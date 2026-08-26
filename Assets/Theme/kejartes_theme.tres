@@ -1,7 +1,7 @@
-[gd_resource type="Theme" format=3 uid="uid://bo3dwau466faa"]
+[gd_resource type="Theme" format=3]
 
-[ext_resource type="FontFile" uid="uid://dlbve18vfs2eo" path="res://Assets/Fonts/Baloo2-Variable.ttf" id="1_i33xe"]
-[ext_resource type="FontFile" uid="uid://dk3cr4sdo2t1n" path="res://Assets/Fonts/Nunito-Variable.ttf" id="2_c7jio"]
+[ext_resource type="FontFile" path="res://Assets/Fonts/Baloo2-Variable.ttf" id="1_i33xe"]
+[ext_resource type="FontFile" path="res://Assets/Fonts/Nunito-Variable.ttf" id="2_c7jio"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i33xe"]
 content_margin_left = 44.0
@@ -481,7 +481,7 @@ PrimaryButton/styles/focus = SubResource("StyleBoxFlat_uxcam")
 PrimaryButton/styles/hover = SubResource("StyleBoxFlat_fnuwu")
 PrimaryButton/styles/normal = SubResource("StyleBoxFlat_ss02d")
 PrimaryButton/styles/pressed = SubResource("StyleBoxFlat_irwde")
-RichTextLabel/colors/font_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
+RichTextLabel/colors/default_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
 RichTextLabel/font_sizes/normal_font_size = 28
 Scrim/base_type = &"Panel"
 Scrim/styles/panel = SubResource("StyleBoxFlat_62oqa")

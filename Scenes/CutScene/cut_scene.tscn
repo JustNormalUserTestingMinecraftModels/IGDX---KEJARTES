@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/CutScene/cut_scene.gd" id="1_88s7j"]
 [ext_resource type="Texture2D" uid="uid://f0niudwtemxb" path="res://Assets/Images/UI/BG.jpg" id="2_w1y33"]
+[ext_resource type="Script" path="res://Scripts/CutScene/hint_label.gd" id="3_hint_lbl"]
 
 [node name="CutScene" type="Control" unique_id=1283265698]
 layout_mode = 3
@@ -25,12 +26,12 @@ offset_left = 165.0
 offset_top = 629.0
 offset_right = 908.0
 offset_bottom = 896.0
+theme_type_variation = &"Card"
 
 [node name="DialogueLabel" type="RichTextLabel" parent="DialogueBox" unique_id=31443811]
 layout_mode = 0
 offset_right = 746.0
 offset_bottom = 268.0
-theme_override_font_sizes/normal_font_size = 55
 
 [node name="FadeOverlay" type="ColorRect" parent="." unique_id=469784982]
 layout_mode = 0
@@ -38,4 +39,15 @@ offset_right = 1088.0
 offset_bottom = 1934.0
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
+
+[node name="HintLabel" type="Label" parent="." unique_id=910481723]
+layout_mode = 0
+offset_left = 165.0
+offset_top = 900.0
+offset_right = 908.0
+offset_bottom = 940.0
+theme_type_variation = &"CaptionLabel"
+horizontal_alignment = 1
+text = "Ketuk untuk melanjutkan"
+script = ExtResource("3_hint_lbl")
 

@@ -216,7 +216,14 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 		_pill(tokens, tokens.surface_sunken, tokens.surface_sunken,
 			tokens.surface_sunken, 0.0))
 
-	theme.set_color("font_color", "RichTextLabel", tokens.text_primary)
+	# RichTextLabel's base text color theme item is "default_color", not
+	# "font_color" (that name is a Label/Button theme item). Setting
+	# "font_color" here was a silent no-op: RichTextLabel never reads a
+	# key by that name, so any RichTextLabel without a per-node override
+	# fell back to the engine default (white), invisible against a white
+	# Card background. Found via Task 11 (CutScene)'s live walkthrough --
+	# DialogueLabel rendered a fully-revealed but blank line.
+	theme.set_color("default_color", "RichTextLabel", tokens.text_primary)
 	theme.set_font_size("normal_font_size", "RichTextLabel", tokens.font_body_size)
 
 	# Container rhythm: every screen gets consistent spacing/margins from

@@ -1,8 +1,34 @@
+@tool
 extends Control
 
+## @tool note: mirrors Scripts/MainMenu/main_menu.gd's established pattern
+## (see that script's header for the full placeholder-instance
+## explanation). Without @tool this script becomes a placeholder instance
+## when the MCP test suite instantiates this scene from inside the editor
+## process, which breaks traversal-based checks like
+## test_scene_has_no_theme_overrides the moment they reach this node.
+##
+## Gating: _setup_top_bar_buttons() / _setup_level_select_ui() build and
+## wire the static UI (buttons, modal) and must run in both a human's
+## editor session and the test suite's instantiation, exactly like
+## MainMenu's button wiring. Everything below the
+## Engine.is_editor_hint() guard -- reading GameState to decide which
+## branch of the cutscene to show, refreshing GameState-derived button
+## text, and kicking off the first CG/dialogue reveal -- is a genuine
+## runtime-only side effect and must never fire just because a human
+## opened this scene in the editor, or because the test suite
+## instantiated it. _input() is left unguarded: per Splashscreen's
+## established note, Control nodes edited in the editor never receive
+## real game input events, so there is nothing to gate there.
+
 @onready var dialogue_label: RichTextLabel = $DialogueBox/DialogueLabel
+@onready var dialogue_box: Panel = $DialogueBox
 @onready var bg_cutscene: TextureRect = $BgCutScene
 @onready var fade_overlay: ColorRect = $FadeOverlay
+@onready var _tokens: DesignTokens = DesignTokens.load_default()
+
+## Typewriter speed, tunable in the inspector without touching code.
+@export var typewriter_chars_per_second: float = 45.0
 
 var cg_data = [
 	{
@@ -28,9 +54,8 @@ var cg_data = [
 ]
 
 var cg_index := 0
-var is_typing := false
-var char_index := 0
 var is_transitioning := false
+var _reveal_tween: Tween
 
 # Level Selection UI elements
 var level_select_overlay: Control
@@ -42,7 +67,12 @@ func _ready():
 	fade_overlay.color.a = 0.0
 	_setup_top_bar_buttons()
 	_setup_level_select_ui()
-	
+
+	if Engine.is_editor_hint():
+		return
+
+	_update_debug_button_text()
+
 	if GameState.is_game_over_cutscene:
 		_setup_game_over_cutscene()
 	else:
@@ -57,8 +87,8 @@ func _setup_game_over_cutscene() -> void:
 	if btn_debug_toggle: btn_debug_toggle.visible = false
 	if btn_skip: btn_skip.visible = false
 	if bg_cutscene:
-		bg_cutscene.modulate = Color(0.45, 0.45, 0.45, 1.0)
-		
+		bg_cutscene.modulate = Color.WHITE.darkened(0.55)
+
 	cg_data = [
 		{
 			"image": preload("res://Assets/Images/UI/BG.jpg"),
@@ -88,14 +118,17 @@ func _setup_top_bar_buttons() -> void:
 	# Top HBox for Skip & Debug controls
 	var top_bar = HBoxContainer.new()
 	top_bar.position = Vector2(30, 40)
-	top_bar.size = Vector2(1020, 80)
-	top_bar.add_theme_constant_override("separation", 20)
+	top_bar.size = Vector2(1020, _tokens.touch_target_min + 20)
 	add_child(top_bar)
 
-	# Debug level select toggle button
+	# Debug level select toggle button. Text is a static placeholder here
+	# -- reading GameState.debug_level_select_enabled happens later, in
+	# _update_debug_button_text(), which only runs at real runtime (see
+	# the Engine.is_editor_hint() guard in _ready()).
 	btn_debug_toggle = Button.new()
-	_update_debug_button_text()
-	btn_debug_toggle.custom_minimum_size = Vector2(360, 60)
+	btn_debug_toggle.theme_type_variation = &"SecondaryButton"
+	btn_debug_toggle.text = "🐛 Debug Level Select"
+	btn_debug_toggle.custom_minimum_size = Vector2(420, _tokens.touch_target_min)
 	btn_debug_toggle.pressed.connect(_on_debug_toggle_pressed)
 	top_bar.add_child(btn_debug_toggle)
 
@@ -105,33 +138,16 @@ func _setup_top_bar_buttons() -> void:
 
 	# Skip cutscene button
 	btn_skip = Button.new()
+	btn_skip.theme_type_variation = &"DangerButton"
 	btn_skip.text = "⏩ Skip Intro"
-	btn_skip.custom_minimum_size = Vector2(220, 60)
+	btn_skip.custom_minimum_size = Vector2(260, _tokens.touch_target_min)
 	btn_skip.pressed.connect(_on_skip_pressed)
 	top_bar.add_child(btn_skip)
-
-	_style_top_button(btn_debug_toggle, Color(0.15, 0.25, 0.4, 0.85))
-	_style_top_button(btn_skip, Color(0.35, 0.2, 0.2, 0.85))
 
 func _update_debug_button_text() -> void:
 	if btn_debug_toggle:
 		var mode_str = "ON (Pilih Kelas)" if GameState.debug_level_select_enabled else "OFF (Normal)"
 		btn_debug_toggle.text = "🐛 Debug Level Select: " + mode_str
-
-func _style_top_button(btn: Button, bg_col: Color) -> void:
-	btn.add_theme_font_size_override("font_size", 24)
-	var style = StyleBoxFlat.new()
-	style.bg_color = bg_col
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10
-	style.corner_radius_bottom_right = 10
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = Color(0.8, 0.8, 0.8, 0.6)
-	btn.add_theme_stylebox_override("normal", style)
 
 func _setup_level_select_ui() -> void:
 	# Overlay container
@@ -140,48 +156,31 @@ func _setup_level_select_ui() -> void:
 	level_select_overlay.visible = false
 	add_child(level_select_overlay)
 
-	# Dark dim backdrop
+	# Dark dim backdrop, using the same scrim the rest of the game uses
+	# for modal overlays.
 	var dim = ColorRect.new()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dim.color = Color(0.03, 0.05, 0.1, 0.92)
+	dim.color = _tokens.scrim_color()
 	level_select_overlay.add_child(dim)
 
 	# Centered Modal Panel
 	var panel = PanelContainer.new()
+	panel.theme_type_variation = &"Card"
 	panel.custom_minimum_size = Vector2(900, 1100)
 	panel.position = Vector2(90, 360)
-	
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.08, 0.12, 0.22, 0.95)
-	panel_style.border_color = Color(0.9, 0.75, 0.3, 0.9)
-	panel_style.border_width_left = 4
-	panel_style.border_width_top = 4
-	panel_style.border_width_right = 4
-	panel_style.border_width_bottom = 4
-	panel_style.corner_radius_top_left = 24
-	panel_style.corner_radius_top_right = 24
-	panel_style.corner_radius_bottom_left = 24
-	panel_style.corner_radius_bottom_right = 24
-	panel.add_theme_stylebox_override("panel", panel_style)
 	level_select_overlay.add_child(panel)
 
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 40)
-	margin.add_theme_constant_override("margin_top", 40)
-	margin.add_theme_constant_override("margin_right", 40)
-	margin.add_theme_constant_override("margin_bottom", 40)
 	panel.add_child(margin)
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 24)
 	margin.add_child(vbox)
 
 	# Header Title
 	var title = Label.new()
 	title.text = "🎓 PILIH TINGKAT KELAS 🎓"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 44)
-	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	title.theme_type_variation = &"H1Label"
 	vbox.add_child(title)
 
 	# Subtitle
@@ -189,15 +188,18 @@ func _setup_level_select_ui() -> void:
 	subtitle.text = "Pilih tingkat jenjang kelas yang ingin kamu bimbing:"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	subtitle.add_theme_font_size_override("font_size", 26)
+	subtitle.theme_type_variation = &"CaptionLabel"
 	vbox.add_child(subtitle)
 
 	# Debug Badge
 	var debug_badge = Label.new()
 	debug_badge.text = "🔧 [MODE DEBUG: LEVEL SELECT AKTIF]"
 	debug_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	debug_badge.add_theme_font_size_override("font_size", 20)
-	debug_badge.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
+	debug_badge.theme_type_variation = &"MicroLabel"
+	# self_modulate tints the already-themed text; it is a Control
+	# property, not a theme override, and reads its color from the
+	# token palette rather than a hardcoded literal.
+	debug_badge.self_modulate = _tokens.cat_akademis
 	vbox.add_child(debug_badge)
 
 	var sep = HSeparator.new()
@@ -205,61 +207,22 @@ func _setup_level_select_ui() -> void:
 
 	# Buttons Container
 	var btn_vbox = VBoxContainer.new()
-	btn_vbox.add_theme_constant_override("separation", 20)
 	vbox.add_child(btn_vbox)
 
 	# Grade 7 Button
-	_create_grade_button(btn_vbox, 7, "🏫 KELAS 7 (Tingkat Pertama)", "Awal Tahun Ajaran • Minggu 1 • Dasar Pembimbingan", Color(0.2, 0.5, 0.8))
-	
+	_create_grade_button(btn_vbox, 7, "🏫 KELAS 7 (Tingkat Pertama)", "Awal Tahun Ajaran • Minggu 1 • Dasar Pembimbingan", &"PrimaryButton")
+
 	# Grade 8 Button
-	_create_grade_button(btn_vbox, 8, "🏫 KELAS 8 (Tingkat Menengah)", "Tahun Ajaran Ke-2 • Minggu 17 • Tantangan Meningkat", Color(0.2, 0.7, 0.5))
+	_create_grade_button(btn_vbox, 8, "🏫 KELAS 8 (Tingkat Menengah)", "Tahun Ajaran Ke-2 • Minggu 17 • Tantangan Meningkat", &"SecondaryButton")
 
 	# Grade 9 Button
-	_create_grade_button(btn_vbox, 9, "🎓 KELAS 9 (Tingkat Akhir)", "Ujian Kelulusan Utama • Minggu 33 • Evaluasi Final", Color(0.85, 0.4, 0.2))
+	_create_grade_button(btn_vbox, 9, "🎓 KELAS 9 (Tingkat Akhir)", "Ujian Kelulusan Utama • Minggu 33 • Evaluasi Final", &"DangerButton")
 
-func _create_grade_button(parent: VBoxContainer, grade_num: int, title_text: String, desc_text: String, theme_col: Color) -> void:
+func _create_grade_button(parent: VBoxContainer, grade_num: int, title_text: String, desc_text: String, variation: StringName) -> void:
 	var btn = Button.new()
+	btn.theme_type_variation = variation
 	btn.custom_minimum_size = Vector2(0, 140)
-	
-	var btn_vbox = VBoxContainer.new()
-	btn_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	btn_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	btn_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-
-	var title_lbl = Label.new()
-	title_lbl.text = title_text
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 30)
-	title_lbl.add_theme_color_override("font_color", Color.WHITE)
-	btn_vbox.add_child(title_lbl)
-
-	var desc_lbl = Label.new()
-	desc_lbl.text = desc_text
-	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_lbl.add_theme_font_size_override("font_size", 20)
-	desc_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
-	btn_vbox.add_child(desc_lbl)
-
-	btn.add_child(btn_vbox)
-
-	var style = StyleBoxFlat.new()
-	style.bg_color = theme_col * 0.4
-	style.border_color = theme_col
-	style.border_width_left = 3
-	style.border_width_top = 3
-	style.border_width_right = 3
-	style.border_width_bottom = 3
-	style.corner_radius_top_left = 16
-	style.corner_radius_top_right = 16
-	style.corner_radius_bottom_left = 16
-	style.corner_radius_bottom_right = 16
-	btn.add_theme_stylebox_override("normal", style)
-
-	var hover_style = style.duplicate()
-	hover_style.bg_color = theme_col * 0.7
-	btn.add_theme_stylebox_override("hover", hover_style)
-	btn.add_theme_stylebox_override("pressed", hover_style)
-
+	btn.text = title_text + "\n" + desc_text
 	btn.pressed.connect(func(): _on_grade_selected(grade_num))
 	parent.add_child(btn)
 
@@ -285,28 +248,31 @@ func show_level_select_modal() -> void:
 func _on_grade_selected(grade_num: int) -> void:
 	print("Grade selected before cutscene: ", grade_num)
 	GameState.set_grade(grade_num)
-	
+
 	is_showing_level_select = false
 	var tween = create_tween()
 	tween.tween_property(level_select_overlay, "modulate:a", 0.0, 0.25)
 	await tween.finished
 	level_select_overlay.visible = false
-	
+
 	show_current()
 
 func show_current():
+	bg_cutscene.modulate.a = 1.0
 	bg_cutscene.texture = cg_data[cg_index]["image"]
-	type_text(cg_data[cg_index]["text"])
+	_reveal(cg_data[cg_index]["text"])
 
-func type_text(full_text: String):
-	is_typing = true
-	char_index = 0
-	dialogue_label.text = ""
-	while is_typing and char_index < full_text.length():
-		dialogue_label.text += full_text[char_index]
-		char_index += 1
-		await get_tree().create_timer(0.03).timeout
-	is_typing = false
+## Typewriter reveal via visible_ratio rather than character-slicing, so
+## any BBCode in the dialogue text renders correctly instead of being
+## sliced mid-tag.
+func _reveal(text: String) -> void:
+	dialogue_label.text = text
+	dialogue_label.visible_ratio = 0.0
+	var chars := float(dialogue_label.get_total_character_count())
+	var duration := chars / typewriter_chars_per_second
+	var tw := dialogue_label.create_tween()
+	tw.tween_property(dialogue_label, "visible_ratio", 1.0, duration)
+	_reveal_tween = tw
 
 func _input(event):
 	if is_transitioning or is_showing_level_select:
@@ -321,11 +287,17 @@ func _input(event):
 	if not tapped:
 		return
 
-	if is_typing:
-		dialogue_label.text = cg_data[cg_index]["text"]
-		is_typing = false
-		return
+	AudioDirector.play_sfx(&"tap")
+	_on_tap()
 
+## Visual-novel contract: tapping mid-reveal completes the current line
+## instantly. It does not advance -- that requires a second, separate tap.
+func _on_tap() -> void:
+	if _reveal_tween != null and _reveal_tween.is_valid() \
+			and dialogue_label.visible_ratio < 1.0:
+		_reveal_tween.kill()
+		dialogue_label.visible_ratio = 1.0
+		return
 	advance()
 
 func advance():
@@ -335,16 +307,20 @@ func advance():
 	else:
 		transition_to_next()
 
+## Cross-fades the CG image instead of hard-cutting it: fade BgCutScene
+## out, swap the texture, fade it back in.
 func transition_to_next():
 	is_transitioning = true
-	var tween = create_tween()
-	tween.tween_property(fade_overlay, "color:a", 1.0, 0.4)
-	await tween.finished
 
-	show_current()
+	var tween_out = create_tween()
+	tween_out.tween_property(bg_cutscene, "modulate:a", 0.0, _tokens.dur_normal)
+	await tween_out.finished
+
+	bg_cutscene.texture = cg_data[cg_index]["image"]
+	_reveal(cg_data[cg_index]["text"])
 
 	var tween_in = create_tween()
-	tween_in.tween_property(fade_overlay, "color:a", 0.0, 0.4)
+	tween_in.tween_property(bg_cutscene, "modulate:a", 1.0, _tokens.dur_normal)
 	await tween_in.finished
 
 	is_transitioning = false
@@ -354,25 +330,25 @@ func go_to_gameplay():
 	var tween = create_tween()
 	tween.tween_property(fade_overlay, "color:a", 1.0, 0.8)
 	await tween.finished
-	
+
 	if GameState.is_game_over_cutscene:
 		GameState.is_game_over_cutscene = false
 		var grade_num = GameState.current_grade
 		var next_scene_path = "res://Scenes/Lobby/loby.tscn"
 		if grade_num > 7:
 			next_scene_path = "res://Scenes/StudentCard/student_card.tscn"
-		
+
 		# Reset schedules and week
 		GameState.day_schedules.clear()
 		GameState.minggu_ke = 1
 		GameState.returned_from_student_card = false
-		
+
 		if grade_num == 7:
 			# Grade 7 full restart: clear selection so they select again
 			GameState.lobby_tutorial_completed = false
 			GameState.approved_students.clear()
 			GameState.grade7_student_ids.clear()
-			
+
 			var AturJadwalScript = load("res://Scripts/AturJadwal/atur_jadwal.gd")
 			if AturJadwalScript and "tutorial_phase1_done" in AturJadwalScript:
 				AturJadwalScript.tutorial_phase1_done = false
@@ -392,9 +368,9 @@ func go_to_gameplay():
 					student["akademis2"] = student["base_akademis2"]
 				if student.has("base_akademis3"):
 					student["akademis3"] = student["base_akademis3"]
-					
+
 		GameState.next_scene = next_scene_path
 	else:
 		GameState.next_scene = "res://Scenes/Lobby/loby.tscn"
-		
+
 	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")

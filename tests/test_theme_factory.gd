@@ -1,0 +1,90 @@
+@tool
+extends McpTestSuite
+
+func suite_name() -> String:
+	return "theme_factory"
+
+var _tokens: DesignTokens
+var _theme: Theme
+
+
+func setup() -> void:
+	_tokens = DesignTokens.load_default()
+	_theme = ThemeFactory.build(_tokens)
+
+
+func test_build_returns_a_theme() -> void:
+	assert_true(_theme != null, "build must return a Theme")
+	assert_true(_theme is Theme, "must be a Theme instance")
+
+
+func test_every_declared_variation_exists() -> void:
+	# Later tasks set theme_type_variation to these exact strings.
+	# A typo here becomes an invisible styling failure at runtime,
+	# because Godot silently falls back to the base type.
+	var expected := [
+		"PrimaryButton", "SecondaryButton", "DangerButton",
+		"Card", "SunkenPanel", "Scrim",
+		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
+		"CaptionLabel", "MicroLabel", "StatBar",
+	]
+	var actual := _theme.get_type_list()
+	for variation in expected:
+		assert_true(actual.has(variation), "theme must declare type: " + variation)
+
+
+func test_button_variations_have_all_four_states() -> void:
+	for variation in ["PrimaryButton", "SecondaryButton", "DangerButton"]:
+		for state in ["normal", "hover", "pressed", "disabled"]:
+			assert_true(_theme.has_stylebox(state, variation),
+				"%s must define stylebox: %s" % [variation, state])
+
+
+func test_primary_button_uses_brand_color() -> void:
+	var sb := _theme.get_stylebox("normal", "PrimaryButton") as StyleBoxFlat
+	assert_true(sb != null, "PrimaryButton/normal must be a StyleBoxFlat")
+	assert_eq(sb.bg_color, _tokens.brand_primary_light,
+		"gradient top of the primary button is brand_primary_light")
+
+
+func test_buttons_meet_minimum_touch_target() -> void:
+	# Anything smaller is a tap the user will miss on a phone.
+	for variation in ["PrimaryButton", "SecondaryButton", "DangerButton"]:
+		var sb := _theme.get_stylebox("normal", variation) as StyleBoxFlat
+		var height := sb.content_margin_top + sb.content_margin_bottom
+		assert_true(height >= float(_tokens.touch_target_min) * 0.5,
+			variation + " content margins must contribute to a tappable height")
+
+
+func test_card_has_visible_outline_and_shadow() -> void:
+	var sb := _theme.get_stylebox("panel", "Card") as StyleBoxFlat
+	assert_eq(sb.bg_color, _tokens.surface_card, "card fill")
+	assert_true(sb.border_width_top >= 1, "card must have the white rim")
+	assert_eq(sb.border_color, _tokens.outline_card, "rim color")
+	assert_true(sb.shadow_size > 0, "card must have a drop shadow")
+
+
+func test_label_variations_carry_font_sizes_from_tokens() -> void:
+	assert_eq(_theme.get_font_size("font_size", "DisplayLabel"), _tokens.font_display_size)
+	assert_eq(_theme.get_font_size("font_size", "H1Label"), _tokens.font_h1)
+	assert_eq(_theme.get_font_size("font_size", "CaptionLabel"), _tokens.font_caption)
+
+
+func test_changing_a_token_changes_the_built_theme() -> void:
+	# This is the whole point of the pipeline: edit the token, get a new look.
+	var custom := DesignTokens.new()
+	custom.brand_primary_light = Color("ff0000")
+	var custom_theme := ThemeFactory.build(custom)
+	var sb := custom_theme.get_stylebox("normal", "PrimaryButton") as StyleBoxFlat
+	assert_eq(sb.bg_color, Color("ff0000"),
+		"theme must be derived from tokens, not hardcoded")
+
+
+func test_build_survives_null_fonts() -> void:
+	# design_tokens.tres has null font slots until Task 4. Baking must
+	# not crash in that window.
+	var bare := DesignTokens.new()
+	bare.font_display = null
+	bare.font_body = null
+	var t := ThemeFactory.build(bare)
+	assert_true(t != null, "build must tolerate unassigned font slots")

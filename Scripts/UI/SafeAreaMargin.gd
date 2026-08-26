@@ -49,6 +49,24 @@ func _apply() -> void:
 			float(win.x - safe.end.x) * scale_x,
 			float(win.y - safe.end.y) * scale_y)
 
+		# get_display_safe_area() reports the MONITOR's safe area, not one
+		# clipped to this window. On a real, fullscreen mobile device the
+		# window IS the monitor so this is moot -- but in a windowed
+		# desktop/editor run (window smaller than or offset from the
+		# monitor) the "safe area" can be larger than the window itself,
+		# making win.x - safe.end.x (etc.) go negative. A negative inset
+		# would WIDEN the margin-adjusted content past the container's own
+		# bounds instead of shrinking it -- observed blowing Layout's width
+		# out to ~5x the screen while testing this screen in the MCP
+		# editor's small preview window. An inset can only ever shrink
+		# available space, never grow it, so clamp to [0, 40% of that
+		# axis] -- generous enough for any real notch/gesture-bar inset,
+		# tight enough to guarantee this can never consume the screen.
+		inset.x = clampf(inset.x, 0.0, size.x * 0.4)
+		inset.y = clampf(inset.y, 0.0, size.y * 0.4)
+		inset.z = clampf(inset.z, 0.0, size.x * 0.4)
+		inset.w = clampf(inset.w, 0.0, size.y * 0.4)
+
 	add_theme_constant_override("margin_left",
 		int(base + inset.x + extra_margin.x))
 	add_theme_constant_override("margin_top",

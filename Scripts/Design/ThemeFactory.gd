@@ -218,3 +218,12 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 
 	theme.set_color("font_color", "RichTextLabel", tokens.text_primary)
 	theme.set_font_size("normal_font_size", "RichTextLabel", tokens.font_body_size)
+
+	# Container rhythm: every screen gets consistent spacing/margins from
+	# the theme instead of per-scene theme_override_constants.
+	theme.set_constant("separation", "VBoxContainer", tokens.space_md)
+	theme.set_constant("separation", "HBoxContainer", tokens.space_sm)
+	theme.set_constant("margin_left", "MarginContainer", tokens.screen_margin)
+	theme.set_constant("margin_right", "MarginContainer", tokens.screen_margin)
+	theme.set_constant("margin_top", "MarginContainer", tokens.screen_margin)
+	theme.set_constant("margin_bottom", "MarginContainer", tokens.screen_margin)

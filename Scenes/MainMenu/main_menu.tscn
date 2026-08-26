@@ -1,8 +1,10 @@
-[gd_scene format=3 uid="uid://b2vxniec67375"]
+[gd_scene load_steps=4 format=3 uid="uid://b2vxniec67375"]
 
-[ext_resource type="Script" uid="uid://cnycp8ahqnwtg" path="res://Scripts/MainMenu/main_menu.gd" id="1_ftydy"]
+[ext_resource type="Script" path="res://Scripts/MainMenu/main_menu.gd" id="1_ftydy"]
+[ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/BG.jpg" id="3_bg"]
 
-[node name="MainMenu" type="Control" unique_id=1380861387]
+[node name="MainMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,38 +13,75 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ftydy")
 
-[node name="Label" type="Label" parent="." unique_id=857693006]
-layout_mode = 0
-offset_left = 148.0
-offset_top = 157.0
-offset_right = 885.0
-offset_bottom = 383.0
-theme_override_font_sizes/font_size = 165
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="SafeArea" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_safe")
+
+[node name="Layout" type="VBoxContainer" parent="SafeArea"]
+layout_mode = 2
+
+[node name="TitleSpacer" type="Control" parent="SafeArea/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.6
+
+[node name="TitleLabel" type="Label" parent="SafeArea/Layout"]
+layout_mode = 2
+theme_type_variation = &"DisplayLabel"
 text = "KEJARTES"
+horizontal_alignment = 1
 
-[node name="PlayButton" type="Button" parent="." unique_id=1543250615]
-layout_mode = 0
-offset_left = 315.0
-offset_top = 474.0
-offset_right = 769.0
-offset_bottom = 677.0
-theme_override_font_sizes/font_size = 143
-text = "PLAY"
+[node name="SubtitleLabel" type="Label" parent="SafeArea/Layout"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Bimbing muridmu sampai akhir semester"
+horizontal_alignment = 1
 
-[node name="SettingButton" type="Button" parent="." unique_id=1084566688]
-layout_mode = 0
-offset_left = 330.0
-offset_top = 767.0
-offset_right = 784.0
-offset_bottom = 926.0
-theme_override_font_sizes/font_size = 110
-text = "SETTING"
+[node name="MidSpacer" type="Control" parent="SafeArea/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
 
-[node name="QuitButton" type="Button" parent="." unique_id=964405341]
-layout_mode = 0
-offset_left = 319.0
-offset_top = 1059.0
-offset_right = 773.0
-offset_bottom = 1232.0
-theme_override_font_sizes/font_size = 120
-text = "QUIT"
+[node name="ButtonColumn" type="VBoxContainer" parent="SafeArea/Layout"]
+layout_mode = 2
+
+[node name="PlayButton" type="Button" parent="SafeArea/Layout/ButtonColumn"]
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "MULAI"
+
+[node name="SettingButton" type="Button" parent="SafeArea/Layout/ButtonColumn"]
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "PENGATURAN"
+
+[node name="QuitButton" type="Button" parent="SafeArea/Layout/ButtonColumn"]
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "KELUAR"
+
+[node name="BottomSpacer" type="Control" parent="SafeArea/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+
+[node name="VersionLabel" type="Label" parent="SafeArea/Layout"]
+layout_mode = 2
+theme_type_variation = &"MicroLabel"
+text = "v0.1"
+horizontal_alignment = 1

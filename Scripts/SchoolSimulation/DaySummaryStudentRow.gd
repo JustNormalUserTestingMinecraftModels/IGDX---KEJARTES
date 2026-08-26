@@ -1,60 +1,30 @@
 extends PanelContainer
 class_name DaySummaryStudentRow
 
+## One student's line in the end-of-day summary: avatar, name, an optional
+## status badge, and one tinted pill per stat that moved today.
+##
+## All styling now comes from the theme -- the row itself is a &"Card",
+## the avatar frame a &"SunkenPanel", the name a &"TitleLabel", and every
+## chip is the shared DaySummaryPill/Badge scene tinted from DesignTokens.
+## Nothing here builds a StyleBox any more.
+
 @onready var avatar_rect: TextureRect = %AvatarTexture
 @onready var name_label: Label = %NameLabel
 @onready var badge_container: HBoxContainer = %BadgeContainer
 @onready var pills_container: HFlowContainer = %PillsContainer
 
-@export_group("Card Styling")
-@export var card_bg_color: Color = Color(0.1, 0.12, 0.24, 0.95)
-@export var card_border_color: Color = Color(0.18, 0.22, 0.38)
-@export var card_border_width: int = 2
-@export var card_corner_radius: int = 20
-
-@export_group("Avatar Styling")
-@export var avatar_bg_color: Color = Color(0.15, 0.18, 0.3)
-@export var avatar_corner_radius: int = 56
-
-@export_group("Pill Colors")
-@export var pill_akademis_color: Color = Color(0.16, 0.27, 1.0)
-@export var pill_senibudaya_color: Color = Color(0.0, 0.6, 0.25)
-@export var pill_olahraga_color: Color = Color(0.75, 0.1, 0.1)
-@export var pill_energy_loss_color: Color = Color(0.85, 0.2, 0.2)
-@export var pill_mood_loss_color: Color = Color(0.88, 0.42, 0.08)
-@export var pill_recovery_color: Color = Color(0.1, 0.65, 0.3)
-@export var pill_bonus_color: Color = Color(0.82, 0.68, 0.08)
-@export var pill_warning_color: Color = Color(0.78, 0.08, 0.08)
-
 @export_group("Typography")
 @export var font: Font = null
 
-func _ready() -> void:
-	_apply_visual_styles()
+const _STAT_NAMES := {
+	"akademis": "Akademis",
+	"seni_budaya": "Seni",
+	"olahraga": "Olahraga",
+	"energy": "Energy",
+	"mood": "Mood",
+}
 
-func _apply_visual_styles() -> void:
-	var sp_sb = StyleBoxFlat.new()
-	sp_sb.bg_color = card_bg_color
-	sp_sb.border_color = card_border_color
-	sp_sb.border_width_left = card_border_width
-	sp_sb.border_width_top = card_border_width
-	sp_sb.border_width_right = card_border_width
-	sp_sb.border_width_bottom = card_border_width
-	sp_sb.corner_radius_top_left = card_corner_radius
-	sp_sb.corner_radius_top_right = card_corner_radius
-	sp_sb.corner_radius_bottom_left = card_corner_radius
-	sp_sb.corner_radius_bottom_right = card_corner_radius
-	add_theme_stylebox_override("panel", sp_sb)
-
-	var av_sb = StyleBoxFlat.new()
-	av_sb.bg_color = avatar_bg_color
-	av_sb.corner_radius_top_left = avatar_corner_radius
-	av_sb.corner_radius_top_right = avatar_corner_radius
-	av_sb.corner_radius_bottom_left = avatar_corner_radius
-	av_sb.corner_radius_bottom_right = avatar_corner_radius
-	var avatar_container = get_node("%AvatarContainer")
-	if avatar_container:
-		avatar_container.add_theme_stylebox_override("panel", av_sb)
 
 func setup_row(student_name: String, changes: Array, student: StudentData) -> void:
 	name_label.text = student_name
@@ -62,86 +32,100 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 		name_label.add_theme_font_override("font", font)
 	if student and student.avatar_texture:
 		avatar_rect.texture = student.avatar_texture
-		
+
+	var tokens := Juice.tokens()
+
 	# Setup badges
 	for child in badge_container.get_children():
 		child.queue_free()
-		
+
 	var event_delta_sum = 0
 	for ch in changes:
 		if ch.get("source") == "event":
 			event_delta_sum += int(ch.get("delta"))
-			
+
 	if student and student.energy <= 20.0:
-		_add_name_row_badge("⚠️ KELELAHAN", pill_warning_color)
+		_add_name_row_badge("⚠️ KELELAHAN", tokens.state_danger)
 	elif event_delta_sum > 0:
-		_add_name_row_badge("✨ BONUS EVENT +%d" % event_delta_sum, pill_bonus_color)
-		
+		_add_name_row_badge("✨ BONUS EVENT +%d" % event_delta_sum, tokens.currency_gold)
+
 	# Setup pills
 	for child in pills_container.get_children():
 		child.queue_free()
-		
+
+	var chips: Array = []
 	for ch in changes:
 		var sk = ch.get("stat_key", "")
 		var delta = ch.get("delta", 0.0)
 		var source = ch.get("source", "")
 		if delta == 0.0:
 			continue
-			
+
 		var sign_str = "+" if delta > 0 else ""
 		var suffix = ""
 		if delta < 0:
 			suffix = " ↓"
 		elif delta > 0 and (sk == "energy" or sk == "mood"):
 			suffix = " ↑"
-			
-		var stat_names = {
-			"akademis": "Akademis",
-			"seni_budaya": "Seni",
-			"olahraga": "Olahraga",
-			"energy": "Energy",
-			"mood": "Mood"
-		}
-		var name_str = stat_names.get(sk, sk)
-		var pill_text = "%s%d %s%s" % [sign_str, int(delta), name_str, suffix]
-		var pill_color = _get_summary_pill_color(sk, delta, source)
-		_add_pill(pill_text, pill_color)
 
-## Badge and pill chips are now theme-driven: the scene supplies the
-## SunkenPanel geometry, the BarLabel text style, and the only per-chip
+		var name_str = _STAT_NAMES.get(sk, sk)
+		# Build a printf template rather than a finished string, so the
+		# number itself can be rolled up by Juice.count_up. "%%d" survives
+		# this first substitution as a literal "%d" for the count-up.
+		var pill_fmt := "%s%%d %s%s" % [sign_str, name_str, suffix]
+		chips.append(_add_pill(pill_fmt, float(delta),
+			_get_summary_pill_color(sk, delta, source)))
+
+	# The chips arrive one after another, then their numbers roll up.
+	Juice.stagger_in(chips)
+
+
+func _add_name_row_badge(text: String, tint: Color) -> PanelContainer:
+	var chip := _make_chip(
+		"res://Scenes/SchoolSimulation/DaySummaryBadge.tscn", tint)
+	(chip.get_node("Text") as Label).text = text
+	badge_container.add_child(chip)
+	return chip
+
+
+## Adds one stat pill whose number counts up from zero to `delta`, so a
+## +6 reads as motion rather than as a static label.
+func _add_pill(fmt: String, delta: float, tint: Color) -> PanelContainer:
+	var chip := _make_chip(
+		"res://Scenes/SchoolSimulation/DaySummaryPill.tscn", tint)
+	pills_container.add_child(chip)
+	Juice.count_up(chip.get_node("Text") as Label, 0.0, delta, fmt)
+	return chip
+
+
+## Badge and pill chips are theme-driven: the scene supplies the
+## SunkenPanel geometry and the BarLabel text style, and the only per-chip
 ## variable left is the tint. `self_modulate` is used rather than
 ## `modulate` deliberately -- it tints the panel's own stylebox without
 ## bleeding into the child Label, which is the same trick StatBar uses to
 ## category-tint a shared white fill.
-func _add_name_row_badge(text: String, tint: Color) -> void:
-	badge_container.add_child(_make_chip(
-		"res://Scenes/SchoolSimulation/DaySummaryBadge.tscn", text, tint))
-
-func _add_pill(text: String, tint: Color) -> void:
-	pills_container.add_child(_make_chip(
-		"res://Scenes/SchoolSimulation/DaySummaryPill.tscn", text, tint))
-
-func _make_chip(scene_path: String, text: String, tint: Color) -> PanelContainer:
+func _make_chip(scene_path: String, tint: Color) -> PanelContainer:
 	var chip := load(scene_path).instantiate() as PanelContainer
 	chip.self_modulate = tint
-	var lbl := chip.get_node("Text") as Label
-	lbl.text = text
 	if font:
-		lbl.add_theme_font_override("font", font)
+		(chip.get_node("Text") as Label).add_theme_font_override("font", font)
 	return chip
 
+
 func _get_summary_pill_color(stat_key: String, delta: float, source: String) -> Color:
-	if source == "minigame_win": return pill_bonus_color
-	if source == "event": return Color(0.45, 0.18, 0.72)
+	var tokens := Juice.tokens()
+	if source == "minigame_win":
+		return tokens.currency_gold
+	if source == "event":
+		return tokens.cat_istirahat
 	if delta > 0:
 		match stat_key:
-			"akademis": return pill_akademis_color
-			"seni_budaya": return pill_senibudaya_color
-			"olahraga": return pill_olahraga_color
-			"energy": return pill_recovery_color
-			"mood": return pill_recovery_color
+			"akademis": return tokens.cat_akademis
+			"seni_budaya": return tokens.cat_senibudaya
+			"olahraga": return tokens.cat_olahraga
+			"energy", "mood": return tokens.state_success
 	else:
 		match stat_key:
-			"energy": return pill_energy_loss_color
-			"mood": return pill_mood_loss_color
-	return Color(0.35, 0.35, 0.4)
+			"energy": return tokens.state_danger
+			"mood": return tokens.state_warning
+	return tokens.text_secondary

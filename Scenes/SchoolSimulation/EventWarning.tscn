@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://co2d26egr4c2e"]
+
+[ext_resource type="Script" path="res://Scripts/SchoolSimulation/EventWarning.gd" id="1_warning"]
+[ext_resource type="Texture2D" uid="uid://b4mc8a23begw3" path="res://Assets/Images/Textures/KiperLeft.jpg" id="2_cicra"]
+[ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="2_i1ddl"]
+[ext_resource type="Shader" uid="uid://b2xh6q6jw0oep" path="res://Scripts/SchoolSimulation/HazardStripeShader.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_stripes"]
+shader = ExtResource("2_shader")
+shader_parameter/color1 = Color(1, 0.85098, 0, 1)
+shader_parameter/color2 = Color(0.0588235, 0.0588235, 0.0588235, 1)
+shader_parameter/speed = 2.0
+shader_parameter/stripe_width = 16.0
+shader_parameter/angle = 45.0
+
+[node name="EventWarning" type="Control" unique_id=1118244677]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_warning")
+background_texture = ExtResource("2_i1ddl")
+caution_icon_texture = ExtResource("2_cicra")
+icon_font_size = 160
+
+[node name="Background" type="ColorRect" parent="." unique_id=1563674738]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.88)
+
+[node name="TopBar" type="ColorRect" parent="." unique_id=241330505]
+material = SubResource("ShaderMaterial_stripes")
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+grow_horizontal = 2
+
+[node name="BottomBar" type="ColorRect" parent="." unique_id=1822022293]
+material = SubResource("ShaderMaterial_stripes")
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -60.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Center" type="CenterContainer" parent="." unique_id=779048480]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center" unique_id=200154272]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="CautionLabel" type="Label" parent="Center/VBox" unique_id=2038317300]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 80
+text = "⚠️"
+horizontal_alignment = 1
+
+[node name="EventLabel" type="Label" parent="Center/VBox" unique_id=837575490]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 48
+text = "EVENT WARNING"
+horizontal_alignment = 1
+autowrap_mode = 2

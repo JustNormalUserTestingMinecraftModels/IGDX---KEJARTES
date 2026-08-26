@@ -1,0 +1,795 @@
+[gd_scene format=3 uid="uid://cbc4ofmd2bktf"]
+
+[ext_resource type="Script" uid="uid://1nbns3hv82e7" path="res://Script/atur_jadwal.gd" id="1_atur"]
+[ext_resource type="Texture2D" uid="uid://dvkb3glcg53su" path="res://Asset/whiteboard.png" id="2_0xkhc"]
+[ext_resource type="Shader" uid="uid://ct2bh8poel6as" path="res://Script/spotlight.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" uid="uid://0c5vps0sx30f" path="res://Asset/stickynotes.png" id="3_03syl"]
+[ext_resource type="Texture2D" uid="uid://0ycjsvqdwjf3" path="res://Asset/pngwing.com (2).png" id="3_a6kja"]
+[ext_resource type="Texture2D" uid="uid://4slit8im18tb" path="res://Asset/Screenshot 2026-08-02 104848.png" id="3_dc5y4"]
+[ext_resource type="Script" uid="uid://y5o8k0o3glrk" path="res://Script/stat_bar.gd" id="3_mccff"]
+[ext_resource type="Texture2D" uid="uid://bhanm4qbpra2a" path="res://Asset/paper.png" id="8_03syl"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yej6c"]
+shader = ExtResource("2_shader")
+shader_parameter/overlay_color = Color(0, 0, 0, 0.7)
+shader_parameter/rect_size = Vector2(1152, 648)
+shader_parameter/hole_pos = Vector2(100, 100)
+shader_parameter/hole_size = Vector2(200, 80)
+shader_parameter/feather = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5m37x"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xkhc"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pno4y"]
+bg_color = Color(0.16000003, 0.2719999, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nri1m"]
+bg_color = Color(0.6, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bc618"]
+bg_color = Color(0, 0.6, 0.25000006, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_46isr"]
+bg_color = Color(0.672, 0.72, 0, 1)
+
+[node name="AturJadwal" type="Control" unique_id=1313751055]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_atur")
+
+[node name="BGHari" type="TextureRect" parent="." unique_id=2055391558]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.039
+anchor_bottom = 0.99500006
+offset_right = -42.119995
+offset_bottom = 9.5998535
+texture = ExtResource("2_0xkhc")
+expand_mode = 1
+
+[node name="Senin" type="TextureButton" parent="BGHari" unique_id=1415431668]
+modulate = Color(0.5529412, 0.45490196, 1, 1)
+layout_mode = 0
+offset_left = 71.0
+offset_top = 998.0
+offset_right = 342.41193
+offset_bottom = 1265.0
+texture_normal = ExtResource("3_03syl")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="BGHari/Senin" unique_id=1796288667]
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 52.0
+offset_top = 84.0
+offset_right = 210.0
+offset_bottom = 157.0
+rotation = -0.07252685
+theme_override_font_sizes/font_size = 53
+text = "SENIN"
+
+[node name="Selasa" type="TextureButton" parent="BGHari" unique_id=535725292]
+modulate = Color(0.5529412, 0.45490196, 1, 1)
+layout_mode = 0
+offset_left = 415.0
+offset_top = 1112.0
+offset_right = 686.4119
+offset_bottom = 1379.0
+texture_normal = ExtResource("3_03syl")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label2" type="Label" parent="BGHari/Selasa" unique_id=29474531]
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 43.0
+offset_top = 98.0
+offset_right = 230.0
+offset_bottom = 171.0
+rotation = -0.06269499
+theme_override_font_sizes/font_size = 53
+text = "SELASA"
+
+[node name="Rabu" type="TextureButton" parent="BGHari" unique_id=1659733278]
+modulate = Color(0.5529412, 0.45490196, 1, 1)
+layout_mode = 0
+offset_left = 740.0
+offset_top = 1000.0
+offset_right = 1011.41187
+offset_bottom = 1267.0
+texture_normal = ExtResource("3_03syl")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label3" type="Label" parent="BGHari/Rabu" unique_id=948886553]
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 56.0
+offset_top = 97.0
+offset_right = 212.0
+offset_bottom = 170.0
+rotation = -0.07867855
+theme_override_font_sizes/font_size = 53
+text = "RABU"
+
+[node name="Kamis" type="TextureButton" parent="BGHari" unique_id=1882812430]
+modulate = Color(0.5529412, 0.45490196, 1, 1)
+layout_mode = 0
+offset_left = 134.0
+offset_top = 1403.0
+offset_right = 405.41193
+offset_bottom = 1670.0
+texture_normal = ExtResource("3_03syl")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label4" type="Label" parent="BGHari/Kamis" unique_id=1022999835]
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 53.0
+offset_top = 97.0
+offset_right = 216.0
+offset_bottom = 170.0
+rotation = -0.053055815
+theme_override_font_sizes/font_size = 53
+text = "KAMIS"
+
+[node name="Jumat" type="TextureButton" parent="BGHari" unique_id=1011112774]
+modulate = Color(0.5529412, 0.45490196, 1, 1)
+layout_mode = 0
+offset_left = 650.0
+offset_top = 1451.0
+offset_right = 921.4119
+offset_bottom = 1718.0
+texture_normal = ExtResource("3_03syl")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label5" type="Label" parent="BGHari/Jumat" unique_id=1879391466]
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 45.0
+offset_top = 99.0
+offset_right = 208.0
+offset_bottom = 172.0
+rotation = -0.068048365
+theme_override_font_sizes/font_size = 53
+text = "JUMAT"
+
+[node name="TextureButton" type="TextureButton" parent="." unique_id=160198999]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 47.0
+offset_right = 447.0
+offset_bottom = 637.0
+texture_normal = ExtResource("3_dc5y4")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="BGStat" type="TextureRect" parent="TextureButton" unique_id=675481685]
+layout_mode = 0
+offset_left = 449.0
+offset_top = -2.0
+offset_right = 883.0
+offset_bottom = 562.0
+expand_mode = 1
+
+[node name="Akademis1" type="ProgressBar" parent="TextureButton/BGStat" unique_id=1270515907]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 7.0
+offset_right = 430.0
+offset_bottom = 80.0
+max_value = 65.0
+show_percentage = false
+script = ExtResource("3_mccff")
+
+[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Akademis1" unique_id=831810105]
+layout_mode = 0
+offset_left = 401.0
+offset_top = 9.0
+offset_right = 481.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 30
+text = "34/65"
+
+[node name="Akademis2" type="ProgressBar" parent="TextureButton/BGStat" unique_id=394755818]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 100.0
+offset_right = 432.0
+offset_bottom = 173.0
+max_value = 65.0
+show_percentage = false
+script = ExtResource("3_mccff")
+
+[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Akademis2" unique_id=683263756]
+layout_mode = 0
+offset_left = 406.0
+offset_top = 11.0
+offset_right = 486.0
+offset_bottom = 62.0
+theme_override_font_sizes/font_size = 30
+text = "65/65"
+
+[node name="Akademis3" type="ProgressBar" parent="TextureButton/BGStat" unique_id=1617858228]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 193.0
+offset_right = 431.0
+offset_bottom = 266.0
+max_value = 65.0
+show_percentage = false
+script = ExtResource("3_mccff")
+
+[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Akademis3" unique_id=1345005751]
+layout_mode = 0
+offset_left = 401.0
+offset_top = 12.0
+offset_right = 481.0
+offset_bottom = 63.0
+theme_override_font_sizes/font_size = 30
+text = "65/65"
+
+[node name="Kepribadian1" type="ProgressBar" parent="TextureButton/BGStat" unique_id=1053416687]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 406.0
+offset_right = 427.0
+offset_bottom = 479.0
+max_value = 65.0
+show_percentage = false
+script = ExtResource("3_mccff")
+
+[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Kepribadian1" unique_id=890165937]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 12.0
+offset_right = 480.0
+offset_bottom = 63.0
+theme_override_font_sizes/font_size = 30
+text = "65/65"
+
+[node name="Kepribadian2" type="ProgressBar" parent="TextureButton/BGStat" unique_id=1170685406]
+layout_mode = 0
+offset_left = 33.0
+offset_top = 495.0
+offset_right = 423.0
+offset_bottom = 568.0
+max_value = 65.0
+show_percentage = false
+script = ExtResource("3_mccff")
+
+[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Kepribadian2" unique_id=538641756]
+layout_mode = 0
+offset_left = 396.0
+offset_top = 14.0
+offset_right = 476.0
+offset_bottom = 65.0
+theme_override_font_sizes/font_size = 30
+text = "65/65"
+
+[node name="LabelNama" type="Label" parent="." unique_id=1966714655]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 640.0
+offset_right = 437.0
+offset_bottom = 742.0
+theme_override_font_sizes/font_size = 74
+text = "Nama"
+
+[node name="LabelTanggal" type="Label" parent="." unique_id=978398382]
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 108.0
+offset_top = 838.0
+offset_right = 956.0
+offset_bottom = 948.0
+theme_override_font_sizes/font_size = 80
+text = "Agustus (minggu ke 1)"
+
+[node name="StartWeek" type="Button" parent="." unique_id=288288757]
+layout_mode = 0
+offset_left = 442.0
+offset_top = 1754.0
+offset_right = 1056.0
+offset_bottom = 1902.0
+theme_override_font_sizes/font_size = 102
+text = "START WEEK"
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1408146570]
+material = SubResource("ShaderMaterial_yej6c")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.9990001
+offset_bottom = 0.9199219
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="ClickManaAja" type="Label" parent="ColorRect" unique_id=48090686]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 1463.0
+offset_right = 945.0
+offset_bottom = 1698.0
+theme_override_font_sizes/font_size = 85
+text = "CLICK DIMANA SAJA
+UNTUK LANJUT"
+horizontal_alignment = 1
+
+[node name="Step1" type="Control" parent="ColorRect" unique_id=1910026756]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step1" unique_id=1751261977]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 35.85
+offset_top = 490.807
+offset_right = 1049.85
+offset_bottom = 913.807
+theme_override_font_sizes/font_size = 49
+text = "Disini dimana kalian akan harus 
+menjadwalkan murid mata pelajan
+ apa yang perlu 
+mereka tingkatkan lebih untuk lolos ujian!"
+horizontal_alignment = 1
+
+[node name="Step2" type="Control" parent="ColorRect" unique_id=1919418456]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step2" unique_id=2009024457]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 35.85
+offset_top = 642.807
+offset_right = 1049.85
+offset_bottom = 1065.807
+theme_override_font_sizes/font_size = 49
+text = "Anda memilih \"Nama Murid\" untuk 
+dijadwalkan terlebih dahulu."
+horizontal_alignment = 1
+
+[node name="Step3" type="Control" parent="ColorRect" unique_id=1001136510]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step3" unique_id=1975927535]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Murid ini membutuhkan bantuan agar
+ mereka terfokuskan
+ untuk meningkatkan apa yang 
+ketertinggalan."
+horizontal_alignment = 1
+
+[node name="Step4_1" type="Control" parent="ColorRect" unique_id=1134063971]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step4_1" unique_id=325018222]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Wah, sepertinya \"Nama Murid\" perlu nilai 
+akademisnya untuk dinaikan lebih lagi."
+horizontal_alignment = 1
+
+[node name="Step4_2" type="Control" parent="ColorRect" unique_id=1335212671]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step4_2" unique_id=2092348620]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Wah, sepertinya \"Nama Murid\" mempunyai
+ nilai akademis yang bagus!"
+horizontal_alignment = 1
+
+[node name="Step5" type="Control" parent="ColorRect" unique_id=753835804]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step5" unique_id=512750049]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Hari berwarnakan Ungu Muda mempunyai
+ arti hari tersebut kosong bagi murid 
+tersebut!"
+horizontal_alignment = 1
+
+[node name="Step6" type="Control" parent="ColorRect" unique_id=152522218]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = -85.640015
+offset_bottom = -90.29199
+
+[node name="Label" type="Label" parent="ColorRect/Step6" unique_id=147277060]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Mari kita jadwalkan  hari senin untuk diisikan
+ mata pelajaran yang mereka sedang 
+butuhkan!"
+horizontal_alignment = 1
+
+[node name="Step7" type="Control" parent="ColorRect" unique_id=820158404]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step7" unique_id=991212435]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Kerja bagus!  Sekarang, kita perhatikan 2 unsur yang akan 
+berubah jikalau anda meng-input 
+sebuah hari dengan mata pelajaran."
+horizontal_alignment = 1
+
+[node name="Step8" type="Control" parent="ColorRect" unique_id=2067418013]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step8" unique_id=1753562963]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Pertama, hari akan berganti warna 
+sesuai dengan warna mata pelajaran.
+Biru, 
+Akademis. Hijau, Seni Budaya
+ dan Merah, Olahraga"
+horizontal_alignment = 1
+
+[node name="Step9" type="Control" parent="ColorRect" unique_id=1518988352]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step9" unique_id=419869824]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Kedua, stats akan mempunyai nilai 
+plus berdasarkan 
+berapa pelajaran per hari yang mereka ambil!  Tapi Mood 
+dan energi mereka akan berkurang!"
+horizontal_alignment = 1
+
+[node name="Step10" type="Control" parent="ColorRect" unique_id=385650204]
+visible = false
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step10" unique_id=738934224]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -7.1500015
+offset_top = 708.807
+offset_right = 1097.85
+offset_bottom = 1131.807
+theme_override_font_sizes/font_size = 49
+text = "Wow, dirimu sangat cepat untuk 
+beradaptasi di lingkungan sekolah ini. 
+Kamu punya potensi besar
+ untuk sukses mendidik lebih jauh disini!"
+horizontal_alignment = 1
+
+[node name="ClickArea" type="Button" parent="ColorRect" unique_id=887578700]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 3.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Peringatan" type="Control" parent="." unique_id=1257958267]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 189.0
+offset_top = 579.0
+offset_right = -175.0
+offset_bottom = -776.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="Peringatan" unique_id=900608003]
+layout_mode = 0
+offset_left = -4.0
+offset_top = -8.0
+offset_right = 736.0
+offset_bottom = 420.0
+texture = ExtResource("3_a6kja")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="Peringatan/TextureRect" unique_id=1041364249]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 37.0
+offset_right = 723.0
+offset_bottom = 374.0
+theme_override_font_sizes/font_size = 47
+text = "PERINGATAN
+
+Terdapat murid yang masih 
+belum memiliki jadwal belajar 
+optimal!! Teruskan?"
+horizontal_alignment = 1
+
+[node name="ButtonYes" type="Button" parent="Peringatan/TextureRect" unique_id=698625612]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 434.0
+offset_right = 353.0
+offset_bottom = 586.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 105
+theme_override_styles/normal = SubResource("StyleBoxFlat_5m37x")
+text = "YES"
+
+[node name="ButtonNo" type="Button" parent="Peringatan/TextureRect" unique_id=1711017920]
+layout_mode = 0
+offset_left = 383.0
+offset_top = 435.0
+offset_right = 742.0
+offset_bottom = 587.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 105
+theme_override_styles/normal = SubResource("StyleBoxFlat_0xkhc")
+text = "NO"
+
+[node name="Penjadwalan" type="Control" parent="." unique_id=2003778541]
+visible = false
+anchors_preset = 0
+offset_right = 1080.0
+offset_bottom = 1920.0
+
+[node name="TextureRect" type="TextureRect" parent="Penjadwalan" unique_id=612493934]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 28.0
+offset_bottom = 51.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("8_03syl")
+stretch_mode = 2
+
+[node name="Akademik" type="Button" parent="Penjadwalan/TextureRect" unique_id=887291090]
+layout_mode = 0
+offset_left = 94.0
+offset_top = 417.0
+offset_right = 368.0
+offset_bottom = 497.0
+scale = Vector2(1.12, 1)
+theme_override_font_sizes/font_size = 52
+theme_override_styles/normal = SubResource("StyleBoxFlat_pno4y")
+text = "AKADEMIK"
+
+[node name="ProgressBar" type="ProgressBar" parent="Penjadwalan/TextureRect/Akademik" unique_id=1331195435]
+layout_mode = 0
+offset_left = 294.0
+offset_right = 747.3214
+offset_bottom = 80.0
+max_value = 65.0
+show_percentage = false
+script = ExtResource("3_mccff")
+goal_value = 55.0
+
+[node name="ValueLabel" type="Label" parent="Penjadwalan/TextureRect/Akademik/ProgressBar" unique_id=1623015816]
+layout_mode = 0
+offset_left = 458.6786
+offset_top = 16.0
+offset_right = 538.6786
+offset_bottom = 58.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "65/65"
+
+[node name="Olahraga" type="Button" parent="Penjadwalan/TextureRect" unique_id=1243804785]
+layout_mode = 0
+offset_left = 78.0
+offset_top = 791.0
+offset_right = 360.0
+offset_bottom = 871.0
+scale = Vector2(1.12, 1)
+theme_override_font_sizes/font_size = 52
+theme_override_styles/normal = SubResource("StyleBoxFlat_nri1m")
+text = "OLAHRAGA"
+
+[node name="ProgressBar2" type="ProgressBar" parent="Penjadwalan/TextureRect/Olahraga" unique_id=1294073586]
+layout_mode = 0
+offset_left = 294.64285
+offset_top = -2.0
+offset_right = 753.5714
+offset_bottom = 79.0
+max_value = 65.0
+show_percentage = false
+script = ExtResource("3_mccff")
+goal_value = 60.0
+
+[node name="ValueLabel" type="Label" parent="Penjadwalan/TextureRect/Olahraga/ProgressBar2" unique_id=70520750]
+layout_mode = 0
+offset_left = 463.39285
+offset_top = 17.0
+offset_right = 543.3928
+offset_bottom = 59.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "65/65"
+
+[node name="SeniBudaya" type="Button" parent="Penjadwalan/TextureRect" unique_id=1127470424]
+layout_mode = 0
+offset_left = 81.00001
+offset_top = 588.0
+offset_right = 377.0
+offset_bottom = 668.0
+scale = Vector2(1.08, 1)
+theme_override_font_sizes/font_size = 52
+theme_override_styles/normal = SubResource("StyleBoxFlat_bc618")
+text = "SEN BUD"
+
+[node name="ProgressBar3" type="ProgressBar" parent="Penjadwalan/TextureRect/SeniBudaya" unique_id=381328819]
+layout_mode = 0
+offset_left = 312.0
+offset_right = 785.1852
+offset_bottom = 80.0
+max_value = 65.0
+show_percentage = false
+script = ExtResource("3_mccff")
+
+[node name="ValueLabel" type="Label" parent="Penjadwalan/TextureRect/SeniBudaya/ProgressBar3" unique_id=732509691]
+layout_mode = 0
+offset_left = 478.7407
+offset_top = 18.0
+offset_right = 558.7407
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "65/65"
+
+[node name="Libur" type="Button" parent="Penjadwalan/TextureRect" unique_id=1650158165]
+layout_mode = 0
+offset_left = 111.0
+offset_top = 1381.0
+offset_right = 476.0
+offset_bottom = 1504.0
+theme_override_font_sizes/font_size = 100
+theme_override_styles/normal = SubResource("StyleBoxFlat_46isr")
+text = "LIBUR"

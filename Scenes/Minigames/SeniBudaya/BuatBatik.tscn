@@ -1,0 +1,252 @@
+[gd_scene format=3 uid="uid://c13gd6s3vki43"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/SeniBudaya/BuatBatik.gd" id="1_buatbatik"]
+[ext_resource type="Texture2D" uid="uid://dqsgnifd7hg17" path="res://Assets/Images/borobudur_temple.jpg" id="2_ybefu"]
+[ext_resource type="Texture2D" uid="uid://ctlhg11qr7aao" path="res://Assets/Images/komodo_dragon.jpg" id="3_mvpj1"]
+[ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="4_2cpfp"]
+[ext_resource type="Texture2D" uid="uid://b4mc8a23begw3" path="res://Assets/Images/Textures/KiperLeft.jpg" id="5_tjkcn"]
+[ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="6_2ic2u"]
+[ext_resource type="Texture2D" uid="uid://ch0pg0l4inpsq" path="res://Assets/Images/Textures/DiagonalRight.jpg" id="7_d365y"]
+
+[node name="BuatBatik" type="Control" unique_id=503659427]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_buatbatik")
+background_texture = ExtResource("2_ybefu")
+canvas_cloth_texture = ExtResource("3_mvpj1")
+tool0_texture = ExtResource("4_2cpfp")
+tool1_texture = ExtResource("5_tjkcn")
+tool2_texture = ExtResource("6_2ic2u")
+tool3_texture = ExtResource("7_d365y")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1194216230]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.08, 0.05, 1)
+
+[node name="TitleLabel" type="Label" parent="." unique_id=220147040]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 60.0
+offset_top = 20.0
+offset_right = -60.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.75, 1)
+theme_override_font_sizes/font_size = 48
+text = "Buat Batik"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="InstructionLabel" type="Label" parent="." unique_id=1962207330]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 60.0
+offset_top = 80.0
+offset_right = -60.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.8, 0.75, 0.6, 1)
+theme_override_font_sizes/font_size = 30
+text = "Seret alat ke atas kanvas dengan urutan yang benar!"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="CanvasRect" type="Control" parent="." unique_id=1499067070]
+layout_mode = 1
+anchor_left = 0.05
+anchor_top = 0.13
+anchor_right = 0.95
+anchor_bottom = 0.7
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CanvasBackground" type="ColorRect" parent="CanvasRect" unique_id=1537916756]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.94, 0.88, 0.73, 1)
+
+[node name="LayersContainer" type="Control" parent="CanvasRect" unique_id=671840595]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ProgressStepsLabel" type="Label" parent="CanvasRect" unique_id=54837019]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 30.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.8, 0.75, 0.6, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="ToolsContainer" type="HBoxContainer" parent="." unique_id=386440903]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.76
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Tool0" type="Control" parent="ToolsContainer" unique_id=118316300]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Bg" type="ColorRect" parent="ToolsContainer/Tool0" unique_id=900487551]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="IconLabel" type="Label" parent="ToolsContainer/Tool0" unique_id=2012515086]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 96
+text = "✏"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tool1" type="Control" parent="ToolsContainer" unique_id=600421237]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Bg" type="ColorRect" parent="ToolsContainer/Tool1" unique_id=656326180]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.65, 0.16, 0.16, 1)
+
+[node name="IconLabel" type="Label" parent="ToolsContainer/Tool1" unique_id=1959026790]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 96
+text = "🖊"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tool2" type="Control" parent="ToolsContainer" unique_id=1362480527]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Bg" type="ColorRect" parent="ToolsContainer/Tool2" unique_id=1358661281]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.2, 0.6, 1)
+
+[node name="IconLabel" type="Label" parent="ToolsContainer/Tool2" unique_id=623213172]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 96
+text = "🎨"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tool3" type="Control" parent="ToolsContainer" unique_id=1479460138]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Bg" type="ColorRect" parent="ToolsContainer/Tool3" unique_id=321827796]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.85, 0.75, 0.1, 1)
+
+[node name="IconLabel" type="Label" parent="ToolsContainer/Tool3" unique_id=1079899411]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 96
+text = "🔥"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TooltipPanel" type="PanelContainer" parent="." unique_id=983644849]
+visible = false
+custom_minimum_size = Vector2(650, 0)
+layout_mode = 0
+offset_right = 690.0
+offset_bottom = 240.0
+
+[node name="MarginContainer" type="MarginContainer" parent="TooltipPanel" unique_id=2085023908]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="TooltipVBox" type="VBoxContainer" parent="TooltipPanel/MarginContainer" unique_id=478876871]
+layout_mode = 2
+
+[node name="TooltipName" type="Label" parent="TooltipPanel/MarginContainer/TooltipVBox" unique_id=1192436827]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "Nama Alat"
+
+[node name="TooltipDesc" type="Label" parent="TooltipPanel/MarginContainer/TooltipVBox" unique_id=1931452256]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Deskripsi alat."
+autowrap_mode = 3

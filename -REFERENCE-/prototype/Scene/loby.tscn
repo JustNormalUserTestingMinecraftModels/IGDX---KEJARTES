@@ -1,0 +1,556 @@
+[gd_scene format=3 uid="uid://60ndk5l2120t"]
+
+[ext_resource type="Script" uid="uid://d1h46ko31v0m3" path="res://Script/loby.gd" id="1_ao7fi"]
+[ext_resource type="Texture2D" uid="uid://bocir146nwtjr" path="res://Asset/pngwing.com (4).png" id="2_2gra1"]
+[ext_resource type="Shader" uid="uid://ct2bh8poel6as" path="res://Script/spotlight.gdshader" id="2_e1w2y"]
+[ext_resource type="Texture2D" uid="uid://cuih86con4sr1" path="res://Asset/pngwing.com (1).png" id="2_tck00"]
+[ext_resource type="Texture2D" uid="uid://dfoo5847iwqfx" path="res://Asset/Desain tanpa judul.png" id="3_2gra1"]
+[ext_resource type="Texture2D" uid="uid://dh3u2xbv3fxf6" path="res://Asset/pngwing.com (5).png" id="4_q6pla"]
+[ext_resource type="Texture2D" uid="uid://iqho776faywc" path="res://Asset/Koin.png" id="5_6pr0q"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
+shader = ExtResource("2_e1w2y")
+shader_parameter/overlay_color = Color(0, 0, 0, 0.7)
+shader_parameter/rect_size = Vector2(1220.14, 614.325)
+shader_parameter/hole_pos = Vector2(200, 347.68)
+shader_parameter/hole_size = Vector2(853.225, 88.87)
+shader_parameter/feather = 13.6850006500375
+
+[node name="TutorialOverlay" type="Control" unique_id=1260800009]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ao7fi")
+
+[node name="Student" type="Button" parent="." unique_id=60536918]
+layout_mode = 0
+offset_left = 166.0
+offset_top = 1076.0
+offset_right = 940.0
+offset_bottom = 1366.0
+theme_override_font_sizes/font_size = 105
+text = "STUDENT"
+
+[node name="Koperasi" type="Button" parent="." unique_id=1654516740]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 1592.0
+offset_right = 292.0
+offset_bottom = 1727.0
+theme_override_font_sizes/font_size = 51
+text = "Koperasi"
+
+[node name="ReportStudent" type="Button" parent="." unique_id=1413365650]
+layout_mode = 0
+offset_left = 346.0
+offset_top = 1592.0
+offset_right = 662.0
+offset_bottom = 1732.0
+theme_override_font_sizes/font_size = 36
+text = "REPORT STUDENT
+"
+
+[node name="Inventory" type="Button" parent="." unique_id=1959471549]
+layout_mode = 0
+offset_left = 729.0
+offset_top = 1581.0
+offset_right = 1001.0
+offset_bottom = 1725.0
+theme_override_font_sizes/font_size = 39
+text = "INVENTORY"
+
+[node name="Jadwal" type="Button" parent="." unique_id=1165224794]
+visible = false
+layout_mode = 0
+offset_left = 233.0
+offset_top = 1107.0
+offset_right = 879.0
+offset_bottom = 1342.0
+theme_override_font_sizes/font_size = 166
+text = "JADWAL
+"
+
+[node name="JUDUL" type="Label" parent="." unique_id=1865641292]
+layout_mode = 0
+offset_left = 239.0
+offset_top = 96.0
+offset_right = 841.0
+offset_bottom = 382.0
+theme_override_font_sizes/font_size = 193
+text = "CLASS"
+
+[node name="DisplayUang" type="TextureRect" parent="." unique_id=1146086250]
+visible = false
+layout_mode = 0
+offset_left = 831.0
+offset_top = 358.0
+offset_right = 1120.7777
+offset_bottom = 521.0
+texture = ExtResource("3_2gra1")
+expand_mode = 1
+flip_h = true
+
+[node name="Label" type="Label" parent="DisplayUang" unique_id=1965474296]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.293
+anchor_top = 0.423
+anchor_right = 0.5
+anchor_bottom = 0.62
+offset_left = -2.904869
+offset_top = 0.051002502
+offset_right = -3.888855
+offset_bottom = 1.9400024
+theme_override_font_sizes/font_size = 24
+text = "50"
+horizontal_alignment = 2
+
+[node name="DailyLogin" type="TextureButton" parent="." unique_id=606066302]
+visible = false
+layout_mode = 0
+offset_left = 87.0
+offset_top = 391.0
+offset_right = 243.0
+offset_bottom = 547.0
+texture_normal = ExtResource("2_2gra1")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="DailyReward" type="TextureRect" parent="DailyLogin" unique_id=1668537543]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_right = 5.9940004
+anchor_bottom = 2.9150002
+offset_left = -7.0
+offset_top = 11.0
+offset_right = -0.064086914
+offset_bottom = -26.74002
+grow_vertical = 0
+texture = ExtResource("4_q6pla")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward" unique_id=1742620929]
+layout_mode = 0
+offset_left = 276.0
+offset_top = 25.0
+offset_right = 644.0
+offset_bottom = 104.0
+theme_override_font_sizes/font_size = 58
+text = "Daily Reward"
+
+[node name="Day1" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=691820095]
+layout_mode = 0
+offset_left = 62.0
+offset_top = 141.0
+offset_right = 140.0
+offset_bottom = 218.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day1" unique_id=1808461453]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day1" unique_id=757051385]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day1"
+
+[node name="Day2" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1449251919]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 140.0
+offset_right = 278.0
+offset_bottom = 217.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day2" unique_id=1020206719]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day2" unique_id=409828123]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day2"
+
+[node name="Day3" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1778261451]
+layout_mode = 0
+offset_left = 343.0
+offset_top = 140.0
+offset_right = 421.0
+offset_bottom = 217.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day3" unique_id=1604811192]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day3" unique_id=1990258783]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day3"
+
+[node name="Day4" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=59280968]
+layout_mode = 0
+offset_left = 468.0
+offset_top = 143.0
+offset_right = 546.0
+offset_bottom = 220.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day4" unique_id=533817081]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day4" unique_id=482783329]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day4"
+
+[node name="Day5" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=667373338]
+layout_mode = 0
+offset_left = 585.0
+offset_top = 143.0
+offset_right = 663.0
+offset_bottom = 220.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day5" unique_id=571622298]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day5" unique_id=1296449788]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day5"
+
+[node name="Day6" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=409394526]
+layout_mode = 0
+offset_left = 709.0
+offset_top = 142.0
+offset_right = 787.0
+offset_bottom = 219.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day6" unique_id=758919105]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day6" unique_id=1335891226]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day6"
+
+[node name="Day7" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1687539421]
+layout_mode = 0
+offset_left = 825.0
+offset_top = 139.0
+offset_right = 903.0
+offset_bottom = 216.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day7" unique_id=1579501483]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day7" unique_id=2039886753]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day7"
+
+[node name="ButtonClaim" type="Button" parent="DailyLogin/DailyReward" unique_id=1056969749]
+layout_mode = 0
+offset_left = 374.0
+offset_top = 257.0
+offset_right = 572.0
+offset_bottom = 351.0
+theme_override_font_sizes/font_size = 62
+text = "CLAIM"
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1056951292]
+material = SubResource("ShaderMaterial_2gra1")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="ClickArea" type="Button" parent="ColorRect" unique_id=1111818860]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.023
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 3.0
+offset_right = -20.909058
+offset_bottom = 3.0
+
+[node name="Step1" type="Control" parent="ColorRect" unique_id=31003056]
+layout_mode = 1
+anchors_preset = 0
+
+[node name="Label" type="Label" parent="ColorRect/Step1" unique_id=1063267341]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 529.0
+offset_right = 1072.0
+offset_bottom = 1261.0
+theme_override_font_sizes/font_size = 68
+text = "Halo! Sebelum 
+anda terjun untuk mengajar
+ generasi muda di sekolah ini.
+
+Mari kita mengenali fasilitas 
+untuk menunjang 
+perjalananmu!"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="ColorRect/Step1" unique_id=408441551]
+layout_mode = 0
+offset_left = 123.0
+offset_top = 1377.0
+offset_right = 983.0
+offset_bottom = 1801.0
+theme_override_font_sizes/font_size = 107
+text = "Klik Dimana Saja
+Untuk Lanjut"
+horizontal_alignment = 1
+
+[node name="Step2" type="Control" parent="ColorRect" unique_id=1758356498]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+
+[node name="Label" type="Label" parent="ColorRect/Step2" unique_id=1258840643]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 42.0
+offset_top = 11.0
+offset_right = 1034.0
+offset_bottom = 840.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 73
+text = "Hmmm, kepikiran 
+kalau kelasmu masih 
+sepi,belum ada murid? 
+
+ Ayo, kita langsung saja pilih 
+muridmu!"
+horizontal_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="ColorRect/Step2" unique_id=2040855608]
+layout_mode = 0
+offset_left = 457.0
+offset_top = 1024.0
+offset_right = 634.3085
+offset_bottom = 1201.3085
+rotation = -1.5687592
+texture = ExtResource("2_tck00")
+expand_mode = 5
+
+[node name="Step3" type="Control" parent="ColorRect" unique_id=1866996763]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+
+[node name="Label" type="Label" parent="ColorRect/Step3" unique_id=1490352301]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = 461.0
+offset_right = 1056.0
+offset_bottom = 1290.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 73
+text = "Pilihan yang sangat bagus!"
+horizontal_alignment = 1
+
+[node name="Step4" type="Control" parent="ColorRect" unique_id=1781234462]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+
+[node name="Label" type="Label" parent="ColorRect/Step4" unique_id=1859068619]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = 461.0
+offset_right = 1056.0
+offset_bottom = 1290.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 73
+text = "Inventory adalah tempat 
+dimana seluruh items kalian 
+berada!"
+horizontal_alignment = 1
+
+[node name="Step5" type="Control" parent="ColorRect" unique_id=1173399871]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+
+[node name="Label" type="Label" parent="ColorRect/Step5" unique_id=1951815616]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = 461.0
+offset_right = 1056.0
+offset_bottom = 1290.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 73
+text = "Raport adalah untuk melihat 
+secara 
+keseluruhan stats murid anda!"
+horizontal_alignment = 1
+
+[node name="Step6" type="Control" parent="ColorRect" unique_id=1788723548]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+
+[node name="Label" type="Label" parent="ColorRect/Step6" unique_id=156771433]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = 461.0
+offset_right = 1056.0
+offset_bottom = 1290.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 73
+text = "Koperasi adalah dimana 
+kalian dapat belanja 
+item dan customisasi 
+untuk murid-murid ampu 
+kalian!"
+horizontal_alignment = 1
+
+[node name="Step7" type="Control" parent="ColorRect" unique_id=1529960796]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+
+[node name="Label" type="Label" parent="ColorRect/Step7" unique_id=276578505]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = 461.0
+offset_right = 1056.0
+offset_bottom = 1290.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 73
+text = "Ahh, sepertinya bel sekolah
+ sudah berbunyi. "
+horizontal_alignment = 1
+
+[connection signal="pressed" from="Student" to="." method="_on_student_pressed"]

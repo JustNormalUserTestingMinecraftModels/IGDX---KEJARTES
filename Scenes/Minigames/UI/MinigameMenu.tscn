@@ -1,0 +1,129 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameMenu.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/Akademis/Menjodohkan.tscn" id="2_menjodohkan"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/Akademis/Variabel.tscn" id="3_variabel"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/Akademis/PilihanGanda.tscn" id="4_pilihanganda"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/Akademis/Password.tscn" id="5_password"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/Olahraga/MainBola.tscn" id="6_mainbola"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/Olahraga/Badminton.tscn" id="7_badminton"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn" id="8_buatbatik"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn" id="9_lombamenari"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/SchoolDay.tscn" id="10_schoolday"]
+
+[node name="MinigameMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+menjodohkan_scene = ExtResource("2_menjodohkan")
+variabel_scene = ExtResource("3_variabel")
+pilihan_ganda_scene = ExtResource("4_pilihanganda")
+password_scene = ExtResource("5_password")
+main_bola_scene = ExtResource("6_mainbola")
+badminton_scene = ExtResource("7_badminton")
+buat_batik_scene = ExtResource("8_buatbatik")
+lomba_menari_scene = ExtResource("9_lombamenari")
+school_day_scene = ExtResource("10_schoolday")
+
+[node name="MenuContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.05
+anchor_top = 0.04
+anchor_right = 0.95
+anchor_bottom = 0.96
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="Title" type="Label" parent="MenuContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 52
+text = "School Raising Simulator"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BtnMenjodohkan" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Menjodohkan (Akademis)"
+
+[node name="BtnVariabel" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Variable (Akademis)"
+
+[node name="BtnPilihanGanda" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Pilihan Ganda (Akademis)"
+
+[node name="BtnPassword" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Password (Akademis)"
+
+[node name="BtnMainBola" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Main Bola (Olahraga)"
+
+[node name="BtnBadminton" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Badminton (Olahraga)"
+
+[node name="BtnBuatBatik" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Buat Batik (Seni Budaya)"
+
+[node name="BtnLombaMenari" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Lomba Menari (Seni Budaya)"
+
+[node name="HSeparator" type="HSeparator" parent="MenuContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 6)
+
+[node name="BtnSchoolDay" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "🏫 Simulasi Minggu Sekolah"
+
+[node name="GameContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

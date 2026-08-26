@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://13fp8j1c53fd"]
+
+[ext_resource type="Script" uid="uid://bvxsxdcauk3vw" path="res://Script/cut_scene.gd" id="1_88s7j"]
+[ext_resource type="Texture2D" uid="uid://f0niudwtemxb" path="res://Asset/BG.jpg" id="2_w1y33"]
+
+[node name="CutScene" type="Control" unique_id=1283265698]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_88s7j")
+
+[node name="BgCutScene" type="TextureRect" parent="." unique_id=599505676]
+layout_mode = 0
+offset_right = 1075.0
+offset_bottom = 1925.0
+texture = ExtResource("2_w1y33")
+stretch_mode = 6
+
+[node name="DialogueBox" type="Panel" parent="." unique_id=1138166682]
+layout_mode = 0
+offset_left = 165.0
+offset_top = 629.0
+offset_right = 908.0
+offset_bottom = 896.0
+
+[node name="DialogueLabel" type="RichTextLabel" parent="DialogueBox" unique_id=31443811]
+layout_mode = 0
+offset_right = 746.0
+offset_bottom = 268.0
+theme_override_font_sizes/normal_font_size = 55
+
+[node name="FadeOverlay" type="ColorRect" parent="." unique_id=469784982]
+layout_mode = 0
+offset_right = 1088.0
+offset_bottom = 1934.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)

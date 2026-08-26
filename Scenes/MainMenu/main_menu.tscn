@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://b2vxniec67375"]
+
+[ext_resource type="Script" uid="uid://cnycp8ahqnwtg" path="res://Scripts/MainMenu/main_menu.gd" id="1_ftydy"]
+
+[node name="MainMenu" type="Control" unique_id=1380861387]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ftydy")
+
+[node name="Label" type="Label" parent="." unique_id=857693006]
+layout_mode = 0
+offset_left = 148.0
+offset_top = 157.0
+offset_right = 885.0
+offset_bottom = 383.0
+theme_override_font_sizes/font_size = 165
+text = "KEJARTES"
+
+[node name="PlayButton" type="Button" parent="." unique_id=1543250615]
+layout_mode = 0
+offset_left = 315.0
+offset_top = 474.0
+offset_right = 769.0
+offset_bottom = 677.0
+theme_override_font_sizes/font_size = 143
+text = "PLAY"
+
+[node name="SettingButton" type="Button" parent="." unique_id=1084566688]
+layout_mode = 0
+offset_left = 330.0
+offset_top = 767.0
+offset_right = 784.0
+offset_bottom = 926.0
+theme_override_font_sizes/font_size = 110
+text = "SETTING"
+
+[node name="QuitButton" type="Button" parent="." unique_id=964405341]
+layout_mode = 0
+offset_left = 319.0
+offset_top = 1059.0
+offset_right = 773.0
+offset_bottom = 1232.0
+theme_override_font_sizes/font_size = 120
+text = "QUIT"

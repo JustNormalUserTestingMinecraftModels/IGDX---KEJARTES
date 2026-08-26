@@ -1,0 +1,98 @@
+[gd_scene format=3 uid="uid://xr21k2wnutqh"]
+
+[ext_resource type="Script" uid="uid://chf32odlu6enr" path="res://Scripts/SchoolSimulation/DailyDecayOverview.gd" id="1_overview"]
+
+[node name="DailyDecayOverview" type="Control" unique_id=1921116030]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_overview")
+
+[node name="BackgroundDim" type="ColorRect" parent="." unique_id=1044646872]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=73690484]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Panel" type="PanelContainer" parent="Margin" unique_id=1849663315]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="Margin/Panel" unique_id=1643256580]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="Margin/Panel/Margin" unique_id=185612957]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="HeaderVBox" type="VBoxContainer" parent="Margin/Panel/Margin/VBox" unique_id=585334441]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="Margin/Panel/Margin/VBox/HeaderVBox" unique_id=1550494223]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 48
+text = "🌅 Aktivitas & Evaluasi Harian"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SubtitleLabel" type="Label" parent="Margin/Panel/Margin/VBox/HeaderVBox" unique_id=2042729512]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 30
+text = "Pengurangan Energi & Mood siswa sesuai kepribadian"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="Margin/Panel/Margin/VBox" unique_id=609985756]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Margin/Panel/Margin/VBox" unique_id=913452722]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StudentsContainer" type="VBoxContainer" parent="Margin/Panel/Margin/VBox/ScrollContainer" unique_id=1779743256]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 48
+
+[node name="HSeparator2" type="HSeparator" parent="Margin/Panel/Margin/VBox" unique_id=1328986426]
+layout_mode = 2
+
+[node name="ContinueButton" type="Button" parent="Margin/Panel/Margin/VBox" unique_id=1752184506]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 36
+text = "Lanjutkan Hari ➔"

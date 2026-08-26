@@ -1,0 +1,90 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8r9w0x1y2z3a"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.95, 0.97, 1.0, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.5, 0.85, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.12)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lock"]
+bg_color = Color(0.1, 0.12, 0.16, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="AnswerCard" type="PanelContainer"]
+custom_minimum_size = Vector2(850, 380)
+offset_right = 850.0
+offset_bottom = 380.0
+pivot_offset = Vector2(425, 190)
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="CardBgTexture" type="TextureRect" parent="."]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="RowImage" type="TextureRect" parent="VBox"]
+visible = false
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextLabel" type="Label" parent="VBox"]
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.1, 0.15, 0.3, 1)
+theme_override_font_sizes/font_size = 42
+text = "Jawaban"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+clip_text = true
+
+[node name="LockOverlay" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lock")
+
+[node name="LockVBox" type="VBoxContainer" parent="LockOverlay"]
+layout_mode = 2
+alignment = 1
+
+[node name="LockIcon" type="Label" parent="LockOverlay/LockVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "🔒"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LockText" type="Label" parent="LockOverlay/LockVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 36
+text = "Terkunci"
+horizontal_alignment = 1
+vertical_alignment = 1

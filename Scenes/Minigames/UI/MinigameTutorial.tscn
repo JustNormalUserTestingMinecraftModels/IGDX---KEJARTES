@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://c8oam0t1u2v3w"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameTutorial.gd" id="1_tutorial"]
+
+[node name="MinigameTutorial" type="CanvasLayer"]
+layer = 500
+script = ExtResource("1_tutorial")

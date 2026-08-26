@@ -1,0 +1,7 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Orange warning triangle -->
+  <polygon points="50,10 90,85 10,85" fill="#ea580c" stroke="#7c2d12" stroke-width="6" stroke-linejoin="round" />
+  <!-- White exclamation mark -->
+  <rect x="46" y="35" width="8" height="25" rx="4" ry="4" fill="#ffffff" />
+  <circle cx="50" cy="71" r="5.5" fill="#ffffff" />
+</svg>

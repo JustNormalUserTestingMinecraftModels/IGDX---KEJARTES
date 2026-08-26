@@ -1,0 +1,9 @@
+<svg viewBox="0 0 500 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer blackboard frame -->
+  <rect x="8" y="8" width="484" height="134" rx="12" fill="#2c3e50" stroke="#7f8c8d" stroke-width="10"/>
+  <!-- Inner board surface -->
+  <rect x="18" y="18" width="464" height="114" rx="6" fill="#34495e"/>
+  <!-- Chalk scuff texture lines -->
+  <path d="M 40 110 Q 200 125 460 105" fill="none" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round" stroke-dasharray="8,18" opacity="0.5"/>
+  <path d="M 60 85 Q 250 75 440 90" fill="none" stroke="#bdc3c7" stroke-width="2" stroke-linecap="round" stroke-dasharray="5,30" opacity="0.25"/>
+</svg>

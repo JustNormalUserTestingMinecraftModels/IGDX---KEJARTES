@@ -1,0 +1,125 @@
+[gd_scene format=3 uid="uid://dkkyxhn7llu72"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/Olahraga/Badminton.gd" id="1_badminton"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_puck"]
+friction = 0.0
+bounce = 1.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_puck"]
+radius = 30.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_paddle"]
+radius = 50.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_goal"]
+size = Vector2(1037, 110)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_v"]
+size = Vector2(20, 1920)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_h"]
+size = Vector2(1080, 20)
+
+[node name="Badminton" type="Control" unique_id=1070671609]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_badminton")
+
+[node name="ScoreLabel" type="Label" parent="." unique_id=718317270]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 40.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 48
+text = "0 - 0"
+horizontal_alignment = 1
+
+[node name="Puck" type="RigidBody2D" parent="." unique_id=1694826156]
+position = Vector2(540, 960)
+physics_material_override = SubResource("PhysicsMaterial_puck")
+gravity_scale = 0.0
+lock_rotation = true
+freeze = true
+continuous_cd = 1
+linear_damp_mode = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Puck" unique_id=1244974654]
+shape = SubResource("CircleShape2D_puck")
+
+[node name="ColorRect" type="ColorRect" parent="Puck" unique_id=187224277]
+offset_left = -30.0
+offset_top = -30.0
+offset_right = 30.0
+offset_bottom = 30.0
+color = Color(1, 0.8, 0, 1)
+
+[node name="PlayerPaddle" type="CharacterBody2D" parent="." unique_id=1366122061]
+position = Vector2(540, 1500)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerPaddle" unique_id=1402345753]
+shape = SubResource("CircleShape2D_paddle")
+
+[node name="ColorRect" type="ColorRect" parent="PlayerPaddle" unique_id=2083048885]
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+color = Color(0, 0.5, 1, 1)
+
+[node name="EnemyPaddle" type="CharacterBody2D" parent="." unique_id=147574036]
+position = Vector2(540, 420)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyPaddle" unique_id=335209238]
+shape = SubResource("CircleShape2D_paddle")
+
+[node name="ColorRect" type="ColorRect" parent="EnemyPaddle" unique_id=161600592]
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+color = Color(1, 0, 0.5, 1)
+
+[node name="PlayerGoal" type="Area2D" parent="." unique_id=255239337]
+position = Vector2(540, 1900)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerGoal" unique_id=776993295]
+shape = SubResource("RectangleShape2D_goal")
+
+[node name="EnemyGoal" type="Area2D" parent="." unique_id=690272067]
+position = Vector2(540, 20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyGoal" unique_id=877848420]
+position = Vector2(-0.5, 25)
+shape = SubResource("RectangleShape2D_goal")
+
+[node name="WallLeft" type="StaticBody2D" parent="." unique_id=1117769395]
+position = Vector2(10, 960)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft" unique_id=2123413515]
+shape = SubResource("RectangleShape2D_wall_v")
+
+[node name="WallRight" type="StaticBody2D" parent="." unique_id=1822931710]
+position = Vector2(1070, 960)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight" unique_id=983071666]
+shape = SubResource("RectangleShape2D_wall_v")
+
+[node name="WallTopLimit" type="StaticBody2D" parent="." unique_id=1389980882]
+position = Vector2(540, 10)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallTopLimit" unique_id=2127978748]
+shape = SubResource("RectangleShape2D_wall_h")
+
+[node name="WallBottomLimit" type="StaticBody2D" parent="." unique_id=436992005]
+position = Vector2(540, 1910)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallBottomLimit" unique_id=670500026]
+shape = SubResource("RectangleShape2D_wall_h")

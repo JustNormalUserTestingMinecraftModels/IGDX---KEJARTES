@@ -1,0 +1,6 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rounded green background -->
+  <circle cx="50" cy="50" r="45" fill="#16a34a" stroke="#14532d" stroke-width="5" />
+  <!-- Leaf drawing -->
+  <path d="M 50 20 Q 80 50 50 80 Q 20 50 50 20 Z M 50 20 L 50 80" fill="#4ade80" stroke="#14532d" stroke-width="4" stroke-linejoin="round" />
+</svg>

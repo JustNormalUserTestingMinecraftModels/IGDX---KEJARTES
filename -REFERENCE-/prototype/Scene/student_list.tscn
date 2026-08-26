@@ -1,0 +1,232 @@
+[gd_scene format=3 uid="uid://bdrlmukmq2tie"]
+
+[ext_resource type="Script" uid="uid://bgs8r6f54mwnf" path="res://Script/student_list.gd" id="1_wr76l"]
+[ext_resource type="Texture2D" uid="uid://c7gmkcle3uv8o" path="res://Asset/MuridPotrait/Murid1.jpg" id="2_v3e4w"]
+
+[node name="StudentList" type="Control" unique_id=1313751055]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_wr76l")
+
+[node name="Murid1" type="TextureRect" parent="." unique_id=1144113555]
+layout_mode = 0
+offset_left = 122.0
+offset_top = 167.0
+offset_right = 481.0
+offset_bottom = 522.0
+texture = ExtResource("2_v3e4w")
+expand_mode = 1
+
+[node name="Nama" type="Button" parent="Murid1" unique_id=1164132710]
+layout_mode = 0
+offset_left = 539.0
+offset_top = 107.0
+offset_right = 851.0
+offset_bottom = 244.0
+theme_override_font_sizes/font_size = 94
+text = "NAMA"
+
+[node name="Belum" type="Button" parent="Murid1" unique_id=1607246098]
+modulate = Color(1, 0, 0, 1)
+layout_mode = 0
+offset_left = 384.0
+offset_top = 130.0
+offset_right = 510.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 21
+text = "BELUM
+TERJADWAL"
+
+[node name="Sudah" type="Button" parent="Murid1" unique_id=123021075]
+visible = false
+modulate = Color(0, 1, 0.14509805, 1)
+layout_mode = 0
+offset_left = 384.0
+offset_top = 130.0
+offset_right = 510.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 21
+text = "SUDAH
+TERJADWAL"
+
+[node name="Murid2" type="TextureRect" parent="." unique_id=981124888]
+layout_mode = 0
+offset_left = 115.0
+offset_top = 592.0
+offset_right = 474.0
+offset_bottom = 947.0
+texture = ExtResource("2_v3e4w")
+expand_mode = 1
+
+[node name="Nama" type="Button" parent="Murid2" unique_id=1575886457]
+layout_mode = 0
+offset_left = 539.0
+offset_top = 107.0
+offset_right = 851.0
+offset_bottom = 244.0
+theme_override_font_sizes/font_size = 94
+text = "NAMA"
+
+[node name="Belum" type="Button" parent="Murid2" unique_id=1656984498]
+modulate = Color(1, 0, 0, 1)
+layout_mode = 0
+offset_left = 384.0
+offset_top = 130.0
+offset_right = 510.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 21
+text = "BELUM
+TERJADWAL"
+
+[node name="Sudah" type="Button" parent="Murid2" unique_id=2109842934]
+visible = false
+modulate = Color(0, 1, 0.14509805, 1)
+layout_mode = 0
+offset_left = 384.0
+offset_top = 130.0
+offset_right = 510.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 21
+text = "SUDAH
+TERJADWAL"
+
+[node name="Murid3" type="TextureRect" parent="." unique_id=311519847]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1018.0
+offset_right = 478.0
+offset_bottom = 1373.0
+texture = ExtResource("2_v3e4w")
+expand_mode = 1
+
+[node name="Nama" type="Button" parent="Murid3" unique_id=218609318]
+layout_mode = 0
+offset_left = 539.0
+offset_top = 107.0
+offset_right = 851.0
+offset_bottom = 244.0
+theme_override_font_sizes/font_size = 94
+text = "NAMA"
+
+[node name="Belum" type="Button" parent="Murid3" unique_id=973775119]
+modulate = Color(1, 0, 0, 1)
+layout_mode = 0
+offset_left = 384.0
+offset_top = 130.0
+offset_right = 510.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 21
+text = "BELUM
+TERJADWAL"
+
+[node name="Sudah" type="Button" parent="Murid3" unique_id=844380401]
+visible = false
+modulate = Color(0, 1, 0.14509805, 1)
+layout_mode = 0
+offset_left = 384.0
+offset_top = 130.0
+offset_right = 510.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 21
+text = "SUDAH
+TERJADWAL"
+
+[node name="Murid4" type="TextureRect" parent="." unique_id=1912832907]
+layout_mode = 0
+offset_left = 110.0
+offset_top = 1458.0
+offset_right = 469.0
+offset_bottom = 1813.0
+texture = ExtResource("2_v3e4w")
+expand_mode = 1
+
+[node name="Nama" type="Button" parent="Murid4" unique_id=132510110]
+layout_mode = 0
+offset_left = 539.0
+offset_top = 107.0
+offset_right = 851.0
+offset_bottom = 244.0
+theme_override_font_sizes/font_size = 94
+text = "NAMA"
+
+[node name="Belum" type="Button" parent="Murid4" unique_id=1893544]
+modulate = Color(1, 0, 0, 1)
+layout_mode = 0
+offset_left = 384.0
+offset_top = 130.0
+offset_right = 510.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 21
+text = "BELUM
+TERJADWAL"
+
+[node name="Sudah" type="Button" parent="Murid4" unique_id=488498106]
+visible = false
+modulate = Color(0, 1, 0.14509805, 1)
+layout_mode = 0
+offset_left = 384.0
+offset_top = 130.0
+offset_right = 510.0
+offset_bottom = 204.0
+theme_override_font_sizes/font_size = 21
+text = "SUDAH
+TERJADWAL"
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1408146570]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.9990001
+offset_bottom = 0.9199219
+mouse_filter = 2
+color = Color(0, 0, 0, 0.3529412)
+
+[node name="ClickManaAja" type="Label" parent="ColorRect" unique_id=48090686]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 1463.0
+offset_right = 945.0
+offset_bottom = 1698.0
+theme_override_font_sizes/font_size = 85
+text = "CLICK DIMANA SAJA
+UNTUK LANJUT"
+horizontal_alignment = 1
+
+[node name="Step1" type="Control" parent="ColorRect" unique_id=1910026756]
+layout_mode = 1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.0830001
+anchor_bottom = 1.268
+offset_left = 81.15
+offset_top = 370.56
+offset_right = 80.73596
+offset_bottom = 370.80615
+
+[node name="Label" type="Label" parent="ColorRect/Step1" unique_id=1751261977]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 32.85
+offset_top = 634.807
+offset_right = 1046.85
+offset_bottom = 1057.807
+theme_override_font_sizes/font_size = 49
+text = "Disini kalian bebas memilih murid-murid 
+yang belum terjadwalkan
+ untuk belajar selama seminggu!"
+horizontal_alignment = 1
+
+[node name="ClickArea" type="Button" parent="ColorRect" unique_id=887578700]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 3.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2

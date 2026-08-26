@@ -1,0 +1,703 @@
+[gd_scene format=3 uid="uid://60ndk5l2120t"]
+
+[ext_resource type="Script" uid="uid://bkfpjbok5vgg5" path="res://Scripts/Lobby/loby.gd" id="1_ao7fi"]
+[ext_resource type="Texture2D" uid="uid://b70nke1156k3l" path="res://Assets/Images/UI/pngwing.com (4).png" id="2_2gra1"]
+[ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_e1w2y"]
+[ext_resource type="Texture2D" uid="uid://cd3yusfuaqa0h" path="res://Assets/Images/UI/Desain tanpa judul.png" id="3_2gra1"]
+[ext_resource type="Texture2D" uid="uid://i6ar7lc7f23j" path="res://Assets/Images/UI/pngwing.com (5).png" id="4_q6pla"]
+[ext_resource type="Texture2D" uid="uid://cjoky7bj16ciw" path="res://Assets/Images/UI/Koin.png" id="5_6pr0q"]
+[ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
+[ext_resource type="StyleBox" path="res://Assets/Images/UI/Placeholders/lobby_btn_hover.tres" id="btn_hover"]
+[ext_resource type="Texture2D" uid="uid://ecg5wpq3jued" path="res://Assets/Images/UI/Placeholders/btn_lobby.svg" id="btn_lobby_tex"]
+[ext_resource type="StyleBox" path="res://Assets/Images/UI/Placeholders/lobby_btn_normal.tres" id="btn_normal"]
+[ext_resource type="StyleBox" path="res://Assets/Images/UI/Placeholders/lobby_btn_pressed.tres" id="btn_pressed"]
+[ext_resource type="Texture2D" uid="uid://rdxrs4jl1r5r" path="res://Assets/Images/MuridPotrait/tanganThea.png" id="default_hand_tex"]
+[ext_resource type="Texture2D" uid="uid://dic0qp1gbfmij" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
+[ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
+[ext_resource type="Texture2D" uid="uid://bflgqwew54uyi" path="res://Assets/Images/MuridPotrait/Meja/kiri bawah.png" id="meja_kb_tex"]
+[ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPotrait/Meja/kanan atas.png" id="meja_kna_tex"]
+[ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPotrait/Meja/kanan bawah.png" id="meja_knb_tex"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
+shader = ExtResource("2_e1w2y")
+shader_parameter/overlay_color = Color(0, 0, 0, 0.7)
+shader_parameter/rect_size = Vector2(1220.14, 614.325)
+shader_parameter/hole_pos = Vector2(200, 347.68)
+shader_parameter/hole_size = Vector2(853.225, 88.87)
+shader_parameter/feather = 13.6850006500375
+
+[node name="TutorialOverlay" type="Control" unique_id=406579160]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ao7fi")
+btn_texture = ExtResource("btn_lobby_tex")
+bg_texture = ExtResource("bg_tex")
+
+[node name="BGLayer" type="TextureRect" parent="." unique_id=18068981]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("bg_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Meja_KiriAtas" type="TextureRect" parent="." unique_id=141187056]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("meja_ka_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Meja_KananAtas" type="TextureRect" parent="." unique_id=1566337339]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("meja_kna_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StudentPortraitsContainer_Back" type="Control" parent="." unique_id=2097219157]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Slot1" type="Control" parent="StudentPortraitsContainer_Back" unique_id=1634846153]
+anchors_preset = 0
+offset_left = 50.0
+offset_right = 450.0
+offset_bottom = 450.0
+
+[node name="Portrait" type="TextureRect" parent="StudentPortraitsContainer_Back/Slot1" unique_id=1112210571]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 57.0
+offset_top = 26.0
+offset_right = 22.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("default_portrait_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot2" type="Control" parent="StudentPortraitsContainer_Back" unique_id=414336718]
+anchors_preset = 0
+offset_left = 620.0
+offset_right = 1020.0
+offset_bottom = 450.0
+
+[node name="Portrait" type="TextureRect" parent="StudentPortraitsContainer_Back/Slot2" unique_id=1454500660]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 22.0
+offset_right = -20.0
+offset_bottom = -13.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("default_portrait_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StudentHandsContainer_Back" type="Control" parent="." unique_id=696016454]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Slot1" type="Control" parent="StudentHandsContainer_Back" unique_id=1309285055]
+anchors_preset = 0
+offset_left = 84.0
+offset_top = -88.0
+offset_right = 484.0
+offset_bottom = 362.0
+
+[node name="Hand" type="TextureRect" parent="StudentHandsContainer_Back/Slot1" unique_id=871782896]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -129.0
+offset_top = -80.0
+offset_right = 151.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 0
+texture = ExtResource("default_hand_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot2" type="Control" parent="StudentHandsContainer_Back" unique_id=616363659]
+anchors_preset = 0
+offset_left = 625.0
+offset_top = -85.0
+offset_right = 1025.0
+offset_bottom = 365.0
+
+[node name="Hand" type="TextureRect" parent="StudentHandsContainer_Back/Slot2" unique_id=1081787062]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -140.0
+offset_top = -80.0
+offset_right = 140.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 0
+texture = ExtResource("default_hand_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Meja_KiriBawah" type="TextureRect" parent="." unique_id=1666960600]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("meja_kb_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Meja_KananBawah" type="TextureRect" parent="." unique_id=1660970638]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("meja_knb_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StudentPortraitsContainer_Front" type="Control" parent="." unique_id=1730743039]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Slot3" type="Control" parent="StudentPortraitsContainer_Front" unique_id=858493737]
+anchors_preset = 0
+offset_left = 50.0
+offset_top = 370.0
+offset_right = 450.0
+offset_bottom = 820.0
+
+[node name="Portrait" type="TextureRect" parent="StudentPortraitsContainer_Front/Slot3" unique_id=1600612014]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -24.795
+offset_top = -29.48
+offset_right = -24.795013
+offset_bottom = -29.480011
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("default_portrait_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4" type="Control" parent="StudentPortraitsContainer_Front" unique_id=85502973]
+anchors_preset = 0
+offset_left = 620.0
+offset_top = 370.0
+offset_right = 1020.0
+offset_bottom = 820.0
+
+[node name="Portrait" type="TextureRect" parent="StudentPortraitsContainer_Front/Slot4" unique_id=1101838453]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.795
+offset_top = -29.48
+offset_right = 24.795013
+offset_bottom = -29.480011
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("default_portrait_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StudentHandsContainer_Front" type="Control" parent="." unique_id=927537512]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Slot3" type="Control" parent="StudentHandsContainer_Front" unique_id=1517080695]
+anchors_preset = 0
+offset_left = 50.0
+offset_top = 370.0
+offset_right = 450.0
+offset_bottom = 820.0
+
+[node name="Hand" type="TextureRect" parent="StudentHandsContainer_Front/Slot3" unique_id=1501956982]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -140.0
+offset_top = -134.50003
+offset_right = 140.0
+offset_bottom = 65.49997
+grow_horizontal = 2
+grow_vertical = 0
+texture = ExtResource("default_hand_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4" type="Control" parent="StudentHandsContainer_Front" unique_id=1684173298]
+anchors_preset = 0
+offset_left = 620.0
+offset_top = 370.0
+offset_right = 1020.0
+offset_bottom = 820.0
+
+[node name="Hand" type="TextureRect" parent="StudentHandsContainer_Front/Slot4" unique_id=1021848288]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -139.80002
+offset_top = -129.50003
+offset_right = 140.19998
+offset_bottom = 70.49997
+grow_horizontal = 2
+grow_vertical = 0
+texture = ExtResource("default_hand_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Student" type="Button" parent="." unique_id=1238526272]
+layout_mode = 0
+offset_left = 156.0
+offset_top = 1351.0
+offset_right = 930.0
+offset_bottom = 1641.0
+theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
+theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
+theme_override_font_sizes/font_size = 105
+theme_override_styles/normal = ExtResource("btn_normal")
+theme_override_styles/pressed = ExtResource("btn_pressed")
+theme_override_styles/hover = ExtResource("btn_hover")
+theme_override_styles/disabled = ExtResource("btn_normal")
+theme_override_styles/focus = ExtResource("btn_normal")
+text = "STUDENT"
+
+[node name="Koperasi" type="Button" parent="." unique_id=247017516]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 1729.0
+offset_right = 308.0
+offset_bottom = 1864.0
+theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
+theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
+theme_override_font_sizes/font_size = 51
+theme_override_styles/normal = ExtResource("btn_normal")
+theme_override_styles/pressed = ExtResource("btn_pressed")
+theme_override_styles/hover = ExtResource("btn_hover")
+theme_override_styles/disabled = ExtResource("btn_normal")
+theme_override_styles/focus = ExtResource("btn_normal")
+text = "Koperasi"
+
+[node name="ReportStudent" type="Button" parent="." unique_id=803503757]
+layout_mode = 0
+offset_left = 709.0
+offset_top = 1729.0
+offset_right = 1059.0
+offset_bottom = 1869.0
+theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
+theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = ExtResource("btn_normal")
+theme_override_styles/pressed = ExtResource("btn_pressed")
+theme_override_styles/hover = ExtResource("btn_hover")
+theme_override_styles/disabled = ExtResource("btn_normal")
+theme_override_styles/focus = ExtResource("btn_normal")
+text = "REPORT STUDENT"
+
+[node name="Inventory" type="Button" parent="." unique_id=1524317152]
+layout_mode = 0
+offset_left = 359.0
+offset_top = 1708.0
+offset_right = 671.0
+offset_bottom = 1852.0
+theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
+theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
+theme_override_font_sizes/font_size = 39
+theme_override_styles/normal = ExtResource("btn_normal")
+theme_override_styles/pressed = ExtResource("btn_pressed")
+theme_override_styles/hover = ExtResource("btn_hover")
+theme_override_styles/disabled = ExtResource("btn_normal")
+theme_override_styles/focus = ExtResource("btn_normal")
+text = "INVENTORY"
+
+[node name="Jadwal" type="Button" parent="." unique_id=2126015085]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 1361.0
+offset_right = 934.0
+offset_bottom = 1628.0
+theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
+theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
+theme_override_font_sizes/font_size = 166
+theme_override_styles/normal = ExtResource("btn_normal")
+theme_override_styles/pressed = ExtResource("btn_pressed")
+theme_override_styles/hover = ExtResource("btn_hover")
+theme_override_styles/disabled = ExtResource("btn_normal")
+theme_override_styles/focus = ExtResource("btn_normal")
+text = "JADWAL!"
+
+[node name="JUDUL" type="Label" parent="." unique_id=1317986974]
+layout_mode = 0
+offset_left = 239.0
+offset_top = 96.0
+offset_right = 841.0
+offset_bottom = 382.0
+theme_override_font_sizes/font_size = 193
+text = "KELAS"
+
+[node name="DisplayUang" type="TextureRect" parent="." unique_id=102747421]
+layout_mode = 0
+offset_left = 831.0
+offset_top = 358.0
+offset_right = 1120.7777
+offset_bottom = 521.0
+texture = ExtResource("3_2gra1")
+expand_mode = 1
+flip_h = true
+
+[node name="Label" type="Label" parent="DisplayUang" unique_id=1444294720]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.293
+anchor_top = 0.423
+anchor_right = 0.5
+anchor_bottom = 0.62
+offset_left = -2.904869
+offset_top = 0.051002502
+offset_right = -3.888855
+offset_bottom = 1.9400024
+theme_override_font_sizes/font_size = 24
+text = "50"
+horizontal_alignment = 2
+
+[node name="DailyLogin" type="TextureButton" parent="." unique_id=1799090163]
+layout_mode = 0
+offset_left = 87.0
+offset_top = 391.0
+offset_right = 243.0
+offset_bottom = 547.0
+texture_normal = ExtResource("2_2gra1")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="DailyReward" type="TextureRect" parent="DailyLogin" unique_id=889996430]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_right = 5.9940004
+anchor_bottom = 2.9150002
+offset_left = -7.0
+offset_top = 11.0
+offset_right = -0.064086914
+offset_bottom = -26.74002
+grow_vertical = 0
+texture = ExtResource("4_q6pla")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward" unique_id=1823371215]
+layout_mode = 0
+offset_left = 276.0
+offset_top = 25.0
+offset_right = 644.0
+offset_bottom = 104.0
+theme_override_font_sizes/font_size = 58
+text = "Daily Reward"
+
+[node name="Day1" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=2016844990]
+layout_mode = 0
+offset_left = 62.0
+offset_top = 141.0
+offset_right = 140.0
+offset_bottom = 218.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day1" unique_id=891884221]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day1" unique_id=1566304681]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day1"
+
+[node name="Day2" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=380237506]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 140.0
+offset_right = 278.0
+offset_bottom = 217.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day2" unique_id=2094990304]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day2" unique_id=297315175]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day2"
+
+[node name="Day3" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1795176471]
+layout_mode = 0
+offset_left = 343.0
+offset_top = 140.0
+offset_right = 421.0
+offset_bottom = 217.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day3" unique_id=1739539063]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day3" unique_id=972452457]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day3"
+
+[node name="Day4" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=2125669158]
+layout_mode = 0
+offset_left = 468.0
+offset_top = 143.0
+offset_right = 546.0
+offset_bottom = 220.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day4" unique_id=786889771]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day4" unique_id=2040716306]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day4"
+
+[node name="Day5" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1220563996]
+layout_mode = 0
+offset_left = 585.0
+offset_top = 143.0
+offset_right = 663.0
+offset_bottom = 220.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day5" unique_id=1084961844]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day5" unique_id=751138267]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day5"
+
+[node name="Day6" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=827404715]
+layout_mode = 0
+offset_left = 709.0
+offset_top = 142.0
+offset_right = 787.0
+offset_bottom = 219.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day6" unique_id=1473938138]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day6" unique_id=1368493211]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day6"
+
+[node name="Day7" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=476878237]
+layout_mode = 0
+offset_left = 825.0
+offset_top = 139.0
+offset_right = 903.0
+offset_bottom = 216.0
+texture = ExtResource("5_6pr0q")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day7" unique_id=1735433752]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 78.0
+offset_right = 64.0
+offset_bottom = 115.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "10G"
+
+[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day7" unique_id=1632813634]
+layout_mode = 0
+offset_left = 9.0
+offset_top = -42.0
+offset_right = 74.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 27
+text = "Day7"
+
+[node name="ButtonClaim" type="Button" parent="DailyLogin/DailyReward" unique_id=1114280413]
+layout_mode = 0
+offset_left = 374.0
+offset_top = 257.0
+offset_right = 572.0
+offset_bottom = 351.0
+theme_override_font_sizes/font_size = 62
+text = "CLAIM"
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=707453591]
+material = SubResource("ShaderMaterial_2gra1")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="ClickArea" type="Button" parent="ColorRect" unique_id=465848992]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

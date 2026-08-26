@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://bbm17rabr5qr6"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/SeniBudaya/LombaMenari.gd" id="1_lombamenari"]
+[ext_resource type="Texture2D" uid="uid://dh3u5vm5bgtfe" path="res://Assets/Images/Textures/Idle.jpg" id="2_ekl8q"]
+[ext_resource type="Texture2D" uid="uid://co5rcx5gefm1v" path="res://Assets/Images/Textures/Gawang.jpg" id="2_g7u23"]
+[ext_resource type="Texture2D" uid="uid://dd5lllw5lljlw" path="res://Assets/Images/Textures/Left.jpg" id="3_ekg76"]
+[ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="3_sfrbx"]
+[ext_resource type="Texture2D" uid="uid://cvrgm856o0itg" path="res://Assets/Images/Textures/Right.jpg" id="4_yj04g"]
+[ext_resource type="Texture2D" uid="uid://nm11wxrdebo2" path="res://Assets/Images/Textures/DiagonalLeft.jpg" id="5_g7u23"]
+[ext_resource type="Texture2D" uid="uid://ch0pg0l4inpsq" path="res://Assets/Images/Textures/DiagonalRight.jpg" id="6_sfrbx"]
+[ext_resource type="Texture2D" uid="uid://dxhdrturf7276" path="res://Assets/Images/Textures/Fail.jpg" id="7_ekg76"]
+
+[node name="LombaMenari" type="Control" unique_id=125767780]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lombamenari")
+background_texture = ExtResource("2_g7u23")
+dancer_idle_texture = ExtResource("2_ekl8q")
+dancer_left_texture = ExtResource("3_ekg76")
+dancer_right_texture = ExtResource("4_yj04g")
+dancer_top_left_texture = ExtResource("5_g7u23")
+dancer_top_right_texture = ExtResource("6_sfrbx")
+dancer_fail_texture = ExtResource("7_ekg76")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1772325959]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="ScoreLabel" type="Label" parent="." unique_id=922826278]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 30.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 44
+text = "Score: 0 / 1500"
+horizontal_alignment = 1
+
+[node name="HitZone" type="TextureRect" parent="." unique_id=2036345891]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.3
+anchor_top = 0.72
+anchor_right = 0.7
+anchor_bottom = 0.88
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="CharacterDisplay" type="TextureRect" parent="." unique_id=450412995]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.16700001
+anchor_top = 0.2
+anchor_right = 0.82600003
+anchor_bottom = 0.65
+offset_left = 7.639984
+offset_top = 11.0
+offset_right = 10.919983
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NotesParent" type="Control" parent="." unique_id=1296841459]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

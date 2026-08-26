@@ -1,0 +1,10 @@
+<svg viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top Left Table -->
+  <rect x="50" y="650" width="400" height="150" fill="#8B5A2B" stroke="#5A3A1A" stroke-width="10" />
+  <!-- Top Right Table -->
+  <rect x="630" y="650" width="400" height="150" fill="#8B5A2B" stroke="#5A3A1A" stroke-width="10" />
+  <!-- Bottom Left Table -->
+  <rect x="50" y="950" width="400" height="150" fill="#8B5A2B" stroke="#5A3A1A" stroke-width="10" />
+  <!-- Bottom Right Table -->
+  <rect x="630" y="950" width="400" height="150" fill="#8B5A2B" stroke="#5A3A1A" stroke-width="10" />
+</svg>

@@ -1,0 +1,182 @@
+[
+  {
+    "question": "Dari gambar di atas, monumen ikonik apakah yang berdiri megah di Jakarta?",
+    "choices": ["Monumen Nasional (Monas)", "Candi Prambanan", "Tugu Muda Semarang", "Monumen Pancasila Sakti"],
+    "correct_index": 0,
+    "image": "res://Assets/Images/monas_monument.jpg"
+  },
+  {
+    "question": "Dari gambar di atas, candi apakah yang terletak di Jawa Tengah dan dikenal sebagai candi Buddha terbesar?",
+    "choices": ["Candi Borobudur", "Candi Prambanan", "Candi Mendut", "Candi Dieng"],
+    "correct_index": 0,
+    "image": "res://Assets/Images/borobudur_temple.jpg"
+  },
+  {
+    "question": "Dari gambar di atas, hewan endemik khas Indonesia apakah ini?",
+    "choices": ["Komodo", "Babi Rusa", "Anoa", "Harimau Sumatra"],
+    "correct_index": 0,
+    "image": "res://Assets/Images/komodo_dragon.jpg"
+  },
+  {
+    "question": "Apa nama ibu kota negara Indonesia saat ini?",
+    "choices": ["Nusantara", "Jakarta", "Bandung", "Surabaya"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Lagu kebangsaan Republik Indonesia adalah...",
+    "choices": ["Indonesia Raya", "Garuda Pancasila", "Satu Nusa Satu Bangsa", "Rayuan Pulau Kelapa"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Mata uang resmi Republik Indonesia adalah...",
+    "choices": ["Rupiah", "Ringgit", "Peso", "Baht"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Dasar negara Republik Indonesia adalah...",
+    "choices": ["Pancasila", "UUD 1945", "Bhinneka Tunggal Ika", "Sumpah Pemuda"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Semboyan Bhinneka Tunggal Ika memiliki arti...",
+    "choices": ["Berbeda-beda tetapi tetap satu jua", "Bersatu kita teguh bercerai kita runtuh", "Satu nusa satu bangsa", "Majulah tanpa menyingkirkan"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Siapa Proklamator Kemerdekaan Indonesia?",
+    "choices": ["Soekarno dan Moh. Hatta", "Soeharto dan B.J. Habibie", "Ki Hajar Dewantara", "Jenderal Sudirman"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Warna bendera Sang Saka Merah Putih melambangkan...",
+    "choices": ["Keberanian dan Kesucian", "Kesucian dan Keberanian", "Keberanian dan Kejujuran", "Kesucian dan Perdamaian"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Rumah adat khas Minangkabau dari Sumatera Barat adalah...",
+    "choices": ["Rumah Gadang", "Rumah Joglo", "Rumah Tongkonan", "Rumah Honai"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Danau vulkanik terbesar di Indonesia adalah...",
+    "choices": ["Danau Toba", "Danau Maninjau", "Danau Singkarak", "Danau Posso"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Alat musik bambu tradisional khas Jawa Barat adalah...",
+    "choices": ["Angklung", "Gamulan", "Kolintang", "Sasando"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Pahlawan nasional yang dijuluki Bapak Pendidikan Nasional adalah...",
+    "choices": ["Ki Hajar Dewantara", "R.A. Kartini", "H.O.S. Tjokroaminoto", "Bung Tomo"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Tari tradisional Bali yang terkenal dengan bunyi nyanyian kecak adalah...",
+    "choices": ["Tari Kecak", "Tari Pendet", "Tari Barong", "Tari Legong"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Senjata tradisional berleluk khas suku Jawa adalah...",
+    "choices": ["Keris", "Rencong", "Kujang", "Mandau"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Tari tradisional khas Aceh yang mengandalkan keharmonisan gerakan tangan adalah...",
+    "choices": ["Tari Saman", "Tari Piring", "Tari Tor-Tor", "Tari Jaipong"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Kain tradisional bergambar khas Indonesia yang diakui oleh UNESCO adalah...",
+    "choices": ["Batik", "Tenun Ikat", "Songket", "Ulos"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Kota yang dijuluki sebagai Kota Hujan adalah...",
+    "choices": ["Bogor", "Bandung", "Malang", "Semarang"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Julukan populer untuk Pulau Bali adalah...",
+    "choices": ["Pulau Dewata", "Pulau Seribu Candi", "Pulau Rempah", "Pulau Emas"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Makanan khas Indonesia berkuah santan kental dengan rempah kaya rasa daging sapi adalah...",
+    "choices": ["Rendang", "Rawon", "Soto", "Gulai"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Pencipta lagu kebangsaan Indonesia Raya adalah...",
+    "choices": ["W.R. Supratman", "Ibu Soed", "C. Simanjuntak", "Ismail Marzuki"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Selat yang memisahkan Pulau Jawa dan Pulau Sumatra adalah...",
+    "choices": ["Selat Sunda", "Selat Bali", "Selat Lombok", "Selat Makassar"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Bunga nasional Indonesia yang dijuluki Puspa Bangsa adalah...",
+    "choices": ["Melati Putih", "Anggrek Bulan", "Rafflesia Arnoldii", "Kembang Sepatu"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Puncak tertinggi di Indonesia (Puncak Jaya) berada di provinsi...",
+    "choices": ["Papua", "Maluku", "Sulawesi Selatan", "Kalimantan Timur"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Burung langka khas Papua yang terkenal dengan keindahan bulunya adalah...",
+    "choices": ["Cendrawasih", "Garuda", "Maleo", "Jalak Bali"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Kain tradisional khas suku Batak dari Sumatera Utara adalah...",
+    "choices": ["Ulos", "Batik", "Songket", "Sasirangan"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Hari Kemerdekaan Republik Indonesia diperingati setiap tanggal...",
+    "choices": ["17 Agustus", "28 Oktober", "10 November", "1 Juni"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Pahlawan emansipasi wanita asal Jepara adalah...",
+    "choices": ["R.A. Kartini", "Cut Nyak Dien", "Dewi Sartika", "Martha Christina Tiahahu"],
+    "correct_index": 0,
+    "image": ""
+  },
+  {
+    "question": "Kota di Jawa Barat yang dijuluki sebagai Kota Kembang adalah...",
+    "choices": ["Bandung", "Bogor", "Cirebon", "Sukabumi"],
+    "correct_index": 0,
+    "image": ""
+  }
+]

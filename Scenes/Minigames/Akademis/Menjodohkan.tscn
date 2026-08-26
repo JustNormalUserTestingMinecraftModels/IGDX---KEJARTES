@@ -1,0 +1,286 @@
+[gd_scene format=3 uid="uid://c31ckajpvpo43"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/Akademis/Menjodohkan.gd" id="1_menjodohkan"]
+[ext_resource type="Texture2D" uid="uid://co5rcx5gefm1v" path="res://Assets/Images/Textures/Gawang.jpg" id="2_7algp"]
+[ext_resource type="Texture2D" uid="uid://b4mc8a23begw3" path="res://Assets/Images/Textures/KiperLeft.jpg" id="3_a28ad"]
+[ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="4_i1och"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nav_btn"]
+bg_color = Color(0.12, 0.15, 0.22, 0.9)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_lock"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.85, 0.45, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.65, 0.2, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_submit_active"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.15, 0.75, 0.3, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 1, 0.5, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.2, 0.9, 0.3, 0.6)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_submit_disabled"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.3, 0.3, 0.35, 0.7)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.45, 0.5, 0.6)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="Menjodohkan" type="Control" unique_id=343322469]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menjodohkan")
+background_texture = ExtResource("2_7algp")
+card_question_bg_texture = ExtResource("3_a28ad")
+card_answer_bg_texture = ExtResource("4_i1och")
+
+[node name="Background" type="TextureRect" parent="." unique_id=370097526]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="HeaderVBox" type="VBoxContainer" parent="." unique_id=1252094437]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.07
+anchor_right = 1.0
+anchor_bottom = 0.19
+offset_left = 12.0
+offset_top = 16.0
+offset_right = -12.0
+grow_horizontal = 2
+theme_override_constants/separation = 3
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="HeaderVBox" unique_id=845362208]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "Jodohkan yang Benar!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ScoreLabel" type="Label" parent="HeaderVBox" unique_id=987123654]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 34
+text = "Pasangan Terjodohkan: 0 dari 4 | Skor: 0"
+horizontal_alignment = 1
+
+[node name="ProgressHBox" type="HBoxContainer" parent="HeaderVBox" unique_id=346121078]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="TopCarousel" type="Control" parent="." unique_id=1964968155]
+layout_mode = 1
+anchor_top = 0.2
+anchor_right = 1.0
+anchor_bottom = 0.48
+grow_horizontal = 2
+
+[node name="TopHeaderLabel" type="Label" parent="TopCarousel" unique_id=96814140]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.022000002
+anchor_right = 1.0
+anchor_bottom = 0.086
+offset_top = 9.1728
+offset_bottom = -7.2336006
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.7, 0.3, 1)
+theme_override_font_sizes/font_size = 30
+text = "PERTANYAAN (GESER / SWIPE)"
+horizontal_alignment = 1
+
+[node name="QuestionWheelParent" type="Control" parent="TopCarousel" unique_id=992953981]
+layout_mode = 1
+anchor_top = 0.1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BtnPrevQ" type="Button" parent="TopCarousel" unique_id=773406494]
+z_index = 25
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.55
+anchor_bottom = 0.55
+offset_left = 8.0
+offset_top = -40.0
+offset_right = 88.0
+offset_bottom = 40.0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_btn")
+text = "◀"
+
+[node name="BtnNextQ" type="Button" parent="TopCarousel" unique_id=358176453]
+z_index = 25
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.55
+anchor_right = 1.0
+anchor_bottom = 0.55
+offset_left = -88.0
+offset_top = -40.0
+offset_right = -8.0
+offset_bottom = 40.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_btn")
+text = "▶"
+
+[node name="MiddleActionBar" type="HBoxContainer" parent="." unique_id=1977700009]
+z_index = 30
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.526
+anchor_right = 1.0
+anchor_bottom = 0.606
+offset_left = 16.0
+offset_top = -0.67004395
+offset_right = -16.0
+offset_bottom = -0.66955566
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnLock" type="Button" parent="MiddleActionBar" unique_id=1063846498]
+custom_minimum_size = Vector2(360, 85)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_lock")
+text = "🔒 Kunci Jawaban!"
+
+[node name="BtnSubmit" type="Button" parent="MiddleActionBar" unique_id=1651264593]
+custom_minimum_size = Vector2(360, 85)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_disabled_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_submit_active")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_submit_disabled")
+disabled = true
+text = "✨ Selesaikan!"
+
+[node name="BottomCarousel" type="Control" parent="." unique_id=773851323]
+layout_mode = 1
+anchor_top = 0.6
+anchor_right = 1.0
+anchor_bottom = 0.88
+grow_horizontal = 2
+
+[node name="BottomHeaderLabel" type="Label" parent="BottomCarousel" unique_id=1029822110]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.086
+anchor_right = 1.0
+anchor_bottom = 0.141
+offset_top = -0.23360062
+offset_bottom = -11.801598
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.4, 0.7, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "PILIHAN JAWABAN (GESER / SWIPE)"
+horizontal_alignment = 1
+
+[node name="AnswerWheelParent" type="Control" parent="BottomCarousel" unique_id=394742388]
+layout_mode = 1
+anchor_top = 0.1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BtnPrevA" type="Button" parent="BottomCarousel" unique_id=71138965]
+z_index = 25
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.55
+anchor_bottom = 0.55
+offset_left = 8.0
+offset_top = -40.0
+offset_right = 88.0
+offset_bottom = 40.0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_btn")
+text = "◀"
+
+[node name="BtnNextA" type="Button" parent="BottomCarousel" unique_id=249088855]
+z_index = 25
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.55
+anchor_right = 1.0
+anchor_bottom = 0.55
+offset_left = -88.0
+offset_top = -40.0
+offset_right = -8.0
+offset_bottom = 40.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_btn")
+text = "▶"

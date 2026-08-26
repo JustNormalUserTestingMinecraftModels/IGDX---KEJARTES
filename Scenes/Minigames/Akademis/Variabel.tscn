@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://dd2yx1erpwhwo"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/Akademis/Variabel.gd" id="1_variabel"]
+[ext_resource type="Texture2D" uid="uid://nm11wxrdebo2" path="res://Assets/Images/Textures/DiagonalLeft.jpg" id="2_gma8s"]
+[ext_resource type="Texture2D" uid="uid://ch0pg0l4inpsq" path="res://Assets/Images/Textures/DiagonalRight.jpg" id="3_wmj8b"]
+
+[node name="Variabel" type="Control" unique_id=677104855]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_variabel")
+numpad_btn_normal_texture = ExtResource("2_gma8s")
+submit_btn_normal_texture = ExtResource("3_wmj8b")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1592266905]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1995615035]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.05
+anchor_top = 0.05
+anchor_right = 0.95
+anchor_bottom = 0.95
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="ProgressLabel" type="Label" parent="VBoxContainer" unique_id=593051902]
+layout_mode = 2
+text = "Soal 1 dari 3  |  Skor: 0"
+horizontal_alignment = 1
+
+[node name="EquationLabel" type="Label" parent="VBoxContainer" unique_id=724524481]
+layout_mode = 2
+text = "Burger + Fries = 5"
+horizontal_alignment = 1
+
+[node name="InputLineEdit" type="LineEdit" parent="VBoxContainer" unique_id=2025955897]
+layout_mode = 2
+placeholder_text = "Jawaban"
+alignment = 1
+editable = false
+
+[node name="NumpadGrid" type="GridContainer" parent="VBoxContainer" unique_id=455858059]
+layout_mode = 2
+size_flags_horizontal = 4
+columns = 3
+
+[node name="SubmitButton" type="Button" parent="VBoxContainer" unique_id=412012270]
+layout_mode = 2
+text = "SUBMIT"

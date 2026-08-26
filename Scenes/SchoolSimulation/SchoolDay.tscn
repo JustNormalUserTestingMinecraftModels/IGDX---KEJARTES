@@ -1,0 +1,126 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://Scripts/SchoolSimulation/SchoolDay.gd" id="1_schoolday"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/ResultCheckup.tscn" id="2_checkup"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/EventAnnouncement.tscn" id="3_announcement"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn" id="4_student_select"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/BookClockWidget.tscn" id="5_bookclock"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryPopup.tscn" id="6_summary"]
+[ext_resource type="Script" path="res://Scripts/SchoolSimulation/SimulationBackground.gd" id="7_bgscript"]
+
+[node name="SchoolDay" type="Control" unique_id=310225723]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_schoolday")
+result_checkup_scene = ExtResource("2_checkup")
+event_announcement_scene = ExtResource("3_announcement")
+event_student_select_scene = ExtResource("4_student_select")
+day_summary_popup_scene = ExtResource("6_summary")
+
+[node name="Background" type="ColorRect" parent="." unique_id=2137808221]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07, 0.07, 0.12, 1)
+script = ExtResource("7_bgscript")
+
+[node name="DayScreen" type="VBoxContainer" parent="." unique_id=689888867]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.05
+anchor_top = 0.06
+anchor_right = 0.95
+anchor_bottom = 0.94
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+
+[node name="DayNumberLabel" type="Label" parent="DayScreen" unique_id=361417759]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 32
+text = "Hari 1 dari 5"
+horizontal_alignment = 1
+
+[node name="DayLabel" type="Label" parent="DayScreen" unique_id=1074097941]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 72
+text = "Senin"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BookClockWidget" parent="DayScreen" unique_id=337990511 instance=ExtResource("5_bookclock")]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ProgressBar" type="ProgressBar" parent="DayScreen" unique_id=1144036598]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+
+[node name="StatusLabel" type="Label" parent="DayScreen" unique_id=359072452]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="StudentScroll" type="ScrollContainer" parent="DayScreen" unique_id=20241029]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StudentStatusContainer" type="VBoxContainer" parent="DayScreen/StudentScroll" unique_id=551234901]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="ClickToContinueLabel" type="Label" parent="DayScreen" unique_id=776210943]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.8, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 36
+text = "✨ Klik di mana saja untuk melanjutkan ➔"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BackButton" type="Button" parent="DayScreen" unique_id=1335205209]
+visible = false
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 36
+text = "🔙 Kembali ke Menu"
+
+[node name="SkipButton" type="Button" parent="DayScreen" unique_id=987654321]
+visible = false
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 36
+text = "⏭ Skip (Tekan O)"
+
+[node name="GameContainer" type="Control" parent="." unique_id=439134809]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

@@ -1,0 +1,2297 @@
+[gd_scene format=3 uid="uid://px5tkr2hweig"]
+
+[ext_resource type="Script" uid="uid://csmj7c70fnwm1" path="res://Scripts/StudentCard/student_card.gd" id="1_ao2t8"]
+[ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="1_jsirh"]
+[ext_resource type="Texture2D" uid="uid://croetdw7smqvd" path="res://Assets/Images/MuridPotrait/Murid3.jpg" id="3_33k3e"]
+[ext_resource type="Texture2D" uid="uid://brotcydbytvmj" path="res://Assets/Images/MuridPotrait/Murid6.jpg" id="3_a1isy"]
+[ext_resource type="Texture2D" uid="uid://dpuj0ix84a0r4" path="res://Assets/Images/MuridPotrait/Murid4.jpg" id="3_osw5o"]
+[ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
+[ext_resource type="Texture2D" uid="uid://ddqatfjpqc4ev" path="res://Assets/Images/MuridPotrait/Murid2.jpg" id="4_6vhdp"]
+[ext_resource type="Texture2D" uid="uid://cn7kemflfrhci" path="res://Assets/Images/MuridPotrait/Murid5.jpg" id="4_hodfn"]
+[ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="4_vdd03"]
+[ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
+[ext_resource type="Texture2D" uid="uid://b0ttj7iunp215" path="res://Assets/Images/UI/paper_placeholder.jpg" id="8_hodfn"]
+[ext_resource type="Texture2D" uid="uid://by8g1doetajut" path="res://Assets/Images/UI/Placeholders/btn_approve.svg" id="tex_btn_approve"]
+[ext_resource type="Texture2D" uid="uid://bwoqbpoaopshj" path="res://Assets/Images/UI/Placeholders/btn_batal.svg" id="tex_btn_batal"]
+[ext_resource type="Texture2D" uid="uid://1aoyegmhi6nf" path="res://Assets/Images/UI/Placeholders/btn_belajar.svg" id="tex_btn_belajar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quirk"]
+bg_color = Color(0.04, 0.56, 0.68, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_persona"]
+bg_color = Color(0.48, 0.13, 0.78, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r4bra"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ns7oa"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ogyao"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6w8h2"]
+bg_color = Color(1, 0.9333334, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tif85"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w13cc"]
+bg_color = Color(0, 0.16666651, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vngbl"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r7c70"]
+bg_color = Color(0.17599994, 0.88, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_26k8k"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ekoon"]
+bg_color = Color(0.89, 0, 0, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_approve"]
+texture = ExtResource("tex_btn_approve")
+texture_margin_left = 32.0
+texture_margin_top = 32.0
+texture_margin_right = 32.0
+texture_margin_bottom = 32.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_batal"]
+texture = ExtResource("tex_btn_batal")
+texture_margin_left = 32.0
+texture_margin_top = 32.0
+texture_margin_right = 32.0
+texture_margin_bottom = 32.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_belajar"]
+texture = ExtResource("tex_btn_belajar")
+texture_margin_left = 42.0
+texture_margin_top = 42.0
+texture_margin_right = 42.0
+texture_margin_bottom = 42.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
+shader = ExtResource("3_ovxc5")
+shader_parameter/overlay_color = Color(0, 0, 0, 0.7)
+shader_parameter/rect_size = Vector2(1152, 648)
+shader_parameter/hole_pos = Vector2(100, 100)
+shader_parameter/hole_size = Vector2(200, 80)
+shader_parameter/feather = 10.0
+
+[node name="StudentCard" type="Control" unique_id=510264751]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 70.0
+offset_top = 254.0
+offset_right = -77.0
+offset_bottom = -352.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ao2t8")
+
+
+[node name="KertasMurid6" type="TextureRect" parent="." unique_id=1627899928]
+visible = false
+layout_mode = 0
+offset_left = -70.0
+offset_top = -254.0
+offset_right = 1012.0
+offset_bottom = 1666.0
+texture = ExtResource("8_hodfn")
+
+
+[node name="TextureRect" type="TextureRect" parent="KertasMurid6" unique_id=1221180924]
+texture = ExtResource("3_a1isy")
+expand_mode = 1
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.008
+anchor_top = 0.072000004
+anchor_right = 0.5
+anchor_bottom = 0.43300003
+offset_left = 84.656
+offset_top = 95.76
+offset_right = 83.75647
+offset_bottom = -49.36
+
+[node name="Nama" type="Label" parent="KertasMurid6" unique_id=974236894]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 73
+text = "Ga Peduli"
+
+layout_mode = 0
+offset_left = 657.0
+offset_top = 212.0
+offset_right = 990.0
+offset_bottom = 313.0
+
+[node name="KutuBuku" type="Button" parent="KertasMurid6" unique_id=1010521266]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+text = "Quirk Kutu Buku"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.786
+anchor_right = 0.5
+anchor_bottom = 0.786
+offset_left = -421.0
+offset_top = -104.119995
+offset_right = 421.0
+offset_bottom = -0.11999512
+
+[node name="KutuBuku2" type="Button" parent="KertasMurid6" unique_id=420784728]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
+theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+text = "Persona Rajin"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.84800005
+anchor_right = 0.5
+anchor_bottom = 0.84800005
+offset_left = -417.0
+offset_top = -98.16016
+offset_right = 420.0
+offset_bottom = 0.83984375
+
+[node name="Profil" type="Label" parent="KertasMurid6" unique_id=1123386699]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "Nama: Jokoteno
+
+Agama: Muslim
+
+Jenis Kelamin: Perempuan
+
+Cita-Cita: Artist
+
+Hobi: Bernyanyi"
+
+layout_mode = 0
+offset_left = 644.0
+offset_top = 320.0
+offset_right = 1061.0
+offset_bottom = 722.0
+
+[node name="Kepribadian" type="Label" parent="KertasMurid6" unique_id=1730294522]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "KEPRIBADIAN"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 830.0
+offset_right = 500.0
+offset_bottom = 883.0
+
+[node name="Akademis" type="Label" parent="KertasMurid6" unique_id=1001822697]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "SKILL"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1059.0
+offset_right = 500.0
+offset_bottom = 1112.0
+
+[node name="Kepribadian1" type="ProgressBar" parent="KertasMurid6" unique_id=101612949]
+theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
+max_value = 65.0
+value = 60.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 890.0
+offset_right = 880.0
+offset_bottom = 958.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid6/Kepribadian1" unique_id=294910009]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid6/Kepribadian1" unique_id=1139951486]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "MOOD"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Kepribadian2" type="ProgressBar" parent="KertasMurid6" unique_id=1855993380]
+theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
+theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
+max_value = 65.0
+value = 50.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 976.0
+offset_right = 880.0
+offset_bottom = 1044.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid6/Kepribadian2" unique_id=711864956]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "50/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid6/Kepribadian2" unique_id=1777917629]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "ENERGY"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis1" type="ProgressBar" parent="KertasMurid6" unique_id=254169502]
+theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
+theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
+max_value = 65.0
+value = 35.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1115.0
+offset_right = 880.0
+offset_bottom = 1183.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis1" unique_id=1398205165]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid6/Akademis1" unique_id=1459576882]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "AKADEMIS"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis2" type="ProgressBar" parent="KertasMurid6" unique_id=423182825]
+theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
+theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
+max_value = 65.0
+value = 20.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1201.0
+offset_right = 880.0
+offset_bottom = 1269.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis2" unique_id=1152689393]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid6/Akademis2" unique_id=424051774]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "SENI BUDAYA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis3" type="ProgressBar" parent="KertasMurid6" unique_id=609774354]
+theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
+max_value = 65.0
+value = 40.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1287.0
+offset_right = 880.0
+offset_bottom = 1355.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis3" unique_id=1894100866]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid6/Akademis3" unique_id=1490684461]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "OLAHRAGA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Aprove" type="Button" parent="KertasMurid6" unique_id=860385850]
+theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
+theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+text = "APPROVE"
+
+layout_mode = 0
+offset_left = 275.0
+offset_top = 1641.0
+offset_right = 765.0
+offset_bottom = 1829.0
+
+[node name="Batal" type="Button" parent="KertasMurid6" unique_id=363348099]
+visible = false
+theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
+theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
+text = "BATAL"
+
+layout_mode = 0
+offset_left = 259.0
+offset_top = 1622.0
+offset_right = 749.0
+offset_bottom = 1800.0
+
+[node name="KertasMurid5" type="TextureRect" parent="." unique_id=1004659439]
+layout_mode = 0
+offset_left = -70.0
+offset_top = -254.0
+offset_right = 1012.0
+offset_bottom = 1666.0
+texture = ExtResource("8_hodfn")
+
+
+[node name="TextureRect" type="TextureRect" parent="KertasMurid5" unique_id=91004226]
+texture = ExtResource("4_hodfn")
+expand_mode = 1
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.008
+anchor_top = 0.072000004
+anchor_right = 0.5
+anchor_bottom = 0.43300003
+offset_left = 84.656
+offset_top = 95.76
+offset_right = 83.75647
+offset_bottom = -49.36
+
+[node name="Nama" type="Label" parent="KertasMurid5" unique_id=236830249]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 73
+text = "Ga Peduli"
+
+layout_mode = 0
+offset_left = 657.0
+offset_top = 212.0
+offset_right = 990.0
+offset_bottom = 313.0
+
+[node name="KutuBuku" type="Button" parent="KertasMurid5" unique_id=1094008115]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+text = "Quirk Kutu Buku"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.786
+anchor_right = 0.5
+anchor_bottom = 0.786
+offset_left = -421.0
+offset_top = -104.119995
+offset_right = 421.0
+offset_bottom = -0.11999512
+
+[node name="KutuBuku2" type="Button" parent="KertasMurid5" unique_id=6069551]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
+theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+text = "Persona Rajin"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.84800005
+anchor_right = 0.5
+anchor_bottom = 0.84800005
+offset_left = -417.0
+offset_top = -98.16016
+offset_right = 420.0
+offset_bottom = 0.83984375
+
+[node name="Profil" type="Label" parent="KertasMurid5" unique_id=435624905]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "Nama: Jokoteno
+
+Agama: Muslim
+
+Jenis Kelamin: Perempuan
+
+Cita-Cita: Artist
+
+Hobi: Bernyanyi"
+
+layout_mode = 0
+offset_left = 644.0
+offset_top = 320.0
+offset_right = 1061.0
+offset_bottom = 722.0
+
+[node name="Kepribadian" type="Label" parent="KertasMurid5" unique_id=872328517]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "KEPRIBADIAN"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 830.0
+offset_right = 500.0
+offset_bottom = 883.0
+
+[node name="Akademis" type="Label" parent="KertasMurid5" unique_id=1595145043]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "SKILL"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1059.0
+offset_right = 500.0
+offset_bottom = 1112.0
+
+[node name="Kepribadian1" type="ProgressBar" parent="KertasMurid5" unique_id=1718979238]
+theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
+max_value = 65.0
+value = 60.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 890.0
+offset_right = 880.0
+offset_bottom = 958.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid5/Kepribadian1" unique_id=2000354003]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid5/Kepribadian1" unique_id=880008900]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "MOOD"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Kepribadian2" type="ProgressBar" parent="KertasMurid5" unique_id=944929826]
+theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
+theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
+max_value = 65.0
+value = 50.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 976.0
+offset_right = 880.0
+offset_bottom = 1044.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid5/Kepribadian2" unique_id=249856602]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "50/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid5/Kepribadian2" unique_id=1149296065]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "ENERGY"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis1" type="ProgressBar" parent="KertasMurid5" unique_id=1735959426]
+theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
+theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
+max_value = 65.0
+value = 35.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1115.0
+offset_right = 880.0
+offset_bottom = 1183.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis1" unique_id=1498183674]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid5/Akademis1" unique_id=167698891]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "AKADEMIS"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis2" type="ProgressBar" parent="KertasMurid5" unique_id=691909228]
+theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
+theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
+max_value = 65.0
+value = 20.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1201.0
+offset_right = 880.0
+offset_bottom = 1269.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis2" unique_id=1879457609]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid5/Akademis2" unique_id=1173367564]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "SENI BUDAYA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis3" type="ProgressBar" parent="KertasMurid5" unique_id=569883677]
+theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
+max_value = 65.0
+value = 40.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1287.0
+offset_right = 880.0
+offset_bottom = 1355.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis3" unique_id=474194300]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid5/Akademis3" unique_id=783874747]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "OLAHRAGA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Aprove" type="Button" parent="KertasMurid5" unique_id=1413978420]
+theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
+theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+text = "APPROVE"
+
+layout_mode = 0
+offset_left = 275.0
+offset_top = 1641.0
+offset_right = 765.0
+offset_bottom = 1829.0
+
+[node name="Batal" type="Button" parent="KertasMurid5" unique_id=510363470]
+visible = false
+theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
+theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
+text = "BATAL"
+
+layout_mode = 0
+offset_left = 259.0
+offset_top = 1622.0
+offset_right = 749.0
+offset_bottom = 1800.0
+
+[node name="KertasMurid4" type="TextureRect" parent="." unique_id=74882940]
+visible = false
+layout_mode = 0
+offset_left = -70.0
+offset_top = -254.0
+offset_right = 1012.0
+offset_bottom = 1666.0
+texture = ExtResource("8_hodfn")
+
+
+[node name="TextureRect" type="TextureRect" parent="KertasMurid4" unique_id=464091592]
+texture = ExtResource("3_osw5o")
+expand_mode = 1
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.008
+anchor_top = 0.072000004
+anchor_right = 0.5
+anchor_bottom = 0.43300003
+offset_left = 84.656
+offset_top = 95.76
+offset_right = 83.75647
+offset_bottom = -49.36
+
+[node name="Nama" type="Label" parent="KertasMurid4" unique_id=1975918155]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 73
+text = "Ga Peduli"
+
+layout_mode = 0
+offset_left = 657.0
+offset_top = 212.0
+offset_right = 990.0
+offset_bottom = 313.0
+
+[node name="KutuBuku" type="Button" parent="KertasMurid4" unique_id=862966656]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+text = "Quirk Kutu Buku"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.786
+anchor_right = 0.5
+anchor_bottom = 0.786
+offset_left = -421.0
+offset_top = -104.119995
+offset_right = 421.0
+offset_bottom = -0.11999512
+
+[node name="KutuBuku2" type="Button" parent="KertasMurid4" unique_id=1021987004]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
+theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+text = "Persona Rajin"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.84800005
+anchor_right = 0.5
+anchor_bottom = 0.84800005
+offset_left = -417.0
+offset_top = -98.16016
+offset_right = 420.0
+offset_bottom = 0.83984375
+
+[node name="Profil" type="Label" parent="KertasMurid4" unique_id=589185817]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "Nama: Jokoteno
+
+Agama: Muslim
+
+Jenis Kelamin: Perempuan
+
+Cita-Cita: Artist
+
+Hobi: Bernyanyi"
+
+layout_mode = 0
+offset_left = 644.0
+offset_top = 320.0
+offset_right = 1061.0
+offset_bottom = 722.0
+
+[node name="Kepribadian" type="Label" parent="KertasMurid4" unique_id=607932436]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "KEPRIBADIAN"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 830.0
+offset_right = 500.0
+offset_bottom = 883.0
+
+[node name="Akademis" type="Label" parent="KertasMurid4" unique_id=1675703779]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "SKILL"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1059.0
+offset_right = 500.0
+offset_bottom = 1112.0
+
+[node name="Kepribadian1" type="ProgressBar" parent="KertasMurid4" unique_id=841029218]
+theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
+max_value = 65.0
+value = 60.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 890.0
+offset_right = 880.0
+offset_bottom = 958.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid4/Kepribadian1" unique_id=384573567]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid4/Kepribadian1" unique_id=2008685126]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "MOOD"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Kepribadian2" type="ProgressBar" parent="KertasMurid4" unique_id=1156609344]
+theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
+theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
+max_value = 65.0
+value = 50.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 976.0
+offset_right = 880.0
+offset_bottom = 1044.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid4/Kepribadian2" unique_id=115016979]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "50/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid4/Kepribadian2" unique_id=516744714]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "ENERGY"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis1" type="ProgressBar" parent="KertasMurid4" unique_id=1424130807]
+theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
+theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
+max_value = 65.0
+value = 35.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1115.0
+offset_right = 880.0
+offset_bottom = 1183.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis1" unique_id=1666610939]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid4/Akademis1" unique_id=1314042417]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "AKADEMIS"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis2" type="ProgressBar" parent="KertasMurid4" unique_id=1209295979]
+theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
+theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
+max_value = 65.0
+value = 20.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1201.0
+offset_right = 880.0
+offset_bottom = 1269.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis2" unique_id=286186706]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid4/Akademis2" unique_id=1538291895]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "SENI BUDAYA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis3" type="ProgressBar" parent="KertasMurid4" unique_id=667467974]
+theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
+max_value = 65.0
+value = 40.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1287.0
+offset_right = 880.0
+offset_bottom = 1355.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis3" unique_id=551935657]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid4/Akademis3" unique_id=344690147]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "OLAHRAGA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Aprove" type="Button" parent="KertasMurid4" unique_id=290729362]
+theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
+theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+text = "APPROVE"
+
+layout_mode = 0
+offset_left = 275.0
+offset_top = 1641.0
+offset_right = 765.0
+offset_bottom = 1829.0
+
+[node name="Batal" type="Button" parent="KertasMurid4" unique_id=119033309]
+visible = false
+theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
+theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
+text = "BATAL"
+
+layout_mode = 0
+offset_left = 259.0
+offset_top = 1622.0
+offset_right = 749.0
+offset_bottom = 1800.0
+
+[node name="KertasMurid3" type="TextureRect" parent="." unique_id=2031333750]
+visible = false
+layout_mode = 0
+offset_left = -70.0
+offset_top = -254.0
+offset_right = 1012.0
+offset_bottom = 1666.0
+texture = ExtResource("8_hodfn")
+
+
+[node name="TextureRect" type="TextureRect" parent="KertasMurid3" unique_id=158931283]
+texture = ExtResource("3_33k3e")
+expand_mode = 1
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.008
+anchor_top = 0.072000004
+anchor_right = 0.5
+anchor_bottom = 0.43300003
+offset_left = 84.656
+offset_top = 95.76
+offset_right = 83.75647
+offset_bottom = -49.36
+
+[node name="Nama" type="Label" parent="KertasMurid3" unique_id=334024477]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 73
+text = "Ga Peduli"
+
+layout_mode = 0
+offset_left = 657.0
+offset_top = 212.0
+offset_right = 990.0
+offset_bottom = 313.0
+
+[node name="KutuBuku" type="Button" parent="KertasMurid3" unique_id=407152762]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+text = "Quirk Kutu Buku"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.786
+anchor_right = 0.5
+anchor_bottom = 0.786
+offset_left = -421.0
+offset_top = -104.119995
+offset_right = 421.0
+offset_bottom = -0.11999512
+
+[node name="KutuBuku2" type="Button" parent="KertasMurid3" unique_id=1734850024]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
+theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+text = "Persona Rajin"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.84800005
+anchor_right = 0.5
+anchor_bottom = 0.84800005
+offset_left = -417.0
+offset_top = -98.16016
+offset_right = 420.0
+offset_bottom = 0.83984375
+
+[node name="Profil" type="Label" parent="KertasMurid3" unique_id=1095889559]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "Nama: Jokoteno
+
+Agama: Muslim
+
+Jenis Kelamin: Perempuan
+
+Cita-Cita: Artist
+
+Hobi: Bernyanyi"
+
+layout_mode = 0
+offset_left = 644.0
+offset_top = 320.0
+offset_right = 1061.0
+offset_bottom = 722.0
+
+[node name="Kepribadian" type="Label" parent="KertasMurid3" unique_id=1784869682]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "KEPRIBADIAN"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 830.0
+offset_right = 500.0
+offset_bottom = 883.0
+
+[node name="Akademis" type="Label" parent="KertasMurid3" unique_id=292209198]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "SKILL"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1059.0
+offset_right = 500.0
+offset_bottom = 1112.0
+
+[node name="Kepribadian1" type="ProgressBar" parent="KertasMurid3" unique_id=1970699477]
+theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
+max_value = 65.0
+value = 60.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 890.0
+offset_right = 880.0
+offset_bottom = 958.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid3/Kepribadian1" unique_id=1856528277]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid3/Kepribadian1" unique_id=1152519946]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "MOOD"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Kepribadian2" type="ProgressBar" parent="KertasMurid3" unique_id=769070225]
+theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
+theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
+max_value = 65.0
+value = 50.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 976.0
+offset_right = 880.0
+offset_bottom = 1044.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid3/Kepribadian2" unique_id=1389837432]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "50/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid3/Kepribadian2" unique_id=120406539]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "ENERGY"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis1" type="ProgressBar" parent="KertasMurid3" unique_id=1877461506]
+theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
+theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
+max_value = 65.0
+value = 35.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1115.0
+offset_right = 880.0
+offset_bottom = 1183.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis1" unique_id=619022267]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid3/Akademis1" unique_id=378837250]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "AKADEMIS"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis2" type="ProgressBar" parent="KertasMurid3" unique_id=1388406393]
+theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
+theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
+max_value = 65.0
+value = 20.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1201.0
+offset_right = 880.0
+offset_bottom = 1269.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis2" unique_id=2096205175]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid3/Akademis2" unique_id=1357091394]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "SENI BUDAYA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis3" type="ProgressBar" parent="KertasMurid3" unique_id=1303018386]
+theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
+max_value = 65.0
+value = 40.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1287.0
+offset_right = 880.0
+offset_bottom = 1355.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis3" unique_id=1677762138]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid3/Akademis3" unique_id=1403043752]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "OLAHRAGA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Aprove" type="Button" parent="KertasMurid3" unique_id=463087752]
+theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
+theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+text = "APPROVE"
+
+layout_mode = 0
+offset_left = 275.0
+offset_top = 1641.0
+offset_right = 765.0
+offset_bottom = 1829.0
+
+[node name="Batal" type="Button" parent="KertasMurid3" unique_id=272631289]
+visible = false
+theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
+theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
+text = "BATAL"
+
+layout_mode = 0
+offset_left = 259.0
+offset_top = 1622.0
+offset_right = 749.0
+offset_bottom = 1800.0
+
+[node name="KertasMurid2" type="TextureRect" parent="." unique_id=465108679]
+visible = false
+layout_mode = 0
+offset_left = -70.0
+offset_top = -254.0
+offset_right = 1012.0
+offset_bottom = 1666.0
+texture = ExtResource("8_hodfn")
+
+
+[node name="TextureRect" type="TextureRect" parent="KertasMurid2" unique_id=1137421456]
+texture = ExtResource("4_6vhdp")
+expand_mode = 1
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.008
+anchor_top = 0.072000004
+anchor_right = 0.5
+anchor_bottom = 0.43300003
+offset_left = 84.656
+offset_top = 95.76
+offset_right = 83.75647
+offset_bottom = -49.36
+
+[node name="Nama" type="Label" parent="KertasMurid2" unique_id=1198253032]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 73
+text = "Ga Peduli"
+
+layout_mode = 0
+offset_left = 657.0
+offset_top = 212.0
+offset_right = 990.0
+offset_bottom = 313.0
+
+[node name="KutuBuku" type="Button" parent="KertasMurid2" unique_id=1530561034]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+text = "Quirk Kutu Buku"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.786
+anchor_right = 0.5
+anchor_bottom = 0.786
+offset_left = -421.0
+offset_top = -104.119995
+offset_right = 421.0
+offset_bottom = -0.11999512
+
+[node name="KutuBuku2" type="Button" parent="KertasMurid2" unique_id=2118033802]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
+theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+text = "Persona Rajin"
+
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.84800005
+anchor_right = 0.5
+anchor_bottom = 0.84800005
+offset_left = -417.0
+offset_top = -98.16016
+offset_right = 420.0
+offset_bottom = 0.83984375
+
+[node name="Profil" type="Label" parent="KertasMurid2" unique_id=1730169888]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "Nama: Jokoteno
+
+Agama: Muslim
+
+Jenis Kelamin: Perempuan
+
+Cita-Cita: Artist
+
+Hobi: Bernyanyi"
+
+layout_mode = 0
+offset_left = 644.0
+offset_top = 320.0
+offset_right = 1061.0
+offset_bottom = 722.0
+
+[node name="Kepribadian" type="Label" parent="KertasMurid2" unique_id=242874824]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "KEPRIBADIAN"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 830.0
+offset_right = 500.0
+offset_bottom = 883.0
+
+[node name="Akademis" type="Label" parent="KertasMurid2" unique_id=1304676564]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "SKILL"
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1059.0
+offset_right = 500.0
+offset_bottom = 1112.0
+
+[node name="Kepribadian1" type="ProgressBar" parent="KertasMurid2" unique_id=1781486670]
+theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
+max_value = 65.0
+value = 60.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 890.0
+offset_right = 880.0
+offset_bottom = 958.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid2/Kepribadian1" unique_id=323613456]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid2/Kepribadian1" unique_id=1718336705]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "MOOD"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Kepribadian2" type="ProgressBar" parent="KertasMurid2" unique_id=1293459282]
+theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
+theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
+max_value = 65.0
+value = 50.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 976.0
+offset_right = 880.0
+offset_bottom = 1044.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid2/Kepribadian2" unique_id=181566930]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "50/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid2/Kepribadian2" unique_id=1841917311]
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "ENERGY"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis1" type="ProgressBar" parent="KertasMurid2" unique_id=1728939962]
+theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
+theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
+max_value = 65.0
+value = 35.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1115.0
+offset_right = 880.0
+offset_bottom = 1183.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis1" unique_id=1939438012]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid2/Akademis1" unique_id=1620638843]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "AKADEMIS"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis2" type="ProgressBar" parent="KertasMurid2" unique_id=1581993055]
+theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
+theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
+max_value = 65.0
+value = 20.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1201.0
+offset_right = 880.0
+offset_bottom = 1269.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis2" unique_id=1441394884]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid2/Akademis2" unique_id=1991085930]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "SENI BUDAYA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Akademis3" type="ProgressBar" parent="KertasMurid2" unique_id=1182239999]
+theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
+max_value = 65.0
+value = 40.0
+show_percentage = false
+
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1287.0
+offset_right = 880.0
+offset_bottom = 1355.0
+
+[node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis3" unique_id=794379074]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+
+[node name="Label" type="Label" parent="KertasMurid2/Akademis3" unique_id=693739334]
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "OLAHRAGA"
+vertical_alignment = 1
+
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+
+[node name="Aprove" type="Button" parent="KertasMurid2" unique_id=351069657]
+theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
+theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+text = "APPROVE"
+
+layout_mode = 0
+offset_left = 275.0
+offset_top = 1641.0
+offset_right = 765.0
+offset_bottom = 1829.0
+
+[node name="Batal" type="Button" parent="KertasMurid2" unique_id=359088105]
+visible = false
+theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
+theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
+text = "BATAL"
+
+layout_mode = 0
+offset_left = 259.0
+offset_top = 1622.0
+offset_right = 749.0
+offset_bottom = 1800.0
+
+[node name="KertasMurid1" type="TextureRect" parent="." unique_id=1772494297]
+layout_mode = 0
+offset_left = -70.0
+offset_top = -254.0
+offset_right = 1012.0
+offset_bottom = 1666.0
+texture = ExtResource("8_hodfn")
+
+
+[node name="TextureRect" type="TextureRect" parent="KertasMurid1" unique_id=981490411]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.008
+anchor_top = 0.072000004
+anchor_right = 0.5
+anchor_bottom = 0.43300003
+offset_left = 84.656
+offset_top = 95.76
+offset_right = 83.75647
+offset_bottom = -49.36
+texture = ExtResource("1_jsirh")
+expand_mode = 1
+
+
+[node name="Nama" type="Label" parent="KertasMurid1" unique_id=800854197]
+layout_mode = 0
+offset_left = 657.0
+offset_top = 212.0
+offset_right = 990.0
+offset_bottom = 313.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 73
+text = "Ga Peduli"
+
+
+[node name="KutuBuku" type="Button" parent="KertasMurid1" unique_id=911792941]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.786
+anchor_right = 0.5
+anchor_bottom = 0.786
+offset_left = -421.0
+offset_top = -104.119995
+offset_right = 421.0
+offset_bottom = -0.11999512
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+text = "Quirk Kutu Buku"
+
+
+[node name="KutuBuku2" type="Button" parent="KertasMurid1" unique_id=1981551433]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.84800005
+anchor_right = 0.5
+anchor_bottom = 0.84800005
+offset_left = -417.0
+offset_top = -98.16016
+offset_right = 420.0
+offset_bottom = 0.83984375
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
+theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+text = "Persona Rajin"
+
+
+[node name="Profil" type="Label" parent="KertasMurid1" unique_id=637179014]
+layout_mode = 0
+offset_left = 644.0
+offset_top = 320.0
+offset_right = 1061.0
+offset_bottom = 722.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "Nama: Jokoteno
+
+Agama: Muslim
+
+Jenis Kelamin: Perempuan
+
+Cita-Cita: Artist
+
+Hobi: Bernyanyi"
+
+
+[node name="Kepribadian" type="Label" parent="KertasMurid1" unique_id=1092958830]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 830.0
+offset_right = 500.0
+offset_bottom = 883.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "KEPRIBADIAN"
+
+
+[node name="Akademis" type="Label" parent="KertasMurid1" unique_id=1362505668]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1059.0
+offset_right = 500.0
+offset_bottom = 1112.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 38
+text = "SKILL"
+
+
+[node name="Kepribadian1" type="ProgressBar" parent="KertasMurid1" unique_id=1809899533]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 890.0
+offset_right = 880.0
+offset_bottom = 958.0
+theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
+max_value = 65.0
+value = 60.0
+show_percentage = false
+
+
+[node name="ValueLabel" type="Label" parent="KertasMurid1/Kepribadian1" unique_id=558492279]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+
+[node name="Label" type="Label" parent="KertasMurid1/Kepribadian1" unique_id=1152517557]
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "MOOD"
+vertical_alignment = 1
+
+
+[node name="Kepribadian2" type="ProgressBar" parent="KertasMurid1" unique_id=40407347]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 976.0
+offset_right = 880.0
+offset_bottom = 1044.0
+theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
+theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
+max_value = 65.0
+value = 50.0
+show_percentage = false
+
+
+[node name="ValueLabel" type="Label" parent="KertasMurid1/Kepribadian2" unique_id=1416689670]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "50/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+
+[node name="Label" type="Label" parent="KertasMurid1/Kepribadian2" unique_id=1384414264]
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 34
+text = "ENERGY"
+vertical_alignment = 1
+
+
+[node name="Akademis1" type="ProgressBar" parent="KertasMurid1" unique_id=1786877303]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1115.0
+offset_right = 880.0
+offset_bottom = 1183.0
+theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
+theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
+max_value = 65.0
+value = 35.0
+show_percentage = false
+
+
+[node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis1" unique_id=1146448601]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+
+[node name="Label" type="Label" parent="KertasMurid1/Akademis1" unique_id=218215994]
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "AKADEMIS"
+vertical_alignment = 1
+
+
+[node name="Akademis2" type="ProgressBar" parent="KertasMurid1" unique_id=1671231058]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1201.0
+offset_right = 880.0
+offset_bottom = 1269.0
+theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
+theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
+max_value = 65.0
+value = 20.0
+show_percentage = false
+
+
+[node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis2" unique_id=901134386]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+
+[node name="Label" type="Label" parent="KertasMurid1/Akademis2" unique_id=502196696]
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "SENI BUDAYA"
+vertical_alignment = 1
+
+
+[node name="Akademis3" type="ProgressBar" parent="KertasMurid1" unique_id=1136784519]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 1287.0
+offset_right = 880.0
+offset_bottom = 1355.0
+theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
+max_value = 65.0
+value = 40.0
+show_percentage = false
+
+
+[node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis3" unique_id=1864829867]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "65/65"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+
+[node name="Label" type="Label" parent="KertasMurid1/Akademis3" unique_id=86560100]
+layout_mode = 0
+offset_left = 24.0
+offset_right = 300.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "OLAHRAGA"
+vertical_alignment = 1
+
+
+[node name="Aprove" type="Button" parent="KertasMurid1" unique_id=362172452]
+layout_mode = 0
+offset_left = 275.0
+offset_top = 1641.0
+offset_right = 765.0
+offset_bottom = 1829.0
+theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
+theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+text = "APPROVE"
+
+
+[node name="Batal" type="Button" parent="KertasMurid1" unique_id=491619717]
+visible = false
+layout_mode = 0
+offset_left = 259.0
+offset_top = 1622.0
+offset_right = 749.0
+offset_bottom = 1800.0
+theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 90
+theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
+theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
+text = "BATAL"
+
+
+[node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
+layout_mode = 0
+offset_left = 977.0
+offset_top = 1637.0
+offset_right = 1497.0
+offset_bottom = 2157.0
+rotation = -3.1272264
+scale = Vector2(0.155, 0.155)
+icon = ExtResource("4_vdd03")
+flat = true
+
+
+[node name="NextButtonKiri" type="Button" parent="." unique_id=1513661131]
+visible = false
+layout_mode = 0
+offset_left = -58.999992
+offset_top = 1584.0001
+offset_right = 453.0
+offset_bottom = 2096.0
+scale = Vector2(0.155, 0.155)
+icon = ExtResource("4_vdd03")
+flat = true
+
+
+[node name="PilihMurid" type="Label" parent="." unique_id=983198317]
+layout_mode = 0
+offset_left = 329.0
+offset_top = -172.0
+offset_right = 964.0
+offset_bottom = -44.0
+theme_override_font_sizes/font_size = 93
+text = "Pilih Muridmu"
+
+
+[node name="BelajarButton" type="Button" parent="." unique_id=219827255]
+layout_mode = 0
+offset_left = 328.0
+offset_top = 1756.0
+offset_right = 818.0
+offset_bottom = 1934.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 110
+theme_override_styles/normal = SubResource("StyleBoxTexture_belajar")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_belajar")
+theme_override_styles/hover = SubResource("StyleBoxTexture_belajar")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_belajar")
+text = "BELAJAR"
+
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=841057524]
+material = SubResource("ShaderMaterial_jsirh")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.075
+anchor_top = -0.193
+anchor_right = 1.085
+anchor_bottom = 1.268
+offset_left = 4.975006
+offset_top = 6.602005
+offset_right = 4.6949463
+offset_bottom = 6.8480225
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+
+[node name="ClickArea" type="Button" parent="ColorRect" unique_id=1890873324]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+
+[node name="StampApprove" type="TextureRect" parent="." unique_id=1739287175]
+visible = false
+layout_mode = 0
+offset_left = -15.0
+offset_top = 98.0
+offset_right = 984.0
+offset_bottom = 918.0
+mouse_filter = 2
+texture = ExtResource("8_6vhdp")
+
+
+[node name="PageLabel" type="Label" parent="." unique_id=977170758]
+layout_mode = 0
+offset_left = 302.0
+offset_top = 1248.0
+offset_right = 561.0
+offset_bottom = 1332.0
+theme_override_font_sizes/font_size = 35
+
+
+[connection signal="pressed" from="NextButtonKanan" to="." method="_on_next_button_kanan_pressed"]
+[connection signal="pressed" from="NextButtonKiri" to="." method="_on_next_button_kiri_pressed"]

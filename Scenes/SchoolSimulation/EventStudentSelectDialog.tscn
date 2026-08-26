@@ -1,0 +1,148 @@
+[gd_scene load_steps=3 format=3 uid="uid://event_student_select_dialog"]
+
+[ext_resource type="Script" path="res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd" id="1_dialog"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.12, 0.2, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.5, 0.85, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_left = 12
+corner_radius_bottom_right = 12
+
+[node name="EventStudentSelectDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dialog")
+
+[node name="BackgroundDim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="DialogPanel" type="PanelContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styleboxes/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="Margin/DialogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="MainVBox" type="VBoxContainer" parent="Margin/DialogPanel/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 48
+text = "📢 JUDUL EVENT"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="DescLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "Deskripsi event..."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="CostBenefitLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "📈 Manfaat: Stat +15\n📉 Biaya: Energy -15"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="Margin/DialogPanel/Margin/MainVBox"]
+layout_mode = 2
+
+[node name="StudentsHeaderLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 28
+text = "Pilih siswa yang akan diikutsertakan:"
+autowrap_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Margin/DialogPanel/Margin/MainVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StudentsContainer" type="VBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 48
+
+[node name="HSeparator2" type="HSeparator" parent="Margin/DialogPanel/Margin/MainVBox"]
+layout_mode = 2
+
+[node name="ActionVBox" type="VBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SecondaryHBox" type="HBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SelectAllButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox"]
+custom_minimum_size = Vector2(0, 85)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Pilih Semua"
+
+[node name="CancelButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox"]
+custom_minimum_size = Vector2(0, 85)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Tidak / Lewati"
+
+[node name="ConfirmButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox"]
+custom_minimum_size = Vector2(0, 95)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 34
+text = "Ya, Ikutsertakan (0)"
+
+[connection signal="pressed" from="Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox/SelectAllButton" to="." method="_on_select_all_pressed"]
+[connection signal="pressed" from="Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox/CancelButton" to="." method="_on_cancel_pressed"]
+[connection signal="pressed" from="Margin/DialogPanel/Margin/MainVBox/ActionVBox/ConfirmButton" to="." method="_on_confirm_pressed"]

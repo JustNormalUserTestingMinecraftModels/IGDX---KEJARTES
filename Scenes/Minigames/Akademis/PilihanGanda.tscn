@@ -1,0 +1,65 @@
+[gd_scene format=3 uid="uid://dfv52334vw10e"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/Akademis/PilihanGanda.gd" id="1_pilihanganda"]
+[ext_resource type="Texture2D" uid="uid://sbcqefj5hbe3" path="res://Assets/Images/Textures/field_bg.jpg" id="2_ubtp4"]
+[ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="3_2jy3k"]
+
+[node name="PilihanGanda" type="Control" unique_id=1850730347]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pilihanganda")
+background_texture = ExtResource("2_ubtp4")
+choice_btn_normal_texture = ExtResource("3_2jy3k")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1882836415]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=859146038]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.05
+anchor_top = 0.08
+anchor_right = 0.95
+anchor_bottom = 0.95
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="ProgressLabel" type="Label" parent="VBoxContainer" unique_id=952582965]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Soal 1 dari 3 | Skor: 0"
+horizontal_alignment = 1
+
+[node name="QuestionLabel" type="Label" parent="VBoxContainer" unique_id=345345602]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Question text here?"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="QuestionImage" type="TextureRect" parent="VBoxContainer" unique_id=1846160863]
+visible = false
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ChoicesGrid" type="GridContainer" parent="VBoxContainer" unique_id=1089490452]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10

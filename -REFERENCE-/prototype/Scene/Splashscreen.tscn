@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://s8801s00ec2q"]
+
+[ext_resource type="Script" uid="uid://cjgo23s1o4liw" path="res://Script/splashscreen.gd" id="1_qc0ra"]
+[ext_resource type="Script" uid="uid://bty0oggn7p2s8" path="res://Script/hint_label.gd" id="2_1lvbu"]
+
+[node name="Splashscreen" type="Control" unique_id=1227495593]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_qc0ra")
+
+[node name="TitleLabel" type="Label" parent="." unique_id=1110713008]
+layout_mode = 0
+offset_left = 92.0
+offset_top = 213.0
+offset_right = 972.0
+offset_bottom = 482.0
+theme_override_font_sizes/font_size = 197
+text = "KEJARTES"
+
+[node name="HintLabel" type="Label" parent="." unique_id=462490696]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 994.0
+offset_right = 996.0
+offset_bottom = 1107.0
+theme_override_font_sizes/font_size = 68
+text = "Click anywhere to continue"
+script = ExtResource("2_1lvbu")

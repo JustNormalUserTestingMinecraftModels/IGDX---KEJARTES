@@ -1,0 +1,4 @@
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <text x="250" y="250" font-family="sans-serif" font-size="48" fill="#FFFFFF" stroke="#000000" stroke-width="2" text-anchor="middle">SANTAI</text>
+  <path d="M 200 450 Q 150 350 250 350 Q 350 350 300 450" fill="none" stroke="#FAD6B1" stroke-width="40" stroke-linecap="round" />
+</svg>

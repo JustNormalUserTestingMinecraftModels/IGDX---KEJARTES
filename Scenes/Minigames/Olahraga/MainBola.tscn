@@ -1,0 +1,127 @@
+[gd_scene format=3 uid="uid://yv3vioh2bc5l"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/Olahraga/MainBola.gd" id="1_mainbola"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_goal"]
+size = Vector2(600, 120)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_goalie"]
+size = Vector2(120, 60)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ball"]
+radius = 40.0
+
+[node name="MainBola" type="Control" unique_id=1326671625]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mainbola")
+
+[node name="FieldBG" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch_mode = 6
+expand_mode = 1
+
+[node name="FieldMarkings" type="Node2D" parent="."]
+
+[node name="GoalBack" type="ColorRect" parent="."]
+layout_mode = 0
+color = Color(0.08, 0.30, 0.08, 1.0)
+
+[node name="GoalNet" type="ColorRect" parent="."]
+layout_mode = 0
+color = Color(0.85, 0.85, 0.85, 0.18)
+
+[node name="Crossbar" type="ColorRect" parent="."]
+layout_mode = 0
+color = Color(0.96, 0.96, 0.96, 1.0)
+
+[node name="PostLeft" type="ColorRect" parent="."]
+layout_mode = 0
+color = Color(0.96, 0.96, 0.96, 1.0)
+
+[node name="PostRight" type="ColorRect" parent="."]
+layout_mode = 0
+color = Color(0.96, 0.96, 0.96, 1.0)
+
+[node name="GoalArea" type="Area2D" parent="." unique_id=1216739494]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GoalArea" unique_id=605393435]
+shape = SubResource("RectangleShape2D_goal")
+
+[node name="TargetBox" type="Control" parent="."]
+
+[node name="Goalie" type="CharacterBody2D" parent="." unique_id=1397322346]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Goalie" unique_id=1108970920]
+shape = SubResource("RectangleShape2D_goalie")
+
+[node name="GFX" type="TextureRect" parent="Goalie"]
+layout_mode = 0
+stretch_mode = 6
+expand_mode = 1
+
+[node name="Ball" type="CharacterBody2D" parent="." unique_id=411307707]
+motion_mode = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ball" unique_id=961026757]
+shape = SubResource("CircleShape2D_ball")
+
+[node name="GFX" type="TextureRect" parent="Ball"]
+layout_mode = 0
+stretch_mode = 6
+expand_mode = 1
+
+[node name="HUDLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="ScoreLabel" type="Label" parent="HUDLayer" unique_id=1318103520]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_top = 10.0
+offset_bottom = 58.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Score: 0 / 5"
+horizontal_alignment = 1
+
+[node name="AttemptsLabel" type="Label" parent="HUDLayer"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_top = 56.0
+offset_bottom = 96.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 30
+text = "Shots Left: 8"
+horizontal_alignment = 1
+
+[node name="SwipeHint" type="Label" parent="HUDLayer"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -80.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 26
+text = "↑ Swipe Up to Shoot"
+horizontal_alignment = 1
+modulate = Color(1, 1, 1, 0.65)

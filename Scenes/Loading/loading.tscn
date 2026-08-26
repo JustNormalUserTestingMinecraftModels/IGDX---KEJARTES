@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://dwsmhlmqpf7q5"]
+
+[ext_resource type="Script" path="res://Scripts/Loading/loading.gd" id="1_ctcb4"]
+[ext_resource type="Texture2D" uid="uid://cwmltvrg3rr1t" path="res://Assets/Images/UI/—Pngtree—book icon vector_4358423.png" id="2_1rgfv"]
+
+[node name="Loading" type="Control" unique_id=101109909]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ctcb4")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1201985737]
+position = Vector2(532, 435)
+scale = Vector2(0.55833334, 0.4295833)
+texture = ExtResource("2_1rgfv")
+
+[node name="LoadingLabel" type="Label" parent="." unique_id=1499825155]
+layout_mode = 0
+offset_left = 368.0
+offset_top = 603.0
+offset_right = 663.0
+offset_bottom = 709.0
+theme_override_font_sizes/font_size = 77
+text = "Loading"
+
+[node name="LoadingBar" type="ProgressBar" parent="." unique_id=149605138]
+layout_mode = 0
+offset_left = 106.0
+offset_top = 734.0
+offset_right = 976.0
+offset_bottom = 795.0
+show_percentage = false
+

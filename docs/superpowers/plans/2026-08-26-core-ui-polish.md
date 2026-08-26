@@ -59,13 +59,13 @@ Derived from the colors already dominant in the codebase, lifted to Umamusume sa
 | `text_secondary` | `#6B7490` | Existing `Color(0.5,0.5,0.5)` / `(0.65,...)`, cooled |
 | `text_on_brand` | `#FFFFFF` | |
 | `cat_akademis` | `#3D8BFF` | Blue — study |
-| `cat_olahraga` | `#FF7A45` | Orange — sport |
-| `cat_senibudaya` | `#B45BFF` | Purple — batik/dance |
-| `cat_istirahat` | `#3ECF7A` | Existing `Color(0.2,0.9,0.4)` (10 uses) |
+| `cat_olahraga` | `#E5484D` | Orange — sport |
+| `cat_senibudaya` | `#7CB342` | Purple — batik/dance |
+| `cat_istirahat` | `#6B4FE0` | Existing `Color(0.2,0.9,0.4)` (10 uses) |
 | `cat_libur` | `#FFC93C` | Existing `Color(1.0,0.85,0.3)` (8 uses) |
 | `state_success` | `#2FB86B` | Existing `Color(0.15,0.7,0.25)` |
 | `state_warning` | `#FFB020` | |
-| `state_danger` | `#E4453A` | Existing `Color(0.85,0.2,0.2)` |
+| `state_danger` | `#C42B6E` | Existing `Color(0.85,0.2,0.2)` |
 | `currency_gold` | `#FFC93C` | Existing `Color(0.83,0.69,0.22)`, brightened |
 
 **Typography (proposed):**
@@ -447,15 +447,15 @@ static func load_default() -> DesignTokens:
 
 @export_group("Category Accents")
 @export var cat_akademis: Color = Color("3d8bff")
-@export var cat_olahraga: Color = Color("ff7a45")
-@export var cat_senibudaya: Color = Color("b45bff")
-@export var cat_istirahat: Color = Color("3ecf7a")
+@export var cat_olahraga: Color = Color("e5484d")
+@export var cat_senibudaya: Color = Color("7cb342")
+@export var cat_istirahat: Color = Color("6b4fe0")
 @export var cat_libur: Color = Color("ffc93c")
 
 @export_group("Semantic States")
 @export var state_success: Color = Color("2fb86b")
 @export var state_warning: Color = Color("ffb020")
-@export var state_danger: Color = Color("e4453a")
+@export var state_danger: Color = Color("c42b6e")
 @export var currency_gold: Color = Color("ffc93c")
 
 @export_group("Radii")
@@ -1008,7 +1008,7 @@ git commit -m "feat(design): build Theme from tokens, register project-wide"
 # Task 4: Fonts
 
 **Files:**
-- Create: `Assets/Fonts/Fredoka-SemiBold.ttf`, `Assets/Fonts/Nunito-Regular.ttf`, `Assets/Fonts/Nunito-Bold.ttf`, `Assets/Fonts/OFL.txt`, `Assets/Fonts/README.md`
+- Create: `Assets/Fonts/Baloo2-Variable.ttf`, `Assets/Fonts/Nunito-Regular.ttf`, `Assets/Fonts/Nunito-Bold.ttf`, `Assets/Fonts/OFL.txt`, `Assets/Fonts/README.md`
 - Modify: `Assets/Theme/design_tokens.tres` (assign font slots)
 - Modify: `Assets/Theme/kejartes_theme.tres` (rebake)
 
@@ -1023,7 +1023,7 @@ git commit -m "feat(design): build Theme from tokens, register project-wide"
 Downloading files requires explicit permission. Ask:
 
 > To wire in the approved fonts I need to download three OFL-licensed files from Google Fonts into `Assets/Fonts/`:
-> - `Fredoka-SemiBold.ttf` (~120 KB) — display face
+> - `Baloo2-Variable.ttf` (~120 KB) — display face
 > - `Nunito-Regular.ttf` (~250 KB) — body
 > - `Nunito-Bold.ttf` (~250 KB) — body emphasis
 >
@@ -1035,15 +1035,14 @@ Downloading files requires explicit permission. Ask:
 
 ```bash
 mkdir -p Assets/Fonts
-curl -L -o Assets/Fonts/Fredoka-SemiBold.ttf "https://github.com/google/fonts/raw/main/ofl/fredoka/Fredoka%5Bwdth%2Cwght%5D.ttf"
+curl -L -o Assets/Fonts/Baloo2-Variable.ttf "https://github.com/google/fonts/raw/main/ofl/baloo2/Baloo2%5Bwght%5D.ttf"
 curl -L -o Assets/Fonts/Nunito-Regular.ttf "https://github.com/google/fonts/raw/main/ofl/nunito/Nunito%5Bwght%5D.ttf"
 curl -L -o Assets/Fonts/OFL.txt "https://github.com/google/fonts/raw/main/ofl/nunito/OFL.txt"
 ```
 
-Both downloads are **variable fonts**. Godot 4 imports these fine and exposes the weight axis on the `FontVariation` resource. Since the filenames say SemiBold/Regular but the files are variable, rename them to reflect reality:
+Both downloads are **variable fonts**. Godot 4 imports these fine and exposes the weight axis on the `FontVariation` resource. `Baloo2%5Bwght%5D.ttf` already downloads with the right name; the Nunito file's filename says Regular but the file is variable — rename it to reflect reality:
 
 ```bash
-mv Assets/Fonts/Fredoka-SemiBold.ttf Assets/Fonts/Fredoka-Variable.ttf
 mv Assets/Fonts/Nunito-Regular.ttf Assets/Fonts/Nunito-Variable.ttf
 ```
 
@@ -1062,7 +1061,7 @@ Create `Assets/Fonts/README.md`:
 ```markdown
 # Fonts
 
-- `Fredoka-Variable.ttf` — display face (headings, buttons, big numbers)
+- `Baloo2-Variable.ttf` — display face (headings, buttons, big numbers)
 - `Nunito-Variable.ttf` — body face (everything else)
 
 Both are SIL Open Font License 1.1. See `OFL.txt`.
@@ -1079,12 +1078,12 @@ No code changes are required. The whole game re-renders in the new face.
 
 - [ ] **Step 4: Assign the fonts in the tokens resource**
 
-Open `Assets/Theme/design_tokens.tres` in the Godot inspector. Under the **Typography** group, drag `Assets/Fonts/Fredoka-Variable.ttf` onto `Font Display` and `Assets/Fonts/Nunito-Variable.ttf` onto `Font Body`. Save.
+Open `Assets/Theme/design_tokens.tres` in the Godot inspector. Under the **Typography** group, drag `Assets/Fonts/Baloo2-Variable.ttf` onto `Font Display` and `Assets/Fonts/Nunito-Variable.ttf` onto `Font Body`. Save.
 
 Verify the assignment landed in the file:
 
 ```bash
-grep -c "Fredoka\|Nunito" Assets/Theme/design_tokens.tres
+grep -c "Baloo2\|Nunito" Assets/Theme/design_tokens.tres
 ```
 
 Expected: `2` or more.
@@ -1097,7 +1096,7 @@ Run `Scripts/Design/BakeTheme.gd` via File > Run.
 
 Open `res://Scenes/MainMenu/main_menu.tscn` with `scene_open` and take an `editor_screenshot`.
 
-Expected: "KEJARTES" renders in Fredoka's rounded forms, visibly different from Godot's default. If it still looks default, the theme did not rebake, or the tokens `.tres` did not save.
+Expected: "KEJARTES" renders in Baloo 2's rounded forms, visibly different from Godot's default. If it still looks default, the theme did not rebake, or the tokens `.tres` did not save.
 
 - [ ] **Step 7: Re-run the token and theme tests**
 
@@ -1109,7 +1108,7 @@ Expected: all 17 tests still PASS. `test_build_survives_null_fonts` still passes
 
 ```bash
 git add Assets/Fonts Assets/Theme
-git commit -m "feat(design): add OFL fonts (Fredoka display, Nunito body) and rebake theme"
+git commit -m "feat(design): add OFL fonts (Baloo 2 display, Nunito body) and rebake theme"
 ```
 
 ---
@@ -2820,7 +2819,7 @@ Expected: 7 tests, all PASS.
 
 `scene_open` on `res://Scenes/MainMenu/main_menu.tscn`, then `editor_screenshot`. Compare with `docs/superpowers/baseline/03-mainmenu.png`.
 
-Expected: centered title in Fredoka with a white outline, three pill buttons with the brand gradient and white rims, generous spacing, a background image, and a version label at the bottom. Nothing clipped at any edge.
+Expected: centered title in Baloo 2 with a white outline, three pill buttons with the brand gradient and white rims, generous spacing, a background image, and a version label at the bottom. Nothing clipped at any edge.
 
 - [ ] **Step 9: Verify motion in the running game**
 

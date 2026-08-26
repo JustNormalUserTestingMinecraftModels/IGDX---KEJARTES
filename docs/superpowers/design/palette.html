@@ -1,0 +1,713 @@
+<title>Kejartes Palette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --bg-raised: #ffffff;
+    --bg-sunken: #eceef5;
+    --ink: #191c2c;
+    --ink-soft: #5a5f78;
+    --ink-faint: #9093a8;
+    --rule: #dcdfec;
+    --rule-strong: #c3c7dc;
+    --tool-accent: #4653a6;
+    --tool-accent-soft: #e8eafb;
+    --pass: #1f8a4c;
+    --pass-bg: #e6f6ec;
+    --fail: #b23b3b;
+    --fail-bg: #fbeaea;
+    --shadow: 0 1px 2px rgba(25, 28, 44, 0.04), 0 6px 20px rgba(25, 28, 44, 0.06);
+    --font-chrome: 'Libre Franklin', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', monospace;
+    --font-display: 'Baloo 2', 'Trebuchet MS', sans-serif;
+    --font-body: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161f;
+      --bg-raised: #1c1f2c;
+      --bg-sunken: #10121a;
+      --ink: #eceefc;
+      --ink-soft: #a7abc7;
+      --ink-faint: #6b6f8a;
+      --rule: #2c2f40;
+      --rule-strong: #3c4058;
+      --tool-accent: #8b96e8;
+      --tool-accent-soft: #262b4a;
+      --pass: #4fd587;
+      --pass-bg: #16321f;
+      --fail: #e8827e;
+      --fail-bg: #3a2020;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14161f;
+    --bg-raised: #1c1f2c;
+    --bg-sunken: #10121a;
+    --ink: #eceefc;
+    --ink-soft: #a7abc7;
+    --ink-faint: #6b6f8a;
+    --rule: #2c2f40;
+    --rule-strong: #3c4058;
+    --tool-accent: #8b96e8;
+    --tool-accent-soft: #262b4a;
+    --pass: #4fd587;
+    --pass-bg: #16321f;
+    --fail: #e8827e;
+    --fail-bg: #3a2020;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-chrome);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 56px 32px 96px;
+  }
+
+  /* ---------- Header ---------- */
+
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 28px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .masthead .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tool-accent);
+    font-weight: 600;
+  }
+
+  .masthead h1 {
+    font-size: 34px;
+    font-weight: 800;
+    margin: 4px 0 0;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .masthead .meta {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-align: right;
+  }
+
+  .dek {
+    max-width: 62ch;
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    margin: 18px 0 48px;
+  }
+
+  .dek strong { color: var(--ink); }
+
+  /* ---------- Section scaffolding ---------- */
+
+  section { margin-bottom: 56px; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    min-width: 22px;
+  }
+
+  .section-head h2 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .section-note {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: -8px 0 20px 34px;
+    max-width: 60ch;
+  }
+
+  /* ---------- Swatch grid ---------- */
+
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+
+  .swatch {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--rule);
+  }
+
+  .swatch-color {
+    height: 84px;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px 10px;
+  }
+
+  .swatch-color .on-chip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(2px);
+  }
+
+  .swatch-info {
+    background: var(--bg-raised);
+    padding: 10px 12px 12px;
+  }
+
+  .swatch-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+
+  .swatch-hex {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  /* ---------- Contrast table ---------- */
+
+  .contrast-wrap { overflow-x: auto; }
+
+  table.contrast {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-size: 13.5px;
+  }
+
+  table.contrast th, table.contrast td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  table.contrast th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    font-weight: 600;
+  }
+
+  table.contrast td.num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+
+  .badge.pass { background: var(--pass-bg); color: var(--pass); }
+  .badge.fail { background: var(--fail-bg); color: var(--fail); }
+
+  .swatch-dot {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border-radius: 4px;
+    vertical-align: -2px;
+    margin-right: 6px;
+    border: 1px solid rgba(0,0,0,0.12);
+  }
+
+  .foot-context {
+    color: var(--ink-faint);
+    font-size: 12.5px;
+  }
+
+  /* ---------- Component preview ---------- */
+
+  .preview-strip {
+    background: var(--bg-sunken);
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    border: 4px solid #ffffff;
+    border-radius: 999px;
+    padding: 14px 30px;
+    cursor: default;
+    box-shadow: 0 6px 0 rgba(8, 15, 60, 0.18), 0 10px 18px rgba(8, 15, 60, 0.16);
+  }
+
+  .btn.primary {
+    background: linear-gradient(180deg, #6e8cff 0%, #2e5bff 100%);
+    color: #ffffff;
+  }
+
+  .btn.secondary {
+    background: #ffffff;
+    color: #2e5bff;
+    border-color: #2e5bff;
+    box-shadow: 0 6px 0 rgba(46,91,255,0.12), 0 10px 18px rgba(46,91,255,0.10);
+  }
+
+  .demo-card {
+    background: #ffffff;
+    border: 5px solid #ffffff;
+    outline: 2px solid #eef1fb;
+    border-radius: 22px;
+    padding: 18px 20px;
+    width: 220px;
+    box-shadow: 0 10px 24px rgba(20, 30, 90, 0.14);
+    font-family: var(--font-body);
+  }
+
+  .demo-card .card-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 17px;
+    color: #1e2436;
+    margin: 0 0 6px;
+  }
+
+  .demo-card .card-sub {
+    font-size: 12.5px;
+    color: #6b7490;
+    margin: 0 0 12px;
+  }
+
+  .stat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .stat-row .stat-label { font-size: 11.5px; color: #6b7490; width: 64px; flex-shrink: 0; }
+  .stat-track { flex: 1; height: 8px; border-radius: 999px; background: #dde5f7; overflow: hidden; }
+  .stat-fill { height: 100%; border-radius: 999px; background: #3d8bff; width: 72%; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .chip {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 7px 16px;
+    border-radius: 999px;
+  }
+
+  /* ---------- Typography specimen ---------- */
+
+  .type-specimen {
+    background: var(--bg-raised);
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    padding: 36px 40px;
+  }
+
+  .type-specimen .display-line {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 64px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+
+  .type-specimen .h1-line {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 22px;
+  }
+
+  .type-specimen .body-line {
+    font-family: var(--font-body);
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 58ch;
+    margin: 0 0 18px;
+  }
+
+  .type-meta {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--rule);
+  }
+
+  .type-meta .tm-item {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+  }
+
+  .type-meta .tm-item b { color: var(--ink-soft); display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+
+  /* ---------- Approval footer ---------- */
+
+  .approval {
+    border: 2px dashed var(--rule-strong);
+    border-radius: 14px;
+    padding: 24px 28px;
+    background: var(--tool-accent-soft);
+  }
+
+  .approval h2 {
+    font-size: 16px;
+    margin: 0 0 8px;
+    color: var(--tool-accent);
+  }
+
+  .approval ol {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .approval li { margin-bottom: 4px; }
+
+  @media (max-width: 640px) {
+    .masthead { flex-direction: column; }
+    .masthead .meta { text-align: left; }
+    .type-specimen .display-line { font-size: 42px; }
+  }
+</style>
+
+<div class="sheet">
+
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">Design proposal · revision 2 — colors + fonts updated per feedback</div>
+      <h1>Kejartes — Core UI Palette &amp; Type Scale</h1>
+    </div>
+    <div class="meta">Plan: 2026-08-26-core-ui-polish<br>Task 1 of 20 — approval gate</div>
+  </div>
+
+  <p class="dek">
+    Proposed system for the core loop (MainMenu → SemesterEnd). Every value below
+    becomes the default in <strong>DesignTokens.tres</strong> — approve as-is, or flag
+    swatches to change before any Godot code is written.
+  </p>
+
+  <!-- 1. Brand -->
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Brand</h2></div>
+    <div class="section-note">The primary blue carries buttons, the transition cover, and the CTA hierarchy across every screen.</div>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="swatch-color" style="background:#2E5BFF"><span class="on-chip" style="color:#fff">brand_primary</span></div>
+        <div class="swatch-info"><p class="swatch-name">Brand Primary</p><p class="swatch-hex">#2E5BFF</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#6E8CFF"><span class="on-chip" style="color:#fff">gradient top</span></div>
+        <div class="swatch-info"><p class="swatch-name">Brand Primary Light</p><p class="swatch-hex">#6E8CFF</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#1B3ACC"><span class="on-chip" style="color:#fff">pressed bevel</span></div>
+        <div class="swatch-info"><p class="swatch-name">Brand Primary Dark</p><p class="swatch-hex">#1B3ACC</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Surfaces -->
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Surfaces</h2></div>
+    <div class="section-note">Cool paper background keeps saturated category colors from fighting each other for attention.</div>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="swatch-color" style="background:#EEF3FF"><span class="on-chip" style="color:#1E2436">page</span></div>
+        <div class="swatch-info"><p class="swatch-name">Surface Page</p><p class="swatch-hex">#EEF3FF</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#FFFFFF;border-bottom:1px solid #e5e5e5"><span class="on-chip" style="color:#1E2436">card</span></div>
+        <div class="swatch-info"><p class="swatch-name">Surface Card</p><p class="swatch-hex">#FFFFFF</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#DDE5F7"><span class="on-chip" style="color:#1E2436">sunken</span></div>
+        <div class="swatch-info"><p class="swatch-name">Surface Sunken</p><p class="swatch-hex">#DDE5F7</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#141A2E"><span class="on-chip" style="color:#fff">scrim base</span></div>
+        <div class="swatch-info"><p class="swatch-name">Surface Overlay</p><p class="swatch-hex">#141A2E</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Text -->
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Text</h2></div>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="swatch-color" style="background:#1E2436"><span class="on-chip" style="color:#fff">primary</span></div>
+        <div class="swatch-info"><p class="swatch-name">Text Primary</p><p class="swatch-hex">#1E2436</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#6B7490"><span class="on-chip" style="color:#fff">secondary</span></div>
+        <div class="swatch-info"><p class="swatch-name">Text Secondary</p><p class="swatch-hex">#6B7490</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#2E5BFF"><span class="on-chip" style="color:#fff">on brand</span></div>
+        <div class="swatch-info"><p class="swatch-name">Text On Brand</p><p class="swatch-hex">#FFFFFF</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#A8B0C4"><span class="on-chip" style="color:#1E2436">disabled</span></div>
+        <div class="swatch-info"><p class="swatch-name">Text Disabled</p><p class="swatch-hex">#A8B0C4</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Category accents -->
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Category Accents</h2></div>
+    <div class="section-note">Every schedule slot, stat bar, and sticky note tints from one of these five — the player should recognize a category by color alone within the first week. Olahraga → red, Seni Budaya → green, Istirahat → purple per revision.</div>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="swatch-color" style="background:#3D8BFF"><span class="on-chip" style="color:#fff">Akademis</span></div>
+        <div class="swatch-info"><p class="swatch-name">Akademis</p><p class="swatch-hex">#3D8BFF</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#E5484D"><span class="on-chip" style="color:#fff">Olahraga</span></div>
+        <div class="swatch-info"><p class="swatch-name">Olahraga</p><p class="swatch-hex">#E5484D</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#7CB342"><span class="on-chip" style="color:#1d3a0f">SeniBudaya</span></div>
+        <div class="swatch-info"><p class="swatch-name">Seni Budaya</p><p class="swatch-hex">#7CB342</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#6B4FE0"><span class="on-chip" style="color:#fff">Istirahat</span></div>
+        <div class="swatch-info"><p class="swatch-name">Istirahat</p><p class="swatch-hex">#6B4FE0</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#FFC93C"><span class="on-chip" style="color:#4a3400">Libur</span></div>
+        <div class="swatch-info"><p class="swatch-name">Libur</p><p class="swatch-hex">#FFC93C</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Semantic states -->
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Semantic States &amp; Currency</h2></div>
+    <div class="section-note">State Danger was shifted from #E4453A to a cooler crimson so it reads distinctly from the new Olahraga red below — the two now differ in hue, not just tone.</div>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="swatch-color" style="background:#2FB86B"><span class="on-chip" style="color:#fff">success</span></div>
+        <div class="swatch-info"><p class="swatch-name">State Success</p><p class="swatch-hex">#2FB86B</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#FFB020"><span class="on-chip" style="color:#4a3400">warning</span></div>
+        <div class="swatch-info"><p class="swatch-name">State Warning</p><p class="swatch-hex">#FFB020</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#C42B6E"><span class="on-chip" style="color:#fff">danger</span></div>
+        <div class="swatch-info"><p class="swatch-name">State Danger</p><p class="swatch-hex">#C42B6E</p></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#FFC93C"><span class="on-chip" style="color:#4a3400">gold</span></div>
+        <div class="swatch-info"><p class="swatch-name">Currency Gold</p><p class="swatch-hex">#FFC93C</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Contrast -->
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Contrast Check</h2></div>
+    <div class="section-note">WCAG 2 relative-luminance contrast, computed against the actual pairing used in the UI. Threshold: 4.5:1 (AA, body text).</div>
+    <div class="contrast-wrap">
+      <table class="contrast">
+        <thead>
+          <tr><th>Text token</th><th>Against</th><th>Where it's used</th><th>Ratio</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-dot" style="background:#1E2436"></span>Text Primary</td>
+            <td><span class="swatch-dot" style="background:#fff;border-color:#ccc"></span>Surface Card</td>
+            <td class="foot-context">body copy on cards / panels</td>
+            <td class="num">15.0 : 1</td>
+            <td><span class="badge pass">PASS · AAA</span></td>
+          </tr>
+          <tr>
+            <td><span class="swatch-dot" style="background:#6B7490"></span>Text Secondary</td>
+            <td><span class="swatch-dot" style="background:#fff;border-color:#ccc"></span>Surface Card</td>
+            <td class="foot-context">captions, micro labels</td>
+            <td class="num">4.64 : 1</td>
+            <td><span class="badge pass">PASS · AA</span></td>
+          </tr>
+          <tr>
+            <td><span class="swatch-dot" style="background:#fff;border-color:#ccc"></span>Text On Brand</td>
+            <td><span class="swatch-dot" style="background:#2E5BFF"></span>Brand Primary</td>
+            <td class="foot-context">primary button label</td>
+            <td class="num">5.18 : 1</td>
+            <td><span class="badge pass">PASS · AA</span></td>
+          </tr>
+          <tr>
+            <td><span class="swatch-dot" style="background:#1E2436"></span>Text Primary</td>
+            <td><span class="swatch-dot" style="background:#2E5BFF"></span>Brand Primary</td>
+            <td class="foot-context">not paired in this design</td>
+            <td class="num">2.90 : 1</td>
+            <td><span class="badge fail">n/a</span></td>
+          </tr>
+          <tr>
+            <td><span class="swatch-dot" style="background:#6B7490"></span>Text Secondary</td>
+            <td><span class="swatch-dot" style="background:#2E5BFF"></span>Brand Primary</td>
+            <td class="foot-context">not paired in this design</td>
+            <td class="num">1.12 : 1</td>
+            <td><span class="badge fail">n/a</span></td>
+          </tr>
+          <tr>
+            <td><span class="swatch-dot" style="background:#fff;border-color:#ccc"></span>Text On Brand</td>
+            <td><span class="swatch-dot" style="background:#fff;border-color:#ccc"></span>Surface Card</td>
+            <td class="foot-context">not paired in this design</td>
+            <td class="num">1.0 : 1</td>
+            <td><span class="badge fail">n/a</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 7. Component preview -->
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Component Preview</h2></div>
+    <div class="section-note">Rendered in pure CSS using only the tokens above — the actual Godot StyleBox output (Task 3) will match this.</div>
+    <div class="preview-strip">
+      <button class="btn primary">Mulai</button>
+      <button class="btn secondary">Pengaturan</button>
+
+      <div class="demo-card">
+        <p class="card-name">Andi Saputra</p>
+        <p class="card-sub">Kelas 7 · Minggu 3</p>
+        <div class="stat-row"><span class="stat-label">Akademis</span><div class="stat-track"><div class="stat-fill" style="background:#3D8BFF;width:72%"></div></div></div>
+        <div class="stat-row"><span class="stat-label">Olahraga</span><div class="stat-track"><div class="stat-fill" style="background:#E5484D;width:54%"></div></div></div>
+        <div class="stat-row"><span class="stat-label">Seni</span><div class="stat-track"><div class="stat-fill" style="background:#7CB342;width:38%"></div></div></div>
+      </div>
+
+      <div class="chip-row">
+        <span class="chip" style="background:#3D8BFF;color:#fff">Akademis</span>
+        <span class="chip" style="background:#E5484D;color:#fff">Olahraga</span>
+        <span class="chip" style="background:#7CB342;color:#1d3a0f">Seni Budaya</span>
+        <span class="chip" style="background:#6B4FE0;color:#fff">Istirahat</span>
+        <span class="chip" style="background:#FFC93C;color:#4a3400">Libur</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Typography -->
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Typography Specimen</h2></div>
+    <div class="section-note">Display: Baloo 2 (swapped in from Mochibop — that font's demo license explicitly forbids use in games, so it can't be embedded; Baloo 2 is the closest OFL match: same bubbly, chunky-rounded weight, full Indonesian Latin coverage). Body/caption/micro: Nunito throughout, as requested.</div>
+    <div class="type-specimen">
+      <p class="display-line">KEJARTES</p>
+      <p class="h1-line">Atur Jadwal Minggu Ini</p>
+      <p class="body-line">
+        Setiap murid punya lima hari untuk dijadwalkan — pilih antara Akademis,
+        Olahraga, Seni Budaya, atau Istirahat. Jadwal yang seimbang membantu
+        mereka mencapai target sebelum semester berakhir.
+      </p>
+      <div class="type-meta">
+        <div class="tm-item"><b>Display</b>Baloo 2 · 96 / 64 / 48px</div>
+        <div class="tm-item"><b>Body</b>Nunito · 36 / 28px</div>
+        <div class="tm-item"><b>Caption</b>Nunito · 22px</div>
+        <div class="tm-item"><b>Micro</b>Nunito · 18px</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Approval -->
+  <div class="approval">
+    <h2>Still open</h2>
+    <ol>
+      <li>Confirmed: every color here is a plain <code>@export var</code> on <code>DesignTokens.tres</code> — change any swatch from the Godot inspector at any time, no code touched. Nothing below is locked in.</li>
+      <li>Confirmed: Baloo 2 (display) + Nunito (body/caption/micro) — replaces the original Fredoka proposal and the unusable Mochibop demo.</li>
+      <li>Confirmed: Olahraga → red, Seni Budaya → green, Istirahat → purple. State Danger was nudged to a crimson so it stays visually distinct from the new Olahraga red.</li>
+      <li>Reply "approved" to lock this in for Task 2, or flag anything above you'd still like changed.</li>
+    </ol>
+  </div>
+
+  <div class="approval" style="margin-top:20px;background:var(--pass-bg);border-color:var(--pass)">
+    <h2 style="color:var(--pass)">APPROVED — 2026-08-26</h2>
+    <p style="font-size:14px;color:var(--ink-soft);margin:0 0 12px">Final values locked for Task 2 (DesignTokens.gd) onward:</p>
+    <table class="contrast" style="min-width:0">
+      <tbody>
+        <tr><td style="width:220px"><span class="swatch-dot" style="background:#2E5BFF"></span>brand_primary</td><td class="num">#2E5BFF</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#6E8CFF"></span>brand_primary_light</td><td class="num">#6E8CFF</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#1B3ACC"></span>brand_primary_dark</td><td class="num">#1B3ACC</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#EEF3FF"></span>surface_page</td><td class="num">#EEF3FF</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#fff;border-color:#ccc"></span>surface_card</td><td class="num">#FFFFFF</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#DDE5F7"></span>surface_sunken</td><td class="num">#DDE5F7</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#141A2E"></span>surface_overlay</td><td class="num">#141A2E</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#1E2436"></span>text_primary</td><td class="num">#1E2436</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#6B7490"></span>text_secondary</td><td class="num">#6B7490</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#fff;border-color:#ccc"></span>text_on_brand</td><td class="num">#FFFFFF</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#A8B0C4"></span>text_disabled</td><td class="num">#A8B0C4</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#3D8BFF"></span>cat_akademis</td><td class="num">#3D8BFF</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#E5484D"></span>cat_olahraga <em>(changed from #FF7A45)</em></td><td class="num">#E5484D</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#7CB342"></span>cat_senibudaya <em>(changed from #B45BFF)</em></td><td class="num">#7CB342</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#6B4FE0"></span>cat_istirahat <em>(changed from #3ECF7A)</em></td><td class="num">#6B4FE0</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#FFC93C"></span>cat_libur</td><td class="num">#FFC93C</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#2FB86B"></span>state_success</td><td class="num">#2FB86B</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#FFB020"></span>state_warning</td><td class="num">#FFB020</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#C42B6E"></span>state_danger <em>(changed from #E4453A, to stay distinct from the new cat_olahraga)</em></td><td class="num">#C42B6E</td></tr>
+        <tr><td><span class="swatch-dot" style="background:#FFC93C"></span>currency_gold</td><td class="num">#FFC93C</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:14px;color:var(--ink-soft);margin:14px 0 0">
+      <strong>Fonts:</strong> Baloo 2 (display) · Nunito (body, caption, micro) — both SIL OFL 1.1.
+    </p>
+  </div>
+
+</div>

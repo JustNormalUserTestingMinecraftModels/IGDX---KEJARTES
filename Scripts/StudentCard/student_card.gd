@@ -16,8 +16,6 @@ extends Control
 @export var icon_akademis: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_akademis.svg")
 @export var icon_seni: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_seni.svg")
 @export var icon_olahraga: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg")
-@export var popup_bg_tex: Texture2D = preload("res://Assets/Images/UI/Placeholders/popup_bg.svg")
-@export var popup_inner_tex: Texture2D = preload("res://Assets/Images/UI/Placeholders/popup_inner.svg")
 @export var badge_bg_tex: Texture2D = preload("res://Assets/Images/UI/Placeholders/badge_bg.svg")
 @export var tex_btn_approve: Texture2D = preload("res://Assets/Images/UI/Placeholders/btn_approve.svg")
 @export var tex_btn_batal: Texture2D = preload("res://Assets/Images/UI/Placeholders/btn_batal.svg")
@@ -42,6 +40,17 @@ const PERSONA_DESCRIPTIONS: Dictionary = {
 	"Persona Santai":  "Perlu 1 sesi Istirahat per minggu atau Energi drop drastis akhir minggu."
 }
 
+# ================= TOKENS =================
+
+## The project's modal scrim. `alpha_scale` of 0 gives the same hue at
+## zero opacity, which is what both popup fades tween from and back to --
+## tweening between two different hues would flash mid-fade.
+func _scrim_color(alpha_scale: float = 1.0) -> Color:
+	var c := DesignTokens.load_default().scrim_color()
+	c.a *= alpha_scale
+	return c
+
+
 # ================= ACTIVE POPUP & TUTORIAL BADGE =================
 var _active_popup: Node = null
 var _tutorial_badge_cleanup: Callable
@@ -53,10 +62,6 @@ var _tutorial_badge_cleanup: Callable
 @export_group("Tutorial")
 ## Edit this array in the Inspector to customize each tutorial step.
 @export var tutorial_steps: Array[TutorialStepData] = []
-## Optional PNG texture for custom tutorial dialogue box background.
-@export var custom_panel_texture: Texture2D = preload("res://Assets/Images/UI/tutorial_panel_bg.png")
-## Optional custom StyleBox override for the tutorial panel.
-@export var custom_panel_stylebox: StyleBox = null
 
 const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
 
@@ -302,42 +307,12 @@ func _build_tutorial_panel():
 	_tutorial_panel.name = "TutorialPanel"
 	_tutorial_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var style: StyleBox
-	if custom_panel_stylebox:
-		style = custom_panel_stylebox
-	elif custom_panel_texture:
-		var tex_style = StyleBoxTexture.new()
-		tex_style.texture = custom_panel_texture
-		tex_style.texture_margin_left = 40
-		tex_style.texture_margin_top = 40
-		tex_style.texture_margin_right = 40
-		tex_style.texture_margin_bottom = 40
-		tex_style.content_margin_left = 36
-		tex_style.content_margin_top = 28
-		tex_style.content_margin_right = 36
-		tex_style.content_margin_bottom = 24
-		style = tex_style
-	else:
-		var flat = StyleBoxFlat.new()
-		flat.bg_color = Color(0.17, 0.25, 0.31, 0.95) # Blackboard dark teal #2c3e50
-		flat.border_width_left = 4
-		flat.border_width_top = 4
-		flat.border_width_right = 4
-		flat.border_width_bottom = 8
-		flat.border_color = Color(0.5, 0.55, 0.55) # Chalk border #7f8c8d
-		flat.corner_radius_top_left = 18
-		flat.corner_radius_top_right = 18
-		flat.corner_radius_bottom_left = 18
-		flat.corner_radius_bottom_right = 18
-		flat.shadow_color = Color(0, 0, 0, 0.4)
-		flat.shadow_size = 6
-		flat.shadow_offset = Vector2(0, 4)
-		flat.content_margin_left = 32
-		flat.content_margin_top = 24
-		flat.content_margin_right = 32
-		flat.content_margin_bottom = 16
-		style = flat
-	_tutorial_panel.add_theme_stylebox_override("panel", style)
+	# Was: a three-way branch between an inspector StyleBox, a PNG
+	# nine-patch, and a hand-rolled dark-teal "blackboard" StyleBoxFlat.
+	# All three are now the project's Card surface, so the tutorial panel
+	# matches every other raised surface in the game and picks up token
+	# changes for free.
+	_tutorial_panel.theme_type_variation = &"Card"
 
 	var panel_width = min(viewport_size.x * 0.92, 1000)
 	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
@@ -1261,7 +1236,7 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 	# Full-screen dim overlay
 	var overlay := ColorRect.new()
 	overlay.name = "TraitOverlay"  # Keep name for easy cleanup/identification
-	overlay.color = Color(0, 0, 0, 0)
+	overlay.color = _scrim_color(0.0)
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	canvas.add_child(overlay)
@@ -1272,26 +1247,7 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 	var panel_w := vp.x * 0.94
 	popup.custom_minimum_size = Vector2(panel_w, 0)
 	
-	if popup_bg_tex:
-		var bg_tex := StyleBoxTexture.new()
-		bg_tex.texture = popup_bg_tex
-		bg_tex.texture_margin_left = 32
-		bg_tex.texture_margin_right = 32
-		bg_tex.texture_margin_top = 32
-		bg_tex.texture_margin_bottom = 32
-		popup.add_theme_stylebox_override("panel", bg_tex)
-	else:
-		var bg := StyleBoxFlat.new()
-		bg.bg_color = Color(0.96, 0.95, 0.92)
-		bg.corner_radius_top_left = 32
-		bg.corner_radius_top_right = 32
-		bg.corner_radius_bottom_left = 32
-		bg.corner_radius_bottom_right = 32
-		bg.content_margin_left = 0
-		bg.content_margin_top = 0
-		bg.content_margin_right = 0
-		bg.content_margin_bottom = 0
-		popup.add_theme_stylebox_override("panel", bg)
+	popup.theme_type_variation = &"Card"
 	overlay.add_child(popup)
 
 	var vbox := VBoxContainer.new()
@@ -1389,22 +1345,7 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 	hbox.add_child(close_btn)
 
 	var body := PanelContainer.new()
-	if popup_inner_tex:
-		var body_tex := StyleBoxTexture.new()
-		body_tex.texture = popup_inner_tex
-		body_tex.texture_margin_left = 32
-		body_tex.texture_margin_right = 32
-		body_tex.texture_margin_top = 24
-		body_tex.texture_margin_bottom = 28
-		body.add_theme_stylebox_override("panel", body_tex)
-	else:
-		var body_bg := StyleBoxFlat.new()
-		body_bg.bg_color = Color(0, 0, 0, 0.05)
-		body_bg.content_margin_left = 32
-		body_bg.content_margin_top = 24
-		body_bg.content_margin_right = 32
-		body_bg.content_margin_bottom = 28
-		body.add_theme_stylebox_override("panel", body_bg)
+	body.theme_type_variation = &"SunkenPanel"
 	vbox.add_child(body)
 	
 	var body_vbox := VBoxContainer.new()
@@ -1464,7 +1405,7 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 
 	var tw2 := create_tween()
 	tw2.set_trans(Tween.TRANS_LINEAR)
-	tw2.tween_property(overlay, "color", Color(0, 0, 0, 0.58), 0.22)
+	tw2.tween_property(overlay, "color", _scrim_color(), 0.22)
 
 	var close_fn = func(): _close_trait_popup(canvas, overlay, popup, Callable())
 	close_btn.pressed.connect(close_fn)
@@ -1573,7 +1514,7 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 	# Full-screen dim overlay 
 	var overlay := ColorRect.new()
 	overlay.name = "TraitOverlay"
-	overlay.color = Color(0, 0, 0, 0)
+	overlay.color = _scrim_color(0.0)
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	canvas.add_child(overlay)
@@ -1585,17 +1526,7 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 	var panel_w := vp.x * 0.94
 	popup.custom_minimum_size = Vector2(panel_w, 0)
 
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.97, 0.96, 0.93)
-	bg.corner_radius_top_left    = 30
-	bg.corner_radius_top_right   = 30
-	bg.corner_radius_bottom_left = 22
-	bg.corner_radius_bottom_right= 22
-	bg.content_margin_left   = 0
-	bg.content_margin_top    = 0
-	bg.content_margin_right  = 0
-	bg.content_margin_bottom = 0
-	popup.add_theme_stylebox_override("panel", bg)
+	popup.theme_type_variation = &"Card"
 	overlay.add_child(popup)
 	
 	# Hide navigation arrows to prevent accidental sliding
@@ -1607,15 +1538,20 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 	popup.add_child(vbox)
 
 	# ── Colored header ──
+	# The one surface in this screen that genuinely varies per instance:
+	# its whole job is to carry the quirk-vs-persona accent, so no fixed
+	# variation can express it. Every value below still comes from a
+	# token; only the accent is chosen at runtime.
 	var header := PanelContainer.new()
+	var tok := DesignTokens.load_default()
 	var hdr_bg := StyleBoxFlat.new()
 	hdr_bg.bg_color = accent
-	hdr_bg.corner_radius_top_left    = 30
-	hdr_bg.corner_radius_top_right   = 30
-	hdr_bg.content_margin_left   = 28
-	hdr_bg.content_margin_top    = 22
-	hdr_bg.content_margin_right  = 18
-	hdr_bg.content_margin_bottom = 22
+	hdr_bg.corner_radius_top_left = tok.radius_lg
+	hdr_bg.corner_radius_top_right = tok.radius_lg
+	hdr_bg.content_margin_left = tok.space_md
+	hdr_bg.content_margin_top = tok.space_sm
+	hdr_bg.content_margin_right = tok.space_md
+	hdr_bg.content_margin_bottom = tok.space_sm
 	header.add_theme_stylebox_override("panel", hdr_bg)
 	vbox.add_child(header)
 
@@ -1661,13 +1597,7 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 
 	# ── Body ──
 	var body := PanelContainer.new()
-	var body_bg := StyleBoxFlat.new()
-	body_bg.bg_color = Color(0, 0, 0, 0)
-	body_bg.content_margin_left   = 32
-	body_bg.content_margin_top    = 24
-	body_bg.content_margin_right  = 32
-	body_bg.content_margin_bottom = 28
-	body.add_theme_stylebox_override("panel", body_bg)
+	body.theme_type_variation = &"SunkenPanel"
 	vbox.add_child(body)
 
 	var desc_lbl := Label.new()
@@ -1692,7 +1622,7 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 
 	var tw2 := create_tween()
 	tw2.set_trans(Tween.TRANS_LINEAR)
-	tw2.tween_property(overlay, "color", Color(0, 0, 0, 0.58), 0.22)
+	tw2.tween_property(overlay, "color", _scrim_color(), 0.22)
 
 	var close_fn = func(): _close_trait_popup(canvas, overlay, popup, on_close)
 	close_btn.pressed.connect(close_fn)
@@ -1715,7 +1645,7 @@ func _close_trait_popup(canvas: CanvasLayer, overlay: Control, popup: Control, o
 	if is_instance_valid(popup):
 		tw.tween_property(popup, "position:y", vp.y, 0.26)
 	if is_instance_valid(overlay):
-		tw.tween_property(overlay, "color", Color(0, 0, 0, 0.0), 0.22)
+		tw.tween_property(overlay, "color", _scrim_color(0.0), 0.22)
 	tw.chain().tween_callback(func():
 		if is_instance_valid(canvas):
 			canvas.queue_free()

@@ -1,5 +1,19 @@
 extends Control
 
+## The results/payoff screen. Deliberately the most-animated screen in the
+## game: title pops in, the cards stagger in behind it, each card's stat
+## bars fill with a count-up, and the LULUS/TIDAK LULUS stamp slams down
+## one beat later -- see @export_group("Reveal Timing") below for the
+## tunable spacing between those beats.
+
+@export_group("Reveal Timing")
+## Delay between each card/page-dot appearing during the initial reveal.
+@export var card_stagger: float = 0.12
+## Delay after a card appears before its stat bars start filling.
+@export var stat_fill_delay: float = 0.35
+## Delay after the stat bars finish before the pass/fail stamp slams in.
+@export var stamp_delay: float = 0.9
+
 # ── Node References ───────────────────────────────────────────────────────────
 @onready var title_label: Label = $MarginContainer/VBoxContainer/HeaderContainer/TitleLabel
 @onready var subtitle_label: Label = $MarginContainer/VBoxContainer/HeaderContainer/SubtitleLabel
@@ -25,6 +39,14 @@ var is_pointer_down: bool = false
 var pointer_start_pos: Vector2 = Vector2.ZERO
 var min_swipe_distance: float = 75.0
 
+# Per-card data computed once in _evaluate_students(), consumed beat-by-beat
+# by the reveal sequence in _reveal_card(). Index-aligned with card_nodes.
+var _card_data: Array[Dictionary] = []
+var _card_revealed: Array[bool] = []
+
+const _SUBJECT_NODE_NAMES := ["Akademis", "Seni", "Olahraga"]
+const _SUBJECT_DATA_KEYS := ["akademis", "seni", "olahraga"]
+
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 func _ready() -> void:
 	# Connect buttons
@@ -39,13 +61,18 @@ func _ready() -> void:
 	_setup_button_juice(btn_restart)
 	_setup_button_juice(btn_menu)
 
-	# Calculate evaluation
+	AudioDirector.play_bgm(&"result")
+
+	# Calculate evaluation, then play the sequenced reveal.
 	_evaluate_students()
+	_play_reveal()
 
 func _evaluate_students() -> void:
 	var students: Array[StudentData] = GameState.convert_to_student_data_array()
 	active_students = students
 	card_nodes.clear()
+	_card_data.clear()
+	_card_revealed.clear()
 
 	# Populate card_nodes with Murid1 to Murid4 based on active selection size
 	for i in range(4):
@@ -57,6 +84,7 @@ func _evaluate_students() -> void:
 		if i < active_students.size():
 			var student = active_students[i]
 			card_nodes.append(card_node)
+			_card_revealed.append(false)
 
 			# Set Name
 			var name_lbl = card_node.get_node_or_null("Nama")
@@ -74,48 +102,25 @@ func _evaluate_students() -> void:
 			var tuntas_olahraga = student.olahraga >= student.target_akademis3
 			var student_passed = tuntas_akademis and tuntas_seni and tuntas_olahraga
 
-			# Set Stamp
+			_card_data.append({
+				"akademis": {"value": student.akademis, "target": student.target_akademis1},
+				"seni": {"value": student.seni_budaya, "target": student.target_akademis2},
+				"olahraga": {"value": student.olahraga, "target": student.target_akademis3},
+				"passed": student_passed,
+			})
+
+			# Stamp text is set now, but stays invisible (alpha 0) until
+			# _slam_stamp reveals it during the sequenced reveal below.
 			var stamp_lbl = card_node.get_node_or_null("Stamp")
 			if stamp_lbl:
-				if student_passed:
-					stamp_lbl.text = "LULUS!"
-					stamp_lbl.add_theme_color_override("font_color", Color(0.15, 0.7, 0.25))
+				stamp_lbl.text = "LULUS!" if student_passed else "TIDAK LULUS..."
+				stamp_lbl.modulate.a = 0.0
 
-					var style = StyleBoxFlat.new()
-					style.bg_color = Color(0.15, 0.7, 0.25, 0.08)
-					style.border_color = Color(0.15, 0.7, 0.25)
-					style.border_width_left = 6
-					style.border_width_top = 6
-					style.border_width_right = 6
-					style.border_width_bottom = 6
-					style.corner_radius_top_left = 12
-					style.corner_radius_top_right = 12
-					style.corner_radius_bottom_left = 12
-					style.corner_radius_bottom_right = 12
-					stamp_lbl.add_theme_stylebox_override("normal", style)
-				else:
-					stamp_lbl.text = "TIDAK LULUS..."
-					stamp_lbl.add_theme_color_override("font_color", Color(0.95, 0.2, 0.25))
-
-					var style = StyleBoxFlat.new()
-					style.bg_color = Color(0.95, 0.2, 0.25, 0.08)
-					style.border_color = Color(0.95, 0.2, 0.25)
-					style.border_width_left = 6
-					style.border_width_top = 6
-					style.border_width_right = 6
-					style.border_width_bottom = 6
-					style.corner_radius_top_left = 12
-					style.corner_radius_top_right = 12
-					style.corner_radius_bottom_left = 12
-					style.corner_radius_bottom_right = 12
-					stamp_lbl.add_theme_stylebox_override("normal", style)
-
-			# Configure Stats Rows
+			# Stat rows stay hidden until the reveal fills them in, so the
+			# card doesn't flash a "0/target" number ahead of its beat.
 			var stats_container = card_node.get_node_or_null("StatsContainer")
 			if stats_container:
-				_configure_stat_row(stats_container.get_node_or_null("Akademis"), student.akademis, student.target_akademis1, tuntas_akademis)
-				_configure_stat_row(stats_container.get_node_or_null("Seni"), student.seni_budaya, student.target_akademis2, tuntas_seni)
-				_configure_stat_row(stats_container.get_node_or_null("Olahraga"), student.olahraga, student.target_akademis3, tuntas_olahraga)
+				stats_container.modulate.a = 0.0
 
 			# Connect Swipe / Touch handlers
 			var card_btn = card_node.get_node_or_null("CardButton")
@@ -137,11 +142,12 @@ func _evaluate_students() -> void:
 	# Overall Evaluation Result
 	var grade_num = GameState.current_grade
 	var all_passed = GameState.check_semester_passed()
+	var tokens := DesignTokens.load_default()
 
 	if all_passed:
 		title_label.text = "🎓 Evaluasi Akhir Semester - Kelas %d 🎓" % grade_num
 		congrats_title.text = "Selamat! Tahun Ajaran Kelas %d Telah Selesai 🎉" % grade_num
-		congrats_title.add_theme_color_override("font_color", Color(0.35, 0.9, 0.55))
+		congrats_title.add_theme_color_override("font_color", tokens.state_success)
 
 		# Compute teacher title
 		var total_tuntas = 0
@@ -172,34 +178,92 @@ func _evaluate_students() -> void:
 	else:
 		title_label.text = "❌ Evaluasi Akhir Semester - Kelas %d ❌" % grade_num
 		congrats_title.text = "Tahun Ajaran Gagal - Coba Lagi ⚠️"
-		congrats_title.add_theme_color_override("font_color", Color(0.9, 0.35, 0.35))
+		congrats_title.add_theme_color_override("font_color", tokens.state_danger)
 
 		teacher_title_label.text = "Gelar Gurumu: Guru Pembimbing Remedial ⚠️"
 		congrats_text.text = "Kamu gagal mendampingi seluruh murid melewati target kelulusan kelas %d.\n\nBeberapa murid masih belum tuntas. Silakan coba lagi untuk membimbing mereka menuju kelulusan!" % grade_num
 		btn_restart.text = "Coba Lagi Kelas %d" % grade_num
 
-func _configure_stat_row(row_node: Control, value: float, target: float, is_tuntas: bool) -> void:
-	if not row_node:
+# ── Reveal Sequencing ─────────────────────────────────────────────────────────
+## Title pops in -> the page dots (one per card) stagger in -> the current
+## card pops in -> that card's own beat (stat fill, then stamp) plays via
+## _reveal_card(). Each beat is gated behind the previous one via await, so
+## the payoff never dumps everything on screen at once.
+func _play_reveal() -> void:
+	var t := Juice.tokens()
+	Juice.pop_in(title_label)
+	Juice.pop_in(subtitle_label, t.dur_instant)
+
+	if page_indicator:
+		Juice.stagger_in(page_indicator.get_children(), card_stagger)
+
+	if card_nodes.is_empty():
 		return
 
-	# Value Label
-	var val_lbl = row_node.get_node_or_null("Labels/Value")
-	if val_lbl:
-		val_lbl.text = "%d/%d" % [int(value), int(target)]
-		val_lbl.add_theme_color_override("font_color", Color(0.1, 0.55, 0.2) if is_tuntas else Color(0.85, 0.15, 0.15))
+	var lead_in := card_stagger * float(page_indicator.get_child_count() if page_indicator else 1)
+	await get_tree().create_timer(lead_in).timeout
+	if not is_instance_valid(self):
+		return
 
-	# Progress Bar
-	var progress = row_node.get_node_or_null("Progress")
-	if progress:
-		progress.value = value
+	Juice.pop_in(card_nodes[current_card_index])
+	_reveal_card(current_card_index)
 
-		var style_fill = StyleBoxFlat.new()
-		style_fill.bg_color = Color(0.2, 0.75, 0.35) if is_tuntas else Color(0.85, 0.2, 0.2)
-		style_fill.corner_radius_top_left = 6
-		style_fill.corner_radius_top_right = 6
-		style_fill.corner_radius_bottom_left = 6
-		style_fill.corner_radius_bottom_right = 6
-		progress.add_theme_stylebox_override("fill", style_fill)
+## Plays one card's stat-fill-then-stamp-slam beat. Safe to call multiple
+## times for the same card (e.g. re-swiping to it) -- it only plays once,
+## tracked via _card_revealed.
+func _reveal_card(index: int) -> void:
+	if index < 0 or index >= card_nodes.size() or index >= _card_revealed.size():
+		return
+	if _card_revealed[index]:
+		return
+	_card_revealed[index] = true
+
+	var card := card_nodes[index]
+	var data: Dictionary = _card_data[index]
+
+	await get_tree().create_timer(stat_fill_delay).timeout
+	if not is_instance_valid(card):
+		return
+
+	var stats_container = card.get_node_or_null("StatsContainer")
+	if stats_container:
+		Juice.fade_in(stats_container)
+		for j in range(_SUBJECT_NODE_NAMES.size()):
+			var row = stats_container.get_node_or_null(_SUBJECT_NODE_NAMES[j])
+			if row:
+				var d: Dictionary = data[_SUBJECT_DATA_KEYS[j]]
+				row.set_result(d["value"], d["target"])
+
+	await get_tree().create_timer(stamp_delay).timeout
+	if not is_instance_valid(card):
+		return
+
+	var stamp_lbl = card.get_node_or_null("Stamp")
+	if stamp_lbl:
+		_slam_stamp(stamp_lbl, data["passed"])
+
+## The stamp is the emotional beat of the whole screen: it slams down from
+## 3x scale, then gives the card a little shake and plays the pass/fail
+## sting. Colors always come from DesignTokens, never a literal -- this is
+## the only place the stamp's color is ever set (no static override lives
+## in the .tscn).
+func _slam_stamp(stamp: Control, passed: bool) -> void:
+	var tokens := DesignTokens.load_default()
+	stamp.add_theme_color_override("font_color",
+		tokens.state_success if passed else tokens.state_danger)
+
+	Juice.set_pivot_center(stamp)
+	stamp.scale = Vector2(3.0, 3.0)
+	stamp.modulate.a = 0.0
+
+	var t := Juice.tokens()
+	var tw := stamp.create_tween().set_parallel(true)
+	tw.tween_property(stamp, "scale", Vector2.ONE, t.dur_fast) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+	tw.tween_property(stamp, "modulate:a", 1.0, t.dur_instant)
+	tw.chain().tween_callback(func() -> void:
+		Juice.shake(stamp.get_parent(), 8.0)
+		AudioDirector.play_sfx(&"success" if passed else &"fail"))
 
 # ── Carousel Logic ────────────────────────────────────────────────────────────
 func _build_page_indicators() -> void:
@@ -208,21 +272,23 @@ func _build_page_indicators() -> void:
 	for child in page_indicator.get_children():
 		child.queue_free()
 
+	var tokens := DesignTokens.load_default()
 	for i in range(card_nodes.size()):
 		var dot = Label.new()
 		dot.text = "●"
-		dot.add_theme_font_size_override("font_size", 36)
+		dot.add_theme_font_size_override("font_size", tokens.font_title)
 		page_indicator.add_child(dot)
 
 func _update_page_indicators() -> void:
+	var tokens := DesignTokens.load_default()
 	if page_indicator:
 		var dots = page_indicator.get_children()
 		for i in range(dots.size()):
 			if dots[i] is Label:
 				if i == current_card_index:
-					dots[i].add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+					dots[i].add_theme_color_override("font_color", tokens.currency_gold)
 				else:
-					dots[i].add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+					dots[i].add_theme_color_override("font_color", tokens.text_disabled)
 
 	if left_arrow:
 		left_arrow.visible = (card_nodes.size() > 1)
@@ -297,6 +363,9 @@ func _switch_card(new_index: int, direction: int) -> void:
 	await tween_in.finished
 
 	card_animating = false
+
+	# Swiping to a card that hasn't had its own reveal beat yet plays it now.
+	_reveal_card(new_index)
 
 func _on_card_pressed(card_node: Control) -> void:
 	pass

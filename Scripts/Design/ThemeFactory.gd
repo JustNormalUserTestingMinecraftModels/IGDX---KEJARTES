@@ -210,6 +210,23 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		maxi(2, tokens.text_outline_size / 2))
 	theme.set_color("font_outline_color", "BarLabel", tokens.text_primary)
 
+	# SemesterEnd is the one screen that deliberately keeps a dark,
+	# certificate-like backdrop instead of the app's usual light surface
+	# (the payoff/results reveal), so its outer labels need their own
+	# light-on-dark variations rather than the light-surface defaults
+	# every other label variation assumes.
+	theme.add_type("ResultHeroLabel")
+	theme.set_type_variation("ResultHeroLabel", "Label")
+	theme.set_font_size("font_size", "ResultHeroLabel", tokens.font_h2)
+	theme.set_color("font_color", "ResultHeroLabel", tokens.currency_gold)
+	theme.set_constant("outline_size", "ResultHeroLabel", tokens.text_outline_size)
+	theme.set_color("font_outline_color", "ResultHeroLabel", tokens.text_primary)
+
+	theme.add_type("ResultBodyLabel")
+	theme.set_type_variation("ResultBodyLabel", "Label")
+	theme.set_font_size("font_size", "ResultBodyLabel", tokens.font_caption)
+	theme.set_color("font_color", "ResultBodyLabel", tokens.text_on_brand)
+
 
 # --------------------------------------------------------------- progress
 

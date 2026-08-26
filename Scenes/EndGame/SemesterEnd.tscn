@@ -1,24 +1,11 @@
-[gd_scene format=3 uid="uid://cbe0d3egr9a11"]
+[gd_scene format=3 uid="uid://cbe0d3egr9a11" load_steps=7]
 
 [ext_resource type="Script" path="res://Scripts/EndGame/SemesterEnd.gd" id="1_end"]
 [ext_resource type="Texture2D" uid="uid://bhanm4qbpra2a" path="res://Assets/Images/UI/paper.png" id="2_paper"]
 [ext_resource type="Texture2D" uid="uid://b6p4x47c2s0gq" path="res://Assets/Images/UI/Placeholders/icon_akademis.svg" id="3_icon_akademis"]
 [ext_resource type="Texture2D" uid="uid://cye75x61s7rge" path="res://Assets/Images/UI/Placeholders/icon_seni.svg" id="4_icon_seni"]
 [ext_resource type="Texture2D" uid="uid://chfshk4b7u2w" path="res://Assets/Images/UI/Placeholders/icon_olahraga.svg" id="5_icon_olahraga"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.12, 0.15, 0.22, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_left = 6
-corner_radius_bottom_right = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
-bg_color = Color(0.2, 0.75, 0.35, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_left = 6
-corner_radius_bottom_right = 6
+[ext_resource type="PackedScene" uid="uid://c8ap5tqsmyihj" path="res://Scenes/EndGame/ResultStatRow.tscn" id="6_resultrow"]
 
 [node name="SemesterEnd" type="Control"]
 layout_mode = 3
@@ -45,34 +32,22 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 30
-theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 30
-theme_override_constants/margin_bottom = 30
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
 
 [node name="HeaderContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 5
 
 [node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"ResultHeroLabel"
 text = "Title text placeholder"
 horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 20
+theme_type_variation = &"ResultBodyLabel"
 text = "Subtitle text placeholder"
 horizontal_alignment = 1
 
@@ -112,8 +87,7 @@ offset_left = 50.0
 offset_top = 45.0
 offset_right = 890.0
 offset_bottom = 125.0
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+theme_type_variation = &"H1Label"
 text = "Nama Murid"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -137,8 +111,7 @@ offset_top = 170.0
 offset_right = 480.0
 offset_bottom = 290.0
 rotation = -0.20944
-theme_override_colors/font_color = Color(0.15, 0.7, 0.25, 1)
-theme_override_font_sizes/font_size = 48
+theme_type_variation = &"H2Label"
 text = "LULUS!"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -149,115 +122,24 @@ offset_left = 60.0
 offset_top = 640.0
 offset_right = 880.0
 offset_bottom = 1150.0
-theme_override_constants/separation = 22
 
-[node name="Akademis" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer"]
+[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-theme_override_constants/separation = 6
+category = "Akademis"
+icon = ExtResource("3_icon_akademis")
+label_text = "Akademis"
 
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Akademis"]
+[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-theme_override_constants/separation = 12
+category = "SeniBudaya"
+icon = ExtResource("4_icon_seni")
+label_text = "Seni Budaya"
 
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Akademis/Labels"]
-custom_minimum_size = Vector2(50, 50)
+[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-texture = ExtResource("3_icon_akademis")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Akademis/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Akademis"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Akademis/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Akademis"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
-
-[node name="Seni" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Seni"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Seni/Labels"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("4_icon_seni")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Seni/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Seni Budaya"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Seni/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Seni"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
-
-[node name="Olahraga" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Olahraga"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Olahraga/Labels"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("5_icon_olahraga")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Olahraga/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Olahraga"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Olahraga/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer/Olahraga"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
+category = "Olahraga"
+icon = ExtResource("5_icon_olahraga")
+label_text = "Olahraga"
 
 [node name="Murid2" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer"]
 visible = false
@@ -291,8 +173,7 @@ offset_left = 50.0
 offset_top = 45.0
 offset_right = 890.0
 offset_bottom = 125.0
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+theme_type_variation = &"H1Label"
 text = "Nama Murid"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -316,8 +197,7 @@ offset_top = 170.0
 offset_right = 480.0
 offset_bottom = 290.0
 rotation = -0.20944
-theme_override_colors/font_color = Color(0.15, 0.7, 0.25, 1)
-theme_override_font_sizes/font_size = 48
+theme_type_variation = &"H2Label"
 text = "LULUS!"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -328,115 +208,24 @@ offset_left = 60.0
 offset_top = 640.0
 offset_right = 880.0
 offset_bottom = 1150.0
-theme_override_constants/separation = 22
 
-[node name="Akademis" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer"]
+[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-theme_override_constants/separation = 6
+category = "Akademis"
+icon = ExtResource("3_icon_akademis")
+label_text = "Akademis"
 
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Akademis"]
+[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-theme_override_constants/separation = 12
+category = "SeniBudaya"
+icon = ExtResource("4_icon_seni")
+label_text = "Seni Budaya"
 
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Akademis/Labels"]
-custom_minimum_size = Vector2(50, 50)
+[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-texture = ExtResource("3_icon_akademis")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Akademis/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Akademis"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Akademis/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Akademis"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
-
-[node name="Seni" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Seni"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Seni/Labels"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("4_icon_seni")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Seni/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Seni Budaya"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Seni/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Seni"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
-
-[node name="Olahraga" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Olahraga"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Olahraga/Labels"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("5_icon_olahraga")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Olahraga/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Olahraga"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Olahraga/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer/Olahraga"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
+category = "Olahraga"
+icon = ExtResource("5_icon_olahraga")
+label_text = "Olahraga"
 
 [node name="Murid3" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer"]
 visible = false
@@ -470,8 +259,7 @@ offset_left = 50.0
 offset_top = 45.0
 offset_right = 890.0
 offset_bottom = 125.0
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+theme_type_variation = &"H1Label"
 text = "Nama Murid"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -495,8 +283,7 @@ offset_top = 170.0
 offset_right = 480.0
 offset_bottom = 290.0
 rotation = -0.20944
-theme_override_colors/font_color = Color(0.15, 0.7, 0.25, 1)
-theme_override_font_sizes/font_size = 48
+theme_type_variation = &"H2Label"
 text = "LULUS!"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -507,115 +294,24 @@ offset_left = 60.0
 offset_top = 640.0
 offset_right = 880.0
 offset_bottom = 1150.0
-theme_override_constants/separation = 22
 
-[node name="Akademis" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer"]
+[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-theme_override_constants/separation = 6
+category = "Akademis"
+icon = ExtResource("3_icon_akademis")
+label_text = "Akademis"
 
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Akademis"]
+[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-theme_override_constants/separation = 12
+category = "SeniBudaya"
+icon = ExtResource("4_icon_seni")
+label_text = "Seni Budaya"
 
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Akademis/Labels"]
-custom_minimum_size = Vector2(50, 50)
+[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-texture = ExtResource("3_icon_akademis")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Akademis/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Akademis"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Akademis/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Akademis"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
-
-[node name="Seni" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Seni"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Seni/Labels"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("4_icon_seni")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Seni/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Seni Budaya"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Seni/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Seni"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
-
-[node name="Olahraga" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Olahraga"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Olahraga/Labels"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("5_icon_olahraga")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Olahraga/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Olahraga"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Olahraga/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer/Olahraga"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
+category = "Olahraga"
+icon = ExtResource("5_icon_olahraga")
+label_text = "Olahraga"
 
 [node name="Murid4" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer"]
 visible = false
@@ -649,8 +345,7 @@ offset_left = 50.0
 offset_top = 45.0
 offset_right = 890.0
 offset_bottom = 125.0
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+theme_type_variation = &"H1Label"
 text = "Nama Murid"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -674,8 +369,7 @@ offset_top = 170.0
 offset_right = 480.0
 offset_bottom = 290.0
 rotation = -0.20944
-theme_override_colors/font_color = Color(0.15, 0.7, 0.25, 1)
-theme_override_font_sizes/font_size = 48
+theme_type_variation = &"H2Label"
 text = "LULUS!"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -686,171 +380,69 @@ offset_left = 60.0
 offset_top = 640.0
 offset_right = 880.0
 offset_bottom = 1150.0
-theme_override_constants/separation = 22
 
-[node name="Akademis" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer"]
+[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-theme_override_constants/separation = 6
+category = "Akademis"
+icon = ExtResource("3_icon_akademis")
+label_text = "Akademis"
 
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Akademis"]
+[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-theme_override_constants/separation = 12
+category = "SeniBudaya"
+icon = ExtResource("4_icon_seni")
+label_text = "Seni Budaya"
 
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Akademis/Labels"]
-custom_minimum_size = Vector2(50, 50)
+[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" instance=ExtResource("6_resultrow")]
 layout_mode = 2
-texture = ExtResource("3_icon_akademis")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Akademis/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Akademis"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Akademis/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Akademis"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
-
-[node name="Seni" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Seni"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Seni/Labels"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("4_icon_seni")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Seni/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Seni Budaya"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Seni/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Seni"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
-
-[node name="Olahraga" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Labels" type="HBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Olahraga"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Olahraga/Labels"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("5_icon_olahraga")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Olahraga/Labels"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "Olahraga"
-
-[node name="Value" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Olahraga/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_font_sizes/font_size = 28
-text = "50/50"
-
-[node name="Progress" type="ProgressBar" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer/Olahraga"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
-value = 50.0
-show_percentage = false
+category = "Olahraga"
+icon = ExtResource("5_icon_olahraga")
+label_text = "Olahraga"
 
 [node name="PageIndicator" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 40)
-theme_override_constants/separation = 15
 alignment = 1
 
 [node name="NarrativeContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 10
 
 [node name="CongratsTitle" type="Label" parent="MarginContainer/VBoxContainer/NarrativeContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.35, 0.9, 0.55, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 5
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"H2Label"
 text = "Congrats Title text placeholder"
 horizontal_alignment = 1
 
 [node name="CongratsText" type="Label" parent="MarginContainer/VBoxContainer/NarrativeContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.92, 0.94, 0.98, 1)
-theme_override_font_sizes/font_size = 20
+theme_type_variation = &"ResultBodyLabel"
 text = "Congrats text body placeholder"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="TeacherContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 5
 
 [node name="TeacherTitleLabel" type="Label" parent="MarginContainer/VBoxContainer/TeacherContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 26
+theme_type_variation = &"ResultHeroLabel"
 text = "Gelar Gurumu: Guru Teladan Utama"
 horizontal_alignment = 1
 
 [node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 40
 alignment = 1
 
 [node name="BtnRestart" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
 custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_type_variation = &"PrimaryButton"
 text = "Mulai Baru"
 
 [node name="BtnMainMenu" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
 custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_type_variation = &"SecondaryButton"
 text = "Menu Utama"
 
 [node name="LeftArrow" type="Button" parent="."]
@@ -863,8 +455,7 @@ offset_top = -180.0
 offset_right = 90.0
 offset_bottom = -20.0
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.8)
-theme_override_font_sizes/font_size = 72
+theme_type_variation = &"SecondaryButton"
 text = "<"
 
 [node name="RightArrow" type="Button" parent="."]
@@ -878,6 +469,5 @@ offset_right = -10.0
 offset_bottom = -20.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.8)
-theme_override_font_sizes/font_size = 72
+theme_type_variation = &"SecondaryButton"
 text = ">"

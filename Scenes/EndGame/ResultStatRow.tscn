@@ -1,0 +1,36 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8ap5tqsmyihj"]
+
+[ext_resource type="Script" uid="uid://chu4iyg4bbqx6" path="res://Scripts/EndGame/ResultStatRow.gd" id="1_row"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="2_statbar"]
+
+[node name="ResultStatRow" type="VBoxContainer"]
+script = ExtResource("1_row")
+category = "Akademis"
+label_text = "Akademis"
+
+[node name="Labels" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Labels"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Labels"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Akademis"
+
+[node name="Value" type="Label" parent="Labels"]
+layout_mode = 2
+text = "0/0"
+
+[node name="Progress" type="ProgressBar" parent="."]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_type_variation = &"StatBar"
+value = 0.0
+show_percentage = false
+script = ExtResource("2_statbar")
+category = "Akademis"

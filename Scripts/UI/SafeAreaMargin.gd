@@ -62,10 +62,19 @@ func _apply() -> void:
 		# available space, never grow it, so clamp to [0, 40% of that
 		# axis] -- generous enough for any real notch/gesture-bar inset,
 		# tight enough to guarantee this can never consume the screen.
-		inset.x = clampf(inset.x, 0.0, size.x * 0.4)
-		inset.y = clampf(inset.y, 0.0, size.y * 0.4)
-		inset.z = clampf(inset.z, 0.0, size.x * 0.4)
-		inset.w = clampf(inset.w, 0.0, size.y * 0.4)
+		var clamped := Vector4(
+			clampf(inset.x, 0.0, size.x * 0.4),
+			clampf(inset.y, 0.0, size.y * 0.4),
+			clampf(inset.z, 0.0, size.x * 0.4),
+			clampf(inset.w, 0.0, size.y * 0.4))
+		# Silent clamping would hide a real, larger inset on some future
+		# device (foldables, unusual notches) with no diagnostic trail --
+		# warn whenever the raw value actually needed correcting.
+		if clamped != inset:
+			push_warning(
+				"SafeAreaMargin: safe-area inset %s clamped to %s (window %s smaller than reported safe area -- expected in a windowed editor run, worth a second look on a real device)"
+				% [inset, clamped, win])
+		inset = clamped
 
 	add_theme_constant_override("margin_left",
 		int(base + inset.x + extra_margin.x))

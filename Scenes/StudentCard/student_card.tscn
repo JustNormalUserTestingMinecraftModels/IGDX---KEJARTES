@@ -123,8 +123,7 @@ offset_right = 83.75647
 offset_bottom = -49.36
 
 [node name="Nama" type="Label" parent="KertasMurid6" unique_id=974236894]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 73
+theme_type_variation = &"H1Label"
 text = "Ga Peduli"
 
 layout_mode = 0
@@ -178,8 +177,6 @@ offset_right = 420.0
 offset_bottom = 0.83984375
 
 [node name="Profil" type="Label" parent="KertasMurid6" unique_id=1123386699]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
 text = "Nama: Jokoteno
 
 Agama: Muslim
@@ -197,8 +194,7 @@ offset_right = 1061.0
 offset_bottom = 722.0
 
 [node name="Kepribadian" type="Label" parent="KertasMurid6" unique_id=1730294522]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "KEPRIBADIAN"
 
 layout_mode = 0
@@ -208,8 +204,7 @@ offset_right = 500.0
 offset_bottom = 883.0
 
 [node name="Akademis" type="Label" parent="KertasMurid6" unique_id=1001822697]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "SKILL"
 
 layout_mode = 0
@@ -232,10 +227,7 @@ offset_right = 880.0
 offset_bottom = 958.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Kepribadian1" unique_id=294910009]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -246,10 +238,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid6/Kepribadian1" unique_id=1139951486]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "MOOD"
 vertical_alignment = 1
 
@@ -272,9 +261,7 @@ offset_right = 880.0
 offset_bottom = 1044.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Kepribadian2" unique_id=711864956]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -285,9 +272,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid6/Kepribadian2" unique_id=1777917629]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "ENERGY"
 vertical_alignment = 1
 
@@ -310,10 +295,7 @@ offset_right = 880.0
 offset_bottom = 1183.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis1" unique_id=1398205165]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -324,10 +306,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid6/Akademis1" unique_id=1459576882]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "AKADEMIS"
 vertical_alignment = 1
 
@@ -350,10 +329,7 @@ offset_right = 880.0
 offset_bottom = 1269.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis2" unique_id=1152689393]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -364,10 +340,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid6/Akademis2" unique_id=424051774]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "SENI BUDAYA"
 vertical_alignment = 1
 
@@ -390,10 +363,7 @@ offset_right = 880.0
 offset_bottom = 1355.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis3" unique_id=1894100866]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -404,10 +374,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid6/Akademis3" unique_id=1490684461]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
@@ -472,8 +439,7 @@ offset_right = 83.75647
 offset_bottom = -49.36
 
 [node name="Nama" type="Label" parent="KertasMurid5" unique_id=236830249]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 73
+theme_type_variation = &"H1Label"
 text = "Ga Peduli"
 
 layout_mode = 0
@@ -527,8 +493,6 @@ offset_right = 420.0
 offset_bottom = 0.83984375
 
 [node name="Profil" type="Label" parent="KertasMurid5" unique_id=435624905]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
 text = "Nama: Jokoteno
 
 Agama: Muslim
@@ -546,8 +510,7 @@ offset_right = 1061.0
 offset_bottom = 722.0
 
 [node name="Kepribadian" type="Label" parent="KertasMurid5" unique_id=872328517]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "KEPRIBADIAN"
 
 layout_mode = 0
@@ -557,8 +520,7 @@ offset_right = 500.0
 offset_bottom = 883.0
 
 [node name="Akademis" type="Label" parent="KertasMurid5" unique_id=1595145043]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "SKILL"
 
 layout_mode = 0
@@ -581,10 +543,7 @@ offset_right = 880.0
 offset_bottom = 958.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Kepribadian1" unique_id=2000354003]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -595,10 +554,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid5/Kepribadian1" unique_id=880008900]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "MOOD"
 vertical_alignment = 1
 
@@ -621,9 +577,7 @@ offset_right = 880.0
 offset_bottom = 1044.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Kepribadian2" unique_id=249856602]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -634,9 +588,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid5/Kepribadian2" unique_id=1149296065]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "ENERGY"
 vertical_alignment = 1
 
@@ -659,10 +611,7 @@ offset_right = 880.0
 offset_bottom = 1183.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis1" unique_id=1498183674]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -673,10 +622,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid5/Akademis1" unique_id=167698891]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "AKADEMIS"
 vertical_alignment = 1
 
@@ -699,10 +645,7 @@ offset_right = 880.0
 offset_bottom = 1269.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis2" unique_id=1879457609]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -713,10 +656,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid5/Akademis2" unique_id=1173367564]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "SENI BUDAYA"
 vertical_alignment = 1
 
@@ -739,10 +679,7 @@ offset_right = 880.0
 offset_bottom = 1355.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis3" unique_id=474194300]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -753,10 +690,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid5/Akademis3" unique_id=783874747]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
@@ -822,8 +756,7 @@ offset_right = 83.75647
 offset_bottom = -49.36
 
 [node name="Nama" type="Label" parent="KertasMurid4" unique_id=1975918155]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 73
+theme_type_variation = &"H1Label"
 text = "Ga Peduli"
 
 layout_mode = 0
@@ -877,8 +810,6 @@ offset_right = 420.0
 offset_bottom = 0.83984375
 
 [node name="Profil" type="Label" parent="KertasMurid4" unique_id=589185817]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
 text = "Nama: Jokoteno
 
 Agama: Muslim
@@ -896,8 +827,7 @@ offset_right = 1061.0
 offset_bottom = 722.0
 
 [node name="Kepribadian" type="Label" parent="KertasMurid4" unique_id=607932436]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "KEPRIBADIAN"
 
 layout_mode = 0
@@ -907,8 +837,7 @@ offset_right = 500.0
 offset_bottom = 883.0
 
 [node name="Akademis" type="Label" parent="KertasMurid4" unique_id=1675703779]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "SKILL"
 
 layout_mode = 0
@@ -931,10 +860,7 @@ offset_right = 880.0
 offset_bottom = 958.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Kepribadian1" unique_id=384573567]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -945,10 +871,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid4/Kepribadian1" unique_id=2008685126]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "MOOD"
 vertical_alignment = 1
 
@@ -971,9 +894,7 @@ offset_right = 880.0
 offset_bottom = 1044.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Kepribadian2" unique_id=115016979]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -984,9 +905,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid4/Kepribadian2" unique_id=516744714]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "ENERGY"
 vertical_alignment = 1
 
@@ -1009,10 +928,7 @@ offset_right = 880.0
 offset_bottom = 1183.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis1" unique_id=1666610939]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1023,10 +939,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid4/Akademis1" unique_id=1314042417]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "AKADEMIS"
 vertical_alignment = 1
 
@@ -1049,10 +962,7 @@ offset_right = 880.0
 offset_bottom = 1269.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis2" unique_id=286186706]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1063,10 +973,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid4/Akademis2" unique_id=1538291895]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "SENI BUDAYA"
 vertical_alignment = 1
 
@@ -1089,10 +996,7 @@ offset_right = 880.0
 offset_bottom = 1355.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis3" unique_id=551935657]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1103,10 +1007,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid4/Akademis3" unique_id=344690147]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
@@ -1172,8 +1073,7 @@ offset_right = 83.75647
 offset_bottom = -49.36
 
 [node name="Nama" type="Label" parent="KertasMurid3" unique_id=334024477]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 73
+theme_type_variation = &"H1Label"
 text = "Ga Peduli"
 
 layout_mode = 0
@@ -1227,8 +1127,6 @@ offset_right = 420.0
 offset_bottom = 0.83984375
 
 [node name="Profil" type="Label" parent="KertasMurid3" unique_id=1095889559]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
 text = "Nama: Jokoteno
 
 Agama: Muslim
@@ -1246,8 +1144,7 @@ offset_right = 1061.0
 offset_bottom = 722.0
 
 [node name="Kepribadian" type="Label" parent="KertasMurid3" unique_id=1784869682]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "KEPRIBADIAN"
 
 layout_mode = 0
@@ -1257,8 +1154,7 @@ offset_right = 500.0
 offset_bottom = 883.0
 
 [node name="Akademis" type="Label" parent="KertasMurid3" unique_id=292209198]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "SKILL"
 
 layout_mode = 0
@@ -1281,10 +1177,7 @@ offset_right = 880.0
 offset_bottom = 958.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Kepribadian1" unique_id=1856528277]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1295,10 +1188,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid3/Kepribadian1" unique_id=1152519946]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "MOOD"
 vertical_alignment = 1
 
@@ -1321,9 +1211,7 @@ offset_right = 880.0
 offset_bottom = 1044.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Kepribadian2" unique_id=1389837432]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1334,9 +1222,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid3/Kepribadian2" unique_id=120406539]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "ENERGY"
 vertical_alignment = 1
 
@@ -1359,10 +1245,7 @@ offset_right = 880.0
 offset_bottom = 1183.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis1" unique_id=619022267]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1373,10 +1256,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid3/Akademis1" unique_id=378837250]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "AKADEMIS"
 vertical_alignment = 1
 
@@ -1399,10 +1279,7 @@ offset_right = 880.0
 offset_bottom = 1269.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis2" unique_id=2096205175]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1413,10 +1290,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid3/Akademis2" unique_id=1357091394]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "SENI BUDAYA"
 vertical_alignment = 1
 
@@ -1439,10 +1313,7 @@ offset_right = 880.0
 offset_bottom = 1355.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis3" unique_id=1677762138]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1453,10 +1324,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid3/Akademis3" unique_id=1403043752]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
@@ -1522,8 +1390,7 @@ offset_right = 83.75647
 offset_bottom = -49.36
 
 [node name="Nama" type="Label" parent="KertasMurid2" unique_id=1198253032]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 73
+theme_type_variation = &"H1Label"
 text = "Ga Peduli"
 
 layout_mode = 0
@@ -1577,8 +1444,6 @@ offset_right = 420.0
 offset_bottom = 0.83984375
 
 [node name="Profil" type="Label" parent="KertasMurid2" unique_id=1730169888]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
 text = "Nama: Jokoteno
 
 Agama: Muslim
@@ -1596,8 +1461,7 @@ offset_right = 1061.0
 offset_bottom = 722.0
 
 [node name="Kepribadian" type="Label" parent="KertasMurid2" unique_id=242874824]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "KEPRIBADIAN"
 
 layout_mode = 0
@@ -1607,8 +1471,7 @@ offset_right = 500.0
 offset_bottom = 883.0
 
 [node name="Akademis" type="Label" parent="KertasMurid2" unique_id=1304676564]
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
+theme_type_variation = &"TitleLabel"
 text = "SKILL"
 
 layout_mode = 0
@@ -1631,10 +1494,7 @@ offset_right = 880.0
 offset_bottom = 958.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Kepribadian1" unique_id=323613456]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1645,10 +1505,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid2/Kepribadian1" unique_id=1718336705]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "MOOD"
 vertical_alignment = 1
 
@@ -1671,9 +1528,7 @@ offset_right = 880.0
 offset_bottom = 1044.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Kepribadian2" unique_id=181566930]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1684,9 +1539,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid2/Kepribadian2" unique_id=1841917311]
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "ENERGY"
 vertical_alignment = 1
 
@@ -1709,10 +1562,7 @@ offset_right = 880.0
 offset_bottom = 1183.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis1" unique_id=1939438012]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1723,10 +1573,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid2/Akademis1" unique_id=1620638843]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "AKADEMIS"
 vertical_alignment = 1
 
@@ -1749,10 +1596,7 @@ offset_right = 880.0
 offset_bottom = 1269.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis2" unique_id=1441394884]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1763,10 +1607,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid2/Akademis2" unique_id=1991085930]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "SENI BUDAYA"
 vertical_alignment = 1
 
@@ -1789,10 +1630,7 @@ offset_right = 880.0
 offset_bottom = 1355.0
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis3" unique_id=794379074]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1803,10 +1641,7 @@ offset_right = 736.0
 offset_bottom = 68.0
 
 [node name="Label" type="Label" parent="KertasMurid2/Akademis3" unique_id=693739334]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
@@ -1871,13 +1706,12 @@ expand_mode = 1
 
 
 [node name="Nama" type="Label" parent="KertasMurid1" unique_id=800854197]
+theme_type_variation = &"H1Label"
 layout_mode = 0
 offset_left = 657.0
 offset_top = 212.0
 offset_right = 990.0
 offset_bottom = 313.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 73
 text = "Ga Peduli"
 
 
@@ -1931,8 +1765,6 @@ offset_left = 644.0
 offset_top = 320.0
 offset_right = 1061.0
 offset_bottom = 722.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
 text = "Nama: Jokoteno
 
 Agama: Muslim
@@ -1945,24 +1777,22 @@ Hobi: Bernyanyi"
 
 
 [node name="Kepribadian" type="Label" parent="KertasMurid1" unique_id=1092958830]
+theme_type_variation = &"TitleLabel"
 layout_mode = 0
 offset_left = 120.0
 offset_top = 830.0
 offset_right = 500.0
 offset_bottom = 883.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
 text = "KEPRIBADIAN"
 
 
 [node name="Akademis" type="Label" parent="KertasMurid1" unique_id=1362505668]
+theme_type_variation = &"TitleLabel"
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1059.0
 offset_right = 500.0
 offset_bottom = 1112.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
 text = "SKILL"
 
 
@@ -1980,28 +1810,22 @@ show_percentage = false
 
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Kepribadian1" unique_id=558492279]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 
 [node name="Label" type="Label" parent="KertasMurid1/Kepribadian1" unique_id=1152517557]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
 text = "MOOD"
 vertical_alignment = 1
 
@@ -2020,26 +1844,22 @@ show_percentage = false
 
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Kepribadian2" unique_id=1416689670]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 
 [node name="Label" type="Label" parent="KertasMurid1/Kepribadian2" unique_id=1384414264]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(0.12, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 34
 text = "ENERGY"
 vertical_alignment = 1
 
@@ -2058,28 +1878,22 @@ show_percentage = false
 
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis1" unique_id=1146448601]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 
 [node name="Label" type="Label" parent="KertasMurid1/Akademis1" unique_id=218215994]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
 text = "AKADEMIS"
 vertical_alignment = 1
 
@@ -2098,28 +1912,22 @@ show_percentage = false
 
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis2" unique_id=901134386]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 
 [node name="Label" type="Label" parent="KertasMurid1/Akademis2" unique_id=502196696]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
 text = "SENI BUDAYA"
 vertical_alignment = 1
 
@@ -2138,28 +1946,22 @@ show_percentage = false
 
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis3" unique_id=1864829867]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 
 [node name="Label" type="Label" parent="KertasMurid1/Akademis3" unique_id=86560100]
+theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
 text = "OLAHRAGA"
 vertical_alignment = 1
 
@@ -2220,12 +2022,12 @@ flat = true
 
 
 [node name="PilihMurid" type="Label" parent="." unique_id=983198317]
+theme_type_variation = &"DisplayLabel"
 layout_mode = 0
 offset_left = 329.0
 offset_top = -172.0
 offset_right = 964.0
 offset_bottom = -44.0
-theme_override_font_sizes/font_size = 93
 text = "Pilih Muridmu"
 
 
@@ -2285,12 +2087,12 @@ texture = ExtResource("8_6vhdp")
 
 
 [node name="PageLabel" type="Label" parent="." unique_id=977170758]
+theme_type_variation = &"TitleLabel"
 layout_mode = 0
 offset_left = 302.0
 offset_top = 1248.0
 offset_right = 561.0
 offset_bottom = 1332.0
-theme_override_font_sizes/font_size = 35
 
 
 [connection signal="pressed" from="NextButtonKanan" to="." method="_on_next_button_kanan_pressed"]

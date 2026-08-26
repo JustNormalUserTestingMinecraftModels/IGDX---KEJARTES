@@ -40,6 +40,23 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.state_danger.lightened(0.18), tokens.state_danger.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
 
+	# StudentCard's APPROVE is an affirmative, not the screen's primary
+	# navigation, so it needs its own green rather than brand blue.
+	_add_button_variation(theme, tokens, "SuccessButton",
+		tokens.state_success.lightened(0.18), tokens.state_success.darkened(0.24),
+		tokens.outline_card, tokens.text_on_brand)
+
+	# Trait chips (Quirk / Persona). Same pill geometry as any other
+	# button variation; only the accent differs, so the two trait kinds
+	# stay visually distinguishable without per-node styleboxes.
+	_add_button_variation(theme, tokens, "QuirkBadge",
+		tokens.brand_primary_light, tokens.brand_primary_dark,
+		tokens.outline_card, tokens.text_on_brand)
+
+	_add_button_variation(theme, tokens, "PersonaBadge",
+		tokens.cat_istirahat.lightened(0.18), tokens.cat_istirahat.darkened(0.24),
+		tokens.outline_card, tokens.text_on_brand)
+
 
 ## One glossy pill in four states. `top`/`bottom` form the vertical
 ## gradient that gives the button its Umamusume sheen.
@@ -165,6 +182,24 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 			theme.set_color("font_outline_color", name, tokens.text_outline_color)
 			if tokens.font_display != null:
 				theme.set_font("font", name, tokens.font_display)
+
+	# Text that sits ON TOP of a StatBar, where the background behind any
+	# given glyph may be either the light track or a saturated category
+	# fill. The other label variations all assume a known backdrop and so
+	# cannot be reused here. White glyph + dark rim reads against both,
+	# which is why this one inverts the usual outline relationship
+	# (light text, dark outline) instead of DisplayLabel's dark-on-light.
+	# The rim is half the display outline: 8px around 36px text is the
+	# chunky look wanted on a 96px display heading, but it swallows a
+	# stat label. Derived from the token rather than hardcoded so a
+	# change to text_outline_size still propagates.
+	theme.add_type("BarLabel")
+	theme.set_type_variation("BarLabel", "Label")
+	theme.set_font_size("font_size", "BarLabel", tokens.font_title)
+	theme.set_color("font_color", "BarLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "BarLabel",
+		maxi(2, tokens.text_outline_size / 2))
+	theme.set_color("font_outline_color", "BarLabel", tokens.text_primary)
 
 
 # --------------------------------------------------------------- progress

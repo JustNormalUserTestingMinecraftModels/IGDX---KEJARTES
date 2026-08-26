@@ -349,10 +349,7 @@ func _build_tutorial_panel():
 
 	_tutorial_title_label = Label.new()
 	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.add_theme_font_size_override("font_size", 56)
-	_tutorial_title_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.7)) # Chalk yellow
-	_tutorial_title_label.add_theme_constant_override("outline_size", 6)
-	_tutorial_title_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	_tutorial_title_label.theme_type_variation = &"H1Label"
 	vbox.add_child(_tutorial_title_label)
 
 	var sep = HSeparator.new()
@@ -362,8 +359,7 @@ func _build_tutorial_panel():
 	_tutorial_body_label = Label.new()
 	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.add_theme_font_size_override("font_size", 40)
-	_tutorial_body_label.add_theme_color_override("font_color", Color(0.93, 0.95, 0.98)) # Chalk white
+	_tutorial_body_label.theme_type_variation = &"TitleLabel"
 	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
 	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 60, 0)
 	vbox.add_child(_tutorial_body_label)
@@ -375,10 +371,7 @@ func _build_tutorial_panel():
 	_tutorial_prompt_label = Label.new()
 	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
 	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.add_theme_font_size_override("font_size", 32)
-	_tutorial_prompt_label.add_theme_color_override("font_color", Color(0.5, 0.95, 0.6)) # Chalk green
-	_tutorial_prompt_label.add_theme_constant_override("outline_size", 5)
-	_tutorial_prompt_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	_tutorial_prompt_label.theme_type_variation = &"TitleLabel"
 	vbox.add_child(_tutorial_prompt_label)
 
 	color_rect.add_child(_tutorial_panel)
@@ -1146,17 +1139,12 @@ func _resize_and_style_bars(kertas: Control, s_data: Dictionary) -> void:
 		elif bname == "Akademis3":
 			current_val = s_data.get("akademis3", 0)
 			
-		var ratio = clamp(current_val / max_val, 0.0, 1.0)
-		
-		var empty_text_color = Color(0.12, 0.1, 0.08) # Dark text for empty bar
-		var fill_text_color = Color.WHITE # White text for dark bars
-		if bname == "Kepribadian2": # Energy is yellow, keep dark text when filled
-			fill_text_color = empty_text_color
-			
-		var stat_color = fill_text_color if ratio >= 0.15 else empty_text_color
-		var val_color = fill_text_color if ratio >= 0.85 else empty_text_color
-
-		# Style stat name label (MOOD, ENERGY, AKADEMIS, SENI BUDAYA, OLAHRAGA)
+		# Style stat name label (MOOD, ENERGY, AKADEMIS, SENI BUDAYA, OLAHRAGA).
+		# The old code picked between a dark and a light text color based on
+		# how full the bar was, so a label could flip color mid-run. The
+		# BarLabel theme variation replaces that with one legible treatment
+		# (white glyph, dark rim) that reads over both the track and every
+		# category fill, so no per-node override is needed at all.
 		var stat_lbl = bar.get_node_or_null("Label")
 		if stat_lbl and stat_lbl is Label:
 			stat_lbl.set_anchors_preset(Control.PRESET_TOP_LEFT)
@@ -1166,14 +1154,7 @@ func _resize_and_style_bars(kertas: Control, s_data: Dictionary) -> void:
 			stat_lbl.offset_bottom = BAR_HEIGHT
 			stat_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-			
-			stat_lbl.add_theme_font_size_override("font_size", 34)
-			stat_lbl.add_theme_color_override("font_color", stat_color)
-			if stat_color == Color.WHITE:
-				stat_lbl.add_theme_constant_override("outline_size", 4)
-				stat_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
-			else:
-				stat_lbl.add_theme_constant_override("outline_size", 0)
+			stat_lbl.theme_type_variation = &"BarLabel"
 
 		# Rounded background
 		var bg = StyleBoxFlat.new()
@@ -1220,7 +1201,7 @@ func _resize_and_style_bars(kertas: Control, s_data: Dictionary) -> void:
 				var lbl = Label.new()
 				lbl.name = "InfoIcon"
 				lbl.text = "??"
-				lbl.add_theme_font_size_override("font_size", 38)
+				lbl.theme_type_variation = &"TitleLabel"
 				info_icon = lbl
 
 			info_icon.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
@@ -1257,13 +1238,7 @@ func _resize_and_style_bars(kertas: Control, s_data: Dictionary) -> void:
 		val_lbl.offset_bottom = BAR_HEIGHT
 		val_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		val_lbl.add_theme_font_size_override("font_size", 36)
-		val_lbl.add_theme_color_override("font_color", val_color)
-		if val_color == Color.WHITE:
-			val_lbl.add_theme_constant_override("outline_size", 4)
-			val_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
-		else:
-			val_lbl.add_theme_constant_override("outline_size", 0)
+		val_lbl.theme_type_variation = &"BarLabel"
 
 func _on_bar_gui_input(ev: InputEvent, kertas: Control, bname: String, s_data: Dictionary) -> void:
 	if tutorial_active or is_animating or _active_popup != null:

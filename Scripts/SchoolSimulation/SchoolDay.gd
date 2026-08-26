@@ -25,38 +25,11 @@ signal _summary_closed
 @export_group("Visual - Student Cards")
 ## Optional PNG for the student card panel background.
 @export var student_card_texture: Texture2D = null
-@export var student_card_color: Color = Color(0.1, 0.14, 0.22, 0.9)
-@export var student_card_border_color: Color = Color(0.2, 0.35, 0.55, 0.7)
 ## Optional PNG to replace the ⚡ energy icon.
 @export var energy_icon_texture: Texture2D = null
 ## Optional PNG to replace the 😊 mood icon.
 @export var mood_icon_texture: Texture2D = null
 @export var card_font: Font = null
-@export var card_name_font_size: int = 36
-
-# ── Visual - Stat Pill Badges ─────────────────────────────────────────────────
-@export_group("Visual - Stat Pill Badges")
-@export var pill_akademis_color: Color = Color(0.16, 0.27, 1.0)
-@export var pill_senibudaya_color: Color = Color(0.0, 0.6, 0.25)
-@export var pill_olahraga_color: Color = Color(0.75, 0.1, 0.1)
-@export var pill_energy_loss_color: Color = Color(0.85, 0.2, 0.2)
-@export var pill_mood_loss_color: Color = Color(0.88, 0.42, 0.08)
-@export var pill_recovery_color: Color = Color(0.1, 0.65, 0.3)
-@export var pill_bonus_color: Color = Color(0.82, 0.68, 0.08)
-@export var pill_warning_color: Color = Color(0.78, 0.08, 0.08)
-@export var pill_holiday_color: Color = Color(0.32, 0.52, 0.12)
-@export var pill_font_size: int = 26
-
-# ── Visual - Day Summary Popup ────────────────────────────────────────────────
-@export_group("Visual - Day Summary Popup")
-## Optional PNG for the summary card background.
-@export var day_summary_card_texture: Texture2D = null
-@export var day_summary_card_color: Color = Color(0.06, 0.08, 0.16, 0.97)
-@export var day_summary_border_color: Color = Color(0.35, 0.48, 0.72, 0.85)
-@export var day_summary_dim_color: Color = Color(0.0, 0.0, 0.0, 0.62)
-@export var day_summary_font: Font = null
-@export var day_summary_title_font_size: int = 44
-@export var day_summary_body_font_size: int = 30
 
 @export_group("End Simulation Tutorial (Week 1)")
 @export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama! 🎓"
@@ -68,7 +41,7 @@ signal _summary_closed
 @onready var day_number_label: Label      = $DayScreen/DayNumberLabel
 @onready var day_label: Label             = $DayScreen/DayLabel
 @onready var book_clock_widget: Control   = $DayScreen/BookClockWidget
-@onready var progress_bar: ProgressBar    = $DayScreen/ProgressBar
+@onready var progress_bar: StatBar        = $DayScreen/ProgressBar
 @onready var status_label: Label          = $DayScreen/StatusLabel
 @onready var student_status_container: VBoxContainer = $DayScreen/StudentScroll/StudentStatusContainer
 @onready var click_to_continue_label: Label = $DayScreen/ClickToContinueLabel
@@ -159,7 +132,19 @@ func _get_playful_texture(type: String) -> Texture2D:
 	return null
 
 # ─────────────────────────────────────────────────────────────────────────────
+## Category accent per weekday, used both for the page tint and for the
+## day-progress StatBar. Five days, five of the project's accents, so the
+## week reads as a progression rather than as five arbitrary colors.
+const DAY_CATEGORIES := ["Olahraga", "Akademis", "Istirahat", "Libur", "SeniBudaya"]
+
+## How much of the day's accent is mixed into surface_page for the
+## backdrop. A page is a large surface; anything stronger stops being a
+## background.
+const DAY_TINT_STRENGTH := 0.12
+
+
 func _ready() -> void:
+	AudioDirector.play_bgm(&"simulation")
 	back_button.pressed.connect(_on_back_pressed)
 	back_button.hide()
 	if skip_button:
@@ -257,16 +242,14 @@ func _run_day() -> void:
 	var day_name = DAYS[current_day]
 
 	# ── Background color and pattern transitions ─────────────────────────────
-	var bg_colors = [
-		Color(0.25, 0.08, 0.08, 0.95),  # Monday: soft red/crimson
-		Color(0.08, 0.22, 0.35, 0.95),  # Tuesday: soft dark blue/teal
-		Color(0.22, 0.08, 0.32, 0.95),  # Wednesday: soft plum/purple
-		Color(0.35, 0.20, 0.08, 0.95),  # Thursday: soft orange/amber
-		Color(0.08, 0.28, 0.18, 0.95)   # Friday: soft forest/mint green
-	]
+	# Each weekday takes one of the project's category accents, mixed into
+	# tokens.surface_page so the page still reads as a page.
+	var tokens := Juice.tokens()
+	var day_category: String = DAY_CATEGORIES[current_day % DAY_CATEGORIES.size()]
 	var bg_node = get_node_or_null("Background")
 	if bg_node:
-		var target_color = bg_colors[current_day % bg_colors.size()]
+		var target_color: Color = tokens.surface_page.lerp(
+			tokens.category_color(day_category), DAY_TINT_STRENGTH)
 		var target_pattern = current_day % 5 # Grid, Stripes, Dots, Zigzag, Stars
 		bg_node.set("pattern_type", target_pattern)
 		if current_day == 0:
@@ -278,18 +261,12 @@ func _run_day() -> void:
 
 	# ── Reset this day's UI ───────────────────────────────────────────────────
 	_reset_day_ui()
-	
-	# Apply unique progress bar fill texture for each day
-	var eng_days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
-	var eng_day = eng_days[current_day % eng_days.size()]
-	var fill_path = "res://Assets/Images/UI/Placeholders/progress_fill_%s.png" % eng_day
-	if ResourceLoader.exists(fill_path):
-		var fill_tex = load(fill_path)
-		if fill_tex and progress_bar:
-			var fill_style = StyleBoxTexture.new()
-			fill_style.texture = fill_tex
-			fill_style.axis_stretch_horizontal = 1 # StyleBoxTexture.AXIS_STRETCH_TILE
-			progress_bar.add_theme_stylebox_override("fill", fill_style)
+
+	# The day-progress bar wears the same accent as the page. This replaces
+	# the five hand-generated progress_fill_<weekday>.png textures that used
+	# to be pushed in as a per-day stylebox override.
+	if progress_bar:
+		progress_bar.category = day_category
 
 	day_number_label.text = "Hari %d dari %d" % [current_day + 1, DAYS.size()]
 	day_label.text        = day_name
@@ -324,9 +301,15 @@ func _run_day() -> void:
 	status_label.text = "Melewati hari sekolah..."
 	
 	# Create parallel tweens for day progress bar AND embedded student energy/mood decay bars!
+	# The bar goes through Juice like every other bar in the game; the
+	# explicit duration keeps it in lockstep with the book clock, which is
+	# paced by the in-fiction day length rather than by a motion token.
+	Juice.fill_bar(progress_bar, trigger_pct, phase1_dur)
 	var day_tween = create_tween().set_parallel(true)
-	day_tween.tween_property(progress_bar, "value", trigger_pct, phase1_dur)\
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# Pacing anchor. The bar no longer lives on this tween, and both the
+	# clock widget and the decay bars are optional, so without this the
+	# tween could end up with no tweeners at all and abort.
+	day_tween.tween_interval(phase1_dur)
 	if book_clock_widget and book_clock_widget.has_method("set_progress"):
 		day_tween.tween_method(func(v: float): book_clock_widget.call("set_progress", v / 100.0), 0.0, trigger_pct, phase1_dur)\
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
@@ -344,9 +327,9 @@ func _run_day() -> void:
 	# ── Phase 2: Fill remaining bar to 100% ──────────────────────────────────
 	var phase2_dur = DAY_FILL_DURATION * ((100.0 - trigger_pct) / 100.0)
 	status_label.text = "Melanjutkan hari..."
+	Juice.fill_bar(progress_bar, 100.0, phase2_dur)
 	var bar_phase2 = create_tween().set_parallel(true)
-	bar_phase2.tween_property(progress_bar, "value", 100.0, phase2_dur)\
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	bar_phase2.tween_interval(phase2_dur)
 	if book_clock_widget and book_clock_widget.has_method("set_progress"):
 		bar_phase2.tween_method(func(v: float): book_clock_widget.call("set_progress", v / 100.0), trigger_pct, 100.0, phase2_dur)\
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
@@ -384,10 +367,13 @@ func _await_click_to_continue() -> void:
 	click_to_continue_label.show()
 	is_waiting_for_continue = true
 
-	# Blinking in and out animation
-	var pulse = create_tween().set_loops()
-	pulse.tween_property(click_to_continue_label, "modulate:a", 0.2, 0.6).set_trans(Tween.TRANS_SINE)
-	pulse.tween_property(click_to_continue_label, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+	# The same looping alpha pulse the Splashscreen hint uses (Task 10), so
+	# "tap to continue" reads identically wherever the game says it.
+	var pulse = click_to_continue_label.create_tween().set_loops()
+	pulse.tween_property(click_to_continue_label, "modulate:a", 0.35, Juice.tokens().dur_slow) \
+		.set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(click_to_continue_label, "modulate:a", 1.0, Juice.tokens().dur_slow) \
+		.set_ease(Tween.EASE_IN_OUT)
 
 	await _continue_tapped
 
@@ -405,10 +391,13 @@ func _render_embedded_student_status() -> void:
 
 	embedded_widgets.clear()
 
+	var cards: Array = []
 	for student in student_manager.students:
 		var panel = PanelContainer.new()
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
+		# An art-supplied card PNG still wins; otherwise the theme's Card
+		# variation supplies fill, outline, radius, shadow and margins.
 		var card_bg = _get_playful_texture("card_bg")
 		if card_bg != null:
 			var style_tex = StyleBoxTexture.new()
@@ -419,18 +408,7 @@ func _render_embedded_student_status() -> void:
 			style_tex.content_margin_bottom = 16
 			panel.add_theme_stylebox_override("panel", style_tex)
 		else:
-			var style = StyleBoxFlat.new()
-			style.bg_color = student_card_color
-			style.border_color = student_card_border_color
-			style.corner_radius_top_left = 12
-			style.corner_radius_top_right = 12
-			style.corner_radius_bottom_left = 12
-			style.corner_radius_bottom_right = 12
-			style.border_width_left = 2
-			style.border_width_top = 2
-			style.border_width_right = 2
-			style.border_width_bottom = 2
-			panel.add_theme_stylebox_override("panel", style)
+			panel.theme_type_variation = &"Card"
 
 		var margin = MarginContainer.new()
 		margin.add_theme_constant_override("margin_left", 24)
@@ -455,24 +433,11 @@ func _render_embedded_student_status() -> void:
 
 		var name_lbl = Label.new()
 		name_lbl.text = student.student_name
-		name_lbl.add_theme_font_size_override("font_size", 36)
-		var is_dark_bg = (card_bg == null)
-		name_lbl.add_theme_color_override("font_color", Color(1, 1, 1) if is_dark_bg else Color(0.1, 0.15, 0.25))
+		name_lbl.theme_type_variation = &"TitleLabel"
 		left_vbox.add_child(name_lbl)
 
-		var p_badge = Label.new()
-		p_badge.text = " %s " % student.personality
-		p_badge.add_theme_font_size_override("font_size", 26)
-		p_badge.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0) if is_dark_bg else Color(0.12, 0.32, 0.55))
-		p_badge.autowrap_mode = TextServer.AUTOWRAP_OFF
-		var p_style = StyleBoxFlat.new()
-		p_style.bg_color = Color(0.15, 0.3, 0.5, 0.6) if is_dark_bg else Color(0.82, 0.88, 0.94)
-		p_style.corner_radius_top_left = 6
-		p_style.corner_radius_top_right = 6
-		p_style.corner_radius_bottom_left = 6
-		p_style.corner_radius_bottom_right = 6
-		p_badge.add_theme_stylebox_override("normal", p_style)
-		left_vbox.add_child(p_badge)
+		left_vbox.add_child(_make_chip(
+			" %s " % student.personality, Juice.tokens().brand_primary))
 
 		# Right column: Bars (Energy & Mood)
 		var right_vbox = VBoxContainer.new()
@@ -480,8 +445,11 @@ func _render_embedded_student_status() -> void:
 		right_vbox.add_theme_constant_override("separation", 12)
 		main_hbox.add_child(right_vbox)
 
-		var e_data = _add_embedded_bar_row(right_vbox, "⚡", student.energy, Color(1.0, 0.85, 0.2))
-		var m_data = _add_embedded_bar_row(right_vbox, "😊", student.mood, Color(1.0, 0.45, 0.7))
+		# Energy and Mood are needs, not schedule categories; Libur (warm
+		# gold) and Istirahat (violet) are the accents the rest of the game
+		# already uses for them.
+		var e_data = _add_embedded_bar_row(right_vbox, "⚡", student.energy, "Libur")
+		var m_data = _add_embedded_bar_row(right_vbox, "😊", student.mood, "Istirahat")
 
 		# Pill badges row
 		var pill_flow = _build_pill_badges_for_student(student, DAYS[current_day] if current_day < DAYS.size() else "")
@@ -489,6 +457,7 @@ func _render_embedded_student_status() -> void:
 			card_vbox.add_child(pill_flow)
 
 		student_status_container.add_child(panel)
+		cards.append(panel)
 
 		embedded_widgets[student.student_name] = {
 			"student": student,
@@ -498,7 +467,23 @@ func _render_embedded_student_status() -> void:
 			"m_lbl": m_data["lbl"]
 		}
 
-func _add_embedded_bar_row(parent_vbox: VBoxContainer, icon_text: String, current_val: float, color: Color) -> Dictionary:
+	Juice.stagger_in(cards)
+
+
+## The shared summary chip (SunkenPanel + BarLabel), tinted via
+## self_modulate so the child label keeps the theme's own contrast.
+func _make_chip(text: String, tint: Color) -> PanelContainer:
+	var chip := load("res://Scenes/SchoolSimulation/DaySummaryPill.tscn") \
+		.instantiate() as PanelContainer
+	chip.self_modulate = tint
+	var lbl := chip.get_node("Text") as Label
+	lbl.text = text
+	if card_font:
+		lbl.add_theme_font_override("font", card_font)
+	return chip
+
+
+func _add_embedded_bar_row(parent_vbox: VBoxContainer, icon_text: String, current_val: float, category: String) -> Dictionary:
 	var row = HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 12)
@@ -517,41 +502,24 @@ func _add_embedded_bar_row(parent_vbox: VBoxContainer, icon_text: String, curren
 		var icon_lbl = Label.new()
 		icon_lbl.text = icon_text
 		icon_lbl.custom_minimum_size = Vector2(36, 0)
-		icon_lbl.add_theme_font_size_override("font_size", 28)
+		icon_lbl.theme_type_variation = &"TitleLabel"
 		icon_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(icon_lbl)
 
-	var bar = ProgressBar.new()
+	var bar := StatBar.new()
+	bar.category = category
 	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	bar.show_percentage = false
 	bar.custom_minimum_size = Vector2(100, 32)
 	bar.value = current_val
-
-	var fill_style = StyleBoxFlat.new()
-	fill_style.bg_color = color
-	fill_style.corner_radius_top_left = 8
-	fill_style.corner_radius_top_right = 8
-	fill_style.corner_radius_bottom_left = 8
-	fill_style.corner_radius_bottom_right = 8
-	bar.add_theme_stylebox_override("fill", fill_style)
-
-	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.08, 0.08, 0.12, 1.0)
-	bg_style.corner_radius_top_left = 8
-	bg_style.corner_radius_top_right = 8
-	bg_style.corner_radius_bottom_left = 8
-	bg_style.corner_radius_bottom_right = 8
-	bar.add_theme_stylebox_override("background", bg_style)
 	row.add_child(bar)
 
 	var info_lbl = Label.new()
 	info_lbl.custom_minimum_size = Vector2(180, 0)
-	info_lbl.add_theme_font_size_override("font_size", 26)
+	info_lbl.theme_type_variation = &"CaptionLabel"
 	info_lbl.text = "%d/100" % int(current_val)
 	info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	info_lbl.autowrap_mode = TextServer.AUTOWRAP_OFF
-	info_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
 
 	row.add_child(info_lbl)
 
@@ -563,6 +531,7 @@ func _add_embedded_bar_row(parent_vbox: VBoxContainer, icon_text: String, curren
 func _build_pill_badges_for_student(student: StudentData, day_name: String) -> HBoxContainer:
 	# Returns an HBoxContainer of colored pill Label badges showing what will change today.
 	# Sources: schedule (known before day), warnings (energy low).
+	var tokens := Juice.tokens()
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 6)
 	var student_id = student.id
@@ -579,36 +548,36 @@ func _build_pill_badges_for_student(student: StudentData, day_name: String) -> H
 	if week == 3: week_holidays["Rabu"] = true
 	if week == 6: week_holidays["Senin"] = true
 	if week_holidays.has(day_name):
-		_add_pill(hbox, "🌿 Libur", pill_holiday_color)
+		_add_pill(hbox, "🌿 Libur", tokens.cat_libur)
 		return hbox
 
 	match category:
 		"Akademis":
 			var gain = 6.0 if student.specialty_category == "Akademis" else 3.0
-			_add_pill(hbox, "+%.0f Akademis 📚" % gain, pill_akademis_color)
+			_add_pill(hbox, "+%.0f Akademis 📚" % gain, tokens.cat_akademis)
 		"SeniBudaya":
 			var gain = 6.0 if student.specialty_category == "SeniBudaya" else 3.0
-			_add_pill(hbox, "+%.0f Seni 🎨" % gain, pill_senibudaya_color)
+			_add_pill(hbox, "+%.0f Seni 🎨" % gain, tokens.cat_senibudaya)
 		"Olahraga":
 			var gain = 6.0 if student.specialty_category == "Olahraga" else 3.0
-			_add_pill(hbox, "+%.0f Olahraga ⚽" % gain, pill_olahraga_color)
+			_add_pill(hbox, "+%.0f Olahraga ⚽" % gain, tokens.cat_olahraga)
 		"Istirahat":
-			_add_pill(hbox, "+25 ⚡ Istirahat", pill_recovery_color)
+			_add_pill(hbox, "+25 ⚡ Istirahat", tokens.state_success)
 		_:
-			_add_pill(hbox, "Kosong", Color(0.35, 0.35, 0.4))
+			_add_pill(hbox, "Kosong", tokens.text_secondary)
 
 	# Energy/Mood cost estimate (show if studying)
 	if category != "" and category != "Istirahat":
-		_add_pill(hbox, "~-15 ⚡", pill_energy_loss_color)
-		_add_pill(hbox, "~-10 😊", pill_mood_loss_color)
-	
+		_add_pill(hbox, "~-15 ⚡", tokens.state_danger)
+		_add_pill(hbox, "~-10 😊", tokens.state_warning)
+
 	# Warning if already low energy
 	if student.energy <= 20.0:
-		_add_pill(hbox, "⚠ KELELAHAN", pill_warning_color)
-	
+		_add_pill(hbox, "⚠ KELELAHAN", tokens.state_danger)
+
 	return hbox
 
-func _add_pill(parent: HBoxContainer, text: String, bg_color: Color) -> void:
+func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 	var clean_text := text
 	var icon_key := ""
 	
@@ -637,61 +606,32 @@ func _add_pill(parent: HBoxContainer, text: String, bg_color: Color) -> void:
 		clean_text = "KELELAHAN"
 		icon_key = "warning"
 
+	# Both branches use the same shared DaySummaryPill chip; the only
+	# difference is whether an icon PNG sits beside the text.
 	var icon_tex = _get_playful_texture(icon_key) if icon_key != "" else null
-	if icon_tex != null:
-		var pill_panel = PanelContainer.new()
-		var style = StyleBoxFlat.new()
-		style.bg_color = bg_color
-		style.corner_radius_top_left = 8
-		style.corner_radius_top_right = 8
-		style.corner_radius_bottom_left = 8
-		style.corner_radius_bottom_right = 8
-		style.content_margin_left = 12
-		style.content_margin_right = 12
-		style.content_margin_top = 4
-		style.content_margin_bottom = 4
-		pill_panel.add_theme_stylebox_override("panel", style)
-		
-		var hbox = HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 6)
-		pill_panel.add_child(hbox)
-		
-		var tex_rect = TextureRect.new()
-		tex_rect.texture = icon_tex
-		tex_rect.custom_minimum_size = Vector2(24, 24)
-		tex_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
-		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tex_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		hbox.add_child(tex_rect)
-		
-		var lbl = Label.new()
-		lbl.text = clean_text
-		lbl.add_theme_font_size_override("font_size", pill_font_size)
-		lbl.add_theme_color_override("font_color", Color.WHITE)
-		lbl.add_theme_constant_override("outline_size", 3)
-		lbl.add_theme_color_override("font_outline_color", Color.BLACK)
-		if card_font: lbl.add_theme_font_override("font", card_font)
-		lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		hbox.add_child(lbl)
-		
-		parent.add_child(pill_panel)
-	else:
-		# Fallback to the original raw label behavior
-		var lbl = Label.new()
-		lbl.text = " %s " % text
-		lbl.add_theme_font_size_override("font_size", pill_font_size)
-		lbl.add_theme_color_override("font_color", Color.WHITE)
-		lbl.add_theme_constant_override("outline_size", 3)
-		lbl.add_theme_color_override("font_outline_color", Color.BLACK)
-		if card_font: lbl.add_theme_font_override("font", card_font)
-		var style = StyleBoxFlat.new()
-		style.bg_color = bg_color
-		style.corner_radius_top_left = 8
-		style.corner_radius_top_right = 8
-		style.corner_radius_bottom_left = 8
-		style.corner_radius_bottom_right = 8
-		lbl.add_theme_stylebox_override("normal", style)
-		parent.add_child(lbl)
+	if icon_tex == null:
+		parent.add_child(_make_chip(text, tint))
+		return
+
+	var chip := _make_chip(clean_text, tint)
+	var lbl := chip.get_node("Text") as Label
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 6)
+
+	var tex_rect = TextureRect.new()
+	tex_rect.texture = icon_tex
+	tex_rect.custom_minimum_size = Vector2(24, 24)
+	tex_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
+	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tex_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	chip.remove_child(lbl)
+	chip.add_child(hbox)
+	hbox.add_child(tex_rect)
+	hbox.add_child(lbl)
+	lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	parent.add_child(chip)
 
 func _show_day_summary(day_name: String) -> void:
 	if not student_manager:
@@ -761,9 +701,10 @@ func _animate_embedded_decay_bars(parallel_tween: Tween, decay_results: Array[Di
 		var m_loss = float(res.get("mood_loss", 5.0))
 		var start_m = clampf(curr_m + m_loss, 0.0, 100.0)
 
-		var e_bar = w["e_bar"] as ProgressBar
+		var tokens := Juice.tokens()
+		var e_bar = w["e_bar"] as StatBar
 		var e_lbl = w["e_lbl"] as Label
-		var m_bar = w["m_bar"] as ProgressBar
+		var m_bar = w["m_bar"] as StatBar
 		var m_lbl = w["m_lbl"] as Label
 
 		e_bar.value = start_e
@@ -774,20 +715,21 @@ func _animate_embedded_decay_bars(parallel_tween: Tween, decay_results: Array[Di
 		parallel_tween.tween_property(m_bar, "value", curr_m, duration)\
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 
-		var is_dark_bg = (_get_playful_texture("card_bg") == null)
+		# The number rolls with the bar, and the label carries the verdict
+		# as a tint rather than as a font_color override.
 		if e_loss >= 0:
-			e_lbl.text = "%d/100 (-%d)" % [int(curr_e), int(e_loss)]
-			e_lbl.add_theme_color_override("font_color", Color(0.95, 0.4, 0.4) if is_dark_bg else Color(0.75, 0.15, 0.15))
+			Juice.count_up(e_lbl, start_e, curr_e, "%d/100 (-" + str(int(e_loss)) + ")")
+			e_lbl.self_modulate = tokens.state_danger
 		else:
-			e_lbl.text = "%d/100 (+%d)" % [int(curr_e), int(-e_loss)]
-			e_lbl.add_theme_color_override("font_color", Color(0.3, 0.95, 0.5) if is_dark_bg else Color(0.1, 0.5, 0.2))
+			Juice.count_up(e_lbl, start_e, curr_e, "%d/100 (+" + str(int(-e_loss)) + ")")
+			e_lbl.self_modulate = tokens.state_success
 
 		if m_loss >= 0:
-			m_lbl.text = "%d/100 (-%d)" % [int(curr_m), int(m_loss)]
-			m_lbl.add_theme_color_override("font_color", Color(0.95, 0.4, 0.4) if is_dark_bg else Color(0.75, 0.15, 0.15))
+			Juice.count_up(m_lbl, start_m, curr_m, "%d/100 (-" + str(int(m_loss)) + ")")
+			m_lbl.self_modulate = tokens.state_danger
 		else:
-			m_lbl.text = "%d/100 (+%d)" % [int(curr_m), int(-m_loss)]
-			m_lbl.add_theme_color_override("font_color", Color(0.3, 0.95, 0.5) if is_dark_bg else Color(0.1, 0.5, 0.2))
+			Juice.count_up(m_lbl, start_m, curr_m, "%d/100 (+" + str(int(-m_loss)) + ")")
+			m_lbl.self_modulate = tokens.state_success
 
 # Smoothly animate embedded progress bars for post-event or minigame stat updates
 func _animate_embedded_stat_updates(duration: float = 0.6) -> void:
@@ -798,57 +740,47 @@ func _animate_embedded_stat_updates(duration: float = 0.6) -> void:
 		_render_embedded_student_status()
 		return
 		
+	var tokens := Juice.tokens()
 	var parallel_tween = create_tween().set_parallel(true)
 	var has_updates = false
-	
-	var is_dark_bg = (_get_playful_texture("card_bg") == null)
-	var gain_color = Color(0.3, 0.95, 0.5) if is_dark_bg else Color(0.1, 0.5, 0.2)
-	var loss_color = Color(0.95, 0.4, 0.4) if is_dark_bg else Color(0.75, 0.15, 0.15)
-	var normal_color = Color(0.8, 0.85, 0.9) if is_dark_bg else Color(0.2, 0.25, 0.35)
-	
+
 	for student in student_manager.students:
 		var w = embedded_widgets.get(student.student_name, {})
 		if w.is_empty():
 			continue
-			
-		var e_bar = w["e_bar"] as ProgressBar
+
+		var e_bar = w["e_bar"] as StatBar
 		var e_lbl = w["e_lbl"] as Label
-		var m_bar = w["m_bar"] as ProgressBar
+		var m_bar = w["m_bar"] as StatBar
 		var m_lbl = w["m_lbl"] as Label
-		
+
 		var start_e = e_bar.value
 		var target_e = student.energy
 		var delta_e = target_e - start_e
-		
+
 		var start_m = m_bar.value
 		var target_m = student.mood
 		var delta_m = target_m - start_m
-		
+
 		if absf(delta_e) > 0.1:
 			has_updates = true
 			parallel_tween.tween_property(e_bar, "value", target_e, duration)\
 				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 			var sign_str = "+%d" % int(delta_e) if delta_e > 0 else "%d" % int(delta_e)
-			e_lbl.text = "%d/100 (%s)" % [int(target_e), sign_str]
-			if delta_e > 0:
-				e_lbl.add_theme_color_override("font_color", gain_color)
-			else:
-				e_lbl.add_theme_color_override("font_color", loss_color)
-				
+			Juice.count_up(e_lbl, start_e, target_e, "%d/100 (" + sign_str + ")")
+			e_lbl.self_modulate = tokens.state_success if delta_e > 0 else tokens.state_danger
+
 		if absf(delta_m) > 0.1:
 			has_updates = true
 			parallel_tween.tween_property(m_bar, "value", target_m, duration)\
 				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 			var sign_str = "+%d" % int(delta_m) if delta_m > 0 else "%d" % int(delta_m)
-			m_lbl.text = "%d/100 (%s)" % [int(target_m), sign_str]
-			if delta_m > 0:
-				m_lbl.add_theme_color_override("font_color", gain_color)
-			else:
-				m_lbl.add_theme_color_override("font_color", loss_color)
+			Juice.count_up(m_lbl, start_m, target_m, "%d/100 (" + sign_str + ")")
+			m_lbl.self_modulate = tokens.state_success if delta_m > 0 else tokens.state_danger
 
 	if has_updates:
 		await parallel_tween.finished
-		await get_tree().create_timer(0.5).timeout
+		await get_tree().create_timer(tokens.dur_slow).timeout
 		# Reset label text to clean standard format
 		for student in student_manager.students:
 			var w = embedded_widgets.get(student.student_name, {})
@@ -856,9 +788,9 @@ func _animate_embedded_stat_updates(duration: float = 0.6) -> void:
 				var e_lbl = w["e_lbl"] as Label
 				var m_lbl = w["m_lbl"] as Label
 				e_lbl.text = "%d/100" % int(student.energy)
-				e_lbl.add_theme_color_override("font_color", normal_color)
+				e_lbl.self_modulate = Color.WHITE
 				m_lbl.text = "%d/100" % int(student.mood)
-				m_lbl.add_theme_color_override("font_color", normal_color)
+				m_lbl.self_modulate = Color.WHITE
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _roll_event(day_name: String) -> void:
@@ -936,17 +868,18 @@ func _roll_event(day_name: String) -> void:
 			else:
 				category_selected = "SeniBudaya"
 
+		var tokens := Juice.tokens()
 		if category_selected == "Akademis":
 			var scene = akademis_scenes[randi() % akademis_scenes.size()]
-			await _show_event_warning("📚 KEGIATAN AKADEMIS!", Color(0.3, 0.6, 1.0))
+			await _show_event_warning("📚 KEGIATAN AKADEMIS!", tokens.cat_akademis)
 			await _play_minigame(scene, "Akademis")
 		elif category_selected == "Olahraga":
 			var scene = olahraga_scenes[randi() % olahraga_scenes.size()]
-			await _show_event_warning("⚽ KEGIATAN OLAHRAGA!", Color(0.2, 0.9, 0.4))
+			await _show_event_warning("⚽ KEGIATAN OLAHRAGA!", tokens.cat_olahraga)
 			await _play_minigame(scene, "Olahraga")
 		else:
 			var scene = seni_scenes[randi() % seni_scenes.size()]
-			await _show_event_warning("🎨 KEGIATAN SENI BUDAYA!", Color(1.0, 0.75, 0.2))
+			await _show_event_warning("🎨 KEGIATAN SENI BUDAYA!", tokens.cat_senibudaya)
 			await _play_minigame(scene, "SeniBudaya")
 
 	else:
@@ -1179,7 +1112,8 @@ func _on_week_complete() -> void:
 
 	day_number_label.text = "Minggu selesai! 🎉"
 	day_label.text        = "Akhir Pekan"
-	progress_bar.value    = 100.0
+	progress_bar.show()
+	Juice.fill_bar(progress_bar, 100.0)
 	status_label.text     = "Selamat! Minggu sekolah telah selesai."
 	back_button.show()
 
@@ -1283,37 +1217,25 @@ func _on_back_pressed() -> void:
 func _show_end_simulation_tutorial() -> void:
 	_is_tutorial_active = true
 	
-	# Dimmer overlay
-	var overlay = ColorRect.new()
+	# Dimmer overlay -- a themed Scrim rather than a hand-colored ColorRect.
+	var overlay = Panel.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.color = Color(0, 0, 0, 0.65)
+	overlay.theme_type_variation = &"Scrim"
 	add_child(overlay)
-	
-	# PanelContainer setup
+
+	# PanelContainer setup.
+	#
+	# This used to prefer the dialogue_box.png placeholder when present.
+	# It no longer does: that art is a near-black box from the old dark
+	# palette, and the theme's label colors are now dark-on-light, so the
+	# tutorial text rendered black-on-black. Confirmed in a live run.
+	# The Card variation is the correct surface for a modal panel and
+	# keeps the text legible; the PNG stays in the project for the
+	# student-card slot, which is light and still reads fine.
 	_tutorial_panel = PanelContainer.new()
-	var box_tex = _get_playful_texture("dialogue_box")
-	if box_tex != null:
-		var style = StyleBoxTexture.new()
-		style.texture = box_tex
-		style.content_margin_left = 36
-		style.content_margin_right = 36
-		style.content_margin_top = 36
-		style.content_margin_bottom = 36
-		_tutorial_panel.add_theme_stylebox_override("panel", style)
-	else:
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.06, 0.06, 0.1, 0.93)
-		style.border_color = Color(0.85, 0.7, 0.25, 0.9)
-		style.border_width_left = 3
-		style.border_width_top = 3
-		style.border_width_right = 3
-		style.border_width_bottom = 3
-		style.corner_radius_top_left = 18
-		style.corner_radius_top_right = 18
-		style.corner_radius_bottom_left = 18
-		style.corner_radius_bottom_right = 18
-		_tutorial_panel.add_theme_stylebox_override("panel", style)
-	
+	_tutorial_panel.theme_type_variation = &"Card"
+
+
 	var viewport_size = get_viewport_rect().size
 	var panel_width = min(viewport_size.x * 0.85, 900)
 	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
@@ -1333,10 +1255,7 @@ func _show_end_simulation_tutorial() -> void:
 	_tutorial_title_label = Label.new()
 	_tutorial_title_label.text = end_tutorial_title
 	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.add_theme_font_size_override("font_size", 42)
-	_tutorial_title_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
-	_tutorial_title_label.add_theme_constant_override("outline_size", 6)
-	_tutorial_title_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_tutorial_title_label.theme_type_variation = &"H2Label"
 	vbox.add_child(_tutorial_title_label)
 	
 	var sep = HSeparator.new()
@@ -1347,8 +1266,6 @@ func _show_end_simulation_tutorial() -> void:
 	_tutorial_body_label.text = end_tutorial_text
 	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.add_theme_font_size_override("font_size", 28)
-	_tutorial_body_label.add_theme_color_override("font_color", Color(0.92, 0.94, 0.98))
 	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
 	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 100, 0)
 	vbox.add_child(_tutorial_body_label)
@@ -1360,19 +1277,19 @@ func _show_end_simulation_tutorial() -> void:
 	_tutorial_prompt_label = Label.new()
 	_tutorial_prompt_label.text = end_tutorial_prompt
 	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.add_theme_font_size_override("font_size", 24)
-	_tutorial_prompt_label.add_theme_color_override("font_color", Color(0.35, 0.9, 0.55))
-	_tutorial_prompt_label.add_theme_constant_override("outline_size", 5)
-	_tutorial_prompt_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_tutorial_prompt_label.theme_type_variation = &"CaptionLabel"
+	_tutorial_prompt_label.self_modulate = Juice.tokens().state_success
 	vbox.add_child(_tutorial_prompt_label)
 	
 	overlay.add_child(_tutorial_panel)
 	
-	# Pulsing Prompt Tween
+	# Pulsing Prompt Tween -- same hint pulse as the Splashscreen (Task 10).
 	_tutorial_prompt_label.modulate.a = 1.0
 	_blink_tween = create_tween().set_loops()
-	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 0.25, 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 1.0, 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 0.35, Juice.tokens().dur_slow) \
+		.set_ease(Tween.EASE_IN_OUT)
+	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 1.0, Juice.tokens().dur_slow) \
+		.set_ease(Tween.EASE_IN_OUT)
 	
 	# Position Centering
 	await get_tree().process_frame
@@ -1416,26 +1333,6 @@ func _reset_day_ui() -> void:
 	back_button.hide()
 	if skip_button:
 		skip_button.hide()
-	_apply_progress_bar_style()
-
-func _apply_progress_bar_style() -> void:
-	if not progress_bar:
-		return
-	var fill_style = StyleBoxFlat.new()
-	fill_style.bg_color = Color(0.95, 0.68, 0.08)
-	fill_style.corner_radius_top_left = 10
-	fill_style.corner_radius_top_right = 10
-	fill_style.corner_radius_bottom_left = 10
-	fill_style.corner_radius_bottom_right = 10
-	progress_bar.add_theme_stylebox_override("fill", fill_style)
-	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.08, 0.08, 0.14, 0.92)
-	bg_style.corner_radius_top_left = 10
-	bg_style.corner_radius_top_right = 10
-	bg_style.corner_radius_bottom_left = 10
-	bg_style.corner_radius_bottom_right = 10
-	progress_bar.add_theme_stylebox_override("background", bg_style)
-	progress_bar.show_percentage = false
 
 func _scene_name(scene: PackedScene) -> String:
 	if scene == null:

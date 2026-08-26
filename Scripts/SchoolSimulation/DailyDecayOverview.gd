@@ -211,7 +211,7 @@ func _add_bar_row(parent_vbox: VBoxContainer, label_text: String, start_val: flo
 
 	var lbl = Label.new()
 	lbl.text = label_text
-	lbl.custom_minimum_size = Vector2(340, 0)
+	lbl.custom_minimum_size = Vector2(220, 0)
 	lbl.theme_type_variation = &"TitleLabel"
 	if font: lbl.add_theme_font_override("font", font)
 	row.add_child(lbl)
@@ -225,7 +225,7 @@ func _add_bar_row(parent_vbox: VBoxContainer, label_text: String, start_val: flo
 	row.add_child(bar)
 
 	var info_lbl = Label.new()
-	info_lbl.custom_minimum_size = Vector2(240, 0)
+	info_lbl.custom_minimum_size = Vector2(180, 0)
 	info_lbl.theme_type_variation = &"TitleLabel"
 	info_lbl.text = "%d/100" % int(start_val)
 	info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT

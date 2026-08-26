@@ -265,7 +265,7 @@ func _add_stat_bar(parent: VBoxContainer, stat_name: String, target_val: float, 
 
 	var label = Label.new()
 	label.text = stat_name
-	label.custom_minimum_size = Vector2(340, 0)
+	label.custom_minimum_size = Vector2(220, 0)
 	label.theme_type_variation = &"TitleLabel"
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if font: label.add_theme_font_override("font", font)
@@ -287,7 +287,7 @@ func _add_stat_bar(parent: VBoxContainer, stat_name: String, target_val: float, 
 	})
 
 	var delta_lbl = Label.new()
-	delta_lbl.custom_minimum_size = Vector2(180, 0)
+	delta_lbl.custom_minimum_size = Vector2(120, 0)
 	delta_lbl.theme_type_variation = &"TitleLabel"
 	if font: delta_lbl.add_theme_font_override("font", font)
 	if delta > 0:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://Scripts/SchoolSimulation/SchoolDay.gd" id="1_schoolday"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/ResultCheckup.tscn" id="2_checkup"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/BookClockWidget.tscn" id="5_bookclock"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryPopup.tscn" id="6_summary"]
 [ext_resource type="Script" path="res://Scripts/SchoolSimulation/SimulationBackground.gd" id="7_bgscript"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="8_statbar"]
 
 [node name="SchoolDay" type="Control" unique_id=310225723]
 layout_mode = 3
@@ -28,7 +29,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.07, 0.07, 0.12, 1)
 script = ExtResource("7_bgscript")
 
 [node name="DayScreen" type="VBoxContainer" parent="." unique_id=689888867]
@@ -45,16 +45,14 @@ theme_override_constants/separation = 18
 [node name="DayNumberLabel" type="Label" parent="DayScreen" unique_id=361417759]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 32
+theme_type_variation = &"CaptionLabel"
 text = "Hari 1 dari 5"
 horizontal_alignment = 1
 
 [node name="DayLabel" type="Label" parent="DayScreen" unique_id=1074097941]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
-theme_override_font_sizes/font_size = 72
+theme_type_variation = &"H1Label"
 text = "Senin"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -68,13 +66,13 @@ size_flags_vertical = 3
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
+script = ExtResource("8_statbar")
+category = "Libur"
 
 [node name="StatusLabel" type="Label" parent="DayScreen" unique_id=359072452]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.84, 0, 1)
-theme_override_font_sizes/font_size = 36
+theme_type_variation = &"TitleLabel"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -94,26 +92,23 @@ theme_override_constants/separation = 20
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.8, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 36
+theme_type_variation = &"TitleLabel"
 text = "✨ Klik di mana saja untuk melanjutkan ➔"
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="BackButton" type="Button" parent="DayScreen" unique_id=1335205209]
 visible = false
-custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 36
+theme_type_variation = &"PrimaryButton"
 text = "🔙 Kembali ke Menu"
 
 [node name="SkipButton" type="Button" parent="DayScreen" unique_id=987654321]
 visible = false
-custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 36
+theme_type_variation = &"SecondaryButton"
 text = "⏭ Skip (Tekan O)"
 
 [node name="GameContainer" type="Control" parent="." unique_id=439134809]

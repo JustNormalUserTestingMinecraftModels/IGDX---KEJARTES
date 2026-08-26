@@ -108,12 +108,20 @@ static func count_up(label: Label, from: float, to: float, fmt: String = "%d") -
 			label.text = fmt % int(round(to)))
 
 
-static func fill_bar(bar: Range, to: float) -> void:
+## Animate a bar to `to`. `duration` defaults to tokens.dur_slow; pass an
+## explicit one only when the fill has to stay in lockstep with something
+## else that is paced by gameplay rather than by the motion tokens (the
+## school day's progress bar runs beside a clock widget over a fixed
+## in-fiction day length, for example). Returns the tween so callers can
+## await it.
+static func fill_bar(bar: Range, to: float, duration: float = -1.0) -> Tween:
 	if not _alive(bar):
-		return
+		return null
 	var tw := bar.create_tween()
 	tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	tw.tween_property(bar, "value", to, tokens().dur_slow)
+	tw.tween_property(bar, "value", to,
+		tokens().dur_slow if duration < 0.0 else duration)
+	return tw
 
 
 ## Horizontal shake for rejection/error feedback. Returns the node to

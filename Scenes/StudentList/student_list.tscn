@@ -4,25 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://c7gmkcle3uv8o" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="2_v3e4w"]
 [ext_resource type="Shader" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
 [ext_resource type="Texture2D" uid="uid://bhanm4qbpra2a" path="res://Assets/Images/UI/paper.png" id="3_paper"]
-[ext_resource type="Texture2D" uid="uid://0c5vps0sx30f" path="res://Assets/Images/UI/stickynotes.png" id="4_sticky"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_belum"]
-bg_color = Color(0.85, 0.2, 0.2, 0.9)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_left = 12
-corner_radius_bottom_right = 12
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sudah"]
-bg_color = Color(0.15, 0.75, 0.3, 0.9)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_left = 12
-corner_radius_bottom_right = 12
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 4
+[ext_resource type="PackedScene" uid="uid://cries6nb441ve" path="res://Scenes/StudentList/StickyNote.tscn" id="5_stickynote"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_spotlight"]
 shader = ExtResource("3_ovxc5")
@@ -51,10 +33,7 @@ offset_top = 30.0
 offset_right = 300.0
 offset_bottom = 110.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 60
+theme_type_variation = &"H1Label"
 text = "DAFTAR MURID"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -100,9 +79,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxFlat_belum")
+theme_type_variation = &"DangerButton"
 text = "BELUM TERJADWALKAN"
 
 [node name="Sudah" type="Button" parent="CardContainer/Murid1" unique_id=123021075]
@@ -113,9 +90,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxFlat_sudah")
+theme_type_variation = &"SuccessButton"
 text = "SUDAH TERJADWALKAN"
 
 [node name="Nama" type="Label" parent="CardContainer/Murid1" unique_id=1164132710]
@@ -125,8 +100,7 @@ offset_top = 45.0
 offset_right = 900.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+theme_type_variation = &"H2Label"
 text = "Hamamiya"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -161,200 +135,50 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Senin" type="TextureRect" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=10101]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Senin" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 280.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Senin"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Senin" unique_id=101011]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "SENIN"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Senin" unique_id=101012]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Selasa" type="TextureRect" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=10202]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Selasa" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 310.0
 offset_top = 40.0
 offset_right = 570.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Selasa"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Selasa" unique_id=102021]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "SELASA"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Selasa" unique_id=102022]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Rabu" type="TextureRect" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=10303]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Rabu" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 600.0
 offset_top = 40.0
 offset_right = 860.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Rabu"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Rabu" unique_id=103031]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "RABU"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Rabu" unique_id=103032]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Kamis" type="TextureRect" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=10404]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Kamis" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 165.0
 offset_top = 330.0
 offset_right = 425.0
 offset_bottom = 590.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Kamis"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Kamis" unique_id=104041]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "KAMIS"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Kamis" unique_id=104042]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Jumat" type="TextureRect" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=10505]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Jumat" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 455.0
 offset_top = 330.0
 offset_right = 715.0
 offset_bottom = 590.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
-
-[node name="DayLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Jumat" unique_id=105051]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "JUMAT"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid1/StickyNotesContainer/Jumat" unique_id=105052]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
+day_name = "Jumat"
+activity = "-"
 
 [node name="Murid2" type="TextureRect" parent="CardContainer" unique_id=981124888]
 visible = false
@@ -384,9 +208,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxFlat_belum")
+theme_type_variation = &"DangerButton"
 text = "BELUM TERJADWALKAN"
 
 [node name="Sudah" type="Button" parent="CardContainer/Murid2" unique_id=2109842934]
@@ -397,9 +219,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxFlat_sudah")
+theme_type_variation = &"SuccessButton"
 text = "SUDAH TERJADWALKAN"
 
 [node name="Nama" type="Label" parent="CardContainer/Murid2" unique_id=1575886457]
@@ -409,8 +229,7 @@ offset_top = 45.0
 offset_right = 900.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+theme_type_variation = &"H2Label"
 text = "Ambatukam"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -445,200 +264,50 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Senin" type="TextureRect" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=20101]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Senin" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 280.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Senin"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Senin" unique_id=201011]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "SENIN"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Senin" unique_id=201012]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Selasa" type="TextureRect" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=20202]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Selasa" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 310.0
 offset_top = 40.0
 offset_right = 570.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Selasa"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Selasa" unique_id=202021]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "SELASA"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Selasa" unique_id=202022]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Rabu" type="TextureRect" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=20303]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Rabu" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 600.0
 offset_top = 40.0
 offset_right = 860.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Rabu"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Rabu" unique_id=203031]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "RABU"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Rabu" unique_id=203032]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Kamis" type="TextureRect" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=20404]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Kamis" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 165.0
 offset_top = 330.0
 offset_right = 425.0
 offset_bottom = 590.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Kamis"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Kamis" unique_id=204041]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "KAMIS"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Kamis" unique_id=204042]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Jumat" type="TextureRect" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=20505]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Jumat" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 455.0
 offset_top = 330.0
 offset_right = 715.0
 offset_bottom = 590.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
-
-[node name="DayLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Jumat" unique_id=205051]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "JUMAT"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid2/StickyNotesContainer/Jumat" unique_id=205052]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
+day_name = "Jumat"
+activity = "-"
 
 [node name="Murid3" type="TextureRect" parent="CardContainer" unique_id=311519847]
 visible = false
@@ -668,9 +337,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxFlat_belum")
+theme_type_variation = &"DangerButton"
 text = "BELUM TERJADWALKAN"
 
 [node name="Sudah" type="Button" parent="CardContainer/Murid3" unique_id=844380401]
@@ -681,9 +348,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxFlat_sudah")
+theme_type_variation = &"SuccessButton"
 text = "SUDAH TERJADWALKAN"
 
 [node name="Nama" type="Label" parent="CardContainer/Murid3" unique_id=218609318]
@@ -693,8 +358,7 @@ offset_top = 45.0
 offset_right = 900.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+theme_type_variation = &"H2Label"
 text = "Zeta"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -729,200 +393,50 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Senin" type="TextureRect" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=30101]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Senin" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 280.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Senin"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Senin" unique_id=301011]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "SENIN"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Senin" unique_id=301012]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Selasa" type="TextureRect" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=30202]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Selasa" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 310.0
 offset_top = 40.0
 offset_right = 570.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Selasa"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Selasa" unique_id=302021]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "SELASA"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Selasa" unique_id=302022]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Rabu" type="TextureRect" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=30303]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Rabu" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 600.0
 offset_top = 40.0
 offset_right = 860.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Rabu"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Rabu" unique_id=303031]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "RABU"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Rabu" unique_id=303032]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Kamis" type="TextureRect" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=30404]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Kamis" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 165.0
 offset_top = 330.0
 offset_right = 425.0
 offset_bottom = 590.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Kamis"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Kamis" unique_id=304041]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "KAMIS"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Kamis" unique_id=304042]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Jumat" type="TextureRect" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=30505]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Jumat" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 455.0
 offset_top = 330.0
 offset_right = 715.0
 offset_bottom = 590.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
-
-[node name="DayLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Jumat" unique_id=305051]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "JUMAT"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid3/StickyNotesContainer/Jumat" unique_id=305052]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
+day_name = "Jumat"
+activity = "-"
 
 [node name="Murid4" type="TextureRect" parent="CardContainer" unique_id=1912832907]
 visible = false
@@ -952,9 +466,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxFlat_belum")
+theme_type_variation = &"DangerButton"
 text = "BELUM TERJADWALKAN"
 
 [node name="Sudah" type="Button" parent="CardContainer/Murid4" unique_id=488498106]
@@ -965,9 +477,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxFlat_sudah")
+theme_type_variation = &"SuccessButton"
 text = "SUDAH TERJADWALKAN"
 
 [node name="Nama" type="Label" parent="CardContainer/Murid4" unique_id=132510110]
@@ -977,8 +487,7 @@ offset_top = 45.0
 offset_right = 900.0
 offset_bottom = 125.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+theme_type_variation = &"H2Label"
 text = "Bocchi"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1013,200 +522,50 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Senin" type="TextureRect" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=40101]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Senin" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 280.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Senin"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Senin" unique_id=401011]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "SENIN"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Senin" unique_id=401012]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Selasa" type="TextureRect" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=40202]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Selasa" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 310.0
 offset_top = 40.0
 offset_right = 570.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Selasa"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Selasa" unique_id=402021]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "SELASA"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Selasa" unique_id=402022]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Rabu" type="TextureRect" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=40303]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Rabu" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 600.0
 offset_top = 40.0
 offset_right = 860.0
 offset_bottom = 300.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Rabu"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Rabu" unique_id=403031]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "RABU"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Rabu" unique_id=403032]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Kamis" type="TextureRect" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=40404]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Kamis" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 165.0
 offset_top = 330.0
 offset_right = 425.0
 offset_bottom = 590.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
+day_name = "Kamis"
+activity = "-"
 
-[node name="DayLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Kamis" unique_id=404041]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "KAMIS"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Kamis" unique_id=404042]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.05
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Jumat" type="TextureRect" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=40505]
-modulate = Color(0.7, 0.7, 1, 1)
-layout_mode = 0
+[node name="Jumat" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
 offset_left = 455.0
 offset_top = 330.0
 offset_right = 715.0
 offset_bottom = 590.0
 mouse_filter = 2
-texture = ExtResource("4_sticky")
-expand_mode = 1
-
-[node name="DayLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Jumat" unique_id=405051]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 38
-text = "JUMAT"
-horizontal_alignment = 1
-
-[node name="ActivityLabel" type="Label" parent="CardContainer/Murid4/StickyNotesContainer/Jumat" unique_id=405052]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
-rotation = -0.06
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.15, 0.2, 0.5, 1)
-theme_override_font_sizes/font_size = 30
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
+day_name = "Jumat"
+activity = "-"
 
 [node name="LeftArrow" type="Button" parent="." unique_id=654321098]
 layout_mode = 1
@@ -1218,8 +577,7 @@ offset_top = -80.0
 offset_right = 90.0
 offset_bottom = 80.0
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 72
+theme_type_variation = &"SecondaryButton"
 text = "<"
 
 [node name="RightArrow" type="Button" parent="." unique_id=654321099]
@@ -1233,8 +591,7 @@ offset_right = -10.0
 offset_bottom = 80.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 72
+theme_type_variation = &"SecondaryButton"
 text = ">"
 
 [node name="PageIndicator" type="HBoxContainer" parent="." unique_id=654321100]
@@ -1250,7 +607,6 @@ offset_right = 200.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_constants/separation = 16
 alignment = 1
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=1408146570]

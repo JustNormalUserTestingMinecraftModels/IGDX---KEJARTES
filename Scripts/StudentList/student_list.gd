@@ -5,26 +5,10 @@ extends Control
 @export var paper_texture: Texture2D = preload("res://Assets/Images/UI/paper.png")
 ## Custom sticky note texture override.
 @export var sticky_note_texture: Texture2D = preload("res://Assets/Images/UI/stickynotes.png")
-## Tint for scheduled sticky notes fallback.
-@export var scheduled_note_color: Color = Color(0.55, 0.45, 1.0)
-## Tint for unscheduled sticky notes.
-@export var unscheduled_note_color: Color = Color(0.7, 0.7, 0.8)
-
-# Subject category colors matching atur_jadwal.tscn
-const CATEGORY_COLORS = {
-	"Akademis": Color(0.16, 0.27, 1.0, 1.0),      # Blue
-	"Olahraga": Color(0.85, 0.2, 0.2, 1.0),      # Red
-	"SeniBudaya": Color(0.0, 0.6, 0.25, 1.0),    # Green
-	"Istirahat": Color(0.672, 0.72, 0.0, 1.0)    # Yellow
-}
 
 @export_group("Tutorial")
 ## Edit this array in the Inspector to customize each tutorial step.
 @export var tutorial_steps: Array[TutorialStepData] = []
-## Optional PNG texture for custom tutorial dialogue box background.
-@export var custom_panel_texture: Texture2D = null
-## Optional custom StyleBox override for the tutorial panel.
-@export var custom_panel_stylebox: StyleBox = null
 
 @onready var color_rect = $ColorRect
 @onready var click_area = $ColorRect/ClickArea
@@ -242,11 +226,13 @@ func _setup_students():
 			if sudah_btn:
 				sudah_btn.visible = fully_scheduled
 
-			# Setup Sticky Notes with category colors matching atur_jadwal.tscn
+			# Setup sticky notes: each is a StickyNote instance whose own
+			# script tints self_modulate from DesignTokens.category_color()
+			# and refreshes its label — this loop only decides the text.
 			var sticky_container = murid_node.get_node_or_null("StickyNotesContainer")
 			if sticky_container:
 				for day_name in required_days:
-					var sticky_node = sticky_container.get_node_or_null(day_name)
+					var sticky_node = sticky_container.get_node_or_null(day_name) as StickyNote
 					if sticky_node:
 						if sticky_note_texture:
 							sticky_node.texture = sticky_note_texture
@@ -254,15 +240,9 @@ func _setup_students():
 						var is_day_set = day_schedules_for_student.has(day_name)
 						if is_day_set:
 							var cat = day_schedules_for_student[day_name].get("category", "")
-							sticky_node.modulate = CATEGORY_COLORS.get(cat, scheduled_note_color)
-							var activity_label = sticky_node.get_node_or_null("ActivityLabel")
-							if activity_label:
-								activity_label.text = cat if cat != "" else "Terjadwal"
+							sticky_node.activity = cat if cat != "" else "Terjadwal"
 						else:
-							sticky_node.modulate = unscheduled_note_color
-							var activity_label = sticky_node.get_node_or_null("ActivityLabel")
-							if activity_label:
-								activity_label.text = "-"
+							sticky_node.activity = "-"
 
 			# Attach CardButton signals for 100% click & swipe reliability
 			var card_button = murid_node.get_node_or_null("CardButton")
@@ -290,7 +270,7 @@ func _build_page_indicators():
 	for i in range(card_nodes.size()):
 		var dot = Label.new()
 		dot.text = "●"
-		dot.add_theme_font_size_override("font_size", 42)
+		dot.theme_type_variation = &"H2Label"
 		page_indicator.add_child(dot)
 
 func _init_carousel_state():
@@ -306,16 +286,27 @@ func _init_carousel_state():
 		else:
 			card.hide()
 	_update_page_indicators()
+	Juice.stagger_in(card_nodes)
+	_stagger_card_notes(card_nodes[current_card_index])
+
+## Reveal one card's five day-notes with a shorter step than the
+## card-level stagger, as if they're being pinned up as the card opens.
+func _stagger_card_notes(card: Control) -> void:
+	var sticky_container = card.get_node_or_null("StickyNotesContainer")
+	if not sticky_container:
+		return
+	Juice.stagger_in(sticky_container.get_children(), DesignTokens.load_default().stagger_step * 0.5)
 
 func _update_page_indicators():
+	var tokens := DesignTokens.load_default()
 	if page_indicator:
 		var dots = page_indicator.get_children()
 		for i in range(dots.size()):
 			if dots[i] is Label:
 				if i == current_card_index:
-					dots[i].add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+					dots[i].self_modulate = tokens.currency_gold
 				else:
-					dots[i].add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+					dots[i].self_modulate = tokens.text_secondary
 
 	if left_arrow:
 		left_arrow.visible = (card_nodes.size() > 1)
@@ -379,6 +370,7 @@ func _switch_card(new_index: int, direction: int):
 
 	await tween_in.finished
 
+	_stagger_card_notes(new_card)
 	card_animating = false
 
 	# If in tutorial Step 1 (Navigasi Card), advance to Step 2 after card transition completes
@@ -457,6 +449,7 @@ func _on_student_selected(student: Dictionary, card_node: Control = null):
 		tw2.tween_property(card_node, "modulate:a", 0.0, 0.22)
 		await tw2.finished
 
+	AudioDirector.play_sfx(&"confirm")
 	print("Murid dipilih: ", student.get("name", ""))
 	GameState.selected_student = student
 	Transition.change_scene("res://Scenes/AturJadwal/atur_jadwal.tscn")
@@ -480,7 +473,7 @@ func _setup_tutorial():
 		if shader:
 			mat = ShaderMaterial.new()
 			mat.shader = shader
-			mat.set_shader_parameter("overlay_color", Color(0.0, 0.0, 0.0, 0.7))
+			mat.set_shader_parameter("overlay_color", DesignTokens.load_default().scrim_color())
 			mat.set_shader_parameter("rect_size", viewport_size)
 			color_rect.material = mat
 	else:
@@ -529,37 +522,11 @@ func _build_tutorial_panel():
 	_tutorial_panel.name = "TutorialPanel"
 	_tutorial_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var style: StyleBox
-	if custom_panel_stylebox:
-		style = custom_panel_stylebox
-	elif custom_panel_texture:
-		var tex_style = StyleBoxTexture.new()
-		tex_style.texture = custom_panel_texture
-		tex_style.content_margin_left = 28
-		tex_style.content_margin_top = 20
-		tex_style.content_margin_right = 28
-		tex_style.content_margin_bottom = 16
-		style = tex_style
-	else:
-		var flat = StyleBoxFlat.new()
-		flat.bg_color = Color(0.06, 0.06, 0.1, 0.93)
-		flat.corner_radius_top_left = 18
-		flat.corner_radius_top_right = 18
-		flat.corner_radius_bottom_left = 18
-		flat.corner_radius_bottom_right = 18
-		flat.border_width_left = 2
-		flat.border_width_top = 2
-		flat.border_width_right = 2
-		flat.border_width_bottom = 2
-		flat.border_color = Color(1.0, 0.85, 0.3, 0.5)
-		flat.shadow_color = Color(0, 0, 0, 0.5)
-		flat.shadow_size = 12
-		flat.content_margin_left = 28
-		flat.content_margin_top = 20
-		flat.content_margin_right = 28
-		flat.content_margin_bottom = 16
-		style = flat
-	_tutorial_panel.add_theme_stylebox_override("panel", style)
+	# Was: a hand-rolled dark StyleBoxFlat with a gold border. Now the
+	# project's Card surface, matching every other raised panel and
+	# picking up token changes for free (established in StudentCard,
+	# Task 12).
+	_tutorial_panel.theme_type_variation = &"Card"
 
 	var panel_width = min(viewport_size.x * 0.92, 1000)
 	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
@@ -571,10 +538,7 @@ func _build_tutorial_panel():
 
 	_tutorial_title_label = Label.new()
 	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.add_theme_font_size_override("font_size", 56)
-	_tutorial_title_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
-	_tutorial_title_label.add_theme_constant_override("outline_size", 6)
-	_tutorial_title_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_tutorial_title_label.theme_type_variation = &"H1Label"
 	vbox.add_child(_tutorial_title_label)
 
 	var sep = HSeparator.new()
@@ -584,8 +548,7 @@ func _build_tutorial_panel():
 	_tutorial_body_label = Label.new()
 	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.add_theme_font_size_override("font_size", 40)
-	_tutorial_body_label.add_theme_color_override("font_color", Color(0.92, 0.94, 0.98))
+	_tutorial_body_label.theme_type_variation = &"TitleLabel"
 	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
 	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 60, 0)
 	vbox.add_child(_tutorial_body_label)
@@ -597,10 +560,7 @@ func _build_tutorial_panel():
 	_tutorial_prompt_label = Label.new()
 	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
 	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.add_theme_font_size_override("font_size", 32)
-	_tutorial_prompt_label.add_theme_color_override("font_color", Color(0.35, 0.9, 0.55))
-	_tutorial_prompt_label.add_theme_constant_override("outline_size", 5)
-	_tutorial_prompt_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_tutorial_prompt_label.theme_type_variation = &"TitleLabel"
 	vbox.add_child(_tutorial_prompt_label)
 
 	color_rect.add_child(_tutorial_panel)
@@ -742,7 +702,7 @@ func _highlight_multiple(controls: Array, padding: float = 12.0):
 		if shader:
 			mat = ShaderMaterial.new()
 			mat.shader = shader
-			mat.set_shader_parameter("overlay_color", Color(0.0, 0.0, 0.0, 0.7))
+			mat.set_shader_parameter("overlay_color", DesignTokens.load_default().scrim_color())
 			mat.set_shader_parameter("rect_size", get_viewport_rect().size)
 			color_rect.material = mat
 	if not mat:

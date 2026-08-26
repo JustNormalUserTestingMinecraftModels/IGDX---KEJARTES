@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://cries6nb441ve"]
+
+[ext_resource type="Texture2D" uid="uid://dbkqgaqqwkp57" path="res://Assets/Images/UI/stickynotes.png" id="1_iwtuy"]
+[ext_resource type="Script" uid="uid://c47ib8or275b3" path="res://Scripts/StudentList/StickyNote.gd" id="2_o72i2"]
+
+[node name="StickyNote" type="TextureRect" unique_id=159726911]
+custom_minimum_size = Vector2(260, 260)
+texture = ExtResource("1_iwtuy")
+expand_mode = 1
+script = ExtResource("2_o72i2")
+
+[node name="DayLabel" type="Label" parent="." unique_id=594998491]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 35.0
+offset_right = 240.0
+offset_bottom = 85.0
+rotation = -0.05
+theme_type_variation = &"TitleLabel"
+text = "SENIN"
+horizontal_alignment = 1
+
+[node name="ActivityLabel" type="Label" parent="." unique_id=1314440149]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 110.0
+offset_right = 245.0
+offset_bottom = 220.0
+rotation = -0.05
+theme_type_variation = &"CaptionLabel"
+text = "-"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2

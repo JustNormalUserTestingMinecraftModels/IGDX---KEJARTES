@@ -7,10 +7,6 @@
 [ext_resource type="Texture2D" uid="uid://i6ar7lc7f23j" path="res://Assets/Images/UI/pngwing.com (5).png" id="4_q6pla"]
 [ext_resource type="Texture2D" uid="uid://cjoky7bj16ciw" path="res://Assets/Images/UI/Koin.png" id="5_6pr0q"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
-[ext_resource type="StyleBox" path="res://Assets/Images/UI/Placeholders/lobby_btn_hover.tres" id="btn_hover"]
-[ext_resource type="Texture2D" uid="uid://ecg5wpq3jued" path="res://Assets/Images/UI/Placeholders/btn_lobby.svg" id="btn_lobby_tex"]
-[ext_resource type="StyleBox" path="res://Assets/Images/UI/Placeholders/lobby_btn_normal.tres" id="btn_normal"]
-[ext_resource type="StyleBox" path="res://Assets/Images/UI/Placeholders/lobby_btn_pressed.tres" id="btn_pressed"]
 [ext_resource type="Texture2D" uid="uid://rdxrs4jl1r5r" path="res://Assets/Images/MuridPotrait/tanganThea.png" id="default_hand_tex"]
 [ext_resource type="Texture2D" uid="uid://dic0qp1gbfmij" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
@@ -35,7 +31,6 @@ offset_left = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ao7fi")
-btn_texture = ExtResource("btn_lobby_tex")
 bg_texture = ExtResource("bg_tex")
 
 [node name="BGLayer" type="TextureRect" parent="." unique_id=18068981]
@@ -319,16 +314,7 @@ offset_left = 156.0
 offset_top = 1351.0
 offset_right = 930.0
 offset_bottom = 1641.0
-theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
-theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
-theme_override_font_sizes/font_size = 105
-theme_override_styles/normal = ExtResource("btn_normal")
-theme_override_styles/pressed = ExtResource("btn_pressed")
-theme_override_styles/hover = ExtResource("btn_hover")
-theme_override_styles/disabled = ExtResource("btn_normal")
-theme_override_styles/focus = ExtResource("btn_normal")
+theme_type_variation = &"LobbyNavButton"
 text = "STUDENT"
 
 [node name="Koperasi" type="Button" parent="." unique_id=247017516]
@@ -337,16 +323,7 @@ offset_left = 28.0
 offset_top = 1729.0
 offset_right = 308.0
 offset_bottom = 1864.0
-theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
-theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
-theme_override_font_sizes/font_size = 51
-theme_override_styles/normal = ExtResource("btn_normal")
-theme_override_styles/pressed = ExtResource("btn_pressed")
-theme_override_styles/hover = ExtResource("btn_hover")
-theme_override_styles/disabled = ExtResource("btn_normal")
-theme_override_styles/focus = ExtResource("btn_normal")
+theme_type_variation = &"LobbyNavButton"
 text = "Koperasi"
 
 [node name="ReportStudent" type="Button" parent="." unique_id=803503757]
@@ -355,16 +332,7 @@ offset_left = 709.0
 offset_top = 1729.0
 offset_right = 1059.0
 offset_bottom = 1869.0
-theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
-theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
-theme_override_font_sizes/font_size = 36
-theme_override_styles/normal = ExtResource("btn_normal")
-theme_override_styles/pressed = ExtResource("btn_pressed")
-theme_override_styles/hover = ExtResource("btn_hover")
-theme_override_styles/disabled = ExtResource("btn_normal")
-theme_override_styles/focus = ExtResource("btn_normal")
+theme_type_variation = &"LobbyNavButton"
 text = "REPORT STUDENT"
 
 [node name="Inventory" type="Button" parent="." unique_id=1524317152]
@@ -373,16 +341,7 @@ offset_left = 359.0
 offset_top = 1708.0
 offset_right = 671.0
 offset_bottom = 1852.0
-theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
-theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
-theme_override_font_sizes/font_size = 39
-theme_override_styles/normal = ExtResource("btn_normal")
-theme_override_styles/pressed = ExtResource("btn_pressed")
-theme_override_styles/hover = ExtResource("btn_hover")
-theme_override_styles/disabled = ExtResource("btn_normal")
-theme_override_styles/focus = ExtResource("btn_normal")
+theme_type_variation = &"LobbyNavButton"
 text = "INVENTORY"
 
 [node name="Jadwal" type="Button" parent="." unique_id=2126015085]
@@ -391,16 +350,7 @@ offset_left = 150.0
 offset_top = 1361.0
 offset_right = 934.0
 offset_bottom = 1628.0
-theme_override_colors/font_color = Color(0.92549, 0.941176, 0.945098, 1)
-theme_override_colors/font_pressed_color = Color(0.741176, 0.764706, 0.780392, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.498039, 0.54902, 0.552941, 0.5)
-theme_override_font_sizes/font_size = 166
-theme_override_styles/normal = ExtResource("btn_normal")
-theme_override_styles/pressed = ExtResource("btn_pressed")
-theme_override_styles/hover = ExtResource("btn_hover")
-theme_override_styles/disabled = ExtResource("btn_normal")
-theme_override_styles/focus = ExtResource("btn_normal")
+theme_type_variation = &"LobbyNavButton"
 text = "JADWAL!"
 
 [node name="JUDUL" type="Label" parent="." unique_id=1317986974]
@@ -409,7 +359,7 @@ offset_left = 239.0
 offset_top = 96.0
 offset_right = 841.0
 offset_bottom = 382.0
-theme_override_font_sizes/font_size = 193
+theme_type_variation = &"DisplayLabel"
 text = "KELAS"
 
 [node name="DisplayUang" type="TextureRect" parent="." unique_id=102747421]
@@ -433,7 +383,7 @@ offset_left = -2.904869
 offset_top = 0.051002502
 offset_right = -3.888855
 offset_bottom = 1.9400024
-theme_override_font_sizes/font_size = 24
+theme_type_variation = &"BarLabel"
 text = "50"
 horizontal_alignment = 2
 
@@ -467,7 +417,7 @@ offset_left = 276.0
 offset_top = 25.0
 offset_right = 644.0
 offset_bottom = 104.0
-theme_override_font_sizes/font_size = 58
+theme_type_variation = &"H1Label"
 text = "Daily Reward"
 
 [node name="Day1" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=2016844990]
@@ -485,8 +435,7 @@ offset_left = 14.0
 offset_top = 78.0
 offset_right = 64.0
 offset_bottom = 115.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "10G"
 
 [node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day1" unique_id=1566304681]
@@ -495,8 +444,7 @@ offset_left = 9.0
 offset_top = -42.0
 offset_right = 74.0
 offset_bottom = -5.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "Day1"
 
 [node name="Day2" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=380237506]
@@ -514,8 +462,7 @@ offset_left = 14.0
 offset_top = 78.0
 offset_right = 64.0
 offset_bottom = 115.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "10G"
 
 [node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day2" unique_id=297315175]
@@ -524,8 +471,7 @@ offset_left = 9.0
 offset_top = -42.0
 offset_right = 74.0
 offset_bottom = -5.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "Day2"
 
 [node name="Day3" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1795176471]
@@ -543,8 +489,7 @@ offset_left = 14.0
 offset_top = 78.0
 offset_right = 64.0
 offset_bottom = 115.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "10G"
 
 [node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day3" unique_id=972452457]
@@ -553,8 +498,7 @@ offset_left = 9.0
 offset_top = -42.0
 offset_right = 74.0
 offset_bottom = -5.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "Day3"
 
 [node name="Day4" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=2125669158]
@@ -572,8 +516,7 @@ offset_left = 14.0
 offset_top = 78.0
 offset_right = 64.0
 offset_bottom = 115.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "10G"
 
 [node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day4" unique_id=2040716306]
@@ -582,8 +525,7 @@ offset_left = 9.0
 offset_top = -42.0
 offset_right = 74.0
 offset_bottom = -5.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "Day4"
 
 [node name="Day5" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1220563996]
@@ -601,8 +543,7 @@ offset_left = 14.0
 offset_top = 78.0
 offset_right = 64.0
 offset_bottom = 115.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "10G"
 
 [node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day5" unique_id=751138267]
@@ -611,8 +552,7 @@ offset_left = 9.0
 offset_top = -42.0
 offset_right = 74.0
 offset_bottom = -5.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "Day5"
 
 [node name="Day6" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=827404715]
@@ -630,8 +570,7 @@ offset_left = 14.0
 offset_top = 78.0
 offset_right = 64.0
 offset_bottom = 115.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "10G"
 
 [node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day6" unique_id=1368493211]
@@ -640,8 +579,7 @@ offset_left = 9.0
 offset_top = -42.0
 offset_right = 74.0
 offset_bottom = -5.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "Day6"
 
 [node name="Day7" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=476878237]
@@ -659,8 +597,7 @@ offset_left = 14.0
 offset_top = 78.0
 offset_right = 64.0
 offset_bottom = 115.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "10G"
 
 [node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day7" unique_id=1632813634]
@@ -669,8 +606,7 @@ offset_left = 9.0
 offset_top = -42.0
 offset_right = 74.0
 offset_bottom = -5.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 27
+theme_type_variation = &"CaptionLabel"
 text = "Day7"
 
 [node name="ButtonClaim" type="Button" parent="DailyLogin/DailyReward" unique_id=1114280413]
@@ -679,7 +615,7 @@ offset_left = 374.0
 offset_top = 257.0
 offset_right = 572.0
 offset_bottom = 351.0
-theme_override_font_sizes/font_size = 62
+theme_type_variation = &"SuccessButton"
 text = "CLAIM"
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=707453591]

@@ -1,16 +1,7 @@
 extends Control
 
-@export_group("UI Textures")
-@export var btn_texture: Texture2D
-@export var btn_texture_student: Texture2D
-@export var btn_texture_koperasi: Texture2D
-@export var btn_texture_report: Texture2D
-@export var btn_texture_inventory: Texture2D
-@export var btn_texture_jadwal: Texture2D
-
 @export_group("Background Layers")
 @export var bg_texture: Texture2D
-@export var tables_overlay_texture: Texture2D
 @export var default_portrait: Texture2D = preload("res://Assets/Images/MuridPotrait/Thea.png")
 
 @export_group("Hand Portraits by Persona")
@@ -20,10 +11,12 @@ extends Control
 @export var hand_pendiam: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_pendiam.png")
 @export var hand_santai: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_santai.png")
 
-@export_group("Button Styling")
-@export var btn_font_size: int = 42
-@export var btn_font_color: Color = Color(0.93, 0.93, 0.93)
-@export var btn_outline_color: Color = Color(0, 0, 0, 0.6)
+@export_group("Idle Motion")
+## Subtle looping vertical bob applied to the diorama's portrait
+## containers, so the hub does not read as a still image.
+@export var idle_bob_pixels: float = 6.0
+@export var idle_bob_period: float = 3.2
+
 
 @onready var color_rect = $ColorRect
 @onready var click_area = $ColorRect/ClickArea
@@ -47,6 +40,9 @@ extends Control
 	7: $DailyLogin/DailyReward/Day7,
 }
 
+@onready var portraits_back: Control = $StudentPortraitsContainer_Back
+@onready var portraits_front: Control = $StudentPortraitsContainer_Front
+
 @onready var portrait_slots = [
 	$StudentPortraitsContainer_Back/Slot1,
 	$StudentPortraitsContainer_Back/Slot2,
@@ -65,8 +61,6 @@ const DAILY_REWARD := 10
 @export_group("Tutorial")
 @export var tutorial_phase1_steps: Array[TutorialStepData] = []
 @export var tutorial_phase2_steps: Array[TutorialStepData] = []
-@export var custom_panel_texture: Texture2D = preload("res://Assets/Images/UI/tutorial_panel_bg.png")
-@export var custom_panel_stylebox: StyleBox = null
 
 const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
 
@@ -109,6 +103,8 @@ func _ready():
 		GameState.initialize_grade_targets()
 
 	_setup_students()
+	_start_idle_bob(portraits_back, 0.0)
+	_start_idle_bob(portraits_front, idle_bob_period * 0.25)
 
 	if tutorial_phase1_steps.is_empty() or tutorial_phase2_steps.is_empty():
 		_populate_default_tutorial_steps()
@@ -302,62 +298,21 @@ func _seeded_shuffle(arr: Array, rng: RandomNumberGenerator):
 		arr[i] = arr[j]
 		arr[j] = temp
 
-func _apply_lobby_button_style(btn: Button, tex: Texture2D) -> void:
-	if not btn: return
-	
-	btn.add_theme_font_size_override("font_size", btn_font_size)
-	btn.add_theme_color_override("font_color", btn_font_color)
-	btn.add_theme_color_override("font_hover_color", btn_font_color)
-	btn.add_theme_color_override("font_pressed_color", btn_font_color)
-	btn.add_theme_constant_override("outline_size", 4)
-	btn.add_theme_color_override("font_outline_color", btn_outline_color)
-	btn.clip_text = false
-	btn.autowrap_mode = TextServer.AUTOWRAP_OFF
-
-	if tex:
-		for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-			var s := StyleBoxTexture.new()
-			s.texture = tex
-			s.texture_margin_left = 32
-			s.texture_margin_right = 32
-			s.texture_margin_top = 16
-			s.texture_margin_bottom = 16
-			s.content_margin_left = 32
-			s.content_margin_right = 32
-			
-			if state == "hover":
-				s.modulate_color = Color(1.1, 1.1, 1.1)
-			elif state == "pressed":
-				s.modulate_color = Color(0.9, 0.9, 0.9)
-			elif state == "disabled":
-				s.modulate_color = Color(0.5, 0.5, 0.5)
-				
-			btn.add_theme_stylebox_override(state, s)
-	else:
-		for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-			var s = StyleBoxFlat.new()
-			match state:
-				"hover":    s.bg_color = Color(0.25, 0.35, 0.45)
-				"pressed":  s.bg_color = Color(0.15, 0.22, 0.28)
-				"disabled": s.bg_color = Color(0.18, 0.22, 0.26)
-				_:          s.bg_color = Color(0.17, 0.25, 0.31)
-			s.corner_radius_top_left    = 10
-			s.corner_radius_top_right   = 10
-			s.corner_radius_bottom_left = 10
-			s.corner_radius_bottom_right= 10
-			s.border_width_left   = 5
-			s.border_width_top    = 5
-			s.border_width_right  = 5
-			s.border_width_bottom = 5
-			s.border_color = Color(0.50, 0.51, 0.52)
-			s.content_margin_left   = 32
-			s.content_margin_right  = 32
-			s.content_margin_top    = 16
-			s.content_margin_bottom = 16
-			s.shadow_color  = Color(0, 0, 0, 0.4)
-			s.shadow_size   = 8
-			s.shadow_offset = Vector2(0, 4)
-			btn.add_theme_stylebox_override(state, s)
+## Slow looping vertical bob for a diorama portrait container, so the hub
+## does not read as a still image. Mirrors _animate_breathing's 2-leg
+## looped-tween shape; `delay` staggers the back/front containers so they
+## never move in perfect lockstep.
+func _start_idle_bob(container: Control, delay: float = 0.0) -> void:
+	if not container:
+		return
+	var base_pos := container.position
+	var tw := create_tween().set_loops()
+	if delay > 0.0:
+		tw.tween_interval(delay)
+	tw.tween_property(container, "position", base_pos + Vector2(0, -idle_bob_pixels), idle_bob_period * 0.5) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(container, "position", base_pos, idle_bob_period * 0.5) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _populate_default_tutorial_steps():
 	if tutorial_phase1_steps.is_empty():
@@ -396,41 +351,11 @@ func _build_tutorial_panel():
 	_tutorial_panel.name = "TutorialPanel"
 	_tutorial_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var style: StyleBox
-	if custom_panel_stylebox:
-		style = custom_panel_stylebox
-	elif custom_panel_texture:
-		var tex_style = StyleBoxTexture.new()
-		tex_style.texture = custom_panel_texture
-		tex_style.texture_margin_left = 40
-		tex_style.texture_margin_top = 40
-		tex_style.texture_margin_right = 40
-		tex_style.texture_margin_bottom = 40
-		tex_style.content_margin_left = 36
-		tex_style.content_margin_top = 28
-		tex_style.content_margin_right = 36
-		tex_style.content_margin_bottom = 24
-		style = tex_style
-	else:
-		var flat = StyleBoxFlat.new()
-		flat.bg_color = Color(0.17, 0.25, 0.31, 0.95) # Blackboard dark teal #2c3e50
-		flat.corner_radius_top_left = 18
-		flat.corner_radius_top_right = 18
-		flat.corner_radius_bottom_left = 18
-		flat.corner_radius_bottom_right = 18
-		flat.border_width_left = 4
-		flat.border_width_top = 4
-		flat.border_width_right = 4
-		flat.border_width_bottom = 4
-		flat.border_color = Color(0.50, 0.51, 0.52) # Chalk grey #7f8c8d
-		flat.shadow_color = Color(0, 0, 0, 0.5)
-		flat.shadow_size = 12
-		flat.content_margin_left = 28
-		flat.content_margin_top = 20
-		flat.content_margin_right = 28
-		flat.content_margin_bottom = 16
-		style = flat
-	_tutorial_panel.add_theme_stylebox_override("panel", style)
+	# Was: a three-way branch between an inspector StyleBox, a PNG
+	# nine-patch, and a hand-rolled dark-teal "blackboard" StyleBoxFlat.
+	# All three are now the project's Card surface, matching Task 12/13's
+	# identical treatment of this same shared tutorial-panel code.
+	_tutorial_panel.theme_type_variation = &"Card"
 
 	var panel_width = min(viewport_size.x * 0.92, 1000)
 	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
@@ -442,10 +367,7 @@ func _build_tutorial_panel():
 
 	_tutorial_title_label = Label.new()
 	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.add_theme_font_size_override("font_size", 56)
-	_tutorial_title_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.7)) # Chalk yellow
-	_tutorial_title_label.add_theme_constant_override("outline_size", 6)
-	_tutorial_title_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	_tutorial_title_label.theme_type_variation = &"H1Label"
 	vbox.add_child(_tutorial_title_label)
 
 	var sep = HSeparator.new()
@@ -455,8 +377,7 @@ func _build_tutorial_panel():
 	_tutorial_body_label = Label.new()
 	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.add_theme_font_size_override("font_size", 40)
-	_tutorial_body_label.add_theme_color_override("font_color", Color(0.93, 0.95, 0.98)) # Chalk white
+	_tutorial_body_label.theme_type_variation = &"TitleLabel"
 	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
 	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 60, 0)
 	vbox.add_child(_tutorial_body_label)
@@ -468,10 +389,7 @@ func _build_tutorial_panel():
 	_tutorial_prompt_label = Label.new()
 	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
 	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.add_theme_font_size_override("font_size", 32)
-	_tutorial_prompt_label.add_theme_color_override("font_color", Color(0.5, 0.95, 0.6)) # Chalk green
-	_tutorial_prompt_label.add_theme_constant_override("outline_size", 5)
-	_tutorial_prompt_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	_tutorial_prompt_label.theme_type_variation = &"TitleLabel"
 	vbox.add_child(_tutorial_prompt_label)
 
 	color_rect.add_child(_tutorial_panel)
@@ -533,7 +451,7 @@ func _fit_color_rect_to_viewport():
 func _create_blur_overlay():
 	blur_overlay = ColorRect.new()
 	blur_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	blur_overlay.color = Color(0, 0, 0, 0)
+	blur_overlay.color = Color.TRANSPARENT
 	var shader = load("res://Scripts/Shaders/blur.gdshader")
 	var mat = ShaderMaterial.new()
 	mat.shader = shader
@@ -560,9 +478,20 @@ func _setup_daily_login():
 	if daily_login_btn and not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
 		daily_login_btn.pressed.connect(_on_daily_login_pressed)
 
-func _update_money_display():
-	if money_label:
-		money_label.text = str(GameState.player_money) + "G"
+## Animates the money display via Juice.count_up instead of setting the
+## label's text directly. Pass the pre-change amount as `from_amount` to
+## get a rolling count and, when the value went up, a coin sfx; omitted
+## (or equal to the current amount) this just lands on the correct text
+## with no visible motion, which is what the initial _setup_daily_login()
+## call wants.
+func _update_money_display(from_amount: int = -1) -> void:
+	if not money_label:
+		return
+	var to_amount := GameState.player_money
+	var from := float(from_amount) if from_amount >= 0 else float(to_amount)
+	Juice.count_up(money_label, from, float(to_amount), "%dG")
+	if to_amount > int(from):
+		AudioDirector.play_sfx(&"coin")
 
 func _check_daily_login_reset():
 	var today = Time.get_date_string_from_system()
@@ -577,17 +506,28 @@ func _check_daily_login_reset():
 func _update_daily_login_visual():
 	var today = Time.get_date_string_from_system()
 	var already_claimed_today = GameState.last_claim_date == today
+	var tokens := DesignTokens.load_default()
+
+	# Claimed/past days dim to text_disabled; today's still-unclaimed day
+	# glows with the project's currency color; future days stay a
+	# half-opacity white preview.
+	var claimed_tint := tokens.text_disabled
+	claimed_tint.a = 1.0
+	var current_tint := tokens.currency_gold
+	current_tint.a = 1.0
+	var future_tint := Color.WHITE
+	future_tint.a = 0.5
 
 	for day_num in day_nodes.keys():
 		var node = day_nodes[day_num]
 		if not node:
 			continue
 		if day_num < GameState.daily_login_day:
-			node.modulate = Color(0.5, 0.5, 0.5, 1.0)
+			node.modulate = claimed_tint
 		elif day_num == GameState.daily_login_day:
-			node.modulate = Color(0.5, 0.5, 0.5, 1.0) if already_claimed_today else Color(1.0, 1.0, 0.6, 1.0)
+			node.modulate = claimed_tint if already_claimed_today else current_tint
 		else:
-			node.modulate = Color(1, 1, 1, 0.5)
+			node.modulate = future_tint
 
 	if claim_button and claim_button is BaseButton:
 		claim_button.disabled = already_claimed_today
@@ -608,15 +548,17 @@ func _show_daily_reward():
 	blur_mat.set_shader_parameter("lod", 0.0)
 	blur_mat.set_shader_parameter("darkness", 0.0)
 
-	# Show and animate popup
+	# Pop the whole popup in, then stagger the seven day tiles in behind it
+	# so the panel doesn't read as a flat, static screenshot.
 	daily_reward.visible = true
-	daily_reward.modulate = Color(1, 1, 1, 0)
-	daily_reward.scale = Vector2(0.8, 0.8)
-	daily_reward.pivot_offset = daily_reward.size / 2.0
+	Juice.pop_in(daily_reward)
+	var ordered_days: Array = []
+	for day_num in range(1, 8):
+		if day_nodes.has(day_num):
+			ordered_days.append(day_nodes[day_num])
+	Juice.stagger_in(ordered_days)
 
 	var tween = create_tween().set_parallel(true)
-	tween.tween_property(daily_reward, "modulate", Color(1, 1, 1, 1), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(daily_reward, "scale", Vector2(1, 1), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	tween.tween_method(_set_blur_lod, 0.0, 3.0, 0.25).set_ease(Tween.EASE_OUT)
 	tween.tween_method(_set_blur_darkness, 0.0, 0.3, 0.25).set_ease(Tween.EASE_OUT)
 
@@ -625,7 +567,7 @@ func _hide_daily_reward():
 		return
 	reward_popup_open = false
 	var tween = create_tween().set_parallel(true)
-	tween.tween_property(daily_reward, "modulate", Color(1, 1, 1, 0), 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_property(daily_reward, "modulate:a", 0.0, 0.15).set_ease(Tween.EASE_IN)
 	tween.tween_property(daily_reward, "scale", Vector2(0.8, 0.8), 0.15).set_ease(Tween.EASE_IN)
 	tween.tween_method(_set_blur_lod, 3.0, 0.0, 0.15).set_ease(Tween.EASE_IN)
 	tween.tween_method(_set_blur_darkness, 0.3, 0.0, 0.15).set_ease(Tween.EASE_IN)
@@ -687,11 +629,19 @@ func _on_claim_pressed():
 	if GameState.last_claim_date == today:
 		return
 
+	var claimed_day := GameState.daily_login_day
+	var old_money := GameState.player_money
+
 	GameState.player_money += DAILY_REWARD
 	GameState.last_claim_date = today
 
-	_update_money_display()
+	_update_money_display(old_money)
 	_update_daily_login_visual()
+
+	var claimed_node: Control = day_nodes.get(claimed_day)
+	if claimed_node:
+		Juice.pop_in(claimed_node)
+	AudioDirector.play_sfx(&"success")
 
 	GameState.daily_login_day += 1
 	if GameState.daily_login_day > 7:

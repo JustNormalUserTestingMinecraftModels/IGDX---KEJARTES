@@ -57,6 +57,15 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.cat_istirahat.lightened(0.18), tokens.cat_istirahat.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
 
+	# Lobby's five hub nav buttons used to point at three loose,
+	# hand-authored StyleBoxFlat .tres files (lobby_btn_normal/hover/
+	# pressed). Folded here so they obey the token cascade like every
+	# other button in the game instead of living outside the theme.
+	_add_button_variation(theme, tokens, "LobbyNavButton",
+		tokens.brand_primary_light, tokens.brand_primary_dark,
+		tokens.outline_card, tokens.text_on_brand)
+
+
 
 ## One glossy pill in four states. `top`/`bottom` form the vertical
 ## gradient that gives the button its Umamusume sheen.

@@ -716,7 +716,11 @@ func _show_day_summary(day_name: String) -> void:
 			child.queue_free()
 
 	add_child(summary_instance)
-	summary_instance.setup_summary(day_name, [], student_manager.students) # Pass empty summary array to skip instantiating simple rows!
+	# build_rows=false: this screen reparents its own live StudentScroll into
+	# the popup's RowsContainer below, so the popup must NOT also instantiate
+	# its own rows. The real summary is still handed over -- the popup needs
+	# it to pick the day's success/fail sting.
+	summary_instance.setup_summary(day_name, summary, student_manager.students, false)
 	
 	# Reparent our StudentScroll container into the popup's RowsContainer AFTER setup_summary has cleared the old rows
 	if rows_container:

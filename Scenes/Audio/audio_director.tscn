@@ -11,7 +11,6 @@
 [ext_resource type="AudioStream" uid="uid://dsqymqh5huu84" path="res://Assets/Audio/SFX/pop.ogg" id="9_o62ei"]
 
 [node name="AudioDirector" type="Node" unique_id=1021481202]
-process_mode = 3
 script = ExtResource("1_audio")
 sfx_tap = ExtResource("2_8cr4q")
 sfx_confirm = ExtResource("3_tr563")

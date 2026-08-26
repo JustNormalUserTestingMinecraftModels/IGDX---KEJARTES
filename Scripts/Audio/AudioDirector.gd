@@ -44,6 +44,24 @@ var _bgm_tween: Tween
 
 
 func _ready() -> void:
+	# @tool makes this script a "real" instance (not a placeholder) when the
+	# in-editor test runner instantiates audio_director.tscn programmatically
+	# and parents it under Engine.get_main_loop().root — that path must keep
+	# running full setup so tests can exercise it.
+	#
+	# But @tool ALSO means _ready() fires for real when a human just opens
+	# Scenes/Audio/audio_director.tscn in the editor (e.g. to drag an .ogg
+	# onto a slot, per Assets/Audio/README.md). In that case this node IS
+	# (or is inside) the editor's edited-scene tree, and running setup would
+	# spawn live AudioStreamPlayers in the editor and let _load_volumes()/
+	# _save_volumes() read and overwrite the real user://audio.cfg just from
+	# having the scene open. Skip setup only for that case.
+	if Engine.is_editor_hint():
+		var tree := get_tree()
+		var edited_root: Node = tree.edited_scene_root if tree else null
+		if edited_root != null and (self == edited_root or edited_root.is_ancestor_of(self)):
+			return
+
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 	for i in SFX_POOL_SIZE:

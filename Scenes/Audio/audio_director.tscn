@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://d0bgiry48yjow"]
+
+[ext_resource type="Script" uid="uid://w8hk3d5adcmu" path="res://Scripts/Audio/AudioDirector.gd" id="1_audio"]
+[ext_resource type="AudioStream" uid="uid://bhonqlcik2jly" path="res://Assets/Audio/SFX/tap.ogg" id="2_8cr4q"]
+[ext_resource type="AudioStream" uid="uid://cipjakd23ghcb" path="res://Assets/Audio/SFX/confirm.ogg" id="3_tr563"]
+[ext_resource type="AudioStream" uid="uid://cyxuwgj11alxf" path="res://Assets/Audio/SFX/cancel.ogg" id="4_ikp5m"]
+[ext_resource type="AudioStream" uid="uid://csri8fxh0qq60" path="res://Assets/Audio/SFX/success.ogg" id="5_rxfkv"]
+[ext_resource type="AudioStream" uid="uid://bsc361pdf1jv8" path="res://Assets/Audio/SFX/fail.ogg" id="6_psmar"]
+[ext_resource type="AudioStream" uid="uid://cfrupfphlvi8x" path="res://Assets/Audio/SFX/coin.ogg" id="7_hhe06"]
+[ext_resource type="AudioStream" uid="uid://ukjf7fho680s" path="res://Assets/Audio/SFX/whoosh.ogg" id="8_5se8n"]
+[ext_resource type="AudioStream" uid="uid://dsqymqh5huu84" path="res://Assets/Audio/SFX/pop.ogg" id="9_o62ei"]
+
+[node name="AudioDirector" type="Node" unique_id=1021481202]
+process_mode = 3
+script = ExtResource("1_audio")
+sfx_tap = ExtResource("2_8cr4q")
+sfx_confirm = ExtResource("3_tr563")
+sfx_cancel = ExtResource("4_ikp5m")
+sfx_success = ExtResource("5_rxfkv")
+sfx_fail = ExtResource("6_psmar")
+sfx_coin = ExtResource("7_hhe06")
+sfx_whoosh = ExtResource("8_5se8n")
+sfx_pop = ExtResource("9_o62ei")

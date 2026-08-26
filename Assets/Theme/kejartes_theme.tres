@@ -1,7 +1,7 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" format=3 uid="uid://bo3dwau466faa"]
 
-[ext_resource type="FontFile" path="res://Assets/Fonts/Baloo2-Variable.ttf" id="1_i33xe"]
-[ext_resource type="FontFile" path="res://Assets/Fonts/Nunito-Variable.ttf" id="2_c7jio"]
+[ext_resource type="FontFile" uid="uid://dlbve18vfs2eo" path="res://Assets/Fonts/Baloo2-Variable.ttf" id="1_i33xe"]
+[ext_resource type="FontFile" uid="uid://dk3cr4sdo2t1n" path="res://Assets/Fonts/Nunito-Variable.ttf" id="2_c7jio"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i33xe"]
 content_margin_left = 44.0

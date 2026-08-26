@@ -1,12 +1,5 @@
 extends Control
 
-@export_group("Stat & Needs Colors")
-@export var color_mood: Color = Color(0.50, 0.14, 0.74)
-@export var color_energy: Color = Color(0.90, 0.66, 0.04)
-@export var color_akademis: Color = Color(0.10, 0.28, 0.90)
-@export var color_senibudaya: Color = Color(0.10, 0.62, 0.22)
-@export var color_olahraga: Color = Color(0.87, 0.21, 0.07)
-
 @export_group("UI Textures (Optional Replace)")
 @export var icon_magnify: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_magnify.svg")
 @export var icon_mood: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_mood.svg")
@@ -702,6 +695,7 @@ func _transition_page(old_index: int, new_index: int, direction: int):
 
 	await tween_in.finished
 
+	_stagger_in_card(new_index)
 	_update_page_label(new_index)
 
 	is_animating = false
@@ -747,10 +741,34 @@ func _show_stamp_if_approved(index: int):
 		if batal_btn:
 			batal_btn.visible = false
 
+## The rows of one student page, top to bottom, for staggered entry.
+## Order matters: Juice.stagger_in delays each node by one stagger_step,
+## so this list is what the player's eye follows down the card.
+const CARD_ROW_ORDER := ["Nama", "Profil", "Kepribadian", "Kepribadian1",
+	"Kepribadian2", "Akademis", "Akademis1", "Akademis2", "Akademis3",
+	"KutuBuku", "KutuBuku2"]
+
+
+## Reveal the newly-shown page's contents row by row instead of having
+## the whole card appear at once. Only ever called for a page that is
+## already visible and settled, never mid page-transition.
+func _stagger_in_card(index: int) -> void:
+	if index < 0 or index >= kertas_murid.size():
+		return
+	var kertas: Node = kertas_murid[index]
+	var rows: Array = []
+	for row_name in CARD_ROW_ORDER:
+		var node = kertas.get_node_or_null(row_name)
+		if node != null:
+			rows.append(node)
+	Juice.stagger_in(rows)
+
+
 func _show_page(index: int):
 	for i in kertas_murid.size():
 		kertas_murid[i].visible = (i == index)
 
+	_stagger_in_card(index)
 	_show_stamp_if_approved(index)
 	_update_nav_buttons(index)
 	_update_page_label(index)
@@ -1057,14 +1075,23 @@ func _get_stat_icon(bname: String) -> Texture2D:
 		"Akademis3": return icon_olahraga
 	return null
 
+## Which DesignTokens category accent a given bar belongs to. Mood and
+## Energy are "needs" rather than schedule categories, so they borrow the
+## two accents no skill uses: Istirahat (rest, violet) for Mood and Libur
+## (holiday, amber) for Energy. That keeps the five bars mutually
+## distinguishable while every color still comes from one token set.
+const BAR_CATEGORY := {
+	"Kepribadian1": "Istirahat",
+	"Kepribadian2": "Libur",
+	"Akademis1": "Akademis",
+	"Akademis2": "SeniBudaya",
+	"Akademis3": "Olahraga",
+}
+
+
 func _get_bar_color(bname: String) -> Color:
-	match bname:
-		"Kepribadian1": return color_mood
-		"Kepribadian2": return color_energy
-		"Akademis1": return color_akademis
-		"Akademis2": return color_senibudaya
-		"Akademis3": return color_olahraga
-	return Color.WHITE
+	var tok := DesignTokens.load_default()
+	return tok.category_color(BAR_CATEGORY.get(bname, ""))
 
 func _resize_and_style_bars(kertas: Control, s_data: Dictionary) -> void:
 	const BAR_HEIGHT := 68.0
@@ -1122,24 +1149,16 @@ func _resize_and_style_bars(kertas: Control, s_data: Dictionary) -> void:
 			stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 			stat_lbl.theme_type_variation = &"BarLabel"
 
-		# Rounded background
-		var bg = StyleBoxFlat.new()
-		bg.bg_color = Color(0, 0, 0, 0.15)
-		bg.corner_radius_top_left    = 18
-		bg.corner_radius_top_right   = 18
-		bg.corner_radius_bottom_left = 18
-		bg.corner_radius_bottom_right= 18
-		bar.add_theme_stylebox_override("background", bg)
-
-		# Rounded fill
-		var fill = StyleBoxFlat.new()
-		fill.bg_color = _get_bar_color(bname)
-		fill.corner_radius_top_left    = 18
-		fill.corner_radius_top_right   = 18
-		fill.corner_radius_bottom_left = 18
-		fill.corner_radius_bottom_right= 18
-		bar.add_theme_stylebox_override("fill", fill)
-		
+		# The bars are StatBar nodes now: the pill track and the white
+		# fill come from the StatBar theme variation, and the per-category
+		# tint from StatBar.category (set in the scene) via self_modulate.
+		# Nothing here needs to build a stylebox any more. Animating the
+		# value through set_stat() also gives each bar a fill sweep on
+		# entry instead of snapping to its final width.
+		if bar is StatBar:
+			bar.set_stat(current_val)
+		else:
+			bar.value = current_val
 		bar.show_percentage = false
 
 		# Make it obviously clickable
@@ -1303,7 +1322,7 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 	else:
 		var icon_lbl := Label.new()
 		icon_lbl.text = icon
-		icon_lbl.add_theme_font_size_override("font_size", 72)
+		icon_lbl.theme_type_variation = &"H1Label"
 		icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		hbox.add_child(icon_lbl)
 
@@ -1313,17 +1332,12 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 
 	var type_lbl := Label.new()
 	type_lbl.text = category_name
-	type_lbl.add_theme_font_size_override("font_size", 30)
-	type_lbl.add_theme_color_override("font_color", Color(0, 0, 0, 0.4))
-	type_lbl.add_theme_constant_override("outline_size", 0)
+	type_lbl.theme_type_variation = &"CaptionLabel"
 	title_vbox.add_child(type_lbl)
 
 	var name_lbl := Label.new()
 	name_lbl.text = stat_name
-	name_lbl.add_theme_font_size_override("font_size", 58)
-	name_lbl.add_theme_color_override("font_color", Color.BLACK)
-	name_lbl.add_theme_constant_override("outline_size", 2)
-	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.1))
+	name_lbl.theme_type_variation = &"H2Label"
 	title_vbox.add_child(name_lbl)
 
 	var close_btn := Button.new()
@@ -1343,41 +1357,23 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 
 	var num_lbl := Label.new()
 	num_lbl.text = "%s: %d / %d" % [stat_name.to_upper(), int(current_val), int(max_val)]
-	num_lbl.add_theme_font_size_override("font_size", 60)
-	num_lbl.add_theme_color_override("font_color", _get_bar_color(bname))
-	num_lbl.add_theme_constant_override("outline_size", 2)
-	num_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.2))
+	num_lbl.theme_type_variation = &"H2Label"
 	body_vbox.add_child(num_lbl)
-	
-	# Create a visual progress bar for the popup
-	var popup_bar := ProgressBar.new()
-	popup_bar.custom_minimum_size = Vector2(0, 64)
-	popup_bar.max_value = max_val
-	popup_bar.value = current_val
-	popup_bar.show_percentage = false
-	
-	var pb_bg := StyleBoxFlat.new()
-	pb_bg.bg_color = Color(0, 0, 0, 0.1)
-	pb_bg.corner_radius_top_left = 16
-	pb_bg.corner_radius_top_right = 16
-	pb_bg.corner_radius_bottom_left = 16
-	pb_bg.corner_radius_bottom_right = 16
-	popup_bar.add_theme_stylebox_override("background", pb_bg)
-	
-	var pb_fill := StyleBoxFlat.new()
-	pb_fill.bg_color = _get_bar_color(bname)
-	pb_fill.corner_radius_top_left = 16
-	pb_fill.corner_radius_top_right = 16
-	pb_fill.corner_radius_bottom_left = 16
-	pb_fill.corner_radius_bottom_right = 16
-	popup_bar.add_theme_stylebox_override("fill", pb_fill)
-	
+
+	# Create a visual progress bar for the popup. Same StatBar component
+	# the card itself uses, so the popup's bar and the bar the player
+	# tapped to open it are guaranteed to look identical.
+	var popup_bar := StatBar.new()
+	popup_bar.custom_minimum_size = Vector2(0, float(
+		DesignTokens.load_default().touch_target_min) * 0.6)
+	popup_bar.category = BAR_CATEGORY.get(bname, "")
 	body_vbox.add_child(popup_bar)
+	popup_bar.max_value = max_val
+	popup_bar.set_stat(current_val)
 
 	var desc_lbl := Label.new()
 	desc_lbl.text = desc
-	desc_lbl.add_theme_font_size_override("font_size", 40)
-	desc_lbl.add_theme_color_override("font_color", Color(0.14, 0.09, 0.04))
+	desc_lbl.theme_type_variation = &"TitleLabel"
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_lbl.add_theme_constant_override("line_spacing", 12)
 	body_vbox.add_child(desc_lbl)
@@ -1385,12 +1381,13 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 	await get_tree().process_frame
 	if not is_instance_valid(popup):
 		return
+	# Was a 0.36s slide up from off the bottom edge. Juice.pop_in is the
+	# project's standard reveal for a detail surface, and it reads faster
+	# on a screen where the popup is the only thing that moved.
 	var ph: float = popup.size.y
-	popup.position = Vector2((vp.x - popup.size.x) * 0.5, vp.y)
-
-	var tw1 := create_tween()
-	tw1.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw1.tween_property(popup, "position:y", vp.y - ph - 36.0, 0.36)
+	popup.position = Vector2((vp.x - popup.size.x) * 0.5,
+		vp.y - ph - float(DesignTokens.load_default().space_md))
+	Juice.pop_in(popup)
 
 	var tw2 := create_tween()
 	tw2.set_trans(Tween.TRANS_LINEAR)
@@ -1478,7 +1475,11 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 
 	var vp: Vector2 = get_viewport_rect().size
 	var is_quirk := (type == "quirk")
-	var accent := Color(0.04, 0.56, 0.68) if is_quirk else Color(0.48, 0.13, 0.78)
+	# Matches the QuirkBadge / PersonaBadge button variations, so tapping a
+	# badge opens a popup headed in that badge's own color.
+	var accent_tokens := DesignTokens.load_default()
+	var accent := accent_tokens.brand_primary if is_quirk \
+		else accent_tokens.cat_istirahat
 
 	var canvas := CanvasLayer.new()
 	canvas.name = "PopupCanvas"
@@ -1535,7 +1536,7 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 
 	var icon_lbl := Label.new()
 	icon_lbl.text = "⚡" if is_quirk else "🌟"
-	icon_lbl.add_theme_font_size_override("font_size", 72)
+	icon_lbl.theme_type_variation = &"H1Label"
 	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hbox.add_child(icon_lbl)
 
@@ -1543,20 +1544,16 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 	title_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(title_vbox)
 
+	# Both sit on the saturated accent header, which is exactly the
+	# backdrop BarLabel exists for: white glyph, dark rim.
 	var type_lbl := Label.new()
 	type_lbl.text = "QUIRK" if is_quirk else "PERSONA"
-	type_lbl.add_theme_font_size_override("font_size", 30)
-	type_lbl.add_theme_color_override("font_color", Color(1, 1, 1, 0.78))
-	type_lbl.add_theme_constant_override("outline_size", 3)
-	type_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
+	type_lbl.theme_type_variation = &"BarLabel"
 	title_vbox.add_child(type_lbl)
 
 	var name_lbl := Label.new()
 	name_lbl.text = name
-	name_lbl.add_theme_font_size_override("font_size", 58)
-	name_lbl.add_theme_color_override("font_color", Color.WHITE)
-	name_lbl.add_theme_constant_override("outline_size", 5)
-	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	name_lbl.theme_type_variation = &"BarLabel"
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title_vbox.add_child(name_lbl)
 
@@ -1574,8 +1571,7 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 
 	var desc_lbl := Label.new()
 	desc_lbl.text = "💡  EFEK GAMEPLAY:\n" + desc
-	desc_lbl.add_theme_font_size_override("font_size", 40)
-	desc_lbl.add_theme_color_override("font_color", Color(0.14, 0.09, 0.04))
+	desc_lbl.theme_type_variation = &"TitleLabel"
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_lbl.add_theme_constant_override("line_spacing", 12)
 	body.add_child(desc_lbl)
@@ -1584,13 +1580,12 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 	await get_tree().process_frame
 	if not is_instance_valid(popup):
 		return
+	# Same reveal as the stat popup: place, then Juice.pop_in.
 	var pw := popup.size.x
 	var ph := popup.size.y
-	popup.position = Vector2((vp.x - pw) * 0.5, vp.y)
-
-	var tw1 := create_tween()
-	tw1.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw1.tween_property(popup, "position:y", vp.y - ph - 36, 0.36)
+	popup.position = Vector2((vp.x - pw) * 0.5,
+		vp.y - ph - float(DesignTokens.load_default().space_md))
+	Juice.pop_in(popup)
 
 	var tw2 := create_tween()
 	tw2.set_trans(Tween.TRANS_LINEAR)
@@ -1781,8 +1776,10 @@ func _on_approve_pressed(page_index: int):
 
 	var approve_btn = kertas_murid[page_index].get_node_or_null("Aprove")
 	var batal_btn = kertas_murid[page_index].get_node_or_null("Batal")
+	AudioDirector.play_sfx(&"confirm")
 	if approve_btn:
-		_animate_button_click_bounce(approve_btn, Color(0.2, 0.9, 0.3))
+		_animate_button_click_bounce(approve_btn,
+			DesignTokens.load_default().state_success)
 
 	approved[page_index] = true
 	approved_count += 1
@@ -1808,8 +1805,10 @@ func _on_batal_pressed(page_index: int):
 
 	var approve_btn = kertas_murid[page_index].get_node_or_null("Aprove")
 	var batal_btn = kertas_murid[page_index].get_node_or_null("Batal")
+	AudioDirector.play_sfx(&"cancel")
 	if batal_btn:
-		_animate_button_click_bounce(batal_btn, Color(0.9, 0.2, 0.2))
+		_animate_button_click_bounce(batal_btn,
+			DesignTokens.load_default().state_danger)
 
 	approved[page_index] = false
 	approved_count = max(0, approved_count - 1)

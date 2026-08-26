@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://px5tkr2hweig"]
 
 [ext_resource type="Script" uid="uid://csmj7c70fnwm1" path="res://Scripts/StudentCard/student_card.gd" id="1_ao2t8"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 [ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="1_jsirh"]
 [ext_resource type="Texture2D" uid="uid://croetdw7smqvd" path="res://Assets/Images/MuridPotrait/Murid3.jpg" id="3_33k3e"]
 [ext_resource type="Texture2D" uid="uid://brotcydbytvmj" path="res://Assets/Images/MuridPotrait/Murid6.jpg" id="3_a1isy"]
@@ -11,31 +12,6 @@
 [ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="4_vdd03"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://b0ttj7iunp215" path="res://Assets/Images/UI/paper_placeholder.jpg" id="8_hodfn"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r4bra"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ns7oa"]
-bg_color = Color(0, 0, 0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ogyao"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6w8h2"]
-bg_color = Color(1, 0.9333334, 0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tif85"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w13cc"]
-bg_color = Color(0, 0.16666651, 1, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vngbl"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r7c70"]
-bg_color = Color(0.17599994, 0.88, 0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_26k8k"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ekoon"]
-bg_color = Color(0.89, 0, 0, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
 shader = ExtResource("3_ovxc5")
@@ -162,9 +138,9 @@ offset_right = 500.0
 offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid6" unique_id=101612949]
-theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Istirahat"
+max_value = 100.0
 value = 60.0
 show_percentage = false
 
@@ -196,9 +172,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid6" unique_id=1855993380]
-theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
-theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Libur"
+max_value = 100.0
 value = 50.0
 show_percentage = false
 
@@ -230,9 +206,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid6" unique_id=254169502]
-theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
-theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Akademis"
+max_value = 100.0
 value = 35.0
 show_percentage = false
 
@@ -264,9 +240,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid6" unique_id=423182825]
-theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
-theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "SeniBudaya"
+max_value = 100.0
 value = 20.0
 show_percentage = false
 
@@ -298,9 +274,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid6" unique_id=609774354]
-theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Olahraga"
+max_value = 100.0
 value = 40.0
 show_percentage = false
 
@@ -454,9 +430,9 @@ offset_right = 500.0
 offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid5" unique_id=1718979238]
-theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Istirahat"
+max_value = 100.0
 value = 60.0
 show_percentage = false
 
@@ -488,9 +464,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid5" unique_id=944929826]
-theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
-theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Libur"
+max_value = 100.0
 value = 50.0
 show_percentage = false
 
@@ -522,9 +498,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid5" unique_id=1735959426]
-theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
-theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Akademis"
+max_value = 100.0
 value = 35.0
 show_percentage = false
 
@@ -556,9 +532,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid5" unique_id=691909228]
-theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
-theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "SeniBudaya"
+max_value = 100.0
 value = 20.0
 show_percentage = false
 
@@ -590,9 +566,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid5" unique_id=569883677]
-theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Olahraga"
+max_value = 100.0
 value = 40.0
 show_percentage = false
 
@@ -747,9 +723,9 @@ offset_right = 500.0
 offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid4" unique_id=841029218]
-theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Istirahat"
+max_value = 100.0
 value = 60.0
 show_percentage = false
 
@@ -781,9 +757,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid4" unique_id=1156609344]
-theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
-theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Libur"
+max_value = 100.0
 value = 50.0
 show_percentage = false
 
@@ -815,9 +791,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid4" unique_id=1424130807]
-theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
-theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Akademis"
+max_value = 100.0
 value = 35.0
 show_percentage = false
 
@@ -849,9 +825,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid4" unique_id=1209295979]
-theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
-theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "SeniBudaya"
+max_value = 100.0
 value = 20.0
 show_percentage = false
 
@@ -883,9 +859,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid4" unique_id=667467974]
-theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Olahraga"
+max_value = 100.0
 value = 40.0
 show_percentage = false
 
@@ -1040,9 +1016,9 @@ offset_right = 500.0
 offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid3" unique_id=1970699477]
-theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Istirahat"
+max_value = 100.0
 value = 60.0
 show_percentage = false
 
@@ -1074,9 +1050,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid3" unique_id=769070225]
-theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
-theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Libur"
+max_value = 100.0
 value = 50.0
 show_percentage = false
 
@@ -1108,9 +1084,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid3" unique_id=1877461506]
-theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
-theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Akademis"
+max_value = 100.0
 value = 35.0
 show_percentage = false
 
@@ -1142,9 +1118,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid3" unique_id=1388406393]
-theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
-theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "SeniBudaya"
+max_value = 100.0
 value = 20.0
 show_percentage = false
 
@@ -1176,9 +1152,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid3" unique_id=1303018386]
-theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Olahraga"
+max_value = 100.0
 value = 40.0
 show_percentage = false
 
@@ -1333,9 +1309,9 @@ offset_right = 500.0
 offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid2" unique_id=1781486670]
-theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Istirahat"
+max_value = 100.0
 value = 60.0
 show_percentage = false
 
@@ -1367,9 +1343,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid2" unique_id=1293459282]
-theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
-theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Libur"
+max_value = 100.0
 value = 50.0
 show_percentage = false
 
@@ -1401,9 +1377,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid2" unique_id=1728939962]
-theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
-theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Akademis"
+max_value = 100.0
 value = 35.0
 show_percentage = false
 
@@ -1435,9 +1411,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid2" unique_id=1581993055]
-theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
-theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "SeniBudaya"
+max_value = 100.0
 value = 20.0
 show_percentage = false
 
@@ -1469,9 +1445,9 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid2" unique_id=1182239999]
-theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
-max_value = 65.0
+script = ExtResource("statbar")
+category = "Olahraga"
+max_value = 100.0
 value = 40.0
 show_percentage = false
 
@@ -1625,14 +1601,14 @@ text = "SKILL"
 
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid1" unique_id=1809899533]
+script = ExtResource("statbar")
+category = "Istirahat"
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_override_styles/background = SubResource("StyleBoxFlat_r4bra")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ns7oa")
-max_value = 65.0
+max_value = 100.0
 value = 60.0
 show_percentage = false
 
@@ -1659,14 +1635,14 @@ vertical_alignment = 1
 
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid1" unique_id=40407347]
+script = ExtResource("statbar")
+category = "Libur"
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_override_styles/background = SubResource("StyleBoxFlat_ogyao")
-theme_override_styles/fill = SubResource("StyleBoxFlat_6w8h2")
-max_value = 65.0
+max_value = 100.0
 value = 50.0
 show_percentage = false
 
@@ -1693,14 +1669,14 @@ vertical_alignment = 1
 
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid1" unique_id=1786877303]
+script = ExtResource("statbar")
+category = "Akademis"
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
-theme_override_styles/background = SubResource("StyleBoxFlat_tif85")
-theme_override_styles/fill = SubResource("StyleBoxFlat_w13cc")
-max_value = 65.0
+max_value = 100.0
 value = 35.0
 show_percentage = false
 
@@ -1727,14 +1703,14 @@ vertical_alignment = 1
 
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid1" unique_id=1671231058]
+script = ExtResource("statbar")
+category = "SeniBudaya"
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
-theme_override_styles/background = SubResource("StyleBoxFlat_vngbl")
-theme_override_styles/fill = SubResource("StyleBoxFlat_r7c70")
-max_value = 65.0
+max_value = 100.0
 value = 20.0
 show_percentage = false
 
@@ -1761,14 +1737,14 @@ vertical_alignment = 1
 
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid1" unique_id=1136784519]
+script = ExtResource("statbar")
+category = "Olahraga"
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
-theme_override_styles/background = SubResource("StyleBoxFlat_26k8k")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ekoon")
-max_value = 65.0
+max_value = 100.0
 value = 40.0
 show_percentage = false
 

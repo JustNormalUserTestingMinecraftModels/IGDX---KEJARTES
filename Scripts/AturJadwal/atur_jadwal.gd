@@ -111,6 +111,9 @@ var penjadwalan_popup_open := false
 var is_overtired_warning := false
 
 func _ready():
+	# Full-screen invisible click-catcher: a scale pulse would visibly
+	# distort the whole overlay.
+	$ColorRect/ClickArea.set_meta(Juice.NO_AUTO_JUICE, true)
 	_setup_portrait_juice(select_student_button)
 	_setup_back_button()
 	_apply_stat_bar_colors()

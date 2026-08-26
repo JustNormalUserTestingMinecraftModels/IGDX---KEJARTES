@@ -17,7 +17,7 @@ config/icon="res://icon.svg"
 
 [audio]
 
-buses/default_bus_layout="res://Assets/Audio/default_bus_layout.tres"
+buses/default_bus_layout="uid://7w3jrrwrc84b"
 
 [autoload]
 
@@ -25,6 +25,7 @@ GameState="*res://Scripts/GameState.gd"
 Transition="*res://Scenes/Transition/transition.tscn"
 GameSettings="*res://Scripts/GameSettings.gd"
 AudioDirector="*res://Scenes/Audio/audio_director.tscn"
+UIPolish="*res://Scripts/UI/UIPolish.gd"
 TouchFeedbackManager="*res://Scripts/TouchFeedback/TouchFeedbackManager.gd"
 DebugManager="*res://Scripts/Debug/DebugManager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"

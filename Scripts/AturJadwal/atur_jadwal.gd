@@ -4,8 +4,6 @@ signal _holiday_dismissed
 
 @export_group("Calendar Display")
 @export var calendar_icon: Texture2D
-@export var label_font_color: Color = Color(0.12, 0.22, 0.45)
-@export var label_outline_color: Color = Color.WHITE
 
 # National Holidays definition
 const HOLIDAYS = {
@@ -39,12 +37,6 @@ var _holiday_active: bool = false
 @onready var ak3_bar = $TextureButton/BGStat/Akademis3
 @onready var kp1_bar = $TextureButton/BGStat/Kepribadian1
 @onready var kp2_bar = $TextureButton/BGStat/Kepribadian2
-
-@onready var ak1_value_label = $TextureButton/BGStat/Akademis1/ValueLabel
-@onready var ak2_value_label = $TextureButton/BGStat/Akademis2/ValueLabel
-@onready var ak3_value_label = $TextureButton/BGStat/Akademis3/ValueLabel
-@onready var kp1_value_label = $TextureButton/BGStat/Kepribadian1/ValueLabel
-@onready var kp2_value_label = $TextureButton/BGStat/Kepribadian2/ValueLabel
 
 @onready var senin_btn = $BGHari/Senin
 @onready var selasa_btn = $BGHari/Selasa
@@ -95,7 +87,11 @@ var _tutorial_prompt_label: Label
 var _blink_tween: Tween
 var _tutorial_arrow: Control = null
 
-var blur_overlay: ColorRect
+## Full-screen dimming backdrop shared by Peringatan and Penjadwalan. A
+## &"Scrim"-variation Panel, not the old ad-hoc blur shader ColorRect.
+var blur_overlay: Control
+
+var _tokens_cache: DesignTokens
 
 const BASE_GAIN := 3.0       # Must match StudentManager.gd apply_jadwal_activity base_gain
 const HOBBY_BONUS_GAIN := 6.0  # Must match base_gain + specialty_bonus (3 + 3 = 6 total for specialty)
@@ -110,13 +106,20 @@ const DAYOFF_GAIN_MAX := 30
 var penjadwalan_popup_open := false
 var is_overtired_warning := false
 
+
+func _get_tokens() -> DesignTokens:
+	if _tokens_cache == null:
+		_tokens_cache = DesignTokens.load_default()
+	return _tokens_cache
+
+
 func _ready():
 	# Full-screen invisible click-catcher: a scale pulse would visibly
 	# distort the whole overlay.
 	$ColorRect/ClickArea.set_meta(Juice.NO_AUTO_JUICE, true)
 	_setup_portrait_juice(select_student_button)
 	_setup_back_button()
-	_apply_stat_bar_colors()
+	_setup_gameplay()
 	_update_tanggal_display()
 	_check_and_lock_holidays()
 	_create_blur_overlay()
@@ -137,47 +140,15 @@ func _on_back_button_pressed():
 	print("Kembali ke Lobby...")
 	Transition.change_scene("res://Scenes/Lobby/loby.tscn")
 
-func _apply_stat_bar_colors():
-	var bar_colors = {
-		ak1_bar: Color(0.16, 0.27, 1.0, 1.0),      # Blue (Akademik)
-		ak2_bar: Color(0.0, 0.6, 0.25, 1.0),       # Green (Seni Budaya)
-		ak3_bar: Color(0.85, 0.2, 0.2, 1.0),       # Red (Olahraga)
-		kp1_bar: Color(0.0, 0.75, 1.0, 1.0),       # Cyan (Energi)
-		kp2_bar: Color(1.0, 0.85, 0.2, 1.0),       # Yellow (Mood)
-		popup_akademik_bar: Color(0.16, 0.27, 1.0, 1.0),
-		popup_senibudaya_bar: Color(0.0, 0.6, 0.25, 1.0),
-		popup_olahraga_bar: Color(0.85, 0.2, 0.2, 1.0)
-	}
-
-	for bar in bar_colors.keys():
-		if bar and is_instance_valid(bar) and bar is ProgressBar:
-			# Dark rounded container background with subtle border
-			var bg = StyleBoxFlat.new()
-			bg.bg_color = Color(0.08, 0.08, 0.12, 0.85)
-			bg.border_width_left = 2
-			bg.border_width_top = 2
-			bg.border_width_right = 2
-			bg.border_width_bottom = 2
-			bg.border_color = Color(0.25, 0.25, 0.35, 0.9)
-			bg.corner_radius_top_left = 8
-			bg.corner_radius_top_right = 8
-			bg.corner_radius_bottom_left = 8
-			bg.corner_radius_bottom_right = 8
-			bar.add_theme_stylebox_override("background", bg)
-
-			# Polished fill stylebox with matching rounded corners
-			var fill = StyleBoxFlat.new()
-			fill.bg_color = bar_colors[bar]
-			fill.corner_radius_top_left = 6
-			fill.corner_radius_top_right = 6
-			fill.corner_radius_bottom_left = 6
-			fill.corner_radius_bottom_right = 6
-			bar.add_theme_stylebox_override("fill", fill)
-
-	# --- Setup Penjadwalan Popup ---
+## Wires the day/activity/start-week buttons, tints the Penjadwalan category
+## buttons per DesignTokens.category_color(), and populates the tutorial.
+## Category tinting for the stat bars themselves lives on each StatBar's
+## `category` export in the scene, not here.
+func _setup_gameplay():
 	if penjadwalan_popup:
 		penjadwalan_popup.hide()
 	_connect_activity_buttons()
+	_tint_popup_activity_buttons()
 
 	_connect_day_button(senin_btn, "Senin")
 	_connect_day_button(selasa_btn, "Selasa")
@@ -225,6 +196,19 @@ func _apply_stat_bar_colors():
 	else:
 		# Baru balik dari student_list, belum jadwalkan Senin
 		_setup_phase2_tutorial()
+
+## The Penjadwalan popup's four pick buttons keep their category-coded
+## identity via self_modulate instead of a per-node StyleBoxFlat.
+func _tint_popup_activity_buttons():
+	var tokens := _get_tokens()
+	if popup_akademik_btn:
+		popup_akademik_btn.self_modulate = tokens.category_color("Akademis")
+	if popup_olahraga_btn:
+		popup_olahraga_btn.self_modulate = tokens.category_color("Olahraga")
+	if popup_senibudaya_btn:
+		popup_senibudaya_btn.self_modulate = tokens.category_color("SeniBudaya")
+	if popup_dayoff_btn:
+		popup_dayoff_btn.self_modulate = tokens.category_color("Istirahat")
 
 func _populate_default_tutorial_steps():
 	if tutorial_phase1_steps.is_empty():
@@ -278,8 +262,13 @@ func _populate_default_tutorial_steps():
 			step.prompt_text = entry[3]
 			tutorial_phase3_steps.append(step)
 
+## The tutorial panel and its three labels are built at runtime (they are
+## not part of the .tscn), so test_scene_has_no_theme_overrides never sees
+## them -- but every color/size here still comes from DesignTokens, not a
+## literal, matching the rest of the migration.
 func _build_tutorial_panel():
 	var viewport_size = get_viewport_rect().size
+	var tokens := _get_tokens()
 
 	_tutorial_panel = PanelContainer.new()
 	_tutorial_panel.name = "TutorialPanel"
@@ -291,29 +280,22 @@ func _build_tutorial_panel():
 	elif custom_panel_texture:
 		var tex_style = StyleBoxTexture.new()
 		tex_style.texture = custom_panel_texture
-		tex_style.content_margin_left = 28
-		tex_style.content_margin_top = 20
-		tex_style.content_margin_right = 28
-		tex_style.content_margin_bottom = 16
+		tex_style.content_margin_left = tokens.space_lg
+		tex_style.content_margin_top = tokens.space_md
+		tex_style.content_margin_right = tokens.space_lg
+		tex_style.content_margin_bottom = tokens.space_sm
 		style = tex_style
 	else:
 		var flat = StyleBoxFlat.new()
-		flat.bg_color = Color(0.06, 0.06, 0.1, 0.93)
-		flat.corner_radius_top_left = 18
-		flat.corner_radius_top_right = 18
-		flat.corner_radius_bottom_left = 18
-		flat.corner_radius_bottom_right = 18
-		flat.border_width_left = 2
-		flat.border_width_top = 2
-		flat.border_width_right = 2
-		flat.border_width_bottom = 2
-		flat.border_color = Color(1.0, 0.85, 0.3, 0.5)
-		flat.shadow_color = Color(0, 0, 0, 0.5)
-		flat.shadow_size = 12
-		flat.content_margin_left = 28
-		flat.content_margin_top = 20
-		flat.content_margin_right = 28
-		flat.content_margin_bottom = 16
+		flat.bg_color = tokens.surface_overlay
+		var border := tokens.currency_gold
+		border.a = 0.5
+		flat.border_color = border
+		flat.set_border_width_all(int(tokens.outline_width) / 2)
+		flat.set_corner_radius_all(tokens.radius_lg)
+		flat.shadow_color = tokens.shadow_color
+		flat.shadow_size = tokens.shadow_size
+		flat.set_content_margin_all(tokens.space_md)
 		style = flat
 	_tutorial_panel.add_theme_stylebox_override("panel", style)
 
@@ -322,15 +304,15 @@ func _build_tutorial_panel():
 
 	var vbox = VBoxContainer.new()
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_theme_constant_override("separation", 10)
+	vbox.add_theme_constant_override("separation", tokens.space_sm)
 	_tutorial_panel.add_child(vbox)
 
+	# BarLabel: white glyph, dark rim -- reads on both the light main scene
+	# and this dark overlay, which is why all three tutorial labels share
+	# it instead of the light-background label variations.
 	_tutorial_title_label = Label.new()
 	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.add_theme_font_size_override("font_size", 56)
-	_tutorial_title_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
-	_tutorial_title_label.add_theme_constant_override("outline_size", 6)
-	_tutorial_title_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_tutorial_title_label.theme_type_variation = &"BarLabel"
 	vbox.add_child(_tutorial_title_label)
 
 	var sep = HSeparator.new()
@@ -340,9 +322,8 @@ func _build_tutorial_panel():
 	_tutorial_body_label = Label.new()
 	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.add_theme_font_size_override("font_size", 40)
-	_tutorial_body_label.add_theme_color_override("font_color", Color(0.92, 0.94, 0.98))
-	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
+	_tutorial_body_label.theme_type_variation = &"BarLabel"
+	_tutorial_body_label.add_theme_constant_override("line_spacing", tokens.space_xs)
 	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 60, 0)
 	vbox.add_child(_tutorial_body_label)
 
@@ -353,10 +334,7 @@ func _build_tutorial_panel():
 	_tutorial_prompt_label = Label.new()
 	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
 	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.add_theme_font_size_override("font_size", 32)
-	_tutorial_prompt_label.add_theme_color_override("font_color", Color(0.35, 0.9, 0.55))
-	_tutorial_prompt_label.add_theme_constant_override("outline_size", 5)
-	_tutorial_prompt_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_tutorial_prompt_label.theme_type_variation = &"BarLabel"
 	vbox.add_child(_tutorial_prompt_label)
 
 	color_rect.add_child(_tutorial_panel)
@@ -369,11 +347,12 @@ func _build_tutorial_panel():
 func _start_prompt_blink():
 	if _blink_tween and _blink_tween.is_valid():
 		_blink_tween.kill()
+	var t := _get_tokens()
 	_tutorial_prompt_label.modulate.a = 1.0
 	_blink_tween = create_tween().set_loops()
-	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 0.25, 0.65) \
+	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 0.25, t.dur_slow) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 1.0, 0.65) \
+	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 1.0, t.dur_slow) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _position_tutorial_panel(force_center: bool = false):
@@ -502,13 +481,17 @@ func _get_current_schedules() -> Dictionary:
 		return {}
 	return GameState.day_schedules.get(student_id, {})
 
+## Tints each BGHari day button by its assigned category via
+## DesignTokens.category_color() (unscheduled days get surface_sunken, a
+## locked holiday gets state_danger).
 func _update_day_button_colors():
 	var schedules = _get_current_schedules()
-	var default_color = Color(0.5529412, 0.45490196, 1, 1)  # unscheduled purple
-	
+	var tokens := _get_tokens()
+	var default_color = tokens.surface_sunken  # unscheduled
+
 	var week = GameState.minggu_ke
 	var week_holidays = HOLIDAYS.get(week, {})
-	
+
 	var day_buttons = {
 		"Senin": senin_btn,
 		"Selasa": selasa_btn,
@@ -521,24 +504,16 @@ func _update_day_button_colors():
 		var btn = day_buttons[day_name]
 		if not btn:
 			continue
-			
+
 		var label = btn.get_child(0) as Label
-		
+
 		if week_holidays.has(day_name):
-			# Soft warning red for Libur Nasional
-			btn.modulate = Color(1.0, 0.35, 0.35, 1.0)
+			btn.modulate = tokens.state_danger
 			if label:
 				label.text = day_name.to_upper() + "\n(LIBUR)"
 		elif schedules.has(day_name):
 			var category = schedules[day_name]["category"]
-			if category == "Akademis":
-				btn.modulate = Color(0.16, 0.27, 1.0, 1.0)
-			elif category == "Olahraga":
-				btn.modulate = Color(0.6, 0.0, 0.0, 1.0)
-			elif category == "SeniBudaya":
-				btn.modulate = Color(0.0, 0.6, 0.25, 1.0)
-			elif category == "Istirahat":
-				btn.modulate = Color(0.672, 0.72, 0.0, 1.0)
+			btn.modulate = tokens.category_color(category)
 			if label:
 				label.text = day_name.to_upper()
 		else:
@@ -595,6 +570,21 @@ func _get_overtired_students() -> Array[String]:
 			overtired.append(student.get("name", "Murid"))
 	return overtired
 
+## Normalizes `current` (optionally shifted by `delta`, a positive gain or
+## negative loss) against `target` into a 0-100 percentage for StatBar,
+## which only understands a fixed 0-100 range. This is how the preview of
+## this week's pending schedule effect still reaches the bar, now that the
+## bar itself has no separate ghost/goal-marker channel.
+func _percent(current: float, target: float) -> float:
+	if target <= 0.0:
+		return 0.0
+	return clampf(current / target * 100.0, 0.0, 100.0)
+
+func _feed_stat_bar(bar: StatBar, current: float, delta: float, target: float) -> void:
+	if bar == null:
+		return
+	bar.set_stat(_percent(current + delta, target))
+
 func _update_student_display():
 	print("DEBUG selected_student: ", GameState.selected_student)
 	if GameState.selected_student.is_empty():
@@ -633,23 +623,18 @@ func _update_student_display():
 			select_student_button.texture_normal = load(portrait_path)
 
 	if kp1_bar:
-		kp1_bar.set_stat(student.get("kepribadian2", 50.0), 100.0)
-		kp1_bar.set_pending_gain(-_compute_total_loss("energy_cost"))
+		_feed_stat_bar(kp1_bar, student.get("kepribadian2", 50.0), -_compute_total_loss("energy_cost"), 100.0)
 	if kp2_bar:
-		kp2_bar.set_stat(student.get("kepribadian1", 50.0), 100.0)
-		kp2_bar.set_pending_gain(-_compute_total_loss("mood_cost"))
+		_feed_stat_bar(kp2_bar, student.get("kepribadian1", 50.0), -_compute_total_loss("mood_cost"), 100.0)
 	if ak1_bar:
-		var target = student.get("target_akademis1", 65.0)
-		ak1_bar.set_stat(student.get("akademis1", 50.0), target)
-		ak1_bar.set_pending_gain(_compute_pending_gain("Akademis", student))
+		var target1 = student.get("target_akademis1", 65.0)
+		_feed_stat_bar(ak1_bar, student.get("akademis1", 50.0), _compute_pending_gain("Akademis", student), target1)
 	if ak2_bar:
-		var target = student.get("target_akademis2", 65.0)
-		ak2_bar.set_stat(student.get("akademis2", 50.0), target)
-		ak2_bar.set_pending_gain(_compute_pending_gain("SeniBudaya", student))
+		var target2 = student.get("target_akademis2", 65.0)
+		_feed_stat_bar(ak2_bar, student.get("akademis2", 50.0), _compute_pending_gain("SeniBudaya", student), target2)
 	if ak3_bar:
-		var target = student.get("target_akademis3", 65.0)
-		ak3_bar.set_stat(student.get("akademis3", 50.0), target)
-		ak3_bar.set_pending_gain(_compute_pending_gain("Olahraga", student))
+		var target3 = student.get("target_akademis3", 65.0)
+		_feed_stat_bar(ak3_bar, student.get("akademis3", 50.0), _compute_pending_gain("Olahraga", student), target3)
 
 	_update_day_button_colors()
 
@@ -666,18 +651,24 @@ func _on_portrait_mouse_entered(btn: Control):
 	if not is_instance_valid(btn):
 		return
 	btn.pivot_offset = btn.size / 2.0
+	var highlight := Color.WHITE
+	highlight.r = 1.2
+	highlight.g = 1.2
+	highlight.b = 1.08
+	var t := _get_tokens()
 	var tw = create_tween().set_parallel(true)
 	tw.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(btn, "scale", Vector2(1.06, 1.06), 0.15)
-	tw.tween_property(btn, "modulate", Color(1.2, 1.2, 1.08, 1.0), 0.15)
+	tw.tween_property(btn, "scale", Vector2(1.06, 1.06), t.dur_fast)
+	tw.tween_property(btn, "modulate", highlight, t.dur_fast)
 
 func _on_portrait_mouse_exited(btn: Control):
 	if not is_instance_valid(btn):
 		return
+	var t := _get_tokens()
 	var tw = create_tween().set_parallel(true)
 	tw.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.15)
-	tw.tween_property(btn, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.15)
+	tw.tween_property(btn, "scale", Vector2(1.0, 1.0), t.dur_fast)
+	tw.tween_property(btn, "modulate", Color.WHITE, t.dur_fast)
 
 func _animate_button_click_bounce(btn: Control):
 	if not is_instance_valid(btn):
@@ -795,6 +786,10 @@ func _show_combined_warning(names: Array[String]):
 	btn_no.text = "NO"
 	btn_no.show()
 	_show_peringatan()
+	# This case includes an incomplete schedule, so it gets the same
+	# rejection feedback as the incomplete-only warning below.
+	Juice.shake(peringatan)
+	AudioDirector.play_sfx(&"fail")
 
 func _show_mental_fatigue_warning(names: Array[String]):
 	current_warning_mode = "mental"
@@ -816,78 +811,64 @@ func _show_incomplete_schedule_warning():
 	btn_no.text = "NO"
 	btn_no.show()
 	_show_peringatan()
+	Juice.shake(peringatan)
+	AudioDirector.play_sfx(&"fail")
 
+## Full-screen &"Scrim" backdrop shared by Peringatan and Penjadwalan.
+## Replaces the old blur-shader ColorRect: a plain themed Panel faded via
+## modulate:a instead of a custom lod/darkness shader sweep.
 func _create_blur_overlay():
-	blur_overlay = ColorRect.new()
-	blur_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	blur_overlay.color = Color(0, 0, 0, 0)
-	var shader = load("res://Scripts/Shaders/blur.gdshader")
-	var mat = ShaderMaterial.new()
-	mat.shader = shader
-	mat.set_shader_parameter("lod", 0.0)
-	mat.set_shader_parameter("darkness", 0.0)
-	blur_overlay.material = mat
-	blur_overlay.visible = false
-	blur_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(blur_overlay)
-	move_child(blur_overlay, peringatan.get_index())
-	blur_overlay.gui_input.connect(_on_blur_overlay_input)
+	var scrim := Panel.new()
+	scrim.name = "Scrim"
+	scrim.theme_type_variation = &"Scrim"
+	scrim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scrim.visible = false
+	scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(scrim)
+	move_child(scrim, peringatan.get_index())
+	scrim.gui_input.connect(_on_blur_overlay_input)
+	blur_overlay = scrim
 
 func _show_peringatan():
 	if not peringatan:
 		return
+	var t := _get_tokens()
 	var warning_label: Label = $Peringatan/TextureRect/Label
 	if warning_label:
 		warning_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		warning_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		# Dynamic sizing so long warning text still fits the fixed art
+		# frame; no single theme variation encodes "shrink to fit".
 		var text_len = warning_label.text.length()
 		if text_len > 110:
-			warning_label.add_theme_font_size_override("font_size", 28)
+			warning_label.add_theme_font_size_override("font_size", t.font_caption)
 		elif text_len > 75:
-			warning_label.add_theme_font_size_override("font_size", 32)
+			warning_label.add_theme_font_size_override("font_size", t.font_body_size)
 		else:
-			warning_label.add_theme_font_size_override("font_size", 40)
+			warning_label.add_theme_font_size_override("font_size", t.font_title)
 
 	blur_overlay.visible = true
-	var blur_mat = blur_overlay.material as ShaderMaterial
-	blur_mat.set_shader_parameter("lod", 0.0)
-	blur_mat.set_shader_parameter("darkness", 0.0)
+	blur_overlay.modulate.a = 0.0
+	var fade := create_tween()
+	fade.tween_property(blur_overlay, "modulate:a", 1.0, t.dur_fast)
 
 	peringatan.show()
-	peringatan.modulate = Color(1, 1, 1, 0)
-	peringatan.scale = Vector2(0.8, 0.8)
-	peringatan.pivot_offset = peringatan.size / 2.0
-
-	var tween = create_tween().set_parallel(true)
-	tween.tween_property(peringatan, "modulate", Color(1, 1, 1, 1), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(peringatan, "scale", Vector2(1, 1), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_method(_set_blur_lod, 0.0, 3.0, 0.25).set_ease(Tween.EASE_OUT)
-	tween.tween_method(_set_blur_darkness, 0.0, 0.3, 0.25).set_ease(Tween.EASE_OUT)
+	Juice.pop_in(peringatan)
 
 func _hide_peringatan():
 	if not peringatan:
 		return
+	var t := _get_tokens()
 	var tween = create_tween().set_parallel(true)
-	tween.tween_property(peringatan, "modulate", Color(1, 1, 1, 0), 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_property(peringatan, "scale", Vector2(0.8, 0.8), 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_method(_set_blur_lod, 3.0, 0.0, 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_method(_set_blur_darkness, 0.3, 0.0, 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_property(peringatan, "modulate:a", 0.0, t.dur_fast).set_ease(Tween.EASE_IN)
+	tween.tween_property(peringatan, "scale", Vector2(0.8, 0.8), t.dur_fast).set_ease(Tween.EASE_IN)
+	tween.tween_property(blur_overlay, "modulate:a", 0.0, t.dur_fast)
 	tween.chain().tween_callback(func():
 		peringatan.hide()
 		blur_overlay.visible = false
 		is_overtired_warning = false
 	)
-
-func _set_blur_lod(value: float):
-	var mat = blur_overlay.material as ShaderMaterial
-	if mat:
-		mat.set_shader_parameter("lod", value)
-
-func _set_blur_darkness(value: float):
-	var mat = blur_overlay.material as ShaderMaterial
-	if mat:
-		mat.set_shader_parameter("darkness", value)
 
 func _switch_to_flagged_student():
 	if _last_overtired_student_name != "":
@@ -933,34 +914,25 @@ func _show_penjadwalan_popup():
 	penjadwalan_popup_open = true
 	_update_popup_stats()
 
-	# Show and animate blur overlay
 	blur_overlay.visible = true
 	blur_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	var blur_mat = blur_overlay.material as ShaderMaterial
-	blur_mat.set_shader_parameter("lod", 0.0)
-	blur_mat.set_shader_parameter("darkness", 0.0)
+	blur_overlay.modulate.a = 0.0
+	var t := _get_tokens()
+	var fade := create_tween()
+	fade.tween_property(blur_overlay, "modulate:a", 1.0, t.dur_fast)
 
-	# Show and animate popup
 	penjadwalan_popup.show()
-	penjadwalan_popup.modulate = Color(1, 1, 1, 0)
-	penjadwalan_popup.scale = Vector2(0.8, 0.8)
-	penjadwalan_popup.pivot_offset = penjadwalan_popup.size / 2.0
-
-	var tween = create_tween().set_parallel(true)
-	tween.tween_property(penjadwalan_popup, "modulate", Color(1, 1, 1, 1), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(penjadwalan_popup, "scale", Vector2(1, 1), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_method(_set_blur_lod, 0.0, 3.0, 0.25).set_ease(Tween.EASE_OUT)
-	tween.tween_method(_set_blur_darkness, 0.0, 0.3, 0.25).set_ease(Tween.EASE_OUT)
+	Juice.pop_in(penjadwalan_popup)
 
 func _hide_penjadwalan_popup():
 	if not penjadwalan_popup:
 		return
 	penjadwalan_popup_open = false
+	var t := _get_tokens()
 	var tween = create_tween().set_parallel(true)
-	tween.tween_property(penjadwalan_popup, "modulate", Color(1, 1, 1, 0), 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_property(penjadwalan_popup, "scale", Vector2(0.8, 0.8), 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_method(_set_blur_lod, 3.0, 0.0, 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_method(_set_blur_darkness, 0.3, 0.0, 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_property(penjadwalan_popup, "modulate:a", 0.0, t.dur_fast).set_ease(Tween.EASE_IN)
+	tween.tween_property(penjadwalan_popup, "scale", Vector2(0.8, 0.8), t.dur_fast).set_ease(Tween.EASE_IN)
+	tween.tween_property(blur_overlay, "modulate:a", 0.0, t.dur_fast)
 	tween.chain().tween_callback(func():
 		penjadwalan_popup.hide()
 		blur_overlay.visible = false
@@ -1009,14 +981,11 @@ func _update_popup_stats():
 	if student.is_empty():
 		return
 	if popup_akademik_bar:
-		popup_akademik_bar.set_current(student.get("akademis1", 50.0))
-		popup_akademik_bar.set_goal(student.get("target_akademis1", 0.0))
+		popup_akademik_bar.set_stat(_percent(student.get("akademis1", 50.0), student.get("target_akademis1", 65.0)))
 	if popup_senibudaya_bar:
-		popup_senibudaya_bar.set_current(student.get("akademis2", 50.0))
-		popup_senibudaya_bar.set_goal(student.get("target_akademis2", 0.0))
+		popup_senibudaya_bar.set_stat(_percent(student.get("akademis2", 50.0), student.get("target_akademis2", 65.0)))
 	if popup_olahraga_bar:
-		popup_olahraga_bar.set_current(student.get("akademis3", 50.0))
-		popup_olahraga_bar.set_goal(student.get("target_akademis3", 0.0))
+		popup_olahraga_bar.set_stat(_percent(student.get("akademis3", 50.0), student.get("target_akademis3", 65.0)))
 
 func _get_day_button(day_name: String) -> Control:
 	match day_name:
@@ -1263,7 +1232,7 @@ func _input(event: InputEvent) -> void:
 		var is_click = (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT)
 		var is_touch = (event is InputEventScreenTouch and event.pressed)
 		var is_key = (event is InputEventKey and event.pressed and event.keycode != KEY_O)
-		
+
 		if is_click or is_touch or is_key:
 			_holiday_dismissed.emit()
 			get_viewport().set_input_as_handled()
@@ -1271,13 +1240,13 @@ func _input(event: InputEvent) -> void:
 func _update_tanggal_display() -> void:
 	if calendar_icon_rect and calendar_icon:
 		calendar_icon_rect.texture = calendar_icon
-	
+
 	if label_tanggal:
 		var week = GameState.minggu_ke
 		var months = ["Agustus", "September", "Oktober", "November", "Desember"]
 		var month_idx = clampi((week - 1) / 4, 0, months.size() - 1)
 		var month_str = months[month_idx]
-		
+
 		var week_in_month = ((week - 1) % 4) + 1
 		var week_word = "Pertama"
 		match week_in_month:
@@ -1285,10 +1254,8 @@ func _update_tanggal_display() -> void:
 			2: week_word = "Kedua"
 			3: week_word = "Ketiga"
 			4: week_word = "Keempat"
-				
+
 		label_tanggal.text = "%s — Minggu %s" % [month_str, week_word]
-		label_tanggal.add_theme_color_override("font_color", label_font_color)
-		label_tanggal.add_theme_color_override("font_outline_color", label_outline_color)
 
 func _check_and_lock_holidays() -> void:
 	var week = GameState.minggu_ke
@@ -1301,7 +1268,7 @@ func _check_and_lock_holidays() -> void:
 				if student_id != null:
 					if not GameState.day_schedules.has(student_id):
 						GameState.day_schedules[student_id] = {}
-					
+
 					# Assign Istirahat with standard mood/energy gain cost delta
 					var mood_cost = -randi_range(DAYOFF_GAIN_MIN, DAYOFF_GAIN_MAX)
 					var energy_cost = -randi_range(DAYOFF_GAIN_MIN, DAYOFF_GAIN_MAX)
@@ -1313,111 +1280,103 @@ func _check_and_lock_holidays() -> void:
 
 func _show_holiday_warning(holiday_title: String) -> void:
 	_holiday_active = true
-	
+	var tokens := _get_tokens()
+
 	# Dimmer overlay
 	var overlay = ColorRect.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.color = Color(0, 0, 0, 0.65)
+	overlay.color = tokens.scrim_color()
 	add_child(overlay)
-	
+
 	# PanelContainer setup
 	var panel = PanelContainer.new()
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.06, 0.1, 0.93)
-	style.border_color = Color(0.85, 0.7, 0.25, 0.9)
-	style.border_width_left = 3
-	style.border_width_top = 3
-	style.border_width_right = 3
-	style.border_width_bottom = 3
-	style.corner_radius_top_left = 18
-	style.corner_radius_top_right = 18
-	style.corner_radius_bottom_left = 18
-	style.corner_radius_bottom_right = 18
+	style.bg_color = tokens.surface_overlay
+	var border := tokens.currency_gold
+	border.a = 0.9
+	style.border_color = border
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(tokens.radius_lg)
+	style.shadow_color = tokens.shadow_color
+	style.shadow_size = tokens.shadow_size
 	panel.add_theme_stylebox_override("panel", style)
-	
+
 	var viewport_size = get_viewport_rect().size
 	var panel_width = min(viewport_size.x * 0.85, 800)
 	panel.custom_minimum_size = Vector2(panel_width, 0)
-	
+
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 30)
-	margin.add_theme_constant_override("margin_top", 30)
-	margin.add_theme_constant_override("margin_right", 30)
-	margin.add_theme_constant_override("margin_bottom", 30)
+	margin.add_theme_constant_override("margin_left", tokens.space_md)
+	margin.add_theme_constant_override("margin_top", tokens.space_md)
+	margin.add_theme_constant_override("margin_right", tokens.space_md)
+	margin.add_theme_constant_override("margin_bottom", tokens.space_md)
 	panel.add_child(margin)
-	
+
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 20)
+	vbox.add_theme_constant_override("separation", tokens.space_sm)
 	margin.add_child(vbox)
-	
+
 	# Title Label
 	var title_lbl = Label.new()
 	title_lbl.text = "Hari Libur Nasional 📅"
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 38)
-	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
-	title_lbl.add_theme_constant_override("outline_size", 6)
-	title_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	title_lbl.theme_type_variation = &"BarLabel"
 	vbox.add_child(title_lbl)
-	
+
 	var sep = HSeparator.new()
 	vbox.add_child(sep)
-	
+
 	# Body Label
 	var body_lbl = Label.new()
 	body_lbl.text = "Ini merupakan hari libur nasional untuk memperingati '%s'.\n\nMaka murid tidak dapat dijadwalkan!" % holiday_title
 	body_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body_lbl.add_theme_font_size_override("font_size", 26)
-	body_lbl.add_theme_color_override("font_color", Color(0.92, 0.94, 0.98))
-	body_lbl.add_theme_constant_override("line_spacing", 8)
+	body_lbl.theme_type_variation = &"BarLabel"
+	body_lbl.add_theme_constant_override("line_spacing", tokens.space_xs)
 	body_lbl.custom_minimum_size = Vector2(panel_width - 100, 0)
 	vbox.add_child(body_lbl)
-	
+
 	var sep2 = HSeparator.new()
 	vbox.add_child(sep2)
-	
+
 	# Prompt Label
 	var prompt_lbl = Label.new()
 	prompt_lbl.text = "KLIK DIMANA SAJA UNTUK LANJUT"
 	prompt_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	prompt_lbl.add_theme_font_size_override("font_size", 22)
-	prompt_lbl.add_theme_color_override("font_color", Color(0.35, 0.9, 0.55))
-	prompt_lbl.add_theme_constant_override("outline_size", 5)
-	prompt_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	prompt_lbl.theme_type_variation = &"BarLabel"
 	vbox.add_child(prompt_lbl)
-	
+
 	overlay.add_child(panel)
-	
+
 	# Pulsing prompt tween
 	prompt_lbl.modulate.a = 1.0
 	var pulse = create_tween().set_loops()
-	pulse.tween_property(prompt_lbl, "modulate:a", 0.25, 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	pulse.tween_property(prompt_lbl, "modulate:a", 1.0, 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	
+	pulse.tween_property(prompt_lbl, "modulate:a", 0.25, tokens.dur_slow).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(prompt_lbl, "modulate:a", 1.0, tokens.dur_slow).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
 	# Centering
 	await get_tree().process_frame
 	var panel_size = panel.size
 	panel.position = (viewport_size - panel_size) / 2.0
 	panel.pivot_offset = panel_size / 2.0
-	
+
 	# Bounce scale-in
 	panel.scale = Vector2(0.8, 0.8)
 	panel.modulate.a = 0.0
 	var tween_in = create_tween().set_parallel(true)
-	tween_in.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween_in.tween_property(panel, "modulate:a", 1.0, 0.25)
+	tween_in.tween_property(panel, "scale", Vector2(1.0, 1.0), tokens.dur_normal).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween_in.tween_property(panel, "modulate:a", 1.0, tokens.dur_fast)
 	await tween_in.finished
-	
+
 	# Wait for click
 	await _holiday_dismissed
-	
+
 	# Bounce scale-out
 	var tween_out = create_tween().set_parallel(true)
-	tween_out.tween_property(panel, "scale", Vector2(0.8, 0.8), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tween_out.tween_property(panel, "modulate:a", 0.0, 0.2)
+	tween_out.tween_property(panel, "scale", Vector2(0.8, 0.8), tokens.dur_fast).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tween_out.tween_property(panel, "modulate:a", 0.0, tokens.dur_fast)
 	await tween_out.finished
-	
+
 	pulse.kill()
 	overlay.queue_free()
 	_holiday_active = false

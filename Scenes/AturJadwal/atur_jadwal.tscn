@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://0c5vps0sx30f" path="res://Assets/Images/UI/stickynotes.png" id="3_03syl"]
 [ext_resource type="Texture2D" uid="uid://0ycjsvqdwjf3" path="res://Assets/Images/UI/pngwing.com (2).png" id="3_a6kja"]
 [ext_resource type="Texture2D" uid="uid://4slit8im18tb" path="res://Assets/Images/UI/Screenshot 2026-08-02 104848.png" id="3_dc5y4"]
-[ext_resource type="Script" path="res://Scripts/AturJadwal/stat_bar.gd" id="3_mccff"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 [ext_resource type="Texture2D" uid="uid://bhanm4qbpra2a" path="res://Assets/Images/UI/paper.png" id="8_03syl"]
 [ext_resource type="Texture2D" uid="uid://cuih86con4sr1" path="res://Assets/Images/UI/pngwing.com (1).png" id="11_left_arrow"]
 
@@ -17,24 +17,6 @@ shader_parameter/rect_size = Vector2(1152, 648)
 shader_parameter/hole_pos = Vector2(100, 100)
 shader_parameter/hole_size = Vector2(200, 80)
 shader_parameter/feather = 10.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5m37x"]
-bg_color = Color(1, 1, 1, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xkhc"]
-bg_color = Color(1, 1, 1, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pno4y"]
-bg_color = Color(0.16000003, 0.2719999, 1, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nri1m"]
-bg_color = Color(0.6, 0, 0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bc618"]
-bg_color = Color(0, 0.6, 0.25000006, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_46isr"]
-bg_color = Color(0.672, 0.72, 0, 1)
 
 [node name="AturJadwal" type="Control" unique_id=1313751055]
 layout_mode = 3
@@ -74,7 +56,7 @@ offset_top = 84.0
 offset_right = 210.0
 offset_bottom = 157.0
 rotation = -0.07252685
-theme_override_font_sizes/font_size = 53
+theme_type_variation = &"H2Label"
 text = "SENIN"
 
 [node name="Selasa" type="TextureButton" parent="BGHari" unique_id=535725292]
@@ -96,7 +78,7 @@ offset_top = 98.0
 offset_right = 230.0
 offset_bottom = 171.0
 rotation = -0.06269499
-theme_override_font_sizes/font_size = 53
+theme_type_variation = &"H2Label"
 text = "SELASA"
 
 [node name="Rabu" type="TextureButton" parent="BGHari" unique_id=457597561]
@@ -118,7 +100,7 @@ offset_top = 89.0
 offset_right = 208.0
 offset_bottom = 162.0
 rotation = -0.06734161
-theme_override_font_sizes/font_size = 53
+theme_type_variation = &"H2Label"
 text = "RABU"
 
 [node name="Kamis" type="TextureButton" parent="BGHari" unique_id=1778930438]
@@ -140,7 +122,7 @@ offset_top = 92.0
 offset_right = 217.0
 offset_bottom = 165.0
 rotation = -0.05381885
-theme_override_font_sizes/font_size = 53
+theme_type_variation = &"H2Label"
 text = "KAMIS"
 
 [node name="Jumat" type="TextureButton" parent="BGHari" unique_id=69651586]
@@ -162,7 +144,7 @@ offset_top = 91.0
 offset_right = 227.0
 offset_bottom = 164.0
 rotation = -0.06346294
-theme_override_font_sizes/font_size = 53
+theme_type_variation = &"H2Label"
 text = "JUMAT"
 
 [node name="TextureButton" type="TextureButton" parent="." unique_id=1727823902]
@@ -193,21 +175,11 @@ offset_left = 30.0
 offset_top = 37.0
 offset_right = 422.0
 offset_bottom = 114.0
-theme_override_styles/background = SubResource("StyleBoxFlat_5m37x")
-theme_override_styles/fill = SubResource("StyleBoxFlat_pno4y")
-max_value = 65.0
 show_percentage = false
-script = ExtResource("3_mccff")
-goal_value = 50.0
-
-[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Akademis1" unique_id=1543301980]
-layout_mode = 0
-offset_left = 398.0
-offset_top = 14.0
-offset_right = 478.0
-offset_bottom = 65.0
-theme_override_font_sizes/font_size = 30
-text = "65/65"
+script = ExtResource("statbar")
+category = "Akademis"
+show_value_label = true
+value_format = "%d%%"
 
 [node name="Akademis2" type="ProgressBar" parent="TextureButton/BGStat" unique_id=1719266399]
 layout_mode = 0
@@ -215,21 +187,11 @@ offset_left = 32.0
 offset_top = 153.0
 offset_right = 423.0
 offset_bottom = 227.0
-theme_override_styles/background = SubResource("StyleBoxFlat_0xkhc")
-theme_override_styles/fill = SubResource("StyleBoxFlat_bc618")
-max_value = 65.0
 show_percentage = false
-script = ExtResource("3_mccff")
-goal_value = 60.0
-
-[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Akademis2" unique_id=184346903]
-layout_mode = 0
-offset_left = 397.0
-offset_top = 13.0
-offset_right = 477.0
-offset_bottom = 64.0
-theme_override_font_sizes/font_size = 30
-text = "65/65"
+script = ExtResource("statbar")
+category = "SeniBudaya"
+show_value_label = true
+value_format = "%d%%"
 
 [node name="Akademis3" type="ProgressBar" parent="TextureButton/BGStat" unique_id=648612192]
 layout_mode = 0
@@ -237,21 +199,11 @@ offset_left = 30.0
 offset_top = 265.0
 offset_right = 422.0
 offset_bottom = 338.0
-theme_override_styles/background = SubResource("StyleBoxFlat_0xkhc")
-theme_override_styles/fill = SubResource("StyleBoxFlat_nri1m")
-max_value = 65.0
 show_percentage = false
-script = ExtResource("3_mccff")
-goal_value = 55.0
-
-[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Akademis3" unique_id=1626071378]
-layout_mode = 0
-offset_left = 398.0
-offset_top = 12.0
-offset_right = 478.0
-offset_bottom = 63.0
-theme_override_font_sizes/font_size = 30
-text = "65/65"
+script = ExtResource("statbar")
+category = "Olahraga"
+show_value_label = true
+value_format = "%d%%"
 
 [node name="Kepribadian1" type="ProgressBar" parent="TextureButton/BGStat" unique_id=1214081682]
 layout_mode = 0
@@ -259,19 +211,11 @@ offset_left = 31.0
 offset_top = 379.0
 offset_right = 423.0
 offset_bottom = 452.0
-theme_override_styles/background = SubResource("StyleBoxFlat_0xkhc")
-max_value = 65.0
 show_percentage = false
-script = ExtResource("3_mccff")
-
-[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Kepribadian1" unique_id=890165937]
-layout_mode = 0
-offset_left = 400.0
-offset_top = 12.0
-offset_right = 480.0
-offset_bottom = 63.0
-theme_override_font_sizes/font_size = 30
-text = "65/65"
+script = ExtResource("statbar")
+category = "Istirahat"
+show_value_label = true
+value_format = "%d%%"
 
 [node name="Kepribadian2" type="ProgressBar" parent="TextureButton/BGStat" unique_id=1170685406]
 layout_mode = 0
@@ -279,18 +223,11 @@ offset_left = 33.0
 offset_top = 495.0
 offset_right = 423.0
 offset_bottom = 568.0
-max_value = 65.0
 show_percentage = false
-script = ExtResource("3_mccff")
-
-[node name="ValueLabel" type="Label" parent="TextureButton/BGStat/Kepribadian2" unique_id=538641756]
-layout_mode = 0
-offset_left = 396.0
-offset_top = 14.0
-offset_right = 476.0
-offset_bottom = 65.0
-theme_override_font_sizes/font_size = 30
-text = "65/65"
+script = ExtResource("statbar")
+category = "Libur"
+show_value_label = true
+value_format = "%d%%"
 
 [node name="LabelNama" type="Label" parent="." unique_id=1966714655]
 layout_mode = 0
@@ -298,7 +235,7 @@ offset_left = 29.0
 offset_top = 640.0
 offset_right = 437.0
 offset_bottom = 742.0
-theme_override_font_sizes/font_size = 74
+theme_type_variation = &"H1Label"
 text = "Nama"
 
 [node name="TanggalContainer" type="HBoxContainer" parent="." unique_id=978398382]
@@ -307,7 +244,6 @@ offset_left = 108.0
 offset_top = 838.0
 offset_right = 956.0
 offset_bottom = 948.0
-theme_override_constants/separation = 15
 alignment = 1
 
 [node name="CalendarIcon" type="TextureRect" parent="TanggalContainer"]
@@ -318,10 +254,7 @@ stretch_mode = 5
 
 [node name="LabelTanggal" type="Label" parent="TanggalContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.12, 0.22, 0.45, 1)
-theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
-theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 56
+theme_type_variation = &"TitleLabel"
 text = "Agustus - Minggu Pertama"
 
 [node name="StartWeek" type="Button" parent="." unique_id=288288757]
@@ -330,7 +263,7 @@ offset_left = 442.0
 offset_top = 1754.0
 offset_right = 1056.0
 offset_bottom = 1902.0
-theme_override_font_sizes/font_size = 102
+theme_type_variation = &"PrimaryButton"
 text = "START WEEK"
 
 [node name="BackButton" type="TextureButton" parent="." unique_id=987654321]
@@ -396,11 +329,11 @@ offset_left = 28.0
 offset_top = 37.0
 offset_right = 710.0
 offset_bottom = 400.0
-theme_override_font_sizes/font_size = 47
+theme_type_variation = &"BarLabel"
 text = "PERINGATAN
 
-Terdapat murid yang masih 
-belum memiliki jadwal belajar 
+Terdapat murid yang masih
+belum memiliki jadwal belajar
 optimal!! Teruskan?"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -412,7 +345,7 @@ offset_left = 135.0
 offset_top = 284.0
 offset_right = 285.0
 offset_bottom = 374.0
-theme_override_font_sizes/font_size = 56
+theme_type_variation = &"SuccessButton"
 text = "YA"
 
 [node name="ButtonNo" type="Button" parent="Peringatan/TextureRect" unique_id=892341999]
@@ -421,7 +354,7 @@ offset_left = 445.0
 offset_top = 284.0
 offset_right = 595.0
 offset_bottom = 374.0
-theme_override_font_sizes/font_size = 56
+theme_type_variation = &"DangerButton"
 text = "TIDAK"
 
 [node name="Penjadwalan" type="Control" parent="." unique_id=1257958268]
@@ -456,8 +389,7 @@ offset_top = 379.0
 offset_right = 377.0
 offset_bottom = 459.0
 scale = Vector2(1.08, 1)
-theme_override_font_sizes/font_size = 52
-theme_override_styles/normal = SubResource("StyleBoxFlat_pno4y")
+theme_type_variation = &"PrimaryButton"
 text = "AKADEMIK"
 
 [node name="ProgressBar" type="ProgressBar" parent="Penjadwalan/TextureRect/Akademik" unique_id=194389028]
@@ -466,20 +398,11 @@ offset_left = 312.037
 offset_top = 1.0
 offset_right = 785.222
 offset_bottom = 81.0
-max_value = 65.0
 show_percentage = false
-script = ExtResource("3_mccff")
-goal_value = 50.0
-
-[node name="ValueLabel" type="Label" parent="Penjadwalan/TextureRect/Akademik/ProgressBar" unique_id=149302847]
-layout_mode = 0
-offset_left = 478.704
-offset_top = 16.0
-offset_right = 558.704
-offset_bottom = 58.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
-text = "65/65"
+script = ExtResource("statbar")
+category = "Akademis"
+show_value_label = true
+value_format = "%d%%"
 
 [node name="Olahraga" type="Button" parent="Penjadwalan/TextureRect" unique_id=1243804785]
 layout_mode = 0
@@ -488,8 +411,7 @@ offset_top = 791.0
 offset_right = 360.0
 offset_bottom = 871.0
 scale = Vector2(1.12, 1)
-theme_override_font_sizes/font_size = 52
-theme_override_styles/normal = SubResource("StyleBoxFlat_nri1m")
+theme_type_variation = &"PrimaryButton"
 text = "OLAHRAGA"
 
 [node name="ProgressBar2" type="ProgressBar" parent="Penjadwalan/TextureRect/Olahraga" unique_id=1294073586]
@@ -498,20 +420,11 @@ offset_left = 294.64285
 offset_top = -2.0
 offset_right = 753.5714
 offset_bottom = 79.0
-max_value = 65.0
 show_percentage = false
-script = ExtResource("3_mccff")
-goal_value = 60.0
-
-[node name="ValueLabel" type="Label" parent="Penjadwalan/TextureRect/Olahraga/ProgressBar2" unique_id=70520750]
-layout_mode = 0
-offset_left = 463.39285
-offset_top = 17.0
-offset_right = 543.3928
-offset_bottom = 59.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
-text = "65/65"
+script = ExtResource("statbar")
+category = "Olahraga"
+show_value_label = true
+value_format = "%d%%"
 
 [node name="SeniBudaya" type="Button" parent="Penjadwalan/TextureRect" unique_id=1127470424]
 layout_mode = 0
@@ -520,8 +433,7 @@ offset_top = 588.0
 offset_right = 377.0
 offset_bottom = 668.0
 scale = Vector2(1.08, 1)
-theme_override_font_sizes/font_size = 52
-theme_override_styles/normal = SubResource("StyleBoxFlat_bc618")
+theme_type_variation = &"PrimaryButton"
 text = "SEN BUD"
 
 [node name="ProgressBar3" type="ProgressBar" parent="Penjadwalan/TextureRect/SeniBudaya" unique_id=381328819]
@@ -529,19 +441,11 @@ layout_mode = 0
 offset_left = 312.0
 offset_right = 785.1852
 offset_bottom = 80.0
-max_value = 65.0
 show_percentage = false
-script = ExtResource("3_mccff")
-
-[node name="ValueLabel" type="Label" parent="Penjadwalan/TextureRect/SeniBudaya/ProgressBar3" unique_id=732509691]
-layout_mode = 0
-offset_left = 478.7407
-offset_top = 18.0
-offset_right = 558.7407
-offset_bottom = 60.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 30
-text = "65/65"
+script = ExtResource("statbar")
+category = "SeniBudaya"
+show_value_label = true
+value_format = "%d%%"
 
 [node name="Libur" type="Button" parent="Penjadwalan/TextureRect" unique_id=1650158165]
 layout_mode = 0
@@ -549,6 +453,5 @@ offset_left = 111.0
 offset_top = 1381.0
 offset_right = 476.0
 offset_bottom = 1504.0
-theme_override_font_sizes/font_size = 100
-theme_override_styles/normal = SubResource("StyleBoxFlat_46isr")
+theme_type_variation = &"PrimaryButton"
 text = "LIBUR"

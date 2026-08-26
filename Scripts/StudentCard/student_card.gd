@@ -6,8 +6,6 @@ extends Control
 @export var color_akademis: Color = Color(0.10, 0.28, 0.90)
 @export var color_senibudaya: Color = Color(0.10, 0.62, 0.22)
 @export var color_olahraga: Color = Color(0.87, 0.21, 0.07)
-@export var color_quirk_badge: Color = Color(0.04, 0.56, 0.68)
-@export var color_persona_badge: Color = Color(0.48, 0.13, 0.78)
 
 @export_group("UI Textures (Optional Replace)")
 @export var icon_magnify: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_magnify.svg")
@@ -16,10 +14,6 @@ extends Control
 @export var icon_akademis: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_akademis.svg")
 @export var icon_seni: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_seni.svg")
 @export var icon_olahraga: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg")
-@export var badge_bg_tex: Texture2D = preload("res://Assets/Images/UI/Placeholders/badge_bg.svg")
-@export var tex_btn_approve: Texture2D = preload("res://Assets/Images/UI/Placeholders/btn_approve.svg")
-@export var tex_btn_batal: Texture2D = preload("res://Assets/Images/UI/Placeholders/btn_batal.svg")
-@export var tex_btn_belajar: Texture2D = preload("res://Assets/Images/UI/Placeholders/btn_belajar.svg")
 
 # ================= TRAIT DESCRIPTIONS =================
 
@@ -170,7 +164,6 @@ func _ready():
 		if approve_btn:
 			approve_btn.set_meta("original_position", approve_btn.position)
 			_setup_button_juice(approve_btn)
-			_apply_button_texture(approve_btn, tex_btn_approve, 32, 90.0, Color(0.1, 0.3, 0.15)) # dark green text
 			if not approve_btn.pressed.is_connected(_on_approve_pressed.bind(i)):
 				approve_btn.pressed.connect(_on_approve_pressed.bind(i))
 
@@ -178,7 +171,6 @@ func _ready():
 		if batal_btn:
 			batal_btn.set_meta("original_position", batal_btn.position)
 			_setup_button_juice(batal_btn)
-			_apply_button_texture(batal_btn, tex_btn_batal, 32, 90.0, Color(0.3, 0.1, 0.1)) # dark red text
 			if not batal_btn.pressed.is_connected(_on_batal_pressed.bind(i)):
 				batal_btn.pressed.connect(_on_batal_pressed.bind(i))
 			batal_btn.visible = false
@@ -192,7 +184,6 @@ func _ready():
 	# ---------- Setup Tombol Belajar ----------
 	belajar_button.pressed.connect(_on_belajar_pressed)
 	_setup_button_juice(belajar_button)
-	_apply_button_texture(belajar_button, tex_btn_belajar, 42, 0.0, Color.WHITE)
 	belajar_button.visible = false
 
 	# Populate UI with data from script (overrides placeholder data in .tscn)
@@ -1337,10 +1328,8 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 
 	var close_btn := Button.new()
 	close_btn.text = "✕"
-	close_btn.flat = true
-	close_btn.add_theme_font_size_override("font_size", 52)
-	close_btn.add_theme_color_override("font_color", Color.BLACK)
-	close_btn.custom_minimum_size = Vector2(76, 76)
+	close_btn.theme_type_variation = &"SecondaryButton"
+	close_btn.custom_minimum_size = Vector2.ONE * float(DesignTokens.load_default().touch_target_min)
 	close_btn.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	hbox.add_child(close_btn)
 
@@ -1419,27 +1408,12 @@ func _create_trait_badge(kertas: Control, node_name: String, type: String, badge
 		return
 
 	btn.text = badge_text
-	
-	var badge_color := color_quirk_badge if type == "quirk" else color_persona_badge
 
-	for state in ["normal", "hover", "pressed", "focus"]:
-		if badge_bg_tex:
-			var s_tex := StyleBoxTexture.new()
-			s_tex.texture = badge_bg_tex
-			s_tex.texture_margin_left = 45
-			s_tex.texture_margin_right = 45
-			s_tex.texture_margin_top = 10
-			s_tex.texture_margin_bottom = 10
-			s_tex.modulate_color = badge_color
-			btn.add_theme_stylebox_override(state, s_tex)
-		else:
-			var s := StyleBoxFlat.new()
-			s.bg_color = badge_color
-			s.set_corner_radius_all(40)
-			s.shadow_color  = Color(0, 0, 0, 0.30)
-			s.shadow_size   = 6
-			s.shadow_offset = Vector2(0, 3)
-			btn.add_theme_stylebox_override(state, s)
+	# Was: a four-state loop building either a tinted SVG nine-patch or a
+	# hand-rolled pill StyleBoxFlat per state. The scene already assigns
+	# QuirkBadge / PersonaBadge; re-asserting it here keeps the badge
+	# correct even if a page is built without those scene properties.
+	btn.theme_type_variation = &"QuirkBadge" if type == "quirk" else &"PersonaBadge"
 
 	btn.pivot_offset = btn.size / 2.0
 
@@ -1588,10 +1562,8 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 
 	var close_btn := Button.new()
 	close_btn.text = "✕"
-	close_btn.flat = true
-	close_btn.add_theme_font_size_override("font_size", 52)
-	close_btn.add_theme_color_override("font_color", Color.WHITE)
-	close_btn.custom_minimum_size = Vector2(76, 76)
+	close_btn.theme_type_variation = &"SecondaryButton"
+	close_btn.custom_minimum_size = Vector2.ONE * float(DesignTokens.load_default().touch_target_min)
 	close_btn.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	hbox.add_child(close_btn)
 
@@ -1730,33 +1702,13 @@ func _on_belajar_pressed():
 
 # ================= STAMP APPROVE / BATAL =================
 
-func _apply_button_texture(btn: Control, tex: Texture2D, override_font_size: int = -1, push_text_left: float = 0.0, f_color: Color = Color.WHITE) -> void:
-	if not btn or not tex: return
-	
-	if btn is Button:
-		if override_font_size > 0:
-			btn.add_theme_font_size_override("font_size", override_font_size)
-		btn.add_theme_color_override("font_color", f_color)
-		btn.add_theme_color_override("font_hover_color", f_color)
-		btn.add_theme_color_override("font_pressed_color", f_color)
+# _apply_button_texture() lived here. It painted a placeholder SVG
+# nine-patch plus per-state modulate and per-node font overrides onto
+# Aprove / Batal / BelajarButton at runtime. All three now carry a theme
+# variation (SuccessButton / DangerButton / PrimaryButton) set in the
+# scene, which supplies the same four states -- plus focus and disabled
+# -- from the baked theme.
 
-	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-		var s := StyleBoxTexture.new()
-		s.texture = tex
-		s.texture_margin_left = 16
-		s.texture_margin_right = 16
-		s.texture_margin_top = 12
-		s.texture_margin_bottom = 12
-		s.content_margin_left = push_text_left
-		
-		if state == "hover":
-			s.modulate_color = Color(1.1, 1.1, 1.1)
-		elif state == "pressed":
-			s.modulate_color = Color(0.9, 0.9, 0.9)
-		elif state == "disabled":
-			s.modulate_color = Color(0.5, 0.5, 0.5)
-			
-		btn.add_theme_stylebox_override(state, s)
 
 func _setup_button_juice(btn: Control):
 	if not btn:

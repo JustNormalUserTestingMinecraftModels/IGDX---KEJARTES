@@ -11,23 +11,6 @@
 [ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="4_vdd03"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://b0ttj7iunp215" path="res://Assets/Images/UI/paper_placeholder.jpg" id="8_hodfn"]
-[ext_resource type="Texture2D" uid="uid://by8g1doetajut" path="res://Assets/Images/UI/Placeholders/btn_approve.svg" id="tex_btn_approve"]
-[ext_resource type="Texture2D" uid="uid://bwoqbpoaopshj" path="res://Assets/Images/UI/Placeholders/btn_batal.svg" id="tex_btn_batal"]
-[ext_resource type="Texture2D" uid="uid://1aoyegmhi6nf" path="res://Assets/Images/UI/Placeholders/btn_belajar.svg" id="tex_btn_belajar"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quirk"]
-bg_color = Color(0.04, 0.56, 0.68, 1)
-corner_radius_top_left = 40
-corner_radius_top_right = 40
-corner_radius_bottom_right = 40
-corner_radius_bottom_left = 40
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_persona"]
-bg_color = Color(0.48, 0.13, 0.78, 1)
-corner_radius_top_left = 40
-corner_radius_top_right = 40
-corner_radius_bottom_right = 40
-corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r4bra"]
 
@@ -53,27 +36,6 @@ bg_color = Color(0.17599994, 0.88, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ekoon"]
 bg_color = Color(0.89, 0, 0, 1)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_approve"]
-texture = ExtResource("tex_btn_approve")
-texture_margin_left = 32.0
-texture_margin_top = 32.0
-texture_margin_right = 32.0
-texture_margin_bottom = 32.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_batal"]
-texture = ExtResource("tex_btn_batal")
-texture_margin_left = 32.0
-texture_margin_top = 32.0
-texture_margin_right = 32.0
-texture_margin_bottom = 32.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_belajar"]
-texture = ExtResource("tex_btn_belajar")
-texture_margin_left = 42.0
-texture_margin_top = 42.0
-texture_margin_right = 42.0
-texture_margin_bottom = 42.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
 shader = ExtResource("3_ovxc5")
@@ -133,14 +95,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid6" unique_id=1010521266]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+theme_type_variation = &"QuirkBadge"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -155,14 +110,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid6" unique_id=420784728]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
-theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+theme_type_variation = &"PersonaBadge"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -384,12 +332,7 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Aprove" type="Button" parent="KertasMurid6" unique_id=860385850]
-theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
-theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
 layout_mode = 0
@@ -399,13 +342,8 @@ offset_right = 765.0
 offset_bottom = 1829.0
 
 [node name="Batal" type="Button" parent="KertasMurid6" unique_id=363348099]
+theme_type_variation = &"DangerButton"
 visible = false
-theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
 text = "BATAL"
 
 layout_mode = 0
@@ -449,14 +387,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid5" unique_id=1094008115]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+theme_type_variation = &"QuirkBadge"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -471,14 +402,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid5" unique_id=6069551]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
-theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+theme_type_variation = &"PersonaBadge"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -700,12 +624,7 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Aprove" type="Button" parent="KertasMurid5" unique_id=1413978420]
-theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
-theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
 layout_mode = 0
@@ -715,13 +634,8 @@ offset_right = 765.0
 offset_bottom = 1829.0
 
 [node name="Batal" type="Button" parent="KertasMurid5" unique_id=510363470]
+theme_type_variation = &"DangerButton"
 visible = false
-theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
 text = "BATAL"
 
 layout_mode = 0
@@ -766,14 +680,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid4" unique_id=862966656]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+theme_type_variation = &"QuirkBadge"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -788,14 +695,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid4" unique_id=1021987004]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
-theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+theme_type_variation = &"PersonaBadge"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -1017,12 +917,7 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Aprove" type="Button" parent="KertasMurid4" unique_id=290729362]
-theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
-theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
 layout_mode = 0
@@ -1032,13 +927,8 @@ offset_right = 765.0
 offset_bottom = 1829.0
 
 [node name="Batal" type="Button" parent="KertasMurid4" unique_id=119033309]
+theme_type_variation = &"DangerButton"
 visible = false
-theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
 text = "BATAL"
 
 layout_mode = 0
@@ -1083,14 +973,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid3" unique_id=407152762]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+theme_type_variation = &"QuirkBadge"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -1105,14 +988,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid3" unique_id=1734850024]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
-theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+theme_type_variation = &"PersonaBadge"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -1334,12 +1210,7 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Aprove" type="Button" parent="KertasMurid3" unique_id=463087752]
-theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
-theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
 layout_mode = 0
@@ -1349,13 +1220,8 @@ offset_right = 765.0
 offset_bottom = 1829.0
 
 [node name="Batal" type="Button" parent="KertasMurid3" unique_id=272631289]
+theme_type_variation = &"DangerButton"
 visible = false
-theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
 text = "BATAL"
 
 layout_mode = 0
@@ -1400,14 +1266,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid2" unique_id=1530561034]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
+theme_type_variation = &"QuirkBadge"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -1422,14 +1281,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid2" unique_id=2118033802]
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
-theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
+theme_type_variation = &"PersonaBadge"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -1651,12 +1503,7 @@ offset_right = 300.0
 offset_bottom = 68.0
 
 [node name="Aprove" type="Button" parent="KertasMurid2" unique_id=351069657]
-theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
-theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
+theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
 layout_mode = 0
@@ -1666,13 +1513,8 @@ offset_right = 765.0
 offset_bottom = 1829.0
 
 [node name="Batal" type="Button" parent="KertasMurid2" unique_id=359088105]
+theme_type_variation = &"DangerButton"
 visible = false
-theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
 text = "BATAL"
 
 layout_mode = 0
@@ -1716,6 +1558,7 @@ text = "Ga Peduli"
 
 
 [node name="KutuBuku" type="Button" parent="KertasMurid1" unique_id=911792941]
+theme_type_variation = &"QuirkBadge"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -1726,18 +1569,11 @@ offset_left = -421.0
 offset_top = -104.119995
 offset_right = 421.0
 offset_bottom = -0.11999512
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/hover = SubResource("StyleBoxFlat_quirk")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_quirk")
 text = "Quirk Kutu Buku"
 
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid1" unique_id=1981551433]
+theme_type_variation = &"PersonaBadge"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -1748,14 +1584,6 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-theme_override_styles/normal = SubResource("StyleBoxFlat_persona")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_persona")
-theme_override_styles/hover = SubResource("StyleBoxFlat_persona")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_persona")
 text = "Persona Rajin"
 
 
@@ -1967,33 +1795,23 @@ vertical_alignment = 1
 
 
 [node name="Aprove" type="Button" parent="KertasMurid1" unique_id=362172452]
+theme_type_variation = &"SuccessButton"
 layout_mode = 0
 offset_left = 275.0
 offset_top = 1641.0
 offset_right = 765.0
 offset_bottom = 1829.0
-theme_override_colors/font_color = Color(0.1, 0.3, 0.15, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_approve")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_approve")
-theme_override_styles/hover = SubResource("StyleBoxTexture_approve")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_approve")
 text = "APPROVE"
 
 
 [node name="Batal" type="Button" parent="KertasMurid1" unique_id=491619717]
+theme_type_variation = &"DangerButton"
 visible = false
 layout_mode = 0
 offset_left = 259.0
 offset_top = 1622.0
 offset_right = 749.0
 offset_bottom = 1800.0
-theme_override_colors/font_color = Color(0.3, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 90
-theme_override_styles/normal = SubResource("StyleBoxTexture_batal")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_batal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_batal")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_batal")
 text = "BATAL"
 
 
@@ -2004,7 +1822,7 @@ offset_top = 1637.0
 offset_right = 1497.0
 offset_bottom = 2157.0
 rotation = -3.1272264
-scale = Vector2(0.155, 0.155)
+scale = Vector2(0.175, 0.175)
 icon = ExtResource("4_vdd03")
 flat = true
 
@@ -2016,7 +1834,7 @@ offset_left = -58.999992
 offset_top = 1584.0001
 offset_right = 453.0
 offset_bottom = 2096.0
-scale = Vector2(0.155, 0.155)
+scale = Vector2(0.175, 0.175)
 icon = ExtResource("4_vdd03")
 flat = true
 
@@ -2032,17 +1850,12 @@ text = "Pilih Muridmu"
 
 
 [node name="BelajarButton" type="Button" parent="." unique_id=219827255]
+theme_type_variation = &"PrimaryButton"
 layout_mode = 0
 offset_left = 328.0
 offset_top = 1756.0
 offset_right = 818.0
 offset_bottom = 1934.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 110
-theme_override_styles/normal = SubResource("StyleBoxTexture_belajar")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_belajar")
-theme_override_styles/hover = SubResource("StyleBoxTexture_belajar")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_belajar")
 text = "BELAJAR"
 
 

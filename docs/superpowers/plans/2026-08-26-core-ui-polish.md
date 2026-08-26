@@ -806,8 +806,6 @@ static func _pill(
 	sb.content_margin_right = tokens.space_lg
 	sb.content_margin_top = tokens.space_md
 	sb.content_margin_bottom = tokens.space_md
-	# Bottom bevel: a darker inner shade sold via the expand margin.
-	sb.bg_color = top.lerp(bottom, 0.35)
 	return sb
 
 
@@ -925,7 +923,7 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 
 `test_run` with `suite: "theme_factory"`.
 
-Expected: 10 tests, all PASS. If `test_buttons_meet_minimum_touch_target` fails, the `space_md` content margins are too small — raise `space_md` in the tokens rather than special-casing the factory.
+Expected: 9 tests, all PASS. If `test_buttons_meet_minimum_touch_target` fails, the `space_md` content margins are too small — raise `space_md` in the tokens rather than special-casing the factory.
 
 - [ ] **Step 5: Write the bake EditorScript**
 

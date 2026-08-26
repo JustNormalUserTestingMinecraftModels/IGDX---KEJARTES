@@ -80,4 +80,3 @@ layout_mode = 2
 
 [node name="DaySummaryPill2" parent="MarginContainer/HBoxContainer/InfoVBox/PillsContainer" instance=ExtResource("3_pill")]
 layout_mode = 2
-text = " -12 Energy ↓ "

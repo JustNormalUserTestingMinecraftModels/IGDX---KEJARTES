@@ -73,9 +73,9 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 			event_delta_sum += int(ch.get("delta"))
 			
 	if student and student.energy <= 20.0:
-		_add_name_row_badge("⚠️ KELELAHAN", Color(0.95, 0.35, 0.35), Color(0.78, 0.08, 0.08))
+		_add_name_row_badge("⚠️ KELELAHAN", pill_warning_color)
 	elif event_delta_sum > 0:
-		_add_name_row_badge("✨ BONUS EVENT +%d" % event_delta_sum, Color(0.95, 0.82, 0.28), Color(0.85, 0.7, 0.1))
+		_add_name_row_badge("✨ BONUS EVENT +%d" % event_delta_sum, pill_bonus_color)
 		
 	# Setup pills
 	for child in pills_container.get_children():
@@ -107,33 +107,28 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 		var pill_color = _get_summary_pill_color(sk, delta, source)
 		_add_pill(pill_text, pill_color)
 
-func _add_name_row_badge(text: String, color: Color, outline_color: Color) -> void:
-	var badge_scene = load("res://Scenes/SchoolSimulation/DaySummaryBadge.tscn")
-	var lbl = badge_scene.instantiate() as Label
-	lbl.text = " %s " % text
-	lbl.add_theme_color_override("font_color", color)
-	if font: lbl.add_theme_font_override("font", font)
-	
-	var base_style = lbl.get_theme_stylebox("normal")
-	if base_style is StyleBoxFlat:
-		var style = base_style.duplicate() as StyleBoxFlat
-		style.bg_color = Color(outline_color.r, outline_color.g, outline_color.b, 0.18)
-		style.border_color = outline_color
-		lbl.add_theme_stylebox_override("normal", style)
-	badge_container.add_child(lbl)
+## Badge and pill chips are now theme-driven: the scene supplies the
+## SunkenPanel geometry, the BarLabel text style, and the only per-chip
+## variable left is the tint. `self_modulate` is used rather than
+## `modulate` deliberately -- it tints the panel's own stylebox without
+## bleeding into the child Label, which is the same trick StatBar uses to
+## category-tint a shared white fill.
+func _add_name_row_badge(text: String, tint: Color) -> void:
+	badge_container.add_child(_make_chip(
+		"res://Scenes/SchoolSimulation/DaySummaryBadge.tscn", text, tint))
 
-func _add_pill(text: String, bg_color: Color) -> void:
-	var pill_scene = load("res://Scenes/SchoolSimulation/DaySummaryPill.tscn")
-	var lbl = pill_scene.instantiate() as Label
-	lbl.text = " %s " % text
-	if font: lbl.add_theme_font_override("font", font)
-	
-	var base_style = lbl.get_theme_stylebox("normal")
-	if base_style is StyleBoxFlat:
-		var style = base_style.duplicate() as StyleBoxFlat
-		style.bg_color = bg_color
-		lbl.add_theme_stylebox_override("normal", style)
-	pills_container.add_child(lbl)
+func _add_pill(text: String, tint: Color) -> void:
+	pills_container.add_child(_make_chip(
+		"res://Scenes/SchoolSimulation/DaySummaryPill.tscn", text, tint))
+
+func _make_chip(scene_path: String, text: String, tint: Color) -> PanelContainer:
+	var chip := load(scene_path).instantiate() as PanelContainer
+	chip.self_modulate = tint
+	var lbl := chip.get_node("Text") as Label
+	lbl.text = text
+	if font:
+		lbl.add_theme_font_override("font", font)
+	return chip
 
 func _get_summary_pill_color(stat_key: String, delta: float, source: String) -> Color:
 	if source == "minigame_win": return pill_bonus_color

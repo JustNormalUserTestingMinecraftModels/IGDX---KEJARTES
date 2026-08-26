@@ -334,7 +334,7 @@ func suite_name() -> String:
 
 func test_default_resource_loads() -> void:
 	var tokens := DesignTokens.load_default()
-	assert_not_null(tokens, "design_tokens.tres must load")
+	assert_true(tokens != null, "design_tokens.tres must load")
 	assert_true(tokens is DesignTokens, "must be a DesignTokens instance")
 
 
@@ -610,7 +610,7 @@ func setup() -> void:
 
 
 func test_build_returns_a_theme() -> void:
-	assert_not_null(_theme, "build must return a Theme")
+	assert_true(_theme != null, "build must return a Theme")
 	assert_true(_theme is Theme, "must be a Theme instance")
 
 
@@ -638,7 +638,7 @@ func test_button_variations_have_all_four_states() -> void:
 
 func test_primary_button_uses_brand_color() -> void:
 	var sb := _theme.get_stylebox("normal", "PrimaryButton") as StyleBoxFlat
-	assert_not_null(sb, "PrimaryButton/normal must be a StyleBoxFlat")
+	assert_true(sb != null, "PrimaryButton/normal must be a StyleBoxFlat")
 	assert_eq(sb.bg_color, _tokens.brand_primary_light,
 		"gradient top of the primary button is brand_primary_light")
 
@@ -683,7 +683,7 @@ func test_build_survives_null_fonts() -> void:
 	bare.font_display = null
 	bare.font_body = null
 	var t := ThemeFactory.build(bare)
-	assert_not_null(t, "build must tolerate unassigned font slots")
+	assert_true(t != null, "build must tolerate unassigned font slots")
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
@@ -1197,21 +1197,19 @@ func test_play_sfx_with_unknown_id_is_survivable() -> void:
 
 func test_bus_volume_roundtrips() -> void:
 	_director.set_bus_volume(&"SFX", 0.5)
-	assert_almost_eq(_director.get_bus_volume(&"SFX"), 0.5, 0.01,
-		"volume set then read must match")
+	assert_true(absf((_director.get_bus_volume(&"SFX")) - (0.5)) <= 0.01, "volume set then read must match")
 
 
 func test_bus_volume_clamps_to_valid_range() -> void:
 	_director.set_bus_volume(&"SFX", 5.0)
-	assert_almost_eq(_director.get_bus_volume(&"SFX"), 1.0, 0.01, "clamps high")
+	assert_true(absf((_director.get_bus_volume(&"SFX")) - (1.0)) <= 0.01, "clamps high")
 	_director.set_bus_volume(&"SFX", -3.0)
-	assert_almost_eq(_director.get_bus_volume(&"SFX"), 0.0, 0.01, "clamps low")
+	assert_true(absf((_director.get_bus_volume(&"SFX")) - (0.0)) <= 0.01, "clamps low")
 
 
 func test_muted_bus_reports_zero_not_negative_infinity() -> void:
 	_director.set_bus_volume(&"BGM", 0.0)
-	assert_almost_eq(_director.get_bus_volume(&"BGM"), 0.0, 0.01,
-		"a fully muted bus reads back as 0.0, not -inf or NaN")
+	assert_true(absf((_director.get_bus_volume(&"BGM")) - (0.0)) <= 0.01, "a fully muted bus reads back as 0.0, not -inf or NaN")
 
 
 func test_sfx_voices_are_pooled_and_reused() -> void:
@@ -1603,8 +1601,7 @@ func test_press_shrinks_the_node() -> void:
 	var c := _make_control()
 	Juice.press(c)
 	await Engine.get_main_loop().create_timer(tokens.dur_instant + 0.05).timeout
-	assert_almost_eq(c.scale.x, tokens.press_scale, 0.02,
-		"press must settle at press_scale")
+	assert_true(absf((c.scale.x) - (tokens.press_scale)) <= 0.02, "press must settle at press_scale")
 
 
 func test_release_returns_to_unit_scale() -> void:
@@ -1613,7 +1610,7 @@ func test_release_returns_to_unit_scale() -> void:
 	c.scale = Vector2(tokens.press_scale, tokens.press_scale)
 	Juice.release(c)
 	await Engine.get_main_loop().create_timer(tokens.dur_fast + 0.15).timeout
-	assert_almost_eq(c.scale.x, 1.0, 0.02, "release must settle at exactly 1.0")
+	assert_true(absf((c.scale.x) - (1.0)) <= 0.02, "release must settle at exactly 1.0")
 
 
 func test_pop_in_makes_a_hidden_node_visible_at_unit_scale() -> void:
@@ -1621,8 +1618,8 @@ func test_pop_in_makes_a_hidden_node_visible_at_unit_scale() -> void:
 	var c := _make_control()
 	Juice.pop_in(c)
 	await Engine.get_main_loop().create_timer(tokens.dur_normal + 0.15).timeout
-	assert_almost_eq(c.scale.x, 1.0, 0.03, "pop_in ends at unit scale")
-	assert_almost_eq(c.modulate.a, 1.0, 0.03, "pop_in ends fully opaque")
+	assert_true(absf((c.scale.x) - (1.0)) <= 0.03, "pop_in ends at unit scale")
+	assert_true(absf((c.modulate.a) - (1.0)) <= 0.03, "pop_in ends fully opaque")
 
 
 func test_count_up_lands_exactly_on_the_target() -> void:
@@ -1653,7 +1650,7 @@ func test_fill_bar_lands_on_the_target_value() -> void:
 	_root.add_child(bar)
 	Juice.fill_bar(bar, 73.5)
 	await Engine.get_main_loop().create_timer(tokens.dur_slow + 0.2).timeout
-	assert_almost_eq(bar.value, 73.5, 0.01, "bar must land on target")
+	assert_true(absf((bar.value) - (73.5)) <= 0.01, "bar must land on target")
 
 
 func test_stagger_in_eventually_shows_every_node() -> void:
@@ -1665,8 +1662,7 @@ func test_stagger_in_eventually_shows_every_node() -> void:
 	var total := tokens.stagger_step * 5.0 + tokens.dur_normal + 0.2
 	await Engine.get_main_loop().create_timer(total).timeout
 	for i in nodes.size():
-		assert_almost_eq(nodes[i].modulate.a, 1.0, 0.03,
-			"staggered node %d must end visible" % i)
+		assert_true(absf((nodes[i].modulate.a) - (1.0)) <= 0.03, "staggered node %d must end visible" % i)
 
 
 func test_stagger_in_tolerates_an_empty_array() -> void:
@@ -1690,8 +1686,8 @@ func test_shake_returns_the_node_to_its_start_position() -> void:
 	c.position = Vector2(50, 60)
 	Juice.shake(c)
 	await Engine.get_main_loop().create_timer(tokens.dur_normal + 0.25).timeout
-	assert_almost_eq(c.position.x, 50.0, 0.5, "shake must restore x")
-	assert_almost_eq(c.position.y, 60.0, 0.5, "shake must restore y")
+	assert_true(absf((c.position.x) - (50.0)) <= 0.5, "shake must restore x")
+	assert_true(absf((c.position.y) - (60.0)) <= 0.5, "shake must restore y")
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
@@ -2044,7 +2040,7 @@ func test_set_stat_without_animation_is_immediate() -> void:
 	var bar := StatBar.new()
 	_root.add_child(bar)
 	bar.set_stat(64.0, false)
-	assert_almost_eq(bar.value, 64.0, 0.001, "unanimated set is immediate")
+	assert_true(absf((bar.value) - (64.0)) <= 0.001, "unanimated set is immediate")
 
 
 func test_set_stat_with_animation_reaches_the_target() -> void:
@@ -2053,7 +2049,7 @@ func test_set_stat_with_animation_reaches_the_target() -> void:
 	_root.add_child(bar)
 	bar.set_stat(88.0, true)
 	await Engine.get_main_loop().create_timer(tokens.dur_slow + 0.2).timeout
-	assert_almost_eq(bar.value, 88.0, 0.05, "animated set reaches target")
+	assert_true(absf((bar.value) - (88.0)) <= 0.05, "animated set reaches target")
 
 
 func test_set_stat_clamps_out_of_range_input() -> void:
@@ -2061,9 +2057,9 @@ func test_set_stat_clamps_out_of_range_input() -> void:
 	var bar := StatBar.new()
 	_root.add_child(bar)
 	bar.set_stat(150.0, false)
-	assert_almost_eq(bar.value, 100.0, 0.001, "clamps above max_value")
+	assert_true(absf((bar.value) - (100.0)) <= 0.001, "clamps above max_value")
 	bar.set_stat(-20.0, false)
-	assert_almost_eq(bar.value, 0.0, 0.001, "clamps below min_value")
+	assert_true(absf((bar.value) - (0.0)) <= 0.001, "clamps below min_value")
 
 
 func test_statbar_value_label_tracks_the_value() -> void:
@@ -2075,7 +2071,7 @@ func test_statbar_value_label_tracks_the_value() -> void:
 	bar.set_stat(77.0, true)
 	await Engine.get_main_loop().create_timer(tokens.dur_slow + 0.25).timeout
 	var label := bar.get_node_or_null("ValueLabel") as Label
-	assert_not_null(label, "show_value_label must create a ValueLabel child")
+	assert_true(label != null, "show_value_label must create a ValueLabel child")
 	assert_eq(label.text, "77", "label must land on the exact value")
 
 
@@ -2291,7 +2287,7 @@ func suite_name() -> String:
 
 func test_autoload_exists() -> void:
 	var t := Engine.get_main_loop().root.get_node_or_null("transition")
-	assert_not_null(t, "the Transition autoload must be in the tree")
+	assert_true(t != null, "the Transition autoload must be in the tree")
 
 
 func test_change_scene_still_accepts_a_single_argument() -> void:
@@ -2332,7 +2328,7 @@ func test_overlay_does_not_block_input_when_idle() -> void:
 	# unclickable — the single worst failure mode for this node.
 	var t := Engine.get_main_loop().root.get_node("transition")
 	var rect := t.get_node_or_null("ColorRect") as Control
-	assert_not_null(rect, "ColorRect must exist")
+	assert_true(rect != null, "ColorRect must exist")
 	assert_eq(rect.mouse_filter, Control.MOUSE_FILTER_IGNORE,
 		"the overlay must never intercept taps")
 ```
@@ -2581,14 +2577,14 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 
 func test_content_is_wrapped_in_a_safe_area() -> void:
 	var safe := _menu.find_child("SafeArea", true, false)
-	assert_not_null(safe, "top-level content must sit inside a SafeAreaMargin")
+	assert_true(safe != null, "top-level content must sit inside a SafeAreaMargin")
 	assert_true(safe is SafeAreaMargin, "must be a SafeAreaMargin")
 
 
 func test_all_three_buttons_exist_and_are_wired() -> void:
 	for name in ["PlayButton", "SettingButton", "QuitButton"]:
 		var b := _menu.find_child(name, true, false) as BaseButton
-		assert_not_null(b, "missing button: " + name)
+		assert_true(b != null, "missing button: " + name)
 		assert_true(b.pressed.get_connections().size() > 0,
 			name + " must have a pressed handler")
 
@@ -2868,7 +2864,7 @@ func test_scene_has_no_theme_overrides() -> void:
 		"found theme_override_* on: " + ", ".join(offenders))
 
 func test_scene_instantiates_without_errors() -> void:
-	assert_not_null(_scene, "scene must instantiate")
+	assert_true(_scene != null, "scene must instantiate")
 
 func test_interactive_controls_meet_touch_minimum() -> void:
 	await Engine.get_main_loop().process_frame
@@ -3345,13 +3341,13 @@ func teardown() -> void:
 
 
 func test_scene_loads() -> void:
-	assert_not_null(_screen, "Settings.tscn must exist and instantiate")
+	assert_true(_screen != null, "Settings.tscn must exist and instantiate")
 
 
 func test_has_a_slider_for_each_audio_bus() -> void:
 	for name in ["MasterSlider", "BgmSlider", "SfxSlider"]:
 		var s := _screen.find_child(name, true, false)
-		assert_not_null(s, "missing slider: " + name)
+		assert_true(s != null, "missing slider: " + name)
 		assert_true(s is Slider, name + " must be a Slider")
 
 
@@ -3359,13 +3355,12 @@ func test_moving_a_slider_changes_the_bus_volume() -> void:
 	var slider := _screen.find_child("SfxSlider", true, false) as Slider
 	slider.value = 0.3
 	await Engine.get_main_loop().process_frame
-	assert_almost_eq(AudioDirector.get_bus_volume(&"SFX"), 0.3, 0.02,
-		"the slider must drive the bus")
+	assert_true(absf((AudioDirector.get_bus_volume(&"SFX")) - (0.3)) <= 0.02, "the slider must drive the bus")
 
 
 func test_tutorial_toggle_reflects_and_writes_game_settings() -> void:
 	var toggle := _screen.find_child("TutorialToggle", true, false) as CheckButton
-	assert_not_null(toggle, "the minigame tutorial toggle must exist")
+	assert_true(toggle != null, "the minigame tutorial toggle must exist")
 	var original := GameSettings.minigame_tutorial_enabled
 	toggle.button_pressed = not original
 	await Engine.get_main_loop().process_frame
@@ -3376,7 +3371,7 @@ func test_tutorial_toggle_reflects_and_writes_game_settings() -> void:
 
 func test_back_button_exists_and_is_wired() -> void:
 	var back := _screen.find_child("BackButton", true, false) as BaseButton
-	assert_not_null(back, "settings must be escapable")
+	assert_true(back != null, "settings must be escapable")
 	assert_true(back.pressed.get_connections().size() > 0,
 		"back button must be wired")
 

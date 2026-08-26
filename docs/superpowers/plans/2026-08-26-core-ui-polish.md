@@ -1006,7 +1006,7 @@ git commit -m "feat(design): build Theme from tokens, register project-wide"
 # Task 4: Fonts
 
 **Files:**
-- Create: `Assets/Fonts/Baloo2-Variable.ttf`, `Assets/Fonts/Nunito-Regular.ttf`, `Assets/Fonts/Nunito-Bold.ttf`, `Assets/Fonts/OFL.txt`, `Assets/Fonts/README.md`
+- Create: `Assets/Fonts/Baloo2-Variable.ttf`, `Assets/Fonts/Nunito-Regular.ttf`, `Assets/Fonts/Nunito-Bold.ttf`, `Assets/Fonts/Baloo2-OFL.txt`, `Assets/Fonts/Nunito-OFL.txt`, `Assets/Fonts/README.md`
 - Modify: `Assets/Theme/design_tokens.tres` (assign font slots)
 - Modify: `Assets/Theme/kejartes_theme.tres` (rebake)
 
@@ -1035,7 +1035,8 @@ Downloading files requires explicit permission. Ask:
 mkdir -p Assets/Fonts
 curl -L -o Assets/Fonts/Baloo2-Variable.ttf "https://github.com/google/fonts/raw/main/ofl/baloo2/Baloo2%5Bwght%5D.ttf"
 curl -L -o Assets/Fonts/Nunito-Regular.ttf "https://github.com/google/fonts/raw/main/ofl/nunito/Nunito%5Bwght%5D.ttf"
-curl -L -o Assets/Fonts/OFL.txt "https://github.com/google/fonts/raw/main/ofl/nunito/OFL.txt"
+curl -L -o Assets/Fonts/Nunito-OFL.txt "https://github.com/google/fonts/raw/main/ofl/nunito/OFL.txt"
+curl -L -o Assets/Fonts/Baloo2-OFL.txt "https://github.com/google/fonts/raw/main/ofl/baloo2/OFL.txt"
 ```
 
 Both downloads are **variable fonts**. Godot 4 imports these fine and exposes the weight axis on the `FontVariation` resource. `Baloo2%5Bwght%5D.ttf` already downloads with the right name; the Nunito file's filename says Regular but the file is variable — rename it to reflect reality:
@@ -1062,7 +1063,7 @@ Create `Assets/Fonts/README.md`:
 - `Baloo2-Variable.ttf` — display face (headings, buttons, big numbers)
 - `Nunito-Variable.ttf` — body face (everything else)
 
-Both are SIL Open Font License 1.1. See `OFL.txt`.
+Both are SIL Open Font License 1.1 — each with its own upstream copyright holder, so each keeps its own license file: `Baloo2-OFL.txt`, `Nunito-OFL.txt`.
 
 ## Swapping in your own fonts
 

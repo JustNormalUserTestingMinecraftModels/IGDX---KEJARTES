@@ -74,3 +74,15 @@ func test_scene_uses_project_theme() -> void:
 	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
 	assert_true(raw.contains("kejartes_theme.tres"),
 		"the scene root must carry the project theme")
+
+func test_use_popup_uses_the_project_scrim() -> void:
+	assert_true(_source().contains("scrim_color()"),
+		"the modal backdrop must use DesignTokens.scrim_color()")
+
+func test_use_popup_animates_with_token_durations() -> void:
+	assert_true(_source().contains("dur_fast"),
+		"popup fades must use the token duration, not a magic number")
+
+func test_scene_changes_specify_a_transition_style() -> void:
+	assert_true(_source().contains("Transition.Style."),
+		"navigation must specify this project's transition style")

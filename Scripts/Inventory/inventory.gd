@@ -76,6 +76,9 @@ func _ready():
 
 	use_popup.hide()
 
+	if not use_popup.gui_input.is_connected(_on_use_popup_input):
+		use_popup.gui_input.connect(_on_use_popup_input)
+
 	# Apply initial styles
 	_style_all_category_buttons()
 	coin_label.text = "%d" % GameState.player_money
@@ -457,6 +460,7 @@ func _on_use_pressed():
 		print("Gunakan 1 × %s — aksi dinonaktifkan (null)" % selected_item.item_name)
 
 func _open_use_popup(item: ItemData, max_qty: int):
+	var tokens := DesignTokens.load_default()
 	current_use_qty = 1
 	max_use_qty = max_qty
 
@@ -466,26 +470,46 @@ func _open_use_popup(item: ItemData, max_qty: int):
 
 	_update_popup_qty_display()
 
-	# Fade in the overlay
+	use_popup.visible = true
+	use_popup.color = tokens.scrim_color()
 	use_popup.modulate.a = 0.0
-	use_popup.show()
-	var overlay_tween = create_tween()
-	overlay_tween.tween_property(use_popup, "modulate:a", 1.0, 0.15)
+	use_popup.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# Spring pop-in for the panel
-	var panel = $UsePopup/CenterContainer/PopupPanel as Control
-	if panel:
-		AnimUtils.popup_spring_in(panel)
+	var panel := use_popup.get_node("CenterContainer/PopupPanel") as Control
+	panel.pivot_offset = panel.size * 0.5
+	panel.scale = Vector2(0.9, 0.9)
+
+	AudioDirector.play_sfx(&"popup_open")
+
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(use_popup, "modulate:a", 1.0, tokens.dur_fast)
+	tween.tween_property(panel, "scale", Vector2.ONE, tokens.dur_fast) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 	# Wobble the popup icon
 	AnimUtils.wobble(popup_item_icon)
 
 func _close_popup_animated():
-	var panel = $UsePopup/CenterContainer/PopupPanel as Control
-	if panel:
-		AnimUtils.popup_spring_out(panel, use_popup, use_popup.hide)
-	else:
-		use_popup.hide()
+	var tokens := DesignTokens.load_default()
+	var panel := use_popup.get_node("CenterContainer/PopupPanel") as Control
+
+	AudioDirector.play_sfx(&"popup_close")
+
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(use_popup, "modulate:a", 0.0, tokens.dur_fast)
+	tween.tween_property(panel, "scale", Vector2(0.9, 0.9), tokens.dur_fast) \
+		.set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(func():
+		use_popup.visible = false
+		use_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		selected_item = null
+	)
+
+func _on_use_popup_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		var panel := use_popup.get_node("CenterContainer/PopupPanel") as Control
+		if not panel.get_global_rect().has_point(event.global_position):
+			_close_popup_animated()
 
 func _update_popup_qty_display():
 	popup_qty_label.text = "%d" % current_use_qty

@@ -138,16 +138,27 @@ func _setup_main_buttons(tokens: DesignTokens):
 		rak1_back_button.pivot_offset = rak1_back_button.size / 2
 
 func _on_rak1_pressed():
+	var tokens := DesignTokens.load_default()
 	AnimUtils.squash_bounce(rak1_button, 4.0)
 	AudioDirector.play_sfx(&"tap")
 
 	if rak1_panel.has_method("setup_random_items"):
 		rak1_panel.setup_random_items()
-	rak1_panel.show()
 
-	AnimUtils.spring_pop_in(rak1_panel)
+	rak1_panel.visible = true
+	rak1_panel.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	rak1_panel.pivot_offset = rak1_panel.size * 0.5
+	rak1_panel.scale = Vector2(0.9, 0.9)
+
+	AudioDirector.play_sfx(&"popup_open")
+
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(rak1_panel, "modulate:a", 1.0, tokens.dur_fast)
+	tween.tween_property(rak1_panel, "scale", Vector2.ONE, tokens.dur_fast) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _on_back_pressed():
+	var tokens := DesignTokens.load_default()
 	AnimUtils.back_bounce(rak1_back_button)
 	AudioDirector.play_sfx(&"whoosh")
 
@@ -156,7 +167,13 @@ func _on_back_pressed():
 	if rak1_panel.has_method("clear_basket_visuals"):
 		rak1_panel.clear_basket_visuals()
 
-	AnimUtils.spring_pop_out(rak1_panel, _finish_back_close)
+	AudioDirector.play_sfx(&"popup_close")
+
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(rak1_panel, "modulate:a", 0.0, tokens.dur_fast)
+	tween.tween_property(rak1_panel, "scale", Vector2(0.9, 0.9), tokens.dur_fast) \
+		.set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(_finish_back_close)
 
 func _finish_back_close():
 	rak1_panel.hide()

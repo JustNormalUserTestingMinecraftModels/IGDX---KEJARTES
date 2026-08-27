@@ -66,3 +66,27 @@ func test_get_quantity_of_unowned_item_is_zero() -> void:
 	GameState.inventory.clear()
 	assert_eq(GameState.get_inventory_quantity("Raket"), 0, "unowned reads as 0")
 	# Task 2 tests complete
+
+func test_cart_total_multiplies_price_by_quantity() -> void:
+	Cart.clear()
+	var komik: ItemData = ItemDatabase.get_item("Komik")
+	Cart.add_item(komik)
+	Cart.add_item(komik)
+	assert_eq(Cart.get_total(), komik.price * 2, "total is price x quantity")
+	assert_eq(Cart.get_item_count(), 2, "item count sums quantities")
+	Cart.clear()
+
+func test_cart_remove_one_erases_at_zero() -> void:
+	Cart.clear()
+	Cart.add_item(ItemDatabase.get_item("Mie"))
+	Cart.remove_one("Mie")
+	assert_true(Cart.is_empty(), "cart is empty after removing the last unit")
+	Cart.clear()
+
+func test_cart_clear_empties_everything() -> void:
+	Cart.clear()
+	Cart.add_item(ItemDatabase.get_item("Raket"))
+	Cart.add_item(ItemDatabase.get_item("LKS"))
+	Cart.clear()
+	assert_eq(Cart.get_total(), 0, "total is 0 after clear")
+	assert_true(Cart.is_empty(), "cart reports empty after clear")

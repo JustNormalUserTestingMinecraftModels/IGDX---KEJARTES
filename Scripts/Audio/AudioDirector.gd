@@ -42,6 +42,7 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var bgm_minigame_olahraga: AudioStream
 @export var bgm_minigame_senibudaya_batik: AudioStream
 @export var bgm_minigame_senibudaya_menari: AudioStream
+@export var bgm_minigame_akademis: Array[AudioStream] = []
 
 @export_group("Mixing")
 ## Default crossfade for play_bgm/stop_bgm when no explicit fade is given.
@@ -61,6 +62,8 @@ var _bgm_active: AudioStreamPlayer
 var _bgm_current_id: StringName = &""
 var _bgm_tween: Tween
 var _bgm_minigame: AudioStreamPlayer
+var _akademis_sequence_index: int = 0
+var _bgm_minigame_id: StringName = &""
 var _save_timer: SceneTreeTimer
 var _save_count: int = 0
 var _setup_ran: bool = false
@@ -98,6 +101,7 @@ func _ready() -> void:
 	_bgm_b = _make_bgm_player()
 	_bgm_active = _bgm_a
 	_bgm_minigame = _make_bgm_player()
+	_bgm_minigame.finished.connect(_on_minigame_bgm_finished)
 
 	_load_volumes()
 
@@ -229,6 +233,18 @@ func resume_bgm(fade: float = -1.0) -> void:
 ## function (a looping 3-track sequence); the ids here are single,
 ## already-looping tracks.
 func play_minigame_bgm(id: StringName) -> void:
+	_bgm_minigame_id = id
+	if id == &"minigame_akademis":
+		if bgm_minigame_akademis.is_empty():
+			return
+		_akademis_sequence_index = 0
+		_bgm_minigame.stream = bgm_minigame_akademis[0]
+		_bgm_minigame.volume_db = -60.0
+		_bgm_minigame.play()
+		var tw := create_tween()
+		tw.tween_property(_bgm_minigame, "volume_db", 0.0, minigame_bgm_fade)
+		return
+
 	var stream := _resolve_minigame_bgm(id)
 	if stream == null:
 		return
@@ -257,6 +273,21 @@ func stop_minigame_bgm(fade: float = -1.0) -> void:
 	var tw := create_tween()
 	tw.tween_property(_bgm_minigame, "volume_db", -60.0, duration)
 	tw.tween_callback(_bgm_minigame.stop)
+
+
+## Fires whenever _bgm_minigame's current track ends naturally (i.e.
+## the track's loop is disabled -- see bgm_minigame_akademis' import
+## settings). Only the Akademis sequence reacts to this; every other
+## minigame track loops forever via its own import setting and never
+## reaches here.
+func _on_minigame_bgm_finished() -> void:
+	if _bgm_minigame_id != &"minigame_akademis":
+		return
+	if bgm_minigame_akademis.is_empty():
+		return
+	_akademis_sequence_index = (_akademis_sequence_index + 1) % bgm_minigame_akademis.size()
+	_bgm_minigame.stream = bgm_minigame_akademis[_akademis_sequence_index]
+	_bgm_minigame.play()
 
 
 func _resolve_bgm(id: StringName) -> AudioStream:

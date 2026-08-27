@@ -24,6 +24,9 @@
 [ext_resource type="AudioStream" uid="uid://cqf2fviq0bh0i" path="res://Assets/Audio/BGM/minigame_olahraga.mp3" id="22_smhh5"]
 [ext_resource type="AudioStream" uid="uid://81vshiwgrv1w" path="res://Assets/Audio/BGM/minigame_senibudaya_batik.mp3" id="23_12b1k"]
 [ext_resource type="AudioStream" uid="uid://bxwgs81fu7bot" path="res://Assets/Audio/BGM/minigame_senibudaya_menari.mp3" id="24_rckhh"]
+[ext_resource type="AudioStream" uid="uid://dxfrh64bbe1d2" path="res://Assets/Audio/BGM/minigame_akademis_1.wav" id="25_pkop0"]
+[ext_resource type="AudioStream" uid="uid://dvjl5mnl87pwg" path="res://Assets/Audio/BGM/minigame_akademis_2.wav" id="26_7i31u"]
+[ext_resource type="AudioStream" uid="uid://ba05r44voyqln" path="res://Assets/Audio/BGM/minigame_akademis_3.wav" id="27_ih8jt"]
 
 [node name="AudioDirector" type="Node" unique_id=1021481202]
 script = ExtResource("1_audio")
@@ -50,3 +53,4 @@ bgm_result_lose = ExtResource("21_smhh5")
 bgm_minigame_olahraga = ExtResource("22_smhh5")
 bgm_minigame_senibudaya_batik = ExtResource("23_12b1k")
 bgm_minigame_senibudaya_menari = ExtResource("24_rckhh")
+bgm_minigame_akademis = Array[AudioStream]([ExtResource("25_pkop0"), ExtResource("26_7i31u"), ExtResource("27_ih8jt")])

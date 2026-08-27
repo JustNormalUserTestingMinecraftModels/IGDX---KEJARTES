@@ -351,3 +351,64 @@ func test_pause_bgm_is_a_safe_no_op_with_nothing_playing() -> void:
 	_director.pause_bgm()
 	_director.resume_bgm()
 	assert_true(true, "pause/resume with no active bgm must not crash")
+
+
+func test_akademis_slot_is_exported() -> void:
+	var props := _director.get_property_list()
+	var names: Array[String] = []
+	for p in props:
+		names.append(p.name)
+	assert_true(names.has("bgm_minigame_akademis"),
+		"must expose export slot: bgm_minigame_akademis")
+
+
+func test_akademis_sequence_plays_in_fixed_order_and_wraps() -> void:
+	# NOTE: must be assigned through a locally-typed Array[AudioStream]
+	# rather than a bare `[...]` literal. _director is statically typed
+	# as Node (AudioDirector.gd has no class_name), so the assignment
+	# below goes through Object.set()'s dynamic property path rather
+	# than a compiler-typed setter; that path requires the Array value
+	# itself to already carry AudioStream typed-array metadata, which a
+	# bare untyped literal does not have -- it fails at runtime with
+	# "Invalid assignment of property ... with value of type 'Array'"
+	# even though every element is a valid AudioStream.
+	var tracks: Array[AudioStream] = [
+		_make_test_stream(), _make_test_stream(), _make_test_stream()
+	]
+	_director.bgm_minigame_akademis = tracks
+	_director.play_minigame_bgm(&"minigame_akademis")
+	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[0],
+		"must start at index 0")
+
+	_director._on_minigame_bgm_finished()
+	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[1],
+		"must advance to index 1")
+
+	_director._on_minigame_bgm_finished()
+	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[2],
+		"must advance to index 2")
+
+	_director._on_minigame_bgm_finished()
+	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[0],
+		"must wrap back to index 0")
+
+
+func test_akademis_sequence_restarts_at_index_zero_on_fresh_play() -> void:
+	# See the typed-local note in test_akademis_sequence_plays_in_fixed_order_and_wraps.
+	var tracks: Array[AudioStream] = [_make_test_stream(), _make_test_stream()]
+	_director.bgm_minigame_akademis = tracks
+	_director.play_minigame_bgm(&"minigame_akademis")
+	_director._on_minigame_bgm_finished()  # now at index 1
+	_director.stop_minigame_bgm(0.0)
+	_director.play_minigame_bgm(&"minigame_akademis")
+	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[0],
+		"a fresh minigame launch must restart the sequence at index 0")
+
+
+func test_non_akademis_minigame_finished_signal_is_a_no_op() -> void:
+	_director.bgm_minigame_olahraga = _make_test_stream()
+	_director.play_minigame_bgm(&"minigame_olahraga")
+	var stream_before: AudioStream = _director._bgm_minigame.stream
+	_director._on_minigame_bgm_finished()
+	assert_true(_director._bgm_minigame.stream == stream_before,
+		"finished on a non-sequence track must not change the stream")

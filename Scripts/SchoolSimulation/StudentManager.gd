@@ -1,6 +1,21 @@
 extends Node
 class_name StudentManager
 
+# ================= WIRAUSAHA BALANCE =================
+# The only numbers that need touching to retune the economy. A Wirausaha
+# day grants no academic stat; it trades mood and energy for money, and
+# pays out at the end of the week.
+
+## Roll range for a single Wirausaha day at full energy.
+const WIRAUSAHA_EARN_MIN := 120
+const WIRAUSAHA_EARN_MAX := 320
+## Earnings are multiplied by this floor plus the student's energy
+## fraction, so an exhausted student still earns something.
+const WIRAUSAHA_ENERGY_FLOOR := 0.35
+## Stat cost on top of the normal personality decay.
+const WIRAUSAHA_MOOD_COST := 6.0
+const WIRAUSAHA_ENERGY_COST := 10.0
+
 var students: Array[StudentData] = []
 var minigame_history: Array[Dictionary] = [] # entries: {day, category, game_name, won, details}
 
@@ -125,7 +140,20 @@ func apply_daily_decay_all(day_name: String) -> Array[Dictionary]:
 		
 		var activity_reason = ""
 		var act_res: Dictionary = {}
-		if category != "":
+		if category == "Wirausaha":
+			var energy_fraction: float = clampf(student.energy / 100.0, 0.0, 1.0)
+			var multiplier: float = WIRAUSAHA_ENERGY_FLOOR + (1.0 - WIRAUSAHA_ENERGY_FLOOR) * energy_fraction
+			var earned: int = int(round(randi_range(WIRAUSAHA_EARN_MIN, WIRAUSAHA_EARN_MAX) * multiplier))
+			GameState.pending_earnings[student.id] = GameState.pending_earnings.get(student.id, 0) + earned
+
+			student.mood = clampf(student.mood - WIRAUSAHA_MOOD_COST, 0.0, 100.0)
+			student.energy = clampf(student.energy - WIRAUSAHA_ENERGY_COST, 0.0, 100.0)
+			mood_loss += WIRAUSAHA_MOOD_COST
+			energy_loss += WIRAUSAHA_ENERGY_COST
+			activity_reason = " & Wirausaha (Rp%d)" % earned
+			log_stat_change(day_name, student.student_name, "mood", -WIRAUSAHA_MOOD_COST, "activity")
+			log_stat_change(day_name, student.student_name, "energy", -WIRAUSAHA_ENERGY_COST, "activity")
+		elif category != "":
 			var base_gain = 3.0
 			var specialty_bonus = 3.0
 			var grade_num = GameState.current_grade
@@ -155,7 +183,7 @@ func apply_daily_decay_all(day_name: String) -> Array[Dictionary]:
 		log_stat_change(day_name, student.student_name, "energy", -energy_loss, "decay")
 		log_stat_change(day_name, student.student_name, "mood", -mood_loss, "decay")
 		# Log activity stat gain
-		if category != "Istirahat" and category != "":
+		if category != "Istirahat" and category != "Wirausaha" and category != "":
 			var act_cat_key = category.to_lower().replace(" ", "_")
 			var stat_key_map = {"akademis": "akademis", "senibudaya": "seni_budaya", "olahraga": "olahraga"}
 			var stat_k = stat_key_map.get(act_cat_key, "")

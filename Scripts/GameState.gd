@@ -90,6 +90,10 @@ var player_money: int:
 ## field on this autoload -- the project has no save system.
 var inventory: Dictionary = {}  ## Tracks item quantities by name
 
+## Wirausaha earnings accrued this week, student_id -> rupiah. Emptied by
+## SchoolDay at week end, when the total is paid into player_money.
+var pending_earnings: Dictionary = {}
+
 
 func add_to_inventory(item_name: String, quantity: int) -> void:
 	inventory[item_name] = inventory.get(item_name, 0) + quantity

@@ -106,7 +106,7 @@ func _setup_main_buttons(tokens: DesignTokens):
 		style_normal.border_color = tokens.outline_card
 		style_normal.shadow_size = 6
 		style_normal.shadow_offset = Vector2(0, 4)
-		style_normal.shadow_color = tokens.shadow_color
+		style_normal.shadow_color = Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.45)
 		style_normal.content_margin_left = 20
 		style_normal.content_margin_right = 20
 		style_normal.content_margin_top = 10
@@ -126,8 +126,8 @@ func _setup_main_buttons(tokens: DesignTokens):
 
 		rak1_button.add_theme_color_override("font_color", tokens.text_on_brand)
 		rak1_button.add_theme_color_override("font_hover_color", tokens.currency_gold)
-		rak1_button.add_theme_color_override("font_pressed_color", tokens.text_secondary)
-		rak1_button.add_theme_color_override("font_shadow_color", tokens.shadow_color)
+		rak1_button.add_theme_color_override("font_pressed_color", tokens.text_on_brand)
+		rak1_button.add_theme_color_override("font_shadow_color", Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.75))
 		rak1_button.add_theme_constant_override("shadow_offset_x", 2)
 		rak1_button.add_theme_constant_override("shadow_offset_y", 2)
 
@@ -185,7 +185,7 @@ func _on_beli_pressed():
 	var total = Cart.get_total()
 	if GameState.player_money < total:
 		AudioDirector.play_sfx(&"error")
-		_show_message("Koin tidak cukup! 🪙", tokens.state_error)
+		_show_message("Koin tidak cukup! 🪙", tokens.state_danger)
 		return
 
 	# Deduct money

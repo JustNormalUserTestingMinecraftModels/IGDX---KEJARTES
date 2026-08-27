@@ -97,7 +97,7 @@ func _setup_dynamic_colors(tokens: DesignTokens) -> void:
 	TEXT_WHITE = tokens.text_on_brand
 	TEXT_GRAY = tokens.text_secondary
 	TEXT_DIM = tokens.text_disabled
-	SHADOW_COLOR = tokens.shadow_color
+	SHADOW_COLOR = Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.85)
 
 	CATEGORY_COLORS = {
 		"Buku": tokens.brand_primary,
@@ -204,7 +204,7 @@ func _apply_category_style(btn: Button, is_selected: bool):
 	btn.add_theme_stylebox_override("pressed", pressed_s)
 
 	btn.add_theme_color_override("font_hover_color", TEXT_WHITE)
-	btn.add_theme_color_override("font_pressed_color", TEXT_GRAY)
+	btn.add_theme_color_override("font_pressed_color", TEXT_WHITE)
 
 # ═══════════════════════════════════════════
 #  GRID POPULATION

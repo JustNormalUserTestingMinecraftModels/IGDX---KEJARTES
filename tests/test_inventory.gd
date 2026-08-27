@@ -86,3 +86,16 @@ func test_use_popup_animates_with_token_durations() -> void:
 func test_scene_changes_specify_a_transition_style() -> void:
 	assert_true(_source().contains("Transition.Style."),
 		"navigation must specify this project's transition style")
+
+func test_closing_use_popup_does_not_clear_grid_selection() -> void:
+	## Regression: selected_item is shared with the grid's slot-selection
+	## state (owned by _select_slot/_deselect_slot). _close_popup_animated
+	## must not null it out on Cancel/OK, or the grid slot stays visually
+	## selected while the Use button silently goes dead until the player
+	## taps the slot again. Only _deselect_slot is allowed to clear it.
+	var src := _source()
+	var close_fn_start := src.find("func _close_popup_animated")
+	var close_fn_end := src.find("\nfunc ", close_fn_start + 1)
+	var close_fn_body := src.substr(close_fn_start, close_fn_end - close_fn_start)
+	assert_false(close_fn_body.contains("selected_item = null"),
+		"_close_popup_animated must not clear selected_item -- that is the grid's job")

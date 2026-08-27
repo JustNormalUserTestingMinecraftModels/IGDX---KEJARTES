@@ -502,7 +502,6 @@ func _close_popup_animated():
 	tween.chain().tween_callback(func():
 		use_popup.visible = false
 		use_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		selected_item = null
 	)
 
 func _on_use_popup_input(event: InputEvent) -> void:

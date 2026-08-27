@@ -103,3 +103,15 @@ func test_has_sfx_is_false_for_empty_and_unknown() -> void:
 		"an unassigned slot must report has_sfx() == false")
 	assert_true(not _director.has_sfx(&"tidak_ada_suara_ini"),
 		"an unknown id must report has_sfx() == false")
+
+
+func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
+	# _director is instantiated from audio_director.tscn, so this asserts
+	# the real shipped assignments — not a fixture. A slot regressing to
+	# empty (file deleted, scene reverted) fails here rather than going
+	# quietly silent in game.
+	for id in ["tap", "confirm", "cancel", "success", "fail", "coin",
+			"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
+			"popup_close", "select", "error", "reward"]:
+		assert_true(_director.has_sfx(StringName(id)),
+			"shipped scene must fill sfx slot: " + id)

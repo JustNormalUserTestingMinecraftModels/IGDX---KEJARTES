@@ -9,6 +9,14 @@
 [ext_resource type="AudioStream" uid="uid://cfrupfphlvi8x" path="res://Assets/Audio/SFX/coin.ogg" id="7_hhe06"]
 [ext_resource type="AudioStream" uid="uid://ukjf7fho680s" path="res://Assets/Audio/SFX/whoosh.ogg" id="8_5se8n"]
 [ext_resource type="AudioStream" uid="uid://dsqymqh5huu84" path="res://Assets/Audio/SFX/pop.ogg" id="9_o62ei"]
+[ext_resource type="AudioStream" uid="uid://ccpyy412s2jta" path="res://Assets/Audio/SFX/swipe.ogg" id="10_uow0o"]
+[ext_resource type="AudioStream" uid="uid://skcxjuv0qf8s" path="res://Assets/Audio/SFX/stamp.ogg" id="11_ejr32"]
+[ext_resource type="AudioStream" uid="uid://d4mxlgkmsx8g8" path="res://Assets/Audio/SFX/unstamp.ogg" id="12_fjkga"]
+[ext_resource type="AudioStream" uid="uid://byt3msofg4b08" path="res://Assets/Audio/SFX/popup_open.ogg" id="13_p6daa"]
+[ext_resource type="AudioStream" uid="uid://c26tnv6sb6c5n" path="res://Assets/Audio/SFX/popup_close.ogg" id="14_57anm"]
+[ext_resource type="AudioStream" uid="uid://c0c6nrm6k78xj" path="res://Assets/Audio/SFX/select.ogg" id="15_4vcgh"]
+[ext_resource type="AudioStream" uid="uid://crghtdln167sm" path="res://Assets/Audio/SFX/error.ogg" id="16_300lm"]
+[ext_resource type="AudioStream" uid="uid://s75qbeop5gv4" path="res://Assets/Audio/SFX/reward.ogg" id="17_smhh5"]
 
 [node name="AudioDirector" type="Node" unique_id=1021481202]
 script = ExtResource("1_audio")
@@ -20,3 +28,11 @@ sfx_fail = ExtResource("6_psmar")
 sfx_coin = ExtResource("7_hhe06")
 sfx_whoosh = ExtResource("8_5se8n")
 sfx_pop = ExtResource("9_o62ei")
+sfx_swipe = ExtResource("10_uow0o")
+sfx_stamp = ExtResource("11_ejr32")
+sfx_unstamp = ExtResource("12_fjkga")
+sfx_popup_open = ExtResource("13_p6daa")
+sfx_popup_close = ExtResource("14_57anm")
+sfx_select = ExtResource("15_4vcgh")
+sfx_error = ExtResource("16_300lm")
+sfx_reward = ExtResource("17_smhh5")

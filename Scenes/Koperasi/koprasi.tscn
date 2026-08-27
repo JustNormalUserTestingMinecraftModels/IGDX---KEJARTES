@@ -1,0 +1,232 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Koperasi/koprasi.gd" id="1_ap2qe"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/Illustration4.jpg" id="2_vylns"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/return.png" id="5_46s2e"]
+[ext_resource type="Script" path="res://Scripts/Koperasi/rakbarang_1.gd" id="5_jfwhh"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/bank soal.png" id="5_tf5nh"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/rak2.jpg" id="6_tf5nh"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/LKS.png" id="7_jfwhh"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/lompat tali.png" id="8_4x77x"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/raket.png" id="9_uhev2"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/pngwing.com (6).png" id="11_vylns"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/pngwing.com (2).png" id="12_vylns"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tf5nh"]
+atlas = ExtResource("6_tf5nh")
+region = Rect2(0, 259.02414, 1080, 1660.9758)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hhv1e"]
+atlas = ExtResource("5_tf5nh")
+region = Rect2(86.29141, 42.939575, 1019.0138, 1425.621)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_unjo2"]
+atlas = ExtResource("7_jfwhh")
+region = Rect2(24.843414, 362.78232, 1196.902, 1083.5895)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s1vid"]
+atlas = ExtResource("8_4x77x")
+region = Rect2(16.906647, 517.7832, 1130.2561, 649.15674)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f61rs"]
+atlas = ExtResource("9_uhev2")
+region = Rect2(277.81873, 23.927307, 567.7704, 1601.428)
+
+[node name="Koprasi" type="Control" unique_id=1906875452]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ap2qe")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1902439476]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("2_vylns")
+
+[node name="Rak1" type="Button" parent="TextureRect" unique_id=891978456]
+layout_mode = 0
+offset_left = 303.0
+offset_top = 1401.0
+offset_right = 745.0
+offset_bottom = 1464.0
+theme_override_font_sizes/font_size = 40
+text = "KEBUTUHAN SEKOLAH"
+
+[node name="Rak1" type="TextureRect" parent="." unique_id=648768245]
+visible = false
+layout_mode = 0
+offset_top = 117.0
+offset_right = 1080.0
+offset_bottom = 1828.0
+texture = SubResource("AtlasTexture_tf5nh")
+script = ExtResource("5_jfwhh")
+
+[node name="BackButton" type="TextureButton" parent="Rak1" unique_id=617180507]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 1543.0
+offset_right = 203.0
+offset_bottom = 1728.0
+texture_normal = ExtResource("5_46s2e")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Barang1" type="TextureButton" parent="Rak1" unique_id=1130164186]
+layout_mode = 0
+offset_left = 117.0
+offset_top = 78.0
+offset_right = 367.0
+offset_bottom = 392.151
+texture_normal = SubResource("AtlasTexture_hhv1e")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Button" type="Button" parent="Rak1/Barang1" unique_id=733754100]
+modulate = Color(0, 1, 0, 1)
+layout_mode = 0
+offset_left = 75.0
+offset_top = 320.0
+offset_right = 141.0
+offset_bottom = 375.0
+theme_override_font_sizes/font_size = 34
+text = "500"
+
+[node name="Barang2" type="TextureButton" parent="Rak1" unique_id=1198733625]
+layout_mode = 0
+offset_left = 628.0
+offset_top = 76.0
+offset_right = 933.0
+offset_bottom = 382.72803
+texture_normal = SubResource("AtlasTexture_unjo2")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Button2" type="Button" parent="Rak1/Barang2" unique_id=362247762]
+modulate = Color(0, 1, 0, 1)
+layout_mode = 0
+offset_left = 150.0
+offset_top = 325.0
+offset_right = 216.0
+offset_bottom = 380.0
+theme_override_font_sizes/font_size = 34
+text = "400"
+
+[node name="Barang3" type="TextureButton" parent="Rak1" unique_id=1077778766]
+layout_mode = 0
+offset_left = 650.0
+offset_top = 527.0
+offset_right = 968.3066
+offset_bottom = 807.9944
+texture_normal = SubResource("AtlasTexture_s1vid")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Button3" type="Button" parent="Rak1/Barang3" unique_id=675803450]
+modulate = Color(0, 1, 0, 1)
+layout_mode = 0
+offset_left = 105.0
+offset_top = 342.0
+offset_right = 191.0
+offset_bottom = 397.0
+theme_override_font_sizes/font_size = 34
+text = "1200"
+
+[node name="Barang4" type="TextureButton" parent="Rak1" unique_id=1495600601]
+layout_mode = 0
+offset_left = 117.0
+offset_top = 527.0
+offset_right = 367.0
+offset_bottom = 808.0
+texture_normal = SubResource("AtlasTexture_f61rs")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Button4" type="Button" parent="Rak1/Barang4" unique_id=580763565]
+modulate = Color(0, 1, 0, 1)
+layout_mode = 0
+offset_left = 78.0
+offset_top = 343.0
+offset_right = 164.0
+offset_bottom = 398.0
+theme_override_font_sizes/font_size = 34
+text = "1500"
+
+[node name="Keranjang" type="TextureRect" parent="Rak1" unique_id=1859166842]
+layout_mode = 0
+offset_left = 218.0
+offset_top = 1245.0
+offset_right = 888.0
+offset_bottom = 1915.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="BasketArea" type="Control" parent="Rak1/Keranjang" unique_id=919839537]
+anchors_preset = 0
+offset_left = 114.0
+offset_top = 191.0
+offset_right = 569.0
+offset_bottom = 457.0
+
+[node name="KeranjangDepan" type="TextureButton" parent="Rak1/Keranjang" unique_id=166640385]
+layout_mode = 0
+offset_left = -7.0
+offset_top = -50.0
+offset_right = 686.0
+offset_bottom = 615.0
+texture_normal = ExtResource("11_vylns")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="ReturPanel" type="TextureRect" parent="Rak1/Keranjang/KeranjangDepan" unique_id=315158298]
+visible = false
+layout_mode = 0
+offset_left = -134.0
+offset_top = -834.0
+offset_right = 811.0
+offset_bottom = -204.0
+texture = ExtResource("12_vylns")
+expand_mode = 1
+
+[node name="BackButton" type="TextureButton" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel" unique_id=2025734139]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 512.0
+offset_right = 128.0
+offset_bottom = 619.0
+texture_normal = ExtResource("5_46s2e")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel" unique_id=203625621]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 85.0
+offset_right = 811.0
+offset_bottom = 529.0
+
+[node name="GridContainer" type="GridContainer" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel/ScrollContainer" unique_id=390431771]
+layout_mode = 2
+columns = 2
+
+[node name="TextureButton" type="Button" parent="Rak1" unique_id=128901155]
+layout_mode = 0
+offset_left = 829.0
+offset_top = 1025.0
+offset_right = 1013.0
+offset_bottom = 1149.0
+theme_override_font_sizes/font_size = 85
+text = "BELI"
+
+[node name="Label" type="Label" parent="Rak1" unique_id=1321203376]
+layout_mode = 0
+offset_left = 51.0
+offset_top = 1043.0
+offset_right = 253.0
+offset_bottom = 1112.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 50
+text = "Harga++"

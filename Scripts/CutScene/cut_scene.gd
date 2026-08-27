@@ -263,14 +263,29 @@ func _on_grade_selected(grade_num: int) -> void:
 
 	show_current()
 
+## Deliberately slower than transition_to_next()'s panel-to-panel
+## crossfade (which uses _tokens.dur_normal) -- this is the very first
+## beat of a reveal sequence (fresh game, after grade select, or the
+## loss-retry cutscene), and it should read as a breath before the
+## scene commits to its opening image, not a routine page-turn.
+const _ENTRANCE_HOLD_SEC := 0.4
+const _ENTRANCE_FADE_SEC := 1.0
+
 func show_current():
 	if GameState.is_game_over_cutscene:
 		AudioDirector.play_bgm(&"result_lose")
 	else:
 		AudioDirector.play_bgm(&"introcutscene")
-	bg_cutscene.modulate.a = 1.0
+	is_transitioning = true
 	bg_cutscene.texture = cg_data[cg_index]["image"]
+	bg_cutscene.modulate.a = 0.0
+	await get_tree().create_timer(_ENTRANCE_HOLD_SEC).timeout
 	_reveal(cg_data[cg_index]["text"])
+	var tw := create_tween()
+	tw.tween_property(bg_cutscene, "modulate:a", 1.0, _ENTRANCE_FADE_SEC) \
+		.set_ease(Tween.EASE_IN_OUT)
+	await tw.finished
+	is_transitioning = false
 
 ## Typewriter reveal via visible_ratio rather than character-slicing, so
 ## any BBCode in the dialogue text renders correctly instead of being

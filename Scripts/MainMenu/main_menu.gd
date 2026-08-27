@@ -67,9 +67,16 @@ func _animate_entry() -> void:
 	Juice.stagger_in(items)
 
 
+## The wipe into the cutscene is deliberately slower than every other
+## transition in the game (Transition.change_scene's other ~20 call
+## sites all use the default duration) -- this is the one moment meant
+## to feel unhurried, giving the player a beat before the story starts.
+const _INTRO_WIPE_SEC := 1.1
+
 func _on_play_pressed() -> void:
 	AudioDirector.play_sfx(&"confirm")
-	Transition.change_scene("res://Scenes/CutScene/cut_scene.tscn")
+	Transition.change_scene("res://Scenes/CutScene/cut_scene.tscn",
+		Transition.Style.WIPE, _INTRO_WIPE_SEC)
 
 
 func _on_setting_pressed() -> void:

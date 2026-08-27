@@ -39,7 +39,11 @@ func _reset_cover() -> void:
 	_cover.position = Vector2.ZERO
 
 
-func change_scene(path: String, style: Style = Style.WIPE) -> void:
+## duration_override lets one call site request a slower (or faster) wipe
+## than the shared default, without changing behavior for the ~20 other
+## call sites that don't pass it. -1.0 (the default) means "use the
+## normal token-based duration."
+func change_scene(path: String, style: Style = Style.WIPE, duration_override: float = -1.0) -> void:
 	# Guard against double-taps firing two transitions at once, which
 	# would change scene twice and strand the cover on screen.
 	if _busy:
@@ -47,7 +51,7 @@ func change_scene(path: String, style: Style = Style.WIPE) -> void:
 	_busy = true
 
 	AudioDirector.play_sfx(&"whoosh")
-	await _cover_in(style)
+	await _cover_in(style, duration_override)
 
 	var err := get_tree().change_scene_to_file(path)
 	if err != OK:
@@ -57,20 +61,22 @@ func change_scene(path: String, style: Style = Style.WIPE) -> void:
 	# before the cover retracts, otherwise the first frame flashes.
 	await get_tree().process_frame
 
-	await _cover_out(style)
+	await _cover_out(style, duration_override)
 	_busy = false
 	scene_changed.emit(path)
 
 
-func _durations() -> Array:
+func _durations(duration_override: float = -1.0) -> Array:
+	if duration_override > 0.0:
+		return [duration_override, duration_override]
 	var tokens := DesignTokens.load_default()
 	if tokens == null:
 		return [0.32, 0.32]
 	return [tokens.dur_normal, tokens.dur_normal]
 
 
-func _cover_in(style: Style) -> void:
-	var d: float = _durations()[0]
+func _cover_in(style: Style, duration_override: float = -1.0) -> void:
+	var d: float = _durations(duration_override)[0]
 	var viewport := get_viewport().get_visible_rect().size
 	var tw := create_tween()
 	match style:
@@ -93,8 +99,8 @@ func _cover_in(style: Style) -> void:
 	await tw.finished
 
 
-func _cover_out(style: Style) -> void:
-	var d: float = _durations()[1]
+func _cover_out(style: Style, duration_override: float = -1.0) -> void:
+	var d: float = _durations(duration_override)[1]
 	var viewport := get_viewport().get_visible_rect().size
 	var tw := create_tween()
 	match style:

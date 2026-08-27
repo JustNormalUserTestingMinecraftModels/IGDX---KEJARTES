@@ -51,3 +51,19 @@ func test_overlay_does_not_block_input_when_idle() -> void:
 	assert_true(rect != null, "ColorRect must exist")
 	assert_eq(rect.mouse_filter, Control.MOUSE_FILTER_IGNORE,
 		"the overlay must never intercept taps")
+
+
+func test_change_scene_accepts_a_duration_override() -> void:
+	# One call site (MainMenu -> CutScene) wants a deliberately slower
+	# wipe than the other ~20 call sites, without changing their
+	# behavior. A third optional parameter is how that stays opt-in.
+	var t: Node = Engine.get_main_loop().root.get_node("Transition")
+	var found := false
+	for m in t.get_method_list():
+		if m.name == "change_scene":
+			found = true
+			assert_true(m.args.size() >= 3,
+				"change_scene must accept a duration override")
+			assert_true(m.default_args.size() >= 2,
+				"both style and duration_override need defaults so old call sites are unaffected")
+	assert_true(found, "change_scene must exist")

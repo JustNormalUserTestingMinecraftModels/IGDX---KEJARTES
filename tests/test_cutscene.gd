@@ -157,3 +157,39 @@ func test_branching_to_lobby_or_student_card_is_unchanged() -> void:
 		"grade > 7 must still be the StudentCard condition")
 	assert_true(src.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
 		"must still hand off through the Loading scene")
+
+
+func test_show_current_starts_with_a_hold_before_revealing() -> void:
+	# Calling show_current() live here would exercise its
+	# `GameState.is_game_over_cutscene` read, which errors in this
+	# suite's standalone-instantiation context regardless of this
+	# change (GameState resolves fine in other suites' setups, but not
+	# when cut_scene.tscn is instantiated bare like test_cutscene.gd
+	# does) -- a pre-existing runner quirk, not something this change
+	# introduced. Source-text check instead, matching this file's own
+	# established pattern (see test_cg_changes_crossfade_instead_of_hard_cutting
+	# and test_branching_to_lobby_or_student_card_is_unchanged above).
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var start := src.find("func show_current")
+	assert_true(start >= 0, "show_current() must exist")
+	var end := src.find("\nfunc ", start + 1)
+	if end < 0:
+		end = src.length()
+	var body := src.substr(start, end - start)
+	assert_true(body.contains("is_transitioning = true"),
+		"show_current() must gate taps during the entrance hold+fade, same as transition_to_next()")
+	assert_true(body.contains("bg_cutscene.modulate.a = 0.0"),
+		"show_current() must start fully transparent -- no more instant pop-in")
+
+
+func test_entrance_hold_and_fade_are_slower_than_the_panel_crossfade() -> void:
+	# The whole point of this pass: the very first beat of a reveal
+	# sequence should read as deliberately slower than routine
+	# panel-to-panel movement (transition_to_next(), which uses
+	# _tokens.dur_normal), so the player gets a moment to register the
+	# scene before it commits to its opening image.
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("_ENTRANCE_HOLD_SEC"),
+		"show_current() must hold before revealing, not pop in instantly")
+	assert_true(src.contains("_ENTRANCE_FADE_SEC"),
+		"show_current()'s entrance fade must use its own, slower duration")

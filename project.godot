@@ -28,6 +28,7 @@ AudioDirector="*res://Scenes/Audio/audio_director.tscn"
 UIPolish="*res://Scripts/UI/UIPolish.gd"
 TouchFeedbackManager="*res://Scripts/TouchFeedback/TouchFeedbackManager.gd"
 DebugManager="*res://Scripts/Debug/DebugManager.gd"
+ItemDatabase="*res://Scripts/Inventory/ItemDatabase.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]

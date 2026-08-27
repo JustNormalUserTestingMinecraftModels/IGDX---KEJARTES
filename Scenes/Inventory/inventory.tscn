@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/bg_inventory.png" id="bg_inv_tex"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/panel_header.png" id="panel_header_tex"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/panel_sidebar.png" id="panel_sidebar_tex"]
+[ext_resource type="Theme" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_header"]
 content_margin_left = 24.0
@@ -152,6 +153,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("kejartes_theme")
 script = ExtResource("1_script")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1272848589]

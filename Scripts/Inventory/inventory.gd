@@ -1,26 +1,18 @@
 extends Control
 
 # ─── Theme Colors (used for dynamic elements only) ───
-const SLOT_BG := Color(0.1, 0.1, 0.24)
-const SLOT_SELECTED_BG := Color(0.16, 0.16, 0.36)
-const ACCENT := Color(0.25, 0.55, 1.0)
-const GOLD := Color(1.0, 0.85, 0.0)
-const TEXT_WHITE := Color(0.95, 0.95, 0.95)
-const TEXT_GRAY := Color(0.6, 0.6, 0.7)
-const TEXT_DIM := Color(0.4, 0.4, 0.5)
+## Populated from DesignTokens in _ready(); see _setup_dynamic_colors().
+var SLOT_BG: Color
+var SLOT_SELECTED_BG: Color
+var ACCENT: Color
+var GOLD: Color
+var TEXT_WHITE: Color
+var TEXT_GRAY: Color
+var TEXT_DIM: Color
+var SHADOW_COLOR: Color
 
-const CATEGORY_COLORS = {
-	"Buku": Color(0.3, 0.5, 1.0),
-	"Olahraga": Color(1.0, 0.55, 0.15),
-	"Makanan": Color(1.0, 0.35, 0.45),
-}
-const DEFAULT_CATEGORY_COLOR := Color(0.5, 0.5, 0.7)
-
-# ─── Cached Textures (loaded once in _ready) ───
-var _tex_btn_normal: Texture2D
-var _tex_btn_pressed: Texture2D
-var _tex_slot_normal: Texture2D
-var _tex_slot_selected: Texture2D
+var CATEGORY_COLORS: Dictionary = {}
+var DEFAULT_CATEGORY_COLOR: Color
 
 # ─── Scene References ───
 @onready var coin_label: Label = $MainLayout/Header/HeaderContent/CoinDisplay/CoinLabel
@@ -59,11 +51,8 @@ var max_use_qty: int = 1
 # ═══════════════════════════════════════════
 
 func _ready():
-	# Cache textures once
-	_tex_btn_normal = load("res://Assets/Images/Shop/UI/btn_normal.png")
-	_tex_btn_pressed = load("res://Assets/Images/Shop/UI/btn_pressed.png")
-	_tex_slot_normal = load("res://Assets/Images/Shop/UI/slot_normal.png")
-	_tex_slot_selected = load("res://Assets/Images/Shop/UI/slot_selected.png")
+	var tokens := DesignTokens.load_default()
+	_setup_dynamic_colors(tokens)
 
 	_apply_png_panel_overrides()
 
@@ -99,6 +88,23 @@ func _ready():
 
 	# Populate the grid
 	_populate_grid()
+
+func _setup_dynamic_colors(tokens: DesignTokens) -> void:
+	SLOT_BG = tokens.surface_overlay
+	SLOT_SELECTED_BG = tokens.surface_overlay.lightened(0.15)
+	ACCENT = tokens.brand_primary
+	GOLD = tokens.currency_gold
+	TEXT_WHITE = tokens.text_on_brand
+	TEXT_GRAY = tokens.text_secondary
+	TEXT_DIM = tokens.text_disabled
+	SHADOW_COLOR = tokens.shadow_color
+
+	CATEGORY_COLORS = {
+		"Buku": tokens.brand_primary,
+		"Olahraga": tokens.cat_libur,
+		"Makanan": tokens.cat_olahraga,
+	}
+	DEFAULT_CATEGORY_COLOR = tokens.text_secondary
 
 func _apply_png_panel_overrides():
 	var header = $MainLayout/Header as PanelContainer
@@ -142,18 +148,6 @@ func _apply_png_panel_overrides():
 		sb.texture_margin_bottom = 48
 		popup_panel.add_theme_stylebox_override("panel", sb)
 
-	if use_button and _tex_btn_normal:
-		var sb = StyleBoxTexture.new()
-		sb.texture = _tex_btn_normal
-		sb.texture_margin_left = 24
-		sb.texture_margin_right = 24
-		use_button.add_theme_stylebox_override("normal", sb)
-		use_button.add_theme_stylebox_override("hover", sb)
-		if _tex_btn_pressed:
-			var sbp = sb.duplicate()
-			sbp.texture = _tex_btn_pressed
-			use_button.add_theme_stylebox_override("pressed", sbp)
-
 # ═══════════════════════════════════════════
 #  SIGNAL HANDLERS
 # ═══════════════════════════════════════════
@@ -178,32 +172,17 @@ func _apply_category_style(btn: Button, is_selected: bool):
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 
-	var normal: StyleBox
-	if _tex_btn_normal:
-		var sb = StyleBoxTexture.new()
-		sb.texture = _tex_btn_normal
-		sb.texture_margin_left = 20
-		sb.texture_margin_right = 20
-		sb.texture_margin_top = 20
-		sb.texture_margin_bottom = 20
-		if is_selected:
-			sb.modulate_color = Color(0.22, 0.55, 1.0, 1.0)
-		else:
-			sb.modulate_color = Color(0.18, 0.22, 0.42, 0.75)
-		normal = sb
+	var normal := StyleBoxFlat.new()
+	normal.corner_radius_top_left = 10
+	normal.corner_radius_top_right = 10
+	normal.corner_radius_bottom_left = 10
+	normal.corner_radius_bottom_right = 10
+	if is_selected:
+		normal.bg_color = ACCENT.darkened(0.2)
+		normal.border_width_left = 4
+		normal.border_color = ACCENT
 	else:
-		var sb = StyleBoxFlat.new()
-		sb.corner_radius_top_left = 10
-		sb.corner_radius_top_right = 10
-		sb.corner_radius_bottom_left = 10
-		sb.corner_radius_bottom_right = 10
-		if is_selected:
-			sb.bg_color = ACCENT.darkened(0.2)
-			sb.border_width_left = 4
-			sb.border_color = ACCENT
-		else:
-			sb.bg_color = Color(0.12, 0.14, 0.28, 0.6)
-		normal = sb
+		normal.bg_color = SLOT_BG
 
 	normal.content_margin_left = 14
 	normal.content_margin_right = 14
@@ -212,40 +191,20 @@ func _apply_category_style(btn: Button, is_selected: bool):
 	btn.add_theme_stylebox_override("normal", normal)
 
 	if is_selected:
-		btn.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+		btn.add_theme_color_override("font_color", TEXT_WHITE)
 	else:
-		btn.add_theme_color_override("font_color", Color(0.7, 0.75, 0.88, 0.85))
+		btn.add_theme_color_override("font_color", TEXT_GRAY)
 
-	var hover: StyleBox
-	if normal is StyleBoxTexture:
-		hover = normal.duplicate()
-		if is_selected:
-			hover.modulate_color = Color(0.35, 0.65, 1.0, 1.0)
-		else:
-			hover.modulate_color = Color(0.25, 0.32, 0.55, 0.9)
-	else:
-		hover = normal.duplicate()
-		hover.bg_color = ACCENT.darkened(0.4) if not is_selected else ACCENT.darkened(0.1)
+	var hover: StyleBoxFlat = normal.duplicate()
+	hover.bg_color = ACCENT.darkened(0.4) if not is_selected else ACCENT.darkened(0.1)
 	btn.add_theme_stylebox_override("hover", hover)
 
-	var pressed_s: StyleBox
-	if _tex_btn_pressed:
-		var sb = StyleBoxTexture.new()
-		sb.texture = _tex_btn_pressed
-		sb.texture_margin_left = 20
-		sb.texture_margin_right = 20
-		sb.texture_margin_top = 20
-		sb.texture_margin_bottom = 20
-		sb.modulate_color = Color(0.15, 0.45, 0.9, 1.0)
-		pressed_s = sb
-	else:
-		pressed_s = normal.duplicate()
-		if pressed_s is StyleBoxFlat:
-			pressed_s.bg_color = ACCENT.darkened(0.3)
+	var pressed_s: StyleBoxFlat = normal.duplicate()
+	pressed_s.bg_color = ACCENT.darkened(0.3)
 	btn.add_theme_stylebox_override("pressed", pressed_s)
 
-	btn.add_theme_color_override("font_hover_color", Color.WHITE)
-	btn.add_theme_color_override("font_pressed_color", Color(0.9, 0.9, 0.9, 1.0))
+	btn.add_theme_color_override("font_hover_color", TEXT_WHITE)
+	btn.add_theme_color_override("font_pressed_color", TEXT_GRAY)
 
 # ═══════════════════════════════════════════
 #  GRID POPULATION
@@ -293,29 +252,17 @@ func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0):
 	var cat_color: Color = CATEGORY_COLORS.get(item.category, DEFAULT_CATEGORY_COLOR)
 
 	# ── Normal style ──
-	var normal_style: StyleBox
-	if _tex_slot_normal:
-		var sb_tex = StyleBoxTexture.new()
-		sb_tex.texture = _tex_slot_normal
-		sb_tex.texture_margin_left = 24
-		sb_tex.texture_margin_right = 24
-		sb_tex.texture_margin_top = 24
-		sb_tex.texture_margin_bottom = 24
-		sb_tex.modulate_color = cat_color.darkened(0.1)
-		normal_style = sb_tex
-	else:
-		var sb_flat = StyleBoxFlat.new()
-		sb_flat.bg_color = SLOT_BG
-		sb_flat.corner_radius_top_left = 12
-		sb_flat.corner_radius_top_right = 12
-		sb_flat.corner_radius_bottom_left = 12
-		sb_flat.corner_radius_bottom_right = 12
-		sb_flat.border_width_left = 4
-		sb_flat.border_width_top = 1
-		sb_flat.border_width_right = 1
-		sb_flat.border_width_bottom = 1
-		sb_flat.border_color = cat_color.darkened(0.3)
-		normal_style = sb_flat
+	var normal_style := StyleBoxFlat.new()
+	normal_style.bg_color = SLOT_BG
+	normal_style.corner_radius_top_left = 12
+	normal_style.corner_radius_top_right = 12
+	normal_style.corner_radius_bottom_left = 12
+	normal_style.corner_radius_bottom_right = 12
+	normal_style.border_width_left = 4
+	normal_style.border_width_top = 1
+	normal_style.border_width_right = 1
+	normal_style.border_width_bottom = 1
+	normal_style.border_color = cat_color.darkened(0.3)
 
 	normal_style.content_margin_left = 12
 	normal_style.content_margin_right = 12
@@ -324,25 +271,13 @@ func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0):
 	slot.add_theme_stylebox_override("panel", normal_style)
 
 	# ── Selected style (stored for later) ──
-	var selected_style: StyleBox
-	if _tex_slot_selected:
-		var sb_tex = StyleBoxTexture.new()
-		sb_tex.texture = _tex_slot_selected
-		sb_tex.texture_margin_left = 24
-		sb_tex.texture_margin_right = 24
-		sb_tex.texture_margin_top = 24
-		sb_tex.texture_margin_bottom = 24
-		sb_tex.modulate_color = cat_color
-		selected_style = sb_tex
-	else:
-		var sb_flat = normal_style.duplicate()
-		sb_flat.bg_color = SLOT_SELECTED_BG
-		sb_flat.border_width_left = 4
-		sb_flat.border_width_top = 2
-		sb_flat.border_width_right = 2
-		sb_flat.border_width_bottom = 2
-		sb_flat.border_color = cat_color
-		selected_style = sb_flat
+	var selected_style: StyleBoxFlat = normal_style.duplicate()
+	selected_style.bg_color = SLOT_SELECTED_BG
+	selected_style.border_width_left = 4
+	selected_style.border_width_top = 2
+	selected_style.border_width_right = 2
+	selected_style.border_width_bottom = 2
+	selected_style.border_color = cat_color
 
 	slot_styles[slot] = {"normal": normal_style, "selected": selected_style}
 
@@ -377,7 +312,7 @@ func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0):
 	qty_label.text = "×%d" % quantity
 	qty_label.add_theme_font_size_override("font_size", 32)
 	qty_label.add_theme_color_override("font_color", GOLD)
-	qty_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	qty_label.add_theme_color_override("font_shadow_color", SHADOW_COLOR)
 	qty_label.add_theme_constant_override("shadow_offset_x", 1)
 	qty_label.add_theme_constant_override("shadow_offset_y", 1)
 	qty_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -602,13 +537,13 @@ func _spawn_floating_stat_pops(item: ItemData, qty: int):
 		_create_stat_float_label(
 			"😊 Mood %+d" % (item.mood_boost * qty),
 			center_screen + Vector2(-120, 0),
-			Color(1.0, 0.85, 0.2)
+			GOLD
 		)
 	if item.energy_boost != 0:
 		_create_stat_float_label(
 			"⚡ Energi %+d" % (item.energy_boost * qty),
 			center_screen + Vector2(120, 0),
-			Color(0.3, 0.9, 1.0)
+			ACCENT
 		)
 
 func _create_stat_float_label(text: String, at_pos: Vector2, color: Color):
@@ -616,7 +551,7 @@ func _create_stat_float_label(text: String, at_pos: Vector2, color: Color):
 	label.text = text
 	label.add_theme_font_size_override("font_size", 38)
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	label.add_theme_color_override("font_shadow_color", SHADOW_COLOR)
 	label.add_theme_constant_override("shadow_offset_x", 2)
 	label.add_theme_constant_override("shadow_offset_y", 2)
 	label.position = at_pos

@@ -11,6 +11,7 @@ var message_label: Label
 var beli_button: Button
 
 func _ready():
+	var tokens := DesignTokens.load_default()
 	rak1_panel.hide()
 
 	if rak1_button and not rak1_button.pressed.is_connected(_on_rak1_pressed):
@@ -19,9 +20,9 @@ func _ready():
 	if rak1_back_button and not rak1_back_button.pressed.is_connected(_on_back_pressed):
 		rak1_back_button.pressed.connect(_on_back_pressed)
 
-	_setup_coin_display()
+	_setup_coin_display(tokens)
 	_setup_message_label()
-	_setup_main_buttons()
+	_setup_main_buttons(tokens)
 	_setup_beli_button()
 
 	_update_coin_display()
@@ -41,7 +42,7 @@ func _notification(what):
 		if rak1_panel and rak1_panel.visible:
 			_on_back_pressed()
 
-func _setup_coin_display():
+func _setup_coin_display(tokens: DesignTokens):
 	# Container for coin icon + label at the top of the screen
 	coin_container = HBoxContainer.new()
 	coin_container.position = Vector2(20, 20)
@@ -60,7 +61,7 @@ func _setup_coin_display():
 	# Coin label
 	coin_label = Label.new()
 	coin_label.add_theme_font_size_override("font_size", 40)
-	coin_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+	coin_label.add_theme_color_override("font_color", tokens.currency_gold)
 	coin_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 	coin_label.add_theme_constant_override("shadow_offset_x", 2)
 	coin_label.add_theme_constant_override("shadow_offset_y", 2)
@@ -87,77 +88,46 @@ func _setup_message_label():
 	message_label.text = ""
 	add_child(message_label)
 
-func _setup_main_buttons():
-	var btn_normal_tex = load("res://Assets/Images/Shop/UI/btn_normal.png")
-	var btn_pressed_tex = load("res://Assets/Images/Shop/UI/btn_pressed.png")
-
+func _setup_main_buttons(tokens: DesignTokens):
 	# ─── Style & Idle Pulse for "School Supplies" (Rak1) Button ───
 	if rak1_button:
 		rak1_button.pivot_offset = rak1_button.size / 2
-		var style_normal: StyleBox
-		if btn_normal_tex:
-			var sb = StyleBoxTexture.new()
-			sb.texture = btn_normal_tex
-			sb.texture_margin_left = 32
-			sb.texture_margin_right = 32
-			sb.texture_margin_top = 32
-			sb.texture_margin_bottom = 32
-			sb.modulate_color = Color(0.18, 0.52, 0.95, 1.0)
-			style_normal = sb
-		else:
-			var sb = StyleBoxFlat.new()
-			sb.bg_color = Color(0.18, 0.52, 0.95, 0.95)
-			sb.corner_radius_top_left = 16
-			sb.corner_radius_top_right = 16
-			sb.corner_radius_bottom_left = 16
-			sb.corner_radius_bottom_right = 16
-			sb.border_width_left = 3
-			sb.border_width_top = 3
-			sb.border_width_right = 3
-			sb.border_width_bottom = 5
-			sb.border_color = Color(0.7, 0.9, 1.0)
-			sb.shadow_size = 6
-			sb.shadow_offset = Vector2(0, 4)
-			sb.shadow_color = Color(0, 0, 0, 0.4)
-			style_normal = sb
 
+		var style_normal := StyleBoxFlat.new()
+		style_normal.bg_color = tokens.brand_primary
+		style_normal.corner_radius_top_left = tokens.radius_md
+		style_normal.corner_radius_top_right = tokens.radius_md
+		style_normal.corner_radius_bottom_left = tokens.radius_md
+		style_normal.corner_radius_bottom_right = tokens.radius_md
+		style_normal.border_width_left = 3
+		style_normal.border_width_top = 3
+		style_normal.border_width_right = 3
+		style_normal.border_width_bottom = 5
+		style_normal.border_color = tokens.outline_card
+		style_normal.shadow_size = 6
+		style_normal.shadow_offset = Vector2(0, 4)
+		style_normal.shadow_color = tokens.shadow_color
 		style_normal.content_margin_left = 20
 		style_normal.content_margin_right = 20
 		style_normal.content_margin_top = 10
 		style_normal.content_margin_bottom = 10
 		rak1_button.add_theme_stylebox_override("normal", style_normal)
 
-		var style_hover = style_normal.duplicate()
-		if style_hover is StyleBoxTexture:
-			style_hover.modulate_color = Color(0.25, 0.62, 1.0, 1.0)
-		else:
-			style_hover.bg_color = Color(0.25, 0.62, 1.0, 1.0)
-			style_hover.border_color = Color(1.0, 1.0, 1.0)
+		var style_hover: StyleBoxFlat = style_normal.duplicate()
+		style_hover.bg_color = tokens.brand_primary.lightened(0.15)
+		style_hover.border_color = tokens.outline_card
 		rak1_button.add_theme_stylebox_override("hover", style_hover)
 
-		var style_pressed: StyleBox
-		if btn_pressed_tex:
-			var sb = StyleBoxTexture.new()
-			sb.texture = btn_pressed_tex
-			sb.texture_margin_left = 32
-			sb.texture_margin_right = 32
-			sb.texture_margin_top = 32
-			sb.texture_margin_bottom = 32
-			sb.modulate_color = Color(0.14, 0.42, 0.8, 1.0)
-			style_pressed = sb
-		else:
-			var sb = style_normal.duplicate()
-			if sb is StyleBoxFlat:
-				sb.bg_color = Color(0.14, 0.42, 0.8, 1.0)
-				sb.border_width_bottom = 2
-				sb.shadow_offset = Vector2(0, 1)
-			style_pressed = sb
+		var style_pressed: StyleBoxFlat = style_normal.duplicate()
+		style_pressed.bg_color = tokens.brand_primary.darkened(0.2)
+		style_pressed.border_width_bottom = 2
+		style_pressed.shadow_offset = Vector2(0, 1)
 		rak1_button.add_theme_stylebox_override("pressed", style_pressed)
 
-		rak1_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
-		rak1_button.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.7))
-		rak1_button.add_theme_color_override("font_pressed_color", Color(0.9, 0.9, 0.9))
-		rak1_button.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+		rak1_button.add_theme_color_override("font_color", tokens.text_on_brand)
+		rak1_button.add_theme_color_override("font_hover_color", tokens.currency_gold)
+		rak1_button.add_theme_color_override("font_pressed_color", tokens.text_secondary)
+		rak1_button.add_theme_color_override("font_shadow_color", tokens.shadow_color)
 		rak1_button.add_theme_constant_override("shadow_offset_x", 2)
 		rak1_button.add_theme_constant_override("shadow_offset_y", 2)
 
@@ -205,15 +175,17 @@ func _update_coin_display():
 func _on_beli_pressed():
 	AnimUtils.squash_bounce(beli_button)
 
+	var tokens := DesignTokens.load_default()
+
 	if Cart.is_empty():
 		AudioDirector.play_sfx(&"error")
-		_show_message("Keranjang kosong! 🛒", Color(1.0, 0.65, 0.1))
+		_show_message("Keranjang kosong! 🛒", tokens.state_warning)
 		return
 
 	var total = Cart.get_total()
 	if GameState.player_money < total:
 		AudioDirector.play_sfx(&"error")
-		_show_message("Koin tidak cukup! 🪙", Color(1.0, 0.35, 0.35))
+		_show_message("Koin tidak cukup! 🪙", tokens.state_error)
 		return
 
 	# Deduct money
@@ -231,7 +203,7 @@ func _on_beli_pressed():
 		rak1_script.clear_basket_visuals()
 
 	AudioDirector.play_sfx(&"coin")
-	_show_message("✨ Pembelian berhasil! ✨", Color(0.35, 1.0, 0.45))
+	_show_message("✨ Pembelian berhasil! ✨", tokens.state_success)
 
 func _show_message(text: String, color: Color = Color.WHITE):
 	if not message_label:

@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/raket.png" id="9_uhev2"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Shop/pngwing.com (6).png" id="11_vylns"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Shop/pngwing.com (2).png" id="12_vylns"]
+[ext_resource type="Theme" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tf5nh"]
 atlas = ExtResource("6_tf5nh")
@@ -39,6 +40,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("kejartes_theme")
 script = ExtResource("1_ap2qe")
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=1902439476]

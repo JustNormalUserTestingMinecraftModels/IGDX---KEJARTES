@@ -48,3 +48,30 @@ func test_scene_has_no_source_project_resource_paths() -> void:
 	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
 	assert_false(raw.contains("res://Asset/"), "scene must not reference res://Asset/")
 	assert_false(raw.contains("res://Script/"), "scene must not reference res://Script/")
+
+func test_no_placeholder_chrome_textures() -> void:
+	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
+	for placeholder in ["btn_normal", "btn_pressed", "slot_normal", "slot_selected"]:
+		assert_false(raw.contains(placeholder),
+			"placeholder chrome must be replaced by the theme: " + placeholder)
+
+func test_preserved_art_is_still_referenced() -> void:
+	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
+	assert_true(raw.contains("Assets/Images/Shop/"),
+		"the ported art must still be referenced")
+
+func test_no_raw_color_literals_in_script() -> void:
+	## Colors come from DesignTokens, matching the rule test_lobby.gd
+	## enforces for the lobby.
+	var src := _source()
+	assert_false(src.contains("Color(0."),
+		"no hardcoded Color() literals -- use DesignTokens")
+
+func test_script_reads_design_tokens() -> void:
+	assert_true(_source().contains("DesignTokens.load_default()"),
+		"styling must be sourced from DesignTokens")
+
+func test_scene_uses_project_theme() -> void:
+	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
+	assert_true(raw.contains("kejartes_theme.tres"),
+		"the scene root must carry the project theme")

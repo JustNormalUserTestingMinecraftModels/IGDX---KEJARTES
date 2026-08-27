@@ -411,6 +411,11 @@ theme_override_font_sizes/font_size = 30
 text = "Item Name"
 horizontal_alignment = 1
 
+[node name="StudentStrip" type="HBoxContainer" parent="UsePopup/CenterContainer/PopupPanel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
 [node name="StepperHBox" type="HBoxContainer" parent="UsePopup/CenterContainer/PopupPanel/VBox" unique_id=987654331]
 layout_mode = 2
 theme_override_constants/separation = 14

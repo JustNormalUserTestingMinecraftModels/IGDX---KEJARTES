@@ -35,6 +35,7 @@ var DEFAULT_CATEGORY_COLOR: Color
 @onready var popup_plus_btn: Button = $UsePopup/CenterContainer/PopupPanel/VBox/StepperHBox/PlusButton
 @onready var popup_cancel_btn: Button = $UsePopup/CenterContainer/PopupPanel/VBox/ButtonsHBox/CancelButton
 @onready var popup_ok_btn: Button = $UsePopup/CenterContainer/PopupPanel/VBox/ButtonsHBox/OkButton
+@onready var student_strip: HBoxContainer = $UsePopup/CenterContainer/PopupPanel/VBox/StudentStrip
 
 # ─── State ───
 var selected_item: ItemData = null
@@ -45,6 +46,7 @@ var slot_styles: Dictionary = {}   # slot -> {"normal": StyleBox, "selected": St
 
 var current_use_qty: int = 1
 var max_use_qty: int = 1
+var _selected_student_id: int = -1
 
 # ═══════════════════════════════════════════
 #  LIFECYCLE
@@ -489,6 +491,54 @@ func _open_use_popup(item: ItemData, max_qty: int):
 	# Wobble the popup icon
 	AnimUtils.wobble(popup_item_icon)
 
+	_build_student_strip()
+
+
+## One tappable card per approved student: portrait, name, and live
+## mood/energy bars, so the player can see who needs the item most.
+func _build_student_strip() -> void:
+	for child in student_strip.get_children():
+		child.queue_free()
+	_selected_student_id = -1
+	popup_ok_btn.disabled = true
+
+	var tokens := DesignTokens.load_default()
+	for student in GameState.approved_students:
+		var card := Button.new()
+		card.custom_minimum_size = Vector2(140, 180)
+		card.toggle_mode = true
+		card.text = str(student.get("student_name", "?"))
+		card.set_meta("student_id", student.get("id", -1))
+
+		var bars := VBoxContainer.new()
+		bars.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bars.add_child(_make_strip_bar(float(student.get("mood", 0.0)), tokens.cat_istirahat))
+		bars.add_child(_make_strip_bar(float(student.get("energy", 0.0)), tokens.state_success))
+		card.add_child(bars)
+
+		card.pressed.connect(_on_student_card_pressed.bind(card))
+		student_strip.add_child(card)
+
+
+func _make_strip_bar(value: float, tint: Color) -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.min_value = 0.0
+	bar.max_value = 100.0
+	bar.value = value
+	bar.show_percentage = false
+	bar.custom_minimum_size = Vector2(0, 10)
+	bar.self_modulate = tint
+	return bar
+
+
+func _on_student_card_pressed(card: Button) -> void:
+	AudioDirector.play_sfx(&"select")
+	for child in student_strip.get_children():
+		if child is Button:
+			child.button_pressed = (child == card)
+	_selected_student_id = card.get_meta("student_id")
+	popup_ok_btn.disabled = false
+
 func _close_popup_animated():
 	var tokens := DesignTokens.load_default()
 	var panel := use_popup.get_node("CenterContainer/PopupPanel") as Control
@@ -536,35 +586,34 @@ func _on_popup_cancel_pressed():
 	AudioDirector.play_sfx(&"tap")
 
 func _on_popup_ok_pressed() -> void:
-	# Task 10 replaces this with the student picker. Until then, target the
-	# first approved student so the screen is runnable end to end.
-	if GameState.approved_students.is_empty():
+	if _selected_student_id == -1:
+		AudioDirector.play_sfx(&"error")
 		return
-	var student_id: int = GameState.approved_students[0].get("id", -1)
-	var result := GameState.use_item(selected_item, student_id, current_use_qty)
+	var result := GameState.use_item(selected_item, _selected_student_id, current_use_qty)
 	if not result["applied"]:
 		AudioDirector.play_sfx(&"error")
 		return
-	_spawn_floating_stat_pops(selected_item, current_use_qty)
+	AudioDirector.play_sfx(&"confirm")
+	_spawn_floating_stat_pops(result["mood_delta"], result["energy_delta"])
 	_close_popup_animated()
 
 # ═══════════════════════════════════════════
 #  FLOATING STAT POPS
 # ═══════════════════════════════════════════
 
-func _spawn_floating_stat_pops(item: ItemData, qty: int):
+func _spawn_floating_stat_pops(mood_delta: float, energy_delta: float) -> void:
 	var vp_size = get_viewport_rect().size
 	var center_screen = Vector2(vp_size.x / 2, vp_size.y * 0.73)
 
-	if item.mood_boost != 0:
+	if mood_delta != 0.0:
 		_create_stat_float_label(
-			"😊 Mood %+d" % (item.mood_boost * qty),
+			"😊 Mood %+d" % mood_delta,
 			center_screen + Vector2(-120, 0),
 			GOLD
 		)
-	if item.energy_boost != 0:
+	if energy_delta != 0.0:
 		_create_stat_float_label(
-			"⚡ Energi %+d" % (item.energy_boost * qty),
+			"⚡ Energi %+d" % energy_delta,
 			center_screen + Vector2(120, 0),
 			ACCENT
 		)

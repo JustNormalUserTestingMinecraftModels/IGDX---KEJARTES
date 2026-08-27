@@ -99,3 +99,28 @@ func test_closing_use_popup_does_not_clear_grid_selection() -> void:
 	var close_fn_body := src.substr(close_fn_start, close_fn_end - close_fn_start)
 	assert_false(close_fn_body.contains("selected_item = null"),
 		"_close_popup_animated must not clear selected_item -- that is the grid's job")
+
+func test_use_popup_has_a_student_strip() -> void:
+	var scene := (load(_SCENE_PATH) as PackedScene).instantiate()
+	var strip := scene.find_child("StudentStrip", true, false)
+	assert_true(strip != null,
+		"the use popup must offer a student to apply the item to")
+	scene.free()
+
+func test_use_targets_the_selected_student() -> void:
+	var src := _source()
+	assert_true(src.contains("_selected_student_id"),
+		"the popup must track which student was picked")
+	assert_true(src.contains("GameState.use_item("),
+		"confirm must route through GameState.use_item")
+
+func test_confirm_is_gated_on_a_student_selection() -> void:
+	assert_true(_source().contains("popup_ok_btn.disabled"),
+		"confirm stays disabled until a student is chosen")
+
+func test_no_global_player_mood_reference() -> void:
+	var src := _source()
+	assert_false(src.contains("GameState.player_mood"),
+		"the global stat model was not imported")
+	assert_false(src.contains("GameState.player_energy"),
+		"the global stat model was not imported")

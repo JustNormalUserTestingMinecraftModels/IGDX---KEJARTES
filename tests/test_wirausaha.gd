@@ -11,6 +11,13 @@ func suite_name() -> String:
 
 const _JADWAL_SCENE := "res://Scenes/AturJadwal/atur_jadwal.tscn"
 
+## Builds a throwaway approved_students roster and returns the caller's
+## original one so each test can restore it.
+func _swap_roster(roster: Array) -> Array:
+	var original: Array = GameState.approved_students
+	GameState.approved_students = roster
+	return original
+
 func test_schedule_popup_offers_wirausaha() -> void:
 	var scene := (load(_JADWAL_SCENE) as PackedScene).instantiate()
 	var btn := scene.find_child("Wirausaha", true, false)
@@ -28,6 +35,9 @@ func test_day_categories_include_wirausaha() -> void:
 		"SchoolDay.DAY_CATEGORIES must include Wirausaha")
 
 func test_jadwal_counts_include_wirausaha() -> void:
+	var original := _swap_roster([
+		{"id": 1, "student_name": "Uji"},
+	])
 	GameState.day_schedules = {
 		1: {"Senin": {"category": "Wirausaha", "mood_cost": 8, "energy_cost": 10}},
 	}
@@ -35,6 +45,7 @@ func test_jadwal_counts_include_wirausaha() -> void:
 	assert_true(counts.has("Wirausaha"), "counts must track Wirausaha")
 	assert_eq(counts["Wirausaha"], 1, "one student assigned to Wirausaha")
 	GameState.day_schedules = {}
+	GameState.approved_students = original
 
 func test_pending_earnings_starts_empty() -> void:
 	GameState.pending_earnings.clear()

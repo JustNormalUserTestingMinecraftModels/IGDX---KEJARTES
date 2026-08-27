@@ -39,6 +39,7 @@ func setup_summary(
 	build_rows: bool = true
 ) -> void:
 	title_label.text = "%s - Rangkuman Hari" % day_name.to_upper()
+	AudioDirector.play_sfx(&"popup_open")
 
 	# Clear old rows
 	for child in rows_container.get_children():
@@ -64,8 +65,6 @@ func setup_summary(
 			row_inst.setup_row(s_name, changes, student)
 			rows.append(row_inst)
 
-	_play_day_verdict_sfx(summary_data, students)
-
 	# Animate in
 	dim_overlay.self_modulate.a = 0.0
 	card_panel.modulate.a = 0.0
@@ -88,6 +87,10 @@ func setup_summary(
 
 	is_dismissable = true
 
+	# The verdict cue lands after the popup's entrance has visibly settled,
+	# rather than layering on top of popup_open in the same frame.
+	_play_day_verdict_sfx(summary_data, students)
+
 
 ## One sound per day, chosen from what actually happened:
 ##   success -- at least one core stat gained AND now sits at or above
@@ -97,7 +100,6 @@ func setup_summary(
 ## A day where nothing crossed a target and nothing was lost stays silent
 ## rather than being congratulated for standing still.
 func _play_day_verdict_sfx(summary_data: Array, students: Array[StudentData]) -> void:
-	AudioDirector.play_sfx(&"popup_open")
 	var gained_above_target := false
 	var had_loss := false
 

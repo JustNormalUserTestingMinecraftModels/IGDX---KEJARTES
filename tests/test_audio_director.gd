@@ -129,9 +129,18 @@ func test_rapid_volume_changes_do_not_write_once_per_change() -> void:
 	var before: int = _director.get_volume_save_count()
 	for i in range(50):
 		_director.set_bus_volume(&"SFX", float(i) / 50.0)
+	var immediately_after: int = _director.get_volume_save_count()
+	assert_true(immediately_after - before <= 2,
+		"50 rapid changes must coalesce, not write synchronously; got %d saves before the debounce window even elapsed"
+			% (immediately_after - before))
+
+	# The coalesced write must actually land once the 0.4s debounce window
+	# passes -- a debounce that silently DROPPED the save (e.g. a stray
+	# early return) would still pass the assertion above.
+	await Engine.get_main_loop().create_timer(0.5).timeout
 	var after: int = _director.get_volume_save_count()
-	assert_true(after - before <= 2,
-		"50 rapid changes must coalesce into at most 2 saves, got %d"
+	assert_true(after - before == 1,
+		"50 rapid changes must coalesce into exactly 1 save once the debounce window elapses, got %d"
 			% (after - before))
 
 

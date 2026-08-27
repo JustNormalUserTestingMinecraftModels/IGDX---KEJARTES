@@ -58,6 +58,7 @@ func show_decay_overview(day_name: String, decay_results: Array[Dictionary]) -> 
 
 	modulate.a = 0.0
 	show()
+	AudioDirector.play_sfx(&"popup_open")
 	var fade_in = create_tween()
 	fade_in.tween_property(self, "modulate:a", 1.0, Juice.tokens().dur_normal)
 	await fade_in.finished

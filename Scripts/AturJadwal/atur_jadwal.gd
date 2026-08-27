@@ -933,6 +933,7 @@ func _show_penjadwalan_popup():
 func _hide_penjadwalan_popup():
 	if not penjadwalan_popup:
 		return
+	AudioDirector.play_sfx(&"popup_close")
 	penjadwalan_popup_open = false
 	var t := _get_tokens()
 	var tween = create_tween().set_parallel(true)
@@ -1289,6 +1290,7 @@ func _check_and_lock_holidays() -> void:
 
 func _show_holiday_warning(holiday_title: String) -> void:
 	_holiday_active = true
+	AudioDirector.play_sfx(&"popup_open")
 	var tokens := _get_tokens()
 
 	# Dimmer overlay

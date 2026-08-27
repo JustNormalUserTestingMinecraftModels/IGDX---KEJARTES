@@ -224,12 +224,11 @@ func _save_volumes() -> void:
 func _schedule_volume_save() -> void:
 	if _save_timer != null:
 		return
+	# _schedule_volume_save is only reached via set_bus_volume, and
+	# _load_volumes() (the only caller before user interaction) runs from
+	# _ready() once this node is already inside the tree, so get_tree()
+	# is always valid here.
 	var tree := get_tree()
-	if tree == null:
-		# No SceneTreeTimer available (e.g. not yet inside the tree);
-		# fall back to writing immediately rather than crashing.
-		_save_volumes()
-		return
 	_save_timer = tree.create_timer(0.4, true, false, true)
 	_save_timer.timeout.connect(func() -> void:
 		_save_timer = null

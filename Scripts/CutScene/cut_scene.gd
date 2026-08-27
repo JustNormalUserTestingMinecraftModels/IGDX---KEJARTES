@@ -235,7 +235,11 @@ func _on_debug_toggle_pressed() -> void:
 		show_level_select_modal()
 
 func _on_skip_pressed() -> void:
-	AudioDirector.play_sfx(&"whoosh")
+	# Transition.change_scene() already plays "whoosh" on the scene change;
+	# adding another here would stack with the _input handler's "tap" and
+	# UIPolish's game-wide auto-tap (three cues, not the "two is fine" the
+	# project's convention allows -- see student_card.gd's
+	# _on_belajar_pressed note).
 	print("Skip Cutscene pressed")
 	go_to_gameplay()
 

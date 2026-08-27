@@ -221,7 +221,6 @@ func _evaluate_swipe(end_pos: Vector2):
 	var delta_x = end_pos.x - swipe_start_pos.x
 	var delta_y = end_pos.y - swipe_start_pos.y
 	if abs(delta_x) > 40.0 and abs(delta_x) > abs(delta_y):
-		AudioDirector.play_sfx(&"swipe")
 		if delta_x < 0:
 			_on_next_kanan_pressed()
 		else:

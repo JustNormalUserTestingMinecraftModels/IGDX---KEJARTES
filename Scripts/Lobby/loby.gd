@@ -579,10 +579,9 @@ func _hide_daily_reward():
 func _on_blur_overlay_input(event: InputEvent):
 	if not reward_popup_open:
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		AudioDirector.play_sfx(&"popup_close")
-		_hide_daily_reward()
-	elif event is InputEventScreenTouch and event.pressed:
+	var is_click = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	var is_touch = event is InputEventScreenTouch and event.pressed
+	if is_click or is_touch:
 		AudioDirector.play_sfx(&"popup_close")
 		_hide_daily_reward()
 

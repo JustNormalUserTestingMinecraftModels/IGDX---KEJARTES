@@ -1,4 +1,5 @@
 extends Control
+class_name SchoolDay
 
 signal simulation_finished
 signal _minigame_result(won: bool)  # internal: bridges minigame signals back to _play_minigame
@@ -563,6 +564,8 @@ func _build_pill_badges_for_student(student: StudentData, day_name: String) -> H
 			_add_pill(hbox, "+%.0f Olahraga ⚽" % gain, tokens.cat_olahraga)
 		"Istirahat":
 			_add_pill(hbox, "+25 ⚡ Istirahat", tokens.state_success)
+		"Wirausaha":
+			_add_pill(hbox, "💰 Wirausaha", tokens.category_color("Wirausaha"))
 		_:
 			_add_pill(hbox, "Kosong", tokens.text_secondary)
 
@@ -1093,6 +1096,26 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 
 	await _animate_embedded_stat_updates(0.6)
 
+## Wirausaha pays weekly, not daily -- the week's accrued earnings across
+## every assigned student land at once, so the player plans a week of
+## trading stats for money rather than watching coins trickle in.
+## Returns the total paid, for the summary line.
+## Static: it only touches the GameState singleton, never `self`, which
+## also lets tests call it on the loaded script class directly without
+## instantiating SchoolDay -- instantiating a non-@tool script inside the
+## editor process (as the MCP test runner does) hits Godot's placeholder-
+## script substitution, silently swapping in an instance whose custom
+## methods don't exist ("Nonexistent function" on any real call). A static
+## call never instantiates anything, so it never hits that substitution.
+static func _pay_out_wirausaha() -> int:
+	var total: int = 0
+	for student_id in GameState.pending_earnings:
+		total += GameState.pending_earnings[student_id]
+	GameState.pending_earnings.clear()
+	if total > 0:
+		GameState.player_money += total
+	return total
+
 # ─────────────────────────────────────────────────────────────────────────────
 func _on_week_complete() -> void:
 	AudioDirector.play_sfx(&"reward")
@@ -1100,6 +1123,10 @@ func _on_week_complete() -> void:
 	if skip_button:
 		skip_button.hide()
 	_reset_day_ui()
+
+	var wirausaha_total := _pay_out_wirausaha()
+	if wirausaha_total > 0:
+		AudioDirector.play_sfx(&"coin")
 
 	if result_checkup_scene:
 		day_screen.hide()
@@ -1121,6 +1148,11 @@ func _on_week_complete() -> void:
 	progress_bar.show()
 	Juice.fill_bar(progress_bar, 100.0)
 	status_label.text     = "Selamat! Minggu sekolah telah selesai."
+	if wirausaha_total > 0:
+		var wirausaha_chip := _make_chip(
+			"Pendapatan Wirausaha: Rp%d" % wirausaha_total,
+			DesignTokens.load_default().category_color("Wirausaha"))
+		status_label.get_parent().add_child(wirausaha_chip)
 	back_button.show()
 
 	if GameState.current_grade == 7 and GameState.minggu_ke == 1:

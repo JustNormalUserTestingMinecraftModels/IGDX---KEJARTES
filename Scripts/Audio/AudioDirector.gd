@@ -38,11 +38,20 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var bgm_result_win: AudioStream
 @export var bgm_result_lose: AudioStream
 
+@export_group("Minigame BGM")
+@export var bgm_minigame_olahraga: AudioStream
+@export var bgm_minigame_senibudaya_batik: AudioStream
+@export var bgm_minigame_senibudaya_menari: AudioStream
+
 @export_group("Mixing")
 ## Default crossfade for play_bgm/stop_bgm when no explicit fade is given.
 @export var default_bgm_fade: float = 0.8
 ## Random pitch spread on each SFX so repeated taps do not sound robotic.
 @export_range(0.0, 0.3) var sfx_pitch_variance: float = 0.06
+## Fade for pausing/resuming bgm_simulation around a minigame, and for
+## minigame music itself. Deliberately quicker than default_bgm_fade so
+## ducking for a minigame doesn't feel sluggish.
+@export var minigame_bgm_fade: float = 0.4
 
 var _sfx_pool: Array[AudioStreamPlayer] = []
 var _sfx_next: int = 0
@@ -51,6 +60,7 @@ var _bgm_b: AudioStreamPlayer
 var _bgm_active: AudioStreamPlayer
 var _bgm_current_id: StringName = &""
 var _bgm_tween: Tween
+var _bgm_minigame: AudioStreamPlayer
 var _save_timer: SceneTreeTimer
 var _save_count: int = 0
 var _setup_ran: bool = false
@@ -87,6 +97,7 @@ func _ready() -> void:
 	_bgm_a = _make_bgm_player()
 	_bgm_b = _make_bgm_player()
 	_bgm_active = _bgm_a
+	_bgm_minigame = _make_bgm_player()
 
 	_load_volumes()
 
@@ -176,6 +187,76 @@ func stop_bgm(fade: float = -1.0) -> void:
 	_bgm_tween.tween_property(_bgm_active, "volume_db", -60.0, duration)
 	_bgm_tween.tween_callback(_bgm_active.stop)
 	_bgm_current_id = &""
+
+
+## Fades the currently-playing bgm to silence and pauses it IN PLACE --
+## unlike stop_bgm, playback position is preserved. Used around a
+## minigame interruption, where the school-day music must pick back up
+## exactly where it left off rather than restarting. Safe no-op if
+## nothing is currently playing.
+func pause_bgm(fade: float = -1.0) -> void:
+	if _bgm_active == null or not _bgm_active.playing:
+		return
+	var duration := minigame_bgm_fade if fade < 0.0 else fade
+	if _bgm_tween != null and _bgm_tween.is_valid():
+		_bgm_tween.kill()
+	_bgm_tween = create_tween()
+	_bgm_tween.tween_property(_bgm_active, "volume_db", -60.0, duration)
+	_bgm_tween.tween_callback(func() -> void: _bgm_active.stream_paused = true)
+
+
+## Reverses pause_bgm: unpauses in place and fades back up. Safe no-op
+## if nothing is paused.
+func resume_bgm(fade: float = -1.0) -> void:
+	if _bgm_active == null or not _bgm_active.stream_paused:
+		return
+	_bgm_active.stream_paused = false
+	var duration := minigame_bgm_fade if fade < 0.0 else fade
+	if _bgm_tween != null and _bgm_tween.is_valid():
+		_bgm_tween.kill()
+	_bgm_tween = create_tween()
+	_bgm_tween.tween_property(_bgm_active, "volume_db", 0.0, duration)
+
+
+# --------------------------------------------------------------- minigame bgm
+
+## Single entry point for all minigame music. Always plays on the
+## dedicated _bgm_minigame player (never the main A/B pair), always
+## starting fresh from silence -- minigames never overlap, so there is
+## no crossfade-between-minigame-tracks case to handle.
+##
+## &"minigame_akademis" is handled by Task 4's extension to this
+## function (a looping 3-track sequence); the ids here are single,
+## already-looping tracks.
+func play_minigame_bgm(id: StringName) -> void:
+	var stream := _resolve_minigame_bgm(id)
+	if stream == null:
+		return
+	_bgm_minigame.stream = stream
+	_bgm_minigame.volume_db = -60.0
+	_bgm_minigame.play()
+	var tw := create_tween()
+	tw.tween_property(_bgm_minigame, "volume_db", 0.0, minigame_bgm_fade)
+
+
+func _resolve_minigame_bgm(id: StringName) -> AudioStream:
+	match id:
+		&"minigame_olahraga": return bgm_minigame_olahraga
+		&"minigame_senibudaya_batik": return bgm_minigame_senibudaya_batik
+		&"minigame_senibudaya_menari": return bgm_minigame_senibudaya_menari
+		_: return null
+
+
+## Fades out and stops the minigame player. Unlike pause_bgm, position
+## does not need to be preserved here -- a minigame always starts its
+## music fresh next time, never resumes a previous minigame's track.
+func stop_minigame_bgm(fade: float = -1.0) -> void:
+	if not _bgm_minigame.playing:
+		return
+	var duration := minigame_bgm_fade if fade < 0.0 else fade
+	var tw := create_tween()
+	tw.tween_property(_bgm_minigame, "volume_db", -60.0, duration)
+	tw.tween_callback(_bgm_minigame.stop)
 
 
 func _resolve_bgm(id: StringName) -> AudioStream:

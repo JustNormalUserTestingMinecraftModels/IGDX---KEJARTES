@@ -233,3 +233,104 @@ func test_bgm_chain_tracks_do_not_loop() -> void:
 				"must NOT loop (wav): " + path)
 		else:
 			assert_true(false, "unexpected stream type for " + path)
+
+
+## A ~0.3s silent 16-bit mono WAV, built in memory. Used only to give
+## pause/resume and playlist/sequence tests real audio to operate on,
+## independent of which real asset files happen to be assigned.
+static func _make_test_stream(duration_sec: float = 0.3) -> AudioStreamWAV:
+	var stream := AudioStreamWAV.new()
+	var mix_rate := 22050
+	var sample_count := int(mix_rate * duration_sec)
+	var data := PackedByteArray()
+	data.resize(sample_count * 2)
+	stream.data = data
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = mix_rate
+	stream.stereo = false
+	stream.loop_mode = AudioStreamWAV.LOOP_DISABLED
+	return stream
+
+
+func test_minigame_slots_are_exported() -> void:
+	var props := _director.get_property_list()
+	var names: Array[String] = []
+	for p in props:
+		names.append(p.name)
+	for slot in ["bgm_minigame_olahraga", "bgm_minigame_senibudaya_batik",
+			"bgm_minigame_senibudaya_menari", "minigame_bgm_fade"]:
+		assert_true(names.has(slot), "must expose export slot: " + slot)
+
+
+func test_minigame_bgm_ids_resolve() -> void:
+	_director.bgm_minigame_olahraga = _make_test_stream()
+	_director.bgm_minigame_senibudaya_batik = _make_test_stream()
+	_director.bgm_minigame_senibudaya_menari = _make_test_stream()
+	# play_minigame_bgm must not crash on any of the three single-track ids.
+	_director.play_minigame_bgm(&"minigame_olahraga")
+	_director.play_minigame_bgm(&"minigame_senibudaya_batik")
+	_director.play_minigame_bgm(&"minigame_senibudaya_menari")
+	assert_true(true, "play_minigame_bgm must not crash on known ids")
+
+
+## NOTE on test technique: this suite's runner calls test methods
+## synchronously (see test_juice.gd's header for the full explanation) so
+## the brief's original `await Engine.get_main_loop().create_timer(...)
+## .timeout` calls would return control at the first suspend point before
+## any post-await assertion ever ran, scoring "0 assertions" -- verified
+## empirically here (this exact draft failed that way first). Fixed with
+## two techniques, both preserving the test's real intent (prove genuine
+## elapsed time before pausing, and genuine non-drift while paused):
+##  1. OS.delay_msec() to actually block the thread for real wall-clock
+##     time. AudioServer mixes on its own thread, independent of the main
+##     loop, so a stream's playback position keeps advancing across a
+##     real OS-level delay even though no engine frame is processed --
+##     this is NOT a no-op like a SceneTreeTimer await that never resumes.
+##  2. Tween.custom_step(), the established technique from test_juice.gd,
+##     to deterministically fast-forward pause_bgm's fade+pause tween
+##     (and resume_bgm's fade-in tween) to completion synchronously --
+##     needed because pause_bgm's `stream_paused = true` is set from a
+##     tween_callback, which otherwise never fires without a processed
+##     frame.
+func test_pause_then_resume_preserves_playback_position() -> void:
+	_director.bgm_simulation = _make_test_stream(0.3)
+	_director.play_bgm(&"simulation", 0.0)
+	# Let real time pass so the stream's playback position genuinely advances.
+	OS.delay_msec(120)
+
+	var before_tweens: Array = Engine.get_main_loop().get_processed_tweens()
+	_director.pause_bgm(0.0)
+	for tw in Engine.get_main_loop().get_processed_tweens():
+		if not before_tweens.has(tw) and is_instance_valid(tw):
+			tw.custom_step(1.0)
+
+	assert_true(_director._bgm_active.stream_paused,
+		"sanity check: pause_bgm must actually pause the stream")
+	# Setting stream_paused doesn't silence the mixer instantaneously --
+	# there is a small, fixed amount of audio-buffer latency already
+	# in flight when the pause takes effect. Let that one-time latency
+	# settle before taking the position snapshot the "no drift" check
+	# below compares against, so the assertion measures genuine drift
+	# during the pause rather than that unavoidable flush.
+	OS.delay_msec(30)
+	var paused_position: float = _director._bgm_active.get_playback_position()
+	assert_true(paused_position > 0.0,
+		"sanity check: some playback must have happened before pausing")
+	# Let more real time pass while paused -- position must not advance further.
+	OS.delay_msec(50)
+	assert_true(absf(_director._bgm_active.get_playback_position() - paused_position) < 0.01,
+		"position must not change while paused")
+
+	var before_resume_tweens: Array = Engine.get_main_loop().get_processed_tweens()
+	_director.resume_bgm(0.0)
+	for tw in Engine.get_main_loop().get_processed_tweens():
+		if not before_resume_tweens.has(tw) and is_instance_valid(tw):
+			tw.custom_step(1.0)
+	assert_true(not _director._bgm_active.stream_paused,
+		"resume_bgm must unset stream_paused")
+
+
+func test_pause_bgm_is_a_safe_no_op_with_nothing_playing() -> void:
+	_director.pause_bgm()
+	_director.resume_bgm()
+	assert_true(true, "pause/resume with no active bgm must not crash")

@@ -1029,6 +1029,9 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	await tween_out.finished
 	day_screen.hide()
 
+	AudioDirector.pause_bgm()
+	AudioDirector.play_minigame_bgm(_minigame_bgm_id(game_scene, category))
+
 	# Spawn minigame
 	current_minigame = game_scene.instantiate()
 	current_minigame.modulate.a = 0.0
@@ -1073,6 +1076,7 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	if student_manager:
 		student_manager.record_minigame_result(day_name, category, game_name, won, mg_score, mg_max_score)
 
+	AudioDirector.stop_minigame_bgm()
 	var tween_close = create_tween()
 	tween_close.tween_property(current_minigame, "modulate:a", 0.0, 0.4)
 	await tween_close.finished
@@ -1082,6 +1086,7 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		child.queue_free()
 
 	day_screen.show()
+	AudioDirector.resume_bgm()
 	var tween_back = create_tween()
 	tween_back.tween_property(day_screen, "modulate:a", 1.0, 0.4)
 	await tween_back.finished
@@ -1349,6 +1354,24 @@ func _scene_name(scene: PackedScene) -> String:
 		"BuatBatik":    return "Buat Batik"
 		"LombaMenari":  return "Lomba Menari"
 	return scene.resource_path.get_file().replace(".tscn", "")
+
+
+## Maps a category + the specific minigame scene to the AudioDirector
+## minigame bgm id that should play for it. Deliberately independent
+## from _scene_name()'s display-text mapping above -- that text is
+## presentation-only and could change without this needing to.
+func _minigame_bgm_id(game_scene: PackedScene, category: String) -> StringName:
+	match category:
+		"Akademis":
+			return &"minigame_akademis"
+		"Olahraga":
+			return &"minigame_olahraga"
+		"SeniBudaya":
+			var file_name := game_scene.resource_path.get_file()
+			if file_name == "LombaMenari.tscn":
+				return &"minigame_senibudaya_menari"
+			return &"minigame_senibudaya_batik"
+	return &""
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _show_event_warning(event_label: String, accent_color: Color) -> void:

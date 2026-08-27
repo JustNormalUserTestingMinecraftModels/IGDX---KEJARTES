@@ -21,6 +21,9 @@
 [ext_resource type="AudioStream" uid="uid://dw8pqrqc75v1y" path="res://Assets/Audio/BGM/introcutscene.mp3" id="19_4vcgh"]
 [ext_resource type="AudioStream" uid="uid://blxefuko484wt" path="res://Assets/Audio/BGM/result_win.mp3" id="20_300lm"]
 [ext_resource type="AudioStream" uid="uid://ckqx0gxhox830" path="res://Assets/Audio/BGM/result_lose.wav" id="21_smhh5"]
+[ext_resource type="AudioStream" uid="uid://cqf2fviq0bh0i" path="res://Assets/Audio/BGM/minigame_olahraga.mp3" id="22_smhh5"]
+[ext_resource type="AudioStream" uid="uid://81vshiwgrv1w" path="res://Assets/Audio/BGM/minigame_senibudaya_batik.mp3" id="23_12b1k"]
+[ext_resource type="AudioStream" uid="uid://bxwgs81fu7bot" path="res://Assets/Audio/BGM/minigame_senibudaya_menari.mp3" id="24_rckhh"]
 
 [node name="AudioDirector" type="Node" unique_id=1021481202]
 script = ExtResource("1_audio")
@@ -44,3 +47,7 @@ bgm_titlescreen = ExtResource("18_57anm")
 bgm_introcutscene = ExtResource("19_4vcgh")
 bgm_result_win = ExtResource("20_300lm")
 bgm_result_lose = ExtResource("21_smhh5")
+bgm_minigame_olahraga = ExtResource("22_smhh5")
+bgm_minigame_senibudaya_batik = ExtResource("23_12b1k")
+bgm_minigame_senibudaya_menari = ExtResource("24_rckhh")
+minigame_bgm_fade = null

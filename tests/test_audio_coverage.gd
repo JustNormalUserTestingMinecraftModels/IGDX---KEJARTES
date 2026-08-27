@@ -362,3 +362,11 @@ func _indent_of(line: String) -> int:
 		else:
 			break
 	return count
+
+
+func test_school_day_pauses_and_resumes_around_minigames() -> void:
+	var src := _source("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	for needle in ["AudioDirector.pause_bgm()", "AudioDirector.play_minigame_bgm(",
+			"AudioDirector.stop_minigame_bgm()", "AudioDirector.resume_bgm()"]:
+		assert_true(src.contains(needle),
+			"SchoolDay.gd must call: " + needle)

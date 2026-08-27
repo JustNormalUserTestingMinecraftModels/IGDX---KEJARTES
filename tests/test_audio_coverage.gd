@@ -75,3 +75,23 @@ func test_student_card_interactions_have_sfx() -> void:
 	for id in ["swipe", "stamp", "unstamp", "popup_open", "popup_close"]:
 		assert_true(src.contains('play_sfx(&"%s")' % id),
 			"student_card must play sfx: " + id)
+
+
+func test_lobby_interactions_have_sfx() -> void:
+	var src := _source("res://Scripts/Lobby/loby.gd")
+	for id in ["reward", "popup_open"]:
+		assert_true(src.contains('play_sfx(&"%s")' % id),
+			"loby must play sfx: " + id)
+
+
+func test_student_list_interactions_have_sfx() -> void:
+	var src := _source("res://Scripts/StudentList/student_list.gd")
+	assert_true(src.contains('play_sfx(&"select")'),
+		"student_list must play sfx: select")
+
+
+func test_atur_jadwal_interactions_have_sfx() -> void:
+	var src := _source("res://Scripts/AturJadwal/atur_jadwal.gd")
+	for id in ["select", "popup_open", "popup_close", "error"]:
+		assert_true(src.contains('play_sfx(&"%s")' % id),
+			"atur_jadwal must play sfx: " + id)

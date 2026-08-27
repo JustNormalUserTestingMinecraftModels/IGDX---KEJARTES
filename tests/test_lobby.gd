@@ -99,8 +99,8 @@ func test_daily_login_uses_stagger_and_pop_in() -> void:
 		"the seven day tiles must stagger in when the panel opens")
 	assert_true(src.contains("Juice.pop_in("),
 		"the claimed tile must pop in")
-	assert_true(src.contains('AudioDirector.play_sfx(&"success")'),
-		"claiming a day must play a success sfx")
+	assert_true(src.contains('AudioDirector.play_sfx(&"reward")'),
+		"claiming a day must play a reward sfx")
 
 
 # ------------------------------------------------------- standard four

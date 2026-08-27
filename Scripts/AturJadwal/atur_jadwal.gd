@@ -745,6 +745,7 @@ func _on_start_week_pressed():
 		return
 
 	# 5. Everything optimal
+	AudioDirector.play_sfx(&"confirm")
 	_proceed_start_week()
 
 func _get_mentally_tired_students() -> Array[String]:
@@ -833,6 +834,7 @@ func _create_blur_overlay():
 func _show_peringatan():
 	if not peringatan:
 		return
+	AudioDirector.play_sfx(&"popup_open")
 	var t := _get_tokens()
 	var warning_label: Label = $Peringatan/TextureRect/Label
 	if warning_label:
@@ -880,6 +882,7 @@ func _switch_to_flagged_student():
 				break
 
 func _on_peringatan_yes():
+	AudioDirector.play_sfx(&"confirm")
 	_hide_peringatan()
 	if current_warning_mode == "energy":
 		_switch_to_flagged_student()
@@ -890,6 +893,7 @@ func _on_peringatan_yes():
 		_proceed_start_week()
 
 func _on_peringatan_no():
+	AudioDirector.play_sfx(&"popup_close")
 	_hide_peringatan()
 	_switch_to_flagged_student()
 
@@ -912,6 +916,7 @@ func _connect_activity_buttons():
 func _show_penjadwalan_popup():
 	if not penjadwalan_popup:
 		return
+	AudioDirector.play_sfx(&"popup_open")
 	penjadwalan_popup_open = true
 	_update_popup_stats()
 
@@ -941,6 +946,7 @@ func _hide_penjadwalan_popup():
 	)
 
 func _on_activity_selected(category: String):
+	AudioDirector.play_sfx(&"select")
 	var student = GameState.selected_student
 	var student_id = student.get("id", null)
 	if GameState.selected_day != "" and student_id != null:
@@ -1021,6 +1027,7 @@ func _on_day_pressed(day_name: String):
 	var week = GameState.minggu_ke
 	var week_holidays = HOLIDAYS.get(week, {})
 	if week_holidays.has(day_name):
+		AudioDirector.play_sfx(&"error")
 		_show_holiday_warning(week_holidays[day_name]["desc"])
 		return
 
@@ -1039,6 +1046,7 @@ func _on_day_pressed(day_name: String):
 		color_rect.hide()
 
 	GameState.selected_day = day_name
+	AudioDirector.play_sfx(&"select")
 	var btn = _get_day_button(day_name)
 	if btn:
 		_animate_day_button_press(btn)

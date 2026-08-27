@@ -450,7 +450,7 @@ func _on_student_selected(student: Dictionary, card_node: Control = null):
 		tw2.tween_property(card_node, "modulate:a", 0.0, 0.22)
 		await tw2.finished
 
-	AudioDirector.play_sfx(&"confirm")
+	AudioDirector.play_sfx(&"select")
 	print("Murid dipilih: ", student.get("name", ""))
 	GameState.selected_student = student
 	Transition.change_scene("res://Scenes/AturJadwal/atur_jadwal.tscn")

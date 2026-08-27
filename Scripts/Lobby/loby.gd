@@ -542,6 +542,7 @@ func _on_daily_login_pressed():
 func _show_daily_reward():
 	if not daily_reward:
 		return
+	AudioDirector.play_sfx(&"popup_open")
 	reward_popup_open = true
 
 	# Show and animate blur overlay
@@ -579,8 +580,10 @@ func _on_blur_overlay_input(event: InputEvent):
 	if not reward_popup_open:
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		AudioDirector.play_sfx(&"popup_close")
 		_hide_daily_reward()
 	elif event is InputEventScreenTouch and event.pressed:
+		AudioDirector.play_sfx(&"popup_close")
 		_hide_daily_reward()
 
 func _set_blur_lod(value: float):
@@ -629,6 +632,7 @@ func _on_claim_pressed():
 	_animate_button_click_bounce(claim_button)
 	var today = Time.get_date_string_from_system()
 	if GameState.last_claim_date == today:
+		AudioDirector.play_sfx(&"error")
 		return
 
 	var claimed_day := GameState.daily_login_day
@@ -643,7 +647,7 @@ func _on_claim_pressed():
 	var claimed_node: Control = day_nodes.get(claimed_day)
 	if claimed_node:
 		Juice.pop_in(claimed_node)
-	AudioDirector.play_sfx(&"success")
+	AudioDirector.play_sfx(&"reward")
 
 	GameState.daily_login_day += 1
 	if GameState.daily_login_day > 7:

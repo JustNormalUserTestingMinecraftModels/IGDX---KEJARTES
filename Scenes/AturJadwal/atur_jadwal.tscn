@@ -447,6 +447,15 @@ category = "SeniBudaya"
 show_value_label = true
 value_format = "%d%%"
 
+[node name="Wirausaha" type="Button" parent="Penjadwalan/TextureRect" unique_id=2001234567]
+layout_mode = 0
+offset_left = 81.00001
+offset_top = 990.0
+offset_right = 377.0
+offset_bottom = 1070.0
+theme_type_variation = &"PrimaryButton"
+text = "WIRAUSAHA"
+
 [node name="Libur" type="Button" parent="Penjadwalan/TextureRect" unique_id=1650158165]
 layout_mode = 0
 offset_left = 111.0

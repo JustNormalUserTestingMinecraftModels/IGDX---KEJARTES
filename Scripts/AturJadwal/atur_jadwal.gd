@@ -54,6 +54,7 @@ var _holiday_active: bool = false
 @onready var popup_olahraga_btn = $Penjadwalan/TextureRect/Olahraga
 @onready var popup_senibudaya_btn = $Penjadwalan/TextureRect/SeniBudaya
 @onready var popup_dayoff_btn = $Penjadwalan/TextureRect/Libur
+@onready var popup_wirausaha_btn = $Penjadwalan/TextureRect/Wirausaha
 @onready var popup_akademik_bar = $Penjadwalan/TextureRect/Akademik/ProgressBar
 @onready var popup_olahraga_bar = $Penjadwalan/TextureRect/Olahraga/ProgressBar2
 @onready var popup_senibudaya_bar = $Penjadwalan/TextureRect/SeniBudaya/ProgressBar3
@@ -102,6 +103,10 @@ const ENERGY_LOSS_MIN := 15
 const ENERGY_LOSS_MAX := 20
 const DAYOFF_GAIN_MIN := 20
 const DAYOFF_GAIN_MAX := 30
+const WIRAUSAHA_MOOD_MIN := 8
+const WIRAUSAHA_MOOD_MAX := 14
+const WIRAUSAHA_ENERGY_MIN := 10
+const WIRAUSAHA_ENERGY_MAX := 16
 
 var penjadwalan_popup_open := false
 var is_overtired_warning := false
@@ -198,7 +203,7 @@ func _setup_gameplay():
 		# Baru balik dari student_list, belum jadwalkan Senin
 		_setup_phase2_tutorial()
 
-## The Penjadwalan popup's four pick buttons keep their category-coded
+## The Penjadwalan popup's five pick buttons keep their category-coded
 ## identity via self_modulate instead of a per-node StyleBoxFlat.
 func _tint_popup_activity_buttons():
 	var tokens := _get_tokens()
@@ -210,6 +215,8 @@ func _tint_popup_activity_buttons():
 		popup_senibudaya_btn.self_modulate = tokens.category_color("SeniBudaya")
 	if popup_dayoff_btn:
 		popup_dayoff_btn.self_modulate = tokens.category_color("Istirahat")
+	if popup_wirausaha_btn:
+		popup_wirausaha_btn.self_modulate = tokens.category_color("Wirausaha")
 
 func _populate_default_tutorial_steps():
 	if tutorial_phase1_steps.is_empty():
@@ -912,6 +919,8 @@ func _connect_activity_buttons():
 		popup_senibudaya_btn.pressed.connect(_on_activity_selected.bind("SeniBudaya"))
 	if popup_dayoff_btn and not popup_dayoff_btn.pressed.is_connected(_on_activity_selected.bind("Istirahat")):
 		popup_dayoff_btn.pressed.connect(_on_activity_selected.bind("Istirahat"))
+	if popup_wirausaha_btn and not popup_wirausaha_btn.pressed.is_connected(_on_activity_selected.bind("Wirausaha")):
+		popup_wirausaha_btn.pressed.connect(_on_activity_selected.bind("Wirausaha"))
 
 func _show_penjadwalan_popup():
 	if not penjadwalan_popup:
@@ -958,6 +967,9 @@ func _on_activity_selected(category: String):
 		if category == "Istirahat":
 			mood_cost = -randi_range(DAYOFF_GAIN_MIN, DAYOFF_GAIN_MAX)
 			energy_cost = -randi_range(DAYOFF_GAIN_MIN, DAYOFF_GAIN_MAX)
+		elif category == "Wirausaha":
+			mood_cost = randi_range(WIRAUSAHA_MOOD_MIN, WIRAUSAHA_MOOD_MAX)
+			energy_cost = randi_range(WIRAUSAHA_ENERGY_MIN, WIRAUSAHA_ENERGY_MAX)
 		else:
 			mood_cost = randi_range(MOOD_LOSS_MIN, MOOD_LOSS_MAX)
 			energy_cost = randi_range(ENERGY_LOSS_MIN, ENERGY_LOSS_MAX)

@@ -197,7 +197,7 @@ func convert_to_student_data_array() -> Array[StudentData]:
 # Get jadwal for a day across all approved students
 func get_jadwal_for_day(day_name: String) -> Dictionary:
 	# Returns {category_name: count} for weighted minigame selection
-	var counts = {"Akademis": 0, "Olahraga": 0, "SeniBudaya": 0, "Istirahat": 0}
+	var counts = {"Akademis": 0, "Olahraga": 0, "SeniBudaya": 0, "Istirahat": 0, "Wirausaha": 0}
 	for student in approved_students:
 		var sid = student.get("id", null)
 		if sid != null and day_schedules.has(sid):

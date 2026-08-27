@@ -135,7 +135,7 @@ func _get_playful_texture(type: String) -> Texture2D:
 ## Category accent per weekday, used both for the page tint and for the
 ## day-progress StatBar. Five days, five of the project's accents, so the
 ## week reads as a progression rather than as five arbitrary colors.
-const DAY_CATEGORIES := ["Olahraga", "Akademis", "Istirahat", "Libur", "SeniBudaya"]
+const DAY_CATEGORIES := ["Olahraga", "Akademis", "Istirahat", "Libur", "SeniBudaya", "Wirausaha"]
 
 ## How much of the day's accent is mixed into surface_page for the
 ## backdrop. A page is a large surface; anything stronger stops being a

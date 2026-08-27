@@ -31,10 +31,12 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var sfx_reward: AudioStream
 
 @export_group("BGM")
-@export var bgm_menu: AudioStream
+@export var bgm_titlescreen: AudioStream
+@export var bgm_introcutscene: AudioStream
 @export var bgm_lobby: AudioStream
 @export var bgm_simulation: AudioStream
-@export var bgm_result: AudioStream
+@export var bgm_result_win: AudioStream
+@export var bgm_result_lose: AudioStream
 
 @export_group("Mixing")
 ## Default crossfade for play_bgm/stop_bgm when no explicit fade is given.
@@ -178,10 +180,12 @@ func stop_bgm(fade: float = -1.0) -> void:
 
 func _resolve_bgm(id: StringName) -> AudioStream:
 	match id:
-		&"menu": return bgm_menu
+		&"titlescreen": return bgm_titlescreen
+		&"introcutscene": return bgm_introcutscene
 		&"lobby": return bgm_lobby
 		&"simulation": return bgm_simulation
-		&"result": return bgm_result
+		&"result_win": return bgm_result_win
+		&"result_lose": return bgm_result_lose
 		_: return null
 
 

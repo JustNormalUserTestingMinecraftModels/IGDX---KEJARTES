@@ -17,6 +17,10 @@
 [ext_resource type="AudioStream" uid="uid://c0c6nrm6k78xj" path="res://Assets/Audio/SFX/select.ogg" id="15_4vcgh"]
 [ext_resource type="AudioStream" uid="uid://crghtdln167sm" path="res://Assets/Audio/SFX/error.ogg" id="16_300lm"]
 [ext_resource type="AudioStream" uid="uid://s75qbeop5gv4" path="res://Assets/Audio/SFX/reward.ogg" id="17_smhh5"]
+[ext_resource type="AudioStream" uid="uid://0uqfj0p24gfx" path="res://Assets/Audio/BGM/titlescreen.mp3" id="18_57anm"]
+[ext_resource type="AudioStream" uid="uid://dw8pqrqc75v1y" path="res://Assets/Audio/BGM/introcutscene.mp3" id="19_4vcgh"]
+[ext_resource type="AudioStream" uid="uid://blxefuko484wt" path="res://Assets/Audio/BGM/result_win.mp3" id="20_300lm"]
+[ext_resource type="AudioStream" uid="uid://ckqx0gxhox830" path="res://Assets/Audio/BGM/result_lose.wav" id="21_smhh5"]
 
 [node name="AudioDirector" type="Node" unique_id=1021481202]
 script = ExtResource("1_audio")
@@ -36,3 +40,7 @@ sfx_popup_close = ExtResource("14_57anm")
 sfx_select = ExtResource("15_4vcgh")
 sfx_error = ExtResource("16_300lm")
 sfx_reward = ExtResource("17_smhh5")
+bgm_titlescreen = ExtResource("18_57anm")
+bgm_introcutscene = ExtResource("19_4vcgh")
+bgm_result_win = ExtResource("20_300lm")
+bgm_result_lose = ExtResource("21_smhh5")

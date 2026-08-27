@@ -73,8 +73,8 @@ func test_all_four_routing_destinations_are_preserved() -> void:
 func test_check_semester_passed_usage_is_unchanged() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var count := src.count("GameState.check_semester_passed()")
-	assert_eq(count, 2,
-		"expected check_semester_passed() to be called exactly twice (evaluate + restart), found " + str(count))
+	assert_eq(count, 3,
+		"expected check_semester_passed() to be called exactly three times (BGM choice in _ready, evaluate, restart), found " + str(count))
 
 
 func test_restart_button_routes_by_pass_fail_and_grade() -> void:

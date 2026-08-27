@@ -51,7 +51,7 @@ func _ready() -> void:
 		# gameplay entry animation from here.
 		return
 
-	AudioDirector.play_bgm(&"menu")
+	AudioDirector.play_bgm(&"titlescreen")
 	_animate_entry()
 
 

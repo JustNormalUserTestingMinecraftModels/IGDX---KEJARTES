@@ -61,7 +61,10 @@ func _ready() -> void:
 	_setup_button_juice(btn_restart)
 	_setup_button_juice(btn_menu)
 
-	AudioDirector.play_bgm(&"result")
+	if GameState.check_semester_passed():
+		AudioDirector.play_bgm(&"result_win")
+	else:
+		AudioDirector.play_bgm(&"result_lose")
 
 	# Calculate evaluation, then play the sequenced reveal.
 	_evaluate_students()

@@ -264,6 +264,10 @@ func _on_grade_selected(grade_num: int) -> void:
 	show_current()
 
 func show_current():
+	if GameState.is_game_over_cutscene:
+		AudioDirector.play_bgm(&"result_lose")
+	else:
+		AudioDirector.play_bgm(&"introcutscene")
 	bg_cutscene.modulate.a = 1.0
 	bg_cutscene.texture = cg_data[cg_index]["image"]
 	_reveal(cg_data[cg_index]["text"])

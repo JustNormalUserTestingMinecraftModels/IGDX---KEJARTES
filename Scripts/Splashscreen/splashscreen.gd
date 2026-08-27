@@ -21,6 +21,7 @@ var _already_clicked := false
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
+	AudioDirector.play_bgm(&"titlescreen")
 	Juice.pop_in(_title)
 	var tw := _hint.create_tween().set_loops()
 	tw.tween_property(_hint, "modulate:a", 0.35, Juice.tokens().dur_slow) \

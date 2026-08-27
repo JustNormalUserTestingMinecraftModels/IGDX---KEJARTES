@@ -39,7 +39,7 @@ func test_sfx_and_bgm_slots_are_exported() -> void:
 			"sfx_fail", "sfx_coin", "sfx_whoosh", "sfx_pop",
 			"sfx_swipe", "sfx_stamp", "sfx_unstamp", "sfx_popup_open",
 			"sfx_popup_close", "sfx_select", "sfx_error", "sfx_reward",
-			"bgm_menu", "bgm_lobby", "bgm_simulation", "bgm_result"]:
+			"bgm_titlescreen", "bgm_lobby", "bgm_simulation", "bgm_result_win"]:
 		assert_true(names.has(slot), "must expose export slot: " + slot)
 
 
@@ -181,6 +181,33 @@ func test_bgm_loop_tracks_actually_loop() -> void:
 				"must loop (wav): " + path)
 		else:
 			assert_true(false, "unexpected stream type for " + path)
+
+
+func test_titlescreen_and_result_slots_are_exported() -> void:
+	var props := _director.get_property_list()
+	var names: Array[String] = []
+	for p in props:
+		names.append(p.name)
+	for slot in ["bgm_titlescreen", "bgm_introcutscene",
+			"bgm_result_win", "bgm_result_lose"]:
+		assert_true(names.has(slot), "must expose export slot: " + slot)
+	assert_true(not names.has("bgm_menu"), "bgm_menu must be renamed away")
+	assert_true(not names.has("bgm_result"), "bgm_result must be split into win/lose")
+
+
+func test_renamed_and_new_bgm_ids_resolve() -> void:
+	var dummy := AudioStreamGenerator.new()
+	_director.bgm_titlescreen = dummy
+	_director.bgm_introcutscene = dummy
+	_director.bgm_result_win = dummy
+	_director.bgm_result_lose = dummy
+	for id in ["titlescreen", "introcutscene", "result_win", "result_lose"]:
+		assert_true(_director._resolve_bgm(StringName(id)) != null,
+			"id must resolve: " + id)
+	assert_true(_director._resolve_bgm(&"menu") == null,
+		"retired id must not resolve: menu")
+	assert_true(_director._resolve_bgm(&"result") == null,
+		"retired id must not resolve: result")
 
 
 func test_bgm_chain_tracks_do_not_loop() -> void:

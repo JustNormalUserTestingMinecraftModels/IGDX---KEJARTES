@@ -23,14 +23,11 @@ func _source(path: String) -> String:
 
 func test_every_screen_starts_its_bgm() -> void:
 	var expected := {
-		"res://Scripts/MainMenu/main_menu.gd": "menu",
-		"res://Scripts/UI/Settings.gd": "menu",
 		"res://Scripts/Lobby/loby.gd": "lobby",
 		"res://Scripts/StudentCard/student_card.gd": "lobby",
 		"res://Scripts/StudentList/student_list.gd": "lobby",
 		"res://Scripts/AturJadwal/atur_jadwal.gd": "lobby",
 		"res://Scripts/SchoolSimulation/SchoolDay.gd": "simulation",
-		"res://Scripts/EndGame/SemesterEnd.gd": "result",
 	}
 	for path in expected:
 		var want := 'play_bgm(&"%s"' % expected[path]
@@ -334,6 +331,27 @@ func _check_file_for_double_sfx(path: String, offenders: Array[String]) -> void:
 				offenders.append("%s:%s (lines %d,%d)" % [
 					path, fname, int(prev["line"]) + 1, int(cur["line"]) + 1])
 				break  # one report per function is enough
+
+
+func test_title_intro_result_screens_start_their_bgm() -> void:
+	var expected := {
+		"res://Scripts/Splashscreen/splashscreen.gd": 'play_bgm(&"titlescreen")',
+		"res://Scripts/MainMenu/main_menu.gd": 'play_bgm(&"titlescreen")',
+		"res://Scripts/UI/Settings.gd": 'play_bgm(&"titlescreen")',
+	}
+	for path in expected:
+		assert_true(_source(path).contains(expected[path]),
+			"%s must call AudioDirector.%s" % [path, expected[path]])
+	var cutscene_src := _source("res://Scripts/CutScene/cut_scene.gd")
+	assert_true(cutscene_src.contains('play_bgm(&"introcutscene")'),
+		"cut_scene.gd must play the intro track")
+	assert_true(cutscene_src.contains('play_bgm(&"result_lose")'),
+		"cut_scene.gd must play result_lose for the game-over retry cutscene")
+	var semester_src := _source("res://Scripts/EndGame/SemesterEnd.gd")
+	assert_true(semester_src.contains('play_bgm(&"result_win")'),
+		"SemesterEnd.gd must play result_win on a pass")
+	assert_true(semester_src.contains('play_bgm(&"result_lose")'),
+		"SemesterEnd.gd must play result_lose on a fail")
 
 
 func _indent_of(line: String) -> int:

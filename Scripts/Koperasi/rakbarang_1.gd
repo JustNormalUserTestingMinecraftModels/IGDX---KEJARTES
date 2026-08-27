@@ -123,7 +123,7 @@ func _setup_blur_layer():
 	blur_rect.anchor_right = 1.0
 	blur_rect.anchor_bottom = 1.0
 	blur_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var shader = load("res://Script/blur.gdshader")
+	var shader = load("res://Scripts/Shaders/blur.gdshader")
 	if shader:
 		var mat = ShaderMaterial.new()
 		mat.shader = shader

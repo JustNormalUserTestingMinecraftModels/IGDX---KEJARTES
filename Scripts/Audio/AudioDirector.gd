@@ -49,6 +49,9 @@ var _bgm_b: AudioStreamPlayer
 var _bgm_active: AudioStreamPlayer
 var _bgm_current_id: StringName = &""
 var _bgm_tween: Tween
+var _save_timer: SceneTreeTimer
+var _save_count: int = 0
+var _setup_ran: bool = false
 
 
 func _ready() -> void:
@@ -70,6 +73,7 @@ func _ready() -> void:
 		if edited_root != null and (self == edited_root or edited_root.is_ancestor_of(self)):
 			return
 
+	_setup_ran = true
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 	for i in SFX_POOL_SIZE:
@@ -194,7 +198,7 @@ func set_bus_volume(bus: StringName, linear: float) -> void:
 	# linear_to_db(0.0) is -inf, which AudioServer stores but which reads
 	# back as -inf; mute the bus instead so get_bus_volume returns 0.0.
 	AudioServer.set_bus_mute(idx, is_zero_approx(v))
-	_save_volumes()
+	_schedule_volume_save()
 
 
 func get_bus_volume(bus: StringName) -> float:
@@ -207,10 +211,52 @@ func get_bus_volume(bus: StringName) -> float:
 
 
 func _save_volumes() -> void:
+	_save_count += 1
 	var cfg := ConfigFile.new()
 	for bus in ["Master", "BGM", "SFX"]:
 		cfg.set_value("volume", bus, get_bus_volume(bus))
 	cfg.save(SETTINGS_PATH)
+
+
+## Coalesce a burst of slider changes into one disk write. Dragging a
+## slider fires value_changed per pixel; writing user://audio.cfg that
+## often stutters on mobile storage.
+func _schedule_volume_save() -> void:
+	if _save_timer != null:
+		return
+	var tree := get_tree()
+	if tree == null:
+		# No SceneTreeTimer available (e.g. not yet inside the tree);
+		# fall back to writing immediately rather than crashing.
+		_save_volumes()
+		return
+	_save_timer = tree.create_timer(0.4, true, false, true)
+	_save_timer.timeout.connect(func() -> void:
+		_save_timer = null
+		_save_volumes())
+
+
+## Write any pending volume change immediately. Called on quit and by
+## tests that need the file on disk before reading it back.
+func flush_volume_save() -> void:
+	_save_timer = null
+	_save_volumes()
+
+
+## Number of times the config has actually been written. Test hook.
+func get_volume_save_count() -> int:
+	return _save_count
+
+
+func _notification(what: int) -> void:
+	# Guard mirrors _ready(): if setup never ran (this instance is merely
+	# sitting in an edited scene in the editor), there is nothing pending
+	# to flush and doing so would read/write the real user://audio.cfg
+	# just from the scene being open, e.g. on an editor focus-loss pause.
+	if not _setup_ran:
+		return
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
+		flush_volume_save()
 
 
 func _load_volumes() -> void:

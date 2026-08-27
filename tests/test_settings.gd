@@ -104,3 +104,9 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 func test_labels_are_indonesian() -> void:
 	var title := _screen.find_child("TitleLabel", true, false) as Label
 	assert_eq(title.text, "PENGATURAN", "title must be Indonesian")
+
+
+func test_bgm_slider_gives_audible_feedback() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd")
+	assert_true(src.contains('&"BGM"') and src.contains('play_sfx(&"pop")'),
+		"dragging the Musik slider must preview a sound, like the SFX slider does")

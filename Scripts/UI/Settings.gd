@@ -56,9 +56,17 @@ func _collect_rows() -> Array:
 
 func _on_volume_changed(value: float, bus: StringName) -> void:
 	AudioDirector.set_bus_volume(bus, value)
-	# Immediate audible feedback while dragging the SFX slider.
-	if bus == &"SFX" and not Engine.is_editor_hint():
+	if Engine.is_editor_hint():
+		return
+	# Immediate audible feedback while dragging. The SFX slider previews
+	# with a tap; the Musik slider needs its own cue because the music bed
+	# is often too sustained to hear a small change against — `pop` is
+	# short and routed through the SFX bus, so it stays audible while the
+	# BGM bus itself is being dragged toward zero.
+	if bus == &"SFX":
 		AudioDirector.play_sfx(&"tap")
+	elif bus == &"BGM":
+		AudioDirector.play_sfx(&"pop")
 
 
 func _on_tutorial_toggled(pressed: bool) -> void:

@@ -105,6 +105,36 @@ func test_has_sfx_is_false_for_empty_and_unknown() -> void:
 		"an unknown id must report has_sfx() == false")
 
 
+func test_volumes_persist_across_a_fresh_director() -> void:
+	# The relaunch requirement: what the player set must come back.
+	_director.set_bus_volume(&"BGM", 0.42)
+	await Engine.get_main_loop().process_frame
+	_director.flush_volume_save()
+
+	var scene: PackedScene = load("res://Scenes/Audio/audio_director.tscn")
+	var second: Node = scene.instantiate()
+	Engine.get_main_loop().root.add_child(second)
+	track(second)
+	assert_true(absf(second.get_bus_volume(&"BGM") - 0.42) <= 0.01,
+		"a freshly loaded director must restore the saved BGM volume")
+
+	# Restore so this test does not leave the real config at 0.42.
+	second.set_bus_volume(&"BGM", 1.0)
+	second.flush_volume_save()
+
+
+func test_rapid_volume_changes_do_not_write_once_per_change() -> void:
+	# Dragging a slider fires value_changed on every pixel. Writing the
+	# config file that often stutters on mobile storage.
+	var before: int = _director.get_volume_save_count()
+	for i in range(50):
+		_director.set_bus_volume(&"SFX", float(i) / 50.0)
+	var after: int = _director.get_volume_save_count()
+	assert_true(after - before <= 2,
+		"50 rapid changes must coalesce into at most 2 saves, got %d"
+			% (after - before))
+
+
 func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
 	# _director is instantiated from audio_director.tscn, so this asserts
 	# the real shipped assignments — not a fixture. A slot regressing to

@@ -44,6 +44,7 @@ func _ready() -> void:
 		return
 
 	Juice.stagger_in(_collect_rows())
+	AudioDirector.play_bgm(&"menu")
 
 
 func _collect_rows() -> Array:

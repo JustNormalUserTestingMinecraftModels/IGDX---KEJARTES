@@ -184,6 +184,7 @@ func _ready():
 	
 	_sync_student_data_from_ui()
 	_show_step(0)
+	AudioDirector.play_bgm(&"lobby")
 
 # ================= TOUCH SWIPE NAVIGATION =================
 

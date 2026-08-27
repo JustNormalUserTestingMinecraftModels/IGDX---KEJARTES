@@ -109,6 +109,50 @@ func remove_from_inventory(item_name: String, quantity: int = 1) -> bool:
 func get_inventory_quantity(item_name: String) -> int:
 	return inventory.get(item_name, 0)
 
+
+## Stat ceiling shared with StudentData's mood/energy range.
+const STAT_MAX := 100.0
+
+## Applies an item's boosts to ONE student in approved_students.
+##
+## The teammate's build had a single global player_mood/player_energy;
+## this project tracks both per student, so the caller must say who. The
+## approved_students dictionaries are the cross-screen source of truth,
+## so that is what gets written.
+##
+## Returns {"applied": bool, "mood_delta": float, "energy_delta": float}.
+## The deltas are what actually landed after clamping, which is what the
+## inventory's floating stat-pop labels display.
+func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
+	var refused := {"applied": false, "mood_delta": 0.0, "energy_delta": 0.0}
+	if item == null or quantity <= 0:
+		return refused
+	if get_inventory_quantity(item.item_name) < quantity:
+		return refused
+
+	var target: Dictionary = {}
+	for student in approved_students:
+		if student.get("id", -1) == student_id:
+			target = student
+			break
+	if target.is_empty():
+		return refused
+
+	var mood_before: float = float(target.get("mood", 0.0))
+	var energy_before: float = float(target.get("energy", 0.0))
+	var mood_after := clampf(mood_before + item.mood_boost * quantity, 0.0, STAT_MAX)
+	var energy_after := clampf(energy_before + item.energy_boost * quantity, 0.0, STAT_MAX)
+	target["mood"] = mood_after
+	target["energy"] = energy_after
+
+	remove_from_inventory(item.item_name, quantity)
+
+	return {
+		"applied": true,
+		"mood_delta": mood_after - mood_before,
+		"energy_delta": energy_after - energy_before,
+	}
+
 var daily_login_day: int = 1
 var last_claim_date: String = ""
 

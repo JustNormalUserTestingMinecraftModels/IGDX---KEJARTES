@@ -90,3 +90,72 @@ func test_cart_clear_empties_everything() -> void:
 	Cart.clear()
 	assert_eq(Cart.get_total(), 0, "total is 0 after clear")
 	assert_true(Cart.is_empty(), "cart reports empty after clear")
+
+## Builds a throwaway approved_students roster and returns the caller's
+## original one so each test can restore it.
+func _swap_roster(roster: Array) -> Array:
+	var original: Array = GameState.approved_students
+	GameState.approved_students = roster
+	return original
+
+func test_use_item_boosts_only_the_chosen_student() -> void:
+	var original := _swap_roster([
+		{"id": 1, "student_name": "A", "mood": 50.0, "energy": 50.0},
+		{"id": 2, "student_name": "B", "mood": 50.0, "energy": 50.0},
+	])
+	GameState.inventory.clear()
+	GameState.add_to_inventory("Komik", 1)
+	var komik: ItemData = ItemDatabase.get_item("Komik")
+	var result := GameState.use_item(komik, 1, 1)
+	assert_true(result["applied"], "use must succeed when the item is owned")
+	assert_eq(GameState.approved_students[0]["mood"], 50.0 + komik.mood_boost, "chosen student gains mood")
+	assert_eq(GameState.approved_students[1]["mood"], 50.0, "other student is untouched")
+	GameState.inventory.clear()
+	GameState.approved_students = original
+
+func test_use_item_clamps_at_one_hundred() -> void:
+	var original := _swap_roster([
+		{"id": 1, "student_name": "A", "mood": 98.0, "energy": 98.0},
+	])
+	GameState.inventory.clear()
+	GameState.add_to_inventory("Komik", 1)
+	GameState.use_item(ItemDatabase.get_item("Komik"), 1, 1)
+	assert_eq(GameState.approved_students[0]["mood"], 100.0, "mood clamps at 100")
+	GameState.inventory.clear()
+	GameState.approved_students = original
+
+func test_use_item_consumes_the_inventory_quantity() -> void:
+	var original := _swap_roster([
+		{"id": 1, "student_name": "A", "mood": 10.0, "energy": 10.0},
+	])
+	GameState.inventory.clear()
+	GameState.add_to_inventory("Mie Instan", 3)
+	GameState.use_item(ItemDatabase.get_item("Mie Instan"), 1, 2)
+	assert_eq(GameState.get_inventory_quantity("Mie Instan"), 1, "2 of 3 consumed")
+	GameState.inventory.clear()
+	GameState.approved_students = original
+
+func test_use_item_refuses_when_not_enough_owned() -> void:
+	var original := _swap_roster([
+		{"id": 1, "student_name": "A", "mood": 10.0, "energy": 10.0},
+	])
+	GameState.inventory.clear()
+	GameState.add_to_inventory("Mie Instan", 1)
+	var result := GameState.use_item(ItemDatabase.get_item("Mie Instan"), 1, 5)
+	assert_false(result["applied"], "cannot use more than owned")
+	assert_eq(GameState.approved_students[0]["mood"], 10.0, "no stat change on refusal")
+	assert_eq(GameState.get_inventory_quantity("Mie Instan"), 1, "nothing consumed on refusal")
+	GameState.inventory.clear()
+	GameState.approved_students = original
+
+func test_use_item_refuses_for_unknown_student_id() -> void:
+	var original := _swap_roster([
+		{"id": 1, "student_name": "A", "mood": 10.0, "energy": 10.0},
+	])
+	GameState.inventory.clear()
+	GameState.add_to_inventory("Mie Instan", 1)
+	var result := GameState.use_item(ItemDatabase.get_item("Mie Instan"), 99, 1)
+	assert_false(result["applied"], "unknown student id must refuse")
+	assert_eq(GameState.get_inventory_quantity("Mie Instan"), 1, "nothing consumed on refusal")
+	GameState.inventory.clear()
+	GameState.approved_students = original

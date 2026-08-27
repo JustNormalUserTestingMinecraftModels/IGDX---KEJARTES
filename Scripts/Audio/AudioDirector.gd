@@ -172,6 +172,7 @@ func play_bgm(id: StringName, fade: float = -1.0) -> void:
 	var outgoing := _bgm_active
 
 	incoming.stream = stream
+	incoming.stream_paused = false
 	incoming.volume_db = -60.0
 	incoming.play()
 
@@ -203,6 +204,7 @@ func play_bgm_playlist(id: StringName, fade: float = -1.0) -> void:
 	var outgoing := _bgm_active
 
 	incoming.stream = tracks[randi() % tracks.size()]
+	incoming.stream_paused = false
 	incoming.volume_db = -60.0
 	incoming.play()
 

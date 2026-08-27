@@ -23,6 +23,7 @@
 [ext_resource type="AudioStream" uid="uid://ckqx0gxhox830" path="res://Assets/Audio/BGM/result_lose.wav" id="21_smhh5"]
 [ext_resource type="AudioStream" uid="uid://cqf2fviq0bh0i" path="res://Assets/Audio/BGM/minigame_olahraga.mp3" id="22_smhh5"]
 [ext_resource type="AudioStream" uid="uid://81vshiwgrv1w" path="res://Assets/Audio/BGM/minigame_senibudaya_batik.mp3" id="23_12b1k"]
+[ext_resource type="AudioStream" uid="uid://ctmk2wdmobsdw" path="res://Assets/Audio/BGM/schoolsimulation.mp3" id="24_g68t3"]
 [ext_resource type="AudioStream" uid="uid://bxwgs81fu7bot" path="res://Assets/Audio/BGM/minigame_senibudaya_menari.mp3" id="24_rckhh"]
 [ext_resource type="AudioStream" uid="uid://dxfrh64bbe1d2" path="res://Assets/Audio/BGM/minigame_akademis_1.wav" id="25_pkop0"]
 [ext_resource type="AudioStream" uid="uid://dvjl5mnl87pwg" path="res://Assets/Audio/BGM/minigame_akademis_2.wav" id="26_7i31u"]
@@ -53,6 +54,7 @@ sfx_reward = ExtResource("17_smhh5")
 bgm_titlescreen = ExtResource("18_57anm")
 bgm_introcutscene = ExtResource("19_4vcgh")
 bgm_lobby_playlist = Array[AudioStream]([ExtResource("28_lby1"), ExtResource("29_lby2"), ExtResource("30_lby3"), ExtResource("31_lby4")])
+bgm_simulation = ExtResource("24_g68t3")
 bgm_result_win = ExtResource("20_300lm")
 bgm_result_lose = ExtResource("21_smhh5")
 bgm_minigame_olahraga = ExtResource("22_smhh5")

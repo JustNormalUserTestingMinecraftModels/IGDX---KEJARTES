@@ -156,6 +156,22 @@ func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
 			"shipped scene must fill sfx slot: " + id)
 
 
+func test_every_bgm_slot_is_filled_in_the_shipped_scene() -> void:
+	# _director is instantiated from the real audio_director.tscn (see
+	# setup()), so this asserts the SHIPPED scene's actual state -- a slot
+	# that's real code but an empty assignment (like bgm_simulation once
+	# was) is exactly what this catches and the loop-setting tests do not.
+	for slot in ["bgm_titlescreen", "bgm_introcutscene", "bgm_simulation",
+			"bgm_result_win", "bgm_result_lose", "bgm_minigame_olahraga",
+			"bgm_minigame_senibudaya_batik", "bgm_minigame_senibudaya_menari"]:
+		assert_true(_director.get(slot) != null,
+			"shipped scene must fill single-track bgm slot: " + slot)
+	for slot in ["bgm_lobby_playlist", "bgm_minigame_akademis"]:
+		var arr: Array = _director.get(slot)
+		assert_true(not arr.is_empty(),
+			"shipped scene must fill array bgm slot: " + slot)
+
+
 func test_minigame_bgm_fade_is_a_real_positive_float_in_the_shipped_scene() -> void:
 	# Regression test: scene_save() once serialized this newly-added export
 	# as an unset `null` before the editor had picked up its 0.4 script
@@ -283,11 +299,15 @@ func test_minigame_bgm_ids_resolve() -> void:
 	_director.bgm_minigame_olahraga = _make_test_stream()
 	_director.bgm_minigame_senibudaya_batik = _make_test_stream()
 	_director.bgm_minigame_senibudaya_menari = _make_test_stream()
-	# play_minigame_bgm must not crash on any of the three single-track ids.
 	_director.play_minigame_bgm(&"minigame_olahraga")
+	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_olahraga,
+		"minigame_olahraga must actually be assigned to the minigame player")
 	_director.play_minigame_bgm(&"minigame_senibudaya_batik")
+	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_senibudaya_batik,
+		"minigame_senibudaya_batik must actually be assigned to the minigame player")
 	_director.play_minigame_bgm(&"minigame_senibudaya_menari")
-	assert_true(true, "play_minigame_bgm must not crash on known ids")
+	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_senibudaya_menari,
+		"minigame_senibudaya_menari must actually be assigned to the minigame player")
 
 
 ## NOTE on test technique: this suite's runner calls test methods

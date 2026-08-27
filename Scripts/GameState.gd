@@ -74,7 +74,40 @@ func initialize_grade_targets() -> void:
 
 
 # Currency
-var player_money: int = 0
+signal money_changed(new_amount: int)
+signal inventory_changed
+
+var _player_money: int = 0
+
+var player_money: int:
+	get: return _player_money
+	set(value):
+		_player_money = value
+		money_changed.emit(value)
+
+## Inventory: item_name -> quantity. Session-scoped, like every other
+## field on this autoload -- the project has no save system.
+var inventory: Dictionary = {}  ## Tracks item quantities by name
+
+
+func add_to_inventory(item_name: String, quantity: int) -> void:
+	inventory[item_name] = inventory.get(item_name, 0) + quantity
+	inventory_changed.emit()
+
+
+func remove_from_inventory(item_name: String, quantity: int = 1) -> bool:
+	if not inventory.has(item_name):
+		return false
+	inventory[item_name] -= quantity
+	if inventory[item_name] <= 0:
+		inventory.erase(item_name)
+	inventory_changed.emit()
+	return true
+
+
+func get_inventory_quantity(item_name: String) -> int:
+	return inventory.get(item_name, 0)
+
 var daily_login_day: int = 1
 var last_claim_date: String = ""
 

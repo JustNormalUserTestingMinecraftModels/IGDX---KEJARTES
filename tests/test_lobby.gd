@@ -203,6 +203,26 @@ func test_labels_use_theme_variations() -> void:
 			assert_eq(lbl.theme_type_variation, &"CaptionLabel", "Day%d/%s variation" % [i, sub])
 
 
+func _lobby_source() -> String:
+	return FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
+
+
+func test_koperasi_button_is_wired() -> void:
+	var src := _lobby_source()
+	assert_true(src.contains("_on_koperasi_pressed"),
+		"the Koperasi button must have a handler")
+	assert_true(src.contains("res://Scenes/Koperasi/koprasi.tscn"),
+		"Koperasi must route to the shop scene")
+
+
+func test_inventory_button_is_wired() -> void:
+	var src := _lobby_source()
+	assert_true(src.contains("_on_inventory_pressed"),
+		"the Inventory button must have a handler")
+	assert_true(src.contains("res://Scenes/Inventory/inventory.tscn"),
+		"Inventory must route to the inventory scene")
+
+
 func test_claim_button_uses_success_button_variation() -> void:
 	var claim := _lobby.get_node_or_null("DailyLogin/DailyReward/ButtonClaim") as Button
 	assert_true(claim != null, "missing claim button")

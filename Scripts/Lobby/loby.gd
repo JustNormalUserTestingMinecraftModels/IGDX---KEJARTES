@@ -168,6 +168,10 @@ func _ready():
 		student_button.pressed.connect(_on_student_pressed)
 	if not jadwal_button.pressed.is_connected(_on_jadwal_pressed):
 		jadwal_button.pressed.connect(_on_jadwal_pressed)
+	if not koperasi_button.pressed.is_connected(_on_koperasi_pressed):
+		koperasi_button.pressed.connect(_on_koperasi_pressed)
+	if not inventory_button.pressed.is_connected(_on_inventory_pressed):
+		inventory_button.pressed.connect(_on_inventory_pressed)
 
 	if click_area.has_signal("pressed"):
 		if not click_area.pressed.is_connected(_next_step):
@@ -661,6 +665,16 @@ func _on_jadwal_pressed():
 	_animate_button_click_bounce(jadwal_button)
 	print("Tombol Jadwal ditekan, pindah ke atur_jadwal")
 	Transition.change_scene("res://Scenes/AturJadwal/atur_jadwal.tscn")
+
+
+func _on_koperasi_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	Transition.change_scene("res://Scenes/Koperasi/koprasi.tscn", Transition.Style.WIPE)
+
+
+func _on_inventory_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	Transition.change_scene("res://Scenes/Inventory/inventory.tscn", Transition.Style.WIPE)
 
 func _on_click_area_gui_input(event: InputEvent):
 	if not tutorial_active:

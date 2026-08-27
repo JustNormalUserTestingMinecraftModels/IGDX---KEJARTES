@@ -42,18 +42,22 @@ func test_has_a_slider_for_each_audio_bus() -> void:
 
 
 func test_moving_a_slider_changes_the_bus_volume() -> void:
+	# No frame-wait needed: Range.value's setter emits value_changed
+	# synchronously when the value actually changes, and the MCP test
+	# runner's suite.call() doesn't await coroutine test methods anyway
+	# (an `await` here would silently truncate the test to 0 assertions).
 	var slider := _screen.find_child("SfxSlider", true, false) as Slider
 	slider.value = 0.3
-	await Engine.get_main_loop().process_frame
 	assert_true(absf((AudioDirector.get_bus_volume(&"SFX")) - (0.3)) <= 0.02, "the slider must drive the bus")
 
 
 func test_tutorial_toggle_reflects_and_writes_game_settings() -> void:
+	# Same reasoning: BaseButton.button_pressed's setter emits `toggled`
+	# synchronously, so no frame-wait is needed or safe to await here.
 	var toggle := _screen.find_child("TutorialToggle", true, false) as CheckButton
 	assert_true(toggle != null, "the minigame tutorial toggle must exist")
 	var original := GameSettings.minigame_tutorial_enabled
 	toggle.button_pressed = not original
-	await Engine.get_main_loop().process_frame
 	assert_eq(GameSettings.minigame_tutorial_enabled, not original,
 		"the toggle must write through to GameSettings")
 	GameSettings.minigame_tutorial_enabled = original

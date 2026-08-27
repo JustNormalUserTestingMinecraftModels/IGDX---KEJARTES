@@ -15,12 +15,17 @@ extends Node
 ## setup() aborted every single test with exactly that error until this
 ## was added.
 ##
-## Unlike AudioDirector's scene-root guard, there is no editor-hint gate
-## needed here: this script has no scene of its own to be "opened" in the
-## editor, and its only side effect (_ready() calling load_settings(),
-## reading user://settings.cfg) is a harmless read that a human editing
-## any scene, or a test instantiating one, should see happen the same way
-## real gameplay does.
+## This script's own state (minigame_tutorial_enabled) is safe to read and
+## write in editor/test context -- no editor-hint gate needed for that part.
+## But load_settings()/save_settings() also touch GameState.is_game_beaten
+## and GameState.debug_level_select_enabled, and GameState.gd is NOT @tool,
+## so GameState remains a placeholder instance in editor/test context.
+## Accessing it there throws "Invalid assignment of property or key
+## 'is_game_beaten' ... on a base object of type 'Node (GameState.gd)'" --
+## this actually happened at editor boot once GameSettings gained @tool,
+## since _ready() -> load_settings() now runs for real in that context.
+## The GameState.* lines are gated below; everything else in this file
+## runs the same way in both contexts.
 
 var minigame_tutorial_enabled: bool = true
 
@@ -33,13 +38,15 @@ func _ready() -> void:
 func save_settings() -> void:
 	var config = ConfigFile.new()
 	config.set_value("pengaturan", "minigame_tutorial", minigame_tutorial_enabled)
-	config.set_value("progres", "is_game_beaten", GameState.is_game_beaten)
-	config.set_value("progres", "debug_level_select", GameState.debug_level_select_enabled)
+	if not Engine.is_editor_hint():
+		config.set_value("progres", "is_game_beaten", GameState.is_game_beaten)
+		config.set_value("progres", "debug_level_select", GameState.debug_level_select_enabled)
 	config.save(SAVE_PATH)
 
 func load_settings() -> void:
 	var config = ConfigFile.new()
 	if config.load(SAVE_PATH) == OK:
 		minigame_tutorial_enabled = config.get_value("pengaturan", "minigame_tutorial", true)
-		GameState.is_game_beaten = config.get_value("progres", "is_game_beaten", false)
-		GameState.debug_level_select_enabled = config.get_value("progres", "debug_level_select", true)
+		if not Engine.is_editor_hint():
+			GameState.is_game_beaten = config.get_value("progres", "is_game_beaten", false)
+			GameState.debug_level_select_enabled = config.get_value("progres", "debug_level_select", true)

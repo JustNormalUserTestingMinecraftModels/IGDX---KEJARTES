@@ -37,6 +37,11 @@ func _ready() -> void:
 
 func save_settings() -> void:
 	var config = ConfigFile.new()
+	# Load whatever is already on disk first so that skipping the
+	# "progres" section below (editor/test context) doesn't truncate
+	# away previously-saved progres values -- a fresh ConfigFile with
+	# only "pengaturan" set would otherwise overwrite the whole file.
+	config.load(SAVE_PATH)
 	config.set_value("pengaturan", "minigame_tutorial", minigame_tutorial_enabled)
 	if not Engine.is_editor_hint():
 		config.set_value("progres", "is_game_beaten", GameState.is_game_beaten)

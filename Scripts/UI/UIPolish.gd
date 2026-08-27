@@ -29,7 +29,7 @@ extends Node
 @export var enabled: bool = true
 ## Buttons larger than this in either axis are treated as invisible
 ## click-catchers and skipped automatically.
-@export var max_juiced_size: Vector2 = Vector2(900, 900)
+@export var max_juiced_size: Vector2 = Vector2(1000, 1000)
 
 
 func _ready() -> void:
@@ -92,4 +92,6 @@ func _on_button_up(button: BaseButton) -> void:
 
 
 func _on_button_pressed(button: BaseButton) -> void:
+	if _skip(button):
+		return
 	AudioDirector.play_sfx(&"tap")

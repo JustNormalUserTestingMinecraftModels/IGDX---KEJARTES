@@ -12,14 +12,14 @@ had a dedicated juice/layout pass.
 
 ## Changing a color, radius, or font globally
 
-Everything visual flows from one resource: `Scripts/Design/design_tokens.tres`
+Everything visual flows from one resource: `Assets/Theme/design_tokens.tres`
 (a `DesignTokens` resource — see `Scripts/Design/DesignTokens.gd` for every
 exported field: brand colors, category colors, spacing scale, radii, shadow,
 outline widths, font slots/sizes, text colors, etc).
 
 To change something globally:
 
-1. Open `design_tokens.tres` in the Godot Inspector (select it in the
+1. Open `design_tokens.tres` (`Assets/Theme/design_tokens.tres`) in the Godot Inspector (select it in the
    FileSystem dock) and edit the field directly — e.g. `brand_primary`,
    `radius_pill`, `space_md`, `font_body`.
 2. Rebake the Theme resource from the edited tokens: open
@@ -155,6 +155,32 @@ found exactly two files with non-zero counts, both exclusively
 
 No color, font-size, or stylebox overrides were found in either file — both
 fall under the accepted layout-only exception above.
+
+## `@tool` and `Engine.is_editor_hint()` for MCP-testable scripts
+
+Any script that the in-editor MCP test runner needs to instantiate live
+(i.e. a test adds an instance of it to a live tree) must be `@tool`. Without
+it, Godot silently replaces the instance with an uncallable placeholder when
+it's created inside the editor process — even ordinary method calls fail
+with a "placeholder instance" error, and the test can't exercise anything.
+
+But `@tool` has a cost: it makes `_ready()` run for real the moment a human
+just opens that scene or resource in the editor, not only during actual
+play. Any *real* side effect in `_ready()` — reading or writing another
+autoload's state, playing audio, kicking off a gameplay-only animation
+sequence, mutating save data — must therefore be gated behind
+`if Engine.is_editor_hint(): return` (or an inline check) so it never fires
+just from opening the scene. Pure UI wiring (connecting signals, reading
+initial display values) should stay *above* that guard, ungated, since the
+test suite needs to exercise exactly that wiring.
+
+- See `Scripts/MainMenu/main_menu.gd` for the worked "gated" example: it's
+  `@tool`, button-signal wiring runs unconditionally, and BGM/entry
+  animation are gated behind `Engine.is_editor_hint()`.
+- See `Scripts/UI/UIPolish.gd` for the worked "correctly needs no `@tool`"
+  example: its `_ready()` can only ever run during a real `project_run`
+  (nothing instantiates it live from the editor process), so there's no
+  placeholder risk and nothing to gate.
 
 ## Out of scope (deferred, not this pass)
 

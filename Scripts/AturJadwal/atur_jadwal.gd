@@ -508,16 +508,16 @@ func _update_day_button_colors():
 		var label = btn.get_child(0) as Label
 
 		if week_holidays.has(day_name):
-			btn.modulate = tokens.state_danger
+			btn.self_modulate = tokens.state_danger
 			if label:
 				label.text = day_name.to_upper() + "\n(LIBUR)"
 		elif schedules.has(day_name):
 			var category = schedules[day_name]["category"]
-			btn.modulate = tokens.category_color(category)
+			btn.self_modulate = tokens.category_color(category)
 			if label:
 				label.text = day_name.to_upper()
 		else:
-			btn.modulate = default_color
+			btn.self_modulate = default_color
 			if label:
 				label.text = day_name.to_upper()
 

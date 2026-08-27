@@ -109,12 +109,13 @@ func _play_day_verdict_sfx(summary_data: Array, students: Array[StudentData]) ->
 				break
 		for ch in entry.get("changes", []):
 			var delta := float(ch.get("delta", 0.0))
+			var stat_key := String(ch.get("stat_key", ""))
 			if delta < 0.0:
-				had_loss = true
+				if _TARGET_FOR.has(stat_key):
+					had_loss = true
 				continue
 			if delta <= 0.0 or student == null:
 				continue
-			var stat_key := String(ch.get("stat_key", ""))
 			if not _TARGET_FOR.has(stat_key):
 				continue
 			if float(student.get(stat_key)) >= float(student.get(_TARGET_FOR[stat_key])):

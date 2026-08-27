@@ -452,7 +452,6 @@ func generate_png_placeholders() -> void:
 
 	_generate_outer_png(outer_path)
 	_generate_inside_png(inside_path)
-	_generate_bar_pngs(dir_path)
 
 func _generate_outer_png(path: String) -> void:
 	var pal := _palette()
@@ -551,29 +550,3 @@ func _generate_inside_png(path: String) -> void:
 
 	img.save_png(path)
 
-func _generate_bar_pngs(dir_path: String) -> void:
-	var t := DesignTokens.load_default()
-	var eng_days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
-	# One category accent per weekday, so the day-progress fills echo the
-	# same five colors the schedule screens already use.
-	var colors: Array[Color] = [
-		t.cat_olahraga,
-		t.cat_akademis,
-		t.cat_istirahat,
-		t.state_warning,
-		t.cat_senibudaya,
-	]
-
-	for i in range(5):
-		var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
-		img.fill(colors[i])
-
-		var highlight := _with_alpha(Color.WHITE, 0.3)
-		for y in range(32):
-			for x in range(32):
-				if x + y < 10:
-					img.set_pixel(x, y, img.get_pixel(x, y).lerp(highlight, 0.5))
-				if (32 - x) + (32 - y) < 12:
-					img.set_pixel(x, y, img.get_pixel(x, y).lerp(highlight, 0.5))
-
-		img.save_png(dir_path + "/progress_fill_" + eng_days[i] + ".png")

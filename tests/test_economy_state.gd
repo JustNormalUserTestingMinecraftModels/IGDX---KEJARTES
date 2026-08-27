@@ -10,7 +10,7 @@ func suite_name() -> String:
 
 const _EXPECTED_ITEMS := [
 	"Bank Soal", "Komik", "LKS", "Lompat Tali", "Raket",
-	"Cilok", "Mie", "Pop Es", "Susu"
+	"Cilok", "Mie Instan", "Pop Ice", "Susu Kotak"
 ]
 
 func test_item_database_registers_every_item() -> void:

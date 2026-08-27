@@ -1,3 +1,4 @@
+@tool
 extends Node
 
 # item_name -> ItemData
@@ -65,7 +66,7 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"energy": 20
 	},
 	{
-		"name": "Mie",
+		"name": "Mie Instan",
 		"price": 1000,
 		"category": "Makanan",
 		"desc": "Mie instan hangat dan lezat favorit anak sekolah.",
@@ -75,7 +76,7 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"energy": 35
 	},
 	{
-		"name": "Pop Es",
+		"name": "Pop Ice",
 		"price": 800,
 		"category": "Makanan",
 		"desc": "Minuman es blender manis dan menyegarkan.",
@@ -85,7 +86,7 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"energy": 15
 	},
 	{
-		"name": "Susu",
+		"name": "Susu Kotak",
 		"price": 1200,
 		"category": "Makanan",
 		"desc": "Susu kotak bernutrisi untuk menambah energi belajar.",

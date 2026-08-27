@@ -78,8 +78,8 @@ func test_cart_total_multiplies_price_by_quantity() -> void:
 
 func test_cart_remove_one_erases_at_zero() -> void:
 	Cart.clear()
-	Cart.add_item(ItemDatabase.get_item("Mie"))
-	Cart.remove_one("Mie")
+	Cart.add_item(ItemDatabase.get_item("Mie Instan"))
+	Cart.remove_one("Mie Instan")
 	assert_true(Cart.is_empty(), "cart is empty after removing the last unit")
 	Cart.clear()
 

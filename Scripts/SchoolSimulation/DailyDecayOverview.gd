@@ -244,7 +244,7 @@ func _set_mouse_filter_pass(node: Node) -> void:
 		_set_mouse_filter_pass(child)
 
 func _on_continue_pressed() -> void:
-	AudioDirector.play_sfx(&"confirm")
+	AudioDirector.play_sfx(&"popup_close")
 	var fade_out = create_tween()
 	fade_out.tween_property(self, "modulate:a", 0.0, Juice.tokens().dur_normal)
 	await fade_out.finished

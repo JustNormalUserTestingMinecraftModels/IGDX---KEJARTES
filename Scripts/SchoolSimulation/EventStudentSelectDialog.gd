@@ -58,6 +58,8 @@ var drag_start_y: float = 0.0
 var initial_scroll_v: int = 0
 
 func _ready() -> void:
+	if not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"popup_open")
 	modulate.a = 0.0
 	_apply_visual_exports()
 	if scroll_container:
@@ -410,7 +412,7 @@ func _update_confirm_button() -> void:
 		confirm_button.disabled = (count == 0)
 
 func _on_select_all_pressed() -> void:
-	AudioDirector.play_sfx(&"tap")
+	AudioDirector.play_sfx(&"select")
 	var all_checked = true
 	for student in student_list:
 		if not student.is_tired():

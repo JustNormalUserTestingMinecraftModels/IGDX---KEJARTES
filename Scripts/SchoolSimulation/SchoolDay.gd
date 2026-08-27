@@ -1090,6 +1090,7 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _on_week_complete() -> void:
+	AudioDirector.play_sfx(&"reward")
 	is_running = false
 	if skip_button:
 		skip_button.hide()
@@ -1195,6 +1196,7 @@ func skip_to_results() -> void:
 	_on_week_complete()
 
 func _on_back_pressed() -> void:
+	AudioDirector.play_sfx(&"cancel")
 	if student_manager:
 		student_manager.write_back_to_gamestate()
 	
@@ -1350,6 +1352,7 @@ func _scene_name(scene: PackedScene) -> String:
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _show_event_warning(event_label: String, accent_color: Color) -> void:
+	AudioDirector.play_sfx(&"popup_open")
 	var warning_scene = event_warning_scene
 	if warning_scene == null:
 		warning_scene = load("res://Scenes/SchoolSimulation/EventWarning.tscn")
@@ -1367,6 +1370,7 @@ func _show_event_warning(event_label: String, accent_color: Color) -> void:
 		warning_instance.queue_free()
 
 func _show_event_announcement(event_label: String) -> void:
+	AudioDirector.play_sfx(&"popup_open")
 	var ann_scene = event_announcement_scene
 	if ann_scene == null:
 		ann_scene = load("res://Scenes/SchoolSimulation/EventAnnouncement.tscn")

@@ -97,6 +97,7 @@ func setup_summary(
 ## A day where nothing crossed a target and nothing was lost stays silent
 ## rather than being congratulated for standing still.
 func _play_day_verdict_sfx(summary_data: Array, students: Array[StudentData]) -> void:
+	AudioDirector.play_sfx(&"popup_open")
 	var gained_above_target := false
 	var had_loss := false
 

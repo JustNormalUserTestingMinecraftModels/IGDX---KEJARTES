@@ -145,6 +145,7 @@ func _evaluate_students() -> void:
 	var tokens := DesignTokens.load_default()
 
 	if all_passed:
+		AudioDirector.play_sfx(&"reward")
 		title_label.text = "🎓 Evaluasi Akhir Semester - Kelas %d 🎓" % grade_num
 		congrats_title.text = "Selamat! Tahun Ajaran Kelas %d Telah Selesai 🎉" % grade_num
 		congrats_title.add_theme_color_override("font_color", tokens.state_success)

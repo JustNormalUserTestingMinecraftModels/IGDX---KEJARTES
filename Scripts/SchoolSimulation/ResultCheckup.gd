@@ -46,6 +46,8 @@ var drag_start_y: float = 0.0
 var initial_scroll_v: int = 0
 
 func _ready() -> void:
+	if not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"popup_open")
 	modulate.a = 0.0
 	_apply_visual_exports()
 	btn_close.pressed.connect(_on_close_pressed)

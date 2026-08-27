@@ -235,6 +235,7 @@ func _on_debug_toggle_pressed() -> void:
 		show_level_select_modal()
 
 func _on_skip_pressed() -> void:
+	AudioDirector.play_sfx(&"whoosh")
 	print("Skip Cutscene pressed")
 	go_to_gameplay()
 
@@ -246,6 +247,7 @@ func show_level_select_modal() -> void:
 	tween.tween_property(level_select_overlay, "modulate:a", 1.0, 0.3)
 
 func _on_grade_selected(grade_num: int) -> void:
+	AudioDirector.play_sfx(&"select")
 	print("Grade selected before cutscene: ", grade_num)
 	GameState.set_grade(grade_num)
 

@@ -148,10 +148,10 @@ func test_motion_and_audio_feedback_are_wired() -> void:
 		"student pages must stagger in on entry")
 	assert_true(src.contains("Juice.pop_in"),
 		"the detail popup must pop in")
-	assert_true(src.contains("AudioDirector.play_sfx(&\"confirm\")"),
-		"approve must play the confirm sfx")
-	assert_true(src.contains("AudioDirector.play_sfx(&\"cancel\")"),
-		"reject must play the cancel sfx")
+	assert_true(src.contains("AudioDirector.play_sfx(&\"stamp\")"),
+		"approve must play the stamp sfx")
+	assert_true(src.contains("AudioDirector.play_sfx(&\"unstamp\")"),
+		"reject must play the unstamp sfx")
 
 
 # ----------------------------------------------------------------- helper

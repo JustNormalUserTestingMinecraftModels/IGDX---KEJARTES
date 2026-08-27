@@ -221,6 +221,7 @@ func _evaluate_swipe(end_pos: Vector2):
 	var delta_x = end_pos.x - swipe_start_pos.x
 	var delta_y = end_pos.y - swipe_start_pos.y
 	if abs(delta_x) > 40.0 and abs(delta_x) > abs(delta_y):
+		AudioDirector.play_sfx(&"swipe")
 		if delta_x < 0:
 			_on_next_kanan_pressed()
 		else:
@@ -601,6 +602,7 @@ func _on_next_kanan_pressed():
 	if tutorial_active or is_animating:
 		return
 	if current_page < kertas_murid.size() - 1:
+		AudioDirector.play_sfx(&"swipe")
 		var old_page = current_page
 		current_page += 1
 		_transition_page(old_page, current_page, -1)
@@ -609,6 +611,7 @@ func _on_next_kiri_pressed():
 	if tutorial_active or is_animating:
 		return
 	if current_page > 0:
+		AudioDirector.play_sfx(&"swipe")
 		var old_page = current_page
 		current_page -= 1
 		_transition_page(old_page, current_page, 1)
@@ -1234,6 +1237,7 @@ func _on_bar_gui_input(ev: InputEvent, kertas: Control, bname: String, s_data: D
 		_show_bar_popup(kertas, bname, s_data)
 
 func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void:
+	AudioDirector.play_sfx(&"popup_open")
 	if next_kanan: next_kanan.hide()
 	if next_kiri: next_kiri.hide()
 	
@@ -1473,6 +1477,7 @@ func _start_button_wiggle(btn: Control, delay: float = 0.0, wiggle_type: String 
 func _show_trait_popup(kertas: Control, type: String, name: String, desc: String, on_close: Callable = Callable()) -> void:
 	if _active_popup and is_instance_valid(_active_popup):
 		return  # already open
+	AudioDirector.play_sfx(&"popup_open")
 
 	var vp: Vector2 = get_viewport_rect().size
 	var is_quirk := (type == "quirk")
@@ -1603,7 +1608,8 @@ func _show_trait_popup(kertas: Control, type: String, name: String, desc: String
 func _close_trait_popup(canvas: CanvasLayer, overlay: Control, popup: Control, on_close: Callable = Callable()) -> void:
 	if not is_instance_valid(canvas) or _active_popup != canvas:
 		return
-	
+	AudioDirector.play_sfx(&"popup_close")
+
 	# Mark as closing immediately to prevent double-calls
 	_active_popup = null
 	
@@ -1668,6 +1674,8 @@ func _arm_tutorial_badge(step_index: int) -> void:
 
 # ──────────────────────────────────────────────────────────────────────────────
 
+# No explicit SFX: UIPolish auto-plays `tap` on press and Transition
+# plays `whoosh` on the scene change. Adding a third would stack.
 func _on_belajar_pressed():
 	if belajar_button:
 		_animate_button_click_bounce(belajar_button)
@@ -1772,12 +1780,13 @@ func _on_approve_pressed(page_index: int):
 	if approved[page_index]:
 		return
 	if approved_count >= MAX_APPROVE:
+		AudioDirector.play_sfx(&"error")
 		print("Batas approve tercapai, tidak bisa approve murid lain")
 		return
 
 	var approve_btn = kertas_murid[page_index].get_node_or_null("Aprove")
 	var batal_btn = kertas_murid[page_index].get_node_or_null("Batal")
-	AudioDirector.play_sfx(&"confirm")
+	AudioDirector.play_sfx(&"stamp")
 	if approve_btn:
 		_animate_button_click_bounce(approve_btn,
 			DesignTokens.load_default().state_success)
@@ -1806,7 +1815,7 @@ func _on_batal_pressed(page_index: int):
 
 	var approve_btn = kertas_murid[page_index].get_node_or_null("Aprove")
 	var batal_btn = kertas_murid[page_index].get_node_or_null("Batal")
-	AudioDirector.play_sfx(&"cancel")
+	AudioDirector.play_sfx(&"unstamp")
 	if batal_btn:
 		_animate_button_click_bounce(batal_btn,
 			DesignTokens.load_default().state_danger)

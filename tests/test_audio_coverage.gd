@@ -68,3 +68,10 @@ func _scan_for_audio_loads(path: String, offenders: Array[String]) -> void:
 					break
 		name = dir.get_next()
 	dir.list_dir_end()
+
+
+func test_student_card_interactions_have_sfx() -> void:
+	var src := _source("res://Scripts/StudentCard/student_card.gd")
+	for id in ["swipe", "stamp", "unstamp", "popup_open", "popup_close"]:
+		assert_true(src.contains('play_sfx(&"%s")' % id),
+			"student_card must play sfx: " + id)

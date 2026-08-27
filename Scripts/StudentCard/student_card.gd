@@ -9,23 +9,8 @@ extends Control
 @export var icon_olahraga: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg")
 
 # ================= TRAIT DESCRIPTIONS =================
-
-const QUIRK_DESCRIPTIONS: Dictionary = {
-	"Kutu Buku":     "Nilai Akademis naik 15% lebih cepat saat dijadwalkan kegiatan Akademis.",
-	"Semangat Juang":"Tidak mudah lelah — biaya Energi berkurang 10% per sesi Olahraga.",
-	"Penasaran":     "Seni Budaya & Akademis sama-sama meningkat lebih merata per minggu.",
-	"Penyendiri":    "Lebih efektif sendiri — sesi Akademis solo memberi +5% bonus nilai.",
-	"Biang Onar":    "Ada peluang kecil mengganggu murid lain saat dijadwalkan bersama.",
-	"Pekerja Keras": "Skill growth +10% tapi Energy berkurang lebih cepat setiap minggu."
-}
-
-const PERSONA_DESCRIPTIONS: Dictionary = {
-	"Persona Tekun":   "Konsisten belajar — tidak kehilangan progress meski Mood sedang rendah.",
-	"Persona Aktif":   "Butuh minimal 1 sesi Olahraga per minggu atau Mood turun otomatis.",
-	"Persona Kreatif": "Seni Budaya memberi bonus ganda jika dijadwalkan 2x atau lebih seminggu.",
-	"Persona Pendiam": "Mood naik lebih lambat dalam kegiatan kelompok, tapi Akademis lebih stabil.",
-	"Persona Santai":  "Perlu 1 sesi Istirahat per minggu atau Energi drop drastis akhir minggu."
-}
+# QUIRK_DESCRIPTIONS / PERSONA_DESCRIPTIONS now live on StudentCardView;
+# use StudentCardView.quirk_description()/persona_description().
 
 # ================= TOKENS =================
 
@@ -880,62 +865,10 @@ func _populate_ui_from_data():
 		var kertas = kertas_murid[i]
 		if not kertas:
 			continue
-			
-		var s_data = student_data_list[i]
-		
-		# Update Name
-		var name_label = kertas.get_node_or_null("Nama")
-		if name_label and name_label is Label:
-			name_label.text = s_data.get("name", "Unknown")
-			
-		# Update Quirk (KutuBuku)
-		var quirk_label = kertas.get_node_or_null("KutuBuku")
-		if quirk_label and quirk_label is Label:
-			var quirk_text = s_data.get("quirk", "")
-			quirk_label.text = ("Quirk " + quirk_text) if quirk_text != "" else ""
-			
-		# Update Persona (KutuBuku2)
-		var persona_label = kertas.get_node_or_null("KutuBuku2")
-		if persona_label and persona_label is Label:
-			persona_label.text = s_data.get("persona", "")
-			
-		# Update Profil
-		var profil_label = kertas.get_node_or_null("Profil")
-		if profil_label and profil_label is Label:
-			var p_text = "Nama: " + s_data.get("name", "") + "\n\n"
-			p_text += s_data.get("profil", "")
-			profil_label.text = p_text
-			
-		# Update Portrait Texture
-		var portrait_node = kertas.get_node_or_null("TextureRect")
-		if portrait_node and portrait_node is TextureRect:
-			var p_path = s_data.get("portrait", "")
-			if p_path != "" and ResourceLoader.exists(p_path):
-				portrait_node.texture = load(p_path)
-				
-		# Update ProgressBars
-		var kp1 = kertas.get_node_or_null("Kepribadian1")
-		if kp1 and kp1 is ProgressBar:
-			kp1.value = s_data.get("kepribadian2", 0)
-		var kp2 = kertas.get_node_or_null("Kepribadian2")
-		if kp2 and kp2 is ProgressBar:
-			kp2.value = s_data.get("kepribadian1", 0)
-		var ak1 = kertas.get_node_or_null("Akademis1")
-		if ak1 and ak1 is ProgressBar:
-			ak1.value = s_data.get("akademis1", 0)
-		var ak2 = kertas.get_node_or_null("Akademis2")
-		if ak2 and ak2 is ProgressBar:
-			ak2.value = s_data.get("akademis2", 0)
-		var ak3 = kertas.get_node_or_null("Akademis3")
-		if ak3 and ak3 is ProgressBar:
-			ak3.value = s_data.get("akademis3", 0)
 
-		# ── Upgrade bar visuals & replace trait labels with animated badges ──
-		_resize_and_style_bars(kertas, s_data)
-		_create_trait_badge(kertas, "KutuBuku", "quirk",
-			"⚡  QUIRK: " + s_data.get("quirk", "—"), s_data)
-		_create_trait_badge(kertas, "KutuBuku2", "persona",
-			"🌟  PERSONA: " + s_data.get("persona", "—").replace("Persona ", ""), s_data)
+		StudentCardView.populate(kertas, student_data_list[i], icon_magnify,
+			_on_bar_gui_input, _on_btn_mouse_entered, _on_btn_mouse_exited,
+			_on_trait_btn_pressed)
 
 var student_data_list = [
 	{
@@ -1095,138 +1028,6 @@ const BAR_CATEGORY := {
 func _get_bar_color(bname: String) -> Color:
 	var tok := DesignTokens.load_default()
 	return tok.category_color(BAR_CATEGORY.get(bname, ""))
-
-func _resize_and_style_bars(kertas: Control, s_data: Dictionary) -> void:
-	const BAR_HEIGHT := 68.0
-	const BAR_GAP    := 18.0
-	const START_Y    := 890.0
-
-	var bar_names = ["Kepribadian1", "Kepribadian2", "Akademis1", "Akademis2", "Akademis3"]
-	var bar_index := { 
-		"Kepribadian1": 0, 
-		"Kepribadian2": 1,
-		"Akademis1": 2, 
-		"Akademis2": 3, 
-		"Akademis3": 4 
-	}
-
-	
-	for bname in bar_names:
-		var bar = kertas.get_node_or_null(bname)
-		if not bar or not bar is ProgressBar:
-			continue
-
-		
-		var idx: int = bar_index[bname]
-
-		
-		var current_val = 0.0
-		var max_val = 100.0
-		if bname == "Kepribadian1":
-			current_val = s_data.get("kepribadian1", 0)
-			max_val = 100.0
-		elif bname == "Kepribadian2":
-			current_val = s_data.get("kepribadian2", 0)
-			max_val = 100.0
-		elif bname == "Akademis1":
-			current_val = s_data.get("akademis1", 0)
-		elif bname == "Akademis2":
-			current_val = s_data.get("akademis2", 0)
-		elif bname == "Akademis3":
-			current_val = s_data.get("akademis3", 0)
-			
-		# Style stat name label (MOOD, ENERGY, AKADEMIS, SENI BUDAYA, OLAHRAGA).
-		# The old code picked between a dark and a light text color based on
-		# how full the bar was, so a label could flip color mid-run. The
-		# BarLabel theme variation replaces that with one legible treatment
-		# (white glyph, dark rim) that reads over both the track and every
-		# category fill, so no per-node override is needed at all.
-		var stat_lbl = bar.get_node_or_null("Label")
-		if stat_lbl and stat_lbl is Label:
-			stat_lbl.set_anchors_preset(Control.PRESET_TOP_LEFT)
-			stat_lbl.offset_left = 24
-			stat_lbl.offset_top = 0
-			stat_lbl.offset_right = 300
-			stat_lbl.offset_bottom = BAR_HEIGHT
-			stat_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-			stat_lbl.theme_type_variation = &"BarLabel"
-
-		# The bars are StatBar nodes now: the pill track and the white
-		# fill come from the StatBar theme variation, and the per-category
-		# tint from StatBar.category (set in the scene) via self_modulate.
-		# Nothing here needs to build a stylebox any more. Animating the
-		# value through set_stat() also gives each bar a fill sweep on
-		# entry instead of snapping to its final width.
-		if bar is StatBar:
-			bar.set_stat(current_val)
-		else:
-			bar.value = current_val
-		bar.show_percentage = false
-
-		# Make it obviously clickable
-		bar.mouse_filter = Control.MOUSE_FILTER_STOP
-		bar.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		
-		# Ensure clean event binding for bar
-		var callable = _on_bar_gui_input.bind(kertas, bname, s_data)
-		if bar.has_meta("bar_gui_callable"):
-			bar.gui_input.disconnect(bar.get_meta("bar_gui_callable"))
-		bar.gui_input.connect(callable)
-		bar.set_meta("bar_gui_callable", callable)
-		
-		# Add a magnifying glass icon (Lup)
-		var info_icon = bar.get_node_or_null("InfoIcon")
-		if not info_icon:
-			if icon_magnify:
-				var tex = TextureRect.new()
-				tex.texture = icon_magnify
-				tex.name = "InfoIcon"
-				tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				info_icon = tex
-			else:
-				var lbl = Label.new()
-				lbl.name = "InfoIcon"
-				lbl.text = "??"
-				lbl.theme_type_variation = &"TitleLabel"
-				info_icon = lbl
-
-			info_icon.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-			info_icon.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-			info_icon.custom_minimum_size = Vector2(56, 56)
-			info_icon.offset_left = 16
-			info_icon.offset_right = 72
-			info_icon.offset_top = -28
-			info_icon.offset_bottom = 28
-			
-			info_icon.mouse_filter = Control.MOUSE_FILTER_STOP
-			info_icon.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-			
-			bar.add_child(info_icon)
-			_start_button_wiggle(info_icon, idx * 0.2, "big")
-			
-		if info_icon.has_meta("icon_gui_callable"):
-			info_icon.gui_input.disconnect(info_icon.get_meta("icon_gui_callable"))
-		info_icon.gui_input.connect(callable)
-		info_icon.set_meta("icon_gui_callable", callable)
-
-		# Add or update numerical value label
-		var val_lbl = bar.get_node_or_null("ValueLabel")
-		if not val_lbl:
-			val_lbl = Label.new()
-			val_lbl.name = "ValueLabel"
-			bar.add_child(val_lbl)
-		
-		val_lbl.text = "%d / %d" % [int(current_val), int(max_val)]
-		val_lbl.set_anchors_preset(Control.PRESET_TOP_LEFT)
-		val_lbl.offset_left = 10
-		val_lbl.offset_top = 0
-		val_lbl.offset_right = bar.size.x - 24
-		val_lbl.offset_bottom = BAR_HEIGHT
-		val_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		val_lbl.theme_type_variation = &"BarLabel"
 
 func _on_bar_gui_input(ev: InputEvent, kertas: Control, bname: String, s_data: Dictionary) -> void:
 	if tutorial_active or is_animating or _active_popup != null:
@@ -1403,74 +1204,6 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 		if (ev is InputEventMouseButton and ev.pressed) or (ev is InputEventScreenTouch and ev.pressed):
 			_close_trait_popup(canvas, overlay, popup, Callable())
 	)
-func _create_trait_badge(kertas: Control, node_name: String, type: String, badge_text: String, s_data: Dictionary) -> void:
-	var btn = kertas.get_node_or_null(node_name)
-	if not btn or not btn is Button:
-		return
-
-	btn.text = badge_text
-
-	# Was: a four-state loop building either a tinted SVG nine-patch or a
-	# hand-rolled pill StyleBoxFlat per state. The scene already assigns
-	# QuirkBadge / PersonaBadge; re-asserting it here keeps the badge
-	# correct even if a page is built without those scene properties.
-	btn.theme_type_variation = &"QuirkBadge" if type == "quirk" else &"PersonaBadge"
-
-	btn.pivot_offset = btn.size / 2.0
-
-	if not btn.mouse_entered.is_connected(_on_btn_mouse_entered.bind(btn)):
-		btn.mouse_entered.connect(_on_btn_mouse_entered.bind(btn))
-	if not btn.mouse_exited.is_connected(_on_btn_mouse_exited.bind(btn)):
-		btn.mouse_exited.connect(_on_btn_mouse_exited.bind(btn))
-	var trait_name: String = s_data.get(type, "")
-	if not btn.pressed.is_connected(_on_trait_btn_pressed):
-		btn.pressed.connect(_on_trait_btn_pressed.bind(kertas, type, trait_name))
-
-	var anim_delay = randf_range(0.4, 0.8) if type == "quirk" else randf_range(1.2, 1.6)
-	_start_button_wiggle(btn, anim_delay, "medium")
-		
- 
-func _start_button_wiggle(btn: Control, delay: float = 0.0, wiggle_type: String = "small") -> void:
-	if not is_instance_valid(btn):
-		return
-	btn.pivot_offset = btn.size / 2.0
-	
-	# Kill existing wiggle tween if it exists on this button to prevent duplicates
-	if btn.has_meta("wiggle_tween"):
-		var old_tw = btn.get_meta("wiggle_tween")
-		if is_instance_valid(old_tw):
-			old_tw.kill()
-
-	var tw := create_tween().set_loops()
-	btn.set_meta("wiggle_tween", tw)
-	
-	if delay > 0:
-		tw.tween_interval(delay)
-	
-	if wiggle_type == "big":
-		tw.tween_property(btn, "scale", Vector2(1.3, 1.3), 0.2)
-		tw.tween_property(btn, "rotation_degrees", 15.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", -15.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", 10.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", -10.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", 0.0, 0.1)
-		tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2)
-		tw.tween_interval(2.0)
-	elif wiggle_type == "medium":
-		tw.tween_property(btn, "scale", Vector2(1.12, 1.12), 0.2)
-		tw.tween_property(btn, "rotation_degrees", 8.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", -8.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", 5.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", -5.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", 0.0, 0.1)
-		tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2)
-		tw.tween_interval(3.5)
-	else:
-		tw.tween_property(btn, "rotation_degrees", 5.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", -5.0, 0.1)
-		tw.tween_property(btn, "rotation_degrees", 0.0, 0.1)
-		tw.tween_interval(2.0)
-
 # ================= TRAIT POPUP =================
 
 func _show_trait_popup(kertas: Control, type: String, name: String, desc: String, on_close: Callable = Callable()) -> void:
@@ -1656,9 +1389,11 @@ func _arm_tutorial_badge(step_index: int) -> void:
 	var trait_key: String = s_data.get("quirk" if badge_type == "quirk" else "persona", "")
 	var desc: String
 	if badge_type == "quirk":
-		desc = QUIRK_DESCRIPTIONS.get(trait_key, "Tidak ada info.")
+		desc = StudentCardView.quirk_description(trait_key)
 	else:
-		desc = PERSONA_DESCRIPTIONS.get(trait_key, "Tidak ada info.")
+		desc = StudentCardView.persona_description(trait_key)
+	if desc == "":
+		desc = "Tidak ada info."
 
 	var handler := func():
 		# The badge's own pressed handler runs first and sets _active_popup synchronously.
@@ -1909,8 +1644,8 @@ func _on_trait_btn_pressed(kertas: Control, type: String, trait_name: String):
 			return
 			
 	if type == "quirk":
-		var desc = QUIRK_DESCRIPTIONS.get(trait_name, "Tidak ada info.")
-		_show_trait_popup(kertas, "quirk", trait_name, desc)
+		var desc = StudentCardView.quirk_description(trait_name)
+		_show_trait_popup(kertas, "quirk", trait_name, desc if desc != "" else "Tidak ada info.")
 	else:
-		var desc = PERSONA_DESCRIPTIONS.get(trait_name, "Tidak ada info.")
-		_show_trait_popup(kertas, "persona", trait_name, desc)
+		var desc = StudentCardView.persona_description(trait_name)
+		_show_trait_popup(kertas, "persona", trait_name, desc if desc != "" else "Tidak ada info.")

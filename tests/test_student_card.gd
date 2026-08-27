@@ -154,6 +154,37 @@ func test_motion_and_audio_feedback_are_wired() -> void:
 		"reject must play the unstamp sfx")
 
 
+# ------------------------------------------------------ StudentCardView
+
+func test_student_card_view_class_exists() -> void:
+	assert_true(ResourceLoader.exists("res://Scripts/StudentCard/StudentCardView.gd"),
+		"the shared card view must exist")
+
+func test_quirk_descriptions_are_available_from_the_view() -> void:
+	assert_true(StudentCardView.quirk_description("Kutu Buku") != "",
+		"Kutu Buku must have a description")
+	assert_true(StudentCardView.quirk_description("TidakAda") == "",
+		"an unknown quirk yields an empty description, not an error")
+
+func test_persona_descriptions_are_available_from_the_view() -> void:
+	assert_true(StudentCardView.persona_description("Persona Tekun") != "",
+		"Persona Tekun must have a description")
+
+func test_student_card_delegates_to_the_view() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	assert_true(src.contains("StudentCardView."),
+		"student_card must consume the shared view, not duplicate it")
+
+func test_tutorial_target_node_paths_are_unchanged() -> void:
+	## The tutorial steps target node paths by string. The extraction must
+	## not move any of them.
+	var scene := (load("res://Scenes/StudentCard/student_card.tscn") as PackedScene).instantiate()
+	for path in ["KertasMurid1/Kepribadian1", "KertasMurid1/KutuBuku"]:
+		assert_true(scene.get_node_or_null(path) != null,
+			"tutorial target must still resolve: " + path)
+	scene.free()
+
+
 # ----------------------------------------------------------------- helper
 
 ## Copied verbatim from tests/test_main_menu.gd. Godot 4.6's Control has

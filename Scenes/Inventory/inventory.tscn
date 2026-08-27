@@ -1,0 +1,466 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Inventory/inventory.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/return.png" id="2_return"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/Koin.png" id="3_coin"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/bg_inventory.png" id="bg_inv_tex"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/panel_header.png" id="panel_header_tex"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/panel_sidebar.png" id="panel_sidebar_tex"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_header"]
+content_margin_left = 24.0
+content_margin_top = 10.0
+content_margin_right = 24.0
+content_margin_bottom = 10.0
+texture = ExtResource("panel_header_tex")
+texture_margin_left = 32.0
+texture_margin_top = 32.0
+texture_margin_right = 32.0
+texture_margin_bottom = 32.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sidebar"]
+content_margin_left = 12.0
+content_margin_top = 30.0
+content_margin_right = 12.0
+content_margin_bottom = 30.0
+texture = ExtResource("panel_sidebar_tex")
+texture_margin_left = 32.0
+texture_margin_top = 32.0
+texture_margin_right = 32.0
+texture_margin_bottom = 32.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_detail"]
+content_margin_left = 30.0
+content_margin_top = 20.0
+content_margin_right = 30.0
+content_margin_bottom = 20.0
+bg_color = Color(0.08, 0.1, 0.22, 1)
+border_width_top = 2
+border_color = Color(0.2, 0.2, 0.45, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_use_normal"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.25, 0.55, 1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_use_pressed"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.2, 0.44, 0.8, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_use_hover"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.36, 0.62, 1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_panel"]
+content_margin_left = 32.0
+content_margin_top = 28.0
+content_margin_right = 32.0
+content_margin_bottom = 28.0
+bg_color = Color(0.08, 0.09, 0.22, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.38, 0.65, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_slot"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.12, 0.14, 0.3, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.45, 0.75, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stepper_btn"]
+bg_color = Color(0.15, 0.25, 0.45, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stepper_box"]
+bg_color = Color(0.05, 0.07, 0.16, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.3, 0.5, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cancel_btn"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.18, 0.2, 0.28, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ok_btn"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.25, 0.55, 1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="Inventory" type="Control" unique_id=1947637416]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1272848589]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("bg_inv_tex")
+expand_mode = 1
+
+[node name="MainLayout" type="VBoxContainer" parent="." unique_id=91687068]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="MainLayout" unique_id=862398111]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_header")
+
+[node name="HeaderContent" type="HBoxContainer" parent="MainLayout/Header" unique_id=2136640895]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="TextureButton" parent="MainLayout/Header/HeaderContent" unique_id=844595689]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+size_flags_vertical = 4
+texture_normal = ExtResource("2_return")
+ignore_texture_size = true
+stretch_mode = 4
+
+[node name="TitleLabel" type="Label" parent="MainLayout/Header/HeaderContent" unique_id=1975862194]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 48
+text = "INVENTORY"
+
+[node name="HeaderSpacer" type="Control" parent="MainLayout/Header/HeaderContent" unique_id=1362390788]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CoinDisplay" type="HBoxContainer" parent="MainLayout/Header/HeaderContent" unique_id=760379935]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="CoinIcon" type="TextureRect" parent="MainLayout/Header/HeaderContent/CoinDisplay" unique_id=1306933828]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("3_coin")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoinLabel" type="Label" parent="MainLayout/Header/HeaderContent/CoinDisplay" unique_id=637941849]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0, 1)
+theme_override_font_sizes/font_size = 36
+text = "0"
+vertical_alignment = 1
+
+[node name="Body" type="HBoxContainer" parent="MainLayout" unique_id=934401341]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="Sidebar" type="PanelContainer" parent="MainLayout/Body" unique_id=1163818199]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_sidebar")
+
+[node name="CategoryList" type="VBoxContainer" parent="MainLayout/Body/Sidebar" unique_id=122800000]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="CatSemua" type="Button" parent="MainLayout/Body/Sidebar/CategoryList" unique_id=1431845504]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Semua"
+
+[node name="CatBuku" type="Button" parent="MainLayout/Body/Sidebar/CategoryList" unique_id=1874598619]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Buku"
+
+[node name="CatOlahraga" type="Button" parent="MainLayout/Body/Sidebar/CategoryList" unique_id=1667074599]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Olahraga"
+
+[node name="CatMakanan" type="Button" parent="MainLayout/Body/Sidebar/CategoryList" unique_id=1799887766]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Makanan"
+
+[node name="GridMargin" type="MarginContainer" parent="MainLayout/Body" unique_id=2029997179]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 10
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MainLayout/Body/GridMargin" unique_id=286301384]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="GridContainer" type="GridContainer" parent="MainLayout/Body/GridMargin/ScrollContainer" unique_id=1361321309]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 3
+
+[node name="DetailPanel" type="PanelContainer" parent="MainLayout" unique_id=542376954]
+visible = false
+custom_minimum_size = Vector2(0, 240)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_detail")
+
+[node name="DetailContent" type="HBoxContainer" parent="MainLayout/DetailPanel" unique_id=1698184404]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="DetailIcon" type="TextureRect" parent="MainLayout/DetailPanel/DetailContent" unique_id=752806945]
+custom_minimum_size = Vector2(140, 140)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 6
+
+[node name="DetailSeparator" type="ColorRect" parent="MainLayout/DetailPanel/DetailContent" unique_id=1275122887]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.25, 0.25, 0.45, 1)
+
+[node name="DetailInfo" type="VBoxContainer" parent="MainLayout/DetailPanel/DetailContent" unique_id=786771094]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="DetailName" type="Label" parent="MainLayout/DetailPanel/DetailContent/DetailInfo" unique_id=282356120]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 34
+text = "Item Name"
+
+[node name="DetailDesc" type="Label" parent="MainLayout/DetailPanel/DetailContent/DetailInfo" unique_id=792806787]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 24
+text = "Item description goes here."
+autowrap_mode = 2
+
+[node name="UseButton" type="Button" parent="MainLayout/DetailPanel/DetailContent" unique_id=728157248]
+custom_minimum_size = Vector2(200, 80)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_colors/font_pressed_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_use_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_use_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_use_hover")
+text = "Gunakan"
+
+[node name="UsePopup" type="ColorRect" parent="." unique_id=987654321]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="CenterContainer" type="CenterContainer" parent="UsePopup" unique_id=987654322]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PopupPanel" type="PanelContainer" parent="UsePopup/CenterContainer" unique_id=987654323]
+custom_minimum_size = Vector2(560, 600)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_popup_panel")
+
+[node name="VBox" type="VBoxContainer" parent="UsePopup/CenterContainer/PopupPanel" unique_id=987654324]
+layout_mode = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="PopupTitle" type="Label" parent="UsePopup/CenterContainer/PopupPanel/VBox" unique_id=987654325]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 36
+text = "Gunakan Item"
+horizontal_alignment = 1
+
+[node name="ItemPreviewContainer" type="CenterContainer" parent="UsePopup/CenterContainer/PopupPanel/VBox" unique_id=987654326]
+layout_mode = 2
+
+[node name="ItemSlot" type="PanelContainer" parent="UsePopup/CenterContainer/PopupPanel/VBox/ItemPreviewContainer" unique_id=987654327]
+custom_minimum_size = Vector2(170, 170)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_popup_slot")
+
+[node name="ItemIcon" type="TextureRect" parent="UsePopup/CenterContainer/PopupPanel/VBox/ItemPreviewContainer/ItemSlot" unique_id=987654328]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="ItemBadge" type="Label" parent="UsePopup/CenterContainer/PopupPanel/VBox/ItemPreviewContainer/ItemSlot" unique_id=987654329]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_colors/font_color = Color(1, 0.85, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 24
+text = "×1"
+
+[node name="ItemNameLabel" type="Label" parent="UsePopup/CenterContainer/PopupPanel/VBox" unique_id=987654330]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_font_sizes/font_size = 30
+text = "Item Name"
+horizontal_alignment = 1
+
+[node name="StepperHBox" type="HBoxContainer" parent="UsePopup/CenterContainer/PopupPanel/VBox" unique_id=987654331]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="MinusButton" type="Button" parent="UsePopup/CenterContainer/PopupPanel/VBox/StepperHBox" unique_id=987654332]
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_stepper_btn")
+text = "−"
+
+[node name="QtyPanel" type="PanelContainer" parent="UsePopup/CenterContainer/PopupPanel/VBox/StepperHBox" unique_id=987654333]
+custom_minimum_size = Vector2(160, 75)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stepper_box")
+
+[node name="QtyLabel" type="Label" parent="UsePopup/CenterContainer/PopupPanel/VBox/StepperHBox/QtyPanel" unique_id=987654334]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 34
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlusButton" type="Button" parent="UsePopup/CenterContainer/PopupPanel/VBox/StepperHBox" unique_id=987654335]
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_stepper_btn")
+text = "+"
+
+[node name="ButtonsHBox" type="HBoxContainer" parent="UsePopup/CenterContainer/PopupPanel/VBox" unique_id=987654336]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="CancelButton" type="Button" parent="UsePopup/CenterContainer/PopupPanel/VBox/ButtonsHBox" unique_id=987654337]
+custom_minimum_size = Vector2(190, 75)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_cancel_btn")
+text = "Batal"
+
+[node name="OkButton" type="Button" parent="UsePopup/CenterContainer/PopupPanel/VBox/ButtonsHBox" unique_id=987654338]
+custom_minimum_size = Vector2(190, 75)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_ok_btn")
+text = "OK"

@@ -1352,14 +1352,14 @@ func _scene_name(scene: PackedScene) -> String:
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _show_event_warning(event_label: String, accent_color: Color) -> void:
-	AudioDirector.play_sfx(&"popup_open")
 	var warning_scene = event_warning_scene
 	if warning_scene == null:
 		warning_scene = load("res://Scenes/SchoolSimulation/EventWarning.tscn")
-		
+
 	if warning_scene == null:
 		return
-		
+
+	AudioDirector.play_sfx(&"popup_open")
 	var warning_instance = warning_scene.instantiate()
 	add_child(warning_instance)
 	
@@ -1370,14 +1370,14 @@ func _show_event_warning(event_label: String, accent_color: Color) -> void:
 		warning_instance.queue_free()
 
 func _show_event_announcement(event_label: String) -> void:
-	AudioDirector.play_sfx(&"popup_open")
 	var ann_scene = event_announcement_scene
 	if ann_scene == null:
 		ann_scene = load("res://Scenes/SchoolSimulation/EventAnnouncement.tscn")
-		
+
 	if ann_scene == null:
 		return
-		
+
+	AudioDirector.play_sfx(&"popup_open")
 	var ann_instance = ann_scene.instantiate()
 	add_child(ann_instance)
 	

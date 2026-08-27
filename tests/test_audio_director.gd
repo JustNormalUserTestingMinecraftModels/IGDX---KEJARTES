@@ -154,3 +154,55 @@ func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
 			"popup_close", "select", "error", "reward"]:
 		assert_true(_director.has_sfx(StringName(id)),
 			"shipped scene must fill sfx slot: " + id)
+
+
+func test_bgm_loop_tracks_actually_loop() -> void:
+	# Every track meant to play forever must genuinely loop at the
+	# resource level. AudioStreamMP3 exposes a simple `loop` bool;
+	# AudioStreamWAV exposes `loop_mode` (an enum where 0 == disabled).
+	var should_loop := [
+		"res://Assets/Audio/BGM/titlescreen.mp3",
+		"res://Assets/Audio/BGM/introcutscene.mp3",
+		"res://Assets/Audio/BGM/schoolsimulation.mp3",
+		"res://Assets/Audio/BGM/result_win.mp3",
+		"res://Assets/Audio/BGM/result_lose.wav",
+		"res://Assets/Audio/BGM/minigame_olahraga.mp3",
+		"res://Assets/Audio/BGM/minigame_senibudaya_batik.mp3",
+		"res://Assets/Audio/BGM/minigame_senibudaya_menari.mp3",
+	]
+	for path in should_loop:
+		var stream: AudioStream = load(path)
+		assert_true(stream != null, "must load: " + path)
+		if stream is AudioStreamMP3:
+			assert_true((stream as AudioStreamMP3).loop,
+				"must loop (mp3): " + path)
+		elif stream is AudioStreamWAV:
+			assert_true((stream as AudioStreamWAV).loop_mode != AudioStreamWAV.LOOP_DISABLED,
+				"must loop (wav): " + path)
+		else:
+			assert_true(false, "unexpected stream type for " + path)
+
+
+func test_bgm_chain_tracks_do_not_loop() -> void:
+	# Playlist and sequence tracks must NOT auto-loop, or their `finished`
+	# signal never fires and AudioDirector can never advance them.
+	var should_not_loop := [
+		"res://Assets/Audio/BGM/loby_song1.mp3",
+		"res://Assets/Audio/BGM/loby_song2.mp3",
+		"res://Assets/Audio/BGM/loby_song3.mp3",
+		"res://Assets/Audio/BGM/loby_song4.mp3",
+		"res://Assets/Audio/BGM/minigame_akademis_1.wav",
+		"res://Assets/Audio/BGM/minigame_akademis_2.wav",
+		"res://Assets/Audio/BGM/minigame_akademis_3.wav",
+	]
+	for path in should_not_loop:
+		var stream: AudioStream = load(path)
+		assert_true(stream != null, "must load: " + path)
+		if stream is AudioStreamMP3:
+			assert_true(not (stream as AudioStreamMP3).loop,
+				"must NOT loop (mp3): " + path)
+		elif stream is AudioStreamWAV:
+			assert_true((stream as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_DISABLED,
+				"must NOT loop (wav): " + path)
+		else:
+			assert_true(false, "unexpected stream type for " + path)

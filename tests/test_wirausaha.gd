@@ -10,6 +10,7 @@ func suite_name() -> String:
 	return "wirausaha"
 
 const _JADWAL_SCENE := "res://Scenes/AturJadwal/atur_jadwal.tscn"
+const _SCHOOL_DAY_SCRIPT := "res://Scripts/SchoolSimulation/SchoolDay.gd"
 
 ## Builds a throwaway approved_students roster and returns the caller's
 ## original one so each test can restore it.
@@ -145,27 +146,18 @@ func test_tired_students_earn_less() -> void:
 ## survived forcing ResourceLoader.load(..., CACHE_MODE_REPLACE) to
 ## recompile from disk on every call).
 ##
-## `_pay_out_wirausaha` never reads or writes `self` -- it only touches
-## the GameState singleton -- so it is declared `static` on SchoolDay.gd.
-## A static call is dispatched on the class itself and never instantiates
-## anything, so it never enters the placeholder path above.
-##
-## Reaching it needs a real, compiler-recognized class identifier, though
-## -- not just any handle to the Script resource. A plain `load()` (or a
-## `const` initialized with `preload()`) is typed as the generic `GDScript`
-## resource wrapper, and calling a user-defined static method on that
-## generic type by name fails with the same "Nonexistent function" error
-## as the placeholder case above, whether written as
-## `script._pay_out_wirausaha()` or `script.call("_pay_out_wirausaha")`
-## (both verified empirically). What actually resolves a static call is a
-## registered global class name, so SchoolDay.gd declares
-## `class_name SchoolDay` and these tests call `SchoolDay._pay_out_wirausaha()`
-## directly, the same way any other global-class static method is called.
+## `_pay_out_wirausaha` is a plain instance method on SchoolDay.gd. Loading
+## the script directly with `load()` and calling `.new()` constructs a real
+## instance whose custom methods -- including this one -- are callable
+## normally; only instancing the .tscn (PackedScene.instantiate()) inside
+## the editor process hits Godot's placeholder-script substitution, which is
+## why tests/test_school_day.gd avoids calling instance methods on its
+## instantiated scene and instead reads source text or scene-declared state.
 
 func test_payout_adds_the_total_to_player_money() -> void:
 	var original_money := GameState.player_money
 	GameState.pending_earnings = {1: 300, 2: 250}
-	var paid: int = SchoolDay._pay_out_wirausaha()
+	var paid: int = load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha()
 	assert_eq(paid, 550, "payout returns the summed total")
 	assert_eq(GameState.player_money, original_money + 550, "money increases by the total")
 	GameState.pending_earnings.clear()
@@ -174,7 +166,7 @@ func test_payout_adds_the_total_to_player_money() -> void:
 func test_payout_clears_pending_earnings() -> void:
 	var original_money := GameState.player_money
 	GameState.pending_earnings = {1: 100}
-	SchoolDay._pay_out_wirausaha()
+	load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha()
 	assert_true(GameState.pending_earnings.is_empty(),
 		"earnings are paid once, then cleared")
 	GameState.player_money = original_money
@@ -182,7 +174,7 @@ func test_payout_clears_pending_earnings() -> void:
 func test_payout_of_nothing_is_zero_and_harmless() -> void:
 	var original_money := GameState.player_money
 	GameState.pending_earnings.clear()
-	assert_eq(SchoolDay._pay_out_wirausaha(), 0, "no Wirausaha days pays nothing")
+	assert_eq(load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha(), 0, "no Wirausaha days pays nothing")
 	assert_eq(GameState.player_money, original_money, "money is untouched")
 
 func test_week_complete_pays_out() -> void:

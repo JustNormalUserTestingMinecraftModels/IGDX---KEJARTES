@@ -1,5 +1,4 @@
 extends Control
-class_name SchoolDay
 
 signal simulation_finished
 signal _minigame_result(won: bool)  # internal: bridges minigame signals back to _play_minigame
@@ -1100,14 +1099,7 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 ## every assigned student land at once, so the player plans a week of
 ## trading stats for money rather than watching coins trickle in.
 ## Returns the total paid, for the summary line.
-## Static: it only touches the GameState singleton, never `self`, which
-## also lets tests call it on the loaded script class directly without
-## instantiating SchoolDay -- instantiating a non-@tool script inside the
-## editor process (as the MCP test runner does) hits Godot's placeholder-
-## script substitution, silently swapping in an instance whose custom
-## methods don't exist ("Nonexistent function" on any real call). A static
-## call never instantiates anything, so it never hits that substitution.
-static func _pay_out_wirausaha() -> int:
+func _pay_out_wirausaha() -> int:
 	var total: int = 0
 	for student_id in GameState.pending_earnings:
 		total += GameState.pending_earnings[student_id]

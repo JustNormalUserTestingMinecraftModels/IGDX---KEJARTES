@@ -39,7 +39,7 @@ func test_sfx_and_bgm_slots_are_exported() -> void:
 			"sfx_fail", "sfx_coin", "sfx_whoosh", "sfx_pop",
 			"sfx_swipe", "sfx_stamp", "sfx_unstamp", "sfx_popup_open",
 			"sfx_popup_close", "sfx_select", "sfx_error", "sfx_reward",
-			"bgm_titlescreen", "bgm_lobby", "bgm_simulation", "bgm_result_win"]:
+			"bgm_titlescreen", "bgm_simulation", "bgm_result_win"]:
 		assert_true(names.has(slot), "must expose export slot: " + slot)
 
 
@@ -412,3 +412,63 @@ func test_non_akademis_minigame_finished_signal_is_a_no_op() -> void:
 	_director._on_minigame_bgm_finished()
 	assert_true(_director._bgm_minigame.stream == stream_before,
 		"finished on a non-sequence track must not change the stream")
+
+
+func test_lobby_playlist_slot_is_exported_and_old_single_slot_is_gone() -> void:
+	var props := _director.get_property_list()
+	var names: Array[String] = []
+	for p in props:
+		names.append(p.name)
+	assert_true(names.has("bgm_lobby_playlist"),
+		"must expose export slot: bgm_lobby_playlist")
+	assert_true(not names.has("bgm_lobby"),
+		"single-track bgm_lobby must be replaced by the playlist array")
+
+
+func test_lobby_playlist_starts_a_track_on_play() -> void:
+	# See the typed-local note in test_akademis_sequence_plays_in_fixed_order_and_wraps.
+	var tracks: Array[AudioStream] = [
+		_make_test_stream(), _make_test_stream(), _make_test_stream(), _make_test_stream()
+	]
+	_director.bgm_lobby_playlist = tracks
+	_director.play_bgm_playlist(&"lobby", 0.0)
+	assert_true(_director._bgm_active.stream in _director.bgm_lobby_playlist,
+		"must start on one of the playlist's tracks")
+
+
+func test_lobby_playlist_never_repeats_the_immediately_previous_track() -> void:
+	# See the typed-local note in test_akademis_sequence_plays_in_fixed_order_and_wraps.
+	var tracks: Array[AudioStream] = [
+		_make_test_stream(), _make_test_stream(), _make_test_stream(), _make_test_stream()
+	]
+	_director.bgm_lobby_playlist = tracks
+	_director.play_bgm_playlist(&"lobby", 0.0)
+	var previous_index: int = _director.bgm_lobby_playlist.find(_director._bgm_active.stream)
+	for i in range(40):
+		var next_index: int = _director._pick_playlist_index(previous_index, _director.bgm_lobby_playlist.size())
+		assert_true(next_index != previous_index,
+			"iteration %d: must not repeat index %d" % [i, previous_index])
+		assert_true(next_index >= 0 and next_index < _director.bgm_lobby_playlist.size(),
+			"index must be in range: got " + str(next_index))
+		previous_index = next_index
+
+
+func test_lobby_playlist_finished_signal_advances_and_avoids_repeat() -> void:
+	# See the typed-local note in test_akademis_sequence_plays_in_fixed_order_and_wraps.
+	var tracks: Array[AudioStream] = [_make_test_stream(), _make_test_stream()]
+	_director.bgm_lobby_playlist = tracks
+	_director.play_bgm_playlist(&"lobby", 0.0)
+	var first_stream: AudioStream = _director._bgm_active.stream
+	# Simulate the track ending naturally.
+	_director._on_bgm_finished(_director._bgm_active)
+	assert_true(_director._bgm_active.stream != first_stream,
+		"with only 2 tracks, finishing one must switch to the other")
+
+
+func test_bgm_finished_signal_is_a_no_op_outside_playlist_mode() -> void:
+	_director.bgm_simulation = _make_test_stream()
+	_director.play_bgm(&"simulation", 0.0)
+	var stream_before: AudioStream = _director._bgm_active.stream
+	_director._on_bgm_finished(_director._bgm_active)
+	assert_true(_director._bgm_active.stream == stream_before,
+		"finished on a non-playlist bgm must not change the stream")

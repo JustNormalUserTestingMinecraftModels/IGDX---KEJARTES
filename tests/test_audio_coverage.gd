@@ -23,10 +23,6 @@ func _source(path: String) -> String:
 
 func test_every_screen_starts_its_bgm() -> void:
 	var expected := {
-		"res://Scripts/Lobby/loby.gd": "lobby",
-		"res://Scripts/StudentCard/student_card.gd": "lobby",
-		"res://Scripts/StudentList/student_list.gd": "lobby",
-		"res://Scripts/AturJadwal/atur_jadwal.gd": "lobby",
 		"res://Scripts/SchoolSimulation/SchoolDay.gd": "simulation",
 	}
 	for path in expected:
@@ -370,3 +366,17 @@ func test_school_day_pauses_and_resumes_around_minigames() -> void:
 			"AudioDirector.stop_minigame_bgm()", "AudioDirector.resume_bgm()"]:
 		assert_true(src.contains(needle),
 			"SchoolDay.gd must call: " + needle)
+
+
+func test_lobby_family_screens_use_the_playlist_not_plain_play_bgm() -> void:
+	for path in [
+		"res://Scripts/Lobby/loby.gd",
+		"res://Scripts/StudentCard/student_card.gd",
+		"res://Scripts/StudentList/student_list.gd",
+		"res://Scripts/AturJadwal/atur_jadwal.gd",
+	]:
+		var src := _source(path)
+		assert_true(src.contains('play_bgm_playlist(&"lobby")'),
+			path + " must start the lobby playlist")
+		assert_true(not src.contains('play_bgm(&"lobby")'),
+			path + " must not use the retired single-track lobby call")

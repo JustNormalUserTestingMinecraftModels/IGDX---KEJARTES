@@ -127,7 +127,7 @@ func _ready():
 
 	color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	AudioDirector.play_bgm(&"lobby")
+	AudioDirector.play_bgm_playlist(&"lobby")
 
 	if GameState.lobby_tutorial_completed or GameState.minggu_ke > 1:
 		GameState.lobby_tutorial_completed = true

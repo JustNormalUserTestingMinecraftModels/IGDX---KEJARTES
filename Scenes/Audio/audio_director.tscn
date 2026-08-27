@@ -27,6 +27,10 @@
 [ext_resource type="AudioStream" uid="uid://dxfrh64bbe1d2" path="res://Assets/Audio/BGM/minigame_akademis_1.wav" id="25_pkop0"]
 [ext_resource type="AudioStream" uid="uid://dvjl5mnl87pwg" path="res://Assets/Audio/BGM/minigame_akademis_2.wav" id="26_7i31u"]
 [ext_resource type="AudioStream" uid="uid://ba05r44voyqln" path="res://Assets/Audio/BGM/minigame_akademis_3.wav" id="27_ih8jt"]
+[ext_resource type="AudioStream" uid="uid://bcq5n5q2mdcph" path="res://Assets/Audio/BGM/loby_song1.mp3" id="28_lby1"]
+[ext_resource type="AudioStream" uid="uid://bx335va1f702b" path="res://Assets/Audio/BGM/loby_song2.mp3" id="29_lby2"]
+[ext_resource type="AudioStream" uid="uid://dmyl16nyyswqa" path="res://Assets/Audio/BGM/loby_song3.mp3" id="30_lby3"]
+[ext_resource type="AudioStream" uid="uid://bpxbe3etimbxw" path="res://Assets/Audio/BGM/loby_song4.mp3" id="31_lby4"]
 
 [node name="AudioDirector" type="Node" unique_id=1021481202]
 script = ExtResource("1_audio")
@@ -48,6 +52,7 @@ sfx_error = ExtResource("16_300lm")
 sfx_reward = ExtResource("17_smhh5")
 bgm_titlescreen = ExtResource("18_57anm")
 bgm_introcutscene = ExtResource("19_4vcgh")
+bgm_lobby_playlist = Array[AudioStream]([ExtResource("28_lby1"), ExtResource("29_lby2"), ExtResource("30_lby3"), ExtResource("31_lby4")])
 bgm_result_win = ExtResource("20_300lm")
 bgm_result_lose = ExtResource("21_smhh5")
 bgm_minigame_olahraga = ExtResource("22_smhh5")

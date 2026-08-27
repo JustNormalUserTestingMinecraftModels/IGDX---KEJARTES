@@ -126,7 +126,7 @@ func _ready():
 	_update_student_display()
 	_update_day_button_colors()
 	_start_day_button_sway()
-	AudioDirector.play_bgm(&"lobby")
+	AudioDirector.play_bgm_playlist(&"lobby")
 
 func _setup_back_button():
 	if back_button:

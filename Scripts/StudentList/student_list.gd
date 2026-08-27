@@ -162,7 +162,7 @@ func _ready():
 	_setup_tutorial()
 	_setup_students()
 	_setup_navigation_arrows()
-	AudioDirector.play_bgm(&"lobby")
+	AudioDirector.play_bgm_playlist(&"lobby")
 
 func _setup_navigation_arrows():
 	if left_arrow:

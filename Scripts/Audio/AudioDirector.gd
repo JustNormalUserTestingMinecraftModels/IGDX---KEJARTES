@@ -33,7 +33,7 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export_group("BGM")
 @export var bgm_titlescreen: AudioStream
 @export var bgm_introcutscene: AudioStream
-@export var bgm_lobby: AudioStream
+@export var bgm_lobby_playlist: Array[AudioStream] = []
 @export var bgm_simulation: AudioStream
 @export var bgm_result_win: AudioStream
 @export var bgm_result_lose: AudioStream
@@ -64,6 +64,7 @@ var _bgm_tween: Tween
 var _bgm_minigame: AudioStreamPlayer
 var _akademis_sequence_index: int = 0
 var _bgm_minigame_id: StringName = &""
+var _bgm_playlist_id: StringName = &""
 var _save_timer: SceneTreeTimer
 var _save_count: int = 0
 var _setup_ran: bool = false
@@ -99,6 +100,8 @@ func _ready() -> void:
 
 	_bgm_a = _make_bgm_player()
 	_bgm_b = _make_bgm_player()
+	_bgm_a.finished.connect(_on_bgm_finished.bind(_bgm_a))
+	_bgm_b.finished.connect(_on_bgm_finished.bind(_bgm_b))
 	_bgm_active = _bgm_a
 	_bgm_minigame = _make_bgm_player()
 	_bgm_minigame.finished.connect(_on_minigame_bgm_finished)
@@ -181,6 +184,75 @@ func play_bgm(id: StringName, fade: float = -1.0) -> void:
 
 	_bgm_active = incoming
 	_bgm_current_id = id
+
+
+## Like play_bgm, but for an array-backed id: starts on a random track,
+## and (via _on_bgm_finished) keeps shuffling to a new track --
+## excluding whichever just played -- indefinitely.
+func play_bgm_playlist(id: StringName, fade: float = -1.0) -> void:
+	var tracks := _resolve_playlist(id)
+	if tracks.is_empty():
+		_bgm_playlist_id = id
+		_bgm_current_id = id
+		return
+	if id == _bgm_current_id and _bgm_active.playing:
+		return
+
+	var duration := default_bgm_fade if fade < 0.0 else fade
+	var incoming := _bgm_b if _bgm_active == _bgm_a else _bgm_a
+	var outgoing := _bgm_active
+
+	incoming.stream = tracks[randi() % tracks.size()]
+	incoming.volume_db = -60.0
+	incoming.play()
+
+	if _bgm_tween != null and _bgm_tween.is_valid():
+		_bgm_tween.kill()
+	_bgm_tween = create_tween().set_parallel(true)
+	_bgm_tween.tween_property(incoming, "volume_db", 0.0, duration)
+	_bgm_tween.tween_property(outgoing, "volume_db", -60.0, duration)
+	_bgm_tween.chain().tween_callback(outgoing.stop)
+
+	_bgm_active = incoming
+	_bgm_current_id = id
+	_bgm_playlist_id = id
+
+
+func _resolve_playlist(id: StringName) -> Array[AudioStream]:
+	match id:
+		&"lobby": return bgm_lobby_playlist
+		_: return []
+
+
+## Uniform random pick over every index except `exclude`. count <= 1
+## always returns 0 (nothing else to pick).
+func _pick_playlist_index(exclude: int, count: int) -> int:
+	if count <= 1:
+		return 0
+	var idx := randi_range(0, count - 2)
+	if idx >= exclude:
+		idx += 1
+	return idx
+
+
+## Fires whenever _bgm_a or _bgm_b's current track ends naturally.
+## Only playlist mode reacts -- every other bgm id loops forever via
+## its own import setting and never reaches here. Guarded against
+## firing for a player that is no longer the active one (e.g. the
+## scene moved on to a different bgm context between when this track
+## started and when it naturally ended).
+func _on_bgm_finished(player: AudioStreamPlayer) -> void:
+	if player != _bgm_active:
+		return
+	if _bgm_playlist_id == &"" or _bgm_current_id != _bgm_playlist_id:
+		return
+	var tracks := _resolve_playlist(_bgm_playlist_id)
+	if tracks.is_empty():
+		return
+	var previous_index := tracks.find(player.stream)
+	var next_index := _pick_playlist_index(maxi(previous_index, 0), tracks.size())
+	player.stream = tracks[next_index]
+	player.play()
 
 
 func stop_bgm(fade: float = -1.0) -> void:
@@ -294,7 +366,6 @@ func _resolve_bgm(id: StringName) -> AudioStream:
 	match id:
 		&"titlescreen": return bgm_titlescreen
 		&"introcutscene": return bgm_introcutscene
-		&"lobby": return bgm_lobby
 		&"simulation": return bgm_simulation
 		&"result_win": return bgm_result_win
 		&"result_lose": return bgm_result_lose

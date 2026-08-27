@@ -1,25 +1,28 @@
 # Audio
 
 - `SFX/` — short one-shot sounds (16 slots, all filled)
-- `BGM/` — looping music (4 slots, currently empty)
+- `BGM/` — music, single tracks and playlists (all slots filled, 15 files total)
 
 **Every file in `SFX/` right now is a placeholder.** All of it is free
 for commercial use (see `SFX/LICENSES.md` and `Kenney_License.txt`), and
-all of it is meant to be replaced. `BGM/` has no files in it yet — the
-four slots are wired up and ready, waiting for tracks.
+all of it is meant to be replaced. `BGM/` holds real user-supplied tracks
+(see `BGM/CREDITS.md`) — swap any of them out the same way.
+
+Note: `introcutscene.mp3` and `schoolsimulation.mp3` are currently the
+same placeholder track. That's deliberate for now, not a bug — one of
+them is slated to be replaced with a distinct OST later.
 
 ## How to swap a sound — the whole procedure
 
-1. Drop your `.ogg` into `SFX/` or `BGM/`. Keep any filename you like;
-   the slot name is what matters, not the filename.
+1. Drop your `.ogg`/`.mp3`/`.wav` into `SFX/` or `BGM/`. Keep any
+   filename you like; the slot name is what matters, not the filename.
 2. Open `Scenes/Audio/audio_director.tscn` in the Godot editor.
 3. Drag your file from the FileSystem dock onto the matching slot in the
-   Inspector.
+   Inspector (see "Adding or swapping BGM" below for array slots).
 4. Save the scene. Done — no code changes, ever.
 
-For BGM only, one extra step: select your file in the FileSystem dock,
-open the **Import** tab, tick **Loop**, and click **Reimport**. Without
-this the track plays once and stops.
+For BGM, the Loop import setting matters and differs by slot type — see
+"Adding or swapping BGM" below.
 
 A slot you leave empty simply plays nothing. Nothing crashes.
 
@@ -56,31 +59,72 @@ plays `stamp` (not `confirm`), and its BATAL/eraser action plays
 them as a matched pair (stamp landing / stamp being scraped off), not
 as a synonym for confirm/cancel.
 
-## BGM slots
+## BGM system
 
-The four `bgm_*` slots on `audio_director.tscn` are wired into the game
-already — every screen calls `AudioDirector.play_bgm(&"...")` at the
-right moment — but the slots themselves are empty until the audio team
-drops files in. Until then, those screens simply play no music.
+Four kinds of BGM behavior exist, chosen automatically per scene — nothing
+here requires a settings toggle.
 
-| Slot | Plays on | Character to aim for |
+### Single looping track
+
+Plain background music: one file, loops forever, crossfades to the next when
+a new one starts.
+
+| Slot | Plays on | Method |
 |---|---|---|
-| `bgm_menu` | MainMenu, Settings | warm, welcoming, unhurried |
-| `bgm_lobby` | Lobby, StudentCard, StudentList, AturJadwal | cheerful, curious, mid-tempo |
-| `bgm_simulation` | SchoolDay and its minigames | gently busy, low-distraction — this one plays longest |
-| `bgm_result` | SemesterEnd | reflective, proud, softer |
+| `bgm_titlescreen` | Splashscreen, MainMenu, Settings, cutscene's level-select modal | `AudioDirector.play_bgm(&"titlescreen")` |
+| `bgm_introcutscene` | the narrative intro reveal (normal path) | `AudioDirector.play_bgm(&"introcutscene")` |
+| `bgm_simulation` | SchoolDay | `AudioDirector.play_bgm(&"simulation")` |
+| `bgm_result_win` | SemesterEnd, on a pass | `AudioDirector.play_bgm(&"result_win")` |
+| `bgm_result_lose` | SemesterEnd on a fail; also the loss-retry cutscene reveal | `AudioDirector.play_bgm(&"result_lose")` |
+| `bgm_minigame_olahraga` | any Olahraga minigame | `AudioDirector.play_minigame_bgm(&"minigame_olahraga")` |
+| `bgm_minigame_senibudaya_batik` | the Batik minigame specifically | `AudioDirector.play_minigame_bgm(&"minigame_senibudaya_batik")` |
+| `bgm_minigame_senibudaya_menari` | the dance minigame specifically | `AudioDirector.play_minigame_bgm(&"minigame_senibudaya_menari")` |
 
-The four lobby-family screens share one track deliberately, and
-`AudioDirector.play_bgm` no-ops when the requested id is already
-playing — so moving between them never restarts the music.
+### Shuffle playlist (no immediate repeat)
 
-Tracks crossfade automatically (0.8 s by default, tunable on the
-`default_bgm_fade` slot in the same inspector).
+| Slot | Plays on | Method |
+|---|---|---|
+| `bgm_lobby_playlist` (4 tracks) | Lobby, StudentCard, StudentList, AturJadwal | `AudioDirector.play_bgm_playlist(&"lobby")` |
 
-To fill a slot: drop the `.ogg` into `BGM/`, drag it onto the matching
-slot in `audio_director.tscn`'s Inspector, then select the file in the
-FileSystem dock, open the **Import** tab, tick **Loop**, and click
-**Reimport**. Save the scene when done.
+Each track plays once, then a new one is picked at random from the
+remaining three — never the one that just played. The four screens above
+share this one playlist so switching between them doesn't restart the music.
+
+### Fixed sequence, looping
+
+| Slot | Plays on | Method |
+|---|---|---|
+| `bgm_minigame_akademis` (3 tracks) | any Akademis minigame | `AudioDirector.play_minigame_bgm(&"minigame_akademis")` |
+
+Always plays in order — 1, 2, 3, 1, 2, 3... A fresh Akademis minigame launch
+always restarts at track 1.
+
+### Pause / resume around a minigame
+
+`bgm_simulation` doesn't stop when a minigame starts — it pauses in place
+(silent, position held) and resumes from exactly where it left off once the
+minigame ends. This is why minigame music plays on its own dedicated player
+rather than sharing the two used for everything else: `AudioDirector.pause_bgm()`
+right before a minigame's music starts, `AudioDirector.resume_bgm()` right
+after it stops. An in-day **event** (an announcement that doesn't launch a
+minigame) never touches this — `bgm_simulation` just keeps playing straight
+through it.
+
+## Adding or swapping BGM
+
+Single-track slots: drag a file onto the slot in `audio_director.tscn`'s
+Inspector, same as any SFX slot. Array slots (`bgm_lobby_playlist`,
+`bgm_minigame_akademis`): expand the array in the Inspector and drag a file
+onto each element.
+
+**One thing that matters for array slots specifically:** the files must
+have their **Loop** import setting turned **off** (Import dock → uncheck/set
+to Disabled → Reimport). These tracks are chained together by code — each
+one plays once, and `AudioDirector` picks the next when it naturally ends.
+If a file loops on its own, it never reaches that ending and the
+chain/shuffle stalls on that one track forever. Every single-track slot
+above is the opposite: **Loop must stay on**, or the music stops dead the
+moment the file ends once.
 
 ## Volume
 

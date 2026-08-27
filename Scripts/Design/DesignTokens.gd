@@ -51,6 +51,9 @@ static func load_default() -> DesignTokens:
 @export var cat_senibudaya: Color = Color("7cb342")
 @export var cat_istirahat: Color = Color("6b4fe0")
 @export var cat_libur: Color = Color("ffc93c")
+## Wirausaha: the money-earning schedule activity. Teal keeps it clear of
+## the five existing category hues.
+@export var cat_wirausaha: Color = Color("00a389")
 
 @export_group("Semantic States")
 @export var state_success: Color = Color("2fb86b")
@@ -110,6 +113,7 @@ func category_color(category: String) -> Color:
 		"SeniBudaya", "Seni Budaya": return cat_senibudaya
 		"Istirahat": return cat_istirahat
 		"Libur": return cat_libur
+		"Wirausaha": return cat_wirausaha
 		_: return text_secondary
 
 

@@ -17,13 +17,20 @@ func test_brand_palette_matches_approved_values() -> void:
 
 func test_category_color_lookup_covers_every_schedule_category() -> void:
 	var tokens := DesignTokens.load_default()
-	for category in ["Akademis", "Olahraga", "SeniBudaya", "Istirahat", "Libur"]:
+	for category in ["Akademis", "Olahraga", "SeniBudaya", "Istirahat", "Libur", "Wirausaha"]:
 		var c := tokens.category_color(category)
 		assert_true(c.a > 0.0, "category_color must resolve for: " + category)
 
 func test_category_color_falls_back_for_unknown_category() -> void:
 	var tokens := DesignTokens.load_default()
 	assert_eq(tokens.category_color("TidakAda"), tokens.text_secondary, "unknown category falls back")
+
+func test_wirausaha_color_is_distinct_from_other_categories() -> void:
+	var tokens := DesignTokens.load_default()
+	var wirausaha := tokens.category_color("Wirausaha")
+	for other in ["Akademis", "Olahraga", "SeniBudaya", "Istirahat", "Libur"]:
+		assert_true(wirausaha != tokens.category_color(other),
+			"Wirausaha must be visually distinct from: " + other)
 
 func test_spacing_scale_is_monotonic() -> void:
 	var tokens := DesignTokens.load_default()

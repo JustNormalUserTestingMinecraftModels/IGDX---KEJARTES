@@ -50,4 +50,3 @@ bgm_result_lose = ExtResource("21_smhh5")
 bgm_minigame_olahraga = ExtResource("22_smhh5")
 bgm_minigame_senibudaya_batik = ExtResource("23_12b1k")
 bgm_minigame_senibudaya_menari = ExtResource("24_rckhh")
-minigame_bgm_fade = null

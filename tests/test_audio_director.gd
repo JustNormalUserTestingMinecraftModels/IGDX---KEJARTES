@@ -156,6 +156,23 @@ func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
 			"shipped scene must fill sfx slot: " + id)
 
 
+func test_minigame_bgm_fade_is_a_real_positive_float_in_the_shipped_scene() -> void:
+	# Regression test: scene_save() once serialized this newly-added export
+	# as an unset `null` before the editor had picked up its 0.4 script
+	# default. Every production call site (SchoolDay.gd's pause_bgm(),
+	# play_minigame_bgm(...), stop_minigame_bgm(), resume_bgm()) calls with
+	# no explicit fade argument, relying on AudioDirector's
+	# "minigame_bgm_fade if fade < 0.0 else fade" fallback -- a null value
+	# there coerces to 0.0, silently turning every minigame pause/resume
+	# fade into an instant hard cut in the real game, invisible to any test
+	# that (like the ones above) always passes an explicit fade argument.
+	assert_true(_director.minigame_bgm_fade != null,
+		"shipped scene must not leave minigame_bgm_fade null")
+	assert_true(_director.minigame_bgm_fade > 0.0,
+		"shipped scene's minigame_bgm_fade must be a real positive fade, got %s"
+			% _director.minigame_bgm_fade)
+
+
 func test_bgm_loop_tracks_actually_loop() -> void:
 	# Every track meant to play forever must genuinely loop at the
 	# resource level. AudioStreamMP3 exposes a simple `loop` bool;

@@ -21,6 +21,14 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var sfx_coin: AudioStream
 @export var sfx_whoosh: AudioStream
 @export var sfx_pop: AudioStream
+@export var sfx_swipe: AudioStream
+@export var sfx_stamp: AudioStream
+@export var sfx_unstamp: AudioStream
+@export var sfx_popup_open: AudioStream
+@export var sfx_popup_close: AudioStream
+@export var sfx_select: AudioStream
+@export var sfx_error: AudioStream
+@export var sfx_reward: AudioStream
 
 @export_group("BGM")
 @export var bgm_menu: AudioStream
@@ -107,7 +115,22 @@ func _resolve_sfx(id: StringName) -> AudioStream:
 		&"coin": return sfx_coin
 		&"whoosh": return sfx_whoosh
 		&"pop": return sfx_pop
+		&"swipe": return sfx_swipe
+		&"stamp": return sfx_stamp
+		&"unstamp": return sfx_unstamp
+		&"popup_open": return sfx_popup_open
+		&"popup_close": return sfx_popup_close
+		&"select": return sfx_select
+		&"error": return sfx_error
+		&"reward": return sfx_reward
 		_: return null
+
+
+## True only when `id` maps to a slot AND that slot holds a stream.
+## Screens never need this — play_sfx is already null-safe — but tests
+## and the audio-coverage suite use it to prove a slot got filled.
+func has_sfx(id: StringName) -> bool:
+	return _resolve_sfx(id) != null
 
 
 # -------------------------------------------------------------------- bgm

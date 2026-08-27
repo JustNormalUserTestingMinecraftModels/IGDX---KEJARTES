@@ -37,6 +37,8 @@ func test_sfx_and_bgm_slots_are_exported() -> void:
 		names.append(p.name)
 	for slot in ["sfx_tap", "sfx_confirm", "sfx_cancel", "sfx_success",
 			"sfx_fail", "sfx_coin", "sfx_whoosh", "sfx_pop",
+			"sfx_swipe", "sfx_stamp", "sfx_unstamp", "sfx_popup_open",
+			"sfx_popup_close", "sfx_select", "sfx_error", "sfx_reward",
 			"bgm_menu", "bgm_lobby", "bgm_simulation", "bgm_result"]:
 		assert_true(names.has(slot), "must expose export slot: " + slot)
 
@@ -80,3 +82,24 @@ func test_sfx_voices_are_pooled_and_reused() -> void:
 			players += 1
 	assert_true(players <= 20,
 		"sfx pool must be bounded, found %d players" % players)
+
+
+func test_every_new_sfx_id_resolves_to_a_slot() -> void:
+	# play_sfx must not silently swallow a typo'd id: assign a dummy
+	# stream to each slot, then assert has_sfx() sees it.
+	var dummy := AudioStreamGenerator.new()
+	var ids := ["swipe", "stamp", "unstamp", "popup_open",
+		"popup_close", "select", "error", "reward"]
+	for id in ids:
+		_director.set("sfx_" + id, dummy)
+	for id in ids:
+		assert_true(_director.has_sfx(StringName(id)),
+			"id must resolve to its slot: " + id)
+
+
+func test_has_sfx_is_false_for_empty_and_unknown() -> void:
+	_director.sfx_swipe = null
+	assert_true(not _director.has_sfx(&"swipe"),
+		"an unassigned slot must report has_sfx() == false")
+	assert_true(not _director.has_sfx(&"tidak_ada_suara_ini"),
+		"an unknown id must report has_sfx() == false")

@@ -267,4 +267,42 @@ static func _style_trait_badge(kertas: Control, node_name: String, trait_type: S
 
 
 static func _start_button_wiggle(btn: Control, delay: float = 0.0, wiggle_type: String = "small") -> void:
-	pass
+	if not is_instance_valid(btn):
+		return
+	btn.pivot_offset = btn.size / 2.0
+
+	# Kill existing wiggle tween if it exists on this button to prevent duplicates
+	if btn.has_meta("wiggle_tween"):
+		var old_tw = btn.get_meta("wiggle_tween")
+		if is_instance_valid(old_tw):
+			old_tw.kill()
+
+	var tw := btn.create_tween().set_loops()
+	btn.set_meta("wiggle_tween", tw)
+
+	if delay > 0:
+		tw.tween_interval(delay)
+
+	if wiggle_type == "big":
+		tw.tween_property(btn, "scale", Vector2(1.3, 1.3), 0.2)
+		tw.tween_property(btn, "rotation_degrees", 15.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", -15.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", 10.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", -10.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", 0.0, 0.1)
+		tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2)
+		tw.tween_interval(2.0)
+	elif wiggle_type == "medium":
+		tw.tween_property(btn, "scale", Vector2(1.12, 1.12), 0.2)
+		tw.tween_property(btn, "rotation_degrees", 8.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", -8.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", 5.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", -5.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", 0.0, 0.1)
+		tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2)
+		tw.tween_interval(3.5)
+	else:
+		tw.tween_property(btn, "rotation_degrees", 5.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", -5.0, 0.1)
+		tw.tween_property(btn, "rotation_degrees", 0.0, 0.1)
+		tw.tween_interval(2.0)

@@ -57,19 +57,13 @@ func initialize_grade_targets() -> void:
 		var b2 = student["base_akademis2"]
 		var b3 = student["base_akademis3"]
 		
+		var uplift := Balance.TARGET_KENAIKAN_KELAS_7
 		match current_grade:
-			7:
-				student["target_akademis1"] = clampf(b1 + 15.0, 0.0, 100.0)
-				student["target_akademis2"] = clampf(b2 + 15.0, 0.0, 100.0)
-				student["target_akademis3"] = clampf(b3 + 15.0, 0.0, 100.0)
-			8:
-				student["target_akademis1"] = clampf(b1 + 30.0, 0.0, 100.0)
-				student["target_akademis2"] = clampf(b2 + 30.0, 0.0, 100.0)
-				student["target_akademis3"] = clampf(b3 + 30.0, 0.0, 100.0)
-			9:
-				student["target_akademis1"] = clampf(b1 + 40.0, 0.0, 100.0)
-				student["target_akademis2"] = clampf(b2 + 40.0, 0.0, 100.0)
-				student["target_akademis3"] = clampf(b3 + 40.0, 0.0, 100.0)
+			8: uplift = Balance.TARGET_KENAIKAN_KELAS_8
+			9: uplift = Balance.TARGET_KENAIKAN_KELAS_9
+		student["target_akademis1"] = clampf(b1 + uplift, 0.0, 100.0)
+		student["target_akademis2"] = clampf(b2 + uplift, 0.0, 100.0)
+		student["target_akademis3"] = clampf(b3 + uplift, 0.0, 100.0)
 		print("Initialized targets for student: ", student.get("name", ""), " to [", student["target_akademis1"], ", ", student["target_akademis2"], ", ", student["target_akademis3"], "]")
 
 

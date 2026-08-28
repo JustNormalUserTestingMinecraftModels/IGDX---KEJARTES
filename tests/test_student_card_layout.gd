@@ -240,6 +240,17 @@ func test_every_card_has_the_sifat_pasif_heading() -> void:
 				"%s missing KertasMurid%d/SifatPasifLabel" % [scene_path, i])
 
 
+## The info badge wears icon_info.png's own colour. Tinting it via modulate
+## multiplies against the art instead of replacing it, so the amber glyph
+## goes muddy rather than changing hue. Matching the mockup's green badge
+## needs a different asset, not a tint.
+func test_info_badge_draws_its_asset_untinted() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentCard/StudentCardView.gd")
+	assert_false(src.contains("badge.modulate"),
+		"the info badge must draw icon_info.png untinted")
+
+
 func test_trait_buttons_use_the_trait_pill_variation() -> void:
 	var src := FileAccess.get_file_as_string(
 		"res://Scripts/StudentCard/StudentCardView.gd")

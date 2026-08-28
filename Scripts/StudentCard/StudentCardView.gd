@@ -201,7 +201,6 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 			var badge := TextureRect.new()
 			badge.name = "InfoBadge"
 			badge.texture = load(_CARD_ART + "icon_info.png")
-			badge.modulate = DesignTokens.load_default().state_success
 			badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE

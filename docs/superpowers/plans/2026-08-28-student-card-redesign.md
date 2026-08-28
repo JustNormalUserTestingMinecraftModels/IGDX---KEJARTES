@@ -63,7 +63,7 @@ Art bounds inside the two button textures (used as `region_rect`, so no file tri
 | `Scripts/UI/StatBar.gd` | Gains an exported `variation` so a bar can opt into `StatPill`. | Modify |
 | `Scripts/StudentCard/StudentCardView.gd` | **The bulk of the work.** Positions pills, builds icon clusters, builds the bio panel, styles trait buttons. Serves both screens. | Modify |
 | `Scripts/StudentCard/student_card.gd` | Roster data gains two fields; `CARD_ROW_ORDER` updated. | Modify |
-| `Scripts/ReportCard/report_card.gd` | Roster data gains the same two fields. | Modify |
+| `Scripts/ReportCard/report_card.gd` | Drops the `icon_magnify` argument at its two `populate()` call sites (Task 6). Reads its roster live from `GameState.approved_students`, so it needs no edit for the new bio fields — they arrive by reference. | Modify |
 | `Scenes/StudentCard/student_card.tscn` | Background `ext_resource` swap; card width normalised. | Modify |
 | `Scenes/ReportCard/report_card.tscn` | Same two edits. | Modify |
 | `tests/test_student_card_layout.gd` | New suite pinning the redesign's contract. | Create |
@@ -175,13 +175,14 @@ git commit -m "feat(student-card): import the redesign art"
 
 **Files:**
 - Modify: `Scripts/StudentCard/student_card.gd` (the `student_data_list` block, around lines 874-1000)
-- Modify: `Scripts/ReportCard/report_card.gd` (its own copy of the same roster)
 - Test: `tests/test_student_card_layout.gd`
 
 **Interfaces:**
 - Produces: two new string keys on every student dictionary — `"jenis_kelamin"` and `"tanggal_lahir"` — read by Task 7's bio panel.
 
 The existing `"profil"` key stays. `GameState.convert_to_student_data_array()` copies it onto `StudentData.profil`, so removing it would break unrelated code. It simply stops being displayed.
+
+**Only one file needs data edits.** `Scripts/ReportCard/report_card.gd` does not hardcode a roster — it reads `GameState.approved_students` live at `_ready()` (`report_card.gd:52`), and `student_card.gd`'s approve flow populates that array directly from `student_data_list` entries (`student_card.gd:1421`, `.append(student_data_list[i])`) — the same Dictionary objects, by reference. So the new fields reach ReportCard automatically once they exist on `student_card.gd`'s dictionaries; nothing in `report_card.gd` needs to change.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -198,20 +199,27 @@ const _BIO := {
 }
 
 
-## Both screens keep their own copy of the roster, so both must carry the
-## new fields or one screen renders a blank bio panel.
-func test_both_rosters_carry_gender_and_birth_date() -> void:
-	for script_path in ["res://Scripts/StudentCard/student_card.gd",
-			"res://Scripts/ReportCard/report_card.gd"]:
-		var src := FileAccess.get_file_as_string(script_path)
-		for student_name in _BIO.keys():
-			var gender: String = _BIO[student_name][0]
-			var born: String = _BIO[student_name][1]
-			assert_true(src.contains('"jenis_kelamin": "%s"' % gender),
-				"%s must declare jenis_kelamin %s" % [script_path, gender])
-			assert_true(src.contains('"tanggal_lahir": "%s"' % born),
-				"%s must declare tanggal_lahir %s for %s"
-					% [script_path, born, student_name])
+func test_roster_carries_gender_and_birth_date() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	for student_name in _BIO.keys():
+		var gender: String = _BIO[student_name][0]
+		var born: String = _BIO[student_name][1]
+		assert_true(src.contains('"jenis_kelamin": "%s"' % gender),
+			"student_card.gd must declare jenis_kelamin %s for %s" % [gender, student_name])
+		assert_true(src.contains('"tanggal_lahir": "%s"' % born),
+			"student_card.gd must declare tanggal_lahir %s for %s" % [born, student_name])
+
+
+## ReportCard never hardcodes student data -- it reads
+## GameState.approved_students live (report_card.gd:52), which
+## student_card.gd populates directly from its own student_data_list
+## entries (student_card.gd:1421). So the new bio fields reach ReportCard
+## automatically once they exist on student_card.gd's dictionaries; this
+## pins that the propagation path itself stays intact.
+func test_report_card_still_reads_approved_students_live() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/report_card.gd")
+	assert_true(src.contains("student_data_list = GameState.approved_students"),
+		"report_card.gd must keep reading the live roster, not a hardcoded copy")
 ```
 
 - [ ] **Step 2: Run and confirm failure**
@@ -221,7 +229,7 @@ Expected: FAIL — `tanggal_lahir` appears nowhere yet.
 
 - [ ] **Step 3: Add the fields**
 
-In **both** `Scripts/StudentCard/student_card.gd` and `Scripts/ReportCard/report_card.gd`, add two keys to each of the six student dictionaries, immediately after the existing `"profil"` line. Match each student by their `"name"`:
+In `Scripts/StudentCard/student_card.gd`, add two keys to each of the six student dictionaries, immediately after the existing `"profil"` line. Match each student by their `"name"`. Do not touch `Scripts/ReportCard/report_card.gd` — it has no hardcoded roster to edit.
 
 ```gdscript
 		"jenis_kelamin": "Laki - Laki",
@@ -248,8 +256,8 @@ Remember the `"profil"` line currently ends without a trailing comma in each dic
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Scripts/StudentCard/student_card.gd Scripts/ReportCard/report_card.gd tests/test_student_card_layout.gd
-git commit -m "feat(student-card): add gender and birth date to both rosters"
+git add Scripts/StudentCard/student_card.gd tests/test_student_card_layout.gd
+git commit -m "feat(student-card): add gender and birth date to the roster"
 ```
 
 ---

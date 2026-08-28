@@ -262,3 +262,10 @@ func test_idle_bob_is_exported_and_wired_to_the_portrait_containers() -> void:
 		"the back portrait container must get the idle bob")
 	assert_true(src.contains("_start_idle_bob(portraits_front"),
 		"the front portrait container must get the idle bob")
+
+func test_report_student_button_is_wired() -> void:
+	var src := _lobby_source()
+	assert_true(src.contains("_on_report_student_pressed"),
+		"the ReportStudent button must have a handler")
+	assert_true(src.contains("res://Scenes/ReportCard/report_card.tscn"),
+		"ReportStudent must route to the report card scene")

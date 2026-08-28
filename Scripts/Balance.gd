@@ -2,7 +2,10 @@
 ## Balance.gd — semua angka yang menentukan murid lulus atau tidak.
 ##
 ## Cara pakai: ubah angkanya, simpan (Ctrl+S), lalu jalankan ulang game.
-## Angka-angka ini tidak ada di tempat lain — semuanya dibaca dari sini.
+## Angka-angka simulasi utama (poin belajar, minigame, kepribadian,
+## sifat pasif, event, Wirausaha) semuanya dibaca dari sini. Perkecualian:
+## layar Atur Jadwal (atur_jadwal.gd) punya salinan sendiri untuk angka
+## preview-nya — belum tersambung ke file ini.
 ##
 ## Biar cepat balik ke situasi yang mau diuji setelah restart:
 ## tekan F1 > "Seed Playtest State", lalu buka tab "Scenes" untuk
@@ -83,9 +86,12 @@ static var LIBUR_MOOD_PULIH_MAX := 25.0
 
 ## Kalau energi turun sampai angka ini atau lebih rendah, murid
 ## otomatis mengambil Izin — mengabaikan jadwal yang sudah kamu atur.
+## Ini bisa kena hari BELAJAR yang dijadwalkan juga, bukan cuma Libur —
+## ditaruh di sini karena sama-sama soal energi yang terlalu rendah.
 static var IZIN_OTOMATIS_BATAS_ENERGI := 5.0
 
-## Di bawah angka ini, murid ditandai "lelah" di layar.
+## Di bawah angka ini, murid ditandai "lelah" di layar. Berlaku tiap
+## hari, bukan cuma pas Libur — ditaruh di sini karena alasan yang sama.
 static var BATAS_KELELAHAN := 20.0
 
 
@@ -216,12 +222,14 @@ static var SIFAT_PENYENDIRI_BOROS_MOOD_RAMAI := 0.05
 static var SIFAT_PENYENDIRI_EVENT_MOOD := 0.25
 
 ## ── Biang Onar (Shinta) ──
-## Menambah peluang event muncul tiap hari.
+## Menambah peluang event muncul tiap hari. Harus angka bulat (tanpa
+## titik), karena dipakai langsung sebagai jumlah, bukan persentase.
 static var SIFAT_BIANG_ONAR_PELUANG_EVENT := 10
-## Event yang bagus jadi 20% lebih bagus untuknya.
+## Dipakai untuk SEMUA event yang menimpanya, baik yang bagus maupun
+## yang buruk — event bagus jadi 20% lebih bagus, event buruk 20% lebih
+## buruk. Cuma satu angka karena kode simulasinya memang cuma membaca
+## satu skala untuk kedua arah.
 static var SIFAT_BIANG_ONAR_EVENT_BAGUS := 0.20
-## Event yang buruk jadi 20% lebih buruk.
-static var SIFAT_BIANG_ONAR_EVENT_BURUK := 0.20
 
 ## ── Pekerja Keras (Thea) ──
 ## Hari belajar lebih hemat energi. 0.10 artinya 10% lebih hemat.
@@ -248,6 +256,7 @@ static var SIFAT_CITRA_SENI_SENDIRI_BONUS := 0.10
 ## ═══════════════════════════════════════════════════════════
 
 ## Uang yang didapat per hari Wirausaha, diacak antara dua nilai ini.
+## Harus angka bulat (tanpa titik) — ini jumlah uang, bukan persentase.
 static var WIRAUSAHA_UANG_MIN := 120
 static var WIRAUSAHA_UANG_MAX := 320
 

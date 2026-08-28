@@ -101,7 +101,6 @@ const _EXPECTED: Dictionary = {
 	"SIFAT_PENYENDIRI_EVENT_MOOD": 0.25,
 	"SIFAT_BIANG_ONAR_PELUANG_EVENT": 10,
 	"SIFAT_BIANG_ONAR_EVENT_BAGUS": 0.20,
-	"SIFAT_BIANG_ONAR_EVENT_BURUK": 0.20,
 	"SIFAT_PEKERJA_HEMAT_ENERGI": 0.10,
 	"SIFAT_PEKERJA_BOROS_MOOD": 0.15,
 	"SIFAT_PEKERJA_BONUS_MOOD_MENANG": 3.0,
@@ -150,11 +149,11 @@ func test_every_field_exists_and_holds_its_shipped_value() -> void:
 				% [field_name, str(expected), str(actual)])
 
 
-## 105 numbers is the whole extraction surface. If the count drifts, either a
+## 104 numbers is the whole extraction surface. If the count drifts, either a
 ## field was added without a test entry or one was quietly dropped.
 func test_the_expected_table_covers_every_number() -> void:
-	assert_eq(_EXPECTED.size(), 105,
-		"the extraction covers 105 numbers; update this test deliberately if that changes")
+	assert_eq(_EXPECTED.size(), 104,
+		"the extraction covers 104 numbers; update this test deliberately if that changes")
 
 
 ## The point of Balance.gd is that a tester can change a number and feel it.

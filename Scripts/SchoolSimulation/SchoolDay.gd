@@ -530,7 +530,7 @@ func _add_embedded_bar_row(parent_vbox: VBoxContainer, icon_text: String, curren
 
 ## The preview badge must quote the same gain the simulation will apply,
 ## or a tester changing Balance.gd sees the old number here and thinks
-## nothing happened. Mirrors StudentManager.apply_jadwal_effects_all.
+## nothing happened. Mirrors StudentManager.apply_daily_decay_all.
 func _preview_gain(student: StudentData, category: String) -> float:
 	var base := Balance.BELAJAR_POIN_CADANGAN
 	var bonus := Balance.BELAJAR_BONUS_FAVORIT_CADANGAN

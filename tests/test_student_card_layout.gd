@@ -173,3 +173,44 @@ func test_the_pill_no_longer_takes_input() -> void:
 		"the pill must be inert; the icon cluster carries the tap")
 	assert_false(src.contains("icon_magnify"),
 		"the magnifying glass is replaced by the stat icons")
+
+
+func test_bio_panel_renders_the_three_rows() -> void:
+	var scene: Node = (load("res://Scenes/StudentCard/student_card.tscn")
+		as PackedScene).instantiate()
+	scene.theme = load("res://Assets/Theme/kejartes_theme.tres")
+	Engine.get_main_loop().root.add_child(scene)
+	track(scene)
+
+	var panel := scene.get_node_or_null("KertasMurid1/BioPanel") as Control
+	assert_true(panel != null, "KertasMurid1 must have a BioPanel")
+
+	var texts: Array[String] = []
+	for child in panel.get_children():
+		if child is Label:
+			texts.append((child as Label).text)
+	for heading in ["Nama:", "Jenis Kelamin:", "Tanggal Lahir:"]:
+		assert_true(texts.has(heading), "BioPanel must show the row " + heading)
+
+
+## The panel is painted into the card art; the text must land inside it.
+func test_bio_panel_sits_inside_the_painted_panel() -> void:
+	var scene: Node = (load("res://Scenes/StudentCard/student_card.tscn")
+		as PackedScene).instantiate()
+	scene.theme = load("res://Assets/Theme/kejartes_theme.tres")
+	Engine.get_main_loop().root.add_child(scene)
+	track(scene)
+
+	var panel := scene.get_node_or_null("KertasMurid1/BioPanel") as Control
+	assert_true(panel.position.x >= 120.0, "BioPanel must start inside the paint")
+	assert_true(panel.position.y >= 300.0, "BioPanel must start inside the paint")
+	assert_true(panel.position.x + panel.size.x <= 609.0,
+		"BioPanel must end inside the paint")
+
+
+func test_superseded_labels_are_hidden() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentCard/StudentCardView.gd")
+	for label_name in ["Profil", "Kepribadian", "Akademis"]:
+		assert_true(src.contains('"%s"' % label_name),
+			"StudentCardView must account for the old label " + label_name)

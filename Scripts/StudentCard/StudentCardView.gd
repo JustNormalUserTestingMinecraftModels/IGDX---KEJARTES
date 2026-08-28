@@ -73,13 +73,6 @@ static func populate(card: Control, student: Dictionary,
 	if persona_label and persona_label is Label:
 		persona_label.text = student.get("persona", "")
 
-	# Update Profil
-	var profil_label = card.get_node_or_null("Profil")
-	if profil_label and profil_label is Label:
-		var p_text = "Nama: " + student.get("name", "") + "\n\n"
-		p_text += student.get("profil", "")
-		profil_label.text = p_text
-
 	# Update Portrait Texture
 	var portrait_node = card.get_node_or_null("TextureRect")
 	if portrait_node and portrait_node is TextureRect:
@@ -107,6 +100,7 @@ static func populate(card: Control, student: Dictionary,
 	# -- Upgrade bar visuals & replace trait labels with animated badges --
 	build_stat_bars(card, student, on_bar_input)
 	build_icon_clusters(card, student, on_bar_input)
+	build_bio_panel(card, student)
 	StudentCardView._style_trait_badge(card, "KutuBuku", "quirk",
 		"QUIRK: " + student.get("quirk", "-"), student,
 		on_badge_hover_enter, on_badge_hover_exit, on_badge_pressed)
@@ -239,6 +233,62 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 			cluster.gui_input.disconnect(cluster.get_meta("cluster_gui_callable"))
 		cluster.gui_input.connect(callable)
 		cluster.set_meta("cluster_gui_callable", callable)
+
+
+## The painted purple panel's interior, in card-local pixels, measured from
+## card_bg.png.
+const BIO_PANEL_RECT := Rect2(120, 300, 489, 367)
+## Inset so the text does not crowd the painted panel's rounded border.
+const _BIO_PADDING := 32.0
+
+
+## Lays the three bio rows over the painted panel: a heading and a value
+## per row. The panel art itself comes from the card background, so this
+## only positions text.
+##
+## Also hides the three labels the redesign supersedes -- `Profil` (whose
+## content these rows replace) and the `Kepribadian` / `Akademis` section
+## headings, which the icon-led layout has no room for.
+static func build_bio_panel(kertas: Control, s_data: Dictionary) -> void:
+	for stale_name in ["Profil", "Kepribadian", "Akademis"]:
+		var stale := kertas.get_node_or_null(stale_name) as CanvasItem
+		if stale != null:
+			stale.visible = false
+
+	var panel := kertas.get_node_or_null("BioPanel") as VBoxContainer
+	if panel == null:
+		panel = VBoxContainer.new()
+		panel.name = "BioPanel"
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		kertas.add_child(panel)
+
+	panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	panel.offset_left = BIO_PANEL_RECT.position.x + _BIO_PADDING
+	panel.offset_top = BIO_PANEL_RECT.position.y + _BIO_PADDING
+	panel.offset_right = BIO_PANEL_RECT.end.x - _BIO_PADDING
+	panel.offset_bottom = BIO_PANEL_RECT.end.y - _BIO_PADDING
+
+	for child in panel.get_children():
+		panel.remove_child(child)
+		child.queue_free()
+
+	var rows := [
+		["Nama:", str(s_data.get("name", ""))],
+		["Jenis Kelamin:", str(s_data.get("jenis_kelamin", ""))],
+		["Tanggal Lahir:", str(s_data.get("tanggal_lahir", ""))],
+	]
+	for row in rows:
+		var heading := Label.new()
+		heading.text = row[0]
+		heading.theme_type_variation = &"BioLabel"
+		heading.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(heading)
+
+		var value := Label.new()
+		value.text = row[1]
+		value.theme_type_variation = &"BioValue"
+		value.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(value)
 
 
 static func _style_trait_badge(kertas: Control, node_name: String, trait_type: String, badge_text: String,

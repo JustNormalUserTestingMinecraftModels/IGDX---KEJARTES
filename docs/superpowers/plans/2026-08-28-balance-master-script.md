@@ -1447,14 +1447,47 @@ and:
 
 The badge quotes the cheap end of each random range — it is an estimate, and the `~` already says so.
 
-- [ ] **Step 4: The tiredness warning reads the shared threshold**
+- [ ] **Step 4: Fix `_add_pill`'s "Libur" branch — it swallows the number Step 3 just added**
+
+`_add_pill` (a few lines below `_build_pill_badges_for_student`) already has a
+branch for the word "Libur", written for a different, pre-existing caller —
+the holiday badge (`_add_pill(hbox, "🌿 Libur", tokens.cat_libur)`, a few
+lines above the `match category:` block), whose text really is nothing but
+the bare word. That branch replaces the ENTIRE text with `"Libur"`:
+
+```gdscript
+	if "Libur" in text:
+		clean_text = "Libur"
+		icon_key = "libur"
+```
+
+Step 3's new badge text, `"+30 ⚡ Libur"` (or whatever the number is), also
+contains the substring "Libur" and hits this same branch first — so the
+`+30 ⚡` prefix is discarded and the badge silently shows a bare "Libur"
+chip with no number. This defeats the entire point of Step 3.
+
+Replace it with the same emoji-stripping pattern its sibling branches
+already use (e.g. the `"istirahat"` branch two lines below), so both callers
+work correctly:
+
+```gdscript
+	if "Libur" in text:
+		clean_text = text.replace("⚡", "").replace("🌿", "").strip_edges()
+		icon_key = "libur"
+```
+
+Traced against both callers: the holiday badge's `"🌿 Libur"` strips to
+`"Libur"` (unchanged from before); Step 3's `"+30 ⚡ Libur"` strips to
+`"+30 Libur"` (now keeps the number, as intended).
+
+- [ ] **Step 5: The tiredness warning reads the shared threshold**
 
 ```gdscript
 	# Warning if already low energy
 	if student.energy <= Balance.BATAS_KELELAHAN:
 ```
 
-- [ ] **Step 5: Run the full suite**
+- [ ] **Step 6: Run the full suite**
 
 **Controller action:** `filesystem_manage(op="scan")` then `test_run()`.
 Expected: **303 passed, 1 failed** (the known `audio_director` bug only).

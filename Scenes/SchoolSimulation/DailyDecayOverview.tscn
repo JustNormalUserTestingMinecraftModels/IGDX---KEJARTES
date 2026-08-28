@@ -89,6 +89,7 @@ layout_mode = 2
 
 [node name="ContinueButton" type="Button" parent="Margin/Panel/Margin/VBox" unique_id=1752184506]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 96)
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
 text = "Lanjutkan Hari ➔"

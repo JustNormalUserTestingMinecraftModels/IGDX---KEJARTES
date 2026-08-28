@@ -434,13 +434,13 @@ layout_mode = 2
 alignment = 1
 
 [node name="BtnRestart" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(300, 96)
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
 text = "Mulai Baru"
 
 [node name="BtnMainMenu" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(300, 96)
 layout_mode = 2
 theme_type_variation = &"SecondaryButton"
 text = "Menu Utama"

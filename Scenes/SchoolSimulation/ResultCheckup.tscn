@@ -97,6 +97,7 @@ layout_mode = 2
 
 [node name="BtnClose" type="Button" parent="Margin/VBox"]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 96)
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
 text = "Selesai & Lanjut"

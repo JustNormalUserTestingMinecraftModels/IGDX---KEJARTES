@@ -99,6 +99,7 @@ autowrap_mode = 2
 
 [node name="BackButton" type="Button" parent="DayScreen" unique_id=1335205209]
 visible = false
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
@@ -106,6 +107,7 @@ text = "🔙 Kembali ke Menu"
 
 [node name="SkipButton" type="Button" parent="DayScreen" unique_id=987654321]
 visible = false
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SecondaryButton"

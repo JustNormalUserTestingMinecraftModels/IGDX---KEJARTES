@@ -259,6 +259,7 @@ text = "Agustus - Minggu Pertama"
 
 [node name="StartWeek" type="Button" parent="." unique_id=288288757]
 layout_mode = 0
+custom_minimum_size = Vector2(0, 96)
 offset_left = 442.0
 offset_top = 1754.0
 offset_right = 1056.0
@@ -341,6 +342,7 @@ autowrap_mode = 2
 
 [node name="ButtonYes" type="Button" parent="Peringatan/TextureRect" unique_id=1843912903]
 layout_mode = 0
+custom_minimum_size = Vector2(0, 96)
 offset_left = 135.0
 offset_top = 284.0
 offset_right = 285.0
@@ -350,6 +352,7 @@ text = "YA"
 
 [node name="ButtonNo" type="Button" parent="Peringatan/TextureRect" unique_id=892341999]
 layout_mode = 0
+custom_minimum_size = Vector2(0, 96)
 offset_left = 445.0
 offset_top = 284.0
 offset_right = 595.0
@@ -384,6 +387,7 @@ expand_mode = 1
 
 [node name="Akademik" type="Button" parent="Penjadwalan/TextureRect" unique_id=1384029283]
 layout_mode = 0
+custom_minimum_size = Vector2(0, 96)
 offset_left = 81.00001
 offset_top = 379.0
 offset_right = 377.0
@@ -406,6 +410,7 @@ value_format = "%d%%"
 
 [node name="Olahraga" type="Button" parent="Penjadwalan/TextureRect" unique_id=1243804785]
 layout_mode = 0
+custom_minimum_size = Vector2(0, 96)
 offset_left = 78.0
 offset_top = 791.0
 offset_right = 360.0
@@ -428,6 +433,7 @@ value_format = "%d%%"
 
 [node name="SeniBudaya" type="Button" parent="Penjadwalan/TextureRect" unique_id=1127470424]
 layout_mode = 0
+custom_minimum_size = Vector2(0, 96)
 offset_left = 81.00001
 offset_top = 588.0
 offset_right = 377.0
@@ -458,6 +464,7 @@ text = "WIRAUSAHA"
 
 [node name="Libur" type="Button" parent="Penjadwalan/TextureRect" unique_id=1650158165]
 layout_mode = 0
+custom_minimum_size = Vector2(0, 96)
 offset_left = 111.0
 offset_top = 1381.0
 offset_right = 476.0

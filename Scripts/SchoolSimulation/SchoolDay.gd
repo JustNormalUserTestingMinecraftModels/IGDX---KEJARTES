@@ -1118,6 +1118,7 @@ func _on_week_complete() -> void:
 
 	var wirausaha_total := _pay_out_wirausaha()
 	if wirausaha_total > 0:
+		await get_tree().process_frame
 		AudioDirector.play_sfx(&"coin")
 
 	if result_checkup_scene:

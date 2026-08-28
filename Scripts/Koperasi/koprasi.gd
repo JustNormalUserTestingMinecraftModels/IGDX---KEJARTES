@@ -140,7 +140,6 @@ func _setup_main_buttons(tokens: DesignTokens):
 func _on_rak1_pressed():
 	var tokens := DesignTokens.load_default()
 	AnimUtils.squash_bounce(rak1_button, 4.0)
-	AudioDirector.play_sfx(&"tap")
 
 	if rak1_panel.has_method("setup_random_items"):
 		rak1_panel.setup_random_items()
@@ -160,7 +159,6 @@ func _on_rak1_pressed():
 func _on_back_pressed():
 	var tokens := DesignTokens.load_default()
 	AnimUtils.back_bounce(rak1_back_button)
-	AudioDirector.play_sfx(&"whoosh")
 
 	# Clear cart and basket visuals
 	Cart.clear()

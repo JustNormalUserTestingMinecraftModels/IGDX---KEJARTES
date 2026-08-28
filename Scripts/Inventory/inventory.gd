@@ -452,7 +452,6 @@ func _on_use_pressed():
 		return
 
 	AnimUtils.squash_bounce(use_button)
-	AudioDirector.play_sfx(&"tap")
 
 	var owned_qty = GameState.get_inventory_quantity(selected_item.item_name)
 	if owned_qty > 1:
@@ -583,7 +582,6 @@ func _on_plus_pressed():
 
 func _on_popup_cancel_pressed():
 	_close_popup_animated()
-	AudioDirector.play_sfx(&"tap")
 
 func _on_popup_ok_pressed() -> void:
 	if _selected_student_id == -1:
@@ -595,6 +593,7 @@ func _on_popup_ok_pressed() -> void:
 		return
 	AudioDirector.play_sfx(&"confirm")
 	_spawn_floating_stat_pops(result["mood_delta"], result["energy_delta"])
+	await get_tree().process_frame
 	_close_popup_animated()
 
 # ═══════════════════════════════════════════

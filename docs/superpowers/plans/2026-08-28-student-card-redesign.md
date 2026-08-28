@@ -702,6 +702,8 @@ git commit -m "feat(student-card): lay the stat fills onto the painted tracks"
 
 **Files:**
 - Modify: `Scripts/StudentCard/StudentCardView.gd` (new `build_icon_clusters`; `populate` calls it)
+- Modify: `Scripts/StudentCard/student_card.gd` (drop `icon_magnify` from two `populate()` calls)
+- Modify: `Scripts/ReportCard/report_card.gd` (drop `icon_magnify` from two `populate()` calls, lines 57 and 66)
 - Test: `tests/test_student_card_layout.gd`
 
 **Interfaces:**

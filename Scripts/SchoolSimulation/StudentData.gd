@@ -115,45 +115,46 @@ func apply_minigame_result(category: String, won: bool, score: int = -1, max_sco
 	var mood_change: float = 0.0
 	var grade_num = GameState.current_grade
 	
+	# Pick this grade's numbers once, then use them below.
+	var win_base := Balance.MINIGAME_MENANG_POIN_DASAR_KELAS_7
+	var win_scale := Balance.MINIGAME_MENANG_POIN_SKALA_KELAS_7
+	var win_flat := Balance.MINIGAME_MENANG_POIN_TANPA_SKOR_KELAS_7
+	var win_energy := Balance.MINIGAME_MENANG_ENERGI_KELAS_7
+	var win_mood := Balance.MINIGAME_MENANG_MOOD_KELAS_7
+	var lose_stat := Balance.MINIGAME_KALAH_POIN_KELAS_7
+	var lose_energy := Balance.MINIGAME_KALAH_ENERGI_KELAS_7
+	var lose_mood := Balance.MINIGAME_KALAH_MOOD_KELAS_7
+	if grade_num == 8:
+		win_base = Balance.MINIGAME_MENANG_POIN_DASAR_KELAS_8
+		win_scale = Balance.MINIGAME_MENANG_POIN_SKALA_KELAS_8
+		win_flat = Balance.MINIGAME_MENANG_POIN_TANPA_SKOR_KELAS_8
+		win_energy = Balance.MINIGAME_MENANG_ENERGI_KELAS_8
+		win_mood = Balance.MINIGAME_MENANG_MOOD_KELAS_8
+		lose_stat = Balance.MINIGAME_KALAH_POIN_KELAS_8
+		lose_energy = Balance.MINIGAME_KALAH_ENERGI_KELAS_8
+		lose_mood = Balance.MINIGAME_KALAH_MOOD_KELAS_8
+	elif grade_num == 9:
+		win_base = Balance.MINIGAME_MENANG_POIN_DASAR_KELAS_9
+		win_scale = Balance.MINIGAME_MENANG_POIN_SKALA_KELAS_9
+		win_flat = Balance.MINIGAME_MENANG_POIN_TANPA_SKOR_KELAS_9
+		win_energy = Balance.MINIGAME_MENANG_ENERGI_KELAS_9
+		win_mood = Balance.MINIGAME_MENANG_MOOD_KELAS_9
+		lose_stat = Balance.MINIGAME_KALAH_POIN_KELAS_9
+		lose_energy = Balance.MINIGAME_KALAH_ENERGI_KELAS_9
+		lose_mood = Balance.MINIGAME_KALAH_MOOD_KELAS_9
+
 	if won:
 		if score >= 0 and max_score > 0:
 			var ratio = clampf(float(score) / float(max_score), 0.0, 1.0)
-			if grade_num == 8:
-				stat_change = roundf(4.0 + ratio * 8.0) if max_score > 1 else 8.0
-			elif grade_num == 9:
-				stat_change = roundf(3.0 + ratio * 6.0) if max_score > 1 else 6.0
-			else:
-				stat_change = roundf(5.0 + ratio * 10.0) if max_score > 1 else 10.0
+			stat_change = roundf(win_base + ratio * win_scale) if max_score > 1 else win_flat
 		else:
-			if grade_num == 8:
-				stat_change = 8.0
-			elif grade_num == 9:
-				stat_change = 6.0
-			else:
-				stat_change = 10.0
-		
-		if grade_num == 8:
-			energy_change = -7.0
-			mood_change = -7.0
-		elif grade_num == 9:
-			energy_change = -10.0
-			mood_change = -10.0
-		else:
-			energy_change = -5.0
-			mood_change = -5.0
+			stat_change = win_flat
+		energy_change = win_energy
+		mood_change = win_mood
 	else:
-		if grade_num == 8:
-			stat_change = -4.0
-			energy_change = -12.0
-			mood_change = -18.0
-		elif grade_num == 9:
-			stat_change = -5.0
-			energy_change = -15.0
-			mood_change = -20.0
-		else:
-			stat_change = -3.0
-			energy_change = -10.0
-			mood_change = -15.0
+		stat_change = lose_stat
+		energy_change = lose_energy
+		mood_change = lose_mood
 		
 	# Apply specialty multiplier to costs
 	var mult = get_category_efficiency_multiplier(category)

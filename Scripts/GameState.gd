@@ -114,6 +114,20 @@ func get_inventory_quantity(item_name: String) -> int:
 	return inventory.get(item_name, 0)
 
 
+## Debug/playtest helper: stock one entry per known item so a session can
+## exercise the inventory screen without driving the shop purchase flow.
+##
+## Replaces the inventory rather than adding to it, so repeated calls are
+## idempotent, and emits inventory_changed once at the end rather than once
+## per item -- listening screens rebuild their grid on that signal.
+func seed_playtest_inventory(quantity: int = 2) -> void:
+	inventory.clear()
+	if quantity > 0:
+		for item in ItemDatabase.get_all_items():
+			inventory[item.item_name] = quantity
+	inventory_changed.emit()
+
+
 ## Stat ceiling shared with StudentData's mood/energy range.
 const STAT_MAX := 100.0
 

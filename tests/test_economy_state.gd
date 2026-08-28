@@ -159,3 +159,32 @@ func test_use_item_refuses_for_unknown_student_id() -> void:
 	assert_eq(GameState.get_inventory_quantity("Mie Instan"), 1, "nothing consumed on refusal")
 	GameState.inventory.clear()
 	GameState.approved_students = original
+
+func test_seed_playtest_inventory_stocks_every_item() -> void:
+	GameState.inventory.clear()
+	GameState.seed_playtest_inventory(2)
+	for item_name in _EXPECTED_ITEMS:
+		assert_eq(GameState.get_inventory_quantity(item_name), 2,
+			"seed must stock: " + item_name)
+	GameState.inventory.clear()
+
+func test_seed_playtest_inventory_replaces_rather_than_stacks() -> void:
+	GameState.inventory.clear()
+	GameState.seed_playtest_inventory(2)
+	GameState.seed_playtest_inventory(3)
+	assert_eq(GameState.get_inventory_quantity("Komik"), 3,
+		"a second seed replaces the quantity instead of adding to it")
+	assert_eq(GameState.inventory.size(), _EXPECTED_ITEMS.size(),
+		"seeding twice must not duplicate entries")
+	GameState.inventory.clear()
+
+func test_seed_playtest_inventory_emits_changed_once() -> void:
+	GameState.inventory.clear()
+	var seen := []
+	var cb := func(): seen.append(1)
+	GameState.inventory_changed.connect(cb)
+	GameState.seed_playtest_inventory(1)
+	GameState.inventory_changed.disconnect(cb)
+	assert_eq(seen.size(), 1,
+		"one seed must emit inventory_changed exactly once, not once per item")
+	GameState.inventory.clear()

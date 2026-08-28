@@ -1494,7 +1494,7 @@ Expected: **303 passed, 1 failed** (the known `audio_director` bug only).
 
 If a test asserts on the badge text, it was pinning the old hardcoded string. Update it to the new value rather than reverting the change, and say so in the commit body.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add Scripts/SchoolSimulation/SchoolDay.gd

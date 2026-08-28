@@ -604,7 +604,7 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 	var icon_key := ""
 	
 	if "Libur" in text:
-		clean_text = "Libur"
+		clean_text = text.replace("⚡", "").replace("🌿", "").strip_edges()
 		icon_key = "libur"
 	elif "Akademis" in text:
 		clean_text = text.replace("📚", "").strip_edges()

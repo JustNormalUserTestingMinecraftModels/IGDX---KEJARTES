@@ -155,3 +155,51 @@ func test_every_field_exists_and_holds_its_shipped_value() -> void:
 func test_the_expected_table_covers_every_number() -> void:
 	assert_eq(_EXPECTED.size(), 105,
 		"the extraction covers 105 numbers; update this test deliberately if that changes")
+
+
+## The point of Balance.gd is that a tester can change a number and feel it.
+## A literal left behind in a function body breaks that promise silently:
+## the field still shows up in the file, but moving it does nothing. This
+## scan is the guard against that.
+const _EXTRACTED_FUNCTIONS := {
+	"res://Scripts/SchoolSimulation/StudentData.gd": [
+		"get_category_efficiency_multiplier",
+		"is_tired",
+		"apply_minigame_result",
+		"apply_personality_daily_decay",
+		"apply_jadwal_activity",
+	],
+}
+
+
+## Pulls one top-level function's body: from its `func` line to the next
+## line starting at column 0.
+func _function_body(src: String, fname: String) -> String:
+	var out := ""
+	var inside := false
+	for line in src.split("\n"):
+		if line.begins_with("func " + fname + "("):
+			inside = true
+			continue
+		if inside:
+			if line.length() > 0 and not (line.begins_with("\t") or line.begins_with(" ")):
+				break
+			out += line + "\n"
+	return out
+
+
+func test_no_balance_literals_left_in_extracted_functions() -> void:
+	# Numbers that are structure, not balance: array indices, clamp bounds,
+	# the 0.0/1.0 identity values, and the grade numbers themselves.
+	var allowed := ["0.0", "1.0", "100.0", "0", "1", "2", "3", "7", "8", "9"]
+	for path in _EXTRACTED_FUNCTIONS.keys():
+		var src := FileAccess.get_file_as_string(path)
+		for fname in _EXTRACTED_FUNCTIONS[path]:
+			var body := _function_body(src, fname)
+			assert_true(body != "", "could not find function " + fname + " in " + path)
+			var regex := RegEx.new()
+			regex.compile("(?<![\\w.])\\d+\\.\\d+")
+			for m in regex.search_all(body):
+				assert_true(allowed.has(m.get_string()),
+					"%s() still has the hardcoded number %s -- it belongs in Balance.gd"
+						% [fname, m.get_string()])

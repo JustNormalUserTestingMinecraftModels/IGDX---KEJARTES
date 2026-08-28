@@ -1211,7 +1211,7 @@ func skip_to_results() -> void:
 				category = "Event"
 				events_triggered_this_week += 1
 
-			var won = randf() > 0.4
+			var won = randf() > Balance.SKIP_PELUANG_KALAH
 			if student_manager:
 				student_manager.record_minigame_result(day_name, category, "Simulasi Cepat", won)
 		current_day += 1

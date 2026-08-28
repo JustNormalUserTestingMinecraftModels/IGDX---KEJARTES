@@ -202,25 +202,25 @@ func apply_personality_daily_decay() -> Dictionary:
 	var reason: String = "Aktivitas biasa"
 	
 	match personality:
-		"Aktif": # Budi: Sporty
-			energy_loss = roundf(randf_range(6.0, 8.0))
-			mood_loss = roundf(randf_range(2.0, 4.0))
+		"Aktif": # Doni
+			energy_loss = roundf(randf_range(Balance.DECAY_AKTIF_ENERGI_MIN, Balance.DECAY_AKTIF_ENERGI_MAX))
+			mood_loss = roundf(randf_range(Balance.DECAY_AKTIF_MOOD_MIN, Balance.DECAY_AKTIF_MOOD_MAX))
 			reason = "Banyak aktivitas fisik & aktif bergerak"
-		"Tekun": # Ani: Academic
-			energy_loss = roundf(randf_range(3.0, 5.0))
-			mood_loss = roundf(randf_range(6.0, 8.0))
+		"Tekun": # Marcel
+			energy_loss = roundf(randf_range(Balance.DECAY_TEKUN_ENERGI_MIN, Balance.DECAY_TEKUN_ENERGI_MAX))
+			mood_loss = roundf(randf_range(Balance.DECAY_TEKUN_MOOD_MIN, Balance.DECAY_TEKUN_MOOD_MAX))
 			reason = "Fokus berpikir & belajar padat"
-		"Kreatif": # Cici: Artistic
-			energy_loss = roundf(randf_range(5.0, 7.0))
-			mood_loss = roundf(randf_range(3.0, 5.0))
+		"Kreatif": # Andi and Thea
+			energy_loss = roundf(randf_range(Balance.DECAY_KREATIF_ENERGI_MIN, Balance.DECAY_KREATIF_ENERGI_MAX))
+			mood_loss = roundf(randf_range(Balance.DECAY_KREATIF_MOOD_MIN, Balance.DECAY_KREATIF_MOOD_MAX))
 			reason = "Lelah berkreasi & mengeksplor ide"
-		"Seni Dalam Kesunyian": # Citra: Artistic Introvert
-			energy_loss = roundf(randf_range(4.0, 6.0))
-			mood_loss = roundf(randf_range(4.0, 6.0))
+		"Seni Dalam Kesunyian": # Citra
+			energy_loss = roundf(randf_range(Balance.DECAY_KESUNYIAN_ENERGI_MIN, Balance.DECAY_KESUNYIAN_ENERGI_MAX))
+			mood_loss = roundf(randf_range(Balance.DECAY_KESUNYIAN_MOOD_MIN, Balance.DECAY_KESUNYIAN_MOOD_MAX))
 			reason = "Merenung dalam ketenangan & berkarya sendiri"
-		_: # Default: Balanced
-			energy_loss = roundf(randf_range(4.0, 6.0))
-			mood_loss = roundf(randf_range(4.0, 6.0))
+		_: # Shinta ("Santai"), and the fallback for any unrecognised personality
+			energy_loss = roundf(randf_range(Balance.DECAY_SANTAI_ENERGI_MIN, Balance.DECAY_SANTAI_ENERGI_MAX))
+			mood_loss = roundf(randf_range(Balance.DECAY_SANTAI_MOOD_MIN, Balance.DECAY_SANTAI_MOOD_MAX))
 			reason = "Menjalani rutinitas harian dengan santai"
 			
 	energy = clampf(energy - energy_loss, 0.0, 100.0)

@@ -865,8 +865,8 @@ static func build_stat_bars(kertas: Control, s_data: Dictionary,
 ```
 
 Both callers pass `icon_magnify` and must be updated:
-- `Scripts/StudentCard/student_card.gd` — two `StudentCardView.populate(` calls; drop the `icon_magnify` argument from each.
-- `Scripts/ReportCard/report_card.gd:57` and `:66` — same.
+- `Scripts/StudentCard/student_card.gd:869` — one `StudentCardView.populate(` call; drop the `icon_magnify` argument.
+- `Scripts/ReportCard/report_card.gd:57` and `:66` — two calls; same.
 
 Leave the `@export var icon_magnify` declaration in `student_card.gd` alone; removing an export changes the scene's serialised properties, which is a bigger edit than this task needs.
 

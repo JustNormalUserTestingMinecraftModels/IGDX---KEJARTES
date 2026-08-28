@@ -890,7 +890,9 @@ var student_data_list = [
 		"personality": "Tekun",
 		"quirk": "Kutu Buku",
 		"persona": "Persona Tekun",
-		"profil": "Agama: Katolik\nJenis Kelamin: Laki-laki"
+		"profil": "Agama: Katolik\nJenis Kelamin: Laki-laki",
+		"jenis_kelamin": "Laki - Laki",
+		"tanggal_lahir": "20 September"
 	},
 	{
 		"id": 2,
@@ -911,7 +913,9 @@ var student_data_list = [
 		"personality": "Aktif",
 		"quirk": "Semangat Juang",
 		"persona": "Persona Aktif",
-		"profil": "Agama: Katolik\nJenis Kelamin: Laki-laki"
+		"profil": "Agama: Katolik\nJenis Kelamin: Laki-laki",
+		"jenis_kelamin": "Laki - Laki",
+		"tanggal_lahir": "9 Maret"
 	},
 	{
 		"id": 3,
@@ -932,7 +936,9 @@ var student_data_list = [
 		"personality": "Kreatif",
 		"quirk": "Penasaran",
 		"persona": "Persona Kreatif",
-		"profil": "Agama: Katolik\nJenis Kelamin: Laki-laki"
+		"profil": "Agama: Katolik\nJenis Kelamin: Laki-laki",
+		"jenis_kelamin": "Laki - Laki",
+		"tanggal_lahir": "25 Januari"
 	},
 	{
 		"id": 4,
@@ -953,7 +959,9 @@ var student_data_list = [
 		"personality": "Seni Dalam Kesunyian",
 		"quirk": "Penyendiri",
 		"persona": "Persona Pendiam",
-		"profil": "Agama: Katolik\nJenis Kelamin: Perempuan"
+		"profil": "Agama: Katolik\nJenis Kelamin: Perempuan",
+		"jenis_kelamin": "Perempuan",
+		"tanggal_lahir": "17 Desember"
 	},
 	{
 		"id": 5,
@@ -974,7 +982,9 @@ var student_data_list = [
 		"personality": "Santai",
 		"quirk": "Biang Onar",
 		"persona": "Persona Santai",
-		"profil": "Agama: Katolik\nJenis Kelamin: Perempuan"
+		"profil": "Agama: Katolik\nJenis Kelamin: Perempuan",
+		"jenis_kelamin": "Perempuan",
+		"tanggal_lahir": "4 Juni"
 	},
 	{
 		"id": 6,
@@ -995,7 +1005,9 @@ var student_data_list = [
 		"personality": "Kreatif",
 		"quirk": "Pekerja Keras",
 		"persona": "Persona Kreatif",
-		"profil": "Agama: Katolik\nJenis Kelamin: Perempuan"
+		"profil": "Agama: Katolik\nJenis Kelamin: Perempuan",
+		"jenis_kelamin": "Perempuan",
+		"tanggal_lahir": "15 Mei"
 	}
 ]
 

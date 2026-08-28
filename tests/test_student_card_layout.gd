@@ -29,3 +29,36 @@ func test_card_background_is_the_full_design_size() -> void:
 	var tex: Texture2D = load(_ART + "card_bg.png")
 	assert_eq(tex.get_width(), 1080, "card_bg must be 1080 wide")
 	assert_eq(tex.get_height(), 1920, "card_bg must be 1920 tall")
+
+
+const _BIO := {
+	"Marcel": ["Laki - Laki", "20 September"],
+	"Doni":   ["Laki - Laki", "9 Maret"],
+	"Andi":   ["Laki - Laki", "25 Januari"],
+	"Citra":  ["Perempuan", "17 Desember"],
+	"Shinta": ["Perempuan", "4 Juni"],
+	"Thea":   ["Perempuan", "15 Mei"],
+}
+
+
+func test_roster_carries_gender_and_birth_date() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	for student_name in _BIO.keys():
+		var gender: String = _BIO[student_name][0]
+		var born: String = _BIO[student_name][1]
+		assert_true(src.contains('"jenis_kelamin": "%s"' % gender),
+			"student_card.gd must declare jenis_kelamin %s for %s" % [gender, student_name])
+		assert_true(src.contains('"tanggal_lahir": "%s"' % born),
+			"student_card.gd must declare tanggal_lahir %s for %s" % [born, student_name])
+
+
+## ReportCard never hardcodes student data -- it reads
+## GameState.approved_students live (report_card.gd:52), which
+## student_card.gd populates directly from its own student_data_list
+## entries (student_card.gd:1421). So the new bio fields reach ReportCard
+## automatically once they exist on student_card.gd's dictionaries; this
+## pins that the propagation path itself stays intact.
+func test_report_card_still_reads_approved_students_live() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/report_card.gd")
+	assert_true(src.contains("student_data_list = GameState.approved_students"),
+		"report_card.gd must keep reading the live roster, not a hardcoded copy")

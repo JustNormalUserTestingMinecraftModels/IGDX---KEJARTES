@@ -103,11 +103,11 @@ func get_mood_delta() -> float: return mood - initial_mood
 
 func get_category_efficiency_multiplier(category: String) -> float:
 	if category == specialty_category:
-		return 0.6 # 40% less energy/mood spent when learning specialty!
+		return Balance.BIAYA_KALAU_MAPEL_FAVORIT
 	elif specialty_category == "Seimbang":
-		return 0.85 # 15% balanced discount
+		return Balance.BIAYA_KALAU_MURID_SEIMBANG
 	else:
-		return 1.20 # 20% more energy/mood spent when learning non-specialty subject
+		return Balance.BIAYA_KALAU_BUKAN_FAVORIT
 
 func apply_minigame_result(category: String, won: bool, score: int = -1, max_score: int = -1) -> Dictionary:
 	var stat_change: float = 0.0
@@ -190,7 +190,7 @@ func apply_minigame_result(category: String, won: bool, score: int = -1, max_sco
 	}
 
 func is_tired() -> bool:
-	return energy <= 20.0
+	return energy <= Balance.BATAS_KELELAHAN
 
 func apply_daily_decay(_energy_loss: float = 5.0, _mood_loss: float = 5.0) -> Dictionary:
 	return apply_personality_daily_decay()
@@ -276,7 +276,7 @@ func apply_jadwal_activity(category: String, base_gain: float = 5.0, specialty_b
 	var ijin_reason: String = ""
 	
 	# Automatic "Izin Sakit / Istirahat" check if student energy is depleted (<= 5.0)
-	if category != "Istirahat" and energy <= 5.0:
+	if category != "Istirahat" and energy <= Balance.IZIN_OTOMATIS_BATAS_ENERGI:
 		took_ijin = true
 		category = "Istirahat"
 		ijin_reason = "Murid %s kehabisan energi dan mengambil Izin (Istirahat) untuk memulihkan tenaga!" % student_name

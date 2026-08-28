@@ -20,6 +20,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_panels(theme, tokens)
 	_build_labels(theme, tokens)
 	_build_progress(theme, tokens)
+	_build_student_card(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -247,6 +248,59 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 
 	theme.set_font_size("font_size", "StatBar", tokens.font_caption)
 	theme.set_color("font_color", "StatBar", tokens.text_primary)
+
+
+# ------------------------------------------------- student card redesign
+
+const _CARD_ART := "res://Assets/Images/StudentCard/"
+
+
+## Variations used only by the student card's redesigned layout. The card
+## background art paints the pill tracks, the bio panel, and the portrait
+## frame, so these styles deliberately draw less than their siblings: the
+## pill contributes only a fill, and the bio text is light because it sits
+## on the painted purple panel.
+static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
+	# -- Stat pill: fill only; the track is painted into the card art. --
+	theme.add_type("StatPill")
+	theme.set_type_variation("StatPill", "ProgressBar")
+	theme.set_stylebox("background", "StatPill", StyleBoxEmpty.new())
+
+	var pill_fill := StyleBoxTexture.new()
+	pill_fill.texture = load(_CARD_ART + "pill_fill.png")
+	# The art sits inset on a 256x256 canvas; region_rect crops to it so no
+	# transparent padding is stretched into the bar.
+	pill_fill.region_rect = Rect2(59, 65, 150, 127)
+	# 28 px keeps both rounded ends intact inside a 67 px tall track
+	# (28 + 28 < 67); anything larger would overlap and distort them.
+	pill_fill.set_texture_margin_all(28)
+	theme.set_stylebox("fill", "StatPill", pill_fill)
+
+	# -- Trait button: one recolourable pill, tinted by the caller. --
+	theme.add_type("TraitPill")
+	theme.set_type_variation("TraitPill", "Button")
+
+	var trait_normal := StyleBoxTexture.new()
+	trait_normal.texture = load(_CARD_ART + "trait_button.png")
+	trait_normal.region_rect = Rect2(20, 277, 601, 91)
+	trait_normal.set_texture_margin_all(45)
+	theme.set_stylebox("normal", "TraitPill", trait_normal)
+	theme.set_stylebox("hover", "TraitPill", trait_normal)
+	theme.set_stylebox("pressed", "TraitPill", trait_normal)
+	theme.set_stylebox("focus", "TraitPill", StyleBoxEmpty.new())
+	theme.set_font_size("font_size", "TraitPill", tokens.font_body_size)
+	theme.set_color("font_color", "TraitPill", tokens.text_on_brand)
+
+	# -- Bio text: light, because it sits on the painted purple panel. --
+	theme.add_type("BioLabel")
+	theme.set_type_variation("BioLabel", "Label")
+	theme.set_font_size("font_size", "BioLabel", tokens.font_body_size)
+	theme.set_color("font_color", "BioLabel", tokens.text_on_brand)
+
+	theme.add_type("BioValue")
+	theme.set_type_variation("BioValue", "Label")
+	theme.set_font_size("font_size", "BioValue", tokens.font_body_size + 6)
+	theme.set_color("font_color", "BioValue", tokens.text_on_brand)
 
 
 # ------------------------------------------------- unstyled base controls

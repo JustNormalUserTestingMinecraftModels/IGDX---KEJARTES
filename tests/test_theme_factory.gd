@@ -88,3 +88,37 @@ func test_build_survives_null_fonts() -> void:
 	bare.font_body = null
 	var t := ThemeFactory.build(bare)
 	assert_true(t != null, "build must tolerate unassigned font slots")
+
+
+func test_redesign_variations_exist() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var actual := theme.get_type_list()
+	for variation in ["StatPill", "TraitPill", "BioLabel", "BioValue"]:
+		assert_true(actual.has(variation),
+			"ThemeFactory must define the " + variation + " variation")
+
+
+## The card background paints the pill tracks, so the bar must draw no
+## background of its own -- otherwise a second track renders on top of the
+## painted one and the pill looks doubled.
+func test_stat_pill_draws_no_background() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	var bg := theme.get_stylebox("background", "StatPill")
+	assert_true(bg is StyleBoxEmpty,
+		"StatPill's background must be empty; the track is painted into the card")
+
+
+func test_stat_pill_fill_uses_the_texture() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	var fill := theme.get_stylebox("fill", "StatPill")
+	assert_true(fill is StyleBoxTexture, "StatPill's fill must be textured")
+	assert_true(fill.texture != null, "StatPill's fill texture must load")
+
+
+## StatBar is shared with AturJadwal, SemesterEnd and ResultCheckup. The
+## redesign must not have altered how it looks for them.
+func test_stat_bar_variation_is_unchanged() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	var bg := theme.get_stylebox("background", "StatBar")
+	assert_true(bg is StyleBoxFlat, "StatBar keeps its flat track")

@@ -13,6 +13,15 @@ extends ProgressBar
 		category = value
 		_apply_tint()
 
+## Which theme variation this bar wears. The student card's redesigned
+## pills use "StatPill", whose track is painted into the card art; every
+## other screen keeps the shared "StatBar" look.
+@export var variation: StringName = &"StatBar":
+	set(value):
+		variation = value
+		if is_inside_tree():
+			theme_type_variation = value
+
 @export var show_value_label: bool = false:
 	set(value):
 		show_value_label = value
@@ -25,7 +34,7 @@ var _label: Label
 
 
 func _ready() -> void:
-	theme_type_variation = &"StatBar"
+	theme_type_variation = variation
 	show_percentage = false
 	min_value = 0.0
 	max_value = 100.0

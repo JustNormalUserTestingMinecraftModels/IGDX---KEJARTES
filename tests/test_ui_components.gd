@@ -139,3 +139,10 @@ func test_unknown_category_still_renders_visibly() -> void:
 	_root.add_child(bar)
 	assert_true(bar.self_modulate.a > 0.0,
 		"an unknown category must never render the bar invisible")
+
+
+func test_stat_bar_defaults_to_its_own_variation() -> void:
+	var bar := StatBar.new()
+	assert_eq(bar.variation, &"StatBar",
+		"an unconfigured StatBar must keep the shared look")
+	bar.free()

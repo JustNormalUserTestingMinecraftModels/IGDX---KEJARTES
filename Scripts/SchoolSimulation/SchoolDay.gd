@@ -528,6 +528,26 @@ func _add_embedded_bar_row(parent_vbox: VBoxContainer, icon_text: String, curren
 		"lbl": info_lbl
 	}
 
+## The preview badge must quote the same gain the simulation will apply,
+## or a tester changing Balance.gd sees the old number here and thinks
+## nothing happened. Mirrors StudentManager.apply_jadwal_effects_all.
+func _preview_gain(student: StudentData, category: String) -> float:
+	var base := Balance.BELAJAR_POIN_CADANGAN
+	var bonus := Balance.BELAJAR_BONUS_FAVORIT_CADANGAN
+	match GameState.current_grade:
+		7:
+			base = Balance.BELAJAR_POIN_KELAS_7
+			bonus = Balance.BELAJAR_BONUS_FAVORIT_KELAS_7
+		8:
+			base = Balance.BELAJAR_POIN_KELAS_8
+			bonus = Balance.BELAJAR_BONUS_FAVORIT_KELAS_8
+		9:
+			base = Balance.BELAJAR_POIN_KELAS_9
+			bonus = Balance.BELAJAR_BONUS_FAVORIT_KELAS_9
+	if student.specialty_category == category:
+		return base + bonus
+	return base
+
 func _build_pill_badges_for_student(student: StudentData, day_name: String) -> HBoxContainer:
 	# Returns an HBoxContainer of colored pill Label badges showing what will change today.
 	# Sources: schedule (known before day), warnings (energy low).
@@ -553,16 +573,16 @@ func _build_pill_badges_for_student(student: StudentData, day_name: String) -> H
 
 	match category:
 		"Akademis":
-			var gain = 6.0 if student.specialty_category == "Akademis" else 3.0
+			var gain := _preview_gain(student, "Akademis")
 			_add_pill(hbox, "+%.0f Akademis 📚" % gain, tokens.cat_akademis)
 		"SeniBudaya":
-			var gain = 6.0 if student.specialty_category == "SeniBudaya" else 3.0
+			var gain := _preview_gain(student, "SeniBudaya")
 			_add_pill(hbox, "+%.0f Seni 🎨" % gain, tokens.cat_senibudaya)
 		"Olahraga":
-			var gain = 6.0 if student.specialty_category == "Olahraga" else 3.0
+			var gain := _preview_gain(student, "Olahraga")
 			_add_pill(hbox, "+%.0f Olahraga ⚽" % gain, tokens.cat_olahraga)
 		"Istirahat":
-			_add_pill(hbox, "+25 ⚡ Istirahat", tokens.state_success)
+			_add_pill(hbox, "+%.0f ⚡ Libur" % Balance.LIBUR_ENERGI_PULIH_MAX, tokens.state_success)
 		"Wirausaha":
 			_add_pill(hbox, "💰 Wirausaha", tokens.category_color("Wirausaha"))
 		_:
@@ -570,11 +590,11 @@ func _build_pill_badges_for_student(student: StudentData, day_name: String) -> H
 
 	# Energy/Mood cost estimate (show if studying)
 	if category != "" and category != "Istirahat":
-		_add_pill(hbox, "~-15 ⚡", tokens.state_danger)
-		_add_pill(hbox, "~-10 😊", tokens.state_warning)
+		_add_pill(hbox, "~-%.0f ⚡" % Balance.BELAJAR_BIAYA_ENERGI_MIN, tokens.state_danger)
+		_add_pill(hbox, "~-%.0f 😊" % Balance.BELAJAR_BIAYA_MOOD_MIN, tokens.state_warning)
 
 	# Warning if already low energy
-	if student.energy <= 20.0:
+	if student.energy <= Balance.BATAS_KELELAHAN:
 		_add_pill(hbox, "⚠ KELELAHAN", tokens.state_danger)
 
 	return hbox

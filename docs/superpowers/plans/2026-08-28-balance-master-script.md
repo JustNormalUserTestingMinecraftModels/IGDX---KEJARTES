@@ -50,7 +50,7 @@ The existing 303-test suite is this plan's real guard. `test_wirausaha`, `test_s
 - Test: `tests/test_balance.gd`
 
 **Interfaces:**
-- Produces: `class_name Balance` with 93 `static var` fields. Every later task reads from it. Exact field names are fixed here and must not be renamed later.
+- Produces: `class_name Balance` with 105 `static var` fields. Every later task reads from it. Exact field names are fixed here and must not be renamed later.
 
 Nothing reads this file yet, so it cannot break anything. Values are copied from the current source — do not round, adjust, or "tidy" any number.
 

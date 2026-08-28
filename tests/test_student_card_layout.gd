@@ -191,11 +191,31 @@ func test_bio_panel_renders_the_three_rows() -> void:
 
 
 ## The panel is painted into the card art; the text must land inside it.
+## Checks the geometry is actually WIRED, not just that the constant
+## exists: all four offsets must derive from BIO_PANEL_RECT with
+## _BIO_PADDING applied, and populate() must actually call build_bio_panel
+## -- a source scan can't run the layout, so it checks the ingredients are
+## connected instead.
 func test_bio_panel_sits_inside_the_painted_panel() -> void:
 	var src := FileAccess.get_file_as_string(
 		"res://Scripts/StudentCard/StudentCardView.gd")
 	assert_true(src.contains("const BIO_PANEL_RECT := Rect2(120, 300, 489, 367)"),
 		"BIO_PANEL_RECT must match the painted panel's measured interior")
+
+	var panel_start := src.find("func build_bio_panel(")
+	assert_true(panel_start != -1, "build_bio_panel must exist")
+	var panel_end := src.find("\nstatic func", panel_start + 1)
+	var panel_body := src.substr(panel_start, panel_end - panel_start)
+	for offset_line in ["panel.offset_left = BIO_PANEL_RECT.position.x + _BIO_PADDING",
+			"panel.offset_top = BIO_PANEL_RECT.position.y + _BIO_PADDING",
+			"panel.offset_right = BIO_PANEL_RECT.end.x - _BIO_PADDING",
+			"panel.offset_bottom = BIO_PANEL_RECT.end.y - _BIO_PADDING"]:
+		assert_true(panel_body.contains(offset_line),
+			"build_bio_panel must derive every offset from BIO_PANEL_RECT and _BIO_PADDING: "
+				+ offset_line)
+
+	assert_true(src.contains("build_bio_panel(card, student)"),
+		"populate() must call build_bio_panel, or the bio panel never renders")
 
 
 func test_superseded_labels_are_hidden() -> void:

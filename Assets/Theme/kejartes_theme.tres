@@ -1,7 +1,6 @@
 [gd_resource type="Theme" format=3]
 
-[ext_resource type="FontFile" path="res://Assets/Fonts/Baloo2-Variable.ttf" id="1_i33xe"]
-[ext_resource type="FontFile" path="res://Assets/Fonts/Nunito-Variable.ttf" id="2_c7jio"]
+[ext_resource type="FontFile" path="res://Assets/Fonts/Milker.otf" id="1_c7jio"]
 [ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/pill_fill.png" id="2_rdx8f"]
 [ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/trait_button.png" id="3_04lmp"]
 
@@ -814,7 +813,7 @@ texture_margin_bottom = 45.0
 region_rect = Rect2(20, 277, 601, 91)
 
 [resource]
-default_font = ExtResource("2_c7jio")
+default_font = ExtResource("1_c7jio")
 default_font_size = 28
 BarLabel/base_type = &"Label"
 BarLabel/colors/font_color = Color(1, 1, 1, 1)
@@ -850,7 +849,7 @@ DangerButton/colors/font_focus_color = Color(1, 1, 1, 1)
 DangerButton/colors/font_hover_color = Color(1, 1, 1, 1)
 DangerButton/colors/font_pressed_color = Color(1, 1, 1, 1)
 DangerButton/font_sizes/font_size = 36
-DangerButton/fonts/font = ExtResource("1_i33xe")
+DangerButton/fonts/font = ExtResource("1_c7jio")
 DangerButton/styles/disabled = SubResource("StyleBoxFlat_jicwd")
 DangerButton/styles/focus = SubResource("StyleBoxFlat_88lyh")
 DangerButton/styles/hover = SubResource("StyleBoxFlat_0xk14")
@@ -861,13 +860,13 @@ DisplayLabel/colors/font_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
 DisplayLabel/colors/font_outline_color = Color(1, 1, 1, 1)
 DisplayLabel/constants/outline_size = 8
 DisplayLabel/font_sizes/font_size = 96
-DisplayLabel/fonts/font = ExtResource("1_i33xe")
+DisplayLabel/fonts/font = ExtResource("1_c7jio")
 H1Label/base_type = &"Label"
 H1Label/colors/font_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
 H1Label/colors/font_outline_color = Color(1, 1, 1, 1)
 H1Label/constants/outline_size = 8
 H1Label/font_sizes/font_size = 64
-H1Label/fonts/font = ExtResource("1_i33xe")
+H1Label/fonts/font = ExtResource("1_c7jio")
 H2Label/base_type = &"Label"
 H2Label/colors/font_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
 H2Label/font_sizes/font_size = 48
@@ -881,7 +880,7 @@ LobbyNavButton/colors/font_focus_color = Color(1, 1, 1, 1)
 LobbyNavButton/colors/font_hover_color = Color(1, 1, 1, 1)
 LobbyNavButton/colors/font_pressed_color = Color(1, 1, 1, 1)
 LobbyNavButton/font_sizes/font_size = 36
-LobbyNavButton/fonts/font = ExtResource("1_i33xe")
+LobbyNavButton/fonts/font = ExtResource("1_c7jio")
 LobbyNavButton/styles/disabled = SubResource("StyleBoxFlat_uxcam")
 LobbyNavButton/styles/focus = SubResource("StyleBoxFlat_fnuwu")
 LobbyNavButton/styles/hover = SubResource("StyleBoxFlat_ss02d")
@@ -902,7 +901,7 @@ PersonaBadge/colors/font_focus_color = Color(1, 1, 1, 1)
 PersonaBadge/colors/font_hover_color = Color(1, 1, 1, 1)
 PersonaBadge/colors/font_pressed_color = Color(1, 1, 1, 1)
 PersonaBadge/font_sizes/font_size = 36
-PersonaBadge/fonts/font = ExtResource("1_i33xe")
+PersonaBadge/fonts/font = ExtResource("1_c7jio")
 PersonaBadge/styles/disabled = SubResource("StyleBoxFlat_bmgv6")
 PersonaBadge/styles/focus = SubResource("StyleBoxFlat_2a4ot")
 PersonaBadge/styles/hover = SubResource("StyleBoxFlat_oxitu")
@@ -915,7 +914,7 @@ PrimaryButton/colors/font_focus_color = Color(1, 1, 1, 1)
 PrimaryButton/colors/font_hover_color = Color(1, 1, 1, 1)
 PrimaryButton/colors/font_pressed_color = Color(1, 1, 1, 1)
 PrimaryButton/font_sizes/font_size = 36
-PrimaryButton/fonts/font = ExtResource("1_i33xe")
+PrimaryButton/fonts/font = ExtResource("1_c7jio")
 PrimaryButton/styles/disabled = SubResource("StyleBoxFlat_y32ug")
 PrimaryButton/styles/focus = SubResource("StyleBoxFlat_ga10r")
 PrimaryButton/styles/hover = SubResource("StyleBoxFlat_0wvsw")
@@ -928,7 +927,7 @@ QuirkBadge/colors/font_focus_color = Color(1, 1, 1, 1)
 QuirkBadge/colors/font_hover_color = Color(1, 1, 1, 1)
 QuirkBadge/colors/font_pressed_color = Color(1, 1, 1, 1)
 QuirkBadge/font_sizes/font_size = 36
-QuirkBadge/fonts/font = ExtResource("1_i33xe")
+QuirkBadge/fonts/font = ExtResource("1_c7jio")
 QuirkBadge/styles/disabled = SubResource("StyleBoxFlat_6otdd")
 QuirkBadge/styles/focus = SubResource("StyleBoxFlat_4vivj")
 QuirkBadge/styles/hover = SubResource("StyleBoxFlat_yu8x1")
@@ -953,7 +952,7 @@ SecondaryButton/colors/font_focus_color = Color(0.18039216, 0.35686275, 1, 1)
 SecondaryButton/colors/font_hover_color = Color(0.18039216, 0.35686275, 1, 1)
 SecondaryButton/colors/font_pressed_color = Color(0.18039216, 0.35686275, 1, 1)
 SecondaryButton/font_sizes/font_size = 36
-SecondaryButton/fonts/font = ExtResource("1_i33xe")
+SecondaryButton/fonts/font = ExtResource("1_c7jio")
 SecondaryButton/styles/disabled = SubResource("StyleBoxFlat_dtdow")
 SecondaryButton/styles/focus = SubResource("StyleBoxFlat_1sy04")
 SecondaryButton/styles/hover = SubResource("StyleBoxFlat_7di56")
@@ -974,7 +973,7 @@ SuccessButton/colors/font_focus_color = Color(1, 1, 1, 1)
 SuccessButton/colors/font_hover_color = Color(1, 1, 1, 1)
 SuccessButton/colors/font_pressed_color = Color(1, 1, 1, 1)
 SuccessButton/font_sizes/font_size = 36
-SuccessButton/fonts/font = ExtResource("1_i33xe")
+SuccessButton/fonts/font = ExtResource("1_c7jio")
 SuccessButton/styles/disabled = SubResource("StyleBoxFlat_2st2o")
 SuccessButton/styles/focus = SubResource("StyleBoxFlat_xn7lv")
 SuccessButton/styles/hover = SubResource("StyleBoxFlat_p23bg")
@@ -990,7 +989,7 @@ TraitPill/colors/font_color = Color(1, 1, 1, 1)
 TraitPill/colors/font_outline_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
 TraitPill/constants/outline_size = 6
 TraitPill/font_sizes/font_size = 48
-TraitPill/fonts/font = ExtResource("1_i33xe")
+TraitPill/fonts/font = ExtResource("1_c7jio")
 TraitPill/styles/focus = SubResource("StyleBoxEmpty_7byrn")
 TraitPill/styles/hover = SubResource("StyleBoxTexture_ufg7e")
 TraitPill/styles/normal = SubResource("StyleBoxTexture_ufg7e")

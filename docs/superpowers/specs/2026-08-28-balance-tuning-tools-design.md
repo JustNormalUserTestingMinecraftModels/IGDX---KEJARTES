@@ -1,285 +1,262 @@
-# Live Balance Tuning Tools — Design
+# Balance Tuning — One Master Script
 
 **Date:** 2026-08-28
 **Status:** Approved, pending implementation plan
 
+> Replaces an earlier draft of this document that proposed a tunable
+> `Resource` plus an in-game editing panel plus a batch simulator. That design
+> was larger than the problem. See "What was cut, and why" at the end.
+
 ## Problem
 
-KejarTes is a stat-check game: whether a student clears their three academic
-targets before the grade's final week is decided entirely by numbers —
-personality decay rates, activity gains, efficiency multipliers, minigame
-win/loss deltas, quirk coefficients, and the per-grade target uplift.
+KejarTes is decided by numbers. Whether a student clears their three targets
+before the grade's final week depends on decay rates, study gains, efficiency
+multipliers, minigame win/loss amounts, trait coefficients, and the per-grade
+target uplift.
 
-A tester who plays a week and feels something is wrong ("losing that minigame
-gutted her mood") currently has no way to act on it. The number they want is
-a hardcoded literal inside a function body — `roundf(randf_range(6.0, 8.0))`
-in `apply_personality_daily_decay`, or `mood_change = -18.0` in an
-`elif grade_num == 8` branch. Finding it means reading gameplay source;
-changing it means editing code and restarting.
+A tester who plays a week and feels something is wrong — "losing that minigame
+gutted her mood" — cannot act on it. The number they want is a bare literal
+inside a function body: `roundf(randf_range(6.0, 8.0))` in
+`apply_personality_daily_decay`, or `mood_change = -18.0` inside an
+`elif grade_num == 8` branch. Finding it means reading gameplay source. There
+are roughly ninety such numbers across four files.
 
-That is the gap this fills. **The tester should be able to change the number
-themselves, mid-playtest, and immediately replay the situation that exposed
-the problem.**
+**The tester should be able to open one file, understand what each number
+does, change it, and re-run — without reading code and without asking anyone.**
 
 ## Goals
 
-1. Every number that affects balance is editable at runtime, from inside a
-   running dev build, with no restart and no code editing.
-2. A change takes effect on the next call that reads it — the next day
-   simulated, the next minigame scored.
-3. The tester can capture the situation that revealed the imbalance and
-   restore it after changing a number, so the comparison is a real A/B and
-   not a vibe.
-4. Tuned values can leave the session: written back to a versioned resource,
-   or copied out as text.
+1. Every number affecting balance lives in exactly one file.
+2. That file is readable by someone who does not program: each number says, in
+   Indonesian, what it does in the game and which student it affects.
+3. Changing a number and re-running the game applies it. No code editing
+   elsewhere, no hunting.
+4. The change is a normal file edit, so it is a git diff a developer can review.
 
 ## Non-Goals
 
-- **No batch simulator.** An earlier draft proposed running semesters
-  headlessly and reporting win rates. That answers "is this statistically
-  winnable", which is not the question being asked. The tester plays the
-  game; the tool only removes the friction between noticing a problem and
-  testing a fix.
-- **No new save system.** `balance_tokens.tres` is a versioned project asset
-  edited by developers, not player state. `GameState` gains no persistence.
-- **No rebalancing.** This ships the current numbers unchanged. It supplies
-  the instrument, not the tuning.
-- **No editor-side tool.** The overlay is the surface, because the user is
-  someone mid-playtest. The resource is Inspector-editable for free, which
-  covers editor use without extra work.
+- **No in-game editing panel.** Testers here run the project from the Godot
+  editor, so they can edit the file directly. A panel is deferred, not
+  rejected — see the `static var` note below, which keeps it cheap to add.
+- **No batch simulator.** An earlier draft proposed running semesters headlessly
+  and reporting win rates. That answers "is this statistically winnable", which
+  is not the question being asked. The tester plays the game.
+- **No new save system.** `Balance.gd` is source, versioned in git. `GameState`
+  gains no persistence.
+- **No rebalancing.** This ships today's numbers unchanged. It supplies the
+  instrument, not the tuning.
 
 ---
 
-## 1. Mechanism
+## 1. The file
 
-### The store
-
-`Scripts/Design/BalanceTokens.gd` — a `Resource` whose fields are
-`@export var` (not `const`), saved as `Assets/Balance/balance_tokens.tres`.
-It mirrors `DesignTokens` / `design_tokens.tres` exactly, including a
-`load_default()` accessor:
+`Scripts/Balance.gd` — a `class_name Balance` holding every tunable as a
+`static var`, grouped and commented in Indonesian.
 
 ```gdscript
-class_name BalanceTokens
-extends Resource
-
-const DEFAULT_PATH := "res://Assets/Balance/balance_tokens.tres"
-
-static func load_default() -> BalanceTokens:
-	return load(DEFAULT_PATH) as BalanceTokens
+## Balance.gd — semua angka yang menentukan murid lulus atau tidak.
+##
+## Cara pakai: ubah angkanya, simpan (Ctrl+S), lalu jalankan ulang game.
+## Angka-angka ini tidak ada di tempat lain — semuanya dibaca dari sini.
+##
+## Biar cepat balik ke situasi yang mau diuji setelah restart:
+## tekan F1 > "Seed Playtest State", lalu buka tab "Scenes" untuk
+## langsung lompat ke layar yang kamu mau.
+##
+## Catatan buat programmer: di dalam kode, kategori "Libur" tersimpan
+## dengan nama "Istirahat". Nama di file ini mengikuti tombol yang
+## dilihat tester, bukan nama internalnya.
+class_name Balance
 ```
 
-### Why this gives live editing for free
+### `static var`, not `const`
 
-Godot's `load()` returns the **cached instance** for an already-loaded
-resource. Every caller of `BalanceTokens.load_default()` therefore holds the
-same object. Mutating a field on it is immediately visible to every call site
-across the codebase — no autoload, no signals, no reload, no restart.
+Two reasons, and the second is the important one:
 
-This is the whole trick, and it is why `const` had to go: a GDScript `const`
-is compile-time and no UI can ever reach it.
+1. A GDScript `const` is compile-time. Nothing can ever change it at runtime.
+2. `static var` costs nothing today and preserves the option: if restart
+   friction later proves annoying, an editing panel can write to these
+   directly, with **zero rework across the ~90 call sites**. With `const`,
+   adding a panel would mean redoing every one.
+
+`static var` is already used in five places in this codebase
+(`AnimUtils.gd`, `Juice.gd`, `atur_jadwal.gd`, `student_list.gd`), so it is
+established, not novel.
 
 ### Call sites
 
-Each extracted literal becomes a field read. A representative example, in
-`StudentData.apply_personality_daily_decay`:
+Each literal becomes a field read:
 
 ```gdscript
 # before
 "Aktif":
 	energy_loss = roundf(randf_range(6.0, 8.0))
-	mood_loss = roundf(randf_range(2.0, 4.0))
 
 # after
-var b := BalanceTokens.load_default()
 "Aktif":
-	energy_loss = roundf(randf_range(b.decay_aktif_energy_min, b.decay_aktif_energy_max))
-	mood_loss = roundf(randf_range(b.decay_aktif_mood_min, b.decay_aktif_mood_max))
+	energy_loss = roundf(randf_range(Balance.DECAY_AKTIF_ENERGI_MIN,
+		Balance.DECAY_AKTIF_ENERGI_MAX))
 ```
 
-Randomness is untouched. The rolled *range* becomes tunable; the roll itself
-stays exactly as it is.
+**Randomness is untouched.** Where the game rolls a random amount, the *range*
+becomes tunable; the roll itself is unchanged.
 
 ---
 
-## 2. Extraction surface
+## 2. Readability is the product
 
-Roughly **90 numbers**, counted from source rather than estimated:
+The file's usability by a non-programmer is the deliverable, not a nicety. Five
+conventions carry that:
 
-| Group | Count | Where | Notes |
-|---|---|---|---|
-| Quirk coefficients | 19 | `StudentData.gd` `@export`s | Already exports; re-pointed to read from the resource |
-| Personality decay ranges | 20 | `StudentData.apply_personality_daily_decay` | 5 personalities × energy/mood × min/max |
-| Minigame win/loss deltas | 21 | `StudentData.apply_minigame_result` | Grade-branched stat, energy and mood values |
-| Rest recovery + activity cost | 8 | `StudentData.apply_jadwal_activity` | `randf_range` bounds |
-| Efficiency multipliers | 3 | `StudentData.get_category_efficiency_multiplier` | 0.6 / 0.85 / 1.20 |
-| Thresholds | 2 | `StudentData` | Auto-Izin at energy ≤ 5, `is_tired` at ≤ 20 |
-| Base gain / specialty bonus | 6+2 | `StudentManager.apply_daily_decay_all`, `apply_jadwal_effects_all` | Per-grade, plus the two defaults |
-| Wirausaha | 5 | `StudentManager` `const` block | Mechanical move |
-| Grade target uplift | 3 | `GameState.initialize_grade_targets` | +15 / +30 / +40 |
-| Fast-path minigame odds | 1 | `SchoolDay.skip_to_results` | The `randf() > 0.4` threshold |
+**Ordered by impact, not alphabetically or by source file.** A tester scrolling
+from the top meets the biggest levers first: passing requirements → study days
+→ minigames → personality decay → traits → Wirausaha.
+
+**Names and comments both in Indonesian.** `MINIGAME_KALAH_MOOD_KELAS_8` reads
+directly. This extends a habit the codebase already has — `WIRAUSAHA_EARN_MIN`
+is an Indonesian domain word with English structure.
+
+**Game vocabulary, not code vocabulary.** The file says *Libur* because that is
+the button in Atur Jadwal, even though the category is stored internally as
+`"Istirahat"`. It says *Sifat Pasif* because that is the heading on the student
+card. The tester should be able to move from what they saw on screen to the
+right line without translating.
+
+**Every trait names its student.** A tester tuning *Kutu Buku* should not have
+to work out that this is Marcel.
+
+**Percentage-style numbers are translated.** `0.25` alone means nothing;
+"25% lebih hemat" does. These are the ones most likely to be changed in the
+wrong direction, so each states which way is which. Likewise every random range
+is a `_MIN`/`_MAX` pair with a note that the game rolls between them — so it is
+clear both must move to shift the range.
+
+### Sample
+
+```gdscript
+## ═══════════════════════════════════════════════════════════
+## HARI BELAJAR BIASA
+## (saat kamu menjadwalkan Akademis, Seni Budaya, atau Olahraga)
+## ═══════════════════════════════════════════════════════════
+
+## Poin mata pelajaran yang didapat dari satu hari belajar.
+static var BELAJAR_POIN_KELAS_7 := 3.0
+
+## Energi yang terpakai untuk satu hari belajar. Game mengacak
+## angka di antara kedua nilai ini, jadi tiap hari tidak persis sama.
+static var BELAJAR_BIAYA_ENERGI_MIN := 15.0
+static var BELAJAR_BIAYA_ENERGI_MAX := 20.0
+
+## Pengali biaya di atas, tergantung mata pelajarannya.
+## Di bawah 1.0 = lebih hemat. Di atas 1.0 = lebih melelahkan.
+## 0.6 artinya mapel favorit cuma memakan 60% biaya.
+static var BIAYA_KALAU_MAPEL_FAVORIT := 0.6
+
+## ── Kutu Buku (Marcel) ──
+## Poin Akademis tambahan di hari belajar.
+static var SIFAT_KUTU_BUKU_BONUS_POIN := 1.0
+
+## Kreatif — Andi DAN Thea. Mengubah angka ini kena dua murid sekaligus.
+static var DECAY_KREATIF_ENERGI_MIN := 5.0
+```
+
+---
+
+## 3. What gets extracted
+
+Roughly **90 numbers**, counted from source:
+
+| Group | Count | Source |
+|---|---|---|
+| Passing requirement (target uplift per grade) | 3 | `GameState.initialize_grade_targets` |
+| Study day gains (base + specialty, per grade) | 8 | `StudentManager.apply_daily_decay_all`, `apply_jadwal_effects_all` |
+| Study day costs + rest recovery | 8 | `StudentData.apply_jadwal_activity` |
+| Efficiency multipliers | 3 | `StudentData.get_category_efficiency_multiplier` |
+| Thresholds (auto-Izin, tired) | 2 | `StudentData` |
+| Minigame win/loss amounts | ~24 | `StudentData.apply_minigame_result` |
+| Personality decay ranges | 20 | `StudentData.apply_personality_daily_decay` |
+| Trait coefficients | 19 | `StudentData` `@export`s |
+| Wirausaha | 5 | `StudentManager` const block |
+| Skip-mode minigame odds | 1 | `SchoolDay.skip_to_results` |
+
+The plan enumerates each line individually; this spec fixes the groups and
+their sources.
+
+### Two data facts the file should record
+
+Both surfaced while mapping students to traits, and both are balance
+information a tester would want:
+
+1. **The comments in `StudentData.gd` today are wrong.** Its decay branches are
+   labelled `# Budi: Sporty`, `# Ani: Academic`, `# Cici: Artistic` — names
+   from `StudentManager`'s fallback roster, not the actual six students. Anyone
+   reading them is misled. The new file corrects this.
+2. **Citra's personality bonus rarely fires.** Her personality is *Seni Dalam
+   Kesunyian*, which rewards studying Seni Budaya alone, but her favourite
+   subject is **Olahraga**. The file notes this beside the number, since
+   "this seems to do nothing" is otherwise a confusing dead end.
 
 ### The safety property
 
 Extraction must be provably behaviour-preserving. Two things guarantee it:
 
-1. `balance_tokens.tres` ships seeded with **today's exact values**, so a
-   correct extraction changes nothing observable.
-2. The existing 303-test suite already pins real numeric outcomes —
-   `test_wirausaha`, `test_school_day`, `test_economy_state`,
-   `test_student_card` — so a literal that shifts during the move fails a
-   test rather than silently altering difficulty.
+1. `Balance.gd` ships seeded with **today's exact values**, so a correct
+   extraction changes nothing observable.
+2. The existing 303-test suite already pins numeric outcomes —
+   `test_wirausaha`, `test_school_day`, `test_economy_state` — so a value that
+   shifts during the move fails a test rather than silently altering difficulty.
 
-Extraction lands in small per-group commits with the suite green after each.
-
----
-
-## 3. The Balance tab
-
-A sixth tab in `DebugManager`, beside General / Students / Minigames /
-Scenes / Logs, built with the same data-driven pattern the student stat
-editor already uses: an array of row descriptors rendered as a label showing
-the current value above a row of adjust buttons.
-
-Each row descriptor carries its own metadata, because the knobs differ in
-scale by three orders of magnitude — an efficiency multiplier steps by 0.05,
-a target uplift by 5:
-
-```gdscript
-{ "key": "decay_aktif_energy_min", "label": "Aktif · energy loss (min)",
-  "step": 0.5, "min": 0.0, "max": 20.0 }
-```
-
-**Grouping.** Ninety rows in a flat list is unusable mid-playtest, so:
-
-- **Common** — the eight knobs most likely to be the culprit when something
-  feels wrong, duplicated at the top rather than moved (they also appear in
-  their own group):
-  1. Grade target uplift, current grade
-  2. Base gain, current grade
-  3. Minigame loss — stat penalty, current grade
-  4. Minigame loss — mood penalty, current grade
-  5. Minigame win — stat gain, current grade
-  6. Rest recovery — energy min/max
-  7. Non-specialty efficiency multiplier (1.20)
-  8. Auto-Izin energy threshold (5.0)
-- Then Targets / Decay / Activity / Minigame / Quirks / Wirausaha.
-- A **filter box** at the top of the tab. This is load-bearing at 90 rows,
-  not a nicety: type `mood` and see every mood-related number at once.
-
-**Change tracking.** A row whose value differs from the shipped default is
-marked, so the tester can see at a glance what they have touched. Per-row
-and global "reset to default".
+Extraction lands in one commit per group, suite green after each.
 
 ---
 
-## 4. Scenario snapshot
+## 4. Testing
 
-Two buttons, and the piece that makes the loop an actual comparison.
+- `tests/test_balance.gd` — a source scan asserting the four touched functions
+  contain no leftover bare numeric literals. This is the real guard: a missed
+  extraction leaves a field in the file that silently does nothing when the
+  tester changes it, which is worse than not having the field. Plus: every
+  field named in the spec exists on the class, and defaults match the values
+  the game shipped with.
+- **The existing suite is the extraction's guard.** No new test proves a
+  literal moved correctly; `test_wirausaha` and `test_school_day` already do,
+  by asserting outcomes that depend on those numbers.
 
-- **Snapshot** — captures `GameState.approved_students` (deep, including
-  every stat), `minggu_ke`, `current_grade`, `day_schedules`, and
-  `player_money` into memory.
-- **Restore** — writes them all back.
-
-The intended loop:
-
-> play → something feels wrong → **Snapshot** → change a number →
-> **Restore** → replay that exact week with one variable changed
-
-Same students, same stats, same schedule. Without this, reproducing "week 5,
-Citra at 41 energy, these schedules" means hand-driving the week setter and
-five per-student stat editors — the friction that makes a tool go unused.
-
-In-memory only, one slot, cleared on quit. It is a comparison aid, not a save
-system.
+Per the runner's constraints: the suite is `@tool` and no test is a coroutine.
 
 ---
 
-## 5. Getting values out
+## 5. Risks
 
-Two exits, because the tester may be in the editor or on a device:
-
-- **Save to `.tres`** — `ResourceSaver.save()` over `balance_tokens.tres`.
-  Real persistence, git-diffable, a developer commits it. Works wherever
-  `res://` is writable, i.e. editor and debug builds.
-- **Copy changed values** — dumps **only fields differing from default** as
-  a paste-ready block. For a tester on an exported build who needs to hand
-  numbers to someone else. Only-the-diff matters: a 90-line dump where two
-  numbers changed is not a useful message.
-
----
-
-## 6. Behavioural caveats
-
-**Target uplift is baked, not read per call.** `initialize_grade_targets()`
-writes `target_akademis1/2/3` onto each student dictionary once. Changing the
-uplift mid-semester does not retarget anyone already in play, so that group
-gets a **"Re-apply targets now"** button that re-runs it against the live
-roster. Every other number is read at call time and applies to the next day
-or next minigame with no action needed.
-
-**Quirk coefficients change globally, not per student.** They are currently
-per-instance `@export`s on `StudentData`, though every instance carries
-identical values. Reading from the shared resource makes that sameness
-explicit. Per-student variation was never used and is not being removed —
-it never existed.
-
-**`load_default()` on a hot path.** It is called per student per day. Since
-`load()` hits the resource cache rather than disk, this is a dictionary
-lookup. Call sites in loops hoist it to a local (`var b := ...`) as shown
-above, matching how `DesignTokens` is already used in this codebase.
+1. **~90 mechanical edits in gameplay-critical files.** The volume is the main
+   cost and the main risk, mitigated by per-group commits each verified green.
+2. **A missed literal is invisible.** Its field appears in the file and does
+   nothing. The no-bare-literals source scan is the defence.
+3. **A typo is a parse error.** `6.o` instead of `6.0` stops the game booting.
+   Loud and immediate rather than silent, but the tester must be comfortable
+   that this is their own fix. The file header could note it; the grouping and
+   one-number-per-line layout keep the blast radius small.
+4. **Restart per change.** Accepted deliberately. `Seed Playtest State` plus
+   the Scenes tab is the fast path back, and the file header points at it.
 
 ---
 
-## 7. Testing
+## What was cut, and why
 
-- `tests/test_balance_tokens.gd` — the resource loads; every field in the
-  row-descriptor tables exists on it (catches a typo'd key silently
-  rendering a dead row); `load_default()` returns the same instance twice
-  (the property the whole design rests on); defaults match the values the
-  game shipped with.
-- `tests/test_balance_snapshot.gd` — snapshot then restore leaves all five
-  captured fields byte-identical; restore with no snapshot taken is a no-op
-  rather than a crash.
-- **The existing suite is the extraction's real guard.** No new test proves
-  a literal moved correctly; `test_wirausaha` and `test_school_day` already
-  do, by asserting outcomes that depend on those numbers.
+The first draft of this design proposed a `BalanceTokens` Resource, a
+`.tres` asset, an in-game Balance tab with ~90 rows plus grouping, filtering,
+change-tracking and reset, a `ResourceSaver` path, an export-snippet
+generator, scenario snapshot/restore, and a headless batch simulator.
 
-Per the runner's constraints: suites are `@tool`, no test is a coroutine,
-and `DebugManager.gd` stays non-`@tool`, so UI wiring is verified by
-source-scan in the manner `tests/test_debug_manager.gd` already establishes.
+The extraction — the actual work — is **identical** in both designs. Everything
+above it was scaffolding for live editing, which is not needed when the tester
+runs the project from the editor and accepts a restart. Two pieces turned out
+redundant rather than merely unbuilt:
 
----
+- The **export snippet** is pointless when the file *is* the artifact; a
+  developer gets a git diff.
+- **Snapshot/restore** does not survive a restart, and `Seed Playtest State`
+  already does that job and does survive.
 
-## 8. Risks
-
-1. **Extraction is ~90 mechanical edits in gameplay-critical files.** The
-   value is guarded by the existing suite, but the volume is the main cost
-   and the main risk. Mitigated by per-group commits, each verified green.
-2. **A missed literal is invisible.** If one is left hardcoded, its row
-   silently does nothing when the tester drags it. The per-group commit
-   structure and a final grep sweep for bare numeric literals in the four
-   touched functions are the defence.
-3. **90 rows is a lot of UI.** Mitigated by grouping, the Common section,
-   and the filter box — but if it still reads as unusable in practice, the
-   fix is curation of the Common set, not more features.
-4. **`ResourceSaver.save()` fails in an exported release build**, where
-   `res://` is read-only. The tool is dev-facing, and "Copy changed values"
-   is the fallback path for exactly that case.
-
----
-
-## 9. Deliberately deferred
-
-- **Batch simulation / win-rate analysis.** Cut deliberately; see Non-Goals.
-  The design does not preclude it — a headless runner could later drive the
-  same `StudentManager` against the same tokens — but it answers a different
-  question and is not being built now.
-- **Wirausaha and the item economy remain untuned by feedback.** Their
-  constants are extracted and editable, but nothing in this tool exercises
-  the Koperasi purchase loop, so changes there get no signal beyond
-  ordinary play.
-- **Multiple snapshot slots / named scenarios.** One slot until one slot
-  proves insufficient.
-- **Undo history on tuning.** "Reset to default" covers the common case.
+Deferred, recorded rather than deleted: the in-game panel (cheap to add later
+thanks to `static var`), `.tres` persistence, and batch simulation.

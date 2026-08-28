@@ -1,6 +1,8 @@
 class_name StudentCardView
 extends RefCounted
 
+const _CARD_ART := "res://Assets/Images/StudentCard/"
+
 ## Shared, stateless rendering for one `KertasMurid` card. Extracted from
 ## `student_card.gd`, which still owns everything interactive (approval,
 ## stamping, the tutorial, popups) -- this class only fills a card's nodes
@@ -49,7 +51,7 @@ static func persona_description(persona: String) -> String:
 ## calling scene -- everything it needs to wire interactivity back to the
 ## caller (bar taps, badge hover/press) comes in as unbound Callables that
 ## it binds itself, exactly as `student_card.gd` used to bind them inline.
-static func populate(card: Control, student: Dictionary, icon_magnify: Texture2D,
+static func populate(card: Control, student: Dictionary,
 		on_bar_input: Callable, on_badge_hover_enter: Callable,
 		on_badge_hover_exit: Callable, on_badge_pressed: Callable) -> void:
 	if not card:
@@ -103,7 +105,8 @@ static func populate(card: Control, student: Dictionary, icon_magnify: Texture2D
 		ak3.value = student.get("akademis3", 0)
 
 	# -- Upgrade bar visuals & replace trait labels with animated badges --
-	build_stat_bars(card, student, icon_magnify, on_bar_input)
+	build_stat_bars(card, student, on_bar_input)
+	build_icon_clusters(card, student, on_bar_input)
 	StudentCardView._style_trait_badge(card, "KutuBuku", "quirk",
 		"QUIRK: " + student.get("quirk", "-"), student,
 		on_badge_hover_enter, on_badge_hover_exit, on_badge_pressed)
@@ -130,7 +133,7 @@ const PILL_RECTS := {
 ## labelling out of the bar: no stat name, no value readout, and no
 ## magnifying glass -- the icon cluster beside the pill (see
 ## build_icon_clusters) both names the stat and carries the tap.
-static func build_stat_bars(kertas: Control, s_data: Dictionary, _icon_magnify: Texture2D,
+static func build_stat_bars(kertas: Control, s_data: Dictionary,
 		_on_bar_input: Callable) -> void:
 	var values := {
 		"Kepribadian1": s_data.get("kepribadian1", 0),
@@ -170,6 +173,72 @@ static func build_stat_bars(kertas: Control, s_data: Dictionary, _icon_magnify: 
 			bar.set_stat(values[bar_name])
 		else:
 			bar.value = values[bar_name]
+
+
+const _ICON_SIZE := 128.0
+## Gap between the icon's right edge and the pill's left edge.
+const _ICON_GAP := 24.0
+## The (i) badge, overlapping the icon's bottom-right corner.
+const _BADGE_SIZE := 56.0
+
+const _STAT_ICONS := {
+	"Akademis1": "stat_akademis.png",
+	"Akademis2": "stat_senibudaya.png",
+	"Akademis3": "stat_olahraga.png",
+	"Kepribadian1": "stat_mood.png",
+	"Kepribadian2": "stat_energy.png",
+}
+
+
+## One tappable icon per stat, sitting left of its pill and vertically
+## centred on it. Each carries a small (i) badge so the icon reads as
+## something you can press.
+##
+## These are siblings of the bars rather than children on purpose: the
+## tutorial addresses bars by string path (`KertasMurid1/Kepribadian1`),
+## so nothing may be re-parented under them.
+static func build_icon_clusters(kertas: Control, s_data: Dictionary,
+		on_bar_input: Callable) -> void:
+	for bar_name in _STAT_ICONS.keys():
+		var rect: Rect2 = PILL_RECTS[bar_name]
+		var node_name := "Icon" + bar_name
+
+		var cluster := kertas.get_node_or_null(node_name) as TextureRect
+		if cluster == null:
+			cluster = TextureRect.new()
+			cluster.name = node_name
+			kertas.add_child(cluster)
+
+			var badge := TextureRect.new()
+			badge.name = "InfoBadge"
+			badge.texture = load(_CARD_ART + "icon_info.png")
+			badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			badge.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+			badge.offset_left = -_BADGE_SIZE
+			badge.offset_top = -_BADGE_SIZE
+			badge.offset_right = 0.0
+			badge.offset_bottom = 0.0
+			cluster.add_child(badge)
+
+		cluster.texture = load(_CARD_ART + _STAT_ICONS[bar_name])
+		cluster.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		cluster.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		cluster.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		cluster.offset_left = rect.position.x - _ICON_GAP - _ICON_SIZE
+		cluster.offset_top = rect.position.y + rect.size.y * 0.5 - _ICON_SIZE * 0.5
+		cluster.offset_right = cluster.offset_left + _ICON_SIZE
+		cluster.offset_bottom = cluster.offset_top + _ICON_SIZE
+
+		cluster.mouse_filter = Control.MOUSE_FILTER_STOP
+		cluster.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
+		var callable := on_bar_input.bind(kertas, bar_name, s_data)
+		if cluster.has_meta("cluster_gui_callable"):
+			cluster.gui_input.disconnect(cluster.get_meta("cluster_gui_callable"))
+		cluster.gui_input.connect(callable)
+		cluster.set_meta("cluster_gui_callable", callable)
 
 
 static func _style_trait_badge(kertas: Control, node_name: String, trait_type: String, badge_text: String,

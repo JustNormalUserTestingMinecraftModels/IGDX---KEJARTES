@@ -866,7 +866,7 @@ func _populate_ui_from_data():
 		if not kertas:
 			continue
 
-		StudentCardView.populate(kertas, student_data_list[i], icon_magnify,
+		StudentCardView.populate(kertas, student_data_list[i],
 			_on_bar_gui_input, _on_btn_mouse_entered, _on_btn_mouse_exited,
 			_on_trait_btn_pressed)
 

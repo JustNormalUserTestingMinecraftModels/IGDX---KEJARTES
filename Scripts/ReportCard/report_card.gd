@@ -54,7 +54,7 @@ func _load_roster() -> void:
 		var has_student: bool = i < student_data_list.size()
 		kertas_murid[i].visible = has_student and i == current_page
 		if has_student:
-			StudentCardView.populate(kertas_murid[i], student_data_list[i], icon_magnify,
+			StudentCardView.populate(kertas_murid[i], student_data_list[i],
 				_on_bar_gui_input, _on_btn_mouse_entered, _on_btn_mouse_exited,
 				_on_trait_btn_pressed)
 
@@ -64,7 +64,7 @@ func _load_roster() -> void:
 func _refresh_current_page() -> void:
 	if current_page < student_data_list.size():
 		StudentCardView.populate(kertas_murid[current_page], student_data_list[current_page],
-			icon_magnify, _on_bar_gui_input, _on_btn_mouse_entered, _on_btn_mouse_exited,
+			_on_bar_gui_input, _on_btn_mouse_entered, _on_btn_mouse_exited,
 			_on_trait_btn_pressed)
 
 

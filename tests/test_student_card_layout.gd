@@ -123,3 +123,38 @@ func test_bars_carry_no_text_children() -> void:
 		"the value readout must be gone from the redesigned pill")
 	assert_true(src.contains('variation = &"StatPill"'),
 		"card bars must opt into the StatPill variation")
+
+
+const _ICON_NODES := [
+	"IconAkademis1", "IconAkademis2", "IconAkademis3",
+	"IconKepribadian1", "IconKepribadian2",
+]
+
+
+## The icon replaces the bar's old name label, and with the magnifier gone
+## it is also the only thing the player can tap for information -- so it
+## has to clear the touch minimum on its own.
+func test_icon_clusters_exist_and_meet_the_touch_target() -> void:
+	var tokens := DesignTokens.load_default()
+	var scene: Node = (load("res://Scenes/StudentCard/student_card.tscn")
+		as PackedScene).instantiate()
+	scene.theme = load("res://Assets/Theme/kejartes_theme.tres")
+	Engine.get_main_loop().root.add_child(scene)
+	track(scene)
+
+	for icon_name in _ICON_NODES:
+		var icon := scene.get_node_or_null("KertasMurid1/" + icon_name) as Control
+		assert_true(icon != null, "missing icon cluster: " + icon_name)
+		var side: float = minf(icon.size.x, icon.size.y)
+		assert_true(side >= float(tokens.touch_target_min),
+			"%s is %d px, below the %d px minimum"
+				% [icon_name, int(side), tokens.touch_target_min])
+
+
+func test_the_pill_no_longer_takes_input() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentCard/StudentCardView.gd")
+	assert_true(src.contains("bar.mouse_filter = Control.MOUSE_FILTER_IGNORE"),
+		"the pill must be inert; the icon cluster carries the tap")
+	assert_false(src.contains("icon_magnify"),
+		"the magnifying glass is replaced by the stat icons")

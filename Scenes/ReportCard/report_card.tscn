@@ -71,7 +71,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid6" unique_id=1010521266]
-theme_type_variation = &"QuirkBadge"
+theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -86,7 +86,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid6" unique_id=420784728]
-theme_type_variation = &"PersonaBadge"
+theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -342,7 +342,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid5" unique_id=1094008115]
-theme_type_variation = &"QuirkBadge"
+theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -357,7 +357,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid5" unique_id=6069551]
-theme_type_variation = &"PersonaBadge"
+theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -614,7 +614,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid4" unique_id=862966656]
-theme_type_variation = &"QuirkBadge"
+theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -629,7 +629,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid4" unique_id=1021987004]
-theme_type_variation = &"PersonaBadge"
+theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -886,7 +886,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid3" unique_id=407152762]
-theme_type_variation = &"QuirkBadge"
+theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -901,7 +901,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid3" unique_id=1734850024]
-theme_type_variation = &"PersonaBadge"
+theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -1158,7 +1158,7 @@ offset_right = 990.0
 offset_bottom = 313.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid2" unique_id=1530561034]
-theme_type_variation = &"QuirkBadge"
+theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
 layout_mode = 1
@@ -1173,7 +1173,7 @@ offset_right = 421.0
 offset_bottom = -0.11999512
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid2" unique_id=2118033802]
-theme_type_variation = &"PersonaBadge"
+theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 layout_mode = 1
@@ -1429,7 +1429,7 @@ text = "Ga Peduli"
 
 
 [node name="KutuBuku" type="Button" parent="KertasMurid1" unique_id=911792941]
-theme_type_variation = &"QuirkBadge"
+theme_type_variation = &"TraitPill"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -1444,7 +1444,7 @@ text = "Quirk Kutu Buku"
 
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid1" unique_id=1981551433]
-theme_type_variation = &"PersonaBadge"
+theme_type_variation = &"TraitPill"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5

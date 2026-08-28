@@ -132,8 +132,8 @@ func test_action_buttons_use_theme_variations() -> void:
 	var expected := {
 		"KertasMurid1/Aprove": &"SuccessButton",
 		"KertasMurid1/Batal": &"DangerButton",
-		"KertasMurid1/KutuBuku": &"QuirkBadge",
-		"KertasMurid1/KutuBuku2": &"PersonaBadge",
+		"KertasMurid1/KutuBuku": &"TraitPill",
+		"KertasMurid1/KutuBuku2": &"TraitPill",
 		"BelajarButton": &"PrimaryButton",
 	}
 	for p in expected.keys():

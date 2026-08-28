@@ -102,10 +102,10 @@ static func populate(card: Control, student: Dictionary,
 	build_icon_clusters(card, student, on_bar_input)
 	build_bio_panel(card, student)
 	StudentCardView._style_trait_badge(card, "KutuBuku", "quirk",
-		"QUIRK: " + student.get("quirk", "-"), student,
+		student.get("quirk", "-"), student,
 		on_badge_hover_enter, on_badge_hover_exit, on_badge_pressed)
 	StudentCardView._style_trait_badge(card, "KutuBuku2", "persona",
-		"PERSONA: " + student.get("persona", "-").replace("Persona ", ""), student,
+		student.get("persona", "-").replace("Persona ", ""), student,
 		on_badge_hover_enter, on_badge_hover_exit, on_badge_pressed)
 
 
@@ -299,7 +299,9 @@ static func _style_trait_badge(kertas: Control, node_name: String, trait_type: S
 		return
 
 	btn.text = badge_text
-	btn.theme_type_variation = &"QuirkBadge" if trait_type == "quirk" else &"PersonaBadge"
+	# Both traits wear one pill now; the design distinguishes them by
+	# position under the "Sifat Pasif" heading, not by colour.
+	btn.theme_type_variation = &"TraitPill"
 	btn.pivot_offset = btn.size / 2.0
 
 	if not btn.mouse_entered.is_connected(on_hover_enter.bind(btn)):

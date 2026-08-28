@@ -224,3 +224,25 @@ func test_superseded_labels_are_hidden() -> void:
 	for label_name in ["Profil", "Kepribadian", "Akademis"]:
 		assert_true(src.contains('"%s"' % label_name),
 			"StudentCardView must account for the old label " + label_name)
+
+
+func test_trait_buttons_use_the_trait_pill_variation() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentCard/StudentCardView.gd")
+	assert_true(src.contains('&"TraitPill"'),
+		"trait buttons must wear the TraitPill variation")
+	assert_false(src.contains('"QUIRK: "'),
+		"the QUIRK: prefix is dropped in the redesign")
+	assert_false(src.contains('"PERSONA: "'),
+		"the PERSONA: prefix is dropped in the redesign")
+
+
+## Renaming a quirk detaches its gameplay effect -- StudentData.gd branches
+## on the exact string -- so the redesign changes only how they are shown.
+func test_trait_values_are_unchanged() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentCard/student_card.gd")
+	for quirk in ["Kutu Buku", "Semangat Juang", "Penasaran",
+			"Penyendiri", "Biang Onar", "Pekerja Keras"]:
+		assert_true(src.contains('"quirk": "%s"' % quirk),
+			"quirk must keep its gameplay name: " + quirk)

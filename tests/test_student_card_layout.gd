@@ -154,9 +154,16 @@ func test_icon_clusters_exist_and_meet_the_touch_target() -> void:
 		"icon cluster is %d px, below the %d px minimum"
 			% [int(icon_size), tokens.touch_target_min])
 
+	# Scoped to the _STAT_ICONS block specifically -- "Akademis1": also
+	# appears in PILL_RECTS and build_stat_bars' values dict, so a bare
+	# src.contains() would still pass even if _STAT_ICONS lost an entry.
+	var stat_icons_start := src.find("const _STAT_ICONS")
+	assert_true(stat_icons_start != -1, "_STAT_ICONS constant must exist")
+	var stat_icons_end := src.find("}", stat_icons_start)
+	var stat_icons_block := src.substr(stat_icons_start, stat_icons_end - stat_icons_start)
 	for bar_name in ["Akademis1", "Akademis2", "Akademis3", "Kepribadian1", "Kepribadian2"]:
-		assert_true(src.contains('"%s":' % bar_name),
-			"build_icon_clusters must map an icon for " + bar_name)
+		assert_true(stat_icons_block.contains('"%s": "stat_' % bar_name),
+			"_STAT_ICONS must map an icon for " + bar_name)
 
 
 func test_the_pill_no_longer_takes_input() -> void:

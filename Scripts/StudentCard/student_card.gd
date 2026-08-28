@@ -732,7 +732,7 @@ func _show_stamp_if_approved(index: int):
 ## The rows of one student page, top to bottom, for staggered entry.
 ## Order matters: Juice.stagger_in delays each node by one stagger_step,
 ## so this list is what the player's eye follows down the card.
-const CARD_ROW_ORDER := ["Nama", "BioPanel", "IconAkademis1", "Akademis1",
+const CARD_ROW_ORDER := ["BioPanel", "IconAkademis1", "Akademis1",
 	"IconAkademis2", "Akademis2", "IconAkademis3", "Akademis3",
 	"IconKepribadian1", "Kepribadian1", "IconKepribadian2", "Kepribadian2",
 	"KutuBuku", "KutuBuku2"]

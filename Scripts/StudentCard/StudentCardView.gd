@@ -250,7 +250,7 @@ const _BIO_PADDING := 32.0
 ## content these rows replace) and the `Kepribadian` / `Akademis` section
 ## headings, which the icon-led layout has no room for.
 static func build_bio_panel(kertas: Control, s_data: Dictionary) -> void:
-	for stale_name in ["Profil", "Kepribadian", "Akademis"]:
+	for stale_name in ["Nama", "Profil", "Kepribadian", "Akademis"]:
 		var stale := kertas.get_node_or_null(stale_name) as CanvasItem
 		if stale != null:
 			stale.visible = false
@@ -260,6 +260,7 @@ static func build_bio_panel(kertas: Control, s_data: Dictionary) -> void:
 		panel = VBoxContainer.new()
 		panel.name = "BioPanel"
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_theme_constant_override("separation", 4)
 		kertas.add_child(panel)
 
 	panel.set_anchors_preset(Control.PRESET_TOP_LEFT)

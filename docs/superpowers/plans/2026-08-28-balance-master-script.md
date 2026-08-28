@@ -196,9 +196,14 @@ func suite_name() -> String:
 
 
 func test_every_field_exists_and_holds_its_shipped_value() -> void:
+	# Balance.get(field_name) is a parse error -- get() is an instance
+	# method, and GDScript refuses to call it through a class name
+	# directly ("make an instance instead"). Static vars are still
+	# visible through an instance's get(), so this works.
+	var balance_probe := Balance.new()
 	for field_name in _EXPECTED.keys():
 		var expected = _EXPECTED[field_name]
-		var actual = Balance.get(field_name)
+		var actual = balance_probe.get(field_name)
 		assert_true(actual != null,
 			"Balance is missing the field: " + field_name)
 		assert_true(is_equal_approx(float(actual), float(expected)),

@@ -65,3 +65,10 @@ func test_delegates_rendering_to_the_shared_view() -> void:
 func test_back_button_returns_to_lobby() -> void:
 	assert_true(_source().contains("res://Scenes/Lobby/loby.tscn"),
 		"back must return to the lobby")
+
+func test_back_button_node_exists_and_is_wired() -> void:
+	var scene := (load(_SCENE_PATH) as PackedScene).instantiate()
+	var btn := scene.find_child("BackButton", true, false)
+	assert_true(btn != null, "the report card must have a real, tappable back button")
+	assert_true(btn is BaseButton, "the back control must be a button")
+	scene.free()

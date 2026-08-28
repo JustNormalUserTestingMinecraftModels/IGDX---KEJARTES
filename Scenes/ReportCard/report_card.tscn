@@ -1737,5 +1737,15 @@ offset_right = 561.0
 offset_bottom = 1332.0
 
 
+[node name="BackButton" type="Button" parent="." unique_id=1002003004]
+theme_type_variation = &"PrimaryButton"
+layout_mode = 0
+offset_left = 20.0
+offset_top = -172.0
+offset_right = 280.0
+offset_bottom = -78.0
+text = "Kembali"
+
+
 [connection signal="pressed" from="NextButtonKanan" to="." method="_on_next_button_kanan_pressed"]
 [connection signal="pressed" from="NextButtonKiri" to="." method="_on_next_button_kiri_pressed"]

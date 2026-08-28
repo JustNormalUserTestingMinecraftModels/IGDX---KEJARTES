@@ -36,6 +36,7 @@ var _active_popup: Node = null
 @onready var kertas_murid: Array = [$KertasMurid1, $KertasMurid2, $KertasMurid3, $KertasMurid4, $KertasMurid5, $KertasMurid6]
 @onready var next_kanan: BaseButton = $NextButtonKanan
 @onready var next_kiri: BaseButton = $NextButtonKiri
+@onready var back_button: Button = $BackButton
 @onready var page_label: Label = $PageLabel
 
 var current_page := 0
@@ -80,6 +81,8 @@ func _ready():
 
 	next_kanan.pressed.connect(_on_next_kanan_pressed)
 	next_kiri.pressed.connect(_on_next_kiri_pressed)
+	if not back_button.pressed.is_connected(_on_back_pressed):
+		back_button.pressed.connect(_on_back_pressed)
 
 	for k in kertas_murid:
 		k.set_meta("original_position", k.position)

@@ -116,7 +116,7 @@ design system — they inherit the Theme but had no polish pass.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 22 suites, 278 tests.
+the Godot AI MCP `test_run` tool. 22 suites, 281 tests.
 
 Hard constraints, learned the hard way:
 
@@ -151,6 +151,66 @@ tasklist | grep -i godot-ai
 
 `logs_read(source="editor")` catches parse errors that never reach the game
 log; `source="game"` misses boot-time failures entirely.
+
+## Working efficiently here
+
+Verification, not implementation, dominates the cost of a session in this
+project. Four rules, in order of how much they save:
+
+**1. Never play the game to reach a state — seed it.** The debug overlay
+(`F1`, or 5 taps in the top-right corner) has **⚡ Seed Playtest State** at the
+top of its General tab: roster approved, 999999G, full inventory, lobby
+tutorial bypassed. Combine it with the overlay's **Scenes** tab, which
+teleports directly to MainMenu / Lobby / StudentCard / AturJadwal / SchoolDay
+/ SemesterEnd / Splashscreen. Seed, teleport, screenshot once. Driving the
+shop purchase flow by simulated clicks to reach the same state took roughly
+forty-five calls and failed twice before working.
+
+When you do have to click, note two quirks. Send a `motion` event to the
+target before the `button` press — Godot will not route a click without the
+hover state first, and a bare press/release pair silently does nothing.
+And rescale coordinates: the design space is 1080x1922 but the window is
+smaller, so window coords are roughly `global * 0.354`. Read the target's
+`global_rect` rather than eyeballing a screenshot.
+
+**2. Scope every `get_ui_elements` call.** Called bare it serialises the whole
+tree — the debug overlay alone returns 58 verbose nodes. Always pass
+`root_path` and a shallow `max_depth`:
+
+    game_manage(op="get_ui_elements",
+                params={"root_path": "/root/Inventory/MainLayout", "max_depth": 3})
+
+Note the runtime path quirk: autoloads answer to `/root/<Name>` (e.g.
+`/root/DebugManager`) but the reply echoes paths relative to the current
+scene (`/Inventory/../DebugManager`). Bare `/root` returns nothing.
+
+**3. Prefer `test_run` over screenshots.** The whole suite — 281 tests, 22
+suites — returns a compact JSON summary in about two seconds. One screenshot
+costs more tokens than the entire run. Reach for a screenshot only to judge
+something genuinely visual (layout, spacing, color); use `test_run` for
+anything about behaviour or wiring. Many suites here are deliberately
+source-text scans (`src.contains(...)`) precisely because they are cheap and
+do not need the scene instantiated.
+
+**4. Rescan after editing a `.gd`, before running tests.** `test_run` will
+serve a **stale** autoload otherwise. Three tests once failed with
+"Nonexistent function 'seed_playtest_inventory'" while that function sat
+committed on disk; one `filesystem_manage(op="scan")` turned the same run into
+20/20. Scan first, or you will debug a phantom.
+
+Two smaller habits: grep before reading (several scripts here exceed 1,500
+lines — read the range you need, not the file), and read `logs_read(source="editor")`
+for parse errors, since boot-time failures never reach the game log.
+
+**The Godot MCP bridge is single-client.** Only one client can hold the
+backend at a time. If you delegate to subagents, they cannot run the editor:
+a subagent that connects displaces your session and gets nothing itself, and
+both then see "A different Godot AI backend is already running". Recovery is
+`taskkill` on the stray `godot-ai.exe` processes, leaving `Godot_v*.exe`
+alone. So: subagents write code, you run the editor and hand them the results.
+
+None of this trades away test coverage. Coverage is the quality floor; the
+savings come from cheaper verification loops, not from fewer tests.
 
 ## Known issues (as of 2026-08-28)
 

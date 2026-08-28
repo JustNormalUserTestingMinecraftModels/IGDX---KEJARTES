@@ -225,9 +225,17 @@ Expected: FAIL — `Balance` does not exist yet.
 
 - [ ] **Step 3: Create `Scripts/Balance.gd`**
 
-Create the file with exactly this content:
+Create the file with exactly this content. Note the `@tool` on the very
+first line — without it, this script's `static var` initializers do not
+reliably run when the in-editor test runner accesses the class (they run
+fine in the actual played game, but the editor's own script-execution
+context is a separate one, and a non-`@tool` class's static initializers
+are unreliable there). Every field would silently read back as its type's
+zero-default under `test_run`, defeating the whole safety net, even though
+gameplay itself would be unaffected.
 
 ```gdscript
+@tool
 ## Balance.gd — semua angka yang menentukan murid lulus atau tidak.
 ##
 ## Cara pakai: ubah angkanya, simpan (Ctrl+S), lalu jalankan ulang game.

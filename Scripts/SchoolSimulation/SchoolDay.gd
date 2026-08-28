@@ -831,7 +831,7 @@ func _roll_event(day_name: String) -> void:
 						var cat = day_sched.get("category", "")
 						# Only boost if Biang Onar student is actively studying (not resting)
 						if cat != "" and cat != "DayOff" and cat != "Istirahat":
-							w_event += s.biang_onar_event_weight_bonus
+							w_event += Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT
 	
 	# Normal day weight scales inversely with active studying (base 20 + resting * 10)
 	var w_normal: int = 20 + (resting_count * 10)
@@ -900,7 +900,7 @@ func _trigger_random_event(day_name: String) -> void:
 		for s in student_manager.students:
 			if s.quirk == "Biang Onar":
 				biang_onar_active = true
-				biang_onar_scale = s.biang_onar_positive_event_scale
+				biang_onar_scale = Balance.SIFAT_BIANG_ONAR_EVENT_BAGUS
 				break
 	
 	match event_id:
@@ -1446,7 +1446,7 @@ func force_event(event_id: int) -> void:
 		for s in student_manager.students:
 			if s.quirk == "Biang Onar":
 				biang_onar_active = true
-				biang_onar_scale = s.biang_onar_positive_event_scale
+				biang_onar_scale = Balance.SIFAT_BIANG_ONAR_EVENT_BAGUS
 				break
 				
 	match event_id:

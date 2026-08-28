@@ -29,56 +29,7 @@ class_name StudentData
 @export var persona: String = ""
 @export var profil: String = ""
 
-# Personality & Quirk Inspector-Editable Parameters
-@export_group("Personality: Seni Dalam Kesunyian")
-## Stat bonus multiplier when studying SeniBudaya ALONE (no other student in same subject)
-@export var seni_kesunyian_solo_bonus: float = 0.10
-
-@export_group("Quirk: Penyendiri")
-## How many students in the same subject triggers crowd penalty
-@export var penyendiri_crowd_threshold: int = 3
-## Extra mood cost % when crowd threshold is met during study
-@export var penyendiri_crowd_mood_penalty: float = 0.05
-## Mood penalty % for event participation (positive gains reduced, negative losses increased)
-@export var penyendiri_event_mood_penalty: float = 0.25
-
-@export_group("Quirk: Kutu Buku")
-## Bonus stat added when studying Akademis
-@export var kutu_buku_akademis_stat_bonus: float = 1.0
-## Mood cost reduction (%) when studying Akademis
-@export var kutu_buku_akademis_mood_discount: float = 0.25
-## Extra mood cost (%) when studying Olahraga
-@export var kutu_buku_olahraga_mood_penalty: float = 0.20
-
-@export_group("Quirk: Semangat Juang")
-## Bonus stat added to minigame WIN result
-@export var semangat_minigame_win_stat_bonus: float = 2.0
-## Rest energy recovery reduction (%)
-@export var semangat_rest_energy_penalty: float = 0.15
-## Energy threshold below which mood cost for studying is halved
-@export var semangat_low_energy_threshold: float = 30.0
-
-@export_group("Quirk: Penasaran")
-## Bonus stat for non-specialty study days
-@export var penasaran_nonspec_stat_bonus: float = 1.0
-## Extra energy cost (%) on all study days
-@export var penasaran_energy_cost_penalty: float = 0.10
-
-@export_group("Quirk: Biang Onar")
-## Extra event weight added to daily roll (makes events more likely)
-@export var biang_onar_event_weight_bonus: int = 10
-## Positive event stat/mood bonus multiplier
-@export var biang_onar_positive_event_scale: float = 0.20
-## Negative event penalty multiplier
-@export var biang_onar_negative_event_scale: float = 0.20
-
-@export_group("Quirk: Pekerja Keras")
-## Study energy cost reduction (%)
-@export var pekerja_energy_discount: float = 0.10
-## Extra study mood cost (%)
-@export var pekerja_mood_penalty: float = 0.15
-## Bonus mood added on minigame WIN
-@export var pekerja_minigame_win_mood_bonus: float = 3.0
+# Personality and Sifat Pasif coefficients now live in Scripts/Balance.gd.
 
 # Initial stats at week start for accurate end-of-week checkup deltas
 var initial_akademis: float = 50.0
@@ -165,11 +116,11 @@ func apply_minigame_result(category: String, won: bool, score: int = -1, max_sco
 	
 	# ── Quirk: Semangat Juang — minigame WIN gives +2 bonus stat (fired up!) ──
 	if won and quirk == "Semangat Juang":
-		stat_change += semangat_minigame_win_stat_bonus
+		stat_change += Balance.SIFAT_SEMANGAT_BONUS_MENANG
 	
 	# ── Quirk: Pekerja Keras — minigame WIN gives +3 mood (satisfied from effort) ──
 	if won and quirk == "Pekerja Keras":
-		mood_change += pekerja_minigame_win_mood_bonus
+		mood_change += Balance.SIFAT_PEKERJA_BONUS_MOOD_MENANG
 		
 	# Apply changes and clamp
 	match category:
@@ -247,9 +198,9 @@ func apply_event_effects(category: String, stat_boost: float, energy_cost: float
 	var final_mood_boost = mood_boost
 	if quirk == "Penyendiri":
 		if final_mood_boost > 0:
-			final_mood_boost = roundf(final_mood_boost * (1.0 - penyendiri_event_mood_penalty))
+			final_mood_boost = roundf(final_mood_boost * (1.0 - Balance.SIFAT_PENYENDIRI_EVENT_MOOD))
 		elif final_mood_boost < 0:
-			final_mood_boost = roundf(final_mood_boost * (1.0 + penyendiri_event_mood_penalty))
+			final_mood_boost = roundf(final_mood_boost * (1.0 + Balance.SIFAT_PENYENDIRI_EVENT_MOOD))
 	
 	match category:
 		"Akademis":
@@ -292,7 +243,7 @@ func apply_jadwal_activity(category: String, base_gain: float = 5.0, specialty_b
 		
 		# ── Quirk: Semangat Juang — rest recovers less energy (too restless) ──
 		if quirk == "Semangat Juang":
-			energy_change = roundf(energy_change * (1.0 - semangat_rest_energy_penalty))
+			energy_change = roundf(energy_change * (1.0 - Balance.SIFAT_SEMANGAT_LIBUR_KURANG))
 	else:
 		# Activity day: increases main stat, costs energy and mood
 		stat_change = base_gain
@@ -302,41 +253,41 @@ func apply_jadwal_activity(category: String, base_gain: float = 5.0, specialty_b
 		# ── Personality: Seni Dalam Kesunyian ──
 		# When studying SeniBudaya ALONE, stat gain increases by 10%
 		if personality == "Seni Dalam Kesunyian" and category == "SeniBudaya" and same_subject_count <= 1:
-			stat_change = roundf(stat_change * (1.0 + seni_kesunyian_solo_bonus))
+			stat_change = roundf(stat_change * (1.0 + Balance.SIFAT_CITRA_SENI_SENDIRI_BONUS))
 		
 		# ── Quirk: Kutu Buku — Akademis specialist, hates Olahraga ──
 		if quirk == "Kutu Buku" and category == "Akademis":
-			stat_change += kutu_buku_akademis_stat_bonus
+			stat_change += Balance.SIFAT_KUTU_BUKU_BONUS_POIN
 		
 		# ── Quirk: Penasaran — non-specialty study gets +1 stat ──
 		if quirk == "Penasaran" and not is_specialty:
-			stat_change += penasaran_nonspec_stat_bonus
+			stat_change += Balance.SIFAT_PENASARAN_BONUS_MAPEL_LAIN
 		
 		energy_change = -roundf(randf_range(Balance.BELAJAR_BIAYA_ENERGI_MIN, Balance.BELAJAR_BIAYA_ENERGI_MAX) * mult)
 		mood_change = -roundf(randf_range(Balance.BELAJAR_BIAYA_MOOD_MIN, Balance.BELAJAR_BIAYA_MOOD_MAX) * mult)
 		
 		# ── Quirk: Penasaran — all study costs +10% energy ──
 		if quirk == "Penasaran":
-			energy_change = roundf(energy_change * (1.0 + penasaran_energy_cost_penalty))
+			energy_change = roundf(energy_change * (1.0 + Balance.SIFAT_PENASARAN_BOROS_ENERGI))
 		
 		# ── Quirk: Pekerja Keras — study costs -10% energy, +15% mood ──
 		if quirk == "Pekerja Keras":
-			energy_change = roundf(energy_change * (1.0 - pekerja_energy_discount))
-			mood_change = roundf(mood_change * (1.0 + pekerja_mood_penalty))
+			energy_change = roundf(energy_change * (1.0 - Balance.SIFAT_PEKERJA_HEMAT_ENERGI))
+			mood_change = roundf(mood_change * (1.0 + Balance.SIFAT_PEKERJA_BOROS_MOOD))
 		
 		# ── Quirk: Kutu Buku — Akademis: -25% mood cost; Olahraga: +20% mood cost ──
 		if quirk == "Kutu Buku":
 			if category == "Akademis":
-				mood_change = roundf(mood_change * (1.0 - kutu_buku_akademis_mood_discount))
+				mood_change = roundf(mood_change * (1.0 - Balance.SIFAT_KUTU_BUKU_HEMAT_MOOD))
 			elif category == "Olahraga":
-				mood_change = roundf(mood_change * (1.0 + kutu_buku_olahraga_mood_penalty))
+				mood_change = roundf(mood_change * (1.0 + Balance.SIFAT_KUTU_BUKU_BOROS_MOOD_OLAHRAGA))
 		
 		# ── Quirk: Penyendiri — 3+ students same subject: +5% mood cost ──
-		if quirk == "Penyendiri" and same_subject_count >= penyendiri_crowd_threshold:
-			mood_change = roundf(mood_change * (1.0 + penyendiri_crowd_mood_penalty))
+		if quirk == "Penyendiri" and same_subject_count >= Balance.SIFAT_PENYENDIRI_BATAS_KERAMAIAN:
+			mood_change = roundf(mood_change * (1.0 + Balance.SIFAT_PENYENDIRI_BOROS_MOOD_RAMAI))
 		
 		# ── Quirk: Semangat Juang — when energy is critically low, mood cost halved ──
-		if quirk == "Semangat Juang" and energy <= semangat_low_energy_threshold:
+		if quirk == "Semangat Juang" and energy <= Balance.SIFAT_SEMANGAT_BATAS_ENERGI_KRITIS:
 			mood_change = roundf(mood_change * Balance.SIFAT_SEMANGAT_POTONGAN_MOOD_KRITIS)
 		
 	# Apply changes and clamp

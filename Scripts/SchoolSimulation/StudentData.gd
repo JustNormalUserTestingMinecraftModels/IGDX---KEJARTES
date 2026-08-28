@@ -287,8 +287,8 @@ func apply_jadwal_activity(category: String, base_gain: float = 5.0, specialty_b
 	
 	if category == "Istirahat":
 		# Recovery day: recovers energy and mood
-		energy_change = roundf(randf_range(20.0, 30.0))
-		mood_change = roundf(randf_range(15.0, 25.0))
+		energy_change = roundf(randf_range(Balance.LIBUR_ENERGI_PULIH_MIN, Balance.LIBUR_ENERGI_PULIH_MAX))
+		mood_change = roundf(randf_range(Balance.LIBUR_MOOD_PULIH_MIN, Balance.LIBUR_MOOD_PULIH_MAX))
 		
 		# ── Quirk: Semangat Juang — rest recovers less energy (too restless) ──
 		if quirk == "Semangat Juang":
@@ -312,8 +312,8 @@ func apply_jadwal_activity(category: String, base_gain: float = 5.0, specialty_b
 		if quirk == "Penasaran" and not is_specialty:
 			stat_change += penasaran_nonspec_stat_bonus
 		
-		energy_change = -roundf(randf_range(15.0, 20.0) * mult)
-		mood_change = -roundf(randf_range(10.0, 15.0) * mult)
+		energy_change = -roundf(randf_range(Balance.BELAJAR_BIAYA_ENERGI_MIN, Balance.BELAJAR_BIAYA_ENERGI_MAX) * mult)
+		mood_change = -roundf(randf_range(Balance.BELAJAR_BIAYA_MOOD_MIN, Balance.BELAJAR_BIAYA_MOOD_MAX) * mult)
 		
 		# ── Quirk: Penasaran — all study costs +10% energy ──
 		if quirk == "Penasaran":
@@ -337,7 +337,7 @@ func apply_jadwal_activity(category: String, base_gain: float = 5.0, specialty_b
 		
 		# ── Quirk: Semangat Juang — when energy is critically low, mood cost halved ──
 		if quirk == "Semangat Juang" and energy <= semangat_low_energy_threshold:
-			mood_change = roundf(mood_change * 0.5)
+			mood_change = roundf(mood_change * Balance.SIFAT_SEMANGAT_POTONGAN_MOOD_KRITIS)
 		
 	# Apply changes and clamp
 	match category:

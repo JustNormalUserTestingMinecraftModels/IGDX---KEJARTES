@@ -275,7 +275,7 @@ func apply_jadwal_activity(category: String, base_gain: float = 5.0, specialty_b
 	var took_ijin: bool = false
 	var ijin_reason: String = ""
 	
-	# Automatic "Izin Sakit / Istirahat" check if student energy is depleted (<= 5.0)
+	# Automatic "Izin Sakit / Istirahat" check if student energy is depleted (see Balance.IZIN_OTOMATIS_BATAS_ENERGI)
 	if category != "Istirahat" and energy <= Balance.IZIN_OTOMATIS_BATAS_ENERGI:
 		took_ijin = true
 		category = "Istirahat"

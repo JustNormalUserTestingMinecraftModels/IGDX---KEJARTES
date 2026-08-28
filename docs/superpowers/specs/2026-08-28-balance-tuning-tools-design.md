@@ -1,7 +1,8 @@
 # Balance Tuning — One Master Script
 
 **Date:** 2026-08-28
-**Status:** Approved, pending implementation plan
+**Status:** Approved. Plan written —
+`docs/superpowers/plans/2026-08-28-balance-master-script.md`
 
 > Replaces an earlier draft of this document that proposed a tunable
 > `Resource` plus an in-game editing panel plus a batch simulator. That design
@@ -19,7 +20,7 @@ gutted her mood" — cannot act on it. The number they want is a bare literal
 inside a function body: `roundf(randf_range(6.0, 8.0))` in
 `apply_personality_daily_decay`, or `mood_change = -18.0` inside an
 `elif grade_num == 8` branch. Finding it means reading gameplay source. There
-are roughly ninety such numbers across four files.
+are 105 such numbers across four files.
 
 **The tester should be able to open one file, understand what each number
 does, change it, and re-run — without reading code and without asking anyone.**
@@ -76,7 +77,7 @@ Two reasons, and the second is the important one:
 1. A GDScript `const` is compile-time. Nothing can ever change it at runtime.
 2. `static var` costs nothing today and preserves the option: if restart
    friction later proves annoying, an editing panel can write to these
-   directly, with **zero rework across the ~90 call sites**. With `const`,
+   directly, with **zero rework across the ~105 call sites**. With `const`,
    adding a panel would mean redoing every one.
 
 `static var` is already used in five places in this codebase
@@ -164,7 +165,7 @@ static var DECAY_KREATIF_ENERGI_MIN := 5.0
 
 ## 3. What gets extracted
 
-Roughly **90 numbers**, counted from source:
+**105 numbers**, counted from source:
 
 | Group | Count | Source |
 |---|---|---|
@@ -178,9 +179,28 @@ Roughly **90 numbers**, counted from source:
 | Trait coefficients | 19 | `StudentData` `@export`s |
 | Wirausaha | 5 | `StudentManager` const block |
 | Skip-mode minigame odds | 1 | `SchoolDay.skip_to_results` |
+| Random event amounts | 12 | `SchoolDay._trigger_random_event` |
 
 The plan enumerates each line individually; this spec fixes the groups and
 their sources.
+
+### Three numbers live in more than one place
+
+Writing the plan turned up duplicate copies that a naive extraction would
+half-convert, leaving the tester with a file that works in one screen and not
+another. Each is a task step, not a footnote:
+
+- The **twelve event amounts** appear identically in `_trigger_random_event`
+  (the real roll) and `force_event` (the debug overlay's hook). Convert only
+  the first and a tester who forces the event to check their change sees the
+  old number.
+- The **Biang Onar scale** is read at three sites in `SchoolDay.gd`, not two.
+- The **study gains** have a third copy in `_build_pill_badges_for_student`,
+  which paints the "+3 Akademis" preview on the day screen. This one is worse
+  than a duplicate: it is already wrong, hardcoding `6.0`/`3.0` while the
+  simulation scales gains by grade, so the preview has always lied in Grades 8
+  and 9. Wiring it to `Balance` fixes that as a side effect — the one place
+  this work changes on-screen output.
 
 ### Two data facts the file should record
 
@@ -228,7 +248,7 @@ Per the runner's constraints: the suite is `@tool` and no test is a coroutine.
 
 ## 5. Risks
 
-1. **~90 mechanical edits in gameplay-critical files.** The volume is the main
+1. **~105 mechanical edits in gameplay-critical files.** The volume is the main
    cost and the main risk, mitigated by per-group commits each verified green.
 2. **A missed literal is invisible.** Its field appears in the file and does
    nothing. The no-bare-literals source scan is the defence.

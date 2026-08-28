@@ -812,7 +812,6 @@ texture_margin_top = 45.0
 texture_margin_right = 45.0
 texture_margin_bottom = 45.0
 region_rect = Rect2(20, 277, 601, 91)
-modulate_color = Color(1, 0.7882353, 0.23529412, 1)
 
 [resource]
 default_font = ExtResource("2_c7jio")
@@ -988,7 +987,10 @@ TitleLabel/colors/font_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
 TitleLabel/font_sizes/font_size = 36
 TraitPill/base_type = &"Button"
 TraitPill/colors/font_color = Color(1, 1, 1, 1)
-TraitPill/font_sizes/font_size = 28
+TraitPill/colors/font_outline_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
+TraitPill/constants/outline_size = 6
+TraitPill/font_sizes/font_size = 48
+TraitPill/fonts/font = ExtResource("1_i33xe")
 TraitPill/styles/focus = SubResource("StyleBoxEmpty_7byrn")
 TraitPill/styles/hover = SubResource("StyleBoxTexture_ufg7e")
 TraitPill/styles/normal = SubResource("StyleBoxTexture_ufg7e")

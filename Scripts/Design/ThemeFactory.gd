@@ -276,7 +276,10 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	pill_fill.set_texture_margin_all(28)
 	theme.set_stylebox("fill", "StatPill", pill_fill)
 
-	# -- Trait button: one recolourable pill, tinted by the caller. --
+	# -- Trait button ("Sifat Pasif" pills): the art ships gold with its own
+	# purple border, so the stylebox draws it untinted. A modulate here
+	# multiplies against the texture rather than replacing its colour --
+	# it would mud the fill to olive and turn the border brown. --
 	theme.add_type("TraitPill")
 	theme.set_type_variation("TraitPill", "Button")
 
@@ -284,13 +287,16 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	trait_normal.texture = load(_CARD_ART + "trait_button.png")
 	trait_normal.region_rect = Rect2(20, 277, 601, 91)
 	trait_normal.set_texture_margin_all(45)
-	trait_normal.modulate_color = tokens.currency_gold
 	theme.set_stylebox("normal", "TraitPill", trait_normal)
 	theme.set_stylebox("hover", "TraitPill", trait_normal)
 	theme.set_stylebox("pressed", "TraitPill", trait_normal)
 	theme.set_stylebox("focus", "TraitPill", StyleBoxEmpty.new())
-	theme.set_font_size("font_size", "TraitPill", tokens.font_body_size)
+	theme.set_font_size("font_size", "TraitPill", tokens.font_h2)
 	theme.set_color("font_color", "TraitPill", tokens.text_on_brand)
+	theme.set_constant("outline_size", "TraitPill", 6)
+	theme.set_color("font_outline_color", "TraitPill", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "TraitPill", tokens.font_display)
 
 	# -- "Sifat Pasif:" section heading: white text needs a dark outline to
 	# read against the light card background, unlike the shared TitleLabel

@@ -99,6 +99,31 @@ func test_redesign_variations_exist() -> void:
 			"ThemeFactory must define the " + variation + " variation")
 
 
+## The pill's art ships gold with a dark purple border baked in. A stylebox
+## tint would multiply against both -- muddying the fill to olive and
+## turning the purple border brown -- so the texture must draw untinted.
+func test_trait_pill_draws_its_art_untinted() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	var normal := theme.get_stylebox("normal", "TraitPill")
+	assert_true(normal is StyleBoxTexture,
+		"TraitPill's normal stylebox must be the pill texture")
+	assert_eq((normal as StyleBoxTexture).modulate_color, Color.WHITE,
+		"TraitPill must not tint its texture")
+
+
+## White text on a gold fill needs the dark rim to stay legible, matching
+## the treatment CardSectionLabel already uses on the same card.
+func test_trait_pill_text_is_outlined() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	assert_eq(theme.get_color("font_color", "TraitPill"), tokens.text_on_brand,
+		"TraitPill text must be white")
+	assert_eq(theme.get_color("font_outline_color", "TraitPill"), tokens.text_primary,
+		"TraitPill text must carry the dark outline")
+	assert_true(theme.get_constant("outline_size", "TraitPill") > 0,
+		"TraitPill's outline must have width")
+
+
 ## The card background paints the pill tracks, so the bar must draw no
 ## background of its own -- otherwise a second track renders on top of the
 ## painted one and the pill looks doubled.

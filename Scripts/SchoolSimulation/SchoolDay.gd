@@ -905,8 +905,8 @@ func _trigger_random_event(day_name: String) -> void:
 	
 	match event_id:
 		0:
-			var stat_val := 15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := -15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var stat_val := Balance.EVENT_AKADEMIS_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var nrg_val := Balance.EVENT_AKADEMIS_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
 				"Les Tambahan Akademis 📚",
@@ -916,9 +916,9 @@ func _trigger_random_event(day_name: String) -> void:
 				"Akademis", stat_val, nrg_val, 0.0
 			)
 		1:
-			var stat_val := 15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_val := 10.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := -20.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var stat_val := Balance.EVENT_OLAHRAGA_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var mood_val := Balance.EVENT_OLAHRAGA_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var nrg_val := Balance.EVENT_OLAHRAGA_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
 				"Latihan Olahraga Ekstra ⚽",
@@ -928,9 +928,9 @@ func _trigger_random_event(day_name: String) -> void:
 				"Olahraga", stat_val, nrg_val, mood_val
 			)
 		2:
-			var stat_val := 15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_val := 15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := -10.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var stat_val := Balance.EVENT_SENI_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var mood_val := Balance.EVENT_SENI_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var nrg_val := Balance.EVENT_SENI_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
 				"Workshop Sanggar Seni 🎨",
@@ -942,8 +942,8 @@ func _trigger_random_event(day_name: String) -> void:
 		3:
 			await _show_event_announcement("🍱 Kejutan Nasi Kotak Orang Tua!")
 			# Biang Onar: global positive events are stronger
-			var energy_bonus := 20.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_bonus := 25.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var names: Array[String] = []
 			for s in student_manager.students:
 				# Route through apply_event_effects so quirks like Penyendiri apply correctly
@@ -955,8 +955,8 @@ func _trigger_random_event(day_name: String) -> void:
 		4:
 			await _show_event_announcement("🌧 Hujan Deras & Jalanan Licin!")
 			# Biang Onar: global negative events are worse
-			var energy_penalty := -15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_penalty := -15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var names: Array[String] = []
 			for s in student_manager.students:
 				# Route through apply_event_effects so quirks like Penyendiri apply correctly
@@ -1439,7 +1439,7 @@ func force_event(event_id: int) -> void:
 	# Trigger a specific event immediately during simulation
 	var day_name = DAYS[current_day] if current_day < DAYS.size() else "Senin"
 	events_triggered_this_week += 1
-	
+
 	var biang_onar_active: bool = false
 	var biang_onar_scale: float = 0.0
 	if student_manager:
@@ -1448,11 +1448,11 @@ func force_event(event_id: int) -> void:
 				biang_onar_active = true
 				biang_onar_scale = Balance.SIFAT_BIANG_ONAR_EVENT_BAGUS
 				break
-				
+
 	match event_id:
 		0:
-			var stat_val := 15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := -15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var stat_val := Balance.EVENT_AKADEMIS_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var nrg_val := Balance.EVENT_AKADEMIS_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
 				"Les Tambahan Akademis 📚",
@@ -1462,9 +1462,9 @@ func force_event(event_id: int) -> void:
 				"Akademis", stat_val, nrg_val, 0.0
 			)
 		1:
-			var stat_val := 15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_val := 10.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := -20.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var stat_val := Balance.EVENT_OLAHRAGA_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var mood_val := Balance.EVENT_OLAHRAGA_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var nrg_val := Balance.EVENT_OLAHRAGA_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
 				"Latihan Olahraga Ekstra ⚽",
@@ -1474,9 +1474,9 @@ func force_event(event_id: int) -> void:
 				"Olahraga", stat_val, nrg_val, mood_val
 			)
 		2:
-			var stat_val := 15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_val := 15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := -10.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var stat_val := Balance.EVENT_SENI_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var mood_val := Balance.EVENT_SENI_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var nrg_val := Balance.EVENT_SENI_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
 				"Workshop Sanggar Seni 🎨",
@@ -1487,8 +1487,8 @@ func force_event(event_id: int) -> void:
 			)
 		3:
 			await _show_event_announcement("🍱 Kejutan Nasi Kotak Orang Tua!")
-			var energy_bonus := 20.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_bonus := 25.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var names: Array[String] = []
 			for s in student_manager.students:
 				s.apply_event_effects("", 0.0, energy_bonus, mood_bonus)
@@ -1498,8 +1498,8 @@ func force_event(event_id: int) -> void:
 			await get_tree().create_timer(0.8).timeout
 		4:
 			await _show_event_announcement("🌧 Hujan Deras & Jalanan Licin!")
-			var energy_penalty := -15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_penalty := -15.0 * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
+			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var names: Array[String] = []
 			for s in student_manager.students:
 				s.apply_event_effects("", 0.0, energy_penalty, mood_penalty)

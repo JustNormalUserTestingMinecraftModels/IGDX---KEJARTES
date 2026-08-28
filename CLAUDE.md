@@ -109,8 +109,10 @@ Full detail: `docs/superpowers/design/style-guide.md`.
   (`squash_bounce`, `popup_spring_in/out`, `coin_pulse`, `create_floating_text`,
   …). It is a plain static-function script, **not** an autoload.
 
-Minigames (`Scenes/Minigames/**`) are explicitly **out of scope** for the
-design system — they inherit the Theme but had no polish pass.
+Minigames (`Scenes/Minigames/**`) and the debug overlay
+(`Scripts/Debug/DebugManager.gd`) are explicitly **out of scope** for the
+design system — minigames inherit the Theme but had no polish pass, and the
+overlay is a programmatic developer tool that styles itself directly.
 
 ## Testing
 
@@ -162,9 +164,12 @@ project. Four rules, in order of how much they save:
 top of its General tab: roster approved, 999999G, full inventory, lobby
 tutorial bypassed. Combine it with the overlay's **Scenes** tab, which
 teleports directly to MainMenu / Lobby / StudentCard / AturJadwal / SchoolDay
-/ SemesterEnd / Splashscreen. Seed, teleport, screenshot once. Driving the
-shop purchase flow by simulated clicks to reach the same state took roughly
-forty-five calls and failed twice before working.
+/ SemesterEnd / Splashscreen. Seed, teleport, screenshot once. The seed covers
+roster, money, inventory and the lobby tutorial flag — it does **not** fill
+`day_schedules`, so anything schedule-driven (SchoolDay, AturJadwal) still
+needs a pass through Atur Jadwal first. Driving the shop purchase flow by
+simulated clicks to reach the same state took roughly forty-five calls and
+failed twice before working.
 
 When you do have to click, note two quirks. Send a `motion` event to the
 target before the `button` press — Godot will not route a click without the
@@ -201,9 +206,8 @@ serve a **stale** autoload otherwise. Three tests once failed with
 committed on disk; one `filesystem_manage(op="scan")` turned the same run into
 20/20. Scan first, or you will debug a phantom.
 
-Two smaller habits: grep before reading (the two largest scripts here exceed 1,500
-lines — read the range you need, not the file), and read `logs_read(source="editor")`
-for parse errors, since boot-time failures never reach the game log.
+One smaller habit: grep before reading — the two largest scripts here
+exceed 1,500 lines, so read the range you need, not the file.
 
 **The Godot MCP bridge is single-client.** Only one client can hold the
 backend at a time. If you delegate to subagents, they cannot run the editor:

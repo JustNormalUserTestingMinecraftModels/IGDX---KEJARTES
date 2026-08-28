@@ -643,15 +643,11 @@ func _set_money(amount: int) -> void:
 ## costs one click instead of playing the game up to that screen.
 func _seed_playtest_state() -> void:
 	_auto_approve_students()
-	GameState.player_money = 999999
+	_set_money(999999)
 	GameState.seed_playtest_inventory(5)
 	GameState.lobby_tutorial_completed = true
 
 	log_message("Seeded playtest state: roster, 999999G, full inventory, tutorial bypassed.")
-
-	var cur_scene = get_tree().current_scene
-	if cur_scene and cur_scene.has_method("_update_money_display"):
-		cur_scene._update_money_display()
 	_refresh_ui_fields()
 
 func _set_time_scale(scale: float) -> void:

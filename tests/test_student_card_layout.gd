@@ -218,12 +218,26 @@ func test_bio_panel_sits_inside_the_painted_panel() -> void:
 		"populate() must call build_bio_panel, or the bio panel never renders")
 
 
-func test_superseded_labels_are_hidden() -> void:
-	var src := FileAccess.get_file_as_string(
-		"res://Scripts/StudentCard/StudentCardView.gd")
-	for label_name in ["Profil", "Kepribadian", "Akademis"]:
-		assert_true(src.contains('"%s"' % label_name),
-			"StudentCardView must account for the old label " + label_name)
+## The redesign's bio panel and icon clusters replace what these four
+## labels used to show; the nodes themselves are removed from every card
+## in both scenes, not just hidden at runtime.
+func test_superseded_labels_are_removed_from_the_scenes() -> void:
+	for scene_path in _SCENES:
+		var src := FileAccess.get_file_as_string(scene_path)
+		for i in range(1, 7):
+			for label_name in ["Nama", "Profil", "Kepribadian", "Akademis"]:
+				assert_false(src.contains('[node name="%s" type="Label" parent="KertasMurid%d"' % [label_name, i]),
+					"%s must not declare KertasMurid%d/%s" % [scene_path, i, label_name])
+
+
+## Every card carries the "Sifat Pasif:" heading above its two trait
+## pills, so the pills don't float unlabelled the way they used to.
+func test_every_card_has_the_sifat_pasif_heading() -> void:
+	for scene_path in _SCENES:
+		var src := FileAccess.get_file_as_string(scene_path)
+		for i in range(1, 7):
+			assert_true(src.contains('[node name="SifatPasifLabel" type="Label" parent="KertasMurid%d"' % i),
+				"%s missing KertasMurid%d/SifatPasifLabel" % [scene_path, i])
 
 
 func test_trait_buttons_use_the_trait_pill_variation() -> void:

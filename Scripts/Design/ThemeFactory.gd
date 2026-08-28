@@ -284,12 +284,23 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	trait_normal.texture = load(_CARD_ART + "trait_button.png")
 	trait_normal.region_rect = Rect2(20, 277, 601, 91)
 	trait_normal.set_texture_margin_all(45)
+	trait_normal.modulate_color = tokens.currency_gold
 	theme.set_stylebox("normal", "TraitPill", trait_normal)
 	theme.set_stylebox("hover", "TraitPill", trait_normal)
 	theme.set_stylebox("pressed", "TraitPill", trait_normal)
 	theme.set_stylebox("focus", "TraitPill", StyleBoxEmpty.new())
 	theme.set_font_size("font_size", "TraitPill", tokens.font_body_size)
 	theme.set_color("font_color", "TraitPill", tokens.text_on_brand)
+
+	# -- "Sifat Pasif:" section heading: white text needs a dark outline to
+	# read against the light card background, unlike the shared TitleLabel
+	# (which is dark-on-light and used across many other screens). --
+	theme.add_type("CardSectionLabel")
+	theme.set_type_variation("CardSectionLabel", "Label")
+	theme.set_font_size("font_size", "CardSectionLabel", tokens.font_title)
+	theme.set_color("font_color", "CardSectionLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "CardSectionLabel", 4)
+	theme.set_color("font_outline_color", "CardSectionLabel", tokens.text_primary)
 
 	# -- Bio text: light, because it sits on the painted purple panel. --
 	theme.add_type("BioLabel")

@@ -57,11 +57,6 @@ static func populate(card: Control, student: Dictionary,
 	if not card:
 		return
 
-	# Update Name
-	var name_label = card.get_node_or_null("Nama")
-	if name_label and name_label is Label:
-		name_label.text = student.get("name", "Unknown")
-
 	# Update Quirk (KutuBuku)
 	var quirk_label = card.get_node_or_null("KutuBuku")
 	if quirk_label and quirk_label is Label:
@@ -206,6 +201,7 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 			var badge := TextureRect.new()
 			badge.name = "InfoBadge"
 			badge.texture = load(_CARD_ART + "icon_info.png")
+			badge.modulate = DesignTokens.load_default().state_success
 			badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -245,16 +241,7 @@ const _BIO_PADDING := 32.0
 ## Lays the three bio rows over the painted panel: a heading and a value
 ## per row. The panel art itself comes from the card background, so this
 ## only positions text.
-##
-## Also hides the three labels the redesign supersedes -- `Profil` (whose
-## content these rows replace) and the `Kepribadian` / `Akademis` section
-## headings, which the icon-led layout has no room for.
 static func build_bio_panel(kertas: Control, s_data: Dictionary) -> void:
-	for stale_name in ["Nama", "Profil", "Kepribadian", "Akademis"]:
-		var stale := kertas.get_node_or_null(stale_name) as CanvasItem
-		if stale != null:
-			stale.visible = false
-
 	var panel := kertas.get_node_or_null("BioPanel") as VBoxContainer
 	if panel == null:
 		panel = VBoxContainer.new()

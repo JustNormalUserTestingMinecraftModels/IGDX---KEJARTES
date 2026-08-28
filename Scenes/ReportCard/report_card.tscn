@@ -61,15 +61,15 @@ offset_right = 920.0
 offset_bottom = 656.0
 stretch_mode = 5
 
-[node name="Nama" type="Label" parent="KertasMurid6" unique_id=974236894]
-theme_type_variation = &"H1Label"
-text = "Ga Peduli"
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid6"]
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 layout_mode = 0
-offset_left = 657.0
-offset_top = 212.0
-offset_right = 990.0
-offset_bottom = 313.0
+offset_left = 119.0
+offset_top = 1330.0
+offset_right = 500.0
+offset_bottom = 1395.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid6" unique_id=1010521266]
 theme_type_variation = &"TraitPill"
@@ -100,43 +100,6 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
-
-[node name="Profil" type="Label" parent="KertasMurid6" unique_id=1123386699]
-text = "Nama: Jokoteno
-
-Agama: Muslim
-
-Jenis Kelamin: Perempuan
-
-Cita-Cita: Artist
-
-Hobi: Bernyanyi"
-
-layout_mode = 0
-offset_left = 644.0
-offset_top = 320.0
-offset_right = 1061.0
-offset_bottom = 722.0
-
-[node name="Kepribadian" type="Label" parent="KertasMurid6" unique_id=1730294522]
-theme_type_variation = &"TitleLabel"
-text = "KEPRIBADIAN"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 830.0
-offset_right = 500.0
-offset_bottom = 883.0
-
-[node name="Akademis" type="Label" parent="KertasMurid6" unique_id=1001822697]
-theme_type_variation = &"TitleLabel"
-text = "SKILL"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 1059.0
-offset_right = 500.0
-offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid6" unique_id=101612949]
 script = ExtResource("statbar")
@@ -333,15 +296,15 @@ offset_right = 920.0
 offset_bottom = 656.0
 stretch_mode = 5
 
-[node name="Nama" type="Label" parent="KertasMurid5" unique_id=236830249]
-theme_type_variation = &"H1Label"
-text = "Ga Peduli"
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid5"]
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 layout_mode = 0
-offset_left = 657.0
-offset_top = 212.0
-offset_right = 990.0
-offset_bottom = 313.0
+offset_left = 119.0
+offset_top = 1330.0
+offset_right = 500.0
+offset_bottom = 1395.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid5" unique_id=1094008115]
 theme_type_variation = &"TraitPill"
@@ -372,43 +335,6 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
-
-[node name="Profil" type="Label" parent="KertasMurid5" unique_id=435624905]
-text = "Nama: Jokoteno
-
-Agama: Muslim
-
-Jenis Kelamin: Perempuan
-
-Cita-Cita: Artist
-
-Hobi: Bernyanyi"
-
-layout_mode = 0
-offset_left = 644.0
-offset_top = 320.0
-offset_right = 1061.0
-offset_bottom = 722.0
-
-[node name="Kepribadian" type="Label" parent="KertasMurid5" unique_id=872328517]
-theme_type_variation = &"TitleLabel"
-text = "KEPRIBADIAN"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 830.0
-offset_right = 500.0
-offset_bottom = 883.0
-
-[node name="Akademis" type="Label" parent="KertasMurid5" unique_id=1595145043]
-theme_type_variation = &"TitleLabel"
-text = "SKILL"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 1059.0
-offset_right = 500.0
-offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid5" unique_id=1718979238]
 script = ExtResource("statbar")
@@ -606,15 +532,15 @@ offset_right = 920.0
 offset_bottom = 656.0
 stretch_mode = 5
 
-[node name="Nama" type="Label" parent="KertasMurid4" unique_id=1975918155]
-theme_type_variation = &"H1Label"
-text = "Ga Peduli"
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid4"]
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 layout_mode = 0
-offset_left = 657.0
-offset_top = 212.0
-offset_right = 990.0
-offset_bottom = 313.0
+offset_left = 119.0
+offset_top = 1330.0
+offset_right = 500.0
+offset_bottom = 1395.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid4" unique_id=862966656]
 theme_type_variation = &"TraitPill"
@@ -645,43 +571,6 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
-
-[node name="Profil" type="Label" parent="KertasMurid4" unique_id=589185817]
-text = "Nama: Jokoteno
-
-Agama: Muslim
-
-Jenis Kelamin: Perempuan
-
-Cita-Cita: Artist
-
-Hobi: Bernyanyi"
-
-layout_mode = 0
-offset_left = 644.0
-offset_top = 320.0
-offset_right = 1061.0
-offset_bottom = 722.0
-
-[node name="Kepribadian" type="Label" parent="KertasMurid4" unique_id=607932436]
-theme_type_variation = &"TitleLabel"
-text = "KEPRIBADIAN"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 830.0
-offset_right = 500.0
-offset_bottom = 883.0
-
-[node name="Akademis" type="Label" parent="KertasMurid4" unique_id=1675703779]
-theme_type_variation = &"TitleLabel"
-text = "SKILL"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 1059.0
-offset_right = 500.0
-offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid4" unique_id=841029218]
 script = ExtResource("statbar")
@@ -879,15 +768,15 @@ offset_right = 920.0
 offset_bottom = 656.0
 stretch_mode = 5
 
-[node name="Nama" type="Label" parent="KertasMurid3" unique_id=334024477]
-theme_type_variation = &"H1Label"
-text = "Ga Peduli"
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid3"]
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 layout_mode = 0
-offset_left = 657.0
-offset_top = 212.0
-offset_right = 990.0
-offset_bottom = 313.0
+offset_left = 119.0
+offset_top = 1330.0
+offset_right = 500.0
+offset_bottom = 1395.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid3" unique_id=407152762]
 theme_type_variation = &"TraitPill"
@@ -918,43 +807,6 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
-
-[node name="Profil" type="Label" parent="KertasMurid3" unique_id=1095889559]
-text = "Nama: Jokoteno
-
-Agama: Muslim
-
-Jenis Kelamin: Perempuan
-
-Cita-Cita: Artist
-
-Hobi: Bernyanyi"
-
-layout_mode = 0
-offset_left = 644.0
-offset_top = 320.0
-offset_right = 1061.0
-offset_bottom = 722.0
-
-[node name="Kepribadian" type="Label" parent="KertasMurid3" unique_id=1784869682]
-theme_type_variation = &"TitleLabel"
-text = "KEPRIBADIAN"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 830.0
-offset_right = 500.0
-offset_bottom = 883.0
-
-[node name="Akademis" type="Label" parent="KertasMurid3" unique_id=292209198]
-theme_type_variation = &"TitleLabel"
-text = "SKILL"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 1059.0
-offset_right = 500.0
-offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid3" unique_id=1970699477]
 script = ExtResource("statbar")
@@ -1152,15 +1004,15 @@ offset_right = 920.0
 offset_bottom = 656.0
 stretch_mode = 5
 
-[node name="Nama" type="Label" parent="KertasMurid2" unique_id=1198253032]
-theme_type_variation = &"H1Label"
-text = "Ga Peduli"
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid2"]
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 layout_mode = 0
-offset_left = 657.0
-offset_top = 212.0
-offset_right = 990.0
-offset_bottom = 313.0
+offset_left = 119.0
+offset_top = 1330.0
+offset_right = 500.0
+offset_bottom = 1395.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid2" unique_id=1530561034]
 theme_type_variation = &"TraitPill"
@@ -1191,43 +1043,6 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
-
-[node name="Profil" type="Label" parent="KertasMurid2" unique_id=1730169888]
-text = "Nama: Jokoteno
-
-Agama: Muslim
-
-Jenis Kelamin: Perempuan
-
-Cita-Cita: Artist
-
-Hobi: Bernyanyi"
-
-layout_mode = 0
-offset_left = 644.0
-offset_top = 320.0
-offset_right = 1061.0
-offset_bottom = 722.0
-
-[node name="Kepribadian" type="Label" parent="KertasMurid2" unique_id=242874824]
-theme_type_variation = &"TitleLabel"
-text = "KEPRIBADIAN"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 830.0
-offset_right = 500.0
-offset_bottom = 883.0
-
-[node name="Akademis" type="Label" parent="KertasMurid2" unique_id=1304676564]
-theme_type_variation = &"TitleLabel"
-text = "SKILL"
-
-layout_mode = 0
-offset_left = 120.0
-offset_top = 1059.0
-offset_right = 500.0
-offset_bottom = 1112.0
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid2" unique_id=1781486670]
 script = ExtResource("statbar")
@@ -1424,15 +1239,15 @@ expand_mode = 1
 stretch_mode = 5
 
 
-[node name="Nama" type="Label" parent="KertasMurid1" unique_id=800854197]
-theme_type_variation = &"H1Label"
-layout_mode = 0
-offset_left = 657.0
-offset_top = 212.0
-offset_right = 990.0
-offset_bottom = 313.0
-text = "Ga Peduli"
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid1"]
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1330.0
+offset_right = 500.0
+offset_bottom = 1395.0
 
 [node name="KutuBuku" type="Button" parent="KertasMurid1" unique_id=911792941]
 theme_type_variation = &"TraitPill"
@@ -1462,43 +1277,6 @@ offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
 text = "Persona Rajin"
-
-
-[node name="Profil" type="Label" parent="KertasMurid1" unique_id=637179014]
-layout_mode = 0
-offset_left = 644.0
-offset_top = 320.0
-offset_right = 1061.0
-offset_bottom = 722.0
-text = "Nama: Jokoteno
-
-Agama: Muslim
-
-Jenis Kelamin: Perempuan
-
-Cita-Cita: Artist
-
-Hobi: Bernyanyi"
-
-
-[node name="Kepribadian" type="Label" parent="KertasMurid1" unique_id=1092958830]
-theme_type_variation = &"TitleLabel"
-layout_mode = 0
-offset_left = 120.0
-offset_top = 830.0
-offset_right = 500.0
-offset_bottom = 883.0
-text = "KEPRIBADIAN"
-
-
-[node name="Akademis" type="Label" parent="KertasMurid1" unique_id=1362505668]
-theme_type_variation = &"TitleLabel"
-layout_mode = 0
-offset_left = 120.0
-offset_top = 1059.0
-offset_right = 500.0
-offset_bottom = 1112.0
-text = "SKILL"
 
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid1" unique_id=1809899533]
@@ -1735,7 +1513,7 @@ grow_vertical = 2
 
 
 [node name="PageLabel" type="Label" parent="." unique_id=977170758]
-theme_type_variation = &"TitleLabel"
+theme_type_variation = &"CardSectionLabel"
 layout_mode = 0
 offset_left = 302.0
 offset_top = 1248.0

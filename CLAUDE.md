@@ -169,8 +169,11 @@ forty-five calls and failed twice before working.
 When you do have to click, note two quirks. Send a `motion` event to the
 target before the `button` press — Godot will not route a click without the
 hover state first, and a bare press/release pair silently does nothing.
-And rescale coordinates: the design space is 1080x1922 but the window is
-smaller, so window coords are roughly `global * 0.354`. Read the target's
+And rescale coordinates: `global_rect` values are in the project's
+1080-wide design space, while input events take window pixels. Derive the
+factor instead of hardcoding one — `editor_screenshot` reports the window's
+real size as `original_width`/`original_height`, so
+`window_x = global_x * original_width / 1080`. Read the target's
 `global_rect` rather than eyeballing a screenshot.
 
 **2. Scope every `get_ui_elements` call.** Called bare it serialises the whole
@@ -198,7 +201,7 @@ serve a **stale** autoload otherwise. Three tests once failed with
 committed on disk; one `filesystem_manage(op="scan")` turned the same run into
 20/20. Scan first, or you will debug a phantom.
 
-Two smaller habits: grep before reading (several scripts here exceed 1,500
+Two smaller habits: grep before reading (the two largest scripts here exceed 1,500
 lines — read the range you need, not the file), and read `logs_read(source="editor")`
 for parse errors, since boot-time failures never reach the game log.
 

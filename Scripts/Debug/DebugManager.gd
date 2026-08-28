@@ -341,7 +341,19 @@ func _build_general_panel(parent: Control) -> void:
 	vbox.add_theme_constant_override("separation", 35)
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	margin_container.add_child(vbox)
-	
+
+	# Row 0: One-click playtest state (most-used action, so it goes first)
+	var btn_seed = Button.new()
+	btn_seed.text = " ⚡ Seed Playtest State "
+	btn_seed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_seed.custom_minimum_size = Vector2(0, 95)
+	btn_seed.add_theme_font_size_override("font_size", 30)
+	btn_seed.pressed.connect(_seed_playtest_state)
+	vbox.add_child(btn_seed)
+
+	var sep_seed = HSeparator.new()
+	vbox.add_child(sep_seed)
+
 	# Row 1: Week tracking & Grade
 	var grp_week = VBoxContainer.new()
 	grp_week.add_theme_constant_override("separation", 15)
@@ -621,6 +633,22 @@ func _modify_money(delta: int) -> void:
 func _set_money(amount: int) -> void:
 	GameState.player_money = max(0, amount)
 	log_message("Player money set to: %dG" % GameState.player_money)
+	var cur_scene = get_tree().current_scene
+	if cur_scene and cur_scene.has_method("_update_money_display"):
+		cur_scene._update_money_display()
+	_refresh_ui_fields()
+
+## One call to reach a mid-game state: roster approved, money stocked,
+## inventory full, lobby tutorial bypassed. Exists so verifying a screen
+## costs one click instead of playing the game up to that screen.
+func _seed_playtest_state() -> void:
+	_auto_approve_students()
+	GameState.player_money = 999999
+	GameState.seed_playtest_inventory(5)
+	GameState.lobby_tutorial_completed = true
+
+	log_message("Seeded playtest state: roster, 999999G, full inventory, tutorial bypassed.")
+
 	var cur_scene = get_tree().current_scene
 	if cur_scene and cur_scene.has_method("_update_money_display"):
 		cur_scene._update_money_display()

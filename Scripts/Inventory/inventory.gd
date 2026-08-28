@@ -249,7 +249,7 @@ func _populate_grid():
 
 func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0):
 	var slot = PanelContainer.new()
-	slot.custom_minimum_size = Vector2(240, 280)
+	slot.custom_minimum_size = Vector2(260, 340)
 	slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slot.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -269,10 +269,10 @@ func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0):
 	normal_style.border_width_bottom = 1
 	normal_style.border_color = cat_color.darkened(0.3)
 
-	normal_style.content_margin_left = 12
-	normal_style.content_margin_right = 12
-	normal_style.content_margin_top = 12
-	normal_style.content_margin_bottom = 10
+	normal_style.content_margin_left = 16
+	normal_style.content_margin_right = 16
+	normal_style.content_margin_top = 16
+	normal_style.content_margin_bottom = 14
 	slot.add_theme_stylebox_override("panel", normal_style)
 
 	# ── Selected style (stored for later) ──
@@ -297,7 +297,7 @@ func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0):
 	icon.texture = item.icon
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.custom_minimum_size = Vector2(180, 210)
+	icon.custom_minimum_size = Vector2(200, 260)
 	icon.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -315,7 +315,7 @@ func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0):
 
 	var qty_label = Label.new()
 	qty_label.text = "×%d" % quantity
-	qty_label.add_theme_font_size_override("font_size", 32)
+	qty_label.add_theme_font_size_override("font_size", 36)
 	qty_label.add_theme_color_override("font_color", GOLD)
 	qty_label.add_theme_color_override("font_shadow_color", SHADOW_COLOR)
 	qty_label.add_theme_constant_override("shadow_offset_x", 1)

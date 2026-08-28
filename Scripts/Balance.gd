@@ -1,3 +1,4 @@
+@tool
 ## Balance.gd — semua angka yang menentukan murid lulus atau tidak.
 ##
 ## Cara pakai: ubah angkanya, simpan (Ctrl+S), lalu jalankan ulang game.

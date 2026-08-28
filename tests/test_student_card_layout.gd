@@ -93,3 +93,33 @@ func test_cards_use_the_new_background() -> void:
 			scene_path + " must reference the new card background")
 		assert_false(src.contains("paper_placeholder.jpg"),
 			scene_path + " must no longer reference the placeholder paper")
+
+
+## The painted tracks are at fixed pixel positions in the card art, so the
+## fills must land exactly on them.
+const _EXPECTED_PILLS := {
+	"Akademis1": Rect2(284, 763, 211, 67),
+	"Akademis2": Rect2(284, 888, 211, 67),
+	"Akademis3": Rect2(284, 1014, 211, 67),
+	"Kepribadian1": Rect2(716, 762, 211, 67),
+	"Kepribadian2": Rect2(717, 888, 211, 67),
+}
+
+
+func test_pill_rects_match_the_painted_tracks() -> void:
+	for bar_name in _EXPECTED_PILLS.keys():
+		assert_true(StudentCardView.PILL_RECTS.has(bar_name),
+			"PILL_RECTS must cover " + bar_name)
+		assert_eq(StudentCardView.PILL_RECTS[bar_name], _EXPECTED_PILLS[bar_name],
+			"PILL_RECTS[%s] must sit on the painted track" % bar_name)
+
+
+## The pill shows no text at all in the new design -- the icon beside it
+## says which stat it is.
+func test_bars_carry_no_text_children() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentCard/StudentCardView.gd")
+	assert_false(src.contains('val_lbl.text = "%d / %d"'),
+		"the value readout must be gone from the redesigned pill")
+	assert_true(src.contains('variation = &"StatPill"'),
+		"card bars must opt into the StatPill variation")

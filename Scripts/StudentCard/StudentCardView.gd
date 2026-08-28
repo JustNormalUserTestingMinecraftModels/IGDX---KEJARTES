@@ -114,133 +114,62 @@ static func populate(card: Control, student: Dictionary, icon_magnify: Texture2D
 
 # ================= BAR RESIZE & BADGE CREATION =================
 
-static func build_stat_bars(kertas: Control, s_data: Dictionary, icon_magnify: Texture2D,
-		on_bar_input: Callable) -> void:
-	const BAR_HEIGHT := 68.0
+## Where each pill's fill sits, in card-local pixels. These are the exact
+## positions of the tracks painted into card_bg.png, measured from the art;
+## the card is sized to the texture's own 1080x1920 so they map 1:1.
+const PILL_RECTS := {
+	"Akademis1": Rect2(284, 763, 211, 67),
+	"Akademis2": Rect2(284, 888, 211, 67),
+	"Akademis3": Rect2(284, 1014, 211, 67),
+	"Kepribadian1": Rect2(716, 762, 211, 67),
+	"Kepribadian2": Rect2(717, 888, 211, 67),
+}
 
-	var bar_names = ["Kepribadian1", "Kepribadian2", "Akademis1", "Akademis2", "Akademis3"]
-	var bar_index := {
-		"Kepribadian1": 0,
-		"Kepribadian2": 1,
-		"Akademis1": 2,
-		"Akademis2": 3,
-		"Akademis3": 4
+
+## Lays each bar's fill onto its painted track. The redesign moves all
+## labelling out of the bar: no stat name, no value readout, and no
+## magnifying glass -- the icon cluster beside the pill (see
+## build_icon_clusters) both names the stat and carries the tap.
+static func build_stat_bars(kertas: Control, s_data: Dictionary, _icon_magnify: Texture2D,
+		_on_bar_input: Callable) -> void:
+	var values := {
+		"Kepribadian1": s_data.get("kepribadian1", 0),
+		"Kepribadian2": s_data.get("kepribadian2", 0),
+		"Akademis1": s_data.get("akademis1", 0),
+		"Akademis2": s_data.get("akademis2", 0),
+		"Akademis3": s_data.get("akademis3", 0),
 	}
 
-	for bname in bar_names:
-		var bar = kertas.get_node_or_null(bname)
-		if not bar or not bar is ProgressBar:
+	for bar_name in PILL_RECTS.keys():
+		var bar = kertas.get_node_or_null(bar_name)
+		if bar == null or not bar is ProgressBar:
 			continue
 
-		var idx: int = bar_index[bname]
-
-		var current_val = 0.0
-		var max_val = 100.0
-		if bname == "Kepribadian1":
-			current_val = s_data.get("kepribadian1", 0)
-			max_val = 100.0
-		elif bname == "Kepribadian2":
-			current_val = s_data.get("kepribadian2", 0)
-			max_val = 100.0
-		elif bname == "Akademis1":
-			current_val = s_data.get("akademis1", 0)
-		elif bname == "Akademis2":
-			current_val = s_data.get("akademis2", 0)
-		elif bname == "Akademis3":
-			current_val = s_data.get("akademis3", 0)
-
-		# Style stat name label (MOOD, ENERGY, AKADEMIS, SENI BUDAYA, OLAHRAGA).
-		# The old code picked between a dark and a light text color based on
-		# how full the bar was, so a label could flip color mid-run. The
-		# BarLabel theme variation replaces that with one legible treatment
-		# (white glyph, dark rim) that reads over both the track and every
-		# category fill, so no per-node override is needed at all.
-		var stat_lbl = bar.get_node_or_null("Label")
-		if stat_lbl and stat_lbl is Label:
-			stat_lbl.set_anchors_preset(Control.PRESET_TOP_LEFT)
-			stat_lbl.offset_left = 24
-			stat_lbl.offset_top = 0
-			stat_lbl.offset_right = 300
-			stat_lbl.offset_bottom = BAR_HEIGHT
-			stat_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-			stat_lbl.theme_type_variation = &"BarLabel"
-
-		# The bars are StatBar nodes now: the pill track and the white
-		# fill come from the StatBar theme variation, and the per-category
-		# tint from StatBar.category (set in the scene) via self_modulate.
-		# Nothing here needs to build a stylebox any more. Animating the
-		# value through set_stat() also gives each bar a fill sweep on
-		# entry instead of snapping to its final width.
-		if bar is StatBar:
-			bar.set_stat(current_val)
-		else:
-			bar.value = current_val
+		var rect: Rect2 = PILL_RECTS[bar_name]
+		bar.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		bar.offset_left = rect.position.x
+		bar.offset_top = rect.position.y
+		bar.offset_right = rect.position.x + rect.size.x
+		bar.offset_bottom = rect.position.y + rect.size.y
 		bar.show_percentage = false
 
-		# Make it obviously clickable
-		bar.mouse_filter = Control.MOUSE_FILTER_STOP
-		bar.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		# The pill is decoration now; the icon cluster takes the input.
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-		# Ensure clean event binding for bar
-		var callable = on_bar_input.bind(kertas, bname, s_data)
-		if bar.has_meta("bar_gui_callable"):
-			bar.gui_input.disconnect(bar.get_meta("bar_gui_callable"))
-		bar.gui_input.connect(callable)
-		bar.set_meta("bar_gui_callable", callable)
+		# Drop the children the old bar carried: the stat-name label, the
+		# value readout, and the magnifier. Leaving any of them would draw
+		# text on a pill the design wants blank.
+		for child_name in ["Label", "ValueLabel", "InfoIcon"]:
+			var stale = bar.get_node_or_null(child_name)
+			if stale != null:
+				bar.remove_child(stale)
+				stale.queue_free()
 
-		# Add a magnifying glass icon (Lup)
-		var info_icon = bar.get_node_or_null("InfoIcon")
-		if not info_icon:
-			if icon_magnify:
-				var tex = TextureRect.new()
-				tex.texture = icon_magnify
-				tex.name = "InfoIcon"
-				tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				info_icon = tex
-			else:
-				var lbl = Label.new()
-				lbl.name = "InfoIcon"
-				lbl.text = "??"
-				lbl.theme_type_variation = &"TitleLabel"
-				info_icon = lbl
-
-			info_icon.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-			info_icon.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-			info_icon.custom_minimum_size = Vector2(56, 56)
-			info_icon.offset_left = 16
-			info_icon.offset_right = 72
-			info_icon.offset_top = -28
-			info_icon.offset_bottom = 28
-
-			info_icon.mouse_filter = Control.MOUSE_FILTER_STOP
-			info_icon.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-
-			bar.add_child(info_icon)
-			StudentCardView._start_button_wiggle(info_icon, idx * 0.2, "big")
-
-		if info_icon.has_meta("icon_gui_callable"):
-			info_icon.gui_input.disconnect(info_icon.get_meta("icon_gui_callable"))
-		info_icon.gui_input.connect(callable)
-		info_icon.set_meta("icon_gui_callable", callable)
-
-		# Add or update numerical value label
-		var val_lbl = bar.get_node_or_null("ValueLabel")
-		if not val_lbl:
-			val_lbl = Label.new()
-			val_lbl.name = "ValueLabel"
-			bar.add_child(val_lbl)
-
-		val_lbl.text = "%d / %d" % [int(current_val), int(max_val)]
-		val_lbl.set_anchors_preset(Control.PRESET_TOP_LEFT)
-		val_lbl.offset_left = 10
-		val_lbl.offset_top = 0
-		val_lbl.offset_right = bar.size.x - 24
-		val_lbl.offset_bottom = BAR_HEIGHT
-		val_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		val_lbl.theme_type_variation = &"BarLabel"
+		if bar is StatBar:
+			bar.variation = &"StatPill"
+			bar.set_stat(values[bar_name])
+		else:
+			bar.value = values[bar_name]
 
 
 static func _style_trait_badge(kertas: Control, node_name: String, trait_type: String, badge_text: String,

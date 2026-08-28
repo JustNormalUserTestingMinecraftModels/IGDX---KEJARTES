@@ -11,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://cn7kemflfrhci" path="res://Assets/Images/MuridPotrait/Murid5.jpg" id="4_hodfn"]
 [ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="4_vdd03"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
-[ext_resource type="Texture2D" uid="uid://b0ttj7iunp215" path="res://Assets/Images/UI/paper_placeholder.jpg" id="8_hodfn"]
+[ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
 shader = ExtResource("3_ovxc5")
@@ -40,7 +40,7 @@ visible = false
 layout_mode = 0
 offset_left = -70.0
 offset_top = -254.0
-offset_right = 1012.0
+offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
@@ -332,7 +332,7 @@ offset_bottom = 1800.0
 layout_mode = 0
 offset_left = -70.0
 offset_top = -254.0
-offset_right = 1012.0
+offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
@@ -625,7 +625,7 @@ visible = false
 layout_mode = 0
 offset_left = -70.0
 offset_top = -254.0
-offset_right = 1012.0
+offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
@@ -918,7 +918,7 @@ visible = false
 layout_mode = 0
 offset_left = -70.0
 offset_top = -254.0
-offset_right = 1012.0
+offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
@@ -1211,7 +1211,7 @@ visible = false
 layout_mode = 0
 offset_left = -70.0
 offset_top = -254.0
-offset_right = 1012.0
+offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
@@ -1503,7 +1503,7 @@ offset_bottom = 1800.0
 layout_mode = 0
 offset_left = -70.0
 offset_top = -254.0
-offset_right = 1012.0
+offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 

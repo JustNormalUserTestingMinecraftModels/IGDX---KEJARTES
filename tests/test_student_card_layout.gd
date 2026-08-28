@@ -62,3 +62,34 @@ func test_report_card_still_reads_approved_students_live() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/report_card.gd")
 	assert_true(src.contains("student_data_list = GameState.approved_students"),
 		"report_card.gd must keep reading the live roster, not a hardcoded copy")
+
+
+const _SCENES := [
+	"res://Scenes/StudentCard/student_card.tscn",
+	"res://Scenes/ReportCard/report_card.tscn",
+]
+
+
+## The measured pill offsets in StudentCardView assume the card is exactly
+## the texture's own 1080x1920. A card of any other width stretches the
+## painted tracks out from under the fills that sit on them.
+func test_every_card_is_exactly_the_texture_size() -> void:
+	for scene_path in _SCENES:
+		var scene: Node = (load(scene_path) as PackedScene).instantiate()
+		for i in range(1, 7):
+			var card := scene.get_node_or_null("KertasMurid%d" % i) as Control
+			assert_true(card != null, "%s missing KertasMurid%d" % [scene_path, i])
+			assert_eq(card.size.x, 1080.0,
+				"%s KertasMurid%d width" % [scene_path, i])
+			assert_eq(card.size.y, 1920.0,
+				"%s KertasMurid%d height" % [scene_path, i])
+		scene.free()
+
+
+func test_cards_use_the_new_background() -> void:
+	for scene_path in _SCENES:
+		var src := FileAccess.get_file_as_string(scene_path)
+		assert_true(src.contains("Assets/Images/StudentCard/card_bg.png"),
+			scene_path + " must reference the new card background")
+		assert_false(src.contains("paper_placeholder.jpg"),
+			scene_path + " must no longer reference the placeholder paper")

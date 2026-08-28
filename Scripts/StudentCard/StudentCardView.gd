@@ -181,7 +181,7 @@ const _ICON_GAP := 24.0
 ## The (i) badge, overlapping the icon's bottom-right corner.
 const _BADGE_SIZE := 56.0
 
-const _STAT_ICONS := {
+const _STAT_ICONS: Dictionary = {
 	"Akademis1": "stat_akademis.png",
 	"Akademis2": "stat_senibudaya.png",
 	"Akademis3": "stat_olahraga.png",
@@ -201,7 +201,7 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 		on_bar_input: Callable) -> void:
 	for bar_name in _STAT_ICONS.keys():
 		var rect: Rect2 = PILL_RECTS[bar_name]
-		var node_name := "Icon" + bar_name
+		var node_name: String = "Icon" + bar_name
 
 		var cluster := kertas.get_node_or_null(node_name) as TextureRect
 		if cluster == null:

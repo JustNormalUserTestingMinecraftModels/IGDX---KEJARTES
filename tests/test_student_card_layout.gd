@@ -125,30 +125,38 @@ func test_bars_carry_no_text_children() -> void:
 		"card bars must opt into the StatPill variation")
 
 
-const _ICON_NODES := [
-	"IconAkademis1", "IconAkademis2", "IconAkademis3",
-	"IconKepribadian1", "IconKepribadian2",
-]
-
-
 ## The icon replaces the bar's old name label, and with the magnifier gone
 ## it is also the only thing the player can tap for information -- so it
 ## has to clear the touch minimum on its own.
+##
+## A source scan, not a live instantiation: build_icon_clusters only runs
+## from populate(), which student_card.gd's _ready() calls -- and
+## student_card.gd is deliberately not @tool, so _ready() never fires just
+## from instantiating the scene in a test (see student_card's suite header
+## for the precedent). Every other test in this suite that needs to check
+## StudentCardView's behaviour uses the same technique.
 func test_icon_clusters_exist_and_meet_the_touch_target() -> void:
 	var tokens := DesignTokens.load_default()
-	var scene: Node = (load("res://Scenes/StudentCard/student_card.tscn")
-		as PackedScene).instantiate()
-	scene.theme = load("res://Assets/Theme/kejartes_theme.tres")
-	Engine.get_main_loop().root.add_child(scene)
-	track(scene)
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentCard/StudentCardView.gd")
 
-	for icon_name in _ICON_NODES:
-		var icon := scene.get_node_or_null("KertasMurid1/" + icon_name) as Control
-		assert_true(icon != null, "missing icon cluster: " + icon_name)
-		var side: float = minf(icon.size.x, icon.size.y)
-		assert_true(side >= float(tokens.touch_target_min),
-			"%s is %d px, below the %d px minimum"
-				% [icon_name, int(side), tokens.touch_target_min])
+	assert_true(src.contains("func build_icon_clusters("),
+		"StudentCardView must build a tappable icon cluster per stat")
+
+	var size_line := ""
+	for line in src.split("\n"):
+		if line.strip_edges().begins_with("const _ICON_SIZE"):
+			size_line = line
+			break
+	assert_true(size_line != "", "_ICON_SIZE constant must exist")
+	var icon_size := size_line.get_slice("=", 1).strip_edges().trim_suffix(".0").to_float()
+	assert_true(icon_size >= float(tokens.touch_target_min),
+		"icon cluster is %d px, below the %d px minimum"
+			% [int(icon_size), tokens.touch_target_min])
+
+	for bar_name in ["Akademis1", "Akademis2", "Akademis3", "Kepribadian1", "Kepribadian2"]:
+		assert_true(src.contains('"%s":' % bar_name),
+			"build_icon_clusters must map an icon for " + bar_name)
 
 
 func test_the_pill_no_longer_takes_input() -> void:

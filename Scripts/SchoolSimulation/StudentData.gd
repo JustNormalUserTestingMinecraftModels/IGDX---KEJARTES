@@ -148,8 +148,8 @@ func apply_daily_decay(_energy_loss: float = 5.0, _mood_loss: float = 5.0) -> Di
 	return apply_personality_daily_decay()
 
 func apply_personality_daily_decay() -> Dictionary:
-	var energy_loss: float = 5.0
-	var mood_loss: float = 5.0
+	var energy_loss: float
+	var mood_loss: float
 	var reason: String = "Aktivitas biasa"
 	
 	match personality:

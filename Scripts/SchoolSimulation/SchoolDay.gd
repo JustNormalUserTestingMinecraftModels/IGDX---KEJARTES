@@ -661,51 +661,24 @@ func _show_day_summary(day_name: String) -> void:
 	var summary = student_manager.get_day_summary(day_name)
 	if summary.is_empty():
 		return
-		
+
 	var summary_scene = day_summary_popup_scene
 	if summary_scene == null:
 		summary_scene = load("res://Scenes/SchoolSimulation/DaySummaryPopup.tscn")
-		
 	if summary_scene == null:
 		return
-		
-	var summary_instance = summary_scene.instantiate()
-	
-	# Clear the default instanced rows in the popup (to keep it clean)
-	var rows_container = summary_instance.get_node("DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer/RowsContainer")
-	if rows_container:
-		for child in rows_container.get_children():
-			child.queue_free()
 
+	var summary_instance = summary_scene.instantiate()
 	add_child(summary_instance)
-	# build_rows=false: this screen reparents its own live StudentScroll into
-	# the popup's RowsContainer below, so the popup must NOT also instantiate
-	# its own rows. The real summary is still handed over -- the popup needs
-	# it to pick the day's success/fail sting.
-	summary_instance.setup_summary(day_name, summary, student_manager.students, false)
-	
-	# Reparent our StudentScroll container into the popup's RowsContainer AFTER setup_summary has cleared the old rows
-	if rows_container:
-		var scroll = get_node_or_null("DayScreen/StudentScroll")
-		if scroll:
-			scroll.get_parent().remove_child(scroll)
-			rows_container.add_child(scroll)
-			scroll.show()
-			# Ensure it takes full vertical space inside the popup
-			scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	
+
+	# The popup builds its own mockup cards from the summary. It used to
+	# be handed this screen's live StudentScroll instead, which is why
+	# DaySummaryStudentRow went unrendered for so long -- and why the
+	# mockup's "+12/65" was unbuildable, since only `summary` carries a
+	# delta at all.
+	summary_instance.setup_summary(day_name, summary, student_manager.students)
+
 	await summary_instance.summary_dismissed
-	
-	# Reparent back to DayScreen
-	var scroll_back = summary_instance.find_child("StudentScroll", true, false)
-	if scroll_back:
-		scroll_back.get_parent().remove_child(scroll_back)
-		var day_screen_node = get_node_or_null("DayScreen")
-		if day_screen_node:
-			day_screen_node.add_child(scroll_back)
-			# Move it to the bottom of the children list so order is preserved
-			day_screen_node.move_child(scroll_back, day_screen_node.get_child_count() - 1)
-		scroll_back.hide()
 
 
 func _animate_embedded_decay_bars(parallel_tween: Tween, decay_results: Array[Dictionary], duration: float) -> void:

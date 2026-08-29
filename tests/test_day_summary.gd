@@ -381,3 +381,32 @@ func test_popup_still_exposes_its_contract() -> void:
 	assert_true(src.contains("func setup_summary("),
 		"setup_summary is gone")
 	assert_true(src.contains("func dismiss()"), "dismiss is gone")
+
+
+const _SCHOOL_DAY_SCRIPT := "res://Scripts/SchoolSimulation/SchoolDay.gd"
+
+
+## The popup now owns its rows. Reparenting DayScreen's live scroll into
+## it would stack the mid-day cards on top of the mockup cards.
+func test_school_day_no_longer_reparents_its_scroll_into_the_popup() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_false(src.contains("rows_container.add_child(scroll)"),
+		"SchoolDay still reparents StudentScroll into the popup")
+	assert_false(src.contains("scroll_back"),
+		"SchoolDay still reparents StudentScroll back out")
+
+
+func test_school_day_asks_the_popup_to_build_its_own_rows() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_false(src.contains("student_manager.students, false)"),
+		"SchoolDay still passes build_rows=false")
+	assert_true(src.contains("summary_instance.setup_summary("),
+		"SchoolDay no longer calls setup_summary")
+
+
+## The mid-day DayScreen cards are explicitly out of scope and must
+## survive this task intact.
+func test_school_day_still_renders_its_embedded_day_cards() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("func _render_embedded_student_status()"),
+		"the mid-day DayScreen cards were removed -- out of scope")

@@ -136,3 +136,46 @@ func test_refresh_is_idempotent() -> void:
 	_row.refresh(student, 7, 0.0)
 	assert_eq(_row.get_node("Pill/Chips").get_child_count(), after_first,
 		"refresh must clear old chips before adding new ones")
+
+
+## Geometry pinned to the mockup. The row is a fixed-height band: a near-square
+## icon box, a gap, the pill, and a name-label strip beneath. Letting the row
+## expand vertically (the old behaviour) stretched it to 264px and turned the
+## icon box into a tall rectangle nothing in the mockup resembles.
+const _ROW_HEIGHT := 200.0
+const _PILL_HEIGHT := 148.0
+const _ICON_BOX_WIDTH := 133.0
+const _PILL_LEFT := 149.0
+
+
+func test_row_is_a_fixed_height_band() -> void:
+	assert_eq(_row.custom_minimum_size.y, _ROW_HEIGHT,
+		"the row's height is fixed at the mockup's 200px")
+	assert_true(_row.size_flags_vertical != Control.SIZE_EXPAND_FILL,
+		"the row must not expand vertically, or its parent VBox stretches it out of proportion")
+
+
+func test_icon_box_is_the_mockup_square() -> void:
+	var box := _row.get_node_or_null("IconBox") as Control
+	assert_true(box != null, "IconBox must exist")
+	_row.size = Vector2(462, _ROW_HEIGHT)
+	assert_eq(box.offset_right, _ICON_BOX_WIDTH, "icon box is 133px wide")
+	assert_eq(box.offset_bottom, _PILL_HEIGHT, "icon box is 148px tall, matching the pill")
+
+
+func test_pill_starts_after_the_icon_gap_and_matches_its_height() -> void:
+	var pill := _row.get_node_or_null("Pill") as Control
+	assert_true(pill != null, "Pill must exist")
+	assert_eq(pill.offset_left, _PILL_LEFT,
+		"the pill starts at 149 -- a 133px icon box plus the mockup's 16px gap")
+	assert_eq(pill.offset_bottom, _PILL_HEIGHT, "the pill is 148px tall")
+	assert_eq(pill.anchor_right, 1.0, "the pill stretches to the row's right edge")
+
+
+func test_name_label_sits_in_the_band_below_the_pill() -> void:
+	var label := _row.get_node_or_null("NameLabel") as Label
+	assert_true(label != null, "NameLabel must exist")
+	assert_eq(label.offset_top, -(_ROW_HEIGHT - _PILL_HEIGHT),
+		"the label occupies the 52px band under the pill")
+	assert_eq(label.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT,
+		"the mockup right-aligns the name under the pill's right edge")

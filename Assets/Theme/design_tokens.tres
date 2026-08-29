@@ -10,3 +10,4 @@ font_body = ExtResource("2_milker")
 preview_row_fill = Color(0.40392157, 0.40392157, 0.40392157, 1)
 preview_row_border = Color(0.23921569, 0.1254902, 0.28235295, 1)
 preview_pill_fill = Color(0.21176471, 0.21176471, 0.21176471, 1)
+text_outline_size = 12

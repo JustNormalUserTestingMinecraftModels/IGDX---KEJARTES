@@ -43,7 +43,7 @@ static func load_default() -> DesignTokens:
 @export var text_disabled: Color = Color("a8b0c4")
 ## Chunky outline behind display text, Umamusume style.
 @export var text_outline_color: Color = Color("ffffff")
-@export var text_outline_size: int = 8
+@export var text_outline_size: int = 12
 
 @export_group("Category Accents")
 @export var cat_akademis: Color = Color("3d8bff")

@@ -28,12 +28,13 @@ const SPLASH_CROP := {
 @onready var art: TextureRect = $Art
 
 
-## Falls back for any student with no entry in SPLASH_CROP -- Doni and
-## Citra today, plus anyone added later. Takes the full width and the
-## top FRAME_ASPECT-worth of rows, which frames a full-body splash on
-## its head without needing to know anything about the pose.
-static func crop_for(student_name: String, tex: Texture2D) -> Rect2:
-	if SPLASH_CROP.has(student_name):
+## Falls back for any student with no entry in SPLASH_CROP, and for every
+## student when the texture is a portrait rather than a splash: the named
+## rects are windows into 1080x1920 full-body art and cut the wrong region
+## out of anything else. Takes the full width and the top FRAME_ASPECT-worth
+## of rows, which frames a head without knowing anything about the pose.
+static func crop_for(student_name: String, tex: Texture2D, is_splash: bool = false) -> Rect2:
+	if is_splash and SPLASH_CROP.has(student_name):
 		return SPLASH_CROP[student_name]
 	if tex == null:
 		return Rect2()
@@ -42,24 +43,27 @@ static func crop_for(student_name: String, tex: Texture2D) -> Rect2:
 	return Rect2(0.0, 0.0, h * FRAME_ASPECT, h)
 
 
-## Resolution order, per the spec: the student's own splash_path, then
-## their portrait, then nothing. Never leaves a broken texture.
+## Resolution order: the student's portrait first, then their splash art,
+## then nothing. The portrait leads because the splash batch is being
+## replaced -- flip these two branches back once the new art lands.
 func set_student(student: StudentData) -> void:
 	if student == null:
 		art.texture = null
 		return
 
 	var tex: Texture2D = null
-	if student.splash_path != "" and ResourceLoader.exists(student.splash_path):
-		tex = load(student.splash_path)
-	elif student.avatar_texture != null:
+	var is_splash := false
+	if student.avatar_texture != null:
 		tex = student.avatar_texture
+	elif student.splash_path != "" and ResourceLoader.exists(student.splash_path):
+		tex = load(student.splash_path)
+		is_splash = true
 
 	if tex == null:
 		art.texture = null
 		return
 
-	var region := crop_for(student.student_name, tex)
+	var region := crop_for(student.student_name, tex, is_splash)
 	if region.size.x <= 0.0:
 		art.texture = tex
 		return

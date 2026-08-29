@@ -466,3 +466,33 @@ func test_banner_box_matches_the_banner_art_aspect() -> void:
 	assert_true(absf(box_aspect - tex_aspect) < 0.05,
 		"banner box aspect %f does not match the art's %f" % [box_aspect, tex_aspect])
 	inst.free()
+
+
+## The portrait is the source of truth for now -- the splash art is being
+## replaced, so the avatar must not reach for it even when a student has
+## one. Source-scanned because building a StudentData with both textures
+## set requires resources this suite cannot load headlessly.
+func test_avatar_prefers_the_portrait_over_the_splash() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/DaySummaryAvatar.gd")
+	var portrait_at := src.find("student.avatar_texture")
+	var splash_at := src.find("student.splash_path")
+	assert_true(portrait_at != -1, "avatar no longer reads avatar_texture")
+	assert_true(splash_at != -1, "avatar no longer reads splash_path")
+	assert_true(portrait_at < splash_at,
+		"avatar_texture must be tried BEFORE splash_path")
+
+
+## A named splash crop applied to a portrait would cut the wrong region,
+## so the table is gated behind the is_splash flag.
+func test_named_crops_apply_only_to_splash_art() -> void:
+	var tex := load("res://Assets/Images/SplashArtMurid/splash_marcel.png") as Texture2D
+	var as_splash := DaySummaryAvatar.crop_for("Marcel", tex, true)
+	var as_portrait := DaySummaryAvatar.crop_for("Marcel", tex, false)
+	assert_eq(as_splash, DaySummaryAvatar.SPLASH_CROP["Marcel"],
+		"splash lookup must return the named crop")
+	assert_true(as_portrait != as_splash,
+		"a portrait must NOT get the named splash crop")
+	var aspect := as_portrait.size.x / as_portrait.size.y
+	assert_true(absf(aspect - DaySummaryAvatar.FRAME_ASPECT) < 0.02,
+		"computed portrait crop aspect %f is not the frame's" % aspect)

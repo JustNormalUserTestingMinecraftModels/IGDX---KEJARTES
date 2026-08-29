@@ -72,6 +72,30 @@ func test_theme_declares_the_new_variations() -> void:
 			"the baked theme must declare " + variation + " -- did you forget to rebake?")
 
 
+## Declaring the type is not enough. Without a base_type Godot never matches
+## the variation to a PanelContainer, so the node silently falls back to the
+## engine's default panel and the pill renders as translucent black.
+func test_preview_pill_is_bound_to_panel_container() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	assert_eq(theme.get_type_variation_base("PreviewPill"), &"PanelContainer",
+		"PreviewPill must declare PanelContainer as its base_type, like every other panel variation")
+
+
+## The end-to-end check the base_type test exists to protect: a real
+## PanelContainer wearing the variation must resolve OUR stylebox, not the
+## engine default (which is StyleBoxFlat with bg_color 0.1,0.1,0.1,0.6).
+func test_preview_pill_resolves_the_designed_stylebox() -> void:
+	var probe := PanelContainer.new()
+	probe.theme = load(_THEME_PATH)
+	probe.theme_type_variation = &"PreviewPill"
+	Engine.get_main_loop().root.add_child(probe)
+	track(probe)
+	var resolved := probe.get_theme_stylebox("panel")
+	var expected := (load(_THEME_PATH) as Theme).get_stylebox("panel", "PreviewPill")
+	assert_true(resolved == expected,
+		"a PreviewPill PanelContainer must resolve the theme's own stylebox, not Godot's default panel")
+
+
 func test_scene_has_no_theme_overrides() -> void:
 	# The project rule: styling flows from the theme, never from per-node
 	# overrides. Layout-only constants (separation, margin_*) are exempt.

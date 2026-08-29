@@ -331,6 +331,7 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	preview_pill.content_margin_top = tokens.space_xs
 	preview_pill.content_margin_bottom = tokens.space_xs
 	theme.add_type("PreviewPill")
+	theme.set_type_variation("PreviewPill", "PanelContainer")
 	theme.set_stylebox("panel", "PreviewPill", preview_pill)
 
 	# -- The numbers inside that pill: white on the dark slab. --

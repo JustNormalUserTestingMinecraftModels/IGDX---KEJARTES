@@ -30,6 +30,10 @@ const _SPLASH := [
 ]
 
 
+func suite_name() -> String:
+	return "day_summary"
+
+
 func test_every_day_summary_texture_imports() -> void:
 	for key in _ART:
 		var path: String = _ART[key]

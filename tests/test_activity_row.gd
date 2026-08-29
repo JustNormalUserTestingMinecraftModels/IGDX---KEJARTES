@@ -159,8 +159,8 @@ func test_icon_box_is_the_mockup_square() -> void:
 	var box := _row.get_node_or_null("IconBox") as Control
 	assert_true(box != null, "IconBox must exist")
 	_row.size = Vector2(462, _ROW_HEIGHT)
-	assert_eq(box.offset_right, _ICON_BOX_WIDTH, "icon box is 133px wide")
-	assert_eq(box.offset_bottom, _PILL_HEIGHT, "icon box is 148px tall, matching the pill")
+	assert_eq(box.size.x, _ICON_BOX_WIDTH, "icon box is 133px wide")
+	assert_eq(box.size.y, _PILL_HEIGHT, "icon box is 148px tall, matching the pill")
 
 
 func test_pill_starts_after_the_icon_gap_and_matches_its_height() -> void:

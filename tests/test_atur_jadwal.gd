@@ -237,8 +237,6 @@ func test_pending_gain_is_grade_aware() -> void:
 		"_compute_pending_gain must delegate to ActivityPreview so it follows the grade")
 
 
-# ----------------------------------------------------------------- helper
-
 ## The card art is a 1080x1080 texture whose visible card occupies only
 ## x 211-868, y 34-1046 -- the rest is transparent padding. Stretched into the
 ## 988x1600 TextureRect that becomes local x 193-794, y 50-1550. Anything the
@@ -257,6 +255,8 @@ func test_rows_are_inset_within_the_card_content() -> void:
 	assert_eq(rows.offset_top, 125.0, "the first row starts 5% down the card")
 	assert_true(rows.offset_left > _CARD_LEFT and rows.offset_right < _CARD_RIGHT,
 		"the row block must sit inside the card art, not over its transparent padding")
+	assert_true(rows.offset_top > _CARD_TOP,
+		"the row block must start below the card's top edge, not over its transparent padding")
 
 
 func test_row_separation_matches_the_mockup_pitch() -> void:
@@ -282,11 +282,13 @@ func test_back_arrow_sits_inside_the_card() -> void:
 func test_the_row_stack_fits_inside_the_card() -> void:
 	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
 	var row_count := 0
+	var row_height := 0.0
 	for child in rows.get_children():
 		if child is ActivityRow:
 			row_count += 1
+			row_height = (child as ActivityRow).custom_minimum_size.y
 	var sep: int = rows.get_theme_constant("separation")
-	var stack_bottom: float = rows.offset_top + row_count * 200.0 + (row_count - 1) * sep
+	var stack_bottom: float = rows.offset_top + row_count * row_height + (row_count - 1) * sep
 	assert_true(stack_bottom <= _CARD_BOTTOM,
 		"the row stack ends at %d, past the card's bottom at %d" % [int(stack_bottom), int(_CARD_BOTTOM)])
 

@@ -277,7 +277,7 @@ func test_back_arrow_sits_inside_the_card() -> void:
 		"the back arrow must stay above the card's bottom edge")
 
 
-## 72 + 5*127 + 4*30 = 827, which must clear the card's bottom edge with room
+## 102 + 5*180 + 4*40 = 1162, which must clear the card's bottom edge with room
 ## for the arrow beneath. If a later change alters row height or separation,
 ## this is the test that catches the stack overflowing the card.
 func test_the_row_stack_fits_inside_the_card() -> void:
@@ -288,7 +288,7 @@ func test_the_row_stack_fits_inside_the_card() -> void:
 		if child is ActivityRow:
 			row_count += 1
 			row_height = (child as ActivityRow).custom_minimum_size.y
-	assert_eq(row_height, _ROW_HEIGHT, "each row is the mockup's 127px tall")
+	assert_eq(row_height, _ROW_HEIGHT, "each row is the mockup's 180px tall")
 	var sep: int = rows.get_theme_constant("separation")
 	var stack_bottom: float = rows.offset_top + row_count * row_height + (row_count - 1) * sep
 	assert_true(stack_bottom <= _CARD_BOTTOM,

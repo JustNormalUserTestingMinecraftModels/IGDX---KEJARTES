@@ -655,6 +655,26 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 
 	parent.add_child(chip)
 
+
+## Nodes on the DayScreen that would otherwise read through the summary
+## popup's scrim and collide with the card stack. Paths, not @onready refs,
+## because several are optional depending on how far the day got.
+const _DAY_CHROME_PATHS := [
+	"DayScreen/DayNumberLabel",
+	"DayScreen/DayLabel",
+	"DayScreen/BookClockWidget",
+	"DayScreen/ProgressBar",
+	"DayScreen/StatusLabel",
+]
+
+
+func _set_day_chrome_visible(shown: bool) -> void:
+	for p in _DAY_CHROME_PATHS:
+		var n := get_node_or_null(p)
+		if n != null:
+			n.visible = shown
+
+
 func _show_day_summary(day_name: String) -> void:
 	if not student_manager:
 		return
@@ -669,6 +689,7 @@ func _show_day_summary(day_name: String) -> void:
 		return
 
 	var summary_instance = summary_scene.instantiate()
+	_set_day_chrome_visible(false)
 	add_child(summary_instance)
 
 	# The popup builds its own mockup cards from the summary. It used to
@@ -679,6 +700,7 @@ func _show_day_summary(day_name: String) -> void:
 	summary_instance.setup_summary(day_name, summary, student_manager.students)
 
 	await summary_instance.summary_dismissed
+	_set_day_chrome_visible(true)
 
 
 func _animate_embedded_decay_bars(parallel_tween: Tween, decay_results: Array[Dictionary], duration: float) -> void:

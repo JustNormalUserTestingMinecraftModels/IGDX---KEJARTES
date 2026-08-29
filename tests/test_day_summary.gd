@@ -496,3 +496,16 @@ func test_named_crops_apply_only_to_splash_art() -> void:
 	var aspect := as_portrait.size.x / as_portrait.size.y
 	assert_true(absf(aspect - DaySummaryAvatar.FRAME_ASPECT) < 0.02,
 		"computed portrait crop aspect %f is not the frame's" % aspect)
+
+
+## The popup is a scrim over the live DayScreen, so anything left visible
+## underneath collides with the card stack. The mockup shows the banner and
+## cards on an empty field.
+func test_school_day_hides_its_chrome_behind_the_summary() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("_set_day_chrome_visible(false)"),
+		"SchoolDay must hide its DayScreen chrome before showing the popup")
+	assert_true(src.contains("_set_day_chrome_visible(true)"),
+		"SchoolDay must restore its chrome after the popup is dismissed")
+	assert_true(src.contains("func _set_day_chrome_visible("),
+		"SchoolDay is missing the chrome helper")

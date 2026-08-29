@@ -128,3 +128,69 @@ func test_energy_and_mood_bars_differ_only_in_fill() -> void:
 	var m_fill := theme.get_stylebox("fill", "DaySummaryMoodBar") as StyleBoxFlat
 	assert_eq(e_fill.bg_color, tokens.day_energy_fill, "energy fill drifted")
 	assert_eq(m_fill.bg_color, tokens.day_mood_fill, "mood fill drifted")
+
+
+const _AVATAR_SCENE := "res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn"
+
+## Frame is 269x286 in the mockup; every crop must match that aspect or
+## the splash is stretched. Tolerance is one part in fifty.
+const _FRAME_ASPECT := 269.0 / 286.0
+
+
+func test_every_named_crop_matches_the_frame_aspect() -> void:
+	for student_name in DaySummaryAvatar.SPLASH_CROP:
+		var r: Rect2 = DaySummaryAvatar.SPLASH_CROP[student_name]
+		assert_true(r.size.x > 0.0 and r.size.y > 0.0,
+			"%s has an empty crop" % student_name)
+		var aspect := r.size.x / r.size.y
+		assert_true(absf(aspect - _FRAME_ASPECT) < 0.02,
+			"%s crop aspect %f is not the frame's %f"
+				% [student_name, aspect, _FRAME_ASPECT])
+
+
+## Every named crop must sit inside its own texture, or Godot samples
+## transparent padding and the head drifts off-centre.
+func test_every_named_crop_is_inside_its_texture() -> void:
+	var paths := {
+		"Marcel": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
+		"Andi": "res://Assets/Images/SplashArtMurid/splash_andi.png",
+		"Shinta": "res://Assets/Images/SplashArtMurid/splash_shinta.png",
+		"Thea": "res://Assets/Images/SplashArtMurid/splash_thea.png",
+	}
+	for student_name in paths:
+		var tex := load(paths[student_name]) as Texture2D
+		var r: Rect2 = DaySummaryAvatar.SPLASH_CROP[student_name]
+		assert_true(r.position.x >= 0.0 and r.position.y >= 0.0,
+			"%s crop starts outside the texture" % student_name)
+		assert_true(r.end.x <= float(tex.get_width()),
+			"%s crop runs past the right edge" % student_name)
+		assert_true(r.end.y <= float(tex.get_height()),
+			"%s crop runs past the bottom edge" % student_name)
+
+
+## Doni and Citra have no new art (spec section 3). The fallback must
+## still produce a usable, correctly-shaped crop rather than nothing.
+func test_unknown_students_get_a_computed_crop() -> void:
+	var tex := load("res://Assets/Images/SplashArtMurid/splash_marcel.png") as Texture2D
+	var r := DaySummaryAvatar.crop_for("Doni", tex)
+	assert_true(r.size.x > 0.0 and r.size.y > 0.0,
+		"fallback crop is empty")
+	var aspect := r.size.x / r.size.y
+	assert_true(absf(aspect - _FRAME_ASPECT) < 0.02,
+		"fallback crop aspect %f is not the frame's" % aspect)
+	assert_true(r.end.y <= float(tex.get_height()),
+		"fallback crop runs off the bottom")
+
+
+func test_avatar_scene_clips_and_wears_the_frame_variation() -> void:
+	var scene := load(_AVATAR_SCENE) as PackedScene
+	assert_not_null(scene, "DaySummaryAvatar.tscn failed to load")
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	assert_eq(inst.theme_type_variation, &"DaySummaryAvatarFrame",
+		"avatar root is not wearing the frame variation")
+	assert_true(inst.clip_contents,
+		"avatar root must clip, or the splash spills past the rim")
+	assert_not_null(inst.get_node_or_null("Art"),
+		"avatar is missing its Art TextureRect")
+	inst.free()

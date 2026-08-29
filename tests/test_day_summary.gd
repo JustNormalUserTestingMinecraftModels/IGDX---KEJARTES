@@ -267,12 +267,17 @@ const _ROW_SCRIPT := "res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd"
 ## The card art is placed at native size, so the row must reserve
 ## exactly the mockup's box. A row that shrink-wraps its children
 ## instead would slide every child off the painted background.
+##
+## 992x410, not the original 992x405 estimate: card_bg.png's own
+## content box (measured via probe.ps1 -Mode bbox, see the
+## 2026-08-29-day-summary-mockup-fixes plan) is 992x410, and the art
+## itself is the authority once it has been cropped to that box.
 func test_row_reserves_the_mockup_card_box() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
 	inst.theme = load(_THEME_PATH)
-	assert_eq(inst.custom_minimum_size, Vector2(992, 405),
-		"card box drifted from the mockup's 992x393 fill + 12px shadow")
+	assert_eq(inst.custom_minimum_size, Vector2(992, 410),
+		"card box drifted from the card art's cropped content box")
 	inst.free()
 
 

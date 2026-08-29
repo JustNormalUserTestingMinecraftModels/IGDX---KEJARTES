@@ -20,6 +20,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_panels(theme, tokens)
 	_build_labels(theme, tokens)
 	_build_progress(theme, tokens)
+	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
@@ -421,3 +422,70 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_constant("margin_right", "MarginContainer", tokens.screen_margin)
 	theme.set_constant("margin_top", "MarginContainer", tokens.screen_margin)
 	theme.set_constant("margin_bottom", "MarginContainer", tokens.screen_margin)
+
+
+# ------------------------------------------------------- day summary
+
+## Variations for the Daily Results card (spec:
+## 2026-08-29-day-summary-mockup-design.md). Two things here deliberately
+## break this file's usual habits, both because the card art is pale and
+## saturated rather than the app's neutral light surface:
+##   * text is white with a DARK rim, inverting the usual relationship;
+##   * the bars carry their own border colour instead of leaning on
+##     outline_card, because the mockup's rim is near-black, not white.
+static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
+	# name, size, outline divisor
+	var text_specs := [
+		["DaySummaryName", tokens.day_name_size],
+		["DaySummaryStat", tokens.day_stat_size],
+	]
+	for spec in text_specs:
+		var name: String = spec[0]
+		theme.add_type(name)
+		theme.set_type_variation(name, "Label")
+		theme.set_font_size("font_size", name, spec[1])
+		theme.set_color("font_color", name, Color.WHITE)
+		theme.set_constant("outline_size", name,
+			maxi(2, tokens.text_outline_size / 2))
+		theme.set_color("font_outline_color", name, tokens.day_glyph_outline)
+		if tokens.font_display != null:
+			theme.set_font("font", name, tokens.font_display)
+
+	theme.add_type("DaySummaryAvatarFrame")
+	theme.set_type_variation("DaySummaryAvatarFrame", "Panel")
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = tokens.day_avatar_fill
+	frame.border_color = tokens.day_avatar_border
+	frame.set_border_width_all(5)
+	frame.set_corner_radius_all(tokens.day_avatar_radius)
+	theme.set_stylebox("panel", "DaySummaryAvatarFrame", frame)
+
+	# The two needs bars and the three stat tracks are the same slab in
+	# three flavours: same rim, same radius, different fill.
+	# name, track color, fill color, radius
+	var bar_specs := [
+		["DaySummaryEnergyBar", tokens.day_bar_track,
+			tokens.day_energy_fill, tokens.day_bar_radius],
+		["DaySummaryMoodBar", tokens.day_bar_track,
+			tokens.day_mood_fill, tokens.day_bar_radius],
+		["DaySummaryStatTrack", tokens.day_stat_track,
+			tokens.day_stat_track, tokens.radius_pill],
+	]
+	for spec in bar_specs:
+		var name: String = spec[0]
+		theme.add_type(name)
+		theme.set_type_variation(name, "ProgressBar")
+
+		var track := StyleBoxFlat.new()
+		track.bg_color = spec[1]
+		track.border_color = tokens.day_bar_border
+		track.set_border_width_all(5)
+		track.set_corner_radius_all(spec[3])
+		theme.set_stylebox("background", name, track)
+
+		var fill := StyleBoxFlat.new()
+		fill.bg_color = spec[2]
+		fill.border_color = tokens.day_glyph_outline
+		fill.set_border_width_all(3)
+		fill.set_corner_radius_all(tokens.radius_pill)
+		theme.set_stylebox("fill", name, fill)

@@ -78,3 +78,53 @@ func test_day_summary_tokens_match_the_mockup() -> void:
 		var c: Color = tokens.get(key)
 		assert_eq(c.to_html(false), expected[key],
 			"token %s drifted from the mockup sample" % key)
+
+
+const _DAY_VARIATIONS := {
+	"DaySummaryName": "Label",
+	"DaySummaryStat": "Label",
+	"DaySummaryAvatarFrame": "Panel",
+	"DaySummaryEnergyBar": "ProgressBar",
+	"DaySummaryMoodBar": "ProgressBar",
+	"DaySummaryStatTrack": "ProgressBar",
+}
+
+
+func test_theme_declares_every_day_summary_variation() -> void:
+	var theme := load(_THEME_PATH) as Theme
+	assert_not_null(theme, "baked theme failed to load")
+	for name in _DAY_VARIATIONS:
+		assert_true(theme.has_type(name),
+			"theme is missing variation %s -- did you rebake?" % name)
+		assert_eq(theme.get_type_variation_base(name), _DAY_VARIATIONS[name],
+			"%s is based on the wrong type" % name)
+
+
+## The name and the numbers are white-on-light with a dark rim; getting
+## this inverted (the project's usual dark-on-light) makes them vanish
+## against the card's pale fill.
+func test_day_summary_text_is_white_with_a_dark_rim() -> void:
+	var theme := load(_THEME_PATH) as Theme
+	var tokens := DesignTokens.load_default()
+	for name in ["DaySummaryName", "DaySummaryStat"]:
+		assert_eq(theme.get_color("font_color", name), Color.WHITE,
+			"%s should be white" % name)
+		assert_eq(theme.get_color("font_outline_color", name),
+			tokens.day_glyph_outline, "%s rim drifted" % name)
+		assert_true(theme.get_constant("outline_size", name) > 0,
+			"%s has no outline" % name)
+
+
+## The two bars share a track and differ only in fill. If they ever share
+## a fill too, energy and mood become indistinguishable.
+func test_energy_and_mood_bars_differ_only_in_fill() -> void:
+	var theme := load(_THEME_PATH) as Theme
+	var tokens := DesignTokens.load_default()
+	var e_bg := theme.get_stylebox("background", "DaySummaryEnergyBar") as StyleBoxFlat
+	var m_bg := theme.get_stylebox("background", "DaySummaryMoodBar") as StyleBoxFlat
+	assert_eq(e_bg.bg_color, m_bg.bg_color, "bar tracks diverged")
+	assert_eq(e_bg.bg_color, tokens.day_bar_track, "bar track drifted")
+	var e_fill := theme.get_stylebox("fill", "DaySummaryEnergyBar") as StyleBoxFlat
+	var m_fill := theme.get_stylebox("fill", "DaySummaryMoodBar") as StyleBoxFlat
+	assert_eq(e_fill.bg_color, tokens.day_energy_fill, "energy fill drifted")
+	assert_eq(m_fill.bg_color, tokens.day_mood_fill, "mood fill drifted")

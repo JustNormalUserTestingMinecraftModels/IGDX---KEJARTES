@@ -921,6 +921,7 @@ PersonaBadge/styles/pressed = SubResource("StyleBoxFlat_vy4bs")
 PreviewChipLabel/base_type = &"Label"
 PreviewChipLabel/colors/font_color = Color(1, 1, 1, 1)
 PreviewChipLabel/font_sizes/font_size = 48
+PreviewPill/base_type = &"PanelContainer"
 PreviewPill/styles/panel = SubResource("StyleBoxFlat_tkop6")
 PrimaryButton/base_type = &"Button"
 PrimaryButton/colors/font_color = Color(1, 1, 1, 1)

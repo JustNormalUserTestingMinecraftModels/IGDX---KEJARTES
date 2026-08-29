@@ -50,13 +50,32 @@ func test_every_new_splash_imports() -> void:
 		assert_not_null(tex, "%s did not load as a Texture2D" % path)
 
 
-## The card art is placed at native size (spec section 1), so a resized
-## or re-exported PNG would silently break every card-relative offset in
-## this plan. Pin its dimensions.
-func test_card_background_is_native_size() -> void:
+## Both card art and banner ship letterboxed inside 1:1 canvases from the
+## design tool. Godot's KEEP_ASPECT_CENTERED honours the CANVAS aspect, so
+## an uncropped 1080x1080 export collapses to a square and the card loses
+## its background entirely. These pin the cropped content boxes measured
+## with probe.ps1 -Mode bbox.
+func test_card_background_is_cropped_to_its_content_box() -> void:
 	var tex := load(_ART["card_bg"]) as Texture2D
-	assert_eq(tex.get_width(), 1080, "card_bg width changed")
-	assert_eq(tex.get_height(), 1080, "card_bg height changed")
+	assert_eq(tex.get_width(), 992, "card_bg width is not its content box")
+	assert_eq(tex.get_height(), 410, "card_bg height is not its content box")
+
+
+func test_title_banner_is_cropped_to_its_content_box() -> void:
+	var tex := load(_ART["title"]) as Texture2D
+	assert_eq(tex.get_width(), 1058, "banner width is not its content box")
+	assert_eq(tex.get_height(), 325, "banner height is not its content box")
+
+
+## The bug this plan exists to kill: a 1:1 canvas holding a wide band of
+## art. If either asset is ever re-exported square again, this fails loudly
+## instead of silently rendering a stamp.
+func test_neither_card_art_nor_banner_is_square() -> void:
+	for key in ["card_bg", "title"]:
+		var tex := load(_ART[key]) as Texture2D
+		var aspect := float(tex.get_width()) / float(tex.get_height())
+		assert_true(aspect > 1.5,
+			"%s is square-ish (aspect %f) -- it must be cropped to its content box" % [key, aspect])
 
 
 ## Every colour here was centroid-sampled from the mockup. A drifted

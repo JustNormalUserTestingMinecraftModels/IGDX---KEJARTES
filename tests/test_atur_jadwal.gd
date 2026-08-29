@@ -171,6 +171,32 @@ func test_peringatan_pops_in_over_a_scrim_with_shake_and_fail_sfx() -> void:
 		"an incomplete-schedule attempt must play the fail sfx")
 
 
+## CLAUDE.md flags atur_jadwal.gd as holding its own copies of numbers that
+## also live in Balance.gd. A shadow constant means the tester edits Balance,
+## reruns, and the screen does not move -- the exact failure Balance.gd exists
+## to prevent.
+func test_no_shadow_balance_constants_remain() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for shadowed in [
+		"BASE_GAIN", "HOBBY_BONUS_GAIN",
+		"MOOD_LOSS_MIN", "MOOD_LOSS_MAX",
+		"ENERGY_LOSS_MIN", "ENERGY_LOSS_MAX",
+		"DAYOFF_GAIN_MIN", "DAYOFF_GAIN_MAX",
+		"WIRAUSAHA_MOOD_MIN", "WIRAUSAHA_MOOD_MAX",
+		"WIRAUSAHA_ENERGY_MIN", "WIRAUSAHA_ENERGY_MAX",
+	]:
+		assert_true(not src.contains("const " + shadowed),
+			"atur_jadwal.gd must not redeclare " + shadowed + "; read Balance.gd via ActivityPreview")
+
+
+## The projected-gain readout was grade-blind: it hardcoded grade 7's numbers,
+## so grades 8 and 9 previewed gains their students would never get.
+func test_pending_gain_is_grade_aware() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("ActivityPreview.skill_gain"),
+		"_compute_pending_gain must delegate to ActivityPreview so it follows the grade")
+
+
 # ----------------------------------------------------------------- helper
 
 ## Copied verbatim from tests/test_main_menu.gd.

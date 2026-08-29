@@ -94,19 +94,9 @@ var blur_overlay: Control
 
 var _tokens_cache: DesignTokens
 
-const BASE_GAIN := 3.0       # Must match StudentManager.gd apply_jadwal_activity base_gain
-const HOBBY_BONUS_GAIN := 6.0  # Must match base_gain + specialty_bonus (3 + 3 = 6 total for specialty)
-
-const MOOD_LOSS_MIN := 10
-const MOOD_LOSS_MAX := 15
-const ENERGY_LOSS_MIN := 15
-const ENERGY_LOSS_MAX := 20
-const DAYOFF_GAIN_MIN := 20
-const DAYOFF_GAIN_MAX := 30
-const WIRAUSAHA_MOOD_MIN := 8
-const WIRAUSAHA_MOOD_MAX := 14
-const WIRAUSAHA_ENERGY_MIN := 10
-const WIRAUSAHA_ENERGY_MAX := 16
+## Every preview number this screen shows now comes from Balance.gd via
+## ActivityPreview. Do not reintroduce local copies -- a shadow constant
+## means the tester edits Balance and the screen silently ignores it.
 
 var penjadwalan_popup_open := false
 var is_overtired_warning := false
@@ -551,8 +541,7 @@ func _compute_pending_gain(category: String, student: Dictionary) -> float:
 	for day in schedules.keys():
 		if schedules[day]["category"] == category:
 			count += 1
-	var increment = HOBBY_BONUS_GAIN if student.get("hobby_category", "") == category else BASE_GAIN
-	return count * increment
+	return count * ActivityPreview.skill_gain(category, student, GameState.current_grade)
 
 func _compute_total_loss(key: String) -> float:
 	var schedules = _get_current_schedules()
@@ -962,17 +951,8 @@ func _on_activity_selected(category: String):
 	if GameState.selected_day != "" and student_id != null:
 		if not GameState.day_schedules.has(student_id):
 			GameState.day_schedules[student_id] = {}
-		var mood_cost: int
-		var energy_cost: int
-		if category == "Istirahat":
-			mood_cost = -randi_range(DAYOFF_GAIN_MIN, DAYOFF_GAIN_MAX)
-			energy_cost = -randi_range(DAYOFF_GAIN_MIN, DAYOFF_GAIN_MAX)
-		elif category == "Wirausaha":
-			mood_cost = randi_range(WIRAUSAHA_MOOD_MIN, WIRAUSAHA_MOOD_MAX)
-			energy_cost = randi_range(WIRAUSAHA_ENERGY_MIN, WIRAUSAHA_ENERGY_MAX)
-		else:
-			mood_cost = randi_range(MOOD_LOSS_MIN, MOOD_LOSS_MAX)
-			energy_cost = randi_range(ENERGY_LOSS_MIN, ENERGY_LOSS_MAX)
+		var mood_cost: int = int(ActivityPreview.mood_cost(category))
+		var energy_cost: int = int(ActivityPreview.energy_cost(category))
 		GameState.day_schedules[student_id][GameState.selected_day] = {
 			"category": category,
 			"mood_cost": mood_cost,
@@ -1292,8 +1272,8 @@ func _check_and_lock_holidays() -> void:
 						GameState.day_schedules[student_id] = {}
 
 					# Assign Istirahat with standard mood/energy gain cost delta
-					var mood_cost = -randi_range(DAYOFF_GAIN_MIN, DAYOFF_GAIN_MAX)
-					var energy_cost = -randi_range(DAYOFF_GAIN_MIN, DAYOFF_GAIN_MAX)
+					var mood_cost = int(ActivityPreview.mood_cost("Istirahat"))
+					var energy_cost = int(ActivityPreview.energy_cost("Istirahat"))
 					GameState.day_schedules[student_id][day_name] = {
 						"category": "Istirahat",
 						"mood_cost": mood_cost,

@@ -103,12 +103,12 @@ static func load_default() -> DesignTokens:
 @export var screen_margin: int = 48
 
 @export_group("Penjadwalan Preview")
-## Sampled from the mockup (docs: 2026-08-29-penjadwalan-mockup-match.md).
+## Sampled from the mockup (docs: 2026-08-29-penjadwalan-mockup-rescale.md).
 ## The row container is a grey slab with a purple rim; the pill inset into
-## it is darker. The mockup fills the container with a subtle vertical
-## gradient (#696969 -> #5C5C5C); StyleBoxFlat has no gradient, so this is
-## the midpoint.
-@export var preview_row_fill: Color = Color("626262")
+## it is darker. Both are vertical gradients in the mockup (row #717171 ->
+## #5D5D5D, pill #3C3C3C -> #303030); StyleBoxFlat cannot express a gradient,
+## so each token is that gradient's midpoint.
+@export var preview_row_fill: Color = Color("676767")
 @export var preview_row_border: Color = Color("3d2048")
 @export var preview_pill_fill: Color = Color("363636")
 

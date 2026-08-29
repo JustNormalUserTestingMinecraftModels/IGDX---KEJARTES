@@ -320,24 +320,33 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "BioValue", tokens.text_on_brand)
 
 	# -- Penjadwalan row container: the bordered grey slab each row sits on.
-	# The icon draws directly onto this; the pill below is inset into it. --
+	# The icon draws directly onto this; the pill below is inset into it. The
+	# mockup shows a hard dark shadow just under the bottom border. --
 	var preview_row := StyleBoxFlat.new()
 	preview_row.bg_color = tokens.preview_row_fill
 	preview_row.border_color = tokens.preview_row_border
-	preview_row.set_border_width_all(4)
+	preview_row.set_border_width_all(3)
 	preview_row.set_corner_radius_all(tokens.radius_md)
+	preview_row.shadow_color = Color(0, 0, 0, 0.7)
+	preview_row.shadow_size = 3
+	preview_row.shadow_offset = Vector2(0, 3)
 	theme.add_type("PreviewRow")
 	theme.set_type_variation("PreviewRow", "Panel")
 	theme.set_stylebox("panel", "PreviewRow", preview_row)
 
-	# -- The darker pill inset into the row, carrying the numbers. --
+	# -- The darker pill inset into the row, carrying the numbers. Its edge in
+	# the mockup is a soft dark halo, NOT a stroke -- building it as a border
+	# reads as a hard outline the reference does not have. --
 	var preview_pill := StyleBoxFlat.new()
 	preview_pill.bg_color = tokens.preview_pill_fill
-	preview_pill.set_corner_radius_all(tokens.radius_sm)
+	preview_pill.set_corner_radius_all(tokens.radius_md)
 	preview_pill.content_margin_left = tokens.space_sm
 	preview_pill.content_margin_right = tokens.space_sm
 	preview_pill.content_margin_top = tokens.space_xs
 	preview_pill.content_margin_bottom = tokens.space_xs
+	preview_pill.shadow_color = Color(0, 0, 0, 0.5)
+	preview_pill.shadow_size = 5
+	preview_pill.shadow_offset = Vector2(0, 2)
 	theme.add_type("PreviewPill")
 	theme.set_type_variation("PreviewPill", "PanelContainer")
 	theme.set_stylebox("panel", "PreviewPill", preview_pill)

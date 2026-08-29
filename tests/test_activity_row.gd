@@ -270,3 +270,24 @@ func test_preview_row_label_is_big_and_outlined() -> void:
 		"the label's dark rim is the same purple as the row border")
 	assert_true(theme.get_constant("outline_size", "PreviewRowLabel") >= 6,
 		"the mockup's label rim is chunkier than CardSectionLabel's 4px")
+
+
+## The mockup's rows carry a hard dark shadow just below their bottom border, and
+## the inset pill has a soft dark edge rather than a stroke. Without them the
+## surfaces read as flat decals on the card instead of raised/inset panels.
+func test_preview_row_border_and_shadow_match_the_mockup() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
+	assert_true(sb != null, "PreviewRow/panel must be a StyleBoxFlat")
+	assert_eq(sb.border_width_top, 3, "the mockup's row border is 3px, not 4")
+	assert_true(sb.shadow_size > 0, "the row casts a drop shadow onto the card")
+	assert_true(sb.shadow_offset.y > 0, "that shadow falls below the row, as in the mockup")
+
+
+func test_preview_pill_has_a_soft_edge_not_a_stroke() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var sb := theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
+	assert_true(sb != null, "PreviewPill/panel must be a StyleBoxFlat")
+	assert_eq(sb.border_width_top, 0,
+		"the pill's dark edge is a shadow, not a border -- a stroke reads wrong")
+	assert_true(sb.shadow_size > 0, "the pill's edge is a soft shadow")

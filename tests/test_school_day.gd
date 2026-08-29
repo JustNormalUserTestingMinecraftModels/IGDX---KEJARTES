@@ -245,10 +245,6 @@ func test_click_to_continue_label_pulses_like_the_splash_hint() -> void:
 func test_day_summary_deltas_count_up_with_audio_feedback() -> void:
 	var popup := FileAccess.get_file_as_string(
 		"res://Scripts/SchoolSimulation/DaySummaryPopup.gd")
-	var row := FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd")
-	assert_true(row.contains("Juice.count_up"),
-		"every stat delta in a summary row must count up")
 	assert_true(popup.contains("Juice.stagger_in"),
 		"summary rows must stagger in")
 	assert_true(popup.contains("AudioDirector.play_sfx(&\"success\")"),

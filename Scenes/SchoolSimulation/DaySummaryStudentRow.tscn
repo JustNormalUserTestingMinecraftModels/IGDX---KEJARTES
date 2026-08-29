@@ -1,81 +1,81 @@
-[gd_scene load_steps=4 format=3]
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd" id="1_row"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryBadge.tscn" id="2_badge"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryPill.tscn" id="3_pill"]
+[gd_scene load_steps=5 format=3]
 
-[node name="DaySummaryStudentRow" type="PanelContainer"]
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_type_variation = &"Card"
+[ext_resource type="Script" path="res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd" id="1_row"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/card_bg.png" id="2_card_bg"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn" id="3_avatar"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
+
+[node name="DaySummaryStudentRow" type="Control"]
+custom_minimum_size = Vector2(992, 405)
+layout_mode = 2
+size_flags_horizontal = 4
 script = ExtResource("1_row")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
-layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 20
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 24
-
-[node name="AvatarContainer" type="Panel" parent="MarginContainer/HBoxContainer"]
-unique_name_in_owner = true
-clip_contents = true
-custom_minimum_size = Vector2(140, 140)
-layout_mode = 2
-size_flags_vertical = 4
-theme_type_variation = &"SunkenPanel"
-
-[node name="AvatarTexture" type="TextureRect" parent="MarginContainer/HBoxContainer/AvatarContainer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 140)
+[node name="CardArt" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = ExtResource("2_card_bg")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
 
-[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-theme_override_constants/separation = 12
+[node name="Avatar" parent="." instance=ExtResource("3_avatar")]
+layout_mode = 1
+offset_left = 50.0
+offset_top = 52.0
+offset_right = 319.0
+offset_bottom = 338.0
 
-[node name="NameRow" type="HBoxContainer" parent="MarginContainer/HBoxContainer/InfoVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="NameLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 336.0
+offset_top = 40.0
+offset_right = 700.0
+offset_bottom = 100.0
+theme_type_variation = &"DaySummaryName"
+text = "Marcel"
+vertical_alignment = 1
 
-[node name="NameLabel" type="Label" parent="MarginContainer/HBoxContainer/InfoVBox/NameRow"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"TitleLabel"
-text = "Nama Siswa"
+[node name="EnergyBar" type="ProgressBar" parent="."]
+layout_mode = 1
+offset_left = 336.0
+offset_top = 113.0
+offset_right = 579.0
+offset_bottom = 181.0
+theme_type_variation = &"DaySummaryEnergyBar"
+show_percentage = false
+value = 36.0
 
-[node name="Spacer" type="Control" parent="MarginContainer/HBoxContainer/InfoVBox/NameRow"]
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="MoodBar" type="ProgressBar" parent="."]
+layout_mode = 1
+offset_left = 336.0
+offset_top = 201.0
+offset_right = 579.0
+offset_bottom = 268.0
+theme_type_variation = &"DaySummaryMoodBar"
+show_percentage = false
+value = 82.0
 
-[node name="BadgeContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/InfoVBox/NameRow"]
-unique_name_in_owner = true
-layout_mode = 2
+[node name="StatRow1" parent="." instance=ExtResource("4_statrow")]
+layout_mode = 1
+offset_left = 616.0
+offset_top = 57.0
+offset_right = 966.0
+offset_bottom = 153.0
 
-[node name="DaySummaryBadge" parent="MarginContainer/HBoxContainer/InfoVBox/NameRow/BadgeContainer" instance=ExtResource("2_badge")]
-layout_mode = 2
+[node name="StatRow2" parent="." instance=ExtResource("4_statrow")]
+layout_mode = 1
+offset_left = 616.0
+offset_top = 154.0
+offset_right = 966.0
+offset_bottom = 250.0
 
-[node name="PillsContainer" type="HFlowContainer" parent="MarginContainer/HBoxContainer/InfoVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 10
-
-[node name="DaySummaryPill" parent="MarginContainer/HBoxContainer/InfoVBox/PillsContainer" instance=ExtResource("3_pill")]
-layout_mode = 2
-
-[node name="DaySummaryPill2" parent="MarginContainer/HBoxContainer/InfoVBox/PillsContainer" instance=ExtResource("3_pill")]
-layout_mode = 2
+[node name="StatRow3" parent="." instance=ExtResource("4_statrow")]
+layout_mode = 1
+offset_left = 616.0
+offset_top = 254.0
+offset_right = 966.0
+offset_bottom = 350.0

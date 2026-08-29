@@ -239,3 +239,95 @@ func test_stat_row_scene_wears_the_theme_and_has_no_overrides() -> void:
 	assert_not_null(inst.get_node_or_null("Chevron"),
 		"stat row is missing Chevron")
 	inst.free()
+
+
+const _ROW_SCENE := "res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn"
+const _ROW_SCRIPT := "res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd"
+
+
+## The card art is placed at native size, so the row must reserve
+## exactly the mockup's box. A row that shrink-wraps its children
+## instead would slide every child off the painted background.
+func test_row_reserves_the_mockup_card_box() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	assert_eq(inst.custom_minimum_size, Vector2(992, 405),
+		"card box drifted from the mockup's 992x393 fill + 12px shadow")
+	inst.free()
+
+
+func test_row_carries_the_card_art_and_the_three_stat_rows() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+
+	var bg := inst.get_node_or_null("CardArt") as TextureRect
+	assert_not_null(bg, "row is missing its CardArt")
+	assert_not_null(bg.texture, "CardArt has no texture assigned")
+
+	assert_not_null(inst.get_node_or_null("Avatar"), "row is missing Avatar")
+	for i in range(1, 4):
+		assert_not_null(inst.get_node_or_null("StatRow%d" % i),
+			"row is missing StatRow%d" % i)
+	inst.free()
+
+
+## Energy is the TOP bar and mood the BOTTOM one, and they are violet
+## and gold respectively. The existing DayScreen cards use the opposite
+## tints (spec section 5); this pins the popup to the mockup so a later
+## reconciliation cannot silently swap them here.
+func test_energy_is_the_top_bar_and_mood_the_bottom() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	var energy := inst.get_node_or_null("EnergyBar") as ProgressBar
+	var mood := inst.get_node_or_null("MoodBar") as ProgressBar
+	assert_not_null(energy, "row is missing EnergyBar")
+	assert_not_null(mood, "row is missing MoodBar")
+	assert_eq(energy.theme_type_variation, &"DaySummaryEnergyBar",
+		"EnergyBar is wearing the wrong variation")
+	assert_eq(mood.theme_type_variation, &"DaySummaryMoodBar",
+		"MoodBar is wearing the wrong variation")
+	assert_true(energy.offset_top < mood.offset_top,
+		"energy must sit above mood, as in the mockup")
+	inst.free()
+
+
+## The naming trap this project documents in CLAUDE.md: target_akademis2
+## is the SENI target and target_akademis3 the OLAHRAGA one. Getting it
+## wrong shows the right number against the wrong icon.
+func test_row_pairs_each_stat_with_its_correct_target_field() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
+	assert_true(src.contains("\"akademis\": \"target_akademis1\""),
+		"akademis must read target_akademis1")
+	assert_true(src.contains("\"seni_budaya\": \"target_akademis2\""),
+		"seni_budaya must read target_akademis2, not target_akademis3")
+	assert_true(src.contains("\"olahraga\": \"target_akademis3\""),
+		"olahraga must read target_akademis3")
+
+
+## The mockup shows a fixed three-row block; a card whose height varied
+## with how many stats happened to move would break the stack rhythm.
+func test_row_always_shows_three_stat_rows() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
+	assert_true(src.contains("STAT_ORDER"),
+		"row should drive its three rows from a fixed STAT_ORDER")
+	assert_eq(DaySummaryStudentRow.STAT_ORDER.size(), 3,
+		"the mockup shows exactly three stat rows")
+	# The old row skipped any stat whose delta was zero, which made the
+	# card's height depend on the day. Nothing may `continue` on a zero
+	# delta any more.
+	assert_false(src.contains("if delta == 0.0:"),
+		"row must not skip stats that did not move")
+
+
+## No theme_override_* anywhere -- the project's hard styling rule.
+func test_row_scene_declares_no_theme_overrides() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCENE)
+	assert_false(src.contains("theme_override_colors"),
+		"colour override found -- use a ThemeFactory variation")
+	assert_false(src.contains("theme_override_fonts"),
+		"font override found -- use a ThemeFactory variation")
+	assert_false(src.contains("theme_override_styles"),
+		"stylebox override found -- use a ThemeFactory variation")

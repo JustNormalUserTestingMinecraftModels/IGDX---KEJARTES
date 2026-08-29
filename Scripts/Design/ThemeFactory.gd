@@ -319,13 +319,21 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "BioValue", tokens.font_body_size + 6)
 	theme.set_color("font_color", "BioValue", tokens.text_on_brand)
 
-	# -- Penjadwalan preview pill: the dark slab a row's numbers sit on. --
+	# -- Penjadwalan row container: the bordered grey slab each row sits on.
+	# The icon draws directly onto this; the pill below is inset into it. --
+	var preview_row := StyleBoxFlat.new()
+	preview_row.bg_color = tokens.preview_row_fill
+	preview_row.border_color = tokens.preview_row_border
+	preview_row.set_border_width_all(4)
+	preview_row.set_corner_radius_all(tokens.radius_md)
+	theme.add_type("PreviewRow")
+	theme.set_type_variation("PreviewRow", "Panel")
+	theme.set_stylebox("panel", "PreviewRow", preview_row)
+
+	# -- The darker pill inset into the row, carrying the numbers. --
 	var preview_pill := StyleBoxFlat.new()
-	preview_pill.bg_color = tokens.surface_overlay
-	preview_pill.corner_radius_top_left = tokens.radius_md
-	preview_pill.corner_radius_top_right = tokens.radius_md
-	preview_pill.corner_radius_bottom_left = tokens.radius_md
-	preview_pill.corner_radius_bottom_right = tokens.radius_md
+	preview_pill.bg_color = tokens.preview_pill_fill
+	preview_pill.set_corner_radius_all(tokens.radius_sm)
 	preview_pill.content_margin_left = tokens.space_sm
 	preview_pill.content_margin_right = tokens.space_sm
 	preview_pill.content_margin_top = tokens.space_xs
@@ -334,11 +342,28 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("PreviewPill", "PanelContainer")
 	theme.set_stylebox("panel", "PreviewPill", preview_pill)
 
+	# -- Wirausaha and Libur have no target, so no inset pill: their chips
+	# sit straight on the container's grey. Same node, no panel drawn. --
+	theme.add_type("PreviewPillFlat")
+	theme.set_type_variation("PreviewPillFlat", "PanelContainer")
+	theme.set_stylebox("panel", "PreviewPillFlat", StyleBoxEmpty.new())
+
 	# -- The numbers inside that pill: white on the dark slab. --
 	theme.add_type("PreviewChipLabel")
 	theme.set_type_variation("PreviewChipLabel", "Label")
 	theme.set_font_size("font_size", "PreviewChipLabel", tokens.font_h2)
 	theme.set_color("font_color", "PreviewChipLabel", tokens.text_on_brand)
+
+	# -- The category name under each row. Bigger and rimmed harder than
+	# CardSectionLabel, which is shared with StudentCard and must not move. --
+	theme.add_type("PreviewRowLabel")
+	theme.set_type_variation("PreviewRowLabel", "Label")
+	theme.set_font_size("font_size", "PreviewRowLabel", tokens.font_h2)
+	theme.set_color("font_color", "PreviewRowLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "PreviewRowLabel", 6)
+	theme.set_color("font_outline_color", "PreviewRowLabel", tokens.preview_row_border)
+	if tokens.font_display != null:
+		theme.set_font("font", "PreviewRowLabel", tokens.font_display)
 
 
 # ------------------------------------------------- unstyled base controls

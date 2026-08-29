@@ -179,3 +179,53 @@ func test_name_label_sits_in_the_band_below_the_pill() -> void:
 		"the label occupies the 52px band under the pill")
 	assert_eq(label.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT,
 		"the mockup right-aligns the name under the pill's right edge")
+
+
+## The mockup's rows are one bordered grey container with a darker pill inset
+## into it. These pin the four surfaces that produces, including base_type --
+## a variation without one silently falls back to the engine default, which is
+## exactly the bug that made the pills invisible before.
+func test_preview_row_is_a_bordered_panel() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme: Theme = load(_THEME_PATH)
+	assert_eq(theme.get_type_variation_base("PreviewRow"), &"Panel",
+		"PreviewRow must declare Panel as its base_type")
+	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
+	assert_true(sb != null, "PreviewRow/panel must be a StyleBoxFlat")
+	assert_eq(sb.bg_color, tokens.preview_row_fill, "row container fill comes from the token")
+	assert_eq(sb.border_color, tokens.preview_row_border, "row container border comes from the token")
+	assert_true(sb.border_width_top >= 1, "the mockup's rows carry a visible purple border")
+
+
+func test_preview_pill_uses_the_sampled_fill() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme: Theme = load(_THEME_PATH)
+	var sb := theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
+	assert_true(sb != null, "PreviewPill/panel must be a StyleBoxFlat")
+	assert_eq(sb.bg_color, tokens.preview_pill_fill,
+		"the inset pill is #363636 in the mockup, not the old near-black surface_overlay")
+
+
+## Wirausaha and Libur have no inset pill -- their chips sit straight on the
+## container's grey. They wear this variation so the code path stays single.
+func test_preview_pill_flat_draws_nothing() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	assert_eq(theme.get_type_variation_base("PreviewPillFlat"), &"PanelContainer",
+		"PreviewPillFlat must declare PanelContainer as its base_type")
+	assert_true(theme.get_stylebox("panel", "PreviewPillFlat") is StyleBoxEmpty,
+		"PreviewPillFlat must draw no panel at all")
+
+
+func test_preview_row_label_is_big_and_outlined() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme: Theme = load(_THEME_PATH)
+	assert_eq(theme.get_type_variation_base("PreviewRowLabel"), &"Label",
+		"PreviewRowLabel must declare Label as its base_type")
+	assert_eq(theme.get_font_size("font_size", "PreviewRowLabel"), tokens.font_h2,
+		"the mockup's row labels are noticeably larger than CardSectionLabel's 36px")
+	assert_eq(theme.get_color("font_color", "PreviewRowLabel"), tokens.text_on_brand,
+		"row labels are white")
+	assert_eq(theme.get_color("font_outline_color", "PreviewRowLabel"), tokens.preview_row_border,
+		"the label's dark rim is the same purple as the row border")
+	assert_true(theme.get_constant("outline_size", "PreviewRowLabel") >= 6,
+		"the mockup's label rim is chunkier than CardSectionLabel's 4px")

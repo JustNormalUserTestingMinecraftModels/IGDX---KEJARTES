@@ -193,7 +193,7 @@ func _build_ui() -> void:
 	toggle_btn.text = "🔧 DBG"
 	toggle_btn.custom_minimum_size = Vector2(160, 80)
 	toggle_btn.position = Vector2(30, 30)
-	toggle_btn.add_theme_font_size_override("font_size", 28)
+	toggle_btn.add_theme_font_size_override("font_size", 21)
 	toggle_btn.pressed.connect(toggle_overlay)
 	
 	var style_toggle = StyleBoxFlat.new()
@@ -232,7 +232,7 @@ func _build_ui() -> void:
 	
 	var title = Label.new()
 	title.text = "🔧 PLAYTESTING DEBUG TOOLS 🔧"
-	title.add_theme_font_size_override("font_size", 44)
+	title.add_theme_font_size_override("font_size", 33)
 	title.add_theme_color_override("font_color", Color(1.0, 0.84, 0.2))
 	header.add_child(title)
 	
@@ -243,7 +243,7 @@ func _build_ui() -> void:
 	var close_btn = Button.new()
 	close_btn.text = " ❌ Close "
 	close_btn.custom_minimum_size = Vector2(180, 75)
-	close_btn.add_theme_font_size_override("font_size", 30)
+	close_btn.add_theme_font_size_override("font_size", 23)
 	close_btn.pressed.connect(toggle_overlay)
 	header.add_child(close_btn)
 	
@@ -258,7 +258,7 @@ func _build_ui() -> void:
 		btn.text = tab
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.custom_minimum_size = Vector2(0, 80)
-		btn.add_theme_font_size_override("font_size", 32)
+		btn.add_theme_font_size_override("font_size", 24)
 		btn.pressed.connect(func(): _switch_tab(tab))
 		tabs_hbox.add_child(btn)
 		tab_buttons[tab] = btn
@@ -347,7 +347,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_seed.text = " ⚡ Seed Playtest State "
 	btn_seed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_seed.custom_minimum_size = Vector2(0, 95)
-	btn_seed.add_theme_font_size_override("font_size", 30)
+	btn_seed.add_theme_font_size_override("font_size", 23)
 	btn_seed.pressed.connect(_seed_playtest_state)
 	vbox.add_child(btn_seed)
 
@@ -364,12 +364,12 @@ func _build_general_panel(parent: Control) -> void:
 	
 	var lbl_w_title = Label.new()
 	lbl_w_title.text = "Minggu & Kelas Progression: "
-	lbl_w_title.add_theme_font_size_override("font_size", 34)
+	lbl_w_title.add_theme_font_size_override("font_size", 26)
 	row_week_info.add_child(lbl_w_title)
 	
 	_lbl_week = Label.new()
 	_lbl_week.text = "Minggu 1 (Grade 7)"
-	_lbl_week.add_theme_font_size_override("font_size", 34)
+	_lbl_week.add_theme_font_size_override("font_size", 26)
 	_lbl_week.add_theme_color_override("font_color", Color(0.3, 0.8, 1.0))
 	row_week_info.add_child(_lbl_week)
 	
@@ -385,7 +385,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_w_minus.text = " ➖ Minggu -1 "
 	btn_w_minus.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_w_minus.custom_minimum_size = Vector2(0, 80)
-	btn_w_minus.add_theme_font_size_override("font_size", 28)
+	btn_w_minus.add_theme_font_size_override("font_size", 21)
 	btn_w_minus.pressed.connect(func(): _modify_week(-1))
 	grid_week_btns.add_child(btn_w_minus)
 	
@@ -393,7 +393,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_w_plus.text = " ➕ Minggu +1 "
 	btn_w_plus.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_w_plus.custom_minimum_size = Vector2(0, 80)
-	btn_w_plus.add_theme_font_size_override("font_size", 28)
+	btn_w_plus.add_theme_font_size_override("font_size", 21)
 	btn_w_plus.pressed.connect(func(): _modify_week(1))
 	grid_week_btns.add_child(btn_w_plus)
 	
@@ -401,7 +401,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_w_8.text = " Set Minggu 8 "
 	btn_w_8.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_w_8.custom_minimum_size = Vector2(0, 80)
-	btn_w_8.add_theme_font_size_override("font_size", 28)
+	btn_w_8.add_theme_font_size_override("font_size", 21)
 	btn_w_8.pressed.connect(func(): _set_week(8))
 	grid_week_btns.add_child(btn_w_8)
 	
@@ -409,7 +409,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_w_16.text = " Set Minggu 16 "
 	btn_w_16.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_w_16.custom_minimum_size = Vector2(0, 80)
-	btn_w_16.add_theme_font_size_override("font_size", 28)
+	btn_w_16.add_theme_font_size_override("font_size", 21)
 	btn_w_16.pressed.connect(func(): _set_week(16))
 	grid_week_btns.add_child(btn_w_16)
 	
@@ -425,7 +425,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_g7.text = " Set Kelas 7 (Wk 1) "
 	btn_g7.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_g7.custom_minimum_size = Vector2(0, 80)
-	btn_g7.add_theme_font_size_override("font_size", 26)
+	btn_g7.add_theme_font_size_override("font_size", 20)
 	btn_g7.pressed.connect(func(): _set_grade(7))
 	grid_grade_btns.add_child(btn_g7)
 	
@@ -433,7 +433,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_g8.text = " Set Kelas 8 (Wk 17) "
 	btn_g8.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_g8.custom_minimum_size = Vector2(0, 80)
-	btn_g8.add_theme_font_size_override("font_size", 26)
+	btn_g8.add_theme_font_size_override("font_size", 20)
 	btn_g8.pressed.connect(func(): _set_grade(8))
 	grid_grade_btns.add_child(btn_g8)
 	
@@ -441,7 +441,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_g9.text = " Set Kelas 9 (Wk 33) "
 	btn_g9.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_g9.custom_minimum_size = Vector2(0, 80)
-	btn_g9.add_theme_font_size_override("font_size", 26)
+	btn_g9.add_theme_font_size_override("font_size", 20)
 	btn_g9.pressed.connect(func(): _set_grade(9))
 	grid_grade_btns.add_child(btn_g9)
 	
@@ -458,12 +458,12 @@ func _build_general_panel(parent: Control) -> void:
 	
 	var lbl_m_title = Label.new()
 	lbl_m_title.text = "Uang Pemain (G): "
-	lbl_m_title.add_theme_font_size_override("font_size", 34)
+	lbl_m_title.add_theme_font_size_override("font_size", 26)
 	row_money_info.add_child(lbl_m_title)
 	
 	_lbl_money = Label.new()
 	_lbl_money.text = "0G"
-	_lbl_money.add_theme_font_size_override("font_size", 34)
+	_lbl_money.add_theme_font_size_override("font_size", 26)
 	_lbl_money.add_theme_color_override("font_color", Color(0.2, 0.9, 0.4))
 	row_money_info.add_child(_lbl_money)
 	
@@ -479,7 +479,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_m_100.text = " 💰 +100G "
 	btn_m_100.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_m_100.custom_minimum_size = Vector2(0, 80)
-	btn_m_100.add_theme_font_size_override("font_size", 28)
+	btn_m_100.add_theme_font_size_override("font_size", 21)
 	btn_m_100.pressed.connect(func(): _modify_money(100))
 	grid_money_btns.add_child(btn_m_100)
 	
@@ -487,7 +487,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_m_1000.text = " 💎 +1000G "
 	btn_m_1000.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_m_1000.custom_minimum_size = Vector2(0, 80)
-	btn_m_1000.add_theme_font_size_override("font_size", 28)
+	btn_m_1000.add_theme_font_size_override("font_size", 21)
 	btn_m_1000.pressed.connect(func(): _modify_money(1000))
 	grid_money_btns.add_child(btn_m_1000)
 	
@@ -495,7 +495,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_m_minus.text = " 💸 -100G "
 	btn_m_minus.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_m_minus.custom_minimum_size = Vector2(0, 80)
-	btn_m_minus.add_theme_font_size_override("font_size", 28)
+	btn_m_minus.add_theme_font_size_override("font_size", 21)
 	btn_m_minus.pressed.connect(func(): _modify_money(-100))
 	grid_money_btns.add_child(btn_m_minus)
 	
@@ -503,7 +503,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_m_0.text = " Reset 0G "
 	btn_m_0.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_m_0.custom_minimum_size = Vector2(0, 80)
-	btn_m_0.add_theme_font_size_override("font_size", 28)
+	btn_m_0.add_theme_font_size_override("font_size", 21)
 	btn_m_0.pressed.connect(func(): _set_money(0))
 	grid_money_btns.add_child(btn_m_0)
 	
@@ -520,12 +520,12 @@ func _build_general_panel(parent: Control) -> void:
 	
 	var lbl_s_title = Label.new()
 	lbl_s_title.text = "Kecepatan Game (Time Scale): "
-	lbl_s_title.add_theme_font_size_override("font_size", 34)
+	lbl_s_title.add_theme_font_size_override("font_size", 26)
 	row_speed_info.add_child(lbl_s_title)
 	
 	_lbl_speed = Label.new()
 	_lbl_speed.text = "1.0x (Normal)"
-	_lbl_speed.add_theme_font_size_override("font_size", 34)
+	_lbl_speed.add_theme_font_size_override("font_size", 26)
 	_lbl_speed.add_theme_color_override("font_color", Color(1.0, 0.5, 0.2))
 	row_speed_info.add_child(_lbl_speed)
 	
@@ -541,7 +541,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_s1.text = " 1.0x (Normal) "
 	btn_s1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_s1.custom_minimum_size = Vector2(0, 80)
-	btn_s1.add_theme_font_size_override("font_size", 28)
+	btn_s1.add_theme_font_size_override("font_size", 21)
 	btn_s1.pressed.connect(func(): _set_time_scale(1.0))
 	grid_speed_btns.add_child(btn_s1)
 	
@@ -549,7 +549,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_s2.text = " 2.0x (Cepat) "
 	btn_s2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_s2.custom_minimum_size = Vector2(0, 80)
-	btn_s2.add_theme_font_size_override("font_size", 28)
+	btn_s2.add_theme_font_size_override("font_size", 21)
 	btn_s2.pressed.connect(func(): _set_time_scale(2.0))
 	grid_speed_btns.add_child(btn_s2)
 	
@@ -557,7 +557,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_s5.text = " 5.0x (Sangat Cepat) "
 	btn_s5.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_s5.custom_minimum_size = Vector2(0, 80)
-	btn_s5.add_theme_font_size_override("font_size", 28)
+	btn_s5.add_theme_font_size_override("font_size", 21)
 	btn_s5.pressed.connect(func(): _set_time_scale(5.0))
 	grid_speed_btns.add_child(btn_s5)
 	
@@ -565,7 +565,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_s10.text = " 10.0x (Turbo Skip) "
 	btn_s10.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_s10.custom_minimum_size = Vector2(0, 80)
-	btn_s10.add_theme_font_size_override("font_size", 28)
+	btn_s10.add_theme_font_size_override("font_size", 21)
 	btn_s10.pressed.connect(func(): _set_time_scale(10.0))
 	grid_speed_btns.add_child(btn_s10)
 	
@@ -579,7 +579,7 @@ func _build_general_panel(parent: Control) -> void:
 	
 	var lbl_tut_title = Label.new()
 	lbl_tut_title.text = "Bypass Tutorial / Pengaturan:"
-	lbl_tut_title.add_theme_font_size_override("font_size", 34)
+	lbl_tut_title.add_theme_font_size_override("font_size", 26)
 	grp_tutorial.add_child(lbl_tut_title)
 	
 	# Tutorial buttons VBox (each button gets full width)
@@ -591,14 +591,14 @@ func _build_general_panel(parent: Control) -> void:
 	_btn_tutorial_lobby = Button.new()
 	_btn_tutorial_lobby.text = "Bypass Tutorial Lobby: OFF"
 	_btn_tutorial_lobby.custom_minimum_size = Vector2(0, 85)
-	_btn_tutorial_lobby.add_theme_font_size_override("font_size", 28)
+	_btn_tutorial_lobby.add_theme_font_size_override("font_size", 21)
 	_btn_tutorial_lobby.pressed.connect(_toggle_lobby_tutorial)
 	v_tut_btns.add_child(_btn_tutorial_lobby)
 	
 	_btn_tutorial_minigames = Button.new()
 	_btn_tutorial_minigames.text = "Tutorial Minigames: ON"
 	_btn_tutorial_minigames.custom_minimum_size = Vector2(0, 85)
-	_btn_tutorial_minigames.add_theme_font_size_override("font_size", 28)
+	_btn_tutorial_minigames.add_theme_font_size_override("font_size", 21)
 	_btn_tutorial_minigames.pressed.connect(_toggle_minigames_tutorial)
 	v_tut_btns.add_child(_btn_tutorial_minigames)
 
@@ -728,7 +728,7 @@ func _rebuild_student_stat_editor() -> void:
 		# Display warning and quick auto-approve option
 		var lbl_warn = Label.new()
 		lbl_warn.text = "⚠️ Belum ada murid yang terpilih di GameState.\nSilakan masuk ke layar pilih murid, atau gunakan jalan pintas di bawah ini:"
-		lbl_warn.add_theme_font_size_override("font_size", 30)
+		lbl_warn.add_theme_font_size_override("font_size", 23)
 		lbl_warn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl_warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		students_vbox_container.add_child(lbl_warn)
@@ -736,7 +736,7 @@ func _rebuild_student_stat_editor() -> void:
 		var btn_approve_default = Button.new()
 		btn_approve_default.text = "⚡ Instantly Approve 4 Default Students ⚡"
 		btn_approve_default.custom_minimum_size = Vector2(0, 100)
-		btn_approve_default.add_theme_font_size_override("font_size", 30)
+		btn_approve_default.add_theme_font_size_override("font_size", 23)
 		btn_approve_default.pressed.connect(_auto_approve_students)
 		
 		var style = StyleBoxFlat.new()
@@ -791,13 +791,13 @@ func _rebuild_student_stat_editor() -> void:
 		# Student Info Header (Stacked vertically to prevent horizontal clipping)
 		var lbl_name = Label.new()
 		lbl_name.text = "👤 %s (ID: %d)" % [s_name, s_id]
-		lbl_name.add_theme_font_size_override("font_size", 36)
+		lbl_name.add_theme_font_size_override("font_size", 27)
 		lbl_name.add_theme_color_override("font_color", Color(1, 0.9, 0.6))
 		s_vbox.add_child(lbl_name)
 		
 		var lbl_traits = Label.new()
 		lbl_traits.text = "⚡ Quirk: %s | 🌟 Persona: %s" % [s_quirk, s_persona.replace("Persona ", "")]
-		lbl_traits.add_theme_font_size_override("font_size", 26)
+		lbl_traits.add_theme_font_size_override("font_size", 20)
 		lbl_traits.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
 		lbl_traits.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		s_vbox.add_child(lbl_traits)
@@ -827,7 +827,7 @@ func _rebuild_student_stat_editor() -> void:
 			# Line 1: Label of stat name and current value
 			var row_lbl = Label.new()
 			row_lbl.text = "• %s: %d / 100" % [s_lbl, int(val)]
-			row_lbl.add_theme_font_size_override("font_size", 28)
+			row_lbl.add_theme_font_size_override("font_size", 21)
 			row_lbl.add_theme_color_override("font_color", s_color)
 			stat_vbox.add_child(row_lbl)
 			
@@ -841,7 +841,7 @@ func _rebuild_student_stat_editor() -> void:
 			btn_minus.text = "-10"
 			btn_minus.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			btn_minus.custom_minimum_size = Vector2(0, 75)
-			btn_minus.add_theme_font_size_override("font_size", 26)
+			btn_minus.add_theme_font_size_override("font_size", 20)
 			btn_minus.pressed.connect(func(): _modify_student_stat(s_name, key, -10.0))
 			row_btns.add_child(btn_minus)
 			
@@ -849,7 +849,7 @@ func _rebuild_student_stat_editor() -> void:
 			btn_plus.text = "+10"
 			btn_plus.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			btn_plus.custom_minimum_size = Vector2(0, 75)
-			btn_plus.add_theme_font_size_override("font_size", 26)
+			btn_plus.add_theme_font_size_override("font_size", 20)
 			btn_plus.pressed.connect(func(): _modify_student_stat(s_name, key, 10.0))
 			row_btns.add_child(btn_plus)
 			
@@ -860,7 +860,7 @@ func _rebuild_student_stat_editor() -> void:
 				btn_zero.text = "Set 0"
 			btn_zero.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			btn_zero.custom_minimum_size = Vector2(0, 75)
-			btn_zero.add_theme_font_size_override("font_size", 26)
+			btn_zero.add_theme_font_size_override("font_size", 20)
 			btn_zero.pressed.connect(func(): _set_student_stat(s_name, key, 5.0 if (key == "kepribadian2" or key == "kepribadian1") else 0.0))
 			row_btns.add_child(btn_zero)
 			
@@ -868,7 +868,7 @@ func _rebuild_student_stat_editor() -> void:
 			btn_max.text = "Set 100"
 			btn_max.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			btn_max.custom_minimum_size = Vector2(0, 75)
-			btn_max.add_theme_font_size_override("font_size", 26)
+			btn_max.add_theme_font_size_override("font_size", 20)
 			btn_max.pressed.connect(func(): _set_student_stat(s_name, key, 100.0))
 			row_btns.add_child(btn_max)
 
@@ -984,7 +984,7 @@ func _build_minigames_panel(parent: Control) -> void:
 	
 	var lbl_cheat_title = Label.new()
 	lbl_cheat_title.text = "Minigame Cheat Outcomes (Simulasi):"
-	lbl_cheat_title.add_theme_font_size_override("font_size", 34)
+	lbl_cheat_title.add_theme_font_size_override("font_size", 26)
 	grp_cheats.add_child(lbl_cheat_title)
 	
 	# Cheats Buttons Grid (2 columns)
@@ -999,7 +999,7 @@ func _build_minigames_panel(parent: Control) -> void:
 	_btn_autowin.text = "Auto-Win Minigames: OFF"
 	_btn_autowin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_btn_autowin.custom_minimum_size = Vector2(0, 85)
-	_btn_autowin.add_theme_font_size_override("font_size", 28)
+	_btn_autowin.add_theme_font_size_override("font_size", 21)
 	_btn_autowin.pressed.connect(func(): _toggle_minigame_cheat("win"))
 	grid_cheat_btns.add_child(_btn_autowin)
 	
@@ -1007,7 +1007,7 @@ func _build_minigames_panel(parent: Control) -> void:
 	_btn_autolose.text = "Auto-Lose Minigames: OFF"
 	_btn_autolose.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_btn_autolose.custom_minimum_size = Vector2(0, 85)
-	_btn_autolose.add_theme_font_size_override("font_size", 28)
+	_btn_autolose.add_theme_font_size_override("font_size", 21)
 	_btn_autolose.pressed.connect(func(): _toggle_minigame_cheat("lose"))
 	grid_cheat_btns.add_child(_btn_autolose)
 	
@@ -1021,7 +1021,7 @@ func _build_minigames_panel(parent: Control) -> void:
 	
 	var lbl_launcher_title = Label.new()
 	lbl_launcher_title.text = "Luncurkan Minigame Mandiri (Standalone):"
-	lbl_launcher_title.add_theme_font_size_override("font_size", 34)
+	lbl_launcher_title.add_theme_font_size_override("font_size", 26)
 	grp_launcher.add_child(lbl_launcher_title)
 	
 	var minigames_list = [
@@ -1049,7 +1049,7 @@ func _build_minigames_panel(parent: Control) -> void:
 		btn_m.text = " ▶ " + mg["name"]
 		btn_m.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn_m.custom_minimum_size = Vector2(0, 90)
-		btn_m.add_theme_font_size_override("font_size", 26)
+		btn_m.add_theme_font_size_override("font_size", 20)
 		btn_m.pressed.connect(func(): _launch_minigame_standalone(mg["path"]))
 		grid_m.add_child(btn_m)
 		
@@ -1063,7 +1063,7 @@ func _build_minigames_panel(parent: Control) -> void:
 	
 	var lbl_evt_title = Label.new()
 	lbl_evt_title.text = "Luncurkan Event Harian Sekolah (Saat Simulasi):"
-	lbl_evt_title.add_theme_font_size_override("font_size", 34)
+	lbl_evt_title.add_theme_font_size_override("font_size", 26)
 	grp_events.add_child(lbl_evt_title)
 	
 	var events_list = [
@@ -1087,7 +1087,7 @@ func _build_minigames_panel(parent: Control) -> void:
 		btn_e.text = " 🔔 " + evt["name"]
 		btn_e.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn_e.custom_minimum_size = Vector2(0, 85)
-		btn_e.add_theme_font_size_override("font_size", 26)
+		btn_e.add_theme_font_size_override("font_size", 20)
 		btn_e.pressed.connect(func(): _trigger_simulation_event(evt["id"]))
 		grid_evts.add_child(btn_e)
 
@@ -1194,7 +1194,7 @@ func _build_scenes_panel(parent: Control) -> void:
 	
 	var lbl_title = Label.new()
 	lbl_title.text = "Teleportasi Scene Langsung (Scene Switcher):"
-	lbl_title.add_theme_font_size_override("font_size", 34)
+	lbl_title.add_theme_font_size_override("font_size", 26)
 	vbox.add_child(lbl_title)
 	
 	var scenes_list = [
@@ -1211,7 +1211,7 @@ func _build_scenes_panel(parent: Control) -> void:
 		var btn = Button.new()
 		btn.text = " 🚀 Teleport ke: " + sc["name"]
 		btn.custom_minimum_size = Vector2(0, 95)
-		btn.add_theme_font_size_override("font_size", 28)
+		btn.add_theme_font_size_override("font_size", 21)
 		btn.pressed.connect(func(): _teleport_to_scene(sc["path"]))
 		vbox.add_child(btn)
 
@@ -1249,7 +1249,7 @@ func _build_logs_panel(parent: Control) -> void:
 	
 	var lbl_title = Label.new()
 	lbl_title.text = " Log Aktivitas & print() Output:"
-	lbl_title.add_theme_font_size_override("font_size", 34)
+	lbl_title.add_theme_font_size_override("font_size", 26)
 	header_bar.add_child(lbl_title)
 	
 	var spacer = Control.new()
@@ -1259,7 +1259,7 @@ func _build_logs_panel(parent: Control) -> void:
 	var clear_btn = Button.new()
 	clear_btn.text = " Clear Logs "
 	clear_btn.custom_minimum_size = Vector2(180, 75)
-	clear_btn.add_theme_font_size_override("font_size", 26)
+	clear_btn.add_theme_font_size_override("font_size", 20)
 	clear_btn.pressed.connect(func(): if log_text_label: log_text_label.text = "")
 	header_bar.add_child(clear_btn)
 	
@@ -1280,7 +1280,7 @@ func _build_logs_panel(parent: Control) -> void:
 	
 	log_text_label = Label.new()
 	log_text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	log_text_label.add_theme_font_size_override("font_size", 24)
+	log_text_label.add_theme_font_size_override("font_size", 18)
 	log_text_label.add_theme_color_override("font_color", Color(0.9, 0.95, 0.9))
 	log_text_label.add_theme_constant_override("line_spacing", 6)
 	log_text_label.text = ""

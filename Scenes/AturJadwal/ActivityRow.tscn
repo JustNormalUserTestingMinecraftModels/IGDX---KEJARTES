@@ -1,0 +1,75 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/AturJadwal/ActivityRow.gd" id="1_row"]
+[ext_resource type="Script" path="res://Scripts/UI/StatBar.gd" id="2_statbar"]
+
+[node name="ActivityRow" type="Button"]
+custom_minimum_size = Vector2(0, 140)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+flat = true
+script = ExtResource("1_row")
+category = "Akademis"
+display_name = "Akademik"
+
+[node name="IconBox" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 104.0
+offset_bottom = -36.0
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"PreviewPill"
+
+[node name="Icon" type="TextureRect" parent="IconBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(64, 64)
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pill" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 120.0
+offset_right = -8.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"PreviewPill"
+
+[node name="StatBar" type="ProgressBar" parent="Pill"]
+layout_mode = 2
+mouse_filter = 2
+show_percentage = false
+script = ExtResource("2_statbar")
+category = "Akademis"
+
+[node name="Chips" type="HBoxContainer" parent="Pill"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -320.0
+offset_top = -34.0
+offset_right = -16.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"CardSectionLabel"
+text = "Akademik"
+horizontal_alignment = 2
+vertical_alignment = 1

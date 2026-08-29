@@ -319,6 +319,26 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "BioValue", tokens.font_body_size + 6)
 	theme.set_color("font_color", "BioValue", tokens.text_on_brand)
 
+	# -- Penjadwalan preview pill: the dark slab a row's numbers sit on. --
+	var preview_pill := StyleBoxFlat.new()
+	preview_pill.bg_color = tokens.surface_overlay
+	preview_pill.corner_radius_top_left = tokens.radius_md
+	preview_pill.corner_radius_top_right = tokens.radius_md
+	preview_pill.corner_radius_bottom_left = tokens.radius_md
+	preview_pill.corner_radius_bottom_right = tokens.radius_md
+	preview_pill.content_margin_left = tokens.space_sm
+	preview_pill.content_margin_right = tokens.space_sm
+	preview_pill.content_margin_top = tokens.space_xs
+	preview_pill.content_margin_bottom = tokens.space_xs
+	theme.add_type("PreviewPill")
+	theme.set_stylebox("panel", "PreviewPill", preview_pill)
+
+	# -- The numbers inside that pill: white on the dark slab. --
+	theme.add_type("PreviewChipLabel")
+	theme.set_type_variation("PreviewChipLabel", "Label")
+	theme.set_font_size("font_size", "PreviewChipLabel", tokens.font_h2)
+	theme.set_color("font_color", "PreviewChipLabel", tokens.text_on_brand)
+
 
 # ------------------------------------------------- unstyled base controls
 

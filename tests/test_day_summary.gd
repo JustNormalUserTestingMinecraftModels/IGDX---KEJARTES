@@ -57,3 +57,24 @@ func test_card_background_is_native_size() -> void:
 	var tex := load(_ART["card_bg"]) as Texture2D
 	assert_eq(tex.get_width(), 1080, "card_bg width changed")
 	assert_eq(tex.get_height(), 1080, "card_bg height changed")
+
+
+## Every colour here was centroid-sampled from the mockup. A drifted
+## token means the rebake will paint something the mockup does not show.
+func test_day_summary_tokens_match_the_mockup() -> void:
+	var tokens := DesignTokens.load_default()
+	assert_not_null(tokens, "design_tokens.tres failed to load")
+	var expected := {
+		"day_avatar_fill": "5e4ebc",
+		"day_avatar_border": "3d3d3d",
+		"day_bar_track": "585858",
+		"day_bar_border": "2b2b2b",
+		"day_energy_fill": "6d60c0",
+		"day_mood_fill": "c8af57",
+		"day_stat_track": "383838",
+		"day_glyph_outline": "3d1e48",
+	}
+	for key in expected:
+		var c: Color = tokens.get(key)
+		assert_eq(c.to_html(false), expected[key],
+			"token %s drifted from the mockup sample" % key)

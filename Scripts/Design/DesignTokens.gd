@@ -112,6 +112,34 @@ static func load_default() -> DesignTokens:
 @export var preview_row_border: Color = Color("3d2048")
 @export var preview_pill_fill: Color = Color("363636")
 
+@export_group("Day Summary")
+## Sampled from dailyresults_mockup.png (spec:
+## 2026-08-29-day-summary-mockup-design.md). Several surfaces in that
+## mockup are vertical gradients, which StyleBoxFlat cannot express; as
+## with the Penjadwalan tokens above, each colour here is that
+## gradient's midpoint.
+##   avatar frame  -- flat violet behind the splash crop
+##   bar track     -- #636363 -> #4E4E4E
+##   energy fill   -- #7062C7 -> #695CB9
+##   mood fill     -- #DFC361 -> #A69249
+##   stat track    -- #3C3C3C -> #353535
+@export var day_avatar_fill: Color = Color("5e4ebc")
+@export var day_avatar_border: Color = Color("3d3d3d")
+@export var day_bar_track: Color = Color("585858")
+@export var day_bar_border: Color = Color("2b2b2b")
+@export var day_energy_fill: Color = Color("6d60c0")
+@export var day_mood_fill: Color = Color("c8af57")
+@export var day_stat_track: Color = Color("383838")
+## The dark rim every white glyph on this card carries -- name, stat
+## icons and the +N/T numbers alike.
+@export var day_glyph_outline: Color = Color("3d1e48")
+
+## Geometry measured off the mockup, in game pixels (mockup is 1:1).
+@export var day_avatar_radius: int = 22
+@export var day_bar_radius: int = 18
+@export var day_name_size: int = 40
+@export var day_stat_size: int = 38
+
 
 ## Resolve a schedule category name to its accent color.
 ## Returns text_secondary for anything unrecognized so callers never

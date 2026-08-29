@@ -1,12 +1,13 @@
 extends Control
 class_name DaySummaryPopup
 
-## The end-of-day recap. A Scrim behind a Card, one DaySummaryStudentRow
-## per student who moved, and a tap-anywhere dismiss.
+## The end-of-day recap. A Scrim (&"Scrim" Panel) behind a Content
+## VBoxContainer holding a TitleBanner (art, not text) and a RowsScroll ->
+## RowsContainer of DaySummaryStudentRow instances -- one per student who
+## moved -- built directly by this popup, plus a tap-anywhere dismiss.
 ##
-## Styling comes entirely from the theme now: the dim layer is a
-## &"Scrim" Panel and the card is a &"Card" PanelContainer, so this
-## script no longer builds a StyleBoxFlat or owns any color.
+## Styling comes entirely from the theme now: this script builds no
+## StyleBoxFlat and owns no color of its own.
 
 signal summary_dismissed
 
@@ -26,15 +27,9 @@ const _TARGET_FOR := {
 }
 
 
-## `build_rows` exists because SchoolDay drives this popup in a second
-## mode: it reparents its own live StudentScroll into RowsContainer and
-## therefore wants the summary data (for the title and the audio verdict)
-## without the popup also instantiating a duplicate set of rows.
 func setup_summary(
-	day_name: String,
 	summary_data: Array,
-	students: Array[StudentData],
-	build_rows: bool = true
+	students: Array[StudentData]
 ) -> void:
 	AudioDirector.play_sfx(&"popup_open")
 
@@ -44,23 +39,22 @@ func setup_summary(
 
 	# Populate rows
 	var rows: Array = []
-	if build_rows:
-		for entry in summary_data:
-			var s_name = entry.get("student_name", "")
-			var changes = entry.get("changes", [])
-			if changes.is_empty():
-				continue
+	for entry in summary_data:
+		var s_name = entry.get("student_name", "")
+		var changes = entry.get("changes", [])
+		if changes.is_empty():
+			continue
 
-			var student: StudentData = null
-			for s in students:
-				if s.student_name == s_name:
-					student = s
-					break
+		var student: StudentData = null
+		for s in students:
+			if s.student_name == s_name:
+				student = s
+				break
 
-			var row_inst = student_row_scene.instantiate()
-			rows_container.add_child(row_inst)
-			row_inst.setup_row(s_name, changes, student)
-			rows.append(row_inst)
+		var row_inst = student_row_scene.instantiate()
+		rows_container.add_child(row_inst)
+		row_inst.setup_row(s_name, changes, student)
+		rows.append(row_inst)
 
 	# Animate in
 	dim_overlay.self_modulate.a = 0.0

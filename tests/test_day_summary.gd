@@ -346,6 +346,41 @@ func test_row_always_shows_three_stat_rows() -> void:
 		"row must not skip stats that did not move")
 
 
+## _sum_deltas is the only genuinely stateful logic this row adds, and it
+## had zero behavioral coverage -- only a source-text scan confirming the
+## naming-trap dictionary literal exists, not that setup_row actually
+## reads the right key at runtime.
+func test_row_sums_same_stat_deltas_and_reads_the_correct_target_field() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+
+	var student := StudentData.new()
+	student.student_name = "TestStudent"
+	student.target_akademis1 = 50.0
+	student.target_akademis2 = 60.0
+	student.target_akademis3 = 70.0
+
+	# Two changes to the SAME stat in one day must sum, not overwrite.
+	var changes := [
+		{"stat_key": "seni_budaya", "delta": 4.0},
+		{"stat_key": "seni_budaya", "delta": 3.0},
+		{"stat_key": "olahraga", "delta": 5.0},
+	]
+
+	inst.setup_row("TestStudent", changes, student)
+
+	var stat_row_2 := inst.get_node("StatRow2") as DaySummaryStatRow
+	assert_eq(stat_row_2.get_node("Value").text, "+7/60",
+		"seni_budaya deltas (4+3) must sum to 7, and read target_akademis2 (60), not target_akademis3")
+
+	var stat_row_3 := inst.get_node("StatRow3") as DaySummaryStatRow
+	assert_eq(stat_row_3.get_node("Value").text, "+5/70",
+		"olahraga must read target_akademis3 (70), not target_akademis2")
+
+	inst.free()
+
+
 ## No theme_override_* anywhere -- the project's hard styling rule.
 func test_row_scene_declares_no_theme_overrides() -> void:
 	var src := FileAccess.get_file_as_string(_ROW_SCENE)

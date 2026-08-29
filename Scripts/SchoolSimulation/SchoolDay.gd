@@ -697,7 +697,7 @@ func _show_day_summary(day_name: String) -> void:
 	# DaySummaryStudentRow went unrendered for so long -- and why the
 	# mockup's "+12/65" was unbuildable, since only `summary` carries a
 	# delta at all.
-	summary_instance.setup_summary(day_name, summary, student_manager.students)
+	summary_instance.setup_summary(summary, student_manager.students)
 
 	await summary_instance.summary_dismissed
 	_set_day_chrome_visible(true)

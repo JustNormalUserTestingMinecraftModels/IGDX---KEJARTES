@@ -3,7 +3,9 @@ extends Panel
 class_name DaySummaryAvatar
 
 ## The Daily Results card's profile image: a rounded violet frame that
-## clips a head-and-shoulders crop out of the student's full-body splash.
+## clips a head-and-shoulders crop out of the student's portrait, falling
+## back to their full-body splash art when no portrait is set (see
+## set_student for the exact resolution order).
 ##
 ## The crop is per-student and cannot be derived from a shared rule --
 ## the splash batch does not share a canvas (Thea's is 550x1119, the

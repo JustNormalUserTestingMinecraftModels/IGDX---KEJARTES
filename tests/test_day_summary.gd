@@ -429,3 +429,40 @@ func test_school_day_still_renders_its_embedded_day_cards() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
 	assert_true(src.contains("func _render_embedded_student_status()"),
 		"the mid-day DayScreen cards were removed -- out of scope")
+
+
+## STRETCH_SCALE (0) is correct ONLY because Task 1 made the texture's
+## aspect equal the box's. KEEP_ASPECT_CENTERED (5) was what collapsed the
+## art to a square, so this pins the mode as much as the size.
+func test_card_art_fills_the_card_box_without_letterboxing() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	assert_eq(inst.custom_minimum_size, Vector2(992, 410),
+		"card box must equal the card art's content box")
+	var art := inst.get_node_or_null("CardArt") as TextureRect
+	assert_not_null(art, "row is missing CardArt")
+	assert_eq(art.stretch_mode, TextureRect.STRETCH_SCALE,
+		"CardArt must STRETCH_SCALE -- KEEP_ASPECT_CENTERED squares the art")
+	var tex: Texture2D = art.texture
+	assert_not_null(tex, "CardArt has no texture")
+	var box_aspect := 992.0 / 410.0
+	var tex_aspect := float(tex.get_width()) / float(tex.get_height())
+	assert_true(absf(box_aspect - tex_aspect) < 0.01,
+		"card box aspect %f does not match the texture's %f" % [box_aspect, tex_aspect])
+	inst.free()
+
+
+func test_banner_box_matches_the_banner_art_aspect() -> void:
+	var scene := load(_POPUP_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	var banner := inst.find_child("TitleBanner", true, false) as TextureRect
+	assert_not_null(banner, "popup is missing TitleBanner")
+	var tex: Texture2D = banner.texture
+	assert_not_null(tex, "TitleBanner has no texture")
+	var box := banner.custom_minimum_size
+	assert_true(box.x > 0.0 and box.y > 0.0, "TitleBanner has no reserved box")
+	var box_aspect := box.x / box.y
+	var tex_aspect := float(tex.get_width()) / float(tex.get_height())
+	assert_true(absf(box_aspect - tex_aspect) < 0.05,
+		"banner box aspect %f does not match the art's %f" % [box_aspect, tex_aspect])
+	inst.free()

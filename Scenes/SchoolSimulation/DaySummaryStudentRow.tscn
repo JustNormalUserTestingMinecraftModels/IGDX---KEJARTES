@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
 
 [node name="DaySummaryStudentRow" type="Control"]
-custom_minimum_size = Vector2(992, 405)
+custom_minimum_size = Vector2(992, 410)
 layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("1_row")
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_card_bg")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 0
 
 [node name="Avatar" parent="." instance=ExtResource("3_avatar")]
 layout_mode = 1

@@ -33,12 +33,12 @@ grow_vertical = 2
 theme_override_constants/separation = 28
 
 [node name="TitleBanner" type="TextureRect" parent="DimOverlay/Content"]
-custom_minimum_size = Vector2(932, 287)
+custom_minimum_size = Vector2(932, 286)
 layout_mode = 2
 size_flags_horizontal = 4
 texture = ExtResource("3_title")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 0
 
 [node name="RowsScroll" type="ScrollContainer" parent="DimOverlay/Content"]
 layout_mode = 2

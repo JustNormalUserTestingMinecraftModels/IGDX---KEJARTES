@@ -238,23 +238,22 @@ func test_pending_gain_is_grade_aware() -> void:
 
 
 ## The card art is a 1080x1080 texture whose visible card occupies only
-## x 211-868, y 34-1046 -- the rest is transparent padding. The TextureRect
-## is square (988x988) so the art keeps its designed proportions, which puts
-## the card's content at local x 193-794, y 31-957. Anything the player is
-## meant to read must sit inside that box, not on the padding.
-const _CARD_LEFT := 193.0
-const _CARD_RIGHT := 794.0
-const _CARD_TOP := 31.0
-const _CARD_BOTTOM := 957.0
-const _ROW_HEIGHT := 127.0
+## x 211-868, y 34-1046. Rendered into a square 1394x1394 TextureRect, that
+## content lands at local x 272-1120, y 44-1350 -- and on screen at x 115-964,
+## y 202-1508, which is the mockup's card position (115-964, 203-1507).
+const _CARD_LEFT := 272.0
+const _CARD_RIGHT := 1120.0
+const _CARD_TOP := 44.0
+const _CARD_BOTTOM := 1350.0
+const _ROW_HEIGHT := 180.0
 
 
 func test_rows_are_inset_within_the_card_content() -> void:
 	var rows := _screen.get_node_or_null("Penjadwalan/TextureRect/Rows") as Control
 	assert_true(rows != null, "Rows must exist")
-	assert_eq(rows.offset_left, 263.0, "rows are inset 11.7% from the card's left edge")
-	assert_eq(rows.offset_right, 724.0, "rows are inset 11.7% from the card's right edge")
-	assert_eq(rows.offset_top, 72.0, "the first row starts 4.4% down the card")
+	assert_eq(rows.offset_left, 375.0, "rows are inset 12.1% from the card's left edge")
+	assert_eq(rows.offset_right, 1024.0, "rows are inset 11.3% from the card's right edge")
+	assert_eq(rows.offset_top, 102.0, "the first row starts 4.4% down the card")
 	assert_true(rows.offset_left > _CARD_LEFT and rows.offset_right < _CARD_RIGHT,
 		"the row block must sit inside the card art, not over its transparent padding")
 	assert_true(rows.offset_top > _CARD_TOP,
@@ -263,15 +262,15 @@ func test_rows_are_inset_within_the_card_content() -> void:
 
 func test_row_separation_matches_the_mockup_pitch() -> void:
 	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
-	assert_eq(rows.get_theme_constant("separation"), 30,
-		"a 127px row plus 30px separation reproduces the mockup's 157px pitch")
+	assert_eq(rows.get_theme_constant("separation"), 40,
+		"a 180px row plus 40px separation reproduces the mockup's 220px pitch")
 
 
 func test_back_arrow_sits_inside_the_card() -> void:
 	var back := _screen.get_node_or_null("Penjadwalan/TextureRect/PopupBack") as Control
 	assert_true(back != null, "PopupBack must exist")
-	assert_eq(back.offset_left, 236.0, "back arrow x, 7.2% in from the card's left")
-	assert_eq(back.offset_top, 821.0, "back arrow y, centred 92% down the card")
+	assert_eq(back.offset_left, 329.0, "back arrow x, 6.7% in from the card's left")
+	assert_eq(back.offset_top, 1170.0, "back arrow y, its art centred 92.3% down the card")
 	assert_true(back.offset_left >= _CARD_LEFT,
 		"the back arrow must not hang off the card's left padding")
 	assert_true(back.offset_bottom <= _CARD_BOTTOM,
@@ -296,15 +295,19 @@ func test_the_row_stack_fits_inside_the_card() -> void:
 		"the row stack ends at %d, past the card's bottom at %d" % [int(stack_bottom), int(_CARD_BOTTOM)])
 
 
-## The card is a 1080x1080 texture. Rendering it into a non-square rect
-## stretches the art -- it was 988x1600, squashing the card to aspect 0.40
-## against the mockup's 0.65, which is what made every row look cramped.
-func test_card_texture_rect_is_square() -> void:
+## The mockup's card spans 78.7% of the 1080px screen width (x 115-964). Rendering
+## the card texture into too small a rect makes a correct layout look cramped at
+## every level, because every child inherits the shortfall.
+func test_card_is_rendered_at_the_mockup_scale() -> void:
 	var card := _screen.get_node_or_null("Penjadwalan/TextureRect") as TextureRect
 	assert_true(card != null, "the popup's card TextureRect must exist")
 	var w: float = card.offset_right - card.offset_left
 	var h: float = card.offset_bottom - card.offset_top
-	assert_eq(w, h, "the card rect must be square so the 1080x1080 art is not stretched")
+	assert_eq(w, h, "the card rect must stay square so the 1080x1080 art is not stretched")
+	assert_eq(w, 1394.0, "the card rect is 1394px so its content renders 850px wide")
+	# Mockup card centre is 105px above screen centre, not centred.
+	var centre_y: float = (card.offset_top + card.offset_bottom) / 2.0
+	assert_eq(centre_y, -105.0, "the card sits 105px above screen centre, as in the mockup")
 
 
 # ----------------------------------------------------------------- helper

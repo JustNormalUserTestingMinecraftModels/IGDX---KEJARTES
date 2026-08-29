@@ -32,6 +32,23 @@ static var TARGET_KENAIKAN_KELAS_7 := 15.0
 static var TARGET_KENAIKAN_KELAS_8 := 30.0
 static var TARGET_KENAIKAN_KELAS_9 := 40.0
 
+## Berapa minggu satu kelas berlangsung — ini "waktu yang kamu punya"
+## untuk mengejar target di atas. Menambah minggu = lebih gampang
+## (lebih banyak kesempatan belajar); mengurangi = lebih sulit.
+## Pasangan angka ini dengan TARGET_KENAIKAN di atas: keduanya bareng
+## yang menentukan satu kelas terasa adil atau mustahil.
+##
+## Harus angka bulat (tanpa titik) — ini jumlah minggu, bukan persentase.
+##
+## Perlu diperhatikan: dua hari libur nasional terkunci di minggu 3
+## (Hari Kemerdekaan RI) dan minggu 6 (Maulid Nabi Muhammad SAW) — lihat
+## HOLIDAYS di atur_jadwal.gd. Keduanya TIDAK ikut bergeser kalau kamu
+## mengubah angka di sini, karena itu tanggal kalender asli. Jadi kalau
+## kelasnya kamu panjangkan, minggu-minggu tambahannya tidak ada liburnya.
+static var JUMLAH_MINGGU_KELAS_7 := 6
+static var JUMLAH_MINGGU_KELAS_8 := 12
+static var JUMLAH_MINGGU_KELAS_9 := 16
+
 
 ## ═══════════════════════════════════════════════════════════
 ## HARI BELAJAR BIASA

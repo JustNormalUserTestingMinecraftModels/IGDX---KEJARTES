@@ -28,10 +28,9 @@ var grade7_student_ids: Array = []
 
 func get_max_weeks() -> int:
 	match current_grade:
-		7: return 6
-		8: return 12
-		9: return 16
-		_: return 6
+		8: return Balance.JUMLAH_MINGGU_KELAS_8
+		9: return Balance.JUMLAH_MINGGU_KELAS_9
+		_: return Balance.JUMLAH_MINGGU_KELAS_7
 
 func get_grade_from_week() -> int:
 	return current_grade

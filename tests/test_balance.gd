@@ -17,6 +17,9 @@ const _EXPECTED: Dictionary = {
 	"TARGET_KENAIKAN_KELAS_7": 15.0,
 	"TARGET_KENAIKAN_KELAS_8": 30.0,
 	"TARGET_KENAIKAN_KELAS_9": 40.0,
+	"JUMLAH_MINGGU_KELAS_7": 6,
+	"JUMLAH_MINGGU_KELAS_8": 12,
+	"JUMLAH_MINGGU_KELAS_9": 16,
 	# Hari belajar
 	"BELAJAR_POIN_KELAS_7": 3.0,
 	"BELAJAR_POIN_KELAS_8": 2.5,
@@ -149,11 +152,11 @@ func test_every_field_exists_and_holds_its_shipped_value() -> void:
 				% [field_name, str(expected), str(actual)])
 
 
-## 104 numbers is the whole extraction surface. If the count drifts, either a
+## 107 numbers is the whole extraction surface. If the count drifts, either a
 ## field was added without a test entry or one was quietly dropped.
 func test_the_expected_table_covers_every_number() -> void:
-	assert_eq(_EXPECTED.size(), 104,
-		"the extraction covers 104 numbers; update this test deliberately if that changes")
+	assert_eq(_EXPECTED.size(), 107,
+		"the extraction covers 107 numbers; update this test deliberately if that changes")
 
 
 ## The point of Balance.gd is that a tester can change a number and feel it.
@@ -202,3 +205,13 @@ func test_no_balance_literals_left_in_extracted_functions() -> void:
 				assert_true(allowed.has(m.get_string()),
 					"%s() still has the hardcoded number %s -- it belongs in Balance.gd"
 						% [fname, m.get_string()])
+
+
+func test_grade_week_counts_come_from_balance() -> void:
+	var original_grade: int = GameState.current_grade
+	for grade in [7, 8, 9]:
+		GameState.current_grade = grade
+		var expected: int = _EXPECTED["JUMLAH_MINGGU_KELAS_%d" % grade]
+		assert_eq(GameState.get_max_weeks(), expected,
+			"Kelas %d must run for Balance.JUMLAH_MINGGU_KELAS_%d weeks" % [grade, grade])
+	GameState.current_grade = original_grade

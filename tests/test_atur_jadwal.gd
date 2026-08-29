@@ -239,6 +239,60 @@ func test_pending_gain_is_grade_aware() -> void:
 
 # ----------------------------------------------------------------- helper
 
+## The card art is a 1080x1080 texture whose visible card occupies only
+## x 211-868, y 34-1046 -- the rest is transparent padding. Stretched into the
+## 988x1600 TextureRect that becomes local x 193-794, y 50-1550. Anything the
+## player is meant to read must sit inside that box, not on the padding.
+const _CARD_LEFT := 193.0
+const _CARD_RIGHT := 794.0
+const _CARD_TOP := 50.0
+const _CARD_BOTTOM := 1550.0
+
+
+func test_rows_are_inset_within_the_card_content() -> void:
+	var rows := _screen.get_node_or_null("Penjadwalan/TextureRect/Rows") as Control
+	assert_true(rows != null, "Rows must exist")
+	assert_eq(rows.offset_left, 265.0, "rows are inset 12% from the card's left edge")
+	assert_eq(rows.offset_right, 727.0, "rows are inset 11% from the card's right edge")
+	assert_eq(rows.offset_top, 125.0, "the first row starts 5% down the card")
+	assert_true(rows.offset_left > _CARD_LEFT and rows.offset_right < _CARD_RIGHT,
+		"the row block must sit inside the card art, not over its transparent padding")
+
+
+func test_row_separation_matches_the_mockup_pitch() -> void:
+	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
+	assert_eq(rows.get_theme_constant("separation"), 45,
+		"a 200px row plus 45px separation reproduces the mockup's 245px pitch")
+
+
+func test_back_arrow_sits_inside_the_card() -> void:
+	var back := _screen.get_node_or_null("Penjadwalan/TextureRect/PopupBack") as Control
+	assert_true(back != null, "PopupBack must exist")
+	assert_true(back.offset_left >= _CARD_LEFT,
+		"the back arrow must not hang off the card's left padding")
+	assert_true(back.offset_bottom <= _CARD_BOTTOM,
+		"the back arrow must stay above the card's bottom edge")
+	assert_eq(back.offset_left, 236.0, "back arrow x, 7.2% in from the card's left")
+	assert_eq(back.offset_top, 1370.0, "back arrow y, 87.5% down the card")
+
+
+## 125 + 5*200 + 4*45 = 1305, which must clear the card's bottom edge with room
+## for the arrow beneath. If a later change alters row height or separation,
+## this is the test that catches the stack overflowing the card.
+func test_the_row_stack_fits_inside_the_card() -> void:
+	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
+	var row_count := 0
+	for child in rows.get_children():
+		if child is ActivityRow:
+			row_count += 1
+	var sep: int = rows.get_theme_constant("separation")
+	var stack_bottom: float = rows.offset_top + row_count * 200.0 + (row_count - 1) * sep
+	assert_true(stack_bottom <= _CARD_BOTTOM,
+		"the row stack ends at %d, past the card's bottom at %d" % [int(stack_bottom), int(_CARD_BOTTOM)])
+
+
+# ----------------------------------------------------------------- helper
+
 ## Copied verbatim from tests/test_main_menu.gd.
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:

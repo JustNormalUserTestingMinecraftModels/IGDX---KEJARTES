@@ -194,3 +194,48 @@ func test_avatar_scene_clips_and_wears_the_frame_variation() -> void:
 	assert_not_null(inst.get_node_or_null("Art"),
 		"avatar is missing its Art TextureRect")
 	inst.free()
+
+
+const _STAT_ROW_SCENE := "res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn"
+
+
+func test_stat_row_maps_each_key_to_its_mockup_icon() -> void:
+	assert_eq(DaySummaryStatRow.ICON_FOR["akademis"],
+		"res://Assets/Images/DaySummary/icon_akademis.png")
+	assert_eq(DaySummaryStatRow.ICON_FOR["seni_budaya"],
+		"res://Assets/Images/DaySummary/icon_seni.png")
+	assert_eq(DaySummaryStatRow.ICON_FOR["olahraga"],
+		"res://Assets/Images/DaySummary/icon_olahraga.png")
+
+
+## The mockup prints "+12/65" -- delta over target, with an explicit
+## plus. A bare "12/65" or a "+12/65.0" both miss it.
+func test_stat_row_formats_delta_over_target() -> void:
+	assert_eq(DaySummaryStatRow.format_value(12.0, 65.0), "+12/65")
+	assert_eq(DaySummaryStatRow.format_value(9.0, 65.0), "+9/65")
+	assert_eq(DaySummaryStatRow.format_value(0.0, 65.0), "+0/65")
+
+
+## A stat can fall (an event or a lost minigame), and "+-3" would be
+## nonsense. The sign must follow the number.
+func test_stat_row_formats_a_loss_without_a_stray_plus() -> void:
+	assert_eq(DaySummaryStatRow.format_value(-3.0, 65.0), "-3/65")
+
+
+func test_stat_row_scene_wears_the_theme_and_has_no_overrides() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	assert_not_null(scene, "DaySummaryStatRow.tscn failed to load")
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	var track := inst.get_node_or_null("Track")
+	assert_not_null(track, "stat row is missing its Track")
+	assert_eq(track.theme_type_variation, &"DaySummaryStatTrack",
+		"Track is not wearing DaySummaryStatTrack")
+	var value := inst.get_node_or_null("Value")
+	assert_not_null(value, "stat row is missing its Value label")
+	assert_eq(value.theme_type_variation, &"DaySummaryStat",
+		"Value is not wearing DaySummaryStat")
+	assert_not_null(inst.get_node_or_null("Icon"), "stat row is missing Icon")
+	assert_not_null(inst.get_node_or_null("Chevron"),
+		"stat row is missing Chevron")
+	inst.free()

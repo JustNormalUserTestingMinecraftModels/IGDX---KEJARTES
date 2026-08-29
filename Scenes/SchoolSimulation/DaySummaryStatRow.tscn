@@ -1,0 +1,69 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/SchoolSimulation/DaySummaryStatRow.gd" id="1_statrow"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="2_chevron"]
+
+[node name="DaySummaryStatRow" type="Control"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_statrow")
+
+[node name="Track" type="ProgressBar" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 0.0
+offset_top = -18.0
+offset_right = -200.0
+offset_bottom = 18.0
+anchor_right = 1.0
+grow_vertical = 2
+theme_type_variation = &"DaySummaryStatTrack"
+show_percentage = false
+value = 100.0
+
+[node name="Icon" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -35.0
+offset_right = 80.0
+offset_bottom = 35.0
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Chevron" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 67.0
+offset_top = -29.0
+offset_right = 107.0
+offset_bottom = 29.0
+grow_vertical = 2
+texture = ExtResource("2_chevron")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -25.0
+offset_bottom = 25.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_type_variation = &"DaySummaryStat"
+text = "+12/65"
+horizontal_alignment = 2
+vertical_alignment = 1

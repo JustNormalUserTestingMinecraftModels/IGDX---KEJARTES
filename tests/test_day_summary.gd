@@ -94,7 +94,7 @@ func test_theme_declares_every_day_summary_variation() -> void:
 	var theme := load(_THEME_PATH) as Theme
 	assert_not_null(theme, "baked theme failed to load")
 	for name in _DAY_VARIATIONS:
-		assert_true(theme.has_type(name),
+		assert_true(theme.get_type_list().has(name),
 			"theme is missing variation %s -- did you rebake?" % name)
 		assert_eq(theme.get_type_variation_base(name), _DAY_VARIATIONS[name],
 			"%s is based on the wrong type" % name)

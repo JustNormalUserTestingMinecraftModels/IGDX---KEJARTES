@@ -13,10 +13,8 @@ signal summary_dismissed
 @export var student_row_scene: PackedScene
 
 @onready var dim_overlay: Panel = $DimOverlay
-@onready var card_panel: PanelContainer = $DimOverlay/MarginContainer/CardPanel
-@onready var title_label: Label = $DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer/TitleLabel
-@onready var rows_container: VBoxContainer = $DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer/RowsContainer
-@onready var hint_label: Label = $DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer/HintLabel
+@onready var content: VBoxContainer = $DimOverlay/Content
+@onready var rows_container: VBoxContainer = $DimOverlay/Content/RowsScroll/RowsContainer
 
 var is_dismissable: bool = false
 
@@ -38,7 +36,6 @@ func setup_summary(
 	students: Array[StudentData],
 	build_rows: bool = true
 ) -> void:
-	title_label.text = "%s - Rangkuman Hari" % day_name.to_upper()
 	AudioDirector.play_sfx(&"popup_open")
 
 	# Clear old rows
@@ -67,18 +64,17 @@ func setup_summary(
 
 	# Animate in
 	dim_overlay.self_modulate.a = 0.0
-	card_panel.modulate.a = 0.0
-	card_panel.scale = Vector2(0.85, 0.85)
+	content.modulate.a = 0.0
+	content.scale = Vector2(0.85, 0.85)
 
 	# Set pivot dynamically for scale bounce
-	var vp_size = get_viewport_rect().size
-	card_panel.pivot_offset = Vector2((vp_size.x - 72) / 2.0, (vp_size.y - 96) / 2.0)
+	content.pivot_offset = get_viewport_rect().size / 2.0
 
 	var t := Juice.tokens()
 	var tw = create_tween().set_parallel(true)
 	tw.tween_property(dim_overlay, "self_modulate:a", 1.0, t.dur_normal)
-	tw.tween_property(card_panel, "modulate:a", 1.0, t.dur_fast)
-	tw.tween_property(card_panel, "scale", Vector2(1.0, 1.0), t.dur_normal) \
+	tw.tween_property(content, "modulate:a", 1.0, t.dur_fast)
+	tw.tween_property(content, "scale", Vector2(1.0, 1.0), t.dur_normal) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await tw.finished
 
@@ -145,7 +141,7 @@ func _input(event: InputEvent) -> void:
 func dismiss() -> void:
 	var t := Juice.tokens()
 	var tw = create_tween().set_parallel(true)
-	tw.tween_property(card_panel, "modulate:a", 0.0, t.dur_fast)
+	tw.tween_property(content, "modulate:a", 0.0, t.dur_fast)
 	tw.tween_property(dim_overlay, "self_modulate:a", 0.0, t.dur_normal)
 	await tw.finished
 	summary_dismissed.emit()

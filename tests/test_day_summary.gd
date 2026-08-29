@@ -331,3 +331,53 @@ func test_row_scene_declares_no_theme_overrides() -> void:
 		"font override found -- use a ThemeFactory variation")
 	assert_false(src.contains("theme_override_styles"),
 		"stylebox override found -- use a ThemeFactory variation")
+
+
+const _POPUP_SCENE := "res://Scenes/SchoolSimulation/DaySummaryPopup.tscn"
+const _POPUP_SCRIPT := "res://Scripts/SchoolSimulation/DaySummaryPopup.gd"
+
+
+func test_popup_shows_the_banner_art_not_a_text_title() -> void:
+	var scene := load(_POPUP_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	var banner := inst.find_child("TitleBanner", true, false) as TextureRect
+	assert_not_null(banner, "popup is missing its TitleBanner")
+	assert_not_null(banner.texture, "TitleBanner has no texture")
+	# custom_minimum_size, not size: the scene is instantiated but never
+	# enters a tree here, so no container sort has run and `size` is
+	# still zero. This suite must not await one (no coroutines).
+	assert_eq(banner.custom_minimum_size.x, 932.0,
+		"banner width drifted from the mockup")
+	inst.free()
+
+
+## The mockup puts the banner and the cards straight on the scrim. A
+## surviving Card panel would draw a white slab behind both.
+func test_popup_has_no_card_panel_behind_the_stack() -> void:
+	var src := FileAccess.get_file_as_string(_POPUP_SCENE)
+	assert_false(src.contains("theme_type_variation = &\"Card\""),
+		"the popup still carries a Card panel behind the stack")
+
+
+## Up to six students can move in a day; six 405px cards overflow 1920px.
+func test_popup_scrolls_its_rows() -> void:
+	var scene := load(_POPUP_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	var scroll := inst.find_child("RowsScroll", true, false)
+	assert_true(scroll is ScrollContainer,
+		"rows must live in a ScrollContainer -- six cards overflow the screen")
+	var rows := inst.find_child("RowsContainer", true, false)
+	assert_not_null(rows, "popup is missing RowsContainer")
+	inst.free()
+
+
+## SchoolDay hands the popup a real summary and expects the rows built
+## from it (Task 8 removes the reparenting that used to bypass this).
+func test_popup_still_exposes_its_contract() -> void:
+	var src := FileAccess.get_file_as_string(_POPUP_SCRIPT)
+	assert_true(src.contains("signal summary_dismissed"),
+		"summary_dismissed is gone -- SchoolDay awaits it")
+	assert_true(src.contains("func setup_summary("),
+		"setup_summary is gone")
+	assert_true(src.contains("func dismiss()"), "dismiss is gone")

@@ -1,6 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
+
 [ext_resource type="Script" path="res://Scripts/SchoolSimulation/DaySummaryPopup.gd" id="1_popup"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_row_scene"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/title_daily_results.png" id="3_title"]
 
 [node name="DaySummaryPopup" type="Control"]
 layout_mode = 3
@@ -21,55 +23,31 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"Scrim"
 
-[node name="MarginContainer" type="MarginContainer" parent="DimOverlay"]
+[node name="Content" type="VBoxContainer" parent="DimOverlay"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 36
-theme_override_constants/margin_top = 48
-theme_override_constants/margin_right = 36
-theme_override_constants/margin_bottom = 48
+theme_override_constants/separation = 28
 
-[node name="CardPanel" type="PanelContainer" parent="DimOverlay/MarginContainer"]
+[node name="TitleBanner" type="TextureRect" parent="DimOverlay/Content"]
+custom_minimum_size = Vector2(932, 287)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("3_title")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RowsScroll" type="ScrollContainer" parent="DimOverlay/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_type_variation = &"Card"
+horizontal_scroll_mode = 0
 
-[node name="MarginContainer" type="MarginContainer" parent="DimOverlay/MarginContainer/CardPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 28
-
-[node name="VBoxContainer" type="VBoxContainer" parent="DimOverlay/MarginContainer/CardPanel/MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="TitleLabel" type="Label" parent="DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_type_variation = &"H2Label"
-text = "SENIN - RANGKUMAN HARI"
-horizontal_alignment = 1
-
-[node name="RowsContainer" type="VBoxContainer" parent="DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer"]
+[node name="RowsContainer" type="VBoxContainer" parent="DimOverlay/Content/RowsScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 16
-
-[node name="DaySummaryStudentRow1" parent="DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer/RowsContainer" instance=ExtResource("2_row_scene")]
-layout_mode = 2
-
-[node name="DaySummaryStudentRow2" parent="DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer/RowsContainer" instance=ExtResource("2_row_scene")]
-layout_mode = 2
-
-[node name="HintLabel" type="Label" parent="DimOverlay/MarginContainer/CardPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Tap untuk lanjut →"
-horizontal_alignment = 1
+theme_override_constants/separation = 56

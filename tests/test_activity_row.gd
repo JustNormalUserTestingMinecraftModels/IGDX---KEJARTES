@@ -138,20 +138,20 @@ func test_refresh_is_idempotent() -> void:
 		"refresh must clear old chips before adding new ones")
 
 
-## Geometry pinned to the mockup's scanlines. Each row is ONE bordered
-## container 101px tall; the icon draws on its grey and a darker pill is
-## inset to the right. The name label overlaps the container's bottom edge
-## and hangs into the 26px band beneath, which is why the row is 127 total.
-const _ROW_HEIGHT := 127.0
-const _CONTAINER_HEIGHT := 101.0
-const _ICON_REGION := 151.0
-const _PILL_RIGHT_INSET := 15.0
-const _PILL_V_INSET := 18.0
+## Geometry pinned to the mockup's scanlines (penjadwalan_mockup.png, 1080x1920).
+## Each row is ONE bordered container 141px tall; the icon draws on its grey and
+## a darker pill is inset to the right. The name label overlaps the container's
+## bottom edge and hangs into the 39px band beneath, so the row is 180 total.
+const _ROW_HEIGHT := 180.0
+const _CONTAINER_HEIGHT := 141.0
+const _ICON_REGION := 214.0
+const _PILL_RIGHT_INSET := 17.0
+const _PILL_V_INSET := 23.0
 
 
 func test_row_is_a_fixed_height_band() -> void:
 	assert_eq(_row.custom_minimum_size.y, _ROW_HEIGHT,
-		"the row's height is fixed at the mockup's 127px")
+		"the row's height is fixed at the mockup's 180px")
 	assert_true(not (_row.size_flags_vertical & Control.SIZE_EXPAND),
 		"the row must not expand vertically, or its parent VBox stretches it out of proportion")
 
@@ -161,7 +161,7 @@ func test_row_is_one_bordered_container() -> void:
 	assert_true(box != null, "the row must hold its contents in a single Container panel")
 	assert_eq(box.theme_type_variation, &"PreviewRow",
 		"the container wears the bordered-grey PreviewRow variation")
-	assert_eq(box.offset_bottom, _CONTAINER_HEIGHT, "the container is 101px tall")
+	assert_eq(box.offset_bottom, _CONTAINER_HEIGHT, "the container is 141px tall")
 	assert_eq(box.anchor_right, 1.0, "the container spans the row's full width")
 	assert_true(_row.get_node_or_null("IconBox") == null,
 		"the old detached IconBox is gone -- the icon now draws on the container")
@@ -171,7 +171,7 @@ func test_icon_sits_inside_the_container_left_region() -> void:
 	var icon := _row.get_node_or_null("Container/Icon") as TextureRect
 	assert_true(icon != null, "Icon must live inside the Container")
 	assert_true(icon.offset_right <= _ICON_REGION,
-		"the icon must stay inside the 151px region left of the pill")
+		"the icon must stay inside the 214px region left of the pill")
 
 
 func test_pill_is_inset_into_the_container() -> void:

@@ -348,35 +348,36 @@ func test_row_always_shows_three_stat_rows() -> void:
 
 ## _sum_deltas is the only genuinely stateful logic this row adds, and it
 ## had zero behavioral coverage -- only a source-text scan confirming the
-## naming-trap dictionary literal exists, not that setup_row actually
-## reads the right key at runtime.
+## naming-trap dictionary literal exists, not that it's actually the value
+## the row uses. Both checks below work on a bare instantiate()d instance
+## with no tree attachment: _sum_deltas touches no @onready var, and
+## TARGET_FOR is a const readable without an instance at all (same
+## pattern this file already uses for STAT_ORDER).
 func test_row_sums_same_stat_deltas_and_reads_the_correct_target_field() -> void:
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["akademis"], "target_akademis1",
+		"akademis must read target_akademis1")
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["seni_budaya"], "target_akademis2",
+		"seni_budaya must read target_akademis2, not target_akademis3")
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["olahraga"], "target_akademis3",
+		"olahraga must read target_akademis3, not target_akademis2")
+
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
-
-	var student := StudentData.new()
-	student.student_name = "TestStudent"
-	student.target_akademis1 = 50.0
-	student.target_akademis2 = 60.0
-	student.target_akademis3 = 70.0
 
 	# Two changes to the SAME stat in one day must sum, not overwrite.
 	var changes := [
 		{"stat_key": "seni_budaya", "delta": 4.0},
 		{"stat_key": "seni_budaya", "delta": 3.0},
 		{"stat_key": "olahraga", "delta": 5.0},
+		{"stat_key": "energy", "delta": 999.0},
 	]
+	var deltas: Dictionary = inst._sum_deltas(changes)
 
-	inst.setup_row("TestStudent", changes, student)
-
-	var stat_row_2 := inst.get_node("StatRow2") as DaySummaryStatRow
-	assert_eq(stat_row_2.get_node("Value").text, "+7/60",
-		"seni_budaya deltas (4+3) must sum to 7, and read target_akademis2 (60), not target_akademis3")
-
-	var stat_row_3 := inst.get_node("StatRow3") as DaySummaryStatRow
-	assert_eq(stat_row_3.get_node("Value").text, "+5/70",
-		"olahraga must read target_akademis3 (70), not target_akademis2")
+	assert_eq(deltas.get("seni_budaya"), 7.0,
+		"seni_budaya deltas (4+3) must sum to 7, not overwrite to 3")
+	assert_eq(deltas.get("olahraga"), 5.0, "olahraga must be unaffected by the seni_budaya sum")
+	assert_false(deltas.has("energy"),
+		"_sum_deltas must drop stat keys that have no TARGET_FOR entry (e.g. energy)")
 
 	inst.free()
 

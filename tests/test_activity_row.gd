@@ -46,7 +46,7 @@ func test_row_meets_the_minimum_touch_target() -> void:
 
 
 func test_row_has_the_nodes_the_script_reaches_for() -> void:
-	for path in ["IconBox/Icon", "Pill", "Pill/Chips", "NameLabel"]:
+	for path in ["Container/Icon", "Container/Pill", "Container/Pill/Chips", "NameLabel"]:
 		assert_true(_row.get_node_or_null(path) != null,
 			"ActivityRow.tscn must declare the node: " + path)
 
@@ -54,15 +54,15 @@ func test_row_has_the_nodes_the_script_reaches_for() -> void:
 func test_name_label_uses_the_outlined_variation() -> void:
 	var label := _row.get_node_or_null("NameLabel") as Label
 	assert_true(label != null, "NameLabel must exist")
-	assert_eq(label.theme_type_variation, &"CardSectionLabel",
-		"the category name is white-on-art, so it needs the outlined variation")
+	assert_eq(label.theme_type_variation, &"PreviewRowLabel",
+		"the category name is white-on-art, so it needs the row label's outlined variation")
 
 
 func test_pill_uses_the_preview_pill_variation() -> void:
-	var pill := _row.get_node_or_null("Pill") as PanelContainer
+	var pill := _row.get_node_or_null("Container/Pill") as PanelContainer
 	assert_true(pill != null, "Pill must exist")
 	assert_eq(pill.theme_type_variation, &"PreviewPill",
-		"the pill must wear the PreviewPill variation, not a theme_override")
+		"a skill row's pill must wear the PreviewPill variation, not a theme_override")
 
 
 func test_theme_declares_the_new_variations() -> void:
@@ -112,7 +112,7 @@ func test_refresh_writes_the_skill_gain_into_a_chip() -> void:
 	var student := {"hobby_category": "Akademik", "name": "Uji"}
 	_row.category = "Akademis"
 	_row.refresh(student, 7, 50.0)
-	var chips := _row.get_node("Pill/Chips")
+	var chips := _row.get_node("Container/Pill/Chips")
 	assert_true(chips.get_child_count() >= 1, "refresh must populate at least one chip")
 
 
@@ -120,7 +120,7 @@ func test_refresh_builds_two_chips_for_libur() -> void:
 	var student := {"hobby_category": "Akademik", "name": "Uji"}
 	_row.category = "Istirahat"
 	_row.refresh(student, 7, 0.0)
-	var chips := _row.get_node("Pill/Chips")
+	var chips := _row.get_node("Container/Pill/Chips")
 	assert_eq(chips.get_child_count(), 2,
 		"Libur shows an energy chip and a mood chip")
 
@@ -131,54 +131,95 @@ func test_refresh_is_idempotent() -> void:
 	var student := {"hobby_category": "Akademik", "name": "Uji"}
 	_row.category = "Istirahat"
 	_row.refresh(student, 7, 0.0)
-	var after_first := _row.get_node("Pill/Chips").get_child_count()
+	var after_first := _row.get_node("Container/Pill/Chips").get_child_count()
 	_row.refresh(student, 7, 0.0)
 	_row.refresh(student, 7, 0.0)
-	assert_eq(_row.get_node("Pill/Chips").get_child_count(), after_first,
+	assert_eq(_row.get_node("Container/Pill/Chips").get_child_count(), after_first,
 		"refresh must clear old chips before adding new ones")
 
 
-## Geometry pinned to the mockup. The row is a fixed-height band: a near-square
-## icon box, a gap, the pill, and a name-label strip beneath. Letting the row
-## expand vertically (the old behaviour) stretched it to 264px and turned the
-## icon box into a tall rectangle nothing in the mockup resembles.
-const _ROW_HEIGHT := 200.0
-const _PILL_HEIGHT := 148.0
-const _ICON_BOX_WIDTH := 133.0
-const _PILL_LEFT := 149.0
+## Geometry pinned to the mockup's scanlines. Each row is ONE bordered
+## container 101px tall; the icon draws on its grey and a darker pill is
+## inset to the right. The name label overlaps the container's bottom edge
+## and hangs into the 26px band beneath, which is why the row is 127 total.
+const _ROW_HEIGHT := 127.0
+const _CONTAINER_HEIGHT := 101.0
+const _ICON_REGION := 151.0
+const _PILL_RIGHT_INSET := 15.0
+const _PILL_V_INSET := 18.0
 
 
 func test_row_is_a_fixed_height_band() -> void:
 	assert_eq(_row.custom_minimum_size.y, _ROW_HEIGHT,
-		"the row's height is fixed at the mockup's 200px")
-	assert_true(_row.size_flags_vertical != Control.SIZE_EXPAND_FILL,
+		"the row's height is fixed at the mockup's 127px")
+	assert_true(not (_row.size_flags_vertical & Control.SIZE_EXPAND),
 		"the row must not expand vertically, or its parent VBox stretches it out of proportion")
 
 
-func test_icon_box_is_the_mockup_square() -> void:
-	var box := _row.get_node_or_null("IconBox") as Control
-	assert_true(box != null, "IconBox must exist")
-	_row.size = Vector2(462, _ROW_HEIGHT)
-	assert_eq(box.size.x, _ICON_BOX_WIDTH, "icon box is 133px wide")
-	assert_eq(box.size.y, _PILL_HEIGHT, "icon box is 148px tall, matching the pill")
+func test_row_is_one_bordered_container() -> void:
+	var box := _row.get_node_or_null("Container") as Panel
+	assert_true(box != null, "the row must hold its contents in a single Container panel")
+	assert_eq(box.theme_type_variation, &"PreviewRow",
+		"the container wears the bordered-grey PreviewRow variation")
+	assert_eq(box.offset_bottom, _CONTAINER_HEIGHT, "the container is 101px tall")
+	assert_eq(box.anchor_right, 1.0, "the container spans the row's full width")
+	assert_true(_row.get_node_or_null("IconBox") == null,
+		"the old detached IconBox is gone -- the icon now draws on the container")
 
 
-func test_pill_starts_after_the_icon_gap_and_matches_its_height() -> void:
-	var pill := _row.get_node_or_null("Pill") as Control
-	assert_true(pill != null, "Pill must exist")
-	assert_eq(pill.offset_left, _PILL_LEFT,
-		"the pill starts at 149 -- a 133px icon box plus the mockup's 16px gap")
-	assert_eq(pill.offset_bottom, _PILL_HEIGHT, "the pill is 148px tall")
-	assert_eq(pill.anchor_right, 1.0, "the pill stretches to the row's right edge")
+func test_icon_sits_inside_the_container_left_region() -> void:
+	var icon := _row.get_node_or_null("Container/Icon") as TextureRect
+	assert_true(icon != null, "Icon must live inside the Container")
+	assert_true(icon.offset_right <= _ICON_REGION,
+		"the icon must stay inside the 151px region left of the pill")
 
 
-func test_name_label_sits_in_the_band_below_the_pill() -> void:
+func test_pill_is_inset_into_the_container() -> void:
+	var pill := _row.get_node_or_null("Container/Pill") as PanelContainer
+	assert_true(pill != null, "Pill must live inside the Container")
+	assert_eq(pill.offset_left, _ICON_REGION, "the pill starts where the icon region ends")
+	assert_eq(pill.offset_right, -_PILL_RIGHT_INSET, "the pill is inset from the container's right edge")
+	assert_eq(pill.offset_top, _PILL_V_INSET, "the pill is inset from the container's top")
+	assert_eq(pill.offset_bottom, -_PILL_V_INSET, "the pill is inset from the container's bottom")
+
+
+## The bar was 281x1 px: size_flags_vertical defaulted to SHRINK_BEGIN (0)
+## and its minimum size is (1,1), so it collapsed into a hairline across the
+## pill's top instead of filling behind the number.
+func test_stat_bar_fills_the_pill_vertically() -> void:
+	var bar := _row.get_node_or_null("Container/Pill/StatBar") as StatBar
+	assert_true(bar != null, "skill rows keep their StatBar")
+	assert_true(bar.size_flags_vertical & Control.SIZE_FILL,
+		"the StatBar must fill its parent vertically, or it collapses to a 1px line")
+
+
+func test_name_label_overlaps_the_container_bottom() -> void:
 	var label := _row.get_node_or_null("NameLabel") as Label
 	assert_true(label != null, "NameLabel must exist")
-	assert_eq(label.offset_top, -(_ROW_HEIGHT - _PILL_HEIGHT),
-		"the label occupies the 52px band under the pill")
+	assert_eq(label.theme_type_variation, &"PreviewRowLabel",
+		"the row label has its own bigger, harder-rimmed variation")
+	assert_true(label.offset_top < -(_ROW_HEIGHT - _CONTAINER_HEIGHT),
+		"the label starts above the container's bottom edge, overlapping it as in the mockup")
 	assert_eq(label.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT,
 		"the mockup right-aligns the name under the pill's right edge")
+
+
+## Rows with no target (Wirausaha, Libur) keep the same node tree but draw no
+## inset pill -- their chips sit straight on the container's grey.
+func test_non_skill_rows_flatten_the_pill_and_drop_the_bar() -> void:
+	var scene: PackedScene = load(_SCENE_PATH)
+	var flat := scene.instantiate() as ActivityRow
+	flat.is_skill_row = false
+	flat.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(flat)
+	track(flat)
+	var pill := flat.get_node_or_null("Container/Pill") as PanelContainer
+	assert_true(pill != null, "the Pill node still exists on a non-skill row")
+	assert_eq(pill.theme_type_variation, &"PreviewPillFlat",
+		"a non-skill row's pill must draw nothing")
+	assert_true(flat.get_node_or_null("Container/Pill/StatBar") == null,
+		"a non-skill row has no target, so no StatBar")
+	flat.queue_free()
 
 
 ## The mockup's rows are one bordered grey container with a darker pill inset

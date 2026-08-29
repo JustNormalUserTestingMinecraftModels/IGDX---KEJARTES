@@ -4,46 +4,56 @@
 [ext_resource type="Script" path="res://Scripts/UI/StatBar.gd" id="2_statbar"]
 
 [node name="ActivityRow" type="Button"]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(200, 127)
 size_flags_horizontal = 3
 flat = true
 script = ExtResource("1_row")
 category = "Akademis"
 display_name = "Akademik"
 
-[node name="IconBox" type="PanelContainer" parent="."]
+[node name="Container" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 101.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"PreviewRow"
+
+[node name="Icon" type="TextureRect" parent="Container"]
 layout_mode = 1
 anchors_preset = 0
-offset_right = 133.0
-offset_bottom = 148.0
-mouse_filter = 2
-theme_type_variation = &"PreviewPill"
-
-[node name="Icon" type="TextureRect" parent="IconBox"]
-layout_mode = 2
-custom_minimum_size = Vector2(64, 64)
+offset_left = 34.0
+offset_top = 9.0
+offset_right = 118.0
+offset_bottom = 93.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Pill" type="PanelContainer" parent="."]
+[node name="Pill" type="PanelContainer" parent="Container"]
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = 15
 anchor_right = 1.0
-offset_left = 149.0
-offset_bottom = 148.0
+anchor_bottom = 1.0
+offset_left = 151.0
+offset_top = 18.0
+offset_right = -15.0
+offset_bottom = -18.0
 grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"PreviewPill"
 
-[node name="StatBar" type="ProgressBar" parent="Pill"]
+[node name="StatBar" type="ProgressBar" parent="Container/Pill"]
 layout_mode = 2
+size_flags_vertical = 1
 mouse_filter = 2
 show_percentage = false
 script = ExtResource("2_statbar")
 category = "Akademis"
 
-[node name="Chips" type="HBoxContainer" parent="Pill"]
+[node name="Chips" type="HBoxContainer" parent="Container/Pill"]
 layout_mode = 2
 mouse_filter = 2
 alignment = 2
@@ -57,11 +67,11 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -340.0
-offset_top = -52.0
+offset_top = -40.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
-theme_type_variation = &"CardSectionLabel"
+theme_type_variation = &"PreviewRowLabel"
 text = "Akademik"
 horizontal_alignment = 2
 vertical_alignment = 1

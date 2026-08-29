@@ -2,13 +2,14 @@
 class_name ActivityRow
 extends Button
 
-## One row of the Penjadwalan popup: an icon, a pill of preview numbers,
-## and the category name. The whole row is the Button -- the player taps
-## anywhere on it to assign that activity to the selected day.
+## One row of the Penjadwalan popup: a bordered container carrying the
+## category icon on its left, a darker pill inset to its right holding the
+## preview numbers, and the category name overlapping the bottom edge. The
+## whole row is the Button -- the player taps anywhere on it to assign that
+## activity to the selected day.
 ##
-## The three skill rows also carry a StatBar showing progress toward the
-## student's target; Wirausaha and Libur have no target, so their pill
-## holds only chips.
+## Rows with a target (the three skills) draw the inset pill and a StatBar
+## behind the numbers. Wirausaha and Libur have neither.
 
 ## One of: Akademis, SeniBudaya, Olahraga, Wirausaha, Istirahat.
 ## Drives both the preview arithmetic and the StatBar's tint -- without the
@@ -17,7 +18,7 @@ extends Button
 	set(value):
 		category = value
 		if is_inside_tree():
-			var bar := get_node_or_null("Pill/StatBar") as StatBar
+			var bar := get_node_or_null("Container/Pill/StatBar") as StatBar
 			if bar:
 				bar.category = value
 
@@ -35,7 +36,7 @@ extends Button
 	set(value):
 		icon_texture = value
 		if is_inside_tree():
-			var icon := get_node_or_null("IconBox/Icon") as TextureRect
+			var icon := get_node_or_null("Container/Icon") as TextureRect
 			if icon:
 				icon.texture = value
 
@@ -45,25 +46,30 @@ extends Button
 @export var mood_icon: Texture2D
 @export var money_icon: Texture2D
 
-## Only the three skill rows (Akademis/SeniBudaya/Olahraga) have a target to
-## progress toward. Set false per-instance for Wirausaha/Istirahat, which
-## removes the StatBar entirely rather than just hiding it -- refresh()
-## must never try to animate a bar that has nothing to show.
-@export var has_progress_bar: bool = true
+## True for the three rows with a target to progress toward (Akademis,
+## SeniBudaya, Olahraga). Those get a StatBar and a drawn inset pill. The
+## other two -- Wirausaha and Istirahat -- have neither: their chips sit
+## straight on the container's grey, matching the mockup. One flag because
+## the two always move together; there is no row with a bar but no pill.
+@export var is_skill_row: bool = true
 
 
 func _ready() -> void:
 	var label := get_node_or_null("NameLabel") as Label
 	if label:
 		label.text = display_name
-	var icon := get_node_or_null("IconBox/Icon") as TextureRect
+	var icon := get_node_or_null("Container/Icon") as TextureRect
 	if icon:
 		icon.texture = icon_texture
-	var bar := get_node_or_null("Pill/StatBar") as StatBar
-	if bar:
-		if has_progress_bar:
+	var pill := get_node_or_null("Container/Pill") as PanelContainer
+	var bar := get_node_or_null("Container/Pill/StatBar") as StatBar
+	if is_skill_row:
+		if bar:
 			bar.category = category
-		else:
+	else:
+		if pill:
+			pill.theme_type_variation = &"PreviewPillFlat"
+		if bar:
 			bar.get_parent().remove_child(bar)
 			bar.free()
 
@@ -80,7 +86,7 @@ func _icon_for(key: String) -> Texture2D:
 ## StatBar fill on skill rows and is ignored on Wirausaha/Libur, which have
 ## no target to progress toward.
 func refresh(student: Dictionary, grade: int, progress_percent: float) -> void:
-	var chips := get_node_or_null("Pill/Chips")
+	var chips := get_node_or_null("Container/Pill/Chips")
 	if chips == null:
 		return
 
@@ -107,7 +113,7 @@ func refresh(student: Dictionary, grade: int, progress_percent: float) -> void:
 		chip_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		chips.add_child(chip_label)
 
-	var bar := get_node_or_null("Pill/StatBar") as StatBar
+	var bar := get_node_or_null("Container/Pill/StatBar") as StatBar
 	if bar:
 		# Only the three skill rows carry a bar; the others left it out.
 		bar.set_stat(progress_percent)

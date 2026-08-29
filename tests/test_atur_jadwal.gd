@@ -153,7 +153,7 @@ func test_only_skill_rows_carry_a_stat_bar() -> void:
 	for child in root.get_children():
 		if not (child is ActivityRow):
 			continue
-		var bar := child.get_node_or_null("Pill/StatBar")
+		var bar := child.get_node_or_null("Container/Pill/StatBar")
 		var is_skill: bool = child.category in ["Akademis", "SeniBudaya", "Olahraga"]
 		if is_skill:
 			assert_true(bar != null, child.category + " must keep its StatBar")
@@ -238,21 +238,23 @@ func test_pending_gain_is_grade_aware() -> void:
 
 
 ## The card art is a 1080x1080 texture whose visible card occupies only
-## x 211-868, y 34-1046 -- the rest is transparent padding. Stretched into the
-## 988x1600 TextureRect that becomes local x 193-794, y 50-1550. Anything the
-## player is meant to read must sit inside that box, not on the padding.
+## x 211-868, y 34-1046 -- the rest is transparent padding. The TextureRect
+## is square (988x988) so the art keeps its designed proportions, which puts
+## the card's content at local x 193-794, y 31-957. Anything the player is
+## meant to read must sit inside that box, not on the padding.
 const _CARD_LEFT := 193.0
 const _CARD_RIGHT := 794.0
-const _CARD_TOP := 50.0
-const _CARD_BOTTOM := 1550.0
+const _CARD_TOP := 31.0
+const _CARD_BOTTOM := 957.0
+const _ROW_HEIGHT := 127.0
 
 
 func test_rows_are_inset_within_the_card_content() -> void:
 	var rows := _screen.get_node_or_null("Penjadwalan/TextureRect/Rows") as Control
 	assert_true(rows != null, "Rows must exist")
-	assert_eq(rows.offset_left, 265.0, "rows are inset 12% from the card's left edge")
-	assert_eq(rows.offset_right, 727.0, "rows are inset 11% from the card's right edge")
-	assert_eq(rows.offset_top, 125.0, "the first row starts 5% down the card")
+	assert_eq(rows.offset_left, 263.0, "rows are inset 11.7% from the card's left edge")
+	assert_eq(rows.offset_right, 724.0, "rows are inset 11.7% from the card's right edge")
+	assert_eq(rows.offset_top, 72.0, "the first row starts 4.4% down the card")
 	assert_true(rows.offset_left > _CARD_LEFT and rows.offset_right < _CARD_RIGHT,
 		"the row block must sit inside the card art, not over its transparent padding")
 	assert_true(rows.offset_top > _CARD_TOP,
@@ -261,22 +263,22 @@ func test_rows_are_inset_within_the_card_content() -> void:
 
 func test_row_separation_matches_the_mockup_pitch() -> void:
 	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
-	assert_eq(rows.get_theme_constant("separation"), 45,
-		"a 200px row plus 45px separation reproduces the mockup's 245px pitch")
+	assert_eq(rows.get_theme_constant("separation"), 30,
+		"a 127px row plus 30px separation reproduces the mockup's 157px pitch")
 
 
 func test_back_arrow_sits_inside_the_card() -> void:
 	var back := _screen.get_node_or_null("Penjadwalan/TextureRect/PopupBack") as Control
 	assert_true(back != null, "PopupBack must exist")
+	assert_eq(back.offset_left, 236.0, "back arrow x, 7.2% in from the card's left")
+	assert_eq(back.offset_top, 821.0, "back arrow y, centred 92% down the card")
 	assert_true(back.offset_left >= _CARD_LEFT,
 		"the back arrow must not hang off the card's left padding")
 	assert_true(back.offset_bottom <= _CARD_BOTTOM,
 		"the back arrow must stay above the card's bottom edge")
-	assert_eq(back.offset_left, 236.0, "back arrow x, 7.2% in from the card's left")
-	assert_eq(back.offset_top, 1370.0, "back arrow y, 87.5% down the card")
 
 
-## 125 + 5*200 + 4*45 = 1305, which must clear the card's bottom edge with room
+## 72 + 5*127 + 4*30 = 827, which must clear the card's bottom edge with room
 ## for the arrow beneath. If a later change alters row height or separation,
 ## this is the test that catches the stack overflowing the card.
 func test_the_row_stack_fits_inside_the_card() -> void:
@@ -287,10 +289,22 @@ func test_the_row_stack_fits_inside_the_card() -> void:
 		if child is ActivityRow:
 			row_count += 1
 			row_height = (child as ActivityRow).custom_minimum_size.y
+	assert_eq(row_height, _ROW_HEIGHT, "each row is the mockup's 127px tall")
 	var sep: int = rows.get_theme_constant("separation")
 	var stack_bottom: float = rows.offset_top + row_count * row_height + (row_count - 1) * sep
 	assert_true(stack_bottom <= _CARD_BOTTOM,
 		"the row stack ends at %d, past the card's bottom at %d" % [int(stack_bottom), int(_CARD_BOTTOM)])
+
+
+## The card is a 1080x1080 texture. Rendering it into a non-square rect
+## stretches the art -- it was 988x1600, squashing the card to aspect 0.40
+## against the mockup's 0.65, which is what made every row look cramped.
+func test_card_texture_rect_is_square() -> void:
+	var card := _screen.get_node_or_null("Penjadwalan/TextureRect") as TextureRect
+	assert_true(card != null, "the popup's card TextureRect must exist")
+	var w: float = card.offset_right - card.offset_left
+	var h: float = card.offset_bottom - card.offset_top
+	assert_eq(w, h, "the card rect must be square so the 1080x1080 art is not stretched")
 
 
 # ----------------------------------------------------------------- helper

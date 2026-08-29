@@ -249,6 +249,15 @@ func assert_ne(actual: Variant, not_expected: Variant, msg: String = "") -> void
 		_message = msg if msg else "Expected value != %s" % str(not_expected)
 
 
+func assert_not_null(value: Variant, msg: String = "") -> void:
+	_assertion_count += 1
+	if _failed:
+		return
+	if value == null:
+		_failed = true
+		_message = msg if msg else "Expected non-null value"
+
+
 func assert_gt(actual: Variant, threshold: Variant, msg: String = "") -> void:
 	_assertion_count += 1
 	if _failed:

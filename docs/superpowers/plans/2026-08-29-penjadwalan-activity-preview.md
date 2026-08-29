@@ -32,7 +32,8 @@ These four answers came from the user and are binding:
 Two further notes from investigation:
 
 - The mockup's numbers (`+19`, `+100.000`) are **placeholder art**, not targets. Real values: a grade-7 study day gains 3 (6 on specialty); Wirausaha pays 120–320G.
-- The mockup's card art (yellow-green with a purple border) was not supplied as an asset. The popup keeps its existing `stickynotes.png` background. Swapping the card art is a separate future change.
+- The mockup's card art was supplied by the user and lives at `Assets/Images/UI/penjadwalan_card_bg.png` (1080×1080, rounded yellow-green gradient card with a purple border, transparent padding around the card — content bounding box roughly 657×1012 inside the canvas). This replaces the popup's current background — which is `paper.png` (ext id `8_03syl` in `atur_jadwal.tscn`), **not** `stickynotes.png` as an earlier draft of this plan mistakenly said. `stickynotes.png` is the literal sticky-note texture on the five day-of-week buttons (`Senin`…`Jumat`) elsewhere in this same scene and is untouched by this plan.
+- The mockup's return arrow is **not** a new asset — the user pointed at the existing `Assets/Images/Shop/return.png` (512×512, solid white silhouette on transparent, already used as the Koperasi screen's back button via a plain `TextureButton`). The popup's back control follows that exact precedent instead of a themed text glyph.
 
 ## Displayed Values
 
@@ -848,7 +849,8 @@ git commit -m "feat(atur-jadwal): add the ActivityRow preview widget"
 Swap the five ad-hoc buttons for five `ActivityRow` instances and wire them up.
 
 **Files:**
-- Modify: `Scenes/AturJadwal/atur_jadwal.tscn:372-473` (the whole `Penjadwalan/TextureRect` subtree)
+- Create: `Assets/Images/UI/penjadwalan_card_bg.png` (already supplied by the user, copied in ahead of this task — this step just wires the scene to it)
+- Modify: `Scenes/AturJadwal/atur_jadwal.tscn:372-473` (the whole `Penjadwalan/TextureRect` subtree, plus one new `ext_resource` line)
 - Modify: `Scripts/AturJadwal/atur_jadwal.gd:52-60` (`@onready` refs), `:206-219` (`_tint_popup_activity_buttons`), `:913-923` (`_connect_activity_buttons`), `:999-1008` (`_update_popup_stats`)
 - Test: `tests/test_atur_jadwal.gd`
 
@@ -922,12 +924,30 @@ test_run(suite="atur_jadwal")
 
 Expected: FAIL — there is no `Rows` node yet.
 
-- [ ] **Step 3: Rebuild the popup subtree in the scene**
+- [ ] **Step 3: Swap the popup's background art**
 
-In `Scenes/AturJadwal/atur_jadwal.tscn`, delete the five buttons and three progress bars under `Penjadwalan/TextureRect` (lines 388–473) and replace them with:
+In `Scenes/AturJadwal/atur_jadwal.tscn`, add a new `ext_resource` for the card art (place it alongside the other `ext_resource` declarations near the top of the file):
 
 ```
-Penjadwalan/TextureRect          (unchanged: the sticky-note background)
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
+```
+
+Change `Penjadwalan/TextureRect`'s `texture` property (currently line 385) from the old background to the new one:
+
+```
+texture = ExtResource("9_cardbg")
+```
+
+Leave `8_03syl` (`paper.png`) declared but now unused by this node — a later cleanup pass can remove the dead `ext_resource` line; do not touch `3_03syl` (`stickynotes.png`), which is a different texture used by the five day-of-week buttons elsewhere in this same scene.
+
+The new asset is 1080×1080 with the card content inset inside transparent padding (bounding box roughly 657×1012). Keep the node's existing `expand_mode = 1` so the padding scales along with the art rather than needing a crop.
+
+- [ ] **Step 4: Rebuild the popup subtree in the scene**
+
+Delete the five buttons and three progress bars under `Penjadwalan/TextureRect` (lines 388–473) and replace them with:
+
+```
+Penjadwalan/TextureRect          (now penjadwalan_card_bg.png, from Step 3)
 ├── Rows                 VBoxContainer   anchors_preset=15, margins inset ~80px,
 │   │                                    theme_override_constants/separation = 24
 │   ├── RowAkademik      ActivityRow  category="Akademis",   display_name="Akademik",
@@ -940,15 +960,18 @@ Penjadwalan/TextureRect          (unchanged: the sticky-note background)
 │   │                                 icon=stat_energy.png,     DELETE Pill/StatBar
 │   └── RowLibur         ActivityRow  category="Istirahat",  display_name="Libur",
 │                                     icon=stat_mood.png,       DELETE Pill/StatBar
-└── PopupBack            Button       bottom-left, custom_minimum_size=(96, 96),
-                                      theme_type_variation="SecondaryButton", text="←"
+└── PopupBack            TextureButton  bottom-left, custom_minimum_size=(96, 96),
+                                        texture_normal=res://Assets/Images/Shop/return.png,
+                                        ignore_texture_size=true, stretch_mode=0
 ```
+
+`PopupBack` mirrors the existing `BackButton` pattern already used on the Koperasi screen (`Scenes/Koperasi/koprasi.tscn:70-78`) — a plain `TextureButton` with `texture_normal` pointed at the shared return-arrow art, `ignore_texture_size = true`, `stretch_mode = 0`. This is not a `theme_override_*` (`texture_normal` is a native `TextureButton` property) and needs no `ThemeFactory` variation, consistent with how the existing back button is built. Do not create a new arrow asset.
 
 Set each row's `category` on the instance, not by editing `ActivityRow.tscn`.
 
 Icon paths, all under `res://Assets/Images/StudentCard/`: `stat_akademis.png`, `stat_senibudaya.png`, `stat_olahraga.png`, `stat_energy.png`, `stat_mood.png`. These already ship in the deep purple the mockup uses — no new art is needed.
 
-- [ ] **Step 4: Update the script's node references**
+- [ ] **Step 5: Update the script's node references**
 
 In `Scripts/AturJadwal/atur_jadwal.gd`, replace the popup `@onready` block (was lines 52–60):
 
@@ -959,7 +982,7 @@ In `Scripts/AturJadwal/atur_jadwal.gd`, replace the popup `@onready` block (was 
 @onready var popup_back_btn = $Penjadwalan/TextureRect/PopupBack
 ```
 
-- [ ] **Step 5: Replace the three functions that drove the old buttons**
+- [ ] **Step 6: Replace the three functions that drove the old buttons**
 
 Replace `_tint_popup_activity_buttons` (was lines 206–219) — the rows carry their own art now, so the per-button tint is gone. Delete the function and its call site in `_ready` (was line 157).
 
@@ -997,7 +1020,7 @@ func _update_popup_stats():
 
 Note the roster's key mapping, which does not line up with its names: `akademis1` is academic, `akademis2` is **seni budaya**, `akademis3` is **olahraga**. Getting this wrong is the single most common bug in this codebase.
 
-- [ ] **Step 6: Run the tests to verify they pass**
+- [ ] **Step 7: Run the tests to verify they pass**
 
 ```
 filesystem_manage(op="scan")
@@ -1006,7 +1029,7 @@ test_run(suite="atur_jadwal")
 
 Expected: PASS, including the pre-existing `test_scene_has_no_theme_overrides` and `test_interactive_controls_meet_the_minimum_touch_target`.
 
-- [ ] **Step 7: Run the full suite**
+- [ ] **Step 8: Run the full suite**
 
 ```
 filesystem_manage(op="scan")
@@ -1015,7 +1038,7 @@ test_run()
 
 Expected: only the known `audio_director` failure.
 
-- [ ] **Step 8: Verify it visually in the running game**
+- [ ] **Step 9: Verify it visually in the running game**
 
 Do not click through the game to reach this state — seed it:
 
@@ -1040,10 +1063,11 @@ project_manage(op="stop")
 
 Expected: `{category: "Wirausaha", mood_cost: 6, energy_cost: 10}` — the shape unchanged, the values now from `Balance.gd`.
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add Scenes/AturJadwal/atur_jadwal.tscn Scripts/AturJadwal/atur_jadwal.gd \
+        Assets/Images/UI/penjadwalan_card_bg.png Assets/Images/UI/penjadwalan_card_bg.png.import \
         tests/test_atur_jadwal.gd
 git commit -m "feat(atur-jadwal): rebuild the Penjadwalan popup around ActivityRow"
 ```
@@ -1054,7 +1078,7 @@ git commit -m "feat(atur-jadwal): rebuild the Penjadwalan popup around ActivityR
 
 **Spec coverage.** Each of the four binding decisions maps to a task. (1) "Progress bar stays, label shows the delta" — Task 3's `refresh()` sets both the `StatBar` fill and the chip text, and Task 4's `test_only_skill_rows_carry_a_stat_bar` pins which rows keep a bar. (2) "Wire to Balance" — Task 1 builds the helper, Task 2 deletes the shadow constants and has a test asserting they stay gone. (3) "No pre-rolling" — no task touches `StudentData.apply_jadwal_activity`; `ActivityPreview` is documented as returning an estimate. (4) "Colours deferred" — no task modifies `design_tokens.tres`.
 
-**Placeholder scan.** No TBDs. Every code step carries the actual code. The two visual steps (Task 3 Step 5, Task 4 Step 3) give explicit node trees with types, variations, and asset paths rather than "build the layout".
+**Placeholder scan.** No TBDs. Every code step carries the actual code. The visual steps (Task 3 Step 5, Task 4 Steps 3–4) give explicit node trees with types, variations, and asset paths rather than "build the layout".
 
 **Type consistency.** `ActivityPreview.chips_for()` returns `Array[Dictionary]` with keys `icon`/`text` in Task 1; Task 3's `refresh()` reads exactly `chip["icon"]` and `chip["text"]`. `ActivityRow.refresh(student, grade, progress_percent)` is declared in Task 3 and called with three arguments in Task 4. `energy_cost`/`mood_cost` are defined in Task 1 and called in Task 2. `category` values are the same five keys throughout.
 

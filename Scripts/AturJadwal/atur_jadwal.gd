@@ -50,14 +50,8 @@ var _holiday_active: bool = false
 
 # --- Penjadwalan Popup ---
 @onready var penjadwalan_popup = $Penjadwalan
-@onready var popup_akademik_btn = $Penjadwalan/TextureRect/Akademik
-@onready var popup_olahraga_btn = $Penjadwalan/TextureRect/Olahraga
-@onready var popup_senibudaya_btn = $Penjadwalan/TextureRect/SeniBudaya
-@onready var popup_dayoff_btn = $Penjadwalan/TextureRect/Libur
-@onready var popup_wirausaha_btn = $Penjadwalan/TextureRect/Wirausaha
-@onready var popup_akademik_bar = $Penjadwalan/TextureRect/Akademik/ProgressBar
-@onready var popup_olahraga_bar = $Penjadwalan/TextureRect/Olahraga/ProgressBar2
-@onready var popup_senibudaya_bar = $Penjadwalan/TextureRect/SeniBudaya/ProgressBar3
+@onready var popup_rows = $Penjadwalan/TextureRect/Rows
+@onready var popup_back_btn = $Penjadwalan/TextureRect/PopupBack
 
 # --- Tutorial 3 Phase Setup ---
 @export_group("Tutorial")
@@ -144,7 +138,6 @@ func _setup_gameplay():
 	if penjadwalan_popup:
 		penjadwalan_popup.hide()
 	_connect_activity_buttons()
-	_tint_popup_activity_buttons()
 
 	_connect_day_button(senin_btn, "Senin")
 	_connect_day_button(selasa_btn, "Selasa")
@@ -192,21 +185,6 @@ func _setup_gameplay():
 	else:
 		# Baru balik dari student_list, belum jadwalkan Senin
 		_setup_phase2_tutorial()
-
-## The Penjadwalan popup's five pick buttons keep their category-coded
-## identity via self_modulate instead of a per-node StyleBoxFlat.
-func _tint_popup_activity_buttons():
-	var tokens := _get_tokens()
-	if popup_akademik_btn:
-		popup_akademik_btn.self_modulate = tokens.category_color("Akademis")
-	if popup_olahraga_btn:
-		popup_olahraga_btn.self_modulate = tokens.category_color("Olahraga")
-	if popup_senibudaya_btn:
-		popup_senibudaya_btn.self_modulate = tokens.category_color("SeniBudaya")
-	if popup_dayoff_btn:
-		popup_dayoff_btn.self_modulate = tokens.category_color("Istirahat")
-	if popup_wirausaha_btn:
-		popup_wirausaha_btn.self_modulate = tokens.category_color("Wirausaha")
 
 func _populate_default_tutorial_steps():
 	if tutorial_phase1_steps.is_empty():
@@ -900,16 +878,13 @@ func _proceed_start_week():
 # ================= PENJADWALAN POPUP =================
 
 func _connect_activity_buttons():
-	if popup_akademik_btn and not popup_akademik_btn.pressed.is_connected(_on_activity_selected.bind("Akademis")):
-		popup_akademik_btn.pressed.connect(_on_activity_selected.bind("Akademis"))
-	if popup_olahraga_btn and not popup_olahraga_btn.pressed.is_connected(_on_activity_selected.bind("Olahraga")):
-		popup_olahraga_btn.pressed.connect(_on_activity_selected.bind("Olahraga"))
-	if popup_senibudaya_btn and not popup_senibudaya_btn.pressed.is_connected(_on_activity_selected.bind("SeniBudaya")):
-		popup_senibudaya_btn.pressed.connect(_on_activity_selected.bind("SeniBudaya"))
-	if popup_dayoff_btn and not popup_dayoff_btn.pressed.is_connected(_on_activity_selected.bind("Istirahat")):
-		popup_dayoff_btn.pressed.connect(_on_activity_selected.bind("Istirahat"))
-	if popup_wirausaha_btn and not popup_wirausaha_btn.pressed.is_connected(_on_activity_selected.bind("Wirausaha")):
-		popup_wirausaha_btn.pressed.connect(_on_activity_selected.bind("Wirausaha"))
+	for row in popup_rows.get_children():
+		if not (row is ActivityRow):
+			continue
+		if not row.pressed.is_connected(_on_activity_selected.bind(row.category)):
+			row.pressed.connect(_on_activity_selected.bind(row.category))
+	if popup_back_btn and not popup_back_btn.pressed.is_connected(_hide_penjadwalan_popup):
+		popup_back_btn.pressed.connect(_hide_penjadwalan_popup)
 
 func _show_penjadwalan_popup():
 	if not penjadwalan_popup:
@@ -976,16 +951,20 @@ func _on_blur_overlay_input(event: InputEvent):
 	elif event is InputEventScreenTouch and event.pressed:
 		_hide_penjadwalan_popup()
 
+## The three skill rows show progress toward that subject's target; the
+## other two have no target and ignore the percentage they are handed.
 func _update_popup_stats():
 	var student = GameState.selected_student
 	if student.is_empty():
 		return
-	if popup_akademik_bar:
-		popup_akademik_bar.set_stat(_percent(student.get("akademis1", 50.0), student.get("target_akademis1", 65.0)))
-	if popup_senibudaya_bar:
-		popup_senibudaya_bar.set_stat(_percent(student.get("akademis2", 50.0), student.get("target_akademis2", 65.0)))
-	if popup_olahraga_bar:
-		popup_olahraga_bar.set_stat(_percent(student.get("akademis3", 50.0), student.get("target_akademis3", 65.0)))
+	var progress := {
+		"Akademis": _percent(student.get("akademis1", 50.0), student.get("target_akademis1", 65.0)),
+		"SeniBudaya": _percent(student.get("akademis2", 50.0), student.get("target_akademis2", 65.0)),
+		"Olahraga": _percent(student.get("akademis3", 50.0), student.get("target_akademis3", 65.0)),
+	}
+	for row in popup_rows.get_children():
+		if row is ActivityRow:
+			row.refresh(student, GameState.current_grade, progress.get(row.category, 0.0))
 
 func _get_day_button(day_name: String) -> Control:
 	match day_name:

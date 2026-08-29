@@ -45,6 +45,12 @@ extends Button
 @export var mood_icon: Texture2D
 @export var money_icon: Texture2D
 
+## Only the three skill rows (Akademis/SeniBudaya/Olahraga) have a target to
+## progress toward. Set false per-instance for Wirausaha/Istirahat, which
+## removes the StatBar entirely rather than just hiding it -- refresh()
+## must never try to animate a bar that has nothing to show.
+@export var has_progress_bar: bool = true
+
 
 func _ready() -> void:
 	var label := get_node_or_null("NameLabel") as Label
@@ -55,7 +61,11 @@ func _ready() -> void:
 		icon.texture = icon_texture
 	var bar := get_node_or_null("Pill/StatBar") as StatBar
 	if bar:
-		bar.category = category
+		if has_progress_bar:
+			bar.category = category
+		else:
+			bar.get_parent().remove_child(bar)
+			bar.free()
 
 
 func _icon_for(key: String) -> Texture2D:

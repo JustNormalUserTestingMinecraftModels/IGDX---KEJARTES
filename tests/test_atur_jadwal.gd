@@ -108,8 +108,9 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		"BGHari/Senin", "BGHari/Selasa", "BGHari/Rabu", "BGHari/Kamis", "BGHari/Jumat",
 		"StartWeek", "BackButton",
 		"Peringatan/TextureRect/ButtonYes", "Peringatan/TextureRect/ButtonNo",
-		"Penjadwalan/TextureRect/Akademik", "Penjadwalan/TextureRect/Olahraga",
-		"Penjadwalan/TextureRect/SeniBudaya", "Penjadwalan/TextureRect/Libur",
+		"Penjadwalan/TextureRect/Rows/RowAkademik", "Penjadwalan/TextureRect/Rows/RowSeniBudaya",
+		"Penjadwalan/TextureRect/Rows/RowAtletik", "Penjadwalan/TextureRect/Rows/RowWirausaha",
+		"Penjadwalan/TextureRect/Rows/RowLibur", "Penjadwalan/TextureRect/PopupBack",
 	]
 	for p in paths:
 		var b := _screen.get_node_or_null(p) as Control
@@ -131,17 +132,56 @@ func test_day_buttons_are_tinted_via_category_color() -> void:
 		"day button tint must come from DesignTokens.category_color()")
 
 
-func test_popup_category_bars_are_statbars() -> void:
+## The popup's five picks are ActivityRows now: icon, preview pill, name.
+func test_popup_has_five_activity_rows() -> void:
+	var root := _screen.get_node_or_null("Penjadwalan/TextureRect/Rows")
+	assert_true(root != null, "the popup must hold its rows in a Rows container")
+	var found := {}
+	for child in root.get_children():
+		if child is ActivityRow:
+			found[child.category] = child
+	for category in ["Akademis", "SeniBudaya", "Olahraga", "Wirausaha", "Istirahat"]:
+		assert_true(found.has(category),
+			"the popup must offer an ActivityRow for " + category)
+	assert_eq(found.size(), 5, "exactly five activity rows, no more")
+
+
+## The three skill rows keep their progress-toward-target bar; the other two
+## have no target, so they must not carry one.
+func test_only_skill_rows_carry_a_stat_bar() -> void:
+	var root := _screen.get_node("Penjadwalan/TextureRect/Rows")
+	for child in root.get_children():
+		if not (child is ActivityRow):
+			continue
+		var bar := child.get_node_or_null("Pill/StatBar")
+		var is_skill: bool = child.category in ["Akademis", "SeniBudaya", "Olahraga"]
+		if is_skill:
+			assert_true(bar != null, child.category + " must keep its StatBar")
+		else:
+			assert_true(bar == null, child.category + " has no target, so no StatBar")
+
+
+## The UI says "Atletik" where the code says "Olahraga". Keeping the two
+## apart is what lets the label change without breaking every category match.
+func test_display_names_are_indonesian_and_decoupled_from_category_keys() -> void:
+	var root := _screen.get_node("Penjadwalan/TextureRect/Rows")
 	var expected := {
-		"Penjadwalan/TextureRect/Akademik/ProgressBar": "Akademis",
-		"Penjadwalan/TextureRect/Olahraga/ProgressBar2": "Olahraga",
-		"Penjadwalan/TextureRect/SeniBudaya/ProgressBar3": "SeniBudaya",
+		"Akademis": "Akademik",
+		"SeniBudaya": "Seni Budaya",
+		"Olahraga": "Atletik",
+		"Wirausaha": "Wirausaha",
+		"Istirahat": "Libur",
 	}
-	for p in expected.keys():
-		var bar := _screen.get_node_or_null(p)
-		assert_true(bar is StatBar, "%s must be a StatBar" % p)
-		if bar is StatBar:
-			assert_eq(bar.category, expected[p], "%s category" % p)
+	for child in root.get_children():
+		if child is ActivityRow:
+			assert_eq(child.display_name, expected[child.category],
+				child.category + " must display as " + expected[child.category])
+
+
+func test_popup_still_has_a_back_button() -> void:
+	var back := _screen.get_node_or_null("Penjadwalan/TextureRect/PopupBack")
+	assert_true(back != null, "the popup needs its own back control")
+	assert_true(back is BaseButton, "the back control must be tappable")
 
 
 func test_bg_stat_bars_are_statbars() -> void:

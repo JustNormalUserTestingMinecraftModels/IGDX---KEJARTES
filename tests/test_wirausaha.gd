@@ -19,16 +19,26 @@ func _swap_roster(roster: Array) -> Array:
 	GameState.approved_students = roster
 	return original
 
+## The scheduling popup's five picks are ActivityRows now (see ActivityRow.gd)
+## rather than a node literally named "Wirausaha" -- find it by category.
 func test_schedule_popup_offers_wirausaha() -> void:
 	var scene := (load(_JADWAL_SCENE) as PackedScene).instantiate()
-	var btn := scene.find_child("Wirausaha", true, false)
-	assert_true(btn != null, "the scheduling popup must offer Wirausaha")
+	var rows := scene.get_node_or_null("Penjadwalan/TextureRect/Rows")
+	var found := false
+	if rows:
+		for row in rows.get_children():
+			if row is ActivityRow and row.category == "Wirausaha":
+				found = true
+	assert_true(found, "the scheduling popup must offer an ActivityRow for Wirausaha")
 	scene.free()
 
+## _connect_activity_buttons() binds every row dynamically via row.category
+## now, rather than one hardcoded bind("Wirausaha") call -- so Wirausaha's
+## wiring is covered by the same generic loop as every other category.
 func test_jadwal_script_binds_wirausaha() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
-	assert_true(src.contains("_on_activity_selected.bind(\"Wirausaha\")"),
-		"the Wirausaha button must be connected")
+	assert_true(src.contains("_on_activity_selected.bind(row.category)"),
+		"every ActivityRow, Wirausaha included, must connect via row.category")
 
 func test_day_categories_include_wirausaha() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")

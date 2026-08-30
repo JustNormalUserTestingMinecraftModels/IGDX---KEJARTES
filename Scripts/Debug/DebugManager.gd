@@ -132,7 +132,12 @@ func _ready() -> void:
 ## through AudioDirector.set_bus_volume() -- that would persist "off" to
 ## user://audio.cfg as if a player chose it. A real volume change (via the
 ## Settings screen) still unmutes and saves normally.
+##
+## Guarded to debug builds only: a real player's release export must never
+## boot muted, fullscreen, and with every tutorial silently disabled.
 func _apply_playtest_defaults() -> void:
+	if not OS.is_debug_build():
+		return
 	GameState.tutorials_bypassed = true
 	GameState.lobby_tutorial_completed = true
 	if "GameSettings" in get_node_or_null("/root"):

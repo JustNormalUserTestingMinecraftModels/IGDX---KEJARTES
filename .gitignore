@@ -5,3 +5,6 @@
 *.tmp
 export_presets.cfg
 .import/
+
+# Local git worktrees (subagent-driven-development isolation)
+.worktrees/

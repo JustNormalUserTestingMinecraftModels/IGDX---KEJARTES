@@ -115,6 +115,24 @@ func test_week_end_routing_is_unchanged() -> void:
 		"simulation results must still be written back before routing")
 
 
+func test_the_week_advances_by_loop_not_by_self_recursion() -> void:
+	# _run_day() used to end with `current_day += 1; _run_day()`. Because it
+	# awaits eight times, each recursive call nested a frame that never
+	# unwound -- depth grew with every day simulated, and a long session was
+	# observed parked in a "Stack overflow (stack size: 1024)" break.
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("while not is_skipped and current_day < DAYS.size():"),
+		"the week must advance in a loop so stack depth stays constant")
+	assert_true(src.contains("await _run_single_day()"),
+		"the loop must await exactly one day per iteration")
+	assert_true(src.contains("func _run_single_day() -> void:"),
+		"the per-day body must live in its own function")
+	# Exactly two occurrences may remain: the `func _run_day() -> void:`
+	# definition, and the single call from start_simulation().
+	assert_eq(src.count("_run_day()"), 2,
+		"_run_day() must be defined once and called once (from start_simulation); any third occurrence is a reintroduced self-call")
+
+
 func test_minigame_launch_path_is_untouched() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
 	# The container the minigames are spawned into, and the spawn itself.

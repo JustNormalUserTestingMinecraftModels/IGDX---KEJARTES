@@ -230,15 +230,27 @@ func start_simulation() -> void:
 	_run_day()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Runs one full day: shows the day screen, fills the progress bar,
-# triggers an optional minigame or event, then awaits click to continue to next day.
+# Drives the whole week. This must stay a loop: _run_single_day() awaits
+# eight times, so calling it recursively (as this function used to) leaves
+# every previous day's frame suspended on the stack. Depth then grows with
+# the number of days simulated and eventually overflows. As a loop, depth is
+# a constant 2 no matter how long the week runs.
 func _run_day() -> void:
-	if is_skipped:
-		return
-	if current_day >= DAYS.size():
+	while not is_skipped and current_day < DAYS.size():
+		await _run_single_day()
+		if is_skipped:
+			return
+		current_day += 1
+	if not is_skipped:
 		_on_week_complete()
-		return
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Runs one full day: shows the day screen, fills the progress bar,
+# triggers an optional minigame or event, then awaits click to continue.
+# Returning early (every `if is_skipped: return` below) hands control back to
+# the driver loop above, which re-checks is_skipped and stops.
+func _run_single_day() -> void:
 	var day_name = DAYS[current_day]
 
 	# ── Background color and pattern transitions ─────────────────────────────
@@ -354,9 +366,6 @@ func _run_day() -> void:
 	await fade_out.finished
 	if is_skipped:
 		return
-
-	current_day += 1
-	_run_day()
 
 func _await_click_to_continue() -> void:
 	if click_to_continue_label == null:

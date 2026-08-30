@@ -1172,7 +1172,7 @@ func _on_week_complete() -> void:
 		status_label.get_parent().add_child(wirausaha_chip)
 	back_button.show()
 
-	if GameState.current_grade == 7 and GameState.minggu_ke == 1:
+	if not GameState.tutorials_bypassed and GameState.current_grade == 7 and GameState.minggu_ke == 1:
 		await _show_end_simulation_tutorial()
 
 func skip_to_results() -> void:

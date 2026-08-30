@@ -133,6 +133,12 @@ func test_the_week_advances_by_loop_not_by_self_recursion() -> void:
 		"_run_day() must be defined once and called once (from start_simulation); any third occurrence is a reintroduced self-call")
 
 
+func test_debug_tutorial_bypass_skips_the_end_of_simulation_tutorial() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("if not GameState.tutorials_bypassed and GameState.current_grade == 7 and GameState.minggu_ke == 1:"),
+		"the debug menu's master tutorial-bypass flag must skip the end-of-week-1 tutorial too")
+
+
 func test_minigame_launch_path_is_untouched() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
 	# The container the minigames are spawned into, and the spawn itself.

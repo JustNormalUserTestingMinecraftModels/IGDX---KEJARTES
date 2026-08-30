@@ -81,6 +81,16 @@ between the chevron and the number and so crosses only the track.
 > fall over a day, and replaying that alongside three growing skill tracks
 > reads as a contradiction rather than as progress.
 
+> **Motion, needs bars (2026-08-31, supersedes the note above).** Every
+> progress bar on the card — daily or weekly — now animates with the same
+> ease-out (`Juice.fill_bar`, `Tween.EASE_OUT`/`TRANS_CUBIC`) motion the
+> stat tracks already used. The needs bars (#6–#9) rewind to
+> `current − today's delta` and grow back, exactly like the stat tracks and
+> exactly like the weekly card's needs bars already did (spec change
+> 2026-08-31, `ResultCheckup` week-card plan). The "contradiction" concern
+> above no longer applies once the weekly card set the precedent of a needs
+> bar animating in either direction.
+
 ### Glyphs, icons and text — not surfaces
 
 | Element | Rect (card-rel) | Colour | Note |

@@ -38,9 +38,9 @@ const GAIN_STEP := 0.08
 	$StatRow1, $StatRow2, $StatRow3,
 ]
 
-## Where the two needs bars stood on Monday morning, cached by
-## setup_week_row so play_week_gain can rewind and travel back. Unused on
-## the daily path, whose needs bars deliberately do not move.
+## Where the two needs bars stood before today's (or this week's) gain,
+## cached by setup_row/setup_week_row so play_gain can rewind and travel
+## back.
 var _energy_from: float = 0.0
 var _mood_from: float = 0.0
 
@@ -71,6 +71,10 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 	energy_delta_label.hide()
 	mood_delta_label.hide()
 
+	var needs_deltas := _sum_needs_deltas(changes)
+	_energy_from = clampf(energy_bar.value - needs_deltas.get("energy", 0.0), 0.0, 100.0)
+	_mood_from = clampf(mood_bar.value - needs_deltas.get("mood", 0.0), 0.0, 100.0)
+
 	_write_stat_rows(_sum_deltas(changes), student)
 
 
@@ -84,6 +88,19 @@ func _sum_deltas(changes: Array) -> Dictionary:
 		if not TARGET_FOR.has(key):
 			continue
 		out[key] = float(out.get(key, 0.0)) + float(ch.get("delta", 0.0))
+	return out
+
+
+## Same idea as _sum_deltas, but for the two needs bars -- energy or mood
+## can also move more than once in a day, and TARGET_FOR (the filter
+## _sum_deltas applies) only ever holds the three skills, so needs need
+## their own small sum rather than a shared one.
+func _sum_needs_deltas(changes: Array) -> Dictionary:
+	var out := {"energy": 0.0, "mood": 0.0}
+	for ch in changes:
+		var key := String(ch.get("stat_key", ""))
+		if key == "energy" or key == "mood":
+			out[key] = float(out[key]) + float(ch.get("delta", 0.0))
 	return out
 
 
@@ -158,32 +175,29 @@ func _show_needs_delta(label: Label, delta: float) -> void:
 	label.show()
 
 
-## Replay every stat track's growth for today, one row after the next.
-## `delay` shifts the whole card, so the popup can line each card's fill
+## Replay every stat track's growth for today (or this week), one row
+## after the next, and travel both needs bars from their opening value to
+## tonight's -- ease-out, like every other bar on this card. `delay`
+## shifts the whole card, so the popup/checkup can line each card's fill
 ## up with its own staggered entrance.
+##
+## Never awaited and never required: setup_row/setup_week_row have
+## already written every final value, so a caller that skips this sees a
+## correct, static card. Call setup_row or setup_week_row first -- this
+## reads the two openings they cached, which otherwise default to 0.
 func play_gain(delay: float = 0.0) -> void:
 	for i in stat_rows.size():
 		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP)
-
-
-## Replay a whole week: the three stat tracks grow the way play_gain
-## already grows them, and the two needs bars travel from Monday's value
-## to tonight's.
-##
-## The daily card deliberately does NOT animate its needs bars (spec
-## 2026-08-29-day-summary-mockup-design.md, motion note) -- that rule is
-## about one day's decay reading as a contradiction beside three growing
-## tracks. Over a week the movement is the readout, so it travels, in
-## either direction.
-##
-## Never awaited and never required: setup_week_row has already written
-## every final value, so a caller that skips this sees a correct, static
-## card. Call setup_week_row first -- this reads the two openings it
-## cached, which otherwise default to 0.
-func play_week_gain(delay: float = 0.0) -> void:
-	play_gain(delay)
 	_play_needs_travel(energy_bar, _energy_from, delay)
 	_play_needs_travel(mood_bar, _mood_from, delay)
+
+
+## The same replay, read off a week instead of a day: setup_week_row
+## primes _energy_from/_mood_from with Monday's values rather than this
+## morning's, so play_gain's own needs-bar travel already covers the
+## week. Kept as its own name for callers that mean "replay the week".
+func play_week_gain(delay: float = 0.0) -> void:
+	play_gain(delay)
 
 
 func _play_needs_travel(bar: ProgressBar, from_value: float, delay: float) -> void:

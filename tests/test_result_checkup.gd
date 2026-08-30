@@ -266,22 +266,78 @@ func test_a_played_week_lands_on_tonights_values() -> void:
 		"replaying the week must not disturb the number")
 
 
-## The daily card's own replay must stay exactly as it was: three tracks
-## and no needs movement. This is the guard on the spec's motion note.
-func test_the_daily_replay_still_leaves_the_needs_bars_alone() -> void:
+## The daily card's needs bars now animate too (2026-08-31 request:
+## ease-out motion on every progress bar in both screens) -- the same
+## rewind-then-grow the weekly card already does, just over one day's
+## movement instead of a week's. This supersedes the spec's 2026-08-30
+## "needs bars do not move on the daily card" note.
+func test_the_daily_card_rewinds_its_needs_bars_to_this_morning() -> void:
 	var inst := _card()
 	var s := StudentData.new()
 	s.student_name = "Marcel"
-	s.energy = 44.0
-	s.mood = 71.0
-	inst.setup_row("Marcel", [], s)
+	s.energy = 62.0
+	s.mood = 55.0
+	var changes := [
+		{"stat_key": "energy", "delta": -18.0},
+		{"stat_key": "mood", "delta": 15.0},
+	]
+	inst.setup_row("Marcel", changes, s)
+	assert_true(absf(inst.energy_bar.value - 62.0) <= 0.01,
+		"setup_row alone must leave tonight's value on the bar")
+	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01,
+		"setup_row alone must leave tonight's value on the bar")
 
 	inst.play_gain()
 
-	assert_true(absf(inst.energy_bar.value - 44.0) <= 0.01,
-		"play_gain must not move the energy bar")
-	assert_true(absf(inst.mood_bar.value - 71.0) <= 0.01,
-		"play_gain must not move the mood bar")
+	assert_true(absf(inst.energy_bar.value - 80.0) <= 0.01,
+		"play_gain must rewind energy to this morning's 62 - (-18) = 80")
+	assert_true(absf(inst.mood_bar.value - 40.0) <= 0.01,
+		"play_gain must rewind mood to this morning's 55 - 15 = 40")
+
+
+## ...and land exactly back on tonight's value once the tween finishes --
+## stepping past dur_slow is what proves this is a real animation and not
+## a second assignment.
+func test_a_played_daily_gain_lands_the_needs_bars_on_tonights_values() -> void:
+	var inst := _card()
+	var s := StudentData.new()
+	s.student_name = "Marcel"
+	s.energy = 62.0
+	s.mood = 55.0
+	var changes := [
+		{"stat_key": "energy", "delta": -18.0},
+		{"stat_key": "mood", "delta": 15.0},
+	]
+	inst.setup_row("Marcel", changes, s)
+	var tokens := DesignTokens.load_default()
+
+	_run_and_step(func(): inst.play_gain(), tokens.dur_slow + 0.2)
+
+	assert_true(absf(inst.energy_bar.value - 62.0) <= 0.01,
+		"energy must end exactly on tonight's value")
+	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01,
+		"mood must end exactly on tonight's value")
+
+
+## A day where energy/mood did not move at all (no matching entries in
+## changes) must not fabricate a rewind -- the bar should hold still,
+## same as before/after being visually indistinguishable from motion of
+## zero distance.
+func test_a_flat_day_still_lands_the_needs_bars_correctly() -> void:
+	var inst := _card()
+	var s := StudentData.new()
+	s.student_name = "Marcel"
+	s.energy = 50.0
+	s.mood = 50.0
+	inst.setup_row("Marcel", [], s)
+	var tokens := DesignTokens.load_default()
+
+	_run_and_step(func(): inst.play_gain(), tokens.dur_slow + 0.2)
+
+	assert_true(absf(inst.energy_bar.value - 50.0) <= 0.01,
+		"a flat day must still land on the correct value")
+	assert_true(absf(inst.mood_bar.value - 50.0) <= 0.01,
+		"a flat day must still land on the correct value")
 
 
 # ----------------------------------------------- the screen that uses it

@@ -436,6 +436,13 @@ func get_volume_save_count() -> int:
 	return _save_count
 
 
+## True while a debounced volume save is still scheduled. Test hook: lets a
+## non-coroutine test prove the write was queued rather than silently dropped,
+## without waiting out the 0.4s debounce window.
+func has_pending_volume_save() -> bool:
+	return _save_timer != null
+
+
 func _notification(what: int) -> void:
 	# Guard mirrors _ready(): if setup never ran (this instance is merely
 	# sitting in an edited scene in the editor), there is nothing pending

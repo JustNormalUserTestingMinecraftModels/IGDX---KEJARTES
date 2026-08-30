@@ -11,12 +11,31 @@ extends McpTestSuite
 func suite_name() -> String:
 	return "settings"
 
+const _MIXER_BUSES := ["Master", "BGM", "SFX"]
+
 var _screen: Control
+var _saved_bus_state: Array[Dictionary] = []
 
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 
 func setup() -> void:
+	# test_moving_a_slider_changes_the_bus_volume drives AudioServer through
+	# the real AudioDirector autoload, not a disposable instance -- the same
+	# class of leak already fixed in test_audio_director.gd. Snapshot here,
+	# restore in teardown, for the same reason: AudioServer buses are
+	# process-global, and a leftover slider value gets written into the
+	# committed Assets/Audio/default_bus_layout.tres.
+	_saved_bus_state.clear()
+	for bus in _MIXER_BUSES:
+		var idx := AudioServer.get_bus_index(bus)
+		if idx >= 0:
+			_saved_bus_state.append({
+				"idx": idx,
+				"db": AudioServer.get_bus_volume_db(idx),
+				"mute": AudioServer.is_bus_mute(idx),
+			})
+
 	var scene: PackedScene = load("res://Scenes/UI/Settings.tscn")
 	_screen = scene.instantiate()
 	_screen.theme = load(_THEME_PATH)
@@ -28,6 +47,11 @@ func teardown() -> void:
 	if is_instance_valid(_screen):
 		_screen.queue_free()
 	_screen = null
+
+	for state in _saved_bus_state:
+		AudioServer.set_bus_volume_db(state["idx"], state["db"])
+		AudioServer.set_bus_mute(state["idx"], state["mute"])
+	_saved_bus_state.clear()
 
 
 func test_scene_loads() -> void:

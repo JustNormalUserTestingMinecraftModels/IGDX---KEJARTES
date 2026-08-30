@@ -4,12 +4,29 @@ extends McpTestSuite
 func suite_name() -> String:
 	return "audio_director"
 
+const _MIXER_BUSES := ["Master", "BGM", "SFX"]
+
 var _director: Node
+var _saved_bus_state: Array[Dictionary] = []
 
 
 func setup() -> void:
-	# Instantiate a fresh copy rather than poking the live autoload, so
-	# volume changes in these tests do not leak into the running game.
+	# AudioServer buses are process-GLOBAL. Instantiating a fresh director does
+	# NOT isolate anything: set_bus_volume() writes straight to AudioServer, so
+	# anything a test sets leaks into the editor's live mixer, and Godot then
+	# writes that back into the committed Assets/Audio/default_bus_layout.tres.
+	# Snapshotting here and restoring in teardown is the only placement that
+	# also covers a test which fails or is abandoned partway through.
+	_saved_bus_state.clear()
+	for bus in _MIXER_BUSES:
+		var idx := AudioServer.get_bus_index(bus)
+		if idx >= 0:
+			_saved_bus_state.append({
+				"idx": idx,
+				"db": AudioServer.get_bus_volume_db(idx),
+				"mute": AudioServer.is_bus_mute(idx),
+			})
+
 	var scene: PackedScene = load("res://Scenes/Audio/audio_director.tscn")
 	_director = scene.instantiate()
 	Engine.get_main_loop().root.add_child(_director)
@@ -20,6 +37,11 @@ func teardown() -> void:
 	if is_instance_valid(_director):
 		_director.queue_free()
 	_director = null
+
+	for state in _saved_bus_state:
+		AudioServer.set_bus_volume_db(state["idx"], state["db"])
+		AudioServer.set_bus_mute(state["idx"], state["mute"])
+	_saved_bus_state.clear()
 
 
 func test_required_buses_exist() -> void:
@@ -107,8 +129,10 @@ func test_has_sfx_is_false_for_empty_and_unknown() -> void:
 
 func test_volumes_persist_across_a_fresh_director() -> void:
 	# The relaunch requirement: what the player set must come back.
+	# No await here -- flush_volume_save() writes synchronously, and the runner
+	# calls suite.call(name) without awaiting, so a coroutine would be
+	# abandoned at its first await and score "0 assertions".
 	_director.set_bus_volume(&"BGM", 0.42)
-	await Engine.get_main_loop().process_frame
 	_director.flush_volume_save()
 
 	var scene: PackedScene = load("res://Scenes/Audio/audio_director.tscn")
@@ -118,7 +142,8 @@ func test_volumes_persist_across_a_fresh_director() -> void:
 	assert_true(absf(second.get_bus_volume(&"BGM") - 0.42) <= 0.01,
 		"a freshly loaded director must restore the saved BGM volume")
 
-	# Restore so this test does not leave the real config at 0.42.
+	# Restore so this test does not leave user://audio.cfg at 0.42. This line
+	# now actually runs; before the await removal it never did.
 	second.set_bus_volume(&"BGM", 1.0)
 	second.flush_volume_save()
 
@@ -130,18 +155,22 @@ func test_rapid_volume_changes_do_not_write_once_per_change() -> void:
 	for i in range(50):
 		_director.set_bus_volume(&"SFX", float(i) / 50.0)
 	var immediately_after: int = _director.get_volume_save_count()
-	assert_true(immediately_after - before <= 2,
-		"50 rapid changes must coalesce, not write synchronously; got %d saves before the debounce window even elapsed"
+	assert_eq(immediately_after - before, 0,
+		"50 rapid changes must coalesce behind the debounce timer, not write synchronously; got %d saves"
 			% (immediately_after - before))
 
-	# The coalesced write must actually land once the 0.4s debounce window
-	# passes -- a debounce that silently DROPPED the save (e.g. a stray
-	# early return) would still pass the assertion above.
-	await Engine.get_main_loop().create_timer(0.5).timeout
+	# The coalesced write must be genuinely SCHEDULED, not silently dropped by
+	# a stray early return. This used to be checked by awaiting out the 0.4s
+	# window -- but the runner calls suite.call(name) without awaiting, so that
+	# assertion never actually ran while the test still reported PASS.
+	# Asserting the pending timer exists, then flushing it, proves the same
+	# thing with no coroutine.
+	assert_true(_director.has_pending_volume_save(),
+		"the 50 changes must leave exactly one save pending, not zero")
+	_director.flush_volume_save()
 	var after: int = _director.get_volume_save_count()
-	assert_true(after - before == 1,
-		"50 rapid changes must coalesce into exactly 1 save once the debounce window elapses, got %d"
-			% (after - before))
+	assert_eq(after - before, 1,
+		"50 rapid changes must coalesce into exactly 1 save, got %d" % (after - before))
 
 
 func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:

@@ -118,7 +118,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 23 suites, 284 tests.
+the Godot AI MCP `test_run` tool. 29 suites, 425 tests, all green.
 
 Hard constraints, learned the hard way:
 
@@ -192,7 +192,7 @@ Note the runtime path quirk: autoloads answer to `/root/<Name>` (e.g.
 `/root/DebugManager`) but the reply echoes paths relative to the current
 scene (`/Inventory/../DebugManager`). Bare `/root` returns nothing.
 
-**3. Prefer `test_run` over screenshots.** The whole suite — 284 tests, 23
+**3. Prefer `test_run` over screenshots.** The whole suite — 425 tests, 29
 suites — returns a compact JSON summary in about two seconds. One screenshot
 costs more tokens than the entire run. Reach for a screenshot only to judge
 something genuinely visual (layout, spacing, color); use `test_run` for
@@ -219,35 +219,36 @@ alone. So: subagents write code, you run the editor and hand them the results.
 None of this trades away test coverage. Coverage is the quality floor; the
 savings come from cheaper verification loops, not from fewer tests.
 
-## Known issues (as of 2026-08-28)
+## Known issues (as of 2026-08-30)
 
-1. **`tests/test_audio_director.gd:108` `test_volumes_persist_across_a_fresh_director`
-   is a coroutine** — it `await`s, so the runner abandons it before the
-   restore on line 122 runs. Two consequences: it always reports "0
-   assertions" as a failure, **and it leaves `Assets/Audio/default_bus_layout.tres`
-   dirty** (BGM at 0.42 linear = −7.535 dB). If you see that file modified
-   with no audio work done, this test did it — `git checkout` it.
-2. **`test_audio_coverage.gd` double-SFX failure** — six functions fire two
-   cues on one path with no `await` between: `inventory.gd` `_on_use_pressed`,
-   `_on_popup_cancel_pressed`, `_on_popup_ok_pressed`; `koprasi.gd`
-   `_on_rak1_pressed`, `_on_back_pressed`; `SchoolDay.gd` `_on_week_complete`.
-   All are in the ported shop/inventory code and the Wirausaha payout — real,
-   introduced by the current branch.
-3. Stale `ext_resource` UIDs in `student_list.tscn` and `loading.tscn` log
-   warnings; Godot falls back to text paths and loads fine. Documented in
-   `docs/superpowers/baseline/known-errors.md` — not a regression.
+None outstanding. The 2026-08-30 stability sweep closed all three of the
+previous entries; see `docs/superpowers/specs/2026-08-30-project-stability-sweep-findings.md`
+for what each turned out to be.
+
+1. **The `test_audio_director` coroutine test** (old #1) — fixed. Both offending
+   tests are non-coroutine now, and the suite snapshots/restores the global
+   AudioServer bus state in `setup`/`teardown`, so a run can no longer dirty
+   `Assets/Audio/default_bus_layout.tres`. If you see that file modified with no
+   audio work done, it is a *new* leak, not this one.
+2. **`test_audio_coverage` double-SFX** (old #2) — did not reproduce on
+   2026-08-30; that suite passes. The entry was stale.
+3. **Stale `ext_resource` UIDs** (old #3) — fixed. All 14 across 5 scenes now
+   point at their real assets, and
+   `tests/test_project_hygiene.gd::test_every_scene_ext_resource_uid_resolves_to_its_own_asset`
+   fails the build if a new one appears.
 
 ## Current work
 
-Branch `feat/koperasi-inventory-integration` (main branch is `Textures`).
+Branch `Textures` (this is also the main branch).
 
-Spec: `docs/superpowers/specs/2026-08-27-koperasi-inventory-integration-design.md`
-Plan: `docs/superpowers/plans/2026-08-27-koperasi-inventory-integration.md`
-(17 tasks; **the checkboxes are never ticked — git log is the real record**).
+The koperasi/inventory integration is committed and done. Recent work is the
+day-summary readout: see `docs/superpowers/plans/2026-08-29-day-summary-mockup.md`,
+`2026-08-30-day-summary-annotated-readout.md`, and
+`2026-08-30-day-summary-stat-track-gauge.md` (**plan checkboxes are never
+ticked — git log is the real record**).
 
-Tasks 1–16 are committed. **Task 17** (wire the ReportCard lobby button) has
-its code and test written but uncommitted, and still needs plan Step 4 (full
-suite — done, see Known Issues) and Step 5 (manual pass in the running app).
+The 2026-08-30 stability sweep
+(`docs/superpowers/plans/2026-08-30-project-stability-sweep.md`) is complete.
 
 `-REFERENCE-/prototype/` is the original prototype, kept for reference only —
 not built, not imported. `koprasi&inventory` was a second programmer's separate

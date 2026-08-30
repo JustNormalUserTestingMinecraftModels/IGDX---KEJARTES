@@ -1,5 +1,13 @@
 # Known pre-existing errors/warnings (baseline, Task 0)
 
+> **Superseded 2026-08-30.** The "Invalid ext_resource UIDs" section below is
+> historical. That audit caught 4 of them; a full sweep on 2026-08-30 found 14
+> across 5 scenes, and all 14 are now repaired. The class is guarded by
+> `tests/test_project_hygiene.gd::test_every_scene_ext_resource_uid_resolves_to_its_own_asset`,
+> which derives truth from `ResourceUID` rather than from a list, so it also
+> catches new ones. See
+> `docs/superpowers/specs/2026-08-30-project-stability-sweep-findings.md` (F6).
+
 These were observed in the editor and game logs during Task 0 verification
 (scene parsing checks and the Step 8 boot test), captured **after** the
 `Scenes/Transition/transition.tscn` corruption fix was applied. They are

@@ -1521,7 +1521,6 @@ func _animate_button_click_bounce(btn: Control, flash_color: Color = Color.TRANS
 	return scale_tw
 
 func _on_approve_pressed(page_index: int):
-	print("DEBUG approve ditekan, tutorial_active: ", tutorial_active)
 	if tutorial_active or is_animating:
 		return
 	if approved[page_index]:

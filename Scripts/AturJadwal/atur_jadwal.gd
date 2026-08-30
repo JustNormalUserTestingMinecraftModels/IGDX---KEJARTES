@@ -561,7 +561,6 @@ func _feed_stat_bar(bar: StatBar, current: float, delta: float, target: float) -
 	bar.set_stat(_percent(current + delta, target))
 
 func _update_student_display():
-	print("DEBUG selected_student: ", GameState.selected_student)
 	if GameState.selected_student.is_empty():
 		if not GameState.approved_students.is_empty():
 			GameState.selected_student = GameState.approved_students[0]
@@ -656,7 +655,6 @@ func _animate_button_click_bounce(btn: Control):
 	tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
 
 func _on_select_student_pressed():
-	print("DEBUG: TOMBOL TERTEKAN!")
 	if select_student_button:
 		_animate_button_click_bounce(select_student_button)
 
@@ -689,7 +687,6 @@ func _has_incomplete_schedules() -> bool:
 var current_warning_mode := ""
 
 func _on_start_week_pressed():
-	print("DEBUG: START WEEK DITEKAN!")
 	if tutorial_active:
 		print("Tutorial active: ignoring start week button press")
 		return
@@ -872,7 +869,6 @@ func _on_peringatan_no():
 	_switch_to_flagged_student()
 
 func _proceed_start_week():
-	print("DEBUG: PROCEEDING START WEEK")
 	Transition.change_scene("res://Scenes/SchoolSimulation/SchoolDay.tscn")
 
 # ================= PENJADWALAN POPUP =================

@@ -70,3 +70,22 @@ func test_every_scene_ext_resource_uid_resolves_to_its_own_asset() -> void:
 	assert_eq(offenders.size(), 0,
 		"every ext_resource UID must resolve to the asset on its own line; offenders: "
 			+ ", ".join(offenders))
+
+
+func test_no_debug_prints_survive_in_production_scripts() -> void:
+	# Scripts/Debug/ is the in-game debug overlay -- printing is its job.
+	# Everywhere else a DEBUG print is a leftover, and they are not harmless:
+	# atur_jadwal.gd dumped the entire selected_student dictionary six times
+	# per selection, crowding real diagnostics out of a finite log buffer.
+	var offenders: Array[String] = []
+	for script_path in _all_files_under("res://Scripts", ".gd"):
+		if script_path.begins_with("res://Scripts/Debug/"):
+			continue
+		var text := FileAccess.get_file_as_string(script_path)
+		var lines := text.split("\n")
+		for i in range(lines.size()):
+			if lines[i].strip_edges().begins_with("print(\"DEBUG"):
+				offenders.append("%s:%d" % [script_path, i + 1])
+	assert_eq(offenders.size(), 0,
+		"DEBUG prints must not ship outside Scripts/Debug/; offenders: "
+			+ ", ".join(offenders))

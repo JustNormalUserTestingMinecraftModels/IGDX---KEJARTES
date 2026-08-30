@@ -1,8 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://result_checkup"]
+[gd_scene format=3 uid="uid://bi1vea4233njp"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/ResultCheckup.gd" id="1_checkup"]
+[ext_resource type="Script" uid="uid://dox5plhrtr0wi" path="res://Scripts/SchoolSimulation/ResultCheckup.gd" id="1_checkup"]
+[ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_ouvge"]
 
-[node name="ResultCheckup" type="Control"]
+[node name="ResultCheckup" type="Control" unique_id=1540732834]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,8 +11,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_checkup")
+student_card_scene = ExtResource("2_ouvge")
 
-[node name="Background" type="Panel" parent="."]
+[node name="Background" type="Panel" parent="." unique_id=384830439]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"SunkenPanel"
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="." unique_id=1659625348]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,72 +34,72 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
+[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=1245057866]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="HeaderPanel" type="VBoxContainer" parent="Margin/VBox"]
+[node name="HeaderPanel" type="VBoxContainer" parent="Margin/VBox" unique_id=1251977570]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="TitleLabel" type="Label" parent="Margin/VBox/HeaderPanel"]
+[node name="TitleLabel" type="Label" parent="Margin/VBox/HeaderPanel" unique_id=241908414]
 layout_mode = 2
 theme_type_variation = &"H1Label"
 text = "Evaluasi Mingguan Siswa"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="SubtitleLabel" type="Label" parent="Margin/VBox/HeaderPanel"]
+[node name="SubtitleLabel" type="Label" parent="Margin/VBox/HeaderPanel" unique_id=469791151]
 layout_mode = 2
 theme_type_variation = &"CaptionLabel"
 text = "Rapor perkembangan stats dan catatan minigame"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="HSeparator" type="HSeparator" parent="Margin/VBox"]
+[node name="HSeparator" type="HSeparator" parent="Margin/VBox" unique_id=330205739]
 layout_mode = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Margin/VBox"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Margin/VBox" unique_id=1062953009]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="MainContent" type="VBoxContainer" parent="Margin/VBox/ScrollContainer"]
+[node name="MainContent" type="VBoxContainer" parent="Margin/VBox/ScrollContainer" unique_id=1092045683]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 20
 
-[node name="StudentsHeader" type="Label" parent="Margin/VBox/ScrollContainer/MainContent"]
+[node name="StudentsHeader" type="Label" parent="Margin/VBox/ScrollContainer/MainContent" unique_id=2070681792]
 layout_mode = 2
 theme_type_variation = &"H2Label"
 text = "📊 Rapor Status Siswa"
 autowrap_mode = 2
 
-[node name="StudentsContainer" type="VBoxContainer" parent="Margin/VBox/ScrollContainer/MainContent"]
+[node name="StudentsContainer" type="VBoxContainer" parent="Margin/VBox/ScrollContainer/MainContent" unique_id=312188741]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 48
+theme_override_constants/separation = 56
 
-[node name="HSeparator" type="HSeparator" parent="Margin/VBox/ScrollContainer/MainContent"]
+[node name="HSeparator" type="HSeparator" parent="Margin/VBox/ScrollContainer/MainContent" unique_id=748594300]
 layout_mode = 2
 
-[node name="HistoryHeader" type="Label" parent="Margin/VBox/ScrollContainer/MainContent"]
+[node name="HistoryHeader" type="Label" parent="Margin/VBox/ScrollContainer/MainContent" unique_id=260089309]
 layout_mode = 2
 theme_type_variation = &"H2Label"
 text = "📝 Catatan Kegiatan (Minigame)"
 autowrap_mode = 2
 
-[node name="HistoryList" type="VBoxContainer" parent="Margin/VBox/ScrollContainer/MainContent"]
+[node name="HistoryList" type="VBoxContainer" parent="Margin/VBox/ScrollContainer/MainContent" unique_id=1279232314]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="HSeparator2" type="HSeparator" parent="Margin/VBox"]
+[node name="HSeparator2" type="HSeparator" parent="Margin/VBox" unique_id=1164965531]
 layout_mode = 2
 
-[node name="BtnClose" type="Button" parent="Margin/VBox"]
-layout_mode = 2
+[node name="BtnClose" type="Button" parent="Margin/VBox" unique_id=1028157195]
 custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
 text = "Selesai & Lanjut"

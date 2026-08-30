@@ -282,3 +282,112 @@ func test_the_daily_replay_still_leaves_the_needs_bars_alone() -> void:
 		"play_gain must not move the energy bar")
 	assert_true(absf(inst.mood_bar.value - 71.0) <= 0.01,
 		"play_gain must not move the mood bar")
+
+
+# ----------------------------------------------- the screen that uses it
+
+## The weekly card must be the SAME scene the daily popup shows, not a
+## copy -- one set of mockup measurements, one piece of art.
+func test_the_checkup_scene_supplies_the_week_card() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	var packed: PackedScene = inst.student_card_scene
+	assert_not_null(packed, "ResultCheckup.tscn must assign student_card_scene")
+	assert_eq(packed.resource_path, _ROW_SCENE,
+		"the weekly card must be the Daily Results card scene itself")
+	inst.free()
+
+
+## The screen end to end: a StudentManager whose first default has moved,
+## one card per student, each reading its own week.
+func test_the_checkup_builds_one_week_card_per_student() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var manager := StudentManager.new()
+	track(manager)
+	manager.students[0].akademis += 12.0
+
+	inst.initialize_checkup(manager)
+
+	var container := inst.get_node(
+		"Margin/VBox/ScrollContainer/MainContent/StudentsContainer")
+	assert_eq(container.get_child_count(), manager.students.size(),
+		"one card per student in the roster")
+	var first = container.get_child(0)
+	assert_true(first is DaySummaryStudentRow,
+		"the checkup must show the Daily Results card, not a hand-built panel")
+	assert_eq(first.name_label.text, manager.students[0].student_name,
+		"each card is labelled with the student it was built for")
+	assert_eq(first.stat_rows[0].value.text,
+		"+12/%d" % int(round(manager.students[0].target_akademis1)),
+		"the card must read the WEEK's gain against that student's target")
+	assert_true(first.energy_delta_label.visible,
+		"the weekly card shows its needs deltas")
+
+
+## The old screen hand-built a five-StatBar panel per student, plus an
+## avatar loader and a gradient placeholder. All of it goes -- leaving it
+## beside the card would be a second, silently diverging report.
+func test_the_checkup_no_longer_hand_builds_its_stat_bars() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	assert_false(src.contains("func _add_stat_bar"),
+		"the hand-built stat bar builder must be gone, not left beside the card")
+	assert_false(src.contains("StatBar.new()"),
+		"the checkup must not build StatBars any more")
+	assert_false(src.contains("_placeholder_avatar"),
+		"the card owns avatar fallback now (DaySummaryAvatar)")
+	assert_false(src.contains("_create_student_card"),
+		"the card is built inline, after add_child -- there is no builder left")
+	assert_true(src.contains("setup_week_row("),
+		"the checkup must feed the card the week")
+	assert_true(src.contains("play_week_gain("),
+		"the checkup must replay the week")
+
+
+## Same rhythm the daily popup uses: cards land first, then their gauges
+## start moving, offset card by card. Filling before the cards are
+## visible wastes the whole gesture.
+func test_the_checkup_fills_its_cards_after_they_land() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	assert_true(src.contains("Juice.stagger_in(cards)"),
+		"the cards must still stagger in")
+	assert_true(src.find("Juice.stagger_in(cards)") < src.find("play_week_gain("),
+		"the fill must be kicked off after stagger_in, not before it")
+
+
+## A card's @onready nodes -- name_label, energy_bar, stat_rows -- are
+## null until it enters the tree, so setting it up before add_child
+## crashes on the first assignment. DaySummaryPopup already adds first
+## and sets up second; this pins the checkup to the same order.
+func test_the_checkup_sets_each_card_up_only_once_it_is_in_the_tree() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	assert_true(
+		src.find("students_container.add_child(card)") < src.find("card.setup_week_row("),
+		"add_child must come before setup_week_row -- @onready nodes are null outside the tree")
+
+
+## The history log and the close button are the week's own chrome and
+## must survive the card swap.
+func test_the_checkup_keeps_its_history_and_its_close_button() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var manager := StudentManager.new()
+	track(manager)
+	manager.minigame_history.append({
+		"day": "Senin", "category": "Akademis",
+		"game_name": "Uji", "won": true,
+	})
+
+	inst.initialize_checkup(manager)
+
+	var history := inst.get_node(
+		"Margin/VBox/ScrollContainer/MainContent/HistoryList")
+	assert_eq(history.get_child_count(), 1,
+		"the week's minigame log must still be built")
+	assert_not_null(inst.get_node_or_null("Margin/VBox/BtnClose"),
+		"the close button must survive the card swap")

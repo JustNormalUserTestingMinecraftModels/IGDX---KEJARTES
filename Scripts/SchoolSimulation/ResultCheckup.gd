@@ -1,8 +1,19 @@
+@tool
 extends Control
 
-## The end-of-week report card: one &"Card" per student with five
-## category-tinted StatBars filling from last week's value, followed by a
-## log of the week's minigames and events.
+## The end-of-week report card: one Daily Results card per student -- the
+## same DaySummaryStudentRow the nightly popup shows -- read one week
+## wide instead of one day, followed by a log of the week's minigames and
+## events.
+##
+## Each card's three stat numbers are "+<the week's gain>/<target>", and
+## its two needs bars carry the week's energy and mood movement as a
+## signed number. All of that lives on the card; this screen only chooses
+## WHICH deltas the card is shown (see DaySummaryStudentRow.setup_week_row).
+##
+## @tool so the in-editor test runner can build the screen and inspect it
+## (CLAUDE.md, testing constraint 3). Everything with a real side effect
+## is gated on Engine.is_editor_hint(); signal wiring deliberately is not.
 ##
 ## Every surface is a theme variation and every accent is a DesignToken;
 ## this script builds no StyleBoxFlat and holds no Color literal.
@@ -29,8 +40,12 @@ signal checkup_closed
 @export var button_close_texture: Texture2D = null
 @export var close_button_text: String = "Selesai Evaluasi"
 
+# ── Wiring ───────────────────────────────────────────────────────────────────
+## The per-student card. Assigned in ResultCheckup.tscn to
+## DaySummaryStudentRow.tscn -- the same scene the nightly popup uses.
+@export var student_card_scene: PackedScene
+
 const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
-const _AVATAR_SIZE := 240
 
 @onready var title_label: Label = $Margin/VBox/HeaderPanel/TitleLabel
 @onready var subtitle_label: Label = $Margin/VBox/HeaderPanel/SubtitleLabel
@@ -39,23 +54,24 @@ const _AVATAR_SIZE := 240
 @onready var scroll_container: ScrollContainer = $Margin/VBox/ScrollContainer
 @onready var btn_close: Button = $Margin/VBox/BtnClose
 
-var animated_bars: Array[Dictionary] = []
-
 var is_dragging_scroll: bool = false
 var drag_start_y: float = 0.0
 var initial_scroll_v: int = 0
 
 func _ready() -> void:
-	if not Engine.is_editor_hint():
-		AudioDirector.play_sfx(&"popup_open")
-	modulate.a = 0.0
-	_apply_visual_exports()
+	# Signal wiring stays ungated so the editor's test runner can exercise
+	# it; everything below the guard is a real side effect.
 	btn_close.pressed.connect(_on_close_pressed)
-	btn_close.modulate.a = 0.0
-	btn_close.disabled = true
-
 	if scroll_container:
 		scroll_container.gui_input.connect(_on_scroll_gui_input)
+	if Engine.is_editor_hint():
+		return
+
+	AudioDirector.play_sfx(&"popup_open")
+	modulate.a = 0.0
+	_apply_visual_exports()
+	btn_close.modulate.a = 0.0
+	btn_close.disabled = true
 
 func initialize_checkup(student_manager: StudentManager) -> void:
 	_apply_visual_exports()
@@ -67,12 +83,13 @@ func initialize_checkup(student_manager: StudentManager) -> void:
 	for child in history_list.get_children():
 		child.queue_free()
 
-	animated_bars.clear()
-
 	var cards: Array = []
 	for student in student_manager.students:
-		var card = _create_student_card(student, student_manager.minigame_history)
+		var card := student_card_scene.instantiate() as DaySummaryStudentRow
 		students_container.add_child(card)
+		# Set up only once the card is in the tree: its @onready nodes are
+		# null until then. Same order DaySummaryPopup.setup_summary uses.
+		card.setup_week_row(student)
 		_set_mouse_filter_pass(card)
 		cards.append(card)
 
@@ -143,166 +160,6 @@ func _set_mouse_filter_pass(node: Node) -> void:
 	for child in node.get_children():
 		_set_mouse_filter_pass(child)
 
-func _create_student_card(student: StudentData, _history: Array[Dictionary]) -> PanelContainer:
-	var panel = PanelContainer.new()
-	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.theme_type_variation = &"Card"
-
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 12)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 12)
-	panel.add_child(margin)
-
-	var main_hbox = HBoxContainer.new()
-	main_hbox.add_theme_constant_override("separation", 12)
-	margin.add_child(main_hbox)
-
-	var avatar_vbox = VBoxContainer.new()
-	avatar_vbox.custom_minimum_size = Vector2(_AVATAR_SIZE, 0)
-	main_hbox.add_child(avatar_vbox)
-
-	var avatar_frame = AspectRatioContainer.new()
-	avatar_frame.ratio = 1.0
-	avatar_frame.custom_minimum_size = Vector2(_AVATAR_SIZE, _AVATAR_SIZE)
-	avatar_vbox.add_child(avatar_frame)
-
-	var avatar = TextureRect.new()
-	avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-
-	if student.avatar_texture != null:
-		avatar.texture = student.avatar_texture
-	else:
-		var name_lower = student.student_name.to_lower()
-		var texture_path = ""
-		if "marcel" in name_lower:
-			texture_path = "res://Assets/Images/MuridPotrait/Marcel.png"
-		elif "doni" in name_lower:
-			texture_path = "res://Assets/Images/MuridPotrait/Doni.png"
-		elif "andi" in name_lower:
-			texture_path = "res://Assets/Images/MuridPotrait/Andi.png"
-		elif "citra" in name_lower:
-			texture_path = "res://Assets/Images/MuridPotrait/Citra.png"
-		elif "shinta" in name_lower:
-			texture_path = "res://Assets/Images/MuridPotrait/Shinta.png"
-		elif "thea" in name_lower:
-			texture_path = "res://Assets/Images/MuridPotrait/Thea.png"
-
-		if texture_path != "" and ResourceLoader.exists(texture_path):
-			avatar.texture = load(texture_path)
-			student.avatar_texture = avatar.texture
-		else:
-			avatar.texture = _placeholder_avatar()
-
-	avatar_frame.add_child(avatar)
-
-	var info_vbox = VBoxContainer.new()
-	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_vbox.add_theme_constant_override("separation", 4)
-	main_hbox.add_child(info_vbox)
-
-	var name_lbl = Label.new()
-	name_lbl.text = student.student_name
-	name_lbl.theme_type_variation = &"H2Label"
-	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	if font: name_lbl.add_theme_font_override("font", font)
-	info_vbox.add_child(name_lbl)
-
-	var akademis_delta: float = student.get_akademis_delta()
-	var seni_delta: float     = student.get_seni_delta()
-	var olahraga_delta: float = student.get_olahraga_delta()
-	var energy_delta: float   = student.get_energy_delta()
-	var mood_delta: float     = student.get_mood_delta()
-
-	info_vbox.add_child(_section_header("STATS"))
-
-	_add_stat_bar(info_vbox, "Akademis", student.akademis, akademis_delta, "Akademis")
-	_add_stat_bar(info_vbox, "Seni Budaya", student.seni_budaya, seni_delta, "SeniBudaya")
-	_add_stat_bar(info_vbox, "Olahraga", student.olahraga, olahraga_delta, "Olahraga")
-
-	var sep = HSeparator.new()
-	sep.add_theme_constant_override("separation", 10)
-	info_vbox.add_child(sep)
-
-	info_vbox.add_child(_section_header("NEEDS"))
-
-	# Energy and Mood are needs, not schedule categories; Libur (warm gold)
-	# and Istirahat (violet) are the accents the rest of the game uses.
-	_add_stat_bar(info_vbox, "Energy ⚡", student.energy, energy_delta, "Libur")
-	_add_stat_bar(info_vbox, "Mood 😊", student.mood, mood_delta, "Istirahat")
-
-	return panel
-
-
-func _section_header(text: String) -> Label:
-	var lbl = Label.new()
-	lbl.text = text
-	lbl.theme_type_variation = &"TitleLabel"
-	lbl.self_modulate = Juice.tokens().text_secondary
-	if font: lbl.add_theme_font_override("font", font)
-	return lbl
-
-
-## Last-resort avatar when a student has neither an assigned texture nor a
-## portrait PNG: a two-stop gradient in a random hue. No literal needed --
-## Color.from_hsv builds it and darkened() derives the second stop.
-func _placeholder_avatar() -> GradientTexture2D:
-	var placeholder = GradientTexture2D.new()
-	placeholder.width = _AVATAR_SIZE
-	placeholder.height = _AVATAR_SIZE
-	var grad = Gradient.new()
-	var col = Color.from_hsv(randf(), 0.6, 0.8)
-	grad.colors = PackedColorArray([col.darkened(0.5), col])
-	placeholder.gradient = grad
-	return placeholder
-
-
-func _add_stat_bar(parent: VBoxContainer, stat_name: String, target_val: float, delta: float, category: String) -> void:
-	var tokens := Juice.tokens()
-	var row = HBoxContainer.new()
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	parent.add_child(row)
-
-	var label = Label.new()
-	label.text = stat_name
-	label.custom_minimum_size = Vector2(220, 0)
-	label.theme_type_variation = &"TitleLabel"
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	if font: label.add_theme_font_override("font", font)
-	row.add_child(label)
-
-	var bar := StatBar.new()
-	bar.category = category
-	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	bar.custom_minimum_size = Vector2(0, 48)
-
-	var start_val = clampf(target_val - delta, 0.0, 100.0)
-	bar.value = start_val
-	row.add_child(bar)
-
-	animated_bars.append({
-		"bar": bar,
-		"target": target_val
-	})
-
-	var delta_lbl = Label.new()
-	delta_lbl.custom_minimum_size = Vector2(120, 0)
-	delta_lbl.theme_type_variation = &"TitleLabel"
-	if font: delta_lbl.add_theme_font_override("font", font)
-	if delta > 0:
-		delta_lbl.text = "+%d" % int(delta)
-		delta_lbl.self_modulate = tokens.state_success
-	elif delta < 0:
-		delta_lbl.text = "%d" % int(delta)
-		delta_lbl.self_modulate = tokens.state_danger
-	else:
-		delta_lbl.text = "--"
-		delta_lbl.self_modulate = tokens.text_secondary
-	row.add_child(delta_lbl)
-
 func _create_history_item(entry: Dictionary) -> PanelContainer:
 	var tokens := Juice.tokens()
 	var item = PanelContainer.new()
@@ -364,6 +221,11 @@ func _make_badge(text: String, tint: Color) -> PanelContainer:
 
 
 func _play_entrance_animations(cards: Array = []) -> void:
+	# The runner builds this screen to inspect it, not to watch it. Under
+	# the editor the cards stay exactly where setup_week_row left them.
+	if Engine.is_editor_hint():
+		return
+
 	var t := Juice.tokens()
 	modulate.a = 0.0
 	var fader = create_tween()
@@ -374,8 +236,12 @@ func _play_entrance_animations(cards: Array = []) -> void:
 	# staggering under a still-transparent root wastes the effect.
 	Juice.stagger_in(cards)
 
-	for bar_data in animated_bars:
-		Juice.fill_bar(bar_data["bar"] as StatBar, bar_data["target"] as float)
+	# Each card's five gauges start moving on the beat that card ARRIVES
+	# on -- the same offset stagger_in uses, so the week's growth and the
+	# card's entrance share a rhythm. This is the nightly popup's own
+	# cadence, one week long.
+	for i in cards.size():
+		cards[i].play_week_gain(float(i) * t.stagger_step)
 	await get_tree().create_timer(t.dur_slow).timeout
 
 	var button_tween = create_tween()

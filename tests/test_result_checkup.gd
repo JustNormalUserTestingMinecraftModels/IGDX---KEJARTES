@@ -204,3 +204,81 @@ func test_both_entry_points_share_one_stat_row_writer() -> void:
 		"the shared stat-row writer must exist")
 	assert_eq(src.count("stat_rows[i].set_stat("), 1,
 		"exactly one place may drive the stat rows")
+
+
+# ---------------------------------------------------- the week's replay
+
+## setup_week_row must land the final value on its own, so a card that is
+## never animated is still correct; play_week_gain then rewinds and grows
+## back. 26 -> 52 against a target of 65 is 40% -> 80%.
+func test_the_week_card_rewinds_its_tracks_to_monday() -> void:
+	var inst := _card()
+	var s := _student_with_week({"akademis": 26.0}, {"akademis": 52.0})
+	inst.setup_week_row(s)
+	assert_true(absf(inst.stat_rows[0].track.value - 80.0) <= 0.01,
+		"setup alone must leave tonight's 52/65 on the track")
+
+	inst.play_week_gain()
+
+	assert_true(absf(inst.stat_rows[0].track.value - 40.0) <= 0.01,
+		"play_week_gain must rewind the track to Monday's 26/65 = 40%")
+
+
+## The needs bars DO move on the weekly card. The spec refuses to animate
+## them on the daily one, because one day's decay replayed beside three
+## growing skill tracks reads as a contradiction -- but the week's
+## movement is exactly what this screen was asked to show, so it moves.
+func test_the_week_card_rewinds_its_needs_bars_to_monday() -> void:
+	var inst := _card()
+	var s := _student_with_week(
+		{"energy": 80.0, "mood": 40.0},
+		{"energy": 62.0, "mood": 55.0})
+	inst.setup_week_row(s)
+
+	inst.play_week_gain()
+
+	assert_true(absf(inst.energy_bar.value - 80.0) <= 0.01,
+		"energy must rewind to Monday's 80 so the week's LOSS is visible as movement")
+	assert_true(absf(inst.mood_bar.value - 40.0) <= 0.01,
+		"mood must rewind to Monday's 40")
+
+
+## ...and every gauge must end exactly where setup_week_row put it.
+## Stepping past dur_slow is what proves these are real animations and
+## not a second assignment.
+func test_a_played_week_lands_on_tonights_values() -> void:
+	var inst := _card()
+	var s := _student_with_week(
+		{"akademis": 26.0, "energy": 80.0, "mood": 40.0},
+		{"akademis": 52.0, "energy": 62.0, "mood": 55.0})
+	inst.setup_week_row(s)
+	var tokens := DesignTokens.load_default()
+
+	_run_and_step(func(): inst.play_week_gain(), tokens.dur_slow + 0.2)
+
+	assert_true(absf(inst.stat_rows[0].track.value - 80.0) <= 0.01,
+		"the stat track must end on tonight's 52/65")
+	assert_true(absf(inst.energy_bar.value - 62.0) <= 0.01,
+		"energy must end on tonight's value")
+	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01,
+		"mood must end on tonight's value")
+	assert_eq(inst.energy_delta_label.text, "-18",
+		"replaying the week must not disturb the number")
+
+
+## The daily card's own replay must stay exactly as it was: three tracks
+## and no needs movement. This is the guard on the spec's motion note.
+func test_the_daily_replay_still_leaves_the_needs_bars_alone() -> void:
+	var inst := _card()
+	var s := StudentData.new()
+	s.student_name = "Marcel"
+	s.energy = 44.0
+	s.mood = 71.0
+	inst.setup_row("Marcel", [], s)
+
+	inst.play_gain()
+
+	assert_true(absf(inst.energy_bar.value - 44.0) <= 0.01,
+		"play_gain must not move the energy bar")
+	assert_true(absf(inst.mood_bar.value - 71.0) <= 0.01,
+		"play_gain must not move the mood bar")

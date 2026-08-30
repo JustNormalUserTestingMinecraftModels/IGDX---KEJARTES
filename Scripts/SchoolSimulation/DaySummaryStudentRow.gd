@@ -164,3 +164,29 @@ func _show_needs_delta(label: Label, delta: float) -> void:
 func play_gain(delay: float = 0.0) -> void:
 	for i in stat_rows.size():
 		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP)
+
+
+## Replay a whole week: the three stat tracks grow the way play_gain
+## already grows them, and the two needs bars travel from Monday's value
+## to tonight's.
+##
+## The daily card deliberately does NOT animate its needs bars (spec
+## 2026-08-29-day-summary-mockup-design.md, motion note) -- that rule is
+## about one day's decay reading as a contradiction beside three growing
+## tracks. Over a week the movement is the readout, so it travels, in
+## either direction.
+##
+## Never awaited and never required: setup_week_row has already written
+## every final value, so a caller that skips this sees a correct, static
+## card. Call setup_week_row first -- this reads the two openings it
+## cached, which otherwise default to 0.
+func play_week_gain(delay: float = 0.0) -> void:
+	play_gain(delay)
+	_play_needs_travel(energy_bar, _energy_from, delay)
+	_play_needs_travel(mood_bar, _mood_from, delay)
+
+
+func _play_needs_travel(bar: ProgressBar, from_value: float, delay: float) -> void:
+	var to_value: float = bar.value
+	bar.value = from_value
+	Juice.fill_bar(bar, to_value, -1.0, delay)

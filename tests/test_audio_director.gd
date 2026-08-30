@@ -151,6 +151,15 @@ func test_volumes_persist_across_a_fresh_director() -> void:
 func test_rapid_volume_changes_do_not_write_once_per_change() -> void:
 	# Dragging a slider fires value_changed on every pixel. Writing the
 	# config file that often stutters on mobile storage.
+	#
+	# _director's _ready() already armed a pending save via _load_volumes()
+	# (it applies whatever's in user://audio.cfg on every fresh instance) --
+	# drain that first, so has_pending_volume_save() below actually reflects
+	# THIS test's own 50-change loop, not a save that was already scheduled
+	# before the test body ran.
+	_director.flush_volume_save()
+	assert_false(_director.has_pending_volume_save(),
+		"baseline: no save may be pending before the burst")
 	var before: int = _director.get_volume_save_count()
 	for i in range(50):
 		_director.set_bus_volume(&"SFX", float(i) / 50.0)

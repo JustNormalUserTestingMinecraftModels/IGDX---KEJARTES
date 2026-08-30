@@ -657,6 +657,11 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 	tex_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	chip.remove_child(lbl)
+	# lbl came from DaySummaryPill.tscn and still names that scene's root as
+	# its owner. Re-parenting it under a runtime-built HBoxContainer (owner ==
+	# null) makes the ownership inconsistent, and Godot warns every single
+	# time -- per badge, per student, per day.
+	lbl.owner = null
 	chip.add_child(hbox)
 	hbox.add_child(tex_rect)
 	hbox.add_child(lbl)

@@ -133,6 +133,22 @@ func test_the_week_advances_by_loop_not_by_self_recursion() -> void:
 		"_run_day() must be defined once and called once (from start_simulation); any third occurrence is a reintroduced self-call")
 
 
+func test_reparented_pill_label_has_its_owner_cleared() -> void:
+	# _make_chip instantiates DaySummaryPill.tscn, so the "Text" Label carries
+	# that scene's root as its owner. _add_pill re-parents it under a runtime
+	# HBoxContainer (owner == null); without clearing owner first Godot warns
+	# "will make owner 'DaySummaryPill' inconsistent" once per badge, per
+	# student, per day -- enough to flood the log buffer and drop every other
+	# diagnostic on this screen.
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("lbl.owner = null"),
+		"_add_pill must clear the label's owner before re-parenting it")
+	var clear_at := src.find("lbl.owner = null")
+	var reparent_at := src.find("hbox.add_child(lbl)")
+	assert_gt(reparent_at, clear_at,
+		"the owner must be cleared BEFORE hbox.add_child(lbl), not after")
+
+
 func test_debug_tutorial_bypass_skips_the_end_of_simulation_tutorial() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
 	assert_true(src.contains("if not GameState.tutorials_bypassed and GameState.current_grade == 7 and GameState.minggu_ke == 1:"),

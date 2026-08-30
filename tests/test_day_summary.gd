@@ -470,6 +470,32 @@ func test_a_played_gain_lands_on_the_days_final_value() -> void:
 		"replaying the fill must not disturb the row's category colour")
 
 
+## Juice.pop_in zeroes the chevron's alpha and shrinks it before tweening
+## both back, so a row that has animated once carries a mutated chevron.
+## Re-arming that row for another student must restore it -- otherwise
+## set_stat's "visible" is a lie and the arrow never appears.
+func test_set_stat_rearms_a_chevron_that_play_gain_already_popped() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	inst.set_stat("akademis", 6.0, 50.0, 39.0)
+	inst.play_gain()
+	assert_true(inst.chevron.modulate.a <= 0.01,
+		"pop_in must have zeroed the chevron's alpha at the start of the gain")
+
+	# The row is re-used for another student without a second play_gain.
+	inst.set_stat("akademis", 4.0, 50.0, 20.0)
+
+	assert_true(inst.chevron.visible, "a +4 row must show its chevron")
+	assert_true(is_equal_approx(inst.chevron.modulate.a, 1.0),
+		"set_stat must restore the alpha pop_in zeroed")
+	assert_true(is_equal_approx(inst.chevron.scale.x, 1.0),
+		"set_stat must restore the scale pop_in shrank")
+
+
 ## The card drives all three of its rows, including the ones that did not
 ## move -- those simply rewind to where they already are and hold still.
 func test_the_card_replays_every_stat_track() -> void:
@@ -502,17 +528,76 @@ func test_the_card_replays_every_stat_track() -> void:
 		"olahraga did not move, so it must hold still at 10/50 = 20%")
 
 
+## The card staggers its three rows rather than firing them together. Step
+## half a GAIN_STEP in: row 0's fill has started moving off its rewound
+## value while row 1 is still sitting exactly on its own, which is only
+## true if the per-row delay is real. Dropping the stagger leaves both
+## moving and fails the second assertion.
+func test_the_cards_three_rows_do_not_all_fill_at_once() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var s := StudentData.new()
+	s.student_name = "Marcel"
+	s.akademis = 39.0
+	s.seni_budaya = 20.0
+	s.olahraga = 10.0
+	s.target_akademis1 = 50.0
+	s.target_akademis2 = 50.0
+	s.target_akademis3 = 50.0
+	inst.setup_row("Marcel", [
+		{"stat_key": "akademis", "delta": 6.0},
+		{"stat_key": "seni_budaya", "delta": 4.0},
+	], s)
+
+	_run_and_step(func(): inst.play_gain(),
+		DaySummaryStudentRow.GAIN_STEP * 0.5)
+
+	assert_true(inst.stat_rows[0].track.value > 66.0,
+		"row 0 has no delay, so it must already be climbing off 66%")
+	assert_true(is_equal_approx(inst.stat_rows[1].track.value, 32.0),
+		"row 1 is still inside its GAIN_STEP delay and must not have moved")
+
+
+## A day that LOST ground must rewind ABOVE where it ends and shrink into
+## place, and must not pop a chevron it is not showing -- play_gain's
+## `if chevron.visible` guard has no other coverage.
+func test_a_losing_day_shrinks_the_track_and_pops_no_chevron() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	inst.set_stat("olahraga", -5.0, 50.0, 30.0)
+	assert_false(inst.chevron.visible, "a losing row shows no arrow")
+
+	inst.play_gain()
+	assert_true(absf(inst.track.value - 70.0) <= 0.01,
+		"a loss must rewind to 35/50 = 70%, ABOVE where it lands")
+	assert_true(is_equal_approx(inst.chevron.modulate.a, 1.0),
+		"play_gain must not pop a chevron that is hidden")
+
+	var tokens := DesignTokens.load_default()
+	_run_and_step(func(): inst.play_gain(), tokens.dur_slow + 0.2)
+	assert_true(absf(inst.track.value - 60.0) <= 0.01,
+		"the track must settle at 30/50 = 60%, having shrunk")
+
+
 ## The popup owns the beat: the bars grow after the cards have landed,
 ## not while the stack is still fading in. A source scan because
 ## setup_summary is a coroutine and this suite may not await one.
-func test_popup_replays_each_cards_gain_after_the_cards_land() -> void:
+func test_popup_replays_each_cards_gain_once_the_cards_start_landing() -> void:
 	var src := FileAccess.get_file_as_string(_POPUP_SCRIPT)
 	assert_true(src.contains("Juice.stagger_in(rows)"),
 		"the cards must still stagger in")
 	assert_true(src.contains("play_gain("),
 		"the popup must replay each card's stat-track growth")
 	assert_true(src.find("Juice.stagger_in(rows)") < src.find("play_gain("),
-		"the fill must run AFTER the cards land, not before")
+		"the fill must be kicked off after stagger_in, not before it")
 
 
 func test_stat_row_scene_wears_the_theme_and_has_no_overrides() -> void:

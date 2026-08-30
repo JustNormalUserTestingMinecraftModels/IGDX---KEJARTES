@@ -79,6 +79,13 @@ static func track_ratio(current: float, target: float) -> float:
 ## slightly and the bar travels a touch further than it really did. That is
 ## cosmetic, and is preferred over threading a pre-day snapshot through the
 ## whole simulation for the sake of one animation.
+##
+## A second and larger source of under-travel: random events apply their
+## stat boosts straight to StudentData but never route them through
+## StudentManager.log_stat_change(), so they are absent from the day
+## summary and therefore from `delta`. On an event day the bar starts
+## too high and the growth understates what really happened. The fix
+## belongs in SchoolDay's record_event_result calls, not here.
 static func track_ratio_before(current: float, delta: float, target: float) -> float:
 	return track_ratio(current - delta, target)
 
@@ -100,7 +107,13 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 	if TRACK_VARIATION_FOR.has(stat_key):
 		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
 	value.text = format_value(delta, target)
+	# play_gain hands the chevron to Juice.pop_in, which zeroes its alpha and
+	# shrinks it before tweening both back. Re-arming a row for another
+	# student must undo that, or a row that is set up but never animated
+	# shows an invisible arrow.
 	chevron.visible = shows_chevron(delta)
+	chevron.modulate.a = 1.0
+	chevron.scale = Vector2.ONE
 	_fill_from = track_ratio_before(current, delta, target)
 	_fill_to = track_ratio(current, target)
 	track.value = _fill_to
@@ -113,6 +126,9 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 ##
 ## Never awaited and never required -- set_stat has already written the
 ## final value, so a caller that skips this sees a correct, static card.
+##
+## Call set_stat first: this reads the two ends it cached, which default
+## to 0.0 and would otherwise empty the track.
 func play_gain(delay: float = 0.0) -> void:
 	track.value = _fill_from
 	Juice.fill_bar(track, _fill_to, -1.0, delay)

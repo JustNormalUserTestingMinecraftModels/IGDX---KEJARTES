@@ -75,10 +75,11 @@ func setup_summary(
 	# The rows land one after another once the card itself has settled.
 	Juice.stagger_in(rows)
 
-	# Each card's tracks grow on the beat that card lands on, so the fill
-	# reads as a consequence of the card arriving rather than as the whole
-	# stack's worth of motion firing at once behind a still-fading list.
-	# The step matches stagger_in's own, which is what lines them up.
+	# Each card's tracks start growing on the beat that card ARRIVES on --
+	# the same offset stagger_in uses, so fill and entrance share a rhythm
+	# rather than the whole stack's motion firing at once. The fill runs
+	# dur_slow against the entrance's dur_normal, so it outlasts the card's
+	# fade and the tail is read clearly even though the two overlap.
 	var gain_step := Juice.tokens().stagger_step
 	for i in rows.size():
 		rows[i].play_gain(float(i) * gain_step)

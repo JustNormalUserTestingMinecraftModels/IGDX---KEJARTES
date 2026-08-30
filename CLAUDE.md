@@ -245,7 +245,11 @@ The koperasi/inventory integration is committed and done. Recent work is the
 day-summary readout: see `docs/superpowers/plans/2026-08-29-day-summary-mockup.md`,
 `2026-08-30-day-summary-annotated-readout.md`, and
 `2026-08-30-day-summary-stat-track-gauge.md` (**plan checkboxes are never
-ticked — git log is the real record**).
+ticked — git log is the real record**). `ResultCheckup` now draws the same
+card one week wide — `+<week's gain>/<target>` per stat, plus the week's
+energy and mood movement on the needs bars — via
+`DaySummaryStudentRow.setup_week_row()`; see
+`docs/superpowers/plans/2026-08-31-result-checkup-week-card.md`.
 
 The 2026-08-30 stability sweep
 (`docs/superpowers/plans/2026-08-30-project-stability-sweep.md`) is complete.

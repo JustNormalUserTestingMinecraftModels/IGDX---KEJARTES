@@ -118,6 +118,36 @@ func test_fill_bar_lands_on_the_target_value() -> void:
 	assert_true(absf((bar.value) - (73.5)) <= 0.01, "bar must land on target")
 
 
+## A delayed fill must sit perfectly still while the delay runs. Stepping
+## 0.20s into a 0.30s delay is the whole assertion -- if set_delay were
+## dropped, the bar would already be most of the way to 80 by then.
+func test_fill_bar_does_not_move_during_its_delay() -> void:
+	var bar := ProgressBar.new()
+	bar.min_value = 0.0
+	bar.max_value = 100.0
+	bar.value = 0.0
+	_root.add_child(bar)
+	_run_and_step(func(): Juice.fill_bar(bar, 80.0, -1.0, 0.30), 0.20)
+	assert_true(absf(bar.value) <= 0.01,
+		"bar must not move until its delay has elapsed")
+
+
+## ...and must still land exactly on target once the delay AND the fill
+## have both run. A delay that swallowed the tween would pass the test
+## above and fail this one.
+func test_a_delayed_fill_still_lands_on_target() -> void:
+	var tokens := DesignTokens.load_default()
+	var bar := ProgressBar.new()
+	bar.min_value = 0.0
+	bar.max_value = 100.0
+	bar.value = 0.0
+	_root.add_child(bar)
+	_run_and_step(func(): Juice.fill_bar(bar, 80.0, -1.0, 0.30),
+		0.30 + tokens.dur_slow + 0.2)
+	assert_true(absf(bar.value - 80.0) <= 0.01,
+		"a delayed fill must still end exactly on its target")
+
+
 func test_stagger_in_eventually_shows_every_node() -> void:
 	var tokens := DesignTokens.load_default()
 	var nodes: Array[Control] = []

@@ -112,15 +112,18 @@ static func count_up(label: Label, from: float, to: float, fmt: String = "%d") -
 ## explicit one only when the fill has to stay in lockstep with something
 ## else that is paced by gameplay rather than by the motion tokens (the
 ## school day's progress bar runs beside a clock widget over a fixed
-## in-fiction day length, for example). Returns the tween so callers can
-## await it.
-static func fill_bar(bar: Range, to: float, duration: float = -1.0) -> Tween:
+## in-fiction day length, for example). `delay` holds the bar still
+## before it starts, mirroring pop_in's, so a row or stack of bars can be
+## staggered without a hand-rolled timer. Returns the tween so callers
+## can await it.
+static func fill_bar(bar: Range, to: float, duration: float = -1.0,
+		delay: float = 0.0) -> Tween:
 	if not _alive(bar):
 		return null
 	var tw := bar.create_tween()
 	tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	tw.tween_property(bar, "value", to,
-		tokens().dur_slow if duration < 0.0 else duration)
+		tokens().dur_slow if duration < 0.0 else duration).set_delay(delay)
 	return tw
 
 

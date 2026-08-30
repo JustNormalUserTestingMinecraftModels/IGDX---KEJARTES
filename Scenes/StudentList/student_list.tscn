@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://bdrlmukmq2tie"]
 
 [ext_resource type="Script" path="res://Scripts/StudentList/student_list.gd" id="1_wr76l"]
-[ext_resource type="Texture2D" uid="uid://c7gmkcle3uv8o" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="2_v3e4w"]
+[ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="2_v3e4w"]
 [ext_resource type="Shader" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
-[ext_resource type="Texture2D" uid="uid://bhanm4qbpra2a" path="res://Assets/Images/UI/paper.png" id="3_paper"]
+[ext_resource type="Texture2D" uid="uid://dlyxcrhuswotn" path="res://Assets/Images/UI/paper.png" id="3_paper"]
 [ext_resource type="PackedScene" uid="uid://cries6nb441ve" path="res://Scenes/StudentList/StickyNote.tscn" id="5_stickynote"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_spotlight"]

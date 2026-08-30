@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dwsmhlmqpf7q5"]
 
 [ext_resource type="Script" path="res://Scripts/Loading/loading.gd" id="1_ctcb4"]
-[ext_resource type="Texture2D" uid="uid://cwmltvrg3rr1t" path="res://Assets/Images/UI/—Pngtree—book icon vector_4358423.png" id="2_1rgfv"]
+[ext_resource type="Texture2D" uid="uid://b1l1tgslf2wkw" path="res://Assets/Images/UI/—Pngtree—book icon vector_4358423.png" id="2_1rgfv"]
 
 [node name="Loading" type="Control" unique_id=101109909]
 layout_mode = 3

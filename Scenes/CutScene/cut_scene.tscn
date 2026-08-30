@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://13fp8j1c53fd"]
 
 [ext_resource type="Script" path="res://Scripts/CutScene/cut_scene.gd" id="1_88s7j"]
-[ext_resource type="Texture2D" uid="uid://f0niudwtemxb" path="res://Assets/Images/UI/BG.jpg" id="2_w1y33"]
+[ext_resource type="Texture2D" uid="uid://cfe2yal5hh4dl" path="res://Assets/Images/UI/BG.jpg" id="2_w1y33"]
 [ext_resource type="Script" path="res://Scripts/CutScene/hint_label.gd" id="3_hint_lbl"]
 
 [node name="CutScene" type="Control" unique_id=1283265698]

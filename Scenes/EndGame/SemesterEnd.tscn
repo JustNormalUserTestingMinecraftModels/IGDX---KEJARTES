@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://cbe0d3egr9a11" load_steps=7]
 
 [ext_resource type="Script" path="res://Scripts/EndGame/SemesterEnd.gd" id="1_end"]
-[ext_resource type="Texture2D" uid="uid://bhanm4qbpra2a" path="res://Assets/Images/UI/paper.png" id="2_paper"]
-[ext_resource type="Texture2D" uid="uid://b6p4x47c2s0gq" path="res://Assets/Images/UI/Placeholders/icon_akademis.svg" id="3_icon_akademis"]
-[ext_resource type="Texture2D" uid="uid://cye75x61s7rge" path="res://Assets/Images/UI/Placeholders/icon_seni.svg" id="4_icon_seni"]
-[ext_resource type="Texture2D" uid="uid://chfshk4b7u2w" path="res://Assets/Images/UI/Placeholders/icon_olahraga.svg" id="5_icon_olahraga"]
+[ext_resource type="Texture2D" uid="uid://dlyxcrhuswotn" path="res://Assets/Images/UI/paper.png" id="2_paper"]
+[ext_resource type="Texture2D" uid="uid://b0ah0m8tx4h7q" path="res://Assets/Images/UI/Placeholders/icon_akademis.svg" id="3_icon_akademis"]
+[ext_resource type="Texture2D" uid="uid://cxym6c466l7q8" path="res://Assets/Images/UI/Placeholders/icon_seni.svg" id="4_icon_seni"]
+[ext_resource type="Texture2D" uid="uid://cj4co2v2kmqrg" path="res://Assets/Images/UI/Placeholders/icon_olahraga.svg" id="5_icon_olahraga"]
 [ext_resource type="PackedScene" uid="uid://c8ap5tqsmyihj" path="res://Scenes/EndGame/ResultStatRow.tscn" id="6_resultrow"]
 
 [node name="SemesterEnd" type="Control"]

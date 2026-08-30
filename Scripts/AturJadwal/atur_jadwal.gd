@@ -166,7 +166,7 @@ func _setup_gameplay():
 	# Build dynamic tutorial UI panel
 	_build_tutorial_panel()
 
-	if tutorial_phase3_done:
+	if GameState.tutorials_bypassed or tutorial_phase3_done:
 		# Semua fase tutorial sudah selesai, tidak muncul lagi
 		color_rect.hide()
 		tutorial_active = false

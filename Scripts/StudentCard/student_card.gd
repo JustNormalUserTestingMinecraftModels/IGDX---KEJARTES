@@ -168,7 +168,11 @@ func _ready():
 	_populate_ui_from_data()
 	
 	_sync_student_data_from_ui()
-	_show_step(0)
+	if GameState.tutorials_bypassed:
+		tutorial_active = false
+		color_rect.hide()
+	else:
+		_show_step(0)
 	AudioDirector.play_bgm_playlist(&"lobby")
 
 # ================= TOUCH SWIPE NAVIGATION =================

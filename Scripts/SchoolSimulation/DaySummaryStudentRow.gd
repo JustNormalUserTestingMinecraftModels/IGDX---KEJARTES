@@ -38,6 +38,12 @@ const GAIN_STEP := 0.08
 	$StatRow1, $StatRow2, $StatRow3,
 ]
 
+## Where the two needs bars stood on Monday morning, cached by
+## setup_week_row so play_week_gain can rewind and travel back. Unused on
+## the daily path, whose needs bars deliberately do not move.
+var _energy_from: float = 0.0
+var _mood_from: float = 0.0
+
 
 ## "+8" / "-12" -- the week's movement on a needs bar. Same sign rule as
 ## DaySummaryStatRow.format_value: the "+" is explicit and the "-" comes
@@ -65,18 +71,7 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 	energy_delta_label.hide()
 	mood_delta_label.hide()
 
-	var deltas := _sum_deltas(changes)
-	for i in STAT_ORDER.size():
-		var key: String = STAT_ORDER[i]
-		var target := 0.0
-		var current := 0.0
-		if student != null:
-			target = float(student.get(TARGET_FOR[key]))
-			# STAT_ORDER's keys are StudentData's own field names, so the
-			# standing value reads straight off the resource -- it is only
-			# the TARGET field names that carry the akademis2/3 naming trap.
-			current = float(student.get(key))
-		stat_rows[i].set_stat(key, deltas.get(key, 0.0), target, current)
+	_write_stat_rows(_sum_deltas(changes), student)
 
 
 ## A stat can move more than once in a day -- a scheduled activity plus
@@ -90,6 +85,77 @@ func _sum_deltas(changes: Array) -> Dictionary:
 			continue
 		out[key] = float(out.get(key, 0.0)) + float(ch.get("delta", 0.0))
 	return out
+
+
+## The three stat rows, given one delta per stat. Shared by the daily and
+## weekly entry points, which differ ONLY in where their deltas come
+## from -- a card that drew its rows two different ways would drift, and
+## the akademis2/3 naming trap below is the last thing that should be
+## written down twice.
+func _write_stat_rows(deltas: Dictionary, student: StudentData) -> void:
+	for i in STAT_ORDER.size():
+		var key: String = STAT_ORDER[i]
+		var target := 0.0
+		var current := 0.0
+		if student != null:
+			target = float(student.get(TARGET_FOR[key]))
+			# STAT_ORDER's keys are StudentData's own field names, so the
+			# standing value reads straight off the resource -- it is only
+			# the TARGET field names that carry the akademis2/3 naming trap.
+			current = float(student.get(key))
+		stat_rows[i].set_stat(key, deltas.get(key, 0.0), target, current)
+
+
+## The same card, one week wide: ResultCheckup's end-of-week report.
+##
+## Every delta here is "now minus Monday morning", straight off the
+## week-start snapshot record_initial_stats() takes when GameState
+## converts the roster -- StudentManager is rebuilt at the top of every
+## week, so no snapshot has to be threaded through the simulation.
+##
+## Two things separate this from setup_row: the deltas span the week
+## rather than the day, and the two needs numbers are shown. The stat
+## rows themselves need no special case -- DaySummaryStatRow already
+## rewinds to (current - delta) / target, which IS Monday's ratio once
+## the delta is a week long.
+func setup_week_row(student: StudentData) -> void:
+	name_label.text = student.student_name if student != null else ""
+	avatar.set_student(student)
+
+	if student == null:
+		energy_bar.value = 0.0
+		mood_bar.value = 0.0
+		_energy_from = 0.0
+		_mood_from = 0.0
+		energy_delta_label.hide()
+		mood_delta_label.hide()
+		_write_stat_rows({}, null)
+		return
+
+	var energy_delta := student.get_energy_delta()
+	var mood_delta := student.get_mood_delta()
+	energy_bar.value = student.energy
+	mood_bar.value = student.mood
+	# StudentData clamps its needs as it applies them, so on a week that
+	# hit the 0 or 100 ceiling this opening value overshoots the true
+	# Monday reading slightly and the bar travels a touch further than it
+	# really did. Cosmetic, and the same trade DaySummaryStatRow already
+	# documents for the stat tracks.
+	_energy_from = clampf(student.energy - energy_delta, 0.0, 100.0)
+	_mood_from = clampf(student.mood - mood_delta, 0.0, 100.0)
+	_show_needs_delta(energy_delta_label, energy_delta)
+	_show_needs_delta(mood_delta_label, mood_delta)
+
+	_write_stat_rows({
+		"akademis": student.get_akademis_delta(),
+		"seni_budaya": student.get_seni_delta(),
+		"olahraga": student.get_olahraga_delta(),
+	}, student)
+
+
+func _show_needs_delta(label: Label, delta: float) -> void:
+	label.text = format_needs_delta(delta)
+	label.show()
 
 
 ## Replay every stat track's growth for today, one row after the next.

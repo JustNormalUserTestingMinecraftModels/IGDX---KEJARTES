@@ -77,7 +77,7 @@ between the chevron and the number and so crosses only the track.
 |---|---|---|---|
 | Name "Marcel" | 349,48 · cap height **40** | `#FFFFFF` fill, `#25132C` outline ~5px | left-aligned; middle-card size |
 | Stat icon (×3) | ~601,83 · box ~95×70 (art aspect kept) | `#FFFFFF` fill, `#3D1E48` outline | **overlaps** the track's left end |
-| Gold chevron (×3) | ~683,93 · ~40×58 | `#E4B012` | drawn **on top** of the track, right of the icon |
+| Gold chevron (×3) | ~683,93 · ~40×58 | `#E4B012` | drawn **on top** of the track, right of the icon; **visible only when that stat gained points that day** (delta > 0). Hidden at +0 and on a loss — the asset is an up arrow and there is no down variant. Absolutely anchored, so hiding it reflows nothing. |
 | Number "+12/65" | right-aligned, ends ~966 · height ~38 | `#FFFFFF` fill, `#3D1E48` outline | sits on the card fill, **not** on the track |
 
 **The stat track's right edge equals the number's left edge.** Verified:

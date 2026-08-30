@@ -343,6 +343,55 @@ func test_set_stat_fills_the_track_and_leaves_the_number_alone() -> void:
 		"track must switch to its own stat's variation")
 
 
+## The mockup's gold arrow is an UP arrow and the asset folder ships no
+## down variant, so it may only appear on a genuine gain. A stat that did
+## not move (+0) or went backwards leaves the track bare rather than
+## claiming progress the student did not make.
+func test_shows_chevron_only_on_a_gain() -> void:
+	assert_true(DaySummaryStatRow.shows_chevron(12.0),
+		"a +12 day must show the up arrow")
+	assert_true(DaySummaryStatRow.shows_chevron(0.4),
+		"any positive gain, however small, must show the arrow")
+	assert_false(DaySummaryStatRow.shows_chevron(0.0),
+		"a +0 day must not show an up arrow")
+	assert_false(DaySummaryStatRow.shows_chevron(-3.0),
+		"a losing day must not show an UP arrow -- there is no down asset")
+
+
+## The gate has to be wired into set_stat, not just available as a
+## helper. Three live rows, one per case, because set_stat writes the
+## visibility and nothing resets it between calls.
+func test_set_stat_gates_the_chevron_on_the_days_delta() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+
+	var gained := scene.instantiate()
+	gained.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(gained)
+	track(gained)
+	gained.set_stat("akademis", 12.0, 65.0, 40.0)
+	assert_true(gained.chevron.visible, "a +12 row must show its chevron")
+	assert_eq(gained.value.text, "+12/65",
+		"gating the chevron must not disturb the number")
+
+	var flat := scene.instantiate()
+	flat.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(flat)
+	track(flat)
+	flat.set_stat("seni_budaya", 0.0, 65.0, 40.0)
+	assert_false(flat.chevron.visible, "a +0 row must hide its chevron")
+	assert_eq(flat.value.text, "+0/65",
+		"a +0 row still shows its number -- only the arrow goes")
+
+	var lost := scene.instantiate()
+	lost.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(lost)
+	track(lost)
+	lost.set_stat("olahraga", -3.0, 65.0, 40.0)
+	assert_false(lost.chevron.visible, "a losing row must hide its chevron")
+	assert_eq(lost.value.text, "-3/65",
+		"a loss still reads -3/65, as format_value already guarantees")
+
+
 func test_stat_row_scene_wears_the_theme_and_has_no_overrides() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	assert_not_null(scene, "DaySummaryStatRow.tscn failed to load")

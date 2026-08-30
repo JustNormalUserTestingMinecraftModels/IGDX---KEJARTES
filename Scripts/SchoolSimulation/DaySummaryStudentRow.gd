@@ -35,9 +35,12 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 	name_label.text = student_name
 	avatar.set_student(student)
 
-	if student != null:
-		energy_bar.value = student.energy
-		mood_bar.value = student.mood
+	# The scene ships the mockup's 36/82 placeholders baked in. Leaving
+	# them when the popup's name lookup misses would paint a confident,
+	# fabricated reading, so an unknown student empties both bars --
+	# matching the avatar, which already clears its texture on null.
+	energy_bar.value = student.energy if student != null else 0.0
+	mood_bar.value = student.mood if student != null else 0.0
 
 	var deltas := _sum_deltas(changes)
 	for i in STAT_ORDER.size():

@@ -469,6 +469,60 @@ func test_energy_is_the_top_bar_and_mood_the_bottom() -> void:
 	inst.free()
 
 
+## The two bars the mockup annotates red and yellow. Both are 0-100
+## scales, so `value` IS the percentage and no conversion is involved --
+## the assertion on max_value pins that, because a later scene edit that
+## rescaled the bar would silently turn 21 energy into 21% of something
+## else.
+##
+## The values below are deliberately NOT the scene's baked 36/82: those
+## are the mockup's placeholders, and a test using them would pass even
+## if the assignment were deleted entirely.
+func test_setup_row_writes_the_students_real_energy_and_mood() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var s := StudentData.new()
+	s.student_name = "Marcel"
+	s.energy = 21.0
+	s.mood = 64.0
+	inst.setup_row("Marcel", [], s)
+
+	assert_true(is_equal_approx(inst.energy_bar.max_value, 100.0),
+		"energy bar must stay a 0-100 scale so `value` IS the percentage")
+	assert_true(is_equal_approx(inst.mood_bar.max_value, 100.0),
+		"mood bar must stay a 0-100 scale so `value` IS the percentage")
+	assert_true(is_equal_approx(inst.energy_bar.value, 21.0),
+		"energy bar must read the student's energy, not the scene placeholder")
+	assert_true(is_equal_approx(inst.mood_bar.value, 64.0),
+		"mood bar must read the student's mood, not the scene placeholder")
+	assert_eq(inst.name_label.text, "Marcel",
+		"the card must be labelled with the student it was built for")
+
+
+## The popup looks each student up by name and passes null when the
+## lookup misses. Leaving the scene's baked 36/82 there would paint a
+## confident, fabricated reading of a student we could not find; empty
+## bars are the honest answer, and they match the avatar, which already
+## clears its texture on null.
+func test_setup_row_empties_the_needs_bars_for_an_unknown_student() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	inst.setup_row("Nobody", [], null)
+
+	assert_true(is_equal_approx(inst.energy_bar.value, 0.0),
+		"an unknown student must not inherit the mockup's 36% energy")
+	assert_true(is_equal_approx(inst.mood_bar.value, 0.0),
+		"an unknown student must not inherit the mockup's 82% mood")
+
+
 ## The naming trap this project documents in CLAUDE.md: target_akademis2
 ## is the SENI target and target_akademis3 the OLAHRAGA one. Getting it
 ## wrong shows the right number against the wrong icon.

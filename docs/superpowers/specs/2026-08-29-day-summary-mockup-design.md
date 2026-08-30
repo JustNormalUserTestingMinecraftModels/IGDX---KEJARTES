@@ -71,6 +71,16 @@ between the chevron and the number and so crosses only the track.
 > means the student is at the target set for that run.** Row 12a above
 > supersedes the "no fill" reading of rows 10–12.
 
+> **Motion (2026-08-30).** The three tracks do not snap to their value. Each
+> rewinds to `(current − today's delta) / target` and grows to
+> `current / target` over `dur_slow`, so the day's gain is visible as
+> movement — the gold chevron pops in on the same beat. Rows within a card
+> are offset by `DaySummaryStudentRow.GAIN_STEP` (0.08s); cards within the
+> stack by `tokens.stagger_step`, matching their own entrance. The needs
+> bars (#6–#9) are deliberately **not** animated: energy and mood mostly
+> fall over a day, and replaying that alongside three growing skill tracks
+> reads as a contradiction rather than as progress.
+
 ### Glyphs, icons and text — not surfaces
 
 | Element | Rect (card-rel) | Colour | Note |

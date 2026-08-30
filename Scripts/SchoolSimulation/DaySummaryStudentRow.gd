@@ -22,6 +22,12 @@ const TARGET_FOR := {
 	"olahraga": "target_akademis3",
 }
 
+## How far apart the card's three tracks start filling, in seconds. Short
+## enough to read as one gesture, long enough that the eye catches each
+## bar leaving the gate. Lives here rather than on the stat row because
+## it is a property of the card's three-row rhythm, not of one row.
+const GAIN_STEP := 0.08
+
 @onready var avatar: DaySummaryAvatar = $Avatar
 @onready var name_label: Label = $NameLabel
 @onready var energy_bar: ProgressBar = $EnergyBar
@@ -67,3 +73,11 @@ func _sum_deltas(changes: Array) -> Dictionary:
 			continue
 		out[key] = float(out.get(key, 0.0)) + float(ch.get("delta", 0.0))
 	return out
+
+
+## Replay every stat track's growth for today, one row after the next.
+## `delay` shifts the whole card, so the popup can line each card's fill
+## up with its own staggered entrance.
+func play_gain(delay: float = 0.0) -> void:
+	for i in stat_rows.size():
+		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP)

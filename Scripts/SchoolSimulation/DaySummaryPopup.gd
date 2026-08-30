@@ -75,6 +75,14 @@ func setup_summary(
 	# The rows land one after another once the card itself has settled.
 	Juice.stagger_in(rows)
 
+	# Each card's tracks grow on the beat that card lands on, so the fill
+	# reads as a consequence of the card arriving rather than as the whole
+	# stack's worth of motion firing at once behind a still-fading list.
+	# The step matches stagger_in's own, which is what lines them up.
+	var gain_step := Juice.tokens().stagger_step
+	for i in rows.size():
+		rows[i].play_gain(float(i) * gain_step)
+
 	is_dismissable = true
 
 	# The verdict cue lands after the popup's entrance has visibly settled,

@@ -34,6 +34,22 @@ func suite_name() -> String:
 	return "day_summary"
 
 
+## Snapshot the active tweens, run `action`, then fast-forward only the
+## tweens it created by `duration` seconds. Lifted from
+## tests/test_juice.gd:52 -- the MCP runner calls suite.call(name)
+## without awaiting, so Tween.custom_step() is the only way a
+## non-coroutine test can see an animation's end state. Diffing against
+## the before-snapshot keeps a tween still finishing from an earlier test
+## (or from the editor's own UI) from being mistaken for this one's.
+func _run_and_step(action: Callable, duration: float) -> void:
+	var before: Array = Engine.get_main_loop().get_processed_tweens()
+	action.call()
+	var after: Array = Engine.get_main_loop().get_processed_tweens()
+	for tw in after:
+		if not before.has(tw) and is_instance_valid(tw):
+			tw.custom_step(duration)
+
+
 func test_every_day_summary_texture_imports() -> void:
 	for key in _ART:
 		var path: String = _ART[key]
@@ -390,6 +406,113 @@ func test_set_stat_gates_the_chevron_on_the_days_delta() -> void:
 	assert_false(lost.chevron.visible, "a losing row must hide its chevron")
 	assert_eq(lost.value.text, "-3/65",
 		"a loss still reads -3/65, as format_value already guarantees")
+
+
+## Where the track stood this morning. The day's gain has already been
+## applied to the StudentData by the time the popup is built, so the
+## starting point is current MINUS the delta -- not plus.
+func test_track_ratio_before_backs_todays_gain_out() -> void:
+	assert_true(is_equal_approx(
+		DaySummaryStatRow.track_ratio_before(39.0, 6.0, 50.0), 66.0),
+		"39 after a +6 day means the morning read 33/50 = 66%")
+	assert_true(is_equal_approx(
+		DaySummaryStatRow.track_ratio_before(39.0, 0.0, 50.0), 78.0),
+		"a day that gained nothing must start exactly where it ends")
+	assert_true(is_equal_approx(
+		DaySummaryStatRow.track_ratio_before(4.0, 10.0, 50.0), 0.0),
+		"a gain larger than the standing stat must clamp to empty, not go negative")
+	assert_true(is_equal_approx(
+		DaySummaryStatRow.track_ratio_before(30.0, -5.0, 50.0), 70.0),
+		"a losing day must start ABOVE where it ends, so the bar shrinks")
+	assert_true(is_equal_approx(
+		DaySummaryStatRow.track_ratio_before(30.0, 5.0, 0.0), 0.0),
+		"a zero target must return 0, not divide by zero")
+
+
+## set_stat must still land the final value on its own, so a row that is
+## never animated -- the editor preview, a future caller -- is still
+## correct. play_gain then rewinds and grows back.
+func test_play_gain_rewinds_the_track_to_this_mornings_value() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	inst.set_stat("akademis", 6.0, 50.0, 39.0)
+	assert_true(absf(inst.track.value - 78.0) <= 0.01,
+		"set_stat must still leave the DAY'S FINAL value on the track")
+
+	inst.play_gain()
+	assert_true(absf(inst.track.value - 66.0) <= 0.01,
+		"play_gain must rewind the track to 33/50 = 66% before it grows")
+	assert_eq(inst.value.text, "+6/50",
+		"replaying the fill must not disturb the number")
+
+
+## ...and the growth must end exactly where set_stat put it. Stepping the
+## tween past dur_slow is what proves the fill is a real animation and
+## not just a second assignment.
+func test_a_played_gain_lands_on_the_days_final_value() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var tokens := DesignTokens.load_default()
+	inst.set_stat("olahraga", 6.0, 50.0, 39.0)
+	_run_and_step(func(): inst.play_gain(), tokens.dur_slow + 0.2)
+
+	assert_true(absf(inst.track.value - 78.0) <= 0.01,
+		"the fill must end exactly on current/target")
+	assert_eq(inst.track.theme_type_variation, &"DaySummaryStatTrackOlahraga",
+		"replaying the fill must not disturb the row's category colour")
+
+
+## The card drives all three of its rows, including the ones that did not
+## move -- those simply rewind to where they already are and hold still.
+func test_the_card_replays_every_stat_track() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var s := StudentData.new()
+	s.student_name = "Marcel"
+	s.akademis = 39.0
+	s.seni_budaya = 20.0
+	s.olahraga = 10.0
+	s.target_akademis1 = 50.0
+	s.target_akademis2 = 50.0
+	s.target_akademis3 = 50.0
+	inst.setup_row("Marcel", [
+		{"stat_key": "akademis", "delta": 6.0},
+		{"stat_key": "seni_budaya", "delta": 4.0},
+	], s)
+
+	inst.play_gain()
+
+	assert_true(absf(inst.stat_rows[0].track.value - 66.0) <= 0.01,
+		"akademis must rewind to 33/50 = 66%")
+	assert_true(absf(inst.stat_rows[1].track.value - 32.0) <= 0.01,
+		"seni_budaya must rewind to 16/50 = 32%")
+	assert_true(absf(inst.stat_rows[2].track.value - 20.0) <= 0.01,
+		"olahraga did not move, so it must hold still at 10/50 = 20%")
+
+
+## The popup owns the beat: the bars grow after the cards have landed,
+## not while the stack is still fading in. A source scan because
+## setup_summary is a coroutine and this suite may not await one.
+func test_popup_replays_each_cards_gain_after_the_cards_land() -> void:
+	var src := FileAccess.get_file_as_string(_POPUP_SCRIPT)
+	assert_true(src.contains("Juice.stagger_in(rows)"),
+		"the cards must still stagger in")
+	assert_true(src.contains("play_gain("),
+		"the popup must replay each card's stat-track growth")
+	assert_true(src.find("Juice.stagger_in(rows)") < src.find("play_gain("),
+		"the fill must run AFTER the cards land, not before")
 
 
 func test_stat_row_scene_wears_the_theme_and_has_no_overrides() -> void:

@@ -1,17 +1,18 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3 uid="uid://c1dstgm0d4nvr"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd" id="1_row"]
-[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/card_bg.png" id="2_card_bg"]
+[ext_resource type="Script" uid="uid://crbnane4dchyf" path="res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd" id="1_row"]
+[ext_resource type="Texture2D" uid="uid://cwehitensta2x" path="res://Assets/Images/DaySummary/card_bg.png" id="2_card_bg"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn" id="3_avatar"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
+[ext_resource type="PackedScene" uid="uid://badokp3g1xb25" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
 
-[node name="DaySummaryStudentRow" type="Control"]
+[node name="DaySummaryStudentRow" type="Control" unique_id=385890646]
 custom_minimum_size = Vector2(992, 410)
-layout_mode = 2
+layout_mode = 3
+anchors_preset = 0
 size_flags_horizontal = 4
 script = ExtResource("1_row")
 
-[node name="CardArt" type="TextureRect" parent="."]
+[node name="CardArt" type="TextureRect" parent="." unique_id=686736351]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,16 +21,15 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_card_bg")
 expand_mode = 1
-stretch_mode = 0
 
-[node name="Avatar" parent="." instance=ExtResource("3_avatar")]
+[node name="Avatar" parent="." unique_id=1319450655 instance=ExtResource("3_avatar")]
 layout_mode = 1
 offset_left = 50.0
 offset_top = 52.0
 offset_right = 319.0
 offset_bottom = 338.0
 
-[node name="NameLabel" type="Label" parent="."]
+[node name="NameLabel" type="Label" parent="." unique_id=1171610888]
 layout_mode = 1
 offset_left = 336.0
 offset_top = 40.0
@@ -39,41 +39,61 @@ theme_type_variation = &"DaySummaryName"
 text = "Marcel"
 vertical_alignment = 1
 
-[node name="EnergyBar" type="ProgressBar" parent="."]
+[node name="EnergyBar" type="ProgressBar" parent="." unique_id=831750713]
 layout_mode = 1
 offset_left = 336.0
 offset_top = 113.0
 offset_right = 579.0
 offset_bottom = 181.0
 theme_type_variation = &"DaySummaryEnergyBar"
-show_percentage = false
 value = 36.0
+show_percentage = false
 
-[node name="MoodBar" type="ProgressBar" parent="."]
+[node name="DeltaLabel" type="Label" parent="EnergyBar" unique_id=1422091204]
+visible = false
+layout_mode = 1
+offset_right = 227.0
+offset_bottom = 68.0
+theme_type_variation = &"DaySummaryStat"
+text = "+0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MoodBar" type="ProgressBar" parent="." unique_id=325317914]
 layout_mode = 1
 offset_left = 336.0
 offset_top = 201.0
 offset_right = 579.0
 offset_bottom = 268.0
 theme_type_variation = &"DaySummaryMoodBar"
-show_percentage = false
 value = 82.0
+show_percentage = false
 
-[node name="StatRow1" parent="." instance=ExtResource("4_statrow")]
+[node name="DeltaLabel" type="Label" parent="MoodBar" unique_id=1544664727]
+visible = false
+layout_mode = 1
+offset_right = 227.0
+offset_bottom = 68.0
+theme_type_variation = &"DaySummaryStat"
+text = "+0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="StatRow1" parent="." unique_id=1507679513 instance=ExtResource("4_statrow")]
 layout_mode = 1
 offset_left = 616.0
 offset_top = 57.0
 offset_right = 966.0
 offset_bottom = 153.0
 
-[node name="StatRow2" parent="." instance=ExtResource("4_statrow")]
+[node name="StatRow2" parent="." unique_id=121854028 instance=ExtResource("4_statrow")]
 layout_mode = 1
 offset_left = 616.0
 offset_top = 154.0
 offset_right = 966.0
 offset_bottom = 250.0
 
-[node name="StatRow3" parent="." instance=ExtResource("4_statrow")]
+[node name="StatRow3" parent="." unique_id=1254964450 instance=ExtResource("4_statrow")]
 layout_mode = 1
 offset_left = 616.0
 offset_top = 254.0

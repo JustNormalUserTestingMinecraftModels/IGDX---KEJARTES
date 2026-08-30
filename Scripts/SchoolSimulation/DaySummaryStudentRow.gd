@@ -32,9 +32,21 @@ const GAIN_STEP := 0.08
 @onready var name_label: Label = $NameLabel
 @onready var energy_bar: ProgressBar = $EnergyBar
 @onready var mood_bar: ProgressBar = $MoodBar
+@onready var energy_delta_label: Label = $EnergyBar/DeltaLabel
+@onready var mood_delta_label: Label = $MoodBar/DeltaLabel
 @onready var stat_rows: Array[DaySummaryStatRow] = [
 	$StatRow1, $StatRow2, $StatRow3,
 ]
+
+
+## "+8" / "-12" -- the week's movement on a needs bar. Same sign rule as
+## DaySummaryStatRow.format_value: the "+" is explicit and the "-" comes
+## free from %d, so a loss never reads "+-12". Zero reads "+0" rather
+## than blank, because an empty slot on the card looks like a bug.
+static func format_needs_delta(delta: float) -> String:
+	var d := int(round(delta))
+	var sign_str := "+" if d >= 0 else ""
+	return "%s%d" % [sign_str, d]
 
 
 func setup_row(student_name: String, changes: Array, student: StudentData) -> void:
@@ -47,6 +59,11 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 	# matching the avatar, which already clears its texture on null.
 	energy_bar.value = student.energy if student != null else 0.0
 	mood_bar.value = student.mood if student != null else 0.0
+	# The needs numbers belong to ResultCheckup's weekly card; the mockup
+	# has none. Hidden explicitly rather than relying on the scene's
+	# default, so a card re-armed from the weekly path is still correct.
+	energy_delta_label.hide()
+	mood_delta_label.hide()
 
 	var deltas := _sum_deltas(changes)
 	for i in STAT_ORDER.size():

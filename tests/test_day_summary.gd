@@ -731,6 +731,29 @@ func test_setup_row_empties_the_needs_bars_for_an_unknown_student() -> void:
 		"an unknown student must not inherit the mockup's 82% mood")
 
 
+## The two DeltaLabels exist for ResultCheckup's weekly card. The mockup
+## has no needs number, so the daily path must leave them hidden -- if a
+## later edit shows them unconditionally, the daily card silently grows a
+## readout the design does not have.
+func test_setup_row_leaves_the_needs_deltas_hidden() -> void:
+	var scene := load(_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var s := StudentData.new()
+	s.student_name = "Marcel"
+	s.energy = 40.0
+	s.mood = 50.0
+	inst.setup_row("Marcel", [], s)
+
+	assert_false(inst.energy_delta_label.visible,
+		"the daily card must not show an energy delta")
+	assert_false(inst.mood_delta_label.visible,
+		"the daily card must not show a mood delta")
+
+
 ## The naming trap this project documents in CLAUDE.md: target_akademis2
 ## is the SENI target and target_akademis3 the OLAHRAGA one. Getting it
 ## wrong shows the right number against the wrong icon.

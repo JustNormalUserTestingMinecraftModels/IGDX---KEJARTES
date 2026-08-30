@@ -458,7 +458,7 @@ func _on_student_selected(student: Dictionary, card_node: Control = null):
 # --- Tutorial System ---
 
 func _setup_tutorial():
-	if tutorial_shown:
+	if GameState.tutorials_bypassed or tutorial_shown:
 		if color_rect:
 			color_rect.hide()
 		tutorial_active = false

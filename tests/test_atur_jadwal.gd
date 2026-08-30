@@ -65,6 +65,12 @@ func test_day_schedules_still_written_in_the_same_shape() -> void:
 			"day_schedules entries must still carry " + key)
 
 
+func test_debug_tutorial_bypass_skips_the_atur_jadwal_tutorial() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("if GameState.tutorials_bypassed or tutorial_phase3_done:"),
+		"the debug menu's master tutorial-bypass flag must skip this screen's tutorial too")
+
+
 func test_stat_bar_gd_is_deleted_and_unreferenced() -> void:
 	assert_false(FileAccess.file_exists("res://Scripts/AturJadwal/stat_bar.gd"),
 		"Scripts/AturJadwal/stat_bar.gd must be deleted")

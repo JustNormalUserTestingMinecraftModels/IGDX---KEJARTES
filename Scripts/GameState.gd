@@ -17,6 +17,10 @@ var day_schedules: Dictionary = {}
 var minggu_ke: int = 1
 var max_minggu: int = 6
 var lobby_tutorial_completed: bool = false
+## Debug-menu master switch: true skips every tutorial in the game (lobby,
+## atur jadwal, student card, student list, school day, minigames), not just
+## the lobby one. Session-scoped like everything else on GameState -- no save.
+var tutorials_bypassed: bool = false
 var current_grade: int = 7:
 	set(val):
 		current_grade = clampi(val, 7, 9)

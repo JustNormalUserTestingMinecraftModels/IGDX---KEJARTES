@@ -78,6 +78,12 @@ func test_still_routes_to_atur_jadwal() -> void:
 		"student_list must still route to AturJadwal")
 
 
+func test_debug_tutorial_bypass_skips_the_student_list_tutorial() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("if GameState.tutorials_bypassed or tutorial_shown:"),
+		"the debug menu's master tutorial-bypass flag must skip this screen's tutorial too")
+
+
 # ------------------------------------------------------- standard four
 
 func test_scene_instantiates() -> void:

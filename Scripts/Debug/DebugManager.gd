@@ -118,10 +118,33 @@ func _ready() -> void:
 	# Ensure the debug manager runs always, even when game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 128 # Above everything (Transition is 100)
-	
+
+	_apply_playtest_defaults()
+
 	# Construct programmatic UI
 	_build_ui()
 	log_message("Debug System Initialized. Press '~' or F1, or tap top-right 5x to toggle.")
+
+## Runs once per launch, before the overlay UI exists. Every playtest should
+## start the same way: no tutorials in the way, the window filling the
+## screen, and no music blaring over whatever else is playing on the dev's
+## machine. Muting BGM here is a live AudioServer override, not a call
+## through AudioDirector.set_bus_volume() -- that would persist "off" to
+## user://audio.cfg as if a player chose it. A real volume change (via the
+## Settings screen) still unmutes and saves normally.
+func _apply_playtest_defaults() -> void:
+	GameState.tutorials_bypassed = true
+	GameState.lobby_tutorial_completed = true
+	if "GameSettings" in get_node_or_null("/root"):
+		var settings = get_node("/root/GameSettings")
+		if "minigame_tutorial_enabled" in settings:
+			settings.minigame_tutorial_enabled = false
+
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+	var bgm_idx := AudioServer.get_bus_index("BGM")
+	if bgm_idx >= 0:
+		AudioServer.set_bus_mute(bgm_idx, true)
 
 func _input(event: InputEvent) -> void:
 	# 1. Keyboard shortcuts
@@ -589,7 +612,7 @@ func _build_general_panel(parent: Control) -> void:
 	grp_tutorial.add_child(v_tut_btns)
 	
 	_btn_tutorial_lobby = Button.new()
-	_btn_tutorial_lobby.text = "Bypass Tutorial Lobby: OFF"
+	_btn_tutorial_lobby.text = "Bypass ALL Tutorials: OFF"
 	_btn_tutorial_lobby.custom_minimum_size = Vector2(0, 85)
 	_btn_tutorial_lobby.add_theme_font_size_override("font_size", 21)
 	_btn_tutorial_lobby.pressed.connect(_toggle_lobby_tutorial)
@@ -645,6 +668,7 @@ func _seed_playtest_state() -> void:
 	_auto_approve_students()
 	_set_money(999999)
 	GameState.seed_playtest_inventory(5)
+	GameState.tutorials_bypassed = true
 	GameState.lobby_tutorial_completed = true
 
 	log_message("Seeded playtest state: roster, 999999G, full inventory, tutorial bypassed.")
@@ -655,9 +679,21 @@ func _set_time_scale(scale: float) -> void:
 	log_message("Game Time Scale set to: %.1fx" % scale)
 	_refresh_ui_fields()
 
+## The "Bypass Tutorial Lobby" button is the master tutorial switch: it
+## doesn't just skip the lobby's own tutorial, it cascades to every
+## tutorial-bearing screen (atur jadwal, student card, student list, school
+## day, minigames) via GameState.tutorials_bypassed, which each of those
+## screens checks at the point they'd otherwise start their tutorial.
 func _toggle_lobby_tutorial() -> void:
-	GameState.lobby_tutorial_completed = not GameState.lobby_tutorial_completed
-	log_message("Lobby Tutorial completed flag toggled to: " + str(GameState.lobby_tutorial_completed))
+	GameState.tutorials_bypassed = not GameState.tutorials_bypassed
+	GameState.lobby_tutorial_completed = GameState.tutorials_bypassed
+	if "GameSettings" in get_node_or_null("/root"):
+		var settings = get_node("/root/GameSettings")
+		if "minigame_tutorial_enabled" in settings:
+			settings.minigame_tutorial_enabled = not GameState.tutorials_bypassed
+			if settings.has_method("save_settings"):
+				settings.save_settings()
+	log_message("All tutorials bypassed: " + str(GameState.tutorials_bypassed))
 	_refresh_ui_fields()
 
 func _toggle_minigames_tutorial() -> void:
@@ -682,7 +718,7 @@ func _refresh_ui_fields() -> void:
 		elif Engine.time_scale > 1.0:
 			_lbl_speed.text += " (Cepat)"
 	if _btn_tutorial_lobby:
-		_btn_tutorial_lobby.text = "Bypass Tutorial Lobby: " + ("ON (Bypassed)" if GameState.lobby_tutorial_completed else "OFF (Normal)")
+		_btn_tutorial_lobby.text = "Bypass ALL Tutorials: " + ("ON (Bypassed)" if GameState.tutorials_bypassed else "OFF (Normal)")
 	if _btn_tutorial_minigames:
 		var active = true
 		if "GameSettings" in get_node_or_null("/root"):

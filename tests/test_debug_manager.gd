@@ -56,6 +56,38 @@ func test_seed_handler_sets_every_piece_of_state_the_docs_promise() -> void:
 		"the seed must stock the inventory")
 	assert_true(body.contains("GameState.lobby_tutorial_completed = true"),
 		"the seed must bypass the lobby tutorial")
+	assert_true(body.contains("GameState.tutorials_bypassed = true"),
+		"the seed must bypass every tutorial in the game, not just the lobby's")
+
+
+func test_tutorial_toggle_is_a_master_switch_for_every_tutorial() -> void:
+	var body := _function_body(_source(), "_toggle_lobby_tutorial")
+	assert_true(body.contains("GameState.tutorials_bypassed = not GameState.tutorials_bypassed"),
+		"the button must flip the master bypass flag every tutorial screen checks")
+	assert_true(body.contains("GameState.lobby_tutorial_completed = GameState.tutorials_bypassed"),
+		"the lobby's own completed flag must follow the master switch")
+	assert_true(body.contains("settings.minigame_tutorial_enabled = not GameState.tutorials_bypassed"),
+		"the minigame tutorial setting must follow the master switch too")
+
+
+func test_ready_applies_playtest_defaults() -> void:
+	var body := _function_body(_source(), "_ready")
+	assert_true(body.contains("_apply_playtest_defaults()"),
+		"_ready must apply the playtest defaults on every launch")
+
+
+func test_playtest_defaults_bypass_tutorial_fullscreen_and_mute_music() -> void:
+	var body := _function_body(_source(), "_apply_playtest_defaults")
+	assert_true(body.contains("GameState.tutorials_bypassed = true"),
+		"playtest must always bypass every tutorial in the game")
+	assert_true(body.contains("GameState.lobby_tutorial_completed = true"),
+		"playtest must always skip the lobby tutorial")
+	assert_true(body.contains("settings.minigame_tutorial_enabled = false"),
+		"playtest must always skip the minigame tutorial")
+	assert_true(body.contains("DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)"),
+		"playtest must always launch fullscreen")
+	assert_true(body.contains("AudioServer.set_bus_mute(bgm_idx, true)"),
+		"playtest must always start with music off")
 
 
 func test_function_body_slicer_stops_at_the_next_function() -> void:

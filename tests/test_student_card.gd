@@ -62,6 +62,15 @@ func test_still_routes_to_the_lobby() -> void:
 		"student_card must still route to the lobby")
 
 
+func test_debug_tutorial_bypass_skips_the_student_card_tutorial() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("if GameState.tutorials_bypassed:"),
+		"the debug menu's master tutorial-bypass flag must skip this screen's tutorial too")
+	assert_true(src.contains("tutorial_active = false\n\t\tcolor_rect.hide()"),
+		"bypassing must disable interaction gating and hide the overlay, same as a finished tutorial does"
+	)
+
+
 # ------------------------------------------------------- standard four
 
 func test_scene_instantiates() -> void:

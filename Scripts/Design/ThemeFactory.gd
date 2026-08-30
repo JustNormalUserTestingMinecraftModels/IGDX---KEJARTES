@@ -461,15 +461,22 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_stylebox("panel", "DaySummaryAvatarFrame", frame)
 
 	# The two needs bars and the three stat tracks are the same slab in
-	# three flavours: same rim, same radius, different fill.
+	# five flavours: same rim, same radius family, different fill.
+	# The stat tracks share the mockup's dark rail and differ only in
+	# fill, which carries the subject's category colour so the three
+	# rows read apart at a glance the same way their icons do.
 	# name, track color, fill color, radius
 	var bar_specs := [
 		["DaySummaryEnergyBar", tokens.day_bar_track,
 			tokens.day_energy_fill, tokens.day_bar_radius],
 		["DaySummaryMoodBar", tokens.day_bar_track,
 			tokens.day_mood_fill, tokens.day_bar_radius],
-		["DaySummaryStatTrack", tokens.day_stat_track,
-			tokens.day_stat_track, tokens.radius_pill],
+		["DaySummaryStatTrackAkademis", tokens.day_stat_track,
+			tokens.cat_akademis, tokens.radius_pill],
+		["DaySummaryStatTrackSeniBudaya", tokens.day_stat_track,
+			tokens.cat_senibudaya, tokens.radius_pill],
+		["DaySummaryStatTrackOlahraga", tokens.day_stat_track,
+			tokens.cat_olahraga, tokens.radius_pill],
 	]
 	for spec in bar_specs:
 		var name: String = spec[0]

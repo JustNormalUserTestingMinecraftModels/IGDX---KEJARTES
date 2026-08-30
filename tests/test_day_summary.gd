@@ -105,7 +105,9 @@ const _DAY_VARIATIONS := {
 	"DaySummaryAvatarFrame": "Panel",
 	"DaySummaryEnergyBar": "ProgressBar",
 	"DaySummaryMoodBar": "ProgressBar",
-	"DaySummaryStatTrack": "ProgressBar",
+	"DaySummaryStatTrackAkademis": "ProgressBar",
+	"DaySummaryStatTrackSeniBudaya": "ProgressBar",
+	"DaySummaryStatTrackOlahraga": "ProgressBar",
 }
 
 
@@ -147,6 +149,43 @@ func test_energy_and_mood_bars_differ_only_in_fill() -> void:
 	var m_fill := theme.get_stylebox("fill", "DaySummaryMoodBar") as StyleBoxFlat
 	assert_eq(e_fill.bg_color, tokens.day_energy_fill, "energy fill drifted")
 	assert_eq(m_fill.bg_color, tokens.day_mood_fill, "mood fill drifted")
+
+
+## Which token each stat track fills with. The icons already tell the
+## three rows apart by subject; the fills now agree with them.
+const _STAT_TRACK_FILL_TOKEN := {
+	"DaySummaryStatTrackAkademis": "cat_akademis",
+	"DaySummaryStatTrackSeniBudaya": "cat_senibudaya",
+	"DaySummaryStatTrackOlahraga": "cat_olahraga",
+}
+
+
+func test_each_stat_track_fills_in_its_category_colour() -> void:
+	var theme := load(_THEME_PATH) as Theme
+	var tokens := DesignTokens.load_default()
+	for name in _STAT_TRACK_FILL_TOKEN:
+		var bg := theme.get_stylebox("background", name) as StyleBoxFlat
+		assert_not_null(bg, "%s has no background stylebox -- did you rebake?" % name)
+		assert_eq(bg.bg_color, tokens.day_stat_track,
+			"%s rail drifted off the mockup's stat-track colour" % name)
+		var fill := theme.get_stylebox("fill", name) as StyleBoxFlat
+		assert_not_null(fill, "%s has no fill stylebox -- did you rebake?" % name)
+		assert_eq(fill.bg_color, tokens.get(_STAT_TRACK_FILL_TOKEN[name]),
+			"%s fill is not its category colour" % name)
+
+
+## The exact defect this change exists to fix: the old single
+## DaySummaryStatTrack variation used day_stat_track for BOTH the
+## background and the fill, so the bar looked identical at 0% and at
+## 100% and read as permanently empty. If a fill ever equals its own
+## rail again, the gauge is invisible no matter what value it holds.
+func test_no_stat_track_fill_matches_its_own_rail() -> void:
+	var theme := load(_THEME_PATH) as Theme
+	for name in _STAT_TRACK_FILL_TOKEN:
+		var bg := theme.get_stylebox("background", name) as StyleBoxFlat
+		var fill := theme.get_stylebox("fill", name) as StyleBoxFlat
+		assert_ne(fill.bg_color, bg.bg_color,
+			"%s fill equals its rail -- the bar reads as empty at every value" % name)
 
 
 const _AVATAR_SCENE := "res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn"
@@ -248,8 +287,8 @@ func test_stat_row_scene_wears_the_theme_and_has_no_overrides() -> void:
 	inst.theme = load(_THEME_PATH)
 	var track := inst.get_node_or_null("Track")
 	assert_not_null(track, "stat row is missing its Track")
-	assert_eq(track.theme_type_variation, &"DaySummaryStatTrack",
-		"Track is not wearing DaySummaryStatTrack")
+	assert_eq(track.theme_type_variation, &"DaySummaryStatTrackAkademis",
+		"Track is not wearing a DaySummaryStatTrack* variation")
 	var value := inst.get_node_or_null("Value")
 	assert_not_null(value, "stat row is missing its Value label")
 	assert_eq(value.theme_type_variation, &"DaySummaryStat",

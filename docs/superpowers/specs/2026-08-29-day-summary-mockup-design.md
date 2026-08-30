@@ -58,10 +58,18 @@ blank border cell means *measured to have none*, not *unknown*.
 | 10 | Stat track 1 | card body | ~616,105 →right edge of #14, h 36 | vertical gradient `#3C3C3C` → `#353535` | `#2B2B2B`, 5px | pill |
 | 11 | Stat track 2 | card body | ~616,202 (same shape) | same as #10 | `#2B2B2B`, 5px | pill |
 | 12 | Stat track 3 | card body | ~616,302 (same shape) | same as #10 | `#2B2B2B`, 5px | pill |
+| 12a | Stat track fill (×3) | #10–#12 | fills #10–#12 left-to-right @ current/target | per category: Akademis `#3D8BFF`, Seni Budaya `#7CB342`, Olahraga `#E5484D` | `#3D1E48`, 3px | pill |
 
 Stat-track rows sit at card-rel y **105 / 202 / 302** (pitch ≈ 98), each
 **36px** tall — measured on the vertical scanline at x=790, which lands
 between the chevron and the number and so crosses only the track.
+
+> **Departure from the mockup (2026-08-30, director-approved).** The mockup
+> draws these three tracks with no visible fill, and the first implementation
+> honoured that by pinning the bar to full and documenting it as decorative.
+> The director has since asked for them to be real gauges: **100% of the bar
+> means the student is at the target set for that run.** Row 12a above
+> supersedes the "no fill" reading of rows 10–12.
 
 ### Glyphs, icons and text — not surfaces
 

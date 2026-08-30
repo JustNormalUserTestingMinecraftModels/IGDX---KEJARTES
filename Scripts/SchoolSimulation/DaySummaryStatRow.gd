@@ -27,6 +27,14 @@ const ICON_FOR := {
 	"olahraga": "res://Assets/Images/DaySummary/icon_olahraga.png",
 }
 
+## Which baked variation each stat's track wears. The fills are the
+## category colours, so the three rows read apart the way the icons do.
+const TRACK_VARIATION_FOR := {
+	"akademis": &"DaySummaryStatTrackAkademis",
+	"seni_budaya": &"DaySummaryStatTrackSeniBudaya",
+	"olahraga": &"DaySummaryStatTrackOlahraga",
+}
+
 @onready var icon: TextureRect = $Icon
 @onready var chevron: TextureRect = $Chevron
 @onready var track: ProgressBar = $Track
@@ -41,11 +49,23 @@ static func format_value(delta: float, target: float) -> String:
 	return "%s%d/%d" % [sign_str, d, int(round(target))]
 
 
-func set_stat(stat_key: String, delta: float, target: float) -> void:
+## How full the track sits, 0-100. A full bar means the student has
+## reached the target set for this run -- so this is the STANDING stat
+## over its target, not the day's gain, which the number beside it
+## already carries.
+##
+## A target of zero reaches this whenever a row is built with no
+## StudentData; returning 0 there is what keeps it off a divide by zero.
+static func track_ratio(current: float, target: float) -> float:
+	if target <= 0.0:
+		return 0.0
+	return clampf(current / target * 100.0, 0.0, 100.0)
+
+
+func set_stat(stat_key: String, delta: float, target: float, current: float) -> void:
 	if ICON_FOR.has(stat_key):
 		icon.texture = load(ICON_FOR[stat_key])
+	if TRACK_VARIATION_FOR.has(stat_key):
+		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
 	value.text = format_value(delta, target)
-	# The track is decorative in the mockup -- it reads as a rail the
-	# chevron sits on, not as a gauge -- so it stays full rather than
-	# encoding delta a second time next to the number that already says it.
-	track.value = track.max_value
+	track.value = track_ratio(current, target)

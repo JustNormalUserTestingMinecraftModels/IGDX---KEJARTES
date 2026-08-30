@@ -280,6 +280,69 @@ func test_stat_row_formats_a_loss_without_a_stray_plus() -> void:
 	assert_eq(DaySummaryStatRow.format_value(-3.0, 65.0), "-3/65")
 
 
+## The gauge contract the director set: a full bar means the student has
+## reached the target for that stat this run. Floats are compared with
+## is_equal_approx -- McpTestSuite has no assert_almost_eq, and
+## 39.0/50.0*100.0 is not bit-exact.
+func test_track_ratio_is_progress_toward_the_target() -> void:
+	assert_true(is_equal_approx(DaySummaryStatRow.track_ratio(39.0, 50.0), 78.0),
+		"39 of a 50 target must read 78%")
+	assert_true(is_equal_approx(DaySummaryStatRow.track_ratio(25.0, 50.0), 50.0),
+		"half the target must read 50%")
+	assert_true(is_equal_approx(DaySummaryStatRow.track_ratio(50.0, 50.0), 100.0),
+		"at target must read a full bar")
+	assert_true(is_equal_approx(DaySummaryStatRow.track_ratio(0.0, 78.0), 0.0),
+		"a zeroed stat must read an empty bar")
+
+
+## Every degenerate input a real roster can produce. StudentData's
+## target_akademis1/2/3 all default to 50.0, but a row built with no
+## student at all passes target 0.0 -- that must not divide by zero, and
+## overshooting a target must not paint outside the rail.
+func test_track_ratio_clamps_and_survives_a_missing_target() -> void:
+	assert_true(is_equal_approx(DaySummaryStatRow.track_ratio(65.0, 50.0), 100.0),
+		"past the target must clamp to full, not overflow")
+	assert_true(is_equal_approx(DaySummaryStatRow.track_ratio(30.0, 0.0), 0.0),
+		"a zero target must return 0, not divide by zero")
+	assert_true(is_equal_approx(DaySummaryStatRow.track_ratio(30.0, -10.0), 0.0),
+		"a negative target must return 0")
+	assert_true(is_equal_approx(DaySummaryStatRow.track_ratio(-5.0, 50.0), 0.0),
+		"a negative stat must clamp to empty")
+
+
+## The row must wear the variation matching its own stat, or all three
+## bars come out akademis blue (the scene's default from Task 1).
+func test_stat_row_wears_the_variation_for_its_stat() -> void:
+	assert_eq(DaySummaryStatRow.TRACK_VARIATION_FOR["akademis"],
+		&"DaySummaryStatTrackAkademis", "akademis track variation is wrong")
+	assert_eq(DaySummaryStatRow.TRACK_VARIATION_FOR["seni_budaya"],
+		&"DaySummaryStatTrackSeniBudaya", "seni_budaya track variation is wrong")
+	assert_eq(DaySummaryStatRow.TRACK_VARIATION_FOR["olahraga"],
+		&"DaySummaryStatTrackOlahraga", "olahraga track variation is wrong")
+
+
+## set_stat is the whole point of this change, so exercise it on a live
+## instance rather than only asserting the pure helper. The scene is
+## added to the tree so its @onready vars resolve, and the baked theme is
+## assigned explicitly -- ThemeDB's project-theme fallback does not
+## populate under the editor's own root.
+func test_set_stat_fills_the_track_and_leaves_the_number_alone() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	inst.set_stat("olahraga", 6.0, 50.0, 39.0)
+
+	assert_true(is_equal_approx(inst.track.value, 78.0),
+		"track must fill to current/target, not sit at max")
+	assert_eq(inst.value.text, "+6/50",
+		"the number must still be the DAY'S GAIN over the target")
+	assert_eq(inst.track.theme_type_variation, &"DaySummaryStatTrackOlahraga",
+		"track must switch to its own stat's variation")
+
+
 func test_stat_row_scene_wears_the_theme_and_has_no_overrides() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	assert_not_null(scene, "DaySummaryStatRow.tscn failed to load")

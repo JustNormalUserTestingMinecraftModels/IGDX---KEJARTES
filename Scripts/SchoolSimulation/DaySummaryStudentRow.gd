@@ -43,9 +43,14 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 	for i in STAT_ORDER.size():
 		var key: String = STAT_ORDER[i]
 		var target := 0.0
+		var current := 0.0
 		if student != null:
 			target = float(student.get(TARGET_FOR[key]))
-		stat_rows[i].set_stat(key, deltas.get(key, 0.0), target)
+			# STAT_ORDER's keys are StudentData's own field names, so the
+			# standing value reads straight off the resource -- it is only
+			# the TARGET field names that carry the akademis2/3 naming trap.
+			current = float(student.get(key))
+		stat_rows[i].set_stat(key, deltas.get(key, 0.0), target, current)
 
 
 ## A stat can move more than once in a day -- a scheduled activity plus

@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://danbj1stwk10x"]
+
+[ext_resource type="Script" uid="uid://cq5ctqqgmpwnj" path="res://Scripts/UI/TraitDetailPopup.gd" id="1_t4phs"]
+
+[node name="TraitDetailPopup" type="CanvasLayer" unique_id=1424003055]
+layer = 100
+script = ExtResource("1_t4phs")
+
+[node name="Scrim" type="ColorRect" parent="." unique_id=1993301214]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Card" type="PanelContainer" parent="Scrim" unique_id=1320277590]
+custom_minimum_size = Vector2(1015, 0)
+layout_mode = 0
+theme_type_variation = &"Card"
+
+[node name="Layout" type="VBoxContainer" parent="Scrim/Card" unique_id=1514686172]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="Scrim/Card/Layout" unique_id=1440106930]
+layout_mode = 2
+theme_type_variation = &"TraitPopupHeader"
+
+[node name="Row" type="HBoxContainer" parent="Scrim/Card/Layout/Header" unique_id=2092313704]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="GlyphLabel" type="Label" parent="Scrim/Card/Layout/Header/Row" unique_id=831374150]
+layout_mode = 2
+theme_type_variation = &"H1Label"
+vertical_alignment = 1
+
+[node name="Titles" type="VBoxContainer" parent="Scrim/Card/Layout/Header/Row" unique_id=1264387691]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="KindLabel" type="Label" parent="Scrim/Card/Layout/Header/Row/Titles" unique_id=1710107734]
+layout_mode = 2
+theme_type_variation = &"BarLabel"
+
+[node name="NameLabel" type="Label" parent="Scrim/Card/Layout/Header/Row/Titles" unique_id=72944973]
+layout_mode = 2
+theme_type_variation = &"BarLabel"
+autowrap_mode = 3
+
+[node name="CloseButton" type="Button" parent="Scrim/Card/Layout/Header/Row" unique_id=836038364]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"SecondaryButton"
+text = "✕"
+
+[node name="Body" type="PanelContainer" parent="Scrim/Card/Layout" unique_id=414830483]
+layout_mode = 2
+theme_type_variation = &"SunkenPanel"
+
+[node name="DescriptionLabel" type="Label" parent="Scrim/Card/Layout/Body" unique_id=954174993]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_constants/line_spacing = 12
+autowrap_mode = 3

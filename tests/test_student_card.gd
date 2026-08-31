@@ -155,8 +155,15 @@ func test_motion_and_audio_feedback_are_wired() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("Juice.stagger_in"),
 		"student pages must stagger in on entry")
-	assert_true(src.contains("Juice.pop_in"),
-		"the detail popup must pop in")
+	# The stat and trait detail popups' pop-in reveal now lives in the shared
+	# scenes they were extracted into (StatDetailPopup.gd / TraitDetailPopup.gd),
+	# not in student_card.gd itself -- that's the point of the extraction.
+	var stat_popup_src := FileAccess.get_file_as_string("res://Scripts/UI/StatDetailPopup.gd")
+	var trait_popup_src := FileAccess.get_file_as_string("res://Scripts/UI/TraitDetailPopup.gd")
+	assert_true(stat_popup_src.contains("Juice.pop_in"),
+		"the stat detail popup must pop in")
+	assert_true(trait_popup_src.contains("Juice.pop_in"),
+		"the trait detail popup must pop in")
 	assert_true(src.contains("AudioDirector.play_sfx(&\"stamp\")"),
 		"approve must play the stamp sfx")
 	assert_true(src.contains("AudioDirector.play_sfx(&\"unstamp\")"),

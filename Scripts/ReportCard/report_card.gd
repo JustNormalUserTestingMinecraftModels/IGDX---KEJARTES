@@ -300,163 +300,31 @@ func _on_detail_popup_closed() -> void:
 	_update_nav_buttons(current_page)
 # ================= TRAIT POPUP =================
 
-func _show_trait_popup(kertas: Control, type: String, name: String, desc: String, on_close: Callable = Callable()) -> void:
-	if _active_popup and is_instance_valid(_active_popup):
-		return  # already open
-	AudioDirector.play_sfx(&"popup_open")
+## The scene the trait-detail modal is authored in.
+@export var trait_popup_scene: PackedScene = preload("res://Scenes/UI/TraitDetailPopup.tscn")
 
-	var vp: Vector2 = get_viewport_rect().size
-	var is_quirk := (type == "quirk")
-	# Matches the QuirkBadge / PersonaBadge button variations, so tapping a
-	# badge opens a popup headed in that badge's own color.
-	var accent_tokens := DesignTokens.load_default()
-	var accent := accent_tokens.brand_primary if is_quirk \
-		else accent_tokens.cat_istirahat
-
-	var canvas := CanvasLayer.new()
-	canvas.name = "PopupCanvas"
-	canvas.layer = 100
-	kertas.add_child(canvas)
-
-	# Full-screen dim overlay
-	var overlay := ColorRect.new()
-	overlay.name = "TraitOverlay"
-	overlay.color = _scrim_color(0.0)
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	canvas.add_child(overlay)
-	_active_popup = canvas
-
-	# ── Popup panel ──
-	var popup := PanelContainer.new()
-	popup.name = "TraitPopupPanel"
-	var panel_w := vp.x * 0.94
-	popup.custom_minimum_size = Vector2(panel_w, 0)
-
-	popup.theme_type_variation = &"Card"
-	overlay.add_child(popup)
-
-	# Hide navigation arrows to prevent accidental sliding
+## Open the quirk/persona detail modal.
+##
+## Affects: adds a CanvasLayer child to `kertas`, hides the page-turn arrows
+## while it is open, and sets `_active_popup`. `on_close` is invoked after
+## the exit animation.
+func _show_trait_popup(kertas: Control, type: String, name: String,
+		desc: String, on_close: Callable = Callable()) -> void:
+	if _active_popup != null and is_instance_valid(_active_popup):
+		return
 	if next_kanan: next_kanan.hide()
 	if next_kiri: next_kiri.hide()
 
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 0)
-	popup.add_child(vbox)
-
-	# ── Colored header ──
-	# The one surface in this screen that genuinely varies per instance:
-	# its whole job is to carry the quirk-vs-persona accent, so no fixed
-	# variation can express it. Every value below still comes from a
-	# token; only the accent is chosen at runtime.
-	var header := PanelContainer.new()
-	var tok := DesignTokens.load_default()
-	var hdr_bg := StyleBoxFlat.new()
-	hdr_bg.bg_color = accent
-	hdr_bg.corner_radius_top_left = tok.radius_lg
-	hdr_bg.corner_radius_top_right = tok.radius_lg
-	hdr_bg.content_margin_left = tok.space_md
-	hdr_bg.content_margin_top = tok.space_sm
-	hdr_bg.content_margin_right = tok.space_md
-	hdr_bg.content_margin_bottom = tok.space_sm
-	header.add_theme_stylebox_override("panel", hdr_bg)
-	vbox.add_child(header)
-
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 18)
-	header.add_child(hbox)
-
-	var icon_lbl := Label.new()
-	icon_lbl.text = "⚡" if is_quirk else "🌟"
-	icon_lbl.theme_type_variation = &"H1Label"
-	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hbox.add_child(icon_lbl)
-
-	var title_vbox := VBoxContainer.new()
-	title_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(title_vbox)
-
-	# Both sit on the saturated accent header, which is exactly the
-	# backdrop BarLabel exists for: white glyph, dark rim.
-	var type_lbl := Label.new()
-	type_lbl.text = "QUIRK" if is_quirk else "PERSONA"
-	type_lbl.theme_type_variation = &"BarLabel"
-	title_vbox.add_child(type_lbl)
-
-	var name_lbl := Label.new()
-	name_lbl.text = name
-	name_lbl.theme_type_variation = &"BarLabel"
-	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	title_vbox.add_child(name_lbl)
-
-	var close_btn := Button.new()
-	close_btn.text = "✕"
-	close_btn.theme_type_variation = &"SecondaryButton"
-	close_btn.custom_minimum_size = Vector2.ONE * float(DesignTokens.load_default().touch_target_min)
-	close_btn.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	hbox.add_child(close_btn)
-
-	# ── Body ──
-	var body := PanelContainer.new()
-	body.theme_type_variation = &"SunkenPanel"
-	vbox.add_child(body)
-
-	var desc_lbl := Label.new()
-	desc_lbl.text = "💡  EFEK GAMEPLAY:\n" + desc
-	desc_lbl.theme_type_variation = &"TitleLabel"
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_lbl.add_theme_constant_override("line_spacing", 12)
-	body.add_child(desc_lbl)
-
-	# ── Slide-up animation ──
-	await get_tree().process_frame
-	if not is_instance_valid(popup):
-		return
-	# Same reveal as the stat popup: place, then Juice.pop_in.
-	var pw := popup.size.x
-	var ph := popup.size.y
-	popup.position = Vector2((vp.x - pw) * 0.5,
-		vp.y - ph - float(DesignTokens.load_default().space_md))
-	Juice.pop_in(popup)
-
-	var tw2 := create_tween()
-	tw2.set_trans(Tween.TRANS_LINEAR)
-	tw2.tween_property(overlay, "color", _scrim_color(), 0.22)
-
-	var close_fn = func(): _close_trait_popup(canvas, overlay, popup, on_close)
-	close_btn.pressed.connect(close_fn)
-	overlay.gui_input.connect(func(ev):
-		if (ev is InputEventMouseButton and ev.pressed) or \
-		   (ev is InputEventScreenTouch and ev.pressed):
-			_close_trait_popup(canvas, overlay, popup, on_close)
-	)
-
-func _close_trait_popup(canvas: CanvasLayer, overlay: Control, popup: Control, on_close: Callable = Callable()) -> void:
-	if not is_instance_valid(canvas) or _active_popup != canvas:
-		return
-	AudioDirector.play_sfx(&"popup_close")
-
-	# Mark as closing immediately to prevent double-calls
-	_active_popup = null
-
-	var vp := get_viewport_rect().size
-	var tw := create_tween().set_parallel(true)
-	tw.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	if is_instance_valid(popup):
-		tw.tween_property(popup, "position:y", vp.y, 0.26)
-	if is_instance_valid(overlay):
-		tw.tween_property(overlay, "color", _scrim_color(0.0), 0.22)
-	tw.chain().tween_callback(func():
-		if is_instance_valid(canvas):
-			canvas.queue_free()
-		if _active_popup == canvas:
-			_active_popup = null
-		if on_close.is_valid():
-			on_close.call()
-
-		# Restore navigation arrows
+	var popup: TraitDetailPopup = trait_popup_scene.instantiate()
+	_active_popup = popup
+	kertas.add_child(popup)
+	popup.configure(type, name, desc)
+	popup.closed.connect(func() -> void:
+		_active_popup = null
 		_update_nav_buttons(current_page)
-	)
+		if on_close.is_valid():
+			on_close.call())
+	popup.open()
 
 # ──────────────────────────────────────────────────────────────────────────────
 

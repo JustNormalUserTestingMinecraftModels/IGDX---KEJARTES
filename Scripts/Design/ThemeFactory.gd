@@ -168,6 +168,23 @@ static func _build_panels(theme: Theme, tokens: DesignTokens) -> void:
 	scrim.bg_color = tokens.scrim_color()
 	theme.set_stylebox("panel", "Scrim", scrim)
 
+	# A card header whose accent is chosen at runtime. The background is
+	# white so the caller can tint it with self_modulate -- the accent is the
+	# one value on this surface that genuinely varies per instance (quirk
+	# versus persona), and no fixed variation can express it. Every other
+	# value still comes from a token.
+	theme.add_type("TraitPopupHeader")
+	theme.set_type_variation("TraitPopupHeader", "Panel")
+	var trait_header := StyleBoxFlat.new()
+	trait_header.bg_color = Color.WHITE
+	trait_header.corner_radius_top_left = tokens.radius_lg
+	trait_header.corner_radius_top_right = tokens.radius_lg
+	trait_header.content_margin_left = tokens.space_md
+	trait_header.content_margin_top = tokens.space_sm
+	trait_header.content_margin_right = tokens.space_md
+	trait_header.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "TraitPopupHeader", trait_header)
+
 
 # ----------------------------------------------------------------- labels
 

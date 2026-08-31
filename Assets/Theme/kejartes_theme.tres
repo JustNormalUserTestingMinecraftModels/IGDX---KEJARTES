@@ -1,8 +1,8 @@
-[gd_resource type="Theme" format=3 uid="uid://1fb707780lq0"]
+[gd_resource type="Theme" format=3]
 
-[ext_resource type="FontFile" uid="uid://cy4h6en00otj5" path="res://Assets/Fonts/Milker.otf" id="1_c7jio"]
-[ext_resource type="Texture2D" uid="uid://lhadclrq8tix" path="res://Assets/Images/StudentCard/pill_fill.png" id="2_rdx8f"]
-[ext_resource type="Texture2D" uid="uid://doouaa0kry0fy" path="res://Assets/Images/StudentCard/trait_button.png" id="3_04lmp"]
+[ext_resource type="FontFile" path="res://Assets/Fonts/Milker.otf" id="1_c7jio"]
+[ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/pill_fill.png" id="2_rdx8f"]
+[ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/trait_button.png" id="3_04lmp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c7jio"]
 content_margin_left = 44.0
@@ -975,6 +975,15 @@ texture_margin_right = 45.0
 texture_margin_bottom = 45.0
 region_rect = Rect2(20, 277, 601, 91)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lyu8e"]
+content_margin_left = 28.0
+content_margin_top = 16.0
+content_margin_right = 28.0
+content_margin_bottom = 16.0
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 36
+corner_radius_top_right = 36
+
 [resource]
 default_font = ExtResource("1_c7jio")
 default_font_size = 28
@@ -1201,4 +1210,6 @@ TraitPill/styles/focus = SubResource("StyleBoxEmpty_n0f8p")
 TraitPill/styles/hover = SubResource("StyleBoxTexture_5fiis")
 TraitPill/styles/normal = SubResource("StyleBoxTexture_5fiis")
 TraitPill/styles/pressed = SubResource("StyleBoxTexture_5fiis")
+TraitPopupHeader/base_type = &"Panel"
+TraitPopupHeader/styles/panel = SubResource("StyleBoxFlat_lyu8e")
 VBoxContainer/constants/separation = 28

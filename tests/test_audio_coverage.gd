@@ -65,9 +65,19 @@ func _scan_for_audio_loads(path: String, offenders: Array[String]) -> void:
 
 func test_student_card_interactions_have_sfx() -> void:
 	var src := _source("res://Scripts/StudentCard/student_card.gd")
-	for id in ["swipe", "stamp", "unstamp", "popup_open", "popup_close"]:
+	for id in ["swipe", "stamp", "unstamp"]:
 		assert_true(src.contains('play_sfx(&"%s")' % id),
 			"student_card must play sfx: " + id)
+	# popup_open/popup_close now live in the shared popup scenes student_card
+	# instantiates (StatDetailPopup.gd, TraitDetailPopup.gd), not in
+	# student_card.gd itself.
+	var stat_popup_src := _source("res://Scripts/UI/StatDetailPopup.gd")
+	var trait_popup_src := _source("res://Scripts/UI/TraitDetailPopup.gd")
+	for id in ["popup_open", "popup_close"]:
+		assert_true(stat_popup_src.contains('play_sfx(&"%s")' % id),
+			"StatDetailPopup must play sfx: " + id)
+		assert_true(trait_popup_src.contains('play_sfx(&"%s")' % id),
+			"TraitDetailPopup must play sfx: " + id)
 
 
 func test_lobby_interactions_have_sfx() -> void:

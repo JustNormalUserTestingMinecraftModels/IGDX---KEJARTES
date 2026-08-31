@@ -32,6 +32,9 @@ const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
 ## breakdown lines. This screen never has an icon texture, so its rows
 ## always show the full-sentence Glyph label ("Energy ⚡") instead.
 @export var student_stat_row_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentStatRow.tscn")
+## Shared Card+Margin chrome for the per-student decay card. Uses the
+## component's own 20/16/20/16 margin defaults unchanged.
+@export var student_summary_card_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentSummaryCard.tscn")
 
 @onready var title_label: Label = $Margin/Panel/Margin/VBox/HeaderVBox/TitleLabel
 @onready var subtitle_label: Label = $Margin/Panel/Margin/VBox/HeaderVBox/SubtitleLabel
@@ -131,16 +134,13 @@ func _apply_visual_exports() -> void:
 
 func _create_student_decay_card(res: Dictionary) -> PanelContainer:
 	var tokens := Juice.tokens()
-	var card = PanelContainer.new()
+	var card: StudentSummaryCard = student_summary_card_scene.instantiate()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.theme_type_variation = &"Card"
 
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 20)
-	margin.add_theme_constant_override("margin_top", 16)
-	margin.add_theme_constant_override("margin_right", 20)
-	margin.add_theme_constant_override("margin_bottom", 16)
-	card.add_child(margin)
+	# The panel hasn't entered the tree yet (it's returned to the caller,
+	# which parents it later), so the @onready `margin` isn't live --
+	# get_node still works because instantiate() built the subtree.
+	var margin: MarginContainer = card.get_node("Margin")
 
 	var vbox = VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL

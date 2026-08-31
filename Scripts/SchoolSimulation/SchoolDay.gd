@@ -33,6 +33,8 @@ signal _summary_closed
 ## Shared icon(-or-glyph) + bar + number row used for the embedded
 ## energy/mood readout on each student card.
 @export var student_stat_row_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentStatRow.tscn")
+## Shared Card+Margin chrome for the per-student day-summary card.
+@export var student_summary_card_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentSummaryCard.tscn")
 ## The end-of-week tutorial's coach-mark. Overridden below to SchoolDay's
 ## shipped 0.85/900 width, 30px content margin, H2Label title, unstyled
 ## body and success-tinted CaptionLabel prompt -- everything TutorialPanel
@@ -407,29 +409,21 @@ func _render_embedded_student_status() -> void:
 
 	var cards: Array = []
 	for student in student_manager.students:
-		var panel = PanelContainer.new()
+		var panel: StudentSummaryCard = student_summary_card_scene.instantiate()
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		panel.margin_left = 24
+		panel.margin_top = 14
+		panel.margin_right = 24
+		panel.margin_bottom = 12
 
 		# An art-supplied card PNG still wins; otherwise the theme's Card
 		# variation supplies fill, outline, radius, shadow and margins.
-		var card_bg = _get_playful_texture("card_bg")
-		if card_bg != null:
-			var style_tex = StyleBoxTexture.new()
-			style_tex.texture = card_bg
-			style_tex.content_margin_left = 24
-			style_tex.content_margin_right = 24
-			style_tex.content_margin_top = 16
-			style_tex.content_margin_bottom = 16
-			panel.add_theme_stylebox_override("panel", style_tex)
-		else:
-			panel.theme_type_variation = &"Card"
+		panel.set_background_texture(_get_playful_texture("card_bg"))
 
-		var margin = MarginContainer.new()
-		margin.add_theme_constant_override("margin_left", 24)
-		margin.add_theme_constant_override("margin_top", 14)
-		margin.add_theme_constant_override("margin_right", 24)
-		margin.add_theme_constant_override("margin_bottom", 12)
-		panel.add_child(margin)
+		# The panel hasn't entered the tree yet (it's appended below, once
+		# fully built, same as before), so the @onready `margin` isn't live
+		# -- get_node still works because instantiate() built the subtree.
+		var margin: MarginContainer = panel.get_node("Margin")
 
 		var card_vbox = VBoxContainer.new()
 		card_vbox.add_theme_constant_override("separation", 8)

@@ -34,6 +34,10 @@ signal event_decision_made(accepted: bool, selected_students: Array[StudentData]
 
 const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
 
+## Shared Card+Margin chrome for each selectable student card. Uses the
+## component's own 20/16/20/16 margin defaults unchanged.
+@export var student_summary_card_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentSummaryCard.tscn")
+
 ## How much white to mix into a state color before using it as a card
 ## tint. A card is a large surface; the raw accent at full strength reads
 ## as an alert, not as a highlight.
@@ -175,9 +179,8 @@ func _set_mouse_filter_pass(node: Node) -> void:
 
 func _create_card(student: StudentData) -> PanelContainer:
 	var tokens := Juice.tokens()
-	var card = PanelContainer.new()
+	var card: StudentSummaryCard = student_summary_card_scene.instantiate()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.theme_type_variation = &"Card"
 
 	var is_tired = student.is_tired()
 	var category = event_data.get("category", "Akademis")
@@ -190,12 +193,10 @@ func _create_card(student: StudentData) -> PanelContainer:
 	elif is_spec:
 		card.self_modulate = tokens.state_success.lerp(Color.WHITE, _CARD_TINT_MIX)
 
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 20)
-	margin.add_theme_constant_override("margin_top", 16)
-	margin.add_theme_constant_override("margin_right", 20)
-	margin.add_theme_constant_override("margin_bottom", 16)
-	card.add_child(margin)
+	# The card hasn't entered the tree yet (it's returned to the caller,
+	# which parents it later), so the @onready `margin` isn't live --
+	# get_node still works because instantiate() built the subtree.
+	var margin: MarginContainer = card.get_node("Margin")
 
 	var main_hbox = HBoxContainer.new()
 	main_hbox.add_theme_constant_override("separation", 20)

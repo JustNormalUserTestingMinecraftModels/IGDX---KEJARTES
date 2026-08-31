@@ -1,20 +1,39 @@
 extends Control
 
+## The Lobby hub: the screen between weeks, and the launch point for every
+## other screen (StudentCard, AturJadwal, Koperasi, Inventory, ReportCard).
+##
+## Draws the roster diorama from GameState.approved_students -- a portrait
+## and matching hand art per approved student slot, keyed by persona -- and
+## the daily-login reward strip. Writes GameState.player_money,
+## daily_login_day and last_claim_date when the reward is claimed, and
+## GameState.lobby_tutorial_completed once its own tutorial finishes;
+## every other button here just transitions to another screen.
+
 @export_group("Background Layers")
+## Lobby backdrop. Null falls back to loading loby.png directly.
 @export var bg_texture: Texture2D
+## Portrait shown in a roster slot when that student has no
+## StudentData.avatar_texture of their own.
 @export var default_portrait: Texture2D = preload("res://Assets/Images/MuridPotrait/Thea.png")
 
 @export_group("Hand Portraits by Persona")
+## Hand art layered behind the "Tekun" persona's portrait slot.
 @export var hand_tekun: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_tekun.png")
+## Same as hand_tekun, for "Aktif".
 @export var hand_aktif: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_aktif.png")
+## Same as hand_tekun, for "Kreatif".
 @export var hand_kreatif: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_kreatif.png")
+## Same as hand_tekun, for "Pendiam" ("Seni Dalam Kesunyian").
 @export var hand_pendiam: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_pendiam.png")
+## Same as hand_tekun, for "Santai".
 @export var hand_santai: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_santai.png")
 
 @export_group("Idle Motion")
 ## Subtle looping vertical bob applied to the diorama's portrait
 ## containers, so the hub does not read as a still image.
 @export var idle_bob_pixels: float = 6.0
+## Full up-down-up cycle length (seconds) for idle_bob_pixels.
 @export var idle_bob_period: float = 3.2
 
 
@@ -59,7 +78,10 @@ extends Control
 const DAILY_REWARD := 10
 
 @export_group("Tutorial")
+## Steps shown the first time the player reaches the Lobby.
 @export var tutorial_phase1_steps: Array[TutorialStepData] = []
+## Steps shown when returning to the Lobby from StudentCard
+## (GameState.returned_from_student_card), instead of phase1's steps.
 @export var tutorial_phase2_steps: Array[TutorialStepData] = []
 
 const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")

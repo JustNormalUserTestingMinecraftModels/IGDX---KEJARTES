@@ -16,14 +16,22 @@ signal overview_closed
 
 # ── Visual - Header & Typography ──────────────────────────────────────────────
 @export_group("Visual - Header & Typography")
+## Header title. `%s` is filled with the day name (e.g. "Senin").
 @export var title_format_text: String = "🌅 Aktivitas & Evaluasi Harian (%s)"
+## Header subtitle, under title_format_text.
 @export var subtitle_text: String = "Pengurangan Energi & Mood siswa sesuai kepribadian & rutinitas"
+## Small icon appended into the title label -- see _apply_visual_exports().
 @export var sunrise_icon_texture: Texture2D = null
+## Optional font override applied to the title/subtitle/continue button.
+## Null keeps the theme's default font.
 @export var font: Font = null
 
 # ── Visual - Buttons (Single-PNG System) ─────────────────────────────────────
 @export_group("Visual - Buttons")
+## Art-supplied continue-button texture. Null keeps the theme's button
+## styling and shows continue_button_text as a plain label instead.
 @export var button_continue_texture: Texture2D = null
+## Label shown on the continue button when button_continue_texture is null.
 @export var continue_button_text: String = "Lanjutkan"
 
 const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"

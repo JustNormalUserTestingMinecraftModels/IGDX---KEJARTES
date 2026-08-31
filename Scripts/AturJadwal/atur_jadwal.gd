@@ -1,8 +1,25 @@
 extends Control
 
+## Atur Jadwal: the player assigns each approved student one activity per
+## school day, then commits the week.
+##
+## Reached from the Lobby. On commit it fills GameState.day_schedules --
+## a dictionary keyed by student id, each holding five category strings --
+## and hands off to StudentList and then SchoolDay, which simulate it.
+##
+## Categories are Akademis / SeniBudaya / Olahraga / Istirahat / Wirausaha.
+## Two legacy spellings are normalised on the way in: "Akademik" becomes
+## "Akademis" and "DayOff" becomes "Istirahat". A student whose energy has
+## fallen to 5 or below is forced to "Izin", which is Istirahat under a
+## different label -- the player cannot override that.
+##
+## Affects: GameState.day_schedules only. It never touches stats; SchoolDay
+## does that when the week runs.
+
 signal _holiday_dismissed
 
 @export_group("Calendar Display")
+## Icon shown next to the current date in the TanggalContainer header.
 @export var calendar_icon: Texture2D
 
 # National Holidays definition

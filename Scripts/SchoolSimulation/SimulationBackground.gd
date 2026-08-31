@@ -24,11 +24,16 @@ enum PatternType {
 		color = val
 		queue_redraw()
 
+## Which weekday motif _draw() renders. SchoolDay sets this per weekday
+## (GRID Monday, STRIPES Tuesday, DOTS Wednesday, ZIGZAG Thursday,
+## STARS Friday).
 @export var pattern_type: PatternType = PatternType.GRID:
 	set(val):
 		pattern_type = val
 		queue_redraw()
 
+## Alpha of the pattern wash over bg_color -- low by design so it reads
+## as texture, not content.
 @export var pattern_opacity: float = 0.07:
 	set(val):
 		pattern_opacity = val

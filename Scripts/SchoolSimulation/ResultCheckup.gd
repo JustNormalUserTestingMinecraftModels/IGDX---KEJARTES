@@ -27,17 +27,29 @@ signal checkup_closed
 
 # ── Visual - Header & Typography ──────────────────────────────────────────────
 @export_group("Visual - Header & Typography")
+## Main header title.
 @export var header_title_text: String = "EVALUASI MINGGUAN SISWA"
+## Main header subtitle, under header_title_text.
 @export var header_subtitle_text: String = "Perkembangan statistik & riwayat kegiatan selama satu minggu"
+## Section heading above the per-student cards.
 @export var students_section_header_text: String = "RAPOR MINGGUAN SISWA"
+## Section heading above the minigame/event history log.
 @export var history_section_header_text: String = "RIWAYAT MINIGAME & EVENT"
+## Icon beside students_section_header_text. Null shows the header with
+## no icon.
 @export var students_header_icon_texture: Texture2D = null
+## Icon beside history_section_header_text.
 @export var history_header_icon_texture: Texture2D = null
+## Optional font override applied across the screen's labels. Null keeps
+## the theme's default font.
 @export var font: Font = null
 
 # ── Visual - Buttons (Single-PNG System) ─────────────────────────────────────
 @export_group("Visual - Buttons")
+## Art-supplied close-button texture. Null keeps the theme's button
+## styling and shows close_button_text as a plain label instead.
 @export var button_close_texture: Texture2D = null
+## Label shown on the close button when button_close_texture is null.
 @export var close_button_text: String = "Selesai Evaluasi"
 
 # ── Wiring ───────────────────────────────────────────────────────────────────

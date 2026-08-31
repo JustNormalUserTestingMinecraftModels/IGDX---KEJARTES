@@ -11,6 +11,8 @@ class_name DaySummaryPopup
 
 signal summary_dismissed
 
+## Template instantiated once per student who moved that day, into
+## rows_container -- normally DaySummaryStudentRow.tscn.
 @export var student_row_scene: PackedScene
 
 @onready var dim_overlay: Panel = $DimOverlay

@@ -30,26 +30,17 @@ func suite_name() -> String:
 ## Scripts still lacking a file-header doc block, frozen 2026-08-31.
 ## Remove entries as they are documented. Never add one.
 const PENDING_HEADERS: Array[String] = [
-	"res://Scripts/AturJadwal/atur_jadwal.gd",
-	"res://Scripts/Koperasi/koprasi.gd",
-	"res://Scripts/Lobby/loby.gd",
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd",
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd",
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd",
 	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd",
 	"res://Scripts/Minigames/UI/BaseMinigame.gd",
 	"res://Scripts/Minigames/UI/MinigameMenu.gd",
-	"res://Scripts/SchoolSimulation/SchoolDay.gd",
-	"res://Scripts/StudentCard/student_card.gd",
 ]
 
 ## script_path -> number of undocumented @export declarations, frozen
 ## 2026-08-31. Lower these as they are documented. Never raise one.
 const PENDING_EXPORT_DOCS: Dictionary = {
-	"res://Scripts/AturJadwal/ActivityRow.gd": 3,
-	"res://Scripts/AturJadwal/atur_jadwal.gd": 1,
-	"res://Scripts/EndGame/ResultStatRow.gd": 2,
-	"res://Scripts/Lobby/loby.gd": 10,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 30,
 	"res://Scripts/Minigames/Akademis/Password.gd": 12,
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 15,
@@ -62,18 +53,6 @@ const PENDING_EXPORT_DOCS: Dictionary = {
 	"res://Scripts/Minigames/UI/MinigameMenu.gd": 9,
 	"res://Scripts/Minigames/UI/MinigameTutorial.gd": 10,
 	"res://Scripts/Minigames/UI/PauseMenu.gd": 13,
-	"res://Scripts/ReportCard/report_card.gd": 6,
-	"res://Scripts/SchoolSimulation/BookClockWidget.gd": 3,
-	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd": 6,
-	"res://Scripts/SchoolSimulation/DaySummaryPopup.gd": 1,
-	"res://Scripts/SchoolSimulation/EventAnnouncement.gd": 5,
-	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 8,
-	"res://Scripts/SchoolSimulation/EventWarning.gd": 4,
-	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 9,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd": 17,
-	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 2,
-	"res://Scripts/StudentCard/student_card.gd": 6,
-	"res://Scripts/StudentList/StickyNote.gd": 2,
 }
 
 ## Same exemption as the editability ratchet: a programmatic developer

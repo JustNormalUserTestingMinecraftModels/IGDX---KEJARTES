@@ -32,6 +32,7 @@ extends Button
 			if label:
 				label.text = value
 
+## The category icon on Container/Icon, left of the row.
 @export var icon_texture: Texture2D:
 	set(value):
 		icon_texture = value
@@ -43,7 +44,9 @@ extends Button
 ## Icons for the inline chips, keyed by the "icon" field ActivityPreview
 ## returns. Assigned in the scene so the paths live in one place.
 @export var energy_icon: Texture2D
+## Same as energy_icon, for the mood-cost chip.
 @export var mood_icon: Texture2D
+## Same as energy_icon, for the Wirausaha earnings chip.
 @export var money_icon: Texture2D
 
 ## True for the three rows with a target to progress toward (Akademis,

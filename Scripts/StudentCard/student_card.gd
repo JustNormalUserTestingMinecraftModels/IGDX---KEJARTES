@@ -1,11 +1,29 @@
 extends Control
 
+## StudentCard: the player reviews the roster and approves which students
+## join the class for this grade.
+##
+## Reached from CutScene on a new grade, and re-reached from the Lobby
+## when the player taps the student button mid-grade. On approve, it
+## writes GameState.returned_from_student_card = true and replaces
+## GameState.approved_students wholesale (Array[Dictionary], the UI-named
+## keys documented on GameState.gd) -- never a partial update. Grade 7's
+## approval flow force-fills a minimum roster if the player approves too
+## few (see the GameState.current_grade branches around
+## `GameState.approved_students = [...]`).
+
 @export_group("UI Textures (Optional Replace)")
+## Currently unreferenced by this script -- appears unused.
 @export var icon_magnify: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_magnify.svg")
+## Icon for the "Kepribadian1" (mood) stat bar -- see _get_stat_icon().
 @export var icon_mood: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_mood.svg")
+## Icon for the "Kepribadian2" (energy) stat bar.
 @export var icon_energy: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_energy.svg")
+## Icon for the "Akademis1" (academic) stat bar.
 @export var icon_akademis: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_akademis.svg")
+## Icon for the "Akademis2" (seni budaya) stat bar.
 @export var icon_seni: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_seni.svg")
+## Icon for the "Akademis3" (olahraga) stat bar.
 @export var icon_olahraga: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg")
 
 # ================= TRAIT DESCRIPTIONS =================

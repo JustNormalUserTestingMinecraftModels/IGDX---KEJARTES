@@ -1,5 +1,16 @@
 extends Control
 
+## Simulates one week's five school days: the day-by-day loop, random
+## minigame/event rolls, and the embedded per-student status cards.
+##
+## Reached from AturJadwal/StudentList once the week's schedule is
+## committed. This is the one screen that mutates student stats -- it
+## does so through a StudentManager instance (`initialize_from_gamestate()`
+## builds it from GameState, `write_back_to_gamestate()` pushes the
+## simulated results back), never by writing GameState.approved_students
+## directly. At week's end it also updates GameState.minggu_ke and pays
+## out GameState.pending_earnings via `_pay_out_wirausaha()`.
+
 signal simulation_finished
 signal _minigame_result(won: bool)  # internal: bridges minigame signals back to _play_minigame
 signal _event_decision_signal(accepted: bool, selected_students: Array[StudentData])
@@ -7,18 +18,34 @@ signal _continue_tapped
 signal _tutorial_closed
 signal _summary_closed
 
+## One of four Akademis minigames _play_minigame() may pick when the
+## day's roll lands on a minigame event. Null lazy-loads
+## Menjodohkan.tscn -- the export exists so a test/level can swap it.
 @export var menjodohkan_scene: PackedScene
+## Same as menjodohkan_scene, for the Variabel minigame.
 @export var variabel_scene: PackedScene
+## Same as menjodohkan_scene, for the PilihanGanda minigame.
 @export var pilihan_ganda_scene: PackedScene
+## Same as menjodohkan_scene, for the Password minigame.
 @export var password_scene: PackedScene
+## One of two Olahraga minigames that may be picked for the day.
 @export var main_bola_scene: PackedScene
+## Same as main_bola_scene, for the Badminton minigame.
 @export var badminton_scene: PackedScene
+## One of two SeniBudaya minigames that may be picked for the day.
 @export var buat_batik_scene: PackedScene
+## Same as buat_batik_scene, for the LombaMenari minigame.
 @export var lomba_menari_scene: PackedScene
+## Popup shown before an interactive random event (accept/decline).
 @export var event_warning_scene: PackedScene
+## Popup shown at the end of the week's simulation with the final tally.
 @export var result_checkup_scene: PackedScene
+## Popup shown for a non-interactive random event (applies automatically).
 @export var event_announcement_scene: PackedScene
+## Dialog for interactive events that need the player to pick which
+## students take part.
 @export var event_student_select_scene: PackedScene
+## Popup shown at the end of each simulated day with that day's summary.
 @export var day_summary_popup_scene: PackedScene
 
 # ── Visual - Student Cards ────────────────────────────────────────────────────
@@ -29,6 +56,8 @@ signal _summary_closed
 @export var energy_icon_texture: Texture2D = null
 ## Optional PNG to replace the 😊 mood icon.
 @export var mood_icon_texture: Texture2D = null
+## Optional font override for the day-summary chip's label (_make_chip).
+## Null keeps the theme's default font.
 @export var card_font: Font = null
 ## Shared icon(-or-glyph) + bar + number row used for the embedded
 ## energy/mood readout on each student card.
@@ -42,8 +71,12 @@ signal _summary_closed
 @export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")
 
 @export_group("End Simulation Tutorial (Week 1)")
+## Title on the one-time tutorial shown after week 1's simulation ends
+## (_show_end_simulation_tutorial) -- see TutorialPanel.show_step().
 @export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama! 🎓"
+## Body text for the same end-of-week-1 tutorial.
 @export_multiline var end_tutorial_text: String = "Kerja bagus, Guru! Kamu telah berhasil membimbing murid-muridmu melewati simulasi minggu pertama.\n\nMulai sekarang, alur permainan akan terus berlanjut dalam siklus:\nAtur Jadwal ➔ Simulasi Hari Sekolah ➔ Evaluasi Mingguan\n\n🎯 Misi Utamamu:\nTingkatkan seluruh kemampuan murid (Akademis, Olahraga, dan Seni Budaya) hingga melampaui Target Ambang Batas masing-masing sebelum Minggu ke-8 selesai!\n\nPada akhir Minggu ke-8, akan diadakan Ujian Kenaikan Kelas untuk menentukan kelulusan murid-muridmu ke jenjang berikutnya. Rencanakan jadwal belajar dan istirahat dengan taktis!"
+## Prompt text for the same tutorial.
 @export var end_tutorial_prompt: String = "KLIK DIMANA SAJA UNTUK MELANJUTKAN"
 
 # ── Node references ───────────────────────────────────────────────────────────

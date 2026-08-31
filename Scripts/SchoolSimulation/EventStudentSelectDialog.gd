@@ -17,19 +17,31 @@ signal event_decision_made(accepted: bool, selected_students: Array[StudentData]
 
 # ── Visual - Dialog Card Panel ───────────────────────────────────────────────
 @export_group("Visual - Dialog Card Panel")
+## Art-supplied background for dialog_panel. Null keeps the theme's Card
+## styling.
 @export var dialog_card_texture: Texture2D = null
 
 # ── Visual - Buttons (Single-PNG System) ─────────────────────────────────────
 @export_group("Visual - Buttons")
+## Art-supplied "select all" button texture. Null shows select_all_text
+## as a plain label instead.
 @export var button_select_all_texture: Texture2D = null
+## Same as button_select_all_texture, for the cancel button.
 @export var button_cancel_texture: Texture2D = null
+## Same as button_select_all_texture, for the confirm button.
 @export var button_confirm_texture: Texture2D = null
+## Label on the select-all button when button_select_all_texture is null.
 @export var select_all_text: String = "Pilih Semua"
+## Label on the cancel button when button_cancel_texture is null.
 @export var cancel_text: String = "Lewati Event"
+## Label on the confirm button when button_confirm_texture is null. `%d`
+## is filled with the currently-selected student count.
 @export var confirm_format_text: String = "Ya, Ikutsertakan (%d Siswa)"
 
 # ── Visual - Typography ───────────────────────────────────────────────────────
 @export_group("Visual - Typography")
+## Optional font override applied to every label and button on this
+## screen. Null keeps the theme's default font.
 @export var font: Font = null
 
 const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"

@@ -32,10 +32,15 @@ class_name BookClockWidget
 @export var progress_fill_texture: Texture2D = null
 ## Optional texture for the bar background track.
 @export var progress_bg_texture: Texture2D = null
+## Height (px) of the progress bar drawn by _draw_progress_bar().
 @export var progress_bar_height: float = 48.0
+## Corner radius (px) of the procedural progress bar track/fill --
+## ignored when progress_fill_texture/progress_bg_texture are set.
 @export var progress_bar_corner_radius: float = 10.0
 
 @export_group("Visual - Font")
+## Currently unreferenced by this script -- appears unused (the widget
+## draws its own text procedurally rather than through Label nodes).
 @export var widget_font: Font = null
 
 # ── Internal State ────────────────────────────────────────────────────────────

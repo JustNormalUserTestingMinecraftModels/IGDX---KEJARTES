@@ -23,12 +23,14 @@ extends VBoxContainer
 		if is_node_ready():
 			_progress.category = value
 
+## Subject icon shown on Labels/Icon.
 @export var icon: Texture2D:
 	set(value):
 		icon = value
 		if is_node_ready():
 			_icon_rect.texture = value
 
+## Subject name shown on Labels/Title (e.g. "Akademis").
 @export var label_text: String = "":
 	set(value):
 		label_text = value

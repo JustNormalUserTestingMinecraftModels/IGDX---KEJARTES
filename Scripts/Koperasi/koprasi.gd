@@ -1,5 +1,15 @@
 extends Control
 
+## Koperasi (the shop) hub: the rak1 shelf toggle, the coin HUD and the
+## purchase-feedback message.
+##
+## The actual shelf/cart/checkout logic lives on rakbarang_1.gd (the Rak1
+## panel this screen shows/hides); this file only owns the entry button,
+## the money display (kept in sync via GameState.money_changed) and
+## routing back to the Lobby. It writes nothing to GameState directly --
+## _on_beli_pressed() deducts GameState.player_money and calls
+## GameState.add_to_inventory() on behalf of the Cart autoload's contents.
+
 @onready var rak1_button = $TextureRect/Rak1
 @onready var rak1_panel = $Rak1
 @onready var rak1_back_button = $Rak1/BackButton

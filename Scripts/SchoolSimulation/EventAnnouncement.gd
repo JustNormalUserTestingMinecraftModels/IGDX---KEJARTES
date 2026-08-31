@@ -13,10 +13,18 @@ extends Control
 
 # ── Visual - Header & Texts ───────────────────────────────────────────────────
 @export_group("Visual - Header & Texts")
+## Art-supplied icon shown above the header. Null falls back to
+## announcement_symbol_text as an emoji glyph instead.
 @export var announcement_icon_texture: Texture2D = null
+## Emoji shown when announcement_icon_texture is null.
 @export var announcement_symbol_text: String = "📢"
+## Header line above the event's own title (set per-call via
+## play_announcement()'s event_title argument).
 @export var header_prefix_text: String = "📢 PENGUMUMAN EVENT SEKOLAH"
+## Optional font override for the icon glyph and header/event labels.
+## Null keeps the theme's default font.
 @export var font: Font = null
+## Size (px, both axes) of announcement_icon_texture/announcement_symbol_text.
 @export var icon_font_size: int = 72
 
 @onready var icon_lbl: Label = $ContentMargin/Center/VBox/IconLabel

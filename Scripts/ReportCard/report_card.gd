@@ -7,11 +7,17 @@ extends Control
 ## assembled, re-rendering live as stats change.
 
 @export_group("UI Textures (Optional Replace)")
+## Currently unreferenced by this script -- appears unused.
 @export var icon_magnify: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_magnify.svg")
+## Icon for the "Kepribadian1" (mood) stat bar -- see _get_stat_icon().
 @export var icon_mood: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_mood.svg")
+## Icon for the "Kepribadian2" (energy) stat bar.
 @export var icon_energy: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_energy.svg")
+## Icon for the "Akademis1" (academic) stat bar.
 @export var icon_akademis: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_akademis.svg")
+## Icon for the "Akademis2" (seni budaya) stat bar.
 @export var icon_seni: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_seni.svg")
+## Icon for the "Akademis3" (olahraga) stat bar.
 @export var icon_olahraga: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg")
 
 # ================= TRAIT DESCRIPTIONS =================

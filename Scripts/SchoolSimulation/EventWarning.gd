@@ -13,9 +13,15 @@ extends Control
 
 # ── Visual - Caution Icon & Text ─────────────────────────────────────────────
 @export_group("Visual - Caution Icon & Text")
+## Art-supplied caution icon. Null falls back to caution_symbol_text as
+## an emoji glyph instead.
 @export var caution_icon_texture: Texture2D = null
+## Emoji shown when caution_icon_texture is null.
 @export var caution_symbol_text: String = "⚠️"
+## Optional font override for the caution glyph and event label. Null
+## keeps the theme's default font.
 @export var font: Font = null
+## Size (px, both axes) of caution_icon_texture/caution_symbol_text.
 @export var icon_font_size: int = 72
 
 @onready var caution_lbl: Label = $Center/VBox/CautionLabel

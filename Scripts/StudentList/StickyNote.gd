@@ -9,12 +9,15 @@ extends TextureRect
 ## self_modulate (not modulate) so the tint never bleeds into the
 ## child labels' own theme-driven font colors.
 
+## Shown uppercased on DayLabel (e.g. "Senin" -> "SENIN").
 @export var day_name: String = "Senin":
 	set(value):
 		day_name = value
 		if is_node_ready():
 			$DayLabel.text = value.to_upper()
 
+## The schedule category for this day -- shown on ActivityLabel and used
+## to tint the note via DesignTokens.category_color().
 @export var activity: String = "-":
 	set(value):
 		activity = value

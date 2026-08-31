@@ -539,29 +539,16 @@ func _calculate_stars(score: int, max_score: int, is_win: bool) -> int:
 		return 2
 	return 1
 
-func _draw_star_polygon(parent: Control, size: Vector2, filled: bool) -> Control:
-	# Returns a Control that draws a 5-pointed star via _draw()
-	var star_ctrl = Control.new()
-	star_ctrl.custom_minimum_size = size
-	var star_color = popup_star_color if filled else popup_star_empty_color
-	star_ctrl.draw.connect(func():
-		var pts = PackedVector2Array()
-		var cx = size.x / 2.0
-		var cy = size.y / 2.0
-		var outer = min(cx, cy) * 0.92
-		var inner = outer * 0.42
-		for i in range(10):
-			var angle = deg_to_rad(i * 36.0 - 90.0)
-			var r = outer if i % 2 == 0 else inner
-			pts.append(Vector2(cx + r * cos(angle), cy + r * sin(angle)))
-		if filled:
-			star_ctrl.draw_colored_polygon(pts, star_color)
-		else:
-			# Draw outline only
-			star_ctrl.draw_polyline(PackedVector2Array(pts) + PackedVector2Array([pts[0]]), star_color, 3.0, true)
-	)
-	return star_ctrl
+## The end-of-game result card. A minigame can override this to show its own.
+@export var result_popup_scene: PackedScene = preload("res://Scenes/Minigames/UI/MinigameResultPopup.tscn")
 
+## Show the win/lose card, wait for the player to continue, then emit the
+## win/lose signal.
+##
+## Affects: adds a MinigameResultPopup child, frees it when the player
+## continues (the popup frees itself). `custom_subtitle` is accepted for
+## call-site compatibility but is not displayed -- the shipped overlay never
+## rendered it either.
 func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 	process_mode = Node.PROCESS_MODE_INHERIT
 
@@ -586,315 +573,26 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 
 	var stars = _calculate_stars(mg_score, mg_max_score, is_win)
 
-	# Friendly failure titles (kept from original)
-	var fail_titles = [
-		"Belum Tepat, Coba Lagi Lain Kali!",
-		"Jangan Menyerah, Coba Lagi Lain Kali! 🔥",
-		"Yuk! Terus Berlatih agar Berhasil! ✨",
-		"Ingat dan Kamu Pasti Bisa! 🚀"
-	]
-	var fail_title = fail_titles[randi() % fail_titles.size()]
-	var title_text = win_title_text if is_win else (lose_title_text if lose_title_text != "" else fail_title)
+	var popup: MinigameResultPopup = result_popup_scene.instantiate()
+	add_child(popup)
+	popup.configure(is_win, stars, mg_score, mg_max_score,
+		_get_active_tutorial_title(), mg_category, stat_delta, energy_delta, mood_delta,
+		{
+			"popup_card_texture": popup_card_texture, "popup_card_color": popup_card_color,
+			"popup_border_color": popup_border_color, "popup_dim_color": popup_dim_color,
+			"popup_star_texture": popup_star_texture, "popup_star_empty_texture": popup_star_empty_texture,
+			"popup_star_color": popup_star_color, "popup_star_empty_color": popup_star_empty_color,
+			"popup_star_size": popup_star_size,
+			"popup_button_texture": popup_button_texture, "popup_button_color": popup_button_color,
+			"popup_button_text": popup_button_text,
+			"popup_title_font": popup_title_font, "popup_body_font": popup_body_font,
+			"popup_title_font_size": popup_title_font_size, "popup_score_font_size": popup_score_font_size,
+			"popup_stat_font_size": popup_stat_font_size,
+			"popup_title_win_color": popup_title_win_color, "popup_title_lose_color": popup_title_lose_color,
+			"win_title_text": win_title_text, "lose_title_text": lose_title_text,
+		})
+	await popup.play()
 
-	# ── Canvas Layer (layer 999, covers everything) ───────────────────────────
-	var canvas_layer = CanvasLayer.new()
-	canvas_layer.name = "ResultCanvasLayer"
-	canvas_layer.layer = 999
-	canvas_layer.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(canvas_layer)
-
-	# ── Dim Overlay ───────────────────────────────────────────────────────────
-	var dim = ColorRect.new()
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	dim.color = Color(popup_dim_color.r, popup_dim_color.g, popup_dim_color.b, 0.0)
-	dim.process_mode = Node.PROCESS_MODE_ALWAYS
-	canvas_layer.add_child(dim)
-
-	# ── Center Container ──────────────────────────────────────────────────────
-	var center = CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	center.process_mode = Node.PROCESS_MODE_ALWAYS
-	dim.add_child(center)
-
-	# ── Achievement Card ──────────────────────────────────────────────────────
-	var card = PanelContainer.new()
-	var viewport_w = get_viewport_rect().size.x
-	card.custom_minimum_size = Vector2(clampf(viewport_w * 0.78, 340, 820), 0)
-
-	if popup_card_texture:
-		var sb = StyleBoxTexture.new()
-		sb.texture = popup_card_texture
-		sb.content_margin_left = 32
-		sb.content_margin_top = 28
-		sb.content_margin_right = 32
-		sb.content_margin_bottom = 28
-		card.add_theme_stylebox_override("panel", sb)
-	else:
-		var sb = StyleBoxFlat.new()
-		sb.bg_color = popup_card_color
-		sb.border_color = popup_border_color
-		sb.border_width_left = 4
-		sb.border_width_top = 4
-		sb.border_width_right = 4
-		sb.border_width_bottom = 4
-		sb.corner_radius_top_left = 22
-		sb.corner_radius_top_right = 22
-		sb.corner_radius_bottom_left = 22
-		sb.corner_radius_bottom_right = 22
-		sb.shadow_color = Color(0, 0, 0, 0.5)
-		sb.shadow_size = 14
-		sb.content_margin_left = 32
-		sb.content_margin_top = 28
-		sb.content_margin_right = 32
-		sb.content_margin_bottom = 28
-		card.add_theme_stylebox_override("panel", sb)
-
-	card.modulate.a = 0.0
-	card.scale = Vector2(0.75, 0.75)
-	center.add_child(card)
-
-	# ── Card Content VBox ─────────────────────────────────────────────────────
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 14)
-	card.add_child(vbox)
-
-	# Title
-	var title_lbl = Label.new()
-	title_lbl.text = title_text
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	title_lbl.add_theme_font_size_override("font_size", popup_title_font_size)
-	title_lbl.add_theme_color_override("font_color", popup_title_win_color if is_win else popup_title_lose_color)
-	title_lbl.add_theme_constant_override("outline_size", 8)
-	title_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
-	if popup_title_font: title_lbl.add_theme_font_override("font", popup_title_font)
-	title_lbl.modulate.a = 0.0
-	vbox.add_child(title_lbl)
-
-	# Stars Row
-	var stars_hbox = HBoxContainer.new()
-	stars_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	stars_hbox.add_theme_constant_override("separation", 10)
-	vbox.add_child(stars_hbox)
-
-	var star_nodes: Array = []
-	for i in range(3):
-		var filled = (i < stars)
-		var star_node: Control
-		if filled and popup_star_texture:
-			var tr = TextureRect.new()
-			tr.texture = popup_star_texture
-			tr.custom_minimum_size = popup_star_size
-			tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			star_node = tr
-		elif not filled and popup_star_empty_texture:
-			var tr = TextureRect.new()
-			tr.texture = popup_star_empty_texture
-			tr.custom_minimum_size = popup_star_size
-			tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			star_node = tr
-		else:
-			star_node = _draw_star_polygon(stars_hbox, popup_star_size, filled)
-		star_node.modulate.a = 0.0
-		star_node.scale = Vector2(0.3, 0.3)
-		star_node.pivot_offset = popup_star_size / 2.0
-		stars_hbox.add_child(star_node)
-		star_nodes.append(star_node)
-
-	# Separator
-	var sep1 = HSeparator.new()
-	vbox.add_child(sep1)
-
-	# Minigame name
-	var game_name_text = _get_active_tutorial_title()
-	var name_lbl = Label.new()
-	name_lbl.text = game_name_text
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.add_theme_font_size_override("font_size", popup_stat_font_size + 4)
-	name_lbl.add_theme_color_override("font_color", Color(0.75, 0.82, 0.95))
-	if popup_body_font: name_lbl.add_theme_font_override("font", popup_body_font)
-	name_lbl.modulate.a = 0.0
-	vbox.add_child(name_lbl)
-
-	# Score label (only shown when score data available)
-	if mg_score >= 0 and mg_max_score > 0:
-		var score_hbox = HBoxContainer.new()
-		score_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		score_hbox.add_theme_constant_override("separation", 8)
-		var score_prefix = Label.new()
-		score_prefix.text = "Skor:"
-		score_prefix.add_theme_font_size_override("font_size", popup_score_font_size)
-		score_prefix.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
-		if popup_body_font: score_prefix.add_theme_font_override("font", popup_body_font)
-		score_hbox.add_child(score_prefix)
-		var score_val = Label.new()
-		score_val.text = "%d / %d" % [mg_score, mg_max_score]
-		score_val.add_theme_font_size_override("font_size", popup_score_font_size)
-		score_val.add_theme_color_override("font_color", popup_title_win_color if is_win else Color(0.8, 0.8, 0.8))
-		score_val.add_theme_constant_override("outline_size", 5)
-		score_val.add_theme_color_override("font_outline_color", Color.BLACK)
-		if popup_body_font: score_val.add_theme_font_override("font", popup_body_font)
-		score_hbox.add_child(score_val)
-		score_hbox.modulate.a = 0.0
-		vbox.add_child(score_hbox)
-
-	# Category badge (if we know the category)
-	if mg_category != "":
-		var badge_colors = {
-			"Akademis": Color(0.16, 0.27, 1.0),
-			"SeniBudaya": Color(0.0, 0.6, 0.25),
-			"Olahraga": Color(0.75, 0.1, 0.1)
-		}
-		var badge_icons = {"Akademis": "📚", "SeniBudaya": "🎨", "Olahraga": "⚽"}
-		var badge_lbl = Label.new()
-		badge_lbl.text = " %s %s " % [badge_icons.get(mg_category, "🎮"), mg_category]
-		badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		badge_lbl.add_theme_font_size_override("font_size", popup_stat_font_size)
-		badge_lbl.add_theme_color_override("font_color", Color.WHITE)
-		if popup_body_font: badge_lbl.add_theme_font_override("font", popup_body_font)
-		var badge_style = StyleBoxFlat.new()
-		badge_style.bg_color = badge_colors.get(mg_category, Color(0.3, 0.3, 0.4))
-		badge_style.corner_radius_top_left = 10
-		badge_style.corner_radius_top_right = 10
-		badge_style.corner_radius_bottom_left = 10
-		badge_style.corner_radius_bottom_right = 10
-		badge_lbl.add_theme_stylebox_override("normal", badge_style)
-		badge_lbl.modulate.a = 0.0
-		vbox.add_child(badge_lbl)
-
-	# Separator
-	var sep2 = HSeparator.new()
-	vbox.add_child(sep2)
-
-	# Stat Deltas
-	var stat_entries: Array[Dictionary] = []
-	var stat_labels_map = {"Akademis": "Akademis 📚", "SeniBudaya": "Seni Budaya 🎨", "Olahraga": "Olahraga ⚽"}
-	if stat_delta != 0.0 and mg_category != "":
-		var label_text = stat_labels_map.get(mg_category, mg_category)
-		stat_entries.append({"text": "%s%d %s" % ["+" if stat_delta > 0 else "", int(stat_delta), label_text], "positive": stat_delta > 0})
-	if energy_delta != 0.0:
-		stat_entries.append({"text": "%s%d Energy ⚡" % ["+" if energy_delta > 0 else "", int(energy_delta)], "positive": energy_delta > 0})
-	if mood_delta != 0.0:
-		stat_entries.append({"text": "%s%d Mood 😊" % ["+" if mood_delta > 0 else "", int(mood_delta)], "positive": mood_delta > 0})
-
-	var delta_nodes: Array = []
-	for entry in stat_entries:
-		var dl = Label.new()
-		dl.text = entry["text"]
-		dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		dl.add_theme_font_size_override("font_size", popup_stat_font_size)
-		dl.add_theme_color_override("font_color", Color(0.3, 0.95, 0.5) if entry["positive"] else Color(0.95, 0.35, 0.35))
-		dl.add_theme_constant_override("outline_size", 4)
-		dl.add_theme_color_override("font_outline_color", Color.BLACK)
-		if popup_body_font: dl.add_theme_font_override("font", popup_body_font)
-		dl.modulate.a = 0.0
-		vbox.add_child(dl)
-		delta_nodes.append(dl)
-
-	# Continue Button
-	var btn: BaseButton
-	if popup_button_texture:
-		var tb = TextureButton.new()
-		tb.texture_normal = popup_button_texture
-		tb.ignore_texture_size = true
-		tb.stretch_mode = TextureButton.STRETCH_SCALE
-		tb.custom_minimum_size = Vector2(280, 90)
-		btn = tb
-	else:
-		var b = Button.new()
-		b.text = popup_button_text
-		b.custom_minimum_size = Vector2(280, 90)
-		b.add_theme_font_size_override("font_size", popup_stat_font_size + 4)
-		b.add_theme_color_override("font_color", Color.WHITE)
-		if popup_body_font: b.add_theme_font_override("font", popup_body_font)
-		var btn_style = StyleBoxFlat.new()
-		btn_style.bg_color = popup_button_color
-		btn_style.corner_radius_top_left = 14
-		btn_style.corner_radius_top_right = 14
-		btn_style.corner_radius_bottom_left = 14
-		btn_style.corner_radius_bottom_right = 14
-		b.add_theme_stylebox_override("normal", btn_style)
-		var btn_hover = btn_style.duplicate() as StyleBoxFlat
-		btn_hover.bg_color = popup_button_color.lightened(0.18)
-		b.add_theme_stylebox_override("hover", btn_hover)
-		btn = b
-
-	var btn_center = CenterContainer.new()
-	btn_center.modulate.a = 0.0
-	btn_center.add_child(btn)
-	vbox.add_child(btn_center)
-
-	# ── Animation sequence ────────────────────────────────────────────────────
-	# 1. Dim overlay fades in
-	var tw_dim = get_tree().create_tween()
-	tw_dim.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tw_dim.tween_property(dim, "color", Color(popup_dim_color.r, popup_dim_color.g, popup_dim_color.b, popup_dim_color.a), 0.35)
-	await tw_dim.finished
-
-	# 2. Card bounces in
-	var tw_card = get_tree().create_tween().set_parallel(true)
-	tw_card.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tw_card.tween_property(card, "modulate:a", 1.0, 0.25)
-	tw_card.tween_property(card, "scale", Vector2(1.0, 1.0), 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	await tw_card.finished
-
-	# 3. Title fades in
-	var tw_title = get_tree().create_tween()
-	tw_title.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tw_title.tween_property(title_lbl, "modulate:a", 1.0, 0.2)
-	await tw_title.finished
-
-	# 4. Stars pop in one by one
-	for star_node in star_nodes:
-		var tw_star = get_tree().create_tween().set_parallel(true)
-		tw_star.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		tw_star.tween_property(star_node, "modulate:a", 1.0, 0.15)
-		tw_star.tween_property(star_node, "scale", Vector2(1.18, 1.18), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		await tw_star.finished
-		var tw_settle = get_tree().create_tween()
-		tw_settle.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		tw_settle.tween_property(star_node, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
-		await tw_settle.finished
-
-	# 5. Score, badge, and deltas fade in sequentially
-	var fade_nodes: Array = [name_lbl]
-	# Add score hbox if it exists in vbox
-	for child in vbox.get_children():
-		if child is HBoxContainer and child != stars_hbox:
-			fade_nodes.append(child)
-			break
-	# badge
-	for child in vbox.get_children():
-		if child is Label and child != title_lbl and child != name_lbl and child.get_theme_stylebox("normal") != null:
-			fade_nodes.append(child)
-			break
-	fade_nodes.append_array(delta_nodes)
-	fade_nodes.append(btn_center)
-
-	for fn in fade_nodes:
-		if is_instance_valid(fn):
-			var tw_f = get_tree().create_tween()
-			tw_f.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-			tw_f.tween_property(fn, "modulate:a", 1.0, 0.18)
-			await tw_f.finished
-			await get_tree().create_timer(0.04).timeout
-
-	# 6. Wait for player to press continue
-	await btn.pressed
-
-	# 7. Fade out everything
-	var tw_out = get_tree().create_tween().set_parallel(true)
-	tw_out.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tw_out.tween_property(card, "modulate:a", 0.0, 0.2)
-	tw_out.tween_property(dim, "modulate:a", 0.0, 0.25)
-	await tw_out.finished
-
-	if is_instance_valid(canvas_layer):
-		canvas_layer.queue_free()
-
-	# 8. Emit win/lose signal
 	if is_win:
 		_do_win()
 	else:

@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://bh43jlmr0mvth"]
+
+[ext_resource type="Script" uid="uid://bwpwbk4k7qq4i" path="res://Scripts/Minigames/UI/ResultStar.gd" id="1_vg8ma"]
+
+[node name="ResultStar" type="Control" unique_id=688303056]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_vg8ma")
+
+[node name="Icon" type="TextureRect" parent="." unique_id=1935988294]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5

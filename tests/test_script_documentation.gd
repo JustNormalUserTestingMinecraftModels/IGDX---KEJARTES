@@ -31,10 +31,6 @@ func suite_name() -> String:
 ## Remove entries as they are documented. Never add one.
 const PENDING_HEADERS: Array[String] = [
 	"res://Scripts/AturJadwal/atur_jadwal.gd",
-	"res://Scripts/GameState.gd",
-	"res://Scripts/Inventory/Cart.gd",
-	"res://Scripts/Inventory/ItemData.gd",
-	"res://Scripts/Inventory/ItemDatabase.gd",
 	"res://Scripts/Koperasi/koprasi.gd",
 	"res://Scripts/Lobby/loby.gd",
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd",
@@ -43,14 +39,8 @@ const PENDING_HEADERS: Array[String] = [
 	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd",
 	"res://Scripts/Minigames/UI/BaseMinigame.gd",
 	"res://Scripts/Minigames/UI/MinigameMenu.gd",
-	"res://Scripts/Pengaturan.gd",
 	"res://Scripts/SchoolSimulation/SchoolDay.gd",
-	"res://Scripts/SchoolSimulation/StudentData.gd",
-	"res://Scripts/SchoolSimulation/StudentManager.gd",
 	"res://Scripts/StudentCard/student_card.gd",
-	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd",
-	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd",
-	"res://Scripts/TutorialArrow.gd",
 ]
 
 ## script_path -> number of undocumented @export declarations, frozen
@@ -58,10 +48,7 @@ const PENDING_HEADERS: Array[String] = [
 const PENDING_EXPORT_DOCS: Dictionary = {
 	"res://Scripts/AturJadwal/ActivityRow.gd": 3,
 	"res://Scripts/AturJadwal/atur_jadwal.gd": 1,
-	"res://Scripts/Audio/AudioDirector.gd": 26,
-	"res://Scripts/Design/DesignTokens.gd": 60,
 	"res://Scripts/EndGame/ResultStatRow.gd": 2,
-	"res://Scripts/Inventory/ItemData.gd": 9,
 	"res://Scripts/Lobby/loby.gd": 10,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 30,
 	"res://Scripts/Minigames/Akademis/Password.gd": 12,
@@ -85,12 +72,8 @@ const PENDING_EXPORT_DOCS: Dictionary = {
 	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 9,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 17,
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 2,
-	"res://Scripts/SchoolSimulation/StudentData.gd": 20,
 	"res://Scripts/StudentCard/student_card.gd": 6,
 	"res://Scripts/StudentList/StickyNote.gd": 2,
-	"res://Scripts/Transition/transition.gd": 1,
-	"res://Scripts/UI/StatBar.gd": 1,
-	"res://Scripts/UI/UIPolish.gd": 1,
 }
 
 ## Same exemption as the editability ratchet: a programmatic developer

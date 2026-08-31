@@ -13,35 +13,78 @@ const SFX_POOL_SIZE := 12
 const SETTINGS_PATH := "user://audio.cfg"
 
 @export_group("SFX")
+## `play_sfx(&"tap")`: generic button/tile taps across most screens
+## (cutscene advance, inventory slots, koperasi shelf, lobby, main menu).
 @export var sfx_tap: AudioStream
+## `play_sfx(&"confirm")`: an affirmative action lands (schedule confirm,
+## inventory use-item, main menu accept, event/result confirm buttons).
 @export var sfx_confirm: AudioStream
+## `play_sfx(&"cancel")`: a dialog is dismissed without confirming (main
+## menu back, settings, event-select cancel, SchoolDay's skip cancel).
 @export var sfx_cancel: AudioStream
+## `play_sfx(&"success")`: DaySummaryPopup's win state.
 @export var sfx_success: AudioStream
+## `play_sfx(&"fail")`: AturJadwal validation failure and
+## DaySummaryPopup's loss state.
 @export var sfx_fail: AudioStream
+## `play_sfx(&"coin")`: a purchase completes (koperasi) or money is
+## earned (lobby, SchoolDay's Wirausaha payout).
 @export var sfx_coin: AudioStream
+## `play_sfx(&"whoosh")`: a panel slides/closes (inventory, koperasi's
+## blur/popup layer) and every Transition.gd scene change.
 @export var sfx_whoosh: AudioStream
+## `play_sfx(&"pop")`: a small UI element appears (koperasi's basket
+## item landing, the settings overlay).
 @export var sfx_pop: AudioStream
+## `play_sfx(&"swipe")`: paging through report_card/student_card.
 @export var sfx_swipe: AudioStream
+## `play_sfx(&"stamp")`: student_card's approve-stamp animation.
 @export var sfx_stamp: AudioStream
+## `play_sfx(&"unstamp")`: student_card's un-approve (erase-stamp)
+## animation.
 @export var sfx_unstamp: AudioStream
+## `play_sfx(&"popup_open")`: a modal opens (atur_jadwal, inventory,
+## koperasi, lobby, DailyDecayOverview and most other popups).
 @export var sfx_popup_open: AudioStream
+## `play_sfx(&"popup_close")`: the closing half of sfx_popup_open's list.
 @export var sfx_popup_close: AudioStream
+## `play_sfx(&"select")`: a list/grid item is chosen (atur_jadwal,
+## cutscene choices, inventory, event student picker, student_list).
 @export var sfx_select: AudioStream
+## `play_sfx(&"error")`: an action is rejected (atur_jadwal, inventory,
+## koperasi's insufficient-funds/empty-cart, lobby, student_card).
 @export var sfx_error: AudioStream
+## `play_sfx(&"reward")`: a reward is granted (SemesterEnd, lobby,
+## SchoolDay).
 @export var sfx_reward: AudioStream
 
 @export_group("BGM")
+## `play_bgm(&"titlescreen")`: Splashscreen/MainMenu.
 @export var bgm_titlescreen: AudioStream
+## `play_bgm(&"introcutscene")`: the opening CutScene.
 @export var bgm_introcutscene: AudioStream
+## `play_bgm_playlist(&"lobby")`: the Lobby hub, shuffled track-to-track
+## via `_on_bgm_finished` -- never a single fixed track.
 @export var bgm_lobby_playlist: Array[AudioStream] = []
+## `play_bgm(&"simulation")`: SchoolDay's day-simulation screen, paused
+## (not stopped) via pause_bgm() whenever a minigame or event interrupts it.
 @export var bgm_simulation: AudioStream
+## `play_bgm(&"result_win")`: DaySummaryPopup/ResultCheckup's win state.
 @export var bgm_result_win: AudioStream
+## `play_bgm(&"result_lose")`: DaySummaryPopup/ResultCheckup's loss state.
 @export var bgm_result_lose: AudioStream
 
 @export_group("Minigame BGM")
+## `play_minigame_bgm(&"minigame_olahraga")`: Badminton and MainBola.
 @export var bgm_minigame_olahraga: AudioStream
+## `play_minigame_bgm(&"minigame_senibudaya_batik")`: BuatBatik.
 @export var bgm_minigame_senibudaya_batik: AudioStream
+## `play_minigame_bgm(&"minigame_senibudaya_menari")`: LombaMenari.
 @export var bgm_minigame_senibudaya_menari: AudioStream
+## `play_minigame_bgm(&"minigame_akademis")`: Menjodohkan, Password,
+## PilihanGanda and Variabel. Not a single track -- loops through this
+## array in sequence via `_on_minigame_bgm_finished`, one entry per
+## Akademis minigame's natural end, instead of crossfading.
 @export var bgm_minigame_akademis: Array[AudioStream] = []
 
 @export_group("Mixing")

@@ -1,7 +1,19 @@
 extends Node
 class_name StudentManager
 
-# Wirausaha balance numbers now live in Scripts/Balance.gd.
+## Drives one school day's simulation for the `StudentData` roster.
+##
+## Not an autoload -- SchoolDay.gd instantiates one per day. Holds the
+## `Array[StudentData]` being simulated (`initialize_from_gamestate()`
+## builds it from `GameState.convert_to_student_data_array()`), logs
+## every stat change to `daily_stat_log` for the end-of-day/end-of-week
+## summaries, and at the end of the day `write_back_to_gamestate()`
+## pushes the simulated stats back onto `GameState.approved_students` --
+## remapping StudentData's real field names to the UI's
+## akademis1/2/3 + kepribadian1/2 keys, the same mismatch documented on
+## GameState.gd.
+##
+## Wirausaha balance numbers now live in Scripts/Balance.gd.
 
 var students: Array[StudentData] = []
 var minigame_history: Array[Dictionary] = [] # entries: {day, category, game_name, won, details}

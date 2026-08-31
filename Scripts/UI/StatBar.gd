@@ -22,6 +22,9 @@ extends ProgressBar
 		if is_inside_tree():
 			theme_type_variation = value
 
+## When true, overlays a centered "value_format % value" Label on top of
+## the fill -- most callers leave this off and show the number in a
+## separate InfoLabel/StudentStatRow instead.
 @export var show_value_label: bool = false:
 	set(value):
 		show_value_label = value

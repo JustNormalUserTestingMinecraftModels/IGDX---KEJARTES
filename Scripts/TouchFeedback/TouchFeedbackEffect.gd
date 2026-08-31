@@ -1,5 +1,13 @@
 extends Node2D
 
+## One touch-ripple burst: a collapsing/expanding circle stroke plus a
+## shower of star and dust particles, all drawn by hand in `_draw()`.
+##
+## Spawned by `TouchFeedbackManager._spawn_effect()` -- never instanced
+## directly. Self-contained and self-freeing: it queues its own
+## `queue_free()` once its stroke tween finishes (`EFFECT_LIFETIME`
+## seconds), independent of whether its particles have finished fading.
+
 # Configurable parameters
 const CIRCLE_START_RADIUS: float = 80.0
 const CIRCLE_END_RADIUS: float = 12.0

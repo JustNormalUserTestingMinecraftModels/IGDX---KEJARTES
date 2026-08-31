@@ -15,6 +15,9 @@ signal scene_changed(path: String)
 @export_group("Appearance")
 ## Color of the cover. Defaults to brand_primary from the design tokens.
 @export var cover_color: Color = Color("2e5bff")
+## Unused by change_scene() itself (every call site passes its own style
+## explicitly) -- kept as the Inspector-visible default for future call
+## sites that omit the argument.
 @export var default_style: Style = Style.WIPE
 
 @onready var _cover: ColorRect = $ColorRect

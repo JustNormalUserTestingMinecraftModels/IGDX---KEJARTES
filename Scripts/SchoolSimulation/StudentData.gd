@@ -1,35 +1,89 @@
 extends Resource
 class_name StudentData
 
+## The live, in-simulation form of one student.
+##
+## Built from a `GameState.approved_students` Dictionary via
+## `GameState.convert_to_student_data_array()` at the start of a school
+## day, mutated all day by `apply_jadwal_activity()` /
+## `apply_daily_decay()` / `apply_minigame_result()` /
+## `apply_event_effects()`, then pushed back to `GameState` by
+## `StudentManager.write_back_to_gamestate()` -- StudentData itself never
+## writes GameState directly.
+##
+## Contrary to CLAUDE.md's note that "every quirk coefficient is an
+## `@export` on StudentData.gd", the quirk/personality multipliers this
+## file's `apply_*` methods read (`Balance.SIFAT_*`, `Balance.DECAY_*`)
+## are `static var`s on `Scripts/Balance.gd`, not exports here -- this
+## file has no quirk-coefficient exports at all. Flagged for the user
+## rather than silently changed.
+
+## Shown on every card/list/summary that identifies this student. Also
+## the Dictionary key StudentManager.write_back_to_gamestate() and
+## SchoolDay's `embedded_widgets` use to find this student's widgets again.
 @export var student_name: String = ""
+## Portrait shown on StudentCard and StudentList. Null falls back to
+## whatever placeholder those screens use.
 @export var avatar_texture: Texture2D
 
 # Stats (0 to 100)
+## Academic skill. Moved by Akademis schedule days, minigames and events;
+## compared against target_akademis1/2/3 to check pass/fail.
 @export var akademis: float = 50.0
+## Arts & culture skill. Same movement rules as akademis, via SeniBudaya.
 @export var seni_budaya: float = 50.0
+## Sports skill. Same movement rules as akademis, via Olahraga.
 @export var olahraga: float = 50.0
 
 # Needs (0 to 100)
+## Depleted by every activity except Istirahat; ≤ Balance.IZIN_OTOMATIS_BATAS_ENERGI
+## forces the student onto an automatic Istirahat day (is_tired() reflects
+## the same threshold via Balance.BATAS_KELELAHAN).
 @export var energy: float = 80.0
+## Same shape as energy, but has no forced-activity side effect of its own.
 @export var mood: float = 80.0
 
 # Personality & Specialty
+## One of Aktif/Tekun/Kreatif/Santai/"Seni Dalam Kesunyian". Selects the
+## daily decay range in apply_personality_daily_decay() and can add extra
+## bonuses inside apply_jadwal_activity() (e.g. the solo-SeniBudaya bonus).
 @export var personality: String = "Santai"
+## Flavor text shown on the student card's personality popup. Not read by
+## any gameplay math.
 @export var personality_desc: String = ""
+## One of "Akademis", "Olahraga", "SeniBudaya", "Seimbang". Feeds
+## get_category_efficiency_multiplier(): studying the specialty is
+## cheaper (Balance.BIAYA_KALAU_MAPEL_FAVORIT), "Seimbang" is a flat
+## rate for every category, and anything else costs more.
 @export var specialty_category: String = "Seimbang" # "Akademis", "Olahraga", "SeniBudaya", "Seimbang"
 
+## The roster id this StudentData was converted from -- matches the
+## `id` key in the source `GameState.approved_students` Dictionary.
 @export var id: int = 0
+## Path to this student's cutscene/report splash art.
 @export var splash_path: String = ""
+## Academic pass threshold: the semester is cleared once akademis is at
+## or above this. Set from GameState.initialize_grade_targets()'s
+## per-grade uplift over the roster's base stats.
 @export var target_akademis1: float = 50.0
+## Same as target_akademis1, but for seni_budaya (the UI's "akademis2").
 @export var target_akademis2: float = 50.0
+## Same as target_akademis1, but for olahraga (the UI's "akademis3").
 @export var target_akademis3: float = 50.0
+## Currently unused by any pass/fail check -- energy and mood have no
+## semester target, only akademis1/2/3 do.
 @export var target_kepribadian1: float = 50.0
+## Currently unused; see target_kepribadian1.
 @export var target_kepribadian2: float = 50.0
+## One of Kutu Buku/Penyendiri/Semangat Juang/Penasaran/Biang Onar/Pekerja
+## Keras, or empty. Selects which `Balance.SIFAT_*` bonuses this file's
+## apply_* methods add -- see the header note above about where those
+## coefficients actually live.
 @export var quirk: String = ""
+## Persona flavor id shown on the student card's persona popup.
 @export var persona: String = ""
+## Free-text profile blurb shown on the student card.
 @export var profil: String = ""
-
-# Personality and Sifat Pasif coefficients now live in Scripts/Balance.gd.
 
 # Initial stats at week start for accurate end-of-week checkup deltas
 var initial_akademis: float = 50.0

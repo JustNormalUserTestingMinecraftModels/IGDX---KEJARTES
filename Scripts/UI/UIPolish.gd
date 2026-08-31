@@ -26,6 +26,8 @@ extends Node
 ## no testing benefit.)
 
 
+## Master off switch -- false stops _on_node_added from juicing any new
+## button, but does not un-juice buttons already wired.
 @export var enabled: bool = true
 ## Buttons larger than this in either axis are treated as invisible
 ## click-catchers and skipped automatically.

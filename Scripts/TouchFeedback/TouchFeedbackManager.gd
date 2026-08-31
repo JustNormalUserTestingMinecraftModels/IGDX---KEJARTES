@@ -1,5 +1,14 @@
 extends CanvasLayer
 
+## Global tap/click ripple. An autoload -- watches every mouse/touch press
+## via `_input()` and spawns a `TouchFeedbackEffect` at the press position,
+## reaching every screen automatically with no per-node opt-in (unlike
+## `UIPolish`/`Juice`, there is no per-node opt-out meta flag either; the
+## only way to suppress it on a screen is adding that scene's filename to
+## `BLOCKED_SCENES` below, which the minigames use to avoid obscuring
+## gameplay). Runs even while the game is paused
+## (`process_mode = PROCESS_MODE_ALWAYS`) so pause-menu taps still ripple.
+
 const TOUCH_EFFECT_SCRIPT = preload("res://Scripts/TouchFeedback/TouchFeedbackEffect.gd")
 
 # Scenes where touch feedback should be disabled to prevent obstruction

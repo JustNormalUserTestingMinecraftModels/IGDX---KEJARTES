@@ -1,6 +1,31 @@
 @tool
 extends Node
 
+## The source of truth for a run.
+##
+## An autoload. Everything the player does between the main menu and the
+## semester end lands here: the approved roster, the week's schedules, the
+## current week and grade, money, and the inventory. There is deliberately
+## no save system -- a run is session-scoped, and adding persistence here
+## is a design change, not a refactor.
+##
+## Written by: student_card.gd (approves the roster into
+## `approved_students`), atur_jadwal.gd (fills `day_schedules`),
+## StudentManager.write_back_to_gamestate() (pushes simulated stats back
+## after each day), koprasi.gd and Cart (`player_money`, `inventory`), and
+## DebugManager (every field, on purpose -- that is what the debug overlay
+## is for).
+##
+## Read by: every screen.
+##
+## The trap: `approved_students` holds Array[Dictionary] whose keys are the
+## UI's names -- `akademis1/2/3` are academic/seni/olahraga, and
+## `kepribadian1/2` are mood/energy. StudentData, used inside the
+## simulation, has real field names instead. convert_to_student_data_array()
+## bridges in and StudentManager.write_back_to_gamestate() bridges out. The
+## two namings do not line up, and that mismatch is the most common source
+## of bugs here.
+
 # Scene navigation
 var next_scene: String = "res://Scenes/MainMenu/main_menu.tscn"
 

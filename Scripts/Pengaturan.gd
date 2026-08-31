@@ -1,6 +1,19 @@
 extends CanvasLayer
 class_name Pengaturan
 
+## The settings overlay: a single toggle for the minigame tutorial,
+## reading and writing `GameSettings.minigame_tutorial_enabled`
+## (persisted immediately via `GameSettings.save_settings()`, unlike
+## `GameState` which is session-only).
+##
+## Not an autoload -- whichever screen offers a settings button
+## instantiates this by script and listens for `back_pressed` to know
+## when to free it. Entirely hand-built in `_ready()`, including raw
+## `StyleBoxFlat`/`theme_override_*` calls that predate the project's
+## ThemeFactory rule -- out of scope for this documentation pass, but
+## flagged here since it is the most-violating file in the viewport
+## editability ratchet baseline.
+
 signal back_pressed
 
 func _ready() -> void:

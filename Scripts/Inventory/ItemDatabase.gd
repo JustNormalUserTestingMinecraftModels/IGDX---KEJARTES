@@ -1,6 +1,14 @@
 @tool
 extends Node
 
+## The shop's item catalog.
+##
+## An autoload. Builds one ItemData resource per entry in DEFAULT_ITEMS on
+## `_ready()` and hands them out by name (get_item) or at random
+## (get_random_items, used to stock rakbarang_1.gd's shelf buttons each
+## time the shop panel opens). To add a new shop item, add an entry to
+## DEFAULT_ITEMS -- there is no other registration path.
+
 # item_name -> ItemData
 var items: Dictionary = {}
 

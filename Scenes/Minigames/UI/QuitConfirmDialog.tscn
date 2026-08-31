@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://br4pstl80mtp4"]
+
+[ext_resource type="Script" uid="uid://binqx2scuw8a3" path="res://Scripts/Minigames/UI/QuitConfirmDialog.gd" id="1_1jnih"]
+
+[node name="QuitConfirmDialog" type="CanvasLayer" unique_id=204567359]
+process_mode = 3
+layer = 210
+script = ExtResource("1_1jnih")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=634963513]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+expand_mode = 1
+stretch_mode = 2
+
+[node name="Center" type="CenterContainer" parent="." unique_id=955806392]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="Center" unique_id=851289083]
+custom_minimum_size = Vector2(960, 560)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Center/Card" unique_id=561445198]
+layout_mode = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+
+[node name="Layout" type="VBoxContainer" parent="Center/Card/Margin" unique_id=2107023515]
+layout_mode = 2
+theme_override_constants/separation = 48
+
+[node name="MessageLabel" type="Label" parent="Center/Card/Margin/Layout" unique_id=726742691]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Card/Margin/Layout" unique_id=1406325427]
+layout_mode = 2
+theme_override_constants/separation = 48
+alignment = 1
+
+[node name="YesButton" type="Button" parent="Center/Card/Margin/Layout/Buttons" unique_id=484149495]
+custom_minimum_size = Vector2(360, 120)
+layout_mode = 2
+theme_type_variation = &"DangerButton"
+
+[node name="NoButton" type="Button" parent="Center/Card/Margin/Layout/Buttons" unique_id=1381431617]
+custom_minimum_size = Vector2(360, 120)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"

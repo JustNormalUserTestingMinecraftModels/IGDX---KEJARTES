@@ -286,39 +286,15 @@ func _on_countdown_start() -> void:
 func _on_countdown_end() -> void:
 	pass
 
+## The countdown overlay every minigame plays before the first input.
+@export var countdown_scene: PackedScene = preload("res://Scenes/Minigames/UI/MinigameCountdown.tscn")
+
 func _play_countdown() -> void:
-	var overlay = CanvasLayer.new()
-	overlay.layer = 150
-	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	var overlay: MinigameCountdown = countdown_scene.instantiate()
 	add_child(overlay)
-	
-	var center = CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.add_child(center)
-	
-	var label = Label.new()
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	
-	label.add_theme_font_size_override("font_size", countdown_font_size)
-	label.add_theme_color_override("font_color", countdown_font_color)
-	label.add_theme_constant_override("outline_size", countdown_outline_size)
-	label.add_theme_color_override("font_outline_color", countdown_outline_color)
-	if countdown_font: label.add_theme_font_override("font", countdown_font)
-	center.add_child(label)
-	
-	var count_steps = countdown_steps_text if not countdown_steps_text.is_empty() else ["3", "2", "1", "Mulai!"]
-	for step in count_steps:
-		label.text = step
-		label.scale = Vector2(1.4, 1.4)
-		label.pivot_offset = label.size / 2.0
-		
-		var tw = create_tween()
-		tw.tween_property(label, "scale", Vector2(1.0, 1.0), 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		await tw.finished
-		await get_tree().create_timer(0.45).timeout
-		
-	overlay.queue_free()
+	overlay.configure(countdown_steps_text, countdown_font, countdown_font_size,
+		countdown_font_color, countdown_outline_color, countdown_outline_size)
+	await overlay.play()
 
 func _start_resume_countdown() -> void:
 	# Restore process mode NOW so that await/timers inside this coroutine can run.
@@ -347,150 +323,37 @@ func _on_pause_quit() -> void:
 		pause_menu_instance.hide()
 	_show_quit_confirmation()
 
+## The "are you sure you want to quit" confirmation.
+@export var quit_dialog_scene: PackedScene = preload("res://Scenes/Minigames/UI/QuitConfirmDialog.tscn")
+
 func _show_quit_confirmation() -> void:
 	if quit_dialog_instance:
 		quit_dialog_instance.queue_free()
-		
-	var canvas = CanvasLayer.new()
-	canvas.layer = 210
-	canvas.process_mode = Node.PROCESS_MODE_ALWAYS
-	quit_dialog_instance = canvas
-	add_child(canvas)
-	
-	if quit_dialog_bg_texture:
-		var bg_tex = TextureRect.new()
-		bg_tex.texture = quit_dialog_bg_texture
-		bg_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		bg_tex.stretch_mode = TextureRect.STRETCH_SCALE
-		bg_tex.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		bg_tex.modulate = quit_dialog_bg_color
-		canvas.add_child(bg_tex)
-	else:
-		var bg = ColorRect.new()
-		bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		bg.color = quit_dialog_bg_color
-		canvas.add_child(bg)
-	
-	var center = CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	canvas.add_child(center)
-	
-	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(960, 560)
-	
-	if quit_dialog_card_texture:
-		var sb = StyleBoxTexture.new()
-		sb.texture = quit_dialog_card_texture
-		panel.add_theme_stylebox_override("panel", sb)
-	else:
-		var style = StyleBoxFlat.new()
-		style.bg_color = quit_dialog_card_color
-		style.corner_radius_top_left = 24
-		style.corner_radius_top_right = 24
-		style.corner_radius_bottom_left = 24
-		style.corner_radius_bottom_right = 24
-		style.border_width_left = 4
-		style.border_width_top = 4
-		style.border_width_right = 4
-		style.border_width_bottom = 4
-		style.border_color = quit_dialog_card_border_color
-		panel.add_theme_stylebox_override("panel", style)
-	center.add_child(panel)
-	
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 48)
-	margin.add_theme_constant_override("margin_top", 48)
-	margin.add_theme_constant_override("margin_right", 48)
-	margin.add_theme_constant_override("margin_bottom", 48)
-	panel.add_child(margin)
-	
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 48)
-	margin.add_child(vbox)
-	
-	var msg = Label.new()
-	msg.text = quit_dialog_message_text
-	msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	msg.add_theme_font_size_override("font_size", quit_dialog_font_size)
-	msg.add_theme_color_override("font_color", quit_dialog_font_color)
-	if quit_dialog_font: msg.add_theme_font_override("font", quit_dialog_font)
-	vbox.add_child(msg)
-	
-	var hbox = HBoxContainer.new()
-	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 48)
-	vbox.add_child(hbox)
-	
-	var btn_yes = Button.new()
-	btn_yes.text = "" if quit_dialog_yes_button_texture else quit_dialog_yes_button_text
-	btn_yes.custom_minimum_size = Vector2(360, 120)
-	btn_yes.add_theme_font_size_override("font_size", 46)
-	btn_yes.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
-	if quit_dialog_font: btn_yes.add_theme_font_override("font", quit_dialog_font)
-	if quit_dialog_yes_button_texture:
-		var sb_norm = StyleBoxTexture.new()
-		sb_norm.texture = quit_dialog_yes_button_texture
-		btn_yes.add_theme_stylebox_override("normal", sb_norm)
-		btn_yes.add_theme_stylebox_override("hover", sb_norm)
-		btn_yes.add_theme_stylebox_override("pressed", sb_norm)
-	hbox.add_child(btn_yes)
-	
-	var btn_no = Button.new()
-	btn_no.text = "" if quit_dialog_no_button_texture else quit_dialog_no_button_text
-	btn_no.custom_minimum_size = Vector2(360, 120)
-	btn_no.add_theme_font_size_override("font_size", 46)
-	if quit_dialog_font: btn_no.add_theme_font_override("font", quit_dialog_font)
-	if quit_dialog_no_button_texture:
-		var sb_norm = StyleBoxTexture.new()
-		sb_norm.texture = quit_dialog_no_button_texture
-		btn_no.add_theme_stylebox_override("normal", sb_norm)
-		btn_no.add_theme_stylebox_override("hover", sb_norm)
-		btn_no.add_theme_stylebox_override("pressed", sb_norm)
-	hbox.add_child(btn_no)
-	
-	btn_yes.pressed.connect(func():
-		_play_button_boing(btn_yes, func():
-			quit_dialog_instance.queue_free()
-			quit_dialog_instance = null
-			if pause_menu_instance:
-				pause_menu_instance.queue_free()
-				pause_menu_instance = null
-			is_paused = false
-			abandon_game()
-		)
-	)
 
-	btn_no.pressed.connect(func():
-		_play_button_boing(btn_no, func():
-			quit_dialog_instance.queue_free()
-			quit_dialog_instance = null
-			if pause_menu_instance:
-				pause_menu_instance.show()
-		)
-	)
+	var dialog: QuitConfirmDialog = quit_dialog_scene.instantiate()
+	quit_dialog_instance = dialog
+	add_child(dialog)
+	dialog.configure(quit_dialog_message_text, quit_dialog_yes_button_text,
+		quit_dialog_no_button_text, quit_dialog_bg_texture, quit_dialog_bg_color,
+		quit_dialog_card_texture, quit_dialog_card_color, quit_dialog_card_border_color,
+		quit_dialog_yes_button_texture, quit_dialog_no_button_texture,
+		quit_dialog_font, quit_dialog_font_size, quit_dialog_font_color)
 
-func _play_button_boing(btn: Button, on_complete: Callable) -> void:
-	if not btn or not is_instance_valid(btn):
-		if on_complete.is_valid(): on_complete.call()
-		return
-		
-	btn.pivot_offset = btn.size / 2.0
-	var tween = get_tree().create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tween.set_process_mode(Tween.TWEEN_PROCESS_IDLE)
-	
-	tween.tween_property(btn, "scale", Vector2(1.22, 0.75), 0.06)\
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(btn, "scale", Vector2(0.82, 1.28), 0.1)\
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(btn, "scale", Vector2(1.08, 0.92), 0.08)\
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.09)\
-		.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
-		
-	if on_complete.is_valid():
-		tween.tween_callback(on_complete)
+	dialog.confirmed.connect(func():
+		quit_dialog_instance.queue_free()
+		quit_dialog_instance = null
+		if pause_menu_instance:
+			pause_menu_instance.queue_free()
+			pause_menu_instance = null
+		is_paused = false
+		abandon_game()
+	)
+	dialog.cancelled.connect(func():
+		quit_dialog_instance.queue_free()
+		quit_dialog_instance = null
+		if pause_menu_instance:
+			pause_menu_instance.show()
+	)
 
 func _create_visual_timer() -> void:
 	if visual_timer:

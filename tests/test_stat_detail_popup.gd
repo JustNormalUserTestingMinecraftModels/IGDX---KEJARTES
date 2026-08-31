@@ -116,3 +116,22 @@ func test_report_card_no_longer_builds_the_popup_itself() -> void:
 		"report_card.gd should instantiate the extracted scene")
 	assert_false(src.contains("const BAR_CATEGORY"),
 		"BAR_CATEGORY moved to StatInfo.token_category()")
+
+
+func test_student_card_no_longer_builds_the_popup_itself() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	assert_contains(src, "StatDetailPopup",
+		"student_card.gd should instantiate the extracted scene")
+	assert_false(src.contains("const BAR_CATEGORY"),
+		"BAR_CATEGORY moved to StatInfo.token_category()")
+
+
+func test_the_two_screens_share_one_popup_implementation() -> void:
+	# The regression this whole task exists to prevent: the two screens each
+	# carried a verbatim copy of the same 168-line builder, and they had
+	# already drifted. Neither may build a StatBar for a popup again.
+	for path in ["res://Scripts/ReportCard/report_card.gd",
+			"res://Scripts/StudentCard/student_card.gd"]:
+		var src := FileAccess.get_file_as_string(path)
+		assert_false(src.contains("StatBar.new("),
+			"%s builds a StatBar in code -- use StatDetailPopup" % path)

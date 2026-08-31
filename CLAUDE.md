@@ -19,10 +19,11 @@ every student's three academic targets before the grade's final week to pass.
 | 8 | 12 | +30 | 8 | −4 |
 | 9 | 16 | +40 | 6 | −5 |
 
-**Loop:** Splashscreen → Loading → MainMenu → CutScene → StudentCard (approve
-roster) → **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay
+**Loop:** **MainMenu (boot)** → CutScene → StudentCard (approve roster) →
+**Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay
 (simulate 5 days) → ResultCheckup → back to Lobby, or SemesterEnd on the final
-week.
+week. Splashscreen and Loading still exist and are still tested, but since
+2026-08-31 they are no longer reached at boot.
 
 **Lobby hub buttons** → StudentCard, AturJadwal, Koperasi (shop), Inventory,
 ReportCard.
@@ -260,15 +261,12 @@ case but did not survey every remaining file. See the authoring guide's
 
 Branch `Textures` (this is also the main branch).
 
-The koperasi/inventory integration is committed and done. Recent work is the
-day-summary readout: see `docs/superpowers/plans/2026-08-29-day-summary-mockup.md`,
-`2026-08-30-day-summary-annotated-readout.md`, and
-`2026-08-30-day-summary-stat-track-gauge.md` (**plan checkboxes are never
-ticked — git log is the real record**). `ResultCheckup` now draws the same
-card one week wide — `+<week's gain>/<target>` per stat, plus the week's
-energy and mood movement on the needs bars — via
-`DaySummaryStudentRow.setup_week_row()`; see
-`docs/superpowers/plans/2026-08-31-result-checkup-week-card.md`.
+The main menu was rebuilt on 2026-08-31 to match
+`docs/superpowers/mockups/main-menu.png` measurement-for-measurement and is
+now the boot scene — see
+`docs/superpowers/specs/2026-08-31-main-menu-mockup.md` for the probe trail
+and the two documented deviations (uniform 66 px button separation, and font
+size 80 rather than the mockup-implied 100 so "PENGATURAN" fits).
 
 The 2026-08-30 stability sweep
 (`docs/superpowers/plans/2026-08-30-project-stability-sweep.md`) is complete.

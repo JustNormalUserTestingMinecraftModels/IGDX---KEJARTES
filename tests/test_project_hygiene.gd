@@ -89,3 +89,15 @@ func test_no_debug_prints_survive_in_production_scripts() -> void:
 	assert_eq(offenders.size(), 0,
 		"DEBUG prints must not ship outside Scripts/Debug/; offenders: "
 			+ ", ".join(offenders))
+
+
+## The boot scene moved off Splashscreen on 2026-08-31. Splashscreen.tscn and
+## Loading.tscn still exist and are still covered by test_boot_screens.gd;
+## they are simply no longer reached at startup. Pinned here because nothing
+## else in the suite asserts run/main_scene, so a stray edit would go unseen.
+func test_the_boot_scene_is_the_main_menu() -> void:
+	var main_scene: String = ProjectSettings.get_setting("application/run/main_scene", "")
+	assert_eq(main_scene, "res://Scenes/MainMenu/main_menu.tscn",
+		"run/main_scene")
+	assert_true(ResourceLoader.exists(main_scene),
+		"the boot scene must actually exist")

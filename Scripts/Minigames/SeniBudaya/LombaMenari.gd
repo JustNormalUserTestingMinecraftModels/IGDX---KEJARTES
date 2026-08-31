@@ -181,11 +181,6 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 		
 		_set_dancer_idle()
 	
-	# Fallback start if launched directly outside of MinigameMenu
-	if not is_game_active:
-		start_minigame(1, 45.0)
-		activate_minigame()
-		
 	# Start spawning beats
 	next_spawn_time = 1.0
 

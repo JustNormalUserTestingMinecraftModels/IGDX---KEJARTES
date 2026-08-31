@@ -14,6 +14,10 @@ extends BaseMinigame
 ## Drag a PNG here for the Enemy racket.
 @export var enemy_racket_texture: Texture2D = null
 @export var enemy_racket_color: Color = Color(1, 0, 0.5, 1)
+## Drag a PNG here for the brief "hit" pose shown when a racket connects
+## with the shuttlecock. Shared by both rackets; leave null to keep the
+## squash-only animation with no texture swap.
+@export var racket_hit_texture: Texture2D = null
 
 # ─── Visual - Trail & VFX ────────────────────────────────────────────────────
 @export_group("Visual - Trail & VFX")
@@ -48,6 +52,15 @@ var target_score: int = 5
 var is_dragging_player: bool = false
 var player_target_pos: Vector2 = Vector2.ZERO
 var puck_start_pos: Vector2
+
+# ─── Visual nodes ────────────────────────────────────────────────────────────
+# These are real nodes in Badminton.tscn, positioned and textured there.
+# The @export textures on this script still win at runtime so an artist can
+# override the scene's choice from the root's Inspector without opening the
+# subtree.
+@onready var puck_sprite: Sprite2D = $Puck/Sprite2D
+@onready var player_paddle_sprite: Sprite2D = $PlayerPaddle/Sprite2D
+@onready var enemy_paddle_sprite: Sprite2D = $EnemyPaddle/Sprite2D
 
 var screen_size: Vector2
 
@@ -157,63 +170,20 @@ func _ready() -> void:
 		var col = puck.get_node_or_null("CollisionShape2D")
 		if col and col.shape is CircleShape2D:
 			col.shape.radius = screen_size.x * 0.04
-		var rect = puck.get_node_or_null("ColorRect") as ColorRect
-		if rect:
-			var side = screen_size.x * 0.08
-			rect.size = Vector2(side, side)
-			rect.position = -rect.size / 2
-			rect.color = shuttlecock_color
-			if shuttlecock_texture:
-				var sprite = puck.get_node_or_null("Sprite2D") as Sprite2D
-				if not sprite:
-					sprite = Sprite2D.new()
-					sprite.name = "Sprite2D"
-					puck.add_child(sprite)
-				sprite.texture = shuttlecock_texture
-				sprite.scale = Vector2(side / shuttlecock_texture.get_width(), side / shuttlecock_texture.get_height())
-				rect.visible = false
-			
+
 	if player_paddle:
 		player_paddle.global_position = Vector2(screen_size.x / 2, screen_size.y * 0.8)
 		var col = player_paddle.get_node_or_null("CollisionShape2D")
 		if col and col.shape is CircleShape2D:
 			col.shape.radius = screen_size.x * 0.06
-		var rect = player_paddle.get_node_or_null("ColorRect") as ColorRect
-		if rect:
-			var side = screen_size.x * 0.12
-			rect.size = Vector2(side, side)
-			rect.position = -rect.size / 2
-			rect.color = player_racket_color
-			if player_racket_texture:
-				var sprite = player_paddle.get_node_or_null("Sprite2D") as Sprite2D
-				if not sprite:
-					sprite = Sprite2D.new()
-					sprite.name = "Sprite2D"
-					player_paddle.add_child(sprite)
-				sprite.texture = player_racket_texture
-				sprite.scale = Vector2(side / player_racket_texture.get_width(), side / player_racket_texture.get_height())
-				rect.visible = false
-			
+
 	if enemy_paddle:
 		enemy_paddle.global_position = Vector2(screen_size.x / 2, screen_size.y * 0.2)
 		var col = enemy_paddle.get_node_or_null("CollisionShape2D")
 		if col and col.shape is CircleShape2D:
 			col.shape.radius = screen_size.x * 0.06
-		var rect = enemy_paddle.get_node_or_null("ColorRect") as ColorRect
-		if rect:
-			var side = screen_size.x * 0.12
-			rect.size = Vector2(side, side)
-			rect.position = -rect.size / 2
-			rect.color = enemy_racket_color
-			if enemy_racket_texture:
-				var sprite = enemy_paddle.get_node_or_null("Sprite2D") as Sprite2D
-				if not sprite:
-					sprite = Sprite2D.new()
-					sprite.name = "Sprite2D"
-					enemy_paddle.add_child(sprite)
-				sprite.texture = enemy_racket_texture
-				sprite.scale = Vector2(side / enemy_racket_texture.get_width(), side / enemy_racket_texture.get_height())
-				rect.visible = false
+
+	_apply_visual_exports()
 
 	if player_goal:
 		player_goal.body_entered.connect(_on_player_goal)
@@ -224,6 +194,28 @@ func _ready() -> void:
 	max_puck_speed = max(screen_size.x * 1.5, 900.0)
 	
 	_setup_trail_and_particles()
+
+## Push the root's @export art onto the scene's sprites.
+##
+## The scene already supplies a texture for each piece, baked in when the
+## sprites were authored; these exports let an artist override the choice
+## from one Inspector panel without opening the subtree. A null export
+## leaves the scene's own texture alone.
+##
+## The `*_color` exports are not applied here. They used to paint a flat
+## ColorRect shown only when no texture was set; now every piece always has
+## a real texture baked into the scene, so there is no colorless state left
+## to tint -- applying them as a sprite modulate would visibly recolour the
+## shipped artwork instead of acting as a fallback.
+##
+## Affects: the three Sprite2D nodes' texture. Nothing else.
+func _apply_visual_exports() -> void:
+	if shuttlecock_texture != null:
+		puck_sprite.texture = shuttlecock_texture
+	if player_racket_texture != null:
+		player_paddle_sprite.texture = player_racket_texture
+	if enemy_racket_texture != null:
+		enemy_paddle_sprite.texture = enemy_racket_texture
 
 func _add_background() -> void:
 	var tex_path := "res://Assets/Images/Textures/lapanganBadminton.jpg"
@@ -249,6 +241,8 @@ func _on_puck_body_entered(body: Node) -> void:
 		_redirect_puck_towards_opponent(body)
 		_play_hit_bounce_animation()
 		_play_racket_squash_animation(body as CharacterBody2D)
+		if puck_sprite:
+			puck_sprite.flip_v = not puck_sprite.flip_v
 
 func _redirect_puck_towards_opponent(body: Node) -> void:
 	if not puck: return
@@ -266,27 +260,47 @@ func _redirect_puck_towards_opponent(body: Node) -> void:
 
 func _play_hit_bounce_animation() -> void:
 	if not puck: return
-	var sprite = puck.get_node_or_null("Sprite2D")
-	var rect = puck.get_node_or_null("ColorRect")
-	var visual_node: CanvasItem = sprite if sprite else (rect if rect else puck)
-	
+
+	# Punch relative to the node's resting scale -- a Sprite2D showing a
+	# texture much larger than its display size (see shuttlecock_texture)
+	# rests at a fractional scale, not 1.0, so animating to absolute
+	# values here would permanently blow it up to native texture size.
+	var base_scale: Vector2 = puck_sprite.scale
+
 	var tw = create_tween()
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	# Scale visual mesh/rect only so collision shape stays constant (prevents physics jitter)
-	tw.tween_property(visual_node, "scale", Vector2(1.6, 1.6), 0.26).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.tween_property(visual_node, "scale", Vector2(1.0, 1.0), 0.26).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	# Scale the sprite only so collision shape stays constant (prevents physics jitter)
+	tw.tween_property(puck_sprite, "scale", base_scale * 1.6, 0.26).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(puck_sprite, "scale", base_scale, 0.26).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 func _play_racket_squash_animation(racket: CharacterBody2D) -> void:
 	if not racket or not is_instance_valid(racket): return
-	var sprite = racket.get_node_or_null("Sprite2D")
-	var rect = racket.get_node_or_null("ColorRect")
-	var visual_node: CanvasItem = sprite if sprite else (rect if rect else racket)
-	
+	var sprite: Sprite2D = player_paddle_sprite if racket == player_paddle else enemy_paddle_sprite
+
+	# Swap to the "hit" pose for the duration of the squash, then back to
+	# whatever the sprite was actually showing -- not the @export texture,
+	# which may be null while the scene's own baked texture is what is
+	# really on screen.
+	var idle_texture: Texture2D = sprite.texture
+	if racket_hit_texture:
+		sprite.texture = racket_hit_texture
+
+	# Punch relative to the node's resting scale -- see _play_hit_bounce_animation's
+	# note on why an absolute (1,1) target would be wrong once a racket texture
+	# is assigned (its rest scale is a fraction, sized to fit the touch target).
+	var base_scale: Vector2 = sprite.scale
+
 	var tw = create_tween()
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tw.tween_property(visual_node, "scale", Vector2(1.35, 0.72), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.tween_property(visual_node, "scale", Vector2(0.78, 1.35), 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.tween_property(visual_node, "scale", Vector2(1.0, 1.0), 0.12).set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sprite, "scale", base_scale * Vector2(1.35, 0.72), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sprite, "scale", base_scale * Vector2(0.78, 1.35), 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sprite, "scale", base_scale, 0.12).set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
+
+	if racket_hit_texture:
+		tw.tween_callback(func():
+			if is_instance_valid(sprite):
+				sprite.texture = idle_texture
+		)
 
 func _physics_process(delta: float) -> void:
 	if not is_game_active or is_paused:

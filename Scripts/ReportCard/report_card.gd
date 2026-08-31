@@ -259,23 +259,10 @@ func _get_stat_icon(bname: String) -> Texture2D:
 		"Akademis3": return icon_olahraga
 	return null
 
-## Which DesignTokens category accent a given bar belongs to. Mood and
-## Energy are "needs" rather than schedule categories, so they borrow the
-## two accents no skill uses: Istirahat (rest, violet) for Mood and Libur
-## (holiday, amber) for Energy. That keeps the five bars mutually
-## distinguishable while every color still comes from one token set.
-const BAR_CATEGORY := {
-	"Kepribadian1": "Istirahat",
-	"Kepribadian2": "Libur",
-	"Akademis1": "Akademis",
-	"Akademis2": "SeniBudaya",
-	"Akademis3": "Olahraga",
-}
-
-
+## The accent colour a given bar wears, from DesignTokens via StatInfo.
+## Affects: the tint of the bars drawn on the card itself.
 func _get_bar_color(bname: String) -> Color:
-	var tok := DesignTokens.load_default()
-	return tok.category_color(BAR_CATEGORY.get(bname, ""))
+	return DesignTokens.load_default().category_color(StatInfo.token_category(bname))
 
 func _on_bar_gui_input(ev: InputEvent, kertas: Control, bname: String, s_data: Dictionary) -> void:
 	if is_animating or _active_popup != null:
@@ -284,174 +271,36 @@ func _on_bar_gui_input(ev: InputEvent, kertas: Control, bname: String, s_data: D
 	   (ev is InputEventScreenTouch and ev.pressed):
 		_show_bar_popup(kertas, bname, s_data)
 
+## The scene the stat-detail modal is authored in. Exported so the popup can
+## be restyled or swapped without touching this screen.
+@export var stat_popup_scene: PackedScene = preload("res://Scenes/UI/StatDetailPopup.tscn")
+
+## Open the stat-detail modal for one bar.
+##
+## Affects: adds a CanvasLayer child to `kertas`, hides the page-turn arrows
+## while it is open, and sets `_active_popup` so a second tap is ignored.
+## No longer a coroutine -- StatDetailPopup.open() owns the reveal.
 func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void:
-	AudioDirector.play_sfx(&"popup_open")
+	if _active_popup != null and is_instance_valid(_active_popup):
+		return
 	if next_kanan: next_kanan.hide()
 	if next_kiri: next_kiri.hide()
 
-	var vp: Vector2 = get_viewport_rect().size
+	var popup: StatDetailPopup = stat_popup_scene.instantiate()
+	_active_popup = popup
+	kertas.add_child(popup)
+	popup.configure(bname, s_data, _get_stat_icon(bname))
+	popup.closed.connect(_on_detail_popup_closed)
+	popup.open()
 
-	var canvas := CanvasLayer.new()
-	canvas.name = "PopupCanvas"
-	canvas.layer = 100
-	kertas.add_child(canvas)
-
-	# Full-screen dim overlay
-	var overlay := ColorRect.new()
-	overlay.name = "TraitOverlay"  # Keep name for easy cleanup/identification
-	overlay.color = _scrim_color(0.0)
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	canvas.add_child(overlay)
-	_active_popup = canvas
-
-	var popup := PanelContainer.new()
-	popup.name = "TraitPopupPanel"
-	var panel_w := vp.x * 0.94
-	popup.custom_minimum_size = Vector2(panel_w, 0)
-
-	popup.theme_type_variation = &"Card"
-	overlay.add_child(popup)
-
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 0)
-	popup.add_child(vbox)
-
-	var header := MarginContainer.new()
-	header.add_theme_constant_override("margin_left", 32)
-	header.add_theme_constant_override("margin_top", 32)
-	header.add_theme_constant_override("margin_right", 32)
-	header.add_theme_constant_override("margin_bottom", 24)
-	vbox.add_child(header)
-
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 24)
-	header.add_child(hbox)
-
-	var is_needs = (bname == "Kepribadian1" or bname == "Kepribadian2")
-	var category_name = "NEEDS" if is_needs else "STATS"
-	var stat_name = ""
-	var current_val = 0.0
-	var max_val = 100.0
-	var desc = ""
-	var icon = ""
-
-	if bname == "Kepribadian1":
-		stat_name = "Mood"
-		current_val = s_data.get("kepribadian1", 0)
-		max_val = 100.0
-		desc = "Mood mempengaruhi tingkat kemauan murid belajar. Jika mood rendah, murid akan stress dan performanya menurun!"
-		icon = "😊"
-	elif bname == "Kepribadian2":
-		stat_name = "Energy"
-		current_val = s_data.get("kepribadian2", 0)
-		max_val = 100.0
-		desc = "Energy digunakan untuk melakukan aktivitas. Pastikan energy cukup sebelum memberikan tugas berat!"
-		icon = "⚡"
-	elif bname == "Akademis1":
-		stat_name = "Akademis"
-		current_val = s_data.get("akademis1", 0)
-		desc = "Menunjukkan tingkat kemampuan murid dalam memahami pelajaran akademis dan teoritis."
-		icon = "📚"
-	elif bname == "Akademis2":
-		stat_name = "Seni Budaya"
-		current_val = s_data.get("akademis2", 0)
-		desc = "Menunjukkan tingkat kemampuan murid dalam menciptakan dan memahami karya kesenian."
-		icon = "🎨"
-	elif bname == "Akademis3":
-		stat_name = "Olahraga"
-		current_val = s_data.get("akademis3", 0)
-		desc = "Menunjukkan tingkat kemampuan fisik dan kebugaran tubuh murid dalam bidang olahraga."
-		icon = "⚽"
-
-	var tex_icon = _get_stat_icon(bname)
-	if tex_icon:
-		var icon_rect = TextureRect.new()
-		icon_rect.texture = tex_icon
-		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon_rect.custom_minimum_size = Vector2(80, 80)
-		hbox.add_child(icon_rect)
-	else:
-		var icon_lbl := Label.new()
-		icon_lbl.text = icon
-		icon_lbl.theme_type_variation = &"H1Label"
-		icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		hbox.add_child(icon_lbl)
-
-	var title_vbox := VBoxContainer.new()
-	title_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(title_vbox)
-
-	var type_lbl := Label.new()
-	type_lbl.text = category_name
-	type_lbl.theme_type_variation = &"CaptionLabel"
-	title_vbox.add_child(type_lbl)
-
-	var name_lbl := Label.new()
-	name_lbl.text = stat_name
-	name_lbl.theme_type_variation = &"H2Label"
-	title_vbox.add_child(name_lbl)
-
-	var close_btn := Button.new()
-	close_btn.text = "✕"
-	close_btn.theme_type_variation = &"SecondaryButton"
-	close_btn.custom_minimum_size = Vector2.ONE * float(DesignTokens.load_default().touch_target_min)
-	close_btn.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	hbox.add_child(close_btn)
-
-	var body := PanelContainer.new()
-	body.theme_type_variation = &"SunkenPanel"
-	vbox.add_child(body)
-
-	var body_vbox := VBoxContainer.new()
-	body_vbox.add_theme_constant_override("separation", 24)
-	body.add_child(body_vbox)
-
-	var num_lbl := Label.new()
-	num_lbl.text = "%s: %d / %d" % [stat_name.to_upper(), int(current_val), int(max_val)]
-	num_lbl.theme_type_variation = &"H2Label"
-	body_vbox.add_child(num_lbl)
-
-	# Create a visual progress bar for the popup. Same StatBar component
-	# the card itself uses, so the popup's bar and the bar the player
-	# tapped to open it are guaranteed to look identical.
-	var popup_bar := StatBar.new()
-	popup_bar.custom_minimum_size = Vector2(0, float(
-		DesignTokens.load_default().touch_target_min) * 0.6)
-	popup_bar.category = BAR_CATEGORY.get(bname, "")
-	body_vbox.add_child(popup_bar)
-	popup_bar.max_value = max_val
-	popup_bar.set_stat(current_val)
-
-	var desc_lbl := Label.new()
-	desc_lbl.text = desc
-	desc_lbl.theme_type_variation = &"TitleLabel"
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_lbl.add_theme_constant_override("line_spacing", 12)
-	body_vbox.add_child(desc_lbl)
-
-	await get_tree().process_frame
-	if not is_instance_valid(popup):
-		return
-	# Was a 0.36s slide up from off the bottom edge. Juice.pop_in is the
-	# project's standard reveal for a detail surface, and it reads faster
-	# on a screen where the popup is the only thing that moved.
-	var ph: float = popup.size.y
-	popup.position = Vector2((vp.x - popup.size.x) * 0.5,
-		vp.y - ph - float(DesignTokens.load_default().space_md))
-	Juice.pop_in(popup)
-
-	var tw2 := create_tween()
-	tw2.set_trans(Tween.TRANS_LINEAR)
-	tw2.tween_property(overlay, "color", _scrim_color(), 0.22)
-
-	var close_fn = func(): _close_trait_popup(canvas, overlay, popup, Callable())
-	close_btn.pressed.connect(close_fn)
-	overlay.gui_input.connect(func(ev):
-		if (ev is InputEventMouseButton and ev.pressed) or (ev is InputEventScreenTouch and ev.pressed):
-			_close_trait_popup(canvas, overlay, popup, Callable())
-	)
+## Clear the guard once a modal finishes its exit animation, so a new popup
+## can open. Shared by the stat and trait popups.
+##
+## Does not restore the page-turn arrows -- matching the shipped behaviour,
+## where _close_trait_popup never did either. Once any popup on this screen
+## has been opened, the arrows stay hidden for the rest of the page's life.
+func _on_detail_popup_closed() -> void:
+	_active_popup = null
 # ================= TRAIT POPUP =================
 
 func _show_trait_popup(kertas: Control, type: String, name: String, desc: String, on_close: Callable = Callable()) -> void:

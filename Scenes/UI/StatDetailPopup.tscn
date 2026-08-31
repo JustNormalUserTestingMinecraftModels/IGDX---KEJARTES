@@ -1,0 +1,89 @@
+[gd_scene format=3 uid="uid://cs3i1ee7isj8k"]
+
+[ext_resource type="Script" uid="uid://bdbt26n7drn5i" path="res://Scripts/UI/StatDetailPopup.gd" id="1_28gq1"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="2_pkbtx"]
+
+[node name="StatDetailPopup" type="CanvasLayer" unique_id=983449157]
+layer = 100
+script = ExtResource("1_28gq1")
+
+[node name="Scrim" type="ColorRect" parent="." unique_id=2064611881]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Card" type="PanelContainer" parent="Scrim" unique_id=1564857373]
+custom_minimum_size = Vector2(1015, 0)
+layout_mode = 0
+theme_type_variation = &"Card"
+
+[node name="Layout" type="VBoxContainer" parent="Scrim/Card" unique_id=1567960771]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Header" type="MarginContainer" parent="Scrim/Card/Layout" unique_id=64880926]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="Row" type="HBoxContainer" parent="Scrim/Card/Layout/Header" unique_id=1130361966]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="IconRect" type="TextureRect" parent="Scrim/Card/Layout/Header/Row" unique_id=1140208113]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GlyphLabel" type="Label" parent="Scrim/Card/Layout/Header/Row" unique_id=1784416112]
+layout_mode = 2
+theme_type_variation = &"H1Label"
+vertical_alignment = 1
+
+[node name="Titles" type="VBoxContainer" parent="Scrim/Card/Layout/Header/Row" unique_id=806853796]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CategoryLabel" type="Label" parent="Scrim/Card/Layout/Header/Row/Titles" unique_id=746740321]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+
+[node name="NameLabel" type="Label" parent="Scrim/Card/Layout/Header/Row/Titles" unique_id=344606627]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+
+[node name="CloseButton" type="Button" parent="Scrim/Card/Layout/Header/Row" unique_id=3514930]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"SecondaryButton"
+text = "✕"
+
+[node name="Body" type="PanelContainer" parent="Scrim/Card/Layout" unique_id=178440331]
+layout_mode = 2
+theme_type_variation = &"SunkenPanel"
+
+[node name="BodyLayout" type="VBoxContainer" parent="Scrim/Card/Layout/Body" unique_id=26316539]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="ValueLabel" type="Label" parent="Scrim/Card/Layout/Body/BodyLayout" unique_id=310043768]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+
+[node name="Bar" type="ProgressBar" parent="Scrim/Card/Layout/Body/BodyLayout" unique_id=1679353022]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+script = ExtResource("2_pkbtx")
+
+[node name="DescriptionLabel" type="Label" parent="Scrim/Card/Layout/Body/BodyLayout" unique_id=655695018]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_constants/line_spacing = 12
+autowrap_mode = 3

@@ -1,7 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dr5qi8rfs083q"]
 
-[ext_resource type="Script" path="res://Scripts/ReportCard/report_card.gd" id="1_ao2t8"]
-[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
+[ext_resource type="Script" uid="uid://sbohtwr3ujoj" path="res://Scripts/ReportCard/report_card.gd" id="1_ao2t8"]
 [ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="1_jsirh"]
 [ext_resource type="Texture2D" uid="uid://croetdw7smqvd" path="res://Assets/Images/MuridPotrait/Murid3.jpg" id="3_33k3e"]
 [ext_resource type="Texture2D" uid="uid://brotcydbytvmj" path="res://Assets/Images/MuridPotrait/Murid6.jpg" id="3_a1isy"]
@@ -10,8 +9,8 @@
 [ext_resource type="Texture2D" uid="uid://ddqatfjpqc4ev" path="res://Assets/Images/MuridPotrait/Murid2.jpg" id="4_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://cn7kemflfrhci" path="res://Assets/Images/MuridPotrait/Murid5.jpg" id="4_hodfn"]
 [ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="4_vdd03"]
-[ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
-[ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
+[ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
 shader = ExtResource("3_ovxc5")
@@ -34,7 +33,6 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ao2t8")
 
-
 [node name="KertasMurid6" type="TextureRect" parent="." unique_id=1627899928]
 visible = false
 layout_mode = 0
@@ -44,37 +42,27 @@ offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
-
 [node name="TextureRect" type="TextureRect" parent="KertasMurid6" unique_id=1221180924]
-texture = ExtResource("3_a1isy")
-expand_mode = 1
-
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
-anchor_right = 0.0
-anchor_bottom = 0.0
 offset_left = 647.0
 offset_top = 299.0
 offset_right = 920.0
 offset_bottom = 656.0
+texture = ExtResource("3_a1isy")
+expand_mode = 1
 stretch_mode = 5
 
-[node name="SifatPasifLabel" type="Label" parent="KertasMurid6"]
-theme_type_variation = &"CardSectionLabel"
-text = "Sifat Pasif:"
-
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid6" unique_id=1087885955]
 layout_mode = 0
 offset_left = 119.0
 offset_top = 1330.0
 offset_right = 500.0
 offset_bottom = 1395.0
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 [node name="KutuBuku" type="Button" parent="KertasMurid6" unique_id=1010521266]
-theme_type_variation = &"TraitPill"
-text = "Quirk Kutu Buku"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -85,11 +73,10 @@ offset_left = -421.0
 offset_top = -104.119995
 offset_right = 421.0
 offset_bottom = -0.11999512
+theme_type_variation = &"TraitPill"
+text = "Quirk Kutu Buku"
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid6" unique_id=420784728]
-theme_type_variation = &"TraitPill"
-text = "Persona Rajin"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -100,176 +87,167 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
+theme_type_variation = &"TraitPill"
+text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid6" unique_id=101612949]
-script = ExtResource("statbar")
-category = "Istirahat"
-max_value = 100.0
-value = 60.0
-show_percentage = false
-
+self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
+theme_type_variation = &"StatBar"
+value = 60.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Istirahat"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Kepribadian1" unique_id=294910009]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid6/Kepribadian1" unique_id=1139951486]
-theme_type_variation = &"BarLabel"
-text = "MOOD"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "MOOD"
+vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid6" unique_id=1855993380]
-script = ExtResource("statbar")
-category = "Libur"
-max_value = 100.0
-value = 50.0
-show_percentage = false
-
+self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
+theme_type_variation = &"StatBar"
+value = 50.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Libur"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Kepribadian2" unique_id=711864956]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid6/Kepribadian2" unique_id=1777917629]
-theme_type_variation = &"BarLabel"
-text = "ENERGY"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "ENERGY"
+vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid6" unique_id=254169502]
-script = ExtResource("statbar")
-category = "Akademis"
-max_value = 100.0
-value = 35.0
-show_percentage = false
-
+self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
+theme_type_variation = &"StatBar"
+value = 35.0
+show_percentage = false
+script = ExtResource("statbar")
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis1" unique_id=1398205165]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid6/Akademis1" unique_id=1459576882]
-theme_type_variation = &"BarLabel"
-text = "AKADEMIS"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "AKADEMIS"
+vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid6" unique_id=423182825]
-script = ExtResource("statbar")
-category = "SeniBudaya"
-max_value = 100.0
-value = 20.0
-show_percentage = false
-
+self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
+theme_type_variation = &"StatBar"
+value = 20.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "SeniBudaya"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis2" unique_id=1152689393]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid6/Akademis2" unique_id=424051774]
-theme_type_variation = &"BarLabel"
-text = "SENI BUDAYA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "SENI BUDAYA"
+vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid6" unique_id=609774354]
-script = ExtResource("statbar")
-category = "Olahraga"
-max_value = 100.0
-value = 40.0
-show_percentage = false
-
+self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
+theme_type_variation = &"StatBar"
+value = 40.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Olahraga"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Akademis3" unique_id=1894100866]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid6/Akademis3" unique_id=1490684461]
-theme_type_variation = &"BarLabel"
-text = "OLAHRAGA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "OLAHRAGA"
+vertical_alignment = 1
 
 [node name="KertasMurid5" type="TextureRect" parent="." unique_id=1004659439]
 layout_mode = 0
@@ -279,37 +257,27 @@ offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
-
 [node name="TextureRect" type="TextureRect" parent="KertasMurid5" unique_id=91004226]
-texture = ExtResource("4_hodfn")
-expand_mode = 1
-
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
-anchor_right = 0.0
-anchor_bottom = 0.0
 offset_left = 647.0
 offset_top = 299.0
 offset_right = 920.0
 offset_bottom = 656.0
+texture = ExtResource("4_hodfn")
+expand_mode = 1
 stretch_mode = 5
 
-[node name="SifatPasifLabel" type="Label" parent="KertasMurid5"]
-theme_type_variation = &"CardSectionLabel"
-text = "Sifat Pasif:"
-
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid5" unique_id=1045905773]
 layout_mode = 0
 offset_left = 119.0
 offset_top = 1330.0
 offset_right = 500.0
 offset_bottom = 1395.0
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 [node name="KutuBuku" type="Button" parent="KertasMurid5" unique_id=1094008115]
-theme_type_variation = &"TraitPill"
-text = "Quirk Kutu Buku"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -320,11 +288,10 @@ offset_left = -421.0
 offset_top = -104.119995
 offset_right = 421.0
 offset_bottom = -0.11999512
+theme_type_variation = &"TraitPill"
+text = "Quirk Kutu Buku"
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid5" unique_id=6069551]
-theme_type_variation = &"TraitPill"
-text = "Persona Rajin"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -335,176 +302,167 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
+theme_type_variation = &"TraitPill"
+text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid5" unique_id=1718979238]
-script = ExtResource("statbar")
-category = "Istirahat"
-max_value = 100.0
-value = 60.0
-show_percentage = false
-
+self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
+theme_type_variation = &"StatBar"
+value = 60.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Istirahat"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Kepribadian1" unique_id=2000354003]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid5/Kepribadian1" unique_id=880008900]
-theme_type_variation = &"BarLabel"
-text = "MOOD"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "MOOD"
+vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid5" unique_id=944929826]
-script = ExtResource("statbar")
-category = "Libur"
-max_value = 100.0
-value = 50.0
-show_percentage = false
-
+self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
+theme_type_variation = &"StatBar"
+value = 50.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Libur"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Kepribadian2" unique_id=249856602]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid5/Kepribadian2" unique_id=1149296065]
-theme_type_variation = &"BarLabel"
-text = "ENERGY"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "ENERGY"
+vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid5" unique_id=1735959426]
-script = ExtResource("statbar")
-category = "Akademis"
-max_value = 100.0
-value = 35.0
-show_percentage = false
-
+self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
+theme_type_variation = &"StatBar"
+value = 35.0
+show_percentage = false
+script = ExtResource("statbar")
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis1" unique_id=1498183674]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid5/Akademis1" unique_id=167698891]
-theme_type_variation = &"BarLabel"
-text = "AKADEMIS"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "AKADEMIS"
+vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid5" unique_id=691909228]
-script = ExtResource("statbar")
-category = "SeniBudaya"
-max_value = 100.0
-value = 20.0
-show_percentage = false
-
+self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
+theme_type_variation = &"StatBar"
+value = 20.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "SeniBudaya"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis2" unique_id=1879457609]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid5/Akademis2" unique_id=1173367564]
-theme_type_variation = &"BarLabel"
-text = "SENI BUDAYA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "SENI BUDAYA"
+vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid5" unique_id=569883677]
-script = ExtResource("statbar")
-category = "Olahraga"
-max_value = 100.0
-value = 40.0
-show_percentage = false
-
+self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
+theme_type_variation = &"StatBar"
+value = 40.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Olahraga"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Akademis3" unique_id=474194300]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid5/Akademis3" unique_id=783874747]
-theme_type_variation = &"BarLabel"
-text = "OLAHRAGA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "OLAHRAGA"
+vertical_alignment = 1
 
 [node name="KertasMurid4" type="TextureRect" parent="." unique_id=74882940]
 visible = false
@@ -515,37 +473,27 @@ offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
-
 [node name="TextureRect" type="TextureRect" parent="KertasMurid4" unique_id=464091592]
-texture = ExtResource("3_osw5o")
-expand_mode = 1
-
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
-anchor_right = 0.0
-anchor_bottom = 0.0
 offset_left = 647.0
 offset_top = 299.0
 offset_right = 920.0
 offset_bottom = 656.0
+texture = ExtResource("3_osw5o")
+expand_mode = 1
 stretch_mode = 5
 
-[node name="SifatPasifLabel" type="Label" parent="KertasMurid4"]
-theme_type_variation = &"CardSectionLabel"
-text = "Sifat Pasif:"
-
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid4" unique_id=1982110775]
 layout_mode = 0
 offset_left = 119.0
 offset_top = 1330.0
 offset_right = 500.0
 offset_bottom = 1395.0
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 [node name="KutuBuku" type="Button" parent="KertasMurid4" unique_id=862966656]
-theme_type_variation = &"TraitPill"
-text = "Quirk Kutu Buku"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -556,11 +504,10 @@ offset_left = -421.0
 offset_top = -104.119995
 offset_right = 421.0
 offset_bottom = -0.11999512
+theme_type_variation = &"TraitPill"
+text = "Quirk Kutu Buku"
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid4" unique_id=1021987004]
-theme_type_variation = &"TraitPill"
-text = "Persona Rajin"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -571,176 +518,167 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
+theme_type_variation = &"TraitPill"
+text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid4" unique_id=841029218]
-script = ExtResource("statbar")
-category = "Istirahat"
-max_value = 100.0
-value = 60.0
-show_percentage = false
-
+self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
+theme_type_variation = &"StatBar"
+value = 60.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Istirahat"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Kepribadian1" unique_id=384573567]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid4/Kepribadian1" unique_id=2008685126]
-theme_type_variation = &"BarLabel"
-text = "MOOD"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "MOOD"
+vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid4" unique_id=1156609344]
-script = ExtResource("statbar")
-category = "Libur"
-max_value = 100.0
-value = 50.0
-show_percentage = false
-
+self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
+theme_type_variation = &"StatBar"
+value = 50.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Libur"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Kepribadian2" unique_id=115016979]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid4/Kepribadian2" unique_id=516744714]
-theme_type_variation = &"BarLabel"
-text = "ENERGY"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "ENERGY"
+vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid4" unique_id=1424130807]
-script = ExtResource("statbar")
-category = "Akademis"
-max_value = 100.0
-value = 35.0
-show_percentage = false
-
+self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
+theme_type_variation = &"StatBar"
+value = 35.0
+show_percentage = false
+script = ExtResource("statbar")
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis1" unique_id=1666610939]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid4/Akademis1" unique_id=1314042417]
-theme_type_variation = &"BarLabel"
-text = "AKADEMIS"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "AKADEMIS"
+vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid4" unique_id=1209295979]
-script = ExtResource("statbar")
-category = "SeniBudaya"
-max_value = 100.0
-value = 20.0
-show_percentage = false
-
+self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
+theme_type_variation = &"StatBar"
+value = 20.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "SeniBudaya"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis2" unique_id=286186706]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid4/Akademis2" unique_id=1538291895]
-theme_type_variation = &"BarLabel"
-text = "SENI BUDAYA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "SENI BUDAYA"
+vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid4" unique_id=667467974]
-script = ExtResource("statbar")
-category = "Olahraga"
-max_value = 100.0
-value = 40.0
-show_percentage = false
-
+self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
+theme_type_variation = &"StatBar"
+value = 40.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Olahraga"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Akademis3" unique_id=551935657]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid4/Akademis3" unique_id=344690147]
-theme_type_variation = &"BarLabel"
-text = "OLAHRAGA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "OLAHRAGA"
+vertical_alignment = 1
 
 [node name="KertasMurid3" type="TextureRect" parent="." unique_id=2031333750]
 visible = false
@@ -751,37 +689,27 @@ offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
-
 [node name="TextureRect" type="TextureRect" parent="KertasMurid3" unique_id=158931283]
-texture = ExtResource("3_33k3e")
-expand_mode = 1
-
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
-anchor_right = 0.0
-anchor_bottom = 0.0
 offset_left = 647.0
 offset_top = 299.0
 offset_right = 920.0
 offset_bottom = 656.0
+texture = ExtResource("3_33k3e")
+expand_mode = 1
 stretch_mode = 5
 
-[node name="SifatPasifLabel" type="Label" parent="KertasMurid3"]
-theme_type_variation = &"CardSectionLabel"
-text = "Sifat Pasif:"
-
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid3" unique_id=386757310]
 layout_mode = 0
 offset_left = 119.0
 offset_top = 1330.0
 offset_right = 500.0
 offset_bottom = 1395.0
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 [node name="KutuBuku" type="Button" parent="KertasMurid3" unique_id=407152762]
-theme_type_variation = &"TraitPill"
-text = "Quirk Kutu Buku"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -792,11 +720,10 @@ offset_left = -421.0
 offset_top = -104.119995
 offset_right = 421.0
 offset_bottom = -0.11999512
+theme_type_variation = &"TraitPill"
+text = "Quirk Kutu Buku"
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid3" unique_id=1734850024]
-theme_type_variation = &"TraitPill"
-text = "Persona Rajin"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -807,176 +734,167 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
+theme_type_variation = &"TraitPill"
+text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid3" unique_id=1970699477]
-script = ExtResource("statbar")
-category = "Istirahat"
-max_value = 100.0
-value = 60.0
-show_percentage = false
-
+self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
+theme_type_variation = &"StatBar"
+value = 60.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Istirahat"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Kepribadian1" unique_id=1856528277]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid3/Kepribadian1" unique_id=1152519946]
-theme_type_variation = &"BarLabel"
-text = "MOOD"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "MOOD"
+vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid3" unique_id=769070225]
-script = ExtResource("statbar")
-category = "Libur"
-max_value = 100.0
-value = 50.0
-show_percentage = false
-
+self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
+theme_type_variation = &"StatBar"
+value = 50.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Libur"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Kepribadian2" unique_id=1389837432]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid3/Kepribadian2" unique_id=120406539]
-theme_type_variation = &"BarLabel"
-text = "ENERGY"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "ENERGY"
+vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid3" unique_id=1877461506]
-script = ExtResource("statbar")
-category = "Akademis"
-max_value = 100.0
-value = 35.0
-show_percentage = false
-
+self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
+theme_type_variation = &"StatBar"
+value = 35.0
+show_percentage = false
+script = ExtResource("statbar")
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis1" unique_id=619022267]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid3/Akademis1" unique_id=378837250]
-theme_type_variation = &"BarLabel"
-text = "AKADEMIS"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "AKADEMIS"
+vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid3" unique_id=1388406393]
-script = ExtResource("statbar")
-category = "SeniBudaya"
-max_value = 100.0
-value = 20.0
-show_percentage = false
-
+self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
+theme_type_variation = &"StatBar"
+value = 20.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "SeniBudaya"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis2" unique_id=2096205175]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid3/Akademis2" unique_id=1357091394]
-theme_type_variation = &"BarLabel"
-text = "SENI BUDAYA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "SENI BUDAYA"
+vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid3" unique_id=1303018386]
-script = ExtResource("statbar")
-category = "Olahraga"
-max_value = 100.0
-value = 40.0
-show_percentage = false
-
+self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
+theme_type_variation = &"StatBar"
+value = 40.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Olahraga"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Akademis3" unique_id=1677762138]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid3/Akademis3" unique_id=1403043752]
-theme_type_variation = &"BarLabel"
-text = "OLAHRAGA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "OLAHRAGA"
+vertical_alignment = 1
 
 [node name="KertasMurid2" type="TextureRect" parent="." unique_id=465108679]
 visible = false
@@ -987,37 +905,27 @@ offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
-
 [node name="TextureRect" type="TextureRect" parent="KertasMurid2" unique_id=1137421456]
-texture = ExtResource("4_6vhdp")
-expand_mode = 1
-
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
-anchor_right = 0.0
-anchor_bottom = 0.0
 offset_left = 647.0
 offset_top = 299.0
 offset_right = 920.0
 offset_bottom = 656.0
+texture = ExtResource("4_6vhdp")
+expand_mode = 1
 stretch_mode = 5
 
-[node name="SifatPasifLabel" type="Label" parent="KertasMurid2"]
-theme_type_variation = &"CardSectionLabel"
-text = "Sifat Pasif:"
-
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid2" unique_id=2128669330]
 layout_mode = 0
 offset_left = 119.0
 offset_top = 1330.0
 offset_right = 500.0
 offset_bottom = 1395.0
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 [node name="KutuBuku" type="Button" parent="KertasMurid2" unique_id=1530561034]
-theme_type_variation = &"TraitPill"
-text = "Quirk Kutu Buku"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -1028,11 +936,10 @@ offset_left = -421.0
 offset_top = -104.119995
 offset_right = 421.0
 offset_bottom = -0.11999512
+theme_type_variation = &"TraitPill"
+text = "Quirk Kutu Buku"
 
 [node name="KutuBuku2" type="Button" parent="KertasMurid2" unique_id=2118033802]
-theme_type_variation = &"TraitPill"
-text = "Persona Rajin"
-
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -1043,176 +950,167 @@ offset_left = -417.0
 offset_top = -98.16016
 offset_right = 420.0
 offset_bottom = 0.83984375
+theme_type_variation = &"TraitPill"
+text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid2" unique_id=1781486670]
-script = ExtResource("statbar")
-category = "Istirahat"
-max_value = 100.0
-value = 60.0
-show_percentage = false
-
+self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
+theme_type_variation = &"StatBar"
+value = 60.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Istirahat"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Kepribadian1" unique_id=323613456]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid2/Kepribadian1" unique_id=1718336705]
-theme_type_variation = &"BarLabel"
-text = "MOOD"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "MOOD"
+vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid2" unique_id=1293459282]
-script = ExtResource("statbar")
-category = "Libur"
-max_value = 100.0
-value = 50.0
-show_percentage = false
-
+self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
+theme_type_variation = &"StatBar"
+value = 50.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Libur"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Kepribadian2" unique_id=181566930]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid2/Kepribadian2" unique_id=1841917311]
-theme_type_variation = &"BarLabel"
-text = "ENERGY"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "ENERGY"
+vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid2" unique_id=1728939962]
-script = ExtResource("statbar")
-category = "Akademis"
-max_value = 100.0
-value = 35.0
-show_percentage = false
-
+self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
+theme_type_variation = &"StatBar"
+value = 35.0
+show_percentage = false
+script = ExtResource("statbar")
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis1" unique_id=1939438012]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid2/Akademis1" unique_id=1620638843]
-theme_type_variation = &"BarLabel"
-text = "AKADEMIS"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "AKADEMIS"
+vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid2" unique_id=1581993055]
-script = ExtResource("statbar")
-category = "SeniBudaya"
-max_value = 100.0
-value = 20.0
-show_percentage = false
-
+self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
+theme_type_variation = &"StatBar"
+value = 20.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "SeniBudaya"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis2" unique_id=1441394884]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid2/Akademis2" unique_id=1991085930]
-theme_type_variation = &"BarLabel"
-text = "SENI BUDAYA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "SENI BUDAYA"
+vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid2" unique_id=1182239999]
-script = ExtResource("statbar")
-category = "Olahraga"
-max_value = 100.0
-value = 40.0
-show_percentage = false
-
+self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
+theme_type_variation = &"StatBar"
+value = 40.0
+show_percentage = false
+script = ExtResource("statbar")
+category = "Olahraga"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Akademis3" unique_id=794379074]
+layout_mode = 0
+offset_left = 644.0
+offset_right = 736.0
+offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-layout_mode = 0
-offset_left = 644.0
-offset_right = 736.0
-offset_bottom = 68.0
-
 [node name="Label" type="Label" parent="KertasMurid2/Akademis3" unique_id=693739334]
-theme_type_variation = &"BarLabel"
-text = "OLAHRAGA"
-vertical_alignment = 1
-
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
+text = "OLAHRAGA"
+vertical_alignment = 1
 
 [node name="KertasMurid1" type="TextureRect" parent="." unique_id=1772494297]
 layout_mode = 0
@@ -1222,14 +1120,9 @@ offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
-
 [node name="TextureRect" type="TextureRect" parent="KertasMurid1" unique_id=981490411]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
-anchor_right = 0.0
-anchor_bottom = 0.0
 offset_left = 647.0
 offset_top = 299.0
 offset_right = 920.0
@@ -1238,19 +1131,16 @@ texture = ExtResource("1_jsirh")
 expand_mode = 1
 stretch_mode = 5
 
-
-[node name="SifatPasifLabel" type="Label" parent="KertasMurid1"]
-theme_type_variation = &"CardSectionLabel"
-text = "Sifat Pasif:"
-
+[node name="SifatPasifLabel" type="Label" parent="KertasMurid1" unique_id=325687621]
 layout_mode = 0
 offset_left = 119.0
 offset_top = 1330.0
 offset_right = 500.0
 offset_bottom = 1395.0
+theme_type_variation = &"CardSectionLabel"
+text = "Sifat Pasif:"
 
 [node name="KutuBuku" type="Button" parent="KertasMurid1" unique_id=911792941]
-theme_type_variation = &"TraitPill"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -1258,196 +1148,184 @@ anchor_top = 0.786
 anchor_right = 0.5
 anchor_bottom = 0.786
 offset_left = -421.0
-offset_top = -104.119995
+offset_top = -342.12
 offset_right = 421.0
-offset_bottom = -0.11999512
+offset_bottom = -205.12
+theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
-
 [node name="KutuBuku2" type="Button" parent="KertasMurid1" unique_id=1981551433]
-theme_type_variation = &"TraitPill"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
 anchor_top = 0.84800005
 anchor_right = 0.5
 anchor_bottom = 0.84800005
-offset_left = -417.0
-offset_top = -98.16016
-offset_right = 420.0
-offset_bottom = 0.83984375
+offset_left = -403.0
+offset_top = -277.16016
+offset_right = 434.0
+offset_bottom = -140.16016
+theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
-
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid1" unique_id=1809899533]
-script = ExtResource("statbar")
-category = "Istirahat"
+self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-max_value = 100.0
+theme_type_variation = &"StatBar"
 value = 60.0
 show_percentage = false
-
+script = ExtResource("statbar")
+category = "Istirahat"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Kepribadian1" unique_id=558492279]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-
 [node name="Label" type="Label" parent="KertasMurid1/Kepribadian1" unique_id=1152517557]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "MOOD"
 vertical_alignment = 1
 
-
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid1" unique_id=40407347]
-script = ExtResource("statbar")
-category = "Libur"
+self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-max_value = 100.0
+theme_type_variation = &"StatBar"
 value = 50.0
 show_percentage = false
-
+script = ExtResource("statbar")
+category = "Libur"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Kepribadian2" unique_id=1416689670]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "50/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-
 [node name="Label" type="Label" parent="KertasMurid1/Kepribadian2" unique_id=1384414264]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "ENERGY"
 vertical_alignment = 1
 
-
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid1" unique_id=1786877303]
-script = ExtResource("statbar")
-category = "Akademis"
+self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
-max_value = 100.0
+theme_type_variation = &"StatBar"
 value = 35.0
 show_percentage = false
-
+script = ExtResource("statbar")
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis1" unique_id=1146448601]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-
 [node name="Label" type="Label" parent="KertasMurid1/Akademis1" unique_id=218215994]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "AKADEMIS"
 vertical_alignment = 1
 
-
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid1" unique_id=1671231058]
-script = ExtResource("statbar")
-category = "SeniBudaya"
+self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
-max_value = 100.0
+theme_type_variation = &"StatBar"
 value = 20.0
 show_percentage = false
-
+script = ExtResource("statbar")
+category = "SeniBudaya"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis2" unique_id=901134386]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-
 [node name="Label" type="Label" parent="KertasMurid1/Akademis2" unique_id=502196696]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "SENI BUDAYA"
 vertical_alignment = 1
 
-
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid1" unique_id=1136784519]
-script = ExtResource("statbar")
-category = "Olahraga"
+self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
-max_value = 100.0
+theme_type_variation = &"StatBar"
 value = 40.0
 show_percentage = false
-
+script = ExtResource("statbar")
+category = "Olahraga"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Akademis3" unique_id=1864829867]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 644.0
 offset_right = 736.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "65/65"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-
 [node name="Label" type="Label" parent="KertasMurid1/Akademis3" unique_id=86560100]
-theme_type_variation = &"BarLabel"
 layout_mode = 0
 offset_left = 24.0
 offset_right = 300.0
 offset_bottom = 68.0
+theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
-
 
 [node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
 layout_mode = 0
@@ -1460,7 +1338,6 @@ scale = Vector2(0.175, 0.175)
 icon = ExtResource("4_vdd03")
 flat = true
 
-
 [node name="NextButtonKiri" type="Button" parent="." unique_id=1513661131]
 visible = false
 layout_mode = 0
@@ -1472,16 +1349,14 @@ scale = Vector2(0.175, 0.175)
 icon = ExtResource("4_vdd03")
 flat = true
 
-
 [node name="PilihMurid" type="Label" parent="." unique_id=983198317]
-theme_type_variation = &"DisplayLabel"
 layout_mode = 0
 offset_left = 329.0
 offset_top = -172.0
 offset_right = 964.0
 offset_bottom = -44.0
+theme_type_variation = &"DisplayLabel"
 text = "Pilih Muridmu"
-
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=841057524]
 material = SubResource("ShaderMaterial_jsirh")
@@ -1491,13 +1366,12 @@ anchor_left = -0.075
 anchor_top = -0.193
 anchor_right = 1.085
 anchor_bottom = 1.268
-offset_left = 4.975006
-offset_top = 6.602005
-offset_right = 4.6949463
-offset_bottom = 6.8480225
+offset_left = 36.975006
+offset_top = 27.602005
+offset_right = 36.694946
+offset_bottom = 27.848022
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
-
 
 [node name="ClickArea" type="Button" parent="ColorRect" unique_id=1890873324]
 modulate = Color(1, 1, 1, 0)
@@ -1505,31 +1379,29 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -3.0
-offset_top = -3.0
-offset_bottom = -4.0
+offset_left = -21.0
+offset_top = 18.0
+offset_right = -18.0
+offset_bottom = 17.0
 grow_horizontal = 2
 grow_vertical = 2
 
-
 [node name="PageLabel" type="Label" parent="." unique_id=977170758]
-theme_type_variation = &"CardSectionLabel"
 layout_mode = 0
 offset_left = 302.0
 offset_top = 1248.0
 offset_right = 561.0
 offset_bottom = 1332.0
-
+theme_type_variation = &"CardSectionLabel"
 
 [node name="BackButton" type="Button" parent="." unique_id=1002003004]
-theme_type_variation = &"PrimaryButton"
 layout_mode = 0
 offset_left = 20.0
 offset_top = -172.0
 offset_right = 280.0
 offset_bottom = -78.0
+theme_type_variation = &"PrimaryButton"
 text = "Kembali"
-
 
 [connection signal="pressed" from="NextButtonKanan" to="." method="_on_next_button_kanan_pressed"]
 [connection signal="pressed" from="NextButtonKiri" to="." method="_on_next_button_kiri_pressed"]

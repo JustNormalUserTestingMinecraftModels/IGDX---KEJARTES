@@ -67,6 +67,53 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.brand_primary_light, tokens.brand_primary_dark,
 		tokens.outline_card, tokens.text_on_brand)
 
+	_build_shop_shelf_button(theme, tokens)
+
+
+## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"). A flat
+## rounded rectangle with a heavier bottom border for a pressed-tab look,
+## not the pill shape _pill()/_add_button_variation() produce, and its
+## hover state recolours the text gold rather than lightening the fill --
+## neither shape matches an existing variation closely enough to reuse.
+static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "ShopShelfButton"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Button")
+
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = tokens.brand_primary
+	normal.set_corner_radius_all(tokens.radius_md)
+	normal.border_width_left = 3
+	normal.border_width_top = 3
+	normal.border_width_right = 3
+	normal.border_width_bottom = 5
+	normal.border_color = tokens.outline_card
+	normal.shadow_size = 6
+	normal.shadow_offset = Vector2(0, 4)
+	normal.shadow_color = Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.45)
+	normal.content_margin_left = 20
+	normal.content_margin_right = 20
+	normal.content_margin_top = 10
+	normal.content_margin_bottom = 10
+	theme.set_stylebox("normal", NAME, normal)
+
+	var hover: StyleBoxFlat = normal.duplicate()
+	hover.bg_color = tokens.brand_primary.lightened(0.15)
+	theme.set_stylebox("hover", NAME, hover)
+
+	var pressed: StyleBoxFlat = normal.duplicate()
+	pressed.bg_color = tokens.brand_primary.darkened(0.2)
+	pressed.border_width_bottom = 2
+	pressed.shadow_offset = Vector2(0, 1)
+	theme.set_stylebox("pressed", NAME, pressed)
+
+	theme.set_color("font_color", NAME, tokens.text_on_brand)
+	theme.set_color("font_hover_color", NAME, tokens.currency_gold)
+	theme.set_color("font_pressed_color", NAME, tokens.text_on_brand)
+	theme.set_color("font_shadow_color", NAME,
+		Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.75))
+	theme.set_constant("shadow_offset_x", NAME, 2)
+	theme.set_constant("shadow_offset_y", NAME, 2)
 
 
 ## One glossy pill in four states. `top`/`bottom` form the vertical
@@ -245,6 +292,35 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.85))
 	theme.set_constant("shadow_offset_x", "CoinLabel", 1)
 	theme.set_constant("shadow_offset_y", "CoinLabel", 1)
+
+	# Koperasi's coin counter predates CoinLabel and carries its own shipped
+	# numbers (bigger font, a flat black shadow, a wider offset) -- kept
+	# distinct rather than folding it into CoinLabel and shrinking it.
+	theme.add_type("ShopCoinLabel")
+	theme.set_type_variation("ShopCoinLabel", "Label")
+	theme.set_font_size("font_size", "ShopCoinLabel", 40)
+	theme.set_color("font_color", "ShopCoinLabel", tokens.currency_gold)
+	theme.set_color("font_shadow_color", "ShopCoinLabel", Color.BLACK)
+	theme.set_constant("shadow_offset_x", "ShopCoinLabel", 2)
+	theme.set_constant("shadow_offset_y", "ShopCoinLabel", 2)
+
+	# Koperasi's purchase-feedback message, one variation per semantic
+	# outcome so the screen swaps theme_type_variation instead of calling
+	# add_theme_color_override with a token colour picked at runtime.
+	var message_specs := [
+		["ShopMessageWarning", tokens.state_warning],
+		["ShopMessageDanger", tokens.state_danger],
+		["ShopMessageSuccess", tokens.state_success],
+	]
+	for spec in message_specs:
+		var name: String = spec[0]
+		theme.add_type(name)
+		theme.set_type_variation(name, "Label")
+		theme.set_font_size("font_size", name, 36)
+		theme.set_color("font_color", name, spec[1])
+		theme.set_color("font_shadow_color", name, Color.BLACK)
+		theme.set_constant("shadow_offset_x", name, 2)
+		theme.set_constant("shadow_offset_y", name, 2)
 
 	# SemesterEnd is the one screen that deliberately keeps a dark,
 	# certificate-like backdrop instead of the app's usual light surface

@@ -1,16 +1,17 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dgdiebg5vu00j"]
 
-[ext_resource type="Script" path="res://Scripts/Koperasi/koprasi.gd" id="1_ap2qe"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/Illustration4.jpg" id="2_vylns"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/return.png" id="5_46s2e"]
-[ext_resource type="Script" path="res://Scripts/Koperasi/rakbarang_1.gd" id="5_jfwhh"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/bank soal.png" id="5_tf5nh"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/rak2.jpg" id="6_tf5nh"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/LKS.png" id="7_jfwhh"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/lompat tali.png" id="8_4x77x"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/ItemRak/raket.png" id="9_uhev2"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/pngwing.com (6).png" id="11_vylns"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/pngwing.com (2).png" id="12_vylns"]
+[ext_resource type="Script" uid="uid://ioeh8qtnpgo5" path="res://Scripts/Koperasi/koprasi.gd" id="1_ap2qe"]
+[ext_resource type="Texture2D" uid="uid://bsa3lvahggq2b" path="res://Assets/Images/Shop/Illustration4.jpg" id="2_vylns"]
+[ext_resource type="Texture2D" uid="uid://fuwhxl8ethbp" path="res://Assets/Images/Shop/return.png" id="5_46s2e"]
+[ext_resource type="Script" uid="uid://bgp5ht1pwg3s1" path="res://Scripts/Koperasi/rakbarang_1.gd" id="5_jfwhh"]
+[ext_resource type="Texture2D" uid="uid://1x5rfg1qq3la" path="res://Assets/Images/Shop/ItemRak/bank soal.png" id="5_tf5nh"]
+[ext_resource type="Texture2D" uid="uid://d37air8ke4qwn" path="res://Assets/Images/Shop/rak2.jpg" id="6_tf5nh"]
+[ext_resource type="Texture2D" uid="uid://cnvh1ppktmvnx" path="res://Assets/Images/Shop/ItemRak/LKS.png" id="7_jfwhh"]
+[ext_resource type="Texture2D" uid="uid://t6ana4kpuktm" path="res://Assets/Images/Shop/ItemRak/lompat tali.png" id="8_4x77x"]
+[ext_resource type="Texture2D" uid="uid://3pb4r7jsijbc" path="res://Assets/Images/Shop/ItemRak/raket.png" id="9_uhev2"]
+[ext_resource type="Texture2D" uid="uid://bmdjrci56ldeq" path="res://Assets/Images/Shop/pngwing.com (6).png" id="11_vylns"]
+[ext_resource type="Texture2D" uid="uid://d17fahj54oxbx" path="res://Assets/Images/Shop/pngwing.com (2).png" id="12_vylns"]
+[ext_resource type="Texture2D" uid="uid://cy6vxo5kujw0i" path="res://Assets/Images/Shop/Koin.png" id="13_st3ia"]
 [ext_resource type="Theme" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tf5nh"]
@@ -55,6 +56,7 @@ offset_left = 303.0
 offset_top = 1401.0
 offset_right = 745.0
 offset_bottom = 1464.0
+theme_type_variation = &"ShopShelfButton"
 theme_override_font_sizes/font_size = 40
 text = "KEBUTUHAN SEKOLAH"
 
@@ -232,3 +234,36 @@ offset_bottom = 1112.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 50
 text = "Harga++"
+
+[node name="CoinHUD" type="HBoxContainer" parent="." unique_id=396070269]
+z_index = 10
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 37.0
+offset_bottom = 48.0
+theme_override_constants/separation = 10
+
+[node name="CoinIcon" type="TextureRect" parent="CoinHUD" unique_id=65902655]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+texture = ExtResource("13_st3ia")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CoinLabel" type="Label" parent="CoinHUD" unique_id=797032672]
+layout_mode = 2
+theme_type_variation = &"ShopCoinLabel"
+vertical_alignment = 1
+
+[node name="MessageLabel" type="Label" parent="." unique_id=754434092]
+z_index = 20
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.47
+anchor_right = 1.0
+anchor_bottom = 0.47
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_type_variation = &"ShopMessageSuccess"
+horizontal_alignment = 1

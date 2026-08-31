@@ -33,6 +33,11 @@ signal _summary_closed
 ## Shared icon(-or-glyph) + bar + number row used for the embedded
 ## energy/mood readout on each student card.
 @export var student_stat_row_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentStatRow.tscn")
+## The end-of-week tutorial's coach-mark. Overridden below to SchoolDay's
+## shipped 0.85/900 width, 30px content margin, H2Label title, unstyled
+## body and success-tinted CaptionLabel prompt -- everything TutorialPanel
+## doesn't default to.
+@export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")
 
 @export_group("End Simulation Tutorial (Week 1)")
 @export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama! 🎓"
@@ -84,10 +89,7 @@ var is_waiting_for_continue: bool = false
 var embedded_widgets: Dictionary = {} # student_name -> Dictionary of node refs
 
 # End Simulation Tutorial internal variables
-var _tutorial_panel: PanelContainer = null
-var _tutorial_title_label: Label = null
-var _tutorial_body_label: Label = null
-var _tutorial_prompt_label: Label = null
+var _tutorial_panel: TutorialPanel = null
 var _blink_tween: Tween = null
 var _is_tutorial_active: bool = false
 var _is_summary_active: bool = false
@@ -1258,74 +1260,38 @@ func _show_end_simulation_tutorial() -> void:
 	overlay.theme_type_variation = &"Scrim"
 	add_child(overlay)
 
-	# PanelContainer setup.
-	#
-	# This used to prefer the dialogue_box.png placeholder when present.
-	# It no longer does: that art is a near-black box from the old dark
-	# palette, and the theme's label colors are now dark-on-light, so the
-	# tutorial text rendered black-on-black. Confirmed in a live run.
-	# The Card variation is the correct surface for a modal panel and
-	# keeps the text legible; the PNG stays in the project for the
-	# student-card slot, which is light and still reads fine.
-	_tutorial_panel = PanelContainer.new()
-	_tutorial_panel.theme_type_variation = &"Card"
-
+	# The shared TutorialPanel, on the Card surface -- this used to prefer
+	# the dialogue_box.png placeholder when present. It no longer does:
+	# that art is a near-black box from the old dark palette, and the
+	# theme's label colors are now dark-on-light, so the tutorial text
+	# rendered black-on-black. Confirmed in a live run. The Card variation
+	# is the correct surface for a modal panel and keeps the text legible;
+	# the PNG stays in the project for the student-card slot, which is
+	# light and still reads fine.
+	_tutorial_panel = tutorial_panel_scene.instantiate()
+	_tutorial_panel.width_fraction = 0.85
+	_tutorial_panel.max_width = 900.0
+	_tutorial_panel.content_margin = 30
+	_tutorial_panel.vbox_separation = 20
+	_tutorial_panel.title_variation = &"H2Label"
+	_tutorial_panel.body_variation = &""
+	_tutorial_panel.body_width_offset = 100.0
+	_tutorial_panel.prompt_variation = &"CaptionLabel"
+	_tutorial_panel.prompt_success_tint = true
 
 	var viewport_size = get_viewport_rect().size
-	var panel_width = min(viewport_size.x * 0.85, 900)
-	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
-	
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 30)
-	margin.add_theme_constant_override("margin_top", 30)
-	margin.add_theme_constant_override("margin_right", 30)
-	margin.add_theme_constant_override("margin_bottom", 30)
-	_tutorial_panel.add_child(margin)
-	
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 20)
-	margin.add_child(vbox)
-	
-	# Title Label
-	_tutorial_title_label = Label.new()
-	_tutorial_title_label.text = end_tutorial_title
-	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.theme_type_variation = &"H2Label"
-	vbox.add_child(_tutorial_title_label)
-	
-	var sep = HSeparator.new()
-	vbox.add_child(sep)
-	
-	# Body Label
-	_tutorial_body_label = Label.new()
-	_tutorial_body_label.text = end_tutorial_text
-	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
-	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 100, 0)
-	vbox.add_child(_tutorial_body_label)
-	
-	var sep2 = HSeparator.new()
-	vbox.add_child(sep2)
-	
-	# Prompt Label
-	_tutorial_prompt_label = Label.new()
-	_tutorial_prompt_label.text = end_tutorial_prompt
-	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.theme_type_variation = &"CaptionLabel"
-	_tutorial_prompt_label.self_modulate = Juice.tokens().state_success
-	vbox.add_child(_tutorial_prompt_label)
-	
+
 	overlay.add_child(_tutorial_panel)
-	
+	_tutorial_panel.show_step(end_tutorial_title, end_tutorial_text, end_tutorial_prompt)
+
 	# Pulsing Prompt Tween -- same hint pulse as the Splashscreen (Task 10).
-	_tutorial_prompt_label.modulate.a = 1.0
+	_tutorial_panel.prompt_label.modulate.a = 1.0
 	_blink_tween = create_tween().set_loops()
-	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 0.35, Juice.tokens().dur_slow) \
+	_blink_tween.tween_property(_tutorial_panel.prompt_label, "modulate:a", 0.35, Juice.tokens().dur_slow) \
 		.set_ease(Tween.EASE_IN_OUT)
-	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 1.0, Juice.tokens().dur_slow) \
+	_blink_tween.tween_property(_tutorial_panel.prompt_label, "modulate:a", 1.0, Juice.tokens().dur_slow) \
 		.set_ease(Tween.EASE_IN_OUT)
-	
+
 	# Position Centering
 	await get_tree().process_frame
 	var panel_size = _tutorial_panel.size

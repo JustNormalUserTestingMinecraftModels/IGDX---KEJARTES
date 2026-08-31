@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://exobac6lqnug"]
+
+[ext_resource type="Script" uid="uid://cx4jdatm5v8i" path="res://Scripts/UI/TutorialPanel.gd" id="1_v0ojc"]
+
+[node name="TutorialPanel" type="PanelContainer" unique_id=221373627]
+mouse_filter = 2
+theme_type_variation = &"Card"
+script = ExtResource("1_v0ojc")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1626375456]
+layout_mode = 2
+
+[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=1522478353]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/Layout" unique_id=1551616205]
+layout_mode = 2
+theme_type_variation = &"H1Label"
+horizontal_alignment = 1
+
+[node name="Separator1" type="HSeparator" parent="Margin/Layout" unique_id=1730028936]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BodyLabel" type="Label" parent="Margin/Layout" unique_id=189272566]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_constants/line_spacing = 8
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Separator2" type="HSeparator" parent="Margin/Layout" unique_id=1274754858]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PromptLabel" type="Label" parent="Margin/Layout" unique_id=1899479792]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+horizontal_alignment = 1

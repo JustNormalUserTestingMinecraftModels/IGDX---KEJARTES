@@ -37,9 +37,15 @@ var _tutorial_badge_cleanup: Callable
 
 const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
 
+## Shared onboarding coach-mark (title/separator/body/separator/prompt on
+## the Card surface). This screen's per-step tutorial keeps StudentCard's
+## shipped 0.92/1000 width and zero content margin -- the component
+## defaults -- and only overrides nothing.
+@export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")
+
 var current_step := 0
 var tutorial_active := true
-var _tutorial_panel: PanelContainer
+var _tutorial_panel: TutorialPanel
 var _tutorial_title_label: Label
 var _tutorial_body_label: Label
 var _tutorial_prompt_label: Label
@@ -274,54 +280,18 @@ func _populate_default_tutorial_steps():
 
 
 
+## Instantiates the shared TutorialPanel with StudentCard's shipped look
+## (its component defaults: 0.92/1000 width, no content margin, H1Label
+## title, TitleLabel body/prompt). Keeps the three label vars pointed at
+## the panel's own nodes so the rest of this file's per-step text logic
+## (_show_step, _start_prompt_blink) is unchanged.
 func _build_tutorial_panel():
-	var viewport_size = get_viewport_rect().size
-
-	_tutorial_panel = PanelContainer.new()
+	_tutorial_panel = tutorial_panel_scene.instantiate()
 	_tutorial_panel.name = "TutorialPanel"
-	_tutorial_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	# Was: a three-way branch between an inspector StyleBox, a PNG
-	# nine-patch, and a hand-rolled dark-teal "blackboard" StyleBoxFlat.
-	# All three are now the project's Card surface, so the tutorial panel
-	# matches every other raised surface in the game and picks up token
-	# changes for free.
-	_tutorial_panel.theme_type_variation = &"Card"
-
-	var panel_width = min(viewport_size.x * 0.92, 1000)
-	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
-
-	var vbox = VBoxContainer.new()
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_theme_constant_override("separation", 10)
-	_tutorial_panel.add_child(vbox)
-
-	_tutorial_title_label = Label.new()
-	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.theme_type_variation = &"H1Label"
-	vbox.add_child(_tutorial_title_label)
-
-	var sep = HSeparator.new()
-	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(sep)
-
-	_tutorial_body_label = Label.new()
-	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.theme_type_variation = &"TitleLabel"
-	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
-	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 60, 0)
-	vbox.add_child(_tutorial_body_label)
-
-	var sep2 = HSeparator.new()
-	sep2.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(sep2)
-
-	_tutorial_prompt_label = Label.new()
+	_tutorial_title_label = _tutorial_panel.title_label
+	_tutorial_body_label = _tutorial_panel.body_label
+	_tutorial_prompt_label = _tutorial_panel.prompt_label
 	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
-	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.theme_type_variation = &"TitleLabel"
-	vbox.add_child(_tutorial_prompt_label)
 
 	color_rect.add_child(_tutorial_panel)
 	var click_idx = click_area.get_index()

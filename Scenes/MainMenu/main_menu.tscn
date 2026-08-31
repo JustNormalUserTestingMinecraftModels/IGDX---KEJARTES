@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://b2vxniec67375"]
+[gd_scene load_steps=5 format=3 uid="uid://b2vxniec67375"]
 
 [ext_resource type="Script" path="res://Scripts/MainMenu/main_menu.gd" id="1_ftydy"]
 [ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/BG.jpg" id="3_bg"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/titlescreen_background.png" id="3_bg"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/logo.png" id="4_logo"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -24,6 +25,18 @@ texture = ExtResource("3_bg")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="Logo" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_top = 68.0
+offset_bottom = 1148.0
+grow_horizontal = 2
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
 [node name="SafeArea" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -31,60 +44,59 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("2_safe")
 
-[node name="Layout" type="VBoxContainer" parent="SafeArea"]
+[node name="Content" type="Control" parent="SafeArea"]
 layout_mode = 2
+mouse_filter = 2
 
-[node name="TitleSpacer" type="Control" parent="SafeArea/Layout"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.6
+[node name="ButtonColumn" type="VBoxContainer" parent="SafeArea/Content"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -335.0
+offset_top = -756.0
+offset_right = 335.0
+offset_bottom = -246.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 66
 
-[node name="TitleLabel" type="Label" parent="SafeArea/Layout"]
+[node name="PlayButton" type="Button" parent="SafeArea/Content/ButtonColumn"]
 layout_mode = 2
-theme_type_variation = &"DisplayLabel"
-text = "KEJARTES"
-horizontal_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="SafeArea/Layout"]
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Bimbing muridmu sampai akhir semester"
-horizontal_alignment = 1
-
-[node name="MidSpacer" type="Control" parent="SafeArea/Layout"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="ButtonColumn" type="VBoxContainer" parent="SafeArea/Layout"]
-layout_mode = 2
-
-[node name="PlayButton" type="Button" parent="SafeArea/Layout/ButtonColumn"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 96)
-theme_type_variation = &"PrimaryButton"
+custom_minimum_size = Vector2(0, 126)
+theme_type_variation = &"MainMenuButton"
 text = "MULAI"
 
-[node name="SettingButton" type="Button" parent="SafeArea/Layout/ButtonColumn"]
+[node name="SettingButton" type="Button" parent="SafeArea/Content/ButtonColumn"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 96)
-theme_type_variation = &"SecondaryButton"
+custom_minimum_size = Vector2(0, 126)
+theme_type_variation = &"MainMenuButton"
 text = "PENGATURAN"
 
-[node name="QuitButton" type="Button" parent="SafeArea/Layout/ButtonColumn"]
+[node name="QuitButton" type="Button" parent="SafeArea/Content/ButtonColumn"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 96)
-theme_type_variation = &"SecondaryButton"
+custom_minimum_size = Vector2(0, 126)
+theme_type_variation = &"MainMenuButton"
 text = "KELUAR"
 
-[node name="BottomSpacer" type="Control" parent="SafeArea/Layout"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.4
-
-[node name="VersionLabel" type="Label" parent="SafeArea/Layout"]
-layout_mode = 2
+[node name="VersionLabel" type="Label" parent="SafeArea/Content"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -48.0
+offset_right = 200.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_type_variation = &"MicroLabel"
 text = "v0.1"
 horizontal_alignment = 1
+mouse_filter = 2

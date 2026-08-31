@@ -28,13 +28,11 @@ extends Control
 ## below it. In an actual played game (`project_run` or a device build),
 ## Engine.is_editor_hint() is false and the full entry sequence runs.
 
-@onready var _title: Label = $SafeArea/Layout/TitleLabel
-@onready var _subtitle: Label = $SafeArea/Layout/SubtitleLabel
-@onready var _buttons: VBoxContainer = $SafeArea/Layout/ButtonColumn
-@onready var _play_button: Button = $SafeArea/Layout/ButtonColumn/PlayButton
-@onready var _setting_button: Button = $SafeArea/Layout/ButtonColumn/SettingButton
-@onready var _quit_button: Button = $SafeArea/Layout/ButtonColumn/QuitButton
-@onready var _version: Label = $SafeArea/Layout/VersionLabel
+@onready var _buttons: VBoxContainer = $SafeArea/Content/ButtonColumn
+@onready var _play_button: Button = $SafeArea/Content/ButtonColumn/PlayButton
+@onready var _setting_button: Button = $SafeArea/Content/ButtonColumn/SettingButton
+@onready var _quit_button: Button = $SafeArea/Content/ButtonColumn/QuitButton
+@onready var _version: Label = $SafeArea/Content/VersionLabel
 
 
 func _ready() -> void:
@@ -55,15 +53,13 @@ func _ready() -> void:
 	_animate_entry()
 
 
+## The logo is static art, so the entry animation is now only the button
+## cascade -- there is no longer a title Label or subtitle to fade in.
 func _animate_entry() -> void:
-	Juice.pop_in(_title)
-	Juice.fade_in(_subtitle, Juice.tokens().dur_fast)
-	# Buttons cascade in after the title lands.
-	var delay := Juice.tokens().dur_normal
 	var items: Array = []
 	for child in _buttons.get_children():
 		items.append(child)
-	await get_tree().create_timer(delay).timeout
+	await get_tree().create_timer(Juice.tokens().dur_normal).timeout
 	Juice.stagger_in(items)
 
 

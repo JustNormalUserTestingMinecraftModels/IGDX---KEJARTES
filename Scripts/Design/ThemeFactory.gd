@@ -327,9 +327,9 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	preview_row.border_color = tokens.preview_row_border
 	preview_row.set_border_width_all(3)
 	preview_row.set_corner_radius_all(tokens.radius_md)
-	preview_row.shadow_color = Color(0, 0, 0, 0.7)
-	preview_row.shadow_size = 3
-	preview_row.shadow_offset = Vector2(0, 3)
+	preview_row.shadow_color = tokens.preview_row_shadow_color
+	preview_row.shadow_size = tokens.preview_row_shadow_size
+	preview_row.shadow_offset = tokens.preview_row_shadow_offset
 	theme.add_type("PreviewRow")
 	theme.set_type_variation("PreviewRow", "Panel")
 	theme.set_stylebox("panel", "PreviewRow", preview_row)
@@ -344,9 +344,9 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	preview_pill.content_margin_right = tokens.space_sm
 	preview_pill.content_margin_top = tokens.space_xs
 	preview_pill.content_margin_bottom = tokens.space_xs
-	preview_pill.shadow_color = Color(0, 0, 0, 0.5)
-	preview_pill.shadow_size = 5
-	preview_pill.shadow_offset = Vector2(0, 2)
+	preview_pill.shadow_color = tokens.preview_pill_shadow_color
+	preview_pill.shadow_size = tokens.preview_pill_shadow_size
+	preview_pill.shadow_offset = tokens.preview_pill_shadow_offset
 	theme.add_type("PreviewPill")
 	theme.set_type_variation("PreviewPill", "PanelContainer")
 	theme.set_stylebox("panel", "PreviewPill", preview_pill)

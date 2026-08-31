@@ -111,6 +111,14 @@ static func load_default() -> DesignTokens:
 @export var preview_row_fill: Color = Color("676767")
 @export var preview_row_border: Color = Color("3d2048")
 @export var preview_pill_fill: Color = Color("363636")
+## The row's hard drop shadow, cast just below its bottom border.
+@export var preview_row_shadow_color: Color = Color(0, 0, 0, 0.7)
+@export var preview_row_shadow_size: int = 3
+@export var preview_row_shadow_offset: Vector2 = Vector2(0, 3)
+## The pill's soft inset edge -- a shadow, not a border.
+@export var preview_pill_shadow_color: Color = Color(0, 0, 0, 0.5)
+@export var preview_pill_shadow_size: int = 5
+@export var preview_pill_shadow_offset: Vector2 = Vector2(0, 2)
 
 
 ## Resolve a schedule category name to its accent color.

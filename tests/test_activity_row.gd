@@ -276,18 +276,40 @@ func test_preview_row_label_is_big_and_outlined() -> void:
 ## the inset pill has a soft dark edge rather than a stroke. Without them the
 ## surfaces read as flat decals on the card instead of raised/inset panels.
 func test_preview_row_border_and_shadow_match_the_mockup() -> void:
+	var tokens := DesignTokens.load_default()
 	var theme: Theme = load(_THEME_PATH)
 	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
 	assert_true(sb != null, "PreviewRow/panel must be a StyleBoxFlat")
 	assert_eq(sb.border_width_top, 3, "the mockup's row border is 3px, not 4")
-	assert_true(sb.shadow_size > 0, "the row casts a drop shadow onto the card")
-	assert_true(sb.shadow_offset.y > 0, "that shadow falls below the row, as in the mockup")
+	assert_eq(sb.shadow_color, tokens.preview_row_shadow_color,
+		"the row's shadow color must match preview_row_shadow_color exactly")
+	assert_eq(sb.shadow_size, tokens.preview_row_shadow_size,
+		"the row's shadow size must match preview_row_shadow_size exactly")
+	assert_eq(sb.shadow_offset, tokens.preview_row_shadow_offset,
+		"the row's shadow offset must match preview_row_shadow_offset exactly")
 
 
 func test_preview_pill_has_a_soft_edge_not_a_stroke() -> void:
+	var tokens := DesignTokens.load_default()
 	var theme: Theme = load(_THEME_PATH)
 	var sb := theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
 	assert_true(sb != null, "PreviewPill/panel must be a StyleBoxFlat")
 	assert_eq(sb.border_width_top, 0,
 		"the pill's dark edge is a shadow, not a border -- a stroke reads wrong")
-	assert_true(sb.shadow_size > 0, "the pill's edge is a soft shadow")
+	assert_eq(sb.shadow_color, tokens.preview_pill_shadow_color,
+		"the pill's shadow color must match preview_pill_shadow_color exactly")
+	assert_eq(sb.shadow_size, tokens.preview_pill_shadow_size,
+		"the pill's shadow size must match preview_pill_shadow_size exactly")
+	assert_eq(sb.shadow_offset, tokens.preview_pill_shadow_offset,
+		"the pill's shadow offset must match preview_pill_shadow_offset exactly")
+
+
+## The pill corner radius moved from radius_sm to radius_md in the mockup-rescale
+## plan (Task 3) so the pill's corners read as round as the container's -- that
+## change shipped with no test, so a regression back to radius_sm would pass silently.
+func test_preview_pill_corner_radius_matches_the_container() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme: Theme = load(_THEME_PATH)
+	var sb := theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
+	assert_eq(sb.corner_radius_top_left, tokens.radius_md,
+		"the pill's corners must be as round as the row container's")

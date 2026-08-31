@@ -360,3 +360,57 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 			out.append(node.name)
 	for child in node.get_children():
 		_collect_overrides(child, out)
+
+
+# ---------------------------------------------- schedule application (bug)
+
+## apply_daily_decay_all only reads GameState.day_schedules for a student
+## whose id is non-zero -- the guard exists because id 0 means "no real
+## student", the shape a schedule dict left over from a placeholder
+## fallback would have. This proves the read side is correct for a real,
+## non-zero id: a scheduled Akademis day must raise akademis rather than
+## leave the student on the Istirahat default. Same technique as
+## tests/test_wirausaha.gd -- StudentManager.new() constructed directly,
+## no SchoolDay scene involved.
+func test_a_scheduled_activity_applies_for_a_student_with_a_real_id() -> void:
+	GameState.day_schedules = {
+		9: {"Senin": {"category": "Akademis", "mood_cost": 10, "energy_cost": 10}},
+	}
+	var manager := StudentManager.new()
+	var student := StudentData.new()
+	student.id = 9
+	student.student_name = "Uji"
+	student.akademis = 40.0
+	student.energy = 80.0
+	student.mood = 80.0
+	student.record_initial_stats()
+	manager.students = [student]
+
+	manager.apply_daily_decay_all("Senin")
+
+	assert_gt(student.akademis, 40.0,
+		"a scheduled Akademis day must raise akademis, not leave the student on the Istirahat default")
+	GameState.day_schedules = {}
+	manager.free()
+
+
+## ...and the same student with no matching schedule entry defaults to
+## Istirahat (no skill gain) -- the contrast that proves the test above is
+## actually reading the schedule, not just always granting a gain.
+func test_an_unscheduled_day_defaults_to_istirahat_with_no_skill_gain() -> void:
+	GameState.day_schedules = {}
+	var manager := StudentManager.new()
+	var student := StudentData.new()
+	student.id = 9
+	student.student_name = "Uji"
+	student.akademis = 40.0
+	student.energy = 80.0
+	student.mood = 80.0
+	student.record_initial_stats()
+	manager.students = [student]
+
+	manager.apply_daily_decay_all("Senin")
+
+	assert_true(is_equal_approx(student.akademis, 40.0),
+		"with no schedule assigned, the student must default to Istirahat and gain no akademis")
+	manager.free()

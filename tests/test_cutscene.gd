@@ -146,15 +146,23 @@ func test_cg_changes_crossfade_instead_of_hard_cutting() -> void:
 		"CG swaps must tween BgCutScene.modulate:a rather than hard-cutting the texture")
 
 
-func test_branching_to_lobby_or_student_card_is_unchanged() -> void:
-	# Presentation may change; this routing logic must not.
+## The bug this pins: go_to_gameplay() used to route a genuinely fresh
+## game (is_game_over_cutscene == false, the very first intro-CG skip or
+## finish) straight to Lobby, never to StudentCard -- so
+## GameState.approved_students stayed empty and every downstream screen
+## (AturJadwal, StudentList, the week simulation itself) silently fell
+## back to its own placeholder roster instead of surfacing the problem.
+## The grade-7 semester-loss retry had the identical bug: it cleared
+## approved_students ("so they select again", per its own comment) but
+## then routed to Lobby anyway. Both must now go through StudentCard --
+## the only screen that actually populates approved_students.
+func test_go_to_gameplay_always_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("res://Scenes/Lobby/loby.tscn"),
-		"must still route to Lobby")
 	assert_true(src.contains("res://Scenes/StudentCard/student_card.tscn"),
-		"must still route to StudentCard")
-	assert_true(src.contains("if grade_num > 7:"),
-		"grade > 7 must still be the StudentCard condition")
+		"must route to StudentCard")
+	assert_false(src.contains("res://Scenes/Lobby/loby.tscn"),
+		"go_to_gameplay must never hand the player to Lobby directly -- " +
+		"StudentCard is the only gate that populates approved_students")
 	assert_true(src.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
 		"must still hand off through the Loading scene")
 

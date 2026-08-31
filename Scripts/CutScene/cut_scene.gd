@@ -359,9 +359,13 @@ func go_to_gameplay():
 	if GameState.is_game_over_cutscene:
 		GameState.is_game_over_cutscene = false
 		var grade_num = GameState.current_grade
-		var next_scene_path = "res://Scenes/Lobby/loby.tscn"
-		if grade_num > 7:
-			next_scene_path = "res://Scenes/StudentCard/student_card.tscn"
+		# A semester loss always sends the player back through StudentCard:
+		# grade 7 clears the roster outright and needs a real re-approval
+		# (see the branch below); grade 8/9 keeps the roster but still uses
+		# this screen as the review-the-roster checkpoint before retrying --
+		# previously_approved_ids pre-checks the same students, so it reads
+		# as a confirm, not a redo.
+		var next_scene_path = "res://Scenes/StudentCard/student_card.tscn"
 
 		# Reset schedules and week
 		GameState.day_schedules.clear()
@@ -396,6 +400,13 @@ func go_to_gameplay():
 
 		GameState.next_scene = next_scene_path
 	else:
-		GameState.next_scene = "res://Scenes/Lobby/loby.tscn"
+		# A fresh game (the very first intro cutscene, in this process)
+		# always needs the player to approve their roster first --
+		# GameState.approved_students is still empty here. Routing to
+		# Lobby directly used to leave every downstream screen (AturJadwal,
+		# StudentList, the week simulation itself) reading that emptiness
+		# as "nobody to schedule" and silently falling back to its own
+		# placeholder data instead of surfacing the problem.
+		GameState.next_scene = "res://Scenes/StudentCard/student_card.tscn"
 
 	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")

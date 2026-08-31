@@ -16,11 +16,15 @@ var retur_back_button: TextureButton
 var shelf_buttons: Array[TextureButton] = []
 var item_data_list: Array[ItemData] = []
 var basket_visuals: Dictionary = {}  # item_name -> Array[Node]
-var input_blocker: ColorRect
-var blur_layer: CanvasLayer
-var popup_layer: CanvasLayer
-var popup_container: Control
 var retur_original_parent: Node
+
+## Permanent shop chrome (koprasi.tscn:Rak1/BlurLayer, Rak1/PopupLayer) --
+## dim/blur backdrop and the layer the shop reparents ReturPanel into
+## while it's open. Built once in the scene, just shown/hidden here.
+@onready var blur_layer: CanvasLayer = $BlurLayer
+@onready var input_blocker: ColorRect = $BlurLayer/InputBlocker
+@onready var popup_layer: CanvasLayer = $PopupLayer
+@onready var popup_container: Control = $PopupLayer/PopupContainer
 
 func _ready():
 	_resolve_nodes()
@@ -47,9 +51,6 @@ func _ready():
 
 	if retur_panel:
 		retur_panel.hide()
-
-	# Setup blur + blocker on a CanvasLayer (sits above all scene content)
-	_setup_blur_layer()
 
 	# Wire the back button on the popup
 	if retur_back_button and not retur_back_button.pressed.is_connected(_on_retur_back_pressed):
@@ -112,47 +113,6 @@ func get_item_effective_size(item: ItemData, source_button: TextureButton = null
 	if source_button != null and source_button.size != Vector2.ZERO:
 		return source_button.size * global_item_scale
 	return Vector2(200, 200) * global_item_scale
-
-func _setup_blur_layer():
-	blur_layer = CanvasLayer.new()
-	blur_layer.layer = 50
-	add_child(blur_layer)
-
-	var blur_rect = ColorRect.new()
-	blur_rect.set_anchors_preset(PRESET_FULL_RECT)
-	blur_rect.anchor_right = 1.0
-	blur_rect.anchor_bottom = 1.0
-	blur_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var shader = load("res://Scripts/Shaders/blur.gdshader")
-	if shader:
-		var mat = ShaderMaterial.new()
-		mat.shader = shader
-		mat.set_shader_parameter("lod", 3.0)
-		mat.set_shader_parameter("darkness", 0.4)
-		blur_rect.material = mat
-	blur_layer.add_child(blur_rect)
-
-	input_blocker = ColorRect.new()
-	input_blocker.set_anchors_preset(PRESET_FULL_RECT)
-	input_blocker.anchor_right = 1.0
-	input_blocker.anchor_bottom = 1.0
-	input_blocker.color = Color(0, 0, 0, 0)
-	input_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
-	blur_layer.add_child(input_blocker)
-
-	blur_layer.hide()
-
-	popup_layer = CanvasLayer.new()
-	popup_layer.layer = 60
-	add_child(popup_layer)
-
-	popup_container = Control.new()
-	popup_container.set_anchors_preset(PRESET_FULL_RECT)
-	popup_container.anchor_right = 1.0
-	popup_container.anchor_bottom = 1.0
-	popup_layer.add_child(popup_container)
-
-	popup_layer.hide()
 
 func _update_total_label():
 	if not is_instance_valid(total_label):

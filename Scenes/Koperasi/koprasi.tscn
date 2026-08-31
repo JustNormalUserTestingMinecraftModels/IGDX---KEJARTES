@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://3pb4r7jsijbc" path="res://Assets/Images/Shop/ItemRak/raket.png" id="9_uhev2"]
 [ext_resource type="Texture2D" uid="uid://bmdjrci56ldeq" path="res://Assets/Images/Shop/pngwing.com (6).png" id="11_vylns"]
 [ext_resource type="Texture2D" uid="uid://d17fahj54oxbx" path="res://Assets/Images/Shop/pngwing.com (2).png" id="12_vylns"]
+[ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="13_pstwm"]
 [ext_resource type="Texture2D" uid="uid://cy6vxo5kujw0i" path="res://Assets/Images/Shop/Koin.png" id="13_st3ia"]
 [ext_resource type="Theme" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 
@@ -33,6 +34,11 @@ region = Rect2(16.906647, 517.7832, 1130.2561, 649.15674)
 [sub_resource type="AtlasTexture" id="AtlasTexture_f61rs"]
 atlas = ExtResource("9_uhev2")
 region = Rect2(277.81873, 23.927307, 567.7704, 1601.428)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0nmov"]
+shader = ExtResource("13_pstwm")
+shader_parameter/lod = 3.0
+shader_parameter/darkness = 0.4
 
 [node name="Koprasi" type="Control" unique_id=1906875452]
 layout_mode = 3
@@ -234,6 +240,33 @@ offset_bottom = 1112.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 50
 text = "Harga++"
+
+[node name="BlurLayer" type="CanvasLayer" parent="Rak1" unique_id=1074984630]
+layer = 50
+visible = false
+
+[node name="BlurRect" type="ColorRect" parent="Rak1/BlurLayer" unique_id=1620123108]
+material = SubResource("ShaderMaterial_0nmov")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="InputBlocker" type="ColorRect" parent="Rak1/BlurLayer" unique_id=803246311]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0)
+
+[node name="PopupLayer" type="CanvasLayer" parent="Rak1" unique_id=818735196]
+layer = 60
+visible = false
+
+[node name="PopupContainer" type="Control" parent="Rak1/PopupLayer" unique_id=78354091]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 
 [node name="CoinHUD" type="HBoxContainer" parent="." unique_id=396070269]
 z_index = 10

@@ -67,6 +67,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.brand_primary_light, tokens.brand_primary_dark,
 		tokens.outline_card, tokens.text_on_brand)
 
+	_build_main_menu_button(theme, tokens)
 	_build_shop_shelf_button(theme, tokens)
 
 
@@ -114,6 +115,54 @@ static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void
 		Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.75))
 	theme.set_constant("shadow_offset_x", NAME, 2)
 	theme.set_constant("shadow_offset_y", NAME, 2)
+
+
+## The main menu's three nav buttons. Deliberately the SAME art as
+## StudentCard's TraitPill (trait_button.png) -- the main-menu mockup's
+## buttons are that asset recoloured, so reusing it reproduces the mockup's
+## silhouette, 3 px #3D2048 border, corner radius and top gloss exactly.
+##
+## It cannot simply reuse the TraitPill variation: TraitPill sets font_size to
+## tokens.font_h2 (48) with a 6 px outline, sized for a chip. The menu needs
+## 80 with no outline (see the plan's spec for the arithmetic -- PENGATURAN at
+## the mockup-implied 100 is 755 px wide against a 624 px inner box).
+##
+## region_rect and texture_margin are copied from TraitPill because they
+## describe the ART, not the chip: the pill occupies (20, 277, 601, 91) inside
+## the 640x640 canvas, and a 45 px 9-slice margin keeps both rounded ends
+## intact when the box is stretched to the menu's 670x126.
+static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "MainMenuButton"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Button")
+
+	var normal := StyleBoxTexture.new()
+	normal.texture = load(_CARD_ART + "trait_button.png")
+	normal.region_rect = Rect2(20, 277, 601, 91)
+	normal.set_texture_margin_all(45)
+	# Horizontal room for the label. 670 - 2*3 px border - 2*20 = 624 px,
+	# which PENGATURAN fills to 604 px at font size 80.
+	normal.content_margin_left = 20
+	normal.content_margin_right = 20
+	normal.content_margin_top = 0
+	normal.content_margin_bottom = 0
+	theme.set_stylebox("normal", NAME, normal)
+
+	# The art carries no separate state variants, so hover/pressed reuse it
+	# and the press feedback comes from UIPolish's automatic Juice scale.
+	theme.set_stylebox("hover", NAME, normal)
+	theme.set_stylebox("pressed", NAME, normal)
+	theme.set_stylebox("disabled", NAME, normal)
+	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
+
+	theme.set_font_size("font_size", NAME, 80)
+	theme.set_color("font_color", NAME, tokens.text_on_brand)
+	theme.set_color("font_hover_color", NAME, tokens.text_on_brand)
+	theme.set_color("font_pressed_color", NAME, tokens.text_on_brand)
+	theme.set_color("font_focus_color", NAME, tokens.text_on_brand)
+	theme.set_color("font_disabled_color", NAME, tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", NAME, tokens.font_display)
 
 
 ## One glossy pill in four states. `top`/`bottom` form the vertical

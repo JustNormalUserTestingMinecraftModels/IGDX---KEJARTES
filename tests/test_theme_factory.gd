@@ -147,3 +147,23 @@ func test_stat_bar_variation_is_unchanged() -> void:
 	var theme := ThemeFactory.build(DesignTokens.load_default())
 	var bg := theme.get_stylebox("background", "StatBar")
 	assert_true(bg is StyleBoxFlat, "StatBar keeps its flat track")
+
+
+func test_main_menu_button_variation_exists_and_is_sized_for_the_mockup() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+
+	assert_true(theme.has_type("MainMenuButton"),
+		"MainMenuButton variation must exist")
+	assert_eq(theme.get_type_variation_base("MainMenuButton"), &"Button",
+		"MainMenuButton must vary the Button type")
+
+	# The mockup's buttons are trait_button.png recoloured: same 9-slice art.
+	var normal := theme.get_stylebox("normal", "MainMenuButton")
+	assert_true(normal is StyleBoxTexture,
+		"MainMenuButton must draw the trait_button.png 9-slice, not a flat box")
+
+	# Font size 80, not the mockup-implied 100: see the spec's typography
+	# section -- PENGATURAN at 100 overflows the 624 px inner box by 131 px.
+	assert_eq(theme.get_font_size("font_size", "MainMenuButton"), 80,
+		"MainMenuButton font size")

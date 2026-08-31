@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://bmha55y4u6w5p"]
+
+[ext_resource type="Script" uid="uid://bk7m8y4vtyhqr" path="res://Scripts/SchoolSimulation/StudentStatRow.gd" id="1_cnyvu"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="2_ekkp2"]
+
+[node name="StudentStatRow" type="HBoxContainer" unique_id=459109544]
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+script = ExtResource("1_cnyvu")
+
+[node name="Icon" type="TextureRect" parent="." unique_id=91142335]
+visible = false
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Glyph" type="Label" parent="." unique_id=492027766]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+
+[node name="Bar" type="ProgressBar" parent="." unique_id=24363336]
+custom_minimum_size = Vector2(100, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+script = ExtResource("2_ekkp2")
+
+[node name="InfoLabel" type="Label" parent="." unique_id=1297359712]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+horizontal_alignment = 2

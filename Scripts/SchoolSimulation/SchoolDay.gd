@@ -30,6 +30,9 @@ signal _summary_closed
 ## Optional PNG to replace the 😊 mood icon.
 @export var mood_icon_texture: Texture2D = null
 @export var card_font: Font = null
+## Shared icon(-or-glyph) + bar + number row used for the embedded
+## energy/mood readout on each student card.
+@export var student_stat_row_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentStatRow.tscn")
 
 @export_group("End Simulation Tutorial (Week 1)")
 @export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama! 🎓"
@@ -492,49 +495,20 @@ func _make_chip(text: String, tint: Color) -> PanelContainer:
 	return chip
 
 
+## Instantiates the shared StudentStatRow. icon_text is a short glyph
+## ("⚡"/"😊") shown only as a fallback when no playful texture exists for
+## it -- see StudentStatRow.setup(). Returns the same {"bar", "lbl"} shape
+## callers have always used, so nothing downstream had to change.
 func _add_embedded_bar_row(parent_vbox: VBoxContainer, icon_text: String, current_val: float, category: String) -> Dictionary:
-	var row = HBoxContainer.new()
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_constant_override("separation", 12)
+	var row: StudentStatRow = student_stat_row_scene.instantiate()
 	parent_vbox.add_child(row)
 
 	var icon_tex := _get_playful_texture("energy" if icon_text == "⚡" else "mood")
-	if icon_tex != null:
-		var tex_rect = TextureRect.new()
-		tex_rect.texture = icon_tex
-		tex_rect.custom_minimum_size = Vector2(36, 36)
-		tex_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
-		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tex_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(tex_rect)
-	else:
-		var icon_lbl = Label.new()
-		icon_lbl.text = icon_text
-		icon_lbl.custom_minimum_size = Vector2(36, 0)
-		icon_lbl.theme_type_variation = &"TitleLabel"
-		icon_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(icon_lbl)
-
-	var bar := StatBar.new()
-	bar.category = category
-	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	bar.custom_minimum_size = Vector2(100, 32)
-	bar.value = current_val
-	row.add_child(bar)
-
-	var info_lbl = Label.new()
-	info_lbl.custom_minimum_size = Vector2(180, 0)
-	info_lbl.theme_type_variation = &"CaptionLabel"
-	info_lbl.text = "%d/100" % int(current_val)
-	info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	info_lbl.autowrap_mode = TextServer.AUTOWRAP_OFF
-
-	row.add_child(info_lbl)
+	row.setup(icon_text, current_val, category, icon_tex)
 
 	return {
-		"bar": bar,
-		"lbl": info_lbl
+		"bar": row.bar,
+		"lbl": row.info_label
 	}
 
 ## The preview badge must quote the same gain the simulation will apply,

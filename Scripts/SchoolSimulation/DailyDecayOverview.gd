@@ -28,6 +28,11 @@ signal overview_closed
 
 const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
 
+## Shared icon(-or-glyph) + bar + number row used for the Energy/Mood
+## breakdown lines. This screen never has an icon texture, so its rows
+## always show the full-sentence Glyph label ("Energy ⚡") instead.
+@export var student_stat_row_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentStatRow.tscn")
+
 @onready var title_label: Label = $Margin/Panel/Margin/VBox/HeaderVBox/TitleLabel
 @onready var subtitle_label: Label = $Margin/Panel/Margin/VBox/HeaderVBox/SubtitleLabel
 @onready var students_container: VBoxContainer = $Margin/Panel/Margin/VBox/ScrollContainer/StudentsContainer
@@ -204,38 +209,23 @@ func _make_badge(text: String, tint: Color) -> PanelContainer:
 	return chip
 
 
+## Instantiates the shared StudentStatRow with this screen's wider Glyph
+## label, taller bar and TitleLabel-variant InfoLabel -- the three ways
+## this row differs from SchoolDay's embedded one. Returns the same
+## {"bar", "info_lbl"} shape callers have always used.
 func _add_bar_row(parent_vbox: VBoxContainer, label_text: String, start_val: float, category: String) -> Dictionary:
-	var row = HBoxContainer.new()
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_constant_override("separation", 12)
+	var row: StudentStatRow = student_stat_row_scene.instantiate()
+	row.glyph_min_width = 220.0
+	row.bar_min_height = 48.0
+	row.info_label_variation = &"TitleLabel"
+	if font:
+		row.custom_font = font
 	parent_vbox.add_child(row)
-
-	var lbl = Label.new()
-	lbl.text = label_text
-	lbl.custom_minimum_size = Vector2(220, 0)
-	lbl.theme_type_variation = &"TitleLabel"
-	if font: lbl.add_theme_font_override("font", font)
-	row.add_child(lbl)
-
-	var bar := StatBar.new()
-	bar.category = category
-	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	bar.custom_minimum_size = Vector2(100, 48)
-	bar.value = start_val
-	row.add_child(bar)
-
-	var info_lbl = Label.new()
-	info_lbl.custom_minimum_size = Vector2(180, 0)
-	info_lbl.theme_type_variation = &"TitleLabel"
-	info_lbl.text = "%d/100" % int(start_val)
-	info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	if font: info_lbl.add_theme_font_override("font", font)
-	row.add_child(info_lbl)
+	row.setup(label_text, start_val, category)
 
 	return {
-		"bar": bar,
-		"info_lbl": info_lbl
+		"bar": row.bar,
+		"info_lbl": row.info_label
 	}
 
 func _set_mouse_filter_pass(node: Node) -> void:

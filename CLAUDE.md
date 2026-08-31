@@ -265,8 +265,9 @@ The main menu was rebuilt on 2026-08-31 to match
 `docs/superpowers/mockups/main-menu.png` measurement-for-measurement and is
 now the boot scene — see
 `docs/superpowers/specs/2026-08-31-main-menu-mockup.md` for the probe trail
-and the two documented deviations (uniform 66 px button separation, and font
-size 80 rather than the mockup-implied 100 so "PENGATURAN" fits).
+and the documented deviations (66 px button separation, font size 80 rather
+than the mockup-implied 100 so "PENGATURAN" fits, gold button art rather than
+the mockup's grey, and an ungraded background).
 
 The 2026-08-30 stability sweep
 (`docs/superpowers/plans/2026-08-30-project-stability-sweep.md`) is complete.

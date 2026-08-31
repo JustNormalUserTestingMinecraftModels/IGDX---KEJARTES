@@ -59,7 +59,6 @@ const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 ## silently clip the longest label. Inner box = the button's 670 px width
 ## minus the art's 3 px border each side minus 20 px content margin each side.
 const _BUTTON_WIDTH := 670.0
-const _BUTTON_INNER_WIDTH := 670.0 - 2.0 * 3.0 - 2.0 * 20.0
 
 
 func setup() -> void:
@@ -173,7 +172,8 @@ func test_button_labels_are_indonesian() -> void:
 
 
 func test_layout_uses_containers_not_absolute_offsets() -> void:
-	# Absolute offsets are why this screen breaks on other aspect ratios.
+	# The three buttons must be spaced by the container's separation
+	# constant, not by three hand-placed rects.
 	var play := _menu.find_child("PlayButton", true, false) as Control
 	var parent := play.get_parent()
 	assert_true(parent is BoxContainer,
@@ -186,12 +186,19 @@ func test_every_label_fits_inside_the_button_at_the_baked_font_size() -> void:
 	var font_size := theme.get_font_size("font_size", "MainMenuButton")
 	assert_true(font != null, "MainMenuButton must have a font")
 
+	# Inner width is derived live from the baked stylebox's own content
+	# margins (owned by ThemeFactory._build_main_menu_button), not a
+	# hardcoded copy of them -- so a future margin change is caught here
+	# instead of silently letting the real button clip its label.
+	var sb := theme.get_stylebox("normal", "MainMenuButton")
+	var inner_width := _BUTTON_WIDTH - 2.0 * 3.0 - sb.content_margin_left - sb.content_margin_right
+
 	for label in ["MULAI", "PENGATURAN", "KELUAR"]:
 		var w := font.get_string_size(
 			label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x
-		assert_true(w <= _BUTTON_INNER_WIDTH,
+		assert_true(w <= inner_width,
 			"%s renders %d px wide, over the %d px inner box"
-				% [label, int(w), int(_BUTTON_INNER_WIDTH)])
+				% [label, int(w), int(inner_width)])
 
 
 ## Measured from docs/superpowers/mockups/main-menu.png; see
@@ -201,13 +208,14 @@ func test_every_label_fits_inside_the_button_at_the_baked_font_size() -> void:
 const _BUTTON_HEIGHT := 126
 const _BUTTON_SEPARATION := 66
 const _COLUMN_HEIGHT := 3 * _BUTTON_HEIGHT + 2 * _BUTTON_SEPARATION  # 510
-const _COLUMN_BOTTOM_INSET := 246.0
 const _LOGO_TOP_OFFSET := 68.0
 
 
 func test_background_uses_the_titlescreen_art() -> void:
 	var bg := _menu.find_child("Background", true, false) as TextureRect
 	assert_true(bg != null, "Background node must exist")
+	if bg == null:
+		return
 	assert_eq(bg.texture.resource_path,
 		"res://Assets/Images/UI/titlescreen_background.png",
 		"background art")
@@ -216,6 +224,8 @@ func test_background_uses_the_titlescreen_art() -> void:
 func test_logo_sits_at_the_measured_offset() -> void:
 	var logo := _menu.find_child("Logo", true, false) as TextureRect
 	assert_true(logo != null, "Logo node must exist")
+	if logo == null:
+		return
 	assert_eq(logo.texture.resource_path, "res://Assets/Images/UI/logo.png",
 		"logo art")
 	# Correlating logo.png against the mockup put the optimum at scale 1.0,
@@ -228,6 +238,8 @@ func test_logo_sits_at_the_measured_offset() -> void:
 func test_button_column_matches_the_mockup_rect() -> void:
 	var col := _menu.find_child("ButtonColumn", true, false) as VBoxContainer
 	assert_true(col != null, "ButtonColumn must exist and be a VBoxContainer")
+	if col == null:
+		return
 
 	# Horizontally centred, 670 wide.
 	assert_eq(col.anchor_left, 0.5, "column left anchor")
@@ -238,7 +250,12 @@ func test_button_column_matches_the_mockup_rect() -> void:
 	# Pinned to the bottom of the safe area, 510 tall.
 	assert_eq(col.anchor_top, 1.0, "column top anchor")
 	assert_eq(col.anchor_bottom, 1.0, "column bottom anchor")
-	assert_eq(col.offset_bottom, -_COLUMN_BOTTOM_INSET, "column bottom inset")
+	# Bottom inset derives from the mockup's measured column bottom (y=1626)
+	# against the full 1920-tall viewport, minus DesignTokens' live
+	# screen_margin -- NOT a hardcoded literal, so a future screen_margin
+	# change is caught here instead of silently drifting off the mockup.
+	var margin := float(DesignTokens.load_default().screen_margin)
+	assert_eq(col.offset_bottom, -(1920.0 - 1626.0 - margin), "column bottom inset")
 	assert_eq(col.offset_bottom - col.offset_top, float(_COLUMN_HEIGHT),
 		"column height")
 
@@ -256,6 +273,8 @@ func test_each_button_is_the_measured_height_and_uses_the_menu_variation() -> vo
 
 
 func test_the_subtitle_is_gone() -> void:
-	# The mockup shows only the logo and three buttons.
-	assert_true(_menu.find_child("SubtitleLabel", true, false) == null,
-		"SubtitleLabel must be removed")
+	# The mockup shows only the logo and three buttons -- everything from
+	# the old spacer-ratio layout must be gone, not just the subtitle.
+	for name in ["SubtitleLabel", "TitleLabel", "Layout", "TitleSpacer", "MidSpacer", "BottomSpacer"]:
+		assert_true(_menu.find_child(name, true, false) == null,
+			name + " must be removed")

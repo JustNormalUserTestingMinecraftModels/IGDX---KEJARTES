@@ -1062,14 +1062,19 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 	popup.closed.connect(_on_detail_popup_closed)
 	popup.open()
 
-## Clear the guard once a modal finishes its exit animation, so a new popup
-## can open. Shared by the stat and trait popups.
+## Clear the guard and restore the page-turn arrows once a modal finishes
+## its exit animation. Shared by the stat and trait popups.
 ##
-## Does not restore the page-turn arrows -- matching the shipped behaviour,
-## where _close_trait_popup never did either. Once any popup on this screen
-## has been opened, the arrows stay hidden for the rest of the page's life.
+## During the onboarding tutorial only forward navigation is allowed, so the
+## restore forces next_kanan visible / next_kiri hidden instead of asking
+## _update_nav_buttons what the current page would normally show.
 func _on_detail_popup_closed() -> void:
 	_active_popup = null
+	if tutorial_active:
+		if next_kanan: next_kanan.show()
+		if next_kiri: next_kiri.hide()
+	else:
+		_update_nav_buttons(current_page)
 # ================= TRAIT POPUP =================
 
 func _show_trait_popup(kertas: Control, type: String, name: String, desc: String, on_close: Callable = Callable()) -> void:

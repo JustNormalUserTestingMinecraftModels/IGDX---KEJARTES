@@ -293,14 +293,11 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 	popup.closed.connect(_on_detail_popup_closed)
 	popup.open()
 
-## Clear the guard once a modal finishes its exit animation, so a new popup
-## can open. Shared by the stat and trait popups.
-##
-## Does not restore the page-turn arrows -- matching the shipped behaviour,
-## where _close_trait_popup never did either. Once any popup on this screen
-## has been opened, the arrows stay hidden for the rest of the page's life.
+## Clear the guard and restore the page-turn arrows once a modal finishes
+## its exit animation. Shared by the stat and trait popups.
 func _on_detail_popup_closed() -> void:
 	_active_popup = null
+	_update_nav_buttons(current_page)
 # ================= TRAIT POPUP =================
 
 func _show_trait_popup(kertas: Control, type: String, name: String, desc: String, on_close: Callable = Callable()) -> void:

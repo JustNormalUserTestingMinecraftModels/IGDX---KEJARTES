@@ -153,7 +153,7 @@ func test_main_menu_button_variation_exists_and_is_sized_for_the_mockup() -> voi
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
 
-	assert_true(theme.has_type("MainMenuButton"),
+	assert_true(theme.get_type_list().has("MainMenuButton"),
 		"MainMenuButton variation must exist")
 	assert_eq(theme.get_type_variation_base("MainMenuButton"), &"Button",
 		"MainMenuButton must vary the Button type")

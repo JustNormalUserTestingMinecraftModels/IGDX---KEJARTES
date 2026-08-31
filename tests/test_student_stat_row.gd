@@ -84,6 +84,29 @@ func test_animate_to_forwards_to_the_bar() -> void:
 	assert_contains(body, "set_stat(value, true)")
 
 
+func test_setup_works_before_the_row_ever_enters_the_tree() -> void:
+	# Regression test: SchoolDay's and DailyDecayOverview's per-student
+	# cards build their whole subtree off-tree (row parented under a
+	# VBoxContainer parented under further off-tree containers) before
+	# appending the finished card in one shot. That means setup() can run
+	# before this row's own @onready vars have ever resolved -- caught live
+	# via a crash ("Invalid assignment ... on a base object of type
+	# 'Nil'." in setup()'s `bar.category = category`) that no earlier
+	# version of this test suite reproduced, because _make() always added
+	# the row to a live tree before calling setup().
+	var row: StudentStatRow = load(SCENE_PATH).instantiate()
+	var offtree_parent := VBoxContainer.new()
+	offtree_parent.add_child(row)
+	track(offtree_parent)
+
+	row.setup("⚡", 47.0, "Libur")
+
+	Engine.get_main_loop().root.add_child(offtree_parent)
+	assert_eq((row.get_node("Bar") as StatBar).value, 47.0)
+	assert_eq((row.get_node("Bar") as StatBar).category, "Libur")
+	assert_eq((row.get_node("InfoLabel") as Label).text, "47/100")
+
+
 func test_both_screens_use_the_shared_row() -> void:
 	for path in ["res://Scripts/SchoolSimulation/SchoolDay.gd",
 			"res://Scripts/SchoolSimulation/DailyDecayOverview.gd"]:

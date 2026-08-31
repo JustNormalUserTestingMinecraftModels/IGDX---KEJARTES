@@ -1,7 +1,7 @@
 @tool
 extends McpTestSuite
 
-## Ratchet on script documentation.
+## Hard rule on script documentation.
 ##
 ## Two mechanically checkable halves of the documentation standard in
 ## docs/superpowers/design/authoring-guide.md:
@@ -12,13 +12,15 @@ extends McpTestSuite
 ##      surfaces that text as the Inspector tooltip, so this rule is the one
 ##      that pays out directly in the editor.
 ##
+## This was a ratchet (PENDING_HEADERS/PENDING_EXPORT_DOCS allowlists) until
+## the 2026-08-31 21-task documentation sweep emptied both. It is a plain
+## rule now: every non-exempt script must satisfy both halves outright, no
+## allowlist to check against.
+##
 ## Rules 3 and 4 of the standard -- per-function doc lines and section
 ## banners -- are review-time conventions, not tested here. A regex cannot
 ## tell a useful sentence from a restated function name, and a test that
 ## `## does the thing` would satisfy buys compliance instead of documentation.
-##
-## Both lists below shrink and never grow. A path that has been fixed but
-## left in PENDING_HEADERS fails just as loudly as a new violation.
 ##
 ## Affects nothing at runtime -- source-text scan only, no scene needed.
 ## Must be @tool, and no test here may be a coroutine.
@@ -26,14 +28,6 @@ extends McpTestSuite
 func suite_name() -> String:
 	return "script_documentation"
 
-
-## Scripts still lacking a file-header doc block, frozen 2026-08-31.
-## Remove entries as they are documented. Never add one.
-const PENDING_HEADERS: Array[String] = []
-
-## script_path -> number of undocumented @export declarations, frozen
-## 2026-08-31. Lower these as they are documented. Never raise one.
-const PENDING_EXPORT_DOCS: Dictionary = {}
 
 ## Same exemption as the editability ratchet: a programmatic developer
 ## overlay, out of scope for the design system per CLAUDE.md.
@@ -126,78 +120,22 @@ func _scan_headers() -> Array[String]:
 	return out
 
 
-## Render an Array[String] as a pasteable GDScript literal.
-func _as_array_literal(name: String, items: Array[String]) -> String:
-	var lines: Array[String] = ["const %s: Array[String] = [" % name]
-	for s in items:
-		lines.append("\t\"%s\"," % s)
-	lines.append("]")
-	return "\n".join(lines)
-
-
-## Render a Dictionary as a pasteable GDScript literal.
-func _as_dict_literal(name: String, d: Dictionary) -> String:
-	var keys: Array = d.keys()
-	keys.sort()
-	var lines: Array[String] = ["const %s: Dictionary = {" % name]
-	for k in keys:
-		lines.append("\t\"%s\": %d," % [k, d[k]])
-	lines.append("}")
-	return "\n".join(lines)
-
-
 func test_every_script_has_a_file_header_doc_block() -> void:
 	var missing := _scan_headers()
-	var unexpected: Array[String] = []
-	for path in missing:
-		if not PENDING_HEADERS.has(path):
-			unexpected.append("  " + path)
-	assert_true(unexpected.is_empty(),
+	assert_true(missing.is_empty(),
 		("These scripts have no `##` header block in their first %d lines. "
 		% HEADER_SEARCH_LINES)
-		+ "Say what the file is, who drives it, and what it affects.\n"
-		+ "\n".join(unexpected))
+		+ "Say what the file is, who drives it, and what it affects.\n  "
+		+ "\n  ".join(missing))
 
 
-func test_pending_header_list_is_not_stale() -> void:
-	var missing := _scan_headers()
-	var fixed: Array[String] = []
-	for path in PENDING_HEADERS:
-		if not missing.has(path):
-			fixed.append("  " + path)
-	assert_true(fixed.is_empty(),
-		"These scripts are documented now -- drop them from PENDING_HEADERS "
-		+ "in the same commit.\n"
-		+ "\n".join(fixed)
-		+ "\n\nCurrent scan, paste over PENDING_HEADERS:\n"
-		+ _as_array_literal("PENDING_HEADERS", missing))
-
-
-func test_no_script_gains_undocumented_exports() -> void:
+func test_every_export_has_an_inspector_doc_comment() -> void:
 	var current := _scan_exports()
-	var grown: Array[String] = []
+	var offenders: Array[String] = []
 	for path in current:
-		var allowed: int = int(PENDING_EXPORT_DOCS.get(path, 0))
-		if int(current[path]) > allowed:
-			grown.append("  %s: allowed %d, now %d" % [path, allowed, current[path]])
-	grown.sort()
-	assert_true(grown.is_empty(),
+		offenders.append("  %s: %d undocumented" % [path, current[path]])
+	offenders.sort()
+	assert_true(offenders.is_empty(),
 		"Every @export needs a `##` line above it -- Godot shows it as the "
 		+ "Inspector tooltip.\n"
-		+ "\n".join(grown))
-
-
-func test_pending_export_doc_counts_are_not_stale() -> void:
-	var current := _scan_exports()
-	var shrunk: Array[String] = []
-	for path in PENDING_EXPORT_DOCS:
-		var now: int = int(current.get(path, 0))
-		if now < int(PENDING_EXPORT_DOCS[path]):
-			shrunk.append("  %s: allowed %d, now %d" % [path, PENDING_EXPORT_DOCS[path], now])
-	shrunk.sort()
-	assert_true(shrunk.is_empty(),
-		"The ratchet turned -- lower these in PENDING_EXPORT_DOCS in the same "
-		+ "commit.\n"
-		+ "\n".join(shrunk)
-		+ "\n\nCurrent scan, paste over PENDING_EXPORT_DOCS:\n"
-		+ _as_dict_literal("PENDING_EXPORT_DOCS", current))
+		+ "\n".join(offenders))

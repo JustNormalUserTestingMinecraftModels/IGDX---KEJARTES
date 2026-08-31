@@ -102,9 +102,14 @@ Full detail: `docs/superpowers/design/style-guide.md`.
 
 **The second rule: no visual is built at runtime.** Static chrome is a node in
 the `.tscn`; repeated rows are a `PackedScene` template; responsive geometry
-is a `@tool` script driven by documented `@export` knobs. Two ratchet suites
-(`tests/test_viewport_editability.gd`, `tests/test_script_documentation.gd`)
-freeze the current violation counts and fail if any file grows.
+is a `@tool` script driven by documented `@export` knobs. Every script's
+documentation (a `##` file header, a `##` line on every `@export`) is a hard
+rule now (`tests/test_script_documentation.gd`) — the 2026-08-31 21-task
+sweep closed that ratchet. Runtime visual construction is still a ratchet
+(`tests/test_viewport_editability.gd`): a `BASELINE` dict of real remaining
+debt, frozen and only ever lowered, plus an `ALLOWED` dict of reviewed,
+commented, permanent exceptions (per-call-dynamic content, or a conditional
+texture-vs-procedural swap) — see the authoring guide's "Known gaps" section.
 
 Full detail: `docs/superpowers/design/authoring-guide.md`.
 
@@ -227,11 +232,17 @@ alone. So: subagents write code, you run the editor and hand them the results.
 None of this trades away test coverage. Coverage is the quality floor; the
 savings come from cheaper verification loops, not from fewer tests.
 
-## Known issues (as of 2026-08-30)
+## Known issues (as of 2026-08-31)
 
 None outstanding. The 2026-08-30 stability sweep closed all three of the
 previous entries; see `docs/superpowers/specs/2026-08-30-project-stability-sweep-findings.md`
 for what each turned out to be.
+
+Not a bug, but tracked debt: `tests/test_viewport_editability.gd`'s
+`BASELINE` still lists real unconverted runtime UI construction across
+~20 files — the 2026-08-31 21-task pass converted every shared-across-screens
+case but did not survey every remaining file. See the authoring guide's
+"Known gaps" section for the list and what each would need.
 
 1. **The `test_audio_director` coroutine test** (old #1) — fixed. Both offending
    tests are non-coroutine now, and the suite snapshots/restores the global

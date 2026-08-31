@@ -306,9 +306,13 @@ func _populate_default_tutorial_steps():
 func _build_tutorial_panel():
 	_tutorial_panel = tutorial_panel_scene.instantiate()
 	_tutorial_panel.name = "TutorialPanel"
-	_tutorial_title_label = _tutorial_panel.title_label
-	_tutorial_body_label = _tutorial_panel.body_label
-	_tutorial_prompt_label = _tutorial_panel.prompt_label
+
+	# The panel hasn't entered the tree yet (it's appended below), so its
+	# @onready title_label/body_label/prompt_label aren't live -- get_node
+	# still works because instantiate() built the subtree.
+	_tutorial_title_label = _tutorial_panel.get_node("Margin/Layout/TitleLabel")
+	_tutorial_body_label = _tutorial_panel.get_node("Margin/Layout/BodyLabel")
+	_tutorial_prompt_label = _tutorial_panel.get_node("Margin/Layout/PromptLabel")
 	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
 
 	color_rect.add_child(_tutorial_panel)

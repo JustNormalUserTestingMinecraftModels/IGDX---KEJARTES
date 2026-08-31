@@ -52,9 +52,25 @@ extends HBoxContainer
 
 
 func _ready() -> void:
+	_ensure_nodes()
 	_apply_layout_exports()
 	_apply_custom_font()
 	info_label.theme_type_variation = info_label_variation
+
+
+## SchoolDay's and DailyDecayOverview's per-student cards build their
+## whole subtree off-tree before appending it in one shot at the end --
+## the same pattern the original hand-built code used. That means
+## setup()/animate_to() can run before this row's own @onready vars have
+## resolved (NOTIFICATION_READY needs real tree entry, which hasn't
+## happened yet). get_node() works regardless, since instantiate() built
+## the subtree already -- so resolve manually if @onready hasn't fired.
+func _ensure_nodes() -> void:
+	if icon == null:
+		icon = get_node("Icon") as TextureRect
+		glyph = get_node("Glyph") as Label
+		bar = get_node("Bar") as StatBar
+		info_label = get_node("InfoLabel") as Label
 
 
 func _apply_layout_exports() -> void:
@@ -75,6 +91,7 @@ func _apply_custom_font() -> void:
 ## `category` feeds StatBar.category directly (a tint key like "Libur" or
 ## "Istirahat", not a skill name -- see StatBar.gd).
 func setup(label_text: String, value: float, category: String, icon_texture: Texture2D = null) -> void:
+	_ensure_nodes()
 	bar.category = category
 	bar.value = value
 	info_label.text = "%d/100" % int(value)
@@ -92,4 +109,5 @@ func setup(label_text: String, value: float, category: String, icon_texture: Tex
 ## snapping -- forwards to StatBar.set_stat, used by DailyDecayOverview's
 ## end-of-day reveal.
 func animate_to(value: float) -> void:
+	_ensure_nodes()
 	bar.set_stat(value, true)

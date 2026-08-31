@@ -8,11 +8,21 @@ extends McpTestSuite
 ## script builds with `SomeControl.new()` at runtime is invisible in the
 ## editor: it cannot be selected, moved, re-themed or previewed.
 ##
-## This suite does not forbid runtime construction outright -- roughly 340
-## call sites predate the rule. It freezes the count per file and fails if
-## any file grows. When a conversion legitimately lowers a file's count the
-## second test fails and prints the exact literal to paste into BASELINE.
-## That is the ratchet: it only turns one way.
+## This suite does not forbid runtime construction outright. It freezes the
+## count per file (in BASELINE, still debt, or ALLOWED, a permanent
+## documented exception -- see each constant's own comment) and fails if any
+## file grows past its own count. When a conversion legitimately lowers a
+## BASELINE file's count the second test fails and prints the exact literal
+## to paste back in. That is the ratchet: it only turns one way.
+##
+## 2026-08-31's 21-task pass converted the extraction-worthy shared UI
+## (popups, cards, rows, panels duplicated across 2-3 screens) but did not
+## attempt every remaining file -- BASELINE still carries real, substantial,
+## unconverted call sites (atur_jadwal.gd's 17, cut_scene.gd's 15,
+## Pengaturan.gd's 12, MinigameTutorial.gd's 12, and others). This is
+## deliberately still a ratchet, not a closed rule: see "Known gaps" in
+## docs/superpowers/design/authoring-guide.md for the full remaining list
+## and what each one would need.
 ##
 ## Affects nothing at runtime. This is a source-text scan in the same style
 ## as tests/test_project_hygiene.gd -- it instantiates nothing, needs no
@@ -47,20 +57,18 @@ const EXEMPT: Array[String] = [
 	"res://Scripts/Debug/DebugManager.gd",
 ]
 
-## Per-file count of runtime visual construction, frozen 2026-08-31.
-## Lower these as conversions land. Never raise one.
+## Per-file count of runtime visual construction still owed a conversion,
+## frozen 2026-08-31 (last updated 2026-08-31 Task 21). Lower these as
+## conversions land. Never raise one. See "Known gaps" in
+## docs/superpowers/design/authoring-guide.md for what each one needs.
 const BASELINE: Dictionary = {
-	"res://Scripts/AnimUtils.gd": 1,
-	"res://Scripts/AturJadwal/ActivityRow.gd": 2,
 	"res://Scripts/AturJadwal/atur_jadwal.gd": 17,
 	"res://Scripts/CutScene/cut_scene.gd": 15,
-	"res://Scripts/EndGame/SemesterEnd.gd": 1,
 	"res://Scripts/Inventory/inventory.gd": 4,
 	"res://Scripts/Koperasi/rakbarang_1.gd": 7,
 	"res://Scripts/Lobby/loby.gd": 8,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 2,
 	"res://Scripts/Minigames/Akademis/Password.gd": 4,
-	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,
 	"res://Scripts/Minigames/Akademis/Variabel.gd": 4,
 	"res://Scripts/Minigames/Olahraga/Badminton.gd": 8,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd": 2,
@@ -68,19 +76,51 @@ const BASELINE: Dictionary = {
 	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 5,
 	"res://Scripts/Minigames/UI/BaseMinigame.gd": 4,
 	"res://Scripts/Minigames/UI/MinigameTutorial.gd": 12,
-	"res://Scripts/Minigames/UI/PauseMenu.gd": 1,
 	"res://Scripts/Pengaturan.gd": 12,
 	"res://Scripts/SchoolSimulation/BookClockWidget.gd": 3,
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd": 6,
-	"res://Scripts/SchoolSimulation/EventAnnouncement.gd": 2,
 	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 11,
-	"res://Scripts/SchoolSimulation/EventWarning.gd": 2,
 	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 7,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 9,
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
 	"res://Scripts/StudentCard/student_card.gd": 1,
 	"res://Scripts/StudentList/student_list.gd": 8,
 	"res://Scripts/TutorialArrow.gd": 1,
+}
+
+## Per-file count of runtime visual construction judged permanent, not
+## debt -- each site builds content that is genuinely per-call dynamic
+## (varies with game state, or is a conditional texture-vs-procedural
+## swap already accepted elsewhere in the project, e.g. QuitConfirmDialog's
+## card in Task 10), not authored layout a .tscn could hold instead.
+## Reviewed 2026-08-31 Task 21. Same ratchet rules as BASELINE: never
+## raise one, and lower it (or move the entry back to BASELINE) if a
+## future edit makes the site static after all.
+const ALLOWED: Dictionary = {
+	# create_floating_text(): one-shot damage/reward-style popup text,
+	# spawned at a caller-supplied position with caller-supplied text.
+	"res://Scripts/AnimUtils.gd": 1,
+	# _add_pill()'s chip icon+label: content and count vary per stat
+	# category on every refresh() call (Wirausaha shows a money chip,
+	# Istirahat shows none, etc).
+	"res://Scripts/AturJadwal/ActivityRow.gd": 2,
+	# _build_page_indicators()'s "●" dots: one per result card, so the
+	# count tracks the approved roster size.
+	"res://Scripts/EndGame/SemesterEnd.gd": 1,
+	# _apply_visual_exports()'s icon TextureRect: only created when an
+	# @export icon texture is actually supplied, in place of the emoji
+	# fallback label -- the conditional texture-or-procedural swap.
+	"res://Scripts/SchoolSimulation/EventAnnouncement.gd": 2,
+	"res://Scripts/SchoolSimulation/EventWarning.gd": 2,
+	# Answer buttons: text and shuffled order regenerate per question: not
+	# fixed layout.
+	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,
+	# _apply_visual_exports()'s overlay TextureRect: same conditional
+	# texture-or-procedural swap as EventAnnouncement/EventWarning above.
+	"res://Scripts/Minigames/UI/PauseMenu.gd": 1,
+	# _sync_label()'s optional value-label overlay: created only when the
+	# show_value_label export is toggled on for that particular bar
+	# instance, not every StatBar has one.
 	"res://Scripts/UI/StatBar.gd": 1,
 }
 
@@ -168,13 +208,13 @@ func test_no_script_builds_more_ui_at_runtime_than_its_baseline() -> void:
 	var current := _scan()
 	var grown: Array[String] = []
 	for path in current:
-		var allowed: int = int(BASELINE.get(path, 0))
+		var allowed: int = int(BASELINE.get(path, 0)) + int(ALLOWED.get(path, 0))
 		if int(current[path]) > allowed:
-			grown.append("  %s: baseline %d, now %d" % [path, allowed, current[path]])
+			grown.append("  %s: allowed %d, now %d" % [path, allowed, current[path]])
 	grown.sort()
 	assert_true(grown.is_empty(),
-		("These scripts build more visual nodes at runtime than the baseline "
-		+ "allows. Author them in a .tscn instead -- see "
+		("These scripts build more visual nodes at runtime than BASELINE+ALLOWED "
+		+ "permits. Author them in a .tscn instead -- see "
 		+ "docs/superpowers/design/authoring-guide.md.\n"
 		+ "\n".join(grown)))
 
@@ -186,10 +226,14 @@ func test_baseline_is_not_stale() -> void:
 		var now: int = int(current.get(path, 0))
 		if now < int(BASELINE[path]):
 			shrunk.append("  %s: baseline %d, now %d" % [path, BASELINE[path], now])
+	for path in ALLOWED:
+		var now: int = int(current.get(path, 0))
+		if now < int(ALLOWED[path]):
+			shrunk.append("  %s: allowed %d, now %d" % [path, ALLOWED[path], now])
 	shrunk.sort()
 	assert_true(shrunk.is_empty(),
-		("The ratchet turned -- lower these in BASELINE in the same commit, or "
-		+ "the improvement can silently regress later.\n"
+		("The ratchet turned -- lower these in BASELINE/ALLOWED in the same "
+		+ "commit, or the improvement can silently regress later.\n"
 		+ "\n".join(shrunk)
 		+ "\n\nCurrent scan, paste over BASELINE:\n"
 		+ _as_literal(current)))

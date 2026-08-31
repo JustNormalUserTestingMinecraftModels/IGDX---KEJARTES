@@ -153,24 +153,63 @@ game-facing identifiers and UI strings in Indonesian.
 
 ## How this is enforced
 
-Two ratchet suites, source-text scans in the style of
-`tests/test_project_hygiene.gd` — no scene instantiation needed, no main
-scene required, both run in well under a second.
+Two suites, source-text scans in the style of `tests/test_project_hygiene.gd`
+— no scene instantiation needed, no main scene required, both run in well
+under a second.
 
-- `tests/test_viewport_editability.gd` — counts `Type.new()` construction of
-  visual node types per script, compares against a frozen `BASELINE`
-  dictionary, and fails if any file's count exceeds its baseline. A second
-  test fails if the baseline is stale (a file's count dropped below its
-  baseline entry but the entry wasn't lowered to match) — that keeps a
-  conversion from silently regressing later.
-- `tests/test_script_documentation.gd` — the same shape, for missing file
-  headers (`PENDING_HEADERS`) and undocumented `@export`s
-  (`PENDING_EXPORT_DOCS`).
+- `tests/test_script_documentation.gd` — **a plain rule.** Every non-exempt
+  script must have a `##` file header in its first 12 lines, and every
+  `@export` must carry a `##` line immediately above it. This was a ratchet
+  (`PENDING_HEADERS`/`PENDING_EXPORT_DOCS` allowlists) until the 2026-08-31
+  21-task documentation sweep emptied both; Task 21 deleted the allowlists
+  and the two "not stale" tests along with them. There is nothing left to
+  paste over — a failure just names the offending file and fixes it.
+- `tests/test_viewport_editability.gd` — **still a ratchet.** Counts
+  `Type.new()` construction of visual node types per script and compares
+  against two frozen dictionaries: `BASELINE` (still owed a conversion —
+  see "Known gaps" below) and `ALLOWED` (reviewed and judged permanent, with
+  a comment on each entry saying why). A file's count may never exceed
+  `BASELINE[file] + ALLOWED[file]`, and a second test fails if either
+  dictionary goes stale (a file's count dropped below its entry but the
+  entry wasn't lowered to match) — that keeps a conversion from silently
+  regressing later. A failing "stale" test prints a ready-to-paste GDScript
+  literal — copy it over `BASELINE` (adjusting for anything that should move
+  to `ALLOWED` instead), rescan (`filesystem_manage(op="scan")`), and
+  re-run. A failing "no growth" test names the offending file directly;
+  convert it to Pattern A/B/C, or (rare) add a reviewed, commented entry to
+  `ALLOWED`.
 
-A failing "not stale" test prints a ready-to-paste GDScript literal — copy it
-over the constant it names, rescan (`filesystem_manage(op="scan")`), and
-re-run. A failing "no growth" test names the offending file directly; convert
-it to Pattern A/B/C, or add the missing `##` line.
+## Known gaps
 
-Once every screen is converted and every script documented, both ratchets
-close into plain rules with no allowlist — see Task 21 of the plan.
+`tests/test_viewport_editability.gd`'s `BASELINE` still carries real,
+unconverted runtime UI construction — the 21-task pass (2026-08-31)
+converted every shared-across-screens case (popups, cards, rows, panels
+duplicated 2-3 times) but did not attempt every remaining file. Largest
+entries, as candidates for a future pass:
+
+- `Scripts/AturJadwal/atur_jadwal.gd` (17) and `Scripts/Pengaturan.gd` (12) —
+  each builds its own settings/tutorial chrome by hand; likely Pattern A/C
+  candidates similar to TutorialPanel.
+- `Scripts/CutScene/cut_scene.gd` (15) — dialogue/choice UI, never surveyed
+  for extraction.
+- `Scripts/Minigames/UI/MinigameTutorial.gd` (12) and
+  `Scripts/SchoolSimulation/EventStudentSelectDialog.gd` (11) — both build a
+  full popup by hand; likely Pattern B candidates.
+- `Scripts/Minigames/UI/BaseMinigame.gd` (4) — `ui_layer`, `pause_button`
+  (with its procedural fallback-draw `Control`), and `visual_timer` are
+  built once per game session; a real extraction here needs to account for
+  the procedural drawing fallback, not just move nodes into a scene.
+- The remaining minigames (`Menjodohkan.gd`, `Password.gd`, `Variabel.gd`,
+  `Badminton.gd`, `MainBola.gd`, `BuatBatik.gd`, `LombaMenari.gd`, each
+  2-8) and screens (`loby.gd`, `inventory.gd`, `rakbarang_1.gd`,
+  `student_list.gd`, `StudentCardView.gd`, `DailyDecayOverview.gd`,
+  `ResultCheckup.gd`, `SchoolDay.gd`, `student_card.gd`,
+  `TutorialArrow.gd`) — smaller counts, mostly single-purpose chrome
+  (a background swap, a fallback drawer) not yet surveyed for whether a
+  scene conversion is worthwhile.
+
+Do not batch-move these into `ALLOWED` without reading each one — the
+`ALLOWED` entries that exist were promoted individually in Task 21 after
+confirming the construction is genuinely per-call dynamic (varies with game
+state) or a conditional texture-vs-procedural swap already accepted
+elsewhere in the project, not because moving them was convenient.

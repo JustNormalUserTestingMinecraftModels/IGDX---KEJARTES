@@ -3,12 +3,10 @@ extends Control
 # ─── Theme Colors (used for dynamic elements only) ───
 ## Populated from DesignTokens in _ready(); see _setup_dynamic_colors().
 var SLOT_BG: Color
-var SLOT_SELECTED_BG: Color
 var ACCENT: Color
 var GOLD: Color
 var TEXT_WHITE: Color
 var TEXT_GRAY: Color
-var TEXT_DIM: Color
 var SHADOW_COLOR: Color
 
 var CATEGORY_COLORS: Dictionary = {}
@@ -18,6 +16,7 @@ var DEFAULT_CATEGORY_COLOR: Color
 @onready var coin_label: Label = $MainLayout/Header/HeaderContent/CoinDisplay/CoinLabel
 @onready var back_button: TextureButton = $MainLayout/Header/HeaderContent/BackButton
 @onready var grid: GridContainer = $MainLayout/Body/GridMargin/ScrollContainer/GridContainer
+@onready var empty_message_label: Label = $MainLayout/Body/GridMargin/ScrollContainer/GridContainer/EmptyMessageLabel
 @onready var detail_panel: PanelContainer = $MainLayout/DetailPanel
 @onready var detail_icon: TextureRect = $MainLayout/DetailPanel/DetailContent/DetailIcon
 @onready var detail_name_label: Label = $MainLayout/DetailPanel/DetailContent/DetailInfo/DetailName
@@ -39,10 +38,9 @@ var DEFAULT_CATEGORY_COLOR: Color
 
 # ─── State ───
 var selected_item: ItemData = null
-var selected_slot: PanelContainer = null
+var selected_slot: InventorySlot = null
 var current_category: String = "Semua"
 var category_buttons: Dictionary = {}
-var slot_styles: Dictionary = {}   # slot -> {"normal": StyleBox, "selected": StyleBox}
 
 var current_use_qty: int = 1
 var max_use_qty: int = 1
@@ -96,12 +94,10 @@ func _ready():
 
 func _setup_dynamic_colors(tokens: DesignTokens) -> void:
 	SLOT_BG = tokens.surface_overlay
-	SLOT_SELECTED_BG = tokens.surface_overlay.lightened(0.15)
 	ACCENT = tokens.brand_primary
 	GOLD = tokens.currency_gold
 	TEXT_WHITE = tokens.text_on_brand
 	TEXT_GRAY = tokens.text_secondary
-	TEXT_DIM = tokens.text_disabled
 	SHADOW_COLOR = Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.85)
 
 	CATEGORY_COLORS = {
@@ -216,12 +212,15 @@ func _apply_category_style(btn: Button, is_selected: bool):
 # ═══════════════════════════════════════════
 
 func _populate_grid():
-	# Clear previous slots
+	# Clear previous slots. EmptyMessageLabel is a permanent scene child of
+	# `grid`, not a per-item slot, so it is skipped rather than freed.
 	for child in grid.get_children():
+		if child == empty_message_label:
+			continue
 		grid.remove_child(child)
 		child.queue_free()
 
-	slot_styles.clear()
+	empty_message_label.visible = false
 	selected_item = null
 	selected_slot = null
 	detail_panel.hide()
@@ -247,109 +246,35 @@ func _populate_grid():
 	if not has_items:
 		_show_empty_message()
 
-func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0):
-	var slot = PanelContainer.new()
-	slot.custom_minimum_size = Vector2(260, 340)
-	slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slot.mouse_filter = Control.MOUSE_FILTER_STOP
+## The scene one grid tile is authored in.
+@export var slot_scene: PackedScene = preload("res://Scenes/Inventory/InventorySlot.tscn")
 
-	# Border color based on category
-	var cat_color: Color = CATEGORY_COLORS.get(item.category, DEFAULT_CATEGORY_COLOR)
-
-	# ── Normal style ──
-	var normal_style := StyleBoxFlat.new()
-	normal_style.bg_color = SLOT_BG
-	normal_style.corner_radius_top_left = 12
-	normal_style.corner_radius_top_right = 12
-	normal_style.corner_radius_bottom_left = 12
-	normal_style.corner_radius_bottom_right = 12
-	normal_style.border_width_left = 4
-	normal_style.border_width_top = 1
-	normal_style.border_width_right = 1
-	normal_style.border_width_bottom = 1
-	normal_style.border_color = cat_color.darkened(0.3)
-
-	normal_style.content_margin_left = 16
-	normal_style.content_margin_right = 16
-	normal_style.content_margin_top = 16
-	normal_style.content_margin_bottom = 14
-	slot.add_theme_stylebox_override("panel", normal_style)
-
-	# ── Selected style (stored for later) ──
-	var selected_style: StyleBoxFlat = normal_style.duplicate()
-	selected_style.bg_color = SLOT_SELECTED_BG
-	selected_style.border_width_left = 4
-	selected_style.border_width_top = 2
-	selected_style.border_width_right = 2
-	selected_style.border_width_bottom = 2
-	selected_style.border_color = cat_color
-
-	slot_styles[slot] = {"normal": normal_style, "selected": selected_style}
-
-	# ── Content ──
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	slot.add_child(vbox)
-
-	# Item icon
-	var icon = TextureRect.new()
-	icon.texture = item.icon
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.custom_minimum_size = Vector2(200, 260)
-	icon.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(icon)
-
-	# Quantity badge row (right-aligned)
-	var qty_hbox = HBoxContainer.new()
-	qty_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(qty_hbox)
-
-	var spacer = Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	qty_hbox.add_child(spacer)
-
-	var qty_label = Label.new()
-	qty_label.text = "×%d" % quantity
-	qty_label.add_theme_font_size_override("font_size", 36)
-	qty_label.add_theme_color_override("font_color", GOLD)
-	qty_label.add_theme_color_override("font_shadow_color", SHADOW_COLOR)
-	qty_label.add_theme_constant_override("shadow_offset_x", 1)
-	qty_label.add_theme_constant_override("shadow_offset_y", 1)
-	qty_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	qty_hbox.add_child(qty_label)
-
-	# Input
-	slot.gui_input.connect(_on_slot_input.bind(slot, item))
-
+## Add one tile to the grid for an owned item.
+##
+## Affects: adds a child to `grid` and starts its staggered entrance. The
+## tile owns its own look; this function only supplies data and wiring.
+func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0) -> void:
+	var slot: InventorySlot = slot_scene.instantiate()
+	slot.category_colors = CATEGORY_COLORS
+	slot.default_category_color = DEFAULT_CATEGORY_COLOR
 	grid.add_child(slot)
+	slot.setup(item, quantity)
+	slot.slot_pressed.connect(_on_slot_pressed)
 
 	# Staggered entrance animation
 	AnimUtils.staggered_entrance(slot, slot_index * 0.06)
 
 func _show_empty_message():
-	var label = Label.new()
 	if current_category == "Semua":
-		label.text = "📦 Inventory kosong"
+		empty_message_label.text = "📦 Inventory kosong"
 	else:
-		label.text = "🔍 Tidak ada item \"%s\"" % current_category
-	label.add_theme_font_size_override("font_size", 32)
-	label.add_theme_color_override("font_color", TEXT_DIM)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid.add_child(label)
-
-	AnimUtils.fade_in(label)
+		empty_message_label.text = "🔍 Tidak ada item \"%s\"" % current_category
+	empty_message_label.visible = true
+	AnimUtils.fade_in(empty_message_label)
 
 # ═══════════════════════════════════════════
 #  INTERACTION
 # ═══════════════════════════════════════════
-
-var _touch_start_pos: Vector2 = Vector2.ZERO
 
 func _notification(what):
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
@@ -360,28 +285,24 @@ func _notification(what):
 		else:
 			_on_back_pressed()
 
-func _on_slot_input(event: InputEvent, slot: PanelContainer, item: ItemData):
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			_touch_start_pos = event.global_position
-		else:
-			# Clean tap vs scroll detection for touchscreens
-			if _touch_start_pos.distance_to(event.global_position) < 20.0:
-				if selected_slot == slot:
-					_deselect_slot()
-				else:
-					_select_slot(slot, item)
+## The tap-vs-scroll gesture is now detected inside InventorySlot itself;
+## this only runs on a confirmed clean tap.
+func _on_slot_pressed(slot: InventorySlot) -> void:
+	if selected_slot == slot:
+		_deselect_slot()
+	else:
+		_select_slot(slot, slot.item)
 
-func _select_slot(slot: PanelContainer, item: ItemData):
+func _select_slot(slot: InventorySlot, item: ItemData):
 	# Deselect previous
-	if selected_slot != null and slot_styles.has(selected_slot):
-		selected_slot.add_theme_stylebox_override("panel", slot_styles[selected_slot]["normal"])
+	if selected_slot != null:
+		selected_slot.set_selected(false)
 		AnimUtils.deselect_shrink(selected_slot)
 
 	# Highlight new with bounce
 	selected_slot = slot
 	selected_item = item
-	slot.add_theme_stylebox_override("panel", slot_styles[slot]["selected"])
+	slot.set_selected(true)
 	AnimUtils.slot_bounce(slot)
 	AudioDirector.play_sfx(&"tap")
 
@@ -404,8 +325,8 @@ func _select_slot(slot: PanelContainer, item: ItemData):
 	AnimUtils.wobble(detail_icon)
 
 func _deselect_slot():
-	if selected_slot != null and slot_styles.has(selected_slot):
-		selected_slot.add_theme_stylebox_override("panel", slot_styles[selected_slot]["normal"])
+	if selected_slot != null:
+		selected_slot.set_selected(false)
 		AnimUtils.deselect_shrink(selected_slot)
 	selected_slot = null
 	selected_item = null

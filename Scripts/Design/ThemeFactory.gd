@@ -197,6 +197,10 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["TitleLabel", tokens.font_title, tokens.text_primary, false],
 		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false],
+		# The "no items match this filter" placeholder text. 32px doesn't
+		# match a token exactly (nearest are font_body_size 28 / font_title
+		# 36); kept as the shipped literal rather than nudging the size.
+		["EmptyStateLabel", 32, tokens.text_disabled, false],
 	]
 	for spec in specs:
 		var name: String = spec[0]
@@ -228,6 +232,19 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_constant("outline_size", "BarLabel",
 		maxi(2, tokens.text_outline_size / 2))
 	theme.set_color("font_outline_color", "BarLabel", tokens.text_primary)
+
+	# Gold currency/quantity text with a soft drop shadow rather than a rim
+	# -- distinct from BarLabel's outline, and the shape both the koperasi
+	# coin counter and an inventory slot's "×N" badge already used before
+	# each built it by hand.
+	theme.add_type("CoinLabel")
+	theme.set_type_variation("CoinLabel", "Label")
+	theme.set_font_size("font_size", "CoinLabel", tokens.font_title)
+	theme.set_color("font_color", "CoinLabel", tokens.currency_gold)
+	theme.set_color("font_shadow_color", "CoinLabel",
+		Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.85))
+	theme.set_constant("shadow_offset_x", "CoinLabel", 1)
+	theme.set_constant("shadow_offset_y", "CoinLabel", 1)
 
 	# SemesterEnd is the one screen that deliberately keeps a dark,
 	# certificate-like backdrop instead of the app's usual light surface

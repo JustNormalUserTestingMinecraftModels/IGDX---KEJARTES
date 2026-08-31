@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://c2ce6vq838xh7"]
+
+[ext_resource type="Script" uid="uid://uv3nxppyuhus" path="res://Scripts/Inventory/InventorySlot.gd" id="1_w8tn1"]
+
+[node name="InventorySlot" type="PanelContainer" unique_id=156201867]
+custom_minimum_size = Vector2(260, 340)
+size_flags_horizontal = 3
+script = ExtResource("1_w8tn1")
+
+[node name="Layout" type="VBoxContainer" parent="." unique_id=1819306915]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="Layout" unique_id=797531944]
+custom_minimum_size = Vector2(200, 260)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuantityRow" type="HBoxContainer" parent="Layout" unique_id=296016358]
+layout_mode = 2
+mouse_filter = 2
+alignment = 2
+
+[node name="QuantityLabel" type="Label" parent="Layout/QuantityRow" unique_id=1224538772]
+layout_mode = 2
+theme_type_variation = &"CoinLabel"

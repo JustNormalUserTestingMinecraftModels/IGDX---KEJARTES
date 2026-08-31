@@ -142,12 +142,12 @@ func test_all_three_buttons_exist_and_are_wired() -> void:
 
 
 func test_buttons_use_theme_variations_not_default_styling() -> void:
-	var play := _menu.find_child("PlayButton", true, false) as Button
-	assert_eq(play.theme_type_variation, &"PrimaryButton",
-		"the main CTA is a PrimaryButton")
-	var setting := _menu.find_child("SettingButton", true, false) as Button
-	assert_eq(setting.theme_type_variation, &"SecondaryButton",
-		"secondary actions are SecondaryButtons")
+	# All three menu buttons now share one variation: the mockup draws them
+	# identically, with no primary/secondary distinction.
+	for name in ["PlayButton", "SettingButton", "QuitButton"]:
+		var b := _menu.find_child(name, true, false) as Button
+		assert_eq(b.theme_type_variation, &"MainMenuButton",
+			name + " must use the MainMenuButton variation")
 
 
 func test_buttons_meet_the_minimum_touch_target() -> void:
@@ -192,3 +192,70 @@ func test_every_label_fits_inside_the_button_at_the_baked_font_size() -> void:
 		assert_true(w <= _BUTTON_INNER_WIDTH,
 			"%s renders %d px wide, over the %d px inner box"
 				% [label, int(w), int(_BUTTON_INNER_WIDTH)])
+
+
+## Measured from docs/superpowers/mockups/main-menu.png; see
+## docs/superpowers/specs/2026-08-31-main-menu-mockup.md for the probe trail.
+## The mockup's own button pitch drifts (gaps of 69 and 64 px); 66 is the
+## normalisation that lands the column's bottom edge on the measured 1626.
+const _BUTTON_HEIGHT := 126
+const _BUTTON_SEPARATION := 66
+const _COLUMN_HEIGHT := 3 * _BUTTON_HEIGHT + 2 * _BUTTON_SEPARATION  # 510
+const _COLUMN_BOTTOM_INSET := 246.0
+const _LOGO_TOP_OFFSET := 68.0
+
+
+func test_background_uses_the_titlescreen_art() -> void:
+	var bg := _menu.find_child("Background", true, false) as TextureRect
+	assert_true(bg != null, "Background node must exist")
+	assert_eq(bg.texture.resource_path,
+		"res://Assets/Images/UI/titlescreen_background.png",
+		"background art")
+
+
+func test_logo_sits_at_the_measured_offset() -> void:
+	var logo := _menu.find_child("Logo", true, false) as TextureRect
+	assert_true(logo != null, "Logo node must exist")
+	assert_eq(logo.texture.resource_path, "res://Assets/Images/UI/logo.png",
+		"logo art")
+	# Correlating logo.png against the mockup put the optimum at scale 1.0,
+	# offset (0, 68) with a sharp 1-px minimum.
+	assert_eq(logo.offset_top, _LOGO_TOP_OFFSET, "logo top offset")
+	assert_eq(logo.offset_bottom, _LOGO_TOP_OFFSET + 1080.0,
+		"logo must be drawn at its native 1080 px height, unscaled")
+
+
+func test_button_column_matches_the_mockup_rect() -> void:
+	var col := _menu.find_child("ButtonColumn", true, false) as VBoxContainer
+	assert_true(col != null, "ButtonColumn must exist and be a VBoxContainer")
+
+	# Horizontally centred, 670 wide.
+	assert_eq(col.anchor_left, 0.5, "column left anchor")
+	assert_eq(col.anchor_right, 0.5, "column right anchor")
+	assert_eq(col.offset_right - col.offset_left, _BUTTON_WIDTH,
+		"column width")
+
+	# Pinned to the bottom of the safe area, 510 tall.
+	assert_eq(col.anchor_top, 1.0, "column top anchor")
+	assert_eq(col.anchor_bottom, 1.0, "column bottom anchor")
+	assert_eq(col.offset_bottom, -_COLUMN_BOTTOM_INSET, "column bottom inset")
+	assert_eq(col.offset_bottom - col.offset_top, float(_COLUMN_HEIGHT),
+		"column height")
+
+	assert_eq(col.get_theme_constant("separation"), _BUTTON_SEPARATION,
+		"button separation")
+
+
+func test_each_button_is_the_measured_height_and_uses_the_menu_variation() -> void:
+	for name in ["PlayButton", "SettingButton", "QuitButton"]:
+		var b := _menu.find_child(name, true, false) as Button
+		assert_eq(b.custom_minimum_size.y, float(_BUTTON_HEIGHT),
+			name + " height")
+		assert_eq(b.theme_type_variation, &"MainMenuButton",
+			name + " must use the MainMenuButton variation")
+
+
+func test_the_subtitle_is_gone() -> void:
+	# The mockup shows only the logo and three buttons.
+	assert_true(_menu.find_child("SubtitleLabel", true, false) == null,
+		"SubtitleLabel must be removed")

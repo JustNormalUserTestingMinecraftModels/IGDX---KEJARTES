@@ -53,6 +53,14 @@ var _menu: Control
 ## real runtime; it does not change what is being asserted.
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
+## The mockup's cap height implies font size 100, but Milker sets
+## "PENGATURAN" 755 px wide at 100 against a 624 px inner box. This asserts
+## the compromise (80) actually holds, so a future copy or size change cannot
+## silently clip the longest label. Inner box = the button's 670 px width
+## minus the art's 3 px border each side minus 20 px content margin each side.
+const _BUTTON_WIDTH := 670.0
+const _BUTTON_INNER_WIDTH := 670.0 - 2.0 * 3.0 - 2.0 * 20.0
+
 
 func setup() -> void:
 	var scene: PackedScene = load("res://Scenes/MainMenu/main_menu.tscn")
@@ -170,3 +178,17 @@ func test_layout_uses_containers_not_absolute_offsets() -> void:
 	var parent := play.get_parent()
 	assert_true(parent is BoxContainer,
 		"buttons must be laid out by a container, not pixel offsets")
+
+
+func test_every_label_fits_inside_the_button_at_the_baked_font_size() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var font := theme.get_font("font", "MainMenuButton")
+	var font_size := theme.get_font_size("font_size", "MainMenuButton")
+	assert_true(font != null, "MainMenuButton must have a font")
+
+	for label in ["MULAI", "PENGATURAN", "KELUAR"]:
+		var w := font.get_string_size(
+			label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x
+		assert_true(w <= _BUTTON_INNER_WIDTH,
+			"%s renders %d px wide, over the %d px inner box"
+				% [label, int(w), int(_BUTTON_INNER_WIDTH)])

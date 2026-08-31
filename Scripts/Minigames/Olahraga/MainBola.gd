@@ -1,4 +1,107 @@
+@tool
 extends BaseMinigame
+
+# ─── Visual - Art ────────────────────────────────────────────────────────────
+@export_group("Visual - Art")
+## The goalkeeper standing ready, before the shot resolves.
+@export var goalie_idle_texture: Texture2D = preload("res://Assets/Images/Textures/KiperIdle.jpg")
+## The goalkeeper diving left. Shown when the save resolves to the left.
+@export var goalie_left_texture: Texture2D = preload("res://Assets/Images/Textures/KiperLeft.jpg")
+## The goalkeeper diving right.
+@export var goalie_right_texture: Texture2D = preload("res://Assets/Images/Textures/KiperRight.jpg")
+## The goalkeeper beaten. Shown on a scored goal.
+@export var goalie_fail_texture: Texture2D = preload("res://Assets/Images/Textures/Fail.jpg")
+## The ball.
+@export var ball_texture: Texture2D = preload("res://Assets/Images/Textures/bola.png")
+## The pitch and goal frame behind everything. When this is set the procedural
+## goal overlays (GoalBack, GoalNet, Crossbar, PostLeft, PostRight) hide, so
+## the artwork's own goalposts show cleanly instead of being double-drawn.
+@export var field_background_texture: Texture2D = preload("res://Assets/Images/Textures/Gawang.jpg")
+
+# ─── Layout knobs ────────────────────────────────────────────────────────────
+# project.godot sets stretch/aspect="expand", so viewport height varies by
+# device and this layout has to be computed rather than authored as fixed
+# positions. Each knob below is a fraction of the viewport; changing one
+# re-runs _setup_layout() immediately, in the editor as well as at runtime.
+@export_group("Layout")
+
+## Top edge of the goal mouth, as a fraction of viewport height.
+@export_range(0.0, 1.0, 0.005) var goal_top_frac: float = 0.28:
+	set(value):
+		goal_top_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## Height of the goal mouth, as a fraction of viewport height.
+@export_range(0.05, 1.0, 0.005) var goal_height_frac: float = 0.28:
+	set(value):
+		goal_height_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## Width of the goal mouth, as a fraction of viewport width.
+@export_range(0.1, 1.0, 0.005) var goal_width_frac: float = 0.88:
+	set(value):
+		goal_width_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## Width of each goalpost, as a fraction of viewport width.
+@export_range(0.0, 0.1, 0.001) var post_width_frac: float = 0.020:
+	set(value):
+		post_width_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## Height of the crossbar, as a fraction of viewport height.
+@export_range(0.0, 0.05, 0.001) var crossbar_height_frac: float = 0.013:
+	set(value):
+		crossbar_height_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## Width of the goalkeeper's hitbox and sprite, as a fraction of viewport width.
+@export_range(0.1, 1.0, 0.005) var goalie_width_frac: float = 0.42:
+	set(value):
+		goalie_width_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## Height of the goalkeeper's hitbox and sprite, as a fraction of viewport height.
+@export_range(0.05, 1.0, 0.005) var goalie_height_frac: float = 0.22:
+	set(value):
+		goalie_height_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## How far the goalkeeper stands into the goal, as a fraction of goal height
+## measured down from the goal's top edge.
+@export_range(0.0, 1.0, 0.005) var goalie_depth_frac: float = 0.76:
+	set(value):
+		goalie_depth_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## The ball's resting height, as a fraction of viewport height.
+@export_range(0.0, 1.0, 0.005) var ball_start_height_frac: float = 0.86:
+	set(value):
+		ball_start_height_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## The ball's collision and sprite radius, as a fraction of viewport width.
+@export_range(0.0, 0.2, 0.001) var ball_radius_frac: float = 0.065:
+	set(value):
+		ball_radius_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
+## Width and height of the moving target box, as a fraction of viewport width.
+@export_range(0.05, 0.5, 0.005) var target_size_frac: float = 0.18:
+	set(value):
+		target_size_frac = value
+		if is_inside_tree():
+			_setup_layout()
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
@@ -50,13 +153,6 @@ var pulse_time: float   = 0.0
 var goalie_gfx: TextureRect = null
 var ball_gfx:   TextureRect = null
 
-# ─── Textures ────────────────────────────────────────────────────────────────
-var tex_idle:   Texture2D = null
-var tex_left:   Texture2D = null
-var tex_right:  Texture2D = null
-var tex_fail:   Texture2D = null
-var tex_ball:   Texture2D = null
-
 # ─── Layout values (set in _setup_layout) ────────────────────────────────────
 var screen_size:    Vector2
 var ball_start_pos: Vector2
@@ -72,11 +168,9 @@ var goalie_half_w: float
 func _ready() -> void:
 	super._ready()
 
-	screen_size  = get_viewport_rect().size
 	target_score = randi() % 3 + 4   # 4 – 6 goals to win
 	attempts_left = MAX_ATTEMPTS
 
-	_load_textures()
 	_setup_layout()
 	_setup_field_markings()
 	_update_hud()
@@ -133,53 +227,48 @@ func _process(delta: float) -> void:
 		target_box_node.queue_redraw()
 
 
-# ─── Texture loading ─────────────────────────────────────────────────────────
-func _load_textures() -> void:
-	tex_idle  = load("res://Assets/Images/Textures/KiperIdle.jpg")
-	tex_left  = load("res://Assets/Images/Textures/KiperLeft.jpg")
-	tex_right = load("res://Assets/Images/Textures/KiperRight.jpg")
-	tex_fail  = load("res://Assets/Images/Textures/Fail.jpg")
-	tex_ball  = load("res://Assets/Images/Textures/soccer_ball.jpg")
-
-
-# ─── Layout setup (all sizes relative to screen) ─────────────────────────────
+## Place every visual node from the layout knobs above.
+##
+## Runs on _ready(), on viewport resize, and whenever a knob changes -- in the
+## editor as well as at runtime, which is what makes the 2D viewport show the
+## real layout instead of an empty scene.
+##
+## Affects: the position and size of FieldBG, GoalBack, GoalNet, Crossbar,
+## PostLeft, PostRight, GoalArea's collision shape, Goalie (and its
+## CollisionShape2D and GFX), Ball (same), and TargetBox. Writes the cached
+## goal_left_x / goal_right_x / goal_top_y / goal_bot_y / ball_start_pos /
+## goalie_base_pos values the shot resolution reads.
 func _setup_layout() -> void:
+	screen_size = get_viewport_rect().size
 	var sw: float = screen_size.x
 	var sh: float = screen_size.y
 
 	# ── Goal dimensions matching Gawang picture ───────────
-	var goal_top: float      = sh * 0.28
-	var goal_height: float   = sh * 0.28
-	var goal_width: float    = sw * 0.88
+	var goal_top: float      = sh * goal_top_frac
+	var goal_height: float   = sh * goal_height_frac
+	var goal_width: float    = sw * goal_width_frac
 	var goal_x_left: float   = (sw - goal_width) * 0.5
 	var goal_x_right: float  = goal_x_left + goal_width
-	var post_w: float        = sw * 0.020
-	var crossbar_h: float    = sh * 0.013
+	var post_w: float        = sw * post_width_frac
+	var crossbar_h: float    = sh * crossbar_height_frac
 
 	goal_left_x  = goal_x_left
 	goal_right_x = goal_x_right
 	goal_top_y   = goal_top
 	goal_bot_y   = goal_top + goal_height
 	target_x_pos = sw * 0.5
-	target_w     = sw * 0.18
+	target_w     = sw * target_size_frac
 	target_h     = target_w
 
-	# FieldBG image setup using user's uploaded Gawang texture
+	# FieldBG image setup. When set, the artwork's own goalposts show cleanly
+	# and the procedural goal overlays below hide instead of double-drawing.
 	var field_bg_node: TextureRect = get_node_or_null("FieldBG") as TextureRect
 	if field_bg_node:
-		var bg_tex: Texture2D = null
-		if ResourceLoader.exists("res://Assets/Images/Textures/Gawang.jpg"):
-			bg_tex = load("res://Assets/Images/Textures/Gawang.jpg")
-		elif ResourceLoader.exists("res://Assets/Images/Textures/Gawang.png"):
-			bg_tex = load("res://Assets/Images/Textures/Gawang.png")
-		
-		if bg_tex:
-			field_bg_node.texture = bg_tex
-			# Hide procedural goal overlays to show Gawang background image goal post cleanly
-			for node_name in ["GoalBack", "GoalNet", "Crossbar", "PostLeft", "PostRight"]:
-				var n: CanvasItem = get_node_or_null(node_name) as CanvasItem
-				if n:
-					n.visible = false
+		field_bg_node.texture = field_background_texture
+		for node_name in ["GoalBack", "GoalNet", "Crossbar", "PostLeft", "PostRight"]:
+			var n: CanvasItem = get_node_or_null(node_name) as CanvasItem
+			if n:
+				n.visible = field_background_texture == null
 
 	# GoalBack (dark shadow behind net)
 	var goal_back: ColorRect = $GoalBack
@@ -219,13 +308,13 @@ func _setup_layout() -> void:
 			(col.shape as RectangleShape2D).size = Vector2(goal_width * 0.92, goal_height)
 
 	# ── Goalie ───────────────────────────────────────────────
-	var g_width: float  = sw * 0.42
-	var g_height: float = sh * 0.22
+	var g_width: float  = sw * goalie_width_frac
+	var g_height: float = sh * goalie_height_frac
 	goalie_half_w = g_width * 0.5
 
 	if goalie:
 		# Place goalie grounded on the goal line inside Gawang image
-		goalie.global_position = Vector2(sw * 0.5, goal_top + goal_height * 0.76)
+		goalie.global_position = Vector2(sw * 0.5, goal_top + goal_height * goalie_depth_frac)
 		goalie_base_pos = goalie.global_position
 
 		var col: CollisionShape2D = goalie.get_node_or_null("CollisionShape2D") as CollisionShape2D
@@ -234,15 +323,15 @@ func _setup_layout() -> void:
 
 		goalie_gfx = goalie.get_node_or_null("GFX") as TextureRect
 		if goalie_gfx:
-			goalie_gfx.texture  = tex_idle
+			goalie_gfx.texture  = goalie_idle_texture
 			goalie_gfx.size     = Vector2(g_width, g_height)
 			goalie_gfx.position = Vector2(-g_width * 0.5, -g_height * 0.78)
 
 	# ── Ball ─────────────────────────────────────────────────
-	var ball_r: float = sw * 0.065
+	var ball_r: float = sw * ball_radius_frac
 
 	if ball:
-		ball.global_position = Vector2(sw * 0.5, sh * 0.86)
+		ball.global_position = Vector2(sw * 0.5, sh * ball_start_height_frac)
 		ball_start_pos = ball.global_position
 
 		var col: CollisionShape2D = ball.get_node_or_null("CollisionShape2D") as CollisionShape2D
@@ -252,7 +341,7 @@ func _setup_layout() -> void:
 		ball_gfx = ball.get_node_or_null("GFX") as TextureRect
 		if ball_gfx:
 			var side: float = ball_r * 2.0
-			ball_gfx.texture  = tex_ball
+			ball_gfx.texture  = ball_texture
 			ball_gfx.size     = Vector2(side, side)
 			ball_gfx.position = Vector2(-ball_r, -ball_r)
 
@@ -448,7 +537,7 @@ func _shoot_ball(swipe_vec: Vector2) -> void:
 
 	# ── Set goalie direction texture ─────────────────────────
 	if goalie_gfx:
-		goalie_gfx.texture = tex_left if dive_dir < 0 else tex_right
+		goalie_gfx.texture = goalie_left_texture if dive_dir < 0 else goalie_right_texture
 
 	# ── Animate ball → goal ──────────────────────────────────
 	var ball_tween: Tween = create_tween()
@@ -583,7 +672,7 @@ func _reset_shot() -> void:
 
 	# Goalie returns to center, texture back to idle
 	if goalie_gfx:
-		goalie_gfx.texture = tex_idle
+		goalie_gfx.texture = goalie_idle_texture
 	if goalie:
 		var rt := create_tween()
 		rt.tween_property(goalie, "global_position:x", goalie_base_pos.x, 0.28)\

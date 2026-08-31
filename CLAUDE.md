@@ -100,6 +100,14 @@ overrides (`separation`, `margin_*`).
 
 Full detail: `docs/superpowers/design/style-guide.md`.
 
+**The second rule: no visual is built at runtime.** Static chrome is a node in
+the `.tscn`; repeated rows are a `PackedScene` template; responsive geometry
+is a `@tool` script driven by documented `@export` knobs. Two ratchet suites
+(`tests/test_viewport_editability.gd`, `tests/test_script_documentation.gd`)
+freeze the current violation counts and fail if any file grows.
+
+Full detail: `docs/superpowers/design/authoring-guide.md`.
+
 **Two animation APIs, both live:**
 - `Scripts/Design/Juice.gd` — the project's own (`press`, `release`, `pop_in`,
   `stagger_in`, `count_up`, `fill_bar`, `shake`). Buttons get press/release

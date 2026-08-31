@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://s8801s00ec2q"]
 
-[ext_resource type="Script" path="res://Scripts/Splashscreen/splashscreen.gd" id="1_qc0ra"]
-[ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
+[ext_resource type="Script" uid="uid://t5yd15hixj7" path="res://Scripts/Splashscreen/splashscreen.gd" id="1_qc0ra"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
 
 [node name="Splashscreen" type="Control" unique_id=1227495593]
 layout_mode = 3
@@ -12,19 +12,23 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qc0ra")
 
-[node name="SafeArea" type="MarginContainer" parent="."]
+[node name="SafeArea" type="MarginContainer" parent="." unique_id=845617159]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
 script = ExtResource("2_safe")
 
-[node name="Layout" type="VBoxContainer" parent="SafeArea"]
+[node name="Layout" type="VBoxContainer" parent="SafeArea" unique_id=1527393347]
 layout_mode = 2
 
-[node name="TitleSpacer" type="Control" parent="SafeArea/Layout"]
+[node name="TitleSpacer" type="Control" parent="SafeArea/Layout" unique_id=43735428]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.7
@@ -35,7 +39,7 @@ theme_type_variation = &"DisplayLabel"
 text = "KEJARTES"
 horizontal_alignment = 1
 
-[node name="MidSpacer" type="Control" parent="SafeArea/Layout"]
+[node name="MidSpacer" type="Control" parent="SafeArea/Layout" unique_id=705840904]
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -45,7 +49,7 @@ theme_type_variation = &"CaptionLabel"
 text = "Ketuk untuk lanjut"
 horizontal_alignment = 1
 
-[node name="BottomSpacer" type="Control" parent="SafeArea/Layout"]
+[node name="BottomSpacer" type="Control" parent="SafeArea/Layout" unique_id=921872266]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.4

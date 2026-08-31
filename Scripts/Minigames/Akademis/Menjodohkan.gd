@@ -1,13 +1,25 @@
 extends BaseMinigame
 
+## Akademis minigame: match each question card to its answer card across
+## two independently-spinning carousels, lock a pair, then submit once
+## every question has a locked answer.
+##
+## Winning feeds the Akademis stat (see StudentData.apply_minigame_result);
+## score is the count of correctly-matched pairs out of questions_count.
+## Falls back to fallback_questions/fallback_answers when no real question
+## bank is wired up for this session.
+
 # ─── Inspector-editable fallback question bank ────────────────────────────────
 @export_group("Fallback Q&A")
+## Used when no real question bank is supplied for this session -- paired
+## by index with fallback_answers.
 @export var fallback_questions: Array[String] = [
 	"Apa ibukota Indonesia?",
 	"Siapa Presiden pertama?",
 	"Candi terbesar di Indonesia?",
 	"Pulau Dewata?"
 ]
+## Paired by index with fallback_questions.
 @export var fallback_answers: Array[String] = [
 	"Jakarta",
 	"Soekarno",
@@ -16,7 +28,9 @@ extends BaseMinigame
 ]
 
 @export_group("Card Templates")
+## Template instantiated once per question into the question carousel.
 @export var question_card_scene: PackedScene = preload("res://Scenes/Minigames/Akademis/QuestionCard.tscn")
+## Template instantiated once per answer into the answer carousel.
 @export var answer_card_scene: PackedScene   = preload("res://Scenes/Minigames/Akademis/AnswerCard.tscn")
 
 # ─── Visual - Background ─────────────────────────────────────────────────────
@@ -51,9 +65,13 @@ extends BaseMinigame
 @export var button_texture_margin: int   = 8
 ## Fallback StyleBox overrides if no texture assigned (leave null = theme default).
 @export var lock_btn_locked_style:     StyleBox = null
+## Lock button's style while unlocking (cancelling a made match).
 @export var lock_btn_cancel_style:     StyleBox = null
+## Submit button's style once every question is locked and it's pressable.
 @export var submit_btn_active_style:   StyleBox = null
+## Submit button's style while questions remain unmatched.
 @export var submit_btn_disabled_style: StyleBox = null
+## Style for both carousels' ◀/▶ navigation buttons.
 @export var nav_btn_style:             StyleBox = null
 
 # ─── Visual - Icons (replace emoji with textures) ─────────────────────────────
@@ -63,42 +81,66 @@ extends BaseMinigame
 
 # ─── Visual - Colors ─────────────────────────────────────────────────────────
 @export_group("Visual - Colors")
+## Flash tint for a correctly-locked pair.
 @export var correct_color: Color         = Color(0.3, 0.85, 0.4, 1)
+## Flash tint for an incorrect submission.
 @export var wrong_color: Color           = Color(0.9, 0.3, 0.3, 1)
+## Text colour for the running score label.
 @export var score_label_color: Color     = Color(0.75, 0.85, 1.0, 1)
+## Text colour for the question carousel's header.
 @export var question_header_color: Color = Color(1.0, 0.7, 0.3, 1)
+## Text colour for the answer carousel's header.
 @export var answer_header_color: Color   = Color(0.4, 0.7, 1.0, 1)
+## Default tint for a progress badge before it is locked.
 @export var badge_default_color: Color   = Color(0.85, 0.85, 0.9, 1)
+## Background fill behind each progress badge.
 @export var badge_bg_color: Color        = Color(0.2, 0.25, 0.35, 0.9)
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
+## Optional font override applied across the game. Null keeps the theme
+## default.
 @export var font: Font = null
+## Font size for the game's title label.
 @export var title_font_size: int  = 48
+## Font size for the running score label.
 @export var score_font_size: int  = 36
+## Font size for both carousels' headers.
 @export var header_font_size: int = 32
+## Font size for the Lock/Submit button labels.
 @export var button_font_size: int = 36
+## Font size for the progress badges.
 @export var badge_font_size: int  = 26
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
-@export var carousel_step_duration: float = 0.26  ## Seconds per card wheel step
+## Seconds per card wheel step
+@export var carousel_step_duration: float = 0.26
 
 # ─── Animation - Cards ───────────────────────────────────────────────────────
 @export_group("Animation - Cards")
-@export var card_side_scale: float   = 0.75   ## Scale of non-focused cards
-@export var card_side_alpha: float   = 0.35   ## Opacity of 1-away cards
-@export var card_side_rotation: float = 5.0   ## Rotation degrees of side cards
+## Scale of non-focused cards
+@export var card_side_scale: float   = 0.75
+## Opacity of 1-away cards
+@export var card_side_alpha: float   = 0.35
+## Rotation degrees of side cards
+@export var card_side_rotation: float = 5.0
 
 # ─── Animation - Buttons ─────────────────────────────────────────────────────
 @export_group("Animation - Buttons")
-@export var btn_boing_squash_x: float   = 1.15  ## X scale at squash peak
-@export var btn_boing_squash_y: float   = 0.80  ## Y scale at squash peak
-@export var btn_wiggle_interval: float  = 1.8   ## Seconds between submit wiggles
-@export var btn_wiggle_rot_deg: float   = 5.0   ## Degrees of submit button wiggle
+## X scale at squash peak
+@export var btn_boing_squash_x: float   = 1.15
+## Y scale at squash peak
+@export var btn_boing_squash_y: float   = 0.80
+## Seconds between submit wiggles
+@export var btn_wiggle_interval: float  = 1.8
+## Degrees of submit button wiggle
+@export var btn_wiggle_rot_deg: float   = 5.0
 
 @export_group("Configuration")
-@export var questions_count: int = 4 # Default 4 questions
+## How many question/answer pairs this session uses (out of the wired-up
+## bank, or fallback_questions/fallback_answers).
+@export var questions_count: int = 4
 
 # ─── Runtime Data ────────────────────────────────────────────────────────────
 var selected_pairs_data: Array = []

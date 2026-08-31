@@ -29,31 +29,11 @@ func suite_name() -> String:
 
 ## Scripts still lacking a file-header doc block, frozen 2026-08-31.
 ## Remove entries as they are documented. Never add one.
-const PENDING_HEADERS: Array[String] = [
-	"res://Scripts/Minigames/Akademis/Menjodohkan.gd",
-	"res://Scripts/Minigames/Akademis/PilihanGanda.gd",
-	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd",
-	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd",
-	"res://Scripts/Minigames/UI/BaseMinigame.gd",
-	"res://Scripts/Minigames/UI/MinigameMenu.gd",
-]
+const PENDING_HEADERS: Array[String] = []
 
 ## script_path -> number of undocumented @export declarations, frozen
 ## 2026-08-31. Lower these as they are documented. Never raise one.
-const PENDING_EXPORT_DOCS: Dictionary = {
-	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 30,
-	"res://Scripts/Minigames/Akademis/Password.gd": 12,
-	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 15,
-	"res://Scripts/Minigames/Akademis/Variabel.gd": 19,
-	"res://Scripts/Minigames/Olahraga/Badminton.gd": 11,
-	"res://Scripts/Minigames/Olahraga/MainBola.gd": 6,
-	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 22,
-	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 25,
-	"res://Scripts/Minigames/UI/BaseMinigame.gd": 36,
-	"res://Scripts/Minigames/UI/MinigameMenu.gd": 9,
-	"res://Scripts/Minigames/UI/MinigameTutorial.gd": 10,
-	"res://Scripts/Minigames/UI/PauseMenu.gd": 13,
-}
+const PENDING_EXPORT_DOCS: Dictionary = {}
 
 ## Same exemption as the editability ratchet: a programmatic developer
 ## overlay, out of scope for the design system per CLAUDE.md.

@@ -1,17 +1,38 @@
 extends Control
 
+## A standalone launcher for testing any single minigame (or a full
+## SchoolDay simulation) in isolation, outside the normal
+## AturJadwal -> SchoolDay flow.
+##
+## Not reached through normal play -- a developer/QA entry point. Each
+## menu button instantiates one game scene directly into game_container
+## with a fixed time limit, listens for minigame_won/minigame_lost to
+## know when to tear it down, and fades the menu back in. Writes nothing
+## to GameState.
+
 @onready var menu_container: VBoxContainer = $MenuContainer
 @onready var game_container: Control = $GameContainer
 
 # ── Minigame scenes ────────────────────────────────────────────────────────────
+## Launched by BtnMenjodohkan, and forwarded into SchoolDay.setup_scenes()
+## when BtnSchoolDay runs a full simulation instead.
 @export var menjodohkan_scene: PackedScene
+## Same as menjodohkan_scene, for BtnVariabel.
 @export var variabel_scene: PackedScene
+## Same as menjodohkan_scene, for BtnPilihanGanda.
 @export var pilihan_ganda_scene: PackedScene
+## Same as menjodohkan_scene, for BtnPassword.
 @export var password_scene: PackedScene
+## Same as menjodohkan_scene, for BtnMainBola.
 @export var main_bola_scene: PackedScene
+## Same as menjodohkan_scene, for BtnBadminton.
 @export var badminton_scene: PackedScene
+## Same as menjodohkan_scene, for BtnBuatBatik.
 @export var buat_batik_scene: PackedScene
+## Same as menjodohkan_scene, for BtnLombaMenari.
 @export var lomba_menari_scene: PackedScene
+## Launched by BtnSchoolDay -- runs a full week simulation instead of a
+## single minigame, wired up with every scene above via setup_scenes().
 @export var school_day_scene: PackedScene
 
 var current_minigame: Node = null

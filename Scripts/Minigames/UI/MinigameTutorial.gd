@@ -14,9 +14,13 @@ signal tutorial_finished
 @export_group("Visual - Dialog Box")
 ## Drag a PNG here for the tutorial popup box card background.
 @export var dialog_box_texture: Texture2D = null
+## Dialog fill used when dialog_box_texture is null.
 @export var dialog_bg_color: Color = Color(0.1, 0.12, 0.18, 0.95)
+## Dialog rim colour, procedural mode only.
 @export var dialog_border_color: Color = Color(0.4, 0.65, 1.0, 0.75)
+## Corner radius (px) of the procedural dialog card.
 @export var dialog_corner_radius: int = 16
+## Content padding (px) inside dialog_box_texture, when set.
 @export var dialog_texture_margin: int = 16
 
 # ─── Visual - Texts & Typography ─────────────────────────────────────────────
@@ -25,11 +29,17 @@ signal tutorial_finished
 @export var blink_prompt_text: String = "Ketuk untuk melanjutkan"
 ## Assign a custom Font resource. Leave null for default theme font.
 @export var font: Font = null
+## Font size for BaseMinigame.tutorial_title.
 @export var title_font_size: int = 48
+## Text colour for BaseMinigame.tutorial_title.
 @export var title_font_color: Color = Color(1.0, 0.88, 0.35)
+## Font size for BaseMinigame.tutorial_instructions.
 @export var instructions_font_size: int = 32
+## Text colour for BaseMinigame.tutorial_instructions.
 @export var instructions_font_color: Color = Color(0.92, 0.94, 0.98)
+## Font size for blink_prompt_text.
 @export var blink_font_size: int = 30
+## Text colour for blink_prompt_text.
 @export var blink_font_color: Color = Color(0.35, 0.9, 0.55)
 
 var tutorial_title_text: String = ""

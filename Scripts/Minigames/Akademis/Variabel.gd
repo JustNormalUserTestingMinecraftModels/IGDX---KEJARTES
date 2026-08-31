@@ -7,21 +7,32 @@ extends BaseMinigame
 
 # ─── Visual - Colors ─────────────────────────────────────────────────────────
 @export_group("Visual - Colors")
+## Flash tint on a correct submission.
 @export var correct_color: Color          = Color(0.2, 0.9, 0.4, 1)
+## Flash tint on an incorrect submission.
 @export var error_color: Color            = Color(0.9, 0.25, 0.25, 1)
+## Tint used when revealing the correct answer after a failed attempt.
 @export var reveal_color: Color           = Color(0.3, 0.95, 0.5, 1)
+## Tint on the equation text during reveal_pause_seconds' variable reveal.
 @export var equation_reveal_color: Color  = Color(0.9, 0.9, 0.5, 1)
+## Text colour for the "question N of ..." progress label.
 @export var progress_label_color: Color   = Color(0.75, 0.85, 1.0, 1)
+## Colour of the floating "+20s" time-boost popup text.
 @export var time_boost_popup_color: Color = Color(0.2, 1.0, 0.5, 1)
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use the project theme font.
 @export var font: Font = null
+## Font size for the progress label.
 @export var progress_font_size: int       = 34
+## Font size for the equation/prompt text.
 @export var equation_font_size: int       = 72
+## Font size for the player's entered-answer display.
 @export var input_font_size: int          = 64
+## Font size for each numpad button's digit.
 @export var numpad_btn_font_size: int     = 48
+## Font size for the floating time-boost popup text.
 @export var time_boost_font_size: int     = 48
 
 # ─── Visual - Input Box ──────────────────────────────────────────────────────
@@ -41,8 +52,10 @@ extends BaseMinigame
 
 # ─── Visual - Numpad ────────────────────────────────────────────────────────
 @export_group("Visual - Numpad")
-@export var numpad_btn_size: Vector2     = Vector2(180, 140)  ## Size of each number button
-@export var clear_btn_height: float      = 140.0             ## Height of the C (clear) row
+## Size of each number button
+@export var numpad_btn_size: Vector2     = Vector2(180, 140)
+## Height of the C (clear) row
+@export var clear_btn_height: float      = 140.0
 ## Drag a PNG here — applies to all number and C keys automatically.
 @export var numpad_btn_normal_texture: Texture2D = null
 ## Optional custom PNG for the Submit button. If left null, uses numpad_btn_normal_texture.
@@ -60,14 +73,19 @@ extends BaseMinigame
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
+## Fade-out before question swap.
 @export var question_fade_out_duration: float = 0.25
+## Fade-in after question swap.
 @export var question_fade_in_duration: float  = 0.30
 
 # ─── Animation - Feedback ───────────────────────────────────────────────────
 @export_group("Animation - Feedback")
-@export var reveal_delay: float             = 0.3    ## Seconds before showing correct answer
-@export var time_boost_float_height: float  = 55.0   ## Pixels the +20s popup floats up
-@export var time_boost_float_duration: float = 0.9   ## Duration of the popup animation
+## Seconds before showing correct answer
+@export var reveal_delay: float             = 0.3
+## Pixels the +20s popup floats up
+@export var time_boost_float_height: float  = 55.0
+## Duration of the popup animation
+@export var time_boost_float_duration: float = 0.9
 
 # ─── State ───────────────────────────────────────────────────────────────────
 var score: int = 0
@@ -81,7 +99,9 @@ var active_questions: Array[Dictionary] = []  # list of {eq_text, answer}
 var numpad_bottom_row: HBoxContainer = null   # holds wide-C + 0 (separate from GridContainer)
 
 @export_group("Configuration")
-@export var reveal_pause_seconds: float = 3.0  ## Seconds the timer is frozen after each answer so the player can read the variable reveal
+## Seconds the timer is frozen after each answer so the player can read
+## the variable reveal
+@export var reveal_pause_seconds: float = 3.0
 
 @onready var progress_label: Label        = $VBoxContainer/ProgressLabel
 @onready var equation_label: Label        = $VBoxContainer/EquationLabel

@@ -1,32 +1,50 @@
 extends BaseMinigame
 
+## SeniBudaya minigame: drag each of the four batik tools (Pencil,
+## Canting, Pewarna, Kompor) onto the cloth canvas in the correct order
+## (correct_sequence), revealing one pattern layer per correct step.
+##
+## Winning feeds the SeniBudaya stat (see StudentData.apply_minigame_result);
+## a wrong tool marks that step failed (has_failed) without ending the
+## game outright.
+
 # ─── Tool 0 (Pencil) ─────────────────────────────────────────────────────────
 @export_group("Tool 0 (Pencil)")
+## Name shown on the Pencil tool slot and its tooltip.
 @export var tool0_display_name: String = "Specialized Pencil"
+## Tooltip body text for the Pencil tool.
 @export_multiline var tool0_description: String = "Pengadaan akan sketsa pola awal untuk membuat pola yang kelihatan jelas diatas kain kosong."
 
 # ─── Tool 1 (Canting) ────────────────────────────────────────────────────────
 @export_group("Tool 1 (Canting)")
+## Name shown on the Canting tool slot and its tooltip.
 @export var tool1_display_name: String = "Canting"
+## Tooltip body text for the Canting tool.
 @export_multiline var tool1_description: String = "Alat untuk menggambar motif batik menggunakan malam (lilin) cair di atas kain."
 
 # ─── Tool 2 (Pewarna) ────────────────────────────────────────────────────────
 @export_group("Tool 2 (Pewarna)")
+## Name shown on the Pewarna tool slot and its tooltip.
 @export var tool2_display_name: String = "Pewarna"
+## Tooltip body text for the Pewarna tool.
 @export_multiline var tool2_description: String = "Larutan zat warna yang digunakan untuk mewarnai kain batik setelah motif selesai."
 
 # ─── Tool 3 (Kompor) ─────────────────────────────────────────────────────────
 @export_group("Tool 3 (Kompor)")
+## Name shown on the Kompor tool slot and its tooltip.
 @export var tool3_display_name: String = "Kompor"
+## Tooltip body text for the Kompor tool.
 @export_multiline var tool3_description: String = "Digunakan untuk memanaskan kain agar lilin meleleh dan warna meresap sempurna."
 
 # ─── Visual - Background & Canvas ───────────────────────────────────────────
 @export_group("Visual - Background & Canvas")
 ## Drag a PNG here for the minigame background image.
 @export var background_texture: Texture2D = null
+## Background fill used when background_texture is null.
 @export var background_color: Color = Color(0.12, 0.08, 0.05, 1)
 ## Drag a PNG here for the batik cloth canvas texture.
 @export var canvas_cloth_texture: Texture2D = null
+## Canvas fill used when canvas_cloth_texture is null.
 @export var canvas_cloth_color: Color = Color(0.94, 0.88, 0.73, 1)
 
 # ─── Visual - Tool PNG Assets ───────────────────────────────────────────────
@@ -43,6 +61,7 @@ extends BaseMinigame
 @export var tool_slot_bg_texture: Texture2D = null
 ## Tint on drag/pressed
 @export var tool_pressed_tint: Color = Color(0.65, 0.65, 0.65, 1.0)
+## Scale a tool icon shrinks to on press.
 @export var tool_press_scale: float = 0.90
 
 # ─── Visual - Batik Step Pattern Layers ─────────────────────────────────────
@@ -58,16 +77,27 @@ extends BaseMinigame
 
 # ─── Visual - Tooltip & Typography ──────────────────────────────────────────
 @export_group("Visual - Tooltip & Typography")
+## Background for the tool tooltip panel. Null keeps the theme's default.
 @export var tooltip_bg_texture: Texture2D = null
+## Optional font override applied across the game. Null keeps the theme default.
 @export var font: Font = null
+## Font size for the game's title label.
 @export var title_font_size: int = 48
+## Font size for the on-screen instruction text.
 @export var instruction_font_size: int = 30
+## Font size for the "Lapisan ..." progress label.
 @export var progress_font_size: int = 30
+## Font size for the tooltip's tool name.
 @export var tooltip_name_font_size: int = 40
+## Font size for the tooltip's description text.
 @export var tooltip_desc_font_size: int = 30
+## Text colour for the title label.
 @export var title_font_color: Color = Color(1.0, 0.92, 0.75, 1)
+## Text colour for the instruction text.
 @export var instruction_font_color: Color = Color(0.8, 0.75, 0.6, 1)
+## Text colour for the tooltip's tool name.
 @export var tooltip_name_color: Color = Color(1.0, 0.92, 0.75, 1)
+## Text colour for the tooltip's description.
 @export var tooltip_desc_color: Color = Color(0.85, 0.85, 0.85, 1)
 
 # ─── Layer display colors per step ──────────────────────────────────────────

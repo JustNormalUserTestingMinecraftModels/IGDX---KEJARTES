@@ -107,11 +107,17 @@ extends BaseMinigame
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use default theme font.
 @export var font: Font = null
+## Font size for the score label.
 @export var score_font_size: int   = 40
+## Font size for the remaining-attempts label.
 @export var attempts_font_size: int = 30
+## Font size for the aiming hint text.
 @export var hint_font_size: int     = 26
+## Text colour for the score label.
 @export var score_color: Color      = Color.WHITE
+## Text colour for the remaining-attempts label.
 @export var attempts_color: Color   = Color.WHITE
+## Text colour for the aiming hint text.
 @export var hint_color: Color       = Color(1, 1, 1, 0.65)
 
 # ─── Constants ───────────────────────────────────────────────────────────────

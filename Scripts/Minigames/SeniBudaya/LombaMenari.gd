@@ -1,5 +1,13 @@
 extends BaseMinigame
 
+## SeniBudaya minigame: a 4-direction rhythm game. Notes spawn per
+## rhythm_patterns and travel toward the hit zone; the player swipes the
+## matching direction (LEFT/RIGHT/TOP_LEFT/TOP_RIGHT) as each one arrives.
+## The dancer character's pose reflects the most recent swipe result.
+##
+## Winning (reaching target_score) feeds the SeniBudaya stat -- see
+## StudentData.apply_minigame_result.
+
 enum NoteType {
 	LEFT,       # Red
 	RIGHT,      # Blue
@@ -7,45 +15,71 @@ enum NoteType {
 	TOP_RIGHT   # Green
 }
 
+## Backdrop behind the dance stage.
 @export var background_texture: Texture2D
 
 @export_group("Note Textures (Incoming PNGs)")
+## Sprite for an unswiped LEFT note approaching the hit zone.
 @export var left_note_texture: Texture2D
+## Same as left_note_texture, for RIGHT.
 @export var right_note_texture: Texture2D
+## Same as left_note_texture, for TOP_LEFT.
 @export var top_left_note_texture: Texture2D
+## Same as left_note_texture, for TOP_RIGHT.
 @export var top_right_note_texture: Texture2D
 
 @export_group("Swiped Textures (Feedback PNGs)")
+## Sprite briefly shown on a LEFT note after a successful swipe.
 @export var left_swiped_texture: Texture2D
+## Same as left_swiped_texture, for RIGHT.
 @export var right_swiped_texture: Texture2D
+## Same as left_swiped_texture, for TOP_LEFT.
 @export var top_left_swiped_texture: Texture2D
+## Same as left_swiped_texture, for TOP_RIGHT.
 @export var top_right_swiped_texture: Texture2D
 
 # ─── Visual - Hit Zone ──────────────────────────────────────────────────────
 @export_group("Visual - Hit Zone")
+## Sprite marking where notes must be swiped. Null draws hit_zone_color instead.
 @export var hit_zone_texture: Texture2D = null
+## Procedural-mode fill for the hit zone.
 @export var hit_zone_color: Color = Color(0.0, 1.0, 0.0, 0.3)
 
 # ─── Visual - Note Colors ────────────────────────────────────────────────────
 @export_group("Visual - Note Colors")
+## Procedural-mode tint for LEFT notes, used when left_note_texture is null.
 @export var left_note_color: Color     = Color(1.0, 0.2, 0.2)
+## Same as left_note_color, for RIGHT.
 @export var right_note_color: Color    = Color(0.2, 0.5, 1.0)
+## Same as left_note_color, for TOP_LEFT.
 @export var top_left_note_color: Color = Color(1.0, 0.8, 0.1)
+## Same as left_note_color, for TOP_RIGHT.
 @export var top_right_note_color: Color = Color(0.2, 0.8, 0.3)
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
+## Optional font override for the score/feedback labels. Null keeps the
+## theme default.
 @export var font: Font = null
+## Font size for the running score label.
 @export var score_font_size: int = 44
+## Text colour for the running score label.
 @export var score_color: Color = Color.WHITE
+## Font size for the per-note hit/miss feedback text.
 @export var feedback_font_size: int = 40
 
 @export_group("Dancer Character Assets")
+## Dancer pose while waiting for the next note.
 @export var dancer_idle_texture: Texture2D
+## Dancer pose immediately after a successful LEFT swipe.
 @export var dancer_left_texture: Texture2D
+## Same as dancer_left_texture, for RIGHT.
 @export var dancer_right_texture: Texture2D
+## Same as dancer_left_texture, for TOP_LEFT.
 @export var dancer_top_left_texture: Texture2D
+## Same as dancer_left_texture, for TOP_RIGHT.
 @export var dancer_top_right_texture: Texture2D
+## Dancer pose after a missed note.
 @export var dancer_fail_texture: Texture2D
 
 var score: int = 0

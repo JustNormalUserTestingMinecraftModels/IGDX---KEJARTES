@@ -1,7 +1,16 @@
 extends BaseMinigame
 
+## Akademis minigame: a straight multiple-choice quiz, total_questions_per_game
+## questions drawn from fallback_questions, one at a time with a
+## correct/wrong flash between each.
+##
+## Winning feeds the Akademis stat (see StudentData.apply_minigame_result);
+## score is the count of correct answers.
+
 # Inspector fallback question bank (used if JSON file fails to load)
 @export_group("Fallback Question Bank")
+## The question pool this game draws total_questions_per_game entries
+## from, each a {question, choices, correct_index, image} Dictionary.
 @export var fallback_questions: Array[Dictionary] = [
 	{
 		"question": "Dari gambar di atas, monumen ikonik apakah yang berdiri megah di Jakarta?",
@@ -72,6 +81,7 @@ extends BaseMinigame
 ]
 
 @export_group("Configuration")
+## How many questions this session draws from fallback_questions.
 @export var total_questions_per_game: int = 3
 
 # ─── Visual - Background ─────────────────────────────────────────────────────
@@ -93,35 +103,48 @@ extends BaseMinigame
 @export var choice_btn_press_duration: float = 0.07
 ## Margin (pixels) inside the button texture where the text is drawn.
 @export var choice_btn_texture_margin: int   = 12
+## Minimum height (px) of each answer button, regardless of text length.
 @export var answer_btn_min_height: int       = 100
 ## StyleBox fallback overrides if no texture assigned (leave null = uses theme default).
 @export var answer_btn_normal_style:  StyleBox = null
+## Style flashed on the button holding the correct answer.
 @export var answer_btn_correct_style: StyleBox = null
+## Style flashed on a button the player picked incorrectly.
 @export var answer_btn_wrong_style:   StyleBox = null
 
 # ─── Visual - Colors ─────────────────────────────────────────────────────────
 @export_group("Visual - Colors")
+## Procedural-mode tint matching answer_btn_correct_style's flash.
 @export var correct_color: Color        = Color(0.2, 0.75, 0.35, 1)
+## Procedural-mode tint matching answer_btn_wrong_style's flash.
 @export var wrong_color: Color          = Color(0.85, 0.25, 0.25, 1)
+## Text colour for the "question N of total_questions_per_game" label.
 @export var progress_label_color: Color = Color(0.75, 0.85, 1.0, 1)
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use the project theme font.
 @export var font: Font = null
+## Font size for the progress label.
 @export var progress_font_size: int  = 32
+## Font size for the question text.
 @export var question_font_size: int  = 48
+## Font size for each answer button's label.
 @export var answer_btn_font_size: int = 36
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
-@export var question_fade_out_duration: float = 0.25  ## Fade-out before question swap
-@export var question_fade_in_duration: float  = 0.30  ## Fade-in after question swap
+## Fade-out before question swap
+@export var question_fade_out_duration: float = 0.25
+## Fade-in after question swap
+@export var question_fade_in_duration: float  = 0.30
 
 # ─── Animation - Feedback ───────────────────────────────────────────────────
 @export_group("Animation - Feedback")
-@export var feedback_hold_duration: float = 0.9   ## Seconds before next question
-@export var flash_highlight_scale: float  = 1.35  ## Modulate brightness on correct/wrong flash
+## Seconds before next question
+@export var feedback_hold_duration: float = 0.9
+## Modulate brightness on correct/wrong flash
+@export var flash_highlight_scale: float  = 1.35
 
 var active_questions: Array[Dictionary] = []
 var current_question_index: int = 0

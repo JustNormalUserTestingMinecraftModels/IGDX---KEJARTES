@@ -7,18 +7,26 @@ extends BaseMinigame
 
 # ─── Visual - Colors ─────────────────────────────────────────────────────────
 @export_group("Visual - Colors")
+## Flash tint on a correct digit entry.
 @export var correct_color: Color        = Color(0.2, 0.9, 0.4, 1)
+## Flash tint on an incorrect digit entry.
 @export var error_color: Color          = Color(0.9, 0.25, 0.25, 1)
+## Tint used when revealing the correct answer after a failed attempt.
 @export var reveal_color: Color         = Color(0.3, 0.95, 0.5, 1)
+## Text colour for the "question N of ..." progress label.
 @export var progress_label_color: Color = Color(0.75, 0.85, 1.0, 1)
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use the project theme font.
 @export var font: Font = null
+## Font size for the progress label.
 @export var progress_font_size: int = 34
+## Font size for the problem/prompt text.
 @export var problem_font_size: int  = 72
+## Font size for the player's entered-answer display.
 @export var input_font_size: int    = 64
+## Font size for each keypad button's digit.
 @export var keypad_btn_font_size: int = 48
 
 # ─── Visual - Input Box ──────────────────────────────────────────────────────
@@ -51,13 +59,17 @@ extends BaseMinigame
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
+## Fade-out before question swap.
 @export var question_fade_out_duration: float = 0.25
+## Fade-in after question swap.
 @export var question_fade_in_duration: float  = 0.30
 
 # ─── Animation - Feedback ───────────────────────────────────────────────────
 @export_group("Animation - Feedback")
-@export var feedback_hold_duration: float = 0.9    ## Pause before next question
-@export var reveal_delay: float           = 0.3    ## Delay before showing correct answer
+## Pause before next question
+@export var feedback_hold_duration: float = 0.9
+## Delay before showing correct answer
+@export var reveal_delay: float           = 0.3
 
 # ─── State ───────────────────────────────────────────────────────────────────
 var score: int = 0

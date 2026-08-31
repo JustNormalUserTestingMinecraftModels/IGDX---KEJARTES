@@ -11,14 +11,18 @@ signal quit_pressed
 @export_group("Visual - Background Overlay")
 ## Drag a PNG here for the full-screen dark background overlay texture.
 @export var overlay_bg_texture: Texture2D = null
+## Overlay fill used when overlay_bg_texture is null.
 @export var overlay_bg_color: Color = Color(0, 0, 0, 0.65)
 
 # ─── Visual - Dialog Box ─────────────────────────────────────────────────────
 @export_group("Visual - Dialog Box")
 ## Drag a PNG here for the pause menu dialog card background.
 @export var dialog_box_texture: Texture2D = null
+## Dialog fill used when dialog_box_texture is null.
 @export var dialog_bg_color: Color = Color(0.12, 0.15, 0.22, 0.95)
+## Dialog rim colour, procedural mode only.
 @export var dialog_border_color: Color = Color(0.4, 0.65, 1.0, 0.75)
+## Content padding (px) inside dialog_box_texture, when set.
 @export var dialog_texture_margin: int = 12
 
 # ─── Visual - Buttons (Single-PNG System) ───────────────────────────────────
@@ -42,14 +46,24 @@ signal quit_pressed
 
 # ─── Visual - Texts & Typography ─────────────────────────────────────────────
 @export_group("Visual - Texts & Typography")
+## Dialog title.
 @export var title_text: String = "GAME DIPAUS"
+## Label shown on BtnResume when button_resume_texture is null.
 @export var resume_text: String = "Lanjutkan"
+## Label shown on BtnSettings when button_settings_texture is null.
 @export var settings_text: String = "Pengaturan"
+## Label shown on BtnQuit when button_quit_texture is null.
 @export var quit_text: String = "Keluar"
+## Optional font override for the title and buttons. Null keeps the
+## theme's default font.
 @export var font: Font = null
+## Font size for title_text.
 @export var title_font_size: int = 54
+## Text colour for title_text.
 @export var title_font_color: Color = Color.WHITE
+## Font size for every button label.
 @export var button_font_size: int = 36
+## Text colour for every button label.
 @export var button_font_color: Color = Color.WHITE
 
 @onready var btn_resume: Button = $PanelContainer/VBoxContainer/BtnResume

@@ -1,6 +1,26 @@
 extends Control
 class_name BaseMinigame
 
+## The base every minigame extends.
+##
+## Owns the shared lifecycle -- start_minigame(difficulty, time_limit),
+## activate_minigame(), win_game()/lose_game() -- plus the chrome every game
+## shows: the countdown, the pause button, the pause menu, the quit
+## confirmation and the end-of-game result card. A subclass supplies only its
+## own play area and scoring.
+##
+## Every visual slot is an @export so a game (or an artist) can override the
+## look per game without subclassing the chrome. The overlays themselves are
+## scenes -- MinigameCountdown, QuitConfirmDialog, MinigameResultPopup -- and
+## the exports are forwarded into them.
+##
+## Affects: GameState only through the calling screen. A minigame reports its
+## result upward; it never writes stats itself. Difficulty scales with
+## GameState.current_grade -- see the grade table in CLAUDE.md.
+##
+## Not covered by the design system: minigames inherit the Theme but had no
+## polish pass, so a theme variation may not exist for a given surface here.
+
 signal minigame_won
 signal minigame_lost
 
@@ -11,7 +31,9 @@ var has_time_limit: bool = false
 
 # ─── Tutorial Settings (Inspector Editable) ─────────────────────────────────
 @export_group("Tutorial")
+## Title shown on the pre-game tutorial popup, if this game shows one.
 @export var tutorial_title: String = ""
+## Body text for the same pre-game tutorial popup.
 @export_multiline var tutorial_instructions: String = ""
 
 # ─── Visual - Result Overlay (Win/Lose Condition Texts) ─────────────────────
@@ -41,8 +63,11 @@ var has_time_limit: bool = false
 @export_group("Visual - Achievement Popup")
 ## Optional PNG for the card background. Leave empty to use procedural dark navy panel.
 @export var popup_card_texture: Texture2D = null
+## Card fill used when popup_card_texture is null.
 @export var popup_card_color: Color = Color(0.06, 0.06, 0.14, 0.97)
+## Card rim colour, procedural mode only.
 @export var popup_border_color: Color = Color(0.85, 0.7, 0.2, 0.9)
+## Backdrop dim colour behind the result card.
 @export var popup_dim_color: Color = Color(0, 0, 0, 0.75)
 
 @export_group("Visual - Achievement Stars")
@@ -50,49 +75,81 @@ var has_time_limit: bool = false
 @export var popup_star_texture: Texture2D = null
 ## Optional PNG for an empty (unearned) star outline. Leave empty for procedural gray star.
 @export var popup_star_empty_texture: Texture2D = null
+## Tint for the procedural filled star, ignored when popup_star_texture is set.
 @export var popup_star_color: Color = Color(1.0, 0.85, 0.2)
+## Tint for the procedural empty star, ignored when popup_star_empty_texture is set.
 @export var popup_star_empty_color: Color = Color(0.28, 0.28, 0.32)
+## Size (px) of each of the three star slots on the result card.
 @export var popup_star_size: Vector2 = Vector2(88, 88)
 
 @export_group("Visual - Achievement Button")
 ## Optional PNG for the continue button. Leave empty for procedural amber button.
 @export var popup_button_texture: Texture2D = null
+## Button fill used when popup_button_texture is null.
 @export var popup_button_color: Color = Color(0.88, 0.58, 0.08)
+## Label on the result card's continue button.
 @export var popup_button_text: String = "Lanjutkan"
 
 @export_group("Visual - Achievement Typography")
+## Font for the result card's win/lose title. Null keeps the theme default.
 @export var popup_title_font: Font = null
+## Font for the result card's body text (score/stat lines).
 @export var popup_body_font: Font = null
+## Font size for the result card's win/lose title.
 @export var popup_title_font_size: int = 68
+## Font size for the result card's score line.
 @export var popup_score_font_size: int = 52
+## Font size for the result card's stat-delta lines.
 @export var popup_stat_font_size: int = 34
+## Title colour on a win.
 @export var popup_title_win_color: Color = Color(1.0, 0.88, 0.22)
+## Title colour on a loss.
 @export var popup_title_lose_color: Color = Color(1.0, 0.65, 0.2)
 
 ## Optional custom background image for the result overlay.
 # ─── Visual - Countdown Overlay ──────────────────────────────────────────────
 @export_group("Visual - Countdown Overlay")
+## Font for the countdown numerals. Null keeps the theme default.
 @export var countdown_font: Font = null
+## Font size for each countdown step.
 @export var countdown_font_size: int = 120
+## Fill colour for the countdown numerals.
 @export var countdown_font_color: Color = Color(1, 1, 1)
+## Outline colour behind the countdown numerals.
 @export var countdown_outline_color: Color = Color.BLACK
+## Outline thickness (px) behind the countdown numerals.
 @export var countdown_outline_size: int = 12
+## The steps played in order before the game (or a resume) unlocks input.
 @export var countdown_steps_text: Array[String] = ["3", "2", "1", "Mulai!"]
 
 # ─── Visual - Quit Dialog Overlay ───────────────────────────────────────────
 @export_group("Visual - Quit Dialog Overlay")
+## Body text on the pause menu's quit confirmation, shown when the
+## player taps Quit -- abandoning here always counts as a loss.
 @export var quit_dialog_message_text: String = "Apakah anda yakin?\nSeluruh progress minigame anda akan dianggap gagal!"
+## Label on the confirm (abandon) button.
 @export var quit_dialog_yes_button_text: String = "Iya"
+## Label on the cancel (keep playing) button.
 @export var quit_dialog_no_button_text: String = "Tidak"
+## Optional PNG for the dialog's backdrop. Null uses quit_dialog_bg_color.
 @export var quit_dialog_bg_texture: Texture2D = null
+## Backdrop fill used when quit_dialog_bg_texture is null.
 @export var quit_dialog_bg_color: Color = Color(0, 0, 0, 0.75)
+## Optional PNG for the dialog card. Null uses quit_dialog_card_color.
 @export var quit_dialog_card_texture: Texture2D = null
+## Card fill used when quit_dialog_card_texture is null.
 @export var quit_dialog_card_color: Color = Color(0.12, 0.14, 0.2, 0.95)
+## Card rim colour, procedural mode only.
 @export var quit_dialog_card_border_color: Color = Color(0.8, 0.3, 0.3, 0.8)
+## Optional PNG for the Yes button. Null keeps the theme's DangerButton styling.
 @export var quit_dialog_yes_button_texture: Texture2D = null
+## Optional PNG for the No button. Null keeps the theme's SecondaryButton styling.
 @export var quit_dialog_no_button_texture: Texture2D = null
+## Font for the dialog's message/buttons. Null keeps the theme default.
 @export var quit_dialog_font: Font = null
+## Font size for the dialog's message text.
 @export var quit_dialog_font_size: int = 46
+## Text colour for the dialog's message.
 @export var quit_dialog_font_color: Color = Color.WHITE
 
 # ─── Visual - UI Controls ───────────────────────────────────────────────────

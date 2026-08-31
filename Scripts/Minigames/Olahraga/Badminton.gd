@@ -4,15 +4,19 @@ extends BaseMinigame
 @export_group("Visual - Shuttlecock")
 ## Drag a PNG here to replace the default shuttlecock/puck.
 @export var shuttlecock_texture: Texture2D = null
+## Currently unreferenced by this script -- the Puck sprite's colour
+## comes from its scene-assigned texture, not this export.
 @export var shuttlecock_color: Color = Color(1, 0.8, 0, 1)
 
 # ─── Visual - Rackets ────────────────────────────────────────────────────────
 @export_group("Visual - Rackets")
 ## Drag a PNG here for the Player racket.
 @export var player_racket_texture: Texture2D = null
+## Currently unreferenced by this script -- see shuttlecock_color above.
 @export var player_racket_color: Color = Color(0, 0.5, 1, 1)
 ## Drag a PNG here for the Enemy racket.
 @export var enemy_racket_texture: Texture2D = null
+## Currently unreferenced by this script -- see shuttlecock_color above.
 @export var enemy_racket_color: Color = Color(1, 0, 0.5, 1)
 ## Drag a PNG here for the brief "hit" pose shown when a racket connects
 ## with the shuttlecock. Shared by both rackets; leave null to keep the
@@ -21,20 +25,33 @@ extends BaseMinigame
 
 # ─── Visual - Trail & VFX ────────────────────────────────────────────────────
 @export_group("Visual - Trail & VFX")
+## Texture for the Line2D trail following the shuttlecock. Null draws a
+## plain gradient-only line.
 @export var trail_texture: Texture2D = null
+## Texture for the puck's motion smoke particles. Null falls back to a
+## procedurally-generated soft dot.
 @export var particle_texture: Texture2D = null
+## Master switch for the shuttlecock's motion trail.
 @export var show_trail: bool = true
+## Currently unreferenced by this script -- the trail's colour comes
+## from a hardcoded Gradient in _setup_trail_and_particles(), not this
+## export.
 @export var trail_color: Color = Color(1.0, 0.9, 0.3, 0.6)
+## Currently unreferenced by this script -- the trail's width comes from
+## screen_size in _setup_trail_and_particles(), not this export.
 @export var trail_width: float = 8.0
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use default theme font.
 @export var font: Font = null
+## Font size for the score label.
 @export var score_font_size: int = 48
+## Text colour for the score label.
 @export var score_color: Color = Color.WHITE
 
 @export_group("Configuration")
+## Speed cap (px/s) on the player paddle's drag-follow movement.
 @export var max_paddle_speed: float = 2400.0
 
 var player_score: int = 0

@@ -38,6 +38,29 @@
 > `move_node`, `delete_node`) works well for this — one call per node instead
 > of a round-trip per property.
 
+> **STATUS — 2026-09-01, sticky-note polish (separate plan).** The five day
+> sticky notes were reworked into a reusable
+> `Scenes/AturJadwal/DayStickyNote.tscn` template (`DayStickyNote.gd`). Plan:
+> `docs/superpowers/plans/2026-09-01-atur-jadwal-sticky-note-polish.md`.
+>
+> - Each scheduled note now shows three lines — day / pembelajaran name
+>   (`Akademik` / `Seni Budaya` / `Atletik` / `Wirausaha` / `Libur`) / a
+>   one-word flavour label (`Fokus` / `Berkarya` / `Semangat` / `Cuan` /
+>   `Santai`) — plus a category icon peeking from the top-right corner and a
+>   soft drop shadow (`Scripts/Shaders/soft_shadow.gdshader`).
+> - Assigning a day plays a squash-pop with the icon sliding in; the idle
+>   sway is unchanged.
+> - National-holiday days (e.g. Week 3 Rabu) render locked gold with the real
+>   holiday title, a `Libur Nasional` flavour line, and a padlock glyph.
+> - **Deferred art:** `icon_wirausaha_placeholder.png`,
+>   `icon_istirahat_placeholder.png` and `icon_libur_nasional_placeholder.png`
+>   in `Assets/Images/AturJadwal/` are flat geometric placeholders drawn by
+>   `Scripts/Design/GenerateStickyNoteIcons.gd` (File > Run). The visual team
+>   overrides them in place — keep the file names. The three skill categories
+>   already use the real `stat_*.png`.
+> - No `ThemeFactory` variation was added, so no theme rebake was needed —
+>   the note reuses `H2Label` / `CaptionLabel` / `MicroLabel`.
+
 **Goal:** Rebuild the top third of Atur Jadwal to `mockup_atur_jadwal.png` — blurred classroom backdrop, wooden shelf, splash art on the left, five icon-and-pill stat rows on the right — while leaving the whiteboard and sticky notes exactly as they are.
 
 **Architecture:** The five stat bars currently live in `BGStat`, a **child of the splash-art `TextureButton`**, so tapping a progress pill navigates to StudentList. Task 1 reparents `BGStat` to the root, which is what "separate the splash art from the progress pill" means (spec §1.3) — the splash→StudentList wiring itself already works and is untouched. Tasks 2-4 then lay the mockup's chrome in: a `Backdrop` TextureRect over the whiteboard's top band, a `Shelf` Panel wearing a new `ShelfEdge` theme variation, the splash resized so every student's figure lands in the mockup's window without clipping, and the five rows repositioned with their icons.

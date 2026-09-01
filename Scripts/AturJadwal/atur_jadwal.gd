@@ -49,11 +49,11 @@ const HOLIDAYS = {
 
 var _holiday_active: bool = false
 
-@onready var ak1_bar = $TextureButton/BGStat/Akademis1
-@onready var ak2_bar = $TextureButton/BGStat/Akademis2
-@onready var ak3_bar = $TextureButton/BGStat/Akademis3
-@onready var kp1_bar = $TextureButton/BGStat/Kepribadian1
-@onready var kp2_bar = $TextureButton/BGStat/Kepribadian2
+@onready var ak1_bar = $BGStat/Akademis1
+@onready var ak2_bar = $BGStat/Akademis2
+@onready var ak3_bar = $BGStat/Akademis3
+@onready var kp1_bar = $BGStat/Kepribadian1
+@onready var kp2_bar = $BGStat/Kepribadian2
 
 @onready var senin_btn = $BGHari/Senin
 @onready var selasa_btn = $BGHari/Selasa
@@ -219,8 +219,8 @@ func _populate_default_tutorial_steps():
 
 	if tutorial_phase2_steps.is_empty():
 		var p2_data = [
-			["Evaluasi Murid", "Murid ini membutuhkan bantuan agar mereka terfokuskan untuk meningkatkan apa yang ketertinggalan.", "TextureButton/BGStat/Akademis1,TextureButton/BGStat/Akademis2,TextureButton/BGStat/Akademis3", ""],
-			["Perhatian Akademis", "Wah, sepertinya \"Nama Murid\" mempunyai nilai akademis yang bagus!", "TextureButton/BGStat/Akademis1", ""],
+			["Evaluasi Murid", "Murid ini membutuhkan bantuan agar mereka terfokuskan untuk meningkatkan apa yang ketertinggalan.", "BGStat/Akademis1,BGStat/Akademis2,BGStat/Akademis3", ""],
+			["Perhatian Akademis", "Wah, sepertinya \"Nama Murid\" mempunyai nilai akademis yang bagus!", "BGStat/Akademis1", ""],
 			["Hari Kosong", "Hari berwarnakan Ungu Muda mempunyai arti hari tersebut kosong bagi murid tersebut!", "BGHari/Senin,BGHari/Selasa,BGHari/Rabu,BGHari/Kamis,BGHari/Jumat", ""],
 			["Jadwal Hari Senin", "Mari kita jadwalkan hari senin untuk diisikan mata pelajaran yang mereka sedang butuhkan!", "BGHari/Senin", "Tekan tombol 'Senin' untuk lanjut!"]
 		]
@@ -236,7 +236,7 @@ func _populate_default_tutorial_steps():
 		var alt = TutorialStepData.new()
 		alt.title = "Perhatian Akademis"
 		alt.text = "Wah, sepertinya \"Nama Murid\" perlu nilai akademisnya untuk dinaikan lebih lagi."
-		alt.target_node_path = "TextureButton/BGStat/Akademis1"
+		alt.target_node_path = "BGStat/Akademis1"
 		alt.prompt_text = ""
 		tutorial_phase2_alt_step = alt
 
@@ -244,7 +244,7 @@ func _populate_default_tutorial_steps():
 		var p3_data = [
 			["Penjadwalan Berhasil", "Kerja bagus!\n\nSekarang, kita perhatikan 2 unsur yang akan berubah jikalau anda meng-input sebuah hari dengan mata pelajaran.", "", ""],
 			["Warna Hari", "Pertama, hari akan berganti warna sesuai dengan warna mata pelajaran.\nBiru: Akademis, Hijau: Seni Budaya, dan Merah: Olahraga", "BGHari/Senin", ""],
-			["Perubahan Stats & Energy", "Kedua, stats akan mempunyai nilai plus berdasarkan berapa pelajaran per hari yang mereka ambil!\n\nTapi Mood dan energi mereka akan berkurang!", "TextureButton/BGStat/Akademis1/ValueLabel,TextureButton/BGStat/Akademis2/ValueLabel,TextureButton/BGStat/Akademis3/ValueLabel,TextureButton/BGStat/Kepribadian1/ValueLabel,TextureButton/BGStat/Kepribadian2/ValueLabel", ""],
+			["Perubahan Stats & Energy", "Kedua, stats akan mempunyai nilai plus berdasarkan berapa pelajaran per hari yang mereka ambil!\n\nTapi Mood dan energi mereka akan berkurang!", "BGStat/Akademis1/ValueLabel,BGStat/Akademis2/ValueLabel,BGStat/Akademis3/ValueLabel,BGStat/Kepribadian1/ValueLabel,BGStat/Kepribadian2/ValueLabel", ""],
 			["Siap Mengajar!", "Wow, dirimu sangat cepat untuk beradaptasi di lingkungan sekolah ini.\nKamu punya potensi besar untuk sukses mendidik lebih jauh disini!", "", ""]
 		]
 		for entry in p3_data:
@@ -585,7 +585,7 @@ func _update_student_display():
 			GameState.selected_student = {
 					"id": 1,
 					"name": "Marcel",
-					"splash": "res://Assets/Images/SplashArtMurid/SplashMurid1.jpg",
+					"splash": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
 					"portrait": "res://Assets/Images/MuridPotrait/Marcel.png",
 					"kepribadian1": 60.0,
 					"kepribadian2": 55.0,

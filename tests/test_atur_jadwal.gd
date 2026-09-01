@@ -192,17 +192,153 @@ func test_popup_still_has_a_back_button() -> void:
 
 func test_bg_stat_bars_are_statbars() -> void:
 	var expected := {
-		"TextureButton/BGStat/Akademis1": "Akademis",
-		"TextureButton/BGStat/Akademis2": "SeniBudaya",
-		"TextureButton/BGStat/Akademis3": "Olahraga",
-		"TextureButton/BGStat/Kepribadian1": "Istirahat",
-		"TextureButton/BGStat/Kepribadian2": "Libur",
+		"BGStat/Akademis1": "Akademis",
+		"BGStat/Akademis2": "SeniBudaya",
+		"BGStat/Akademis3": "Olahraga",
+		"BGStat/Kepribadian1": "Istirahat",
+		"BGStat/Kepribadian2": "Libur",
 	}
 	for p in expected.keys():
 		var bar := _screen.get_node_or_null(p)
 		assert_true(bar is StatBar, "%s must be a StatBar" % p)
 		if bar is StatBar:
 			assert_eq(bar.category, expected[p], "%s category" % p)
+
+
+## The five stat bars used to live inside the splash-art TextureButton, so
+## tapping a progress pill fell through to the button and navigated away to
+## StudentList. They must be siblings, not descendants.
+func test_stat_pills_are_not_inside_the_splash_button() -> void:
+	var splash := _screen.get_node_or_null("TextureButton")
+	assert_true(splash != null, "the splash TextureButton is gone")
+	assert_true(splash.get_node_or_null("BGStat") == null,
+		"BGStat is still a child of the splash button")
+	assert_true(_screen.get_node_or_null("BGStat") != null,
+		"BGStat is not at the root")
+
+
+## The mockup's top band: blurred classroom from y=0 to the shelf at 766,
+## then the wooden divider to 843, then the untouched whiteboard. The
+## backdrop must sit above BGHari (or the whiteboard covers it) and below
+## the splash and pills (or it covers them).
+func test_top_band_matches_the_mockup() -> void:
+	var backdrop := _screen.get_node_or_null("Backdrop") as TextureRect
+	assert_true(backdrop != null, "Backdrop TextureRect is missing")
+	assert_true(backdrop.texture != null, "Backdrop has no texture")
+	assert_eq(backdrop.texture.resource_path,
+		"res://Assets/Images/UI/blur_background.png",
+		"Backdrop is not drawing blur_background.png")
+	assert_eq(backdrop.offset_bottom, 766.0,
+		"the backdrop band ends at the shelf line")
+
+	# The shelf's two measured bands: #B37D4D face 766-817, #77573A edge
+	# 817-843. Drawn as ColorRects rather than a themed Panel -- see the
+	# plan's status note; converting them to a ShelfEdge variation needs an
+	# editor restart to pick up the new DesignTokens properties.
+	var face := _screen.get_node_or_null("ShelfFace") as ColorRect
+	assert_true(face != null, "ShelfFace is missing")
+	assert_eq(face.offset_top, 766.0, "shelf face starts at the backdrop's end")
+	assert_eq(face.offset_bottom, 817.0, "shelf face is 51px tall")
+
+	var edge := _screen.get_node_or_null("ShelfEdge") as ColorRect
+	assert_true(edge != null, "ShelfEdge is missing")
+	assert_eq(edge.offset_top, 817.0, "shelf edge follows the face")
+	assert_eq(edge.offset_bottom, 843.0, "shelf edge is 26px tall")
+
+	var whiteboard := _screen.get_node_or_null("BGHari")
+	assert_true(whiteboard != null, "BGHari is gone")
+	assert_true(whiteboard.get_index() < backdrop.get_index(),
+		"the backdrop must draw over the whiteboard")
+
+	var splash := _screen.get_node_or_null("TextureButton")
+	assert_true(backdrop.get_index() < splash.get_index(),
+		"the splash must draw over the backdrop")
+	assert_true(splash.get_index() < face.get_index(),
+		"the shelf must draw over the splash's feet")
+
+
+## Sized to the source art's own aspect (431/766 = 0.5626 against
+## 1080/1920 = 0.5625) so a uniform scale fits with no distortion and no
+## clipping container -- the shelf covers the feet instead.
+func test_splash_is_sized_to_the_mockup_window() -> void:
+	var splash := _screen.get_node_or_null("TextureButton") as Control
+	assert_true(splash != null, "the splash TextureButton is gone")
+	assert_eq(splash.offset_left, 0.0, "splash left")
+	assert_eq(splash.offset_top, 0.0, "splash top")
+	assert_eq(splash.offset_right, 431.0, "splash right")
+	assert_eq(splash.offset_bottom, 766.0, "splash bottom")
+
+
+## The whiteboard and its five sticky notes are explicitly out of scope for
+## the restyle -- they must survive it untouched.
+func test_the_whiteboard_and_sticky_notes_are_unchanged() -> void:
+	var board := _screen.get_node_or_null("BGHari") as TextureRect
+	assert_true(board != null, "BGHari is gone")
+	assert_eq(board.texture.resource_path,
+		"res://Assets/Images/UI/whiteboard.png",
+		"the whiteboard texture changed")
+	for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
+		var note := _screen.get_node_or_null("BGHari/%s" % day) as Control
+		assert_true(note != null,
+			"sticky note %s is gone or was reparented" % day)
+
+
+## Uniform 126px pitch from y=129. The mockup's own pitch drifts (129,
+## 126, 127, 117) because the art was hand-placed; a uniform pitch is
+## within 5px of it everywhere and is what a container can express.
+func test_stat_rows_sit_on_the_mockup_grid() -> void:
+	var expected := {
+		"Akademis1": 129.0,
+		"Akademis2": 255.0,
+		"Akademis3": 381.0,
+		"Kepribadian2": 507.0,
+		"Kepribadian1": 633.0,
+	}
+	for bar_name in expected:
+		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as Control
+		assert_true(bar != null, "BGStat/%s is missing" % bar_name)
+		assert_eq(bar.offset_top, expected[bar_name], "%s row top" % bar_name)
+		assert_eq(bar.offset_bottom, expected[bar_name] + 70.0,
+			"%s row height must be the mockup's 70px" % bar_name)
+		assert_eq(bar.offset_left, 649.0, "%s pill left" % bar_name)
+		assert_eq(bar.offset_right, 973.0, "%s pill right" % bar_name)
+
+
+## kepribadian1 is MOOD and kepribadian2 is ENERGY, but the mockup's
+## fourth row is the lightning glyph and its fifth is the smiley. The
+## visual order is therefore swapped from the node numbering -- getting it
+## backwards puts the lightning bolt on the mood bar.
+func test_each_row_carries_its_mockup_icon() -> void:
+	var expected := {
+		"IconAkademis1": "res://Assets/Images/StudentCard/stat_akademis.png",
+		"IconAkademis2": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+		"IconAkademis3": "res://Assets/Images/StudentCard/stat_olahraga.png",
+		"IconKepribadian2": "res://Assets/Images/StudentCard/stat_energy.png",
+		"IconKepribadian1": "res://Assets/Images/StudentCard/stat_mood.png",
+	}
+	for icon_name in expected:
+		var icon := _screen.get_node_or_null(
+			"BGStat/%s" % icon_name) as TextureRect
+		assert_true(icon != null, "BGStat/%s is missing" % icon_name)
+		assert_true(icon.texture != null, "%s has no texture" % icon_name)
+		assert_eq(icon.texture.resource_path, expected[icon_name],
+			"%s is drawing the wrong glyph" % icon_name)
+
+	var pairs := {
+		"IconAkademis1": "Akademis1",
+		"IconAkademis2": "Akademis2",
+		"IconAkademis3": "Akademis3",
+		"IconKepribadian2": "Kepribadian2",
+		"IconKepribadian1": "Kepribadian1",
+	}
+	for icon_name in pairs:
+		var icon := _screen.get_node_or_null("BGStat/%s" % icon_name) as Control
+		var bar := _screen.get_node_or_null(
+			"BGStat/%s" % pairs[icon_name]) as Control
+		var icon_mid := (icon.offset_top + icon.offset_bottom) / 2.0
+		var bar_mid := (bar.offset_top + bar.offset_bottom) / 2.0
+		assert_true(absf(icon_mid - bar_mid) <= 1.0,
+			"%s is not centred on %s" % [icon_name, pairs[icon_name]])
 
 
 func test_peringatan_pops_in_over_a_scrim_with_shake_and_fail_sfx() -> void:

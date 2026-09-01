@@ -35,6 +35,26 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_atur")
 
+[node name="Backdrop" type="TextureRect" parent="." unique_id=104432566]
+layout_mode = 0
+offset_right = 1080.0
+offset_bottom = 766.0
+mouse_filter = 2
+texture = ExtResource("4_f4ced")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TextureButton" type="TextureButton" parent="." unique_id=1727823902]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -76.0
+offset_top = 45.0
+offset_right = 624.0
+offset_bottom = 1289.0835
+texture_normal = ExtResource("5_f4ced")
+ignore_texture_size = true
+stretch_mode = 0
+
 [node name="BGHari" type="TextureRect" parent="." unique_id=2055391558]
 layout_mode = 1
 anchors_preset = -1
@@ -154,26 +174,6 @@ offset_bottom = 164.0
 rotation = -0.06346294
 theme_type_variation = &"H2Label"
 text = "JUMAT"
-
-[node name="Backdrop" type="TextureRect" parent="." unique_id=104432566]
-layout_mode = 0
-offset_right = 1080.0
-offset_bottom = 766.0
-mouse_filter = 2
-texture = ExtResource("4_f4ced")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="TextureButton" type="TextureButton" parent="." unique_id=1727823902]
-layout_mode = 1
-anchors_preset = -1
-offset_left = -76.0
-offset_top = 45.0
-offset_right = 624.0
-offset_bottom = 1289.0835
-texture_normal = ExtResource("5_f4ced")
-ignore_texture_size = true
-stretch_mode = 0
 
 [node name="ShelfFace" type="ColorRect" parent="." unique_id=540110925]
 layout_mode = 0

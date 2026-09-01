@@ -218,9 +218,16 @@ func test_stat_pills_are_not_inside_the_splash_button() -> void:
 
 
 ## The mockup's top band: blurred classroom from y=0 to the shelf at 766,
-## then the wooden divider to 843, then the untouched whiteboard. The
-## backdrop must sit above BGHari (or the whiteboard covers it) and below
-## the splash and pills (or it covers them).
+## then the wooden divider to 843, then the untouched whiteboard.
+##
+## 2026-09-01, hand-tuned: the splash art's box grew tall enough to spill
+## over the sticky-note row beneath the shelf. Rather than re-clip the
+## TextureButton, the z-order puts BGHari (whiteboard) IN FRONT of the
+## splash -- whiteboard.png is transparent above y~766 (letting the splash
+## show through there) and opaque below it, so the whiteboard's own alpha
+## channel masks off whatever the splash draws past the shelf line. Order
+## is therefore Backdrop -> splash -> whiteboard -> shelf, not the
+## whiteboard-first order the original mockup-match pass used.
 func test_top_band_matches_the_mockup() -> void:
 	var backdrop := _screen.get_node_or_null("Backdrop") as TextureRect
 	assert_true(backdrop != null, "Backdrop TextureRect is missing")
@@ -247,14 +254,17 @@ func test_top_band_matches_the_mockup() -> void:
 
 	var whiteboard := _screen.get_node_or_null("BGHari")
 	assert_true(whiteboard != null, "BGHari is gone")
-	assert_true(whiteboard.get_index() < backdrop.get_index(),
-		"the backdrop must draw over the whiteboard")
-
 	var splash := _screen.get_node_or_null("TextureButton")
+	assert_true(splash != null, "TextureButton (the splash) is gone")
+
 	assert_true(backdrop.get_index() < splash.get_index(),
 		"the splash must draw over the backdrop")
-	assert_true(splash.get_index() < face.get_index(),
-		"the shelf must draw over the splash's feet")
+	assert_true(splash.get_index() < whiteboard.get_index(),
+		"the whiteboard must draw over the splash, so its own opaque " +
+		"region masks the figure below the shelf line instead of letting " +
+		"it spill over the sticky notes")
+	assert_true(whiteboard.get_index() < face.get_index(),
+		"the shelf must draw over the whiteboard")
 
 
 ## Hand-tuned in the editor on 2026-09-01 (overrides the plan's original

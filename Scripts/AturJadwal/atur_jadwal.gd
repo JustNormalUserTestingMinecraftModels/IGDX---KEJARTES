@@ -474,13 +474,11 @@ func _get_current_schedules() -> Dictionary:
 		return {}
 	return GameState.day_schedules.get(student_id, {})
 
-## Tints each BGHari day button by its assigned category via
-## DesignTokens.category_color() (unscheduled days get surface_sunken, a
-## locked holiday gets state_danger).
+## Drives each BGHari day button through the DayStickyNote template API
+## (set_day_name, show_empty, show_scheduled, show_holiday), which handles
+## tinting and content display internally.
 func _update_day_button_colors():
 	var schedules = _get_current_schedules()
-	var tokens := _get_tokens()
-	var default_color = tokens.surface_sunken  # unscheduled
 
 	var week = GameState.minggu_ke
 	var week_holidays = HOLIDAYS.get(week, {})
@@ -495,24 +493,18 @@ func _update_day_button_colors():
 
 	for day_name in day_buttons.keys():
 		var btn = day_buttons[day_name]
-		if not btn:
+		var note := btn as DayStickyNote
+		if note == null:
 			continue
 
-		var label = btn.get_child(0) as Label
+		note.set_day_name(day_name)
 
 		if week_holidays.has(day_name):
-			btn.self_modulate = tokens.state_danger
-			if label:
-				label.text = day_name.to_upper() + "\n(LIBUR)"
+			note.show_holiday(week_holidays[day_name].get("title", "Libur Nasional"))
 		elif schedules.has(day_name):
-			var category = schedules[day_name]["category"]
-			btn.self_modulate = tokens.category_color(category)
-			if label:
-				label.text = day_name.to_upper()
+			note.show_scheduled(schedules[day_name]["category"])
 		else:
-			btn.self_modulate = default_color
-			if label:
-				label.text = day_name.to_upper()
+			note.show_empty()
 
 func _start_day_button_sway():
 	var buttons = [senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn]

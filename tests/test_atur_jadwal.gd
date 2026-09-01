@@ -476,6 +476,18 @@ func test_card_is_rendered_at_the_mockup_scale() -> void:
 
 # ----------------------------------------------------------------- helper
 
+## _update_day_button_colors() must route each day to the DayStickyNote
+## template, never poke a child Label directly (the old bare-button code did
+## `btn.get_child(0) as Label`).
+func test_update_day_colors_uses_the_template_api() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_false(src.contains("get_child(0) as Label"),
+		"the old per-button Label poke must be gone")
+	assert_true(src.contains("show_scheduled("), "must call DayStickyNote.show_scheduled()")
+	assert_true(src.contains("show_holiday("), "must call DayStickyNote.show_holiday()")
+	assert_true(src.contains("show_empty("), "must call DayStickyNote.show_empty()")
+
+
 ## Copied verbatim from tests/test_main_menu.gd.
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:

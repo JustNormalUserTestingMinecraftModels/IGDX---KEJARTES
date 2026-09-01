@@ -391,6 +391,31 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 
 # --------------------------------------------------------------- progress
 
+## Shared fill art for every progress bar in the game (StatBar and the
+## DaySummary tracks below) -- one rounded-rect piece, stretched via a
+## 9-patch margin so it fits any bar width/height without distorting its
+## corners. modulate_color is what lets the same texture serve every
+## category: white leaves it untouched for StatBar (whose callers tint
+## the whole node via self_modulate instead, see StatBar.gd), while
+## DaySummary's tracks bake their category colour directly into the
+## stylebox since those bars don't use self_modulate.
+const _PROGRESS_FILL_ART := "res://Assets/Images/UI/progress_bar_fill.png"
+
+## Measured off the 256x256 source: the opaque rounded-rect content sits
+## inside this region, with transparent padding around it that must not
+## be stretched into the bar. Margin keeps both rounded ends intact
+## (2*24 = 48 < 124, the region's height).
+const _PROGRESS_FILL_REGION := Rect2(60, 66, 148, 124)
+const _PROGRESS_FILL_MARGIN := 24
+
+static func _progress_fill_stylebox(modulate: Color = Color.WHITE) -> StyleBoxTexture:
+	var fill := StyleBoxTexture.new()
+	fill.texture = load(_PROGRESS_FILL_ART)
+	fill.region_rect = _PROGRESS_FILL_REGION
+	fill.set_texture_margin_all(_PROGRESS_FILL_MARGIN)
+	fill.modulate_color = modulate
+	return fill
+
 static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("StatBar")
 	theme.set_type_variation("StatBar", "ProgressBar")
@@ -401,10 +426,7 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_stylebox("background", "StatBar", bg)
 
 	# White fill so callers can tint per category via self_modulate.
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = Color.WHITE
-	fill.set_corner_radius_all(tokens.radius_pill)
-	theme.set_stylebox("fill", "StatBar", fill)
+	theme.set_stylebox("fill", "StatBar", _progress_fill_stylebox())
 
 	theme.set_font_size("font_size", "StatBar", tokens.font_caption)
 	theme.set_color("font_color", "StatBar", tokens.text_primary)
@@ -649,9 +671,4 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 		track.set_corner_radius_all(spec[3])
 		theme.set_stylebox("background", name, track)
 
-		var fill := StyleBoxFlat.new()
-		fill.bg_color = spec[2]
-		fill.border_color = tokens.day_glyph_outline
-		fill.set_border_width_all(3)
-		fill.set_corner_radius_all(tokens.radius_pill)
-		theme.set_stylebox("fill", name, fill)
+		theme.set_stylebox("fill", name, _progress_fill_stylebox(spec[2]))

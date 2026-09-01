@@ -190,8 +190,15 @@ func _ready():
 
 	# Populate UI with data from script (overrides placeholder data in .tscn)
 	_populate_ui_from_data()
-	
+
 	_sync_student_data_from_ui()
+
+	# Every kertas_murid card defaults to visible in the .tscn; without this
+	# they all render stacked on top of each other for one frame before
+	# _end_tutorial()/_show_page() first runs, which is what made a card
+	# (Shinta's) appear to glitch in "behind" the others on first entry.
+	_show_page(current_page)
+
 	if GameState.tutorials_bypassed:
 		tutorial_active = false
 		color_rect.hide()
@@ -653,6 +660,12 @@ func _transition_page(old_index: int, new_index: int, direction: int):
 	new_kertas.rotation_degrees = -15 * direction
 	new_kertas.modulate.a = 0.0
 
+	# Pre-hide the new page's rows before the card itself fades in, so they
+	# don't ride the card's own modulate up to fully visible only to be
+	# yanked back to invisible a moment later when _stagger_in_card's
+	# pop_in() takes over -- that jump was the "not fully invisible" glitch.
+	_hide_card_rows(new_index)
+
 	_show_stamp_if_approved(new_index)
 	_update_nav_buttons(new_index)
 
@@ -732,6 +745,19 @@ const CARD_ROW_ORDER := ["BioPanel", "IconAkademis1", "Akademis1",
 	"IconAkademis2", "Akademis2", "IconAkademis3", "Akademis3",
 	"IconKepribadian1", "Kepribadian1", "IconKepribadian2", "Kepribadian2",
 	"KutuBuku", "KutuBuku2"]
+
+
+## Sets every row of the given page to the same invisible state pop_in()
+## starts from, ahead of time -- see the call sites for why.
+func _hide_card_rows(index: int) -> void:
+	if index < 0 or index >= kertas_murid.size():
+		return
+	var kertas: Node = kertas_murid[index]
+	for row_name in CARD_ROW_ORDER:
+		var node = kertas.get_node_or_null(row_name)
+		if node is Control:
+			node.modulate.a = 0.0
+			node.scale = Vector2(0.82, 0.82)
 
 
 ## Reveal the newly-shown page's contents row by row instead of having

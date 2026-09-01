@@ -1,17 +1,15 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://bs3nadqta0083"]
 
-[ext_resource type="Script" path="res://Scripts/AturJadwal/ActivityRow.gd" id="1_row"]
-[ext_resource type="Script" path="res://Scripts/UI/StatBar.gd" id="2_statbar"]
+[ext_resource type="Script" uid="uid://bgxl86yyt3qwx" path="res://Scripts/AturJadwal/ActivityRow.gd" id="1_row"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="2_statbar"]
 
-[node name="ActivityRow" type="Button"]
+[node name="ActivityRow" type="Button" unique_id=606062372]
 custom_minimum_size = Vector2(200, 180)
 size_flags_horizontal = 3
 flat = true
 script = ExtResource("1_row")
-category = "Akademis"
-display_name = "Akademik"
 
-[node name="Container" type="Panel" parent="."]
+[node name="Container" type="Panel" parent="." unique_id=301160204]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -20,9 +18,8 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_type_variation = &"PreviewRow"
 
-[node name="Icon" type="TextureRect" parent="Container"]
+[node name="Icon" type="TextureRect" parent="Container" unique_id=36198174]
 layout_mode = 1
-anchors_preset = 0
 offset_left = 48.0
 offset_top = 13.0
 offset_right = 166.0
@@ -31,7 +28,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Pill" type="PanelContainer" parent="Container"]
+[node name="Pill" type="PanelContainer" parent="Container" unique_id=826356744]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,21 +42,22 @@ grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"PreviewPill"
 
-[node name="StatBar" type="ProgressBar" parent="Container/Pill"]
+[node name="StatBar" type="ProgressBar" parent="Container/Pill" unique_id=1655153705]
+self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 2
 size_flags_vertical = 1
 mouse_filter = 2
+theme_type_variation = &"StatBar"
 show_percentage = false
 script = ExtResource("2_statbar")
-category = "Akademis"
 
-[node name="Chips" type="HBoxContainer" parent="Container/Pill"]
+[node name="Chips" type="HBoxContainer" parent="Container/Pill" unique_id=1906586906]
 layout_mode = 2
 mouse_filter = 2
-alignment = 2
 theme_override_constants/separation = 16
+alignment = 2
 
-[node name="NameLabel" type="Label" parent="."]
+[node name="NameLabel" type="Label" parent="." unique_id=128566525]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -70,7 +68,6 @@ offset_left = -480.0
 offset_top = -44.0
 grow_horizontal = 0
 grow_vertical = 0
-mouse_filter = 2
 theme_type_variation = &"PreviewRowLabel"
 text = "Akademik"
 horizontal_alignment = 2

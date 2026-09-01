@@ -146,6 +146,19 @@ func test_cg_changes_crossfade_instead_of_hard_cutting() -> void:
 		"CG swaps must tween BgCutScene.modulate:a rather than hard-cutting the texture")
 
 
+## Pulls one top-level function's body out of the script source, from its
+## "func name" line up to (but not including) the next top-level "\nfunc ".
+## Shared by the two tests below so each can scope its Lobby/StudentCard
+## check to the one function it is actually about.
+func _function_body(src: String, func_name: String) -> String:
+	var start := src.find("func " + func_name)
+	assert_true(start >= 0, func_name + "() must exist")
+	var end := src.find("\nfunc ", start + 1)
+	if end < 0:
+		end = src.length()
+	return src.substr(start, end - start)
+
+
 ## The bug this pins: go_to_gameplay() used to route a genuinely fresh
 ## game (is_game_over_cutscene == false, the very first intro-CG skip or
 ## finish) straight to Lobby, never to StudentCard -- so
@@ -156,15 +169,45 @@ func test_cg_changes_crossfade_instead_of_hard_cutting() -> void:
 ## approved_students ("so they select again", per its own comment) but
 ## then routed to Lobby anyway. Both must now go through StudentCard --
 ## the only screen that actually populates approved_students.
+##
+## Scoped to go_to_gameplay()'s own body (not the whole file), because
+## _on_skip_pressed() now legitimately routes to Lobby -- see the test
+## below.
 func test_go_to_gameplay_always_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("res://Scenes/StudentCard/student_card.tscn"),
+	var body := _function_body(src, "go_to_gameplay")
+	assert_true(body.contains("res://Scenes/StudentCard/student_card.tscn"),
 		"must route to StudentCard")
-	assert_false(src.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
 		"go_to_gameplay must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")
-	assert_true(src.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
+	assert_true(body.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
 		"must still hand off through the Loading scene")
+
+
+## Skip is a deliberate exception to the rule above: pressing "Skip Intro"
+## bails straight to Lobby, even before a roster has been approved. Only
+## safe because _setup_game_over_cutscene() hides this button outright, so
+## it is never reachable while GameState.is_game_over_cutscene is true --
+## covered by test_skip_button_is_hidden_during_the_game_over_cutscene.
+func test_skip_button_routes_straight_to_lobby() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_body(src, "_on_skip_pressed")
+	assert_true(body.contains("res://Scenes/Lobby/loby.tscn"),
+		"Skip Intro must route straight to Lobby")
+	assert_false(body.contains("res://Scenes/StudentCard/student_card.tscn"),
+		"Skip Intro must not detour through StudentCard")
+	assert_true(body.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
+		"must still hand off through the Loading scene")
+
+
+func test_skip_button_is_hidden_during_the_game_over_cutscene() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_body(src, "_setup_game_over_cutscene")
+	assert_true(body.contains("btn_skip.visible = false"),
+		"the game-over/retry cutscene must hide Skip Intro -- it has no " +
+		"safe destination there, since Lobby needs an approved roster on " +
+		"a fresh game-7 retry and StudentCard is the point of that screen anyway")
 
 
 func test_show_current_starts_with_a_hold_before_revealing() -> void:

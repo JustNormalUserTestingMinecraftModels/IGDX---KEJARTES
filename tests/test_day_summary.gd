@@ -161,10 +161,13 @@ func test_energy_and_mood_bars_differ_only_in_fill() -> void:
 	var m_bg := theme.get_stylebox("background", "DaySummaryMoodBar") as StyleBoxFlat
 	assert_eq(e_bg.bg_color, m_bg.bg_color, "bar tracks diverged")
 	assert_eq(e_bg.bg_color, tokens.day_bar_track, "bar track drifted")
-	var e_fill := theme.get_stylebox("fill", "DaySummaryEnergyBar") as StyleBoxFlat
-	var m_fill := theme.get_stylebox("fill", "DaySummaryMoodBar") as StyleBoxFlat
-	assert_eq(e_fill.bg_color, tokens.day_energy_fill, "energy fill drifted")
-	assert_eq(m_fill.bg_color, tokens.day_mood_fill, "mood fill drifted")
+	# The fill is the shared progress-bar art (see ThemeFactory's
+	# _progress_fill_stylebox), tinted per bar via modulate_color rather
+	# than drawn as a flat colour.
+	var e_fill := theme.get_stylebox("fill", "DaySummaryEnergyBar") as StyleBoxTexture
+	var m_fill := theme.get_stylebox("fill", "DaySummaryMoodBar") as StyleBoxTexture
+	assert_eq(e_fill.modulate_color, tokens.day_energy_fill, "energy fill drifted")
+	assert_eq(m_fill.modulate_color, tokens.day_mood_fill, "mood fill drifted")
 
 
 ## Which token each stat track fills with. The icons already tell the
@@ -184,9 +187,10 @@ func test_each_stat_track_fills_in_its_category_colour() -> void:
 		assert_not_null(bg, "%s has no background stylebox -- did you rebake?" % name)
 		assert_eq(bg.bg_color, tokens.day_stat_track,
 			"%s rail drifted off the mockup's stat-track colour" % name)
-		var fill := theme.get_stylebox("fill", name) as StyleBoxFlat
+		# The fill is the shared progress-bar art, tinted via modulate_color.
+		var fill := theme.get_stylebox("fill", name) as StyleBoxTexture
 		assert_not_null(fill, "%s has no fill stylebox -- did you rebake?" % name)
-		assert_eq(fill.bg_color, tokens.get(_STAT_TRACK_FILL_TOKEN[name]),
+		assert_eq(fill.modulate_color, tokens.get(_STAT_TRACK_FILL_TOKEN[name]),
 			"%s fill is not its category colour" % name)
 
 
@@ -199,8 +203,8 @@ func test_no_stat_track_fill_matches_its_own_rail() -> void:
 	var theme := load(_THEME_PATH) as Theme
 	for name in _STAT_TRACK_FILL_TOKEN:
 		var bg := theme.get_stylebox("background", name) as StyleBoxFlat
-		var fill := theme.get_stylebox("fill", name) as StyleBoxFlat
-		assert_ne(fill.bg_color, bg.bg_color,
+		var fill := theme.get_stylebox("fill", name) as StyleBoxTexture
+		assert_ne(fill.modulate_color, bg.bg_color,
 			"%s fill equals its rail -- the bar reads as empty at every value" % name)
 
 
@@ -446,8 +450,8 @@ func test_play_gain_rewinds_the_track_to_this_mornings_value() -> void:
 	inst.play_gain()
 	assert_true(absf(inst.track.value - 66.0) <= 0.01,
 		"play_gain must rewind the track to 33/50 = 66% before it grows")
-	assert_eq(inst.value.text, "+6/50",
-		"replaying the fill must not disturb the number")
+	assert_eq(inst.value.text, "+0/50",
+		"play_gain must rewind the number to 0 alongside the track, so it can count back up")
 
 
 ## ...and the growth must end exactly where set_stat put it. Stepping the
@@ -468,6 +472,29 @@ func test_a_played_gain_lands_on_the_days_final_value() -> void:
 		"the fill must end exactly on current/target")
 	assert_eq(inst.track.theme_type_variation, &"DaySummaryStatTrackOlahraga",
 		"replaying the fill must not disturb the row's category colour")
+	assert_eq(inst.value.text, "+6/50",
+		"the number must land exactly on the day's real gain, not a float-eased approximation")
+
+
+## A loss must count DOWN from 0 to a negative number -- format_value's
+## sign flips on the interpolated value itself, not on the final total,
+## so this is the one case a naive "always positive" counter would get
+## wrong.
+func test_a_losing_days_number_counts_down_to_negative() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var tokens := DesignTokens.load_default()
+	inst.set_stat("olahraga", -5.0, 50.0, 30.0)
+	assert_eq(inst.value.text, "-5/50",
+		"set_stat must still leave the DAY'S FINAL number showing")
+
+	_run_and_step(func(): inst.play_gain(), tokens.dur_slow + 0.2)
+	assert_eq(inst.value.text, "-5/50",
+		"the number must land exactly on the day's real loss")
 
 
 ## Juice.pop_in zeroes the chevron's alpha and shrinks it before tweening

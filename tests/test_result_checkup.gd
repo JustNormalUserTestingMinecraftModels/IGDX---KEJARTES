@@ -263,7 +263,27 @@ func test_a_played_week_lands_on_tonights_values() -> void:
 	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01,
 		"mood must end on tonight's value")
 	assert_eq(inst.energy_delta_label.text, "-18",
-		"replaying the week must not disturb the number")
+		"replaying the week must land exactly on the number, not a float-eased approximation")
+
+
+## The needs delta labels count up (or down) from 0 alongside the bar
+## they sit beside, same as the stat rows' "+18/65" -- play_week_gain
+## must rewind the label the instant it is called, before any tween
+## stepping, or a still screenshot mid-animation would show the wrong
+## number relative to the bar's own rewound position.
+func test_the_week_cards_needs_deltas_rewind_to_zero_before_counting_up() -> void:
+	var inst := _card()
+	var s := _student_with_week(
+		{"energy": 80.0, "mood": 40.0},
+		{"energy": 62.0, "mood": 55.0})
+	inst.setup_week_row(s)
+
+	inst.play_week_gain()
+
+	assert_eq(inst.energy_delta_label.text, "+0",
+		"the energy delta must rewind to 0 before counting down to -18")
+	assert_eq(inst.mood_delta_label.text, "+0",
+		"the mood delta must rewind to 0 before counting up to +15")
 
 
 ## The daily card's needs bars now animate too (2026-08-31 request:

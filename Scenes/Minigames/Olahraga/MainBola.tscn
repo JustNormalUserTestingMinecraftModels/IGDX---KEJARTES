@@ -12,7 +12,7 @@ size = Vector2(874.368, 538.16)
 size = Vector2(453.6, 422.84)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gt578"]
-radius = 70.2
+radius = 126.03383
 
 [node name="MainBola" type="Control" unique_id=1326671625]
 layout_mode = 3
@@ -115,10 +115,10 @@ motion_mode = 1
 shape = SubResource("CircleShape2D_gt578")
 
 [node name="GFX" type="TextureRect" parent="Ball" unique_id=1147258294]
-offset_left = -70.2
-offset_top = -70.2
-offset_right = 70.2
-offset_bottom = 70.2
+offset_left = -172.99998
+offset_top = -240.9201
+offset_right = 182.00002
+offset_bottom = 230.0799
 texture = ExtResource("4_rtmmt")
 expand_mode = 1
 stretch_mode = 6

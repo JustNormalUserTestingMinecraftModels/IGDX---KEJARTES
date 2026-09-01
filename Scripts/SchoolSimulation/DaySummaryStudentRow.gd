@@ -44,6 +44,13 @@ const GAIN_STEP := 0.08
 var _energy_from: float = 0.0
 var _mood_from: float = 0.0
 
+## The week's raw energy/mood deltas, cached by setup_week_row so
+## play_gain can count the "+8"/"-12" labels up from zero alongside the
+## bars they sit beside. setup_row never shows these labels, so they
+## stay 0.0 there.
+var _energy_delta: float = 0.0
+var _mood_delta: float = 0.0
+
 
 ## "+8" / "-12" -- the week's movement on a needs bar. Same sign rule as
 ## DaySummaryStatRow.format_value: the "+" is explicit and the "-" comes
@@ -144,6 +151,8 @@ func setup_week_row(student: StudentData) -> void:
 		mood_bar.value = 0.0
 		_energy_from = 0.0
 		_mood_from = 0.0
+		_energy_delta = 0.0
+		_mood_delta = 0.0
 		energy_delta_label.hide()
 		mood_delta_label.hide()
 		_write_stat_rows({}, null)
@@ -160,6 +169,8 @@ func setup_week_row(student: StudentData) -> void:
 	# documents for the stat tracks.
 	_energy_from = clampf(student.energy - energy_delta, 0.0, 100.0)
 	_mood_from = clampf(student.mood - mood_delta, 0.0, 100.0)
+	_energy_delta = energy_delta
+	_mood_delta = mood_delta
 	_show_needs_delta(energy_delta_label, energy_delta)
 	_show_needs_delta(mood_delta_label, mood_delta)
 
@@ -190,6 +201,12 @@ func play_gain(delay: float = 0.0) -> void:
 		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP)
 	_play_needs_travel(energy_bar, _energy_from, delay)
 	_play_needs_travel(mood_bar, _mood_from, delay)
+	if energy_delta_label.visible:
+		Juice.count_up_formatted(energy_delta_label, 0.0, _energy_delta,
+			func(v: float) -> String: return format_needs_delta(v), delay)
+	if mood_delta_label.visible:
+		Juice.count_up_formatted(mood_delta_label, 0.0, _mood_delta,
+			func(v: float) -> String: return format_needs_delta(v), delay)
 
 
 ## The same replay, read off a week instead of a day: setup_week_row

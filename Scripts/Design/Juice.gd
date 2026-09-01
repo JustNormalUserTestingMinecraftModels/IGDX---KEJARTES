@@ -108,6 +108,30 @@ static func count_up(label: Label, from: float, to: float, fmt: String = "%d") -
 			label.text = fmt % int(round(to)))
 
 
+## Same as count_up, but the text is built by a caller-supplied formatter
+## instead of a single printf pattern -- for labels whose text depends on
+## more than one number (a signed delta beside a fixed target, e.g.
+## "+12/65"). `formatter` takes the interpolated value and returns the
+## full label text; `delay` matches pop_in/fill_bar's, so this can be
+## staggered alongside a bar it travels with.
+static func count_up_formatted(label: Label, from: float, to: float,
+		formatter: Callable, delay: float = 0.0) -> void:
+	if not _alive(label):
+		return
+	var t := tokens()
+	label.text = formatter.call(from)
+	var tw := label.create_tween()
+	tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tw.tween_method(
+		func(v: float) -> void:
+			if _alive(label):
+				label.text = formatter.call(v),
+		from, to, t.dur_slow).set_delay(delay)
+	tw.tween_callback(func() -> void:
+		if _alive(label):
+			label.text = formatter.call(to))
+
+
 ## Animate a bar to `to`. `duration` defaults to tokens.dur_slow; pass an
 ## explicit one only when the fill has to stay in lockstep with something
 ## else that is paced by gameplay rather than by the motion tokens (the

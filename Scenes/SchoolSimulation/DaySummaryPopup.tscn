@@ -1,10 +1,11 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://blgxgwieuhoky"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/DaySummaryPopup.gd" id="1_popup"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_row_scene"]
-[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/title_daily_results.png" id="3_title"]
+[ext_resource type="Script" uid="uid://hdovk2h2bip7" path="res://Scripts/SchoolSimulation/DaySummaryPopup.gd" id="1_popup"]
+[ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_row_scene"]
+[ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="3_pdawt"]
+[ext_resource type="Texture2D" uid="uid://ce7ojcp3wl20" path="res://Assets/Images/DaySummary/title_daily_results.png" id="3_title"]
 
-[node name="DaySummaryPopup" type="Control"]
+[node name="DaySummaryPopup" type="Control" unique_id=652940852]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +15,16 @@ grow_vertical = 2
 script = ExtResource("1_popup")
 student_row_scene = ExtResource("2_row_scene")
 
-[node name="DimOverlay" type="Panel" parent="."]
+[node name="Backdrop" type="TextureRect" parent="." unique_id=1837002046]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_pdawt")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="DimOverlay" type="Panel" parent="." unique_id=1503499733]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +33,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"Scrim"
 
-[node name="Content" type="VBoxContainer" parent="DimOverlay"]
+[node name="Content" type="VBoxContainer" parent="DimOverlay" unique_id=2136405530]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,21 +42,20 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 28
 
-[node name="TitleBanner" type="TextureRect" parent="DimOverlay/Content"]
+[node name="TitleBanner" type="TextureRect" parent="DimOverlay/Content" unique_id=1547726228]
 custom_minimum_size = Vector2(932, 286)
 layout_mode = 2
 size_flags_horizontal = 4
 texture = ExtResource("3_title")
 expand_mode = 1
-stretch_mode = 0
 
-[node name="RowsScroll" type="ScrollContainer" parent="DimOverlay/Content"]
+[node name="RowsScroll" type="ScrollContainer" parent="DimOverlay/Content" unique_id=1145774374]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="RowsContainer" type="VBoxContainer" parent="DimOverlay/Content/RowsScroll"]
+[node name="RowsContainer" type="VBoxContainer" parent="DimOverlay/Content/RowsScroll" unique_id=974298710]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

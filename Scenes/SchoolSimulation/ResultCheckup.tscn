@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bi1vea4233njp"]
 
 [ext_resource type="Script" uid="uid://dox5plhrtr0wi" path="res://Scripts/SchoolSimulation/ResultCheckup.gd" id="1_checkup"]
+[ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_frxit"]
 [ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_ouvge"]
 
 [node name="ResultCheckup" type="Control" unique_id=1540732834]
@@ -11,6 +12,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_checkup")
+background_texture = ExtResource("2_frxit")
 student_card_scene = ExtResource("2_ouvge")
 
 [node name="Background" type="Panel" parent="." unique_id=384830439]

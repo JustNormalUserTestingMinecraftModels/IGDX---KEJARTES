@@ -167,8 +167,10 @@ stretch_mode = 6
 [node name="TextureButton" type="TextureButton" parent="." unique_id=1727823902]
 layout_mode = 1
 anchors_preset = -1
-offset_right = 431.0
-offset_bottom = 766.0
+offset_left = -76.0
+offset_top = 45.0
+offset_right = 624.0
+offset_bottom = 1289.0835
 texture_normal = ExtResource("5_f4ced")
 ignore_texture_size = true
 stretch_mode = 0
@@ -190,9 +192,12 @@ mouse_filter = 2
 color = Color(0.46666667, 0.34117648, 0.22745098, 1)
 
 [node name="BGStat" type="Control" parent="." unique_id=1626245942]
-anchors_preset = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Akademis1" type="ProgressBar" parent="BGStat" unique_id=1583002621]
@@ -232,7 +237,8 @@ show_value_label = true
 value_format = "%d%%"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis2" unique_id=1676429292]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme_type_variation = &"CaptionLabel"
@@ -301,7 +307,8 @@ show_value_label = true
 value_format = "%d%%"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Kepribadian2" unique_id=2145646865]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme_type_variation = &"CaptionLabel"

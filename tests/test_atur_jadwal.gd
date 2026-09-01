@@ -257,16 +257,18 @@ func test_top_band_matches_the_mockup() -> void:
 		"the shelf must draw over the splash's feet")
 
 
-## Sized to the source art's own aspect (431/766 = 0.5626 against
-## 1080/1920 = 0.5625) so a uniform scale fits with no distortion and no
-## clipping container -- the shelf covers the feet instead.
+## Hand-tuned in the editor on 2026-09-01 (overrides the plan's original
+## 0,0,431,766 -- a uniform scale of the source art's own aspect). Pins
+## whatever the designer last set rather than a derived value, since
+## there is no longer a single formula driving this rect.
 func test_splash_is_sized_to_the_mockup_window() -> void:
 	var splash := _screen.get_node_or_null("TextureButton") as Control
 	assert_true(splash != null, "the splash TextureButton is gone")
-	assert_eq(splash.offset_left, 0.0, "splash left")
-	assert_eq(splash.offset_top, 0.0, "splash top")
-	assert_eq(splash.offset_right, 431.0, "splash right")
-	assert_eq(splash.offset_bottom, 766.0, "splash bottom")
+	assert_eq(splash.offset_left, -76.0, "splash left")
+	assert_eq(splash.offset_top, 45.0, "splash top")
+	assert_eq(splash.offset_right, 624.0, "splash right")
+	assert_true(absf(splash.offset_bottom - 1289.0835) <= 0.01,
+		"splash bottom")
 
 
 ## The whiteboard and its five sticky notes are explicitly out of scope for

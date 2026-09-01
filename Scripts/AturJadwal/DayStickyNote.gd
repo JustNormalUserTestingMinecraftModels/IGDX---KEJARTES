@@ -13,8 +13,8 @@ extends Control
 ## a padlock glyph. When a day newly becomes scheduled -- or its category
 ## changes -- the note plays a squash-pop and the icon slides into view.
 ##
-## All colour comes from DesignTokens; there is no Color() literal here and
-## no theme_override_*. This is a @tool script so the note previews in the
+## All colour comes from DesignTokens; there is no hardcoded colour literal
+## here and no theme_override_*. This is a @tool script so the note previews in the
 ## editor, so every real side effect (tweens, audio) is gated behind
 ## Engine.is_editor_hint(); the pressed re-emit is pure wiring and stays
 ## ungated so tests can exercise it.
@@ -44,14 +44,22 @@ const FLAVOR_WORDS := {
 
 const _HOLIDAY_FLAVOR := "Libur Nasional"
 
-## Category key -> the icon that peeks from behind the note. Set once on the
-## DayStickyNote.tscn root so all five instances share one copy. Akademis /
-## SeniBudaya / Olahraga use the real stat_*.png; Wirausaha / Istirahat use
-## generated placeholders for the visual team to override in place.
-@export var category_icons: Dictionary = {}
+## Category key -> the icon that peeks from behind the note, shared by all
+## five instances via this preloaded default. Akademis / SeniBudaya /
+## Olahraga use the real stat_*.png; Wirausaha / Istirahat use generated
+## placeholders. Still an @export so the visual team can override per
+## instance in the Inspector once real art lands.
+@export var category_icons: Dictionary = {
+	"Akademis": preload("res://Assets/Images/StudentCard/stat_akademis.png"),
+	"SeniBudaya": preload("res://Assets/Images/StudentCard/stat_senibudaya.png"),
+	"Olahraga": preload("res://Assets/Images/StudentCard/stat_olahraga.png"),
+	"Wirausaha": preload("res://Assets/Images/AturJadwal/icon_wirausaha_placeholder.png"),
+	"Istirahat": preload("res://Assets/Images/AturJadwal/icon_istirahat_placeholder.png"),
+}
 
 ## The peeking icon for a national-holiday note (a flag/calendar placeholder).
-@export var holiday_icon: Texture2D
+## An @export with a preloaded default, same rationale as category_icons.
+@export var holiday_icon: Texture2D = preload("res://Assets/Images/AturJadwal/icon_libur_nasional_placeholder.png")
 
 @onready var _paper: TextureButton = $Paper
 @onready var _day_label: Label = $Paper/DayLabel

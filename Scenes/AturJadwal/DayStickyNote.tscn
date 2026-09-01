@@ -1,0 +1,91 @@
+[gd_scene format=3 uid="uid://ds7r2wlhqoyes"]
+
+[ext_resource type="Script" uid="uid://dtfh14aacv1cg" path="res://Scripts/AturJadwal/DayStickyNote.gd" id="1_hn8nh"]
+[ext_resource type="Shader" uid="uid://bmdrhc1vicis" path="res://Scripts/Shaders/soft_shadow.gdshader" id="2_elcly"]
+[ext_resource type="Texture2D" uid="uid://dbkqgaqqwkp57" path="res://Assets/Images/UI/stickynotes.png" id="3_wbbga"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mpgil"]
+shader = ExtResource("2_elcly")
+shader_parameter/blur = 2.5
+
+[node name="DayStickyNote" type="Control" unique_id=2030438336]
+custom_minimum_size = Vector2(271, 267)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 1
+script = ExtResource("1_hn8nh")
+
+[node name="Shadow" type="TextureRect" parent="." unique_id=507132163]
+self_modulate = Color(0, 0, 0, 0.33)
+material = SubResource("ShaderMaterial_mpgil")
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 18.0
+offset_right = 14.0
+offset_bottom = 18.0
+scale = Vector2(1.03, 1.03)
+mouse_filter = 2
+texture = ExtResource("3_wbbga")
+expand_mode = 1
+
+[node name="BackIcon" type="TextureRect" parent="." unique_id=996279826]
+visible = false
+layout_mode = 0
+offset_left = 150.0
+offset_top = -70.0
+offset_right = 325.0
+offset_bottom = 105.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Paper" type="TextureButton" parent="." unique_id=639882731]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture_normal = ExtResource("3_wbbga")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="DayLabel" type="Label" parent="Paper" unique_id=266274374]
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 40.0
+offset_top = 24.0
+offset_right = 240.0
+offset_bottom = 92.0
+theme_type_variation = &"H2Label"
+text = "SENIN"
+
+[node name="SubjectLabel" type="Label" parent="Paper" unique_id=839462538]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 40.0
+offset_top = 104.0
+offset_right = 260.0
+offset_bottom = 150.0
+theme_type_variation = &"CaptionLabel"
+autowrap_mode = 2
+
+[node name="FlavorLabel" type="Label" parent="Paper" unique_id=1483257253]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 40.0
+offset_top = 156.0
+offset_right = 260.0
+offset_bottom = 196.0
+theme_type_variation = &"MicroLabel"
+
+[node name="Lock" type="Label" parent="Paper" unique_id=1387335178]
+visible = false
+layout_mode = 0
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 60.0
+offset_bottom = 56.0
+theme_type_variation = &"MicroLabel"
+text = "🔒"

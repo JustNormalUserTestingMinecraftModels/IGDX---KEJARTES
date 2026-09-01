@@ -153,6 +153,20 @@ func test_back_icon_returns_to_its_authored_offset_after_repeated_pops() -> void
 	assert_true(now.is_equal_approx(authored),
 		"BackIcon drifted to %s from its authored %s after repeated pops" % [now, authored])
 
+## Design decision #8: the state methods are repaints and must never pop.
+## The assign-pop is driven from atur_jadwal.gd::_on_activity_selected on the
+## single note the player just assigned, never from show_*(). So calling the
+## state methods with no explicit play_assign_pop() must leave BackIcon at its
+## authored offset and raise no error.
+func test_state_methods_do_not_pop() -> void:
+	var authored := (_note.get_node("BackIcon") as TextureRect).position
+	_note.show_scheduled("Akademis")
+	_note.show_scheduled("Olahraga")
+	_note.show_holiday("Kemerdekaan RI")
+	var now := (_note.get_node("BackIcon") as TextureRect).position
+	assert_true(now.is_equal_approx(authored),
+		"a state method moved BackIcon (to %s from %s) -- it must not pop" % [now, authored])
+
 func test_touch_target_is_big_enough() -> void:
 	var tokens := DesignTokens.load_default()
 	var s := _note.get_combined_minimum_size()

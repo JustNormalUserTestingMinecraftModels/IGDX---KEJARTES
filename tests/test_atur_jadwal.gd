@@ -488,6 +488,21 @@ func test_update_day_colors_uses_the_template_api() -> void:
 	assert_true(src.contains("show_empty("), "must call DayStickyNote.show_empty()")
 
 
+## The day-note squash-pop must fire only on a real player assignment, which
+## is _on_activity_selected -- not from _update_day_button_colors (a repaint).
+## Design decision #8 of the sticky-note-polish plan.
+func test_assign_pop_is_driven_from_on_activity_selected() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("play_assign_pop()"),
+		"atur_jadwal.gd must drive the day-note pop itself")
+	var idx := src.find("func _on_activity_selected")
+	assert_true(idx != -1, "_on_activity_selected must exist")
+	var next := src.find("\nfunc ", idx + 1)
+	var body := src.substr(idx, next - idx if next != -1 else src.length() - idx)
+	assert_true(body.contains("play_assign_pop()"),
+		"the pop must be called from inside _on_activity_selected")
+
+
 ## Copied verbatim from tests/test_main_menu.gd.
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:

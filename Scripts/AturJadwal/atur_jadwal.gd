@@ -940,6 +940,11 @@ func _on_activity_selected(category: String):
 		}
 	_hide_penjadwalan_popup()
 	_update_day_button_colors()
+	# The one genuine player assignment -- pop only this note. Every other
+	# caller of show_scheduled/show_holiday is a repaint (Design decision #8).
+	var _assigned_note := _get_day_button(GameState.selected_day) as DayStickyNote
+	if _assigned_note:
+		_assigned_note.play_assign_pop()
 	_update_student_display()
 
 	# Check if Phase 3 tutorial should start

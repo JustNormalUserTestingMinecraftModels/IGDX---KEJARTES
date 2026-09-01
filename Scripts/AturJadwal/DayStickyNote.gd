@@ -71,7 +71,6 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 var _tokens: DesignTokens
 var _state := ""       # "" | "empty" | "scheduled" | "holiday"
 var _category := ""
-var _painted := false
 var _icon_rest := Vector2.INF
 var _reveal: Tween
 
@@ -101,11 +100,12 @@ func show_empty() -> void:
 	_apply(_get_tokens().surface_sunken, false, false)
 	_state = "empty"
 	_category = ""
-	_painted = true
 
 
+## Paints the scheduled look. This is a repaint only -- it never plays the
+## assign-pop. atur_jadwal.gd::_on_activity_selected calls play_assign_pop()
+## itself on the one note the player just assigned (Design decision #8).
 func show_scheduled(category: String) -> void:
-	var changed := _state != "scheduled" or _category != category
 	if _subject_label:
 		_subject_label.text = DISPLAY_NAMES.get(category, category)
 	if _flavor_label:
@@ -115,13 +115,11 @@ func show_scheduled(category: String) -> void:
 	_apply(_get_tokens().category_color(category), true, false)
 	_state = "scheduled"
 	_category = category
-	if changed and _painted:
-		play_assign_pop()
-	_painted = true
 
 
+## Paints the locked-holiday look. Repaint only, never pops -- see
+## show_scheduled().
 func show_holiday(title: String) -> void:
-	var changed := _state != "holiday"
 	if _subject_label:
 		_subject_label.text = title
 	if _flavor_label:
@@ -131,9 +129,6 @@ func show_holiday(title: String) -> void:
 	_apply(_get_tokens().category_color("Libur"), true, true)
 	_state = "holiday"
 	_category = ""
-	if changed and _painted:
-		play_assign_pop()
-	_painted = true
 
 
 ## Sets the paper tint and the visibility of the subject line, flavour line,

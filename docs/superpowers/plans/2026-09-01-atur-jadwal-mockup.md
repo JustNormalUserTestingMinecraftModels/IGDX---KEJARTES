@@ -60,6 +60,7 @@
 >   already use the real `stat_*.png`.
 > - No `ThemeFactory` variation was added, so no theme rebake was needed —
 >   the note reuses `H2Label` / `CaptionLabel` / `MicroLabel`.
+> - Minor: the tutorial's day-button prompt now reads the button's node name ("Senin") instead of the old all-caps label text ("SENIN"), because the day text moved one level deeper into the template. Accepted as-is — it is only tutorial prompt copy.
 
 **Goal:** Rebuild the top third of Atur Jadwal to `mockup_atur_jadwal.png` — blurred classroom backdrop, wooden shelf, splash art on the left, five icon-and-pill stat rows on the right — while leaving the whiteboard and sticky notes exactly as they are.
 

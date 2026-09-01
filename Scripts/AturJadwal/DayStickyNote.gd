@@ -71,6 +71,9 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 var _tokens: DesignTokens
 var _state := ""       # "" | "empty" | "scheduled" | "holiday"
 var _category := ""
+var _painted := false
+var _icon_rest := Vector2.INF
+var _reveal: Tween
 
 
 func _ready() -> void:
@@ -98,30 +101,39 @@ func show_empty() -> void:
 	_apply(_get_tokens().surface_sunken, false, false)
 	_state = "empty"
 	_category = ""
+	_painted = true
 
 
 func show_scheduled(category: String) -> void:
 	var changed := _state != "scheduled" or _category != category
-	_subject_label.text = DISPLAY_NAMES.get(category, category)
-	_flavor_label.text = FLAVOR_WORDS.get(category, "")
-	_back_icon.texture = _get_icon(category)
+	if _subject_label:
+		_subject_label.text = DISPLAY_NAMES.get(category, category)
+	if _flavor_label:
+		_flavor_label.text = FLAVOR_WORDS.get(category, "")
+	if _back_icon:
+		_back_icon.texture = _get_icon(category)
 	_apply(_get_tokens().category_color(category), true, false)
 	_state = "scheduled"
 	_category = category
-	if changed:
+	if changed and _painted:
 		play_assign_pop()
+	_painted = true
 
 
 func show_holiday(title: String) -> void:
 	var changed := _state != "holiday"
-	_subject_label.text = title
-	_flavor_label.text = _HOLIDAY_FLAVOR
-	_back_icon.texture = holiday_icon
+	if _subject_label:
+		_subject_label.text = title
+	if _flavor_label:
+		_flavor_label.text = _HOLIDAY_FLAVOR
+	if _back_icon:
+		_back_icon.texture = holiday_icon
 	_apply(_get_tokens().category_color("Libur"), true, true)
 	_state = "holiday"
 	_category = ""
-	if changed:
+	if changed and _painted:
 		play_assign_pop()
+	_painted = true
 
 
 ## Sets the paper tint and the visibility of the subject line, flavour line,
@@ -163,10 +175,13 @@ func play_assign_pop() -> void:
 	pop.tween_property(self, "scale", Vector2(0.94, 1.06), t.dur_fast * 0.7)
 	pop.tween_property(self, "scale", Vector2.ONE, t.dur_fast)
 	if _back_icon:
-		var rest := _back_icon.position
-		_back_icon.position = rest + Vector2(10, -12)
+		if _icon_rest == Vector2.INF:
+			_icon_rest = _back_icon.position
+		if _reveal and _reveal.is_valid():
+			_reveal.kill()
+		_back_icon.position = _icon_rest + Vector2(10, -12)
 		_back_icon.modulate.a = 0.0
-		var reveal := create_tween().set_parallel(true)
-		reveal.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		reveal.tween_property(_back_icon, "position", rest, t.dur_normal)
-		reveal.tween_property(_back_icon, "modulate:a", 1.0, t.dur_normal)
+		_reveal = create_tween().set_parallel(true)
+		_reveal.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_reveal.tween_property(_back_icon, "position", _icon_rest, t.dur_normal)
+		_reveal.tween_property(_back_icon, "modulate:a", 1.0, t.dur_normal)

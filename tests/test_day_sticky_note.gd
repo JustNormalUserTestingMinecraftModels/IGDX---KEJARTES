@@ -43,12 +43,18 @@ func test_no_theme_overrides() -> void:
 	assert_eq(offenders.size(), 0, "theme_override_* on: " + ", ".join(offenders))
 
 func _collect_overrides(n: Node, out: Array) -> void:
-	for pr in n.get_property_list():
-		var nm: String = pr.get("name", "")
-		if nm.begins_with("theme_override_") and not (
-				nm.begins_with("theme_override_constants/")):
-			if n.get(nm) != null:
-				out.append("%s.%s" % [n.name, nm])
+	if n is Control or n is Window:
+		for c in n.get_theme_color_list(""):
+			if n.has_theme_color_override(c): out.append("%s color/%s" % [n.name, c])
+		for c in n.get_theme_constant_list(""):
+			if n.has_theme_constant_override(c) and c not in ["separation", "margin_left", "margin_top", "margin_right", "margin_bottom", "h_separation", "v_separation"]:
+				out.append("%s constant/%s" % [n.name, c])
+		for f in n.get_theme_font_list(""):
+			if n.has_theme_font_override(f): out.append("%s font/%s" % [n.name, f])
+		for f in n.get_theme_font_size_list(""):
+			if n.has_theme_font_size_override(f): out.append("%s font_size/%s" % [n.name, f])
+		for s in n.get_theme_stylebox_list(""):
+			if n.has_theme_stylebox_override(s): out.append("%s stylebox/%s" % [n.name, s])
 	for c in n.get_children():
 		_collect_overrides(c, out)
 
@@ -77,11 +83,11 @@ func test_flavor_words_cover_all_five_categories() -> void:
 		assert_true(DayStickyNote.FLAVOR_WORDS.has(c), "no flavour word for " + c)
 		assert_true(String(DayStickyNote.FLAVOR_WORDS[c]).length() > 0, c + " flavour word is empty")
 
-func test_icon_exports_are_populated_from_the_tscn_root() -> void:
+func test_icon_exports_are_populated() -> void:
 	for c in ["Akademis", "SeniBudaya", "Olahraga", "Wirausaha", "Istirahat"]:
 		assert_true(_note.category_icons.has(c), "category_icons missing " + c)
 		assert_true(_note.category_icons[c] is Texture2D, c + " icon is not a Texture2D")
-	assert_true(_note.holiday_icon is Texture2D, "holiday_icon not set on the template root")
+	assert_true(_note.holiday_icon is Texture2D, "holiday_icon is not a Texture2D")
 
 # ---- behaviour ------------------------------------------------------
 
@@ -126,6 +132,19 @@ func test_pressed_is_re_emitted_from_the_inner_button() -> void:
 	_note.pressed.connect(func(): got[0] = true)
 	(_note.get_node("Paper") as BaseButton).pressed.emit()
 	assert_true(got[0], "DayStickyNote must re-emit the inner Paper button's `pressed`")
+
+## Guard for the BackIcon cumulative-drift fix. play_assign_pop early-returns
+## under Engine.is_editor_hint(), so inside the editor test runner this is a
+## no-op and the icon never moves (authored == authored); it becomes a real
+## regression check in a non-editor run.
+func test_back_icon_returns_to_its_authored_offset_after_repeated_pops() -> void:
+	var authored := (_note.get_node("BackIcon") as TextureRect).position
+	_note.show_scheduled("Akademis")
+	_note.show_scheduled("Olahraga")
+	_note.show_scheduled("Akademis")
+	var now := (_note.get_node("BackIcon") as TextureRect).position
+	assert_true(now.is_equal_approx(authored),
+		"BackIcon drifted to %s from its authored %s after repeated pops" % [now, authored])
 
 func test_touch_target_is_big_enough() -> void:
 	var tokens := DesignTokens.load_default()

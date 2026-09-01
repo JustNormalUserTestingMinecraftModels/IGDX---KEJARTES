@@ -132,10 +132,16 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
-func test_day_buttons_are_tinted_via_category_color() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("category_color"),
-		"day button tint must come from DesignTokens.category_color()")
+## The day-note tint now lives in the DayStickyNote template, not this
+## screen's script. The screen just calls show_empty/show_scheduled/
+## show_holiday; the template maps category -> DesignTokens.category_color().
+func test_day_notes_are_daystickynote_instances_tinted_via_category_color() -> void:
+	for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
+		var note := _screen.get_node_or_null("BGHari/" + day)
+		assert_true(note is DayStickyNote, day + " must be a DayStickyNote instance")
+	var tmpl := FileAccess.get_file_as_string("res://Scripts/AturJadwal/DayStickyNote.gd")
+	assert_true(tmpl.contains("category_color"),
+		"the template must tint via DesignTokens.category_color()")
 
 
 ## The popup's five picks are ActivityRows now: icon, preview pill, name.
@@ -281,18 +287,22 @@ func test_splash_is_sized_to_the_mockup_window() -> void:
 		"splash bottom")
 
 
-## The whiteboard and its five sticky notes are explicitly out of scope for
-## the restyle -- they must survive it untouched.
-func test_the_whiteboard_and_sticky_notes_are_unchanged() -> void:
+## The whiteboard art itself is still out of scope for the restyle and must
+## survive untouched. The five sticky notes were polished on 2026-09-01
+## (docs/superpowers/plans/2026-09-01-atur-jadwal-sticky-note-polish.md):
+## each is now a DayStickyNote whose Paper still draws stickynotes.png.
+func test_the_whiteboard_is_unchanged_and_notes_are_stickynotes() -> void:
 	var board := _screen.get_node_or_null("BGHari") as TextureRect
 	assert_true(board != null, "BGHari is gone")
-	assert_eq(board.texture.resource_path,
-		"res://Assets/Images/UI/whiteboard.png",
+	assert_eq(board.texture.resource_path, "res://Assets/Images/UI/whiteboard.png",
 		"the whiteboard texture changed")
 	for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
-		var note := _screen.get_node_or_null("BGHari/%s" % day) as Control
-		assert_true(note != null,
-			"sticky note %s is gone or was reparented" % day)
+		var note := _screen.get_node_or_null("BGHari/%s" % day) as DayStickyNote
+		assert_true(note != null, "sticky note %s is gone or was reparented" % day)
+		var paper := note.get_node_or_null("Paper") as TextureButton
+		assert_true(paper != null and paper.texture_normal != null
+			and paper.texture_normal.resource_path == "res://Assets/Images/UI/stickynotes.png",
+			"%s Paper must still draw stickynotes.png" % day)
 
 
 ## Uniform 126px pitch from y=129. The mockup's own pitch drifts (129,

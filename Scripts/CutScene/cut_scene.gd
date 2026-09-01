@@ -22,7 +22,7 @@ extends Control
 ## real game input events, so there is nothing to gate there.
 
 @onready var dialogue_label: RichTextLabel = $DialogueBox/DialogueLabel
-@onready var dialogue_box: Panel = $DialogueBox
+@onready var dialogue_box: Control = $DialogueBox
 @onready var bg_cutscene: TextureRect = $BgCutScene
 @onready var fade_overlay: ColorRect = $FadeOverlay
 @onready var _tokens: DesignTokens = DesignTokens.load_default()
@@ -32,7 +32,7 @@ extends Control
 
 var cg_data = [
 	{
-		"image": preload("res://Assets/Images/UI/BG.jpg"),
+		"image": preload("res://Assets/Images/CG/cg0.jpg"),
 		"text": "Fiuh, setelah sekian lama aku mendaftar di sekolah ini. Akhirnya saya resmi diakui untuk mengajar disini!"
 	},
 	{
@@ -129,6 +129,14 @@ func _setup_top_bar_buttons() -> void:
 	btn_debug_toggle.theme_type_variation = &"SecondaryButton"
 	btn_debug_toggle.text = "🐛 Debug Level Select"
 	btn_debug_toggle.custom_minimum_size = Vector2(420, _tokens.touch_target_min)
+	# _update_debug_button_text() swaps this in for a longer runtime string
+	# ("...: ON (Pilih Kelas)"). Without clip_text, a Button's minimum size
+	# grows to fit whatever text it currently holds, so that longer string
+	# pushed this button past 420px wide, widening the whole top_bar HBox
+	# past the 1080px screen and shoving Skip Intro off the right edge
+	# entirely -- clip_text pins it back to custom_minimum_size and
+	# ellipsizes instead.
+	btn_debug_toggle.clip_text = true
 	btn_debug_toggle.pressed.connect(_on_debug_toggle_pressed)
 	top_bar.add_child(btn_debug_toggle)
 
@@ -141,6 +149,7 @@ func _setup_top_bar_buttons() -> void:
 	btn_skip.theme_type_variation = &"DangerButton"
 	btn_skip.text = "⏩ Skip Intro"
 	btn_skip.custom_minimum_size = Vector2(260, _tokens.touch_target_min)
+	btn_skip.clip_text = true
 	btn_skip.pressed.connect(_on_skip_pressed)
 	top_bar.add_child(btn_skip)
 
@@ -234,6 +243,21 @@ func _on_debug_toggle_pressed() -> void:
 	if GameState.debug_level_select_enabled and not is_showing_level_select:
 		show_level_select_modal()
 
+## Shared with go_to_gameplay(): both exits from this scene fade to black
+## the same way before the scene change.
+func _fade_to_black(duration: float = 0.8) -> void:
+	is_transitioning = true
+	var tween = create_tween()
+	tween.tween_property(fade_overlay, "color:a", 1.0, duration)
+	await tween.finished
+
+## Skip bails straight to Lobby, unlike finishing the cutscene normally
+## (go_to_gameplay, below), which must route through StudentCard so a
+## fresh game gets a real approved_students roster instead of leaving it
+## empty. This button is never shown during the game-over/retry cutscene
+## (_setup_game_over_cutscene hides it, see _ready), so there is no
+## GameState.is_game_over_cutscene reset to reconcile here -- it is
+## always false while Skip Intro exists on screen.
 func _on_skip_pressed() -> void:
 	# Transition.change_scene() already plays "whoosh" on the scene change;
 	# adding another here would stack with the _input handler's "tap" and
@@ -241,7 +265,9 @@ func _on_skip_pressed() -> void:
 	# project's convention allows -- see student_card.gd's
 	# _on_belajar_pressed note).
 	print("Skip Cutscene pressed")
-	go_to_gameplay()
+	await _fade_to_black()
+	GameState.next_scene = "res://Scenes/Lobby/loby.tscn"
+	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")
 
 func show_level_select_modal() -> void:
 	is_showing_level_select = true
@@ -351,10 +377,10 @@ func transition_to_next():
 	is_transitioning = false
 
 func go_to_gameplay():
-	is_transitioning = true
-	var tween = create_tween()
-	tween.tween_property(fade_overlay, "color:a", 1.0, 0.8)
-	await tween.finished
+	await _fade_to_black()
+
+	# Always route to StudentCard after difficulty selection, never to Lobby
+	GameState.next_scene = "res://Scenes/StudentCard/student_card.tscn"
 
 	if GameState.is_game_over_cutscene:
 		GameState.is_game_over_cutscene = false
@@ -365,7 +391,6 @@ func go_to_gameplay():
 		# this screen as the review-the-roster checkpoint before retrying --
 		# previously_approved_ids pre-checks the same students, so it reads
 		# as a confirm, not a redo.
-		var next_scene_path = "res://Scenes/StudentCard/student_card.tscn"
 
 		# Reset schedules and week
 		GameState.day_schedules.clear()
@@ -397,16 +422,5 @@ func go_to_gameplay():
 					student["akademis2"] = student["base_akademis2"]
 				if student.has("base_akademis3"):
 					student["akademis3"] = student["base_akademis3"]
-
-		GameState.next_scene = next_scene_path
-	else:
-		# A fresh game (the very first intro cutscene, in this process)
-		# always needs the player to approve their roster first --
-		# GameState.approved_students is still empty here. Routing to
-		# Lobby directly used to leave every downstream screen (AturJadwal,
-		# StudentList, the week simulation itself) reading that emptiness
-		# as "nobody to schedule" and silently falling back to its own
-		# placeholder data instead of surfacing the problem.
-		GameState.next_scene = "res://Scenes/StudentCard/student_card.tscn"
 
 	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")

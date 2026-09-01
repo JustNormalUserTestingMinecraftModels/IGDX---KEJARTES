@@ -120,10 +120,61 @@ func test_no_hardcoded_colors_remain_in_the_script() -> void:
 	assert_eq(re.search_all(src).size(), 0, "script must read colors from DesignTokens, not Color() literals")
 
 
-func test_dialogue_box_uses_the_card_variation() -> void:
-	var box := _scene.find_child("DialogueBox", true, false) as Panel
-	assert_true(box != null, "missing DialogueBox")
-	assert_eq(box.theme_type_variation, &"Card", "the dialogue box must use the Card variation")
+## The mockup supplies the panel as art (cutscene_dialogue.png), so the box
+## draws a texture instead of the Card stylebox. The art is 1:1 with its
+## on-screen size, so it sits at its native 1080x1080 offset (0, 940),
+## which lands the opaque panel within 1px of the mockup on every edge --
+## see the spec, section 5.
+func test_dialogue_box_draws_the_mockup_panel_art() -> void:
+	var box := _scene.find_child("DialogueBox", true, false) as TextureRect
+	assert_true(box != null,
+		"DialogueBox is missing or is no longer a TextureRect")
+	assert_true(box.texture != null, "DialogueBox has no texture")
+	assert_eq(box.texture.resource_path,
+		"res://Assets/Images/UI/cutscene_dialogue.png",
+		"DialogueBox is not drawing the mockup's panel art")
+	assert_eq(box.offset_left, 0.0, "panel left")
+	assert_eq(box.offset_top, 940.0, "panel top")
+	assert_eq(box.offset_right, 1080.0, "panel right")
+	assert_eq(box.offset_bottom, 2020.0, "panel bottom (native 1080 tall)")
+
+
+## The text and the tap hint must both sit inside the panel's white content
+## area -- screen x 110-967, y 1148-1815, which is x 110-967, y 208-875 in
+## the box's own coordinates. Outside it they print over the orange frame.
+func test_dialogue_text_sits_inside_the_panel_content_area() -> void:
+	var label := _scene.get_node_or_null(
+		"DialogueBox/DialogueLabel") as Control
+	assert_true(label != null, "DialogueLabel is missing")
+	assert_true(label.offset_left >= 110.0, "text starts left of the frame")
+	assert_true(label.offset_right <= 967.0, "text runs past the right frame")
+	assert_true(label.offset_top >= 208.0, "text starts above the frame")
+	assert_true(label.offset_bottom <= 875.0, "text runs past the bottom frame")
+
+	var hint := _scene.get_node_or_null("HintLabel") as Control
+	assert_true(hint != null, "HintLabel is missing")
+	assert_true(hint.offset_top >= 1148.0,
+		"the tap hint sits above the panel's content area")
+	assert_true(hint.offset_bottom <= 1815.0,
+		"the tap hint runs past the panel's content area")
+
+
+## Both were authored as hardcoded rects that miss 1080x1920 -- the CG
+## 1075x1925, the fade 1088x1934 -- so the CG was 5px short across and the
+## fade overran the screen. Anchoring both makes them exact and
+## resolution-independent.
+func test_the_full_screen_layers_fill_the_screen_exactly() -> void:
+	for node_name in ["BgCutScene", "FadeOverlay"]:
+		var node := _scene.get_node_or_null(node_name) as Control
+		assert_true(node != null, "%s is missing" % node_name)
+		assert_eq(node.anchor_right, 1.0,
+			"%s must anchor to the right edge" % node_name)
+		assert_eq(node.anchor_bottom, 1.0,
+			"%s must anchor to the bottom edge" % node_name)
+		assert_eq(node.offset_right, 0.0,
+			"%s has a stray right offset" % node_name)
+		assert_eq(node.offset_bottom, 0.0,
+			"%s has a stray bottom offset" % node_name)
 
 
 func test_tap_during_reveal_completes_the_line_instead_of_advancing() -> void:
@@ -146,6 +197,19 @@ func test_cg_changes_crossfade_instead_of_hard_cutting() -> void:
 		"CG swaps must tween BgCutScene.modulate:a rather than hard-cutting the texture")
 
 
+## Pulls one top-level function's body out of the script source, from its
+## "func name" line up to (but not including) the next top-level "\nfunc ".
+## Shared by the two tests below so each can scope its Lobby/StudentCard
+## check to the one function it is actually about.
+func _function_body(src: String, func_name: String) -> String:
+	var start := src.find("func " + func_name)
+	assert_true(start >= 0, func_name + "() must exist")
+	var end := src.find("\nfunc ", start + 1)
+	if end < 0:
+		end = src.length()
+	return src.substr(start, end - start)
+
+
 ## The bug this pins: go_to_gameplay() used to route a genuinely fresh
 ## game (is_game_over_cutscene == false, the very first intro-CG skip or
 ## finish) straight to Lobby, never to StudentCard -- so
@@ -156,15 +220,45 @@ func test_cg_changes_crossfade_instead_of_hard_cutting() -> void:
 ## approved_students ("so they select again", per its own comment) but
 ## then routed to Lobby anyway. Both must now go through StudentCard --
 ## the only screen that actually populates approved_students.
+##
+## Scoped to go_to_gameplay()'s own body (not the whole file), because
+## _on_skip_pressed() now legitimately routes to Lobby -- see the test
+## below.
 func test_go_to_gameplay_always_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("res://Scenes/StudentCard/student_card.tscn"),
+	var body := _function_body(src, "go_to_gameplay")
+	assert_true(body.contains("res://Scenes/StudentCard/student_card.tscn"),
 		"must route to StudentCard")
-	assert_false(src.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
 		"go_to_gameplay must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")
-	assert_true(src.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
+	assert_true(body.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
 		"must still hand off through the Loading scene")
+
+
+## Skip is a deliberate exception to the rule above: pressing "Skip Intro"
+## bails straight to Lobby, even before a roster has been approved. Only
+## safe because _setup_game_over_cutscene() hides this button outright, so
+## it is never reachable while GameState.is_game_over_cutscene is true --
+## covered by test_skip_button_is_hidden_during_the_game_over_cutscene.
+func test_skip_button_routes_straight_to_lobby() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_body(src, "_on_skip_pressed")
+	assert_true(body.contains("res://Scenes/Lobby/loby.tscn"),
+		"Skip Intro must route straight to Lobby")
+	assert_false(body.contains("res://Scenes/StudentCard/student_card.tscn"),
+		"Skip Intro must not detour through StudentCard")
+	assert_true(body.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
+		"must still hand off through the Loading scene")
+
+
+func test_skip_button_is_hidden_during_the_game_over_cutscene() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_body(src, "_setup_game_over_cutscene")
+	assert_true(body.contains("btn_skip.visible = false"),
+		"the game-over/retry cutscene must hide Skip Intro -- it has no " +
+		"safe destination there, since Lobby needs an approved roster on " +
+		"a fresh game-7 retry and StudentCard is the point of that screen anyway")
 
 
 func test_show_current_starts_with_a_hold_before_revealing() -> void:

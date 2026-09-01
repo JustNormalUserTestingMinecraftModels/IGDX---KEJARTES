@@ -1,43 +1,62 @@
-[gd_scene load_steps=5 format=3 uid="uid://b2vxniec67375"]
+[gd_scene format=3 uid="uid://b2vxniec67375"]
 
-[ext_resource type="Script" path="res://Scripts/MainMenu/main_menu.gd" id="1_ftydy"]
-[ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/titlescreen_background.png" id="3_bg"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/logo.png" id="4_logo"]
+[ext_resource type="Script" uid="uid://cnycp8ahqnwtg" path="res://Scripts/MainMenu/main_menu.gd" id="1_ftydy"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
+[ext_resource type="Texture2D" uid="uid://cqafwo6ks0sbf" path="res://Assets/Images/UI/titlescreen_background.png" id="3_bg"]
+[ext_resource type="Texture2D" uid="uid://c72nldobl75au" path="res://Assets/Images/UI/logo.png" id="4_logo"]
+[ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="5_0l8wx"]
+[ext_resource type="Texture2D" uid="uid://dqf66cw5abxy0" path="res://Assets/Images/UI/icon_exit.svg" id="6_n5jej"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=1708799478]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_ftydy")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=2012323774]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("3_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Logo" type="TextureRect" parent="."]
+[node name="LogoShadow" type="TextureRect" parent="." unique_id=1338557889]
+modulate = Color(0, 0, 0, 0.32)
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_left = 12.0
+offset_top = 86.0
+offset_right = 12.0
+offset_bottom = 1166.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Logo" type="TextureRect" parent="." unique_id=133579693]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
 offset_top = 68.0
 offset_bottom = 1148.0
 grow_horizontal = 2
+mouse_filter = 2
 texture = ExtResource("4_logo")
 expand_mode = 1
 stretch_mode = 5
-mouse_filter = 2
 
-[node name="SafeArea" type="MarginContainer" parent="."]
+[node name="SafeArea" type="MarginContainer" parent="." unique_id=1913735591]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,46 +64,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
 script = ExtResource("2_safe")
 
-[node name="Content" type="Control" parent="SafeArea"]
+[node name="Content" type="Control" parent="SafeArea" unique_id=1656770369]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="ButtonColumn" type="VBoxContainer" parent="SafeArea/Content"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -335.0
-offset_top = -756.0
-offset_right = 335.0
-offset_bottom = -246.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_constants/separation = 66
-
-[node name="PlayButton" type="Button" parent="SafeArea/Content/ButtonColumn"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 126)
-theme_type_variation = &"MainMenuButton"
-text = "MULAI"
-
-[node name="SettingButton" type="Button" parent="SafeArea/Content/ButtonColumn"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 126)
-theme_type_variation = &"MainMenuButton"
-text = "PENGATURAN"
-
-[node name="QuitButton" type="Button" parent="SafeArea/Content/ButtonColumn"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 126)
-theme_type_variation = &"MainMenuButton"
-text = "KELUAR"
-
-[node name="VersionLabel" type="Label" parent="SafeArea/Content"]
+[node name="VersionLabel" type="Label" parent="SafeArea/Content" unique_id=318428126]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -97,6 +87,52 @@ offset_right = 200.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_type_variation = &"MicroLabel"
-text = "v0.1"
+text = "v"
 horizontal_alignment = 1
-mouse_filter = 2
+
+[node name="TapPrompt" type="Label" parent="SafeArea/Content" unique_id=480073977]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = -383.0
+offset_right = 15.0
+offset_bottom = -152.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"TitleLabel"
+text = "Ketuk di mana saja untuk bermain!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="IconBar" type="HBoxContainer" parent="SafeArea/Content" unique_id=17796421]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -142.0
+offset_top = -161.92505
+offset_right = 142.0
+offset_bottom = -31.925049
+theme_override_constants/separation = 44
+alignment = 1
+
+[node name="SettingButton" type="Button" parent="SafeArea/Content/IconBar" unique_id=877737303]
+custom_minimum_size = Vector2(116, 116)
+layout_mode = 2
+tooltip_text = "Pengaturan"
+theme_type_variation = &"MainMenuButton"
+icon = ExtResource("5_0l8wx")
+expand_icon = true
+
+[node name="QuitButton" type="Button" parent="SafeArea/Content/IconBar" unique_id=1738459432]
+custom_minimum_size = Vector2(116, 116)
+layout_mode = 2
+tooltip_text = "Keluar"
+theme_type_variation = &"MainMenuButton"
+icon = ExtResource("6_n5jej")
+expand_icon = true

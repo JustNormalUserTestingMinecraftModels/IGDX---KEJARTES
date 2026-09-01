@@ -11,32 +11,35 @@ extends Control
 ## ordinary Control methods on it then fails with "Attempt to call a
 ## method on a placeholder instance. Check if the script is in tool
 ## mode." That broke this suite's tests until this script was marked
-## @tool: test_all_three_buttons_exist_and_are_wired failed outright
-## (no real _ready() ever ran to connect the buttons) and
-## test_scene_has_no_theme_overrides aborted the whole run mid-traversal
-## the moment it reached the placeholder-backed root node.
+## @tool: the button-wiring and no-theme-override traversal checks both
+## need a real _ready() to have run.
 ##
-## The risk that comes with @tool (per the project's established pattern
-## from Tasks 5/6): a human simply opening this scene in the editor would
-## now run this script for real, including _ready(). To keep that safe,
-## every runtime-only side effect (audio, entry animation) is gated
-## behind `Engine.is_editor_hint()`, which is true both when a human has
-## the scene open in the editor AND when the MCP test suite instantiates
-## it (both execute inside the editor process) -- so button wiring, which
-## must run in both of those cases, sits above the guard, while
-## BGM/animation, which must never fire outside a real play session, sits
-## below it. In an actual played game (`project_run` or a device build),
-## Engine.is_editor_hint() is false and the full entry sequence runs.
+## The risk that comes with @tool: a human simply opening this scene in
+## the editor would now run this script for real, including _ready(). To
+## keep that safe, every runtime-only side effect (audio, entry
+## animation, the looping blink and logo float) is gated behind
+## `Engine.is_editor_hint()`, which is true both when a human has the
+## scene open in the editor AND when the MCP test suite instantiates it.
+## Button wiring, which must run in both of those cases, sits above the
+## guard. In an actual played game Engine.is_editor_hint() is false and
+## the full entry sequence runs.
 
-@onready var _buttons: VBoxContainer = $SafeArea/Content/ButtonColumn
-@onready var _play_button: Button = $SafeArea/Content/ButtonColumn/PlayButton
-@onready var _setting_button: Button = $SafeArea/Content/ButtonColumn/SettingButton
-@onready var _quit_button: Button = $SafeArea/Content/ButtonColumn/QuitButton
+@onready var _logo: TextureRect = $Logo
+@onready var _logo_shadow: TextureRect = $LogoShadow
+@onready var _tap_prompt: Label = $SafeArea/Content/TapPrompt
+@onready var _icon_bar: HBoxContainer = $SafeArea/Content/IconBar
+@onready var _setting_button: Button = $SafeArea/Content/IconBar/SettingButton
+@onready var _quit_button: Button = $SafeArea/Content/IconBar/QuitButton
 @onready var _version: Label = $SafeArea/Content/VersionLabel
+
+## Float amplitude (px) and half-period (s) for the drifting KEJARTES logo.
+const _LOGO_FLOAT_AMPLITUDE := 12.0
+const _LOGO_FLOAT_HALF_PERIOD := 2.2
+
+var _started := false
 
 
 func _ready() -> void:
-	_play_button.pressed.connect(_on_play_pressed)
 	_setting_button.pressed.connect(_on_setting_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)
 
@@ -51,16 +54,41 @@ func _ready() -> void:
 
 	AudioDirector.play_bgm(&"titlescreen")
 	_animate_entry()
+	_blink_forever(_tap_prompt)
+	_float_forever(_logo, _logo.position.y)
+	_float_forever(_logo_shadow, _logo_shadow.position.y)
 
 
-## The logo is static art, so the entry animation is now only the button
-## cascade -- there is no longer a title Label or subtitle to fade in.
+## Entry animation: the logo is static art, so this is just the icon
+## buttons popping in after a short beat.
 func _animate_entry() -> void:
 	var items: Array = []
-	for child in _buttons.get_children():
+	for child in _icon_bar.get_children():
 		items.append(child)
 	await get_tree().create_timer(Juice.tokens().dur_normal).timeout
 	Juice.stagger_in(items)
+
+
+## The "ketuk di mana saja" prompt pulses its alpha forever. Mirrors the
+## splash screen's hint-label loop (Scripts/Splashscreen/splashscreen.gd).
+func _blink_forever(label: Label) -> void:
+	var tw := label.create_tween().set_loops()
+	tw.tween_property(label, "modulate:a", 0.3, Juice.tokens().dur_slow) \
+		.set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(label, "modulate:a", 1.0, Juice.tokens().dur_slow) \
+		.set_ease(Tween.EASE_IN_OUT)
+
+
+## Slow vertical drift, ping-ponging around the node's resting Y. The
+## logo and its offset drop-shadow each get their own so they move in
+## lockstep.
+func _float_forever(node: Control, base_y: float) -> void:
+	var tw := node.create_tween().set_loops()
+	tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(node, "position:y", base_y - _LOGO_FLOAT_AMPLITUDE,
+		_LOGO_FLOAT_HALF_PERIOD)
+	tw.tween_property(node, "position:y", base_y + _LOGO_FLOAT_AMPLITUDE,
+		_LOGO_FLOAT_HALF_PERIOD)
 
 
 ## The wipe into the cutscene is deliberately slower than every other
@@ -69,7 +97,21 @@ func _animate_entry() -> void:
 ## to feel unhurried, giving the player a beat before the story starts.
 const _INTRO_WIPE_SEC := 1.1
 
-func _on_play_pressed() -> void:
+## Tapping anywhere that a Button did not already consume starts the
+## game. _unhandled_input (not _input) is deliberate: the gear and exit
+## Buttons call accept_event() on their own presses, so those taps never
+## reach here and cannot double-fire alongside their handlers.
+func _unhandled_input(event: InputEvent) -> void:
+	if _started:
+		return
+	if event is InputEventScreenTouch and event.pressed:
+		_start_game()
+	elif event is InputEventMouseButton and event.pressed:
+		_start_game()
+
+
+func _start_game() -> void:
+	_started = true
 	AudioDirector.play_sfx(&"confirm")
 	Transition.change_scene("res://Scenes/CutScene/cut_scene.tscn",
 		Transition.Style.WIPE, _INTRO_WIPE_SEC)

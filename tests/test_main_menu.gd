@@ -1,64 +1,38 @@
 @tool
 extends McpTestSuite
 
-## NOTE on test technique: the brief's original draft used
-## `await Engine.get_main_loop().process_frame` (twice) in
-## test_buttons_meet_the_minimum_touch_target to let VBoxContainer finish
-## sizing PlayButton/SettingButton/QuitButton before reading `.size.y`.
-## Per test_ui_components.gd's and test_juice.gd's established finding,
-## the MCP test runner's `_run_one_test` calls `suite.call(method_name)`
-## without awaiting it, so a coroutine test returns control at its first
-## `await` before any post-await assertion runs, and is scored as
-## "0 assertions" (a false pass, not a real one).
+## NOTE on the runner's two quirks this suite works around (unchanged
+## from the pre-2026-09-01 layout):
 ##
-## Unlike test_ui_components.gd's case (_ready() side effects, which run
-## synchronously inside add_child() and just needed the await deleted),
-## this measurement is different: `.size` reflects the result of
-## VBoxContainer's *sort pass*, which Container schedules via
-## `queue_sort()` -> a deferred call flushed from the message queue, not
-## something add_child() executes inline. Deleting the await outright and
-## reading `.size` immediately measured 0x0 in a manual check.
+## 1. No test may be a coroutine. The MCP runner calls
+##    `suite.call(method_name)` without awaiting, so a test that hits an
+##    `await` returns early and is scored as "0 assertions" (a false
+##    pass). Anything that would need a frame wait (e.g. reading a
+##    Container's post-sort `.size`) is instead measured via
+##    `get_combined_minimum_size()`, which is computed on demand from the
+##    theme with no dependency on a pending sort or frame.
 ##
-## Fix: measure `get_combined_minimum_size().y` instead of `.size.y`.
-## These buttons carry no SIZE_EXPAND flag, so a VBoxContainer always
-## gives each of them exactly its combined minimum size on the cross
-## axis — the sort pass can only ever settle them there. The minimum
-## size itself is computed on demand from the theme (stylebox content
-## margins + font metrics) with no dependency on any pending sort or
-## frame, so it is safe to read synchronously right after add_child().
-## This keeps the test's intent (buttons must be tappable) while making
-## it correct under the runner's synchronous call convention.
+## 2. A played game's root Window resolves the project theme through
+##    ThemeDB automatically; that population never happens for the
+##    editor's root while a suite runs inside the editor. So `setup()`
+##    assigns the baked theme to the scene root explicitly -- mirroring
+##    what the project setting does at real runtime, without changing
+##    what is asserted.
+##
+## 2026-09-01: the three stacked MULAI / PENGATURAN / KELUAR buttons were
+## replaced by a minimal layout -- MULAI is now a blinking "ketuk di mana
+## saja" prompt and a tap anywhere starts the game; PENGATURAN and KELUAR
+## are icon-only buttons (still the yellow MainMenuButton art) in a
+## bottom IconBar. See Scripts/MainMenu/main_menu.gd.
 
 func suite_name() -> String:
 	return "main_menu"
 
-var _menu: Control
-
-
-## NOTE on theme cascade: a *played* game's root Window automatically
-## resolves the project's "gui/theme/custom" setting through ThemeDB as
-## the ultimate theme fallback, which is why PrimaryButton/SecondaryButton
-## etc. render correctly at runtime. Empirically, that population never
-## happens for `Engine.get_main_loop().root` while running *inside the
-## editor* (this suite's context) -- ThemeDB's project theme is only
-## loaded when the game actually starts playing. Diagnosed by printing
-## the resolved stylebox for a button explicitly typed "PrimaryButton":
-## it came back with content_margin 6/6 and font_size 14, i.e. Godot's
-## built-in engine-default Button metrics, not this project's baked
-## theme at all. Without a fix, every size/stylebox-dependent assertion
-## in this suite would silently measure the wrong theme.
-## Fix: explicitly assign the baked theme to the scene root so this
-## subtree's cascade resolves through it directly, independent of
-## ThemeDB. This mirrors what the project setting does automatically at
-## real runtime; it does not change what is being asserted.
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+const _SCRIPT_PATH := "res://Scripts/MainMenu/main_menu.gd"
+const _LOGO_TOP_OFFSET := 68.0
 
-## The mockup's cap height implies font size 100, but Milker sets
-## "PENGATURAN" 755 px wide at 100 against a 624 px inner box. This asserts
-## the compromise (80) actually holds, so a future copy or size change cannot
-## silently clip the longest label. Inner box = the button's 670 px width
-## minus the art's 3 px border each side minus 20 px content margin each side.
-const _BUTTON_WIDTH := 670.0
+var _menu: Control
 
 
 func setup() -> void:
@@ -75,33 +49,25 @@ func teardown() -> void:
 	_menu = null
 
 
+func _script_source() -> String:
+	return FileAccess.get_file_as_string(_SCRIPT_PATH)
+
+
+func _icon_button(name: String) -> Button:
+	return _menu.find_child(name, true, false) as Button
+
+
+# --- Centralised styling -----------------------------------------------------
+
 func test_scene_has_no_theme_overrides() -> void:
-	# The whole point of centralization: this scene must be styled
-	# entirely by the project theme.
+	# Constants are deliberately excluded: SafeAreaMargin sets margin
+	# constants and IconBar sets a separation constant, both allowed.
 	var offenders: Array[String] = []
 	_collect_overrides(_menu, offenders)
 	assert_eq(offenders.size(), 0,
 		"found theme_override_* on: " + ", ".join(offenders))
 
 
-## NOTE on API correctness: the brief's original draft called
-## `get_theme_font_size_override_list()` / `get_theme_color_override_list()`
-## / `get_theme_stylebox_override_list()` on a Control. None of the three
-## exist on Godot 4.6's Control class (confirmed against the live editor's
-## ClassDB via api_manage — Control declares 174 methods total, none named
-## `get_theme_*_override_list`; what it does have is per-name checks:
-## `has_theme_color_override(name)`, `has_theme_font_size_override(name)`,
-## `has_theme_stylebox_override(name)`, etc.). Calling the nonexistent
-## methods aborted the whole suite with a script error rather than failing
-## individual assertions.
-##
-## Fixed by walking `get_property_list()` for the three override
-## categories the original check cared about (colors, font_sizes, styles
-## — constants/fonts/icons are deliberately excluded, matching the
-## original intent: SafeAreaMargin legitimately sets constant overrides
-## for its margins, and that must not trip this test) and asking the
-## matching `has_theme_*_override()` whether that specific item was
-## actually set on this node instance.
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:
 		var c := node as Control
@@ -132,84 +98,124 @@ func test_content_is_wrapped_in_a_safe_area() -> void:
 	assert_true(safe is SafeAreaMargin, "must be a SafeAreaMargin")
 
 
-func test_all_three_buttons_exist_and_are_wired() -> void:
-	for name in ["PlayButton", "SettingButton", "QuitButton"]:
-		var b := _menu.find_child(name, true, false) as BaseButton
+# --- MULAI is now a tap-anywhere prompt ------------------------------------
+
+func test_play_button_is_gone() -> void:
+	assert_true(_menu.find_child("PlayButton", true, false) == null,
+		"the MULAI Button must be removed -- MULAI is now a text prompt")
+
+
+func test_tap_prompt_exists_and_is_indonesian() -> void:
+	var prompt := _menu.find_child("TapPrompt", true, false) as Label
+	assert_true(prompt != null, "TapPrompt label must exist")
+	if prompt == null:
+		return
+	assert_true(prompt.text.strip_edges() != "", "TapPrompt must have text")
+	assert_true(prompt.text.to_lower().contains("ketuk"),
+		"TapPrompt copy must be Indonesian (contains 'ketuk')")
+	assert_true(prompt.theme_type_variation != &"",
+		"TapPrompt must be styled by a theme variation, not overrides")
+
+
+func test_tap_prompt_blinks() -> void:
+	var src := _script_source()
+	assert_true(src.contains("_blink_forever"),
+		"main_menu.gd must pulse the tap prompt")
+	assert_true(src.contains('"modulate:a"'),
+		"the blink must tween the prompt's alpha")
+
+
+func test_nothing_full_screen_swallows_the_tap() -> void:
+	# _unhandled_input only fires if no Control consumed the click first.
+	# The root and the full-rect Background must therefore not hit-test,
+	# or "tap anywhere to start" silently stops working.
+	assert_eq(_menu.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"the MainMenu root must not intercept taps")
+	var bg := _menu.find_child("Background", true, false) as Control
+	if bg != null:
+		assert_eq(bg.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"the Background must not intercept taps")
+
+
+func test_a_tap_anywhere_starts_the_game() -> void:
+	var src := _script_source()
+	# _unhandled_input (not _input) so the icon buttons' own presses,
+	# which they accept_event(), never double-fire the start.
+	assert_true(src.contains("func _unhandled_input("),
+		"main_menu.gd must listen for a tap anywhere via _unhandled_input")
+	assert_true(src.contains("func _start_game("),
+		"main_menu.gd must have a _start_game entry point")
+	assert_true(src.contains('"res://Scenes/CutScene/cut_scene.tscn"'),
+		"a tap must transition into the cutscene")
+	assert_true(src.contains("Transition.Style.WIPE"),
+		"the intro transition must be the slow wipe")
+
+
+# --- PENGATURAN / KELUAR are icon-only yellow buttons ---------------------
+
+func test_icon_bar_is_a_horizontal_container() -> void:
+	var bar := _menu.find_child("IconBar", true, false)
+	assert_true(bar is HBoxContainer,
+		"the two icon buttons must be laid out by an HBoxContainer")
+
+
+func test_icon_buttons_exist_and_are_wired() -> void:
+	for name in ["SettingButton", "QuitButton"]:
+		var b := _icon_button(name)
 		assert_true(b != null, "missing button: " + name)
+		if b == null:
+			continue
 		assert_true(b.pressed.get_connections().size() > 0,
 			name + " must have a pressed handler")
+		assert_true(b.get_parent() is HBoxContainer,
+			name + " must sit in the IconBar")
 
 
-func test_buttons_use_theme_variations_not_default_styling() -> void:
-	# All three menu buttons now share one variation: the mockup draws them
-	# identically, with no primary/secondary distinction.
-	for name in ["PlayButton", "SettingButton", "QuitButton"]:
-		var b := _menu.find_child(name, true, false) as Button
+func test_icon_buttons_keep_the_yellow_menu_art() -> void:
+	for name in ["SettingButton", "QuitButton"]:
+		var b := _icon_button(name)
+		if b == null:
+			continue
 		assert_eq(b.theme_type_variation, &"MainMenuButton",
-			name + " must use the MainMenuButton variation")
+			name + " must keep the MainMenuButton (yellow box) variation")
 
 
-func test_buttons_meet_the_minimum_touch_target() -> void:
-	# See header note: measured via combined minimum size, not `.size`,
-	# so this assertion is correct without any frame wait.
+func test_icon_buttons_show_an_icon_and_no_text() -> void:
+	for name in ["SettingButton", "QuitButton"]:
+		var b := _icon_button(name)
+		if b == null:
+			continue
+		assert_true(b.icon != null, name + " must have an icon")
+		assert_eq(b.text, "", name + " must be icon-only (no label)")
+		assert_true(b.expand_icon, name + " icon must scale to the button")
+
+
+func test_icon_button_art_paths() -> void:
+	var gear := _icon_button("SettingButton")
+	if gear != null and gear.icon != null:
+		assert_eq(gear.icon.resource_path, "res://Assets/Images/UI/setting.png",
+			"gear icon art")
+	var exit := _icon_button("QuitButton")
+	if exit != null and exit.icon != null:
+		assert_eq(exit.icon.resource_path, "res://Assets/Images/UI/icon_exit.svg",
+			"exit icon art")
+
+
+func test_icon_buttons_meet_the_minimum_touch_target() -> void:
 	var tokens := DesignTokens.load_default()
-	for name in ["PlayButton", "SettingButton", "QuitButton"]:
-		var b := _menu.find_child(name, true, false) as Control
-		var h := b.get_combined_minimum_size().y
-		assert_true(h >= float(tokens.touch_target_min),
-			"%s has minimum height %d px, below the %d px minimum"
-				% [name, int(h), tokens.touch_target_min])
+	for name in ["SettingButton", "QuitButton"]:
+		var b := _icon_button(name)
+		if b == null:
+			continue
+		assert_true(b.custom_minimum_size.x >= float(tokens.touch_target_min),
+			"%s width %d px is below the %d px minimum"
+				% [name, int(b.custom_minimum_size.x), tokens.touch_target_min])
+		assert_true(b.custom_minimum_size.y >= float(tokens.touch_target_min),
+			"%s height %d px is below the %d px minimum"
+				% [name, int(b.custom_minimum_size.y), tokens.touch_target_min])
 
 
-func test_button_labels_are_indonesian() -> void:
-	# The rest of the game is Indonesian; PLAY/SETTING/QUIT were leftovers.
-	var play := _menu.find_child("PlayButton", true, false) as Button
-	assert_eq(play.text, "MULAI", "play button")
-	var setting := _menu.find_child("SettingButton", true, false) as Button
-	assert_eq(setting.text, "PENGATURAN", "setting button")
-	var quit := _menu.find_child("QuitButton", true, false) as Button
-	assert_eq(quit.text, "KELUAR", "quit button")
-
-
-func test_layout_uses_containers_not_absolute_offsets() -> void:
-	# The three buttons must be spaced by the container's separation
-	# constant, not by three hand-placed rects.
-	var play := _menu.find_child("PlayButton", true, false) as Control
-	var parent := play.get_parent()
-	assert_true(parent is BoxContainer,
-		"buttons must be laid out by a container, not pixel offsets")
-
-
-func test_every_label_fits_inside_the_button_at_the_baked_font_size() -> void:
-	var theme: Theme = load(_THEME_PATH)
-	var font := theme.get_font("font", "MainMenuButton")
-	var font_size := theme.get_font_size("font_size", "MainMenuButton")
-	assert_true(font != null, "MainMenuButton must have a font")
-
-	# Inner width is derived live from the baked stylebox's own content
-	# margins (owned by ThemeFactory._build_main_menu_button), not a
-	# hardcoded copy of them -- so a future margin change is caught here
-	# instead of silently letting the real button clip its label.
-	var sb := theme.get_stylebox("normal", "MainMenuButton")
-	var inner_width := _BUTTON_WIDTH - 2.0 * 3.0 - sb.content_margin_left - sb.content_margin_right
-
-	for label in ["MULAI", "PENGATURAN", "KELUAR"]:
-		var w := font.get_string_size(
-			label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x
-		assert_true(w <= inner_width,
-			"%s renders %d px wide, over the %d px inner box"
-				% [label, int(w), int(inner_width)])
-
-
-## Measured from docs/superpowers/mockups/main-menu.png; see
-## docs/superpowers/specs/2026-08-31-main-menu-mockup.md for the probe trail.
-## The mockup's own button pitch drifts (gaps of 69 and 64 px); 66 is the
-## normalisation that lands the column's bottom edge on the measured 1626.
-const _BUTTON_HEIGHT := 126
-const _BUTTON_SEPARATION := 66
-const _COLUMN_HEIGHT := 3 * _BUTTON_HEIGHT + 2 * _BUTTON_SEPARATION  # 510
-const _LOGO_TOP_OFFSET := 68.0
-
+# --- Background + floating logo ------------------------------------------
 
 func test_background_uses_the_titlescreen_art() -> void:
 	var bg := _menu.find_child("Background", true, false) as TextureRect
@@ -217,8 +223,7 @@ func test_background_uses_the_titlescreen_art() -> void:
 	if bg == null:
 		return
 	assert_eq(bg.texture.resource_path,
-		"res://Assets/Images/UI/titlescreen_background.png",
-		"background art")
+		"res://Assets/Images/UI/titlescreen_background.png", "background art")
 
 
 func test_logo_sits_at_the_measured_offset() -> void:
@@ -228,53 +233,42 @@ func test_logo_sits_at_the_measured_offset() -> void:
 		return
 	assert_eq(logo.texture.resource_path, "res://Assets/Images/UI/logo.png",
 		"logo art")
-	# Correlating logo.png against the mockup put the optimum at scale 1.0,
-	# offset (0, 68) with a sharp 1-px minimum.
 	assert_eq(logo.offset_top, _LOGO_TOP_OFFSET, "logo top offset")
 	assert_eq(logo.offset_bottom, _LOGO_TOP_OFFSET + 1080.0,
 		"logo must be drawn at its native 1080 px height, unscaled")
 
 
-func test_button_column_matches_the_mockup_rect() -> void:
-	var col := _menu.find_child("ButtonColumn", true, false) as VBoxContainer
-	assert_true(col != null, "ButtonColumn must exist and be a VBoxContainer")
-	if col == null:
+func test_logo_floats_slowly() -> void:
+	var src := _script_source()
+	assert_true(src.contains("_float_forever"),
+		"main_menu.gd must drift the logo")
+	assert_true(src.contains('"position:y"'),
+		"the float must animate the logo's Y position")
+
+
+func test_logo_has_a_drop_shadow_behind_it() -> void:
+	var logo := _menu.find_child("Logo", true, false) as TextureRect
+	var shadow := _menu.find_child("LogoShadow", true, false) as TextureRect
+	assert_true(shadow != null, "LogoShadow node must exist")
+	if shadow == null or logo == null:
 		return
-
-	# Horizontally centred, 670 wide.
-	assert_eq(col.anchor_left, 0.5, "column left anchor")
-	assert_eq(col.anchor_right, 0.5, "column right anchor")
-	assert_eq(col.offset_right - col.offset_left, _BUTTON_WIDTH,
-		"column width")
-
-	# Pinned to the bottom of the safe area, 510 tall.
-	assert_eq(col.anchor_top, 1.0, "column top anchor")
-	assert_eq(col.anchor_bottom, 1.0, "column bottom anchor")
-	# Bottom inset derives from the mockup's measured column bottom (y=1626)
-	# against the full 1920-tall viewport, minus DesignTokens' live
-	# screen_margin -- NOT a hardcoded literal, so a future screen_margin
-	# change is caught here instead of silently drifting off the mockup.
-	var margin := float(DesignTokens.load_default().screen_margin)
-	assert_eq(col.offset_bottom, -(1920.0 - 1626.0 - margin), "column bottom inset")
-	assert_eq(col.offset_bottom - col.offset_top, float(_COLUMN_HEIGHT),
-		"column height")
-
-	assert_eq(col.get_theme_constant("separation"), _BUTTON_SEPARATION,
-		"button separation")
+	assert_eq(shadow.texture.resource_path, logo.texture.resource_path,
+		"the shadow must be the same art as the logo")
+	# Drawn first => rendered behind the real logo.
+	assert_true(shadow.get_index() < logo.get_index(),
+		"LogoShadow must be ordered before Logo so it renders behind it")
+	assert_true(shadow.modulate.a < 1.0 and shadow.modulate.v < 0.5,
+		"the shadow must be a darkened, semi-transparent copy")
+	# Offset from the logo so the shadow actually reads.
+	assert_true(shadow.offset_top != logo.offset_top
+			or shadow.offset_left != logo.offset_left,
+		"the shadow must be offset from the logo")
 
 
-func test_each_button_is_the_measured_height_and_uses_the_menu_variation() -> void:
-	for name in ["PlayButton", "SettingButton", "QuitButton"]:
-		var b := _menu.find_child(name, true, false) as Button
-		assert_eq(b.custom_minimum_size.y, float(_BUTTON_HEIGHT),
-			name + " height")
-		assert_eq(b.theme_type_variation, &"MainMenuButton",
-			name + " must use the MainMenuButton variation")
+# --- The old stacked layout is fully gone ------------------------------
 
-
-func test_the_subtitle_is_gone() -> void:
-	# The mockup shows only the logo and three buttons -- everything from
-	# the old spacer-ratio layout must be gone, not just the subtitle.
-	for name in ["SubtitleLabel", "TitleLabel", "Layout", "TitleSpacer", "MidSpacer", "BottomSpacer"]:
+func test_old_layout_nodes_are_removed() -> void:
+	for name in ["ButtonColumn", "Layout", "TitleSpacer", "MidSpacer",
+			"BottomSpacer", "SubtitleLabel", "TitleLabel"]:
 		assert_true(_menu.find_child(name, true, false) == null,
 			name + " must be removed")

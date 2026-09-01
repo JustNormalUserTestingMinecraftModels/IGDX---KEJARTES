@@ -2,7 +2,7 @@
 
 Godot **4.6** mobile game (portrait 1080×1920, `mobile` renderer, d3d12).
 Indonesian-language school-management sim. Main scene:
-`Scenes/Splashscreen/Splashscreen.tscn`.
+`Scenes/MainMenu/main_menu.tscn` (since the 2026-08-31 boot change).
 
 ## The game
 
@@ -132,7 +132,8 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 29 suites, 425 tests, all green.
+the Godot AI MCP `test_run` tool. 45 suites, 568 tests, all green
+(2026-09-01).
 
 Hard constraints, learned the hard way:
 
@@ -144,8 +145,8 @@ Hard constraints, learned the hard way:
    effects in `_ready()` gated behind `if Engine.is_editor_hint(): return`.
    Pure signal wiring stays ungated so tests can exercise it.
 4. Some suites assume the **main scene is open** in the editor; `test_run`
-   returns a `scene_warning` when it isn't. Open
-   `Scenes/Splashscreen/Splashscreen.tscn` before trusting a failure.
+   returns a `scene_warning` when it isn't, naming the scene it wants. Open
+   `Scenes/MainMenu/main_menu.tscn` before trusting a failure.
 
 Many tests are **source-text scans** (`src.contains(...)`) rather than
 behavioral, because a lot of the UI can't be instantiated headlessly. Follow
@@ -171,7 +172,7 @@ log; `source="game"` misses boot-time failures entirely.
 ## Working efficiently here
 
 Verification, not implementation, dominates the cost of a session in this
-project. Four rules, in order of how much they save:
+project. Five rules, in order of how much they save:
 
 **1. Never play the game to reach a state — seed it.** The debug overlay
 (`F1`, or 5 taps in the top-right corner) has **⚡ Seed Playtest State** at the
@@ -206,7 +207,7 @@ Note the runtime path quirk: autoloads answer to `/root/<Name>` (e.g.
 `/root/DebugManager`) but the reply echoes paths relative to the current
 scene (`/Inventory/../DebugManager`). Bare `/root` returns nothing.
 
-**3. Prefer `test_run` over screenshots.** The whole suite — 425 tests, 29
+**3. Prefer `test_run` over screenshots.** The whole suite — 568 tests, 45
 suites — returns a compact JSON summary in about two seconds. One screenshot
 costs more tokens than the entire run. Reach for a screenshot only to judge
 something genuinely visual (layout, spacing, color); use `test_run` for
@@ -214,7 +215,21 @@ anything about behaviour or wiring. Many suites here are deliberately
 source-text scans (`src.contains(...)`) precisely because they are cheap and
 do not need the scene instantiated.
 
-**4. Rescan after editing a `.gd`, before running tests.** `test_run` will
+**4. Never hand-edit a `.tscn` while the editor is attached.** It caches
+every scene, its in-memory copy wins, and the next `scene_save` silently
+overwrites your text edit — `scan`, `reimport` and even
+`scene_open(force_reload=true)` all fail to evict it. Go through the editor:
+`scene_open` → `node_create` / `node_set_property` / `node_manage` →
+`scene_save`. `batch_execute` takes the plugin command names (`create_node`,
+`set_property`, `move_node`, `delete_node`) and does a whole node in one
+call. Gotchas: `anchors_preset` is inert (set the four anchors), numbers must
+be unquoted (`1`, not `"1.0"`), `node_create` appends last so z-order needs
+`move_node`, and a node's *type* can only be changed by delete-and-recreate.
+The same cache bites `class_name` scripts: a **new `@export` on a Resource is
+invisible until the editor restarts**, which is why the theme rebake
+(`Scripts/Design/BakeTheme.gd`, File > Run) has no headless path.
+
+**5. Rescan after editing a `.gd`, before running tests.** `test_run` will
 serve a **stale** autoload otherwise. Three tests once failed with
 "Nonexistent function 'seed_playtest_inventory'" while that function sat
 committed on disk; one `filesystem_manage(op="scan")` turned the same run into
@@ -271,6 +286,22 @@ the mockup's grey, and an ungraded background).
 
 The 2026-08-30 stability sweep
 (`docs/superpowers/plans/2026-08-30-project-stability-sweep.md`) is complete.
+
+The 2026-09-01 art pass is complete except for one deferred item. Spec:
+`docs/superpowers/specs/2026-09-01-art-pass-and-screen-restyle.md`; five plans
+in `docs/superpowers/plans/2026-09-01-*.md`, each carrying a STATUS block with
+its deviations. It landed the six-student splash batch (all four rosters
+rewired, Daily Results avatars recropped, and the avatar flipped to
+splash-first as `DaySummaryAvatar.gd` had asked), the blurred-classroom
+backdrop on DaySummary / ResultCheckup / AturJadwal, ReportCard/StudentCard
+render parity, AturJadwal's mockup top band with the stat pills lifted out of
+the splash button, and the intro cutscene's new dialogue panel.
+
+**Deferred:** AturJadwal's shelf ships as two `ColorRect`s rather than the
+intended `ShelfEdge` theme variation — a new `@export` on `DesignTokens` is
+invisible to a running editor, so it needs a restart plus a manual rebake. See
+the STATUS block in `2026-09-01-atur-jadwal-mockup.md` for the exact diff to
+re-apply.
 
 `-REFERENCE-/prototype/` is the original prototype, kept for reference only —
 not built, not imported. `koprasi&inventory` was a second programmer's separate

@@ -5,20 +5,11 @@
 [ext_resource type="Texture2D" uid="uid://croetdw7smqvd" path="res://Assets/Images/MuridPotrait/Murid3.jpg" id="3_33k3e"]
 [ext_resource type="Texture2D" uid="uid://brotcydbytvmj" path="res://Assets/Images/MuridPotrait/Murid6.jpg" id="3_a1isy"]
 [ext_resource type="Texture2D" uid="uid://dpuj0ix84a0r4" path="res://Assets/Images/MuridPotrait/Murid4.jpg" id="3_osw5o"]
-[ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
 [ext_resource type="Texture2D" uid="uid://ddqatfjpqc4ev" path="res://Assets/Images/MuridPotrait/Murid2.jpg" id="4_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://cn7kemflfrhci" path="res://Assets/Images/MuridPotrait/Murid5.jpg" id="4_hodfn"]
 [ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="4_vdd03"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
-shader = ExtResource("3_ovxc5")
-shader_parameter/overlay_color = Color(0, 0, 0, 0.7)
-shader_parameter/rect_size = Vector2(1152, 648)
-shader_parameter/hole_pos = Vector2(100, 100)
-shader_parameter/hole_size = Vector2(200, 80)
-shader_parameter/feather = 10.0
 
 [node name="StudentCard" type="Control" unique_id=510264751]
 layout_mode = 3
@@ -1148,9 +1139,9 @@ anchor_top = 0.786
 anchor_right = 0.5
 anchor_bottom = 0.786
 offset_left = -421.0
-offset_top = -342.12
+offset_top = -104.119995
 offset_right = 421.0
-offset_bottom = -205.12
+offset_bottom = -0.11999512
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -1161,10 +1152,10 @@ anchor_left = 0.5
 anchor_top = 0.84800005
 anchor_right = 0.5
 anchor_bottom = 0.84800005
-offset_left = -403.0
-offset_top = -277.16016
-offset_right = 434.0
-offset_bottom = -140.16016
+offset_left = -417.0
+offset_top = -98.16016
+offset_right = 420.0
+offset_bottom = 0.83984375
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -1356,35 +1347,7 @@ offset_top = -172.0
 offset_right = 964.0
 offset_bottom = -44.0
 theme_type_variation = &"DisplayLabel"
-text = "Pilih Muridmu"
-
-[node name="ColorRect" type="ColorRect" parent="." unique_id=841057524]
-material = SubResource("ShaderMaterial_jsirh")
-layout_mode = 1
-anchors_preset = -1
-anchor_left = -0.075
-anchor_top = -0.193
-anchor_right = 1.085
-anchor_bottom = 1.268
-offset_left = 36.975006
-offset_top = 27.602005
-offset_right = 36.694946
-offset_bottom = 27.848022
-mouse_filter = 2
-color = Color(0, 0, 0, 0)
-
-[node name="ClickArea" type="Button" parent="ColorRect" unique_id=1890873324]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -21.0
-offset_top = 18.0
-offset_right = -18.0
-offset_bottom = 17.0
-grow_horizontal = 2
-grow_vertical = 2
+text = "Rapor Murid"
 
 [node name="PageLabel" type="Label" parent="." unique_id=977170758]
 layout_mode = 0

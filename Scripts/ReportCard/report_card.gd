@@ -195,6 +195,12 @@ func _transition_page(old_index: int, new_index: int, direction: int):
 	new_kertas.rotation_degrees = -15 * direction
 	new_kertas.modulate.a = 0.0
 
+	# Pre-hide the new page's rows before the card itself fades in, so they
+	# don't ride the card's own modulate up to fully visible only to be
+	# yanked back to invisible a moment later when _stagger_in_card's
+	# pop_in() takes over. Mirrors student_card.gd:667.
+	_hide_card_rows(new_index)
+
 	_update_nav_buttons(new_index)
 
 	# --- TWEEN IN (Slide new card in from off-screen) ---
@@ -226,9 +232,25 @@ func _update_page_label(index: int):
 ## The rows of one student page, top to bottom, for staggered entry.
 ## Order matters: Juice.stagger_in delays each node by one stagger_step,
 ## so this list is what the player's eye follows down the card.
-const CARD_ROW_ORDER := ["Nama", "Profil", "Kepribadian", "Kepribadian1",
-	"Kepribadian2", "Akademis", "Akademis1", "Akademis2", "Akademis3",
+const CARD_ROW_ORDER := ["BioPanel", "IconAkademis1", "Akademis1",
+	"IconAkademis2", "Akademis2", "IconAkademis3", "Akademis3",
+	"IconKepribadian1", "Kepribadian1", "IconKepribadian2", "Kepribadian2",
 	"KutuBuku", "KutuBuku2"]
+
+
+## Sets every row of the given page to the same invisible state pop_in()
+## starts from, ahead of time -- without it the rows ride the card's own
+## modulate up to fully visible and are then yanked back down when
+## _stagger_in_card takes over. Mirrors student_card.gd:752.
+func _hide_card_rows(index: int) -> void:
+	if index < 0 or index >= kertas_murid.size():
+		return
+	var kertas: Node = kertas_murid[index]
+	for row_name in CARD_ROW_ORDER:
+		var node = kertas.get_node_or_null(row_name)
+		if node is Control:
+			node.modulate.a = 0.0
+			node.scale = Vector2(0.82, 0.82)
 
 
 ## Reveal the newly-shown page's contents row by row instead of having

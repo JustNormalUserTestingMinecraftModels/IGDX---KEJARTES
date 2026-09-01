@@ -42,21 +42,28 @@ func test_no_theme_overrides() -> void:
 	_collect_overrides(_note, offenders)
 	assert_eq(offenders.size(), 0, "theme_override_* on: " + ", ".join(offenders))
 
-func _collect_overrides(n: Node, out: Array) -> void:
-	if n is Control or n is Window:
-		for c in n.get_theme_color_list(""):
-			if n.has_theme_color_override(c): out.append("%s color/%s" % [n.name, c])
-		for c in n.get_theme_constant_list(""):
-			if n.has_theme_constant_override(c) and c not in ["separation", "margin_left", "margin_top", "margin_right", "margin_bottom", "h_separation", "v_separation"]:
-				out.append("%s constant/%s" % [n.name, c])
-		for f in n.get_theme_font_list(""):
-			if n.has_theme_font_override(f): out.append("%s font/%s" % [n.name, f])
-		for f in n.get_theme_font_size_list(""):
-			if n.has_theme_font_size_override(f): out.append("%s font_size/%s" % [n.name, f])
-		for s in n.get_theme_stylebox_list(""):
-			if n.has_theme_stylebox_override(s): out.append("%s stylebox/%s" % [n.name, s])
-	for c in n.get_children():
-		_collect_overrides(c, out)
+func _collect_overrides(node: Node, out: Array[String]) -> void:
+	if node is Control:
+		var c := node as Control
+		var flagged := false
+		for prop in c.get_property_list():
+			var pname: String = prop.name
+			if pname.begins_with("theme_override_colors/"):
+				if c.has_theme_color_override(pname.get_slice("/", 1)):
+					flagged = true
+					break
+			elif pname.begins_with("theme_override_font_sizes/"):
+				if c.has_theme_font_size_override(pname.get_slice("/", 1)):
+					flagged = true
+					break
+			elif pname.begins_with("theme_override_styles/"):
+				if c.has_theme_stylebox_override(pname.get_slice("/", 1)):
+					flagged = true
+					break
+		if flagged:
+			out.append(node.name)
+	for child in node.get_children():
+		_collect_overrides(child, out)
 
 func test_script_has_no_color_literals() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT)

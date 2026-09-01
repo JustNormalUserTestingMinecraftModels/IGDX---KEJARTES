@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://sbohtwr3ujoj" path="res://Scripts/ReportCard/report_card.gd" id="1_ao2t8"]
 [ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="1_jsirh"]
+[ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="2_avjyq"]
 [ext_resource type="Texture2D" uid="uid://croetdw7smqvd" path="res://Assets/Images/MuridPotrait/Murid3.jpg" id="3_33k3e"]
 [ext_resource type="Texture2D" uid="uid://brotcydbytvmj" path="res://Assets/Images/MuridPotrait/Murid6.jpg" id="3_a1isy"]
 [ext_resource type="Texture2D" uid="uid://dpuj0ix84a0r4" path="res://Assets/Images/MuridPotrait/Murid4.jpg" id="3_osw5o"]
@@ -23,6 +24,17 @@ offset_bottom = -352.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ao2t8")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=2062452678]
+layout_mode = 0
+offset_left = -70.0
+offset_top = -254.0
+offset_right = 1010.0
+offset_bottom = 1666.0
+mouse_filter = 2
+texture = ExtResource("2_avjyq")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="KertasMurid6" type="TextureRect" parent="." unique_id=1627899928]
 visible = false

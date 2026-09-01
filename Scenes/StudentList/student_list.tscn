@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://bdrlmukmq2tie"]
 
-[ext_resource type="Script" path="res://Scripts/StudentList/student_list.gd" id="1_wr76l"]
+[ext_resource type="Script" uid="uid://d3u4r180wpqlp" path="res://Scripts/StudentList/student_list.gd" id="1_wr76l"]
+[ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="2_j8vmn"]
 [ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="2_v3e4w"]
-[ext_resource type="Shader" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
+[ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
 [ext_resource type="Texture2D" uid="uid://dlyxcrhuswotn" path="res://Assets/Images/UI/paper.png" id="3_paper"]
 [ext_resource type="PackedScene" uid="uid://cries6nb441ve" path="res://Scenes/StudentList/StickyNote.tscn" id="5_stickynote"]
 
@@ -22,6 +23,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_wr76l")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=1201077660]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_j8vmn")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="HeaderLabel" type="Label" parent="." unique_id=892341201]
 layout_mode = 1
@@ -99,7 +112,6 @@ offset_left = 380.0
 offset_top = 45.0
 offset_right = 900.0
 offset_bottom = 125.0
-mouse_filter = 2
 theme_type_variation = &"H2Label"
 text = "Hamamiya"
 horizontal_alignment = 2
@@ -135,50 +147,54 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Senin" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Senin" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=857761668 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 280.0
 offset_bottom = 300.0
 mouse_filter = 2
-day_name = "Senin"
-activity = "-"
 
-[node name="Selasa" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Selasa" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=1499677925 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 310.0
 offset_top = 40.0
 offset_right = 570.0
 offset_bottom = 300.0
 mouse_filter = 2
 day_name = "Selasa"
-activity = "-"
 
-[node name="Rabu" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Rabu" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=323241185 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 600.0
 offset_top = 40.0
 offset_right = 860.0
 offset_bottom = 300.0
 mouse_filter = 2
 day_name = "Rabu"
-activity = "-"
 
-[node name="Kamis" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Kamis" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=1607444755 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 165.0
 offset_top = 330.0
 offset_right = 425.0
 offset_bottom = 590.0
 mouse_filter = 2
 day_name = "Kamis"
-activity = "-"
 
-[node name="Jumat" parent="CardContainer/Murid1/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Jumat" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=880559361 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 455.0
 offset_top = 330.0
 offset_right = 715.0
 offset_bottom = 590.0
 mouse_filter = 2
 day_name = "Jumat"
-activity = "-"
 
 [node name="Murid2" type="TextureRect" parent="CardContainer" unique_id=981124888]
 visible = false
@@ -228,7 +244,6 @@ offset_left = 380.0
 offset_top = 45.0
 offset_right = 900.0
 offset_bottom = 125.0
-mouse_filter = 2
 theme_type_variation = &"H2Label"
 text = "Ambatukam"
 horizontal_alignment = 2
@@ -264,50 +279,54 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Senin" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Senin" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=475777445 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 280.0
 offset_bottom = 300.0
 mouse_filter = 2
-day_name = "Senin"
-activity = "-"
 
-[node name="Selasa" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Selasa" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=1479542953 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 310.0
 offset_top = 40.0
 offset_right = 570.0
 offset_bottom = 300.0
 mouse_filter = 2
 day_name = "Selasa"
-activity = "-"
 
-[node name="Rabu" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Rabu" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=486030669 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 600.0
 offset_top = 40.0
 offset_right = 860.0
 offset_bottom = 300.0
 mouse_filter = 2
 day_name = "Rabu"
-activity = "-"
 
-[node name="Kamis" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Kamis" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=1132963549 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 165.0
 offset_top = 330.0
 offset_right = 425.0
 offset_bottom = 590.0
 mouse_filter = 2
 day_name = "Kamis"
-activity = "-"
 
-[node name="Jumat" parent="CardContainer/Murid2/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Jumat" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=472368283 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 455.0
 offset_top = 330.0
 offset_right = 715.0
 offset_bottom = 590.0
 mouse_filter = 2
 day_name = "Jumat"
-activity = "-"
 
 [node name="Murid3" type="TextureRect" parent="CardContainer" unique_id=311519847]
 visible = false
@@ -357,7 +376,6 @@ offset_left = 380.0
 offset_top = 45.0
 offset_right = 900.0
 offset_bottom = 125.0
-mouse_filter = 2
 theme_type_variation = &"H2Label"
 text = "Zeta"
 horizontal_alignment = 2
@@ -393,50 +411,54 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Senin" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Senin" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=196663787 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 280.0
 offset_bottom = 300.0
 mouse_filter = 2
-day_name = "Senin"
-activity = "-"
 
-[node name="Selasa" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Selasa" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=1381663213 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 310.0
 offset_top = 40.0
 offset_right = 570.0
 offset_bottom = 300.0
 mouse_filter = 2
 day_name = "Selasa"
-activity = "-"
 
-[node name="Rabu" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Rabu" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=437369894 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 600.0
 offset_top = 40.0
 offset_right = 860.0
 offset_bottom = 300.0
 mouse_filter = 2
 day_name = "Rabu"
-activity = "-"
 
-[node name="Kamis" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Kamis" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=2115518920 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 165.0
 offset_top = 330.0
 offset_right = 425.0
 offset_bottom = 590.0
 mouse_filter = 2
 day_name = "Kamis"
-activity = "-"
 
-[node name="Jumat" parent="CardContainer/Murid3/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Jumat" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=928317486 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 455.0
 offset_top = 330.0
 offset_right = 715.0
 offset_bottom = 590.0
 mouse_filter = 2
 day_name = "Jumat"
-activity = "-"
 
 [node name="Murid4" type="TextureRect" parent="CardContainer" unique_id=1912832907]
 visible = false
@@ -486,7 +508,6 @@ offset_left = 380.0
 offset_top = 45.0
 offset_right = 900.0
 offset_bottom = 125.0
-mouse_filter = 2
 theme_type_variation = &"H2Label"
 text = "Bocchi"
 horizontal_alignment = 2
@@ -522,54 +543,58 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Senin" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Senin" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=426519226 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 280.0
 offset_bottom = 300.0
 mouse_filter = 2
-day_name = "Senin"
-activity = "-"
 
-[node name="Selasa" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Selasa" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=964603021 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 310.0
 offset_top = 40.0
 offset_right = 570.0
 offset_bottom = 300.0
 mouse_filter = 2
 day_name = "Selasa"
-activity = "-"
 
-[node name="Rabu" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Rabu" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=655103121 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 600.0
 offset_top = 40.0
 offset_right = 860.0
 offset_bottom = 300.0
 mouse_filter = 2
 day_name = "Rabu"
-activity = "-"
 
-[node name="Kamis" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Kamis" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=1917549899 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 165.0
 offset_top = 330.0
 offset_right = 425.0
 offset_bottom = 590.0
 mouse_filter = 2
 day_name = "Kamis"
-activity = "-"
 
-[node name="Jumat" parent="CardContainer/Murid4/StickyNotesContainer" instance=ExtResource("5_stickynote")]
+[node name="Jumat" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=1218424600 instance=ExtResource("5_stickynote")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
 offset_left = 455.0
 offset_top = 330.0
 offset_right = 715.0
 offset_bottom = 590.0
 mouse_filter = 2
 day_name = "Jumat"
-activity = "-"
 
 [node name="LeftArrow" type="Button" parent="." unique_id=654321098]
-layout_mode = 1
 custom_minimum_size = Vector2(0, 96)
+layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
@@ -582,10 +607,12 @@ theme_type_variation = &"SecondaryButton"
 text = "<"
 
 [node name="RightArrow" type="Button" parent="." unique_id=654321099]
-layout_mode = 1
 custom_minimum_size = Vector2(0, 96)
+layout_mode = 1
 anchors_preset = 6
+anchor_left = 1.0
 anchor_top = 0.5
+anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -90.0
 offset_top = -80.0

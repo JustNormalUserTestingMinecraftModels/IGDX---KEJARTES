@@ -1,9 +1,10 @@
 [gd_scene format=3 uid="uid://c31ckajpvpo43"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/Akademis/Menjodohkan.gd" id="1_menjodohkan"]
+[ext_resource type="Script" uid="uid://ev32hego1ljx" path="res://Scripts/Minigames/Akademis/Menjodohkan.gd" id="1_menjodohkan"]
 [ext_resource type="Texture2D" uid="uid://co5rcx5gefm1v" path="res://Assets/Images/Textures/Gawang.jpg" id="2_7algp"]
 [ext_resource type="Texture2D" uid="uid://b4mc8a23begw3" path="res://Assets/Images/Textures/KiperLeft.jpg" id="3_a28ad"]
 [ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="4_i1och"]
+[ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="5_a28ad"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nav_btn"]
 bg_color = Color(0.12, 0.15, 0.22, 0.9)
@@ -81,6 +82,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = ExtResource("5_a28ad")
 expand_mode = 1
 stretch_mode = 6
 

@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://dfv52334vw10e"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/Akademis/PilihanGanda.gd" id="1_pilihanganda"]
+[ext_resource type="Script" uid="uid://j0ixncgl13v1" path="res://Scripts/Minigames/Akademis/PilihanGanda.gd" id="1_pilihanganda"]
 [ext_resource type="Texture2D" uid="uid://sbcqefj5hbe3" path="res://Assets/Images/Textures/field_bg.jpg" id="2_ubtp4"]
 [ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="3_2jy3k"]
+[ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="4_doxun"]
 
 [node name="PilihanGanda" type="Control" unique_id=1850730347]
 layout_mode = 3
@@ -22,6 +23,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = ExtResource("4_doxun")
 expand_mode = 1
 stretch_mode = 6
 

@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://c13gd6s3vki43"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/SeniBudaya/BuatBatik.gd" id="1_buatbatik"]
+[ext_resource type="Script" uid="uid://cukv143e5oghy" path="res://Scripts/Minigames/SeniBudaya/BuatBatik.gd" id="1_buatbatik"]
 [ext_resource type="Texture2D" uid="uid://dqsgnifd7hg17" path="res://Assets/Images/borobudur_temple.jpg" id="2_ybefu"]
 [ext_resource type="Texture2D" uid="uid://ctlhg11qr7aao" path="res://Assets/Images/komodo_dragon.jpg" id="3_mvpj1"]
 [ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="4_2cpfp"]
 [ext_resource type="Texture2D" uid="uid://b4mc8a23begw3" path="res://Assets/Images/Textures/KiperLeft.jpg" id="5_tjkcn"]
 [ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="6_2ic2u"]
 [ext_resource type="Texture2D" uid="uid://ch0pg0l4inpsq" path="res://Assets/Images/Textures/DiagonalRight.jpg" id="7_d365y"]
+[ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="8_tjkcn"]
 
 [node name="BuatBatik" type="Control" unique_id=503659427]
 layout_mode = 3
@@ -23,14 +24,17 @@ tool1_texture = ExtResource("5_tjkcn")
 tool2_texture = ExtResource("6_2ic2u")
 tool3_texture = ExtResource("7_d365y")
 
-[node name="Background" type="ColorRect" parent="." unique_id=1194216230]
+[node name="Background" type="TextureRect" parent="." unique_id=466903234]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.12, 0.08, 0.05, 1)
+mouse_filter = 2
+texture = ExtResource("8_tjkcn")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="TitleLabel" type="Label" parent="." unique_id=220147040]
 layout_mode = 1

@@ -48,6 +48,12 @@ const TRACK_VARIATION_FOR := {
 var _fill_from: float = 0.0
 var _fill_to: float = 0.0
 
+## The day's (or week's) raw delta and its target, cached by set_stat so
+## play_gain can count the "+12/65" label up from zero the same way it
+## rewinds the track -- see play_gain.
+var _delta: float = 0.0
+var _target: float = 0.0
+
 
 ## "+12/65" -- the sign rides with the number so a loss reads "-3/65"
 ## rather than "+-3/65".
@@ -106,6 +112,8 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 		icon.texture = load(ICON_FOR[stat_key])
 	if TRACK_VARIATION_FOR.has(stat_key):
 		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
+	_delta = delta
+	_target = target
 	value.text = format_value(delta, target)
 	# play_gain hands the chevron to Juice.pop_in, which zeroes its alpha and
 	# shrinks it before tweening both back. Re-arming a row for another
@@ -134,3 +142,5 @@ func play_gain(delay: float = 0.0) -> void:
 	Juice.fill_bar(track, _fill_to, -1.0, delay)
 	if chevron.visible:
 		Juice.pop_in(chevron, delay)
+	Juice.count_up_formatted(value, 0.0, _delta,
+		func(v: float) -> String: return format_value(v, _target), delay)

@@ -24,7 +24,9 @@ const _ART := {
 
 const _SPLASH := [
 	"res://Assets/Images/SplashArtMurid/splash_marcel.png",
+	"res://Assets/Images/SplashArtMurid/splash_doni.png",
 	"res://Assets/Images/SplashArtMurid/splash_andi.png",
+	"res://Assets/Images/SplashArtMurid/splash_citra.png",
 	"res://Assets/Images/SplashArtMurid/splash_shinta.png",
 	"res://Assets/Images/SplashArtMurid/splash_thea.png",
 ]
@@ -161,10 +163,13 @@ func test_energy_and_mood_bars_differ_only_in_fill() -> void:
 	var m_bg := theme.get_stylebox("background", "DaySummaryMoodBar") as StyleBoxFlat
 	assert_eq(e_bg.bg_color, m_bg.bg_color, "bar tracks diverged")
 	assert_eq(e_bg.bg_color, tokens.day_bar_track, "bar track drifted")
-	var e_fill := theme.get_stylebox("fill", "DaySummaryEnergyBar") as StyleBoxFlat
-	var m_fill := theme.get_stylebox("fill", "DaySummaryMoodBar") as StyleBoxFlat
-	assert_eq(e_fill.bg_color, tokens.day_energy_fill, "energy fill drifted")
-	assert_eq(m_fill.bg_color, tokens.day_mood_fill, "mood fill drifted")
+	# The fill is the shared progress-bar art (see ThemeFactory's
+	# _progress_fill_stylebox), tinted per bar via modulate_color rather
+	# than drawn as a flat colour.
+	var e_fill := theme.get_stylebox("fill", "DaySummaryEnergyBar") as StyleBoxTexture
+	var m_fill := theme.get_stylebox("fill", "DaySummaryMoodBar") as StyleBoxTexture
+	assert_eq(e_fill.modulate_color, tokens.day_energy_fill, "energy fill drifted")
+	assert_eq(m_fill.modulate_color, tokens.day_mood_fill, "mood fill drifted")
 
 
 ## Which token each stat track fills with. The icons already tell the
@@ -184,9 +189,10 @@ func test_each_stat_track_fills_in_its_category_colour() -> void:
 		assert_not_null(bg, "%s has no background stylebox -- did you rebake?" % name)
 		assert_eq(bg.bg_color, tokens.day_stat_track,
 			"%s rail drifted off the mockup's stat-track colour" % name)
-		var fill := theme.get_stylebox("fill", name) as StyleBoxFlat
+		# The fill is the shared progress-bar art, tinted via modulate_color.
+		var fill := theme.get_stylebox("fill", name) as StyleBoxTexture
 		assert_not_null(fill, "%s has no fill stylebox -- did you rebake?" % name)
-		assert_eq(fill.bg_color, tokens.get(_STAT_TRACK_FILL_TOKEN[name]),
+		assert_eq(fill.modulate_color, tokens.get(_STAT_TRACK_FILL_TOKEN[name]),
 			"%s fill is not its category colour" % name)
 
 
@@ -199,8 +205,8 @@ func test_no_stat_track_fill_matches_its_own_rail() -> void:
 	var theme := load(_THEME_PATH) as Theme
 	for name in _STAT_TRACK_FILL_TOKEN:
 		var bg := theme.get_stylebox("background", name) as StyleBoxFlat
-		var fill := theme.get_stylebox("fill", name) as StyleBoxFlat
-		assert_ne(fill.bg_color, bg.bg_color,
+		var fill := theme.get_stylebox("fill", name) as StyleBoxTexture
+		assert_ne(fill.modulate_color, bg.bg_color,
 			"%s fill equals its rail -- the bar reads as empty at every value" % name)
 
 
@@ -227,7 +233,9 @@ func test_every_named_crop_matches_the_frame_aspect() -> void:
 func test_every_named_crop_is_inside_its_texture() -> void:
 	var paths := {
 		"Marcel": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
+		"Doni": "res://Assets/Images/SplashArtMurid/splash_doni.png",
 		"Andi": "res://Assets/Images/SplashArtMurid/splash_andi.png",
+		"Citra": "res://Assets/Images/SplashArtMurid/splash_citra.png",
 		"Shinta": "res://Assets/Images/SplashArtMurid/splash_shinta.png",
 		"Thea": "res://Assets/Images/SplashArtMurid/splash_thea.png",
 	}
@@ -242,11 +250,12 @@ func test_every_named_crop_is_inside_its_texture() -> void:
 			"%s crop runs past the bottom edge" % student_name)
 
 
-## Doni and Citra have no new art (spec section 3). The fallback must
-## still produce a usable, correctly-shaped crop rather than nothing.
+## Every student in the roster now has a named crop, so the fallback is
+## reached only by a student who is not in the table at all -- a debug or
+## test fixture. It must still produce a usable, correctly-shaped crop.
 func test_unknown_students_get_a_computed_crop() -> void:
 	var tex := load("res://Assets/Images/SplashArtMurid/splash_marcel.png") as Texture2D
-	var r := DaySummaryAvatar.crop_for("Doni", tex)
+	var r := DaySummaryAvatar.crop_for("Budi", tex)
 	assert_true(r.size.x > 0.0 and r.size.y > 0.0,
 		"fallback crop is empty")
 	var aspect := r.size.x / r.size.y
@@ -446,8 +455,8 @@ func test_play_gain_rewinds_the_track_to_this_mornings_value() -> void:
 	inst.play_gain()
 	assert_true(absf(inst.track.value - 66.0) <= 0.01,
 		"play_gain must rewind the track to 33/50 = 66% before it grows")
-	assert_eq(inst.value.text, "+6/50",
-		"replaying the fill must not disturb the number")
+	assert_eq(inst.value.text, "+0/50",
+		"play_gain must rewind the number to 0 alongside the track, so it can count back up")
 
 
 ## ...and the growth must end exactly where set_stat put it. Stepping the
@@ -468,6 +477,29 @@ func test_a_played_gain_lands_on_the_days_final_value() -> void:
 		"the fill must end exactly on current/target")
 	assert_eq(inst.track.theme_type_variation, &"DaySummaryStatTrackOlahraga",
 		"replaying the fill must not disturb the row's category colour")
+	assert_eq(inst.value.text, "+6/50",
+		"the number must land exactly on the day's real gain, not a float-eased approximation")
+
+
+## A loss must count DOWN from 0 to a negative number -- format_value's
+## sign flips on the interpolated value itself, not on the final total,
+## so this is the one case a naive "always positive" counter would get
+## wrong.
+func test_a_losing_days_number_counts_down_to_negative() -> void:
+	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	var inst := scene.instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var tokens := DesignTokens.load_default()
+	inst.set_stat("olahraga", -5.0, 50.0, 30.0)
+	assert_eq(inst.value.text, "-5/50",
+		"set_stat must still leave the DAY'S FINAL number showing")
+
+	_run_and_step(func(): inst.play_gain(), tokens.dur_slow + 0.2)
+	assert_eq(inst.value.text, "-5/50",
+		"the number must land exactly on the day's real loss")
 
 
 ## Juice.pop_in zeroes the chevron's alpha and shrinks it before tweening
@@ -945,19 +977,19 @@ func test_banner_box_matches_the_banner_art_aspect() -> void:
 	inst.free()
 
 
-## The portrait is the source of truth for now -- the splash art is being
-## replaced, so the avatar must not reach for it even when a student has
-## one. Source-scanned because building a StudentData with both textures
-## set requires resources this suite cannot load headlessly.
-func test_avatar_prefers_the_portrait_over_the_splash() -> void:
+## The splash batch has landed (spec section 3.1), so the full-body art is
+## now the source of truth and the portrait is the fallback. Source-scanned
+## because building a StudentData with both textures set requires resources
+## this suite cannot load headlessly.
+func test_avatar_prefers_the_splash_over_the_portrait() -> void:
 	var src := FileAccess.get_file_as_string(
 		"res://Scripts/SchoolSimulation/DaySummaryAvatar.gd")
 	var portrait_at := src.find("student.avatar_texture")
 	var splash_at := src.find("student.splash_path")
 	assert_true(portrait_at != -1, "avatar no longer reads avatar_texture")
 	assert_true(splash_at != -1, "avatar no longer reads splash_path")
-	assert_true(portrait_at < splash_at,
-		"avatar_texture must be tried BEFORE splash_path")
+	assert_true(splash_at < portrait_at,
+		"splash_path must be tried BEFORE avatar_texture")
 
 
 ## A named splash crop applied to a portrait would cut the wrong region,
@@ -986,3 +1018,50 @@ func test_school_day_hides_its_chrome_behind_the_summary() -> void:
 		"SchoolDay must restore its chrome after the popup is dismissed")
 	assert_true(src.contains("func _set_day_chrome_visible("),
 		"SchoolDay is missing the chrome helper")
+
+
+## The roster is declared verbatim in four places with no single source of
+## truth (spec section 3.2). A student whose splash is updated in one file
+## and not another shows different art depending on which screen built the
+## dictionary, so all four are pinned together here.
+func test_every_roster_points_at_the_new_splash_batch() -> void:
+	var sources := [
+		"res://Scripts/StudentCard/student_card.gd",
+		"res://Scripts/StudentList/student_list.gd",
+		"res://Scripts/Debug/DebugManager.gd",
+		"res://Scripts/AturJadwal/atur_jadwal.gd",
+	]
+	for path in sources:
+		var src := FileAccess.get_file_as_string(path)
+		assert_false(src.contains("SplashArtMurid/SplashMurid"),
+			"%s still points at the legacy SplashMurid*.jpg batch" % path)
+
+
+## The popup sits over the live SchoolDay screen. An opaque blurred-
+## classroom backdrop replaces that view so the recap reads as its own
+## setting, and it must sit BEHIND the scrim -- in front, it would hide
+## the dimming that keeps the white row text legible.
+func test_popup_has_a_blurred_backdrop_behind_the_scrim() -> void:
+	var scene := load(_POPUP_SCENE) as PackedScene
+	assert_not_null(scene, "DaySummaryPopup.tscn failed to load")
+	var inst := scene.instantiate()
+
+	var backdrop := inst.get_node_or_null("Backdrop") as TextureRect
+	assert_not_null(backdrop, "popup is missing its Backdrop TextureRect")
+	assert_not_null(backdrop.texture, "Backdrop has no texture assigned")
+	assert_eq(backdrop.texture.resource_path,
+		"res://Assets/Images/UI/blur_background.png",
+		"Backdrop is not drawing blur_background.png")
+
+	var dim := inst.get_node_or_null("DimOverlay")
+	assert_not_null(dim, "popup is missing its DimOverlay")
+	assert_true(backdrop.get_index() < dim.get_index(),
+		"Backdrop must render behind DimOverlay")
+
+	# 369x654 art on a 1080x1920 screen: it must fill, not letterbox.
+	assert_eq(backdrop.expand_mode, TextureRect.EXPAND_IGNORE_SIZE,
+		"Backdrop must ignore its texture's native size")
+	assert_eq(backdrop.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_COVERED,
+		"Backdrop must cover the screen without distorting")
+
+	inst.free()

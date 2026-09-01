@@ -8,23 +8,26 @@ class_name DaySummaryAvatar
 ## set_student for the exact resolution order).
 ##
 ## The crop is per-student and cannot be derived from a shared rule --
-## the splash batch does not share a canvas (Thea's is 550x1119, the
-## others 1080x1920) and splash_andi.png carries a sliver of a second
-## figure baked into its right edge. See the spec, section 3.
+## the figures differ in height, pose and framing within a common
+## 1080x1920 canvas. See the 2026-09-01 spec, section 3.
 
 ## Frame size in game pixels, measured off the mockup.
 const FRAME_SIZE := Vector2(269, 286)
 const FRAME_ASPECT := FRAME_SIZE.x / FRAME_SIZE.y
 
 ## Head-and-shoulders window into each splash, in that splash's own
-## pixels. Each is FRAME_ASPECT-shaped so nothing stretches. Values were
-## derived from the content bounding boxes in the spec and confirmed
-## visually in Task 9 -- adjust here, not by scaling the TextureRect.
+## pixels. Each is FRAME_ASPECT-shaped so nothing stretches. Derived from
+## the 2026-09-01 batch's content bounding boxes: head band taken as the
+## top 18% of the figure, crop height 42% of figure height, centred on the
+## head and lifted 1% above the crown so hair is not clipped. See the
+## spec, section 3 -- adjust here, not by scaling the TextureRect.
 const SPLASH_CROP := {
-	"Marcel": Rect2(202, 40, 752, 800),
-	"Andi": Rect2(224, 45, 752, 800),
-	"Shinta": Rect2(210, 100, 752, 800),
-	"Thea": Rect2(99, 0, 442, 470),
+	"Marcel": Rect2(132, 40, 736, 782),
+	"Doni": Rect2(192, 125, 702, 746),
+	"Andi": Rect2(112, 0, 752, 800),
+	"Citra": Rect2(167, 65, 726, 772),
+	"Shinta": Rect2(160, 111, 707, 752),
+	"Thea": Rect2(154, 86, 718, 763),
 }
 
 @onready var art: TextureRect = $Art
@@ -45,9 +48,10 @@ static func crop_for(student_name: String, tex: Texture2D, is_splash: bool = fal
 	return Rect2(0.0, 0.0, h * FRAME_ASPECT, h)
 
 
-## Resolution order: the student's portrait first, then their splash art,
-## then nothing. The portrait leads because the splash batch is being
-## replaced -- flip these two branches back once the new art lands.
+## Resolution order: the student's splash art first, then their portrait,
+## then nothing. The splash leads now that the 2026-09-01 batch has landed
+## -- it is full-body art cropped to a head window by SPLASH_CROP, which
+## frames better than the square portrait.
 func set_student(student: StudentData) -> void:
 	if student == null:
 		art.texture = null
@@ -55,11 +59,11 @@ func set_student(student: StudentData) -> void:
 
 	var tex: Texture2D = null
 	var is_splash := false
-	if student.avatar_texture != null:
-		tex = student.avatar_texture
-	elif student.splash_path != "" and ResourceLoader.exists(student.splash_path):
+	if student.splash_path != "" and ResourceLoader.exists(student.splash_path):
 		tex = load(student.splash_path)
 		is_splash = true
+	elif student.avatar_texture != null:
+		tex = student.avatar_texture
 
 	if tex == null:
 		art.texture = null

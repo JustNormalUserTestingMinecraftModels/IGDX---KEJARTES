@@ -32,7 +32,7 @@ const DEFAULT_STUDENTS = [
 		"id": 1,
 		"name": "Marcel",
 		"portrait": "res://Assets/Images/MuridPotrait/Marcel.png",
-		"splash": "res://Assets/Images/SplashArtMurid/SplashMurid1.jpg",
+		"splash": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
 		"kepribadian1": 60.0,   # Mood
 		"kepribadian2": 55.0,   # Energy
 		"akademis1": 28.0,      # Akademis (Specialty)
@@ -53,7 +53,7 @@ const DEFAULT_STUDENTS = [
 		"id": 2,
 		"name": "Doni",
 		"portrait": "res://Assets/Images/MuridPotrait/Doni.png",
-		"splash": "res://Assets/Images/SplashArtMurid/SplashMurid2.jpg",
+		"splash": "res://Assets/Images/SplashArtMurid/splash_doni.png",
 		"kepribadian1": 55.0,   # Mood
 		"kepribadian2": 55.0,   # Energy
 		"akademis1": 38.0,      # Akademis
@@ -74,7 +74,7 @@ const DEFAULT_STUDENTS = [
 		"id": 3,
 		"name": "Andi",
 		"portrait": "res://Assets/Images/MuridPotrait/Andi.png",
-		"splash": "res://Assets/Images/SplashArtMurid/SplashMurid3.jpg",
+		"splash": "res://Assets/Images/SplashArtMurid/splash_andi.png",
 		"kepribadian1": 60.0,   # Mood
 		"kepribadian2": 60.0,   # Energy
 		"akademis1": 48.0,      # Akademis
@@ -95,7 +95,7 @@ const DEFAULT_STUDENTS = [
 		"id": 4,
 		"name": "Citra",
 		"portrait": "res://Assets/Images/MuridPotrait/Citra.png",
-		"splash": "res://Assets/Images/SplashArtMurid/SplashMurid4.jpg",
+		"splash": "res://Assets/Images/SplashArtMurid/splash_citra.png",
 		"kepribadian1": 35.0,   # Mood
 		"kepribadian2": 60.0,   # Energy
 		"akademis1": 28.0,      # Akademis

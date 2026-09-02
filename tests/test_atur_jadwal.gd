@@ -592,3 +592,40 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 			out.append(node.name)
 	for child in node.get_children():
 		_collect_overrides(child, out)
+
+
+## StatBar used to build its own ValueLabel unconditionally, doubling up
+## with the one authored in the scene: two overlapping labels, and the
+## authored one frozen at "0%" forever. It must adopt instead.
+func test_each_stat_bar_has_exactly_one_value_label() -> void:
+	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
+		"Kepribadian1", "Kepribadian2"]
+	for bar_name in bar_names:
+		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as StatBar
+		assert_true(bar != null, "BGStat/%s is not a StatBar" % bar_name)
+		if bar == null:
+			continue
+		var labels := 0
+		for child in bar.get_children():
+			if child is Label:
+				labels += 1
+		assert_eq(labels, 1,
+			"%s must carry exactly one Label, found %d" % [bar_name, labels])
+
+
+## BarLabel (white glyph + dark rim) is the only variation that reads over
+## both the pale track and a saturated category fill.
+func test_stat_bar_value_labels_use_the_bar_label_variation() -> void:
+	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
+		"Kepribadian1", "Kepribadian2"]
+	for bar_name in bar_names:
+		var label := _screen.get_node_or_null(
+			"BGStat/%s/ValueLabel" % bar_name) as Label
+		assert_true(label != null, "%s/ValueLabel is missing" % bar_name)
+		if label != null:
+			assert_eq(String(label.theme_type_variation), "BarLabel",
+				"%s/ValueLabel must use BarLabel" % bar_name)
+
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/StatBar.gd")
+	assert_true(src.contains("get_node_or_null(\"ValueLabel\")"),
+		"StatBar must adopt an authored ValueLabel rather than build a second one")

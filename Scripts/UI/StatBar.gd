@@ -56,19 +56,24 @@ func _apply_tint() -> void:
 func _sync_label() -> void:
 	if not is_inside_tree():
 		return
+	if _label == null:
+		# The scene may already author a ValueLabel (every AturJadwal bar
+		# does). Adopt it -- building a second one leaves the authored
+		# label frozen at its design-time text underneath the live one.
+		_label = get_node_or_null("ValueLabel") as Label
 	if show_value_label and _label == null:
 		_label = Label.new()
 		_label.name = "ValueLabel"
-		_label.theme_type_variation = &"CaptionLabel"
-		_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		_label.set_anchors_preset(Control.PRESET_FULL_RECT)
-		_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(_label)
-		_label.text = value_format % int(round(value))
-	elif not show_value_label and _label != null:
-		_label.queue_free()
-		_label = null
+	if _label == null:
+		return
+	_label.visible = show_value_label
+	_label.theme_type_variation = &"BarLabel"
+	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_label.text = value_format % int(round(value))
 
 
 ## Set the bar's value, optionally animating the fill and the label

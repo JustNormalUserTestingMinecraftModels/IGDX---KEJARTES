@@ -310,11 +310,11 @@ func test_the_whiteboard_is_unchanged_and_notes_are_stickynotes() -> void:
 ## within 5px of it everywhere and is what a container can express.
 func test_stat_rows_sit_on_the_mockup_grid() -> void:
 	var expected := {
-		"Akademis1": 129.0,
-		"Akademis2": 255.0,
-		"Akademis3": 381.0,
-		"Kepribadian2": 507.0,
-		"Kepribadian1": 633.0,
+		"Akademis1": 112.0,
+		"Akademis2": 238.0,
+		"Akademis3": 364.0,
+		"Kepribadian2": 490.0,
+		"Kepribadian1": 616.0,
 	}
 	for bar_name in expected:
 		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as Control
@@ -322,8 +322,8 @@ func test_stat_rows_sit_on_the_mockup_grid() -> void:
 		assert_eq(bar.offset_top, expected[bar_name], "%s row top" % bar_name)
 		assert_eq(bar.offset_bottom, expected[bar_name] + 70.0,
 			"%s row height must be the mockup's 70px" % bar_name)
-		assert_eq(bar.offset_left, 649.0, "%s pill left" % bar_name)
-		assert_eq(bar.offset_right, 973.0, "%s pill right" % bar_name)
+		assert_eq(bar.offset_left, 680.0, "%s pill left" % bar_name)
+		assert_eq(bar.offset_right, 1004.0, "%s pill right" % bar_name)
 
 
 ## kepribadian1 is MOOD and kepribadian2 is ENERGY, but the mockup's

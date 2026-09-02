@@ -679,3 +679,28 @@ func test_the_stagger_does_not_move_the_final_icons() -> void:
 		assert_true(not body.contains(forbidden),
 			"_stagger_stat_rows must not write %s -- the icon grid is final"
 			% forbidden)
+
+
+## The five bars used to tint via self_modulate, which multiplies the WHOLE
+## node -- track and rim included -- so a bar at value 0 rendered as a
+## solid category-coloured capsule instead of an empty one. Each bar must
+## now resolve to its category's own theme variation (whose fill stylebox
+## bakes the colour in, see ThemeFactory._build_progress) and leave the
+## node itself untinted.
+func test_bg_stat_bars_use_their_category_variation_and_stay_untinted() -> void:
+	var expected := {
+		"BGStat/Akademis1": &"StatBarAkademis",
+		"BGStat/Akademis2": &"StatBarSeniBudaya",
+		"BGStat/Akademis3": &"StatBarOlahraga",
+		"BGStat/Kepribadian1": &"StatBarIstirahat",
+		"BGStat/Kepribadian2": &"StatBarLibur",
+	}
+	for p in expected.keys():
+		var bar := _screen.get_node_or_null(p) as StatBar
+		assert_true(bar != null, "%s must be a StatBar" % p)
+		if bar == null:
+			continue
+		assert_eq(bar.theme_type_variation, expected[p],
+			"%s must wear its category's theme variation" % p)
+		assert_eq(bar.self_modulate, Color.WHITE,
+			"%s must not tint the whole node -- the fill stylebox carries the colour" % p)

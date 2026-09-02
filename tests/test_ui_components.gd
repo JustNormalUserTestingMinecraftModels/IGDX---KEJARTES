@@ -81,20 +81,29 @@ func test_safe_area_can_be_disabled() -> void:
 		"with safe area off, margin is exactly screen_margin")
 
 
-func test_statbar_tints_itself_from_its_category() -> void:
-	var tokens := DesignTokens.load_default()
+## Renamed from test_statbar_tints_itself_from_its_category: a StatBar-family
+## bar no longer tints via self_modulate (that multiplied the WHOLE node,
+## including the track behind the fill, so a value-0 bar rendered as a
+## solid capsule). The category colour now lives in a per-category theme
+## variation's fill stylebox instead (ThemeFactory._build_progress), so
+## this asserts the bar picked the right variation AND stayed untinted.
+func test_statbar_takes_its_category_variation() -> void:
 	var bar := StatBar.new()
 	bar.category = "Olahraga"
 	_root.add_child(bar)
-	assert_eq(bar.self_modulate, tokens.cat_olahraga,
-		"StatBar tints via self_modulate from the category token")
+	assert_eq(bar.theme_type_variation, &"StatBarOlahraga",
+		"a StatBar-family bar must resolve to its category's variation")
+	assert_eq(bar.self_modulate, Color.WHITE,
+		"the node itself must stay untinted -- the fill stylebox carries the colour now")
 
 
 func test_statbar_uses_the_theme_variation() -> void:
 	var bar := StatBar.new()
 	_root.add_child(bar)
-	assert_eq(bar.theme_type_variation, &"StatBar",
-		"StatBar must opt into its theme variation automatically")
+	# Default category is "Akademis", which now resolves to its own
+	# per-category variation rather than the plain shared "StatBar" look.
+	assert_eq(bar.theme_type_variation, &"StatBarAkademis",
+		"StatBar must opt into its category's theme variation automatically")
 
 
 func test_set_stat_without_animation_is_immediate() -> void:

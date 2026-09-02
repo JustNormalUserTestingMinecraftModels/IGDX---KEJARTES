@@ -443,6 +443,35 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "StatBar", tokens.font_caption)
 	theme.set_color("font_color", "StatBar", tokens.text_primary)
 
+	# self_modulate tints the WHOLE node, not just the fill -- so a StatBar
+	# tinted that way multiplies its category colour onto the track's
+	# surface_sunken ground and white rim too, and a fill sitting on a
+	# same-coloured track is indistinguishable from it. At value 0 that
+	# made every bar read as a solid capsule, 100% full. So AturJadwal's
+	# per-category bars get their colour baked into the FILL stylebox
+	# instead (the same fix DaySummary's tracks already use above), and
+	# StatBar.gd switches those bars to theme_type_variation + white
+	# self_modulate rather than tinting the node. One variation per
+	# category, all sharing the exact "StatBar" track built above so the
+	# rim/shadow/inset chrome never drifts between them.
+	var stat_bar_categories := [
+		["StatBarAkademis", tokens.cat_akademis],
+		["StatBarSeniBudaya", tokens.cat_senibudaya],
+		["StatBarOlahraga", tokens.cat_olahraga],
+		["StatBarIstirahat", tokens.cat_istirahat],
+		["StatBarLibur", tokens.cat_libur],
+		["StatBarWirausaha", tokens.cat_wirausaha],
+	]
+	for spec in stat_bar_categories:
+		var name: String = spec[0]
+		var color: Color = spec[1]
+		theme.add_type(name)
+		theme.set_type_variation(name, "ProgressBar")
+		theme.set_stylebox("background", name, bg)
+		theme.set_stylebox("fill", name, _progress_fill_stylebox(color))
+		theme.set_font_size("font_size", name, tokens.font_caption)
+		theme.set_color("font_color", name, tokens.text_primary)
+
 
 # ------------------------------------------------- student card redesign
 

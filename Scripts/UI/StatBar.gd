@@ -51,11 +51,38 @@ func _ready() -> void:
 	_sync_label()
 
 
+## Category -> the per-category "StatBar" theme variation baked in
+## ThemeFactory._build_progress. An unlisted category falls back to plain
+## "StatBar" (white fill, no self_modulate tint) rather than going invisible.
+const _STAT_BAR_VARIATIONS := {
+	"Akademis": &"StatBarAkademis",
+	"SeniBudaya": &"StatBarSeniBudaya",
+	"Olahraga": &"StatBarOlahraga",
+	"Istirahat": &"StatBarIstirahat",
+	"Libur": &"StatBarLibur",
+	"Wirausaha": &"StatBarWirausaha",
+}
+
+
 func _apply_tint() -> void:
+	if variation == &"StatBar":
+		# self_modulate tints the WHOLE node -- on the "StatBar" family that
+		# also multiplies the track's surface_sunken ground and white rim,
+		# so a value-0 bar rendered as a solid category-coloured capsule
+		# instead of an empty track. The category colour is baked into the
+		# fill stylebox instead (see ThemeFactory._build_progress), so the
+		# node itself must stay untinted here.
+		self_modulate = Color.WHITE
+		var target: StringName = _STAT_BAR_VARIATIONS.get(category, &"StatBar")
+		if is_inside_tree():
+			theme_type_variation = target
+		return
+	# StatPill (StudentCard): background is a StyleBoxEmpty, so tinting the
+	# whole node only colours the fill -- self_modulate is correct there.
+	# Keep that path exactly as it was.
 	var tokens := DesignTokens.load_default()
 	if tokens == null:
 		return
-	# The theme's fill stylebox is white, so self_modulate is the tint.
 	self_modulate = tokens.category_color(category)
 
 

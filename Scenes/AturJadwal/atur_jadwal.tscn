@@ -131,7 +131,6 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Akademis1" type="ProgressBar" parent="BGStat" unique_id=1583002621]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 649.0
 offset_top = 129.0
@@ -154,7 +153,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="BGStat" unique_id=1719266399]
-self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 649.0
 offset_top = 255.0
@@ -181,7 +179,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="BGStat" unique_id=648612192]
-self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 649.0
 offset_top = 381.0
@@ -205,7 +202,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Kepribadian1" type="ProgressBar" parent="BGStat" unique_id=1214081682]
-self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 649.0
 offset_top = 633.0
@@ -229,7 +225,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="BGStat" unique_id=1170685406]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 649.0
 offset_top = 507.0

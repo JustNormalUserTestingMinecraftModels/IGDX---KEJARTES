@@ -186,3 +186,39 @@ func test_stat_bar_track_is_an_inset_outlined_capsule() -> void:
 		"the fill must be inset so the rail stays visible")
 	assert_true(bg.corner_radius_top_left >= 32,
 		"the track must stay a capsule")
+
+
+## StatBar used to tint itself via self_modulate, which multiplies the WHOLE
+## node -- the track's surface_sunken ground and white rim included -- so a
+## bar at value 0 rendered as a solid category-coloured capsule, 100% full
+## by eye. Each category now gets its own theme variation whose FILL
+## stylebox bakes the colour in directly, sharing the exact "StatBar" track
+## above so the rim/shadow/inset chrome can't drift between categories.
+func test_stat_bar_category_variations_exist_and_bake_their_colour_into_the_fill() -> void:
+	var expected := {
+		"StatBarAkademis": _tokens.cat_akademis,
+		"StatBarSeniBudaya": _tokens.cat_senibudaya,
+		"StatBarOlahraga": _tokens.cat_olahraga,
+		"StatBarIstirahat": _tokens.cat_istirahat,
+		"StatBarLibur": _tokens.cat_libur,
+		"StatBarWirausaha": _tokens.cat_wirausaha,
+	}
+	var actual := _theme.get_type_list()
+	for name in expected.keys():
+		assert_true(actual.has(name), "theme must declare type: " + name)
+		if not actual.has(name):
+			continue
+
+		var fill := _theme.get_stylebox("fill", name) as StyleBoxTexture
+		assert_true(fill != null, "%s/fill must be a StyleBoxTexture" % name)
+		if fill != null:
+			assert_eq(fill.modulate_color, expected[name],
+				"%s/fill must bake in its category colour" % name)
+
+		# Same rim/shadow/radius chrome as the shared "StatBar" track, or
+		# a value-0 bar in this category is invisible again.
+		var bg := _theme.get_stylebox("background", name) as StyleBoxFlat
+		assert_true(bg != null, "%s/background must be a StyleBoxFlat" % name)
+		if bg != null:
+			assert_true(bg.border_width_top > 0,
+				"%s/background must keep the track's rim" % name)

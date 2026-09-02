@@ -104,9 +104,6 @@ const ALLOWED: Dictionary = {
 	# category on every refresh() call (Wirausaha shows a money chip,
 	# Istirahat shows none, etc).
 	"res://Scripts/AturJadwal/ActivityRow.gd": 2,
-	# _build_page_indicators()'s "●" dots: one per result card, so the
-	# count tracks the approved roster size.
-	"res://Scripts/EndGame/SemesterEnd.gd": 1,
 	# _apply_visual_exports()'s icon TextureRect: only created when an
 	# @export icon texture is actually supplied, in place of the emoji
 	# fallback label -- the conditional texture-or-procedural swap.

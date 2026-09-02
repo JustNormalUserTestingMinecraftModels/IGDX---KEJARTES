@@ -11,6 +11,7 @@ func suite_name() -> String:
 	return "run_result"
 
 
+
 func test_the_row_template_loads() -> void:
 	var row = load(_ROW_PATH).instantiate()
 	var ok := row != null
@@ -135,7 +136,7 @@ func test_the_report_uses_texture_icons_not_emoji() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("Assets/Images/UI/Placeholders/icon_uang.svg"),
 		"the rows reference real icon assets")
-	for glyph in ["\u{1F3AE}", "\u{1F4B0}", "\u{2B50}", "\u{1F392}", "\u{1F3AA}"]:
+	for glyph in ["🎮", "💰", "⭐", "🎒", "🎪"]:
 		assert_false(src.contains(glyph),
 			"no emoji glyph is used as an icon")
 

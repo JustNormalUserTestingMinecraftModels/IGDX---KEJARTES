@@ -295,3 +295,39 @@ func test_entrance_hold_and_fade_are_slower_than_the_panel_crossfade() -> void:
 		"show_current() must hold before revealing, not pop in instantly")
 	assert_true(src.contains("_ENTRANCE_FADE_SEC"),
 		"show_current()'s entrance fade must use its own, slower duration")
+
+
+func test_the_exam_branch_exists_and_wins_precedence() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
+	assert_true(src.contains("_setup_exam_cutscene"),
+		"there is an exam branch")
+	var exam_at := src.find("if GameState.is_exam_intro_cutscene")
+	var over_at := src.find("if GameState.is_game_over_cutscene")
+	assert_true(exam_at != -1, "the exam flag is branched on")
+	assert_true(exam_at < over_at,
+		"the exam branch is tested before the game-over branch")
+
+
+func test_the_exam_branch_has_four_dialogues() -> void:
+	var scene = load("res://Scenes/CutScene/cut_scene.tscn").instantiate()
+	scene._setup_exam_cutscene()
+	var count: int = scene.cg_data.size()
+	scene.free()
+	assert_eq(count, 4, "four exam dialogues")
+
+
+func test_the_exam_branch_exits_to_the_stat_check() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
+	assert_true(src.contains("res://Scenes/EndGame/SemesterEnd.tscn"),
+		"the exam cutscene ends at the stat check")
+
+
+func test_the_game_over_branch_exits_to_the_run_result() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
+	assert_true(src.contains("res://Scenes/EndGame/RunResult.tscn"),
+		"the lose cutscene ends at the run result")
+
+
+func test_the_exam_branch_plays_its_own_bgm() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
+	assert_true(src.contains("play_bgm(&\"exam_cutscene\")"), "exam BGM")

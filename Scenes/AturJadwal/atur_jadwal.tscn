@@ -68,43 +68,43 @@ expand_mode = 1
 
 [node name="Senin" parent="BGHari" unique_id=2030438336 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 71.0
-offset_top = 998.0
-offset_right = 342.41193
-offset_bottom = 1265.0
-pivot_offset = Vector2(135.5, 133.5)
+offset_left = 50.0
+offset_top = 1000.0
+offset_right = 321.41193
+offset_bottom = 1267.0
+pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Selasa" parent="BGHari" unique_id=1474646409 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 415.0
-offset_top = 1112.0
-offset_right = 686.4119
-offset_bottom = 1379.0
-pivot_offset = Vector2(135.5, 133.5)
+offset_left = 396.0
+offset_top = 1206.0
+offset_right = 667.4119
+offset_bottom = 1473.0
+pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Rabu" parent="BGHari" unique_id=369629270 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 744.0
-offset_top = 998.0
-offset_right = 1015.41187
-offset_bottom = 1265.0
-pivot_offset = Vector2(135.5, 133.5)
+offset_left = 710.0
+offset_top = 1017.0
+offset_right = 981.41187
+offset_bottom = 1284.0
+pivot_offset = Vector2(135.70593, 133.5)
 
 [node name="Kamis" parent="BGHari" unique_id=684348886 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 227.0
-offset_top = 1381.0
-offset_right = 498.41193
-offset_bottom = 1648.0
-pivot_offset = Vector2(135.5, 133.5)
+offset_left = 55.0
+offset_top = 1414.0
+offset_right = 326.41193
+offset_bottom = 1681.0
+pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Jumat" parent="BGHari" unique_id=152305377 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 574.0
-offset_top = 1386.0
-offset_right = 845.41187
-offset_bottom = 1653.0
-pivot_offset = Vector2(135.5, 133.5)
+offset_left = 731.0
+offset_top = 1426.0
+offset_right = 1002.41187
+offset_bottom = 1693.0
+pivot_offset = Vector2(135.70593, 133.5)
 
 [node name="ShelfFace" type="ColorRect" parent="." unique_id=540110925]
 layout_mode = 0

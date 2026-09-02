@@ -26,6 +26,14 @@ signal _holiday_dismissed
 ## display (no real student id is ever negative) always staggers.
 var _last_staggered_student_id = -1
 
+## True once _update_student_display() has staggered at least once.
+## Needed because student.get("id", -1) shares the -1 fallback with
+## _last_staggered_student_id's initial value: two different students that
+## both happen to lack an "id" key would compare equal (-1 == -1) and
+## silently skip the stagger on the switch between them. This sentinel is
+## independent of whatever value "id" holds, so that collision can't happen.
+var _has_staggered_once := false
+
 @export_group("Calendar Display")
 ## Icon shown next to the current date in the TanggalContainer header.
 @export var calendar_icon: Texture2D
@@ -572,10 +580,10 @@ func _percent(current: float, target: float) -> float:
 		return 0.0
 	return clampf(current / target * 100.0, 0.0, 100.0)
 
-func _feed_stat_bar(bar: StatBar, current: float, delta: float, target: float) -> void:
+func _feed_stat_bar(bar: StatBar, current: float, delta: float, target: float, pop: bool = true) -> void:
 	if bar == null:
 		return
-	bar.set_stat(_percent(current + delta, target))
+	bar.set_stat(_percent(current + delta, target), true, pop)
 
 func _update_student_display():
 	if GameState.selected_student.is_empty():
@@ -613,24 +621,35 @@ func _update_student_display():
 		if portrait_path != "" and ResourceLoader.exists(portrait_path):
 			select_student_button.texture_normal = load(portrait_path)
 
+	# Decide whether this is a real student switch BEFORE feeding the bars.
+	# The stagger and the per-bar pop both animate `scale` on the same five
+	# nodes; if both fired on a switch frame, two independently-tracked
+	# tweens (AnimUtils._safe_tween's dictionary vs Juice.pop_in's bare
+	# create_tween()) would fight over the same property. So on a switch,
+	# feed the bars WITHOUT popping (pop=false) and let the stagger own the
+	# motion; on a same-student edit, feed WITH popping and skip the stagger.
+	var current_id = student.get("id", -1)
+	var is_switch: bool = not _has_staggered_once or current_id != _last_staggered_student_id
+	var pop_bars: bool = not is_switch
+
 	if kp1_bar:
-		_feed_stat_bar(kp1_bar, student.get("kepribadian2", 50.0), -_compute_total_loss("energy_cost"), 100.0)
+		_feed_stat_bar(kp1_bar, student.get("kepribadian2", 50.0), -_compute_total_loss("energy_cost"), 100.0, pop_bars)
 	if kp2_bar:
-		_feed_stat_bar(kp2_bar, student.get("kepribadian1", 50.0), -_compute_total_loss("mood_cost"), 100.0)
+		_feed_stat_bar(kp2_bar, student.get("kepribadian1", 50.0), -_compute_total_loss("mood_cost"), 100.0, pop_bars)
 	if ak1_bar:
 		var target1 = student.get("target_akademis1", 65.0)
-		_feed_stat_bar(ak1_bar, student.get("akademis1", 50.0), _compute_pending_gain("Akademis", student), target1)
+		_feed_stat_bar(ak1_bar, student.get("akademis1", 50.0), _compute_pending_gain("Akademis", student), target1, pop_bars)
 	if ak2_bar:
 		var target2 = student.get("target_akademis2", 65.0)
-		_feed_stat_bar(ak2_bar, student.get("akademis2", 50.0), _compute_pending_gain("SeniBudaya", student), target2)
+		_feed_stat_bar(ak2_bar, student.get("akademis2", 50.0), _compute_pending_gain("SeniBudaya", student), target2, pop_bars)
 	if ak3_bar:
 		var target3 = student.get("target_akademis3", 65.0)
-		_feed_stat_bar(ak3_bar, student.get("akademis3", 50.0), _compute_pending_gain("Olahraga", student), target3)
+		_feed_stat_bar(ak3_bar, student.get("akademis3", 50.0), _compute_pending_gain("Olahraga", student), target3, pop_bars)
 
 	_update_day_button_colors()
 
-	var current_id = student.get("id", -1)
-	if current_id != _last_staggered_student_id:
+	if is_switch:
+		_has_staggered_once = true
 		_last_staggered_student_id = current_id
 		_stagger_stat_rows()
 

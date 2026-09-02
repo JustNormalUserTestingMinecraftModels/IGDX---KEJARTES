@@ -646,6 +646,19 @@ func test_stat_bars_are_animated_on_change_and_on_student_switch() -> void:
 	var bar_src := FileAccess.get_file_as_string("res://Scripts/UI/StatBar.gd")
 	assert_true(bar_src.contains("pop_on_change"),
 		"StatBar must expose pop_on_change")
+	# Juice.pop_in zeroes modulate.a and tweens it back, so a regression that
+	# swapped AnimUtils.squash_bounce back to Juice.pop_in here would blink
+	# the bar and its label transparent on every value change -- pin the
+	# choice so that regression fails a test instead of only failing on-screen.
+	assert_true(bar_src.contains("AnimUtils.squash_bounce"),
+		"StatBar's pop must use AnimUtils.squash_bounce (scale-only)")
+	var pop_start := bar_src.find("func set_stat")
+	assert_true(pop_start != -1, "StatBar.set_stat is missing")
+	# Match the CALL form, with its paren: the code comment beside the pop
+	# names Juice.pop_in to explain why it is not used, and a bare substring
+	# scan would fail on that comment.
+	assert_true(not bar_src.substr(pop_start).contains("Juice.pop_in("),
+		"StatBar.set_stat must not call Juice.pop_in -- it zeroes modulate.a and would flash the bar")
 
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("Juice.stagger_in"),
@@ -679,6 +692,17 @@ func test_the_stagger_does_not_move_the_final_icons() -> void:
 		assert_true(not body.contains(forbidden),
 			"_stagger_stat_rows must not write %s -- the icon grid is final"
 			% forbidden)
+
+	# The mockup's visual top-to-bottom order is the reverse of the node
+	# numbering here: Kepribadian2 (energy, lightning) sits above
+	# Kepribadian1 (mood, smiley). Pin the order so a future edit can't
+	# silently swap them and make the stagger run out of order down the screen.
+	var kp2_index := body.find("Kepribadian2")
+	var kp1_index := body.find("Kepribadian1")
+	assert_true(kp2_index != -1 and kp1_index != -1,
+		"_stagger_stat_rows must reference both Kepribadian1 and Kepribadian2")
+	assert_true(kp2_index < kp1_index,
+		"Kepribadian2 (energy) must be staggered in before Kepribadian1 (mood) to match the mockup's visual order")
 
 
 ## The five bars used to tint via self_modulate, which multiplies the WHOLE

@@ -38,7 +38,6 @@ extends ProgressBar
 ## SemesterEnd and ReportCard show settled numbers, not live edits.
 @export var pop_on_change: bool = false
 
-
 var _label: Label
 
 
@@ -111,14 +110,20 @@ func _sync_label() -> void:
 
 ## Set the bar's value, optionally animating the fill and the label
 ## count-up together. Input is clamped: decay math upstream can overshoot.
-func set_stat(new_value: float, animate: bool = true) -> void:
+## `pop` lets a caller suppress the squash-pop for this call even when
+## pop_on_change is on -- on a student switch the caller drives all five
+## bars through AturJadwal._stagger_stat_rows() instead, and popping here
+## too would start a second, independently-tracked tween on the same
+## `scale` property and the two would jitter against each other. The
+## stagger owns the motion on a switch; the pop owns it on an edit.
+func set_stat(new_value: float, animate: bool = true, pop: bool = true) -> void:
 	var target := clampf(new_value, min_value, max_value)
 	if animate:
 		var previous := value
 		Juice.fill_bar(self, target)
 		if _label != null:
 			Juice.count_up(_label, previous, target, value_format)
-		if pop_on_change and not is_equal_approx(previous, target):
+		if pop_on_change and pop and not is_equal_approx(previous, target):
 			# AnimUtils.squash_bounce, not Juice.pop_in: pop_in sets
 			# modulate.a to 0 and tweens it back, which would blink the bar
 			# and its value label transparent on every change -- a flash,

@@ -414,3 +414,24 @@ func test_an_unscheduled_day_defaults_to_istirahat_with_no_skill_gain() -> void:
 	assert_true(is_equal_approx(student.akademis, 40.0),
 		"with no schedule assigned, the student must default to Istirahat and gain no akademis")
 	manager.free()
+
+
+func test_student_manager_records_minigames_into_run_stats() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/StudentManager.gd")
+	assert_true(src.contains("GameState.run_stats.record_minigame("),
+		"record_minigame_result feeds the run tally")
+
+
+func test_school_day_records_wirausaha_into_run_stats() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("GameState.run_stats.record_wirausaha("),
+		"the wirausaha payout feeds the run tally")
+
+
+func test_school_day_records_event_students_into_run_stats() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("GameState.run_stats.record_event_student("),
+		"the event branch feeds the run tally")

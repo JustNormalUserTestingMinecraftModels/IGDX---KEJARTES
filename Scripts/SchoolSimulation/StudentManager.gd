@@ -70,13 +70,17 @@ func initialize_students() -> void:
 
 func record_minigame_result(day_name: String, category: String, game_name: String, won: bool, score: int = -1, max_score: int = -1) -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
+	# Roster-wide points for this one minigame. The run-result screen
+	# reports the class total, not any single student's share.
+	var roster_points := 0.0
 	for student in students:
 		var deltas = student.apply_minigame_result(category, won, score, max_score)
+		roster_points += float(deltas.get("stat_delta", 0.0))
 		results.append({
 			"student_name": student.student_name,
 			"deltas": deltas
 		})
-		
+
 		# Log minigame stat changes
 		var mg_source = "minigame_win" if won else "minigame_loss"
 		var mg_stat_key_map = {"Akademis": "akademis", "SeniBudaya": "seni_budaya", "Olahraga": "olahraga"}
@@ -85,7 +89,9 @@ func record_minigame_result(day_name: String, category: String, game_name: Strin
 			log_stat_change(day_name, student.student_name, mg_sk, deltas.get("stat_delta", 0.0), mg_source)
 		log_stat_change(day_name, student.student_name, "energy", deltas.get("energy_delta", 0.0), mg_source)
 		log_stat_change(day_name, student.student_name, "mood", deltas.get("mood_delta", 0.0), mg_source)
-	
+
+	GameState.run_stats.record_minigame(won, roster_points)
+
 	minigame_history.append({
 		"day": day_name,
 		"category": category,

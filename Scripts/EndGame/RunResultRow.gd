@@ -1,4 +1,5 @@
 @tool
+class_name RunResultRow
 extends PanelContainer
 
 ## One row of the end-of-grade report: an icon, a name, and a number that

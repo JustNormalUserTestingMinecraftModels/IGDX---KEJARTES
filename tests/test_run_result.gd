@@ -83,6 +83,29 @@ func test_the_screen_loads() -> void:
 	assert_true(ok, "RunResult.tscn instantiates")
 
 
+## A broken/non-compiling script leaves a node running a PlaceholderScript
+## instead of the real one -- has_method() returns false for a method that
+## is genuinely defined but unreachable through a placeholder, which is
+## what test_the_screen_loads()'s bare `!= null` check cannot catch (a
+## placeholder instance is still non-null). GDScript.can_instantiate() was
+## tried first here but proved unreliable inside this editor's own
+## test-runner process specifically -- it can still report false for a
+## script that a fresh game process (verified via project_run +
+## editor_manage(game_eval)) loads and instantiates correctly, so this
+## checks the actually-relevant thing instead: that the instantiated
+## scene's own methods are real, not placeholder stand-ins.
+func test_the_script_actually_compiles() -> void:
+	var screen = load(_SCENE_PATH).instantiate()
+	var has_real_methods: bool = screen.has_method("_build_rows") \
+		and screen.has_method("_compute_grade") \
+		and screen.has_method("_apply_progression")
+	screen.free()
+	assert_true(has_real_methods,
+		"RunResult.gd's methods are reachable, not a placeholder instance " +
+		"(a parse error, e.g. an unregistered type reference, would " +
+		"produce a PlaceholderScript here instead)")
+
+
 func test_the_screen_has_a_backdrop_grade_card_and_rows_box() -> void:
 	var screen = load(_SCENE_PATH).instantiate()
 	var has_all := screen.get_node_or_null("Backdrop") != null \

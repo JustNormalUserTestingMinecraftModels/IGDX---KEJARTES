@@ -167,3 +167,22 @@ func test_main_menu_button_variation_exists_and_is_sized_for_the_mockup() -> voi
 	# section -- PENGATURAN at 100 overflows the 624 px inner box by 131 px.
 	assert_eq(theme.get_font_size("font_size", "MainMenuButton"), 80,
 		"MainMenuButton font size")
+
+
+## The bars used to be a flat sunken capsule with the fill running flush
+## to the outer edge. The track now carries the project's sticker chrome
+## (white rim + soft shadow) and insets the fill so a rail stays visible.
+func test_stat_bar_track_is_an_inset_outlined_capsule() -> void:
+	var bg := _theme.get_stylebox("background", "StatBar") as StyleBoxFlat
+	assert_true(bg != null, "StatBar has no StyleBoxFlat background")
+	if bg == null:
+		return
+	assert_true(bg.border_width_top > 0 and bg.border_width_bottom > 0
+		and bg.border_width_left > 0 and bg.border_width_right > 0,
+		"the track must carry a rim on all four sides")
+	assert_true(bg.shadow_size > 0, "the track must carry a soft shadow")
+	assert_true(bg.content_margin_left > 0.0 and bg.content_margin_top > 0.0
+		and bg.content_margin_right > 0.0 and bg.content_margin_bottom > 0.0,
+		"the fill must be inset so the rail stays visible")
+	assert_true(bg.corner_radius_top_left >= 32,
+		"the track must stay a capsule")

@@ -420,9 +420,21 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("StatBar")
 	theme.set_type_variation("StatBar", "ProgressBar")
 
+	# The track is a sticker capsule like the rest of the chrome: sunken
+	# ground, white rim, soft drop shadow. content_margin insets the fill
+	# so a rail of track stays visible even at 100% -- without it the
+	# coloured fill runs flush to the rim and the bar reads as a debug
+	# widget. The inset is half outline_width so the rail and the rim
+	# stay a 1:1 pair at any token value.
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = tokens.surface_sunken
 	bg.set_corner_radius_all(tokens.radius_pill)
+	bg.set_border_width_all(int(tokens.outline_width / 2.0))
+	bg.border_color = tokens.outline_card
+	bg.shadow_color = tokens.shadow_color
+	bg.shadow_size = int(tokens.shadow_size / 2.0)
+	bg.shadow_offset = tokens.shadow_offset
+	bg.set_content_margin_all(tokens.outline_width / 2.0)
 	theme.set_stylebox("background", "StatBar", bg)
 
 	# White fill so callers can tint per category via self_modulate.

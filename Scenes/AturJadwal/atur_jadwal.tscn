@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://cbxv7sbybkdh2" path="res://Scripts/AturJadwal/atur_jadwal.gd" id="1_atur"]
 [ext_resource type="Texture2D" uid="uid://bmxugmsumo04o" path="res://Assets/Images/UI/whiteboard.png" id="2_0xkhc"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://cqc6snupncqgd" path="res://Assets/Images/UI/pngwing.com (2).png" id="3_a6kja"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="4_f4ced"]
 [ext_resource type="Texture2D" uid="uid://dd3bvl367ysl3" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
 [ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
@@ -392,22 +391,26 @@ offset_bottom = -776.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TextureRect" type="TextureRect" parent="Peringatan" unique_id=900608003]
+[node name="TextureRect" type="NinePatchRect" parent="Peringatan" unique_id=49961884]
 layout_mode = 0
 offset_left = -4.0
 offset_top = -8.0
 offset_right = 736.0
 offset_bottom = 420.0
-texture = ExtResource("3_a6kja")
-expand_mode = 1
+texture = ExtResource("9_cardbg")
+region_rect = Rect2(211, 34, 658, 1013)
+patch_margin_left = 32
+patch_margin_top = 32
+patch_margin_right = 32
+patch_margin_bottom = 32
 
 [node name="Label" type="Label" parent="Peringatan/TextureRect" unique_id=1041364249]
 layout_mode = 0
 offset_left = 28.0
 offset_top = 37.0
 offset_right = 710.0
-offset_bottom = 400.0
-theme_type_variation = &"BarLabel"
+offset_bottom = 268.0
+theme_type_variation = &"TitleLabel"
 text = "PERINGATAN
 
 Terdapat murid yang masih

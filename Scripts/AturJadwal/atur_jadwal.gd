@@ -18,6 +18,14 @@ extends Control
 
 signal _holiday_dismissed
 
+## Id of the student whose stat rows were last staggered in. Guards
+## _stagger_stat_rows() so it only plays on screen entry or an actual
+## student switch -- _update_student_display() also runs on every activity
+## assignment, and an unconditional stagger there would re-fade the whole
+## stat panel on every tap and fight the per-bar pop. -1 so the very first
+## display (no real student id is ever negative) always staggers.
+var _last_staggered_student_id = -1
+
 @export_group("Calendar Display")
 ## Icon shown next to the current date in the TanggalContainer header.
 @export var calendar_icon: Texture2D
@@ -620,6 +628,25 @@ func _update_student_display():
 		_feed_stat_bar(ak3_bar, student.get("akademis3", 50.0), _compute_pending_gain("Olahraga", student), target3)
 
 	_update_day_button_colors()
+
+	var current_id = student.get("id", -1)
+	if current_id != _last_staggered_student_id:
+		_last_staggered_student_id = current_id
+		_stagger_stat_rows()
+
+## Brings the five stat rows in together with their icons when the
+## displayed student changes. Opacity and scale only -- the icons sit on
+## the mockup's measured 126px grid and must not be moved.
+func _stagger_stat_rows() -> void:
+	var rows := []
+	for pair in [["Akademis1", "IconAkademis1"], ["Akademis2", "IconAkademis2"],
+			["Akademis3", "IconAkademis3"], ["Kepribadian2", "IconKepribadian2"],
+			["Kepribadian1", "IconKepribadian1"]]:
+		for node_name in pair:
+			var node := get_node_or_null("BGStat/%s" % node_name)
+			if node != null:
+				rows.append(node)
+	Juice.stagger_in(rows)
 
 func _setup_portrait_juice(btn: Control):
 	if not btn:

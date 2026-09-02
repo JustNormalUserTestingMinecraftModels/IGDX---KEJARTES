@@ -629,3 +629,53 @@ func test_stat_bar_value_labels_use_the_bar_label_variation() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/StatBar.gd")
 	assert_true(src.contains("get_node_or_null(\"ValueLabel\")"),
 		"StatBar must adopt an authored ValueLabel rather than build a second one")
+
+
+## A schedule edit must be visible on the bar it moved, and switching
+## students must bring the five rows in as a stagger rather than a snap.
+func test_stat_bars_are_animated_on_change_and_on_student_switch() -> void:
+	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
+		"Kepribadian1", "Kepribadian2"]
+	for bar_name in bar_names:
+		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as StatBar
+		assert_true(bar != null, "BGStat/%s is not a StatBar" % bar_name)
+		if bar != null:
+			assert_true(bar.pop_on_change,
+				"%s must pop when its value moves" % bar_name)
+
+	var bar_src := FileAccess.get_file_as_string("res://Scripts/UI/StatBar.gd")
+	assert_true(bar_src.contains("pop_on_change"),
+		"StatBar must expose pop_on_change")
+
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("Juice.stagger_in"),
+		"the stagger must go through Juice.stagger_in")
+	# _update_student_display() runs on every activity assignment (see the
+	# schedule-assignment path around line 948), so a call to
+	# _stagger_stat_rows() must be gated behind a guard variable rather than
+	# unconditional -- otherwise every tap would re-fade the whole stat
+	# panel and fight the per-bar pop. Assert the guard exists so that
+	# gating cannot be silently dropped; contains("_stagger_stat_rows")
+	# alone would still pass even if the function were never called.
+	assert_true(src.contains("_stagger_stat_rows"),
+		"the screen must stagger its stat rows in")
+	assert_true(src.contains("_last_staggered_student_id"),
+		"the stagger must be gated by a last-staggered-student guard, not called unconditionally")
+
+
+## The stagger animates opacity and scale only. The icons are final art on
+## a measured grid -- their offsets must not be touched.
+func test_the_stagger_does_not_move_the_final_icons() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var start := src.find("func _stagger_stat_rows")
+	assert_true(start != -1, "_stagger_stat_rows is missing")
+	# Slice to the real extent of the function (up to the next "func "),
+	# not a fixed character count -- a fixed slice can overrun the body and
+	# scan unrelated code below it, producing a false failure.
+	var next_func := src.find("\nfunc ", start + 1)
+	var body := src.substr(start, next_func - start if next_func != -1 else -1)
+	for forbidden in ["offset_left", "offset_top", "offset_right",
+			"offset_bottom", "position"]:
+		assert_true(not body.contains(forbidden),
+			"_stagger_stat_rows must not write %s -- the icon grid is final"
+			% forbidden)

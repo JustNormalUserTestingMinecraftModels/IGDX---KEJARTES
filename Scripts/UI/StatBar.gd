@@ -33,6 +33,12 @@ extends ProgressBar
 ## printf format for the value label. Use "%d%%" for a percentage.
 @export var value_format: String = "%d"
 
+## When true, an animated set_stat() also gives the bar a short squash-pop
+## so a change is visible even when the fill barely moves. Off by default:
+## SemesterEnd and ReportCard show settled numbers, not live edits.
+@export var pop_on_change: bool = false
+
+
 var _label: Label
 
 
@@ -85,6 +91,12 @@ func set_stat(new_value: float, animate: bool = true) -> void:
 		Juice.fill_bar(self, target)
 		if _label != null:
 			Juice.count_up(_label, previous, target, value_format)
+		if pop_on_change and not is_equal_approx(previous, target):
+			# AnimUtils.squash_bounce, not Juice.pop_in: pop_in sets
+			# modulate.a to 0 and tweens it back, which would blink the bar
+			# and its value label transparent on every change -- a flash,
+			# not a pop. squash_bounce is scale-only.
+			AnimUtils.squash_bounce(self)
 	else:
 		value = target
 		if _label != null:

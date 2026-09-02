@@ -321,10 +321,11 @@ func test_the_exam_branch_exists_and_wins_precedence() -> void:
 
 func test_the_exam_branch_has_four_dialogues() -> void:
 	var scene = load("res://Scenes/CutScene/cut_scene.tscn").instantiate()
-	scene._ready()
+	Engine.get_main_loop().root.add_child(scene)
 	scene._setup_exam_cutscene()
 	var count: int = scene.cg_data.size()
-	scene.free()
+	Engine.get_main_loop().root.remove_child(scene)
+	scene.queue_free()
 	assert_eq(count, 4, "four exam dialogues")
 
 

@@ -1,9 +1,9 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" format=3 uid="uid://bo3dwau466faa"]
 
-[ext_resource type="FontFile" path="res://Assets/Fonts/Milker.otf" id="1_c7jio"]
-[ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/pill_fill.png" id="2_rdx8f"]
-[ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/trait_button.png" id="3_04lmp"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/progress_bar_fill.png" id="4_pbfill"]
+[ext_resource type="FontFile" uid="uid://cy4h6en00otj5" path="res://Assets/Fonts/Milker.otf" id="1_c7jio"]
+[ext_resource type="Texture2D" uid="uid://lhadclrq8tix" path="res://Assets/Images/StudentCard/pill_fill.png" id="2_rdx8f"]
+[ext_resource type="Texture2D" uid="uid://doouaa0kry0fy" path="res://Assets/Images/StudentCard/trait_button.png" id="3_04lmp"]
+[ext_resource type="Texture2D" uid="uid://bjgfxgeyi7llw" path="res://Assets/Images/UI/progress_bar_fill.png" id="4_pbfill"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rdx8f"]
 content_margin_left = 44.0
@@ -1240,6 +1240,9 @@ MarginContainer/constants/margin_top = 48
 MicroLabel/base_type = &"Label"
 MicroLabel/colors/font_color = Color(0.41960785, 0.45490196, 0.5647059, 1)
 MicroLabel/font_sizes/font_size = 18
+PageDotLabel/base_type = &"Label"
+PageDotLabel/colors/font_color = Color(0.65882355, 0.6901961, 0.76862746, 1)
+PageDotLabel/font_sizes/font_size = 22
 Panel/styles/panel = SubResource("StyleBoxFlat_yu8x1")
 PersonaBadge/base_type = &"Button"
 PersonaBadge/colors/font_color = Color(1, 1, 1, 1)

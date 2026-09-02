@@ -103,8 +103,10 @@ func _instantiate(path: String) -> Control:
 
 func test_week_end_routing_is_unchanged() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
-	assert_true(src.contains("res://Scenes/EndGame/SemesterEnd.tscn"),
-		"the final week must still route to SemesterEnd")
+	assert_true(src.contains("res://Scenes/EndGame/TesNotice.tscn"),
+		"the final week now exits into the Tes Besar notice, not straight to the stat check")
+	assert_false(src.contains("res://Scenes/EndGame/SemesterEnd.tscn"),
+		"SchoolDay no longer reaches the stat check directly")
 	assert_true(src.contains("res://Scenes/Lobby/loby.tscn"),
 		"a non-final week must still route back to the Lobby")
 	assert_true(src.contains("completed_week >= max_weeks"),

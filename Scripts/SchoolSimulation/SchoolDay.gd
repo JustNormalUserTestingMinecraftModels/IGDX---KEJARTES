@@ -1282,7 +1282,7 @@ func _on_back_pressed() -> void:
 	var max_weeks = GameState.max_minggu
 
 	if completed_week >= max_weeks:
-		Transition.change_scene("res://Scenes/EndGame/SemesterEnd.tscn")
+		Transition.change_scene("res://Scenes/EndGame/TesNotice.tscn")
 	else:
 		Transition.change_scene("res://Scenes/Lobby/loby.tscn")
 

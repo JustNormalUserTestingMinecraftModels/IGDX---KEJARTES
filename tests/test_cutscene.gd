@@ -227,13 +227,24 @@ func _function_body(src: String, func_name: String) -> String:
 func test_go_to_gameplay_always_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "go_to_gameplay")
-	assert_true(body.contains("res://Scenes/StudentCard/student_card.tscn"),
-		"must route to StudentCard")
+	assert_true(body.contains("GameState.next_scene = _next_scene_path()"),
+		"must delegate routing to _next_scene_path()")
 	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
 		"go_to_gameplay must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")
 	assert_true(body.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
 		"must still hand off through the Loading scene")
+
+
+## _next_scene_path() is the routing table go_to_gameplay() now delegates
+## to. StudentCard must remain its default/fallback branch -- this is what
+## preserves the original guarantee that the intro branch always ends up
+## at StudentCard, not Lobby.
+func test_next_scene_path_defaults_to_student_card() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_body(src, "_next_scene_path")
+	assert_true(body.contains("res://Scenes/StudentCard/student_card.tscn"),
+		"_next_scene_path must default/fallback to StudentCard")
 
 
 ## Skip is a deliberate exception to the rule above: pressing "Skip Intro"
@@ -310,6 +321,7 @@ func test_the_exam_branch_exists_and_wins_precedence() -> void:
 
 func test_the_exam_branch_has_four_dialogues() -> void:
 	var scene = load("res://Scenes/CutScene/cut_scene.tscn").instantiate()
+	scene._ready()
 	scene._setup_exam_cutscene()
 	var count: int = scene.cg_data.size()
 	scene.free()

@@ -55,6 +55,19 @@ var debug_level_select_enabled: bool = true
 var is_game_over_cutscene: bool = false
 var grade7_student_ids: Array = []
 
+## Per-grade tally consumed by the run-result screen. Never null; reset by
+## set_grade() and by the grade-advance path in RunResult.
+var run_stats: RunStats = RunStats.new()
+
+## True while the exam cutscene branch of cut_scene.gd should play, set by
+## TesNotice and cleared by the cutscene itself. Distinct from
+## is_game_over_cutscene, which selects the losing branch.
+var is_exam_intro_cutscene: bool = false
+
+## True once the stat check has decided the run was lost. Read by
+## RunResult to force a D grade without re-running the evaluation.
+var run_failed: bool = false
+
 func get_max_weeks() -> int:
 	match current_grade:
 		8: return Balance.JUMLAH_MINGGU_KELAS_8
@@ -70,6 +83,9 @@ func get_grade_name() -> String:
 func set_grade(grade_num: int) -> void:
 	current_grade = grade_num
 	minggu_ke = 1
+	run_stats.reset()
+	is_exam_intro_cutscene = false
+	run_failed = false
 	print("GameState grade set to: Kelas ", current_grade, " (Minggu ", minggu_ke, ", Max Minggu ", max_minggu, ")")
 
 func initialize_grade_targets() -> void:
@@ -186,6 +202,7 @@ func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
 	target["energy"] = energy_after
 
 	remove_from_inventory(item.item_name, quantity)
+	run_stats.record_item_use(quantity)
 
 	return {
 		"applied": true,
@@ -260,3 +277,24 @@ func check_semester_passed() -> bool:
 		if not (tuntas_akademis and tuntas_seni and tuntas_olahraga):
 			return false
 	return true
+
+
+## Counts how many of the roster's three-per-student academic targets have
+## been cleared, as [cleared, total]. RunGrade's dominant scoring
+## component -- kept here rather than in RunResult because it reads the
+## approved_students dictionaries, whose key naming (akademis1/2/3 =
+## academic/seni/olahraga) is this file's own concern.
+func count_targets_cleared() -> Array:
+	var cleared := 0
+	var total := 0
+	for student in approved_students:
+		var pairs := [
+			["akademis1", "target_akademis1"],
+			["akademis2", "target_akademis2"],
+			["akademis3", "target_akademis3"],
+		]
+		for pair in pairs:
+			total += 1
+			if float(student.get(pair[0], 0.0)) >= float(student.get(pair[1], 0.0)):
+				cleared += 1
+	return [cleared, total]

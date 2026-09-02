@@ -235,6 +235,24 @@ serve a **stale** autoload otherwise. Three tests once failed with
 committed on disk; one `filesystem_manage(op="scan")` turned the same run into
 20/20. Scan first, or you will debug a phantom.
 
+**A scan is not always enough.** When the `.gd` was edited from *outside*
+the editor — any plain file write, including one from a subagent — the
+editor can keep serving the old bytecode through a scan. On 2026-09-02 both
+`ThemeFactory.gd` and `StatBar.gd` did exactly that: their brand-new tests
+failed, and a new `@export` was invisible to `node_set_property`
+("Property 'pop_on_change' not found on StatBar"), all while the correct
+source sat on disk. A **no-op `script_patch` on that same file** forces the
+reload — add and remove a blank line. It logs a benign
+`GDScript reload failed with error code 43` and then works. Cheapest
+reliable fix: make edits through `script_patch` in the first place.
+
+There is no MCP entry point for an `EditorScript` such as
+`Scripts/Design/BakeTheme.gd`, so the theme rebake normally needs
+File > Run by hand. It can be driven headlessly instead by writing a
+transient `@tool` `McpTestSuite` into `res://tests/` whose single test does
+the `ThemeFactory.build()` + `ResourceSaver.save()`, running it with
+`test_run`, then deleting it.
+
 One smaller habit: grep before reading — the two largest scripts here
 exceed 1,500 lines, so read the range you need, not the file.
 
@@ -296,6 +314,18 @@ splash-first as `DaySummaryAvatar.gd` had asked), the blurred-classroom
 backdrop on DaySummary / ResultCheckup / AturJadwal, ReportCard/StudentCard
 render parity, AturJadwal's mockup top band with the stat pills lifted out of
 the splash button, and the intro cutscene's new dialogue panel.
+
+The 2026-09-02 AturJadwal polish pass is complete. Spec:
+`docs/superpowers/specs/2026-09-02-atur-jadwal-warning-and-statbar-polish.md`.
+It reframed the PERINGATAN dialog onto `penjadwalan_card_bg.png` as a
+nine-patch, and rebuilt how every `StatBar` in the game is coloured: the
+category colour is now baked into a per-category fill stylebox rather than
+applied with `self_modulate`, because `self_modulate` multiplies the whole
+node and made a bar at value 0 render as a solid capsule that looked 100%
+full. It also fixed `StatBar` building a second `ValueLabel` on top of the
+one authored in the scene — AturJadwal had five such bars, ReportCard about
+thirty. Read that spec's "Two hazards worth remembering" before touching
+`StatBar.gd`.
 
 **Deferred:** AturJadwal's shelf ships as two `ColorRect`s rather than the
 intended `ShelfEdge` theme variation — a new `@export` on `DesignTokens` is

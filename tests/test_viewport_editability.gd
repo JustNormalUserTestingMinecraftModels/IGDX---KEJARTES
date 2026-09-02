@@ -122,6 +122,13 @@ const ALLOWED: Dictionary = {
 	# show_value_label export is toggled on for that particular bar
 	# instance, not every StatBar has one.
 	"res://Scripts/UI/StatBar.gd": 1,
+	# _build_rows()'s six report rows: instanced from RunResultRow.tscn via
+	# PackedScene.instantiate(), not a VISUAL_TYPES ".new(" call, so this
+	# scan's regex does not actually count them (the entry is 0 for that
+	# reason) -- registered anyway per the per-call-dynamic-content
+	# exception: the row count is fixed, but every value is run-dependent,
+	# and the template carries all the visual structure.
+	"res://Scripts/EndGame/RunResult.gd": 0,
 }
 
 

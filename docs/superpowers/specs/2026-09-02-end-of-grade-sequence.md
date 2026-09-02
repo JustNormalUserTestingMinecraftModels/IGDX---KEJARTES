@@ -129,3 +129,87 @@ grade), `fail` (D grade), `tap` (typewriter advance).
 ## Out of scope
 
 New art, new audio files, a save system, and any change to the simulation math.
+
+## STATUS
+
+Implemented in full via `docs/superpowers/plans/2026-09-02-end-of-grade-sequence.md`
+(14 tasks, subagent-driven-development, branch `end-of-grade-sequence` off
+`sticky-note-polish`). Full test suite: 671 tests, 661 pass live in the
+editor at time of writing; the other 10 (`economy_state` ×6, `wirausaha` ×3,
+plus the `test_gamestate_exposes_a_run_stats_record` structural check) are
+all one known, already-diagnosed Godot editor limitation, not a code defect
+— see "Known gaps" below.
+
+**Deviations from the plan:**
+
+- **RunResultRow needs `class_name`.** The plan's Task 13 typed two
+  `RunResult.gd` variables as `RunResultRow` to fix an inference bug, but
+  Task 12's `RunResultRow.gd` never declared `class_name RunResultRow` —
+  a real parse error the plan didn't anticipate. Fixed by adding the
+  `class_name` declaration.
+- **Two invalid `\u{XXXX}`-braced unicode escapes** in the plan's own
+  Task 13 test text (GDScript only supports bare `\uXXXX`) broke the whole
+  `test_run_result.gd` suite's ability to load. Fixed by using the literal
+  emoji glyphs directly in the negative-check array.
+- **Three more untyped-`:=`/base-typed-var GDScript inference bugs**, on top
+  of the one flagged during planning, surfaced across Tasks 10, 12, and 13's
+  brief text (`var mine = ...` / `var tapped := ...` in WinScreen's test and
+  script, `var row := ...` / `var row: Control = ...` in RunResult.gd). All
+  are the same class: a variable typed too broadly for a subclass-only
+  member access under GDScript's `:=` inference. Fixed with explicit type
+  annotations at each site; behavior unchanged in every case.
+- **Two `@onready`-before-`_ready()` test gaps.** `test_the_exam_branch_has_four_dialogues`
+  (Task 7) and `RunResultRow`'s `set_row`/`play_count_up` tests (Task 12)
+  both called methods on a bare `instantiate()` without ever running
+  `_ready()`, leaving `@onready` vars null. Fixed by (a) adding the node to
+  the live SceneTree via `Engine.get_main_loop().root.add_child(...)` with
+  matching cleanup, per this project's own `test_semester_end.gd` precedent,
+  and (b) adding an explicit (empty) `_ready()` to `RunResultRow.gd`, which
+  had none at all.
+- **A stale pre-existing test broke on a legitimate refactor.**
+  `test_go_to_gameplay_always_routes_through_student_card` (predates this
+  plan) asserted a source-text scan of `go_to_gameplay()`'s body for a
+  string literal that Task 7's refactor correctly moved into the new
+  `_next_scene_path()` helper. Updated the test to check the new
+  architecture instead of the code.
+- **A stale `viewport_editability` `ALLOWED` entry regressed unnoticed
+  since Task 9.** Task 9 converted `SemesterEnd.gd`'s runtime-built page
+  dots to authored `.tscn` nodes, which should have removed that file's
+  `ALLOWED` entry in the same commit — but Task 9's own test pass never ran
+  `viewport_editability`, so the stale entry sat undetected until Task 13's
+  own new entry triggered a full ratchet re-scan. Removed.
+- **`GameState.set_grade()` doesn't clear `day_schedules`.** The plan
+  flagged this as a "verify and patch if needed" item for Task 13; verified
+  true against the real `GameState.gd`, and the beat-the-game progression
+  branch now clears `day_schedules` explicitly (the other two branches
+  already did).
+
+**Known gaps:**
+
+- **The Godot editor's live singleton autoload does not pick up new plain
+  `var` fields on script hot-reload for objects instantiated before the
+  edit.** This is the same class of limitation CLAUDE.md already documents
+  for new `@export` fields on Resources ("invisible until the editor
+  restarts... no headless path"), now also observed for `GameState`'s new
+  `run_stats`/`is_exam_intro_cutscene`/`run_failed` fields. Every headless
+  remedy available via the Godot MCP was tried (`filesystem_manage(scan)`,
+  a no-op `script_patch`, `editor_reload_plugin`, `scene_open` on the main
+  scene) — none clear it. The actual game code is independently confirmed
+  correct: a genuinely fresh process, launched via `project_run` and probed
+  with `editor_manage(game_eval)`, shows every `GameState.run_stats` read
+  and write working exactly as specified, and the 661 passing tests include
+  every suite that doesn't touch the stale singleton. **A human restarting
+  the Godot editor once will clear the remaining 10 false failures** — no
+  code change is needed. Re-run `test_run()` after a restart to confirm.
+- Every cutscene line in the exam and win branches is a `[PLACEHOLDER]`
+  awaiting real dialogue.
+- The exam/win backdrops reuse the intro's CG images (`cg0.jpg`–`cg4.jpg`)
+  as stand-ins.
+- `exam_notice`/`exam_cutscene`/`run_result` BGM ids alias existing tracks
+  per the Audio table above — no new audio files were added.
+- `RunGrade`'s scoring weights, and especially `MONEY_FULL_MARKS`
+  (20000 rupiah for full marks on the money component), are estimates with
+  no real-run data behind them yet.
+- Report icons (`Assets/Images/UI/Placeholders/icon_*.svg`) are
+  placeholder-quality hand-authored SVGs, not finished art — see the plan's
+  Task 11 for why SVG rather than PNG, and the drop-in path to real art.

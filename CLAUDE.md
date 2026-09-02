@@ -21,9 +21,12 @@ every student's three academic targets before the grade's final week to pass.
 
 **Loop:** **MainMenu (boot)** → CutScene → StudentCard (approve roster) →
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay
-(simulate 5 days) → ResultCheckup → back to Lobby, or SemesterEnd on the final
-week. Splashscreen and Loading still exist and are still tested, but since
-2026-08-31 they are no longer reached at boot.
+(simulate 5 days) → ResultCheckup → back to Lobby. On the final week of a
+grade, SchoolDay instead runs the end-of-grade sequence: **TesNotice →
+CutScene (exam branch) → SemesterEnd (stat check) → WinScreen or the
+game-over cutscene → RunResult → MainMenu.** Splashscreen and Loading still
+exist and are still tested, but since 2026-08-31 they are no longer reached
+at boot.
 
 **Lobby hub buttons** → StudentCard, AturJadwal, Koperasi (shop), Inventory,
 ReportCard.
@@ -332,6 +335,32 @@ intended `ShelfEdge` theme variation — a new `@export` on `DesignTokens` is
 invisible to a running editor, so it needs a restart plus a manual rebake. See
 the STATUS block in `2026-09-01-atur-jadwal-mockup.md` for the exact diff to
 re-apply.
+
+The 2026-09-02 end-of-grade sequence is complete. Spec:
+`docs/superpowers/specs/2026-09-02-end-of-grade-sequence.md`; plan:
+`docs/superpowers/plans/2026-09-02-end-of-grade-sequence.md`. It added the
+Tes Besar notice, the cutscene's third (exam) branch, a per-grade `RunStats`
+tally on GameState (`RunStats.gd`), the `RunGrade` A+/…/C-/D scorer
+(`RunGrade.gd`), a cutscene-styled WinScreen, the `RunResultRow` template,
+and the RunResult report screen — which now owns grade progression, moved
+off SemesterEnd (`SemesterEnd.gd::_on_restart_pressed()` no longer advances
+the grade). SemesterEnd was also restyled: the flat near-black background is
+now the blurred-classroom backdrop, and its page dots are authored `.tscn`
+nodes (`PageDotLabel` theme variation) instead of runtime-built `Label`s.
+Report icons are real transparent SVG textures
+(`Assets/Images/UI/Placeholders/icon_*.svg`), never emoji glyphs — the
+project explicitly banned emoji as UI iconography during this pass.
+Placeholders still outstanding: every cutscene line in the exam and win
+branches is marked `[PLACEHOLDER]`, the exam/win backdrops reuse the intro's
+CG images, the three new BGM ids (`exam_notice`, `exam_cutscene`,
+`run_result`) alias existing tracks, and `RunGrade`'s scoring weights
+(especially `MONEY_FULL_MARKS`) are estimates pending a real-run balance
+pass. Built via subagent-driven-development with the Godot MCP bridge held
+by the controller session throughout (implementer subagents write
+scripts/tests/assets; the controller builds every `.tscn` and runs every
+`test_run`) — see that plan's SDD ledger
+(`.superpowers/sdd/2026-09-02-end-of-grade-sequence/progress.md`, deleted
+after merge) for the fix-loop history if anything here needs revisiting.
 
 `-REFERENCE-/prototype/` is the original prototype, kept for reference only —
 not built, not imported. `koprasi&inventory` was a second programmer's separate

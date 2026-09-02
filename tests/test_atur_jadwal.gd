@@ -510,6 +510,8 @@ func test_assign_pop_is_driven_from_on_activity_selected() -> void:
 func test_peringatan_frame_is_a_ninepatch_of_the_card_art() -> void:
 	var frame := _screen.get_node_or_null("Peringatan/TextureRect")
 	assert_true(frame != null, "Peringatan/TextureRect is missing")
+	if frame == null:
+		return
 	assert_true(frame is NinePatchRect,
 		"the warning frame must be a NinePatchRect, got %s" % frame.get_class())
 	if frame is NinePatchRect:

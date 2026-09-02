@@ -22,8 +22,9 @@ signal _holiday_dismissed
 ## _stagger_stat_rows() so it only plays on screen entry or an actual
 ## student switch -- _update_student_display() also runs on every activity
 ## assignment, and an unconditional stagger there would re-fade the whole
-## stat panel on every tap and fight the per-bar pop. -1 so the very first
-## display (no real student id is ever negative) always staggers.
+## stat panel on every tap and fight the per-bar pop. The very first display
+## is handled separately by _has_staggered_once below, not by this -1
+## initial value.
 var _last_staggered_student_id = -1
 
 ## True once _update_student_display() has staggered at least once.
@@ -580,6 +581,11 @@ func _percent(current: float, target: float) -> float:
 		return 0.0
 	return clampf(current / target * 100.0, 0.0, 100.0)
 
+## pop: whether this update should play StatBar's squash-pop. Callers pass
+## false during a student switch, where _stagger_stat_rows()'s stagger
+## already owns the motion for the row; callers pass true (the default) for
+## a same-student edit -- e.g. assigning an activity -- where there is no
+## stagger and the pop is the only motion telling the player the bar moved.
 func _feed_stat_bar(bar: StatBar, current: float, delta: float, target: float, pop: bool = true) -> void:
 	if bar == null:
 		return

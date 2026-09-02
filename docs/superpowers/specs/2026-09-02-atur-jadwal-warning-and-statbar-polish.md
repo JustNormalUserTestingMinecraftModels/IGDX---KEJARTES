@@ -104,6 +104,15 @@ bytecode loaded: new tests fail spuriously and a new `@export` is invisible
 to `node_set_property`. A no-op `script_patch` on the same file forces the
 reload. Both hazards are now written up in `CLAUDE.md`.
 
+**The on-change squash-pop is tight against the icon column.** The pop peaks
+at scale `(1.18, 0.85)` about a centred pivot, and the bars are 324px wide
+(`offset_left` 649 to `offset_right` 973), so the horizontal peak grows
+±29.2px per side. `IconAkademis1` ends at x=611, leaving a 38px gap to the
+bar's left edge — the pop clears the icon by only about 8.8px, for roughly
+0.07s. That's fine today, but it's a real constraint: widening the bars or
+moving the icon grid closer needs to keep this clearance in mind, or the pop
+will visibly overlap the icon.
+
 ## Verification
 
 Full suite: **604 passed, 1 failed**. The single failure is
@@ -126,7 +135,6 @@ the real nodes rather than trusting a screenshot:
 
 ## Known deferred items
 
-- `_feed_stat_bar`'s doc comment does not mention its new `pop` parameter.
 - `show_value_label` true → false → true does not round-trip: `_sync_label`'s
   early return no longer hides an existing label. Latent — no caller toggles
   the flag at runtime; it is fixed at scene-authoring time.

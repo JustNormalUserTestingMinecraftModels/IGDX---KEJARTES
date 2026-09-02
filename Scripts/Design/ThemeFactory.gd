@@ -456,8 +456,13 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	# instead (the same fix DaySummary's tracks already use above), and
 	# StatBar.gd switches those bars to theme_type_variation + white
 	# self_modulate rather than tinting the node. One variation per
-	# category, all sharing the exact "StatBar" track built above so the
-	# rim/shadow/inset chrome never drifts between them.
+	# category, each set_type_variation'd directly off "ProgressBar" (not
+	# chained onto "StatBar") -- the rim/shadow/inset chrome staying
+	# identical across all six is because they're handed the SAME `bg`
+	# StyleBoxFlat instance below, and font size/color are copied from the
+	# same tokens explicitly, not because they inherit from "StatBar". A
+	# new theme item added to "StatBar" later will NOT reach these six
+	# siblings automatically -- it would need to be added here too.
 	var stat_bar_categories := [
 		["StatBarAkademis", tokens.cat_akademis],
 		["StatBarSeniBudaya", tokens.cat_senibudaya],

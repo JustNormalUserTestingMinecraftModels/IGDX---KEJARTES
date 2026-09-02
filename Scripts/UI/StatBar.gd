@@ -34,6 +34,12 @@ extends ProgressBar
 ## When true, overlays a centered "value_format % value" Label on top of
 ## the fill -- most callers leave this off and show the number in a
 ## separate InfoLabel/StudentStatRow instead.
+## Set this at scene-authoring time; it is not meant to be toggled at
+## runtime. Flipping it true shows the label, but flipping it back false
+## does NOT hide a label already shown -- _sync_label() bails out early
+## whenever this is false, on purpose, so this @tool script never touches
+## (and can't stomp) a ValueLabel that ReportCard/StudentCard authored by
+## hand. Do not "fix" that early return; see _sync_label()'s doc.
 @export var show_value_label: bool = false:
 	set(value):
 		show_value_label = value

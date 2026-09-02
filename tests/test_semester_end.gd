@@ -2,13 +2,12 @@
 extends McpTestSuite
 
 ## SemesterEnd is the payoff/results screen (8th and final per-screen
-## migration in the core-ui-polish plan) -- 883-line scene, ~150 theme
-## overrides, 422-line script. It has FOUR possible routing destinations
-## selected by _on_restart_pressed()/_on_menu_pressed():
-##   - CutScene   (GameState.check_semester_passed() == false)
-##   - StudentCard (passed, current_grade < 9)
-##   - Lobby      (passed, current_grade >= 9 -- "beat the game", loop to 7)
-##   - MainMenu   (BtnMainMenu pressed, any state)
+## migration in the core-ui-polish plan) -- restyled and re-pointed as
+## part of the end-of-grade-sequence plan. It no longer applies grade
+## progression itself (that moved to RunResult) and now has exactly two
+## routing destinations selected by _on_restart_pressed():
+##   - WinScreen  (GameState.check_semester_passed() == true)
+##   - CutScene   (failed -- also arms GameState.is_game_over_cutscene)
 ##
 ## Technique notes carried over from Tasks 9-16:
 ##  * This suite must itself be @tool or the runner reports it as broken.
@@ -59,35 +58,46 @@ func teardown() -> void:
 
 # ------------------------------------------------ behavioral contract net
 
-func test_all_four_routing_destinations_are_preserved() -> void:
+func test_it_exits_to_the_win_screen_when_the_semester_passed() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	for path in [
-		"res://Scenes/CutScene/cut_scene.tscn",
-		"res://Scenes/StudentCard/student_card.tscn",
-		"res://Scenes/Lobby/loby.tscn",
-		"res://Scenes/MainMenu/main_menu.tscn",
-	]:
-		assert_true(src.contains(path), "missing routing destination: " + path)
+	assert_true(src.contains("res://Scenes/EndGame/WinScreen.tscn"),
+		"a pass leads to the win screen")
 
 
-func test_check_semester_passed_usage_is_unchanged() -> void:
+func test_it_exits_to_the_lose_cutscene_when_the_semester_failed() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	var count := src.count("GameState.check_semester_passed()")
-	assert_eq(count, 3,
-		"expected check_semester_passed() to be called exactly three times (BGM choice in _ready, evaluate, restart), found " + str(count))
+	assert_true(src.contains("GameState.is_game_over_cutscene = true"),
+		"a fail arms the lose cutscene")
+	assert_true(src.contains("res://Scenes/CutScene/cut_scene.tscn"),
+		"a fail leads to the cutscene")
 
 
-func test_restart_button_routes_by_pass_fail_and_grade() -> void:
-	# Structural check that the branching that selects between the four
-	# destinations is still intact: fail -> cutscene; pass + grade<9 ->
-	# student_card; pass + grade>=9 -> lobby (loop back to grade 7).
+func test_grade_progression_has_moved_off_this_screen() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("is_game_over_cutscene = true"),
-		"failing must still flag the game-over cutscene")
-	assert_true(src.contains("grade_num < 9"),
-		"grade<9 branch must still gate the student_card route")
-	assert_true(src.contains("GameState.current_grade = 7"),
-		"beating the game must still loop back to grade 7 via lobby")
+	assert_false(src.contains("GameState.current_grade += 1"),
+		"the stat check no longer advances the grade -- RunResult does")
+
+
+func test_the_backdrop_replaced_the_flat_color_rect() -> void:
+	assert_true(_screen.get_node_or_null("Backdrop") is TextureRect,
+		"there is a blurred backdrop")
+	assert_true(_screen.get_node_or_null("Scrim") is Panel,
+		"there is a themed scrim over it")
+	assert_true(_screen.get_node_or_null("Background") == null,
+		"the flat dark ColorRect is gone")
+
+
+func test_the_page_dots_are_authored_in_the_scene() -> void:
+	var dots = _screen.get_node_or_null(
+		"MarginContainer/VBoxContainer/PageIndicator")
+	assert_eq(dots.get_child_count(), 4,
+		"four page dots authored in the .tscn, not built at runtime")
+
+
+func test_the_copy_dropped_the_emoji_clutter() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for emoji in ["🎓", "❌", "⚠️", "🎉", "🏆"]:
+		assert_false(src.contains(emoji), "no %s in the copy" % emoji)
 
 
 # ---------------------------------------------------------------- structure
@@ -131,7 +141,7 @@ func test_no_hardcoded_colors_in_script() -> void:
 
 func test_buttons_meet_the_minimum_touch_target() -> void:
 	var tokens := DesignTokens.load_default()
-	for name in ["BtnRestart", "BtnMainMenu"]:
+	for name in ["BtnRestart"]:
 		var b := _screen.find_child(name, true, false) as Control
 		var h := b.get_combined_minimum_size().y
 		assert_true(h >= float(tokens.touch_target_min),

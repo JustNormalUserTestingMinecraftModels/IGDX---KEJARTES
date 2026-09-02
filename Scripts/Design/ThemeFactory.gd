@@ -293,6 +293,10 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["TitleLabel", tokens.font_title, tokens.text_primary, false],
 		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false],
+		# The SemesterEnd carousel's page dots. Authored in the .tscn (four
+		# of them, the roster cap); the script only shows/hides and
+		# re-modulates them for the active page -- see SemesterEnd.gd.
+		["PageDotLabel", tokens.font_caption, tokens.text_disabled, false],
 		# The "no items match this filter" placeholder text. 32px doesn't
 		# match a token exactly (nearest are font_body_size 28 / font_title
 		# 36); kept as the shipped literal rather than nudging the size.

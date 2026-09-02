@@ -142,12 +142,52 @@ func test_statbar_value_label_tracks_the_value() -> void:
 	assert_eq(label.text, "77", "label must land on the exact value")
 
 
+## Regression pin: StatBar is @tool, so _ready() -> _sync_label() runs at
+## EDIT time too, whenever a scene containing one is opened and saved --
+## not just in-game. ReportCard and StudentCard bars leave show_value_label
+## at its default false while authoring their own ValueLabel children with
+## meaningful text/alignment that those screens drive themselves. Opening
+## and saving Scenes/ReportCard/report_card.tscn once adopted those
+## authored labels and silently persisted stomped values into the .tscn:
+## visible flipped to false, text overwritten from the authored "65/65" to
+## a freshly computed "60", and horizontal_alignment forced from right (2)
+## to centre (1). show_value_label = false must leave an authored child
+## completely alone -- not adopt it, not hide it, not restyle it, not
+## rewrite its text.
+func test_statbar_leaves_an_authored_label_alone_when_show_value_label_is_false() -> void:
+	var bar := StatBar.new()
+	# show_value_label left at its default false, matching ReportCard/
+	# StudentCard's authored bars.
+	var authored := Label.new()
+	authored.name = "ValueLabel"
+	authored.text = "65/65"
+	authored.visible = true
+	authored.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	bar.add_child(authored)
+	_root.add_child(bar)
+
+	assert_eq(authored.text, "65/65",
+		"an authored label's text must survive _ready() when show_value_label is false")
+	assert_true(authored.visible,
+		"an authored label's visibility must survive _ready() when show_value_label is false")
+	assert_eq(authored.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT,
+		"an authored label's alignment must survive _ready() when show_value_label is false")
+
+
+## self_modulate is unconditionally white for the whole StatBar family now,
+## so `self_modulate.a > 0.0` would pass for any category and no longer
+## exercises the fallback mapping at all. What actually matters is that an
+## unrecognised category resolves to the neutral "StatBar" variation (whose
+## fill stylebox is genuinely visible, see ThemeFactory._build_progress)
+## rather than an empty/unknown theme_type_variation string.
 func test_unknown_category_still_renders_visibly() -> void:
 	var bar := StatBar.new()
 	bar.category = "KategoriTidakDikenal"
 	_root.add_child(bar)
 	assert_true(bar.self_modulate.a > 0.0,
 		"an unknown category must never render the bar invisible")
+	assert_eq(bar.theme_type_variation, &"StatBar",
+		"an unrecognised category must fall back to the neutral StatBar variation")
 
 
 func test_stat_bar_defaults_to_its_own_variation() -> void:

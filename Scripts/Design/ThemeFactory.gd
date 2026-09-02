@@ -437,7 +437,11 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	bg.set_content_margin_all(tokens.outline_width / 2.0)
 	theme.set_stylebox("background", "StatBar", bg)
 
-	# White fill so callers can tint per category via self_modulate.
+	# Plain "StatBar" is now only the neutral fallback for an unrecognised
+	# category (StatBar.gd._STAT_BAR_VARIATIONS) -- every real caller
+	# resolves to one of the six per-category siblings below, whose fill
+	# stylebox bakes its colour in directly. None of them tint via
+	# self_modulate any more.
 	theme.set_stylebox("fill", "StatBar", _progress_fill_stylebox())
 
 	theme.set_font_size("font_size", "StatBar", tokens.font_caption)

@@ -1,9 +1,9 @@
-[gd_resource type="Theme" format=3 uid="uid://by2xquufan2ft"]
+[gd_resource type="Theme" format=3]
 
-[ext_resource type="FontFile" uid="uid://cy4h6en00otj5" path="res://Assets/Fonts/Milker.otf" id="1_c7jio"]
-[ext_resource type="Texture2D" uid="uid://lhadclrq8tix" path="res://Assets/Images/StudentCard/pill_fill.png" id="2_rdx8f"]
-[ext_resource type="Texture2D" uid="uid://doouaa0kry0fy" path="res://Assets/Images/StudentCard/trait_button.png" id="3_04lmp"]
-[ext_resource type="Texture2D" uid="uid://bjgfxgeyi7llw" path="res://Assets/Images/UI/progress_bar_fill.png" id="4_pbfill"]
+[ext_resource type="FontFile" path="res://Assets/Fonts/Milker.otf" id="1_c7jio"]
+[ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/pill_fill.png" id="2_rdx8f"]
+[ext_resource type="Texture2D" path="res://Assets/Images/StudentCard/trait_button.png" id="3_04lmp"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/progress_bar_fill.png" id="4_pbfill"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rdx8f"]
 content_margin_left = 44.0
@@ -267,7 +267,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.23921569, 0.54509807, 1, 1)
+modulate_color = Color(0.14901961, 0.56078434, 1, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2a4ot"]
 bg_color = Color(0.21960784, 0.21960784, 0.21960784, 1)
@@ -288,7 +288,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.8980392, 0.28235295, 0.3019608, 1)
+modulate_color = Color(1, 0.14901961, 0.23529412, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vy4bs"]
 bg_color = Color(0.21960784, 0.21960784, 0.21960784, 1)
@@ -309,7 +309,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.4862745, 0.7019608, 0.25882354, 1)
+modulate_color = Color(0.6392157, 1, 0.101960786, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y32ug"]
 content_margin_left = 44.0
@@ -431,7 +431,7 @@ content_margin_left = 44.0
 content_margin_top = 28.0
 content_margin_right = 44.0
 content_margin_bottom = 28.0
-bg_color = Color(0.7638902, 0.75883925, 0.94813335, 1)
+bg_color = Color(0.7590667, 0.7443687, 0.9780392, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
@@ -449,7 +449,7 @@ content_margin_left = 44.0
 content_margin_top = 28.0
 content_margin_right = 44.0
 content_margin_bottom = 28.0
-bg_color = Color(0.5240784, 0.43403924, 0.90031374, 1)
+bg_color = Color(0.508, 0.38580394, 1, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
@@ -468,7 +468,7 @@ content_margin_left = 44.0
 content_margin_top = 28.0
 content_margin_right = 44.0
 content_margin_bottom = 28.0
-bg_color = Color(0.56215215, 0.4793161, 0.90828866, 1)
+bg_color = Color(0.54736, 0.43493962, 1, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
@@ -487,7 +487,7 @@ content_margin_left = 44.0
 content_margin_top = 28.0
 content_margin_right = 44.0
 content_margin_bottom = 28.0
-bg_color = Color(0.5240784, 0.43403924, 0.90031374, 1)
+bg_color = Color(0.508, 0.38580394, 1, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
@@ -506,7 +506,7 @@ content_margin_left = 44.0
 content_margin_top = 28.0
 content_margin_right = 44.0
 content_margin_bottom = 28.0
-bg_color = Color(0.31890196, 0.23545098, 0.66760784, 1)
+bg_color = Color(0.304, 0.1907451, 0.76, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
@@ -927,7 +927,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.23921569, 0.54509807, 1, 1)
+modulate_color = Color(0.14901961, 0.56078434, 1, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1qbbx"]
 texture = ExtResource("4_pbfill")
@@ -936,7 +936,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.41960785, 0.30980393, 0.8784314, 1)
+modulate_color = Color(0.4, 0.2509804, 1, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_n0f8p"]
 texture = ExtResource("4_pbfill")
@@ -945,7 +945,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(1, 0.7882353, 0.23529412, 1)
+modulate_color = Color(1, 0.827451, 0.2, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5fiis"]
 texture = ExtResource("4_pbfill")
@@ -954,7 +954,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.8980392, 0.28235295, 0.3019608, 1)
+modulate_color = Color(1, 0.14901961, 0.23529412, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lyu8e"]
 texture = ExtResource("4_pbfill")
@@ -963,7 +963,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.4862745, 0.7019608, 0.25882354, 1)
+modulate_color = Color(0.6392157, 1, 0.101960786, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_3ty2y"]
 texture = ExtResource("4_pbfill")
@@ -972,7 +972,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0, 0.6392157, 0.5372549, 1)
+modulate_color = Color(0, 0.9019608, 0.72156864, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lj7qd"]
 

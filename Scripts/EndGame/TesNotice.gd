@@ -24,9 +24,6 @@ extends Control
 ## auto-advance and waits for the button.
 @export var auto_advance_seconds: float = 6.0
 
-## How long the card takes to pop in, in seconds.
-@export var card_pop_seconds: float = 0.45
-
 var _advancing: bool = false
 
 

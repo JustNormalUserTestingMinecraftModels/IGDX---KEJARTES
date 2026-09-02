@@ -97,8 +97,6 @@ func _setup_exam_cutscene() -> void:
 	if btn_debug_toggle: btn_debug_toggle.visible = false
 	if btn_skip: btn_skip.visible = false
 
-	AudioDirector.play_bgm(&"exam_cutscene")
-
 	cg_data = [
 		{
 			"image": preload("res://Assets/Images/CG/cg3.jpg"),

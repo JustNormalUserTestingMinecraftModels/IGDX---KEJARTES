@@ -57,6 +57,7 @@ const GRADE_CAPTIONS := {
 
 var _grade_text: String = "D"
 var _money_row: Control = null
+var _exiting: bool = false
 
 
 func _ready() -> void:
@@ -170,23 +171,28 @@ func _slam_grade() -> void:
 ## Exactly the same three cases as before -- advance, beat-the-game reset,
 ## or retry the same grade -- just moved to the end of the sequence.
 func _on_selesai_pressed() -> void:
+	if _exiting:
+		return
+	_exiting = true
 	AudioDirector.play_sfx(&"confirm")
-	_apply_progression()
+	var destination := _apply_progression()
 
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.4)
 	await tween.finished
-	Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn")
+	Transition.change_scene(destination)
 
 
-func _apply_progression() -> void:
+func _apply_progression() -> String:
 	if GameState.run_failed:
-		# A failed grade is retried from the top, roster intact.
+		# A loss returns to the main menu; the normal MainMenu -> CutScene
+		# bootstrap handles the restart from there (a fresh grade-7 run, or
+		# the level-select modal if already unlocked).
 		GameState.day_schedules.clear()
 		GameState.minggu_ke = 1
 		GameState.run_stats.reset()
 		GameState.run_failed = false
-		return
+		return "res://Scenes/MainMenu/main_menu.tscn"
 
 	if GameState.current_grade < 9:
 		GameState.current_grade += 1
@@ -201,6 +207,7 @@ func _apply_progression() -> void:
 		GameState.returned_from_student_card = false
 		GameState.lobby_tutorial_completed = true
 		GameState.run_stats.reset()
+		return "res://Scenes/StudentCard/student_card.tscn"
 	else:
 		# The game is beaten: unlock level select and reset to Kelas 7.
 		# set_grade() resets current_grade/minggu_ke/run_stats/
@@ -225,3 +232,4 @@ func _apply_progression() -> void:
 		var LobbyScript = load("res://Scripts/Lobby/loby.gd")
 		if LobbyScript and "tutorial_shown" in LobbyScript:
 			LobbyScript.tutorial_shown = false
+		return "res://Scenes/MainMenu/main_menu.tscn"

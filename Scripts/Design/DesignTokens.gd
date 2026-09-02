@@ -79,20 +79,20 @@ static func load_default() -> DesignTokens:
 @export_group("Category Accents")
 ## Tint for the Akademis schedule category and its StatBar/pill/icon uses
 ## wherever `category_color("Akademis")` is called.
-@export var cat_akademis: Color = Color("3d8bff")
+@export var cat_akademis: Color = Color("4d9cff")
 ## Same as cat_akademis, for Olahraga.
-@export var cat_olahraga: Color = Color("e5484d")
+@export var cat_olahraga: Color = Color("ff5566")
 ## Same as cat_akademis, for SeniBudaya.
-@export var cat_senibudaya: Color = Color("7cb342")
+@export var cat_senibudaya: Color = Color("8fd91f")
 ## Same as cat_akademis, for Istirahat (the rest-day category, also reused
 ## as the "Mood" accent on need bars that aren't schedule categories).
-@export var cat_istirahat: Color = Color("6b4fe0")
+@export var cat_istirahat: Color = Color("8c6fff")
 ## Same as cat_akademis, for Libur (also reused as the "Energy" accent on
 ## need bars, matching Istirahat's dual role).
-@export var cat_libur: Color = Color("ffc93c")
+@export var cat_libur: Color = Color("ffd950")
 ## Wirausaha: the money-earning schedule activity. Teal keeps it clear of
 ## the five existing category hues.
-@export var cat_wirausaha: Color = Color("00a389")
+@export var cat_wirausaha: Color = Color("00c89f")
 
 @export_group("Semantic States")
 ## Positive-outcome tint: SuccessButton, win badges, the specialty-match

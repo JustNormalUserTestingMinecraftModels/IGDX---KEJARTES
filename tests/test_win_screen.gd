@@ -7,6 +7,7 @@ extends McpTestSuite
 ## cut_scene.tscn rather than anything novel.
 
 const _SCENE_PATH := "res://Scenes/EndGame/WinScreen.tscn"
+
 const _SCRIPT_PATH := "res://Scripts/EndGame/WinScreen.gd"
 const _CUTSCENE_PATH := "res://Scenes/CutScene/cut_scene.tscn"
 
@@ -46,8 +47,8 @@ func test_the_chatbox_uses_the_cutscene_art() -> void:
 
 func test_the_chatbox_sits_where_the_cutscene_puts_it() -> void:
 	var other = load(_CUTSCENE_PATH).instantiate()
-	var mine = _screen.get_node_or_null("DialogueBox")
-	var theirs = other.get_node_or_null("DialogueBox")
+	var mine: Control = _screen.get_node_or_null("DialogueBox")
+	var theirs: Control = other.get_node_or_null("DialogueBox")
 	var same_anchors := (mine.anchor_left == theirs.anchor_left
 		and mine.anchor_top == theirs.anchor_top
 		and mine.anchor_right == theirs.anchor_right

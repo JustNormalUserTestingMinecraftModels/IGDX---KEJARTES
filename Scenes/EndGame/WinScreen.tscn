@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://com1mq7p7rsea"]
+
+[ext_resource type="Script" path="res://Scripts/EndGame/WinScreen.gd" id="1_kpmwb"]
+[ext_resource type="Texture2D" uid="uid://dgvesub2rdjot" path="res://Assets/Images/CG/cg0.jpg" id="2_owdk3"]
+[ext_resource type="Texture2D" uid="uid://u0inspdoga14" path="res://Assets/Images/UI/cutscene_dialogue.png" id="3_aoqub"]
+[ext_resource type="Script" uid="uid://bqpiy0bobcloa" path="res://Scripts/CutScene/hint_label.gd" id="4_kohfl"]
+
+[node name="WinScreen" type="Control" unique_id=1779820727]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_kpmwb")
+
+[node name="BgCutScene" type="TextureRect" parent="." unique_id=1513197325]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("2_owdk3")
+stretch_mode = 6
+
+[node name="DialogueBox" type="TextureRect" parent="." unique_id=1933501367]
+layout_mode = 0
+offset_top = 940.0
+offset_right = 1080.0
+offset_bottom = 2020.0
+mouse_filter = 2
+texture = ExtResource("3_aoqub")
+
+[node name="DialogueLabel" type="RichTextLabel" parent="DialogueBox" unique_id=1946196221]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 248.0
+offset_right = 927.0
+offset_bottom = 790.0
+
+[node name="FadeOverlay" type="ColorRect" parent="." unique_id=244073751]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="HintLabel" type="Label" parent="." unique_id=456321224]
+layout_mode = 0
+offset_left = 110.0
+offset_top = 1745.0
+offset_right = 967.0
+offset_bottom = 1805.0
+theme_type_variation = &"CaptionLabel"
+text = "Ketuk untuk melanjutkan"
+horizontal_alignment = 1
+script = ExtResource("4_kohfl")

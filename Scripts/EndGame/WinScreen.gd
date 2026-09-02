@@ -24,6 +24,7 @@ extends Control
 ## How long the fade to the next screen takes, in seconds.
 @export var exit_fade_seconds: float = 0.6
 
+
 ## The win dialogue. Placeholders until the final script is written --
 ## keep them four lines so the pacing stays close to the lose cutscene's.
 @export var dialogues: Array[String] = [
@@ -49,7 +50,7 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if _exiting:
 		return
-	var tapped := (event is InputEventScreenTouch and event.pressed) \
+	var tapped: bool = (event is InputEventScreenTouch and event.pressed) \
 		or (event is InputEventMouseButton and event.pressed
 			and event.button_index == MOUSE_BUTTON_LEFT)
 	if not tapped:

@@ -14,6 +14,16 @@ extends PanelContainer
 @onready var name_label: Label = $Row/NameLabel
 @onready var value_label: Label = $Row/ValueLabel
 
+## Explicit and otherwise empty: without a user-defined _ready(), Godot
+## has no compiled "_ready" method to call, and tests that instantiate
+## this template without adding it to a live SceneTree (per this
+## project's established @tool-scene test pattern) call _ready() directly
+## to populate the @onready vars above -- that call needs a real method
+## to land in.
+func _ready() -> void:
+	pass
+
+
 ## The number this row counts up to. Set through set_row().
 var target_value: float = 0.0
 ## Appended to the counted number, e.g. "G" for rupiah. Set through set_row().

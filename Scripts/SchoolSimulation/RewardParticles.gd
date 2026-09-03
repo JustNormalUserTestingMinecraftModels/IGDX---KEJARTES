@@ -35,6 +35,13 @@ func fire(delay: float = 0.0) -> void:
 			return
 	restart()
 	emitting = true
+	# A nested emitter (RewardBurst's PlusBurst) rides the same gesture.
+	# Fired directly rather than awaited: this node frees itself when
+	# spent, and a child cannot outlive it anyway.
+	for child in get_children():
+		if child is GPUParticles2D:
+			child.restart()
+			child.emitting = true
 	if plays_sfx:
 		AudioDirector.play_sfx(&"sparkle")
 	await get_tree().create_timer(lifetime * (2.0 - explosiveness) + CLEANUP_GRACE).timeout

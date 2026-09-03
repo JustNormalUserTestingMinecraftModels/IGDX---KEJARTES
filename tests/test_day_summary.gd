@@ -1355,3 +1355,14 @@ func test_negative_needs_delta_is_tinted_danger() -> void:
 		"and a gain from the success token")
 	assert_false(src.contains("Color("),
 		"the tint comes from DesignTokens, never a Color literal")
+
+
+## The per-stat burst moves off the generic star onto the pass's own
+## sprites (2026-09-03 recap spec section 7).
+func test_reward_burst_uses_the_new_particle_sprites() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/RewardBurst.tscn")
+	assert_contains(src, "particle_spark.png",
+		"the glint replaces the generic star")
+	assert_contains(src, "particle_plus.png",
+		"and a + rides along with it")

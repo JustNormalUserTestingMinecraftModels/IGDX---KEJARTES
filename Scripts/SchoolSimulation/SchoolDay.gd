@@ -83,7 +83,7 @@ signal _summary_closed
 @onready var day_screen: VBoxContainer    = $DayScreen
 @onready var day_number_label: Label      = $DayScreen/DayNumberLabel
 @onready var day_label: Label             = $DayScreen/DayLabel
-@onready var book_clock_widget: Control   = $DayScreen/BookClockWidget
+@onready var book_clock_widget: Control   = $BookClockWidget
 @onready var progress_bar: StatBar        = $DayScreen/ProgressBar
 @onready var status_label: Label          = $DayScreen/StatusLabel
 @onready var student_status_container: VBoxContainer = $DayScreen/StudentScroll/StudentStatusContainer
@@ -676,10 +676,12 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 ## Nodes on the DayScreen that would otherwise read through the summary
 ## popup's scrim and collide with the card stack. Paths, not @onready refs,
 ## because several are optional depending on how far the day got.
+##
+## The sky cinematic is deliberately absent: it is the screen's backdrop
+## now, not chrome, and should keep turning behind the summary's scrim.
 const _DAY_CHROME_PATHS := [
 	"DayScreen/DayNumberLabel",
 	"DayScreen/DayLabel",
-	"DayScreen/BookClockWidget",
 	"DayScreen/ProgressBar",
 	"DayScreen/StatusLabel",
 ]

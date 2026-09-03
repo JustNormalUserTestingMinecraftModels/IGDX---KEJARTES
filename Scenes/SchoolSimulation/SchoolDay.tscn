@@ -1,12 +1,12 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://gkmrwjq0xc75"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/SchoolDay.gd" id="1_schoolday"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/ResultCheckup.tscn" id="2_checkup"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/EventAnnouncement.tscn" id="3_announcement"]
+[ext_resource type="Script" uid="uid://4jmdeoilk6nk" path="res://Scripts/SchoolSimulation/SchoolDay.gd" id="1_schoolday"]
+[ext_resource type="PackedScene" uid="uid://bi1vea4233njp" path="res://Scenes/SchoolSimulation/ResultCheckup.tscn" id="2_checkup"]
+[ext_resource type="PackedScene" uid="uid://rneo43oike8g" path="res://Scenes/SchoolSimulation/EventAnnouncement.tscn" id="3_announcement"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn" id="4_student_select"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/BookClockWidget.tscn" id="5_bookclock"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryPopup.tscn" id="6_summary"]
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/SimulationBackground.gd" id="7_bgscript"]
+[ext_resource type="PackedScene" uid="uid://cx6n3hr2evpn1" path="res://Scenes/SchoolSimulation/BookClockWidget.tscn" id="5_bookclock"]
+[ext_resource type="PackedScene" uid="uid://blgxgwieuhoky" path="res://Scenes/SchoolSimulation/DaySummaryPopup.tscn" id="6_summary"]
+[ext_resource type="Script" uid="uid://ca6bou6m1loq6" path="res://Scripts/SchoolSimulation/SimulationBackground.gd" id="7_bgscript"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="8_statbar"]
 
 [node name="SchoolDay" type="Control" unique_id=310225723]
@@ -30,6 +30,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("7_bgscript")
+
+[node name="BookClockWidget" parent="." unique_id=1100225047 instance=ExtResource("5_bookclock")]
+layout_mode = 1
 
 [node name="DayScreen" type="VBoxContainer" parent="." unique_id=689888867]
 layout_mode = 1
@@ -57,15 +60,13 @@ text = "Senin"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="BookClockWidget" parent="DayScreen" unique_id=337990511 instance=ExtResource("5_bookclock")]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
 [node name="ProgressBar" type="ProgressBar" parent="DayScreen" unique_id=1144036598]
+self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"StatBar"
+show_percentage = false
 script = ExtResource("8_statbar")
 category = "Libur"
 

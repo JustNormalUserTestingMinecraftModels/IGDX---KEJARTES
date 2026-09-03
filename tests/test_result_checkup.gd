@@ -1011,3 +1011,21 @@ func test_pane_transition_direction_is_derived_not_hardcoded() -> void:
 	assert_contains(src, "signi(",
 		"the transition direction comes from signi(pane - _active_pane), " +
 			"not two hardcoded literal directions")
+
+
+## ScrollFade was a flat SunkenPanel -- an unexplained white box between
+## the scrollable pane and BtnClose. It's a gradient now: an actual
+## fade-to-transparent cue, not a themed surface (2026-09-03
+## interactivity spec, section 7).
+func test_scroll_fade_is_a_gradient_not_a_flat_panel() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
+	assert_contains(src, "GradientTexture2D",
+		"ScrollFade must render an actual fade, not a flat SunkenPanel")
+	# Isolate ScrollFade's own node block and confirm it carries no
+	# theme_type_variation -- a gradient texture is not a themed surface.
+	var node_start := src.find('[node name="ScrollFade"')
+	assert_true(node_start != -1, "ScrollFade node exists")
+	var next_node := src.find("[node name=", node_start + 1)
+	var block := src.substr(node_start, next_node - node_start)
+	assert_false(block.contains("theme_type_variation"),
+		"ScrollFade is textured, not themed -- no SunkenPanel variation left on it")

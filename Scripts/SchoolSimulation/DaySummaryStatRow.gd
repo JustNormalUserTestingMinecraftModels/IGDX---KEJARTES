@@ -25,10 +25,10 @@ class_name DaySummaryStatRow
 const ROW_HEIGHT := 96
 const TRACK_HEIGHT := 36
 const TRACK_LEFT := 0
-const ICON_BOX := Vector2(95, 70)
-const ICON_LEFT := -15
-const CHEVRON_BOX := Vector2(40, 58)
-const CHEVRON_LEFT := 67
+const ICON_BOX := Vector2(110, 81)
+const ICON_LEFT := -17
+const CHEVRON_BOX := Vector2(46, 67)
+const CHEVRON_LEFT := 100
 ## How far the track's right edge sits from the row's own right edge --
 ## a small margin so the fill's rounded cap does not touch the card's
 ## own edge.

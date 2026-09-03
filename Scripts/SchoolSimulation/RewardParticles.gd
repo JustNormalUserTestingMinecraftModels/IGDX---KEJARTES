@@ -11,9 +11,9 @@ class_name RewardParticles
 ## the burst has run out, so a caller never has to track it. Nothing here
 ## builds a material or a texture; both are authored in the .tscn.
 
-## How long after the burst's lifetime before the node frees itself.
-## Covers the longest a single particle can outlive `lifetime` under the
-## emitter's own randomness.
+## Small safety margin added on top of the explosiveness-scaled tail
+## (see fire()) before the node frees itself -- covers a little extra
+## slop under the emitter's own randomness, not the tail itself.
 const CLEANUP_GRACE := 0.5
 
 ## Whether firing also plays the sparkle cue. Turned off for the second
@@ -37,5 +37,6 @@ func fire(delay: float = 0.0) -> void:
 	emitting = true
 	if plays_sfx:
 		AudioDirector.play_sfx(&"sparkle")
-	await get_tree().create_timer(lifetime + CLEANUP_GRACE).timeout
-	queue_free()
+	await get_tree().create_timer(lifetime * (2.0 - explosiveness) + CLEANUP_GRACE).timeout
+	if is_inside_tree():
+		queue_free()

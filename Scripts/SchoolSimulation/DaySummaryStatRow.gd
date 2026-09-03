@@ -137,36 +137,39 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 ## gained -- throwing a star burst from the chevron. `delay` holds the
 ## whole gesture so a card can stagger its three rows.
 ##
-## `with_burst` lets the card suppress the sound on the second and later
-## bursts of one gesture, so three gaining rows do not fire three sparkle
-## cues 80 ms apart; see DaySummaryStudentRow.play_gain.
+## `plays_sparkle` lets the card suppress the sparkle cue on the second and
+## later bursts of one gesture, so three gaining rows do not fire three
+## sparkle cues 80 ms apart; see DaySummaryStudentRow.play_gain. The tally
+## tick is a separate decision and always plays on a real gain, regardless
+## of `plays_sparkle`.
 ##
 ## Never awaited and never required -- set_stat has already written the
 ## final value, so a caller that skips this sees a correct, static card.
 ##
 ## Call set_stat first: this reads the two ends it cached, which default
 ## to 0.0 and would otherwise empty the track.
-func play_gain(delay: float = 0.0, with_burst: bool = true) -> void:
+func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	track.value = _fill_from
 	Juice.fill_bar(track, _fill_to, -1.0, delay)
 	if chevron.visible:
 		Juice.pop_in(chevron, delay)
-		_play_burst(delay, with_burst)
+		_play_burst(delay, plays_sparkle)
 	Juice.count_up_formatted(value, 0.0, _delta,
 		func(v: float) -> String: return format_value(v, _target), delay)
 
 
 ## The gain's reward: a star burst centred on the chevron, plus the tally
-## tick on the same beat. Editor-gated -- the test runner builds these
-## rows to inspect them, not to watch them.
-func _play_burst(delay: float, plays_sfx: bool) -> void:
+## tick on the same beat -- the tally always plays on a real gain; only
+## the burst's own sparkle cue is deduplicated across a card's gesture
+## (see DaySummaryStudentRow.play_gain). Editor-gated -- the test runner
+## builds these rows to inspect them, not to watch them.
+func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	if Engine.is_editor_hint():
 		return
 	var burst_scene: PackedScene = load(BURST_SCENE)
 	var fx := burst_scene.instantiate() as RewardParticles
-	fx.plays_sfx = plays_sfx
+	fx.plays_sfx = plays_sparkle
 	fx.position = chevron.position + chevron.size * 0.5
 	add_child(fx)
 	fx.fire(delay)
-	if plays_sfx:
-		AudioDirector.play_sfx(&"tally")
+	AudioDirector.play_sfx(&"tally")

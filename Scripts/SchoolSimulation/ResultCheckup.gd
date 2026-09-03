@@ -58,6 +58,7 @@ signal checkup_closed
 @export var student_card_scene: PackedScene
 
 const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
+const _CELEBRATION_SCENE := "res://Scenes/SchoolSimulation/CelebrationConfetti.tscn"
 
 @onready var title_label: Label = $Margin/VBox/HeaderPanel/TitleLabel
 @onready var subtitle_label: Label = $Margin/VBox/HeaderPanel/SubtitleLabel
@@ -65,9 +66,6 @@ const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
 @onready var history_list: VBoxContainer = $Margin/VBox/ScrollContainer/MainContent/HistoryList
 @onready var scroll_container: ScrollContainer = $Margin/VBox/ScrollContainer
 @onready var btn_close: Button = $Margin/VBox/BtnClose
-## The week's celebration, authored in the scene and fired at most once
-## per screen -- see _play_entrance_animations.
-@onready var celebration: RewardParticles = $Celebration
 
 var is_dragging_scroll: bool = false
 var drag_start_y: float = 0.0
@@ -267,6 +265,10 @@ func _play_entrance_animations(cards: Array = []) -> void:
 			week_gained = true
 			break
 	if week_gained:
+		var celebration_scene: PackedScene = load(_CELEBRATION_SCENE)
+		var celebration := celebration_scene.instantiate() as RewardParticles
+		celebration.position = get_node("Celebration").position
+		add_child(celebration)
 		celebration.fire(float(cards.size()) * t.stagger_step)
 
 	await get_tree().create_timer(t.dur_slow).timeout

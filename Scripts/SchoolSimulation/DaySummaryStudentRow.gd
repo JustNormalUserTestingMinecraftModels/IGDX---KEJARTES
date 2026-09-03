@@ -218,12 +218,14 @@ func _show_needs_delta(label: Label, delta: float) -> void:
 func play_gain(delay: float = 0.0) -> void:
 	# Only the first burst of the card's gesture carries the sparkle cue:
 	# three gaining rows 80 ms apart would otherwise fire it three times.
-	var sfx_spent := false
+	# Every gaining row still plays its own tally tick -- that part is not
+	# deduplicated.
+	var sparkle_spent := false
 	for i in stat_rows.size():
-		var wants_sfx := not sfx_spent and stat_rows[i].chevron.visible
-		if wants_sfx:
-			sfx_spent = true
-		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP, wants_sfx)
+		var wants_sparkle := not sparkle_spent and stat_rows[i].chevron.visible
+		if wants_sparkle:
+			sparkle_spent = true
+		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP, wants_sparkle)
 	_play_needs_travel(energy_bar, _energy_from, delay)
 	_play_needs_travel(mood_bar, _mood_from, delay)
 	if energy_delta_label.visible:

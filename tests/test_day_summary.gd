@@ -1066,20 +1066,30 @@ func test_popup_has_a_blurred_backdrop_behind_the_scrim() -> void:
 
 	inst.free()
 
-## The 2026-09-03 fix: the "+12/65" label owns the row's right-hand
-## VALUE_WIDTH and nothing else. It used to be offset -321/-121, which
-## laid it straight over the Track and is what "StatRow is bugged" meant.
-func test_stat_row_value_label_sits_right_of_the_track() -> void:
+## The 2026-09-03 fix: the "+12/65" label reads on top of the track's
+## own right end, matching the reference mockup -- not in a separate
+## fixed-width column beside it (that first fix over-corrected the
+## original bug, where the label was offset -321/-121 and landed
+## straight over the Track; both were wrong in different directions).
+func test_stat_row_value_label_overlays_the_tracks_right_end() -> void:
 	var row_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn")
 	var row := row_scene.instantiate()
 	var value: Label = row.get_node("Value")
 	var track: ProgressBar = row.get_node("Track")
-	assert_eq(value.offset_left, -float(DaySummaryStatRow.VALUE_WIDTH),
-		"Value.offset_left must be -VALUE_WIDTH")
-	assert_eq(value.offset_right, 0.0,
-		"Value must reach the row's right edge")
-	assert_true(track.offset_right <= value.offset_left,
-		"Track must end where Value begins -- they must not overlap")
+
+	assert_eq(value.anchor_left, 0.0, "Value must stretch across the row, not a fixed right column")
+	assert_eq(value.anchor_right, 1.0, "Value must stretch across the row, not a fixed right column")
+	assert_eq(value.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT,
+		"the text must still read right-aligned inside that stretched box")
+	assert_eq(value.offset_right, -float(DaySummaryStatRow.VALUE_RIGHT_MARGIN),
+		"Value's right edge must sit VALUE_RIGHT_MARGIN off the row's own edge")
+	assert_eq(track.offset_right, -float(DaySummaryStatRow.TRACK_RIGHT_MARGIN),
+		"Track must run (almost) the full row width, not stop short for Value")
+
+	# Value must paint after Track in the tree, or the number would be
+	# hidden under the track's fill instead of reading on top of it.
+	assert_true(value.get_index() > track.get_index(),
+		"Value must be drawn after Track so the number reads on top")
 	row.free()
 
 
@@ -1281,7 +1291,7 @@ func test_stat_row_icon_does_not_hide_most_of_the_track() -> void:
 	card.free()
 
 	var icon_right := DaySummaryStatRow.ICON_LEFT + DaySummaryStatRow.ICON_BOX.x
-	var track_width := row_width - float(DaySummaryStatRow.VALUE_WIDTH)
+	var track_width := row_width - float(DaySummaryStatRow.TRACK_RIGHT_MARGIN)
 	var visible_track := track_width - icon_right
 	assert_true(visible_track / track_width >= 0.5,
 		"the icon must not cover more than half the track's width -- " +

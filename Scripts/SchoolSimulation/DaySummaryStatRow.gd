@@ -4,39 +4,40 @@ class_name DaySummaryStatRow
 
 ## One line of the Daily Results card: a white stat icon and a gold
 ## chevron sitting ON TOP of a dark track, with "+12/65" right-aligned
-## on the card fill beside it. The chevron shows only on a day that
-## actually gained points for this stat -- see shows_chevron.
+## and sitting ON TOP of the track's own right end -- not beside it in
+## a separate column. The chevron shows only on a day that actually
+## gained points for this stat -- see shows_chevron.
 ##
-## The track's right edge is the number's left edge -- in the mockup a
-## wider number ("+12/65") pushes the track shorter than a narrow one
-## ("+9/65"). That falls out of the anchors below: the number is
-## right-aligned and shrink-sized, the track expands into what is left.
+## 2026-09-03 follow-up: the number used to own a fixed-width column to
+## the RIGHT of the track (VALUE_WIDTH), so the track visibly ended
+## before the row did. That does not match the reference mockup, where
+## the track runs the full row and the number is white text laid over
+## its right end, the same way the needs bars carry their tier word.
+## Track now spans (almost) the full row (TRACK_RIGHT_MARGIN); Value
+## spans the same width and is drawn last, so it paints on top.
 
 ## Geometry in game pixels, measured off the mockup (spec section 2).
 ##
-## The track's width is (row width - VALUE_WIDTH), and the icon is drawn
-## ON TOP of its left end, so every pixel either one covers is a pixel
-## of fill the player can never see. Two independent 2026-09-03
-## follow-up fixes to the same symptom -- a normal 40-70%-of-target
-## stat rendering as a visually empty bar:
-##   * ICON_BOX was 95x70 (63% of a 150px track); shrunk to 48x48.
-##   * VALUE_WIDTH was 200, sized for "+100/100" (measured ~201px at
-##     DaySummaryStat's font/outline) -- a string that can never occur,
-##     since a stat's delta and its target cannot both be 100 the same
-##     day. The actual longest realistic string, "-18/100", measures
-##     ~168px; VALUE_WIDTH is now 175, just past that, so the number
-##     never needs the 25px it was stealing from the track for a case
-##     that doesn't happen.
-## Keep both boxes this tight if either is retuned -- see
-## test_stat_row_icon_does_not_hide_most_of_the_track.
+## The icon is drawn ON TOP of the track's left end, so every pixel it
+## covers is a pixel of fill the player can never see -- keep ICON_BOX
+## well under half the row width, or a partly-full stat reads as an
+## empty bar. See test_stat_row_icon_does_not_hide_most_of_the_track.
 const ROW_HEIGHT := 96
 const TRACK_HEIGHT := 36
 const TRACK_LEFT := 0
-const ICON_BOX := Vector2(48, 48)
-const ICON_LEFT := -6
+const ICON_BOX := Vector2(95, 70)
+const ICON_LEFT := -15
 const CHEVRON_BOX := Vector2(40, 58)
 const CHEVRON_LEFT := 67
-const VALUE_WIDTH := 175
+## How far the track's right edge sits from the row's own right edge --
+## a small margin so the fill's rounded cap does not touch the card's
+## own edge.
+const TRACK_RIGHT_MARGIN := 8
+## How far the number's right edge sits from the row's own right edge.
+## Slightly more than TRACK_RIGHT_MARGIN so the text reads with a
+## little breathing room inside the track's rounded cap rather than
+## running flush against it.
+const VALUE_RIGHT_MARGIN := 20
 
 ## The authored one-shot burst thrown at a row that gained. Instanced,
 ## never built -- see the project's "no visual is built at runtime" rule.

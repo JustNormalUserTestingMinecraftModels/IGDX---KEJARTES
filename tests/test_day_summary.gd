@@ -1275,8 +1275,13 @@ func test_stat_row_bursts_exactly_when_it_shows_a_chevron() -> void:
 ## at least half the track to survive the icon keeps that margin honest
 ## if either constant drifts again.
 func test_stat_row_icon_does_not_hide_most_of_the_track() -> void:
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	var row_width: float = (card.get_node("StatRow1") as Control).size.x
+	card.free()
+
 	var icon_right := DaySummaryStatRow.ICON_LEFT + DaySummaryStatRow.ICON_BOX.x
-	var track_width := 350.0 - float(DaySummaryStatRow.VALUE_WIDTH)
+	var track_width := row_width - float(DaySummaryStatRow.VALUE_WIDTH)
 	var visible_track := track_width - icon_right
 	assert_true(visible_track / track_width >= 0.5,
 		"the icon must not cover more than half the track's width -- " +

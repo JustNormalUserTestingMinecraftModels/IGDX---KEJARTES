@@ -14,14 +14,21 @@ class_name DaySummaryStatRow
 
 ## Geometry in game pixels, measured off the mockup (spec section 2).
 ##
-## The track is only TRACK_LEFT..VALUE_WIDTH wide (150px at the row's
-## current 350px width) and the icon is drawn ON TOP of its left end, so
-## every pixel the icon covers is a pixel of fill the player can never
-## see -- a track under about ICON_LEFT+ICON_BOX.x percent full reads as
-## completely empty. ICON_BOX was originally 95x70 (63% of the track),
-## which is why a student sitting at a normal 40-70% of their target
-## still looked like an empty bar (2026-09-03 follow-up fix). Keep this
-## box small enough that most of the track stays visible.
+## The track's width is (row width - VALUE_WIDTH), and the icon is drawn
+## ON TOP of its left end, so every pixel either one covers is a pixel
+## of fill the player can never see. Two independent 2026-09-03
+## follow-up fixes to the same symptom -- a normal 40-70%-of-target
+## stat rendering as a visually empty bar:
+##   * ICON_BOX was 95x70 (63% of a 150px track); shrunk to 48x48.
+##   * VALUE_WIDTH was 200, sized for "+100/100" (measured ~201px at
+##     DaySummaryStat's font/outline) -- a string that can never occur,
+##     since a stat's delta and its target cannot both be 100 the same
+##     day. The actual longest realistic string, "-18/100", measures
+##     ~168px; VALUE_WIDTH is now 175, just past that, so the number
+##     never needs the 25px it was stealing from the track for a case
+##     that doesn't happen.
+## Keep both boxes this tight if either is retuned -- see
+## test_stat_row_icon_does_not_hide_most_of_the_track.
 const ROW_HEIGHT := 96
 const TRACK_HEIGHT := 36
 const TRACK_LEFT := 0
@@ -29,7 +36,7 @@ const ICON_BOX := Vector2(48, 48)
 const ICON_LEFT := -6
 const CHEVRON_BOX := Vector2(40, 58)
 const CHEVRON_LEFT := 67
-const VALUE_WIDTH := 200
+const VALUE_WIDTH := 175
 
 ## The authored one-shot burst thrown at a row that gained. Instanced,
 ## never built -- see the project's "no visual is built at runtime" rule.

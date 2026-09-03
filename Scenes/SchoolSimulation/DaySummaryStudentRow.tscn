@@ -138,21 +138,21 @@ vertical_alignment = 1
 
 [node name="StatRow1" parent="." unique_id=1507679513 instance=ExtResource("4_statrow")]
 layout_mode = 1
-offset_left = 616.0
+offset_left = 595.0
 offset_top = 57.0
-offset_right = 966.0
+offset_right = 982.0
 offset_bottom = 153.0
 
 [node name="StatRow2" parent="." unique_id=121854028 instance=ExtResource("4_statrow")]
 layout_mode = 1
-offset_left = 616.0
+offset_left = 595.0
 offset_top = 154.0
-offset_right = 966.0
+offset_right = 982.0
 offset_bottom = 250.0
 
 [node name="StatRow3" parent="." unique_id=1254964450 instance=ExtResource("4_statrow")]
 layout_mode = 1
-offset_left = 616.0
+offset_left = 595.0
 offset_top = 251.0
-offset_right = 966.0
+offset_right = 982.0
 offset_bottom = 347.0

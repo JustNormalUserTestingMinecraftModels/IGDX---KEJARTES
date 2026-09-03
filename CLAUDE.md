@@ -362,6 +362,28 @@ scripts/tests/assets; the controller builds every `.tscn` and runs every
 (`.superpowers/sdd/2026-09-02-end-of-grade-sequence/progress.md`, deleted
 after merge) for the fix-loop history if anything here needs revisiting.
 
+The 2026-09-03 Daily Results polish pass is complete. Spec:
+`docs/superpowers/specs/2026-09-03-day-summary-polish-and-rewards.md`. It
+fixed the `DaySummaryStatRow` value-label overlap bug (a mis-anchored
+`Value` node printed "+12/65" over its own coloured track), re-pitched the
+card's three stat rows to an even 97 px, and gave the energy/mood bars an
+icon and an Indonesian tier word (`Lelah`/`Cukup`/`Bugar`,
+`Sedih`/`Biasa`/`Senang`) carried *inside* the existing `EnergyBar`/
+`MoodBar` nodes (`DaySummaryNeedsBar.gd`) rather than a redundant sibling
+chip — the spec's own §3.2 was revised mid-brainstorm once that
+duplication was caught. It also added reward particles: a per-stat-row
+star burst (`RewardBurst.tscn`) fired off a gaining chevron, and a
+screen-wide confetti fall (`CelebrationConfetti.tscn`) on `ResultCheckup`,
+both gated on `DaySummaryStudentRow.gained_ground()` so a flat or losing
+day/week stays quiet. Two new `AudioDirector` cues, `tally` and `sparkle`,
+alias existing SFX files as placeholders. Same build discipline as the
+2026-09-02 pass — see that entry below for the controller/subagent MCP
+split, which this pass also used throughout
+(`.superpowers/sdd/2026-09-03-day-summary-polish-and-rewards/progress.md`,
+deleted after merge). Placeholders outstanding: the three particle sprites
+(`Assets/Images/Particles/particle_*.png`, crude flat geometry) and the
+two aliased SFX streams.
+
 `-REFERENCE-/prototype/` is the original prototype, kept for reference only —
 not built, not imported. `koprasi&inventory` was a second programmer's separate
 project; the spec's Asset Policy documents exactly which of its art is

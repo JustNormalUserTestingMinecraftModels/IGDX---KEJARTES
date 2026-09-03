@@ -1065,3 +1065,36 @@ func test_popup_has_a_blurred_backdrop_behind_the_scrim() -> void:
 		"Backdrop must cover the screen without distorting")
 
 	inst.free()
+
+## The 2026-09-03 fix: the "+12/65" label owns the row's right-hand
+## VALUE_WIDTH and nothing else. It used to be offset -321/-121, which
+## laid it straight over the Track and is what "StatRow is bugged" meant.
+func test_stat_row_value_label_sits_right_of_the_track() -> void:
+	var row_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn")
+	var row := row_scene.instantiate()
+	var value: Label = row.get_node("Value")
+	var track: ProgressBar = row.get_node("Track")
+	assert_eq(value.offset_left, -float(DaySummaryStatRow.VALUE_WIDTH),
+		"Value.offset_left must be -VALUE_WIDTH")
+	assert_eq(value.offset_right, 0.0,
+		"Value must reach the row's right edge")
+	assert_true(track.offset_right <= value.offset_left,
+		"Track must end where Value begins -- they must not overlap")
+	row.free()
+
+
+## Three rows, one pitch. They were 97 / 100 apart, which reads as a
+## misaligned bottom row against the card art.
+func test_card_pitches_its_three_stat_rows_evenly() -> void:
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	var tops: Array[float] = []
+	for n in ["StatRow1", "StatRow2", "StatRow3"]:
+		var r: Control = card.get_node(n)
+		tops.append(r.offset_top)
+		assert_eq(r.offset_bottom - r.offset_top,
+			float(DaySummaryStatRow.ROW_HEIGHT),
+			"%s must be ROW_HEIGHT tall" % n)
+	assert_eq(tops[1] - tops[0], tops[2] - tops[1],
+		"the three stat rows must be evenly pitched")
+	card.free()

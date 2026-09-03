@@ -96,6 +96,6 @@ offset_bottom = 250.0
 [node name="StatRow3" parent="." unique_id=1254964450 instance=ExtResource("4_statrow")]
 layout_mode = 1
 offset_left = 616.0
-offset_top = 254.0
+offset_top = 251.0
 offset_right = 966.0
-offset_bottom = 350.0
+offset_bottom = 347.0

@@ -57,6 +57,26 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"reward")`: a reward is granted (SemesterEnd, lobby,
 ## SchoolDay).
 @export var sfx_reward: AudioStream
+## `play_sfx(&"tally")`: a Daily Results stat row's gold chevron pops in
+## on a day that gained. Placeholder: aliases SFX/pop.ogg until a real
+## tick lands.
+@export var sfx_tally: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
+## `play_sfx(&"sparkle")`: a reward burst or the weekly celebration
+## confetti fires. Placeholder: aliases SFX/reward.ogg.
+@export var sfx_sparkle: AudioStream = preload("res://Assets/Audio/SFX/reward.ogg")
+## `play_sfx(&"pill_tap")`: tapping a headline pill on ResultCheckup's
+## week recap banner. A dedicated copy of SFX/tap.ogg (not a second id
+## on the same file) so it can be retuned independently later.
+@export var sfx_pill_tap: AudioStream = preload("res://Assets/Audio/SFX/pill_tap.ogg")
+## `play_sfx(&"pill_popup_open")`: WeekRecapPillInfoPopup opens. A
+## dedicated copy of SFX/popup_open.ogg.
+@export var sfx_pill_popup_open: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_open.ogg")
+## `play_sfx(&"pill_popup_close")`: WeekRecapPillInfoPopup closes. A
+## dedicated copy of SFX/popup_close.ogg.
+@export var sfx_pill_popup_close: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_close.ogg")
+## `play_sfx(&"pane_swipe")`: ResultCheckup's SISWA<->RIWAYAT pane
+## transition. A dedicated copy of SFX/swipe.ogg.
+@export var sfx_pane_swipe: AudioStream = preload("res://Assets/Audio/SFX/pane_swipe.ogg")
 
 @export_group("BGM")
 ## `play_bgm(&"titlescreen")`: Splashscreen/MainMenu.
@@ -73,6 +93,12 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var bgm_result_win: AudioStream
 ## `play_bgm(&"result_lose")`: DaySummaryPopup/ResultCheckup's loss state.
 @export var bgm_result_lose: AudioStream
+## `play_bgm(&"exam_notice")`: the Tes Besar announcement screen.
+@export var bgm_exam_notice: AudioStream = preload("res://Assets/Audio/BGM/schoolsimulation.mp3")
+## `play_bgm(&"exam_cutscene")`: the pre-exam cutscene branch.
+@export var bgm_exam_cutscene: AudioStream = preload("res://Assets/Audio/BGM/introcutscene.mp3")
+## `play_bgm(&"run_result")`: the end-of-grade run report.
+@export var bgm_run_result: AudioStream = preload("res://Assets/Audio/BGM/result_win.mp3")
 
 @export_group("Minigame BGM")
 ## `play_minigame_bgm(&"minigame_olahraga")`: Badminton and MainBola.
@@ -190,6 +216,12 @@ func _resolve_sfx(id: StringName) -> AudioStream:
 		&"select": return sfx_select
 		&"error": return sfx_error
 		&"reward": return sfx_reward
+		&"tally": return sfx_tally
+		&"sparkle": return sfx_sparkle
+		&"pill_tap": return sfx_pill_tap
+		&"pill_popup_open": return sfx_pill_popup_open
+		&"pill_popup_close": return sfx_pill_popup_close
+		&"pane_swipe": return sfx_pane_swipe
 		_: return null
 
 
@@ -414,6 +446,9 @@ func _resolve_bgm(id: StringName) -> AudioStream:
 		&"simulation": return bgm_simulation
 		&"result_win": return bgm_result_win
 		&"result_lose": return bgm_result_lose
+		&"exam_notice": return bgm_exam_notice
+		&"exam_cutscene": return bgm_exam_cutscene
+		&"run_result": return bgm_run_result
 		_: return null
 
 

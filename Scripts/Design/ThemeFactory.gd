@@ -22,6 +22,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_progress(theme, tokens)
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
+	_build_week_recap(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -293,6 +294,10 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["TitleLabel", tokens.font_title, tokens.text_primary, false],
 		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false],
+		# The SemesterEnd carousel's page dots. Authored in the .tscn (four
+		# of them, the roster cap); the script only shows/hides and
+		# re-modulates them for the active page -- see SemesterEnd.gd.
+		["PageDotLabel", tokens.font_caption, tokens.text_disabled, false],
 		# The "no items match this filter" placeholder text. 32px doesn't
 		# match a token exactly (nearest are font_body_size 28 / font_title
 		# 36); kept as the shipped literal rather than nudging the size.
@@ -420,16 +425,66 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("StatBar")
 	theme.set_type_variation("StatBar", "ProgressBar")
 
+	# The track is a sticker capsule like the rest of the chrome: sunken
+	# ground, white rim, soft drop shadow. content_margin insets the fill
+	# so a rail of track stays visible even at 100% -- without it the
+	# coloured fill runs flush to the rim and the bar reads as a debug
+	# widget. The inset is half outline_width so the rail and the rim
+	# stay a 1:1 pair at any token value.
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = tokens.surface_sunken
 	bg.set_corner_radius_all(tokens.radius_pill)
+	bg.set_border_width_all(int(tokens.outline_width / 2.0))
+	bg.border_color = tokens.outline_card
+	bg.shadow_color = tokens.shadow_color
+	bg.shadow_size = int(tokens.shadow_size / 2.0)
+	bg.shadow_offset = tokens.shadow_offset
+	bg.set_content_margin_all(tokens.outline_width / 2.0)
 	theme.set_stylebox("background", "StatBar", bg)
 
-	# White fill so callers can tint per category via self_modulate.
+	# Plain "StatBar" is now only the neutral fallback for an unrecognised
+	# category (StatBar.gd._STAT_BAR_VARIATIONS) -- every real caller
+	# resolves to one of the six per-category siblings below, whose fill
+	# stylebox bakes its colour in directly. None of them tint via
+	# self_modulate any more.
 	theme.set_stylebox("fill", "StatBar", _progress_fill_stylebox())
 
 	theme.set_font_size("font_size", "StatBar", tokens.font_caption)
 	theme.set_color("font_color", "StatBar", tokens.text_primary)
+
+	# self_modulate tints the WHOLE node, not just the fill -- so a StatBar
+	# tinted that way multiplies its category colour onto the track's
+	# surface_sunken ground and white rim too, and a fill sitting on a
+	# same-coloured track is indistinguishable from it. At value 0 that
+	# made every bar read as a solid capsule, 100% full. So AturJadwal's
+	# per-category bars get their colour baked into the FILL stylebox
+	# instead (the same fix DaySummary's tracks already use above), and
+	# StatBar.gd switches those bars to theme_type_variation + white
+	# self_modulate rather than tinting the node. One variation per
+	# category, each set_type_variation'd directly off "ProgressBar" (not
+	# chained onto "StatBar") -- the rim/shadow/inset chrome staying
+	# identical across all six is because they're handed the SAME `bg`
+	# StyleBoxFlat instance below, and font size/color are copied from the
+	# same tokens explicitly, not because they inherit from "StatBar". A
+	# new theme item added to "StatBar" later will NOT reach these six
+	# siblings automatically -- it would need to be added here too.
+	var stat_bar_categories := [
+		["StatBarAkademis", tokens.cat_akademis],
+		["StatBarSeniBudaya", tokens.cat_senibudaya],
+		["StatBarOlahraga", tokens.cat_olahraga],
+		["StatBarIstirahat", tokens.cat_istirahat],
+		["StatBarLibur", tokens.cat_libur],
+		["StatBarWirausaha", tokens.cat_wirausaha],
+	]
+	for spec in stat_bar_categories:
+		var name: String = spec[0]
+		var color: Color = spec[1]
+		theme.add_type(name)
+		theme.set_type_variation(name, "ProgressBar")
+		theme.set_stylebox("background", name, bg)
+		theme.set_stylebox("fill", name, _progress_fill_stylebox(color))
+		theme.set_font_size("font_size", name, tokens.font_caption)
+		theme.set_color("font_color", name, tokens.text_primary)
 
 
 # ------------------------------------------------- student card redesign
@@ -672,3 +727,85 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_stylebox("background", name, track)
 
 		theme.set_stylebox("fill", name, _progress_fill_stylebox(spec[2]))
+
+	# The 2026-09-03 needs word, which sits ON the energy/mood bar rather
+	# than in a chip of its own -- so there is no new stylebox here, only
+	# type. Same white-on-dark-rim inversion the rest of this card uses.
+	# Sized from its OWN token (day_needs_label_size), not derived from
+	# DaySummaryStat's -- the two used to share one via "day_stat_size - 4"
+	# and a stat-row font bump silently overran the needs bar's pill when
+	# that dragged the needs word up with it. See day_needs_label_size's
+	# own doc comment for the measured numbers.
+	theme.add_type("DaySummaryNeedsLabel")
+	theme.set_type_variation("DaySummaryNeedsLabel", "Label")
+	theme.set_font_size("font_size", "DaySummaryNeedsLabel",
+		tokens.day_needs_label_size)
+	theme.set_color("font_color", "DaySummaryNeedsLabel", Color.WHITE)
+	theme.set_constant("outline_size", "DaySummaryNeedsLabel",
+		maxi(2, tokens.text_outline_size / 2))
+	theme.set_color("font_outline_color", "DaySummaryNeedsLabel",
+		tokens.day_glyph_outline)
+	if tokens.font_display != null:
+		theme.set_font("font", "DaySummaryNeedsLabel", tokens.font_display)
+
+
+# ------------------------------------------------------------ week recap
+
+static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
+	# The banner is a raised card that must not read as another student
+	# card, so it takes the card surface with the brand's own edge.
+	theme.add_type("RecapBannerPanel")
+	theme.set_type_variation("RecapBannerPanel", "Panel")
+	var recap_banner := StyleBoxFlat.new()
+	recap_banner.bg_color = tokens.surface_card
+	recap_banner.set_corner_radius_all(tokens.radius_md)
+	recap_banner.border_color = tokens.brand_primary
+	recap_banner.set_border_width_all(int(tokens.outline_width) / 2)
+	recap_banner.content_margin_left = tokens.space_md
+	recap_banner.content_margin_right = tokens.space_md
+	recap_banner.content_margin_top = tokens.space_sm
+	recap_banner.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "RecapBannerPanel", recap_banner)
+
+	# A pill is a sunken capsule -- the counter-form to the banner it sits
+	# inside.
+	theme.add_type("RecapPillPanel")
+	theme.set_type_variation("RecapPillPanel", "Panel")
+	var recap_pill := StyleBoxFlat.new()
+	recap_pill.bg_color = tokens.surface_sunken
+	recap_pill.set_corner_radius_all(tokens.radius_pill)
+	recap_pill.content_margin_left = tokens.space_sm
+	recap_pill.content_margin_right = tokens.space_sm
+	recap_pill.content_margin_top = tokens.space_xs
+	recap_pill.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "RecapPillPanel", recap_pill)
+
+	# The pill's number. Tinted per-pill via self_modulate, so the
+	# variation itself stays neutral.
+	theme.add_type("RecapPillValueLabel")
+	theme.set_type_variation("RecapPillValueLabel", "Label")
+	theme.set_font_size("font_size", "RecapPillValueLabel", tokens.font_h2)
+	theme.set_color("font_color", "RecapPillValueLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
+
+	# The tab. A real pressed state is what makes the active tab legible
+	# without any manual tint at the call site.
+	theme.add_type("WeekTabButton")
+	theme.set_type_variation("WeekTabButton", "Button")
+	var tab_normal := StyleBoxFlat.new()
+	tab_normal.bg_color = tokens.surface_sunken
+	tab_normal.corner_radius_top_left = tokens.radius_md
+	tab_normal.corner_radius_top_right = tokens.radius_md
+	tab_normal.content_margin_top = tokens.space_sm
+	tab_normal.content_margin_bottom = tokens.space_sm
+	var tab_pressed := tab_normal.duplicate() as StyleBoxFlat
+	tab_pressed.bg_color = tokens.brand_primary
+	theme.set_stylebox("normal", "WeekTabButton", tab_normal)
+	theme.set_stylebox("hover", "WeekTabButton", tab_normal)
+	theme.set_stylebox("pressed", "WeekTabButton", tab_pressed)
+	theme.set_stylebox("focus", "WeekTabButton", tab_normal)
+	theme.set_color("font_color", "WeekTabButton", tokens.text_secondary)
+	theme.set_color("font_pressed_color", "WeekTabButton", tokens.text_on_brand)
+	theme.set_color("font_hover_color", "WeekTabButton", tokens.text_primary)
+	theme.set_font_size("font_size", "WeekTabButton", tokens.font_title)

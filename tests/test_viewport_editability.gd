@@ -80,7 +80,7 @@ const BASELINE: Dictionary = {
 	"res://Scripts/SchoolSimulation/BookClockWidget.gd": 0,
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd": 6,
 	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 11,
-	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 7,
+	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 1,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 9,
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
 	"res://Scripts/StudentCard/student_card.gd": 1,
@@ -104,9 +104,6 @@ const ALLOWED: Dictionary = {
 	# category on every refresh() call (Wirausaha shows a money chip,
 	# Istirahat shows none, etc).
 	"res://Scripts/AturJadwal/ActivityRow.gd": 2,
-	# _build_page_indicators()'s "●" dots: one per result card, so the
-	# count tracks the approved roster size.
-	"res://Scripts/EndGame/SemesterEnd.gd": 1,
 	# _apply_visual_exports()'s icon TextureRect: only created when an
 	# @export icon texture is actually supplied, in place of the emoji
 	# fallback label -- the conditional texture-or-procedural swap.
@@ -122,6 +119,13 @@ const ALLOWED: Dictionary = {
 	# show_value_label export is toggled on for that particular bar
 	# instance, not every StatBar has one.
 	"res://Scripts/UI/StatBar.gd": 1,
+	# _build_rows()'s six report rows: instanced from RunResultRow.tscn via
+	# PackedScene.instantiate(), not a VISUAL_TYPES ".new(" call, so this
+	# scan's regex does not actually count them (the entry is 0 for that
+	# reason) -- registered anyway per the per-call-dynamic-content
+	# exception: the row count is fixed, but every value is run-dependent,
+	# and the template carries all the visual structure.
+	"res://Scripts/EndGame/RunResult.gd": 0,
 }
 
 

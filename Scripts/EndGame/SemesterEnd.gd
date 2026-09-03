@@ -24,7 +24,6 @@ extends Control
 @onready var teacher_title_label: Label = $MarginContainer/VBoxContainer/TeacherContainer/TeacherTitleLabel
 
 @onready var btn_restart: Button = $MarginContainer/VBoxContainer/ButtonContainer/BtnRestart
-@onready var btn_menu: Button = $MarginContainer/VBoxContainer/ButtonContainer/BtnMainMenu
 
 @onready var left_arrow: Button = $LeftArrow
 @onready var right_arrow: Button = $RightArrow
@@ -51,7 +50,6 @@ const _SUBJECT_DATA_KEYS := ["akademis", "seni", "olahraga"]
 func _ready() -> void:
 	# Connect buttons
 	btn_restart.pressed.connect(_on_restart_pressed)
-	btn_menu.pressed.connect(_on_menu_pressed)
 	left_arrow.pressed.connect(_prev_card)
 	right_arrow.pressed.connect(_next_card)
 
@@ -59,7 +57,6 @@ func _ready() -> void:
 	_setup_button_juice(left_arrow)
 	_setup_button_juice(right_arrow)
 	_setup_button_juice(btn_restart)
-	_setup_button_juice(btn_menu)
 
 	if GameState.check_semester_passed():
 		AudioDirector.play_bgm(&"result_win")
@@ -149,8 +146,8 @@ func _evaluate_students() -> void:
 
 	if all_passed:
 		AudioDirector.play_sfx(&"reward")
-		title_label.text = "🎓 Evaluasi Akhir Semester - Kelas %d 🎓" % grade_num
-		congrats_title.text = "Selamat! Tahun Ajaran Kelas %d Telah Selesai 🎉" % grade_num
+		title_label.text = "Hasil Tes Besar - %s" % GameState.get_grade_name()
+		congrats_title.text = "Semua murid berhasil!"
 		congrats_title.add_theme_color_override("font_color", tokens.state_success)
 
 		# Compute teacher title
@@ -168,25 +165,16 @@ func _evaluate_students() -> void:
 
 		teacher_title_label.text = "Gelar Gurumu: %s" % teacher_rank_str
 
-		if grade_num >= 9:
-			GameState.is_game_beaten = true
-			GameSettings.save_settings()
-			congrats_text.text = "Luar biasa! Kamu telah berhasil mendampingi seluruh murid menyelesaikan pendidikan dari Kelas 7 hingga LULUS Kelas 9! 🏆\n\nFITUR PILIH LEVEL (Level Selection) sekarang TERBUKA PERMANEN di Intro!"
-			btn_restart.text = "Mulai Ulang Permainan"
-		elif grade_num == 8:
-			congrats_text.text = "Kamu telah berhasil mendampingi seluruh murid melewati ujian akhir kelas 8.\n\nTantangan akhir Ujian Kelulusan Kelas 9 telah menanti!"
-			btn_restart.text = "Lanjut Kelas 9"
-		else:
-			congrats_text.text = "Kamu telah berhasil mendampingi seluruh murid melewati ujian semester akhir kelas 7.\n\nPetualangan dan tantangan baru di Kelas 8 & Kelas 9 menantimu!"
-			btn_restart.text = "Lanjut Kelas 8"
+		congrats_text.text = "Seluruh muridmu memenuhi target %s. Mereka siap melangkah ke tahap berikutnya." % GameState.get_grade_name()
+		btn_restart.text = "Lihat Hasil"
 	else:
-		title_label.text = "❌ Evaluasi Akhir Semester - Kelas %d ❌" % grade_num
-		congrats_title.text = "Tahun Ajaran Gagal - Coba Lagi ⚠️"
+		title_label.text = "Hasil Tes Besar - %s" % GameState.get_grade_name()
+		congrats_title.text = "Belum semua murid tuntas"
 		congrats_title.add_theme_color_override("font_color", tokens.state_danger)
 
-		teacher_title_label.text = "Gelar Gurumu: Guru Pembimbing Remedial ⚠️"
-		congrats_text.text = "Kamu gagal mendampingi seluruh murid melewati target kelulusan kelas %d.\n\nBeberapa murid masih belum tuntas. Silakan coba lagi untuk membimbing mereka menuju kelulusan!" % grade_num
-		btn_restart.text = "Coba Lagi Kelas %d" % grade_num
+		teacher_title_label.text = "Gelar Gurumu: Guru Pembimbing Remedial"
+		congrats_text.text = "Sebagian muridmu belum mencapai target %s. Mari lihat bagaimana tahun ajaran ini berjalan." % GameState.get_grade_name()
+		btn_restart.text = "Lihat Hasil"
 
 # ── Reveal Sequencing ─────────────────────────────────────────────────────────
 ## Title pops in -> the page dots (one per card) stagger in -> the current
@@ -270,18 +258,14 @@ func _slam_stamp(stamp: Control, passed: bool) -> void:
 		AudioDirector.play_sfx(&"success" if passed else &"fail"))
 
 # ── Carousel Logic ────────────────────────────────────────────────────────────
+## The dots are authored in the .tscn (four of them, the roster cap), so
+## this only decides how many are visible. Nothing is constructed here --
+## see the authoring guide's "no visual is built at runtime" rule.
 func _build_page_indicators() -> void:
 	if not page_indicator:
 		return
-	for child in page_indicator.get_children():
-		child.queue_free()
-
-	var tokens := DesignTokens.load_default()
-	for i in range(card_nodes.size()):
-		var dot = Label.new()
-		dot.text = "●"
-		dot.add_theme_font_size_override("font_size", tokens.font_title)
-		page_indicator.add_child(dot)
+	for i in range(page_indicator.get_child_count()):
+		page_indicator.get_child(i).visible = (i < card_nodes.size())
 
 func _update_page_indicators() -> void:
 	var tokens := DesignTokens.load_default()
@@ -412,64 +396,24 @@ func _on_card_gui_input(event: InputEvent, card_node: Control) -> void:
 						_prev_card()
 
 # ── Button Actions ────────────────────────────────────────────────────────────
+## The stat check no longer decides progression -- it only decides which
+## emotional beat plays next. RunResult applies the grade advance, because
+## RunResult is now the last screen of a run.
 func _on_restart_pressed() -> void:
-	var all_passed = GameState.check_semester_passed()
-	var next_scene_path = ""
+	var all_passed := GameState.check_semester_passed()
+	var next_scene_path := ""
 
-	if not all_passed:
-		# Fail: Trigger Game Over cutscene
+	if all_passed:
+		next_scene_path = "res://Scenes/EndGame/WinScreen.tscn"
+	else:
+		GameState.run_failed = true
 		GameState.is_game_over_cutscene = true
 		next_scene_path = "res://Scenes/CutScene/cut_scene.tscn"
-	else:
-		# Win: standard progress
-		var grade_num = GameState.current_grade
-		if grade_num < 9:
-			GameState.current_grade += 1
 
-			# Reset mood/energy, clear base targets for recalculations
-			for student in GameState.approved_students:
-				student["kepribadian1"] = 80.0
-				student["kepribadian2"] = 80.0
-				student.erase("base_akademis1")
-				student.erase("base_akademis2")
-				student.erase("base_akademis3")
-
-			GameState.day_schedules.clear()
-			GameState.minggu_ke = 1
-			GameState.returned_from_student_card = false
-			GameState.lobby_tutorial_completed = true
-			next_scene_path = "res://Scenes/StudentCard/student_card.tscn"
-		else:
-			# Beat Game: restart Grade 7 fresh
-			GameState.current_grade = 7
-			GameState.is_game_beaten = false
-
-			var AturJadwalScript = load("res://Scripts/AturJadwal/atur_jadwal.gd")
-			if AturJadwalScript and "tutorial_phase1_done" in AturJadwalScript:
-				AturJadwalScript.tutorial_phase1_done = false
-				AturJadwalScript.tutorial_phase3_done = false
-			var LobbyScript = load("res://Scripts/Lobby/loby.gd")
-			if LobbyScript and "tutorial_shown" in LobbyScript:
-				LobbyScript.tutorial_shown = false
-
-			GameState.day_schedules.clear()
-			GameState.minggu_ke = 1
-			GameState.returned_from_student_card = false
-			GameState.lobby_tutorial_completed = false
-			GameState.approved_students.clear()
-			GameState.grade7_student_ids.clear()
-			next_scene_path = "res://Scenes/Lobby/loby.tscn"
-
-	var tween = create_tween()
+	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.4)
 	await tween.finished
 	Transition.change_scene(next_scene_path)
-
-func _on_menu_pressed() -> void:
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.4)
-	await tween.finished
-	Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn")
 
 # ── Button Juice ──────────────────────────────────────────────────────────────
 func _setup_button_juice(btn: Control) -> void:

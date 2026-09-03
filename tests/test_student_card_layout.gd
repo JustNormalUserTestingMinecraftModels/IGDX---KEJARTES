@@ -125,6 +125,34 @@ func test_bars_carry_no_text_children() -> void:
 		"card bars must opt into the StatPill variation")
 
 
+## Behavioural companion to the source scan above. StudentCardView.gd:161
+## sets `bar.variation = &"StatPill"` at RUNTIME, after the bar has already
+## gone through _ready() with the default "StatBar" family -- which force-
+## sets self_modulate to white for that family (see StatBar._apply_tint()).
+## StatPill's fill has no baked-in colour and its background is a
+## StyleBoxEmpty, so it depends entirely on self_modulate for its category
+## colour. A `variation` setter that only wrote theme_type_variation left
+## self_modulate stuck at that earlier white and the pill rendered blank --
+## this reproduces the exact sequence StudentCardView performs and would
+## have caught it.
+func test_switching_variation_at_runtime_rederives_the_tint() -> void:
+	var bar := StatBar.new()
+	bar.category = "Olahraga"
+	Engine.get_main_loop().root.add_child(bar)
+	track(bar)
+	# Default family, as _ready() left it.
+	assert_eq(bar.self_modulate, Color.WHITE,
+		"sanity check: the default StatBar family starts self_modulate white")
+
+	bar.variation = &"StatPill"
+
+	var tokens := DesignTokens.load_default()
+	assert_eq(bar.self_modulate, tokens.cat_olahraga,
+		"switching to StatPill at runtime must re-derive self_modulate from the category")
+	assert_eq(bar.theme_type_variation, &"StatPill",
+		"switching to StatPill at runtime must still update theme_type_variation")
+
+
 ## The icon replaces the bar's old name label, and with the magnifier gone
 ## it is also the only thing the player can tap for information -- so it
 ## has to clear the touch minimum on its own.

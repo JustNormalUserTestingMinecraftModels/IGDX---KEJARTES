@@ -188,3 +188,67 @@ func test_seed_playtest_inventory_emits_changed_once() -> void:
 	assert_eq(seen.size(), 1,
 		"one seed must emit inventory_changed exactly once, not once per item")
 	GameState.inventory.clear()
+
+
+func test_gamestate_exposes_a_run_stats_record() -> void:
+	assert_true(GameState.run_stats != null, "run_stats is never null")
+	assert_true(GameState.run_stats is RunStats, "run_stats is a RunStats")
+
+
+func test_using_an_item_records_it_in_run_stats() -> void:
+	var before: int = GameState.run_stats.items_used
+	var saved_roster: Array = GameState.approved_students.duplicate(true)
+	var saved_inventory: Dictionary = GameState.inventory.duplicate(true)
+
+	GameState.approved_students = [{
+		"id": 4242, "name": "Uji", "mood": 10.0, "energy": 10.0,
+	}]
+	var item := ItemData.new()
+	item.item_name = "UjiCoba"
+	item.mood_boost = 5.0
+	item.energy_boost = 5.0
+	GameState.add_to_inventory("UjiCoba", 1)
+
+	var result: Dictionary = GameState.use_item(item, 4242, 1)
+
+	GameState.approved_students = saved_roster
+	GameState.inventory = saved_inventory
+
+	assert_true(result.get("applied", false), "the item applied")
+	assert_eq(GameState.run_stats.items_used, before + 1,
+		"a successful use bumps items_used")
+
+
+func test_a_refused_item_use_does_not_record() -> void:
+	var before: int = GameState.run_stats.items_used
+	var item := ItemData.new()
+	item.item_name = "TidakAda"
+	var result: Dictionary = GameState.use_item(item, -1, 1)
+	assert_false(result.get("applied", true), "refused")
+	assert_eq(GameState.run_stats.items_used, before,
+		"a refused use records nothing")
+
+
+func test_set_grade_resets_the_run_stats() -> void:
+	var saved_grade: int = GameState.current_grade
+	GameState.run_stats.record_minigame(true, 10.0)
+	GameState.set_grade(saved_grade)
+	assert_eq(GameState.run_stats.minigames_won, 0,
+		"starting a grade clears the tally")
+	assert_false(GameState.is_exam_intro_cutscene,
+		"the exam-cutscene flag clears with the grade")
+	assert_false(GameState.run_failed, "the fail flag clears with the grade")
+
+
+func test_count_targets_cleared_reports_cleared_and_total() -> void:
+	var saved_roster: Array = GameState.approved_students.duplicate(true)
+	GameState.approved_students = [{
+		"id": 1, "name": "A",
+		"akademis1": 90.0, "akademis2": 90.0, "akademis3": 10.0,
+		"target_akademis1": 50.0, "target_akademis2": 50.0,
+		"target_akademis3": 50.0,
+	}]
+	var counted: Array = GameState.count_targets_cleared()
+	GameState.approved_students = saved_roster
+	assert_eq(counted[0], 2, "two of three targets cleared")
+	assert_eq(counted[1], 3, "three targets total for one student")

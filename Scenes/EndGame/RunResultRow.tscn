@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://dnunxu5lmnlca"]
+
+[ext_resource type="Script" path="res://Scripts/EndGame/RunResultRow.gd" id="1_2ghnb"]
+[ext_resource type="Texture2D" uid="uid://88na4148i5d" path="res://Assets/Images/UI/Placeholders/icon_poin.svg" id="2_osbgl"]
+
+[node name="RunResultRow" type="PanelContainer" unique_id=1802971213]
+theme_type_variation = &"Card"
+script = ExtResource("1_2ghnb")
+
+[node name="Row" type="HBoxContainer" parent="." unique_id=1243740065]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="IconRect" type="TextureRect" parent="Row" unique_id=1640281166]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+texture = ExtResource("2_osbgl")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="Row" unique_id=2129082973]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ResultBodyLabel"
+
+[node name="ValueLabel" type="Label" parent="Row" unique_id=944812355]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+horizontal_alignment = 2

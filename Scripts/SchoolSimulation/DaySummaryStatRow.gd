@@ -4,23 +4,44 @@ class_name DaySummaryStatRow
 
 ## One line of the Daily Results card: a white stat icon and a gold
 ## chevron sitting ON TOP of a dark track, with "+12/65" right-aligned
-## on the card fill beside it. The chevron shows only on a day that
-## actually gained points for this stat -- see shows_chevron.
+## and sitting ON TOP of the track's own right end -- not beside it in
+## a separate column. The chevron shows only on a day that actually
+## gained points for this stat -- see shows_chevron.
 ##
-## The track's right edge is the number's left edge -- in the mockup a
-## wider number ("+12/65") pushes the track shorter than a narrow one
-## ("+9/65"). That falls out of the anchors below: the number is
-## right-aligned and shrink-sized, the track expands into what is left.
+## 2026-09-03 follow-up: the number used to own a fixed-width column to
+## the RIGHT of the track (VALUE_WIDTH), so the track visibly ended
+## before the row did. That does not match the reference mockup, where
+## the track runs the full row and the number is white text laid over
+## its right end, the same way the needs bars carry their tier word.
+## Track now spans (almost) the full row (TRACK_RIGHT_MARGIN); Value
+## spans the same width and is drawn last, so it paints on top.
 
 ## Geometry in game pixels, measured off the mockup (spec section 2).
+##
+## The icon is drawn ON TOP of the track's left end, so every pixel it
+## covers is a pixel of fill the player can never see -- keep ICON_BOX
+## well under half the row width, or a partly-full stat reads as an
+## empty bar. See test_stat_row_icon_does_not_hide_most_of_the_track.
 const ROW_HEIGHT := 96
 const TRACK_HEIGHT := 36
 const TRACK_LEFT := 0
-const ICON_BOX := Vector2(95, 70)
-const ICON_LEFT := -15
-const CHEVRON_BOX := Vector2(40, 58)
-const CHEVRON_LEFT := 67
-const VALUE_WIDTH := 200
+const ICON_BOX := Vector2(122, 88)
+const ICON_LEFT := -19
+const CHEVRON_BOX := Vector2(51, 74)
+const CHEVRON_LEFT := 110
+## How far the track's right edge sits from the row's own right edge --
+## a small margin so the fill's rounded cap does not touch the card's
+## own edge.
+const TRACK_RIGHT_MARGIN := 8
+## How far the number's right edge sits from the row's own right edge.
+## Slightly more than TRACK_RIGHT_MARGIN so the text reads with a
+## little breathing room inside the track's rounded cap rather than
+## running flush against it.
+const VALUE_RIGHT_MARGIN := 20
+
+## The authored one-shot burst thrown at a row that gained. Instanced,
+## never built -- see the project's "no visual is built at runtime" rule.
+const BURST_SCENE := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
 
 const ICON_FOR := {
 	"akademis": "res://Assets/Images/DaySummary/icon_akademis.png",
@@ -129,18 +150,43 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 
 ## Replay today's movement: rewind the track to where it stood this
 ## morning and grow it back to where set_stat already left it, popping
-## the chevron in over the same beat. `delay` holds the whole gesture so
-## a card can stagger its three rows.
+## the chevron in over the same beat and -- on a day that actually
+## gained -- throwing a star burst from the chevron. `delay` holds the
+## whole gesture so a card can stagger its three rows.
+##
+## `plays_sparkle` lets the card suppress the sparkle cue on the second and
+## later bursts of one gesture, so three gaining rows do not fire three
+## sparkle cues 80 ms apart; see DaySummaryStudentRow.play_gain. The tally
+## tick is a separate decision and always plays on a real gain, regardless
+## of `plays_sparkle`.
 ##
 ## Never awaited and never required -- set_stat has already written the
 ## final value, so a caller that skips this sees a correct, static card.
 ##
 ## Call set_stat first: this reads the two ends it cached, which default
 ## to 0.0 and would otherwise empty the track.
-func play_gain(delay: float = 0.0) -> void:
+func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	track.value = _fill_from
 	Juice.fill_bar(track, _fill_to, -1.0, delay)
 	if chevron.visible:
 		Juice.pop_in(chevron, delay)
+		_play_burst(delay, plays_sparkle)
 	Juice.count_up_formatted(value, 0.0, _delta,
 		func(v: float) -> String: return format_value(v, _target), delay)
+
+
+## The gain's reward: a star burst centred on the chevron, plus the tally
+## tick on the same beat -- the tally always plays on a real gain; only
+## the burst's own sparkle cue is deduplicated across a card's gesture
+## (see DaySummaryStudentRow.play_gain). Editor-gated -- the test runner
+## builds these rows to inspect them, not to watch them.
+func _play_burst(delay: float, plays_sparkle: bool) -> void:
+	if Engine.is_editor_hint():
+		return
+	var burst_scene: PackedScene = load(BURST_SCENE)
+	var fx := burst_scene.instantiate() as RewardParticles
+	fx.plays_sfx = plays_sparkle
+	fx.position = chevron.position + chevron.size * 0.5
+	add_child(fx)
+	fx.fire(delay)
+	AudioDirector.play_sfx(&"tally")

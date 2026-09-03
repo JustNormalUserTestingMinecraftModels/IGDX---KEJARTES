@@ -81,20 +81,29 @@ func test_safe_area_can_be_disabled() -> void:
 		"with safe area off, margin is exactly screen_margin")
 
 
-func test_statbar_tints_itself_from_its_category() -> void:
-	var tokens := DesignTokens.load_default()
+## Renamed from test_statbar_tints_itself_from_its_category: a StatBar-family
+## bar no longer tints via self_modulate (that multiplied the WHOLE node,
+## including the track behind the fill, so a value-0 bar rendered as a
+## solid capsule). The category colour now lives in a per-category theme
+## variation's fill stylebox instead (ThemeFactory._build_progress), so
+## this asserts the bar picked the right variation AND stayed untinted.
+func test_statbar_takes_its_category_variation() -> void:
 	var bar := StatBar.new()
 	bar.category = "Olahraga"
 	_root.add_child(bar)
-	assert_eq(bar.self_modulate, tokens.cat_olahraga,
-		"StatBar tints via self_modulate from the category token")
+	assert_eq(bar.theme_type_variation, &"StatBarOlahraga",
+		"a StatBar-family bar must resolve to its category's variation")
+	assert_eq(bar.self_modulate, Color.WHITE,
+		"the node itself must stay untinted -- the fill stylebox carries the colour now")
 
 
 func test_statbar_uses_the_theme_variation() -> void:
 	var bar := StatBar.new()
 	_root.add_child(bar)
-	assert_eq(bar.theme_type_variation, &"StatBar",
-		"StatBar must opt into its theme variation automatically")
+	# Default category is "Akademis", which now resolves to its own
+	# per-category variation rather than the plain shared "StatBar" look.
+	assert_eq(bar.theme_type_variation, &"StatBarAkademis",
+		"StatBar must opt into its category's theme variation automatically")
 
 
 func test_set_stat_without_animation_is_immediate() -> void:
@@ -133,12 +142,52 @@ func test_statbar_value_label_tracks_the_value() -> void:
 	assert_eq(label.text, "77", "label must land on the exact value")
 
 
+## Regression pin: StatBar is @tool, so _ready() -> _sync_label() runs at
+## EDIT time too, whenever a scene containing one is opened and saved --
+## not just in-game. ReportCard and StudentCard bars leave show_value_label
+## at its default false while authoring their own ValueLabel children with
+## meaningful text/alignment that those screens drive themselves. Opening
+## and saving Scenes/ReportCard/report_card.tscn once adopted those
+## authored labels and silently persisted stomped values into the .tscn:
+## visible flipped to false, text overwritten from the authored "65/65" to
+## a freshly computed "60", and horizontal_alignment forced from right (2)
+## to centre (1). show_value_label = false must leave an authored child
+## completely alone -- not adopt it, not hide it, not restyle it, not
+## rewrite its text.
+func test_statbar_leaves_an_authored_label_alone_when_show_value_label_is_false() -> void:
+	var bar := StatBar.new()
+	# show_value_label left at its default false, matching ReportCard/
+	# StudentCard's authored bars.
+	var authored := Label.new()
+	authored.name = "ValueLabel"
+	authored.text = "65/65"
+	authored.visible = true
+	authored.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	bar.add_child(authored)
+	_root.add_child(bar)
+
+	assert_eq(authored.text, "65/65",
+		"an authored label's text must survive _ready() when show_value_label is false")
+	assert_true(authored.visible,
+		"an authored label's visibility must survive _ready() when show_value_label is false")
+	assert_eq(authored.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT,
+		"an authored label's alignment must survive _ready() when show_value_label is false")
+
+
+## self_modulate is unconditionally white for the whole StatBar family now,
+## so `self_modulate.a > 0.0` would pass for any category and no longer
+## exercises the fallback mapping at all. What actually matters is that an
+## unrecognised category resolves to the neutral "StatBar" variation (whose
+## fill stylebox is genuinely visible, see ThemeFactory._build_progress)
+## rather than an empty/unknown theme_type_variation string.
 func test_unknown_category_still_renders_visibly() -> void:
 	var bar := StatBar.new()
 	bar.category = "KategoriTidakDikenal"
 	_root.add_child(bar)
 	assert_true(bar.self_modulate.a > 0.0,
 		"an unknown category must never render the bar invisible")
+	assert_eq(bar.theme_type_variation, &"StatBar",
+		"an unrecognised category must fall back to the neutral StatBar variation")
 
 
 func test_stat_bar_defaults_to_its_own_variation() -> void:

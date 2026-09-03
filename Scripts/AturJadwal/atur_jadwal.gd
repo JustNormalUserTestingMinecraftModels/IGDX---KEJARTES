@@ -18,6 +18,23 @@ extends Control
 
 signal _holiday_dismissed
 
+## Id of the student whose stat rows were last staggered in. Guards
+## _stagger_stat_rows() so it only plays on screen entry or an actual
+## student switch -- _update_student_display() also runs on every activity
+## assignment, and an unconditional stagger there would re-fade the whole
+## stat panel on every tap and fight the per-bar pop. The very first display
+## is handled separately by _has_staggered_once below, not by this -1
+## initial value.
+var _last_staggered_student_id = -1
+
+## True once _update_student_display() has staggered at least once.
+## Needed because student.get("id", -1) shares the -1 fallback with
+## _last_staggered_student_id's initial value: two different students that
+## both happen to lack an "id" key would compare equal (-1 == -1) and
+## silently skip the stagger on the switch between them. This sentinel is
+## independent of whatever value "id" holds, so that collision can't happen.
+var _has_staggered_once := false
+
 @export_group("Calendar Display")
 ## Icon shown next to the current date in the TanggalContainer header.
 @export var calendar_icon: Texture2D
@@ -474,13 +491,11 @@ func _get_current_schedules() -> Dictionary:
 		return {}
 	return GameState.day_schedules.get(student_id, {})
 
-## Tints each BGHari day button by its assigned category via
-## DesignTokens.category_color() (unscheduled days get surface_sunken, a
-## locked holiday gets state_danger).
+## Drives each BGHari day button through the DayStickyNote template API
+## (set_day_name, show_empty, show_scheduled, show_holiday), which handles
+## tinting and content display internally.
 func _update_day_button_colors():
 	var schedules = _get_current_schedules()
-	var tokens := _get_tokens()
-	var default_color = tokens.surface_sunken  # unscheduled
 
 	var week = GameState.minggu_ke
 	var week_holidays = HOLIDAYS.get(week, {})
@@ -495,24 +510,18 @@ func _update_day_button_colors():
 
 	for day_name in day_buttons.keys():
 		var btn = day_buttons[day_name]
-		if not btn:
+		var note := btn as DayStickyNote
+		if note == null:
 			continue
 
-		var label = btn.get_child(0) as Label
+		note.set_day_name(day_name)
 
 		if week_holidays.has(day_name):
-			btn.self_modulate = tokens.state_danger
-			if label:
-				label.text = day_name.to_upper() + "\n(LIBUR)"
+			note.show_holiday(week_holidays[day_name].get("title", "Libur Nasional"))
 		elif schedules.has(day_name):
-			var category = schedules[day_name]["category"]
-			btn.self_modulate = tokens.category_color(category)
-			if label:
-				label.text = day_name.to_upper()
+			note.show_scheduled(schedules[day_name]["category"])
 		else:
-			btn.self_modulate = default_color
-			if label:
-				label.text = day_name.to_upper()
+			note.show_empty()
 
 func _start_day_button_sway():
 	var buttons = [senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn]
@@ -572,10 +581,15 @@ func _percent(current: float, target: float) -> float:
 		return 0.0
 	return clampf(current / target * 100.0, 0.0, 100.0)
 
-func _feed_stat_bar(bar: StatBar, current: float, delta: float, target: float) -> void:
+## pop: whether this update should play StatBar's squash-pop. Callers pass
+## false during a student switch, where _stagger_stat_rows()'s stagger
+## already owns the motion for the row; callers pass true (the default) for
+## a same-student edit -- e.g. assigning an activity -- where there is no
+## stagger and the pop is the only motion telling the player the bar moved.
+func _feed_stat_bar(bar: StatBar, current: float, delta: float, target: float, pop: bool = true) -> void:
 	if bar == null:
 		return
-	bar.set_stat(_percent(current + delta, target))
+	bar.set_stat(_percent(current + delta, target), true, pop)
 
 func _update_student_display():
 	if GameState.selected_student.is_empty():
@@ -613,21 +627,51 @@ func _update_student_display():
 		if portrait_path != "" and ResourceLoader.exists(portrait_path):
 			select_student_button.texture_normal = load(portrait_path)
 
+	# Decide whether this is a real student switch BEFORE feeding the bars.
+	# The stagger and the per-bar pop both animate `scale` on the same five
+	# nodes; if both fired on a switch frame, two independently-tracked
+	# tweens (AnimUtils._safe_tween's dictionary vs Juice.pop_in's bare
+	# create_tween()) would fight over the same property. So on a switch,
+	# feed the bars WITHOUT popping (pop=false) and let the stagger own the
+	# motion; on a same-student edit, feed WITH popping and skip the stagger.
+	var current_id = student.get("id", -1)
+	var is_switch: bool = not _has_staggered_once or current_id != _last_staggered_student_id
+	var pop_bars: bool = not is_switch
+
 	if kp1_bar:
-		_feed_stat_bar(kp1_bar, student.get("kepribadian2", 50.0), -_compute_total_loss("energy_cost"), 100.0)
+		_feed_stat_bar(kp1_bar, student.get("kepribadian2", 50.0), -_compute_total_loss("energy_cost"), 100.0, pop_bars)
 	if kp2_bar:
-		_feed_stat_bar(kp2_bar, student.get("kepribadian1", 50.0), -_compute_total_loss("mood_cost"), 100.0)
+		_feed_stat_bar(kp2_bar, student.get("kepribadian1", 50.0), -_compute_total_loss("mood_cost"), 100.0, pop_bars)
 	if ak1_bar:
 		var target1 = student.get("target_akademis1", 65.0)
-		_feed_stat_bar(ak1_bar, student.get("akademis1", 50.0), _compute_pending_gain("Akademis", student), target1)
+		_feed_stat_bar(ak1_bar, student.get("akademis1", 50.0), _compute_pending_gain("Akademis", student), target1, pop_bars)
 	if ak2_bar:
 		var target2 = student.get("target_akademis2", 65.0)
-		_feed_stat_bar(ak2_bar, student.get("akademis2", 50.0), _compute_pending_gain("SeniBudaya", student), target2)
+		_feed_stat_bar(ak2_bar, student.get("akademis2", 50.0), _compute_pending_gain("SeniBudaya", student), target2, pop_bars)
 	if ak3_bar:
 		var target3 = student.get("target_akademis3", 65.0)
-		_feed_stat_bar(ak3_bar, student.get("akademis3", 50.0), _compute_pending_gain("Olahraga", student), target3)
+		_feed_stat_bar(ak3_bar, student.get("akademis3", 50.0), _compute_pending_gain("Olahraga", student), target3, pop_bars)
 
 	_update_day_button_colors()
+
+	if is_switch:
+		_has_staggered_once = true
+		_last_staggered_student_id = current_id
+		_stagger_stat_rows()
+
+## Brings the five stat rows in together with their icons when the
+## displayed student changes. Opacity and scale only -- the icons sit on
+## the mockup's measured 126px grid and must not be moved.
+func _stagger_stat_rows() -> void:
+	var rows := []
+	for pair in [["Akademis1", "IconAkademis1"], ["Akademis2", "IconAkademis2"],
+			["Akademis3", "IconAkademis3"], ["Kepribadian2", "IconKepribadian2"],
+			["Kepribadian1", "IconKepribadian1"]]:
+		for node_name in pair:
+			var node := get_node_or_null("BGStat/%s" % node_name)
+			if node != null:
+				rows.append(node)
+	Juice.stagger_in(rows)
 
 func _setup_portrait_juice(btn: Control):
 	if not btn:
@@ -948,6 +992,11 @@ func _on_activity_selected(category: String):
 		}
 	_hide_penjadwalan_popup()
 	_update_day_button_colors()
+	# The one genuine player assignment -- pop only this note. Every other
+	# caller of show_scheduled/show_holiday is a repaint (Design decision #8).
+	var _assigned_note := _get_day_button(GameState.selected_day) as DayStickyNote
+	if _assigned_note:
+		_assigned_note.play_assign_pop()
 	_update_student_display()
 
 	# Check if Phase 3 tutorial should start

@@ -132,10 +132,16 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
-func test_day_buttons_are_tinted_via_category_color() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("category_color"),
-		"day button tint must come from DesignTokens.category_color()")
+## The day-note tint now lives in the DayStickyNote template, not this
+## screen's script. The screen just calls show_empty/show_scheduled/
+## show_holiday; the template maps category -> DesignTokens.category_color().
+func test_day_notes_are_daystickynote_instances_tinted_via_category_color() -> void:
+	for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
+		var note := _screen.get_node_or_null("BGHari/" + day)
+		assert_true(note is DayStickyNote, day + " must be a DayStickyNote instance")
+	var tmpl := FileAccess.get_file_as_string("res://Scripts/AturJadwal/DayStickyNote.gd")
+	assert_true(tmpl.contains("category_color"),
+		"the template must tint via DesignTokens.category_color()")
 
 
 ## The popup's five picks are ActivityRows now: icon, preview pill, name.
@@ -281,18 +287,22 @@ func test_splash_is_sized_to_the_mockup_window() -> void:
 		"splash bottom")
 
 
-## The whiteboard and its five sticky notes are explicitly out of scope for
-## the restyle -- they must survive it untouched.
-func test_the_whiteboard_and_sticky_notes_are_unchanged() -> void:
+## The whiteboard art itself is still out of scope for the restyle and must
+## survive untouched. The five sticky notes were polished on 2026-09-01
+## (docs/superpowers/plans/2026-09-01-atur-jadwal-sticky-note-polish.md):
+## each is now a DayStickyNote whose Paper still draws stickynotes.png.
+func test_the_whiteboard_is_unchanged_and_notes_are_stickynotes() -> void:
 	var board := _screen.get_node_or_null("BGHari") as TextureRect
 	assert_true(board != null, "BGHari is gone")
-	assert_eq(board.texture.resource_path,
-		"res://Assets/Images/UI/whiteboard.png",
+	assert_eq(board.texture.resource_path, "res://Assets/Images/UI/whiteboard.png",
 		"the whiteboard texture changed")
 	for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
-		var note := _screen.get_node_or_null("BGHari/%s" % day) as Control
-		assert_true(note != null,
-			"sticky note %s is gone or was reparented" % day)
+		var note := _screen.get_node_or_null("BGHari/%s" % day) as DayStickyNote
+		assert_true(note != null, "sticky note %s is gone or was reparented" % day)
+		var paper := note.get_node_or_null("Paper") as TextureButton
+		assert_true(paper != null and paper.texture_normal != null
+			and paper.texture_normal.resource_path == "res://Assets/Images/UI/stickynotes.png",
+			"%s Paper must still draw stickynotes.png" % day)
 
 
 ## Uniform 126px pitch from y=129. The mockup's own pitch drifts (129,
@@ -300,11 +310,11 @@ func test_the_whiteboard_and_sticky_notes_are_unchanged() -> void:
 ## within 5px of it everywhere and is what a container can express.
 func test_stat_rows_sit_on_the_mockup_grid() -> void:
 	var expected := {
-		"Akademis1": 129.0,
-		"Akademis2": 255.0,
-		"Akademis3": 381.0,
-		"Kepribadian2": 507.0,
-		"Kepribadian1": 633.0,
+		"Akademis1": 112.0,
+		"Akademis2": 238.0,
+		"Akademis3": 364.0,
+		"Kepribadian2": 490.0,
+		"Kepribadian1": 616.0,
 	}
 	for bar_name in expected:
 		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as Control
@@ -312,8 +322,8 @@ func test_stat_rows_sit_on_the_mockup_grid() -> void:
 		assert_eq(bar.offset_top, expected[bar_name], "%s row top" % bar_name)
 		assert_eq(bar.offset_bottom, expected[bar_name] + 70.0,
 			"%s row height must be the mockup's 70px" % bar_name)
-		assert_eq(bar.offset_left, 649.0, "%s pill left" % bar_name)
-		assert_eq(bar.offset_right, 973.0, "%s pill right" % bar_name)
+		assert_eq(bar.offset_left, 680.0, "%s pill left" % bar_name)
+		assert_eq(bar.offset_right, 1004.0, "%s pill right" % bar_name)
 
 
 ## kepribadian1 is MOOD and kepribadian2 is ENERGY, but the mockup's
@@ -466,6 +476,101 @@ func test_card_is_rendered_at_the_mockup_scale() -> void:
 
 # ----------------------------------------------------------------- helper
 
+## _update_day_button_colors() must route each day to the DayStickyNote
+## template, never poke a child Label directly (the old bare-button code did
+## `btn.get_child(0) as Label`).
+func test_update_day_colors_uses_the_template_api() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_false(src.contains("get_child(0) as Label"),
+		"the old per-button Label poke must be gone")
+	assert_true(src.contains("show_scheduled("), "must call DayStickyNote.show_scheduled()")
+	assert_true(src.contains("show_holiday("), "must call DayStickyNote.show_holiday()")
+	assert_true(src.contains("show_empty("), "must call DayStickyNote.show_empty()")
+
+
+## The day-note squash-pop must fire only on a real player assignment, which
+## is _on_activity_selected -- not from _update_day_button_colors (a repaint).
+## Design decision #8 of the sticky-note-polish plan.
+func test_assign_pop_is_driven_from_on_activity_selected() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("play_assign_pop()"),
+		"atur_jadwal.gd must drive the day-note pop itself")
+	var idx := src.find("func _on_activity_selected")
+	assert_true(idx != -1, "_on_activity_selected must exist")
+	var next := src.find("\nfunc ", idx + 1)
+	var body := src.substr(idx, next - idx if next != -1 else src.length() - idx)
+	assert_true(body.contains("play_assign_pop()"),
+		"the pop must be called from inside _on_activity_selected")
+
+
+## The warning dialog shipped on a stock placeholder ("pngwing.com (2).png").
+## It now wears the same finished card art as the Penjadwalan panel. The art
+## is square (1080x1080) and the frame is 740x428, so it must be a
+## NinePatchRect -- a TextureRect would smear the painted corners.
+func test_peringatan_frame_is_a_ninepatch_of_the_card_art() -> void:
+	var frame := _screen.get_node_or_null("Peringatan/TextureRect")
+	assert_true(frame != null, "Peringatan/TextureRect is missing")
+	if frame == null:
+		return
+	assert_true(frame is NinePatchRect,
+		"the warning frame must be a NinePatchRect, got %s" % frame.get_class())
+	if frame is NinePatchRect:
+		assert_true(frame.texture != null, "the warning frame has no texture")
+		assert_eq(frame.texture.resource_path,
+			"res://Assets/Images/UI/penjadwalan_card_bg.png",
+			"the warning frame must draw the finished card art")
+		# The 1080x1080 source has transparent padding around the painted
+		# card -- the actual card is the 658x1013 rect at (211,34). Without
+		# this crop the card would float small inside a mostly-transparent
+		# frame instead of filling it.
+		assert_eq(frame.region_rect, Rect2(211, 34, 658, 1013),
+			"the warning frame must crop to the card art, not the full padded canvas")
+		for side in ["left", "top", "right", "bottom"]:
+			assert_true(frame.get("patch_margin_" + side) > 0,
+				"patch_margin_%s must be set or the corners still stretch" % side)
+
+	# The dialog's three children must survive the retype -- atur_jadwal.gd
+	# reaches them by path in six places.
+	for child_name in ["Label", "ButtonYes", "ButtonNo"]:
+		assert_true(_screen.get_node_or_null(
+			"Peringatan/TextureRect/%s" % child_name) != null,
+			"%s was lost when the frame was retyped" % child_name)
+
+
+## Nothing in the warning dialog may still reference the stock placeholder.
+func test_no_pngwing_placeholder_remains_in_the_warning_dialog() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/AturJadwal/atur_jadwal.tscn")
+	var peringatan_start := src.find("[node name=\"Peringatan\"")
+	assert_true(peringatan_start != -1, "Peringatan node block not found")
+	var peringatan_end := src.find("[node name=\"Penjadwalan\"", peringatan_start)
+	var block := src.substr(peringatan_start, peringatan_end - peringatan_start)
+	assert_true(not block.contains("3_a6kja"),
+		"the Peringatan block still draws the pngwing placeholder")
+
+
+## The warning label used to be BarLabel (white glyph + dark rim), designed
+## for text sitting on a saturated progress-bar fill. The card art is now a
+## light cream gradient, so white-on-cream was near-unreadable -- it must be
+## TitleLabel (dark text_primary, no outline) instead. Separately, the label
+## used to stretch down to offset_bottom 400, which put its last line under
+## the YA / TIDAK buttons at offset_top 284; it must end at or above wherever
+## the buttons currently start, not at a hardcoded 268, so a deliberate
+## reposition of either node doesn't false-fail this test while an actual
+## regression (label growing back down over the buttons) still does.
+func test_peringatan_label_reads_against_the_light_card() -> void:
+	var label := _screen.get_node_or_null("Peringatan/TextureRect/Label") as Label
+	assert_true(label != null, "Peringatan/TextureRect/Label is missing")
+	var button_yes := _screen.get_node_or_null("Peringatan/TextureRect/ButtonYes") as Control
+	assert_true(button_yes != null, "Peringatan/TextureRect/ButtonYes is missing")
+	if label == null or button_yes == null:
+		return
+	assert_eq(label.get_theme_type_variation(), &"TitleLabel",
+		"the warning label must be TitleLabel (dark text) to read against the light card art")
+	assert_true(label.offset_bottom <= button_yes.offset_top,
+		"the warning label must not extend down past where the buttons start, or its last line renders under them")
+
+
 ## Copied verbatim from tests/test_main_menu.gd.
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:
@@ -489,3 +594,139 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 			out.append(node.name)
 	for child in node.get_children():
 		_collect_overrides(child, out)
+
+
+## StatBar used to build its own ValueLabel unconditionally, doubling up
+## with the one authored in the scene: two overlapping labels, and the
+## authored one frozen at "0%" forever. It must adopt instead.
+func test_each_stat_bar_has_exactly_one_value_label() -> void:
+	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
+		"Kepribadian1", "Kepribadian2"]
+	for bar_name in bar_names:
+		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as StatBar
+		assert_true(bar != null, "BGStat/%s is not a StatBar" % bar_name)
+		if bar == null:
+			continue
+		var labels := 0
+		for child in bar.get_children():
+			if child is Label:
+				labels += 1
+		assert_eq(labels, 1,
+			"%s must carry exactly one Label, found %d" % [bar_name, labels])
+
+
+## BarLabel (white glyph + dark rim) is the only variation that reads over
+## both the pale track and a saturated category fill.
+func test_stat_bar_value_labels_use_the_bar_label_variation() -> void:
+	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
+		"Kepribadian1", "Kepribadian2"]
+	for bar_name in bar_names:
+		var label := _screen.get_node_or_null(
+			"BGStat/%s/ValueLabel" % bar_name) as Label
+		assert_true(label != null, "%s/ValueLabel is missing" % bar_name)
+		if label != null:
+			assert_eq(String(label.theme_type_variation), "BarLabel",
+				"%s/ValueLabel must use BarLabel" % bar_name)
+
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/StatBar.gd")
+	assert_true(src.contains("get_node_or_null(\"ValueLabel\")"),
+		"StatBar must adopt an authored ValueLabel rather than build a second one")
+
+
+## A schedule edit must be visible on the bar it moved, and switching
+## students must bring the five rows in as a stagger rather than a snap.
+func test_stat_bars_are_animated_on_change_and_on_student_switch() -> void:
+	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
+		"Kepribadian1", "Kepribadian2"]
+	for bar_name in bar_names:
+		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as StatBar
+		assert_true(bar != null, "BGStat/%s is not a StatBar" % bar_name)
+		if bar != null:
+			assert_true(bar.pop_on_change,
+				"%s must pop when its value moves" % bar_name)
+
+	var bar_src := FileAccess.get_file_as_string("res://Scripts/UI/StatBar.gd")
+	assert_true(bar_src.contains("pop_on_change"),
+		"StatBar must expose pop_on_change")
+	# Juice.pop_in zeroes modulate.a and tweens it back, so a regression that
+	# swapped AnimUtils.squash_bounce back to Juice.pop_in here would blink
+	# the bar and its label transparent on every value change -- pin the
+	# choice so that regression fails a test instead of only failing on-screen.
+	assert_true(bar_src.contains("AnimUtils.squash_bounce"),
+		"StatBar's pop must use AnimUtils.squash_bounce (scale-only)")
+	var pop_start := bar_src.find("func set_stat")
+	assert_true(pop_start != -1, "StatBar.set_stat is missing")
+	# Match the CALL form, with its paren: the code comment beside the pop
+	# names Juice.pop_in to explain why it is not used, and a bare substring
+	# scan would fail on that comment.
+	assert_true(not bar_src.substr(pop_start).contains("Juice.pop_in("),
+		"StatBar.set_stat must not call Juice.pop_in -- it zeroes modulate.a and would flash the bar")
+
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("Juice.stagger_in"),
+		"the stagger must go through Juice.stagger_in")
+	# _update_student_display() runs on every activity assignment (see the
+	# schedule-assignment path around line 948), so a call to
+	# _stagger_stat_rows() must be gated behind a guard variable rather than
+	# unconditional -- otherwise every tap would re-fade the whole stat
+	# panel and fight the per-bar pop. Assert the guard exists so that
+	# gating cannot be silently dropped; contains("_stagger_stat_rows")
+	# alone would still pass even if the function were never called.
+	assert_true(src.contains("_stagger_stat_rows"),
+		"the screen must stagger its stat rows in")
+	assert_true(src.contains("_last_staggered_student_id"),
+		"the stagger must be gated by a last-staggered-student guard, not called unconditionally")
+
+
+## The stagger animates opacity and scale only. The icons are final art on
+## a measured grid -- their offsets must not be touched.
+func test_the_stagger_does_not_move_the_final_icons() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var start := src.find("func _stagger_stat_rows")
+	assert_true(start != -1, "_stagger_stat_rows is missing")
+	# Slice to the real extent of the function (up to the next "func "),
+	# not a fixed character count -- a fixed slice can overrun the body and
+	# scan unrelated code below it, producing a false failure.
+	var next_func := src.find("\nfunc ", start + 1)
+	var body := src.substr(start, next_func - start if next_func != -1 else -1)
+	for forbidden in ["offset_left", "offset_top", "offset_right",
+			"offset_bottom", "position"]:
+		assert_true(not body.contains(forbidden),
+			"_stagger_stat_rows must not write %s -- the icon grid is final"
+			% forbidden)
+
+	# The mockup's visual top-to-bottom order is the reverse of the node
+	# numbering here: Kepribadian2 (energy, lightning) sits above
+	# Kepribadian1 (mood, smiley). Pin the order so a future edit can't
+	# silently swap them and make the stagger run out of order down the screen.
+	var kp2_index := body.find("Kepribadian2")
+	var kp1_index := body.find("Kepribadian1")
+	assert_true(kp2_index != -1 and kp1_index != -1,
+		"_stagger_stat_rows must reference both Kepribadian1 and Kepribadian2")
+	assert_true(kp2_index < kp1_index,
+		"Kepribadian2 (energy) must be staggered in before Kepribadian1 (mood) to match the mockup's visual order")
+
+
+## The five bars used to tint via self_modulate, which multiplies the WHOLE
+## node -- track and rim included -- so a bar at value 0 rendered as a
+## solid category-coloured capsule instead of an empty one. Each bar must
+## now resolve to its category's own theme variation (whose fill stylebox
+## bakes the colour in, see ThemeFactory._build_progress) and leave the
+## node itself untinted.
+func test_bg_stat_bars_use_their_category_variation_and_stay_untinted() -> void:
+	var expected := {
+		"BGStat/Akademis1": &"StatBarAkademis",
+		"BGStat/Akademis2": &"StatBarSeniBudaya",
+		"BGStat/Akademis3": &"StatBarOlahraga",
+		"BGStat/Kepribadian1": &"StatBarIstirahat",
+		"BGStat/Kepribadian2": &"StatBarLibur",
+	}
+	for p in expected.keys():
+		var bar := _screen.get_node_or_null(p) as StatBar
+		assert_true(bar != null, "%s must be a StatBar" % p)
+		if bar == null:
+			continue
+		assert_eq(bar.theme_type_variation, expected[p],
+			"%s must wear its category's theme variation" % p)
+		assert_eq(bar.self_modulate, Color.WHITE,
+			"%s must not tint the whole node -- the fill stylebox carries the colour" % p)

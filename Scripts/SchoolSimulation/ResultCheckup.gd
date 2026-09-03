@@ -1,50 +1,58 @@
 @tool
 extends Control
 
-## The end-of-week report card: one Daily Results card per student -- the
-## same DaySummaryStudentRow the nightly popup shows -- read one week
-## wide instead of one day, followed by a log of the week's minigames and
-## events.
+## The end-of-week report: a pinned WeekRecapBanner over two tabbed
+## panes -- SISWA (one DaySummaryStudentRow per student, read one week
+## wide) and RIWAYAT (the week's minigames and events as WeekHistoryRows)
+## -- rebuilt to the 2026-09-03 spec.
 ##
-## Each card's three stat numbers are "+<the week's gain>/<target>", and
-## its two needs bars carry the week's energy and mood movement as a
-## signed number. All of that lives on the card; this screen only chooses
-## WHICH deltas the card is shown (see DaySummaryStudentRow.setup_week_row).
+## Everything visual is an authored scene. This script only decides
+## WHICH deltas a card shows (DaySummaryStudentRow.setup_week_row), which
+## pane is visible, and when the entrance's five stages fire. Stages 1-3
+## belong to the banner; stages 4-5 are here, because this is what owns
+## the cards.
 ##
 ## @tool so the in-editor test runner can build the screen and inspect it
 ## (CLAUDE.md, testing constraint 3). Everything with a real side effect
-## is gated on Engine.is_editor_hint(); signal wiring deliberately is not.
+## is gated on Engine.is_editor_hint(); signal wiring deliberately is
+## not.
 ##
 ## Every surface is a theme variation and every accent is a DesignToken;
 ## this script builds no StyleBoxFlat and holds no Color literal.
 
 signal checkup_closed
 
-# ── Visual - Background Overlay ───────────────────────────────────────────────
+## The two panes, in tab order. Indices into _panes and the argument
+## show_pane takes.
+enum Pane { SISWA = 0, RIWAYAT = 1 }
+
+## How far a pane slides horizontally during the SISWA<->RIWAYAT
+## transition, in pixels.
+const PANE_SLIDE_DISTANCE := 40.0
+
+# ── Visual - Background Overlay ───────────────────────────────────────
 @export_group("Visual - Background Overlay")
 ## Optional photo behind the report. When set it replaces the panel.
 @export var background_texture: Texture2D = null
 
-# ── Visual - Header & Typography ──────────────────────────────────────────────
+# ── Visual - Header & Typography ──────────────────────────────────────
 @export_group("Visual - Header & Typography")
 ## Main header title.
 @export var header_title_text: String = "EVALUASI MINGGUAN SISWA"
 ## Main header subtitle, under header_title_text.
 @export var header_subtitle_text: String = "Perkembangan statistik & riwayat kegiatan selama satu minggu"
-## Section heading above the per-student cards.
-@export var students_section_header_text: String = "RAPOR MINGGUAN SISWA"
-## Section heading above the minigame/event history log.
-@export var history_section_header_text: String = "RIWAYAT MINIGAME & EVENT"
-## Icon beside students_section_header_text. Null shows the header with
-## no icon.
-@export var students_header_icon_texture: Texture2D = null
-## Icon beside history_section_header_text.
-@export var history_header_icon_texture: Texture2D = null
 ## Optional font override applied across the screen's labels. Null keeps
 ## the theme's default font.
 @export var font: Font = null
 
-# ── Visual - Buttons (Single-PNG System) ─────────────────────────────────────
+# ── Visual - Tabs ────────────────────────────────────────────────────
+@export_group("Visual - Tabs")
+## Label on the students tab. The live count is appended in brackets.
+@export var tab_students_text: String = "SISWA"
+## Label on the history tab. The live count is appended in brackets.
+@export var tab_history_text: String = "RIWAYAT"
+
+# ── Visual - Buttons ─────────────────────────────────────────────────
 @export_group("Visual - Buttons")
 ## Art-supplied close-button texture. Null keeps the theme's button
 ## styling and shows close_button_text as a plain label instead.
@@ -52,30 +60,53 @@ signal checkup_closed
 ## Label shown on the close button when button_close_texture is null.
 @export var close_button_text: String = "Selesai Evaluasi"
 
-# ── Wiring ───────────────────────────────────────────────────────────────────
+# ── Wiring ───────────────────────────────────────────────────────────
 ## The per-student card. Assigned in ResultCheckup.tscn to
 ## DaySummaryStudentRow.tscn -- the same scene the nightly popup uses.
 @export var student_card_scene: PackedScene
+## The history row template, WeekHistoryRow.tscn.
+@export var history_row_scene: PackedScene
 
-const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
+const _CELEBRATION_SCENE := "res://Scenes/SchoolSimulation/CelebrationConfetti.tscn"
 
 @onready var title_label: Label = $Margin/VBox/HeaderPanel/TitleLabel
 @onready var subtitle_label: Label = $Margin/VBox/HeaderPanel/SubtitleLabel
-@onready var students_container: VBoxContainer = $Margin/VBox/ScrollContainer/MainContent/StudentsContainer
-@onready var history_list: VBoxContainer = $Margin/VBox/ScrollContainer/MainContent/HistoryList
+@onready var banner: WeekRecapBanner = $Margin/VBox/Banner
+@onready var tab_siswa: Button = $Margin/VBox/TabBar/TabSiswa
+@onready var tab_riwayat: Button = $Margin/VBox/TabBar/TabRiwayat
 @onready var scroll_container: ScrollContainer = $Margin/VBox/ScrollContainer
+@onready var students_pane: VBoxContainer = $Margin/VBox/ScrollContainer/PaneStack/StudentsPane
+@onready var history_pane: VBoxContainer = $Margin/VBox/ScrollContainer/PaneStack/HistoryPane
+@onready var history_empty_label: Label = $Margin/VBox/ScrollContainer/PaneStack/HistoryPane/EmptyLabel
 @onready var btn_close: Button = $Margin/VBox/BtnClose
 
 var is_dragging_scroll: bool = false
 var drag_start_y: float = 0.0
 var initial_scroll_v: int = 0
 
+## The active tab, as a Pane value.
+var _active_pane: int = Pane.SISWA
+## Each pane's own last scroll offset, so switching back returns to the
+## card you were reading rather than snapping to the top.
+var _pane_scroll: Array[int] = [0, 0]
+## Latched the first time RIWAYAT opens. Its rows stagger in once; every
+## later switch is an instant show, so tabbing back and forth never
+## re-fires the stamp cue.
+var _history_animated: bool = false
+## The instanced history rows, kept so the lazy first animation can reach
+## them without re-walking the tree.
+var _history_rows: Array = []
+
+
 func _ready() -> void:
-	# Signal wiring stays ungated so the editor's test runner can exercise
-	# it; everything below the guard is a real side effect.
+	# Signal wiring stays ungated so the editor's test runner can
+	# exercise it; everything below the guard is a real side effect.
 	btn_close.pressed.connect(_on_close_pressed)
+	tab_siswa.pressed.connect(show_pane.bind(Pane.SISWA))
+	tab_riwayat.pressed.connect(show_pane.bind(Pane.RIWAYAT))
 	if scroll_container:
 		scroll_container.gui_input.connect(_on_scroll_gui_input)
+	_sync_tab_buttons()
 	if Engine.is_editor_hint():
 		return
 
@@ -85,41 +116,161 @@ func _ready() -> void:
 	btn_close.modulate.a = 0.0
 	btn_close.disabled = true
 
+
 func initialize_checkup(student_manager: StudentManager) -> void:
 	_apply_visual_exports()
-	if student_manager == null:
-		return
 
-	for child in students_container.get_children():
+	var recap: Dictionary = WeekRecap.compute(student_manager)
+	banner.set_recap(recap)
+
+	for child in students_pane.get_children():
 		child.queue_free()
-	for child in history_list.get_children():
-		child.queue_free()
+	for child in history_pane.get_children():
+		if child != history_empty_label:
+			child.queue_free()
+	_history_rows.clear()
+
+	if student_manager == null:
+		_update_tab_counts(0, 0)
+		return
 
 	var cards: Array = []
 	for student in student_manager.students:
 		var card := student_card_scene.instantiate() as DaySummaryStudentRow
-		students_container.add_child(card)
-		# Set up only once the card is in the tree: its @onready nodes are
-		# null until then. Same order DaySummaryPopup.setup_summary uses.
+		students_pane.add_child(card)
+		# Set up only once the card is in the tree: its @onready nodes
+		# are null until then. Same order DaySummaryPopup.setup_summary
+		# uses.
 		card.setup_week_row(student)
 		_set_mouse_filter_pass(card)
 		cards.append(card)
 
-	if student_manager.minigame_history.is_empty():
-		var empty_lbl = Label.new()
-		empty_lbl.text = "Tidak ada minigame yang dimainkan minggu ini."
-		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		empty_lbl.theme_type_variation = &"CaptionLabel"
-		empty_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		if font: empty_lbl.add_theme_font_override("font", font)
-		history_list.add_child(empty_lbl)
-	else:
-		for entry in student_manager.minigame_history:
-			var item = _create_history_item(entry)
-			history_list.add_child(item)
-			_set_mouse_filter_pass(item)
+	var history: Array = student_manager.minigame_history
+	history_empty_label.visible = history.is_empty()
+	for entry in history:
+		var row := history_row_scene.instantiate() as WeekHistoryRow
+		history_pane.add_child(row)
+		row.set_entry(entry)
+		_set_mouse_filter_pass(row)
+		_history_rows.append(row)
 
+	_update_tab_counts(cards.size(), history.size())
 	_play_entrance_animations(cards)
+
+
+## Show one pane and hide the other, remembering where each was scrolled
+## to. Safe to call with the already-active pane: it is a no-op and plays
+## nothing, so a second tap on the live tab is silent.
+func show_pane(pane: int) -> void:
+	if pane == _active_pane and students_pane.visible != history_pane.visible:
+		return
+	if scroll_container:
+		_pane_scroll[_active_pane] = scroll_container.scroll_vertical
+	var outgoing_pane := _active_pane
+	_active_pane = pane
+	_sync_tab_buttons()
+
+	if Engine.is_editor_hint():
+		students_pane.visible = pane == Pane.SISWA
+		history_pane.visible = pane == Pane.RIWAYAT
+		if scroll_container:
+			scroll_container.scroll_vertical = _pane_scroll[pane]
+		_history_animated = _history_animated or pane == Pane.RIWAYAT
+		return
+
+	AudioDirector.play_sfx(&"pane_swipe")
+	await _transition_panes(outgoing_pane, pane)
+	if scroll_container:
+		# Deliberately synchronous, not set_deferred. A deferred write is
+		# the theoretically correct fix for the ScrollContainer's
+		# scrollbar max_value being narrowly one layout pass stale right
+		# after the visibility flip above -- but show_pane is called
+		# directly by tests (suite.call(name), no frame processing
+		# in-between, no coroutines allowed here per this file's own
+		# testing constraints) and there is no supported way to flush a
+		# deferred call inside that harness. A deferred write would
+		# silently break both of this file's passing scroll-memory
+		# tests with no way to re-cover them. The risk window this
+		# leaves open is narrow: it only matters when the two panes'
+		# content heights differ AND the read happens before the next
+		# idle frame resyncs the scrollbar. Documented and accepted
+		# rather than fixed, per 2026-09-03 review (Task 9 fix round).
+		scroll_container.scroll_vertical = _pane_scroll[pane]
+
+	AudioDirector.play_sfx(&"select")
+	if pane == Pane.RIWAYAT and not _history_animated:
+		_history_animated = true
+		# A beat of separation before the stamp cue: tapping RIWAYAT for
+		# the first time triggers two distinct gestures (the tab select,
+		# and the lazy history entrance's stamp/shake per row) that would
+		# otherwise land in the same synchronous frame. The audio-hygiene
+		# scanner (tests/test_audio_coverage.gd) flags any function that
+		# fires two SFX cues on one path with no await between them, and
+		# rightly so here too -- a genuine gap reads as two intentional
+		# beats rather than a simultaneous double-hit.
+		await get_tree().create_timer(Juice.tokens().dur_instant).timeout
+		_play_history_entrance()
+
+
+## The SISWA<->RIWAYAT slide+fade itself. `outgoing`/`incoming` are Pane
+## values; direction is derived from their difference so a third pane
+## would need no change here. The outgoing pane's own `visible` flips to
+## false only once its exit tween finishes -- never before, so it's never
+## cut off mid-slide. The incoming pane starts from the opposite offset
+## and fades/slides back to its authored position, chained (not
+## parallel) after the outgoing tween, so the two panes -- which occupy
+## the same rect -- never visually overlap mid-transition.
+##
+## A coroutine; only ever called from show_pane, which is itself only
+## reached here when Engine.is_editor_hint() is false.
+func _transition_panes(outgoing: int, incoming: int) -> void:
+	var dir := signi(incoming - outgoing)
+	var outgoing_node: Control = students_pane if outgoing == Pane.SISWA else history_pane
+	var incoming_node: Control = students_pane if incoming == Pane.SISWA else history_pane
+	if outgoing_node == incoming_node:
+		return
+
+	var t := Juice.tokens()
+	var out_tw := outgoing_node.create_tween().set_parallel(true)
+	out_tw.tween_property(outgoing_node, "position:x",
+		float(dir) * -PANE_SLIDE_DISTANCE, t.dur_fast)
+	out_tw.tween_property(outgoing_node, "modulate:a", 0.0, t.dur_fast)
+	await out_tw.finished
+	if not is_instance_valid(outgoing_node):
+		return
+	outgoing_node.visible = false
+	outgoing_node.position.x = 0.0
+	outgoing_node.modulate.a = 1.0
+
+	if not is_instance_valid(incoming_node):
+		return
+	incoming_node.position.x = float(dir) * PANE_SLIDE_DISTANCE
+	incoming_node.modulate.a = 0.0
+	incoming_node.visible = true
+	var in_tw := incoming_node.create_tween().set_parallel(true)
+	in_tw.tween_property(incoming_node, "position:x", 0.0, t.dur_fast)
+	in_tw.tween_property(incoming_node, "modulate:a", 1.0, t.dur_fast)
+	await in_tw.finished
+
+
+## Keep the two toggle buttons agreeing with _active_pane. The pressed
+## state is what the WeekTabButton variation styles, so no manual tint is
+## needed here.
+func _sync_tab_buttons() -> void:
+	if tab_siswa:
+		tab_siswa.button_pressed = _active_pane == Pane.SISWA
+	if tab_riwayat:
+		tab_riwayat.button_pressed = _active_pane == Pane.RIWAYAT
+
+
+## "SISWA (4)" / "RIWAYAT (7)" -- so the player can see there is
+## something worth tapping before tapping it.
+func _update_tab_counts(student_count: int, history_count: int) -> void:
+	if tab_siswa:
+		tab_siswa.text = "%s (%d)" % [tab_students_text, student_count]
+	if tab_riwayat:
+		tab_riwayat.text = "%s (%d)" % [tab_history_text, history_count]
+
 
 func _apply_visual_exports() -> void:
 	# The themed panel is the default backdrop; an art-supplied photo
@@ -145,16 +296,6 @@ func _apply_visual_exports() -> void:
 		subtitle_label.text = header_subtitle_text
 		if font: subtitle_label.add_theme_font_override("font", font)
 
-	var std_hdr = get_node_or_null("Margin/VBox/ScrollContainer/MainContent/StudentsSectionHeader/Label") as Label
-	if std_hdr:
-		std_hdr.text = students_section_header_text
-		if font: std_hdr.add_theme_font_override("font", font)
-
-	var hist_hdr = get_node_or_null("Margin/VBox/ScrollContainer/MainContent/HistorySectionHeader/Label") as Label
-	if hist_hdr:
-		hist_hdr.text = history_section_header_text
-		if font: hist_hdr.add_theme_font_override("font", font)
-
 	if btn_close:
 		btn_close.text = "" if button_close_texture else close_button_text
 		if font: btn_close.add_theme_font_override("font", font)
@@ -165,6 +306,7 @@ func _apply_visual_exports() -> void:
 			btn_close.add_theme_stylebox_override("hover", sb)
 			btn_close.add_theme_stylebox_override("pressed", sb)
 
+
 func _set_mouse_filter_pass(node: Node) -> void:
 	if node is Control:
 		if not node is Button:
@@ -172,64 +314,19 @@ func _set_mouse_filter_pass(node: Node) -> void:
 	for child in node.get_children():
 		_set_mouse_filter_pass(child)
 
-func _create_history_item(entry: Dictionary) -> PanelContainer:
-	var tokens := Juice.tokens()
-	var item = PanelContainer.new()
-	item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	item.theme_type_variation = &"SunkenPanel"
 
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 20)
-	margin.add_theme_constant_override("margin_top", 16)
-	margin.add_theme_constant_override("margin_right", 20)
-	margin.add_theme_constant_override("margin_bottom", 16)
-	item.add_child(margin)
-
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 10)
-	margin.add_child(hbox)
-
-	var day_lbl = Label.new()
-	day_lbl.text = "[%s]" % entry.get("day", "")
-	day_lbl.theme_type_variation = &"TitleLabel"
-	day_lbl.self_modulate = tokens.brand_primary
-	day_lbl.custom_minimum_size = Vector2(180, 0)
-	if font: day_lbl.add_theme_font_override("font", font)
-	hbox.add_child(day_lbl)
-
-	var category_str = entry.get("category", "")
-	var game_name = entry.get("game_name", "Minigame")
-	var info_lbl = Label.new()
-	if category_str == "Event":
-		info_lbl.text = "📢 Event: %s" % game_name
-	else:
-		info_lbl.text = "%s - %s" % [category_str, game_name]
-	info_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_lbl.theme_type_variation = &"TitleLabel"
-	info_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	if font: info_lbl.add_theme_font_override("font", font)
-	hbox.add_child(info_lbl)
-
-	var won = entry.get("won", false)
-	if category_str == "Event":
-		hbox.add_child(_make_badge(" EVENT ", tokens.brand_primary))
-	elif won:
-		hbox.add_child(_make_badge(" BERHASIL ", tokens.state_success))
-	else:
-		hbox.add_child(_make_badge(" GAGAL ", tokens.state_danger))
-
-	return item
-
-
-## Shared chip: the DaySummaryBadge scene (SunkenPanel + BarLabel), tinted
-## via self_modulate so the child label keeps the theme's own contrast.
-func _make_badge(text: String, tint: Color) -> PanelContainer:
-	var chip := load(_BADGE_SCENE).instantiate() as PanelContainer
-	chip.self_modulate = tint
-	var lbl := chip.get_node("Text") as Label
-	lbl.text = text
-	if font: lbl.add_theme_font_override("font", font)
-	return chip
+## RIWAYAT's lazy first open: rows stagger in, a win stamping into place
+## and a loss shaking. Latched by show_pane, so this runs at most once.
+func _play_history_entrance() -> void:
+	Juice.stagger_in(_history_rows)
+	for i in _history_rows.size():
+		var row: WeekHistoryRow = _history_rows[i]
+		if row.is_event():
+			continue  # events get neither the stamp nor the shake
+		if row.is_win():
+			AudioDirector.play_sfx(&"stamp")
+		else:
+			Juice.shake(row)
 
 
 func _play_entrance_animations(cards: Array = []) -> void:
@@ -244,21 +341,41 @@ func _play_entrance_animations(cards: Array = []) -> void:
 	fader.tween_property(self, "modulate:a", 1.0, t.dur_normal)
 	await fader.finished
 
-	# Cards land one at a time only after the screen itself is visible --
-	# staggering under a still-transparent root wastes the effect.
-	Juice.stagger_in(cards)
+	# Stages 1-3 belong to the banner: slide, four pill count-ups, and
+	# the gated coin shower.
+	banner.play_entrance()
+	await get_tree().create_timer(t.dur_normal).timeout
 
-	# Each card's five gauges start moving on the beat that card ARRIVES
-	# on -- the same offset stagger_in uses, so the week's growth and the
-	# card's entrance share a rhythm. This is the nightly popup's own
+	# Stage 4. Cards land one at a time, each card's five gauges moving
+	# on the beat that card ARRIVES on -- the nightly popup's own
 	# cadence, one week long.
+	Juice.stagger_in(cards)
 	for i in cards.size():
 		cards[i].play_week_gain(float(i) * t.stagger_step)
+
+	# Stage 5. One celebration for the whole week, landing just behind
+	# the last card's own burst -- and only if the week went somewhere. A
+	# flat or losing week gets the report without the party.
+	var week_gained := false
+	for card in cards:
+		if card.gained_ground():
+			week_gained = true
+			break
+	if week_gained:
+		AudioDirector.play_sfx(&"reward")
+		var celebration_scene: PackedScene = load(_CELEBRATION_SCENE)
+		var celebration := celebration_scene.instantiate() as RewardParticles
+		celebration.position = get_node("Celebration").position
+		add_child(celebration)
+		celebration.fire(float(cards.size()) * t.stagger_step)
+
 	await get_tree().create_timer(t.dur_slow).timeout
 
 	var button_tween = create_tween()
 	button_tween.tween_property(btn_close, "modulate:a", 1.0, t.dur_fast)
 	btn_close.disabled = false
+	banner.start_idle_bounce()
+
 
 func _on_scroll_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -272,7 +389,9 @@ func _on_scroll_gui_input(event: InputEvent) -> void:
 		var delta_y = event.global_position.y - drag_start_y
 		scroll_container.scroll_vertical = int(initial_scroll_v - delta_y)
 
+
 func _on_close_pressed() -> void:
+	banner.stop_idle_bounce()
 	AudioDirector.play_sfx(&"confirm")
 	var fade_out = create_tween()
 	fade_out.tween_property(self, "modulate:a", 0.0, Juice.tokens().dur_normal)

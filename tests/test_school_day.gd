@@ -105,8 +105,10 @@ func _instantiate(path: String) -> Control:
 
 func test_week_end_routing_is_unchanged() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
-	assert_true(src.contains("res://Scenes/EndGame/SemesterEnd.tscn"),
-		"the final week must still route to SemesterEnd")
+	assert_true(src.contains("res://Scenes/EndGame/TesNotice.tscn"),
+		"the final week now exits into the Tes Besar notice, not straight to the stat check")
+	assert_false(src.contains("res://Scenes/EndGame/SemesterEnd.tscn"),
+		"SchoolDay no longer reaches the stat check directly")
 	assert_true(src.contains("res://Scenes/Lobby/loby.tscn"),
 		"a non-final week must still route back to the Lobby")
 	assert_true(src.contains("completed_week >= max_weeks"),
@@ -416,3 +418,24 @@ func test_an_unscheduled_day_defaults_to_istirahat_with_no_skill_gain() -> void:
 	assert_true(is_equal_approx(student.akademis, 40.0),
 		"with no schedule assigned, the student must default to Istirahat and gain no akademis")
 	manager.free()
+
+
+func test_student_manager_records_minigames_into_run_stats() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/StudentManager.gd")
+	assert_true(src.contains("GameState.run_stats.record_minigame("),
+		"record_minigame_result feeds the run tally")
+
+
+func test_school_day_records_wirausaha_into_run_stats() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("GameState.run_stats.record_wirausaha("),
+		"the wirausaha payout feeds the run tally")
+
+
+func test_school_day_records_event_students_into_run_stats() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("GameState.run_stats.record_event_student("),
+		"the event branch feeds the run tally")

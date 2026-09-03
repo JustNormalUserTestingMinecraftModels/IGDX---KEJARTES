@@ -924,6 +924,10 @@ func _roll_event(day_name: String) -> void:
 # ─────────────────────────────────────────────────────────────────────────────
 func _trigger_random_event(day_name: String) -> void:
 	events_triggered_this_week += 1
+	# Every student on the roster is present for an event, so
+	# an event marks the whole roster as having participated.
+	for s in GameState.approved_students:
+		GameState.run_stats.record_event_student(int(s.get("id", -1)))
 	var event_id = randi() % 5
 	
 	# ── Quirk: Biang Onar — events are ±20% stronger when active ──
@@ -1137,6 +1141,7 @@ func _pay_out_wirausaha() -> int:
 	var total: int = 0
 	for student_id in GameState.pending_earnings:
 		total += GameState.pending_earnings[student_id]
+	GameState.run_stats.record_wirausaha(total)
 	GameState.pending_earnings.clear()
 	if total > 0:
 		GameState.player_money += total
@@ -1244,6 +1249,10 @@ func skip_to_results() -> void:
 			else:
 				category = "Event"
 				events_triggered_this_week += 1
+				# Every student on the roster is present for an event, so
+				# an event marks the whole roster as having participated.
+				for s in GameState.approved_students:
+					GameState.run_stats.record_event_student(int(s.get("id", -1)))
 
 			var won = randf() > Balance.SKIP_PELUANG_KALAH
 			if student_manager:
@@ -1275,7 +1284,7 @@ func _on_back_pressed() -> void:
 	var max_weeks = GameState.max_minggu
 
 	if completed_week >= max_weeks:
-		Transition.change_scene("res://Scenes/EndGame/SemesterEnd.tscn")
+		Transition.change_scene("res://Scenes/EndGame/TesNotice.tscn")
 	else:
 		Transition.change_scene("res://Scenes/Lobby/loby.tscn")
 
@@ -1437,6 +1446,10 @@ func force_event(event_id: int) -> void:
 	# Trigger a specific event immediately during simulation
 	var day_name = DAYS[current_day] if current_day < DAYS.size() else "Senin"
 	events_triggered_this_week += 1
+	# Every student on the roster is present for an event, so
+	# an event marks the whole roster as having participated.
+	for s in GameState.approved_students:
+		GameState.run_stats.record_event_student(int(s.get("id", -1)))
 
 	var biang_onar_active: bool = false
 	var biang_onar_scale: float = 0.0

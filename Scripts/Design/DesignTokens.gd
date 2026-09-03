@@ -79,20 +79,20 @@ static func load_default() -> DesignTokens:
 @export_group("Category Accents")
 ## Tint for the Akademis schedule category and its StatBar/pill/icon uses
 ## wherever `category_color("Akademis")` is called.
-@export var cat_akademis: Color = Color("3d8bff")
+@export var cat_akademis: Color = Color("268fff")
 ## Same as cat_akademis, for Olahraga.
-@export var cat_olahraga: Color = Color("e5484d")
+@export var cat_olahraga: Color = Color("ff263c")
 ## Same as cat_akademis, for SeniBudaya.
-@export var cat_senibudaya: Color = Color("7cb342")
+@export var cat_senibudaya: Color = Color("a3ff1a")
 ## Same as cat_akademis, for Istirahat (the rest-day category, also reused
 ## as the "Mood" accent on need bars that aren't schedule categories).
-@export var cat_istirahat: Color = Color("6b4fe0")
+@export var cat_istirahat: Color = Color("6640ff")
 ## Same as cat_akademis, for Libur (also reused as the "Energy" accent on
 ## need bars, matching Istirahat's dual role).
-@export var cat_libur: Color = Color("ffc93c")
+@export var cat_libur: Color = Color("ffd333")
 ## Wirausaha: the money-earning schedule activity. Teal keeps it clear of
 ## the five existing category hues.
-@export var cat_wirausaha: Color = Color("00a389")
+@export var cat_wirausaha: Color = Color("00e6b8")
 
 @export_group("Semantic States")
 ## Positive-outcome tint: SuccessButton, win badges, the specialty-match
@@ -233,8 +233,18 @@ static func load_default() -> DesignTokens:
 @export var day_bar_radius: int = 18
 ## Font size for the student's name on the card.
 @export var day_name_size: int = 40
-## Font size for the card's stat numbers.
-@export var day_stat_size: int = 38
+## Font size for the card's stat numbers ("+12/65", overlaid on the
+## stat track).
+@export var day_stat_size: int = 52
+## Font size for the energy/mood bar's tier word ("Lelah", "Senang").
+## Independent of day_stat_size on purpose: the two used to share one
+## token (day_stat_size - 4), which meant bumping the stat number for
+## the stat-row polish pass silently blew this one up too -- "Senang"
+## at that size measured ~235px against the ~175px of pill actually
+## free past the icon, and visibly overran the needs bar. Keep this
+## under ~32 unless EnergyBar/MoodBar's own width also grows -- see
+## test_needs_bar_word_fits_its_pill.
+@export var day_needs_label_size: int = 30
 
 
 ## Resolve a schedule category name to its accent color.

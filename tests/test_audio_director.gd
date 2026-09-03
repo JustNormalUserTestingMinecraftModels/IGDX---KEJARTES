@@ -189,7 +189,9 @@ func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
 	# quietly silent in game.
 	for id in ["tap", "confirm", "cancel", "success", "fail", "coin",
 			"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
-			"popup_close", "select", "error", "reward"]:
+			"popup_close", "select", "error", "reward",
+			"tally", "sparkle",
+			]:
 		assert_true(_director.has_sfx(StringName(id)),
 			"shipped scene must fill sfx slot: " + id)
 
@@ -530,3 +532,15 @@ func test_bgm_finished_signal_is_a_no_op_outside_playlist_mode() -> void:
 	_director._on_bgm_finished(_director._bgm_active)
 	assert_true(_director._bgm_active.stream == stream_before,
 		"finished on a non-playlist bgm must not change the stream")
+
+
+func test_the_end_of_grade_bgm_ids_all_resolve() -> void:
+	for id in [&"exam_notice", &"exam_cutscene", &"run_result"]:
+		assert_true(_director._resolve_bgm(id) != null,
+			"BGM id %s resolves to a stream" % id)
+
+
+func test_pill_and_pane_sfx_are_registered() -> void:
+	for id in [&"pill_tap", &"pill_popup_open", &"pill_popup_close", &"pane_swipe"]:
+		assert_true(AudioDirector.has_sfx(id),
+			"AudioDirector has no stream registered for %s" % id)

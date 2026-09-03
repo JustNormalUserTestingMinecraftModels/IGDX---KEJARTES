@@ -1065,3 +1065,376 @@ func test_popup_has_a_blurred_backdrop_behind_the_scrim() -> void:
 		"Backdrop must cover the screen without distorting")
 
 	inst.free()
+
+## The 2026-09-03 fix: the "+12/65" label reads on top of the track's
+## own right end, matching the reference mockup -- not in a separate
+## fixed-width column beside it (that first fix over-corrected the
+## original bug, where the label was offset -321/-121 and landed
+## straight over the Track; both were wrong in different directions).
+func test_stat_row_value_label_overlays_the_tracks_right_end() -> void:
+	var row_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn")
+	var row := row_scene.instantiate()
+	var value: Label = row.get_node("Value")
+	var track: ProgressBar = row.get_node("Track")
+
+	assert_eq(value.anchor_left, 0.0, "Value must stretch across the row, not a fixed right column")
+	assert_eq(value.anchor_right, 1.0, "Value must stretch across the row, not a fixed right column")
+	assert_eq(value.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT,
+		"the text must still read right-aligned inside that stretched box")
+	assert_eq(value.offset_right, -float(DaySummaryStatRow.VALUE_RIGHT_MARGIN),
+		"Value's right edge must sit VALUE_RIGHT_MARGIN off the row's own edge")
+	assert_eq(track.offset_right, -float(DaySummaryStatRow.TRACK_RIGHT_MARGIN),
+		"Track must run (almost) the full row width, not stop short for Value")
+
+	# Value must paint after Track in the tree, or the number would be
+	# hidden under the track's fill instead of reading on top of it.
+	assert_true(value.get_index() > track.get_index(),
+		"Value must be drawn after Track so the number reads on top")
+	row.free()
+
+
+## Three rows, one pitch. They were 97 / 100 apart, which reads as a
+## misaligned bottom row against the card art.
+func test_card_pitches_its_three_stat_rows_evenly() -> void:
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	var tops: Array[float] = []
+	for n in ["StatRow1", "StatRow2", "StatRow3"]:
+		var r: Control = card.get_node(n)
+		tops.append(r.offset_top)
+		assert_eq(r.offset_bottom - r.offset_top,
+			float(DaySummaryStatRow.ROW_HEIGHT),
+			"%s must be ROW_HEIGHT tall" % n)
+	assert_eq(tops[1] - tops[0], tops[2] - tops[1],
+		"the three stat rows must be evenly pitched")
+	card.free()
+
+
+## The bar shows a word, not a number: the precise value is already
+## carried by the bar's own fill, and the week's delta by DeltaLabel.
+func test_needs_bar_words_follow_the_spec_tiers() -> void:
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 0.0), "Lelah")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 33.0), "Lelah")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 34.0), "Cukup")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 66.0), "Cukup")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 67.0), "Bugar")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 100.0), "Bugar")
+	assert_eq(DaySummaryNeedsBar.word_for("mood", 10.0), "Sedih")
+	assert_eq(DaySummaryNeedsBar.word_for("mood", 50.0), "Biasa")
+	assert_eq(DaySummaryNeedsBar.word_for("mood", 90.0), "Senang")
+	# An unknown need must not fabricate a mood.
+	assert_eq(DaySummaryNeedsBar.word_for("stamina", 50.0), "")
+
+
+## The word's variation must survive the bake, or it renders as a bare
+## default Label -- dark, unrimmed, illegible on the bar's fill.
+func test_theme_bakes_the_needs_label_variation() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	assert_true(theme.has_font_size("font_size", "DaySummaryNeedsLabel"),
+		"DaySummaryNeedsLabel must bake a font size")
+	assert_true(theme.has_color("font_color", "DaySummaryNeedsLabel"),
+		"DaySummaryNeedsLabel must bake a font colour")
+
+
+## The 2026-09-03 clipping bug: DaySummaryNeedsLabel used to be derived
+## from DaySummaryStat's size ("day_stat_size - 4"), so a stat-row font
+## bump silently dragged the needs word up with it -- "Senang" at the
+## resulting size overran the pill by ~60px. day_needs_label_size is now
+## its own token; this pins the widest realistic word to actually fit
+## the room available inside the pill (EnergyBar's own width, minus the
+## icon and its padding -- not Word's authored box, which Label does not
+## clip against).
+func test_needs_bar_word_fits_its_pill() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var font: Font = theme.get_font("font", "DaySummaryNeedsLabel")
+	var size: int = theme.get_font_size("font_size", "DaySummaryNeedsLabel")
+	var outline: int = theme.get_constant("outline_size", "DaySummaryNeedsLabel")
+
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	var bar := card.get_node("EnergyBar") as Control
+	var word := card.get_node("EnergyBar/Word") as Control
+	var pill_width: float = bar.size.x
+	var word_left: float = word.position.x
+	card.free()
+
+	var widest := 0.0
+	for words in DaySummaryNeedsBar.TIER_WORDS.values():
+		for w in words:
+			var sz := font.get_string_size(String(w), HORIZONTAL_ALIGNMENT_LEFT, -1, size)
+			widest = maxf(widest, sz.x + float(outline) * 2.0)
+
+	assert_true(word_left + widest <= pill_width,
+		"the widest tier word (%.0fpx) must fit inside the pill (%.0fpx of room past the icon) -- day_needs_label_size is too big" %
+			[widest, pill_width - word_left])
+
+
+## One node per need, not two. The icon and word live INSIDE the bar --
+## a sibling chip beside it would duplicate the bar's own shape, which is
+## the redundancy this design rules out.
+func test_needs_bars_carry_their_icon_and_word_inside_themselves() -> void:
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	for n in ["EnergyBar", "MoodBar"]:
+		var bar := card.get_node_or_null(n) as DaySummaryNeedsBar
+		assert_true(bar != null, "%s must be a DaySummaryNeedsBar" % n)
+		assert_true(bar.get_node_or_null("Icon") != null,
+			"%s must own its Icon" % n)
+		assert_true(bar.get_node_or_null("Word") != null,
+			"%s must own its Word" % n)
+		assert_true(bar.get_node_or_null("DeltaLabel") != null,
+			"%s must keep its existing DeltaLabel" % n)
+	# No stacked second element per need.
+	assert_true(card.get_node_or_null("EnergyPill") == null,
+		"there must be no separate energy chip node")
+	assert_true(card.get_node_or_null("MoodPill") == null,
+		"there must be no separate mood chip node")
+	card.free()
+
+
+## Both entry points write the bars through set_need, so the fill and the
+## word can never disagree.
+func test_card_fills_its_needs_bars_on_both_paths() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	card.theme = theme
+	Engine.get_main_loop().root.add_child(card)
+
+	var student := StudentData.new()
+	student.student_name = "Shinta"
+	student.energy = 20.0
+	student.mood = 90.0
+
+	card.setup_row("Shinta", [], student)
+	assert_eq(card.energy_bar.value, 20.0)
+	assert_eq(card.energy_bar.get_node("Word").text, "Lelah")
+	assert_eq(card.mood_bar.get_node("Word").text, "Senang")
+	assert_true(card.energy_bar.get_node("Icon").texture != null,
+		"the energy bar must carry icon_energy")
+
+	card.setup_week_row(student)
+	assert_eq(card.energy_bar.get_node("Word").text, "Lelah",
+		"the weekly path must write the same word")
+	assert_eq(card.mood_bar.value, 90.0)
+
+	card.queue_free()
+
+
+## The particle art is a placeholder by contract: the visual team drops
+## real PNGs in at these exact names, so the names are load-bearing and
+## a rename must break the build here.
+func test_particle_sprites_exist_and_are_transparent() -> void:
+	var paths := [
+		"res://Assets/Images/Particles/particle_star.png",
+		"res://Assets/Images/Particles/particle_confetti.png",
+		"res://Assets/Images/Particles/particle_ring.png",
+	]
+	for p in paths:
+		assert_true(ResourceLoader.exists(p), "missing particle sprite: " + p)
+		var tex: Texture2D = load(p)
+		assert_true(tex != null, "must load as a texture: " + p)
+		var img := tex.get_image()
+		assert_true(img.detect_alpha() != Image.ALPHA_NONE,
+			"particle sprite must have a transparent background: " + p)
+
+
+
+## Both bursts must be one-shot and start idle: a looping emitter left
+## running under a card would never free and would leak per row, per day.
+func test_particle_scenes_are_one_shot_and_start_idle() -> void:
+	for path in [
+		"res://Scenes/SchoolSimulation/RewardBurst.tscn",
+		"res://Scenes/SchoolSimulation/CelebrationConfetti.tscn",
+	]:
+		var fx_scene: PackedScene = load(path)
+		var fx := fx_scene.instantiate() as GPUParticles2D
+		assert_true(fx != null, "must be a GPUParticles2D: " + path)
+		assert_true(fx.one_shot, "must be one_shot: " + path)
+		assert_true(not fx.emitting, "must start idle: " + path)
+		assert_true(fx.texture != null, "must carry a sprite: " + path)
+		assert_true(fx.process_material != null,
+			"must carry a ParticleProcessMaterial: " + path)
+		fx.free()
+
+
+## Read a .gd as text. Many tests here are source scans rather than
+## behavioural, because a lot of this UI cannot be driven headlessly.
+func _script_source(path: String) -> String:
+	var f := FileAccess.open(path, FileAccess.READ)
+	assert_true(f != null, "script must exist: " + path)
+	if f == null:
+		return ""
+	return f.get_as_text()
+
+
+## Only a real gain earns a burst. A flat or losing day must stay quiet,
+## or the reward stops meaning anything.
+func test_only_a_gaining_card_reports_ground_gained() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	card.theme = theme
+	Engine.get_main_loop().root.add_child(card)
+
+	var student := StudentData.new()
+	student.student_name = "Shinta"
+	student.target_akademis1 = 65.0
+	student.target_akademis2 = 65.0
+	student.target_akademis3 = 65.0
+	student.akademis = 30.0
+
+	card.setup_row("Shinta", [], student)
+	assert_true(not card.gained_ground(),
+		"a day with no changes must not celebrate")
+
+	card.setup_row("Shinta", [{"stat_key": "akademis", "delta": -4.0}], student)
+	assert_true(not card.gained_ground(),
+		"a losing day must not celebrate")
+
+	card.setup_row("Shinta", [{"stat_key": "akademis", "delta": 12.0}], student)
+	assert_true(card.gained_ground(),
+		"a gaining day must celebrate")
+
+	card.queue_free()
+
+
+## The burst rides the chevron: same condition, same beat.
+func test_stat_row_bursts_exactly_when_it_shows_a_chevron() -> void:
+	var src := _script_source(
+		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd")
+	assert_true(src.contains("BURST_SCENE"),
+		"the stat row must instance the authored burst scene")
+	assert_true(src.contains('play_sfx(&"tally")'),
+		"the chevron pop must play the tally cue")
+	assert_true(not src.contains("GPUParticles2D.new()"),
+		"particles must come from the .tscn, never be built at runtime")
+
+
+## The 2026-09-03 follow-up fix: the icon must not swallow so much of
+## the track that a normal (40-70%) stat reads as completely empty. The
+## icon's right edge is ICON_LEFT+ICON_BOX.x -- past that point, the
+## track's fill is finally visible past the icon's silhouette. Requiring
+## at least half the track to survive the icon keeps that margin honest
+## if either constant drifts again.
+func test_stat_row_icon_does_not_hide_most_of_the_track() -> void:
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	var row_width: float = (card.get_node("StatRow1") as Control).size.x
+	card.free()
+
+	var icon_right := DaySummaryStatRow.ICON_LEFT + DaySummaryStatRow.ICON_BOX.x
+	var track_width := row_width - float(DaySummaryStatRow.TRACK_RIGHT_MARGIN)
+	var visible_track := track_width - icon_right
+	assert_true(visible_track / track_width >= 0.5,
+		"the icon must not cover more than half the track's width -- " +
+		"a partly-full stat would otherwise show no visible fill at all")
+
+
+func test_stat_row_scene_matches_the_icon_geometry_consts() -> void:
+	var row_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn")
+	var row := row_scene.instantiate()
+	var icon: Control = row.get_node("Icon")
+	assert_eq(icon.offset_left, DaySummaryStatRow.ICON_LEFT,
+		"Icon.offset_left must match ICON_LEFT")
+	assert_eq(icon.offset_right - icon.offset_left, DaySummaryStatRow.ICON_BOX.x,
+		"Icon's width must match ICON_BOX.x")
+	row.free()
+
+
+
+## A drained week must LOOK drained. format_needs_delta already produced
+## "-12", but nothing coloured the label, so a loss rendered in the same
+## ink as a gain (2026-09-03 spec section 4.1).
+## Superseded by the 2026-09-03 interactivity pass (spec section 4):
+## _show_needs_delta no longer tints a visible number -- the number label
+## is permanently hidden and direction is conveyed by the DeltaChevron's
+## rotation (0deg up / 180deg down) instead. This test now checks that
+## replacement contract rather than the retired colour-tint one.
+func test_negative_needs_delta_points_the_chevron_down() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd")
+	assert_contains(src, "rotation_degrees = 180.0",
+		"_show_needs_delta must point a loss's chevron down")
+	assert_contains(src, "rotation_degrees = 0.0",
+		"and a gain's chevron up")
+	assert_false(src.contains("Color("),
+		"the chevron's state comes from rotation, never a Color literal")
+
+
+## The per-stat burst moves off the generic star onto the pass's own
+## sprites (2026-09-03 recap spec section 7).
+func test_reward_burst_uses_the_new_particle_sprites() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/RewardBurst.tscn")
+	assert_contains(src, "particle_spark.png",
+		"the glint replaces the generic star")
+	assert_contains(src, "particle_plus.png",
+		"and a + rides along with it")
+
+
+## The needs-bar delta is a directional arrow now, not a number that
+## collides with the tier word beside it (2026-09-03 interactivity spec,
+## section 4). DeltaLabel keeps carrying the text as data (existing
+## coverage of format_needs_delta stays meaningful) but is never
+## rendered; DeltaChevron is what the player actually sees.
+##
+## setup_week_row reads its delta from StudentData.get_energy_delta()/
+## get_mood_delta(), which are simply `energy - initial_energy` /
+## `mood - initial_mood` (StudentData.gd) -- so a test controls the
+## delta by setting `initial_energy`/`energy` (or the mood pair) apart,
+## not by passing a delta directly.
+func test_needs_delta_chevron_points_up_on_a_gain() -> void:
+	var row := _make_row()
+	var student := StudentData.new()
+	student.initial_energy = 40.0
+	student.energy = 48.0  # +8
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
+	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
+	assert_true(chevron.visible, "a gain shows the chevron")
+	assert_eq(chevron.rotation_degrees, 0.0, "a gain points up")
+	assert_false(row.energy_delta_label.visible,
+		"the number itself is never rendered")
+	row.queue_free()
+
+
+func test_needs_delta_chevron_points_down_on_a_loss() -> void:
+	var row := _make_row()
+	var student := StudentData.new()
+	student.initial_energy = 52.0
+	student.energy = 40.0  # -12
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
+	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
+	assert_true(chevron.visible, "a loss shows the chevron")
+	assert_eq(chevron.rotation_degrees, 180.0, "a loss points down")
+	row.queue_free()
+
+
+func test_needs_delta_chevron_hidden_at_exactly_zero() -> void:
+	var row := _make_row()
+	var student := StudentData.new()
+	student.initial_energy = 40.0
+	student.energy = 40.0  # +0
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
+	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
+	assert_false(chevron.visible, "no movement, no arrow")
+	row.queue_free()
+
+
+## Instantiates DaySummaryStudentRow.tscn, assigns the baked theme, and
+## adds it to the tree so its @onready fields resolve -- the same
+## pattern test_card_fills_its_needs_bars_on_both_paths already uses
+## earlier in this suite.
+func _make_row() -> DaySummaryStudentRow:
+	var theme: Theme = load(_THEME_PATH)
+	var row: DaySummaryStudentRow = load(
+		"res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn").instantiate()
+	row.theme = theme
+	Engine.get_main_loop().root.add_child(row)
+	return row

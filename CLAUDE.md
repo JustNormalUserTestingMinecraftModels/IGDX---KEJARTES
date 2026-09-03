@@ -21,9 +21,12 @@ every student's three academic targets before the grade's final week to pass.
 
 **Loop:** **MainMenu (boot)** → CutScene → StudentCard (approve roster) →
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay
-(simulate 5 days) → ResultCheckup → back to Lobby, or SemesterEnd on the final
-week. Splashscreen and Loading still exist and are still tested, but since
-2026-08-31 they are no longer reached at boot.
+(simulate 5 days) → ResultCheckup → back to Lobby. On the final week of a
+grade, SchoolDay instead runs the end-of-grade sequence: **TesNotice →
+CutScene (exam branch) → SemesterEnd (stat check) → WinScreen or the
+game-over cutscene → RunResult → MainMenu.** Splashscreen and Loading still
+exist and are still tested, but since 2026-08-31 they are no longer reached
+at boot.
 
 **Lobby hub buttons** → StudentCard, AturJadwal, Koperasi (shop), Inventory,
 ReportCard.
@@ -235,6 +238,24 @@ serve a **stale** autoload otherwise. Three tests once failed with
 committed on disk; one `filesystem_manage(op="scan")` turned the same run into
 20/20. Scan first, or you will debug a phantom.
 
+**A scan is not always enough.** When the `.gd` was edited from *outside*
+the editor — any plain file write, including one from a subagent — the
+editor can keep serving the old bytecode through a scan. On 2026-09-02 both
+`ThemeFactory.gd` and `StatBar.gd` did exactly that: their brand-new tests
+failed, and a new `@export` was invisible to `node_set_property`
+("Property 'pop_on_change' not found on StatBar"), all while the correct
+source sat on disk. A **no-op `script_patch` on that same file** forces the
+reload — add and remove a blank line. It logs a benign
+`GDScript reload failed with error code 43` and then works. Cheapest
+reliable fix: make edits through `script_patch` in the first place.
+
+There is no MCP entry point for an `EditorScript` such as
+`Scripts/Design/BakeTheme.gd`, so the theme rebake normally needs
+File > Run by hand. It can be driven headlessly instead by writing a
+transient `@tool` `McpTestSuite` into `res://tests/` whose single test does
+the `ThemeFactory.build()` + `ResourceSaver.save()`, running it with
+`test_run`, then deleting it.
+
 One smaller habit: grep before reading — the two largest scripts here
 exceed 1,500 lines, so read the range you need, not the file.
 
@@ -297,11 +318,71 @@ backdrop on DaySummary / ResultCheckup / AturJadwal, ReportCard/StudentCard
 render parity, AturJadwal's mockup top band with the stat pills lifted out of
 the splash button, and the intro cutscene's new dialogue panel.
 
+The 2026-09-02 AturJadwal polish pass is complete. Spec:
+`docs/superpowers/specs/2026-09-02-atur-jadwal-warning-and-statbar-polish.md`.
+It reframed the PERINGATAN dialog onto `penjadwalan_card_bg.png` as a
+nine-patch, and rebuilt how every `StatBar` in the game is coloured: the
+category colour is now baked into a per-category fill stylebox rather than
+applied with `self_modulate`, because `self_modulate` multiplies the whole
+node and made a bar at value 0 render as a solid capsule that looked 100%
+full. It also fixed `StatBar` building a second `ValueLabel` on top of the
+one authored in the scene — AturJadwal had five such bars, ReportCard about
+thirty. Read that spec's "Two hazards worth remembering" before touching
+`StatBar.gd`.
+
 **Deferred:** AturJadwal's shelf ships as two `ColorRect`s rather than the
 intended `ShelfEdge` theme variation — a new `@export` on `DesignTokens` is
 invisible to a running editor, so it needs a restart plus a manual rebake. See
 the STATUS block in `2026-09-01-atur-jadwal-mockup.md` for the exact diff to
 re-apply.
+
+The 2026-09-02 end-of-grade sequence is complete. Spec:
+`docs/superpowers/specs/2026-09-02-end-of-grade-sequence.md`; plan:
+`docs/superpowers/plans/2026-09-02-end-of-grade-sequence.md`. It added the
+Tes Besar notice, the cutscene's third (exam) branch, a per-grade `RunStats`
+tally on GameState (`RunStats.gd`), the `RunGrade` A+/…/C-/D scorer
+(`RunGrade.gd`), a cutscene-styled WinScreen, the `RunResultRow` template,
+and the RunResult report screen — which now owns grade progression, moved
+off SemesterEnd (`SemesterEnd.gd::_on_restart_pressed()` no longer advances
+the grade). SemesterEnd was also restyled: the flat near-black background is
+now the blurred-classroom backdrop, and its page dots are authored `.tscn`
+nodes (`PageDotLabel` theme variation) instead of runtime-built `Label`s.
+Report icons are real transparent SVG textures
+(`Assets/Images/UI/Placeholders/icon_*.svg`), never emoji glyphs — the
+project explicitly banned emoji as UI iconography during this pass.
+Placeholders still outstanding: every cutscene line in the exam and win
+branches is marked `[PLACEHOLDER]`, the exam/win backdrops reuse the intro's
+CG images, the three new BGM ids (`exam_notice`, `exam_cutscene`,
+`run_result`) alias existing tracks, and `RunGrade`'s scoring weights
+(especially `MONEY_FULL_MARKS`) are estimates pending a real-run balance
+pass. Built via subagent-driven-development with the Godot MCP bridge held
+by the controller session throughout (implementer subagents write
+scripts/tests/assets; the controller builds every `.tscn` and runs every
+`test_run`) — see that plan's SDD ledger
+(`.superpowers/sdd/2026-09-02-end-of-grade-sequence/progress.md`, deleted
+after merge) for the fix-loop history if anything here needs revisiting.
+
+The 2026-09-03 Daily Results polish pass is complete. Spec:
+`docs/superpowers/specs/2026-09-03-day-summary-polish-and-rewards.md`. It
+fixed the `DaySummaryStatRow` value-label overlap bug (a mis-anchored
+`Value` node printed "+12/65" over its own coloured track), re-pitched the
+card's three stat rows to an even 97 px, and gave the energy/mood bars an
+icon and an Indonesian tier word (`Lelah`/`Cukup`/`Bugar`,
+`Sedih`/`Biasa`/`Senang`) carried *inside* the existing `EnergyBar`/
+`MoodBar` nodes (`DaySummaryNeedsBar.gd`) rather than a redundant sibling
+chip — the spec's own §3.2 was revised mid-brainstorm once that
+duplication was caught. It also added reward particles: a per-stat-row
+star burst (`RewardBurst.tscn`) fired off a gaining chevron, and a
+screen-wide confetti fall (`CelebrationConfetti.tscn`) on `ResultCheckup`,
+both gated on `DaySummaryStudentRow.gained_ground()` so a flat or losing
+day/week stays quiet. Two new `AudioDirector` cues, `tally` and `sparkle`,
+alias existing SFX files as placeholders. Same build discipline as the
+2026-09-02 pass — see that entry below for the controller/subagent MCP
+split, which this pass also used throughout
+(`.superpowers/sdd/2026-09-03-day-summary-polish-and-rewards/progress.md`,
+deleted after merge). Placeholders outstanding: the three particle sprites
+(`Assets/Images/Particles/particle_*.png`, crude flat geometry) and the
+two aliased SFX streams.
 
 `-REFERENCE-/prototype/` is the original prototype, kept for reference only —
 not built, not imported. `koprasi&inventory` was a second programmer's separate

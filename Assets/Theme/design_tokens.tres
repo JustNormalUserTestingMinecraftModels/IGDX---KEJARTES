@@ -1,13 +1,9 @@
-[gd_resource type="Resource" script_class="DesignTokens" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="DesignTokens" format=3 uid="uid://qots65a6imkb"]
 
-[ext_resource type="Script" path="res://Scripts/Design/DesignTokens.gd" id="1_tokens"]
-[ext_resource type="FontFile" path="res://Assets/Fonts/Milker.otf" id="2_milker"]
+[ext_resource type="Script" uid="uid://bqhmvq1ap6336" path="res://Scripts/Design/DesignTokens.gd" id="1_tokens"]
+[ext_resource type="FontFile" uid="uid://cy4h6en00otj5" path="res://Assets/Fonts/Milker.otf" id="2_milker"]
 
 [resource]
 script = ExtResource("1_tokens")
 font_display = ExtResource("2_milker")
 font_body = ExtResource("2_milker")
-preview_row_fill = Color(0.40392157, 0.40392157, 0.40392157, 1)
-preview_row_border = Color(0.23921569, 0.1254902, 0.28235295, 1)
-preview_pill_fill = Color(0.21176471, 0.21176471, 0.21176471, 1)
-text_outline_size = 12

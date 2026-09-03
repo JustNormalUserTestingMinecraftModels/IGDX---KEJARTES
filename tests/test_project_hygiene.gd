@@ -101,3 +101,28 @@ func test_the_boot_scene_is_the_main_menu() -> void:
 		"run/main_scene")
 	assert_true(ResourceLoader.exists(main_scene),
 		"the boot scene must actually exist")
+
+
+func test_the_run_result_icons_all_exist_and_load_as_textures() -> void:
+	var icons := [
+		"icon_minigame_menang", "icon_minigame_kalah", "icon_poin",
+		"icon_barang", "icon_uang", "icon_event",
+	]
+	for icon_name in icons:
+		var path := "res://Assets/Images/UI/Placeholders/%s.svg" % icon_name
+		assert_true(ResourceLoader.exists(path), "%s exists" % icon_name)
+		assert_true(load(path) is Texture2D, "%s loads as a Texture2D" % icon_name)
+
+
+func test_the_run_result_icons_are_transparent_backed() -> void:
+	# A background rect covering the whole viewBox would defeat the point --
+	# these sit on the Card surface and must not paint their own plate.
+	var icons := [
+		"icon_minigame_menang", "icon_minigame_kalah", "icon_poin",
+		"icon_barang", "icon_uang", "icon_event",
+	]
+	for icon_name in icons:
+		var src := FileAccess.get_file_as_string(
+			"res://Assets/Images/UI/Placeholders/%s.svg" % icon_name)
+		assert_false(src.contains('x="0" y="0" width="100" height="100"'),
+			"%s has no full-bleed background rect" % icon_name)

@@ -30,10 +30,20 @@ const GAIN_STEP := 0.08
 
 @onready var avatar: DaySummaryAvatar = $Avatar
 @onready var name_label: Label = $NameLabel
-@onready var energy_bar: ProgressBar = $EnergyBar
-@onready var mood_bar: ProgressBar = $MoodBar
+## The two needs bars now carry their own icon and tier word inside
+## themselves (2026-09-03 spec section 3.2), so they are typed as
+## DaySummaryNeedsBar rather than plain ProgressBar. Everything else about
+## them -- geometry, fill, variation -- is unchanged.
+@onready var energy_bar: DaySummaryNeedsBar = $EnergyBar
+@onready var mood_bar: DaySummaryNeedsBar = $MoodBar
 @onready var energy_delta_label: Label = $EnergyBar/DeltaLabel
 @onready var mood_delta_label: Label = $MoodBar/DeltaLabel
+## The directional arrow replacing the needs-bar delta NUMBER (2026-09-03
+## interactivity spec, section 4) -- energy_delta_label/mood_delta_label
+## still carry the formatted text as data for format_needs_delta's own
+## test coverage, but are never shown; these chevrons are what renders.
+@onready var energy_delta_chevron: TextureRect = $EnergyBar/DeltaChevron
+@onready var mood_delta_chevron: TextureRect = $MoodBar/DeltaChevron
 @onready var stat_rows: Array[DaySummaryStatRow] = [
 	$StatRow1, $StatRow2, $StatRow3,
 ]
@@ -50,6 +60,11 @@ var _mood_from: float = 0.0
 ## stay 0.0 there.
 var _energy_delta: float = 0.0
 var _mood_delta: float = 0.0
+
+## Whether any of the three skills moved UP on the day (or week) this
+## card is currently showing. Written by _write_stat_rows, read by
+## gained_ground() -- the screens use it to decide whether to celebrate.
+var _gained_ground: bool = false
 
 
 ## "+8" / "-12" -- the week's movement on a needs bar. Same sign rule as
@@ -70,13 +85,15 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 	# them when the popup's name lookup misses would paint a confident,
 	# fabricated reading, so an unknown student empties both bars --
 	# matching the avatar, which already clears its texture on null.
-	energy_bar.value = student.energy if student != null else 0.0
-	mood_bar.value = student.mood if student != null else 0.0
+	energy_bar.set_need("energy", student.energy if student != null else 0.0)
+	mood_bar.set_need("mood", student.mood if student != null else 0.0)
 	# The needs numbers belong to ResultCheckup's weekly card; the mockup
 	# has none. Hidden explicitly rather than relying on the scene's
 	# default, so a card re-armed from the weekly path is still correct.
 	energy_delta_label.hide()
 	mood_delta_label.hide()
+	energy_delta_chevron.hide()
+	mood_delta_chevron.hide()
 
 	var needs_deltas := _sum_needs_deltas(changes)
 	_energy_from = clampf(energy_bar.value - needs_deltas.get("energy", 0.0), 0.0, 100.0)
@@ -117,6 +134,7 @@ func _sum_needs_deltas(changes: Array) -> Dictionary:
 ## the akademis2/3 naming trap below is the last thing that should be
 ## written down twice.
 func _write_stat_rows(deltas: Dictionary, student: StudentData) -> void:
+	_gained_ground = false
 	for i in STAT_ORDER.size():
 		var key: String = STAT_ORDER[i]
 		var target := 0.0
@@ -128,6 +146,15 @@ func _write_stat_rows(deltas: Dictionary, student: StudentData) -> void:
 			# the TARGET field names that carry the akademis2/3 naming trap.
 			current = float(student.get(key))
 		stat_rows[i].set_stat(key, deltas.get(key, 0.0), target, current)
+		if float(deltas.get(key, 0.0)) > 0.0:
+			_gained_ground = true
+
+
+## True when at least one skill gained on the day (or week) this card is
+## showing. The screens gate their celebration on it -- a flat or losing
+## card stays quiet, so the reward keeps meaning something.
+func gained_ground() -> bool:
+	return _gained_ground
 
 
 ## The same card, one week wide: ResultCheckup's end-of-week report.
@@ -147,8 +174,8 @@ func setup_week_row(student: StudentData) -> void:
 	avatar.set_student(student)
 
 	if student == null:
-		energy_bar.value = 0.0
-		mood_bar.value = 0.0
+		energy_bar.set_need("energy", 0.0)
+		mood_bar.set_need("mood", 0.0)
 		_energy_from = 0.0
 		_mood_from = 0.0
 		_energy_delta = 0.0
@@ -160,8 +187,8 @@ func setup_week_row(student: StudentData) -> void:
 
 	var energy_delta := student.get_energy_delta()
 	var mood_delta := student.get_mood_delta()
-	energy_bar.value = student.energy
-	mood_bar.value = student.mood
+	energy_bar.set_need("energy", student.energy)
+	mood_bar.set_need("mood", student.mood)
 	# StudentData clamps its needs as it applies them, so on a week that
 	# hit the 0 or 100 ceiling this opening value overshoots the true
 	# Monday reading slightly and the bar travels a touch further than it
@@ -171,8 +198,8 @@ func setup_week_row(student: StudentData) -> void:
 	_mood_from = clampf(student.mood - mood_delta, 0.0, 100.0)
 	_energy_delta = energy_delta
 	_mood_delta = mood_delta
-	_show_needs_delta(energy_delta_label, energy_delta)
-	_show_needs_delta(mood_delta_label, mood_delta)
+	_show_needs_delta(energy_delta_label, energy_delta_chevron, energy_delta)
+	_show_needs_delta(mood_delta_label, mood_delta_chevron, mood_delta)
 
 	_write_stat_rows({
 		"akademis": student.get_akademis_delta(),
@@ -181,9 +208,24 @@ func setup_week_row(student: StudentData) -> void:
 	}, student)
 
 
-func _show_needs_delta(label: Label, delta: float) -> void:
+## Point one needs-bar's directional chevron by its delta's sign, and
+## keep writing the label's TEXT (never its visibility) so
+## format_needs_delta's own coverage stays meaningful. A gain points the
+## chevron up (rotation 0), a loss points it down (rotation 180, the
+## same up-arrow asset DaySummaryStatRow's own chevron uses, reused
+## rather than drawn twice), and exactly zero shows neither -- matching
+## this card's "no news, no icon" rule everywhere else.
+func _show_needs_delta(label: Label, chevron: TextureRect, delta: float) -> void:
 	label.text = format_needs_delta(delta)
-	label.show()
+	label.visible = false
+	if delta > 0.0:
+		chevron.rotation_degrees = 0.0
+		chevron.visible = true
+	elif delta < 0.0:
+		chevron.rotation_degrees = 180.0
+		chevron.visible = true
+	else:
+		chevron.visible = false
 
 
 ## Replay every stat track's growth for today (or this week), one row
@@ -197,8 +239,16 @@ func _show_needs_delta(label: Label, delta: float) -> void:
 ## correct, static card. Call setup_row or setup_week_row first -- this
 ## reads the two openings they cached, which otherwise default to 0.
 func play_gain(delay: float = 0.0) -> void:
+	# Only the first burst of the card's gesture carries the sparkle cue:
+	# three gaining rows 80 ms apart would otherwise fire it three times.
+	# Every gaining row still plays its own tally tick -- that part is not
+	# deduplicated.
+	var sparkle_spent := false
 	for i in stat_rows.size():
-		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP)
+		var wants_sparkle := not sparkle_spent and stat_rows[i].chevron.visible
+		if wants_sparkle:
+			sparkle_spent = true
+		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP, wants_sparkle)
 	_play_needs_travel(energy_bar, _energy_from, delay)
 	_play_needs_travel(mood_bar, _mood_from, delay)
 	if energy_delta_label.visible:

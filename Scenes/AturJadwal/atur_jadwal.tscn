@@ -3,10 +3,9 @@
 [ext_resource type="Script" uid="uid://cbxv7sbybkdh2" path="res://Scripts/AturJadwal/atur_jadwal.gd" id="1_atur"]
 [ext_resource type="Texture2D" uid="uid://bmxugmsumo04o" path="res://Assets/Images/UI/whiteboard.png" id="2_0xkhc"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://dbkqgaqqwkp57" path="res://Assets/Images/UI/stickynotes.png" id="3_03syl"]
-[ext_resource type="Texture2D" uid="uid://cqc6snupncqgd" path="res://Assets/Images/UI/pngwing.com (2).png" id="3_a6kja"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="4_f4ced"]
 [ext_resource type="Texture2D" uid="uid://dd3bvl367ysl3" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
+[ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
 [ext_resource type="Texture2D" uid="uid://cixngx8hgvgmn" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
 [ext_resource type="Texture2D" uid="uid://fuwhxl8ethbp" path="res://Assets/Images/Shop/return.png" id="10_return"]
 [ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="11_left_arrow"]
@@ -66,115 +65,45 @@ mouse_filter = 2
 texture = ExtResource("2_0xkhc")
 expand_mode = 1
 
-[node name="Senin" type="TextureButton" parent="BGHari" unique_id=1415431668]
-modulate = Color(0.5529412, 0.45490196, 1, 1)
+[node name="Senin" parent="BGHari" unique_id=2030438336 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 71.0
-offset_top = 998.0
-offset_right = 342.41193
-offset_bottom = 1265.0
-texture_normal = ExtResource("3_03syl")
-ignore_texture_size = true
-stretch_mode = 0
+offset_left = 50.0
+offset_top = 1000.0
+offset_right = 321.41193
+offset_bottom = 1267.0
+pivot_offset = Vector2(135.70596, 133.5)
 
-[node name="Label" type="Label" parent="BGHari/Senin" unique_id=1796288667]
-modulate = Color(0, 0, 0, 1)
+[node name="Selasa" parent="BGHari" unique_id=1474646409 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 52.0
-offset_top = 84.0
-offset_right = 210.0
-offset_bottom = 157.0
-rotation = -0.07252685
-theme_type_variation = &"H2Label"
-text = "SENIN"
+offset_left = 396.0
+offset_top = 1206.0
+offset_right = 667.4119
+offset_bottom = 1473.0
+pivot_offset = Vector2(135.70596, 133.5)
 
-[node name="Selasa" type="TextureButton" parent="BGHari" unique_id=535725292]
-modulate = Color(0.5529412, 0.45490196, 1, 1)
+[node name="Rabu" parent="BGHari" unique_id=369629270 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 415.0
-offset_top = 1112.0
-offset_right = 686.4119
-offset_bottom = 1379.0
-texture_normal = ExtResource("3_03syl")
-ignore_texture_size = true
-stretch_mode = 0
+offset_left = 710.0
+offset_top = 1017.0
+offset_right = 981.41187
+offset_bottom = 1284.0
+pivot_offset = Vector2(135.70593, 133.5)
 
-[node name="Label2" type="Label" parent="BGHari/Selasa" unique_id=29474531]
-modulate = Color(0, 0, 0, 1)
+[node name="Kamis" parent="BGHari" unique_id=684348886 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 43.0
-offset_top = 98.0
-offset_right = 230.0
-offset_bottom = 171.0
-rotation = -0.06269499
-theme_type_variation = &"H2Label"
-text = "SELASA"
+offset_left = 55.0
+offset_top = 1414.0
+offset_right = 326.41193
+offset_bottom = 1681.0
+pivot_offset = Vector2(135.70596, 133.5)
 
-[node name="Rabu" type="TextureButton" parent="BGHari" unique_id=457597561]
-modulate = Color(0.5529412, 0.45490196, 1, 1)
+[node name="Jumat" parent="BGHari" unique_id=152305377 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 744.0
-offset_top = 998.0
-offset_right = 1015.41187
-offset_bottom = 1265.0
-texture_normal = ExtResource("3_03syl")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="Label3" type="Label" parent="BGHari/Rabu" unique_id=1418706346]
-modulate = Color(0, 0, 0, 1)
-layout_mode = 0
-offset_left = 61.0
-offset_top = 89.0
-offset_right = 208.0
-offset_bottom = 162.0
-rotation = -0.06734161
-theme_type_variation = &"H2Label"
-text = "RABU"
-
-[node name="Kamis" type="TextureButton" parent="BGHari" unique_id=1778930438]
-modulate = Color(0.5529412, 0.45490196, 1, 1)
-layout_mode = 0
-offset_left = 227.0
-offset_top = 1381.0
-offset_right = 498.41193
-offset_bottom = 1648.0
-texture_normal = ExtResource("3_03syl")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="Label4" type="Label" parent="BGHari/Kamis" unique_id=1454647313]
-modulate = Color(0, 0, 0, 1)
-layout_mode = 0
-offset_left = 49.0
-offset_top = 92.0
-offset_right = 217.0
-offset_bottom = 165.0
-rotation = -0.05381885
-theme_type_variation = &"H2Label"
-text = "KAMIS"
-
-[node name="Jumat" type="TextureButton" parent="BGHari" unique_id=69651586]
-modulate = Color(0.5529412, 0.45490196, 1, 1)
-layout_mode = 0
-offset_left = 574.0
-offset_top = 1386.0
-offset_right = 845.41187
-offset_bottom = 1653.0
-texture_normal = ExtResource("3_03syl")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="Label5" type="Label" parent="BGHari/Jumat" unique_id=1063994326]
-modulate = Color(0, 0, 0, 1)
-layout_mode = 0
-offset_left = 48.0
-offset_top = 91.0
-offset_right = 227.0
-offset_bottom = 164.0
-rotation = -0.06346294
-theme_type_variation = &"H2Label"
-text = "JUMAT"
+offset_left = 731.0
+offset_top = 1426.0
+offset_right = 1002.41187
+offset_bottom = 1693.0
+pivot_offset = Vector2(135.70593, 133.5)
 
 [node name="ShelfFace" type="ColorRect" parent="." unique_id=540110925]
 layout_mode = 0
@@ -202,40 +131,40 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Akademis1" type="ProgressBar" parent="BGStat" unique_id=1583002621]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
-offset_left = 649.0
-offset_top = 129.0
-offset_right = 973.0
-offset_bottom = 199.0
+offset_left = 680.0
+offset_top = 112.0
+offset_right = 1004.0
+offset_bottom = 182.0
 theme_type_variation = &"StatBar"
 show_percentage = false
 script = ExtResource("statbar")
 show_value_label = true
 value_format = "%d%%"
+pop_on_change = true
 
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis1" unique_id=684455384]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"BarLabel"
 text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="BGStat" unique_id=1719266399]
-self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
-offset_left = 649.0
-offset_top = 255.0
-offset_right = 973.0
-offset_bottom = 325.0
+offset_left = 680.0
+offset_top = 238.0
+offset_right = 1004.0
+offset_bottom = 308.0
 theme_type_variation = &"StatBar"
 show_percentage = false
 script = ExtResource("statbar")
 category = "SeniBudaya"
 show_value_label = true
 value_format = "%d%%"
+pop_on_change = true
 
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis2" unique_id=1676429292]
 layout_mode = 1
@@ -244,70 +173,70 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"BarLabel"
 text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="BGStat" unique_id=648612192]
-self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
-offset_left = 649.0
-offset_top = 381.0
-offset_right = 973.0
-offset_bottom = 451.0
+offset_left = 680.0
+offset_top = 364.0
+offset_right = 1004.0
+offset_bottom = 434.0
 theme_type_variation = &"StatBar"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Olahraga"
 show_value_label = true
 value_format = "%d%%"
+pop_on_change = true
 
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis3" unique_id=1385557803]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"BarLabel"
 text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Kepribadian1" type="ProgressBar" parent="BGStat" unique_id=1214081682]
-self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
-offset_left = 649.0
-offset_top = 633.0
-offset_right = 973.0
-offset_bottom = 703.0
+offset_left = 680.0
+offset_top = 616.0
+offset_right = 1004.0
+offset_bottom = 686.0
 theme_type_variation = &"StatBar"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Istirahat"
 show_value_label = true
 value_format = "%d%%"
+pop_on_change = true
 
 [node name="ValueLabel" type="Label" parent="BGStat/Kepribadian1" unique_id=1157659437]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"BarLabel"
 text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="BGStat" unique_id=1170685406]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
-offset_left = 649.0
-offset_top = 507.0
-offset_right = 973.0
-offset_bottom = 577.0
+offset_left = 680.0
+offset_top = 490.0
+offset_right = 1004.0
+offset_bottom = 560.0
 theme_type_variation = &"StatBar"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Libur"
 show_value_label = true
 value_format = "%d%%"
+pop_on_change = true
 
 [node name="ValueLabel" type="Label" parent="BGStat/Kepribadian2" unique_id=2145646865]
 layout_mode = 1
@@ -316,17 +245,17 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"BarLabel"
 text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="IconAkademis1" type="TextureRect" parent="BGStat" unique_id=151779984]
 layout_mode = 0
-offset_left = 523.0
-offset_top = 120.0
-offset_right = 611.0
-offset_bottom = 208.0
+offset_left = 554.0
+offset_top = 103.0
+offset_right = 642.0
+offset_bottom = 191.0
 mouse_filter = 2
 texture = ExtResource("13_icon_akademis")
 expand_mode = 1
@@ -334,10 +263,10 @@ stretch_mode = 5
 
 [node name="IconAkademis2" type="TextureRect" parent="BGStat" unique_id=1792061513]
 layout_mode = 0
-offset_left = 523.0
-offset_top = 246.0
-offset_right = 611.0
-offset_bottom = 334.0
+offset_left = 554.0
+offset_top = 229.0
+offset_right = 642.0
+offset_bottom = 317.0
 mouse_filter = 2
 texture = ExtResource("14_icon_seni")
 expand_mode = 1
@@ -345,10 +274,10 @@ stretch_mode = 5
 
 [node name="IconAkademis3" type="TextureRect" parent="BGStat" unique_id=679578632]
 layout_mode = 0
-offset_left = 523.0
-offset_top = 372.0
-offset_right = 611.0
-offset_bottom = 460.0
+offset_left = 554.0
+offset_top = 355.0
+offset_right = 642.0
+offset_bottom = 443.0
 mouse_filter = 2
 texture = ExtResource("15_icon_olahraga")
 expand_mode = 1
@@ -356,10 +285,10 @@ stretch_mode = 5
 
 [node name="IconKepribadian2" type="TextureRect" parent="BGStat" unique_id=1377394430]
 layout_mode = 0
-offset_left = 523.0
-offset_top = 498.0
-offset_right = 611.0
-offset_bottom = 586.0
+offset_left = 554.0
+offset_top = 481.0
+offset_right = 642.0
+offset_bottom = 569.0
 mouse_filter = 2
 texture = ExtResource("16_icon_energy")
 expand_mode = 1
@@ -367,10 +296,10 @@ stretch_mode = 5
 
 [node name="IconKepribadian1" type="TextureRect" parent="BGStat" unique_id=1498132207]
 layout_mode = 0
-offset_left = 523.0
-offset_top = 624.0
-offset_right = 611.0
-offset_bottom = 712.0
+offset_left = 554.0
+offset_top = 607.0
+offset_right = 642.0
+offset_bottom = 695.0
 mouse_filter = 2
 texture = ExtResource("17_icon_mood")
 expand_mode = 1
@@ -462,22 +391,26 @@ offset_bottom = -776.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TextureRect" type="TextureRect" parent="Peringatan" unique_id=900608003]
+[node name="TextureRect" type="NinePatchRect" parent="Peringatan" unique_id=49961884]
 layout_mode = 0
 offset_left = -4.0
 offset_top = -8.0
 offset_right = 736.0
 offset_bottom = 420.0
-texture = ExtResource("3_a6kja")
-expand_mode = 1
+texture = ExtResource("9_cardbg")
+region_rect = Rect2(211, 34, 658, 1013)
+patch_margin_left = 32
+patch_margin_top = 32
+patch_margin_right = 32
+patch_margin_bottom = 32
 
 [node name="Label" type="Label" parent="Peringatan/TextureRect" unique_id=1041364249]
 layout_mode = 0
 offset_left = 28.0
 offset_top = 37.0
 offset_right = 710.0
-offset_bottom = 400.0
-theme_type_variation = &"BarLabel"
+offset_bottom = 268.0
+theme_type_variation = &"TitleLabel"
 text = "PERINGATAN
 
 Terdapat murid yang masih

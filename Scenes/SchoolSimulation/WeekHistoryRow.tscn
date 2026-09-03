@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://nb2qunnb3b44"]
+
+[ext_resource type="Script" path="res://Scripts/SchoolSimulation/WeekHistoryRow.gd" id="1_85ux1"]
+[ext_resource type="Texture2D" uid="uid://bg1retxhhcvhi" path="res://Assets/Images/UI/Placeholders/icon_minigame_menang.svg" id="2_nyglq"]
+[ext_resource type="Texture2D" uid="uid://dhj3feltff0b0" path="res://Assets/Images/UI/Placeholders/icon_minigame_kalah.svg" id="3_qmp57"]
+[ext_resource type="Texture2D" uid="uid://yfyflcrgpn6o" path="res://Assets/Images/UI/Placeholders/icon_event.svg" id="4_pat4i"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryBadge.tscn" id="5_okxpj"]
+
+[node name="WeekHistoryRow" type="PanelContainer" unique_id=1791349445]
+size_flags_horizontal = 3
+theme_type_variation = &"SunkenPanel"
+script = ExtResource("1_85ux1")
+icon_won = ExtResource("2_nyglq")
+icon_lost = ExtResource("3_qmp57")
+icon_event = ExtResource("4_pat4i")
+
+[node name="Body" type="HBoxContainer" parent="." unique_id=1894918875]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Icon" type="TextureRect" parent="Body" unique_id=953184773]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Lines" type="VBoxContainer" parent="Body" unique_id=318020363]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Breadcrumb" type="Label" parent="Body/Lines" unique_id=1946858762]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+
+[node name="TitleRow" type="HBoxContainer" parent="Body/Lines" unique_id=1960450885]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Body/Lines/TitleRow" unique_id=617185844]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+autowrap_mode = 2
+
+[node name="Badge" parent="Body/Lines/TitleRow" unique_id=1903848411 instance=ExtResource("5_okxpj")]
+layout_mode = 2
+
+[node name="DetailLabel" type="Label" parent="Body/Lines" unique_id=540007980]
+layout_mode = 2
+theme_type_variation = &"MicroLabel"
+autowrap_mode = 2

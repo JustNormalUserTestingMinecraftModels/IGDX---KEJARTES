@@ -47,7 +47,7 @@ interactive and fixes the two visual defects.
 - `signal pill_tapped` — carries no payload; the pill doesn't know its own
   semantic key (`uang`/`poin`/`menang`/`event`), only `WeekRecapBanner`
   does, from the order it built the pills in.
-- SFX: `AudioDirector.play_sfx(&"tap")` fires on a successful tap, in
+- SFX: `AudioDirector.play_sfx(&"pill_tap")` fires on a successful tap, in
   `WeekRecapBanner`'s handler (see 3.3), not inside the pill — a tap that
   gets cancelled (drag-off) makes no sound.
 
@@ -76,7 +76,8 @@ New: `Scenes/UI/WeekRecapPillInfoPopup.tscn` +
 `Scripts/UI/WeekRecapPillInfoPopup.gd`, structurally a smaller sibling of
 `Scenes/UI/StatDetailPopup.tscn` — same shell (`CanvasLayer` → `Scrim`
 `ColorRect` → `Card` `PanelContainer`), same tap-anywhere-on-scrim-to-close
-behavior, same `popup_open`/`popup_close` SFX pair, same
+behavior, its own `pill_popup_open`/`pill_popup_close` SFX pair (see §8 —
+dedicated ids, not `StatDetailPopup`'s shared ones), same
 `scrim_fade_in_seconds`/`close_slide_seconds`/`scrim_fade_out_seconds`
 export shape — but no `StatBar`, no numeric value line: just an icon, a
 title, and one sentence of body text, because a pill has no 0–100 value to
@@ -181,11 +182,11 @@ animation. This pass replaces that with a chained slide+fade:
   `dur_fast` — chained to start right after the outgoing tween finishes,
   not in parallel with it (so the two panes never visually overlap
   mid-transition, since they occupy the same rect).
-- SFX: `AudioDirector.play_sfx(&"swipe")` fires once, at the start of the
-  transition — already documented as "paging through report_card/
-  student_card," the same gesture. Replaces nothing; `show_pane` currently
-  plays no SFX on its own (the `select` cue lives elsewhere in the
-  function, on the tab tap itself, and is unchanged).
+- SFX: `AudioDirector.play_sfx(&"pane_swipe")` fires once, at the start of
+  the transition — a dedicated id/file copied from `swipe.ogg` (see §8),
+  not the shared `swipe` cue itself. Replaces nothing; `show_pane`
+  currently plays no SFX on its own (the `select` cue lives elsewhere in
+  the function, on the tab tap itself, and is unchanged).
 - The already-existing scroll-offset save/restore (§3.1 of the week-recap
   spec) and the `_history_animated` latch are unaffected — they still fire
   at the same points relative to the pane swap, just with the swap itself
@@ -217,22 +218,37 @@ transparent gradient:
 
 ## 8. Audio
 
-No new `AudioDirector` ids. Every new interaction reuses an existing,
-already-documented cue:
-
-| Interaction | Cue | Existing doc |
-|---|---|---|
-| Tapping a pill | `tap` | "generic button/tile taps across most screens" |
-| Pill info popup opens | `popup_open` | same cue `StatDetailPopup` uses |
-| Pill info popup closes | `popup_close` | same |
-| SISWA↔RIWAYAT pane switch | `swipe` | "paging through report_card/student_card" |
-| Idle pill bounce | *(none)* | deliberately silent — see §3.2 |
-
 Fetching a new third-party SFX pack was raised and declined: downloading
 files from an external, untrusted source is out of scope for an agent
-session regardless of convenience. If the project wants a distinct pill-tap
-sound later, a human adds the file to `Assets/Audio/SFX/` and a new
-`AudioDirector` id gets registered against it — no blocker to this pass.
+session regardless of convenience. Instead, each new interaction gets its
+**own** `AudioDirector` id and its **own** audio file — a byte-identical
+copy of an existing cue under a new filename, not a second id pointing at
+the same file. This is a step beyond the project's existing alias pattern
+(`sfx_tally`/`sfx_sparkle`, which point a new export directly at an
+existing file with no copy) — copying the file means these four new cues
+can each be swapped for a genuinely distinct sound later without touching
+whatever else in the project still uses the original cue:
+
+| New id | New file (copy of) | Interaction |
+|---|---|---|
+| `pill_tap` | `pill_tap.ogg` (copy of `tap.ogg`) | Tapping a pill |
+| `pill_popup_open` | `pill_popup_open.ogg` (copy of `popup_open.ogg`) | Pill info popup opens |
+| `pill_popup_close` | `pill_popup_close.ogg` (copy of `popup_close.ogg`) | Pill info popup closes |
+| `pane_swipe` | `pane_swipe.ogg` (copy of `swipe.ogg`) | SISWA↔RIWAYAT pane switch |
+
+`AudioDirector.gd` gains four new `@export var sfx_<id>: AudioStream`
+fields (each `preload()`-defaulted to its new file, matching the
+`sfx_tally`/`sfx_sparkle` export style) and four new `&"<id>": return
+sfx_<id>` branches in `play_sfx`'s lookup, each with a `##` doc line above
+its export naming which screen/interaction it belongs to — same
+documentation convention as every existing entry in that file.
+
+The idle pill bounce (§3.2) stays deliberately silent — no id, no file, no
+change from the design already agreed. If the project wants a genuinely
+different *sound*, not just a different *file*, for any of the four above,
+a human drops a real recording into `Assets/Audio/SFX/` under the same
+filename and nothing else in the codebase needs to change — the id and the
+call sites are already correct.
 
 ## 9. Testing
 

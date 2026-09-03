@@ -1,13 +1,13 @@
-[gd_scene format=3 uid="uid://cbe0d3egr9a11" load_steps=7]
+[gd_scene format=3 uid="uid://cbe0d3egsaa11"]
 
-[ext_resource type="Script" path="res://Scripts/EndGame/SemesterEnd.gd" id="1_end"]
+[ext_resource type="Script" uid="uid://6uwkcmljp45o" path="res://Scripts/EndGame/SemesterEnd.gd" id="1_end"]
 [ext_resource type="Texture2D" uid="uid://dlyxcrhuswotn" path="res://Assets/Images/UI/paper.png" id="2_paper"]
 [ext_resource type="Texture2D" uid="uid://b0ah0m8tx4h7q" path="res://Assets/Images/UI/Placeholders/icon_akademis.svg" id="3_icon_akademis"]
 [ext_resource type="Texture2D" uid="uid://cxym6c466l7q8" path="res://Assets/Images/UI/Placeholders/icon_seni.svg" id="4_icon_seni"]
 [ext_resource type="Texture2D" uid="uid://cj4co2v2kmqrg" path="res://Assets/Images/UI/Placeholders/icon_olahraga.svg" id="5_icon_olahraga"]
 [ext_resource type="PackedScene" uid="uid://c8ap5tqsmyihj" path="res://Scenes/EndGame/ResultStatRow.tscn" id="6_resultrow"]
 
-[node name="SemesterEnd" type="Control"]
+[node name="SemesterEnd" type="Control" unique_id=371679711]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,7 +16,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_end")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1820183745]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -25,7 +25,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.04, 0.05, 0.08, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1759566178]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,30 +33,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1760412054]
 layout_mode = 2
 
-[node name="HeaderContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="HeaderContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=977370680]
 layout_mode = 2
 
-[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderContainer"]
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderContainer" unique_id=162416211]
 layout_mode = 2
 theme_type_variation = &"ResultHeroLabel"
 text = "Title text placeholder"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderContainer"]
+[node name="SubtitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderContainer" unique_id=622613459]
 layout_mode = 2
 theme_type_variation = &"ResultBodyLabel"
 text = "Subtitle text placeholder"
 horizontal_alignment = 1
 
-[node name="CardContainer" type="Control" parent="MarginContainer/VBoxContainer"]
+[node name="CardContainer" type="Control" parent="MarginContainer/VBoxContainer" unique_id=1472930935]
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 1
 
-[node name="Murid1" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer"]
+[node name="Murid1" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer" unique_id=1585766233]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -72,7 +72,7 @@ grow_vertical = 2
 texture = ExtResource("2_paper")
 expand_mode = 1
 
-[node name="CardButton" type="Button" parent="MarginContainer/VBoxContainer/CardContainer/Murid1"]
+[node name="CardButton" type="Button" parent="MarginContainer/VBoxContainer/CardContainer/Murid1" unique_id=1324351782]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 15
@@ -81,7 +81,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Nama" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1"]
+[node name="Nama" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1" unique_id=1948325786]
 layout_mode = 0
 offset_left = 50.0
 offset_top = 45.0
@@ -92,10 +92,11 @@ text = "Nama Murid"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Portrait" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid1"]
+[node name="Portrait" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid1" unique_id=1145171283]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
+anchor_right = 0.5
 offset_left = -230.0
 offset_top = 150.0
 offset_right = 230.0
@@ -104,7 +105,7 @@ grow_horizontal = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Stamp" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1"]
+[node name="Stamp" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid1" unique_id=478777492]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 170.0
@@ -116,32 +117,30 @@ text = "LULUS!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StatsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid1"]
+[node name="StatsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid1" unique_id=960294000]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 640.0
 offset_right = 880.0
 offset_bottom = 1150.0
 
-[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" unique_id=890533429 instance=ExtResource("6_resultrow")]
 layout_mode = 2
-category = "Akademis"
 icon = ExtResource("3_icon_akademis")
-label_text = "Akademis"
 
-[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" unique_id=626918033 instance=ExtResource("6_resultrow")]
 layout_mode = 2
 category = "SeniBudaya"
 icon = ExtResource("4_icon_seni")
 label_text = "Seni Budaya"
 
-[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid1/StatsContainer" unique_id=1268970264 instance=ExtResource("6_resultrow")]
 layout_mode = 2
 category = "Olahraga"
 icon = ExtResource("5_icon_olahraga")
 label_text = "Olahraga"
 
-[node name="Murid2" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer"]
+[node name="Murid2" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer" unique_id=77032600]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -158,7 +157,7 @@ grow_vertical = 2
 texture = ExtResource("2_paper")
 expand_mode = 1
 
-[node name="CardButton" type="Button" parent="MarginContainer/VBoxContainer/CardContainer/Murid2"]
+[node name="CardButton" type="Button" parent="MarginContainer/VBoxContainer/CardContainer/Murid2" unique_id=1143286559]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 15
@@ -167,7 +166,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Nama" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2"]
+[node name="Nama" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2" unique_id=96147163]
 layout_mode = 0
 offset_left = 50.0
 offset_top = 45.0
@@ -178,10 +177,11 @@ text = "Nama Murid"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Portrait" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid2"]
+[node name="Portrait" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid2" unique_id=1974539261]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
+anchor_right = 0.5
 offset_left = -230.0
 offset_top = 150.0
 offset_right = 230.0
@@ -190,7 +190,7 @@ grow_horizontal = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Stamp" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2"]
+[node name="Stamp" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid2" unique_id=239791562]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 170.0
@@ -202,32 +202,30 @@ text = "LULUS!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StatsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid2"]
+[node name="StatsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid2" unique_id=221236743]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 640.0
 offset_right = 880.0
 offset_bottom = 1150.0
 
-[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" unique_id=1267814695 instance=ExtResource("6_resultrow")]
 layout_mode = 2
-category = "Akademis"
 icon = ExtResource("3_icon_akademis")
-label_text = "Akademis"
 
-[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" unique_id=258603207 instance=ExtResource("6_resultrow")]
 layout_mode = 2
 category = "SeniBudaya"
 icon = ExtResource("4_icon_seni")
 label_text = "Seni Budaya"
 
-[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid2/StatsContainer" unique_id=1389219704 instance=ExtResource("6_resultrow")]
 layout_mode = 2
 category = "Olahraga"
 icon = ExtResource("5_icon_olahraga")
 label_text = "Olahraga"
 
-[node name="Murid3" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer"]
+[node name="Murid3" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer" unique_id=177483222]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -244,7 +242,7 @@ grow_vertical = 2
 texture = ExtResource("2_paper")
 expand_mode = 1
 
-[node name="CardButton" type="Button" parent="MarginContainer/VBoxContainer/CardContainer/Murid3"]
+[node name="CardButton" type="Button" parent="MarginContainer/VBoxContainer/CardContainer/Murid3" unique_id=813636243]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 15
@@ -253,7 +251,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Nama" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3"]
+[node name="Nama" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3" unique_id=311367946]
 layout_mode = 0
 offset_left = 50.0
 offset_top = 45.0
@@ -264,10 +262,11 @@ text = "Nama Murid"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Portrait" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid3"]
+[node name="Portrait" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid3" unique_id=1671557516]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
+anchor_right = 0.5
 offset_left = -230.0
 offset_top = 150.0
 offset_right = 230.0
@@ -276,7 +275,7 @@ grow_horizontal = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Stamp" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3"]
+[node name="Stamp" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid3" unique_id=794143474]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 170.0
@@ -288,32 +287,30 @@ text = "LULUS!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StatsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid3"]
+[node name="StatsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid3" unique_id=2065413815]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 640.0
 offset_right = 880.0
 offset_bottom = 1150.0
 
-[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" unique_id=295432761 instance=ExtResource("6_resultrow")]
 layout_mode = 2
-category = "Akademis"
 icon = ExtResource("3_icon_akademis")
-label_text = "Akademis"
 
-[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" unique_id=1228384700 instance=ExtResource("6_resultrow")]
 layout_mode = 2
 category = "SeniBudaya"
 icon = ExtResource("4_icon_seni")
 label_text = "Seni Budaya"
 
-[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid3/StatsContainer" unique_id=987981105 instance=ExtResource("6_resultrow")]
 layout_mode = 2
 category = "Olahraga"
 icon = ExtResource("5_icon_olahraga")
 label_text = "Olahraga"
 
-[node name="Murid4" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer"]
+[node name="Murid4" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer" unique_id=1537936305]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -330,7 +327,7 @@ grow_vertical = 2
 texture = ExtResource("2_paper")
 expand_mode = 1
 
-[node name="CardButton" type="Button" parent="MarginContainer/VBoxContainer/CardContainer/Murid4"]
+[node name="CardButton" type="Button" parent="MarginContainer/VBoxContainer/CardContainer/Murid4" unique_id=1801616803]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 15
@@ -339,7 +336,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Nama" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4"]
+[node name="Nama" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4" unique_id=450620246]
 layout_mode = 0
 offset_left = 50.0
 offset_top = 45.0
@@ -350,10 +347,11 @@ text = "Nama Murid"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Portrait" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid4"]
+[node name="Portrait" type="TextureRect" parent="MarginContainer/VBoxContainer/CardContainer/Murid4" unique_id=195591020]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
+anchor_right = 0.5
 offset_left = -230.0
 offset_top = 150.0
 offset_right = 230.0
@@ -362,7 +360,7 @@ grow_horizontal = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Stamp" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4"]
+[node name="Stamp" type="Label" parent="MarginContainer/VBoxContainer/CardContainer/Murid4" unique_id=155828576]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 170.0
@@ -374,78 +372,76 @@ text = "LULUS!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StatsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid4"]
+[node name="StatsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardContainer/Murid4" unique_id=1200639839]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 640.0
 offset_right = 880.0
 offset_bottom = 1150.0
 
-[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Akademis" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" unique_id=1080641984 instance=ExtResource("6_resultrow")]
 layout_mode = 2
-category = "Akademis"
 icon = ExtResource("3_icon_akademis")
-label_text = "Akademis"
 
-[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Seni" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" unique_id=953630856 instance=ExtResource("6_resultrow")]
 layout_mode = 2
 category = "SeniBudaya"
 icon = ExtResource("4_icon_seni")
 label_text = "Seni Budaya"
 
-[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" instance=ExtResource("6_resultrow")]
+[node name="Olahraga" parent="MarginContainer/VBoxContainer/CardContainer/Murid4/StatsContainer" unique_id=1416146825 instance=ExtResource("6_resultrow")]
 layout_mode = 2
 category = "Olahraga"
 icon = ExtResource("5_icon_olahraga")
 label_text = "Olahraga"
 
-[node name="PageIndicator" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
+[node name="PageIndicator" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1867120483]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 alignment = 1
 
-[node name="NarrativeContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="NarrativeContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=857844006]
 layout_mode = 2
 
-[node name="CongratsTitle" type="Label" parent="MarginContainer/VBoxContainer/NarrativeContainer"]
+[node name="CongratsTitle" type="Label" parent="MarginContainer/VBoxContainer/NarrativeContainer" unique_id=719176979]
 layout_mode = 2
 theme_type_variation = &"H2Label"
 text = "Congrats Title text placeholder"
 horizontal_alignment = 1
 
-[node name="CongratsText" type="Label" parent="MarginContainer/VBoxContainer/NarrativeContainer"]
+[node name="CongratsText" type="Label" parent="MarginContainer/VBoxContainer/NarrativeContainer" unique_id=1193860420]
 layout_mode = 2
 theme_type_variation = &"ResultBodyLabel"
 text = "Congrats text body placeholder"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="TeacherContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="TeacherContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1620127005]
 layout_mode = 2
 
-[node name="TeacherTitleLabel" type="Label" parent="MarginContainer/VBoxContainer/TeacherContainer"]
+[node name="TeacherTitleLabel" type="Label" parent="MarginContainer/VBoxContainer/TeacherContainer" unique_id=1951706800]
 layout_mode = 2
 theme_type_variation = &"ResultHeroLabel"
 text = "Gelar Gurumu: Guru Teladan Utama"
 horizontal_alignment = 1
 
-[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=2126487681]
 layout_mode = 2
 alignment = 1
 
-[node name="BtnRestart" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
+[node name="BtnRestart" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer" unique_id=997781066]
 custom_minimum_size = Vector2(300, 96)
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
 text = "Mulai Baru"
 
-[node name="BtnMainMenu" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
+[node name="BtnMainMenu" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer" unique_id=1631677850]
 custom_minimum_size = Vector2(300, 96)
 layout_mode = 2
 theme_type_variation = &"SecondaryButton"
 text = "Menu Utama"
 
-[node name="LeftArrow" type="Button" parent="."]
+[node name="LeftArrow" type="Button" parent="." unique_id=897948417]
 layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5
@@ -458,10 +454,12 @@ grow_vertical = 2
 theme_type_variation = &"SecondaryButton"
 text = "<"
 
-[node name="RightArrow" type="Button" parent="."]
+[node name="RightArrow" type="Button" parent="." unique_id=970538456]
 layout_mode = 1
 anchors_preset = 6
+anchor_left = 1.0
 anchor_top = 0.5
+anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -90.0
 offset_top = -180.0

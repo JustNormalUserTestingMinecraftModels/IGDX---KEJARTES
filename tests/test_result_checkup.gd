@@ -388,7 +388,7 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 	inst.initialize_checkup(manager)
 
 	var container := inst.get_node(
-		"Margin/VBox/ScrollContainer/MainContent/StudentsContainer")
+		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
 	assert_eq(container.get_child_count(), manager.students.size(),
 		"one card per student in the roster")
 	var first = container.get_child(0)
@@ -462,8 +462,11 @@ func test_the_checkup_keeps_its_history_and_its_close_button() -> void:
 	inst.initialize_checkup(manager)
 
 	var history := inst.get_node(
-		"Margin/VBox/ScrollContainer/MainContent/HistoryList")
-	assert_eq(history.get_child_count(), 1,
+		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane")
+	# HistoryPane always keeps its EmptyLabel child (visibility toggles,
+	# it is never freed), so the row count is the pane's children minus
+	# that one authored label.
+	assert_eq(history.get_child_count() - 1, 1,
 		"the week's minigame log must still be built")
 	assert_not_null(inst.get_node_or_null("Margin/VBox/BtnClose"),
 		"the close button must survive the card swap")
@@ -715,3 +718,103 @@ func test_scene_carries_no_emoji_and_no_dead_section_headers() -> void:
 		"the emoji section headers are replaced by the tab labels")
 	assert_false(src.contains("HistoryHeader"),
 		"both of them")
+
+
+func test_script_no_longer_builds_history_rows_at_runtime() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	assert_false(src.contains("_create_history_item"),
+		"the runtime row builder is replaced by WeekHistoryRow.tscn")
+	assert_false(src.contains("PanelContainer.new()"),
+		"no PanelContainer is constructed at runtime")
+	assert_false(src.contains("Label.new()"),
+		"nor the empty-state Label")
+
+
+func test_script_drops_the_dead_section_header_exports() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	for dead in ["students_section_header_text",
+			"history_section_header_text",
+			"students_header_icon_texture",
+			"history_header_icon_texture",
+			"StudentsSectionHeader", "HistorySectionHeader"]:
+		assert_false(src.contains(dead),
+			"%s never rendered -- it is removed, not repaired" % dead)
+
+
+func test_script_carries_no_emoji() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	for glyph in ["📊", "📝", "📢"]:
+		assert_false(src.contains(glyph), "emoji are banned")
+
+
+func test_default_tab_is_siswa() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	_add_themed(screen)
+	assert_true(screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane").visible,
+		"the screen opens on the students pane")
+	assert_false(screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane").visible,
+		"the history pane starts hidden")
+	screen.queue_free()
+
+
+func test_switching_tabs_swaps_pane_visibility_without_freeing() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	_add_themed(screen)
+	var students: Node = screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
+	var history: Node = screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane")
+	screen.show_pane(1)
+	assert_false(students.visible, "students pane hides")
+	assert_true(history.visible, "history pane shows")
+	assert_true(is_instance_valid(students),
+		"panes are hidden, never freed")
+	screen.show_pane(0)
+	assert_true(students.visible, "and it comes back")
+	screen.queue_free()
+
+
+func test_each_pane_keeps_its_own_scroll_offset() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	_add_themed(screen)
+	var scroll: ScrollContainer = screen.get_node(
+		"Margin/VBox/ScrollContainer")
+	# ScrollContainer.scroll_vertical clamps synchronously against its
+	# scrollbar's max_value, computed from child content size. Nothing
+	# was added via initialize_checkup, so the panes are empty and the
+	# scrollable range is 0 -- without this, "400" would clamp straight
+	# back to 0 before show_pane ever runs, and the test would pass
+	# trivially without exercising the offset-memory logic at all.
+	scroll.get_v_scroll_bar().max_value = 1000
+	scroll.scroll_vertical = 400
+	screen.show_pane(1)
+	assert_eq(scroll.scroll_vertical, 0,
+		"the history pane opens at its own top")
+	screen.show_pane(0)
+	assert_eq(scroll.scroll_vertical, 400,
+		"returning to SISWA restores where you were reading")
+	screen.queue_free()
+
+
+func test_history_pane_animation_latch_fires_only_once() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	_add_themed(screen)
+	screen.show_pane(1)
+	assert_true(screen._history_animated,
+		"the first open latches the animation")
+	screen.show_pane(0)
+	screen.show_pane(1)
+	assert_true(screen._history_animated,
+		"and it stays latched, so audio never re-fires")
+	screen.queue_free()
+
+
+## Adds a screen to the tree with the baked theme assigned. ThemeDB's
+## project-theme fallback does not populate under the editor's own root,
+## so the theme is set explicitly -- the same pattern the suite's other
+## in-tree tests use.
+func _add_themed(screen: Control) -> void:
+	screen.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(screen)

@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_frxit"]
 [ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_ouvge"]
 [ext_resource type="PackedScene" uid="uid://df8hmrsqlb12n" path="res://Scenes/SchoolSimulation/WeekRecapBanner.tscn" id="4_5y4mq"]
+[ext_resource type="PackedScene" uid="uid://nb2qunnb3b44" path="res://Scenes/SchoolSimulation/WeekHistoryRow.tscn" id="4_qpkja"]
 [ext_resource type="PackedScene" uid="uid://q8q7bf0kakwd" path="res://Scenes/SchoolSimulation/CelebrationConfetti.tscn" id="4_yy1v4"]
 
 [node name="ResultCheckup" type="Control" unique_id=1540732834]
@@ -16,6 +17,7 @@ grow_vertical = 2
 script = ExtResource("1_checkup")
 background_texture = ExtResource("2_frxit")
 student_card_scene = ExtResource("2_ouvge")
+history_row_scene = ExtResource("4_qpkja")
 
 [node name="Background" type="Panel" parent="." unique_id=384830439]
 layout_mode = 1

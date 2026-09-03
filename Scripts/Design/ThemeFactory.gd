@@ -22,6 +22,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_progress(theme, tokens)
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
+	_build_week_recap(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -746,3 +747,65 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.day_glyph_outline)
 	if tokens.font_display != null:
 		theme.set_font("font", "DaySummaryNeedsLabel", tokens.font_display)
+
+
+# ------------------------------------------------------------ week recap
+
+static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
+	# The banner is a raised card that must not read as another student
+	# card, so it takes the card surface with the brand's own edge.
+	theme.add_type("RecapBannerPanel")
+	theme.set_type_variation("RecapBannerPanel", "Panel")
+	var recap_banner := StyleBoxFlat.new()
+	recap_banner.bg_color = tokens.surface_card
+	recap_banner.set_corner_radius_all(tokens.radius_md)
+	recap_banner.border_color = tokens.brand_primary
+	recap_banner.set_border_width_all(int(tokens.outline_width) / 2)
+	recap_banner.content_margin_left = tokens.space_md
+	recap_banner.content_margin_right = tokens.space_md
+	recap_banner.content_margin_top = tokens.space_sm
+	recap_banner.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "RecapBannerPanel", recap_banner)
+
+	# A pill is a sunken capsule -- the counter-form to the banner it sits
+	# inside.
+	theme.add_type("RecapPillPanel")
+	theme.set_type_variation("RecapPillPanel", "Panel")
+	var recap_pill := StyleBoxFlat.new()
+	recap_pill.bg_color = tokens.surface_sunken
+	recap_pill.set_corner_radius_all(tokens.radius_pill)
+	recap_pill.content_margin_left = tokens.space_sm
+	recap_pill.content_margin_right = tokens.space_sm
+	recap_pill.content_margin_top = tokens.space_xs
+	recap_pill.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "RecapPillPanel", recap_pill)
+
+	# The pill's number. Tinted per-pill via self_modulate, so the
+	# variation itself stays neutral.
+	theme.add_type("RecapPillValueLabel")
+	theme.set_type_variation("RecapPillValueLabel", "Label")
+	theme.set_font_size("font_size", "RecapPillValueLabel", tokens.font_h2)
+	theme.set_color("font_color", "RecapPillValueLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
+
+	# The tab. A real pressed state is what makes the active tab legible
+	# without any manual tint at the call site.
+	theme.add_type("WeekTabButton")
+	theme.set_type_variation("WeekTabButton", "Button")
+	var tab_normal := StyleBoxFlat.new()
+	tab_normal.bg_color = tokens.surface_sunken
+	tab_normal.corner_radius_top_left = tokens.radius_md
+	tab_normal.corner_radius_top_right = tokens.radius_md
+	tab_normal.content_margin_top = tokens.space_sm
+	tab_normal.content_margin_bottom = tokens.space_sm
+	var tab_pressed := tab_normal.duplicate() as StyleBoxFlat
+	tab_pressed.bg_color = tokens.brand_primary
+	theme.set_stylebox("normal", "WeekTabButton", tab_normal)
+	theme.set_stylebox("hover", "WeekTabButton", tab_normal)
+	theme.set_stylebox("pressed", "WeekTabButton", tab_pressed)
+	theme.set_stylebox("focus", "WeekTabButton", tab_normal)
+	theme.set_color("font_color", "WeekTabButton", tokens.text_secondary)
+	theme.set_color("font_pressed_color", "WeekTabButton", tokens.text_on_brand)
+	theme.set_color("font_hover_color", "WeekTabButton", tokens.text_primary)
+	theme.set_font_size("font_size", "WeekTabButton", tokens.font_title)

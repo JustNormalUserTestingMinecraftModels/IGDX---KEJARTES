@@ -514,3 +514,17 @@ func test_checkup_scene_carries_an_idle_confetti_node() -> void:
 	assert_true(not fx.emitting, "the confetti must start idle")
 	assert_true(fx.one_shot, "the confetti must be one_shot")
 	inst.free()
+
+
+## The four variations the recap banner and tab bar need. Without these
+## the screen would have to reach for theme_override_*, which the project
+## forbids (2026-09-03 spec section 8).
+func test_theme_carries_the_recap_variations() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	assert_not_null(theme, "the baked theme loads")
+	for variation in ["RecapBannerPanel", "RecapPillPanel",
+			"RecapPillValueLabel", "WeekTabButton"]:
+		assert_true(theme.has_stylebox("panel", variation)
+				or theme.has_stylebox("normal", variation)
+				or theme.has_font_size("font_size", variation),
+			"%s is baked into the theme" % variation)

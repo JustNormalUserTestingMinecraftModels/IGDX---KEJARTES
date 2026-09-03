@@ -1136,6 +1136,39 @@ func test_theme_bakes_the_needs_label_variation() -> void:
 		"DaySummaryNeedsLabel must bake a font colour")
 
 
+## The 2026-09-03 clipping bug: DaySummaryNeedsLabel used to be derived
+## from DaySummaryStat's size ("day_stat_size - 4"), so a stat-row font
+## bump silently dragged the needs word up with it -- "Senang" at the
+## resulting size overran the pill by ~60px. day_needs_label_size is now
+## its own token; this pins the widest realistic word to actually fit
+## the room available inside the pill (EnergyBar's own width, minus the
+## icon and its padding -- not Word's authored box, which Label does not
+## clip against).
+func test_needs_bar_word_fits_its_pill() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var font: Font = theme.get_font("font", "DaySummaryNeedsLabel")
+	var size: int = theme.get_font_size("font_size", "DaySummaryNeedsLabel")
+	var outline: int = theme.get_constant("outline_size", "DaySummaryNeedsLabel")
+
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	var bar := card.get_node("EnergyBar") as Control
+	var word := card.get_node("EnergyBar/Word") as Control
+	var pill_width: float = bar.size.x
+	var word_left: float = word.position.x
+	card.free()
+
+	var widest := 0.0
+	for words in DaySummaryNeedsBar.TIER_WORDS.values():
+		for w in words:
+			var sz := font.get_string_size(String(w), HORIZONTAL_ALIGNMENT_LEFT, -1, size)
+			widest = maxf(widest, sz.x + float(outline) * 2.0)
+
+	assert_true(word_left + widest <= pill_width,
+		"the widest tier word (%.0fpx) must fit inside the pill (%.0fpx of room past the icon) -- day_needs_label_size is too big" %
+			[widest, pill_width - word_left])
+
+
 ## One node per need, not two. The icon and word live INSIDE the bar --
 ## a sibling chip beside it would duplicate the bar's own shape, which is
 ## the redundancy this design rules out.

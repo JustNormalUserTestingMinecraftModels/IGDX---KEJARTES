@@ -233,8 +233,18 @@ static func load_default() -> DesignTokens:
 @export var day_bar_radius: int = 18
 ## Font size for the student's name on the card.
 @export var day_name_size: int = 40
-## Font size for the card's stat numbers.
+## Font size for the card's stat numbers ("+12/65", overlaid on the
+## stat track).
 @export var day_stat_size: int = 52
+## Font size for the energy/mood bar's tier word ("Lelah", "Senang").
+## Independent of day_stat_size on purpose: the two used to share one
+## token (day_stat_size - 4), which meant bumping the stat number for
+## the stat-row polish pass silently blew this one up too -- "Senang"
+## at that size measured ~235px against the ~175px of pill actually
+## free past the icon, and visibly overran the needs bar. Keep this
+## under ~32 unless EnergyBar/MoodBar's own width also grows -- see
+## test_needs_bar_word_fits_its_pill.
+@export var day_needs_label_size: int = 30
 
 
 ## Resolve a schedule category name to its accent color.

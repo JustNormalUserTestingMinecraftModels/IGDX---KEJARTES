@@ -729,15 +729,16 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 
 	# The 2026-09-03 needs word, which sits ON the energy/mood bar rather
 	# than in a chip of its own -- so there is no new stylebox here, only
-	# type. Same white-on-dark-rim inversion the rest of this card uses,
-	# one step down from DaySummaryStat so a long word fits inside the bar.
-	# Built only from tokens that already exist: a NEW DesignTokens
-	# @export is invisible to a running editor and would make this bake
-	# need a restart.
+	# type. Same white-on-dark-rim inversion the rest of this card uses.
+	# Sized from its OWN token (day_needs_label_size), not derived from
+	# DaySummaryStat's -- the two used to share one via "day_stat_size - 4"
+	# and a stat-row font bump silently overran the needs bar's pill when
+	# that dragged the needs word up with it. See day_needs_label_size's
+	# own doc comment for the measured numbers.
 	theme.add_type("DaySummaryNeedsLabel")
 	theme.set_type_variation("DaySummaryNeedsLabel", "Label")
 	theme.set_font_size("font_size", "DaySummaryNeedsLabel",
-		tokens.day_stat_size - 4)
+		tokens.day_needs_label_size)
 	theme.set_color("font_color", "DaySummaryNeedsLabel", Color.WHITE)
 	theme.set_constant("outline_size", "DaySummaryNeedsLabel",
 		maxi(2, tokens.text_outline_size / 2))

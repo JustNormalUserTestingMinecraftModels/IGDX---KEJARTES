@@ -55,6 +55,11 @@ var _mood_from: float = 0.0
 var _energy_delta: float = 0.0
 var _mood_delta: float = 0.0
 
+## Whether any of the three skills moved UP on the day (or week) this
+## card is currently showing. Written by _write_stat_rows, read by
+## gained_ground() -- the screens use it to decide whether to celebrate.
+var _gained_ground: bool = false
+
 
 ## "+8" / "-12" -- the week's movement on a needs bar. Same sign rule as
 ## DaySummaryStatRow.format_value: the "+" is explicit and the "-" comes
@@ -121,6 +126,7 @@ func _sum_needs_deltas(changes: Array) -> Dictionary:
 ## the akademis2/3 naming trap below is the last thing that should be
 ## written down twice.
 func _write_stat_rows(deltas: Dictionary, student: StudentData) -> void:
+	_gained_ground = false
 	for i in STAT_ORDER.size():
 		var key: String = STAT_ORDER[i]
 		var target := 0.0
@@ -132,6 +138,15 @@ func _write_stat_rows(deltas: Dictionary, student: StudentData) -> void:
 			# the TARGET field names that carry the akademis2/3 naming trap.
 			current = float(student.get(key))
 		stat_rows[i].set_stat(key, deltas.get(key, 0.0), target, current)
+		if float(deltas.get(key, 0.0)) > 0.0:
+			_gained_ground = true
+
+
+## True when at least one skill gained on the day (or week) this card is
+## showing. The screens gate their celebration on it -- a flat or losing
+## card stays quiet, so the reward keeps meaning something.
+func gained_ground() -> bool:
+	return _gained_ground
 
 
 ## The same card, one week wide: ResultCheckup's end-of-week report.
@@ -201,8 +216,14 @@ func _show_needs_delta(label: Label, delta: float) -> void:
 ## correct, static card. Call setup_row or setup_week_row first -- this
 ## reads the two openings they cached, which otherwise default to 0.
 func play_gain(delay: float = 0.0) -> void:
+	# Only the first burst of the card's gesture carries the sparkle cue:
+	# three gaining rows 80 ms apart would otherwise fire it three times.
+	var sfx_spent := false
 	for i in stat_rows.size():
-		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP)
+		var wants_sfx := not sfx_spent and stat_rows[i].chevron.visible
+		if wants_sfx:
+			sfx_spent = true
+		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP, wants_sfx)
 	_play_needs_travel(energy_bar, _energy_from, delay)
 	_play_needs_travel(mood_bar, _mood_from, delay)
 	if energy_delta_label.visible:

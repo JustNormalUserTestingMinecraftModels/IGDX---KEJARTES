@@ -1213,3 +1213,57 @@ func test_particle_scenes_are_one_shot_and_start_idle() -> void:
 		assert_true(fx.process_material != null,
 			"must carry a ParticleProcessMaterial: " + path)
 		fx.free()
+
+
+## Read a .gd as text. Many tests here are source scans rather than
+## behavioural, because a lot of this UI cannot be driven headlessly.
+func _script_source(path: String) -> String:
+	var f := FileAccess.open(path, FileAccess.READ)
+	assert_true(f != null, "script must exist: " + path)
+	if f == null:
+		return ""
+	return f.get_as_text()
+
+
+## Only a real gain earns a burst. A flat or losing day must stay quiet,
+## or the reward stops meaning anything.
+func test_only_a_gaining_card_reports_ground_gained() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	card.theme = theme
+	Engine.get_main_loop().root.add_child(card)
+
+	var student := StudentData.new()
+	student.student_name = "Shinta"
+	student.target_akademis1 = 65.0
+	student.target_akademis2 = 65.0
+	student.target_akademis3 = 65.0
+	student.akademis = 30.0
+
+	card.setup_row("Shinta", [], student)
+	assert_true(not card.gained_ground(),
+		"a day with no changes must not celebrate")
+
+	card.setup_row("Shinta", [{"stat_key": "akademis", "delta": -4.0}], student)
+	assert_true(not card.gained_ground(),
+		"a losing day must not celebrate")
+
+	card.setup_row("Shinta", [{"stat_key": "akademis", "delta": 12.0}], student)
+	assert_true(card.gained_ground(),
+		"a gaining day must celebrate")
+
+	card.queue_free()
+
+
+## The burst rides the chevron: same condition, same beat.
+func test_stat_row_bursts_exactly_when_it_shows_a_chevron() -> void:
+	var src := _script_source(
+		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd")
+	assert_true(src.contains("BURST_SCENE"),
+		"the stat row must instance the authored burst scene")
+	assert_true(src.contains('play_sfx(&"tally")'),
+		"the chevron pop must play the tally cue")
+	assert_true(not src.contains("GPUParticles2D.new()"),
+		"particles must come from the .tscn, never be built at runtime")
+

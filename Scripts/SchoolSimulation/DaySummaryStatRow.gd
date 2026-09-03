@@ -22,6 +22,10 @@ const CHEVRON_BOX := Vector2(40, 58)
 const CHEVRON_LEFT := 67
 const VALUE_WIDTH := 200
 
+## The authored one-shot burst thrown at a row that gained. Instanced,
+## never built -- see the project's "no visual is built at runtime" rule.
+const BURST_SCENE := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
+
 const ICON_FOR := {
 	"akademis": "res://Assets/Images/DaySummary/icon_akademis.png",
 	"seni_budaya": "res://Assets/Images/DaySummary/icon_seni.png",
@@ -129,18 +133,40 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 
 ## Replay today's movement: rewind the track to where it stood this
 ## morning and grow it back to where set_stat already left it, popping
-## the chevron in over the same beat. `delay` holds the whole gesture so
-## a card can stagger its three rows.
+## the chevron in over the same beat and -- on a day that actually
+## gained -- throwing a star burst from the chevron. `delay` holds the
+## whole gesture so a card can stagger its three rows.
+##
+## `with_burst` lets the card suppress the sound on the second and later
+## bursts of one gesture, so three gaining rows do not fire three sparkle
+## cues 80 ms apart; see DaySummaryStudentRow.play_gain.
 ##
 ## Never awaited and never required -- set_stat has already written the
 ## final value, so a caller that skips this sees a correct, static card.
 ##
 ## Call set_stat first: this reads the two ends it cached, which default
 ## to 0.0 and would otherwise empty the track.
-func play_gain(delay: float = 0.0) -> void:
+func play_gain(delay: float = 0.0, with_burst: bool = true) -> void:
 	track.value = _fill_from
 	Juice.fill_bar(track, _fill_to, -1.0, delay)
 	if chevron.visible:
 		Juice.pop_in(chevron, delay)
+		_play_burst(delay, with_burst)
 	Juice.count_up_formatted(value, 0.0, _delta,
 		func(v: float) -> String: return format_value(v, _target), delay)
+
+
+## The gain's reward: a star burst centred on the chevron, plus the tally
+## tick on the same beat. Editor-gated -- the test runner builds these
+## rows to inspect them, not to watch them.
+func _play_burst(delay: float, plays_sfx: bool) -> void:
+	if Engine.is_editor_hint():
+		return
+	var burst_scene: PackedScene = load(BURST_SCENE)
+	var fx := burst_scene.instantiate() as RewardParticles
+	fx.plays_sfx = plays_sfx
+	fx.position = chevron.position + chevron.size * 0.5
+	add_child(fx)
+	fx.fire(delay)
+	if plays_sfx:
+		AudioDirector.play_sfx(&"tally")

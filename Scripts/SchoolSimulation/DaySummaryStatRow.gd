@@ -13,11 +13,20 @@ class_name DaySummaryStatRow
 ## right-aligned and shrink-sized, the track expands into what is left.
 
 ## Geometry in game pixels, measured off the mockup (spec section 2).
+##
+## The track is only TRACK_LEFT..VALUE_WIDTH wide (150px at the row's
+## current 350px width) and the icon is drawn ON TOP of its left end, so
+## every pixel the icon covers is a pixel of fill the player can never
+## see -- a track under about ICON_LEFT+ICON_BOX.x percent full reads as
+## completely empty. ICON_BOX was originally 95x70 (63% of the track),
+## which is why a student sitting at a normal 40-70% of their target
+## still looked like an empty bar (2026-09-03 follow-up fix). Keep this
+## box small enough that most of the track stays visible.
 const ROW_HEIGHT := 96
 const TRACK_HEIGHT := 36
 const TRACK_LEFT := 0
-const ICON_BOX := Vector2(95, 70)
-const ICON_LEFT := -15
+const ICON_BOX := Vector2(48, 48)
+const ICON_LEFT := -6
 const CHEVRON_BOX := Vector2(40, 58)
 const CHEVRON_LEFT := 67
 const VALUE_WIDTH := 200

@@ -1267,3 +1267,29 @@ func test_stat_row_bursts_exactly_when_it_shows_a_chevron() -> void:
 	assert_true(not src.contains("GPUParticles2D.new()"),
 		"particles must come from the .tscn, never be built at runtime")
 
+
+## The 2026-09-03 follow-up fix: the icon must not swallow so much of
+## the track that a normal (40-70%) stat reads as completely empty. The
+## icon's right edge is ICON_LEFT+ICON_BOX.x -- past that point, the
+## track's fill is finally visible past the icon's silhouette. Requiring
+## at least half the track to survive the icon keeps that margin honest
+## if either constant drifts again.
+func test_stat_row_icon_does_not_hide_most_of_the_track() -> void:
+	var icon_right := DaySummaryStatRow.ICON_LEFT + DaySummaryStatRow.ICON_BOX.x
+	var track_width := 350.0 - float(DaySummaryStatRow.VALUE_WIDTH)
+	var visible_track := track_width - icon_right
+	assert_true(visible_track / track_width >= 0.5,
+		"the icon must not cover more than half the track's width -- " +
+		"a partly-full stat would otherwise show no visible fill at all")
+
+
+func test_stat_row_scene_matches_the_icon_geometry_consts() -> void:
+	var row_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn")
+	var row := row_scene.instantiate()
+	var icon: Control = row.get_node("Icon")
+	assert_eq(icon.offset_left, DaySummaryStatRow.ICON_LEFT,
+		"Icon.offset_left must match ICON_LEFT")
+	assert_eq(icon.offset_right - icon.offset_left, DaySummaryStatRow.ICON_BOX.x,
+		"Icon's width must match ICON_BOX.x")
+	row.free()
+

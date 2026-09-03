@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://ctpvyoynd3ggr"]
+
+[ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="1_li2i7"]
+[ext_resource type="Script" uid="uid://dirvyxt44yitc" path="res://Scripts/SchoolSimulation/RewardParticles.gd" id="2_02mtq"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_8xi2f"]
+emission_shape = 1
+emission_sphere_radius = 24.0
+direction = Vector3(0, -1, 0)
+initial_velocity_min = 120.0
+initial_velocity_max = 260.0
+angular_velocity_min = -220.0
+angular_velocity_max = 220.0
+gravity = Vector3(0, 420, 0)
+scale_min = 0.18
+scale_max = 0.34
+color = Color(1, 0.84313726, 0.41568628, 1)
+
+[node name="RewardBurst" type="GPUParticles2D" unique_id=2106305868]
+emitting = false
+amount = 14
+texture = ExtResource("1_li2i7")
+lifetime = 0.7
+one_shot = true
+explosiveness = 0.85
+process_material = SubResource("ParticleProcessMaterial_8xi2f")
+script = ExtResource("2_02mtq")

@@ -1195,3 +1195,21 @@ func test_particle_sprites_exist_and_are_transparent() -> void:
 		assert_true(img.detect_alpha() != Image.ALPHA_NONE,
 			"particle sprite must have a transparent background: " + p)
 
+
+
+## Both bursts must be one-shot and start idle: a looping emitter left
+## running under a card would never free and would leak per row, per day.
+func test_particle_scenes_are_one_shot_and_start_idle() -> void:
+	for path in [
+		"res://Scenes/SchoolSimulation/RewardBurst.tscn",
+		"res://Scenes/SchoolSimulation/CelebrationConfetti.tscn",
+	]:
+		var fx_scene: PackedScene = load(path)
+		var fx := fx_scene.instantiate() as GPUParticles2D
+		assert_true(fx != null, "must be a GPUParticles2D: " + path)
+		assert_true(fx.one_shot, "must be one_shot: " + path)
+		assert_true(not fx.emitting, "must start idle: " + path)
+		assert_true(fx.texture != null, "must carry a sprite: " + path)
+		assert_true(fx.process_material != null,
+			"must carry a ParticleProcessMaterial: " + path)
+		fx.free()

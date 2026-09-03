@@ -30,8 +30,12 @@ const GAIN_STEP := 0.08
 
 @onready var avatar: DaySummaryAvatar = $Avatar
 @onready var name_label: Label = $NameLabel
-@onready var energy_bar: ProgressBar = $EnergyBar
-@onready var mood_bar: ProgressBar = $MoodBar
+## The two needs bars now carry their own icon and tier word inside
+## themselves (2026-09-03 spec section 3.2), so they are typed as
+## DaySummaryNeedsBar rather than plain ProgressBar. Everything else about
+## them -- geometry, fill, variation -- is unchanged.
+@onready var energy_bar: DaySummaryNeedsBar = $EnergyBar
+@onready var mood_bar: DaySummaryNeedsBar = $MoodBar
 @onready var energy_delta_label: Label = $EnergyBar/DeltaLabel
 @onready var mood_delta_label: Label = $MoodBar/DeltaLabel
 @onready var stat_rows: Array[DaySummaryStatRow] = [
@@ -70,8 +74,8 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 	# them when the popup's name lookup misses would paint a confident,
 	# fabricated reading, so an unknown student empties both bars --
 	# matching the avatar, which already clears its texture on null.
-	energy_bar.value = student.energy if student != null else 0.0
-	mood_bar.value = student.mood if student != null else 0.0
+	energy_bar.set_need("energy", student.energy if student != null else 0.0)
+	mood_bar.set_need("mood", student.mood if student != null else 0.0)
 	# The needs numbers belong to ResultCheckup's weekly card; the mockup
 	# has none. Hidden explicitly rather than relying on the scene's
 	# default, so a card re-armed from the weekly path is still correct.
@@ -147,8 +151,8 @@ func setup_week_row(student: StudentData) -> void:
 	avatar.set_student(student)
 
 	if student == null:
-		energy_bar.value = 0.0
-		mood_bar.value = 0.0
+		energy_bar.set_need("energy", 0.0)
+		mood_bar.set_need("mood", 0.0)
 		_energy_from = 0.0
 		_mood_from = 0.0
 		_energy_delta = 0.0
@@ -160,8 +164,8 @@ func setup_week_row(student: StudentData) -> void:
 
 	var energy_delta := student.get_energy_delta()
 	var mood_delta := student.get_mood_delta()
-	energy_bar.value = student.energy
-	mood_bar.value = student.mood
+	energy_bar.set_need("energy", student.energy)
+	mood_bar.set_need("mood", student.mood)
 	# StudentData clamps its needs as it applies them, so on a week that
 	# hit the 0 or 100 ceiling this opening value overshoots the true
 	# Monday reading slightly and the bar travels a touch further than it

@@ -1124,3 +1124,56 @@ func test_theme_bakes_the_needs_label_variation() -> void:
 		"DaySummaryNeedsLabel must bake a font size")
 	assert_true(theme.has_color("font_color", "DaySummaryNeedsLabel"),
 		"DaySummaryNeedsLabel must bake a font colour")
+
+
+## One node per need, not two. The icon and word live INSIDE the bar --
+## a sibling chip beside it would duplicate the bar's own shape, which is
+## the redundancy this design rules out.
+func test_needs_bars_carry_their_icon_and_word_inside_themselves() -> void:
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	for n in ["EnergyBar", "MoodBar"]:
+		var bar := card.get_node_or_null(n) as DaySummaryNeedsBar
+		assert_true(bar != null, "%s must be a DaySummaryNeedsBar" % n)
+		assert_true(bar.get_node_or_null("Icon") != null,
+			"%s must own its Icon" % n)
+		assert_true(bar.get_node_or_null("Word") != null,
+			"%s must own its Word" % n)
+		assert_true(bar.get_node_or_null("DeltaLabel") != null,
+			"%s must keep its existing DeltaLabel" % n)
+	# No stacked second element per need.
+	assert_true(card.get_node_or_null("EnergyPill") == null,
+		"there must be no separate energy chip node")
+	assert_true(card.get_node_or_null("MoodPill") == null,
+		"there must be no separate mood chip node")
+	card.free()
+
+
+## Both entry points write the bars through set_need, so the fill and the
+## word can never disagree.
+func test_card_fills_its_needs_bars_on_both_paths() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	var card := card_scene.instantiate()
+	card.theme = theme
+	Engine.get_main_loop().root.add_child(card)
+
+	var student := StudentData.new()
+	student.student_name = "Shinta"
+	student.energy = 20.0
+	student.mood = 90.0
+
+	card.setup_row("Shinta", [], student)
+	assert_eq(card.energy_bar.value, 20.0)
+	assert_eq(card.energy_bar.get_node("Word").text, "Lelah")
+	assert_eq(card.mood_bar.get_node("Word").text, "Senang")
+	assert_true(card.energy_bar.get_node("Icon").texture != null,
+		"the energy bar must carry icon_energy")
+
+	card.setup_week_row(student)
+	assert_eq(card.energy_bar.get_node("Word").text, "Lelah",
+		"the weekly path must write the same word")
+	assert_eq(card.mood_bar.value, 90.0)
+
+	card.queue_free()
+

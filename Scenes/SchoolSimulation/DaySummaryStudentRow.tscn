@@ -3,7 +3,10 @@
 [ext_resource type="Script" uid="uid://crbnane4dchyf" path="res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd" id="1_row"]
 [ext_resource type="Texture2D" uid="uid://cwehitensta2x" path="res://Assets/Images/DaySummary/card_bg.png" id="2_card_bg"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn" id="3_avatar"]
+[ext_resource type="Script" uid="uid://xm5t6rwv1ddu" path="res://Scripts/SchoolSimulation/DaySummaryNeedsBar.gd" id="4_0kar2"]
 [ext_resource type="PackedScene" uid="uid://badokp3g1xb25" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
+[ext_resource type="Texture2D" uid="uid://gluqad4t4h8s" path="res://Assets/Images/UI/Placeholders/icon_energy.svg" id="5_jftq2"]
+[ext_resource type="Texture2D" uid="uid://b4u3q24i144fb" path="res://Assets/Images/UI/Placeholders/icon_mood.svg" id="6_awl4u"]
 
 [node name="DaySummaryStudentRow" type="Control" unique_id=385890646]
 custom_minimum_size = Vector2(992, 410)
@@ -48,6 +51,7 @@ offset_bottom = 181.0
 theme_type_variation = &"DaySummaryEnergyBar"
 value = 36.0
 show_percentage = false
+script = ExtResource("4_0kar2")
 
 [node name="DeltaLabel" type="Label" parent="EnergyBar" unique_id=1422091204]
 visible = false
@@ -59,6 +63,32 @@ text = "+0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
+[node name="Icon" type="TextureRect" parent="EnergyBar" unique_id=227012392]
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 14.0
+offset_top = -22.0
+offset_right = 58.0
+offset_bottom = 22.0
+grow_vertical = 2
+texture = ExtResource("5_jftq2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Word" type="Label" parent="EnergyBar" unique_id=2116280457]
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 68.0
+offset_top = -26.0
+offset_right = 220.0
+offset_bottom = 26.0
+grow_vertical = 2
+theme_type_variation = &"DaySummaryNeedsLabel"
+text = "Lelah"
+vertical_alignment = 1
+
 [node name="MoodBar" type="ProgressBar" parent="." unique_id=325317914]
 layout_mode = 1
 offset_left = 336.0
@@ -68,6 +98,7 @@ offset_bottom = 268.0
 theme_type_variation = &"DaySummaryMoodBar"
 value = 82.0
 show_percentage = false
+script = ExtResource("4_0kar2")
 
 [node name="DeltaLabel" type="Label" parent="MoodBar" unique_id=1544664727]
 visible = false
@@ -77,6 +108,32 @@ offset_bottom = 68.0
 theme_type_variation = &"DaySummaryStat"
 text = "+0"
 horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Icon" type="TextureRect" parent="MoodBar" unique_id=29085669]
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 14.0
+offset_top = -22.0
+offset_right = 58.0
+offset_bottom = 22.0
+grow_vertical = 2
+texture = ExtResource("6_awl4u")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Word" type="Label" parent="MoodBar" unique_id=1291295651]
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 68.0
+offset_top = -26.0
+offset_right = 220.0
+offset_bottom = 26.0
+grow_vertical = 2
+theme_type_variation = &"DaySummaryNeedsLabel"
+text = "Senang"
 vertical_alignment = 1
 
 [node name="StatRow1" parent="." unique_id=1507679513 instance=ExtResource("4_statrow")]

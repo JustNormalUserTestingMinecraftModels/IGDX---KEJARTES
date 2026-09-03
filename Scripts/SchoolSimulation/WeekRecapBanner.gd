@@ -17,6 +17,16 @@ class_name WeekRecapBanner
 ## to read as four separate events rather than one chord.
 const PILL_STEP := 0.14
 
+## How far each pill starts above its authored slot before sliding down
+## into place, in pixels.
+const PILL_SLIDE_DISTANCE := 20.0
+
+## Gap between one pill's slide-in STARTING and the next pill's starting
+## -- a cascade, not four simultaneous tweens. Each pill's own number
+## count-up begins only once THAT pill's slide-in finishes, so the
+## numbers read left-to-right in the same rhythm as the pills landing.
+const PILL_CASCADE_STEP := 0.10
+
 ## How far the banner travels down into place on stage 1.
 const SLIDE_DISTANCE := 48.0
 
@@ -206,8 +216,7 @@ func play_entrance() -> void:
 		func(v: float) -> String: return "%d" % int(v),
 	]
 	for i in pills.size():
-		pills[i].play_count_up(values[i], formatters[i],
-			float(i) * PILL_STEP)
+		_slide_in_pill(pills[i], values[i], formatters[i], float(i) * PILL_CASCADE_STEP)
 
 	# Stage 3. Gated: a week that earned nothing gets no coin shower and
 	# no coin cue, the same discipline the cards use for their sparkle.
@@ -217,3 +226,31 @@ func play_entrance() -> void:
 			return
 		AudioDirector.play_sfx(&"coin")
 		coin_shower.fire()
+
+
+## One pill's own slide+fade entrance, chained into its number count-up.
+## `delay` is this pill's position in the cascade (§5 of the 2026-09-03
+## interactivity spec) -- pill 0 starts immediately, pill 1 starts
+## PILL_CASCADE_STEP later, and so on, each pill's tween running
+## independently once started rather than all four waiting on a shared
+## clock.
+##
+## A coroutine; called only from play_entrance(), never directly by a
+## test.
+func _slide_in_pill(pill: WeekRecapPill, to_value: float, formatter: Callable,
+		delay: float) -> void:
+	if delay > 0.0:
+		await get_tree().create_timer(delay).timeout
+		if not is_instance_valid(pill) or not pill.is_inside_tree():
+			return
+	var t := Juice.tokens()
+	pill.modulate.a = 0.0
+	pill.position.y -= PILL_SLIDE_DISTANCE
+	var tw := pill.create_tween().set_parallel(true)
+	tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(pill, "modulate:a", 1.0, t.dur_fast)
+	tw.tween_property(pill, "position:y", pill.position.y + PILL_SLIDE_DISTANCE, t.dur_fast)
+	await tw.finished
+	if not is_instance_valid(pill):
+		return
+	pill.play_count_up(to_value, formatter)

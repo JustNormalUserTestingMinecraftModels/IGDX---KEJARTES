@@ -968,3 +968,24 @@ func test_idle_bounce_start_stop_pause_are_present() -> void:
 		"a live popup pauses the bounce so a pill never bounces under the scrim")
 	assert_contains(src, "_idle_tween.play()",
 		"and the bounce resumes once that popup closes")
+
+
+## The cascade itself is a coroutine (play_entrance), so this test only
+## checks the SETUP each pill's tween needs before it can slide+fade in
+## -- that every pill starts the cascade at alpha 0 and offset above its
+## slot, per the 2026-09-03 interactivity spec section 5. It does not
+## await play_entrance() itself.
+func test_pills_start_the_cascade_transparent_and_offset() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, "modulate.a = 0.0",
+		"each pill starts fully transparent before its slide-in")
+	assert_contains(src, "PILL_SLIDE_DISTANCE",
+		"a named constant drives the pill's start offset, not a literal")
+
+
+func test_pill_cascade_step_is_a_named_constant() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, "PILL_CASCADE_STEP",
+		"the stagger between one pill starting and the next is named, not a literal")

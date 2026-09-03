@@ -1177,3 +1177,21 @@ func test_card_fills_its_needs_bars_on_both_paths() -> void:
 
 	card.queue_free()
 
+
+## The particle art is a placeholder by contract: the visual team drops
+## real PNGs in at these exact names, so the names are load-bearing and
+## a rename must break the build here.
+func test_particle_sprites_exist_and_are_transparent() -> void:
+	var paths := [
+		"res://Assets/Images/Particles/particle_star.png",
+		"res://Assets/Images/Particles/particle_confetti.png",
+		"res://Assets/Images/Particles/particle_ring.png",
+	]
+	for p in paths:
+		assert_true(ResourceLoader.exists(p), "missing particle sprite: " + p)
+		var tex: Texture2D = load(p)
+		assert_true(tex != null, "must load as a texture: " + p)
+		var img := tex.get_image()
+		assert_true(img.detect_alpha() != Image.ALPHA_NONE,
+			"particle sprite must have a transparent background: " + p)
+

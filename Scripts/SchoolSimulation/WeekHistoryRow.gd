@@ -29,6 +29,14 @@ const DETAIL_JOIN := "  ·  "
 @onready var badge: PanelContainer = $Body/Lines/TitleRow/Badge
 @onready var detail_label: Label = $Body/Lines/DetailLabel
 
+## Whether this row is rendering an event rather than a played minigame.
+## Read by ResultCheckup._play_history_entrance to choose stamp vs. shake
+## without inferring it from the badge's tint.
+var _is_event: bool = false
+## Whether this row's minigame was won. Meaningless when _is_event is
+## true; read the same way as _is_event.
+var _won: bool = false
+
 # ── Visual - Icons ───────────────────────────────────────────────────
 @export_group("Visual - Icons")
 ## Leading icon for a minigame that was won.
@@ -47,6 +55,8 @@ func set_entry(entry: Dictionary) -> void:
 	var category: String = entry.get("category", "")
 	var is_event: bool = category == EVENT_CATEGORY
 	var won: bool = entry.get("won", false)
+	_is_event = is_event
+	_won = won
 
 	breadcrumb.text = "%s · %s" % [entry.get("day", ""), category]
 	name_label.text = entry.get("game_name", "")
@@ -102,3 +112,15 @@ func _participants(entry: Dictionary) -> String:
 			if res is Dictionary and res.has("student_name"):
 				names.append(str(res["student_name"]))
 	return ", ".join(names)
+
+
+## Whether the last set_entry() call rendered an event rather than a
+## played minigame.
+func is_event() -> bool:
+	return _is_event
+
+
+## Whether the last set_entry() call's minigame was won. Meaningless if
+## is_event() is true.
+func is_win() -> bool:
+	return _won

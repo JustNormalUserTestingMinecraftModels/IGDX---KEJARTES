@@ -818,3 +818,40 @@ func test_history_pane_animation_latch_fires_only_once() -> void:
 func _add_themed(screen: Control) -> void:
 	screen.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(screen)
+
+
+## Finding 1 fix (2026-09-03 Task 9 review): win/loss must be read from
+## WeekHistoryRow's own accessors, not inferred from the badge's tint --
+## an event row is tinted brand_primary, which matched neither
+## state_success nor state_danger and used to fall through to the "lost"
+## branch and shake. These three set_entry() calls exercise an event, a
+## won minigame, and a lost minigame; none needs tree-entry since
+## is_event()/is_win() are now plain field reads, not @onready.
+func test_history_row_exposes_event_and_win_state() -> void:
+	var event_row: Control = load(_HISTORY_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(event_row)
+	event_row.set_entry({"day": "Rabu", "category": "Event",
+		"game_name": "Hujan Deras", "won": true})
+	assert_true(event_row.is_event(),
+		"an Event-category entry must report is_event() true")
+	event_row.queue_free()
+
+	var won_row: Control = load(_HISTORY_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(won_row)
+	won_row.set_entry({"day": "Senin", "category": "Akademis",
+		"game_name": "Uji", "won": true})
+	assert_false(won_row.is_event(),
+		"a played minigame must not report is_event()")
+	assert_true(won_row.is_win(),
+		"a won minigame must report is_win() true")
+	won_row.queue_free()
+
+	var lost_row: Control = load(_HISTORY_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(lost_row)
+	lost_row.set_entry({"day": "Kamis", "category": "Olahraga",
+		"game_name": "Lomba", "won": false})
+	assert_false(lost_row.is_event(),
+		"a played minigame must not report is_event()")
+	assert_false(lost_row.is_win(),
+		"a lost minigame must report is_win() false")
+	lost_row.queue_free()

@@ -166,6 +166,20 @@ func show_pane(pane: int) -> void:
 	students_pane.visible = pane == Pane.SISWA
 	history_pane.visible = pane == Pane.RIWAYAT
 	if scroll_container:
+		# Deliberately synchronous, not set_deferred. A deferred write is
+		# the theoretically correct fix for the ScrollContainer's
+		# scrollbar max_value being narrowly one layout pass stale right
+		# after the visibility flip above -- but show_pane is called
+		# directly by tests (suite.call(name), no frame processing
+		# in-between, no coroutines allowed here per this file's own
+		# testing constraints) and there is no supported way to flush a
+		# deferred call inside that harness. A deferred write would
+		# silently break both of this file's passing scroll-memory
+		# tests with no way to re-cover them. The risk window this
+		# leaves open is narrow: it only matters when the two panes'
+		# content heights differ AND the read happens before the next
+		# idle frame resyncs the scrollbar. Documented and accepted
+		# rather than fixed, per 2026-09-03 review (Task 9 fix round).
 		scroll_container.scroll_vertical = _pane_scroll[pane]
 	_sync_tab_buttons()
 
@@ -245,11 +259,11 @@ func _set_mouse_filter_pass(node: Node) -> void:
 ## and a loss shaking. Latched by show_pane, so this runs at most once.
 func _play_history_entrance() -> void:
 	Juice.stagger_in(_history_rows)
-	var t := Juice.tokens()
 	for i in _history_rows.size():
 		var row: WeekHistoryRow = _history_rows[i]
-		var entry_won: bool = row.badge.self_modulate == t.state_success
-		if entry_won:
+		if row.is_event():
+			continue  # events get neither the stamp nor the shake
+		if row.is_win():
 			AudioDirector.play_sfx(&"stamp")
 		else:
 			Juice.shake(row)

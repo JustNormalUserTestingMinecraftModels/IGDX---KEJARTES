@@ -672,3 +672,46 @@ func test_history_row_carries_no_emoji() -> void:
 
 func _row_text(row: Control, path: String) -> String:
 	return (row.get_node("Body/Lines/" + path) as Label).text
+
+
+func test_screen_authors_the_banner_tabs_and_both_panes() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	for path in ["Margin/VBox/Banner",
+			"Margin/VBox/TabBar/TabSiswa",
+			"Margin/VBox/TabBar/TabRiwayat",
+			"Margin/VBox/ScrollContainer/PaneStack/StudentsPane",
+			"Margin/VBox/ScrollContainer/PaneStack/HistoryPane",
+			"Margin/VBox/ScrollContainer/PaneStack/HistoryPane/EmptyLabel"]:
+		assert_not_null(screen.get_node_or_null(path),
+			"%s is authored in the scene" % path)
+	screen.free()
+
+
+func test_banner_and_tabs_sit_outside_the_scroll() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	var scroll: Node = screen.get_node("Margin/VBox/ScrollContainer")
+	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/Banner")),
+		"the banner must stay pinned while the panes scroll")
+	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/TabBar")),
+		"and so must the tab bar")
+	screen.free()
+
+
+func test_students_pane_uses_the_spec_separation() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	var pane: VBoxContainer = screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
+	assert_eq(pane.get_theme_constant("separation"), 28,
+		"card separation drops 56 -> 28 (spec section 3)")
+	screen.free()
+
+
+func test_scene_carries_no_emoji_and_no_dead_section_headers() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
+	for glyph in ["📊", "📝", "📢"]:
+		assert_false(src.contains(glyph),
+			"emoji are banned as UI iconography")
+	assert_false(src.contains("StudentsHeader"),
+		"the emoji section headers are replaced by the tab labels")
+	assert_false(src.contains("HistoryHeader"),
+		"both of them")

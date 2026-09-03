@@ -4,11 +4,11 @@ class_name BookClockWidget
 
 ## The day-passing cinematic behind the SchoolDay screen.
 ##
-## Two full-screen layers: a square sky texture that rotates about the
-## screen centre, and a stationary school-on-a-hill foreground painted
-## over it. As the school day advances, set_progress() turns the sky so
-## the bright half sweeps away and the night half swings in, and the
-## whole screen reads as one day passing.
+## Two full-screen layers: a square sky texture that rotates about a
+## pivot near the bottom of the screen, and a stationary school-on-a-hill
+## foreground painted over it. As the school day advances, set_progress()
+## turns the sky so the bright half sweeps away and the night half swings
+## in, and the whole screen reads as one day passing.
 ##
 ## This file used to draw a procedural cat pocket-watch. It no longer
 ## draws anything: both layers are authored TextureRects in the scene,
@@ -21,6 +21,11 @@ class_name BookClockWidget
 ## counter-clockwise sweep the mechanism reference asks for runs from 0
 ## to a NEGATIVE angle. See docs/superpowers/mockups/
 ## day-transition-mechanism.png.
+##
+## Pivot: the mechanism mockup marks its rotation point (a blue dot) at
+## the bottom-centre of the visible frame, not the frame's middle -- the
+## sky's own vortex art converges there, at the school's ground line,
+## rather than at screen-centre. See sky_pivot_ratio.
 ##
 ## @tool, so the composited cinematic previews live in the editor
 ## viewport. Nothing in _ready() has a side effect outside this widget's
@@ -54,6 +59,16 @@ const FOREGROUND_NODE := "SchoolForeground"
 		_apply_rotation()
 
 @export_group("Layout")
+## Where the sky's rotation pivot sits, as a fraction of the widget's own
+## size (0,0 = top-left, 1,1 = bottom-right). The mechanism mockup's blue
+## dot marks this at the screen's bottom-centre, Vector2(0.5, 1.0): the
+## sky's vortex "eye" sits at the school's ground line rather than the
+## screen's geometric middle, so the sky reads as wheeling overhead
+## while the ground stays put.
+@export var sky_pivot_ratio: Vector2 = Vector2(0.5, 1.0):
+	set(value):
+		sky_pivot_ratio = value
+		_fit_layers()
 ## Slack multiplied into the sky's cover size. The maths already covers
 ## the screen exactly; this absorbs rounding on odd aspect ratios so a
 ## corner of the page can never flash through mid-rotation.
@@ -139,12 +154,18 @@ func _apply_rotation() -> void:
 
 ## Sizes and centres both layers for the current control rect.
 ##
-## The sky is grown to a square whose side equals the screen's diagonal.
-## That makes its INSCRIBED circle reach the screen's corners, and the
-## inscribed circle is exactly the region a rotating square is guaranteed
-## to keep covered -- so no corner can ever swing into view. At the
-## project's 1080x1920 that is a 2203 px square from a 1600 px source,
-## i.e. about 1.38x, which the art is drawn loose enough to take.
+## The sky is a square CENTRED ON THE PIVOT (sky_pivot_ratio), not on the
+## screen -- rotating a square about its own centre leaves its inscribed
+## circle (radius = side / 2) untouched at every angle, so that circle is
+## exactly the region guaranteed to stay covered. To cover the whole
+## screen from an off-centre pivot, the inscribed circle must reach the
+## screen's FARTHEST corner from that pivot, not the nearest: for the
+## default bottom-centre pivot on the project's 1080x1920, the far
+## corners are the top two, ~1994 px away, so the square ends up ~4069 px
+## (2 x 1994 x margin) from a 1600 px source -- about 2.5x, noticeably
+## more zoomed than a centre pivot's 1.38x. That is the tradeoff of
+## anchoring the sky's vortex at the school's ground line instead of
+## screen-centre; the art is drawn loose enough to take it.
 func _fit_layers() -> void:
 	var rect := size
 	if rect.x <= 0.0 or rect.y <= 0.0:
@@ -152,9 +173,13 @@ func _fit_layers() -> void:
 
 	var sky := _sky_layer()
 	if sky != null:
-		var side: float = rect.length() * sky_cover_margin
+		var pivot_point: Vector2 = rect * sky_pivot_ratio
+		var farthest_corner_distance: float = 0.0
+		for corner in [Vector2.ZERO, Vector2(rect.x, 0.0), Vector2(0.0, rect.y), rect]:
+			farthest_corner_distance = maxf(farthest_corner_distance, pivot_point.distance_to(corner))
+		var side: float = farthest_corner_distance * 2.0 * sky_cover_margin
 		sky.size = Vector2(side, side)
-		sky.position = (rect - sky.size) * 0.5
+		sky.position = pivot_point - sky.size * 0.5
 		sky.pivot_offset = sky.size * 0.5
 
 	var foreground := _foreground_layer()

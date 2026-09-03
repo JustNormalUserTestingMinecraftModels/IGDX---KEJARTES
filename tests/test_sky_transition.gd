@@ -180,15 +180,38 @@ func test_reset_clears_day_and_progress() -> void:
 
 # ------------------------------------------------ responsive geometry
 
-func test_the_sky_is_square_and_centred() -> void:
+## The farthest a rectangle's corner (0,0)-(extent) can be from an
+## arbitrary point -- the radius a pivoted rotating square must reach to
+## guarantee full coverage. Shared by every covering-math assertion below
+## so the "farthest corner" rule is expressed once, not four times.
+func _farthest_corner_distance(pivot: Vector2, extent: Vector2) -> float:
+	var farthest: float = 0.0
+	for corner in [Vector2.ZERO, Vector2(extent.x, 0.0), Vector2(0.0, extent.y), extent]:
+		farthest = maxf(farthest, pivot.distance_to(corner))
+	return farthest
+
+
+func test_the_default_pivot_matches_the_mockup() -> void:
+	# docs/superpowers/mockups/day-transition-mechanism.png marks the
+	# rotation point (a blue dot) at the visible frame's bottom-centre:
+	# the sky's vortex converges at the school's ground line, not at the
+	# screen's geometric middle.
+	var w := _instantiate(_WIDGET_SCENE)
+	var ratio: Vector2 = w.get("sky_pivot_ratio")
+	assert_true(ratio.distance_to(Vector2(0.5, 1.0)) < 0.001,
+		"the default pivot must match the mechanism mockup's blue dot")
+
+
+func test_the_sky_is_square_and_centred_on_the_pivot() -> void:
 	var w := _sized_widget()
 	var sky: TextureRect = w.get_node("SkyBackground")
 	assert_true(absf(sky.size.x - sky.size.y) < 0.001,
 		"the rotating layer must be square or it will wobble")
 	var sky_centre := sky.position + sky.size * 0.5
-	var widget_centre := _DESIGN_SIZE * 0.5
-	assert_true(sky_centre.distance_to(widget_centre) < 0.001,
-		"the sky must be centred on the screen, or it will orbit off-axis")
+	var ratio: Vector2 = w.get("sky_pivot_ratio")
+	var pivot_point: Vector2 = _DESIGN_SIZE * ratio
+	assert_true(sky_centre.distance_to(pivot_point) < 0.001,
+		"the sky must be centred on the configured pivot, or it will orbit off-axis")
 
 
 func test_the_sky_pivots_about_its_own_centre() -> void:
@@ -200,15 +223,20 @@ func test_the_sky_pivots_about_its_own_centre() -> void:
 
 func test_the_sky_covers_the_screen_at_every_angle() -> void:
 	# The worst case for a rotating square is its inscribed circle: any
-	# point further from the centre than size/2 can rotate out of frame.
-	# So the inscribed circle must reach the screen's corners.
+	# point further from the pivot than size/2 can rotate out of frame.
+	# With an off-centre pivot the danger corner is whichever screen
+	# corner sits FARTHEST from it, not the nearest -- for the default
+	# bottom-centre pivot that is one of the top corners, not the bottom
+	# ones the pivot sits right next to.
 	var w := _sized_widget()
 	var sky: TextureRect = w.get_node("SkyBackground")
+	var ratio: Vector2 = w.get("sky_pivot_ratio")
+	var pivot_point: Vector2 = _DESIGN_SIZE * ratio
 	var inscribed_radius: float = sky.size.x * 0.5
-	var corner_distance: float = _DESIGN_SIZE.length() * 0.5
-	assert_true(inscribed_radius >= corner_distance,
+	var farthest_corner: float = _farthest_corner_distance(pivot_point, _DESIGN_SIZE)
+	assert_true(inscribed_radius >= farthest_corner,
 		"a corner of the page would show through at some angle: radius %f < %f"
-			% [inscribed_radius, corner_distance])
+			% [inscribed_radius, farthest_corner])
 
 
 func test_the_foreground_fills_the_screen_exactly() -> void:
@@ -222,11 +250,28 @@ func test_geometry_follows_a_resize() -> void:
 	var w := _sized_widget()
 	w.size = Vector2(720, 1280)
 	var sky: TextureRect = w.get_node("SkyBackground")
+	var ratio: Vector2 = w.get("sky_pivot_ratio")
+	var expected_pivot: Vector2 = Vector2(720, 1280) * ratio
 	var sky_centre := sky.position + sky.size * 0.5
-	assert_true(sky_centre.distance_to(Vector2(360, 640)) < 0.001,
-		"the sky must re-centre when the viewport changes")
-	assert_true(sky.size.x * 0.5 >= Vector2(720, 1280).length() * 0.5,
+	assert_true(sky_centre.distance_to(expected_pivot) < 0.001,
+		"the sky must re-centre on the configured pivot when the viewport changes")
+	assert_true(sky.size.x * 0.5 >= _farthest_corner_distance(expected_pivot, Vector2(720, 1280)),
 		"the sky must re-cover when the viewport changes")
+
+
+func test_changing_the_pivot_ratio_moves_and_recovers_the_sky() -> void:
+	# A non-default pivot -- e.g. tuning the mockup reading later -- must
+	# still produce a correctly centred, fully covering square, not just
+	# the default (0.5, 1.0) case.
+	var w := _sized_widget()
+	w.set("sky_pivot_ratio", Vector2(0.3, 0.7))
+	var sky: TextureRect = w.get_node("SkyBackground")
+	var expected_pivot: Vector2 = _DESIGN_SIZE * Vector2(0.3, 0.7)
+	var sky_centre := sky.position + sky.size * 0.5
+	assert_true(sky_centre.distance_to(expected_pivot) < 0.001,
+		"changing sky_pivot_ratio must move the sky's centre to match")
+	assert_true(sky.size.x * 0.5 >= _farthest_corner_distance(expected_pivot, _DESIGN_SIZE),
+		"changing sky_pivot_ratio must still keep the screen fully covered")
 
 
 # ------------------------------------------------ the old widget is gone

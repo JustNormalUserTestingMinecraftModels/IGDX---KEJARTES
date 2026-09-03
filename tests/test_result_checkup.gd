@@ -528,3 +528,36 @@ func test_theme_carries_the_recap_variations() -> void:
 				or theme.has_stylebox("normal", variation)
 				or theme.has_font_size("font_size", variation),
 			"%s is baked into the theme" % variation)
+
+
+const _PILL_SCENE := "res://Scenes/SchoolSimulation/WeekRecapPill.tscn"
+
+
+func test_pill_scene_has_its_three_authored_nodes() -> void:
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	assert_not_null(pill.get_node_or_null("Icon"), "Icon is authored")
+	assert_not_null(pill.get_node_or_null("Value"), "Value is authored")
+	assert_not_null(pill.get_node_or_null("Ring"), "Ring emitter is authored")
+	pill.free()
+
+
+func test_pill_uses_the_theme_variation_not_an_override() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/WeekRecapPill.tscn")
+	assert_contains(src, "RecapPillPanel", "the pill takes its variation")
+	assert_false(src.contains("theme_override_styles"),
+		"no stylebox override on the pill")
+
+
+func test_pill_set_pill_writes_text_and_tint() -> void:
+	# set_pill writes through @onready fields, which Godot only populates
+	# once the node enters the tree -- the same requirement
+	# DaySummaryStudentRow documents for its own setup_row/setup_week_row.
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(pill)
+	pill.set_pill(null, "4.200", Color.RED)
+	assert_eq((pill.get_node("Value") as Label).text, "4.200",
+		"the value label carries the formatted number")
+	assert_eq((pill.get_node("Value") as Label).self_modulate, Color.RED,
+		"and the caller's tint")
+	pill.queue_free()

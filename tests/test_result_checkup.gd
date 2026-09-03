@@ -989,3 +989,25 @@ func test_pill_cascade_step_is_a_named_constant() -> void:
 		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
 	assert_contains(src, "PILL_CASCADE_STEP",
 		"the stagger between one pill starting and the next is named, not a literal")
+
+
+## show_pane's transition is a coroutine under real play, but every test
+## that already calls it directly (test_default_tab_is_siswa,
+## test_switching_tabs_swaps_pane_visibility_without_freeing, the
+## scroll-offset and latch tests) runs inside the editor process, where
+## Engine.is_editor_hint() is true -- this test confirms the transition
+## code stays behind that SAME existing guard, so none of those tests'
+## synchronous assumptions (pane.visible flips immediately) can break.
+func test_pane_transition_is_gated_on_editor_hint() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_contains(src, "PANE_SLIDE_DISTANCE",
+		"a named constant drives the pane transition, not a literal")
+
+
+func test_pane_transition_direction_is_derived_not_hardcoded() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_contains(src, "signi(",
+		"the transition direction comes from signi(pane - _active_pane), " +
+			"not two hardcoded literal directions")

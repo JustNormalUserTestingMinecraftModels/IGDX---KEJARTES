@@ -26,6 +26,10 @@ signal checkup_closed
 ## show_pane takes.
 enum Pane { SISWA = 0, RIWAYAT = 1 }
 
+## How far a pane slides horizontally during the SISWA<->RIWAYAT
+## transition, in pixels.
+const PANE_SLIDE_DISTANCE := 40.0
+
 # ── Visual - Background Overlay ───────────────────────────────────────
 @export_group("Visual - Background Overlay")
 ## Optional photo behind the report. When set it replaces the panel.
@@ -162,9 +166,20 @@ func show_pane(pane: int) -> void:
 		return
 	if scroll_container:
 		_pane_scroll[_active_pane] = scroll_container.scroll_vertical
+	var outgoing_pane := _active_pane
 	_active_pane = pane
-	students_pane.visible = pane == Pane.SISWA
-	history_pane.visible = pane == Pane.RIWAYAT
+	_sync_tab_buttons()
+
+	if Engine.is_editor_hint():
+		students_pane.visible = pane == Pane.SISWA
+		history_pane.visible = pane == Pane.RIWAYAT
+		if scroll_container:
+			scroll_container.scroll_vertical = _pane_scroll[pane]
+		_history_animated = _history_animated or pane == Pane.RIWAYAT
+		return
+
+	AudioDirector.play_sfx(&"pane_swipe")
+	await _transition_panes(outgoing_pane, pane)
 	if scroll_container:
 		# Deliberately synchronous, not set_deferred. A deferred write is
 		# the theoretically correct fix for the ScrollContainer's
@@ -181,11 +196,6 @@ func show_pane(pane: int) -> void:
 		# idle frame resyncs the scrollbar. Documented and accepted
 		# rather than fixed, per 2026-09-03 review (Task 9 fix round).
 		scroll_container.scroll_vertical = _pane_scroll[pane]
-	_sync_tab_buttons()
-
-	if Engine.is_editor_hint():
-		_history_animated = _history_animated or pane == Pane.RIWAYAT
-		return
 
 	AudioDirector.play_sfx(&"select")
 	if pane == Pane.RIWAYAT and not _history_animated:
@@ -200,6 +210,47 @@ func show_pane(pane: int) -> void:
 		# beats rather than a simultaneous double-hit.
 		await get_tree().create_timer(Juice.tokens().dur_instant).timeout
 		_play_history_entrance()
+
+
+## The SISWA<->RIWAYAT slide+fade itself. `outgoing`/`incoming` are Pane
+## values; direction is derived from their difference so a third pane
+## would need no change here. The outgoing pane's own `visible` flips to
+## false only once its exit tween finishes -- never before, so it's never
+## cut off mid-slide. The incoming pane starts from the opposite offset
+## and fades/slides back to its authored position, chained (not
+## parallel) after the outgoing tween, so the two panes -- which occupy
+## the same rect -- never visually overlap mid-transition.
+##
+## A coroutine; only ever called from show_pane, which is itself only
+## reached here when Engine.is_editor_hint() is false.
+func _transition_panes(outgoing: int, incoming: int) -> void:
+	var dir := signi(incoming - outgoing)
+	var outgoing_node: Control = students_pane if outgoing == Pane.SISWA else history_pane
+	var incoming_node: Control = students_pane if incoming == Pane.SISWA else history_pane
+	if outgoing_node == incoming_node:
+		return
+
+	var t := Juice.tokens()
+	var out_tw := outgoing_node.create_tween().set_parallel(true)
+	out_tw.tween_property(outgoing_node, "position:x",
+		float(dir) * -PANE_SLIDE_DISTANCE, t.dur_fast)
+	out_tw.tween_property(outgoing_node, "modulate:a", 0.0, t.dur_fast)
+	await out_tw.finished
+	if not is_instance_valid(outgoing_node):
+		return
+	outgoing_node.visible = false
+	outgoing_node.position.x = 0.0
+	outgoing_node.modulate.a = 1.0
+
+	if not is_instance_valid(incoming_node):
+		return
+	incoming_node.position.x = float(dir) * PANE_SLIDE_DISTANCE
+	incoming_node.modulate.a = 0.0
+	incoming_node.visible = true
+	var in_tw := incoming_node.create_tween().set_parallel(true)
+	in_tw.tween_property(incoming_node, "position:x", 0.0, t.dur_fast)
+	in_tw.tween_property(incoming_node, "modulate:a", 1.0, t.dur_fast)
+	await in_tw.finished
 
 
 ## Keep the two toggle buttons agreeing with _active_pane. The pressed

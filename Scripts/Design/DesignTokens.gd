@@ -234,7 +234,7 @@ static func load_default() -> DesignTokens:
 ## Font size for the student's name on the card.
 @export var day_name_size: int = 40
 ## Font size for the card's stat numbers.
-@export var day_stat_size: int = 46
+@export var day_stat_size: int = 52
 
 
 ## Resolve a schedule category name to its accent color.

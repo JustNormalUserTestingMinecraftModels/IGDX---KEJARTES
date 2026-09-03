@@ -855,3 +855,65 @@ func test_history_row_exposes_event_and_win_state() -> void:
 	assert_false(lost_row.is_win(),
 		"a lost minigame must report is_win() false")
 	lost_row.queue_free()
+
+
+func test_pill_root_stops_mouse_input() -> void:
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	assert_eq(pill.mouse_filter, Control.MOUSE_FILTER_STOP,
+		"the pill must consume clicks, not pass them through")
+	pill.free()
+
+
+func test_pill_tapped_fires_on_a_clean_press_release() -> void:
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(pill)
+	pill.size = Vector2(228, 132)
+	# A plain int local would be captured BY VALUE inside the lambda below
+	# (GDScript closures snapshot value-type locals rather than
+	# referencing the caller's own variable), so "fired += 1" would mutate
+	# a copy the assertion below can never see. A one-element Array is
+	# captured by reference, which is what a closure needs to write back.
+	var fired := [0]
+	pill.pill_tapped.connect(func() -> void: fired[0] += 1)
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(50, 50)
+	pill._gui_input(press)
+
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = Vector2(60, 60)
+	pill._gui_input(release)
+
+	assert_eq(fired[0], 1, "one clean tap fires the signal exactly once")
+	pill.queue_free()
+
+
+func test_pill_tapped_does_not_fire_on_drag_off() -> void:
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(pill)
+	pill.size = Vector2(228, 132)
+	# See the note in test_pill_tapped_fires_on_a_clean_press_release --
+	# a plain int local is captured by value inside the lambda below, so
+	# a one-element Array is used instead to catch a real false-positive
+	# firing rather than accidentally asserting a copy that never moves.
+	var fired := [0]
+	pill.pill_tapped.connect(func() -> void: fired[0] += 1)
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(50, 50)
+	pill._gui_input(press)
+
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = Vector2(9999, 9999)
+	pill._gui_input(release)
+
+	assert_eq(fired[0], 0, "releasing outside the rect cancels the tap")
+	pill.queue_free()

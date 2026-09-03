@@ -1,13 +1,30 @@
 [gd_scene format=3 uid="uid://cx6n3hr2evpn1"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/BookClockWidget.gd" id="1_bkclock"]
+[ext_resource type="Script" uid="uid://cork10nxnud6p" path="res://Scripts/SchoolSimulation/BookClockWidget.gd" id="1_bkclock"]
+[ext_resource type="Texture2D" uid="uid://b8j5e5pqt2hr8" path="res://Assets/Images/SchoolDay/transition_background.png" id="2_v81rb"]
+[ext_resource type="Texture2D" uid="uid://dak848judjoxg" path="res://Assets/Images/SchoolDay/transition_foreground.png" id="3_yfwwc"]
 
-[node name="BookClockWidget" type="Control"]
-custom_minimum_size = Vector2(0, 110)
+[node name="BookClockWidget" type="Control" unique_id=1100225047]
+clip_contents = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_bkclock")
+
+[node name="SkyBackground" type="TextureRect" parent="." unique_id=373042140]
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("2_v81rb")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="SchoolForeground" type="TextureRect" parent="." unique_id=792585029]
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("3_yfwwc")
+expand_mode = 1
+stretch_mode = 6

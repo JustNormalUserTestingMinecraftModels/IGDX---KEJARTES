@@ -484,3 +484,33 @@ func test_screen_declares_the_blurred_backdrop_texture() -> void:
 		"background_texture is not blur_background.png")
 
 	inst.free()
+
+
+func _source(path: String) -> String:
+	var f := FileAccess.open(path, FileAccess.READ)
+	assert_true(f != null, "script must exist: " + path)
+	if f == null:
+		return ""
+	return f.get_as_text()
+
+
+## The weekly celebration is authored, gated and singular: one confetti
+## node in the scene, fired only when a card actually gained, never
+## constructed at runtime.
+func test_checkup_celebrates_only_a_week_that_gained() -> void:
+	var src := _source("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_true(src.contains("gained_ground()"),
+		"the confetti must be gated on a card having gained ground")
+	assert_true(src.contains("celebration"),
+		"the checkup must reference its authored confetti node")
+	assert_true(not src.contains("GPUParticles2D.new()"),
+		"the confetti must come from the .tscn, never be built at runtime")
+
+
+func test_checkup_scene_carries_an_idle_confetti_node() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	var fx := inst.get_node_or_null("Celebration") as GPUParticles2D
+	assert_true(fx != null, "ResultCheckup must author a Celebration node")
+	assert_true(not fx.emitting, "the confetti must start idle")
+	assert_true(fx.one_shot, "the confetti must be one_shot")
+	inst.free()

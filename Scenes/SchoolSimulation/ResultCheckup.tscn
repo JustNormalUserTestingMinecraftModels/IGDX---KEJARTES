@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dox5plhrtr0wi" path="res://Scripts/SchoolSimulation/ResultCheckup.gd" id="1_checkup"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_frxit"]
 [ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_ouvge"]
+[ext_resource type="PackedScene" uid="uid://q8q7bf0kakwd" path="res://Scenes/SchoolSimulation/CelebrationConfetti.tscn" id="4_yy1v4"]
 
 [node name="ResultCheckup" type="Control" unique_id=1540732834]
 layout_mode = 3
@@ -105,3 +106,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
 text = "Selesai & Lanjut"
+
+[node name="Celebration" parent="." unique_id=1147740379 instance=ExtResource("4_yy1v4")]
+z_index = 100
+position = Vector2(540, -40)

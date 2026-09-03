@@ -65,6 +65,9 @@ const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
 @onready var history_list: VBoxContainer = $Margin/VBox/ScrollContainer/MainContent/HistoryList
 @onready var scroll_container: ScrollContainer = $Margin/VBox/ScrollContainer
 @onready var btn_close: Button = $Margin/VBox/BtnClose
+## The week's celebration, authored in the scene and fired at most once
+## per screen -- see _play_entrance_animations.
+@onready var celebration: RewardParticles = $Celebration
 
 var is_dragging_scroll: bool = false
 var drag_start_y: float = 0.0
@@ -254,6 +257,18 @@ func _play_entrance_animations(cards: Array = []) -> void:
 	# cadence, one week long.
 	for i in cards.size():
 		cards[i].play_week_gain(float(i) * t.stagger_step)
+
+	# One celebration for the whole week, landing just behind the last
+	# card's own burst -- and only if the week went somewhere. A flat or
+	# losing week gets the report without the party.
+	var week_gained := false
+	for card in cards:
+		if card.gained_ground():
+			week_gained = true
+			break
+	if week_gained:
+		celebration.fire(float(cards.size()) * t.stagger_step)
+
 	await get_tree().create_timer(t.dur_slow).timeout
 
 	var button_tween = create_tween()

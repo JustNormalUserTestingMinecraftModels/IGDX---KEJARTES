@@ -190,6 +190,15 @@ func show_pane(pane: int) -> void:
 	AudioDirector.play_sfx(&"select")
 	if pane == Pane.RIWAYAT and not _history_animated:
 		_history_animated = true
+		# A beat of separation before the stamp cue: tapping RIWAYAT for
+		# the first time triggers two distinct gestures (the tab select,
+		# and the lazy history entrance's stamp/shake per row) that would
+		# otherwise land in the same synchronous frame. The audio-hygiene
+		# scanner (tests/test_audio_coverage.gd) flags any function that
+		# fires two SFX cues on one path with no await between them, and
+		# rightly so here too -- a genuine gap reads as two intentional
+		# beats rather than a simultaneous double-hit.
+		await get_tree().create_timer(Juice.tokens().dur_instant).timeout
 		_play_history_entrance()
 
 

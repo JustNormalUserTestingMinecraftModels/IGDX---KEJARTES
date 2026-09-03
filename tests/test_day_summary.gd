@@ -1098,3 +1098,29 @@ func test_card_pitches_its_three_stat_rows_evenly() -> void:
 	assert_eq(tops[1] - tops[0], tops[2] - tops[1],
 		"the three stat rows must be evenly pitched")
 	card.free()
+
+
+## The bar shows a word, not a number: the precise value is already
+## carried by the bar's own fill, and the week's delta by DeltaLabel.
+func test_needs_bar_words_follow_the_spec_tiers() -> void:
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 0.0), "Lelah")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 33.0), "Lelah")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 34.0), "Cukup")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 66.0), "Cukup")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 67.0), "Bugar")
+	assert_eq(DaySummaryNeedsBar.word_for("energy", 100.0), "Bugar")
+	assert_eq(DaySummaryNeedsBar.word_for("mood", 10.0), "Sedih")
+	assert_eq(DaySummaryNeedsBar.word_for("mood", 50.0), "Biasa")
+	assert_eq(DaySummaryNeedsBar.word_for("mood", 90.0), "Senang")
+	# An unknown need must not fabricate a mood.
+	assert_eq(DaySummaryNeedsBar.word_for("stamina", 50.0), "")
+
+
+## The word's variation must survive the bake, or it renders as a bare
+## default Label -- dark, unrimmed, illegible on the bar's fill.
+func test_theme_bakes_the_needs_label_variation() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	assert_true(theme.has_font_size("font_size", "DaySummaryNeedsLabel"),
+		"DaySummaryNeedsLabel must bake a font size")
+	assert_true(theme.has_color("font_color", "DaySummaryNeedsLabel"),
+		"DaySummaryNeedsLabel must bake a font colour")

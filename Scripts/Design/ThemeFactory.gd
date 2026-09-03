@@ -726,3 +726,22 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_stylebox("background", name, track)
 
 		theme.set_stylebox("fill", name, _progress_fill_stylebox(spec[2]))
+
+	# The 2026-09-03 needs word, which sits ON the energy/mood bar rather
+	# than in a chip of its own -- so there is no new stylebox here, only
+	# type. Same white-on-dark-rim inversion the rest of this card uses,
+	# one step down from DaySummaryStat so a long word fits inside the bar.
+	# Built only from tokens that already exist: a NEW DesignTokens
+	# @export is invisible to a running editor and would make this bake
+	# need a restart.
+	theme.add_type("DaySummaryNeedsLabel")
+	theme.set_type_variation("DaySummaryNeedsLabel", "Label")
+	theme.set_font_size("font_size", "DaySummaryNeedsLabel",
+		tokens.day_stat_size - 4)
+	theme.set_color("font_color", "DaySummaryNeedsLabel", Color.WHITE)
+	theme.set_constant("outline_size", "DaySummaryNeedsLabel",
+		maxi(2, tokens.text_outline_size / 2))
+	theme.set_color("font_outline_color", "DaySummaryNeedsLabel",
+		tokens.day_glyph_outline)
+	if tokens.font_display != null:
+		theme.set_font("font", "DaySummaryNeedsLabel", tokens.font_display)

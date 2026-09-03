@@ -1341,3 +1341,17 @@ func test_stat_row_scene_matches_the_icon_geometry_consts() -> void:
 		"Icon's width must match ICON_BOX.x")
 	row.free()
 
+
+
+## A drained week must LOOK drained. format_needs_delta already produced
+## "-12", but nothing coloured the label, so a loss rendered in the same
+## ink as a gain (2026-09-03 spec section 4.1).
+func test_negative_needs_delta_is_tinted_danger() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd")
+	assert_contains(src, "state_danger",
+		"_show_needs_delta must tint a loss from the danger token")
+	assert_contains(src, "state_success",
+		"and a gain from the success token")
+	assert_false(src.contains("Color("),
+		"the tint comes from DesignTokens, never a Color literal")

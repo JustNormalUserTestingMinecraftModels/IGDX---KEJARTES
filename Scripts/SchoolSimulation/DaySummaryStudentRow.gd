@@ -200,8 +200,21 @@ func setup_week_row(student: StudentData) -> void:
 	}, student)
 
 
+## Write and reveal one needs-bar delta label, tinted by its direction:
+## a gain reads success-green, a loss danger-red, and an exactly-flat
+## needs bar stays in the card's own ink so "+0" does not claim to be
+## good news. self_modulate rather than a font colour override, because
+## the label's variation owns its typography (project rule: no
+## theme_override_*).
 func _show_needs_delta(label: Label, delta: float) -> void:
 	label.text = format_needs_delta(delta)
+	var t := Juice.tokens()
+	if delta > 0.0:
+		label.self_modulate = t.state_success
+	elif delta < 0.0:
+		label.self_modulate = t.state_danger
+	else:
+		label.self_modulate = t.text_primary
 	label.show()
 
 

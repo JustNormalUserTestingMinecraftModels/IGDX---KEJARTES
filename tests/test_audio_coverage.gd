@@ -119,6 +119,7 @@ func test_every_play_sfx_id_in_the_project_is_known() -> void:
 	var known := ["tap", "confirm", "cancel", "success", "fail", "coin",
 		"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
 		"popup_close", "select", "error", "reward", "tally", "sparkle",
+		"pill_tap", "pill_popup_open", "pill_popup_close", "pane_swipe",
 		]
 	var bad: Array[String] = []
 	_scan_for_sfx_ids("res://Scripts", known, bad)

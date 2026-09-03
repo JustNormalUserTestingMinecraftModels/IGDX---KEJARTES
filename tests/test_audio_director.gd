@@ -538,3 +538,9 @@ func test_the_end_of_grade_bgm_ids_all_resolve() -> void:
 	for id in [&"exam_notice", &"exam_cutscene", &"run_result"]:
 		assert_true(_director._resolve_bgm(id) != null,
 			"BGM id %s resolves to a stream" % id)
+
+
+func test_pill_and_pane_sfx_are_registered() -> void:
+	for id in [&"pill_tap", &"pill_popup_open", &"pill_popup_close", &"pane_swipe"]:
+		assert_true(AudioDirector.has_sfx(id),
+			"AudioDirector has no stream registered for %s" % id)

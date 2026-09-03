@@ -20,6 +20,29 @@ const PILL_STEP := 0.14
 ## How far the banner travels down into place on stage 1.
 const SLIDE_DISTANCE := 48.0
 
+## The pills, keyed by the same names WeekRecap.compute() uses, in the
+## fixed left-to-right order they're authored in the scene. Read by both
+## the idle bounce cycle and the tap handler, so both agree on order and
+## on which pill maps to which explainer.
+const PILL_ORDER := ["uang", "poin", "menang", "event"]
+
+## One sentence per pill, shown by WeekRecapPillInfoPopup on tap. Indonesian,
+## matching the project's explanatory tone (2026-09-03 interactivity spec,
+## section 3.3).
+const PILL_INFO := {
+	"uang": {"title": "Uang", "body": "Total penghasilan Wirausaha yang terkumpul minggu ini."},
+	"poin": {"title": "Poin", "body": "Total kenaikan Akademis, Seni Budaya, dan Olahraga minggu ini -- bisa minus jika menurun."},
+	"menang": {"title": "Menang", "body": "Jumlah minigame yang dimenangkan dari total yang dimainkan minggu ini."},
+	"event": {"title": "Event", "body": "Jumlah kejadian acak yang terjadi minggu ini."},
+}
+
+## Gap between one idle-bounce pill and the next, and the pause after the
+## fourth before the cycle repeats.
+const IDLE_STEP := 0.9
+const IDLE_CYCLE_PAUSE := 1.2
+
+const _POPUP_SCENE := "res://Scenes/UI/WeekRecapPillInfoPopup.tscn"
+
 @onready var week_label: Label = $Header/WeekLabel
 @onready var grade_label: Label = $Header/GradeLabel
 @onready var pill_uang: WeekRecapPill = $Pills/PillUang
@@ -42,6 +65,77 @@ const SLIDE_DISTANCE := 48.0
 ## The recap this banner is currently showing, cached by set_recap so
 ## play_entrance can count each pill up to the right number.
 var _recap: Dictionary = {}
+
+## The looping idle-bounce tween, or null when not running. A single
+## tween owned by the banner (not one per pill) so the whole cycle can be
+## paused/killed in one call -- see start_idle_bounce/stop_idle_bounce.
+var _idle_tween: Tween = null
+
+
+func _ready() -> void:
+	pill_uang.pill_tapped.connect(_on_pill_tapped.bind("uang"))
+	pill_poin.pill_tapped.connect(_on_pill_tapped.bind("poin"))
+	pill_menang.pill_tapped.connect(_on_pill_tapped.bind("menang"))
+	pill_event.pill_tapped.connect(_on_pill_tapped.bind("event"))
+
+
+## Open this pill's explainer popup. Pauses the idle bounce first so a
+## pill never visibly bounces behind the scrim.
+func _on_pill_tapped(pill_key: String) -> void:
+	if Engine.is_editor_hint():
+		return
+	if _idle_tween and _idle_tween.is_valid():
+		_idle_tween.pause()
+	AudioDirector.play_sfx(&"pill_tap")
+	var info: Dictionary = PILL_INFO.get(pill_key, {})
+	var icon: Texture2D = {
+		"uang": icon_uang, "poin": icon_poin,
+		"menang": icon_menang, "event": icon_event,
+	}.get(pill_key)
+	var popup: WeekRecapPillInfoPopup = load(_POPUP_SCENE).instantiate()
+	get_tree().root.add_child(popup)
+	popup.configure(icon, info.get("title", ""), info.get("body", ""))
+	popup.closed.connect(_on_popup_closed)
+	popup.open()
+
+
+## Resume the idle bounce once its popup closes.
+func _on_popup_closed() -> void:
+	if _idle_tween and _idle_tween.is_valid():
+		_idle_tween.play()
+
+
+## Start the looping "tap me" hint: each pill in turn gets a small
+## non-destructive scale-pop, left to right, then a longer pause before
+## the cycle repeats. Silent -- no SFX; a looping cue every cycle would
+## read as an alarm, not a hint (2026-09-03 interactivity spec, section
+## 3.2). Safe to call while already running: kills any prior tween first.
+func start_idle_bounce() -> void:
+	if Engine.is_editor_hint():
+		return
+	stop_idle_bounce()
+	var pills: Array = [pill_uang, pill_poin, pill_menang, pill_event]
+	_idle_tween = create_tween().set_loops()
+	for pill in pills:
+		Juice.set_pivot_center(pill)
+		_idle_tween.tween_property(pill, "scale", Vector2(1.08, 1.08), 0.15) \
+			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		_idle_tween.tween_property(pill, "scale", Vector2.ONE, 0.15) \
+			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+		_idle_tween.tween_interval(IDLE_STEP)
+	_idle_tween.tween_interval(IDLE_CYCLE_PAUSE)
+
+
+## Stop the idle bounce outright (not pause -- kill), snapping every
+## pill's scale back to 1.0 so none is left mid-bounce. Safe to call when
+## not running.
+func stop_idle_bounce() -> void:
+	if _idle_tween and _idle_tween.is_valid():
+		_idle_tween.kill()
+	_idle_tween = null
+	for pill in [pill_uang, pill_poin, pill_menang, pill_event]:
+		if is_instance_valid(pill):
+			pill.scale = Vector2.ONE
 
 
 ## Write the week's header line and all four pills. Idempotent -- calling

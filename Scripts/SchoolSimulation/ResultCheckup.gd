@@ -323,6 +323,7 @@ func _play_entrance_animations(cards: Array = []) -> void:
 	var button_tween = create_tween()
 	button_tween.tween_property(btn_close, "modulate:a", 1.0, t.dur_fast)
 	btn_close.disabled = false
+	banner.start_idle_bounce()
 
 
 func _on_scroll_gui_input(event: InputEvent) -> void:
@@ -339,6 +340,7 @@ func _on_scroll_gui_input(event: InputEvent) -> void:
 
 
 func _on_close_pressed() -> void:
+	banner.stop_idle_bounce()
 	AudioDirector.play_sfx(&"confirm")
 	var fade_out = create_tween()
 	fade_out.tween_property(self, "modulate:a", 0.0, Juice.tokens().dur_normal)

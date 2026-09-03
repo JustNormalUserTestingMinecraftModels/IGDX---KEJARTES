@@ -917,3 +917,32 @@ func test_pill_tapped_does_not_fire_on_drag_off() -> void:
 
 	assert_eq(fired[0], 0, "releasing outside the rect cancels the tap")
 	pill.queue_free()
+
+## _on_pill_tapped, start_idle_bounce, and stop_idle_bounce all gate on
+## Engine.is_editor_hint() -- the same convention play_entrance() already
+## uses on this class, matching every other animated/side-effecting
+## method on this screen (CLAUDE.md testing constraint 3). Since
+## test_run itself runs INSIDE the editor process, that guard is always
+## true here, so calling these methods directly can only ever exercise
+## the early return -- never the real behaviour. Source-scan tests are
+## this codebase's established substitute for exactly this situation
+## (see the existing pill/entrance tests earlier in this suite).
+func test_pill_tap_wires_to_the_info_popup_with_the_right_content() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, "pill_tapped.connect", "each pill's tap signal is wired")
+	assert_contains(src, "WeekRecapPillInfoPopup", "opens the pill info popup")
+	assert_contains(src, "PILL_INFO", "content comes from the fixed per-pill copy")
+	assert_contains(src, "AudioDirector.play_sfx(&\"pill_tap\")",
+		"a tap plays the dedicated pill_tap cue")
+
+
+func test_idle_bounce_start_stop_pause_are_present() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, "func start_idle_bounce", "the banner exposes start_idle_bounce")
+	assert_contains(src, "func stop_idle_bounce", "and stop_idle_bounce")
+	assert_contains(src, "_idle_tween.pause()",
+		"a live popup pauses the bounce so a pill never bounces under the scrim")
+	assert_contains(src, "_idle_tween.play()",
+		"and the bounce resumes once that popup closes")

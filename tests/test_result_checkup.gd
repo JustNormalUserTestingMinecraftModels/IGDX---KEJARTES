@@ -561,3 +561,48 @@ func test_pill_set_pill_writes_text_and_tint() -> void:
 	assert_eq((pill.get_node("Value") as Label).self_modulate, Color.RED,
 		"and the caller's tint")
 	pill.queue_free()
+
+
+const _BANNER_SCENE := "res://Scenes/SchoolSimulation/WeekRecapBanner.tscn"
+
+
+func test_banner_authors_all_four_pills() -> void:
+	var banner: Control = load(_BANNER_SCENE).instantiate()
+	for pill_name in ["PillUang", "PillPoin", "PillMenang", "PillEvent"]:
+		assert_not_null(banner.get_node_or_null("Pills/" + pill_name),
+			"%s is authored, not built at runtime" % pill_name)
+	banner.free()
+
+
+func test_banner_writes_every_total_into_its_pills() -> void:
+	# set_recap writes through the pills' @onready fields (and its own),
+	# which Godot only populates once the node enters the tree -- same
+	# rule as WeekRecapPill's own set_pill test.
+	var banner: Control = load(_BANNER_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(banner)
+	banner.set_recap({
+		"money_earned": 4200, "net_skill_delta": 37,
+		"minigames_won": 3, "minigames_total": 5, "events_count": 2,
+	})
+	assert_eq(_pill_text(banner, "PillUang"), "4.200", "money is grouped")
+	assert_eq(_pill_text(banner, "PillPoin"), "+37", "poin is signed")
+	assert_eq(_pill_text(banner, "PillMenang"), "3/5", "won over total")
+	assert_eq(_pill_text(banner, "PillEvent"), "2", "a bare event count")
+	banner.queue_free()
+
+
+func test_banner_shows_a_negative_week_as_negative() -> void:
+	var banner: Control = load(_BANNER_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(banner)
+	banner.set_recap({
+		"money_earned": 0, "net_skill_delta": -4,
+		"minigames_won": 0, "minigames_total": 2, "events_count": 0,
+	})
+	assert_eq(_pill_text(banner, "PillPoin"), "-4",
+		"a losing week is not hidden")
+	banner.queue_free()
+
+
+func _pill_text(banner: Control, pill_name: String) -> String:
+	return (banner.get_node("Pills/" + pill_name).get_node("Value")
+		as Label).text

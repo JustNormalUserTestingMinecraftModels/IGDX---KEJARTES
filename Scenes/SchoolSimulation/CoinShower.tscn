@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://da1j2twwbqj4d"]
+
+[ext_resource type="Texture2D" uid="uid://diguw0yukcqd3" path="res://Assets/Images/Particles/particle_coin.png" id="1_540g7"]
+[ext_resource type="Script" uid="uid://dirvyxt44yitc" path="res://Scripts/SchoolSimulation/RewardParticles.gd" id="2_et0k6"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_y586o"]
+emission_shape = 3
+emission_box_extents = Vector3(120, 8, 0)
+direction = Vector3(0, -1, 0)
+initial_velocity_min = 80.0
+initial_velocity_max = 200.0
+angular_velocity_min = -180.0
+angular_velocity_max = 180.0
+gravity = Vector3(0, 620, 0)
+scale_min = 0.22
+scale_max = 0.4
+color = Color(1, 0.7882353, 0.23529412, 1)
+
+[node name="CoinShower" type="GPUParticles2D" unique_id=1082865761]
+emitting = false
+amount = 22
+texture = ExtResource("1_540g7")
+lifetime = 1.1
+one_shot = true
+explosiveness = 0.6
+process_material = SubResource("ParticleProcessMaterial_y586o")
+script = ExtResource("2_et0k6")
+plays_sfx = false

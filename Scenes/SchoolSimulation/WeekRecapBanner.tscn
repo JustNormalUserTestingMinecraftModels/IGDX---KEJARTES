@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://df8hmrsqlb12n"]
+
+[ext_resource type="Script" path="res://Scripts/SchoolSimulation/WeekRecapBanner.gd" id="1_mtvdn"]
+[ext_resource type="Texture2D" uid="uid://cvhp38uu23hb5" path="res://Assets/Images/UI/Placeholders/icon_uang.svg" id="2_l8q1r"]
+[ext_resource type="Texture2D" uid="uid://88na4148i5d" path="res://Assets/Images/UI/Placeholders/icon_poin.svg" id="3_nu073"]
+[ext_resource type="Texture2D" uid="uid://bg1retxhhcvhi" path="res://Assets/Images/UI/Placeholders/icon_minigame_menang.svg" id="4_eia8w"]
+[ext_resource type="Texture2D" uid="uid://yfyflcrgpn6o" path="res://Assets/Images/UI/Placeholders/icon_event.svg" id="5_80yyh"]
+[ext_resource type="PackedScene" uid="uid://ch10k6jbp1fe1" path="res://Scenes/SchoolSimulation/WeekRecapPill.tscn" id="6_bg3l5"]
+[ext_resource type="PackedScene" uid="uid://da1j2twwbqj4d" path="res://Scenes/SchoolSimulation/CoinShower.tscn" id="7_1fr3o"]
+
+[node name="WeekRecapBanner" type="PanelContainer" unique_id=2085513516]
+custom_minimum_size = Vector2(0, 340)
+theme_type_variation = &"RecapBannerPanel"
+script = ExtResource("1_mtvdn")
+icon_uang = ExtResource("2_l8q1r")
+icon_poin = ExtResource("3_nu073")
+icon_menang = ExtResource("4_eia8w")
+icon_event = ExtResource("5_80yyh")
+
+[node name="Header" type="HBoxContainer" parent="." unique_id=2072295213]
+layout_mode = 2
+
+[node name="WeekLabel" type="Label" parent="Header" unique_id=1914646388]
+layout_mode = 2
+theme_type_variation = &"H1Label"
+
+[node name="GradeLabel" type="Label" parent="Header" unique_id=1283570457]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"CaptionLabel"
+horizontal_alignment = 2
+
+[node name="Pills" type="HBoxContainer" parent="." unique_id=275182380]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="PillUang" parent="Pills" unique_id=593429704 instance=ExtResource("6_bg3l5")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PillPoin" parent="Pills" unique_id=2118184385 instance=ExtResource("6_bg3l5")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PillMenang" parent="Pills" unique_id=98421677 instance=ExtResource("6_bg3l5")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PillEvent" parent="Pills" unique_id=1613000695 instance=ExtResource("6_bg3l5")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CoinShower" parent="." unique_id=1082865761 instance=ExtResource("7_1fr3o")]
+z_index = 50
+position = Vector2(114, 250)

@@ -5,8 +5,8 @@
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn" id="3_avatar"]
 [ext_resource type="Script" uid="uid://xm5t6rwv1ddu" path="res://Scripts/SchoolSimulation/DaySummaryNeedsBar.gd" id="4_0kar2"]
 [ext_resource type="PackedScene" uid="uid://badokp3g1xb25" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
-[ext_resource type="Texture2D" uid="uid://gluqad4t4h8s" path="res://Assets/Images/UI/Placeholders/icon_energy.svg" id="5_jftq2"]
-[ext_resource type="Texture2D" uid="uid://b4u3q24i144fb" path="res://Assets/Images/UI/Placeholders/icon_mood.svg" id="6_awl4u"]
+[ext_resource type="Texture2D" uid="uid://ohek4lgo3sn6" path="res://Assets/Images/StudentCard/stat_energy.png" id="5_0kar2"]
+[ext_resource type="Texture2D" uid="uid://dbl6a1ft4dmer" path="res://Assets/Images/StudentCard/stat_mood.png" id="6_jftq2"]
 
 [node name="DaySummaryStudentRow" type="Control" unique_id=385890646]
 custom_minimum_size = Vector2(992, 410)
@@ -72,7 +72,7 @@ offset_top = -22.0
 offset_right = 58.0
 offset_bottom = 22.0
 grow_vertical = 2
-texture = ExtResource("5_jftq2")
+texture = ExtResource("5_0kar2")
 expand_mode = 1
 stretch_mode = 5
 
@@ -119,7 +119,7 @@ offset_top = -22.0
 offset_right = 58.0
 offset_bottom = 22.0
 grow_vertical = 2
-texture = ExtResource("6_awl4u")
+texture = ExtResource("6_jftq2")
 expand_mode = 1
 stretch_mode = 5
 

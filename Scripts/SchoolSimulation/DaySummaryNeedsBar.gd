@@ -27,11 +27,12 @@ const TIER_WORDS := {
 ## Anything above the second cut takes the top word.
 const TIER_CUTS := [33.0, 66.0]
 
-## Which icon each need wears. These are the project's existing
-## transparent SVGs -- named for the need, as the design ask specified.
+## Which icon each need wears. Reuses StudentCard's own energy/mood
+## icons rather than the placeholder SVGs, so this card and StudentCard
+## read as the same need with the same glyph.
 const ICON_FOR := {
-	"energy": "res://Assets/Images/UI/Placeholders/icon_energy.svg",
-	"mood": "res://Assets/Images/UI/Placeholders/icon_mood.svg",
+	"energy": "res://Assets/Images/StudentCard/stat_energy.png",
+	"mood": "res://Assets/Images/StudentCard/stat_mood.png",
 }
 
 @onready var icon: TextureRect = $Icon

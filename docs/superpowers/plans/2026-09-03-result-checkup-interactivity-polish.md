@@ -756,32 +756,73 @@ Append to `tests/test_day_summary.gd`:
 ## section 4). DeltaLabel keeps carrying the text as data (existing
 ## coverage of format_needs_delta stays meaningful) but is never
 ## rendered; DeltaChevron is what the player actually sees.
+##
+## setup_week_row reads its delta from StudentData.get_energy_delta()/
+## get_mood_delta(), which are simply `energy - initial_energy` /
+## `mood - initial_mood` (StudentData.gd) -- so a test controls the
+## delta by setting `initial_energy`/`energy` (or the mood pair) apart,
+## not by passing a delta directly.
 func test_needs_delta_chevron_points_up_on_a_gain() -> void:
 	var row := _make_row()
-	row.setup_week_row(_student_with_deltas(energy_delta = 8.0, mood_delta = 0.0))
+	var student := StudentData.new()
+	student.initial_energy = 40.0
+	student.energy = 48.0  # +8
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
 	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
 	assert_true(chevron.visible, "a gain shows the chevron")
 	assert_eq(chevron.rotation_degrees, 0.0, "a gain points up")
 	assert_false(row.energy_delta_label.visible,
 		"the number itself is never rendered")
+	row.queue_free()
 
 
 func test_needs_delta_chevron_points_down_on_a_loss() -> void:
 	var row := _make_row()
-	row.setup_week_row(_student_with_deltas(energy_delta = -12.0, mood_delta = 0.0))
+	var student := StudentData.new()
+	student.initial_energy = 52.0
+	student.energy = 40.0  # -12
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
 	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
 	assert_true(chevron.visible, "a loss shows the chevron")
 	assert_eq(chevron.rotation_degrees, 180.0, "a loss points down")
+	row.queue_free()
 
 
 func test_needs_delta_chevron_hidden_at_exactly_zero() -> void:
 	var row := _make_row()
-	row.setup_week_row(_student_with_deltas(energy_delta = 0.0, mood_delta = 0.0))
+	var student := StudentData.new()
+	student.initial_energy = 40.0
+	student.energy = 40.0  # +0
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
 	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
 	assert_false(chevron.visible, "no movement, no arrow")
+	row.queue_free()
+
+
+## Instantiates DaySummaryStudentRow.tscn, assigns the baked theme, and
+## adds it to the tree so its @onready fields resolve -- the same
+## pattern test_card_fills_its_needs_bars_on_both_paths already uses
+## earlier in this suite.
+func _make_row() -> DaySummaryStudentRow:
+	var theme: Theme = load(_THEME_PATH)
+	var row: DaySummaryStudentRow = load(
+		"res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn").instantiate()
+	row.theme = theme
+	Engine.get_main_loop().root.add_child(row)
+	return row
 ```
 
-Read the existing suite first to find (or add, matching its own established helper style) `_make_row()` and `_student_with_deltas(...)` — this file already has `setup_week_row` coverage from the 2026-09-03 week-recap pass, so a helper building a `StudentData` with controllable energy/mood deltas either already exists (reuse it) or needs the same shape as whatever the existing week-row tests already use (read `test_the_week_card_shows_both_needs_deltas` and copy its setup pattern exactly, including how it fakes "before" vs. "after" values to produce a specific delta).
+If `_THEME_PATH` is not already a const in this file, add it at the top
+of the suite matching the value used elsewhere in this codebase's test
+files: `const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"`
+(check first — it likely already exists, since other tests in this same
+file assign a theme the same way).
 
 - [ ] **Step 2: Run the test to verify it fails**
 

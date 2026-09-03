@@ -28,12 +28,14 @@ extends McpTestSuite
 ##  * ThemeDB's project-theme fallback does not populate for a scene
 ##    instantiated under the editor's own root, so the baked theme is
 ##    assigned explicitly before each scene enters the tree.
-##  * None of these scripts is @tool, so _ready() does not fire for an
+##  * SchoolDay.gd is not @tool, so its _ready() does not fire for an
 ##    editor-instantiated scene. Every assertion here therefore reads
 ##    either scene-declared state or script source text, never
 ##    runtime-built state. (Verified empirically: SchoolDay._ready()
 ##    calls start_simulation(), which would build a StudentManager off
-##    GameState -- it does not run here.)
+##    GameState -- it does not run here.) BookClockWidget.gd IS @tool as
+##    of the 2026-09-03 sky cinematic, but its _ready() only lays out its
+##    own two children, so nothing here is disturbed.
 
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 

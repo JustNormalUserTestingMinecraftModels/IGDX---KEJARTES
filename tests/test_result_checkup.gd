@@ -606,3 +606,69 @@ func test_banner_shows_a_negative_week_as_negative() -> void:
 func _pill_text(banner: Control, pill_name: String) -> String:
 	return (banner.get_node("Pills/" + pill_name).get_node("Value")
 		as Label).text
+
+
+const _HISTORY_ROW_SCENE := "res://Scenes/SchoolSimulation/WeekHistoryRow.tscn"
+
+
+func test_history_row_renders_a_minigame_win() -> void:
+	# set_entry writes through @onready fields, which Godot only
+	# populates once the node enters the tree -- same rule as
+	# WeekRecapPill's own set_pill test.
+	var row: Control = load(_HISTORY_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(row)
+	row.set_entry({
+		"day": "Senin", "category": "Olahraga",
+		"game_name": "Lomba Badminton", "won": true,
+		"score": 3, "max_score": 5,
+		"results": [{"student_name": "Budi"}, {"student_name": "Doni"}],
+	})
+	assert_contains(_row_text(row, "Breadcrumb"), "Senin",
+		"the day leads the breadcrumb")
+	assert_contains(_row_text(row, "Breadcrumb"), "Olahraga",
+		"the category follows it")
+	assert_eq(_row_text(row, "TitleRow/NameLabel"), "Lomba Badminton",
+		"the game name is the row's title")
+	assert_contains(_row_text(row, "DetailLabel"), "Budi",
+		"participants are named -- this is the new information")
+	assert_contains(_row_text(row, "DetailLabel"), "3/5",
+		"and the score is carried")
+	row.queue_free()
+
+
+func test_history_row_renders_an_event_with_affected_students() -> void:
+	var row: Control = load(_HISTORY_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(row)
+	row.set_entry({
+		"day": "Rabu", "category": "Event", "game_name": "Hujan Deras",
+		"won": true, "details": "Semua siswa kehilangan 5 energi",
+		"affected_students": ["Ani", "Cici"],
+	})
+	assert_contains(_row_text(row, "DetailLabel"), "Ani",
+		"affected students are named")
+	assert_contains(_row_text(row, "DetailLabel"), "kehilangan",
+		"and the event's own details are shown")
+	row.queue_free()
+
+
+func test_history_row_hides_the_detail_line_when_there_is_nothing_to_say() -> void:
+	var row: Control = load(_HISTORY_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(row)
+	row.set_entry({"day": "Kamis", "category": "Akademis",
+		"game_name": "Password", "won": false})
+	var detail: Label = row.get_node("Body/Lines/DetailLabel")
+	assert_false(detail.visible,
+		"an entry with no participants and no details collapses to two lines")
+	row.queue_free()
+
+
+func test_history_row_carries_no_emoji() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekHistoryRow.gd")
+	for glyph in ["📢", "📊", "📝"]:
+		assert_false(src.contains(glyph),
+			"emoji are banned as UI iconography; use the SVG icons")
+
+
+func _row_text(row: Control, path: String) -> String:
+	return (row.get_node("Body/Lines/" + path) as Label).text

@@ -189,7 +189,9 @@ func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
 	# quietly silent in game.
 	for id in ["tap", "confirm", "cancel", "success", "fail", "coin",
 			"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
-			"popup_close", "select", "error", "reward"]:
+			"popup_close", "select", "error", "reward",
+			"tally", "sparkle",
+			]:
 		assert_true(_director.has_sfx(StringName(id)),
 			"shipped scene must fill sfx slot: " + id)
 

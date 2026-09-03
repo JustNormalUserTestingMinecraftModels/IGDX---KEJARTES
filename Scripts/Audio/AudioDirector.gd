@@ -57,6 +57,13 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"reward")`: a reward is granted (SemesterEnd, lobby,
 ## SchoolDay).
 @export var sfx_reward: AudioStream
+## `play_sfx(&"tally")`: a Daily Results stat row's gold chevron pops in
+## on a day that gained. Placeholder: aliases SFX/pop.ogg until a real
+## tick lands.
+@export var sfx_tally: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
+## `play_sfx(&"sparkle")`: a reward burst or the weekly celebration
+## confetti fires. Placeholder: aliases SFX/reward.ogg.
+@export var sfx_sparkle: AudioStream = preload("res://Assets/Audio/SFX/reward.ogg")
 
 @export_group("BGM")
 ## `play_bgm(&"titlescreen")`: Splashscreen/MainMenu.
@@ -196,6 +203,8 @@ func _resolve_sfx(id: StringName) -> AudioStream:
 		&"select": return sfx_select
 		&"error": return sfx_error
 		&"reward": return sfx_reward
+		&"tally": return sfx_tally
+		&"sparkle": return sfx_sparkle
 		_: return null
 
 

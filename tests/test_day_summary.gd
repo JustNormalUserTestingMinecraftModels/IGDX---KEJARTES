@@ -1346,15 +1346,20 @@ func test_stat_row_scene_matches_the_icon_geometry_consts() -> void:
 ## A drained week must LOOK drained. format_needs_delta already produced
 ## "-12", but nothing coloured the label, so a loss rendered in the same
 ## ink as a gain (2026-09-03 spec section 4.1).
-func test_negative_needs_delta_is_tinted_danger() -> void:
+## Superseded by the 2026-09-03 interactivity pass (spec section 4):
+## _show_needs_delta no longer tints a visible number -- the number label
+## is permanently hidden and direction is conveyed by the DeltaChevron's
+## rotation (0deg up / 180deg down) instead. This test now checks that
+## replacement contract rather than the retired colour-tint one.
+func test_negative_needs_delta_points_the_chevron_down() -> void:
 	var src := FileAccess.get_file_as_string(
 		"res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd")
-	assert_contains(src, "state_danger",
-		"_show_needs_delta must tint a loss from the danger token")
-	assert_contains(src, "state_success",
-		"and a gain from the success token")
+	assert_contains(src, "rotation_degrees = 180.0",
+		"_show_needs_delta must point a loss's chevron down")
+	assert_contains(src, "rotation_degrees = 0.0",
+		"and a gain's chevron up")
 	assert_false(src.contains("Color("),
-		"the tint comes from DesignTokens, never a Color literal")
+		"the chevron's state comes from rotation, never a Color literal")
 
 
 ## The per-stat burst moves off the generic star onto the pass's own
@@ -1366,3 +1371,70 @@ func test_reward_burst_uses_the_new_particle_sprites() -> void:
 		"the glint replaces the generic star")
 	assert_contains(src, "particle_plus.png",
 		"and a + rides along with it")
+
+
+## The needs-bar delta is a directional arrow now, not a number that
+## collides with the tier word beside it (2026-09-03 interactivity spec,
+## section 4). DeltaLabel keeps carrying the text as data (existing
+## coverage of format_needs_delta stays meaningful) but is never
+## rendered; DeltaChevron is what the player actually sees.
+##
+## setup_week_row reads its delta from StudentData.get_energy_delta()/
+## get_mood_delta(), which are simply `energy - initial_energy` /
+## `mood - initial_mood` (StudentData.gd) -- so a test controls the
+## delta by setting `initial_energy`/`energy` (or the mood pair) apart,
+## not by passing a delta directly.
+func test_needs_delta_chevron_points_up_on_a_gain() -> void:
+	var row := _make_row()
+	var student := StudentData.new()
+	student.initial_energy = 40.0
+	student.energy = 48.0  # +8
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
+	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
+	assert_true(chevron.visible, "a gain shows the chevron")
+	assert_eq(chevron.rotation_degrees, 0.0, "a gain points up")
+	assert_false(row.energy_delta_label.visible,
+		"the number itself is never rendered")
+	row.queue_free()
+
+
+func test_needs_delta_chevron_points_down_on_a_loss() -> void:
+	var row := _make_row()
+	var student := StudentData.new()
+	student.initial_energy = 52.0
+	student.energy = 40.0  # -12
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
+	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
+	assert_true(chevron.visible, "a loss shows the chevron")
+	assert_eq(chevron.rotation_degrees, 180.0, "a loss points down")
+	row.queue_free()
+
+
+func test_needs_delta_chevron_hidden_at_exactly_zero() -> void:
+	var row := _make_row()
+	var student := StudentData.new()
+	student.initial_energy = 40.0
+	student.energy = 40.0  # +0
+	student.initial_mood = 50.0
+	student.mood = 50.0  # +0
+	row.setup_week_row(student)
+	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
+	assert_false(chevron.visible, "no movement, no arrow")
+	row.queue_free()
+
+
+## Instantiates DaySummaryStudentRow.tscn, assigns the baked theme, and
+## adds it to the tree so its @onready fields resolve -- the same
+## pattern test_card_fills_its_needs_bars_on_both_paths already uses
+## earlier in this suite.
+func _make_row() -> DaySummaryStudentRow:
+	var theme: Theme = load(_THEME_PATH)
+	var row: DaySummaryStudentRow = load(
+		"res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn").instantiate()
+	row.theme = theme
+	Engine.get_main_loop().root.add_child(row)
+	return row

@@ -162,14 +162,25 @@ func test_the_week_card_shows_both_needs_deltas() -> void:
 
 	inst.setup_week_row(s)
 
-	assert_true(inst.energy_delta_label.visible,
-		"the week card must show the energy delta")
-	assert_true(inst.mood_delta_label.visible,
-		"the week card must show the mood delta")
+	# The number itself is never rendered any more (2026-09-03
+	# interactivity spec, section 4) -- direction now reads as the
+	# DeltaChevron's rotation. The label still carries the correct text
+	# as data (format_needs_delta's own coverage stays meaningful) but
+	# stays permanently hidden.
+	assert_false(inst.energy_delta_label.visible,
+		"the number is never rendered, even for a real delta")
+	assert_false(inst.mood_delta_label.visible,
+		"same for the mood number")
 	assert_eq(inst.energy_delta_label.text, "-18",
 		"energy fell 80 -> 62 across the week")
 	assert_eq(inst.mood_delta_label.text, "+15",
 		"mood rose 70 -> 85 across the week")
+	var energy_chevron: TextureRect = inst.get_node("EnergyBar/DeltaChevron")
+	var mood_chevron: TextureRect = inst.get_node("MoodBar/DeltaChevron")
+	assert_true(energy_chevron.visible, "a real loss shows the energy chevron")
+	assert_eq(energy_chevron.rotation_degrees, 180.0, "energy fell, so it points down")
+	assert_true(mood_chevron.visible, "a real gain shows the mood chevron")
+	assert_eq(mood_chevron.rotation_degrees, 0.0, "mood rose, so it points up")
 	assert_true(is_equal_approx(inst.energy_bar.value, 62.0),
 		"the bar itself still reads tonight's energy")
 	assert_true(is_equal_approx(inst.mood_bar.value, 85.0),
@@ -266,24 +277,30 @@ func test_a_played_week_lands_on_tonights_values() -> void:
 		"replaying the week must land exactly on the number, not a float-eased approximation")
 
 
-## The needs delta labels count up (or down) from 0 alongside the bar
-## they sit beside, same as the stat rows' "+18/65" -- play_week_gain
-## must rewind the label the instant it is called, before any tween
-## stepping, or a still screenshot mid-animation would show the wrong
-## number relative to the bar's own rewound position.
-func test_the_week_cards_needs_deltas_rewind_to_zero_before_counting_up() -> void:
+## Superseded by the 2026-09-03 interactivity pass (spec section 4):
+## the needs delta LABEL is never visible any more, so play_gain's own
+## "if energy_delta_label.visible: count_up_formatted(...)" branch
+## (Scripts/SchoolSimulation/DaySummaryStudentRow.gd) is permanently
+## dead for this label -- there is no more rewind-to-zero-then-count
+## animation to verify. What play_week_gain must still get right is
+## that it does NOT touch the label's already-correct text at all,
+## since the chevron (not the label) is what the player actually sees,
+## and the chevron has no "rewind" concept -- rotation is not a counted
+## number.
+func test_the_week_cards_needs_delta_text_is_untouched_by_play_gain() -> void:
 	var inst := _card()
 	var s := _student_with_week(
 		{"energy": 80.0, "mood": 40.0},
 		{"energy": 62.0, "mood": 55.0})
 	inst.setup_week_row(s)
 
+	assert_eq(inst.energy_delta_label.text, "-18",
+		"setup_week_row already wrote the final text")
 	inst.play_week_gain()
-
-	assert_eq(inst.energy_delta_label.text, "+0",
-		"the energy delta must rewind to 0 before counting down to -18")
-	assert_eq(inst.mood_delta_label.text, "+0",
-		"the mood delta must rewind to 0 before counting up to +15")
+	assert_eq(inst.energy_delta_label.text, "-18",
+		"play_week_gain leaves it exactly as setup wrote it -- no rewind, no count")
+	assert_eq(inst.mood_delta_label.text, "+15",
+		"same for mood")
 
 
 ## The daily card's needs bars now animate too (2026-08-31 request:
@@ -399,8 +416,13 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 	assert_eq(first.stat_rows[0].value.text,
 		"+12/%d" % int(round(manager.students[0].target_akademis1)),
 		"the card must read the WEEK's gain against that student's target")
-	assert_true(first.energy_delta_label.visible,
-		"the weekly card shows its needs deltas")
+	# The number label is never rendered any more (2026-09-03
+	# interactivity spec, section 4); the DeltaChevron is what shows
+	# the weekly movement now.
+	assert_false(first.energy_delta_label.visible,
+		"the number itself stays hidden")
+	var chevron: TextureRect = first.get_node("EnergyBar/DeltaChevron")
+	assert_not_null(chevron, "the weekly card still shows its needs delta, as a chevron")
 
 
 ## The old screen hand-built a five-StatBar panel per student, plus an

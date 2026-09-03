@@ -38,6 +38,12 @@ const GAIN_STEP := 0.08
 @onready var mood_bar: DaySummaryNeedsBar = $MoodBar
 @onready var energy_delta_label: Label = $EnergyBar/DeltaLabel
 @onready var mood_delta_label: Label = $MoodBar/DeltaLabel
+## The directional arrow replacing the needs-bar delta NUMBER (2026-09-03
+## interactivity spec, section 4) -- energy_delta_label/mood_delta_label
+## still carry the formatted text as data for format_needs_delta's own
+## test coverage, but are never shown; these chevrons are what renders.
+@onready var energy_delta_chevron: TextureRect = $EnergyBar/DeltaChevron
+@onready var mood_delta_chevron: TextureRect = $MoodBar/DeltaChevron
 @onready var stat_rows: Array[DaySummaryStatRow] = [
 	$StatRow1, $StatRow2, $StatRow3,
 ]
@@ -86,6 +92,8 @@ func setup_row(student_name: String, changes: Array, student: StudentData) -> vo
 	# default, so a card re-armed from the weekly path is still correct.
 	energy_delta_label.hide()
 	mood_delta_label.hide()
+	energy_delta_chevron.hide()
+	mood_delta_chevron.hide()
 
 	var needs_deltas := _sum_needs_deltas(changes)
 	_energy_from = clampf(energy_bar.value - needs_deltas.get("energy", 0.0), 0.0, 100.0)
@@ -190,8 +198,8 @@ func setup_week_row(student: StudentData) -> void:
 	_mood_from = clampf(student.mood - mood_delta, 0.0, 100.0)
 	_energy_delta = energy_delta
 	_mood_delta = mood_delta
-	_show_needs_delta(energy_delta_label, energy_delta)
-	_show_needs_delta(mood_delta_label, mood_delta)
+	_show_needs_delta(energy_delta_label, energy_delta_chevron, energy_delta)
+	_show_needs_delta(mood_delta_label, mood_delta_chevron, mood_delta)
 
 	_write_stat_rows({
 		"akademis": student.get_akademis_delta(),
@@ -200,22 +208,24 @@ func setup_week_row(student: StudentData) -> void:
 	}, student)
 
 
-## Write and reveal one needs-bar delta label, tinted by its direction:
-## a gain reads success-green, a loss danger-red, and an exactly-flat
-## needs bar stays in the card's own ink so "+0" does not claim to be
-## good news. self_modulate rather than a font colour override, because
-## the label's variation owns its typography (project rule: no
-## theme_override_*).
-func _show_needs_delta(label: Label, delta: float) -> void:
+## Point one needs-bar's directional chevron by its delta's sign, and
+## keep writing the label's TEXT (never its visibility) so
+## format_needs_delta's own coverage stays meaningful. A gain points the
+## chevron up (rotation 0), a loss points it down (rotation 180, the
+## same up-arrow asset DaySummaryStatRow's own chevron uses, reused
+## rather than drawn twice), and exactly zero shows neither -- matching
+## this card's "no news, no icon" rule everywhere else.
+func _show_needs_delta(label: Label, chevron: TextureRect, delta: float) -> void:
 	label.text = format_needs_delta(delta)
-	var t := Juice.tokens()
+	label.visible = false
 	if delta > 0.0:
-		label.self_modulate = t.state_success
+		chevron.rotation_degrees = 0.0
+		chevron.visible = true
 	elif delta < 0.0:
-		label.self_modulate = t.state_danger
+		chevron.rotation_degrees = 180.0
+		chevron.visible = true
 	else:
-		label.self_modulate = t.text_primary
-	label.show()
+		chevron.visible = false
 
 
 ## Replay every stat track's growth for today (or this week), one row

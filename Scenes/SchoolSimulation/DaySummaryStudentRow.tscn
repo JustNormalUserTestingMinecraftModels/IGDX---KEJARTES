@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://xm5t6rwv1ddu" path="res://Scripts/SchoolSimulation/DaySummaryNeedsBar.gd" id="4_0kar2"]
 [ext_resource type="PackedScene" uid="uid://badokp3g1xb25" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
 [ext_resource type="Texture2D" uid="uid://ohek4lgo3sn6" path="res://Assets/Images/StudentCard/stat_energy.png" id="5_0kar2"]
+[ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="6_awl4u"]
 [ext_resource type="Texture2D" uid="uid://dbl6a1ft4dmer" path="res://Assets/Images/StudentCard/stat_mood.png" id="6_jftq2"]
 
 [node name="DaySummaryStudentRow" type="Control" unique_id=385890646]
@@ -89,6 +90,20 @@ theme_type_variation = &"DaySummaryNeedsLabel"
 text = "Lelah"
 vertical_alignment = 1
 
+[node name="DeltaChevron" type="TextureRect" parent="EnergyBar" unique_id=1575630085]
+visible = false
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 195.0
+offset_top = -14.0
+offset_right = 223.0
+offset_bottom = 14.0
+grow_vertical = 2
+texture = ExtResource("6_awl4u")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="MoodBar" type="ProgressBar" parent="." unique_id=325317914]
 layout_mode = 1
 offset_left = 336.0
@@ -135,6 +150,20 @@ grow_vertical = 2
 theme_type_variation = &"DaySummaryNeedsLabel"
 text = "Senang"
 vertical_alignment = 1
+
+[node name="DeltaChevron" type="TextureRect" parent="MoodBar" unique_id=827949514]
+visible = false
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 195.0
+offset_top = -14.0
+offset_right = 223.0
+offset_bottom = 14.0
+grow_vertical = 2
+texture = ExtResource("6_awl4u")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="StatRow1" parent="." unique_id=1507679513 instance=ExtResource("4_statrow")]
 layout_mode = 1

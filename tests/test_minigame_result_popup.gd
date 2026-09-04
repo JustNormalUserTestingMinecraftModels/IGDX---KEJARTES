@@ -157,3 +157,23 @@ func test_star_calculation_stayed_on_base_minigame() -> void:
 	var popup_src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
 	assert_false(popup_src.contains("_calculate_stars"),
 		"the popup renders stars, it does not decide them")
+
+
+## Every icon this screen now uses instead of an emoji glyph. The project
+## banned emoji as UI iconography during the 2026-09-02 pass; these are the
+## replacements.
+const RESULT_ICONS := [
+	"res://Assets/Images/UI/Placeholders/icon_bintang.svg",
+	"res://Assets/Images/UI/Placeholders/icon_bintang_kosong.svg",
+	"res://Assets/Images/UI/Placeholders/icon_skor.svg",
+	"res://Assets/Images/UI/Placeholders/icon_target.svg",
+	"res://Assets/Images/UI/Placeholders/icon_akurasi.svg",
+	"res://Assets/Images/UI/Placeholders/icon_kombo.svg",
+	"res://Assets/Images/UI/Placeholders/icon_waktu.svg",
+]
+
+
+func test_every_result_icon_exists_and_loads_as_a_texture() -> void:
+	for path in RESULT_ICONS:
+		assert_true(ResourceLoader.exists(path), "%s exists" % path)
+		assert_true(load(path) is Texture2D, "%s loads as a Texture2D" % path)

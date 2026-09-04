@@ -211,3 +211,34 @@ func test_badminton_calls_sync_score_alias_on_every_rally_point_and_at_game_end(
 		"sync_score_alias() should be called at both score sites, in both "
 		+ "win_game() and lose_game(), and once on reset -- five call sites beyond "
 		+ "the declaration, so more than 3")
+
+
+const BATIK_PATH := "res://Scripts/Minigames/SeniBudaya/BuatBatik.gd"
+## BuatBatik.gd declares no class_name -- see MainBolaScript's comment in
+## Task 2's test additions for why a preloaded Script const is used instead
+## of the bare class name.
+const BatikScript := preload("res://Scripts/Minigames/SeniBudaya/BuatBatik.gd")
+
+
+func test_batik_rates_a_flawless_sequence_at_three_stars() -> void:
+	var ratio := BatikScript._mistake_free_ratio(0, 4)
+	assert_true(absf(ratio - 1.0) < 0.001, "no wrong tools placed")
+	assert_eq(BaseMinigame._calculate_stars(ratio, true), 3, "and earns three stars")
+
+
+func test_batik_rates_a_run_with_mistakes_lower() -> void:
+	# two mistakes against four required steps
+	var ratio := BatikScript._mistake_free_ratio(2, 4)
+	assert_true(absf(ratio - 0.5) < 0.001, "two mistakes halves the rating")
+	assert_eq(BaseMinigame._calculate_stars(ratio, true), 1, "and is one star")
+
+
+func test_batik_never_reports_a_negative_ratio() -> void:
+	var ratio := BatikScript._mistake_free_ratio(99, 4)
+	assert_true(absf(ratio - 0.0) < 0.001, "mistakes clamp at zero, not below")
+
+
+func test_batik_get_star_ratio_delegates_to_the_static_helper() -> void:
+	var src := FileAccess.get_file_as_string(BATIK_PATH)
+	assert_true(src.contains("_mistake_free_ratio("),
+		"get_star_ratio() calls the static helper rather than re-deriving the math")

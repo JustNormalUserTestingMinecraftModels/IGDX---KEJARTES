@@ -112,6 +112,9 @@ const WRONG_LAYER_COLOR: Color = Color(0.8, 0.1, 0.1, 0.45)
 
 # ─── Correct sequence ────────────────────────────────────────────────────────
 var correct_sequence: Array = ["Tool0", "Tool1", "Tool2", "Tool3"]
+## Wrong tool placements this run. The star rubric's only input -- BuatBatik
+## has no score, so a clean sequence is what mastery means here.
+var wrong_attempts: int = 0
 var player_sequence: Array = []
 var has_failed: bool = false
 var auto_revealed_steps: Array = []   # Array of step indices placed by reveal_answers
@@ -462,6 +465,7 @@ func _check_tool_drop() -> void:
 		else:
 			# ❌ Wrong tool — add a "messed up" layer
 			has_failed = true
+			wrong_attempts += 1
 			player_sequence.append(active_tool_name)
 			_add_wrong_layer(step)
 			# Force the remaining tools to be used but record failure
@@ -701,6 +705,23 @@ func reveal_answers() -> void:
 	# Finished auto-revealing all correct steps — display result failure overlay
 	await get_tree().create_timer(0.6).timeout
 	_show_result_overlay(false, "Urutan Pembuatan Batik Kurang Tepat!")
+
+## Cleanliness of the batik sequence: every wrong tool placement costs one
+## step's worth of the rating. A four-step pattern laid down without a single
+## mistake rates 1.0.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func _mistake_free_ratio(wrong_attempts: int, required_steps: int) -> float:
+	if required_steps <= 0:
+		return STAR_RATIO_UNKNOWN
+	return clampf(1.0 - float(wrong_attempts) / float(required_steps), 0.0, 1.0)
+
+
+## How well the player did this run, delegated to the static helper above.
+##
+## Affects: nothing. Pure. Read by BaseMinigame._show_result_overlay().
+func get_star_ratio() -> float:
+	return _mistake_free_ratio(wrong_attempts, correct_sequence.size())
 
 func _on_all_steps_done(all_correct: bool) -> void:
 	await get_tree().create_timer(0.6).timeout

@@ -63,7 +63,11 @@ const STAR_HOLD_TIMES: Array[float] = [0.06, 0.10, 0.18]
 ## Stars at or above which the card fires its screen-wide confetti. Three: a
 ## two-star finish staying quiet is what makes three mean something.
 const CONFETTI_STAR_THRESHOLD: int = 3
-## Seconds the score readout takes to tally up from zero.
+## Intended seconds for the score readout's tally-up, kept for interface
+## completeness -- currently unused. Juice.count_up() (the tally call this
+## file actually makes) has no duration parameter; its animation length is
+## hardcoded to DesignTokens.dur_slow. Wire this in if Juice.gd ever grows
+## a duration override.
 const SCORE_COUNT_TIME: float = 0.6
 
 @onready var dim: ColorRect = $Dim

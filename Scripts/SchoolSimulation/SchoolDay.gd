@@ -263,6 +263,7 @@ func start_simulation() -> void:
 	minigames_played_this_week = 0
 	events_triggered_this_week = 0
 	max_events_this_week = randi_range(1, 2)
+	GameState.minigame_gain_this_week.clear()
 	student_manager = StudentManager.new()
 	student_manager.initialize_from_gamestate()
 	if skip_button:

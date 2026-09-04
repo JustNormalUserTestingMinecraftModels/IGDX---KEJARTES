@@ -23,6 +23,13 @@ var minigame_history: Array[Dictionary] = [] # entries: {day, category, game_nam
 # source: "decay"|"activity"|"minigame_win"|"minigame_loss"|"event"|"holiday"
 var daily_stat_log: Dictionary = {}
 
+## This grade's per-student weekly minigame-win skill cap.
+func _weekly_minigame_cap() -> float:
+	match GameState.current_grade:
+		8: return Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_8
+		9: return Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_9
+		_: return Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_7
+
 func _init() -> void:
 	initialize_students()
 
@@ -75,6 +82,23 @@ func record_minigame_result(day_name: String, category: String, game_name: Strin
 	var roster_points := 0.0
 	for student in students:
 		var deltas = student.apply_minigame_result(category, won, score, max_score)
+
+		# Apply weekly minigame cap: wins are capped per student, losses are untouched
+		var raw_delta: float = float(deltas.get("stat_delta", 0.0))
+		if won and raw_delta > 0.0:
+			var cap: float = _weekly_minigame_cap()
+			var sid: int = student.id
+			var already: float = float(GameState.minigame_gain_this_week.get(sid, 0.0))
+			var allowed: float = maxf(0.0, cap - already)
+			if raw_delta > allowed:
+				var overflow: float = raw_delta - allowed
+				match category:
+					"Akademis":   student.akademis    = clampf(student.akademis    - overflow, 0.0, 100.0)
+					"SeniBudaya": student.seni_budaya  = clampf(student.seni_budaya  - overflow, 0.0, 100.0)
+					"Olahraga":   student.olahraga     = clampf(student.olahraga     - overflow, 0.0, 100.0)
+				deltas["stat_delta"] = allowed
+			GameState.minigame_gain_this_week[sid] = already + minf(raw_delta, allowed)
+
 		roster_points += float(deltas.get("stat_delta", 0.0))
 		results.append({
 			"student_name": student.student_name,

@@ -57,15 +57,24 @@ func test_both_scenes_exist() -> void:
 
 func test_popup_scene_carries_every_node_the_script_binds() -> void:
 	var node := _make()
-	for path in ["Dim", "Dim/Center/Card/Layout/TitleLabel",
+	for path in ["Dim", "Dim/ResultConfetti",
+			"Dim/Center/Card/Layout/TitleLabel",
 			"Dim/Center/Card/Layout/StarRow",
 			"Dim/Center/Card/Layout/NameLabel",
-			"Dim/Center/Card/Layout/ScoreRow/ScorePrefixLabel",
-			"Dim/Center/Card/Layout/ScoreRow/ScoreValueLabel",
+			"Dim/Center/Card/Layout/ScorePanel",
+			"Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScoreIcon",
+			"Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScorePrefixLabel",
+			"Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScoreValueLabel",
 			"Dim/Center/Card/Layout/CategoryBadge",
-			"Dim/Center/Card/Layout/StatDeltaLabel",
-			"Dim/Center/Card/Layout/EnergyDeltaLabel",
-			"Dim/Center/Card/Layout/MoodDeltaLabel",
+			"Dim/Center/Card/Layout/CategoryBadge/BadgeRow/BadgeIcon",
+			"Dim/Center/Card/Layout/CategoryBadge/BadgeRow/BadgeLabel",
+			"Dim/Center/Card/Layout/DeltaPanel",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/StatDeltaRow/StatDeltaIcon",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/StatDeltaRow/StatDeltaLabel",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/EnergyDeltaRow/EnergyDeltaIcon",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/EnergyDeltaRow/EnergyDeltaLabel",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow/MoodDeltaIcon",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow/MoodDeltaLabel",
 			"Dim/Center/Card/Layout/ContinueButtonCenter/ContinueButton"]:
 		assert_not_null(node.get_node_or_null(path), "missing node: %s" % path)
 
@@ -102,17 +111,19 @@ func test_score_row_hides_when_no_score_data() -> void:
 	# The shipped code only showed the score line when mg_score >= 0 and
 	# mg_max_score > 0. max_score <= 0 means "this minigame doesn't track a
 	# score" -- the row must stay hidden, not show "0 / 0" or similar.
+	# Task 12 moved the toggle from ScoreRow onto its new ScorePanel wrapper.
 	var node := _make()
 	node.configure(true, 1, -1, -1, "Budi", "", 0.0, 0.0, 0.0, STYLE)
-	assert_false(node.get_node("Dim/Center/Card/Layout/ScoreRow").visible)
+	assert_false(node.get_node("Dim/Center/Card/Layout/ScorePanel").visible)
 
 
 func test_score_row_shows_and_reads_score_over_max() -> void:
 	var node := _make()
 	node.configure(true, 3, 4, 5, "Budi", "", 0.0, 0.0, 0.0, STYLE)
-	var row: Control = node.get_node("Dim/Center/Card/Layout/ScoreRow")
-	assert_true(row.visible)
-	var value_text: String = node.get_node("Dim/Center/Card/Layout/ScoreRow/ScoreValueLabel").text
+	var panel: Control = node.get_node("Dim/Center/Card/Layout/ScorePanel")
+	assert_true(panel.visible)
+	var value_text: String = \
+		node.get_node("Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScoreValueLabel").text
 	assert_contains(value_text, "4")
 	assert_contains(value_text, "5")
 
@@ -123,24 +134,67 @@ func test_category_badge_hides_when_no_category() -> void:
 	assert_false(node.get_node("Dim/Center/Card/Layout/CategoryBadge").visible)
 
 
-func test_category_badge_shows_the_right_icon_and_colour() -> void:
+func test_the_popup_uses_no_emoji_as_iconography() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	# GDScript takes \U plus eight hex digits for the astral planes; the
+	# three BMP glyphs below are safe as literals. Note \u{...} is NOT valid
+	# syntax.
+	var banned: Array[String] = [
+		"\U0001F4DA", "\U0001F3A8", "⚽", "⚡", "\U0001F60A",
+		"\U0001F389", "\U0001F525", "✨", "\U0001F680", "\U0001F3AE",
+	]
+	for glyph in banned:
+		assert_false(src.contains(glyph),
+			"emoji-as-iconography has been banned since the 2026-09-02 pass")
+
+
+func test_the_category_badge_shows_a_texture_not_a_glyph() -> void:
 	var node := _make()
-	node.configure(true, 1, -1, -1, "Budi", "Olahraga", 0.0, 0.0, 0.0, STYLE)
-	var badge: Label = node.get_node("Dim/Center/Card/Layout/CategoryBadge")
-	assert_true(badge.visible)
-	assert_contains(badge.text, "Olahraga")
-	assert_contains(badge.text, "⚽")
+	node.configure(true, 3, 3, 3, "Pilihan Ganda", "Akademis", 5.0, -2.0, 1.0, STYLE)
+	assert_true(node.badge_icon.texture != null, "the badge carries an icon texture")
+	assert_eq(node.category_badge_label.text, "Akademis", "and just the name as text")
+
+
+func test_each_delta_row_carries_its_own_icon() -> void:
+	var node := _make()
+	node.configure(true, 3, 3, 3, "Pilihan Ganda", "Olahraga", 5.0, -2.0, 1.0, STYLE)
+	assert_true(node.stat_delta_icon.texture != null, "the stat delta has an icon")
+	assert_true(node.energy_delta_icon.texture != null, "energy has icon_energy")
+	assert_true(node.mood_delta_icon.texture != null, "mood has icon_mood")
+
+
+func test_configure_builds_no_styleboxes_or_overrides_at_runtime() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_false(src.contains("StyleBoxFlat.new()"),
+		"card, badge and button chrome come from theme variations now")
+	assert_false(src.contains("StyleBoxTexture.new()"), "same for the textured card")
+	assert_false(src.contains("add_theme_stylebox_override"), "no stylebox overrides")
+	assert_false(src.contains("add_theme_color_override"), "no colour overrides")
+	assert_false(src.contains("add_theme_font_size_override"), "no font-size overrides")
+
+
+func test_the_score_row_shows_for_a_game_with_only_a_target() -> void:
+	var node := _make()
+	# Badminton's shape after Task 4: a real score, a real target.
+	node.configure(true, 3, 7, 7, "Badminton", "Olahraga", 5.0, -2.0, 1.0, STYLE)
+	assert_true(node.score_panel.visible,
+		"a target-based game gets a score row, not a blank card")
 
 
 func test_each_delta_label_hides_independently_when_its_delta_is_zero() -> void:
+	# Task 12 moved the toggle from each Label onto its own row
+	# (StatDeltaRow/EnergyDeltaRow/MoodDeltaRow), so a hidden row takes its
+	# icon with it.
 	var node := _make()
 	node.configure(true, 1, -1, -1, "Budi", "Akademis", 5.0, 0.0, -3.0, STYLE)
-	assert_true(node.get_node("Dim/Center/Card/Layout/StatDeltaLabel").visible)
-	assert_false(node.get_node("Dim/Center/Card/Layout/EnergyDeltaLabel").visible,
-		"energy delta is 0.0 -- its label must stay hidden")
-	assert_true(node.get_node("Dim/Center/Card/Layout/MoodDeltaLabel").visible)
-	assert_contains(node.get_node("Dim/Center/Card/Layout/StatDeltaLabel").text, "+5")
-	assert_contains(node.get_node("Dim/Center/Card/Layout/MoodDeltaLabel").text, "-3")
+	var stat_row := node.get_node("Dim/Center/Card/Layout/DeltaPanel/DeltaList/StatDeltaRow")
+	var energy_row := node.get_node("Dim/Center/Card/Layout/DeltaPanel/DeltaList/EnergyDeltaRow")
+	var mood_row := node.get_node("Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow")
+	assert_true(stat_row.visible)
+	assert_false(energy_row.visible, "energy delta is 0.0 -- its row must stay hidden")
+	assert_true(mood_row.visible)
+	assert_contains(node.stat_delta_label.text, "+5")
+	assert_contains(node.mood_delta_label.text, "-3")
 
 
 func test_base_minigame_no_longer_builds_the_result_card() -> void:

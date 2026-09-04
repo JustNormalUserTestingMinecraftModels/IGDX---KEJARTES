@@ -39,7 +39,7 @@ var has_time_limit: bool = false
 # ─── Visual - Result Overlay (Win/Lose Condition Texts) ─────────────────────
 @export_group("Visual - Result Overlay")
 ## Custom Win title text. Leave default or customize per minigame.
-@export var win_title_text: String = "Kamu Berhasil! 🎉"
+@export var win_title_text: String = "Kamu Berhasil!"
 ## Custom Lose title text.
 @export var lose_title_text: String = "Belum Tepat, Coba Lagi Lain Kali!"
 ## Custom Win subtitle text.

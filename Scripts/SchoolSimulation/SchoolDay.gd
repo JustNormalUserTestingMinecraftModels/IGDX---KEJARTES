@@ -119,6 +119,9 @@ var is_skipped: bool = false
 var minigames_played_this_week: int = 0
 var events_triggered_this_week: int = 0
 var max_events_this_week: int = 2
+## Rolled once per week from Balance.MINIGAME_MAKS_MINGGU_MIN..MAX. The player
+## cannot bank on a fixed number of minigames -- see the anti-exploit spec.
+var max_minigames_this_week: int = 2
 var is_waiting_for_continue: bool = false
 
 var embedded_widgets: Dictionary = {} # student_name -> Dictionary of node refs
@@ -263,6 +266,7 @@ func start_simulation() -> void:
 	minigames_played_this_week = 0
 	events_triggered_this_week = 0
 	max_events_this_week = randi_range(1, 2)
+	max_minigames_this_week = randi_range(Balance.MINIGAME_MAKS_MINGGU_MIN, Balance.MINIGAME_MAKS_MINGGU_MAX)
 	GameState.minigame_gain_this_week.clear()
 	student_manager = StudentManager.new()
 	student_manager.initialize_from_gamestate()
@@ -848,7 +852,7 @@ func _roll_event(day_name: String) -> void:
 	# Dynamic weight calculation:
 	# Minigame weight scales with active studying students (0 to 4 * 15 = 0 to 60)
 	var w_minigame: int = 0
-	if minigames_played_this_week < 2:
+	if minigames_played_this_week < max_minigames_this_week:
 		w_minigame = active_studying * 15
 
 	# Event weight capped at 1-2 per week
@@ -888,22 +892,25 @@ func _roll_event(day_name: String) -> void:
 		await get_tree().create_timer(0.8).timeout
 
 	elif outcome == "Minigame":
-		var total_subject_weight = w_akademis + w_olahraga + w_seni
 		var category_selected = ""
-
-		if total_subject_weight == 0:
-			var cat_roll = randi() % 3
-			if cat_roll == 0: category_selected = "Akademis"
-			elif cat_roll == 1: category_selected = "Olahraga"
-			else: category_selected = "SeniBudaya"
+		if randf() < Balance.MINIGAME_KATEGORI_ACAK_PELUANG:
+			var r := randi() % 3
+			category_selected = "Akademis" if r == 0 else ("Olahraga" if r == 1 else "SeniBudaya")
 		else:
-			var choice = randi() % total_subject_weight
-			if choice < w_akademis:
-				category_selected = "Akademis"
-			elif choice < w_akademis + w_olahraga:
-				category_selected = "Olahraga"
+			var total_subject_weight = w_akademis + w_olahraga + w_seni
+			if total_subject_weight == 0:
+				var cat_roll = randi() % 3
+				if cat_roll == 0: category_selected = "Akademis"
+				elif cat_roll == 1: category_selected = "Olahraga"
+				else: category_selected = "SeniBudaya"
 			else:
-				category_selected = "SeniBudaya"
+				var choice = randi() % total_subject_weight
+				if choice < w_akademis:
+					category_selected = "Akademis"
+				elif choice < w_akademis + w_olahraga:
+					category_selected = "Olahraga"
+				else:
+					category_selected = "SeniBudaya"
 
 		var tokens := Juice.tokens()
 		if category_selected == "Akademis":

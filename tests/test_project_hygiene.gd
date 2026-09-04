@@ -126,3 +126,20 @@ func test_the_run_result_icons_are_transparent_backed() -> void:
 			"res://Assets/Images/UI/Placeholders/%s.svg" % icon_name)
 		assert_false(src.contains('x="0" y="0" width="100" height="100"'),
 			"%s has no full-bleed background rect" % icon_name)
+
+
+## Plan A (2026-09-04) replaced the SemesterEnd carousel with StatCheck.
+## Pinned so the scene and its row template cannot drift back in.
+##
+## FileAccess.file_exists(), not ResourceLoader.exists(): the invariant is
+## "this file is not in the repo", and only the former reads the disk.
+## ResourceLoader consults the editor's resource cache, which keeps
+## reporting a just-deleted script as present for the rest of the session --
+## it did exactly that when these files were removed, failing this test
+## while disk and git both agreed they were gone.
+func test_semester_end_and_its_row_template_are_gone() -> void:
+	for path in ["res://Scenes/EndGame/SemesterEnd.tscn",
+			"res://Scripts/EndGame/SemesterEnd.gd",
+			"res://Scenes/EndGame/ResultStatRow.tscn",
+			"res://Scripts/EndGame/ResultStatRow.gd"]:
+		assert_false(FileAccess.file_exists(path), path + " must be deleted")

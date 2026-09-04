@@ -54,7 +54,7 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"error")`: an action is rejected (atur_jadwal, inventory,
 ## koperasi's insufficient-funds/empty-cart, lobby, student_card).
 @export var sfx_error: AudioStream
-## `play_sfx(&"reward")`: a reward is granted (SemesterEnd, lobby,
+## `play_sfx(&"reward")`: a reward is granted (StatCheck, lobby,
 ## SchoolDay).
 @export var sfx_reward: AudioStream
 ## `play_sfx(&"tally")`: a Daily Results stat row's gold chevron pops in

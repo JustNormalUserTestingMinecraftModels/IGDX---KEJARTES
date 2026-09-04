@@ -171,7 +171,7 @@ func test_stat_pill_fill_uses_the_texture() -> void:
 	assert_true(fill.texture != null, "StatPill's fill texture must load")
 
 
-## StatBar is shared with AturJadwal, SemesterEnd and ResultCheckup. The
+## StatBar is shared with AturJadwal, StatCheck and ResultCheckup. The
 ## redesign must not have altered how it looks for them.
 func test_stat_bar_variation_is_unchanged() -> void:
 	var theme := ThemeFactory.build(DesignTokens.load_default())

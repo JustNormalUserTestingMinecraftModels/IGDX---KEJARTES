@@ -294,6 +294,8 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["TitleLabel", tokens.font_title, tokens.text_primary, false],
 		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false],
+		# (Unused since Plan A deleted SemesterEnd -- kept baked; removing
+		# a variation needs a theme rebake, which is out of scope.)
 		# The SemesterEnd carousel's page dots. Authored in the .tscn (four
 		# of them, the roster cap); the script only shows/hides and
 		# re-modulates them for the active page -- see SemesterEnd.gd.
@@ -376,9 +378,11 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_constant("shadow_offset_x", name, 2)
 		theme.set_constant("shadow_offset_y", name, 2)
 
-	# SemesterEnd is the one screen that deliberately keeps a dark,
+	# (Unused since Plan A deleted SemesterEnd -- kept baked; removing a
+	# variation needs a theme rebake, which is out of scope.)
+	# SemesterEnd was the one screen that deliberately kept a dark,
 	# certificate-like backdrop instead of the app's usual light surface
-	# (the payoff/results reveal), so its outer labels need their own
+	# (the payoff/results reveal), so its outer labels needed their own
 	# light-on-dark variations rather than the light-surface defaults
 	# every other label variation assumes.
 	theme.add_type("ResultHeroLabel")

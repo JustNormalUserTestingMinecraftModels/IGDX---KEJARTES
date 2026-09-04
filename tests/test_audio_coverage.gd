@@ -170,14 +170,6 @@ func test_result_checkup_has_sfx() -> void:
 		"ResultCheckup must play sfx: confirm")
 
 
-func test_semester_end_has_sfx() -> void:
-	var src := _source("res://Scripts/EndGame/SemesterEnd.gd")
-	assert_true(src.contains('play_sfx(&"reward")'),
-		"SemesterEnd must play sfx: reward")
-	assert_true(src.contains('play_sfx(&"success" if passed else &"fail")'),
-		"SemesterEnd must play a pass/fail verdict sfx per card")
-
-
 # ======================================================================
 # Double-fire guard: prove an sfx id is not just PRESENT, but fires ONCE
 # per player action. The other tests in this file only assert an id
@@ -353,13 +345,12 @@ func test_title_intro_result_screens_start_their_bgm() -> void:
 	var cutscene_src := _source("res://Scripts/CutScene/cut_scene.gd")
 	assert_true(cutscene_src.contains('play_bgm(&"introcutscene")'),
 		"cut_scene.gd must play the intro track")
-	assert_true(cutscene_src.contains('play_bgm(&"result_lose")'),
-		"cut_scene.gd must play result_lose for the game-over retry cutscene")
-	var semester_src := _source("res://Scripts/EndGame/SemesterEnd.gd")
-	assert_true(semester_src.contains('play_bgm(&"result_win")'),
-		"SemesterEnd.gd must play result_win on a pass")
-	assert_true(semester_src.contains('play_bgm(&"result_lose")'),
-		"SemesterEnd.gd must play result_lose on a fail")
+	# result_win / result_lose moved off SemesterEnd when StatCheck replaced
+	# it; until Plan B's win/lose screens land, no shipped script plays them.
+	# StatCheck keeps exam_notice going instead.
+	var stat_check_src := _source("res://Scripts/EndGame/StatCheck.gd")
+	assert_true(stat_check_src.contains('play_bgm(&"exam_notice")'),
+		"StatCheck.gd must keep the exam BGM running")
 
 
 func _indent_of(line: String) -> int:

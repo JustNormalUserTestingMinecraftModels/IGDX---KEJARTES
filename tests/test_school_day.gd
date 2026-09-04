@@ -11,7 +11,7 @@ extends McpTestSuite
 ## scene/script, before any migration work started, so that every later
 ## slice has something real to break. They pin down the two things a UI
 ## migration must never disturb on this screen:
-##   1. the week-end routing fork (SemesterEnd vs. Lobby), and
+##   1. the week-end routing fork (TesNotice vs. Lobby), and
 ##   2. the minigame launch boundary (GameContainer + Scenes/Minigames/*),
 ##      which is explicitly out of scope for this task.
 ##

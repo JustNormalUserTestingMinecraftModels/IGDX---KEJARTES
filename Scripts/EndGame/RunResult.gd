@@ -3,14 +3,15 @@ extends Control
 ## The last screen of a run: what the player actually did this grade,
 ## reported as six counted-up figures and one letter grade.
 ##
-## Deliberately NOT @tool -- like SemesterEnd and StudentCard, _ready()
+## Deliberately NOT @tool -- like StatCheck and StudentCard, _ready()
 ## reads GameState, starts BGM and kicks off a tween chain, none of which
 ## should fire because the editor opened the scene. Its tests are
 ## therefore source-text scans plus structural checks on a bare
 ## instantiate(), never live property reads.
 ##
 ## This screen also owns grade progression, which used to live in
-## SemesterEnd._on_restart_pressed(). It moved here because RunResult is
+## SemesterEnd._on_restart_pressed() (SemesterEnd has since been deleted,
+## replaced by StatCheck). It moved here because RunResult is
 ## now the last thing a run touches, and progression has to happen exactly
 ## once, after the report has been read.
 
@@ -167,7 +168,8 @@ func _slam_grade() -> void:
 			AudioDirector.play_sfx(&"fail"))
 
 
-## Applies the progression SemesterEnd used to apply, then goes home.
+## Applies the progression SemesterEnd used to apply (before it was deleted
+## and replaced by StatCheck), then goes home.
 ## Exactly the same three cases as before -- advance, beat-the-game reset,
 ## or retry the same grade -- just moved to the end of the sequence.
 func _on_selesai_pressed() -> void:
@@ -222,7 +224,7 @@ func _apply_progression() -> String:
 		GameState.grade7_student_ids.clear()
 		GameState.lobby_tutorial_completed = false
 
-		# Tutorial flags, carried over from SemesterEnd's old grade-7
+		# Tutorial flags, carried over from the now-deleted SemesterEnd's old grade-7
 		# full-restart branch (see Scripts/CutScene/cut_scene.gd for the
 		# same pattern still in use there).
 		var AturJadwalScript = load("res://Scripts/AturJadwal/atur_jadwal.gd")

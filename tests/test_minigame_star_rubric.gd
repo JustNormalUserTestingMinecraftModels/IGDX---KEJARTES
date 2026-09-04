@@ -61,12 +61,12 @@ func test_default_get_star_ratio_uses_max_score_when_present() -> void:
 	var b := _base()
 	b.set("score", 3)
 	b.set("max_score", 4)
-	assert_almost_eq(b.get_star_ratio(), 0.75, 0.001, "score over max_score")
+	assert_true(absf(b.get_star_ratio() - (0.75)) < 0.001, "score over max_score")
 
 
 func test_default_get_star_ratio_is_unknown_without_max_score() -> void:
 	var b := _base()
-	assert_almost_eq(b.get_star_ratio(), -1.0, 0.001,
+	assert_true(absf(b.get_star_ratio() - (-1.0)) < 0.001,
 		"a game that tracks nothing reports no ratio rather than a fake zero")
 
 

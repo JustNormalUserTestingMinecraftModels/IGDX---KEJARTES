@@ -103,6 +103,12 @@ var _is_win: bool = false
 var _star_count: int = 0
 ## What the score readout counts up to. Set fresh on every configure() call.
 var _score_target: int = 0
+## The denominator the score readout counts up *against*. Set fresh on every
+## configure() call -- deliberately separate from _score_target: they used to
+## be the same variable, which meant a non-perfect run's tally silently
+## reformatted its own denominator to match the numerator (a 3-of-5 run
+## counted up to "3 / 3"). Never conflate the two again.
+var _score_max: int = 0
 
 
 ## Fill every node from the result and BaseMinigame's popup @exports.
@@ -122,6 +128,7 @@ func configure(is_win: bool, stars: int, score: int, max_score: int,
 	_is_win = is_win
 	_star_count = stars
 	_score_target = score
+	_score_max = max_score
 
 	# ── Dim + card shell ──
 	var dim_color: Color = style["popup_dim_color"]
@@ -293,7 +300,7 @@ func play() -> void:
 			if fn == score_panel and _score_target > 0:
 				AudioDirector.play_sfx(&"score_tick")
 				Juice.count_up(score_value_label, 0.0, float(_score_target),
-					"%d / " + str(_score_target))
+					"%d / " + str(_score_max))
 			var tw_f := get_tree().create_tween()
 			tw_f.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 			tw_f.tween_property(fn, "modulate:a", 1.0, 0.18)

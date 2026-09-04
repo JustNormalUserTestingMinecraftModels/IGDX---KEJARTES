@@ -25,6 +25,7 @@ const POP_TIME: float = 0.12
 ## Burst fired at the readout when the score goes up.
 const BURST_SCENE := "res://Scenes/Minigames/UI/ScorePopBurst.tscn"
 
+@onready var panel: PanelContainer = $Panel
 @onready var icon: TextureRect = $Panel/Row/Icon
 @onready var value_label: Label = $Panel/Row/ValueLabel
 @onready var target_label: Label = $Panel/Row/TargetLabel
@@ -34,6 +35,46 @@ const BURST_SCENE := "res://Scenes/Minigames/UI/ScorePopBurst.tscn"
 
 ## Last value set_score() saw, so a re-set of the same score does not re-pop.
 var _last_score: int = 0
+
+
+## The root Control does not auto-propagate Panel's minimum size the way a
+## Container parent would, so a parent VBoxContainer (Menjodohkan,
+## PilihanGanda, Password, Variabel all mount the HUD as a VBox child) was
+## allocating this node zero height, and an absolute-positioned mount
+## (MainBola's HUDLayer -- itself a Container -- worked once this reported a
+## real minimum, but Badminton/LombaMenari mount it directly under the root
+## scene with no Container parent at all, which never auto-clamps a
+## Control's authored size up to its minimum) was left at literal zero size.
+## Panel fills this Control's full rect (see the .tscn), so reporting
+## Panel's own combined minimum size here is this node's real minimum size.
+func _get_minimum_size() -> Vector2:
+	if not is_instance_valid(panel):
+		return Vector2.ZERO
+	return panel.get_combined_minimum_size()
+
+
+## A Control outside any Container is never auto-resized to its minimum, so
+## Badminton.tscn/LombaMenari.tscn's HUD instances -- authored with
+## offset_left == offset_right (and top == bottom) as a "centered on this
+## point" anchor, the standard technique for a Container-managed sibling,
+## but mounted with no Container in between -- were staying at their
+## authored zero size. Grow explicitly around that authored anchor point.
+## Called from setup() (not _ready()) because every minigame already calls
+## setup() once at mount time, giving this a single, predictable moment to
+## run at rather than depending on node-ready ordering across scene trees.
+## Ungated by Engine.is_editor_hint() -- unlike set_score()'s audio/particle
+## side effects, this is pure layout math with no external effect, and
+## running it in the editor too is what makes the scene preview correctly.
+func _grow_to_minimum_if_unmanaged() -> void:
+	if get_parent() is Container:
+		return
+	var min_size := get_combined_minimum_size()
+	if min_size == Vector2.ZERO:
+		return
+	if size != Vector2.ZERO:
+		return
+	position -= min_size / 2.0
+	size = min_size
 
 
 ## Install the readout's icon and its target. A `target` of 0 or less hides the
@@ -47,6 +88,7 @@ func setup(hud_icon: Texture2D, target: int) -> void:
 		target_label.text = "/ %d" % target
 	value_label.text = "0"
 	_last_score = 0
+	_grow_to_minimum_if_unmanaged()
 
 
 ## Set the score. A genuine increase pops the label, fires a burst and ticks; a

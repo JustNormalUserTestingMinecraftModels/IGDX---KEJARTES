@@ -129,6 +129,13 @@ func test_score_row_shows_and_reads_score_over_max() -> void:
 		node.get_node("Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScoreValueLabel").text
 	assert_contains(value_text, "5")
 	assert_eq(node._score_target, 4, "play() will count up to this")
+	# Regression: play()'s tally used to format with _score_target as its own
+	# denominator, so a 4-of-5 run silently counted up to "4 / 4" instead of
+	# "4 / 5" -- the tally would misreport every non-perfect run as perfect.
+	# _score_max is the value that must survive as the denominator.
+	assert_eq(node._score_max, 5, "the tally's denominator is max_score, not score")
+	assert_ne(node._score_target, node._score_max,
+		"this case must keep score and max_score distinct, or it can't catch the regression")
 
 
 func test_category_badge_hides_when_no_category() -> void:
@@ -307,6 +314,20 @@ func test_every_result_variation_is_in_the_baked_theme() -> void:
 	for variation in RESULT_VARIATIONS:
 		assert_true(variation in types,
 			"%s is a baked type variation -- rebake ThemeFactory if not" % variation)
+
+
+## Regression: MinigameResultPopup._configure_delta_label() sets a delta
+## label's colour via self_modulate (green for a gain, red for a loss), which
+## *multiplies* the label's own baked font_color rather than replacing it.
+## ResultDeltaLabel used to bake tokens.text_primary -- a dark navy -- so
+## green/red-times-navy collapsed to near-black either way, destroying the
+## +/- colour coding the whole delta row exists to show. White is the
+## multiplicative identity: self_modulate's colour must survive intact.
+func test_result_delta_label_bakes_white_so_self_modulate_survives() -> void:
+	var theme: Theme = load("res://Assets/Theme/kejartes_theme.tres")
+	var base_color: Color = theme.get_color("font_color", "ResultDeltaLabel")
+	assert_eq(base_color, Color.WHITE,
+		"a non-white base defeats self_modulate's green/red multiply")
 
 
 func test_a_star_defaults_to_real_art_not_the_procedural_polygon() -> void:

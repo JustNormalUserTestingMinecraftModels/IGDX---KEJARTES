@@ -63,6 +63,28 @@ func test_the_escape_hatch_leaves_the_target_alone() -> void:
 	assert_true(hud.target_label.text.contains("7"), "and the target is untouched")
 
 
+## Regression: the root Control never propagated Panel's minimum size to a
+## VBoxContainer parent (Menjodohkan/PilihanGanda/Password/Variabel mount the
+## HUD this way), so it was allocated zero height there, and a non-Container
+## mount (Badminton/LombaMenari) stayed at literal zero size too, since a
+## bare Control outside a Container is never auto-clamped to its minimum.
+func test_setup_grows_a_zero_sized_non_container_mount_to_fit_its_content() -> void:
+	var hud := _make()
+	hud.position = Vector2(390, 40)
+	assert_eq(hud.size, Vector2.ZERO, "authored at zero size, like Badminton's mount")
+	hud.setup(load(ICON_SKOR), 5)
+	assert_true(hud.size.x > 0 and hud.size.y > 0,
+		"setup() must grow a Container-less mount to its real content size")
+
+
+func test_the_hud_reports_a_real_minimum_size_for_container_parents() -> void:
+	var hud := _make()
+	hud.setup(load(ICON_SKOR), 5)
+	var min_size: Vector2 = hud.get_combined_minimum_size()
+	assert_true(min_size.x > 0 and min_size.y > 0,
+		"a VBoxContainer mount needs a nonzero minimum to not be allocated zero height")
+
+
 func test_the_hud_adds_no_theme_overrides() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameScoreHUD.gd")
 	assert_false(src.contains("add_theme_"), "chrome comes from the theme variations")

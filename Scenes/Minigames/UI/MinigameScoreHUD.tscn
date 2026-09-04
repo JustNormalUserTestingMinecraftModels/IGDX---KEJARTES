@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c252mxoppqb74"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameScoreHUD.gd" id="1_so0nq"]
+[ext_resource type="Script" uid="uid://cmidwqkgsud8g" path="res://Scripts/Minigames/UI/MinigameScoreHUD.gd" id="1_so0nq"]
 [ext_resource type="Texture2D" uid="uid://c6m7obsoagq7e" path="res://Assets/Images/UI/Placeholders/icon_kombo.svg" id="2_hanf1"]
 
 [node name="MinigameScoreHUD" type="Control" unique_id=584836618]
@@ -10,7 +10,10 @@ mouse_filter = 2
 script = ExtResource("1_so0nq")
 
 [node name="Panel" type="PanelContainer" parent="." unique_id=1140813042]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 theme_type_variation = &"ScoreHudPanel"
 
 [node name="Row" type="HBoxContainer" parent="Panel" unique_id=699360933]

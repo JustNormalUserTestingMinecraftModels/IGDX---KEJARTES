@@ -876,10 +876,16 @@ static func _build_minigame_result(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("ResultStarSlot", "Control")
 
 	# -- ResultDeltaLabel: the stat/energy/mood delta rows' text. --
+	# font_color is white, not tokens.text_primary -- MinigameResultPopup
+	# always overrides this label's colour via self_modulate (green for a
+	# gain, red for a loss), and self_modulate *multiplies* the base colour.
+	# text_primary is a dark navy; multiplying green/red by near-black
+	# collapsed both to near-black, destroying the +/- colour coding. White
+	# is the multiplicative identity, so self_modulate's colour reads as-is.
 	theme.add_type("ResultDeltaLabel")
 	theme.set_type_variation("ResultDeltaLabel", "Label")
 	theme.set_font_size("font_size", "ResultDeltaLabel", tokens.font_caption)
-	theme.set_color("font_color", "ResultDeltaLabel", tokens.text_primary)
+	theme.set_color("font_color", "ResultDeltaLabel", Color.WHITE)
 	theme.set_constant("outline_size", "ResultDeltaLabel", 4)
 	theme.set_color("font_outline_color", "ResultDeltaLabel", tokens.text_outline_color)
 

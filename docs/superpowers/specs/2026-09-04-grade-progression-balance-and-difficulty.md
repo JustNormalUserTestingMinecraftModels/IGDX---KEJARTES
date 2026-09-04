@@ -2,11 +2,16 @@
 
 **Date:** 2026-09-04
 **Branch:** `minigame-reward-feedback` (work continues here; main is `Textures`)
-**Status:** approved for planning. The numeric targets in §4 and the caps in §3/§8
-are **balance-pass estimates**, to be confirmed by the `test_balance_pacing.gd`
-seed sweep (§7) and a manual grade-7 playthrough before merge — the same
-"estimate pending a real-run balance pass" status the project already applies to
-`RunGrade`'s scoring weights.
+**Status:** implemented and verified by the `test_balance_pacing.gd` seed sweep
+(2026-09-04) plus a manual debug-overlay spot check. All 13 plan tasks landed;
+full suite is 858/858 passing across 60 suites. One number moved during tuning:
+`TARGET_KENAIKAN_KELAS_9` shipped at **40.0**, not the 50.0 estimate in §4 below —
+the sim harness proved 50.0 never let the well-played policy clear grade 9
+within its 16-week budget, and 40.0 independently matches the grade-9 uplift
+this project's own `CLAUDE.md` grade table has documented from the start
+(+40), so the retune reads as a correction back onto stated design intent
+rather than a tuning fudge. Every other §4/§3/§8 number shipped as specified.
+`tests/test_balance.gd`'s `_EXPECTED` reflects the shipped value.
 
 ---
 
@@ -317,7 +322,7 @@ All in `Scripts/Balance.gd`; every line below is also mirrored into
 ```
 TARGET_KENAIKAN_KELAS_7 : 15.0  ->  15.0   (UNCHANGED — the §3 cap does the grade-7 work)
 TARGET_KENAIKAN_KELAS_8 : 30.0  ->  34.0
-TARGET_KENAIKAN_KELAS_9 : 40.0  ->  50.0
+TARGET_KENAIKAN_KELAS_9 : 40.0  ->  50.0   (SHIPPED AT 40.0 — see Status block; the sim proved 50.0 never let grade 9 clear in 16 weeks)
 + KENAIKAN_KELAS_HEAD_START_FRAKSI := 0.20   (new; consumed by §2)
 ```
 

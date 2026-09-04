@@ -297,6 +297,39 @@ case but did not survey every remaining file. See the authoring guide's
 
 Branch `Textures` (this is also the main branch).
 
+The 2026-09-04 grade-progression difficulty pass is complete, built on branch
+`minigame-reward-feedback`. Spec:
+`docs/superpowers/specs/2026-09-04-grade-progression-balance-and-difficulty.md`;
+plan: `docs/superpowers/plans/2026-09-04-grade-progression-balance-and-difficulty.md`.
+It retuned grade 7 to need tactical subject-rotation instead of one lucky week
+(via a new per-student weekly minigame-points cap —
+`Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_7/8/9` = 14/12/10 — rather
+than touching grade-7 study rates), ramped grade 8/9 targets
+(`TARGET_KENAIKAN_KELAS_8` 30→34, `_KELAS_9` 40→**40 shipped**, see the spec's
+Status block for why the 50 estimate moved), amplified quirk/specialty
+coefficients ~1.4×, ramped the Skip button's loss chance per grade
+(`SKIP_PELUANG_KALAH_KELAS_7/8/9` 0.4/0.5/0.6), added `GameState.
+reset_roster_for_new_grade()` — a 20%-head-start roster reset shared by real
+grade progression *and* the debug grade-jump buttons, which previously left
+skill stats carried over — and closed a minigame-farming exploit
+(`SchoolDay._roll_event()`/`skip_to_results()` now roll a randomized 1-3
+weekly minigame allowance and a 35% chance the category is picked uniformly
+rather than by schedule, without touching how often minigames/events appear
+at all). AturJadwal got new specialty-match feedback: a gold particle burst
+(`SpecialtyMatchBurst.tscn`) plus the `specialty_match` SFX cue on the sticky
+note when a day is scheduled onto a student's specialty subject, and a ★
+badge on the Penjadwalan picker row beforehand. A new headless suite,
+`tests/test_balance_pacing.gd`, runs a scripted greedy simulation against the
+real simulation functions and is the tuning/regression harness for these
+numbers going forward. Built via subagent-driven development with the
+controller holding the Godot MCP bridge throughout; one fix round needed a
+human editor restart to clear a stale-bytecode reload (`Balance.gd` served an
+old field value across every MCP-available recovery lever) — not a code
+defect, just a one-off editor quirk worth knowing about if a future session
+hits `GDScript reload failed with error code 43` on a repeatedly-patched
+file. Placeholder outstanding: `sfx_specialty_match` aliases the existing
+`sfx_reward` stream, same convention as this project's other recent cues.
+
 The main menu was rebuilt on 2026-08-31 to match
 `docs/superpowers/mockups/main-menu.png` measurement-for-measurement and is
 now the boot scene — see

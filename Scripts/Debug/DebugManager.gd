@@ -1245,7 +1245,6 @@ func _build_scenes_panel(parent: Control) -> void:
 		{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/atur_jadwal.tscn"},
 		{"name": "Simulasi Hari (SchoolDay)", "path": "res://Scenes/SchoolSimulation/SchoolDay.tscn"},
 		{"name": "Notice Tes Besar (TesNotice)", "path": "res://Scenes/EndGame/TesNotice.tscn"},
-		{"name": "Evaluasi Semester (SemesterEnd)", "path": "res://Scenes/EndGame/SemesterEnd.tscn"},
 		{"name": "Layar Menang (WinScreen)", "path": "res://Scenes/EndGame/WinScreen.tscn"},
 		{"name": "Hasil Run (RunResult)", "path": "res://Scenes/EndGame/RunResult.tscn"},
 		{"name": "Splash Screen", "path": "res://Scenes/Splashscreen/Splashscreen.tscn"}
@@ -1258,6 +1257,34 @@ func _build_scenes_panel(parent: Control) -> void:
 		btn.add_theme_font_size_override("font_size", 21)
 		btn.pressed.connect(func(): _teleport_to_scene(sc["path"]))
 		vbox.add_child(btn)
+
+	var sep_rehearsal = HSeparator.new()
+	vbox.add_child(sep_rehearsal)
+
+	var lbl_rehearsal = Label.new()
+	lbl_rehearsal.text = "Gladi Resik Akhir Kelas (mulai dari Notice Tes Besar):"
+	lbl_rehearsal.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_rehearsal)
+
+	var rehearsals = [
+		{"name": "Semua Lulus", "preset": EndGameRehearsal.PRESET_LULUS},
+		{"name": "Semua Gagal", "preset": EndGameRehearsal.PRESET_GAGAL},
+		{"name": "Campur (3/2/1/0 bintang)", "preset": EndGameRehearsal.PRESET_CAMPUR},
+	]
+	for r in rehearsals:
+		var btn_r = Button.new()
+		btn_r.text = " 🎭 Gladi Resik: " + r["name"]
+		btn_r.custom_minimum_size = Vector2(0, 95)
+		btn_r.add_theme_font_size_override("font_size", 21)
+		btn_r.pressed.connect(func(): _start_end_game_rehearsal(r["preset"]))
+		vbox.add_child(btn_r)
+
+	var btn_restore = Button.new()
+	btn_restore.text = " ↩ Pulihkan Run Sebelum Gladi Resik "
+	btn_restore.custom_minimum_size = Vector2(0, 95)
+	btn_restore.add_theme_font_size_override("font_size", 21)
+	btn_restore.pressed.connect(_restore_before_rehearsal)
+	vbox.add_child(btn_restore)
 
 func _teleport_to_scene(path: String) -> void:
 	log_message("Teleporting to scene: " + path)
@@ -1278,6 +1305,35 @@ func _teleport_to_scene(path: String) -> void:
 			return
 			
 	get_tree().change_scene_to_file(path)
+
+## The run that was in progress when the last rehearsal was armed. Empty
+## when nothing is stashed -- _restore_before_rehearsal() reports that
+## rather than wiping the current run with a blank snapshot.
+var _rehearsal_snapshot: Dictionary = {}
+
+## Arms a fixed roster and enters the end-of-grade sequence at its first
+## screen. The snapshot MUST be taken before arm() -- that is the whole
+## "doesn't interrupt the main game" guarantee, and the ordering is pinned
+## by test_debug_manager.gd.
+func _start_end_game_rehearsal(preset: String) -> void:
+	_rehearsal_snapshot = EndGameRehearsal.snapshot()
+	EndGameRehearsal.arm(preset, DEFAULT_STUDENTS)
+	log_message("Gladi resik akhir kelas armed: preset '%s', %s, minggu %d/%d. Run sebelumnya disimpan." % [
+		preset, GameState.get_grade_name(), GameState.minggu_ke, GameState.max_minggu])
+	_refresh_ui_fields()
+	_teleport_to_scene(EndGameRehearsal.ENTRY_SCENE)
+
+## Puts back the run the last rehearsal replaced, then forgets it: the
+## stashed state describes a moment that has now passed, and re-applying it
+## twice would silently rewind whatever happened in between.
+func _restore_before_rehearsal() -> void:
+	if not EndGameRehearsal.restore(_rehearsal_snapshot):
+		log_message("Tidak ada run tersimpan -- gladi resik belum pernah dijalankan.")
+		return
+	_rehearsal_snapshot = {}
+	log_message("Run sebelum gladi resik dipulihkan: %s, minggu %d." % [
+		GameState.get_grade_name(), GameState.minggu_ke])
+	_refresh_ui_fields()
 
 # --- Logs/Console Panel ---
 func _build_logs_panel(parent: Control) -> void:

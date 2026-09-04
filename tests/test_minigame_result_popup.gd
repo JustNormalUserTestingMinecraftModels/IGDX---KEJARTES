@@ -122,10 +122,13 @@ func test_score_row_shows_and_reads_score_over_max() -> void:
 	node.configure(true, 3, 4, 5, "Budi", "", 0.0, 0.0, 0.0, STYLE)
 	var panel: Control = node.get_node("Dim/Center/Card/Layout/ScorePanel")
 	assert_true(panel.visible)
+	# Task 13: the label is seeded at "0 / max" here -- it only counts up to
+	# "4 / 5" once play() runs, which this synchronous test cannot await.
+	# _score_target is what play() actually reads to drive that tally.
 	var value_text: String = \
 		node.get_node("Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScoreValueLabel").text
-	assert_contains(value_text, "4")
 	assert_contains(value_text, "5")
+	assert_eq(node._score_target, 4, "play() will count up to this")
 
 
 func test_category_badge_hides_when_no_category() -> void:
@@ -179,6 +182,36 @@ func test_the_score_row_shows_for_a_game_with_only_a_target() -> void:
 	node.configure(true, 3, 7, 7, "Badminton", "Olahraga", 5.0, -2.0, 1.0, STYLE)
 	assert_true(node.score_panel.visible,
 		"a target-based game gets a score row, not a blank card")
+
+
+func test_the_reveal_escalates_across_the_three_stars() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_true(src.contains("const STAR_POP_SCALES"),
+		"per-star pop scales are a named const, not inline literals")
+	assert_true(src.contains("celebrate("),
+		"each earned star gets its landing burst and rising cue")
+
+
+func test_confetti_is_gated_on_a_three_star_finish() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_true(src.contains("const CONFETTI_STAR_THRESHOLD"),
+		"the confetti gate is a named const")
+	assert_true(src.contains("_star_count >= CONFETTI_STAR_THRESHOLD"),
+		"a two-star finish stays quiet")
+
+
+func test_the_score_counts_up_rather_than_appearing_finished() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_true(src.contains("Juice.count_up"), "the score tallies")
+	assert_true(src.contains("result_fanfare"), "the card arrives with a sting")
+
+
+func test_configure_remembers_the_star_count_for_play() -> void:
+	var popup := _make()
+	popup.configure(true, 3, 3, 3, "Pilihan Ganda", "Akademis", 5.0, -2.0, 1.0, STYLE)
+	assert_eq(popup._star_count, 3, "play() reads the count configure() was given")
+	popup.configure(true, 1, 1, 3, "Pilihan Ganda", "Akademis", 5.0, -2.0, 1.0, STYLE)
+	assert_eq(popup._star_count, 1, "and it updates on reconfigure")
 
 
 func test_each_delta_label_hides_independently_when_its_delta_is_zero() -> void:

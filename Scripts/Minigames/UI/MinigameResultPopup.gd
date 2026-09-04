@@ -53,6 +53,19 @@ const _CATEGORY_ICON_FALLBACK := "res://Assets/Images/UI/Placeholders/icon_poin.
 const _ENERGY_ICON := "res://Assets/Images/UI/Placeholders/icon_energy.svg"
 const _MOOD_ICON := "res://Assets/Images/UI/Placeholders/icon_mood.svg"
 
+## Per-star pop scale, ascending. The shipped reveal popped all three to the
+## same 1.18, so the third star landed no harder than the first and the whole
+## sequence read flat. Index is the star's 0-based position.
+const STAR_POP_SCALES: Array[float] = [1.14, 1.22, 1.34]
+## Seconds each star holds at its pop scale before settling. Ascending for the
+## same reason.
+const STAR_HOLD_TIMES: Array[float] = [0.06, 0.10, 0.18]
+## Stars at or above which the card fires its screen-wide confetti. Three: a
+## two-star finish staying quiet is what makes three mean something.
+const CONFETTI_STAR_THRESHOLD: int = 3
+## Seconds the score readout takes to tally up from zero.
+const SCORE_COUNT_TIME: float = 0.6
+
 @onready var dim: ColorRect = $Dim
 @onready var card: PanelContainer = $Dim/Center/Card
 @onready var title_label: Label = $Dim/Center/Card/Layout/TitleLabel
@@ -81,6 +94,11 @@ const _MOOD_ICON := "res://Assets/Images/UI/Placeholders/icon_mood.svg"
 ## order without re-deriving visibility.
 var _dim_target_color: Color
 var _is_win: bool = false
+## How many stars play() should land -- read by its star loop and by the
+## confetti gate. Set fresh on every configure() call.
+var _star_count: int = 0
+## What the score readout counts up to. Set fresh on every configure() call.
+var _score_target: int = 0
 
 
 ## Fill every node from the result and BaseMinigame's popup @exports.
@@ -98,6 +116,8 @@ func configure(is_win: bool, stars: int, score: int, max_score: int,
 		stat_delta: float, energy_delta: float, mood_delta: float,
 		style: Dictionary) -> void:
 	_is_win = is_win
+	_star_count = stars
+	_score_target = score
 
 	# ── Dim + card shell ──
 	var dim_color: Color = style["popup_dim_color"]
@@ -141,7 +161,9 @@ func configure(is_win: bool, stars: int, score: int, max_score: int,
 	# ── Score row ──
 	score_panel.visible = score >= 0 and max_score > 0
 	score_icon.texture = load("res://Assets/Images/UI/Placeholders/icon_skor.svg")
-	score_value_label.text = "%d / %d" % [score, max_score]
+	# Seeded at zero so play() has something to count up from -- the "0" is
+	# never actually seen, since the whole panel fades in already ticking.
+	score_value_label.text = "0 / %d" % max_score
 	score_value_label.self_modulate = \
 		style["popup_title_win_color"] if is_win else Color(0.8, 0.8, 0.8)
 	score_panel.modulate.a = 0.0
@@ -217,6 +239,7 @@ func play() -> void:
 	tw_card.tween_property(card, "scale", Vector2(1.0, 1.0), 0.35)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await tw_card.finished
+	AudioDirector.play_sfx(&"result_fanfare")
 
 	# 3. Title fades in
 	var tw_title := get_tree().create_tween()
@@ -224,32 +247,49 @@ func play() -> void:
 	tw_title.tween_property(title_label, "modulate:a", 1.0, 0.2)
 	await tw_title.finished
 
-	# 4. Stars pop in one by one, filled or not
+	# 4. Stars pop in one by one, escalating. An unearned star still appears
+	# -- silently, and without a burst -- so the contrast makes an earned
+	# one land.
+	var star_index := 0
 	for star in star_row.get_children():
+		var pop_scale: float = STAR_POP_SCALES[mini(star_index, STAR_POP_SCALES.size() - 1)]
 		var tw_star := get_tree().create_tween().set_parallel(true)
 		tw_star.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw_star.tween_property(star, "modulate:a", 1.0, 0.15)
-		tw_star.tween_property(star, "scale", Vector2(1.18, 1.18), 0.18)\
+		tw_star.tween_property(star, "scale", Vector2(pop_scale, pop_scale), 0.18)\
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		await tw_star.finished
+		star.celebrate(star_index)
+		await get_tree().create_timer(
+			STAR_HOLD_TIMES[mini(star_index, STAR_HOLD_TIMES.size() - 1)]).timeout
 		var tw_settle := get_tree().create_tween()
 		tw_settle.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		tw_settle.tween_property(star, "scale", Vector2(1.0, 1.0), 0.1)\
 			.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
 		await tw_settle.finished
+		star_index += 1
+
+	# 4b. A full house, and only a full house, gets the confetti.
+	if _star_count >= CONFETTI_STAR_THRESHOLD:
+		confetti.fire()
 
 	# 5. Name, score, badge and deltas fade in in shipped order, skipping
-	# whichever rows configure() left hidden.
+	# whichever boxes configure() left hidden. The three delta rows share
+	# one fade slot (delta_panel) now that they're grouped in one box --
+	# checking each row's old Label.visible would be stale, since
+	# _configure_delta_label() toggles the row, not the label.
 	var fade_nodes: Array = [name_label]
-	if score_row.visible: fade_nodes.append(score_row)
+	if score_panel.visible: fade_nodes.append(score_panel)
 	if category_badge.visible: fade_nodes.append(category_badge)
-	if stat_delta_label.visible: fade_nodes.append(stat_delta_label)
-	if energy_delta_label.visible: fade_nodes.append(energy_delta_label)
-	if mood_delta_label.visible: fade_nodes.append(mood_delta_label)
+	if delta_panel.visible: fade_nodes.append(delta_panel)
 	fade_nodes.append(continue_button_center)
 
 	for fn in fade_nodes:
 		if is_instance_valid(fn):
+			if fn == score_panel and _score_target > 0:
+				AudioDirector.play_sfx(&"score_tick")
+				Juice.count_up(score_value_label, 0.0, float(_score_target),
+					"%d / " + str(_score_target))
 			var tw_f := get_tree().create_tween()
 			tw_f.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 			tw_f.tween_property(fn, "modulate:a", 1.0, 0.18)

@@ -29,8 +29,13 @@ class_name Balance
 ## besar angkanya, makin sulit kelasnya. Ini pengatur kesulitan
 ## paling berpengaruh di seluruh game.
 static var TARGET_KENAIKAN_KELAS_7 := 15.0
-static var TARGET_KENAIKAN_KELAS_8 := 30.0
-static var TARGET_KENAIKAN_KELAS_9 := 40.0
+static var TARGET_KENAIKAN_KELAS_8 := 34.0
+static var TARGET_KENAIKAN_KELAS_9 := 50.0
+
+## Bagian kenaikan skill di atas nilai awal roster yang DISIMPAN saat murid
+## naik kelas. 0.20 = murid membawa 20% kemajuannya sebagai modal awal kelas
+## berikutnya; sisanya di-reset. Dipakai GameState.reset_roster_for_new_grade().
+static var KENAIKAN_KELAS_HEAD_START_FRAKSI := 0.20
 
 ## Berapa minggu satu kelas berlangsung — ini "waktu yang kamu punya"
 ## untuk mengejar target di atas. Menambah minggu = lebih gampang
@@ -81,12 +86,12 @@ static var BELAJAR_BIAYA_MOOD_MAX := 15.0
 
 ## Pengali biaya di atas, tergantung mata pelajarannya.
 ## Di bawah 1.0 = lebih hemat. Di atas 1.0 = lebih melelahkan.
-## 0.6 artinya mapel favorit cuma memakan 60% biaya.
-static var BIAYA_KALAU_MAPEL_FAVORIT := 0.6
+## 0.55 artinya mapel favorit cuma memakan 55% biaya.
+static var BIAYA_KALAU_MAPEL_FAVORIT := 0.55
 ## Untuk murid "Seimbang", yang tidak punya mapel favorit.
 static var BIAYA_KALAU_MURID_SEIMBANG := 0.85
-## Mapel yang bukan favoritnya — 20% lebih melelahkan.
-static var BIAYA_KALAU_BUKAN_FAVORIT := 1.20
+## Mapel yang bukan favoritnya — 28% lebih melelahkan.
+static var BIAYA_KALAU_BUKAN_FAVORIT := 1.28
 
 
 ## ═══════════════════════════════════════════════════════════
@@ -130,6 +135,29 @@ static var MINIGAME_MENANG_POIN_SKALA_KELAS_9 := 6.0
 static var MINIGAME_MENANG_POIN_TANPA_SKOR_KELAS_7 := 10.0
 static var MINIGAME_MENANG_POIN_TANPA_SKOR_KELAS_8 := 8.0
 static var MINIGAME_MENANG_POIN_TANPA_SKOR_KELAS_9 := 6.0
+
+## Batas poin skill yang bisa didapat SATU murid dari MENANG minigame dalam
+## satu minggu. Kekalahan TIDAK dibatasi. Menahan agar satu minggu penuh
+## kemenangan minigame tidak langsung menuntaskan satu target.
+static var MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_7 := 14.0
+static var MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_8 := 12.0
+static var MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_9 := 10.0
+
+## Pengali durasi minigame per kelas (dulu angka mati di SchoolDay). Di bawah
+## 1.0 = waktu lebih singkat. Tidak mengubah perilaku, hanya memindah angka.
+static var MINIGAME_WAKTU_SKALA_KELAS_8 := 0.8
+static var MINIGAME_WAKTU_SKALA_KELAS_9 := 0.6
+
+## Saat sebuah hari memunculkan Minigame, sebesar peluang ini kategorinya
+## diundi RATA (Akademis/Olahraga/Seni) tanpa melihat jadwal; sisanya ikut
+## proporsi murid yang belajar. BUKAN peluang munculnya minigame — itu tetap.
+static var MINIGAME_KATEGORI_ACAK_PELUANG := 0.35
+
+## Berapa minigame paling banyak dalam satu minggu — diundi ulang tiap minggu
+## di rentang ini (rata-rata ~2, seperti dulu, tapi tidak bisa dipastikan).
+## Harus angka bulat (tanpa titik).
+static var MINIGAME_MAKS_MINGGU_MIN := 1
+static var MINIGAME_MAKS_MINGGU_MAX := 3
 
 ## Energi dan mood yang terpakai walaupun MENANG — main tetap capek.
 static var MINIGAME_MENANG_ENERGI_KELAS_7 := -5.0
@@ -203,16 +231,16 @@ static var DECAY_SANTAI_MOOD_MAX := 6.0
 
 ## ── Kutu Buku (Marcel) ──
 ## Poin Akademis tambahan di hari belajar.
-static var SIFAT_KUTU_BUKU_BONUS_POIN := 1.0
+static var SIFAT_KUTU_BUKU_BONUS_POIN := 1.5
 ## Akademis lebih hemat mood karena dia menikmatinya.
-## 0.25 artinya 25% lebih hemat.
-static var SIFAT_KUTU_BUKU_HEMAT_MOOD := 0.25
+## 0.35 artinya 35% lebih hemat.
+static var SIFAT_KUTU_BUKU_HEMAT_MOOD := 0.35
 ## Sebaliknya, Olahraga lebih boros mood. 0.20 artinya 20% lebih boros.
 static var SIFAT_KUTU_BUKU_BOROS_MOOD_OLAHRAGA := 0.20
 
 ## ── Semangat Juang (Doni) ──
 ## Poin tambahan setiap kali kelas MENANG minigame.
-static var SIFAT_SEMANGAT_BONUS_MENANG := 2.0
+static var SIFAT_SEMANGAT_BONUS_MENANG := 3.0
 ## Energi yang pulih saat Libur berkurang — terlalu gelisah untuk santai.
 ## 0.15 artinya 15% lebih sedikit.
 static var SIFAT_SEMANGAT_LIBUR_KURANG := 0.15
@@ -224,7 +252,7 @@ static var SIFAT_SEMANGAT_POTONGAN_MOOD_KRITIS := 0.5
 
 ## ── Penasaran (Andi) ──
 ## Poin tambahan saat belajar mapel yang BUKAN favoritnya.
-static var SIFAT_PENASARAN_BONUS_MAPEL_LAIN := 1.0
+static var SIFAT_PENASARAN_BONUS_MAPEL_LAIN := 1.5
 ## Tapi semua hari belajar jadi lebih boros energi. 0.10 artinya 10%.
 static var SIFAT_PENASARAN_BOROS_ENERGI := 0.10
 
@@ -254,7 +282,7 @@ static var SIFAT_PEKERJA_HEMAT_ENERGI := 0.10
 ## Tapi lebih boros mood. 0.15 artinya 15% lebih boros.
 static var SIFAT_PEKERJA_BOROS_MOOD := 0.15
 ## Bonus mood setiap kali kelas MENANG minigame.
-static var SIFAT_PEKERJA_BONUS_MOOD_MENANG := 3.0
+static var SIFAT_PEKERJA_BONUS_MOOD_MENANG := 4.0
 
 ## ── Seni Dalam Kesunyian (Citra) ──
 ## Ini efek KEPRIBADIAN, bukan Sifat Pasif — tapi ditaruh di sini
@@ -318,6 +346,9 @@ static var EVENT_HUJAN_MOOD := -15.0
 ## MODE SKIP
 ## ═══════════════════════════════════════════════════════════
 
-## Saat pemain menekan Skip, minigame tidak dimainkan — hasilnya diundi.
-## Angka ini peluang KALAH: 0.4 artinya kelas menang 60% dari waktu.
-static var SKIP_PELUANG_KALAH := 0.4
+## Peluang KALAH saat pemain menekan Skip (minigame tidak dimainkan, hasil
+## diundi). Naik per kelas: skip makin berisiko di kelas atas, tapi tetap ada
+## sebagai jalan aksesibilitas. 0.4 = menang 60% di kelas 7.
+static var SKIP_PELUANG_KALAH_KELAS_7 := 0.4
+static var SKIP_PELUANG_KALAH_KELAS_8 := 0.5
+static var SKIP_PELUANG_KALAH_KELAS_9 := 0.6

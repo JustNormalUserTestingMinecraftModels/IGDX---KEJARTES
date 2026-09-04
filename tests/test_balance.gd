@@ -15,8 +15,9 @@ extends McpTestSuite
 const _EXPECTED: Dictionary = {
 	# Syarat lulus
 	"TARGET_KENAIKAN_KELAS_7": 15.0,
-	"TARGET_KENAIKAN_KELAS_8": 30.0,
-	"TARGET_KENAIKAN_KELAS_9": 40.0,
+	"TARGET_KENAIKAN_KELAS_8": 34.0,
+	"TARGET_KENAIKAN_KELAS_9": 50.0,
+	"KENAIKAN_KELAS_HEAD_START_FRAKSI": 0.20,
 	"JUMLAH_MINGGU_KELAS_7": 6,
 	"JUMLAH_MINGGU_KELAS_8": 12,
 	"JUMLAH_MINGGU_KELAS_9": 16,
@@ -33,9 +34,9 @@ const _EXPECTED: Dictionary = {
 	"BELAJAR_BIAYA_ENERGI_MAX": 20.0,
 	"BELAJAR_BIAYA_MOOD_MIN": 10.0,
 	"BELAJAR_BIAYA_MOOD_MAX": 15.0,
-	"BIAYA_KALAU_MAPEL_FAVORIT": 0.6,
+	"BIAYA_KALAU_MAPEL_FAVORIT": 0.55,
 	"BIAYA_KALAU_MURID_SEIMBANG": 0.85,
-	"BIAYA_KALAU_BUKAN_FAVORIT": 1.20,
+	"BIAYA_KALAU_BUKAN_FAVORIT": 1.28,
 	# Libur
 	"LIBUR_ENERGI_PULIH_MIN": 20.0,
 	"LIBUR_ENERGI_PULIH_MAX": 30.0,
@@ -68,6 +69,14 @@ const _EXPECTED: Dictionary = {
 	"MINIGAME_KALAH_MOOD_KELAS_7": -15.0,
 	"MINIGAME_KALAH_MOOD_KELAS_8": -18.0,
 	"MINIGAME_KALAH_MOOD_KELAS_9": -20.0,
+	"MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_7": 14.0,
+	"MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_8": 12.0,
+	"MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_9": 10.0,
+	"MINIGAME_WAKTU_SKALA_KELAS_8": 0.8,
+	"MINIGAME_WAKTU_SKALA_KELAS_9": 0.6,
+	"MINIGAME_KATEGORI_ACAK_PELUANG": 0.35,
+	"MINIGAME_MAKS_MINGGU_MIN": 1,
+	"MINIGAME_MAKS_MINGGU_MAX": 3,
 	# Kepribadian
 	"DECAY_AKTIF_ENERGI_MIN": 6.0,
 	"DECAY_AKTIF_ENERGI_MAX": 8.0,
@@ -90,14 +99,14 @@ const _EXPECTED: Dictionary = {
 	"DECAY_SANTAI_MOOD_MIN": 4.0,
 	"DECAY_SANTAI_MOOD_MAX": 6.0,
 	# Sifat Pasif
-	"SIFAT_KUTU_BUKU_BONUS_POIN": 1.0,
-	"SIFAT_KUTU_BUKU_HEMAT_MOOD": 0.25,
+	"SIFAT_KUTU_BUKU_BONUS_POIN": 1.5,
+	"SIFAT_KUTU_BUKU_HEMAT_MOOD": 0.35,
 	"SIFAT_KUTU_BUKU_BOROS_MOOD_OLAHRAGA": 0.20,
-	"SIFAT_SEMANGAT_BONUS_MENANG": 2.0,
+	"SIFAT_SEMANGAT_BONUS_MENANG": 3.0,
 	"SIFAT_SEMANGAT_LIBUR_KURANG": 0.15,
 	"SIFAT_SEMANGAT_BATAS_ENERGI_KRITIS": 30.0,
 	"SIFAT_SEMANGAT_POTONGAN_MOOD_KRITIS": 0.5,
-	"SIFAT_PENASARAN_BONUS_MAPEL_LAIN": 1.0,
+	"SIFAT_PENASARAN_BONUS_MAPEL_LAIN": 1.5,
 	"SIFAT_PENASARAN_BOROS_ENERGI": 0.10,
 	"SIFAT_PENYENDIRI_BATAS_KERAMAIAN": 3,
 	"SIFAT_PENYENDIRI_BOROS_MOOD_RAMAI": 0.05,
@@ -106,7 +115,7 @@ const _EXPECTED: Dictionary = {
 	"SIFAT_BIANG_ONAR_EVENT_BAGUS": 0.20,
 	"SIFAT_PEKERJA_HEMAT_ENERGI": 0.10,
 	"SIFAT_PEKERJA_BOROS_MOOD": 0.15,
-	"SIFAT_PEKERJA_BONUS_MOOD_MENANG": 3.0,
+	"SIFAT_PEKERJA_BONUS_MOOD_MENANG": 4.0,
 	"SIFAT_CITRA_SENI_SENDIRI_BONUS": 0.10,
 	# Wirausaha
 	"WIRAUSAHA_UANG_MIN": 120,
@@ -128,7 +137,9 @@ const _EXPECTED: Dictionary = {
 	"EVENT_HUJAN_ENERGI": -15.0,
 	"EVENT_HUJAN_MOOD": -15.0,
 	# Skip
-	"SKIP_PELUANG_KALAH": 0.4,
+	"SKIP_PELUANG_KALAH_KELAS_7": 0.4,
+	"SKIP_PELUANG_KALAH_KELAS_8": 0.5,
+	"SKIP_PELUANG_KALAH_KELAS_9": 0.6,
 }
 
 
@@ -152,11 +163,11 @@ func test_every_field_exists_and_holds_its_shipped_value() -> void:
 				% [field_name, str(expected), str(actual)])
 
 
-## 107 numbers is the whole extraction surface. If the count drifts, either a
+## 118 numbers is the whole extraction surface. If the count drifts, either a
 ## field was added without a test entry or one was quietly dropped.
 func test_the_expected_table_covers_every_number() -> void:
-	assert_eq(_EXPECTED.size(), 107,
-		"the extraction covers 107 numbers; update this test deliberately if that changes")
+	assert_eq(_EXPECTED.size(), 118,
+		"the extraction covers 118 numbers; update this test deliberately if that changes")
 
 
 ## The point of Balance.gd is that a tester can change a number and feel it.

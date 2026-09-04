@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://bnk27kur21gjr"]
+
+[ext_resource type="Texture2D" uid="uid://d4lt82q0pi5xe" path="res://Assets/Images/Particles/particle_spark.png" id="1_hugif"]
+[ext_resource type="Script" uid="uid://dirvyxt44yitc" path="res://Scripts/SchoolSimulation/RewardParticles.gd" id="2_pb75v"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_injpy"]
+emission_shape = 1
+emission_sphere_radius = 10.0
+direction = Vector3(0, -1, 0)
+spread = 55.0
+initial_velocity_min = 70.0
+initial_velocity_max = 150.0
+gravity = Vector3(0, 300, 0)
+scale_min = 0.12
+scale_max = 0.22
+
+[node name="ScorePopBurst" type="GPUParticles2D" unique_id=1189196911]
+emitting = false
+texture = ExtResource("1_hugif")
+lifetime = 0.45
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_injpy")
+script = ExtResource("2_pb75v")
+plays_sfx = false

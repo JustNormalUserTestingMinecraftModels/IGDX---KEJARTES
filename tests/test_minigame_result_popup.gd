@@ -177,3 +177,24 @@ func test_every_result_icon_exists_and_loads_as_a_texture() -> void:
 	for path in RESULT_ICONS:
 		assert_true(ResourceLoader.exists(path), "%s exists" % path)
 		assert_true(load(path) is Texture2D, "%s loads as a Texture2D" % path)
+
+
+const PARTICLE_SCENES := [
+	"res://Scenes/Minigames/UI/StarBurst.tscn",
+	"res://Scenes/Minigames/UI/ResultConfetti.tscn",
+	"res://Scenes/Minigames/UI/ScorePopBurst.tscn",
+]
+
+
+func test_every_particle_scene_is_a_one_shot_reward_particles_emitter() -> void:
+	for path in PARTICLE_SCENES:
+		assert_true(ResourceLoader.exists(path), "%s exists" % path)
+		var node: Node = load(path).instantiate()
+		track(node)
+		assert_true(node is GPUParticles2D, "%s roots at a GPUParticles2D" % path)
+		assert_true(node is RewardParticles,
+			"%s reuses RewardParticles rather than a new script" % path)
+		assert_true(node.one_shot, "%s is one-shot" % path)
+		assert_false(node.emitting, "%s does not emit until fired" % path)
+		assert_true(node.texture != null, "%s has an authored texture" % path)
+		assert_true(node.process_material != null, "%s has an authored material" % path)

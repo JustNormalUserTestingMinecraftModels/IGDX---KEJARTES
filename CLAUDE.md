@@ -384,6 +384,24 @@ deleted after merge). Placeholders outstanding: the three particle sprites
 (`Assets/Images/Particles/particle_*.png`, crude flat geometry) and the
 two aliased SFX streams.
 
+The 2026-09-04 minigame reward pass is complete. Plan:
+`docs/superpowers/plans/2026-09-04-minigame-reward-feedback.md`. It fixed the
+one-star bug — `_calculate_stars()` read `max_score`, which only the four
+Akademis quizzes declare, so every win in MainBola, LombaMenari, Badminton
+and BuatBatik was hard-capped at one star — by replacing it with an
+overridable per-game `get_star_ratio()` mastery metric (shot accuracy, note
+accuracy, rally margin, mistake-free sequence) and a two-star floor for an
+unrated win. It then moved the result card's chrome off runtime
+`StyleBox`es onto seven new `ThemeFactory` variations, replaced every emoji
+glyph with a transparent SVG, gave the star reveal an escalating pop with
+per-star bursts and three rising audio cues, gated confetti on a
+three-star finish, and replaced the ad-hoc `ScoreLabel`s with the shared
+`MinigameScoreHUD` template. Placeholders outstanding: the six new
+`AudioDirector` cue ids (`star_earn_1/2/3`, `result_fanfare`, `score_tick`,
+`combo_up`) all alias `pop.ogg` / `reward.ogg`, the seven new icon SVGs are
+flat white placeholder geometry, and `LombaMenari.best_combo` is tracked
+but not yet fed into the rubric, pending a real balance pass.
+
 `-REFERENCE-/prototype/` is the original prototype, kept for reference only —
 not built, not imported. `koprasi&inventory` was a second programmer's separate
 project; the spec's Asset Policy documents exactly which of its art is

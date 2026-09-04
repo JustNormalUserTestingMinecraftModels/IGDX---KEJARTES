@@ -57,15 +57,24 @@ func test_both_scenes_exist() -> void:
 
 func test_popup_scene_carries_every_node_the_script_binds() -> void:
 	var node := _make()
-	for path in ["Dim", "Dim/Center/Card/Layout/TitleLabel",
+	for path in ["Dim", "Dim/ResultConfetti",
+			"Dim/Center/Card/Layout/TitleLabel",
 			"Dim/Center/Card/Layout/StarRow",
 			"Dim/Center/Card/Layout/NameLabel",
-			"Dim/Center/Card/Layout/ScoreRow/ScorePrefixLabel",
-			"Dim/Center/Card/Layout/ScoreRow/ScoreValueLabel",
+			"Dim/Center/Card/Layout/ScorePanel",
+			"Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScoreIcon",
+			"Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScorePrefixLabel",
+			"Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScoreValueLabel",
 			"Dim/Center/Card/Layout/CategoryBadge",
-			"Dim/Center/Card/Layout/StatDeltaLabel",
-			"Dim/Center/Card/Layout/EnergyDeltaLabel",
-			"Dim/Center/Card/Layout/MoodDeltaLabel",
+			"Dim/Center/Card/Layout/CategoryBadge/BadgeRow/BadgeIcon",
+			"Dim/Center/Card/Layout/CategoryBadge/BadgeRow/BadgeLabel",
+			"Dim/Center/Card/Layout/DeltaPanel",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/StatDeltaRow/StatDeltaIcon",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/StatDeltaRow/StatDeltaLabel",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/EnergyDeltaRow/EnergyDeltaIcon",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/EnergyDeltaRow/EnergyDeltaLabel",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow/MoodDeltaIcon",
+			"Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow/MoodDeltaLabel",
 			"Dim/Center/Card/Layout/ContinueButtonCenter/ContinueButton"]:
 		assert_not_null(node.get_node_or_null(path), "missing node: %s" % path)
 
@@ -102,19 +111,31 @@ func test_score_row_hides_when_no_score_data() -> void:
 	# The shipped code only showed the score line when mg_score >= 0 and
 	# mg_max_score > 0. max_score <= 0 means "this minigame doesn't track a
 	# score" -- the row must stay hidden, not show "0 / 0" or similar.
+	# Task 12 moved the toggle from ScoreRow onto its new ScorePanel wrapper.
 	var node := _make()
 	node.configure(true, 1, -1, -1, "Budi", "", 0.0, 0.0, 0.0, STYLE)
-	assert_false(node.get_node("Dim/Center/Card/Layout/ScoreRow").visible)
+	assert_false(node.get_node("Dim/Center/Card/Layout/ScorePanel").visible)
 
 
 func test_score_row_shows_and_reads_score_over_max() -> void:
 	var node := _make()
 	node.configure(true, 3, 4, 5, "Budi", "", 0.0, 0.0, 0.0, STYLE)
-	var row: Control = node.get_node("Dim/Center/Card/Layout/ScoreRow")
-	assert_true(row.visible)
-	var value_text: String = node.get_node("Dim/Center/Card/Layout/ScoreRow/ScoreValueLabel").text
-	assert_contains(value_text, "4")
+	var panel: Control = node.get_node("Dim/Center/Card/Layout/ScorePanel")
+	assert_true(panel.visible)
+	# Task 13: the label is seeded at "0 / max" here -- it only counts up to
+	# "4 / 5" once play() runs, which this synchronous test cannot await.
+	# _score_target is what play() actually reads to drive that tally.
+	var value_text: String = \
+		node.get_node("Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScoreValueLabel").text
 	assert_contains(value_text, "5")
+	assert_eq(node._score_target, 4, "play() will count up to this")
+	# Regression: play()'s tally used to format with _score_target as its own
+	# denominator, so a 4-of-5 run silently counted up to "4 / 4" instead of
+	# "4 / 5" -- the tally would misreport every non-perfect run as perfect.
+	# _score_max is the value that must survive as the denominator.
+	assert_eq(node._score_max, 5, "the tally's denominator is max_score, not score")
+	assert_ne(node._score_target, node._score_max,
+		"this case must keep score and max_score distinct, or it can't catch the regression")
 
 
 func test_category_badge_hides_when_no_category() -> void:
@@ -123,24 +144,97 @@ func test_category_badge_hides_when_no_category() -> void:
 	assert_false(node.get_node("Dim/Center/Card/Layout/CategoryBadge").visible)
 
 
-func test_category_badge_shows_the_right_icon_and_colour() -> void:
+func test_the_popup_uses_no_emoji_as_iconography() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	# GDScript takes \U plus eight hex digits for the astral planes; the
+	# three BMP glyphs below are safe as literals. Note \u{...} is NOT valid
+	# syntax.
+	var banned: Array[String] = [
+		"\U0001F4DA", "\U0001F3A8", "⚽", "⚡", "\U0001F60A",
+		"\U0001F389", "\U0001F525", "✨", "\U0001F680", "\U0001F3AE",
+	]
+	for glyph in banned:
+		assert_false(src.contains(glyph),
+			"emoji-as-iconography has been banned since the 2026-09-02 pass")
+
+
+func test_the_category_badge_shows_a_texture_not_a_glyph() -> void:
 	var node := _make()
-	node.configure(true, 1, -1, -1, "Budi", "Olahraga", 0.0, 0.0, 0.0, STYLE)
-	var badge: Label = node.get_node("Dim/Center/Card/Layout/CategoryBadge")
-	assert_true(badge.visible)
-	assert_contains(badge.text, "Olahraga")
-	assert_contains(badge.text, "⚽")
+	node.configure(true, 3, 3, 3, "Pilihan Ganda", "Akademis", 5.0, -2.0, 1.0, STYLE)
+	assert_true(node.badge_icon.texture != null, "the badge carries an icon texture")
+	assert_eq(node.category_badge_label.text, "Akademis", "and just the name as text")
+
+
+func test_each_delta_row_carries_its_own_icon() -> void:
+	var node := _make()
+	node.configure(true, 3, 3, 3, "Pilihan Ganda", "Olahraga", 5.0, -2.0, 1.0, STYLE)
+	assert_true(node.stat_delta_icon.texture != null, "the stat delta has an icon")
+	assert_true(node.energy_delta_icon.texture != null, "energy has icon_energy")
+	assert_true(node.mood_delta_icon.texture != null, "mood has icon_mood")
+
+
+func test_configure_builds_no_styleboxes_or_overrides_at_runtime() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_false(src.contains("StyleBoxFlat.new()"),
+		"card, badge and button chrome come from theme variations now")
+	assert_false(src.contains("StyleBoxTexture.new()"), "same for the textured card")
+	assert_false(src.contains("add_theme_stylebox_override"), "no stylebox overrides")
+	assert_false(src.contains("add_theme_color_override"), "no colour overrides")
+	assert_false(src.contains("add_theme_font_size_override"), "no font-size overrides")
+
+
+func test_the_score_row_shows_for_a_game_with_only_a_target() -> void:
+	var node := _make()
+	# Badminton's shape after Task 4: a real score, a real target.
+	node.configure(true, 3, 7, 7, "Badminton", "Olahraga", 5.0, -2.0, 1.0, STYLE)
+	assert_true(node.score_panel.visible,
+		"a target-based game gets a score row, not a blank card")
+
+
+func test_the_reveal_escalates_across_the_three_stars() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_true(src.contains("const STAR_POP_SCALES"),
+		"per-star pop scales are a named const, not inline literals")
+	assert_true(src.contains("celebrate("),
+		"each earned star gets its landing burst and rising cue")
+
+
+func test_confetti_is_gated_on_a_three_star_finish() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_true(src.contains("const CONFETTI_STAR_THRESHOLD"),
+		"the confetti gate is a named const")
+	assert_true(src.contains("_star_count >= CONFETTI_STAR_THRESHOLD"),
+		"a two-star finish stays quiet")
+
+
+func test_the_score_counts_up_rather_than_appearing_finished() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_true(src.contains("Juice.count_up"), "the score tallies")
+	assert_true(src.contains("result_fanfare"), "the card arrives with a sting")
+
+
+func test_configure_remembers_the_star_count_for_play() -> void:
+	var popup := _make()
+	popup.configure(true, 3, 3, 3, "Pilihan Ganda", "Akademis", 5.0, -2.0, 1.0, STYLE)
+	assert_eq(popup._star_count, 3, "play() reads the count configure() was given")
+	popup.configure(true, 1, 1, 3, "Pilihan Ganda", "Akademis", 5.0, -2.0, 1.0, STYLE)
+	assert_eq(popup._star_count, 1, "and it updates on reconfigure")
 
 
 func test_each_delta_label_hides_independently_when_its_delta_is_zero() -> void:
+	# Task 12 moved the toggle from each Label onto its own row
+	# (StatDeltaRow/EnergyDeltaRow/MoodDeltaRow), so a hidden row takes its
+	# icon with it.
 	var node := _make()
 	node.configure(true, 1, -1, -1, "Budi", "Akademis", 5.0, 0.0, -3.0, STYLE)
-	assert_true(node.get_node("Dim/Center/Card/Layout/StatDeltaLabel").visible)
-	assert_false(node.get_node("Dim/Center/Card/Layout/EnergyDeltaLabel").visible,
-		"energy delta is 0.0 -- its label must stay hidden")
-	assert_true(node.get_node("Dim/Center/Card/Layout/MoodDeltaLabel").visible)
-	assert_contains(node.get_node("Dim/Center/Card/Layout/StatDeltaLabel").text, "+5")
-	assert_contains(node.get_node("Dim/Center/Card/Layout/MoodDeltaLabel").text, "-3")
+	var stat_row := node.get_node("Dim/Center/Card/Layout/DeltaPanel/DeltaList/StatDeltaRow")
+	var energy_row := node.get_node("Dim/Center/Card/Layout/DeltaPanel/DeltaList/EnergyDeltaRow")
+	var mood_row := node.get_node("Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow")
+	assert_true(stat_row.visible)
+	assert_false(energy_row.visible, "energy delta is 0.0 -- its row must stay hidden")
+	assert_true(mood_row.visible)
+	assert_contains(node.stat_delta_label.text, "+5")
+	assert_contains(node.mood_delta_label.text, "-3")
 
 
 func test_base_minigame_no_longer_builds_the_result_card() -> void:
@@ -151,7 +245,119 @@ func test_base_minigame_no_longer_builds_the_result_card() -> void:
 
 
 func test_star_calculation_stayed_on_base_minigame() -> void:
-	# _calculate_stars is game logic, not presentation. Moving it into the
-	# popup would put a rule in a view.
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/BaseMinigame.gd")
-	assert_contains(src, "func _calculate_stars")
+	assert_true(src.contains("static func _calculate_stars(ratio: float, is_win: bool) -> int:"),
+		"the rubric still lives on BaseMinigame, not in the popup")
+	var popup_src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
+	assert_false(popup_src.contains("_calculate_stars"),
+		"the popup renders stars, it does not decide them")
+
+
+## Every icon this screen now uses instead of an emoji glyph. The project
+## banned emoji as UI iconography during the 2026-09-02 pass; these are the
+## replacements.
+const RESULT_ICONS := [
+	"res://Assets/Images/UI/Placeholders/icon_bintang.svg",
+	"res://Assets/Images/UI/Placeholders/icon_bintang_kosong.svg",
+	"res://Assets/Images/UI/Placeholders/icon_skor.svg",
+	"res://Assets/Images/UI/Placeholders/icon_target.svg",
+	"res://Assets/Images/UI/Placeholders/icon_akurasi.svg",
+	"res://Assets/Images/UI/Placeholders/icon_kombo.svg",
+	"res://Assets/Images/UI/Placeholders/icon_waktu.svg",
+]
+
+
+func test_every_result_icon_exists_and_loads_as_a_texture() -> void:
+	for path in RESULT_ICONS:
+		assert_true(ResourceLoader.exists(path), "%s exists" % path)
+		assert_true(load(path) is Texture2D, "%s loads as a Texture2D" % path)
+
+
+const PARTICLE_SCENES := [
+	"res://Scenes/Minigames/UI/StarBurst.tscn",
+	"res://Scenes/Minigames/UI/ResultConfetti.tscn",
+	"res://Scenes/Minigames/UI/ScorePopBurst.tscn",
+]
+
+
+func test_every_particle_scene_is_a_one_shot_reward_particles_emitter() -> void:
+	for path in PARTICLE_SCENES:
+		assert_true(ResourceLoader.exists(path), "%s exists" % path)
+		var node: Node = load(path).instantiate()
+		track(node)
+		assert_true(node is GPUParticles2D, "%s roots at a GPUParticles2D" % path)
+		assert_true(node is RewardParticles,
+			"%s reuses RewardParticles rather than a new script" % path)
+		assert_true(node.one_shot, "%s is one-shot" % path)
+		assert_false(node.emitting, "%s does not emit until fired" % path)
+		assert_true(node.texture != null, "%s has an authored texture" % path)
+		assert_true(node.process_material != null, "%s has an authored material" % path)
+
+
+## The variations the result card and score HUD are styled by. Their existence
+## in the baked theme is what lets Tasks 12 and 14 delete every runtime
+## StyleBox and theme_override_* from MinigameResultPopup.configure().
+const RESULT_VARIATIONS := [
+	"ResultCardPanel", "ResultStatPanel", "ResultBadgePanel", "ResultStarSlot",
+	"ResultDeltaLabel", "ScoreHudPanel", "ScoreHudValueLabel",
+]
+
+
+func test_every_result_variation_is_in_the_baked_theme() -> void:
+	var theme: Theme = load("res://Assets/Theme/kejartes_theme.tres")
+	# Base type "Panel", not "PanelContainer" -- every panel-style variation
+	# in ThemeFactory.gd is registered with set_type_variation(name, "Panel")
+	# even though the nodes that use them are PanelContainer in the .tscn.
+	var types := theme.get_type_variation_list("Panel") \
+		+ theme.get_type_variation_list("Label") \
+		+ theme.get_type_variation_list("Control")
+	for variation in RESULT_VARIATIONS:
+		assert_true(variation in types,
+			"%s is a baked type variation -- rebake ThemeFactory if not" % variation)
+
+
+## Regression: MinigameResultPopup._configure_delta_label() sets a delta
+## label's colour via self_modulate (green for a gain, red for a loss), which
+## *multiplies* the label's own baked font_color rather than replacing it.
+## ResultDeltaLabel used to bake tokens.text_primary -- a dark navy -- so
+## green/red-times-navy collapsed to near-black either way, destroying the
+## +/- colour coding the whole delta row exists to show. White is the
+## multiplicative identity: self_modulate's colour must survive intact.
+func test_result_delta_label_bakes_white_so_self_modulate_survives() -> void:
+	var theme: Theme = load("res://Assets/Theme/kejartes_theme.tres")
+	var base_color: Color = theme.get_color("font_color", "ResultDeltaLabel")
+	assert_eq(base_color, Color.WHITE,
+		"a non-white base defeats self_modulate's green/red multiply")
+
+
+func test_a_star_defaults_to_real_art_not_the_procedural_polygon() -> void:
+	var star: Control = load(STAR_PATH).instantiate()
+	Engine.get_main_loop().root.add_child(star)
+	track(star)
+	star.set_filled(true, null, null, Color.WHITE, Color.GRAY)
+	assert_true(star.icon.texture != null,
+		"a null texture argument falls back to the shipped star art, not to _draw()")
+	assert_true(star.is_filled, "and the star reads as earned")
+
+
+func test_an_unearned_star_uses_the_hollow_art() -> void:
+	var star: Control = load(STAR_PATH).instantiate()
+	Engine.get_main_loop().root.add_child(star)
+	track(star)
+	star.set_filled(false, null, null, Color.WHITE, Color.GRAY)
+	assert_true(star.icon.texture != null, "the empty star has art too")
+	assert_false(star.is_filled, "and reads as unearned")
+
+
+func test_the_star_scene_carries_a_glow_and_a_burst_slot() -> void:
+	var star: Control = load(STAR_PATH).instantiate()
+	track(star)
+	assert_true(star.has_node("Glow"), "an authored Glow layer, not a runtime one")
+	assert_true(star.has_node("BurstSlot"), "an authored slot the burst mounts into")
+
+
+func test_celebrate_is_not_a_coroutine() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/ResultStar.gd")
+	var body: String = src.split("func celebrate(")[1].split("\nfunc ")[0]
+	assert_false(body.contains("await "),
+		"celebrate() must be callable from a test and from the reveal loop")

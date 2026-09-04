@@ -120,6 +120,8 @@ func test_every_play_sfx_id_in_the_project_is_known() -> void:
 		"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
 		"popup_close", "select", "error", "reward", "tally", "sparkle",
 		"pill_tap", "pill_popup_open", "pill_popup_close", "pane_swipe",
+		"star_earn_1", "star_earn_2", "star_earn_3", "result_fanfare",
+		"score_tick", "combo_up",
 		]
 	var bad: Array[String] = []
 	_scan_for_sfx_ids("res://Scripts", known, bad)
@@ -392,3 +394,16 @@ func test_lobby_family_screens_use_the_playlist_not_plain_play_bgm() -> void:
 			path + " must start the lobby playlist")
 		assert_true(not src.contains('play_bgm(&"lobby")'),
 			path + " must not use the retired single-track lobby call")
+
+
+## The six cues the 2026-09-04 minigame reward pass added. Each currently
+## aliases an existing stream; the ids are the contract, the files are not.
+const REWARD_SFX_IDS := [
+	&"star_earn_1", &"star_earn_2", &"star_earn_3",
+	&"result_fanfare", &"score_tick", &"combo_up",
+]
+
+
+func test_every_reward_cue_resolves_to_a_real_stream() -> void:
+	for id in REWARD_SFX_IDS:
+		assert_true(AudioDirector.has_sfx(id), "%s resolves to a stream" % id)

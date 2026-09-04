@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://b5kea4h33q5vo" path="res://Scripts/Minigames/UI/MinigameResultPopup.gd" id="1_bw2jk"]
 [ext_resource type="PackedScene" uid="uid://bh43jlmr0mvth" path="res://Scenes/Minigames/UI/ResultStar.tscn" id="2_nclls"]
+[ext_resource type="Texture2D" uid="uid://c2nhb6m52di2u" path="res://Assets/Images/UI/Placeholders/icon_skor.svg" id="3_xm3lp"]
+[ext_resource type="PackedScene" uid="uid://wkhx361nmrwr" path="res://Scenes/Minigames/UI/ResultConfetti.tscn" id="4_moia8"]
 
 [node name="MinigameResultPopup" type="CanvasLayer" unique_id=1587108605]
 process_mode = 3
@@ -27,6 +29,7 @@ grow_vertical = 2
 
 [node name="Card" type="PanelContainer" parent="Dim/Center" unique_id=1948114101]
 layout_mode = 2
+theme_type_variation = &"ResultCardPanel"
 
 [node name="Layout" type="VBoxContainer" parent="Dim/Center/Card" unique_id=1219537204]
 layout_mode = 2
@@ -34,8 +37,7 @@ theme_override_constants/separation = 14
 
 [node name="TitleLabel" type="Label" parent="Dim/Center/Card/Layout" unique_id=1513523759]
 layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 8
+theme_type_variation = &"ResultHeroLabel"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -58,48 +60,110 @@ layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="Dim/Center/Card/Layout" unique_id=255216878]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.82, 0.95, 1)
+theme_type_variation = &"ResultBodyLabel"
 horizontal_alignment = 1
 
-[node name="ScoreRow" type="HBoxContainer" parent="Dim/Center/Card/Layout" unique_id=1308054677]
+[node name="ScorePanel" type="PanelContainer" parent="Dim/Center/Card/Layout" unique_id=1083119830]
+layout_mode = 2
+theme_type_variation = &"ResultStatPanel"
+
+[node name="ScoreRow" type="HBoxContainer" parent="Dim/Center/Card/Layout/ScorePanel" unique_id=1308054677]
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="ScorePrefixLabel" type="Label" parent="Dim/Center/Card/Layout/ScoreRow" unique_id=346597186]
+[node name="ScoreIcon" type="TextureRect" parent="Dim/Center/Card/Layout/ScorePanel/ScoreRow" unique_id=368218223]
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+texture = ExtResource("3_xm3lp")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ScorePrefixLabel" type="Label" parent="Dim/Center/Card/Layout/ScorePanel/ScoreRow" unique_id=346597186]
+layout_mode = 2
+theme_type_variation = &"ResultBodyLabel"
 text = "Skor:"
 
-[node name="ScoreValueLabel" type="Label" parent="Dim/Center/Card/Layout/ScoreRow" unique_id=434410521]
+[node name="ScoreValueLabel" type="Label" parent="Dim/Center/Card/Layout/ScorePanel/ScoreRow" unique_id=434410521]
 layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 5
+theme_type_variation = &"DisplayLabel"
 
-[node name="CategoryBadge" type="Label" parent="Dim/Center/Card/Layout" unique_id=622992857]
+[node name="CategoryBadge" type="PanelContainer" parent="Dim/Center/Card/Layout" unique_id=721433455]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-horizontal_alignment = 1
+theme_type_variation = &"ResultBadgePanel"
+
+[node name="BadgeRow" type="HBoxContainer" parent="Dim/Center/Card/Layout/CategoryBadge" unique_id=1721534375]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="BadgeIcon" type="TextureRect" parent="Dim/Center/Card/Layout/CategoryBadge/BadgeRow" unique_id=1383441068]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BadgeLabel" type="Label" parent="Dim/Center/Card/Layout/CategoryBadge/BadgeRow" unique_id=1765504345]
+layout_mode = 2
+theme_type_variation = &"ResultDeltaLabel"
 
 [node name="Sep2" type="HSeparator" parent="Dim/Center/Card/Layout" unique_id=424401058]
 layout_mode = 2
 
-[node name="StatDeltaLabel" type="Label" parent="Dim/Center/Card/Layout" unique_id=1225432988]
+[node name="DeltaPanel" type="PanelContainer" parent="Dim/Center/Card/Layout" unique_id=1011405573]
 layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
+theme_type_variation = &"ResultStatPanel"
+
+[node name="DeltaList" type="VBoxContainer" parent="Dim/Center/Card/Layout/DeltaPanel" unique_id=683956032]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatDeltaRow" type="HBoxContainer" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList" unique_id=244538810]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="StatDeltaIcon" type="TextureRect" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList/StatDeltaRow" unique_id=1586011332]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StatDeltaLabel" type="Label" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList/StatDeltaRow" unique_id=1225432988]
+layout_mode = 2
+theme_type_variation = &"ResultDeltaLabel"
 horizontal_alignment = 1
 
-[node name="EnergyDeltaLabel" type="Label" parent="Dim/Center/Card/Layout" unique_id=1289689689]
+[node name="EnergyDeltaRow" type="HBoxContainer" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList" unique_id=634637764]
 layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="EnergyDeltaIcon" type="TextureRect" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList/EnergyDeltaRow" unique_id=1604199074]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnergyDeltaLabel" type="Label" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList/EnergyDeltaRow" unique_id=1289689689]
+layout_mode = 2
+theme_type_variation = &"ResultDeltaLabel"
 horizontal_alignment = 1
 
-[node name="MoodDeltaLabel" type="Label" parent="Dim/Center/Card/Layout" unique_id=1569512349]
+[node name="MoodDeltaRow" type="HBoxContainer" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList" unique_id=1522972337]
 layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="MoodDeltaIcon" type="TextureRect" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow" unique_id=99777689]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MoodDeltaLabel" type="Label" parent="Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow" unique_id=1569512349]
+layout_mode = 2
+theme_type_variation = &"ResultDeltaLabel"
 horizontal_alignment = 1
 
 [node name="ContinueButtonCenter" type="CenterContainer" parent="Dim/Center/Card/Layout" unique_id=1458879743]
@@ -107,3 +171,7 @@ layout_mode = 2
 
 [node name="ContinueButton" type="Button" parent="Dim/Center/Card/Layout/ContinueButtonCenter" unique_id=922764465]
 layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+
+[node name="ResultConfetti" parent="Dim" unique_id=530501178 instance=ExtResource("4_moia8")]
+position = Vector2(540, -20)

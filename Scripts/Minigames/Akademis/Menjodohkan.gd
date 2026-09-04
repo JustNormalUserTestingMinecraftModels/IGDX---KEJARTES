@@ -85,8 +85,6 @@ extends BaseMinigame
 @export var correct_color: Color         = Color(0.3, 0.85, 0.4, 1)
 ## Flash tint for an incorrect submission.
 @export var wrong_color: Color           = Color(0.9, 0.3, 0.3, 1)
-## Text colour for the running score label.
-@export var score_label_color: Color     = Color(0.75, 0.85, 1.0, 1)
 ## Text colour for the question carousel's header.
 @export var question_header_color: Color = Color(1.0, 0.7, 0.3, 1)
 ## Text colour for the answer carousel's header.
@@ -103,8 +101,6 @@ extends BaseMinigame
 @export var font: Font = null
 ## Font size for the game's title label.
 @export var title_font_size: int  = 48
-## Font size for the running score label.
-@export var score_font_size: int  = 36
 ## Font size for both carousels' headers.
 @export var header_font_size: int = 32
 ## Font size for the Lock/Submit button labels.
@@ -174,7 +170,7 @@ var a_is_dragging: bool   = false
 
 # ─── Scene Nodes ─────────────────────────────────────────────────────────────
 @onready var title_label: Label           = $HeaderVBox/TitleLabel
-@onready var score_label: Label           = $HeaderVBox/ScoreLabel
+@onready var score_hud: MinigameScoreHUD  = $HeaderVBox/ScoreHUD
 @onready var progress_hbox: HBoxContainer = $HeaderVBox/ProgressHBox
 
 @onready var top_carousel: Control          = $TopCarousel
@@ -217,10 +213,8 @@ func _apply_visual_exports() -> void:
 	elif btn_submit and submit_btn_disabled_style:
 		btn_submit.add_theme_stylebox_override("normal", submit_btn_disabled_style)
 	# Apply font overrides to static labels
-	if font:
-		for lbl in [title_label, score_label]:
-			if lbl:
-				lbl.add_theme_font_override("font", font)
+	if font and title_label:
+		title_label.add_theme_font_override("font", font)
 
 func _apply_custom_button(btn: Button, tex: Texture2D) -> void:
 	if not btn or not tex:
@@ -302,6 +296,8 @@ func setup_game() -> void:
 	is_revealing = false
 	score = 0
 	max_score = questions_count
+	if score_hud:
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_akademis.svg"), max_score)
 	correct_matches = 0
 	incorrect_matches = 0
 	locked_matches.clear()
@@ -502,8 +498,8 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 		)
 
 func _update_score_ui() -> void:
-	if score_label:
-		score_label.text = "Pasangan Terjodohkan: %d dari %d | Skor: %d" % [locked_matches.size(), max_score, score]
+	if score_hud:
+		score_hud.set_score(locked_matches.size())
 
 func _update_action_bar_ui() -> void:
 	if not is_game_active:

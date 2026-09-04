@@ -1,12 +1,25 @@
 [gd_scene format=3 uid="uid://bh43jlmr0mvth"]
 
 [ext_resource type="Script" uid="uid://bwpwbk4k7qq4i" path="res://Scripts/Minigames/UI/ResultStar.gd" id="1_vg8ma"]
+[ext_resource type="Texture2D" uid="uid://cyfkas4fqxd7c" path="res://Assets/Images/Particles/particle_glow.png" id="2_kbwnx"]
 
 [node name="ResultStar" type="Control" unique_id=688303056]
-custom_minimum_size = Vector2(88, 88)
+custom_minimum_size = Vector2(96, 96)
 layout_mode = 3
 anchors_preset = 0
+theme_type_variation = &"ResultStarSlot"
 script = ExtResource("1_vg8ma")
+
+[node name="Glow" type="TextureRect" parent="." unique_id=123939458]
+modulate = Color(1, 0.86, 0.32, 0)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_kbwnx")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Icon" type="TextureRect" parent="." unique_id=1935988294]
 layout_mode = 0
@@ -16,3 +29,10 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
+
+[node name="BurstSlot" type="Control" parent="." unique_id=287642547]
+anchors_preset = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5

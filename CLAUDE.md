@@ -9,14 +9,17 @@ Indonesian-language school-management sim. Main scene:
 You play a teacher. You approve a roster of students, assign each of them a
 daily activity for the school week, then watch the week simulate. Stats move,
 minigames and random events fire, and at week's end you get a report. Clear
-every student's three academic targets before the grade's final week to pass.
+two-thirds of the roster's academic targets — `run_stars() >= 2.0` of 3.0 —
+before the grade's final week to pass. It is a roster-wide fraction, not a
+per-student gate: three students clearing everything while a fourth clears
+nothing is 9 of 12 = 2.25 stars, and passes.
 
 **Grades scale the whole game** (`GameState.current_grade`, 7–9):
 
 | Grade | Weeks | Target uplift over base | Minigame win stat | Loss penalty |
 |---|---|---|---|---|
 | 7 | 6 | +15 | 10 | −3 |
-| 8 | 12 | +30 | 8 | −4 |
+| 8 | 12 | +34 | 8 | −4 |
 | 9 | 16 | +40 | 6 | −5 |
 
 **Loop:** **MainMenu (boot)** → CutScene → StudentCard (approve roster) →

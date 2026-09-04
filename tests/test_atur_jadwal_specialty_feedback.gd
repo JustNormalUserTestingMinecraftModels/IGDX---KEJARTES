@@ -24,3 +24,12 @@ func test_specialty_match_cue_registered() -> void:
 	assert_true(src.contains("sfx_specialty_match"), "AudioDirector needs the sfx_specialty_match export")
 	assert_true(src.contains("&\"specialty_match\": return sfx_specialty_match"),
 		"the &\"specialty_match\" cue must map to sfx_specialty_match")
+
+func test_specialty_burst_scene_shape() -> void:
+	var packed := load("res://Scenes/AturJadwal/SpecialtyMatchBurst.tscn") as PackedScene
+	assert_true(packed != null, "SpecialtyMatchBurst.tscn must exist")
+	var inst := packed.instantiate()
+	assert_true(inst is CPUParticles2D, "root must be CPUParticles2D")
+	assert_true(inst.one_shot, "the burst must be one_shot")
+	assert_true(inst.has_method("play"), "the burst must expose play()")
+	inst.free()

@@ -61,12 +61,18 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 ## An @export with a preloaded default, same rationale as category_icons.
 @export var holiday_icon: Texture2D = preload("res://Assets/Images/AturJadwal/icon_libur_nasional_placeholder.png")
 
+## Partikel yang muncul saat hari ini cocok dengan mapel favorit murid.
+## @export agar tim visual bisa mengganti per instance di Inspector.
+@export var specialty_match_burst_scene: PackedScene = preload("res://Scenes/AturJadwal/SpecialtyMatchBurst.tscn")
+
 @onready var _paper: TextureButton = $Paper
 @onready var _day_label: Label = $Paper/DayLabel
 @onready var _subject_label: Label = $Paper/SubjectLabel
 @onready var _flavor_label: Label = $Paper/FlavorLabel
 @onready var _lock: Label = $Paper/Lock
 @onready var _back_icon: TextureRect = $BackIcon
+@onready var _match_glow: TextureRect = $Paper/MatchGlow
+@onready var _specialty_star: TextureRect = $Paper/SpecialtyStar
 
 var _tokens: DesignTokens
 var _state := ""       # "" | "empty" | "scheduled" | "holiday"
@@ -144,6 +150,12 @@ func _apply(tint: Color, show_extras: bool, show_lock: bool) -> void:
 		_back_icon.visible = show_extras
 	if _lock:
 		_lock.visible = show_lock
+	# A repaint always clears the specialty-match decoration; play_specialty_match()
+	# re-adds it for the one note the player just assigned.
+	if _match_glow:
+		_match_glow.visible = false
+	if _specialty_star:
+		_specialty_star.visible = false
 
 
 func _get_tokens() -> DesignTokens:
@@ -180,3 +192,29 @@ func play_assign_pop() -> void:
 		_reveal.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		_reveal.tween_property(_back_icon, "position", _icon_rest, t.dur_normal)
 		_reveal.tween_property(_back_icon, "modulate:a", 1.0, t.dur_normal)
+
+
+## Plays the specialty-match reaction on top of the normal assign-pop: a gold
+## particle burst from the note centre, a glow pulse, and a persistent star.
+## No-op in the editor. atur_jadwal.gd calls this INSTEAD OF play_assign_pop()
+## when the assigned activity is the selected student's specialty.
+func play_specialty_match() -> void:
+	play_assign_pop()
+	if _specialty_star:
+		_specialty_star.visible = true
+	if _match_glow:
+		_match_glow.visible = true
+	if Engine.is_editor_hint() or not is_inside_tree():
+		return
+	if _match_glow:
+		_match_glow.modulate.a = 0.0
+		var t := _get_tokens()
+		var glow_tw := create_tween()
+		glow_tw.tween_property(_match_glow, "modulate:a", 0.55, t.dur_fast)
+		glow_tw.tween_property(_match_glow, "modulate:a", 0.30, t.dur_normal)
+	if specialty_match_burst_scene:
+		var burst := specialty_match_burst_scene.instantiate()
+		add_child(burst)
+		burst.position = size / 2.0
+		if burst.has_method("play"):
+			burst.play()

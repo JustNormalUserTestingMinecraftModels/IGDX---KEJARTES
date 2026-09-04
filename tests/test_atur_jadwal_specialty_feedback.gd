@@ -33,3 +33,18 @@ func test_specialty_burst_scene_shape() -> void:
 	assert_true(inst.one_shot, "the burst must be one_shot")
 	assert_true(inst.has_method("play"), "the burst must expose play()")
 	inst.free()
+
+func test_sticky_note_has_matched_state_api() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/DayStickyNote.gd")
+	assert_true(src.contains("func play_specialty_match"), "DayStickyNote needs play_specialty_match()")
+	assert_true(src.contains("play_assign_pop()"), "play_specialty_match must reuse play_assign_pop()")
+	assert_true(src.contains("specialty_match_burst_scene"), "the burst scene must be an @export")
+	assert_true(src.contains("_match_glow") and src.contains("_specialty_star"),
+		"both matched-state child nodes must be referenced")
+
+func test_sticky_note_scene_has_matched_nodes() -> void:
+	var packed := load("res://Scenes/AturJadwal/DayStickyNote.tscn") as PackedScene
+	var inst := packed.instantiate()
+	assert_true(inst.get_node_or_null("Paper/MatchGlow") != null, "MatchGlow node must exist")
+	assert_true(inst.get_node_or_null("Paper/SpecialtyStar") != null, "SpecialtyStar node must exist")
+	inst.free()

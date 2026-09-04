@@ -119,6 +119,7 @@ func test_every_play_sfx_id_in_the_project_is_known() -> void:
 	var known := ["tap", "confirm", "cancel", "success", "fail", "coin",
 		"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
 		"popup_close", "select", "error", "reward", "tally", "sparkle",
+		"specialty_match",
 		"pill_tap", "pill_popup_open", "pill_popup_close", "pane_swipe",
 		"star_earn_1", "star_earn_2", "star_earn_3", "result_fanfare",
 		"score_tick", "combo_up",
@@ -407,3 +408,11 @@ const REWARD_SFX_IDS := [
 func test_every_reward_cue_resolves_to_a_real_stream() -> void:
 	for id in REWARD_SFX_IDS:
 		assert_true(AudioDirector.has_sfx(id), "%s resolves to a stream" % id)
+
+
+## specialty_match (the 2026-09-04 AturJadwal specialty-match gold burst cue)
+## is assigned only in audio_director.tscn via the editor, never via a
+## script preload, so nothing else in this suite proves it resolves.
+func test_specialty_match_cue_resolves_to_a_real_stream() -> void:
+	assert_true(AudioDirector.has_sfx(&"specialty_match"),
+		"specialty_match resolves to a stream")

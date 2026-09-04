@@ -38,6 +38,12 @@ var selected_day: String = ""
 # Jadwal storage: day_schedules[student_id][day_name] = {category, mood_cost, energy_cost}
 var day_schedules: Dictionary = {}
 
+## Per-week tally of skill points each student has gained from minigame WINS,
+## student_id -> float. Enforces Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_*.
+## Cleared at week start (SchoolDay.start_simulation) and on grade change
+## (reset_roster_for_new_grade). Session-scoped like everything here.
+var minigame_gain_this_week: Dictionary = {}
+
 # Week tracking  
 var minggu_ke: int = 1
 var max_minggu: int = 6
@@ -81,12 +87,46 @@ func get_grade_name() -> String:
 	return "Kelas " + str(current_grade)
 
 func set_grade(grade_num: int) -> void:
+	var previous_grade: int = current_grade
 	current_grade = grade_num
 	minggu_ke = 1
 	run_stats.reset()
 	is_exam_intro_cutscene = false
 	run_failed = false
+	if current_grade != previous_grade:
+		reset_roster_for_new_grade()  # no-op when the roster is empty
 	print("GameState grade set to: Kelas ", current_grade, " (Minggu ", minggu_ke, ", Max Minggu ", max_minggu, ")")
+
+## Rebases every roster student's three skill stats for a new grade: keep
+## Balance.KENAIKAN_KELAS_HEAD_START_FRAKSI of the gains made above roster
+## base, snap mood/energy to 80, and drop the cached base_akademis* so
+## initialize_grade_targets() recomputes targets from the new baseline.
+##
+## Called by RunResult._apply_progression() on a real grade advance and by
+## set_grade() on a debug grade-jump, so both paths behave identically.
+## A no-op when approved_students is empty.
+func reset_roster_for_new_grade() -> void:
+	if approved_students.is_empty():
+		return
+	var frac: float = Balance.KENAIKAN_KELAS_HEAD_START_FRAKSI
+	var skill_keys := [
+		["akademis1", "roster_base_akademis1"],
+		["akademis2", "roster_base_akademis2"],
+		["akademis3", "roster_base_akademis3"],
+	]
+	for student in approved_students:
+		for pair in skill_keys:
+			var cur: float = float(student.get(pair[0], 50.0))
+			if not student.has(pair[1]):
+				student[pair[1]] = cur
+			var rbase: float = float(student[pair[1]])
+			student[pair[0]] = rbase + frac * maxf(0.0, cur - rbase)
+		student["kepribadian1"] = 80.0
+		student["kepribadian2"] = 80.0
+		student.erase("base_akademis1")
+		student.erase("base_akademis2")
+		student.erase("base_akademis3")
+	minigame_gain_this_week.clear()
 
 func initialize_grade_targets() -> void:
 	for student in approved_students:

@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://dsk34ui1fwns"]
+
+[ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="1_ysnhu"]
+[ext_resource type="Script" uid="uid://d3u4mjwk3cmoi" path="res://Scripts/AturJadwal/SpecialtyMatchBurst.gd" id="2_hk3j4"]
+
+[node name="SpecialtyMatchBurst" type="CPUParticles2D" unique_id=1254133915]
+emitting = false
+amount = 14
+texture = ExtResource("1_ysnhu")
+lifetime = 0.7
+one_shot = true
+explosiveness = 1.0
+direction = Vector2(0, -1)
+spread = 180.0
+gravity = Vector2(0, 300)
+initial_velocity_min = 120.0
+initial_velocity_max = 240.0
+scale_amount_min = 0.4
+scale_amount_max = 0.9
+script = ExtResource("2_hk3j4")

@@ -119,6 +119,9 @@ var is_skipped: bool = false
 var minigames_played_this_week: int = 0
 var events_triggered_this_week: int = 0
 var max_events_this_week: int = 2
+## Rolled once per week from Balance.MINIGAME_MAKS_MINGGU_MIN..MAX. The player
+## cannot bank on a fixed number of minigames -- see the anti-exploit spec.
+var max_minigames_this_week: int = 2
 var is_waiting_for_continue: bool = false
 
 var embedded_widgets: Dictionary = {} # student_name -> Dictionary of node refs
@@ -263,6 +266,8 @@ func start_simulation() -> void:
 	minigames_played_this_week = 0
 	events_triggered_this_week = 0
 	max_events_this_week = randi_range(1, 2)
+	max_minigames_this_week = randi_range(Balance.MINIGAME_MAKS_MINGGU_MIN, Balance.MINIGAME_MAKS_MINGGU_MAX)
+	GameState.minigame_gain_this_week.clear()
 	student_manager = StudentManager.new()
 	student_manager.initialize_from_gamestate()
 	if skip_button:
@@ -847,7 +852,7 @@ func _roll_event(day_name: String) -> void:
 	# Dynamic weight calculation:
 	# Minigame weight scales with active studying students (0 to 4 * 15 = 0 to 60)
 	var w_minigame: int = 0
-	if minigames_played_this_week < 2:
+	if minigames_played_this_week < max_minigames_this_week:
 		w_minigame = active_studying * 15
 
 	# Event weight capped at 1-2 per week
@@ -887,22 +892,7 @@ func _roll_event(day_name: String) -> void:
 		await get_tree().create_timer(0.8).timeout
 
 	elif outcome == "Minigame":
-		var total_subject_weight = w_akademis + w_olahraga + w_seni
-		var category_selected = ""
-
-		if total_subject_weight == 0:
-			var cat_roll = randi() % 3
-			if cat_roll == 0: category_selected = "Akademis"
-			elif cat_roll == 1: category_selected = "Olahraga"
-			else: category_selected = "SeniBudaya"
-		else:
-			var choice = randi() % total_subject_weight
-			if choice < w_akademis:
-				category_selected = "Akademis"
-			elif choice < w_akademis + w_olahraga:
-				category_selected = "Olahraga"
-			else:
-				category_selected = "SeniBudaya"
+		var category_selected = _pick_minigame_category(w_akademis, w_olahraga, w_seni)
 
 		var tokens := Juice.tokens()
 		if category_selected == "Akademis":
@@ -922,6 +912,34 @@ func _roll_event(day_name: String) -> void:
 		await _trigger_random_event(day_name)
 
 # ─────────────────────────────────────────────────────────────────────────────
+## Picks a minigame category with a chance of uniform-random noise
+## (Balance.MINIGAME_KATEGORI_ACAK_PELUANG) before falling back to a pick
+## proportional to the day's scheduled subject weights, with a uniform
+## fallback if all weights are zero. Shared by _roll_event() and
+## skip_to_results() so the two simulation paths can't drift apart.
+func _pick_minigame_category(w_akademis: int, w_olahraga: int, w_seni: int) -> String:
+	if randf() < Balance.MINIGAME_KATEGORI_ACAK_PELUANG:
+		var r := randi() % 3
+		return "Akademis" if r == 0 else ("Olahraga" if r == 1 else "SeniBudaya")
+	else:
+		var total_subject_weight = w_akademis + w_olahraga + w_seni
+		if total_subject_weight == 0:
+			var cat_roll = randi() % 3
+			if cat_roll == 0:
+				return "Akademis"
+			elif cat_roll == 1:
+				return "Olahraga"
+			else:
+				return "SeniBudaya"
+		else:
+			var choice = randi() % total_subject_weight
+			if choice < w_akademis:
+				return "Akademis"
+			elif choice < w_akademis + w_olahraga:
+				return "Olahraga"
+			else:
+				return "SeniBudaya"
+
 func _trigger_random_event(day_name: String) -> void:
 	events_triggered_this_week += 1
 	# Every student on the roster is present for an event, so
@@ -1087,8 +1105,8 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		var base_duration: float = 40.0 if _scene_name(game_scene) == "Menjodohkan" else 30.0
 		var duration: float = base_duration
 		match GameState.current_grade:
-			8: duration = base_duration * 0.8
-			9: duration = base_duration * 0.6
+			8: duration = base_duration * Balance.MINIGAME_WAKTU_SKALA_KELAS_8
+			9: duration = base_duration * Balance.MINIGAME_WAKTU_SKALA_KELAS_9
 		var diff_level = clampi(GameState.current_grade - 6, 1, 3)
 		current_minigame.start_minigame(diff_level, duration)
 
@@ -1216,7 +1234,7 @@ func skip_to_results() -> void:
 		var resting_count = counts.get("Istirahat", 0)
 
 		var w_minigame: int = 0
-		if minigames_played_this_week < 2:
+		if minigames_played_this_week < max_minigames_this_week:
 			w_minigame = active_studying * 15
 
 		var w_event: int = 0
@@ -1240,12 +1258,7 @@ func skip_to_results() -> void:
 			var category = "Akademis"
 			if outcome == "Minigame":
 				minigames_played_this_week += 1
-				var total_subj = w_akademis + w_olahraga + w_seni
-				if total_subj > 0:
-					var choice = randi() % total_subj
-					if choice < w_akademis: category = "Akademis"
-					elif choice < w_akademis + w_olahraga: category = "Olahraga"
-					else: category = "SeniBudaya"
+				category = _pick_minigame_category(w_akademis, w_olahraga, w_seni)
 			else:
 				category = "Event"
 				events_triggered_this_week += 1
@@ -1254,7 +1267,11 @@ func skip_to_results() -> void:
 				for s in GameState.approved_students:
 					GameState.run_stats.record_event_student(int(s.get("id", -1)))
 
-			var won = randf() > Balance.SKIP_PELUANG_KALAH
+			var skip_lose_chance := Balance.SKIP_PELUANG_KALAH_KELAS_7
+			match GameState.current_grade:
+				8: skip_lose_chance = Balance.SKIP_PELUANG_KALAH_KELAS_8
+				9: skip_lose_chance = Balance.SKIP_PELUANG_KALAH_KELAS_9
+			var won = randf() > skip_lose_chance
 			if student_manager:
 				student_manager.record_minigame_result(day_name, category, "Simulasi Cepat", won)
 		current_day += 1

@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://dtfh14aacv1cg" path="res://Scripts/AturJadwal/DayStickyNote.gd" id="1_hn8nh"]
 [ext_resource type="Shader" uid="uid://bmdrhc1vicis" path="res://Scripts/Shaders/soft_shadow.gdshader" id="2_elcly"]
 [ext_resource type="Texture2D" uid="uid://dbkqgaqqwkp57" path="res://Assets/Images/UI/stickynotes.png" id="3_wbbga"]
+[ext_resource type="Texture2D" uid="uid://cyfkas4fqxd7c" path="res://Assets/Images/Particles/particle_glow.png" id="4_wbbga"]
+[ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="5_mpgil"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mpgil"]
 shader = ExtResource("2_elcly")
@@ -12,6 +14,7 @@ shader_parameter/blur = 2.5
 custom_minimum_size = Vector2(271, 267)
 layout_mode = 3
 anchors_preset = 0
+pivot_offset = Vector2(135.5, 133.5)
 mouse_filter = 1
 script = ExtResource("1_hn8nh")
 
@@ -42,12 +45,24 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Paper" type="TextureButton" parent="." unique_id=639882731]
+self_modulate = Color(0.8666667, 0.8980392, 0.96862745, 1)
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture_normal = ExtResource("3_wbbga")
 ignore_texture_size = true
 stretch_mode = 0
+metadata/no_auto_juice = true
+
+[node name="MatchGlow" type="TextureRect" parent="Paper" unique_id=244445976]
+visible = false
+layout_mode = 0
+offset_right = 271.0
+offset_bottom = 267.0
+mouse_filter = 2
+texture = ExtResource("4_wbbga")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="DayLabel" type="Label" parent="Paper" unique_id=266274374]
 modulate = Color(0, 0, 0, 1)
@@ -89,3 +104,16 @@ offset_right = 60.0
 offset_bottom = 56.0
 theme_type_variation = &"MicroLabel"
 text = "🔒"
+
+[node name="SpecialtyStar" type="TextureRect" parent="Paper" unique_id=1009588491]
+visible = false
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 46.0
+offset_bottom = 46.0
+mouse_filter = 2
+texture = ExtResource("5_mpgil")
+expand_mode = 1
+stretch_mode = 5

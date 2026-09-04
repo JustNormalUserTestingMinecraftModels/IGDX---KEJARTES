@@ -1187,6 +1187,22 @@ func _on_belajar_pressed():
 			9:
 				GameState.approved_students = [student_data_list[0], student_data_list[1], student_data_list[2], student_data_list[3]]
 
+	# Freeze each student's starting skills as the permanent roster baseline.
+	# GameState.reset_roster_for_new_grade() rebases toward these every grade;
+	# they are never erased. base_akademis* (set later by
+	# initialize_grade_targets) is the per-grade cache and IS erased on reset.
+	# Only the FIRST approval may set roster_base_* — a player re-opening
+	# StudentCard mid-grade and pressing Belajar again must not move it, or
+	# reset_roster_for_new_grade()'s 20%-head-start formula collapses toward
+	# ~100% retention and roster_base drifts upward every grade.
+	for _s in GameState.approved_students:
+		if not _s.has("roster_base_akademis1"):
+			_s["roster_base_akademis1"] = float(_s.get("akademis1", 50.0))
+		if not _s.has("roster_base_akademis2"):
+			_s["roster_base_akademis2"] = float(_s.get("akademis2", 50.0))
+		if not _s.has("roster_base_akademis3"):
+			_s["roster_base_akademis3"] = float(_s.get("akademis3", 50.0))
+
 	GameState.selected_student = GameState.approved_students[0]
 	
 	if GameState.current_grade == 7:

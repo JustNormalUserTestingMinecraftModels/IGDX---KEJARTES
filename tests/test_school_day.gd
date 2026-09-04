@@ -439,3 +439,35 @@ func test_school_day_records_event_students_into_run_stats() -> void:
 		"res://Scripts/SchoolSimulation/SchoolDay.gd")
 	assert_true(src.contains("GameState.run_stats.record_event_student("),
 		"the event branch feeds the run tally")
+
+
+func test_skip_uses_per_grade_loss_chance() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_false(src.contains("Balance.SKIP_PELUANG_KALAH)"),
+		"skip must not read the old single SKIP_PELUANG_KALAH constant")
+	assert_true(src.contains("SKIP_PELUANG_KALAH_KELAS_"),
+		"skip resolution must pick a per-grade SKIP_PELUANG_KALAH_KELAS_* value")
+
+
+func test_minigame_time_scale_comes_from_balance() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("Balance.MINIGAME_WAKTU_SKALA_KELAS_8"),
+		"grade-8 minigame duration must read Balance.MINIGAME_WAKTU_SKALA_KELAS_8")
+	assert_true(src.contains("Balance.MINIGAME_WAKTU_SKALA_KELAS_9"),
+		"grade-9 minigame duration must read Balance.MINIGAME_WAKTU_SKALA_KELAS_9")
+
+
+func test_weekly_minigame_count_is_randomised() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("max_minigames_this_week"),
+		"SchoolDay must track a per-week max minigame count")
+	assert_true(src.contains("randi_range(Balance.MINIGAME_MAKS_MINGGU_MIN, Balance.MINIGAME_MAKS_MINGGU_MAX)"),
+		"the per-week minigame count must be rolled from Balance each week")
+	assert_false(src.contains("minigames_played_this_week < 2"),
+		"the hardcoded < 2 minigame guard must be gone")
+
+
+func test_minigame_category_has_uniform_noise() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("Balance.MINIGAME_KATEGORI_ACAK_PELUANG"),
+		"the minigame category pick must branch on the uniform-noise chance")

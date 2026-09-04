@@ -87,6 +87,9 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"combo_up")`: an in-run combo stepping up. Placeholder:
 ## aliases pop.ogg.
 @export var sfx_combo_up: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
+## `play_sfx(&"specialty_match")`: AturJadwal, a day is assigned to the
+## selected student's specialty subject. Placeholder: aliases sfx_reward.
+@export var sfx_specialty_match: AudioStream
 ## `play_sfx(&"pill_popup_open")`: WeekRecapPillInfoPopup opens. A
 ## dedicated copy of SFX/popup_open.ogg.
 @export var sfx_pill_popup_open: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_open.ogg")
@@ -247,6 +250,7 @@ func _resolve_sfx(id: StringName) -> AudioStream:
 		&"result_fanfare": return sfx_result_fanfare
 		&"score_tick": return sfx_score_tick
 		&"combo_up": return sfx_combo_up
+		&"specialty_match": return sfx_specialty_match
 		_: return null
 
 

@@ -122,3 +122,35 @@ func test_mainbola_get_star_ratio_delegates_to_the_static_helper() -> void:
 	var src := FileAccess.get_file_as_string(MAINBOLA_PATH)
 	assert_true(src.contains("_shot_accuracy_ratio("),
 		"get_star_ratio() calls the static helper rather than re-deriving the math")
+
+
+const MENARI_PATH := "res://Scripts/Minigames/SeniBudaya/LombaMenari.gd"
+## LombaMenari.gd declares no class_name -- see MainBolaScript's comment in
+## this same suite for why a preloaded Script const is used instead of the
+## bare class name.
+const MenariScript := preload("res://Scripts/Minigames/SeniBudaya/LombaMenari.gd")
+
+
+func test_menari_rates_an_all_perfect_routine_at_three_stars() -> void:
+	var ratio := MenariScript._note_accuracy_ratio(20, 0, 0)
+	assert_true(absf(ratio - 1.0) < 0.001, "every note PERFECT")
+	assert_eq(BaseMinigame._calculate_stars(ratio, true), 3, "and earns three stars")
+
+
+func test_menari_rates_a_half_good_half_missed_routine_lower() -> void:
+	# 10 good hits = 500 points of a possible 2000
+	var ratio := MenariScript._note_accuracy_ratio(0, 10, 10)
+	assert_true(absf(ratio - 0.25) < 0.001, "half the notes at half credit")
+	assert_eq(BaseMinigame._calculate_stars(ratio, true), 1, "a sloppy win is one star")
+
+
+func test_menari_reports_unknown_before_a_single_note() -> void:
+	var ratio := MenariScript._note_accuracy_ratio(0, 0, 0)
+	assert_true(absf(ratio - BaseMinigame.STAR_RATIO_UNKNOWN) < 0.001,
+		"no notes presented means nothing to rate")
+
+
+func test_menari_get_star_ratio_delegates_to_the_static_helper() -> void:
+	var src := FileAccess.get_file_as_string(MENARI_PATH)
+	assert_true(src.contains("_note_accuracy_ratio("),
+		"get_star_ratio() calls the static helper rather than re-deriving the math")

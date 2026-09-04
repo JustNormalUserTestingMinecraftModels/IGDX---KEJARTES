@@ -18,6 +18,7 @@ extends McpTestSuite
 ## with no instantiation at all.
 
 func suite_name() -> String:
+
 	return "minigame_star_rubric"
 
 
@@ -89,26 +90,32 @@ func test_thresholds_are_named_constants() -> void:
 
 
 const MAINBOLA_PATH := "res://Scripts/Minigames/Olahraga/MainBola.gd"
+## MainBola.gd declares no class_name, so its static helper is reached
+## through this preloaded Script reference rather than a bare identifier --
+## `MainBola.foo()` fails to parse ("Identifier not declared"); a preloaded
+## Script const resolves statics fine with no class_name required. Confirmed
+## empirically before this was written.
+const MainBolaScript := preload("res://Scripts/Minigames/Olahraga/MainBola.gd")
 
 
 func test_mainbola_rates_a_flawless_striker_at_three_stars() -> void:
 	# 5 goals from 5 shots is perfect.
-	assert_true(absf(MainBola._shot_accuracy_ratio(5, 5) - 1.0) < 0.001,
+	assert_true(absf(MainBolaScript._shot_accuracy_ratio(5, 5) - 1.0) < 0.001,
 		"5 goals from 5 shots is perfect")
-	assert_eq(BaseMinigame._calculate_stars(MainBola._shot_accuracy_ratio(5, 5), true), 3,
+	assert_eq(BaseMinigame._calculate_stars(MainBolaScript._shot_accuracy_ratio(5, 5), true), 3,
 		"and earns three stars")
 
 
 func test_mainbola_rates_a_wasteful_striker_lower() -> void:
 	# 4 goals from 8 shots.
-	assert_true(absf(MainBola._shot_accuracy_ratio(4, 8) - 0.5) < 0.001,
+	assert_true(absf(MainBolaScript._shot_accuracy_ratio(4, 8) - 0.5) < 0.001,
 		"4 goals from 8 shots")
-	assert_eq(BaseMinigame._calculate_stars(MainBola._shot_accuracy_ratio(4, 8), true), 1,
+	assert_eq(BaseMinigame._calculate_stars(MainBolaScript._shot_accuracy_ratio(4, 8), true), 1,
 		"a scraped win is one star")
 
 
 func test_mainbola_reports_unknown_before_any_shot() -> void:
-	assert_true(absf(MainBola._shot_accuracy_ratio(0, 0) - BaseMinigame.STAR_RATIO_UNKNOWN) < 0.001,
+	assert_true(absf(MainBolaScript._shot_accuracy_ratio(0, 0) - BaseMinigame.STAR_RATIO_UNKNOWN) < 0.001,
 		"no shots taken means no accuracy to divide by")
 
 

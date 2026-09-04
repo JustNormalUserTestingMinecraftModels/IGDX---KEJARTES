@@ -242,3 +242,61 @@ func test_batik_get_star_ratio_delegates_to_the_static_helper() -> void:
 	var src := FileAccess.get_file_as_string(BATIK_PATH)
 	assert_true(src.contains("_mistake_free_ratio("),
 		"get_star_ratio() calls the static helper rather than re-deriving the math")
+
+
+## Every minigame script in the project, so a ninth one cannot quietly ship
+## without a mastery metric.
+const ALL_MINIGAMES := [
+	"res://Scripts/Minigames/Akademis/PilihanGanda.gd",
+	"res://Scripts/Minigames/Akademis/Menjodohkan.gd",
+	"res://Scripts/Minigames/Akademis/Password.gd",
+	"res://Scripts/Minigames/Akademis/Variabel.gd",
+	"res://Scripts/Minigames/Olahraga/MainBola.gd",
+	"res://Scripts/Minigames/Olahraga/Badminton.gd",
+	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd",
+	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd",
+]
+
+## The four games that ride the base implementation because they score out of a
+## real max_score. The other four override it -- see Tasks 2-5.
+const QUIZ_MINIGAMES := [
+	"res://Scripts/Minigames/Akademis/PilihanGanda.gd",
+	"res://Scripts/Minigames/Akademis/Menjodohkan.gd",
+	"res://Scripts/Minigames/Akademis/Password.gd",
+	"res://Scripts/Minigames/Akademis/Variabel.gd",
+]
+
+
+func test_every_quiz_declares_a_real_max_score() -> void:
+	for path in QUIZ_MINIGAMES:
+		var src := FileAccess.get_file_as_string(path)
+		assert_true(src.contains("var max_score: int"),
+			"%s scores out of a max_score, so the base rubric rates it" % path)
+
+
+func test_every_minigame_can_be_rated() -> void:
+	for path in ALL_MINIGAMES:
+		var src := FileAccess.get_file_as_string(path)
+		var overrides := src.contains("func get_star_ratio() -> float:")
+		var has_max := src.contains("var max_score: int")
+		assert_true(overrides or has_max,
+			"%s must either declare max_score or override get_star_ratio()" % path)
+
+
+func test_a_perfect_quiz_run_is_three_stars() -> void:
+	var ratio := BaseMinigame._ratio_from_score(3, 3)
+	assert_eq(BaseMinigame._calculate_stars(ratio, true), 3,
+		"3 of 3 correct is a three-star run")
+
+
+func test_every_minigame_that_overrides_get_star_ratio_uses_a_static_helper() -> void:
+	# The pattern this whole test suite depends on: any override must expose
+	# its math as a static func, or its own tests (and any later caller) hit
+	# the same "placeholder instance" wall Task 1 found and worked around.
+	for path in ALL_MINIGAMES:
+		var src := FileAccess.get_file_as_string(path)
+		if not src.contains("func get_star_ratio() -> float:"):
+			continue   # quiz-shaped games ride the base implementation, nothing to check
+		assert_true(src.contains("static func "),
+			"%s overrides get_star_ratio() and must expose its math as a static "
+			+ "helper, per the pattern Task 1 established" % path)

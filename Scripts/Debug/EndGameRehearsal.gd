@@ -110,6 +110,13 @@ static func build_roster(preset: String, grade: int,
 const SNAPSHOT_KEYS := [
 	"approved_students", "selected_student", "day_schedules",
 	"pending_earnings", "grade7_student_ids", "inventory",
+	# The weekly minigame-gain budget. A rehearsal reaches
+	# RunResult's progression, which calls
+	# GameState.reset_roster_for_new_grade() -- and that clears this
+	# dict. Without it here, rehearsing mid-week would hand the player
+	# a fresh minigame budget and reopen the farming exploit the cap
+	# exists to close.
+	"minigame_gain_this_week",
 	"minggu_ke", "current_grade", "player_money",
 	"run_failed", "is_game_beaten",
 	"lobby_tutorial_completed", "tutorials_bypassed",

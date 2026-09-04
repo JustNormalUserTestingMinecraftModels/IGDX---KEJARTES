@@ -193,6 +193,19 @@ static func load_default() -> DesignTokens:
 ## Fill for the pill inset into the preview row -- darker than
 ## preview_row_fill so it reads as recessed.
 @export var preview_pill_fill: Color = Color("363636")
+## The row's hard drop shadow, cast just below its bottom border.
+@export var preview_row_shadow_color: Color = Color(0, 0, 0, 0.7)
+## Blur radius (px) of the row's drop shadow.
+@export var preview_row_shadow_size: int = 3
+## Offset (px) of the row's drop shadow from the row's own rect.
+@export var preview_row_shadow_offset: Vector2 = Vector2(0, 3)
+## The pill's soft inset edge -- a shadow, not a border.
+@export var preview_pill_shadow_color: Color = Color(0, 0, 0, 0.5)
+## Blur radius (px) of the pill's inset shadow.
+@export var preview_pill_shadow_size: int = 5
+## Offset (px) of the pill's inset shadow from the pill's own rect.
+@export var preview_pill_shadow_offset: Vector2 = Vector2(0, 2)
+
 
 @export_group("Day Summary")
 ## Sampled from dailyresults_mockup.png (spec:

@@ -80,6 +80,36 @@ func test_changing_a_token_changes_the_built_theme() -> void:
 		"theme must be derived from tokens, not hardcoded")
 
 
+## Task 3 of the mockup-rescale plan added these shadows as literal Color(...)
+## values instead of tokens -- the only hardcoded colors in the whole file.
+## This proves the fix: change the token, get a different shadow.
+func test_preview_shadows_come_from_tokens() -> void:
+	var custom := DesignTokens.new()
+	custom.preview_row_shadow_color = Color(1, 0, 0, 0.5)
+	custom.preview_row_shadow_size = 9
+	custom.preview_row_shadow_offset = Vector2(0, 9)
+	custom.preview_pill_shadow_color = Color(0, 1, 0, 0.5)
+	custom.preview_pill_shadow_size = 11
+	custom.preview_pill_shadow_offset = Vector2(0, 11)
+	var custom_theme := ThemeFactory.build(custom)
+
+	var row_sb := custom_theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
+	assert_eq(row_sb.shadow_color, custom.preview_row_shadow_color,
+		"PreviewRow shadow color must come from tokens, not a hardcoded literal")
+	assert_eq(row_sb.shadow_size, custom.preview_row_shadow_size,
+		"PreviewRow shadow size must come from tokens, not a hardcoded literal")
+	assert_eq(row_sb.shadow_offset, custom.preview_row_shadow_offset,
+		"PreviewRow shadow offset must come from tokens, not a hardcoded literal")
+
+	var pill_sb := custom_theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
+	assert_eq(pill_sb.shadow_color, custom.preview_pill_shadow_color,
+		"PreviewPill shadow color must come from tokens, not a hardcoded literal")
+	assert_eq(pill_sb.shadow_size, custom.preview_pill_shadow_size,
+		"PreviewPill shadow size must come from tokens, not a hardcoded literal")
+	assert_eq(pill_sb.shadow_offset, custom.preview_pill_shadow_offset,
+		"PreviewPill shadow offset must come from tokens, not a hardcoded literal")
+
+
 func test_build_survives_null_fonts() -> void:
 	# design_tokens.tres has null font slots until Task 4. Baking must
 	# not crash in that window.

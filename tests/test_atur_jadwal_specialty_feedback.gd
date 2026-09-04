@@ -48,3 +48,26 @@ func test_sticky_note_scene_has_matched_nodes() -> void:
 	assert_true(inst.get_node_or_null("Paper/MatchGlow") != null, "MatchGlow node must exist")
 	assert_true(inst.get_node_or_null("Paper/SpecialtyStar") != null, "SpecialtyStar node must exist")
 	inst.free()
+
+func test_activity_selected_plays_specialty_feedback_conditionally() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
+	assert_true(src.contains("func _on_activity_selected"), "_on_activity_selected must exist")
+	assert_true(src.contains("ActivityPreview.is_specialty(category, student)"),
+		"_on_activity_selected must check is_specialty() against the assigned student")
+	assert_true(src.contains("_assigned_note.play_specialty_match()"),
+		"a specialty match must play the sticky note's matched-state animation")
+	assert_true(src.contains("AudioDirector.play_sfx(&\"specialty_match\")"),
+		"a specialty match must play the specialty_match cue")
+	assert_true(src.contains("_assigned_note.play_assign_pop()"),
+		"a non-specialty assignment must still play the plain assign pop")
+
+func test_activity_row_toggles_specialty_badge() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/ActivityRow.gd")
+	assert_true(src.contains("Container/SpecialtyBadge"), "refresh() must look up the SpecialtyBadge node")
+	assert_true(src.contains("badge.visible = ActivityPreview.is_specialty(category, student)"),
+		"the badge's visibility must be driven by is_specialty()")
+	var packed := load("res://Scenes/AturJadwal/ActivityRow.tscn") as PackedScene
+	var inst := packed.instantiate()
+	assert_true(inst.get_node_or_null("Container/SpecialtyBadge") != null,
+		"ActivityRow.tscn must have a Container/SpecialtyBadge TextureRect")
+	inst.free()

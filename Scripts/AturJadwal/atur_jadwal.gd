@@ -977,7 +977,6 @@ func _hide_penjadwalan_popup():
 	)
 
 func _on_activity_selected(category: String):
-	AudioDirector.play_sfx(&"select")
 	var student = GameState.selected_student
 	var student_id = student.get("id", null)
 	if GameState.selected_day != "" and student_id != null:
@@ -996,7 +995,12 @@ func _on_activity_selected(category: String):
 	# caller of show_scheduled/show_holiday is a repaint (Design decision #8).
 	var _assigned_note := _get_day_button(GameState.selected_day) as DayStickyNote
 	if _assigned_note:
-		_assigned_note.play_assign_pop()
+		if ActivityPreview.is_specialty(category, student):
+			_assigned_note.play_specialty_match()
+			AudioDirector.play_sfx(&"specialty_match")
+		else:
+			_assigned_note.play_assign_pop()
+			AudioDirector.play_sfx(&"select")
 	_update_student_display()
 
 	# Check if Phase 3 tutorial should start

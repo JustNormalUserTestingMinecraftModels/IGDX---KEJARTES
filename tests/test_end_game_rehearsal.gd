@@ -158,27 +158,22 @@ func test_snapshot_deep_copies_so_later_edits_do_not_leak_in() -> void:
 func test_restore_puts_back_run_stats_and_the_end_game_flags() -> void:
 	var original_stats: RunStats = GameState.run_stats
 	var original_failed: bool = GameState.run_failed
-	var original_exam: bool = GameState.is_exam_intro_cutscene
 
 	GameState.run_stats = RunStats.new()
 	GameState.run_stats.minigames_won = 7
 	GameState.run_failed = false
-	GameState.is_exam_intro_cutscene = false
 
 	var snap := EndGameRehearsal.snapshot()
 
 	GameState.run_stats = RunStats.new()
 	GameState.run_failed = true
-	GameState.is_exam_intro_cutscene = true
 
 	EndGameRehearsal.restore(snap)
 	assert_eq(GameState.run_stats.minigames_won, 7, "the tally is back")
 	assert_false(GameState.run_failed, "run_failed is back")
-	assert_false(GameState.is_exam_intro_cutscene, "the exam flag is back")
 
 	GameState.run_stats = original_stats
 	GameState.run_failed = original_failed
-	GameState.is_exam_intro_cutscene = original_exam
 
 
 func test_restore_refuses_an_empty_snapshot() -> void:
@@ -202,7 +197,6 @@ func test_arm_lands_on_the_final_week_with_a_clean_sequence_state() -> void:
 	GameState.current_grade = 7
 	GameState.minggu_ke = 2
 	GameState.run_failed = true
-	GameState.is_exam_intro_cutscene = true
 	GameState.day_schedules = {"stale": true}
 
 	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
@@ -211,8 +205,6 @@ func test_arm_lands_on_the_final_week_with_a_clean_sequence_state() -> void:
 		"arming lands on the grade's final week, where the sequence fires")
 	assert_false(GameState.run_failed,
 		"a fresh rehearsal must not inherit a previous run's verdict")
-	assert_false(GameState.is_exam_intro_cutscene,
-		"the cutscene flag is ExamProgress's to set, not arm()'s")
 	assert_true(GameState.day_schedules.is_empty(),
 		"stale schedules are cleared -- the rehearsal simulates no weeks")
 	assert_eq(GameState.approved_students.size(), 2, "the roster is armed")
@@ -261,6 +253,24 @@ func test_arm_seeds_a_run_stats_tally_matched_to_the_preset() -> void:
 		"money must be non-zero or the money component is always 0/15")
 
 	EndGameRehearsal.restore(snap)
+
+
+## The inverse of the completeness ratchet above: every SNAPSHOT_KEYS entry
+## must still name a real GameState field. A key left behind after a field
+## is deleted fails silently -- get() returns null, set() no-ops -- so the
+## snapshot would quietly stop round-tripping. Plan A deleted
+## is_exam_intro_cutscene, which is exactly this shape.
+func test_every_snapshot_key_names_a_real_game_state_property() -> void:
+	var declared := {}
+	for prop in GameState.get_script().get_script_property_list():
+		if prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			declared[prop.name] = true
+	var stale: Array[String] = []
+	for key in EndGameRehearsal.SNAPSHOT_KEYS:
+		if not declared.has(key):
+			stale.append(String(key))
+	assert_eq(stale.size(), 0,
+		"SNAPSHOT_KEYS names fields GameState no longer declares: " + ", ".join(stale))
 
 
 # ───────────────────────────────────────────────── snapshot completeness ratchet

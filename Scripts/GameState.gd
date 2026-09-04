@@ -52,17 +52,11 @@ var current_grade: int = 7:
 		max_minggu = get_max_weeks()
 var is_game_beaten: bool = false
 var debug_level_select_enabled: bool = true
-var is_game_over_cutscene: bool = false
 var grade7_student_ids: Array = []
 
 ## Per-grade tally consumed by the run-result screen. Never null; reset by
 ## set_grade() and by the grade-advance path in RunResult.
 var run_stats: RunStats = RunStats.new()
-
-## True while the exam cutscene branch of cut_scene.gd should play, set by
-## TesNotice and cleared by the cutscene itself. Distinct from
-## is_game_over_cutscene, which selects the losing branch.
-var is_exam_intro_cutscene: bool = false
 
 ## True once the stat check has decided the run was lost. Read by
 ## RunResult to force a D grade without re-running the evaluation.
@@ -84,7 +78,6 @@ func set_grade(grade_num: int) -> void:
 	current_grade = grade_num
 	minggu_ke = 1
 	run_stats.reset()
-	is_exam_intro_cutscene = false
 	run_failed = false
 	print("GameState grade set to: Kelas ", current_grade, " (Minggu ", minggu_ke, ", Max Minggu ", max_minggu, ")")
 

@@ -25,6 +25,7 @@ extends Control
 @onready var dialogue_box: Control = $DialogueBox
 @onready var bg_cutscene: TextureRect = $BgCutScene
 @onready var fade_overlay: ColorRect = $FadeOverlay
+@onready var hint_label: Label = $HintLabel
 @onready var _tokens: DesignTokens = DesignTokens.load_default()
 
 ## Typewriter speed, tunable in the inspector without touching code.
@@ -73,81 +74,12 @@ func _ready():
 
 	_update_debug_button_text()
 
-	if GameState.is_exam_intro_cutscene:
-		_setup_exam_cutscene()
-	elif GameState.is_game_over_cutscene:
-		_setup_game_over_cutscene()
+	# Show level selection BEFORE playing intro cutscene if unlocked or in debug mode
+	if GameState.is_game_beaten or GameState.debug_level_select_enabled:
+		show_level_select_modal()
 	else:
-		# Show level selection BEFORE playing intro cutscene if unlocked or in debug mode
-		if GameState.is_game_beaten or GameState.debug_level_select_enabled:
-			show_level_select_modal()
-		else:
-			GameState.set_grade(7)
-			show_current()
-
-## The pre-exam beat, between the Tes Besar notice and the stat check.
-##
-## Deliberately short -- four lines -- and deliberately neutral: the
-## player does not yet know whether they passed, and this cutscene must
-## not hint either way.
-##
-## The CG images are the intro's, standing in until dedicated exam art
-## lands. Swapping them is a four-line change here and nothing else.
-func _setup_exam_cutscene() -> void:
-	if btn_debug_toggle: btn_debug_toggle.visible = false
-	if btn_skip: btn_skip.visible = false
-
-	cg_data = [
-		{
-			"image": preload("res://Assets/Images/CG/cg3.jpg"),
-			"text": "[PLACEHOLDER] Pagi itu halaman sekolah terasa berbeda. Semua murid berjalan pelan menuju aula, membawa pensil dan harapan masing-masing."
-		},
-		{
-			"image": preload("res://Assets/Images/CG/cg4.jpg"),
-			"text": "[PLACEHOLDER] Aku berdiri di depan pintu aula, menghitung lagi wajah-wajah yang sudah kubimbing selama satu tahun ajaran ini."
-		},
-		{
-			"image": preload("res://Assets/Images/CG/cg2.jpg"),
-			"text": "[PLACEHOLDER] 'Bu, Pak... kami sudah siap,' kata salah satu dari mereka. Suaranya bergetar, tapi matanya tidak."
-		},
-		{
-			"image": preload("res://Assets/Images/CG/cg0.jpg"),
-			"text": "[PLACEHOLDER] Bel berbunyi. Tes Besar Sekolah dimulai. Sekarang giliran mereka yang berjuang, dan giliranku untuk percaya."
-		}
-	]
-	cg_index = 0
-	show_current()
-
-func _setup_game_over_cutscene() -> void:
-	if btn_debug_toggle: btn_debug_toggle.visible = false
-	if btn_skip: btn_skip.visible = false
-	if bg_cutscene:
-		bg_cutscene.modulate = Color.WHITE.darkened(0.55)
-
-	cg_data = [
-		{
-			"image": preload("res://Assets/Images/UI/BG.jpg"),
-			"text": "Kepala Sekolah menggelengkan kepalanya melihat hasil evaluasi akhir... 'Maaf, murid-muridmu belum memenuhi standar kelulusan.'"
-		},
-		{
-			"image": preload("res://Assets/Images/UI/BG.jpg"),
-			"text": "Aku tertunduk lesu di ruangannya. Semua usaha keras membimbing mereka selama satu semester ini terasa sirna..."
-		},
-		{
-			"image": preload("res://Assets/Images/UI/BG.jpg"),
-			"text": "Melihat ruang kelas yang kosong, aku teringat kembali wajah-wajah penuh harapan dari murid-muridku."
-		},
-		{
-			"image": preload("res://Assets/Images/UI/BG.jpg"),
-			"text": "Aku merasa bersalah. Aku telah gagal membuktikan diriku sebagai guru pembimbing yang baik bagi mereka."
-		},
-		{
-			"image": preload("res://Assets/Images/UI/BG.jpg"),
-			"text": "Tapi, aku tidak boleh menyerah begitu saja! Aku harus kembali mengajar mereka dengan segenap kemampuanku kali ini!"
-		}
-	]
-	cg_index = 0
-	show_current()
+		GameState.set_grade(7)
+		show_current()
 
 func _setup_top_bar_buttons() -> void:
 	# Top HBox for Skip & Debug controls
@@ -289,10 +221,8 @@ func _fade_to_black(duration: float = 0.8) -> void:
 ## Skip bails straight to Lobby, unlike finishing the cutscene normally
 ## (go_to_gameplay, below), which must route through StudentCard so a
 ## fresh game gets a real approved_students roster instead of leaving it
-## empty. This button is never shown during the game-over/retry cutscene
-## (_setup_game_over_cutscene hides it, see _ready), so there is no
-## GameState.is_game_over_cutscene reset to reconcile here -- it is
-## always false while Skip Intro exists on screen.
+## empty. Skip Intro is only ever reachable during the normal
+## roster-approval intro, so there is nothing to reconcile here.
 func _on_skip_pressed() -> void:
 	# Transition.change_scene() already plays "whoosh" on the scene change;
 	# adding another here would stack with the _input handler's "tap" and
@@ -333,12 +263,7 @@ const _ENTRANCE_HOLD_SEC := 0.4
 const _ENTRANCE_FADE_SEC := 1.0
 
 func show_current():
-	if GameState.is_exam_intro_cutscene:
-		AudioDirector.play_bgm(&"exam_cutscene")
-	elif GameState.is_game_over_cutscene:
-		AudioDirector.play_bgm(&"result_lose")
-	else:
-		AudioDirector.play_bgm(&"introcutscene")
+	AudioDirector.play_bgm(&"introcutscene")
 	is_transitioning = true
 	bg_cutscene.texture = cg_data[cg_index]["image"]
 	bg_cutscene.modulate.a = 0.0
@@ -365,7 +290,6 @@ func _reveal(text: String) -> void:
 func _input(event):
 	if is_transitioning or is_showing_level_select:
 		return
-
 	var tapped = false
 	if event is InputEventScreenTouch and event.pressed:
 		tapped = true
@@ -413,65 +337,12 @@ func transition_to_next():
 
 	is_transitioning = false
 
-## Where the cutscene lets out depends on which branch played:
-##   exam      -> the stat check
-##   game-over -> the run result (the run is already decided; the lose
-##                cutscene IS the lose screen)
-##   intro     -> the roster approval screen, as before
+## The intro lands on the roster approval screen, as before. (The exam
+## branch that once lived here was deleted with the exam-intro beat.)
 func _next_scene_path() -> String:
-	if GameState.is_exam_intro_cutscene:
-		GameState.is_exam_intro_cutscene = false
-		return "res://Scenes/EndGame/SemesterEnd.tscn"
-	if GameState.is_game_over_cutscene:
-		GameState.is_game_over_cutscene = false
-		GameState.run_failed = true
-		return "res://Scenes/EndGame/RunResult.tscn"
 	return "res://Scenes/StudentCard/student_card.tscn"
 
 func go_to_gameplay():
 	await _fade_to_black()
-
-	# The reset logic below reads GameState.is_game_over_cutscene, so it
-	# must run before _next_scene_path() flips that flag back off.
-	if GameState.is_game_over_cutscene:
-		var grade_num = GameState.current_grade
-		# A semester loss always sends the player back through StudentCard:
-		# grade 7 clears the roster outright and needs a real re-approval
-		# (see the branch below); grade 8/9 keeps the roster but still uses
-		# this screen as the review-the-roster checkpoint before retrying --
-		# previously_approved_ids pre-checks the same students, so it reads
-		# as a confirm, not a redo.
-
-		# Reset schedules and week
-		GameState.day_schedules.clear()
-		GameState.minggu_ke = 1
-		GameState.returned_from_student_card = false
-
-		if grade_num == 7:
-			# Grade 7 full restart: clear selection so they select again
-			GameState.lobby_tutorial_completed = false
-			GameState.approved_students.clear()
-			GameState.grade7_student_ids.clear()
-
-			var AturJadwalScript = load("res://Scripts/AturJadwal/atur_jadwal.gd")
-			if AturJadwalScript and "tutorial_phase1_done" in AturJadwalScript:
-				AturJadwalScript.tutorial_phase1_done = false
-				AturJadwalScript.tutorial_phase3_done = false
-			var LobbyScript = load("res://Scripts/Lobby/loby.gd")
-			if LobbyScript and "tutorial_shown" in LobbyScript:
-				LobbyScript.tutorial_shown = false
-		else:
-			# Grade 8 or 9 restart: restore academic stats back to base_akademis
-			GameState.lobby_tutorial_completed = true
-			for student in GameState.approved_students:
-				student["kepribadian1"] = 80.0
-				student["kepribadian2"] = 80.0
-				if student.has("base_akademis1"):
-					student["akademis1"] = student["base_akademis1"]
-				if student.has("base_akademis2"):
-					student["akademis2"] = student["base_akademis2"]
-				if student.has("base_akademis3"):
-					student["akademis3"] = student["base_akademis3"]
-
 	GameState.next_scene = _next_scene_path()
 	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")

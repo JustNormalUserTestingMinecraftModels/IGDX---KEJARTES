@@ -211,8 +211,8 @@ func _function_body(src: String, func_name: String) -> String:
 
 
 ## The bug this pins: go_to_gameplay() used to route a genuinely fresh
-## game (is_game_over_cutscene == false, the very first intro-CG skip or
-## finish) straight to Lobby, never to StudentCard -- so
+## game (the very first intro-CG skip or finish) straight to Lobby, never
+## to StudentCard -- so
 ## GameState.approved_students stayed empty and every downstream screen
 ## (AturJadwal, StudentList, the week simulation itself) silently fell
 ## back to its own placeholder roster instead of surfacing the problem.
@@ -248,10 +248,7 @@ func test_next_scene_path_defaults_to_student_card() -> void:
 
 
 ## Skip is a deliberate exception to the rule above: pressing "Skip Intro"
-## bails straight to Lobby, even before a roster has been approved. Only
-## safe because _setup_game_over_cutscene() hides this button outright, so
-## it is never reachable while GameState.is_game_over_cutscene is true --
-## covered by test_skip_button_is_hidden_during_the_game_over_cutscene.
+## bails straight to Lobby, even before a roster has been approved.
 func test_skip_button_routes_straight_to_lobby() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "_on_skip_pressed")
@@ -263,20 +260,10 @@ func test_skip_button_routes_straight_to_lobby() -> void:
 		"must still hand off through the Loading scene")
 
 
-func test_skip_button_is_hidden_during_the_game_over_cutscene() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	var body := _function_body(src, "_setup_game_over_cutscene")
-	assert_true(body.contains("btn_skip.visible = false"),
-		"the game-over/retry cutscene must hide Skip Intro -- it has no " +
-		"safe destination there, since Lobby needs an approved roster on " +
-		"a fresh game-7 retry and StudentCard is the point of that screen anyway")
-
-
 func test_show_current_starts_with_a_hold_before_revealing() -> void:
-	# Calling show_current() live here would exercise its
-	# `GameState.is_game_over_cutscene` read, which errors in this
-	# suite's standalone-instantiation context regardless of this
-	# change (GameState resolves fine in other suites' setups, but not
+	# Calling show_current() live here would exercise Godot autoload
+	# resolution, which errors in this suite's standalone-instantiation
+	# context (GameState resolves fine in other suites' setups, but not
 	# when cut_scene.tscn is instantiated bare like test_cutscene.gd
 	# does) -- a pre-existing runner quirk, not something this change
 	# introduced. Source-text check instead, matching this file's own
@@ -308,39 +295,21 @@ func test_entrance_hold_and_fade_are_slower_than_the_panel_crossfade() -> void:
 		"show_current()'s entrance fade must use its own, slower duration")
 
 
-func test_the_exam_branch_exists_and_wins_precedence() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
-	assert_true(src.contains("_setup_exam_cutscene"),
-		"there is an exam branch")
-	var exam_at := src.find("if GameState.is_exam_intro_cutscene")
-	var over_at := src.find("if GameState.is_game_over_cutscene")
-	assert_true(exam_at != -1, "the exam flag is branched on")
-	assert_true(exam_at < over_at,
-		"the exam branch is tested before the game-over branch")
+## Plan A (2026-09-04) deleted the exam-intro cutscene beat: ExamProgress
+## now hands off straight to StatCheck. CutScene is back to a single
+## responsibility -- the game-start intro and its level-select modal.
+func test_the_exam_branch_is_gone() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for gone in ["is_exam_intro_cutscene", "_setup_exam_cutscene", "btn_lanjut_exam",
+			"BtnLanjutExam", "exam_cutscene", "SemesterEnd.tscn", "StatCheck.tscn"]:
+		assert_false(src.contains(gone), "cut_scene.gd must not mention " + gone)
+	assert_true(_scene.get_node_or_null("BtnLanjutExam") == null,
+		"the BtnLanjutExam node is deleted from cut_scene.tscn")
 
 
-func test_the_exam_branch_has_four_dialogues() -> void:
-	var scene = load("res://Scenes/CutScene/cut_scene.tscn").instantiate()
-	Engine.get_main_loop().root.add_child(scene)
-	scene._setup_exam_cutscene()
-	var count: int = scene.cg_data.size()
-	Engine.get_main_loop().root.remove_child(scene)
-	scene.queue_free()
-	assert_eq(count, 4, "four exam dialogues")
-
-
-func test_the_exam_branch_exits_to_the_stat_check() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
-	assert_true(src.contains("res://Scenes/EndGame/SemesterEnd.tscn"),
-		"the exam cutscene ends at the stat check")
-
-
-func test_the_game_over_branch_exits_to_the_run_result() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
-	assert_true(src.contains("res://Scenes/EndGame/RunResult.tscn"),
-		"the lose cutscene ends at the run result")
-
-
-func test_the_exam_branch_plays_its_own_bgm() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
-	assert_true(src.contains("play_bgm(&\"exam_cutscene\")"), "exam BGM")
+func test_next_scene_path_has_a_single_destination_again() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_body(src, "_next_scene_path")
+	assert_true(body.contains("res://Scenes/StudentCard/student_card.tscn"),
+		"the intro still lands on roster approval")
+	assert_false(body.contains("if "), "no branch left: one destination")

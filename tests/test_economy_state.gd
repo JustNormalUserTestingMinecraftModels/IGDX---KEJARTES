@@ -235,8 +235,6 @@ func test_set_grade_resets_the_run_stats() -> void:
 	GameState.set_grade(saved_grade)
 	assert_eq(GameState.run_stats.minigames_won, 0,
 		"starting a grade clears the tally")
-	assert_false(GameState.is_exam_intro_cutscene,
-		"the exam-cutscene flag clears with the grade")
 	assert_false(GameState.run_failed, "the fail flag clears with the grade")
 
 

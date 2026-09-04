@@ -72,21 +72,41 @@ func _run_check() -> void:
 		card_slot.add_child(card)
 		card.bind(student)
 		await _slide_in(card)
+		if _abandoned():
+			return
 		await get_tree().create_timer(hold_seconds).timeout
+		if _abandoned():
+			return
 
 		for row in card.rows():
 			await row.fill()
+			if _abandoned():
+				return
 			if row.cleared:
 				_stars += star_share(_total_stats)
 				star_meter.animate_to(_stars)
 				AudioDirector.play_sfx(&"tally")
 
 		await get_tree().create_timer(hold_seconds).timeout
+		if _abandoned():
+			return
 		await _slide_out(card)
+		if _abandoned():
+			return
 		card.queue_free()
 
 	await _fade_to_white()
+	if _abandoned():
+		return
 	_hand_off()
+
+
+## True once this screen has been freed or pulled out of the tree -- which
+## the debug overlay's scene teleport can do at any await point in
+## _run_check(). Godot raises a script error on the next resume rather than
+## no-op'ing, so every await in the sequence checks this and bails.
+func _abandoned() -> bool:
+	return not is_instance_valid(self) or not is_inside_tree()
 
 
 ## From just past the right edge to its resting spot, with the entry

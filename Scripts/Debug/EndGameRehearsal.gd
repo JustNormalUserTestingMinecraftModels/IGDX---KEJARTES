@@ -2,9 +2,8 @@ class_name EndGameRehearsal
 extends RefCounted
 
 ## Debug-only jig for the end-of-grade sequence: builds a fixed, known
-## roster so TesNotice -> ExamProgress -> CutScene -> SemesterEnd ->
-## RunResult can be rehearsed in one click instead of played for six to
-## sixteen weeks.
+## roster so TesNotice -> ExamProgress -> StatCheck -> RunResult can be
+## rehearsed in one click instead of played for six to sixteen weeks.
 ##
 ## Nothing in the shipped game calls this file -- DebugManager's Scenes
 ## tab is its only caller. Everything it writes to GameState is captured
@@ -38,7 +37,7 @@ const REHEARSAL_ENERGY := 70.0
 
 ## How many of the three skills each student clears, by slot in the
 ## roster. The campur ladder is deliberate: one card per star rating, so
-## the SemesterEnd carousel shows 3-, 2-, 1- and 0-star detail popups and
+## the StatCheck meter lights 3, 2, 1 and 0 shares in turn and
 ## both stamp kinds in a single pass. Slots past the end of the list
 ## repeat its last entry, so a roster of any size still works.
 const CLEARED_COUNTS := {
@@ -112,7 +111,7 @@ const SNAPSHOT_KEYS := [
 	"approved_students", "selected_student", "day_schedules",
 	"pending_earnings", "grade7_student_ids", "inventory",
 	"minggu_ke", "current_grade", "player_money",
-	"run_failed", "is_exam_intro_cutscene", "is_game_beaten",
+	"run_failed", "is_game_beaten",
 	"lobby_tutorial_completed", "tutorials_bypassed",
 	"returned_from_student_card",
 ]
@@ -171,7 +170,7 @@ static func restore(snap: Dictionary) -> bool:
 
 ## Where a rehearsal starts. The whole point of the tool is that it enters
 ## at the notice and runs the REAL sequence from there, rather than
-## teleporting into SemesterEnd and skipping the beats before it.
+## teleporting into StatCheck and skipping the beats before it.
 const ENTRY_SCENE := "res://Scenes/EndGame/TesNotice.tscn"
 
 ## Plausible per-preset tallies for GameState.run_stats.
@@ -216,10 +215,8 @@ static func arm(preset: String, source_students: Array) -> void:
 	GameState.day_schedules.clear()
 	GameState.minggu_ke = GameState.max_minggu
 
-	# Both flags belong to the sequence itself: SemesterEnd sets run_failed
-	# from its own stat check, ExamProgress arms the cutscene branch.
+	# run_failed belongs to the sequence itself: StatCheck writes the verdict.
 	GameState.run_failed = false
-	GameState.is_exam_intro_cutscene = false
 
 	_seed_run_stats(preset, roster)
 

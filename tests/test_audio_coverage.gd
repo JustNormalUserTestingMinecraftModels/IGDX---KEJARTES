@@ -120,6 +120,8 @@ func test_every_play_sfx_id_in_the_project_is_known() -> void:
 		"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
 		"popup_close", "select", "error", "reward", "tally", "sparkle",
 		"pill_tap", "pill_popup_open", "pill_popup_close", "pane_swipe",
+		"star_earn_1", "star_earn_2", "star_earn_3", "result_fanfare",
+		"score_tick", "combo_up",
 		]
 	var bad: Array[String] = []
 	_scan_for_sfx_ids("res://Scripts", known, bad)
@@ -404,5 +406,4 @@ const REWARD_SFX_IDS := [
 
 func test_every_reward_cue_resolves_to_a_real_stream() -> void:
 	for id in REWARD_SFX_IDS:
-		assert_true(AudioDirector._resolve_sfx(id) != null,
-			"%s resolves to a stream" % id)
+		assert_true(AudioDirector.has_sfx(id), "%s resolves to a stream" % id)

@@ -261,3 +261,93 @@ func test_arm_seeds_a_run_stats_tally_matched_to_the_preset() -> void:
 		"money must be non-zero or the money component is always 0/15")
 
 	EndGameRehearsal.restore(snap)
+
+
+# ───────────────────────────────────────────────── snapshot completeness ratchet
+
+## Every script-declared GameState field is either snapshotted or listed here
+## with a reason. A new GameState var turns this red until someone decides
+## which -- the same shape as test_viewport_editability.gd's BASELINE ratchet.
+const _DELIBERATELY_UNSNAPSHOTTED := {
+	"run_stats": "handled separately -- a Resource, duplicated in snapshot()/restore()",
+	"max_minggu": "derived by current_grade's setter; restoring the grade restores it",
+	"next_scene": "transient routing scratch for the Loading scene, never read by the end-game sequence",
+	"selected_day": "transient UI selection (AturJadwal), never read by the end-game sequence",
+	"debug_level_select_enabled": "debug flag, not run state",
+	"daily_login_day": "daily-login streak counter, unrelated to the end-of-grade run a rehearsal replays",
+	"last_claim_date": "daily-login streak timestamp, unrelated to the end-of-grade run a rehearsal replays",
+}
+
+
+func test_every_game_state_field_is_snapshotted_or_deliberately_excluded() -> void:
+	var missing: Array[String] = []
+	for prop in GameState.get_script().get_script_property_list():
+		if not (prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
+			continue
+		var name: String = prop.name
+		if name.begins_with("_"):
+			continue
+		if EndGameRehearsal.SNAPSHOT_KEYS.has(name):
+			continue
+		if _DELIBERATELY_UNSNAPSHOTTED.has(name):
+			continue
+		missing.append(name)
+	assert_eq(missing.size(), 0,
+		"GameState fields neither snapshotted nor deliberately excluded: "
+			+ ", ".join(missing))
+
+
+# ───────────────────────────────────────────── restore after run progression
+
+## Final-review finding: the tests only ever restored immediately after arm() --
+## never after the state churn a completed rehearsal actually causes. This
+## mirrors what RunResult's _apply_progression() does to GameState on the way
+## OUT of a completed rehearsal (the grade-advance branch, RunResult.gd:197-210)
+## and proves the snapshot survives it.
+func test_restore_survives_run_results_progression_mutations() -> void:
+	var outer := EndGameRehearsal.snapshot()
+
+	# A fake "run in progress" worth protecting.
+	GameState.current_grade = 7
+	GameState.minggu_ke = 4
+	GameState.approved_students = [
+		{"id": 7, "name": "Asli", "akademis1": 33.0, "base_akademis1": 30.0,
+			"kepribadian1": 41.0, "kepribadian2": 42.0},
+	]
+	GameState.day_schedules = {"7": {"Senin": {"category": "Akademis"}}}
+	GameState.run_stats = RunStats.new()
+	GameState.run_stats.minigames_won = 3
+	GameState.lobby_tutorial_completed = false
+	GameState.returned_from_student_card = false
+
+	var before := EndGameRehearsal.snapshot()
+
+	# What a rehearsal does, then what RunResult does to it on exit.
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
+	GameState.current_grade += 1
+	for student in GameState.approved_students:
+		student["kepribadian1"] = 80.0
+		student["kepribadian2"] = 80.0
+		student.erase("base_akademis1")
+		student.erase("base_akademis2")
+		student.erase("base_akademis3")
+	GameState.day_schedules.clear()
+	GameState.minggu_ke = 1
+	GameState.returned_from_student_card = false
+	GameState.lobby_tutorial_completed = true
+	GameState.run_stats.reset()
+
+	assert_true(EndGameRehearsal.restore(before), "restore reports success")
+	assert_eq(GameState.current_grade, 7, "grade advance is undone")
+	assert_eq(GameState.minggu_ke, 4, "week is back")
+	assert_eq(GameState.approved_students.size(), 1, "the real roster is back")
+	assert_eq(GameState.approved_students[0]["name"], "Asli", "the real student is back")
+	assert_eq(GameState.approved_students[0]["base_akademis1"], 30.0,
+		"the erased base_akademis* is back")
+	assert_eq(GameState.approved_students[0]["kepribadian1"], 41.0,
+		"the overwritten mood is back")
+	assert_true(GameState.day_schedules.has("7"), "schedules are back")
+	assert_eq(GameState.run_stats.minigames_won, 3, "the tally is back")
+	assert_false(GameState.lobby_tutorial_completed, "the tutorial flag is back")
+
+	EndGameRehearsal.restore(outer)

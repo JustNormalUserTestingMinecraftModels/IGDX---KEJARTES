@@ -1331,6 +1331,11 @@ func _restore_before_rehearsal() -> void:
 		log_message("Tidak ada run tersimpan -- gladi resik belum pernah dijalankan.")
 		return
 	_rehearsal_snapshot = {}
+	# A rehearsal that reached RunResult on a grade-9 win has already
+	# persisted is_game_beaten = true through GameSettings.save_settings()
+	# (RunResult.gd). restore() only puts the in-memory flag back, so re-save
+	# here or the unlock silently survives the next launch.
+	GameSettings.save_settings()
 	log_message("Run sebelum gladi resik dipulihkan: %s, minggu %d." % [
 		GameState.get_grade_name(), GameState.minggu_ke])
 	_refresh_ui_fields()

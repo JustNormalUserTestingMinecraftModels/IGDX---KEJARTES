@@ -174,3 +174,18 @@ func _scan_for_rehearsal_callers(dir_path: String, out: Array[String]) -> void:
 				out.append(full)
 		entry = dir.get_next()
 	dir.list_dir_end()
+
+
+## Final-review finding: a grade-9 Lulus rehearsal reaches RunResult, which sets
+## GameState.is_game_beaten and calls GameSettings.save_settings() -- persisting the
+## unlock to user://. restore() puts the in-memory flag back, but only a re-save
+## re-syncs the file. Without this line the tool's "doesn't interrupt the main game"
+## promise silently fails across a relaunch.
+func test_restore_resyncs_persisted_settings_after_restoring() -> void:
+	var body := _function_body(_source(), "_restore_before_rehearsal")
+	var restore_at := body.find("EndGameRehearsal.restore(_rehearsal_snapshot)")
+	var save_at := body.find("GameSettings.save_settings()")
+	assert_true(save_at != -1,
+		"restore must re-save GameSettings so a persisted is_game_beaten is undone on disk too")
+	assert_true(restore_at != -1 and save_at > restore_at,
+		"the re-save must come AFTER the restore, or it persists the pre-restore value")

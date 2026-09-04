@@ -207,9 +207,12 @@ static func arm(preset: String, source_students: Array) -> void:
 	GameState.selected_student = roster[0] if not roster.is_empty() else {}
 	GameState.returned_from_student_card = true
 
-	# The sequence only fires on the grade's final week, and SchoolDay
-	# compares minggu_ke against max_minggu to decide that -- so land there,
-	# and clear the schedules for weeks this rehearsal never played.
+	# Land on the grade's final week: the sequence's own screens report and
+	# progress off minggu_ke/max_minggu (SemesterEnd's header, RunResult's
+	# grade advance), so the pair must read as "end of grade". A rehearsal
+	# enters at TesNotice and never runs SchoolDay's final-week check, so
+	# that is NOT why this matters. Clear the schedules for weeks this
+	# rehearsal never played.
 	GameState.day_schedules.clear()
 	GameState.minggu_ke = GameState.max_minggu
 

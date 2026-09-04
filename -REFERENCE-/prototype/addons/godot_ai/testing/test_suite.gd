@@ -1,5 +1,4 @@
 @tool
-class_name McpTestSuite
 extends RefCounted
 
 ## Base class for MCP test suites. Provides assertion methods and

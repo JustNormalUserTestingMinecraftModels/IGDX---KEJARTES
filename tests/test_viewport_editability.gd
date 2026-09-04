@@ -126,6 +126,12 @@ const ALLOWED: Dictionary = {
 	# exception: the row count is fixed, but every value is run-dependent,
 	# and the template carries all the visual structure.
 	"res://Scripts/EndGame/RunResult.gd": 0,
+	# StatCheck instances one StatCheckCard per student into CardSlot, and
+	# StatCheckRow instances the authored RewardBurst on a full bar -- both
+	# per-call-dynamic content (roster size / which bars clear), the same
+	# shape as RunResult's rows. Every visual lives in a .tscn; scans as 0.
+	"res://Scripts/EndGame/StatCheck.gd": 0,
+	"res://Scripts/EndGame/StatCheckRow.gd": 0,
 }
 
 

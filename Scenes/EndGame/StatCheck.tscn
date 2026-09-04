@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://bt3mb6wabdl63"]
+
+[ext_resource type="Script" uid="uid://b6xv2wjciuy06" path="res://Scripts/EndGame/StatCheck.gd" id="1_lbrdu"]
+[ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_2mn6t"]
+[ext_resource type="Script" uid="uid://btn73mrqwvf1o" path="res://Scripts/EndGame/StarMeter.gd" id="3_mu1f4"]
+[ext_resource type="Texture2D" uid="uid://bxr0nynyliitp" path="res://Assets/Images/UI/Placeholders/icon_star.svg" id="4_qgn2j"]
+
+[node name="StatCheck" type="Control" unique_id=1602759799]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_lbrdu")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=1085290687]
+layout_mode = 0
+offset_right = 1080.0
+offset_bottom = 1920.0
+texture = ExtResource("2_2mn6t")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Scrim" type="Panel" parent="." unique_id=1681707398]
+layout_mode = 0
+offset_right = 1080.0
+offset_bottom = 1920.0
+theme_type_variation = &"Scrim"
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1701133153]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Column" type="VBoxContainer" parent="MarginContainer" unique_id=1761066375]
+layout_mode = 2
+alignment = 1
+
+[node name="CardSlot" type="Control" parent="MarginContainer/Column" unique_id=1042307462]
+custom_minimum_size = Vector2(760, 1000)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="StarMeter" type="HBoxContainer" parent="MarginContainer/Column" unique_id=2089250649]
+layout_mode = 2
+alignment = 1
+script = ExtResource("3_mu1f4")
+
+[node name="Star1" type="TextureProgressBar" parent="MarginContainer/Column/StarMeter" unique_id=2067867014]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+texture_under = ExtResource("4_qgn2j")
+texture_progress = ExtResource("4_qgn2j")
+tint_under = Color(0.3, 0.3, 0.35, 1)
+
+[node name="Star2" type="TextureProgressBar" parent="MarginContainer/Column/StarMeter" unique_id=542371159]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+texture_under = ExtResource("4_qgn2j")
+texture_progress = ExtResource("4_qgn2j")
+tint_under = Color(0.3, 0.3, 0.35, 1)
+
+[node name="Star3" type="TextureProgressBar" parent="MarginContainer/Column/StarMeter" unique_id=1855887258]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+texture_under = ExtResource("4_qgn2j")
+texture_progress = ExtResource("4_qgn2j")
+tint_under = Color(0.3, 0.3, 0.35, 1)
+
+[node name="WhiteFade" type="ColorRect" parent="." unique_id=1550028429]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2

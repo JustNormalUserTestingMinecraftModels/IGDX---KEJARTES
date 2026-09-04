@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://dqbcxf6404a5b"]
+
+[ext_resource type="Script" uid="uid://nm657nyljtks" path="res://Scripts/EndGame/StatCheckCard.gd" id="1_35ubu"]
+[ext_resource type="Texture2D" uid="uid://b0ah0m8tx4h7q" path="res://Assets/Images/UI/Placeholders/icon_akademis.svg" id="2_cv7o4"]
+[ext_resource type="PackedScene" uid="uid://cbxqfgtlk4ior" path="res://Scenes/EndGame/StatCheckRow.tscn" id="3_4v6bp"]
+[ext_resource type="Texture2D" uid="uid://cxym6c466l7q8" path="res://Assets/Images/UI/Placeholders/icon_seni.svg" id="4_cmuyl"]
+[ext_resource type="Texture2D" uid="uid://cj4co2v2kmqrg" path="res://Assets/Images/UI/Placeholders/icon_olahraga.svg" id="5_ugct1"]
+
+[node name="StatCheckCard" type="Control" unique_id=1850082186]
+custom_minimum_size = Vector2(760, 1000)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 760.0
+offset_bottom = 1000.0
+script = ExtResource("1_35ubu")
+
+[node name="Paper" type="Panel" parent="." unique_id=1723061401]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_type_variation = &"Card"
+
+[node name="Header" type="HBoxContainer" parent="Paper" unique_id=1224064218]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 32.0
+offset_right = 728.0
+offset_bottom = 332.0
+
+[node name="BioPanel" type="Panel" parent="Paper/Header" unique_id=2118291488]
+custom_minimum_size = Vector2(420, 300)
+layout_mode = 2
+theme_type_variation = &"SunkenPanel"
+
+[node name="Bio" type="VBoxContainer" parent="Paper/Header/BioPanel" unique_id=1397728151]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+
+[node name="Nama" type="Label" parent="Paper/Header/BioPanel/Bio" unique_id=1530113809]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Nama"
+
+[node name="Profil" type="Label" parent="Paper/Header/BioPanel/Bio" unique_id=2143681229]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Jenis Kelamin: -"
+autowrap_mode = 3
+
+[node name="Portrait" type="TextureRect" parent="Paper/Header" unique_id=1364638721]
+custom_minimum_size = Vector2(240, 300)
+layout_mode = 2
+texture = ExtResource("2_cv7o4")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Rows" type="VBoxContainer" parent="Paper" unique_id=1298692888]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 380.0
+offset_right = 728.0
+offset_bottom = 740.0
+
+[node name="Akademis" parent="Paper/Rows" unique_id=1532010288 instance=ExtResource("3_4v6bp")]
+layout_mode = 2
+icon = ExtResource("2_cv7o4")
+
+[node name="Seni" parent="Paper/Rows" unique_id=916027237 instance=ExtResource("3_4v6bp")]
+layout_mode = 2
+category = "SeniBudaya"
+icon = ExtResource("4_cmuyl")
+
+[node name="Olahraga" parent="Paper/Rows" unique_id=53550485 instance=ExtResource("3_4v6bp")]
+layout_mode = 2
+category = "Olahraga"
+icon = ExtResource("5_ugct1")

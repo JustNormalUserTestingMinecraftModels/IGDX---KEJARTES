@@ -70,3 +70,171 @@ func test_star_placeholder_exists_and_loads_as_a_texture() -> void:
 	assert_true(ResourceLoader.exists(_STAR_ICON), "icon_star.svg exists")
 	var tex = load(_STAR_ICON)
 	assert_true(tex is Texture2D, "it imports as a Texture2D")
+
+
+# ────────────────────────────────────────────────────────────── StatCheckCard
+
+const _CARD_SCENE := "res://Scenes/EndGame/StatCheckCard.tscn"
+const _SCENE := "res://Scenes/EndGame/StatCheck.tscn"
+const _SCRIPT := "res://Scripts/EndGame/StatCheck.gd"
+const _METER_SCRIPT := "res://Scripts/EndGame/StarMeter.gd"
+
+
+func test_card_scene_has_the_mockup_parts() -> void:
+	var card = load(_CARD_SCENE).instantiate()
+	track(card)
+	assert_true(card.get_node_or_null("Paper") is Panel, "the paper backing")
+	assert_true(card.get_node_or_null("Paper/Header/BioPanel/Bio/Nama") is Label, "Nama")
+	assert_true(card.get_node_or_null("Paper/Header/BioPanel/Bio/Profil") is Label, "Profil lines")
+	assert_true(card.get_node_or_null("Paper/Header/Portrait") is TextureRect, "Portrait")
+	for n in ["Akademis", "Seni", "Olahraga"]:
+		assert_true(card.get_node_or_null("Paper/Rows/" + n) is StatCheckRow,
+			"%s row is a StatCheckRow" % n)
+
+
+func test_card_bind_fills_name_profil_portrait_and_arms_three_rows() -> void:
+	var card = load(_CARD_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	var s := StudentData.new()
+	s.student_name = "Citra"
+	s.profil = "Agama: Katolik\nJenis Kelamin: Perempuan"
+	s.akademis = 70.0
+	s.target_akademis1 = 60.0
+	s.seni_budaya = 30.0
+	s.target_akademis2 = 60.0
+	s.olahraga = 60.0
+	s.target_akademis3 = 60.0
+	card.bind(s)
+	assert_eq(card.get_node("Paper/Header/BioPanel/Bio/Nama").text, "Citra", "name")
+	assert_true(card.get_node("Paper/Header/BioPanel/Bio/Profil").text.contains("Jenis Kelamin"),
+		"profil lines are shown verbatim")
+	var rows: Array = card.rows()
+	assert_eq(rows.size(), 3, "three rows, akademis/seni/olahraga")
+	assert_true(is_equal_approx(rows[0].target_ratio, 100.0), "akademis 70/60 caps at 100")
+	assert_true(is_equal_approx(rows[1].target_ratio, 50.0), "seni 30/60 is half")
+	assert_true(is_equal_approx(rows[2].target_ratio, 100.0), "olahraga 60/60 is full")
+	Engine.get_main_loop().root.remove_child(card)
+
+
+func test_card_rows_carry_the_right_categories_and_icons() -> void:
+	# rows() reads @onready vars, so the card must be in the tree first.
+	var card = load(_CARD_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	var rows: Array = card.rows()
+	assert_eq(rows[0].category, "Akademis", "row 0 is Akademis")
+	assert_eq(rows[1].category, "SeniBudaya", "row 1 is SeniBudaya")
+	assert_eq(rows[2].category, "Olahraga", "row 2 is Olahraga")
+	for r in rows:
+		assert_true(r.icon != null, "every row has an icon texture")
+	Engine.get_main_loop().root.remove_child(card)
+
+
+# ───────────────────────────────────────────────────────────────── StarMeter
+
+func test_star_meter_maps_a_float_onto_three_star_bars() -> void:
+	var screen = load(_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(screen)
+	track(screen)
+	var meter = screen.get_node("MarginContainer/Column/StarMeter")
+	assert_true(meter is StarMeter, "StarMeter script")
+	meter.set_stars(1.75)
+	assert_true(is_equal_approx(meter.get_node("Star1").value, 100.0), "star 1 full")
+	assert_true(is_equal_approx(meter.get_node("Star2").value, 75.0), "star 2 three-quarters")
+	assert_true(is_equal_approx(meter.get_node("Star3").value, 0.0), "star 3 empty")
+	meter.set_stars(3.0)
+	assert_true(is_equal_approx(meter.get_node("Star3").value, 100.0), "3.0 fills the last star")
+	meter.set_stars(0.0)
+	assert_true(is_equal_approx(meter.get_node("Star1").value, 0.0), "0.0 empties the first")
+	Engine.get_main_loop().root.remove_child(screen)
+
+
+func test_star_meter_bars_use_the_placeholder_star() -> void:
+	var screen = load(_SCENE).instantiate()
+	track(screen)
+	for n in ["Star1", "Star2", "Star3"]:
+		var bar = screen.get_node("MarginContainer/Column/StarMeter/" + n)
+		assert_true(bar is TextureProgressBar, "%s is a TextureProgressBar" % n)
+		assert_true(String(bar.texture_progress.resource_path).ends_with("icon_star.svg"),
+			"%s fills with icon_star.svg" % n)
+		assert_eq(bar.fill_mode, TextureProgressBar.FILL_LEFT_TO_RIGHT,
+			"%s fills left to right" % n)
+
+
+# ───────────────────────────────────────────────────────────────── StatCheck
+
+func test_scene_loads_with_its_chrome() -> void:
+	var screen = load(_SCENE).instantiate()
+	track(screen)
+	assert_true(screen.get_node_or_null("Backdrop") is TextureRect, "Backdrop")
+	assert_true(screen.get_node_or_null("Scrim") is Panel, "Scrim")
+	assert_true(screen.get_node_or_null("MarginContainer/Column/CardSlot") is Control,
+		"CardSlot, where each student's card is instanced")
+	assert_true(screen.get_node_or_null("MarginContainer/Column/StarMeter") is StarMeter,
+		"StarMeter")
+	var white = screen.get_node_or_null("WhiteFade")
+	assert_true(white is ColorRect, "the white fade overlay")
+	assert_true(is_equal_approx(white.color.a, 1.0) and white.modulate.a == 0.0,
+		"WhiteFade is opaque white, fully transparent via modulate until the end")
+
+
+func test_star_share_is_one_over_total_stats_scaled_to_three() -> void:
+	assert_true(is_equal_approx(StatCheck.star_share(12), 0.25), "4 students: 0.25 per stat")
+	assert_true(is_equal_approx(StatCheck.star_share(6), 0.5), "2 students: 0.5 per stat")
+	assert_true(is_equal_approx(StatCheck.star_share(0), 0.0), "no stats: nothing to share")
+
+
+func test_the_sequence_slides_fills_in_order_and_awaits_each_beat() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("func _run_check() -> void:"), "the sequence coroutine")
+	var slide_at := src.find("await _slide_in(card)")
+	var fill_at := src.find("await row.fill()")
+	var slide_out_at := src.find("await _slide_out(card)")
+	assert_true(slide_at != -1 and fill_at != -1 and slide_out_at != -1,
+		"slide in, fill, slide out are all awaited")
+	assert_true(slide_at < fill_at and fill_at < slide_out_at,
+		"a card slides in, its rows fill, then it slides out -- in that order")
+	assert_true(src.contains("for row in card.rows():"),
+		"rows fill in card order: akademis, seni budaya, olahraga")
+
+
+func test_every_cleared_stat_adds_one_share_to_the_meter() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("_stars += star_share(_total_stats)"),
+		"a cleared stat adds exactly one share")
+	assert_true(src.contains("star_meter.animate_to(_stars)"),
+		"the meter animates to the running total after each clear")
+	assert_true(src.contains("if row.cleared:"),
+		"only a cleared row moves the meter -- a partial fill adds nothing")
+
+
+func test_it_ends_on_a_white_fade_then_hands_off_by_verdict() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("tween_property(white_fade, \"modulate:a\", 1.0, white_fade_seconds)"),
+		"the white overlay fades in over white_fade_seconds")
+	assert_true(src.contains("GameState.run_failed = not GameState.check_semester_passed()"),
+		"the verdict is written to GameState before leaving")
+	assert_true(src.contains("NEXT_SCENE_WIN if not GameState.run_failed else NEXT_SCENE_LOSE"),
+		"win and lose have separate destinations")
+	assert_true(src.contains("get_tree().change_scene_to_file("),
+		"the hand-off bypasses Transition, whose cover is brand blue and would flash over the white")
+	assert_false(src.contains("Transition.change_scene"),
+		"no Transition wipe on the way out")
+
+
+func test_it_keeps_the_exam_bgm_and_never_reads_the_cutscene_flag() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("play_bgm(&\"exam_notice\")"),
+		"continuity with TesNotice/ExamProgress; result BGM belongs to Plan B's screens")
+	assert_false(src.contains("is_exam_intro_cutscene"), "the flag is gone")
+
+
+func test_interim_hand_off_targets_run_result_until_plan_b() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("const NEXT_SCENE_WIN := \"res://Scenes/EndGame/RunResult.tscn\""),
+		"Plan B repoints this to WinScreen")
+	assert_true(src.contains("const NEXT_SCENE_LOSE := \"res://Scenes/EndGame/RunResult.tscn\""),
+		"Plan B repoints this to LoseScreen")
+	assert_true(ResourceLoader.exists("res://Scenes/EndGame/RunResult.tscn"),
+		"the interim destination exists")

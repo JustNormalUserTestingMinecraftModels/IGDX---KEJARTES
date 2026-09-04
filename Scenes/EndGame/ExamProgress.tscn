@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://571oain8ppk6"]
+
+[ext_resource type="Script" uid="uid://bl4mmiltrkt4l" path="res://Scripts/EndGame/ExamProgress.gd" id="1_6eyov"]
+[ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_axhxj"]
+
+[node name="ExamProgress" type="Control" unique_id=1018216631]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_6eyov")
+pan_pixels = null
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=384324851]
+layout_mode = 0
+offset_right = 1296.0
+offset_bottom = 1920.0
+texture = ExtResource("2_axhxj")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Scrim" type="Panel" parent="." unique_id=74092318]
+layout_mode = 0
+offset_right = 1080.0
+offset_bottom = 1920.0
+theme_type_variation = &"Scrim"
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=591100110]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Content" type="CenterContainer" parent="MarginContainer" unique_id=658369918]
+layout_mode = 2
+
+[node name="Inner" type="VBoxContainer" parent="MarginContainer/Content" unique_id=934546089]
+custom_minimum_size = Vector2(820, 0)
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/Content/Inner" unique_id=1631258819]
+layout_mode = 2
+theme_type_variation = &"H1Label"
+text = "Tes sedang berlangsung"
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/Content/Inner" unique_id=1488546893]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_type_variation = &"StatBar"

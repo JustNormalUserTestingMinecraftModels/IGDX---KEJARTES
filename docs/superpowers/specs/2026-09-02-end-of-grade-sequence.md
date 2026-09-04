@@ -213,3 +213,35 @@ all one known, already-diagnosed Godot editor limitation, not a code defect
 - Report icons (`Assets/Images/UI/Placeholders/icon_*.svg`) are
   placeholder-quality hand-authored SVGs, not finished art — see the plan's
   Task 11 for why SVG rather than PNG, and the drop-in path to real art.
+
+## Post-implementation whole-branch review (2026-09-02)
+
+The final whole-branch review found two load-bearing issues no single task's
+scope could see, both fixed in a dedicated follow-up commit:
+
+- **Campaign continuity was broken.** `RunResult`'s grade-advance branch
+  applied `current_grade += 1` and reset roster state, but routed to
+  MainMenu — whose "Mulai" flow always calls `GameState.set_grade()`,
+  silently discarding that progression. Fixed: the grade-advance exit now
+  goes to `StudentCard.tscn` instead, restoring the continuity the
+  pre-existing `SemesterEnd.gd` used to provide. The beat-the-game and
+  lose exits still go to MainMenu, matching the flow diagram.
+- **No re-entrancy guard on `RunResult`'s exit button** — every sibling
+  screen in the sequence (TesNotice, WinScreen, the cutscene) had one; a
+  double-tap during the 0.4s fade could double-apply grade progression.
+  Fixed with the same `_exiting: bool` guard pattern.
+
+One scoring-calibration issue was found and **deliberately left
+unfixed**, since fixing it properly is a product-design decision, not a
+bug: every `SchoolDay` event-recording site marks the **whole roster** as
+having "participated" in an event (per this plan's own Task 4 text). That
+collapses `RunGrade`'s 10-point event-participation component to a flat
+constant after the first event of a grade, and — combined with
+`check_semester_passed()`'s all-or-nothing target condition — means the
+minimum achievable **win** score is 65/100. Letter bands `B-`, `C+`, `C`
+and `C-` (and their `GRADE_CAPTIONS` strings) can never actually be
+reached on a win; only `A+`/`A`/`A-` (a strong win) or `D` (a loss) ever
+render. A future balance pass needs to either track which specific
+students attended an event, or rescale `RunGrade`'s bands to the real
+65–100 achievable win range — see `Scripts/EndGame/RunGrade.gd` and
+`SchoolDay.gd`'s `record_event_student()` call sites.

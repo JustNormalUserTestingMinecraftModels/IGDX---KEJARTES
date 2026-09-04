@@ -685,6 +685,25 @@ func _reset_shot() -> void:
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 
+## Shot accuracy: goals scored per shot taken. Reaching the goal target with
+## every shot on target is a three-star run; grinding it out over all eight
+## attempts is not. Returns STAR_RATIO_UNKNOWN before the first shot, so a win
+## that somehow took no shots is not rated a zero.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func _shot_accuracy_ratio(score: int, shots_taken: int) -> float:
+	if shots_taken <= 0:
+		return STAR_RATIO_UNKNOWN
+	return clampf(float(score) / float(shots_taken), 0.0, 1.0)
+
+
+## How well the player did this run, delegated to the static helper above.
+##
+## Affects: nothing. Pure. Read by BaseMinigame._show_result_overlay().
+func get_star_ratio() -> float:
+	return _shot_accuracy_ratio(score, MAX_ATTEMPTS - attempts_left)
+
+
 # ─── Override lose_game to bypass BaseMinigame's score-check shortcut ────────
 func lose_game() -> void:
 	if not is_game_active:

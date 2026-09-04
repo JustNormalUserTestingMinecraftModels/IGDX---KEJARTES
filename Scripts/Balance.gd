@@ -30,7 +30,7 @@ class_name Balance
 ## paling berpengaruh di seluruh game.
 static var TARGET_KENAIKAN_KELAS_7 := 15.0
 static var TARGET_KENAIKAN_KELAS_8 := 34.0
-static var TARGET_KENAIKAN_KELAS_9 := 50.0
+static var TARGET_KENAIKAN_KELAS_9 := 40.0
 
 ## Bagian kenaikan skill di atas nilai awal roster yang DISIMPAN saat murid
 ## naik kelas. 0.20 = murid membawa 20% kemajuannya sebagai modal awal kelas

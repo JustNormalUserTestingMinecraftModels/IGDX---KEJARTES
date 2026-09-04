@@ -601,29 +601,41 @@ const STAR_UNRATED_DEFAULT: int = 2
 const STAR_RATIO_UNKNOWN: float = -1.0
 
 
+## Score-out-of-max-score ratio, or STAR_RATIO_UNKNOWN when max_score isn't a
+## real ceiling (<= 0). Static and pure so it is callable directly on the
+## class in a test, with no instance and no placeholder-instance failure --
+## every per-game override in Tasks 2-5 follows this same static-helper shape.
+##
+## Affects: nothing. Pure.
+static func _ratio_from_score(score: int, max_score: int) -> float:
+	if max_score <= 0:
+		return STAR_RATIO_UNKNOWN
+	return clampf(float(score) / float(max_score), 0.0, 1.0)
+
+
 ## How well the player did, 0.0-1.0, independent of whether they won.
 ##
 ## Override this in a minigame that has a mastery metric its win threshold does
 ## not already express (shot accuracy, note accuracy, rally margin, mistakes
 ## made). The default here covers the quiz-shaped games, which score out of a
-## real `max_score`.
-##
-## Return STAR_RATIO_UNKNOWN to say "this game cannot rate itself" -- the player
-## then gets STAR_UNRATED_DEFAULT stars for a win rather than the minimum.
+## real `max_score`. Thin instance glue over _ratio_from_score() -- keep any
+## new math in a static helper of its own, not here, so it stays testable.
 ##
 ## Affects: nothing. Pure.
 func get_star_ratio() -> float:
-	var has_max: bool = "max_score" in self and int(self.max_score) > 0
-	if not has_max:
-		return STAR_RATIO_UNKNOWN
 	var s: int = int(self.score) if "score" in self else 0
-	return clampf(float(s) / float(self.max_score), 0.0, 1.0)
+	var m: int = int(self.max_score) if "max_score" in self else 0
+	return _ratio_from_score(s, m)
 
 
-## Stars from a mastery ratio. A loss is always zero stars; a win is never zero.
+## Stars from a mastery ratio. A loss is always zero stars; a win is never
+## zero. Static: called from a test with no instance, and from
+## _show_result_overlay() as `BaseMinigame._calculate_stars(...)` would also
+## work, though the instance call `_calculate_stars(...)` still resolves fine
+## from inside an instance method since Godot looks up statics through self.
 ##
 ## Affects: nothing. Pure.
-func _calculate_stars(ratio: float, is_win: bool) -> int:
+static func _calculate_stars(ratio: float, is_win: bool) -> int:
 	if not is_win:
 		return 0
 	if ratio < 0.0:

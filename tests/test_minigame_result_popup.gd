@@ -152,7 +152,7 @@ func test_base_minigame_no_longer_builds_the_result_card() -> void:
 
 func test_star_calculation_stayed_on_base_minigame() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/BaseMinigame.gd")
-	assert_true(src.contains("func _calculate_stars(ratio: float, is_win: bool) -> int:"),
+	assert_true(src.contains("static func _calculate_stars(ratio: float, is_win: bool) -> int:"),
 		"the rubric still lives on BaseMinigame, not in the popup")
 	var popup_src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
 	assert_false(popup_src.contains("_calculate_stars"),

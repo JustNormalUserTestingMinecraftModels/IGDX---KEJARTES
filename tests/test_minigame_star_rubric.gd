@@ -10,7 +10,12 @@ extends McpTestSuite
 ## per-game mastery ratio via get_star_ratio(), and a never-one-star floor for a
 ## win that reports no ratio at all.
 ##
-## Must be @tool; no test here may be a coroutine.
+## Must be @tool; no test here may be a coroutine. BaseMinigame.gd is
+## deliberately NOT @tool, so every method call on a live instance of it
+## fails in this editor-hosted runner ("placeholder instance") even inside
+## the scene tree -- confirmed empirically before this suite was written.
+## Every test below therefore calls the class's static helpers directly,
+## with no instantiation at all.
 
 func suite_name() -> String:
 	return "minigame_star_rubric"
@@ -19,61 +24,60 @@ func suite_name() -> String:
 const BASE_PATH := "res://Scripts/Minigames/UI/BaseMinigame.gd"
 
 
-## _calculate_stars is a pure function on the script, so the suite exercises it
-## on a bare instance -- no scene, no viewport, no tree.
-func _base() -> Node:
-	var node: Node = Node.new()
-	node.set_script(load(BASE_PATH))
-	track(node)
-	return node
-
-
 func test_a_loss_is_always_zero_stars() -> void:
-	var b := _base()
-	assert_eq(b._calculate_stars(1.0, false), 0, "a loss earns no stars")
-	assert_eq(b._calculate_stars(-1.0, false), 0, "a loss with no ratio earns no stars")
+	assert_eq(BaseMinigame._calculate_stars(1.0, false), 0, "a loss earns no stars")
+	assert_eq(BaseMinigame._calculate_stars(-1.0, false), 0,
+		"a loss with no ratio earns no stars")
 
 
 func test_a_perfect_ratio_earns_three_stars() -> void:
-	var b := _base()
-	assert_eq(b._calculate_stars(1.0, true), 3, "100% mastery is three stars")
-	assert_eq(b._calculate_stars(0.92, true), 3, "at the three-star threshold")
+	assert_eq(BaseMinigame._calculate_stars(1.0, true), 3, "100% mastery is three stars")
+	assert_eq(BaseMinigame._calculate_stars(0.92, true), 3, "at the three-star threshold")
 
 
 func test_a_middling_ratio_earns_two_stars() -> void:
-	var b := _base()
-	assert_eq(b._calculate_stars(0.7, true), 2, "70% mastery is two stars")
+	assert_eq(BaseMinigame._calculate_stars(0.7, true), 2, "70% mastery is two stars")
 
 
 func test_a_bare_win_earns_one_star() -> void:
-	var b := _base()
-	assert_eq(b._calculate_stars(0.2, true), 1, "a scraped win is one star")
+	assert_eq(BaseMinigame._calculate_stars(0.2, true), 1, "a scraped win is one star")
 
 
 ## The regression this whole task exists for.
 func test_a_win_with_no_tracked_ratio_is_not_capped_at_one_star() -> void:
-	var b := _base()
-	assert_eq(b._calculate_stars(-1.0, true), 2,
+	assert_eq(BaseMinigame._calculate_stars(-1.0, true), 2,
 		"a win the game cannot rate must not read as the worst possible win")
 
 
-func test_default_get_star_ratio_uses_max_score_when_present() -> void:
-	var b := _base()
-	b.set("score", 3)
-	b.set("max_score", 4)
-	assert_true(absf(b.get_star_ratio() - (0.75)) < 0.001, "score over max_score")
+func test_ratio_from_score_uses_max_score_when_present() -> void:
+	assert_true(absf(BaseMinigame._ratio_from_score(3, 4) - 0.75) < 0.001,
+		"score over max_score")
 
 
-func test_default_get_star_ratio_is_unknown_without_max_score() -> void:
-	var b := _base()
-	assert_true(absf(b.get_star_ratio() - (-1.0)) < 0.001,
+func test_ratio_from_score_is_unknown_without_a_real_max_score() -> void:
+	assert_true(absf(BaseMinigame._ratio_from_score(0, 0) - BaseMinigame.STAR_RATIO_UNKNOWN) < 0.001,
 		"a game that tracks nothing reports no ratio rather than a fake zero")
+	assert_true(absf(BaseMinigame._ratio_from_score(0, -1) - BaseMinigame.STAR_RATIO_UNKNOWN) < 0.001,
+		"a negative max_score is also 'no real max'")
 
 
-func test_calculate_stars_no_longer_takes_a_max_score() -> void:
+func test_ratio_from_score_clamps_to_one() -> void:
+	assert_true(absf(BaseMinigame._ratio_from_score(9, 3) - 1.0) < 0.001,
+		"a score above max_score still clamps to a perfect ratio, never over 1.0")
+
+
+func test_get_star_ratio_is_thin_glue_over_the_static_helper() -> void:
 	var src := FileAccess.get_file_as_string(BASE_PATH)
-	assert_true(src.contains("func _calculate_stars(ratio: float, is_win: bool) -> int:"),
-		"the rubric takes a ratio, not a (score, max_score) pair")
+	assert_true(src.contains("_ratio_from_score("),
+		"get_star_ratio() delegates its math to the static helper rather than "
+		+ "re-deriving it, so every override can reuse the same pattern")
+
+
+func test_calculate_stars_is_static_and_no_longer_takes_a_max_score() -> void:
+	var src := FileAccess.get_file_as_string(BASE_PATH)
+	assert_true(src.contains("static func _calculate_stars(ratio: float, is_win: bool) -> int:"),
+		"the rubric takes a ratio, not a (score, max_score) pair, and is static "
+		+ "so every minigame test can call it without instantiating a live node")
 	assert_false(src.contains("return 1  # Win with no score tracking = 1 star minimum"),
 		"the one-star cap is gone")
 

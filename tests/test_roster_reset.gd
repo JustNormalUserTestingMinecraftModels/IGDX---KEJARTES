@@ -80,3 +80,10 @@ func test_gain_tracker_cleared() -> void:
 	assert_eq(GameState.minigame_gain_this_week.size(), 0,
 		"reset must clear the weekly minigame-gain tracker")
 	GameState.approved_students = saved
+
+func test_student_card_captures_roster_base_on_approval() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	assert_true(src.contains("roster_base_akademis1"),
+		"student_card must stamp roster_base_akademis1 when it approves the roster")
+	assert_true(src.contains("roster_base_akademis3"),
+		"student_card must stamp roster_base_akademis3 when it approves the roster")

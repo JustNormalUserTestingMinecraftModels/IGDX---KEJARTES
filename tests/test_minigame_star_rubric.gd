@@ -154,3 +154,60 @@ func test_menari_get_star_ratio_delegates_to_the_static_helper() -> void:
 	var src := FileAccess.get_file_as_string(MENARI_PATH)
 	assert_true(src.contains("_note_accuracy_ratio("),
 		"get_star_ratio() calls the static helper rather than re-deriving the math")
+
+
+const BADMINTON_PATH := "res://Scripts/Minigames/Olahraga/Badminton.gd"
+## Badminton.gd declares no class_name -- see MainBolaScript's comment in
+## Task 2's test additions for why a preloaded Script const is used instead
+## of the bare class name.
+const BadmintonScript := preload("res://Scripts/Minigames/Olahraga/Badminton.gd")
+
+
+func test_badminton_rates_a_shutout_at_three_stars() -> void:
+	var ratio := BadmintonScript._rally_margin_ratio(7, 0)
+	assert_true(absf(ratio - 1.0) < 0.001, "a shutout is perfect")
+	assert_eq(BaseMinigame._calculate_stars(ratio, true), 3, "and earns three stars")
+
+
+func test_badminton_rates_a_narrow_win_lower() -> void:
+	var ratio := BadmintonScript._rally_margin_ratio(7, 6)
+	assert_true(absf(ratio - (7.0 / 13.0)) < 0.001, "a 7-6 grind")
+	assert_eq(BaseMinigame._calculate_stars(ratio, true), 1, "and is one star")
+
+
+func test_badminton_reports_unknown_before_any_rally() -> void:
+	var ratio := BadmintonScript._rally_margin_ratio(0, 0)
+	assert_true(absf(ratio - BaseMinigame.STAR_RATIO_UNKNOWN) < 0.001,
+		"no rallies played means nothing to rate")
+
+
+func test_badminton_get_star_ratio_delegates_to_the_static_helper() -> void:
+	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
+	assert_true(src.contains("_rally_margin_ratio("),
+		"get_star_ratio() calls the static helper rather than re-deriving the math")
+
+
+func test_badminton_declares_score_and_max_score_mirrors() -> void:
+	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
+	assert_true(src.contains("var score: int = 0"),
+		"score mirrors player_score so the result card can show a score row")
+	assert_true(src.contains("var max_score: int = 0"),
+		"max_score mirrors the rally target")
+
+
+func test_badminton_sync_score_alias_assigns_both_mirrors() -> void:
+	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
+	assert_true(src.contains("func sync_score_alias() -> void:"),
+		"the mirror-sync method exists")
+	var body: String = src.split("func sync_score_alias() -> void:")[1].split("\nfunc ")[0]
+	assert_true(body.contains("score = player_score"), "score mirrors player_score")
+	assert_true(body.contains("max_score = target_score"), "max_score mirrors target_score")
+
+
+func test_badminton_calls_sync_score_alias_on_every_rally_point_and_at_game_end() -> void:
+	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
+	var call_count: int = src.count("sync_score_alias()") - 1   # subtract the func's own declaration line
+	assert_gt(call_count, 3,
+		"sync_score_alias() should be called at both score sites, in both "
+		+ "win_game() and lose_game(), and once on reset -- five call sites beyond "
+		+ "the declaration, so more than 3")

@@ -57,6 +57,13 @@ extends BaseMinigame
 var player_score: int = 0
 var enemy_score: int = 0
 var target_score: int = 5
+## Mirror of player_score under the name BaseMinigame's result card reads.
+## Badminton is the only minigame that names its own score `player_score`; the
+## card would otherwise hide its score row entirely. Kept in step by
+## sync_score_alias() -- never assigned directly.
+var score: int = 0
+## Mirror of target_score under the name the result card reads.
+var max_score: int = 0
 
 @onready var puck: RigidBody2D           = $Puck
 @onready var player_paddle: CharacterBody2D = $PlayerPaddle
@@ -104,6 +111,7 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 		target_score = 5
 	player_score = 0
 	enemy_score = 0
+	sync_score_alias()
 	last_conceding_side = "player"
 	_update_score_ui()
 
@@ -421,6 +429,7 @@ func _on_player_goal(body: Node2D) -> void:
 	if body == puck:
 		is_scoring_delay = true
 		enemy_score += 1
+		sync_score_alias()
 		last_conceding_side = "player"
 		_trigger_score_sequence(false)
 
@@ -430,6 +439,7 @@ func _on_enemy_goal(body: Node2D) -> void:
 	if body == puck:
 		is_scoring_delay = true
 		player_score += 1
+		sync_score_alias()
 		last_conceding_side = "enemy"
 		_trigger_score_sequence(true)
 
@@ -588,7 +598,35 @@ func _check_win_condition() -> void:
 	elif enemy_score >= target_score:
 		lose_game()
 
+## Republish player_score / target_score under the names BaseMinigame's result
+## card reads. Called after every rally point and once before the card shows.
+##
+## Affects: this node's own `score` and `max_score` mirrors.
+func sync_score_alias() -> void:
+	score = player_score
+	max_score = target_score
+
+
+## Rally dominance: the share of all points played that the player took. A
+## shutout rates 1.0; scraping past the target in a long rally does not.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func _rally_margin_ratio(player_score: int, enemy_score: int) -> float:
+	var rallies: int = player_score + enemy_score
+	if rallies <= 0:
+		return STAR_RATIO_UNKNOWN
+	return clampf(float(player_score) / float(rallies), 0.0, 1.0)
+
+
+## How well the player did this run, delegated to the static helper above.
+##
+## Affects: nothing. Pure. Read by BaseMinigame._show_result_overlay().
+func get_star_ratio() -> float:
+	return _rally_margin_ratio(player_score, enemy_score)
+
+
 func win_game() -> void:
+	sync_score_alias()
 	if puck:
 		puck.set_deferred("freeze", true)
 		puck.set_deferred("linear_velocity", Vector2.ZERO)
@@ -596,6 +634,7 @@ func win_game() -> void:
 	super.win_game()
 
 func lose_game() -> void:
+	sync_score_alias()
 	if puck:
 		puck.set_deferred("freeze", true)
 		puck.set_deferred("linear_velocity", Vector2.ZERO)

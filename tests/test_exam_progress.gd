@@ -105,6 +105,13 @@ func test_the_backdrop_is_wider_than_the_viewport_so_the_pan_shows_no_edge() -> 
 	assert_eq(int(backdrop.size.y), 1920, "Backdrop keeps the full viewport height")
 
 
+func test_the_scene_hands_the_script_a_real_pan_distance() -> void:
+	assert_true(is_equal_approx(_screen.pan_pixels, -216.0),
+		"the scene must deliver pan_pixels = -216.0, not null or 0")
+	assert_true(_screen.pan_pixels < 0.0,
+		"negative: the image translates left, which reads as the camera panning right")
+
+
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:
 		var c := node as Control

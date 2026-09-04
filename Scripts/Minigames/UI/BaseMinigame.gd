@@ -584,15 +584,53 @@ func _do_lose() -> void:
 		await get_tree().create_timer(1.0).timeout
 		get_tree().reload_current_scene()
 
-func _calculate_stars(score: int, max_score: int, is_win: bool) -> int:
+# --- Star rubric ------------------------------------------------------------
+# A minigame's win threshold and its *mastery* are different questions: a win
+# means score >= target, so rating stars off the win threshold would make every
+# win three stars. Each minigame answers the mastery question itself in
+# get_star_ratio(); this block only turns that answer into stars.
+
+## Mastery ratio at or above which a win earns three stars.
+const STAR_RATIO_THREE: float = 0.90
+## Mastery ratio at or above which a win earns two stars.
+const STAR_RATIO_TWO: float = 0.60
+## Stars for a win by a minigame that reports no mastery ratio at all. Two, not
+## one: an unrated win must never read to the player as the worst possible win.
+const STAR_UNRATED_DEFAULT: int = 2
+## Sentinel get_star_ratio() returns when the minigame tracks no mastery metric.
+const STAR_RATIO_UNKNOWN: float = -1.0
+
+
+## How well the player did, 0.0-1.0, independent of whether they won.
+##
+## Override this in a minigame that has a mastery metric its win threshold does
+## not already express (shot accuracy, note accuracy, rally margin, mistakes
+## made). The default here covers the quiz-shaped games, which score out of a
+## real `max_score`.
+##
+## Return STAR_RATIO_UNKNOWN to say "this game cannot rate itself" -- the player
+## then gets STAR_UNRATED_DEFAULT stars for a win rather than the minimum.
+##
+## Affects: nothing. Pure.
+func get_star_ratio() -> float:
+	var has_max: bool = "max_score" in self and int(self.max_score) > 0
+	if not has_max:
+		return STAR_RATIO_UNKNOWN
+	var s: int = int(self.score) if "score" in self else 0
+	return clampf(float(s) / float(self.max_score), 0.0, 1.0)
+
+
+## Stars from a mastery ratio. A loss is always zero stars; a win is never zero.
+##
+## Affects: nothing. Pure.
+func _calculate_stars(ratio: float, is_win: bool) -> int:
 	if not is_win:
 		return 0
-	if max_score <= 0:
-		return 1  # Win with no score tracking = 1 star minimum
-	var ratio = float(score) / float(max_score)
-	if ratio >= 0.80:
+	if ratio < 0.0:
+		return STAR_UNRATED_DEFAULT
+	if ratio >= STAR_RATIO_THREE:
 		return 3
-	elif ratio >= 0.50:
+	if ratio >= STAR_RATIO_TWO:
 		return 2
 	return 1
 
@@ -628,7 +666,7 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 	if "last_mood_delta" in self: mood_delta = self.last_mood_delta
 	if "minigame_category" in self: mg_category = self.minigame_category
 
-	var stars = _calculate_stars(mg_score, mg_max_score, is_win)
+	var stars := _calculate_stars(get_star_ratio(), is_win)
 
 	var popup: MinigameResultPopup = result_popup_scene.instantiate()
 	add_child(popup)

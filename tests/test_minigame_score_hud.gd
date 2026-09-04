@@ -73,3 +73,40 @@ func test_no_public_method_is_a_coroutine() -> void:
 	for fn in ["setup", "set_score", "set_combo", "set_label_text"]:
 		var body: String = src.split("func %s(" % fn)[1].split("\nfunc ")[0]
 		assert_false(body.contains("await "), "%s() must be callable from _process" % fn)
+
+
+## Every minigame scene that keeps a score, and must therefore mount the shared
+## HUD rather than styling a bare ScoreLabel of its own.
+const SCORING_MINIGAME_SCENES := [
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn",
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn",
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn",
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn",
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn",
+	"res://Scenes/Minigames/Akademis/Password.tscn",
+	"res://Scenes/Minigames/Akademis/Variabel.tscn",
+]
+
+const SCORING_MINIGAME_SCRIPTS := [
+	"res://Scripts/Minigames/Olahraga/MainBola.gd",
+	"res://Scripts/Minigames/Olahraga/Badminton.gd",
+	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd",
+	"res://Scripts/Minigames/Akademis/Menjodohkan.gd",
+	"res://Scripts/Minigames/Akademis/PilihanGanda.gd",
+	"res://Scripts/Minigames/Akademis/Password.gd",
+	"res://Scripts/Minigames/Akademis/Variabel.gd",
+]
+
+
+func test_every_scoring_minigame_mounts_the_shared_hud() -> void:
+	for path in SCORING_MINIGAME_SCENES:
+		var src := FileAccess.get_file_as_string(path)
+		assert_true(src.contains("MinigameScoreHUD.tscn"),
+			"%s instances the shared HUD" % path)
+
+
+func test_no_scoring_minigame_still_styles_a_score_label_at_runtime() -> void:
+	for path in SCORING_MINIGAME_SCRIPTS:
+		var src := FileAccess.get_file_as_string(path)
+		assert_false(src.contains("score_label.add_theme_"),
+			"%s no longer styles its score at runtime" % path)

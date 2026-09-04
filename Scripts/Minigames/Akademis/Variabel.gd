@@ -103,6 +103,7 @@ var numpad_bottom_row: HBoxContainer = null   # holds wide-C + 0 (separate from 
 ## the variable reveal
 @export var reveal_pause_seconds: float = 3.0
 
+@onready var score_hud: MinigameScoreHUD  = $VBoxContainer/ScoreHUD
 @onready var progress_label: Label        = $VBoxContainer/ProgressLabel
 @onready var equation_label: Label        = $VBoxContainer/EquationLabel
 @onready var input_line_edit: LineEdit    = $VBoxContainer/InputLineEdit
@@ -155,6 +156,8 @@ func setup_game() -> void:
 	max_score = 3
 	current_question_index = 0
 	is_submitting_answer = false
+	if score_hud:
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_akademis.svg"), max_score)
 	active_questions.clear()
 
 	# Indonesian school stationery items — makes it feel like a real classroom assignment
@@ -377,6 +380,8 @@ func _on_submit_pressed() -> void:
 
 	if answered == expected_answer:
 		score += 1
+		if score_hud:
+			score_hud.set_score(score)
 		if input_line_edit:
 			input_line_edit.add_theme_color_override("font_color", correct_color)
 		_play_jump_animation(input_line_edit)

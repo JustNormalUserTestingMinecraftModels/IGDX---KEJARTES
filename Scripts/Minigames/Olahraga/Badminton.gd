@@ -45,11 +45,6 @@ extends BaseMinigame
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use default theme font.
 @export var font: Font = null
-## Font size for the score label.
-@export var score_font_size: int = 48
-## Text colour for the score label.
-@export var score_color: Color = Color.WHITE
-
 @export_group("Configuration")
 ## Speed cap (px/s) on the player paddle's drag-follow movement.
 @export var max_paddle_speed: float = 2400.0
@@ -71,7 +66,7 @@ var max_score: int = 0
 
 @onready var player_goal: Area2D         = $PlayerGoal
 @onready var enemy_goal: Area2D          = $EnemyGoal
-@onready var score_label: Label          = $ScoreLabel
+@onready var score_hud: MinigameScoreHUD = $ScoreHUD
 
 var is_dragging_player: bool = false
 var player_target_pos: Vector2 = Vector2.ZERO
@@ -113,6 +108,8 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	enemy_score = 0
 	sync_score_alias()
 	last_conceding_side = "player"
+	if score_hud:
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), target_score)
 	_update_score_ui()
 
 func activate_minigame() -> void:
@@ -583,14 +580,8 @@ func _reset_puck(receiver_side: String = "player") -> void:
 		)
 
 func _update_score_ui() -> void:
-	if score_label:
-		score_label.text = "%d - %d" % [enemy_score, player_score]
-		score_label.add_theme_font_size_override("font_size", score_font_size)
-		score_label.add_theme_color_override("font_color", score_color)
-		score_label.add_theme_constant_override("outline_size", 8)
-		score_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-		if font:
-			score_label.add_theme_font_override("font", font)
+	if score_hud:
+		score_hud.set_label_text("%d - %d" % [enemy_score, player_score])
 
 func _check_win_condition() -> void:
 	if player_score >= target_score:

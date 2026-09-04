@@ -80,6 +80,7 @@ var is_submitting_answer: bool = false
 
 var active_questions: Array[Dictionary] = []  # list of {problem_text, answer}
 
+@onready var score_hud: MinigameScoreHUD = $VBoxContainer/ScoreHUD
 @onready var progress_label: Label    = $VBoxContainer/ProgressLabel
 @onready var problem_label: Label     = $VBoxContainer/ProblemLabel
 @onready var input_label: Label       = $VBoxContainer/InputLabel
@@ -117,6 +118,8 @@ func setup_game() -> void:
 	max_score = 3
 	current_question_index = 0
 	is_submitting_answer = false
+	if score_hud:
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_akademis.svg"), max_score)
 	active_questions.clear()
 
 	while active_questions.size() < max_score:
@@ -315,6 +318,8 @@ func _on_enter_pressed() -> void:
 
 	if answered == expected_answer:
 		score += 1
+		if score_hud:
+			score_hud.set_score(score)
 		if input_label:
 			input_label.add_theme_color_override("font_color", correct_color)
 		_play_jump_animation(input_label)

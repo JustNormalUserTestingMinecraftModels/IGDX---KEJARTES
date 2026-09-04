@@ -4,15 +4,16 @@
 [ext_resource type="Texture2D" uid="uid://co5rcx5gefm1v" path="res://Assets/Images/Textures/Gawang.jpg" id="2_ticf0"]
 [ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="3_m0rci"]
 [ext_resource type="Texture2D" uid="uid://8faghs2oje04" path="res://Assets/Images/Textures/bola.png" id="4_rtmmt"]
+[ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_m0rci"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enlbf"]
-size = Vector2(874.368, 538.16)
+size = Vector2(895.4176, 163.8)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wxm10"]
-size = Vector2(453.6, 422.84)
+size = Vector2(464.52, 128.7)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gt578"]
-radius = 126.03383
+radius = 71.89
 
 [node name="MainBola" type="Control" unique_id=1326671625]
 layout_mode = 3
@@ -39,103 +40,92 @@ stretch_mode = 6
 [node name="GoalBack" type="ColorRect" parent="." unique_id=450668837]
 visible = false
 layout_mode = 0
-offset_left = 64.8
-offset_top = 538.16
-offset_right = 1015.2
-offset_bottom = 1076.32
+offset_left = 66.36
+offset_top = 163.8
+offset_right = 1039.64
+offset_bottom = 327.6
 color = Color(0.08, 0.3, 0.08, 1)
 
 [node name="GoalNet" type="ColorRect" parent="." unique_id=1505802700]
 visible = false
 layout_mode = 0
-offset_left = 64.8
-offset_top = 538.16
-offset_right = 1015.2
-offset_bottom = 1076.32
+offset_left = 66.36
+offset_top = 163.8
+offset_right = 1039.64
+offset_bottom = 327.6
 color = Color(0.85, 0.85, 0.85, 0.18)
 
 [node name="Crossbar" type="ColorRect" parent="." unique_id=1036469776]
 visible = false
 layout_mode = 0
-offset_left = 43.2
-offset_top = 538.16
-offset_right = 1036.7999
-offset_bottom = 563.146
+offset_left = 44.24
+offset_top = 163.8
+offset_right = 1061.76
+offset_bottom = 171.405
 color = Color(0.96, 0.96, 0.96, 1)
 
 [node name="PostLeft" type="ColorRect" parent="." unique_id=1846436201]
 visible = false
 layout_mode = 0
-offset_left = 43.2
-offset_top = 538.16
-offset_right = 64.8
-offset_bottom = 1076.32
+offset_left = 44.24
+offset_top = 163.8
+offset_right = 66.36
+offset_bottom = 327.6
 color = Color(0.96, 0.96, 0.96, 1)
 
 [node name="PostRight" type="ColorRect" parent="." unique_id=1824431573]
 visible = false
 layout_mode = 0
-offset_left = 1015.2
-offset_top = 538.16
-offset_right = 1036.8
-offset_bottom = 1076.32
+offset_left = 1039.64
+offset_top = 163.8
+offset_right = 1061.76
+offset_bottom = 327.6
 color = Color(0.96, 0.96, 0.96, 1)
 
 [node name="GoalArea" type="Area2D" parent="." unique_id=1216739494]
-position = Vector2(540, 807.24)
+position = Vector2(553, 245.7)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GoalArea" unique_id=605393435]
 shape = SubResource("RectangleShape2D_enlbf")
 
 [node name="TargetBox" type="Control" parent="." unique_id=1960199159]
 anchors_preset = 0
-offset_right = 194.4
-offset_bottom = 194.4
+offset_right = 199.08
+offset_bottom = 199.08
 
 [node name="Goalie" type="CharacterBody2D" parent="." unique_id=1397322346]
-position = Vector2(540, 947.1616)
+position = Vector2(553, 288.288)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Goalie" unique_id=1108970920]
 shape = SubResource("RectangleShape2D_wxm10")
 
 [node name="GFX" type="TextureRect" parent="Goalie" unique_id=1353785742]
-offset_left = -226.8
-offset_top = -329.8152
-offset_right = 226.8
-offset_bottom = 93.02481
+offset_left = -232.26
+offset_top = -100.386
+offset_right = 232.26
+offset_bottom = 28.313995
 texture = ExtResource("3_m0rci")
 expand_mode = 1
 stretch_mode = 6
 
 [node name="Ball" type="CharacterBody2D" parent="." unique_id=411307707]
-position = Vector2(540, 1652.92)
+position = Vector2(553, 503.1)
 motion_mode = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ball" unique_id=961026757]
 shape = SubResource("CircleShape2D_gt578")
 
 [node name="GFX" type="TextureRect" parent="Ball" unique_id=1147258294]
-offset_left = -172.99998
-offset_top = -240.9201
-offset_right = 182.00002
-offset_bottom = 230.0799
+offset_left = -71.89
+offset_top = -71.89
+offset_right = 71.89
+offset_bottom = 71.89
 texture = ExtResource("4_rtmmt")
 expand_mode = 1
 stretch_mode = 6
 
 [node name="HUDLayer" type="CanvasLayer" parent="." unique_id=2137222322]
 layer = 10
-
-[node name="ScoreLabel" type="Label" parent="HUDLayer" unique_id=1318103520]
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 10.0
-offset_bottom = 58.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 40
-text = "Score: 0 / 5"
-horizontal_alignment = 1
 
 [node name="AttemptsLabel" type="Label" parent="HUDLayer" unique_id=704406724]
 anchors_preset = 10
@@ -161,3 +151,10 @@ grow_vertical = 0
 theme_override_font_sizes/font_size = 26
 text = "↑ Swipe Up to Shoot"
 horizontal_alignment = 1
+
+[node name="ScoreHUD" parent="HUDLayer" unique_id=584836618 instance=ExtResource("5_m0rci")]
+offset_left = 390.0
+offset_top = 10.0
+offset_right = 390.0
+offset_bottom = 10.0
+grow_horizontal = 2

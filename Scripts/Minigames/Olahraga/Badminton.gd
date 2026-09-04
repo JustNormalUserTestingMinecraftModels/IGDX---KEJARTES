@@ -45,11 +45,6 @@ extends BaseMinigame
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use default theme font.
 @export var font: Font = null
-## Font size for the score label.
-@export var score_font_size: int = 48
-## Text colour for the score label.
-@export var score_color: Color = Color.WHITE
-
 @export_group("Configuration")
 ## Speed cap (px/s) on the player paddle's drag-follow movement.
 @export var max_paddle_speed: float = 2400.0
@@ -57,6 +52,13 @@ extends BaseMinigame
 var player_score: int = 0
 var enemy_score: int = 0
 var target_score: int = 5
+## Mirror of player_score under the name BaseMinigame's result card reads.
+## Badminton is the only minigame that names its own score `player_score`; the
+## card would otherwise hide its score row entirely. Kept in step by
+## sync_score_alias() -- never assigned directly.
+var score: int = 0
+## Mirror of target_score under the name the result card reads.
+var max_score: int = 0
 
 @onready var puck: RigidBody2D           = $Puck
 @onready var player_paddle: CharacterBody2D = $PlayerPaddle
@@ -64,7 +66,7 @@ var target_score: int = 5
 
 @onready var player_goal: Area2D         = $PlayerGoal
 @onready var enemy_goal: Area2D          = $EnemyGoal
-@onready var score_label: Label          = $ScoreLabel
+@onready var score_hud: MinigameScoreHUD = $ScoreHUD
 
 var is_dragging_player: bool = false
 var player_target_pos: Vector2 = Vector2.ZERO
@@ -104,7 +106,10 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 		target_score = 5
 	player_score = 0
 	enemy_score = 0
+	sync_score_alias()
 	last_conceding_side = "player"
+	if score_hud:
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), target_score)
 	_update_score_ui()
 
 func activate_minigame() -> void:
@@ -421,6 +426,7 @@ func _on_player_goal(body: Node2D) -> void:
 	if body == puck:
 		is_scoring_delay = true
 		enemy_score += 1
+		sync_score_alias()
 		last_conceding_side = "player"
 		_trigger_score_sequence(false)
 
@@ -430,6 +436,7 @@ func _on_enemy_goal(body: Node2D) -> void:
 	if body == puck:
 		is_scoring_delay = true
 		player_score += 1
+		sync_score_alias()
 		last_conceding_side = "enemy"
 		_trigger_score_sequence(true)
 
@@ -573,14 +580,8 @@ func _reset_puck(receiver_side: String = "player") -> void:
 		)
 
 func _update_score_ui() -> void:
-	if score_label:
-		score_label.text = "%d - %d" % [enemy_score, player_score]
-		score_label.add_theme_font_size_override("font_size", score_font_size)
-		score_label.add_theme_color_override("font_color", score_color)
-		score_label.add_theme_constant_override("outline_size", 8)
-		score_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-		if font:
-			score_label.add_theme_font_override("font", font)
+	if score_hud:
+		score_hud.set_label_text("%d - %d" % [enemy_score, player_score])
 
 func _check_win_condition() -> void:
 	if player_score >= target_score:
@@ -588,7 +589,35 @@ func _check_win_condition() -> void:
 	elif enemy_score >= target_score:
 		lose_game()
 
+## Republish player_score / target_score under the names BaseMinigame's result
+## card reads. Called after every rally point and once before the card shows.
+##
+## Affects: this node's own `score` and `max_score` mirrors.
+func sync_score_alias() -> void:
+	score = player_score
+	max_score = target_score
+
+
+## Rally dominance: the share of all points played that the player took. A
+## shutout rates 1.0; scraping past the target in a long rally does not.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func _rally_margin_ratio(player_score: int, enemy_score: int) -> float:
+	var rallies: int = player_score + enemy_score
+	if rallies <= 0:
+		return STAR_RATIO_UNKNOWN
+	return clampf(float(player_score) / float(rallies), 0.0, 1.0)
+
+
+## How well the player did this run, delegated to the static helper above.
+##
+## Affects: nothing. Pure. Read by BaseMinigame._show_result_overlay().
+func get_star_ratio() -> float:
+	return _rally_margin_ratio(player_score, enemy_score)
+
+
 func win_game() -> void:
+	sync_score_alias()
 	if puck:
 		puck.set_deferred("freeze", true)
 		puck.set_deferred("linear_velocity", Vector2.ZERO)
@@ -596,6 +625,7 @@ func win_game() -> void:
 	super.win_game()
 
 func lose_game() -> void:
+	sync_score_alias()
 	if puck:
 		puck.set_deferred("freeze", true)
 		puck.set_deferred("linear_velocity", Vector2.ZERO)

@@ -23,6 +23,13 @@ var minigame_history: Array[Dictionary] = [] # entries: {day, category, game_nam
 # source: "decay"|"activity"|"minigame_win"|"minigame_loss"|"event"|"holiday"
 var daily_stat_log: Dictionary = {}
 
+## This grade's per-student weekly minigame-win skill cap.
+func _weekly_minigame_cap() -> float:
+	match GameState.current_grade:
+		8: return Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_8
+		9: return Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_9
+		_: return Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_7
+
 func _init() -> void:
 	initialize_students()
 
@@ -73,8 +80,33 @@ func record_minigame_result(day_name: String, category: String, game_name: Strin
 	# Roster-wide points for this one minigame. The run-result screen
 	# reports the class total, not any single student's share.
 	var roster_points := 0.0
+	# Categories StudentData.apply_minigame_result() actually applies a skill
+	# change for. A skip-path "Event" outcome still computes a positive
+	# stat_delta from the win-points formula even though no skill category
+	# match arm exists for it, so the weekly cap must only track real skill
+	# categories -- otherwise "Event" burns budget out of
+	# minigame_gain_this_week for a gain that never happened, potentially
+	# zeroing out a genuine minigame win later in the same week.
+	var mg_stat_key_map = {"Akademis": "akademis", "SeniBudaya": "seni_budaya", "Olahraga": "olahraga"}
 	for student in students:
 		var deltas = student.apply_minigame_result(category, won, score, max_score)
+
+		# Apply weekly minigame cap: wins are capped per student, losses are untouched
+		var raw_delta: float = float(deltas.get("stat_delta", 0.0))
+		if won and raw_delta > 0.0 and mg_stat_key_map.has(category):
+			var cap: float = _weekly_minigame_cap()
+			var sid: int = student.id
+			var already: float = float(GameState.minigame_gain_this_week.get(sid, 0.0))
+			var allowed: float = maxf(0.0, cap - already)
+			if raw_delta > allowed:
+				var overflow: float = raw_delta - allowed
+				match category:
+					"Akademis":   student.akademis    = clampf(student.akademis    - overflow, 0.0, 100.0)
+					"SeniBudaya": student.seni_budaya  = clampf(student.seni_budaya  - overflow, 0.0, 100.0)
+					"Olahraga":   student.olahraga     = clampf(student.olahraga     - overflow, 0.0, 100.0)
+				deltas["stat_delta"] = allowed
+			GameState.minigame_gain_this_week[sid] = already + minf(raw_delta, allowed)
+
 		roster_points += float(deltas.get("stat_delta", 0.0))
 		results.append({
 			"student_name": student.student_name,
@@ -83,7 +115,6 @@ func record_minigame_result(day_name: String, category: String, game_name: Strin
 
 		# Log minigame stat changes
 		var mg_source = "minigame_win" if won else "minigame_loss"
-		var mg_stat_key_map = {"Akademis": "akademis", "SeniBudaya": "seni_budaya", "Olahraga": "olahraga"}
 		var mg_sk = mg_stat_key_map.get(category, "")
 		if mg_sk != "":
 			log_stat_change(day_name, student.student_name, mg_sk, deltas.get("stat_delta", 0.0), mg_source)

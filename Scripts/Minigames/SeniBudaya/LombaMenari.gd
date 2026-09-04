@@ -61,10 +61,6 @@ enum NoteType {
 ## Optional font override for the score/feedback labels. Null keeps the
 ## theme default.
 @export var font: Font = null
-## Font size for the running score label.
-@export var score_font_size: int = 44
-## Text colour for the running score label.
-@export var score_color: Color = Color.WHITE
 ## Font size for the per-note hit/miss feedback text.
 @export var feedback_font_size: int = 40
 
@@ -82,8 +78,26 @@ enum NoteType {
 ## Dancer pose after a missed note.
 @export var dancer_fail_texture: Texture2D
 
+## Points a PERFECT hit is worth. The star rubric divides by this, so it is a
+## const rather than an inline literal at the two award sites.
+const POINTS_PERFECT: int = 100
+## Points a merely-good (matched but outside the tight window) hit is worth.
+const POINTS_GOOD: int = 50
+
 var score: int = 0
 var target_score: int = 1500
+
+## Notes swiped inside the PERFECT window this run. Read by get_star_ratio().
+var perfect_hits: int = 0
+## Notes swiped correctly but outside the PERFECT window this run.
+var good_hits: int = 0
+## Notes that reached the hit zone unanswered this run.
+var missed_notes: int = 0
+## Consecutive hits without a miss, for the HUD's combo chip. Reset by a miss.
+var current_combo: int = 0
+## Longest combo this run. Not yet read by the star rubric -- reserved for a
+## balance pass once real playtest numbers exist.
+var best_combo: int = 0
 
 var next_spawn_time: float = 1.0
 var time_elapsed: float = 0.0
@@ -132,7 +146,7 @@ var active_pattern_index: int = 0
 var pattern_step_index: int = 0
 
 @onready var background_rect: TextureRect = $Background
-@onready var score_label: Label = $ScoreLabel
+@onready var score_hud: MinigameScoreHUD = $ScoreHUD
 @onready var hit_zone: Control = $HitZone
 @onready var notes_parent: Control = $NotesParent
 @onready var character_display: TextureRect = $CharacterDisplay
@@ -160,12 +174,6 @@ func _ready() -> void:
 		else:
 			background_rect.texture = _create_flat_texture(Color(0.08, 0.08, 0.12))
 			
-	if score_label:
-		score_label.text = "Score: 0 / " + str(target_score)
-		score_label.add_theme_font_size_override("font_size", score_font_size)
-		score_label.add_theme_color_override("font_color", score_color)
-		if font: score_label.add_theme_font_override("font", font)
-		
 	if hit_zone:
 		hit_zone.pivot_offset = hit_zone.size / 2.0
 		hit_zone.resized.connect(func(): hit_zone.pivot_offset = hit_zone.size / 2.0)
@@ -180,6 +188,9 @@ func _ready() -> void:
 func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	super.start_minigame(game_difficulty, 0.0)
 	score = 0
+	perfect_hits = 0
+	good_hits = 0
+	missed_notes = 0
 	if difficulty == 2:
 		target_score = 2000
 		note_speed = 270.0
@@ -190,9 +201,11 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 		target_score = 1500
 		note_speed = 220.0
 	
-	if score_label:
-		score_label.text = "Score: 0 / " + str(target_score)
-			
+	current_combo = 0
+	best_combo = 0
+	if score_hud:
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_seni.svg"), target_score)
+
 	# Setup Dancer Character Display
 	if character_display:
 		character_display.pivot_offset = character_display.size / 2.0
@@ -265,6 +278,10 @@ func _process(delta: float) -> void:
 		var note_center = note.global_position + note.size / 2.0
 		var vec_from_target = note_center - hz_center
 		if vec_from_target.dot(move_dir) > 80.0:
+			missed_notes += 1
+			current_combo = 0
+			if score_hud:
+				score_hud.set_combo(current_combo)
 			notes_to_remove.append(note)
 			
 	for note in notes_to_remove:
@@ -454,11 +471,17 @@ func _evaluate_swipe(swipe_type: int) -> void:
 		var required_type = best_note.get_meta("note_type")
 		if swipe_type == required_type:
 			if min_dist < 45.0:
-				score += 100
+				score += POINTS_PERFECT
+				perfect_hits += 1
+				current_combo += 1
+				best_combo = maxi(best_combo, current_combo)
 				_show_hit_feedback("PERFECT!", Color(1.0, 0.84, 0.0))
 				_pulse_hit_zone(Color(1.0, 0.9, 0.2)) # Glowing gold/yellow pulse
 			else:
-				score += 50
+				score += POINTS_GOOD
+				good_hits += 1
+				current_combo += 1
+				best_combo = maxi(best_combo, current_combo)
 				_show_hit_feedback("GOOD!", Color(0.2, 0.9, 0.4))
 				_pulse_hit_zone(Color(0.3, 1.0, 0.5)) # Glowing green pulse
 			_play_dancer_motion(swipe_type)
@@ -473,11 +496,32 @@ func _evaluate_swipe(swipe_type: int) -> void:
 		_pulse_hit_zone(Color(1.0, 0.55, 0.15)) # Orange alert pulse
 		_play_dancer_fail_motion()
 			
-	if score_label:
-		score_label.text = "Score: " + str(score) + " / " + str(target_score)
-		
+	if score_hud:
+		score_hud.set_score(score)
+		score_hud.set_combo(current_combo)
+
 	if score >= target_score:
 		win_game()
+
+## Note accuracy: points earned as a fraction of the points that were actually
+## on the table. An all-PERFECT routine rates 1.0; a routine that only ever
+## grazes the window tops out at 0.5 even if it clears the score target.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func _note_accuracy_ratio(perfect_hits: int, good_hits: int, missed_notes: int) -> float:
+	var notes_presented: int = perfect_hits + good_hits + missed_notes
+	if notes_presented <= 0:
+		return STAR_RATIO_UNKNOWN
+	var earned: int = perfect_hits * POINTS_PERFECT + good_hits * POINTS_GOOD
+	var possible: int = notes_presented * POINTS_PERFECT
+	return clampf(float(earned) / float(possible), 0.0, 1.0)
+
+
+## How well the player did this run, delegated to the static helper above.
+##
+## Affects: nothing. Pure. Read by BaseMinigame._show_result_overlay().
+func get_star_ratio() -> float:
+	return _note_accuracy_ratio(perfect_hits, good_hits, missed_notes)
 
 func _remove_note(note: Control) -> void:
 	active_notes.erase(note)

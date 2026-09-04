@@ -39,7 +39,7 @@ var has_time_limit: bool = false
 # ─── Visual - Result Overlay (Win/Lose Condition Texts) ─────────────────────
 @export_group("Visual - Result Overlay")
 ## Custom Win title text. Leave default or customize per minigame.
-@export var win_title_text: String = "Kamu Berhasil! 🎉"
+@export var win_title_text: String = "Kamu Berhasil!"
 ## Custom Lose title text.
 @export var lose_title_text: String = "Belum Tepat, Coba Lagi Lain Kali!"
 ## Custom Win subtitle text.
@@ -584,15 +584,65 @@ func _do_lose() -> void:
 		await get_tree().create_timer(1.0).timeout
 		get_tree().reload_current_scene()
 
-func _calculate_stars(score: int, max_score: int, is_win: bool) -> int:
+# --- Star rubric ------------------------------------------------------------
+# A minigame's win threshold and its *mastery* are different questions: a win
+# means score >= target, so rating stars off the win threshold would make every
+# win three stars. Each minigame answers the mastery question itself in
+# get_star_ratio(); this block only turns that answer into stars.
+
+## Mastery ratio at or above which a win earns three stars.
+const STAR_RATIO_THREE: float = 0.90
+## Mastery ratio at or above which a win earns two stars.
+const STAR_RATIO_TWO: float = 0.60
+## Stars for a win by a minigame that reports no mastery ratio at all. Two, not
+## one: an unrated win must never read to the player as the worst possible win.
+const STAR_UNRATED_DEFAULT: int = 2
+## Sentinel get_star_ratio() returns when the minigame tracks no mastery metric.
+const STAR_RATIO_UNKNOWN: float = -1.0
+
+
+## Score-out-of-max-score ratio, or STAR_RATIO_UNKNOWN when max_score isn't a
+## real ceiling (<= 0). Static and pure so it is callable directly on the
+## class in a test, with no instance and no placeholder-instance failure --
+## every per-game override in Tasks 2-5 follows this same static-helper shape.
+##
+## Affects: nothing. Pure.
+static func _ratio_from_score(score: int, max_score: int) -> float:
+	if max_score <= 0:
+		return STAR_RATIO_UNKNOWN
+	return clampf(float(score) / float(max_score), 0.0, 1.0)
+
+
+## How well the player did, 0.0-1.0, independent of whether they won.
+##
+## Override this in a minigame that has a mastery metric its win threshold does
+## not already express (shot accuracy, note accuracy, rally margin, mistakes
+## made). The default here covers the quiz-shaped games, which score out of a
+## real `max_score`. Thin instance glue over _ratio_from_score() -- keep any
+## new math in a static helper of its own, not here, so it stays testable.
+##
+## Affects: nothing. Pure.
+func get_star_ratio() -> float:
+	var s: int = int(self.score) if "score" in self else 0
+	var m: int = int(self.max_score) if "max_score" in self else 0
+	return _ratio_from_score(s, m)
+
+
+## Stars from a mastery ratio. A loss is always zero stars; a win is never
+## zero. Static: called from a test with no instance, and from
+## _show_result_overlay() as `BaseMinigame._calculate_stars(...)` would also
+## work, though the instance call `_calculate_stars(...)` still resolves fine
+## from inside an instance method since Godot looks up statics through self.
+##
+## Affects: nothing. Pure.
+static func _calculate_stars(ratio: float, is_win: bool) -> int:
 	if not is_win:
 		return 0
-	if max_score <= 0:
-		return 1  # Win with no score tracking = 1 star minimum
-	var ratio = float(score) / float(max_score)
-	if ratio >= 0.80:
+	if ratio < 0.0:
+		return STAR_UNRATED_DEFAULT
+	if ratio >= STAR_RATIO_THREE:
 		return 3
-	elif ratio >= 0.50:
+	if ratio >= STAR_RATIO_TWO:
 		return 2
 	return 1
 
@@ -628,7 +678,7 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 	if "last_mood_delta" in self: mood_delta = self.last_mood_delta
 	if "minigame_category" in self: mg_category = self.minigame_category
 
-	var stars = _calculate_stars(mg_score, mg_max_score, is_win)
+	var stars := _calculate_stars(get_star_ratio(), is_win)
 
 	var popup: MinigameResultPopup = result_popup_scene.instantiate()
 	add_child(popup)

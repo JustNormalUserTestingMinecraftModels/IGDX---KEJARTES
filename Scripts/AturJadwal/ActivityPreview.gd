@@ -24,6 +24,13 @@ static func _specialty_of(student: Dictionary) -> String:
 	return hobby
 
 
+## True when `category` is this student's normalized specialty. The one place
+## any screen should ask "does this activity play to the student's strength" --
+## the raw hobby_category spelling ("Akademik") is a trap.
+static func is_specialty(category: String, student: Dictionary) -> bool:
+	return _specialty_of(student) == category
+
+
 ## Points this category adds in ONE day, for this student, at this grade.
 static func skill_gain(category: String, student: Dictionary, grade: int) -> float:
 	var base := Balance.BELAJAR_POIN_CADANGAN

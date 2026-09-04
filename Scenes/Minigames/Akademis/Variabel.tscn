@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://dd2yx1erpwhwo"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/Akademis/Variabel.gd" id="1_variabel"]
+[ext_resource type="Script" uid="uid://dctb8hswqsc5w" path="res://Scripts/Minigames/Akademis/Variabel.gd" id="1_variabel"]
 [ext_resource type="Texture2D" uid="uid://nm11wxrdebo2" path="res://Assets/Images/Textures/DiagonalLeft.jpg" id="2_gma8s"]
 [ext_resource type="Texture2D" uid="uid://ch0pg0l4inpsq" path="res://Assets/Images/Textures/DiagonalRight.jpg" id="3_wmj8b"]
+[ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="4_wmj8b"]
 
 [node name="Variabel" type="Control" unique_id=677104855]
 layout_mode = 3
@@ -35,6 +36,10 @@ anchor_bottom = 0.95
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
+
+[node name="ScoreHUD" parent="VBoxContainer" unique_id=584836618 instance=ExtResource("4_wmj8b")]
+layout_mode = 2
+size_flags_horizontal = 4
 
 [node name="ProgressLabel" type="Label" parent="VBoxContainer" unique_id=593051902]
 layout_mode = 2

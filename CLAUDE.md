@@ -336,6 +336,39 @@ The win rule moved with it: `GameState.check_semester_passed()` is now
 all academic targets cleared anywhere on the roster, no longer
 all-or-nothing, so one weak student no longer loses the run.
 
+The 2026-09-04 grade-progression difficulty pass is complete, built on branch
+`minigame-reward-feedback`. Spec:
+`docs/superpowers/specs/2026-09-04-grade-progression-balance-and-difficulty.md`;
+plan: `docs/superpowers/plans/2026-09-04-grade-progression-balance-and-difficulty.md`.
+It retuned grade 7 to need tactical subject-rotation instead of one lucky week
+(via a new per-student weekly minigame-points cap —
+`Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_7/8/9` = 14/12/10 — rather
+than touching grade-7 study rates), ramped grade 8/9 targets
+(`TARGET_KENAIKAN_KELAS_8` 30→34, `_KELAS_9` 40→**40 shipped**, see the spec's
+Status block for why the 50 estimate moved), amplified quirk/specialty
+coefficients ~1.4×, ramped the Skip button's loss chance per grade
+(`SKIP_PELUANG_KALAH_KELAS_7/8/9` 0.4/0.5/0.6), added `GameState.
+reset_roster_for_new_grade()` — a 20%-head-start roster reset shared by real
+grade progression *and* the debug grade-jump buttons, which previously left
+skill stats carried over — and closed a minigame-farming exploit
+(`SchoolDay._roll_event()`/`skip_to_results()` now roll a randomized 1-3
+weekly minigame allowance and a 35% chance the category is picked uniformly
+rather than by schedule, without touching how often minigames/events appear
+at all). AturJadwal got new specialty-match feedback: a gold particle burst
+(`SpecialtyMatchBurst.tscn`) plus the `specialty_match` SFX cue on the sticky
+note when a day is scheduled onto a student's specialty subject, and a ★
+badge on the Penjadwalan picker row beforehand. A new headless suite,
+`tests/test_balance_pacing.gd`, runs a scripted greedy simulation against the
+real simulation functions and is the tuning/regression harness for these
+numbers going forward. Built via subagent-driven development with the
+controller holding the Godot MCP bridge throughout; one fix round needed a
+human editor restart to clear a stale-bytecode reload (`Balance.gd` served an
+old field value across every MCP-available recovery lever) — not a code
+defect, just a one-off editor quirk worth knowing about if a future session
+hits `GDScript reload failed with error code 43` on a repeatedly-patched
+file. Placeholder outstanding: `sfx_specialty_match` aliases the existing
+`sfx_reward` stream, same convention as this project's other recent cues.
+
 The main menu was rebuilt on 2026-08-31 to match
 `docs/superpowers/mockups/main-menu.png` measurement-for-measurement and is
 now the boot scene — see
@@ -422,6 +455,24 @@ split, which this pass also used throughout
 deleted after merge). Placeholders outstanding: the three particle sprites
 (`Assets/Images/Particles/particle_*.png`, crude flat geometry) and the
 two aliased SFX streams.
+
+The 2026-09-04 minigame reward pass is complete. Plan:
+`docs/superpowers/plans/2026-09-04-minigame-reward-feedback.md`. It fixed the
+one-star bug — `_calculate_stars()` read `max_score`, which only the four
+Akademis quizzes declare, so every win in MainBola, LombaMenari, Badminton
+and BuatBatik was hard-capped at one star — by replacing it with an
+overridable per-game `get_star_ratio()` mastery metric (shot accuracy, note
+accuracy, rally margin, mistake-free sequence) and a two-star floor for an
+unrated win. It then moved the result card's chrome off runtime
+`StyleBox`es onto seven new `ThemeFactory` variations, replaced every emoji
+glyph with a transparent SVG, gave the star reveal an escalating pop with
+per-star bursts and three rising audio cues, gated confetti on a
+three-star finish, and replaced the ad-hoc `ScoreLabel`s with the shared
+`MinigameScoreHUD` template. Placeholders outstanding: the six new
+`AudioDirector` cue ids (`star_earn_1/2/3`, `result_fanfare`, `score_tick`,
+`combo_up`) all alias `pop.ogg` / `reward.ogg`, the seven new icon SVGs are
+flat white placeholder geometry, and `LombaMenari.best_combo` is tracked
+but not yet fed into the rubric, pending a real balance pass.
 
 `-REFERENCE-/prototype/` is the original prototype, kept for reference only —
 not built, not imported. `koprasi&inventory` was a second programmer's separate

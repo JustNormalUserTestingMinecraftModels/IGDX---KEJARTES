@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://sbcqefj5hbe3" path="res://Assets/Images/Textures/field_bg.jpg" id="2_ubtp4"]
 [ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="3_2jy3k"]
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="4_doxun"]
+[ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_b17uc"]
 
 [node name="PilihanGanda" type="Control" unique_id=1850730347]
 layout_mode = 3
@@ -38,6 +39,10 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 16
 alignment = 1
+
+[node name="ScoreHUD" parent="VBoxContainer" unique_id=584836618 instance=ExtResource("5_b17uc")]
+layout_mode = 2
+size_flags_horizontal = 4
 
 [node name="ProgressLabel" type="Label" parent="VBoxContainer" unique_id=952582965]
 layout_mode = 2

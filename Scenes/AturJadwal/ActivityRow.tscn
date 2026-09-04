@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bgxl86yyt3qwx" path="res://Scripts/AturJadwal/ActivityRow.gd" id="1_row"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="2_statbar"]
+[ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="3_thr1m"]
 
 [node name="ActivityRow" type="Button" unique_id=606062372]
 custom_minimum_size = Vector2(200, 180)
@@ -43,11 +44,10 @@ mouse_filter = 2
 theme_type_variation = &"PreviewPill"
 
 [node name="StatBar" type="ProgressBar" parent="Container/Pill" unique_id=1655153705]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 2
 size_flags_vertical = 1
 mouse_filter = 2
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarAkademis"
 show_percentage = false
 script = ExtResource("2_statbar")
 
@@ -56,6 +56,19 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 2
+
+[node name="SpecialtyBadge" type="TextureRect" parent="Container" unique_id=776482362]
+visible = false
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 0
+offset_left = 156.0
+offset_top = 4.0
+offset_right = 196.0
+offset_bottom = 44.0
+mouse_filter = 2
+texture = ExtResource("3_thr1m")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="." unique_id=128566525]
 layout_mode = 1

@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://wkhx361nmrwr"]
+
+[ext_resource type="Texture2D" uid="uid://skr3tjxap0qw" path="res://Assets/Images/Particles/particle_confetti.png" id="1_c1elo"]
+[ext_resource type="Script" uid="uid://dirvyxt44yitc" path="res://Scripts/SchoolSimulation/RewardParticles.gd" id="2_5ls24"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ykcwy"]
+emission_shape = 3
+emission_box_extents = Vector3(540, 8, 1)
+direction = Vector3(0, 1, 0)
+spread = 28.0
+initial_velocity_min = 100.0
+initial_velocity_max = 260.0
+angular_velocity_min = -340.0
+angular_velocity_max = 340.0
+gravity = Vector3(0, 320, 0)
+scale_min = 0.22
+scale_max = 0.48
+
+[node name="ResultConfetti" type="GPUParticles2D" unique_id=530501178]
+emitting = false
+amount = 120
+texture = ExtResource("1_c1elo")
+lifetime = 2.6
+one_shot = true
+explosiveness = 0.2
+process_material = SubResource("ParticleProcessMaterial_ykcwy")
+script = ExtResource("2_5ls24")

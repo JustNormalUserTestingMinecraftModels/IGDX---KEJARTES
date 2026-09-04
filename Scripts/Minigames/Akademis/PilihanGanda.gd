@@ -153,6 +153,7 @@ var is_submitting_answer: bool = false
 var score: int = 0
 var max_score: int = 3
 
+@onready var score_hud: MinigameScoreHUD  = $VBoxContainer/ScoreHUD
 @onready var progress_label: Label        = $VBoxContainer/ProgressLabel
 @onready var question_label: Label        = $VBoxContainer/QuestionLabel
 @onready var question_image: TextureRect  = $VBoxContainer/QuestionImage
@@ -192,6 +193,8 @@ func setup_game() -> void:
 	max_score = total_questions_per_game
 	current_question_index = 0
 	is_submitting_answer = false
+	if score_hud:
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_akademis.svg"), max_score)
 
 	var pool = load_question_bank()
 	if pool.is_empty():
@@ -389,6 +392,8 @@ func _on_choice_pressed(index: int, pressed_btn: Button) -> void:
 
 	if index == expected_answer_index:
 		score += 1
+		if score_hud:
+			score_hud.set_score(score)
 		_flash_button_box(pressed_btn, correct_color)
 		_play_jump_animation(pressed_btn)
 	else:

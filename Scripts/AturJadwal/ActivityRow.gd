@@ -120,3 +120,7 @@ func refresh(student: Dictionary, grade: int, progress_percent: float) -> void:
 	if bar:
 		# Only the three skill rows carry a bar; the others left it out.
 		bar.set_stat(progress_percent)
+
+	var badge := get_node_or_null("Container/SpecialtyBadge") as TextureRect
+	if badge:
+		badge.visible = ActivityPreview.is_specialty(category, student)

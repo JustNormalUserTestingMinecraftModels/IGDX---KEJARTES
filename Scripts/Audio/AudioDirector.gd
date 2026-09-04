@@ -68,6 +68,28 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## week recap banner. A dedicated copy of SFX/tap.ogg (not a second id
 ## on the same file) so it can be retuned independently later.
 @export var sfx_pill_tap: AudioStream = preload("res://Assets/Audio/SFX/pill_tap.ogg")
+## `play_sfx(&"star_earn_1")`: first star of the result card's reveal.
+## Placeholder: aliases pop.ogg. The three star_earn_* cues are meant to
+## rise in pitch; swap in real assets before ship.
+@export var sfx_star_earn_1: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
+## `play_sfx(&"star_earn_2")`: second star of the reveal. Placeholder:
+## aliases pop.ogg.
+@export var sfx_star_earn_2: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
+## `play_sfx(&"star_earn_3")`: third star of the reveal. Placeholder:
+## aliases reward.ogg.
+@export var sfx_star_earn_3: AudioStream = preload("res://Assets/Audio/SFX/reward.ogg")
+## `play_sfx(&"result_fanfare")`: the result card's arrival sting.
+## Placeholder: aliases reward.ogg.
+@export var sfx_result_fanfare: AudioStream = preload("res://Assets/Audio/SFX/reward.ogg")
+## `play_sfx(&"score_tick")`: one increment of a counting score readout.
+## Placeholder: aliases pop.ogg.
+@export var sfx_score_tick: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
+## `play_sfx(&"combo_up")`: an in-run combo stepping up. Placeholder:
+## aliases pop.ogg.
+@export var sfx_combo_up: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
+## `play_sfx(&"specialty_match")`: AturJadwal, a day is assigned to the
+## selected student's specialty subject. Placeholder: aliases sfx_reward.
+@export var sfx_specialty_match: AudioStream
 ## `play_sfx(&"pill_popup_open")`: WeekRecapPillInfoPopup opens. A
 ## dedicated copy of SFX/popup_open.ogg.
 @export var sfx_pill_popup_open: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_open.ogg")
@@ -220,6 +242,13 @@ func _resolve_sfx(id: StringName) -> AudioStream:
 		&"pill_popup_open": return sfx_pill_popup_open
 		&"pill_popup_close": return sfx_pill_popup_close
 		&"pane_swipe": return sfx_pane_swipe
+		&"star_earn_1": return sfx_star_earn_1
+		&"star_earn_2": return sfx_star_earn_2
+		&"star_earn_3": return sfx_star_earn_3
+		&"result_fanfare": return sfx_result_fanfare
+		&"score_tick": return sfx_score_tick
+		&"combo_up": return sfx_combo_up
+		&"specialty_match": return sfx_specialty_match
 		_: return null
 
 

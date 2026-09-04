@@ -107,14 +107,10 @@ extends BaseMinigame
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use default theme font.
 @export var font: Font = null
-## Font size for the score label.
-@export var score_font_size: int   = 40
 ## Font size for the remaining-attempts label.
 @export var attempts_font_size: int = 30
 ## Font size for the aiming hint text.
 @export var hint_font_size: int     = 26
-## Text colour for the score label.
-@export var score_color: Color      = Color.WHITE
 ## Text colour for the remaining-attempts label.
 @export var attempts_color: Color   = Color.WHITE
 ## Text colour for the aiming hint text.
@@ -142,7 +138,7 @@ var is_swiping: bool = false
 @onready var goalie: CharacterBody2D     = $Goalie
 @onready var ball: CharacterBody2D       = $Ball
 @onready var field_markings: Node2D      = $FieldMarkings
-@onready var score_label: Label          = $HUDLayer/ScoreLabel
+@onready var score_hud: MinigameScoreHUD = $HUDLayer/ScoreHUD
 @onready var attempts_label: Label       = $HUDLayer/AttemptsLabel
 @onready var swipe_hint: Label           = $HUDLayer/SwipeHint
 @onready var target_box_node: Control    = $TargetBox
@@ -198,6 +194,8 @@ func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 		goalie_speed_mult = 1.0
 	score = 0
 	attempts_left = MAX_ATTEMPTS
+	if score_hud:
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), target_score)
 	_update_hud()
 
 
@@ -424,14 +422,8 @@ func _on_field_markings_draw() -> void:
 
 # ─── HUD ─────────────────────────────────────────────────────────────────────
 func _update_hud() -> void:
-	if score_label:
-		score_label.text = "Score: %d / %d" % [score, target_score]
-		score_label.add_theme_font_size_override("font_size", score_font_size)
-		score_label.add_theme_color_override("font_color", score_color)
-		score_label.add_theme_constant_override("outline_size", 8)
-		score_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-		if font:
-			score_label.add_theme_font_override("font", font)
+	if score_hud:
+		score_hud.set_score(score)
 	if attempts_label:
 		attempts_label.text = "Shots Left: %d" % attempts_left
 		attempts_label.add_theme_font_size_override("font_size", attempts_font_size)
@@ -636,13 +628,9 @@ func _on_goal_scored() -> void:
 	_update_hud()
 	print("GOAL! %d / %d" % [score, target_score])
 
-	# Brief flash green on score label
-	if score_label:
-		score_label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.4))
-		await get_tree().create_timer(0.35).timeout
-		score_label.remove_theme_color_override("font_color")
-	else:
-		await get_tree().create_timer(0.35).timeout
+	# The HUD's own pop+burst on set_score() already gives this moment its
+	# feedback; this pause is just pacing before the shot resets.
+	await get_tree().create_timer(0.35).timeout
 
 	_reset_shot()
 
@@ -683,6 +671,25 @@ func _reset_shot() -> void:
 		var rt := create_tween()
 		rt.tween_property(goalie, "global_position:x", goalie_base_pos.x, 0.28)\
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+
+## Shot accuracy: goals scored per shot taken. Reaching the goal target with
+## every shot on target is a three-star run; grinding it out over all eight
+## attempts is not. Returns STAR_RATIO_UNKNOWN before the first shot, so a win
+## that somehow took no shots is not rated a zero.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func _shot_accuracy_ratio(score: int, shots_taken: int) -> float:
+	if shots_taken <= 0:
+		return STAR_RATIO_UNKNOWN
+	return clampf(float(score) / float(shots_taken), 0.0, 1.0)
+
+
+## How well the player did this run, delegated to the static helper above.
+##
+## Affects: nothing. Pure. Read by BaseMinigame._show_result_overlay().
+func get_star_ratio() -> float:
+	return _shot_accuracy_ratio(score, MAX_ATTEMPTS - attempts_left)
 
 
 # ─── Override lose_game to bypass BaseMinigame's score-check shortcut ────────

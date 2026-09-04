@@ -220,3 +220,36 @@ func test_every_result_variation_is_in_the_baked_theme() -> void:
 	for variation in RESULT_VARIATIONS:
 		assert_true(variation in types,
 			"%s is a baked type variation -- rebake ThemeFactory if not" % variation)
+
+
+func test_a_star_defaults_to_real_art_not_the_procedural_polygon() -> void:
+	var star: Control = load(STAR_PATH).instantiate()
+	Engine.get_main_loop().root.add_child(star)
+	track(star)
+	star.set_filled(true, null, null, Color.WHITE, Color.GRAY)
+	assert_true(star.icon.texture != null,
+		"a null texture argument falls back to the shipped star art, not to _draw()")
+	assert_true(star.is_filled, "and the star reads as earned")
+
+
+func test_an_unearned_star_uses_the_hollow_art() -> void:
+	var star: Control = load(STAR_PATH).instantiate()
+	Engine.get_main_loop().root.add_child(star)
+	track(star)
+	star.set_filled(false, null, null, Color.WHITE, Color.GRAY)
+	assert_true(star.icon.texture != null, "the empty star has art too")
+	assert_false(star.is_filled, "and reads as unearned")
+
+
+func test_the_star_scene_carries_a_glow_and_a_burst_slot() -> void:
+	var star: Control = load(STAR_PATH).instantiate()
+	track(star)
+	assert_true(star.has_node("Glow"), "an authored Glow layer, not a runtime one")
+	assert_true(star.has_node("BurstSlot"), "an authored slot the burst mounts into")
+
+
+func test_celebrate_is_not_a_coroutine() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/ResultStar.gd")
+	var body: String = src.split("func celebrate(")[1].split("\nfunc ")[0]
+	assert_false(body.contains("await "),
+		"celebrate() must be callable from a test and from the reveal loop")

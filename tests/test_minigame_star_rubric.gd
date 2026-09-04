@@ -18,7 +18,6 @@ extends McpTestSuite
 ## with no instantiation at all.
 
 func suite_name() -> String:
-
 	return "minigame_star_rubric"
 
 

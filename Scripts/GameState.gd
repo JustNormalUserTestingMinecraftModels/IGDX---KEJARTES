@@ -266,17 +266,27 @@ func get_jadwal_for_day(day_name: String) -> Dictionary:
 				counts[cat] += 1
 	return counts
 
+## The run's star meter, 0.0 to Balance.STARS_TOTAL: every academic target
+## cleared anywhere on the roster earns an equal share of the three stars.
+## Continuous on purpose -- StatCheck's meter fills star by star as the
+## check plays, and 7 of 12 must read as 1.75, not "1".
+func run_stars() -> float:
+	var counted: Array = count_targets_cleared()
+	var total := int(counted[1])
+	if total <= 0:
+		return 0.0
+	return Balance.STARS_TOTAL * float(counted[0]) / float(total)
+
+
+## Win rule since Plan A: the star meter at or above
+## Balance.STAR_WIN_THRESHOLD. Replaces "every student clears all three
+## targets" -- one weak student on a strong roster no longer loses the run.
+## An empty roster still passes, as it always did, so a debug teleport with
+## nothing approved never reads as a loss.
 func check_semester_passed() -> bool:
-	var students = convert_to_student_data_array()
-	if students.is_empty():
+	if approved_students.is_empty():
 		return true
-	for student in students:
-		var tuntas_akademis = student.akademis >= student.target_akademis1
-		var tuntas_seni = student.seni_budaya >= student.target_akademis2
-		var tuntas_olahraga = student.olahraga >= student.target_akademis3
-		if not (tuntas_akademis and tuntas_seni and tuntas_olahraga):
-			return false
-	return true
+	return run_stars() >= Balance.STAR_WIN_THRESHOLD
 
 
 ## Counts how many of the roster's three-per-student academic targets have

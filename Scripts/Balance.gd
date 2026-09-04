@@ -32,6 +32,15 @@ static var TARGET_KENAIKAN_KELAS_7 := 15.0
 static var TARGET_KENAIKAN_KELAS_8 := 30.0
 static var TARGET_KENAIKAN_KELAS_9 := 40.0
 
+## The end-of-grade star meter (Plan A, 2026-09-04). One star-share per
+## academic target cleared across the whole roster: stars = STARS_TOTAL ×
+## cleared ÷ total. The run is won at STAR_WIN_THRESHOLD or better -- so
+## with four students (twelve targets), 8 cleared is exactly 2.0 and wins,
+## 7 is 1.75 and loses. Mathematically the same as "average per-student
+## stars ≥ 2", which is how the brief first phrased it.
+static var STARS_TOTAL := 3.0
+static var STAR_WIN_THRESHOLD := 2.0
+
 ## Berapa minggu satu kelas berlangsung — ini "waktu yang kamu punya"
 ## untuk mengejar target di atas. Menambah minggu = lebih gampang
 ## (lebih banyak kesempatan belajar); mengurangi = lebih sulit.

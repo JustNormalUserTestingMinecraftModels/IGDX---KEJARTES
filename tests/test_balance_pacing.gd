@@ -7,10 +7,31 @@ extends McpTestSuite
 ## grade 8/9 targets and the weekly minigame cap -- if an assertion fails,
 ## retune Balance and re-run (~2s), then update the spec's Status block.
 ##
-## No coroutines. Deterministic: every scenario seeds the RNG first.
+## No coroutines. Deterministic: every scenario seeds the global RNG stream
+## first (via the global seed()/randi_range/randf_range calls, not a local
+## RandomNumberGenerator object).
 
 func suite_name() -> String:
 	return "balance_pacing"
+
+# --- GameState snapshot/restore, so this suite never leaks its synthetic
+# 4-student roster into whichever suite the runner executes next.
+var _snap_current_grade: int
+var _snap_approved_students: Array
+var _snap_day_schedules: Dictionary
+var _snap_minigame_gain_this_week: Dictionary
+
+func setup() -> void:
+	_snap_current_grade = GameState.current_grade
+	_snap_approved_students = GameState.approved_students.duplicate(true)
+	_snap_day_schedules = GameState.day_schedules.duplicate(true)
+	_snap_minigame_gain_this_week = GameState.minigame_gain_this_week.duplicate(true)
+
+func teardown() -> void:
+	GameState.current_grade = _snap_current_grade
+	GameState.approved_students = _snap_approved_students
+	GameState.day_schedules = _snap_day_schedules
+	GameState.minigame_gain_this_week = _snap_minigame_gain_this_week
 
 # The real roster values, hard-copied from student_card.gd (student_data_list,
 # lines ~896-1035) so a roster edit does not silently move the goalposts.
@@ -82,7 +103,7 @@ func _policy_stack_exploit(_student: Dictionary, week: int) -> Array:
 # Run one week: writes day_schedules, runs 5 days of decay+activity, injects
 # `minigames` minigame results, writes stats back. Returns nothing; mutates
 # GameState.approved_students via StudentManager.
-func _run_week(policy: Callable, week: int, rng: RandomNumberGenerator, minigames: int, win_ratio: float) -> void:
+func _run_week(policy: Callable, week: int, minigames: int, win_ratio: float) -> void:
 	GameState.minigame_gain_this_week = {}
 	GameState.day_schedules = {}
 	for student in GameState.approved_students:
@@ -109,15 +130,13 @@ func _all_cleared() -> bool:
 # Play a grade start-to-finish under one policy on one seed; return the 1-based
 # week the roster fully cleared, or weeks+1 if it never did.
 func _weeks_to_clear(grade: int, policy: Callable, seed_val: int) -> int:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = seed_val
 	seed(seed_val)
 	_seed_gamestate(grade)
 	var weeks: int = GameState.get_max_weeks()
 	for w in range(1, weeks + 1):
 		var mg := randi_range(Balance.MINIGAME_MAKS_MINGGU_MIN, Balance.MINIGAME_MAKS_MINGGU_MAX)
 		var ratio := 0.7 if policy == Callable(self, "_policy_well_played") else 0.4
-		_run_week(policy, w, rng, mg, ratio)
+		_run_week(policy, w, mg, ratio)
 		if _all_cleared():
 			return w
 	return weeks + 1

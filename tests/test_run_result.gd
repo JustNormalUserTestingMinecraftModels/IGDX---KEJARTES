@@ -172,6 +172,14 @@ func test_no_theme_overrides_in_the_scene() -> void:
 	assert_eq(offenders.size(), 0, "no theme_override_*: %s" % str(offenders))
 
 
+func test_progression_delegates_roster_reset_to_gamestate() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("reset_roster_for_new_grade"),
+		"the grade-advance branch must call GameState.reset_roster_for_new_grade()")
+	assert_false(src.contains("student[\"kepribadian1\"] = 80.0"),
+		"the inline mood/energy reset must move into GameState")
+
+
 ## Copied verbatim from tests/test_main_menu.gd.
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:

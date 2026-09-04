@@ -196,12 +196,7 @@ func _apply_progression() -> String:
 
 	if GameState.current_grade < 9:
 		GameState.current_grade += 1
-		for student in GameState.approved_students:
-			student["kepribadian1"] = 80.0
-			student["kepribadian2"] = 80.0
-			student.erase("base_akademis1")
-			student.erase("base_akademis2")
-			student.erase("base_akademis3")
+		GameState.reset_roster_for_new_grade()
 		GameState.day_schedules.clear()
 		GameState.minggu_ke = 1
 		GameState.returned_from_student_card = false

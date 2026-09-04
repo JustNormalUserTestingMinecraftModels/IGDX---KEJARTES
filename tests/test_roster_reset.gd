@@ -87,3 +87,26 @@ func test_student_card_captures_roster_base_on_approval() -> void:
 		"student_card must stamp roster_base_akademis1 when it approves the roster")
 	assert_true(src.contains("roster_base_akademis3"),
 		"student_card must stamp roster_base_akademis3 when it approves the roster")
+
+func test_set_grade_resets_roster_only_on_real_change() -> void:
+	var saved := GameState.approved_students
+	var saved_grade := GameState.current_grade
+	GameState.approved_students = [_make_student(1, 50.0, 30.0)]
+	GameState.current_grade = 7
+
+	GameState.set_grade(8)
+	assert_true(is_equal_approx(float(GameState.approved_students[0]["akademis1"]), 34.0),
+		"set_grade(8) from 7 must rebase the roster")
+
+	GameState.approved_students[0]["akademis1"] = 90.0
+	GameState.set_grade(8)  # same grade -> no-op
+	assert_true(is_equal_approx(float(GameState.approved_students[0]["akademis1"]), 90.0),
+		"set_grade to the SAME grade must not re-rebase (no stacked head-start)")
+
+	GameState.approved_students = saved
+	GameState.current_grade = saved_grade
+
+func test_set_grade_debug_jump_wires_into_reset_roster() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
+	assert_true(src.contains("reset_roster_for_new_grade()"),
+		"set_grade must call reset_roster_for_new_grade() when grade changes")

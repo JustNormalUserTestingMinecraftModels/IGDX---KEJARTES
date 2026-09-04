@@ -87,11 +87,14 @@ func get_grade_name() -> String:
 	return "Kelas " + str(current_grade)
 
 func set_grade(grade_num: int) -> void:
+	var previous_grade: int = current_grade
 	current_grade = grade_num
 	minggu_ke = 1
 	run_stats.reset()
 	is_exam_intro_cutscene = false
 	run_failed = false
+	if current_grade != previous_grade:
+		reset_roster_for_new_grade()  # no-op when the roster is empty
 	print("GameState grade set to: Kelas ", current_grade, " (Minggu ", minggu_ke, ", Max Minggu ", max_minggu, ")")
 
 ## Rebases every roster student's three skill stats for a new grade: keep

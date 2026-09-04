@@ -23,8 +23,7 @@ every student's three academic targets before the grade's final week to pass.
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay
 (simulate 5 days) → ResultCheckup → back to Lobby. On the final week of a
 grade, SchoolDay instead runs the end-of-grade sequence: **TesNotice →
-CutScene (exam branch) → SemesterEnd (stat check) → WinScreen or the
-game-over cutscene → RunResult → MainMenu.** Splashscreen and Loading still
+ExamProgress → StatCheck → RunResult → MainMenu.** Splashscreen and Loading still
 exist and are still tested, but since 2026-08-31 they are no longer reached
 at boot.
 
@@ -189,6 +188,22 @@ needs a pass through Atur Jadwal first. Driving the shop purchase flow by
 simulated clicks to reach the same state took roughly forty-five calls and
 failed twice before working.
 
+The overlay's **Scenes** tab also carries **🎭 Gladi Resik Akhir Kelas** —
+three one-click rehearsals of the whole end-of-grade sequence (TesNotice →
+ExamProgress → StatCheck → RunResult) with a fixed roster:
+*Semua Lulus* (win path), *Semua Gagal* (lose path), and *Campur*, which
+ladders 3/2/1/0 cleared targets across the four students so one pass of
+StatCheck lights the meter 3, 2, 1 and 0 shares in turn (6 of 12 = 1.5
+stars, a loss). Arming
+one snapshots the run first; **↩ Pulihkan Run Sebelum Gladi Resik** puts it
+back, which matters because RunResult's progression otherwise advances the
+grade and clears the roster on its way out. These replaced the bare
+"Teleport ke: Evaluasi Semester" button, which landed on an empty carousel
+whenever no roster was approved. The logic is in
+`Scripts/Debug/EndGameRehearsal.gd` (plain static functions, tested
+behaviourally in `tests/test_end_game_rehearsal.gd`); `DebugManager.gd`
+only holds the buttons.
+
 When you do have to click, note two quirks. Send a `motion` event to the
 target before the `button` press — Godot will not route a click without the
 hover state first, and a bare press/release pair silently does nothing.
@@ -296,6 +311,30 @@ case but did not survey every remaining file. See the authoring guide's
 ## Current work
 
 Branch `Textures` (this is also the main branch).
+
+The 2026-09-04 end-game rebuild replaced the whole tail of the flow
+described above. **TesNotice → ExamProgress → StatCheck → RunResult →
+MainMenu** is now accurate. `WinScreen.tscn`/`.gd`, CutScene's exam and
+game-over branches, and the `SemesterEnd` carousel with its
+`ResultStatRow` template were all deleted outright — Plan B reinstates
+a WinScreen/LoseScreen pair between StatCheck and RunResult, and Plan C
+redesigns RunResult.
+
+`ExamProgress` is a pacing beat after TesNotice ("Tes sedang
+berlangsung" plus a timed fill bar); it pans its backdrop 216 px during
+the fill, which is why that node is authored 1296 wide rather than 1080.
+Plan A (`docs/superpowers/plans/2026-09-04-endgame-a-statcheck.md`) then
+replaced the exam-intro cutscene beat and the SemesterEnd carousel with
+`StatCheck` — an automated one-student-at-a-time reveal: the card slides
+in from the right, its bars fill akademis → seni → olahraga, a bar that
+reaches its target pops (squash-bounce plus a `RewardBurst`), and every
+cleared stat lights `1/(roster×3)` of a shared 3-star `StarMeter`. It
+ends in a white fade.
+
+The win rule moved with it: `GameState.check_semester_passed()` is now
+`run_stars() >= Balance.STAR_WIN_THRESHOLD` (2.0 of 3.0) — two-thirds of
+all academic targets cleared anywhere on the roster, no longer
+all-or-nothing, so one weak student no longer loses the run.
 
 The main menu was rebuilt on 2026-08-31 to match
 `docs/superpowers/mockups/main-menu.png` measurement-for-measurement and is

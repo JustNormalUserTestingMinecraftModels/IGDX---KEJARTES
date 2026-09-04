@@ -1224,7 +1224,7 @@ func skip_to_results() -> void:
 		var resting_count = counts.get("Istirahat", 0)
 
 		var w_minigame: int = 0
-		if minigames_played_this_week < 2:
+		if minigames_played_this_week < max_minigames_this_week:
 			w_minigame = active_studying * 15
 
 		var w_event: int = 0
@@ -1248,12 +1248,25 @@ func skip_to_results() -> void:
 			var category = "Akademis"
 			if outcome == "Minigame":
 				minigames_played_this_week += 1
-				var total_subj = w_akademis + w_olahraga + w_seni
-				if total_subj > 0:
-					var choice = randi() % total_subj
-					if choice < w_akademis: category = "Akademis"
-					elif choice < w_akademis + w_olahraga: category = "Olahraga"
-					else: category = "SeniBudaya"
+				category = ""
+				if randf() < Balance.MINIGAME_KATEGORI_ACAK_PELUANG:
+					var r := randi() % 3
+					category = "Akademis" if r == 0 else ("Olahraga" if r == 1 else "SeniBudaya")
+				else:
+					var total_subject_weight = w_akademis + w_olahraga + w_seni
+					if total_subject_weight == 0:
+						var cat_roll = randi() % 3
+						if cat_roll == 0: category = "Akademis"
+						elif cat_roll == 1: category = "Olahraga"
+						else: category = "SeniBudaya"
+					else:
+						var choice = randi() % total_subject_weight
+						if choice < w_akademis:
+							category = "Akademis"
+						elif choice < w_akademis + w_olahraga:
+							category = "Olahraga"
+						else:
+							category = "SeniBudaya"
 			else:
 				category = "Event"
 				events_triggered_this_week += 1

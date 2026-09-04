@@ -99,3 +99,69 @@ static func build_roster(preset: String, grade: int,
 		roster.append(student)
 
 	return roster
+
+
+# ─────────────────────────────────────────────────────── snapshot / restore
+
+## Every GameState field a rehearsal can move, directly or through the
+## sequence it starts. RunResult's own progression is the reason this list
+## is longer than what arm() writes: a rehearsal that runs to completion
+## advances the grade, clears schedules, resets run_stats and may clear the
+## roster, so all of that has to be captured up front.
+const SNAPSHOT_KEYS := [
+	"approved_students", "selected_student", "day_schedules",
+	"pending_earnings", "grade7_student_ids", "inventory",
+	"minggu_ke", "current_grade", "player_money",
+	"run_failed", "is_exam_intro_cutscene", "is_game_beaten",
+	"lobby_tutorial_completed", "tutorials_bypassed",
+	"returned_from_student_card",
+]
+
+
+## Captures the current run. Collections are deep-copied and run_stats is
+## duplicated, so nothing the rehearsal does afterwards writes through into
+## the snapshot.
+static func snapshot() -> Dictionary:
+	var snap := {}
+	for key in SNAPSHOT_KEYS:
+		var value = GameState.get(key)
+		if value is Array or value is Dictionary:
+			snap[key] = value.duplicate(true)
+		else:
+			snap[key] = value
+	snap["run_stats"] = GameState.run_stats.duplicate(true)
+	return snap
+
+
+## Puts a snapshot() back. Returns false (and changes nothing) for an empty
+## dictionary, so a "restore" pressed before anything was ever armed is a
+## logged no-op rather than a wipe.
+##
+## Known limitation, deliberate: assigning `inventory` back does not emit
+## GameState.inventory_changed, so an Inventory screen left open across a
+## restore keeps its old grid until it rebuilds. Restoring is a debug
+## action taken from the overlay, before navigating anywhere, so the case
+## does not arise in practice -- and emitting the signal here would fire it
+## at screens mid-teardown.
+static func restore(snap: Dictionary) -> bool:
+	if snap.is_empty():
+		return false
+
+	# current_grade first: its setter recomputes max_minggu, so restoring
+	# it after minggu_ke would leave the pair briefly inconsistent.
+	if snap.has("current_grade"):
+		GameState.current_grade = snap["current_grade"]
+
+	for key in SNAPSHOT_KEYS:
+		if key == "current_grade" or not snap.has(key):
+			continue
+		var value = snap[key]
+		if value is Array or value is Dictionary:
+			GameState.set(key, value.duplicate(true))
+		else:
+			GameState.set(key, value)
+
+	if snap.has("run_stats") and snap["run_stats"] != null:
+		GameState.run_stats = snap["run_stats"].duplicate(true)
+
+	return true

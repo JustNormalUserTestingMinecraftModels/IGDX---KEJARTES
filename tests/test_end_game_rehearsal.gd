@@ -105,3 +105,82 @@ func test_roster_keeps_identity_fields_and_sets_base_stats() -> void:
 	assert_eq(roster[0]["base_akademis1"], EndGameRehearsal.BASE_SKILL,
 		"base_* must be set so a later initialize_grade_targets() " +
 		"recomputes the same targets instead of moving them")
+
+
+# ─────────────────────────────────────────────────────── snapshot / restore
+
+## These tests write to the GameState autoload, so each one restores what
+## it touched before returning -- the same discipline test_economy_state.gd
+## uses. A snapshot taken at the top and restored at the bottom is exactly
+## the feature under test, so the tests deliberately do it by hand instead.
+func test_snapshot_then_restore_round_trips_the_roster() -> void:
+	var original_roster: Array = GameState.approved_students.duplicate(true)
+	var original_week: int = GameState.minggu_ke
+	var original_grade: int = GameState.current_grade
+
+	GameState.approved_students = [{"id": 99, "name": "Asli", "akademis1": 11.0}]
+	GameState.minggu_ke = 3
+	GameState.current_grade = 8
+
+	var snap := EndGameRehearsal.snapshot()
+
+	GameState.approved_students = [{"id": 1, "name": "Palsu"}]
+	GameState.minggu_ke = 12
+	GameState.current_grade = 9
+
+	assert_true(EndGameRehearsal.restore(snap), "restore reports success")
+	assert_eq(GameState.approved_students.size(), 1, "roster length is back")
+	assert_eq(GameState.approved_students[0]["name"], "Asli", "roster is back")
+	assert_eq(GameState.minggu_ke, 3, "week is back")
+	assert_eq(GameState.current_grade, 8, "grade is back")
+
+	GameState.approved_students = original_roster
+	GameState.current_grade = original_grade
+	GameState.minggu_ke = original_week
+
+
+func test_snapshot_deep_copies_so_later_edits_do_not_leak_in() -> void:
+	var original_roster: Array = GameState.approved_students.duplicate(true)
+
+	GameState.approved_students = [{"id": 1, "name": "Asli", "akademis1": 11.0}]
+	var snap := EndGameRehearsal.snapshot()
+	# Mutate the live dictionary in place. A shallow snapshot would be
+	# holding this same Dictionary and would "restore" the mutation.
+	GameState.approved_students[0]["akademis1"] = 99.0
+
+	EndGameRehearsal.restore(snap)
+	assert_eq(GameState.approved_students[0]["akademis1"], 11.0,
+		"the snapshot must hold its own copy of each student dictionary")
+
+	GameState.approved_students = original_roster
+
+
+func test_restore_puts_back_run_stats_and_the_end_game_flags() -> void:
+	var original_stats: RunStats = GameState.run_stats
+	var original_failed: bool = GameState.run_failed
+	var original_exam: bool = GameState.is_exam_intro_cutscene
+
+	GameState.run_stats = RunStats.new()
+	GameState.run_stats.minigames_won = 7
+	GameState.run_failed = false
+	GameState.is_exam_intro_cutscene = false
+
+	var snap := EndGameRehearsal.snapshot()
+
+	GameState.run_stats = RunStats.new()
+	GameState.run_failed = true
+	GameState.is_exam_intro_cutscene = true
+
+	EndGameRehearsal.restore(snap)
+	assert_eq(GameState.run_stats.minigames_won, 7, "the tally is back")
+	assert_false(GameState.run_failed, "run_failed is back")
+	assert_false(GameState.is_exam_intro_cutscene, "the exam flag is back")
+
+	GameState.run_stats = original_stats
+	GameState.run_failed = original_failed
+	GameState.is_exam_intro_cutscene = original_exam
+
+
+func test_restore_refuses_an_empty_snapshot() -> void:
+	assert_false(EndGameRehearsal.restore({}),
+		"restoring nothing must be a reported no-op, not a wipe")

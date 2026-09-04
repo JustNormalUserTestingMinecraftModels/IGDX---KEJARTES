@@ -298,5 +298,5 @@ func test_every_minigame_that_overrides_get_star_ratio_uses_a_static_helper() ->
 		if not src.contains("func get_star_ratio() -> float:"):
 			continue   # quiz-shaped games ride the base implementation, nothing to check
 		assert_true(src.contains("static func "),
-			"%s overrides get_star_ratio() and must expose its math as a static "
-			+ "helper, per the pattern Task 1 established" % path)
+			("%s overrides get_star_ratio() and must expose its math as a static "
+			+ "helper, per the pattern Task 1 established") % path)

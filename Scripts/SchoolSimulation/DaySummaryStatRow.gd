@@ -28,7 +28,7 @@ const TRACK_LEFT := 0
 const ICON_BOX := Vector2(122, 88)
 const ICON_LEFT := -19
 const CHEVRON_BOX := Vector2(51, 74)
-const CHEVRON_LEFT := 110
+const CHEVRON_LEFT := 90
 ## How far the track's right edge sits from the row's own right edge --
 ## a small margin so the fill's rounded cap does not touch the card's
 ## own edge.

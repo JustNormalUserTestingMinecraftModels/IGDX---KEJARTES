@@ -184,3 +184,80 @@ func test_restore_puts_back_run_stats_and_the_end_game_flags() -> void:
 func test_restore_refuses_an_empty_snapshot() -> void:
 	assert_false(EndGameRehearsal.restore({}),
 		"restoring nothing must be a reported no-op, not a wipe")
+
+
+# ───────────────────────────────────────────────────────────────── arming
+
+func test_entry_scene_is_the_tes_besar_notice() -> void:
+	assert_eq(EndGameRehearsal.ENTRY_SCENE,
+		"res://Scenes/EndGame/TesNotice.tscn",
+		"the rehearsal starts at the Tes Besar notice, not mid-sequence")
+	assert_true(ResourceLoader.exists(EndGameRehearsal.ENTRY_SCENE),
+		"the entry scene must actually exist")
+
+
+func test_arm_lands_on_the_final_week_with_a_clean_sequence_state() -> void:
+	var snap := EndGameRehearsal.snapshot()
+
+	GameState.current_grade = 7
+	GameState.minggu_ke = 2
+	GameState.run_failed = true
+	GameState.is_exam_intro_cutscene = true
+	GameState.day_schedules = {"stale": true}
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
+
+	assert_eq(GameState.minggu_ke, GameState.max_minggu,
+		"arming lands on the grade's final week, where the sequence fires")
+	assert_false(GameState.run_failed,
+		"a fresh rehearsal must not inherit a previous run's verdict")
+	assert_false(GameState.is_exam_intro_cutscene,
+		"the cutscene flag is ExamProgress's to set, not arm()'s")
+	assert_true(GameState.day_schedules.is_empty(),
+		"stale schedules are cleared -- the rehearsal simulates no weeks")
+	assert_eq(GameState.approved_students.size(), 2, "the roster is armed")
+	assert_true(GameState.returned_from_student_card,
+		"screens that gate on roster approval must see it as approved")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_makes_the_lulus_preset_actually_pass_the_stat_check() -> void:
+	var snap := EndGameRehearsal.snapshot()
+
+	GameState.current_grade = 7
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
+	assert_true(GameState.check_semester_passed(),
+		"the lulus preset must satisfy the real pass condition")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_makes_the_gagal_preset_actually_fail_the_stat_check() -> void:
+	var snap := EndGameRehearsal.snapshot()
+
+	GameState.current_grade = 7
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GAGAL, _fake_source())
+	assert_false(GameState.check_semester_passed(),
+		"the gagal preset must fail the real pass condition")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_seeds_a_run_stats_tally_matched_to_the_preset() -> void:
+	var snap := EndGameRehearsal.snapshot()
+
+	GameState.current_grade = 7
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
+	var winning := GameState.run_stats.minigame_win_rate()
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GAGAL, _fake_source())
+	var losing := GameState.run_stats.minigame_win_rate()
+
+	assert_true(winning > losing,
+		"the lulus preset must out-score the gagal one on minigames, or " +
+		"RunGrade's non-target components never leave their floor")
+	assert_true(GameState.run_stats.wirausaha_money > 0,
+		"money must be non-zero or the money component is always 0/15")
+
+	EndGameRehearsal.restore(snap)

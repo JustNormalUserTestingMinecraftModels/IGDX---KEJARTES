@@ -165,3 +165,74 @@ static func restore(snap: Dictionary) -> bool:
 		GameState.run_stats = snap["run_stats"].duplicate(true)
 
 	return true
+
+
+# ───────────────────────────────────────────────────────────────── arming
+
+## Where a rehearsal starts. The whole point of the tool is that it enters
+## at the notice and runs the REAL sequence from there, rather than
+## teleporting into SemesterEnd and skipping the beats before it.
+const ENTRY_SCENE := "res://Scenes/EndGame/TesNotice.tscn"
+
+## Plausible per-preset tallies for GameState.run_stats.
+##
+## RunGrade weights targets 55%, minigame win-rate 20%, wirausaha money 15%
+## and event participation 10% (Scripts/EndGame/RunGrade.gd:15-21). An
+## empty tally would therefore cap even a perfect roster near a C+ and hide
+## the A-range the lulus preset exists to show, so each preset carries a
+## tally matching its ambition. `money` is measured against
+## RunGrade.MONEY_FULL_MARKS (20000).
+const REHEARSAL_STATS := {
+	PRESET_LULUS: {
+		"won": 8, "lost": 1, "points": 64.0, "items": 6,
+		"money": 24000, "events": 4,
+	},
+	PRESET_GAGAL: {
+		"won": 1, "lost": 7, "points": -22.0, "items": 1,
+		"money": 4000, "events": 1,
+	},
+	PRESET_CAMPUR: {
+		"won": 5, "lost": 4, "points": 18.0, "items": 3,
+		"money": 12000, "events": 2,
+	},
+}
+
+
+## Writes the rehearsal state onto GameState. Call snapshot() FIRST if the
+## current run matters -- this overwrites the roster, the week and the
+## tally without asking.
+static func arm(preset: String, source_students: Array) -> void:
+	var roster := build_roster(preset, GameState.current_grade, source_students)
+	GameState.approved_students = roster
+	GameState.selected_student = roster[0] if not roster.is_empty() else {}
+	GameState.returned_from_student_card = true
+
+	# The sequence only fires on the grade's final week, and SchoolDay
+	# compares minggu_ke against max_minggu to decide that -- so land there,
+	# and clear the schedules for weeks this rehearsal never played.
+	GameState.day_schedules.clear()
+	GameState.minggu_ke = GameState.max_minggu
+
+	# Both flags belong to the sequence itself: SemesterEnd sets run_failed
+	# from its own stat check, ExamProgress arms the cutscene branch.
+	GameState.run_failed = false
+	GameState.is_exam_intro_cutscene = false
+
+	_seed_run_stats(preset, roster)
+
+
+static func _seed_run_stats(preset: String, roster: Array) -> void:
+	var spec: Dictionary = REHEARSAL_STATS.get(preset,
+		REHEARSAL_STATS[PRESET_CAMPUR])
+	var stats := RunStats.new()
+	stats.minigames_won = int(spec["won"])
+	stats.minigames_lost = int(spec["lost"])
+	stats.minigame_points = float(spec["points"])
+	stats.items_used = int(spec["items"])
+	stats.wirausaha_money = int(spec["money"])
+	# Event ids have to be real roster ids: RunGrade scores them as a
+	# fraction of roster size, and RunResult lists them by student.
+	var wanted: int = mini(int(spec["events"]), roster.size())
+	for i in range(wanted):
+		stats.record_event_student(int(roster[i].get("id", i + 1)))
+	GameState.run_stats = stats

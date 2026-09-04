@@ -222,9 +222,12 @@ func convert_to_student_data_array() -> Array[StudentData]:
 		sd.mood = dict.get("kepribadian1", 80.0)
 		sd.energy = dict.get("kepribadian2", 80.0)
 		
-		sd.target_akademis1 = dict.get("target_akademis1", 50.0)
-		sd.target_akademis2 = dict.get("target_akademis2", 50.0)
-		sd.target_akademis3 = dict.get("target_akademis3", 50.0)
+		# 0.0, not 50.0: count_targets_cleared() reads the same three keys
+		# with a 0.0 default, and the two sides of the bridge must agree on
+		# what an uninitialized target looks like. See target_cleared().
+		sd.target_akademis1 = dict.get("target_akademis1", 0.0)
+		sd.target_akademis2 = dict.get("target_akademis2", 0.0)
+		sd.target_akademis3 = dict.get("target_akademis3", 0.0)
 		sd.target_kepribadian1 = dict.get("target_kepribadian1", 50.0)
 		sd.target_kepribadian2 = dict.get("target_kepribadian2", 50.0)
 		sd.quirk = dict.get("quirk", "")
@@ -298,6 +301,25 @@ func count_targets_cleared() -> Array:
 		]
 		for pair in pairs:
 			total += 1
-			if float(student.get(pair[0], 0.0)) >= float(student.get(pair[1], 0.0)):
+			if target_cleared(float(student.get(pair[0], 0.0)),
+					float(student.get(pair[1], 0.0))):
 				cleared += 1
 	return [cleared, total]
+
+
+## The one predicate for "this stat cleared its target", shared by the
+## verdict (count_targets_cleared, and so run_stars and
+## check_semester_passed) and by the reveal (StatCheckRow.ratio, which
+## reaches 100 on exactly this condition).
+##
+## A target of zero or less is NOT cleared. Targets are only ever zero when
+## initialize_grade_targets() never ran, which is a data bug -- and the two
+## sides used to disagree about it: this function's `value >= target` read a
+## missing target as cleared while the bar filled to 0%, so a malformed
+## roster could show an empty star meter and still route to the win screen.
+## Failing an uninitialized target keeps the meter and the verdict telling
+## the same story.
+static func target_cleared(value: float, target: float) -> bool:
+	if target <= 0.0:
+		return false
+	return value >= target

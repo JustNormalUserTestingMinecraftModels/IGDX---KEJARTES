@@ -285,6 +285,29 @@ func test_run_stars_is_three_times_the_cleared_fraction() -> void:
 	GameState.approved_students = original
 
 
+## An uninitialized target used to count as CLEARED here (the old
+## `value >= target` read a missing key's 0.0 default as met), which meant
+## a malformed roster passed the run with an empty star meter on screen.
+## Failing it instead keeps the meter and the verdict consistent.
+func test_a_target_that_was_never_initialized_does_not_count_as_cleared() -> void:
+	var saved: Array = GameState.approved_students
+	GameState.approved_students = [
+		{"id": 1, "akademis1": 80.0, "akademis2": 80.0, "akademis3": 80.0},
+	]
+	var counted: Array = GameState.count_targets_cleared()
+	GameState.approved_students = saved
+	assert_eq(int(counted[0]), 0, "no target set means nothing was cleared")
+	assert_eq(int(counted[1]), 3, "all three still count toward the total")
+
+
+func test_target_cleared_is_the_one_predicate() -> void:
+	assert_true(GameState.target_cleared(60.0, 60.0), "exactly met clears")
+	assert_true(GameState.target_cleared(90.0, 60.0), "past it clears")
+	assert_false(GameState.target_cleared(59.0, 60.0), "short does not")
+	assert_false(GameState.target_cleared(80.0, 0.0), "a zero target does not")
+	assert_false(GameState.target_cleared(80.0, -5.0), "nor a negative one")
+
+
 func test_run_stars_is_zero_for_an_empty_roster() -> void:
 	var original: Array = GameState.approved_students
 	GameState.approved_students = []

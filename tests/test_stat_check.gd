@@ -35,6 +35,23 @@ func test_row_ratio_is_value_over_target_capped_at_100() -> void:
 		"a zero target reads as empty, never a divide by zero")
 
 
+## The meter and the win/lose routing must tell the same story. ratio()
+## reaching 100 is what makes a row `cleared`; GameState.target_cleared()
+## is what decides the run. They disagreed on a zero target -- the verdict
+## counted it cleared while the bar filled to 0% -- so a roster whose
+## targets were never initialized could show an empty star meter and still
+## route to the win screen.
+func test_the_bar_and_the_verdict_agree_on_what_cleared_means() -> void:
+	for pair in [[30.0, 60.0], [60.0, 60.0], [90.0, 60.0], [10.0, 0.0],
+			[0.0, 0.0], [0.0, 60.0]]:
+		var value: float = pair[0]
+		var target: float = pair[1]
+		assert_eq(is_equal_approx(StatCheckRow.ratio(value, target), 100.0),
+			GameState.target_cleared(value, target),
+			"value %s vs target %s: a full bar and a cleared target must be "
+			% [value, target] + "the same condition")
+
+
 func test_row_set_result_arms_the_target_without_animating() -> void:
 	var row = load(_ROW_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(row)
@@ -47,11 +64,27 @@ func test_row_set_result_arms_the_target_without_animating() -> void:
 	Engine.get_main_loop().root.remove_child(row)
 
 
+## The row's `icon` export has no default, so _ready() used to assign null
+## over whatever Icon was authored with in StatCheckRow.tscn. Latent today
+## (all three card rows set it), but it silently inverts the project's
+## "authored in the .tscn" rule for anyone who instances the row bare.
+func test_a_bare_row_keeps_the_icon_authored_in_its_scene() -> void:
+	var row = load(_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(row)
+	track(row)
+	assert_true(row.get_node("Icon").texture != null,
+		"_ready() must not blank the authored Icon texture")
+	Engine.get_main_loop().root.remove_child(row)
+
+
 func test_row_fill_is_a_coroutine_that_pops_only_at_full() -> void:
 	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
 	assert_true(src.contains("func fill() -> void:"), "fill() exists")
-	assert_true(src.contains("await Juice.fill_bar(bar, target_ratio, fill_seconds).finished"),
-		"fill() awaits Juice.fill_bar over fill_seconds")
+	assert_true(src.contains("Juice.fill_bar(bar, target_ratio, fill_seconds)"),
+		"fill() drives Juice.fill_bar over fill_seconds")
+	assert_true(src.contains("if tween == null:"),
+		"a null tween is refused -- Juice.fill_bar returns null for a dead "
+		+ "node, and awaiting .finished on that is a null deref")
 	assert_true(src.contains("if target_ratio >= 100.0:"),
 		"the pop is gated on a full bar")
 	assert_true(src.contains("filled.emit(cleared)"),
@@ -70,6 +103,20 @@ func test_star_placeholder_exists_and_loads_as_a_texture() -> void:
 	assert_true(ResourceLoader.exists(_STAR_ICON), "icon_star.svg exists")
 	var tex = load(_STAR_ICON)
 	assert_true(tex is Texture2D, "it imports as a Texture2D")
+
+
+## TextureProgressBar draws texture_progress at its NATIVE pixel size and
+## does not stretch it to custom_minimum_size. The star cells are 180x180,
+## so a 100x100 import would park the art in the top-left corner of each
+## cell with 80 px of dead gap between stars. The size lives in the .import
+## (svg/scale), which is exactly the kind of step a code review misses --
+## so assert the imported result, not the setting.
+func test_the_star_texture_is_imported_large_enough_to_fill_its_cell() -> void:
+	var tex: Texture2D = load(_STAR_ICON)
+	assert_true(tex.get_width() >= 180 and tex.get_height() >= 180,
+		"icon_star.svg imports at %dx%d; the 180x180 star cells need at "
+		% [tex.get_width(), tex.get_height()]
+		+ "least 180 -- raise svg/scale in the .import and reimport")
 
 
 # ────────────────────────────────────────────────────────────── StatCheckCard

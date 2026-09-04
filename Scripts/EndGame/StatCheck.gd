@@ -106,7 +106,13 @@ func _run_check() -> void:
 ## _run_check(). Godot raises a script error on the next resume rather than
 ## no-op'ing, so every await in the sequence checks this and bails.
 func _abandoned() -> bool:
-	return not is_instance_valid(self) or not is_inside_tree()
+	# is_instance_valid(self) inside a method of self is always true, so it
+	# was never doing any work -- and a genuinely freed node errors on
+	# coroutine resume before reaching here anyway. is_queued_for_deletion()
+	# is the check that catches the teleport: queue_free() marks the node
+	# but leaves it in the tree until the frame ends, which is exactly the
+	# window an await lands in.
+	return is_queued_for_deletion() or not is_inside_tree()
 
 
 ## From just past the right edge to its resting spot, with the entry

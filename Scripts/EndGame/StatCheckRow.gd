@@ -49,13 +49,24 @@ var cleared: bool = false
 
 func _ready() -> void:
 	bar.category = category
-	icon_rect.texture = icon
+	# Only push the export down when it actually carries one. Unset, it is
+	# null, and assigning it unconditionally wiped the icon authored on
+	# Icon in StatCheckRow.tscn for any instance that did not override it.
+	if icon != null:
+		icon_rect.texture = icon
+	else:
+		icon = icon_rect.texture
 	bar.value = 0.0
 
 
 ## value ÷ target as a 0-100 percentage, capped so a stat past its target
 ## reads as exactly full. A zero target reads as empty rather than
 ## dividing by zero -- the case when a row is armed with no StudentData.
+##
+## Reaching 100 is what makes a row `cleared`, so this must agree with
+## GameState.target_cleared(), which decides the run's verdict. Both treat
+## a zero target as not cleared; if you relax one, relax both, or the star
+## meter and the win/lose routing will disagree on screen.
 static func ratio(value: float, target: float) -> float:
 	if target <= 0.0:
 		return 0.0
@@ -72,7 +83,12 @@ func set_result(value: float, target: float) -> void:
 ## The beat. A coroutine -- StatCheck awaits it row by row; never call it
 ## from a test (the MCP runner does not await).
 func fill() -> void:
-	await Juice.fill_bar(bar, target_ratio, fill_seconds).finished
+	# Juice.fill_bar returns null for a dead node; awaiting .finished on
+	# that is a hard null-deref, so refuse rather than crash.
+	var tween: Tween = Juice.fill_bar(bar, target_ratio, fill_seconds)
+	if tween == null:
+		return
+	await tween.finished
 	if not is_inside_tree():
 		return
 	if target_ratio >= 100.0:

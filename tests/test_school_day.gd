@@ -439,3 +439,19 @@ func test_school_day_records_event_students_into_run_stats() -> void:
 		"res://Scripts/SchoolSimulation/SchoolDay.gd")
 	assert_true(src.contains("GameState.run_stats.record_event_student("),
 		"the event branch feeds the run tally")
+
+
+func test_skip_uses_per_grade_loss_chance() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_false(src.contains("Balance.SKIP_PELUANG_KALAH)"),
+		"skip must not read the old single SKIP_PELUANG_KALAH constant")
+	assert_true(src.contains("SKIP_PELUANG_KALAH_KELAS_"),
+		"skip resolution must pick a per-grade SKIP_PELUANG_KALAH_KELAS_* value")
+
+
+func test_minigame_time_scale_comes_from_balance() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("Balance.MINIGAME_WAKTU_SKALA_KELAS_8"),
+		"grade-8 minigame duration must read Balance.MINIGAME_WAKTU_SKALA_KELAS_8")
+	assert_true(src.contains("Balance.MINIGAME_WAKTU_SKALA_KELAS_9"),
+		"grade-9 minigame duration must read Balance.MINIGAME_WAKTU_SKALA_KELAS_9")

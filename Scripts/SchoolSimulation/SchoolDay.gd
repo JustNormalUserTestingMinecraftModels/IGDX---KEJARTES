@@ -1087,8 +1087,8 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		var base_duration: float = 40.0 if _scene_name(game_scene) == "Menjodohkan" else 30.0
 		var duration: float = base_duration
 		match GameState.current_grade:
-			8: duration = base_duration * 0.8
-			9: duration = base_duration * 0.6
+			8: duration = base_duration * Balance.MINIGAME_WAKTU_SKALA_KELAS_8
+			9: duration = base_duration * Balance.MINIGAME_WAKTU_SKALA_KELAS_9
 		var diff_level = clampi(GameState.current_grade - 6, 1, 3)
 		current_minigame.start_minigame(diff_level, duration)
 
@@ -1254,7 +1254,11 @@ func skip_to_results() -> void:
 				for s in GameState.approved_students:
 					GameState.run_stats.record_event_student(int(s.get("id", -1)))
 
-			var won = randf() > Balance.SKIP_PELUANG_KALAH
+			var skip_lose_chance := Balance.SKIP_PELUANG_KALAH_KELAS_7
+			match GameState.current_grade:
+				8: skip_lose_chance = Balance.SKIP_PELUANG_KALAH_KELAS_8
+				9: skip_lose_chance = Balance.SKIP_PELUANG_KALAH_KELAS_9
+			var won = randf() > skip_lose_chance
 			if student_manager:
 				student_manager.record_minigame_result(day_name, category, "Simulasi Cepat", won)
 		current_day += 1

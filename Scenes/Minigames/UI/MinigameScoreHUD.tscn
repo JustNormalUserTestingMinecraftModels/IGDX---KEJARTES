@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://c252mxoppqb74"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameScoreHUD.gd" id="1_so0nq"]
+[ext_resource type="Texture2D" uid="uid://c6m7obsoagq7e" path="res://Assets/Images/UI/Placeholders/icon_kombo.svg" id="2_hanf1"]
+
+[node name="MinigameScoreHUD" type="Control" unique_id=584836618]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("1_so0nq")
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=1140813042]
+layout_mode = 0
+theme_type_variation = &"ScoreHudPanel"
+
+[node name="Row" type="HBoxContainer" parent="Panel" unique_id=699360933]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="Panel/Row" unique_id=697988741]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ValueLabel" type="Label" parent="Panel/Row" unique_id=683731547]
+layout_mode = 2
+theme_type_variation = &"ScoreHudValueLabel"
+
+[node name="TargetLabel" type="Label" parent="Panel/Row" unique_id=1141669053]
+layout_mode = 2
+theme_type_variation = &"ResultBodyLabel"
+
+[node name="ComboChip" type="PanelContainer" parent="Panel/Row" unique_id=462822397]
+visible = false
+layout_mode = 2
+theme_type_variation = &"ResultBadgePanel"
+
+[node name="ComboRow" type="HBoxContainer" parent="Panel/Row/ComboChip" unique_id=596603241]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ComboIcon" type="TextureRect" parent="Panel/Row/ComboChip/ComboRow" unique_id=546548495]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+texture = ExtResource("2_hanf1")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ComboLabel" type="Label" parent="Panel/Row/ComboChip/ComboRow" unique_id=2104137978]
+layout_mode = 2
+theme_type_variation = &"ResultBodyLabel"
+
+[node name="BurstSlot" type="Control" parent="." unique_id=138100622]
+anchors_preset = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5

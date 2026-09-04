@@ -119,6 +119,7 @@ func test_every_play_sfx_id_in_the_project_is_known() -> void:
 	var known := ["tap", "confirm", "cancel", "success", "fail", "coin",
 		"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
 		"popup_close", "select", "error", "reward", "tally", "sparkle",
+		"specialty_match",
 		"pill_tap", "pill_popup_open", "pill_popup_close", "pane_swipe",
 		"star_earn_1", "star_earn_2", "star_earn_3", "result_fanfare",
 		"score_tick", "combo_up",

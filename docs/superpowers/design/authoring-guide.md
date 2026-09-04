@@ -206,7 +206,17 @@ entries, as candidates for a future pass:
   `ResultCheckup.gd`, `SchoolDay.gd`, `student_card.gd`,
   `TutorialArrow.gd`) — smaller counts, mostly single-purpose chrome
   (a background swap, a fallback drawer) not yet surveyed for whether a
-  scene conversion is worthwhile.
+  scene conversion is worthwhile. The 2026-09-04 reward pass converted the
+  one piece of chrome shared across all seven scoring minigames — the
+  in-run score readout — onto `Scenes/Minigames/UI/MinigameScoreHUD.tscn`
+  (icon, value, target and a combo chip, all authored nodes), so any future
+  survey of these files should start from what's left *after* that: the
+  `BASELINE` counts above are unchanged because the readout was never a
+  `.new()` call site (it was `theme_override_*` styling on an existing
+  `ScoreLabel`, out of scope for this ratchet), but every scoring minigame
+  now mounts `MinigameScoreHUD` instead of hand-styling its own label — use
+  that template for any new minigame's score display rather than
+  reinventing it.
 
 Do not batch-move these into `ALLOWED` without reading each one — the
 `ALLOWED` entries that exist were promoted individually in Task 21 after

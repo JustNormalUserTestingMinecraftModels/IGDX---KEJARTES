@@ -198,3 +198,25 @@ func test_every_particle_scene_is_a_one_shot_reward_particles_emitter() -> void:
 		assert_false(node.emitting, "%s does not emit until fired" % path)
 		assert_true(node.texture != null, "%s has an authored texture" % path)
 		assert_true(node.process_material != null, "%s has an authored material" % path)
+
+
+## The variations the result card and score HUD are styled by. Their existence
+## in the baked theme is what lets Tasks 12 and 14 delete every runtime
+## StyleBox and theme_override_* from MinigameResultPopup.configure().
+const RESULT_VARIATIONS := [
+	"ResultCardPanel", "ResultStatPanel", "ResultBadgePanel", "ResultStarSlot",
+	"ResultDeltaLabel", "ScoreHudPanel", "ScoreHudValueLabel",
+]
+
+
+func test_every_result_variation_is_in_the_baked_theme() -> void:
+	var theme: Theme = load("res://Assets/Theme/kejartes_theme.tres")
+	# Base type "Panel", not "PanelContainer" -- every panel-style variation
+	# in ThemeFactory.gd is registered with set_type_variation(name, "Panel")
+	# even though the nodes that use them are PanelContainer in the .tscn.
+	var types := theme.get_type_variation_list("Panel") \
+		+ theme.get_type_variation_list("Label") \
+		+ theme.get_type_variation_list("Control")
+	for variation in RESULT_VARIATIONS:
+		assert_true(variation in types,
+			"%s is a baked type variation -- rebake ThemeFactory if not" % variation)

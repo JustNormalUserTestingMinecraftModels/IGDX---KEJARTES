@@ -23,6 +23,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
 	_build_week_recap(theme, tokens)
+	_build_minigame_result(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -809,3 +810,101 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_pressed_color", "WeekTabButton", tokens.text_on_brand)
 	theme.set_color("font_hover_color", "WeekTabButton", tokens.text_primary)
 	theme.set_font_size("font_size", "WeekTabButton", tokens.font_title)
+
+
+# ---------------------------------------------------- minigame result card
+
+## popup_bg.svg's nine-patch source for the result card's frame, following
+## the same nine-patch dialog framing the 2026-09-02 PERINGATAN dialog
+## established. Placeholder art (a plain rounded rect); the margin below
+## keeps its rx=32 corners intact on a 200x200 canvas.
+const _RESULT_CARD_ART := "res://Assets/Images/UI/Placeholders/popup_bg.svg"
+
+## The 2026-09-04 minigame reward pass: the end-of-minigame result card and
+## the shared in-run score HUD. Every box here replaces a runtime StyleBox
+## MinigameResultPopup.configure() used to build from whichever BaseMinigame
+## @export values the individual minigame happened to set -- which is why
+## the card looked different across the eight games. See that spec's plan,
+## docs/superpowers/plans/2026-09-04-minigame-reward-feedback.md, Task 10.
+static func _build_minigame_result(theme: Theme, tokens: DesignTokens) -> void:
+	# -- ResultCardPanel: the card's own frame. --
+	theme.add_type("ResultCardPanel")
+	theme.set_type_variation("ResultCardPanel", "Panel")
+	var result_card := StyleBoxTexture.new()
+	result_card.texture = load(_RESULT_CARD_ART)
+	result_card.set_texture_margin_all(40)
+	result_card.content_margin_left = 32
+	result_card.content_margin_top = 28
+	result_card.content_margin_right = 32
+	result_card.content_margin_bottom = 28
+	theme.set_stylebox("panel", "ResultCardPanel", result_card)
+
+	# -- ResultStatPanel: derived from SunkenPanel -- the score row and the
+	# stat/energy/mood delta rows sit on this. --
+	theme.add_type("ResultStatPanel")
+	theme.set_type_variation("ResultStatPanel", "Panel")
+	var result_stat := StyleBoxFlat.new()
+	result_stat.bg_color = tokens.surface_sunken
+	result_stat.set_corner_radius_all(tokens.radius_md)
+	result_stat.content_margin_left = 20
+	result_stat.content_margin_top = 12
+	result_stat.content_margin_right = 20
+	result_stat.content_margin_bottom = 12
+	theme.set_stylebox("panel", "ResultStatPanel", result_stat)
+
+	# -- ResultBadgePanel: the category chip's ground. The category accent
+	# is applied to the badge's icon TextureRect, never to this panel -- a
+	# self_modulate on the panel would multiply its own background too,
+	# the same StatBar hazard the 2026-09-02 pass hit. --
+	theme.add_type("ResultBadgePanel")
+	theme.set_type_variation("ResultBadgePanel", "Panel")
+	var result_badge := StyleBoxFlat.new()
+	result_badge.bg_color = tokens.surface_card
+	result_badge.set_corner_radius_all(tokens.radius_pill)
+	result_badge.content_margin_left = 18
+	result_badge.content_margin_top = 8
+	result_badge.content_margin_right = 18
+	result_badge.content_margin_bottom = 8
+	theme.set_stylebox("panel", "ResultBadgePanel", result_badge)
+
+	# -- ResultStarSlot: a bare marker variation, no stylebox of its own.
+	# Exists only so ResultStar.tscn's root can carry a
+	# theme_type_variation instead of the star's 88x88 footprint being
+	# passed down as a runtime @export (popup_star_size) -- the node's own
+	# custom_minimum_size still sets the actual size. --
+	theme.add_type("ResultStarSlot")
+	theme.set_type_variation("ResultStarSlot", "Control")
+
+	# -- ResultDeltaLabel: the stat/energy/mood delta rows' text. --
+	theme.add_type("ResultDeltaLabel")
+	theme.set_type_variation("ResultDeltaLabel", "Label")
+	theme.set_font_size("font_size", "ResultDeltaLabel", tokens.font_caption)
+	theme.set_color("font_color", "ResultDeltaLabel", tokens.text_primary)
+	theme.set_constant("outline_size", "ResultDeltaLabel", 4)
+	theme.set_color("font_outline_color", "ResultDeltaLabel", tokens.text_outline_color)
+
+	# -- ScoreHudPanel: a translucent dark pill for the in-run score HUD,
+	# so the readout stays legible over any minigame's own background art. --
+	theme.add_type("ScoreHudPanel")
+	theme.set_type_variation("ScoreHudPanel", "Panel")
+	var score_hud_panel := StyleBoxFlat.new()
+	score_hud_panel.bg_color = Color(tokens.surface_overlay.r,
+		tokens.surface_overlay.g, tokens.surface_overlay.b, 0.55)
+	score_hud_panel.set_corner_radius_all(tokens.radius_pill)
+	score_hud_panel.content_margin_left = 18
+	score_hud_panel.content_margin_top = 8
+	score_hud_panel.content_margin_right = 18
+	score_hud_panel.content_margin_bottom = 8
+	theme.set_stylebox("panel", "ScoreHudPanel", score_hud_panel)
+
+	# -- ScoreHudValueLabel: the HUD's score readout -- has to stay legible
+	# over a football pitch and a batik cloth, so it borrows DisplayLabel's
+	# weight rather than a body-text size. --
+	theme.add_type("ScoreHudValueLabel")
+	theme.set_type_variation("ScoreHudValueLabel", "Label")
+	theme.set_font_size("font_size", "ScoreHudValueLabel", tokens.font_h1)
+	theme.set_color("font_color", "ScoreHudValueLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "ScoreHudValueLabel", 8)
+	theme.set_color("font_outline_color", "ScoreHudValueLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "ScoreHudValueLabel", tokens.font_display)

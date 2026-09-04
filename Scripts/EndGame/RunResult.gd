@@ -208,7 +208,10 @@ func _apply_progression() -> String:
 		# set_grade() resets current_grade/minggu_ke/run_stats/
 		# is_exam_intro_cutscene/run_failed but NOT day_schedules -- confirmed
 		# against the current Scripts/GameState.gd -- so it is cleared
-		# explicitly here, matching the other two branches above.
+		# explicitly here, matching the other two branches above. Since
+		# Finding 1's fix, set_grade() also calls reset_roster_for_new_grade()
+		# and rebases the roster -- moot here, since approved_students is
+		# cleared two lines below anyway.
 		GameState.is_game_beaten = true
 		GameSettings.save_settings()
 		GameState.set_grade(7)

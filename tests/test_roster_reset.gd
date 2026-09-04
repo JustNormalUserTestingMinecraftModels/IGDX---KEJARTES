@@ -110,3 +110,17 @@ func test_set_grade_debug_jump_wires_into_reset_roster() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
 	assert_true(src.contains("reset_roster_for_new_grade()"),
 		"set_grade must call reset_roster_for_new_grade() when grade changes")
+
+func test_student_card_only_stamps_roster_base_on_first_approval() -> void:
+	# A re-approval mid-grade (player re-opens StudentCard, presses Belajar
+	# again) must not move roster_base_akademis* off its first-set value, or
+	# reset_roster_for_new_grade()'s head-start formula collapses toward
+	# ~100% retention. Source-scan for the guard, matching this file's
+	# established convention for asserting student_card's approval behavior.
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	assert_true(src.contains('not _s.has("roster_base_akademis1")'),
+		"student_card must guard roster_base_akademis1 with a has() check so only the first approval sets it")
+	assert_true(src.contains('not _s.has("roster_base_akademis2")'),
+		"student_card must guard roster_base_akademis2 with a has() check so only the first approval sets it")
+	assert_true(src.contains('not _s.has("roster_base_akademis3")'),
+		"student_card must guard roster_base_akademis3 with a has() check so only the first approval sets it")

@@ -408,3 +408,11 @@ const REWARD_SFX_IDS := [
 func test_every_reward_cue_resolves_to_a_real_stream() -> void:
 	for id in REWARD_SFX_IDS:
 		assert_true(AudioDirector.has_sfx(id), "%s resolves to a stream" % id)
+
+
+## specialty_match (the 2026-09-04 AturJadwal specialty-match gold burst cue)
+## is assigned only in audio_director.tscn via the editor, never via a
+## script preload, so nothing else in this suite proves it resolves.
+func test_specialty_match_cue_resolves_to_a_real_stream() -> void:
+	assert_true(AudioDirector.has_sfx(&"specialty_match"),
+		"specialty_match resolves to a stream")

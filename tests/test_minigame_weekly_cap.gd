@@ -76,3 +76,34 @@ func test_week_start_clears_the_tracker() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
 	assert_true(src.contains("minigame_gain_this_week"),
 		"start_simulation must clear GameState.minigame_gain_this_week each week")
+
+func test_event_category_does_not_consume_weekly_cap_budget() -> void:
+	# skip_to_results()'s "Event" outcome calls record_minigame_result with
+	# category="Event". StudentData.apply_minigame_result() still computes a
+	# positive stat_delta for it (the win-points formula runs regardless of
+	# category), but no match arm in apply_minigame_result applies that delta
+	# to any skill for "Event" -- so the weekly cap tracker must not be
+	# charged for it, or a real Akademis/Olahraga/SeniBudaya win later in the
+	# same week could be wrongly capped for headroom this student never used.
+	var saved_grade := GameState.current_grade
+	var saved_gain := GameState.minigame_gain_this_week
+	GameState.current_grade = 7
+	GameState.minigame_gain_this_week = {}
+	var sm := _fresh_manager()
+
+	sm.record_minigame_result("Sen", "Event", "Simulasi Cepat", true, 3, 4)
+	assert_eq(GameState.minigame_gain_this_week.get(1, 0.0), 0.0,
+		"an Event-category win must not add to minigame_gain_this_week")
+	assert_true(is_equal_approx(sm.students[0].akademis, 10.0),
+		"an Event-category result must not change any skill stat")
+
+	GameState.current_grade = saved_grade
+	GameState.minigame_gain_this_week = saved_gain
+
+func test_school_day_category_pickers_share_one_helper() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	var occurrences := src.count("_pick_minigame_category(w_akademis, w_olahraga, w_seni)")
+	assert_eq(occurrences, 2,
+		"_roll_event() and skip_to_results() must both call the shared _pick_minigame_category() helper, found %d call sites" % occurrences)
+	assert_true(src.contains("func _pick_minigame_category("),
+		"SchoolDay.gd must define the shared _pick_minigame_category() helper")

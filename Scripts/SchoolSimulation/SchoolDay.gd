@@ -892,25 +892,7 @@ func _roll_event(day_name: String) -> void:
 		await get_tree().create_timer(0.8).timeout
 
 	elif outcome == "Minigame":
-		var category_selected = ""
-		if randf() < Balance.MINIGAME_KATEGORI_ACAK_PELUANG:
-			var r := randi() % 3
-			category_selected = "Akademis" if r == 0 else ("Olahraga" if r == 1 else "SeniBudaya")
-		else:
-			var total_subject_weight = w_akademis + w_olahraga + w_seni
-			if total_subject_weight == 0:
-				var cat_roll = randi() % 3
-				if cat_roll == 0: category_selected = "Akademis"
-				elif cat_roll == 1: category_selected = "Olahraga"
-				else: category_selected = "SeniBudaya"
-			else:
-				var choice = randi() % total_subject_weight
-				if choice < w_akademis:
-					category_selected = "Akademis"
-				elif choice < w_akademis + w_olahraga:
-					category_selected = "Olahraga"
-				else:
-					category_selected = "SeniBudaya"
+		var category_selected = _pick_minigame_category(w_akademis, w_olahraga, w_seni)
 
 		var tokens := Juice.tokens()
 		if category_selected == "Akademis":
@@ -930,6 +912,34 @@ func _roll_event(day_name: String) -> void:
 		await _trigger_random_event(day_name)
 
 # ─────────────────────────────────────────────────────────────────────────────
+## Picks a minigame category with a chance of uniform-random noise
+## (Balance.MINIGAME_KATEGORI_ACAK_PELUANG) before falling back to a pick
+## proportional to the day's scheduled subject weights, with a uniform
+## fallback if all weights are zero. Shared by _roll_event() and
+## skip_to_results() so the two simulation paths can't drift apart.
+func _pick_minigame_category(w_akademis: int, w_olahraga: int, w_seni: int) -> String:
+	if randf() < Balance.MINIGAME_KATEGORI_ACAK_PELUANG:
+		var r := randi() % 3
+		return "Akademis" if r == 0 else ("Olahraga" if r == 1 else "SeniBudaya")
+	else:
+		var total_subject_weight = w_akademis + w_olahraga + w_seni
+		if total_subject_weight == 0:
+			var cat_roll = randi() % 3
+			if cat_roll == 0:
+				return "Akademis"
+			elif cat_roll == 1:
+				return "Olahraga"
+			else:
+				return "SeniBudaya"
+		else:
+			var choice = randi() % total_subject_weight
+			if choice < w_akademis:
+				return "Akademis"
+			elif choice < w_akademis + w_olahraga:
+				return "Olahraga"
+			else:
+				return "SeniBudaya"
+
 func _trigger_random_event(day_name: String) -> void:
 	events_triggered_this_week += 1
 	# Every student on the roster is present for an event, so
@@ -1248,25 +1258,7 @@ func skip_to_results() -> void:
 			var category = "Akademis"
 			if outcome == "Minigame":
 				minigames_played_this_week += 1
-				category = ""
-				if randf() < Balance.MINIGAME_KATEGORI_ACAK_PELUANG:
-					var r := randi() % 3
-					category = "Akademis" if r == 0 else ("Olahraga" if r == 1 else "SeniBudaya")
-				else:
-					var total_subject_weight = w_akademis + w_olahraga + w_seni
-					if total_subject_weight == 0:
-						var cat_roll = randi() % 3
-						if cat_roll == 0: category = "Akademis"
-						elif cat_roll == 1: category = "Olahraga"
-						else: category = "SeniBudaya"
-					else:
-						var choice = randi() % total_subject_weight
-						if choice < w_akademis:
-							category = "Akademis"
-						elif choice < w_akademis + w_olahraga:
-							category = "Olahraga"
-						else:
-							category = "SeniBudaya"
+				category = _pick_minigame_category(w_akademis, w_olahraga, w_seni)
 			else:
 				category = "Event"
 				events_triggered_this_week += 1

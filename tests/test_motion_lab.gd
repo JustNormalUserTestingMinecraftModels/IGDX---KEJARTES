@@ -144,3 +144,32 @@ func test_token_can_be_copied() -> void:
 	var src := _editor_source()
 	assert_contains(src, "navigator.clipboard",
 		"one-click copy -- the token is retyped by hand otherwise")
+
+
+const _SKILL := "res://.claude/skills/motion-lab/SKILL.md"
+
+
+func test_skill_document_exists_with_frontmatter() -> void:
+	assert_true(FileAccess.file_exists(_SKILL), _SKILL + " exists")
+	var src := FileAccess.get_file_as_string(_SKILL)
+	assert_true(src.begins_with("---"), "SKILL.md opens with frontmatter")
+	assert_contains(src, "name: motion-lab", "skill declares its name")
+	assert_contains(src, "description:", "skill declares a description")
+
+
+## The guard rail the spec calls load-bearing: patching a shared helper in
+## place restyles every element in the game that uses it. SKILL.md must name
+## the helpers by hand so the check cannot be forgotten mid-session.
+func test_skill_names_the_shared_helpers_it_must_not_patch_blindly() -> void:
+	var src := FileAccess.get_file_as_string(_SKILL)
+	for helper in ["Juice.press", "Juice.pop_in", "AnimUtils.squash_bounce"]:
+		assert_contains(src, helper, "guard rail names " + helper)
+	assert_contains(src, "Scripts/Design/Juice.gd", "skill knows where Juice lives")
+	assert_contains(src, "Scripts/AnimUtils.gd", "skill knows where AnimUtils lives")
+
+
+func test_skill_documents_the_token_and_the_markers() -> void:
+	var src := FileAccess.get_file_as_string(_SKILL)
+	assert_contains(src, "KJT-MOTION v1", "skill parses the versioned token")
+	assert_contains(src, "/*__GODOT_EASING_TABLE__*/", "skill substitutes the table")
+	assert_contains(src, "/*__MOTION_LAB_TARGET__*/", "skill substitutes the target")

@@ -103,6 +103,12 @@ resource). To change a color/radius/font globally: edit that resource, then
 **rebake** by running `Scripts/Design/BakeTheme.gd` via File > Run
 (Ctrl+Shift+X), which writes `Assets/Theme/kejartes_theme.tres`.
 
+Two faces: **Catfiles** (`font_display`) for headings, titles, buttons and
+badges; **Open Sans Medium** (`font_body`) for everything else, as the
+theme's `default_font`. Which variation gets which is pinned in both
+directions by `DISPLAY_ROSTER` in `tests/test_theme_factory.gd` — change
+the roster and `ThemeFactory` together, or the suite fails.
+
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
 variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
 `SuccessButton`, `LobbyNavButton`, `Card`, `SunkenPanel`, `Scrim`,
@@ -339,37 +345,10 @@ the previous three. See `docs/superpowers/CHANGELOG.md`.
 
 ## Current work
 
-Branch `Textures` (this is also the main branch).
-
-The 2026-09-04 end-game rebuild replaced the whole tail of the flow
-described above. **TesNotice → ExamProgress → StatCheck → EndCutscene →
-RunResult → MainMenu** is now accurate. `WinScreen.tscn`/`.gd`, CutScene's
-exam and game-over branches, and the `SemesterEnd` carousel with its
-`ResultStatRow` template were all deleted outright; Plan C still
-redesigns RunResult.
-
-`ExamProgress` is a pacing beat after TesNotice ("Tes sedang
-berlangsung" plus a timed fill bar); it pans its backdrop 216 px during
-the fill, which is why that node is authored 1296 wide rather than 1080.
-Plan A (`docs/superpowers/plans/2026-09-04-endgame-a-statcheck.md`) then
-replaced the exam-intro cutscene beat and the SemesterEnd carousel with
-`StatCheck` — an automated one-student-at-a-time reveal: the card slides
-in from the right, its bars fill akademis → seni → olahraga, a bar that
-reaches its target pops (squash-bounce plus a `RewardBurst`), and every
-cleared stat lights `1/(roster×3)` of a shared 3-star `StarMeter`. It
-ends in a white fade.
-
-The 2026-09-05 pass added `EndCutscene` between StatCheck and RunResult —
-one scene for both outcomes rather than a WinScreen/LoseScreen pair,
-dressed from `GameState.run_failed`. It opens under an opaque white
-overlay (finishing StatCheck's fade, which is why that hand-off bypasses
-`Transition`), fades it out over a full-bleed backdrop, slams a
-LULUS/GAGAL badge into the top-left with the same gesture RunResult uses
-for its letter, then reveals a `Lanjut` button — the only way forward,
-disabled until the badge lands. Backdrops, badges, BGM ids and all three
-pacing durations are `@export`s on the scene.
-
-Everything completed before this is in `docs/superpowers/CHANGELOG.md`.
+Branch `Textures` (also main). The 2026-09-04–09-05 end-game rebuild
+described in the Loop above is complete; only Plan C's RunResult redesign
+remains open, tracked in
+`docs/superpowers/plans/2026-09-04-endgame-a-statcheck.md`.
 
 ## Maintaining this file
 

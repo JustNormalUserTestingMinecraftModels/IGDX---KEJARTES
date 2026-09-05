@@ -8,6 +8,77 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-05 — Typography: Catfiles heads, Open Sans Medium body
+
+Imported `Catfiles.otf` and the Open Sans family (none had `.import`
+sidecars) and pointed `DesignTokens.font_display` / `font_body` at
+Catfiles and OpenSans-Medium. Both slots had pointed at `Milker.otf`, so
+the head/body split existed in code and was invisible on screen.
+
+Fixed the classification bug behind that: `ThemeFactory._build_labels`
+applied the display font inside the `outlined` branch, so `H2Label` and
+`TitleLabel` — headings that are not outlined — silently took the body
+face. Added an explicit `heading` column and promoted `H2Label`,
+`TitleLabel`, `CardSectionLabel` and `ResultHeroLabel`.
+
+The plan's own test for this, `test_body_labels_do_not_take_the_display_font()`,
+turned out to be broken: it asserted `theme.get_font("font", name) == null`,
+but `Theme.get_font()` always falls back to the theme's `default_font` when a
+type has no explicit override, so the assertion could never be null and never
+actually failed regardless of whether the bug was present. Diagnosed live
+against the running editor and fixed by switching to
+`not theme.get_font_list(name).has("font")`, which checks for an explicit
+per-type override with no fallback chain. `ThemeFactory.gd` itself was
+correct throughout; only the test assertion was wrong (`4c71a8c` then the
+one-line fix in `967eed4`).
+
+`BarLabel` (130 scene uses) stays on the body face deliberately: it is
+stat-bar chrome, not a heading.
+
+No scene edits were needed — a grep proved zero `theme_override_fonts/`
+entries in any shipped `.tscn`, so the whole font family resolves through
+the theme. The 70 `theme_override_font_sizes/` entries are sizes, in
+minigames and koperasi/inventory, and were untouched.
+
+The visual audit (Task 5) found and fixed two real overflows caused by
+Catfiles' wider glyphs, everything else surveyed — Lobby, AturJadwal,
+SchoolDay's event dialog and result recap, StatCheck, EndCutscene,
+RunResult, TesNotice, MainMenu's splash — rendered cleanly:
+
+1. `student_card.tscn`'s `PilihMurid` label (a `DisplayLabel`, text "Pilih
+   Muridmu") sits on a free-floating Control outside any container. Its
+   unwrapped runtime width (825px, measured live) ignored its authored
+   635px box and ran 74px past the 1080px screen edge. Fixed by widening
+   and repositioning the box (`offset_left` 329→90, `offset_right`
+   964→990).
+2. `cut_scene.gd`'s debug-only grade-select modal (built at runtime,
+   styled via `theme_type_variation`) grew past its 900px panel width
+   because its title `Label` had no `autowrap_mode` (unlike `subtitle`
+   right below it, which already wraps) and its three grade `Button`s had
+   no `clip_text` (unlike `btn_skip`/`btn_debug_toggle` earlier in the
+   same file, which already guard against this exact failure mode with an
+   explanatory comment). Fixed by extending both of the file's own
+   existing patterns to the two spots that hadn't needed them before. One
+   accepted residual: two of the three buttons still lose the tail of
+   their second (description) line to `clip_text`, since a plain `Button`
+   can't wrap multi-line text independently per line — a pre-existing
+   tight fit that Catfiles narrowed further, not something this pass
+   created outright. A proper fix (splitting each button into separate
+   title/description child Labels) was left as a follow-up rather than
+   expanding scope. (`060c8f9`)
+
+Noted in passing, not changed: ten minigame scripts (`Menjodohkan.gd`,
+`Password.gd`, `PilihanGanda.gd`, `Variabel.gd`, `Badminton.gd`,
+`MainBola.gd`, `BuatBatik.gd`, `LombaMenari.gd`, `MinigameTutorial.gd`,
+`PauseMenu.gd`) declare `@export var font: Font = null` and call
+`add_theme_font_override` behind `if font:`. No `.tscn` assigns the
+export, so the calls are inert — minigames are out of scope for the
+design system.
+
+`tests/test_fonts_present.gd` (new) guards import + glyph coverage;
+`tests/test_theme_factory.gd` gained `DISPLAY_ROSTER`, asserted in both
+directions. Suite count: 64→65 suites, 949→959 tests.
+
 ## 2026-09-05 — Motion Lab skill
 
 Added `.claude/skills/motion-lab/`, an in-browser easing editor for this

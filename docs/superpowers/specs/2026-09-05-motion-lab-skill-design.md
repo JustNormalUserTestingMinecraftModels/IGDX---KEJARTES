@@ -161,8 +161,9 @@ between samples.
 
 This removes the largest failure mode in a tool of this kind — a preview that
 looks right in the browser and plays differently in the engine — by deleting the
-second implementation entirely. 48 × 256 floats is roughly 60 KB inline, far
-inside the Artifact size budget.
+second implementation entirely. 48 × 256 floats written at 5 decimals is roughly
+100 KB inline — far inside the Artifact size budget, and the fixed precision
+keeps the file diffable when it is ever rebaked.
 
 Generating the table needs the editor attached, since `test_run` is the only
 route to live engine calls. This follows the documented pattern for headless

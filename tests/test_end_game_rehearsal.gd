@@ -255,6 +255,83 @@ func test_arm_seeds_a_run_stats_tally_matched_to_the_preset() -> void:
 	EndGameRehearsal.restore(snap)
 
 
+# ───────────────────────────────────────────────── grade-letter scenarios
+
+## Four-student stand-in source. The grade-scenario presets' CLEARED_COUNTS
+## arrays assume a four-slot roster (mirroring DebugManager.DEFAULT_STUDENTS'
+## length, and RunGrade's event/target fractions which are computed over the
+## whole roster). Unlike test_campur_gives_each_slot_a_different_cleared_count()'s
+## duplicates, these two get distinct ids (3, 4) -- record_event_student()
+## dedupes by id, so a grade preset that wants all four students to count
+## toward the event fraction needs four actually-distinct ids, the same as
+## DebugManager.DEFAULT_STUDENTS has in the real game.
+func _fake_source_four() -> Array:
+	var source := _fake_source()
+	var third: Dictionary = source[0].duplicate()
+	third["id"] = 3
+	var fourth: Dictionary = source[1].duplicate()
+	fourth["id"] = 4
+	source.append(third)
+	source.append(fourth)
+	return source
+
+
+## Computes the letter RunResult itself would show for the currently-armed
+## GameState -- the exact same three calls _compute_grade() makes
+## (Scripts/EndGame/RunResult.gd:109-114).
+func _resulting_letter() -> String:
+	var counted: Array = GameState.count_targets_cleared()
+	var passed := not GameState.run_failed and GameState.check_semester_passed()
+	var run_score := RunGrade.score(GameState.run_stats,
+		int(counted[0]), int(counted[1]), GameState.approved_students.size())
+	return RunGrade.letter(run_score, passed)
+
+
+func test_arm_makes_the_grade_a_preset_resolve_to_an_a() -> void:
+	var snap := EndGameRehearsal.snapshot()
+	GameState.current_grade = 7
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GRADE_A, _fake_source_four())
+	assert_eq(_resulting_letter(), "A",
+		"the grade-A preset must resolve to exactly 'A', not 'A+' or 'A-'")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_makes_the_grade_b_preset_resolve_to_a_b() -> void:
+	var snap := EndGameRehearsal.snapshot()
+	GameState.current_grade = 7
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GRADE_B, _fake_source_four())
+	assert_eq(_resulting_letter(), "B",
+		"the grade-B preset must resolve to exactly 'B', not 'B+' or 'B-'")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_makes_the_grade_c_preset_resolve_to_a_c() -> void:
+	var snap := EndGameRehearsal.snapshot()
+	GameState.current_grade = 7
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GRADE_C, _fake_source_four())
+	assert_eq(_resulting_letter(), "C",
+		"the grade-C preset must resolve to exactly 'C', not 'C+' or 'C-'")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_makes_the_grade_d_preset_resolve_to_a_d() -> void:
+	var snap := EndGameRehearsal.snapshot()
+	GameState.current_grade = 7
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GRADE_D, _fake_source_four())
+	assert_eq(_resulting_letter(), "D",
+		"the grade-D preset must fail to pass, which forces the letter to 'D' " +
+		"regardless of score")
+
+	EndGameRehearsal.restore(snap)
+
+
 ## The inverse of the completeness ratchet above: every SNAPSHOT_KEYS entry
 ## must still name a real GameState field. A key left behind after a field
 ## is deleted fails silently -- get() returns null, set() no-ops -- so the

@@ -19,6 +19,18 @@ const PRESET_LULUS := "lulus"
 const PRESET_GAGAL := "gagal"
 const PRESET_CAMPUR := "campur"
 
+## Four more presets, added for testing RunResult's letter grade directly
+## rather than the win/lose narrative above -- see RunGrade.gd's weights
+## (targets 55%, minigames 20%, money 15%, events 10%). Each is tuned so
+## RunGrade.score()/letter() lands solidly inside one band, assuming the
+## debug roster's fixed 4 students / 12 academic targets. Full arithmetic:
+## docs/superpowers/specs/2026-09-05-tesnotice-grade-scenarios-design.md
+const PRESET_GRADE_A := "grade_a"
+const PRESET_GRADE_B := "grade_b"
+const PRESET_GRADE_C := "grade_c"
+const PRESET_GRADE_D := "grade_d"
+
+
 # ── Tunables ──────────────────────────────────────────────────────────────────
 ## Base skill value every rehearsal student starts from. Targets are
 ## derived as base + the grade's uplift -- the same arithmetic
@@ -44,6 +56,10 @@ const CLEARED_COUNTS := {
 	PRESET_LULUS: [3, 3, 3, 3],
 	PRESET_GAGAL: [0, 0, 0, 0],
 	PRESET_CAMPUR: [3, 2, 1, 0],
+	PRESET_GRADE_A: [3, 3, 3, 3],
+	PRESET_GRADE_B: [3, 3, 2, 1],
+	PRESET_GRADE_C: [3, 2, 2, 1],
+	PRESET_GRADE_D: [2, 1, 1, 0],
 }
 
 ## Skill keys in the order CLEARED_COUNTS counts them, paired with the
@@ -200,6 +216,25 @@ const REHEARSAL_STATS := {
 	PRESET_CAMPUR: {
 		"won": 5, "lost": 4, "points": 18.0, "items": 3,
 		"money": 12000, "events": 2,
+	},
+	# Grade-letter scenarios. Cleared-ratio comes from CLEARED_COUNTS above;
+	# money/minigames/events here are tuned to land the total score a few
+	# points inside the target band (see the design spec for the arithmetic).
+	PRESET_GRADE_A: {
+		"won": 6, "lost": 5, "points": 20.0, "items": 4,
+		"money": 20000, "events": 4,
+	},
+	PRESET_GRADE_B: {
+		"won": 6, "lost": 4, "points": 24.0, "items": 3,
+		"money": 12000, "events": 2,
+	},
+	PRESET_GRADE_C: {
+		"won": 0, "lost": 0, "points": 0.0, "items": 1,
+		"money": 10000, "events": 0,
+	},
+	PRESET_GRADE_D: {
+		"won": 1, "lost": 6, "points": -18.0, "items": 1,
+		"money": 2000, "events": 1,
 	},
 }
 

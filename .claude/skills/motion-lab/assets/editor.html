@@ -1,0 +1,432 @@
+<title>Motion Lab</title>
+<style>
+  :root {
+    --ink: #f3f6fb;
+    --panel: #ffffff;
+    --panel-edge: #d7deea;
+    --grid-line: #c7d0e0;
+    --accent: #c2650a;
+    --accent-ink: #ffffff;
+    --accent-2: #0f9488;
+    --text: #171b26;
+    --text-muted: #5b6478;
+    --danger: #b3261e;
+    --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+    --radius-panel: 14px;
+    --radius-control: 8px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #12161f;
+      --panel: #1a2030;
+      --panel-edge: #2a3244;
+      --grid-line: #323c52;
+      --accent: #ffb545;
+      --accent-ink: #1a1204;
+      --accent-2: #5ec8c0;
+      --text: #e8ecf4;
+      --text-muted: #8892a6;
+      --danger: #ff8a80;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #12161f;
+    --panel: #1a2030;
+    --panel-edge: #2a3244;
+    --grid-line: #323c52;
+    --accent: #ffb545;
+    --accent-ink: #1a1204;
+    --accent-2: #5ec8c0;
+    --text: #e8ecf4;
+    --text-muted: #8892a6;
+    --danger: #ff8a80;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ink);
+    color: var(--text);
+    font-family: var(--sans);
+    margin: 0;
+  }
+
+  button, input {
+    font-family: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .console {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 28px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .rack {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--panel-edge);
+    padding-bottom: 16px;
+  }
+
+  .wordmark-mark {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+  }
+
+  .wordmark-sub {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  .channel {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: var(--radius-control);
+    padding: 8px 14px;
+  }
+
+  .channel-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  .channel-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .bay {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 760px) {
+    .bay { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: var(--radius-panel);
+    padding: 18px;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .panel-head h2 {
+    font-family: var(--mono);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .panel-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .scope canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-control);
+    background: var(--ink);
+  }
+
+  .bank-grid {
+    display: grid;
+    grid-template-columns: 84px repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .bank-corner {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+  }
+
+  .bank-col-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-align: center;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    padding-bottom: 4px;
+  }
+
+  .bank-row-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    padding-right: 6px;
+    color: var(--text-muted);
+  }
+
+  .preset-cell {
+    appearance: none;
+    border: 1px solid var(--panel-edge);
+    background: var(--ink);
+    border-radius: var(--radius-control);
+    padding: 7px 2px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .preset-cell { transition: none; }
+  }
+
+  .preset-cell:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .preset-cell[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  .reserved {
+    min-height: 120px;
+    border: 1px dashed var(--panel-edge);
+    border-radius: var(--radius-panel);
+  }
+</style>
+
+<div class="console">
+  <header class="rack">
+    <div>
+      <span class="wordmark-mark">MOTION LAB</span>
+      <span class="wordmark-sub">Godot Tween console</span>
+    </div>
+    <div class="channel">
+      <span class="channel-label">Channel</span>
+      <span id="target-label" class="channel-value"></span>
+    </div>
+  </header>
+
+  <main class="bay">
+    <section id="graph" class="panel scope" aria-label="Easing curve">
+      <div class="panel-head">
+        <h2>Curve</h2>
+        <span class="panel-meta" id="curve-meta"></span>
+      </div>
+      <canvas id="curve" width="640" height="440"></canvas>
+    </section>
+
+    <section id="presets" class="panel bank" aria-label="Transition and ease presets">
+      <div class="panel-head">
+        <h2>Shape bank</h2>
+        <span class="panel-meta">12 &times; 4</span>
+      </div>
+      <div class="bank-grid" id="bank-grid" role="group" aria-label="Preset grid"></div>
+    </section>
+
+    <section id="stage" class="panel reserved" aria-label="Live preview"></section>
+
+    <section id="controls" class="panel reserved" aria-label="Tuning controls"></section>
+
+    <section id="token" class="panel reserved" aria-label="Token"></section>
+  </main>
+</div>
+
+<script>
+const EASING = /*__GODOT_EASING_TABLE__*/ null;
+const TARGET = /*__MOTION_LAB_TARGET__*/ {
+  element: "Lanjut", scene: "EndCutscene.tscn", property: "scale",
+  trans: "BACK", ease: "OUT", duration: 0.32, travel: 0.90
+};
+
+const TRANSITIONS = ["LINEAR", "SINE", "QUINT", "QUART", "QUAD", "EXPO",
+  "ELASTIC", "CUBIC", "CIRC", "BOUNCE", "BACK", "SPRING"];
+const EASES = ["IN", "OUT", "IN_OUT", "OUT_IN"];
+
+// design_tokens.tres, Motion group. test_motion_lab.gd asserts these match.
+const TOKENS = { instant: 0.08, fast: 0.18, normal: 0.32, slow: 0.55 };
+
+const STATE = {
+  trans: TARGET.trans, ease: TARGET.ease,
+  duration: TARGET.duration, travel: TARGET.travel,
+  property: TARGET.property, intensity: 3, loop: true
+};
+
+// Linear interpolation between the 256 samples Godot gave us. Returns the
+// engine's own number, so the preview cannot drift from the game.
+function sampleCurve(trans, ease, p) {
+  const curve = EASING.curves[trans + "/" + ease];
+  const n = curve.length;
+  const x = Math.min(1, Math.max(0, p)) * (n - 1);
+  const i = Math.floor(x);
+  if (i >= n - 1) return curve[n - 1];
+  return curve[i] + (curve[i + 1] - curve[i]) * (x - i);
+}
+
+function selectPreset(trans, ease) {
+  STATE.trans = trans;
+  STATE.ease = ease;
+  render();
+}
+
+function renderGrid() {
+  const grid = document.getElementById("bank-grid");
+  grid.innerHTML = "";
+
+  const corner = document.createElement("div");
+  corner.className = "bank-corner";
+  grid.appendChild(corner);
+  for (const ease of EASES) {
+    const label = document.createElement("div");
+    label.className = "bank-col-label";
+    label.textContent = ease.replace("_", "·");
+    grid.appendChild(label);
+  }
+
+  for (const trans of TRANSITIONS) {
+    const rowLabel = document.createElement("div");
+    rowLabel.className = "bank-row-label";
+    rowLabel.textContent = trans;
+    grid.appendChild(rowLabel);
+
+    for (const ease of EASES) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "preset-cell";
+      btn.textContent = ease.replace("_", "·");
+      const pressed = trans === STATE.trans && ease === STATE.ease;
+      btn.setAttribute("aria-pressed", pressed ? "true" : "false");
+      btn.addEventListener("click", () => selectPreset(trans, ease));
+      grid.appendChild(btn);
+    }
+  }
+}
+
+function drawGraph() {
+  const canvas = document.getElementById("curve");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+  const style = getComputedStyle(document.documentElement);
+  const gridColor = style.getPropertyValue("--grid-line").trim();
+  const textColor = style.getPropertyValue("--text-muted").trim();
+  const accentColor = style.getPropertyValue("--accent").trim();
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Value 1.0 sits a quarter of the way down, 0.0 three quarters down --
+  // the remaining top/bottom quarters are reserved for BACK/ELASTIC/SPRING
+  // overshoot, drawn honestly instead of clipped.
+  const mapV = (v) => 0.75 * H - v * 0.5 * H;
+  const oneY = mapV(1.0);
+  const zeroY = mapV(0.0);
+
+  ctx.fillStyle = gridColor;
+  ctx.globalAlpha = 0.25;
+  ctx.fillRect(0, 0, W, oneY);
+  ctx.fillRect(0, zeroY, W, H - zeroY);
+  ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = gridColor;
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const x = (i / 4) * W;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, H);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = textColor;
+  ctx.beginPath();
+  ctx.moveTo(0, oneY);
+  ctx.lineTo(W, oneY);
+  ctx.moveTo(0, zeroY);
+  ctx.lineTo(W, zeroY);
+  ctx.stroke();
+
+  ctx.fillStyle = textColor;
+  ctx.font = "11px " + style.getPropertyValue("--mono").trim();
+  ctx.fillText("1.0", 6, oneY - 6);
+  ctx.fillText("0.0", 6, zeroY - 6);
+
+  ctx.strokeStyle = accentColor;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  const steps = 256;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const v = sampleCurve(STATE.trans, STATE.ease, t);
+    const x = t * W;
+    const y = mapV(v);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Playhead: parked at t=0 until the animation loop lands.
+  const playheadT = STATE._playheadT || 0;
+  const pv = sampleCurve(STATE.trans, STATE.ease, playheadT);
+  ctx.fillStyle = accentColor;
+  ctx.beginPath();
+  ctx.arc(playheadT * W, mapV(pv), 5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function render() {
+  document.getElementById("target-label").textContent =
+    TARGET.element + " · " + TARGET.scene;
+  document.getElementById("curve-meta").textContent =
+    STATE.trans + "/" + STATE.ease + " — " + STATE.duration.toFixed(2) + "s";
+  renderGrid();
+  drawGraph();
+}
+
+render();
+</script>

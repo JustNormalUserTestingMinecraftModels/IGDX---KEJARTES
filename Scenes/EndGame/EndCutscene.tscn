@@ -5,12 +5,20 @@
 [ext_resource type="Texture2D" uid="uid://cxwh4x533f1rc" path="res://Assets/Images/UI/Placeholders/stamp_lulus.svg" id="3_krlxx"]
 [ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="4_cpj81"]
 [ext_resource type="Texture2D" uid="uid://bbxhfytf5wqc5" path="res://Assets/Images/UI/Placeholders/stamp_gagal.svg" id="5_qxnts"]
+[ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="6_el241"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_krlxx"]
+shader = ExtResource("6_el241")
+shader_parameter/lod = 0.0
+shader_parameter/darkness = 0.3
 
 [node name="EndCutscene" type="Control" unique_id=87568452]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_iwdes")
 win_backdrop = ExtResource("2_el241")
 win_badge = ExtResource("3_krlxx")
@@ -25,6 +33,14 @@ mouse_filter = 2
 texture = ExtResource("2_el241")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="BlurLayer" type="ColorRect" parent="." unique_id=1774545846]
+visible = false
+material = SubResource("ShaderMaterial_krlxx")
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
 [node name="Badge" type="TextureRect" parent="." unique_id=1963610663]
 modulate = Color(1, 1, 1, 0)

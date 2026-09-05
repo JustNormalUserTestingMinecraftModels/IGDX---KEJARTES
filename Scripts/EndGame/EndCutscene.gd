@@ -15,6 +15,11 @@ extends Control
 ## slams the badge into the top-left, holds again, then reveals the Next
 ## button. The button is the only way forward, and is disabled until then.
 ##
+## Pressing it blurs the backdrop in place and swaps RunResult in underneath.
+## That blur is the transition: this screen does not call Transition, exactly
+## as StatCheck does not on the way in, so the three screens read as one
+## continuous beat instead of three wipes.
+##
 ## @tool so the MCP test suite can instantiate the scene inside the editor;
 ## every runtime side effect sits behind Engine.is_editor_hint(). The button
 ## signal is wired before that guard so the wiring stays testable.
@@ -43,6 +48,16 @@ extends Control
 ## Pause after the badge lands before the Next button appears.
 @export var button_delay_seconds: float = 0.5
 
+@export_group("Exit blur")
+## Seconds the backdrop takes to blur once Next is pressed. This IS the
+## transition to RunResult -- there is no wipe over the top of it.
+@export var blur_seconds: float = 0.5
+## Final blur strength, as a screen-texture mip level. Matches the shop's
+## BlurLayer (koprasi.tscn) so the two blurs read as the same effect.
+@export var blur_lod: float = 3.0
+## Final dim applied with the blur, 0-1. Also matched to the shop's.
+@export var blur_darkness: float = 0.4
+
 ## Where the button goes.
 const RUN_RESULT_SCENE := "res://Scenes/EndGame/RunResult.tscn"
 
@@ -50,6 +65,9 @@ const RUN_RESULT_SCENE := "res://Scenes/EndGame/RunResult.tscn"
 @onready var badge: TextureRect = $Badge
 @onready var btn_next: Button = $BtnNext
 @onready var white_fade: ColorRect = $WhiteFade
+## Sits between Backdrop and Badge on purpose: the shader samples what is
+## already drawn, so only the backdrop blurs and the badge stays sharp.
+@onready var blur_layer: ColorRect = $BlurLayer
 
 var _exiting: bool = false
 
@@ -63,6 +81,13 @@ func _ready() -> void:
 	badge.modulate.a = 0.0
 	btn_next.modulate.a = 0.0
 	btn_next.disabled = true
+
+	# Park the blur inert. lod 0 makes textureLod an identity sample and
+	# darkness 0 leaves the colour alone, so the layer is a no-op even if it
+	# is shown -- the scene authors darkness at the shader's own 0.3 default,
+	# which would otherwise dim the image the moment the layer appeared.
+	blur_layer.hide()
+	_set_blur(0.0, 0.0)
 
 	if Engine.is_editor_hint():
 		return
@@ -115,6 +140,37 @@ func _slam_badge() -> void:
 		Juice.shake(badge.get_parent(), 8.0))
 
 
+## Writes both blur uniforms at once. Kept in one place because they are
+## only ever meaningful together: lod without darkness reads as a smear,
+## darkness without lod as a plain dim.
+func _set_blur(lod: float, darkness: float) -> void:
+	var mat: ShaderMaterial = blur_layer.material
+	mat.set_shader_parameter("lod", lod)
+	mat.set_shader_parameter("darkness", darkness)
+
+
+## The hand-off: the backdrop blurs where it stands, and RunResult is swapped
+## in underneath it. A coroutine -- never call it from a test.
+##
+## Deliberately bypasses the project-wide wipe. The blur is the transition; a
+## wipe over the top would read as two of them. StatCheck bypasses it on the
+## way in here for the same reason, so the whole StatCheck -> this ->
+## RunResult stretch is one continuous piece rather than three wipes.
+##
+## (Naming the autoload's method in full here would trip the suite's own
+## grep for it -- that assertion is how the wipe is kept out.)
+func _blur_out() -> void:
+	_set_blur(0.0, 0.0)
+	blur_layer.show()
+	var mat: ShaderMaterial = blur_layer.material
+	var tw := create_tween().set_parallel(true)
+	tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tw.tween_property(mat, "shader_parameter/lod", blur_lod, blur_seconds)
+	tw.tween_property(mat, "shader_parameter/darkness", blur_darkness,
+		blur_seconds)
+	await tw.finished
+
+
 ## Guarded so a double-tap cannot fire two scene changes, the same way
 ## TesNotice and RunResult guard theirs.
 func _on_next_pressed() -> void:
@@ -122,4 +178,7 @@ func _on_next_pressed() -> void:
 		return
 	_exiting = true
 	AudioDirector.play_sfx(&"confirm")
-	Transition.change_scene(RUN_RESULT_SCENE)
+	await _blur_out()
+	if not is_inside_tree():
+		return
+	get_tree().change_scene_to_file(RUN_RESULT_SCENE)

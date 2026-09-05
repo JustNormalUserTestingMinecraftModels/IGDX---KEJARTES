@@ -149,8 +149,11 @@ func test_the_button_is_the_only_way_to_run_result() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT)
 	assert_true(src.contains("const RUN_RESULT_SCENE := \"res://Scenes/EndGame/RunResult.tscn\""),
 		"RunResult is the destination")
-	assert_true(src.contains("Transition.change_scene(RUN_RESULT_SCENE)"),
-		"the hand-off uses the project-wide wipe")
+	assert_true(src.contains("get_tree().change_scene_to_file(RUN_RESULT_SCENE)"),
+		"the hand-off is a direct swap under the blur, not a wipe")
+	assert_false(src.contains("Transition.change_scene"),
+		"the project-wide wipe must be gone -- the blur IS the transition, "
+		+ "and a wipe on top of it would read as two transitions")
 	assert_true(src.contains("btn_next.pressed.connect(_on_next_pressed)"),
 		"the button is wired to the hand-off")
 	assert_false(src.contains("func _input(") or src.contains("InputEventScreenTouch"),
@@ -161,3 +164,91 @@ func test_button_label_is_indonesian() -> void:
 	var s := _scene()
 	assert_eq(s.get_node("BtnNext").text, "Lanjut",
 		"UI text is Indonesian, matching TesNotice's forward button")
+
+
+# ─────────────────────────────────────────────────── the blur-out hand-off
+
+const _BLUR_SHADER := "res://Scripts/Shaders/blur.gdshader"
+
+
+## The exit blurs the backdrop in place instead of wiping the screen. The
+## layer is authored in the .tscn, never built at runtime -- same ColorRect +
+## blur.gdshader pattern the shop's BlurLayer uses (koprasi.tscn:Rak1/BlurLayer).
+func test_the_scene_carries_an_authored_blur_layer() -> void:
+	var s := _scene()
+	var layer = s.get_node_or_null("BlurLayer")
+	assert_true(layer is ColorRect, "BlurLayer is an authored ColorRect")
+	assert_true(layer.material is ShaderMaterial, "it wears a ShaderMaterial")
+	assert_eq(layer.material.shader.resource_path, _BLUR_SHADER,
+		"reusing the project's blur shader rather than a second one")
+	assert_eq(layer.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"the layer must never eat the Next button's clicks")
+
+
+## It covers the screen but is inert until the button is pressed: hidden, and
+## with both shader parameters at zero so showing it cannot pop. lod 0 makes
+## textureLod an identity sample and darkness 0 leaves the colour untouched.
+##
+## Behavioural, not a read of the authored values: the scene stores
+## darkness at the shader's own 0.3 default (Godot serialises uniform
+## defaults, and the MCP property validator cannot author shader_parameter/*),
+## so _ready() is what actually parks it at 0. Adding the node to the tree is
+## what proves that -- checking the .tscn alone would assert 0.3 and pass
+## while the real screen dimmed the instant the layer appeared.
+func test_the_blur_layer_starts_inert() -> void:
+	var s := _scene()
+	var layer: ColorRect = s.get_node("BlurLayer")
+	assert_false(layer.visible, "hidden until the hand-off")
+	Engine.get_main_loop().root.add_child(s)
+	var mat: ShaderMaterial = layer.material
+	var lod := float(mat.get_shader_parameter("lod"))
+	var dark := float(mat.get_shader_parameter("darkness"))
+	Engine.get_main_loop().root.remove_child(s)
+	assert_true(is_equal_approx(lod, 0.0),
+		"lod is parked at 0 -- an identity sample, so showing it is invisible")
+	assert_true(is_equal_approx(dark, 0.0),
+		"and darkness at 0 for the same reason, whatever the scene stored")
+
+
+## Draw order is the whole mechanism: the shader samples what is already on
+## screen, so only siblings BEFORE it get blurred. Backdrop must be behind it;
+## Badge and BtnNext must stay in front and stay sharp.
+func test_the_blur_layer_blurs_the_backdrop_but_not_the_badge_or_button() -> void:
+	var s := _scene()
+	var order: Array[String] = []
+	for c in s.get_children():
+		order.append(String(c.name))
+	var backdrop_at := order.find("Backdrop")
+	var blur_at := order.find("BlurLayer")
+	var badge_at := order.find("Badge")
+	var btn_at := order.find("BtnNext")
+	assert_true(backdrop_at < blur_at,
+		"Backdrop draws first, so the shader samples it")
+	assert_true(blur_at < badge_at and blur_at < btn_at,
+		"Badge and BtnNext draw after the blur, so they stay sharp")
+	assert_eq(String(s.get_children()[s.get_child_count() - 1].name), "WhiteFade",
+		"WhiteFade still covers everything")
+
+
+func test_the_blur_pacing_is_exported_and_tunable() -> void:
+	var s := _scene()
+	assert_true(s.blur_seconds > 0.0, "the blur takes a tunable time")
+	assert_true(s.blur_lod > 0.0, "it reaches a tunable strength")
+	assert_true(s.blur_darkness >= 0.0, "and a tunable dim")
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	for name in ["blur_seconds", "blur_lod", "blur_darkness"]:
+		assert_true(src.contains("@export var " + name),
+			name + " is an @export, not a magic number")
+
+
+## The order that matters: blur first, hand off second. Handing off first
+## would swap the scene out before a single frame of the blur was drawn.
+func test_the_exit_blurs_before_it_hands_off() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	var blur_at := src.find("await _blur_out()")
+	var swap_at := src.find("get_tree().change_scene_to_file(RUN_RESULT_SCENE)")
+	assert_true(blur_at != -1, "the exit awaits the blur")
+	assert_true(swap_at != -1, "then swaps to RunResult")
+	assert_true(blur_at < swap_at, "blur first, swap second")
+	assert_true(src.contains("shader_parameter/lod"),
+		"the blur is animated by tweening the shader parameters")

@@ -277,11 +277,11 @@ func test_it_keeps_the_exam_bgm_and_never_reads_the_cutscene_flag() -> void:
 	assert_false(src.contains("is_exam_intro_cutscene"), "the flag is gone")
 
 
-func test_interim_hand_off_targets_run_result_until_plan_b() -> void:
+func test_hand_off_targets_the_end_cutscene_for_both_verdicts() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT)
-	assert_true(src.contains("const NEXT_SCENE_WIN := \"res://Scenes/EndGame/RunResult.tscn\""),
-		"Plan B repoints this to WinScreen")
-	assert_true(src.contains("const NEXT_SCENE_LOSE := \"res://Scenes/EndGame/RunResult.tscn\""),
-		"Plan B repoints this to LoseScreen")
-	assert_true(ResourceLoader.exists("res://Scenes/EndGame/RunResult.tscn"),
-		"the interim destination exists")
+	assert_true(src.contains("const NEXT_SCENE_WIN := \"res://Scenes/EndGame/EndCutscene.tscn\""),
+		"a win lands on the end cutscene")
+	assert_true(src.contains("const NEXT_SCENE_LOSE := \"res://Scenes/EndGame/EndCutscene.tscn\""),
+		"so does a loss -- one scene dresses itself from GameState.run_failed")
+	assert_true(ResourceLoader.exists("res://Scenes/EndGame/EndCutscene.tscn"),
+		"the destination exists")

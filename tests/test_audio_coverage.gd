@@ -349,8 +349,13 @@ func test_title_intro_result_screens_start_their_bgm() -> void:
 	assert_true(cutscene_src.contains('play_bgm(&"introcutscene")'),
 		"cut_scene.gd must play the intro track")
 	# result_win / result_lose moved off SemesterEnd when StatCheck replaced
-	# it; until Plan B's win/lose screens land, no shipped script plays them.
-	# StatCheck keeps exam_notice going instead.
+	# it, and now start on the end cutscene -- one scene, one of two exported
+	# ids chosen by the verdict, so the ids are asserted on the scene rather
+	# than on a play_bgm call site.
+	var cutscene = load("res://Scenes/EndGame/EndCutscene.tscn").instantiate()
+	assert_eq(String(cutscene.win_bgm), "result_win", "the win path plays result_win")
+	assert_eq(String(cutscene.lose_bgm), "result_lose", "the lose path plays result_lose")
+	cutscene.free()
 	var stat_check_src := _source("res://Scripts/EndGame/StatCheck.gd")
 	assert_true(stat_check_src.contains('play_bgm(&"exam_notice")'),
 		"StatCheck.gd must keep the exam BGM running")

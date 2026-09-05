@@ -16,10 +16,12 @@ extends Control
 ## a chain of coroutines -- tests assert on state and source, never by
 ## playing it.
 
-## Where the white fade lands. Plan B repoints both at its win/lose
-## screens; until then the report follows straight on.
-const NEXT_SCENE_WIN := "res://Scenes/EndGame/RunResult.tscn"
-const NEXT_SCENE_LOSE := "res://Scenes/EndGame/RunResult.tscn"
+## Where the white fade lands. Both verdicts land on the same screen --
+## EndCutscene dresses itself from GameState.run_failed, which _hand_off()
+## writes just below. The ternary at the hand-off is kept rather than
+## collapsed so re-pointing one arm stays a one-line change.
+const NEXT_SCENE_WIN := "res://Scenes/EndGame/EndCutscene.tscn"
+const NEXT_SCENE_LOSE := "res://Scenes/EndGame/EndCutscene.tscn"
 
 ## The card template, instanced once per student into CardSlot. Reviewed
 ## per-call-dynamic exception (tests/test_viewport_editability.gd ALLOWED).

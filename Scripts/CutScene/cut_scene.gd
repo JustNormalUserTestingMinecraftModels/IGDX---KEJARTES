@@ -158,11 +158,14 @@ func _setup_level_select_ui() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.theme_type_variation = &"H1Label"
 	# Unwrapped, this single line is wider than the panel's 900px at
-	# H1Label's 64px -- Catfiles' wider glyphs (2026-09-05) pushed it
-	# past that budget, and a Label with no autowrap forces its
-	# VBoxContainer (and the panel around it) to grow to fit, dragging
-	# the whole modal off the 1080px screen. subtitle below already
-	# wraps for the same reason; title just hadn't needed it before.
+	# H1Label's 64px. This was already true under the old placeholder
+	# font -- the 2026-09-05 typography audit measured actual advance
+	# widths and found Catfiles is narrower than the placeholder here,
+	# it just surfaced this pre-existing overflow rather than causing
+	# it. A Label with no autowrap forces its VBoxContainer (and the
+	# panel around it) to grow to fit, dragging the whole modal off the
+	# 1080px screen. subtitle below already wraps for the same reason;
+	# title just hadn't needed it before.
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(title)
 
@@ -207,11 +210,20 @@ func _create_grade_button(parent: VBoxContainer, grade_num: int, title_text: Str
 	btn.custom_minimum_size = Vector2(0, 140)
 	btn.text = title_text + "\n" + desc_text
 	# Same failure mode as btn_debug_toggle above: without clip_text, a
-	# Button's minimum size grows to fit its two-line text, and the
-	# 2026-09-05 Catfiles switch (wider glyphs than the old placeholder
-	# font) pushed that past the level_select panel's 900px width,
+	# Button's minimum size grows to fit its two-line text. This modal
+	# was already overflowing the level_select panel's 900px width under
+	# the old placeholder font -- the 2026-09-05 typography audit
+	# surfaced that pre-existing overflow, it didn't cause a new one --
 	# dragging the whole modal off the right edge of the 1080px screen.
+	# This grade-select modal defaults to enabled (see
+	# GameState.debug_level_select_enabled), so it's the first-boot
+	# grade picker every player sees, not a hidden debug tool: clip
+	# left-aligned with an ellipsis rather than the default centered
+	# clip, which would otherwise clip both edges of the string and
+	# leave a garbled middle fragment behind.
 	btn.clip_text = true
+	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	btn.pressed.connect(func(): _on_grade_selected(grade_num))
 	parent.add_child(btn)
 

@@ -49,7 +49,13 @@ func test_body_font_covers_the_ui_alphabet() -> void:
 
 ## Scans a font for missing glyphs in the given probe string.
 ## Returns a string containing all missing glyphs (excluding spaces).
+## Safe to call with a null font (e.g. after a failed load): returns ""
+## immediately so a load failure fails cleanly on the assert_true above it
+## instead of crashing here on a null dereference -- this framework's
+## assert_true does not halt execution on failure.
 func _missing_glyphs(font: FontFile, probe: String) -> String:
+	if font == null:
+		return ""
 	var missing := ""
 	for i in probe.length():
 		var c := probe[i]

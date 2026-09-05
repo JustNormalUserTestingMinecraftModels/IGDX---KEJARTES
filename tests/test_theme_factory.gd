@@ -345,3 +345,18 @@ func test_the_two_faces_are_actually_different() -> void:
 	assert_true(tokens.font_body != null, "body slot must be assigned")
 	assert_true(tokens.font_display != tokens.font_body,
 		"display and body must be different faces")
+
+
+func test_baked_theme_resource_matches_the_factory() -> void:
+	# The suite above only ever tests ThemeFactory.build() in memory. The
+	# running game loads the baked .tres from disk instead, and that bake
+	# has no headless path (Scripts/Design/BakeTheme.gd needs File > Run) --
+	# so a ThemeFactory edit with a forgotten rebake would leave every test
+	# above green while the shipped game still rendered the stale theme.
+	var tokens := DesignTokens.load_default()
+	var baked: Theme = load("res://Assets/Theme/kejartes_theme.tres")
+	assert_true(baked != null, "kejartes_theme.tres must load")
+	assert_eq(baked.default_font, tokens.font_body,
+		"baked theme's default_font must match the current body font")
+	assert_eq(baked.get_font("font", "H1Label"), tokens.font_display,
+		"baked theme's H1Label must match the current display font")

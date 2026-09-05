@@ -150,7 +150,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 64 suites, 940 tests, all green
+the Godot AI MCP `test_run` tool. 65 suites, 960 tests, all green
 (2026-09-05).
 
 Hard constraints, learned the hard way:
@@ -237,7 +237,7 @@ Note the runtime path quirk: autoloads answer to `/root/<Name>` (e.g.
 `/root/DebugManager`) but the reply echoes paths relative to the current
 scene (`/Inventory/../DebugManager`). Bare `/root` returns nothing.
 
-**3. Prefer `test_run` over screenshots.** The whole suite — 568 tests, 45
+**3. Prefer `test_run` over screenshots.** The whole suite — 960 tests, 65
 suites — returns a compact JSON summary in about two seconds. One screenshot
 costs more tokens than the entire run. Reach for a screenshot only to judge
 something genuinely visual (layout, spacing, color); use `test_run` for
@@ -348,7 +348,7 @@ the previous three. See `docs/superpowers/CHANGELOG.md`.
 Branch `Textures` (also main). The 2026-09-04–09-05 end-game rebuild
 described in the Loop above is complete; only Plan C's RunResult redesign
 remains open, tracked in
-`docs/superpowers/plans/2026-09-04-endgame-a-statcheck.md`.
+`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
 
 ## Maintaining this file
 

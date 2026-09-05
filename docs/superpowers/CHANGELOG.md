@@ -40,10 +40,15 @@ entries in any shipped `.tscn`, so the whole font family resolves through
 the theme. The 70 `theme_override_font_sizes/` entries are sizes, in
 minigames and koperasi/inventory, and were untouched.
 
-The visual audit (Task 5) found and fixed two real overflows caused by
-Catfiles' wider glyphs, everything else surveyed — Lobby, AturJadwal,
-SchoolDay's event dialog and result recap, StatCheck, EndCutscene,
-RunResult, TesNotice, MainMenu's splash — rendered cleanly:
+The visual audit (Task 5) found and fixed two real overflows, everything
+else surveyed — Lobby, AturJadwal, SchoolDay's event dialog and result
+recap, StatCheck, EndCutscene, RunResult, TesNotice, MainMenu's splash —
+rendered cleanly. Only the first of the two is actually caused by
+Catfiles' wider glyphs; the second (the CutScene grade-select modal) was
+already overflowing under the old placeholder font — measuring actual
+advance widths showed Catfiles is narrower than the placeholder for every
+string in that modal, so the audit surfaced a pre-existing bug there
+rather than causing a new one:
 
 1. `student_card.tscn`'s `PilihMurid` label (a `DisplayLabel`, text "Pilih
    Muridmu") sits on a free-floating Control outside any container. Its

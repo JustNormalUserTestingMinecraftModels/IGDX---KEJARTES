@@ -287,23 +287,30 @@ static func _build_panels(theme: Theme, tokens: DesignTokens) -> void:
 # ----------------------------------------------------------------- labels
 
 static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
-	# name, size, color, outlined
+	# name, size, color, outlined, heading
+	#
+	# `outlined` and `heading` are deliberately independent. Before
+	# 2026-09-05 the display font was applied inside the `outlined`
+	# branch, which silently gave every un-outlined heading the body
+	# font. Outline is about the backdrop a label sits on; heading is
+	# about typographic role. They coincide for DisplayLabel/H1Label and
+	# diverge for H2Label/TitleLabel.
 	var specs := [
-		["DisplayLabel", tokens.font_display_size, tokens.text_primary, true],
-		["H1Label", tokens.font_h1, tokens.text_primary, true],
-		["H2Label", tokens.font_h2, tokens.text_primary, false],
-		["TitleLabel", tokens.font_title, tokens.text_primary, false],
-		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false],
-		["MicroLabel", tokens.font_micro, tokens.text_secondary, false],
+		["DisplayLabel", tokens.font_display_size, tokens.text_primary, true, true],
+		["H1Label", tokens.font_h1, tokens.text_primary, true, true],
+		["H2Label", tokens.font_h2, tokens.text_primary, false, true],
+		["TitleLabel", tokens.font_title, tokens.text_primary, false, true],
+		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false, false],
+		["MicroLabel", tokens.font_micro, tokens.text_secondary, false, false],
 		# PageDotLabel styled the SemesterEnd carousel's page dots and has
 		# had no consumer since Plan A deleted that screen. Kept baked
 		# rather than removed: dropping a variation needs a theme rebake,
 		# which has no headless path. Nothing above this line is unused.
-		["PageDotLabel", tokens.font_caption, tokens.text_disabled, false],
+		["PageDotLabel", tokens.font_caption, tokens.text_disabled, false, false],
 		# The "no items match this filter" placeholder text. 32px doesn't
 		# match a token exactly (nearest are font_body_size 28 / font_title
 		# 36); kept as the shipped literal rather than nudging the size.
-		["EmptyStateLabel", 32, tokens.text_disabled, false],
+		["EmptyStateLabel", 32, tokens.text_disabled, false, false],
 	]
 	for spec in specs:
 		var name: String = spec[0]
@@ -315,8 +322,8 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 			# The chunky white rim behind big display text.
 			theme.set_constant("outline_size", name, tokens.text_outline_size)
 			theme.set_color("font_outline_color", name, tokens.text_outline_color)
-			if tokens.font_display != null:
-				theme.set_font("font", name, tokens.font_display)
+		if spec[4] and tokens.font_display != null:
+			theme.set_font("font", name, tokens.font_display)
 
 	# Text that sits ON TOP of a StatBar, where the background behind any
 	# given glyph may be either the light track or a saturated category
@@ -391,6 +398,8 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "ResultHeroLabel", tokens.currency_gold)
 	theme.set_constant("outline_size", "ResultHeroLabel", tokens.text_outline_size)
 	theme.set_color("font_outline_color", "ResultHeroLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "ResultHeroLabel", tokens.font_display)
 
 	theme.add_type("ResultBodyLabel")
 	theme.set_type_variation("ResultBodyLabel", "Label")
@@ -548,6 +557,8 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "CardSectionLabel", tokens.text_on_brand)
 	theme.set_constant("outline_size", "CardSectionLabel", 4)
 	theme.set_color("font_outline_color", "CardSectionLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "CardSectionLabel", tokens.font_display)
 
 	# -- Bio text: light, because it sits on the painted purple panel. --
 	theme.add_type("BioLabel")

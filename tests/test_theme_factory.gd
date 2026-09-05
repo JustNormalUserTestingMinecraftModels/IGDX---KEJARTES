@@ -252,3 +252,40 @@ func test_stat_bar_category_variations_exist_and_bake_their_colour_into_the_fill
 		if bg != null:
 			assert_true(bg.border_width_top > 0,
 				"%s/background must keep the track's rim" % name)
+
+
+func test_headings_take_the_display_font() -> void:
+	# H2Label and TitleLabel are headings but are not outlined. Before the
+	# 2026-09-05 typography pass they took the body font, because
+	# _build_labels keyed the display font off the outline flag.
+	var tokens := DesignTokens.load_default()
+	if tokens.font_display == null:
+		# Nothing to assert while the slot is empty; Task 1/3 fills it.
+		assert_true(true, "display slot unassigned, skipping")
+		return
+	for name in ["DisplayLabel", "H1Label", "H2Label", "TitleLabel"]:
+		assert_eq(_theme.get_font("font", name), tokens.font_display,
+			"%s must take the display font" % name)
+
+
+func test_section_and_hero_headings_take_the_display_font() -> void:
+	# CardSectionLabel and ResultHeroLabel are built outside _build_labels
+	# and so were never reached by its font assignment at all.
+	var tokens := DesignTokens.load_default()
+	if tokens.font_display == null:
+		assert_true(true, "display slot unassigned, skipping")
+		return
+	assert_eq(_theme.get_font("font", "CardSectionLabel"), tokens.font_display,
+		"CardSectionLabel must take the display font")
+	assert_eq(_theme.get_font("font", "ResultHeroLabel"), tokens.font_display,
+		"ResultHeroLabel must take the display font")
+
+
+func test_body_labels_do_not_take_the_display_font() -> void:
+	# The other half of the contract: promoting headings must not sweep up
+	# captions, prose, or stat-bar chrome. BarLabel in particular is the
+	# highest-traffic variation in the game (130 scene uses) and stays body.
+	for name in ["CaptionLabel", "MicroLabel", "EmptyStateLabel",
+			"ResultBodyLabel", "BioLabel", "BarLabel"]:
+		assert_true(_theme.get_font("font", name) == null,
+			"%s must inherit default_font, not the display font" % name)

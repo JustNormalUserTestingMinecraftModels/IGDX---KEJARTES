@@ -1,7 +1,14 @@
 [gd_scene format=3 uid="uid://c801ue56jdtke"]
 
-[ext_resource type="Script" path="res://Scripts/EndGame/RunResult.gd" id="1_ka631"]
-[ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_ljh66"]
+[ext_resource type="Script" uid="uid://cmy1pxe01ahu2" path="res://Scripts/EndGame/RunResult.gd" id="1_ka631"]
+[ext_resource type="Texture2D" uid="uid://y6veg070l8fe" path="res://Assets/Images/CG/cg2.jpg" id="2_57p0g"]
+[ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="3_top1l"]
+[ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="4_hifyx"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rclo1"]
+shader = ExtResource("4_hifyx")
+shader_parameter/lod = 0.0
+shader_parameter/darkness = 0.3
 
 [node name="RunResult" type="Control" unique_id=1023582551]
 layout_mode = 3
@@ -11,23 +18,24 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ka631")
+win_backdrop = ExtResource("2_57p0g")
+lose_backdrop = ExtResource("3_top1l")
 
 [node name="Backdrop" type="TextureRect" parent="." unique_id=1312377068]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-texture = ExtResource("2_ljh66")
+texture = ExtResource("2_57p0g")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Scrim" type="Panel" parent="." unique_id=506052267]
+[node name="BlurLayer" type="ColorRect" parent="." unique_id=1247280518]
+material = SubResource("ShaderMaterial_rclo1")
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_type_variation = &"Scrim"
+mouse_filter = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=721379561]
 layout_mode = 0

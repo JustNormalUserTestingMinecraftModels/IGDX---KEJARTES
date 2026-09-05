@@ -55,8 +55,10 @@ extends Control
 ## Final blur strength, as a screen-texture mip level. Matches the shop's
 ## BlurLayer (koprasi.tscn) so the two blurs read as the same effect.
 @export var blur_lod: float = 3.0
-## Final dim applied with the blur, 0-1. Also matched to the shop's.
-@export var blur_darkness: float = 0.4
+## Final dim applied with the blur, 0-1. RunResult opens on exactly this
+## value so the swap between the two screens is invisible -- change one and
+## you must change the other (test_run_result pins them together).
+@export var blur_darkness: float = 0.3
 
 ## Where the button goes.
 const RUN_RESULT_SCENE := "res://Scenes/EndGame/RunResult.tscn"

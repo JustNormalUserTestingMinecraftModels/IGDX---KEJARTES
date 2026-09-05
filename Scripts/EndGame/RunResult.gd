@@ -23,6 +23,24 @@ extends Control
 ## Pause after the last row before the letter grade slams in.
 @export var grade_delay: float = 0.5
 
+@export_group("Backdrop")
+## Backdrop when the run passed. The SAME image EndCutscene shows, so this
+## screen opens on the frame that one blurred out on.
+@export var win_backdrop: Texture2D
+## Backdrop when the run failed. Likewise paired with EndCutscene's.
+@export var lose_backdrop: Texture2D
+## Blur strength, as a screen-texture mip level. Must equal EndCutscene's
+## blur_lod -- the hand-off is only invisible if both match.
+@export var blur_lod: float = 3.0
+## Dim applied with the blur, 0-1. Must equal EndCutscene's blur_darkness.
+## This replaced the old Scrim panel, which at 0.72 alpha was far darker
+## than the blur and made the swap read as a sudden drop in brightness.
+@export var blur_darkness: float = 0.3
+
+@onready var backdrop: TextureRect = $Backdrop
+## Between Backdrop and the report UI: the shader samples what is already
+## drawn, so the image blurs and the report stays sharp.
+@onready var blur_layer: ColorRect = $BlurLayer
 @onready var rows_box: VBoxContainer = $MarginContainer/Column/RowsBox
 @onready var grade_letter: Label = $MarginContainer/Column/GradeCard/GradeStack/GradeLetter
 @onready var grade_caption: Label = $MarginContainer/Column/GradeCard/GradeStack/GradeCaption
@@ -65,6 +83,8 @@ func _ready() -> void:
 	btn_selesai.pressed.connect(_on_selesai_pressed)
 	AudioDirector.play_bgm(&"run_result")
 
+	_dress_backdrop()
+
 	title_label.text = "Hasil %s" % GameState.get_grade_name()
 	grade_letter.text = ""
 	grade_caption.text = ""
@@ -72,6 +92,22 @@ func _ready() -> void:
 	_build_rows()
 	_compute_grade()
 	_play_reveal()
+
+
+## Opens on the frame EndCutscene blurred out on: the same CG for the same
+## verdict, at the same blur and the same dim. StatCheck decided the verdict
+## and EndCutscene already showed it -- this only re-dresses, it never
+## recomputes.
+##
+## The blur is live rather than a pre-blurred image so the two screens cannot
+## drift apart: one shader, one pair of numbers, both read from exports that
+## a test pins to EndCutscene's.
+func _dress_backdrop() -> void:
+	backdrop.texture = lose_backdrop if GameState.run_failed else win_backdrop
+	var mat: ShaderMaterial = blur_layer.material
+	mat.set_shader_parameter("lod", blur_lod)
+	mat.set_shader_parameter("darkness", blur_darkness)
+	blur_layer.show()
 
 
 ## The six rows are instanced from RunResultRow.tscn rather than authored

@@ -3,8 +3,9 @@
 - `Catfiles.otf` — display face (headings, buttons, big numbers)
 - `OpenSans-Medium.ttf` — body face (everything else)
 
-Both are SIL Open Font License 1.1 — each with its own upstream copyright
-holder, so each keeps its own license file: `Baloo2-OFL.txt`, `Nunito-OFL.txt`.
+Open Sans is licensed under Apache License 2.0. Catfiles' license has not been
+verified — no license file for either `Catfiles.otf` or `OpenSans-Medium.ttf`
+has been added to this repo yet; confirm and add before shipping.
 
 ## Swapping in your own fonts
 

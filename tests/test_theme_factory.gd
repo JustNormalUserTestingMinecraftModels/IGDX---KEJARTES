@@ -353,8 +353,16 @@ func test_baked_theme_resource_matches_the_factory() -> void:
 	# has no headless path (Scripts/Design/BakeTheme.gd needs File > Run) --
 	# so a ThemeFactory edit with a forgotten rebake would leave every test
 	# above green while the shipped game still rendered the stale theme.
+	#
+	# Plain load() would use Godot's ResourceLoader cache by path: this
+	# test runs inside the same long-lived editor process across an entire
+	# session (godot-ai MCP bridge), so a bare load() can silently return
+	# a copy of this resource cached from BEFORE the last rebake, producing
+	# a false result in either direction. CACHE_MODE_REPLACE forces a real
+	# read of what's on disk right now and updates the cache to match.
 	var tokens := DesignTokens.load_default()
-	var baked: Theme = load("res://Assets/Theme/kejartes_theme.tres")
+	var baked: Theme = ResourceLoader.load(
+		"res://Assets/Theme/kejartes_theme.tres", "", ResourceLoader.CACHE_MODE_REPLACE)
 	assert_true(baked != null, "kejartes_theme.tres must load")
 	assert_eq(baked.default_font, tokens.font_body,
 		"baked theme's default_font must match the current body font")

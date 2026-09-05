@@ -294,3 +294,54 @@ func test_body_labels_do_not_take_the_display_font() -> void:
 			"ResultBodyLabel", "BioLabel", "BarLabel"]:
 		assert_true(not _theme.get_font_list(name).has("font"),
 			"%s must not carry an explicit font override (should inherit default_font)" % name)
+
+
+## Every variation that must render in the display face. Adding a
+## variation to ThemeFactory without adding it here (or deliberately
+## leaving it out) will fail test_display_font_roster_is_exact.
+const DISPLAY_ROSTER := [
+	"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
+	"CardSectionLabel", "ResultHeroLabel",
+	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
+	"SuccessButton", "QuirkBadge", "PersonaBadge", "LobbyNavButton",
+	"TraitPill", "PreviewRowLabel",
+	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
+	"RecapPillValueLabel", "ScoreHudValueLabel",
+]
+
+
+func test_display_font_roster_is_exact() -> void:
+	# Both directions. A one-directional check would pass while a new
+	# heading quietly inherited the body font, which is the exact bug
+	# H2Label and TitleLabel had before 2026-09-05.
+	var tokens := DesignTokens.load_default()
+	assert_true(tokens.font_display != null, "display slot must be assigned")
+	for name in DISPLAY_ROSTER:
+		assert_eq(_theme.get_font("font", name), tokens.font_display,
+			"%s is on the display roster but did not get the display font" % name)
+
+	var strays := []
+	for name in _theme.get_type_list():
+		if name in DISPLAY_ROSTER:
+			continue
+		if _theme.get_font("font", name) == tokens.font_display:
+			strays.append(name)
+	assert_eq(strays.size(), 0,
+		"these got the display font but are not on the roster: %s" % str(strays))
+
+
+func test_default_font_is_the_body_face() -> void:
+	var tokens := DesignTokens.load_default()
+	assert_eq(_theme.default_font, tokens.font_body,
+		"default_font must be the body face so untagged Labels inherit it")
+
+
+func test_the_two_faces_are_actually_different() -> void:
+	# Before 2026-09-05 both slots pointed at Milker.otf, so the whole
+	# head/body split existed in code and was invisible on screen. This
+	# is the assertion that would have caught that.
+	var tokens := DesignTokens.load_default()
+	assert_true(tokens.font_display != null, "display slot must be assigned")
+	assert_true(tokens.font_body != null, "body slot must be assigned")
+	assert_true(tokens.font_display != tokens.font_body,
+		"display and body must be different faces")

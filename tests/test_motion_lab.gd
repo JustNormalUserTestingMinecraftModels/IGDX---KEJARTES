@@ -117,3 +117,30 @@ func test_preview_covers_every_property_the_skill_can_target() -> void:
 			"stand-in can demonstrate the " + prop + " property")
 	assert_contains(src, "requestAnimationFrame",
 		"ball and stand-in share one animation clock")
+
+
+## The token is the entire browser-to-Claude return path. Both ends parse
+## the same six fields, so the format is pinned here rather than left to
+## whatever the page happens to emit.
+func test_token_format_is_pinned() -> void:
+	var src := _editor_source()
+	assert_contains(src, "KJT-MOTION v1", "token carries its format version")
+	assert_contains(src, "function buildToken", "the page builds the token")
+	for field in ["travel", "toFixed(3)", "toFixed(2)"]:
+		assert_contains(src, field, "token field present: " + field)
+	assert_contains(src, "@", "token echoes element@scene")
+
+
+## Pasting a stale token from an earlier round would otherwise apply the
+## wrong curve to the right element, silently. The token names its target
+## so SKILL.md can refuse a mismatch.
+func test_token_echoes_the_target_back() -> void:
+	var src := _editor_source()
+	assert_contains(src, "TARGET.element", "token names the element")
+	assert_contains(src, "TARGET.scene", "token names the scene")
+
+
+func test_token_can_be_copied() -> void:
+	var src := _editor_source()
+	assert_contains(src, "navigator.clipboard",
+		"one-click copy -- the token is retyped by hand otherwise")

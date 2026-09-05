@@ -133,6 +133,13 @@
     gap: 20px;
   }
 
+  /* Grid items default to min-width:auto, so a fixed-size <canvas> (its
+     640x440 buffer counts as intrinsic content size) can force its track
+     wider than the viewport. min-width:0 lets width:100% actually win. */
+  .bay > * {
+    min-width: 0;
+  }
+
   @media (max-width: 760px) {
     .bay { grid-template-columns: 1fr; }
   }
@@ -239,6 +246,41 @@
     min-height: 120px;
     border: 1px dashed var(--panel-edge);
     border-radius: var(--radius-panel);
+  }
+
+  .readout-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .readout-value {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    background: var(--ink);
+    border: 1px solid var(--panel-edge);
+    border-radius: var(--radius-control);
+    padding: 10px 14px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .readout-copy {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: var(--radius-control);
+    padding: 10px 18px;
+    font-weight: 600;
+    font-family: var(--mono);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .readout-copy[data-copied="true"] {
+    background: var(--accent-2);
   }
 
   .track {
@@ -445,7 +487,16 @@
       </div>
     </section>
 
-    <section id="token" class="panel reserved" aria-label="Token"></section>
+    <section id="token" class="panel" aria-label="Token">
+      <div class="panel-head">
+        <h2>Token</h2>
+        <span class="panel-meta">paste back into chat</span>
+      </div>
+      <div class="readout-row">
+        <code class="readout-value" id="token-value"></code>
+        <button type="button" class="readout-copy" id="token-copy">Copy</button>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -651,6 +702,47 @@ function drawGhosts() {
   ctx.globalAlpha = 1;
 }
 
+function buildToken() {
+  return [
+    "KJT-MOTION v1",
+    STATE.trans + "/" + STATE.ease,
+    STATE.duration.toFixed(3) + "s",
+    "travel " + STATE.travel.toFixed(2),
+    STATE.property,
+    TARGET.element + "@" + TARGET.scene
+  ].join(" | ");
+}
+
+function renderToken() {
+  document.getElementById("token-value").textContent = buildToken();
+}
+
+function wireToken() {
+  const copyBtn = document.getElementById("token-copy");
+  copyBtn.addEventListener("click", async () => {
+    // navigator.clipboard.writeText() throws NotAllowedError when the
+    // document lacks focus (e.g. right after the page opens) -- fall back
+    // to selecting the readout so the user still has a path: Ctrl+C.
+    let copied = true;
+    try {
+      await navigator.clipboard.writeText(buildToken());
+    } catch (err) {
+      copied = false;
+      const range = document.createRange();
+      range.selectNodeContents(document.getElementById("token-value"));
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    copyBtn.textContent = copied ? "Copied" : "Press Ctrl+C";
+    copyBtn.setAttribute("data-copied", "true");
+    setTimeout(() => {
+      copyBtn.textContent = "Copy";
+      copyBtn.removeAttribute("data-copied");
+    }, copied ? 1200 : 2400);
+  });
+}
+
 let started = performance.now();
 const LOOP_GAP = 0.6; // seconds of rest between repeats, while looping
 
@@ -790,6 +882,7 @@ function render() {
   renderControls();
   renderStandIn();
   drawGhosts();
+  renderToken();
   started = performance.now();
 }
 
@@ -804,6 +897,7 @@ if (LADDER.includes(STATE.trans)) {
 }
 
 wireControls();
+wireToken();
 render();
 requestAnimationFrame(frame);
 </script>

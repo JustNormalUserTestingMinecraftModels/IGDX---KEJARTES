@@ -1245,7 +1245,7 @@ func _build_scenes_panel(parent: Control) -> void:
 		{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/atur_jadwal.tscn"},
 		{"name": "Simulasi Hari (SchoolDay)", "path": "res://Scenes/SchoolSimulation/SchoolDay.tscn"},
 		{"name": "Notice Tes Besar (TesNotice)", "path": "res://Scenes/EndGame/TesNotice.tscn"},
-		{"name": "Layar Menang (WinScreen)", "path": "res://Scenes/EndGame/WinScreen.tscn"},
+		{"name": "Progres Tes (ExamProgress)", "path": "res://Scenes/EndGame/ExamProgress.tscn"},
 		{"name": "Hasil Run (RunResult)", "path": "res://Scenes/EndGame/RunResult.tscn"},
 		{"name": "Splash Screen", "path": "res://Scenes/Splashscreen/Splashscreen.tscn"}
 	]
@@ -1278,6 +1278,28 @@ func _build_scenes_panel(parent: Control) -> void:
 		btn_r.add_theme_font_size_override("font_size", 21)
 		btn_r.pressed.connect(func(): _start_end_game_rehearsal(r["preset"]))
 		vbox.add_child(btn_r)
+
+	var sep_grade = HSeparator.new()
+	vbox.add_child(sep_grade)
+
+	var lbl_grade = Label.new()
+	lbl_grade.text = "Skenario Nilai Akhir (A/B/C/D, mulai dari Notice Tes Besar):"
+	lbl_grade.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_grade)
+
+	var grade_scenarios = [
+		{"name": "Nilai A", "preset": EndGameRehearsal.PRESET_GRADE_A},
+		{"name": "Nilai B", "preset": EndGameRehearsal.PRESET_GRADE_B},
+		{"name": "Nilai C", "preset": EndGameRehearsal.PRESET_GRADE_C},
+		{"name": "Nilai D", "preset": EndGameRehearsal.PRESET_GRADE_D},
+	]
+	for g in grade_scenarios:
+		var btn_g = Button.new()
+		btn_g.text = " 🎯 Skenario: " + g["name"]
+		btn_g.custom_minimum_size = Vector2(0, 95)
+		btn_g.add_theme_font_size_override("font_size", 21)
+		btn_g.pressed.connect(func(): _start_end_game_rehearsal(g["preset"]))
+		vbox.add_child(btn_g)
 
 	var btn_restore = Button.new()
 	btn_restore.text = " ↩ Pulihkan Run Sebelum Gladi Resik "

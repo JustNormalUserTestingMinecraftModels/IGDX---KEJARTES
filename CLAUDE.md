@@ -26,7 +26,7 @@ nothing is 9 of 12 = 2.25 stars, and passes.
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay
 (simulate 5 days) → ResultCheckup → back to Lobby. On the final week of a
 grade, SchoolDay instead runs the end-of-grade sequence: **TesNotice →
-ExamProgress → StatCheck → RunResult → MainMenu.** Splashscreen and Loading still
+ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu.** Splashscreen and Loading still
 exist and are still tested, but since 2026-08-31 they are no longer reached
 at boot.
 
@@ -302,6 +302,13 @@ minigame result icons and the report icons
 geometry — real transparent SVGs, but not final art. The exam and win cutscene
 backdrops reuse the intro's CG images.
 
+**End cutscene art.** `EndCutscene`'s win backdrop is `cg2.jpg` standing in for
+final art, and both badges (`stamp_lulus.svg`, `stamp_gagal.svg`) are generated
+placeholder stamps. All four are `@export`s on `EndCutscene.tscn`, so swapping
+them is an Inspector change. Note the badge words are drawn as stroked **paths**,
+not SVG `<text>`: Godot rasterises SVG through ThorVG, which drops text elements
+on import — `tests/test_end_cutscene.gd` guards that with a pixel check.
+
 **Copy placeholders.** Every cutscene line in the exam and win branches is
 marked `[PLACEHOLDER]`.
 
@@ -329,11 +336,10 @@ the previous three. See `docs/superpowers/CHANGELOG.md`.
 Branch `Textures` (this is also the main branch).
 
 The 2026-09-04 end-game rebuild replaced the whole tail of the flow
-described above. **TesNotice → ExamProgress → StatCheck → RunResult →
-MainMenu** is now accurate. `WinScreen.tscn`/`.gd`, CutScene's exam and
-game-over branches, and the `SemesterEnd` carousel with its
-`ResultStatRow` template were all deleted outright — Plan B reinstates
-a WinScreen/LoseScreen pair between StatCheck and RunResult, and Plan C
+described above. **TesNotice → ExamProgress → StatCheck → EndCutscene →
+RunResult → MainMenu** is now accurate. `WinScreen.tscn`/`.gd`, CutScene's
+exam and game-over branches, and the `SemesterEnd` carousel with its
+`ResultStatRow` template were all deleted outright; Plan C still
 redesigns RunResult.
 
 `ExamProgress` is a pacing beat after TesNotice ("Tes sedang
@@ -346,6 +352,16 @@ in from the right, its bars fill akademis → seni → olahraga, a bar that
 reaches its target pops (squash-bounce plus a `RewardBurst`), and every
 cleared stat lights `1/(roster×3)` of a shared 3-star `StarMeter`. It
 ends in a white fade.
+
+The 2026-09-05 pass added `EndCutscene` between StatCheck and RunResult —
+one scene for both outcomes rather than a WinScreen/LoseScreen pair,
+dressed from `GameState.run_failed`. It opens under an opaque white
+overlay (finishing StatCheck's fade, which is why that hand-off bypasses
+`Transition`), fades it out over a full-bleed backdrop, slams a
+LULUS/GAGAL badge into the top-left with the same gesture RunResult uses
+for its letter, then reveals a `Lanjut` button — the only way forward,
+disabled until the badge lands. Backdrops, badges, BGM ids and all three
+pacing durations are `@export`s on the scene.
 
 Everything completed before this is in `docs/superpowers/CHANGELOG.md`.
 

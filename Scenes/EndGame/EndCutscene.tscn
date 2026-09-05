@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://c45df7me6glda"]
+
+[ext_resource type="Script" uid="uid://bbrtmexihtc1" path="res://Scripts/EndGame/EndCutscene.gd" id="1_iwdes"]
+[ext_resource type="Texture2D" uid="uid://y6veg070l8fe" path="res://Assets/Images/CG/cg2.jpg" id="2_el241"]
+[ext_resource type="Texture2D" uid="uid://cxwh4x533f1rc" path="res://Assets/Images/UI/Placeholders/stamp_lulus.svg" id="3_krlxx"]
+[ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="4_cpj81"]
+[ext_resource type="Texture2D" uid="uid://bbxhfytf5wqc5" path="res://Assets/Images/UI/Placeholders/stamp_gagal.svg" id="5_qxnts"]
+
+[node name="EndCutscene" type="Control" unique_id=87568452]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_iwdes")
+win_backdrop = ExtResource("2_el241")
+win_badge = ExtResource("3_krlxx")
+lose_backdrop = ExtResource("4_cpj81")
+lose_badge = ExtResource("5_qxnts")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=943311214]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_el241")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Badge" type="TextureRect" parent="." unique_id=1963610663]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+offset_left = 48.0
+offset_top = 120.0
+offset_right = 528.0
+offset_bottom = 360.0
+mouse_filter = 2
+texture = ExtResource("3_krlxx")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BtnNext" type="Button" parent="." unique_id=1879276024]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+offset_left = 290.0
+offset_top = 1640.0
+offset_right = 790.0
+offset_bottom = 1780.0
+theme_type_variation = &"PrimaryButton"
+disabled = true
+text = "Lanjut"
+
+[node name="WhiteFade" type="ColorRect" parent="." unique_id=248414144]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2

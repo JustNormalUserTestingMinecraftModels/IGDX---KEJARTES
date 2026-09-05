@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://571oain8ppk6"]
 
 [ext_resource type="Script" uid="uid://bl4mmiltrkt4l" path="res://Scripts/EndGame/ExamProgress.gd" id="1_6eyov"]
-[ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_axhxj"]
+[ext_resource type="Texture2D" uid="uid://cyiemn8h8wqnw" path="res://Assets/Images/CG/cg_test.jpg" id="2_6eyov"]
 
 [node name="ExamProgress" type="Control" unique_id=1018216631]
 layout_mode = 3
@@ -16,7 +16,7 @@ script = ExtResource("1_6eyov")
 layout_mode = 0
 offset_right = 1296.0
 offset_bottom = 1920.0
-texture = ExtResource("2_axhxj")
+texture = ExtResource("2_6eyov")
 expand_mode = 1
 stretch_mode = 6
 

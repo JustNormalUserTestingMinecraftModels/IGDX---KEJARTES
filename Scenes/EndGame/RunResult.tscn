@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c801ue56jdtke"]
 
 [ext_resource type="Script" uid="uid://cmy1pxe01ahu2" path="res://Scripts/EndGame/RunResult.gd" id="1_ka631"]
-[ext_resource type="Texture2D" uid="uid://y6veg070l8fe" path="res://Assets/Images/CG/cg2.jpg" id="2_57p0g"]
+[ext_resource type="Texture2D" uid="uid://c2xpoxjppdomj" path="res://Assets/Images/CG/cg_win.jpg" id="2_57p0g"]
 [ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="3_top1l"]
 [ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="4_hifyx"]
 

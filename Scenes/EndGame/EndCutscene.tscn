@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c45df7me6glda"]
 
 [ext_resource type="Script" uid="uid://bbrtmexihtc1" path="res://Scripts/EndGame/EndCutscene.gd" id="1_iwdes"]
-[ext_resource type="Texture2D" uid="uid://y6veg070l8fe" path="res://Assets/Images/CG/cg2.jpg" id="2_el241"]
+[ext_resource type="Texture2D" uid="uid://c2xpoxjppdomj" path="res://Assets/Images/CG/cg_win.jpg" id="2_el241"]
 [ext_resource type="Texture2D" uid="uid://cxwh4x533f1rc" path="res://Assets/Images/UI/Placeholders/stamp_lulus.svg" id="3_krlxx"]
 [ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="4_cpj81"]
 [ext_resource type="Texture2D" uid="uid://bbxhfytf5wqc5" path="res://Assets/Images/UI/Placeholders/stamp_gagal.svg" id="5_qxnts"]
@@ -10,7 +10,7 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_krlxx"]
 shader = ExtResource("6_el241")
 shader_parameter/lod = 0.0
-shader_parameter/darkness = 0.3
+shader_parameter/darkness = 0.0
 
 [node name="EndCutscene" type="Control" unique_id=87568452]
 layout_mode = 3

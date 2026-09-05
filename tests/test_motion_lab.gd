@@ -77,3 +77,43 @@ func test_page_declares_a_title_and_a_light_and_dark_palette() -> void:
 	assert_contains(src, ":root", "palette is defined on bare :root")
 	assert_contains(src, "prefers-color-scheme: dark", "dark theme is handled")
 	assert_contains(src, "[data-theme=\"dark\"]", "explicit dark choice wins")
+
+
+## The intensity slider means two different things and the split must be
+## total: every one of the 12 transitions is either on the strength ladder
+## or travel-scaled. A family in neither list would leave the slider inert
+## with no indication why.
+func test_every_transition_has_an_intensity_behaviour() -> void:
+	var src := _editor_source()
+	assert_contains(src, "const LADDER", "the strength ladder exists")
+	assert_contains(src, "const FIXED_SHAPE", "the travel-scaled list exists")
+	var ladder := ["LINEAR", "SINE", "QUAD", "CUBIC", "QUART", "QUINT", "EXPO"]
+	var fixed := ["BACK", "ELASTIC", "BOUNCE", "SPRING", "CIRC"]
+	assert_eq(ladder.size() + fixed.size(), _TRANSITIONS.size(),
+		"the two lists partition all 12 transitions")
+	for t in _TRANSITIONS:
+		assert_true(ladder.has(t) or fixed.has(t),
+			t + " has an intensity behaviour")
+
+
+## The duration slider snaps to this project's own motion tokens, so a tuned
+## value can be emitted as Juice.tokens().dur_fast instead of a bare float.
+## These four numbers are design_tokens.tres's Motion group and the page
+## must not drift from them.
+func test_duration_snaps_to_the_projects_real_motion_tokens() -> void:
+	var src := _editor_source()
+	var tokens := DesignTokens.load_default()
+	assert_not_null(tokens, "design_tokens.tres loads")
+	for pair in [["instant", tokens.dur_instant], ["fast", tokens.dur_fast],
+			["normal", tokens.dur_normal], ["slow", tokens.dur_slow]]:
+		assert_contains(src, "%s: %s" % [pair[0], String.num(pair[1], 2)],
+			"page snaps to dur_%s = %s" % [pair[0], pair[1]])
+
+
+func test_preview_covers_every_property_the_skill_can_target() -> void:
+	var src := _editor_source()
+	for prop in ["scale", "fade", "slide", "fill"]:
+		assert_contains(src, "\"%s\"" % prop,
+			"stand-in can demonstrate the " + prop + " property")
+	assert_contains(src, "requestAnimationFrame",
+		"ball and stand-in share one animation clock")

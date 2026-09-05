@@ -240,6 +240,126 @@
     border: 1px dashed var(--panel-edge);
     border-radius: var(--radius-panel);
   }
+
+  .track {
+    position: relative;
+    height: 44px;
+    margin: 6px 24px 18px;
+    border-bottom: 1px solid var(--panel-edge);
+  }
+
+  .track canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ball {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    margin-left: -8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .standin-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 64px;
+    padding: 0 12px;
+  }
+
+  .standin {
+    padding: 12px 22px;
+    border-radius: var(--radius-control);
+    border: 1px solid var(--panel-edge);
+    background: var(--ink);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .standin-track {
+    width: 100%;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--ink);
+    border: 1px solid var(--panel-edge);
+    overflow: hidden;
+  }
+
+  .standin-fill {
+    height: 100%;
+    background: var(--accent-2);
+  }
+
+  .control-row {
+    display: grid;
+    grid-template-columns: 82px 1fr 120px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .control-row label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .control-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  .control-row input[type="number"] {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--panel-edge);
+    border-radius: var(--radius-control);
+    padding: 5px 8px;
+  }
+
+  .control-readout {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    justify-self: end;
+    text-align: right;
+  }
+
+  .control-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .control-actions button {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: var(--radius-control);
+    padding: 8px 16px;
+    font-weight: 600;
+    font-family: var(--mono);
+    cursor: pointer;
+  }
+
+  .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: none;
+    letter-spacing: 0;
+  }
 </style>
 
 <div class="console">
@@ -271,9 +391,59 @@
       <div class="bank-grid" id="bank-grid" role="group" aria-label="Preset grid"></div>
     </section>
 
-    <section id="stage" class="panel reserved" aria-label="Live preview"></section>
+    <section id="stage" class="panel" aria-label="Live preview">
+      <div class="panel-head">
+        <h2>Preview</h2>
+        <span class="panel-meta" id="stage-meta"></span>
+      </div>
+      <div class="track" id="track">
+        <canvas id="ghosts" width="600" height="44"></canvas>
+        <div class="ball" id="ball"></div>
+      </div>
+      <div class="standin-row">
+        <div class="standin" id="standin"></div>
+        <div class="standin-track" id="standin-track" hidden>
+          <div class="standin-fill" id="standin-fill"></div>
+        </div>
+      </div>
+    </section>
 
-    <section id="controls" class="panel reserved" aria-label="Tuning controls"></section>
+    <section id="controls" class="panel controls" aria-label="Tuning controls">
+      <div class="panel-head"><h2>Controls</h2></div>
+
+      <div class="control-row">
+        <label for="intensity">Intensity</label>
+        <input type="range" id="intensity" min="0" max="6" step="1">
+        <span class="control-readout" id="intensity-readout"></span>
+      </div>
+
+      <div class="control-row">
+        <label for="duration">Duration</label>
+        <input type="range" id="duration" min="0.02" max="2" step="0.01" list="duration-ticks">
+        <span class="control-readout" id="duration-readout"></span>
+      </div>
+      <datalist id="duration-ticks">
+        <option value="0.08"></option>
+        <option value="0.18"></option>
+        <option value="0.32"></option>
+        <option value="0.55"></option>
+      </datalist>
+
+      <div class="control-row">
+        <label for="travel">Travel</label>
+        <input type="number" id="travel" step="0.01">
+        <span class="control-readout" id="travel-readout">start value</span>
+      </div>
+
+      <div class="control-row">
+        <label>Playback</label>
+        <div class="control-actions">
+          <button type="button" id="replay">Replay</button>
+          <label class="checkbox"><input type="checkbox" id="loop" checked> Loop</label>
+        </div>
+        <span></span>
+      </div>
+    </section>
 
     <section id="token" class="panel reserved" aria-label="Token"></section>
   </main>
@@ -310,10 +480,201 @@ function sampleCurve(trans, ease, p) {
   return curve[i] + (curve[i + 1] - curve[i]) * (x - i);
 }
 
+// One slider, two meanings. On the ladder families each step is a strictly
+// steeper curve -- the bezier-handle sensation, but every stop is a real
+// Godot preset. The fixed-shape families cannot change shape at all
+// (Godot exposes no overshoot constant on Tween), so intensity moves how
+// far the property travels instead.
+const LADDER = ["LINEAR", "SINE", "QUAD", "CUBIC", "QUART", "QUINT", "EXPO"];
+const FIXED_SHAPE = ["BACK", "ELASTIC", "BOUNCE", "SPRING", "CIRC"];
+
+// Per-property travel range: where the property STARTS (it always ends at
+// rest). "barely moves" at intensity 0 up to "throws itself" at intensity 6.
+const TRAVEL_RANGE = {
+  scale: [0.98, 0.70],
+  fade: [0.90, 0.00],
+  slide: [20, 400],
+  fill: [0.90, 0.00]
+};
+
+function travelForIntensity(i) {
+  const [lo, hi] = TRAVEL_RANGE[STATE.property];
+  return lo + (hi - lo) * (i / 6);
+}
+
+function applyIntensity(i) {
+  STATE.intensity = Math.min(6, Math.max(0, i | 0));
+  if (LADDER.includes(STATE.trans)) {
+    STATE.trans = LADDER[STATE.intensity];
+  } else {
+    STATE.travel = travelForIntensity(STATE.intensity);
+  }
+  render();
+}
+
+// Selecting a grid cell in a ladder family sets intensity to that
+// transition's rung, so the slider and the grid never disagree.
 function selectPreset(trans, ease) {
   STATE.trans = trans;
   STATE.ease = ease;
+  if (LADDER.includes(trans)) {
+    STATE.intensity = LADDER.indexOf(trans);
+  } else {
+    const [lo, hi] = TRAVEL_RANGE[STATE.property];
+    STATE.intensity = Math.min(6, Math.max(0,
+      Math.round(((STATE.travel - lo) / (hi - lo)) * 6)));
+  }
   render();
+}
+
+function nearestToken(value) {
+  let best = null;
+  let bestDist = Infinity;
+  for (const name in TOKENS) {
+    const d = Math.abs(TOKENS[name] - value);
+    if (d < bestDist) { bestDist = d; best = name; }
+  }
+  return bestDist <= 0.015 ? best : null;
+}
+
+function intensityDescription() {
+  if (LADDER.includes(STATE.trans)) {
+    return "steepening the curve - " + STATE.trans;
+  }
+  const expected = travelForIntensity(STATE.intensity);
+  if (Math.abs(expected - STATE.travel) > 0.001) {
+    return "custom travel - shape is fixed for " + STATE.trans;
+  }
+  return "travel " + STATE.travel.toFixed(2) + " - shape is fixed for " + STATE.trans;
+}
+
+function renderControls() {
+  const intensity = document.getElementById("intensity");
+  intensity.value = STATE.intensity;
+  document.getElementById("intensity-readout").textContent = intensityDescription();
+
+  const duration = document.getElementById("duration");
+  duration.value = STATE.duration;
+  const token = nearestToken(STATE.duration);
+  document.getElementById("duration-readout").textContent = token
+    ? STATE.duration.toFixed(3) + "s (dur_" + token + ")"
+    : STATE.duration.toFixed(3) + "s";
+
+  document.getElementById("travel").value = STATE.travel.toFixed(2);
+  document.getElementById("loop").checked = STATE.loop;
+}
+
+function wireControls() {
+  document.getElementById("intensity").addEventListener("input", (e) => {
+    applyIntensity(parseInt(e.target.value, 10));
+  });
+  document.getElementById("duration").addEventListener("input", (e) => {
+    let value = parseFloat(e.target.value);
+    const token = nearestToken(value);
+    if (token) value = TOKENS[token];
+    STATE.duration = value;
+    render();
+  });
+  document.getElementById("travel").addEventListener("input", (e) => {
+    STATE.travel = parseFloat(e.target.value);
+    render();
+  });
+  document.getElementById("loop").addEventListener("change", (e) => {
+    STATE.loop = e.target.checked;
+  });
+  document.getElementById("replay").addEventListener("click", () => {
+    started = performance.now();
+  });
+}
+
+// The stand-in mock shown depends on which property is being tuned: a
+// button-shaped card for scale/fade/slide, a progress bar for fill.
+function renderStandIn() {
+  const standin = document.getElementById("standin");
+  const track = document.getElementById("standin-track");
+  standin.hidden = STATE.property === "fill";
+  track.hidden = STATE.property !== "fill";
+  standin.textContent = TARGET.element;
+  document.getElementById("stage-meta").textContent =
+    "property: " + STATE.property;
+}
+
+function applyStandIn(v) {
+  const standin = document.getElementById("standin");
+  switch (STATE.property) {
+    case "scale": {
+      const s = STATE.travel + (1 - STATE.travel) * v;
+      standin.style.transform = "scale(" + s + ")";
+      break;
+    }
+    case "fade": {
+      standin.style.opacity = STATE.travel + (1 - STATE.travel) * v;
+      break;
+    }
+    case "slide": {
+      const x = STATE.travel * (1 - v);
+      standin.style.transform = "translateX(" + x + "px)";
+      break;
+    }
+    case "fill": {
+      const pct = (STATE.travel + (1 - STATE.travel) * v) * 100;
+      document.getElementById("standin-fill").style.width = pct + "%";
+      break;
+    }
+  }
+}
+
+function drawGhosts() {
+  const canvas = document.getElementById("ghosts");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+  const style = getComputedStyle(document.documentElement);
+  ctx.clearRect(0, 0, W, H);
+  ctx.strokeStyle = style.getPropertyValue("--panel-edge").trim();
+  ctx.beginPath();
+  ctx.moveTo(0, H / 2);
+  ctx.lineTo(W, H / 2);
+  ctx.stroke();
+  ctx.fillStyle = style.getPropertyValue("--text-muted").trim();
+  // Eight samples at even TIME intervals -- where they bunch up is where
+  // the animation lingers, the fastest way to read a curve's shape by eye.
+  for (let i = 0; i <= 7; i++) {
+    const t = i / 7;
+    const v = sampleCurve(STATE.trans, STATE.ease, t);
+    const x = Math.min(1, Math.max(0, v)) * W;
+    ctx.globalAlpha = 0.25 + 0.5 * (i / 7);
+    ctx.beginPath();
+    ctx.arc(x, H / 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+let started = performance.now();
+const LOOP_GAP = 0.6; // seconds of rest between repeats, while looping
+
+function frame(now) {
+  const cycle = STATE.duration + LOOP_GAP;
+  let elapsed = (now - started) / 1000;
+  if (STATE.loop) {
+    elapsed = elapsed % cycle;
+  } else if (elapsed > STATE.duration) {
+    elapsed = STATE.duration;
+  }
+  const p = Math.min(1, elapsed / STATE.duration);
+  const v = sampleCurve(STATE.trans, STATE.ease, p);
+
+  STATE._playheadT = p;
+  drawGraph();
+
+  const track = document.getElementById("track");
+  const ball = document.getElementById("ball");
+  const x = Math.min(1, Math.max(0, v)) * track.clientWidth;
+  ball.style.left = x + "px";
+  applyStandIn(v);
+
+  requestAnimationFrame(frame);
 }
 
 function renderGrid() {
@@ -326,7 +687,7 @@ function renderGrid() {
   for (const ease of EASES) {
     const label = document.createElement("div");
     label.className = "bank-col-label";
-    label.textContent = ease.replace("_", "·");
+    label.textContent = ease;
     grid.appendChild(label);
   }
 
@@ -340,7 +701,7 @@ function renderGrid() {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "preset-cell";
-      btn.textContent = ease.replace("_", "·");
+      btn.textContent = ease;
       const pressed = trans === STATE.trans && ease === STATE.ease;
       btn.setAttribute("aria-pressed", pressed ? "true" : "false");
       btn.addEventListener("click", () => selectPreset(trans, ease));
@@ -421,12 +782,28 @@ function drawGraph() {
 
 function render() {
   document.getElementById("target-label").textContent =
-    TARGET.element + " · " + TARGET.scene;
+    TARGET.element + " @ " + TARGET.scene;
   document.getElementById("curve-meta").textContent =
-    STATE.trans + "/" + STATE.ease + " — " + STATE.duration.toFixed(2) + "s";
+    STATE.trans + "/" + STATE.ease + " - " + STATE.duration.toFixed(2) + "s";
   renderGrid();
   drawGraph();
+  renderControls();
+  renderStandIn();
+  drawGhosts();
+  started = performance.now();
 }
 
+// Seed intensity from the resolved target's actual travel/transition rather
+// than an arbitrary default, so the slider starts near where the data is.
+if (LADDER.includes(STATE.trans)) {
+  STATE.intensity = LADDER.indexOf(STATE.trans);
+} else {
+  const [lo, hi] = TRAVEL_RANGE[STATE.property];
+  STATE.intensity = Math.min(6, Math.max(0,
+    Math.round(((STATE.travel - lo) / (hi - lo)) * 6)));
+}
+
+wireControls();
 render();
+requestAnimationFrame(frame);
 </script>

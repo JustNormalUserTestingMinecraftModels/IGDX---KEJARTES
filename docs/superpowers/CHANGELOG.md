@@ -8,6 +8,55 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-05 — Motion Lab skill
+
+Added `.claude/skills/motion-lab/`, an in-browser easing editor for this
+project's Tween motion, built on branch `worktree-motion-lab`. Spec:
+`docs/superpowers/specs/2026-09-05-motion-lab-skill-design.md`; plan:
+`docs/superpowers/plans/2026-09-05-motion-lab-skill.md`. The user names an
+element and scene; the skill resolves what animates it, publishes a checked-in
+HTML editor (`assets/editor.html`) as an Artifact with a preset grid, an
+oscilloscope-style curve graph, a ball-plus-stand-in preview and tuning
+controls, then patches the user's returned one-line token
+(`KJT-MOTION v1 | TRANS/EASE | 0.320s | travel 0.90 | property | element@scene`)
+into the real call site. The page previews only native Godot `Tween` presets —
+never a bezier/`Curve` alternative — so nothing separates what the browser
+shows from what the engine plays: `tests/test_easing_table.gd` bakes all 48
+transition × ease combinations from `Tween.interpolate_value()` itself into
+`assets/godot-easing.json` (256 samples each, ~97 KB) and re-verifies the
+table against the live engine on every run, catching a future Godot upgrade
+that changes a curve. One real engine quirk surfaced this way: `TRANS_EXPO`'s
+`IN` and `OUT_IN` legs settle at 0.999-something rather than exactly 1.0 (`OUT`
+and `IN_OUT` do land on exactly 1.0) — genuine, not a sampling bug, so that one
+family gets a looser end-of-curve tolerance in the test rather than the other
+47 combinations losing precision.
+
+The intensity slider means two different things depending on the transition:
+for the seven families whose curve can steepen (`LINEAR` through `EXPO`) it
+walks that ladder; for the five whose shape Godot fixes (`BACK`, `ELASTIC`,
+`BOUNCE`, `SPRING`, `CIRC`) it scales how far the property travels instead —
+labelled on screen so the two behaviours are never ambiguous. Duration snaps
+to this project's real `design_tokens.tres` values (`dur_instant/fast/normal/
+slow`). `SKILL.md`'s guard rail stops before patching a helper shared across
+screens (`Juice.press`, `Juice.pop_in`, `AnimUtils.squash_bounce`, and 30-odd
+others) and asks whether to retune it globally or add a per-call parameter,
+rather than silently restyling every consumer.
+
+The end-to-end rehearsal (Task 6) ran the whole pipeline against a real
+target — the `Lanjut` button's reveal in `EndCutscene.tscn`, which turned out
+to run through the shared `Juice.pop_in` (12 call sites), correctly tripping
+the guard rail rather than patching a change through — and turned up two real
+bugs neither the source-scan tests nor a screenshot caught: `navigator.
+clipboard.writeText()` throws `NotAllowedError` when the document lacks focus
+(a real state a user can hit, not just a test artifact) with no visible
+feedback, fixed with a select-the-text fallback; and a fixed-size `<canvas>`
+was overflowing its CSS Grid track at narrow widths — grid items default to
+`min-width: auto`, so an intrinsically-sized child can force the track wider
+than the viewport — fixed with `min-width: 0` on the grid items. Both were
+found by driving the actual rendered page (DOM queries, a forced clipboard
+rejection, real width measurements) rather than trusting the source scans
+alone. Suite count: 45→64 suites, 568→940 tests.
+
 ## 2026-09-04 — Grade-progression balance and difficulty
 
 The 2026-09-04 grade-progression difficulty pass is complete, built on branch

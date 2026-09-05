@@ -144,8 +144,8 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 45 suites, 568 tests, all green
-(2026-09-01).
+the Godot AI MCP `test_run` tool. 64 suites, 940 tests, all green
+(2026-09-05).
 
 Hard constraints, learned the hard way:
 
@@ -283,6 +283,12 @@ alone. So: subagents write code, you run the editor and hand them the results.
 
 None of this trades away test coverage. Coverage is the quality floor; the
 savings come from cheaper verification loops, not from fewer tests.
+
+**Tuning how something animates** goes through the `motion-lab` skill
+(`.claude/skills/motion-lab/SKILL.md`), not edit-run-watch. It resolves the
+element's current `Tween` preset, opens an in-browser easing editor whose
+preview is sampled straight from the engine, and patches back a one-line
+token you paste — faster than guessing a duration and replaying the scene.
 
 ## Outstanding debt & placeholders
 

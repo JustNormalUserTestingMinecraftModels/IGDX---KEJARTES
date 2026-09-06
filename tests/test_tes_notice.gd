@@ -2,8 +2,10 @@
 extends McpTestSuite
 
 ## TesNotice is the first screen of the end-of-grade sequence: a single
-## announcement card that must not leak the pass/fail verdict, and that
-## routes into the exam branch of the cutscene.
+## announcement card that must not leak the pass/fail verdict. Since the
+## 2026-09-04 reskin it hands off to ExamProgress (a timed pacing beat)
+## rather than arming the exam cutscene flag and jumping straight to
+## CutScene itself -- ExamProgress owns that flag now.
 ##
 ## Structure is checked live (the scene instantiates cleanly); routing is
 ## checked by source-text scan, per this project's established pattern for
@@ -68,12 +70,12 @@ func test_the_notice_does_not_leak_the_verdict() -> void:
 		"the notice never reads the pass/fail result")
 
 
-func test_it_routes_into_the_exam_cutscene() -> void:
+func test_it_routes_into_exam_progress() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("GameState.is_exam_intro_cutscene = true"),
-		"it arms the exam cutscene branch")
-	assert_true(src.contains("res://Scenes/CutScene/cut_scene.tscn"),
-		"it routes to the cutscene")
+	assert_true(src.contains("res://Scenes/EndGame/ExamProgress.tscn"),
+		"it routes to the exam progress beat")
+	assert_false(src.contains("GameState.is_exam_intro_cutscene"),
+		"arming the exam cutscene flag is ExamProgress's job now, not TesNotice's")
 
 
 func test_it_plays_the_notice_bgm() -> void:

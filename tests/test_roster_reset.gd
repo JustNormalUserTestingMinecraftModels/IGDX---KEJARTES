@@ -25,7 +25,7 @@ func test_head_start_keeps_twenty_percent_of_gains() -> void:
 	var s: Dictionary = GameState.approved_students[0]
 	# 30 + 0.20 * (50 - 30) = 34.0
 	assert_true(is_equal_approx(float(s["akademis1"]), 34.0),
-		"akademis1 should rebase to roster_base + 20% of gains, got %s" % str(s["akademis1"]))
+		"akademis1 should rebase to roster_base + 20%% of gains, got %s" % str(s["akademis1"]))
 	GameState.approved_students = saved
 
 func test_skill_below_roster_base_floors_at_roster_base() -> void:

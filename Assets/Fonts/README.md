@@ -1,11 +1,13 @@
 # Fonts
 
-- `Catfiles.otf` — display face (headings, buttons, big numbers)
+- `Boohong.otf` — display face (headings, buttons, big numbers)
 - `OpenSans-Medium.ttf` — body face (everything else)
 
-Open Sans is licensed under Apache License 2.0. Catfiles' license has not been
-verified — no license file for either `Catfiles.otf` or `OpenSans-Medium.ttf`
-has been added to this repo yet; confirm and add before shipping.
+Open Sans is licensed under Apache License 2.0. Boohong's license has not been
+verified — its embedded metadata names Khurasan as the foundry and points to
+`https://khurasanstudio.com/license/`, but no license file for either
+`Boohong.otf` or `OpenSans-Medium.ttf` has been added to this repo yet;
+confirm and add before shipping.
 
 ## Swapping in your own fonts
 
@@ -18,13 +20,14 @@ No code changes are required. The whole game re-renders in the new face.
 
 ## Roles (2026-09-05)
 
-- `Catfiles.otf` — the **display** face. Headings, titles, buttons, badges,
+- `Boohong.otf` — the **display** face. Headings, titles, buttons, badges,
   and stat numerals. Wired as `DesignTokens.font_display`.
 - `OpenSans-Medium.ttf` — the **body** face. Everything else, including every
   untagged Label. Wired as `DesignTokens.font_body`, which `ThemeFactory` sets
   as the theme's `default_font`.
-- `Milker.otf`, `Baloo2-Variable.ttf`, `Nunito-Variable.ttf` — no longer
-  referenced by the theme. Kept in the repo, unused.
+- `Brocats.otf`, `Catfiles.otf`, `Catcut.otf`, `Milker.otf`,
+  `Baloo2-Variable.ttf`, `Nunito-Variable.ttf` — no longer referenced by the
+  theme. Kept in the repo, unused.
 
 The other 43 Open Sans weights are imported but unused. Reach for one only
 through a new `DesignTokens` slot, never a `theme_override_fonts/` entry.

@@ -8,7 +8,7 @@
 ## that silent fallback into a red test.
 extends McpTestSuite
 
-const DISPLAY_PATH := "res://Assets/Fonts/Catfiles.otf"
+const DISPLAY_PATH := "res://Assets/Fonts/Boohong.otf"
 const BODY_PATH := "res://Assets/Fonts/OpenSans-Medium.ttf"
 
 ## Indonesian UI copy plus the digits and punctuation the stat readouts
@@ -23,8 +23,8 @@ func suite_name() -> String:
 
 func test_display_font_loads() -> void:
 	var f := load(DISPLAY_PATH)
-	assert_true(f != null, "Catfiles.otf must be imported (run a filesystem scan)")
-	assert_true(f is FontFile, "Catfiles.otf must import as a FontFile")
+	assert_true(f != null, "Boohong.otf must be imported (run a filesystem scan)")
+	assert_true(f is FontFile, "Boohong.otf must import as a FontFile")
 
 
 func test_body_font_loads() -> void:
@@ -37,7 +37,7 @@ func test_display_font_covers_the_ui_alphabet() -> void:
 	var f: FontFile = load(DISPLAY_PATH)
 	assert_true(f != null, "font must load before glyph coverage can be checked")
 	var missing := _missing_glyphs(f, PROBE)
-	assert_eq(missing, "", "Catfiles is missing glyphs: %s" % missing)
+	assert_eq(missing, "", "Boohong is missing glyphs: %s" % missing)
 
 
 func test_body_font_covers_the_ui_alphabet() -> void:

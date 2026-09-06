@@ -36,6 +36,15 @@ extends Control
 ## Full up-down-up cycle length (seconds) for idle_bob_pixels.
 @export var idle_bob_period: float = 3.2
 
+@export_group("Layered Faces")
+## Multi-layer face rigs (StudentFace: base, eye white, iris, lashes, brows
+## and a blink lid) that replace the flat Portrait TextureRect for the students
+## that have one. A rig is matched to a roster slot by its own student_name,
+## so adding a character is a matter of dropping their .tscn in here; a
+## student with no rig keeps the flat portrait. Left empty, _ready() falls
+## back to Citra's rig, the same shape as the hand_* fallbacks above.
+@export var face_rigs: Array[PackedScene] = []
+
 
 @onready var color_rect = $ColorRect
 @onready var click_area = $ColorRect/ClickArea
@@ -120,6 +129,9 @@ func _ready():
 		hand_pendiam = load("res://Assets/Images/Lobby/Hands/hand_pendiam.png")
 	if not hand_santai:
 		hand_santai = load("res://Assets/Images/Lobby/Hands/hand_santai.png")
+
+	if face_rigs.is_empty():
+		face_rigs = [load("res://Scenes/Lobby/CitraFace.tscn")]
 
 	if GameState.has_method("initialize_grade_targets"):
 		GameState.initialize_grade_targets()
@@ -253,7 +265,18 @@ func _setup_students():
 			
 			hand_node.show()
 			var breathing_delay = float(i) * 0.4
-			_animate_breathing(portrait_node, breathing_delay)
+			# A student with a layered rig gets it instead of the flat
+			# portrait; both breathe identically, so the diorama reads the
+			# same either way.
+			var face := _acquire_face(p_slot, str(s.get("name", "")))
+			if face != null:
+				_match_rect(face, portrait_node)
+				portrait_node.hide()
+				face.show()
+				_animate_breathing(face, breathing_delay)
+			else:
+				portrait_node.show()
+				_animate_breathing(portrait_node, breathing_delay)
 		else:
 			p_slot.hide()
 			h_slot.hide()
@@ -276,6 +299,69 @@ func _animate_breathing(node: Control, delay: float):
 	tw.tween_property(node, "scale", Vector2(1.01, 1.02), 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	# Time to exhale (shrink back to normal)
 	tw.tween_property(node, "scale", Vector2(1.0, 1.0), 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+## The face rig registered for `student`, or null when that student has no
+## layered art and should keep the flat portrait. The rig -- not this script --
+## owns which roster name it belongs to, so matching reads student_name off
+## the PackedScene's saved state rather than instantiating it to ask.
+func _face_rig_for(student: String) -> PackedScene:
+	var wanted := student.strip_edges().to_lower()
+	if wanted == "":
+		return null
+	for rig in face_rigs:
+		if rig == null:
+			continue
+		if _rig_student_name(rig).strip_edges().to_lower() == wanted:
+			return rig
+	return null
+
+
+## Reads the student_name @export off a face rig's root node without loading
+## the scene into the tree.
+func _rig_student_name(rig: PackedScene) -> String:
+	var state := rig.get_state()
+	if state.get_node_count() == 0:
+		return ""
+	for i in range(state.get_node_property_count(0)):
+		if state.get_node_property_name(0, i) == &"student_name":
+			return str(state.get_node_property_value(0, i))
+	return ""
+
+
+## Instances `student`'s face rig into `slot` and returns it, or null when
+## that student has none. Replaces any rig already in the slot, so a second
+## pass over the roster never stacks two faces on one seat.
+func _acquire_face(slot: Control, student: String) -> StudentFace:
+	var existing := slot.get_node_or_null(^"Face")
+	if existing != null:
+		slot.remove_child(existing)
+		existing.queue_free()
+	var rig := _face_rig_for(student)
+	if rig == null:
+		return null
+	var face := rig.instantiate() as StudentFace
+	if face == null:
+		return null
+	face.name = "Face"
+	slot.add_child(face)
+	return face
+
+
+## Gives `target` the anchors and offsets of `source`, so a face rig lands
+## exactly where the flat portrait it replaces sat. Keeps the diorama's layout
+## a .tscn concern: nudge a Portrait in the viewport and the rig follows.
+func _match_rect(target: Control, source: Control) -> void:
+	target.anchor_left = source.anchor_left
+	target.anchor_top = source.anchor_top
+	target.anchor_right = source.anchor_right
+	target.anchor_bottom = source.anchor_bottom
+	target.offset_left = source.offset_left
+	target.offset_top = source.offset_top
+	target.offset_right = source.offset_right
+	target.offset_bottom = source.offset_bottom
+	target.grow_horizontal = source.grow_horizontal
+	target.grow_vertical = source.grow_vertical
+
 
 func _compute_seat_order(students: Array) -> Array:
 	if not GameState.has_method("get_grade_from_week"):

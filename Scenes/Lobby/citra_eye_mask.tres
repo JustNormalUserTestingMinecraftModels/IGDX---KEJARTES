@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://Scripts/Shaders/eye_mask.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Citra/citra_sclera.png" id="2_mask"]
+
+[resource]
+resource_local_to_scene = true
+shader = ExtResource("1_shader")
+shader_parameter/mask_uv_offset = Vector2(0.115023, -0.0736842)
+shader_parameter/mask_uv_scale = Vector2(0.769953, 1.042105)
+shader_parameter/mask_softness = 0.15
+shader_parameter/mask_texture = ExtResource("2_mask")

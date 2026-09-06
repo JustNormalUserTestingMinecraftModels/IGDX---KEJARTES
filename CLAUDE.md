@@ -103,7 +103,7 @@ resource). To change a color/radius/font globally: edit that resource, then
 **rebake** by running `Scripts/Design/BakeTheme.gd` via File > Run
 (Ctrl+Shift+X), which writes `Assets/Theme/kejartes_theme.tres`.
 
-Two faces: **Catfiles** (`font_display`) for headings, titles, buttons and
+Two faces: **Boohong** (`font_display`) for headings, titles, buttons and
 badges; **Open Sans Medium** (`font_body`) for everything else, as the
 theme's `default_font`. Which variation gets which is pinned in both
 directions by `DISPLAY_ROSTER` in `tests/test_theme_factory.gd` — change
@@ -334,6 +334,17 @@ invisible to a running editor, so this needs an editor restart plus a manual
 rebake. The exact diff to re-apply is in the STATUS block of
 `docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`.
 
+**Deferred: blinking on the layered faces.** `Scenes/Lobby/CitraFace.tscn`'s
+`Eyelid` layer and `StudentFace.blink()` are wired and tested, but
+`idle_blink_enabled` defaults **false**, so nothing closes the eyes on its own
+yet — the blink pass was explicitly held back. Turning it on is one Inspector
+toggle; a real pass would want a half-lid frame (the art has none) or an
+alpha/scale ease rather than the current hard cut.
+
+**Layered faces exist for Citra only.** The other four students still use the
+flat portrait. Adding one means a new `<Name>Face.tscn` with that character's
+own solved layer offsets, dropped into `loby.gd`'s `face_rigs`.
+
 **Ratchet debt.** `tests/test_viewport_editability.gd`'s `BASELINE` still lists
 real unconverted runtime UI construction across roughly 20 files. The
 2026-08-31 pass converted every shared-across-screens case but did not survey
@@ -348,7 +359,9 @@ the previous three. See `docs/superpowers/CHANGELOG.md`.
 Branch `Textures` (also main). The 2026-09-04–09-05 end-game rebuild
 described in the Loop above is complete; only Plan C's RunResult redesign
 remains open, tracked in
-`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
+`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`. The 2026-09-06
+layered-face rig (`StudentFace`) has landed for Citra — see the changelog, and
+the two face entries under outstanding debt for what is deliberately unfinished.
 
 ## Maintaining this file
 

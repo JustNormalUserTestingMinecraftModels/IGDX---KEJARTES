@@ -8,6 +8,59 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-06 — Lobby: layered student faces, gaze and blink rig
+
+Reworked the lobby diorama's student sprite from a single flat portrait
+TextureRect into a six-layer rig, starting with Citra. New
+`Scenes/Lobby/CitraFace.tscn` (script `Scripts/Lobby/StudentFace.gd`,
+`class_name StudentFace`) stacks, back to front: Base, Sclera, Pupil,
+Eyelashes, Eyelid, Eyebrows. `loby.gd` now instances a rig into a roster
+slot when the student has one — matched by the rig's own `student_name`,
+read off the PackedScene's saved state — copies the flat portrait's rect
+onto it and breathes it identically, so the diorama layout is unchanged.
+Students with no rig keep the flat portrait; `face_rigs` is an `@export`
+array so adding a character is dropping their `.tscn` in.
+
+The art arrived as six separately-cropped PNGs with no canvas offsets, so
+every layer position was solved rather than eyeballed: each crop was
+template-matched back onto the flattened `Citra.png` (eyelashes and eyebrows
+both matched at 100% of sampled pixels), and Sclera/Eyelid were pinned
+exactly by the transparent eye cut-outs in `citra_base.png`, which each
+plugs to the pixel with a unique solution. `tests/test_student_face.gd`
+freezes that solve in `_GEOMETRY`.
+
+Two things worth remembering. `citra_eyebrows.png` was delivered as
+`citra_eyelashes_closed.png` and first wired as the lower half of a blink;
+it is the eyebrows, always visible, and topmost because the base has hair
+(not brows) underneath. And the pupil is drawn to fill the eye white
+exactly — a strict all-pixels check gave a travel envelope of roughly ±7px
+before the iris spilled onto skin — so gaze motion instead clips the Pupil
+layer to the Sclera's alpha through the new
+`Scripts/Shaders/eye_mask.gdshader`, letting it travel freely. The material
+(`Scenes/Lobby/citra_eye_mask.tres`) is `resource_local_to_scene` so four
+seats do not share one set of uniforms.
+
+Idle gaze is on: ease-out saccades to a point in a ±20×±7 canvas-pixel
+ellipse, 1.4–4.2s holds, per-instance RNG so seats never sync. Idle blink is
+wired but off — see `CLAUDE.md`'s outstanding-debt entry.
+
+## 2026-09-05 — Typography: swap the display face to Boohong
+
+Repointed `DesignTokens.font_display` from `Catfiles.otf` to `Boohong.otf`
+(Khurasan) and rebaked the theme. Landed in two steps same-day: the request
+named the font only as "boohoong," and at that point neither new drop
+(`Brocats.otf`, `Catcut.otf`) matched that name in its embedded font-name
+table, so `Brocats.otf` went in as a placeholder pending clarification; the
+correctly-named `Boohong.otf` was dropped in shortly after and the token was
+repointed to it. No classification changes either time: the heading/body
+split fixed in the Catfiles pass below is a single design-token indirection,
+so every `ThemeFactory` type variation that already took `font_display`
+(headings, titles, buttons, badges, stat numerals) picked up each new face
+with no other edits. Updated `tests/test_fonts_present.gd`'s hardcoded
+path/messages, `Assets/Fonts/README.md`, and `CLAUDE.md`'s typography line
+to match. `Brocats.otf`, `Catfiles.otf`, and `Catcut.otf` all stay in the
+repo unused, alongside Milker/Baloo2/Nunito.
+
 ## 2026-09-05 — Typography: Catfiles heads, Open Sans Medium body
 
 Imported `Catfiles.otf` and the Open Sans family (none had `.import`

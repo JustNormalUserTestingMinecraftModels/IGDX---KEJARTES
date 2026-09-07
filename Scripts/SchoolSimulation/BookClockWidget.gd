@@ -52,18 +52,28 @@ enum Phase { DAWN, MIDDAY, EVENING }
 ## counter-clockwise sweep the mechanism reference asks for runs toward
 ## NEGATIVE angles.
 
-## The sky's angle at the start of the school day.
-@export var dawn_rotation_degrees: float = 0.0:
+## The sky's angle at the start of the school day: morning breaking,
+## bright sky opening out of the night half.
+##
+## These three were 0 / -90 / -180 until a 2026-09-07 screenshot pass
+## showed 0 renders as NIGHT, not morning -- the single sweep this
+## replaced started at the same value and made the same "morning" claim
+## in its docstring, so the art and the naming had disagreed since the
+## sweep was written. Shifting the whole arc one quarter-turn puts
+## each pose on the sky it is named for, and keeps the sweep
+## counter-clockwise (monotonically decreasing) as the mechanism
+## reference asks.
+@export var dawn_rotation_degrees: float = -90.0:
 	set(value):
 		dawn_rotation_degrees = value
 		_apply_rotation()
-## The sky's angle when the day's event rolls.
-@export var midday_rotation_degrees: float = -90.0:
+## The sky's angle when the day's event rolls: full bright day overhead.
+@export var midday_rotation_degrees: float = -180.0:
 	set(value):
 		midday_rotation_degrees = value
 		_apply_rotation()
-## The sky's angle when the school day ends.
-@export var evening_rotation_degrees: float = -180.0:
+## The sky's angle when the school day ends: dusk, first stars returning.
+@export var evening_rotation_degrees: float = -270.0:
 	set(value):
 		evening_rotation_degrees = value
 		_apply_rotation()

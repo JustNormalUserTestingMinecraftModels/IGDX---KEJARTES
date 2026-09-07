@@ -39,14 +39,28 @@ func test_retired_the_single_sweep_exports() -> void:
 			"%s is superseded by the three pose exports" % retired)
 
 
-func test_defaults_reproduce_the_old_sweep_geometry() -> void:
-	# Nothing should move on screen from this change alone: only the
-	# TIMING changed. Dawn 0, midday -90, evening -180 is exactly the
-	# old start 0 / total -180 sweep, with the middle named.
+func test_each_pose_sits_on_the_sky_it_is_named_for() -> void:
+	# The arc was 0 / -90 / -180 -- inherited from the old start 0 /
+	# total -180 sweep -- until a screenshot showed 0 renders as NIGHT.
+	# The original docstring claimed 0 was "morning", so the art and the
+	# naming had disagreed since the sweep was written. Shifted one
+	# quarter-turn so dawn is morning breaking, midday is full day and
+	# evening is dusk.
 	var w := _widget()
-	assert_eq(w.dawn_rotation_degrees, 0.0, "dawn should still be 0")
-	assert_eq(w.midday_rotation_degrees, -90.0, "midday should be the halfway angle")
-	assert_eq(w.evening_rotation_degrees, -180.0, "evening should still be -180")
+	assert_eq(w.dawn_rotation_degrees, -90.0, "dawn should be morning breaking")
+	assert_eq(w.midday_rotation_degrees, -180.0, "midday should be full bright day")
+	assert_eq(w.evening_rotation_degrees, -270.0, "evening should be dusk")
+	w.free()
+
+
+func test_the_day_still_sweeps_counter_clockwise() -> void:
+	# The mechanism reference's arrows: the sky turns one way across the
+	# day. Re-anchoring the arc must not have flipped its direction.
+	var w := _widget()
+	assert_true(w.midday_rotation_degrees < w.dawn_rotation_degrees,
+		"midday must sit further counter-clockwise than dawn")
+	assert_true(w.evening_rotation_degrees < w.midday_rotation_degrees,
+		"evening must sit further counter-clockwise than midday")
 	w.free()
 
 

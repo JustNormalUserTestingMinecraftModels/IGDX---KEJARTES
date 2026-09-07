@@ -23,11 +23,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mainbola")
-goalie_jump_texture = null
-jump_faces_right = null
-center_block_uses_jump = null
-breath_rate = null
-breath_scale_amount = null
 
 [node name="FieldBG" type="TextureRect" parent="." unique_id=1315448352]
 layout_mode = 1
@@ -107,8 +102,9 @@ shape = SubResource("RectangleShape2D_wxm10")
 [node name="GFX" type="TextureRect" parent="Goalie" unique_id=1353785742]
 offset_left = -0.42
 offset_top = -0.3432
-offset_right = 0.41999635
-offset_bottom = 0.09680244
+offset_right = 0.42
+offset_bottom = 0.0968
+pivot_offset = Vector2(0.42, 0.44)
 texture = ExtResource("3_m0rci")
 expand_mode = 1
 stretch_mode = 6
@@ -123,8 +119,8 @@ shape = SubResource("CircleShape2D_gt578")
 [node name="GFX" type="TextureRect" parent="Ball" unique_id=1147258294]
 offset_left = -0.13
 offset_top = -0.13
-offset_right = 0.13000214
-offset_bottom = 0.13000214
+offset_right = 0.13
+offset_bottom = 0.13
 texture = ExtResource("4_rtmmt")
 expand_mode = 1
 stretch_mode = 6

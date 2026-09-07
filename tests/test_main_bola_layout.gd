@@ -132,6 +132,21 @@ func test_dive_direction_uses_flip_h_not_a_texture_swap() -> void:
 		"which way the jump art faces must stay an Inspector toggle")
 
 
+## The scene must not NULL an art export.
+##
+## Found by screenshot on 2026-09-07, not by any test here: MainBola.tscn
+## carried `goalie_jump_texture = null`, written when the editor
+## re-serialised the scene against a stale copy of the script. The export
+## checks above all passed -- they read the SCRIPT -- while the running
+## game would have shown an invisible keeper the moment he dived.
+func test_scene_does_not_null_any_art_export() -> void:
+	var scene_text := FileAccess.get_file_as_string(SCENE_PATH)
+	for slot in TEXTURE_EXPORTS:
+		assert_false(scene_text.contains("%s = null" % slot),
+			"%s is nulled in the scene, which overrides the script's preload "
+			% slot + "and renders nothing")
+
+
 func test_goalie_breathing_is_tunable_not_hardcoded() -> void:
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
 	for knob in ["breath_rate", "breath_scale_amount"]:

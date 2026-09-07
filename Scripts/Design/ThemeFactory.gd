@@ -29,6 +29,48 @@ static func build(tokens: DesignTokens) -> Theme:
 	return theme
 
 
+## The shop hub's two destination tiles, panel-less by design.
+##
+## Deliberately NOT _add_button_variation: a pill's light card fill made
+## the white icons invisible against it and read as an egg rather than a
+## tile. The mockup has no panel under them at all -- icon and caption sit
+## straight on the dimmed blur -- so normal draws nothing and only the
+## touch states wash in, which is also the only affordance a tile this
+## size needs.
+static func _add_shop_hub_tile(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "ShopHubTile"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Button")
+
+	theme.set_stylebox("normal", NAME, StyleBoxEmpty.new())
+	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
+
+	var wash := StyleBoxFlat.new()
+	wash.bg_color = Color(1, 1, 1, 0.14)
+	wash.set_corner_radius_all(tokens.radius_lg)
+	theme.set_stylebox("hover", NAME, wash)
+
+	var pressed := StyleBoxFlat.new()
+	pressed.bg_color = Color(1, 1, 1, 0.24)
+	pressed.set_corner_radius_all(tokens.radius_lg)
+	theme.set_stylebox("pressed", NAME, pressed)
+	theme.set_stylebox("disabled", NAME, StyleBoxEmpty.new())
+
+
+## The caption under each hub tile. White, because it sits on the dimmed
+## blur rather than on a panel -- H2Label's ink would disappear into it.
+static func _add_shop_hub_tile_label(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "ShopHubTileLabel"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Label")
+	theme.set_font_size("font_size", NAME, tokens.font_h2)
+	theme.set_color("font_color", NAME, tokens.text_on_brand)
+	theme.set_constant("outline_size", NAME, 8)
+	theme.set_color("font_outline_color", NAME, Color(0, 0, 0, 0.55))
+	if tokens.font_display != null:
+		theme.set_font("font", NAME, tokens.font_display)
+
+
 # ---------------------------------------------------------------- buttons
 
 static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
@@ -50,12 +92,8 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.state_success.lightened(0.18), tokens.state_success.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
 
-	# The shop hub's two destination tiles: big, quiet card-coloured
-	# slabs carrying an icon and a label, so the blurred artwork behind
-	# them stays the loudest thing on that screen.
-	_add_button_variation(theme, tokens, "ShopHubTile",
-		tokens.surface_card, tokens.surface_sunken,
-		tokens.brand_primary, tokens.text_primary)
+	_add_shop_hub_tile(theme, tokens)
+	_add_shop_hub_tile_label(theme, tokens)
 
 	# The event dialog's per-student card. The whole card is the toggle,
 	# so its "pressed" state has to read as SELECTED rather than as a

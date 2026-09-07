@@ -1003,99 +1003,25 @@ shadow_color = Color(0.08, 0.11, 0.22, 0.28)
 shadow_size = 14
 shadow_offset = Vector2(0, 3)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quyg1"]
-content_margin_left = 44.0
-content_margin_top = 28.0
-content_margin_right = 44.0
-content_margin_bottom = 28.0
-bg_color = Color(0.9066667, 0.92862743, 0.9780392, 1)
-border_width_left = 6
-border_width_top = 6
-border_width_right = 6
-border_width_bottom = 6
-border_color = Color(0.5235294, 0.62745094, 0.9843137, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-shadow_color = Color(0.08, 0.11, 0.22, 0.28)
-shadow_offset = Vector2(0, 6)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_quyg1"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nhb4n"]
-content_margin_left = 44.0
-content_margin_top = 28.0
-content_margin_right = 44.0
-content_margin_bottom = 28.0
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 6
-border_width_top = 6
-border_width_right = 6
-border_width_bottom = 6
-border_color = Color(0.18039216, 0.35686275, 1, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-shadow_color = Color(0.08, 0.11, 0.22, 0.28)
-shadow_size = 14
-shadow_offset = Vector2(0, 6)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nhb4n"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ubjb3"]
-content_margin_left = 44.0
-content_margin_top = 28.0
-content_margin_right = 44.0
-content_margin_bottom = 28.0
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 6
-border_width_top = 6
-border_width_right = 6
-border_width_bottom = 6
-border_color = Color(0.18039216, 0.35686275, 1, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-shadow_color = Color(0.08, 0.11, 0.22, 0.28)
-shadow_size = 14
-shadow_offset = Vector2(0, 6)
+bg_color = Color(1, 1, 1, 0.14)
+corner_radius_top_left = 36
+corner_radius_top_right = 36
+corner_radius_bottom_right = 36
+corner_radius_bottom_left = 36
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8e75b"]
-content_margin_left = 44.0
-content_margin_top = 28.0
-content_margin_right = 44.0
-content_margin_bottom = 28.0
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 6
-border_width_top = 6
-border_width_right = 6
-border_width_bottom = 6
-border_color = Color(0.18039216, 0.35686275, 1, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-shadow_color = Color(0.08, 0.11, 0.22, 0.28)
-shadow_size = 14
-shadow_offset = Vector2(0, 6)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8e75b"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0c0km"]
-content_margin_left = 44.0
-content_margin_top = 28.0
-content_margin_right = 44.0
-content_margin_bottom = 28.0
-bg_color = Color(0.8666667, 0.8980392, 0.96862745, 1)
-border_width_left = 6
-border_width_top = 6
-border_width_right = 6
-border_width_bottom = 6
-border_color = Color(0.18039216, 0.35686275, 1, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-shadow_color = Color(0.08, 0.11, 0.22, 0.28)
-shadow_size = 14
-shadow_offset = Vector2(0, 3)
+bg_color = Color(1, 1, 1, 0.24)
+corner_radius_top_left = 36
+corner_radius_top_right = 36
+corner_radius_bottom_right = 36
+corner_radius_bottom_left = 36
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s83cx"]
 content_margin_left = 20.0
@@ -1655,18 +1581,17 @@ ShopCoinLabel/constants/shadow_offset_x = 2
 ShopCoinLabel/constants/shadow_offset_y = 2
 ShopCoinLabel/font_sizes/font_size = 40
 ShopHubTile/base_type = &"Button"
-ShopHubTile/colors/font_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
-ShopHubTile/colors/font_disabled_color = Color(0.65882355, 0.6901961, 0.76862746, 1)
-ShopHubTile/colors/font_focus_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
-ShopHubTile/colors/font_hover_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
-ShopHubTile/colors/font_pressed_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
-ShopHubTile/font_sizes/font_size = 36
-ShopHubTile/fonts/font = ExtResource("1_c56gm")
-ShopHubTile/styles/disabled = SubResource("StyleBoxFlat_quyg1")
-ShopHubTile/styles/focus = SubResource("StyleBoxFlat_nhb4n")
+ShopHubTile/styles/disabled = SubResource("StyleBoxEmpty_quyg1")
+ShopHubTile/styles/focus = SubResource("StyleBoxEmpty_nhb4n")
 ShopHubTile/styles/hover = SubResource("StyleBoxFlat_ubjb3")
-ShopHubTile/styles/normal = SubResource("StyleBoxFlat_8e75b")
+ShopHubTile/styles/normal = SubResource("StyleBoxEmpty_8e75b")
 ShopHubTile/styles/pressed = SubResource("StyleBoxFlat_0c0km")
+ShopHubTileLabel/base_type = &"Label"
+ShopHubTileLabel/colors/font_color = Color(1, 1, 1, 1)
+ShopHubTileLabel/colors/font_outline_color = Color(0, 0, 0, 0.55)
+ShopHubTileLabel/constants/outline_size = 8
+ShopHubTileLabel/font_sizes/font_size = 48
+ShopHubTileLabel/fonts/font = ExtResource("1_c56gm")
 ShopMessageDanger/base_type = &"Label"
 ShopMessageDanger/colors/font_color = Color(0.76862746, 0.16862746, 0.43137255, 1)
 ShopMessageDanger/colors/font_shadow_color = Color(0, 0, 0, 1)

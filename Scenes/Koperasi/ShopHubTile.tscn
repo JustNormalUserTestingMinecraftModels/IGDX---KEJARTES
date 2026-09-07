@@ -30,7 +30,7 @@ stretch_mode = 5
 
 [node name="Caption" type="Label" parent="Content" unique_id=575261468]
 layout_mode = 2
-theme_type_variation = &"H2Label"
+theme_type_variation = &"ShopHubTileLabel"
 text = "Makanan & Barang"
 horizontal_alignment = 1
 autowrap_mode = 2

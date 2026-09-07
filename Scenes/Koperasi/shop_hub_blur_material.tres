@@ -4,5 +4,5 @@
 
 [resource]
 shader = ExtResource("1_l18e1")
-shader_parameter/lod = 3.0
-shader_parameter/darkness = 0.35
+shader_parameter/lod = 3.5
+shader_parameter/darkness = 0.55

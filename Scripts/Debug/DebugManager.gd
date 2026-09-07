@@ -382,6 +382,15 @@ func _build_general_panel(parent: Control) -> void:
 	var sep_seed = HSeparator.new()
 	vbox.add_child(sep_seed)
 
+	var btn_forget = Button.new()
+	btn_forget.text = " 🧹 Forget Session (hapus save, ke MainMenu) "
+	btn_forget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_forget.custom_minimum_size = Vector2(0, 95)
+	btn_forget.add_theme_font_size_override("font_size", 23)
+	btn_forget.pressed.connect(_forget_session)
+	vbox.add_child(btn_forget)
+	vbox.add_child(HSeparator.new())
+
 	# Row 1: Week tracking & Grade
 	var grp_week = VBoxContainer.new()
 	grp_week.add_theme_constant_override("separation", 15)
@@ -678,6 +687,14 @@ func _seed_playtest_state() -> void:
 
 	log_message("Seeded playtest state: roster, 999999G, full inventory, tutorial bypassed.")
 	_refresh_ui_fields()
+
+## Debug: wipe in-memory GameState + the inventory save, then boot fresh.
+func _forget_session() -> void:
+	GameState.forget_session()
+	if debug_ui_root:
+		debug_ui_root.visible = false
+	log_message("Session forgotten: GameState reset, save deleted.")
+	Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn", Transition.Style.FADE)
 
 func _set_time_scale(scale: float) -> void:
 	Engine.time_scale = scale

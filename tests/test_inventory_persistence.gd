@@ -69,3 +69,9 @@ func test_transition_flushes_inventory_on_scene_change() -> void:
 		"change_scene must flush the inventory save")
 	assert_true(src.contains("is_editor_hint"),
 		"the save call must be editor-gated")
+
+func test_debug_manager_has_forget_session() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
+	assert_true(src.contains("_forget_session"), "debug button handler present")
+	assert_true(src.contains("GameState.forget_session()"), "handler calls forget_session")
+	assert_true(src.contains("main_menu.tscn"), "handler returns to MainMenu")

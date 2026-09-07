@@ -200,7 +200,8 @@ func set_phase(phase: Phase) -> void:
 func transition_to(phase: Phase, duration: float = -1.0) -> Tween:
 	var seconds: float = transition_duration if duration < 0.0 else duration
 	var tween := create_tween()
-	tween.tween_method(set_progress, _progress, progress_for_phase(phase), seconds)		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_method(set_progress, _progress, progress_for_phase(phase), seconds) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	return tween
 
 

@@ -376,9 +376,11 @@ func _run_single_day() -> void:
 	# clock widget and the decay bars are optional, so without this the
 	# tween could end up with no tweeners at all and abort.
 	day_tween.tween_interval(phase1_dur)
-	if book_clock_widget and book_clock_widget.has_method("set_progress"):
-		day_tween.tween_method(func(v: float): book_clock_widget.call("set_progress", v / 100.0), 0.0, trigger_pct, phase1_dur)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# Transition 1: dawn to midday. The widget owns its own easing, so
+	# this hands it only the duration -- day_tween's interval above is
+	# what this function actually awaits.
+	if book_clock_widget and book_clock_widget.has_method("transition_to"):
+		book_clock_widget.call("transition_to", BookClockWidget.Phase.MIDDAY, phase1_dur)
 
 	_animate_embedded_decay_bars(day_tween, decay_results, phase1_dur)
 	await day_tween.finished
@@ -396,9 +398,9 @@ func _run_single_day() -> void:
 	Juice.fill_bar(progress_bar, 100.0, phase2_dur)
 	var bar_phase2 = create_tween().set_parallel(true)
 	bar_phase2.tween_interval(phase2_dur)
-	if book_clock_widget and book_clock_widget.has_method("set_progress"):
-		bar_phase2.tween_method(func(v: float): book_clock_widget.call("set_progress", v / 100.0), trigger_pct, 100.0, phase2_dur)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# Transition 2: midday to evening.
+	if book_clock_widget and book_clock_widget.has_method("transition_to"):
+		book_clock_widget.call("transition_to", BookClockWidget.Phase.EVENING, phase2_dur)
 	await bar_phase2.finished
 	if is_skipped:
 		return

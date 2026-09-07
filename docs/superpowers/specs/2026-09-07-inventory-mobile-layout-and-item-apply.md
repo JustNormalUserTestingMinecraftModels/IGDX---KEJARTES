@@ -556,6 +556,31 @@ Rationale: Buku boosts academics/arts, Olahraga gear boosts sport, Makanan stays
 pure need-recovery. Values are ~⅓ of a good single-day study gain so an item is
 a useful nudge, not a target-skip. Copy this table verbatim into the plan.
 
+### 4.2a Per-item placeholder descriptions
+
+Every entry in `DEFAULT_ITEMS` already carries a `desc` string; this pass keeps
+**one distinct, non-empty Indonesian one-liner per item**, shown verbatim in
+`ItemDetailSheet`'s `DescLabel`. Where an existing line is thin, replace it with
+a fuller placeholder (prefix the array comment for the block with
+`# [PLACEHOLDER] item flavour copy — pending a writing pass`). Target copy — one
+sentence, flavour only, no numbers (the "+N" lives in the Efek block):
+
+| Item | `desc` (placeholder) |
+|---|---|
+| Bank Soal | "Bundel soal-soal ujian tahun lalu; latihan paling ampuh sebelum tes." |
+| Komik | "Komik favorit yang bikin lupa waktu — hiburan cepat saat penat." |
+| LKS | "Lembar Kerja Siswa untuk mengasah materi pelan-pelan di rumah." |
+| Lompat Tali | "Tali lompat warna-warni; pemanasan seru yang bikin badan segar." |
+| Raket | "Raket bulu tangkis pinjaman kakak kelas, masih enak dipakai tanding." |
+| Cilok | "Cilok kenyal berbumbu kacang, jajanan wajib jam istirahat." |
+| Mie Instan | "Semangkuk mie instan hangat — pengganjal perut andalan anak kos." |
+| Pop Ice | "Es blender manis warna cerah yang langsung menaikkan mood." |
+| Susu Kotak | "Susu kotak dingin, katanya bikin fokus pas jam pelajaran pagi." |
+
+These strings are flagged placeholder alongside the project's other pending copy
+(cutscene lines, aliased SFX); a later writing pass may revise them without
+touching this feature.
+
 ### 4.3 `GameState.use_item()` — fix keys, add skills
 
 Current bug: reads/writes `"mood"` / `"energy"`. Change to the canonical roster
@@ -699,6 +724,9 @@ Edits to existing suites:
   `akademis_boost`, `seni_budaya_boost`, `olahraga_boost` and that
   `ItemDatabase.get_item("Raket").olahraga_boost == 8`. Otherwise fold that
   into `test_use_item_on_students.gd`.
+- **Descriptions:** in the same suite, assert every `ItemDatabase.get_all_items()`
+  entry has a non-empty `description` and that all descriptions are unique
+  (`desc` set size == item count).
 
 ---
 

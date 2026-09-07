@@ -214,13 +214,17 @@ const STAT_MAX := 100.0
 ## The teammate's build had a single global player_mood/player_energy;
 ## this project tracks both per student, so the caller must say who. The
 ## approved_students dictionaries are the cross-screen source of truth,
-## so that is what gets written.
+## so that is what gets written. Writes the CANONICAL roster keys the
+## simulation reads: kepribadian1 (mood), kepribadian2 (energy),
+## akademis1/2/3 (the three skills) — never the dead "mood"/"energy" keys.
 ##
-## Returns {"applied": bool, "mood_delta": float, "energy_delta": float}.
-## The deltas are what actually landed after clamping, which is what the
-## inventory's floating stat-pop labels display.
+## Returns {"applied": bool, "mood_delta","energy_delta","akademis_delta",
+## "seni_delta","olahraga_delta": float} — five deltas, each the amount that
+## actually landed after clamping, which is what the inventory's floating
+## stat-pop labels display.
 func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
-	var refused := {"applied": false, "mood_delta": 0.0, "energy_delta": 0.0}
+	var refused := {"applied": false, "mood_delta": 0.0, "energy_delta": 0.0,
+		"akademis_delta": 0.0, "seni_delta": 0.0, "olahraga_delta": 0.0}
 	if item == null or quantity <= 0:
 		return refused
 	if get_inventory_quantity(item.item_name) < quantity:
@@ -234,21 +238,49 @@ func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
 	if target.is_empty():
 		return refused
 
-	var mood_before: float = float(target.get("mood", 0.0))
-	var energy_before: float = float(target.get("energy", 0.0))
-	var mood_after := clampf(mood_before + item.mood_boost * quantity, 0.0, STAT_MAX)
-	var energy_after := clampf(energy_before + item.energy_boost * quantity, 0.0, STAT_MAX)
-	target["mood"] = mood_after
-	target["energy"] = energy_after
+	var fields := [
+		["kepribadian1", item.mood_boost,        "mood_delta"],
+		["kepribadian2", item.energy_boost,      "energy_delta"],
+		["akademis1",    item.akademis_boost,    "akademis_delta"],
+		["akademis2",    item.seni_budaya_boost, "seni_delta"],
+		["akademis3",    item.olahraga_boost,    "olahraga_delta"],
+	]
+	var out := {"applied": true}
+	for f in fields:
+		var before: float = float(target.get(f[0], 0.0))
+		var after := clampf(before + float(f[1]) * quantity, 0.0, STAT_MAX)
+		target[f[0]] = after
+		out[f[2]] = after - before
 
 	remove_from_inventory(item.item_name, quantity)
 	run_stats.record_item_use(quantity)
+	return out
 
-	return {
-		"applied": true,
-		"mood_delta": mood_after - mood_before,
-		"energy_delta": energy_after - energy_before,
-	}
+
+## Applies one copy of `item` to each id in `student_ids` (one application
+## each; quantity is fixed at 1 per student). All-or-nothing: if the stack
+## cannot cover every id, nothing is applied and "applied" is false.
+## Returns {"applied": bool, "results": Array} where each result is
+## {"student_id": int, "name": String, "mood_delta","energy_delta",
+##  "akademis_delta","seni_delta","olahraga_delta": float}.
+func use_item_on_students(item: ItemData, student_ids: Array) -> Dictionary:
+	if item == null or student_ids.is_empty():
+		return {"applied": false, "results": []}
+	if get_inventory_quantity(item.item_name) < student_ids.size():
+		return {"applied": false, "results": []}
+	var results: Array = []
+	for sid in student_ids:
+		var sname := ""
+		for s in approved_students:
+			if s.get("id", -1) == sid:
+				sname = str(s.get("name", ""))
+				break
+		var r := use_item(item, sid, 1)
+		if r["applied"]:
+			r["student_id"] = sid
+			r["name"] = sname
+			results.append(r)
+	return {"applied": not results.is_empty(), "results": results}
 
 var daily_login_day: int = 1
 var last_claim_date: String = ""

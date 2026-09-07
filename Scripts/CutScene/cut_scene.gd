@@ -243,11 +243,17 @@ func _fade_to_black(duration: float = 0.8) -> void:
 	tween.tween_property(fade_overlay, "color:a", 1.0, duration)
 	await tween.finished
 
-## Skip bails straight to Lobby, unlike finishing the cutscene normally
-## (go_to_gameplay, below), which must route through StudentCard so a
-## fresh game gets a real approved_students roster instead of leaving it
-## empty. Skip Intro is only ever reachable during the normal
-## roster-approval intro, so there is nothing to reconcile here.
+## Skip must route through StudentCard exactly like finishing the cutscene
+## normally does (go_to_gameplay, below) -- this scene is only ever reached
+## fresh from MainMenu (see main_menu.gd; nothing else routes here), so
+## GameState.approved_students is always empty at this point. Routing
+## straight to Lobby used to leave it that way, which every downstream
+## screen (AturJadwal, StudentList, StudentManager's own week simulation)
+## silently read as "nobody to schedule" and covered for with its own
+## placeholder roster instead of surfacing the problem -- the same bug
+## go_to_gameplay() had before it was fixed to always delegate to
+## _next_scene_path(). Skip Intro is a normal, always-visible button (not
+## a debug affordance), so a real player hitting it hit this every time.
 func _on_skip_pressed() -> void:
 	# Transition.change_scene() already plays "whoosh" on the scene change;
 	# adding another here would stack with the _input handler's "tap" and
@@ -256,7 +262,7 @@ func _on_skip_pressed() -> void:
 	# _on_belajar_pressed note).
 	print("Skip Cutscene pressed")
 	await _fade_to_black()
-	GameState.next_scene = "res://Scenes/Lobby/loby.tscn"
+	GameState.next_scene = _next_scene_path()
 	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")
 
 func show_level_select_modal() -> void:

@@ -221,9 +221,9 @@ func _function_body(src: String, func_name: String) -> String:
 ## then routed to Lobby anyway. Both must now go through StudentCard --
 ## the only screen that actually populates approved_students.
 ##
-## Scoped to go_to_gameplay()'s own body (not the whole file), because
-## _on_skip_pressed() now legitimately routes to Lobby -- see the test
-## below.
+## Scoped to go_to_gameplay()'s own body (not the whole file) so it and
+## test_on_skip_pressed_also_routes_through_student_card below can each
+## pin their own function independently.
 func test_go_to_gameplay_always_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "go_to_gameplay")
@@ -247,15 +247,21 @@ func test_next_scene_path_defaults_to_student_card() -> void:
 		"_next_scene_path must default/fallback to StudentCard")
 
 
-## Skip is a deliberate exception to the rule above: pressing "Skip Intro"
-## bails straight to Lobby, even before a roster has been approved.
-func test_skip_button_routes_straight_to_lobby() -> void:
+## The bug this pins: _on_skip_pressed() routed straight to Lobby, even
+## though this scene (and therefore Skip Intro, a normal always-visible
+## button, not a debug affordance) is only ever reached fresh from
+## MainMenu -- GameState.approved_students is always empty here. That is
+## the exact bug go_to_gameplay() had before its own fix
+## (test_go_to_gameplay_always_routes_through_student_card, above); Skip
+## just never got the same fix applied to it.
+func test_on_skip_pressed_also_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "_on_skip_pressed")
-	assert_true(body.contains("res://Scenes/Lobby/loby.tscn"),
-		"Skip Intro must route straight to Lobby")
-	assert_false(body.contains("res://Scenes/StudentCard/student_card.tscn"),
-		"Skip Intro must not detour through StudentCard")
+	assert_true(body.contains("GameState.next_scene = _next_scene_path()"),
+		"Skip Intro must delegate routing to _next_scene_path(), same as go_to_gameplay()")
+	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
+		"Skip Intro must never hand the player to Lobby directly -- " +
+		"StudentCard is the only gate that populates approved_students")
 	assert_true(body.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
 		"must still hand off through the Loading scene")
 

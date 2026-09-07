@@ -399,10 +399,6 @@ the collaborator's inventory mobile-layout & item-apply pass. Both are written
 up in `docs/superpowers/CHANGELOG.md`, including every placeholder each one
 left behind.
 
-**Deliberately open: the BookClock's two transition curves still carry
-placeholder easing pending a `motion-lab` pass.**
-`BookClockWidget.transition_to` is the one call site to patch.
-
 Plan C's RunResult redesign also remains open, tracked in
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
 

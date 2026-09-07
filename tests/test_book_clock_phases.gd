@@ -95,6 +95,34 @@ func test_transition_duration_is_a_single_tunable_knob() -> void:
 		"how long a transition takes must be an Inspector knob")
 
 
+func test_transition_carries_the_tuned_motion_lab_preset() -> void:
+	# Chosen in motion-lab on 2026-09-07: SINE/IN_OUT over 2.0s. A sine
+	# ease-in-out is the gentlest of the twelve at both ends, which is
+	# what a sky wheeling overhead wants -- no snap into or out of rest.
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_contains(src, "Tween.TRANS_SINE", "the tuned transition is SINE")
+	assert_contains(src, "Tween.EASE_IN_OUT", "the tuned ease is IN_OUT")
+	var w := _widget()
+	assert_true(is_equal_approx(w.transition_duration, 2.0),
+		"the tuned duration is 2.0s, got %f" % w.transition_duration)
+	w.free()
+
+
+func test_schoolday_paces_both_phases_off_the_clock() -> void:
+	# The sky and the day's progress bar must not drift: SchoolDay takes
+	# each phase's length from the widget rather than splitting its own
+	# constant, so the tuned sweep is the single source of pacing.
+	var src := FileAccess.get_file_as_string(SCHOOLDAY_SCRIPT)
+	assert_contains(src, "func _phase_duration",
+		"SchoolDay should derive its phase length, not hardcode a split")
+	assert_contains(src, "transition_duration",
+		"and that length should come off the BookClock")
+	# Both phases, and only the phases -- counting call sites rather than
+	# mentions, so a doc comment naming the helper cannot skew this.
+	assert_eq(src.count(":= _phase_duration()"), 2,
+		"both day phases should take their length from the clock")
+
+
 func test_set_progress_still_maps_through_the_midday_pose() -> void:
 	# Old callers and the day progress bar keep working, and the middle
 	# of the day now lands exactly on the midday pose rather than

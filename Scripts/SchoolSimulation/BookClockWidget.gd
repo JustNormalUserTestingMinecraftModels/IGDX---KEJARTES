@@ -78,8 +78,12 @@ enum Phase { DAWN, MIDDAY, EVENING }
 		evening_rotation_degrees = value
 		_apply_rotation()
 ## How long one transition between two neighbouring poses takes, in
-## seconds, when transition_to() is not given an explicit duration.
-@export var transition_duration: float = 1.6
+## seconds. Chosen in motion-lab on 2026-09-07 alongside SINE/IN_OUT.
+##
+## SchoolDay reads this to pace BOTH the sky and the day's progress bar,
+## so the two always move together -- changing it here changes how long
+## a simulated school day takes on screen (two transitions per day).
+@export var transition_duration: float = 2.0
 ## When true, progress runs through smoothstep before it maps to an
 ## angle, so the sweep eases in and out even under a linear driver.
 ## SchoolDay.gd also eases its own tween; the two compose harmlessly.
@@ -211,7 +215,7 @@ func transition_to(phase: Phase, duration: float = -1.0) -> Tween:
 	var seconds: float = transition_duration if duration < 0.0 else duration
 	var tween := create_tween()
 	tween.tween_method(set_progress, _progress, progress_for_phase(phase), seconds) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	return tween
 
 

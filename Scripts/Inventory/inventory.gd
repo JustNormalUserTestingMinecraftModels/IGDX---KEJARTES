@@ -15,7 +15,7 @@ extends Control
 @export var toast_hold: float = 1.1
 
 @onready var _coin_label: Label = $MainColumn/Header/Row/CoinDisplay/CoinLabel
-@onready var _back_button: TextureButton = $MainColumn/Header/Row/BackButton
+@onready var _back_button: Button = $MainColumn/Header/Row/BackButton
 @onready var _grid: GridContainer = $MainColumn/GridArea/Scroll/Grid
 @onready var _empty_label: Label = $MainColumn/GridArea/Scroll/Grid/EmptyStateLabel
 @onready var _toast: Label = $ToastLabel

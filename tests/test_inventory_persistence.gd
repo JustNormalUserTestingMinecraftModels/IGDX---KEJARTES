@@ -46,10 +46,13 @@ func test_read_coerces_types() -> void:
 	assert_eq(GameState.inventory.get("Komik"), 2)
 
 func test_save_inventory_is_gated_in_editor_context() -> void:
+	# State-independent: save_inventory() must not CREATE (or remove) the
+	# file in editor/test context, whatever was there before.
+	var existed_before := FileAccess.file_exists(GameState.INVENTORY_SAVE_PATH)
 	GameState.inventory = {"Komik": 1}
 	GameState.save_inventory()
-	assert_false(FileAccess.file_exists(GameState.INVENTORY_SAVE_PATH),
-		"save_inventory must no-op under Engine.is_editor_hint()")
+	assert_eq(FileAccess.file_exists(GameState.INVENTORY_SAVE_PATH), existed_before,
+		"save_inventory must no-op on disk under Engine.is_editor_hint()")
 
 func test_forget_session_resets_run_state_but_keeps_progress_flags() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")

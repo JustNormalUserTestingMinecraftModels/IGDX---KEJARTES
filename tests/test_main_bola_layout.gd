@@ -21,9 +21,16 @@ const SCRIPT_PATH := "res://Scripts/Minigames/Olahraga/MainBola.gd"
 const SCENE_PATH := "res://Scenes/Minigames/Olahraga/MainBola.tscn"
 
 ## Every art slot the script used to fetch with a hardcoded load().
+## The goalkeeper collapsed from four textures to two on 2026-09-07:
+## one idle, one dive, with direction carried by flip_h instead.
 const TEXTURE_EXPORTS: Array[String] = [
-	"goalie_idle_texture", "goalie_left_texture", "goalie_right_texture",
-	"goalie_fail_texture", "ball_texture", "field_background_texture",
+	"goalie_idle_texture", "goalie_jump_texture",
+	"ball_texture", "field_background_texture",
+]
+
+## Textures the two-state goalie retired. Named so a revert is loud.
+const RETIRED_TEXTURE_EXPORTS: Array[String] = [
+	"goalie_left_texture", "goalie_right_texture", "goalie_fail_texture",
 ]
 
 ## Every magic fraction _setup_layout() used to hardcode.
@@ -100,3 +107,52 @@ func test_scene_positions_every_visual_node() -> void:
 		"Ball sits at the origin -- the scene was never given a real position")
 	assert_ne((root.get_node("Goalie") as Node2D).position, Vector2.ZERO,
 		"Goalie sits at the origin -- the scene was never given a real position")
+
+
+func test_goalie_has_exactly_two_pose_textures() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_contains(src, "kiper_idle.png",
+		"goalie_idle_texture should preload the new alpha PNG")
+	assert_contains(src, "kiper_jump.png",
+		"goalie_jump_texture should preload the new alpha PNG")
+
+
+func test_retired_goalie_textures_are_gone() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	for retired in RETIRED_TEXTURE_EXPORTS:
+		assert_false(src.contains(retired),
+			"%s should have been removed with the two-state goalie" % retired)
+
+
+func test_dive_direction_uses_flip_h_not_a_texture_swap() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_contains(src, "goalie_gfx.flip_h",
+		"dive direction should mirror the one jump sprite, not swap textures")
+	assert_contains(src, "jump_faces_right",
+		"which way the jump art faces must stay an Inspector toggle")
+
+
+func test_goalie_breathing_is_tunable_not_hardcoded() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	for knob in ["breath_rate", "breath_scale_amount"]:
+		assert_contains(src, "@export var %s" % knob,
+			"breathing amplitude and rate must be Inspector knobs")
+
+
+func test_goalie_breathing_pivots_at_the_feet() -> void:
+	# A standing character scaled about its middle lifts off the goal
+	# line. The pivot has to sit at bottom-centre, and it has to be
+	# rewritten in _apply_layout because that function rewrites size.
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_contains(src, "goalie_gfx.pivot_offset",
+		"breathing needs an explicit pivot")
+	assert_contains(src, "goalie_gfx.size.y)",
+		"the pivot's y should be the full height, i.e. the feet")
+
+
+func test_goalie_breathing_pauses_while_a_shot_resolves() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_contains(src, "func _breathe_goalie",
+		"breathing should live in its own function, not inline in _process")
+	assert_contains(src, "is_resolving",
+		"breathing must yield to the dive animation")

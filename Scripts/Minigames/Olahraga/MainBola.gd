@@ -4,13 +4,22 @@ extends BaseMinigame
 # ─── Visual - Art ────────────────────────────────────────────────────────────
 @export_group("Visual - Art")
 ## The goalkeeper standing ready, before the shot resolves.
-@export var goalie_idle_texture: Texture2D = preload("res://Assets/Images/Textures/KiperIdle.jpg")
-## The goalkeeper diving left. Shown when the save resolves to the left.
-@export var goalie_left_texture: Texture2D = preload("res://Assets/Images/Textures/KiperLeft.jpg")
-## The goalkeeper diving right.
-@export var goalie_right_texture: Texture2D = preload("res://Assets/Images/Textures/KiperRight.jpg")
-## The goalkeeper beaten. Shown on a scored goal.
-@export var goalie_fail_texture: Texture2D = preload("res://Assets/Images/Textures/Fail.jpg")
+@export var goalie_idle_texture: Texture2D = preload("res://Assets/Images/Textures/kiper_idle.png")
+## The goalkeeper diving. One sprite serves both directions -- a left dive
+## is this same art mirrored, so the pose only had to be drawn once.
+@export var goalie_jump_texture: Texture2D = preload("res://Assets/Images/Textures/kiper_jump.png")
+## True when goalie_jump_texture is drawn diving toward screen-RIGHT.
+## Flip this if a replacement dive sprite faces the other way; nothing
+## else needs to change.
+@export var jump_faces_right: bool = true
+## When true a centre block also shows the dive pose. Off by default:
+## on dive_dir == 0 the keeper does not move, so he should not be mid-air.
+@export var center_block_uses_jump: bool = false
+## How fast the idle keeper breathes, in radians per second.
+@export var breath_rate: float = 3.2
+## How far the idle breath scales the keeper, as a fraction of his size.
+## 0.03 is a 3% swell -- readable at a glance without reading as a bounce.
+@export var breath_scale_amount: float = 0.03
 ## The ball.
 @export var ball_texture: Texture2D = preload("res://Assets/Images/Textures/bola.png")
 ## The pitch and goal frame behind everything. When this is set the procedural
@@ -159,6 +168,8 @@ var ball_gfx:   TextureRect = null
 var screen_size:    Vector2
 var ball_start_pos: Vector2
 var goalie_base_pos: Vector2
+## Phase accumulator for the idle keeper's breathing, in radians.
+var breath_time: float = 0.0
 var goal_left_x:  float
 var goal_right_x: float
 var goal_top_y:   float
@@ -200,8 +211,28 @@ func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 
 
 # ─── Process loop for target movement & glow animation ──────────────────────
+## A slow swell on the idle keeper, so he does not read as a still image
+## between shots. Suspended while a shot resolves -- the dive tween owns
+## the sprite then -- and rewound to rest so a dive never starts from a
+## mid-breath scale.
+func _breathe_goalie(delta: float) -> void:
+	if goalie_gfx == null:
+		return
+	if is_resolving or is_game_over or not is_game_active:
+		goalie_gfx.scale = Vector2.ONE
+		breath_time = 0.0
+		return
+	breath_time += delta * breath_rate
+	var swell: float = sin(breath_time) * breath_scale_amount
+	# The chest rises more than it widens, as a real breath does.
+	goalie_gfx.scale = Vector2(1.0 - swell * 0.5, 1.0 + swell)
+
+
 func _process(delta: float) -> void:
 	super._process(delta)
+	# Before the guard, so the reset branch still runs while a shot is
+	# resolving and the keeper never starts a dive mid-breath.
+	_breathe_goalie(delta)
 	if not is_game_active or is_resolving or is_game_over:
 		return
 
@@ -330,6 +361,11 @@ func _setup_layout() -> void:
 			goalie_gfx.texture  = goalie_idle_texture
 			goalie_gfx.size     = Vector2(g_width, g_height)
 			goalie_gfx.position = Vector2(-g_width * 0.5, -g_height * 0.78)
+			# Breathe about the feet, not the middle: a standing figure
+			# scaled about its centre lifts off the goal line. This has
+			# to live here rather than in _ready because this function
+			# rewrites goalie_gfx.size on every resize.
+			goalie_gfx.pivot_offset = Vector2(goalie_gfx.size.x * 0.5, goalie_gfx.size.y)
 
 	# ── Ball ─────────────────────────────────────────────────
 	var ball_r: float = sw * ball_radius_frac
@@ -533,9 +569,17 @@ func _shoot_ball(swipe_vec: Vector2) -> void:
 
 	var dive_time: float = clampf(0.35 / goalie_speed_mult, 0.18, 0.40)
 
-	# ── Set goalie direction texture ─────────────────────────
+	# ── Set goalie pose ──────────────────────────────────────
+	# One dive sprite serves both sides: flip_h mirrors it. The XOR
+	# against jump_faces_right means a replacement sprite drawn facing
+	# the other way needs an Inspector toggle, not a code edit.
 	if goalie_gfx:
-		goalie_gfx.texture = goalie_left_texture if dive_dir < 0 else goalie_right_texture
+		if dive_dir == 0 and not center_block_uses_jump:
+			goalie_gfx.texture = goalie_idle_texture
+			goalie_gfx.flip_h = false
+		else:
+			goalie_gfx.texture = goalie_jump_texture
+			goalie_gfx.flip_h = (dive_dir < 0) == jump_faces_right
 
 	# ── Animate ball → goal ──────────────────────────────────
 	var ball_tween: Tween = create_tween()
@@ -664,9 +708,11 @@ func _reset_shot() -> void:
 		ball.global_position = ball_start_pos
 		ball.scale = Vector2.ONE
 
-	# Goalie returns to center, texture back to idle
+	# Goalie returns to center, texture back to idle. Clearing flip_h
+	# matters: without it a left dive leaves the idle pose mirrored.
 	if goalie_gfx:
 		goalie_gfx.texture = goalie_idle_texture
+		goalie_gfx.flip_h = false
 	if goalie:
 		var rt := create_tween()
 		rt.tween_property(goalie, "global_position:x", goalie_base_pos.x, 0.28)\

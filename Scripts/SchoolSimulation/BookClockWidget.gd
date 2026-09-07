@@ -36,20 +36,40 @@ const SKY_NODE := "SkyBackground"
 ## Child that holds the stationary school and hill.
 const FOREGROUND_NODE := "SchoolForeground"
 
+## The day's three resting poses. The event rolls at MIDDAY.
+enum Phase { DAWN, MIDDAY, EVENING }
+
 @export_group("Motion")
-## The sky's angle at progress 0.0, in degrees -- its "morning" pose.
-@export var start_rotation_degrees: float = 0.0:
+## The three angles the school day rests at, in degrees.
+##
+## The defaults reproduce the old single -180 sweep exactly: midday is
+## simply the halfway angle, named. Nothing moves on screen until the
+## TIMING changes -- what changed on 2026-09-07 is that the day is two
+## deliberate transitions between named poses rather than one continuous
+## sweep, with the event pinned to the middle one.
+##
+## Godot's rotation is clockwise-positive with y down, so the
+## counter-clockwise sweep the mechanism reference asks for runs toward
+## NEGATIVE angles.
+
+## The sky's angle at the start of the school day.
+@export var dawn_rotation_degrees: float = 0.0:
 	set(value):
-		start_rotation_degrees = value
+		dawn_rotation_degrees = value
 		_apply_rotation()
-## Degrees swept across one whole school day. Negative turns the sky
-## counter-clockwise on screen, which is the direction the mechanism
-## reference's arrows describe. -180 carries the bright half of the sky
-## all the way across and brings the night half down in its place.
-@export var total_rotation_degrees: float = -180.0:
+## The sky's angle when the day's event rolls.
+@export var midday_rotation_degrees: float = -90.0:
 	set(value):
-		total_rotation_degrees = value
+		midday_rotation_degrees = value
 		_apply_rotation()
+## The sky's angle when the school day ends.
+@export var evening_rotation_degrees: float = -180.0:
+	set(value):
+		evening_rotation_degrees = value
+		_apply_rotation()
+## How long one transition between two neighbouring poses takes, in
+## seconds, when transition_to() is not given an explicit duration.
+@export var transition_duration: float = 1.6
 ## When true, progress runs through smoothstep before it maps to an
 ## angle, so the sweep eases in and out even under a linear driver.
 ## SchoolDay.gd also eases its own tween; the two compose harmlessly.
@@ -132,8 +152,56 @@ func eased_progress() -> float:
 
 
 ## The sky's angle, in degrees, for the current progress.
+##
+## Piecewise through the midday pose, so progress 0.5 lands exactly on
+## it however the three angles are set. The old single lerp put midday
+## halfway between dawn and evening by arithmetic; this puts it there by
+## definition, which is what lets the pose be tuned on its own.
 func current_rotation_degrees() -> float:
-	return start_rotation_degrees + eased_progress() * total_rotation_degrees
+	var eased := eased_progress()
+	if eased <= 0.5:
+		return lerpf(dawn_rotation_degrees, midday_rotation_degrees, eased * 2.0)
+	return lerpf(midday_rotation_degrees, evening_rotation_degrees, (eased - 0.5) * 2.0)
+
+
+## The angle one phase rests at.
+func angle_for_phase(phase: Phase) -> float:
+	match phase:
+		Phase.MIDDAY:
+			return midday_rotation_degrees
+		Phase.EVENING:
+			return evening_rotation_degrees
+		_:
+			return dawn_rotation_degrees
+
+
+## The raw progress value one phase sits at.
+func progress_for_phase(phase: Phase) -> float:
+	match phase:
+		Phase.MIDDAY:
+			return 0.5
+		Phase.EVENING:
+			return 1.0
+		_:
+			return 0.0
+
+
+## Snaps the sky to one pose, with no animation.
+func set_phase(phase: Phase) -> void:
+	set_progress(progress_for_phase(phase))
+
+
+## Sweeps the sky to one pose and hands the Tween back, so the caller can
+## await it and line the rest of the screen up with the sweep.
+##
+## The easing lives here rather than at the call site so there is exactly
+## one place to tune how a transition feels. Pass a negative duration to
+## take transition_duration.
+func transition_to(phase: Phase, duration: float = -1.0) -> Tween:
+	var seconds: float = transition_duration if duration < 0.0 else duration
+	var tween := create_tween()
+	tween.tween_method(set_progress, _progress, progress_for_phase(phase), seconds)		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	return tween
 
 
 # ── Internals ─────────────────────────────────────────────────────────────────

@@ -95,6 +95,15 @@ signal _summary_closed
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 const DAY_FILL_DURATION = 2.0   # seconds to fill a day's progress bar
 
+## Where in the school day the event rolls, as a percentage of it.
+##
+## Fixed at midday -- the BookClock's middle pose -- rather than the
+## randomised afternoon point it used to be. The day is now two
+## transitions, dawn to midday and midday to evening, and the event
+## belongs on the pose between them rather than at a random point in
+## the afternoon.
+const EVENT_TRIGGER_PCT := 50.0
+
 # Event distribution chances (total 100)
 const CHANCE_NOTHING  = 20
 const CHANCE_MINIGAME = 40
@@ -352,7 +361,7 @@ func _run_single_day() -> void:
 		decay_results = student_manager.apply_daily_decay_all(day_name)
 
 	# ── Phase 1: Fill bar to a random "event trigger" point ──────────────────
-	var trigger_pct = randf_range(0.5, 0.8) * 100.0
+	var trigger_pct := EVENT_TRIGGER_PCT
 	var phase1_dur  = DAY_FILL_DURATION * (trigger_pct / 100.0)
 
 	status_label.text = "Melewati hari sekolah..."

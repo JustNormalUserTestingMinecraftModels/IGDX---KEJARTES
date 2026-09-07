@@ -53,6 +53,9 @@ func change_scene(path: String, style: Style = Style.WIPE, duration_override: fl
 		return
 	_busy = true
 
+	if not Engine.is_editor_hint():
+		GameState.save_inventory()
+
 	AudioDirector.play_sfx(&"whoosh")
 	await _cover_in(style, duration_override)
 

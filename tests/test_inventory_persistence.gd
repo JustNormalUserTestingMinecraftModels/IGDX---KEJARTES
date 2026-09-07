@@ -62,3 +62,10 @@ func test_forget_session_clears_run_state() -> void:
 	assert_true(GameState.inventory.is_empty())
 	assert_true(GameState.approved_students.is_empty())
 	assert_eq(GameState.player_money, 0)
+
+func test_transition_flushes_inventory_on_scene_change() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Transition/transition.gd")
+	assert_true(src.contains("GameState.save_inventory()"),
+		"change_scene must flush the inventory save")
+	assert_true(src.contains("is_editor_hint"),
+		"the save call must be editor-gated")

@@ -26,7 +26,7 @@ func test_every_declared_variation_exists() -> void:
 		"PrimaryButton", "SecondaryButton", "DangerButton",
 		"Card", "SunkenPanel", "Scrim",
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
-		"CaptionLabel", "MicroLabel", "StatBar",
+		"CaptionLabel", "MicroLabel", "StatBar", "FilterChipButton",
 	]
 	var actual := _theme.get_type_list()
 	for variation in expected:
@@ -34,7 +34,7 @@ func test_every_declared_variation_exists() -> void:
 
 
 func test_button_variations_have_all_four_states() -> void:
-	for variation in ["PrimaryButton", "SecondaryButton", "DangerButton"]:
+	for variation in ["PrimaryButton", "SecondaryButton", "DangerButton", "FilterChipButton"]:
 		for state in ["normal", "hover", "pressed", "disabled"]:
 			assert_true(_theme.has_stylebox(state, variation),
 				"%s must define stylebox: %s" % [variation, state])

@@ -1,558 +1,148 @@
 extends Control
+## The Inventory screen. Every owned item is a tappable grid tile; tapping one
+## opens ItemDetailSheet, whose "Pakai ke Siswa" button opens ApplyItemScreen.
+## This script never builds visuals at runtime -- tiles, the sheet and the
+## apply screen are all PackedScene templates, and the chrome is authored in
+## the .tscn with theme variations.
 
-# ─── Theme Colors (used for dynamic elements only) ───
-## Populated from DesignTokens in _ready(); see _setup_dynamic_colors().
-var SLOT_BG: Color
-var ACCENT: Color
-var GOLD: Color
-var TEXT_WHITE: Color
-var TEXT_GRAY: Color
-var SHADOW_COLOR: Color
+## One grid tile.
+@export var slot_scene: PackedScene = preload("res://Scenes/Inventory/InventorySlot.tscn")
+## Bottom sheet shown when a tile is tapped.
+@export var detail_sheet_scene: PackedScene = preload("res://Scenes/Inventory/ItemDetailSheet.tscn")
+## Full-screen "apply to students" modal opened from the sheet.
+@export var apply_screen_scene: PackedScene = preload("res://Scenes/Inventory/ApplyItemScreen.tscn")
+## Seconds the "stack habis" toast stays fully visible.
+@export var toast_hold: float = 1.1
 
-var CATEGORY_COLORS: Dictionary = {}
-var DEFAULT_CATEGORY_COLOR: Color
+@onready var _coin_label: Label = $MainColumn/Header/Row/CoinDisplay/CoinLabel
+@onready var _back_button: TextureButton = $MainColumn/Header/Row/BackButton
+@onready var _grid: GridContainer = $MainColumn/GridArea/Scroll/Grid
+@onready var _empty_label: Label = $MainColumn/GridArea/Scroll/Grid/EmptyStateLabel
+@onready var _toast: Label = $ToastLabel
+@onready var _chips: Array = [
+	$MainColumn/FilterRow/Scroll/Chips/CatSemua,
+	$MainColumn/FilterRow/Scroll/Chips/CatBuku,
+	$MainColumn/FilterRow/Scroll/Chips/CatOlahraga,
+	$MainColumn/FilterRow/Scroll/Chips/CatMakanan,
+]
 
-# ─── Scene References ───
-@onready var coin_label: Label = $MainLayout/Header/HeaderContent/CoinDisplay/CoinLabel
-@onready var back_button: TextureButton = $MainLayout/Header/HeaderContent/BackButton
-@onready var grid: GridContainer = $MainLayout/Body/GridMargin/ScrollContainer/GridContainer
-@onready var empty_message_label: Label = $MainLayout/Body/GridMargin/ScrollContainer/GridContainer/EmptyMessageLabel
-@onready var detail_panel: PanelContainer = $MainLayout/DetailPanel
-@onready var detail_icon: TextureRect = $MainLayout/DetailPanel/DetailContent/DetailIcon
-@onready var detail_name_label: Label = $MainLayout/DetailPanel/DetailContent/DetailInfo/DetailName
-@onready var detail_desc_label: Label = $MainLayout/DetailPanel/DetailContent/DetailInfo/DetailDesc
-@onready var use_button: Button = $MainLayout/DetailPanel/DetailContent/UseButton
-@onready var category_list_container: VBoxContainer = $MainLayout/Body/Sidebar/CategoryList
-
-# ─── Use Popup References ───
-@onready var use_popup: ColorRect = $UsePopup
-@onready var popup_item_icon: TextureRect = $UsePopup/CenterContainer/PopupPanel/VBox/ItemPreviewContainer/ItemSlot/ItemIcon
-@onready var popup_item_badge: Label = $UsePopup/CenterContainer/PopupPanel/VBox/ItemPreviewContainer/ItemSlot/ItemBadge
-@onready var popup_item_name: Label = $UsePopup/CenterContainer/PopupPanel/VBox/ItemNameLabel
-@onready var popup_qty_label: Label = $UsePopup/CenterContainer/PopupPanel/VBox/StepperHBox/QtyPanel/QtyLabel
-@onready var popup_minus_btn: Button = $UsePopup/CenterContainer/PopupPanel/VBox/StepperHBox/MinusButton
-@onready var popup_plus_btn: Button = $UsePopup/CenterContainer/PopupPanel/VBox/StepperHBox/PlusButton
-@onready var popup_cancel_btn: Button = $UsePopup/CenterContainer/PopupPanel/VBox/ButtonsHBox/CancelButton
-@onready var popup_ok_btn: Button = $UsePopup/CenterContainer/PopupPanel/VBox/ButtonsHBox/OkButton
-@onready var student_strip: HBoxContainer = $UsePopup/CenterContainer/PopupPanel/VBox/StudentStrip
-
-# ─── State ───
-var selected_item: ItemData = null
-var selected_slot: InventorySlot = null
 var current_category: String = "Semua"
-var category_buttons: Dictionary = {}
+var _sheet: ItemDetailSheet = null
+var _apply_screen: ApplyItemScreen = null
 
-var current_use_qty: int = 1
-var max_use_qty: int = 1
-var _selected_student_id: int = -1
-
-# ═══════════════════════════════════════════
-#  LIFECYCLE
-# ═══════════════════════════════════════════
-
-func _ready():
-	var tokens := DesignTokens.load_default()
-	_setup_dynamic_colors(tokens)
-
-	_apply_png_panel_overrides()
-
-	# Dynamically discover category buttons
-	category_buttons.clear()
-	for child in category_list_container.get_children():
-		if child is Button:
-			category_buttons[child.text] = child
-			if not child.pressed.is_connected(_on_category_pressed):
-				child.pressed.connect(_on_category_pressed.bind(child.text))
-
-	# Connect main signals
-	back_button.pressed.connect(_on_back_pressed)
-	use_button.pressed.connect(_on_use_pressed)
-
-	# Connect popup signals
-	popup_minus_btn.pressed.connect(_on_minus_pressed)
-	popup_plus_btn.pressed.connect(_on_plus_pressed)
-	popup_cancel_btn.pressed.connect(_on_popup_cancel_pressed)
-	popup_ok_btn.pressed.connect(_on_popup_ok_pressed)
-
-	use_popup.hide()
-
-	if not use_popup.gui_input.is_connected(_on_use_popup_input):
-		use_popup.gui_input.connect(_on_use_popup_input)
-
-	# Apply initial styles
-	_style_all_category_buttons()
-	coin_label.text = "%d" % GameState.player_money
-
-	# Signal-driven updates
+func _ready() -> void:
+	_back_button.pressed.connect(_on_back_pressed)
+	for chip in _chips:
+		chip.pressed.connect(_on_chip_pressed.bind(chip.text))
+	_chips[0].button_pressed = true
+	_toast.visible = false
+	_coin_label.text = "%d" % GameState.player_money
 	if not GameState.money_changed.is_connected(_on_money_changed):
 		GameState.money_changed.connect(_on_money_changed)
 	if not GameState.inventory_changed.is_connected(_on_inventory_changed):
 		GameState.inventory_changed.connect(_on_inventory_changed)
-
-	# Populate the grid
 	_populate_grid()
 
-func _setup_dynamic_colors(tokens: DesignTokens) -> void:
-	SLOT_BG = tokens.surface_overlay
-	ACCENT = tokens.brand_primary
-	GOLD = tokens.currency_gold
-	TEXT_WHITE = tokens.text_on_brand
-	TEXT_GRAY = tokens.text_secondary
-	SHADOW_COLOR = Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.85)
+func _on_money_changed(_amount: int) -> void:
+	_coin_label.text = "%d" % GameState.player_money
 
-	CATEGORY_COLORS = {
-		"Buku": tokens.brand_primary,
-		"Olahraga": tokens.cat_libur,
-		"Makanan": tokens.cat_olahraga,
-	}
-	DEFAULT_CATEGORY_COLOR = tokens.text_secondary
-
-func _apply_png_panel_overrides():
-	var header = $MainLayout/Header as PanelContainer
-	var header_tex = load("res://Assets/Images/Shop/UI/panel_header.png")
-	if header and header_tex:
-		var sb = StyleBoxTexture.new()
-		sb.texture = header_tex
-		sb.texture_margin_left = 32
-		sb.texture_margin_right = 32
-		sb.texture_margin_bottom = 32
-		header.add_theme_stylebox_override("panel", sb)
-
-	var sidebar = $MainLayout/Body/Sidebar as PanelContainer
-	var sidebar_tex = load("res://Assets/Images/Shop/UI/panel_sidebar.png")
-	if sidebar and sidebar_tex:
-		var sb = StyleBoxTexture.new()
-		sb.texture = sidebar_tex
-		sb.texture_margin_left = 32
-		sb.texture_margin_right = 32
-		sb.texture_margin_top = 32
-		sidebar.add_theme_stylebox_override("panel", sb)
-
-	var detail_panel_node = $MainLayout/DetailPanel as PanelContainer
-	var detail_tex = load("res://Assets/Images/Shop/UI/panel_detail.png")
-	if detail_panel_node and detail_tex:
-		var sb = StyleBoxTexture.new()
-		sb.texture = detail_tex
-		sb.texture_margin_left = 32
-		sb.texture_margin_right = 32
-		sb.texture_margin_top = 40
-		detail_panel_node.add_theme_stylebox_override("panel", sb)
-
-	var popup_panel = $UsePopup/CenterContainer/PopupPanel as PanelContainer
-	var popup_tex = load("res://Assets/Images/Shop/UI/panel_popup.png")
-	if popup_panel and popup_tex:
-		var sb = StyleBoxTexture.new()
-		sb.texture = popup_tex
-		sb.texture_margin_left = 48
-		sb.texture_margin_right = 48
-		sb.texture_margin_top = 48
-		sb.texture_margin_bottom = 48
-		popup_panel.add_theme_stylebox_override("panel", sb)
-
-# ═══════════════════════════════════════════
-#  SIGNAL HANDLERS
-# ═══════════════════════════════════════════
-
-func _on_money_changed(_new_amount: int):
-	coin_label.text = "%d" % GameState.player_money
-
-func _on_inventory_changed():
-	# Refresh grid if an item was used
+func _on_inventory_changed() -> void:
 	if is_inside_tree():
 		_populate_grid()
 
-# ═══════════════════════════════════════════
-#  CATEGORY BUTTON STYLING
-# ═══════════════════════════════════════════
-
-func _style_all_category_buttons():
-	for cat in category_buttons:
-		_apply_category_style(category_buttons[cat], cat == current_category)
-
-func _apply_category_style(btn: Button, is_selected: bool):
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-
-	var normal := StyleBoxFlat.new()
-	normal.corner_radius_top_left = 10
-	normal.corner_radius_top_right = 10
-	normal.corner_radius_bottom_left = 10
-	normal.corner_radius_bottom_right = 10
-	if is_selected:
-		normal.bg_color = ACCENT.darkened(0.2)
-		normal.border_width_left = 4
-		normal.border_color = ACCENT
-	else:
-		normal.bg_color = SLOT_BG
-
-	normal.content_margin_left = 14
-	normal.content_margin_right = 14
-	normal.content_margin_top = 8
-	normal.content_margin_bottom = 8
-	btn.add_theme_stylebox_override("normal", normal)
-
-	if is_selected:
-		btn.add_theme_color_override("font_color", TEXT_WHITE)
-	else:
-		btn.add_theme_color_override("font_color", TEXT_GRAY)
-
-	var hover: StyleBoxFlat = normal.duplicate()
-	hover.bg_color = ACCENT.darkened(0.4) if not is_selected else ACCENT.darkened(0.1)
-	btn.add_theme_stylebox_override("hover", hover)
-
-	var pressed_s: StyleBoxFlat = normal.duplicate()
-	pressed_s.bg_color = ACCENT.darkened(0.3)
-	btn.add_theme_stylebox_override("pressed", pressed_s)
-
-	btn.add_theme_color_override("font_hover_color", TEXT_WHITE)
-	btn.add_theme_color_override("font_pressed_color", TEXT_WHITE)
-
-# ═══════════════════════════════════════════
-#  GRID POPULATION
-# ═══════════════════════════════════════════
-
-func _populate_grid():
-	# Clear previous slots. EmptyMessageLabel is a permanent scene child of
-	# `grid`, not a per-item slot, so it is skipped rather than freed.
-	for child in grid.get_children():
-		if child == empty_message_label:
+func _populate_grid() -> void:
+	for child in _grid.get_children():
+		if child == _empty_label:
 			continue
-		grid.remove_child(child)
+		_grid.remove_child(child)
 		child.queue_free()
+	_empty_label.visible = false
 
-	empty_message_label.visible = false
-	selected_item = null
-	selected_slot = null
-	detail_panel.hide()
-	use_popup.hide()
-
-	var has_items := false
-	var slot_index := 0
-
+	var idx := 0
 	for item_name in GameState.inventory:
-		var quantity: int = GameState.inventory[item_name]
-		var item_data: ItemData = ItemDatabase.get_item(item_name)
-		if item_data == null:
+		var qty: int = GameState.inventory[item_name]
+		var data: ItemData = ItemDatabase.get_item(item_name)
+		if data == null:
 			continue
-
-		# Category filter
-		if current_category != "Semua" and item_data.category != current_category:
+		if current_category != "Semua" and data.category != current_category:
 			continue
+		var slot: InventorySlot = slot_scene.instantiate()
+		_grid.add_child(slot)
+		slot.setup(data, qty)
+		slot.slot_pressed.connect(_on_slot_pressed)
+		AnimUtils.staggered_entrance(slot, idx * 0.06)
+		idx += 1
 
-		has_items = true
-		_create_item_slot(item_data, quantity, slot_index)
-		slot_index += 1
+	if idx == 0:
+		_empty_label.text = "Inventory kosong" if current_category == "Semua" \
+			else "Tidak ada item \"%s\"" % current_category
+		_empty_label.visible = true
 
-	if not has_items:
-		_show_empty_message()
-
-## The scene one grid tile is authored in.
-@export var slot_scene: PackedScene = preload("res://Scenes/Inventory/InventorySlot.tscn")
-
-## Add one tile to the grid for an owned item.
-##
-## Affects: adds a child to `grid` and starts its staggered entrance. The
-## tile owns its own look; this function only supplies data and wiring.
-func _create_item_slot(item: ItemData, quantity: int, slot_index: int = 0) -> void:
-	var slot: InventorySlot = slot_scene.instantiate()
-	slot.category_colors = CATEGORY_COLORS
-	slot.default_category_color = DEFAULT_CATEGORY_COLOR
-	grid.add_child(slot)
-	slot.setup(item, quantity)
-	slot.slot_pressed.connect(_on_slot_pressed)
-
-	# Staggered entrance animation
-	AnimUtils.staggered_entrance(slot, slot_index * 0.06)
-
-func _show_empty_message():
-	if current_category == "Semua":
-		empty_message_label.text = "📦 Inventory kosong"
-	else:
-		empty_message_label.text = "🔍 Tidak ada item \"%s\"" % current_category
-	empty_message_label.visible = true
-	AnimUtils.fade_in(empty_message_label)
-
-# ═══════════════════════════════════════════
-#  INTERACTION
-# ═══════════════════════════════════════════
-
-func _notification(what):
-	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		if use_popup and use_popup.visible:
-			_on_popup_cancel_pressed()
-		elif detail_panel and detail_panel.visible:
-			_deselect_slot()
-		else:
-			_on_back_pressed()
-
-## The tap-vs-scroll gesture is now detected inside InventorySlot itself;
-## this only runs on a confirmed clean tap.
-func _on_slot_pressed(slot: InventorySlot) -> void:
-	if selected_slot == slot:
-		_deselect_slot()
-	else:
-		_select_slot(slot, slot.item)
-
-func _select_slot(slot: InventorySlot, item: ItemData):
-	# Deselect previous
-	if selected_slot != null:
-		selected_slot.set_selected(false)
-		AnimUtils.deselect_shrink(selected_slot)
-
-	# Highlight new with bounce
-	selected_slot = slot
-	selected_item = item
-	slot.set_selected(true)
-	AnimUtils.slot_bounce(slot)
-	AudioDirector.play_sfx(&"tap")
-
-	# Update detail panel with description + stats
-	detail_icon.texture = item.icon
-	detail_name_label.text = item.item_name
-
-	var desc_text = item.description if item.description != "" else "Tidak ada deskripsi."
-	var stats_parts: Array[String] = []
-	if item.mood_boost != 0:
-		stats_parts.append("😊 Mood: %+d" % item.mood_boost)
-	if item.energy_boost != 0:
-		stats_parts.append("⚡ Energi: %+d" % item.energy_boost)
-
-	if not stats_parts.is_empty():
-		desc_text += "\n" + " | ".join(stats_parts)
-
-	detail_desc_label.text = desc_text
-	AnimUtils.detail_slide_in(detail_panel)
-	AnimUtils.wobble(detail_icon)
-
-func _deselect_slot():
-	if selected_slot != null:
-		selected_slot.set_selected(false)
-		AnimUtils.deselect_shrink(selected_slot)
-	selected_slot = null
-	selected_item = null
-	if detail_panel.visible:
-		AnimUtils.detail_slide_out(detail_panel)
-	use_popup.hide()
-
-func _on_category_pressed(category: String):
+func _on_chip_pressed(category: String) -> void:
 	if current_category == category:
 		return
 	current_category = category
 	AudioDirector.play_sfx(&"tap")
-
-	# Animate category buttons smoothly
-	for cat_name in category_buttons:
-		var btn = category_buttons[cat_name] as Control
-		btn.scale = Vector2.ONE
-		btn.position.x = 0.0
-		AnimUtils._center_pivot(btn)
-
-		if cat_name == category:
-			# Subtle horizontal punch
-			var cat_tween = btn.create_tween().set_parallel(true)
-			btn.scale.x = 0.92
-			btn.position.x = 6.0
-			cat_tween.tween_property(btn, "scale:x", 1.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			cat_tween.tween_property(btn, "position:x", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-
-	_style_all_category_buttons()
 	_populate_grid()
 
-func _on_back_pressed():
-	AnimUtils.back_bounce(back_button)
+func _on_slot_pressed(slot: InventorySlot) -> void:
+	if _sheet != null:
+		_sheet.queue_free()
+		_sheet = null
+	_open_detail_sheet(slot.item)
+
+func _open_detail_sheet(item: ItemData) -> void:
+	_sheet = detail_sheet_scene.instantiate()
+	add_child(_sheet)
+	_sheet.setup(item, GameState.get_inventory_quantity(item.item_name))
+	_sheet.apply_requested.connect(_open_apply_screen)
+	_sheet.dismissed.connect(func(): _sheet = null)
+
+func _open_apply_screen(item: ItemData) -> void:
+	if _sheet != null:
+		_sheet.queue_free()
+		_sheet = null
+	_apply_screen = apply_screen_scene.instantiate()
+	add_child(_apply_screen)
+	_apply_screen.setup(item)
+	_apply_screen.applied.connect(_on_items_applied.bind(item))
+	_apply_screen.cancelled.connect(func(): _apply_screen = null)
+
+func _on_items_applied(_results: Array, item: ItemData) -> void:
+	_apply_screen = null
 	AudioDirector.play_sfx(&"whoosh")
-	await back_button.create_tween().tween_interval(0.2).finished
+	var remaining := GameState.get_inventory_quantity(item.item_name)
+	_populate_grid()
+	if remaining > 0:
+		for slot in _grid.get_children():
+			if slot is InventorySlot and slot.item == item:
+				slot.bounce_badge()
+	else:
+		_show_toast("%s habis" % item.item_name)
+
+func _show_toast(text: String) -> void:
+	_toast.text = text
+	_toast.visible = true
+	_toast.modulate.a = 0.0
+	var t := create_tween()
+	t.tween_property(_toast, "modulate:a", 1.0, 0.15)
+	t.tween_interval(toast_hold)
+	t.tween_property(_toast, "modulate:a", 0.0, 0.3)
+	t.tween_callback(func(): _toast.visible = false)
+
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
+		return
+	if _apply_screen != null:
+		_apply_screen.queue_free()
+		_apply_screen = null
+	elif _sheet != null:
+		_sheet.queue_free()
+		_sheet = null
+	else:
+		_on_back_pressed()
+
+func _on_back_pressed() -> void:
+	AudioDirector.play_sfx(&"whoosh")
+	await get_tree().create_timer(0.15).timeout
 	Transition.change_scene("res://Scenes/Lobby/loby.tscn", Transition.Style.WIPE)
-
-# ═══════════════════════════════════════════
-#  USE ACTION & POPUP LOGIC
-# ═══════════════════════════════════════════
-
-func _on_use_pressed():
-	if selected_item == null:
-		return
-
-	AnimUtils.squash_bounce(use_button)
-
-	var owned_qty = GameState.get_inventory_quantity(selected_item.item_name)
-	if owned_qty > 1:
-		_open_use_popup(selected_item, owned_qty)
-	elif owned_qty == 1:
-		# Single item use (action disabled / set to null for now)
-		print("Gunakan 1 × %s — aksi dinonaktifkan (null)" % selected_item.item_name)
-
-func _open_use_popup(item: ItemData, max_qty: int):
-	var tokens := DesignTokens.load_default()
-	current_use_qty = 1
-	max_use_qty = max_qty
-
-	popup_item_icon.texture = item.icon
-	popup_item_badge.text = "×%d" % max_qty
-	popup_item_name.text = item.item_name
-
-	_update_popup_qty_display()
-
-	use_popup.visible = true
-	use_popup.color = tokens.scrim_color()
-	use_popup.modulate.a = 0.0
-	use_popup.mouse_filter = Control.MOUSE_FILTER_STOP
-
-	var panel := use_popup.get_node("CenterContainer/PopupPanel") as Control
-	panel.pivot_offset = panel.size * 0.5
-	panel.scale = Vector2(0.9, 0.9)
-
-	AudioDirector.play_sfx(&"popup_open")
-
-	var tween := create_tween().set_parallel(true)
-	tween.tween_property(use_popup, "modulate:a", 1.0, tokens.dur_fast)
-	tween.tween_property(panel, "scale", Vector2.ONE, tokens.dur_fast) \
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-	# Wobble the popup icon
-	AnimUtils.wobble(popup_item_icon)
-
-	_build_student_strip()
-
-
-## One tappable card per approved student: portrait, name, and live
-## mood/energy bars, so the player can see who needs the item most.
-func _build_student_strip() -> void:
-	for child in student_strip.get_children():
-		child.queue_free()
-	_selected_student_id = -1
-	popup_ok_btn.disabled = true
-
-	var tokens := DesignTokens.load_default()
-	for student in GameState.approved_students:
-		var card := Button.new()
-		card.custom_minimum_size = Vector2(140, 180)
-		card.toggle_mode = true
-		card.text = str(student.get("student_name", "?"))
-		card.set_meta("student_id", student.get("id", -1))
-
-		var bars := VBoxContainer.new()
-		bars.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		bars.add_child(_make_strip_bar(float(student.get("mood", 0.0)), tokens.cat_istirahat))
-		bars.add_child(_make_strip_bar(float(student.get("energy", 0.0)), tokens.state_success))
-		card.add_child(bars)
-
-		card.pressed.connect(_on_student_card_pressed.bind(card))
-		student_strip.add_child(card)
-
-
-func _make_strip_bar(value: float, tint: Color) -> ProgressBar:
-	var bar := ProgressBar.new()
-	bar.min_value = 0.0
-	bar.max_value = 100.0
-	bar.value = value
-	bar.show_percentage = false
-	bar.custom_minimum_size = Vector2(0, 10)
-	bar.self_modulate = tint
-	return bar
-
-
-func _on_student_card_pressed(card: Button) -> void:
-	AudioDirector.play_sfx(&"select")
-	for child in student_strip.get_children():
-		if child is Button:
-			child.button_pressed = (child == card)
-	_selected_student_id = card.get_meta("student_id")
-	popup_ok_btn.disabled = false
-
-func _close_popup_animated():
-	var tokens := DesignTokens.load_default()
-	var panel := use_popup.get_node("CenterContainer/PopupPanel") as Control
-
-	AudioDirector.play_sfx(&"popup_close")
-
-	var tween := create_tween().set_parallel(true)
-	tween.tween_property(use_popup, "modulate:a", 0.0, tokens.dur_fast)
-	tween.tween_property(panel, "scale", Vector2(0.9, 0.9), tokens.dur_fast) \
-		.set_ease(Tween.EASE_IN)
-	tween.chain().tween_callback(func():
-		use_popup.visible = false
-		use_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	)
-
-func _on_use_popup_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		var panel := use_popup.get_node("CenterContainer/PopupPanel") as Control
-		if not panel.get_global_rect().has_point(event.global_position):
-			_close_popup_animated()
-
-func _update_popup_qty_display():
-	popup_qty_label.text = "%d" % current_use_qty
-	popup_minus_btn.disabled = (current_use_qty <= 1)
-	popup_plus_btn.disabled = (current_use_qty >= max_use_qty)
-
-func _on_minus_pressed():
-	if current_use_qty > 1:
-		current_use_qty -= 1
-		_update_popup_qty_display()
-		AnimUtils.qty_punch(popup_qty_label)
-		AnimUtils.stepper_bounce(popup_minus_btn, -1.0)
-		AudioDirector.play_sfx(&"tap")
-
-func _on_plus_pressed():
-	if current_use_qty < max_use_qty:
-		current_use_qty += 1
-		_update_popup_qty_display()
-		AnimUtils.qty_punch(popup_qty_label)
-		AnimUtils.stepper_bounce(popup_plus_btn, 1.0)
-		AudioDirector.play_sfx(&"tap")
-
-func _on_popup_cancel_pressed():
-	_close_popup_animated()
-
-func _on_popup_ok_pressed() -> void:
-	if _selected_student_id == -1:
-		AudioDirector.play_sfx(&"error")
-		return
-	var result := GameState.use_item(selected_item, _selected_student_id, current_use_qty)
-	if not result["applied"]:
-		AudioDirector.play_sfx(&"error")
-		return
-	AudioDirector.play_sfx(&"confirm")
-	_spawn_floating_stat_pops(result["mood_delta"], result["energy_delta"])
-	await get_tree().process_frame
-	_close_popup_animated()
-
-# ═══════════════════════════════════════════
-#  FLOATING STAT POPS
-# ═══════════════════════════════════════════
-
-func _spawn_floating_stat_pops(mood_delta: float, energy_delta: float) -> void:
-	var vp_size = get_viewport_rect().size
-	var center_screen = Vector2(vp_size.x / 2, vp_size.y * 0.73)
-
-	if mood_delta != 0.0:
-		_create_stat_float_label(
-			"😊 Mood %+d" % mood_delta,
-			center_screen + Vector2(-120, 0),
-			GOLD
-		)
-	if energy_delta != 0.0:
-		_create_stat_float_label(
-			"⚡ Energi %+d" % energy_delta,
-			center_screen + Vector2(120, 0),
-			ACCENT
-		)
-
-func _create_stat_float_label(text: String, at_pos: Vector2, color: Color):
-	var label = Label.new()
-	label.text = text
-	label.add_theme_font_size_override("font_size", 38)
-	label.add_theme_color_override("font_color", color)
-	label.add_theme_color_override("font_shadow_color", SHADOW_COLOR)
-	label.add_theme_constant_override("shadow_offset_x", 2)
-	label.add_theme_constant_override("shadow_offset_y", 2)
-	label.position = at_pos
-	label.z_index = 250
-	label.pivot_offset = Vector2(100, 20)
-	add_child(label)
-
-	var tween = create_tween().set_parallel(true)
-	tween.tween_property(label, "position:y", at_pos.y - 120.0, 0.8).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(label, "scale", Vector2(1.2, 1.2), 0.18).set_trans(Tween.TRANS_BACK)
-	tween.chain().tween_property(label, "modulate:a", 0.0, 0.35)
-	tween.chain().tween_callback(label.queue_free)

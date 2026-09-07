@@ -64,7 +64,6 @@ const EXEMPT: Array[String] = [
 const BASELINE: Dictionary = {
 	"res://Scripts/AturJadwal/atur_jadwal.gd": 17,
 	"res://Scripts/CutScene/cut_scene.gd": 15,
-	"res://Scripts/Inventory/inventory.gd": 4,
 	"res://Scripts/Koperasi/rakbarang_1.gd": 7,
 	"res://Scripts/Lobby/loby.gd": 8,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 2,

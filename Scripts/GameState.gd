@@ -257,9 +257,7 @@ func forget_session() -> void:
 	tutorials_bypassed = false
 	current_grade = 7
 	max_minggu = get_max_weeks()
-	is_game_over_cutscene = false
 	grade7_student_ids = []
-	is_exam_intro_cutscene = false
 	run_failed = false
 	player_money = 0
 	pending_earnings = {}

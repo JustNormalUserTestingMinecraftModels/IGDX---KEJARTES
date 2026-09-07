@@ -123,6 +123,13 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.brand_primary_light, tokens.brand_primary_dark,
 		tokens.outline_card, tokens.text_on_brand)
 
+	# Inventory's category filter row: a quiet pill at rest; the toggled-on
+	# chip renders with the pressed stylebox _add_button_variation already
+	# builds, so no extra "selected" styling is needed.
+	_add_button_variation(theme, tokens, "FilterChipButton",
+		tokens.surface_card, tokens.surface_sunken,
+		tokens.brand_primary, tokens.brand_primary)
+
 	_build_main_menu_button(theme, tokens)
 	_build_shop_shelf_button(theme, tokens)
 

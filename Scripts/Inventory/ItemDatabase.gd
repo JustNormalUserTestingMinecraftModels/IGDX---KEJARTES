@@ -12,62 +12,68 @@ extends Node
 # item_name -> ItemData
 var items: Dictionary = {}
 
+# [PLACEHOLDER] item flavour copy + skill values pending a balance/writing pass
 const DEFAULT_ITEMS: Array[Dictionary] = [
 	{
 		"name": "Bank Soal",
 		"price": 500,
 		"category": "Buku",
-		"desc": "Kumpulan soal latihan untuk persiapan ujian sekolah.",
+		"desc": "Bundel soal-soal ujian tahun lalu; latihan paling ampuh sebelum tes.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/bank soal.png",
 		"display_size": Vector2(220, 280),
 		"mood": 10,
-		"energy": 5
+		"energy": 5,
+		"akademis": 6
 	},
 	{
 		"name": "Komik",
 		"price": 800,
 		"category": "Buku",
-		"desc": "Buku komik seru untuk hiburan di waktu luang.",
+		"desc": "Komik favorit yang bikin lupa waktu — hiburan cepat saat penat.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/komik.png",
 		"display_size": Vector2(200, 260),
 		"mood": 25,
-		"energy": 5
+		"energy": 5,
+		"seni_budaya": 4
 	},
 	{
 		"name": "LKS",
 		"price": 400,
 		"category": "Buku",
-		"desc": "Lembar Kerja Siswa untuk latihan di rumah.",
+		"desc": "Lembar Kerja Siswa untuk mengasah materi pelan-pelan di rumah.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/LKS.png",
 		"display_size": Vector2(220, 270),
 		"mood": 5,
-		"energy": 5
+		"energy": 5,
+		"akademis": 5
 	},
 	{
 		"name": "Lompat Tali",
 		"price": 1200,
 		"category": "Olahraga",
-		"desc": "Alat lompat tali untuk olahraga dan bermain.",
+		"desc": "Tali lompat warna-warni; pemanasan seru yang bikin badan segar.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/lompat tali.png",
 		"display_size": Vector2(240, 220),
 		"mood": 20,
-		"energy": 15
+		"energy": 15,
+		"olahraga": 6
 	},
 	{
 		"name": "Raket",
 		"price": 1500,
 		"category": "Olahraga",
-		"desc": "Raket badminton untuk bermain bersama teman.",
+		"desc": "Raket bulu tangkis pinjaman kakak kelas, masih enak dipakai tanding.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/raket.png",
 		"display_size": Vector2(180, 280),
 		"mood": 30,
-		"energy": 20
+		"energy": 20,
+		"olahraga": 8
 	},
 	{
 		"name": "Cilok",
 		"price": 500,
 		"category": "Makanan",
-		"desc": "Jajanan cilok kenyal dan lezat dengan bumbu gurih.",
+		"desc": "Cilok kenyal berbumbu kacang, jajanan wajib jam istirahat.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/cilok.png",
 		"display_size": Vector2(180, 220),
 		"mood": 15,
@@ -77,7 +83,7 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"name": "Mie Instan",
 		"price": 1000,
 		"category": "Makanan",
-		"desc": "Mie instan hangat dan lezat favorit anak sekolah.",
+		"desc": "Semangkuk mie instan hangat — pengganjal perut andalan anak kos.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/mie.png",
 		"display_size": Vector2(200, 200),
 		"mood": 20,
@@ -87,7 +93,7 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"name": "Pop Ice",
 		"price": 800,
 		"category": "Makanan",
-		"desc": "Minuman es blender manis dan menyegarkan.",
+		"desc": "Es blender manis warna cerah yang langsung menaikkan mood.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/pop es.png",
 		"display_size": Vector2(160, 240),
 		"mood": 25,
@@ -97,11 +103,12 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"name": "Susu Kotak",
 		"price": 1200,
 		"category": "Makanan",
-		"desc": "Susu kotak bernutrisi untuk menambah energi belajar.",
+		"desc": "Susu kotak dingin, katanya bikin fokus pas jam pelajaran pagi.",
 		"icon_path": "res://Assets/Images/Shop/ItemRak/susus.png",
 		"display_size": Vector2(160, 250),
 		"mood": 10,
-		"energy": 30
+		"energy": 30,
+		"seni_budaya": 3
 	},
 ]
 
@@ -114,7 +121,10 @@ func _init_database():
 		var size = info.get("display_size", Vector2.ZERO)
 		var mood = info.get("mood", 0)
 		var energy = info.get("energy", 0)
-		register(info["name"], info["price"], tex, info["desc"], info["category"], size, mood, energy)
+		var akademis = info.get("akademis", 0)
+		var seni = info.get("seni_budaya", 0)
+		var olahraga = info.get("olahraga", 0)
+		register(info["name"], info["price"], tex, info["desc"], info["category"], size, mood, energy, akademis, seni, olahraga)
 
 func register(
 	item_name: String,
@@ -124,7 +134,10 @@ func register(
 	category: String = "",
 	display_size: Vector2 = Vector2.ZERO,
 	mood_boost: int = 0,
-	energy_boost: int = 0
+	energy_boost: int = 0,
+	akademis_boost: int = 0,
+	seni_budaya_boost: int = 0,
+	olahraga_boost: int = 0
 ) -> ItemData:
 	if items.has(item_name):
 		var existing = items[item_name]
@@ -140,6 +153,12 @@ func register(
 			existing.mood_boost = mood_boost
 		if energy_boost != 0:
 			existing.energy_boost = energy_boost
+		if akademis_boost != 0:
+			existing.akademis_boost = akademis_boost
+		if seni_budaya_boost != 0:
+			existing.seni_budaya_boost = seni_budaya_boost
+		if olahraga_boost != 0:
+			existing.olahraga_boost = olahraga_boost
 		return existing
 
 	var data = ItemData.new()
@@ -151,6 +170,9 @@ func register(
 	data.display_size = display_size
 	data.mood_boost = mood_boost
 	data.energy_boost = energy_boost
+	data.akademis_boost = akademis_boost
+	data.seni_budaya_boost = seni_budaya_boost
+	data.olahraga_boost = olahraga_boost
 	items[item_name] = data
 	return data
 

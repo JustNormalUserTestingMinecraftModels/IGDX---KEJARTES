@@ -85,23 +85,36 @@ func test_a_clean_tap_emits_slot_pressed() -> void:
 	assert_true(slot.has_signal("slot_pressed"), "InventorySlot needs slot_pressed")
 
 
-func test_inventory_no_longer_builds_slots_or_styleboxes_for_layout() -> void:
-	# _create_item_slot() is kept as the entry point (callers still use that
-	# name) -- its body now instantiates the scene instead of hand-building
-	# nodes, which is what this checks.
+func test_inventory_populate_grid_instantiates_the_slot_scene() -> void:
+	# The grid is filled by instancing InventorySlot.tscn, never by
+	# hand-building PanelContainers / StyleBoxFlats.
 	var src := FileAccess.get_file_as_string("res://Scripts/Inventory/inventory.gd")
-	assert_contains(src, "InventorySlot", "inventory.gd should instantiate the scene")
-	var start := src.find("func _create_item_slot")
-	assert_gt(start, 0, "_create_item_slot should still exist as the call-site entry point")
+	assert_contains(src, "slot_scene.instantiate()", "grid slots come from the PackedScene")
+	var start := src.find("func _populate_grid")
+	assert_gt(start, 0, "_populate_grid should exist")
 	var next_func := src.find("\nfunc ", start + 1)
 	var body := src.substr(start, (next_func if next_func != -1 else src.length()) - start)
 	assert_false(body.contains("PanelContainer.new(") or body.contains("StyleBoxFlat.new("),
-		"_create_item_slot still builds the slot by hand")
+		"_populate_grid must not hand-build the slot")
 
 
-func test_empty_message_is_a_scene_node_not_a_runtime_label() -> void:
-	# The "inventory kosong" state is a permanent part of the screen, so it
-	# belongs in inventory.tscn where a human can restyle it.
+func test_empty_state_is_a_scene_node_not_a_runtime_label() -> void:
 	var text := FileAccess.get_file_as_string("res://Scenes/Inventory/inventory.tscn")
-	assert_contains(text, "EmptyMessageLabel",
-		"inventory.tscn should carry the empty-state label")
+	assert_contains(text, "EmptyStateLabel",
+		"inventory.tscn should carry the authored empty-state label")
+
+
+func test_slot_has_bounce_badge_and_shine_gate() -> void:
+	var slot := _make()
+	assert_true(slot.has_method("bounce_badge"), "bounce_badge() present")
+	assert_true("shine_min_quantity" in slot, "shine_min_quantity export present")
+	assert_not_null(slot.get_node_or_null("Shine"), "authored Shine node present")
+
+
+func test_shine_visibility_follows_quantity_threshold() -> void:
+	var slot := _make()
+	slot.shine_min_quantity = 5
+	slot.setup(_sample_item(), 2)
+	assert_false(slot.get_node("Shine").visible, "shine hidden below threshold")
+	slot.setup(_sample_item(), 9)
+	assert_true(slot.get_node("Shine").visible, "shine shown at/above threshold")

@@ -90,8 +90,16 @@ the single most common source of bugs here. Note `hobby_category` "Akademik"
 maps to specialty "Akademis"; schedules also normalize `Akademik`→`Akademis`
 and `DayOff`→`Istirahat`.
 
-No save system. Everything is session-scoped by design — do not add
-persistence to `GameState` without being asked.
+Persistence is minimal and deliberate: **only `GameState.inventory`** is
+written to disk (`user://inventory.cfg`, a `ConfigFile`, flushed at the top of
+every `Transition.change_scene` and loaded in `GameState._ready`). Everything
+else — roster, money, week, grade, schedules — is session-scoped by design.
+Item boosts land on `approved_students`, which is **not** persisted, so a boost
+applied and not simulated before quit is lost (and a fresh run inherits the
+previous run's stock). Do not add further persistence without being asked.
+Debug > General > **🧹 Forget Session** wipes in-memory `GameState` and deletes
+the save. `save_inventory`/`load_inventory`/`clear_inventory_save` all no-op
+under `Engine.is_editor_hint()`.
 
 `-REFERENCE-/prototype/` is the original prototype, kept for reference only —
 not built, not imported. `koprasi&inventory` was a second programmer's separate
@@ -384,15 +392,83 @@ the previous three. See `docs/superpowers/CHANGELOG.md`.
 
 ## Current work
 
-Branch `feat/sprite-rigs-and-shop-hub`, off `Textures` (also main). The
-2026-09-07 pass — two-state goalie, layered `DancerRig`, the event dialog on
-DaySummary chrome, the three-pose day cycle, the shop hub — is complete and
-green at 1034 tests; see the changelog. **Deliberately open: the BookClock's
+Branch `Textures` (also main). The 2026-09-07 sprite-rig pass — two-state
+goalie, layered `DancerRig`, the event dialog on DaySummary chrome, the
+three-pose day cycle, the shop hub — is merged; see the changelog. **Deliberately open: the BookClock's
 two transition curves still carry placeholder easing pending a `motion-lab`
 pass.** `BookClockWidget.transition_to` is the one call site to patch.
 
 Plan C's RunResult redesign also remains open, tracked in
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
+
+The 2026-09-07 inventory mobile-layout & item-apply pass is complete, on branch
+`feat/inventory-mobile-apply`. Spec:
+`docs/superpowers/specs/2026-09-07-inventory-mobile-layout-and-item-apply.md`;
+plan: `docs/superpowers/plans/2026-09-07-inventory-mobile-layout-and-item-apply.md`.
+It rebuilt the Inventory screen as a 3-zone portrait layout (Header `&"Card"` /
+horizontal `FilterChipButton` chip row sharing one `inventory_filter_group.tres`
+`ButtonGroup` / 3-column grid + authored `ToastLabel`), dropping the vertical
+sidebar, `DetailPanel` and `UsePopup` and every per-node `StyleBoxFlat` — the
+rewritten `inventory.gd` builds zero runtime visuals, so its
+`tests/test_viewport_editability.gd` `BASELINE` entry (was 4) is gone. Tapping a
+tile opens the new `ItemDetailSheet` bottom sheet (icon/name/category chip/
+description + an "Efek" block: a `+N` row and fixed plain-Indonesian explainer
+per affected bar, five authored `EfekRow` instances). Its "Pakai ke Siswa"
+button opens the new full-screen `ApplyItemScreen` (`ApplyStudentRow` template
+per approved student, `StatBarRow` sub-template, multi-select with a live
+`65 ➔ 90 (+25)` preview on every affected `StatBar`, "Pilih Semua", `Pakai (N
+Siswa)`), then a staged payoff — per-student `RewardBurst` + `AnimUtils.
+create_floating_text` + rising `star_earn_1/2/3`, screen-wide
+`CelebrationConfetti` + `sparkle` when every pick gained, `result_fanfare` to
+close. **Items are now functional**: `ItemData` gained `akademis_boost` /
+`seni_budaya_boost` / `olahraga_boost`; `GameState.use_item()` was fixed (it
+wrote dead `"mood"`/`"energy"` keys instead of the canonical `kepribadian1/2` +
+`akademis1/2/3`) and given a `use_item_on_students(item, ids)` all-or-nothing
+batch (stock **and** id-existence pre-checked). Inventory now persists — see the
+persistence paragraph above. Built via subagent-driven development with the
+controller holding the Godot MCP bridge (implementers wrote `.gd`; the
+controller authored every `.tscn` and ran every `test_run`); one editor restart
+was needed to clear a stale `ItemDatabase` autoload after Task 1. Placeholders
+outstanding: per-item `desc` strings in `ItemDatabase.DEFAULT_ITEMS` are
+`[PLACEHOLDER]` flavour copy; the item skill-boost values (3–8) are conservative
+and balance-pending against `test_balance_pacing.gd` (spec "Balance risk"); the
+`ApplyItemScreen` payoff reuses existing `AudioDirector` cues (no dedicated
+`sfx_item_apply`); `EfekRow` need-icons reuse the shared placeholder SVG set;
+the `InventorySlot` high-count `Shine` overlay is a plain white fill `ColorRect`
+with no dedicated texture.
+
+The 2026-09-04 grade-progression difficulty pass is complete, built on branch
+`minigame-reward-feedback`. Spec:
+`docs/superpowers/specs/2026-09-04-grade-progression-balance-and-difficulty.md`;
+plan: `docs/superpowers/plans/2026-09-04-grade-progression-balance-and-difficulty.md`.
+It retuned grade 7 to need tactical subject-rotation instead of one lucky week
+(via a new per-student weekly minigame-points cap —
+`Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_7/8/9` = 14/12/10 — rather
+than touching grade-7 study rates), ramped grade 8/9 targets
+(`TARGET_KENAIKAN_KELAS_8` 30→34, `_KELAS_9` 40→**40 shipped**, see the spec's
+Status block for why the 50 estimate moved), amplified quirk/specialty
+coefficients ~1.4×, ramped the Skip button's loss chance per grade
+(`SKIP_PELUANG_KALAH_KELAS_7/8/9` 0.4/0.5/0.6), added `GameState.
+reset_roster_for_new_grade()` — a 20%-head-start roster reset shared by real
+grade progression *and* the debug grade-jump buttons, which previously left
+skill stats carried over — and closed a minigame-farming exploit
+(`SchoolDay._roll_event()`/`skip_to_results()` now roll a randomized 1-3
+weekly minigame allowance and a 35% chance the category is picked uniformly
+rather than by schedule, without touching how often minigames/events appear
+at all). AturJadwal got new specialty-match feedback: a gold particle burst
+(`SpecialtyMatchBurst.tscn`) plus the `specialty_match` SFX cue on the sticky
+note when a day is scheduled onto a student's specialty subject, and a ★
+badge on the Penjadwalan picker row beforehand. A new headless suite,
+`tests/test_balance_pacing.gd`, runs a scripted greedy simulation against the
+real simulation functions and is the tuning/regression harness for these
+numbers going forward. Built via subagent-driven development with the
+controller holding the Godot MCP bridge throughout; one fix round needed a
+human editor restart to clear a stale-bytecode reload (`Balance.gd` served an
+old field value across every MCP-available recovery lever) — not a code
+defect, just a one-off editor quirk worth knowing about if a future session
+hits `GDScript reload failed with error code 43` on a repeatedly-patched
+file. Placeholder outstanding: `sfx_specialty_match` aliases the existing
+`sfx_reward` stream, same convention as this project's other recent cues.
 
 ## Maintaining this file
 

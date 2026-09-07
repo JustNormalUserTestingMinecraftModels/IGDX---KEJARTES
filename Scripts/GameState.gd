@@ -199,6 +199,76 @@ func seed_playtest_inventory(quantity: int = 2) -> void:
 	inventory_changed.emit()
 
 
+const INVENTORY_SAVE_PATH := "user://inventory.cfg"
+
+## Serialize `inventory` into `cfg` (pure -- no disk, no editor gate). Split
+## out so a headless test can round-trip it without the is_editor_hint guard.
+func _write_inventory_to(cfg: ConfigFile) -> void:
+	cfg.set_value("inventory", "items", inventory.duplicate())
+
+## Inverse of _write_inventory_to. A missing section leaves `inventory` empty.
+## Coerces keys to String and values to int.
+func _read_inventory_from(cfg: ConfigFile) -> void:
+	var raw: Dictionary = cfg.get_value("inventory", "items", {})
+	inventory.clear()
+	for k in raw:
+		inventory[String(k)] = int(raw[k])
+
+## Persist the current inventory. No-op in editor/test context: a placeholder
+## instance must never touch user://.
+func save_inventory() -> void:
+	if Engine.is_editor_hint():
+		return
+	var cfg := ConfigFile.new()
+	_write_inventory_to(cfg)
+	cfg.save(INVENTORY_SAVE_PATH)
+
+## Load the persisted inventory at boot. Emits inventory_changed so any
+## already-built screen rebuilds. No-op in editor/test context.
+func load_inventory() -> void:
+	if Engine.is_editor_hint():
+		return
+	var cfg := ConfigFile.new()
+	if cfg.load(INVENTORY_SAVE_PATH) == OK:
+		_read_inventory_from(cfg)
+		inventory_changed.emit()
+
+## Delete the on-disk inventory save, if present.
+func clear_inventory_save() -> void:
+	if Engine.is_editor_hint():
+		return
+	if FileAccess.file_exists(INVENTORY_SAVE_PATH):
+		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
+
+## Debug: return every session run-state field to its declared default and
+## drop the on-disk inventory save. Deliberately leaves is_game_beaten and
+## debug_level_select_enabled alone -- those are persisted progress flags
+## (GameSettings writes them to settings.cfg), not run state.
+func forget_session() -> void:
+	next_scene = "res://Scenes/MainMenu/main_menu.tscn"
+	returned_from_student_card = false
+	approved_students = []
+	selected_student = {}
+	selected_day = ""
+	day_schedules = {}
+	minigame_gain_this_week = {}
+	minggu_ke = 1
+	lobby_tutorial_completed = false
+	tutorials_bypassed = false
+	current_grade = 7
+	max_minggu = get_max_weeks()
+	grade7_student_ids = []
+	run_failed = false
+	player_money = 0
+	pending_earnings = {}
+	inventory.clear()
+	daily_login_day = 1
+	last_claim_date = ""
+	run_stats.reset()
+	clear_inventory_save()
+	inventory_changed.emit()
+
+
 ## Stat ceiling shared with StudentData's mood/energy range.
 const STAT_MAX := 100.0
 
@@ -207,13 +277,17 @@ const STAT_MAX := 100.0
 ## The teammate's build had a single global player_mood/player_energy;
 ## this project tracks both per student, so the caller must say who. The
 ## approved_students dictionaries are the cross-screen source of truth,
-## so that is what gets written.
+## so that is what gets written. Writes the CANONICAL roster keys the
+## simulation reads: kepribadian1 (mood), kepribadian2 (energy),
+## akademis1/2/3 (the three skills) — never the dead "mood"/"energy" keys.
 ##
-## Returns {"applied": bool, "mood_delta": float, "energy_delta": float}.
-## The deltas are what actually landed after clamping, which is what the
-## inventory's floating stat-pop labels display.
+## Returns {"applied": bool, "mood_delta","energy_delta","akademis_delta",
+## "seni_delta","olahraga_delta": float} — five deltas, each the amount that
+## actually landed after clamping, which is what the inventory's floating
+## stat-pop labels display.
 func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
-	var refused := {"applied": false, "mood_delta": 0.0, "energy_delta": 0.0}
+	var refused := {"applied": false, "mood_delta": 0.0, "energy_delta": 0.0,
+		"akademis_delta": 0.0, "seni_delta": 0.0, "olahraga_delta": 0.0}
 	if item == null or quantity <= 0:
 		return refused
 	if get_inventory_quantity(item.item_name) < quantity:
@@ -227,27 +301,67 @@ func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
 	if target.is_empty():
 		return refused
 
-	var mood_before: float = float(target.get("mood", 0.0))
-	var energy_before: float = float(target.get("energy", 0.0))
-	var mood_after := clampf(mood_before + item.mood_boost * quantity, 0.0, STAT_MAX)
-	var energy_after := clampf(energy_before + item.energy_boost * quantity, 0.0, STAT_MAX)
-	target["mood"] = mood_after
-	target["energy"] = energy_after
+	var fields := [
+		["kepribadian1", item.mood_boost,        "mood_delta"],
+		["kepribadian2", item.energy_boost,      "energy_delta"],
+		["akademis1",    item.akademis_boost,    "akademis_delta"],
+		["akademis2",    item.seni_budaya_boost, "seni_delta"],
+		["akademis3",    item.olahraga_boost,    "olahraga_delta"],
+	]
+	var out := {"applied": true}
+	for f in fields:
+		var before: float = float(target.get(f[0], 0.0))
+		var after := clampf(before + float(f[1]) * quantity, 0.0, STAT_MAX)
+		target[f[0]] = after
+		out[f[2]] = after - before
 
 	remove_from_inventory(item.item_name, quantity)
 	run_stats.record_item_use(quantity)
+	return out
 
-	return {
-		"applied": true,
-		"mood_delta": mood_after - mood_before,
-		"energy_delta": energy_after - energy_before,
-	}
+
+## Applies one copy of `item` to each id in `student_ids` (one application
+## each; quantity is fixed at 1 per student). All-or-nothing: if the stack
+## cannot cover every id, nothing is applied and "applied" is false. The stock
+## and id-existence pre-checks below make a partial application unreachable, so
+## `applied` mirrors `not results.is_empty()`.
+## Returns {"applied": bool, "results": Array} where each result is
+## {"student_id": int, "name": String, "mood_delta","energy_delta",
+##  "akademis_delta","seni_delta","olahraga_delta": float}.
+func use_item_on_students(item: ItemData, student_ids: Array) -> Dictionary:
+	if item == null or student_ids.is_empty():
+		return {"applied": false, "results": []}
+	if get_inventory_quantity(item.item_name) < student_ids.size():
+		return {"applied": false, "results": []}
+	for sid in student_ids:
+		var found := false
+		for s in approved_students:
+			if s.get("id", -1) == sid:
+				found = true
+				break
+		if not found:
+			return {"applied": false, "results": []}
+	var results: Array = []
+	for sid in student_ids:
+		var sname := ""
+		for s in approved_students:
+			if s.get("id", -1) == sid:
+				sname = str(s.get("name", ""))
+				break
+		var r := use_item(item, sid, 1)
+		if r["applied"]:
+			r.erase("applied")
+			r["student_id"] = sid
+			r["name"] = sname
+			results.append(r)
+	return {"applied": not results.is_empty(), "results": results}
 
 var daily_login_day: int = 1
 var last_claim_date: String = ""
 
 func _ready():
 	print("GameState siap")
+	load_inventory()
 
 # --- Converter: Dictionary → StudentData (for simulation) ---
 func convert_to_student_data_array() -> Array[StudentData]:

@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://djqecanahebv5"]
+
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="1_statbar"]
+
+[node name="StatBarRow" type="HBoxContainer" unique_id=1149687117]
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="." unique_id=1155081536]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Stat"
+
+[node name="Bar" type="ProgressBar" parent="." unique_id=1255819938]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_type_variation = &"StatBarAkademis"
+show_percentage = false
+script = ExtResource("1_statbar")
+
+[node name="ValueLabel" type="Label" parent="." unique_id=1714434327]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "0/100"
+horizontal_alignment = 2
+
+[node name="DeltaLabel" type="Label" parent="." unique_id=671195584]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+theme_type_variation = &"ResultDeltaLabel"
+text = "--"
+horizontal_alignment = 2

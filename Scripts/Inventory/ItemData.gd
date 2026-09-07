@@ -35,3 +35,13 @@ extends Resource
 @export var mood_boost: int = 0
 ## Same as mood_boost, but for energy.
 @export var energy_boost: int = 0
+
+@export_group("Skill Boost")
+## Added to the target student's akademis (roster key akademis1) when the
+## item is used, times quantity, clamped [0, 100]. Set by study items (Buku);
+## some other categories set the sibling skill fields.
+@export var akademis_boost: int = 0
+## Same, for seni_budaya (roster key akademis2).
+@export var seni_budaya_boost: int = 0
+## Same, for olahraga (roster key akademis3).
+@export var olahraga_boost: int = 0

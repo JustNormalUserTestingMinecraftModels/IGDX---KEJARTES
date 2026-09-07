@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://df8hmrsqlb12n"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/WeekRecapBanner.gd" id="1_mtvdn"]
+[ext_resource type="Script" uid="uid://c11vl4nq1k54h" path="res://Scripts/SchoolSimulation/WeekRecapBanner.gd" id="1_mtvdn"]
 [ext_resource type="Texture2D" uid="uid://cvhp38uu23hb5" path="res://Assets/Images/UI/Placeholders/icon_uang.svg" id="2_l8q1r"]
 [ext_resource type="Texture2D" uid="uid://88na4148i5d" path="res://Assets/Images/UI/Placeholders/icon_poin.svg" id="3_nu073"]
 [ext_resource type="Texture2D" uid="uid://bg1retxhhcvhi" path="res://Assets/Images/UI/Placeholders/icon_minigame_menang.svg" id="4_eia8w"]

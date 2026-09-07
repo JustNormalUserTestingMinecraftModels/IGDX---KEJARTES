@@ -1,0 +1,119 @@
+[gd_scene format=3 uid="uid://0c0a8cy1nb0m"]
+
+[ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://dff0bybyhxwb2" path="res://Scripts/Inventory/ApplyItemScreen.gd" id="2_script"]
+
+[node name="ApplyItemScreen" type="Control" unique_id=1556086124]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+
+[node name="Background" type="Panel" parent="." unique_id=1329799509]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"Scrim"
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=2126816871]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="Card" type="PanelContainer" parent="Margin" unique_id=1768071305]
+layout_mode = 2
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="Margin/Card" unique_id=1263765858]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 28
+
+[node name="VBox" type="VBoxContainer" parent="Margin/Card/Margin" unique_id=917349084]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="TitleLabel" type="Label" parent="Margin/Card/Margin/VBox" unique_id=240328920]
+layout_mode = 2
+theme_type_variation = &"H1Label"
+text = "Pakai ke Siapa?"
+
+[node name="RecapStrip" type="HBoxContainer" parent="Margin/Card/Margin/VBox" unique_id=1094577951]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="RecapIcon" type="TextureRect" parent="Margin/Card/Margin/VBox/RecapStrip" unique_id=555428520]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RecapName" type="Label" parent="Margin/Card/Margin/VBox/RecapStrip" unique_id=1548853569]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Nama Item"
+
+[node name="RecapCount" type="Label" parent="Margin/Card/Margin/VBox/RecapStrip" unique_id=1064730365]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Sisa ×0"
+
+[node name="EffectSummary" type="Label" parent="Margin/Card/Margin/VBox" unique_id=1327952809]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Menambah: ... per siswa."
+autowrap_mode = 3
+
+[node name="Scroll" type="ScrollContainer" parent="Margin/Card/Margin/VBox" unique_id=2056101922]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Rows" type="VBoxContainer" parent="Margin/Card/Margin/VBox/Scroll" unique_id=2100631725]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="Actions" type="VBoxContainer" parent="Margin/Card/Margin/VBox" unique_id=402455033]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="SecondaryRow" type="HBoxContainer" parent="Margin/Card/Margin/VBox/Actions" unique_id=234032249]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="SelectAllButton" type="Button" parent="Margin/Card/Margin/VBox/Actions/SecondaryRow" unique_id=860478660]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Pilih Semua"
+
+[node name="CancelButton" type="Button" parent="Margin/Card/Margin/VBox/Actions/SecondaryRow" unique_id=1520159299]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Batal"
+
+[node name="ConfirmButton" type="Button" parent="Margin/Card/Margin/VBox/Actions" unique_id=1196808454]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+theme_type_variation = &"SuccessButton"
+text = "Pakai (0 Siswa)"

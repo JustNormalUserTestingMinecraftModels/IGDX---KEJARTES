@@ -50,6 +50,13 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.state_success.lightened(0.18), tokens.state_success.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
 
+	# The shop hub's two destination tiles: big, quiet card-coloured
+	# slabs carrying an icon and a label, so the blurred artwork behind
+	# them stays the loudest thing on that screen.
+	_add_button_variation(theme, tokens, "ShopHubTile",
+		tokens.surface_card, tokens.surface_sunken,
+		tokens.brand_primary, tokens.text_primary)
+
 	# The event dialog's per-student card. The whole card is the toggle,
 	# so its "pressed" state has to read as SELECTED rather than as a
 	# button being held: normal is the plain card surface, pressed picks

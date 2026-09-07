@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://bagftbms2pxy1"]
+
+[ext_resource type="Script" uid="uid://dxxusvhsf2pl8" path="res://Scripts/Koperasi/shop_hub_tile.gd" id="1_38wfh"]
+[ext_resource type="Texture2D" uid="uid://del1h0jhpisrq" path="res://Assets/Images/Shop/UI/icon_shop_items.svg" id="1_g4ob7"]
+
+[node name="ShopHubTile" type="Button" unique_id=599551777]
+custom_minimum_size = Vector2(420, 520)
+theme_type_variation = &"ShopHubTile"
+script = ExtResource("1_38wfh")
+
+[node name="Content" type="VBoxContainer" parent="." unique_id=1952908678]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 40.0
+offset_right = -30.0
+offset_bottom = -40.0
+mouse_filter = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="Content" unique_id=1228872031]
+custom_minimum_size = Vector2(0, 240)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("1_g4ob7")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Caption" type="Label" parent="Content" unique_id=575261468]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "Makanan & Barang"
+horizontal_alignment = 1
+autowrap_mode = 2

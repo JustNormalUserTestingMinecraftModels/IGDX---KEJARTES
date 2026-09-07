@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://bbmej4cjfppxo"]
+
+[ext_resource type="Script" uid="uid://c3v6nevrey78g" path="res://Scripts/Koperasi/cosmetic_shop.gd" id="1_nhexx"]
+[ext_resource type="Texture2D" uid="uid://bsa3lvahggq2b" path="res://Assets/Images/Shop/Illustration4.jpg" id="2_bnvsf"]
+[ext_resource type="Material" uid="uid://cw2ydcnw0g4b" path="res://Scenes/Koperasi/shop_hub_blur_material.tres" id="3_we22b"]
+
+[node name="CosmeticShop" type="Control" unique_id=1688013111]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_nhexx")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=735705893]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_bnvsf")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BlurLayer" type="ColorRect" parent="." unique_id=520798661]
+material = ExtResource("3_we22b")
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="ComingSoonLabel" type="Label" parent="." unique_id=1483825787]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -70.0
+offset_right = 420.0
+offset_bottom = 70.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"H1Label"
+text = "Segera Hadir"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BackButton" type="Button" parent="." unique_id=1871444960]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -240.0
+offset_top = -220.0
+offset_right = 240.0
+offset_bottom = -124.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"SecondaryButton"
+text = "Kembali"

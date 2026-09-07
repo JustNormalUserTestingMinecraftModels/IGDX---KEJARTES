@@ -6,7 +6,7 @@ extends Control
 ## The actual shelf/cart/checkout logic lives on rakbarang_1.gd (the Rak1
 ## panel this screen shows/hides); this file only owns the entry button,
 ## the money display (kept in sync via GameState.money_changed) and
-## routing back to the Lobby. It writes nothing to GameState directly --
+## routing back to the shop hub. It writes nothing to GameState directly --
 ## _on_beli_pressed() deducts GameState.player_money and calls
 ## GameState.add_to_inventory() on behalf of the Cart autoload's contents.
 
@@ -99,7 +99,7 @@ func _finish_back_close():
 	rak1_panel.hide()
 	rak1_panel.scale = Vector2(1.0, 1.0)
 	rak1_panel.modulate.a = 1.0
-	Transition.change_scene("res://Scenes/Lobby/loby.tscn", Transition.Style.WIPE)
+	Transition.change_scene("res://Scenes/Koperasi/ShopHub.tscn", Transition.Style.WIPE)
 
 func _on_money_changed(new_amount: int):
 	_update_coin_display()

@@ -304,11 +304,40 @@ const DISPLAY_ROSTER := [
 	"CardSectionLabel", "ResultHeroLabel",
 	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
 	"SuccessButton", "QuirkBadge", "PersonaBadge", "LobbyNavButton",
-	"EventSelectCard",
+	"EventSelectCard", "ShopHubTile",
 	"TraitPill", "PreviewRowLabel",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 ]
+
+
+## Every type ThemeFactory builds must also be in the BAKED theme.
+##
+## Added 2026-09-07 after a near-miss: two new variations were added to
+## ThemeFactory and the roster, every test passed, and the shipped
+## kejartes_theme.tres still lacked them -- because every other test in
+## this suite calls ThemeFactory.build() fresh and never reads the file
+## the game actually loads. A variation missing from the bake renders as
+## an unstyled default Button in game while the suite stays green.
+##
+## If this fails, the fix is to rebake: run Scripts/Design/BakeTheme.gd
+## via File > Run, or drive it headlessly through a transient test suite.
+func test_baked_theme_matches_what_the_factory_builds() -> void:
+	var built := ThemeFactory.build(DesignTokens.load_default())
+	# CACHE_MODE_IGNORE matters: the editor holds kejartes_theme.tres in
+	# memory from startup, so a plain load() returns that cached copy --
+	# which is exactly the stale bake this test exists to catch.
+	var baked := ResourceLoader.load(
+		"res://Assets/Theme/kejartes_theme.tres", "",
+		ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	assert_not_null(baked, "the baked theme should load")
+
+	var missing: Array[String] = []
+	for type_name in built.get_type_list():
+		if not baked.get_type_list().has(type_name):
+			missing.append(type_name)
+	assert_eq(missing.size(), 0,
+		"these types are built but missing from the baked theme -- rebake: %s" % str(missing))
 
 
 func test_display_font_roster_is_exact() -> void:

@@ -1244,6 +1244,7 @@ func _build_scenes_panel(parent: Control) -> void:
 		{"name": "Pilih Murid (StudentCard)", "path": "res://Scenes/StudentCard/student_card.tscn"},
 		{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/atur_jadwal.tscn"},
 		{"name": "Simulasi Hari (SchoolDay)", "path": "res://Scenes/SchoolSimulation/SchoolDay.tscn"},
+		{"name": "Pilih Toko (ShopHub)", "path": "res://Scenes/Koperasi/ShopHub.tscn"},
 		{"name": "Notice Tes Besar (TesNotice)", "path": "res://Scenes/EndGame/TesNotice.tscn"},
 		{"name": "Progres Tes (ExamProgress)", "path": "res://Scenes/EndGame/ExamProgress.tscn"},
 		{"name": "Hasil Run (RunResult)", "path": "res://Scenes/EndGame/RunResult.tscn"},

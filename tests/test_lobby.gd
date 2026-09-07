@@ -211,8 +211,12 @@ func test_koperasi_button_is_wired() -> void:
 	var src := _lobby_source()
 	assert_true(src.contains("_on_koperasi_pressed"),
 		"the Koperasi button must have a handler")
-	assert_true(src.contains("res://Scenes/Koperasi/koprasi.tscn"),
-		"Koperasi must route to the shop scene")
+	# Changed 2026-09-07: the button lands on the hub, which forks to
+	# the item shop or the cosmetic shop.
+	assert_true(src.contains("res://Scenes/Koperasi/ShopHub.tscn"),
+		"Koperasi must route to the shop hub")
+	assert_false(src.contains("res://Scenes/Koperasi/koprasi.tscn"),
+		"the Lobby should no longer reach the item shop directly")
 
 
 func test_inventory_button_is_wired() -> void:

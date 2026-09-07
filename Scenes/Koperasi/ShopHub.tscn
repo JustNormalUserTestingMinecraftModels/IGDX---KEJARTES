@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://do847bvfwb055"]
+
+[ext_resource type="Script" uid="uid://bfi5sn3yx3jur" path="res://Scripts/Koperasi/shop_hub.gd" id="1_dpf3a"]
+[ext_resource type="Texture2D" uid="uid://bsa3lvahggq2b" path="res://Assets/Images/Shop/Illustration4.jpg" id="2_u0dhl"]
+[ext_resource type="Material" uid="uid://cw2ydcnw0g4b" path="res://Scenes/Koperasi/shop_hub_blur_material.tres" id="3_h812q"]
+[ext_resource type="PackedScene" uid="uid://bagftbms2pxy1" path="res://Scenes/Koperasi/ShopHubTile.tscn" id="4_s0qym"]
+[ext_resource type="Texture2D" uid="uid://del1h0jhpisrq" path="res://Assets/Images/Shop/UI/icon_shop_items.svg" id="5_h812q"]
+[ext_resource type="Texture2D" uid="uid://pmw4xwwq5ico" path="res://Assets/Images/Shop/UI/icon_shop_cosmetics.svg" id="6_s0qym"]
+
+[node name="ShopHub" type="Control" unique_id=1253771003]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dpf3a")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=106300855]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_u0dhl")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BlurLayer" type="ColorRect" parent="." unique_id=1266182172]
+material = ExtResource("3_h812q")
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Tiles" type="HBoxContainer" parent="." unique_id=679592425]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -474.0
+offset_top = -260.0
+offset_right = 474.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 48
+alignment = 1
+
+[node name="ItemsTile" parent="Tiles" unique_id=599551777 instance=ExtResource("4_s0qym")]
+layout_mode = 2
+icon_texture = ExtResource("5_h812q")
+caption_text = "Makanan & Barang"
+
+[node name="CosmeticsTile" parent="Tiles" unique_id=1557840380 instance=ExtResource("4_s0qym")]
+layout_mode = 2
+icon_texture = ExtResource("6_s0qym")
+caption_text = "Kosmetik"
+
+[node name="BackButton" type="Button" parent="." unique_id=450614459]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -240.0
+offset_top = -220.0
+offset_right = 240.0
+offset_bottom = -124.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"SecondaryButton"
+text = "Kembali"

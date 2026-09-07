@@ -100,27 +100,27 @@ func _swap_roster(roster: Array) -> Array:
 
 func test_use_item_boosts_only_the_chosen_student() -> void:
 	var original := _swap_roster([
-		{"id": 1, "student_name": "A", "mood": 50.0, "energy": 50.0},
-		{"id": 2, "student_name": "B", "mood": 50.0, "energy": 50.0},
+		{"id": 1, "student_name": "A", "kepribadian1": 50.0, "kepribadian2": 50.0},
+		{"id": 2, "student_name": "B", "kepribadian1": 50.0, "kepribadian2": 50.0},
 	])
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Komik", 1)
 	var komik: ItemData = ItemDatabase.get_item("Komik")
 	var result := GameState.use_item(komik, 1, 1)
 	assert_true(result["applied"], "use must succeed when the item is owned")
-	assert_eq(GameState.approved_students[0]["mood"], 50.0 + komik.mood_boost, "chosen student gains mood")
-	assert_eq(GameState.approved_students[1]["mood"], 50.0, "other student is untouched")
+	assert_eq(GameState.approved_students[0]["kepribadian1"], 50.0 + komik.mood_boost, "chosen student gains mood")
+	assert_eq(GameState.approved_students[1]["kepribadian1"], 50.0, "other student is untouched")
 	GameState.inventory.clear()
 	GameState.approved_students = original
 
 func test_use_item_clamps_at_one_hundred() -> void:
 	var original := _swap_roster([
-		{"id": 1, "student_name": "A", "mood": 98.0, "energy": 98.0},
+		{"id": 1, "student_name": "A", "kepribadian1": 98.0, "kepribadian2": 98.0},
 	])
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Komik", 1)
 	GameState.use_item(ItemDatabase.get_item("Komik"), 1, 1)
-	assert_eq(GameState.approved_students[0]["mood"], 100.0, "mood clamps at 100")
+	assert_eq(GameState.approved_students[0]["kepribadian1"], 100.0, "mood clamps at 100")
 	GameState.inventory.clear()
 	GameState.approved_students = original
 

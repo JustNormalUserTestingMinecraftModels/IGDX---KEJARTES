@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://dhtknn6ud6sk"]
+
+[node name="EfekRow" type="HBoxContainer" unique_id=148632534]
+theme_override_constants/separation = 16
+
+[node name="NeedIcon" type="TextureRect" parent="." unique_id=1841589733]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ValueLabel" type="Label" parent="." unique_id=295930136]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_type_variation = &"ResultDeltaLabel"
+text = "+0"
+
+[node name="ExplainLabel" type="Label" parent="." unique_id=729471077]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MicroLabel"
+text = "Penjelasan efek."
+autowrap_mode = 3

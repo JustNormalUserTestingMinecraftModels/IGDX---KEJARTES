@@ -12,13 +12,13 @@ func test_item_data_has_skill_boost_fields() -> void:
 	assert_true("akademis_boost" in d, "ItemData needs akademis_boost")
 	assert_true("seni_budaya_boost" in d, "ItemData needs seni_budaya_boost")
 	assert_true("olahraga_boost" in d, "ItemData needs olahraga_boost")
-	assert_equal(0, d.akademis_boost, "skill boosts default to 0")
+	assert_eq(d.akademis_boost, 0, "skill boosts default to 0")
 
 func test_catalog_skill_values_are_registered() -> void:
-	assert_equal(8, ItemDatabase.get_item("Raket").olahraga_boost)
-	assert_equal(6, ItemDatabase.get_item("Bank Soal").akademis_boost)
-	assert_equal(4, ItemDatabase.get_item("Komik").seni_budaya_boost)
-	assert_equal(0, ItemDatabase.get_item("Mie Instan").akademis_boost)
+	assert_eq(ItemDatabase.get_item("Raket").olahraga_boost, 8)
+	assert_eq(ItemDatabase.get_item("Bank Soal").akademis_boost, 6)
+	assert_eq(ItemDatabase.get_item("Komik").seni_budaya_boost, 4)
+	assert_eq(ItemDatabase.get_item("Mie Instan").akademis_boost, 0)
 
 func test_every_item_has_a_unique_nonempty_description() -> void:
 	var items := ItemDatabase.get_all_items()

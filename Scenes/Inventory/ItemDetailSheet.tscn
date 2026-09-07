@@ -1,0 +1,113 @@
+[gd_scene format=3 uid="uid://bnw7k2tx35q6p"]
+
+[ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://6p1lvnukp5ua" path="res://Scripts/Inventory/ItemDetailSheet.gd" id="2_script"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryBadge.tscn" id="3_badge"]
+[ext_resource type="PackedScene" uid="uid://dhtknn6ud6sk" path="res://Scenes/Inventory/EfekRow.tscn" id="4_efek"]
+
+[node name="ItemDetailSheet" type="Control" unique_id=1641322500]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+
+[node name="Scrim" type="ColorRect" parent="." unique_id=876920157]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Sheet" type="PanelContainer" parent="." unique_id=73044959]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.34
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="Sheet" unique_id=706411926]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="Sheet/Margin" unique_id=319619616]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Grabber" type="ColorRect" parent="Sheet/Margin/VBox" unique_id=984222152]
+custom_minimum_size = Vector2(56, 6)
+layout_mode = 2
+size_flags_horizontal = 4
+color = Color(0.5, 0.5, 0.5, 0.5)
+
+[node name="TopRow" type="HBoxContainer" parent="Sheet/Margin/VBox" unique_id=365554769]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Icon" type="TextureRect" parent="Sheet/Margin/VBox/TopRow" unique_id=1969327357]
+custom_minimum_size = Vector2(140, 140)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleCol" type="VBoxContainer" parent="Sheet/Margin/VBox/TopRow" unique_id=1467960251]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="Sheet/Margin/VBox/TopRow/TitleCol" unique_id=66299317]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Nama Item"
+
+[node name="CategoryChip" parent="Sheet/Margin/VBox/TopRow/TitleCol" unique_id=2089847571 instance=ExtResource("3_badge")]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="DescLabel" type="Label" parent="Sheet/Margin/VBox" unique_id=1836201033]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Deskripsi item."
+autowrap_mode = 3
+
+[node name="EfekHeader" type="Label" parent="Sheet/Margin/VBox" unique_id=1013907722]
+layout_mode = 2
+theme_type_variation = &"CardSectionLabel"
+text = "Efek"
+
+[node name="EfekList" type="VBoxContainer" parent="Sheet/Margin/VBox" unique_id=570818534]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="RowAkademis" parent="Sheet/Margin/VBox/EfekList" unique_id=1560465477 instance=ExtResource("4_efek")]
+layout_mode = 2
+
+[node name="RowSeni" parent="Sheet/Margin/VBox/EfekList" unique_id=1435596969 instance=ExtResource("4_efek")]
+layout_mode = 2
+
+[node name="RowOlahraga" parent="Sheet/Margin/VBox/EfekList" unique_id=875086677 instance=ExtResource("4_efek")]
+layout_mode = 2
+
+[node name="RowMood" parent="Sheet/Margin/VBox/EfekList" unique_id=1632053999 instance=ExtResource("4_efek")]
+layout_mode = 2
+
+[node name="RowEnergy" parent="Sheet/Margin/VBox/EfekList" unique_id=1260974133 instance=ExtResource("4_efek")]
+layout_mode = 2
+
+[node name="ApplyButton" type="Button" parent="Sheet/Margin/VBox" unique_id=1318934005]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "Pakai ke Siswa"

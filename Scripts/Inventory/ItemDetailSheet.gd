@@ -47,6 +47,7 @@ const _NEED_ICONS := {
 }
 
 var _item: ItemData = null
+var _dismissing := false
 
 func _ready() -> void:
 	if Engine.is_editor_hint():
@@ -92,6 +93,7 @@ func setup(item: ItemData, _owned_qty: int) -> void:
 func _on_apply() -> void:
 	if _item == null:
 		return
+	_apply_button.disabled = true
 	AudioDirector.play_sfx(&"confirm")
 	apply_requested.emit(_item)
 
@@ -105,6 +107,9 @@ func _notification(what: int) -> void:
 		_dismiss()
 
 func _dismiss() -> void:
+	if _dismissing:
+		return
+	_dismissing = true
 	AudioDirector.play_sfx(&"popup_close")
 	if Engine.is_editor_hint():
 		dismissed.emit()

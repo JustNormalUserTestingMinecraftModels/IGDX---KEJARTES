@@ -99,6 +99,8 @@ func _open_detail_sheet(item: ItemData) -> void:
 	_sheet.dismissed.connect(func(): _sheet = null)
 
 func _open_apply_screen(item: ItemData) -> void:
+	if _apply_screen != null:
+		return
 	if _sheet != null:
 		_sheet.queue_free()
 		_sheet = null
@@ -133,14 +135,11 @@ func _show_toast(text: String) -> void:
 func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
 		return
-	if _apply_screen != null:
-		_apply_screen.queue_free()
-		_apply_screen = null
-	elif _sheet != null:
-		_sheet.queue_free()
-		_sheet = null
-	else:
-		_on_back_pressed()
+	# The sheet and the apply screen each handle the back request and free
+	# themselves; only fall through to leaving the screen when neither is up.
+	if _sheet != null or _apply_screen != null:
+		return
+	_on_back_pressed()
 
 func _on_back_pressed() -> void:
 	AudioDirector.play_sfx(&"whoosh")

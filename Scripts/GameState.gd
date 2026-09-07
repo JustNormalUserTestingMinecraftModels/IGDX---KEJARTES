@@ -242,6 +242,8 @@ func load_inventory() -> void:
 
 ## Delete the on-disk inventory save, if present.
 func clear_inventory_save() -> void:
+	if Engine.is_editor_hint():
+		return
 	if FileAccess.file_exists(INVENTORY_SAVE_PATH):
 		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
 
@@ -329,7 +331,9 @@ func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
 
 ## Applies one copy of `item` to each id in `student_ids` (one application
 ## each; quantity is fixed at 1 per student). All-or-nothing: if the stack
-## cannot cover every id, nothing is applied and "applied" is false.
+## cannot cover every id, nothing is applied and "applied" is false. The stock
+## and id-existence pre-checks below make a partial application unreachable, so
+## `applied` mirrors `not results.is_empty()`.
 ## Returns {"applied": bool, "results": Array} where each result is
 ## {"student_id": int, "name": String, "mood_delta","energy_delta",
 ##  "akademis_delta","seni_delta","olahraga_delta": float}.

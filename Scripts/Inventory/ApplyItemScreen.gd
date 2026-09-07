@@ -43,6 +43,7 @@ var _rows: Array = []
 var _drag := false
 var _drag_y := 0.0
 var _drag_v0 := 0
+var _committing := false
 
 func _ready() -> void:
 	_select_all_button.text = "Pilih Semua"
@@ -123,13 +124,15 @@ func _on_select_all() -> void:
 	_refresh_confirm()
 
 func _on_cancel() -> void:
+	if _committing:
+		return
 	if not Engine.is_editor_hint():
 		AudioDirector.play_sfx(&"cancel")
 	cancelled.emit()
 	queue_free()
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and not _committing:
 		_on_cancel()
 
 func _on_confirm() -> void:
@@ -138,6 +141,7 @@ func _on_confirm() -> void:
 	if not res["applied"]:
 		AudioDirector.play_sfx(&"error")
 		return
+	_committing = true
 	_confirm_button.disabled = true
 	_select_all_button.disabled = true
 	await _play_payoff(res["results"])
@@ -149,19 +153,19 @@ func _play_payoff(results: Array) -> void:
 	var tier := 0
 	for r in results:
 		var row = _row_for(int(r["student_id"]))
+		var lines := _gain_lines(r)
+		if lines == "":
+			all_gained = false
 		if row != null:
 			var burst = reward_burst_scene.instantiate()
 			burst.plays_sfx = false
 			row.add_child(burst)
 			burst.position = row.size * 0.5
 			burst.fire()
-			var lines := _gain_lines(r)
 			if lines != "":
 				AnimUtils.create_floating_text(self, lines,
 					row.global_position + row.size * 0.5,
 					DesignTokens.load_default().state_success)
-			else:
-				all_gained = false
 		AudioDirector.play_sfx([&"star_earn_1", &"star_earn_2", &"star_earn_3"][mini(tier, 2)])
 		tier += 1
 		await get_tree().create_timer(payoff_stagger).timeout

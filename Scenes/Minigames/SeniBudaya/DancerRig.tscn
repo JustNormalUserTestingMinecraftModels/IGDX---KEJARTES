@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://cvcji5ahomyaj"]
+
+[ext_resource type="Script" uid="uid://c48e0t4hmho2w" path="res://Scripts/Minigames/SeniBudaya/DancerRig.gd" id="1_6s4vb"]
+[ext_resource type="Texture2D" uid="uid://cchslwcnjf8yg" path="res://Assets/Images/Textures/dance_body_idle.png" id="2_ywpnv"]
+[ext_resource type="Texture2D" uid="uid://bwrfu5uokks0y" path="res://Assets/Images/Textures/dance_head.png" id="3_lgehw"]
+
+[node name="DancerRig" type="Control" unique_id=878431887]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_6s4vb")
+
+[node name="Body" type="TextureRect" parent="." unique_id=2057325304]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_ywpnv")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Head" type="TextureRect" parent="." unique_id=796419422]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_lgehw")
+expand_mode = 1
+stretch_mode = 5

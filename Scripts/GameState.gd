@@ -206,6 +206,76 @@ func seed_playtest_inventory(quantity: int = 2) -> void:
 	inventory_changed.emit()
 
 
+const INVENTORY_SAVE_PATH := "user://inventory.cfg"
+
+## Serialize `inventory` into `cfg` (pure -- no disk, no editor gate). Split
+## out so a headless test can round-trip it without the is_editor_hint guard.
+func _write_inventory_to(cfg: ConfigFile) -> void:
+	cfg.set_value("inventory", "items", inventory.duplicate())
+
+## Inverse of _write_inventory_to. A missing section leaves `inventory` empty.
+## Coerces keys to String and values to int.
+func _read_inventory_from(cfg: ConfigFile) -> void:
+	var raw: Dictionary = cfg.get_value("inventory", "items", {})
+	inventory.clear()
+	for k in raw:
+		inventory[String(k)] = int(raw[k])
+
+## Persist the current inventory. No-op in editor/test context: a placeholder
+## instance must never touch user://.
+func save_inventory() -> void:
+	if Engine.is_editor_hint():
+		return
+	var cfg := ConfigFile.new()
+	_write_inventory_to(cfg)
+	cfg.save(INVENTORY_SAVE_PATH)
+
+## Load the persisted inventory at boot. Emits inventory_changed so any
+## already-built screen rebuilds. No-op in editor/test context.
+func load_inventory() -> void:
+	if Engine.is_editor_hint():
+		return
+	var cfg := ConfigFile.new()
+	if cfg.load(INVENTORY_SAVE_PATH) == OK:
+		_read_inventory_from(cfg)
+		inventory_changed.emit()
+
+## Delete the on-disk inventory save, if present.
+func clear_inventory_save() -> void:
+	if FileAccess.file_exists(INVENTORY_SAVE_PATH):
+		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
+
+## Debug: return every session run-state field to its declared default and
+## drop the on-disk inventory save. Deliberately leaves is_game_beaten and
+## debug_level_select_enabled alone -- those are persisted progress flags
+## (GameSettings writes them to settings.cfg), not run state.
+func forget_session() -> void:
+	next_scene = "res://Scenes/MainMenu/main_menu.tscn"
+	returned_from_student_card = false
+	approved_students = []
+	selected_student = {}
+	selected_day = ""
+	day_schedules = {}
+	minigame_gain_this_week = {}
+	minggu_ke = 1
+	lobby_tutorial_completed = false
+	tutorials_bypassed = false
+	current_grade = 7
+	max_minggu = get_max_weeks()
+	is_game_over_cutscene = false
+	grade7_student_ids = []
+	is_exam_intro_cutscene = false
+	run_failed = false
+	player_money = 0
+	pending_earnings = {}
+	inventory.clear()
+	daily_login_day = 1
+	last_claim_date = ""
+	run_stats.reset()
+	clear_inventory_save()
+	inventory_changed.emit()
+
+
 ## Stat ceiling shared with StudentData's mood/energy range.
 const STAT_MAX := 100.0
 
@@ -268,6 +338,14 @@ func use_item_on_students(item: ItemData, student_ids: Array) -> Dictionary:
 		return {"applied": false, "results": []}
 	if get_inventory_quantity(item.item_name) < student_ids.size():
 		return {"applied": false, "results": []}
+	for sid in student_ids:
+		var found := false
+		for s in approved_students:
+			if s.get("id", -1) == sid:
+				found = true
+				break
+		if not found:
+			return {"applied": false, "results": []}
 	var results: Array = []
 	for sid in student_ids:
 		var sname := ""
@@ -277,6 +355,7 @@ func use_item_on_students(item: ItemData, student_ids: Array) -> Dictionary:
 				break
 		var r := use_item(item, sid, 1)
 		if r["applied"]:
+			r.erase("applied")
 			r["student_id"] = sid
 			r["name"] = sname
 			results.append(r)
@@ -287,6 +366,7 @@ var last_claim_date: String = ""
 
 func _ready():
 	print("GameState siap")
+	load_inventory()
 
 # --- Converter: Dictionary → StudentData (for simulation) ---
 func convert_to_student_data_array() -> Array[StudentData]:

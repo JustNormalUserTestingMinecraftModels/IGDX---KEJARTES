@@ -63,7 +63,7 @@ custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_vertical = 4
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 
 [node name="RecapName" type="Label" parent="Margin/Card/Margin/VBox/RecapStrip" unique_id=1548853569]
 layout_mode = 2

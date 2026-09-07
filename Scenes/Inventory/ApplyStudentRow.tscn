@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://chyglpo7i20kv"]
+
+[ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://yn6ejdk25ver" path="res://Scripts/Inventory/ApplyStudentRow.gd" id="2_script"]
+[ext_resource type="PackedScene" uid="uid://djqecanahebv5" path="res://Scenes/Inventory/StatBarRow.tscn" id="3_barrow"]
+
+[node name="ApplyStudentRow" type="PanelContainer" unique_id=1677160895]
+theme = ExtResource("1_theme")
+theme_type_variation = &"Card"
+script = ExtResource("2_script")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=829482806]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="HBox" type="HBoxContainer" parent="Margin" unique_id=1530897872]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Check" type="CheckBox" parent="Margin/HBox" unique_id=1467424881]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+
+[node name="Portrait" type="TextureRect" parent="Margin/HBox" unique_id=109704464]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Col" type="VBoxContainer" parent="Margin/HBox" unique_id=778824612]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="HeaderRow" type="HBoxContainer" parent="Margin/HBox/Col" unique_id=585574732]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="Margin/HBox/Col/HeaderRow" unique_id=534068657]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "Nama Siswa"
+
+[node name="BadgeSlot" type="HBoxContainer" parent="Margin/HBox/Col/HeaderRow" unique_id=437460707]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BarRowAkademis" parent="Margin/HBox/Col" unique_id=1482620063 instance=ExtResource("3_barrow")]
+layout_mode = 2
+
+[node name="BarRowSeni" parent="Margin/HBox/Col" unique_id=1388802523 instance=ExtResource("3_barrow")]
+layout_mode = 2
+
+[node name="BarRowOlahraga" parent="Margin/HBox/Col" unique_id=1163804452 instance=ExtResource("3_barrow")]
+layout_mode = 2
+
+[node name="BarRowMood" parent="Margin/HBox/Col" unique_id=1294043261 instance=ExtResource("3_barrow")]
+layout_mode = 2
+
+[node name="BarRowEnergy" parent="Margin/HBox/Col" unique_id=1028250587 instance=ExtResource("3_barrow")]
+layout_mode = 2

@@ -1438,3 +1438,76 @@ func _make_row() -> DaySummaryStudentRow:
 	row.theme = theme
 	Engine.get_main_loop().root.add_child(row)
 	return row
+
+
+# ── EventStudentCard ─────────────────────────────────────────────────────────
+# The event dialog's per-student card, rebuilt on this screen's own
+# components on 2026-09-07. See the sprite-rig-and-shop-hub spec.
+
+const EVENT_CARD_SCENE := "res://Scenes/SchoolSimulation/EventStudentCard.tscn"
+
+
+func test_event_card_reuses_the_day_summary_parts() -> void:
+	var packed := load(EVENT_CARD_SCENE) as PackedScene
+	assert_not_null(packed, "EventStudentCard.tscn should load")
+	var card := packed.instantiate()
+	assert_not_null(card.get_node_or_null("Avatar"),
+		"the event card should reuse DaySummaryAvatar")
+	assert_not_null(card.get_node_or_null("EnergyBar"),
+		"the event card should reuse the DaySummary needs bars")
+	assert_not_null(card.get_node_or_null("MoodBar"), "ditto mood")
+	for i in range(1, 4):
+		assert_not_null(card.get_node_or_null("StatRow%d" % i),
+			"the event card should carry all three DaySummaryStatRows")
+	card.free()
+
+
+func test_event_card_needs_bars_carry_their_icon_and_word() -> void:
+	# DaySummaryNeedsBar.set_need writes into $Icon and $Word; without
+	# those children every call would crash on a null.
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
+	for bar_name in ["EnergyBar", "MoodBar"]:
+		var bar := card.get_node("%s" % bar_name)
+		assert_not_null(bar.get_node_or_null("Icon"),
+			"%s needs an Icon child" % bar_name)
+		assert_not_null(bar.get_node_or_null("Word"),
+			"%s needs a Word child" % bar_name)
+	card.free()
+
+
+func test_event_card_is_a_toggle_not_a_scaled_checkbox() -> void:
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
+	assert_true(card is Button, "the whole card should be the tap target")
+	assert_true(card.toggle_mode, "the card should latch when selected")
+	assert_eq(card.theme_type_variation, &"EventSelectCard",
+		"selection state should come from the theme, not a bespoke stylebox")
+	card.free()
+
+
+func test_event_card_reports_its_selection() -> void:
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as EventStudentCard
+	assert_false(card.is_selected(), "a fresh card starts unselected")
+	card.button_pressed = true
+	assert_true(card.is_selected(), "pressing the card selects it")
+	card.free()
+
+
+func test_event_card_refuses_selection_when_not_selectable() -> void:
+	# A tired student cannot be sent, and the card has to say so.
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as EventStudentCard
+	card.button_pressed = true
+	card.set_selectable(false)
+	assert_true(card.disabled, "an unselectable card must not accept a tap")
+	assert_false(card.is_selected(),
+		"making a card unselectable must drop any selection it held")
+	card.free()
+
+
+func test_event_card_children_do_not_swallow_the_tap() -> void:
+	# The whole 992x410 card is the tap target; a child left on the
+	# default mouse filter would eat the click over its own rect.
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
+	for child in card.get_children():
+		assert_eq(child.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"%s should ignore the mouse so the card gets the tap" % child.name)
+	card.free()

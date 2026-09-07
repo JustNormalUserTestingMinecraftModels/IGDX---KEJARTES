@@ -50,6 +50,15 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.state_success.lightened(0.18), tokens.state_success.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
 
+	# The event dialog's per-student card. The whole card is the toggle,
+	# so its "pressed" state has to read as SELECTED rather than as a
+	# button being held: normal is the plain card surface, pressed picks
+	# up the brand outline. Sits with the other button variations because
+	# it is literally a Button, however card-shaped it looks.
+	_add_button_variation(theme, tokens, "EventSelectCard",
+		tokens.surface_card, tokens.surface_card,
+		tokens.brand_primary, tokens.text_primary)
+
 	# Trait chips (Quirk / Persona). Same pill geometry as any other
 	# button variation; only the accent differs, so the two trait kinds
 	# stay visually distinguishable without per-node styleboxes.

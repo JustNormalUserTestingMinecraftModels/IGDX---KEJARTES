@@ -1503,6 +1503,65 @@ func test_event_card_refuses_selection_when_not_selectable() -> void:
 	card.free()
 
 
+const EVENT_DIALOG_SCRIPT := "res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd"
+
+
+func test_event_dialog_instantiates_cards_instead_of_building_them() -> void:
+	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
+	assert_contains(src, "EventStudentCard.tscn",
+		"cards should come from a PackedScene, not from HBoxContainer.new()")
+	for built in ["HBoxContainer.new()", "VBoxContainer.new()",
+			"CheckBox.new()", "StatBar.new()", "Label.new()"]:
+		assert_false(src.contains(built),
+			"%s is runtime visual construction and should be gone" % built)
+
+
+func test_event_dialog_carries_no_emoji_iconography() -> void:
+	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
+	for glyph in ["📢", "📈", "📉", "😴", "🌟", "📚", "⚽", "🎨", "⚡", "😊"]:
+		assert_false(src.contains(glyph),
+			"emoji are banned as UI iconography; %s should be an SVG" % glyph)
+
+
+func test_event_dialog_scene_carries_no_emoji_either() -> void:
+	var scene_text := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn")
+	for glyph in ["📢", "📈", "📉"]:
+		assert_false(scene_text.contains(glyph),
+			"the scene's own labels should not carry %s" % glyph)
+
+
+func test_event_dialog_dropped_the_button_texture_override_path() -> void:
+	# StyleBoxTexture overrides are what let these three buttons drift
+	# out of the theme every other screen uses.
+	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
+	# dialog_card_texture keeps its own StyleBoxTexture: that is a
+	# separate, pre-existing art-swap hook for the PANEL and is out of
+	# scope here. What had to go is the per-button override path, so the
+	# check is that every remaining override targets the panel.
+	var overrides := 0
+	for line in src.split("
+"):
+		if line.contains("add_theme_stylebox_override"):
+			overrides += 1
+			assert_contains(line, "dialog_panel",
+				"only the dialog panel may override a stylebox, not: %s" % line.strip_edges())
+	assert_eq(overrides, 1,
+		"expected exactly one stylebox override (the panel's), found %d" % overrides)
+	for retired in ["button_select_all_texture", "button_cancel_texture",
+			"button_confirm_texture"]:
+		assert_false(src.contains(retired),
+			"%s should have been removed with the override path" % retired)
+
+
+func test_event_dialog_action_buttons_keep_the_shared_variations() -> void:
+	var scene_text := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn")
+	for variation in ["SecondaryButton", "DangerButton", "PrimaryButton"]:
+		assert_contains(scene_text, variation,
+			"the action buttons should use the game's shared %s" % variation)
+
+
 func test_event_card_children_do_not_swallow_the_tap() -> void:
 	# The whole 992x410 card is the tap target; a child left on the
 	# default mouse filter would eat the click over its own rect.

@@ -304,6 +304,7 @@ const DISPLAY_ROSTER := [
 	"CardSectionLabel", "ResultHeroLabel",
 	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
 	"SuccessButton", "QuirkBadge", "PersonaBadge", "LobbyNavButton",
+	"EventSelectCard",
 	"TraitPill", "PreviewRowLabel",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
 	"RecapPillValueLabel", "ScoreHudValueLabel",

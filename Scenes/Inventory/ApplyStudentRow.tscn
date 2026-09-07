@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://djqecanahebv5" path="res://Scenes/Inventory/StatBarRow.tscn" id="3_barrow"]
 
 [node name="ApplyStudentRow" type="PanelContainer" unique_id=1677160895]
+size_flags_horizontal = 3
 theme = ExtResource("1_theme")
 theme_type_variation = &"Card"
 script = ExtResource("2_script")

@@ -29,3 +29,9 @@ alignment = 2
 [node name="QuantityLabel" type="Label" parent="Layout/QuantityRow" unique_id=1224538772]
 layout_mode = 2
 theme_type_variation = &"CoinLabel"
+
+[node name="Shine" type="ColorRect" parent="." unique_id=1906551156]
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+mouse_filter = 2

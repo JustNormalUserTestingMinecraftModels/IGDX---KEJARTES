@@ -1,6 +1,9 @@
 # KejarTes — Project Guide
 
-Godot **4.6** mobile game (portrait 1080×1920, `mobile` renderer, d3d12).
+Godot **4.6** mobile game (portrait 1080×1920, `mobile` renderer, Vulkan —
+the Windows driver was pinned to `d3d12` from the initial commit until
+2026-09-07, when it was unpinned back to the engine default while chasing
+editor hangs; older plan docs still say d3d12).
 Indonesian-language school-management sim. Main scene:
 `Scenes/MainMenu/main_menu.tscn` (since the 2026-08-31 boot change).
 

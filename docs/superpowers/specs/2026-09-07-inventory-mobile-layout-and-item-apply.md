@@ -44,7 +44,8 @@ is the ported second-programmer `koperasi&inventory` screen. It has three proble
 
 ## Non-goals
 
-- No save/persistence for inventory or roster state (project has none by design).
+- No persistence beyond `GameState.inventory` (see Section 7). Roster, money,
+  week, grade and schedules stay session-scoped.
 - No change to how items are **bought** (`koprasi.gd` / shop shelf) or to
   `Cart` — this pass is inventory-side only.
 - No new balance tuning of `Balance.gd` or grade-progression numbers. New item
@@ -730,6 +731,137 @@ Edits to existing suites:
 
 ---
 
+## Section 7 — Inventory persistence + debug session reset
+
+This is the project's **first** on-disk save. `CLAUDE.md` currently says "No
+save system … do not add persistence to `GameState` without being asked" — this
+pass was explicitly asked for. Keep the footprint minimal and update that
+`CLAUDE.md` paragraph when the feature lands (note: only `GameState.inventory`
+persists; everything else stays session-scoped).
+
+### 7.1 Decisions
+
+- **Persist `GameState.inventory` only** (item_name → quantity). Money, roster,
+  week, grade, schedules stay session-scoped.
+- **Known limitation, call it out in code + `CLAUDE.md`:** item boosts land on
+  `approved_students`, which is **not** persisted. Using an item, then quitting
+  before the week simulates, loses that boost on relaunch. Acceptable for this
+  pass; a full run-state save is a separate future spec.
+- **Write on scene transitions**, not per change.
+- **Debug "Forget Session"** wipes in-memory `GameState` to boot defaults,
+  deletes the save file, and returns to MainMenu.
+
+### 7.2 `GameState.gd` — persistence API
+
+Separate file from `settings.cfg` so the debug wipe is a single-file delete:
+
+```gdscript
+const INVENTORY_SAVE_PATH := "user://inventory.cfg"
+
+## Serialize `inventory` into `cfg` (pure — no disk, no gate). Split out so a
+## headless test can round-trip it without hitting the is_editor_hint guard.
+func _write_inventory_to(cfg: ConfigFile) -> void:
+    cfg.set_value("inventory", "items", inventory.duplicate())
+
+## Inverse of _write_inventory_to. Missing section -> leaves `inventory` empty.
+func _read_inventory_from(cfg: ConfigFile) -> void:
+    var raw: Dictionary = cfg.get_value("inventory", "items", {})
+    inventory.clear()
+    for k in raw:
+        inventory[String(k)] = int(raw[k])
+
+## Persist the current inventory. No-op in editor/test context (GameState is
+## not @tool; a placeholder instance must not touch user://).
+func save_inventory() -> void:
+    if Engine.is_editor_hint():
+        return
+    var cfg := ConfigFile.new()
+    _write_inventory_to(cfg)
+    cfg.save(INVENTORY_SAVE_PATH)
+
+## Load the persisted inventory at boot. Emits inventory_changed so any
+## already-built screen rebuilds.
+func load_inventory() -> void:
+    if Engine.is_editor_hint():
+        return
+    var cfg := ConfigFile.new()
+    if cfg.load(INVENTORY_SAVE_PATH) == OK:
+        _read_inventory_from(cfg)
+        inventory_changed.emit()
+
+## Delete the on-disk inventory save, if present.
+func clear_inventory_save() -> void:
+    if FileAccess.file_exists(INVENTORY_SAVE_PATH):
+        DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
+
+## Debug: return the whole autoload to a fresh-boot state and drop the save.
+## Enumerates every runtime field GameState initializes at declaration — the
+## plan author greps GameState.gd for the full list; the fields known today:
+##   inventory.clear(); approved_students.clear(); day_schedules.clear()
+##   pending_earnings.clear(); player_money = 0; current_week = 1
+##   current_grade = 7; run_stats = RunStats.new()  (or its reset())
+## then clear_inventory_save(); emit money_changed(0) and inventory_changed.
+func forget_session() -> void
+```
+
+- `_ready()` — after the existing `print("GameState siap")`, call
+  `load_inventory()`.
+
+### 7.3 `Transition.transition.gd` — save hook
+
+In `change_scene()`, immediately after `_busy = true`:
+
+```gdscript
+if not Engine.is_editor_hint():
+    GameState.save_inventory()
+```
+
+One line, before `_cover_in`. Every navigation flushes the current stack; the
+only lost-write window is a hard crash mid-scene, which the "on transitions"
+choice accepts.
+
+### 7.4 `DebugManager.gd` — Forget Session button
+
+In `_build_general_panel()`, directly after the seed button + its `HSeparator`
+(so it sits second, next to the other one-click action), a runtime `Button`
+(the overlay builds its own UI — out of design-system scope, unchanged here):
+
+```gdscript
+var btn_forget := Button.new()
+btn_forget.text = " 🧹 Forget Session (hapus save, ke MainMenu) "
+btn_forget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+btn_forget.custom_minimum_size = Vector2(0, 95)
+btn_forget.add_theme_font_size_override("font_size", 23)
+btn_forget.pressed.connect(_forget_session)
+vbox.add_child(btn_forget)
+vbox.add_child(HSeparator.new())
+
+func _forget_session() -> void:
+    GameState.forget_session()
+    _toggle_overlay(false)   # use whatever the overlay's own hide path is
+    Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn", Transition.Style.FADE)
+```
+
+### 7.5 Tests — `tests/test_inventory_persistence.gd` (new, `@tool`, no coroutine)
+
+- `_write_inventory_to` / `_read_inventory_from` round-trip: set
+  `GameState.inventory = {"Komik": 3, "Raket": 1}`, write to a fresh
+  `ConfigFile`, clear, read back, assert equal. Snapshot/restore
+  `GameState.inventory` in `setup`/`teardown`.
+- `_read_inventory_from` on an empty `ConfigFile` leaves `inventory` empty.
+- `_read_inventory_from` coerces types: values come back as `int`, keys as
+  `String`.
+- `forget_session()` empties `inventory` and `approved_students` and resets
+  `player_money` to 0 (pure in-memory — safe in test context).
+- `save_inventory()` / `load_inventory()` are `is_editor_hint`-gated: call
+  `save_inventory()` in the suite and assert **no** file appears at
+  `INVENTORY_SAVE_PATH` (proves the guard holds; the real disk path is
+  exercised only in a running game).
+- `Transition.transition.gd` source contains `GameState.save_inventory()` and
+  the `is_editor_hint` guard (source scan).
+- `DebugManager.gd` source contains `_forget_session` and
+  `GameState.forget_session()` (source scan).
+
 ## Balance risk
 
 Item skill-boosts are a new route to a grade's three academic targets, and the
@@ -768,3 +900,8 @@ point caps, ramped targets). Mitigations in this design:
 | Create | `tests/test_apply_student_row.gd` | row mapping + preview |
 | Modify | `tests/test_inventory.gd` | new-layout assertions, drop sidebar-era ones |
 | Modify | `tests/test_viewport_editability.gd` | drop `inventory.gd` BASELINE entry |
+| Modify | `Scripts/GameState.gd` | `save_inventory` / `load_inventory` / `clear_inventory_save` / `forget_session` + pure `_write/_read_inventory_from`; `load_inventory()` in `_ready` |
+| Modify | `Scripts/Transition/transition.gd` | `GameState.save_inventory()` on every `change_scene`, editor-gated |
+| Modify | `Scripts/Debug/DebugManager.gd` | "Forget Session" button in the General tab → `forget_session()` + reload MainMenu |
+| Create | `tests/test_inventory_persistence.gd` | round-trip, gate, `forget_session`, source scans |
+| Update | `CLAUDE.md` | revise the "No save system" paragraph — inventory now persists to `user://inventory.cfg`; nothing else does |

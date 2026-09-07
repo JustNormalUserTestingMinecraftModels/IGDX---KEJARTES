@@ -158,27 +158,22 @@ func test_snapshot_deep_copies_so_later_edits_do_not_leak_in() -> void:
 func test_restore_puts_back_run_stats_and_the_end_game_flags() -> void:
 	var original_stats: RunStats = GameState.run_stats
 	var original_failed: bool = GameState.run_failed
-	var original_exam: bool = GameState.is_exam_intro_cutscene
 
 	GameState.run_stats = RunStats.new()
 	GameState.run_stats.minigames_won = 7
 	GameState.run_failed = false
-	GameState.is_exam_intro_cutscene = false
 
 	var snap := EndGameRehearsal.snapshot()
 
 	GameState.run_stats = RunStats.new()
 	GameState.run_failed = true
-	GameState.is_exam_intro_cutscene = true
 
 	EndGameRehearsal.restore(snap)
 	assert_eq(GameState.run_stats.minigames_won, 7, "the tally is back")
 	assert_false(GameState.run_failed, "run_failed is back")
-	assert_false(GameState.is_exam_intro_cutscene, "the exam flag is back")
 
 	GameState.run_stats = original_stats
 	GameState.run_failed = original_failed
-	GameState.is_exam_intro_cutscene = original_exam
 
 
 func test_restore_refuses_an_empty_snapshot() -> void:
@@ -202,7 +197,6 @@ func test_arm_lands_on_the_final_week_with_a_clean_sequence_state() -> void:
 	GameState.current_grade = 7
 	GameState.minggu_ke = 2
 	GameState.run_failed = true
-	GameState.is_exam_intro_cutscene = true
 	GameState.day_schedules = {"stale": true}
 
 	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
@@ -211,8 +205,6 @@ func test_arm_lands_on_the_final_week_with_a_clean_sequence_state() -> void:
 		"arming lands on the grade's final week, where the sequence fires")
 	assert_false(GameState.run_failed,
 		"a fresh rehearsal must not inherit a previous run's verdict")
-	assert_false(GameState.is_exam_intro_cutscene,
-		"the cutscene flag is ExamProgress's to set, not arm()'s")
 	assert_true(GameState.day_schedules.is_empty(),
 		"stale schedules are cleared -- the rehearsal simulates no weeks")
 	assert_eq(GameState.approved_students.size(), 2, "the roster is armed")
@@ -261,6 +253,101 @@ func test_arm_seeds_a_run_stats_tally_matched_to_the_preset() -> void:
 		"money must be non-zero or the money component is always 0/15")
 
 	EndGameRehearsal.restore(snap)
+
+
+# ───────────────────────────────────────────────── grade-letter scenarios
+
+## Four-student stand-in source. The grade-scenario presets' CLEARED_COUNTS
+## arrays assume a four-slot roster (mirroring DebugManager.DEFAULT_STUDENTS'
+## length, and RunGrade's event/target fractions which are computed over the
+## whole roster). Unlike test_campur_gives_each_slot_a_different_cleared_count()'s
+## duplicates, these two get distinct ids (3, 4) -- record_event_student()
+## dedupes by id, so a grade preset that wants all four students to count
+## toward the event fraction needs four actually-distinct ids, the same as
+## DebugManager.DEFAULT_STUDENTS has in the real game.
+func _fake_source_four() -> Array:
+	var source := _fake_source()
+	var third: Dictionary = source[0].duplicate()
+	third["id"] = 3
+	var fourth: Dictionary = source[1].duplicate()
+	fourth["id"] = 4
+	source.append(third)
+	source.append(fourth)
+	return source
+
+
+## Computes the letter RunResult itself would show for the currently-armed
+## GameState -- the exact same three calls _compute_grade() makes
+## (Scripts/EndGame/RunResult.gd:109-114).
+func _resulting_letter() -> String:
+	var counted: Array = GameState.count_targets_cleared()
+	var passed := not GameState.run_failed and GameState.check_semester_passed()
+	var run_score := RunGrade.score(GameState.run_stats,
+		int(counted[0]), int(counted[1]), GameState.approved_students.size())
+	return RunGrade.letter(run_score, passed)
+
+
+func test_arm_makes_the_grade_a_preset_resolve_to_an_a() -> void:
+	var snap := EndGameRehearsal.snapshot()
+	GameState.current_grade = 7
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GRADE_A, _fake_source_four())
+	assert_eq(_resulting_letter(), "A",
+		"the grade-A preset must resolve to exactly 'A', not 'A+' or 'A-'")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_makes_the_grade_b_preset_resolve_to_a_b() -> void:
+	var snap := EndGameRehearsal.snapshot()
+	GameState.current_grade = 7
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GRADE_B, _fake_source_four())
+	assert_eq(_resulting_letter(), "B",
+		"the grade-B preset must resolve to exactly 'B', not 'B+' or 'B-'")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_makes_the_grade_c_preset_resolve_to_a_c() -> void:
+	var snap := EndGameRehearsal.snapshot()
+	GameState.current_grade = 7
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GRADE_C, _fake_source_four())
+	assert_eq(_resulting_letter(), "C",
+		"the grade-C preset must resolve to exactly 'C', not 'C+' or 'C-'")
+
+	EndGameRehearsal.restore(snap)
+
+
+func test_arm_makes_the_grade_d_preset_resolve_to_a_d() -> void:
+	var snap := EndGameRehearsal.snapshot()
+	GameState.current_grade = 7
+
+	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GRADE_D, _fake_source_four())
+	assert_eq(_resulting_letter(), "D",
+		"the grade-D preset must fail to pass, which forces the letter to 'D' " +
+		"regardless of score")
+
+	EndGameRehearsal.restore(snap)
+
+
+## The inverse of the completeness ratchet above: every SNAPSHOT_KEYS entry
+## must still name a real GameState field. A key left behind after a field
+## is deleted fails silently -- get() returns null, set() no-ops -- so the
+## snapshot would quietly stop round-tripping. Plan A deleted
+## is_exam_intro_cutscene, which is exactly this shape.
+func test_every_snapshot_key_names_a_real_game_state_property() -> void:
+	var declared := {}
+	for prop in GameState.get_script().get_script_property_list():
+		if prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			declared[prop.name] = true
+	var stale: Array[String] = []
+	for key in EndGameRehearsal.SNAPSHOT_KEYS:
+		if not declared.has(key):
+			stale.append(String(key))
+	assert_eq(stale.size(), 0,
+		"SNAPSHOT_KEYS names fields GameState no longer declares: " + ", ".join(stale))
 
 
 # ───────────────────────────────────────────────── snapshot completeness ratchet

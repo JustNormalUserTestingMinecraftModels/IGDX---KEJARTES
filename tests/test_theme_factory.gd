@@ -171,7 +171,7 @@ func test_stat_pill_fill_uses_the_texture() -> void:
 	assert_true(fill.texture != null, "StatPill's fill texture must load")
 
 
-## StatBar is shared with AturJadwal, SemesterEnd and ResultCheckup. The
+## StatBar is shared with AturJadwal, StatCheck and ResultCheckup. The
 ## redesign must not have altered how it looks for them.
 func test_stat_bar_variation_is_unchanged() -> void:
 	var theme := ThemeFactory.build(DesignTokens.load_default())
@@ -252,3 +252,119 @@ func test_stat_bar_category_variations_exist_and_bake_their_colour_into_the_fill
 		if bg != null:
 			assert_true(bg.border_width_top > 0,
 				"%s/background must keep the track's rim" % name)
+
+
+func test_headings_take_the_display_font() -> void:
+	# H2Label and TitleLabel are headings but are not outlined. Before the
+	# 2026-09-05 typography pass they took the body font, because
+	# _build_labels keyed the display font off the outline flag.
+	var tokens := DesignTokens.load_default()
+	if tokens.font_display == null:
+		# Nothing to assert while the slot is empty; Task 1/3 fills it.
+		assert_true(true, "display slot unassigned, skipping")
+		return
+	for name in ["DisplayLabel", "H1Label", "H2Label", "TitleLabel"]:
+		assert_eq(_theme.get_font("font", name), tokens.font_display,
+			"%s must take the display font" % name)
+
+
+func test_section_and_hero_headings_take_the_display_font() -> void:
+	# CardSectionLabel and ResultHeroLabel are built outside _build_labels
+	# and so were never reached by its font assignment at all.
+	var tokens := DesignTokens.load_default()
+	if tokens.font_display == null:
+		assert_true(true, "display slot unassigned, skipping")
+		return
+	assert_eq(_theme.get_font("font", "CardSectionLabel"), tokens.font_display,
+		"CardSectionLabel must take the display font")
+	assert_eq(_theme.get_font("font", "ResultHeroLabel"), tokens.font_display,
+		"ResultHeroLabel must take the display font")
+
+
+func test_body_labels_do_not_take_the_display_font() -> void:
+	# The other half of the contract: promoting headings must not sweep up
+	# captions, prose, or stat-bar chrome. BarLabel in particular is the
+	# highest-traffic variation in the game (130 scene uses) and stays body.
+	#
+	# Theme.get_font() always falls back to default_font when no explicit
+	# override exists, so it is never null here even for a correctly-body
+	# variation -- get_font_list() is the only way to see whether an
+	# explicit "font" override was actually registered for this exact type.
+	for name in ["CaptionLabel", "MicroLabel", "EmptyStateLabel",
+			"ResultBodyLabel", "BioLabel", "BarLabel"]:
+		assert_true(not _theme.get_font_list(name).has("font"),
+			"%s must not carry an explicit font override (should inherit default_font)" % name)
+
+
+## Every variation that must render in the display face. Adding a
+## variation to ThemeFactory without adding it here (or deliberately
+## leaving it out) will fail test_display_font_roster_is_exact.
+const DISPLAY_ROSTER := [
+	"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
+	"CardSectionLabel", "ResultHeroLabel",
+	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
+	"SuccessButton", "QuirkBadge", "PersonaBadge", "LobbyNavButton",
+	"TraitPill", "PreviewRowLabel",
+	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
+	"RecapPillValueLabel", "ScoreHudValueLabel",
+]
+
+
+func test_display_font_roster_is_exact() -> void:
+	# Both directions. A one-directional check would pass while a new
+	# heading quietly inherited the body font, which is the exact bug
+	# H2Label and TitleLabel had before 2026-09-05.
+	var tokens := DesignTokens.load_default()
+	assert_true(tokens.font_display != null, "display slot must be assigned")
+	for name in DISPLAY_ROSTER:
+		assert_eq(_theme.get_font("font", name), tokens.font_display,
+			"%s is on the display roster but did not get the display font" % name)
+
+	var strays := []
+	for name in _theme.get_type_list():
+		if name in DISPLAY_ROSTER:
+			continue
+		if _theme.get_font("font", name) == tokens.font_display:
+			strays.append(name)
+	assert_eq(strays.size(), 0,
+		"these got the display font but are not on the roster: %s" % str(strays))
+
+
+func test_default_font_is_the_body_face() -> void:
+	var tokens := DesignTokens.load_default()
+	assert_eq(_theme.default_font, tokens.font_body,
+		"default_font must be the body face so untagged Labels inherit it")
+
+
+func test_the_two_faces_are_actually_different() -> void:
+	# Before 2026-09-05 both slots pointed at Milker.otf, so the whole
+	# head/body split existed in code and was invisible on screen. This
+	# is the assertion that would have caught that.
+	var tokens := DesignTokens.load_default()
+	assert_true(tokens.font_display != null, "display slot must be assigned")
+	assert_true(tokens.font_body != null, "body slot must be assigned")
+	assert_true(tokens.font_display != tokens.font_body,
+		"display and body must be different faces")
+
+
+func test_baked_theme_resource_matches_the_factory() -> void:
+	# The suite above only ever tests ThemeFactory.build() in memory. The
+	# running game loads the baked .tres from disk instead, and that bake
+	# has no headless path (Scripts/Design/BakeTheme.gd needs File > Run) --
+	# so a ThemeFactory edit with a forgotten rebake would leave every test
+	# above green while the shipped game still rendered the stale theme.
+	#
+	# Plain load() would use Godot's ResourceLoader cache by path: this
+	# test runs inside the same long-lived editor process across an entire
+	# session (godot-ai MCP bridge), so a bare load() can silently return
+	# a copy of this resource cached from BEFORE the last rebake, producing
+	# a false result in either direction. CACHE_MODE_REPLACE forces a real
+	# read of what's on disk right now and updates the cache to match.
+	var tokens := DesignTokens.load_default()
+	var baked: Theme = ResourceLoader.load(
+		"res://Assets/Theme/kejartes_theme.tres", "", ResourceLoader.CACHE_MODE_REPLACE)
+	assert_true(baked != null, "kejartes_theme.tres must load")
+	assert_eq(baked.default_font, tokens.font_body,
+		"baked theme's default_font must match the current body font")
+	assert_eq(baked.get_font("font", "H1Label"), tokens.font_display,
+		"baked theme's H1Label must match the current display font")

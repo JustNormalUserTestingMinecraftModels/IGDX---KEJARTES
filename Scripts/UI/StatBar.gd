@@ -4,7 +4,7 @@ extends ProgressBar
 
 ## An animated, category-tinted stat bar. Replaces the ad-hoc
 ## ProgressBar + ValueLabel pairs currently duplicated across
-## AturJadwal, SemesterEnd, and StudentCard.
+## AturJadwal, StatCheck, and StudentCard.
 
 ## One of: Akademis, Olahraga, SeniBudaya, Istirahat, Libur.
 ## Anything else falls back to text_secondary — never invisible.
@@ -50,7 +50,7 @@ extends ProgressBar
 
 ## When true, an animated set_stat() also gives the bar a short squash-pop
 ## so a change is visible even when the fill barely moves. Off by default:
-## SemesterEnd and ReportCard show settled numbers, not live edits.
+## StatCheck and ReportCard show settled numbers, not live edits.
 @export var pop_on_change: bool = false
 
 var _label: Label

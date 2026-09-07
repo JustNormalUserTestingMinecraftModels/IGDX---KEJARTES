@@ -11,7 +11,7 @@ extends McpTestSuite
 ## scene/script, before any migration work started, so that every later
 ## slice has something real to break. They pin down the two things a UI
 ## migration must never disturb on this screen:
-##   1. the week-end routing fork (SemesterEnd vs. Lobby), and
+##   1. the week-end routing fork (TesNotice vs. Lobby), and
 ##   2. the minigame launch boundary (GameContainer + Scenes/Minigames/*),
 ##      which is explicitly out of scope for this task.
 ##
@@ -425,6 +425,49 @@ func test_student_manager_records_minigames_into_run_stats() -> void:
 		"res://Scripts/SchoolSimulation/StudentManager.gd")
 	assert_true(src.contains("GameState.run_stats.record_minigame("),
 		"record_minigame_result feeds the run tally")
+
+
+## initialize_from_gamestate() falls back to the hardcoded demo roster
+## (Budi/Ani/Cici/Doni, generic Murid*.jpg art) whenever
+## GameState.approved_students is empty -- e.g. SchoolDay reached without
+## an approved roster. That used to swap in silently; used_fallback_roster
+## now lets a caller (or this test) tell the placeholder cast apart from a
+## real one instead of it passing for the approved roster.
+func test_initialize_from_gamestate_flags_the_fallback_roster_when_empty() -> void:
+	var saved_roster: Array = GameState.approved_students.duplicate()
+	GameState.approved_students = []
+
+	var manager := StudentManager.new()
+	manager.initialize_from_gamestate()
+
+	assert_true(manager.used_fallback_roster,
+		"an empty approved_students must be flagged as the fallback roster")
+	assert_true(manager.students.size() > 0 and manager.students[0].student_name == "Budi",
+		"the fallback roster is the hardcoded Budi/Ani/Cici/Doni demo cast")
+
+	GameState.approved_students = saved_roster
+	manager.free()
+
+
+## ...and the contrast: a real, non-empty approved_students must not be
+## flagged, proving the test above is actually reading the empty case and
+## not just always true.
+func test_initialize_from_gamestate_does_not_flag_a_real_roster() -> void:
+	var saved_roster: Array = GameState.approved_students.duplicate()
+	GameState.approved_students = [{
+		"id": 1, "name": "Uji", "akademis1": 50, "akademis2": 50, "akademis3": 50,
+		"kepribadian1": 80, "kepribadian2": 80, "quirk": "", "persona": "Aktif",
+		"hobby_category": "Akademis", "portrait": "", "splash": "",
+	}]
+
+	var manager := StudentManager.new()
+	manager.initialize_from_gamestate()
+
+	assert_true(not manager.used_fallback_roster,
+		"a non-empty approved_students must not be flagged as the fallback roster")
+
+	GameState.approved_students = saved_roster
+	manager.free()
 
 
 func test_school_day_records_wirausaha_into_run_stats() -> void:

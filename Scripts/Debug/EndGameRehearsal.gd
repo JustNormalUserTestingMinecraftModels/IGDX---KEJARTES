@@ -2,9 +2,8 @@ class_name EndGameRehearsal
 extends RefCounted
 
 ## Debug-only jig for the end-of-grade sequence: builds a fixed, known
-## roster so TesNotice -> ExamProgress -> CutScene -> SemesterEnd ->
-## RunResult can be rehearsed in one click instead of played for six to
-## sixteen weeks.
+## roster so TesNotice -> ExamProgress -> StatCheck -> RunResult can be
+## rehearsed in one click instead of played for six to sixteen weeks.
 ##
 ## Nothing in the shipped game calls this file -- DebugManager's Scenes
 ## tab is its only caller. Everything it writes to GameState is captured
@@ -19,6 +18,18 @@ extends RefCounted
 const PRESET_LULUS := "lulus"
 const PRESET_GAGAL := "gagal"
 const PRESET_CAMPUR := "campur"
+
+## Four more presets, added for testing RunResult's letter grade directly
+## rather than the win/lose narrative above -- see RunGrade.gd's weights
+## (targets 55%, minigames 20%, money 15%, events 10%). Each is tuned so
+## RunGrade.score()/letter() lands solidly inside one band, assuming the
+## debug roster's fixed 4 students / 12 academic targets. Full arithmetic:
+## docs/superpowers/specs/2026-09-05-tesnotice-grade-scenarios-design.md
+const PRESET_GRADE_A := "grade_a"
+const PRESET_GRADE_B := "grade_b"
+const PRESET_GRADE_C := "grade_c"
+const PRESET_GRADE_D := "grade_d"
+
 
 # ── Tunables ──────────────────────────────────────────────────────────────────
 ## Base skill value every rehearsal student starts from. Targets are
@@ -38,13 +49,17 @@ const REHEARSAL_ENERGY := 70.0
 
 ## How many of the three skills each student clears, by slot in the
 ## roster. The campur ladder is deliberate: one card per star rating, so
-## the SemesterEnd carousel shows 3-, 2-, 1- and 0-star detail popups and
+## the StatCheck meter lights 3, 2, 1 and 0 shares in turn and
 ## both stamp kinds in a single pass. Slots past the end of the list
 ## repeat its last entry, so a roster of any size still works.
 const CLEARED_COUNTS := {
 	PRESET_LULUS: [3, 3, 3, 3],
 	PRESET_GAGAL: [0, 0, 0, 0],
 	PRESET_CAMPUR: [3, 2, 1, 0],
+	PRESET_GRADE_A: [3, 3, 3, 3],
+	PRESET_GRADE_B: [3, 3, 2, 1],
+	PRESET_GRADE_C: [3, 2, 2, 1],
+	PRESET_GRADE_D: [2, 1, 1, 0],
 }
 
 ## Skill keys in the order CLEARED_COUNTS counts them, paired with the
@@ -111,8 +126,15 @@ static func build_roster(preset: String, grade: int,
 const SNAPSHOT_KEYS := [
 	"approved_students", "selected_student", "day_schedules",
 	"pending_earnings", "grade7_student_ids", "inventory",
+	# The weekly minigame-gain budget. A rehearsal reaches
+	# RunResult's progression, which calls
+	# GameState.reset_roster_for_new_grade() -- and that clears this
+	# dict. Without it here, rehearsing mid-week would hand the player
+	# a fresh minigame budget and reopen the farming exploit the cap
+	# exists to close.
+	"minigame_gain_this_week",
 	"minggu_ke", "current_grade", "player_money",
-	"run_failed", "is_exam_intro_cutscene", "is_game_beaten",
+	"run_failed", "is_game_beaten",
 	"lobby_tutorial_completed", "tutorials_bypassed",
 	"returned_from_student_card",
 ]
@@ -171,7 +193,7 @@ static func restore(snap: Dictionary) -> bool:
 
 ## Where a rehearsal starts. The whole point of the tool is that it enters
 ## at the notice and runs the REAL sequence from there, rather than
-## teleporting into SemesterEnd and skipping the beats before it.
+## teleporting into StatCheck and skipping the beats before it.
 const ENTRY_SCENE := "res://Scenes/EndGame/TesNotice.tscn"
 
 ## Plausible per-preset tallies for GameState.run_stats.
@@ -195,6 +217,25 @@ const REHEARSAL_STATS := {
 		"won": 5, "lost": 4, "points": 18.0, "items": 3,
 		"money": 12000, "events": 2,
 	},
+	# Grade-letter scenarios. Cleared-ratio comes from CLEARED_COUNTS above;
+	# money/minigames/events here are tuned to land the total score a few
+	# points inside the target band (see the design spec for the arithmetic).
+	PRESET_GRADE_A: {
+		"won": 6, "lost": 5, "points": 20.0, "items": 4,
+		"money": 20000, "events": 4,
+	},
+	PRESET_GRADE_B: {
+		"won": 6, "lost": 4, "points": 24.0, "items": 3,
+		"money": 12000, "events": 2,
+	},
+	PRESET_GRADE_C: {
+		"won": 0, "lost": 0, "points": 0.0, "items": 1,
+		"money": 10000, "events": 0,
+	},
+	PRESET_GRADE_D: {
+		"won": 1, "lost": 6, "points": -18.0, "items": 1,
+		"money": 2000, "events": 1,
+	},
 }
 
 
@@ -208,18 +249,16 @@ static func arm(preset: String, source_students: Array) -> void:
 	GameState.returned_from_student_card = true
 
 	# Land on the grade's final week: the sequence's own screens report and
-	# progress off minggu_ke/max_minggu (SemesterEnd's header, RunResult's
-	# grade advance), so the pair must read as "end of grade". A rehearsal
+	# progress off minggu_ke/max_minggu (RunResult's grade advance), so the
+	# pair must read as "end of grade". A rehearsal
 	# enters at TesNotice and never runs SchoolDay's final-week check, so
 	# that is NOT why this matters. Clear the schedules for weeks this
 	# rehearsal never played.
 	GameState.day_schedules.clear()
 	GameState.minggu_ke = GameState.max_minggu
 
-	# Both flags belong to the sequence itself: SemesterEnd sets run_failed
-	# from its own stat check, ExamProgress arms the cutscene branch.
+	# run_failed belongs to the sequence itself: StatCheck writes the verdict.
 	GameState.run_failed = false
-	GameState.is_exam_intro_cutscene = false
 
 	_seed_run_stats(preset, roster)
 

@@ -104,13 +104,12 @@ theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid6" unique_id=101612949]
-self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarIstirahat"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -136,13 +135,12 @@ text = "MOOD"
 vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid6" unique_id=1855993380]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarLibur"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -168,13 +166,12 @@ text = "ENERGY"
 vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid6" unique_id=254169502]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarAkademis"
 value = 35.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -199,13 +196,12 @@ text = "AKADEMIS"
 vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid6" unique_id=423182825]
-self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarSeniBudaya"
 value = 20.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -231,13 +227,12 @@ text = "SENI BUDAYA"
 vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid6" unique_id=609774354]
-self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarOlahraga"
 value = 40.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -338,13 +333,12 @@ theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid5" unique_id=1718979238]
-self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarIstirahat"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -370,13 +364,12 @@ text = "MOOD"
 vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid5" unique_id=944929826]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarLibur"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -402,13 +395,12 @@ text = "ENERGY"
 vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid5" unique_id=1735959426]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarAkademis"
 value = 35.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -433,13 +425,12 @@ text = "AKADEMIS"
 vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid5" unique_id=691909228]
-self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarSeniBudaya"
 value = 20.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -465,13 +456,12 @@ text = "SENI BUDAYA"
 vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid5" unique_id=569883677]
-self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarOlahraga"
 value = 40.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -573,13 +563,12 @@ theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid4" unique_id=841029218]
-self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarIstirahat"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -605,13 +594,12 @@ text = "MOOD"
 vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid4" unique_id=1156609344]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarLibur"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -637,13 +625,12 @@ text = "ENERGY"
 vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid4" unique_id=1424130807]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarAkademis"
 value = 35.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -668,13 +655,12 @@ text = "AKADEMIS"
 vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid4" unique_id=1209295979]
-self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarSeniBudaya"
 value = 20.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -700,13 +686,12 @@ text = "SENI BUDAYA"
 vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid4" unique_id=667467974]
-self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarOlahraga"
 value = 40.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -808,13 +793,12 @@ theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid3" unique_id=1970699477]
-self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarIstirahat"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -840,13 +824,12 @@ text = "MOOD"
 vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid3" unique_id=769070225]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarLibur"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -872,13 +855,12 @@ text = "ENERGY"
 vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid3" unique_id=1877461506]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarAkademis"
 value = 35.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -903,13 +885,12 @@ text = "AKADEMIS"
 vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid3" unique_id=1388406393]
-self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarSeniBudaya"
 value = 20.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -935,13 +916,12 @@ text = "SENI BUDAYA"
 vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid3" unique_id=1303018386]
-self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarOlahraga"
 value = 40.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1043,13 +1023,12 @@ theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid2" unique_id=1781486670]
-self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarIstirahat"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1075,13 +1054,12 @@ text = "MOOD"
 vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid2" unique_id=1293459282]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarLibur"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1107,13 +1085,12 @@ text = "ENERGY"
 vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid2" unique_id=1728939962]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarAkademis"
 value = 35.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1138,13 +1115,12 @@ text = "AKADEMIS"
 vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid2" unique_id=1581993055]
-self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarSeniBudaya"
 value = 20.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1170,13 +1146,12 @@ text = "SENI BUDAYA"
 vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid2" unique_id=1182239999]
-self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarOlahraga"
 value = 40.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1277,13 +1252,12 @@ theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
 [node name="Kepribadian1" type="ProgressBar" parent="KertasMurid1" unique_id=1809899533]
-self_modulate = Color(0.41960785, 0.30980393, 0.8784314, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarIstirahat"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1309,13 +1283,12 @@ text = "MOOD"
 vertical_alignment = 1
 
 [node name="Kepribadian2" type="ProgressBar" parent="KertasMurid1" unique_id=40407347]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarLibur"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1341,13 +1314,12 @@ text = "ENERGY"
 vertical_alignment = 1
 
 [node name="Akademis1" type="ProgressBar" parent="KertasMurid1" unique_id=1786877303]
-self_modulate = Color(0.23921569, 0.54509807, 1, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1115.0
 offset_right = 880.0
 offset_bottom = 1183.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarAkademis"
 value = 35.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1372,13 +1344,12 @@ text = "AKADEMIS"
 vertical_alignment = 1
 
 [node name="Akademis2" type="ProgressBar" parent="KertasMurid1" unique_id=1671231058]
-self_modulate = Color(0.4862745, 0.7019608, 0.25882354, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1201.0
 offset_right = 880.0
 offset_bottom = 1269.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarSeniBudaya"
 value = 20.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1404,13 +1375,12 @@ text = "SENI BUDAYA"
 vertical_alignment = 1
 
 [node name="Akademis3" type="ProgressBar" parent="KertasMurid1" unique_id=1136784519]
-self_modulate = Color(0.8980392, 0.28235295, 0.3019608, 1)
 layout_mode = 0
 offset_left = 120.0
 offset_top = 1287.0
 offset_right = 880.0
 offset_bottom = 1355.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarOlahraga"
 value = 40.0
 show_percentage = false
 script = ExtResource("statbar")
@@ -1478,9 +1448,9 @@ flat = true
 
 [node name="PilihMurid" type="Label" parent="." unique_id=983198317]
 layout_mode = 0
-offset_left = 329.0
+offset_left = 90.0
 offset_top = -172.0
-offset_right = 964.0
+offset_right = 990.0
 offset_bottom = -44.0
 theme_type_variation = &"DisplayLabel"
 text = "Pilih Muridmu"

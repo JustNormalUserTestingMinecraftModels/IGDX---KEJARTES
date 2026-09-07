@@ -235,8 +235,6 @@ func test_set_grade_resets_the_run_stats() -> void:
 	GameState.set_grade(saved_grade)
 	assert_eq(GameState.run_stats.minigames_won, 0,
 		"starting a grade clears the tally")
-	assert_false(GameState.is_exam_intro_cutscene,
-		"the exam-cutscene flag clears with the grade")
 	assert_false(GameState.run_failed, "the fail flag clears with the grade")
 
 
@@ -252,3 +250,102 @@ func test_count_targets_cleared_reports_cleared_and_total() -> void:
 	GameState.approved_students = saved_roster
 	assert_eq(counted[0], 2, "two of three targets cleared")
 	assert_eq(counted[1], 3, "three targets total for one student")
+
+
+# ────────────────────────────────────────────────────────── run stars (Plan A)
+
+## Four students, twelve stats. `cleared` of them meet their target.
+func _roster_with_cleared(cleared: int) -> Array:
+	var roster: Array = []
+	var k := 0
+	for i in range(4):
+		var s := {"id": i + 1, "name": "M%d" % (i + 1)}
+		for pair in [["akademis1", "target_akademis1"],
+				["akademis2", "target_akademis2"],
+				["akademis3", "target_akademis3"]]:
+			s[pair[1]] = 60.0
+			s[pair[0]] = 70.0 if k < cleared else 40.0
+			k += 1
+		roster.append(s)
+	return roster
+
+
+func test_run_stars_is_three_times_the_cleared_fraction() -> void:
+	var original: Array = GameState.approved_students
+	GameState.approved_students = _roster_with_cleared(8)
+	assert_true(is_equal_approx(GameState.run_stars(), 2.0),
+		"8 of 12 stats cleared is 2.0 stars")
+	GameState.approved_students = _roster_with_cleared(7)
+	assert_true(is_equal_approx(GameState.run_stars(), 1.75),
+		"7 of 12 is 1.75 -- the meter is continuous, not rounded")
+	GameState.approved_students = _roster_with_cleared(12)
+	assert_true(is_equal_approx(GameState.run_stars(), 3.0), "all cleared is 3.0")
+	GameState.approved_students = _roster_with_cleared(0)
+	assert_true(is_equal_approx(GameState.run_stars(), 0.0), "none cleared is 0.0")
+	GameState.approved_students = original
+
+
+## An uninitialized target used to count as CLEARED here (the old
+## `value >= target` read a missing key's 0.0 default as met), which meant
+## a malformed roster passed the run with an empty star meter on screen.
+## Failing it instead keeps the meter and the verdict consistent.
+func test_a_target_that_was_never_initialized_does_not_count_as_cleared() -> void:
+	var saved: Array = GameState.approved_students
+	GameState.approved_students = [
+		{"id": 1, "akademis1": 80.0, "akademis2": 80.0, "akademis3": 80.0},
+	]
+	var counted: Array = GameState.count_targets_cleared()
+	GameState.approved_students = saved
+	assert_eq(int(counted[0]), 0, "no target set means nothing was cleared")
+	assert_eq(int(counted[1]), 3, "all three still count toward the total")
+
+
+func test_target_cleared_is_the_one_predicate() -> void:
+	assert_true(GameState.target_cleared(60.0, 60.0), "exactly met clears")
+	assert_true(GameState.target_cleared(90.0, 60.0), "past it clears")
+	assert_false(GameState.target_cleared(59.0, 60.0), "short does not")
+	assert_false(GameState.target_cleared(80.0, 0.0), "a zero target does not")
+	assert_false(GameState.target_cleared(80.0, -5.0), "nor a negative one")
+
+
+func test_run_stars_is_zero_for_an_empty_roster() -> void:
+	var original: Array = GameState.approved_students
+	GameState.approved_students = []
+	assert_true(is_equal_approx(GameState.run_stars(), 0.0),
+		"no stats means no stars, and no divide by zero")
+	GameState.approved_students = original
+
+
+func test_semester_passes_at_two_stars_and_fails_below() -> void:
+	var original: Array = GameState.approved_students
+	GameState.approved_students = _roster_with_cleared(8)   # exactly 2.0
+	assert_true(GameState.check_semester_passed(), "2.0 stars passes")
+	GameState.approved_students = _roster_with_cleared(7)   # 1.75
+	assert_false(GameState.check_semester_passed(), "1.75 stars fails")
+	GameState.approved_students = _roster_with_cleared(4)   # 1.0
+	assert_false(GameState.check_semester_passed(), "1 star fails")
+	GameState.approved_students = original
+
+
+func test_semester_pass_no_longer_requires_every_student_to_clear_everything() -> void:
+	# The old rule: one missed stat anywhere failed the run. The new rule
+	# carries a weak student on a strong roster. 11 of 12 cleared = 2.75.
+	var original: Array = GameState.approved_students
+	GameState.approved_students = _roster_with_cleared(11)
+	assert_true(GameState.check_semester_passed(),
+		"one missed target no longer fails the whole run")
+	GameState.approved_students = original
+
+
+func test_empty_roster_still_counts_as_passed() -> void:
+	# Preserved from the old predicate: debug teleports with no roster must
+	# not read as a loss.
+	var original: Array = GameState.approved_students
+	GameState.approved_students = []
+	assert_true(GameState.check_semester_passed(), "empty roster passes, as before")
+	GameState.approved_students = original
+
+
+func test_star_tunables_live_in_balance() -> void:
+	assert_true(is_equal_approx(Balance.STARS_TOTAL, 3.0), "three stars total")
+	assert_true(is_equal_approx(Balance.STAR_WIN_THRESHOLD, 2.0), "two stars to win")

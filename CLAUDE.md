@@ -1,6 +1,9 @@
 # KejarTes — Project Guide
 
-Godot **4.6** mobile game (portrait 1080×1920, `mobile` renderer, d3d12).
+Godot **4.6** mobile game (portrait 1080×1920, `mobile` renderer, Vulkan —
+the Windows driver was pinned to `d3d12` from the initial commit until
+2026-09-07, when it was unpinned back to the engine default while chasing
+editor hangs; older plan docs still say d3d12).
 Indonesian-language school-management sim. Main scene:
 `Scenes/MainMenu/main_menu.tscn` (since the 2026-08-31 boot change).
 
@@ -9,22 +12,24 @@ Indonesian-language school-management sim. Main scene:
 You play a teacher. You approve a roster of students, assign each of them a
 daily activity for the school week, then watch the week simulate. Stats move,
 minigames and random events fire, and at week's end you get a report. Clear
-every student's three academic targets before the grade's final week to pass.
+two-thirds of the roster's academic targets — `run_stars() >= 2.0` of 3.0 —
+before the grade's final week to pass. It is a roster-wide fraction, not a
+per-student gate: three students clearing everything while a fourth clears
+nothing is 9 of 12 = 2.25 stars, and passes.
 
 **Grades scale the whole game** (`GameState.current_grade`, 7–9):
 
 | Grade | Weeks | Target uplift over base | Minigame win stat | Loss penalty |
 |---|---|---|---|---|
 | 7 | 6 | +15 | 10 | −3 |
-| 8 | 12 | +30 | 8 | −4 |
+| 8 | 12 | +34 | 8 | −4 |
 | 9 | 16 | +40 | 6 | −5 |
 
 **Loop:** **MainMenu (boot)** → CutScene → StudentCard (approve roster) →
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay
 (simulate 5 days) → ResultCheckup → back to Lobby. On the final week of a
 grade, SchoolDay instead runs the end-of-grade sequence: **TesNotice →
-CutScene (exam branch) → SemesterEnd (stat check) → WinScreen or the
-game-over cutscene → RunResult → MainMenu.** Splashscreen and Loading still
+ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu.** Splashscreen and Loading still
 exist and are still tested, but since 2026-08-31 they are no longer reached
 at boot.
 
@@ -95,12 +100,25 @@ Debug > General > **🧹 Forget Session** wipes in-memory `GameState` and delete
 the save. `save_inventory`/`load_inventory`/`clear_inventory_save` all no-op
 under `Engine.is_editor_hint()`.
 
+`-REFERENCE-/prototype/` is the original prototype, kept for reference only —
+not built, not imported. `koprasi&inventory` was a second programmer's separate
+project; that project's spec
+(`docs/superpowers/specs/2026-08-27-koperasi-inventory-integration-design.md`)
+documents exactly which of its art is finished (copy byte-identical) versus
+placeholder chrome (restyle onto our theme).
+
 ## Visual system — read this before touching any UI
 
 Everything flows from `Assets/Theme/design_tokens.tres` (a `DesignTokens`
 resource). To change a color/radius/font globally: edit that resource, then
 **rebake** by running `Scripts/Design/BakeTheme.gd` via File > Run
 (Ctrl+Shift+X), which writes `Assets/Theme/kejartes_theme.tres`.
+
+Two faces: **Boohong** (`font_display`) for headings, titles, buttons and
+badges; **Open Sans Medium** (`font_body`) for everything else, as the
+theme's `default_font`. Which variation gets which is pinned in both
+directions by `DISPLAY_ROSTER` in `tests/test_theme_factory.gd` — change
+the roster and `ThemeFactory` together, or the suite fails.
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
 variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
@@ -143,15 +161,15 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 45 suites, 568 tests, all green
-(2026-09-01).
+the Godot AI MCP `test_run` tool. 65 suites, 960 tests, all green
+(2026-09-05).
 
 Hard constraints, learned the hard way:
 
 1. **The suite must be `@tool`** or the runner reports it abstract/broken.
 2. **No test may be a coroutine.** The runner does `suite.call(name)` without
    awaiting — an `await` silently aborts the test mid-way, and it reports as
-   "0 assertions". (See Known Issues.)
+   "0 assertions".
 3. Scripts the runner instantiates live must be `@tool` too, with real side
    effects in `_ready()` gated behind `if Engine.is_editor_hint(): return`.
    Pure signal wiring stays ungated so tests can exercise it.
@@ -193,9 +211,21 @@ teleports directly to MainMenu / Lobby / StudentCard / AturJadwal / SchoolDay
 / SemesterEnd / Splashscreen. Seed, teleport, screenshot once. The seed covers
 roster, money, inventory and the lobby tutorial flag — it does **not** fill
 `day_schedules`, so anything schedule-driven (SchoolDay, AturJadwal) still
-needs a pass through Atur Jadwal first. Driving the shop purchase flow by
-simulated clicks to reach the same state took roughly forty-five calls and
-failed twice before working.
+needs a pass through Atur Jadwal first.
+
+The overlay's **Scenes** tab also carries **🎭 Gladi Resik Akhir Kelas** —
+three one-click rehearsals of the whole end-of-grade sequence (TesNotice →
+ExamProgress → StatCheck → RunResult) with a fixed roster:
+*Semua Lulus* (win path), *Semua Gagal* (lose path), and *Campur*, which
+ladders 3/2/1/0 cleared targets across the four students so one pass of
+StatCheck lights the meter 3, 2, 1 and 0 shares in turn (6 of 12 = 1.5
+stars, a loss). Arming
+one snapshots the run first; **↩ Pulihkan Run Sebelum Gladi Resik** puts it
+back, which matters because RunResult's progression otherwise advances the
+grade and clears the roster on its way out. The logic is in
+`Scripts/Debug/EndGameRehearsal.gd` (plain static functions, tested
+behaviourally in `tests/test_end_game_rehearsal.gd`); `DebugManager.gd`
+only holds the buttons.
 
 When you do have to click, note two quirks. Send a `motion` event to the
 target before the `button` press — Godot will not route a click without the
@@ -218,7 +248,7 @@ Note the runtime path quirk: autoloads answer to `/root/<Name>` (e.g.
 `/root/DebugManager`) but the reply echoes paths relative to the current
 scene (`/Inventory/../DebugManager`). Bare `/root` returns nothing.
 
-**3. Prefer `test_run` over screenshots.** The whole suite — 568 tests, 45
+**3. Prefer `test_run` over screenshots.** The whole suite — 960 tests, 65
 suites — returns a compact JSON summary in about two seconds. One screenshot
 costs more tokens than the entire run. Reach for a screenshot only to judge
 something genuinely visual (layout, spacing, color); use `test_run` for
@@ -241,19 +271,13 @@ invisible until the editor restarts**, which is why the theme rebake
 (`Scripts/Design/BakeTheme.gd`, File > Run) has no headless path.
 
 **5. Rescan after editing a `.gd`, before running tests.** `test_run` will
-serve a **stale** autoload otherwise. Three tests once failed with
-"Nonexistent function 'seed_playtest_inventory'" while that function sat
-committed on disk; one `filesystem_manage(op="scan")` turned the same run into
-20/20. Scan first, or you will debug a phantom.
+serve a **stale** autoload otherwise. Scan first, or you will debug a phantom.
 
 **A scan is not always enough.** When the `.gd` was edited from *outside*
 the editor — any plain file write, including one from a subagent — the
-editor can keep serving the old bytecode through a scan. On 2026-09-02 both
-`ThemeFactory.gd` and `StatBar.gd` did exactly that: their brand-new tests
-failed, and a new `@export` was invisible to `node_set_property`
-("Property 'pop_on_change' not found on StatBar"), all while the correct
-source sat on disk. A **no-op `script_patch` on that same file** forces the
-reload — add and remove a blank line. It logs a benign
+editor can keep serving the old bytecode through a scan. A **no-op
+`script_patch` on that same file** forces the reload — add and remove a
+blank line. It logs a benign
 `GDScript reload failed with error code 43` and then works. Cheapest
 reliable fix: make edits through `script_patch` in the first place.
 
@@ -277,213 +301,107 @@ alone. So: subagents write code, you run the editor and hand them the results.
 None of this trades away test coverage. Coverage is the quality floor; the
 savings come from cheaper verification loops, not from fewer tests.
 
-## Known issues (as of 2026-08-31)
+**Tuning how something animates** goes through the `motion-lab` skill
+(`.claude/skills/motion-lab/SKILL.md`), not edit-run-watch. It resolves the
+element's current `Tween` preset, opens an in-browser easing editor whose
+preview is sampled straight from the engine, and patches back a one-line
+token you paste — faster than guessing a duration and replaying the scene.
 
-None outstanding. The 2026-08-30 stability sweep closed all three of the
-previous entries; see `docs/superpowers/specs/2026-08-30-project-stability-sweep-findings.md`
-for what each turned out to be.
+## Outstanding debt & placeholders
 
-Not a bug, but tracked debt: `tests/test_viewport_editability.gd`'s
-`BASELINE` still lists real unconverted runtime UI construction across
-~20 files — the 2026-08-31 21-task pass converted every shared-across-screens
-case but did not survey every remaining file. See the authoring guide's
-"Known gaps" section for the list and what each would need.
+Live, unfinished items. Delete an entry when it is resolved — do not mark it
+done and leave it here.
 
-1. **The `test_audio_director` coroutine test** (old #1) — fixed. Both offending
-   tests are non-coroutine now, and the suite snapshots/restores the global
-   AudioServer bus state in `setup`/`teardown`, so a run can no longer dirty
-   `Assets/Audio/default_bus_layout.tres`. If you see that file modified with no
-   audio work done, it is a *new* leak, not this one.
-2. **`test_audio_coverage` double-SFX** (old #2) — did not reproduce on
-   2026-08-30; that suite passes. The entry was stale.
-3. **Stale `ext_resource` UIDs** (old #3) — fixed. All 14 across 5 scenes now
-   point at their real assets, and
-   `tests/test_project_hygiene.gd::test_every_scene_ext_resource_uid_resolves_to_its_own_asset`
-   fails the build if a new one appears.
+**Audio placeholders.** Several `AudioDirector` cue ids alias existing streams
+rather than having their own: `sfx_specialty_match` → `sfx_reward`; `tally` and
+`sparkle` → existing SFX files; `star_earn_1/2/3`, `result_fanfare`,
+`score_tick`, `combo_up` → `pop.ogg` / `reward.ogg`; and the BGM ids
+`exam_notice`, `exam_cutscene`, `run_result` → existing tracks.
+
+**Art placeholders.** The three particle sprites
+(`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven
+minigame result icons and the report icons
+(`Assets/Images/UI/Placeholders/icon_*.svg`) are flat white placeholder
+geometry — real transparent SVGs, but not final art. The exam and win cutscene
+backdrops reuse the intro's CG images.
+
+**End cutscene art.** `EndCutscene`'s win backdrop is `cg2.jpg` standing in for
+final art, and both badges (`stamp_lulus.svg`, `stamp_gagal.svg`) are generated
+placeholder stamps. All four are `@export`s on `EndCutscene.tscn`, so swapping
+them is an Inspector change. Note the badge words are drawn as stroked **paths**,
+not SVG `<text>`: Godot rasterises SVG through ThorVG, which drops text elements
+on import — `tests/test_end_cutscene.gd` guards that with a pixel check.
+
+**Copy placeholders.** Every cutscene line in the exam and win branches is
+marked `[PLACEHOLDER]`. Every `desc` string in `ItemDatabase.DEFAULT_ITEMS` is
+`[PLACEHOLDER]` flavour copy shown verbatim in `ItemDetailSheet`.
+
+**Inventory placeholders.** `Assets/Images/Shop/UI/bg_inventory_blur.png` is a
+box-blurred copy of the lobby art under a fresh name for drop-replacement; the
+four `icon_filter_*.svg` chip icons and the `EfekRow` need-icons are flat
+placeholder SVGs; `InventorySlot`'s high-count `Shine` overlay is a plain white
+`ColorRect` (no texture); `ApplyItemScreen`'s payoff reuses existing
+`AudioDirector` cues rather than a dedicated `sfx_item_apply`.
+
+**Pending a balance pass.** `RunGrade`'s scoring weights — especially
+`MONEY_FULL_MARKS` — are estimates. `LombaMenari.best_combo` is tracked but not
+yet fed into the star rubric. The item skill-boost values in
+`ItemDatabase.DEFAULT_ITEMS` (`akademis`/`seni_budaya`/`olahraga`, 3–8) are
+conservative starting numbers, untested against `tests/test_balance_pacing.gd`.
+
+**Deferred: the AturJadwal shelf.** It ships as two `ColorRect`s rather than the
+intended `ShelfEdge` theme variation. A new `@export` on `DesignTokens` is
+invisible to a running editor, so this needs an editor restart plus a manual
+rebake. The exact diff to re-apply is in the STATUS block of
+`docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`.
+
+**Deferred: blinking on the layered faces.** `Scenes/Lobby/CitraFace.tscn`'s
+`Eyelid` layer and `StudentFace.blink()` are wired and tested, but
+`idle_blink_enabled` defaults **false**, so nothing closes the eyes on its own
+yet — the blink pass was explicitly held back. Turning it on is one Inspector
+toggle; a real pass would want a half-lid frame (the art has none) or an
+alpha/scale ease rather than the current hard cut.
+
+**Layered faces exist for Citra only.** The other four students still use the
+flat portrait. Adding one means a new `<Name>Face.tscn` with that character's
+own solved layer offsets, dropped into `loby.gd`'s `face_rigs`.
+
+**Ratchet debt.** `tests/test_viewport_editability.gd`'s `BASELINE` still lists
+real unconverted runtime UI construction across roughly 20 files. The
+2026-08-31 pass converted every shared-across-screens case but did not survey
+every remaining file. The list and what each would need is in the authoring
+guide's "Known gaps" section.
+
+No outstanding *bugs* as of 2026-08-31 — the 2026-08-30 stability sweep closed
+the previous three. See `docs/superpowers/CHANGELOG.md`.
 
 ## Current work
 
-Branch `Textures` (this is also the main branch).
+Branch `Textures` (also main). The 2026-09-04–09-05 end-game rebuild
+described in the Loop above is complete; only Plan C's RunResult redesign
+remains open, tracked in
+`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`. The 2026-09-06
+layered-face rig (`StudentFace`) has landed for Citra — see the changelog, and
+the two face entries under outstanding debt for what is deliberately unfinished.
 
-The 2026-09-07 inventory mobile-layout & item-apply pass is complete, on branch
-`feat/inventory-mobile-apply`. Spec:
-`docs/superpowers/specs/2026-09-07-inventory-mobile-layout-and-item-apply.md`;
-plan: `docs/superpowers/plans/2026-09-07-inventory-mobile-layout-and-item-apply.md`.
-It rebuilt the Inventory screen as a 3-zone portrait layout (Header `&"Card"` /
-horizontal `FilterChipButton` chip row sharing one `inventory_filter_group.tres`
-`ButtonGroup` / 3-column grid + authored `ToastLabel`), dropping the vertical
-sidebar, `DetailPanel` and `UsePopup` and every per-node `StyleBoxFlat` — the
-rewritten `inventory.gd` builds zero runtime visuals, so its
-`tests/test_viewport_editability.gd` `BASELINE` entry (was 4) is gone. Tapping a
-tile opens the new `ItemDetailSheet` bottom sheet (icon/name/category chip/
-description + an "Efek" block: a `+N` row and fixed plain-Indonesian explainer
-per affected bar, five authored `EfekRow` instances). Its "Pakai ke Siswa"
-button opens the new full-screen `ApplyItemScreen` (`ApplyStudentRow` template
-per approved student, `StatBarRow` sub-template, multi-select with a live
-`65 ➔ 90 (+25)` preview on every affected `StatBar`, "Pilih Semua", `Pakai (N
-Siswa)`), then a staged payoff — per-student `RewardBurst` + `AnimUtils.
-create_floating_text` + rising `star_earn_1/2/3`, screen-wide
-`CelebrationConfetti` + `sparkle` when every pick gained, `result_fanfare` to
-close. **Items are now functional**: `ItemData` gained `akademis_boost` /
-`seni_budaya_boost` / `olahraga_boost`; `GameState.use_item()` was fixed (it
-wrote dead `"mood"`/`"energy"` keys instead of the canonical `kepribadian1/2` +
-`akademis1/2/3`) and given a `use_item_on_students(item, ids)` all-or-nothing
-batch (stock **and** id-existence pre-checked). Inventory now persists — see the
-persistence paragraph above. Built via subagent-driven development with the
-controller holding the Godot MCP bridge (implementers wrote `.gd`; the
-controller authored every `.tscn` and ran every `test_run`); one editor restart
-was needed to clear a stale `ItemDatabase` autoload after Task 1. Placeholders
-outstanding: per-item `desc` strings in `ItemDatabase.DEFAULT_ITEMS` are
-`[PLACEHOLDER]` flavour copy; the item skill-boost values (3–8) are conservative
-and balance-pending against `test_balance_pacing.gd` (spec "Balance risk"); the
-`ApplyItemScreen` payoff reuses existing `AudioDirector` cues (no dedicated
-`sfx_item_apply`); `EfekRow` need-icons reuse the shared placeholder SVG set;
-the `InventorySlot` high-count `Shine` overlay is a plain white fill `ColorRect`
-with no dedicated texture.
+## Maintaining this file
 
-The 2026-09-04 grade-progression difficulty pass is complete, built on branch
-`minigame-reward-feedback`. Spec:
-`docs/superpowers/specs/2026-09-04-grade-progression-balance-and-difficulty.md`;
-plan: `docs/superpowers/plans/2026-09-04-grade-progression-balance-and-difficulty.md`.
-It retuned grade 7 to need tactical subject-rotation instead of one lucky week
-(via a new per-student weekly minigame-points cap —
-`Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_7/8/9` = 14/12/10 — rather
-than touching grade-7 study rates), ramped grade 8/9 targets
-(`TARGET_KENAIKAN_KELAS_8` 30→34, `_KELAS_9` 40→**40 shipped**, see the spec's
-Status block for why the 50 estimate moved), amplified quirk/specialty
-coefficients ~1.4×, ramped the Skip button's loss chance per grade
-(`SKIP_PELUANG_KALAH_KELAS_7/8/9` 0.4/0.5/0.6), added `GameState.
-reset_roster_for_new_grade()` — a 20%-head-start roster reset shared by real
-grade progression *and* the debug grade-jump buttons, which previously left
-skill stats carried over — and closed a minigame-farming exploit
-(`SchoolDay._roll_event()`/`skip_to_results()` now roll a randomized 1-3
-weekly minigame allowance and a 35% chance the category is picked uniformly
-rather than by schedule, without touching how often minigames/events appear
-at all). AturJadwal got new specialty-match feedback: a gold particle burst
-(`SpecialtyMatchBurst.tscn`) plus the `specialty_match` SFX cue on the sticky
-note when a day is scheduled onto a student's specialty subject, and a ★
-badge on the Penjadwalan picker row beforehand. A new headless suite,
-`tests/test_balance_pacing.gd`, runs a scripted greedy simulation against the
-real simulation functions and is the tuning/regression harness for these
-numbers going forward. Built via subagent-driven development with the
-controller holding the Godot MCP bridge throughout; one fix round needed a
-human editor restart to clear a stale-bytecode reload (`Balance.gd` served an
-old field value across every MCP-available recovery lever) — not a code
-defect, just a one-off editor quirk worth knowing about if a future session
-hits `GDScript reload failed with error code 43` on a repeatedly-patched
-file. Placeholder outstanding: `sfx_specialty_match` aliases the existing
-`sfx_reward` stream, same convention as this project's other recent cues.
+This file is injected into every session before the user speaks. Everything in
+it costs context on every single run, so it earns its place or it moves.
 
-The main menu was rebuilt on 2026-08-31 to match
-`docs/superpowers/mockups/main-menu.png` measurement-for-measurement and is
-now the boot scene — see
-`docs/superpowers/specs/2026-08-31-main-menu-mockup.md` for the probe trail
-and the documented deviations (66 px button separation, font size 80 rather
-than the mockup-implied 100 so "PENGATURAN" fits, gold button art rather than
-the mockup's grey, and an ungraded background).
+- A **completed pass** gets an entry in `docs/superpowers/CHANGELOG.md`, newest
+  first — not a paragraph here.
+- A fact that **changes how you work on the project** goes in the topical
+  section it governs, not in `## Current work`.
+- An **unfinished placeholder or deferred item** goes in `## Outstanding debt &
+  placeholders`, and is deleted when resolved.
+- `## Current work` holds **only what is in flight right now**. When it lands,
+  it moves to the changelog.
+- Soft budget: keep this file under **20,000 characters**. It was 27,547 on
+  2026-09-05, of which 39% was completed-pass narrative.
 
-The 2026-08-30 stability sweep
-(`docs/superpowers/plans/2026-08-30-project-stability-sweep.md`) is complete.
-
-The 2026-09-01 art pass is complete except for one deferred item. Spec:
-`docs/superpowers/specs/2026-09-01-art-pass-and-screen-restyle.md`; five plans
-in `docs/superpowers/plans/2026-09-01-*.md`, each carrying a STATUS block with
-its deviations. It landed the six-student splash batch (all four rosters
-rewired, Daily Results avatars recropped, and the avatar flipped to
-splash-first as `DaySummaryAvatar.gd` had asked), the blurred-classroom
-backdrop on DaySummary / ResultCheckup / AturJadwal, ReportCard/StudentCard
-render parity, AturJadwal's mockup top band with the stat pills lifted out of
-the splash button, and the intro cutscene's new dialogue panel.
-
-The 2026-09-02 AturJadwal polish pass is complete. Spec:
-`docs/superpowers/specs/2026-09-02-atur-jadwal-warning-and-statbar-polish.md`.
-It reframed the PERINGATAN dialog onto `penjadwalan_card_bg.png` as a
-nine-patch, and rebuilt how every `StatBar` in the game is coloured: the
-category colour is now baked into a per-category fill stylebox rather than
-applied with `self_modulate`, because `self_modulate` multiplies the whole
-node and made a bar at value 0 render as a solid capsule that looked 100%
-full. It also fixed `StatBar` building a second `ValueLabel` on top of the
-one authored in the scene — AturJadwal had five such bars, ReportCard about
-thirty. Read that spec's "Two hazards worth remembering" before touching
-`StatBar.gd`.
-
-**Deferred:** AturJadwal's shelf ships as two `ColorRect`s rather than the
-intended `ShelfEdge` theme variation — a new `@export` on `DesignTokens` is
-invisible to a running editor, so it needs a restart plus a manual rebake. See
-the STATUS block in `2026-09-01-atur-jadwal-mockup.md` for the exact diff to
-re-apply.
-
-The 2026-09-02 end-of-grade sequence is complete. Spec:
-`docs/superpowers/specs/2026-09-02-end-of-grade-sequence.md`; plan:
-`docs/superpowers/plans/2026-09-02-end-of-grade-sequence.md`. It added the
-Tes Besar notice, the cutscene's third (exam) branch, a per-grade `RunStats`
-tally on GameState (`RunStats.gd`), the `RunGrade` A+/…/C-/D scorer
-(`RunGrade.gd`), a cutscene-styled WinScreen, the `RunResultRow` template,
-and the RunResult report screen — which now owns grade progression, moved
-off SemesterEnd (`SemesterEnd.gd::_on_restart_pressed()` no longer advances
-the grade). SemesterEnd was also restyled: the flat near-black background is
-now the blurred-classroom backdrop, and its page dots are authored `.tscn`
-nodes (`PageDotLabel` theme variation) instead of runtime-built `Label`s.
-Report icons are real transparent SVG textures
-(`Assets/Images/UI/Placeholders/icon_*.svg`), never emoji glyphs — the
-project explicitly banned emoji as UI iconography during this pass.
-Placeholders still outstanding: every cutscene line in the exam and win
-branches is marked `[PLACEHOLDER]`, the exam/win backdrops reuse the intro's
-CG images, the three new BGM ids (`exam_notice`, `exam_cutscene`,
-`run_result`) alias existing tracks, and `RunGrade`'s scoring weights
-(especially `MONEY_FULL_MARKS`) are estimates pending a real-run balance
-pass. Built via subagent-driven-development with the Godot MCP bridge held
-by the controller session throughout (implementer subagents write
-scripts/tests/assets; the controller builds every `.tscn` and runs every
-`test_run`) — see that plan's SDD ledger
-(`.superpowers/sdd/2026-09-02-end-of-grade-sequence/progress.md`, deleted
-after merge) for the fix-loop history if anything here needs revisiting.
-
-The 2026-09-03 Daily Results polish pass is complete. Spec:
-`docs/superpowers/specs/2026-09-03-day-summary-polish-and-rewards.md`. It
-fixed the `DaySummaryStatRow` value-label overlap bug (a mis-anchored
-`Value` node printed "+12/65" over its own coloured track), re-pitched the
-card's three stat rows to an even 97 px, and gave the energy/mood bars an
-icon and an Indonesian tier word (`Lelah`/`Cukup`/`Bugar`,
-`Sedih`/`Biasa`/`Senang`) carried *inside* the existing `EnergyBar`/
-`MoodBar` nodes (`DaySummaryNeedsBar.gd`) rather than a redundant sibling
-chip — the spec's own §3.2 was revised mid-brainstorm once that
-duplication was caught. It also added reward particles: a per-stat-row
-star burst (`RewardBurst.tscn`) fired off a gaining chevron, and a
-screen-wide confetti fall (`CelebrationConfetti.tscn`) on `ResultCheckup`,
-both gated on `DaySummaryStudentRow.gained_ground()` so a flat or losing
-day/week stays quiet. Two new `AudioDirector` cues, `tally` and `sparkle`,
-alias existing SFX files as placeholders. Same build discipline as the
-2026-09-02 pass — see that entry below for the controller/subagent MCP
-split, which this pass also used throughout
-(`.superpowers/sdd/2026-09-03-day-summary-polish-and-rewards/progress.md`,
-deleted after merge). Placeholders outstanding: the three particle sprites
-(`Assets/Images/Particles/particle_*.png`, crude flat geometry) and the
-two aliased SFX streams.
-
-The 2026-09-04 minigame reward pass is complete. Plan:
-`docs/superpowers/plans/2026-09-04-minigame-reward-feedback.md`. It fixed the
-one-star bug — `_calculate_stars()` read `max_score`, which only the four
-Akademis quizzes declare, so every win in MainBola, LombaMenari, Badminton
-and BuatBatik was hard-capped at one star — by replacing it with an
-overridable per-game `get_star_ratio()` mastery metric (shot accuracy, note
-accuracy, rally margin, mistake-free sequence) and a two-star floor for an
-unrated win. It then moved the result card's chrome off runtime
-`StyleBox`es onto seven new `ThemeFactory` variations, replaced every emoji
-glyph with a transparent SVG, gave the star reveal an escalating pop with
-per-star bursts and three rising audio cues, gated confetti on a
-three-star finish, and replaced the ad-hoc `ScoreLabel`s with the shared
-`MinigameScoreHUD` template. Placeholders outstanding: the six new
-`AudioDirector` cue ids (`star_earn_1/2/3`, `result_fanfare`, `score_tick`,
-`combo_up`) all alias `pop.ogg` / `reward.ogg`, the seven new icon SVGs are
-flat white placeholder geometry, and `LombaMenari.best_combo` is tracked
-but not yet fed into the rubric, pending a real balance pass.
-
-`-REFERENCE-/prototype/` is the original prototype, kept for reference only —
-not built, not imported. `koprasi&inventory` was a second programmer's separate
-project; the spec's Asset Policy documents exactly which of its art is
-finished (copy byte-identical) versus placeholder chrome (restyle onto our
-theme).
+Rationale and the full restructure record:
+`docs/superpowers/specs/2026-09-05-project-guide-restructure-and-memory-seeding-design.md`.
 
 ## Conventions
 
@@ -495,3 +413,10 @@ theme).
   `fix(lobby): wire the dead ReportStudent button`.
 - Tunable gameplay numbers belong in a named `const` block or an `@export`,
   not inline. See `StudentManager.gd`'s `WIRAUSAHA_*` block.
+- **`Balance.gd` values are owned by a collaborator, not by us.** Read them
+  freely; never change them. If a task appears to need a different value, say
+  so and propose it rather than editing. On merge, take their version of that
+  file.
+- **No emoji as UI iconography.** Use real transparent SVG textures instead —
+  explicitly banned during the 2026-09-02 end-of-grade pass after report icons
+  briefly used emoji glyphs.

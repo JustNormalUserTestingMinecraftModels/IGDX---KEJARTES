@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://cbxqfgtlk4ior"]
+
+[ext_resource type="Script" uid="uid://drmpjndsv7tq1" path="res://Scripts/EndGame/StatCheckRow.gd" id="1_m0cgx"]
+[ext_resource type="Texture2D" uid="uid://b0ah0m8tx4h7q" path="res://Assets/Images/UI/Placeholders/icon_akademis.svg" id="2_5j6tf"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="3_reem7"]
+
+[node name="StatCheckRow" type="HBoxContainer" unique_id=1532010288]
+custom_minimum_size = Vector2(520, 96)
+script = ExtResource("1_m0cgx")
+
+[node name="Icon" type="TextureRect" parent="." unique_id=489487563]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+texture = ExtResource("2_5j6tf")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Bar" type="ProgressBar" parent="." unique_id=136940567]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_type_variation = &"StatBarAkademis"
+script = ExtResource("3_reem7")

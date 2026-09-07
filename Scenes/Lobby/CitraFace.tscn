@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://bi8meefllkb7d"]
+
+[ext_resource type="Script" uid="uid://6u5oau2rmsa0" path="res://Scripts/Lobby/StudentFace.gd" id="1_t0ygo"]
+[ext_resource type="Texture2D" uid="uid://bkwlbakxdxupa" path="res://Assets/Images/MuridPotrait/Citra/citra_base.png" id="2_ir8wx"]
+[ext_resource type="Texture2D" uid="uid://bmipv6pdwpobs" path="res://Assets/Images/MuridPotrait/Citra/citra_sclera.png" id="3_ivhiq"]
+[ext_resource type="Material" path="res://Scenes/Lobby/citra_eye_mask.tres" id="4_pj8i6"]
+[ext_resource type="Texture2D" uid="uid://bnpochvyk233g" path="res://Assets/Images/MuridPotrait/Citra/citra_pupil.png" id="5_oa8q5"]
+[ext_resource type="Texture2D" uid="uid://bhty6iiub1ksm" path="res://Assets/Images/MuridPotrait/Citra/citra_eyelashes.png" id="6_twlee"]
+[ext_resource type="Texture2D" uid="uid://bf5hynupnst2v" path="res://Assets/Images/MuridPotrait/Citra/citra_eyelid.png" id="7_tk1sx"]
+[ext_resource type="Texture2D" uid="uid://d4aeqtmswleav" path="res://Assets/Images/MuridPotrait/Citra/citra_eyebrows.png" id="8_t0ygo"]
+
+[node name="CitraFace" type="Control" unique_id=202289195]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 400.0
+offset_bottom = 450.0
+mouse_filter = 2
+script = ExtResource("1_t0ygo")
+student_name = "Citra"
+
+[node name="Canvas" type="Control" parent="." unique_id=1882951965]
+anchors_preset = 0
+offset_right = 1280.0
+offset_bottom = 1280.0
+mouse_filter = 2
+
+[node name="Base" type="TextureRect" parent="Canvas" unique_id=1183136420]
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 1280.0
+mouse_filter = 2
+texture = ExtResource("2_ir8wx")
+expand_mode = 1
+
+[node name="Sclera" type="TextureRect" parent="Canvas" unique_id=447401183]
+layout_mode = 0
+offset_left = 427.0
+offset_top = 578.0
+offset_right = 853.0
+offset_bottom = 673.0
+mouse_filter = 2
+texture = ExtResource("3_ivhiq")
+expand_mode = 1
+
+[node name="Pupil" type="TextureRect" parent="Canvas" unique_id=798193088]
+material = ExtResource("4_pj8i6")
+layout_mode = 0
+offset_left = 476.0
+offset_top = 571.0
+offset_right = 804.0
+offset_bottom = 670.0
+mouse_filter = 2
+texture = ExtResource("5_oa8q5")
+expand_mode = 1
+
+[node name="Eyelashes" type="TextureRect" parent="Canvas" unique_id=1752438356]
+layout_mode = 0
+offset_left = 391.0
+offset_top = 534.0
+offset_right = 889.0
+offset_bottom = 627.0
+mouse_filter = 2
+texture = ExtResource("6_twlee")
+expand_mode = 1
+
+[node name="Eyelid" type="TextureRect" parent="Canvas" unique_id=1532603562]
+visible = false
+layout_mode = 0
+offset_left = 419.0
+offset_top = 578.0
+offset_right = 861.0
+offset_bottom = 684.0
+mouse_filter = 2
+texture = ExtResource("7_tk1sx")
+expand_mode = 1
+
+[node name="Eyebrows" type="TextureRect" parent="Canvas" unique_id=1959611640]
+layout_mode = 0
+offset_left = 447.0
+offset_top = 499.0
+offset_right = 831.0
+offset_bottom = 525.0
+mouse_filter = 2
+texture = ExtResource("8_t0ygo")
+expand_mode = 1

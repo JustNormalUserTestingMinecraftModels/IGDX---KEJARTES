@@ -109,7 +109,7 @@ func test_the_script_actually_compiles() -> void:
 func test_the_screen_has_a_backdrop_grade_card_and_rows_box() -> void:
 	var screen = load(_SCENE_PATH).instantiate()
 	var has_all := screen.get_node_or_null("Backdrop") != null \
-		and screen.get_node_or_null("Scrim") != null \
+		and screen.get_node_or_null("BlurLayer") != null \
 		and screen.get_node_or_null(
 			"MarginContainer/Column/GradeCard/GradeStack/GradeLetter") != null \
 		and screen.get_node_or_null("MarginContainer/Column/RowsBox") != null
@@ -203,3 +203,83 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 			out.append(node.name)
 	for child in node.get_children():
 		_collect_overrides(child, out)
+
+
+# ────────────────────────────────── the backdrop carried over from EndCutscene
+
+const _BLUR_SHADER := "res://Scripts/Shaders/blur.gdshader"
+const _CUTSCENE_SCRIPT := "res://Scripts/EndGame/EndCutscene.gd"
+
+
+## RunResult opens on the very image EndCutscene just blurred, so the swap
+## between them is invisible. Same CG, same shader, same lod, same darkness --
+## if any of those drift, the hand-off becomes a visible cut.
+func test_the_backdrop_is_the_same_blurred_cg_the_cutscene_ended_on() -> void:
+	var screen = load(_SCENE_PATH).instantiate()
+	var layer = screen.get_node_or_null("BlurLayer")
+	var is_rect: bool = layer is ColorRect
+	var shader_path := ""
+	if is_rect and layer.material is ShaderMaterial:
+		shader_path = layer.material.shader.resource_path
+	var order: Array[String] = []
+	for c in screen.get_children():
+		order.append(String(c.name))
+	screen.free()
+	assert_true(is_rect, "BlurLayer is an authored ColorRect")
+	assert_eq(shader_path, _BLUR_SHADER,
+		"it reuses the same blur shader EndCutscene exits through")
+	assert_true(order.find("Backdrop") < order.find("BlurLayer"),
+		"the backdrop draws first, so the shader samples it")
+	assert_true(order.find("BlurLayer") < order.find("MarginContainer"),
+		"and the report UI draws after it, so the UI stays sharp")
+
+
+## The Scrim is gone on purpose: at 0.72 alpha it was far darker than the
+## blur, so keeping it would leave RunResult visibly darker than the frame
+## EndCutscene hands over. The blur's own darkness is the dim now.
+func test_the_scrim_no_longer_double_darkens_the_backdrop() -> void:
+	var screen = load(_SCENE_PATH).instantiate()
+	# Resolve to a bool BEFORE freeing: a freed Object reference compares
+	# equal to null in GDScript, so holding the node across screen.free()
+	# would make this assertion pass whether or not the Scrim was there.
+	var has_scrim: bool = screen.get_node_or_null("Scrim") != null
+	screen.free()
+	assert_false(has_scrim,
+		"Scrim must be gone -- the blur layer's darkness is the only dim, "
+		+ "otherwise the two screens cannot match")
+
+
+## Which CG is chosen is StatCheck's verdict, read exactly the way
+## EndCutscene reads it. RunResult must not recompute the decision.
+func test_the_backdrop_is_dressed_from_the_same_verdict_flag() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("@export var win_backdrop"), "a win backdrop is exported")
+	assert_true(src.contains("@export var lose_backdrop"), "and a lose one")
+	# Scoped to _dress_backdrop's own body, not the whole file: _compute_grade
+	# legitimately calls check_semester_passed() to letter the run. It is only
+	# the BACKDROP that must not re-decide anything -- it has to agree with the
+	# image EndCutscene just showed, which was chosen from run_failed alone.
+	var from := src.find("func _dress_backdrop()")
+	assert_true(from != -1, "_dress_backdrop exists")
+	var to := src.find("\nfunc ", from + 1)
+	var body := src.substr(from, to - from) if to != -1 else src.substr(from)
+	assert_true(body.contains("GameState.run_failed"),
+		"the choice comes from the flag StatCheck wrote")
+	assert_false(body.contains("check_semester_passed"),
+		"the backdrop must not re-decide the verdict, only mirror it")
+
+
+## 25% off the old 0.4. Pinned as a literal in both screens because the whole
+## point is that they are identical -- a drift shows up as a flash at the
+## hand-off, which no structural test would catch.
+func test_both_screens_dim_the_blur_by_the_same_amount() -> void:
+	var run_src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var cut_src := FileAccess.get_file_as_string(_CUTSCENE_SCRIPT)
+	assert_true(run_src.contains("@export var blur_darkness: float = 0.3"),
+		"RunResult dims by 0.3")
+	assert_true(cut_src.contains("@export var blur_darkness: float = 0.3"),
+		"and EndCutscene ends on exactly the same 0.3")
+	assert_true(run_src.contains("@export var blur_lod: float = 3.0"),
+		"RunResult blurs by the same lod")
+	assert_true(cut_src.contains("@export var blur_lod: float = 3.0"),
+		"as EndCutscene reaches")

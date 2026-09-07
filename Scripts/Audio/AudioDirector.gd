@@ -54,7 +54,7 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"error")`: an action is rejected (atur_jadwal, inventory,
 ## koperasi's insufficient-funds/empty-cart, lobby, student_card).
 @export var sfx_error: AudioStream
-## `play_sfx(&"reward")`: a reward is granted (SemesterEnd, lobby,
+## `play_sfx(&"reward")`: a reward is granted (StatCheck, lobby,
 ## SchoolDay).
 @export var sfx_reward: AudioStream
 ## `play_sfx(&"tally")`: a Daily Results stat row's gold chevron pops in
@@ -117,8 +117,6 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var bgm_result_lose: AudioStream
 ## `play_bgm(&"exam_notice")`: the Tes Besar announcement screen.
 @export var bgm_exam_notice: AudioStream = preload("res://Assets/Audio/BGM/schoolsimulation.mp3")
-## `play_bgm(&"exam_cutscene")`: the pre-exam cutscene branch.
-@export var bgm_exam_cutscene: AudioStream = preload("res://Assets/Audio/BGM/introcutscene.mp3")
 ## `play_bgm(&"run_result")`: the end-of-grade run report.
 @export var bgm_run_result: AudioStream = preload("res://Assets/Audio/BGM/result_win.mp3")
 
@@ -476,7 +474,6 @@ func _resolve_bgm(id: StringName) -> AudioStream:
 		&"result_win": return bgm_result_win
 		&"result_lose": return bgm_result_lose
 		&"exam_notice": return bgm_exam_notice
-		&"exam_cutscene": return bgm_exam_cutscene
 		&"run_result": return bgm_run_result
 		_: return null
 

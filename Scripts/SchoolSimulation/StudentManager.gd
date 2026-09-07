@@ -18,6 +18,13 @@ class_name StudentManager
 var students: Array[StudentData] = []
 var minigame_history: Array[Dictionary] = [] # entries: {day, category, game_name, won, details}
 
+## Set by initialize_from_gamestate() when GameState.approved_students was
+## empty and it fell back to initialize_students()'s hardcoded demo roster
+## (Budi/Ani/Cici/Doni) instead of the real approved cast. Lets a caller or
+## test tell the two apart instead of the placeholder cast passing silently
+## for a real one.
+var used_fallback_roster: bool = false
+
 # daily_stat_log[day_name] = Array of {student_name, stat_key, delta, source}
 # stat_key: "akademis"|"seni_budaya"|"olahraga"|"energy"|"mood"
 # source: "decay"|"activity"|"minigame_win"|"minigame_loss"|"event"|"holiday"
@@ -263,8 +270,13 @@ func initialize_from_gamestate() -> void:
 	minigame_history.clear()
 	daily_stat_log.clear()
 	if GameState.approved_students.is_empty():
+		used_fallback_roster = true
+		push_warning("StudentManager: GameState.approved_students is empty -- " +
+			"falling back to the placeholder demo roster (Budi/Ani/Cici/Doni). " +
+			"This scene was reached without an approved roster.")
 		initialize_students()
 	else:
+		used_fallback_roster = false
 		students = GameState.convert_to_student_data_array()
 
 func apply_jadwal_effects_all(day_name: String) -> Array[Dictionary]:

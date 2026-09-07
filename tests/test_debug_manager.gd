@@ -109,6 +109,16 @@ func test_rehearsal_buttons_exist_for_all_three_presets() -> void:
 		"rehearsal has no way back to the run it replaced")
 
 
+func test_grade_scenario_buttons_exist_for_all_four_presets() -> void:
+	var body := _function_body(_source(), "_build_scenes_panel")
+	for preset in ["PRESET_GRADE_A", "PRESET_GRADE_B", "PRESET_GRADE_C", "PRESET_GRADE_D"]:
+		assert_true(body.contains("EndGameRehearsal." + preset),
+			"the Scenes tab must offer the %s grade scenario" % preset)
+	assert_true(body.contains("_start_end_game_rehearsal"),
+		"the grade scenarios must reuse the existing rehearsal handler, " +
+		"not a parallel code path")
+
+
 func test_the_bare_semester_end_teleport_is_gone() -> void:
 	var body := _function_body(_source(), "_build_scenes_panel")
 	assert_false(body.contains("res://Scenes/EndGame/SemesterEnd.tscn"),

@@ -535,7 +535,7 @@ func test_bgm_finished_signal_is_a_no_op_outside_playlist_mode() -> void:
 
 
 func test_the_end_of_grade_bgm_ids_all_resolve() -> void:
-	for id in [&"exam_notice", &"exam_cutscene", &"run_result"]:
+	for id in [&"exam_notice", &"run_result"]:
 		assert_true(_director._resolve_bgm(id) != null,
 			"BGM id %s resolves to a stream" % id)
 

@@ -57,5 +57,4 @@ func _advance() -> void:
 	if _advancing:
 		return
 	_advancing = true
-	GameState.is_exam_intro_cutscene = true
-	Transition.change_scene("res://Scenes/CutScene/cut_scene.tscn")
+	Transition.change_scene("res://Scenes/EndGame/ExamProgress.tscn")

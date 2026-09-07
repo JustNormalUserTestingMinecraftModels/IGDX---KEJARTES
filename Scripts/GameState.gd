@@ -58,17 +58,11 @@ var current_grade: int = 7:
 		max_minggu = get_max_weeks()
 var is_game_beaten: bool = false
 var debug_level_select_enabled: bool = true
-var is_game_over_cutscene: bool = false
 var grade7_student_ids: Array = []
 
 ## Per-grade tally consumed by the run-result screen. Never null; reset by
 ## set_grade() and by the grade-advance path in RunResult.
 var run_stats: RunStats = RunStats.new()
-
-## True while the exam cutscene branch of cut_scene.gd should play, set by
-## TesNotice and cleared by the cutscene itself. Distinct from
-## is_game_over_cutscene, which selects the losing branch.
-var is_exam_intro_cutscene: bool = false
 
 ## True once the stat check has decided the run was lost. Read by
 ## RunResult to force a D grade without re-running the evaluation.
@@ -91,7 +85,6 @@ func set_grade(grade_num: int) -> void:
 	current_grade = grade_num
 	minggu_ke = 1
 	run_stats.reset()
-	is_exam_intro_cutscene = false
 	run_failed = false
 	if current_grade != previous_grade:
 		reset_roster_for_new_grade()  # no-op when the roster is empty
@@ -385,9 +378,12 @@ func convert_to_student_data_array() -> Array[StudentData]:
 		sd.mood = dict.get("kepribadian1", 80.0)
 		sd.energy = dict.get("kepribadian2", 80.0)
 		
-		sd.target_akademis1 = dict.get("target_akademis1", 50.0)
-		sd.target_akademis2 = dict.get("target_akademis2", 50.0)
-		sd.target_akademis3 = dict.get("target_akademis3", 50.0)
+		# 0.0, not 50.0: count_targets_cleared() reads the same three keys
+		# with a 0.0 default, and the two sides of the bridge must agree on
+		# what an uninitialized target looks like. See target_cleared().
+		sd.target_akademis1 = dict.get("target_akademis1", 0.0)
+		sd.target_akademis2 = dict.get("target_akademis2", 0.0)
+		sd.target_akademis3 = dict.get("target_akademis3", 0.0)
 		sd.target_kepribadian1 = dict.get("target_kepribadian1", 50.0)
 		sd.target_kepribadian2 = dict.get("target_kepribadian2", 50.0)
 		sd.quirk = dict.get("quirk", "")
@@ -422,17 +418,27 @@ func get_jadwal_for_day(day_name: String) -> Dictionary:
 				counts[cat] += 1
 	return counts
 
+## The run's star meter, 0.0 to Balance.STARS_TOTAL: every academic target
+## cleared anywhere on the roster earns an equal share of the three stars.
+## Continuous on purpose -- StatCheck's meter fills star by star as the
+## check plays, and 7 of 12 must read as 1.75, not "1".
+func run_stars() -> float:
+	var counted: Array = count_targets_cleared()
+	var total := int(counted[1])
+	if total <= 0:
+		return 0.0
+	return Balance.STARS_TOTAL * float(counted[0]) / float(total)
+
+
+## Win rule since Plan A: the star meter at or above
+## Balance.STAR_WIN_THRESHOLD. Replaces "every student clears all three
+## targets" -- one weak student on a strong roster no longer loses the run.
+## An empty roster still passes, as it always did, so a debug teleport with
+## nothing approved never reads as a loss.
 func check_semester_passed() -> bool:
-	var students = convert_to_student_data_array()
-	if students.is_empty():
+	if approved_students.is_empty():
 		return true
-	for student in students:
-		var tuntas_akademis = student.akademis >= student.target_akademis1
-		var tuntas_seni = student.seni_budaya >= student.target_akademis2
-		var tuntas_olahraga = student.olahraga >= student.target_akademis3
-		if not (tuntas_akademis and tuntas_seni and tuntas_olahraga):
-			return false
-	return true
+	return run_stars() >= Balance.STAR_WIN_THRESHOLD
 
 
 ## Counts how many of the roster's three-per-student academic targets have
@@ -451,6 +457,25 @@ func count_targets_cleared() -> Array:
 		]
 		for pair in pairs:
 			total += 1
-			if float(student.get(pair[0], 0.0)) >= float(student.get(pair[1], 0.0)):
+			if target_cleared(float(student.get(pair[0], 0.0)),
+					float(student.get(pair[1], 0.0))):
 				cleared += 1
 	return [cleared, total]
+
+
+## The one predicate for "this stat cleared its target", shared by the
+## verdict (count_targets_cleared, and so run_stars and
+## check_semester_passed) and by the reveal (StatCheckRow.ratio, which
+## reaches 100 on exactly this condition).
+##
+## A target of zero or less is NOT cleared. Targets are only ever zero when
+## initialize_grade_targets() never ran, which is a data bug -- and the two
+## sides used to disagree about it: this function's `value >= target` read a
+## missing target as cleared while the bar filled to 0%, so a malformed
+## roster could show an empty star meter and still route to the win screen.
+## Failing an uninitialized target keeps the meter and the verdict telling
+## the same story.
+static func target_cleared(value: float, target: float) -> bool:
+	if target <= 0.0:
+		return false
+	return value >= target

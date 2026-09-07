@@ -118,6 +118,8 @@ offset_left = -142.0
 offset_top = -161.92505
 offset_right = 142.0
 offset_bottom = -31.925049
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_constants/separation = 44
 alignment = 1
 

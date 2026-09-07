@@ -85,6 +85,44 @@ because the editor holds the old copy in memory.
 
 Suite: 1034 tests across 69 suites, all green.
 
+## 2026-09-07 — Inventory: mobile layout and the item-apply flow
+
+The 2026-09-07 inventory mobile-layout & item-apply pass is complete, on branch
+`feat/inventory-mobile-apply`. Spec:
+`docs/superpowers/specs/2026-09-07-inventory-mobile-layout-and-item-apply.md`;
+plan: `docs/superpowers/plans/2026-09-07-inventory-mobile-layout-and-item-apply.md`.
+It rebuilt the Inventory screen as a 3-zone portrait layout (Header `&"Card"` /
+horizontal `FilterChipButton` chip row sharing one `inventory_filter_group.tres`
+`ButtonGroup` / 3-column grid + authored `ToastLabel`), dropping the vertical
+sidebar, `DetailPanel` and `UsePopup` and every per-node `StyleBoxFlat` — the
+rewritten `inventory.gd` builds zero runtime visuals, so its
+`tests/test_viewport_editability.gd` `BASELINE` entry (was 4) is gone. Tapping a
+tile opens the new `ItemDetailSheet` bottom sheet (icon/name/category chip/
+description + an "Efek" block: a `+N` row and fixed plain-Indonesian explainer
+per affected bar, five authored `EfekRow` instances). Its "Pakai ke Siswa"
+button opens the new full-screen `ApplyItemScreen` (`ApplyStudentRow` template
+per approved student, `StatBarRow` sub-template, multi-select with a live
+`65 ➔ 90 (+25)` preview on every affected `StatBar`, "Pilih Semua", `Pakai (N
+Siswa)`), then a staged payoff — per-student `RewardBurst` + `AnimUtils.
+create_floating_text` + rising `star_earn_1/2/3`, screen-wide
+`CelebrationConfetti` + `sparkle` when every pick gained, `result_fanfare` to
+close. **Items are now functional**: `ItemData` gained `akademis_boost` /
+`seni_budaya_boost` / `olahraga_boost`; `GameState.use_item()` was fixed (it
+wrote dead `"mood"`/`"energy"` keys instead of the canonical `kepribadian1/2` +
+`akademis1/2/3`) and given a `use_item_on_students(item, ids)` all-or-nothing
+batch (stock **and** id-existence pre-checked). Inventory now persists — see the
+persistence paragraph above. Built via subagent-driven development with the
+controller holding the Godot MCP bridge (implementers wrote `.gd`; the
+controller authored every `.tscn` and ran every `test_run`); one editor restart
+was needed to clear a stale `ItemDatabase` autoload after Task 1. Placeholders
+outstanding: per-item `desc` strings in `ItemDatabase.DEFAULT_ITEMS` are
+`[PLACEHOLDER]` flavour copy; the item skill-boost values (3–8) are conservative
+and balance-pending against `test_balance_pacing.gd` (spec "Balance risk"); the
+`ApplyItemScreen` payoff reuses existing `AudioDirector` cues (no dedicated
+`sfx_item_apply`); `EfekRow` need-icons reuse the shared placeholder SVG set;
+the `InventorySlot` high-count `Shine` overlay is a plain white fill `ColorRect`
+with no dedicated texture.
+
 ## 2026-09-06 — Lobby: layered student faces, gaze and blink rig
 
 Reworked the lobby diorama's student sprite from a single flat portrait

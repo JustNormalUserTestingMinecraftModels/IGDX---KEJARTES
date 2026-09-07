@@ -105,3 +105,19 @@ func test_empty_message_is_a_scene_node_not_a_runtime_label() -> void:
 	var text := FileAccess.get_file_as_string("res://Scenes/Inventory/inventory.tscn")
 	assert_contains(text, "EmptyMessageLabel",
 		"inventory.tscn should carry the empty-state label")
+
+
+func test_slot_has_bounce_badge_and_shine_gate() -> void:
+	var slot := _make()
+	assert_true(slot.has_method("bounce_badge"), "bounce_badge() present")
+	assert_true("shine_min_quantity" in slot, "shine_min_quantity export present")
+	assert_not_null(slot.get_node_or_null("Shine"), "authored Shine node present")
+
+
+func test_shine_visibility_follows_quantity_threshold() -> void:
+	var slot := _make()
+	slot.shine_min_quantity = 5
+	slot.setup(_sample_item(), 2)
+	assert_false(slot.get_node("Shine").visible, "shine hidden below threshold")
+	slot.setup(_sample_item(), 9)
+	assert_true(slot.get_node("Shine").visible, "shine shown at/above threshold")

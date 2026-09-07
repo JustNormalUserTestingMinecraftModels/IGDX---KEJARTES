@@ -32,9 +32,12 @@ signal slot_pressed(slot: InventorySlot)
 @export var category_colors: Dictionary = {}
 ## The border colour for a category not listed above.
 @export var default_category_color: Color = Color(0.6, 0.6, 0.65)
+## Minimum owned quantity before the idle shine overlay pulses on this tile.
+@export var shine_min_quantity: int = 5
 
 @onready var icon: TextureRect = $Layout/Icon
 @onready var quantity_label: Label = $Layout/QuantityRow/QuantityLabel
+@onready var _shine: ColorRect = $Shine
 
 ## The item this tile shows. Read by inventory.gd when the tile is tapped.
 var item: ItemData = null
@@ -83,6 +86,28 @@ func setup(p_item: ItemData, quantity: int) -> void:
 	_selected_style.border_color = cat_color
 
 	add_theme_stylebox_override("panel", _normal_style)
+
+	if _shine:
+		_shine.visible = quantity >= shine_min_quantity
+		if _shine.visible and not Engine.is_editor_hint():
+			_start_shine()
+
+
+## Loop a soft alpha pulse on the tile's Shine overlay -- a purely
+## decorative "you own a lot of these" cue, gated by shine_min_quantity.
+## InventorySlot's root is a PanelContainer (children are forced to fill),
+## so this pulses alpha rather than sweeping a highlight across.
+func _start_shine() -> void:
+	_shine.modulate.a = 0.0
+	var t := create_tween().set_loops()
+	t.tween_property(_shine, "modulate:a", 0.22, 0.9).set_trans(Tween.TRANS_SINE)
+	t.tween_property(_shine, "modulate:a", 0.0, 0.9).set_trans(Tween.TRANS_SINE)
+	t.tween_interval(1.6)
+
+
+## Bounce the quantity badge after the owned count changed.
+func bounce_badge() -> void:
+	AnimUtils.qty_punch(quantity_label)
 
 
 ## Swap between the resting and selected look. Both styles are already

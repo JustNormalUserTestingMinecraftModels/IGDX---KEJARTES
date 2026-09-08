@@ -12,8 +12,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-color = Color(0.078431375, 0.101960786, 0.18039216, 0)
+color = Color(0, 0, 0, 0)
 
 [node name="Card" type="PanelContainer" parent="Scrim" unique_id=1320277590]
 custom_minimum_size = Vector2(1015, 0)

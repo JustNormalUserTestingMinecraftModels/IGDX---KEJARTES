@@ -117,18 +117,38 @@ preview_pill_fill      363636 -> 4A3728
 `trait_button.png`, the asset whose warmth prompted this whole pass, and moving
 `cat_libur` to `#D98E0B` resolves the collision without giving up the reference.
 
-### New exports (14)
+### New exports (16)
 
 ```
 cat_akademis_on_dark    3BA7F5      radius_button   20
-cat_olahraga_on_dark    FF5A36      btn_pad_v       14
-cat_senibudaya_on_dark  6BD425      btn_h_s         96
-cat_istirahat_on_dark   A78BFA      btn_h_m         128
-cat_libur_on_dark       F5A623      btn_h_l         160
-cat_wirausaha_on_dark   16C79A      btn_icon_s      48
-                                    btn_icon_m      64
-                                    btn_icon_l      80
+cat_olahraga_on_dark    FF5A36      btn_h_s         96     btn_icon_s   48
+cat_senibudaya_on_dark  6BD425      btn_h_m         128    btn_icon_m   64
+cat_istirahat_on_dark   A78BFA      btn_h_l         160    btn_icon_l   80
+cat_libur_on_dark       F5A623      btn_pad_v_s     MEASURE (~20)
+cat_wirausaha_on_dark   16C79A      btn_pad_v_m     MEASURE (~29)
+                                    btn_pad_v_l     MEASURE (~35)
 ```
+
+#### The padding tokens are derived, not chosen
+
+A Godot `Button`'s minimum height is already
+`content_margin_top + bottom + border + line height`. Tune each step's vertical
+padding so that its variation's **natural minimum equals its step**, and a scene
+author sets no height at all and cannot land between steps. The height stops
+being something anyone types.
+
+The three values must therefore be **measured against Boohong in-engine** at
+font sizes 36 / 48 / 64, then solved as
+`pad = (btn_h_x - 2*outline_width - line_height) / 2`. The `~` figures above are
+arithmetic from an estimated line box and are **not** to be committed as-is. A
+test asserts the identity holds rather than asserting the numbers:
+
+```
+minimum_size.y of a fresh Button in variation X == tokens.btn_h_<step>
+```
+
+That test is the one that matters. If the font changes, it fails loudly instead
+of letting every button quietly drift a few pixels.
 
 Measured contrast of each on-dark accent against `day_bar_track` `#4A3728`:
 
@@ -153,7 +173,7 @@ All clear 3.5:1. The floor is set at **3.0:1** so there is headroom for tuning.
 ### `_pill()` → `_button_box()`
 
 - `set_corner_radius_all(tokens.radius_button)` instead of `radius_pill`
-- `content_margin_top/bottom = tokens.btn_pad_v` instead of `space_md`
+- `content_margin_top/bottom` = the step's `btn_pad_v_s/m/l` instead of `space_md`
 - `content_margin_left/right` stays `space_lg`
 
 `_add_button_variation()` gains a trailing `radius := tokens.radius_button`
@@ -187,10 +207,11 @@ are not optional to handle — the new "one radius" test walks every
 | `ShopShelfButton` | `radius_md` (24) | → `radius_button` |
 | `WeekTabButton` | `radius_md` top corners | → `radius_button` top corners; bottom stays square (it is a tab) |
 | `ShopHubTile` | `radius_lg` (36) on the hover/pressed washes | → `radius_button` |
-| `MainMenuButton` | `StyleBoxTexture`, no radius property | **allow-list**, with the reason recorded in the test |
+| `MainMenuButton` | `StyleBoxTexture`, no radius property | **allow-list**; the art carries the silhouette, and the art is being re-authored to a 20px corner (see New assets) |
 
-`MainMenuButton` is the only true exception, and it is an exception because the
-art dictates the silhouette. See Out of scope.
+`MainMenuButton` stays a `StyleBoxTexture` because the gold gloss is painted, not
+generated. It comes onto the system by having its *asset* redrawn rather than by
+switching to a stylebox, so the test allow-lists it with that reason recorded.
 
 `_pill()`'s doc comment currently describes an "Umamusume sheen" from a
 gradient. That framing goes with the rename; the warm system's affordance is the
@@ -298,6 +319,28 @@ Drawn in `text_on_brand` `#FFF6E8` as flat silhouettes, matching the existing
 SVG icon set's weight. Per project convention, **no emoji** — these exist
 precisely so the tiles do not use glyphs.
 
+### `menu_button.png` — a split, not an edit
+
+The splashscreen's Settings/Exit shape is fixed by **re-authoring the art**, but
+`trait_button.png` cannot simply be redrawn: `_build_main_menu_button()`'s own
+doc comment records that it deliberately reuses `TraitPill`'s `region_rect` and
+45px margins because the menu mockup is that asset recoloured. **One asset backs
+both.** Squaring it to 20px corners would square off every Quirk and Persona chip
+too, contradicting the chips-stay-round rule.
+
+So the asset splits in two:
+
+- `trait_button.png` — **unchanged**, stays fully round, keeps serving `TraitPill`.
+- `menu_button.png` — **new**, same gold `#FFC93C`, same `#3D2048` rim, same top
+  gloss, but drawn with a 20px corner. `MainMenuButton` points at this instead.
+
+`region_rect` and `texture_margin` must be re-derived for the new canvas rather
+than copied from `TraitPill`'s `Rect2(20, 277, 601, 91)` — the whole point of
+the split is that the two are no longer the same shape.
+
+Part 2 raises the trait pill's box from 70 to 96 so the 45px margins fit. That
+change applies to `trait_button.png` and is unaffected by this split.
+
 ## Test impact
 
 Token references in tests are almost all by name and survive value changes.
@@ -321,6 +364,20 @@ Token references in tests are almost all by name and survive value changes.
    baseline, and that no lobby control's rect exceeds x=1080 or comes within
    `shadow_size` of the rim. This is the regression guard for both the clipping
    and the off-screen `DisplayUang`.
+4. **Natural height matches the step.** For each size variation, a fresh
+   `Button` carrying it reports `minimum_size.y == tokens.btn_h_<step>`. This is
+   what makes the padding tokens self-correcting rather than hand-tuned.
+5. **Height ratchet.** Walk every themed `Button` in every scene and assert its
+   authored height is one of `btn_h_s/m/l`, with an `ALLOWED` dict of reviewed,
+   commented exceptions — the same shape as `tests/test_viewport_editability.gd`'s
+   existing `BASELINE`/`ALLOWED` pattern, so it is a form the project already
+   uses.
+
+Tests 4 and 5 exist because the size tokens are otherwise only documentation.
+Fifteen ad-hoc heights is exactly what accumulates when a scale is written down
+but not enforced; without these, the same drift starts again on day one.
+`ShopShelfButton` (63) and `Batal` (178) either move onto a step or earn an
+`ALLOWED` entry that says why — no silent third option.
 
 `tests/test_activity_row.gd` carries a regression note about the schedule pill's
 radius moving to `radius_md`. That pill is not a `Button` and is unaffected —
@@ -330,8 +387,10 @@ but the note should be re-read before touching `_build_penjadwalan()`.
 
 The editor-restart constraint dictates the sequence.
 
-1. Update `DesignTokens.gd` — changed values **and** all 14 new exports, each
+1. Update `DesignTokens.gd` — changed values **and** all 16 new exports, each
    with its `##` doc line (`tests/test_script_documentation.gd` enforces this).
+   The three `btn_pad_v_*` values go in as placeholders; they are solved in
+   step 6a once the font can actually be measured.
 2. Update the 11 hardcoded hex assertions.
 3. **Restart the editor.** The new exports are invisible until this happens.
 4. Rebake: `Scripts/Design/BakeTheme.gd` via File > Run, or the transient
@@ -339,7 +398,11 @@ The editor-restart constraint dictates the sequence.
 5. `ThemeFactory` — `_button_box()`, the nine new variations, `DISPLAY_ROSTER`,
    the DaySummary `bar_specs` switch to on-dark.
 6. Rebake again, run the suite.
-7. Generate the five icons.
+6a. **Solve the three `btn_pad_v_*` values.** Measure Boohong's line box at 36 /
+   48 / 64 in-engine, solve `pad = (btn_h_x - 2*outline_width - line_height) / 2`,
+   write the results back, rebake. Test 4 is the acceptance criterion — do not
+   move on while it is red.
+7. Generate the five nav icons and re-author `menu_button.png`.
 8. Lobby scene work through the editor — `scene_open` → `node_*` → `scene_save`.
    Per the project guide, **scene work last and separately from script work**:
    `scene_save` flushes stale script buffers over anything patched from outside.
@@ -357,9 +420,9 @@ step 6, so they should not be split across sessions.
   but no layout work is done there.
 - **`Balance.gd`** is owned by a collaborator and is not touched.
 - The **`radius_pill` chips** keep their current geometry. Only their colours move.
-- **`MainMenuButton`** keeps `trait_button.png`. Its silhouette does not match
-  the new 20px radius, but replacing it means re-authoring the art, which is a
-  separate pass. Flagged in Outstanding debt rather than fixed here.
+- ~~`MainMenuButton`~~ — **now in scope.** Resolved by splitting the art into
+  `trait_button.png` (round, chips) and `menu_button.png` (20px corner, menu).
+  See New assets.
 - The **viewport-editability ratchet** is not advanced. This pass should not
   raise `BASELINE`; if lobby work would add a runtime-constructed visual, it
   goes in the `.tscn` instead.

@@ -79,13 +79,13 @@ text = "Sifat Pasif:"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.786
+anchor_top = 0.7
 anchor_right = 0.5
-anchor_bottom = 0.786
+anchor_bottom = 0.7
 offset_left = -421.0
-offset_top = -104.119995
+offset_top = -60.0
 offset_right = 421.0
-offset_bottom = -0.11999512
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -93,13 +93,13 @@ text = "Quirk Kutu Buku"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.84800005
+anchor_top = 0.755
 anchor_right = 0.5
-anchor_bottom = 0.84800005
+anchor_bottom = 0.755
 offset_left = -417.0
-offset_top = -98.16016
+offset_top = -60.0
 offset_right = 420.0
-offset_bottom = 0.83984375
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -259,10 +259,10 @@ vertical_alignment = 1
 
 [node name="Aprove" type="Button" parent="KertasMurid6" unique_id=860385850]
 layout_mode = 0
-offset_left = 275.0
-offset_top = 1641.0
-offset_right = 765.0
-offset_bottom = 1829.0
+offset_left = 260.0
+offset_top = 1560.0
+offset_right = 780.0
+offset_bottom = 1720.0
 theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
@@ -308,13 +308,13 @@ text = "Sifat Pasif:"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.786
+anchor_top = 0.7
 anchor_right = 0.5
-anchor_bottom = 0.786
+anchor_bottom = 0.7
 offset_left = -421.0
-offset_top = -104.119995
+offset_top = -60.0
 offset_right = 421.0
-offset_bottom = -0.11999512
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -322,13 +322,13 @@ text = "Quirk Kutu Buku"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.84800005
+anchor_top = 0.755
 anchor_right = 0.5
-anchor_bottom = 0.84800005
+anchor_bottom = 0.755
 offset_left = -417.0
-offset_top = -98.16016
+offset_top = -60.0
 offset_right = 420.0
-offset_bottom = 0.83984375
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -488,10 +488,10 @@ vertical_alignment = 1
 
 [node name="Aprove" type="Button" parent="KertasMurid5" unique_id=1413978420]
 layout_mode = 0
-offset_left = 275.0
-offset_top = 1641.0
-offset_right = 765.0
-offset_bottom = 1829.0
+offset_left = 260.0
+offset_top = 1560.0
+offset_right = 780.0
+offset_bottom = 1720.0
 theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
@@ -538,13 +538,13 @@ text = "Sifat Pasif:"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.786
+anchor_top = 0.7
 anchor_right = 0.5
-anchor_bottom = 0.786
+anchor_bottom = 0.7
 offset_left = -421.0
-offset_top = -104.119995
+offset_top = -60.0
 offset_right = 421.0
-offset_bottom = -0.11999512
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -552,13 +552,13 @@ text = "Quirk Kutu Buku"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.84800005
+anchor_top = 0.755
 anchor_right = 0.5
-anchor_bottom = 0.84800005
+anchor_bottom = 0.755
 offset_left = -417.0
-offset_top = -98.16016
+offset_top = -60.0
 offset_right = 420.0
-offset_bottom = 0.83984375
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -718,10 +718,10 @@ vertical_alignment = 1
 
 [node name="Aprove" type="Button" parent="KertasMurid4" unique_id=290729362]
 layout_mode = 0
-offset_left = 275.0
-offset_top = 1641.0
-offset_right = 765.0
-offset_bottom = 1829.0
+offset_left = 260.0
+offset_top = 1560.0
+offset_right = 780.0
+offset_bottom = 1720.0
 theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
@@ -768,13 +768,13 @@ text = "Sifat Pasif:"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.786
+anchor_top = 0.7
 anchor_right = 0.5
-anchor_bottom = 0.786
+anchor_bottom = 0.7
 offset_left = -421.0
-offset_top = -104.119995
+offset_top = -60.0
 offset_right = 421.0
-offset_bottom = -0.11999512
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -782,13 +782,13 @@ text = "Quirk Kutu Buku"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.84800005
+anchor_top = 0.755
 anchor_right = 0.5
-anchor_bottom = 0.84800005
+anchor_bottom = 0.755
 offset_left = -417.0
-offset_top = -98.16016
+offset_top = -60.0
 offset_right = 420.0
-offset_bottom = 0.83984375
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -948,10 +948,10 @@ vertical_alignment = 1
 
 [node name="Aprove" type="Button" parent="KertasMurid3" unique_id=463087752]
 layout_mode = 0
-offset_left = 275.0
-offset_top = 1641.0
-offset_right = 765.0
-offset_bottom = 1829.0
+offset_left = 260.0
+offset_top = 1560.0
+offset_right = 780.0
+offset_bottom = 1720.0
 theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
@@ -998,13 +998,13 @@ text = "Sifat Pasif:"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.786
+anchor_top = 0.7
 anchor_right = 0.5
-anchor_bottom = 0.786
+anchor_bottom = 0.7
 offset_left = -421.0
-offset_top = -104.119995
+offset_top = -60.0
 offset_right = 421.0
-offset_bottom = -0.11999512
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -1012,13 +1012,13 @@ text = "Quirk Kutu Buku"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.84800005
+anchor_top = 0.755
 anchor_right = 0.5
-anchor_bottom = 0.84800005
+anchor_bottom = 0.755
 offset_left = -417.0
-offset_top = -98.16016
+offset_top = -60.0
 offset_right = 420.0
-offset_bottom = 0.83984375
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -1178,10 +1178,10 @@ vertical_alignment = 1
 
 [node name="Aprove" type="Button" parent="KertasMurid2" unique_id=351069657]
 layout_mode = 0
-offset_left = 275.0
-offset_top = 1641.0
-offset_right = 765.0
-offset_bottom = 1829.0
+offset_left = 260.0
+offset_top = 1560.0
+offset_right = 780.0
+offset_bottom = 1720.0
 theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
@@ -1227,13 +1227,13 @@ text = "Sifat Pasif:"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.786
+anchor_top = 0.7
 anchor_right = 0.5
-anchor_bottom = 0.786
+anchor_bottom = 0.7
 offset_left = -421.0
-offset_top = -104.119995
+offset_top = -60.0
 offset_right = 421.0
-offset_bottom = -0.11999512
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -1241,13 +1241,13 @@ text = "Quirk Kutu Buku"
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 0.84800005
+anchor_top = 0.755
 anchor_right = 0.5
-anchor_bottom = 0.84800005
+anchor_bottom = 0.755
 offset_left = -417.0
-offset_top = -98.16016
+offset_top = -60.0
 offset_right = 420.0
-offset_bottom = 0.83984375
+offset_bottom = 40.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -1407,10 +1407,10 @@ vertical_alignment = 1
 
 [node name="Aprove" type="Button" parent="KertasMurid1" unique_id=362172452]
 layout_mode = 0
-offset_left = 275.0
-offset_top = 1641.0
-offset_right = 765.0
-offset_bottom = 1829.0
+offset_left = 260.0
+offset_top = 1560.0
+offset_right = 780.0
+offset_bottom = 1720.0
 theme_type_variation = &"SuccessButton"
 text = "APPROVE"
 
@@ -1449,18 +1449,18 @@ flat = true
 [node name="PilihMurid" type="Label" parent="." unique_id=983198317]
 layout_mode = 0
 offset_left = 90.0
-offset_top = -172.0
+offset_top = -210.0
 offset_right = 990.0
-offset_bottom = -44.0
+offset_bottom = -60.0
 theme_type_variation = &"DisplayLabel"
 text = "Pilih Muridmu"
 
 [node name="BelajarButton" type="Button" parent="." unique_id=219827255]
 layout_mode = 0
 offset_left = 328.0
-offset_top = 1756.0
+offset_top = 1740.0
 offset_right = 818.0
-offset_bottom = 1934.0
+offset_bottom = 1900.0
 theme_type_variation = &"PrimaryButton"
 text = "BELAJAR"
 

@@ -304,33 +304,79 @@ func test_trait_values_are_unchanged() -> void:
 ## Card 1's trait pills on ReportCard were hand-edited out of alignment --
 ## ~240px high and 33px taller than the shape every other card uses. Card 1
 ## is the page both screens open on, so the drift was the first thing seen.
-## Checked across both scenes and all six cards so it cannot recur.
+## Checked across all six cards so it cannot recur, per scene.
+##
+## student_card.tscn and report_card.tscn intentionally carry DIFFERENT
+## pinned geometry as of 2026-09-08: student_card.tscn's pills moved from
+## anchor-0.786/0.848 offsets to anchor-0.70/0.755 ones to stop them
+## overlapping the Approve button (see student_card_layout suite's sibling
+## test_trait_pills_sit_above_approve). ReportCard has no Approve/Batal
+## button for the pills to clip -- it is a read-only report screen -- so it
+## was out of scope for that fix and keeps the original geometry here.
+## Each scene is still checked for uniformity across all six of its own
+## cards, which is this test's real invariant.
 ##
 ## Compared with a tolerance, not assert_eq: the scene stores float32, so
 ## the widened value is -104.119995117188 and an exact match against a
 ## float64 literal fails. Same absf() idiom the other suites use, since
 ## McpTestSuite has no assert_almost_eq.
+const _TRAIT_PILL_GEOMETRY_BY_SCENE := {
+	"res://Scenes/StudentCard/student_card.tscn": {
+		"KutuBuku": {"anchor_top": 0.70, "anchor_bottom": 0.70,
+			"offset_top": -60.0, "offset_bottom": 40.0},
+		"KutuBuku2": {"anchor_top": 0.755, "anchor_bottom": 0.755,
+			"offset_top": -60.0, "offset_bottom": 40.0},
+	},
+	"res://Scenes/ReportCard/report_card.tscn": {
+		"KutuBuku": {"offset_top": -104.119995, "offset_bottom": -0.11999512},
+		"KutuBuku2": {
+			"offset_left": -417.0, "offset_right": 420.0,
+			"offset_top": -98.16016, "offset_bottom": 0.83984375,
+		},
+	},
+}
+
+
 func test_every_trait_pill_shares_one_geometry() -> void:
-	var quirk_box := {"offset_top": -104.119995, "offset_bottom": -0.11999512}
-	var persona_box := {
-		"offset_left": -417.0, "offset_right": 420.0,
-		"offset_top": -98.16016, "offset_bottom": 0.83984375,
-	}
 	for scene_path in _SCENES:
 		var scene := load(scene_path) as PackedScene
 		assert_true(scene != null, "%s failed to load" % scene_path)
 		var inst := scene.instantiate()
+		var geometry_by_pill: Dictionary = _TRAIT_PILL_GEOMETRY_BY_SCENE[scene_path]
 		for i in range(1, 7):
 			for pill_name in ["KutuBuku", "KutuBuku2"]:
 				var pill := inst.get_node_or_null(
 					"KertasMurid%d/%s" % [i, pill_name]) as Control
 				assert_true(pill != null, "%s KertasMurid%d/%s missing"
 					% [scene_path, i, pill_name])
-				var want: Dictionary = quirk_box if pill_name == "KutuBuku" \
-					else persona_box
+				var want: Dictionary = geometry_by_pill[pill_name]
 				for prop in want:
 					assert_true(absf(pill.get(prop) - want[prop]) <= 0.01,
 						"%s card %d %s.%s is %f, expected %f"
 							% [scene_path, i, pill_name, prop,
 								pill.get(prop), want[prop]])
 		inst.free()
+
+
+## The clipping fix (2026-09-08): student_card.tscn's KutuBuku/KutuBuku2
+## pills moved off anchor 0.786/0.848 -- which put them on top of the
+## Aprove button and the empty PageLabel's box, showing as the stray "376"
+## in the QA screenshot -- onto anchor 0.70/0.755, clear of Aprove.
+func test_trait_pills_sit_above_approve() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/StudentCard/student_card.tscn")
+	assert_true(src.contains("anchor_top = 0.7\n"),
+		"Expected KutuBuku pill anchored at 0.70 after the clipping fix")
+	assert_true(src.contains("anchor_top = 0.755"),
+		"Expected KutuBuku2 pill anchored at 0.755 after the clipping fix")
+	assert_false(src.contains("anchor_top = 0.786"),
+		"Old overlapping pill anchor must not remain on student_card.tscn")
+
+
+## PageLabel is empty by design; the stray "376" seen in the QA screenshot
+## was the trait pill drawn over this row, not text PageLabel itself owns.
+## Pins the row's position so a future edit can't silently reintroduce the
+## overlap from a different angle.
+func test_page_label_has_no_stray_text() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/StudentCard/student_card.tscn")
+	assert_true(src.contains('offset_top = 1248.0'),
+		"PageLabel moved unexpectedly")

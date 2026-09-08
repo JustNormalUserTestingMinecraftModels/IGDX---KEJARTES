@@ -19,8 +19,8 @@ extends Control
 ## Header line above the event's own title (set per-call via
 ## play_announcement()'s event_title argument).
 @export var header_prefix_text: String = "PENGUMUMAN EVENT SEKOLAH"
-## Optional font override for the icon glyph and header/event labels.
-## Null keeps the theme's default font.
+## Optional font override for the header/event labels. Null keeps the
+## theme's default font.
 @export var font: Font = null
 ## Size (px, both axes) of announcement_icon_texture.
 @export var icon_font_size: int = 72

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://q2rywxai4x8w" path="res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd" id="1_dialog"]
 [ext_resource type="Texture2D" uid="uid://dffe8jahya5xe" path="res://Assets/Images/UI/Placeholders/icon_benefit.svg" id="2_6axh0"]
+[ext_resource type="Texture2D" uid="uid://cqjnt1pjo3ww3" path="res://Assets/Images/UI/Placeholders/bg_event_dialog.png" id="2_l76hw"]
 [ext_resource type="Texture2D" uid="uid://dk30c4dkeha6g" path="res://Assets/Images/UI/Placeholders/icon_cost.svg" id="3_l76hw"]
 
 [node name="EventStudentSelectDialog" type="Control" unique_id=1536047944]
@@ -12,6 +13,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_dialog")
+background_texture = ExtResource("2_l76hw")
 
 [node name="BackgroundDim" type="Panel" parent="." unique_id=1350618391]
 layout_mode = 1
@@ -55,13 +57,14 @@ theme_override_constants/separation = 10
 
 [node name="TitleLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1680428600]
 layout_mode = 2
-theme_type_variation = &"H2Label"
+theme_type_variation = &"EventDialogHeaderLabel"
 text = "JUDUL EVENT"
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="DescLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1579734788]
 layout_mode = 2
+theme_type_variation = &"EventBodyLabel"
 text = "Deskripsi event..."
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -85,7 +88,7 @@ stretch_mode = 5
 
 [node name="Text" type="Label" parent="Margin/DialogPanel/Margin/MainVBox/CostBenefitBox/BenefitRow" unique_id=829364104]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"EventBodyLabel"
 text = "Manfaat: Stat +15"
 vertical_alignment = 1
 
@@ -104,7 +107,7 @@ stretch_mode = 5
 
 [node name="Text" type="Label" parent="Margin/DialogPanel/Margin/MainVBox/CostBenefitBox/CostRow" unique_id=789354069]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"EventBodyLabel"
 text = "Biaya: Energy -15"
 vertical_alignment = 1
 
@@ -113,7 +116,7 @@ layout_mode = 2
 
 [node name="StudentsHeaderLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1179780684]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"H2Label"
 text = "Pilih siswa yang akan diikutsertakan:"
 autowrap_mode = 2
 

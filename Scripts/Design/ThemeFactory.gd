@@ -140,6 +140,15 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	_build_main_menu_button(theme, tokens)
 	_build_shop_shelf_button(theme, tokens)
 
+	# Size steps. M covers the 116-148 px call sites (TesNotice, RunResult,
+	# QuitConfirmDialog, EndCutscene, AturJadwal's StartWeek); L covers the
+	# 160-178 px ones (StudentCard's Aprove and Batal, StudentList's
+	# arrows). SuccessButton has no M call site, so none is generated.
+	for base in ["PrimaryButton", "SecondaryButton", "DangerButton"]:
+		_add_size_step(theme, tokens, base, "M", tokens.font_h2, tokens.btn_pad_v_m)
+	for base in ["PrimaryButton", "SecondaryButton", "DangerButton", "SuccessButton"]:
+		_add_size_step(theme, tokens, base, "L", tokens.font_h1, tokens.btn_pad_v_l)
+
 
 ## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"). A flat
 ## rounded rectangle with a heavier bottom border for a pressed-tab look,
@@ -275,6 +284,38 @@ static func _add_button_variation(
 	theme.set_color("font_focus_color", name, text_color)
 	theme.set_color("font_disabled_color", name, tokens.text_disabled)
 	theme.set_font_size("font_size", name, tokens.font_title)
+	if tokens.font_display != null:
+		theme.set_font("font", name, tokens.font_display)
+
+
+## Clone an existing role variation at a larger size step.
+##
+## Only font_size differs -- the fill, rim and radius are the role's, so
+## a PrimaryButtonL is unmistakably a PrimaryButton. Height comes from
+## the step's own vertical padding, which is why this also re-pads.
+static func _add_size_step(
+	theme: Theme,
+	tokens: DesignTokens,
+	base: String,
+	suffix: String,
+	font_size: int,
+	pad_v: int
+) -> void:
+	var name := base + suffix
+	theme.add_type(name)
+	theme.set_type_variation(name, "Button")
+
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var sb := (theme.get_stylebox(state, base) as StyleBoxFlat).duplicate()
+		sb.content_margin_top = pad_v
+		sb.content_margin_bottom = pad_v
+		theme.set_stylebox(state, name, sb)
+
+	for key in ["font_color", "font_hover_color", "font_pressed_color",
+			"font_focus_color", "font_disabled_color"]:
+		theme.set_color(key, name, theme.get_color(key, base))
+
+	theme.set_font_size("font_size", name, font_size)
 	if tokens.font_display != null:
 		theme.set_font("font", name, tokens.font_display)
 

@@ -303,13 +303,19 @@ const DISPLAY_ROSTER := [
 	"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
 	"CardSectionLabel", "ResultHeroLabel",
 	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
-	"SuccessButton", "QuirkBadge", "PersonaBadge", "LobbyNavButton",
+	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill", "PreviewRowLabel",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-08: event popup title, display face at H1+6.
 	"EventDialogHeaderLabel",
+	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
+	# this roster in the same pass -- LobbyNavTile and LobbyCtaButton
+	# replaced it.
+	"PrimaryButtonM", "SecondaryButtonM", "DangerButtonM",
+	"PrimaryButtonL", "SecondaryButtonL", "DangerButtonL", "SuccessButtonL",
+	"LobbyNavTile", "LobbyCtaButton",
 ]
 
 

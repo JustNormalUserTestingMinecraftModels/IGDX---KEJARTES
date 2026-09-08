@@ -75,3 +75,35 @@ func test_exempt_variations_still_exist() -> void:
 	for name in RADIUS_EXEMPT:
 		assert_true(all.has(name),
 			"%s is exempt from the radius rule but no longer exists" % name)
+
+
+## Godot type variations do not compose -- "PrimaryButton, but L" is not
+## expressible -- so each role that has a non-S call site needs its own
+## sibling. These seven cover the heights actually authored in the
+## project; combinations nothing uses are deliberately not generated.
+const SIZE_STEPS := {
+	"PrimaryButton": "s", "SecondaryButton": "s",
+	"DangerButton": "s", "SuccessButton": "s",
+	"PrimaryButtonM": "m", "SecondaryButtonM": "m", "DangerButtonM": "m",
+	"PrimaryButtonL": "l", "SecondaryButtonL": "l",
+	"DangerButtonL": "l", "SuccessButtonL": "l",
+}
+
+
+func test_every_size_step_variation_exists() -> void:
+	var all := _theme.get_type_list()
+	for name in SIZE_STEPS:
+		assert_true(all.has(name), "theme must declare type: " + name)
+
+
+func test_size_steps_carry_the_right_font_size() -> void:
+	var expected := {
+		"s": _tokens.font_title,
+		"m": _tokens.font_h2,
+		"l": _tokens.font_h1,
+	}
+	for name in SIZE_STEPS:
+		var step: String = SIZE_STEPS[name]
+		assert_eq(_theme.get_font_size("font_size", name), expected[step],
+			"%s is the %s step and must use font size %d"
+				% [name, step.to_upper(), expected[step]])

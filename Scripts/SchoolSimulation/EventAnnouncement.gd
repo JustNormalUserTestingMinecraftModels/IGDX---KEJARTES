@@ -13,18 +13,16 @@ extends Control
 
 # ── Visual - Header & Texts ───────────────────────────────────────────────────
 @export_group("Visual - Header & Texts")
-## Art-supplied icon shown above the header. Null falls back to
-## announcement_symbol_text as an emoji glyph instead.
+## Art-supplied icon shown above the header. Always required as of the
+## 2026-09-08 no-emoji pass -- no emoji fallback remains.
 @export var announcement_icon_texture: Texture2D = null
-## Emoji shown when announcement_icon_texture is null.
-@export var announcement_symbol_text: String = "📢"
 ## Header line above the event's own title (set per-call via
 ## play_announcement()'s event_title argument).
-@export var header_prefix_text: String = "📢 PENGUMUMAN EVENT SEKOLAH"
-## Optional font override for the icon glyph and header/event labels.
-## Null keeps the theme's default font.
+@export var header_prefix_text: String = "PENGUMUMAN EVENT SEKOLAH"
+## Optional font override for the header/event labels. Null keeps the
+## theme's default font.
 @export var font: Font = null
-## Size (px, both axes) of announcement_icon_texture/announcement_symbol_text.
+## Size (px, both axes) of announcement_icon_texture.
 @export var icon_font_size: int = 72
 
 @onready var icon_lbl: Label = $ContentMargin/Center/VBox/IconLabel
@@ -44,6 +42,8 @@ func play_announcement(event_title: String, _event_description: String = "") -> 
 	# Fade in announcement
 	modulate.a = 0.0
 	show()
+	if not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"event_announce")
 	var fade_in = create_tween()
 	fade_in.tween_property(self, "modulate:a", 1.0, t.dur_normal)
 	await fade_in.finished
@@ -103,13 +103,6 @@ func _apply_visual_exports() -> void:
 			tex_rect.texture = announcement_icon_texture
 			tex_rect.custom_minimum_size = icon_size
 			tex_rect.show()
-		else:
-			icon_lbl.text = announcement_symbol_text
-			icon_lbl.custom_minimum_size = Vector2.ZERO
-			if font: icon_lbl.add_theme_font_override("font", font)
-			var tex_rect = icon_lbl.get_node_or_null("IconTextureRect")
-			if tex_rect:
-				tex_rect.hide()
 
 	if header_lbl:
 		header_lbl.text = header_prefix_text

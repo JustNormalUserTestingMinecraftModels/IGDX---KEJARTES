@@ -106,11 +106,16 @@ func is_selected() -> bool:
 
 
 ## A tired student cannot be sent; the card refuses the tap and drops
-## any selection it was already carrying.
+## any selection it was already carrying. Also dims the whole card and
+## desaturates the avatar so unavailability reads at a glance instead of
+## the player tapping it and wondering why nothing happens.
 func set_selectable(on: bool) -> void:
 	disabled = not on
 	if not on:
 		button_pressed = false
+	modulate.a = 1.0 if on else 0.55
+	if avatar:
+		avatar.modulate = Color.WHITE if on else Color(0.7, 0.7, 0.75, 1.0)
 
 
 ## Writes all three stat tracks. Only the event's own category previews

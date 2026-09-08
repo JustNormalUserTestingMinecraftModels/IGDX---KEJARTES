@@ -304,33 +304,121 @@ func test_trait_values_are_unchanged() -> void:
 ## Card 1's trait pills on ReportCard were hand-edited out of alignment --
 ## ~240px high and 33px taller than the shape every other card uses. Card 1
 ## is the page both screens open on, so the drift was the first thing seen.
-## Checked across both scenes and all six cards so it cannot recur.
+## Checked across all six cards so it cannot recur, per scene.
+##
+## student_card.tscn and report_card.tscn intentionally carry DIFFERENT
+## pinned geometry as of 2026-09-08: student_card.tscn's pills moved off
+## anchor-0.786/0.848 to stop them overlapping the Approve button (see
+## student_card_layout suite's sibling test_trait_pills_sit_above_approve).
+## A same-day follow-up fix (2026-09-08, second pass) moved them again --
+## the first fix's 0.70/0.755 anchors cleared Approve but newly overlapped
+## SifatPasifLabel above them, caught only by resolving actual geometry
+## (test_trait_pills_do_not_overlap_neighbors below), not by pinning anchor
+## values alone. The pills are now 70px tall (down from ~100px) so both fit
+## in the 165px band between SifatPasifLabel's bottom (1395) and Aprove's
+## top (1560), with 5px gaps around each and 15px clear of Aprove.
+## ReportCard has no Approve/Batal button for the pills to clip -- it is a
+## read-only report screen -- so it was out of scope for either fix and
+## keeps the original geometry here. Each scene is still checked for
+## uniformity across all six of its own cards, which is this test's real
+## invariant.
 ##
 ## Compared with a tolerance, not assert_eq: the scene stores float32, so
 ## the widened value is -104.119995117188 and an exact match against a
 ## float64 literal fails. Same absf() idiom the other suites use, since
 ## McpTestSuite has no assert_almost_eq.
+const _TRAIT_PILL_GEOMETRY_BY_SCENE := {
+	"res://Scenes/StudentCard/student_card.tscn": {
+		"KutuBuku": {"anchor_top": 0.747395833333333, "anchor_bottom": 0.747395833333333,
+			"offset_top": -35.0, "offset_bottom": 35.0},
+		"KutuBuku2": {"anchor_top": 0.786458333333333, "anchor_bottom": 0.786458333333333,
+			"offset_top": -35.0, "offset_bottom": 35.0},
+	},
+	"res://Scenes/ReportCard/report_card.tscn": {
+		"KutuBuku": {"offset_top": -104.119995, "offset_bottom": -0.11999512},
+		"KutuBuku2": {
+			"offset_left": -417.0, "offset_right": 420.0,
+			"offset_top": -98.16016, "offset_bottom": 0.83984375,
+		},
+	},
+}
+
+
 func test_every_trait_pill_shares_one_geometry() -> void:
-	var quirk_box := {"offset_top": -104.119995, "offset_bottom": -0.11999512}
-	var persona_box := {
-		"offset_left": -417.0, "offset_right": 420.0,
-		"offset_top": -98.16016, "offset_bottom": 0.83984375,
-	}
 	for scene_path in _SCENES:
 		var scene := load(scene_path) as PackedScene
 		assert_true(scene != null, "%s failed to load" % scene_path)
 		var inst := scene.instantiate()
+		var geometry_by_pill: Dictionary = _TRAIT_PILL_GEOMETRY_BY_SCENE[scene_path]
 		for i in range(1, 7):
 			for pill_name in ["KutuBuku", "KutuBuku2"]:
 				var pill := inst.get_node_or_null(
 					"KertasMurid%d/%s" % [i, pill_name]) as Control
 				assert_true(pill != null, "%s KertasMurid%d/%s missing"
 					% [scene_path, i, pill_name])
-				var want: Dictionary = quirk_box if pill_name == "KutuBuku" \
-					else persona_box
+				var want: Dictionary = geometry_by_pill[pill_name]
 				for prop in want:
 					assert_true(absf(pill.get(prop) - want[prop]) <= 0.01,
 						"%s card %d %s.%s is %f, expected %f"
 							% [scene_path, i, pill_name, prop,
 								pill.get(prop), want[prop]])
 		inst.free()
+
+
+## The clipping fix (2026-09-08, two passes): student_card.tscn's
+## KutuBuku/KutuBuku2 pills started at anchor 0.786/0.848 -- overlapping
+## the Aprove button and the empty PageLabel's box, showing as the stray
+## "376" in the QA screenshot. The first pass moved them to anchor
+## 0.70/0.755, clear of Aprove but (unnoticed until resolved geometry was
+## checked) newly overlapping SifatPasifLabel above them. The second pass
+## moved them again, to anchor 0.7473958/0.7864583 at 70px tall, fitting
+## between SifatPasifLabel and Aprove with room on both sides -- see
+## test_trait_pills_do_not_overlap_neighbors below for the geometry proof.
+func test_trait_pills_sit_above_approve() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/StudentCard/student_card.tscn")
+	assert_true(src.contains("anchor_top = 0.7473958"),
+		"Expected KutuBuku pill anchored at ~0.7474 after the clipping fix")
+	assert_true(src.contains("anchor_top = 0.7864583"),
+		"Expected KutuBuku2 pill anchored at ~0.7865 after the clipping fix")
+	assert_false(src.contains("anchor_top = 0.786\n"),
+		"Old Aprove-overlapping pill anchor must not remain on student_card.tscn")
+	assert_false(src.contains("anchor_top = 0.7\n"),
+		"First-pass SifatPasifLabel-overlapping pill anchor must not remain")
+
+
+## The first pass above only pinned anchor VALUES, which is exactly how it
+## missed the SifatPasifLabel overlap: two literal-correct numbers can
+## still resolve to overlapping screen rects. This instantiates every
+## card and checks the pills' ACTUAL resolved Rect2 against their
+## neighbors -- the check the source-text scan structurally cannot do.
+func test_trait_pills_do_not_overlap_neighbors() -> void:
+	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var inst := scene.instantiate()
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	inst.size = Vector2(1080, 1920)
+	for i in range(1, 7):
+		var card := inst.get_node("KertasMurid%d" % i)
+		var kutu1 := card.get_node("KutuBuku") as Control
+		var kutu2 := card.get_node("KutuBuku2") as Control
+		var aprove := card.get_node("Aprove") as Control
+		var sifat := card.get_node("SifatPasifLabel") as Control
+		assert_false(kutu1.get_rect().intersects(sifat.get_rect()),
+			"card %d: KutuBuku overlaps SifatPasifLabel (%s vs %s)"
+				% [i, kutu1.get_rect(), sifat.get_rect()])
+		assert_false(kutu1.get_rect().intersects(kutu2.get_rect()),
+			"card %d: KutuBuku overlaps KutuBuku2 (%s vs %s)"
+				% [i, kutu1.get_rect(), kutu2.get_rect()])
+		assert_false(kutu2.get_rect().intersects(aprove.get_rect()),
+			"card %d: KutuBuku2 overlaps Aprove (%s vs %s)"
+				% [i, kutu2.get_rect(), aprove.get_rect()])
+
+
+## PageLabel is empty by design; the stray "376" seen in the QA screenshot
+## was the trait pill drawn over this row, not text PageLabel itself owns.
+## Pins the row's position so a future edit can't silently reintroduce the
+## overlap from a different angle.
+func test_page_label_has_no_stray_text() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/StudentCard/student_card.tscn")
+	assert_true(src.contains('offset_top = 1248.0'),
+		"PageLabel moved unexpectedly")

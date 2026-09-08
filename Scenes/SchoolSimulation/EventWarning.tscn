@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://co2d26egr4c2e"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/EventWarning.gd" id="1_warning"]
-[ext_resource type="Texture2D" uid="uid://b4mc8a23begw3" path="res://Assets/Images/Textures/KiperLeft.jpg" id="2_cicra"]
+[ext_resource type="Script" uid="uid://dqfujm6sko67i" path="res://Scripts/SchoolSimulation/EventWarning.gd" id="1_warning"]
 [ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="2_i1ddl"]
 [ext_resource type="Shader" uid="uid://b2xh6q6jw0oep" path="res://Scripts/SchoolSimulation/HazardStripeShader.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" uid="uid://8nqwtq5fanll" path="res://Assets/Images/UI/Placeholders/icon_event_warning.png" id="3_i1ddl"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_stripes"]
 shader = ExtResource("2_shader")
@@ -20,8 +20,8 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_warning")
 background_texture = ExtResource("2_i1ddl")
-caution_icon_texture = ExtResource("2_cicra")
-icon_font_size = 160
+caution_icon_texture = ExtResource("3_i1ddl")
+icon_font_size = 320
 
 [node name="Background" type="Panel" parent="." unique_id=1563674738]
 layout_mode = 1
@@ -67,12 +67,11 @@ alignment = 1
 [node name="CautionLabel" type="Label" parent="Center/VBox" unique_id=2038317300]
 layout_mode = 2
 theme_type_variation = &"DisplayLabel"
-text = "⚠️"
 horizontal_alignment = 1
 
 [node name="EventLabel" type="Label" parent="Center/VBox" unique_id=837575490]
 layout_mode = 2
-theme_type_variation = &"H2Label"
+theme_type_variation = &"EventDialogHeaderLabel"
 text = "EVENT WARNING"
 horizontal_alignment = 1
 autowrap_mode = 2

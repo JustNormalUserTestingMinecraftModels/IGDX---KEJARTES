@@ -333,6 +333,8 @@ rather than having their own: `sfx_specialty_match` → `sfx_reward`; `tally` an
 `sparkle` → existing SFX files; `star_earn_1/2/3`, `result_fanfare`,
 `score_tick`, `combo_up` → `pop.ogg` / `reward.ogg`; and the BGM ids
 `exam_notice`, `exam_cutscene`, `run_result` → existing tracks.
+`sfx_event_announce` (the mid-simulation event popup's open cue) aliases
+`reward.ogg` via a dedicated copy, `Assets/Audio/SFX/event_announce.ogg`.
 
 **Art placeholders.** The three particle sprites
 (`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven
@@ -340,6 +342,15 @@ minigame result icons and the report icons
 (`Assets/Images/UI/Placeholders/icon_*.svg`) are flat white placeholder
 geometry — real transparent SVGs, but not final art. The exam and win cutscene
 backdrops reuse the intro's CG images.
+
+**Event-popup placeholders (2026-09-08).** `icon_event_announce.png`,
+`icon_event_warning.png`, `bg_event_announce.png`, `bg_event_dialog.png`
+(`Assets/Images/UI/Placeholders/`) and `particle_burst.png`
+(`Assets/Images/Particles/`) are generated placeholders (PowerShell +
+`System.Drawing`, not hand-authored art) standing in on
+`EventAnnouncement`, `EventWarning`, and `EventStudentSelectDialog` —
+transparent PNGs suitable for drop-replacement, but geometric shapes, not
+final illustration.
 
 **End cutscene art.** `EndCutscene`'s win backdrop is `cg2.jpg` standing in for
 final art, and both badges (`stamp_lulus.svg`, `stamp_gagal.svg`) are generated
@@ -349,11 +360,21 @@ not SVG `<text>`: Godot rasterises SVG through ThorVG, which drops text elements
 on import — `tests/test_end_cutscene.gd` guards that with a pixel check.
 
 **Copy placeholders.** Every cutscene line in the exam and win branches is
-marked `[PLACEHOLDER]`.
+marked `[PLACEHOLDER]`. Every `desc` string in `ItemDatabase.DEFAULT_ITEMS` is
+`[PLACEHOLDER]` flavour copy shown verbatim in `ItemDetailSheet`.
+
+**Inventory placeholders.** `Assets/Images/Shop/UI/bg_inventory_blur.png` is a
+box-blurred copy of the lobby art under a fresh name for drop-replacement; the
+four `icon_filter_*.svg` chip icons and the `EfekRow` need-icons are flat
+placeholder SVGs; `InventorySlot`'s high-count `Shine` overlay is a plain white
+`ColorRect` (no texture); `ApplyItemScreen`'s payoff reuses existing
+`AudioDirector` cues rather than a dedicated `sfx_item_apply`.
 
 **Pending a balance pass.** `RunGrade`'s scoring weights — especially
 `MONEY_FULL_MARKS` — are estimates. `LombaMenari.best_combo` is tracked but not
-yet fed into the star rubric.
+yet fed into the star rubric. The item skill-boost values in
+`ItemDatabase.DEFAULT_ITEMS` (`akademis`/`seni_budaya`/`olahraga`, 3–8) are
+conservative starting numbers, untested against `tests/test_balance_pacing.gd`.
 
 **Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` ships as a
 blurred backdrop, a "Segera Hadir" line and a back button. The shop hub's

@@ -929,15 +929,15 @@ func _roll_event(day_name: String) -> void:
 		var tokens := Juice.tokens()
 		if category_selected == "Akademis":
 			var scene = akademis_scenes[randi() % akademis_scenes.size()]
-			await _show_event_warning("📚 KEGIATAN AKADEMIS!", tokens.cat_akademis)
+			await _show_event_warning("KEGIATAN AKADEMIS!", tokens.cat_akademis)
 			await _play_minigame(scene, "Akademis")
 		elif category_selected == "Olahraga":
 			var scene = olahraga_scenes[randi() % olahraga_scenes.size()]
-			await _show_event_warning("⚽ KEGIATAN OLAHRAGA!", tokens.cat_olahraga)
+			await _show_event_warning("KEGIATAN OLAHRAGA!", tokens.cat_olahraga)
 			await _play_minigame(scene, "Olahraga")
 		else:
 			var scene = seni_scenes[randi() % seni_scenes.size()]
-			await _show_event_warning("🎨 KEGIATAN SENI BUDAYA!", tokens.cat_senibudaya)
+			await _show_event_warning("KEGIATAN SENI BUDAYA!", tokens.cat_senibudaya)
 			await _play_minigame(scene, "SeniBudaya")
 
 	else:
@@ -1028,7 +1028,7 @@ func _trigger_random_event(day_name: String) -> void:
 				"SeniBudaya", stat_val, nrg_val, mood_val
 			)
 		3:
-			await _show_event_announcement("🍱 Kejutan Nasi Kotak Orang Tua!")
+			await _show_event_announcement("Kejutan Nasi Kotak Orang Tua!")
 			# Biang Onar: global positive events are stronger
 			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1041,7 +1041,7 @@ func _trigger_random_event(day_name: String) -> void:
 			await _animate_embedded_stat_updates(0.6)
 			await get_tree().create_timer(0.8).timeout
 		4:
-			await _show_event_announcement("🌧 Hujan Deras & Jalanan Licin!")
+			await _show_event_announcement("Hujan Deras & Jalanan Licin!")
 			# Biang Onar: global negative events are worse
 			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1546,7 +1546,7 @@ func force_event(event_id: int) -> void:
 				"SeniBudaya", stat_val, nrg_val, mood_val
 			)
 		3:
-			await _show_event_announcement("🍱 Kejutan Nasi Kotak Orang Tua!")
+			await _show_event_announcement("Kejutan Nasi Kotak Orang Tua!")
 			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var names: Array[String] = []
@@ -1557,7 +1557,7 @@ func force_event(event_id: int) -> void:
 			await _animate_embedded_stat_updates(0.6)
 			await get_tree().create_timer(0.8).timeout
 		4:
-			await _show_event_announcement("🌧 Hujan Deras & Jalanan Licin!")
+			await _show_event_announcement("Hujan Deras & Jalanan Licin!")
 			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var names: Array[String] = []

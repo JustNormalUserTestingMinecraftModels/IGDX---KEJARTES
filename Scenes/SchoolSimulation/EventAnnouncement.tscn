@@ -1,9 +1,10 @@
 [gd_scene format=3 uid="uid://rneo43oike8g"]
 
 [ext_resource type="Script" uid="uid://c0fw1i4omrdlg" path="res://Scripts/SchoolSimulation/EventAnnouncement.gd" id="1_announcement"]
-[ext_resource type="Texture2D" uid="uid://dxhdrturf7276" path="res://Assets/Images/Textures/Fail.jpg" id="2_34g3e"]
-[ext_resource type="Texture2D" uid="uid://b4mc8a23begw3" path="res://Assets/Images/Textures/KiperLeft.jpg" id="2_id40r"]
+[ext_resource type="Texture2D" uid="uid://rulxkekim06d" path="res://Assets/Images/UI/Placeholders/bg_event_announce.png" id="2_nqjjl"]
 [ext_resource type="Shader" uid="uid://b2xh6q6jw0oep" path="res://Scripts/SchoolSimulation/HazardStripeShader.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" uid="uid://cmrsf07ysvuh6" path="res://Assets/Images/UI/Placeholders/icon_event_announce.png" id="3_dhmyu"]
+[ext_resource type="PackedScene" uid="uid://dwanf35xnpnyb" path="res://Scenes/SchoolSimulation/AnnouncementBurst.tscn" id="5_1bohw"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_blue_stripes"]
 shader = ExtResource("2_shader")
@@ -19,9 +20,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_announcement")
-background_texture = ExtResource("2_34g3e")
-announcement_icon_texture = ExtResource("2_id40r")
-icon_font_size = 760
+background_texture = ExtResource("2_nqjjl")
+announcement_icon_texture = ExtResource("3_dhmyu")
+header_prefix_text = "PENGUMUMAN EVENT SEKOLAH"
+icon_font_size = 320
 
 [node name="Background" type="Panel" parent="." unique_id=1307183250]
 layout_mode = 1
@@ -77,13 +79,12 @@ alignment = 1
 [node name="IconLabel" type="Label" parent="ContentMargin/Center/VBox" unique_id=2080472164]
 layout_mode = 2
 theme_type_variation = &"DisplayLabel"
-text = "📢"
 horizontal_alignment = 1
 
 [node name="HeaderLabel" type="Label" parent="ContentMargin/Center/VBox" unique_id=525522960]
 layout_mode = 2
-theme_type_variation = &"TitleLabel"
-text = "📢 PENGUMUMAN EVENT SEKOLAH"
+theme_type_variation = &"EventDialogHeaderLabel"
+text = "PENGUMUMAN EVENT SEKOLAH"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -93,3 +94,6 @@ theme_type_variation = &"H1Label"
 text = "Nasi Kotak Berbagi!"
 horizontal_alignment = 1
 autowrap_mode = 2
+
+[node name="Burst" parent="." unique_id=2026189597 instance=ExtResource("5_1bohw")]
+position = Vector2(540, 900)

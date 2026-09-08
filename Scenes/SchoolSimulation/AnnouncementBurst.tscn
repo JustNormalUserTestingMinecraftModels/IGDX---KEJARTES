@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dwanf35xnpnyb"]
+
+[ext_resource type="Texture2D" uid="uid://dbmrgcl8ddkeo" path="res://Assets/Images/Particles/particle_burst.png" id="1_rakhx"]
+[ext_resource type="Script" uid="uid://byaa1qksyd60u" path="res://Scripts/SchoolSimulation/AnnouncementBurst.gd" id="2_wdi6v"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_753ck"]
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 350.0
+initial_velocity_max = 550.0
+gravity = Vector3(0, 220, 0)
+scale_min = 0.4
+scale_max = 1.1
+color = Color(1, 0.827451, 0.2, 1)
+
+[node name="AnnouncementBurst" type="GPUParticles2D" unique_id=2026189597]
+amount = 40
+texture = ExtResource("1_rakhx")
+lifetime = 0.9
+process_material = SubResource("ParticleProcessMaterial_753ck")
+script = ExtResource("2_wdi6v")

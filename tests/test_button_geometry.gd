@@ -137,3 +137,148 @@ func test_natural_height_matches_the_size_step() -> void:
 		assert_true(abs(natural - targets[name]) <= 1.0,
 			"%s natural height is %f but its step is %d -- re-solve btn_pad_v"
 				% [name, natural, targets[name]])
+
+
+## Every themed button in every scene must be authored at a size step.
+##
+## Fifteen ad-hoc heights is what accumulates when a scale is written
+## down but not enforced -- 63, 80, 90, 94, 96, 116, 120, 135, 140, 144,
+## 148, 160, 178, 267, 290 was the state on 2026-09-08. Without this the
+## same drift starts again immediately.
+##
+## ALLOWED is for reviewed, commented exceptions and follows the same
+## shape as test_viewport_editability.gd's dict. An entry needs a reason.
+const HEIGHT_ALLOWED := {
+	# "Scenes/Foo/bar.tscn::SomeButton": "why this one is off-step",
+	"Scenes/Lobby/loby.tscn::Student":
+		"lobby CTA -- relaid out to the L step in Task 11, entry removed there",
+	"Scenes/Lobby/loby.tscn::Jadwal":
+		"lobby CTA -- relaid out to the L step in Task 11, entry removed there",
+	"Scenes/Lobby/loby.tscn::Koperasi":
+		"lobby nav tile -- relaid out to the L step in Task 11, entry removed there",
+	"Scenes/Lobby/loby.tscn::ReportStudent":
+		"lobby nav tile -- relaid out to the L step in Task 11, entry removed there",
+	"Scenes/Lobby/loby.tscn::Inventory":
+		"lobby nav tile -- relaid out to the L step in Task 11, entry removed there",
+}
+
+const SCENE_GLOB := "res://Scenes"
+
+
+func _scene_files(dir_path: String, out: Array) -> void:
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		var full := dir_path + "/" + entry
+		if dir.current_is_dir():
+			if not entry.begins_with("."):
+				_scene_files(full, out)
+		elif entry.ends_with(".tscn"):
+			out.append(full)
+		entry = dir.get_next()
+	dir.list_dir_end()
+
+
+## Checks one finished node's accumulated state against the S/M/L steps and
+## appends a formatted offender line to `out` if it fails.
+##
+## Height priority mirrors what Godot actually renders: for an anchored
+## Control, offset_top/offset_bottom determine the real on-screen size, so
+## an explicit offset delta wins over custom_minimum_size, which is only a
+## floor. This matters concretely for loby.tscn's "Student"/"Jadwal" CTAs,
+## which carry custom_minimum_size = Vector2(0, 96) *and* an offset delta
+## of 290 -- the button actually renders at 290, not 96, and a parser that
+## let custom_minimum_size win would hide that real offender.
+func _check_node(path: String, name: String, parent: String, is_button: bool,
+		top: float, bottom: float, min_h: float, steps: Array, out: Array) -> void:
+	if not is_button or name == "":
+		return
+	var height := -1.0
+	if top != INF and bottom != INF:
+		height = bottom - top
+	elif min_h > 0.0:
+		height = min_h
+	if height <= 0.0:
+		return
+	var full_name := name
+	if parent != "" and parent != ".":
+		full_name = parent + "/" + name
+	var key := "%s::%s" % [path.replace("res://", ""), full_name]
+	if HEIGHT_ALLOWED.has(key):
+		return
+	if not steps.has(int(round(height))):
+		out.append("%s = %d" % [key, int(round(height))])
+
+
+## Walks one scene's source text and returns its offending button lines.
+##
+## Node property blocks are parsed order-independently -- a node's
+## properties (offsets, custom_minimum_size, theme_type_variation) can
+## appear in any order across the project's .tscn files, so state is
+## accumulated per node and only judged when the block ends (the next
+## "[...]" section header, or end of file), rather than judged inline as
+## each property line is read.
+func _offenders_in_scene(path: String, src: String, steps: Array) -> Array:
+	var out := []
+	var node_name := ""
+	var node_parent := ""
+	var is_variation_button := false
+	var top := INF
+	var bottom := INF
+	var min_size_h := -1.0
+
+	var lines := src.split("\n")
+	for i in range(lines.size() + 1):
+		var at_end := i >= lines.size()
+		var line := "" if at_end else lines[i]
+		if at_end or line.begins_with("["):
+			_check_node(path, node_name, node_parent, is_variation_button,
+					top, bottom, min_size_h, steps, out)
+			node_name = ""
+			node_parent = ""
+			is_variation_button = false
+			top = INF
+			bottom = INF
+			min_size_h = -1.0
+			if line.begins_with("[node "):
+				if line.contains("name=\""):
+					node_name = line.get_slice("name=\"", 1).get_slice("\"", 0)
+				if line.contains("parent=\""):
+					node_parent = line.get_slice("parent=\"", 1).get_slice("\"", 0)
+			continue
+		if node_name == "":
+			continue
+		if line.begins_with("offset_top = "):
+			top = float(line.get_slice("= ", 1))
+		elif line.begins_with("offset_bottom = "):
+			bottom = float(line.get_slice("= ", 1))
+		elif line.begins_with("custom_minimum_size = Vector2("):
+			var inner := line.get_slice("Vector2(", 1).get_slice(")", 0)
+			min_size_h = float(inner.get_slice(",", 1).strip_edges())
+		elif line.begins_with("theme_type_variation = &\"") and line.contains("Button"):
+			is_variation_button = true
+	return out
+
+
+func test_no_button_is_authored_off_step() -> void:
+	var steps := [_tokens.btn_h_s, _tokens.btn_h_m, _tokens.btn_h_l]
+	var scenes := []
+	_scene_files(SCENE_GLOB, scenes)
+	assert_true(scenes.size() > 20,
+		"expected to find many scenes, found %d" % scenes.size())
+
+	var offenders := []
+	for path in scenes:
+		# Minigames are out of the design system by standing policy.
+		if path.contains("/Minigames/"):
+			continue
+		var src := FileAccess.get_file_as_string(path)
+		if src == "":
+			continue
+		offenders.append_array(_offenders_in_scene(path, src, steps))
+
+	assert_eq(offenders.size(), 0,
+		"buttons authored off the S/M/L scale:\n  " + "\n  ".join(offenders))

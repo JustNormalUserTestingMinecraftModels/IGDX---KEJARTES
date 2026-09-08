@@ -334,12 +334,12 @@ theme_type_variation = &"TitleLabel"
 text = "Agustus - Minggu Pertama"
 
 [node name="StartWeek" type="Button" parent="." unique_id=288288757]
-custom_minimum_size = Vector2(0, 96)
+custom_minimum_size = Vector2(0, 128)
 layout_mode = 0
 offset_left = 442.0
 offset_top = 1754.0
 offset_right = 1056.0
-offset_bottom = 1902.0
+offset_bottom = 1882.0
 theme_type_variation = &"PrimaryButton"
 text = "START WEEK"
 
@@ -426,7 +426,7 @@ layout_mode = 0
 offset_left = 135.0
 offset_top = 284.0
 offset_right = 285.0
-offset_bottom = 374.0
+offset_bottom = 380.0
 theme_type_variation = &"SuccessButton"
 text = "YA"
 
@@ -436,7 +436,7 @@ layout_mode = 0
 offset_left = 445.0
 offset_top = 284.0
 offset_right = 595.0
-offset_bottom = 374.0
+offset_bottom = 380.0
 theme_type_variation = &"DangerButton"
 text = "TIDAK"
 

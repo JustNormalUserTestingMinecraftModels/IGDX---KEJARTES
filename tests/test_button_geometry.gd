@@ -282,3 +282,17 @@ func test_no_button_is_authored_off_step() -> void:
 
 	assert_eq(offenders.size(), 0,
 		"buttons authored off the S/M/L scale:\n  " + "\n  ".join(offenders))
+
+
+## MainMenuButton is exempt from the radius rule because its corner is
+## painted, not generated -- but "exempt" must not mean "unchecked". This
+## asserts it points at the asset that carries the right corner, so the
+## exemption cannot quietly become a way of keeping the old shape.
+func test_main_menu_button_uses_the_split_asset() -> void:
+	var sb := _theme.get_stylebox("normal", "MainMenuButton") as StyleBoxTexture
+	assert_not_null(sb, "MainMenuButton/normal must be a StyleBoxTexture")
+	assert_true(sb.texture != null, "MainMenuButton has no texture")
+	assert_true(str(sb.texture.resource_path).ends_with("menu_button.png"),
+		"MainMenuButton must use menu_button.png, not %s -- trait_button.png "
+		% str(sb.texture.resource_path)
+		+ "is the round chip art and must stay round")

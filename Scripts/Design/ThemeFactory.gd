@@ -196,29 +196,27 @@ static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void
 	theme.set_constant("shadow_offset_y", NAME, 2)
 
 
-## The main menu's three nav buttons. Deliberately the SAME art as
-## StudentCard's TraitPill (trait_button.png) -- the main-menu mockup's
-## buttons are that asset recoloured, so reusing it reproduces the mockup's
-## silhouette, 3 px #3D2048 border, corner radius and top gloss exactly.
+## The main menu's three nav buttons.
 ##
-## It cannot simply reuse the TraitPill variation: TraitPill sets font_size to
-## tokens.font_h2 (48) with a 6 px outline, sized for a chip. The menu needs
-## 80 with no outline (see the plan's spec for the arithmetic -- PENGATURAN at
-## the mockup-implied 100 is 755 px wide against a 624 px inner box).
+## Uses menu_button.png, NOT trait_button.png. The two were one asset
+## until 2026-09-08: the menu mockup is the chip art recoloured, so
+## reusing it reproduced the mockup exactly. That stopped working when
+## buttons moved to a fixed 20px corner and chips stayed fully round --
+## one asset cannot be both shapes. See the spec's "a split, not an edit".
 ##
-## region_rect and texture_margin are copied from TraitPill because they
-## describe the ART, not the chip: the pill occupies (20, 277, 601, 91) inside
-## the 640x640 canvas, and a 45 px 9-slice margin keeps both rounded ends
-## intact when the box is stretched to the menu's 670x126.
+## Still a StyleBoxTexture rather than a stylebox because the gold gloss
+## is painted; the corner therefore lives in the art, which is why
+## test_button_geometry allow-lists this variation and then checks the
+## texture path instead.
 static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
 	const NAME := "MainMenuButton"
 	theme.add_type(NAME)
 	theme.set_type_variation(NAME, "Button")
 
 	var normal := StyleBoxTexture.new()
-	normal.texture = load(_CARD_ART + "trait_button.png")
-	normal.region_rect = Rect2(20, 277, 601, 91)
-	normal.set_texture_margin_all(45)
+	normal.texture = load(_CARD_ART + "menu_button.png")
+	normal.region_rect = Rect2(0, 0, 256, 128)
+	normal.set_texture_margin_all(28)
 	# Horizontal room for the label. 670 - 2*3 px border - 2*20 = 624 px,
 	# which PENGATURAN fills to 604 px at font size 80.
 	normal.content_margin_left = 20

@@ -11,9 +11,9 @@ func test_default_resource_loads() -> void:
 
 func test_brand_palette_matches_approved_values() -> void:
 	var tokens := DesignTokens.load_default()
-	assert_eq(tokens.brand_primary.to_html(false), "2e5bff", "brand_primary")
-	assert_eq(tokens.surface_card.to_html(false), "ffffff", "surface_card")
-	assert_eq(tokens.text_primary.to_html(false), "1e2436", "text_primary")
+	assert_eq(tokens.brand_primary.to_html(false), "7a4a2b", "brand_primary")
+	assert_eq(tokens.surface_card.to_html(false), "fffdf8", "surface_card")
+	assert_eq(tokens.text_primary.to_html(false), "3b2412", "text_primary")
 
 func test_category_color_lookup_covers_every_schedule_category() -> void:
 	var tokens := DesignTokens.load_default()

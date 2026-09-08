@@ -96,20 +96,23 @@ func test_neither_card_art_nor_banner_is_square() -> void:
 			"%s is square-ish (aspect %f) -- it must be cropped to its content box" % [key, aspect])
 
 
-## Every colour here was centroid-sampled from the mockup. A drifted
-## token means the rebake will paint something the mockup does not show.
+## These were sampled from the grey mockup until 2026-09-08, when the
+## warm-UI pass replaced them. They are now design values, not samples:
+## the dark greys measured 1.36:1 (energy) and 2.55:1 (olahraga) against
+## their fills, which is unreadable. See test_bar_contrast.gd, which is
+## now the test that actually constrains them.
 func test_day_summary_tokens_match_the_mockup() -> void:
 	var tokens := DesignTokens.load_default()
 	assert_not_null(tokens, "design_tokens.tres failed to load")
 	var expected := {
-		"day_avatar_fill": "5e4ebc",
-		"day_avatar_border": "3d3d3d",
-		"day_bar_track": "585858",
-		"day_bar_border": "2b2b2b",
-		"day_energy_fill": "6d60c0",
-		"day_mood_fill": "c8af57",
-		"day_stat_track": "383838",
-		"day_glyph_outline": "3d1e48",
+		"day_avatar_fill": "7a4a2b",
+		"day_avatar_border": "fff6e8",
+		"day_bar_track": "4a3728",
+		"day_bar_border": "2e2118",
+		"day_energy_fill": "a78bfa",
+		"day_mood_fill": "f5a623",
+		"day_stat_track": "3f2e21",
+		"day_glyph_outline": "2e2118",
 	}
 	for key in expected:
 		var c: Color = tokens.get(key)

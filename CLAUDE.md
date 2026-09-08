@@ -333,6 +333,8 @@ rather than having their own: `sfx_specialty_match` → `sfx_reward`; `tally` an
 `sparkle` → existing SFX files; `star_earn_1/2/3`, `result_fanfare`,
 `score_tick`, `combo_up` → `pop.ogg` / `reward.ogg`; and the BGM ids
 `exam_notice`, `exam_cutscene`, `run_result` → existing tracks.
+`sfx_event_announce` (the mid-simulation event popup's open cue) aliases
+`reward.ogg` via a dedicated copy, `Assets/Audio/SFX/event_announce.ogg`.
 
 **Art placeholders.** The three particle sprites
 (`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven
@@ -340,6 +342,15 @@ minigame result icons and the report icons
 (`Assets/Images/UI/Placeholders/icon_*.svg`) are flat white placeholder
 geometry — real transparent SVGs, but not final art. The exam and win cutscene
 backdrops reuse the intro's CG images.
+
+**Event-popup placeholders (2026-09-08).** `icon_event_announce.png`,
+`icon_event_warning.png`, `bg_event_announce.png`, `bg_event_dialog.png`
+(`Assets/Images/UI/Placeholders/`) and `particle_burst.png`
+(`Assets/Images/Particles/`) are generated placeholders (PowerShell +
+`System.Drawing`, not hand-authored art) standing in on
+`EventAnnouncement`, `EventWarning`, and `EventStudentSelectDialog` —
+transparent PNGs suitable for drop-replacement, but geometric shapes, not
+final illustration.
 
 **End cutscene art.** `EndCutscene`'s win backdrop is `cg2.jpg` standing in for
 final art, and both badges (`stamp_lulus.svg`, `stamp_gagal.svg`) are generated

@@ -64,6 +64,43 @@ enum NoteType {
 ## Font size for the per-note hit/miss feedback text.
 @export var feedback_font_size: int = 40
 
+# ─── Motion - Idle Breathing ─────────────────────────────────────────────────
+# Every idling element on this stage now shares one motion: a slow sine breath
+# that rises more than it widens, the same shape MainBola's keeper uses. It
+# replaces the constant bounce-and-wobble this screen ran until 2026-09-08 --
+# the dancer at 5.0 rad/s, the hit zone at 8.0, and the notes at 14.0 with a
+# 0.15 rad wobble -- which read as jitter rather than as an idle. Rates are in
+# breaths per second; amplitudes are fractions of the element's base scale.
+@export_group("Motion - Idle Breathing")
+## Breaths per second of the dancer's idle swell.
+@export_range(0.05, 3.0, 0.01) var dancer_breath_rate: float = 0.32
+## Peak vertical swell of the dancer's breath, as a fraction of its base scale.
+@export_range(0.0, 0.2, 0.001) var dancer_breath_amount: float = 0.018
+## Breaths per second of the hit zone's idle swell.
+@export_range(0.05, 3.0, 0.01) var hit_zone_breath_rate: float = 0.45
+## Peak vertical swell of the hit zone, as a fraction of its base scale.
+@export_range(0.0, 0.2, 0.001) var hit_zone_breath_amount: float = 0.014
+## Peak wobble of the hit zone, in radians. Runs at half the breath rate.
+@export_range(0.0, 0.2, 0.001) var hit_zone_sway_radians: float = 0.006
+## Breaths per second of an in-flight note's swell.
+@export_range(0.05, 4.0, 0.01) var note_breath_rate: float = 0.8
+## Peak vertical swell of an in-flight note, as a fraction of its base scale.
+@export_range(0.0, 0.3, 0.001) var note_breath_amount: float = 0.03
+## Peak wobble of an in-flight note, in radians. Runs at half the breath rate.
+@export_range(0.0, 0.3, 0.001) var note_sway_radians: float = 0.012
+
+## Horizontal share of a breath's vertical swell. A chest rises more than it
+## widens, so the width contracts by half of what the height gains.
+const BREATH_WIDTH_RATIO: float = -0.5
+
+@export_group("Motion - Pose Strike")
+## How long the dancer takes to snap into a swiped pose. Tuned in motion-lab
+## on 2026-09-08 to SPRING/OUT at 0.65s, up from BACK/OUT at 0.15s. Not one
+## of design_tokens.tres's Motion values, so it lives here as a knob rather
+## than as a bare float at the call site.
+@export_range(0.05, 1.5, 0.01) var dancer_strike_duration: float = 0.65
+
+
 # The dancer's art moved to DancerRig.tscn on 2026-09-07: three body
 # poses plus a head layer, mirrored for the left-hand arrows. The six
 # flat pose textures that used to live here are gone with it.
@@ -144,7 +181,6 @@ var pattern_step_index: int = 0
 var dancer_tween: Tween
 var is_dancer_failed: bool = false
 var dancer_base_scale: Vector2 = Vector2.ONE
-var dancer_base_rotation: float = 0.0
 
 var hit_zone_base_scale: Vector2 = Vector2.ONE
 var hit_zone_base_rotation: float = 0.0
@@ -197,11 +233,37 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 
 	# Setup Dancer Character Display
 	if character_display:
-		character_display.pivot_offset = character_display.size / 2.0
+		_anchor_dancer_pivot()
+		if not character_display.resized.is_connected(_anchor_dancer_pivot):
+			character_display.resized.connect(_anchor_dancer_pivot)
 		_set_dancer_idle()
 	
 	# Start spawning beats
 	next_spawn_time = 1.0
+
+## Pins the dancer's scaling origin to her feet -- bottom-centre, not the
+## middle. A standing figure scaled about its centre drifts up and down as
+## it breathes, which reads as floating rather than as breathing. Re-run on
+## every resize, because a Control rewrites pivot_offset with its size.
+func _anchor_dancer_pivot() -> void:
+	if character_display:
+		character_display.pivot_offset = Vector2(
+			character_display.size.x * 0.5, character_display.size.y)
+
+
+## One breath's scale at `t` seconds: a sine swell of `amount` on the height,
+## with the width contracting by BREATH_WIDTH_RATIO of that. `rate` is in
+## breaths per second. Returns a multiplier to apply to a base scale.
+func _breath_scale(t: float, rate: float, amount: float) -> Vector2:
+	var swell: float = sin(t * rate * TAU) * amount
+	return Vector2(1.0 + swell * BREATH_WIDTH_RATIO, 1.0 + swell)
+
+
+## The sway that goes with _breath_scale: half the breath rate, so the lean
+## carries across two breaths instead of ticking with each one. Radians.
+func _breath_sway(t: float, rate: float, radians: float) -> float:
+	return sin(t * rate * PI) * radians
+
 
 func _process(delta: float) -> void:
 	super._process(delta)
@@ -215,36 +277,34 @@ func _process(delta: float) -> void:
 	if time_elapsed >= next_spawn_time:
 		_spawn_rhythm_beat()
 		
-	# Rhythmic breathing & bounce animation for all non-failed dancer poses (Idle, Left, Right, Top-Left, Top-Right)
+	# The dancer breathes in every non-failed pose (Idle, Left, Right,
+	# Top-Left, Top-Right). The fail pose holds still by design.
 	if character_display and not is_dancer_failed:
-		var breath_phase: float = time_elapsed * 5.0
-		var breath_y: float = sin(breath_phase) * 0.05
-		var breath_x: float = -sin(breath_phase) * 0.03
-		character_display.scale = dancer_base_scale * Vector2(1.0 + breath_x, 1.0 + breath_y)
-		character_display.rotation = dancer_base_rotation + sin(breath_phase * 0.5) * 0.03
-		
-	# Rhythmic continuous wiggle & pulse animation for the green hit zone
+		character_display.scale = dancer_base_scale * _breath_scale(
+			time_elapsed, dancer_breath_rate, dancer_breath_amount)
+
+	# The hit zone breathes on the same shape, a touch quicker, so it reads
+	# as alive without competing with the notes arriving into it.
 	if hit_zone:
-		var hz_phase: float = time_elapsed * 8.0
-		var hz_bounce_y: float = sin(hz_phase) * 0.04
-		var hz_bounce_x: float = -sin(hz_phase) * 0.02
-		var hz_wobble: float = sin(hz_phase * 0.5) * 0.03
-		hit_zone.scale = hit_zone_base_scale * Vector2(1.0 + hz_bounce_x, 1.0 + hz_bounce_y)
-		hit_zone.rotation = hit_zone_base_rotation + hz_wobble
+		hit_zone.scale = hit_zone_base_scale * _breath_scale(
+			time_elapsed, hit_zone_breath_rate, hit_zone_breath_amount)
+		hit_zone.rotation = hit_zone_base_rotation + _breath_sway(
+			time_elapsed, hit_zone_breath_rate, hit_zone_sway_radians)
 		
-	# Move notes and apply jumpy impatient idle dance animation
+	# Move notes, each breathing on its own phase offset.
 	var hz_center = hit_zone.get_global_rect().get_center()
 	var notes_to_remove = []
 	for note in active_notes:
 		var move_dir: Vector2 = note.get_meta("move_dir", Vector2.DOWN)
 		note.global_position += move_dir * note_speed * delta
 		
-		# Jumpy impatient pulse and wobble animation
-		var phase: float = note.get_meta("anim_phase", 0.0) + time_elapsed * 14.0
-		var bounce_scale: float = 1.0 + sin(phase) * 0.12 # Energetic scale pulse
-		var wobble_rot: float = sin(phase * 0.8) * 0.15 # Impatient wobble
-		note.scale = Vector2(bounce_scale, bounce_scale)
-		note.rotation = wobble_rot
+		# Each note carries its own anim_phase so the flight does not
+		# pulse in lockstep, but the motion is the stage's breath.
+		var phase_offset: float = note.get_meta("anim_phase", 0.0)
+		note.scale = _breath_scale(
+			time_elapsed + phase_offset, note_breath_rate, note_breath_amount)
+		note.rotation = _breath_sway(
+			time_elapsed + phase_offset, note_breath_rate, note_sway_radians)
 		
 		# Miss if note moves past the hit zone center
 		var note_center = note.global_position + note.size / 2.0
@@ -646,7 +706,6 @@ func _create_flat_texture(color: Color) -> ImageTexture:
 
 func _set_dancer_idle() -> void:
 	is_dancer_failed = false
-	dancer_base_rotation = 0.0
 	dancer_base_scale = Vector2.ONE
 	
 	if not character_display:
@@ -666,7 +725,6 @@ func _play_dancer_motion(swipe_type: int) -> void:
 		
 	var pose: DancerRig.Pose = DancerRig.Pose.IDLE
 	var flipped: bool = false
-	var rot_target: float = 0.0
 	var scale_target: Vector2 = Vector2(1.15, 1.15)
 
 	# One body pose per axis, mirrored for the left-hand arrows: RIGHT
@@ -677,20 +735,16 @@ func _play_dancer_motion(swipe_type: int) -> void:
 		NoteType.LEFT:
 			pose = DancerRig.Pose.SIDE
 			flipped = true
-			rot_target = deg_to_rad(-15.0)
 			scale_target = Vector2(1.2, 0.85)
 		NoteType.RIGHT:
 			pose = DancerRig.Pose.SIDE
-			rot_target = deg_to_rad(15.0)
 			scale_target = Vector2(1.2, 0.85)
 		NoteType.TOP_LEFT:
 			pose = DancerRig.Pose.UP
 			flipped = true
-			rot_target = deg_to_rad(-22.0)
 			scale_target = Vector2(1.15, 1.25)
 		NoteType.TOP_RIGHT:
 			pose = DancerRig.Pose.UP
-			rot_target = deg_to_rad(22.0)
 			scale_target = Vector2(1.15, 1.25)
 
 	character_display.set_pose(pose, flipped)
@@ -699,13 +753,11 @@ func _play_dancer_motion(swipe_type: int) -> void:
 	# Spring dance motion tween updating base pose scale and rotation
 	dancer_tween = create_tween()
 	dancer_tween.set_parallel(true)
-	dancer_tween.tween_property(self, "dancer_base_rotation", rot_target, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	dancer_tween.tween_property(self, "dancer_base_scale", scale_target, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	dancer_tween.tween_property(self, "dancer_base_scale", scale_target, dancer_strike_duration).set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
 	
 	# Hold pose for 0.9s delay before smoothly returning base scale/rotation to Idle
 	dancer_tween.chain().tween_interval(0.9)
 	dancer_tween.chain().set_parallel(true)
-	dancer_tween.tween_property(self, "dancer_base_rotation", 0.0, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	dancer_tween.tween_property(self, "dancer_base_scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	dancer_tween.chain().tween_callback(_set_dancer_idle)
 
@@ -727,12 +779,10 @@ func _play_dancer_fail_motion() -> void:
 	dancer_tween = create_tween()
 	dancer_tween.set_parallel(true)
 	dancer_tween.tween_property(character_display, "scale", Vector2(0.85, 0.85), 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	dancer_tween.tween_property(character_display, "rotation", deg_to_rad(-8.0), 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Hold fail pose for 0.9s delay before returning to Idle
 	dancer_tween.chain().tween_interval(0.9)
 	dancer_tween.chain().set_parallel(true)
-	dancer_tween.tween_property(character_display, "rotation", 0.0, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	dancer_tween.tween_property(character_display, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	dancer_tween.chain().tween_callback(_set_dancer_idle)
 

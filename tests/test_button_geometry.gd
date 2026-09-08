@@ -107,3 +107,33 @@ func test_size_steps_carry_the_right_font_size() -> void:
 		assert_eq(_theme.get_font_size("font_size", name), expected[step],
 			"%s is the %s step and must use font size %d"
 				% [name, step.to_upper(), expected[step]])
+
+
+## The identity that makes the size scale self-enforcing.
+##
+## If a button's natural minimum height equals its step, a scene author
+## sets no height at all and cannot land between steps. This asserts the
+## identity rather than the padding numbers, so a font change fails here
+## loudly instead of letting every button in the game drift a few pixels.
+func test_natural_height_matches_the_size_step() -> void:
+	var targets := {
+		"PrimaryButton": _tokens.btn_h_s,
+		"SecondaryButton": _tokens.btn_h_s,
+		"DangerButton": _tokens.btn_h_s,
+		"SuccessButton": _tokens.btn_h_s,
+		"PrimaryButtonM": _tokens.btn_h_m,
+		"SecondaryButtonM": _tokens.btn_h_m,
+		"DangerButtonM": _tokens.btn_h_m,
+		"PrimaryButtonL": _tokens.btn_h_l,
+		"SecondaryButtonL": _tokens.btn_h_l,
+		"DangerButtonL": _tokens.btn_h_l,
+		"SuccessButtonL": _tokens.btn_h_l,
+	}
+	for name in targets:
+		var sb := _theme.get_stylebox("normal", name) as StyleBoxFlat
+		var font := _theme.get_font("font", name)
+		var fsize := _theme.get_font_size("font_size", name)
+		var natural: float = sb.get_minimum_size().y + font.get_height(fsize)
+		assert_true(abs(natural - targets[name]) <= 1.0,
+			"%s natural height is %f but its step is %d -- re-solve btn_pad_v"
+				% [name, natural, targets[name]])

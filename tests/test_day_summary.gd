@@ -133,7 +133,13 @@ const _DAY_VARIATIONS := {
 
 
 func test_theme_declares_every_day_summary_variation() -> void:
-	var theme := load(_THEME_PATH) as Theme
+	## CACHE_MODE_IGNORE is required because the editor caches the theme
+	## from startup, so a plain load() reads the stale bake. Without it,
+	## tests fail after rebaking even though the real bake is correct.
+	## Because each call returns a fresh Theme instance, a test that needs
+	## object identity (e.g. comparing StyleBoxes with ==) must load once
+	## into a local variable and reuse it, not call load() again.
+	var theme := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_not_null(theme, "baked theme failed to load")
 	for name in _DAY_VARIATIONS:
 		assert_true(theme.get_type_list().has(name),
@@ -146,7 +152,7 @@ func test_theme_declares_every_day_summary_variation() -> void:
 ## this inverted (the project's usual dark-on-light) makes them vanish
 ## against the card's pale fill.
 func test_day_summary_text_is_white_with_a_dark_rim() -> void:
-	var theme := load(_THEME_PATH) as Theme
+	var theme := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var tokens := DesignTokens.load_default()
 	for name in ["DaySummaryName", "DaySummaryStat"]:
 		assert_eq(theme.get_color("font_color", name), Color.WHITE,
@@ -160,7 +166,7 @@ func test_day_summary_text_is_white_with_a_dark_rim() -> void:
 ## The two bars share a track and differ only in fill. If they ever share
 ## a fill too, energy and mood become indistinguishable.
 func test_energy_and_mood_bars_differ_only_in_fill() -> void:
-	var theme := load(_THEME_PATH) as Theme
+	var theme := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var tokens := DesignTokens.load_default()
 	var e_bg := theme.get_stylebox("background", "DaySummaryEnergyBar") as StyleBoxFlat
 	var m_bg := theme.get_stylebox("background", "DaySummaryMoodBar") as StyleBoxFlat
@@ -185,7 +191,7 @@ const _STAT_TRACK_FILL_TOKEN := {
 
 
 func test_each_stat_track_fills_in_its_category_colour() -> void:
-	var theme := load(_THEME_PATH) as Theme
+	var theme := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var tokens := DesignTokens.load_default()
 	for name in _STAT_TRACK_FILL_TOKEN:
 		var bg := theme.get_stylebox("background", name) as StyleBoxFlat
@@ -205,7 +211,7 @@ func test_each_stat_track_fills_in_its_category_colour() -> void:
 ## 100% and read as permanently empty. If a fill ever equals its own
 ## rail again, the gauge is invisible no matter what value it holds.
 func test_no_stat_track_fill_matches_its_own_rail() -> void:
-	var theme := load(_THEME_PATH) as Theme
+	var theme := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	for name in _STAT_TRACK_FILL_TOKEN:
 		var bg := theme.get_stylebox("background", name) as StyleBoxFlat
 		var fill := theme.get_stylebox("fill", name) as StyleBoxTexture
@@ -272,7 +278,7 @@ func test_avatar_scene_clips_and_wears_the_frame_variation() -> void:
 	var scene := load(_AVATAR_SCENE) as PackedScene
 	assert_not_null(scene, "DaySummaryAvatar.tscn failed to load")
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(inst.theme_type_variation, &"DaySummaryAvatarFrame",
 		"avatar root is not wearing the frame variation")
 	assert_true(inst.clip_contents,
@@ -357,7 +363,7 @@ func test_stat_row_wears_the_variation_for_its_stat() -> void:
 func test_set_stat_fills_the_track_and_leaves_the_number_alone() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -391,9 +397,10 @@ func test_shows_chevron_only_on_a_gain() -> void:
 ## visibility and nothing resets it between calls.
 func test_set_stat_gates_the_chevron_on_the_days_delta() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
+	var theme := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 
 	var gained := scene.instantiate()
-	gained.theme = load(_THEME_PATH)
+	gained.theme = theme
 	Engine.get_main_loop().root.add_child(gained)
 	track(gained)
 	gained.set_stat("akademis", 12.0, 65.0, 40.0)
@@ -402,7 +409,7 @@ func test_set_stat_gates_the_chevron_on_the_days_delta() -> void:
 		"gating the chevron must not disturb the number")
 
 	var flat := scene.instantiate()
-	flat.theme = load(_THEME_PATH)
+	flat.theme = theme
 	Engine.get_main_loop().root.add_child(flat)
 	track(flat)
 	flat.set_stat("seni_budaya", 0.0, 65.0, 40.0)
@@ -411,7 +418,7 @@ func test_set_stat_gates_the_chevron_on_the_days_delta() -> void:
 		"a +0 row still shows its number -- only the arrow goes")
 
 	var lost := scene.instantiate()
-	lost.theme = load(_THEME_PATH)
+	lost.theme = theme
 	Engine.get_main_loop().root.add_child(lost)
 	track(lost)
 	lost.set_stat("olahraga", -3.0, 65.0, 40.0)
@@ -447,7 +454,7 @@ func test_track_ratio_before_backs_todays_gain_out() -> void:
 func test_play_gain_rewinds_the_track_to_this_mornings_value() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -468,7 +475,7 @@ func test_play_gain_rewinds_the_track_to_this_mornings_value() -> void:
 func test_a_played_gain_lands_on_the_days_final_value() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -491,7 +498,7 @@ func test_a_played_gain_lands_on_the_days_final_value() -> void:
 func test_a_losing_days_number_counts_down_to_negative() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -512,7 +519,7 @@ func test_a_losing_days_number_counts_down_to_negative() -> void:
 func test_set_stat_rearms_a_chevron_that_play_gain_already_popped() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -536,7 +543,7 @@ func test_set_stat_rearms_a_chevron_that_play_gain_already_popped() -> void:
 func test_the_card_replays_every_stat_track() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -571,7 +578,7 @@ func test_the_card_replays_every_stat_track() -> void:
 func test_the_cards_three_rows_do_not_all_fill_at_once() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -603,7 +610,7 @@ func test_the_cards_three_rows_do_not_all_fill_at_once() -> void:
 func test_a_losing_day_shrinks_the_track_and_pops_no_chevron() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -639,7 +646,7 @@ func test_stat_row_scene_wears_the_theme_and_has_no_overrides() -> void:
 	var scene := load(_STAT_ROW_SCENE) as PackedScene
 	assert_not_null(scene, "DaySummaryStatRow.tscn failed to load")
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var track := inst.get_node_or_null("Track")
 	assert_not_null(track, "stat row is missing its Track")
 	assert_eq(track.theme_type_variation, &"DaySummaryStatTrackAkademis",
@@ -669,7 +676,7 @@ const _ROW_SCRIPT := "res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd"
 func test_row_reserves_the_mockup_card_box() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(inst.custom_minimum_size, Vector2(992, 410),
 		"card box drifted from the card art's cropped content box")
 	inst.free()
@@ -678,7 +685,7 @@ func test_row_reserves_the_mockup_card_box() -> void:
 func test_row_carries_the_card_art_and_the_three_stat_rows() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 
 	var bg := inst.get_node_or_null("CardArt") as TextureRect
 	assert_not_null(bg, "row is missing its CardArt")
@@ -698,7 +705,7 @@ func test_row_carries_the_card_art_and_the_three_stat_rows() -> void:
 func test_energy_is_the_top_bar_and_mood_the_bottom() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var energy := inst.get_node_or_null("EnergyBar") as ProgressBar
 	var mood := inst.get_node_or_null("MoodBar") as ProgressBar
 	assert_not_null(energy, "row is missing EnergyBar")
@@ -724,7 +731,7 @@ func test_energy_is_the_top_bar_and_mood_the_bottom() -> void:
 func test_setup_row_writes_the_students_real_energy_and_mood() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -754,7 +761,7 @@ func test_setup_row_writes_the_students_real_energy_and_mood() -> void:
 func test_setup_row_empties_the_needs_bars_for_an_unknown_student() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -773,7 +780,7 @@ func test_setup_row_empties_the_needs_bars_for_an_unknown_student() -> void:
 func test_setup_row_leaves_the_needs_deltas_hidden() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 
@@ -871,7 +878,7 @@ const _POPUP_SCRIPT := "res://Scripts/SchoolSimulation/DaySummaryPopup.gd"
 func test_popup_shows_the_banner_art_not_a_text_title() -> void:
 	var scene := load(_POPUP_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	inst.theme = load(_THEME_PATH)
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var banner := inst.find_child("TitleBanner", true, false) as TextureRect
 	assert_not_null(banner, "popup is missing its TitleBanner")
 	assert_not_null(banner.texture, "TitleBanner has no texture")
@@ -1132,7 +1139,7 @@ func test_needs_bar_words_follow_the_spec_tiers() -> void:
 ## The word's variation must survive the bake, or it renders as a bare
 ## default Label -- dark, unrimmed, illegible on the bar's fill.
 func test_theme_bakes_the_needs_label_variation() -> void:
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_true(theme.has_font_size("font_size", "DaySummaryNeedsLabel"),
 		"DaySummaryNeedsLabel must bake a font size")
 	assert_true(theme.has_color("font_color", "DaySummaryNeedsLabel"),
@@ -1148,7 +1155,7 @@ func test_theme_bakes_the_needs_label_variation() -> void:
 ## icon and its padding -- not Word's authored box, which Label does not
 ## clip against).
 func test_needs_bar_word_fits_its_pill() -> void:
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var font: Font = theme.get_font("font", "DaySummaryNeedsLabel")
 	var size: int = theme.get_font_size("font_size", "DaySummaryNeedsLabel")
 	var outline: int = theme.get_constant("outline_size", "DaySummaryNeedsLabel")
@@ -1198,7 +1205,7 @@ func test_needs_bars_carry_their_icon_and_word_inside_themselves() -> void:
 ## Both entry points write the bars through set_need, so the fill and the
 ## word can never disagree.
 func test_card_fills_its_needs_bars_on_both_paths() -> void:
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
 	var card := card_scene.instantiate()
 	card.theme = theme
@@ -1274,7 +1281,7 @@ func _script_source(path: String) -> String:
 ## Only a real gain earns a burst. A flat or losing day must stay quiet,
 ## or the reward stops meaning anything.
 func test_only_a_gaining_card_reports_ground_gained() -> void:
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var card_scene: PackedScene = load("res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
 	var card := card_scene.instantiate()
 	card.theme = theme
@@ -1435,7 +1442,7 @@ func test_needs_delta_chevron_hidden_at_exactly_zero() -> void:
 ## pattern test_card_fills_its_needs_bars_on_both_paths already uses
 ## earlier in this suite.
 func _make_row() -> DaySummaryStudentRow:
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var row: DaySummaryStudentRow = load(
 		"res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn").instantiate()
 	row.theme = theme

@@ -166,15 +166,18 @@ static func load_default() -> DesignTokens:
 @export var btn_icon_m: int = 64
 ## Icon edge length inside a large button.
 @export var btn_icon_l: int = 80
-## Vertical content_margin for the small step. SOLVED, not chosen: it is
-## tuned so a small button's NATURAL minimum height equals btn_h_s, which
-## is what lets scene authors set no height at all and never land between
-## steps. Re-solve with Task 5's probe if the display font changes.
-@export var btn_pad_v_s: int = 20
-## Vertical content_margin for the medium step. See btn_pad_v_s.
-@export var btn_pad_v_m: int = 29
-## Vertical content_margin for the large step. See btn_pad_v_s.
-@export var btn_pad_v_l: int = 35
+## Vertical content_margin for the small button step, solved by measurement.
+## The display font (title) renders at 36px; padding is derived from
+## 2 × padding + font_height = btn_h_s (96px). Re-solve if the display font changes.
+@export var btn_pad_v_s: int = 30
+## Vertical content_margin for the medium button step, solved by measurement.
+## The display font (h2) renders at 48px; padding is derived from
+## 2 × padding + font_height = btn_h_m (128px). Re-solve if the display font changes.
+@export var btn_pad_v_m: int = 40
+## Vertical content_margin for the large button step, solved by measurement.
+## The display font (h1) renders at 64px; padding is derived from
+## 2 × padding + font_height = btn_h_l (160px). Re-solve if the display font changes.
+@export var btn_pad_v_l: int = 48
 
 @export_group("Typography")
 ## Default display face for DisplayLabel/H1Label/BarLabel/CoinLabel/etc,

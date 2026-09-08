@@ -47,12 +47,12 @@ static func _add_shop_hub_tile(theme: Theme, tokens: DesignTokens) -> void:
 
 	var wash := StyleBoxFlat.new()
 	wash.bg_color = Color(1, 1, 1, 0.14)
-	wash.set_corner_radius_all(tokens.radius_lg)
+	wash.set_corner_radius_all(tokens.radius_button)
 	theme.set_stylebox("hover", NAME, wash)
 
 	var pressed := StyleBoxFlat.new()
 	pressed.bg_color = Color(1, 1, 1, 0.24)
-	pressed.set_corner_radius_all(tokens.radius_lg)
+	pressed.set_corner_radius_all(tokens.radius_button)
 	theme.set_stylebox("pressed", NAME, pressed)
 	theme.set_stylebox("disabled", NAME, StyleBoxEmpty.new())
 
@@ -100,20 +100,27 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# button being held: normal is the plain card surface, pressed picks
 	# up the brand outline. Sits with the other button variations because
 	# it is literally a Button, however card-shaped it looks.
+	# The radius argument is what makes "chips stay round" implementable.
+	# QuirkBadge and PersonaBadge are chips but are built through
+	# _add_button_variation, so without it they would be forced to
+	# radius_button along with everything else.
 	_add_button_variation(theme, tokens, "EventSelectCard",
 		tokens.surface_card, tokens.surface_card,
-		tokens.brand_primary, tokens.text_primary)
+		tokens.brand_primary, tokens.text_primary,
+		tokens.radius_lg)
 
 	# Trait chips (Quirk / Persona). Same pill geometry as any other
 	# button variation; only the accent differs, so the two trait kinds
 	# stay visually distinguishable without per-node styleboxes.
 	_add_button_variation(theme, tokens, "QuirkBadge",
 		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.outline_card, tokens.text_on_brand,
+		tokens.radius_pill)
 
 	_add_button_variation(theme, tokens, "PersonaBadge",
 		tokens.cat_istirahat.lightened(0.18), tokens.cat_istirahat.darkened(0.24),
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.outline_card, tokens.text_on_brand,
+		tokens.radius_pill)
 
 	# Lobby's five hub nav buttons used to point at three loose,
 	# hand-authored StyleBoxFlat .tres files (lobby_btn_normal/hover/
@@ -136,7 +143,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 
 ## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"). A flat
 ## rounded rectangle with a heavier bottom border for a pressed-tab look,
-## not the pill shape _pill()/_add_button_variation() produce, and its
+## not the pill shape _button_box()/_add_button_variation() produce, and its
 ## hover state recolours the text gold rather than lightening the fill --
 ## neither shape matches an existing variation closely enough to reuse.
 static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void:
@@ -146,7 +153,7 @@ static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void
 
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = tokens.brand_primary
-	normal.set_corner_radius_all(tokens.radius_md)
+	normal.set_corner_radius_all(tokens.radius_button)
 	normal.border_width_left = 3
 	normal.border_width_top = 3
 	normal.border_width_right = 3
@@ -228,8 +235,6 @@ static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_font("font", NAME, tokens.font_display)
 
 
-## One glossy pill in four states. `top`/`bottom` form the vertical
-## gradient that gives the button its Umamusume sheen.
 static func _add_button_variation(
 	theme: Theme,
 	tokens: DesignTokens,
@@ -237,25 +242,30 @@ static func _add_button_variation(
 	top: Color,
 	bottom: Color,
 	border: Color,
-	text_color: Color
+	text_color: Color,
+	radius: int = -1
 ) -> void:
+	# -1 means "the default", resolved here so callers that do not care
+	# about shape do not have to name the token.
+	var r: int = tokens.radius_button if radius < 0 else radius
+
 	theme.add_type(name)
 	theme.set_type_variation(name, "Button")
 
 	theme.set_stylebox("normal", name,
-		_pill(tokens, top, bottom, border, 0.0))
+		_button_box(tokens, top, bottom, border, 0.0, r))
 	theme.set_stylebox("hover", name,
-		_pill(tokens, top.lightened(0.08), bottom.lightened(0.08), border, 0.0))
+		_button_box(tokens, top.lightened(0.08), bottom.lightened(0.08), border, 0.0, r))
 	# Pressed sinks: gradient flips and the shadow collapses.
 	theme.set_stylebox("pressed", name,
-		_pill(tokens, bottom, top, border, -tokens.shadow_offset.y * 0.5))
+		_button_box(tokens, bottom, top, border, -tokens.shadow_offset.y * 0.5, r))
 	theme.set_stylebox("focus", name,
-		_pill(tokens, top, bottom, tokens.brand_primary, 0.0))
+		_button_box(tokens, top, bottom, tokens.brand_primary, 0.0, r))
 
-	var disabled := _pill(tokens,
+	var disabled := _button_box(tokens,
 		top.lerp(tokens.surface_sunken, 0.7),
 		bottom.lerp(tokens.surface_sunken, 0.7),
-		border.lerp(tokens.surface_sunken, 0.5), 0.0)
+		border.lerp(tokens.surface_sunken, 0.5), 0.0, r)
 	disabled.shadow_size = 0
 	theme.set_stylebox("disabled", name, disabled)
 
@@ -269,31 +279,41 @@ static func _add_button_variation(
 		theme.set_font("font", name, tokens.font_display)
 
 
-static func _pill(
+## One button surface in four states.
+##
+## `radius` is explicit rather than always tokens.radius_button because
+## chips (QuirkBadge, PersonaBadge) and cards (EventSelectCard) are built
+## through this same path and must opt out. See the table in
+## _build_buttons.
+##
+## `top`/`bottom` are kept as separate parameters even though
+## StyleBoxFlat has no gradient: the two-tone read comes from a lighter
+## fill plus the darker bottom border acting as a bevel, and the pressed
+## state flips them.
+static func _button_box(
 	tokens: DesignTokens,
 	top: Color,
 	bottom: Color,
 	border: Color,
-	shadow_dy: float
+	shadow_dy: float,
+	radius: int
 ) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = top
-	# StyleBoxFlat has no gradient; the two-tone look comes from a
-	# lighter fill plus a darker, thicker bottom border acting as a bevel.
 	sb.border_color = border
 	sb.border_width_left = int(tokens.outline_width)
 	sb.border_width_top = int(tokens.outline_width)
 	sb.border_width_right = int(tokens.outline_width)
 	sb.border_width_bottom = int(tokens.outline_width)
-	sb.set_corner_radius_all(tokens.radius_pill)
+	sb.set_corner_radius_all(radius)
 	sb.shadow_color = tokens.shadow_color
 	sb.shadow_size = tokens.shadow_size
 	sb.shadow_offset = Vector2(tokens.shadow_offset.x,
 		tokens.shadow_offset.y + shadow_dy)
 	sb.content_margin_left = tokens.space_lg
 	sb.content_margin_right = tokens.space_lg
-	sb.content_margin_top = tokens.space_md
-	sb.content_margin_bottom = tokens.space_md
+	sb.content_margin_top = tokens.btn_pad_v_s
+	sb.content_margin_bottom = tokens.btn_pad_v_s
 	return sb
 
 
@@ -718,17 +738,18 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "Button", tokens.text_on_brand)
 	theme.set_font_size("font_size", "Button", tokens.font_title)
 	theme.set_stylebox("normal", "Button",
-		_pill(tokens, tokens.brand_primary_light, tokens.brand_primary_dark,
-			tokens.outline_card, 0.0))
+		_button_box(tokens, tokens.brand_primary_light, tokens.brand_primary_dark,
+			tokens.outline_card, 0.0, tokens.radius_button))
 	theme.set_stylebox("hover", "Button",
-		_pill(tokens, tokens.brand_primary_light.lightened(0.08),
-			tokens.brand_primary_dark.lightened(0.08), tokens.outline_card, 0.0))
+		_button_box(tokens, tokens.brand_primary_light.lightened(0.08),
+			tokens.brand_primary_dark.lightened(0.08), tokens.outline_card, 0.0,
+			tokens.radius_button))
 	theme.set_stylebox("pressed", "Button",
-		_pill(tokens, tokens.brand_primary_dark, tokens.brand_primary_light,
-			tokens.outline_card, -tokens.shadow_offset.y * 0.5))
+		_button_box(tokens, tokens.brand_primary_dark, tokens.brand_primary_light,
+			tokens.outline_card, -tokens.shadow_offset.y * 0.5, tokens.radius_button))
 	theme.set_stylebox("disabled", "Button",
-		_pill(tokens, tokens.surface_sunken, tokens.surface_sunken,
-			tokens.surface_sunken, 0.0))
+		_button_box(tokens, tokens.surface_sunken, tokens.surface_sunken,
+			tokens.surface_sunken, 0.0, tokens.radius_button))
 
 	# RichTextLabel's base text color theme item is "default_color", not
 	# "font_color" (that name is a Label/Button theme item). Setting
@@ -885,8 +906,8 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("WeekTabButton", "Button")
 	var tab_normal := StyleBoxFlat.new()
 	tab_normal.bg_color = tokens.surface_sunken
-	tab_normal.corner_radius_top_left = tokens.radius_md
-	tab_normal.corner_radius_top_right = tokens.radius_md
+	tab_normal.corner_radius_top_left = tokens.radius_button
+	tab_normal.corner_radius_top_right = tokens.radius_button
 	tab_normal.content_margin_top = tokens.space_sm
 	tab_normal.content_margin_bottom = tokens.space_sm
 	var tab_pressed := tab_normal.duplicate() as StyleBoxFlat

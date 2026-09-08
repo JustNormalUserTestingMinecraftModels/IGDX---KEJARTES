@@ -308,6 +308,8 @@ const DISPLAY_ROSTER := [
 	"TraitPill", "PreviewRowLabel",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
 	"RecapPillValueLabel", "ScoreHudValueLabel",
+	# 2026-09-08: event popup title, display face at H1+6.
+	"EventDialogHeaderLabel",
 ]
 
 

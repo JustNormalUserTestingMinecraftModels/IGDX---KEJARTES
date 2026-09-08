@@ -372,6 +372,17 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# match a token exactly (nearest are font_body_size 28 / font_title
 		# 36); kept as the shipped literal rather than nudging the size.
 		["EmptyStateLabel", 32, tokens.text_disabled, false, false],
+		# 2026-09-08 mobile-readability pass: the mid-simulation event
+		# popups (EventAnnouncement, EventWarning, EventStudentSelectDialog)
+		# needed a title bigger than H1Label without becoming a second
+		# DisplayLabel -- H1+6 in the display face, no outline (these titles
+		# sit on their own opaque card/scrim, not over busy art).
+		["EventDialogHeaderLabel", tokens.font_h1 + 6, tokens.text_primary, false, true],
+		# Same pass: the event dialog's benefit/cost lines and description
+		# sat in 22px CaptionLabel, unreadably small on a 1080px phone.
+		# Body face (not display), a moderate bump over font_body_size(28)
+		# to 32px -- readable without competing with the dialog's headings.
+		["EventBodyLabel", tokens.font_body_size + 4, tokens.text_primary, false, false],
 	]
 	for spec in specs:
 		var name: String = spec[0]
@@ -622,14 +633,17 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_font("font", "CardSectionLabel", tokens.font_display)
 
 	# -- Bio text: light, because it sits on the painted purple panel. --
+	# 2026-09-08 mobile-readability pass: BioLabel shrinks to caption-size
+	# so it reads as a label rather than competing with BioValue, which
+	# jumps to H2 so the student's own name/date is the thing that pops.
 	theme.add_type("BioLabel")
 	theme.set_type_variation("BioLabel", "Label")
-	theme.set_font_size("font_size", "BioLabel", tokens.font_body_size)
+	theme.set_font_size("font_size", "BioLabel", tokens.font_caption)
 	theme.set_color("font_color", "BioLabel", tokens.text_on_brand)
 
 	theme.add_type("BioValue")
 	theme.set_type_variation("BioValue", "Label")
-	theme.set_font_size("font_size", "BioValue", tokens.font_body_size + 6)
+	theme.set_font_size("font_size", "BioValue", tokens.font_h2)
 	theme.set_color("font_color", "BioValue", tokens.text_on_brand)
 
 	# -- Penjadwalan row container: the bordered grey slab each row sits on.

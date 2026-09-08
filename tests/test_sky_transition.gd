@@ -86,16 +86,16 @@ func test_no_layer_swallows_input() -> void:
 func test_progress_zero_is_the_start_angle() -> void:
 	var w := _sized_widget()
 	w.call("set_progress", 0.0)
-	assert_eq(w.call("current_rotation_degrees"), w.get("start_rotation_degrees"),
-		"progress 0 must sit exactly on the authored morning pose")
+	assert_eq(w.call("current_rotation_degrees"), w.get("dawn_rotation_degrees"),
+		"progress 0 must sit exactly on the authored dawn pose")
 
 
 func test_progress_one_is_the_full_sweep() -> void:
 	var w := _sized_widget()
 	w.call("set_progress", 1.0)
-	var expected: float = w.get("start_rotation_degrees") + w.get("total_rotation_degrees")
+	var expected: float = w.get("evening_rotation_degrees")
 	assert_true(absf(w.call("current_rotation_degrees") - expected) < 0.001,
-		"progress 1 must land exactly on start + total")
+		"progress 1 must land exactly on the authored evening pose")
 
 
 func test_the_sweep_turns_counter_clockwise() -> void:

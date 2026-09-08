@@ -64,6 +64,83 @@ double-tap opening two apply screens, a back press during the payoff `await`
 hitting a freed node, a persistence test that deleted the real save) — all
 fixed and scoped-re-reviewed clean.
 
+## 2026-09-07 — Sprite rigs, event dialog, day phases and the shop hub
+
+Five independent presentation passes landing one art drop. Spec:
+`docs/superpowers/specs/2026-09-07-sprite-rig-and-shop-hub-design.md`;
+plan: `docs/superpowers/plans/2026-09-07-sprite-rigs-and-shop-hub.md`.
+
+**Goalie (`MainBola`).** Four opaque `.jpg` goalie textures collapse to
+two alpha PNGs, so the keeper stopped rendering as a white box over the
+pitch. Dive direction is `flip_h` on the single `kiper_jump` sprite
+rather than a left/right texture pair; which way that art faces is the
+`jump_faces_right` export, not a constant. `goalie_fail_texture` went
+with them — it was declared and never read. Added idle breathing: a sine
+on the sprite's scale pivoted at the FEET (scaling a standing figure
+about its middle lifts it off the goal line), suspended and rewound
+while a dive resolves.
+
+**Dancer (`LombaMenari`).** Six flat pose textures became a two-layer
+`DancerRig`: a body swapping between three poses and mirroring for the
+left-hand arrows, and a head that does neither, so her face and hairclip
+stay fixed. The head offset was solved, not eyeballed — compositing
+`dance_head` over `dance_body_idle` and minimising per-pixel difference
+against `dance_mockup.png` converges on **(+2, +28)** on the sprites'
+1280 canvas, stored as a ratio so it survives any rect size. All three
+body poses put the neck within a few pixels of the same spot, so one
+offset serves every pose. A miss has no drawn pose, so it is the idle
+body tinted red plus the shake-and-droop already written.
+
+**Event dialog.** Per-student cards come from `EventStudentCard.tscn`,
+assembled from the DaySummary components that already existed, instead
+of being built from raw containers at runtime — the script went from
+~470 lines to 272 and its editability baseline from 11 to 1. The whole
+992×410 card is now the toggle, replacing a 2.4×-scaled Godot CheckBox
+that matched nothing else in the game. Eleven emoji became SVG icons
+(four new, five reusing icons the project already had). The per-button
+`StyleBoxTexture` override path is gone. The on-check stat preview,
+including the specialty energy discount, is unchanged.
+
+**Day cycle.** The sky's single continuous sweep became three named
+poses — dawn, midday, evening — and two transitions. `set_progress` maps
+piecewise through midday, so progress 0.5 lands on it by definition
+rather than by arithmetic, which is what lets midday be retuned alone.
+The day's event stopped rolling at a random 50–80% of the afternoon and
+lands on the midday pose. `transition_to` returns its Tween so
+`SchoolDay` can await it and the easing has one place to be tuned.
+Defaults reproduce the old geometry exactly: only the timing changed.
+
+**Shop hub.** The Lobby's shop button lands on a new `ShopHub` with two
+tiles rather than dropping into the Koperasi; both shops' back buttons
+return there. `CosmeticShop` is a deliberate stub. The backdrop reuses
+the existing screen-space blur shader over the Koperasi's own artwork,
+so the screen needs no new image asset — the mockup's blurred
+minimarket photo is not in the repo and would have been the only
+photograph in an illustrated game. Tiles are labelled in Indonesian,
+overriding the mockup's English.
+
+**A bug this pass introduced and then caught.** `kejartes_theme.tres`
+was reverted by the editor before the event-card commit, so it shipped
+without the `EventSelectCard` variation while every test stayed green:
+`test_theme_factory` only ever called `ThemeFactory.build()` fresh and
+never read the file the game actually loads. `test_baked_theme_matches_what_the_factory_builds`
+now compares the two, reading the baked file with `CACHE_MODE_IGNORE`
+because the editor holds the old copy in memory.
+
+**Two editor hazards worth knowing** (both cost real time here):
+
+- The editor keeps `.gd` files open in script-editor tabs, and
+  `scene_save` flushes those stale buffers over your edits — the same
+  cache hazard `CLAUDE.md` documents for `.tscn`, but for scripts. Do
+  scene work first and script work second within a task, and check
+  `git diff` on already-committed scripts after any `scene_save`.
+- Godot only serialises property overrides on an instanced scene's own
+  ROOT. Setting properties on the instance's children silently loses
+  them on save; give the sub-scene `@export`s instead (this is why
+  `ShopHubTile` carries `icon_texture` and `caption_text`).
+
+Suite: 1034 tests across 69 suites, all green.
+
 ## 2026-09-06 — Lobby: layered student faces, gaze and blink rig
 
 Reworked the lobby diorama's student sprite from a single flat portrait

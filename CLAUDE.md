@@ -33,8 +33,9 @@ ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu.** Splashs
 exist and are still tested, but since 2026-08-31 they are no longer reached
 at boot.
 
-**Lobby hub buttons** → StudentCard, AturJadwal, Koperasi (shop), Inventory,
-ReportCard.
+**Lobby hub buttons** → StudentCard, AturJadwal, ShopHub, Inventory,
+ReportCard. **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub);
+both return to the hub, not straight to the Lobby.
 
 ### Stats & activities
 
@@ -270,6 +271,21 @@ The same cache bites `class_name` scripts: a **new `@export` on a Resource is
 invisible until the editor restarts**, which is why the theme rebake
 (`Scripts/Design/BakeTheme.gd`, File > Run) has no headless path.
 
+**4b. Two save hazards that silently eat work.**
+
+*`scene_save` flushes stale script buffers.* The editor holds `.gd` files open
+in tabs and writes them over whatever you patched — rule 4's `.tscn` hazard,
+for scripts, and `script_patch` does not protect you. Do **scene work first,
+script work second**, and after any `scene_save` check
+`git diff HEAD -- '*.gd'` for files you were not editing. Restarting the editor
+is the only real fix; it also reclaims the memory this build leaks (~2 GB and
+dropping the MCP connection, twice in one session).
+
+*Overrides serialise only on an instanced scene's ROOT.* Setting properties on
+an instance's **children** reports success and is dropped on save. Give the
+sub-scene `@export`s on its root instead — why `ShopHubTile` carries
+`icon_texture`/`caption_text` rather than the hub reaching into `Content/Icon`.
+
 **5. Rescan after editing a `.gd`, before running tests.** `test_run` will
 serve a **stale** autoload otherwise. Scan first, or you will debug a phantom.
 
@@ -349,6 +365,15 @@ yet fed into the star rubric. The item skill-boost values in
 `ItemDatabase.DEFAULT_ITEMS` (`akademis`/`seni_budaya`/`olahraga`, 3–8) are
 conservative starting numbers, untested against `tests/test_balance_pacing.gd`.
 
+**Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` ships as a
+blurred backdrop, a "Segera Hadir" line and a back button. The shop hub's
+second tile has to lead somewhere; nothing behind it is designed yet.
+
+**Six more placeholder SVG icons.** `icon_benefit`, `icon_cost`, `icon_tired`,
+`icon_check` (`Assets/Images/UI/Placeholders/`) and `icon_shop_items`,
+`icon_shop_cosmetics` (`Assets/Images/Shop/UI/`) are flat geometry standing in
+for real art, like the rest of that folder.
+
 **Deferred: the AturJadwal shelf.** It ships as two `ColorRect`s rather than the
 intended `ShelfEdge` theme variation. A new `@export` on `DesignTokens` is
 invisible to a running editor, so this needs an editor restart plus a manual
@@ -377,12 +402,16 @@ the previous three. See `docs/superpowers/CHANGELOG.md`.
 
 ## Current work
 
-Branch `Textures` (also main). The 2026-09-04–09-05 end-game rebuild
-described in the Loop above is complete; only Plan C's RunResult redesign
-remains open, tracked in
-`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`. The 2026-09-06
-layered-face rig (`StudentFace`) has landed for Citra — see the changelog, and
-the two face entries under outstanding debt for what is deliberately unfinished.
+Branch `Textures` (also main). Two 2026-09-07 passes are merged and green at
+1061 tests -- the sprite-rig pass (two-state goalie, layered `DancerRig`, the
+event dialog on DaySummary chrome, the three-pose day cycle, the shop hub) and
+the collaborator's inventory mobile-layout & item-apply pass. Both are written
+up in `docs/superpowers/CHANGELOG.md`, including every placeholder each one
+left behind.
+
+Plan C's RunResult redesign also remains open, tracked in
+`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
+
 
 ## Maintaining this file
 

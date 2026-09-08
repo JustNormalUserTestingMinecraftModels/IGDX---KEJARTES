@@ -64,19 +64,9 @@ enum NoteType {
 ## Font size for the per-note hit/miss feedback text.
 @export var feedback_font_size: int = 40
 
-@export_group("Dancer Character Assets")
-## Dancer pose while waiting for the next note.
-@export var dancer_idle_texture: Texture2D
-## Dancer pose immediately after a successful LEFT swipe.
-@export var dancer_left_texture: Texture2D
-## Same as dancer_left_texture, for RIGHT.
-@export var dancer_right_texture: Texture2D
-## Same as dancer_left_texture, for TOP_LEFT.
-@export var dancer_top_left_texture: Texture2D
-## Same as dancer_left_texture, for TOP_RIGHT.
-@export var dancer_top_right_texture: Texture2D
-## Dancer pose after a missed note.
-@export var dancer_fail_texture: Texture2D
+# The dancer's art moved to DancerRig.tscn on 2026-09-07: three body
+# poses plus a head layer, mirrored for the left-hand arrows. The six
+# flat pose textures that used to live here are gone with it.
 
 ## Points a PERFECT hit is worth. The star rubric divides by this, so it is a
 ## const rather than an inline literal at the two award sites.
@@ -149,9 +139,8 @@ var pattern_step_index: int = 0
 @onready var score_hud: MinigameScoreHUD = $ScoreHUD
 @onready var hit_zone: Control = $HitZone
 @onready var notes_parent: Control = $NotesParent
-@onready var character_display: TextureRect = $CharacterDisplay
+@onready var character_display: DancerRig = $CharacterDisplay
 
-var dancer_label: Label
 var dancer_tween: Tween
 var is_dancer_failed: bool = false
 var dancer_base_scale: Vector2 = Vector2.ONE
@@ -209,23 +198,6 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	# Setup Dancer Character Display
 	if character_display:
 		character_display.pivot_offset = character_display.size / 2.0
-		
-		# Create overlay label for placeholder visual indication
-		dancer_label = Label.new()
-		dancer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		dancer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		dancer_label.add_theme_font_size_override("font_size", 32)
-		dancer_label.add_theme_color_override("font_color", Color.WHITE)
-		dancer_label.add_theme_constant_override("outline_size", 12)
-		dancer_label.add_theme_color_override("font_outline_color", Color.BLACK)
-		dancer_label.anchor_left = 0.0
-		dancer_label.anchor_top = 0.0
-		dancer_label.anchor_right = 1.0
-		dancer_label.anchor_bottom = 1.0
-		dancer_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-		dancer_label.grow_vertical = Control.GROW_DIRECTION_BOTH
-		character_display.add_child(dancer_label)
-		
 		_set_dancer_idle()
 	
 	# Start spawning beats
@@ -680,16 +652,8 @@ func _set_dancer_idle() -> void:
 	if not character_display:
 		return
 		
-	if dancer_idle_texture:
-		character_display.texture = dancer_idle_texture
-		if dancer_label:
-			dancer_label.text = ""
-	else:
-		character_display.texture = _create_flat_texture(Color(0.2, 0.25, 0.35, 0.6))
-		if dancer_label:
-			dancer_label.text = "🕺 IDLE"
-			
-	character_display.modulate = Color.WHITE
+	character_display.set_pose(DancerRig.Pose.IDLE, false)
+	character_display.set_failed(false)
 
 func _play_dancer_motion(swipe_type: int) -> void:
 	is_dancer_failed = false
@@ -700,50 +664,37 @@ func _play_dancer_motion(swipe_type: int) -> void:
 	if dancer_tween and dancer_tween.is_running():
 		dancer_tween.kill()
 		
-	var target_tex: Texture2D = null
-	var label_str: String = ""
+	var pose: DancerRig.Pose = DancerRig.Pose.IDLE
+	var flipped: bool = false
 	var rot_target: float = 0.0
 	var scale_target: Vector2 = Vector2(1.15, 1.15)
-	
+
+	# One body pose per axis, mirrored for the left-hand arrows: RIGHT
+	# and TOP_RIGHT are the direction the art was drawn in, LEFT and
+	# TOP_LEFT are that same art flipped. The head never mirrors, so her
+	# face stays put through all four -- see DancerRig.
 	match swipe_type:
 		NoteType.LEFT:
-			target_tex = dancer_left_texture
-			label_str = "◄ DANCE LEFT 🕺"
+			pose = DancerRig.Pose.SIDE
+			flipped = true
 			rot_target = deg_to_rad(-15.0)
 			scale_target = Vector2(1.2, 0.85)
 		NoteType.RIGHT:
-			target_tex = dancer_right_texture
-			label_str = "🕺 DANCE RIGHT ►"
+			pose = DancerRig.Pose.SIDE
 			rot_target = deg_to_rad(15.0)
 			scale_target = Vector2(1.2, 0.85)
 		NoteType.TOP_LEFT:
-			target_tex = dancer_top_left_texture
-			label_str = "↖ DIAGONAL LEFT 💃"
+			pose = DancerRig.Pose.UP
+			flipped = true
 			rot_target = deg_to_rad(-22.0)
 			scale_target = Vector2(1.15, 1.25)
 		NoteType.TOP_RIGHT:
-			target_tex = dancer_top_right_texture
-			label_str = "💃 DIAGONAL RIGHT ↗"
+			pose = DancerRig.Pose.UP
 			rot_target = deg_to_rad(22.0)
 			scale_target = Vector2(1.15, 1.25)
 
-	# Direct texture swap without alpha flickering
-	if target_tex:
-		character_display.texture = target_tex
-		if dancer_label:
-			dancer_label.text = ""
-	else:
-		var colors = {
-			NoteType.LEFT: Color(0.9, 0.2, 0.2, 0.8),
-			NoteType.RIGHT: Color(0.2, 0.5, 0.9, 0.8),
-			NoteType.TOP_LEFT: Color(0.9, 0.7, 0.1, 0.8),
-			NoteType.TOP_RIGHT: Color(0.2, 0.8, 0.4, 0.8)
-		}
-		character_display.texture = _create_flat_texture(colors.get(swipe_type, Color.WHITE))
-		if dancer_label:
-			dancer_label.text = label_str
-
-	character_display.modulate = Color.WHITE
+	character_display.set_pose(pose, flipped)
+	character_display.set_failed(false)
 
 	# Spring dance motion tween updating base pose scale and rotation
 	dancer_tween = create_tween()
@@ -767,16 +718,10 @@ func _play_dancer_fail_motion() -> void:
 	if dancer_tween and dancer_tween.is_running():
 		dancer_tween.kill()
 		
-	if dancer_fail_texture:
-		character_display.texture = dancer_fail_texture
-		if dancer_label:
-			dancer_label.text = ""
-	else:
-		character_display.texture = _create_flat_texture(Color(0.85, 0.15, 0.2, 0.85))
-		if dancer_label:
-			dancer_label.text = "💔 MISSED!"
-			
-	character_display.modulate = Color.WHITE
+	# No fail pose was drawn for this character. A miss is the idle pose
+	# tinted red, plus the shake-and-droop below.
+	character_display.set_pose(DancerRig.Pose.IDLE, false)
+	character_display.set_failed(true)
 
 	# Shake & droop motion tween directly animating character_display
 	dancer_tween = create_tween()

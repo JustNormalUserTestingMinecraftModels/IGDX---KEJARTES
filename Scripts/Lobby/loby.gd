@@ -785,7 +785,9 @@ func _on_jadwal_pressed():
 
 func _on_koperasi_pressed() -> void:
 	AudioDirector.play_sfx(&"tap")
-	Transition.change_scene("res://Scenes/Koperasi/koprasi.tscn", Transition.Style.WIPE)
+	# The shop button lands on the hub, which forks to the item shop or
+	# the cosmetic shop, rather than dropping straight into the Koperasi.
+	Transition.change_scene("res://Scenes/Koperasi/ShopHub.tscn", Transition.Style.WIPE)
 
 
 func _on_inventory_pressed() -> void:

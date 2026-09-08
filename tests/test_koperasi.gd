@@ -30,9 +30,14 @@ func test_no_in_shop_inventory_button() -> void:
 		"the shop must not link to the inventory -- both are lobby siblings")
 	scene.free()
 
-func test_back_button_returns_to_lobby() -> void:
-	assert_true(_source().contains("res://Scenes/Lobby/loby.tscn"),
-		"the shop's back button must return to the lobby")
+func test_back_button_returns_to_the_shop_hub() -> void:
+	# Changed 2026-09-07: the Lobby's shop button now lands on the hub,
+	# so backing out of the item shop returns there rather than skipping
+	# straight past it to the Lobby.
+	assert_true(_source().contains("res://Scenes/Koperasi/ShopHub.tscn"),
+		"the shop's back button must return to the shop hub")
+	assert_false(_source().contains("res://Scenes/Lobby/loby.tscn"),
+		"the shop should no longer jump straight back to the Lobby")
 
 func test_does_not_reference_source_project_paths() -> void:
 	var src := _source()

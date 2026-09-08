@@ -93,7 +93,20 @@ signal _summary_closed
 @onready var game_container: Control      = $GameContainer
 
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
-const DAY_FILL_DURATION = 2.0   # seconds to fill a day's progress bar
+## Fallback seconds to fill a day's progress bar, used only when the
+## BookClock widget is absent. Normally the pacing comes from the
+## widget's own transition_duration -- see _phase_duration() -- so the
+## sky's tuned motion and the bar can never drift apart.
+const DAY_FILL_DURATION = 2.0
+
+## Where in the school day the event rolls, as a percentage of it.
+##
+## Fixed at midday -- the BookClock's middle pose -- rather than the
+## randomised afternoon point it used to be. The day is now two
+## transitions, dawn to midday and midday to evening, and the event
+## belongs on the pose between them rather than at a random point in
+## the afternoon.
+const EVENT_TRIGGER_PCT := 50.0
 
 # Event distribution chances (total 100)
 const CHANCE_NOTHING  = 20
@@ -351,9 +364,13 @@ func _run_single_day() -> void:
 	if student_manager:
 		decay_results = student_manager.apply_daily_decay_all(day_name)
 
-	# ── Phase 1: Fill bar to a random "event trigger" point ──────────────────
-	var trigger_pct = randf_range(0.5, 0.8) * 100.0
-	var phase1_dur  = DAY_FILL_DURATION * (trigger_pct / 100.0)
+	# ── Phase 1: dawn to midday, where the event rolls ───────────────────────
+	# Both phases run for one BookClock transition. Taking the length from
+	# the widget rather than splitting a constant here is what keeps the
+	# day's progress bar and the sky in lockstep: the sweep's tuned
+	# duration is the single source, and the bar follows it.
+	var trigger_pct := EVENT_TRIGGER_PCT
+	var phase1_dur := _phase_duration()
 
 	status_label.text = "Melewati hari sekolah..."
 	
@@ -367,9 +384,11 @@ func _run_single_day() -> void:
 	# clock widget and the decay bars are optional, so without this the
 	# tween could end up with no tweeners at all and abort.
 	day_tween.tween_interval(phase1_dur)
-	if book_clock_widget and book_clock_widget.has_method("set_progress"):
-		day_tween.tween_method(func(v: float): book_clock_widget.call("set_progress", v / 100.0), 0.0, trigger_pct, phase1_dur)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# Transition 1: dawn to midday. The widget owns its own easing, so
+	# this hands it only the duration -- day_tween's interval above is
+	# what this function actually awaits.
+	if book_clock_widget and book_clock_widget.has_method("transition_to"):
+		book_clock_widget.call("transition_to", BookClockWidget.Phase.MIDDAY, phase1_dur)
 
 	_animate_embedded_decay_bars(day_tween, decay_results, phase1_dur)
 	await day_tween.finished
@@ -382,14 +401,14 @@ func _run_single_day() -> void:
 		return
 
 	# ── Phase 2: Fill remaining bar to 100% ──────────────────────────────────
-	var phase2_dur = DAY_FILL_DURATION * ((100.0 - trigger_pct) / 100.0)
+	var phase2_dur := _phase_duration()
 	status_label.text = "Melanjutkan hari..."
 	Juice.fill_bar(progress_bar, 100.0, phase2_dur)
 	var bar_phase2 = create_tween().set_parallel(true)
 	bar_phase2.tween_interval(phase2_dur)
-	if book_clock_widget and book_clock_widget.has_method("set_progress"):
-		bar_phase2.tween_method(func(v: float): book_clock_widget.call("set_progress", v / 100.0), trigger_pct, 100.0, phase2_dur)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# Transition 2: midday to evening.
+	if book_clock_widget and book_clock_widget.has_method("transition_to"):
+		book_clock_widget.call("transition_to", BookClockWidget.Phase.EVENING, phase2_dur)
 	await bar_phase2.finished
 	if is_skipped:
 		return
@@ -834,6 +853,19 @@ func _animate_embedded_stat_updates(duration: float = 0.6) -> void:
 				m_lbl.self_modulate = Color.WHITE
 
 # ─────────────────────────────────────────────────────────────────────────────
+## How long one half of the school day runs, in seconds.
+##
+## Read off the BookClock so the sky's tuned sweep is the single source
+## of pacing and the day's progress bar simply follows it -- the two used
+## to be kept in step by hand, by splitting DAY_FILL_DURATION here and
+## passing the same number to both. Falls back to that split when the
+## widget is missing, which is the case in headless tests.
+func _phase_duration() -> float:
+	if book_clock_widget != null and "transition_duration" in book_clock_widget:
+		return float(book_clock_widget.transition_duration)
+	return DAY_FILL_DURATION * 0.5
+
+
 func _roll_event(day_name: String) -> void:
 	var week = GameState.minggu_ke
 	if HOLIDAYS.has(week) and HOLIDAYS[week].has(day_name):

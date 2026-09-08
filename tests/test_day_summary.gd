@@ -1438,3 +1438,135 @@ func _make_row() -> DaySummaryStudentRow:
 	row.theme = theme
 	Engine.get_main_loop().root.add_child(row)
 	return row
+
+
+# ── EventStudentCard ─────────────────────────────────────────────────────────
+# The event dialog's per-student card, rebuilt on this screen's own
+# components on 2026-09-07. See the sprite-rig-and-shop-hub spec.
+
+const EVENT_CARD_SCENE := "res://Scenes/SchoolSimulation/EventStudentCard.tscn"
+
+
+func test_event_card_reuses_the_day_summary_parts() -> void:
+	var packed := load(EVENT_CARD_SCENE) as PackedScene
+	assert_not_null(packed, "EventStudentCard.tscn should load")
+	var card := packed.instantiate()
+	assert_not_null(card.get_node_or_null("Avatar"),
+		"the event card should reuse DaySummaryAvatar")
+	assert_not_null(card.get_node_or_null("EnergyBar"),
+		"the event card should reuse the DaySummary needs bars")
+	assert_not_null(card.get_node_or_null("MoodBar"), "ditto mood")
+	for i in range(1, 4):
+		assert_not_null(card.get_node_or_null("StatRow%d" % i),
+			"the event card should carry all three DaySummaryStatRows")
+	card.free()
+
+
+func test_event_card_needs_bars_carry_their_icon_and_word() -> void:
+	# DaySummaryNeedsBar.set_need writes into $Icon and $Word; without
+	# those children every call would crash on a null.
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
+	for bar_name in ["EnergyBar", "MoodBar"]:
+		var bar := card.get_node("%s" % bar_name)
+		assert_not_null(bar.get_node_or_null("Icon"),
+			"%s needs an Icon child" % bar_name)
+		assert_not_null(bar.get_node_or_null("Word"),
+			"%s needs a Word child" % bar_name)
+	card.free()
+
+
+func test_event_card_is_a_toggle_not_a_scaled_checkbox() -> void:
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
+	assert_true(card is Button, "the whole card should be the tap target")
+	assert_true(card.toggle_mode, "the card should latch when selected")
+	assert_eq(card.theme_type_variation, &"EventSelectCard",
+		"selection state should come from the theme, not a bespoke stylebox")
+	card.free()
+
+
+func test_event_card_reports_its_selection() -> void:
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as EventStudentCard
+	assert_false(card.is_selected(), "a fresh card starts unselected")
+	card.button_pressed = true
+	assert_true(card.is_selected(), "pressing the card selects it")
+	card.free()
+
+
+func test_event_card_refuses_selection_when_not_selectable() -> void:
+	# A tired student cannot be sent, and the card has to say so.
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as EventStudentCard
+	card.button_pressed = true
+	card.set_selectable(false)
+	assert_true(card.disabled, "an unselectable card must not accept a tap")
+	assert_false(card.is_selected(),
+		"making a card unselectable must drop any selection it held")
+	card.free()
+
+
+const EVENT_DIALOG_SCRIPT := "res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd"
+
+
+func test_event_dialog_instantiates_cards_instead_of_building_them() -> void:
+	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
+	assert_contains(src, "EventStudentCard.tscn",
+		"cards should come from a PackedScene, not from HBoxContainer.new()")
+	for built in ["HBoxContainer.new()", "VBoxContainer.new()",
+			"CheckBox.new()", "StatBar.new()", "Label.new()"]:
+		assert_false(src.contains(built),
+			"%s is runtime visual construction and should be gone" % built)
+
+
+func test_event_dialog_carries_no_emoji_iconography() -> void:
+	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
+	for glyph in ["📢", "📈", "📉", "😴", "🌟", "📚", "⚽", "🎨", "⚡", "😊"]:
+		assert_false(src.contains(glyph),
+			"emoji are banned as UI iconography; %s should be an SVG" % glyph)
+
+
+func test_event_dialog_scene_carries_no_emoji_either() -> void:
+	var scene_text := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn")
+	for glyph in ["📢", "📈", "📉"]:
+		assert_false(scene_text.contains(glyph),
+			"the scene's own labels should not carry %s" % glyph)
+
+
+func test_event_dialog_dropped_the_button_texture_override_path() -> void:
+	# StyleBoxTexture overrides are what let these three buttons drift
+	# out of the theme every other screen uses.
+	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
+	# dialog_card_texture keeps its own StyleBoxTexture: that is a
+	# separate, pre-existing art-swap hook for the PANEL and is out of
+	# scope here. What had to go is the per-button override path, so the
+	# check is that every remaining override targets the panel.
+	var overrides := 0
+	for line in src.split("
+"):
+		if line.contains("add_theme_stylebox_override"):
+			overrides += 1
+			assert_contains(line, "dialog_panel",
+				"only the dialog panel may override a stylebox, not: %s" % line.strip_edges())
+	assert_eq(overrides, 1,
+		"expected exactly one stylebox override (the panel's), found %d" % overrides)
+	for retired in ["button_select_all_texture", "button_cancel_texture",
+			"button_confirm_texture"]:
+		assert_false(src.contains(retired),
+			"%s should have been removed with the override path" % retired)
+
+
+func test_event_dialog_action_buttons_keep_the_shared_variations() -> void:
+	var scene_text := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn")
+	for variation in ["SecondaryButton", "DangerButton", "PrimaryButton"]:
+		assert_contains(scene_text, variation,
+			"the action buttons should use the game's shared %s" % variation)
+
+
+func test_event_card_children_do_not_swallow_the_tap() -> void:
+	# The whole 992x410 card is the tap target; a child left on the
+	# default mouse filter would eat the click over its own rect.
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
+	for child in card.get_children():
+		assert_eq(child.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"%s should ignore the mouse so the card gets the tap" % child.name)
+	card.free()

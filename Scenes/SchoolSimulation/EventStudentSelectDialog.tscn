@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://event_student_select_dialog"]
+[gd_scene format=3 uid="uid://cc0owmbxv4r3g"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd" id="1_dialog"]
+[ext_resource type="Script" uid="uid://q2rywxai4x8w" path="res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd" id="1_dialog"]
+[ext_resource type="Texture2D" uid="uid://dffe8jahya5xe" path="res://Assets/Images/UI/Placeholders/icon_benefit.svg" id="2_6axh0"]
+[ext_resource type="Texture2D" uid="uid://dk30c4dkeha6g" path="res://Assets/Images/UI/Placeholders/icon_cost.svg" id="3_l76hw"]
 
-[node name="EventStudentSelectDialog" type="Control"]
+[node name="EventStudentSelectDialog" type="Control" unique_id=1536047944]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_dialog")
 
-[node name="BackgroundDim" type="Panel" parent="."]
+[node name="BackgroundDim" type="Panel" parent="." unique_id=1350618391]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"Scrim"
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="." unique_id=349683723]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,95 +34,129 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="DialogPanel" type="PanelContainer" parent="Margin"]
+[node name="DialogPanel" type="PanelContainer" parent="Margin" unique_id=921905465]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_type_variation = &"Card"
 
-[node name="Margin" type="MarginContainer" parent="Margin/DialogPanel"]
+[node name="Margin" type="MarginContainer" parent="Margin/DialogPanel" unique_id=216248843]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 14
 
-[node name="MainVBox" type="VBoxContainer" parent="Margin/DialogPanel/Margin"]
+[node name="MainVBox" type="VBoxContainer" parent="Margin/DialogPanel/Margin" unique_id=1852253158]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="TitleLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox"]
+[node name="TitleLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1680428600]
 layout_mode = 2
 theme_type_variation = &"H2Label"
-text = "📢 JUDUL EVENT"
+text = "JUDUL EVENT"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="DescLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox"]
+[node name="DescLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1579734788]
 layout_mode = 2
 text = "Deskripsi event..."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="CostBenefitLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox"]
+[node name="CostBenefitBox" type="VBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1858542439]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BenefitRow" type="HBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox/CostBenefitBox" unique_id=1739161299]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="Margin/DialogPanel/Margin/MainVBox/CostBenefitBox/BenefitRow" unique_id=1020468872]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("2_6axh0")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Margin/DialogPanel/Margin/MainVBox/CostBenefitBox/BenefitRow" unique_id=829364104]
 layout_mode = 2
 theme_type_variation = &"CaptionLabel"
-text = "📈 Manfaat: Stat +15
-📉 Biaya: Energy -15"
-horizontal_alignment = 1
-autowrap_mode = 2
+text = "Manfaat: Stat +15"
+vertical_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="Margin/DialogPanel/Margin/MainVBox"]
+[node name="CostRow" type="HBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox/CostBenefitBox" unique_id=225958111]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="Margin/DialogPanel/Margin/MainVBox/CostBenefitBox/CostRow" unique_id=176263310]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("3_l76hw")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Margin/DialogPanel/Margin/MainVBox/CostBenefitBox/CostRow" unique_id=789354069]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Biaya: Energy -15"
+vertical_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1473724341]
 layout_mode = 2
 
-[node name="StudentsHeaderLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox"]
+[node name="StudentsHeaderLabel" type="Label" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1179780684]
 layout_mode = 2
 theme_type_variation = &"CaptionLabel"
 text = "Pilih siswa yang akan diikutsertakan:"
 autowrap_mode = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Margin/DialogPanel/Margin/MainVBox"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1016174529]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="StudentsContainer" type="VBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox/ScrollContainer"]
+[node name="StudentsContainer" type="VBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox/ScrollContainer" unique_id=112726832]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 48
+theme_override_constants/separation = 24
 
-[node name="HSeparator2" type="HSeparator" parent="Margin/DialogPanel/Margin/MainVBox"]
+[node name="HSeparator2" type="HSeparator" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=1355988318]
 layout_mode = 2
 
-[node name="ActionVBox" type="VBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="SecondaryHBox" type="HBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox"]
+[node name="ActionVBox" type="VBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox" unique_id=552282594]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SelectAllButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox"]
+[node name="SecondaryHBox" type="HBoxContainer" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox" unique_id=1855464196]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SelectAllButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox" unique_id=550856707]
 custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SecondaryButton"
 text = "Pilih Semua"
 
-[node name="CancelButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox"]
-layout_mode = 2
+[node name="CancelButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox" unique_id=1297142109]
 custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"DangerButton"
 text = "Tidak / Lewati"
 
-[node name="ConfirmButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox"]
-layout_mode = 2
+[node name="ConfirmButton" type="Button" parent="Margin/DialogPanel/Margin/MainVBox/ActionVBox" unique_id=632157218]
 custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
 text = "Ya, Ikutsertakan (0)"

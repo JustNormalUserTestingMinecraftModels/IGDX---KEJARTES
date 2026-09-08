@@ -14,8 +14,11 @@ scale_max = 1.1
 color = Color(1, 0.827451, 0.2, 1)
 
 [node name="AnnouncementBurst" type="GPUParticles2D" unique_id=2026189597]
+emitting = false
 amount = 40
 texture = ExtResource("1_rakhx")
 lifetime = 0.9
+one_shot = true
+explosiveness = 1.0
 process_material = SubResource("ParticleProcessMaterial_753ck")
 script = ExtResource("2_wdi6v")

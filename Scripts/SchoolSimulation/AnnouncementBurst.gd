@@ -9,7 +9,6 @@ class_name AnnouncementBurst
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
-	one_shot = true
 	emitting = true
 	var t := lifetime + 0.2
 	await get_tree().create_timer(t).timeout

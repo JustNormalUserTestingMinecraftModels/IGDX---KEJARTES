@@ -48,6 +48,11 @@ var _is_closing: bool = false
 
 func _ready() -> void:
 	scrim.color = _scrim_color(0.0)
+	# Starts inert: the same tap that opened this popup (via a bar's
+	# gui_input) would otherwise also land on this full-screen scrim in
+	# the same frame and immediately close what it just opened. open()
+	# re-enables input once the reveal finishes.
+	scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	close_button.pressed.connect(close)
 	scrim.gui_input.connect(_on_scrim_input)
 
@@ -120,6 +125,9 @@ func open() -> void:
 	var tw := create_tween()
 	tw.set_trans(Tween.TRANS_LINEAR)
 	tw.tween_property(scrim, "color", _scrim_color(), scrim_fade_in_seconds)
+	tw.tween_callback(func() -> void:
+		if is_instance_valid(scrim):
+			scrim.mouse_filter = Control.MOUSE_FILTER_STOP)
 
 
 ## Slide the card out, fade the scrim, free this node, emit `closed`.

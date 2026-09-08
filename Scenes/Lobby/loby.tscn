@@ -6,6 +6,11 @@
 [ext_resource type="Texture2D" uid="uid://cd3yusfuaqa0h" path="res://Assets/Images/UI/Desain tanpa judul.png" id="3_2gra1"]
 [ext_resource type="Texture2D" uid="uid://i6ar7lc7f23j" path="res://Assets/Images/UI/pngwing.com (5).png" id="4_q6pla"]
 [ext_resource type="Texture2D" uid="uid://cjoky7bj16ciw" path="res://Assets/Images/UI/Koin.png" id="5_6pr0q"]
+[ext_resource type="Texture2D" uid="uid://c5uf1bkw1f3ui" path="res://Assets/Images/UI/Nav/icon_cta_student.png" id="9_dyk4g"]
+[ext_resource type="Texture2D" uid="uid://b0caiiviquf" path="res://Assets/Images/UI/Nav/icon_nav_koperasi.png" id="10_bfy74"]
+[ext_resource type="Texture2D" uid="uid://ddjx1gmpupjvv" path="res://Assets/Images/UI/Nav/icon_nav_rapor.png" id="11_4w5lf"]
+[ext_resource type="Texture2D" uid="uid://b83solgop708f" path="res://Assets/Images/UI/Nav/icon_nav_inventory.png" id="12_fb4vu"]
+[ext_resource type="Texture2D" uid="uid://ccu4bm5rdto8r" path="res://Assets/Images/UI/Nav/icon_cta_jadwal.png" id="13_85cl3"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://rdxrs4jl1r5r" path="res://Assets/Images/MuridPotrait/tanganThea.png" id="default_hand_tex"]
 [ext_resource type="Texture2D" uid="uid://dic0qp1gbfmij" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
@@ -310,69 +315,80 @@ stretch_mode = 5
 
 [node name="Student" type="Button" parent="." unique_id=1238526272]
 layout_mode = 0
-custom_minimum_size = Vector2(0, 96)
-offset_left = 156.0
-offset_top = 1351.0
-offset_right = 930.0
-offset_bottom = 1641.0
-theme_type_variation = &"LobbyNavButton"
+offset_left = 48.0
+offset_top = 1520.0
+offset_right = 1032.0
+offset_bottom = 1680.0
+theme_type_variation = &"LobbyCtaButton"
 text = "STUDENT"
+icon = ExtResource("9_dyk4g")
+expand_icon = true
 
 [node name="Koperasi" type="Button" parent="." unique_id=247017516]
 layout_mode = 0
-custom_minimum_size = Vector2(0, 96)
-offset_left = 28.0
-offset_top = 1729.0
-offset_right = 308.0
-offset_bottom = 1864.0
-theme_type_variation = &"LobbyNavButton"
+offset_left = 48.0
+offset_top = 1712.0
+offset_right = 354.0
+offset_bottom = 1872.0
+theme_type_variation = &"LobbyNavTile"
 text = "Koperasi"
+icon = ExtResource("10_bfy74")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="ReportStudent" type="Button" parent="." unique_id=803503757]
 layout_mode = 0
-custom_minimum_size = Vector2(0, 96)
-offset_left = 709.0
-offset_top = 1729.0
-offset_right = 1059.0
-offset_bottom = 1869.0
-theme_type_variation = &"LobbyNavButton"
-text = "REPORT STUDENT"
+offset_left = 724.0
+offset_top = 1712.0
+offset_right = 1030.0
+offset_bottom = 1872.0
+theme_type_variation = &"LobbyNavTile"
+text = "Rapor"
+icon = ExtResource("11_4w5lf")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="Inventory" type="Button" parent="." unique_id=1524317152]
 layout_mode = 0
-custom_minimum_size = Vector2(0, 96)
-offset_left = 359.0
-offset_top = 1708.0
-offset_right = 671.0
-offset_bottom = 1852.0
-theme_type_variation = &"LobbyNavButton"
+offset_left = 386.0
+offset_top = 1712.0
+offset_right = 692.0
+offset_bottom = 1872.0
+theme_type_variation = &"LobbyNavTile"
 text = "INVENTORY"
+icon = ExtResource("12_fb4vu")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="Jadwal" type="Button" parent="." unique_id=2126015085]
 layout_mode = 0
-custom_minimum_size = Vector2(0, 96)
-offset_left = 150.0
-offset_top = 1361.0
-offset_right = 934.0
-offset_bottom = 1628.0
-theme_type_variation = &"LobbyNavButton"
+offset_left = 48.0
+offset_top = 1520.0
+offset_right = 1032.0
+offset_bottom = 1680.0
+theme_type_variation = &"LobbyCtaButton"
 text = "JADWAL!"
+icon = ExtResource("13_85cl3")
+expand_icon = true
 
 [node name="JUDUL" type="Label" parent="." unique_id=1317986974]
 layout_mode = 0
-offset_left = 239.0
-offset_top = 96.0
-offset_right = 841.0
-offset_bottom = 382.0
+offset_left = 381.0
+offset_top = 40.0
+offset_right = 704.0
+offset_bottom = 140.0
 theme_type_variation = &"DisplayLabel"
 text = "KELAS"
 
 [node name="DisplayUang" type="TextureRect" parent="." unique_id=102747421]
 layout_mode = 0
-offset_left = 831.0
-offset_top = 358.0
-offset_right = 1120.7777
-offset_bottom = 521.0
+offset_left = 700.0
+offset_top = 1301.0
+offset_right = 1032.0
+offset_bottom = 1488.0
 texture = ExtResource("3_2gra1")
 expand_mode = 1
 flip_h = true
@@ -394,29 +410,26 @@ horizontal_alignment = 2
 
 [node name="DailyLogin" type="TextureButton" parent="." unique_id=1799090163]
 layout_mode = 0
-offset_left = 87.0
-offset_top = 391.0
-offset_right = 243.0
-offset_bottom = 547.0
+offset_left = 48.0
+offset_top = 1392.0
+offset_right = 144.0
+offset_bottom = 1488.0
 texture_normal = ExtResource("2_2gra1")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="DailyReward" type="TextureRect" parent="DailyLogin" unique_id=889996430]
+[node name="DailyReward" type="TextureRect" parent="." unique_id=889996430]
 layout_mode = 1
 anchors_preset = -1
-anchor_top = 1.0
-anchor_right = 5.9940004
-anchor_bottom = 2.9150002
-offset_left = -7.0
-offset_top = 11.0
-offset_right = -0.064086914
-offset_bottom = -26.74002
+offset_left = 80.0
+offset_top = 558.0
+offset_right = 1022.0
+offset_bottom = 819.0
 grow_vertical = 0
 texture = ExtResource("4_q6pla")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="DailyLogin/DailyReward" unique_id=1823371215]
+[node name="Label" type="Label" parent="DailyReward" unique_id=1823371215]
 layout_mode = 0
 offset_left = 276.0
 offset_top = 25.0
@@ -425,7 +438,7 @@ offset_bottom = 104.0
 theme_type_variation = &"H1Label"
 text = "Daily Reward"
 
-[node name="Day1" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=2016844990]
+[node name="Day1" type="TextureRect" parent="DailyReward" unique_id=2016844990]
 layout_mode = 0
 offset_left = 62.0
 offset_top = 141.0
@@ -434,7 +447,7 @@ offset_bottom = 218.0
 texture = ExtResource("5_6pr0q")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day1" unique_id=891884221]
+[node name="Label" type="Label" parent="DailyReward/Day1" unique_id=891884221]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 78.0
@@ -443,7 +456,7 @@ offset_bottom = 115.0
 theme_type_variation = &"CaptionLabel"
 text = "10G"
 
-[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day1" unique_id=1566304681]
+[node name="Label2" type="Label" parent="DailyReward/Day1" unique_id=1566304681]
 layout_mode = 0
 offset_left = 9.0
 offset_top = -42.0
@@ -452,7 +465,7 @@ offset_bottom = -5.0
 theme_type_variation = &"CaptionLabel"
 text = "Day1"
 
-[node name="Day2" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=380237506]
+[node name="Day2" type="TextureRect" parent="DailyReward" unique_id=380237506]
 layout_mode = 0
 offset_left = 200.0
 offset_top = 140.0
@@ -461,7 +474,7 @@ offset_bottom = 217.0
 texture = ExtResource("5_6pr0q")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day2" unique_id=2094990304]
+[node name="Label" type="Label" parent="DailyReward/Day2" unique_id=2094990304]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 78.0
@@ -470,7 +483,7 @@ offset_bottom = 115.0
 theme_type_variation = &"CaptionLabel"
 text = "10G"
 
-[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day2" unique_id=297315175]
+[node name="Label2" type="Label" parent="DailyReward/Day2" unique_id=297315175]
 layout_mode = 0
 offset_left = 9.0
 offset_top = -42.0
@@ -479,7 +492,7 @@ offset_bottom = -5.0
 theme_type_variation = &"CaptionLabel"
 text = "Day2"
 
-[node name="Day3" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1795176471]
+[node name="Day3" type="TextureRect" parent="DailyReward" unique_id=1795176471]
 layout_mode = 0
 offset_left = 343.0
 offset_top = 140.0
@@ -488,7 +501,7 @@ offset_bottom = 217.0
 texture = ExtResource("5_6pr0q")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day3" unique_id=1739539063]
+[node name="Label" type="Label" parent="DailyReward/Day3" unique_id=1739539063]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 78.0
@@ -497,7 +510,7 @@ offset_bottom = 115.0
 theme_type_variation = &"CaptionLabel"
 text = "10G"
 
-[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day3" unique_id=972452457]
+[node name="Label2" type="Label" parent="DailyReward/Day3" unique_id=972452457]
 layout_mode = 0
 offset_left = 9.0
 offset_top = -42.0
@@ -506,7 +519,7 @@ offset_bottom = -5.0
 theme_type_variation = &"CaptionLabel"
 text = "Day3"
 
-[node name="Day4" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=2125669158]
+[node name="Day4" type="TextureRect" parent="DailyReward" unique_id=2125669158]
 layout_mode = 0
 offset_left = 468.0
 offset_top = 143.0
@@ -515,7 +528,7 @@ offset_bottom = 220.0
 texture = ExtResource("5_6pr0q")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day4" unique_id=786889771]
+[node name="Label" type="Label" parent="DailyReward/Day4" unique_id=786889771]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 78.0
@@ -524,7 +537,7 @@ offset_bottom = 115.0
 theme_type_variation = &"CaptionLabel"
 text = "10G"
 
-[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day4" unique_id=2040716306]
+[node name="Label2" type="Label" parent="DailyReward/Day4" unique_id=2040716306]
 layout_mode = 0
 offset_left = 9.0
 offset_top = -42.0
@@ -533,7 +546,7 @@ offset_bottom = -5.0
 theme_type_variation = &"CaptionLabel"
 text = "Day4"
 
-[node name="Day5" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=1220563996]
+[node name="Day5" type="TextureRect" parent="DailyReward" unique_id=1220563996]
 layout_mode = 0
 offset_left = 585.0
 offset_top = 143.0
@@ -542,7 +555,7 @@ offset_bottom = 220.0
 texture = ExtResource("5_6pr0q")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day5" unique_id=1084961844]
+[node name="Label" type="Label" parent="DailyReward/Day5" unique_id=1084961844]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 78.0
@@ -551,7 +564,7 @@ offset_bottom = 115.0
 theme_type_variation = &"CaptionLabel"
 text = "10G"
 
-[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day5" unique_id=751138267]
+[node name="Label2" type="Label" parent="DailyReward/Day5" unique_id=751138267]
 layout_mode = 0
 offset_left = 9.0
 offset_top = -42.0
@@ -560,7 +573,7 @@ offset_bottom = -5.0
 theme_type_variation = &"CaptionLabel"
 text = "Day5"
 
-[node name="Day6" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=827404715]
+[node name="Day6" type="TextureRect" parent="DailyReward" unique_id=827404715]
 layout_mode = 0
 offset_left = 709.0
 offset_top = 142.0
@@ -569,7 +582,7 @@ offset_bottom = 219.0
 texture = ExtResource("5_6pr0q")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day6" unique_id=1473938138]
+[node name="Label" type="Label" parent="DailyReward/Day6" unique_id=1473938138]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 78.0
@@ -578,7 +591,7 @@ offset_bottom = 115.0
 theme_type_variation = &"CaptionLabel"
 text = "10G"
 
-[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day6" unique_id=1368493211]
+[node name="Label2" type="Label" parent="DailyReward/Day6" unique_id=1368493211]
 layout_mode = 0
 offset_left = 9.0
 offset_top = -42.0
@@ -587,7 +600,7 @@ offset_bottom = -5.0
 theme_type_variation = &"CaptionLabel"
 text = "Day6"
 
-[node name="Day7" type="TextureRect" parent="DailyLogin/DailyReward" unique_id=476878237]
+[node name="Day7" type="TextureRect" parent="DailyReward" unique_id=476878237]
 layout_mode = 0
 offset_left = 825.0
 offset_top = 139.0
@@ -596,7 +609,7 @@ offset_bottom = 216.0
 texture = ExtResource("5_6pr0q")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="DailyLogin/DailyReward/Day7" unique_id=1735433752]
+[node name="Label" type="Label" parent="DailyReward/Day7" unique_id=1735433752]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 78.0
@@ -605,7 +618,7 @@ offset_bottom = 115.0
 theme_type_variation = &"CaptionLabel"
 text = "10G"
 
-[node name="Label2" type="Label" parent="DailyLogin/DailyReward/Day7" unique_id=1632813634]
+[node name="Label2" type="Label" parent="DailyReward/Day7" unique_id=1632813634]
 layout_mode = 0
 offset_left = 9.0
 offset_top = -42.0
@@ -614,9 +627,9 @@ offset_bottom = -5.0
 theme_type_variation = &"CaptionLabel"
 text = "Day7"
 
-[node name="ButtonClaim" type="Button" parent="DailyLogin/DailyReward" unique_id=1114280413]
-layout_mode = 0
+[node name="ButtonClaim" type="Button" parent="DailyReward" unique_id=1114280413]
 custom_minimum_size = Vector2(0, 96)
+layout_mode = 0
 offset_left = 374.0
 offset_top = 257.0
 offset_right = 572.0

@@ -122,13 +122,26 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.outline_card, tokens.text_on_brand,
 		tokens.radius_pill)
 
-	# Lobby's five hub nav buttons used to point at three loose,
-	# hand-authored StyleBoxFlat .tres files (lobby_btn_normal/hover/
-	# pressed). Folded here so they obey the token cascade like every
-	# other button in the game instead of living outside the theme.
-	_add_button_variation(theme, tokens, "LobbyNavButton",
+	# The lobby's three destination tiles. Icon stacked over label: at
+	# the L step there is room for a 64px icon, an 8px gap and a
+	# font_title line inside the 120px content box, and the icon is what
+	# makes a destination scannable. Retired LobbyNavButton, which was
+	# one variation stretched across five boxes of five different sizes.
+	_add_button_variation(theme, tokens, "LobbyNavTile",
 		tokens.brand_primary_light, tokens.brand_primary_dark,
 		tokens.outline_card, tokens.text_on_brand)
+	theme.set_constant("icon_max_width", "LobbyNavTile", tokens.btn_icon_m)
+	theme.set_constant("h_separation", "LobbyNavTile", 8)
+
+	# The week's primary call to action. Horizontal rather than stacked:
+	# it is 984px wide, and a stacked icon in a banner that shape leaves
+	# exactly the horizontal emptiness this pass exists to remove.
+	_add_button_variation(theme, tokens, "LobbyCtaButton",
+		tokens.brand_primary_light, tokens.brand_primary_dark,
+		tokens.outline_card, tokens.text_on_brand)
+	theme.set_font_size("font_size", "LobbyCtaButton", tokens.font_h1)
+	theme.set_constant("icon_max_width", "LobbyCtaButton", tokens.btn_icon_l)
+	theme.set_constant("h_separation", "LobbyCtaButton", 24)
 
 	# Inventory's category filter row: a quiet pill at rest; the toggled-on
 	# chip renders with the pressed stylebox _add_button_variation already

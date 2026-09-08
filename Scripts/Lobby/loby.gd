@@ -56,16 +56,16 @@ extends Control
 
 @onready var money_label = $DisplayUang/Label
 @onready var daily_login_btn = $DailyLogin
-@onready var daily_reward = $DailyLogin/DailyReward
-@onready var claim_button = $DailyLogin/DailyReward/ButtonClaim
+@onready var daily_reward = $DailyReward
+@onready var claim_button = $DailyReward/ButtonClaim
 @onready var day_nodes = {
-	1: $DailyLogin/DailyReward/Day1,
-	2: $DailyLogin/DailyReward/Day2,
-	3: $DailyLogin/DailyReward/Day3,
-	4: $DailyLogin/DailyReward/Day4,
-	5: $DailyLogin/DailyReward/Day5,
-	6: $DailyLogin/DailyReward/Day6,
-	7: $DailyLogin/DailyReward/Day7,
+	1: $DailyReward/Day1,
+	2: $DailyReward/Day2,
+	3: $DailyReward/Day3,
+	4: $DailyReward/Day4,
+	5: $DailyReward/Day5,
+	6: $DailyReward/Day6,
+	7: $DailyReward/Day7,
 }
 
 @onready var portraits_back: Control = $StudentPortraitsContainer_Back
@@ -583,7 +583,11 @@ func _create_blur_overlay():
 	blur_overlay.visible = false
 	blur_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(blur_overlay)
-	# Place blur_overlay just before DailyLogin so it renders on top of other UI but behind the popup
+	# DailyReward is now a sibling of DailyLogin, not its child (Task 10
+	# re-anchored it to the scene root). Place blur_overlay just before
+	# DailyLogin -- still ahead of DailyReward in child order, since the
+	# reparent appended DailyReward at the end of the root's children --
+	# so it renders on top of the rest of the lobby UI but behind the popup.
 	move_child(blur_overlay, daily_login_btn.get_index())
 	# Connect click on blur overlay to close popup
 	blur_overlay.gui_input.connect(_on_blur_overlay_input)

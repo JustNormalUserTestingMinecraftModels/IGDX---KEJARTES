@@ -150,16 +150,6 @@ func test_natural_height_matches_the_size_step() -> void:
 ## shape as test_viewport_editability.gd's dict. An entry needs a reason.
 const HEIGHT_ALLOWED := {
 	# "Scenes/Foo/bar.tscn::SomeButton": "why this one is off-step",
-	"Scenes/Lobby/loby.tscn::Student":
-		"lobby CTA -- relaid out to the L step in Task 11, entry removed there",
-	"Scenes/Lobby/loby.tscn::Jadwal":
-		"lobby CTA -- relaid out to the L step in Task 11, entry removed there",
-	"Scenes/Lobby/loby.tscn::Koperasi":
-		"lobby nav tile -- relaid out to the L step in Task 11, entry removed there",
-	"Scenes/Lobby/loby.tscn::ReportStudent":
-		"lobby nav tile -- relaid out to the L step in Task 11, entry removed there",
-	"Scenes/Lobby/loby.tscn::Inventory":
-		"lobby nav tile -- relaid out to the L step in Task 11, entry removed there",
 }
 
 const SCENE_GLOB := "res://Scenes"

@@ -427,159 +427,41 @@ step 6, so they should not be split across sessions.
   raise `BASELINE`; if lobby work would add a runtime-constructed visual, it
   goes in the `.tscn` instead.
 
-## Known risk
+## Known risk — RESOLVED 2026-09-09
 
-Nine screens read `brand_primary` for something other than a button — washes,
-tints, focus rings, the event-row highlight noted at
-`tests/test_result_checkup.gd:847`. A brown at `#7A4A2B` is much darker than
-`#2e5bff`, so any place that composites it at low alpha over a light surface
-will read muddier rather than merely warmer. These need a visual pass after
-step 6, not just a green suite.
+Both risks below were checked directly during Part 1's Task 12. Recording the
+outcome rather than deleting the section: the next palette change hits the same
+two places.
 
-**`surface_page` is not only a theme value.** `SchoolDay.gd:321` lerps it toward
-each day's category accent to tint the simulation background, and
-`SimulationBackground.gd` starts its fill from it. Moving it from `#eef3ff` to
-`#FBF1E3` changes what all five day tints resolve to — a cool page lerped toward
-red gives a different result than a cream one. The five days need looking at
-directly; no test covers their appearance.
+**`brand_primary` washes — did not materialise.** The predicted failure was that
+`#7A4A2B`, being far darker than `#2e5bff`, would read muddy wherever it is
+composited at low alpha over a light surface. **There are no such call sites.**
+All seven consumers outside `Scripts/Design/` use it at full strength:
 
----
-
-# Part 2 — StudentCard rework
-
-Added 2026-09-08 after a second round of mentor feedback on this scene
-specifically. Depends on Part 1's tokens; do not start it before Part 1 step 6.
-
-## Findings
-
-Five reported, all confirmed by reading the scene. Three are structural, not
-cosmetic.
-
-1. **The identity block is baked into the artwork.** `card_bg.png` is a
-   1080x1920 PNG with the lavender panel *and* the strings "Nama / Jenis Kelamin
-   / Tanggal Lahir" painted into it. There is no node. All six cards therefore
-   show identical text, and it can never reflect the actual student. The panel is
-   a `#C6B6EE` -> `#9C8FBB` gradient, which is why the text on it reads poorly.
-2. **`PageLabel` overlaps the Persona pill by 43px, at rest.** Screen-space
-   `PageLabel` y 1502-1586; Persona pill y 1475-1545. This is static geometry in
-   the `.tscn`, not a swipe race as first suspected.
-3. **`TraitPill` overdraws its own rect.** It is a `StyleBoxTexture` with a 45px
-   9-slice margin (90px needed vertically) forced into a 70px-tall box, so the
-   art bleeds upward over `SifatPasifLabel`, which ends only 5px above it.
-4. **The arrows are pure `#FF0000`.** Every opaque pixel of
-   `pngwing.com (1).png` is primary red. `NextButtonKanan` also carries
-   `rotation = -3.1272` and `scale = 0.175` to reuse one asset for both
-   directions.
-5. **The backdrop out-saturates the card.** `meja_background.png` runs
-   `#E6A57D` -> `#884119`, mean luminance 130/255, under a mint `#D1F5E2` paper.
-   Near-complementary hues with the *background* more saturated than the content.
-
-### Also found
-
-- **A latent coordinate-system mismatch.** The trait pills are anchor-positioned
-  (`anchor_top` 0.7474 / 0.7865 of card height) while every sibling uses absolute
-  `layout_mode = 0` offsets, and `PageLabel` lives in scene space entirely. Three
-  coordinate systems in one vertical stack; any card resize desynchronises them.
-- **`BelajarButton` may render off-screen.** Authored at root-space y 1740-1900,
-  which is screen y 1994-2154 against a 1920-tall screen. It starts
-  `visible = false` and `student_card.gd:636` only tweens its `x`. **Verify
-  before fixing** — it is possible something repositions it that a static read
-  does not show.
-
-## Decisions
-
-| Decision | Choice |
+| Consumer | Use |
 |---|---|
-| Portrait / identity | **Swap** — portrait left, identity right |
-| Backdrop | **Generate a replacement** neutral oak PNG |
-| Six duplicated cards | **Collapse to one `PackedScene` template** |
+| `DailyDecayOverview.gd:169` | BBCode text colour |
+| `SchoolDay.gd:505` | BBCode text colour |
+| `EventAnnouncement.gd:128-129` | shader `color1`/`color2` on a gradient burst |
+| `WeekHistoryRow.gd:69` | badge `self_modulate`, beside `state_success`/`state_danger` |
+| `TraitDetailPopup.gd:83` | header `self_modulate`, matching the badge that opened it |
+| `Transition.gd:33` | the scene-transition cover |
 
-### The template extraction is safe
+No alpha compositing anywhere, so nothing to fix. Worth knowing: **every scene
+wipe in the game is now chocolate rather than blue**, because `Transition`'s
+cover colour is `brand_primary`. That is a large, deliberate, thematically
+correct change that no test covers.
 
-`student_card.gd` addresses card internals by string — `"KertasMurid1/Kepribadian1"`,
-`"KertasMurid1/KutuBuku"`, and the `CARD_ROW_ORDER` lookups at line 756. Those
-resolve as *instance name + child name*. Instancing the template six times as
-`KertasMurid1`..`KertasMurid6`, with child names preserved, leaves every one of
-those strings valid. No script change is required for the extraction itself.
+**`surface_page` day tints — safe by arithmetic.** `SchoolDay.gd` lerps
+`surface_page` toward each day's category accent at `DAY_TINT_STRENGTH = 0.12`.
+At 12%, even the deepest accent (`cat_libur` `#A66A07`) yields `#F1E1C9` — still
+unmistakably a light page. The move from a cool `#eef3ff` to a warm `#FBF1E3`
+base makes the five days warmer, which is the intent, and cannot make any of them
+dark.
 
-## New layout
-
-`StudentCardPaper.tscn`, 1080x1920, content inset to x 90-990. Card-local
-coordinates.
-
-| Element | x | y | Notes |
-|---|---|---|---|
-| Portrait frame | 90-390 | 260-650 | `radius_button`, `outline_card` rim |
-| Identity panel | 430-990 | 260-650 | `SunkenPanel`, warm cream |
-| Stat rows x5 | 90-990 | 700-1180 | 76 tall, 25 gap; label outside the bar |
-| `SifatPasifLabel` | 90-450 | 1230-1290 | |
-| Quirk pill | 90-990 | 1300-1396 | **96 tall** |
-| Persona pill | 90-990 | 1416-1512 | **96 tall** |
-| Approve / Batal | 290-790 | 1560-1720 | L step; shared slot, swapped visibility |
-| Left chevron | 90-210 | 1770-1890 | 120x120 |
-| Page pill | 440-640 | 1795-1865 | `CaptionLabel` on `SunkenPanel` |
-| Right chevron | 870-990 | 1770-1890 | 120x120 |
-
-**The pill height fixes finding 3 directly.** `TraitPill`'s 9-slice needs 90px
-vertically (45 + 45); at 96 it fits with 6px of centre slice left over. The
-current 70 is the defect.
-
-**The page indicator moves 250px clear of the pills**, which fixes finding 2 by
-separation rather than by nudging an offset.
-
-**The trait section becomes a `VBoxContainer`.** A container cannot overlap its
-own children, so this removes the whole class of bug instead of the instance.
-Same for the five stat rows.
-
-Single-column stats are a readability decision: the current two-column grid
-leaves each bar roughly 44px of usable track on a 1080-wide screen, with the
-label competing for the same space.
-
-## New theme variation
-
-`CardArrowButton` — 120x120, `radius_pill`, `brand_primary` fill, `outline_card`
-rim, standard shadow, chevron icon centred with no label.
-
-> **A reviewed exception to the fixed-radius rule.** Part 1 states every `Button`
-> uses `radius_button`. This one keeps `radius_pill` deliberately: at a fixed
-> 120x120 square, `radius_pill` yields an exact circle, and because the size is
-> fixed there is no height-dependent-radius risk. The new radius test must
-> allow-list it with this reasoning, not silently skip it.
-
-That takes Part 1's nine new variations to **ten**.
-
-## New assets
-
-- `meja_background.png` — **replaced in place.** Pale oak, low saturation, target
-  mean luminance ~190 (from 130), gentle grain, no strong vertical gradient.
-  Keeping the filename means no other reference changes.
-- `card_bg.png` — **re-authored.** Warm off-white paper (`surface_card`), soft
-  rounded corners and drop shadow. **No baked text and no baked panel** — the
-  identity block becomes real nodes.
-- `icon_chevron_left.png`, `icon_chevron_right.png` — 256x256 transparent, cream
-  glyph. Two separate assets rather than one rotated asset, which retires the
-  `rotation = -3.1272` / `scale = 0.175` hack on `NextButtonKanan`.
-
-## Test impact
-
-- `tests/test_student_card.gd` (if present) will need its node paths rechecked
-  after the template extraction.
-- **New test: no two siblings in the card overlap.** Walk the template's
-  `Control` children and assert their rects are disjoint. This is the direct
-  regression guard for findings 2 and 3, and it is cheap because the template is
-  now a single scene rather than six copies.
-- The existing 178px `Batal` and 160px `Aprove` both land on the L step, so they
-  pick up `DangerButtonL` / `SuccessButtonL` from Part 1.
-
-## Implementation order
-
-Slots in after Part 1 step 8.
-
-1. Verify the `BelajarButton` off-screen suspicion before changing it.
-2. Generate the three new assets.
-3. Build `StudentCardPaper.tscn` in the editor, child names preserved.
-4. Replace the six copies with instances; confirm the tutorial's string paths
-   still resolve by running the tutorial, not by reading it.
-5. Add `CardArrowButton`, rebake, update `DISPLAY_ROSTER`.
-6. Wire the identity labels to real student data — the first time this screen
-   has ever shown it.
+**Still unverified visually.** The deepened light-track accents
+(`cat_akademis`, `cat_senibudaya`, `cat_libur`, `cat_wirausaha`) also resolve
+through `category_color()` for AturJadwal's schedule pills and category icons.
+The lobby was checked in a running build; the schedule screen was **not**. That
+is the one visual claim in this pass resting on measurement rather than eyes, and
+`cat_libur`'s near-60% luminance cut is the most likely place to look first.

@@ -336,6 +336,18 @@ rather than having their own: `sfx_specialty_match` → `sfx_reward`; `tally` an
 `sfx_event_announce` (the mid-simulation event popup's open cue) aliases
 `reward.ogg` via a dedicated copy, `Assets/Audio/SFX/event_announce.ogg`.
 
+**Nav icons are generated geometry (2026-09-09).** The five icons in
+`Assets/Images/UI/Nav/` (`icon_nav_koperasi`, `icon_nav_inventory`,
+`icon_nav_rapor`, `icon_cta_jadwal`, `icon_cta_student`) were produced with
+PowerShell + `System.Drawing`, not hand-authored. They are correctly weighted
+transparent cream silhouettes that read at 48-80px and are fine to ship, but they
+are not illustration. Drop-replaceable at the same paths.
+
+**`DisplayUang`'s texture is off-palette.** `Assets/Images/UI/Desain tanpa
+judul.png` is pink/magenta and now visibly clashes with the warm chrome around
+it. It is also a 1920x1080 landscape image, which is why the lobby HUD chip is
+sized 332x187 rather than the 332x96 the layout would otherwise want.
+
 **Art placeholders.** The three particle sprites
 (`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven
 minigame result icons and the report icons

@@ -182,11 +182,15 @@ func test_energy_and_mood_bars_differ_only_in_fill() -> void:
 
 
 ## Which token each stat track fills with. The icons already tell the
-## three rows apart by subject; the fills now agree with them.
+## three rows apart by subject; the fills now agree with them. The card
+## background is dark, and a single category colour cannot achieve 3.0:1
+## contrast on both light and dark grounds. Each category carries a pair;
+## this card uses the on-dark variants. test_bar_contrast.gd enforces the
+## 3.0:1 floor on both halves.
 const _STAT_TRACK_FILL_TOKEN := {
-	"DaySummaryStatTrackAkademis": "cat_akademis",
-	"DaySummaryStatTrackSeniBudaya": "cat_senibudaya",
-	"DaySummaryStatTrackOlahraga": "cat_olahraga",
+	"DaySummaryStatTrackAkademis": "cat_akademis_on_dark",
+	"DaySummaryStatTrackSeniBudaya": "cat_senibudaya_on_dark",
+	"DaySummaryStatTrackOlahraga": "cat_olahraga_on_dark",
 }
 
 

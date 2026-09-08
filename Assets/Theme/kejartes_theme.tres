@@ -457,7 +457,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.18039216, 0.5254902, 0.84705883, 1)
+modulate_color = Color(0.23137255, 0.654902, 0.9607843, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_23nkv"]
 bg_color = Color(0.24705882, 0.18039216, 0.12941177, 1)
@@ -478,7 +478,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.8784314, 0.22745098, 0.09411765, 1)
+modulate_color = Color(1, 0.3529412, 0.21176471, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_505wk"]
 bg_color = Color(0.24705882, 0.18039216, 0.12941177, 1)
@@ -499,7 +499,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.30980393, 0.6392157, 0.09019608, 1)
+modulate_color = Color(0.41960785, 0.83137256, 0.14509805, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1sy04"]
 content_margin_left = 44.0
@@ -1772,7 +1772,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.18039216, 0.5254902, 0.84705883, 1)
+modulate_color = Color(0.12156863, 0.43529412, 0.7294118, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hs2ll"]
 texture = ExtResource("4_pbfill")
@@ -1790,7 +1790,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.8509804, 0.5568628, 0.043137256, 1)
+modulate_color = Color(0.6509804, 0.41568628, 0.02745098, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hwoyc"]
 texture = ExtResource("4_pbfill")
@@ -1808,7 +1808,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.30980393, 0.6392157, 0.09019608, 1)
+modulate_color = Color(0.23921569, 0.49803922, 0.07058824, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5i4oi"]
 texture = ExtResource("4_pbfill")
@@ -1817,7 +1817,7 @@ texture_margin_top = 24.0
 texture_margin_right = 24.0
 texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
-modulate_color = Color(0.05490196, 0.61960787, 0.47843137, 1)
+modulate_color = Color(0.039215688, 0.47843137, 0.36862746, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_t3mj5"]
 

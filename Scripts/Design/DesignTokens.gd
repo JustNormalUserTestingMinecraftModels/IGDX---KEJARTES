@@ -78,21 +78,33 @@ static func load_default() -> DesignTokens:
 
 @export_group("Category Accents")
 ## Tint for the Akademis schedule category and its StatBar/pill/icon uses
-## wherever `category_color("Akademis")` is called.
-@export var cat_akademis: Color = Color("2E86D8")
+## wherever `category_color("Akademis")` is called. Deepened from #2E86D8
+## on 2026-09-08: the original only measured 2.94:1 against surface_sunken,
+## below the light StatBar track's floor. #1F6FBA keeps the hue and
+## measures 4.01:1. Guarded by tests/test_bar_contrast.gd (floor 3.0).
+@export var cat_akademis: Color = Color("1F6FBA")
 ## Same as cat_akademis, for Olahraga.
 @export var cat_olahraga: Color = Color("E03A18")
-## Same as cat_akademis, for SeniBudaya.
-@export var cat_senibudaya: Color = Color("4FA317")
+## Same as cat_akademis, for SeniBudaya. Deepened from #4FA317 on
+## 2026-09-08: the original only measured 2.46:1 against surface_sunken,
+## below the light StatBar track's floor. #3D7F12 keeps the hue and
+## measures 3.82:1. Guarded by tests/test_bar_contrast.gd (floor 3.0).
+@export var cat_senibudaya: Color = Color("3D7F12")
 ## Same as cat_akademis, for Istirahat (the rest-day category, also reused
 ## as the "Mood" accent on need bars that aren't schedule categories).
 @export var cat_istirahat: Color = Color("7C3AED")
 ## Same as cat_akademis, for Libur (also reused as the "Energy" accent on
-## need bars, matching Istirahat's dual role).
-@export var cat_libur: Color = Color("D98E0B")
+## need bars, matching Istirahat's dual role). Deepened from #D98E0B on
+## 2026-09-08: the original only measured 2.07:1 against surface_sunken,
+## below the light StatBar track's floor. #A66A07 keeps the hue and
+## measures 3.46:1. Guarded by tests/test_bar_contrast.gd (floor 3.0).
+@export var cat_libur: Color = Color("A66A07")
 ## Wirausaha: the money-earning schedule activity. Teal keeps it clear of
-## the five existing category hues.
-@export var cat_wirausaha: Color = Color("0E9E7A")
+## the five existing category hues. Deepened from #0E9E7A on 2026-09-08:
+## the original only measured 2.62:1 against surface_sunken, below the
+## light StatBar track's floor. #0A7A5E keeps the hue and measures
+## 4.09:1. Guarded by tests/test_bar_contrast.gd (floor 3.0).
+@export var cat_wirausaha: Color = Color("0A7A5E")
 
 ## Akademis on a DARK ground. The light-track cat_akademis measures only
 ## 1.93:1 against day_bar_track and is unreadable there; this is the value

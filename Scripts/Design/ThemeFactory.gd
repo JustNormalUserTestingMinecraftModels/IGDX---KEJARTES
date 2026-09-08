@@ -860,11 +860,11 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 		["DaySummaryMoodBar", tokens.day_bar_track,
 			tokens.day_mood_fill, tokens.day_bar_radius],
 		["DaySummaryStatTrackAkademis", tokens.day_stat_track,
-			tokens.cat_akademis, tokens.radius_pill],
+			tokens.cat_akademis_on_dark, tokens.radius_pill],
 		["DaySummaryStatTrackSeniBudaya", tokens.day_stat_track,
-			tokens.cat_senibudaya, tokens.radius_pill],
+			tokens.cat_senibudaya_on_dark, tokens.radius_pill],
 		["DaySummaryStatTrackOlahraga", tokens.day_stat_track,
-			tokens.cat_olahraga, tokens.radius_pill],
+			tokens.cat_olahraga_on_dark, tokens.radius_pill],
 	]
 	for spec in bar_specs:
 		var name: String = spec[0]

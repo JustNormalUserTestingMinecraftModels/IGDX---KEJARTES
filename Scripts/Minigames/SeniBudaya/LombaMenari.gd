@@ -99,6 +99,15 @@ const BREATH_WIDTH_RATIO: float = -0.5
 ## of design_tokens.tres's Motion values, so it lives here as a knob rather
 ## than as a bare float at the call site.
 @export_range(0.05, 1.5, 0.01) var dancer_strike_duration: float = 0.65
+## Scale the SIDE pose (LEFT/RIGHT) snaps to. Toned down from (1.2, 0.85)
+## on 2026-09-08 -- the step now carries the motion, scale just accents it.
+@export var dancer_strike_scale_side: Vector2 = Vector2(1.08, 0.95)
+## Scale the UP pose (TOP_LEFT/TOP_RIGHT) snaps to. Toned down from
+## (1.15, 1.25) on 2026-09-08 for the same reason.
+@export var dancer_strike_scale_up: Vector2 = Vector2(1.05, 1.1)
+## How far the dancer steps toward the swiped side, in pixels. Sign is
+## applied at the call site: positive is screen-right.
+@export_range(0.0, 200.0, 1.0) var dancer_strike_offset: float = 36.0
 
 
 # The dancer's art moved to DancerRig.tscn on 2026-09-07: three body
@@ -181,6 +190,11 @@ var pattern_step_index: int = 0
 var dancer_tween: Tween
 var is_dancer_failed: bool = false
 var dancer_base_scale: Vector2 = Vector2.ONE
+## Her rest position (from the scene's anchors), captured once in _ready
+## so a pose strike can offset from it without fighting the anchor layout.
+var dancer_rest_position: Vector2 = Vector2.ZERO
+## Added to dancer_rest_position every frame -- the strike's sideways step.
+var dancer_base_position: Vector2 = Vector2.ZERO
 
 var hit_zone_base_scale: Vector2 = Vector2.ONE
 var hit_zone_base_rotation: float = 0.0
@@ -193,6 +207,8 @@ var min_swipe_length: float = 40.0 # Threshold for swipe detection
 
 func _ready() -> void:
 	super._ready()
+	if character_display:
+		dancer_rest_position = character_display.position
 	if background_rect:
 		if background_texture:
 			background_rect.texture = background_texture
@@ -282,6 +298,7 @@ func _process(delta: float) -> void:
 	if character_display and not is_dancer_failed:
 		character_display.scale = dancer_base_scale * _breath_scale(
 			time_elapsed, dancer_breath_rate, dancer_breath_amount)
+		character_display.position = dancer_rest_position + dancer_base_position
 
 	# The hit zone breathes on the same shape, a touch quicker, so it reads
 	# as alive without competing with the notes arriving into it.
@@ -707,6 +724,7 @@ func _create_flat_texture(color: Color) -> ImageTexture:
 func _set_dancer_idle() -> void:
 	is_dancer_failed = false
 	dancer_base_scale = Vector2.ONE
+	dancer_base_position = Vector2.ZERO
 	
 	if not character_display:
 		return
@@ -735,30 +753,38 @@ func _play_dancer_motion(swipe_type: int) -> void:
 		NoteType.LEFT:
 			pose = DancerRig.Pose.SIDE
 			flipped = true
-			scale_target = Vector2(1.2, 0.85)
+			scale_target = dancer_strike_scale_side
 		NoteType.RIGHT:
 			pose = DancerRig.Pose.SIDE
-			scale_target = Vector2(1.2, 0.85)
+			scale_target = dancer_strike_scale_side
 		NoteType.TOP_LEFT:
 			pose = DancerRig.Pose.UP
 			flipped = true
-			scale_target = Vector2(1.15, 1.25)
+			scale_target = dancer_strike_scale_up
 		NoteType.TOP_RIGHT:
 			pose = DancerRig.Pose.UP
-			scale_target = Vector2(1.15, 1.25)
+			scale_target = dancer_strike_scale_up
+
+	# She steps toward the side she swiped instead of just posing in place --
+	# reusing the mirroring flag the pose art already keys off, so LEFT and
+	# TOP_LEFT (flipped) step left, RIGHT and TOP_RIGHT step right.
+	var offset_target: Vector2 = Vector2(
+		-dancer_strike_offset if flipped else dancer_strike_offset, 0.0)
 
 	character_display.set_pose(pose, flipped)
 	character_display.set_failed(false)
 
-	# Spring dance motion tween updating base pose scale and rotation
+	# Spring dance motion tween updating base pose scale and step position
 	dancer_tween = create_tween()
 	dancer_tween.set_parallel(true)
 	dancer_tween.tween_property(self, "dancer_base_scale", scale_target, dancer_strike_duration).set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
-	
-	# Hold pose for 0.9s delay before smoothly returning base scale/rotation to Idle
+	dancer_tween.tween_property(self, "dancer_base_position", offset_target, dancer_strike_duration).set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
+
+	# Hold pose for 0.9s delay before smoothly returning base scale/position to Idle
 	dancer_tween.chain().tween_interval(0.9)
 	dancer_tween.chain().set_parallel(true)
 	dancer_tween.tween_property(self, "dancer_base_scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	dancer_tween.tween_property(self, "dancer_base_position", Vector2.ZERO, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	dancer_tween.chain().tween_callback(_set_dancer_idle)
 
 func _play_dancer_fail_motion() -> void:
@@ -769,7 +795,10 @@ func _play_dancer_fail_motion() -> void:
 		
 	if dancer_tween and dancer_tween.is_running():
 		dancer_tween.kill()
-		
+
+	dancer_base_position = Vector2.ZERO
+	character_display.position = dancer_rest_position
+
 	# No fail pose was drawn for this character. A miss is the idle pose
 	# tinted red, plus the shake-and-droop below.
 	character_display.set_pose(DancerRig.Pose.IDLE, false)

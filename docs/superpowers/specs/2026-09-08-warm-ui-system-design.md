@@ -156,11 +156,41 @@ All clear 3.5:1. The floor is set at **3.0:1** so there is headroom for tuning.
 - `content_margin_top/bottom = tokens.btn_pad_v` instead of `space_md`
 - `content_margin_left/right` stays `space_lg`
 
-`radius_pill` is **not** removed. It survives for non-button chips —
-`TraitPill`, `QuirkBadge`, `PersonaBadge`, the result badges and the score HUD —
-which should stay fully round precisely so they read as labels rather than as
-something tappable. The rule becomes: **every `Button` gets `radius_button`;
-chips keep `radius_pill`.**
+`_add_button_variation()` gains a trailing `radius := tokens.radius_button`
+parameter which it forwards to `_button_box()`. This is required, not cosmetic:
+`QuirkBadge` and `PersonaBadge` are chips that must stay fully round, but they
+are built *through* `_add_button_variation`, so without the parameter the
+"chips stay round" rule is unimplementable. `EventSelectCard` is card-shaped and
+takes `radius_lg` by the same mechanism.
+
+| Variation | Radius | Why |
+|---|---|---|
+| Primary / Secondary / Danger / Success (+M/L) | `radius_button` | the rule |
+| `FilterChipButton`, `LobbyNavTile`, `LobbyCtaButton` | `radius_button` | the rule |
+| `QuirkBadge`, `PersonaBadge` | `radius_pill` | chips, not buttons |
+| `EventSelectCard` | `radius_lg` | reads as a card |
+
+`radius_pill` is **not** removed. It survives for chips — `TraitPill` (which is
+a separate `StyleBoxTexture` build, not an `_add_button_variation` call), the two
+badges above, the result badges and the score HUD. The rule is: **every `Button`
+that reads as a button gets `radius_button`; chips and cards declare otherwise
+explicitly, in the table above.**
+
+### Button variations that bypass `_button_box()`
+
+Four `Button` type variations are built by hand and never touch `_pill()`. They
+are not optional to handle — the new "one radius" test walks every
+`Button`-based variation and would fail on all four.
+
+| Variation | Today | Action |
+|---|---|---|
+| `ShopShelfButton` | `radius_md` (24) | → `radius_button` |
+| `WeekTabButton` | `radius_md` top corners | → `radius_button` top corners; bottom stays square (it is a tab) |
+| `ShopHubTile` | `radius_lg` (36) on the hover/pressed washes | → `radius_button` |
+| `MainMenuButton` | `StyleBoxTexture`, no radius property | **allow-list**, with the reason recorded in the test |
+
+`MainMenuButton` is the only true exception, and it is an exception because the
+art dictates the silhouette. See Out of scope.
 
 `_pill()`'s doc comment currently describes an "Umamusume sheen" from a
 gradient. That framing goes with the rename; the warm system's affordance is the
@@ -199,6 +229,11 @@ All nine new variations must be added to `DISPLAY_ROSTER` in
 `tests/test_theme_factory.gd` — that roster is pinned in both directions, so
 omitting one fails the suite either way.
 
+**`LobbyNavButton` must be *removed* from `DISPLAY_ROSTER` in the same edit.**
+It is on the roster today at line 306; retiring it from `ThemeFactory` while
+leaving the roster entry fails the "roster name has the display font" assertion
+on a type that no longer exists.
+
 ### Bar styleboxes
 
 `_build_progress()`'s per-category fills continue to read `cat_*` (light
@@ -228,6 +263,24 @@ is the correct Indonesian term besides.
 
 Nothing in the portrait or desk art moves. The HUD relocates into space that is
 already empty, which is why this option was chosen over a scrimmed top bar.
+
+### Two constraints on the HUD nodes themselves
+
+Both were missed in the first draft and both block the rects above as written.
+
+- **`DisplayUang`'s texture is 1920×1080 landscape** (`Desain tanpa judul.png`,
+  drawn `flip_h`). Its current 290×163 rect is aspect 1.78 — an exact match. The
+  proposed 332×96 pill is aspect **3.46** and would visibly stretch the art.
+  Either author a new wide plaque asset, or keep the art's aspect and size the
+  chip **332×187** instead, moving the strip up to y 1300–1488. The second is
+  cheaper and is the default unless new art is wanted.
+- **`DailyLogin`'s reward popup is anchored to multiples of its parent** —
+  `DailyReward` carries `anchor_right = 5.994`, `anchor_bottom = 2.915`. The
+  panel's size is therefore *derived from the button's*: at the current 156px it
+  resolves to ~935px wide, and shrinking the button to 96px would drag the popup
+  down to ~575px and break its internal 7-day layout. Fix by **re-anchoring
+  `DailyReward` to the scene root** rather than to the button, before moving the
+  button. This is a prerequisite, not a follow-up.
 
 ## New assets
 
@@ -319,6 +372,13 @@ tints, focus rings, the event-row highlight noted at
 `#2e5bff`, so any place that composites it at low alpha over a light surface
 will read muddier rather than merely warmer. These need a visual pass after
 step 6, not just a green suite.
+
+**`surface_page` is not only a theme value.** `SchoolDay.gd:321` lerps it toward
+each day's category accent to tint the simulation background, and
+`SimulationBackground.gd` starts its fill from it. Moving it from `#eef3ff` to
+`#FBF1E3` changes what all five day tints resolve to — a cool page lerped toward
+red gives a different result than a cream one. The five days need looking at
+directly; no test covers their appearance.
 
 ---
 

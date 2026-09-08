@@ -91,6 +91,18 @@ extends BaseMinigame
 		if is_inside_tree():
 			_setup_layout()
 
+## Where the keeper's feet sit, as a fraction of his sprite height measured
+## down from the sprite's top edge. 1.0 stands him on the goal line that
+## goalie_depth_frac picks; kiper_idle.png draws the feet flush with the
+## bottom of the image (under 1% transparent padding), so 1.0 is the value
+## that actually grounds him. This was a hardcoded 0.78 until 2026-09-08,
+## which hung 22% of the sprite below the line and left him floating.
+@export_range(0.5, 1.2, 0.005) var goalie_feet_frac: float = 1.0:
+	set(value):
+		goalie_feet_frac = value
+		if is_inside_tree():
+			_setup_layout()
+
 ## The ball's resting height, as a fraction of viewport height.
 @export_range(0.0, 1.0, 0.005) var ball_start_height_frac: float = 0.86:
 	set(value):
@@ -360,7 +372,7 @@ func _setup_layout() -> void:
 		if goalie_gfx:
 			goalie_gfx.texture  = goalie_idle_texture
 			goalie_gfx.size     = Vector2(g_width, g_height)
-			goalie_gfx.position = Vector2(-g_width * 0.5, -g_height * 0.78)
+			goalie_gfx.position = Vector2(-g_width * 0.5, -g_height * goalie_feet_frac)
 			# Breathe about the feet, not the middle: a standing figure
 			# scaled about its centre lifts off the goal line. This has
 			# to live here rather than in _ready because this function

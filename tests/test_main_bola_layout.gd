@@ -165,6 +165,23 @@ func test_goalie_breathing_pivots_at_the_feet() -> void:
 		"the pivot's y should be the full height, i.e. the feet")
 
 
+func test_goalie_stands_on_the_goal_line_not_below_it() -> void:
+	# kiper_idle.png draws the keeper's feet flush with the bottom of the
+	# image (under 1% transparent padding), so the sprite has to be offset
+	# by its FULL height above the node's origin for the feet to land on
+	# the goal line goalie_depth_frac picks. This was a hardcoded 0.78
+	# until 2026-09-08, which left 22% of the sprite hanging below the
+	# line and the keeper reading as floating.
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_contains(src, "goalie_feet_frac",
+		"where the keeper's feet sit must be an Inspector knob, not a literal")
+	assert_contains(src, "-g_height * goalie_feet_frac",
+		"the sprite offset must read the knob rather than a hardcoded fraction")
+
+	assert_contains(src, "var goalie_feet_frac: float = 1.0",
+		"the default must ground the keeper: a full sprite height above the line")
+
+
 func test_goalie_breathing_pauses_while_a_shot_resolves() -> void:
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
 	assert_contains(src, "func _breathe_goalie",

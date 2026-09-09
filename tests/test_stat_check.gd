@@ -348,3 +348,63 @@ func test_hand_off_targets_the_end_cutscene_for_both_verdicts() -> void:
 		"so does a loss -- one scene dresses itself from GameState.run_failed")
 	assert_true(ResourceLoader.exists("res://Scenes/EndGame/EndCutscene.tscn"),
 		"the destination exists")
+
+
+func test_a_tap_rushes_the_current_student() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("func _unhandled_input("),
+		"the screen listens for a tap")
+	assert_true(src.contains("InputEventScreenTouch"), "touch on device")
+	assert_true(src.contains("InputEventMouseButton"), "and click in the editor")
+	assert_true(src.contains("func _rush_current_student()"), "the rush entry point")
+
+
+## The rush is scoped to one student: the flag resets as each card starts,
+## so a tap on student 2 never carries into student 3.
+func test_the_rush_flag_resets_per_student() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	var loop_at := src.find("for student in students:")
+	var reset_at := src.find("_rushing = false", loop_at)
+	var slide_at := src.find("await _slide_in(card)", loop_at)
+	assert_true(loop_at != -1 and reset_at != -1 and slide_at != -1,
+		"the loop resets the rush flag")
+	assert_true(reset_at < slide_at,
+		"the flag clears before the card animates, so each student starts unrushed")
+
+
+## The holds must be tweens, not SceneTreeTimers. A SceneTreeTimer cannot
+## be sped up, so a timer-based hold would ignore the tap and stall the
+## rush for its full duration.
+func test_the_holds_are_tween_based_so_they_can_be_rushed() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("func _hold("), "holds go through one helper")
+	assert_true(src.contains("tween_interval("), "which is a tween, not a timer")
+	assert_false(src.contains("create_timer(hold_seconds)"),
+		"no SceneTreeTimer hold survives -- it could not be rushed")
+
+
+## Rushing must not fire three tally cues inside one frame; they would
+## overlap into a click rather than reading as three clears.
+func test_a_rushed_student_plays_one_tally_not_three() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("if not _rushing:"),
+		"the per-row cue is suppressed while rushing")
+
+
+## The trailing hold and the slide-out are deliberately NOT rushed by the
+## first tap: the point is to reach the numbers sooner, not to hide them.
+func test_the_first_tap_leaves_the_read_beat_intact() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	var rows_at := src.find("for row in card.rows():")
+	var clear_at := src.find("_rushing = false", rows_at)
+	var slide_out_at := src.find("await _slide_out(card)", rows_at)
+	assert_true(clear_at != -1 and slide_out_at != -1 and clear_at < slide_out_at,
+		"the rush is stood down before the trailing hold, so it plays in full")
+
+
+func test_the_header_no_longer_claims_the_screen_is_not_tap_driven() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_false(src.contains("Deliberately NOT tap-driven"),
+		"the old decision is superseded")
+	assert_true(src.contains("tap"),
+		"and the header explains the tap that replaced it")

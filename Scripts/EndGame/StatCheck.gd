@@ -9,7 +9,15 @@ extends Control
 ## the roster is done the screen fades to white and hands off by verdict.
 ## Replaces both the exam-intro cutscene beat and the SemesterEnd carousel.
 ##
-## Deliberately NOT tap-driven: the check is a reveal the player watches.
+## The check is a reveal the player watches, but a tap anywhere rushes the
+## CURRENT student to its finished state -- bars, stars and pops land at
+## once. The trailing hold and the slide-out still play in full, so the
+## numbers stay readable; a second tap rushes those too. The next student
+## animates normally and needs its own tap.
+##
+## (This reverses the screen's original "deliberately not tap-driven"
+## rule, 2026-09-09, on the grounds that a player who has already read a
+## student should not have to wait out the animation.)
 ##
 ## @tool so the MCP test suite can instantiate the scene inside the
 ## editor; the sequence itself sits behind Engine.is_editor_hint() and is
@@ -27,6 +35,10 @@ const NEXT_SCENE_LOSE := "res://Scenes/EndGame/EndCutscene.tscn"
 ## per-call-dynamic exception (tests/test_viewport_editability.gd ALLOWED).
 const CARD_SCENE := preload("res://Scenes/EndGame/StatCheckCard.tscn")
 
+## Speed multiplier a rush applies to whichever tween is in flight. Matches
+## StatCheckRow.RUSH_SPEED and StarMeter.RUSH_SPEED.
+const RUSH_SPEED := 1000.0
+
 @export_group("Pacing")
 ## Seconds a card takes to slide in from the right edge (and out to the left).
 @export var slide_seconds: float = 0.45
@@ -43,6 +55,11 @@ const CARD_SCENE := preload("res://Scenes/EndGame/StatCheckCard.tscn")
 var _stars: float = 0.0
 var _total_stats: int = 0
 var _exiting: bool = false
+## True once the player has tapped during the current student. Reset at the
+## top of every card, which is what scopes a rush to one student.
+var _rushing: bool = false
+## Whichever beat is currently being awaited, held so a tap can rush it.
+var _live_tween: Tween = null
 
 
 func _ready() -> void:
@@ -70,26 +87,44 @@ func _run_check() -> void:
 	_stars = 0.0
 
 	for student in students:
+		# Reset before anything animates: each student starts unrushed, so
+		# a tap on one never carries into the next.
+		_rushing = false
+
 		var card: StatCheckCard = CARD_SCENE.instantiate()
 		card_slot.add_child(card)
 		card.bind(student)
 		await _slide_in(card)
 		if _abandoned():
 			return
-		await get_tree().create_timer(hold_seconds).timeout
+		await _hold(hold_seconds)
 		if _abandoned():
 			return
 
+		var rushed_clears := 0
 		for row in card.rows():
+			if _rushing:
+				row.rush()
 			await row.fill()
 			if _abandoned():
 				return
 			if row.cleared:
 				_stars += star_share(_total_stats)
 				star_meter.animate_to(_stars)
-				AudioDirector.play_sfx(&"tally")
+				if not _rushing:
+					AudioDirector.play_sfx(&"tally")
+				else:
+					# Three cues inside one frame overlap into a click.
+					rushed_clears += 1
+					star_meter.rush()
+		if rushed_clears > 0:
+			AudioDirector.play_sfx(&"tally")
 
-		await get_tree().create_timer(hold_seconds).timeout
+		# Stand the rush down before the read beat. The trailing hold and
+		# the slide-out play in full so the numbers can actually be read; a
+		# second tap rushes those.
+		_rushing = false
+		await _hold(hold_seconds)
 		if _abandoned():
 			return
 		await _slide_out(card)
@@ -101,6 +136,47 @@ func _run_check() -> void:
 	if _abandoned():
 		return
 	_hand_off()
+
+
+## A tap anywhere rushes the current student. No node is added for this --
+## nothing else on this screen is interactive, so a full-screen catcher
+## would only be one more thing to keep in front of the card.
+func _unhandled_input(event: InputEvent) -> void:
+	if Engine.is_editor_hint() or _exiting:
+		return
+	var pressed := (event is InputEventScreenTouch and event.pressed) \
+		or (event is InputEventMouseButton and event.pressed)
+	if pressed:
+		_rush_current_student()
+
+
+## Land the in-flight beat at once, and mark the rest of this student's
+## reveal as rushed.
+##
+## Speed-scaling rather than killing is load-bearing: Tween.kill() does not
+## emit `finished`, so killing the tween _run_check() is awaiting would
+## leave that await pending forever and strand the screen mid-card.
+func _rush_current_student() -> void:
+	_rushing = true
+	if _live_tween != null and _live_tween.is_valid():
+		_live_tween.set_speed_scale(RUSH_SPEED)
+	star_meter.rush()
+	var card: Node = card_slot.get_child(card_slot.get_child_count() - 1) \
+		if card_slot.get_child_count() > 0 else null
+	if card != null and card.has_method("rows"):
+		for row in card.rows():
+			row.rush()
+
+
+## A pause, as a tween rather than a SceneTreeTimer, so _rush_current_student()
+## can speed it up. A timer cannot be rushed, and a timer-based hold would
+## swallow the tap for its full duration.
+func _hold(seconds: float) -> void:
+	var tw := create_tween()
+	_live_tween = tw
+	tw.tween_interval(seconds)
+	await tw.finished
+	_live_tween = null
 
 
 ## True once this screen has been freed or pulled out of the tree -- which
@@ -124,18 +200,22 @@ func _slide_in(card: Control) -> void:
 	card.position.x = get_viewport_rect().size.x
 	AudioDirector.play_sfx(&"swipe")
 	var tw := create_tween()
+	_live_tween = tw
 	tw.tween_property(card, "position:x", rest.x, slide_seconds) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	await tw.finished
+	_live_tween = null
 
 
 ## Out to the left, easing in, so the next card's entrance reads as a
 ## continuation of the same pan.
 func _slide_out(card: Control) -> void:
 	var tw := create_tween()
+	_live_tween = tw
 	tw.tween_property(card, "position:x", -card.size.x, slide_seconds) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
 	await tw.finished
+	_live_tween = null
 
 
 func _fade_to_white() -> void:

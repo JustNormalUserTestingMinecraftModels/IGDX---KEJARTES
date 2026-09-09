@@ -40,6 +40,33 @@ extends Control
 ## BGM started when the run failed.
 @export var lose_bgm: StringName = &"result_lose"
 
+@export_group("Win lineup")
+## Splash art for roster name "Doni". Null leaves its slot hidden.
+@export var win_splash_doni: Texture2D
+## Splash art for roster name "Andi". Null leaves its slot hidden.
+@export var win_splash_andi: Texture2D
+## Splash art for roster name "Citra". Null leaves its slot hidden.
+@export var win_splash_citra: Texture2D
+## Splash art for roster name "Shinta". Null leaves its slot hidden.
+@export var win_splash_shinta: Texture2D
+## Splash art for roster name "Marcel". Null leaves its slot hidden.
+@export var win_splash_marcel: Texture2D
+## Splash art for roster name "Thea". Null leaves its slot hidden.
+@export var win_splash_thea: Texture2D
+## Fills the letterbox bars above and below the painting. Defaults to the
+## surface_overlay token so the bars read as the game's own chrome rather
+## than as a video letterbox.
+@export var bar_color: Color = Color("141a2e")
+## Texture every ground shadow wears. Drop-replacement point for real art.
+@export var shadow_texture: Texture2D
+## Alpha of every ground shadow, 0-1.
+@export var shadow_opacity: float = 0.28
+## Multiplies each student's measured foot span to get its shadow width.
+@export var shadow_spread: float = 1.25
+## Ellipse height as a fraction of its width. Lower reads as a flatter
+## floor, higher as a softer pool.
+@export var shadow_flatness: float = 0.28
+
 @export_group("Pacing")
 ## Seconds the opaque white overlay takes to clear.
 @export var white_fade_seconds: float = 0.8
@@ -63,10 +90,18 @@ extends Control
 ## Where the button goes.
 const RUN_RESULT_SCENE := "res://Scenes/EndGame/RunResult.tscn"
 
+## The backdrop's native size. Students are positioned in this space and
+## the whole Stage is scaled into the viewport, so numbers measured off
+## the mockup transfer 1:1 and the composition never drifts from the art.
+const ART_SIZE := Vector2(1536.0, 2048.0)
+
 @onready var backdrop: TextureRect = $Stage/Backdrop
 @onready var badge: TextureRect = $Badge
 @onready var btn_next: Button = $BtnNext
 @onready var white_fade: ColorRect = $WhiteFade
+@onready var stage: Control = $Stage
+@onready var shadows: Control = $Stage/Shadows
+@onready var students: Control = $Stage/Students
 ## Sits between Backdrop and Badge on purpose: the shader samples what is
 ## already drawn, so only the backdrop blurs and the badge stays sharp.
 @onready var blur_layer: ColorRect = $BlurLayer
@@ -100,11 +135,96 @@ func _ready() -> void:
 
 ## Reads the verdict once and dresses the screen for it. StatCheck decided
 ## it; this screen is only the reveal.
+##
+## The two paths diverge more than they used to. Lose keeps the CG and the
+## stamp. Win puts the roster on the new backdrop and shows no badge --
+## the chalkboard already reads "Selamat Kelulusan", so a LULUS stamp over
+## it would be redundant and would cover the art.
 func _dress_for_verdict() -> void:
 	var failed: bool = GameState.run_failed
 	backdrop.texture = lose_backdrop if failed else win_backdrop
 	badge.texture = lose_badge if failed else win_badge
+	# Stage stays visible either way -- Backdrop lives under it and carries
+	# both verdicts' art. The lineup slots are authored hidden and are only
+	# ever shown by _dress_lineup(), so the lose path never sees them.
+	if not failed:
+		_fit_stage()
+		_dress_lineup()
 	AudioDirector.play_bgm(lose_bgm if failed else win_bgm)
+
+
+## Letterbox the painting into the viewport: scale by the smaller ratio so
+## the whole 3:4 image survives on a 9:16 screen, and centre it. At
+## 1080x1920 this gives 1080x1440 with 240px bars top and bottom -- which
+## is where BtnNext sits, clear of the art.
+func _fit_stage() -> void:
+	var vp := get_viewport_rect().size
+	var s := minf(vp.x / ART_SIZE.x, vp.y / ART_SIZE.y)
+	stage.size = ART_SIZE
+	stage.scale = Vector2(s, s)
+	stage.position = (vp - ART_SIZE * s) * 0.5
+
+
+## Splash art for a roster name, or null when the name is unknown.
+##
+## Six separate exports rather than one Dictionary: a Dictionary's nested
+## values cannot be wired as Resources through the editor's property API,
+## so the paths stayed strings and the textures never loaded.
+func _splash_for(student_name: String) -> Texture2D:
+	match student_name:
+		"Doni": return win_splash_doni
+		"Andi": return win_splash_andi
+		"Citra": return win_splash_citra
+		"Shinta": return win_splash_shinta
+		"Marcel": return win_splash_marcel
+		"Thea": return win_splash_thea
+	return null
+
+
+## Put the run's own roster on the stage. Called only on the win path --
+## the lose branch keeps its CG and its stamp.
+##
+## Slots and shadows are authored nodes; this only sets texture, size,
+## position and visibility on them. Nothing is constructed here.
+func _dress_lineup() -> void:
+	var names: Array = []
+	for s in GameState.approved_students:
+		names.append(s.get("name", ""))
+
+	var placed := WinLineup.assign(names)
+	for i in range(4):
+		var sprite: TextureRect = students.get_node("Student%d" % (i + 1))
+		var shadow: TextureRect = shadows.get_node("Shadow%d" % (i + 1))
+		if i >= placed.size():
+			sprite.hide()
+			shadow.hide()
+			continue
+
+		var p: Dictionary = placed[i]
+		var tex: Texture2D = _splash_for(p["name"])
+		if tex == null:
+			push_warning("EndCutscene: no win splash for '%s'" % p["name"])
+			sprite.hide()
+			shadow.hide()
+			continue
+
+		# The splash is anchored bottom-centre: its canvas is square, so
+		# half its scaled width sits either side of the anchor and its
+		# full scaled height sits above it.
+		var side: float = tex.get_width() * float(p["scale"])
+		sprite.texture = tex
+		sprite.size = Vector2(side, side)
+		sprite.position = Vector2(p["anchor"]) - Vector2(side * 0.5, side)
+		sprite.show()
+
+		var sh := WinLineup.shadow_for(p, shadow_spread, shadow_flatness)
+		var sh_size: Vector2 = sh["size"]
+		var sh_centre: Vector2 = sh["centre"]
+		shadow.texture = shadow_texture
+		shadow.size = sh_size
+		shadow.position = sh_centre - sh_size * 0.5
+		shadow.modulate = Color(0.0, 0.0, 0.0, shadow_opacity)
+		shadow.show()
 
 
 ## The beat, as a coroutine -- never call this from a test.
@@ -117,10 +237,12 @@ func _play() -> void:
 	if not is_inside_tree():
 		return
 
-	_slam_badge()
-	await get_tree().create_timer(button_delay_seconds).timeout
-	if not is_inside_tree():
-		return
+	var failed: bool = GameState.run_failed
+	if failed:
+		_slam_badge()
+		await get_tree().create_timer(button_delay_seconds).timeout
+		if not is_inside_tree():
+			return
 
 	btn_next.disabled = false
 	Juice.pop_in(btn_next)

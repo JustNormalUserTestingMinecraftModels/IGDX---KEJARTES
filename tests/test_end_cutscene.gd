@@ -301,3 +301,45 @@ func test_the_next_button_sits_in_the_bottom_letterbox_bar() -> void:
 	var btn: Button = _scene().get_node("BtnNext")
 	assert_gt(btn.offset_top, 1680.0, "the button clears the bottom of the art")
 	assert_true(btn.offset_bottom <= 1920.0, "and stays on screen")
+
+
+func test_the_stage_fits_by_computed_scale_not_a_hardcoded_transform() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("func _fit_stage()"), "the stage is fitted by script")
+	assert_true(src.contains("minf("), "it fits by the smaller of the two ratios")
+	assert_false(src.contains("0.703125"),
+		"the letterbox scale is derived from the viewport, not pasted in")
+
+
+func test_the_lineup_comes_from_win_lineup() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("WinLineup.assign("),
+		"slot assignment lives in WinLineup, not here")
+	assert_true(src.contains("WinLineup.shadow_for("),
+		"so does shadow geometry")
+
+
+func test_the_win_path_skips_the_badge() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("if failed:"),
+		"the badge slam is behind the lose branch")
+	# The chalkboard already reads "Selamat Kelulusan"; a LULUS stamp over
+	# it is redundant and covers the art.
+	assert_true(src.contains("_slam_badge()"), "the lose path still stamps")
+
+
+func test_the_shadow_knobs_are_exported() -> void:
+	var s := _scene()
+	for prop in ["shadow_opacity", "shadow_spread", "shadow_flatness",
+			"bar_color", "win_splash_doni"]:
+		assert_true(prop in s, prop + " is tunable in the Inspector")
+
+
+## Six typed Texture2D exports, not one Dictionary -- a Dictionary's nested
+## values cannot be wired as Resources through the editor's property API, so
+## this proves _splash_for() resolves every roster name to a real texture,
+## not merely that a property exists.
+func test_every_roster_name_has_a_splash_wired() -> void:
+	var s := _scene()
+	for name in ["Doni", "Andi", "Citra", "Shinta", "Marcel", "Thea"]:
+		assert_true(s._splash_for(name) is Texture2D, name + "'s splash is a texture")

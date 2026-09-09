@@ -39,6 +39,13 @@ win_splash_marcel = ExtResource("10_c4p38")
 win_splash_thea = ExtResource("11_d01gn")
 shadow_texture = ExtResource("7_qxnts")
 
+[node name="BarFill" type="ColorRect" parent="." unique_id=1627736187]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.078431375, 0.101960786, 0.18039216, 1)
+
 [node name="Stage" type="Control" parent="." unique_id=1490079219]
 anchors_preset = 0
 offset_right = 1536.0

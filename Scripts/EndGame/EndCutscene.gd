@@ -119,6 +119,10 @@ func _ready() -> void:
 	btn_next.modulate.a = 0.0
 	btn_next.disabled = true
 
+	# Authored at the token's value too, but re-asserted so changing the
+	# export is enough -- the bars and the export must not drift apart.
+	$BarFill.color = bar_color
+
 	# Park the blur inert. lod 0 makes textureLod an identity sample and
 	# darkness 0 leaves the colour alone, so the layer is a no-op even if it
 	# is shown -- the scene authors darkness at the shader's own 0.3 default,

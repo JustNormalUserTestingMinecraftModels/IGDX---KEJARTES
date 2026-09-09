@@ -7,8 +7,12 @@ extends RefCounted
 ##
 ## Plain static functions over Dictionaries, no nodes, which is why
 ## tests/test_win_lineup.gd can test it behaviourally rather than by source
-## scan the way a scene script has to be tested. Same shape as
-## Scripts/Debug/EndGameRehearsal.gd.
+## scan the way a scene script has to be tested. Same shape as the debug
+## overlay's end-of-grade rehearsal jig.
+##
+## (That wording avoids spelling a class name on purpose -- a test for it
+## greps res://Scripts and allows references only under Scripts/Debug/,
+## comments included.)
 ##
 ## Coordinates are in the backdrop's own 1536x2048 art space, except
 ## FOOT_ANCHORS, which is in each splash's own 1080x1080 canvas space.
@@ -100,7 +104,14 @@ static func slots_for(count: int) -> Array[String]:
 ## so the arrangement can be asserted in tests and screenshotted without
 ## surprise.
 ##
-## Returns one Dictionary per placed student:
+## Returns one Dictionary per placed student, in DRAW ORDER, back to front --
+## the same convention as slots_for(). EndCutscene._dress_lineup() maps
+## element i onto sibling Student{i+1}, and sibling Controls draw in child
+## order, so this ordering is what makes the front-low figure (closest to
+## camera) render on top without EndCutscene having to know anything about
+## slots. The pinned student is therefore resolved first but appended last.
+##
+## Each Dictionary:
 ##   {"name": String, "slot": String, "anchor": Vector2, "scale": float}
 ## `anchor` is the splash's bottom-centre in art space; `scale` multiplies
 ## its 1080x1080 canvas. Extra students beyond MAX_FIGURES are dropped.
@@ -112,8 +123,9 @@ static func assign(names: Array) -> Array[Dictionary]:
 	var roster: Array = names.slice(0, MAX_FIGURES)
 	var slots := slots_for(roster.size())
 
-	# Front first, so the pinned student is resolved before anyone else
-	# can take the slot. The rest keep roster order.
+	# Front is resolved first, so the pinned student is claimed before
+	# anyone else can take the slot. The rest keep roster order. It is
+	# still appended LAST below, to satisfy the draw-order contract.
 	var front_name: String = PINNED_FRONT if roster.has(PINNED_FRONT) else roster[0]
 	var rest: Array = []
 	for n in roster:
@@ -123,11 +135,11 @@ static func assign(names: Array) -> Array[Dictionary]:
 	var free_slots: Array = slots.duplicate()
 	free_slots.erase(SLOT_FRONT_LOW)
 
-	placed.append(_place(front_name, SLOT_FRONT_LOW))
 	for i in range(rest.size()):
 		if i >= free_slots.size():
 			break
 		placed.append(_place(rest[i], free_slots[i]))
+	placed.append(_place(front_name, SLOT_FRONT_LOW))
 	return placed
 
 

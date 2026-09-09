@@ -343,3 +343,12 @@ func test_every_roster_name_has_a_splash_wired() -> void:
 	var s := _scene()
 	for name in ["Doni", "Andi", "Citra", "Shinta", "Marcel", "Thea"]:
 		assert_true(s._splash_for(name) is Texture2D, name + "'s splash is a texture")
+
+
+func test_the_letterbox_bars_are_painted() -> void:
+	var s := _scene()
+	var bars := s.get_node_or_null("BarFill")
+	assert_true(bars is ColorRect, "a ColorRect fills the letterbox bars")
+	assert_true(bars.get_index() < s.get_node("Stage").get_index(),
+		"the bars are behind the painting")
+	assert_true(bars.color.a > 0.9, "the bars are opaque -- nothing shows through")

@@ -116,17 +116,19 @@ func test_doni_takes_the_front_slot_at_every_roster_size() -> void:
 
 
 func test_everyone_else_fills_in_roster_order() -> void:
-	# Doni is second in roster order but takes the front slot, so Marcel,
-	# Andi and Citra fill the remaining three in the order they appear.
+	## Doni is second in roster order but takes the front slot, so Marcel, Andi
+	## and Citra fill the remaining three. The expected slots are named
+	## explicitly rather than re-derived from slots_for(): the arrangement order
+	## IS the composition, so a reordering of ARRANGEMENTS must fail here.
 	var placed := WinLineup.assign(["Marcel", "Doni", "Andi", "Citra"])
 	var by_name := {}
 	for p in placed:
 		by_name[p["name"]] = p["slot"]
-	var remaining := WinLineup.slots_for(4).duplicate()
-	remaining.erase(WinLineup.SLOT_FRONT_LOW)
-	assert_eq(by_name["Marcel"], remaining[0], "first non-Doni takes the first free slot")
-	assert_eq(by_name["Andi"], remaining[1], "second non-Doni takes the second")
-	assert_eq(by_name["Citra"], remaining[2], "third non-Doni takes the third")
+	assert_eq(by_name["Doni"], WinLineup.SLOT_FRONT_LOW, "Doni is pinned front")
+	assert_eq(by_name["Marcel"], WinLineup.SLOT_SIDE_LEFT,
+		"first non-Doni takes the backmost free slot")
+	assert_eq(by_name["Andi"], WinLineup.SLOT_SIDE_RIGHT, "second non-Doni")
+	assert_eq(by_name["Citra"], WinLineup.SLOT_FRONT_MID, "third non-Doni")
 
 
 func test_a_roster_without_doni_still_fills_the_front() -> void:

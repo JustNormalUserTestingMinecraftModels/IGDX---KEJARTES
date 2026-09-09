@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The countdown and the quit confirmation are shared by all eight minigames.
 ## Both used to be built node-by-node inside BaseMinigame, so neither could be

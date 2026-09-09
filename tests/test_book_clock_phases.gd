@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The school day used to be one continuous sky sweep with the event
 ## landing at a random 50-80% of it. It is now three named poses and two

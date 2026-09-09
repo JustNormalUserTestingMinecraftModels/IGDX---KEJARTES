@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The onboarding coach-mark. student_card.gd and SchoolDay.gd each built it
 ## by hand, and reading both before extracting turned up far more drift than

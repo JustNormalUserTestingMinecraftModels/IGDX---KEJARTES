@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## Motion Lab's skill assets (2026-09-05).
 ##

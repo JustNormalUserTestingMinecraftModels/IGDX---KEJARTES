@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## EndCutscene (2026-09-05): the win/lose beat between StatCheck and
 ## RunResult. One scene, dressed by GameState.run_failed.

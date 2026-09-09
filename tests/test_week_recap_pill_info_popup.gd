@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## WeekRecapPillInfoPopup: the explainer a player gets by tapping a
 ## headline pill on ResultCheckup's week recap banner. Structurally a

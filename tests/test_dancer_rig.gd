@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The dancer is two layers, not one sprite: a body that swaps pose and
 ## mirrors, and a head that does neither. The head's offset was solved

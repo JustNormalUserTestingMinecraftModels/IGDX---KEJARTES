@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The lobby's layered student face (StudentFace + Scenes/Lobby/CitraFace.tscn),
 ## which replaces the single flat portrait TextureRect for students that have

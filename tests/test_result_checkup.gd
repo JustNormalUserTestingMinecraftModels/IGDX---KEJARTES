@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The end-of-week report (ResultCheckup), rebuilt on the Daily Results
 ## card. The card's own geometry, art and daily behaviour belong to

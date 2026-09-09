@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The end-of-minigame result card: roughly 340 lines of runtime construction
 ## in BaseMinigame._show_result_overlay(), seen by every player after every

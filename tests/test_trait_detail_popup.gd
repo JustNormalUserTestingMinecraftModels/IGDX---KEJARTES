@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The quirk/persona detail modal, extracted from the verbatim copies in
 ## report_card.gd and student_card.gd.

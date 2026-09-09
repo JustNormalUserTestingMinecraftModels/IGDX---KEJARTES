@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## Badminton's art must be visible in the 2D viewport, not conjured in
 ## _ready(). The scene ships three ColorRect placeholders that the script used

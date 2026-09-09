@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## MainBola shipped as an invisible scene: every node had no position and no
 ## size, and _setup_layout() placed all of them at runtime from magic

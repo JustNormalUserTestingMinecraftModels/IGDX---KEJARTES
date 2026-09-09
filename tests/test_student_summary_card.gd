@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The Card+Margin chrome that SchoolDay's day-summary card,
 ## DailyDecayOverview's decay card and EventStudentSelectDialog's picker

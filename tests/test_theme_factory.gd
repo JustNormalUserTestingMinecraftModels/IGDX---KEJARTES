@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 func suite_name() -> String:
 	return "theme_factory"

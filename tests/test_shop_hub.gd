@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The Lobby's shop button now lands on a hub that splits consumables
 ## from cosmetics, rather than dropping straight into the Koperasi.

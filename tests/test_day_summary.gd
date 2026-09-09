@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The rebuilt Daily Results popup (spec:
 ## docs/superpowers/specs/2026-08-29-day-summary-mockup-design.md).

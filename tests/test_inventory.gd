@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## Inventory screen: 3-zone portrait layout, theme-driven (no per-node
 ## StyleBoxFlat overrides), routes to ItemDetailSheet + ApplyItemScreen.

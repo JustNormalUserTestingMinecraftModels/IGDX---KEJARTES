@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## One "icon (or glyph) + bar + number" row. SchoolDay's per-student
 ## energy/mood readout and DailyDecayOverview's end-of-day summary both

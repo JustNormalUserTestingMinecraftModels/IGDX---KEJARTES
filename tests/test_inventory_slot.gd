@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## One inventory grid slot, authored once as a scene instead of built
 ## node-by-node for every item on every category change.

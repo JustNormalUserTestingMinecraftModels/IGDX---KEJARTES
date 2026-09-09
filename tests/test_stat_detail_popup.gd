@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The stat-detail modal, now a scene rather than 168 lines of construction
 ## duplicated between report_card.gd and student_card.gd.

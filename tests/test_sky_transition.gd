@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The day-passing cinematic on SchoolDay: a square sky texture that
 ## rotates counter-clockwise around a stationary school foreground.

@@ -678,6 +678,27 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 const _CARD_ART := "res://Assets/Images/StudentCard/"
 
 
+## The stat pill's fill, optionally tinted.
+##
+## modulate_color MULTIPLIES against pill_fill.png, so the texture has to be
+## near-white for the accent to survive it. It was mid-grey (mean luminance
+## 133/255) until 2026-09-09, which rendered every accent at ~53% and put
+## the fills at 1.3-1.9:1 against the track -- under the 3.0 floor, while
+## test_bar_contrast.gd measured the untouched token and passed. The art is
+## now ~96%, so what lands on screen is close to the token itself.
+static func _pill_fill_stylebox(modulate: Color = Color.WHITE) -> StyleBoxTexture:
+	var fill := StyleBoxTexture.new()
+	fill.texture = load(_CARD_ART + "pill_fill.png")
+	# The art sits inset on a 256x256 canvas; region_rect crops to it so no
+	# transparent padding is stretched into the bar.
+	fill.region_rect = Rect2(59, 65, 150, 127)
+	# 28 px keeps both rounded ends intact inside a 67 px tall track
+	# (28 + 28 < 67); anything larger would overlap and distort them.
+	fill.set_texture_margin_all(28)
+	fill.modulate_color = modulate
+	return fill
+
+
 ## Variations used only by the student card's redesigned layout. The card
 ## background art paints the bio panel and the portrait frame, so these
 ## styles deliberately draw less than their siblings.
@@ -710,15 +731,36 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	pill_bg.set_content_margin_all(tokens.outline_width / 2.0)
 	theme.set_stylebox("background", "StatPill", pill_bg)
 
-	var pill_fill := StyleBoxTexture.new()
-	pill_fill.texture = load(_CARD_ART + "pill_fill.png")
-	# The art sits inset on a 256x256 canvas; region_rect crops to it so no
-	# transparent padding is stretched into the bar.
-	pill_fill.region_rect = Rect2(59, 65, 150, 127)
-	# 28 px keeps both rounded ends intact inside a 67 px tall track
-	# (28 + 28 < 67); anything larger would overlap and distort them.
-	pill_fill.set_texture_margin_all(28)
-	theme.set_stylebox("fill", "StatPill", pill_fill)
+	theme.set_stylebox("fill", "StatPill", _pill_fill_stylebox())
+
+	# -- Per-category pill siblings. --
+	#
+	# StatPill used to be tinted by StatBar.gd setting self_modulate on the
+	# node. That worked only while its background was a StyleBoxEmpty:
+	# self_modulate multiplies EVERYTHING the node draws, so the moment the
+	# pill grew a real track (above), the accent started multiplying the
+	# track's brown ground and cream rim too, giving each pill a differently
+	# tinted "empty" half.
+	#
+	# This is the same trap the StatBar family walked into and out of, and
+	# the same fix: one variation per category with the colour baked into
+	# the FILL stylebox, and a white self_modulate on the node. They share
+	# the single `pill_bg` instance, so the track stays identical across all
+	# six -- a new theme item added to plain "StatPill" will NOT reach these
+	# automatically and would need adding here too.
+	for spec in [
+		["StatPillAkademis", tokens.cat_akademis_on_dark],
+		["StatPillSeniBudaya", tokens.cat_senibudaya_on_dark],
+		["StatPillOlahraga", tokens.cat_olahraga_on_dark],
+		["StatPillIstirahat", tokens.cat_istirahat_on_dark],
+		["StatPillLibur", tokens.cat_libur_on_dark],
+		["StatPillWirausaha", tokens.cat_wirausaha_on_dark],
+	]:
+		var pill_name: String = spec[0]
+		theme.add_type(pill_name)
+		theme.set_type_variation(pill_name, "ProgressBar")
+		theme.set_stylebox("background", pill_name, pill_bg)
+		theme.set_stylebox("fill", pill_name, _pill_fill_stylebox(spec[1]))
 
 	# -- Trait button ("Sifat Pasif" pills): the art ships gold with its own
 	# purple border, so the stylebox draws it untinted. A modulate here

@@ -89,6 +89,22 @@ const _STAT_BAR_VARIATIONS := {
 	"Wirausaha": &"StatBarWirausaha",
 }
 
+## The same mapping for the student card's pill family. Kept as its own
+## table rather than derived by string-swapping "StatBar" for "StatPill":
+## an unrecognised category has to fall back to a variation that actually
+## exists in the theme, and a derived name would silently produce one that
+## does not.
+const _STAT_PILL_VARIATIONS := {
+	"Akademis": &"StatPillAkademis",
+	"Akademik": &"StatPillAkademis",
+	"SeniBudaya": &"StatPillSeniBudaya",
+	"Seni Budaya": &"StatPillSeniBudaya",
+	"Olahraga": &"StatPillOlahraga",
+	"Istirahat": &"StatPillIstirahat",
+	"Libur": &"StatPillLibur",
+	"Wirausaha": &"StatPillWirausaha",
+}
+
 
 func _apply_tint() -> void:
 	if variation == &"StatBar":
@@ -103,22 +119,28 @@ func _apply_tint() -> void:
 		if is_inside_tree():
 			theme_type_variation = target
 		return
-	# Any other family (StatPill on StudentCard): its track is either
-	# painted into the scene art or an empty stylebox, so theme_type_variation
-	# just selects the family here -- it never encodes a category the way the
-	# StatBar branch above does.
+	# StatPill (StudentCard) now works exactly like the StatBar family
+	# above: the category picks a sibling variation whose FILL stylebox
+	# has the colour baked in, and the node itself stays untinted.
+	#
+	# It used to set self_modulate to the on-dark accent instead, which was
+	# safe only while StatPill's background was a StyleBoxEmpty and the
+	# track was painted into card_bg.png. When the painted chips were
+	# deleted and StatPill grew a real track, self_modulate -- which
+	# multiplies everything the node draws, not just the fill -- started
+	# tinting that track too, so each pill's "empty" half took on its own
+	# category's hue.
+	self_modulate = Color.WHITE
+	if variation == &"StatPill":
+		var pill: StringName = _STAT_PILL_VARIATIONS.get(category, &"StatPill")
+		if is_inside_tree():
+			theme_type_variation = pill
+		return
+
+	# Any other family: theme_type_variation just selects it verbatim -- it
+	# never encodes a category the way the two branches above do.
 	if is_inside_tree():
 		theme_type_variation = variation
-	# StatPill (StudentCard): its background stylebox is empty, so what
-	# actually shows behind the fill is the DARK track painted straight into
-	# card_bg.png -- not a light ProgressBar surface. self_modulate must
-	# therefore come from the on-dark accent set, not the light-chrome one;
-	# pairing a light-chrome accent with that dark painted track is exactly
-	# what made these bars read dark and muddy.
-	var tokens := DesignTokens.load_default()
-	if tokens == null:
-		return
-	self_modulate = tokens.category_color_on_dark(category)
 
 
 ## Only ever touches a ValueLabel when show_value_label is true. This

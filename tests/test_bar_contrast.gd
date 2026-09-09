@@ -78,19 +78,68 @@ func test_light_chrome_accents_stay_legible() -> void:
 				% [category, ratio, FLOOR])
 
 
-func test_stat_bar_on_dark_accents_clear_the_floor() -> void:
-	# StatBar and its six per-category siblings now draw on stat_bar_track
-	# (dark) with the bright cat_*_on_dark fills, mirroring the DaySummary
-	# bars above. Every ratio here should beat what the old light-track
-	# fills measured, while using brighter colours.
+## The fill textures a bar's accent is multiplied through, and the region
+## of each that its stylebox actually crops to.
+const _FILL_ART := {
+	"res://Assets/Images/UI/progress_bar_fill.png": Rect2i(60, 66, 148, 124),
+	"res://Assets/Images/StudentCard/pill_fill.png": Rect2i(59, 65, 150, 127),
+}
+
+## How dark a fill texture may be before it starts eating the accent. At
+## 0.90 a token measured at the floor still renders within a hair of it.
+const _MIN_FILL_BRIGHTNESS := 0.90
+
+
+## Mean luminance of a fill texture's cropped region, 0..1 -- the factor a
+## StyleBoxTexture's modulate_color is multiplied by before it reaches the
+## screen.
+func _fill_brightness(path: String, region: Rect2i) -> float:
+	var texture: Texture2D = load(path)
+	var image := texture.get_image()
+	var total := 0.0
+	var count := 0
+	for y in range(region.position.y, region.end.y):
+		for x in range(region.position.x, region.end.x):
+			var c := image.get_pixel(x, y)
+			if c.a < 0.5:
+				continue
+			total += 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
+			count += 1
+	return total / maxf(count, 1)
+
+
+## Measures the fill as it is DRAWN, not as it is declared.
+##
+## This test used to read cat_*_on_dark straight off the tokens and call
+## it the fill colour. It is not: both fill styleboxes are textures, and
+## modulate_color multiplies the accent through the art. Those textures
+## were mid-grey (mean luminance ~0.53), so every bar rendered at about
+## half the token's brightness and measured 1.3-1.9:1 against the track --
+## while this test read 3.6-5.9:1 and passed. The user saw dark bars a
+## green suite said were fine.
+##
+## So the brightness of each texture is measured from the PNG and folded
+## into the colour before the ratio is taken, and the textures themselves
+## are held above a floor so a future art pass cannot re-open the gap by
+## darkening them back down.
+func test_stat_bar_on_dark_accents_clear_the_floor_as_rendered() -> void:
 	var tokens := DesignTokens.load_default()
-	for category in ["Akademis", "Olahraga", "SeniBudaya",
-			"Istirahat", "Libur", "Wirausaha"]:
-		var fill := tokens.category_color_on_dark(category)
-		var ratio := _contrast(fill, tokens.stat_bar_track)
-		assert_true(ratio >= FLOOR,
-			"%s on-dark is %s against stat_bar_track -- %.2f:1, floor is %.1f"
-				% [category, fill.to_html(false), ratio, FLOOR])
+	for path in _FILL_ART:
+		var brightness := _fill_brightness(path, _FILL_ART[path])
+		assert_true(brightness >= _MIN_FILL_BRIGHTNESS,
+			"%s is %.2f bright; a modulate through it would cut every accent "
+				% [path, brightness]
+				+ "to that fraction (floor %.2f)" % _MIN_FILL_BRIGHTNESS)
+
+		for category in ["Akademis", "Olahraga", "SeniBudaya",
+				"Istirahat", "Libur", "Wirausaha"]:
+			var token := tokens.category_color_on_dark(category)
+			var rendered := Color(token.r * brightness, token.g * brightness,
+				token.b * brightness, 1.0)
+			var ratio := _contrast(rendered, tokens.stat_bar_track)
+			assert_true(ratio >= FLOOR,
+				"%s renders as %s through %s -- %.2f:1 against stat_bar_track, floor is %.1f"
+					% [category, rendered.to_html(false), path.get_file(), ratio, FLOOR])
 
 
 func test_libur_and_currency_gold_are_distinguishable() -> void:

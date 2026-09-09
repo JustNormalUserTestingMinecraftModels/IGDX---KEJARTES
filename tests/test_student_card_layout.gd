@@ -125,19 +125,22 @@ func test_bars_carry_no_text_children() -> void:
 		"card bars must opt into the StatPill variation")
 
 
-## Behavioural companion to the source scan above. StudentCardView.gd:161
-## sets `bar.variation = &"StatPill"` at RUNTIME, after the bar has already
-## gone through _ready() with the default "StatBar" family -- which force-
-## sets self_modulate to white for that family (see StatBar._apply_tint()).
-## A `variation` setter that only wrote theme_type_variation left
-## self_modulate stuck at that earlier white and the pill rendered blank --
-## this reproduces the exact sequence StudentCardView performs and would
-## have caught it.
+## Behavioural companion to the source scan above. StudentCardView sets
+## `bar.variation = &"StatPill"` at RUNTIME, after the bar has already gone
+## through _ready() with the default "StatBar" family -- so the setter has
+## to re-derive the whole look, not just write theme_type_variation. An
+## earlier setter that wrote only theme_type_variation left the pill
+## rendering blank; this reproduces the exact sequence and would catch it.
 ##
-## The expected colour is the ON-DARK accent, not the light-chrome one:
-## StatPill's background is a StyleBoxEmpty, so what sits behind the fill is
-## the dark track painted into card_bg.png. Pairing a light-chrome accent
-## with that dark ground is what made these bars read muddy.
+## What "the whole look" means changed on 2026-09-09. The pill used to be
+## tinted by setting self_modulate to the on-dark accent, which was safe
+## only while StatPill's background was a StyleBoxEmpty over a track
+## painted into card_bg.png. Once the painted chips were deleted and
+## StatPill grew a real track, self_modulate -- which multiplies
+## EVERYTHING the node draws -- began tinting that track too, giving each
+## pill a differently coloured "empty" half. So the category now selects a
+## sibling variation with the colour baked into its fill, exactly as the
+## StatBar family already did, and the node stays white.
 func test_switching_variation_at_runtime_rederives_the_tint() -> void:
 	var bar := StatBar.new()
 	bar.category = "Olahraga"
@@ -146,14 +149,32 @@ func test_switching_variation_at_runtime_rederives_the_tint() -> void:
 	# Default family, as _ready() left it.
 	assert_eq(bar.self_modulate, Color.WHITE,
 		"sanity check: the default StatBar family starts self_modulate white")
+	assert_eq(bar.theme_type_variation, &"StatBarOlahraga",
+		"sanity check: the default family resolves its own per-category sibling")
 
 	bar.variation = &"StatPill"
 
-	var tokens := DesignTokens.load_default()
-	assert_eq(bar.self_modulate, tokens.cat_olahraga_on_dark,
-		"switching to StatPill at runtime must re-derive self_modulate from the category")
-	assert_eq(bar.theme_type_variation, &"StatPill",
-		"switching to StatPill at runtime must still update theme_type_variation")
+	assert_eq(bar.theme_type_variation, &"StatPillOlahraga",
+		"switching to StatPill at runtime must resolve the per-category pill")
+	assert_eq(bar.self_modulate, Color.WHITE,
+		"the pill must NOT tint the node -- self_modulate would colour its track too")
+
+
+## An unrecognised category must land on a variation that exists in the
+## theme. Deriving the pill name by string-swapping "StatBar" for
+## "StatPill" would produce one that does not, so the mapping is its own
+## table and the fallback is the plain family.
+func test_an_unknown_category_falls_back_to_a_real_variation() -> void:
+	var theme: Theme = load("res://Assets/Theme/kejartes_theme.tres")
+	for family in [&"StatBar", &"StatPill"]:
+		var bar := StatBar.new()
+		bar.category = "NotACategory"
+		Engine.get_main_loop().root.add_child(bar)
+		track(bar)
+		bar.variation = family
+		assert_true(theme.has_type(bar.theme_type_variation),
+			"%s with an unknown category resolved to %s, which the theme does not define"
+				% [family, bar.theme_type_variation])
 
 
 ## The icon replaces the bar's old name label, and with the magnifier gone

@@ -93,3 +93,38 @@ func test_the_rows_are_divided_by_hairlines() -> void:
 		"the activity rows should be divided by the hairline variation")
 	var count := src.count("PreviewRowSeparator")
 	assert_eq(count, 4, "five rows need exactly four separators, found %d" % count)
+
+
+## Panel has no pressed state, so the sink is driven from the Button that
+## wraps it. Signal wiring stays ungated by Engine.is_editor_hint so this
+## can be exercised without instantiating the scene.
+func test_the_row_wires_its_own_press_state() -> void:
+	var f := FileAccess.open("res://Scripts/AturJadwal/ActivityRow.gd", FileAccess.READ)
+	assert_not_null(f, "could not open ActivityRow.gd")
+	var src := f.get_as_text()
+	f.close()
+	assert_contains(src, "button_down.connect",
+		"Panel has no pressed state; the row must drive it from the Button")
+	assert_contains(src, "button_up.connect",
+		"a press with no release leaves the row stuck sunken")
+	assert_contains(src, "PreviewRowPressed",
+		"the press should swap to the baked pressed variation")
+
+
+## The behavioural half: pressing must actually change the container's
+## variation, and releasing must put it back.
+func test_pressing_the_row_swaps_the_container_variation() -> void:
+	var scene: PackedScene = load("res://Scenes/AturJadwal/ActivityRow.tscn")
+	var row := scene.instantiate() as ActivityRow
+	Engine.get_main_loop().root.add_child(row)
+	track(row)
+	var container := row.get_node("Container") as Panel
+	assert_eq(container.theme_type_variation, &"PreviewRow",
+		"a resting row wears the plain cream variation")
+	row.button_down.emit()
+	assert_eq(container.theme_type_variation, &"PreviewRowPressed",
+		"holding the row must sink it")
+	row.button_up.emit()
+	assert_eq(container.theme_type_variation, &"PreviewRow",
+		"releasing must lift it back, or the row stays stuck sunken")
+	row.queue_free()

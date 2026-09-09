@@ -78,6 +78,11 @@ extends Button
 
 
 func _ready() -> void:
+	# Ungated by Engine.is_editor_hint deliberately: pure signal wiring, so
+	# the suite can exercise the press without instantiating the popup.
+	button_down.connect(_on_row_pressed)
+	button_up.connect(_on_row_released)
+
 	var label := get_node_or_null("NameLabel") as Label
 	if label:
 		label.text = display_name
@@ -109,6 +114,23 @@ func _ready() -> void:
 		var chips := get_node_or_null("Container/Pill/Chips") as HBoxContainer
 		if chips:
 			chips.alignment = BoxContainer.ALIGNMENT_BEGIN
+
+
+## Panel has no pressed state of its own, so the row's Button drives it.
+## Swapping the variation rather than tweening a colour keeps the change
+## in the theme, where the rest of the row's styling already lives.
+func _on_row_pressed() -> void:
+	var container := get_node_or_null("Container") as Panel
+	if container:
+		container.theme_type_variation = &"PreviewRowPressed"
+
+
+## Paired with _on_row_pressed. Without this the row stays sunken after
+## the first tap.
+func _on_row_released() -> void:
+	var container := get_node_or_null("Container") as Panel
+	if container:
+		container.theme_type_variation = &"PreviewRow"
 
 
 func _icon_for(key: String) -> Texture2D:

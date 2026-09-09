@@ -141,7 +141,7 @@ static func load_default() -> DesignTokens:
 ##
 ## Pink and yellow are the two hues the six schedule categories left free.
 ## Yellow does sit near cat_libur's amber (about 12 degrees of hue apart) --
-## they are told apart by motif, lidah api against truntum, which is
+## they are told apart by motif, a bolt against a sun, which is
 ## precisely what the motif system is for. The two never share a screen in
 ## any case: libur is a schedule category, energy is a per-student need.
 @export var cat_mood_on_dark: Color = Color("E86FA8")

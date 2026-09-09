@@ -412,8 +412,9 @@ second tile has to lead somewhere; nothing behind it is designed yet.
 **Bar fill motifs are generated geometry (2026-09-09).** The eight tiles in
 `Assets/Images/UI/BarFill/` (`fill_akademis`, `fill_senibudaya`,
 `fill_olahraga`, `fill_wirausaha`, `fill_istirahat`, `fill_libur`,
-`fill_mood`, `fill_energi`) carry batik motifs -- nitik, parang, lereng,
-ceplok, kawung, truntum, sulur, lidah api -- drawn with PowerShell +
+`fill_mood`, `fill_energi`) carry one motif each -- a book, tenun chevrons,
+the batik lereng diagonal, a coin, a crescent, a sun, a heart, a bolt --
+drawn with PowerShell +
 `System.Drawing`, not hand-authored. They are deliberately drop-in: same
 256x256 canvas, region (60,66) 148x124, near-white body, motif at a light
 grey. Hand-drawn art at the same paths needs no code change. Two

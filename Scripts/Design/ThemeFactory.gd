@@ -612,10 +612,13 @@ const _BAR_FILL_BY_CATEGORY := {
 ## A bar's fill: the stat's own motif tile, tinted by its accent.
 ##
 ## Every bar used to share ONE near-white capsule that each category tinted.
-## Since 2026-09-09 each stat has its own tile carrying a batik motif --
-## nitik for akademis, parang for seni budaya, kawung for istirahat and so
-## on -- so a bar is identifiable by texture as well as by hue. `category`
-## empty falls back to the plain untextured capsule.
+## Since 2026-09-09 each stat has its own tile carrying its own motif, so a
+## bar is identifiable by texture as well as by hue. Six are objects -- a
+## book, a coin, a crescent, a sun, a heart, a bolt -- and two are woven
+## geometry, because at bar scale the two stats that most need telling
+## apart do better as texture than as a picture: seni budaya wears tenun
+## chevrons and olahraga the batik lereng diagonal. `category` empty falls
+## back to the plain untextured capsule.
 ##
 ## The centre slice TILES rather than stretching. That is load-bearing: a
 ## stretched centre would smear the motif horizontally as the bar fills.

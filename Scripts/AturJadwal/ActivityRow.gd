@@ -155,6 +155,13 @@ func refresh(student: Dictionary, grade: int, progress_percent: float) -> void:
 		child.queue_free()
 		chips.remove_child(child)
 
+	# Wirausaha and Libur each show a cost and a gain, and the reference
+	# pushes them to opposite ends of the track rather than bunching them
+	# on the left. Rather than add a spacer node -- this file sits at 2 in
+	# test_viewport_editability's ALLOWED and a third construction site
+	# would raise that ratchet -- the first label is made to expand, which
+	# drives everything after it to the right edge.
+	var chip_index := 0
 	for chip in ActivityPreview.chips_for(category, student, grade):
 		var tex := _icon_for(chip["icon"])
 		if tex != null:
@@ -170,7 +177,11 @@ func refresh(student: Dictionary, grade: int, progress_percent: float) -> void:
 		chip_label.text = chip["text"]
 		chip_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		chip_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if not is_skill_row and chip_index == 0:
+			chip_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			chip_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		chips.add_child(chip_label)
+		chip_index += 1
 
 	var bar := get_node_or_null("Container/Pill/StatBar") as StatBar
 	if bar:

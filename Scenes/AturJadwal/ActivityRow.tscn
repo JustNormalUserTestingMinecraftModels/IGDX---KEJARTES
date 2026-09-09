@@ -21,10 +21,10 @@ theme_type_variation = &"PreviewRow"
 
 [node name="Icon" type="TextureRect" parent="Container" unique_id=36198174]
 layout_mode = 1
-offset_left = 48.0
-offset_top = 13.0
-offset_right = 166.0
-offset_bottom = 131.0
+offset_left = 20.0
+offset_top = 3.0
+offset_right = 158.0
+offset_bottom = 141.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
@@ -45,7 +45,8 @@ theme_type_variation = &"PreviewPill"
 
 [node name="Watermark" type="TextureRect" parent="Container/Pill" unique_id=1187187625]
 visible = false
-custom_minimum_size = Vector2(56, 56)
+modulate = Color(1, 1, 1, 0.55)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 4

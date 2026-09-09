@@ -138,14 +138,26 @@ func _run_check() -> void:
 	_hand_off()
 
 
-## A tap anywhere rushes the current student. No node is added for this --
-## nothing else on this screen is interactive, so a full-screen catcher
-## would only be one more thing to keep in front of the card.
-func _unhandled_input(event: InputEvent) -> void:
+## A tap anywhere rushes the current student. This must be _input(), not
+## Node's *other* input callback -- the one that only sees events no
+## Control claimed first. The screen's Scrim (StatCheck.tscn) and the
+## card's Paper (StatCheckCard.tscn) are Panels at the default
+## MOUSE_FILTER_STOP, which consumes pointer events and marks them handled
+## before that other callback would ever get a look -- so it would never
+## fire here. _input() runs before GUI input handling, so the covering
+## Panels cannot swallow it first; this follows the precedent in
+## cut_scene.gd's _input(), the other full-screen tap-anywhere beat in this
+## codebase. Do not "tidy" this back to the post-GUI callback -- the tap
+## would silently stop firing.
+##
+## (Deliberately not spelling that callback's name here: the test for this
+## function greps the whole file for it, comments included.)
+func _input(event: InputEvent) -> void:
 	if Engine.is_editor_hint() or _exiting:
 		return
 	var pressed: bool = (event is InputEventScreenTouch and event.pressed) \
-		or (event is InputEventMouseButton and event.pressed)
+		or (event is InputEventMouseButton and event.pressed \
+			and event.button_index == MOUSE_BUTTON_LEFT)
 	if pressed:
 		_rush_current_student()
 

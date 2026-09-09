@@ -352,8 +352,13 @@ func test_hand_off_targets_the_end_cutscene_for_both_verdicts() -> void:
 
 func test_a_tap_rushes_the_current_student() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT)
-	assert_true(src.contains("func _unhandled_input("),
-		"the screen listens for a tap")
+	assert_true(src.contains("func _input("),
+		"the screen listens for a tap via _input, not _unhandled_input -- "
+		+ "the Scrim and Paper Panels default to MOUSE_FILTER_STOP and would "
+		+ "consume the event first")
+	assert_false(src.contains("_unhandled_input"),
+		"must never revert to _unhandled_input -- the covering Panels would "
+		+ "swallow the event before it got there")
 	assert_true(src.contains("InputEventScreenTouch"), "touch on device")
 	assert_true(src.contains("InputEventMouseButton"), "and click in the editor")
 	assert_true(src.contains("func _rush_current_student()"), "the rush entry point")

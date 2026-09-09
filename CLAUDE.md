@@ -299,12 +299,19 @@ then see "A different Godot AI backend is already running". Recovery is
 `taskkill` on stray `godot-ai.exe` processes, leaving `Godot_v*.exe` alone. So:
 subagents write code, you run the editor and hand them the results.
 
-**Bridge drops are usually memory pressure, not a leak.** Investigated
-2026-09-10: three drops in one session, each immediately after a full
-`test_run`, with ~1 GB free of 16 GB (an 8.6 GB game was resident). A full run
-needs ~930 MB, so Godot's working set was being trimmed under starvation. Check
-free memory before blaming the editor, and prefer targeted
-`test_run(suite=...)` calls — they take milliseconds and have never dropped it.
+**A full `test_run` drops the bridge.** Observed four times on 2026-09-10, each
+immediately after a full run and never after a targeted one. The first
+explanation was memory pressure — the machine had ~1 GB free of 16 GB — but the
+fourth drop happened with **8.9 GB free**, which rules that out. What is left is
+duration: a full run is 15-20s of near-continuous main-thread work, and the
+plugin's transport does not survive it (the `test_run` docs warn that a single
+test blocking for 20s+ can drop the session).
+
+So: **prefer targeted `test_run(suite=...)`** — milliseconds, never dropped.
+Budget one editor restart for each full run you take, and take them at
+milestones rather than between tasks. A full run's results are still valid when
+the drop happens after the reply arrives; check `git status` afterwards, because
+a full run also rewrites the two tracked files noted under `## Testing`.
 
 One smaller habit: grep before reading — the two largest scripts here exceed
 1,500 lines, so read the range you need, not the file.

@@ -57,3 +57,20 @@ Open the game and look at a bar at a low value — most problems show up in
 the first 20% of the fill, not at 100%. If the suite fails on
 `test_stat_bar_on_dark_accents_clear_the_floor_as_rendered`, the message
 names the file and its measured brightness.
+
+## track_ghost.png
+
+Not a fill -- a track. Used by `PreviewTrackGhost` behind the Wirausaha and
+Libur rows, which have no target stat and therefore no gauge.
+
+Two rules bind a replacement, and they are different from the fill rules
+above:
+
+- **It must stretch, not tile.** The alpha ramps left to right; a tiled ramp
+  sawtooths back to transparent at every repeat.
+- **The left 22px cap must hold the ramp's starting alpha (0.18)**, or a seam
+  shows where the rounded end meets the ramp.
+
+The 0.90 mean-luminance floor does **not** apply. That floor exists because
+fill textures multiply against an accent colour; a track multiplies nothing.
+`tests/test_ghost_track.gd` asserts this file stays out of the fill roster.

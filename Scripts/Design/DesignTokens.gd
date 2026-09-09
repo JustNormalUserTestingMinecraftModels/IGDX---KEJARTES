@@ -269,18 +269,26 @@ static func load_default() -> DesignTokens:
 @export var screen_margin: int = 48
 
 @export_group("Penjadwalan Preview")
-## Sampled from the mockup (docs: 2026-08-29-penjadwalan-mockup-rescale.md).
-## The row container is a grey slab with a purple rim; the pill inset into
-## it is darker. Both are vertical gradients in the mockup (row #717171 ->
-## #5D5D5D, pill #3C3C3C -> #303030); StyleBoxFlat cannot express a gradient,
-## so each token is that gradient's midpoint.
-@export var preview_row_fill: Color = Color("6B4B33")
+## The activity row's own surface. Cream since the 2026-09-10 pass: the
+## row used to be a brown slab with a stroke and a drop shadow, which
+## with the card behind it and the pill inside it stacked four surfaces
+## deep. Depth now comes from the inset track alone.
+@export var preview_row_fill: Color = Color("FFFDF8")
 ## Rim colour around the schedule preview row, reused as
 ## PreviewRowLabel's text outline so the label reads against either fill.
 @export var preview_row_border: Color = Color("2E2118")
-## Fill for the pill inset into the preview row -- darker than
-## preview_row_fill so it reads as recessed.
-@export var preview_pill_fill: Color = Color("4A3728")
+## The recessed track inset into the row, carrying the bar or the
+## preview numbers. Warmer and slightly darker than preview_row_fill so
+## it reads as a channel cut into the cream sheet.
+@export var preview_pill_fill: Color = Color("E6DAC6")
+## Hairline between activity rows on the cream sheet. Replaces the 3px
+## border every row used to carry -- one rule between rows reads as a
+## list, four strokes per row read as clutter.
+@export var preview_row_separator: Color = Color("DCCFBB")
+## The row's fill while held. Darker than preview_row_fill so the row
+## sinks on touch; Panel has no pressed state, so ActivityRow.gd swaps
+## the stylebox on button_down/button_up.
+@export var preview_row_pressed_fill: Color = Color("F0E2CD")
 ## The row's hard drop shadow, cast just below its bottom border.
 @export var preview_row_shadow_color: Color = Color(0, 0, 0, 0.7)
 ## Blur radius (px) of the row's drop shadow.

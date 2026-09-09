@@ -14,6 +14,8 @@
 [ext_resource type="Texture2D" uid="uid://dkwph7530y25f" path="res://Assets/Images/StudentCard/stat_senibudaya.png" id="14_icon_seni"]
 [ext_resource type="Texture2D" uid="uid://cqmbju8odke6v" path="res://Assets/Images/StudentCard/stat_olahraga.png" id="15_icon_olahraga"]
 [ext_resource type="Texture2D" uid="uid://ohek4lgo3sn6" path="res://Assets/Images/StudentCard/stat_energy.png" id="16_icon_energy"]
+[ext_resource type="Texture2D" uid="uid://b8ew4atf1h0ru" path="res://Assets/Images/UI/BarFill/icon_ghost_koin.png" id="16_ulthj"]
+[ext_resource type="Texture2D" uid="uid://hq418p0ftajb" path="res://Assets/Images/UI/BarFill/icon_ghost_sabit.png" id="17_gscbg"]
 [ext_resource type="Texture2D" uid="uid://dbl6a1ft4dmer" path="res://Assets/Images/StudentCard/stat_mood.png" id="17_icon_mood"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
@@ -136,7 +138,7 @@ offset_left = 680.0
 offset_top = 112.0
 offset_right = 1004.0
 offset_bottom = 182.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarAkademis"
 show_percentage = false
 script = ExtResource("statbar")
 show_value_label = true
@@ -158,7 +160,7 @@ offset_left = 680.0
 offset_top = 238.0
 offset_right = 1004.0
 offset_bottom = 308.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarSeniBudaya"
 show_percentage = false
 script = ExtResource("statbar")
 category = "SeniBudaya"
@@ -184,7 +186,7 @@ offset_left = 680.0
 offset_top = 364.0
 offset_right = 1004.0
 offset_bottom = 434.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarOlahraga"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Olahraga"
@@ -207,7 +209,7 @@ offset_left = 680.0
 offset_top = 616.0
 offset_right = 1004.0
 offset_bottom = 686.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarIstirahat"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Istirahat"
@@ -230,7 +232,7 @@ offset_left = 680.0
 offset_top = 490.0
 offset_right = 1004.0
 offset_bottom = 560.0
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarLibur"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Libur"
@@ -427,7 +429,7 @@ offset_left = 135.0
 offset_top = 284.0
 offset_right = 285.0
 offset_bottom = 380.0
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"PrimaryButton"
 text = "YA"
 
 [node name="ButtonNo" type="Button" parent="Peringatan/TextureRect" unique_id=892341999]
@@ -437,7 +439,7 @@ offset_left = 445.0
 offset_top = 284.0
 offset_right = 595.0
 offset_bottom = 380.0
-theme_type_variation = &"DangerButton"
+theme_type_variation = &"SecondaryButton"
 text = "TIDAK"
 
 [node name="Penjadwalan" type="Control" parent="." unique_id=1257958268]
@@ -467,17 +469,22 @@ expand_mode = 1
 
 [node name="Rows" type="VBoxContainer" parent="Penjadwalan/TextureRect" unique_id=1598823012]
 layout_mode = 0
-offset_left = 375.0
+offset_left = 310.0
 offset_top = 102.0
-offset_right = 1024.0
+offset_right = 1084.0
 offset_bottom = 1162.0
-theme_override_constants/separation = 40
+theme_override_constants/separation = 16
 
 [node name="RowAkademik" parent="Penjadwalan/TextureRect/Rows" unique_id=1478912023 instance=ExtResource("12_activityrow")]
 layout_mode = 2
 icon_texture = ExtResource("13_icon_akademis")
 energy_icon = ExtResource("16_icon_energy")
 mood_icon = ExtResource("17_icon_mood")
+
+[node name="Sep1" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=684746858]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"PreviewRowSeparator"
 
 [node name="RowSeniBudaya" parent="Penjadwalan/TextureRect/Rows" unique_id=1326671027 instance=ExtResource("12_activityrow")]
 layout_mode = 2
@@ -487,6 +494,11 @@ icon_texture = ExtResource("14_icon_seni")
 energy_icon = ExtResource("16_icon_energy")
 mood_icon = ExtResource("17_icon_mood")
 
+[node name="Sep2" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=968623681]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"PreviewRowSeparator"
+
 [node name="RowAtletik" parent="Penjadwalan/TextureRect/Rows" unique_id=1636671479 instance=ExtResource("12_activityrow")]
 layout_mode = 2
 category = "Olahraga"
@@ -495,6 +507,11 @@ icon_texture = ExtResource("15_icon_olahraga")
 energy_icon = ExtResource("16_icon_energy")
 mood_icon = ExtResource("17_icon_mood")
 
+[node name="Sep3" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=985182480]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"PreviewRowSeparator"
+
 [node name="RowWirausaha" parent="Penjadwalan/TextureRect/Rows" unique_id=1108045609 instance=ExtResource("12_activityrow")]
 layout_mode = 2
 category = "Wirausaha"
@@ -502,7 +519,13 @@ display_name = "Wirausaha"
 icon_texture = ExtResource("16_icon_energy")
 energy_icon = ExtResource("16_icon_energy")
 mood_icon = ExtResource("17_icon_mood")
+watermark_texture = ExtResource("16_ulthj")
 is_skill_row = false
+
+[node name="Sep4" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=1550113771]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"PreviewRowSeparator"
 
 [node name="RowLibur" parent="Penjadwalan/TextureRect/Rows" unique_id=428494737 instance=ExtResource("12_activityrow")]
 layout_mode = 2
@@ -511,6 +534,7 @@ display_name = "Libur"
 icon_texture = ExtResource("17_icon_mood")
 energy_icon = ExtResource("16_icon_energy")
 mood_icon = ExtResource("17_icon_mood")
+watermark_texture = ExtResource("17_gscbg")
 is_skill_row = false
 
 [node name="PopupBack" type="TextureButton" parent="Penjadwalan/TextureRect" unique_id=385991892]

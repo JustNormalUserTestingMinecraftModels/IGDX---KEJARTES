@@ -115,5 +115,5 @@ text = "Batal"
 [node name="ConfirmButton" type="Button" parent="Margin/Card/Margin/VBox/Actions" unique_id=1196808454]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"PrimaryButton"
 text = "Pakai (0 Siswa)"

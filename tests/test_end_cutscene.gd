@@ -62,7 +62,7 @@ func _scene() -> Node:
 func test_scene_has_the_chrome() -> void:
 	var s := _scene()
 	assert_true(s is EndCutscene, "the scene wears EndCutscene.gd")
-	assert_true(s.get_node_or_null("Backdrop") is TextureRect, "Backdrop")
+	assert_true(s.get_node_or_null("Stage/Backdrop") is TextureRect, "Backdrop")
 	assert_true(s.get_node_or_null("Badge") is TextureRect, "Badge")
 	assert_true(s.get_node_or_null("BtnNext") is Button, "BtnNext")
 	assert_true(s.get_node_or_null("WhiteFade") is ColorRect, "WhiteFade")
@@ -211,19 +211,20 @@ func test_the_blur_layer_starts_inert() -> void:
 
 
 ## Draw order is the whole mechanism: the shader samples what is already on
-## screen, so only siblings BEFORE it get blurred. Backdrop must be behind it;
-## Badge and BtnNext must stay in front and stay sharp.
+## screen, so only siblings BEFORE it get blurred. Stage and its contents must
+## be behind it; Badge and BtnNext must stay in front and stay sharp.
 func test_the_blur_layer_blurs_the_backdrop_but_not_the_badge_or_button() -> void:
 	var s := _scene()
 	var order: Array[String] = []
 	for c in s.get_children():
 		order.append(String(c.name))
-	var backdrop_at := order.find("Backdrop")
+	var stage_at := order.find("Stage")
 	var blur_at := order.find("BlurLayer")
 	var badge_at := order.find("Badge")
 	var btn_at := order.find("BtnNext")
-	assert_true(backdrop_at < blur_at,
-		"Backdrop draws first, so the shader samples it")
+	assert_gt(stage_at, -1, "Stage is a direct child of the root")
+	assert_true(stage_at < blur_at,
+		"Stage draws first, so the shader samples the painting and its figures")
 	assert_true(blur_at < badge_at and blur_at < btn_at,
 		"Badge and BtnNext draw after the blur, so they stay sharp")
 	assert_eq(String(s.get_children()[s.get_child_count() - 1].name), "WhiteFade",
@@ -252,3 +253,51 @@ func test_the_exit_blurs_before_it_hands_off() -> void:
 	assert_true(blur_at < swap_at, "blur first, swap second")
 	assert_true(src.contains("shader_parameter/lod"),
 		"the blur is animated by tweening the shader parameters")
+
+
+func test_the_scene_carries_an_art_space_stage() -> void:
+	var s := _scene()
+	var stage := s.get_node_or_null("Stage")
+	assert_true(stage is Control, "Stage holds the painting and its figures")
+	assert_true(stage.get_node_or_null("Backdrop") is TextureRect,
+		"the backdrop moved under Stage")
+	assert_true(stage.get_node_or_null("Shadows") is Control, "the Shadows layer")
+	assert_true(stage.get_node_or_null("Students") is Control, "the Students layer")
+
+
+## All shadows are drawn before all figures, rather than pairing each
+## shadow with its own sprite. Pairing would let Doni's wide crouch-shadow
+## smear across the side students' shoes.
+func test_shadows_draw_beneath_every_student() -> void:
+	var stage := _scene().get_node("Stage")
+	var shadows: int = stage.get_node("Shadows").get_index()
+	var students: int = stage.get_node("Students").get_index()
+	var backdrop: int = stage.get_node("Backdrop").get_index()
+	assert_true(backdrop < shadows, "the backdrop is behind the shadows")
+	assert_true(shadows < students, "every shadow is behind every figure")
+
+
+func test_the_stage_has_four_authored_slots_and_four_shadows() -> void:
+	var stage := _scene().get_node("Stage")
+	for i in range(1, 5):
+		assert_true(stage.get_node_or_null("Students/Student%d" % i) is TextureRect,
+			"Student%d is authored in the scene, not built at runtime" % i)
+		assert_true(stage.get_node_or_null("Shadows/Shadow%d" % i) is TextureRect,
+			"Shadow%d is authored in the scene, not built at runtime" % i)
+
+
+## The exit blur samples what is already drawn, so it must sit above the
+## whole Stage -- otherwise the painting softens on the way to RunResult
+## while the students stay sharp.
+func test_the_blur_layer_draws_above_the_stage() -> void:
+	var s := _scene()
+	assert_true(s.get_node("Stage").get_index() < s.get_node("BlurLayer").get_index(),
+		"BlurLayer is above Stage, so the students blur out with the backdrop")
+
+
+func test_the_next_button_sits_in_the_bottom_letterbox_bar() -> void:
+	# The 1536x2048 art letterboxes to 1080x1440 inside 1080x1920, leaving
+	# 240px bars. The button belongs in the bottom bar, clear of the art.
+	var btn: Button = _scene().get_node("BtnNext")
+	assert_gt(btn.offset_top, 1680.0, "the button clears the bottom of the art")
+	assert_true(btn.offset_bottom <= 1920.0, "and stays on screen")

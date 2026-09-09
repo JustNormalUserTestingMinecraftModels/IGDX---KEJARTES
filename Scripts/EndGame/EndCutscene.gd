@@ -63,7 +63,7 @@ extends Control
 ## Where the button goes.
 const RUN_RESULT_SCENE := "res://Scenes/EndGame/RunResult.tscn"
 
-@onready var backdrop: TextureRect = $Backdrop
+@onready var backdrop: TextureRect = $Stage/Backdrop
 @onready var badge: TextureRect = $Badge
 @onready var btn_next: Button = $BtnNext
 @onready var white_fade: ColorRect = $WhiteFade

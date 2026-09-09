@@ -5,7 +5,9 @@
 [ext_resource type="Texture2D" uid="uid://cxwh4x533f1rc" path="res://Assets/Images/UI/Placeholders/stamp_lulus.svg" id="3_krlxx"]
 [ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="4_cpj81"]
 [ext_resource type="Texture2D" uid="uid://bbxhfytf5wqc5" path="res://Assets/Images/UI/Placeholders/stamp_gagal.svg" id="5_qxnts"]
+[ext_resource type="Texture2D" uid="uid://56hidkmdh1e" path="res://Assets/Images/CG/Win/win_background.png" id="6_cpj81"]
 [ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="6_el241"]
+[ext_resource type="Texture2D" uid="uid://v5uiy2v54wcr" path="res://Assets/Images/UI/Placeholders/shadow_ellipse.png" id="7_qxnts"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_krlxx"]
 shader = ExtResource("6_el241")
@@ -25,14 +27,79 @@ win_badge = ExtResource("3_krlxx")
 lose_backdrop = ExtResource("4_cpj81")
 lose_badge = ExtResource("5_qxnts")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=943311214]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
+[node name="Stage" type="Control" parent="." unique_id=1490079219]
+anchors_preset = 0
+offset_right = 1536.0
+offset_bottom = 2048.0
 mouse_filter = 2
-texture = ExtResource("2_el241")
+
+[node name="Backdrop" type="TextureRect" parent="Stage" unique_id=672798659]
+layout_mode = 0
+offset_right = 1536.0
+offset_bottom = 2048.0
+mouse_filter = 2
+texture = ExtResource("6_cpj81")
 expand_mode = 1
-stretch_mode = 6
+
+[node name="Shadows" type="Control" parent="Stage" unique_id=2059022315]
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Shadow1" type="TextureRect" parent="Stage/Shadows" unique_id=1394076969]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("7_qxnts")
+expand_mode = 1
+
+[node name="Shadow2" type="TextureRect" parent="Stage/Shadows" unique_id=2137798515]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("7_qxnts")
+expand_mode = 1
+
+[node name="Shadow3" type="TextureRect" parent="Stage/Shadows" unique_id=2140631244]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("7_qxnts")
+expand_mode = 1
+
+[node name="Shadow4" type="TextureRect" parent="Stage/Shadows" unique_id=1653984068]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("7_qxnts")
+expand_mode = 1
+
+[node name="Students" type="Control" parent="Stage" unique_id=1606521341]
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Student1" type="TextureRect" parent="Stage/Students" unique_id=1611799564]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Student2" type="TextureRect" parent="Stage/Students" unique_id=781806283]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Student3" type="TextureRect" parent="Stage/Students" unique_id=341486232]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Student4" type="TextureRect" parent="Stage/Students" unique_id=2102591806]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=1774545846]
 visible = false
@@ -58,9 +125,9 @@ stretch_mode = 5
 modulate = Color(1, 1, 1, 0)
 layout_mode = 0
 offset_left = 290.0
-offset_top = 1640.0
+offset_top = 1730.0
 offset_right = 790.0
-offset_bottom = 1780.0
+offset_bottom = 1870.0
 theme_type_variation = &"PrimaryButton"
 disabled = true
 text = "Lanjut"

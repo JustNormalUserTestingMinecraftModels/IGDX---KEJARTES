@@ -409,6 +409,13 @@ conservative starting numbers, untested against `tests/test_balance_pacing.gd`.
 blurred backdrop, a "Segera Hadir" line and a back button. The shop hub's
 second tile has to lead somewhere; nothing behind it is designed yet.
 
+**Emoji still used as iconography on the trait popup (2026-09-09).**
+`Scripts/UI/TraitDetailPopup.gd` sets `glyph_label.text` to `"⚡"` or
+`"🌟"`, and `EFFECT_PREFIX` opens with `"💡  "`. Both predate the
+2026-09-02 ban above and were missed by it. The 💡 goes when the
+"EFEK GAMEPLAY:" heading is split into its own display-font label; the
+⚡/🌟 header glyph needs two real transparent textures before it can go.
+
 **Six more placeholder SVG icons.** `icon_benefit`, `icon_cost`, `icon_tired`,
 `icon_check` (`Assets/Images/UI/Placeholders/`) and `icon_shop_items`,
 `icon_shop_cosmetics` (`Assets/Images/Shop/UI/`) are flat geometry standing in

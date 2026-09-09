@@ -113,7 +113,9 @@ func _setup_top_bar_buttons() -> void:
 
 	# Skip cutscene button
 	btn_skip = Button.new()
-	btn_skip.theme_type_variation = &"DangerButton"
+	# Skipping a cutscene discards nothing, so it is a quiet opt-out rather
+	# than a warning. It wore DangerButton until the 2026-09-10 pass.
+	btn_skip.theme_type_variation = &"SecondaryButton"
 	btn_skip.text = "⏩ Skip Intro"
 	btn_skip.custom_minimum_size = Vector2(260, _tokens.touch_target_min)
 	btn_skip.clip_text = true
@@ -202,7 +204,7 @@ func _setup_level_select_ui() -> void:
 	_create_grade_button(btn_vbox, 8, "🏫 KELAS 8 (Tingkat Menengah)", "Tahun Ajaran Ke-2 • Minggu 17 • Tantangan Meningkat", &"SecondaryButton")
 
 	# Grade 9 Button
-	_create_grade_button(btn_vbox, 9, "🎓 KELAS 9 (Tingkat Akhir)", "Ujian Kelulusan Utama • Minggu 33 • Evaluasi Final", &"DangerButton")
+	_create_grade_button(btn_vbox, 9, "🎓 KELAS 9 (Tingkat Akhir)", "Ujian Kelulusan Utama • Minggu 33 • Evaluasi Final", &"PrimaryButton")
 
 func _create_grade_button(parent: VBoxContainer, grade_num: int, title_text: String, desc_text: String, variation: StringName) -> void:
 	var btn = Button.new()

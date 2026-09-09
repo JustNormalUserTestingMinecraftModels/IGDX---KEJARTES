@@ -429,7 +429,7 @@ offset_left = 135.0
 offset_top = 284.0
 offset_right = 285.0
 offset_bottom = 380.0
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"PrimaryButton"
 text = "YA"
 
 [node name="ButtonNo" type="Button" parent="Peringatan/TextureRect" unique_id=892341999]
@@ -439,7 +439,7 @@ offset_left = 445.0
 offset_top = 284.0
 offset_right = 595.0
 offset_bottom = 380.0
-theme_type_variation = &"DangerButton"
+theme_type_variation = &"SecondaryButton"
 text = "TIDAK"
 
 [node name="Penjadwalan" type="Control" parent="." unique_id=1257958268]

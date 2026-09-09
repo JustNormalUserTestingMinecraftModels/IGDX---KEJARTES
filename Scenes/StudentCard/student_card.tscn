@@ -261,7 +261,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SuccessButtonL"
+theme_type_variation = &"PrimaryButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid6" unique_id=363348099]
@@ -271,7 +271,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"DangerButtonL"
+theme_type_variation = &"SecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid6" unique_id=1413363287]
@@ -512,7 +512,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SuccessButtonL"
+theme_type_variation = &"PrimaryButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid5" unique_id=510363470]
@@ -522,7 +522,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"DangerButtonL"
+theme_type_variation = &"SecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid5" unique_id=211728033]
@@ -764,7 +764,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SuccessButtonL"
+theme_type_variation = &"PrimaryButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid4" unique_id=119033309]
@@ -774,7 +774,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"DangerButtonL"
+theme_type_variation = &"SecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid4" unique_id=2012391498]
@@ -1016,7 +1016,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SuccessButtonL"
+theme_type_variation = &"PrimaryButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid3" unique_id=272631289]
@@ -1026,7 +1026,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"DangerButtonL"
+theme_type_variation = &"SecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid3" unique_id=948563813]
@@ -1268,7 +1268,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SuccessButtonL"
+theme_type_variation = &"PrimaryButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid2" unique_id=359088105]
@@ -1278,7 +1278,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"DangerButtonL"
+theme_type_variation = &"SecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid2" unique_id=1923656077]
@@ -1519,7 +1519,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SuccessButtonL"
+theme_type_variation = &"PrimaryButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid1" unique_id=491619717]
@@ -1529,7 +1529,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"DangerButtonL"
+theme_type_variation = &"SecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid1" unique_id=1707616966]

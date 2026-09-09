@@ -99,6 +99,45 @@ func test_row_pop_is_squash_burst_and_sfx() -> void:
 	assert_true(src.contains("AudioDirector.play_sfx(&\"pop\")"), "the pop cue")
 
 
+## A rush must SPEED UP the live tween, never kill it. Tween.kill() does
+## not emit finished, so killing the tween StatCheck is awaiting would hang
+## the sequence forever -- the screen would sit on a half-filled bar with
+## no way forward. This is a source scan because the alternative is a
+## coroutine, and no test here may await.
+func test_row_rush_speeds_the_tween_rather_than_killing_it() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
+	assert_true(src.contains("func rush() -> void:"), "a row can be rushed")
+	assert_true(src.contains("set_speed_scale("),
+		"the rush speed-scales the live tween")
+	assert_false(src.contains(".kill()"),
+		"it must never kill the tween -- kill() does not emit finished, " +
+		"so the pending await would never resume")
+
+
+func test_row_keeps_its_fill_tween_so_it_can_be_rushed() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
+	assert_true(src.contains("_fill_tween"),
+		"the fill tween is held on the row, not a local")
+	assert_true(src.contains("const RUSH_SPEED"),
+		"the rush multiplier is a named const, not an inline literal")
+
+
+## rush() must be safe before anything is in flight -- a tap during the
+## card's slide-in reaches it with no fill tween yet. It should leave the
+## row exactly as set_result() armed it, not quietly complete the fill.
+func test_rushing_an_idle_row_leaves_it_armed_but_unmoved() -> void:
+	var row = load(_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(row)
+	track(row)
+	row.set_result(45.0, 60.0)
+	row.rush()
+	assert_true(is_equal_approx(row.get_node("Bar").value, 0.0),
+		"rushing before fill() started does not move the bar")
+	assert_true(is_equal_approx(row.target_ratio, 75.0), "the armed ratio survives")
+	assert_false(row.cleared, "and the row is not marked cleared")
+	Engine.get_main_loop().root.remove_child(row)
+
+
 func test_star_placeholder_exists_and_loads_as_a_texture() -> void:
 	assert_true(ResourceLoader.exists(_STAR_ICON), "icon_star.svg exists")
 	var tex = load(_STAR_ICON)

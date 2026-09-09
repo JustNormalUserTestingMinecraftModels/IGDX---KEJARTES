@@ -38,10 +38,17 @@ signal filled(cleared: bool)
 ## built -- see the project's "no visual is built at runtime" rule.
 const BURST_SCENE := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
 
+## Speed multiplier a rush applies to the live fill. Large enough to land
+## within a frame; the tween still emits `finished`, which is the whole
+## point -- see rush().
+const RUSH_SPEED := 1000.0
+
 ## Where the fill will stop, 0-100. Armed by set_result().
 var target_ratio: float = 0.0
 ## True once fill() has played to 100.
 var cleared: bool = false
+## The in-flight fill(), held so rush() can reach it.
+var _fill_tween: Tween = null
 
 @onready var icon_rect: TextureRect = $Icon
 @onready var bar: StatBar = $Bar
@@ -85,16 +92,32 @@ func set_result(value: float, target: float) -> void:
 func fill() -> void:
 	# Juice.fill_bar returns null for a dead node; awaiting .finished on
 	# that is a hard null-deref, so refuse rather than crash.
-	var tween: Tween = Juice.fill_bar(bar, target_ratio, fill_seconds)
-	if tween == null:
+	_fill_tween = Juice.fill_bar(bar, target_ratio, fill_seconds)
+	if _fill_tween == null:
 		return
-	await tween.finished
+	await _fill_tween.finished
+	_fill_tween = null
 	if not is_inside_tree():
 		return
 	if target_ratio >= 100.0:
 		cleared = true
 		pop()
 	filled.emit(cleared)
+
+
+## Finish the in-flight fill immediately, keeping every consequence.
+##
+## Speed-scales rather than killing the tween, on purpose: Tween's kill
+## does not emit `finished`, so killing the tween StatCheck is awaiting
+## would leave that await pending forever and strand the screen on a
+## half-filled bar. Speed-scaling lands it within a frame and still emits,
+## so `cleared`, the full-bar pop and the `filled` signal all run their
+## normal path.
+##
+## A no-op when nothing is in flight.
+func rush() -> void:
+	if _fill_tween != null and _fill_tween.is_valid():
+		_fill_tween.set_speed_scale(RUSH_SPEED)
 
 
 ## The satisfying part: a scale-only squash (Juice.pop_in would blink the

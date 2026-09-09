@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## Regenerates Assets/Theme/kejartes_theme.tres, headlessly.
 ##

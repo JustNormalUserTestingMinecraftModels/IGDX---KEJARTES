@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## Guards the button geometry system introduced 2026-09-08.
 ##

@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## WCAG contrast floor for every progress-bar fill against its track.
 ##

@@ -913,6 +913,28 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("PreviewPillFlat", "PanelContainer")
 	theme.set_stylebox("panel", "PreviewPillFlat", StyleBoxEmpty.new())
 
+	# -- Wirausaha and Libur have no target, so no gauge. Against the old
+	# dark slab an empty row read fine; on the cream sheet they collapsed
+	# into near-empty strips beside the three rows that do carry bars.
+	# They now get the gauge's silhouette used as a container: a texture
+	# whose alpha ramps from 0.18 at the left to solid at the right, so
+	# the row still reads as empty without reading as missing.
+	#
+	# STRETCH, not TILE. The BarFill fills above tile, but a horizontal
+	# alpha ramp sawtooths back to transparent at every repeat if tiled.
+	var ghost := StyleBoxTexture.new()
+	ghost.texture = load("res://Assets/Images/UI/BarFill/track_ghost.png")
+	ghost.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
+	ghost.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
+	ghost.set_texture_margin_all(22)
+	ghost.content_margin_left = tokens.space_sm
+	ghost.content_margin_right = tokens.space_sm
+	ghost.content_margin_top = tokens.space_xs
+	ghost.content_margin_bottom = tokens.space_xs
+	theme.add_type("PreviewTrackGhost")
+	theme.set_type_variation("PreviewTrackGhost", "PanelContainer")
+	theme.set_stylebox("panel", "PreviewTrackGhost", ghost)
+
 	# -- The numbers inside that pill: white on the dark slab. --
 	theme.add_type("PreviewChipLabel")
 	theme.set_type_variation("PreviewChipLabel", "Label")

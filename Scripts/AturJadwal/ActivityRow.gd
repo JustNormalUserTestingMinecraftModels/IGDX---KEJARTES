@@ -2,14 +2,17 @@
 class_name ActivityRow
 extends Button
 
-## One row of the Penjadwalan popup: a bordered container carrying the
-## category icon on its left, a darker pill inset to its right holding the
-## preview numbers, and the category name overlapping the bottom edge. The
-## whole row is the Button -- the player taps anywhere on it to assign that
+## One row of the Penjadwalan popup: a cream slab carrying the category
+## icon on its left, a recessed track to its right holding the preview
+## numbers, and the category name overlapping the bottom edge. The whole
+## row is the Button -- the player taps anywhere on it to assign that
 ## activity to the selected day.
 ##
-## Rows with a target (the three skills) draw the inset pill and a StatBar
-## behind the numbers. Wirausaha and Libur have neither.
+## Rows with a target (the three skills) draw a StatBar inside that track.
+## Wirausaha and Libur have no target, so their track is the ghost
+## variation: same silhouette, alpha-ramped, holding chips rather than a
+## bar. Before 2026-09-10 the row was a bordered brown slab with a darker
+## pill inset into it; the cream pass collapsed that to one surface.
 
 ## One of: Akademis, SeniBudaya, Olahraga, Wirausaha, Istirahat.
 ## Drives both the preview arithmetic and the StatBar's tint -- without the
@@ -50,10 +53,13 @@ extends Button
 @export var money_icon: Texture2D
 
 ## True for the three rows with a target to progress toward (Akademis,
-## SeniBudaya, Olahraga). Those get a StatBar and a drawn inset pill. The
-## other two -- Wirausaha and Istirahat -- have neither: their chips sit
-## straight on the container's grey, matching the mockup. One flag because
-## the two always move together; there is no row with a bar but no pill.
+## SeniBudaya, Olahraga). Those get a StatBar inside a drawn track. The
+## other two -- Wirausaha and Istirahat -- have no target, so they take
+## the ghost track instead: the same silhouette used as a container for
+## their cost/gain chips rather than as a meter. Until 2026-09-10 they
+## used PreviewPillFlat and sat on bare surface, which collapsed once the
+## row went cream. One flag because the two always move together; there
+## is no row with a bar but no track.
 @export var is_skill_row: bool = true
 
 
@@ -71,7 +77,7 @@ func _ready() -> void:
 			bar.category = category
 	else:
 		if pill:
-			pill.theme_type_variation = &"PreviewPillFlat"
+			pill.theme_type_variation = &"PreviewTrackGhost"
 		if bar:
 			bar.get_parent().remove_child(bar)
 			bar.free()

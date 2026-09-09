@@ -211,9 +211,12 @@ func test_name_label_overlaps_the_container_bottom() -> void:
 		"the mockup right-aligns the name under the pill's right edge")
 
 
-## Rows with no target (Wirausaha, Libur) keep the same node tree but draw no
-## inset pill -- their chips sit straight on the container's grey.
-func test_non_skill_rows_flatten_the_pill_and_drop_the_bar() -> void:
+## Rows with no target (Wirausaha, Libur) keep the same node tree but swap
+## the track for the ghost variation: same silhouette, alpha ramped, so
+## the row reads as empty rather than as missing. Until 2026-09-10 they
+## used PreviewPillFlat and drew nothing at all, which was fine on the old
+## dark slab and collapsed the row once the sheet went cream.
+func test_non_skill_rows_take_the_ghost_track_and_drop_the_bar() -> void:
 	var scene: PackedScene = load(_SCENE_PATH)
 	var flat := scene.instantiate() as ActivityRow
 	flat.is_skill_row = false
@@ -222,8 +225,8 @@ func test_non_skill_rows_flatten_the_pill_and_drop_the_bar() -> void:
 	track(flat)
 	var pill := flat.get_node_or_null("Container/Pill") as PanelContainer
 	assert_true(pill != null, "the Pill node still exists on a non-skill row")
-	assert_eq(pill.theme_type_variation, &"PreviewPillFlat",
-		"a non-skill row's pill must draw nothing")
+	assert_eq(pill.theme_type_variation, &"PreviewTrackGhost",
+		"a non-skill row's track must be the ghost variation, not empty")
 	assert_true(flat.get_node_or_null("Container/Pill/StatBar") == null,
 		"a non-skill row has no target, so no StatBar")
 	flat.queue_free()

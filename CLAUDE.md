@@ -366,7 +366,7 @@ hand-authored art. Every ground shadow on the win screen wears it, tinted
 and scaled per student. Transparent PNG, drop-replaceable.
 
 **Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding —
-no script, no references, still on `cg0.jpg`. The real win screen is
+root unscripted, no references, still on `cg0.jpg`. The real win screen is
 `EndCutscene`'s win branch. Safe to delete.
 
 **Copy placeholders.** Every cutscene line in the exam and win branches is

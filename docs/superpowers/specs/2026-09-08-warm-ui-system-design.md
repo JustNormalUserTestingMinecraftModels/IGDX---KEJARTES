@@ -465,3 +465,175 @@ through `category_color()` for AturJadwal's schedule pills and category icons.
 The lobby was checked in a running build; the schedule screen was **not**. That
 is the one visual claim in this pass resting on measurement rather than eyes, and
 `cat_libur`'s near-60% luminance cut is the most likely place to look first.
+
+---
+
+# Part 2 — StudentCard rework
+
+Added 2026-09-08 after a second round of mentor feedback on this scene
+specifically. Depends on Part 1's tokens; do not start it before Part 1 step 6.
+
+## Findings
+
+Five reported. Four confirmed by reading the scene; the first was WRONG and is
+corrected below. Two of the remaining four are structural, not cosmetic.
+
+1. **CORRECTED 2026-09-09 — the identity block is NOT baked art.** This finding
+   was wrong as originally written. Do not plan against it. What is actually true:
+   - `StudentCardView.build_bio_panel(kertas, s_data)` creates a `VBoxContainer`
+     named `BioPanel` **at runtime**, anchors it inside
+     `BIO_PANEL_RECT := Rect2(120, 300, 489, 367)`, and fills it with each
+     student's real `name`, `jenis_kelamin` and `tanggal_lahir` through a
+     `BioLabel` theme variation. It is data-driven and it does differ per student.
+   - Only the panel's **background** — the `#C6B6EE` -> `#9C8FBB` lavender
+     gradient — is painted into `card_bg.png`. `test_student_card_layout.gd`
+     describes `BIO_PANEL_RECT` as "the painted panel's measured interior".
+   - `student_card.gd` already carries `jenis_kelamin` and `tanggal_lahir` for all
+     six students, and three existing tests pin this:
+     `test_roster_carries_gender_and_birth_date`,
+     `test_bio_panel_renders_the_three_rows`, and
+     `test_bio_panel_sits_inside_the_painted_panel`.
+
+   The error came from grepping `student_card.gd` for the field names and never
+   opening `StudentCardView.gd`, where the view logic lives. The screenshot that
+   looked like static placeholder text was showing Andi's correct data.
+
+   **The real finding underneath it, which still stands:**
+   - Readability — the mentor's actual complaint — is about the painted lavender
+     gradient behind the text, not missing or fake data. Replacing that background
+     is still worth doing.
+   - `build_bio_panel` is **runtime UI construction**, which this project
+     ratchets against. `Scripts/StudentCard/StudentCardView.gd` already sits in
+     `tests/test_viewport_editability.gd`'s `BASELINE` at **5**. Moving the bio
+     panel into the `.tscn` would LOWER that ratchet — a genuine win the original
+     spec missed entirely, because it believed the panel did not exist.
+   - Consequence for Part 2's implementation order: its final step, "wire the
+     identity labels to real student data — the first time this screen has ever
+     shown it", is **void**. That already works. The step becomes "move the bio
+     panel from runtime construction into the template, preserving the existing
+     data binding and lowering the ratchet".
+
+2. **`PageLabel` overlaps the Persona pill by 43px, at rest.** Screen-space
+   `PageLabel` y 1502-1586; Persona pill y 1475-1545. This is static geometry in
+   the `.tscn`, not a swipe race as first suspected.
+3. **`TraitPill` overdraws its own rect.** It is a `StyleBoxTexture` with a 45px
+   9-slice margin (90px needed vertically) forced into a 70px-tall box, so the
+   art bleeds upward over `SifatPasifLabel`, which ends only 5px above it.
+4. **The arrows are pure `#FF0000`.** Every opaque pixel of
+   `pngwing.com (1).png` is primary red. `NextButtonKanan` also carries
+   `rotation = -3.1272` and `scale = 0.175` to reuse one asset for both
+   directions.
+5. **The backdrop out-saturates the card.** `meja_background.png` runs
+   `#E6A57D` -> `#884119`, mean luminance 130/255, under a mint `#D1F5E2` paper.
+   Near-complementary hues with the *background* more saturated than the content.
+
+### Also found
+
+- **A latent coordinate-system mismatch.** The trait pills are anchor-positioned
+  (`anchor_top` 0.7474 / 0.7865 of card height) while every sibling uses absolute
+  `layout_mode = 0` offsets, and `PageLabel` lives in scene space entirely. Three
+  coordinate systems in one vertical stack; any card resize desynchronises them.
+- **`BelajarButton` may render off-screen.** Authored at root-space y 1740-1900,
+  which is screen y 1994-2154 against a 1920-tall screen. It starts
+  `visible = false` and `student_card.gd:636` only tweens its `x`. **Verify
+  before fixing** — it is possible something repositions it that a static read
+  does not show.
+
+## Decisions
+
+| Decision | Choice |
+|---|---|
+| Portrait / identity | **Swap** — portrait left, identity right |
+| Backdrop | **Generate a replacement** neutral oak PNG |
+| Six duplicated cards | **Collapse to one `PackedScene` template** |
+
+### The template extraction is safe
+
+`student_card.gd` addresses card internals by string — `"KertasMurid1/Kepribadian1"`,
+`"KertasMurid1/KutuBuku"`, and the `CARD_ROW_ORDER` lookups at line 756. Those
+resolve as *instance name + child name*. Instancing the template six times as
+`KertasMurid1`..`KertasMurid6`, with child names preserved, leaves every one of
+those strings valid. No script change is required for the extraction itself.
+
+## New layout
+
+`StudentCardPaper.tscn`, 1080x1920, content inset to x 90-990. Card-local
+coordinates.
+
+| Element | x | y | Notes |
+|---|---|---|---|
+| Portrait frame | 90-390 | 260-650 | `radius_button`, `outline_card` rim |
+| Identity panel | 430-990 | 260-650 | `SunkenPanel`, warm cream |
+| Stat rows x5 | 90-990 | 700-1180 | 76 tall, 25 gap; label outside the bar |
+| `SifatPasifLabel` | 90-450 | 1230-1290 | |
+| Quirk pill | 90-990 | 1300-1396 | **96 tall** |
+| Persona pill | 90-990 | 1416-1512 | **96 tall** |
+| Approve / Batal | 290-790 | 1560-1720 | L step; shared slot, swapped visibility |
+| Left chevron | 90-210 | 1770-1890 | 120x120 |
+| Page pill | 440-640 | 1795-1865 | `CaptionLabel` on `SunkenPanel` |
+| Right chevron | 870-990 | 1770-1890 | 120x120 |
+
+**The pill height fixes finding 3 directly.** `TraitPill`'s 9-slice needs 90px
+vertically (45 + 45); at 96 it fits with 6px of centre slice left over. The
+current 70 is the defect.
+
+**The page indicator moves 250px clear of the pills**, which fixes finding 2 by
+separation rather than by nudging an offset.
+
+**The trait section becomes a `VBoxContainer`.** A container cannot overlap its
+own children, so this removes the whole class of bug instead of the instance.
+Same for the five stat rows.
+
+Single-column stats are a readability decision: the current two-column grid
+leaves each bar roughly 44px of usable track on a 1080-wide screen, with the
+label competing for the same space.
+
+## New theme variation
+
+`CardArrowButton` — 120x120, `radius_pill`, `brand_primary` fill, `outline_card`
+rim, standard shadow, chevron icon centred with no label.
+
+> **A reviewed exception to the fixed-radius rule.** Part 1 states every `Button`
+> uses `radius_button`. This one keeps `radius_pill` deliberately: at a fixed
+> 120x120 square, `radius_pill` yields an exact circle, and because the size is
+> fixed there is no height-dependent-radius risk. The new radius test must
+> allow-list it with this reasoning, not silently skip it.
+
+That takes Part 1's nine new variations to **ten**.
+
+## New assets
+
+- `meja_background.png` — **replaced in place.** Pale oak, low saturation, target
+  mean luminance ~190 (from 130), gentle grain, no strong vertical gradient.
+  Keeping the filename means no other reference changes.
+- `card_bg.png` — **re-authored.** Warm off-white paper (`surface_card`), soft
+  rounded corners and drop shadow. **No baked text and no baked panel** — the
+  identity block becomes real nodes.
+- `icon_chevron_left.png`, `icon_chevron_right.png` — 256x256 transparent, cream
+  glyph. Two separate assets rather than one rotated asset, which retires the
+  `rotation = -3.1272` / `scale = 0.175` hack on `NextButtonKanan`.
+
+## Test impact
+
+- `tests/test_student_card.gd` (if present) will need its node paths rechecked
+  after the template extraction.
+- **New test: no two siblings in the card overlap.** Walk the template's
+  `Control` children and assert their rects are disjoint. This is the direct
+  regression guard for findings 2 and 3, and it is cheap because the template is
+  now a single scene rather than six copies.
+- The existing 178px `Batal` and 160px `Aprove` both land on the L step, so they
+  pick up `DangerButtonL` / `SuccessButtonL` from Part 1.
+
+## Implementation order
+
+Slots in after Part 1 step 8.
+
+1. Verify the `BelajarButton` off-screen suspicion before changing it.
+2. Generate the three new assets.
+3. Build `StudentCardPaper.tscn` in the editor, child names preserved.
+4. Replace the six copies with instances; confirm the tutorial's string paths
+   still resolve by running the tutorial, not by reading it.
+5. Add `CardArrowButton`, rebake, update `DISPLAY_ROSTER`.
+6. Move the bio panel out of `StudentCardView.build_bio_panel()` and into the
+   template, preserving its existing data binding, and lower
+   `test_viewport_editability.gd`'s BASELINE for that file from 5.

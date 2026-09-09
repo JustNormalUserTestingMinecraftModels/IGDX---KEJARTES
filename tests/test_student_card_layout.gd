@@ -172,7 +172,7 @@ func test_an_unknown_category_falls_back_to_a_real_variation() -> void:
 		Engine.get_main_loop().root.add_child(bar)
 		track(bar)
 		bar.variation = family
-		assert_true(theme.has_type(bar.theme_type_variation),
+		assert_true(theme.get_type_list().has(String(bar.theme_type_variation)),
 			"%s with an unknown category resolved to %s, which the theme does not define"
 				% [family, bar.theme_type_variation])
 

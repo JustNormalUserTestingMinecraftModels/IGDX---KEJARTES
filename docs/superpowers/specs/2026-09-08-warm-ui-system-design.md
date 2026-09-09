@@ -473,59 +473,102 @@ is the one visual claim in this pass resting on measurement rather than eyes, an
 Added 2026-09-08 after a second round of mentor feedback on this scene
 specifically. Depends on Part 1's tokens; do not start it before Part 1 step 6.
 
-## Findings
+## Findings — REWRITTEN 2026-09-09
 
-Five reported. Four confirmed by reading the scene; the first was WRONG and is
-corrected below. Two of the remaining four are structural, not cosmetic.
+**The original five findings were written from the `.tscn` and a screenshot,
+without reading `StudentCardView.gd`, which is what actually draws this screen.
+Three of the five were wrong or stale.** They are replaced below. The full
+architecture map this rewrite is based on is
+`docs/superpowers/specs/2026-09-09-studentcard-architecture-map.md`.
 
-1. **CORRECTED 2026-09-09 — the identity block is NOT baked art.** This finding
-   was wrong as originally written. Do not plan against it. What is actually true:
-   - `StudentCardView.build_bio_panel(kertas, s_data)` creates a `VBoxContainer`
-     named `BioPanel` **at runtime**, anchors it inside
-     `BIO_PANEL_RECT := Rect2(120, 300, 489, 367)`, and fills it with each
-     student's real `name`, `jenis_kelamin` and `tanggal_lahir` through a
-     `BioLabel` theme variation. It is data-driven and it does differ per student.
-   - Only the panel's **background** — the `#C6B6EE` -> `#9C8FBB` lavender
-     gradient — is painted into `card_bg.png`. `test_student_card_layout.gd`
-     describes `BIO_PANEL_RECT` as "the painted panel's measured interior".
-   - `student_card.gd` already carries `jenis_kelamin` and `tanggal_lahir` for all
-     six students, and three existing tests pin this:
-     `test_roster_carries_gender_and_birth_date`,
-     `test_bio_panel_renders_the_three_rows`, and
-     `test_bio_panel_sits_inside_the_painted_panel`.
+### How this screen is actually built
 
-   The error came from grepping `student_card.gd` for the field names and never
-   opening `StudentCardView.gd`, where the view logic lives. The screenshot that
-   looked like static placeholder text was showing Andi's correct data.
+`card_bg.png` is a **painted 1080x1920 illustration**, and the card is sized to
+it so art pixels map 1:1. It paints the bio panel's rounded frame *and* the five
+stat-pill tracks. `StudentCardView.gd` then positions live nodes onto that art
+using constants measured from it:
 
-   **The real finding underneath it, which still stands:**
-   - Readability — the mentor's actual complaint — is about the painted lavender
-     gradient behind the text, not missing or fake data. Replacing that background
-     is still worth doing.
-   - `build_bio_panel` is **runtime UI construction**, which this project
-     ratchets against. `Scripts/StudentCard/StudentCardView.gd` already sits in
-     `tests/test_viewport_editability.gd`'s `BASELINE` at **5**. Moving the bio
-     panel into the `.tscn` would LOWER that ratchet — a genuine win the original
-     spec missed entirely, because it believed the panel did not exist.
-   - Consequence for Part 2's implementation order: its final step, "wire the
-     identity labels to real student data — the first time this screen has ever
-     shown it", is **void**. That already works. The step becomes "move the bio
-     panel from runtime construction into the template, preserving the existing
-     data binding and lowering the ratchet".
+| Constant | Value | Measured against |
+|---|---|---|
+| `PILL_RECTS` | 5 rects, x=284 and x=716 columns | the painted tracks |
+| `BIO_PANEL_RECT` | `Rect2(120, 300, 489, 367)` | the painted panel's interior |
+| `_ICON_SIZE` / `_ICON_GAP` / `_BADGE_SIZE` | 128 / 24 / 56 | positioned off the pills |
 
-2. **`PageLabel` overlaps the Persona pill by 43px, at rest.** Screen-space
-   `PageLabel` y 1502-1586; Persona pill y 1475-1545. This is static geometry in
-   the `.tscn`, not a swipe race as first suspected.
-3. **`TraitPill` overdraws its own rect.** It is a `StyleBoxTexture` with a 45px
-   9-slice margin (90px needed vertically) forced into a 70px-tall box, so the
-   art bleeds upward over `SifatPasifLabel`, which ends only 5px above it.
-4. **The arrows are pure `#FF0000`.** Every opaque pixel of
-   `pngwing.com (1).png` is primary red. `NextButtonKanan` also carries
-   `rotation = -3.1272` and `scale = 0.175` to reuse one asset for both
-   directions.
-5. **The backdrop out-saturates the card.** `meja_background.png` runs
+**Any layout change moves all of this at once**: re-author the illustration,
+re-measure every constant, and update the tests that pin them
+(`test_pill_rects_match_the_painted_tracks`, `test_bio_panel_sits_inside_the_painted_panel`,
+`test_cards_use_the_new_background`). That is the true size of this task, and the
+original spec did not account for any of it.
+
+### Corrected findings
+
+1. **WRONG — "the identity block is baked art".** It is not.
+   `StudentCardView.build_bio_panel()` builds it at runtime from each student's
+   real `name`, `jenis_kelamin` and `tanggal_lahir`. Only the panel's lavender
+   frame is painted. See the correction block earlier in this document.
+
+2. **STALE — "PageLabel overlaps the Persona pill by 43px".** No overlap exists.
+   `PageLabel` is **empty by design** and carries no text at all;
+   `test_student_card_layout.gd:417` records that the stray "376" in the QA
+   screenshot was *the trait pill drawn over that row*, not PageLabel's own text.
+   The pills now sit at 70px with 5px gaps above and below and 15px clear of
+   `Aprove`, pinned by `test_trait_pills_do_not_overlap_neighbors`. **Commit
+   `9984bea` fixed this on 2026-09-08, before this spec was written.** The
+   screenshot the spec was written from predated the fix.
+
+3. **PARTLY STALE — "TraitPill overdraws its box".** This was the real cause of
+   finding 2's artifact, and it has already been mitigated: the pills were
+   shrunk from ~100px to 70px so they fit their band. Whether the 9-slice still
+   bleeds at 70px is worth one look, but it is no longer producing a visible
+   defect.
+
+4. **STANDS — the arrows.** Both `NextButtonKanan` and `NextButtonKiri` use the
+   same asset, `pngwing.com (1).png`, whose every opaque pixel is pure `#FF0000`.
+   `NextButtonKanan` carries `rotation = -3.1272264` (~-179.17 degrees) to point
+   it the other way; `NextButtonKiri` is unrotated. One asset, one flat primary
+   red, no palette relationship to anything.
+
+5. **STANDS — the backdrop out-saturates the card.** `meja_background.png` runs
    `#E6A57D` -> `#884119`, mean luminance 130/255, under a mint `#D1F5E2` paper.
-   Near-complementary hues with the *background* more saturated than the content.
+
+### New findings the original spec missed
+
+6. **The stat icons and their (i) badges do not exist in the scene.**
+   `build_icon_clusters()` creates all five at runtime. A screenshot shows them;
+   the `.tscn` does not contain them.
+
+7. **Every `ProgressBar` in the scene still carries dead `Label` and
+   `ValueLabel` children**, which `build_stat_bars()` deletes at runtime. The
+   scene stores nodes that never render.
+
+8. **`Aprove`/`Batal` are a swapped slot, but not a clean one.** They sit 62px
+   apart vertically rather than sharing a rect, there is a third grade-7 state
+   where neither shows, and both are repositioned at runtime when
+   `BelajarButton` slides in.
+
+9. **Runtime construction is tracked debt with a number on it.**
+   `Scripts/StudentCard/StudentCardView.gd` sits in
+   `tests/test_viewport_editability.gd`'s `BASELINE` at **5**. Moving the static
+   parts into the template lowers that ratchet — the clearest win available here,
+   and one the original spec could not see because it thought the panel did not
+   exist.
+
+### What is actually left to do
+
+Findings 1, 2 and most of 3 are gone. What remains is smaller and mostly
+cosmetic plus one architectural win:
+
+- bio panel readability (the painted lavender gradient)
+- portrait / identity swap (a layout preference, not a defect)
+- the arrows (real, cheap)
+- the backdrop (real, cheap)
+- the runtime-construction ratchet (real, architectural, worth doing)
+- the six duplicated card copies (real, and the template extraction still stands)
+
+**Scope judgement:** the arrows and the backdrop are cheap and independent of the
+painted art. Anything that moves the portrait, the bio panel or the stat pills
+requires re-authoring `card_bg.png` and re-measuring three constant tables, and
+should be costed accordingly rather than treated as a layout tweak.
 
 ### Also found
 

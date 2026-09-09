@@ -129,12 +129,15 @@ func test_bars_carry_no_text_children() -> void:
 ## sets `bar.variation = &"StatPill"` at RUNTIME, after the bar has already
 ## gone through _ready() with the default "StatBar" family -- which force-
 ## sets self_modulate to white for that family (see StatBar._apply_tint()).
-## StatPill's fill has no baked-in colour and its background is a
-## StyleBoxEmpty, so it depends entirely on self_modulate for its category
-## colour. A `variation` setter that only wrote theme_type_variation left
+## A `variation` setter that only wrote theme_type_variation left
 ## self_modulate stuck at that earlier white and the pill rendered blank --
 ## this reproduces the exact sequence StudentCardView performs and would
 ## have caught it.
+##
+## The expected colour is the ON-DARK accent, not the light-chrome one:
+## StatPill's background is a StyleBoxEmpty, so what sits behind the fill is
+## the dark track painted into card_bg.png. Pairing a light-chrome accent
+## with that dark ground is what made these bars read muddy.
 func test_switching_variation_at_runtime_rederives_the_tint() -> void:
 	var bar := StatBar.new()
 	bar.category = "Olahraga"
@@ -147,7 +150,7 @@ func test_switching_variation_at_runtime_rederives_the_tint() -> void:
 	bar.variation = &"StatPill"
 
 	var tokens := DesignTokens.load_default()
-	assert_eq(bar.self_modulate, tokens.cat_olahraga,
+	assert_eq(bar.self_modulate, tokens.cat_olahraga_on_dark,
 		"switching to StatPill at runtime must re-derive self_modulate from the category")
 	assert_eq(bar.theme_type_variation, &"StatPill",
 		"switching to StatPill at runtime must still update theme_type_variation")

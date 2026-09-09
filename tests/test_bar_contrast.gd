@@ -62,17 +62,35 @@ func test_the_two_needs_fills_clear_the_floor() -> void:
 				% [spec[0], ratio, FLOOR])
 
 
-func test_light_track_accents_clear_the_floor_too() -> void:
-	# The light StatBar track is the other half of the pair. If someone
-	# "simplifies" by pointing both grounds at one token, this catches it.
+func test_light_chrome_accents_stay_legible() -> void:
+	# surface_sunken is no longer any progress bar's track -- StatBar and
+	# its six siblings moved to the dark stat_bar_track on 2026-09-09. But
+	# the light (non-"_on_dark") cat_* accents are still used directly on
+	# sunken panels as schedule pills and icons, so that relationship is
+	# still real and still worth guarding.
 	var tokens := DesignTokens.load_default()
 	for category in ["Akademis", "Olahraga", "SeniBudaya",
 			"Istirahat", "Libur", "Wirausaha"]:
 		var fill := tokens.category_color(category)
 		var ratio := _contrast(fill, tokens.surface_sunken)
 		assert_true(ratio >= FLOOR,
-			"%s on the light StatBar track is %.2f:1, floor is %.1f"
+			"%s on light chrome (surface_sunken) is %.2f:1, floor is %.1f"
 				% [category, ratio, FLOOR])
+
+
+func test_stat_bar_on_dark_accents_clear_the_floor() -> void:
+	# StatBar and its six per-category siblings now draw on stat_bar_track
+	# (dark) with the bright cat_*_on_dark fills, mirroring the DaySummary
+	# bars above. Every ratio here should beat what the old light-track
+	# fills measured, while using brighter colours.
+	var tokens := DesignTokens.load_default()
+	for category in ["Akademis", "Olahraga", "SeniBudaya",
+			"Istirahat", "Libur", "Wirausaha"]:
+		var fill := tokens.category_color_on_dark(category)
+		var ratio := _contrast(fill, tokens.stat_bar_track)
+		assert_true(ratio >= FLOOR,
+			"%s on-dark is %s against stat_bar_track -- %.2f:1, floor is %.1f"
+				% [category, fill.to_html(false), ratio, FLOOR])
 
 
 func test_libur_and_currency_gold_are_distinguishable() -> void:

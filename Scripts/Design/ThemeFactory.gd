@@ -582,14 +582,18 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("StatBar")
 	theme.set_type_variation("StatBar", "ProgressBar")
 
-	# The track is a sticker capsule like the rest of the chrome: sunken
+	# The track is a sticker capsule like the rest of the chrome: dark
 	# ground, white rim, soft drop shadow. content_margin insets the fill
 	# so a rail of track stays visible even at 100% -- without it the
 	# coloured fill runs flush to the rim and the bar reads as a debug
 	# widget. The inset is half outline_width so the rail and the rim
-	# stay a 1:1 pair at any token value.
+	# stay a 1:1 pair at any token value. The track is deliberately dark
+	# (stat_bar_track, not surface_sunken) so the fill can be a bright
+	# cat_*_on_dark accent instead of a light track forcing those accents
+	# to be darkened until they were muddy -- see stat_bar_track's doc
+	# comment on DesignTokens.gd.
 	var bg := StyleBoxFlat.new()
-	bg.bg_color = tokens.surface_sunken
+	bg.bg_color = tokens.stat_bar_track
 	bg.set_corner_radius_all(tokens.radius_pill)
 	bg.set_border_width_all(int(tokens.outline_width / 2.0))
 	bg.border_color = tokens.outline_card
@@ -626,12 +630,12 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	# new theme item added to "StatBar" later will NOT reach these six
 	# siblings automatically -- it would need to be added here too.
 	var stat_bar_categories := [
-		["StatBarAkademis", tokens.cat_akademis],
-		["StatBarSeniBudaya", tokens.cat_senibudaya],
-		["StatBarOlahraga", tokens.cat_olahraga],
-		["StatBarIstirahat", tokens.cat_istirahat],
-		["StatBarLibur", tokens.cat_libur],
-		["StatBarWirausaha", tokens.cat_wirausaha],
+		["StatBarAkademis", tokens.cat_akademis_on_dark],
+		["StatBarSeniBudaya", tokens.cat_senibudaya_on_dark],
+		["StatBarOlahraga", tokens.cat_olahraga_on_dark],
+		["StatBarIstirahat", tokens.cat_istirahat_on_dark],
+		["StatBarLibur", tokens.cat_libur_on_dark],
+		["StatBarWirausaha", tokens.cat_wirausaha_on_dark],
 	]
 	for spec in stat_bar_categories:
 		var name: String = spec[0]

@@ -45,6 +45,11 @@ static func load_default() -> DesignTokens:
 @export var surface_overlay: Color = Color("2E2118")
 ## Alpha applied to surface_overlay when used as a modal scrim.
 @export_range(0.0, 1.0) var overlay_scrim_alpha: float = 0.72
+## Empty-track colour for StatBar and its six per-category siblings. Dark on
+## purpose: a vibrant fill needs a dark ground to read against, and the light
+## surface_sunken track this replaced forced four category accents to be
+## darkened until they were muddy. Pairs with the cat_*_on_dark accents.
+@export var stat_bar_track: Color = Color("4A3728")
 
 @export_group("Outline & Shadow")
 ## Border colour on PrimaryButton, DangerButton, SuccessButton,

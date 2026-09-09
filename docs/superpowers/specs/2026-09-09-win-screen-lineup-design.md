@@ -108,20 +108,24 @@ re-exported with every figure's feet on the canvas bottom edge (see
 "Re-exported art" below), which gives all six a shared baseline: the canvas
 bottom *is* the ground line, so anchoring a slot anchors the figure's feet.
 
-### Re-exported art
+### Re-exported art — done, verified
 
-The splashes in the Downloads folder as of this writing do not share a
-baseline — their lowest opaque row ranges from 984 (Thea) to 1079 (Andi).
-They are being repositioned so every figure's feet sit at the canvas bottom.
+The splashes were originally exported without a shared baseline: their
+lowest solid row ranged from 984 (Thea) to 1079 (Andi). They have since been
+repositioned so every figure's feet sit on the canvas bottom, and this is
+verified — measuring the lowest row carrying at least 16 pixels above alpha
+128 gives **1077–1079 across all six**, a 2px spread, which is 1.4 screen
+pixels after the letterbox scale.
 
-This is a simplification, and the design assumes it. Two consequences:
+Consequence: the ground line collapses into the bottom anchor. No
+per-character ground value is needed, and the airborne handling previously
+planned for Thea is moot — she is grounded like everyone else.
 
-- The ground line collapses into the bottom anchor. No separate per-slot
-  ground value is needed.
-- Every measured number in §5 is taken from the *current* art and must be
-  re-derived from the final art before it is written into code. The
-  procedure is recorded in §5 so it can be repeated whenever the art
-  changes.
+Measure the baseline at **alpha > 128**, not at alpha > 16. Every splash
+carries stray near-transparent pixels down to y 1078–1079 regardless of
+where the figure actually ends, so a low threshold reports a shared baseline
+whether or not one exists, and would have hidden the problem instead of
+confirming the fix.
 
 Measured from the mockup: the four figures occupy art-space
 x 244–1386, y 818–1797 — the lower half of the painting, about 74% of its
@@ -219,46 +223,42 @@ splash's own 1080² canvas space, as `{ centre_x, span }` — the vertical
 position is the canvas bottom for every character now that the art shares a
 baseline.
 
-**The numbers must be measured from the final art, not from this table.**
-The procedure, so it can be repeated whenever a splash is re-exported:
-
-1. Read the PNG's alpha; treat a pixel as opaque above alpha 16.
-2. Find the lowest opaque row — the figure's baseline.
-3. Take the horizontal span of opaque pixels within the bottom 6% of the
-   figure's height. That band is the foot contact, not the whole silhouette.
-4. `centre_x` is the midpoint of that span; `span` is its width.
-
-Measured against the *current*, pre-repositioning art, for scale rather than
-for use:
+Measured from the **final, repositioned art**. These are the values to use:
 
 | | foot centre x | span |
 |---|---|---|
-| Doni | 590 | 603 |
-| Andi | 488 | 392 |
-| Citra | 514 | 354 |
-| Sinta (Shinta) | 526 | 188 |
-| Marcel | 391 | 123 |
-| Thea | 559 | 105 |
+| Doni | 587 | 597 |
+| Andi | 488 | 390 |
+| Citra | 530 | 352 |
+| Sinta (Shinta) | 526 | 186 |
+| Marcel | 480 | 116 |
+| Thea | 546 | 100 |
 
-The shape of that spread is what matters and will survive repositioning:
-spans run 5× from Marcel to Doni, and centres drift up to 149px off canvas
-centre (Marcel at 391, not 540). A single shared shadow size would be
+The procedure, so it can be repeated whenever a splash is re-exported:
+
+1. Read the PNG's alpha; treat a pixel as solid above **alpha 128**. The
+   low threshold used for a bounding box is wrong here — see §2.
+2. Find the lowest row carrying at least 16 solid pixels. That is the
+   figure's baseline; a lower threshold catches stray antialiasing instead.
+3. Take the horizontal span of solid pixels in the 40 rows above that
+   baseline. That band is the foot contact, not the whole silhouette.
+4. `centre_x` is the midpoint of that span; `span` is its width.
+
+Spans run 6× from Thea to Doni, and centres sit up to 60px off canvas
+centre (Marcel at 480, not 540). A single shared shadow size would be
 visibly wrong at both ends, which is why this table exists at all.
 
-### Two poses that need a judgement call
+### Two narrow-contact poses
 
-Both are contact-area artifacts, and both should be re-checked against the
-final art rather than assumed:
+Both are genuinely one-footed, confirmed against the final art:
 
-- **Marcel leans on one foot**, giving a 123px span. A shadow that narrow
-  under a standing figure reads as a smudge rather than as contact, so his
-  widens toward his body's true centre.
-- **Thea is mid-jump.** In the current art her trailing foot is the only
-  contact and sits 96px above the canvas bottom. Once her foot is moved to
-  the bottom edge she will read as grounded, and the airborne handling
-  previously planned for her is moot — a normal shadow, sized from her
-  measured span, is correct. If the re-export instead keeps her visibly
-  airborne, her shadow should go wider and fainter to read as height.
+- **Marcel leans on one foot**, giving a 116px span.
+- **Thea is mid-stride**, giving 100px.
+
+A shadow that narrow under a full-height figure reads as a smudge rather
+than as contact. Both widen toward the body's centre — expected to be
+roughly double, tuned in the same screenshot pass as the slot anchors
+rather than fixed here.
 
 ### Knobs
 
@@ -320,11 +320,10 @@ Three tiers, and it matters which is which:
 x 244–1386, y 818–1797 — from diffing `mockup_winscreen.png` against
 `win_background.png`. The backdrop does not change, so this holds.
 
-**Measured but provisional.** The per-character foot anchors in §5, taken
-from each splash's alpha. The splashes are being re-exported on a shared
-baseline, so these must be re-derived from the final art by the procedure in
-§5 before they are written into `FOOT_ANCHORS`. The numbers in the table are
-there to show the shape of the spread, not to be copied into code.
+**Measured and current.** The per-character foot anchors in §5, taken from
+the final repositioned splashes at alpha > 128. They go into `FOOT_ANCHORS`
+as written. Re-derive them by the §5 procedure if the art is exported
+again.
 
 **Estimated.** The four individual slot anchors and scales, seeded from the
 mockup and tuned in a single editor screenshot pass. Stated plainly here so

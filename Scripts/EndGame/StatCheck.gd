@@ -183,10 +183,18 @@ func _rush_current_student() -> void:
 ## A pause, as a tween rather than a SceneTreeTimer, so _rush_current_student()
 ## can speed it up. A timer cannot be rushed, and a timer-based hold would
 ## swallow the tap for its full duration.
+##
+## Also honors _rushing directly, not just a tap landing on _live_tween: the
+## rows loop can leave _rushing true right up to this call, and the
+## trailing hold's own _rushing = false runs before its _hold() -- so
+## speed-scaling here only ever affects the entry hold, never the read
+## beat, which is exactly the intended split.
 func _hold(seconds: float) -> void:
 	var tw := create_tween()
 	_live_tween = tw
 	tw.tween_interval(seconds)
+	if _rushing:
+		tw.set_speed_scale(RUSH_SPEED)
 	await tw.finished
 	_live_tween = null
 

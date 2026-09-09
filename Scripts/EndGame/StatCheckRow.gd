@@ -49,6 +49,10 @@ var target_ratio: float = 0.0
 var cleared: bool = false
 ## The in-flight fill(), held so rush() can reach it.
 var _fill_tween: Tween = null
+## True once rush() has been called on this row, so a fill that has not
+## started yet begins already rushed. A row is instanced fresh per student,
+## so this never leaks between students.
+var _rushed: bool = false
 
 @onready var icon_rect: TextureRect = $Icon
 @onready var bar: StatBar = $Bar
@@ -84,6 +88,7 @@ static func ratio(value: float, target: float) -> float:
 func set_result(value: float, target: float) -> void:
 	target_ratio = ratio(value, target)
 	cleared = false
+	_rushed = false
 	bar.value = 0.0
 
 
@@ -95,6 +100,10 @@ func fill() -> void:
 	_fill_tween = Juice.fill_bar(bar, target_ratio, fill_seconds)
 	if _fill_tween == null:
 		return
+	# A rush() that landed before this fill existed (row not yet started
+	# when the player tapped) is honored here instead of being dropped.
+	if _rushed:
+		_fill_tween.set_speed_scale(RUSH_SPEED)
 	await _fill_tween.finished
 	_fill_tween = null
 	if not is_inside_tree():
@@ -114,8 +123,11 @@ func fill() -> void:
 ## so `cleared`, the full-bar pop and the `filled` signal all run their
 ## normal path.
 ##
-## A no-op when nothing is in flight.
+## Sticks even when nothing is in flight yet: a row rushed before its own
+## fill() has run (a tap during slide-in, or on a not-yet-reached row in
+## the loop) starts already rushed instead of losing the tap.
 func rush() -> void:
+	_rushed = true
 	if _fill_tween != null and _fill_tween.is_valid():
 		_fill_tween.set_speed_scale(RUSH_SPEED)
 

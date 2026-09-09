@@ -138,6 +138,32 @@ func test_rushing_an_idle_row_leaves_it_armed_but_unmoved() -> void:
 	Engine.get_main_loop().root.remove_child(row)
 
 
+## The bug this guards: rush() used to only speed-scale a LIVE _fill_tween,
+## so a tap landing before fill() had ever run on this row -- e.g. row 1 or
+## 2 while row 0 is still filling -- hit the null guard, no-op'd, and was
+## silently dropped. The row then played its full-length fill anyway. A
+## rush must stick so a not-yet-started fill begins already rushed.
+func test_rushing_a_row_before_its_fill_starts_still_rushes_it() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
+	assert_true(src.contains("var _rushed: bool = false"),
+		"the row remembers a rush across the gap before fill() exists")
+	var rush_at := src.find("func rush() -> void:")
+	var set_flag_at := src.find("_rushed = true", rush_at)
+	var speed_scale_at := src.find("_fill_tween.set_speed_scale(RUSH_SPEED)", rush_at)
+	assert_true(rush_at != -1 and set_flag_at != -1 and speed_scale_at != -1,
+		"rush() both sets the flag and speed-scales a live tween")
+	assert_true(set_flag_at < speed_scale_at,
+		"the flag is set first, so it survives even when the live-tween "
+		+ "branch below it does not apply")
+	var fill_at := src.find("func fill() -> void:")
+	var null_check_at := src.find("if _fill_tween == null:", fill_at)
+	var rushed_check_at := src.find("if _rushed:", fill_at)
+	assert_true(fill_at != -1 and null_check_at != -1 and rushed_check_at != -1,
+		"fill() consults the flag right after creating its own tween")
+	assert_true(null_check_at < rushed_check_at,
+		"the dead-node guard runs first, so a freed row is never speed-scaled")
+
+
 func test_star_placeholder_exists_and_loads_as_a_texture() -> void:
 	assert_true(ResourceLoader.exists(_STAR_ICON), "icon_star.svg exists")
 	var tex = load(_STAR_ICON)
@@ -386,6 +412,26 @@ func test_the_holds_are_tween_based_so_they_can_be_rushed() -> void:
 	assert_true(src.contains("tween_interval("), "which is a tween, not a timer")
 	assert_false(src.contains("create_timer(hold_seconds)"),
 		"no SceneTreeTimer hold survives -- it could not be rushed")
+
+
+## The bug this guards: _hold() used to be sped up only via whatever tap
+## landed on _live_tween at that instant, never by checking _rushing
+## itself -- so the entry hold (between the slide-in and row 0's fill)
+## always played at full length even though a tap had already set
+## _rushing true. A tap must not leave the player waiting out that pause.
+func test_the_entry_hold_is_rushed_by_a_tap() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	var hold_at := src.find("func _hold(")
+	var interval_at := src.find("tween_interval(", hold_at)
+	var rushing_check_at := src.find("if _rushing:", hold_at)
+	var speed_scale_at := src.find("tw.set_speed_scale(RUSH_SPEED)", hold_at)
+	assert_true(hold_at != -1 and interval_at != -1 and rushing_check_at != -1
+		and speed_scale_at != -1,
+		"_hold() checks _rushing and speed-scales its own tween when it is set")
+	assert_true(interval_at < rushing_check_at,
+		"the check comes after the interval is armed")
+	assert_true(rushing_check_at < speed_scale_at,
+		"and immediately drives the speed-scale, before the await")
 
 
 ## Rushing must not fire three tally cues inside one frame; they would

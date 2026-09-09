@@ -79,3 +79,17 @@ func test_separator_variation_is_the_hairline() -> void:
 	assert_not_null(box, "PreviewRowSeparator should be a StyleBoxLine")
 	assert_eq(box.color, SEPARATOR, "separator should use the hairline token")
 	assert_eq(box.thickness, 1, "separator should be 1px")
+
+
+## Source-text scan, following the established pattern for UI that
+## cannot be instantiated headlessly. Five rows need four separators.
+func test_the_rows_are_divided_by_hairlines() -> void:
+	var path := "res://Scenes/AturJadwal/atur_jadwal.tscn"
+	var f := FileAccess.open(path, FileAccess.READ)
+	assert_not_null(f, "could not open " + path)
+	var src := f.get_as_text()
+	f.close()
+	assert_contains(src, "PreviewRowSeparator",
+		"the activity rows should be divided by the hairline variation")
+	var count := src.count("PreviewRowSeparator")
+	assert_eq(count, 4, "five rows need exactly four separators, found %d" % count)

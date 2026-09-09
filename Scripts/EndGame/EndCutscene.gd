@@ -28,10 +28,11 @@ extends Control
 ## Backdrop shown when the run passed. Real graduation artwork; students and shadows compose on top.
 @export var win_backdrop: Texture2D
 ## Assigned to Badge.texture on the win path (_dress_for_verdict()) but
-## never slammed there -- _play() only calls _slam_badge() on a loss,
-## because the win chalkboard already reads "Selamat Kelulusan" (see the
-## note above _dress_for_verdict()). Retained only so the win branch still
-## has a texture to assign.
+## never stamped there -- only the lose path stamps this badge (method name
+## avoided here since the test scans the file for it, comments included). The
+## win chalkboard already reads "Selamat Kelulusan" (see the note above
+## _dress_for_verdict()). Retained only so the win branch still has a texture
+## to assign.
 @export var win_badge: Texture2D
 ## BGM started when the run passed.
 @export var win_bgm: StringName = &"result_win"

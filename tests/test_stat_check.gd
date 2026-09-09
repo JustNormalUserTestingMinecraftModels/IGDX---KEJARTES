@@ -82,7 +82,7 @@ func test_row_fill_is_a_coroutine_that_pops_only_at_full() -> void:
 	assert_true(src.contains("func fill() -> void:"), "fill() exists")
 	assert_true(src.contains("Juice.fill_bar(bar, target_ratio, fill_seconds)"),
 		"fill() drives Juice.fill_bar over fill_seconds")
-	assert_true(src.contains("if tween == null:"),
+	assert_true(src.contains("if _fill_tween == null:"),
 		"a null tween is refused -- Juice.fill_bar returns null for a dead "
 		+ "node, and awaiting .finished on that is a null deref")
 	assert_true(src.contains("if target_ratio >= 100.0:"),

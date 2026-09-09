@@ -181,11 +181,13 @@ func test_header_and_status_badges_use_theme_variations() -> void:
 		assert_eq(nama.theme_type_variation, &"H2Label", "Murid%d/Nama variation" % i)
 
 
+## These nav arrows are on the L size step (160px tall), whose variation uses
+## font_h1 (64) rather than font_title (36) -- hence the L suffix on the name.
 func test_nav_arrows_use_theme_variation() -> void:
 	for name in ["LeftArrow", "RightArrow"]:
 		var b := _list.get_node_or_null(name) as Button
 		assert_true(b != null, "missing " + name)
-		assert_eq(b.theme_type_variation, &"SecondaryButton", name + " variation")
+		assert_eq(b.theme_type_variation, &"SecondaryButtonL", name + " variation")
 
 
 func test_sticky_notes_are_stickynote_instances_wired_per_day() -> void:

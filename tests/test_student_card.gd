@@ -137,13 +137,15 @@ func test_stat_bars_are_statbars_with_a_category() -> void:
 				"KertasMurid%d/%s category" % [i, bar_name])
 
 
+## These buttons are on the L size step (160px tall), which uses font_h1 (64px)
+## rather than the standard font_title (36px), so their variation names carry the L suffix.
 func test_action_buttons_use_theme_variations() -> void:
 	var expected := {
-		"KertasMurid1/Aprove": &"SuccessButton",
-		"KertasMurid1/Batal": &"DangerButton",
+		"KertasMurid1/Aprove": &"SuccessButtonL",
+		"KertasMurid1/Batal": &"DangerButtonL",
 		"KertasMurid1/KutuBuku": &"TraitPill",
 		"KertasMurid1/KutuBuku2": &"TraitPill",
-		"BelajarButton": &"PrimaryButton",
+		"BelajarButton": &"PrimaryButtonL",
 	}
 	for p in expected.keys():
 		var b := _card.get_node_or_null(p) as Button

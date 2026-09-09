@@ -217,7 +217,7 @@ func test_a_shadow_follows_its_students_foot_centre_not_the_canvas_centre() -> v
 
 
 func test_shadow_width_scales_with_the_foot_span() -> void:
-	# Doni's 597px crouch against Shinta's 186px stance: the shadows must
+	# Doni's 597px crouch against Citra's 352px stance: the shadows must
 	# differ by roughly the same factor, or one of them reads wrong.
 	var doni := WinLineup.shadow_for(_placed("Doni"), 1.25, 0.28)
 	var citra := WinLineup.shadow_for(_placed("Citra"), 1.25, 0.28)

@@ -27,7 +27,11 @@ extends Control
 @export_group("Win")
 ## Backdrop shown when the run passed. Real graduation artwork; students and shadows compose on top.
 @export var win_backdrop: Texture2D
-## Badge stamped into the top-left when the run passed.
+## Assigned to Badge.texture on the win path (_dress_for_verdict()) but
+## never slammed there -- _play() only calls _slam_badge() on a loss,
+## because the win chalkboard already reads "Selamat Kelulusan" (see the
+## note above _dress_for_verdict()). Retained only so the win branch still
+## has a texture to assign.
 @export var win_badge: Texture2D
 ## BGM started when the run passed.
 @export var win_bgm: StringName = &"result_win"
@@ -149,11 +153,17 @@ func _dress_for_verdict() -> void:
 	backdrop.texture = lose_backdrop if failed else win_backdrop
 	badge.texture = lose_badge if failed else win_badge
 	# Stage stays visible either way -- Backdrop lives under it and carries
-	# both verdicts' art. The lineup slots are authored hidden and are only
-	# ever shown by _dress_lineup(), so the lose path never sees them.
+	# both verdicts' art. Win letterboxes Stage to the art size and poses
+	# the roster on it. Lose keeps the framing the CG had before Stage
+	# existed: Stage fills the viewport so Backdrop's KEEP_ASPECT_COVERED
+	# crops cg_lose.jpg the way it always did. The lineup slots are
+	# authored hidden and are only ever shown by _dress_lineup(), so the
+	# lose path never sees them.
 	if not failed:
 		_fit_stage()
 		_dress_lineup()
+	else:
+		_fit_stage_cover()
 	AudioDirector.play_bgm(lose_bgm if failed else win_bgm)
 
 
@@ -167,6 +177,17 @@ func _fit_stage() -> void:
 	stage.size = ART_SIZE
 	stage.scale = Vector2(s, s)
 	stage.position = (vp - ART_SIZE * s) * 0.5
+
+
+## The lose path keeps the framing the CG had before the Stage existed:
+## Stage fills the viewport and Backdrop covers it (KEEP_ASPECT_COVERED),
+## so cg_lose.jpg is centred and cropped rather than stretched. Without
+## this, Stage would keep its authored 1536x2048 art size and the lose CG
+## would show only its top-left corner.
+func _fit_stage_cover() -> void:
+	stage.size = get_viewport_rect().size
+	stage.scale = Vector2.ONE
+	stage.position = Vector2.ZERO
 
 
 ## Splash art for a roster name, or null when the name is unknown.

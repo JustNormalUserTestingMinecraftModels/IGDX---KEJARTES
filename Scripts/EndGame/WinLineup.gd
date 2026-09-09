@@ -64,9 +64,8 @@ const SLOT_GEOMETRY := {
 ## Which slots a roster of `count` uses, ordered BACK TO FRONT so a caller
 ## can add nodes in array order and get the right z-order for free.
 ##
-## Each size is arranged rather than derived: a 2-student shot that simply
-## left the side slots empty would read as a gappy 4-figure composition
-## instead of a deliberate 2-figure one.
+## The 2- and 3-slot rosters are subsets of the 4-figure geometry below,
+## chosen so the front slot is always present -- not separately tuned.
 const ARRANGEMENTS := {
 	2: [SLOT_SIDE_LEFT, SLOT_FRONT_LOW],
 	3: [SLOT_SIDE_LEFT, SLOT_FRONT_MID, SLOT_FRONT_LOW],

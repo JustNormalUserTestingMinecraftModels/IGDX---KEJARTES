@@ -105,14 +105,17 @@ func test_next_button_starts_hidden_and_disabled() -> void:
 		"be clickable before its cue")
 
 
+## win_badge is still assigned on the win path (EndCutscene.gd's
+## _dress_for_verdict()) but never slammed there -- see
+## test_the_win_path_skips_the_badge below for that. This only pins what
+## still actually renders: the two backdrops differ, and the lose badge
+## (which the lose path does stamp) is a real texture.
 func test_both_verdicts_are_dressed_from_exports() -> void:
 	var s := _scene()
 	assert_true(s.win_backdrop is Texture2D, "a win backdrop is assigned")
 	assert_true(s.lose_backdrop is Texture2D, "a lose backdrop is assigned")
-	assert_true(s.win_badge is Texture2D, "a win badge is assigned")
 	assert_true(s.lose_badge is Texture2D, "a lose badge is assigned")
 	assert_ne(s.win_backdrop, s.lose_backdrop, "the two outcomes look different")
-	assert_ne(s.win_badge, s.lose_badge, "so do their badges")
 	assert_eq(String(s.win_bgm), "result_win", "win BGM")
 	assert_eq(String(s.lose_bgm), "result_lose", "lose BGM")
 
@@ -275,6 +278,35 @@ func test_shadows_draw_beneath_every_student() -> void:
 	var backdrop: int = stage.get_node("Backdrop").get_index()
 	assert_true(backdrop < shadows, "the backdrop is behind the shadows")
 	assert_true(shadows < students, "every shadow is behind every figure")
+
+
+## Lose regressed once already (2026-09-09): before EndCutscene grew a Stage
+## node, Backdrop was a direct child with full anchors and
+## KEEP_ASPECT_COVERED, so cg_lose.jpg filled the screen, centred and
+## cropped. Once Backdrop moved under Stage, a Stage left at its authored
+## 1536x2048 art size showed only the CG's top-left corner.
+## _fit_stage_cover() is what restores the old framing on the lose path --
+## Stage is resized to the viewport so Backdrop's own KEEP_ASPECT_COVERED
+## does the covering, same as it always did.
+func test_the_lose_path_covers_the_viewport_like_it_used_to() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("func _fit_stage_cover() -> void:"),
+		"_fit_stage_cover() exists")
+
+	var dress_at := src.find("func _dress_for_verdict()")
+	var next_func_at := src.find("func _fit_stage()")
+	assert_true(dress_at != -1 and next_func_at != -1,
+		"both _dress_for_verdict() and _fit_stage() are present")
+	var dress_body := src.substr(dress_at, next_func_at - dress_at)
+	var else_at := dress_body.find("else:")
+	var cover_call_at := dress_body.find("_fit_stage_cover()")
+	assert_true(else_at != -1 and cover_call_at != -1 and else_at < cover_call_at,
+		"the lose (else) branch of _dress_for_verdict() is what calls " +
+		"_fit_stage_cover(), not the win branch")
+
+	var backdrop: TextureRect = _scene().get_node("Stage/Backdrop")
+	assert_eq(backdrop.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_COVERED,
+		"Backdrop is authored to cover whatever Stage it sits in, on both verdicts")
 
 
 func test_the_stage_has_four_authored_slots_and_four_shadows() -> void:

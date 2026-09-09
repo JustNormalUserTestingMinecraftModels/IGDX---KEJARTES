@@ -801,23 +801,28 @@ func _shift_approve_for_belajar(index: int):
 	var orig_pos = ref_btn.get_meta("original_position") if ref_btn.has_meta("original_position") else ref_btn.position
 	var ref_size = ref_btn.size * ref_btn.scale
 	var gap = 10.0
-	var shift_amount = (ref_size.x + gap) / 2.0
-	
+	var b_width = belajar_button.size.x * belajar_button.scale.x
+
 	var is_locked = (approve_btn and not approve_btn.visible) and (batal_btn and not batal_btn.visible)
 	var shifted_x = orig_pos.x
 	var kertas_pos = active_kertas.position
 	var belajar_target = Vector2.ZERO
 
 	if is_locked:
-		var b_width = belajar_button.size.x * belajar_button.scale.x
 		belajar_target = Vector2(
 			kertas_pos.x + (active_kertas.size.x - b_width) / 2.0,
 			kertas_pos.y + ref_btn.position.y
 		)
 	else:
-		shifted_x = orig_pos.x - shift_amount
+		# Centre the PAIR on the card, not each button on where the single
+		# button used to be. The old code slid both by half of the ref
+		# button's own width, which only centres the pair when the two
+		# buttons are the same width -- Batal is 520 and Belajar 490, so
+		# the row landed 35px right of centre.
+		var pair_left = (active_kertas.size.x - (ref_size.x + gap + b_width)) / 2.0
+		shifted_x = pair_left
 		belajar_target = Vector2(
-			kertas_pos.x + orig_pos.x + ref_size.x + gap - shift_amount,
+			kertas_pos.x + pair_left + ref_size.x + gap,
 			kertas_pos.y + ref_btn.position.y
 		)
 

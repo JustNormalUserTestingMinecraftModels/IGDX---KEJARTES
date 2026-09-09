@@ -36,11 +36,12 @@ func test_scene_exists_and_instantiates() -> void:
 func test_scene_supplies_every_node_the_script_binds() -> void:
 	var popup := _make()
 	for path in ["Scrim", "Scrim/Card", "Scrim/Card/Layout/Header",
-			"Scrim/Card/Layout/Header/Row/GlyphLabel",
+			"Scrim/Card/Layout/Header/Row/GlyphIcon",
 			"Scrim/Card/Layout/Header/Row/Titles/KindLabel",
 			"Scrim/Card/Layout/Header/Row/Titles/NameLabel",
 			"Scrim/Card/Layout/Header/Row/CloseButton",
-			"Scrim/Card/Layout/Body/DescriptionLabel"]:
+			"Scrim/Card/Layout/Body/BodyLayout/EffectLabel",
+			"Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel"]:
 		assert_not_null(popup.get_node_or_null(path), "missing node: %s" % path)
 
 
@@ -59,23 +60,60 @@ func test_quirk_and_persona_get_their_own_accent() -> void:
 	assert_eq(quirk.get_node("Scrim/Card/Layout/Header").self_modulate,
 		tokens.brand_primary)
 	assert_eq(quirk.get_node("Scrim/Card/Layout/Header/Row/Titles/KindLabel").text, "QUIRK")
-	assert_eq(quirk.get_node("Scrim/Card/Layout/Header/Row/GlyphLabel").text, "⚡")
 
 	var persona := _make()
 	persona.configure("persona", "Tekun", "Belajar terus.")
 	assert_eq(persona.get_node("Scrim/Card/Layout/Header").self_modulate,
 		tokens.cat_istirahat)
 	assert_eq(persona.get_node("Scrim/Card/Layout/Header/Row/Titles/KindLabel").text, "PERSONA")
-	assert_eq(persona.get_node("Scrim/Card/Layout/Header/Row/GlyphLabel").text, "🌟")
 
 
-func test_description_keeps_the_gameplay_effect_prefix() -> void:
-	# Player-facing Indonesian copy shipped with this exact prefix.
+## The header glyph was the literal emoji "⚡" / "🌟" set as a Label's TEXT
+## until 2026-09-09 -- emoji as UI iconography, which this project bans,
+## and which also made the glyph depend on the device's emoji font. It is a
+## TextureRect fed real PNGs now. Asserted by comparing the two kinds'
+## textures rather than pinning a path, so renaming the art is free but
+## quietly serving one glyph for both traits is not.
+func test_each_trait_kind_gets_its_own_glyph_texture() -> void:
+	var quirk := _make()
+	quirk.configure("quirk", "Kutu Buku", "Suka membaca.")
+	var quirk_tex: Texture2D = quirk.get_node(
+		"Scrim/Card/Layout/Header/Row/GlyphIcon").texture
+	assert_not_null(quirk_tex, "the quirk header must get a glyph texture")
+
+	var persona := _make()
+	persona.configure("persona", "Tekun", "Belajar terus.")
+	var persona_tex: Texture2D = persona.get_node(
+		"Scrim/Card/Layout/Header/Row/GlyphIcon").texture
+	assert_not_null(persona_tex, "the persona header must get a glyph texture")
+	assert_true(quirk_tex != persona_tex,
+		"quirk and persona must not share one glyph")
+
+
+## "EFEK GAMEPLAY:" used to be a prefix glued onto the front of the
+## description, which is why it could only ever wear the body face. It is
+## its own display-font heading now, and the description is just the
+## description. The 💡 that opened the old prefix went with it.
+func test_the_gameplay_effect_heading_is_its_own_display_label() -> void:
 	var popup := _make()
 	popup.configure("quirk", "Kutu Buku", "Suka membaca.")
-	assert_contains(
-		popup.get_node("Scrim/Card/Layout/Body/DescriptionLabel").text,
-		"EFEK GAMEPLAY")
+
+	# Asserted as the VARIATION, not as a resolved font. This popup is a
+	# CanvasLayer with no theme of its own, so get_theme_font() here walks
+	# up to the root Window and returns the engine default rather than the
+	# project theme -- it would fail whatever the label wore. The variation
+	# is the real contract: TitleLabel is on test_theme_factory.gd's
+	# DISPLAY_ROSTER, which pins it to the display face in the bake.
+	var heading: Label = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/EffectLabel")
+	assert_contains(heading.text, "EFEK GAMEPLAY")
+	assert_eq(heading.theme_type_variation, &"TitleLabel",
+		"the heading must wear a display-roster variation, not the body face")
+
+	var body: Label = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel")
+	assert_eq(body.text, "Suka membaca.",
+		"the description must no longer carry the heading as a prefix")
+	assert_false(body.text.contains("💡"),
+		"the emoji prefix must be gone")
 
 
 func test_neither_screen_builds_a_trait_popup_by_hand() -> void:

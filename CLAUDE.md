@@ -409,6 +409,30 @@ conservative starting numbers, untested against `tests/test_balance_pacing.gd`.
 blurred backdrop, a "Segera Hadir" line and a back button. The shop hub's
 second tile has to lead somewhere; nothing behind it is designed yet.
 
+**Bar fill motifs are generated geometry (2026-09-09).** The eight tiles in
+`Assets/Images/UI/BarFill/` (`fill_akademis`, `fill_senibudaya`,
+`fill_olahraga`, `fill_wirausaha`, `fill_istirahat`, `fill_libur`,
+`fill_mood`, `fill_energi`) carry one motif each -- a book, tenun chevrons,
+the batik lereng diagonal, a coin, a crescent, a sun, a heart, a bolt --
+drawn with PowerShell +
+`System.Drawing`, not hand-authored. They are deliberately drop-in: same
+256x256 canvas, region (60,66) 148x124, near-white body, motif at a light
+grey. Hand-drawn art at the same paths needs no code change. Two
+constraints bind any replacement: the motif period must divide the 100x76
+9-slice centre (the shipped tiles use 20x19, i.e. 5 x 4) or the tiled
+centre will jump at every repeat, and each tile must stay above 0.90 mean
+luminance or the accents fall under the contrast floor
+(`tests/test_bar_contrast.gd` enforces both).
+
+**Emoji still used as iconography on the stat popup.**
+`Scripts/UI/StatDetailPopup.gd` falls back to `info["glyph"]` from
+`StatInfo` when a stat has no icon texture, and those glyphs are emoji,
+which the 2026-09-02 ban above forbids. The trait popup had the same
+problem and was fixed on 2026-09-09 -- its ⚡/🌟 header became
+`Assets/Images/UI/icon_trait_quirk.png` / `icon_trait_persona.png`, and
+its "💡 EFEK GAMEPLAY:" prefix became a plain display-font heading. This
+fallback wants the same treatment.
+
 **Six more placeholder SVG icons.** `icon_benefit`, `icon_cost`, `icon_tired`,
 `icon_check` (`Assets/Images/UI/Placeholders/`) and `icon_shop_items`,
 `icon_shop_cosmetics` (`Assets/Images/Shop/UI/`) are flat geometry standing in

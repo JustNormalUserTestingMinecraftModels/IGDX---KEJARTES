@@ -130,6 +130,25 @@ static func load_default() -> DesignTokens:
 ## Wirausaha on a dark ground. See cat_akademis_on_dark.
 @export var cat_wirausaha_on_dark: Color = Color("16C79A")
 
+## Mood and energy are NEEDS, not schedule categories, but they had no
+## colours of their own until 2026-09-09 -- the student card's two
+## Kepribadian bars were authored with category "Istirahat" and "Libur" and
+## simply wore the rest and holiday accents. That was survivable while a
+## category was only a colour. It stopped being survivable when each
+## category got its own batik motif: mood would have been stamped with the
+## rest motif and energy with the holiday one, teaching the player a
+## mapping that is wrong.
+##
+## Pink and yellow are the two hues the six schedule categories left free.
+## Yellow does sit near cat_libur's amber (about 12 degrees of hue apart) --
+## they are told apart by motif, a bolt against a sun, which is
+## precisely what the motif system is for. The two never share a screen in
+## any case: libur is a schedule category, energy is a per-student need.
+@export var cat_mood_on_dark: Color = Color("E86FA8")
+## Energy's accent. See cat_mood_on_dark above for why these two exist and
+## why yellow sits this close to cat_libur.
+@export var cat_energy_on_dark: Color = Color("F5D423")
+
 @export_group("Semantic States")
 ## Positive-outcome tint: SuccessButton, win badges, the specialty-match
 ## card wash, ShopMessageSuccess.
@@ -355,6 +374,8 @@ func category_color_on_dark(category: String) -> Color:
 		"Istirahat": return cat_istirahat_on_dark
 		"Libur": return cat_libur_on_dark
 		"Wirausaha": return cat_wirausaha_on_dark
+		"Mood": return cat_mood_on_dark
+		"Energy", "Energi": return cat_energy_on_dark
 		_: return text_secondary
 
 

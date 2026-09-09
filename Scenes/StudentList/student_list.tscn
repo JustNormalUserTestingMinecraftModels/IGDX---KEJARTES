@@ -603,7 +603,7 @@ offset_top = -80.0
 offset_right = 90.0
 offset_bottom = 80.0
 grow_vertical = 2
-theme_type_variation = &"SecondaryButton"
+theme_type_variation = &"SecondaryButtonL"
 text = "<"
 
 [node name="RightArrow" type="Button" parent="." unique_id=654321099]
@@ -620,7 +620,7 @@ offset_right = -10.0
 offset_bottom = 80.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_type_variation = &"SecondaryButton"
+theme_type_variation = &"SecondaryButtonL"
 text = ">"
 
 [node name="PageIndicator" type="HBoxContainer" parent="." unique_id=654321100]

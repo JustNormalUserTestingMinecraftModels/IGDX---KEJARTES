@@ -342,6 +342,9 @@ rather than having their own: `sfx_specialty_match` → `sfx_reward`; `tally` an
 PowerShell + `System.Drawing`, not hand-authored. They are correctly weighted
 transparent cream silhouettes that read at 48-80px and are fine to ship, but they
 are not illustration. Drop-replaceable at the same paths.
+`Assets/Images/StudentCard/menu_button.png` is the same kind of placeholder --
+also PowerShell + `System.Drawing` -- standing in for a hand-painted gold
+gloss.
 
 **`DisplayUang`'s texture is off-palette.** `Assets/Images/UI/Desain tanpa
 judul.png` is pink/magenta and now visibly clashes with the warm chrome around

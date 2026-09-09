@@ -61,7 +61,7 @@ offset_left = 290.0
 offset_top = 1640.0
 offset_right = 790.0
 offset_bottom = 1768.0
-theme_type_variation = &"PrimaryButton"
+theme_type_variation = &"PrimaryButtonM"
 disabled = true
 text = "Lanjut"
 

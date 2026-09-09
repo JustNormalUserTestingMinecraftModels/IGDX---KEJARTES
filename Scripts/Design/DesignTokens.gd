@@ -17,13 +17,16 @@ static func load_default() -> DesignTokens:
 
 
 @export_group("Brand")
-## The saturated brand colour. Fills PrimaryButton, LobbyNavButton and the
-## quirk pill's border/tint chain in ThemeFactory. Changing this re-tints
-## roughly half the game's call-to-action surfaces -- rebake after editing.
+## The saturated brand colour. Fills PrimaryButton, LobbyNavTile,
+## LobbyCtaButton and the quirk pill's border/tint chain in ThemeFactory.
+## Changing this re-tints roughly half the game's call-to-action surfaces --
+## rebake after editing.
 @export var brand_primary: Color = Color("7A4A2B")
-## PrimaryButton/LobbyNavButton's hover-lightened and gradient-top variant.
+## PrimaryButton/LobbyNavTile/LobbyCtaButton's hover-lightened and
+## gradient-top variant.
 @export var brand_primary_light: Color = Color("9C6440")
-## PrimaryButton/LobbyNavButton's pressed-darkened and gradient-bottom variant.
+## PrimaryButton/LobbyNavTile/LobbyCtaButton's pressed-darkened and
+## gradient-bottom variant.
 @export var brand_primary_dark: Color = Color("56321B")
 
 @export_group("Surfaces")
@@ -45,7 +48,8 @@ static func load_default() -> DesignTokens:
 
 @export_group("Outline & Shadow")
 ## Border colour on PrimaryButton, DangerButton, SuccessButton,
-## LobbyNavButton and Card -- the game's one shared "raised surface" rim.
+## LobbyNavTile, LobbyCtaButton and Card -- the game's one shared "raised
+## surface" rim.
 @export var outline_card: Color = Color("FFF6E8")
 ## Border width (px) applied everywhere outline_card is, plus Card's own
 ## border.

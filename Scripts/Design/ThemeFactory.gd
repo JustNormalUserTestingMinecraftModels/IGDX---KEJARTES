@@ -230,8 +230,8 @@ static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
 	normal.texture = load(_CARD_ART + "menu_button.png")
 	normal.region_rect = Rect2(0, 0, 256, 128)
 	normal.set_texture_margin_all(28)
-	# Horizontal room for the label. 670 - 2*3 px border - 2*20 = 624 px,
-	# which PENGATURAN fills to 604 px at font size 80.
+	# Icon-only button (128x128, tooltip_text, no text) -- these margins
+	# just centre the painted gloss inside the texture region.
 	normal.content_margin_left = 20
 	normal.content_margin_right = 20
 	normal.content_margin_top = 0

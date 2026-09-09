@@ -585,9 +585,11 @@ func _create_blur_overlay():
 	add_child(blur_overlay)
 	# DailyReward is now a sibling of DailyLogin, not its child (Task 10
 	# re-anchored it to the scene root). Place blur_overlay just before
-	# DailyLogin -- still ahead of DailyReward in child order, since the
-	# reparent appended DailyReward at the end of the root's children --
-	# so it renders on top of the rest of the lobby UI but behind the popup.
+	# DailyLogin, i.e. at DailyLogin's own index -- DailyReward sits right
+	# after DailyLogin in child order (index 17, with the root's own
+	# ColorRect following at 18), so inserting here still puts blur_overlay
+	# ahead of DailyReward -- so it renders on top of the rest of the lobby
+	# UI but behind the popup.
 	move_child(blur_overlay, daily_login_btn.get_index())
 	# Connect click on blur overlay to close popup
 	blur_overlay.gui_input.connect(_on_blur_overlay_input)

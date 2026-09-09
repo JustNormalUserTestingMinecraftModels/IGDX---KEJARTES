@@ -182,8 +182,10 @@ func _scene_files(dir_path: String, out: Array) -> void:
 ## which carry custom_minimum_size = Vector2(0, 96) *and* an offset delta
 ## of 290 -- the button actually renders at 290, not 96, and a parser that
 ## let custom_minimum_size win would hide that real offender.
-func _check_node(path: String, name: String, parent: String, is_button: bool,
-		top: float, bottom: float, min_h: float, steps: Array, out: Array) -> void:
+func _check_node(path: String, name: String, parent: String, variation: String,
+		top: float, bottom: float, min_h: float, steps: Array,
+		button_variations: Array, out: Array) -> void:
+	var is_button := variation == "Button" or button_variations.has(variation)
 	if not is_button or name == "":
 		return
 	var height := -1.0
@@ -211,11 +213,12 @@ func _check_node(path: String, name: String, parent: String, is_button: bool,
 ## accumulated per node and only judged when the block ends (the next
 ## "[...]" section header, or end of file), rather than judged inline as
 ## each property line is read.
-func _offenders_in_scene(path: String, src: String, steps: Array) -> Array:
+func _offenders_in_scene(path: String, src: String, steps: Array,
+		button_variations: Array) -> Array:
 	var out := []
 	var node_name := ""
 	var node_parent := ""
-	var is_variation_button := false
+	var node_variation := ""
 	var top := INF
 	var bottom := INF
 	var min_size_h := -1.0
@@ -225,11 +228,11 @@ func _offenders_in_scene(path: String, src: String, steps: Array) -> Array:
 		var at_end := i >= lines.size()
 		var line := "" if at_end else lines[i]
 		if at_end or line.begins_with("["):
-			_check_node(path, node_name, node_parent, is_variation_button,
-					top, bottom, min_size_h, steps, out)
+			_check_node(path, node_name, node_parent, node_variation,
+					top, bottom, min_size_h, steps, button_variations, out)
 			node_name = ""
 			node_parent = ""
-			is_variation_button = false
+			node_variation = ""
 			top = INF
 			bottom = INF
 			min_size_h = -1.0
@@ -248,13 +251,35 @@ func _offenders_in_scene(path: String, src: String, steps: Array) -> Array:
 		elif line.begins_with("custom_minimum_size = Vector2("):
 			var inner := line.get_slice("Vector2(", 1).get_slice(")", 0)
 			min_size_h = float(inner.get_slice(",", 1).strip_edges())
-		elif line.begins_with("theme_type_variation = &\"") and line.contains("Button"):
-			is_variation_button = true
+		elif line.begins_with("theme_type_variation = &\""):
+			node_variation = line.get_slice("&\"", 1).get_slice("\"", 0)
 	return out
 
 
+## The size scale applies to exactly the variations that use radius_button.
+##
+## A variation listed in RADIUS_EXEMPT (plus ShopHubTile, exempt for the
+## same StyleBoxEmpty reason but tracked separately because its `normal`
+## stylebox opts out of the radius check by falling through rather than by
+## being named there) has already declared itself off the fixed-corner
+## button shape -- TraitPill/QuirkBadge/PersonaBadge are chips, EventSelectCard
+## is a card, MainMenuButton's corner is painted into menu_button.png, and
+## ShopHubTile is a 520px panel-less destination tile with an empty `normal`
+## stylebox, so it is neither radius- nor height-scaled. Being Button-based
+## in the theme graph does not make any of these a button on the S/M/L scale,
+## so the widened detector (any theme_type_variation, not just the literal
+## "Button") must not start flagging their authored heights (TraitPill at
+## h=70/103/99, ShopHubTile at h=520, EventSelectCard at h=410) as if they
+## were off-step buttons. This is one rule -- "opts out of radius_button" --
+## expressed in the height check too, not a second, independently-grown
+## exception list.
 func test_no_button_is_authored_off_step() -> void:
 	var steps := [_tokens.btn_h_s, _tokens.btn_h_m, _tokens.btn_h_l]
+	var button_variations := []
+	for name in _button_variations():
+		if RADIUS_EXEMPT.has(name) or name == "ShopHubTile":
+			continue
+		button_variations.append(name)
 	var scenes := []
 	_scene_files(SCENE_GLOB, scenes)
 	assert_true(scenes.size() > 20,
@@ -268,7 +293,7 @@ func test_no_button_is_authored_off_step() -> void:
 		var src := FileAccess.get_file_as_string(path)
 		if src == "":
 			continue
-		offenders.append_array(_offenders_in_scene(path, src, steps))
+		offenders.append_array(_offenders_in_scene(path, src, steps, button_variations))
 
 	assert_eq(offenders.size(), 0,
 		"buttons authored off the S/M/L scale:\n  " + "\n  ".join(offenders))

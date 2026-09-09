@@ -340,7 +340,7 @@ offset_left = 442.0
 offset_top = 1754.0
 offset_right = 1056.0
 offset_bottom = 1882.0
-theme_type_variation = &"PrimaryButton"
+theme_type_variation = &"PrimaryButtonM"
 text = "START WEEK"
 
 [node name="BackButton" type="TextureButton" parent="." unique_id=987654321]

@@ -9,6 +9,7 @@
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
 [ext_resource type="Texture2D" uid="uid://ddqatfjpqc4ev" path="res://Assets/Images/MuridPotrait/Murid2.jpg" id="4_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://cn7kemflfrhci" path="res://Assets/Images/MuridPotrait/Murid5.jpg" id="4_hodfn"]
+[ext_resource type="Texture2D" uid="uid://whtj1qktee40" path="res://Assets/Images/StudentCard/portrait_frame.png" id="6_kiyav"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
 [ext_resource type="Texture2D" uid="uid://0n6i1ep0ugkv" path="res://Assets/Images/UI/Nav/icon_chevron_right.png" id="11_1k4ux"]
@@ -59,10 +60,10 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid6" unique_id=1221180924]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 647.0
-offset_top = 299.0
-offset_right = 920.0
-offset_bottom = 665.0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
 texture = ExtResource("3_a1isy")
 expand_mode = 1
 stretch_mode = 6
@@ -290,6 +291,15 @@ offset_right = 961.0
 offset_bottom = 1250.0
 theme_type_variation = &"H2Label"
 
+[node name="PortraitFrame" type="TextureRect" parent="KertasMurid6" unique_id=382068055]
+layout_mode = 0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
+mouse_filter = 2
+texture = ExtResource("6_kiyav")
+
 [node name="KertasMurid5" type="TextureRect" parent="." unique_id=1004659439]
 layout_mode = 0
 offset_left = -70.0
@@ -301,10 +311,10 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid5" unique_id=91004226]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 647.0
-offset_top = 299.0
-offset_right = 920.0
-offset_bottom = 665.0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
 texture = ExtResource("4_hodfn")
 expand_mode = 1
 stretch_mode = 6
@@ -532,6 +542,15 @@ offset_right = 961.0
 offset_bottom = 1250.0
 theme_type_variation = &"H2Label"
 
+[node name="PortraitFrame" type="TextureRect" parent="KertasMurid5" unique_id=93061004]
+layout_mode = 0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
+mouse_filter = 2
+texture = ExtResource("6_kiyav")
+
 [node name="KertasMurid4" type="TextureRect" parent="." unique_id=74882940]
 visible = false
 layout_mode = 0
@@ -544,10 +563,10 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid4" unique_id=464091592]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 647.0
-offset_top = 299.0
-offset_right = 920.0
-offset_bottom = 665.0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
 texture = ExtResource("3_osw5o")
 expand_mode = 1
 stretch_mode = 6
@@ -775,6 +794,15 @@ offset_right = 961.0
 offset_bottom = 1250.0
 theme_type_variation = &"H2Label"
 
+[node name="PortraitFrame" type="TextureRect" parent="KertasMurid4" unique_id=1252138411]
+layout_mode = 0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
+mouse_filter = 2
+texture = ExtResource("6_kiyav")
+
 [node name="KertasMurid3" type="TextureRect" parent="." unique_id=2031333750]
 visible = false
 layout_mode = 0
@@ -787,10 +815,10 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid3" unique_id=158931283]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 647.0
-offset_top = 299.0
-offset_right = 920.0
-offset_bottom = 665.0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
 texture = ExtResource("3_33k3e")
 expand_mode = 1
 stretch_mode = 6
@@ -1018,6 +1046,15 @@ offset_right = 961.0
 offset_bottom = 1250.0
 theme_type_variation = &"H2Label"
 
+[node name="PortraitFrame" type="TextureRect" parent="KertasMurid3" unique_id=867948519]
+layout_mode = 0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
+mouse_filter = 2
+texture = ExtResource("6_kiyav")
+
 [node name="KertasMurid2" type="TextureRect" parent="." unique_id=465108679]
 visible = false
 layout_mode = 0
@@ -1030,10 +1067,10 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid2" unique_id=1137421456]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 647.0
-offset_top = 299.0
-offset_right = 920.0
-offset_bottom = 665.0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
 texture = ExtResource("4_6vhdp")
 expand_mode = 1
 stretch_mode = 6
@@ -1261,6 +1298,15 @@ offset_right = 961.0
 offset_bottom = 1250.0
 theme_type_variation = &"H2Label"
 
+[node name="PortraitFrame" type="TextureRect" parent="KertasMurid2" unique_id=550968030]
+layout_mode = 0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
+mouse_filter = 2
+texture = ExtResource("6_kiyav")
+
 [node name="KertasMurid1" type="TextureRect" parent="." unique_id=1772494297]
 layout_mode = 0
 offset_left = -70.0
@@ -1272,10 +1318,10 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid1" unique_id=981490411]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 647.0
-offset_top = 299.0
-offset_right = 920.0
-offset_bottom = 665.0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
 texture = ExtResource("1_jsirh")
 expand_mode = 1
 stretch_mode = 6
@@ -1502,6 +1548,15 @@ offset_top = 1180.0
 offset_right = 961.0
 offset_bottom = 1250.0
 theme_type_variation = &"H2Label"
+
+[node name="PortraitFrame" type="TextureRect" parent="KertasMurid1" unique_id=589369512]
+layout_mode = 0
+offset_left = 662.0
+offset_top = 294.0
+offset_right = 945.0
+offset_bottom = 670.0
+mouse_filter = 2
+texture = ExtResource("6_kiyav")
 
 [node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
 layout_mode = 0

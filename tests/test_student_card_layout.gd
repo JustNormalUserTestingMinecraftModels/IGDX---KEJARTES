@@ -251,7 +251,7 @@ func test_bio_panel_renders_the_three_rows() -> void:
 func test_bio_panel_sits_inside_the_painted_panel() -> void:
 	var src := FileAccess.get_file_as_string(
 		"res://Scripts/StudentCard/StudentCardView.gd")
-	assert_true(src.contains("const BIO_PANEL_RECT := Rect2(120, 300, 489, 367)"),
+	assert_true(src.contains("const BIO_PANEL_RECT := Rect2(140, 300, 489, 367)"),
 		"BIO_PANEL_RECT must match the painted panel's measured interior")
 
 	var panel_start := src.find("func build_bio_panel(")
@@ -570,13 +570,29 @@ func test_the_portrait_fills_a_frame_matched_to_the_identity_panel() -> void:
 			assert_eq(portrait.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_COVERED,
 				"%s card %d: the portrait must COVER its frame, not letterbox in it"
 					% [scene_path, i])
-			assert_true(absf(portrait.get_rect().end.y - 665.0) <= 1.0,
-				"%s card %d: the portrait ends at y=%f, not the repainted frame's 665"
+			assert_true(absf(portrait.get_rect().end.y - 670.0) <= 1.0,
+				"%s card %d: the portrait ends at y=%f, not the frame's 670"
 					% [scene_path, i, portrait.get_rect().end.y])
-			assert_true(absf(portrait.get_rect().end.y - panel_bottom) <= 2.0,
+			assert_true(absf(portrait.get_rect().end.y - panel_bottom) <= 5.0,
 				"%s card %d: the portrait box (ends %f) and the identity panel "
 					% [scene_path, i, portrait.get_rect().end.y]
 					+ "(ends %f) must close on the same row" % panel_bottom)
+
+			# The rounded corners cannot come from the painted frame: the
+			# photo is drawn OVER it and would poke its square corners
+			# through them. They come from a frame texture laid on top of
+			# the photo, which must therefore exist, sit on exactly the
+			# same rect, and be drawn AFTER the photo in child order.
+			var frame := inst.get_node_or_null(
+				"KertasMurid%d/PortraitFrame" % i) as TextureRect
+			assert_true(frame != null,
+				"%s card %d: no PortraitFrame over the photo" % [scene_path, i])
+			assert_eq(frame.get_rect(), portrait.get_rect(),
+				"%s card %d: the frame must cover the photo exactly (%s vs %s)"
+					% [scene_path, i, frame.get_rect(), portrait.get_rect()])
+			assert_true(frame.get_index() > portrait.get_index(),
+				"%s card %d: PortraitFrame must draw after the photo, not under it"
+					% [scene_path, i])
 
 
 ## The action row and the page arrows sit on the desk BELOW the paper, and

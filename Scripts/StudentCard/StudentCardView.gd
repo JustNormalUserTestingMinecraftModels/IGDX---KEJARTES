@@ -302,7 +302,10 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 
 ## The painted purple panel's interior, in card-local pixels, measured from
 ## card_bg.png.
-const BIO_PANEL_RECT := Rect2(120, 300, 489, 367)
+## x moved 120 -> 140 on 2026-09-09 with the identification block, which
+## sat 20px left of centre on the 1080-wide card (116px of margin on the
+## left against 155 on the right). The block moved right; this follows it.
+const BIO_PANEL_RECT := Rect2(140, 300, 489, 367)
 ## Inset so the text does not crowd the painted panel's rounded border.
 const _BIO_PADDING := 32.0
 

@@ -438,6 +438,21 @@ fallback wants the same treatment.
 `icon_shop_cosmetics` (`Assets/Images/Shop/UI/`) are flat geometry standing in
 for real art, like the rest of that folder.
 
+**`penjadwalan_card_bg.png` is a generated recolour (2026-09-10).** The
+AturJadwal card and its PERINGATAN dialog share one texture at two different
+`region_rect`s, so the cream pass replaced the file in place rather than
+re-authoring both call sites. It was produced by rotating the original olive
+art's hue into the warm family in HSV (PowerShell + `System.Drawing`), not
+hand-authored. Drop-replaceable at the same path -- but any replacement must
+keep the exact original 1080x1080 dimensions, because both call sites address
+it with hardcoded `region_rect` values.
+
+**Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`,
+`preview_row_shadow_size` and `preview_row_shadow_offset` are read by no theme
+variation since `PreviewRow` lost its drop shadow in the cream pass. They were
+left in place rather than widening that diff. Remove them deliberately, or give
+them a consumer.
+
 **Deferred: the AturJadwal shelf.** It ships as two `ColorRect`s rather than the
 intended `ShelfEdge` theme variation. A new `@export` on `DesignTokens` is
 invisible to a running editor, so this needs an editor restart plus a manual

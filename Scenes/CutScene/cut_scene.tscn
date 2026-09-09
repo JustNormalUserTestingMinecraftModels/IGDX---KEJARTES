@@ -23,7 +23,7 @@ stretch_mode = 6
 [node name="DialogueBox" type="Panel" parent="." unique_id=1079685626]
 layout_mode = 0
 offset_left = 44.0
-offset_top = 1240.0
+offset_top = 1340.0
 offset_right = 1036.0
 offset_bottom = 1660.0
 mouse_filter = 2
@@ -34,7 +34,7 @@ layout_mode = 0
 offset_left = 44.0
 offset_top = 44.0
 offset_right = 948.0
-offset_bottom = 376.0
+offset_bottom = 276.0
 theme_type_variation = &"CutsceneDialogue"
 bbcode_enabled = true
 

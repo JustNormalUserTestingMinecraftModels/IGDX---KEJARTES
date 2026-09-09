@@ -1,13 +1,16 @@
 [gd_scene format=3 uid="uid://c13gd6s3vki43"]
 
 [ext_resource type="Script" uid="uid://cukv143e5oghy" path="res://Scripts/Minigames/SeniBudaya/BuatBatik.gd" id="1_buatbatik"]
-[ext_resource type="Texture2D" uid="uid://dqsgnifd7hg17" path="res://Assets/Images/borobudur_temple.jpg" id="2_ybefu"]
-[ext_resource type="Texture2D" uid="uid://ctlhg11qr7aao" path="res://Assets/Images/komodo_dragon.jpg" id="3_mvpj1"]
-[ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="4_2cpfp"]
-[ext_resource type="Texture2D" uid="uid://b4mc8a23begw3" path="res://Assets/Images/Textures/KiperLeft.jpg" id="5_tjkcn"]
-[ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="6_2ic2u"]
-[ext_resource type="Texture2D" uid="uid://ch0pg0l4inpsq" path="res://Assets/Images/Textures/DiagonalRight.jpg" id="7_d365y"]
+[ext_resource type="Texture2D" uid="uid://mtvd05unwbmh" path="res://Assets/Images/Textures/batik_fase1.png" id="3_6wcp2"]
+[ext_resource type="Texture2D" uid="uid://wktogrsj02k2" path="res://Assets/Images/Textures/batik_tool_pencil.png" id="4_11aq8"]
+[ext_resource type="Texture2D" uid="uid://bd0b4srh3qwoj" path="res://Assets/Images/Textures/batik_tool_canting.png" id="5_2sjcu"]
+[ext_resource type="Texture2D" uid="uid://b1hoebioeppjn" path="res://Assets/Images/Textures/batik_tool_pewarna.png" id="6_brsgn"]
+[ext_resource type="Texture2D" uid="uid://sgakspvjsare" path="res://Assets/Images/Textures/batik_tool_kompor.png" id="7_3e0kn"]
+[ext_resource type="Texture2D" uid="uid://d0l2ayregon0j" path="res://Assets/Images/Textures/batik_fase2.png" id="8_iejgo"]
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="8_tjkcn"]
+[ext_resource type="Texture2D" uid="uid://cu0eett4rkbmx" path="res://Assets/Images/Textures/batik_fase3.png" id="9_5s4va"]
+[ext_resource type="Texture2D" uid="uid://d025rina4pbxc" path="res://Assets/Images/Textures/batik_fase4.png" id="10_p0yls"]
+[ext_resource type="Texture2D" uid="uid://crkkqt6hdug0q" path="res://Assets/Images/Textures/batik_fase5.png" id="11_bm7ql"]
 
 [node name="BuatBatik" type="Control" unique_id=503659427]
 layout_mode = 3
@@ -17,12 +20,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_buatbatik")
-background_texture = ExtResource("2_ybefu")
-canvas_cloth_texture = ExtResource("3_mvpj1")
-tool0_texture = ExtResource("4_2cpfp")
-tool1_texture = ExtResource("5_tjkcn")
-tool2_texture = ExtResource("6_2ic2u")
-tool3_texture = ExtResource("7_d365y")
+background_texture = ExtResource("8_tjkcn")
+canvas_cloth_texture = ExtResource("3_6wcp2")
+tool0_texture = ExtResource("4_11aq8")
+tool1_texture = ExtResource("5_2sjcu")
+tool2_texture = ExtResource("6_brsgn")
+tool3_texture = ExtResource("7_3e0kn")
+layer0_pattern_texture = ExtResource("8_iejgo")
+layer1_pattern_texture = ExtResource("9_5s4va")
+layer2_pattern_texture = ExtResource("10_p0yls")
+layer3_pattern_texture = ExtResource("11_bm7ql")
 
 [node name="Background" type="TextureRect" parent="." unique_id=466903234]
 layout_mode = 1

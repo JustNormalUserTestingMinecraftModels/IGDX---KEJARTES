@@ -43,3 +43,15 @@ func test_new_art_imports_as_texture2d() -> void:
 			assert_true(ResourceLoader.exists(path), "missing imported art: " + path)
 			var tex := load(path) as Texture2D
 			assert_true(tex != null, path + " did not import as a Texture2D")
+
+func test_buatbatik_wires_the_new_art() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn")
+	for group in [_BATIK_PHASES, _BATIK_TOOLS]:
+		for path in group:
+			assert_true(src.contains(path), "BuatBatik.tscn must reference " + path)
+
+func test_buatbatik_has_no_placeholder_art() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn")
+	for stale in ["Kiper", "DiagonalRight", "komodo_dragon", "borobudur_temple"]:
+		assert_false(src.contains(stale),
+			"BuatBatik.tscn still references the placeholder " + stale)

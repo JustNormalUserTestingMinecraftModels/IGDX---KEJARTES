@@ -184,10 +184,20 @@ func test_icon_sits_inside_the_container_left_region() -> void:
 func test_pill_is_inset_into_the_container() -> void:
 	var pill := _row.get_node_or_null("Container/Pill") as PanelContainer
 	assert_true(pill != null, "Pill must live inside the Container")
-	assert_eq(pill.offset_left, _ICON_REGION, "the pill starts where the icon region ends")
-	assert_eq(pill.offset_right, -_PILL_RIGHT_INSET, "the pill is inset from the container's right edge")
-	assert_eq(pill.offset_top, _PILL_V_INSET, "the pill is inset from the container's top")
-	assert_eq(pill.offset_bottom, -_PILL_V_INSET, "the pill is inset from the container's bottom")
+	# Widened on 2026-09-10: the reference runs its bars nearly the full
+	# width of the sheet, and the old 214px icon gutter plus a 17px right
+	# inset left the bar noticeably short of it. The top inset grew instead,
+	# to clear the label that now sits above the bar rather than below it.
+	var icon := _row.get_node_or_null("Container/Icon") as TextureRect
+	assert_true(icon != null, "the icon must exist to gutter against")
+	assert_true(pill.offset_left > icon.offset_right,
+		"the bar must start clear of the icon")
+	assert_true(pill.offset_left < _ICON_REGION,
+		"the bar was widened past the old 214px gutter")
+	assert_true(pill.offset_right > -_PILL_RIGHT_INSET,
+		"the bar reaches nearer the container's right edge than it used to")
+	assert_true(pill.offset_top > _PILL_V_INSET,
+		"the bar sits lower now, clearing the label above it")
 
 
 ## The bar was 281x1 px: size_flags_vertical defaulted to SHRINK_BEGIN (0)
@@ -200,15 +210,23 @@ func test_stat_bar_fills_the_pill_vertically() -> void:
 		"the StatBar must fill its parent vertically, or it collapses to a 1px line")
 
 
-func test_name_label_overlaps_the_container_bottom() -> void:
+## The label used to hang off the container's bottom edge, right-aligned
+## under the pill. The 2026-09-10 reference puts it above its bar and
+## left-aligned with it, which is also what makes the bar readable as a
+## measure rather than a decorated strip.
+func test_name_label_sits_above_its_bar() -> void:
 	var label := _row.get_node_or_null("NameLabel") as Label
 	assert_true(label != null, "NameLabel must exist")
 	assert_eq(label.theme_type_variation, &"PreviewRowLabel",
-		"the row label has its own bigger, harder-rimmed variation")
-	assert_true(label.offset_top < -(_ROW_HEIGHT - _CONTAINER_HEIGHT),
-		"the label starts above the container's bottom edge, overlapping it as in the mockup")
-	assert_eq(label.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT,
-		"the mockup right-aligns the name under the pill's right edge")
+		"the row label has its own variation")
+	var pill := _row.get_node_or_null("Container/Pill") as PanelContainer
+	assert_true(pill != null, "Pill must exist")
+	assert_true(label.offset_bottom <= pill.offset_top,
+		"the label must clear the bar, not overlap it")
+	assert_eq(label.horizontal_alignment, HORIZONTAL_ALIGNMENT_LEFT,
+		"label and bar share a left edge, as in the reference")
+	assert_eq(label.offset_left, pill.offset_left,
+		"label and bar must start at the same x or the row looks ragged")
 
 
 ## Rows with no target (Wirausaha, Libur) keep the same node tree but swap
@@ -241,16 +259,14 @@ func test_preview_row_is_an_unstroked_cream_panel() -> void:
 	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(theme.get_type_variation_base("PreviewRow"), &"Panel",
 		"PreviewRow must declare Panel as its base_type")
-	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
-	assert_true(sb != null, "PreviewRow/panel must be a StyleBoxFlat")
-	assert_eq(sb.bg_color, tokens.preview_row_fill, "row container fill comes from the token")
-	# Until 2026-09-10 this asserted a 3px stroke from preview_row_border.
-	# The cream pass removed it: the card behind the row, the row's slab,
-	# the pill inside it and the bar made four surfaces per row, and the
-	# stroke was what made each read as a separate box. Rows are now
-	# divided by a hairline between them instead of a box around each.
-	assert_eq(sb.border_width_top, 0, "the cream row carries no stroke")
-	assert_eq(sb.border_width_bottom, 0, "the cream row carries no stroke")
+	# Until 2026-09-10 this asserted a brown fill and a 3px stroke. The
+	# cream pass removed both: the card behind the row, the row's own slab,
+	# the pill inside it and the bar made four surfaces per row. Recolouring
+	# that stack cream was not enough -- a row that paints anything reads as
+	# a box -- so the row now draws nothing and the hairlines between rows
+	# do the dividing.
+	var sb := theme.get_stylebox("panel", "PreviewRow")
+	assert_true(sb is StyleBoxEmpty, "the cream row draws no surface of its own")
 
 
 func test_preview_pill_uses_the_sampled_fill() -> void:
@@ -272,19 +288,22 @@ func test_preview_pill_flat_draws_nothing() -> void:
 		"PreviewPillFlat must draw no panel at all")
 
 
-func test_preview_row_label_is_big_and_outlined() -> void:
+## Until 2026-09-10 this label was cream with a chunky near-black rim,
+## sized font_h2 and overlapping a dark brown row -- correct then. On the
+## cream sheet that rendered as an outlined white smear, so it is now
+## quiet dark text sitting above its bar. The bar is the loud element in
+## the row; its name is not.
+func test_preview_row_label_is_quiet_dark_text() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(theme.get_type_variation_base("PreviewRowLabel"), &"Label",
 		"PreviewRowLabel must declare Label as its base_type")
-	assert_eq(theme.get_font_size("font_size", "PreviewRowLabel"), tokens.font_h2,
-		"the mockup's row labels are noticeably larger than CardSectionLabel's 36px")
-	assert_eq(theme.get_color("font_color", "PreviewRowLabel"), tokens.text_on_brand,
-		"row labels are white")
-	assert_eq(theme.get_color("font_outline_color", "PreviewRowLabel"), tokens.preview_row_border,
-		"the label's dark rim is the same purple as the row border")
-	assert_true(theme.get_constant("outline_size", "PreviewRowLabel") >= 6,
-		"the mockup's label rim is chunkier than CardSectionLabel's 4px")
+	assert_eq(theme.get_font_size("font_size", "PreviewRowLabel"), tokens.font_body_size,
+		"the label sits a step below the numbers, not above them")
+	assert_eq(theme.get_color("font_color", "PreviewRowLabel"), tokens.text_secondary,
+		"row labels are quiet dark text on the cream sheet")
+	assert_eq(theme.get_constant("outline_size", "PreviewRowLabel"), 0,
+		"a rim exists to separate text from busy art; on cream it only smears")
 
 
 ## The mockup's rows carry a hard dark shadow just below their bottom border, and
@@ -297,10 +316,14 @@ func test_preview_row_label_is_big_and_outlined() -> void:
 ## quietly reintroduce either.
 func test_preview_row_carries_no_stroke_or_shadow() -> void:
 	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
-	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
-	assert_true(sb != null, "PreviewRow/panel must be a StyleBoxFlat")
-	assert_eq(sb.border_width_top, 0, "the cream row carries no stroke")
-	assert_eq(sb.shadow_size, 0, "the cream row casts no drop shadow")
+	var sb := theme.get_stylebox("panel", "PreviewRow")
+	assert_true(sb is StyleBoxEmpty,
+		"an empty stylebox has no stroke and no shadow by construction")
+	# The pressed sibling is where the row does get a surface -- and it
+	# must not reintroduce the chrome the resting row shed.
+	var pressed := theme.get_stylebox("panel", "PreviewRowPressed") as StyleBoxFlat
+	assert_true(pressed != null, "PreviewRowPressed must be a StyleBoxFlat")
+	assert_eq(pressed.shadow_size, 0, "the pressed row casts no drop shadow")
 
 
 func test_preview_pill_has_a_soft_edge_not_a_stroke() -> void:

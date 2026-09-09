@@ -284,7 +284,7 @@ static func load_default() -> DesignTokens:
 ## Hairline between activity rows on the cream sheet. Replaces the 3px
 ## border every row used to carry -- one rule between rows reads as a
 ## list, four strokes per row read as clutter.
-@export var preview_row_separator: Color = Color("EFE0CB")
+@export var preview_row_separator: Color = Color("DCCFBB")
 ## The row's fill while held. Darker than preview_row_fill so the row
 ## sinks on touch; Panel has no pressed state, so ActivityRow.gd swaps
 ## the stylebox on button_down/button_up.

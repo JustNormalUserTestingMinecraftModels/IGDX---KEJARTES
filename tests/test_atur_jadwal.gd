@@ -415,8 +415,20 @@ const _ROW_HEIGHT := 180.0
 func test_rows_are_inset_within_the_card_content() -> void:
 	var rows := _screen.get_node_or_null("Penjadwalan/TextureRect/Rows") as Control
 	assert_true(rows != null, "Rows must exist")
-	assert_eq(rows.offset_left, 375.0, "rows are inset 12.1% from the card's left edge")
-	assert_eq(rows.offset_right, 1024.0, "rows are inset 11.3% from the card's right edge")
+	# Tightened on 2026-09-10 from 375/1024. Those insets were 12.1% and
+	# 11.3% of the card, so the row block used less than half the card's
+	# width and left ~100px dead on each side -- the bars read as short
+	# and the popup as underfilled. They are now ~4.5%, which is what the
+	# mentor reference shows.
+	var card_width := _CARD_RIGHT - _CARD_LEFT
+	var left_inset := (rows.offset_left - _CARD_LEFT) / card_width
+	var right_inset := (_CARD_RIGHT - rows.offset_right) / card_width
+	assert_true(left_inset < 0.06,
+		"rows should hug the card's left edge, got %.1f%%" % (left_inset * 100.0))
+	assert_true(right_inset < 0.06,
+		"rows should hug the card's right edge, got %.1f%%" % (right_inset * 100.0))
+	assert_true(absf(left_inset - right_inset) < 0.015,
+		"the two insets must match or the block sits off-centre")
 	assert_eq(rows.offset_top, 102.0, "the first row starts 4.4% down the card")
 	assert_true(rows.offset_left > _CARD_LEFT and rows.offset_right < _CARD_RIGHT,
 		"the row block must sit inside the card art, not over its transparent padding")

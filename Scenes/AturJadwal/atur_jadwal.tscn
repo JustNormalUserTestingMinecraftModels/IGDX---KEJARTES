@@ -469,9 +469,9 @@ expand_mode = 1
 
 [node name="Rows" type="VBoxContainer" parent="Penjadwalan/TextureRect" unique_id=1598823012]
 layout_mode = 0
-offset_left = 375.0
+offset_left = 310.0
 offset_top = 102.0
-offset_right = 1024.0
+offset_right = 1084.0
 offset_bottom = 1162.0
 theme_override_constants/separation = 16
 

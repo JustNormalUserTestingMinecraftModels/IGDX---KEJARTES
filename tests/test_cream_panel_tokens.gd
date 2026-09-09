@@ -10,7 +10,10 @@ extends McpTestSuite
 
 const CREAM_SHEET := Color("FFFDF8")
 const TRACK := Color("E6DAC6")
-const SEPARATOR := Color("EFE0CB")
+## Darkened from #EFE0CB on 2026-09-10: once the card texture was
+## lightened toward the reference the old value was within a hair of the
+## sheet and the hairlines vanished entirely.
+const SEPARATOR := Color("DCCFBB")
 const PRESSED := Color("F0E2CD")
 
 
@@ -47,27 +50,29 @@ func test_pressed_fill_is_darker_than_the_resting_sheet() -> void:
 		"pressed fill (%f) must be darker than resting (%f)" % [pressed, resting])
 
 
-func test_preview_row_is_cream_and_unstroked() -> void:
+## A row draws nothing at rest. Painting a fill -- any fill -- makes the
+## row read as a box on the card, which is what the mentor objected to;
+## recolouring those boxes cream was the first attempt and it still looked
+## like five stacked cards. The rows ARE the sheet, divided by hairlines.
+func test_preview_row_draws_nothing_at_rest() -> void:
 	var tokens := DesignTokens.load_default()
 	assert_not_null(tokens, "design_tokens.tres failed to load")
 	var theme := ThemeFactory.build(tokens)
-	var box := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
-	assert_not_null(box, "PreviewRow should be a StyleBoxFlat")
-	assert_eq(box.bg_color, CREAM_SHEET, "PreviewRow should be cream")
-	assert_eq(box.border_width_top, 0, "the 3px stroke should be gone")
-	assert_eq(box.border_width_bottom, 0, "the 3px stroke should be gone")
-	assert_eq(box.shadow_size, 0, "the hard drop shadow should be gone")
+	var box := theme.get_stylebox("panel", "PreviewRow")
+	assert_true(box is StyleBoxEmpty,
+		"PreviewRow must draw nothing, or every row reads as its own box")
 
 
 func test_pressed_variation_exists_and_differs_from_resting() -> void:
 	var tokens := DesignTokens.load_default()
 	assert_not_null(tokens, "design_tokens.tres failed to load")
 	var theme := ThemeFactory.build(tokens)
-	var resting := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
+	# The resting row draws nothing at all, so there is no resting colour to
+	# differ from -- the press IS the appearance of a surface.
+	assert_true(theme.get_stylebox("panel", "PreviewRow") is StyleBoxEmpty,
+		"the resting row draws nothing")
 	var pressed := theme.get_stylebox("panel", "PreviewRowPressed") as StyleBoxFlat
 	assert_not_null(pressed, "PreviewRowPressed variation missing")
-	assert_ne(pressed.bg_color, resting.bg_color,
-		"pressed and resting must not be the same colour")
 	assert_eq(pressed.bg_color, PRESSED, "pressed should use the recess token")
 
 

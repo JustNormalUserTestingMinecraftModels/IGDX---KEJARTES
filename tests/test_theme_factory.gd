@@ -98,9 +98,8 @@ func test_preview_shadows_come_from_tokens() -> void:
 	# ignore those tokens rather than to honour them -- the guard against a
 	# hardcoded literal now lives on the pill alone, below. The three
 	# preview_row_shadow_* tokens are consequently unread by any variation.
-	var row_sb := custom_theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
-	assert_eq(row_sb.shadow_size, 0,
-		"PreviewRow must stay shadowless regardless of the shadow tokens")
+	assert_true(custom_theme.get_stylebox("panel", "PreviewRow") is StyleBoxEmpty,
+		"PreviewRow draws nothing, so no shadow token can reach it")
 
 	var pill_sb := custom_theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
 	assert_eq(pill_sb.shadow_color, custom.preview_pill_shadow_color,

@@ -447,6 +447,14 @@ hand-authored. Drop-replaceable at the same path -- but any replacement must
 keep the exact original 1080x1080 dimensions, because both call sites address
 it with hardcoded `region_rect` values.
 
+**Ghost-track assets are generated geometry (2026-09-10).**
+`Assets/Images/UI/BarFill/track_ghost.png` and the two motifs
+`icon_ghost_koin.png` / `icon_ghost_sabit.png` were produced with PowerShell +
+`System.Drawing`, not hand-authored. Drop-replaceable at the same paths. The
+track's two constraints are in that folder's README and differ from the fill
+rules: it must stretch rather than tile, and its left 22px cap must hold the
+ramp's 0.18 starting alpha. The 0.90 luminance floor does not apply to it.
+
 **Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`,
 `preview_row_shadow_size` and `preview_row_shadow_offset` are read by no theme
 variation since `PreviewRow` lost its drop shadow in the cream pass. They were

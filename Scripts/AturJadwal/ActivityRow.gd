@@ -52,6 +52,20 @@ extends Button
 ## Same as energy_icon, for the Wirausaha earnings chip.
 @export var money_icon: Texture2D
 
+## The ghosted motif at the solid right end of the ghost track, on the two
+## rows that have no gauge. Null on skill rows, which draw a bar in that
+## space instead. Assigned per row in atur_jadwal.tscn -- it lives on this
+## root rather than on Container/Pill/Watermark because overrides only
+## serialise on an instanced scene's root.
+@export var watermark_texture: Texture2D:
+	set(value):
+		watermark_texture = value
+		if is_inside_tree():
+			var mark := get_node_or_null("Container/Pill/Watermark") as TextureRect
+			if mark:
+				mark.texture = value
+				mark.visible = value != null
+
 ## True for the three rows with a target to progress toward (Akademis,
 ## SeniBudaya, Olahraga). Those get a StatBar inside a drawn track. The
 ## other two -- Wirausaha and Istirahat -- have no target, so they take
@@ -72,15 +86,29 @@ func _ready() -> void:
 		icon.texture = icon_texture
 	var pill := get_node_or_null("Container/Pill") as PanelContainer
 	var bar := get_node_or_null("Container/Pill/StatBar") as StatBar
+	var mark := get_node_or_null("Container/Pill/Watermark") as TextureRect
 	if is_skill_row:
 		if bar:
 			bar.category = category
+		# A skill row draws its bar in that space; a motif behind it would
+		# just be noise under the fill.
+		if mark:
+			mark.visible = false
 	else:
 		if pill:
 			pill.theme_type_variation = &"PreviewTrackGhost"
 		if bar:
 			bar.get_parent().remove_child(bar)
 			bar.free()
+		if mark:
+			mark.texture = watermark_texture
+			mark.visible = watermark_texture != null
+		# Skill rows right-align their chips against the bar's fill. A ghost
+		# row has no fill and puts the motif at that end instead, so its
+		# chips read from the left or the two would collide.
+		var chips := get_node_or_null("Container/Pill/Chips") as HBoxContainer
+		if chips:
+			chips.alignment = BoxContainer.ALIGNMENT_BEGIN
 
 
 func _icon_for(key: String) -> Texture2D:

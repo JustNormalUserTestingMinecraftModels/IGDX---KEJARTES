@@ -14,6 +14,8 @@
 [ext_resource type="Texture2D" uid="uid://dkwph7530y25f" path="res://Assets/Images/StudentCard/stat_senibudaya.png" id="14_icon_seni"]
 [ext_resource type="Texture2D" uid="uid://cqmbju8odke6v" path="res://Assets/Images/StudentCard/stat_olahraga.png" id="15_icon_olahraga"]
 [ext_resource type="Texture2D" uid="uid://ohek4lgo3sn6" path="res://Assets/Images/StudentCard/stat_energy.png" id="16_icon_energy"]
+[ext_resource type="Texture2D" uid="uid://b8ew4atf1h0ru" path="res://Assets/Images/UI/BarFill/icon_ghost_koin.png" id="16_ulthj"]
+[ext_resource type="Texture2D" uid="uid://hq418p0ftajb" path="res://Assets/Images/UI/BarFill/icon_ghost_sabit.png" id="17_gscbg"]
 [ext_resource type="Texture2D" uid="uid://dbl6a1ft4dmer" path="res://Assets/Images/StudentCard/stat_mood.png" id="17_icon_mood"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
@@ -517,6 +519,7 @@ display_name = "Wirausaha"
 icon_texture = ExtResource("16_icon_energy")
 energy_icon = ExtResource("16_icon_energy")
 mood_icon = ExtResource("17_icon_mood")
+watermark_texture = ExtResource("16_ulthj")
 is_skill_row = false
 
 [node name="Sep4" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=1550113771]
@@ -531,6 +534,7 @@ display_name = "Libur"
 icon_texture = ExtResource("17_icon_mood")
 energy_icon = ExtResource("16_icon_energy")
 mood_icon = ExtResource("17_icon_mood")
+watermark_texture = ExtResource("17_gscbg")
 is_skill_row = false
 
 [node name="PopupBack" type="TextureButton" parent="Penjadwalan/TextureRect" unique_id=385991892]

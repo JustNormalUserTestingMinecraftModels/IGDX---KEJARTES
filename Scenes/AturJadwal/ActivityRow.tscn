@@ -43,6 +43,16 @@ grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"PreviewPill"
 
+[node name="Watermark" type="TextureRect" parent="Container/Pill" unique_id=1187187625]
+visible = false
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="StatBar" type="ProgressBar" parent="Container/Pill" unique_id=1655153705]
 layout_mode = 2
 size_flags_vertical = 1

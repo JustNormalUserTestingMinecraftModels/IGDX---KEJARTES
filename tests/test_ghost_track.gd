@@ -89,3 +89,59 @@ func test_the_gaugeless_rows_use_the_ghost_variation() -> void:
 	f.close()
 	assert_contains(src, "PreviewTrackGhost",
 		"the non-skill rows should take the ghost track")
+
+
+const KOIN_PATH := "res://Assets/Images/UI/BarFill/icon_ghost_koin.png"
+const SABIT_PATH := "res://Assets/Images/UI/BarFill/icon_ghost_sabit.png"
+## The row icon's brown. The watermark must sit lighter than this.
+const ROW_ICON_BROWN := Color("7A4A2B")
+
+
+func test_both_watermark_motifs_exist() -> void:
+	assert_not_null(load(KOIN_PATH) as Texture2D, "missing " + KOIN_PATH)
+	assert_not_null(load(SABIT_PATH) as Texture2D, "missing " + SABIT_PATH)
+
+
+## The watermark must read as absent. If it lands at the row icon's
+## weight it becomes a second active element competing with the chips.
+func test_the_motifs_are_lighter_than_the_row_icon_brown() -> void:
+	for path in [KOIN_PATH, SABIT_PATH]:
+		var tex := load(path) as Texture2D
+		assert_not_null(tex, "missing " + path)
+		var img := tex.get_image()
+		var lit := 0.0
+		var n := 0
+		for y in range(0, img.get_height(), 4):
+			for x in range(0, img.get_width(), 4):
+				var px := img.get_pixel(x, y)
+				if px.a > 0.5:
+					lit += px.get_luminance()
+					n += 1
+		assert_gt(n, 0, path + " appears to be fully transparent")
+		var mean: float = lit / float(n)
+		assert_true(mean > ROW_ICON_BROWN.get_luminance(),
+			"%s mean luminance %f should be lighter than the row icon" % [path, mean])
+
+
+## Authored in the scene, not built at runtime -- keeps the watermark
+## clear of the test_viewport_editability ratchet. Note this suite does
+## NOT assert ActivityRow.gd is free of TextureRect.new(): refresh()
+## legitimately builds chip icons that way, and that site is already a
+## reviewed entry in that ratchet's ALLOWED dict.
+func test_the_watermark_is_a_scene_node() -> void:
+	var f := FileAccess.open("res://Scenes/AturJadwal/ActivityRow.tscn", FileAccess.READ)
+	assert_not_null(f, "could not open ActivityRow.tscn")
+	var src := f.get_as_text()
+	f.close()
+	assert_contains(src, "Watermark", "the watermark should be a node in the scene")
+
+
+## Only the two gauge-less rows carry a motif; the skill rows draw a bar
+## in that space instead.
+func test_only_the_gaugeless_rows_are_given_a_motif() -> void:
+	var f := FileAccess.open("res://Scenes/AturJadwal/atur_jadwal.tscn", FileAccess.READ)
+	assert_not_null(f, "could not open atur_jadwal.tscn")
+	var src := f.get_as_text()
+	f.close()
+	assert_eq(src.count("watermark_texture"), 2,
+		"exactly two rows -- Wirausaha and Libur -- should set a watermark")

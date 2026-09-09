@@ -336,6 +336,9 @@ const DISPLAY_ROSTER := [
 	# header, which is tinted per trait kind and so cannot use any of the
 	# text_primary label variations.
 	"TraitPopupKindLabel", "TraitPopupNameLabel",
+	# 2026-09-10: the daily-login claim button, display face over the
+	# panel art's own gold pill.
+	"GhostButton",
 ]
 
 
@@ -426,3 +429,36 @@ func test_baked_theme_resource_matches_the_factory() -> void:
 		"baked theme's default_font must match the current body font")
 	assert_eq(baked.get_font("font", "H1Label"), tokens.font_display,
 		"baked theme's H1Label must match the current display font")
+
+
+## RichTextLabel reads "normal_font_size" and "default_color", NOT
+## "font_size" and "font_color" -- those are Label/Button theme items, and
+## setting them on a RichTextLabel variation is a silent no-op. The base
+## RichTextLabel styling at ThemeFactory's _build_base_overrides already
+## carries a comment about this; the same trap applies to the variation.
+func test_cutscene_dialogue_is_bigger_body_text() -> void:
+	var tokens := DesignTokens.load_default()
+	assert_eq(_theme.get_font_size("normal_font_size", "CutsceneDialogue"),
+		tokens.font_title,
+		"cutscene dialogue steps up from body (28) to title (36)")
+	assert_eq(_theme.get_color("default_color", "CutsceneDialogue"),
+		tokens.text_primary,
+		"and reads through default_color, not font_color")
+	assert_eq(_theme.get_type_variation_base("CutsceneDialogue"),
+		&"RichTextLabel",
+		"it varies RichTextLabel, not Label")
+
+
+## The daily-login claim button sits on top of the panel art's own gold
+## pill, so the button must draw nothing of its own in the resting state.
+func test_ghost_button_draws_no_resting_chrome() -> void:
+	for state in ["normal", "focus", "disabled"]:
+		assert_true(_theme.get_stylebox(state, "GhostButton") is StyleBoxEmpty,
+			"GhostButton's %s state must draw nothing -- the art is the button"
+				% state)
+	assert_true(_theme.get_stylebox("hover", "GhostButton") is StyleBoxFlat,
+		"but it still needs a touch affordance on hover")
+	assert_true(_theme.get_stylebox("pressed", "GhostButton") is StyleBoxFlat,
+		"and on press")
+	assert_eq(_theme.get_type_variation_base("GhostButton"), &"Button",
+		"it varies Button")

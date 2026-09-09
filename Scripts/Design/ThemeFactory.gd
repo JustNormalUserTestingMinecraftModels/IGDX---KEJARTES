@@ -71,6 +71,37 @@ static func _add_shop_hub_tile_label(theme: Theme, tokens: DesignTokens) -> void
 		theme.set_font("font", NAME, tokens.font_display)
 
 
+## A button with no chrome of its own, for sitting on top of art that
+## already draws the button -- the daily-login panel's baked gold pill.
+##
+## Modelled on ShopHubTile, which solves the same problem for the shop
+## hub's panel-less tiles: nothing in the resting state, and only the
+## touch states wash in.
+static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "GhostButton"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Button")
+
+	theme.set_stylebox("normal", NAME, StyleBoxEmpty.new())
+	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
+	theme.set_stylebox("disabled", NAME, StyleBoxEmpty.new())
+
+	var wash := StyleBoxFlat.new()
+	wash.bg_color = Color(1, 1, 1, 0.14)
+	wash.set_corner_radius_all(tokens.radius_button)
+	theme.set_stylebox("hover", NAME, wash)
+
+	var pressed := StyleBoxFlat.new()
+	pressed.bg_color = Color(0, 0, 0, 0.12)
+	pressed.set_corner_radius_all(tokens.radius_button)
+	theme.set_stylebox("pressed", NAME, pressed)
+
+	theme.set_font_size("font_size", NAME, tokens.font_h2)
+	theme.set_color("font_color", NAME, tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", NAME, tokens.font_display)
+
+
 # ---------------------------------------------------------------- buttons
 
 static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
@@ -94,6 +125,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 
 	_add_shop_hub_tile(theme, tokens)
 	_add_shop_hub_tile_label(theme, tokens)
+	_add_ghost_button(theme, tokens)
 
 	# The event dialog's per-student card. The whole card is the toggle,
 	# so its "pressed" state has to read as SELECTED rather than as a
@@ -428,6 +460,21 @@ static func _build_panels(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_stylebox("panel", "TraitPopupHeader", trait_header)
 
 
+## The cutscene's dialogue text: one step up the scale from body, on the
+## body face, over the Card panel Task 3 puts behind it.
+##
+## RichTextLabel's theme items are NOT the Label ones. Its size key is
+## "normal_font_size" and its colour key is "default_color"; setting
+## "font_size"/"font_color" here compiles and does nothing, which is the
+## same trap _build_base_overrides already documents for the base type.
+static func _add_cutscene_dialogue(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "CutsceneDialogue"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "RichTextLabel")
+	theme.set_font_size("normal_font_size", NAME, tokens.font_title)
+	theme.set_color("default_color", NAME, tokens.text_primary)
+
+
 # ----------------------------------------------------------------- labels
 
 static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
@@ -574,6 +621,8 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("ResultBodyLabel", "Label")
 	theme.set_font_size("font_size", "ResultBodyLabel", tokens.font_caption)
 	theme.set_color("font_color", "ResultBodyLabel", tokens.text_on_brand)
+
+	_add_cutscene_dialogue(theme, tokens)
 
 
 # --------------------------------------------------------------- progress

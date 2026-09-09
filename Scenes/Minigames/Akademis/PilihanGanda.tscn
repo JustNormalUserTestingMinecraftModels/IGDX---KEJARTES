@@ -74,6 +74,7 @@ background_texture = ExtResource("4_doxun")
 answer_btn_normal_style = SubResource("StyleBoxFlat_b17uc")
 answer_btn_correct_style = SubResource("StyleBoxFlat_4ughg")
 answer_btn_wrong_style = SubResource("StyleBoxFlat_7bbtt")
+progress_label_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
 font = ExtResource("3_doxun")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1882836415]

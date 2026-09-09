@@ -145,6 +145,8 @@ static func load_default() -> DesignTokens:
 ## precisely what the motif system is for. The two never share a screen in
 ## any case: libur is a schedule category, energy is a per-student need.
 @export var cat_mood_on_dark: Color = Color("E86FA8")
+## Energy's accent. See cat_mood_on_dark above for why these two exist and
+## why yellow sits this close to cat_libur.
 @export var cat_energy_on_dark: Color = Color("F5D423")
 
 @export_group("Semantic States")

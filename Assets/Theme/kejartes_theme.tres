@@ -1133,7 +1133,7 @@ corner_radius_bottom_right = 24
 corner_radius_bottom_left = 24
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_opp78"]
-color = Color(0.9372549, 0.8784314, 0.79607844, 1)
+color = Color(0.8627451, 0.8117647, 0.73333335, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fvlvx"]
 content_margin_left = 16.0

@@ -53,9 +53,17 @@ func test_stat_popup_description_uses_body_font() -> void:
 		"DescriptionLabel should use the body-weight EventBodyLabel variation")
 
 
+## Scoped to the DescriptionLabel NODE rather than scanning the whole
+## .tscn for the string "TitleLabel", which is what this did until
+## 2026-09-09. That scan passed only for as long as no other node in the
+## file wanted a heading; when "EFEK GAMEPLAY:" was split out of the
+## description into its own display-font label, the file-wide scan failed
+## on a heading it was never meant to police. The invariant was always
+## about the description alone.
 func test_trait_popup_description_uses_body_font() -> void:
-	var src := _read("res://Scenes/UI/TraitDetailPopup.tscn")
-	assert_false(src.contains('theme_type_variation = &"TitleLabel"'),
-		"DescriptionLabel should no longer use the bold TitleLabel variation")
-	assert_true(src.contains('theme_type_variation = &"EventBodyLabel"'),
-		"DescriptionLabel should use the body-weight EventBodyLabel variation")
+	var popup: Node = load("res://Scenes/UI/TraitDetailPopup.tscn").instantiate()
+	track(popup)
+	var description: Label = popup.get_node(
+		"Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel")
+	assert_eq(description.theme_type_variation, &"EventBodyLabel",
+		"the description must be body weight, not a heading variation")

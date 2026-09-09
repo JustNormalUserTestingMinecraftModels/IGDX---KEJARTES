@@ -125,16 +125,22 @@ func test_bars_carry_no_text_children() -> void:
 		"card bars must opt into the StatPill variation")
 
 
-## Behavioural companion to the source scan above. StudentCardView.gd:161
-## sets `bar.variation = &"StatPill"` at RUNTIME, after the bar has already
-## gone through _ready() with the default "StatBar" family -- which force-
-## sets self_modulate to white for that family (see StatBar._apply_tint()).
-## StatPill's fill has no baked-in colour and its background is a
-## StyleBoxEmpty, so it depends entirely on self_modulate for its category
-## colour. A `variation` setter that only wrote theme_type_variation left
-## self_modulate stuck at that earlier white and the pill rendered blank --
-## this reproduces the exact sequence StudentCardView performs and would
-## have caught it.
+## Behavioural companion to the source scan above. StudentCardView sets
+## `bar.variation = &"StatPill"` at RUNTIME, after the bar has already gone
+## through _ready() with the default "StatBar" family -- so the setter has
+## to re-derive the whole look, not just write theme_type_variation. An
+## earlier setter that wrote only theme_type_variation left the pill
+## rendering blank; this reproduces the exact sequence and would catch it.
+##
+## What "the whole look" means changed on 2026-09-09. The pill used to be
+## tinted by setting self_modulate to the on-dark accent, which was safe
+## only while StatPill's background was a StyleBoxEmpty over a track
+## painted into card_bg.png. Once the painted chips were deleted and
+## StatPill grew a real track, self_modulate -- which multiplies
+## EVERYTHING the node draws -- began tinting that track too, giving each
+## pill a differently coloured "empty" half. So the category now selects a
+## sibling variation with the colour baked into its fill, exactly as the
+## StatBar family already did, and the node stays white.
 func test_switching_variation_at_runtime_rederives_the_tint() -> void:
 	var bar := StatBar.new()
 	bar.category = "Olahraga"
@@ -143,14 +149,32 @@ func test_switching_variation_at_runtime_rederives_the_tint() -> void:
 	# Default family, as _ready() left it.
 	assert_eq(bar.self_modulate, Color.WHITE,
 		"sanity check: the default StatBar family starts self_modulate white")
+	assert_eq(bar.theme_type_variation, &"StatBarOlahraga",
+		"sanity check: the default family resolves its own per-category sibling")
 
 	bar.variation = &"StatPill"
 
-	var tokens := DesignTokens.load_default()
-	assert_eq(bar.self_modulate, tokens.cat_olahraga,
-		"switching to StatPill at runtime must re-derive self_modulate from the category")
-	assert_eq(bar.theme_type_variation, &"StatPill",
-		"switching to StatPill at runtime must still update theme_type_variation")
+	assert_eq(bar.theme_type_variation, &"StatPillOlahraga",
+		"switching to StatPill at runtime must resolve the per-category pill")
+	assert_eq(bar.self_modulate, Color.WHITE,
+		"the pill must NOT tint the node -- self_modulate would colour its track too")
+
+
+## An unrecognised category must land on a variation that exists in the
+## theme. Deriving the pill name by string-swapping "StatBar" for
+## "StatPill" would produce one that does not, so the mapping is its own
+## table and the fallback is the plain family.
+func test_an_unknown_category_falls_back_to_a_real_variation() -> void:
+	var theme: Theme = load("res://Assets/Theme/kejartes_theme.tres")
+	for family in [&"StatBar", &"StatPill"]:
+		var bar := StatBar.new()
+		bar.category = "NotACategory"
+		Engine.get_main_loop().root.add_child(bar)
+		track(bar)
+		bar.variation = family
+		assert_true(theme.get_type_list().has(String(bar.theme_type_variation)),
+			"%s with an unknown category resolved to %s, which the theme does not define"
+				% [family, bar.theme_type_variation])
 
 
 ## The icon replaces the bar's old name label, and with the magnifier gone
@@ -227,7 +251,7 @@ func test_bio_panel_renders_the_three_rows() -> void:
 func test_bio_panel_sits_inside_the_painted_panel() -> void:
 	var src := FileAccess.get_file_as_string(
 		"res://Scripts/StudentCard/StudentCardView.gd")
-	assert_true(src.contains("const BIO_PANEL_RECT := Rect2(120, 300, 489, 367)"),
+	assert_true(src.contains("const BIO_PANEL_RECT := Rect2(452, 300, 489, 367)"),
 		"BIO_PANEL_RECT must match the painted panel's measured interior")
 
 	var panel_start := src.find("func build_bio_panel(")
@@ -256,6 +280,43 @@ func test_superseded_labels_are_removed_from_the_scenes() -> void:
 			for label_name in ["Nama", "Profil", "Kepribadian", "Akademis"]:
 				assert_false(src.contains('[node name="%s" type="Label" parent="KertasMurid%d"' % [label_name, i]),
 					"%s must not declare KertasMurid%d/%s" % [scene_path, i, label_name])
+
+
+## The ~240px band between the stat bars and the trait pills was dead
+## paper. It now carries the student's specialty, which is the single most
+## decision-relevant fact when approving a roster -- their own category
+## costs 0.6x energy and mood where everything else costs 1.20x -- and was
+## previously shown nowhere on the card.
+##
+## The heading is static in the scene; the value is filled per student.
+## Checked on both scenes and all six cards, and the mapping is exercised
+## for every specialty the roster actually ships, because the stored key
+## ("SeniBudaya") is not the word the player should read ("Seni Budaya").
+func test_every_card_shows_the_students_specialty() -> void:
+	for scene_path in _SCENES:
+		var src := FileAccess.get_file_as_string(scene_path)
+		for i in range(1, 7):
+			for node_name in ["MinatLabel", "MinatValue"]:
+				assert_true(src.contains(
+					'[node name="%s" type="Label" parent="KertasMurid%d"'
+						% [node_name, i]),
+					"%s missing KertasMurid%d/%s" % [scene_path, i, node_name])
+
+	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var inst := scene.instantiate()
+	track(inst)
+	var card := inst.get_node("KertasMurid1") as Control
+	var value := card.get_node("MinatValue") as Label
+
+	for pair in [["Akademis", "Akademis"], ["Olahraga", "Olahraga"],
+			["SeniBudaya", "Seni Budaya"]]:
+		StudentCardView.build_minat_row(card, {"hobby_category": pair[0]})
+		assert_eq(value.text, pair[1],
+			"specialty %s must read as '%s'" % [pair[0], pair[1]])
+
+	# An unknown or missing key must not crash or print a raw placeholder.
+	StudentCardView.build_minat_row(card, {})
+	assert_eq(value.text, "", "a missing specialty must render as empty")
 
 
 ## Every card carries the "Sifat Pasif:" heading above its two trait
@@ -306,42 +367,42 @@ func test_trait_values_are_unchanged() -> void:
 ## is the page both screens open on, so the drift was the first thing seen.
 ## Checked across all six cards so it cannot recur, per scene.
 ##
-## student_card.tscn and report_card.tscn intentionally carry DIFFERENT
-## pinned geometry as of 2026-09-08: student_card.tscn's pills moved off
-## anchor-0.786/0.848 to stop them overlapping the Approve button (see
-## student_card_layout suite's sibling test_trait_pills_sit_above_approve).
-## A same-day follow-up fix (2026-09-08, second pass) moved them again --
-## the first fix's 0.70/0.755 anchors cleared Approve but newly overlapped
-## SifatPasifLabel above them, caught only by resolving actual geometry
-## (test_trait_pills_do_not_overlap_neighbors below), not by pinning anchor
-## values alone. The pills are now 70px tall (down from ~100px) so both fit
-## in the 165px band between SifatPasifLabel's bottom (1395) and Aprove's
-## top (1560), with 5px gaps around each and 15px clear of Aprove.
-## ReportCard has no Approve/Batal button for the pills to clip -- it is a
-## read-only report screen -- so it was out of scope for either fix and
-## keeps the original geometry here. Each scene is still checked for
-## uniformity across all six of its own cards, which is this test's real
-## invariant.
+## The two scenes used to carry DIFFERENT pinned geometry, because the
+## pills were moved on student_card.tscn alone to clear its Approve button
+## while report_card.tscn kept the original. Shortening the painted paper
+## (its bottom edge is now y=1559, down from 1716) ended that: on BOTH
+## scenes the lower pill spilled past the paper's edge -- report_card's
+## worst, at 1530-1629, seventy pixels of pill on bare desk. The pills are
+## now one shared rect on both scenes, so there is a single geometry to
+## reason about and the divergence cannot silently return.
+##
+## The band they live in was made by moving the three Akademis bars up 50px
+## (they sit on blank paper -- nothing is painted under them), which frees
+## room for SifatPasifLabel at 1318-1370 and the two 70px pills at
+## 1378-1448 and 1456-1526, closing 33px clear of the paper's edge.
+## Anchors are now 0 with absolute offsets: the old fractional anchors
+## (0.7474, 0.786, 0.848) made every move a division and hid what row the
+## pill actually landed on.
 ##
 ## Compared with a tolerance, not assert_eq: the scene stores float32, so
-## the widened value is -104.119995117188 and an exact match against a
-## float64 literal fails. Same absf() idiom the other suites use, since
-## McpTestSuite has no assert_almost_eq.
-const _TRAIT_PILL_GEOMETRY_BY_SCENE := {
-	"res://Scenes/StudentCard/student_card.tscn": {
-		"KutuBuku": {"anchor_top": 0.747395833333333, "anchor_bottom": 0.747395833333333,
-			"offset_top": -35.0, "offset_bottom": 35.0},
-		"KutuBuku2": {"anchor_top": 0.786458333333333, "anchor_bottom": 0.786458333333333,
-			"offset_top": -35.0, "offset_bottom": 35.0},
+## an exact match against a float64 literal is not safe. Same absf() idiom
+## the other suites use, since McpTestSuite has no assert_almost_eq.
+const _TRAIT_PILL_GEOMETRY := {
+	"KutuBuku": {
+		"anchor_top": 0.0, "anchor_bottom": 0.0,
+		"offset_left": -421.0, "offset_right": 421.0,
+		"offset_top": 1328.0, "offset_bottom": 1398.0,
 	},
-	"res://Scenes/ReportCard/report_card.tscn": {
-		"KutuBuku": {"offset_top": -104.119995, "offset_bottom": -0.11999512},
-		"KutuBuku2": {
-			"offset_left": -417.0, "offset_right": 420.0,
-			"offset_top": -98.16016, "offset_bottom": 0.83984375,
-		},
+	"KutuBuku2": {
+		"anchor_top": 0.0, "anchor_bottom": 0.0,
+		"offset_left": -421.0, "offset_right": 421.0,
+		"offset_top": 1406.0, "offset_bottom": 1476.0,
 	},
 }
+
+## The painted paper's bottom edge, measured off card_bg.png. Everything in
+## the card's lower stack has to close above it.
+const _PAPER_BOTTOM := 1559.0
 
 
 func test_every_trait_pill_shares_one_geometry() -> void:
@@ -349,14 +410,13 @@ func test_every_trait_pill_shares_one_geometry() -> void:
 		var scene := load(scene_path) as PackedScene
 		assert_true(scene != null, "%s failed to load" % scene_path)
 		var inst := scene.instantiate()
-		var geometry_by_pill: Dictionary = _TRAIT_PILL_GEOMETRY_BY_SCENE[scene_path]
 		for i in range(1, 7):
 			for pill_name in ["KutuBuku", "KutuBuku2"]:
 				var pill := inst.get_node_or_null(
 					"KertasMurid%d/%s" % [i, pill_name]) as Control
 				assert_true(pill != null, "%s KertasMurid%d/%s missing"
 					% [scene_path, i, pill_name])
-				var want: Dictionary = geometry_by_pill[pill_name]
+				var want: Dictionary = _TRAIT_PILL_GEOMETRY[pill_name]
 				for prop in want:
 					assert_true(absf(pill.get(prop) - want[prop]) <= 0.01,
 						"%s card %d %s.%s is %f, expected %f"
@@ -365,25 +425,35 @@ func test_every_trait_pill_shares_one_geometry() -> void:
 		inst.free()
 
 
-## The clipping fix (2026-09-08, two passes): student_card.tscn's
-## KutuBuku/KutuBuku2 pills started at anchor 0.786/0.848 -- overlapping
-## the Aprove button and the empty PageLabel's box, showing as the stray
-## "376" in the QA screenshot. The first pass moved them to anchor
-## 0.70/0.755, clear of Aprove but (unnoticed until resolved geometry was
-## checked) newly overlapping SifatPasifLabel above them. The second pass
-## moved them again, to anchor 0.7473958/0.7864583 at 70px tall, fitting
-## between SifatPasifLabel and Aprove with room on both sides -- see
-## test_trait_pills_do_not_overlap_neighbors below for the geometry proof.
-func test_trait_pills_sit_above_approve() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/StudentCard/student_card.tscn")
-	assert_true(src.contains("anchor_top = 0.7473958"),
-		"Expected KutuBuku pill anchored at ~0.7474 after the clipping fix")
-	assert_true(src.contains("anchor_top = 0.7864583"),
-		"Expected KutuBuku2 pill anchored at ~0.7865 after the clipping fix")
-	assert_false(src.contains("anchor_top = 0.786\n"),
-		"Old Aprove-overlapping pill anchor must not remain on student_card.tscn")
-	assert_false(src.contains("anchor_top = 0.7\n"),
-		"First-pass SifatPasifLabel-overlapping pill anchor must not remain")
+## The pills spent three passes chasing the Aprove button around by
+## nudging fractional anchors (0.786/0.848, then 0.70/0.755, then
+## 0.7474/0.7865) and each pass fixed one overlap while opening another,
+## because a fraction of the card's height tells you nothing about which
+## row the pill lands on. Then the paper itself was shortened and the
+## lower pill spilled off its bottom edge -- the failure a pinned anchor
+## string structurally cannot see.
+##
+## So this checks the thing the user actually reported: every element of
+## the card's lower stack resolves to a rect that CLOSES ABOVE the painted
+## paper's bottom edge. It is scene-agnostic and survives the pills being
+## moved again, which the anchor-string scan it replaces did not.
+func test_the_lower_card_stack_stays_on_the_paper() -> void:
+	for scene_path in _SCENES:
+		var scene := load(scene_path) as PackedScene
+		var inst := scene.instantiate()
+		Engine.get_main_loop().root.add_child(inst)
+		track(inst)
+		inst.size = Vector2(1080, 1920)
+		for i in range(1, 7):
+			var card := inst.get_node("KertasMurid%d" % i) as Control
+			for child_name in ["Akademis3", "SifatPasifLabel", "KutuBuku", "KutuBuku2"]:
+				var node := card.get_node_or_null(child_name) as Control
+				assert_true(node != null,
+					"%s KertasMurid%d/%s missing" % [scene_path, i, child_name])
+				assert_true(node.get_rect().end.y <= _PAPER_BOTTOM,
+					"%s card %d: %s ends at y=%f, past the paper's edge at %f"
+						% [scene_path, i, child_name, node.get_rect().end.y,
+							_PAPER_BOTTOM])
 
 
 ## The first pass above only pinned anchor VALUES, which is exactly how it
@@ -397,28 +467,181 @@ func test_trait_pills_do_not_overlap_neighbors() -> void:
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 	inst.size = Vector2(1080, 1920)
+	# In reading order down the card. Checked pairwise rather than only
+	# against the pills, because the pass that moved the pills left
+	# SifatPasifLabel (1330-1395) sitting 25px inside Akademis3's bar
+	# (1287-1355) -- an overlap between two nodes neither of which was a
+	# pill, which is exactly why the old three-way check missed it.
+	#
+	# The five stat bars are compared at their RUNTIME rects, not their
+	# authored ones. StudentCardView.build_stat_bars rewrites all four
+	# offsets from PILL_RECTS on every populate(), so whatever the .tscn
+	# says about a bar's position is dead the moment the card is shown --
+	# a pass that "made room" by moving the bars in the scene changed
+	# nothing on screen. Reading PILL_RECTS here keeps the test measuring
+	# the layout the player sees.
+	var stack := ["Kepribadian1", "Kepribadian2", "Akademis1", "Akademis2",
+		"Akademis3", "MinatLabel", "MinatValue", "SifatPasifLabel",
+		"KutuBuku", "KutuBuku2", "Aprove"]
 	for i in range(1, 7):
 		var card := inst.get_node("KertasMurid%d" % i)
-		var kutu1 := card.get_node("KutuBuku") as Control
+		for a in range(stack.size()):
+			for b in range(a + 1, stack.size()):
+				var first := _resolved_rect(card, stack[a])
+				var second := _resolved_rect(card, stack[b])
+				assert_false(first.intersects(second),
+					"card %d: %s overlaps %s (%s vs %s)"
+						% [i, stack[a], stack[b], first, second])
+
+
+## A node's rect as it will actually be drawn: PILL_RECTS for the stat
+## bars the view repositions at runtime, the authored rect for everything
+## else.
+func _resolved_rect(card: Node, child_name: String) -> Rect2:
+	if StudentCardView.PILL_RECTS.has(child_name):
+		return StudentCardView.PILL_RECTS[child_name]
+	return (card.get_node("%s" % child_name) as Control).get_rect()
+
+
+## PageLabel is NOT empty -- student_card.gd:717 sets its text every page turn
+## ("page_label.text = str(index + 1) + "/" + str(kertas_murid.size())"), so
+## it renders "1/6" etc. at runtime. It genuinely overlapped the Persona
+## trait pill on screen. That overlap was previously missed because
+## PageLabel is a child of the scene ROOT while the KertasMurid cards sit at
+## a -70,-254 offset within that root -- comparing PageLabel's root-space
+## offsets against the cards' card-local offsets made the overlap vanish on
+## paper while it was plainly visible on screen. Do not repeat that
+## comparison; always use global rects when checking this label against
+## card content.
+##
+## PageLabel now sits centred between the two page arrows (root offsets
+## x 20-140 and x 800-920, y 1516-1636). This instantiates the scene and
+## checks the label's resolved global rect against the trait pill it used
+## to clip, in both student_card.tscn and report_card.tscn.
+func test_page_label_sits_between_the_arrows() -> void:
+	for scene_path in [
+		"res://Scenes/StudentCard/student_card.tscn",
+		"res://Scenes/ReportCard/report_card.tscn",
+	]:
+		var scene := load(scene_path) as PackedScene
+		var inst := scene.instantiate()
+		Engine.get_main_loop().root.add_child(inst)
+		track(inst)
+		inst.size = Vector2(1080, 1920)
+		var page_label := inst.get_node("PageLabel") as Control
+		var card := inst.get_node("KertasMurid1") as Control
 		var kutu2 := card.get_node("KutuBuku2") as Control
-		var aprove := card.get_node("Aprove") as Control
-		var sifat := card.get_node("SifatPasifLabel") as Control
-		assert_false(kutu1.get_rect().intersects(sifat.get_rect()),
-			"card %d: KutuBuku overlaps SifatPasifLabel (%s vs %s)"
-				% [i, kutu1.get_rect(), sifat.get_rect()])
-		assert_false(kutu1.get_rect().intersects(kutu2.get_rect()),
-			"card %d: KutuBuku overlaps KutuBuku2 (%s vs %s)"
-				% [i, kutu1.get_rect(), kutu2.get_rect()])
-		assert_false(kutu2.get_rect().intersects(aprove.get_rect()),
-			"card %d: KutuBuku2 overlaps Aprove (%s vs %s)"
-				% [i, kutu2.get_rect(), aprove.get_rect()])
+		assert_false(page_label.get_global_rect().intersects(kutu2.get_global_rect()),
+			"%s: PageLabel overlaps KutuBuku2 (%s vs %s)"
+				% [scene_path, page_label.get_global_rect(), kutu2.get_global_rect()])
 
 
-## PageLabel is empty by design; the stray "376" seen in the QA screenshot
-## was the trait pill drawn over this row, not text PageLabel itself owns.
-## Pins the row's position so a future edit can't silently reintroduce the
-## overlap from a different angle.
-func test_page_label_has_no_stray_text() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/StudentCard/student_card.tscn")
-	assert_true(src.contains('offset_top = 1248.0'),
-		"PageLabel moved unexpectedly")
+## Both of the card's top boxes are painted into card_bg.png -- the identity
+## panel on the left, the portrait frame on the right -- and only the
+## portrait carries a node, the TextureRect that draws the student's photo
+## into it. Two faults were reported together and they share a cause:
+##
+## 1. The two boxes closed on different rows (the portrait's border ended
+##    at y=660, the identity panel's at y=669), so a pair meant to read as
+##    a matched set was 9px out. The art now ends both at 669, and the
+##    TextureRect follows the repaint to offset_bottom 665, its interior.
+## 2. The TextureRect used STRETCH_KEEP_ASPECT_CENTERED, so a portrait
+##    whose aspect did not match the frame letterboxed inside it and let
+##    the frame's painted interior show through around the photo -- read
+##    on screen as the portrait "not fully sized with the box". It is now
+##    STRETCH_KEEP_ASPECT_COVERED (6), which fills the frame and clips.
+##
+## Pinned as resolved geometry rather than as .tscn text so it holds for
+## every card on both scenes at once.
+func test_the_portrait_fills_a_frame_matched_to_the_identity_panel() -> void:
+	# The identity panel's painted interior, measured off card_bg.png.
+	var panel_bottom := 666.0
+	for scene_path in _SCENES:
+		var scene := load(scene_path) as PackedScene
+		var inst := scene.instantiate()
+		Engine.get_main_loop().root.add_child(inst)
+		track(inst)
+		inst.size = Vector2(1080, 1920)
+		for i in range(1, 7):
+			var portrait := inst.get_node_or_null(
+				"KertasMurid%d/TextureRect" % i) as TextureRect
+			assert_true(portrait != null,
+				"%s KertasMurid%d/TextureRect missing" % [scene_path, i])
+			assert_eq(portrait.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_COVERED,
+				"%s card %d: the portrait must COVER its frame, not letterbox in it"
+					% [scene_path, i])
+			assert_true(absf(portrait.get_rect().end.y - 670.0) <= 1.0,
+				"%s card %d: the portrait ends at y=%f, not the frame's 670"
+					% [scene_path, i, portrait.get_rect().end.y])
+			assert_true(absf(portrait.get_rect().end.y - panel_bottom) <= 5.0,
+				"%s card %d: the portrait box (ends %f) and the identity panel "
+					% [scene_path, i, portrait.get_rect().end.y]
+					+ "(ends %f) must close on the same row" % panel_bottom)
+
+			# The rounded corners cannot come from the painted frame: the
+			# photo is drawn OVER it and would poke its square corners
+			# through them. They come from a frame texture laid on top of
+			# the photo, which must therefore exist, sit on exactly the
+			# same rect, and be drawn AFTER the photo in child order.
+			var frame := inst.get_node_or_null(
+				"KertasMurid%d/PortraitFrame" % i) as TextureRect
+			assert_true(frame != null,
+				"%s card %d: no PortraitFrame over the photo" % [scene_path, i])
+			assert_eq(frame.get_rect(), portrait.get_rect(),
+				"%s card %d: the frame must cover the photo exactly (%s vs %s)"
+					% [scene_path, i, frame.get_rect(), portrait.get_rect()])
+			assert_true(frame.get_index() > portrait.get_index(),
+				"%s card %d: PortraitFrame must draw after the photo, not under it"
+					% [scene_path, i])
+
+
+## The action row and the page arrows sit on the desk BELOW the paper, and
+## the space between them is the whole reason that band reads as calm or
+## as crowded.
+##
+## It was not calm. Shortening the paper to y=1559 put its edge exactly 1px
+## above Aprove's top at 1560 -- the button looked glued to the sheet. All
+## 81px of slack in that band had collected below the button instead, where
+## nothing needed it. The row moved down to 1600-1760 and the arrows down
+## to 1780-1900, which spends that slack as 41 / 20 / 20 instead of
+## 1 / 50 / 30.
+##
+## The arrow gap matters as much as the paper gap: BelajarButton slides in
+## beside Aprove and runs to x=1050, so it genuinely sits above the right
+## arrow rather than merely near it.
+##
+## Compared as GLOBAL rects. The cards sit at (-70,-254) inside a root that
+## is itself inset (70,254), while the arrows are children of that root --
+## comparing the two sets of authored offsets directly is the exact mistake
+## that once hid the PageLabel overlap, so this resolves both through the
+## tree.
+const _MIN_PAPER_GAP := 30.0
+const _MIN_ARROW_GAP := 15.0
+
+
+func test_the_action_row_is_not_crowded_against_the_paper() -> void:
+	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var inst := scene.instantiate()
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	inst.size = Vector2(1080, 1920)
+
+	var left_arrow := inst.get_node("NextButtonKiri") as Control
+	var right_arrow := inst.get_node("NextButtonKanan") as Control
+
+	for i in range(1, 7):
+		var card := inst.get_node("KertasMurid%d" % i) as Control
+		var paper_bottom := card.get_global_rect().position.y + _PAPER_BOTTOM
+		for button_name in ["Aprove", "Batal"]:
+			var button := card.get_node(button_name) as Control
+			var gap := button.get_global_rect().position.y - paper_bottom
+			assert_true(gap >= _MIN_PAPER_GAP,
+				"card %d: %s sits %fpx below the paper's edge, under the %fpx minimum"
+					% [i, button_name, gap, _MIN_PAPER_GAP])
+
+			for arrow in [left_arrow, right_arrow]:
+				var arrow_gap: float = (arrow.get_global_rect().position.y
+					- button.get_global_rect().end.y)
+				assert_true(arrow_gap >= _MIN_ARROW_GAP,
+					"card %d: %s ends %fpx above the page arrows, under the %fpx minimum"
+						% [i, button_name, arrow_gap, _MIN_ARROW_GAP])

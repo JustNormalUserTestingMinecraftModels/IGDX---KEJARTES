@@ -47,12 +47,12 @@ static func _add_shop_hub_tile(theme: Theme, tokens: DesignTokens) -> void:
 
 	var wash := StyleBoxFlat.new()
 	wash.bg_color = Color(1, 1, 1, 0.14)
-	wash.set_corner_radius_all(tokens.radius_lg)
+	wash.set_corner_radius_all(tokens.radius_button)
 	theme.set_stylebox("hover", NAME, wash)
 
 	var pressed := StyleBoxFlat.new()
 	pressed.bg_color = Color(1, 1, 1, 0.24)
-	pressed.set_corner_radius_all(tokens.radius_lg)
+	pressed.set_corner_radius_all(tokens.radius_button)
 	theme.set_stylebox("pressed", NAME, pressed)
 	theme.set_stylebox("disabled", NAME, StyleBoxEmpty.new())
 
@@ -100,28 +100,48 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# button being held: normal is the plain card surface, pressed picks
 	# up the brand outline. Sits with the other button variations because
 	# it is literally a Button, however card-shaped it looks.
+	# The radius argument is what makes "chips stay round" implementable.
+	# QuirkBadge and PersonaBadge are chips but are built through
+	# _add_button_variation, so without it they would be forced to
+	# radius_button along with everything else.
 	_add_button_variation(theme, tokens, "EventSelectCard",
 		tokens.surface_card, tokens.surface_card,
-		tokens.brand_primary, tokens.text_primary)
+		tokens.brand_primary, tokens.text_primary,
+		tokens.radius_lg)
 
 	# Trait chips (Quirk / Persona). Same pill geometry as any other
 	# button variation; only the accent differs, so the two trait kinds
 	# stay visually distinguishable without per-node styleboxes.
 	_add_button_variation(theme, tokens, "QuirkBadge",
 		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.outline_card, tokens.text_on_brand,
+		tokens.radius_pill)
 
 	_add_button_variation(theme, tokens, "PersonaBadge",
 		tokens.cat_istirahat.lightened(0.18), tokens.cat_istirahat.darkened(0.24),
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.outline_card, tokens.text_on_brand,
+		tokens.radius_pill)
 
-	# Lobby's five hub nav buttons used to point at three loose,
-	# hand-authored StyleBoxFlat .tres files (lobby_btn_normal/hover/
-	# pressed). Folded here so they obey the token cascade like every
-	# other button in the game instead of living outside the theme.
-	_add_button_variation(theme, tokens, "LobbyNavButton",
+	# The lobby's three destination tiles. Icon stacked over label: at
+	# the L step there is room for a 64px icon, an 8px gap and a
+	# font_title line inside the 120px content box, and the icon is what
+	# makes a destination scannable. Retired LobbyNavButton, which was
+	# one variation stretched across five boxes of five different sizes.
+	_add_button_variation(theme, tokens, "LobbyNavTile",
 		tokens.brand_primary_light, tokens.brand_primary_dark,
 		tokens.outline_card, tokens.text_on_brand)
+	theme.set_constant("icon_max_width", "LobbyNavTile", tokens.btn_icon_m)
+	theme.set_constant("h_separation", "LobbyNavTile", 8)
+
+	# The week's primary call to action. Horizontal rather than stacked:
+	# it is 984px wide, and a stacked icon in a banner that shape leaves
+	# exactly the horizontal emptiness this pass exists to remove.
+	_add_button_variation(theme, tokens, "LobbyCtaButton",
+		tokens.brand_primary_light, tokens.brand_primary_dark,
+		tokens.outline_card, tokens.text_on_brand)
+	theme.set_font_size("font_size", "LobbyCtaButton", tokens.font_h1)
+	theme.set_constant("icon_max_width", "LobbyCtaButton", tokens.btn_icon_l)
+	theme.set_constant("h_separation", "LobbyCtaButton", 24)
 
 	# Inventory's category filter row: a quiet pill at rest; the toggled-on
 	# chip renders with the pressed stylebox _add_button_variation already
@@ -130,13 +150,33 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.surface_card, tokens.surface_sunken,
 		tokens.brand_primary, tokens.brand_primary)
 
+	# The student card's page arrows. Fixed 120x120, so radius_pill yields a
+	# circle rather than a height-dependent capsule -- the one place that
+	# radius is still correct on a Button, and why the geometry test
+	# allow-lists it. Replaces two rotated copies of a pure-#FF0000 asset
+	# that had no palette relationship to anything.
+	_add_button_variation(theme, tokens, "CardArrowButton",
+		tokens.brand_primary, tokens.brand_primary_dark,
+		tokens.outline_card, tokens.text_on_brand,
+		tokens.radius_pill)
+	theme.set_constant("icon_max_width", "CardArrowButton", tokens.btn_icon_m)
+
 	_build_main_menu_button(theme, tokens)
 	_build_shop_shelf_button(theme, tokens)
+
+	# Size steps. M covers the 116-148 px call sites (TesNotice, RunResult,
+	# QuitConfirmDialog, EndCutscene, AturJadwal's StartWeek); L covers the
+	# 160-178 px ones (StudentCard's Aprove and Batal, StudentList's
+	# arrows). SuccessButton has no M call site, so none is generated.
+	for base in ["PrimaryButton", "SecondaryButton", "DangerButton"]:
+		_add_size_step(theme, tokens, base, "M", tokens.font_h2, tokens.btn_pad_v_m)
+	for base in ["PrimaryButton", "SecondaryButton", "DangerButton", "SuccessButton"]:
+		_add_size_step(theme, tokens, base, "L", tokens.font_h1, tokens.btn_pad_v_l)
 
 
 ## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"). A flat
 ## rounded rectangle with a heavier bottom border for a pressed-tab look,
-## not the pill shape _pill()/_add_button_variation() produce, and its
+## not the pill shape _button_box()/_add_button_variation() produce, and its
 ## hover state recolours the text gold rather than lightening the fill --
 ## neither shape matches an existing variation closely enough to reuse.
 static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void:
@@ -146,7 +186,7 @@ static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void
 
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = tokens.brand_primary
-	normal.set_corner_radius_all(tokens.radius_md)
+	normal.set_corner_radius_all(tokens.radius_button)
 	normal.border_width_left = 3
 	normal.border_width_top = 3
 	normal.border_width_right = 3
@@ -180,31 +220,29 @@ static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void
 	theme.set_constant("shadow_offset_y", NAME, 2)
 
 
-## The main menu's three nav buttons. Deliberately the SAME art as
-## StudentCard's TraitPill (trait_button.png) -- the main-menu mockup's
-## buttons are that asset recoloured, so reusing it reproduces the mockup's
-## silhouette, 3 px #3D2048 border, corner radius and top gloss exactly.
+## The main menu's three nav buttons.
 ##
-## It cannot simply reuse the TraitPill variation: TraitPill sets font_size to
-## tokens.font_h2 (48) with a 6 px outline, sized for a chip. The menu needs
-## 80 with no outline (see the plan's spec for the arithmetic -- PENGATURAN at
-## the mockup-implied 100 is 755 px wide against a 624 px inner box).
+## Uses menu_button.png, NOT trait_button.png. The two were one asset
+## until 2026-09-08: the menu mockup is the chip art recoloured, so
+## reusing it reproduced the mockup exactly. That stopped working when
+## buttons moved to a fixed 20px corner and chips stayed fully round --
+## one asset cannot be both shapes. See the spec's "a split, not an edit".
 ##
-## region_rect and texture_margin are copied from TraitPill because they
-## describe the ART, not the chip: the pill occupies (20, 277, 601, 91) inside
-## the 640x640 canvas, and a 45 px 9-slice margin keeps both rounded ends
-## intact when the box is stretched to the menu's 670x126.
+## Still a StyleBoxTexture rather than a stylebox because the gold gloss
+## is painted; the corner therefore lives in the art, which is why
+## test_button_geometry allow-lists this variation and then checks the
+## texture path instead.
 static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
 	const NAME := "MainMenuButton"
 	theme.add_type(NAME)
 	theme.set_type_variation(NAME, "Button")
 
 	var normal := StyleBoxTexture.new()
-	normal.texture = load(_CARD_ART + "trait_button.png")
-	normal.region_rect = Rect2(20, 277, 601, 91)
-	normal.set_texture_margin_all(45)
-	# Horizontal room for the label. 670 - 2*3 px border - 2*20 = 624 px,
-	# which PENGATURAN fills to 604 px at font size 80.
+	normal.texture = load(_CARD_ART + "menu_button.png")
+	normal.region_rect = Rect2(0, 0, 256, 128)
+	normal.set_texture_margin_all(28)
+	# Icon-only button (128x128, tooltip_text, no text) -- these margins
+	# just centre the painted gloss inside the texture region.
 	normal.content_margin_left = 20
 	normal.content_margin_right = 20
 	normal.content_margin_top = 0
@@ -228,8 +266,6 @@ static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_font("font", NAME, tokens.font_display)
 
 
-## One glossy pill in four states. `top`/`bottom` form the vertical
-## gradient that gives the button its Umamusume sheen.
 static func _add_button_variation(
 	theme: Theme,
 	tokens: DesignTokens,
@@ -237,25 +273,30 @@ static func _add_button_variation(
 	top: Color,
 	bottom: Color,
 	border: Color,
-	text_color: Color
+	text_color: Color,
+	radius: int = -1
 ) -> void:
+	# -1 means "the default", resolved here so callers that do not care
+	# about shape do not have to name the token.
+	var r: int = tokens.radius_button if radius < 0 else radius
+
 	theme.add_type(name)
 	theme.set_type_variation(name, "Button")
 
 	theme.set_stylebox("normal", name,
-		_pill(tokens, top, bottom, border, 0.0))
+		_button_box(tokens, top, bottom, border, 0.0, r))
 	theme.set_stylebox("hover", name,
-		_pill(tokens, top.lightened(0.08), bottom.lightened(0.08), border, 0.0))
+		_button_box(tokens, top.lightened(0.08), bottom.lightened(0.08), border, 0.0, r))
 	# Pressed sinks: gradient flips and the shadow collapses.
 	theme.set_stylebox("pressed", name,
-		_pill(tokens, bottom, top, border, -tokens.shadow_offset.y * 0.5))
+		_button_box(tokens, bottom, top, border, -tokens.shadow_offset.y * 0.5, r))
 	theme.set_stylebox("focus", name,
-		_pill(tokens, top, bottom, tokens.brand_primary, 0.0))
+		_button_box(tokens, top, bottom, tokens.brand_primary, 0.0, r))
 
-	var disabled := _pill(tokens,
+	var disabled := _button_box(tokens,
 		top.lerp(tokens.surface_sunken, 0.7),
 		bottom.lerp(tokens.surface_sunken, 0.7),
-		border.lerp(tokens.surface_sunken, 0.5), 0.0)
+		border.lerp(tokens.surface_sunken, 0.5), 0.0, r)
 	disabled.shadow_size = 0
 	theme.set_stylebox("disabled", name, disabled)
 
@@ -269,31 +310,73 @@ static func _add_button_variation(
 		theme.set_font("font", name, tokens.font_display)
 
 
-static func _pill(
+## Clone an existing role variation at a larger size step.
+##
+## Only font_size differs -- the fill, rim and radius are the role's, so
+## a PrimaryButtonL is unmistakably a PrimaryButton. Height comes from
+## the step's own vertical padding, which is why this also re-pads.
+static func _add_size_step(
+	theme: Theme,
+	tokens: DesignTokens,
+	base: String,
+	suffix: String,
+	font_size: int,
+	pad_v: int
+) -> void:
+	var name := base + suffix
+	theme.add_type(name)
+	theme.set_type_variation(name, "Button")
+
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var sb := (theme.get_stylebox(state, base) as StyleBoxFlat).duplicate()
+		sb.content_margin_top = pad_v
+		sb.content_margin_bottom = pad_v
+		theme.set_stylebox(state, name, sb)
+
+	for key in ["font_color", "font_hover_color", "font_pressed_color",
+			"font_focus_color", "font_disabled_color"]:
+		theme.set_color(key, name, theme.get_color(key, base))
+
+	theme.set_font_size("font_size", name, font_size)
+	if tokens.font_display != null:
+		theme.set_font("font", name, tokens.font_display)
+
+
+## One button surface in four states.
+##
+## `radius` is explicit rather than always tokens.radius_button because
+## chips (QuirkBadge, PersonaBadge) and cards (EventSelectCard) are built
+## through this same path and must opt out. See the table in
+## _build_buttons.
+##
+## `top`/`bottom` are kept as separate parameters even though
+## StyleBoxFlat has no gradient: the two-tone read comes from a lighter
+## fill plus the darker bottom border acting as a bevel, and the pressed
+## state flips them.
+static func _button_box(
 	tokens: DesignTokens,
 	top: Color,
 	bottom: Color,
 	border: Color,
-	shadow_dy: float
+	shadow_dy: float,
+	radius: int
 ) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = top
-	# StyleBoxFlat has no gradient; the two-tone look comes from a
-	# lighter fill plus a darker, thicker bottom border acting as a bevel.
 	sb.border_color = border
 	sb.border_width_left = int(tokens.outline_width)
 	sb.border_width_top = int(tokens.outline_width)
 	sb.border_width_right = int(tokens.outline_width)
 	sb.border_width_bottom = int(tokens.outline_width)
-	sb.set_corner_radius_all(tokens.radius_pill)
+	sb.set_corner_radius_all(radius)
 	sb.shadow_color = tokens.shadow_color
 	sb.shadow_size = tokens.shadow_size
 	sb.shadow_offset = Vector2(tokens.shadow_offset.x,
 		tokens.shadow_offset.y + shadow_dy)
 	sb.content_margin_left = tokens.space_lg
 	sb.content_margin_right = tokens.space_lg
-	sb.content_margin_top = tokens.space_md
-	sb.content_margin_bottom = tokens.space_md
+	sb.content_margin_top = tokens.btn_pad_v_s
+	sb.content_margin_bottom = tokens.btn_pad_v_s
 	return sb
 
 
@@ -380,9 +463,23 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["EventDialogHeaderLabel", tokens.font_h1 + 6, tokens.text_primary, false, true],
 		# Same pass: the event dialog's benefit/cost lines and description
 		# sat in 22px CaptionLabel, unreadably small on a 1080px phone.
-		# Body face (not display), a moderate bump over font_body_size(28)
-		# to 32px -- readable without competing with the dialog's headings.
-		["EventBodyLabel", tokens.font_body_size + 4, tokens.text_primary, false, false],
+		# Body face (not display), over font_body_size(28). Raised again on
+		# 2026-09-09 from +4 to +8 after the trait popup was reviewed on a
+		# phone: 32px was legible but cramped in a modal that fills most of
+		# the screen. Also used by StatDetailPopup and
+		# EventStudentSelectDialog, which want the same bump.
+		["EventBodyLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# The trait popup's header sits on a per-trait tinted panel
+		# (TraitPopupHeader, self_modulated brand_primary for a quirk and
+		# cat_istirahat for a persona), so its two labels need CREAM text.
+		# Every other label variation above is text_primary, which is why
+		# these exist rather than reusing TitleLabel/H2Label: dark ink on
+		# either of those tints is close to unreadable. Display face --
+		# they are the modal's title, and the review note was that they
+		# read as body copy. No outline: the panel behind them is opaque
+		# and flat, so an outline would only thicken the letterforms.
+		["TraitPopupKindLabel", tokens.font_title, tokens.text_on_brand, false, true],
+		["TraitPopupNameLabel", tokens.font_h2, tokens.text_on_brand, false, true],
 	]
 	for spec in specs:
 		var name: String = spec[0]
@@ -498,11 +595,47 @@ const _PROGRESS_FILL_ART := "res://Assets/Images/UI/progress_bar_fill.png"
 const _PROGRESS_FILL_REGION := Rect2(60, 66, 148, 124)
 const _PROGRESS_FILL_MARGIN := 24
 
-static func _progress_fill_stylebox(modulate: Color = Color.WHITE) -> StyleBoxTexture:
+## Where the per-stat fill tiles live. One PNG per stat, drop-in
+## replaceable: same 256x256 canvas, same region, same near-white body.
+## Hand-drawn art at these paths needs no code change.
+const _BAR_FILL_ART := "res://Assets/Images/UI/BarFill/fill_%s.png"
+
+## Stat key -> its fill tile's file suffix. The keys are the `category`
+## strings StatBar carries, including the spellings the schedule data uses.
+const _BAR_FILL_BY_CATEGORY := {
+	"Akademis": "akademis", "SeniBudaya": "senibudaya", "Olahraga": "olahraga",
+	"Wirausaha": "wirausaha", "Istirahat": "istirahat", "Libur": "libur",
+	"Mood": "mood", "Energy": "energi",
+}
+
+
+## A bar's fill: the stat's own motif tile, tinted by its accent.
+##
+## Every bar used to share ONE near-white capsule that each category tinted.
+## Since 2026-09-09 each stat has its own tile carrying its own motif, so a
+## bar is identifiable by texture as well as by hue. Six are objects -- a
+## book, a coin, a crescent, a sun, a heart, a bolt -- and two are woven
+## geometry, because at bar scale the two stats that most need telling
+## apart do better as texture than as a picture: seni budaya wears tenun
+## chevrons and olahraga the batik lereng diagonal. `category` empty falls
+## back to the plain untextured capsule.
+##
+## The centre slice TILES rather than stretching. That is load-bearing: a
+## stretched centre would smear the motif horizontally as the bar fills.
+## The tiles' motif period (20x19) divides the centre slice (100x76) exactly
+## 5 x 4, which is what makes the repeat seamless -- changing
+## _PROGRESS_FILL_MARGIN or the region without regenerating the art at a
+## matching period will make the motif jump at every repeat.
+static func _progress_fill_stylebox(modulate: Color = Color.WHITE,
+		category: String = "") -> StyleBoxTexture:
 	var fill := StyleBoxTexture.new()
-	fill.texture = load(_PROGRESS_FILL_ART)
+	var suffix: String = _BAR_FILL_BY_CATEGORY.get(category, "")
+	fill.texture = load(_BAR_FILL_ART % suffix) if suffix != "" \
+		else load(_PROGRESS_FILL_ART)
 	fill.region_rect = _PROGRESS_FILL_REGION
 	fill.set_texture_margin_all(_PROGRESS_FILL_MARGIN)
+	fill.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_TILE
+	fill.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_TILE
 	fill.modulate_color = modulate
 	return fill
 
@@ -510,14 +643,18 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("StatBar")
 	theme.set_type_variation("StatBar", "ProgressBar")
 
-	# The track is a sticker capsule like the rest of the chrome: sunken
+	# The track is a sticker capsule like the rest of the chrome: dark
 	# ground, white rim, soft drop shadow. content_margin insets the fill
 	# so a rail of track stays visible even at 100% -- without it the
 	# coloured fill runs flush to the rim and the bar reads as a debug
 	# widget. The inset is half outline_width so the rail and the rim
-	# stay a 1:1 pair at any token value.
+	# stay a 1:1 pair at any token value. The track is deliberately dark
+	# (stat_bar_track, not surface_sunken) so the fill can be a bright
+	# cat_*_on_dark accent instead of a light track forcing those accents
+	# to be darkened until they were muddy -- see stat_bar_track's doc
+	# comment on DesignTokens.gd.
 	var bg := StyleBoxFlat.new()
-	bg.bg_color = tokens.surface_sunken
+	bg.bg_color = tokens.stat_bar_track
 	bg.set_corner_radius_all(tokens.radius_pill)
 	bg.set_border_width_all(int(tokens.outline_width / 2.0))
 	bg.border_color = tokens.outline_card
@@ -553,13 +690,19 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	# same tokens explicitly, not because they inherit from "StatBar". A
 	# new theme item added to "StatBar" later will NOT reach these six
 	# siblings automatically -- it would need to be added here too.
+	# Mood and Energy joined this list on 2026-09-09. They are needs rather
+	# than schedule categories and used to borrow Istirahat's and Libur's
+	# variations outright, which the batik motifs made untenable -- mood
+	# would have worn the rest motif and energy the holiday one.
 	var stat_bar_categories := [
-		["StatBarAkademis", tokens.cat_akademis],
-		["StatBarSeniBudaya", tokens.cat_senibudaya],
-		["StatBarOlahraga", tokens.cat_olahraga],
-		["StatBarIstirahat", tokens.cat_istirahat],
-		["StatBarLibur", tokens.cat_libur],
-		["StatBarWirausaha", tokens.cat_wirausaha],
+		["StatBarAkademis", tokens.cat_akademis_on_dark, "Akademis"],
+		["StatBarSeniBudaya", tokens.cat_senibudaya_on_dark, "SeniBudaya"],
+		["StatBarOlahraga", tokens.cat_olahraga_on_dark, "Olahraga"],
+		["StatBarIstirahat", tokens.cat_istirahat_on_dark, "Istirahat"],
+		["StatBarLibur", tokens.cat_libur_on_dark, "Libur"],
+		["StatBarWirausaha", tokens.cat_wirausaha_on_dark, "Wirausaha"],
+		["StatBarMood", tokens.cat_mood_on_dark, "Mood"],
+		["StatBarEnergy", tokens.cat_energy_on_dark, "Energy"],
 	]
 	for spec in stat_bar_categories:
 		var name: String = spec[0]
@@ -567,7 +710,7 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 		theme.add_type(name)
 		theme.set_type_variation(name, "ProgressBar")
 		theme.set_stylebox("background", name, bg)
-		theme.set_stylebox("fill", name, _progress_fill_stylebox(color))
+		theme.set_stylebox("fill", name, _progress_fill_stylebox(color, spec[2]))
 		theme.set_font_size("font_size", name, tokens.font_caption)
 		theme.set_color("font_color", name, tokens.text_primary)
 
@@ -577,38 +720,103 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 const _CARD_ART := "res://Assets/Images/StudentCard/"
 
 
+
 ## Variations used only by the student card's redesigned layout. The card
-## background art paints the pill tracks, the bio panel, and the portrait
-## frame, so these styles deliberately draw less than their siblings: the
-## pill contributes only a fill, and the bio text is light because it sits
-## on the painted purple panel.
+## background art paints the bio panel and the portrait frame, so these
+## styles deliberately draw less than their siblings.
 static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
-	# -- Stat pill: fill only; the track is painted into the card art. --
+	# -- Stat pill track. --
+	#
+	# This used to be a StyleBoxEmpty, because card_bg.png painted a dark
+	# chip behind every pill and the stylebox only had to supply the fill.
+	# Those painted chips were removed on 2026-09-09: the bars had been
+	# real ProgressBar nodes for a while, the chips' right column stuck out
+	# past the bar's edge, and the art could not follow the bars when they
+	# moved. Deleting them made an empty bar invisible -- the fill drew
+	# nothing and there was no track behind it, so a stat at 0 looked like
+	# blank paper.
+	#
+	# The track now comes from the theme, where it belongs, and reuses
+	# StatBar's own recipe (same stat_bar_track ground, same rim, same
+	# half-outline content inset keeping a rail of track visible at 100%)
+	# so the two bar families read as one component. It carries no drop
+	# shadow: unlike StatBar these sit directly on the card's paper, where
+	# a cast shadow would read as the pill floating off the page.
 	theme.add_type("StatPill")
 	theme.set_type_variation("StatPill", "ProgressBar")
-	theme.set_stylebox("background", "StatPill", StyleBoxEmpty.new())
 
-	var pill_fill := StyleBoxTexture.new()
-	pill_fill.texture = load(_CARD_ART + "pill_fill.png")
-	# The art sits inset on a 256x256 canvas; region_rect crops to it so no
-	# transparent padding is stretched into the bar.
-	pill_fill.region_rect = Rect2(59, 65, 150, 127)
-	# 28 px keeps both rounded ends intact inside a 67 px tall track
-	# (28 + 28 < 67); anything larger would overlap and distort them.
-	pill_fill.set_texture_margin_all(28)
-	theme.set_stylebox("fill", "StatPill", pill_fill)
+	var pill_bg := StyleBoxFlat.new()
+	pill_bg.bg_color = tokens.stat_bar_track
+	pill_bg.set_corner_radius_all(tokens.radius_pill)
+	pill_bg.set_border_width_all(int(tokens.outline_width / 2.0))
+	pill_bg.border_color = tokens.outline_card
+	pill_bg.set_content_margin_all(tokens.outline_width / 2.0)
+	theme.set_stylebox("background", "StatPill", pill_bg)
+
+	# The pills share the StatBar family's fill helper, and therefore its
+	# tiles and its geometry. They used to carry their own pill_fill.png at
+	# a slightly different region and a 28px margin; that divergence had no
+	# purpose and could not survive the motif tiles, whose period is cut to
+	# divide the shared 24px-margin centre slice exactly.
+	theme.set_stylebox("fill", "StatPill", _progress_fill_stylebox())
+
+	# -- Per-category pill siblings. --
+	#
+	# StatPill used to be tinted by StatBar.gd setting self_modulate on the
+	# node. That worked only while its background was a StyleBoxEmpty:
+	# self_modulate multiplies EVERYTHING the node draws, so the moment the
+	# pill grew a real track (above), the accent started multiplying the
+	# track's brown ground and cream rim too, giving each pill a differently
+	# tinted "empty" half.
+	#
+	# This is the same trap the StatBar family walked into and out of, and
+	# the same fix: one variation per category with the colour baked into
+	# the FILL stylebox, and a white self_modulate on the node. They share
+	# the single `pill_bg` instance, so the track stays identical across all
+	# six -- a new theme item added to plain "StatPill" will NOT reach these
+	# automatically and would need adding here too.
+	for spec in [
+		["StatPillAkademis", tokens.cat_akademis_on_dark, "Akademis"],
+		["StatPillSeniBudaya", tokens.cat_senibudaya_on_dark, "SeniBudaya"],
+		["StatPillOlahraga", tokens.cat_olahraga_on_dark, "Olahraga"],
+		["StatPillIstirahat", tokens.cat_istirahat_on_dark, "Istirahat"],
+		["StatPillLibur", tokens.cat_libur_on_dark, "Libur"],
+		["StatPillWirausaha", tokens.cat_wirausaha_on_dark, "Wirausaha"],
+		["StatPillMood", tokens.cat_mood_on_dark, "Mood"],
+		["StatPillEnergy", tokens.cat_energy_on_dark, "Energy"],
+	]:
+		var pill_name: String = spec[0]
+		theme.add_type(pill_name)
+		theme.set_type_variation(pill_name, "ProgressBar")
+		theme.set_stylebox("background", pill_name, pill_bg)
+		theme.set_stylebox("fill", pill_name, _progress_fill_stylebox(spec[1], spec[2]))
 
 	# -- Trait button ("Sifat Pasif" pills): the art ships gold with its own
 	# purple border, so the stylebox draws it untinted. A modulate here
 	# multiplies against the texture rather than replacing its colour --
 	# it would mud the fill to olive and turn the border brown. --
+	# The vertical texture margin is smaller than the horizontal: the pills
+	# are a fixed 70px tall, and 45+45 (fine on the ~840px-wide horizontal
+	# axis) does not fit vertically -- 30+30 does, leaving a 31px centre
+	# slice out of the 91px source region. Content margins are set
+	# explicitly rather than left at their StyleBoxTexture default (-1),
+	# because a StyleBoxTexture with default content margins inherits them
+	# from its TEXTURE margins -- at 45/45 that starved the 70px-tall label
+	# of any room at all.
 	theme.add_type("TraitPill")
 	theme.set_type_variation("TraitPill", "Button")
 
 	var trait_normal := StyleBoxTexture.new()
 	trait_normal.texture = load(_CARD_ART + "trait_button.png")
 	trait_normal.region_rect = Rect2(20, 277, 601, 91)
-	trait_normal.set_texture_margin_all(45)
+	trait_normal.texture_margin_left = 45
+	trait_normal.texture_margin_right = 45
+	trait_normal.texture_margin_top = 30
+	trait_normal.texture_margin_bottom = 30
+	trait_normal.content_margin_left = 32
+	trait_normal.content_margin_right = 32
+	trait_normal.content_margin_top = 4
+	trait_normal.content_margin_bottom = 4
 	theme.set_stylebox("normal", "TraitPill", trait_normal)
 	theme.set_stylebox("hover", "TraitPill", trait_normal)
 	theme.set_stylebox("pressed", "TraitPill", trait_normal)
@@ -620,15 +828,17 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "TraitPill", tokens.font_display)
 
-	# -- "Sifat Pasif:" section heading: white text needs a dark outline to
-	# read against the light card background, unlike the shared TitleLabel
-	# (which is dark-on-light and used across many other screens). --
+	# -- "Sifat Pasif:" section heading: the card paper (card_bg.png) is warm
+	# cream, so this heading reads dark-on-light like the rest of the
+	# project's text, same as the shared TitleLabel. It keeps a light outline
+	# (thinner than TitleLabel needs) only to stay crisp where it crosses the
+	# painted fold in the card art's corner. --
 	theme.add_type("CardSectionLabel")
 	theme.set_type_variation("CardSectionLabel", "Label")
 	theme.set_font_size("font_size", "CardSectionLabel", tokens.font_title)
-	theme.set_color("font_color", "CardSectionLabel", tokens.text_on_brand)
-	theme.set_constant("outline_size", "CardSectionLabel", 4)
-	theme.set_color("font_outline_color", "CardSectionLabel", tokens.text_primary)
+	theme.set_color("font_color", "CardSectionLabel", tokens.text_primary)
+	theme.set_constant("outline_size", "CardSectionLabel", 2)
+	theme.set_color("font_outline_color", "CardSectionLabel", tokens.text_outline_color)
 	if tokens.font_display != null:
 		theme.set_font("font", "CardSectionLabel", tokens.font_display)
 
@@ -718,17 +928,18 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "Button", tokens.text_on_brand)
 	theme.set_font_size("font_size", "Button", tokens.font_title)
 	theme.set_stylebox("normal", "Button",
-		_pill(tokens, tokens.brand_primary_light, tokens.brand_primary_dark,
-			tokens.outline_card, 0.0))
+		_button_box(tokens, tokens.brand_primary_light, tokens.brand_primary_dark,
+			tokens.outline_card, 0.0, tokens.radius_button))
 	theme.set_stylebox("hover", "Button",
-		_pill(tokens, tokens.brand_primary_light.lightened(0.08),
-			tokens.brand_primary_dark.lightened(0.08), tokens.outline_card, 0.0))
+		_button_box(tokens, tokens.brand_primary_light.lightened(0.08),
+			tokens.brand_primary_dark.lightened(0.08), tokens.outline_card, 0.0,
+			tokens.radius_button))
 	theme.set_stylebox("pressed", "Button",
-		_pill(tokens, tokens.brand_primary_dark, tokens.brand_primary_light,
-			tokens.outline_card, -tokens.shadow_offset.y * 0.5))
+		_button_box(tokens, tokens.brand_primary_dark, tokens.brand_primary_light,
+			tokens.outline_card, -tokens.shadow_offset.y * 0.5, tokens.radius_button))
 	theme.set_stylebox("disabled", "Button",
-		_pill(tokens, tokens.surface_sunken, tokens.surface_sunken,
-			tokens.surface_sunken, 0.0))
+		_button_box(tokens, tokens.surface_sunken, tokens.surface_sunken,
+			tokens.surface_sunken, 0.0, tokens.radius_button))
 
 	# RichTextLabel's base text color theme item is "default_color", not
 	# "font_color" (that name is a Label/Button theme item). Setting
@@ -798,11 +1009,11 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 		["DaySummaryMoodBar", tokens.day_bar_track,
 			tokens.day_mood_fill, tokens.day_bar_radius],
 		["DaySummaryStatTrackAkademis", tokens.day_stat_track,
-			tokens.cat_akademis, tokens.radius_pill],
+			tokens.cat_akademis_on_dark, tokens.radius_pill],
 		["DaySummaryStatTrackSeniBudaya", tokens.day_stat_track,
-			tokens.cat_senibudaya, tokens.radius_pill],
+			tokens.cat_senibudaya_on_dark, tokens.radius_pill],
 		["DaySummaryStatTrackOlahraga", tokens.day_stat_track,
-			tokens.cat_olahraga, tokens.radius_pill],
+			tokens.cat_olahraga_on_dark, tokens.radius_pill],
 	]
 	for spec in bar_specs:
 		var name: String = spec[0]
@@ -885,8 +1096,8 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("WeekTabButton", "Button")
 	var tab_normal := StyleBoxFlat.new()
 	tab_normal.bg_color = tokens.surface_sunken
-	tab_normal.corner_radius_top_left = tokens.radius_md
-	tab_normal.corner_radius_top_right = tokens.radius_md
+	tab_normal.corner_radius_top_left = tokens.radius_button
+	tab_normal.corner_radius_top_right = tokens.radius_button
 	tab_normal.content_margin_top = tokens.space_sm
 	tab_normal.content_margin_bottom = tokens.space_sm
 	var tab_pressed := tab_normal.duplicate() as StyleBoxFlat

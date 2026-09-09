@@ -23,7 +23,13 @@ var _row: Button
 func setup() -> void:
 	var scene: PackedScene = load(_SCENE_PATH)
 	_row = scene.instantiate()
-	_row.theme = load(_THEME_PATH)
+	## CACHE_MODE_IGNORE is required because the editor caches the theme
+	## from startup, so a plain load() reads the stale bake. Without it,
+	## tests fail after rebaking even though the real bake is correct.
+	## Because each call returns a fresh Theme instance, a test that needs
+	## object identity (e.g. comparing StyleBoxes with ==) must load once
+	## into a local variable and reuse it, not call load() again.
+	_row.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(_row)
 	track(_row)
 
@@ -66,7 +72,7 @@ func test_pill_uses_the_preview_pill_variation() -> void:
 
 
 func test_theme_declares_the_new_variations() -> void:
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	for variation in ["PreviewPill", "PreviewChipLabel"]:
 		assert_true(theme.get_type_list().has(variation),
 			"the baked theme must declare " + variation + " -- did you forget to rebake?")
@@ -76,7 +82,7 @@ func test_theme_declares_the_new_variations() -> void:
 ## the variation to a PanelContainer, so the node silently falls back to the
 ## engine's default panel and the pill renders as translucent black.
 func test_preview_pill_is_bound_to_panel_container() -> void:
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(theme.get_type_variation_base("PreviewPill"), &"PanelContainer",
 		"PreviewPill must declare PanelContainer as its base_type, like every other panel variation")
 
@@ -85,13 +91,14 @@ func test_preview_pill_is_bound_to_panel_container() -> void:
 ## PanelContainer wearing the variation must resolve OUR stylebox, not the
 ## engine default (which is StyleBoxFlat with bg_color 0.1,0.1,0.1,0.6).
 func test_preview_pill_resolves_the_designed_stylebox() -> void:
+	var theme := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var probe := PanelContainer.new()
-	probe.theme = load(_THEME_PATH)
+	probe.theme = theme
 	probe.theme_type_variation = &"PreviewPill"
 	Engine.get_main_loop().root.add_child(probe)
 	track(probe)
 	var resolved := probe.get_theme_stylebox("panel")
-	var expected := (load(_THEME_PATH) as Theme).get_stylebox("panel", "PreviewPill")
+	var expected := theme.get_stylebox("panel", "PreviewPill")
 	assert_true(resolved == expected,
 		"a PreviewPill PanelContainer must resolve the theme's own stylebox, not Godot's default panel")
 
@@ -210,7 +217,7 @@ func test_non_skill_rows_flatten_the_pill_and_drop_the_bar() -> void:
 	var scene: PackedScene = load(_SCENE_PATH)
 	var flat := scene.instantiate() as ActivityRow
 	flat.is_skill_row = false
-	flat.theme = load(_THEME_PATH)
+	flat.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	Engine.get_main_loop().root.add_child(flat)
 	track(flat)
 	var pill := flat.get_node_or_null("Container/Pill") as PanelContainer
@@ -228,7 +235,7 @@ func test_non_skill_rows_flatten_the_pill_and_drop_the_bar() -> void:
 ## exactly the bug that made the pills invisible before.
 func test_preview_row_is_a_bordered_panel() -> void:
 	var tokens := DesignTokens.load_default()
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(theme.get_type_variation_base("PreviewRow"), &"Panel",
 		"PreviewRow must declare Panel as its base_type")
 	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
@@ -240,7 +247,7 @@ func test_preview_row_is_a_bordered_panel() -> void:
 
 func test_preview_pill_uses_the_sampled_fill() -> void:
 	var tokens := DesignTokens.load_default()
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var sb := theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
 	assert_true(sb != null, "PreviewPill/panel must be a StyleBoxFlat")
 	assert_eq(sb.bg_color, tokens.preview_pill_fill,
@@ -250,7 +257,7 @@ func test_preview_pill_uses_the_sampled_fill() -> void:
 ## Wirausaha and Libur have no inset pill -- their chips sit straight on the
 ## container's grey. They wear this variation so the code path stays single.
 func test_preview_pill_flat_draws_nothing() -> void:
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(theme.get_type_variation_base("PreviewPillFlat"), &"PanelContainer",
 		"PreviewPillFlat must declare PanelContainer as its base_type")
 	assert_true(theme.get_stylebox("panel", "PreviewPillFlat") is StyleBoxEmpty,
@@ -259,7 +266,7 @@ func test_preview_pill_flat_draws_nothing() -> void:
 
 func test_preview_row_label_is_big_and_outlined() -> void:
 	var tokens := DesignTokens.load_default()
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(theme.get_type_variation_base("PreviewRowLabel"), &"Label",
 		"PreviewRowLabel must declare Label as its base_type")
 	assert_eq(theme.get_font_size("font_size", "PreviewRowLabel"), tokens.font_h2,
@@ -277,7 +284,7 @@ func test_preview_row_label_is_big_and_outlined() -> void:
 ## surfaces read as flat decals on the card instead of raised/inset panels.
 func test_preview_row_border_and_shadow_match_the_mockup() -> void:
 	var tokens := DesignTokens.load_default()
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
 	assert_true(sb != null, "PreviewRow/panel must be a StyleBoxFlat")
 	assert_eq(sb.border_width_top, 3, "the mockup's row border is 3px, not 4")
@@ -291,7 +298,7 @@ func test_preview_row_border_and_shadow_match_the_mockup() -> void:
 
 func test_preview_pill_has_a_soft_edge_not_a_stroke() -> void:
 	var tokens := DesignTokens.load_default()
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var sb := theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
 	assert_true(sb != null, "PreviewPill/panel must be a StyleBoxFlat")
 	assert_eq(sb.border_width_top, 0,
@@ -309,7 +316,7 @@ func test_preview_pill_has_a_soft_edge_not_a_stroke() -> void:
 ## change shipped with no test, so a regression back to radius_sm would pass silently.
 func test_preview_pill_corner_radius_matches_the_container() -> void:
 	var tokens := DesignTokens.load_default()
-	var theme: Theme = load(_THEME_PATH)
+	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var sb := theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
 	assert_eq(sb.corner_radius_top_left, tokens.radius_md,
 		"the pill's corners must be as round as the row container's")

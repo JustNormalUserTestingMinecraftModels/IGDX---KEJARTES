@@ -76,12 +76,15 @@ static func populate(card: Control, student: Dictionary,
 			portrait_node.texture = load(p_path)
 
 	# Update ProgressBars
-	var kp1 = card.get_node_or_null("Kepribadian1")
-	if kp1 and kp1 is ProgressBar:
-		kp1.value = student.get("kepribadian2", 0)
-	var kp2 = card.get_node_or_null("Kepribadian2")
-	if kp2 and kp2 is ProgressBar:
-		kp2.value = student.get("kepribadian1", 0)
+	#
+	# Kepribadian1 and Kepribadian2 are NOT set here. They were, and they
+	# were set crossed over -- Kepribadian1 took kepribadian2 and vice
+	# versa -- which contradicted build_stat_bars() below, whose mapping is
+	# straight through. build_stat_bars runs after this and wins, so the
+	# crossed assignment never reached the screen; it only stood as a
+	# second, disagreeing answer to which bar is mood and which is energy.
+	# The straight mapping is the correct one: _STAT_ICONS pairs
+	# Kepribadian1 with stat_mood.png and Kepribadian2 with stat_energy.png.
 	var ak1 = card.get_node_or_null("Akademis1")
 	if ak1 and ak1 is ProgressBar:
 		ak1.value = student.get("akademis1", 0)
@@ -91,6 +94,8 @@ static func populate(card: Control, student: Dictionary,
 	var ak3 = card.get_node_or_null("Akademis3")
 	if ak3 and ak3 is ProgressBar:
 		ak3.value = student.get("akademis3", 0)
+
+	build_minat_row(card, student)
 
 	# -- Upgrade bar visuals & replace trait labels with animated badges --
 	build_stat_bars(card, student, on_bar_input)
@@ -164,11 +169,75 @@ static func build_stat_bars(kertas: Control, s_data: Dictionary,
 			bar.value = values[bar_name]
 
 
+## The specialty's stored key mapped to the Indonesian the player reads.
+## Only "SeniBudaya" actually differs; the other two are already the words
+## the UI uses. Kept as a table anyway so a new specialty gets its display
+## name here rather than in a string branch somewhere.
+##
+## These keys are `hobby_category` on GameState.approved_students, NOT the
+## StudentData specialty names -- the two vocabularies differ across that
+## boundary (see CLAUDE.md), and "Akademik" is normalised to "Akademis"
+## before it reaches a card.
+const _MINAT_NAMES := {
+	"Akademis": "Akademis",
+	"SeniBudaya": "Seni Budaya",
+	"Olahraga": "Olahraga",
+}
+
+
+## Fills the specialty row that sits between the stat bars and the trait
+## pills.
+##
+## The band was dead paper until 2026-09-09. Specialty is the single most
+## decision-relevant fact when approving a roster -- a student's own
+## category costs 0.6x energy and mood where everything else costs 1.20x
+## (StudentData.get_category_efficiency_multiplier) -- and it was shown
+## nowhere on the card, so a player picking a roster was guessing.
+##
+## The heading is a static node in the .tscn; only the value is per
+## student, which is all this touches.
+static func build_minat_row(card: Control, student: Dictionary) -> void:
+	var value := card.get_node_or_null("MinatValue") as Label
+	if value == null:
+		return
+	var key: String = student.get("hobby_category", "")
+	value.text = _MINAT_NAMES.get(key, key)
+
+
 const _ICON_SIZE := 128.0
 ## Gap between the icon's right edge and the pill's left edge.
 const _ICON_GAP := 24.0
 ## The (i) badge, overlapping the icon's bottom-right corner.
 const _BADGE_SIZE := 56.0
+
+## The badge art. Red rather than the original amber, because amber read as
+## decoration next to the warm paper instead of as "press me". It is a
+## separate FILE rather than a modulate on icon_info.png: modulate
+## multiplies against the art, so tinting the amber disc red muddies it
+## instead of replacing it (see the sibling test that forbids a modulate
+## here). icon_info.png is still used elsewhere and is left untouched.
+const _BADGE_ART := "icon_info_red.png"
+
+## How far the badge swells at the top of its pulse, and how long one
+## breath in or out takes. The badge is the only affordance saying the
+## stat icon is tappable -- the icon itself is a flat sticker -- so it
+## breathes continuously rather than reacting to hover, which a touch
+## screen never reports.
+const _BADGE_PULSE_SCALE := 1.18
+const _BADGE_PULSE_SECONDS := 0.65
+
+
+## Starts the badge's endless in-out breath. Called once per badge, on the
+## frame it is created; the cluster is reused across page turns, so a
+## second call would stack a second tween on the same node.
+static func _start_badge_pulse(badge: Control) -> void:
+	badge.pivot_offset = Vector2(_BADGE_SIZE, _BADGE_SIZE) * 0.5
+	var tween := badge.create_tween()
+	tween.set_loops()
+	tween.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(badge, "scale",
+		Vector2.ONE * _BADGE_PULSE_SCALE, _BADGE_PULSE_SECONDS)
+	tween.tween_property(badge, "scale", Vector2.ONE, _BADGE_PULSE_SECONDS)
 
 const _STAT_ICONS: Dictionary = {
 	"Akademis1": "stat_akademis.png",
@@ -200,7 +269,7 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 
 			var badge := TextureRect.new()
 			badge.name = "InfoBadge"
-			badge.texture = load(_CARD_ART + "icon_info.png")
+			badge.texture = load(_CARD_ART + _BADGE_ART)
 			badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -210,6 +279,7 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 			badge.offset_right = 0.0
 			badge.offset_bottom = 0.0
 			cluster.add_child(badge)
+			_start_badge_pulse(badge)
 
 		cluster.texture = load(_CARD_ART + _STAT_ICONS[bar_name])
 		cluster.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -232,7 +302,14 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 
 ## The painted purple panel's interior, in card-local pixels, measured from
 ## card_bg.png.
-const BIO_PANEL_RECT := Rect2(120, 300, 489, 367)
+## x has moved twice on 2026-09-09. First 120 -> 140, when the whole
+## identification block was centred (it sat 20px left of centre, 116px of
+## margin against 155). Then 140 -> 452, when the block's two halves were
+## swapped: the portrait took the left slot at x 136..418 and this panel
+## took the right at 448..944, keeping the block's outer bounds and the
+## 29px gap between them. 452 is that new outer edge plus the panel's own
+## 4px border.
+const BIO_PANEL_RECT := Rect2(452, 300, 489, 367)
 ## Inset so the text does not crowd the painted panel's rounded border.
 const _BIO_PADDING := 32.0
 

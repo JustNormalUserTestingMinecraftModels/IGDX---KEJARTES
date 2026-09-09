@@ -178,6 +178,20 @@ Hard constraints, learned the hard way:
    returns a `scene_warning` when it isn't, naming the scene it wants. Open
    `Scenes/MainMenu/main_menu.tscn` before trusting a failure.
 
+5. **The suite cannot be run headless.** `--headless` with a scene that drives
+   `McpTestRunner` looks like a way to test without the MCP bridge. It is not,
+   for two reasons, both learned by trying it on 2026-09-09. `--script` with a
+   custom `SceneTree` replaces the main loop, so **no autoloads register** and
+   every suite touching `AudioDirector`/`GameState` fails to compile; running a
+   *scene* fixes that, but `Engine.is_editor_hint()` is then **false**, so every
+   `@tool` `_ready()` guard runs its real side effects and ~143 of 1099 tests
+   fail on nulls and dirty scene state that the editor never sees. Worse, the
+   `theme_rebake` suite's `ResourceSaver.save()` runs without the editor's UID
+   cache and **rewrites `Assets/Theme/kejartes_theme.tres` with every `uid://`
+   stripped**, and `AudioDirector` rewrites `default_bus_layout.tres` on boot.
+   Both are tracked files. If you must try it anyway, expect to `git checkout --`
+   those two afterwards. The bridge is the only real way to run these tests.
+
 Many tests are **source-text scans** (`src.contains(...)`) rather than
 behavioral, because a lot of the UI can't be instantiated headlessly. Follow
 that pattern where it's established.
@@ -336,6 +350,21 @@ rather than having their own: `sfx_specialty_match` → `sfx_reward`; `tally` an
 `sfx_event_announce` (the mid-simulation event popup's open cue) aliases
 `reward.ogg` via a dedicated copy, `Assets/Audio/SFX/event_announce.ogg`.
 
+**Nav icons are generated geometry (2026-09-09).** The five icons in
+`Assets/Images/UI/Nav/` (`icon_nav_koperasi`, `icon_nav_inventory`,
+`icon_nav_rapor`, `icon_cta_jadwal`, `icon_cta_student`) were produced with
+PowerShell + `System.Drawing`, not hand-authored. They are correctly weighted
+transparent cream silhouettes that read at 48-80px and are fine to ship, but they
+are not illustration. Drop-replaceable at the same paths.
+`Assets/Images/StudentCard/menu_button.png` is the same kind of placeholder --
+also PowerShell + `System.Drawing` -- standing in for a hand-painted gold
+gloss.
+
+**`DisplayUang`'s texture is off-palette.** `Assets/Images/UI/Desain tanpa
+judul.png` is pink/magenta and now visibly clashes with the warm chrome around
+it. It is also a 1920x1080 landscape image, which is why the lobby HUD chip is
+sized 332x187 rather than the 332x96 the layout would otherwise want.
+
 **Art placeholders.** The three particle sprites
 (`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven
 minigame result icons and the report icons
@@ -389,6 +418,30 @@ conservative starting numbers, untested against `tests/test_balance_pacing.gd`.
 **Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` ships as a
 blurred backdrop, a "Segera Hadir" line and a back button. The shop hub's
 second tile has to lead somewhere; nothing behind it is designed yet.
+
+**Bar fill motifs are generated geometry (2026-09-09).** The eight tiles in
+`Assets/Images/UI/BarFill/` (`fill_akademis`, `fill_senibudaya`,
+`fill_olahraga`, `fill_wirausaha`, `fill_istirahat`, `fill_libur`,
+`fill_mood`, `fill_energi`) carry one motif each -- a book, tenun chevrons,
+the batik lereng diagonal, a coin, a crescent, a sun, a heart, a bolt --
+drawn with PowerShell +
+`System.Drawing`, not hand-authored. They are deliberately drop-in: same
+256x256 canvas, region (60,66) 148x124, near-white body, motif at a light
+grey. Hand-drawn art at the same paths needs no code change. Two
+constraints bind any replacement: the motif period must divide the 100x76
+9-slice centre (the shipped tiles use 20x19, i.e. 5 x 4) or the tiled
+centre will jump at every repeat, and each tile must stay above 0.90 mean
+luminance or the accents fall under the contrast floor
+(`tests/test_bar_contrast.gd` enforces both).
+
+**Emoji still used as iconography on the stat popup.**
+`Scripts/UI/StatDetailPopup.gd` falls back to `info["glyph"]` from
+`StatInfo` when a stat has no icon texture, and those glyphs are emoji,
+which the 2026-09-02 ban above forbids. The trait popup had the same
+problem and was fixed on 2026-09-09 -- its ⚡/🌟 header became
+`Assets/Images/UI/icon_trait_quirk.png` / `icon_trait_persona.png`, and
+its "💡 EFEK GAMEPLAY:" prefix became a plain display-font heading. This
+fallback wants the same treatment.
 
 **Six more placeholder SVG icons.** `icon_benefit`, `icon_cost`, `icon_tired`,
 `icon_check` (`Assets/Images/UI/Placeholders/`) and `icon_shop_items`,

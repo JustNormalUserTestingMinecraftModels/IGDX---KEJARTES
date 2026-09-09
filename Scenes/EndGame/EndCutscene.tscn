@@ -145,10 +145,10 @@ stretch_mode = 5
 modulate = Color(1, 1, 1, 0)
 layout_mode = 0
 offset_left = 290.0
-offset_top = 1730.0
+offset_top = 1736.0
 offset_right = 790.0
-offset_bottom = 1870.0
-theme_type_variation = &"PrimaryButton"
+offset_bottom = 1864.0
+theme_type_variation = &"PrimaryButtonM"
 disabled = true
 text = "Lanjut"
 

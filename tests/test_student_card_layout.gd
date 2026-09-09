@@ -417,11 +417,34 @@ func test_trait_pills_do_not_overlap_neighbors() -> void:
 				% [i, kutu2.get_rect(), aprove.get_rect()])
 
 
-## PageLabel is empty by design; the stray "376" seen in the QA screenshot
-## was the trait pill drawn over this row, not text PageLabel itself owns.
-## Pins the row's position so a future edit can't silently reintroduce the
-## overlap from a different angle.
-func test_page_label_has_no_stray_text() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/StudentCard/student_card.tscn")
-	assert_true(src.contains('offset_top = 1248.0'),
-		"PageLabel moved unexpectedly")
+## PageLabel is NOT empty -- student_card.gd:717 sets its text every page turn
+## ("page_label.text = str(index + 1) + "/" + str(kertas_murid.size())"), so
+## it renders "1/6" etc. at runtime. It genuinely overlapped the Persona
+## trait pill on screen. That overlap was previously missed because
+## PageLabel is a child of the scene ROOT while the KertasMurid cards sit at
+## a -70,-254 offset within that root -- comparing PageLabel's root-space
+## offsets against the cards' card-local offsets made the overlap vanish on
+## paper while it was plainly visible on screen. Do not repeat that
+## comparison; always use global rects when checking this label against
+## card content.
+##
+## PageLabel now sits centred between the two page arrows (root offsets
+## x 20-140 and x 800-920, y 1516-1636). This instantiates the scene and
+## checks the label's resolved global rect against the trait pill it used
+## to clip, in both student_card.tscn and report_card.tscn.
+func test_page_label_sits_between_the_arrows() -> void:
+	for scene_path in [
+		"res://Scenes/StudentCard/student_card.tscn",
+		"res://Scenes/ReportCard/report_card.tscn",
+	]:
+		var scene := load(scene_path) as PackedScene
+		var inst := scene.instantiate()
+		Engine.get_main_loop().root.add_child(inst)
+		track(inst)
+		inst.size = Vector2(1080, 1920)
+		var page_label := inst.get_node("PageLabel") as Control
+		var card := inst.get_node("KertasMurid1") as Control
+		var kutu2 := card.get_node("KutuBuku2") as Control
+		assert_false(page_label.get_global_rect().intersects(kutu2.get_global_rect()),
+			"%s: PageLabel overlaps KutuBuku2 (%s vs %s)"
+				% [scene_path, page_label.get_global_rect(), kutu2.get_global_rect()])

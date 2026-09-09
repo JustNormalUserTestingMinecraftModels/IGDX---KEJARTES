@@ -689,13 +689,28 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	# purple border, so the stylebox draws it untinted. A modulate here
 	# multiplies against the texture rather than replacing its colour --
 	# it would mud the fill to olive and turn the border brown. --
+	# The vertical texture margin is smaller than the horizontal: the pills
+	# are a fixed 70px tall, and 45+45 (fine on the ~840px-wide horizontal
+	# axis) does not fit vertically -- 30+30 does, leaving a 31px centre
+	# slice out of the 91px source region. Content margins are set
+	# explicitly rather than left at their StyleBoxTexture default (-1),
+	# because a StyleBoxTexture with default content margins inherits them
+	# from its TEXTURE margins -- at 45/45 that starved the 70px-tall label
+	# of any room at all.
 	theme.add_type("TraitPill")
 	theme.set_type_variation("TraitPill", "Button")
 
 	var trait_normal := StyleBoxTexture.new()
 	trait_normal.texture = load(_CARD_ART + "trait_button.png")
 	trait_normal.region_rect = Rect2(20, 277, 601, 91)
-	trait_normal.set_texture_margin_all(45)
+	trait_normal.texture_margin_left = 45
+	trait_normal.texture_margin_right = 45
+	trait_normal.texture_margin_top = 30
+	trait_normal.texture_margin_bottom = 30
+	trait_normal.content_margin_left = 32
+	trait_normal.content_margin_right = 32
+	trait_normal.content_margin_top = 4
+	trait_normal.content_margin_bottom = 4
 	theme.set_stylebox("normal", "TraitPill", trait_normal)
 	theme.set_stylebox("hover", "TraitPill", trait_normal)
 	theme.set_stylebox("pressed", "TraitPill", trait_normal)
@@ -707,15 +722,17 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "TraitPill", tokens.font_display)
 
-	# -- "Sifat Pasif:" section heading: white text needs a dark outline to
-	# read against the light card background, unlike the shared TitleLabel
-	# (which is dark-on-light and used across many other screens). --
+	# -- "Sifat Pasif:" section heading: the card paper (card_bg.png) is warm
+	# cream, so this heading reads dark-on-light like the rest of the
+	# project's text, same as the shared TitleLabel. It keeps a light outline
+	# (thinner than TitleLabel needs) only to stay crisp where it crosses the
+	# painted fold in the card art's corner. --
 	theme.add_type("CardSectionLabel")
 	theme.set_type_variation("CardSectionLabel", "Label")
 	theme.set_font_size("font_size", "CardSectionLabel", tokens.font_title)
-	theme.set_color("font_color", "CardSectionLabel", tokens.text_on_brand)
-	theme.set_constant("outline_size", "CardSectionLabel", 4)
-	theme.set_color("font_outline_color", "CardSectionLabel", tokens.text_primary)
+	theme.set_color("font_color", "CardSectionLabel", tokens.text_primary)
+	theme.set_constant("outline_size", "CardSectionLabel", 2)
+	theme.set_color("font_outline_color", "CardSectionLabel", tokens.text_outline_color)
 	if tokens.font_display != null:
 		theme.set_font("font", "CardSectionLabel", tokens.font_display)
 

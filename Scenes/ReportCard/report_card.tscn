@@ -1333,11 +1333,13 @@ text = "Rapor Murid"
 
 [node name="PageLabel" type="Label" parent="." unique_id=977170758]
 layout_mode = 0
-offset_left = 302.0
-offset_top = 1248.0
-offset_right = 561.0
-offset_bottom = 1332.0
+offset_left = 370.0
+offset_top = 1541.0
+offset_right = 570.0
+offset_bottom = 1611.0
 theme_type_variation = &"CardSectionLabel"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="BackButton" type="Button" parent="." unique_id=1002003004]
 layout_mode = 0

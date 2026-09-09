@@ -856,20 +856,39 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "BioValue", tokens.font_h2)
 	theme.set_color("font_color", "BioValue", tokens.text_on_brand)
 
-	# -- Penjadwalan row container: the bordered grey slab each row sits on.
-	# The icon draws directly onto this; the pill below is inset into it. The
-	# mockup shows a hard dark shadow just under the bottom border. --
+	# -- Penjadwalan row: a plain cream slab on the sheet. Before the
+	# 2026-09-10 pass this was a brown slab with a 3px stroke and a hard
+	# drop shadow; with the card behind it and the pill inside it, that
+	# stacked four surfaces per row and read as clutter. Depth now comes
+	# from the inset track alone. --
 	var preview_row := StyleBoxFlat.new()
 	preview_row.bg_color = tokens.preview_row_fill
-	preview_row.border_color = tokens.preview_row_border
-	preview_row.set_border_width_all(3)
+	preview_row.set_border_width_all(0)
 	preview_row.set_corner_radius_all(tokens.radius_md)
-	preview_row.shadow_color = tokens.preview_row_shadow_color
-	preview_row.shadow_size = tokens.preview_row_shadow_size
-	preview_row.shadow_offset = tokens.preview_row_shadow_offset
 	theme.add_type("PreviewRow")
 	theme.set_type_variation("PreviewRow", "Panel")
 	theme.set_stylebox("panel", "PreviewRow", preview_row)
+
+	# -- The same slab while held. Panel has no pressed state, so
+	# ActivityRow.gd swaps this in on button_down. The inset top edge is
+	# what sells the sink; a flat colour change alone reads as a hover. --
+	var preview_row_pressed := StyleBoxFlat.new()
+	preview_row_pressed.bg_color = tokens.preview_row_pressed_fill
+	preview_row_pressed.set_border_width_all(0)
+	preview_row_pressed.border_width_top = 2
+	preview_row_pressed.border_color = tokens.preview_row_pressed_fill.darkened(0.12)
+	preview_row_pressed.set_corner_radius_all(tokens.radius_md)
+	theme.add_type("PreviewRowPressed")
+	theme.set_type_variation("PreviewRowPressed", "Panel")
+	theme.set_stylebox("panel", "PreviewRowPressed", preview_row_pressed)
+
+	# -- The hairline between rows, replacing the per-row stroke. --
+	var preview_separator := StyleBoxLine.new()
+	preview_separator.color = tokens.preview_row_separator
+	preview_separator.thickness = 1
+	theme.add_type("PreviewRowSeparator")
+	theme.set_type_variation("PreviewRowSeparator", "HSeparator")
+	theme.set_stylebox("separator", "PreviewRowSeparator", preview_separator)
 
 	# -- The darker pill inset into the row, carrying the numbers. Its edge in
 	# the mockup is a soft dark halo, NOT a stroke -- building it as a border

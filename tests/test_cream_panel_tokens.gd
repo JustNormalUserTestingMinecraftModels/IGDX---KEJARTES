@@ -45,3 +45,37 @@ func test_pressed_fill_is_darker_than_the_resting_sheet() -> void:
 	var pressed: float = tokens.preview_row_pressed_fill.get_luminance()
 	assert_true(pressed < resting,
 		"pressed fill (%f) must be darker than resting (%f)" % [pressed, resting])
+
+
+func test_preview_row_is_cream_and_unstroked() -> void:
+	var tokens := DesignTokens.load_default()
+	assert_not_null(tokens, "design_tokens.tres failed to load")
+	var theme := ThemeFactory.build(tokens)
+	var box := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
+	assert_not_null(box, "PreviewRow should be a StyleBoxFlat")
+	assert_eq(box.bg_color, CREAM_SHEET, "PreviewRow should be cream")
+	assert_eq(box.border_width_top, 0, "the 3px stroke should be gone")
+	assert_eq(box.border_width_bottom, 0, "the 3px stroke should be gone")
+	assert_eq(box.shadow_size, 0, "the hard drop shadow should be gone")
+
+
+func test_pressed_variation_exists_and_differs_from_resting() -> void:
+	var tokens := DesignTokens.load_default()
+	assert_not_null(tokens, "design_tokens.tres failed to load")
+	var theme := ThemeFactory.build(tokens)
+	var resting := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
+	var pressed := theme.get_stylebox("panel", "PreviewRowPressed") as StyleBoxFlat
+	assert_not_null(pressed, "PreviewRowPressed variation missing")
+	assert_ne(pressed.bg_color, resting.bg_color,
+		"pressed and resting must not be the same colour")
+	assert_eq(pressed.bg_color, PRESSED, "pressed should use the recess token")
+
+
+func test_separator_variation_is_the_hairline() -> void:
+	var tokens := DesignTokens.load_default()
+	assert_not_null(tokens, "design_tokens.tres failed to load")
+	var theme := ThemeFactory.build(tokens)
+	var box := theme.get_stylebox("separator", "PreviewRowSeparator") as StyleBoxLine
+	assert_not_null(box, "PreviewRowSeparator should be a StyleBoxLine")
+	assert_eq(box.color, SEPARATOR, "separator should use the hairline token")
+	assert_eq(box.thickness, 1, "separator should be 1px")

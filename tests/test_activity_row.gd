@@ -233,7 +233,7 @@ func test_non_skill_rows_flatten_the_pill_and_drop_the_bar() -> void:
 ## into it. These pin the four surfaces that produces, including base_type --
 ## a variation without one silently falls back to the engine default, which is
 ## exactly the bug that made the pills invisible before.
-func test_preview_row_is_a_bordered_panel() -> void:
+func test_preview_row_is_an_unstroked_cream_panel() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	assert_eq(theme.get_type_variation_base("PreviewRow"), &"Panel",
@@ -241,8 +241,13 @@ func test_preview_row_is_a_bordered_panel() -> void:
 	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
 	assert_true(sb != null, "PreviewRow/panel must be a StyleBoxFlat")
 	assert_eq(sb.bg_color, tokens.preview_row_fill, "row container fill comes from the token")
-	assert_eq(sb.border_color, tokens.preview_row_border, "row container border comes from the token")
-	assert_true(sb.border_width_top >= 1, "the mockup's rows carry a visible purple border")
+	# Until 2026-09-10 this asserted a 3px stroke from preview_row_border.
+	# The cream pass removed it: the card behind the row, the row's slab,
+	# the pill inside it and the bar made four surfaces per row, and the
+	# stroke was what made each read as a separate box. Rows are now
+	# divided by a hairline between them instead of a box around each.
+	assert_eq(sb.border_width_top, 0, "the cream row carries no stroke")
+	assert_eq(sb.border_width_bottom, 0, "the cream row carries no stroke")
 
 
 func test_preview_pill_uses_the_sampled_fill() -> void:
@@ -282,18 +287,17 @@ func test_preview_row_label_is_big_and_outlined() -> void:
 ## The mockup's rows carry a hard dark shadow just below their bottom border, and
 ## the inset pill has a soft dark edge rather than a stroke. Without them the
 ## surfaces read as flat decals on the card instead of raised/inset panels.
-func test_preview_row_border_and_shadow_match_the_mockup() -> void:
-	var tokens := DesignTokens.load_default()
+## The row used to carry a 3px stroke and a hard drop shadow, both
+## sampled from the 2026-08-29 mockup. The 2026-09-10 cream pass removed
+## both -- depth now comes from the track inset into the row, not from
+## chrome around it. This asserts the removal so a future rebake cannot
+## quietly reintroduce either.
+func test_preview_row_carries_no_stroke_or_shadow() -> void:
 	var theme: Theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var sb := theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
 	assert_true(sb != null, "PreviewRow/panel must be a StyleBoxFlat")
-	assert_eq(sb.border_width_top, 3, "the mockup's row border is 3px, not 4")
-	assert_eq(sb.shadow_color, tokens.preview_row_shadow_color,
-		"the row's shadow color must match preview_row_shadow_color exactly")
-	assert_eq(sb.shadow_size, tokens.preview_row_shadow_size,
-		"the row's shadow size must match preview_row_shadow_size exactly")
-	assert_eq(sb.shadow_offset, tokens.preview_row_shadow_offset,
-		"the row's shadow offset must match preview_row_shadow_offset exactly")
+	assert_eq(sb.border_width_top, 0, "the cream row carries no stroke")
+	assert_eq(sb.shadow_size, 0, "the cream row casts no drop shadow")
 
 
 func test_preview_pill_has_a_soft_edge_not_a_stroke() -> void:

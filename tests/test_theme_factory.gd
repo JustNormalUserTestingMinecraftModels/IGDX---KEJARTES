@@ -93,13 +93,14 @@ func test_preview_shadows_come_from_tokens() -> void:
 	custom.preview_pill_shadow_offset = Vector2(0, 11)
 	var custom_theme := ThemeFactory.build(custom)
 
+	# PreviewRow used to consume preview_row_shadow_* here. The 2026-09-10
+	# cream pass dropped its shadow entirely, so the row is asserted to
+	# ignore those tokens rather than to honour them -- the guard against a
+	# hardcoded literal now lives on the pill alone, below. The three
+	# preview_row_shadow_* tokens are consequently unread by any variation.
 	var row_sb := custom_theme.get_stylebox("panel", "PreviewRow") as StyleBoxFlat
-	assert_eq(row_sb.shadow_color, custom.preview_row_shadow_color,
-		"PreviewRow shadow color must come from tokens, not a hardcoded literal")
-	assert_eq(row_sb.shadow_size, custom.preview_row_shadow_size,
-		"PreviewRow shadow size must come from tokens, not a hardcoded literal")
-	assert_eq(row_sb.shadow_offset, custom.preview_row_shadow_offset,
-		"PreviewRow shadow offset must come from tokens, not a hardcoded literal")
+	assert_eq(row_sb.shadow_size, 0,
+		"PreviewRow must stay shadowless regardless of the shadow tokens")
 
 	var pill_sb := custom_theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
 	assert_eq(pill_sb.shadow_color, custom.preview_pill_shadow_color,

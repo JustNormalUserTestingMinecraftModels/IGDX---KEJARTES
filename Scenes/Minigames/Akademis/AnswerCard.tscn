@@ -1,20 +1,20 @@
-[gd_scene load_steps=3 format=3 uid="uid://c8r9w0x1y2z3a"]
+[gd_scene format=3 uid="uid://c8saw0x1y203a"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ipwb4"]
 content_margin_left = 8.0
 content_margin_top = 6.0
 content_margin_right = 8.0
 content_margin_bottom = 6.0
-bg_color = Color(0.95, 0.97, 1.0, 1)
+bg_color = Color(0.95, 0.97, 1, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.2, 0.5, 0.85, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
 shadow_color = Color(0, 0, 0, 0.12)
 shadow_size = 4
 shadow_offset = Vector2(0, 2)
@@ -26,25 +26,25 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="AnswerCard" type="PanelContainer"]
+[node name="AnswerCard" type="PanelContainer" unique_id=452346541]
 custom_minimum_size = Vector2(850, 380)
 offset_right = 850.0
 offset_bottom = 380.0
 pivot_offset = Vector2(425, 190)
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+theme_override_styles/panel = SubResource("StyleBoxFlat_ipwb4")
 
-[node name="CardBgTexture" type="TextureRect" parent="."]
+[node name="CardBgTexture" type="TextureRect" parent="." unique_id=317037946]
 layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1035574784]
 layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 1
 
-[node name="RowImage" type="TextureRect" parent="VBox"]
+[node name="RowImage" type="TextureRect" parent="VBox" unique_id=828495145]
 visible = false
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
@@ -52,36 +52,36 @@ size_flags_vertical = 3
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TextLabel" type="Label" parent="VBox"]
+[node name="TextLabel" type="Label" parent="VBox" unique_id=1874003857]
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.1, 0.15, 0.3, 1)
-theme_override_font_sizes/font_size = 42
+theme_type_variation = &"H2Label"
+theme_override_colors/font_color = Color(0.11764706, 0.14117648, 0.21176471, 1)
 text = "Jawaban"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 clip_text = true
 
-[node name="LockOverlay" type="PanelContainer" parent="."]
+[node name="LockOverlay" type="PanelContainer" parent="." unique_id=962033926]
 visible = false
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_lock")
 
-[node name="LockVBox" type="VBoxContainer" parent="LockOverlay"]
+[node name="LockVBox" type="VBoxContainer" parent="LockOverlay" unique_id=563519800]
 layout_mode = 2
 alignment = 1
 
-[node name="LockIcon" type="Label" parent="LockOverlay/LockVBox"]
+[node name="LockIcon" type="Label" parent="LockOverlay/LockVBox" unique_id=522608901]
 layout_mode = 2
 theme_override_font_sizes/font_size = 64
 text = "🔒"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LockText" type="Label" parent="LockOverlay/LockVBox"]
+[node name="LockText" type="Label" parent="LockOverlay/LockVBox" unique_id=1360491859]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_font_sizes/font_size = 36

@@ -110,3 +110,19 @@ func test_buatbatik_wiring_maps_each_export_to_the_right_art() -> void:
 		var res_id := src.substr(id_start, id_end - id_start)
 		assert_eq(ids.get(res_id, ""), _BATIK_WIRING[prop],
 			prop + " must point at " + str(_BATIK_WIRING[prop]))
+
+func test_menjodohkan_cards_are_rounded_and_use_heading_text() -> void:
+	for p in ["res://Scenes/Minigames/Akademis/QuestionCard.tscn",
+			"res://Scenes/Minigames/Akademis/AnswerCard.tscn"]:
+		var src := FileAccess.get_file_as_string(p)
+		assert_true(src.contains("corner_radius_top_left = 24"),
+			p + " card needs the radius_md corner")
+		assert_true(src.contains("theme_type_variation = &\"H2Label\""),
+			p + " TextLabel needs the H2Label heading variation")
+		assert_false(src.contains("theme_override_font_sizes/font_size = 42"),
+			p + " must drop the static 42px TextLabel override")
+
+func test_menjodohkan_has_no_placeholder_card_art() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Menjodohkan.tscn")
+	assert_false(src.contains("Kiper"),
+		"Menjodohkan.tscn still references a Kiper meme placeholder")

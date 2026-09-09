@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://csmj7c70fnwm1" path="res://Scripts/StudentCard/student_card.gd" id="1_ao2t8"]
 [ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="1_jsirh"]
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="2_ly60b"]
+[ext_resource type="Material" uid="uid://dv5bscxw2v678" path="res://Scripts/Shaders/soft_shadow_material.tres" id="3_1k4ux"]
 [ext_resource type="Texture2D" uid="uid://croetdw7smqvd" path="res://Assets/Images/MuridPotrait/Murid3.jpg" id="3_33k3e"]
 [ext_resource type="Texture2D" uid="uid://brotcydbytvmj" path="res://Assets/Images/MuridPotrait/Murid6.jpg" id="3_a1isy"]
 [ext_resource type="Texture2D" uid="uid://dpuj0ix84a0r4" path="res://Assets/Images/MuridPotrait/Murid4.jpg" id="3_osw5o"]
@@ -47,6 +48,18 @@ mouse_filter = 2
 texture = ExtResource("2_ly60b")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Shadow" type="TextureRect" parent="." unique_id=1102027981]
+self_modulate = Color(0, 0, 0, 0.33)
+material = ExtResource("3_1k4ux")
+layout_mode = 0
+offset_left = -56.0
+offset_top = -236.0
+offset_right = 1024.0
+offset_bottom = 1684.0
+scale = Vector2(1.03, 1.03)
+mouse_filter = 2
+texture = ExtResource("8_hodfn")
 
 [node name="KertasMurid6" type="TextureRect" parent="." unique_id=1627899928]
 visible = false

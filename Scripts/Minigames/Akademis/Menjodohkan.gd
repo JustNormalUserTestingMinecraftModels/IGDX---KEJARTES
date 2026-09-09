@@ -415,15 +415,17 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 		var txt_lbl = card.find_child("TextLabel", true, false) as Label
 		if txt_lbl:
 			txt_lbl.text = questions[i]
+			# 2.5x the original 36/32/28/24 ladder. The card grew to 480 tall to
+			# keep the longest question inside the box at these sizes.
 			var q_len = questions[i].length()
 			if q_len <= 15:
-				txt_lbl.add_theme_font_size_override("font_size", 36)
+				txt_lbl.add_theme_font_size_override("font_size", 90)
 			elif q_len <= 32:
-				txt_lbl.add_theme_font_size_override("font_size", 32)
+				txt_lbl.add_theme_font_size_override("font_size", 80)
 			elif q_len <= 55:
-				txt_lbl.add_theme_font_size_override("font_size", 28)
+				txt_lbl.add_theme_font_size_override("font_size", 70)
 			else:
-				txt_lbl.add_theme_font_size_override("font_size", 24)
+				txt_lbl.add_theme_font_size_override("font_size", 60)
 				
 		var img_rect = card.find_child("RowImage", true, false) as TextureRect
 		if img_rect:
@@ -432,7 +434,9 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 				img_rect.texture = load(img_path)
 				img_rect.visible = true
 				if txt_lbl:
-					txt_lbl.add_theme_font_size_override("font_size", 24)
+					# Smallest rung of the 2.5x ladder: the picture takes the
+					# upper half of the card, so the text gets what is left.
+					txt_lbl.add_theme_font_size_override("font_size", 60)
 			else:
 				img_rect.visible = false
 				
@@ -462,15 +466,16 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 		var txt_lbl = card.find_child("TextLabel", true, false) as Label
 		if txt_lbl:
 			txt_lbl.text = answers[i]
+			# Same 2.5x scale as the question ladder above.
 			var a_len = answers[i].length()
 			if a_len <= 15:
-				txt_lbl.add_theme_font_size_override("font_size", 36)
+				txt_lbl.add_theme_font_size_override("font_size", 90)
 			elif a_len <= 30:
-				txt_lbl.add_theme_font_size_override("font_size", 32)
+				txt_lbl.add_theme_font_size_override("font_size", 80)
 			elif a_len <= 50:
-				txt_lbl.add_theme_font_size_override("font_size", 28)
+				txt_lbl.add_theme_font_size_override("font_size", 70)
 			else:
-				txt_lbl.add_theme_font_size_override("font_size", 24)
+				txt_lbl.add_theme_font_size_override("font_size", 60)
 			
 		var img_rect = card.find_child("RowImage", true, false) as TextureRect
 		if img_rect:
@@ -517,7 +522,9 @@ func _update_action_bar_ui() -> void:
 		elif lock_btn_cancel_style:
 			btn_lock.add_theme_stylebox_override("normal", lock_btn_cancel_style)
 		else:
-			_set_button_style(btn_lock, Color(0.8, 0.25, 0.25), Color(1.0, 0.45, 0.45))
+			# Cancelling is the destructive action, so it takes the project's
+			# DangerButton rather than a hand-rolled red box.
+			btn_lock.theme_type_variation = &"DangerButton"
 		btn_lock.disabled = false
 	else:
 		btn_lock.text = "" if button_lock_texture else "🔒 Kunci Jawaban!"
@@ -535,7 +542,8 @@ func _update_action_bar_ui() -> void:
 		elif lock_btn_locked_style:
 			btn_lock.add_theme_stylebox_override("normal", lock_btn_locked_style)
 		else:
-			_set_button_style(btn_lock, Color(0.85, 0.45, 0.1), Color(1, 0.65, 0.2))
+			# Locking an answer is the screen's primary action.
+			btn_lock.theme_type_variation = &"PrimaryButton"
 		
 	# Update Submit Button (`BtnSubmit`)
 	var all_locked = (locked_matches.size() >= questions_count)
@@ -556,23 +564,6 @@ func _update_action_bar_ui() -> void:
 	else:
 		_stop_impatient_submit_wiggle()
 
-func _set_button_style(btn: Button, bg_color: Color, border_color: Color) -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = bg_color
-	style.border_color = border_color
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_left = 14
-	style.corner_radius_bottom_right = 14
-	style.content_margin_left = 12
-	style.content_margin_right = 12
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	btn.add_theme_stylebox_override("normal", style)
 
 func _start_impatient_submit_wiggle() -> void:
 	if submit_wiggle_tween and submit_wiggle_tween.is_valid():

@@ -104,6 +104,13 @@ alignment = 1
 layout_mode = 2
 size_flags_horizontal = 4
 
+[node name="QuestionImage" type="TextureRect" parent="VBoxContainer" unique_id=1846160863]
+visible = false
+custom_minimum_size = Vector2(0, 420)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="ProgressLabel" type="Label" parent="VBoxContainer" unique_id=952582965]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
@@ -117,13 +124,6 @@ theme_override_font_sizes/font_size = 18
 text = "Question text here?"
 horizontal_alignment = 1
 autowrap_mode = 2
-
-[node name="QuestionImage" type="TextureRect" parent="VBoxContainer" unique_id=1846160863]
-visible = false
-custom_minimum_size = Vector2(0, 140)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
 
 [node name="ChoicesGrid" type="GridContainer" parent="VBoxContainer" unique_id=1089490452]
 layout_mode = 2

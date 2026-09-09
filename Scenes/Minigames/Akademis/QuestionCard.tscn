@@ -38,10 +38,10 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [node name="QuestionCard" type="PanelContainer" unique_id=82108006]
-custom_minimum_size = Vector2(850, 380)
+custom_minimum_size = Vector2(850, 480)
 offset_right = 850.0
-offset_bottom = 380.0
-pivot_offset = Vector2(425, 190)
+offset_bottom = 480.0
+pivot_offset = Vector2(425, 240)
 theme_override_styles/panel = SubResource("StyleBoxFlat_452ld")
 
 [node name="CardBgTexture" type="TextureRect" parent="." unique_id=1157154124]
@@ -57,14 +57,14 @@ alignment = 1
 
 [node name="RowImage" type="TextureRect" parent="VBox" unique_id=776562002]
 visible = false
-custom_minimum_size = Vector2(0, 58)
+custom_minimum_size = Vector2(0, 116)
 layout_mode = 2
 size_flags_vertical = 3
 expand_mode = 1
 stretch_mode = 5
 
 [node name="TextLabel" type="Label" parent="VBox" unique_id=1935641382]
-custom_minimum_size = Vector2(0, 180)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

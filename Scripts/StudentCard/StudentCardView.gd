@@ -170,6 +170,35 @@ const _ICON_GAP := 24.0
 ## The (i) badge, overlapping the icon's bottom-right corner.
 const _BADGE_SIZE := 56.0
 
+## The badge art. Red rather than the original amber, because amber read as
+## decoration next to the warm paper instead of as "press me". It is a
+## separate FILE rather than a modulate on icon_info.png: modulate
+## multiplies against the art, so tinting the amber disc red muddies it
+## instead of replacing it (see the sibling test that forbids a modulate
+## here). icon_info.png is still used elsewhere and is left untouched.
+const _BADGE_ART := "icon_info_red.png"
+
+## How far the badge swells at the top of its pulse, and how long one
+## breath in or out takes. The badge is the only affordance saying the
+## stat icon is tappable -- the icon itself is a flat sticker -- so it
+## breathes continuously rather than reacting to hover, which a touch
+## screen never reports.
+const _BADGE_PULSE_SCALE := 1.18
+const _BADGE_PULSE_SECONDS := 0.65
+
+
+## Starts the badge's endless in-out breath. Called once per badge, on the
+## frame it is created; the cluster is reused across page turns, so a
+## second call would stack a second tween on the same node.
+static func _start_badge_pulse(badge: Control) -> void:
+	badge.pivot_offset = Vector2(_BADGE_SIZE, _BADGE_SIZE) * 0.5
+	var tween := badge.create_tween()
+	tween.set_loops()
+	tween.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(badge, "scale",
+		Vector2.ONE * _BADGE_PULSE_SCALE, _BADGE_PULSE_SECONDS)
+	tween.tween_property(badge, "scale", Vector2.ONE, _BADGE_PULSE_SECONDS)
+
 const _STAT_ICONS: Dictionary = {
 	"Akademis1": "stat_akademis.png",
 	"Akademis2": "stat_senibudaya.png",
@@ -200,7 +229,7 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 
 			var badge := TextureRect.new()
 			badge.name = "InfoBadge"
-			badge.texture = load(_CARD_ART + "icon_info.png")
+			badge.texture = load(_CARD_ART + _BADGE_ART)
 			badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -210,6 +239,7 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 			badge.offset_right = 0.0
 			badge.offset_bottom = 0.0
 			cluster.add_child(badge)
+			_start_badge_pulse(badge)
 
 		cluster.texture = load(_CARD_ART + _STAT_ICONS[bar_name])
 		cluster.expand_mode = TextureRect.EXPAND_IGNORE_SIZE

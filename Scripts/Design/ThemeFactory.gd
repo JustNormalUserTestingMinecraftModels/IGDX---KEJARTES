@@ -665,15 +665,36 @@ const _CARD_ART := "res://Assets/Images/StudentCard/"
 
 
 ## Variations used only by the student card's redesigned layout. The card
-## background art paints the pill tracks, the bio panel, and the portrait
-## frame, so these styles deliberately draw less than their siblings: the
-## pill contributes only a fill, and the bio text is light because it sits
-## on the painted purple panel.
+## background art paints the bio panel and the portrait frame, so these
+## styles deliberately draw less than their siblings.
 static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
-	# -- Stat pill: fill only; the track is painted into the card art. --
+	# -- Stat pill track. --
+	#
+	# This used to be a StyleBoxEmpty, because card_bg.png painted a dark
+	# chip behind every pill and the stylebox only had to supply the fill.
+	# Those painted chips were removed on 2026-09-09: the bars had been
+	# real ProgressBar nodes for a while, the chips' right column stuck out
+	# past the bar's edge, and the art could not follow the bars when they
+	# moved. Deleting them made an empty bar invisible -- the fill drew
+	# nothing and there was no track behind it, so a stat at 0 looked like
+	# blank paper.
+	#
+	# The track now comes from the theme, where it belongs, and reuses
+	# StatBar's own recipe (same stat_bar_track ground, same rim, same
+	# half-outline content inset keeping a rail of track visible at 100%)
+	# so the two bar families read as one component. It carries no drop
+	# shadow: unlike StatBar these sit directly on the card's paper, where
+	# a cast shadow would read as the pill floating off the page.
 	theme.add_type("StatPill")
 	theme.set_type_variation("StatPill", "ProgressBar")
-	theme.set_stylebox("background", "StatPill", StyleBoxEmpty.new())
+
+	var pill_bg := StyleBoxFlat.new()
+	pill_bg.bg_color = tokens.stat_bar_track
+	pill_bg.set_corner_radius_all(tokens.radius_pill)
+	pill_bg.set_border_width_all(int(tokens.outline_width / 2.0))
+	pill_bg.border_color = tokens.outline_card
+	pill_bg.set_content_margin_all(tokens.outline_width / 2.0)
+	theme.set_stylebox("background", "StatPill", pill_bg)
 
 	var pill_fill := StyleBoxTexture.new()
 	pill_fill.texture = load(_CARD_ART + "pill_fill.png")

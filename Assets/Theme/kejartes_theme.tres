@@ -2008,7 +2008,21 @@ texture_margin_bottom = 24.0
 region_rect = Rect2(60, 66, 148, 124)
 modulate_color = Color(0.08627451, 0.78039217, 0.6039216, 1)
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_e51d3"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e51d3"]
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+bg_color = Color(0.2901961, 0.21568628, 0.15686275, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.9647059, 0.9098039, 1)
+corner_radius_top_left = 999
+corner_radius_top_right = 999
+corner_radius_bottom_right = 999
+corner_radius_bottom_left = 999
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ma18t"]
 texture = ExtResource("2_rdx8f")
@@ -2730,7 +2744,7 @@ StatBarWirausaha/font_sizes/font_size = 22
 StatBarWirausaha/styles/background = SubResource("StyleBoxFlat_0ryph")
 StatBarWirausaha/styles/fill = SubResource("StyleBoxTexture_ap2b7")
 StatPill/base_type = &"ProgressBar"
-StatPill/styles/background = SubResource("StyleBoxEmpty_e51d3")
+StatPill/styles/background = SubResource("StyleBoxFlat_e51d3")
 StatPill/styles/fill = SubResource("StyleBoxTexture_ma18t")
 SuccessButton/base_type = &"Button"
 SuccessButton/colors/font_color = Color(1, 0.9647059, 0.9098039, 1)

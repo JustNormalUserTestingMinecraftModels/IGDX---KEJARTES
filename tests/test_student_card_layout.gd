@@ -414,18 +414,34 @@ func test_trait_pills_do_not_overlap_neighbors() -> void:
 	# SifatPasifLabel (1330-1395) sitting 25px inside Akademis3's bar
 	# (1287-1355) -- an overlap between two nodes neither of which was a
 	# pill, which is exactly why the old three-way check missed it.
+	#
+	# The five stat bars are compared at their RUNTIME rects, not their
+	# authored ones. StudentCardView.build_stat_bars rewrites all four
+	# offsets from PILL_RECTS on every populate(), so whatever the .tscn
+	# says about a bar's position is dead the moment the card is shown --
+	# a pass that "made room" by moving the bars in the scene changed
+	# nothing on screen. Reading PILL_RECTS here keeps the test measuring
+	# the layout the player sees.
 	var stack := ["Kepribadian1", "Kepribadian2", "Akademis1", "Akademis2",
 		"Akademis3", "SifatPasifLabel", "KutuBuku", "KutuBuku2", "Aprove"]
 	for i in range(1, 7):
 		var card := inst.get_node("KertasMurid%d" % i)
 		for a in range(stack.size()):
 			for b in range(a + 1, stack.size()):
-				var first := card.get_node("%s" % stack[a]) as Control
-				var second := card.get_node("%s" % stack[b]) as Control
-				assert_false(first.get_rect().intersects(second.get_rect()),
+				var first := _resolved_rect(card, stack[a])
+				var second := _resolved_rect(card, stack[b])
+				assert_false(first.intersects(second),
 					"card %d: %s overlaps %s (%s vs %s)"
-						% [i, stack[a], stack[b],
-							first.get_rect(), second.get_rect()])
+						% [i, stack[a], stack[b], first, second])
+
+
+## A node's rect as it will actually be drawn: PILL_RECTS for the stat
+## bars the view repositions at runtime, the authored rect for everything
+## else.
+func _resolved_rect(card: Node, child_name: String) -> Rect2:
+	if StudentCardView.PILL_RECTS.has(child_name):
+		return StudentCardView.PILL_RECTS[child_name]
+	return (card.get_node("%s" % child_name) as Control).get_rect()
 
 
 ## PageLabel is NOT empty -- student_card.gd:717 sets its text every page turn

@@ -154,14 +154,25 @@ func test_trait_pill_text_is_outlined() -> void:
 		"TraitPill's outline must have width")
 
 
-## The card background paints the pill tracks, so the bar must draw no
-## background of its own -- otherwise a second track renders on top of the
-## painted one and the pill looks doubled.
-func test_stat_pill_draws_no_background() -> void:
-	var theme := ThemeFactory.build(DesignTokens.load_default())
+## StatPill used to draw NO background, because card_bg.png painted a dark
+## chip behind every pill and a second track would have doubled it. Those
+## painted chips were deleted on 2026-09-09 -- the bars had become real
+## ProgressBar nodes that the art could not follow -- and an empty bar
+## promptly went invisible: no fill to draw, and nothing behind it.
+##
+## So the track is a real stylebox now, and this test is inverted. It also
+## pins the ground colour, because that is the half of the pair the
+## contrast floor in test_bar_contrast.gd measures the bright cat_*_on_dark
+## fills against; a track quietly reverting to a light colour would put
+## every one of those fills back under the floor.
+func test_stat_pill_draws_its_own_track() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
 	var bg := theme.get_stylebox("background", "StatPill")
-	assert_true(bg is StyleBoxEmpty,
-		"StatPill's background must be empty; the track is painted into the card")
+	assert_true(bg is StyleBoxFlat,
+		"StatPill must draw its own track; the painted one is gone")
+	assert_eq((bg as StyleBoxFlat).bg_color, tokens.stat_bar_track,
+		"StatPill's track must be the dark stat_bar_track the fills are measured against")
 
 
 func test_stat_pill_fill_uses_the_texture() -> void:

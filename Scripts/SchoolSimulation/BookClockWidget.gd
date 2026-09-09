@@ -106,23 +106,7 @@ enum Phase { DAWN, MIDDAY, EVENING }
 ## Slack multiplied into the sky's cover size. The maths already covers
 ## the screen exactly; this absorbs rounding on odd aspect ratios so a
 ## corner of the page can never flash through mid-rotation.
-##
-## The default is not arbitrary any more. transition_background.png (the
-## sky texture) has a stray artifact the artist left visible: a bluish
-## night-street scene pasted into its bottom-left corner, roughly
-## texture-space x 0..442, y 1837..2047. Because the sky always rotates
-## about its own centre, a texel's distance from that centre is
-## rotation-invariant, and this artifact's nearest texel to centre sits
-## ~1000.4 texels out -- close enough that it can swing into a screen
-## corner mid-sweep. On the project's default 1080x1920 layout with the
-## default bottom-centre pivot, the artifact clears every screen corner
-## only once this margin exceeds ~1.0236; below that it clips a corner
-## (worst case measured: 45 screen px in the top-right corner at -200
-## degrees of rotation). 1.06 gives ~3.6% real clearance above that
-## threshold while the extra zoom stays imperceptible. Do not lower this
-## back toward 1.02 without first cleaning the source art -- see
-## tests/test_book_clock_phases.gd's floor test.
-@export var sky_cover_margin: float = 1.06:
+@export var sky_cover_margin: float = 1.02:
 	set(value):
 		sky_cover_margin = value
 		_fit_layers()

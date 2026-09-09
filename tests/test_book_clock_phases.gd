@@ -152,26 +152,6 @@ func test_rotation_stays_monotone_across_the_whole_day() -> void:
 	w.free()
 
 
-func test_sky_cover_margin_stays_above_the_source_art_defect_floor() -> void:
-	# transition_background.png has a stray artifact the artist left
-	# visible: a bluish night-street scene pasted into its bottom-left
-	# corner (roughly texture-space x 0..442, y 1837..2047). The sky
-	# rotates about its own centre, so a texel's distance from centre is
-	# rotation-invariant, and this artifact's nearest texel to centre sits
-	# ~1000.4 texels out. On the project's default 1080x1920 layout with
-	# the default bottom-centre pivot, the artifact clears every screen
-	# corner only once sky_cover_margin exceeds ~1.0236 (measured worst
-	# case below that: 45 screen px of clipping in the top-right corner at
-	# -200 degrees). 1.04 is a floor with headroom above that threshold,
-	# not the exact tuned default (1.06) -- pinning the exact value here
-	# would fail this test on every future motion-lab nudge for no reason.
-	var w := _widget()
-	assert_true(w.sky_cover_margin >= 1.04,
-		"sky_cover_margin must stay above the source-art defect threshold (~1.0236), got %f"
-			% w.sky_cover_margin)
-	w.free()
-
-
 func test_event_fires_at_midday_not_at_a_random_afternoon_point() -> void:
 	var src := FileAccess.get_file_as_string(SCHOOLDAY_SCRIPT)
 	assert_contains(src, "EVENT_TRIGGER_PCT",

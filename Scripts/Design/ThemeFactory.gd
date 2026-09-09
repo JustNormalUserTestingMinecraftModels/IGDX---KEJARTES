@@ -77,6 +77,18 @@ static func _add_shop_hub_tile_label(theme: Theme, tokens: DesignTokens) -> void
 ## Modelled on ShopHubTile, which solves the same problem for the shop
 ## hub's panel-less tiles: nothing in the resting state, and only the
 ## touch states wash in.
+##
+## Unlike ShopHubTile, the wash radius here is radius_pill, not
+## radius_button. The two solve different shapes: ShopHubTile's icon card
+## is squarish, so its fixed radius_button corner is correct. This button
+## sits on Task 8's baked claim-button art (day1.png), which is a full
+## capsule -- corner radius roughly half the button's own height. Only
+## radius_pill gets that: Godot clamps 999 to half the box's smaller
+## dimension at draw time, so the wash always matches the capsule under
+## it regardless of the button's authored size. A fixed radius_button
+## (20px) undershoots that curve and pokes square-ish corners past the
+## art's rounded ends on hover/press. Do not "fix" this back to
+## radius_button -- see RADIUS_EXEMPT in tests/test_button_geometry.gd.
 static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
 	const NAME := "GhostButton"
 	theme.add_type(NAME)
@@ -88,12 +100,12 @@ static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
 
 	var wash := StyleBoxFlat.new()
 	wash.bg_color = Color(1, 1, 1, 0.14)
-	wash.set_corner_radius_all(tokens.radius_button)
+	wash.set_corner_radius_all(tokens.radius_pill)
 	theme.set_stylebox("hover", NAME, wash)
 
 	var pressed := StyleBoxFlat.new()
 	pressed.bg_color = Color(0, 0, 0, 0.12)
-	pressed.set_corner_radius_all(tokens.radius_button)
+	pressed.set_corner_radius_all(tokens.radius_pill)
 	theme.set_stylebox("pressed", NAME, pressed)
 
 	theme.set_font_size("font_size", NAME, tokens.font_h2)

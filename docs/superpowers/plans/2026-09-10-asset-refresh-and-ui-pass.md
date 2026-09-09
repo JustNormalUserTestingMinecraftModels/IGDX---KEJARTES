@@ -250,18 +250,19 @@ static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
 
 	var wash := StyleBoxFlat.new()
 	wash.bg_color = Color(1, 1, 1, 0.14)
-	wash.set_corner_radius_all(tokens.radius_button)
+	wash.set_corner_radius_all(tokens.radius_pill)
 	theme.set_stylebox("hover", NAME, wash)
 
 	var pressed := StyleBoxFlat.new()
 	pressed.bg_color = Color(0, 0, 0, 0.12)
-	# radius_button, not radius_pill: tests/test_button_geometry.gd's
-	# test_every_button_variation_uses_one_fixed_radius holds every Button
-	# variation to it, and its RADIUS_EXEMPT entries are all justified by
-	# a real shape (painted corner, chip, exact circle, card) that a
-	# GhostButton does not have. ShopHubTile, the precedent this is
-	# modelled on, uses radius_button for the same reason.
-	pressed.set_corner_radius_all(tokens.radius_button)
+	# radius_pill, and GhostButton is therefore added to RADIUS_EXEMPT in
+	# tests/test_button_geometry.gd. The claim button baked into day1.png
+	# is a capsule with fully rounded ends, so at Task 8's 282x78 the wash
+	# must round to ~39px; the project's usual radius_button (20)
+	# undershoots it and shows square corners poking past the art.
+	# ShopHubTile is NOT the precedent here -- read its docstring, it
+	# avoids the pill look on purpose because its tile is a squarish card.
+	pressed.set_corner_radius_all(tokens.radius_pill)
 	theme.set_stylebox("pressed", NAME, pressed)
 
 	theme.set_font_size("font_size", NAME, tokens.font_h2)

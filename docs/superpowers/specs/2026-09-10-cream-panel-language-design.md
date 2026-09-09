@@ -39,9 +39,10 @@ around every row.
 
 ## Scope
 
-Four sections, in dependency order. Sections 1 to 3 are confined to AturJadwal.
-Section 4 spans eight scenes and is the only part carrying real regression
-risk.
+Four sections. Sections 1 to 3 are confined to AturJadwal and are sequenced,
+because each depends on the tokens the previous one adds. Section 4 spans
+several scenes but is independent of the other three and cosmetic-only, so it
+can land in parallel.
 
 ### Section 1 — the cream row
 
@@ -167,14 +168,21 @@ The AturJadwal warning becomes a cream panel with a solid brown **YA** and an
 outlined **TIDAK**.
 
 Affected: `atur_jadwal.tscn`, `ApplyItemScreen.tscn`, `loby.tscn`,
-`QuitConfirmDialog.tscn`, `EventStudentSelectDialog.tscn`, `student_card.tscn`,
-`student_list.tscn`, `cut_scene.gd`, `BaseMinigame.gd`,
-`EventStudentSelectDialog.gd`, `student_card.gd`.
+`EventStudentSelectDialog.tscn`, `student_card.tscn`, `student_list.tscn`,
+`cut_scene.gd`, `EventStudentSelectDialog.gd`, `student_card.gd`.
 
-`cut_scene.gd` and `BaseMinigame.gd` assign variations in script and must be
-read before the swap. `BaseMinigame.gd:144` documents a null-PNG fallback that
-depends on the theme's `DangerButton` styling; a blind find-and-replace there
-would put an outline button where a minigame expects a filled one.
+**`Scenes/Minigames/UI/QuitConfirmDialog.tscn` is already correct** and is
+excluded. Lines 55 and 60 already carry `DangerButton` + `SecondaryButton` —
+the exact pattern this section proposes, applied to a genuinely destructive
+action. It needs no change.
+
+`Scripts/Minigames/UI/BaseMinigame.gd` is likewise excluded. Its only mention
+of these variations is a `##` doc comment on `quit_dialog_yes_button_texture`,
+a `Texture2D` `@export` defaulting to null, meaning "let the theme style this".
+It is documentation, not a dependency on the button being filled.
+
+`cut_scene.gd` is the only script that actually assigns a variation, at the two
+lines above. Both assignments are cosmetic.
 
 ## Non-goals
 
@@ -204,15 +212,24 @@ The suite is 960 tests across 65 suites and must stay green.
 
 - **Editor restart required.** Two new `Resource` `@export`s are invisible to a
   running editor. Restart, then rebake via `Scripts/Design/BakeTheme.gd`.
-- **Section 4 is the regression surface.** Eight scenes, two of them driven by
-  script. Sections 1 to 3 are confined to one scene and can land
-  independently.
+- **Section 4 is cosmetic only and cannot break gameplay.**
+  `theme_type_variation` selects a styling entry; it has no bearing on input
+  routing, `pressed` signals, or logic, and a missing or wrong variation falls
+  back to the base `Button` styling. Nothing in this section touches a
+  `.connect()` or a handler. The worst realistic failure is a **contrast** one:
+  a button rendering cream-on-cream, leaving its label hard to read while
+  remaining fully tappable. That is a screenshot-and-fix problem. Every
+  affected screen should be screenshotted once after the swap.
 - **The ghost track is a judgement call.** It solves a problem predicted from a
   sketch, not observed in a build. Section 1 should be screenshotted before
   section 2 is committed to; the two rows may look fine without it.
 
 ## Sequencing
 
-1. Section 1, then screenshot and review before continuing.
-2. Sections 2 and 3.
-3. Section 4 last, as its own reviewable change.
+1. Section 1, then screenshot and review before continuing. This is the part
+   the mentor actually asked for, and the screenshot decides whether section 2
+   is needed at all.
+2. Sections 2 and 3, which depend on section 1's tokens.
+3. Section 4 any time — it shares no tokens, scenes or tests with the others.
+   Running it in parallel is fine; it is placed last here only because it is
+   the least important, not because it is the riskiest.

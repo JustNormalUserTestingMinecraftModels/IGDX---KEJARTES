@@ -1,41 +1,36 @@
 # KejarTes — Project Guide
 
-Godot **4.6** mobile game (portrait 1080×1920, `mobile` renderer, Vulkan —
-the Windows driver was pinned to `d3d12` from the initial commit until
-2026-09-07, when it was unpinned back to the engine default while chasing
-editor hangs; older plan docs still say d3d12).
+Godot **4.6** mobile game, portrait 1080×1920, `mobile` renderer, Vulkan
+(older plan docs say `d3d12` — that pin was removed 2026-09-07).
 Indonesian-language school-management sim. Main scene:
-`Scenes/MainMenu/main_menu.tscn` (since the 2026-08-31 boot change).
+`Scenes/MainMenu/main_menu.tscn`.
 
 ## The game
 
-You play a teacher. You approve a roster of students, assign each of them a
-daily activity for the school week, then watch the week simulate. Stats move,
-minigames and random events fire, and at week's end you get a report. Clear
-two-thirds of the roster's academic targets — `run_stars() >= 2.0` of 3.0 —
-before the grade's final week to pass. It is a roster-wide fraction, not a
-per-student gate: three students clearing everything while a fourth clears
-nothing is 9 of 12 = 2.25 stars, and passes.
+You play a teacher. Approve a roster, assign each student a daily activity for
+the school week, then watch the week simulate: stats move, minigames and random
+events fire, and a report lands at week's end. Clear two-thirds of the roster's
+academic targets — `run_stars() >= 2.0` of 3.0 — before the grade's final week
+to pass. It is a roster-wide fraction, not a per-student gate: three students
+clearing everything while a fourth clears nothing is 9 of 12 = 2.25 stars, and
+passes.
 
 **Grades scale the whole game** (`GameState.current_grade`, 7–9):
 
-| Grade | Weeks | Target uplift over base | Minigame win stat | Loss penalty |
+| Grade | Weeks | Target uplift | Minigame win stat | Loss penalty |
 |---|---|---|---|---|
 | 7 | 6 | +15 | 10 | −3 |
 | 8 | 12 | +34 | 8 | −4 |
 | 9 | 16 | +40 | 6 | −5 |
 
 **Loop:** **MainMenu (boot)** → CutScene → StudentCard (approve roster) →
-**Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay
-(simulate 5 days) → ResultCheckup → back to Lobby. On the final week of a
-grade, SchoolDay instead runs the end-of-grade sequence: **TesNotice →
-ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu.** Splashscreen and Loading still
-exist and are still tested, but since 2026-08-31 they are no longer reached
-at boot.
-
-**Lobby hub buttons** → StudentCard, AturJadwal, ShopHub, Inventory,
-ReportCard. **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub);
-both return to the hub, not straight to the Lobby.
+**Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay (simulate
+5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
+**TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
+Splashscreen and Loading still exist and are tested but are no longer reached at
+boot. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+**ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
+to the hub rather than the Lobby.
 
 ### Stats & activities
 
@@ -44,18 +39,18 @@ needs (`energy`, `mood`), all 0–100. Five schedule categories:
 
 - `Akademis` / `SeniBudaya` / `Olahraga` — gain that skill, cost energy+mood.
 - `Istirahat` — recover energy+mood, no skill gain.
-- `Wirausaha` — no skill gain; earns money at a higher mood/energy cost.
-  Accrues into `GameState.pending_earnings`, paid out at week end.
+- `Wirausaha` — no skill gain; earns money at a higher mood/energy cost, accrued
+  into `GameState.pending_earnings` and paid out at week end.
 
-Costs are scaled by `get_category_efficiency_multiplier()`: 0.6× for the
-student's specialty, 0.85× for `Seimbang`, 1.20× otherwise. A student at
-energy ≤ 5 auto-takes "Izin" (forced Istirahat).
+Costs scale by `get_category_efficiency_multiplier()`: 0.6× for the student's
+specialty, 0.85× for `Seimbang`, 1.20× otherwise. A student at energy ≤ 5
+auto-takes "Izin" (forced Istirahat).
 
 **Personalities** (`Aktif`/`Tekun`/`Kreatif`/`Santai`/`Seni Dalam Kesunyian`)
-drive daily decay rates. **Quirks** (`Kutu Buku`, `Penyendiri`, `Semangat
+drive daily decay rates; **quirks** (`Kutu Buku`, `Penyendiri`, `Semangat
 Juang`, `Penasaran`, `Biang Onar`, `Pekerja Keras`) modify gains and costs.
-Every quirk coefficient is an `@export` on `StudentData.gd` — tune in the
-Inspector, don't hardcode.
+Every coefficient is an `@export` on `StudentData.gd` — tune in the Inspector,
+never hardcode.
 
 ## Architecture
 
@@ -90,23 +85,17 @@ the single most common source of bugs here. Note `hobby_category` "Akademik"
 maps to specialty "Akademis"; schedules also normalize `Akademik`→`Akademis`
 and `DayOff`→`Istirahat`.
 
-Persistence is minimal and deliberate: **only `GameState.inventory`** is
-written to disk (`user://inventory.cfg`, a `ConfigFile`, flushed at the top of
-every `Transition.change_scene` and loaded in `GameState._ready`). Everything
-else — roster, money, week, grade, schedules — is session-scoped by design.
-Item boosts land on `approved_students`, which is **not** persisted, so a boost
-applied and not simulated before quit is lost (and a fresh run inherits the
-previous run's stock). Do not add further persistence without being asked.
-Debug > General > **🧹 Forget Session** wipes in-memory `GameState` and deletes
-the save. `save_inventory`/`load_inventory`/`clear_inventory_save` all no-op
-under `Engine.is_editor_hint()`.
+Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
+disk (`user://inventory.cfg`, flushed at the top of every
+`Transition.change_scene`, loaded in `GameState._ready`). Roster, money, week,
+grade and schedules are session-scoped by design. **Do not add further
+persistence without being asked.** Item boosts land on `approved_students`,
+which is not persisted, so a boost applied and not simulated before quit is
+lost. Debug > General > **🧹 Forget Session** wipes `GameState` and deletes the
+save; the three `*_inventory` functions no-op under `Engine.is_editor_hint()`.
 
-`-REFERENCE-/prototype/` is the original prototype, kept for reference only —
-not built, not imported. `koprasi&inventory` was a second programmer's separate
-project; that project's spec
-(`docs/superpowers/specs/2026-08-27-koperasi-inventory-integration-design.md`)
-documents exactly which of its art is finished (copy byte-identical) versus
-placeholder chrome (restyle onto our theme).
+`-REFERENCE-/prototype/` is the original prototype — reference only, not built,
+not imported.
 
 ## Visual system — read this before touching any UI
 
@@ -177,23 +166,26 @@ Hard constraints, learned the hard way:
    returns a `scene_warning` when it isn't, naming the scene it wants. Open
    `Scenes/MainMenu/main_menu.tscn` before trusting a failure.
 
-5. **The suite cannot be run headless.** `--headless` with a scene that drives
-   `McpTestRunner` looks like a way to test without the MCP bridge. It is not,
-   for two reasons, both learned by trying it on 2026-09-09. `--script` with a
-   custom `SceneTree` replaces the main loop, so **no autoloads register** and
-   every suite touching `AudioDirector`/`GameState` fails to compile; running a
-   *scene* fixes that, but `Engine.is_editor_hint()` is then **false**, so every
-   `@tool` `_ready()` guard runs its real side effects and ~143 of 1099 tests
-   fail on nulls and dirty scene state that the editor never sees. Worse, the
-   `theme_rebake` suite's `ResourceSaver.save()` runs without the editor's UID
-   cache and **rewrites `Assets/Theme/kejartes_theme.tres` with every `uid://`
-   stripped**, and `AudioDirector` rewrites `default_bus_layout.tres` on boot.
-   Both are tracked files. If you must try it anyway, expect to `git checkout --`
-   those two afterwards. The bridge is the only real way to run these tests.
+5. **The suite cannot be run headless.** Proven on 2026-09-09: `--script`
+   registers no autoloads, and running a *scene* makes `Engine.is_editor_hint()`
+   false so every `@tool` guard fires its real side effects (~143 failures).
+   The bridge is the only real way. Details in the changelog.
+
+**A full `test_run` writes two tracked files.** The `theme_rebake` suite calls
+`ResourceSaver.save()` in-process, so a full run rebakes
+`Assets/Theme/kejartes_theme.tres` — in the editor that is usually what you
+want (it picks up token edits), but it means a "clean" tree can go dirty just
+from running tests. `AudioDirector` rewrites `default_bus_layout.tres` on boot.
+Check `git status` after a full run and `git checkout --` whichever you did not
+intend. Suite order matters too: a suite that reads the baked theme before
+`theme_rebake` runs sees the *old* bake, so a single failing theme assertion in
+a full run may just be ordering — re-run that suite alone before believing it.
 
 Many tests are **source-text scans** (`src.contains(...)`) rather than
 behavioral, because a lot of the UI can't be instantiated headlessly. Follow
-that pattern where it's established.
+that pattern where it's established. Note what that buys and what it does not:
+a scan asserts the value you *set*, so it can confirm you changed what you
+meant to and can never tell you that you changed the wrong things.
 
 ## Godot MCP
 
@@ -202,327 +194,221 @@ The `godot-ai` MCP server drives the live editor: `test_run`, `scene_open`,
 `editor_screenshot`, `logs_read`. Prefer these over shelling out.
 
 If a session fails to attach with *"A different Godot AI backend is already
-running"*, stray `godot-ai.exe` processes are holding the port. Kill them
-(leave `Godot_v*.exe` alone) and retry:
-
-```bash
-tasklist | grep -i godot-ai
-```
+running"*, stray `godot-ai.exe` processes hold the port — `tasklist | grep -i
+godot-ai`, kill those, leave `Godot_v*.exe` alone. If instead
+`session_manage(op="list")` returns `count=0` while the server answers, the
+*editor* dropped its side and only restarting the editor fixes it.
 
 `logs_read(source="editor")` catches parse errors that never reach the game
 log; `source="game"` misses boot-time failures entirely.
 
 ## Working efficiently here
 
-Verification, not implementation, dominates the cost of a session in this
-project. Five rules, in order of how much they save:
+Verification, not implementation, dominates the cost of a session here.
 
-**1. Never play the game to reach a state — seed it.** The debug overlay
-(`F1`, or 5 taps in the top-right corner) has **⚡ Seed Playtest State** at the
-top of its General tab: roster approved, 999999G, full inventory, lobby
-tutorial bypassed. Combine it with the overlay's **Scenes** tab, which
-teleports directly to MainMenu / Lobby / StudentCard / AturJadwal / SchoolDay
-/ SemesterEnd / Splashscreen. Seed, teleport, screenshot once. The seed covers
-roster, money, inventory and the lobby tutorial flag — it does **not** fill
-`day_schedules`, so anything schedule-driven (SchoolDay, AturJadwal) still
-needs a pass through Atur Jadwal first.
+**1. Never play the game to reach a state — seed it.** Debug overlay (`F1`, or
+5 taps top-right) → General → **⚡ Seed Playtest State**: roster approved,
+999999G, full inventory, lobby tutorial bypassed. Its **Scenes** tab teleports
+to MainMenu / Lobby / StudentCard / AturJadwal / SchoolDay / SemesterEnd /
+Splashscreen. Seed, teleport, screenshot once. The seed does **not** fill
+`day_schedules`, so schedule-driven screens (SchoolDay, AturJadwal) still need
+a pass through Atur Jadwal first.
 
-The overlay's **Scenes** tab also carries **🎭 Gladi Resik Akhir Kelas** —
-three one-click rehearsals of the whole end-of-grade sequence (TesNotice →
-ExamProgress → StatCheck → RunResult) with a fixed roster:
-*Semua Lulus* (win path), *Semua Gagal* (lose path), and *Campur*, which
-ladders 3/2/1/0 cleared targets across the four students so one pass of
-StatCheck lights the meter 3, 2, 1 and 0 shares in turn (6 of 12 = 1.5
-stars, a loss). Arming
-one snapshots the run first; **↩ Pulihkan Run Sebelum Gladi Resik** puts it
-back, which matters because RunResult's progression otherwise advances the
-grade and clears the roster on its way out. The logic is in
-`Scripts/Debug/EndGameRehearsal.gd` (plain static functions, tested
-behaviourally in `tests/test_end_game_rehearsal.gd`); `DebugManager.gd`
-only holds the buttons.
+That tab also carries **🎭 Gladi Resik Akhir Kelas** — one-click rehearsals of
+the whole end-of-grade sequence with a fixed roster: *Semua Lulus*, *Semua
+Gagal*, and *Campur*, which ladders 3/2/1/0 cleared targets so one pass of
+StatCheck lights the meter 3, 2, 1 and 0 shares in turn (6 of 12 = 1.5 stars, a
+loss). Arming one snapshots the run; **↩ Pulihkan Run Sebelum Gladi Resik**
+restores it, which matters because RunResult otherwise advances the grade and
+clears the roster on its way out. Logic lives in
+`Scripts/Debug/EndGameRehearsal.gd`, tested in
+`tests/test_end_game_rehearsal.gd`; `DebugManager.gd` only holds the buttons.
 
-When you do have to click, note two quirks. Send a `motion` event to the
-target before the `button` press — Godot will not route a click without the
-hover state first, and a bare press/release pair silently does nothing.
-And rescale coordinates: `global_rect` values are in the project's
-1080-wide design space, while input events take window pixels. Derive the
-factor instead of hardcoding one — `editor_screenshot` reports the window's
-real size as `original_width`/`original_height`, so
-`window_x = global_x * original_width / 1080`. Read the target's
-`global_rect` rather than eyeballing a screenshot.
+**Clicking, when you must.** Send a `motion` event to the target before the
+`button` press — Godot will not route a click without the hover state first,
+and a bare press/release pair silently does nothing. Rescale coordinates:
+`global_rect` is in the 1080-wide design space while input events take window
+pixels, and `editor_screenshot` reports the real size as `original_width`, so
+`window_x = global_x * original_width / 1080`. Read the target's `global_rect`
+rather than eyeballing a screenshot — and re-read it after any window resize.
 
-**2. Scope every `get_ui_elements` call.** Called bare it serialises the whole
-tree — the debug overlay alone returns 58 verbose nodes. Always pass
-`root_path` and a shallow `max_depth`:
+**2. Scope every `get_ui_elements` call.** Bare, it serialises the whole tree
+(the debug overlay alone is 58 verbose nodes). Always pass `root_path` and a
+shallow `max_depth`:
 
     game_manage(op="get_ui_elements",
                 params={"root_path": "/root/Inventory/MainLayout", "max_depth": 3})
 
-Note the runtime path quirk: autoloads answer to `/root/<Name>` (e.g.
-`/root/DebugManager`) but the reply echoes paths relative to the current
-scene (`/Inventory/../DebugManager`). Bare `/root` returns nothing.
+Autoloads answer to `/root/<Name>` but the reply echoes scene-relative paths
+(`/Inventory/../DebugManager`). Bare `/root` returns nothing.
 
-**3. Prefer `test_run` over screenshots.** The whole suite — 1133 tests, 85
-suites — returns a compact JSON summary in about two seconds. One screenshot
-costs more tokens than the entire run. Reach for a screenshot only to judge
-something genuinely visual (layout, spacing, color); use `test_run` for
-anything about behaviour or wiring. Many suites here are deliberately
-source-text scans (`src.contains(...)`) precisely because they are cheap and
-do not need the scene instantiated.
+**3. Prefer `test_run` over screenshots.** The whole suite returns compact JSON
+in seconds; one screenshot costs more tokens than the entire run. Reach for a
+screenshot only to judge something genuinely visual — and when you do, judge it
+at full size. A scaled-down capture cannot show 1px detail, spacing or weight,
+and signing off a visual change from one is how the 2026-09-10 cream pass
+shipped a half-finished layout.
 
-**4. Never hand-edit a `.tscn` while the editor is attached.** It caches
-every scene, its in-memory copy wins, and the next `scene_save` silently
-overwrites your text edit — `scan`, `reimport` and even
-`scene_open(force_reload=true)` all fail to evict it. Go through the editor:
-`scene_open` → `node_create` / `node_set_property` / `node_manage` →
-`scene_save`. `batch_execute` takes the plugin command names (`create_node`,
-`set_property`, `move_node`, `delete_node`) and does a whole node in one
-call. Gotchas: `anchors_preset` is inert (set the four anchors), numbers must
-be unquoted (`1`, not `"1.0"`), `node_create` appends last so z-order needs
-`move_node`, and a node's *type* can only be changed by delete-and-recreate.
-The same cache bites `class_name` scripts: a **new `@export` on a Resource is
-invisible until the editor restarts**, which is why the theme rebake
-(`Scripts/Design/BakeTheme.gd`, File > Run) has no headless path.
+**4. Never hand-edit a `.tscn` while the editor is attached.** Its in-memory
+copy wins and the next `scene_save` silently overwrites your text edit — `scan`,
+`reimport` and even `scene_open(force_reload=true)` all fail to evict it. Go
+through the editor: `scene_open` → `node_create` / `node_set_property` /
+`node_manage` → `scene_save`. `batch_execute` takes the plugin command names
+(`create_node`, `set_property`, `move_node`, `delete_node`) and does a whole
+node in one call. Gotchas: `anchors_preset` is inert (set the four anchors),
+numbers must be unquoted (`1`, not `"1.0"`), `node_create` appends last so
+z-order needs `move_node`, and a node's *type* can only be changed by
+delete-and-recreate.
 
 **4b. Two save hazards that silently eat work.**
 
-*`scene_save` flushes stale script buffers.* The editor holds `.gd` files open
-in tabs and writes them over whatever you patched — rule 4's `.tscn` hazard,
-for scripts, and `script_patch` does not protect you. Do **scene work first,
-script work second**, and after any `scene_save` check
-`git diff HEAD -- '*.gd'` for files you were not editing. Restarting the editor
-is the only real fix; it also reclaims the memory this build leaks (~2 GB and
-dropping the MCP connection, twice in one session).
+- *`scene_save` flushes stale script buffers.* The editor holds `.gd` files
+  open and writes them over whatever you patched; `script_patch` does not
+  protect you. Do **scene work first, script work second**, and after any
+  `scene_save` check `git diff HEAD -- '*.gd'` for files you were not editing.
+- *Overrides serialise only on an instanced scene's ROOT.* Properties set on an
+  instance's **children** report success and are dropped on save. Give the
+  sub-scene `@export`s on its root instead — why `ShopHubTile` carries
+  `icon_texture`/`caption_text` rather than the hub reaching into
+  `Content/Icon`, and why `ActivityRow` carries `watermark_texture`.
 
-*Overrides serialise only on an instanced scene's ROOT.* Setting properties on
-an instance's **children** reports success and is dropped on save. Give the
-sub-scene `@export`s on its root instead — why `ShopHubTile` carries
-`icon_texture`/`caption_text` rather than the hub reaching into `Content/Icon`.
+**5. Rescan after editing a `.gd`, before running tests.** `test_run` serves a
+**stale** autoload otherwise. A scan is not always enough: when the file was
+edited from *outside* the editor (any plain write, including a subagent's), a
+**no-op `script_patch` on that same file** forces the reload — it logs a benign
+`GDScript reload failed with error code 43` and then works. Cheapest reliable
+fix: make edits through `script_patch` in the first place.
 
-**5. Rescan after editing a `.gd`, before running tests.** `test_run` will
-serve a **stale** autoload otherwise. Scan first, or you will debug a phantom.
+**Editing a `class_name` script breaks the next game run.** After patching
+`DesignTokens.gd` or similar, `project_run` fails with *Could not find script
+for class* until you `project_manage(op="stop")`, `filesystem_manage(op="scan")`
+and relaunch. Worse, a **changed default on a Resource `@export` needs a full
+editor restart** — `load_default()` keeps serving the cached instance, so the
+new value silently does not take effect and a test asserting it fails for no
+visible reason. Same for a **new** `@export`. This is why the theme rebake has
+no headless path.
 
-**A scan is not always enough.** When the `.gd` was edited from *outside*
-the editor — any plain file write, including one from a subagent — the
-editor can keep serving the old bytecode through a scan. A **no-op
-`script_patch` on that same file** forces the reload — add and remove a
-blank line. It logs a benign
-`GDScript reload failed with error code 43` and then works. Cheapest
-reliable fix: make edits through `script_patch` in the first place.
+**Rebaking without File > Run.** `Scripts/Design/BakeTheme.gd` is an
+`EditorScript` with no MCP entry point. Write a transient `@tool`
+`McpTestSuite` into `res://tests/` whose one test does `ThemeFactory.build()`
+plus `ResourceSaver.save()`, run it with `test_run`, then delete it.
 
-There is no MCP entry point for an `EditorScript` such as
-`Scripts/Design/BakeTheme.gd`, so the theme rebake normally needs
-File > Run by hand. It can be driven headlessly instead by writing a
-transient `@tool` `McpTestSuite` into `res://tests/` whose single test does
-the `ThemeFactory.build()` + `ResourceSaver.save()`, running it with
-`test_run`, then deleting it.
+**The bridge is single-client.** Only one client holds the backend at a time. A
+subagent that connects displaces your session and gets nothing itself, and both
+then see "A different Godot AI backend is already running". Recovery is
+`taskkill` on stray `godot-ai.exe` processes, leaving `Godot_v*.exe` alone. So:
+subagents write code, you run the editor and hand them the results.
 
-One smaller habit: grep before reading — the two largest scripts here
-exceed 1,500 lines, so read the range you need, not the file.
+**Bridge drops are usually memory pressure, not a leak.** Investigated
+2026-09-10: three drops in one session, each immediately after a full
+`test_run`, with ~1 GB free of 16 GB (an 8.6 GB game was resident). A full run
+needs ~930 MB, so Godot's working set was being trimmed under starvation. Check
+free memory before blaming the editor, and prefer targeted
+`test_run(suite=...)` calls — they take milliseconds and have never dropped it.
 
-**The Godot MCP bridge is single-client.** Only one client can hold the
-backend at a time. If you delegate to subagents, they cannot run the editor:
-a subagent that connects displaces your session and gets nothing itself, and
-both then see "A different Godot AI backend is already running". Recovery is
-`taskkill` on the stray `godot-ai.exe` processes, leaving `Godot_v*.exe`
-alone. So: subagents write code, you run the editor and hand them the results.
+One smaller habit: grep before reading — the two largest scripts here exceed
+1,500 lines, so read the range you need, not the file.
+
+**Tuning how something animates** goes through the `motion-lab` skill
+(`.claude/skills/motion-lab/SKILL.md`), not edit-run-watch.
 
 None of this trades away test coverage. Coverage is the quality floor; the
 savings come from cheaper verification loops, not from fewer tests.
-
-**Tuning how something animates** goes through the `motion-lab` skill
-(`.claude/skills/motion-lab/SKILL.md`), not edit-run-watch. It resolves the
-element's current `Tween` preset, opens an in-browser easing editor whose
-preview is sampled straight from the engine, and patches back a one-line
-token you paste — faster than guessing a duration and replaying the scene.
 
 ## Outstanding debt & placeholders
 
 Live, unfinished items. Delete an entry when it is resolved — do not mark it
 done and leave it here.
 
-**Audio placeholders.** Several `AudioDirector` cue ids alias existing streams
-rather than having their own: `sfx_specialty_match` → `sfx_reward`; `tally` and
-`sparkle` → existing SFX files; `star_earn_1/2/3`, `result_fanfare`,
-`score_tick`, `combo_up` → `pop.ogg` / `reward.ogg`; and the BGM ids
-`exam_notice`, `exam_cutscene`, `run_result` → existing tracks.
-`sfx_event_announce` (the mid-simulation event popup's open cue) aliases
-`reward.ogg` via a dedicated copy, `Assets/Audio/SFX/event_announce.ogg`.
+**Generated placeholder art.** Produced with PowerShell + `System.Drawing`, not
+hand-authored. All are transparent PNG/SVG, drop-replaceable at the same path
+with no code change: the five `Assets/Images/UI/Nav/` icons,
+`Assets/Images/StudentCard/menu_button.png`, three `Particles/particle_*.png`, the minigame
+result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
+(`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
+event-popup set (`icon_event_*`, `bg_event_*`, `particle_burst.png`),
+`shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`,
+`EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, and the
+2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,
+`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`).
 
-**Nav icons are generated geometry (2026-09-09).** The five icons in
-`Assets/Images/UI/Nav/` (`icon_nav_koperasi`, `icon_nav_inventory`,
-`icon_nav_rapor`, `icon_cta_jadwal`, `icon_cta_student`) were produced with
-PowerShell + `System.Drawing`, not hand-authored. They are correctly weighted
-transparent cream silhouettes that read at 48-80px and are fine to ship, but they
-are not illustration. Drop-replaceable at the same paths.
-`Assets/Images/StudentCard/menu_button.png` is the same kind of placeholder --
-also PowerShell + `System.Drawing` -- standing in for a hand-painted gold
-gloss.
+Three carry constraints a replacement **must** honour:
 
-**`DisplayUang`'s texture is off-palette.** `Assets/Images/UI/Desain tanpa
-judul.png` is pink/magenta and now visibly clashes with the warm chrome around
-it. It is also a 1920x1080 landscape image, which is why the lobby HUD chip is
-sized 332x187 rather than the 332x96 the layout would otherwise want.
+- The `fill_*` tiles and `track_ghost.png` — rules in
+  `Assets/Images/UI/BarFill/README.md`, enforced by `tests/test_bar_contrast.gd`
+  and `tests/test_ghost_track.gd`.
+- `penjadwalan_card_bg.png` must stay exactly 1080x1080; two call sites address
+  it with hardcoded `region_rect`s.
+- `EndCutscene`'s badge words are stroked **paths**, not SVG `<text>` — Godot
+  rasterises SVG through ThorVG, which drops text elements on import.
+  `tests/test_end_cutscene.gd` guards this with a pixel check.
 
-**Art placeholders.** The three particle sprites
-(`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven
-minigame result icons and the report icons
-(`Assets/Images/UI/Placeholders/icon_*.svg`) are flat white placeholder
-geometry — real transparent SVGs, but not final art. The exam cutscene
-backdrop reuses the intro's CG images.
+**Off-palette art.** `Assets/Images/UI/Desain tanpa judul.png` (`DisplayUang`)
+is pink/magenta against warm chrome, and is a 1920x1080 landscape image — which
+is why the lobby HUD chip is 332x187 rather than 332x96.
 
-**Event-popup placeholders (2026-09-08).** `icon_event_announce.png`,
-`icon_event_warning.png`, `bg_event_announce.png`, `bg_event_dialog.png`
-(`Assets/Images/UI/Placeholders/`) and `particle_burst.png`
-(`Assets/Images/Particles/`) are generated placeholders (PowerShell +
-`System.Drawing`, not hand-authored art) standing in on
-`EventAnnouncement`, `EventWarning`, and `EventStudentSelectDialog` —
-transparent PNGs suitable for drop-replacement, but geometric shapes, not
-final illustration.
+**Audio placeholders.** These `AudioDirector` cue ids alias existing streams:
+`sfx_specialty_match`, `tally`, `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
+`score_tick`, `combo_up`, `sfx_event_announce`, and the BGM ids `exam_notice`,
+`exam_cutscene`, `run_result`. `ApplyItemScreen`'s payoff likewise reuses
+existing cues rather than a dedicated `sfx_item_apply`.
 
-**End cutscene art.** `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in
-for final art, and both badges (`stamp_lulus.svg`, `stamp_gagal.svg`) are
-generated placeholder stamps. All three are `@export`s on `EndCutscene.tscn`, so
-swapping them is an Inspector change. Note the badge words are drawn as stroked
-**paths**, not SVG `<text>`: Godot rasterises SVG through ThorVG, which drops
-text elements on import — `tests/test_end_cutscene.gd` guards that with a pixel
-check.
+**Copy placeholders.** Every cutscene line in the exam and win branches, and
+every `desc` string in `ItemDatabase.DEFAULT_ITEMS` (shown verbatim in
+`ItemDetailSheet`), is marked `[PLACEHOLDER]`.
 
-**Win screen shadow (2026-09-09).** `Assets/Images/UI/Placeholders/shadow_ellipse.png`
-is a generated radial-gradient ellipse (PowerShell + `System.Drawing`), not
-hand-authored art. Every ground shadow on the win screen wears it, tinted
-and scaled per student. Transparent PNG, drop-replaceable.
+**Other art gaps.** `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in
+for final art (an `@export`, so an Inspector swap). `InventorySlot`'s high-count
+`Shine` overlay is a plain white `ColorRect` with no texture.
 
-**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding —
-root unscripted, no references, still on `cg0.jpg`. The real win screen is
-`EndCutscene`'s win branch. Safe to delete.
+**Emoji as iconography on the stat popup.** `Scripts/UI/StatDetailPopup.gd`
+falls back to `info["glyph"]` from `StatInfo`, and those glyphs are emoji, which
+the ban in `## Conventions` forbids. The trait popup was fixed the same way on
+2026-09-09 — real textures plus a display-font heading; this wants the same.
 
-**Copy placeholders.** Every cutscene line in the exam and win branches is
-marked `[PLACEHOLDER]`. Every `desc` string in `ItemDatabase.DEFAULT_ITEMS` is
-`[PLACEHOLDER]` flavour copy shown verbatim in `ItemDetailSheet`.
+**Pending a balance pass.** `RunGrade`'s scoring weights (especially
+`MONEY_FULL_MARKS`) are estimates; `LombaMenari.best_combo` is tracked but not
+fed into the star rubric; the item skill-boost values in
+`ItemDatabase.DEFAULT_ITEMS` (3–8) are untested against
+`tests/test_balance_pacing.gd`.
 
-**Inventory placeholders.** `Assets/Images/Shop/UI/bg_inventory_blur.png` is a
-box-blurred copy of the lobby art under a fresh name for drop-replacement; the
-four `icon_filter_*.svg` chip icons and the `EfekRow` need-icons are flat
-placeholder SVGs; `InventorySlot`'s high-count `Shine` overlay is a plain white
-`ColorRect` (no texture); `ApplyItemScreen`'s payoff reuses existing
-`AudioDirector` cues rather than a dedicated `sfx_item_apply`.
+**Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` is a blurred
+backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
+has to lead somewhere; nothing behind it is designed.
 
-**Pending a balance pass.** `RunGrade`'s scoring weights — especially
-`MONEY_FULL_MARKS` — are estimates. `LombaMenari.best_combo` is tracked but not
-yet fed into the star rubric. The item skill-boost values in
-`ItemDatabase.DEFAULT_ITEMS` (`akademis`/`seni_budaya`/`olahraga`, 3–8) are
-conservative starting numbers, untested against `tests/test_balance_pacing.gd`.
+**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
+unscripted, nothing references it. The real win screen is `EndCutscene`'s win
+branch. Safe to delete.
 
-**Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` ships as a
-blurred backdrop, a "Segera Hadir" line and a back button. The shop hub's
-second tile has to lead somewhere; nothing behind it is designed yet.
+**Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
+`_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
+them deliberately, or give them a consumer.
 
-**Bar fill motifs are generated geometry (2026-09-09).** The eight tiles in
-`Assets/Images/UI/BarFill/` (`fill_akademis`, `fill_senibudaya`,
-`fill_olahraga`, `fill_wirausaha`, `fill_istirahat`, `fill_libur`,
-`fill_mood`, `fill_energi`) carry one motif each -- a book, tenun chevrons,
-the batik lereng diagonal, a coin, a crescent, a sun, a heart, a bolt --
-drawn with PowerShell +
-`System.Drawing`, not hand-authored. They are deliberately drop-in: same
-256x256 canvas, region (60,66) 148x124, near-white body, motif at a light
-grey. Hand-drawn art at the same paths needs no code change. Two
-constraints bind any replacement: the motif period must divide the 100x76
-9-slice centre (the shipped tiles use 20x19, i.e. 5 x 4) or the tiled
-centre will jump at every repeat, and each tile must stay above 0.90 mean
-luminance or the accents fall under the contrast floor
-(`tests/test_bar_contrast.gd` enforces both).
-
-**Emoji still used as iconography on the stat popup.**
-`Scripts/UI/StatDetailPopup.gd` falls back to `info["glyph"]` from
-`StatInfo` when a stat has no icon texture, and those glyphs are emoji,
-which the 2026-09-02 ban above forbids. The trait popup had the same
-problem and was fixed on 2026-09-09 -- its ⚡/🌟 header became
-`Assets/Images/UI/icon_trait_quirk.png` / `icon_trait_persona.png`, and
-its "💡 EFEK GAMEPLAY:" prefix became a plain display-font heading. This
-fallback wants the same treatment.
-
-**Six more placeholder SVG icons.** `icon_benefit`, `icon_cost`, `icon_tired`,
-`icon_check` (`Assets/Images/UI/Placeholders/`) and `icon_shop_items`,
-`icon_shop_cosmetics` (`Assets/Images/Shop/UI/`) are flat geometry standing in
-for real art, like the rest of that folder.
-
-**`penjadwalan_card_bg.png` is a generated recolour (2026-09-10).** The
-AturJadwal card and its PERINGATAN dialog share one texture at two different
-`region_rect`s, so the cream pass replaced the file in place rather than
-re-authoring both call sites. It was produced by rotating the original olive
-art's hue into the warm family in HSV (PowerShell + `System.Drawing`), not
-hand-authored. Drop-replaceable at the same path -- but any replacement must
-keep the exact original 1080x1080 dimensions, because both call sites address
-it with hardcoded `region_rect` values.
-
-**Ghost-track assets are generated geometry (2026-09-10).**
-`Assets/Images/UI/BarFill/track_ghost.png` and the two motifs
-`icon_ghost_koin.png` / `icon_ghost_sabit.png` were produced with PowerShell +
-`System.Drawing`, not hand-authored. Drop-replaceable at the same paths. The
-track's two constraints are in that folder's README and differ from the fill
-rules: it must stretch rather than tile, and its left 22px cap must hold the
-ramp's 0.18 starting alpha. The 0.90 luminance floor does not apply to it.
-
-**Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`,
-`preview_row_shadow_size` and `preview_row_shadow_offset` are read by no theme
-variation since `PreviewRow` lost its drop shadow in the cream pass. They were
-left in place rather than widening that diff. Remove them deliberately, or give
-them a consumer.
-
-**Deferred: the AturJadwal shelf.** It ships as two `ColorRect`s rather than the
-intended `ShelfEdge` theme variation. A new `@export` on `DesignTokens` is
-invisible to a running editor, so this needs an editor restart plus a manual
-rebake. The exact diff to re-apply is in the STATUS block of
+**Deferred: the AturJadwal shelf.** Ships as two `ColorRect`s rather than a
+`ShelfEdge` variation. Needs an editor restart plus a manual rebake (a new
+`@export` on `DesignTokens` is invisible to a running editor). The exact diff is
+in the STATUS block of
 `docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`.
 
-**Deferred: blinking on the layered faces.** `Scenes/Lobby/CitraFace.tscn`'s
-`Eyelid` layer and `StudentFace.blink()` are wired and tested, but
-`idle_blink_enabled` defaults **false**, so nothing closes the eyes on its own
-yet — the blink pass was explicitly held back. Turning it on is one Inspector
-toggle; a real pass would want a half-lid frame (the art has none) or an
-alpha/scale ease rather than the current hard cut.
+**Deferred: blinking on the layered faces.** `CitraFace.tscn`'s `Eyelid` layer
+and `StudentFace.blink()` are wired and tested, but `idle_blink_enabled`
+defaults **false** — held back deliberately. A real pass wants a half-lid frame
+(the art has none) or an alpha/scale ease rather than the current hard cut.
 
-**Layered faces exist for Citra only.** The other four students still use the
-flat portrait. Adding one means a new `<Name>Face.tscn` with that character's
-own solved layer offsets, dropped into `loby.gd`'s `face_rigs`.
+**Layered faces exist for Citra only.** The other four use the flat portrait.
+Adding one means a new `<Name>Face.tscn` with that character's own solved layer
+offsets, dropped into `loby.gd`'s `face_rigs`.
 
 **Ratchet debt.** `tests/test_viewport_editability.gd`'s `BASELINE` still lists
-real unconverted runtime UI construction across roughly 20 files. The
-2026-08-31 pass converted every shared-across-screens case but did not survey
-every remaining file. The list and what each would need is in the authoring
-guide's "Known gaps" section.
-
-**Open bug: seven `ext_resource` UIDs do not resolve (2026-09-10).**
-`tests/test_project_hygiene.gd` fails on `CitraFace.tscn` and five EndGame
-scenes: `uid://6u5oau2rmsa0` and six others are "not a known UID". The scene
-references and the `.gd.uid` files *match each other*, so the files are
-internally consistent and Godot falls back to the text path -- the running game
-logs `invalid UID: ... using text path instead` rather than breaking. It is the
-editor's UID cache that does not know them, and two editor restarts did not fix
-it. Confirmed pre-existing by stashing an unrelated branch's work and re-running
-on a clean tree.
+real unconverted runtime UI construction across roughly 20 files. The list, and
+what each would need, is in the authoring guide's "Known gaps" section.
 
 ## Current work
 
-Branch `cream-panel-language`, off `Textures`. The 2026-09-10 cream panel pass
-is complete and written up in the changelog: cream activity rows with hairlines,
-ghost tracks for the two gauge-less rows, a press-inset, and the confirm-pair
-semantics split. 1131 of 1133 pass; the two failures are the UID bug above and
-nothing else.
+Branch `Textures` (also main). Nothing in flight.
 
-Plan C's RunResult redesign remains open, tracked in
+Open: Plan C's RunResult redesign,
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
-
-**Editor stability caveat.** The MCP bridge dropped three times in one session
-on 2026-09-10, every time immediately after a full `test_run`. The machine had
-~1 GB free of 16 GB (an 8.6 GB Project Zomboid was resident), and a full run
-needs ~930 MB, so Godot's working set was being trimmed under starvation. This
-is environmental, not a Godot leak -- the "this build leaks ~2 GB" note that
-used to sit in rule 4b was probably misattributing the same cause. Prefer
-targeted `test_run(suite=...)` calls, which take milliseconds and never dropped
-the bridge.
-
 
 ## Maintaining this file
 
@@ -537,8 +423,16 @@ it costs context on every single run, so it earns its place or it moves.
   placeholders`, and is deleted when resolved.
 - `## Current work` holds **only what is in flight right now**. When it lands,
   it moves to the changelog.
-- Soft budget: keep this file under **20,000 characters**. It was 27,547 on
-  2026-09-05, of which 39% was completed-pass narrative.
+- **Group placeholders, do not list them.** A dozen entries each saying "X is
+  generated `System.Drawing` art, drop-replaceable" is one entry with a path
+  list. Keep the prose only for the ones carrying a real constraint.
+- **Point at the README, do not restate it.** If a folder README or a
+  spec already documents the rules for an asset, link it and keep one line.
+- Soft budget: **20,000 characters**. History: 27,547 on 2026-09-05 (39%
+  completed-pass narrative), 30,936 on 2026-09-10, 24,000 after that day's
+  audit. The 2026-09-10 pass could not reach 20k without deleting live
+  operational rules — if it must come down further, the honest lever is moving
+  `## Outstanding debt` to its own file, not thinning the rules.
 
 Rationale and the full restructure record:
 `docs/superpowers/specs/2026-09-05-project-guide-restructure-and-memory-seeding-design.md`.

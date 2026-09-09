@@ -54,11 +54,12 @@ mouse_filter = 2
 
 [node name="Backdrop" type="TextureRect" parent="Stage" unique_id=672798659]
 layout_mode = 0
-offset_right = 1536.0
-offset_bottom = 2048.0
+anchor_right = 1.0
+anchor_bottom = 1.0
 mouse_filter = 2
 texture = ExtResource("6_cpj81")
 expand_mode = 1
+stretch_mode = 6
 
 [node name="Shadows" type="Control" parent="Stage" unique_id=2059022315]
 anchors_preset = 0

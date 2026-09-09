@@ -11,6 +11,11 @@ extends HBoxContainer
 ## Seconds a meter step takes. Short: it follows a bar that already popped.
 @export var step_seconds: float = 0.35
 
+## Speed multiplier a rush applies to the live step. Matches
+## StatCheckRow.RUSH_SPEED so a rushed student's bar and meter land
+## together rather than one trailing the other.
+const RUSH_SPEED := 1000.0
+
 @onready var _stars: Array[TextureProgressBar] = [$Star1, $Star2, $Star3]
 
 ## The in-flight animate_to() tween, killed before a new one starts.
@@ -39,3 +44,13 @@ func animate_to(stars: float) -> void:
 	for i in range(_stars.size()):
 		var target := clampf(stars - float(i), 0.0, 1.0) * 100.0
 		tw.tween_property(_stars[i], "value", target, step_seconds)
+
+
+## Land the in-flight step immediately. Speed-scaled rather than killed so
+## the tween still completes normally; nothing awaits this one, but keeping
+## both rushes identical means there is only one behaviour to reason about.
+##
+## A no-op when nothing is in flight.
+func rush() -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.set_speed_scale(RUSH_SPEED)

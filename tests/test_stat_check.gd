@@ -248,6 +248,30 @@ func test_star_meter_bars_use_the_placeholder_star() -> void:
 			"%s fills left to right" % n)
 
 
+func test_star_meter_can_be_rushed() -> void:
+	var src := FileAccess.get_file_as_string(_METER_SCRIPT)
+	assert_true(src.contains("func rush() -> void:"), "the meter can be rushed")
+	assert_true(src.contains("set_speed_scale("), "by speed-scaling its tween")
+	assert_true(src.contains("const RUSH_SPEED"), "with a named multiplier")
+
+
+## rush() must be safe before animate_to() has ever run -- the first tap can
+## land before any stat has cleared. It should leave the rendered value
+## alone rather than snapping the meter somewhere.
+func test_rushing_an_idle_meter_leaves_the_stars_where_they_are() -> void:
+	var screen = load(_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(screen)
+	track(screen)
+	var meter = screen.get_node("MarginContainer/Column/StarMeter")
+	meter.set_stars(1.5)
+	meter.rush()
+	assert_true(is_equal_approx(meter.get_node("Star1").value, 100.0),
+		"the first star stays full after an idle rush")
+	assert_true(is_equal_approx(meter.get_node("Star2").value, 50.0),
+		"the second stays half")
+	Engine.get_main_loop().root.remove_child(screen)
+
+
 # ───────────────────────────────────────────────────────────────── StatCheck
 
 func test_scene_loads_with_its_chrome() -> void:

@@ -113,7 +113,7 @@ theme_type_variation = &"SecondaryButton"
 text = "Batal"
 
 [node name="ConfirmButton" type="Button" parent="Margin/Card/Margin/VBox/Actions" unique_id=1196808454]
-custom_minimum_size = Vector2(0, 90)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 theme_type_variation = &"SuccessButton"
 text = "Pakai (0 Siswa)"

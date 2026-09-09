@@ -223,15 +223,18 @@ func test_stat_bar_track_is_an_inset_outlined_capsule() -> void:
 ## bar at value 0 rendered as a solid category-coloured capsule, 100% full
 ## by eye. Each category now gets its own theme variation whose FILL
 ## stylebox bakes the colour in directly, sharing the exact "StatBar" track
-## above so the rim/shadow/inset chrome can't drift between categories.
+## above so the rim/shadow/inset chrome can't drift between categories. The
+## track is now a dark stat_bar_track, and the fills use the vibrant on-dark
+## accents so they pop against that dark ground instead of requiring muddy
+## darkened light-chrome colours to hit a contrast floor.
 func test_stat_bar_category_variations_exist_and_bake_their_colour_into_the_fill() -> void:
 	var expected := {
-		"StatBarAkademis": _tokens.cat_akademis,
-		"StatBarSeniBudaya": _tokens.cat_senibudaya,
-		"StatBarOlahraga": _tokens.cat_olahraga,
-		"StatBarIstirahat": _tokens.cat_istirahat,
-		"StatBarLibur": _tokens.cat_libur,
-		"StatBarWirausaha": _tokens.cat_wirausaha,
+		"StatBarAkademis": _tokens.cat_akademis_on_dark,
+		"StatBarSeniBudaya": _tokens.cat_senibudaya_on_dark,
+		"StatBarOlahraga": _tokens.cat_olahraga_on_dark,
+		"StatBarIstirahat": _tokens.cat_istirahat_on_dark,
+		"StatBarLibur": _tokens.cat_libur_on_dark,
+		"StatBarWirausaha": _tokens.cat_wirausaha_on_dark,
 	}
 	var actual := _theme.get_type_list()
 	for name in expected.keys():
@@ -303,13 +306,19 @@ const DISPLAY_ROSTER := [
 	"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
 	"CardSectionLabel", "ResultHeroLabel",
 	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
-	"SuccessButton", "QuirkBadge", "PersonaBadge", "LobbyNavButton",
+	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill", "PreviewRowLabel",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-08: event popup title, display face at H1+6.
 	"EventDialogHeaderLabel",
+	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
+	# this roster in the same pass -- LobbyNavTile and LobbyCtaButton
+	# replaced it.
+	"PrimaryButtonM", "SecondaryButtonM", "DangerButtonM",
+	"PrimaryButtonL", "SecondaryButtonL", "DangerButtonL", "SuccessButtonL",
+	"LobbyNavTile", "LobbyCtaButton",
 ]
 
 

@@ -81,7 +81,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="TabSiswa" type="Button" parent="Margin/VBox/TabBar" unique_id=145519704]
-custom_minimum_size = Vector2(0, 88)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"WeekTabButton"
@@ -90,7 +90,7 @@ button_pressed = true
 text = "SISWA (0)"
 
 [node name="TabRiwayat" type="Button" parent="Margin/VBox/TabBar" unique_id=521380428]
-custom_minimum_size = Vector2(0, 88)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"WeekTabButton"

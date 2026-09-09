@@ -263,7 +263,7 @@ offset_left = 260.0
 offset_top = 1560.0
 offset_right = 780.0
 offset_bottom = 1720.0
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid6" unique_id=363348099]
@@ -272,8 +272,8 @@ layout_mode = 0
 offset_left = 259.0
 offset_top = 1622.0
 offset_right = 749.0
-offset_bottom = 1800.0
-theme_type_variation = &"DangerButton"
+offset_bottom = 1782.0
+theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
 [node name="KertasMurid5" type="TextureRect" parent="." unique_id=1004659439]
@@ -492,7 +492,7 @@ offset_left = 260.0
 offset_top = 1560.0
 offset_right = 780.0
 offset_bottom = 1720.0
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid5" unique_id=510363470]
@@ -501,8 +501,8 @@ layout_mode = 0
 offset_left = 259.0
 offset_top = 1622.0
 offset_right = 749.0
-offset_bottom = 1800.0
-theme_type_variation = &"DangerButton"
+offset_bottom = 1782.0
+theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
 [node name="KertasMurid4" type="TextureRect" parent="." unique_id=74882940]
@@ -722,7 +722,7 @@ offset_left = 260.0
 offset_top = 1560.0
 offset_right = 780.0
 offset_bottom = 1720.0
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid4" unique_id=119033309]
@@ -731,8 +731,8 @@ layout_mode = 0
 offset_left = 259.0
 offset_top = 1622.0
 offset_right = 749.0
-offset_bottom = 1800.0
-theme_type_variation = &"DangerButton"
+offset_bottom = 1782.0
+theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
 [node name="KertasMurid3" type="TextureRect" parent="." unique_id=2031333750]
@@ -952,7 +952,7 @@ offset_left = 260.0
 offset_top = 1560.0
 offset_right = 780.0
 offset_bottom = 1720.0
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid3" unique_id=272631289]
@@ -961,8 +961,8 @@ layout_mode = 0
 offset_left = 259.0
 offset_top = 1622.0
 offset_right = 749.0
-offset_bottom = 1800.0
-theme_type_variation = &"DangerButton"
+offset_bottom = 1782.0
+theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
 [node name="KertasMurid2" type="TextureRect" parent="." unique_id=465108679]
@@ -1182,7 +1182,7 @@ offset_left = 260.0
 offset_top = 1560.0
 offset_right = 780.0
 offset_bottom = 1720.0
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid2" unique_id=359088105]
@@ -1191,8 +1191,8 @@ layout_mode = 0
 offset_left = 259.0
 offset_top = 1622.0
 offset_right = 749.0
-offset_bottom = 1800.0
-theme_type_variation = &"DangerButton"
+offset_bottom = 1782.0
+theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
 [node name="KertasMurid1" type="TextureRect" parent="." unique_id=1772494297]
@@ -1411,7 +1411,7 @@ offset_left = 260.0
 offset_top = 1560.0
 offset_right = 780.0
 offset_bottom = 1720.0
-theme_type_variation = &"SuccessButton"
+theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
 [node name="Batal" type="Button" parent="KertasMurid1" unique_id=491619717]
@@ -1420,8 +1420,8 @@ layout_mode = 0
 offset_left = 259.0
 offset_top = 1622.0
 offset_right = 749.0
-offset_bottom = 1800.0
-theme_type_variation = &"DangerButton"
+offset_bottom = 1782.0
+theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
 [node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
@@ -1461,7 +1461,7 @@ offset_left = 328.0
 offset_top = 1740.0
 offset_right = 818.0
 offset_bottom = 1900.0
-theme_type_variation = &"PrimaryButton"
+theme_type_variation = &"PrimaryButtonL"
 text = "BELAJAR"
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=841057524]

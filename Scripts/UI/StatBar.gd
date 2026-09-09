@@ -109,13 +109,16 @@ func _apply_tint() -> void:
 	# StatBar branch above does.
 	if is_inside_tree():
 		theme_type_variation = variation
-	# StatPill (StudentCard): background is a StyleBoxEmpty, so tinting the
-	# whole node only colours the fill -- self_modulate is correct there.
-	# Keep that path exactly as it was.
+	# StatPill (StudentCard): its background stylebox is empty, so what
+	# actually shows behind the fill is the DARK track painted straight into
+	# card_bg.png -- not a light ProgressBar surface. self_modulate must
+	# therefore come from the on-dark accent set, not the light-chrome one;
+	# pairing a light-chrome accent with that dark painted track is exactly
+	# what made these bars read dark and muddy.
 	var tokens := DesignTokens.load_default()
 	if tokens == null:
 		return
-	self_modulate = tokens.category_color(category)
+	self_modulate = tokens.category_color_on_dark(category)
 
 
 ## Only ever touches a ValueLabel when show_value_label is true. This

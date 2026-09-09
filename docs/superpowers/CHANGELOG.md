@@ -7,6 +7,50 @@ need to know why something is the way it is.
 Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
+## 2026-09-09 — Warm UI system, Part 1
+
+The palette, button geometry, bar contrast and lobby layout pass. Spec:
+`docs/superpowers/specs/2026-09-08-warm-ui-system-design.md`. Plan:
+`docs/superpowers/plans/2026-09-08-warm-ui-system-part-1.md`.
+
+**Palette.** `brand_primary` moved from `#2e5bff` to `#7A4A2B`, with 35 token
+values re-tinted warm and 16 new exports added. Every scene wipe in the game is
+now chocolate rather than blue, because `Transition`'s cover colour is
+`brand_primary` — a large visible change that no test covers.
+
+**Button geometry.** `_pill()` became `_button_box()` and takes an explicit
+radius. Before this, every button used `radius_pill = 999`, which Godot clamps to
+half the box height — so the project's 15 authored heights rendered as 15
+different corner radii between 31 and 145 px from one nominal style. Now one
+fixed 20px radius, with chips and cards opting out explicitly.
+
+**Height comes from the theme now.** `btn_pad_v_s/m/l` were solved by measuring
+Boohong in-engine: `get_height()` returns exactly the font size, and
+`StyleBoxFlat.get_minimum_size()` excludes the border, so `2*pad + font_height`
+lands a button exactly on its size step. A scene sets no height at all. Twenty-nine
+buttons across twelve scenes were moved onto the scale, and a ratchet test keeps
+them there. Three of those heights were ones the plan's own survey missed.
+
+**Bar contrast.** A WCAG floor of 3.0:1 now guards every fill against its track.
+It immediately caught four light-track accents below the floor, which were
+deepened rather than the floor being lowered. It exists because the DaySummary
+energy bar had been shipping at 1.36:1 — invisible, not merely dim — and Olahraga
+at 2.55:1, both green for months because nothing measured them.
+
+**Lobby.** `LobbyNavButton` retired for `LobbyNavTile` and `LobbyCtaButton`. The
+money display and daily-login button moved off the two front-row students' heads,
+which they had been centred on. `DailyReward` was re-anchored to the scene root
+first: its size was a multiple of `DailyLogin`'s via `anchor_right = 5.994`, so
+resizing that button would have dragged the seven-day panel with it.
+
+**Suite:** 82 suites, 1099 tests, 1098 passing. The one failure is a pre-existing
+`project_hygiene` UID issue in scenes this pass never touched, recorded as the
+baseline before work started.
+
+**Recovered along the way:** the working tree had `assert_not_null` deleted from
+`addons/godot_ai/testing/test_suite.gd`, which was breaking 21 suites and hiding
+374 tests. Restored, with the removal saved as a patch.
+
 
 ## 2026-09-07 — Inventory: mobile layout rebuild, item-apply flow, persistence
 

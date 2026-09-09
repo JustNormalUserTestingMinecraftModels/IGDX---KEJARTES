@@ -112,10 +112,10 @@ func test_scene_instantiates() -> void:
 		assert_true(_lobby.get_node_or_null(name) != null, "missing nav button: " + name)
 	assert_true(_lobby.get_node_or_null("JUDUL") != null, "missing JUDUL")
 	assert_true(_lobby.get_node_or_null("DisplayUang/Label") != null, "missing money label")
-	assert_true(_lobby.get_node_or_null("DailyLogin/DailyReward/ButtonClaim") != null,
+	assert_true(_lobby.get_node_or_null("DailyReward/ButtonClaim") != null,
 		"missing claim button")
 	for i in range(1, 8):
-		assert_true(_lobby.get_node_or_null("DailyLogin/DailyReward/Day%d" % i) != null,
+		assert_true(_lobby.get_node_or_null("DailyReward/Day%d" % i) != null,
 			"missing Day%d" % i)
 
 
@@ -164,7 +164,7 @@ func test_no_hardcoded_colors_remain_in_the_script() -> void:
 func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 	var tokens := DesignTokens.load_default()
 	var paths := _NAV_BUTTONS.duplicate()
-	paths.append("DailyLogin/DailyReward/ButtonClaim")
+	paths.append("DailyReward/ButtonClaim")
 	for p in paths:
 		var b := _lobby.get_node_or_null(p) as Control
 		assert_true(b != null, "missing control: " + p)
@@ -175,11 +175,17 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
-func test_nav_buttons_use_lobby_nav_button_variation() -> void:
-	for name in _NAV_BUTTONS:
+func test_nav_buttons_use_lobby_nav_tile_or_cta_button_variation() -> void:
+	var tile_buttons := ["Koperasi", "Inventory", "ReportStudent"]
+	var cta_buttons := ["Student", "Jadwal"]
+	for name in tile_buttons:
 		var b := _lobby.get_node_or_null(name) as Button
 		assert_true(b != null, "missing nav button: " + name)
-		assert_eq(b.theme_type_variation, &"LobbyNavButton", name + " variation")
+		assert_eq(b.theme_type_variation, &"LobbyNavTile", name + " variation")
+	for name in cta_buttons:
+		var b := _lobby.get_node_or_null(name) as Button
+		assert_true(b != null, "missing nav button: " + name)
+		assert_eq(b.theme_type_variation, &"LobbyCtaButton", name + " variation")
 
 
 func test_labels_use_theme_variations() -> void:
@@ -191,14 +197,14 @@ func test_labels_use_theme_variations() -> void:
 	assert_true(money != null, "missing money label")
 	assert_eq(money.theme_type_variation, &"BarLabel", "money label variation")
 
-	var header := _lobby.get_node_or_null("DailyLogin/DailyReward/Label") as Label
+	var header := _lobby.get_node_or_null("DailyReward/Label") as Label
 	assert_true(header != null, "missing Daily Reward header label")
 	assert_eq(header.theme_type_variation, &"H1Label", "Daily Reward header variation")
 
 	for i in range(1, 8):
 		for sub in ["Label", "Label2"]:
 			var lbl := _lobby.get_node_or_null(
-				"DailyLogin/DailyReward/Day%d/%s" % [i, sub]) as Label
+				"DailyReward/Day%d/%s" % [i, sub]) as Label
 			assert_true(lbl != null, "missing Day%d/%s" % [i, sub])
 			assert_eq(lbl.theme_type_variation, &"CaptionLabel", "Day%d/%s variation" % [i, sub])
 
@@ -228,7 +234,7 @@ func test_inventory_button_is_wired() -> void:
 
 
 func test_claim_button_uses_success_button_variation() -> void:
-	var claim := _lobby.get_node_or_null("DailyLogin/DailyReward/ButtonClaim") as Button
+	var claim := _lobby.get_node_or_null("DailyReward/ButtonClaim") as Button
 	assert_true(claim != null, "missing claim button")
 	assert_eq(claim.theme_type_variation, &"SuccessButton", "claim button variation")
 
@@ -244,8 +250,10 @@ func test_loose_stylebox_files_are_gone_and_unreferenced() -> void:
 func test_theme_factory_bakes_lobby_nav_button_variation() -> void:
 	var theme: Theme = load(_THEME_PATH)
 	assert_true(theme != null, "baked theme must load")
-	assert_true(theme.get_type_list().has("LobbyNavButton"),
-		"baked theme must include the LobbyNavButton variation")
+	assert_true(theme.get_type_list().has("LobbyNavTile"),
+		"baked theme must include the LobbyNavTile variation")
+	assert_true(theme.get_type_list().has("LobbyCtaButton"),
+		"baked theme must include the LobbyCtaButton variation")
 
 
 func test_idle_bob_is_exported_and_wired_to_the_portrait_containers() -> void:

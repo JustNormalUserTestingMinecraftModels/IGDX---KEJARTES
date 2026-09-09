@@ -144,7 +144,7 @@ func _run_check() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if Engine.is_editor_hint() or _exiting:
 		return
-	var pressed := (event is InputEventScreenTouch and event.pressed) \
+	var pressed: bool = (event is InputEventScreenTouch and event.pressed) \
 		or (event is InputEventMouseButton and event.pressed)
 	if pressed:
 		_rush_current_student()

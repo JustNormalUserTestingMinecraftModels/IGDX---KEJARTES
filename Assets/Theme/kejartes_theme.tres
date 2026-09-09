@@ -1109,7 +1109,7 @@ content_margin_left = 16.0
 content_margin_top = 8.0
 content_margin_right = 16.0
 content_margin_bottom = 8.0
-bg_color = Color(0.2901961, 0.21568628, 0.15686275, 1)
+bg_color = Color(0.9019608, 0.85490197, 0.7764706, 1)
 corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
@@ -1121,7 +1121,7 @@ shadow_offset = Vector2(0, 2)
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_t35km"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i5quh"]
-bg_color = Color(0.41960785, 0.29411766, 0.2, 1)
+bg_color = Color(1, 0.99215686, 0.972549, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3

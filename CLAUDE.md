@@ -162,8 +162,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 65 suites, 960 tests, all green
-(2026-09-05).
+the Godot AI MCP `test_run` tool. 85 suites, 1133 tests (2026-09-10).
 
 Hard constraints, learned the hard way:
 
@@ -263,7 +262,7 @@ Note the runtime path quirk: autoloads answer to `/root/<Name>` (e.g.
 `/root/DebugManager`) but the reply echoes paths relative to the current
 scene (`/Inventory/../DebugManager`). Bare `/root` returns nothing.
 
-**3. Prefer `test_run` over screenshots.** The whole suite — 960 tests, 65
+**3. Prefer `test_run` over screenshots.** The whole suite — 1133 tests, 85
 suites — returns a compact JSON summary in about two seconds. One screenshot
 costs more tokens than the entire run. Reach for a screenshot only to judge
 something genuinely visual (layout, spacing, color); use `test_run` for
@@ -484,20 +483,35 @@ real unconverted runtime UI construction across roughly 20 files. The
 every remaining file. The list and what each would need is in the authoring
 guide's "Known gaps" section.
 
-No outstanding *bugs* as of 2026-08-31 — the 2026-08-30 stability sweep closed
-the previous three. See `docs/superpowers/CHANGELOG.md`.
+**Open bug: seven `ext_resource` UIDs do not resolve (2026-09-10).**
+`tests/test_project_hygiene.gd` fails on `CitraFace.tscn` and five EndGame
+scenes: `uid://6u5oau2rmsa0` and six others are "not a known UID". The scene
+references and the `.gd.uid` files *match each other*, so the files are
+internally consistent and Godot falls back to the text path -- the running game
+logs `invalid UID: ... using text path instead` rather than breaking. It is the
+editor's UID cache that does not know them, and two editor restarts did not fix
+it. Confirmed pre-existing by stashing an unrelated branch's work and re-running
+on a clean tree.
 
 ## Current work
 
-Branch `Textures` (also main). Two 2026-09-07 passes are merged and green at
-1061 tests -- the sprite-rig pass (two-state goalie, layered `DancerRig`, the
-event dialog on DaySummary chrome, the three-pose day cycle, the shop hub) and
-the collaborator's inventory mobile-layout & item-apply pass. Both are written
-up in `docs/superpowers/CHANGELOG.md`, including every placeholder each one
-left behind.
+Branch `cream-panel-language`, off `Textures`. The 2026-09-10 cream panel pass
+is complete and written up in the changelog: cream activity rows with hairlines,
+ghost tracks for the two gauge-less rows, a press-inset, and the confirm-pair
+semantics split. 1131 of 1133 pass; the two failures are the UID bug above and
+nothing else.
 
-Plan C's RunResult redesign also remains open, tracked in
+Plan C's RunResult redesign remains open, tracked in
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
+
+**Editor stability caveat.** The MCP bridge dropped three times in one session
+on 2026-09-10, every time immediately after a full `test_run`. The machine had
+~1 GB free of 16 GB (an 8.6 GB Project Zomboid was resident), and a full run
+needs ~930 MB, so Godot's working set was being trimmed under starvation. This
+is environmental, not a Godot leak -- the "this build leaks ~2 GB" note that
+used to sit in rule 4b was probably misattributing the same cause. Prefer
+targeted `test_run(suite=...)` calls, which take milliseconds and never dropped
+the bridge.
 
 
 ## Maintaining this file

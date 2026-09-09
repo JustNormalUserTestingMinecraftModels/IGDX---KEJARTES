@@ -1571,9 +1571,17 @@ func test_event_dialog_dropped_the_button_texture_override_path() -> void:
 func test_event_dialog_action_buttons_keep_the_shared_variations() -> void:
 	var scene_text := FileAccess.get_file_as_string(
 		"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn")
-	for variation in ["SecondaryButton", "DangerButton", "PrimaryButton"]:
+	# The point of this test is that the action buttons take shared theme
+	# variations rather than the per-node texture overrides the test above
+	# retired -- not that any one specific variation appears. The cancel
+	# button was DangerButton until 2026-09-10, when the confirm-pair pass
+	# reserved red for actions that actually discard something; skipping an
+	# event discards nothing, so it is a quiet Secondary now.
+	for variation in ["SecondaryButton", "PrimaryButton"]:
 		assert_contains(scene_text, variation,
 			"the action buttons should use the game's shared %s" % variation)
+	assert_false(scene_text.contains("DangerButton"),
+		"skipping an event is not destructive and should not be red")
 
 
 func test_event_card_children_do_not_swallow_the_tap() -> void:

@@ -7,6 +7,78 @@ need to know why something is the way it is.
 Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
+## 2026-09-10 — Cream panel language (Warm UI, Part 2)
+
+The mentor's second review: the AturJadwal card's olive green is drab, and each
+activity row nests four surfaces so the eye has nowhere to land. Spec:
+`docs/superpowers/specs/2026-09-10-cream-panel-language-design.md`. Plan:
+`docs/superpowers/plans/2026-09-10-cream-panel-language.md`.
+
+**The green was never a token.** `design_tokens.tres` was already cream
+(`surface_page #FBF1E3`). The olive came from one texture,
+`penjadwalan_card_bg.png`, used twice in `atur_jadwal.tscn` at two different
+`region_rect`s — as the activity card and as the PERINGATAN dialog's panel. So
+one in-place replacement fixed both surfaces the mentor pointed at, without
+touching either call site.
+
+Recolouring it by luminance turned the body flat grey: the olive's problem is
+its yellow-green *hue*, not its brightness. Rotating hue to 35 in HSV and
+desaturating kept every bit of the original structure — body `#EEE1CE`,
+highlights `#FFF1DD`, and the bottom rim surviving as a warm `#776C5D`.
+
+**The clutter was in the tokens.** `preview_row_fill` `#6B4B33` → `#FFFDF8` and
+`preview_pill_fill` `#4A3728` → `#E6DAC6`, plus `PreviewRow` losing its 3px
+stroke and hard drop shadow. Rows are now divided by a hairline between them
+rather than a box around each. The mockup's 220px row pitch survives exactly:
+the `VBoxContainer`'s separation dropped 40 → 16 because the gap is paid on both
+sides of each hairline, and 180 + 16 + 8 + 16 = 220. The hairline counts as 8,
+its *combined minimum size* — the editor reports a laid-out `size.y` of 4 for
+the same node, which is the misleading number.
+
+**Wirausaha and Libur needed their own answer.** They have no target stat and so
+no gauge; on the old dark slab an empty row read fine, but the review gate
+confirmed they collapse into near-empty strips on cream. They now take the
+gauge's silhouette as a container: a stretched `StyleBoxTexture` whose alpha
+ramps 0.18 → 1.0 left to right, with the category motif watermarked at the solid
+end. Stretch, not tile — the `BarFill` fills tile, but a horizontal alpha ramp
+sawtooths back to transparent at every repeat if tiled.
+
+**Press state needed a script.** `Panel` has no pressed state, so `ActivityRow`
+swaps its container's variation on `button_down`/`button_up`. The wiring is
+deliberately ungated by `Engine.is_editor_hint()` — pure signal connection, no
+side effects — so the suite can emit both signals and assert the variation
+actually changes in both directions.
+
+**Red and green now mean something.** Every confirm was a green/red pair
+regardless of what was being confirmed. `DangerButton` is now reserved for
+actions that discard something and `SuccessButton` for something earned;
+ordinary confirms take `PrimaryButton` + `SecondaryButton`. Three exclusions
+were found by reading the button text rather than trusting the plan's file
+list — and the first would have been a real regression:
+
+- **StudentList's green/red are status badges, not actions.** They read BELUM /
+  SUDAH TERJADWALKAN. The colour *is* the information; recolouring them would
+  have destroyed it.
+- **The lobby's CLAIM is earned, not confirmed**, which is what `SuccessButton`
+  is for.
+- **QuitConfirmDialog was already correct** — `DangerButton` + `SecondaryButton`
+  on a genuinely destructive action.
+
+**Tests that pinned the old design were rewritten, not deleted.**
+`test_preview_row_is_a_bordered_panel` became
+`test_preview_row_is_an_unstroked_cream_panel`; the row-pitch test now asserts
+the composed pitch rather than a bare constant that no longer describes the
+spacing; `test_theme_factory`'s shadow test narrowed to the pill, which still
+consumes its tokens.
+
+**Placeholders left behind**, all recorded in `CLAUDE.md`: the recoloured
+`penjadwalan_card_bg.png`, `track_ghost.png`, and the two motifs
+`icon_ghost_koin.png` / `icon_ghost_sabit.png` — all generated with PowerShell +
+`System.Drawing`, all drop-replaceable. `preview_row_shadow_color`, `_size` and
+`_offset` are now read by no variation.
+
+Suite: 1133 tests across 85 suites.
+
 ## 2026-09-09 — Warm UI system, Part 1
 
 The palette, button geometry, bar contrast and lobby layout pass. Spec:

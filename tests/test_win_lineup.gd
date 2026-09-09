@@ -11,6 +11,8 @@ const _SCRIPT := "res://Scripts/EndGame/WinLineup.gd"
 
 const _SPLASHES := ["andi", "citra", "doni", "marcel", "shinta", "thea"]
 
+const _ROSTER := ["Marcel", "Doni", "Andi", "Citra", "Shinta", "Thea"]
+
 
 func suite_name() -> String:
 	return "win_lineup"
@@ -42,3 +44,46 @@ func test_the_shadow_ellipse_imported_and_is_soft() -> void:
 	var mid := img.get_pixel(int(w * 0.75), h / 2).a
 	assert_true(mid > 0.05 and mid < 0.9,
 		"partially transparent partway out (got %f) -- the falloff is a gradient" % mid)
+
+
+func test_every_roster_name_has_a_foot_anchor() -> void:
+	for name in _ROSTER:
+		assert_has_key(WinLineup.FOOT_ANCHORS, name,
+			name + " has a measured foot anchor")
+		var a: Dictionary = WinLineup.FOOT_ANCHORS[name]
+		assert_has_key(a, "centre_x", name + ".centre_x")
+		assert_has_key(a, "span", name + ".span")
+
+
+## The anchors are measured from the splash alpha at threshold 128 -- see
+## the spec's section 5. These pin the measurement so a re-export that
+## silently moves a figure is caught here rather than on screen.
+func test_the_anchors_match_the_measured_art() -> void:
+	var expected := {
+		"Doni": [587.0, 597.0],
+		"Andi": [488.0, 390.0],
+		"Citra": [530.0, 352.0],
+		"Shinta": [526.0, 186.0],
+		"Marcel": [480.0, 116.0],
+		"Thea": [546.0, 100.0],
+	}
+	for name in expected:
+		var a: Dictionary = WinLineup.FOOT_ANCHORS[name]
+		assert_true(is_equal_approx(a["centre_x"], expected[name][0]),
+			"%s centre_x is %f, expected %f" % [name, a["centre_x"], expected[name][0]])
+		assert_true(is_equal_approx(a["span"], expected[name][1]),
+			"%s span is %f, expected %f" % [name, a["span"], expected[name][1]])
+
+
+## Marcel leans on one foot and Thea is mid-stride, so their contact bands
+## are far narrower than their bodies. A shadow that narrow reads as a
+## smudge, so both carry an explicit widening factor.
+func test_the_narrow_contact_poses_are_widened() -> void:
+	for name in ["Marcel", "Thea"]:
+		var a: Dictionary = WinLineup.FOOT_ANCHORS[name]
+		assert_gt(a.get("widen", 1.0), 1.0,
+			name + " is one-footed and widens toward the body")
+	for name in ["Doni", "Andi", "Citra", "Shinta"]:
+		var a: Dictionary = WinLineup.FOOT_ANCHORS[name]
+		assert_true(is_equal_approx(a.get("widen", 1.0), 1.0),
+			name + " stands on two feet and is not widened")

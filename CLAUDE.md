@@ -178,6 +178,20 @@ Hard constraints, learned the hard way:
    returns a `scene_warning` when it isn't, naming the scene it wants. Open
    `Scenes/MainMenu/main_menu.tscn` before trusting a failure.
 
+5. **The suite cannot be run headless.** `--headless` with a scene that drives
+   `McpTestRunner` looks like a way to test without the MCP bridge. It is not,
+   for two reasons, both learned by trying it on 2026-09-09. `--script` with a
+   custom `SceneTree` replaces the main loop, so **no autoloads register** and
+   every suite touching `AudioDirector`/`GameState` fails to compile; running a
+   *scene* fixes that, but `Engine.is_editor_hint()` is then **false**, so every
+   `@tool` `_ready()` guard runs its real side effects and ~143 of 1099 tests
+   fail on nulls and dirty scene state that the editor never sees. Worse, the
+   `theme_rebake` suite's `ResourceSaver.save()` runs without the editor's UID
+   cache and **rewrites `Assets/Theme/kejartes_theme.tres` with every `uid://`
+   stripped**, and `AudioDirector` rewrites `default_bus_layout.tres` on boot.
+   Both are tracked files. If you must try it anyway, expect to `git checkout --`
+   those two afterwards. The bridge is the only real way to run these tests.
+
 Many tests are **source-text scans** (`src.contains(...)`) rather than
 behavioral, because a lot of the UI can't be instantiated headlessly. Follow
 that pattern where it's established.

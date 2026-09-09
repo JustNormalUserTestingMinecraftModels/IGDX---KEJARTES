@@ -1,8 +1,15 @@
 # Win screen lineup — design
 
-2026-09-09. Overhauls the win branch of `EndCutscene` so it shows the run's
-own roster standing with the teacher, on the new `win_background` art,
-instead of the placeholder CG it uses today.
+2026-09-09. Two independently shippable changes to the end-of-grade
+sequence:
+
+- **§Scope–§10** — the win branch of `EndCutscene` shows the run's own
+  roster standing with the teacher, on the new `win_background` art,
+  instead of the placeholder CG it uses today.
+- **§11** — `StatCheck` becomes tappable: a touch rushes the current
+  student's reveal to its finished state.
+
+They share no code and can land in either order.
 
 Note for whoever updates the docs: `CLAUDE.md:355` says the win backdrop is
 `cg2.jpg`, but `EndCutscene.tscn:4` actually references
@@ -96,14 +103,25 @@ Four `TextureRect` nodes authored in the `.tscn`. The script sets only
 `texture`, `visible`, `position` and `scale` — no node is constructed at
 runtime, so `tests/test_viewport_editability.gd`'s ratchet is not disturbed.
 
-A slot is a **bottom-centre anchor plus a scale plus a ground line**. That
-works uniformly across all six splashes because every figure centres on
-x ≈ 540 in its own 1080² canvas and sits with its feet near the canvas
-bottom; the variation that remains (Thea airborne, Doni crouched) is
-deliberate and is preserved by anchoring on the canvas, not on the figure.
+A slot is a **bottom-centre anchor plus a scale**. The splashes are being
+re-exported with every figure's feet on the canvas bottom edge (see
+"Re-exported art" below), which gives all six a shared baseline: the canvas
+bottom *is* the ground line, so anchoring a slot anchors the figure's feet.
 
-The ground line is carried separately from the bottom anchor because Thea's
-shadow decouples from her feet (§5).
+### Re-exported art
+
+The splashes in the Downloads folder as of this writing do not share a
+baseline — their lowest opaque row ranges from 984 (Thea) to 1079 (Andi).
+They are being repositioned so every figure's feet sit at the canvas bottom.
+
+This is a simplification, and the design assumes it. Two consequences:
+
+- The ground line collapses into the bottom anchor. No separate per-slot
+  ground value is needed.
+- Every measured number in §5 is taken from the *current* art and must be
+  re-derived from the final art before it is written into code. The
+  procedure is recorded in §5 so it can be repeated whenever the art
+  changes.
 
 Measured from the mockup: the four figures occupy art-space
 x 244–1386, y 818–1797 — the lower half of the painting, about 74% of its
@@ -149,7 +167,7 @@ is behaviourally testable without instantiating the cutscene.
     static func assign(names: Array[String]) -> Array[Dictionary]
 
 Returns one entry per student: the name, the slot it landed in, and that
-slot's anchor, scale and ground line. `EndCutscene` calls it once in
+slot's anchor and scale. `EndCutscene` calls it once in
 `_dress_for_verdict()` and applies the result to the four authored nodes.
 
 Keeping it out of `EndCutscene.gd` matters because that script is already
@@ -195,32 +213,52 @@ that class of artifact entirely.
 
 ### Per-character anchors
 
-Measured from the alpha of each splash — the lowest opaque row, and the
-horizontal span of opaque pixels within the bottom 6% of the figure. Held as
-a documented `const FOOT_ANCHORS` in `WinLineup.gd`, in each splash's own
-1080² canvas space:
+Each shadow takes its width and its horizontal centre from the figure above
+it. Held as a documented `const FOOT_ANCHORS` in `WinLineup.gd`, in each
+splash's own 1080² canvas space, as `{ centre_x, span }` — the vertical
+position is the canvas bottom for every character now that the art shares a
+baseline.
 
-| | foot centre x | ground y | foot span |
-|---|---|---|---|
-| Doni | 590 | 993 | 603 |
-| Andi | 488 | 1079 | 392 |
-| Citra | 514 | 1034 | 354 |
-| Sinta (Shinta) | 526 | 1014 | 188 |
-| Marcel | 391 | 1053 | 123 → widened |
-| Thea | 559 | 984 → lowered | 105 → widened, faded |
+**The numbers must be measured from the final art, not from this table.**
+The procedure, so it can be repeated whenever a splash is re-exported:
 
-Foot spans run 5× from Marcel to Doni, and foot centres drift up to 149px
-off canvas centre (Marcel at 391, not 540), which is why the shadows are
-measured per character rather than sharing one size.
+1. Read the PNG's alpha; treat a pixel as opaque above alpha 16.
+2. Find the lowest opaque row — the figure's baseline.
+3. Take the horizontal span of opaque pixels within the bottom 6% of the
+   figure's height. That band is the foot contact, not the whole silhouette.
+4. `centre_x` is the midpoint of that span; `span` is its width.
 
-Two documented exceptions, both arising from the poses:
+Measured against the *current*, pre-repositioning art, for scale rather than
+for use:
 
-- **Thea is airborne.** A shadow at her feet would nail a jumping figure to
-  the floor. Hers drops to the slot's ground line, below her, and goes wider
-  and fainter — which reads as height, and turns the pose into an asset.
+| | foot centre x | span |
+|---|---|---|
+| Doni | 590 | 603 |
+| Andi | 488 | 392 |
+| Citra | 514 | 354 |
+| Sinta (Shinta) | 526 | 188 |
+| Marcel | 391 | 123 |
+| Thea | 559 | 105 |
+
+The shape of that spread is what matters and will survive repositioning:
+spans run 5× from Marcel to Doni, and centres drift up to 149px off canvas
+centre (Marcel at 391, not 540). A single shared shadow size would be
+visibly wrong at both ends, which is why this table exists at all.
+
+### Two poses that need a judgement call
+
+Both are contact-area artifacts, and both should be re-checked against the
+final art rather than assumed:
+
 - **Marcel leans on one foot**, giving a 123px span. A shadow that narrow
-  under a standing figure reads as a smudge, so his widens toward his body's
-  true centre.
+  under a standing figure reads as a smudge rather than as contact, so his
+  widens toward his body's true centre.
+- **Thea is mid-jump.** In the current art her trailing foot is the only
+  contact and sits 96px above the canvas bottom. Once her foot is moved to
+  the bottom edge she will read as grounded, and the airborne handling
+  previously planned for her is moot — a normal shadow, sized from her
+  measured span, is correct. If the re-export instead keeps her visibly
+  airborne, her shadow should go wider and fainter to read as height.
 
 ### Knobs
 
@@ -276,13 +314,21 @@ Final node order:
 
 ## 8. Coordinates are estimates
 
-The group's overall extent — art-space x 244–1386, y 818–1797 — is measured
-by diffing `mockup_winscreen.png` against `win_background.png`. The
-per-character foot anchors in §5 are measured from each splash's alpha.
+Three tiers, and it matters which is which:
 
-The **four individual slot anchors and scales are estimates**, seeded from
-the mockup and tuned in a single editor screenshot pass. Stated plainly
-here so nobody later mistakes them for derived values.
+**Measured and durable.** The group's overall extent — art-space
+x 244–1386, y 818–1797 — from diffing `mockup_winscreen.png` against
+`win_background.png`. The backdrop does not change, so this holds.
+
+**Measured but provisional.** The per-character foot anchors in §5, taken
+from each splash's alpha. The splashes are being re-exported on a shared
+baseline, so these must be re-derived from the final art by the procedure in
+§5 before they are written into `FOOT_ANCHORS`. The numbers in the table are
+there to show the shape of the spread, not to be copied into code.
+
+**Estimated.** The four individual slot anchors and scales, seeded from the
+mockup and tuned in a single editor screenshot pass. Stated plainly here so
+nobody later mistakes them for derived values.
 
 ## 9. Tests
 
@@ -317,3 +363,100 @@ For the `CLAUDE.md` debt list:
 `cg2.jpg`'s entry under **End cutscene art** is retired for the win backdrop,
 which is now real art. The win badge line goes with it. The lose backdrop and
 both stamps stay listed.
+
+## 11. StatCheck: tap to rush the current student
+
+A separate change to a separate screen, sharing only the end-of-grade
+sequence. `StatCheck` plays one card per student — slide in, three bars fill
+in turn, cleared stats light the star meter, card slides out. A touch
+anywhere now rushes **the current student only** to its finished state. The
+next student animates normally, and can be rushed by its own tap.
+
+### Reversing a recorded decision
+
+`StatCheck.gd:14` currently reads *"Deliberately NOT tap-driven: the check
+is a reveal the player watches."* That comment is to be **rewritten, not
+deleted**, so the next reader sees the decision changed on purpose: the
+check is still a reveal, but the player may now rush a student they have
+already read.
+
+### What a tap does
+
+Rushes the reveal, keeps the read beat:
+
+| Beat | On tap |
+|---|---|
+| Slide-in (0.45s) | rushed |
+| Hold before bars (0.4s) | rushed |
+| Three bar fills (0.9s each) | rushed; pops still fire |
+| Star meter steps (0.35s each) | rushed |
+| Hold after bars (0.4s) | **plays in full** |
+| Slide-out (0.45s) | plays in full |
+
+The trailing hold and the slide-out are deliberately left alone. The point
+of the tap is to reach the numbers sooner, not to hide them — rushing the
+exit as well would flash the result past before it can be read. A second tap
+during the same student rushes the exit too, for anyone who has already
+read it.
+
+Taps during the closing white fade are ignored; the hand-off is imminent and
+there is nothing left to reveal.
+
+### Mechanism
+
+Every awaited beat in `_run_check()` is a `Tween`. Skipping is therefore
+uniform: **hold the live tween in a member and speed-scale it.**
+
+    const RUSH_SPEED := 1000.0
+    _live_tween.set_speed_scale(RUSH_SPEED)
+
+This is the load-bearing detail. `Tween.kill()` does **not** emit
+`finished`, so killing a tween leaves the pending `await` hanging forever
+and the sequence deadlocks. Speed-scaling finishes it within a frame *and*
+still emits, so every completion path downstream — `StatCheckRow.cleared`,
+the full-bar `pop()`, the `filled` signal, the star credit in the loop —
+runs exactly as it does today. No parallel "snap" code path, and no risk of
+a stat being counted twice.
+
+Three supporting changes:
+
+- **`StatCheck._hold()`** replaces the two
+  `get_tree().create_timer(hold_seconds).timeout` awaits with a
+  `create_tween().tween_interval(hold_seconds)`. A `SceneTreeTimer` cannot
+  be sped up; a tween can. This is what lets the entry hold be rushed by the
+  same one mechanism.
+- **`StatCheckRow.rush()`** speed-scales the tween `fill()` is awaiting.
+  `fill()` itself is unchanged.
+- **`StarMeter.rush()`** speed-scales its `_tween`, which the class already
+  tracks and kills on re-entry.
+
+### Input
+
+`_unhandled_input()` on the `StatCheck` root, catching
+`InputEventScreenTouch` and `InputEventMouseButton` on press. No node is
+added — there is nothing else interactive on this screen to compete with,
+and a full-screen catcher would be one more thing to keep in front of the
+card.
+
+`_rushing` is set on tap and cleared at the top of each student's iteration,
+which is what scopes the skip to one student.
+
+### Audio
+
+While `_rushing`, the per-row `tally` cue is suppressed and a single one
+plays when the student's stars are credited. Three cues fired inside one
+frame would overlap into a click.
+
+### Tests
+
+Added to the StatCheck suite, all behavioural against non-coroutine surface
+or source scans, per the project's constraint that no test may await:
+
+- `RUSH_SPEED` is a named const, not an inline literal.
+- `_rushing` resets per student, so a tap does not leak into the next one.
+- `StatCheckRow.rush()` and `StarMeter.rush()` speed-scale rather than kill
+  — asserted by source scan, since killing is the failure mode that
+  deadlocks the screen.
+- The holds are tween-based, not `SceneTreeTimer`-based.
+- The trailing hold and slide-out are not rushed by the first tap.
+- The header comment no longer claims the screen is not tap-driven.

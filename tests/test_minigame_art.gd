@@ -141,3 +141,19 @@ func test_pilihanganda_uses_the_display_font() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
 	assert_true(src.contains("Boohong.otf"),
 		"the scene must set its font export to the Boohong display face for heading text")
+
+func test_choice_buttons_animate_on_both_style_paths() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
+	assert_false(src.contains("_make_choice_shadow"),
+		"the per-button shadow Panel is superseded by the stylebox's own shadow")
+	assert_true(src.contains("answer_btn_font_color"),
+		"answer buttons need their own ink colour: the theme's Button font is white")
+	var flat_branch := src.find("if choice_btn_normal_texture == null:")
+	var press_wiring := src.find("button_down.connect")
+	assert_true(flat_branch != -1, "the flat-style branch should still exist")
+	assert_true(press_wiring > flat_branch,
+		"press wiring must come after the branch so both paths reach it")
+	if press_wiring > flat_branch:
+		var branch_body := src.substr(flat_branch, press_wiring - flat_branch)
+		assert_false(branch_body.contains("return"),
+			"the flat path must fall through to the shared press-animation wiring")

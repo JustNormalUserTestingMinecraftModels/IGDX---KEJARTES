@@ -111,6 +111,9 @@ extends BaseMinigame
 @export var answer_btn_correct_style: StyleBox = null
 ## Style flashed on a button the player picked incorrectly.
 @export var answer_btn_wrong_style:   StyleBox = null
+## Ink for answer buttons on the flat-StyleBox path. The theme's Button font
+## colour is text_on_brand (white), which vanishes on a light card.
+@export var answer_btn_font_color: Color = Color("1e2436")
 
 # ─── Visual - Colors ─────────────────────────────────────────────────────────
 @export_group("Visual - Colors")
@@ -309,21 +312,34 @@ func _show_current_question() -> void:
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	await tween_in.finished
 
-## Applies texture-based StyleBoxes and press animations to choice buttons.
+## Applies the answer-button chrome -- texture StyleBoxes when a PNG is
+## supplied, otherwise the rounded-rect StyleBoxes authored in the Inspector.
+## Both paths fall through to the shared press-shrink wiring at the end.
 func _apply_choice_btn_textures(btn: Button) -> void:
 	if choice_btn_normal_texture == null:
 		if answer_btn_normal_style:
 			btn.add_theme_stylebox_override("normal", answer_btn_normal_style)
-		return
-
-	var sb_normal   = _make_btn_stylebox(choice_btn_normal_texture, Color.WHITE)
-	var sb_pressed  = _make_btn_stylebox(choice_btn_normal_texture, choice_btn_pressed_tint)
-	var sb_disabled = _make_btn_stylebox(choice_btn_normal_texture, choice_btn_disabled_tint)
-	btn.add_theme_stylebox_override("normal",   sb_normal)
-	btn.add_theme_stylebox_override("hover",    sb_normal)
-	btn.add_theme_stylebox_override("pressed",  sb_pressed)
-	btn.add_theme_stylebox_override("disabled", sb_disabled)
-	btn.add_theme_stylebox_override("focus",    sb_normal)
+			btn.add_theme_stylebox_override("hover",  answer_btn_normal_style)
+			btn.add_theme_stylebox_override("focus",  answer_btn_normal_style)
+			var sb_pressed_flat := answer_btn_normal_style.duplicate() as StyleBoxFlat
+			if sb_pressed_flat:
+				sb_pressed_flat.bg_color = sb_pressed_flat.bg_color * choice_btn_pressed_tint
+				btn.add_theme_stylebox_override("pressed", sb_pressed_flat)
+			var sb_disabled_flat := answer_btn_normal_style.duplicate() as StyleBoxFlat
+			if sb_disabled_flat:
+				sb_disabled_flat.bg_color = sb_disabled_flat.bg_color * choice_btn_disabled_tint
+				btn.add_theme_stylebox_override("disabled", sb_disabled_flat)
+		btn.add_theme_color_override("font_color", answer_btn_font_color)
+		btn.add_theme_color_override("font_disabled_color", answer_btn_font_color)
+	else:
+		var sb_normal   = _make_btn_stylebox(choice_btn_normal_texture, Color.WHITE)
+		var sb_pressed  = _make_btn_stylebox(choice_btn_normal_texture, choice_btn_pressed_tint)
+		var sb_disabled = _make_btn_stylebox(choice_btn_normal_texture, choice_btn_disabled_tint)
+		btn.add_theme_stylebox_override("normal",   sb_normal)
+		btn.add_theme_stylebox_override("hover",    sb_normal)
+		btn.add_theme_stylebox_override("pressed",  sb_pressed)
+		btn.add_theme_stylebox_override("disabled", sb_disabled)
+		btn.add_theme_stylebox_override("focus",    sb_normal)
 
 	btn.pivot_offset = Vector2(btn.size.x / 2.0, answer_btn_min_height / 2.0)
 	btn.resized.connect(func(): if is_instance_valid(btn): btn.pivot_offset = btn.size / 2.0)

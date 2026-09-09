@@ -32,7 +32,7 @@
 Copy the new art into the repo, downscaling the four oversized sources. The project imports textures at `compress/mode=0` (lossless on disk, RGBA8 in VRAM), so a source's pixel dimensions are its VRAM cost. Untransformed, the seven daily-login panels alone would cost 658 MB.
 
 **Files:**
-- Create: `scripts_tmp/downscale_assets.py` (scratchpad — not committed)
+- Create: `downscale_assets.py` **in the session scratchpad directory, never inside the repo** — it is a throwaway tool, and a stray `.py` under the project root would show up in `git status` and in Godot's filesystem scan
 - Create: `Assets/Images/UI/uang.png`, `Assets/Images/UI/icon_daily_login.png`
 - Create: `Assets/Images/UI/DailyLogin/day1.png` … `day7.png`
 - Create: `Assets/Images/EndGame/Ranks/rank_s.png`, `rank_a.png`, `rank_b.png`, `rank_c.png`, `rank_d.png`
@@ -580,7 +580,10 @@ func test_schoolday_sweeps_the_sky_once_across_the_whole_day() -> void:
 	# them, so it visibly froze at midday behind the popup. One call now,
 	# spanning both phases.
 	var src := FileAccess.get_file_as_string(SCHOOLDAY_SCRIPT)
-	assert_eq(src.count("\"transition_to\""), 1,
+	# Count CALL sites, not mentions: each one is guarded by a
+	# has_method("transition_to") test, so the bare string appears twice
+	# per sweep and counting it would read 2 for a single call.
+	assert_eq(src.count(".call(\"transition_to\""), 1,
 		"the sky is swept exactly once per day")
 	assert_false(src.contains("BookClockWidget.Phase.MIDDAY"),
 		"nothing drives the sky to a midday pose any more")

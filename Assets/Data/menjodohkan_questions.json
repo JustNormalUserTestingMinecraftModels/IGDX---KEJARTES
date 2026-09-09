@@ -1,8 +1,8 @@
 [
-  { "question": "Gambar apakah di atas?", "answer": "Wayang Kulit", "image": "res://Assets/Images/wayang_kulit.jpg" },
-  { "question": "Gambar apakah di atas?", "answer": "Garuda Pancasila", "image": "res://Assets/Images/garuda_pancasila.jpg" },
-  { "question": "Gambar apakah di atas?", "answer": "Candi Borobudur", "image": "res://Assets/Images/borobudur_temple.jpg" },
-  { "question": "Gambar apakah di atas?", "answer": "Komodo", "image": "res://Assets/Images/komodo_dragon.jpg" },
+  { "question": "Gambar apakah di atas?", "answer": "Wayang Kulit", "image": "res://Assets/Images/wayang.png" },
+  { "question": "Gambar apakah di atas?", "answer": "Garuda Pancasila", "image": "res://Assets/Images/bhineka_tunggal_ika.png" },
+  { "question": "Gambar apakah di atas?", "answer": "Candi Borobudur", "image": "res://Assets/Images/borobudur.png" },
+  { "question": "Gambar apakah di atas?", "answer": "Komodo", "image": "res://Assets/Images/komodo.png" },
   { "question": "Ibukota negara Indonesia adalah...", "answer": "Jakarta" },
   { "question": "Pulau terluas di Indonesia adalah...", "answer": "Papua" },
   { "question": "Semboyan nasional Indonesia adalah...", "answer": "Bhinneka Tunggal Ika" },

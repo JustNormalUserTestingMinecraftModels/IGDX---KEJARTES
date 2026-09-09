@@ -16,7 +16,7 @@ extends BaseMinigame
 		"question": "Dari gambar di atas, monumen ikonik apakah yang berdiri megah di Jakarta?",
 		"choices": ["Monumen Nasional (Monas)", "Candi Prambanan", "Tugu Muda Semarang", "Monumen Pancasila Sakti"],
 		"correct_index": 0,
-		"image": "res://Assets/Images/monas_monument.jpg"
+		"image": "res://Assets/Images/monas.png"
 	},
 	{
 		"question": "Apa nama ibu kota negara Indonesia saat ini?",

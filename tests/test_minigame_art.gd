@@ -157,3 +157,25 @@ func test_choice_buttons_animate_on_both_style_paths() -> void:
 		var branch_body := src.substr(flat_branch, press_wiring - flat_branch)
 		assert_false(branch_body.contains("return"),
 			"the flat path must fall through to the shared press-animation wiring")
+
+func test_every_question_image_resolves() -> void:
+	for data_path in ["res://Assets/Data/pilihanganda_questions.json",
+			"res://Assets/Data/menjodohkan_questions.json"]:
+		var parsed = JSON.parse_string(FileAccess.get_file_as_string(data_path))
+		assert_true(parsed is Array, data_path + " must parse as a JSON Array")
+		if parsed is Array:
+			for entry in parsed:
+				var img: String = str(entry.get("image", ""))
+				if img != "":
+					assert_true(ResourceLoader.exists(img),
+						data_path + " points at a missing image: " + img)
+
+func test_no_placeholder_quiz_photos_remain() -> void:
+	var stale := ["monas_monument", "borobudur_temple", "komodo_dragon",
+			"wayang_kulit", "garuda_pancasila"]
+	for p in ["res://Assets/Data/pilihanganda_questions.json",
+			"res://Assets/Data/menjodohkan_questions.json",
+			"res://Scripts/Minigames/Akademis/PilihanGanda.gd"]:
+		var src := FileAccess.get_file_as_string(p)
+		for stale_name in stale:
+			assert_false(src.contains(stale_name), p + " still references " + stale_name)

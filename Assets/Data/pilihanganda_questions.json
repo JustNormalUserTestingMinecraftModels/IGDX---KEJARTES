@@ -3,19 +3,19 @@
     "question": "Dari gambar di atas, monumen ikonik apakah yang berdiri megah di Jakarta?",
     "choices": ["Monumen Nasional (Monas)", "Candi Prambanan", "Tugu Muda Semarang", "Monumen Pancasila Sakti"],
     "correct_index": 0,
-    "image": "res://Assets/Images/monas_monument.jpg"
+    "image": "res://Assets/Images/monas.png"
   },
   {
     "question": "Dari gambar di atas, candi apakah yang terletak di Jawa Tengah dan dikenal sebagai candi Buddha terbesar?",
     "choices": ["Candi Borobudur", "Candi Prambanan", "Candi Mendut", "Candi Dieng"],
     "correct_index": 0,
-    "image": "res://Assets/Images/borobudur_temple.jpg"
+    "image": "res://Assets/Images/borobudur.png"
   },
   {
     "question": "Dari gambar di atas, hewan endemik khas Indonesia apakah ini?",
     "choices": ["Komodo", "Babi Rusa", "Anoa", "Harimau Sumatra"],
     "correct_index": 0,
-    "image": "res://Assets/Images/komodo_dragon.jpg"
+    "image": "res://Assets/Images/komodo.png"
   },
   {
     "question": "Apa nama ibu kota negara Indonesia saat ini?",

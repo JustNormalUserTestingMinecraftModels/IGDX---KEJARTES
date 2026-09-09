@@ -1237,12 +1237,23 @@ func test_row_keeps_its_fill_tween_so_it_can_be_rushed() -> void:
 		"the rush multiplier is a named const, not an inline literal")
 
 
-func test_rushing_an_idle_row_is_harmless() -> void:
+## rush() must be safe before anything is in flight -- a tap during the
+## card's slide-in reaches it with no fill tween yet. It should leave the
+## row exactly as set_result() armed it, not quietly complete the fill.
+func test_rushing_an_idle_row_leaves_it_armed_but_unmoved() -> void:
 	var row = load(_ROW_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(row)
 	track(row)
+	row.set_result(45.0, 60.0)
 	row.rush()
-	assert_true(true, "rushing a row that never started does not error")
+	assert_true(is_equal_approx(row.get_node("Bar").value, 0.0),
+		"rushing before fill() started does not move the bar")
+	assert_true(is_equal_approx(row.target_ratio, 75.0), "the armed ratio survives")
+	assert_false(row.cleared, "and the row is not marked cleared")
+	Engine.get_main_loop().root.remove_child(row)
 ```
+
+Follow the established pattern in this file: instantiate, `add_child` to `Engine.get_main_loop().root` so `@onready` vars resolve, `track()`, then `remove_child` at the end — see `test_row_set_result_arms_the_target_without_animating:55`.
 
 - [ ] **Step 2: Run it to verify it fails**
 
@@ -1348,12 +1359,24 @@ func test_star_meter_can_be_rushed() -> void:
 	assert_true(src.contains("const RUSH_SPEED"), "with a named multiplier")
 
 
-func test_rushing_an_idle_meter_is_harmless() -> void:
-	var meter = load("res://Scenes/EndGame/StatCheck.tscn").instantiate() \
-		.get_node("MarginContainer/Column/StarMeter")
+## rush() must be safe before animate_to() has ever run -- the first tap can
+## land before any stat has cleared. It should leave the rendered value
+## alone rather than snapping the meter somewhere.
+func test_rushing_an_idle_meter_leaves_the_stars_where_they_are() -> void:
+	var screen = load(_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(screen)
+	track(screen)
+	var meter = screen.get_node("MarginContainer/Column/StarMeter")
+	meter.set_stars(1.5)
 	meter.rush()
-	assert_true(true, "rushing a meter that never animated does not error")
+	assert_true(is_equal_approx(meter.get_node("Star1").value, 100.0),
+		"the first star stays full after an idle rush")
+	assert_true(is_equal_approx(meter.get_node("Star2").value, 50.0),
+		"the second stays half")
+	Engine.get_main_loop().root.remove_child(screen)
 ```
+
+Mirrors `test_star_meter_maps_a_float_onto_three_star_bars:183`. Instantiating `StatCheck.tscn` in-editor is safe: `_ready()` returns at the `Engine.is_editor_hint()` guard before it starts the sequence.
 
 Note `StarMeter.animate_to()` legitimately calls `_tween.kill()` before starting a new tween — that is killing its *own* previous tween, which nothing awaits. Only the awaited tween must never be killed, so do not add a blanket no-`.kill()` assertion to this file.
 

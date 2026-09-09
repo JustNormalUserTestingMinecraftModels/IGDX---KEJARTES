@@ -463,9 +463,23 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["EventDialogHeaderLabel", tokens.font_h1 + 6, tokens.text_primary, false, true],
 		# Same pass: the event dialog's benefit/cost lines and description
 		# sat in 22px CaptionLabel, unreadably small on a 1080px phone.
-		# Body face (not display), a moderate bump over font_body_size(28)
-		# to 32px -- readable without competing with the dialog's headings.
-		["EventBodyLabel", tokens.font_body_size + 4, tokens.text_primary, false, false],
+		# Body face (not display), over font_body_size(28). Raised again on
+		# 2026-09-09 from +4 to +8 after the trait popup was reviewed on a
+		# phone: 32px was legible but cramped in a modal that fills most of
+		# the screen. Also used by StatDetailPopup and
+		# EventStudentSelectDialog, which want the same bump.
+		["EventBodyLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# The trait popup's header sits on a per-trait tinted panel
+		# (TraitPopupHeader, self_modulated brand_primary for a quirk and
+		# cat_istirahat for a persona), so its two labels need CREAM text.
+		# Every other label variation above is text_primary, which is why
+		# these exist rather than reusing TitleLabel/H2Label: dark ink on
+		# either of those tints is close to unreadable. Display face --
+		# they are the modal's title, and the review note was that they
+		# read as body copy. No outline: the panel behind them is opaque
+		# and flat, so an outline would only thicken the letterforms.
+		["TraitPopupKindLabel", tokens.font_title, tokens.text_on_brand, false, true],
+		["TraitPopupNameLabel", tokens.font_h2, tokens.text_on_brand, false, true],
 	]
 	for spec in specs:
 		var name: String = spec[0]

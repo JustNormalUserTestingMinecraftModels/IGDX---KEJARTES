@@ -261,6 +261,43 @@ func test_superseded_labels_are_removed_from_the_scenes() -> void:
 					"%s must not declare KertasMurid%d/%s" % [scene_path, i, label_name])
 
 
+## The ~240px band between the stat bars and the trait pills was dead
+## paper. It now carries the student's specialty, which is the single most
+## decision-relevant fact when approving a roster -- their own category
+## costs 0.6x energy and mood where everything else costs 1.20x -- and was
+## previously shown nowhere on the card.
+##
+## The heading is static in the scene; the value is filled per student.
+## Checked on both scenes and all six cards, and the mapping is exercised
+## for every specialty the roster actually ships, because the stored key
+## ("SeniBudaya") is not the word the player should read ("Seni Budaya").
+func test_every_card_shows_the_students_specialty() -> void:
+	for scene_path in _SCENES:
+		var src := FileAccess.get_file_as_string(scene_path)
+		for i in range(1, 7):
+			for node_name in ["MinatLabel", "MinatValue"]:
+				assert_true(src.contains(
+					'[node name="%s" type="Label" parent="KertasMurid%d"'
+						% [node_name, i]),
+					"%s missing KertasMurid%d/%s" % [scene_path, i, node_name])
+
+	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var inst := scene.instantiate()
+	track(inst)
+	var card := inst.get_node("KertasMurid1") as Control
+	var value := card.get_node("MinatValue") as Label
+
+	for pair in [["Akademis", "Akademis"], ["Olahraga", "Olahraga"],
+			["SeniBudaya", "Seni Budaya"]]:
+		StudentCardView.build_minat_row(card, {"hobby_category": pair[0]})
+		assert_eq(value.text, pair[1],
+			"specialty %s must read as '%s'" % [pair[0], pair[1]])
+
+	# An unknown or missing key must not crash or print a raw placeholder.
+	StudentCardView.build_minat_row(card, {})
+	assert_eq(value.text, "", "a missing specialty must render as empty")
+
+
 ## Every card carries the "Sifat Pasif:" heading above its two trait
 ## pills, so the pills don't float unlabelled the way they used to.
 func test_every_card_has_the_sifat_pasif_heading() -> void:
@@ -333,12 +370,12 @@ const _TRAIT_PILL_GEOMETRY := {
 	"KutuBuku": {
 		"anchor_top": 0.0, "anchor_bottom": 0.0,
 		"offset_left": -421.0, "offset_right": 421.0,
-		"offset_top": 1378.0, "offset_bottom": 1448.0,
+		"offset_top": 1328.0, "offset_bottom": 1398.0,
 	},
 	"KutuBuku2": {
 		"anchor_top": 0.0, "anchor_bottom": 0.0,
 		"offset_left": -421.0, "offset_right": 421.0,
-		"offset_top": 1456.0, "offset_bottom": 1526.0,
+		"offset_top": 1406.0, "offset_bottom": 1476.0,
 	},
 }
 
@@ -423,7 +460,8 @@ func test_trait_pills_do_not_overlap_neighbors() -> void:
 	# nothing on screen. Reading PILL_RECTS here keeps the test measuring
 	# the layout the player sees.
 	var stack := ["Kepribadian1", "Kepribadian2", "Akademis1", "Akademis2",
-		"Akademis3", "SifatPasifLabel", "KutuBuku", "KutuBuku2", "Aprove"]
+		"Akademis3", "MinatLabel", "MinatValue", "SifatPasifLabel",
+		"KutuBuku", "KutuBuku2", "Aprove"]
 	for i in range(1, 7):
 		var card := inst.get_node("KertasMurid%d" % i)
 		for a in range(stack.size()):

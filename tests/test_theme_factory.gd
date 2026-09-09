@@ -332,6 +332,10 @@ const DISPLAY_ROSTER := [
 	"LobbyNavTile", "LobbyCtaButton",
 	# 2026-09-09 student card arrow buttons: circles with brand fill.
 	"CardArrowButton",
+	# 2026-09-09 trait popup readability: cream display labels for the
+	# header, which is tinted per trait kind and so cannot use any of the
+	# text_primary label variations.
+	"TraitPopupKindLabel", "TraitPopupNameLabel",
 ]
 
 

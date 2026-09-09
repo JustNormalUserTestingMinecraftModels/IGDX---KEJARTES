@@ -32,17 +32,26 @@ signal closed
 ## How long the scrim takes to fade back out on close.
 @export var scrim_fade_out_seconds: float = 0.22
 
-## Player-facing prefix on every trait description. Indonesian, ships as-is.
-const EFFECT_PREFIX := "💡  EFEK GAMEPLAY:\n"
+## The header glyph for each trait kind. These were the literal emoji
+## characters "⚡" and "🌟" until 2026-09-09, drawn as TEXT in a Label --
+## emoji as UI iconography, which this project bans. They are real
+## transparent PNGs now, drawn in a TextureRect, and the glyph no longer
+## depends on whichever emoji font the device happens to ship.
+const _GLYPH_ART := {
+	"quirk": "res://Assets/Images/UI/icon_trait_quirk.png",
+	"persona": "res://Assets/Images/UI/icon_trait_persona.png",
+}
+
 
 @onready var scrim: ColorRect = $Scrim
 @onready var card: PanelContainer = $Scrim/Card
 @onready var header: PanelContainer = $Scrim/Card/Layout/Header
-@onready var glyph_label: Label = $Scrim/Card/Layout/Header/Row/GlyphLabel
+@onready var glyph_icon: TextureRect = $Scrim/Card/Layout/Header/Row/GlyphIcon
 @onready var kind_label: Label = $Scrim/Card/Layout/Header/Row/Titles/KindLabel
 @onready var name_label: Label = $Scrim/Card/Layout/Header/Row/Titles/NameLabel
 @onready var close_button: Button = $Scrim/Card/Layout/Header/Row/CloseButton
-@onready var description_label: Label = $Scrim/Card/Layout/Body/DescriptionLabel
+@onready var effect_label: Label = $Scrim/Card/Layout/Body/BodyLayout/EffectLabel
+@onready var description_label: Label = $Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel
 
 ## Guards against a double close: the exit tween and the scrim tap can both
 ## fire, and freeing twice crashes.
@@ -81,10 +90,13 @@ func configure(trait_kind: String, trait_name: String, description: String) -> v
 	var is_quirk := trait_kind == "quirk"
 	var tokens := DesignTokens.load_default()
 	header.self_modulate = tokens.brand_primary if is_quirk else tokens.cat_istirahat
-	glyph_label.text = "⚡" if is_quirk else "🌟"
+	glyph_icon.texture = load(_GLYPH_ART["quirk" if is_quirk else "persona"])
 	kind_label.text = "QUIRK" if is_quirk else "PERSONA"
 	name_label.text = trait_name
-	description_label.text = EFFECT_PREFIX + description
+	# "EFEK GAMEPLAY:" is its own display-font heading now. It used to be a
+	# prefix glued onto the front of this same label, which meant it could
+	# only ever wear the body face -- the readability note in review.
+	description_label.text = description
 
 
 ## Play the reveal: place the card above the bottom edge, pop it in, fade the

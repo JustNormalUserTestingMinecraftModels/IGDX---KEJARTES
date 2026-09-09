@@ -92,6 +92,8 @@ static func populate(card: Control, student: Dictionary,
 	if ak3 and ak3 is ProgressBar:
 		ak3.value = student.get("akademis3", 0)
 
+	build_minat_row(card, student)
+
 	# -- Upgrade bar visuals & replace trait labels with animated badges --
 	build_stat_bars(card, student, on_bar_input)
 	build_icon_clusters(card, student, on_bar_input)
@@ -162,6 +164,41 @@ static func build_stat_bars(kertas: Control, s_data: Dictionary,
 			bar.set_stat(values[bar_name])
 		else:
 			bar.value = values[bar_name]
+
+
+## The specialty's stored key mapped to the Indonesian the player reads.
+## Only "SeniBudaya" actually differs; the other two are already the words
+## the UI uses. Kept as a table anyway so a new specialty gets its display
+## name here rather than in a string branch somewhere.
+##
+## These keys are `hobby_category` on GameState.approved_students, NOT the
+## StudentData specialty names -- the two vocabularies differ across that
+## boundary (see CLAUDE.md), and "Akademik" is normalised to "Akademis"
+## before it reaches a card.
+const _MINAT_NAMES := {
+	"Akademis": "Akademis",
+	"SeniBudaya": "Seni Budaya",
+	"Olahraga": "Olahraga",
+}
+
+
+## Fills the specialty row that sits between the stat bars and the trait
+## pills.
+##
+## The band was dead paper until 2026-09-09. Specialty is the single most
+## decision-relevant fact when approving a roster -- a student's own
+## category costs 0.6x energy and mood where everything else costs 1.20x
+## (StudentData.get_category_efficiency_multiplier) -- and it was shown
+## nowhere on the card, so a player picking a roster was guessing.
+##
+## The heading is a static node in the .tscn; only the value is per
+## student, which is all this touches.
+static func build_minat_row(card: Control, student: Dictionary) -> void:
+	var value := card.get_node_or_null("MinatValue") as Label
+	if value == null:
+		return
+	var key: String = student.get("hobby_category", "")
+	value.text = _MINAT_NAMES.get(key, key)
 
 
 const _ICON_SIZE := 128.0

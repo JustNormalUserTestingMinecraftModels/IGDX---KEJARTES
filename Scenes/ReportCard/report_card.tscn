@@ -60,9 +60,9 @@ stretch_mode = 6
 [node name="SifatPasifLabel" type="Label" parent="KertasMurid6" unique_id=1087885955]
 layout_mode = 0
 offset_left = 119.0
-offset_top = 1318.0
+offset_top = 1268.0
 offset_right = 500.0
-offset_bottom = 1370.0
+offset_bottom = 1320.0
 theme_type_variation = &"CardSectionLabel"
 text = "Sifat Pasif:"
 
@@ -72,9 +72,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1378.0
+offset_top = 1328.0
 offset_right = 421.0
-offset_bottom = 1448.0
+offset_bottom = 1398.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -84,9 +84,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1456.0
+offset_top = 1406.0
 offset_right = 421.0
-offset_bottom = 1526.0
+offset_bottom = 1476.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -244,6 +244,23 @@ theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
+[node name="MinatLabel" type="Label" parent="KertasMurid6" unique_id=1073857925]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1120.0
+offset_right = 500.0
+offset_bottom = 1172.0
+theme_type_variation = &"CardSectionLabel"
+text = "Minat:"
+
+[node name="MinatValue" type="Label" parent="KertasMurid6" unique_id=72218747]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1180.0
+offset_right = 961.0
+offset_bottom = 1250.0
+theme_type_variation = &"H2Label"
+
 [node name="KertasMurid5" type="TextureRect" parent="." unique_id=1004659439]
 layout_mode = 0
 offset_left = -70.0
@@ -266,9 +283,9 @@ stretch_mode = 6
 [node name="SifatPasifLabel" type="Label" parent="KertasMurid5" unique_id=1045905773]
 layout_mode = 0
 offset_left = 119.0
-offset_top = 1318.0
+offset_top = 1268.0
 offset_right = 500.0
-offset_bottom = 1370.0
+offset_bottom = 1320.0
 theme_type_variation = &"CardSectionLabel"
 text = "Sifat Pasif:"
 
@@ -278,9 +295,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1378.0
+offset_top = 1328.0
 offset_right = 421.0
-offset_bottom = 1448.0
+offset_bottom = 1398.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -290,9 +307,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1456.0
+offset_top = 1406.0
 offset_right = 421.0
-offset_bottom = 1526.0
+offset_bottom = 1476.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -450,6 +467,23 @@ theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
+[node name="MinatLabel" type="Label" parent="KertasMurid5" unique_id=751423666]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1120.0
+offset_right = 500.0
+offset_bottom = 1172.0
+theme_type_variation = &"CardSectionLabel"
+text = "Minat:"
+
+[node name="MinatValue" type="Label" parent="KertasMurid5" unique_id=1494513118]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1180.0
+offset_right = 961.0
+offset_bottom = 1250.0
+theme_type_variation = &"H2Label"
+
 [node name="KertasMurid4" type="TextureRect" parent="." unique_id=74882940]
 visible = false
 layout_mode = 0
@@ -473,9 +507,9 @@ stretch_mode = 6
 [node name="SifatPasifLabel" type="Label" parent="KertasMurid4" unique_id=1982110775]
 layout_mode = 0
 offset_left = 119.0
-offset_top = 1318.0
+offset_top = 1268.0
 offset_right = 500.0
-offset_bottom = 1370.0
+offset_bottom = 1320.0
 theme_type_variation = &"CardSectionLabel"
 text = "Sifat Pasif:"
 
@@ -485,9 +519,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1378.0
+offset_top = 1328.0
 offset_right = 421.0
-offset_bottom = 1448.0
+offset_bottom = 1398.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -497,9 +531,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1456.0
+offset_top = 1406.0
 offset_right = 421.0
-offset_bottom = 1526.0
+offset_bottom = 1476.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -657,6 +691,23 @@ theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
+[node name="MinatLabel" type="Label" parent="KertasMurid4" unique_id=1716954477]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1120.0
+offset_right = 500.0
+offset_bottom = 1172.0
+theme_type_variation = &"CardSectionLabel"
+text = "Minat:"
+
+[node name="MinatValue" type="Label" parent="KertasMurid4" unique_id=2101736681]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1180.0
+offset_right = 961.0
+offset_bottom = 1250.0
+theme_type_variation = &"H2Label"
+
 [node name="KertasMurid3" type="TextureRect" parent="." unique_id=2031333750]
 visible = false
 layout_mode = 0
@@ -680,9 +731,9 @@ stretch_mode = 6
 [node name="SifatPasifLabel" type="Label" parent="KertasMurid3" unique_id=386757310]
 layout_mode = 0
 offset_left = 119.0
-offset_top = 1318.0
+offset_top = 1268.0
 offset_right = 500.0
-offset_bottom = 1370.0
+offset_bottom = 1320.0
 theme_type_variation = &"CardSectionLabel"
 text = "Sifat Pasif:"
 
@@ -692,9 +743,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1378.0
+offset_top = 1328.0
 offset_right = 421.0
-offset_bottom = 1448.0
+offset_bottom = 1398.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -704,9 +755,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1456.0
+offset_top = 1406.0
 offset_right = 421.0
-offset_bottom = 1526.0
+offset_bottom = 1476.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -864,6 +915,23 @@ theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
+[node name="MinatLabel" type="Label" parent="KertasMurid3" unique_id=921285264]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1120.0
+offset_right = 500.0
+offset_bottom = 1172.0
+theme_type_variation = &"CardSectionLabel"
+text = "Minat:"
+
+[node name="MinatValue" type="Label" parent="KertasMurid3" unique_id=1325196378]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1180.0
+offset_right = 961.0
+offset_bottom = 1250.0
+theme_type_variation = &"H2Label"
+
 [node name="KertasMurid2" type="TextureRect" parent="." unique_id=465108679]
 visible = false
 layout_mode = 0
@@ -887,9 +955,9 @@ stretch_mode = 6
 [node name="SifatPasifLabel" type="Label" parent="KertasMurid2" unique_id=2128669330]
 layout_mode = 0
 offset_left = 119.0
-offset_top = 1318.0
+offset_top = 1268.0
 offset_right = 500.0
-offset_bottom = 1370.0
+offset_bottom = 1320.0
 theme_type_variation = &"CardSectionLabel"
 text = "Sifat Pasif:"
 
@@ -899,9 +967,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1378.0
+offset_top = 1328.0
 offset_right = 421.0
-offset_bottom = 1448.0
+offset_bottom = 1398.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -911,9 +979,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1456.0
+offset_top = 1406.0
 offset_right = 421.0
-offset_bottom = 1526.0
+offset_bottom = 1476.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -1071,6 +1139,23 @@ theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
 
+[node name="MinatLabel" type="Label" parent="KertasMurid2" unique_id=1860315427]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1120.0
+offset_right = 500.0
+offset_bottom = 1172.0
+theme_type_variation = &"CardSectionLabel"
+text = "Minat:"
+
+[node name="MinatValue" type="Label" parent="KertasMurid2" unique_id=2132419618]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1180.0
+offset_right = 961.0
+offset_bottom = 1250.0
+theme_type_variation = &"H2Label"
+
 [node name="KertasMurid1" type="TextureRect" parent="." unique_id=1772494297]
 layout_mode = 0
 offset_left = -70.0
@@ -1093,9 +1178,9 @@ stretch_mode = 6
 [node name="SifatPasifLabel" type="Label" parent="KertasMurid1" unique_id=325687621]
 layout_mode = 0
 offset_left = 119.0
-offset_top = 1318.0
+offset_top = 1268.0
 offset_right = 500.0
-offset_bottom = 1370.0
+offset_bottom = 1320.0
 theme_type_variation = &"CardSectionLabel"
 text = "Sifat Pasif:"
 
@@ -1105,9 +1190,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1378.0
+offset_top = 1328.0
 offset_right = 421.0
-offset_bottom = 1448.0
+offset_bottom = 1398.0
 theme_type_variation = &"TraitPill"
 text = "Quirk Kutu Buku"
 
@@ -1117,9 +1202,9 @@ anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -421.0
-offset_top = 1456.0
+offset_top = 1406.0
 offset_right = 421.0
-offset_bottom = 1526.0
+offset_bottom = 1476.0
 theme_type_variation = &"TraitPill"
 text = "Persona Rajin"
 
@@ -1276,6 +1361,23 @@ offset_bottom = 68.0
 theme_type_variation = &"BarLabel"
 text = "OLAHRAGA"
 vertical_alignment = 1
+
+[node name="MinatLabel" type="Label" parent="KertasMurid1" unique_id=1369559101]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1120.0
+offset_right = 500.0
+offset_bottom = 1172.0
+theme_type_variation = &"CardSectionLabel"
+text = "Minat:"
+
+[node name="MinatValue" type="Label" parent="KertasMurid1" unique_id=629209465]
+layout_mode = 0
+offset_left = 119.0
+offset_top = 1180.0
+offset_right = 961.0
+offset_bottom = 1250.0
+theme_type_variation = &"H2Label"
 
 [node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
 layout_mode = 0

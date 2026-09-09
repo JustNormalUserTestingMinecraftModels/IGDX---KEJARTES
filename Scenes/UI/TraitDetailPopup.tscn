@@ -12,7 +12,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0)
+mouse_filter = 2
+color = Color(0.18039216, 0.12941177, 0.09411765, 0)
 
 [node name="Card" type="PanelContainer" parent="Scrim" unique_id=1320277590]
 custom_minimum_size = Vector2(1015, 0)
@@ -31,10 +32,12 @@ theme_type_variation = &"TraitPopupHeader"
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="GlyphLabel" type="Label" parent="Scrim/Card/Layout/Header/Row" unique_id=831374150]
+[node name="GlyphIcon" type="TextureRect" parent="Scrim/Card/Layout/Header/Row" unique_id=786087065]
+custom_minimum_size = Vector2(72, 72)
 layout_mode = 2
-theme_type_variation = &"H1Label"
-vertical_alignment = 1
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Titles" type="VBoxContainer" parent="Scrim/Card/Layout/Header/Row" unique_id=1264387691]
 layout_mode = 2
@@ -42,11 +45,11 @@ size_flags_horizontal = 3
 
 [node name="KindLabel" type="Label" parent="Scrim/Card/Layout/Header/Row/Titles" unique_id=1710107734]
 layout_mode = 2
-theme_type_variation = &"BarLabel"
+theme_type_variation = &"TraitPopupKindLabel"
 
 [node name="NameLabel" type="Label" parent="Scrim/Card/Layout/Header/Row/Titles" unique_id=72944973]
 layout_mode = 2
-theme_type_variation = &"BarLabel"
+theme_type_variation = &"TraitPopupNameLabel"
 autowrap_mode = 3
 
 [node name="CloseButton" type="Button" parent="Scrim/Card/Layout/Header/Row" unique_id=836038364]
@@ -60,8 +63,15 @@ text = "✕"
 layout_mode = 2
 theme_type_variation = &"SunkenPanel"
 
-[node name="DescriptionLabel" type="Label" parent="Scrim/Card/Layout/Body" unique_id=954174993]
+[node name="BodyLayout" type="VBoxContainer" parent="Scrim/Card/Layout/Body" unique_id=567294847]
+layout_mode = 2
+
+[node name="EffectLabel" type="Label" parent="Scrim/Card/Layout/Body/BodyLayout" unique_id=1078732113]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "EFEK GAMEPLAY:"
+
+[node name="DescriptionLabel" type="Label" parent="Scrim/Card/Layout/Body/BodyLayout" unique_id=530613811]
 layout_mode = 2
 theme_type_variation = &"EventBodyLabel"
-theme_override_constants/line_spacing = 12
 autowrap_mode = 3

@@ -257,9 +257,9 @@ vertical_alignment = 1
 [node name="Aprove" type="Button" parent="KertasMurid6" unique_id=860385850]
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
@@ -267,9 +267,9 @@ text = "APPROVE"
 visible = false
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
@@ -499,9 +499,9 @@ vertical_alignment = 1
 [node name="Aprove" type="Button" parent="KertasMurid5" unique_id=1413978420]
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
@@ -509,9 +509,9 @@ text = "APPROVE"
 visible = false
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
@@ -742,9 +742,9 @@ vertical_alignment = 1
 [node name="Aprove" type="Button" parent="KertasMurid4" unique_id=290729362]
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
@@ -752,9 +752,9 @@ text = "APPROVE"
 visible = false
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
@@ -985,9 +985,9 @@ vertical_alignment = 1
 [node name="Aprove" type="Button" parent="KertasMurid3" unique_id=463087752]
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
@@ -995,9 +995,9 @@ text = "APPROVE"
 visible = false
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
@@ -1228,9 +1228,9 @@ vertical_alignment = 1
 [node name="Aprove" type="Button" parent="KertasMurid2" unique_id=351069657]
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
@@ -1238,9 +1238,9 @@ text = "APPROVE"
 visible = false
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
@@ -1470,9 +1470,9 @@ vertical_alignment = 1
 [node name="Aprove" type="Button" parent="KertasMurid1" unique_id=362172452]
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"SuccessButtonL"
 text = "APPROVE"
 
@@ -1480,9 +1480,9 @@ text = "APPROVE"
 visible = false
 layout_mode = 0
 offset_left = 260.0
-offset_top = 1560.0
+offset_top = 1600.0
 offset_right = 780.0
-offset_bottom = 1720.0
+offset_bottom = 1760.0
 theme_type_variation = &"DangerButtonL"
 text = "BATAL"
 
@@ -1506,9 +1506,9 @@ theme_type_variation = &"H2Label"
 [node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
 layout_mode = 0
 offset_left = 800.0
-offset_top = 1516.0
+offset_top = 1526.0
 offset_right = 920.0
-offset_bottom = 1636.0
+offset_bottom = 1646.0
 theme_type_variation = &"CardArrowButton"
 icon = ExtResource("11_1k4ux")
 expand_icon = true
@@ -1517,9 +1517,9 @@ expand_icon = true
 visible = false
 layout_mode = 0
 offset_left = 20.0
-offset_top = 1516.0
+offset_top = 1526.0
 offset_right = 140.0
-offset_bottom = 1636.0
+offset_bottom = 1646.0
 theme_type_variation = &"CardArrowButton"
 icon = ExtResource("12_kiyav")
 expand_icon = true
@@ -1582,9 +1582,9 @@ texture = ExtResource("8_6vhdp")
 [node name="PageLabel" type="Label" parent="." unique_id=977170758]
 layout_mode = 0
 offset_left = 370.0
-offset_top = 1541.0
+offset_top = 1551.0
 offset_right = 570.0
-offset_bottom = 1611.0
+offset_bottom = 1621.0
 theme_type_variation = &"CardSectionLabel"
 horizontal_alignment = 1
 vertical_alignment = 1

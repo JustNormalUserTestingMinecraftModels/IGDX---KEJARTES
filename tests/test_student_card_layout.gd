@@ -556,3 +556,55 @@ func test_the_portrait_fills_a_frame_matched_to_the_identity_panel() -> void:
 				"%s card %d: the portrait box (ends %f) and the identity panel "
 					% [scene_path, i, portrait.get_rect().end.y]
 					+ "(ends %f) must close on the same row" % panel_bottom)
+
+
+## The action row and the page arrows sit on the desk BELOW the paper, and
+## the space between them is the whole reason that band reads as calm or
+## as crowded.
+##
+## It was not calm. Shortening the paper to y=1559 put its edge exactly 1px
+## above Aprove's top at 1560 -- the button looked glued to the sheet. All
+## 81px of slack in that band had collected below the button instead, where
+## nothing needed it. The row moved down to 1600-1760 and the arrows down
+## to 1780-1900, which spends that slack as 41 / 20 / 20 instead of
+## 1 / 50 / 30.
+##
+## The arrow gap matters as much as the paper gap: BelajarButton slides in
+## beside Aprove and runs to x=1050, so it genuinely sits above the right
+## arrow rather than merely near it.
+##
+## Compared as GLOBAL rects. The cards sit at (-70,-254) inside a root that
+## is itself inset (70,254), while the arrows are children of that root --
+## comparing the two sets of authored offsets directly is the exact mistake
+## that once hid the PageLabel overlap, so this resolves both through the
+## tree.
+const _MIN_PAPER_GAP := 30.0
+const _MIN_ARROW_GAP := 15.0
+
+
+func test_the_action_row_is_not_crowded_against_the_paper() -> void:
+	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var inst := scene.instantiate()
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	inst.size = Vector2(1080, 1920)
+
+	var left_arrow := inst.get_node("NextButtonKiri") as Control
+	var right_arrow := inst.get_node("NextButtonKanan") as Control
+
+	for i in range(1, 7):
+		var card := inst.get_node("KertasMurid%d" % i) as Control
+		var paper_bottom := card.get_global_rect().position.y + _PAPER_BOTTOM
+		for button_name in ["Aprove", "Batal"]:
+			var button := card.get_node(button_name) as Control
+			var gap := button.get_global_rect().position.y - paper_bottom
+			assert_true(gap >= _MIN_PAPER_GAP,
+				"card %d: %s sits %fpx below the paper's edge, under the %fpx minimum"
+					% [i, button_name, gap, _MIN_PAPER_GAP])
+
+			for arrow in [left_arrow, right_arrow]:
+				var arrow_gap: float = (arrow.get_global_rect().position.y
+					- button.get_global_rect().end.y)
+				assert_true(arrow_gap >= _MIN_ARROW_GAP,
+					"card %d: %s ends %fpx above the page arrows, under the %fpx minimum"
+						% [i, button_name, arrow_gap, _MIN_ARROW_GAP])

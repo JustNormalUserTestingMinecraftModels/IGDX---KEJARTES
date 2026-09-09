@@ -8,6 +8,55 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-09 — Win screen: roster lineup, letterbox, ground shadows
+
+Spec: `docs/superpowers/specs/2026-09-09-win-screen-lineup-design.md`; plan:
+`docs/superpowers/plans/2026-09-09-win-screen-lineup-and-statcheck-rush.md`.
+
+`EndCutscene`'s win branch is rebuilt around new 1536×2048 art
+(`Assets/Images/CG/Win/win_background.png`) instead of reusing the intro's CG.
+`_fit_stage()` letterboxes the painting into the 1080×1920 screen by the
+smaller of the two axis ratios, so the whole 3:4 image survives — 240px bars
+top and bottom, filled by a new `BarFill` `ColorRect` whose `bar_color`
+export defaults to `surface_overlay`'s literal value (a copy, not a live
+token reference, so a future palette change has to touch both). `BtnNext`
+("Lanjut") moved into the bottom bar, clear of the art. The lose branch is
+untouched — same `cg_lose.jpg`, same GAGAL stamp, same slam timing.
+
+The run's own approved roster stands on the new backdrop, posed from splash
+art rather than the flat portraits used elsewhere. New
+`Scripts/EndGame/WinLineup.gd` (`class_name WinLineup`, plain static
+functions over Dictionaries — same shape as the debug overlay's end-of-grade
+rehearsal jig, and tested behaviourally for the same reason) owns the
+composition: three hand-arranged slot maps for 2/3/4-student rosters (grades
+7/8/9), Doni pinned to the front slot whenever he's approved with everyone
+else filling in `approved_students` order, and per-character foot anchors
+measured from each splash's alpha at threshold 128. `EndCutscene._dress_lineup()`
+only sets texture/size/position on eight authored `Student{1-4}` /
+`Shadow{1-4}` nodes — nothing is constructed. Splash art is six typed
+`Texture2D` exports rather than one Dictionary: a Dictionary's nested values
+can't be wired as Resources through the editor's property API, so the paths
+stayed strings and the textures never loaded.
+
+Every figure gets a soft ground shadow (`shadow_ellipse.png`, tinted and
+scaled per student from the measured foot span) drawn on a `Shadows` layer
+that renders entirely before the `Students` layer, so no one's shadow lands
+on another figure. A late fix caught a z-order bug the tests couldn't see:
+`WinLineup.assign()` returned the front student first, and `_dress_lineup()`
+maps array index onto sibling order, where the first child draws behind its
+siblings — so Doni, who must read closest to camera, would have rendered
+behind everyone. `assign()` now returns back-to-front, matching
+`slots_for()`, so index-to-sibling is correct by construction; found by
+compositing offline against the reference art, not by a test, so a test now
+pins the draw order.
+
+The win path shows no LULUS badge — the chalkboard art already reads
+"Selamat Kelulusan," so a stamp over it would be redundant and would cover
+the art. `win_badge` stays wired to `stamp_lulus.svg` but is never slammed
+in on the win path.
+
+Suite: 1133 tests across 80 suites, all green.
+
 ## 2026-09-07 — Inventory: mobile layout rebuild, item-apply flow, persistence
 
 Spec/plan: `docs/superpowers/specs/2026-09-07-inventory-mobile-layout-and-item-apply.md`,

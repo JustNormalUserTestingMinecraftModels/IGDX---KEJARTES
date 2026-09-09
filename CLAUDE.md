@@ -352,12 +352,22 @@ backdrops reuse the intro's CG images.
 transparent PNGs suitable for drop-replacement, but geometric shapes, not
 final illustration.
 
-**End cutscene art.** `EndCutscene`'s win backdrop is `cg2.jpg` standing in for
-final art, and both badges (`stamp_lulus.svg`, `stamp_gagal.svg`) are generated
-placeholder stamps. All four are `@export`s on `EndCutscene.tscn`, so swapping
-them is an Inspector change. Note the badge words are drawn as stroked **paths**,
-not SVG `<text>`: Godot rasterises SVG through ThorVG, which drops text elements
-on import — `tests/test_end_cutscene.gd` guards that with a pixel check.
+**End cutscene art.** `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in
+for final art, and both badges (`stamp_lulus.svg`, `stamp_gagal.svg`) are
+generated placeholder stamps. All three are `@export`s on `EndCutscene.tscn`, so
+swapping them is an Inspector change. Note the badge words are drawn as stroked
+**paths**, not SVG `<text>`: Godot rasterises SVG through ThorVG, which drops
+text elements on import — `tests/test_end_cutscene.gd` guards that with a pixel
+check.
+
+**Win screen shadow (2026-09-09).** `Assets/Images/UI/Placeholders/shadow_ellipse.png`
+is a generated radial-gradient ellipse (PowerShell + `System.Drawing`), not
+hand-authored art. Every ground shadow on the win screen wears it, tinted
+and scaled per student. Transparent PNG, drop-replaceable.
+
+**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding —
+no script, no references, still on `cg0.jpg`. The real win screen is
+`EndCutscene`'s win branch. Safe to delete.
 
 **Copy placeholders.** Every cutscene line in the exam and win branches is
 marked `[PLACEHOLDER]`. Every `desc` string in `ItemDatabase.DEFAULT_ITEMS` is

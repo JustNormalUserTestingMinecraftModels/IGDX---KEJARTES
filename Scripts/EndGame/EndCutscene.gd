@@ -25,7 +25,7 @@ extends Control
 ## signal is wired before that guard so the wiring stays testable.
 
 @export_group("Win")
-## Backdrop shown when the run passed. Placeholder until final art lands.
+## Backdrop shown when the run passed. Real graduation artwork; students and shadows compose on top.
 @export var win_backdrop: Texture2D
 ## Badge stamped into the top-left when the run passed.
 @export var win_badge: Texture2D

@@ -340,8 +340,8 @@ rather than having their own: `sfx_specialty_match` → `sfx_reward`; `tally` an
 (`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven
 minigame result icons and the report icons
 (`Assets/Images/UI/Placeholders/icon_*.svg`) are flat white placeholder
-geometry — real transparent SVGs, but not final art. The exam and win cutscene
-backdrops reuse the intro's CG images.
+geometry — real transparent SVGs, but not final art. The exam cutscene
+backdrop reuses the intro's CG images.
 
 **Event-popup placeholders (2026-09-08).** `icon_event_announce.png`,
 `icon_event_warning.png`, `bg_event_announce.png`, `bg_event_dialog.png`

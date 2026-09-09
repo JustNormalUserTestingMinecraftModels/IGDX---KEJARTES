@@ -595,11 +595,44 @@ const _PROGRESS_FILL_ART := "res://Assets/Images/UI/progress_bar_fill.png"
 const _PROGRESS_FILL_REGION := Rect2(60, 66, 148, 124)
 const _PROGRESS_FILL_MARGIN := 24
 
-static func _progress_fill_stylebox(modulate: Color = Color.WHITE) -> StyleBoxTexture:
+## Where the per-stat fill tiles live. One PNG per stat, drop-in
+## replaceable: same 256x256 canvas, same region, same near-white body.
+## Hand-drawn art at these paths needs no code change.
+const _BAR_FILL_ART := "res://Assets/Images/UI/BarFill/fill_%s.png"
+
+## Stat key -> its fill tile's file suffix. The keys are the `category`
+## strings StatBar carries, including the spellings the schedule data uses.
+const _BAR_FILL_BY_CATEGORY := {
+	"Akademis": "akademis", "SeniBudaya": "senibudaya", "Olahraga": "olahraga",
+	"Wirausaha": "wirausaha", "Istirahat": "istirahat", "Libur": "libur",
+	"Mood": "mood", "Energy": "energi",
+}
+
+
+## A bar's fill: the stat's own motif tile, tinted by its accent.
+##
+## Every bar used to share ONE near-white capsule that each category tinted.
+## Since 2026-09-09 each stat has its own tile carrying a batik motif --
+## nitik for akademis, parang for seni budaya, kawung for istirahat and so
+## on -- so a bar is identifiable by texture as well as by hue. `category`
+## empty falls back to the plain untextured capsule.
+##
+## The centre slice TILES rather than stretching. That is load-bearing: a
+## stretched centre would smear the motif horizontally as the bar fills.
+## The tiles' motif period (20x19) divides the centre slice (100x76) exactly
+## 5 x 4, which is what makes the repeat seamless -- changing
+## _PROGRESS_FILL_MARGIN or the region without regenerating the art at a
+## matching period will make the motif jump at every repeat.
+static func _progress_fill_stylebox(modulate: Color = Color.WHITE,
+		category: String = "") -> StyleBoxTexture:
 	var fill := StyleBoxTexture.new()
-	fill.texture = load(_PROGRESS_FILL_ART)
+	var suffix: String = _BAR_FILL_BY_CATEGORY.get(category, "")
+	fill.texture = load(_BAR_FILL_ART % suffix) if suffix != "" \
+		else load(_PROGRESS_FILL_ART)
 	fill.region_rect = _PROGRESS_FILL_REGION
 	fill.set_texture_margin_all(_PROGRESS_FILL_MARGIN)
+	fill.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_TILE
+	fill.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_TILE
 	fill.modulate_color = modulate
 	return fill
 
@@ -654,13 +687,19 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 	# same tokens explicitly, not because they inherit from "StatBar". A
 	# new theme item added to "StatBar" later will NOT reach these six
 	# siblings automatically -- it would need to be added here too.
+	# Mood and Energy joined this list on 2026-09-09. They are needs rather
+	# than schedule categories and used to borrow Istirahat's and Libur's
+	# variations outright, which the batik motifs made untenable -- mood
+	# would have worn the rest motif and energy the holiday one.
 	var stat_bar_categories := [
-		["StatBarAkademis", tokens.cat_akademis_on_dark],
-		["StatBarSeniBudaya", tokens.cat_senibudaya_on_dark],
-		["StatBarOlahraga", tokens.cat_olahraga_on_dark],
-		["StatBarIstirahat", tokens.cat_istirahat_on_dark],
-		["StatBarLibur", tokens.cat_libur_on_dark],
-		["StatBarWirausaha", tokens.cat_wirausaha_on_dark],
+		["StatBarAkademis", tokens.cat_akademis_on_dark, "Akademis"],
+		["StatBarSeniBudaya", tokens.cat_senibudaya_on_dark, "SeniBudaya"],
+		["StatBarOlahraga", tokens.cat_olahraga_on_dark, "Olahraga"],
+		["StatBarIstirahat", tokens.cat_istirahat_on_dark, "Istirahat"],
+		["StatBarLibur", tokens.cat_libur_on_dark, "Libur"],
+		["StatBarWirausaha", tokens.cat_wirausaha_on_dark, "Wirausaha"],
+		["StatBarMood", tokens.cat_mood_on_dark, "Mood"],
+		["StatBarEnergy", tokens.cat_energy_on_dark, "Energy"],
 	]
 	for spec in stat_bar_categories:
 		var name: String = spec[0]
@@ -668,7 +707,7 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 		theme.add_type(name)
 		theme.set_type_variation(name, "ProgressBar")
 		theme.set_stylebox("background", name, bg)
-		theme.set_stylebox("fill", name, _progress_fill_stylebox(color))
+		theme.set_stylebox("fill", name, _progress_fill_stylebox(color, spec[2]))
 		theme.set_font_size("font_size", name, tokens.font_caption)
 		theme.set_color("font_color", name, tokens.text_primary)
 
@@ -677,26 +716,6 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 
 const _CARD_ART := "res://Assets/Images/StudentCard/"
 
-
-## The stat pill's fill, optionally tinted.
-##
-## modulate_color MULTIPLIES against pill_fill.png, so the texture has to be
-## near-white for the accent to survive it. It was mid-grey (mean luminance
-## 133/255) until 2026-09-09, which rendered every accent at ~53% and put
-## the fills at 1.3-1.9:1 against the track -- under the 3.0 floor, while
-## test_bar_contrast.gd measured the untouched token and passed. The art is
-## now ~96%, so what lands on screen is close to the token itself.
-static func _pill_fill_stylebox(modulate: Color = Color.WHITE) -> StyleBoxTexture:
-	var fill := StyleBoxTexture.new()
-	fill.texture = load(_CARD_ART + "pill_fill.png")
-	# The art sits inset on a 256x256 canvas; region_rect crops to it so no
-	# transparent padding is stretched into the bar.
-	fill.region_rect = Rect2(59, 65, 150, 127)
-	# 28 px keeps both rounded ends intact inside a 67 px tall track
-	# (28 + 28 < 67); anything larger would overlap and distort them.
-	fill.set_texture_margin_all(28)
-	fill.modulate_color = modulate
-	return fill
 
 
 ## Variations used only by the student card's redesigned layout. The card
@@ -731,7 +750,12 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	pill_bg.set_content_margin_all(tokens.outline_width / 2.0)
 	theme.set_stylebox("background", "StatPill", pill_bg)
 
-	theme.set_stylebox("fill", "StatPill", _pill_fill_stylebox())
+	# The pills share the StatBar family's fill helper, and therefore its
+	# tiles and its geometry. They used to carry their own pill_fill.png at
+	# a slightly different region and a 28px margin; that divergence had no
+	# purpose and could not survive the motif tiles, whose period is cut to
+	# divide the shared 24px-margin centre slice exactly.
+	theme.set_stylebox("fill", "StatPill", _progress_fill_stylebox())
 
 	# -- Per-category pill siblings. --
 	#
@@ -749,18 +773,20 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	# six -- a new theme item added to plain "StatPill" will NOT reach these
 	# automatically and would need adding here too.
 	for spec in [
-		["StatPillAkademis", tokens.cat_akademis_on_dark],
-		["StatPillSeniBudaya", tokens.cat_senibudaya_on_dark],
-		["StatPillOlahraga", tokens.cat_olahraga_on_dark],
-		["StatPillIstirahat", tokens.cat_istirahat_on_dark],
-		["StatPillLibur", tokens.cat_libur_on_dark],
-		["StatPillWirausaha", tokens.cat_wirausaha_on_dark],
+		["StatPillAkademis", tokens.cat_akademis_on_dark, "Akademis"],
+		["StatPillSeniBudaya", tokens.cat_senibudaya_on_dark, "SeniBudaya"],
+		["StatPillOlahraga", tokens.cat_olahraga_on_dark, "Olahraga"],
+		["StatPillIstirahat", tokens.cat_istirahat_on_dark, "Istirahat"],
+		["StatPillLibur", tokens.cat_libur_on_dark, "Libur"],
+		["StatPillWirausaha", tokens.cat_wirausaha_on_dark, "Wirausaha"],
+		["StatPillMood", tokens.cat_mood_on_dark, "Mood"],
+		["StatPillEnergy", tokens.cat_energy_on_dark, "Energy"],
 	]:
 		var pill_name: String = spec[0]
 		theme.add_type(pill_name)
 		theme.set_type_variation(pill_name, "ProgressBar")
 		theme.set_stylebox("background", pill_name, pill_bg)
-		theme.set_stylebox("fill", pill_name, _pill_fill_stylebox(spec[1]))
+		theme.set_stylebox("fill", pill_name, _progress_fill_stylebox(spec[1], spec[2]))
 
 	# -- Trait button ("Sifat Pasif" pills): the art ships gold with its own
 	# purple border, so the stylebox draws it untinted. A modulate here

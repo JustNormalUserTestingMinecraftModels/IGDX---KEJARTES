@@ -106,11 +106,11 @@ offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBarIstirahat"
+theme_type_variation = &"StatBarMood"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Istirahat"
+category = "Mood"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Kepribadian1" unique_id=294910009]
 layout_mode = 0
@@ -137,11 +137,11 @@ offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBarLibur"
+theme_type_variation = &"StatBarEnergy"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Libur"
+category = "Energy"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid6/Kepribadian2" unique_id=711864956]
 layout_mode = 0
@@ -348,11 +348,11 @@ offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBarIstirahat"
+theme_type_variation = &"StatBarMood"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Istirahat"
+category = "Mood"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Kepribadian1" unique_id=2000354003]
 layout_mode = 0
@@ -379,11 +379,11 @@ offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBarLibur"
+theme_type_variation = &"StatBarEnergy"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Libur"
+category = "Energy"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid5/Kepribadian2" unique_id=249856602]
 layout_mode = 0
@@ -591,11 +591,11 @@ offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBarIstirahat"
+theme_type_variation = &"StatBarMood"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Istirahat"
+category = "Mood"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Kepribadian1" unique_id=384573567]
 layout_mode = 0
@@ -622,11 +622,11 @@ offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBarLibur"
+theme_type_variation = &"StatBarEnergy"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Libur"
+category = "Energy"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid4/Kepribadian2" unique_id=115016979]
 layout_mode = 0
@@ -834,11 +834,11 @@ offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBarIstirahat"
+theme_type_variation = &"StatBarMood"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Istirahat"
+category = "Mood"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Kepribadian1" unique_id=1856528277]
 layout_mode = 0
@@ -865,11 +865,11 @@ offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBarLibur"
+theme_type_variation = &"StatBarEnergy"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Libur"
+category = "Energy"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid3/Kepribadian2" unique_id=1389837432]
 layout_mode = 0
@@ -1077,11 +1077,11 @@ offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBarIstirahat"
+theme_type_variation = &"StatBarMood"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Istirahat"
+category = "Mood"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Kepribadian1" unique_id=323613456]
 layout_mode = 0
@@ -1108,11 +1108,11 @@ offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBarLibur"
+theme_type_variation = &"StatBarEnergy"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Libur"
+category = "Energy"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid2/Kepribadian2" unique_id=181566930]
 layout_mode = 0
@@ -1319,11 +1319,11 @@ offset_left = 120.0
 offset_top = 890.0
 offset_right = 880.0
 offset_bottom = 958.0
-theme_type_variation = &"StatBarIstirahat"
+theme_type_variation = &"StatBarMood"
 value = 60.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Istirahat"
+category = "Mood"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Kepribadian1" unique_id=558492279]
 layout_mode = 0
@@ -1350,11 +1350,11 @@ offset_left = 120.0
 offset_top = 976.0
 offset_right = 880.0
 offset_bottom = 1044.0
-theme_type_variation = &"StatBarLibur"
+theme_type_variation = &"StatBarEnergy"
 value = 50.0
 show_percentage = false
 script = ExtResource("statbar")
-category = "Libur"
+category = "Energy"
 
 [node name="ValueLabel" type="Label" parent="KertasMurid1/Kepribadian2" unique_id=1416689670]
 layout_mode = 0

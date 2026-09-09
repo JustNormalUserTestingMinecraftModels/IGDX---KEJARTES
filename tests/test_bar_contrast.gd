@@ -78,12 +78,22 @@ func test_light_chrome_accents_stay_legible() -> void:
 				% [category, ratio, FLOOR])
 
 
-## The fill textures a bar's accent is multiplied through, and the region
-## of each that its stylebox actually crops to.
+## Every stat's fill tile, keyed by the category string StatBar carries.
+## One file per stat since 2026-09-09, when each gained its own batik
+## motif -- they were a single shared capsule before that.
 const _FILL_ART := {
-	"res://Assets/Images/UI/progress_bar_fill.png": Rect2i(60, 66, 148, 124),
-	"res://Assets/Images/StudentCard/pill_fill.png": Rect2i(59, 65, 150, 127),
+	"Akademis": "res://Assets/Images/UI/BarFill/fill_akademis.png",
+	"SeniBudaya": "res://Assets/Images/UI/BarFill/fill_senibudaya.png",
+	"Olahraga": "res://Assets/Images/UI/BarFill/fill_olahraga.png",
+	"Wirausaha": "res://Assets/Images/UI/BarFill/fill_wirausaha.png",
+	"Istirahat": "res://Assets/Images/UI/BarFill/fill_istirahat.png",
+	"Libur": "res://Assets/Images/UI/BarFill/fill_libur.png",
+	"Mood": "res://Assets/Images/UI/BarFill/fill_mood.png",
+	"Energy": "res://Assets/Images/UI/BarFill/fill_energi.png",
 }
+
+## The region every tile is cropped to, matching ThemeFactory.
+const _FILL_REGION := Rect2i(60, 66, 148, 124)
 
 ## How dark a fill texture may be before it starts eating the accent. At
 ## 0.90 a token measured at the floor still renders within a hair of it.
@@ -122,24 +132,31 @@ func _fill_brightness(path: String, region: Rect2i) -> float:
 ## into the colour before the ratio is taken, and the textures themselves
 ## are held above a floor so a future art pass cannot re-open the gap by
 ## darkening them back down.
+## Each stat is now measured through ITS OWN tile, because each tile
+## carries a different motif and so a different amount of ink. Kawung
+## (istirahat) is the heaviest by some way -- four overlapping circles per
+## period against nitik's two small squares -- and it is the one that will
+## fail first if the motifs are ever redrawn darker.
 func test_stat_bar_on_dark_accents_clear_the_floor_as_rendered() -> void:
 	var tokens := DesignTokens.load_default()
-	for path in _FILL_ART:
-		var brightness := _fill_brightness(path, _FILL_ART[path])
-		assert_true(brightness >= _MIN_FILL_BRIGHTNESS,
-			"%s is %.2f bright; a modulate through it would cut every accent "
-				% [path, brightness]
-				+ "to that fraction (floor %.2f)" % _MIN_FILL_BRIGHTNESS)
+	for category in _FILL_ART:
+		var path: String = _FILL_ART[category]
+		assert_true(ResourceLoader.exists(path),
+			"%s has no fill tile at %s" % [category, path])
 
-		for category in ["Akademis", "Olahraga", "SeniBudaya",
-				"Istirahat", "Libur", "Wirausaha"]:
-			var token := tokens.category_color_on_dark(category)
-			var rendered := Color(token.r * brightness, token.g * brightness,
-				token.b * brightness, 1.0)
-			var ratio := _contrast(rendered, tokens.stat_bar_track)
-			assert_true(ratio >= FLOOR,
-				"%s renders as %s through %s -- %.2f:1 against stat_bar_track, floor is %.1f"
-					% [category, rendered.to_html(false), path.get_file(), ratio, FLOOR])
+		var brightness := _fill_brightness(path, _FILL_REGION)
+		assert_true(brightness >= _MIN_FILL_BRIGHTNESS,
+			"%s is %.3f bright; a modulate through it cuts the accent to that "
+				% [path.get_file(), brightness]
+				+ "fraction (floor %.2f)" % _MIN_FILL_BRIGHTNESS)
+
+		var token := tokens.category_color_on_dark(category)
+		var rendered := Color(token.r * brightness, token.g * brightness,
+			token.b * brightness, 1.0)
+		var ratio := _contrast(rendered, tokens.stat_bar_track)
+		assert_true(ratio >= FLOOR,
+			"%s renders as %s through %s -- %.2f:1 against stat_bar_track, floor is %.1f"
+				% [category, rendered.to_html(false), path.get_file(), ratio, FLOOR])
 
 
 func test_libur_and_currency_gold_are_distinguishable() -> void:

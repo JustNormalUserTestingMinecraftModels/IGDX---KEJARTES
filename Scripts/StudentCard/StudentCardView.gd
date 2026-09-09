@@ -76,12 +76,15 @@ static func populate(card: Control, student: Dictionary,
 			portrait_node.texture = load(p_path)
 
 	# Update ProgressBars
-	var kp1 = card.get_node_or_null("Kepribadian1")
-	if kp1 and kp1 is ProgressBar:
-		kp1.value = student.get("kepribadian2", 0)
-	var kp2 = card.get_node_or_null("Kepribadian2")
-	if kp2 and kp2 is ProgressBar:
-		kp2.value = student.get("kepribadian1", 0)
+	#
+	# Kepribadian1 and Kepribadian2 are NOT set here. They were, and they
+	# were set crossed over -- Kepribadian1 took kepribadian2 and vice
+	# versa -- which contradicted build_stat_bars() below, whose mapping is
+	# straight through. build_stat_bars runs after this and wins, so the
+	# crossed assignment never reached the screen; it only stood as a
+	# second, disagreeing answer to which bar is mood and which is energy.
+	# The straight mapping is the correct one: _STAT_ICONS pairs
+	# Kepribadian1 with stat_mood.png and Kepribadian2 with stat_energy.png.
 	var ak1 = card.get_node_or_null("Akademis1")
 	if ak1 and ak1 is ProgressBar:
 		ak1.value = student.get("akademis1", 0)

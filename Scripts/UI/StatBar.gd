@@ -87,6 +87,12 @@ const _STAT_BAR_VARIATIONS := {
 	"Istirahat": &"StatBarIstirahat",
 	"Libur": &"StatBarLibur",
 	"Wirausaha": &"StatBarWirausaha",
+	# Needs, not schedule categories. Added 2026-09-09 -- the student card's
+	# two Kepribadian bars used to be authored as "Istirahat" and "Libur"
+	# and so wore the rest and holiday accents outright.
+	"Mood": &"StatBarMood",
+	"Energy": &"StatBarEnergy",
+	"Energi": &"StatBarEnergy",
 }
 
 ## The same mapping for the student card's pill family. Kept as its own
@@ -103,6 +109,9 @@ const _STAT_PILL_VARIATIONS := {
 	"Istirahat": &"StatPillIstirahat",
 	"Libur": &"StatPillLibur",
 	"Wirausaha": &"StatPillWirausaha",
+	"Mood": &"StatPillMood",
+	"Energy": &"StatPillEnergy",
+	"Energi": &"StatPillEnergy",
 }
 
 

@@ -60,9 +60,9 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid6" unique_id=1221180924]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 texture = ExtResource("3_a1isy")
 expand_mode = 1
@@ -293,9 +293,9 @@ theme_type_variation = &"H2Label"
 
 [node name="PortraitFrame" type="TextureRect" parent="KertasMurid6" unique_id=382068055]
 layout_mode = 0
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 mouse_filter = 2
 texture = ExtResource("6_kiyav")
@@ -311,9 +311,9 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid5" unique_id=91004226]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 texture = ExtResource("4_hodfn")
 expand_mode = 1
@@ -544,9 +544,9 @@ theme_type_variation = &"H2Label"
 
 [node name="PortraitFrame" type="TextureRect" parent="KertasMurid5" unique_id=93061004]
 layout_mode = 0
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 mouse_filter = 2
 texture = ExtResource("6_kiyav")
@@ -563,9 +563,9 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid4" unique_id=464091592]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 texture = ExtResource("3_osw5o")
 expand_mode = 1
@@ -796,9 +796,9 @@ theme_type_variation = &"H2Label"
 
 [node name="PortraitFrame" type="TextureRect" parent="KertasMurid4" unique_id=1252138411]
 layout_mode = 0
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 mouse_filter = 2
 texture = ExtResource("6_kiyav")
@@ -815,9 +815,9 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid3" unique_id=158931283]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 texture = ExtResource("3_33k3e")
 expand_mode = 1
@@ -1048,9 +1048,9 @@ theme_type_variation = &"H2Label"
 
 [node name="PortraitFrame" type="TextureRect" parent="KertasMurid3" unique_id=867948519]
 layout_mode = 0
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 mouse_filter = 2
 texture = ExtResource("6_kiyav")
@@ -1067,9 +1067,9 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid2" unique_id=1137421456]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 texture = ExtResource("4_6vhdp")
 expand_mode = 1
@@ -1300,9 +1300,9 @@ theme_type_variation = &"H2Label"
 
 [node name="PortraitFrame" type="TextureRect" parent="KertasMurid2" unique_id=550968030]
 layout_mode = 0
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 mouse_filter = 2
 texture = ExtResource("6_kiyav")
@@ -1318,9 +1318,9 @@ texture = ExtResource("8_hodfn")
 [node name="TextureRect" type="TextureRect" parent="KertasMurid1" unique_id=981490411]
 layout_mode = 1
 anchors_preset = -1
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 texture = ExtResource("1_jsirh")
 expand_mode = 1
@@ -1551,9 +1551,9 @@ theme_type_variation = &"H2Label"
 
 [node name="PortraitFrame" type="TextureRect" parent="KertasMurid1" unique_id=589369512]
 layout_mode = 0
-offset_left = 662.0
+offset_left = 136.0
 offset_top = 294.0
-offset_right = 945.0
+offset_right = 419.0
 offset_bottom = 670.0
 mouse_filter = 2
 texture = ExtResource("6_kiyav")

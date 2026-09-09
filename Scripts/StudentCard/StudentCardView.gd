@@ -302,10 +302,14 @@ static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 
 ## The painted purple panel's interior, in card-local pixels, measured from
 ## card_bg.png.
-## x moved 120 -> 140 on 2026-09-09 with the identification block, which
-## sat 20px left of centre on the 1080-wide card (116px of margin on the
-## left against 155 on the right). The block moved right; this follows it.
-const BIO_PANEL_RECT := Rect2(140, 300, 489, 367)
+## x has moved twice on 2026-09-09. First 120 -> 140, when the whole
+## identification block was centred (it sat 20px left of centre, 116px of
+## margin against 155). Then 140 -> 452, when the block's two halves were
+## swapped: the portrait took the left slot at x 136..418 and this panel
+## took the right at 448..944, keeping the block's outer bounds and the
+## 29px gap between them. 452 is that new outer edge plus the panel's own
+## 4px border.
+const BIO_PANEL_RECT := Rect2(452, 300, 489, 367)
 ## Inset so the text does not crowd the painted panel's rounded border.
 const _BIO_PADDING := 32.0
 

@@ -251,7 +251,7 @@ func test_bio_panel_renders_the_three_rows() -> void:
 func test_bio_panel_sits_inside_the_painted_panel() -> void:
 	var src := FileAccess.get_file_as_string(
 		"res://Scripts/StudentCard/StudentCardView.gd")
-	assert_true(src.contains("const BIO_PANEL_RECT := Rect2(140, 300, 489, 367)"),
+	assert_true(src.contains("const BIO_PANEL_RECT := Rect2(452, 300, 489, 367)"),
 		"BIO_PANEL_RECT must match the painted panel's measured interior")
 
 	var panel_start := src.find("func build_bio_panel(")

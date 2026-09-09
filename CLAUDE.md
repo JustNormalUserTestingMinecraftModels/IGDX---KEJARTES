@@ -365,6 +365,21 @@ judul.png` is pink/magenta and now visibly clashes with the warm chrome around
 it. It is also a 1920x1080 landscape image, which is why the lobby HUD chip is
 sized 332x187 rather than the 332x96 the layout would otherwise want.
 
+**Stray layer in the day-transition sky (2026-09-10).**
+`Assets/Images/SchoolDay/transition_background.png` has a bluish night
+street scene pasted into its bottom-left corner -- a layer the artist left
+visible, at roughly texture-space x 0..442, y 1837..2047. It is not
+decorative and should be erased at source.
+
+Until it is, `BookClockWidget.sky_cover_margin` is holding it out of frame:
+the sky rotates about its own centre, so the artifact sits at a fixed
+~1000 texels from centre, and the margin scales how many screen pixels a
+texel covers. At the old 1.02 it reached 45 screen pixels in a corner at
+around -200 degrees; at 1.04 and above it never enters the screen rect at
+any angle in the swept arc. Shipping 1.06, with a >= 1.04 floor guarded by
+`tests/test_book_clock_phases.gd`. Erasing the corner is the real fix and
+lets that margin go back down.
+
 **Art placeholders.** The three particle sprites
 (`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven
 minigame result icons and the report icons

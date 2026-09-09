@@ -36,17 +36,18 @@ const SKY_NODE := "SkyBackground"
 ## Child that holds the stationary school and hill.
 const FOREGROUND_NODE := "SchoolForeground"
 
-## The day's three resting poses. The event rolls at MIDDAY.
+## The day's two resting poses, plus MIDDAY as the arc's midpoint -- the
+## event still rolls there, but the sky no longer stops for it.
 enum Phase { DAWN, MIDDAY, EVENING }
 
 @export_group("Motion")
-## The three angles the school day rests at, in degrees.
+## The two angles the school day rests at, in degrees.
 ##
-## The defaults reproduce the old single -180 sweep exactly: midday is
-## simply the halfway angle, named. Nothing moves on screen until the
-## TIMING changes -- what changed on 2026-09-07 is that the day is two
-## deliberate transitions between named poses rather than one continuous
-## sweep, with the event pinned to the middle one.
+## The defaults reproduce the old single -180 sweep exactly. The day was
+## two deliberate transitions between three named poses from 2026-09-07,
+## with the event pinned to the middle one; from 2026-09-10 it is one
+## continuous sweep between these two poses, and the event still rolls at
+## the midpoint but the sky no longer stops there.
 ##
 ## Godot's rotation is clockwise-positive with y down, so the
 ## counter-clockwise sweep the mechanism reference asks for runs toward
@@ -55,34 +56,33 @@ enum Phase { DAWN, MIDDAY, EVENING }
 ## The sky's angle at the start of the school day: morning breaking,
 ## bright sky opening out of the night half.
 ##
-## These three were 0 / -90 / -180 until a 2026-09-07 screenshot pass
+## Dawn and evening were 0 / -180 until a 2026-09-07 screenshot pass
 ## showed 0 renders as NIGHT, not morning -- the single sweep this
 ## replaced started at the same value and made the same "morning" claim
 ## in its docstring, so the art and the naming had disagreed since the
 ## sweep was written. Shifting the whole arc one quarter-turn puts
 ## each pose on the sky it is named for, and keeps the sweep
 ## counter-clockwise (monotonically decreasing) as the mechanism
-## reference asks.
+## reference asks. A third, midday pose sat between them from
+## 2026-09-07 until 2026-09-10, when it was retired -- see
+## current_rotation_degrees().
 @export var dawn_rotation_degrees: float = -90.0:
 	set(value):
 		dawn_rotation_degrees = value
-		_apply_rotation()
-## The sky's angle when the day's event rolls: full bright day overhead.
-@export var midday_rotation_degrees: float = -180.0:
-	set(value):
-		midday_rotation_degrees = value
 		_apply_rotation()
 ## The sky's angle when the school day ends: dusk, first stars returning.
 @export var evening_rotation_degrees: float = -270.0:
 	set(value):
 		evening_rotation_degrees = value
 		_apply_rotation()
-## How long one transition between two neighbouring poses takes, in
-## seconds. Chosen in motion-lab on 2026-09-07 alongside SINE/IN_OUT.
+## How long one phase of the school day takes, in seconds -- the day has
+## two, dawn-to-midday and midday-to-evening, each this length. Chosen in
+## motion-lab on 2026-09-07 alongside SINE/IN_OUT.
 ##
-## SchoolDay reads this to pace BOTH the sky and the day's progress bar,
-## so the two always move together -- changing it here changes how long
-## a simulated school day takes on screen (two transitions per day).
+## SchoolDay reads this to pace the day's progress bar across its two
+## phases and the sky in a single sweep spanning both, so all three stay
+## in lockstep -- changing it here changes how long a simulated school
+## day takes on screen.
 @export var transition_duration: float = 2.0
 ## When true, progress runs through smoothstep before it maps to an
 ## angle, so the sweep eases in and out even under a linear driver.
@@ -106,7 +106,23 @@ enum Phase { DAWN, MIDDAY, EVENING }
 ## Slack multiplied into the sky's cover size. The maths already covers
 ## the screen exactly; this absorbs rounding on odd aspect ratios so a
 ## corner of the page can never flash through mid-rotation.
-@export var sky_cover_margin: float = 1.02:
+##
+## The default is not arbitrary any more. transition_background.png (the
+## sky texture) has a stray artifact the artist left visible: a bluish
+## night-street scene pasted into its bottom-left corner, roughly
+## texture-space x 0..442, y 1837..2047. Because the sky always rotates
+## about its own centre, a texel's distance from that centre is
+## rotation-invariant, and this artifact's nearest texel to centre sits
+## ~1000.4 texels out -- close enough that it can swing into a screen
+## corner mid-sweep. On the project's default 1080x1920 layout with the
+## default bottom-centre pivot, the artifact clears every screen corner
+## only once this margin exceeds ~1.0236; below that it clips a corner
+## (worst case measured: 45 screen px in the top-right corner at -200
+## degrees of rotation). 1.06 gives ~3.6% real clearance above that
+## threshold while the extra zoom stays imperceptible. Do not lower this
+## back toward 1.02 without first cleaning the source art -- see
+## tests/test_book_clock_phases.gd's floor test.
+@export var sky_cover_margin: float = 1.06:
 	set(value):
 		sky_cover_margin = value
 		_fit_layers()
@@ -167,22 +183,19 @@ func eased_progress() -> float:
 
 ## The sky's angle, in degrees, for the current progress.
 ##
-## Piecewise through the midday pose, so progress 0.5 lands exactly on
-## it however the three angles are set. The old single lerp put midday
-## halfway between dawn and evening by arithmetic; this puts it there by
-## definition, which is what lets the pose be tuned on its own.
+## One straight lerp between the day's two poses. This was piecewise
+## through a third, separately authored midday angle until 2026-09-10;
+## the middle of the day is now the middle of the arc by construction.
 func current_rotation_degrees() -> float:
-	var eased := eased_progress()
-	if eased <= 0.5:
-		return lerpf(dawn_rotation_degrees, midday_rotation_degrees, eased * 2.0)
-	return lerpf(midday_rotation_degrees, evening_rotation_degrees, (eased - 0.5) * 2.0)
+	return lerpf(dawn_rotation_degrees, evening_rotation_degrees, eased_progress())
 
 
-## The angle one phase rests at.
+## The angle one phase rests at. MIDDAY has no authored angle of its own
+## any more -- it is simply the arc's midpoint.
 func angle_for_phase(phase: Phase) -> float:
 	match phase:
 		Phase.MIDDAY:
-			return midday_rotation_degrees
+			return lerpf(dawn_rotation_degrees, evening_rotation_degrees, 0.5)
 		Phase.EVENING:
 			return evening_rotation_degrees
 		_:

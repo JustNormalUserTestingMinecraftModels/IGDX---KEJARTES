@@ -146,17 +146,36 @@ func test_choice_buttons_animate_on_both_style_paths() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
 	assert_false(src.contains("_make_choice_shadow"),
 		"the per-button shadow Panel is superseded by the stylebox's own shadow")
-	assert_true(src.contains("answer_btn_font_color"),
-		"answer buttons need their own ink colour: the theme's Button font is white")
 	var flat_branch := src.find("if choice_btn_normal_texture == null:")
-	var press_wiring := src.find("button_down.connect")
-	assert_true(flat_branch != -1, "the flat-style branch should still exist")
-	assert_true(press_wiring > flat_branch,
-		"press wiring must come after the branch so both paths reach it")
-	if press_wiring > flat_branch:
-		var branch_body := src.substr(flat_branch, press_wiring - flat_branch)
-		assert_false(branch_body.contains("return"),
-			"the flat path must fall through to the shared press-animation wiring")
+	assert_true(flat_branch != -1, "_apply_choice_btn_textures should branch on a null texture")
+	var else_branch := src.find("\telse:", flat_branch)
+	assert_true(else_branch > flat_branch, "the texture branch should follow the flat branch")
+	if else_branch <= flat_branch:
+		return
+	var flat_body := src.substr(flat_branch, else_branch - flat_branch)
+	for state in ["\"hover\"", "\"pressed\"", "\"disabled\""]:
+		assert_true(flat_body.contains("add_theme_stylebox_override(" + state),
+			"the flat path must style the " + state + " state, not just normal")
+	assert_false(flat_body.contains("return"),
+		"the flat path must fall through to the shared press-animation wiring")
+	# One leading tab means function-body level: shared by both branches rather
+	# than nested inside either, which is the regression this guards.
+	assert_true(src.contains("\n\tbtn.button_down.connect(_on_choice_btn_down.bind(btn))"),
+		"press wiring must sit at the function's top level so both paths reach it")
+	assert_true(src.contains("\n\tbtn.pivot_offset = Vector2("),
+		"pivot setup must sit at the function's top level so both paths reach it")
+
+func test_flash_keeps_white_ink_on_the_coloured_fill() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
+	var at := src.find("func _flash_button_box")
+	assert_true(at != -1, "_flash_button_box should exist")
+	if at == -1:
+		return
+	var next_func := src.find("\nfunc ", at + 10)
+	var body := src.substr(at, next_func - at) if next_func > at else src.substr(at)
+	assert_true(body.contains("font_disabled_color"),
+		"choice buttons are disabled before the flash lands, so the flash must "
+		+ "set font_disabled_color as well or the dark resting ink survives")
 
 func test_every_question_image_resolves() -> void:
 	for data_path in ["res://Assets/Data/pilihanganda_questions.json",
@@ -179,3 +198,70 @@ func test_no_placeholder_quiz_photos_remain() -> void:
 		var src := FileAccess.get_file_as_string(p)
 		for stale_name in stale:
 			assert_false(src.contains(stale_name), p + " still references " + stale_name)
+
+## Parses `bg_color = Color(r, g, b, a)` out of every `[sub_resource]` block,
+## keyed by sub-resource id, so a test can follow a SubResource reference to
+## the colour it actually resolves to.
+func _sub_resource_fills(src: String) -> Dictionary:
+	var out := {}
+	var current := ""
+	for raw in src.split("\n"):
+		if raw.begins_with("[sub_resource"):
+			var id_at := raw.find(" id=\"")
+			if id_at == -1:
+				current = ""
+			else:
+				var id_end := raw.find("\"", id_at + 5)
+				current = raw.substr(id_at + 5, id_end - id_at - 5)
+		elif raw.begins_with("["):
+			current = ""
+		elif current != "" and raw.begins_with("bg_color = Color("):
+			var open_at := raw.find("(")
+			var inner := raw.substr(open_at + 1, raw.rfind(")") - open_at - 1)
+			var rgba := PackedFloat32Array()
+			for part in inner.split(","):
+				rgba.append(float(part.strip_edges()))
+			out[current] = rgba
+	return out
+
+func test_pilihanganda_flash_styles_are_not_transposed() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
+	var fills := _sub_resource_fills(src)
+	var ids := {}
+	for prop in ["answer_btn_normal_style", "answer_btn_correct_style", "answer_btn_wrong_style"]:
+		var needle: String = prop + " = SubResource(\""
+		var at := src.find(needle)
+		assert_true(at != -1, prop + " must be assigned a StyleBox sub-resource")
+		if at == -1:
+			continue
+		var start := at + needle.length()
+		ids[prop] = src.substr(start, src.find("\"", start) - start)
+	assert_eq(ids.size(), 3, "all three answer-button styles must be assigned")
+	var seen := {}
+	for prop in ids:
+		seen[ids[prop]] = true
+	assert_eq(seen.size(), 3, "the three answer-button styles must be three distinct sub-resources")
+	var normal: PackedFloat32Array = fills.get(ids.get("answer_btn_normal_style", ""), PackedFloat32Array())
+	var correct: PackedFloat32Array = fills.get(ids.get("answer_btn_correct_style", ""), PackedFloat32Array())
+	var wrong: PackedFloat32Array = fills.get(ids.get("answer_btn_wrong_style", ""), PackedFloat32Array())
+	assert_eq(normal.size(), 4, "the resting style needs a bg_color")
+	assert_eq(correct.size(), 4, "the correct-flash style needs a bg_color")
+	assert_eq(wrong.size(), 4, "the wrong-flash style needs a bg_color")
+	if normal.size() < 4 or correct.size() < 4 or wrong.size() < 4:
+		return
+	assert_true(normal[0] > 0.9 and normal[1] > 0.9 and normal[2] > 0.9,
+		"the resting answer button must stay a near-white card")
+	assert_true(correct[1] > correct[0] and correct[1] > correct[2],
+		"the correct-answer flash must resolve to the green fill")
+	assert_true(wrong[0] > wrong[1] and wrong[0] > wrong[2],
+		"the wrong-answer flash must resolve to the red fill")
+
+func test_quiz_labels_use_ink_that_reads_on_the_wood_table() -> void:
+	var pg := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
+	assert_true(pg.contains("progress_label_color = Color(0.11764706, 0.14117648, 0.21176471, 1)"),
+		"the progress label must keep the dark ink; pale blue vanished on the wood table")
+	var mj := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Menjodohkan.tscn")
+	assert_false(mj.contains("Color(0.4, 0.7, 1, 1)"),
+		"Menjodohkan's answer header must not go back to the pale blue")
+	assert_false(mj.contains("Color(1, 0.7, 0.3, 1)"),
+		"Menjodohkan's question header must not go back to the pale orange")

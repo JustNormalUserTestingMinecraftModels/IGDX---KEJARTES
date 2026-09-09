@@ -105,7 +105,9 @@ extends BaseMinigame
 @export var choice_btn_texture_margin: int   = 12
 ## Minimum height (px) of each answer button, regardless of text length.
 @export var answer_btn_min_height: int       = 100
-## StyleBox fallback overrides if no texture assigned (leave null = uses theme default).
+## StyleBox used for answer buttons when no texture is assigned. Left null the
+## buttons fall back to the theme's pill Button, which answer_btn_font_color's
+## dark ink is not designed for -- assign a light rounded StyleBoxFlat instead.
 @export var answer_btn_normal_style:  StyleBox = null
 ## Style flashed on the button holding the correct answer.
 @export var answer_btn_correct_style: StyleBox = null
@@ -391,7 +393,11 @@ func _flash_button_box(btn: Button, box_color: Color) -> void:
 		style.corner_radius_bottom_right = 8
 		btn.add_theme_stylebox_override("disabled", style)
 		btn.add_theme_stylebox_override("normal", style)
+	# The button is already disabled by _on_choice_pressed when the flash
+	# lands, so Godot draws font_disabled_color -- override both or the label
+	# keeps the dark resting ink on top of the coloured flash fill.
 	btn.add_theme_color_override("font_color", Color.WHITE)
+	btn.add_theme_color_override("font_disabled_color", Color.WHITE)
 
 	# Bright highlight flash then smooth settle
 	btn.modulate = Color(flash_highlight_scale, flash_highlight_scale, flash_highlight_scale)

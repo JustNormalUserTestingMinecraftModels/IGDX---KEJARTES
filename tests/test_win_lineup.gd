@@ -174,3 +174,69 @@ func test_every_placement_carries_an_anchor_and_a_scale() -> void:
 			"%s anchors inside the canvas horizontally" % p["name"])
 		assert_true(p["anchor"].y > 1024.0 and p["anchor"].y <= 2048.0,
 			"%s stands in the lower half of the painting" % p["name"])
+
+
+func _placed(name: String) -> Dictionary:
+	for p in WinLineup.assign(["Marcel", "Doni", "Andi", "Citra"]):
+		if p["name"] == name:
+			return p
+	return {}
+
+
+func test_a_shadow_sits_at_its_students_feet() -> void:
+	var doni := _placed("Doni")
+	var sh := WinLineup.shadow_for(doni, 1.25, 0.28)
+	# The splash's feet are on its canvas bottom, so the shadow's centre
+	# sits on the anchor's own y -- not above or below it.
+	assert_true(is_equal_approx(sh["centre"].y, doni["anchor"].y),
+		"the shadow is on the ground line, not floating (%f vs %f)"
+			% [sh["centre"].y, doni["anchor"].y])
+
+
+func test_a_shadow_follows_its_students_foot_centre_not_the_canvas_centre() -> void:
+	# Marcel's contact band centres at 480, 60px left of the 540 canvas
+	# centre. A shadow that ignored that would sit visibly off his foot.
+	var marcel := _placed("Marcel")
+	var sh := WinLineup.shadow_for(marcel, 1.25, 0.28)
+	var offset: float = (480.0 - 540.0) * marcel["scale"]
+	assert_true(is_equal_approx(sh["centre"].x, marcel["anchor"].x + offset),
+		"the shadow tracks the measured foot centre")
+
+
+func test_shadow_width_scales_with_the_foot_span() -> void:
+	# Doni's 597px crouch against Shinta's 186px stance: the shadows must
+	# differ by roughly the same factor, or one of them reads wrong.
+	var doni := WinLineup.shadow_for(_placed("Doni"), 1.25, 0.28)
+	var citra := WinLineup.shadow_for(_placed("Citra"), 1.25, 0.28)
+	assert_gt(doni["size"].x, citra["size"].x,
+		"the wide crouch throws the wider shadow")
+
+
+func test_the_narrow_poses_are_widened_by_their_factor() -> void:
+	var marcel := _placed("Marcel")
+	var plain := 116.0 * 1.25 * marcel["scale"]
+	var sh := WinLineup.shadow_for(marcel, 1.25, 0.28)
+	assert_true(is_equal_approx(sh["size"].x, plain * 2.0),
+		"Marcel's one-footed contact is widened toward his body")
+
+
+func test_flatness_sets_the_ellipse_height() -> void:
+	var sh := WinLineup.shadow_for(_placed("Doni"), 1.25, 0.28)
+	assert_true(is_equal_approx(sh["size"].y, sh["size"].x * 0.28),
+		"height is flatness x width")
+
+
+func test_spread_widens_every_shadow() -> void:
+	var narrow := WinLineup.shadow_for(_placed("Andi"), 1.0, 0.28)
+	var wide := WinLineup.shadow_for(_placed("Andi"), 2.0, 0.28)
+	assert_true(is_equal_approx(wide["size"].x, narrow["size"].x * 2.0),
+		"spread multiplies the width")
+
+
+func test_an_unknown_name_still_returns_a_usable_shadow() -> void:
+	# A roster name with no measured anchor must not crash the end-of-grade
+	# sequence -- it falls back to the canvas centre and a nominal span.
+	var sh := WinLineup.shadow_for(
+		{"name": "Nobody", "slot": WinLineup.SLOT_FRONT_LOW,
+		"anchor": Vector2(700.0, 1810.0), "scale": 1.0}, 1.25, 0.28)
+	assert_gt(sh["size"].x, 0.0, "a fallback shadow still has a width")

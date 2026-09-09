@@ -72,6 +72,15 @@ const ARRANGEMENTS := {
 ## How many figures the composition holds.
 const MAX_FIGURES := 4
 
+## Half of a splash canvas, in its own space. A figure's horizontal offset
+## from its anchor is measured from here.
+const CANVAS_HALF := 540.0
+
+## Foot span assumed for a name with no measured anchor. Roughly a
+## two-footed stance, so an unmeasured student gets a plausible shadow
+## instead of none.
+const FALLBACK_SPAN := 300.0
+
 
 ## The slots a roster of `count` uses, back to front. Counts outside 2-4
 ## clamp into range: 0 and 1 borrow the 2-figure arrangement's tail, and
@@ -129,4 +138,31 @@ static func _place(name: String, slot: String) -> Dictionary:
 		"slot": slot,
 		"anchor": g["anchor"],
 		"scale": g["scale"],
+	}
+
+
+## Where a placed student's ground shadow goes, in art space.
+##
+## `spread` multiplies the measured foot span and `flatness` sets the
+## ellipse's height as a fraction of its width -- both are EndCutscene
+## exports, so the shadows can be art-directed without touching the
+## measured numbers in FOOT_ANCHORS.
+##
+## Returns {"centre": Vector2, "size": Vector2}.
+static func shadow_for(placed: Dictionary, spread: float,
+		flatness: float) -> Dictionary:
+	var scale: float = placed["scale"]
+	var anchor: Vector2 = placed["anchor"]
+	var a: Dictionary = FOOT_ANCHORS.get(placed["name"], {})
+
+	var centre_x: float = a.get("centre_x", CANVAS_HALF)
+	var span: float = a.get("span", FALLBACK_SPAN)
+	var widen: float = a.get("widen", 1.0)
+
+	var width: float = span * widen * spread * scale
+	return {
+		# The splash is anchored bottom-CENTRE, so the foot centre's offset
+		# from the canvas midline is what displaces the shadow.
+		"centre": Vector2(anchor.x + (centre_x - CANVAS_HALF) * scale, anchor.y),
+		"size": Vector2(width, width * flatness),
 	}

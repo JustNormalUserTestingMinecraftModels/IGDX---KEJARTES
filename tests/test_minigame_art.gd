@@ -55,3 +55,58 @@ func test_buatbatik_has_no_placeholder_art() -> void:
 	for stale in ["Kiper", "DiagonalRight", "komodo_dragon", "borobudur_temple"]:
 		assert_false(src.contains(stale),
 			"BuatBatik.tscn still references the placeholder " + stale)
+
+func test_buatbatik_tool_slots_use_rounded_panels() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn")
+	assert_eq(src.count("[node name=\"Bg\" type=\"Panel\""), 4,
+		"all four tool slots need a Panel background that can carry a rounded StyleBox")
+	assert_false(src.contains("[node name=\"Bg\" type=\"ColorRect\""),
+		"no tool slot may keep its placeholder ColorRect background")
+
+## Every BuatBatik export and the art it must point at. Guards the mapping
+## itself rather than mere presence: a swapped tool0/tool1, or fase3 landing
+## on layer2, leaves every path still present in the file and would otherwise
+## pass unnoticed. The Downloads numbering skipped 2, so pewarna comes from
+## Tool3.png and kompor from Tool4.png -- easy to transpose by hand.
+const _BATIK_WIRING: Dictionary = {
+	"tool0_texture": "res://Assets/Images/Textures/batik_tool_pencil.png",
+	"tool1_texture": "res://Assets/Images/Textures/batik_tool_canting.png",
+	"tool2_texture": "res://Assets/Images/Textures/batik_tool_pewarna.png",
+	"tool3_texture": "res://Assets/Images/Textures/batik_tool_kompor.png",
+	"canvas_cloth_texture": "res://Assets/Images/Textures/batik_fase1.png",
+	"layer0_pattern_texture": "res://Assets/Images/Textures/batik_fase2.png",
+	"layer1_pattern_texture": "res://Assets/Images/Textures/batik_fase3.png",
+	"layer2_pattern_texture": "res://Assets/Images/Textures/batik_fase4.png",
+	"layer3_pattern_texture": "res://Assets/Images/Textures/batik_fase5.png",
+}
+
+## Maps every `[ext_resource ... id="X"]` line in a .tscn to its res:// path.
+func _ext_resource_ids(src: String) -> Dictionary:
+	var out := {}
+	for raw in src.split("\n"):
+		if not raw.begins_with("[ext_resource"):
+			continue
+		var path_at := raw.find("path=\"")
+		# Leading space matters: a bare `id="` also matches inside `uid="`.
+		var id_at := raw.find(" id=\"")
+		if path_at == -1 or id_at == -1:
+			continue
+		var path_end := raw.find("\"", path_at + 6)
+		var id_end := raw.find("\"", id_at + 5)
+		out[raw.substr(id_at + 5, id_end - id_at - 5)] = raw.substr(path_at + 6, path_end - path_at - 6)
+	return out
+
+func test_buatbatik_wiring_maps_each_export_to_the_right_art() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn")
+	var ids := _ext_resource_ids(src)
+	for prop in _BATIK_WIRING:
+		var needle: String = prop + " = ExtResource(\""
+		var at := src.find(needle)
+		assert_true(at != -1, "BuatBatik.tscn has no " + prop + " assignment")
+		if at == -1:
+			continue
+		var id_start := at + needle.length()
+		var id_end := src.find("\"", id_start)
+		var res_id := src.substr(id_start, id_end - id_start)
+		assert_eq(ids.get(res_id, ""), _BATIK_WIRING[prop],
+			prop + " must point at " + str(_BATIK_WIRING[prop]))

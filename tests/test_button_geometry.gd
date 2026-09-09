@@ -35,6 +35,8 @@ const RADIUS_EXEMPT := {
 		"chip -- stays radius_pill by design",
 	"EventSelectCard":
 		"reads as a card, not a button -- radius_lg",
+	"CardArrowButton":
+		"fixed 120x120 square, so radius_pill yields an exact circle -- no height-dependent-radius risk",
 }
 
 
@@ -311,3 +313,15 @@ func test_main_menu_button_uses_the_split_asset() -> void:
 		"MainMenuButton must use menu_button.png, not %s -- trait_button.png "
 		% str(sb.texture.resource_path)
 		+ "is the round chip art and must stay round")
+
+
+## The student card's page arrows. A reviewed exception to the fixed-radius
+## rule: at a fixed 120x120 square, radius_pill yields an exact circle, and
+## because the size is fixed there is no height-dependent-radius risk.
+func test_card_arrow_button_is_a_circle() -> void:
+	var sb := _theme.get_stylebox("normal", "CardArrowButton") as StyleBoxFlat
+	assert_not_null(sb, "CardArrowButton/normal must be a StyleBoxFlat")
+	assert_eq(sb.corner_radius_top_left, _tokens.radius_pill,
+		"CardArrowButton is a fixed square, so radius_pill makes it a circle")
+	assert_eq(sb.bg_color, _tokens.brand_primary, "arrow fill")
+	assert_eq(sb.border_color, _tokens.outline_card, "arrow rim")

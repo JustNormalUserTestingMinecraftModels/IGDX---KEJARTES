@@ -9,9 +9,10 @@
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
 [ext_resource type="Texture2D" uid="uid://ddqatfjpqc4ev" path="res://Assets/Images/MuridPotrait/Murid2.jpg" id="4_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://cn7kemflfrhci" path="res://Assets/Images/MuridPotrait/Murid5.jpg" id="4_hodfn"]
-[ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="4_vdd03"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
+[ext_resource type="Texture2D" uid="uid://0n6i1ep0ugkv" path="res://Assets/Images/UI/Nav/icon_chevron_right.png" id="11_1k4ux"]
+[ext_resource type="Texture2D" uid="uid://cwvk65ofc5rgl" path="res://Assets/Images/UI/Nav/icon_chevron_left.png" id="12_kiyav"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
@@ -1426,25 +1427,24 @@ text = "BATAL"
 
 [node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
 layout_mode = 0
-offset_left = 977.0
-offset_top = 1637.0
-offset_right = 1497.0
-offset_bottom = 2157.0
-rotation = -3.1272264
-scale = Vector2(0.175, 0.175)
-icon = ExtResource("4_vdd03")
-flat = true
+offset_left = 800.0
+offset_top = 1516.0
+offset_right = 920.0
+offset_bottom = 1636.0
+theme_type_variation = &"CardArrowButton"
+icon = ExtResource("11_1k4ux")
+expand_icon = true
 
 [node name="NextButtonKiri" type="Button" parent="." unique_id=1513661131]
 visible = false
 layout_mode = 0
-offset_left = -58.999992
-offset_top = 1584.0001
-offset_right = 453.0
-offset_bottom = 2096.0
-scale = Vector2(0.175, 0.175)
-icon = ExtResource("4_vdd03")
-flat = true
+offset_left = 20.0
+offset_top = 1516.0
+offset_right = 140.0
+offset_bottom = 1636.0
+theme_type_variation = &"CardArrowButton"
+icon = ExtResource("12_kiyav")
+expand_icon = true
 
 [node name="PilihMurid" type="Label" parent="." unique_id=983198317]
 layout_mode = 0

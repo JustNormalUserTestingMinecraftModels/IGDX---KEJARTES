@@ -150,6 +150,17 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.surface_card, tokens.surface_sunken,
 		tokens.brand_primary, tokens.brand_primary)
 
+	# The student card's page arrows. Fixed 120x120, so radius_pill yields a
+	# circle rather than a height-dependent capsule -- the one place that
+	# radius is still correct on a Button, and why the geometry test
+	# allow-lists it. Replaces two rotated copies of a pure-#FF0000 asset
+	# that had no palette relationship to anything.
+	_add_button_variation(theme, tokens, "CardArrowButton",
+		tokens.brand_primary, tokens.brand_primary_dark,
+		tokens.outline_card, tokens.text_on_brand,
+		tokens.radius_pill)
+	theme.set_constant("icon_max_width", "CardArrowButton", tokens.btn_icon_m)
+
 	_build_main_menu_button(theme, tokens)
 	_build_shop_shelf_button(theme, tokens)
 

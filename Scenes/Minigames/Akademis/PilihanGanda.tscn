@@ -1,10 +1,66 @@
 [gd_scene format=3 uid="uid://dfv52334vw10e"]
 
 [ext_resource type="Script" uid="uid://j0ixncgl13v1" path="res://Scripts/Minigames/Akademis/PilihanGanda.gd" id="1_pilihanganda"]
-[ext_resource type="Texture2D" uid="uid://sbcqefj5hbe3" path="res://Assets/Images/Textures/field_bg.jpg" id="2_ubtp4"]
-[ext_resource type="Texture2D" uid="uid://cmdekvvsqg57y" path="res://Assets/Images/Textures/KiperRight.jpg" id="3_2jy3k"]
+[ext_resource type="FontFile" uid="uid://bbmfoy35ubh2t" path="res://Assets/Fonts/Boohong.otf" id="3_doxun"]
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="4_doxun"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_b17uc"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_b17uc"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.98, 0.98, 0.98, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.5, 0.85, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4ughg"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.18431373, 0.72156864, 0.41960785, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7bbtt"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.76862746, 0.16862746, 0.43137255, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
 
 [node name="PilihanGanda" type="Control" unique_id=1850730347]
 layout_mode = 3
@@ -14,8 +70,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_pilihanganda")
-background_texture = ExtResource("2_ubtp4")
-choice_btn_normal_texture = ExtResource("3_2jy3k")
+background_texture = ExtResource("4_doxun")
+answer_btn_normal_style = SubResource("StyleBoxFlat_b17uc")
+answer_btn_correct_style = SubResource("StyleBoxFlat_4ughg")
+answer_btn_wrong_style = SubResource("StyleBoxFlat_7bbtt")
+font = ExtResource("3_doxun")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1882836415]
 layout_mode = 1

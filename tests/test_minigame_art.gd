@@ -126,3 +126,18 @@ func test_menjodohkan_has_no_placeholder_card_art() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Menjodohkan.tscn")
 	assert_false(src.contains("Kiper"),
 		"Menjodohkan.tscn still references a Kiper meme placeholder")
+
+func test_pilihanganda_answer_buttons_are_rounded_rects() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
+	for prop in ["answer_btn_normal_style", "answer_btn_correct_style", "answer_btn_wrong_style"]:
+		assert_true(src.contains(prop + " = SubResource("),
+			prop + " must be authored as a StyleBox in the scene")
+	assert_true(src.contains("corner_radius_top_left = 24"),
+		"answer buttons must be rounded rectangles, not the theme's default pill")
+	assert_false(src.contains("choice_btn_normal_texture = ExtResource"),
+		"the meme placeholder texture must be cleared")
+
+func test_pilihanganda_uses_the_display_font() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
+	assert_true(src.contains("Boohong.otf"),
+		"the scene must set its font export to the Boohong display face for heading text")

@@ -8,6 +8,56 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-09 — StatCheck: tap anywhere to rush a student's reveal
+
+Plan (Part B): `docs/superpowers/plans/2026-09-09-win-screen-lineup-and-statcheck-rush.md`.
+
+`StatCheck` — the end-of-grade screen where one card per student slides in,
+its three stat bars fill in turn, cleared stats light a share of the 3-star
+meter, then the card slides out — is now tappable. A touch anywhere rushes
+**the current student only**; the next student still animates at full speed
+and needs its own tap. This reverses a recorded decision: the screen's file
+header used to read "Deliberately NOT tap-driven: the check is a reveal the
+player watches," and was rewritten rather than deleted so the reversal reads
+as intentional rather than an oversight.
+
+The mechanism is a speed-scale, never a kill. `Tween.kill()` does not emit
+`finished`, and `_run_check()` awaits its tweens in sequence — killing one
+would leave that await pending forever and strand the screen mid-card. A
+rush instead calls `set_speed_scale()` on whichever tween is currently live
+(`StatCheckRow.rush()`, `StarMeter.rush()`, and `StatCheck._hold()`'s own
+tween), so it still completes and emits within a frame, running `cleared`,
+the full-bar pop, the `filled` signal and the star credit through their
+normal path rather than a special-cased shortcut. `StatCheckRow` carries a
+source-scan test asserting the file contains no `.kill()` at all, precisely
+to stop a future "simplification" from reintroducing it.
+
+Both `hold_seconds` pauses (the entry beat and the trailing one before slide-
+out) became `tween_interval()` tweens rather than `SceneTreeTimer`s, since a
+timer cannot be sped up and a timer-based hold would swallow the tap for its
+full duration. The trailing hold and the slide-out deliberately keep playing
+at full length after a first tap — rushing is meant to reach the numbers
+sooner, not hide them — so a second tap is needed to rush those too.
+
+A `_rushed` flag on `StatCheckRow`, separate from the speed-scale call,
+makes the rush stick to rows that have not started their tween yet: `rush()`
+sets the flag even with nothing in flight, and `fill()` honors it the moment
+it creates a tween. The first cut of this only sped up whichever tween
+happened to be live at the instant of the tap, so a row that hadn't started
+yet filled at full speed with its tally cue already suppressed — an audible
+desync between the star meter and the sound. Only one `tally` cue now plays
+per rushed student no matter how many stats cleared; three inside one frame
+would overlap into a click.
+
+The tap itself is taken in `_input()`, not `_unhandled_input()`: the
+screen's `Scrim` and the card's `Paper` are `Panel`s at Godot's default
+`MOUSE_FILTER_STOP`, which consume pointer events and mark them handled
+before `_unhandled_input()` would ever see them, so the handler silently
+never fired until this was caught. Follows the precedent already set in
+`Scripts/CutScene/cut_scene.gd`'s tap-anywhere input.
+
+Suite: `stat_check` green at 34 tests.
+
 ## 2026-09-09 — Win screen: roster lineup, letterbox, ground shadows
 
 Spec: `docs/superpowers/specs/2026-09-09-win-screen-lineup-design.md`; plan:

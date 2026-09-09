@@ -214,7 +214,7 @@ func test_shadow_width_scales_with_the_foot_span() -> void:
 
 func test_the_narrow_poses_are_widened_by_their_factor() -> void:
 	var marcel := _placed("Marcel")
-	var plain := 116.0 * 1.25 * marcel["scale"]
+	var plain: float = 116.0 * 1.25 * float(marcel["scale"])
 	var sh := WinLineup.shadow_for(marcel, 1.25, 0.28)
 	assert_true(is_equal_approx(sh["size"].x, plain * 2.0),
 		"Marcel's one-footed contact is widened toward his body")

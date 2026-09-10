@@ -15,7 +15,7 @@ bounce = 1.0
 radius = 30.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_paddle"]
-radius = 50.0
+radius = 104.0769
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_goal"]
 size = Vector2(1037, 110)
@@ -64,7 +64,8 @@ position = Vector2(540, 1500)
 shape = SubResource("CircleShape2D_paddle")
 
 [node name="Sprite2D" type="Sprite2D" parent="PlayerPaddle" unique_id=230033909]
-scale = Vector2(0.1045161, 0.0738882)
+position = Vector2(-14.000015, 41.999992)
+scale = Vector2(0.3418952, 0.28401384)
 texture = ExtResource("3_77y7n")
 
 [node name="EnemyPaddle" type="CharacterBody2D" parent="." unique_id=147574036]
@@ -74,7 +75,8 @@ position = Vector2(540, 420)
 shape = SubResource("CircleShape2D_paddle")
 
 [node name="Sprite2D" type="Sprite2D" parent="EnemyPaddle" unique_id=1374491768]
-scale = Vector2(0.1045161, 0.0738882)
+position = Vector2(-14.000015, 41.999992)
+scale = Vector2(0.3418952, 0.28401384)
 texture = ExtResource("3_77y7n")
 
 [node name="PlayerGoal" type="Area2D" parent="." unique_id=255239337]

@@ -197,17 +197,15 @@ func _ready() -> void:
 		if col and col.shape is CircleShape2D:
 			col.shape.radius = screen_size.x * puck_radius_frac
 
+	# The paddles' hit circle is authored in the scene -- both share
+	# CircleShape2D_paddle -- so resizing it in the 2D editor is what plays.
+	# It used to be forced to screen_size.x * 0.06 here, which silently threw
+	# away any size set in the editor (2026-09-10).
 	if player_paddle:
 		player_paddle.global_position = Vector2(screen_size.x / 2, screen_size.y * 0.8)
-		var col = player_paddle.get_node_or_null("CollisionShape2D")
-		if col and col.shape is CircleShape2D:
-			col.shape.radius = screen_size.x * 0.06
 
 	if enemy_paddle:
 		enemy_paddle.global_position = Vector2(screen_size.x / 2, screen_size.y * 0.2)
-		var col = enemy_paddle.get_node_or_null("CollisionShape2D")
-		if col and col.shape is CircleShape2D:
-			col.shape.radius = screen_size.x * 0.06
 
 	_apply_visual_exports()
 	_remember_racket_poses()

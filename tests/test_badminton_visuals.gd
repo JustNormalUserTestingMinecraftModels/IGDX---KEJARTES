@@ -103,3 +103,24 @@ func test_the_racket_squash_returns_to_remembered_values() -> void:
 		"the racket must not capture its idle art mid-swap")
 	assert_contains(src, "_racket_rest_scale", "each racket's rest scale is stored once")
 	assert_contains(src, "_racket_idle_texture", "each racket's idle art is stored once")
+
+
+func test_the_paddles_match_and_their_hit_circle_is_authored_in_the_scene() -> void:
+	# Both paddles share one CircleShape2D, so resizing it in the 2D editor
+	# resizes both. The script used to force it to screen_size.x * 0.06 at
+	# startup, which threw that size away (2026-09-10).
+	var root: Node = load(SCENE_PATH).instantiate()
+	track(root)
+	var player_col := root.get_node("PlayerPaddle/CollisionShape2D") as CollisionShape2D
+	var enemy_col := root.get_node("EnemyPaddle/CollisionShape2D") as CollisionShape2D
+	assert_true(player_col.shape == enemy_col.shape, "both paddles must share one hit circle")
+	var player_sprite := root.get_node("PlayerPaddle/Sprite2D") as Sprite2D
+	var enemy_sprite := root.get_node("EnemyPaddle/Sprite2D") as Sprite2D
+	assert_true(player_sprite.scale.is_equal_approx(enemy_sprite.scale),
+		"the rackets must be drawn at the same size, got %s vs %s" % [player_sprite.scale, enemy_sprite.scale])
+	assert_true(player_sprite.position.is_equal_approx(enemy_sprite.position),
+		"the rackets must sit over their circles the same way, got %s vs %s"
+			% [player_sprite.position, enemy_sprite.position])
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_false(src.contains("col.shape.radius = screen_size.x * 0.06"),
+		"the script must not override the paddle circle authored in the scene")

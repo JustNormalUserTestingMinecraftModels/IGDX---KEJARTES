@@ -278,3 +278,26 @@ func test_roster_avatar_uses_ghost_button_and_clears_touch_minimum() -> void:
 	var m := a.get_combined_minimum_size()
 	assert_true(minf(m.x, m.y) >= float(tokens.touch_target_min),
 		"avatar must clear the touch minimum, got %s" % m)
+
+
+## The four cards are one template instanced four times now. The instance
+## NAMES stay Murid1..4 because test_scene_instantiates resolves
+## CardContainer/Murid%d and the tutorial's first step targets
+## CardContainer -- keeping the names keeps both contracts.
+func test_the_four_cards_are_rostercard_instances_under_their_old_names() -> void:
+	for i in range(1, 5):
+		var card := _list.get_node_or_null("CardContainer/Murid%d" % i)
+		assert_true(card != null, "missing CardContainer/Murid%d" % i)
+		assert_true(card is RosterCard,
+			"CardContainer/Murid%d must be a RosterCard instance" % i)
+
+
+## Composed from two small tables rather than a 30-entry lookup: five
+## persona openers x six quirk observations.
+func test_catatan_composes_persona_then_quirk() -> void:
+	assert_eq(RosterCard.compose_catatan("Tekun", "Kutu Buku"),
+		"Duduk paling depan, catatannya rapi. Perpustakaan sudah seperti rumah kedua.",
+		"catatan must read persona opener then quirk observation")
+	assert_eq(RosterCard.compose_catatan("", ""),
+		"Belum ada catatan untuk murid ini.",
+		"an unknown pairing must still produce a sentence")

@@ -197,7 +197,9 @@ func _setup_students():
 				murid_node.texture = paper_texture
 
 			# Set Portrait
-			var portrait_node = murid_node.get_node_or_null("Portrait")
+			# RosterCard wraps the portrait in a PortraitFrame node (Task 4
+			# extraction), so it is no longer a direct child of the card.
+			var portrait_node = murid_node.get_node_or_null("PortraitFrame/Portrait")
 			var portrait_path = student_data.get("portrait", "")
 			if portrait_node and portrait_path != "" and ResourceLoader.exists(portrait_path):
 				portrait_node.texture = load(portrait_path)

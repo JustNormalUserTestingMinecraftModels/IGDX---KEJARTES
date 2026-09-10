@@ -1,0 +1,164 @@
+[gd_scene format=3 uid="uid://b701oo028pqff"]
+
+[ext_resource type="Texture2D" uid="uid://dlyxcrhuswotn" path="res://Assets/Images/UI/paper.png" id="1_pwhc5"]
+[ext_resource type="Script" uid="uid://cmgc7mel8ba5n" path="res://Scripts/StudentList/RosterCard.gd" id="2_dawm1"]
+[ext_resource type="PackedScene" uid="uid://cries6nb441ve" path="res://Scenes/StudentList/StickyNote.tscn" id="3_2cr6j"]
+
+[node name="RosterCard" type="TextureRect" unique_id=1291523057]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+texture = ExtResource("1_pwhc5")
+expand_mode = 1
+script = ExtResource("2_dawm1")
+
+[node name="CardButton" type="Button" parent="." unique_id=1821756309]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Belum" type="Button" parent="." unique_id=727038106]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 45.0
+offset_right = 360.0
+offset_bottom = 141.0
+mouse_filter = 2
+theme_type_variation = &"DangerButton"
+text = "BELUM TERJADWALKAN"
+
+[node name="Sudah" type="Button" parent="." unique_id=547041322]
+visible = false
+layout_mode = 0
+offset_left = 40.0
+offset_top = 45.0
+offset_right = 360.0
+offset_bottom = 141.0
+mouse_filter = 2
+theme_type_variation = &"SuccessButton"
+text = "SUDAH TERJADWALKAN"
+
+[node name="Nama" type="Label" parent="." unique_id=1733212225]
+layout_mode = 0
+offset_left = 380.0
+offset_top = 45.0
+offset_right = 900.0
+offset_bottom = 125.0
+theme_type_variation = &"H2Label"
+text = "Hamamiya"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PortraitFrame" type="Control" parent="." unique_id=428478704]
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Portrait" type="TextureRect" parent="PortraitFrame" unique_id=11649935]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -230.0
+offset_top = 155.0
+offset_right = 230.0
+offset_bottom = 615.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="StickyNotesContainer" type="Control" parent="." unique_id=283858632]
+anchors_preset = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -440.0
+offset_top = -920.0
+offset_right = 440.0
+offset_bottom = -30.0
+mouse_filter = 2
+
+[node name="Senin" parent="StickyNotesContainer" unique_id=159726911 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = 280.0
+offset_bottom = 300.0
+mouse_filter = 2
+
+[node name="Selasa" parent="StickyNotesContainer" unique_id=1799566043 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
+offset_left = 310.0
+offset_top = 40.0
+offset_right = 570.0
+offset_bottom = 300.0
+mouse_filter = 2
+day_name = "Selasa"
+
+[node name="Rabu" parent="StickyNotesContainer" unique_id=1024822765 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
+offset_left = 600.0
+offset_top = 40.0
+offset_right = 860.0
+offset_bottom = 300.0
+mouse_filter = 2
+day_name = "Rabu"
+
+[node name="Kamis" parent="StickyNotesContainer" unique_id=820140775 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
+offset_left = 165.0
+offset_top = 330.0
+offset_right = 425.0
+offset_bottom = 590.0
+mouse_filter = 2
+day_name = "Kamis"
+
+[node name="Jumat" parent="StickyNotesContainer" unique_id=1309994276 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+layout_mode = 0
+offset_left = 455.0
+offset_top = 330.0
+offset_right = 715.0
+offset_bottom = 590.0
+mouse_filter = 2
+day_name = "Jumat"
+
+[node name="TraitRow" type="HBoxContainer" parent="." unique_id=517615274]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 1180.0
+offset_right = 900.0
+offset_bottom = 1276.0
+
+[node name="SpecialtyChip" type="Button" parent="TraitRow" unique_id=1755543310]
+layout_mode = 2
+theme_type_variation = &"SpecialtyBadge"
+
+[node name="PersonaChip" type="Button" parent="TraitRow" unique_id=934576774]
+layout_mode = 2
+theme_type_variation = &"PersonaBadge"
+
+[node name="QuirkChip" type="Button" parent="TraitRow" unique_id=909514293]
+layout_mode = 2
+theme_type_variation = &"QuirkBadge"
+
+[node name="CatatanGuru" type="Control" parent="." unique_id=1031197187]
+anchors_preset = 0
+offset_left = 40.0
+offset_top = 1320.0
+offset_right = 900.0
+offset_bottom = 1520.0
+mouse_filter = 2
+
+[node name="CatatanLabel" type="Label" parent="CatatanGuru" unique_id=534992870]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+autowrap_mode = 3

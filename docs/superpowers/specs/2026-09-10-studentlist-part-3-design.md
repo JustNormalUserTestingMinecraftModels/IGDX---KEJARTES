@@ -250,7 +250,8 @@ line and it is not being touched.
   `touch_target_min`
 - the four `CardContainer/Murid%d` are `RosterCard` instances (the name contract
   survives the extraction)
-- `TraitRow` holds three `TraitChip` instances per card
+- `TraitRow` holds three chip `Button`s (`SpecialtyBadge`, `PersonaBadge`,
+  `QuirkBadge`) that each clear `touch_target_min`
 - `StickyNotesContainer` holds five notes **in one row** — same y, ascending x
 - `PageIndicator` and `LeftArrow` / `RightArrow` sit in the lower third of the
   screen, i.e. thumb-reachable
@@ -286,7 +287,7 @@ scripts carries its own `##` line, per `tests/test_script_documentation.gd`.
   class" until `project_manage(op="stop")`, `filesystem_manage(op="scan")` and
   relaunch. A new `@export` on a Resource also needs a full editor restart before
   its default is visible — budget for one.
-- **Rebake after the `TraitChip` variation lands**, via a transient `@tool`
+- **Rebake after the `SpecialtyBadge` variation lands**, via a transient `@tool`
   `McpTestSuite` that calls `ThemeFactory.build()` plus `ResourceSaver.save()`,
   then delete it. `Scripts/Design/BakeTheme.gd` has no MCP entry point.
 - **Prefer targeted `test_run(suite=...)`.** A full run drops the bridge; budget

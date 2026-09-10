@@ -265,3 +265,39 @@ func test_quiz_labels_use_ink_that_reads_on_the_wood_table() -> void:
 		"Menjodohkan's answer header must not go back to the pale blue")
 	assert_false(mj.contains("Color(1, 0.7, 0.3, 1)"),
 		"Menjodohkan's question header must not go back to the pale orange")
+
+## LombaMenari's backdrop. It borrowed Gawang.jpg -- MainBola's football goal
+## -- as a placeholder until the festival art arrived on 2026-09-10. See
+## docs/superpowers/specs/2026-09-10-minigame-sky-and-paper-fixes-design.md §6.
+const _MENARI_SCENE := "res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn"
+const _MENARI_BACKDROP := "res://Assets/Images/Textures/budaya_background.jpg"
+
+func test_lomba_menari_backdrop_imports() -> void:
+	assert_true(ResourceLoader.exists(_MENARI_BACKDROP), "missing imported art: " + _MENARI_BACKDROP)
+	assert_true(load(_MENARI_BACKDROP) is Texture2D, _MENARI_BACKDROP + " did not import as a Texture2D")
+
+func test_lomba_menari_wires_the_festival_backdrop_not_the_football_goal() -> void:
+	var src := FileAccess.get_file_as_string(_MENARI_SCENE)
+	var ids := _ext_resource_ids(src)
+	var needle := "background_texture = ExtResource(\""
+	var at := src.find(needle)
+	assert_true(at != -1, "LombaMenari.tscn has no background_texture assignment")
+	if at != -1:
+		var id_start := at + needle.length()
+		var res_id := src.substr(id_start, src.find("\"", id_start) - id_start)
+		assert_eq(ids.get(res_id, ""), _MENARI_BACKDROP,
+			"background_texture must point at the festival backdrop")
+	assert_false(src.contains("Gawang.jpg"),
+		"LombaMenari.tscn still references MainBola's football goal")
+
+func test_lomba_menari_backdrop_shows_in_the_editor_and_covers_tall_screens() -> void:
+	var scene: Node = (load(_MENARI_SCENE) as PackedScene).instantiate()
+	track(scene)
+	var bg := scene.get_node_or_null("Background") as TextureRect
+	assert_true(bg != null, "LombaMenari needs its Background TextureRect")
+	if bg == null:
+		return
+	assert_true(bg.texture != null and bg.texture.resource_path == _MENARI_BACKDROP,
+		"the Background node must carry the art itself, so the 2D editor shows it")
+	assert_eq(bg.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_COVERED,
+		"a taller phone must crop the sides, not stretch the art")

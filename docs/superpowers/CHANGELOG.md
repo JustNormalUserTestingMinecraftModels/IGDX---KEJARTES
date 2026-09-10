@@ -36,8 +36,8 @@ so its anchors are actually saved), so the picture travels with the tool; the
 emoji `IconLabel`s are gone and the ratchet dropped 8 → 7.
 
 **The day's sky.** A full turn, dawn 60 → evening −300, from the darkest frame
-back round to it, easing out (SINE/OUT; smoothstep off). The sweep's Motion Lab
-is published; a token re-tunes it.
+back round to it, easing out — QUAD/OUT over 1.64 s per phase, tuned in Motion
+Lab, so a school day now takes 3.28 s on screen (was 4.0 s); smoothstep off.
 
 **Paper shadows.** `Scenes/UI/PaperShadow.tscn` inside each of the twelve
 StudentCard/ReportCard papers, drawn behind it, so a thrown paper takes its

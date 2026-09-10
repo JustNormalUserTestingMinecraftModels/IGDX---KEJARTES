@@ -443,10 +443,6 @@ merged back into it on 2026-09-10. The asset refresh and UI pass is complete
 and pushed, not yet merged; the minigame, sky and paper fixes are committed on
 top, not yet pushed. See `docs/superpowers/CHANGELOG.md`.
 
-Open: the day sky's Motion Lab tuning — `BookClockWidget.transition_to()` ships
-SINE/OUT until a token re-tunes it (the token's duration is
-`transition_duration`, one of the day's two phases).
-
 Open: Plan C's RunResult redesign,
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass
 already replaced RunResult's grade letter with five rank badges and fixed its

@@ -167,6 +167,14 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.outline_card, tokens.text_on_brand,
 		tokens.radius_pill)
 
+	# The roster card's third chip. Quirk and Persona carry their own
+	# accents; specialty stays neutral because its category colour
+	# varies per student and rides on the chip's icon instead.
+	_add_button_variation(theme, tokens, "SpecialtyBadge",
+		tokens.surface_sunken, tokens.surface_sunken.darkened(0.18),
+		tokens.brand_primary, tokens.text_primary,
+		tokens.radius_pill)
+
 	# The lobby's three destination tiles. Icon stacked over label: at
 	# the L step there is room for a 64px icon, an 8px gap and a
 	# font_title line inside the 120px content box, and the icon is what

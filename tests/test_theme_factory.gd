@@ -339,6 +339,8 @@ const DISPLAY_ROSTER := [
 	# 2026-09-10: the daily-login claim button, display face over the
 	# panel art's own gold pill.
 	"GhostButton",
+	# 2026-09-10 StudentList Part 3 -- roster card specialty chip.
+	"SpecialtyBadge",
 ]
 
 
@@ -447,6 +449,27 @@ func test_cutscene_dialogue_is_bigger_body_text() -> void:
 	assert_eq(_theme.get_type_variation_base("CutsceneDialogue"),
 		&"RichTextLabel",
 		"it varies RichTextLabel, not Label")
+
+
+## The roster card's specialty chip. QuirkBadge and PersonaBadge already
+## cover the other two trait kinds; specialty had no chip variation, and
+## borrowing one of theirs would have made the three kinds
+## indistinguishable. Neutral brand fill -- the category's own colour
+## rides on the chip's icon, which varies per student, so it cannot live
+## in a static variation.
+func test_specialty_badge_is_a_pill_button_variation() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	assert_true(theme.get_type_list().has("SpecialtyBadge"),
+		"ThemeFactory must build a SpecialtyBadge variation")
+	assert_eq(theme.get_type_variation_base("SpecialtyBadge"), &"Button",
+		"SpecialtyBadge must vary Button, like QuirkBadge and PersonaBadge")
+	assert_true(theme.has_stylebox("normal", "SpecialtyBadge"),
+		"SpecialtyBadge must define a normal stylebox")
+	var sb := theme.get_stylebox("normal", "SpecialtyBadge")
+	assert_true(sb is StyleBoxFlat, "SpecialtyBadge normal must be a StyleBoxFlat")
+	var tokens := DesignTokens.load_default()
+	assert_eq((sb as StyleBoxFlat).corner_radius_top_left, tokens.radius_pill,
+		"SpecialtyBadge must be a pill, like QuirkBadge and PersonaBadge")
 
 
 ## The daily-login claim button sits on top of the panel art's own gold

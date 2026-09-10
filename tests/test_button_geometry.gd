@@ -33,6 +33,8 @@ const RADIUS_EXEMPT := {
 		"chip -- stays radius_pill by design",
 	"PersonaBadge":
 		"chip -- stays radius_pill by design",
+	"SpecialtyBadge":
+		"chip -- stays radius_pill by design, like QuirkBadge and PersonaBadge",
 	"EventSelectCard":
 		"reads as a card, not a button -- radius_lg",
 	"CardArrowButton":

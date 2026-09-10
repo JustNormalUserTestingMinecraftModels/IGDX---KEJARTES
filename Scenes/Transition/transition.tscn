@@ -1,11 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://oy267w61wjfa"]
+[gd_scene format=3 uid="uid://oy267w61wjfa"]
 
-[ext_resource type="Script" path="res://Scripts/Transition/transition.gd" id="1_4dhrd"]
+[ext_resource type="Script" uid="uid://u00bb81rs2o4" path="res://Scripts/Transition/transition.gd" id="1_4dhrd"]
+[ext_resource type="Texture2D" path="res://Assets/Theme/transition_edge_ramp.tres" id="2_exk3b"]
 
-[node name="transition" type="CanvasLayer"]
+[node name="transition" type="CanvasLayer" unique_id=835381880]
+process_mode = 3
+layer = 100
 script = ExtResource("1_4dhrd")
+cover_color = Color(0.47843137, 0.2901961, 0.16862746, 1)
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=978838407]
 modulate = Color(1, 1, 1, 0)
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,4 +17,21 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.18, 0.357, 1, 1)
+color = Color(0.18, 0.357, 1, 0)
+
+[node name="Gradient" type="TextureRect" parent="ColorRect" unique_id=1962657446]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_exk3b")
+expand_mode = 1
+
+[node name="Pattern" type="TextureRect" parent="ColorRect" unique_id=790822877]
+modulate = Color(1, 1, 1, 0.18)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 1

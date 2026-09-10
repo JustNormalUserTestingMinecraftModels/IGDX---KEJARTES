@@ -7,6 +7,78 @@ need to know why something is the way it is.
 Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
+## 2026-09-10 — Asset refresh and UI pass
+
+Six independent changes driven by a batch of new art. Spec:
+`docs/superpowers/specs/2026-09-10-asset-refresh-and-ui-pass-design.md`. Plan:
+`docs/superpowers/plans/2026-09-10-asset-refresh-and-ui-pass.md`.
+
+**Asset intake.** 18 files in. Four were downscaled on the way: the project
+imports at `compress/mode=0`, so a source's pixel dimensions are its VRAM cost,
+and the seven daily-login panels at their native 7281x3231 would have been
+94 MB each — 658 MB. They ship at 1600x710. The sky went 3998² to 2048², the
+coin 1484x1192 to 256x206, the rank badges 1521x1471 to 512x495. Transparent
+PNGs were resized with alpha premultiplied and unpremultiplied; a straight
+LANCZOS resize on RGBA drags the RGB under fully-transparent pixels into the
+edges and fringes every rounded corner.
+
+**Two new theme variations.** `CutsceneDialogue` (RichTextLabel, body face,
+title size) and `GhostButton` (draws nothing at rest so baked art can be the
+button). Both built only from existing tokens, so no `DesignTokens` export was
+added and no editor restart was needed. `GhostButton` keeps `radius_pill` and
+is registered in `test_button_geometry`'s `RADIUS_EXEMPT`, because its one call
+site overlays a capsule baked into the daily-login art — the project's fixed
+20px radius undershoots it.
+
+**Intro cutscene.** The dialogue box was a `TextureRect` wearing
+`cutscene_dialogue.png`, 1080 tall from y=940 — 100px of it hung off the bottom
+of a 1920-tall screen. Now a `Panel` on the `Card` variation, inside the screen,
+sized to its text, with the copy stepping from 28 to 36. CG 2 and CG 4 replaced
+in place; `cut_scene.gd` preloads by path, so no code changed.
+
+**The sky sweeps once across the day.** `midday_rotation_degrees` is gone: the
+arc is one lerp between dawn and evening, and `SchoolDay` sweeps it once across
+both phases instead of resting the sky at a midday pose while the event popup
+is up. Total travel is unchanged. Accepted consequence: the event is
+player-blocking, so a slow player sees the sky reach evening early and hold.
+
+**Soft shadows.** `report_card.tscn`'s paper stack gets the same soft-shadow
+sibling `student_card.tscn` and `DayStickyNote` already use. The two Akademis
+minigames' cards shipped a 0.12-alpha 4px shadow that was invisible; deepened
+to 0.22/12/(0,6), and PilihanGanda's three choice-button styleboxes to
+0.25/12/(0,6). Those three already carried deliberate colour-coded fills —
+saturated green for correct, crimson for wrong — so only the shadow moved.
+
+**Lobby money chip and daily login.** `DisplayUang` was a 1920x1080
+pink/magenta landscape PNG with a label on top, and the only reason the chip
+was 332x187 instead of the 332x96 the layout wanted. Now a `Panel` on `Card` at
+332x96, bottom-aligned with `DailyLogin`, holding the shared coin and a
+`CoinLabel`; Koperasi and Inventory read the same coin. Daily login moved onto
+the new panel art, which bakes the whole seven-slot calendar with slot N lit —
+so the seven overlay tiles, their fourteen labels and the per-tile tint loop
+are all gone, and the day is a single texture swap.
+
+**RunResult.** Ten `+`/`-` bands collapse to five ranks (S 90 / A 75 / B 60 /
+C 45 / D) with badge art; `GradeLetter` is replaced by a `GradeBadge`
+`TextureRect` fed by five Inspector-assigned textures. The win backdrop was a
+wiring bug, not a redesign: `RunResult.gd` has always documented its backdrop
+as "the SAME image EndCutscene shows" but pointed at `cg_win.jpg` (735x865)
+while EndCutscene had moved to `win_background.png` (1536x2048). Blur lod,
+darkness and stretch already matched.
+
+**Placeholders and debt this pass left behind.** The new sky art has a stray
+night-street layer in its bottom-left corner that should be erased at source
+(it sits outside the visible area — see `CLAUDE.md`). The five rank thresholds
+are estimates awaiting the balance pass. There is no `PRESET_GRADE_S`, so the
+debug overlay cannot rehearse the new top rank. `EndGameRehearsal.gd`'s comment
+still points at a spec describing the retired ten-band scheme, and
+`Assets/Images/CG/cg_win.jpg` is now orphaned. On RunResult the row *name*
+labels read faintly against the white rows — pre-existing, not touched here.
+The daily-login header reads "Daily Login" in English against the project's
+Indonesian-UI rule, at the user's explicit request.
+
+Suite went 1170 to 1198 tests across 84 to 86 suites, green throughout.
+
 ## 2026-09-09 — Warm UI system, Part 1
 
 The palette, button geometry, bar contrast and lobby layout pass. Spec:

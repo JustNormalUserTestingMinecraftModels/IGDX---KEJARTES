@@ -32,6 +32,8 @@ extends BaseMinigame
 # device and this layout has to be computed rather than authored as fixed
 # positions. Each knob below is a fraction of the viewport; changing one
 # re-runs _setup_layout() immediately, in the editor as well as at runtime.
+# The Goalie is the one exception: drag him in the 2D editor, and
+# _place_goalie() maps where he was put onto the real screen at runtime.
 @export_group("Layout")
 
 ## Top edge of the goal mouth, as a fraction of viewport height.
@@ -83,17 +85,10 @@ extends BaseMinigame
 		if is_inside_tree():
 			_setup_layout()
 
-## How far the goalkeeper stands into the goal, as a fraction of goal height
-## measured down from the goal's top edge.
-@export_range(0.0, 1.0, 0.005) var goalie_depth_frac: float = 0.76:
-	set(value):
-		goalie_depth_frac = value
-		if is_inside_tree():
-			_setup_layout()
-
 ## Where the keeper's feet sit, as a fraction of his sprite height measured
-## down from the sprite's top edge. 1.0 stands him on the goal line that
-## goalie_depth_frac picks; kiper_idle.png draws the feet flush with the
+## down from the sprite's top edge. 1.0 stands him on the Goalie node's own
+## origin -- the spot he is dragged to in the 2D editor. kiper_idle.png
+## draws the feet flush with the
 ## bottom of the image (under 1% transparent padding), so 1.0 is the value
 ## that actually grounds him. This was a hardcoded 0.78 until 2026-09-08,
 ## which hung 22% of the sprite below the line and left him floating.
@@ -187,6 +182,11 @@ var goal_right_x: float
 var goal_top_y:   float
 var goal_bot_y:   float
 var goalie_half_w: float
+## The Goalie's authored position in design space -- the project's
+## 1080x1920 base size -- wherever he was dragged in the 2D editor. Captured
+## at the first in-game layout, before anything moves him.
+var _goalie_design_pos: Vector2 = Vector2.ZERO
+var _goalie_design_captured: bool = false
 
 
 # ─── Lifecycle ───────────────────────────────────────────────────────────────
@@ -203,6 +203,14 @@ func _ready() -> void:
 
 	# Note: start_minigame() and activate_minigame() are called externally
 	# by MinigameMenu after the scene is instantiated and faded in.
+
+
+## Re-lay out whenever the root is resized, in the editor as well as in
+## game. NOTIFICATION_RESIZED can arrive before _ready(), while the @onready
+## node references are still null; is_node_ready() skips that one.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED and is_node_ready():
+		_setup_layout()
 
 func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 	super.start_minigame(game_difficulty, time_limit)
@@ -281,12 +289,19 @@ func _process(delta: float) -> void:
 ## real layout instead of an empty scene.
 ##
 ## Affects: the position and size of FieldBG, GoalBack, GoalNet, Crossbar,
-## PostLeft, PostRight, GoalArea's collision shape, Goalie (and its
-## CollisionShape2D and GFX), Ball (same), and TargetBox. Writes the cached
-## goal_left_x / goal_right_x / goal_top_y / goal_bot_y / ball_start_pos /
-## goalie_base_pos values the shot resolution reads.
+## PostLeft, PostRight, GoalArea's collision shape, the Goalie's
+## CollisionShape2D and GFX (his position belongs to _place_goalie()), Ball
+## (and its shape and GFX), and TargetBox. Writes the cached goal_left_x /
+## goal_right_x / goal_top_y / goal_bot_y / ball_start_pos values the shot
+## resolution reads.
 func _setup_layout() -> void:
-	screen_size = get_viewport_rect().size
+	# The root's own size, not the viewport's: inside the editor the viewport
+	# rect is a 2x2 stub, which collapsed this whole layout into the top-left
+	# corner. The root is full-rect, so in game this is the screen and in the
+	# editor it is the 1080x1920 design size.
+	screen_size = size
+	if screen_size.x <= 0.0 or screen_size.y <= 0.0:
+		return
 	var sw: float = screen_size.x
 	var sh: float = screen_size.y
 
@@ -360,9 +375,7 @@ func _setup_layout() -> void:
 	goalie_half_w = g_width * 0.5
 
 	if goalie:
-		# Place goalie grounded on the goal line inside Gawang image
-		goalie.global_position = Vector2(sw * 0.5, goal_top + goal_height * goalie_depth_frac)
-		goalie_base_pos = goalie.global_position
+		_place_goalie()
 
 		var col: CollisionShape2D = goalie.get_node_or_null("CollisionShape2D") as CollisionShape2D
 		if col and col.shape is RectangleShape2D:
@@ -413,6 +426,42 @@ func _setup_layout() -> void:
 					draw_node.draw_arc(Vector2.ZERO, ball_r, 0, TAU, 32, Color(0, 0, 0, 1), 2.0, true)
 			)
 			draw_node.queue_redraw()
+
+
+## Put the Goalie where he was authored. In the editor that means leaving
+## him exactly where he was dragged -- this never moves him there. In game
+## his design-space position is mapped onto the real screen by the same
+## proportional rule the goal follows, so on a taller phone he moves down
+## with it.
+##
+## Affects: the Goalie's position (in game only) and goalie_base_pos, the
+## origin the dive and the reset tween read.
+func _place_goalie() -> void:
+	if Engine.is_editor_hint():
+		goalie_base_pos = goalie.global_position
+		return
+	if not _goalie_design_captured:
+		_goalie_design_pos = goalie.position
+		_goalie_design_captured = true
+	goalie.position = design_to_screen(_goalie_design_pos, _design_size(), screen_size)
+	goalie_base_pos = goalie.global_position
+
+
+## The project's base resolution -- the space the scene is authored in.
+func _design_size() -> Vector2:
+	return Vector2(
+		float(ProjectSettings.get_setting("display/window/size/viewport_width", 1080)),
+		float(ProjectSettings.get_setting("display/window/size/viewport_height", 1920)))
+
+
+## Map a design-space point onto a screen of size `screen`, proportionally on
+## each axis -- the rule every fraction in this layout already follows.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func design_to_screen(design_pos: Vector2, design: Vector2, screen: Vector2) -> Vector2:
+	if design.x <= 0.0 or design.y <= 0.0:
+		return design_pos
+	return Vector2(design_pos.x / design.x * screen.x, design_pos.y / design.y * screen.y)
 
 
 # ─── Field markings (_draw callback on Node2D) ───────────────────────────────

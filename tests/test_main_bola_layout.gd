@@ -37,7 +37,7 @@ const RETIRED_TEXTURE_EXPORTS: Array[String] = [
 const LAYOUT_EXPORTS: Array[String] = [
 	"goal_top_frac", "goal_height_frac", "goal_width_frac",
 	"post_width_frac", "crossbar_height_frac",
-	"goalie_width_frac", "goalie_height_frac", "goalie_depth_frac",
+	"goalie_width_frac", "goalie_height_frac",
 	"ball_start_height_frac", "ball_radius_frac", "target_size_frac",
 ]
 
@@ -169,7 +169,7 @@ func test_goalie_stands_on_the_goal_line_not_below_it() -> void:
 	# kiper_idle.png draws the keeper's feet flush with the bottom of the
 	# image (under 1% transparent padding), so the sprite has to be offset
 	# by its FULL height above the node's origin for the feet to land on
-	# the goal line goalie_depth_frac picks. This was a hardcoded 0.78
+	# the spot the Goalie node is dragged to. This was a hardcoded 0.78
 	# until 2026-09-08, which left 22% of the sprite hanging below the
 	# line and the keeper reading as floating.
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
@@ -188,3 +188,77 @@ func test_goalie_breathing_pauses_while_a_shot_resolves() -> void:
 		"breathing should live in its own function, not inline in _process")
 	assert_contains(src, "is_resolving",
 		"breathing must yield to the dive animation")
+
+
+## Knobs the draggable goalie retired on 2026-09-10. Named so a revert is loud.
+const RETIRED_LAYOUT_EXPORTS: Array[String] = ["goalie_depth_frac"]
+
+## The goal mouth in design space, from the default fractions: top
+## 0.28 x 1920, height 0.28 x 1920, width 0.88 x 1080, centred.
+const GOAL_MOUTH_DESIGN := Rect2(64.8, 537.6, 950.4, 537.6)
+
+
+## The text of one function, from its `func` line up to the next `func`.
+func _function_body(src: String, fn: String) -> String:
+	var at := src.find("func %s(" % fn)
+	if at == -1:
+		return ""
+	var end := src.find("\nfunc ", at + 1)
+	return src.substr(at, end - at) if end != -1 else src.substr(at)
+
+
+func test_goalie_depth_knob_is_retired() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	for retired in RETIRED_LAYOUT_EXPORTS:
+		assert_false(src.contains(retired),
+			"%s is superseded by dragging the Goalie in the 2D editor" % retired)
+
+
+func test_layout_measures_the_root_not_the_editor_viewport() -> void:
+	# Inside the editor the viewport rect is a 2x2 stub (confirmed live on
+	# 2026-09-10): the whole layout collapsed into the top-left corner, with
+	# the goalie a speck at (1, 0.99).
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	var layout := _function_body(src, "_setup_layout")
+	assert_false(layout.contains("get_viewport_rect()"),
+		"_setup_layout() must not measure the editor's stub viewport")
+	assert_contains(layout, "screen_size = size",
+		"_setup_layout() must measure the root Control's own size")
+	assert_contains(src, "NOTIFICATION_RESIZED",
+		"the layout must follow a resize of the root")
+
+
+func test_the_editor_never_moves_the_goalie() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	var layout := _function_body(src, "_setup_layout")
+	assert_false(layout.contains("goalie.global_position ="),
+		"_setup_layout() must not compute the Goalie's position")
+	assert_contains(layout, "_place_goalie()",
+		"_setup_layout() hands the Goalie to _place_goalie()")
+	var place := _function_body(src, "_place_goalie")
+	assert_contains(place, "Engine.is_editor_hint()",
+		"_place_goalie() must leave the Goalie where he was dragged in the editor")
+	assert_contains(place, "_goalie_design_pos",
+		"in game the Goalie's authored position is mapped, not recomputed")
+
+
+func test_the_scene_goalie_stands_inside_the_goal_mouth() -> void:
+	var root: Node = load(SCENE_PATH).instantiate()
+	track(root)
+	var pos := (root.get_node("Goalie") as Node2D).position
+	assert_true(GOAL_MOUTH_DESIGN.has_point(pos),
+		"the Goalie is authored at %s, outside the goal mouth %s" % [pos, GOAL_MOUTH_DESIGN])
+
+
+func test_design_to_screen_maps_each_axis_proportionally() -> void:
+	var s: Script = load(SCRIPT_PATH)
+	var design := Vector2(1080, 1920)
+	var same: Vector2 = s.call("design_to_screen", Vector2(540, 946.176), design, design)
+	assert_true(same.is_equal_approx(Vector2(540, 946.176)),
+		"at the design size the authored position is used as-is, got %s" % same)
+	var tall: Vector2 = s.call("design_to_screen", Vector2(540, 960), design, Vector2(1080, 2340))
+	assert_true(tall.is_equal_approx(Vector2(540, 1170)),
+		"on a taller phone he moves down in proportion, like the goal, got %s" % tall)
+	var wide: Vector2 = s.call("design_to_screen", Vector2(270, 960), design, Vector2(1440, 1920))
+	assert_true(wide.is_equal_approx(Vector2(360, 960)),
+		"on a wider screen he moves sideways in proportion, got %s" % wide)

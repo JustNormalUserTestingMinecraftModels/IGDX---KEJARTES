@@ -416,3 +416,17 @@ func test_the_script_carries_a_file_header() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.begins_with("##"),
 		"student_list.gd must open with a ## file header")
+
+## Three steps become four. The new one teaches the only genuinely new
+## mechanic; the other three keep their targets, which still resolve
+## after the relayout.
+func test_tutorial_teaches_the_roster_strip() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("\"Status Jadwal\""),
+		"a tutorial step must introduce the roster strip")
+	assert_true(src.contains("\"RosterStrip\""),
+		"that step must spotlight RosterStrip")
+	assert_true(src.contains("\"CardContainer\""),
+		"step 1 must still target CardContainer")
+	assert_true(src.contains("\"RightArrow\""),
+		"the navigation step must still target RightArrow")

@@ -456,15 +456,16 @@ func _switch_card(new_index: int, direction: int):
 
 	_sync_roster_strip()
 
-	# If in tutorial Step 1 (Navigasi Card), advance to Step 2 after card transition completes
-	if tutorial_active and current_step == 1:
+	# The Navigasi Card step (index 2 since the Status Jadwal step was
+	# inserted at 1) auto-advances once the card slide it asked for lands.
+	if tutorial_active and current_step == 2:
 		_next_step()
 
 func _on_card_pressed(student_data: Dictionary, card_node: Control):
 	if card_animating:
 		return
 	if tutorial_active:
-		if current_step == 2:  # Step 2: Pilih Murid (Final step locks onto card)
+		if current_step == 3:  # Pilih Murid, the final step, locks onto the card
 			_end_tutorial()
 			_on_student_selected(student_data, card_node)
 		return
@@ -588,6 +589,7 @@ func _setup_tutorial():
 func _populate_default_tutorial_steps():
 	var defaults = [
 		["Daftar Murid", "Disini kalian bebas memilih murid-murid yang belum terjadwalkan untuk belajar selama seminggu!", "CardContainer"],
+		["Status Jadwal", "Hijau berarti sudah terjadwal, merah berarti belum. Ketuk untuk langsung ke murid itu!", "RosterStrip"],
 		["Navigasi Card", "Geser layar atau tekan tombol panah kanan untuk melihat murid lainnya!", "RightArrow"],
 		["Pilih Murid", "Bagus! Sekarang tekan kertas dokumen murid ini untuk mulai mengatur jadwal belajarnya!", ""]
 	]
@@ -709,11 +711,11 @@ func _show_step(index: int):
 	_tutorial_body_label.text = step.text
 
 	var targets: Array[Control] = []
-	if index == 1:
+	if index == 2:
 		var arrow_target = right_arrow if right_arrow else left_arrow
 		if arrow_target and is_instance_valid(arrow_target):
 			targets.append(arrow_target)
-	elif index == 2 and not card_nodes.is_empty():
+	elif index == 3 and not card_nodes.is_empty():
 		var active_card = card_nodes[current_card_index]
 		if active_card and is_instance_valid(active_card):
 			targets.append(active_card)
@@ -733,9 +735,9 @@ func _show_step(index: int):
 
 	if step.prompt_text != "":
 		_tutorial_prompt_label.text = step.prompt_text
-	elif index == 1:
-		_tutorial_prompt_label.text = "TEKAN PANAH ATAU GESER UNTUK PINDAH MURID!"
 	elif index == 2:
+		_tutorial_prompt_label.text = "TEKAN PANAH ATAU GESER UNTUK PINDAH MURID!"
+	elif index == 3:
 		_tutorial_prompt_label.text = "TEKAN KERTAS UNTUK MEMILIH MURID!"
 	else:
 		_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
@@ -749,15 +751,17 @@ func _show_step(index: int):
 	_panel_tween.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.12)
 	_panel_tween.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.10)
 
-	if index == 0:
+	if index == 0 or index == 1:
+		# Daftar Murid and Status Jadwal are spotlight-only: the scrim
+		# blocks, a tap anywhere advances.
 		color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
-	elif index == 1:
+	elif index == 2:
 		color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if left_arrow: left_arrow.mouse_filter = Control.MOUSE_FILTER_STOP
 		if right_arrow: right_arrow.mouse_filter = Control.MOUSE_FILTER_STOP
-	elif index == 2:
+	elif index == 3:
 		color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -847,7 +851,9 @@ func _end_tutorial():
 		color_rect.hide()
 
 func _on_click_area_gui_input(event: InputEvent):
-	if tutorial_active and current_step == 0:
+	# Steps 0 (Daftar Murid) and 1 (Status Jadwal) are both spotlight-only
+	# -- a tap anywhere advances.
+	if tutorial_active and (current_step == 0 or current_step == 1):
 		if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) or (event is InputEventScreenTouch and event.pressed):
 			_next_step()
 

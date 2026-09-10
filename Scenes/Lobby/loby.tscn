@@ -1,16 +1,15 @@
 [gd_scene format=3 uid="uid://60ndk5l2120t"]
 
 [ext_resource type="Script" uid="uid://bkfpjbok5vgg5" path="res://Scripts/Lobby/loby.gd" id="1_ao7fi"]
-[ext_resource type="Texture2D" uid="uid://b70nke1156k3l" path="res://Assets/Images/UI/pngwing.com (4).png" id="2_2gra1"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_e1w2y"]
-[ext_resource type="Texture2D" uid="uid://i6ar7lc7f23j" path="res://Assets/Images/UI/pngwing.com (5).png" id="4_q6pla"]
-[ext_resource type="Texture2D" uid="uid://cjoky7bj16ciw" path="res://Assets/Images/UI/Koin.png" id="5_6pr0q"]
 [ext_resource type="Texture2D" uid="uid://c5uf1bkw1f3ui" path="res://Assets/Images/UI/Nav/icon_cta_student.png" id="9_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://b0caiiviquf" path="res://Assets/Images/UI/Nav/icon_nav_koperasi.png" id="10_bfy74"]
 [ext_resource type="Texture2D" uid="uid://ddjx1gmpupjvv" path="res://Assets/Images/UI/Nav/icon_nav_rapor.png" id="11_4w5lf"]
 [ext_resource type="Texture2D" uid="uid://b83solgop708f" path="res://Assets/Images/UI/Nav/icon_nav_inventory.png" id="12_fb4vu"]
 [ext_resource type="Texture2D" uid="uid://ccu4bm5rdto8r" path="res://Assets/Images/UI/Nav/icon_cta_jadwal.png" id="13_85cl3"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
+[ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
+[ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://rdxrs4jl1r5r" path="res://Assets/Images/MuridPotrait/tanganThea.png" id="default_hand_tex"]
 [ext_resource type="Texture2D" uid="uid://dic0qp1gbfmij" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
@@ -420,7 +419,7 @@ offset_left = 48.0
 offset_top = 1392.0
 offset_right = 144.0
 offset_bottom = 1488.0
-texture_normal = ExtResource("2_2gra1")
+texture_normal = ExtResource("15_d385k")
 ignore_texture_size = true
 stretch_mode = 0
 
@@ -430,218 +429,51 @@ anchors_preset = -1
 offset_left = 80.0
 offset_top = 558.0
 offset_right = 1022.0
-offset_bottom = 819.0
+offset_bottom = 976.0
 grow_vertical = 0
-texture = ExtResource("4_q6pla")
+texture = ExtResource("16_dyk4g")
 expand_mode = 1
 
 [node name="Label" type="Label" parent="DailyReward" unique_id=1823371215]
 layout_mode = 0
-offset_left = 276.0
-offset_top = 25.0
-offset_right = 644.0
-offset_bottom = 104.0
+offset_left = 300.0
+offset_top = 10.0
+offset_right = 700.0
+offset_bottom = 78.0
 theme_type_variation = &"H1Label"
-text = "Daily Reward"
-
-[node name="Day1" type="TextureRect" parent="DailyReward" unique_id=2016844990]
-layout_mode = 0
-offset_left = 62.0
-offset_top = 141.0
-offset_right = 140.0
-offset_bottom = 218.0
-texture = ExtResource("5_6pr0q")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="DailyReward/Day1" unique_id=891884221]
-layout_mode = 0
-offset_left = 14.0
-offset_top = 78.0
-offset_right = 64.0
-offset_bottom = 115.0
-theme_type_variation = &"CaptionLabel"
-text = "10G"
-
-[node name="Label2" type="Label" parent="DailyReward/Day1" unique_id=1566304681]
-layout_mode = 0
-offset_left = 9.0
-offset_top = -42.0
-offset_right = 74.0
-offset_bottom = -5.0
-theme_type_variation = &"CaptionLabel"
-text = "Day1"
-
-[node name="Day2" type="TextureRect" parent="DailyReward" unique_id=380237506]
-layout_mode = 0
-offset_left = 200.0
-offset_top = 140.0
-offset_right = 278.0
-offset_bottom = 217.0
-texture = ExtResource("5_6pr0q")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="DailyReward/Day2" unique_id=2094990304]
-layout_mode = 0
-offset_left = 14.0
-offset_top = 78.0
-offset_right = 64.0
-offset_bottom = 115.0
-theme_type_variation = &"CaptionLabel"
-text = "10G"
-
-[node name="Label2" type="Label" parent="DailyReward/Day2" unique_id=297315175]
-layout_mode = 0
-offset_left = 9.0
-offset_top = -42.0
-offset_right = 74.0
-offset_bottom = -5.0
-theme_type_variation = &"CaptionLabel"
-text = "Day2"
-
-[node name="Day3" type="TextureRect" parent="DailyReward" unique_id=1795176471]
-layout_mode = 0
-offset_left = 343.0
-offset_top = 140.0
-offset_right = 421.0
-offset_bottom = 217.0
-texture = ExtResource("5_6pr0q")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="DailyReward/Day3" unique_id=1739539063]
-layout_mode = 0
-offset_left = 14.0
-offset_top = 78.0
-offset_right = 64.0
-offset_bottom = 115.0
-theme_type_variation = &"CaptionLabel"
-text = "10G"
-
-[node name="Label2" type="Label" parent="DailyReward/Day3" unique_id=972452457]
-layout_mode = 0
-offset_left = 9.0
-offset_top = -42.0
-offset_right = 74.0
-offset_bottom = -5.0
-theme_type_variation = &"CaptionLabel"
-text = "Day3"
-
-[node name="Day4" type="TextureRect" parent="DailyReward" unique_id=2125669158]
-layout_mode = 0
-offset_left = 468.0
-offset_top = 143.0
-offset_right = 546.0
-offset_bottom = 220.0
-texture = ExtResource("5_6pr0q")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="DailyReward/Day4" unique_id=786889771]
-layout_mode = 0
-offset_left = 14.0
-offset_top = 78.0
-offset_right = 64.0
-offset_bottom = 115.0
-theme_type_variation = &"CaptionLabel"
-text = "10G"
-
-[node name="Label2" type="Label" parent="DailyReward/Day4" unique_id=2040716306]
-layout_mode = 0
-offset_left = 9.0
-offset_top = -42.0
-offset_right = 74.0
-offset_bottom = -5.0
-theme_type_variation = &"CaptionLabel"
-text = "Day4"
-
-[node name="Day5" type="TextureRect" parent="DailyReward" unique_id=1220563996]
-layout_mode = 0
-offset_left = 585.0
-offset_top = 143.0
-offset_right = 663.0
-offset_bottom = 220.0
-texture = ExtResource("5_6pr0q")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="DailyReward/Day5" unique_id=1084961844]
-layout_mode = 0
-offset_left = 14.0
-offset_top = 78.0
-offset_right = 64.0
-offset_bottom = 115.0
-theme_type_variation = &"CaptionLabel"
-text = "10G"
-
-[node name="Label2" type="Label" parent="DailyReward/Day5" unique_id=751138267]
-layout_mode = 0
-offset_left = 9.0
-offset_top = -42.0
-offset_right = 74.0
-offset_bottom = -5.0
-theme_type_variation = &"CaptionLabel"
-text = "Day5"
-
-[node name="Day6" type="TextureRect" parent="DailyReward" unique_id=827404715]
-layout_mode = 0
-offset_left = 709.0
-offset_top = 142.0
-offset_right = 787.0
-offset_bottom = 219.0
-texture = ExtResource("5_6pr0q")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="DailyReward/Day6" unique_id=1473938138]
-layout_mode = 0
-offset_left = 14.0
-offset_top = 78.0
-offset_right = 64.0
-offset_bottom = 115.0
-theme_type_variation = &"CaptionLabel"
-text = "10G"
-
-[node name="Label2" type="Label" parent="DailyReward/Day6" unique_id=1368493211]
-layout_mode = 0
-offset_left = 9.0
-offset_top = -42.0
-offset_right = 74.0
-offset_bottom = -5.0
-theme_type_variation = &"CaptionLabel"
-text = "Day6"
-
-[node name="Day7" type="TextureRect" parent="DailyReward" unique_id=476878237]
-layout_mode = 0
-offset_left = 825.0
-offset_top = 139.0
-offset_right = 903.0
-offset_bottom = 216.0
-texture = ExtResource("5_6pr0q")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="DailyReward/Day7" unique_id=1735433752]
-layout_mode = 0
-offset_left = 14.0
-offset_top = 78.0
-offset_right = 64.0
-offset_bottom = 115.0
-theme_type_variation = &"CaptionLabel"
-text = "10G"
-
-[node name="Label2" type="Label" parent="DailyReward/Day7" unique_id=1632813634]
-layout_mode = 0
-offset_left = 9.0
-offset_top = -42.0
-offset_right = 74.0
-offset_bottom = -5.0
-theme_type_variation = &"CaptionLabel"
-text = "Day7"
+text = "Daily Login"
+horizontal_alignment = 1
 
 [node name="ButtonClaim" type="Button" parent="DailyReward" unique_id=1114280413]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 0
-offset_left = 374.0
-offset_top = 257.0
-offset_right = 572.0
-offset_bottom = 353.0
-theme_type_variation = &"SuccessButton"
-text = "CLAIM"
+offset_left = 330.0
+offset_top = 345.0
+offset_right = 612.0
+offset_bottom = 412.0
+theme_type_variation = &"GhostButton"
+text = "KLAIM"
+
+[node name="RewardCoin" type="TextureRect" parent="DailyReward" unique_id=956875139]
+layout_mode = 0
+offset_left = 640.0
+offset_top = 352.0
+offset_right = 700.0
+offset_bottom = 400.0
+mouse_filter = 2
+texture = ExtResource("14_dyk4g")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RewardAmount" type="Label" parent="DailyReward" unique_id=955040772]
+layout_mode = 0
+offset_left = 708.0
+offset_top = 350.0
+offset_right = 828.0
+offset_bottom = 402.0
+theme_type_variation = &"CoinLabel"
+text = "10G"
+vertical_alignment = 1
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=707453591]
 material = SubResource("ShaderMaterial_2gra1")

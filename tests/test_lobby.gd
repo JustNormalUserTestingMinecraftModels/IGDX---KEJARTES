@@ -250,6 +250,23 @@ func test_theme_factory_bakes_lobby_nav_button_variation() -> void:
 		"baked theme must include the LobbyCtaButton variation")
 
 
+## Regression guard (2026-09-10). The claim pill's own art never changes
+## between claimed/unclaimed, and GhostButton draws no stylebox chrome at
+## all, so a disabled ButtonClaim with no font_disabled_color of its own
+## fell through to Godot's stock translucent white -- the only remaining
+## "already claimed" cue, and it read as broken rather than intentional.
+func test_ghost_button_defines_font_disabled_color() -> void:
+	# CACHE_MODE_IGNORE matters: the editor holds kejartes_theme.tres in
+	# memory from startup, so a plain load() returns that cached copy --
+	# which would hide a real rebake from this test. See
+	# test_theme_factory.gd's test_baked_theme_matches_what_the_factory_builds.
+	var theme: Theme = ResourceLoader.load(
+		_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	assert_true(theme != null, "baked theme must load")
+	assert_true(theme.has_color("font_disabled_color", &"GhostButton"),
+		"GhostButton must define font_disabled_color, or a disabled claim button falls back to Godot's stock translucent white")
+
+
 func test_idle_bob_is_exported_and_wired_to_the_portrait_containers() -> void:
 	# Verified via source text, matching this suite's other script-content
 	# checks: the MCP editor test runner caches compiled GDScript classes

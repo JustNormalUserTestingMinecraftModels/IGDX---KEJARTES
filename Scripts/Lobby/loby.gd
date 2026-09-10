@@ -58,6 +58,8 @@ extends Control
 @onready var daily_login_btn = $DailyLogin
 @onready var daily_reward = $DailyReward
 @onready var claim_button = $DailyReward/ButtonClaim
+@onready var reward_coin = $DailyReward/RewardCoin
+@onready var reward_amount = $DailyReward/RewardAmount
 
 @onready var portraits_back: Control = $StudentPortraitsContainer_Back
 @onready var portraits_front: Control = $StudentPortraitsContainer_Front
@@ -76,6 +78,13 @@ extends Control
 ]
 
 const DAILY_REWARD := 10
+
+## Modulate alpha applied to ButtonClaim / RewardCoin / RewardAmount once
+## today's reward is already claimed. The panel art always draws the same
+## bright gold "claim me" pill regardless of state, and GhostButton draws no
+## chrome of its own, so this dim is the only visible cue that the day's
+## claim is done once the button goes disabled.
+const CLAIMED_CUE_DIM_ALPHA := 0.4
 
 ## The daily-login panel, one frame per streak day. The art bakes all
 ## seven slots with the active one lit, so the whole calendar is a single
@@ -645,6 +654,14 @@ func _update_daily_login_visual() -> void:
 
 	if claim_button and claim_button is BaseButton:
 		claim_button.disabled = already_claimed_today
+
+	# The art has no separate "claimed" frame, so dim the affordance nodes
+	# directly -- restore full modulate once a new day makes the claim
+	# available again.
+	var claim_dim_alpha := CLAIMED_CUE_DIM_ALPHA if already_claimed_today else 1.0
+	for node in [claim_button, reward_coin, reward_amount]:
+		if node:
+			node.modulate.a = claim_dim_alpha
 
 func _on_daily_login_pressed():
 	if reward_popup_open:

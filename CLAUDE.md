@@ -213,6 +213,11 @@ tasklist | grep -i godot-ai
 `logs_read(source="editor")` catches parse errors that never reach the game
 log; `source="game"` misses boot-time failures entirely.
 
+`scene_open` on `Scenes/SchoolSimulation/BookClockWidget.tscn` hangs the
+editor -- the call times out, the MCP transport write-pauses, then the
+plugin disconnects, and the editor needs a restart. Cause unconfirmed;
+verify that widget via `project_run` instead, which exercises it fine.
+
 ## Working efficiently here
 
 Verification, not implementation, dominates the cost of a session in this
@@ -362,15 +367,12 @@ gloss.
 
 **Stray layer in the day-transition sky (2026-09-10).**
 `Assets/Images/SchoolDay/transition_background.png` has a bluish night
-street scene pasted into its bottom-left corner -- a layer the artist left
-visible, at roughly texture-space x 0..375, y 1833..2047. It is not
-decorative and should be erased at source.
-
-It currently sits outside the visible area: its nearest texel to centre is
-~1037 texels out, against a ~1004-texel visible radius at the default
-`sky_cover_margin` (1.02) -- about 3% clearance, not load-bearing on the
-margin. That clearance depends on both `sky_pivot_ratio` and
-`sky_cover_margin`, so re-check it if either is retuned.
+street scene pasted into its bottom-left corner (texture-space roughly
+x 0..375, y 1833..2047) that should be erased at source. It sits outside
+the texture's inscribed circle -- `BookClockWidget.gd`'s `_fit_layers()`
+makes the visible texture radius exactly `1024 / sky_cover_margin`,
+independent of pivot or screen size, and the artifact sits at radius
+~1041, so any `sky_cover_margin` at or above 1.0 keeps it off screen.
 
 **Art placeholders.** The three particle sprites
 (`Assets/Images/Particles/particle_*.png`) are crude flat geometry. The seven

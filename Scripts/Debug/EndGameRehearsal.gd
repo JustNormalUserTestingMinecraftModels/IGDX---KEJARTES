@@ -23,8 +23,10 @@ const PRESET_CAMPUR := "campur"
 ## rather than the win/lose narrative above -- see RunGrade.gd's weights
 ## (targets 55%, minigames 20%, money 15%, events 10%). Each is tuned so
 ## RunGrade.score()/letter() lands solidly inside one band, assuming the
-## debug roster's fixed 4 students / 12 academic targets. Full arithmetic:
-## docs/superpowers/specs/2026-09-05-tesnotice-grade-scenarios-design.md
+## debug roster's fixed 4 students / 12 academic targets. Full arithmetic is
+## inline on REHEARSAL_STATS below, not in
+## docs/superpowers/specs/2026-09-05-tesnotice-grade-scenarios-design.md,
+## which still describes the retired ten-band scheme.
 const PRESET_GRADE_A := "grade_a"
 const PRESET_GRADE_B := "grade_b"
 const PRESET_GRADE_C := "grade_c"

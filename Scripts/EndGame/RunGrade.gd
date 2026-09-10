@@ -67,6 +67,6 @@ static func letter(run_score: float, passed: bool) -> String:
 	return LETTER_FLOOR
 
 
-## S and A both light the success colour and the reward sting.
+## S and A both play the reward sting.
 static func is_top_grade(letter_text: String) -> bool:
 	return letter_text == "S" or letter_text == "A"

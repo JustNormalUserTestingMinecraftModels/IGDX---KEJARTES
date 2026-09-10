@@ -110,6 +110,7 @@ static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
 
 	theme.set_font_size("font_size", NAME, tokens.font_h2)
 	theme.set_color("font_color", NAME, tokens.text_primary)
+	theme.set_color("font_disabled_color", NAME, tokens.text_disabled)
 	if tokens.font_display != null:
 		theme.set_font("font", NAME, tokens.font_display)
 

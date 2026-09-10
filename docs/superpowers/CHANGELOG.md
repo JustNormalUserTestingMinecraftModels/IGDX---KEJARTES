@@ -7,6 +7,7 @@ need to know why something is the way it is.
 Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
+
 ## 2026-09-10 — Asset refresh and UI pass
 
 Six independent changes driven by a batch of new art. Spec:
@@ -69,8 +70,7 @@ darkness and stretch already matched.
 **Placeholders and debt this pass left behind.** The new sky art has a stray
 night-street layer in its bottom-left corner that should be erased at source
 (it sits outside the visible area — see `CLAUDE.md`). The five rank thresholds
-are estimates awaiting the balance pass. There is no `PRESET_GRADE_S`, so the
-debug overlay cannot rehearse the new top rank. `EndGameRehearsal.gd`'s comment
+are estimates awaiting the balance pass. `EndGameRehearsal.gd`'s comment
 still points at a spec describing the retired ten-band scheme, and
 `Assets/Images/CG/cg_win.jpg` is now orphaned. On RunResult the row *name*
 labels read faintly against the white rows — pre-existing, not touched here.

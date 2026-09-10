@@ -41,7 +41,7 @@ func test_retired_the_single_sweep_exports() -> void:
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
 	for retired in ["start_rotation_degrees", "total_rotation_degrees"]:
 		assert_false(src.contains(retired),
-			"%s is superseded by the three pose exports" % retired)
+			"%s is superseded by the two pose exports" % retired)
 
 
 func test_each_pose_sits_on_the_sky_it_is_named_for() -> void:
@@ -152,11 +152,11 @@ func test_rotation_stays_monotone_across_the_whole_day() -> void:
 	w.free()
 
 
-func test_event_fires_at_midday_not_at_a_random_afternoon_point() -> void:
+func test_event_fires_at_the_days_halfway_point_not_a_random_afternoon_point() -> void:
 	var src := FileAccess.get_file_as_string(SCHOOLDAY_SCRIPT)
 	assert_contains(src, "EVENT_TRIGGER_PCT",
 		"the event trigger point must be a named const")
 	assert_contains(src, "const EVENT_TRIGGER_PCT := 50.0",
-		"the event must land on the midday pose")
+		"the event must land at the 50% point of the day, there is no midday pose to land on any more")
 	assert_false(src.contains("randf_range(0.5, 0.8)"),
 		"the event should no longer land at a random point in the day")

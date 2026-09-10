@@ -68,10 +68,10 @@ vertical_alignment = 1
 [node name="CardContainer" type="Control" parent="." unique_id=987123456]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 70.0
+offset_left = 50.0
 offset_top = 310.0
-offset_right = 1010.0
-offset_bottom = 1700.0
+offset_right = 1030.0
+offset_bottom = 1720.0
 
 [node name="Shadow" type="TextureRect" parent="CardContainer" unique_id=606476685]
 self_modulate = Color(0, 0, 0, 0.33)

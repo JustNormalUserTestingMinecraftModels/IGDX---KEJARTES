@@ -19,7 +19,7 @@ extends TextureRect
 ## How far each category color is pulled toward white before it is
 ## multiplied into the paper. 0.0 is the raw token (illegible), 1.0 is
 ## plain white paper with no category read at all.
-const TINT_WASH := 0.55
+const TINT_WASH := 0.42
 
 ## Shown uppercased on DayLabel (e.g. "Senin" -> "SENIN").
 @export var day_name: String = "Senin":

@@ -25,10 +25,10 @@ anchor_bottom = 1.0
 
 [node name="Belum" type="Button" parent="." unique_id=727038106]
 layout_mode = 0
-offset_left = 620.0
-offset_top = 30.0
-offset_right = 910.0
-offset_bottom = 126.0
+offset_left = 600.0
+offset_top = 208.0
+offset_right = 915.0
+offset_bottom = 304.0
 mouse_filter = 2
 theme_type_variation = &"DangerButton"
 text = "BELUM"
@@ -46,10 +46,10 @@ stretch_mode = 5
 [node name="Sudah" type="Button" parent="." unique_id=547041322]
 visible = false
 layout_mode = 0
-offset_left = 620.0
-offset_top = 30.0
-offset_right = 910.0
-offset_bottom = 126.0
+offset_left = 600.0
+offset_top = 208.0
+offset_right = 915.0
+offset_bottom = 304.0
 mouse_filter = 2
 theme_type_variation = &"SuccessButton"
 text = "SUDAH"
@@ -66,19 +66,19 @@ stretch_mode = 5
 
 [node name="Nama" type="Label" parent="." unique_id=1733212225]
 layout_mode = 0
-offset_left = 30.0
-offset_top = 24.0
-offset_right = 600.0
-offset_bottom = 134.0
+offset_left = 65.0
+offset_top = 208.0
+offset_right = 580.0
+offset_bottom = 305.0
 theme_type_variation = &"H2Label"
 vertical_alignment = 1
 
 [node name="PortraitFrame" type="Control" parent="." unique_id=428478704]
 anchors_preset = 0
-offset_left = 150.0
-offset_top = 148.0
-offset_right = 790.0
-offset_bottom = 788.0
+offset_left = 210.0
+offset_top = 318.0
+offset_right = 770.0
+offset_bottom = 768.0
 mouse_filter = 2
 
 [node name="Backdrop" type="Panel" parent="PortraitFrame" unique_id=1201417250]
@@ -122,57 +122,62 @@ flip_v = true
 
 [node name="StickyNotesContainer" type="Control" parent="." unique_id=283858632]
 anchors_preset = 0
-offset_left = 20.0
-offset_top = 936.0
-offset_right = 920.0
-offset_bottom = 1216.0
+offset_left = 65.0
+offset_top = 880.0
+offset_right = 915.0
+offset_bottom = 1065.0
 mouse_filter = 2
 
 [node name="Senin" parent="StickyNotesContainer" unique_id=159726911 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
-offset_right = 172.0
-offset_bottom = 280.0
+offset_right = 162.0
+offset_bottom = 185.0
 mouse_filter = 2
 day_name = "SEN"
 
 [node name="Selasa" parent="StickyNotesContainer" unique_id=1799566043 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
-offset_left = 182.0
-offset_right = 354.0
-offset_bottom = 280.0
+offset_left = 172.0
+offset_right = 334.0
+offset_bottom = 185.0
 mouse_filter = 2
 day_name = "SEL"
 
 [node name="Rabu" parent="StickyNotesContainer" unique_id=1024822765 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
-offset_left = 364.0
-offset_right = 536.0
-offset_bottom = 280.0
+offset_left = 344.0
+offset_right = 506.0
+offset_bottom = 185.0
 mouse_filter = 2
 day_name = "RAB"
 
 [node name="Kamis" parent="StickyNotesContainer" unique_id=820140775 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
-offset_left = 546.0
-offset_right = 718.0
-offset_bottom = 280.0
+offset_left = 516.0
+offset_right = 678.0
+offset_bottom = 185.0
 mouse_filter = 2
 day_name = "KAM"
 
 [node name="Jumat" parent="StickyNotesContainer" unique_id=1309994276 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
-offset_left = 728.0
-offset_right = 900.0
-offset_bottom = 280.0
+offset_left = 688.0
+offset_right = 850.0
+offset_bottom = 185.0
 mouse_filter = 2
 day_name = "JUM"
 
 [node name="TraitRow" type="HBoxContainer" parent="." unique_id=517615274]
 layout_mode = 0
-offset_left = 30.0
-offset_top = 806.0
-offset_right = 910.0
-offset_bottom = 918.0
+offset_left = 65.0
+offset_top = 780.0
+offset_right = 915.0
+offset_bottom = 868.0
 mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
@@ -203,10 +208,10 @@ theme_type_variation = &"QuirkBadgeM"
 
 [node name="CatatanGuru" type="Control" parent="." unique_id=1031197187]
 anchors_preset = 0
-offset_left = 30.0
-offset_top = 1232.0
-offset_right = 910.0
-offset_bottom = 1366.0
+offset_left = 65.0
+offset_top = 1066.0
+offset_right = 860.0
+offset_bottom = 1136.0
 mouse_filter = 2
 
 [node name="Rule" type="TextureRect" parent="CatatanGuru" unique_id=445468317]

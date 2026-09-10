@@ -6,5 +6,11 @@
 export_presets.cfg
 .import/
 
-# Local git worktrees (subagent-driven-development isolation)
+# Local git worktrees (subagent-driven-development isolation).
+# Both paths matter: Claude Code creates them under .claude/worktrees/, and a
+# committed worktree would put a second copy of every .uid file inside the
+# project — Godot scans the whole directory, so each UID would then be claimed
+# twice and resolve to neither. That is what broke tests/test_project_hygiene.gd
+# on 2026-09-10. .claude/.gdignore keeps Godot out of there as a second guard.
 .worktrees/
+.claude/worktrees/

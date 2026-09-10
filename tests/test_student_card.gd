@@ -152,8 +152,13 @@ func test_stat_bars_are_statbars_with_a_category() -> void:
 ## rather than the standard font_title (36px), so their variation names carry the L suffix.
 func test_action_buttons_use_theme_variations() -> void:
 	var expected := {
-		"KertasMurid1/Aprove": &"SuccessButtonL",
-		"KertasMurid1/Batal": &"DangerButtonL",
+		# Approving a student is an ordinary confirm and cancelling it
+		# discards nothing, so the 2026-09-10 pass moved this pair off
+		# green/red. SuccessButton is now reserved for something earned
+		# (the lobby's CLAIM) and DangerButton for something discarded
+		# (quitting a minigame mid-run).
+		"KertasMurid1/Aprove": &"PrimaryButtonL",
+		"KertasMurid1/Batal": &"SecondaryButtonL",
 		"KertasMurid1/KutuBuku": &"TraitPill",
 		"KertasMurid1/KutuBuku2": &"TraitPill",
 		"BelajarButton": &"PrimaryButtonL",

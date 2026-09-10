@@ -114,6 +114,18 @@ const _STAT_PILL_VARIATIONS := {
 	"Energi": &"StatPillEnergy",
 }
 
+## The light-track family, used where a bar sits on a cream surface rather
+## than the dark chrome the rest of the game's bars assume. Only the three
+## schedule skills appear: Wirausaha and Libur have no target and so no
+## bar. Added 2026-09-10 for AturJadwal's preview rows.
+const _STAT_BAR_LIGHT_VARIATIONS := {
+	"Akademis": &"StatBarAkademisLight",
+	"Akademik": &"StatBarAkademisLight",
+	"SeniBudaya": &"StatBarSeniBudayaLight",
+	"Seni Budaya": &"StatBarSeniBudayaLight",
+	"Olahraga": &"StatBarOlahragaLight",
+}
+
 
 func _apply_tint() -> void:
 	if variation == &"StatBar":
@@ -139,6 +151,16 @@ func _apply_tint() -> void:
 	# multiplies everything the node draws, not just the fill -- started
 	# tinting that track too, so each pill's "empty" half took on its own
 	# category's hue.
+	# The light-track family, for bars on a cream surface (AturJadwal's
+	# preview rows). Same shape as the two branches above: the category
+	# picks a sibling whose fill has the deep cat_* colour baked in, and
+	# the node stays untinted.
+	if variation == &"StatBarLight":
+		var light: StringName = _STAT_BAR_LIGHT_VARIATIONS.get(category, &"StatBar")
+		if is_inside_tree():
+			theme_type_variation = light
+		return
+
 	self_modulate = Color.WHITE
 	if variation == &"StatPill":
 		var pill: StringName = _STAT_PILL_VARIATIONS.get(category, &"StatPill")

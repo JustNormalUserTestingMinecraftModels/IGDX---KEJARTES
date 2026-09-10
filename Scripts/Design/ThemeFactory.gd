@@ -776,6 +776,37 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_font_size("font_size", name, tokens.font_caption)
 		theme.set_color("font_color", name, tokens.text_primary)
 
+	# -- Light-track siblings, for bars on a cream surface. --
+	#
+	# The dark ground above exists so bright cat_*_on_dark accents can read
+	# against it. AturJadwal's cream card inverts that premise: a dark well
+	# on a cream sheet is the loudest thing in the popup, which is what the
+	# 2026-09-10 mentor reference objected to. These use the base cat_*
+	# colours -- deep and saturated -- on a light track instead.
+	#
+	# Only the three schedule skills need them: Wirausaha and Libur carry
+	# no bar at all, they take the ghost track. Selected by setting
+	# StatBar.variation to "StatBarLight", mirroring how StatPill picks its
+	# own siblings.
+	var light_bg := StyleBoxFlat.new()
+	light_bg.bg_color = tokens.preview_pill_fill
+	light_bg.set_corner_radius_all(tokens.radius_pill)
+	light_bg.set_content_margin_all(tokens.outline_width / 2.0)
+
+	for lspec in [
+		["StatBarAkademisLight", tokens.cat_akademis, "Akademis"],
+		["StatBarSeniBudayaLight", tokens.cat_senibudaya, "SeniBudaya"],
+		["StatBarOlahragaLight", tokens.cat_olahraga, "Olahraga"],
+	]:
+		var lname: String = lspec[0]
+		var lcolor: Color = lspec[1]
+		theme.add_type(lname)
+		theme.set_type_variation(lname, "ProgressBar")
+		theme.set_stylebox("background", lname, light_bg)
+		theme.set_stylebox("fill", lname, _progress_fill_stylebox(lcolor, lspec[2]))
+		theme.set_font_size("font_size", lname, tokens.font_caption)
+		theme.set_color("font_color", lname, tokens.text_primary)
+
 
 # ------------------------------------------------- student card redesign
 
@@ -918,20 +949,42 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "BioValue", tokens.font_h2)
 	theme.set_color("font_color", "BioValue", tokens.text_on_brand)
 
-	# -- Penjadwalan row container: the bordered grey slab each row sits on.
-	# The icon draws directly onto this; the pill below is inset into it. The
-	# mockup shows a hard dark shadow just under the bottom border. --
-	var preview_row := StyleBoxFlat.new()
-	preview_row.bg_color = tokens.preview_row_fill
-	preview_row.border_color = tokens.preview_row_border
-	preview_row.set_border_width_all(3)
-	preview_row.set_corner_radius_all(tokens.radius_md)
-	preview_row.shadow_color = tokens.preview_row_shadow_color
-	preview_row.shadow_size = tokens.preview_row_shadow_size
-	preview_row.shadow_offset = tokens.preview_row_shadow_offset
+	# -- Penjadwalan row: a plain cream slab on the sheet. Before the
+	# 2026-09-10 pass this was a brown slab with a 3px stroke and a hard
+	# drop shadow; with the card behind it and the pill inside it, that
+	# stacked four surfaces per row and read as clutter. Depth now comes
+	# from the inset track alone. --
+	# Draws nothing at rest. A row that paints its own fill reads as a box
+	# on the card whatever colour that fill is -- recolouring the boxes was
+	# the first attempt and it still looked like five stacked cards. The
+	# rows ARE the sheet now; only the hairlines divide them.
+	# PreviewRowPressed below is what gives a row a surface, and only while
+	# it is held. preview_row_fill survives as that variation's resting
+	# reference rather than as anything drawn.
 	theme.add_type("PreviewRow")
 	theme.set_type_variation("PreviewRow", "Panel")
-	theme.set_stylebox("panel", "PreviewRow", preview_row)
+	theme.set_stylebox("panel", "PreviewRow", StyleBoxEmpty.new())
+
+	# -- The same slab while held. Panel has no pressed state, so
+	# ActivityRow.gd swaps this in on button_down. The inset top edge is
+	# what sells the sink; a flat colour change alone reads as a hover. --
+	var preview_row_pressed := StyleBoxFlat.new()
+	preview_row_pressed.bg_color = tokens.preview_row_pressed_fill
+	preview_row_pressed.set_border_width_all(0)
+	preview_row_pressed.border_width_top = 2
+	preview_row_pressed.border_color = tokens.preview_row_pressed_fill.darkened(0.12)
+	preview_row_pressed.set_corner_radius_all(tokens.radius_md)
+	theme.add_type("PreviewRowPressed")
+	theme.set_type_variation("PreviewRowPressed", "Panel")
+	theme.set_stylebox("panel", "PreviewRowPressed", preview_row_pressed)
+
+	# -- The hairline between rows, replacing the per-row stroke. --
+	var preview_separator := StyleBoxLine.new()
+	preview_separator.color = tokens.preview_row_separator
+	preview_separator.thickness = 1
+	theme.add_type("PreviewRowSeparator")
+	theme.set_type_variation("PreviewRowSeparator", "HSeparator")
+	theme.set_stylebox("separator", "PreviewRowSeparator", preview_separator)
 
 	# -- The darker pill inset into the row, carrying the numbers. Its edge in
 	# the mockup is a soft dark halo, NOT a stroke -- building it as a border
@@ -956,20 +1009,48 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("PreviewPillFlat", "PanelContainer")
 	theme.set_stylebox("panel", "PreviewPillFlat", StyleBoxEmpty.new())
 
+	# -- Wirausaha and Libur have no target, so no gauge. Against the old
+	# dark slab an empty row read fine; on the cream sheet they collapsed
+	# into near-empty strips beside the three rows that do carry bars.
+	# They now get the gauge's silhouette used as a container: a texture
+	# whose alpha ramps from 0.18 at the left to solid at the right, so
+	# the row still reads as empty without reading as missing.
+	#
+	# STRETCH, not TILE. The BarFill fills above tile, but a horizontal
+	# alpha ramp sawtooths back to transparent at every repeat if tiled.
+	var ghost := StyleBoxTexture.new()
+	ghost.texture = load("res://Assets/Images/UI/BarFill/track_ghost.png")
+	ghost.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
+	ghost.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
+	ghost.set_texture_margin_all(22)
+	ghost.content_margin_left = tokens.space_sm
+	ghost.content_margin_right = tokens.space_sm
+	ghost.content_margin_top = tokens.space_xs
+	ghost.content_margin_bottom = tokens.space_xs
+	theme.add_type("PreviewTrackGhost")
+	theme.set_type_variation("PreviewTrackGhost", "PanelContainer")
+	theme.set_stylebox("panel", "PreviewTrackGhost", ghost)
+
 	# -- The numbers inside that pill: white on the dark slab. --
 	theme.add_type("PreviewChipLabel")
 	theme.set_type_variation("PreviewChipLabel", "Label")
 	theme.set_font_size("font_size", "PreviewChipLabel", tokens.font_h2)
-	theme.set_color("font_color", "PreviewChipLabel", tokens.text_on_brand)
+	# Dark on the light track since 2026-09-10. These were text_on_brand
+	# cream, which was right on the old dark pill and invisible on the
+	# ghost track that replaced it.
+	theme.set_color("font_color", "PreviewChipLabel", tokens.text_primary)
 
-	# -- The category name under each row. Bigger and rimmed harder than
-	# CardSectionLabel, which is shared with StudentCard and must not move. --
+	# -- The category name for each row. Until 2026-09-10 this was cream
+	# text with a near-black 6px rim, overlapping the bottom of a dark
+	# brown row -- correct then, and an outlined white smear once the row
+	# went cream. It is now quiet dark text sitting above its bar, so the
+	# rim has nothing to do and the size drops a step: the bar is the loud
+	# element in the row, not its name. --
 	theme.add_type("PreviewRowLabel")
 	theme.set_type_variation("PreviewRowLabel", "Label")
-	theme.set_font_size("font_size", "PreviewRowLabel", tokens.font_h2)
-	theme.set_color("font_color", "PreviewRowLabel", tokens.text_on_brand)
-	theme.set_constant("outline_size", "PreviewRowLabel", 6)
-	theme.set_color("font_outline_color", "PreviewRowLabel", tokens.preview_row_border)
+	theme.set_font_size("font_size", "PreviewRowLabel", tokens.font_body_size)
+	theme.set_color("font_color", "PreviewRowLabel", tokens.text_secondary)
+	theme.set_constant("outline_size", "PreviewRowLabel", 0)
 	if tokens.font_display != null:
 		theme.set_font("font", "PreviewRowLabel", tokens.font_display)
 

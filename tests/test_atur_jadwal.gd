@@ -415,8 +415,20 @@ const _ROW_HEIGHT := 180.0
 func test_rows_are_inset_within_the_card_content() -> void:
 	var rows := _screen.get_node_or_null("Penjadwalan/TextureRect/Rows") as Control
 	assert_true(rows != null, "Rows must exist")
-	assert_eq(rows.offset_left, 375.0, "rows are inset 12.1% from the card's left edge")
-	assert_eq(rows.offset_right, 1024.0, "rows are inset 11.3% from the card's right edge")
+	# Tightened on 2026-09-10 from 375/1024. Those insets were 12.1% and
+	# 11.3% of the card, so the row block used less than half the card's
+	# width and left ~100px dead on each side -- the bars read as short
+	# and the popup as underfilled. They are now ~4.5%, which is what the
+	# mentor reference shows.
+	var card_width := _CARD_RIGHT - _CARD_LEFT
+	var left_inset := (rows.offset_left - _CARD_LEFT) / card_width
+	var right_inset := (_CARD_RIGHT - rows.offset_right) / card_width
+	assert_true(left_inset < 0.06,
+		"rows should hug the card's left edge, got %.1f%%" % (left_inset * 100.0))
+	assert_true(right_inset < 0.06,
+		"rows should hug the card's right edge, got %.1f%%" % (right_inset * 100.0))
+	assert_true(absf(left_inset - right_inset) < 0.015,
+		"the two insets must match or the block sits off-centre")
 	assert_eq(rows.offset_top, 102.0, "the first row starts 4.4% down the card")
 	assert_true(rows.offset_left > _CARD_LEFT and rows.offset_right < _CARD_RIGHT,
 		"the row block must sit inside the card art, not over its transparent padding")
@@ -424,10 +436,43 @@ func test_rows_are_inset_within_the_card_content() -> void:
 		"the row block must start below the card's top edge, not over its transparent padding")
 
 
+## The mockup's row pitch is 220px and must survive the 2026-09-10 cream
+## pass, which put a hairline between every pair of rows. The gap is now
+## paid twice -- once above the separator and once below -- so the
+## constant dropped from 40 to 16: 180 + 16 + 8 + 16 = 220, unchanged.
+##
+## The hairline counts as 8px, its combined minimum size, which is what
+## the VBoxContainer allocates. Note the editor's laid-out size.y reads
+## 4 for the same node; the minimum is the number the pitch depends on.
+##
+## Asserting the composed pitch rather than the bare constant, because
+## the constant alone no longer describes the spacing.
 func test_row_separation_matches_the_mockup_pitch() -> void:
 	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
-	assert_eq(rows.get_theme_constant("separation"), 40,
-		"a 180px row plus 40px separation reproduces the mockup's 220px pitch")
+	var gap: int = rows.get_theme_constant("separation")
+	var sep := rows.get_node("Sep1") as HSeparator
+	assert_true(sep != null, "a hairline must sit between the rows")
+	# get_combined_minimum_size(), not size: a test-instantiated scene has
+	# had no layout pass, so size.y is still 0 here.
+	var hairline: float = sep.get_combined_minimum_size().y
+	assert_eq(180.0 + gap + hairline + gap, 220.0,
+		"row + gap + hairline + gap must reproduce the mockup's 220px pitch; "
+		+ "got 180 + %d + %d + %d" % [gap, int(hairline), gap])
+
+
+## Five rows, four hairlines, interleaved. Guards against a separator
+## being appended at the end where it would draw under the last row.
+func test_the_hairlines_are_interleaved_between_the_rows() -> void:
+	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
+	assert_eq(rows.get_child_count(), 9, "five rows plus four hairlines")
+	for i in rows.get_child_count():
+		var child := rows.get_child(i)
+		if i % 2 == 1:
+			assert_true(child is HSeparator,
+				"index %d should be a hairline, got %s" % [i, child.get_class()])
+		else:
+			assert_true(child is Button,
+				"index %d should be an activity row, got %s" % [i, child.get_class()])
 
 
 func test_back_arrow_sits_inside_the_card() -> void:

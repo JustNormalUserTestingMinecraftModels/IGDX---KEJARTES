@@ -355,14 +355,17 @@ drawn white so `self_modulate` tints them from tokens), and
 `UI/StudentList/page_dot.png` (a filled dot -- tinting the hollow ring above
 it reads as invisible on a phone).
 
-**`Assets/Images/UI/paper_card.png` is `paper.png` cropped to its opaque
-area.** `paper.png` is 1080x1920 but only opaque across rows 262..1578 and
-columns 47..1033 -- roughly a third of it is transparent margin, so content
-laid out against the full node rect renders on the desk behind the card.
-`paper_card.png` is that bbox rescaled to 1080x1440, opaque edge to edge,
-which is why the StudentList RosterCard can address its own full rect. Use it
-for a card that must fill its node; keep `paper.png` where the torn margin is
-wanted. Measure before laying out on either.
+**`Assets/Images/UI/paper_card.png` is a generated full-bleed sheet.**
+`paper.png` is 1080x1920 but only opaque across rows 262..1578 and columns
+47..1033, and its bottom-right corner is cut away to a transparent wedge --
+so a card stretching it paints paper across only the middle two thirds of
+itself, with a diagonal hole near the bottom. Its body is otherwise flat
+pure white (96% of sampled opaque pixels are exactly 255,255,255), so
+`paper_card.png` reproduces it as a clean 1080x1440 rounded rectangle,
+opaque edge to edge, with a faint warm inner edge. That is why the
+StudentList RosterCard can address its own full rect. Use it for a card that
+must fill its node; keep `paper.png` where the cut corner and torn margin
+are wanted. Measure before laying out on either.
 
 Three carry constraints a replacement **must** honour:
 

@@ -389,3 +389,30 @@ func test_header_sits_on_the_papan_plaque() -> void:
 	var header := _list.get_node_or_null("HeaderLabel") as Label
 	assert_true(header != null, "missing HeaderLabel")
 	assert_eq(header.theme_type_variation, &"H1Label", "HeaderLabel variation")
+
+
+## Source scans, not behaviour: student_list.gd is deliberately NOT
+## @tool, so its _ready never fires in the editor and nothing it would
+## populate can be asserted live. See this suite's header note.
+func test_roster_strip_is_wired_to_the_carousel() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("func _sync_roster_strip"),
+		"the strip must resync when the card changes")
+	assert_true(src.contains("func _on_avatar_pressed"),
+		"tapping an avatar must jump the carousel")
+	assert_true(src.contains("_switch_card("),
+		"the jump must reuse the existing carousel switch")
+
+
+func test_page_dots_come_from_a_template_not_from_code() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("res://Scenes/StudentList/PageDot.tscn"),
+		"page dots must instance the PageDot template")
+	assert_false(src.contains("var dot = Label.new()"),
+		"the page-dot loop must not construct Labels at runtime")
+
+
+func test_the_script_carries_a_file_header() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.begins_with("##"),
+		"student_list.gd must open with a ## file header")

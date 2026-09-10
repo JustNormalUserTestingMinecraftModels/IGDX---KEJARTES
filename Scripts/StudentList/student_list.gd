@@ -1,4 +1,23 @@
+## The roster hub. AturJadwal routes here; tapping a student's paper card
+## sends that student back to AturJadwal to have their week set, and the
+## player returns. So this screen exists to answer one question -- "who
+## still needs a schedule?" -- which is why the RosterStrip above the
+## carousel carries every student's state at once rather than making the
+## player page through four cards to find out.
+##
+## Deliberately NOT @tool. This scene's runtime setup reads the GameState
+## autoload and builds the tutorial panel dynamically, and Godot only runs
+## a plain script's lifecycle callbacks inside an actually-running game
+## tree -- so under the MCP test runner _ready() never fires and the suite
+## asserts authored .tscn structure and source text instead. See
+## tests/test_student_list.gd's header for the full finding.
 extends Control
+
+const PageDotScene: PackedScene = preload("res://Scenes/StudentList/PageDot.tscn")
+## Weekdays every student must have a category assigned for to count as
+## fully scheduled. Single source shared by _setup_students() and
+## _is_student_scheduled() so the strip, the badge and the dots agree.
+const REQUIRED_DAYS := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 
 @export_group("Paper Card Design")
 ## Custom paper card texture override.
@@ -196,7 +215,7 @@ func _setup_students():
 		students = default_students
 	active_students = students
 
-	var required_days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
+	var required_days = REQUIRED_DAYS
 	card_nodes.clear()
 
 	for i in range(4):
@@ -227,15 +246,10 @@ func _setup_students():
 
 			# Schedule calculation
 			var student_id = student_data.get("id", null)
-			var fully_scheduled := false
+			var fully_scheduled := _is_student_scheduled(student_data)
 			var day_schedules_for_student: Dictionary = {}
 			if student_id != null and GameState.day_schedules.has(student_id):
 				day_schedules_for_student = GameState.day_schedules[student_id]
-				fully_scheduled = true
-				for day in required_days:
-					if not day_schedules_for_student.has(day):
-						fully_scheduled = false
-						break
 
 			# Status Badges
 			var belum_btn = murid_node.get_node_or_null("Belum")
@@ -285,6 +299,50 @@ func _setup_students():
 
 	_build_page_indicators()
 	_init_carousel_state()
+	_sync_roster_strip()
+
+
+## True when every weekday in REQUIRED_DAYS has a category assigned for this
+## student. Same source as the Belum/Sudah badge in _setup_students(), so
+## the strip and the stamp can never disagree.
+func _is_student_scheduled(student: Dictionary) -> bool:
+	var student_id = student.get("id", null)
+	if student_id == null or not GameState.day_schedules.has(student_id):
+		return false
+	var sched = GameState.day_schedules[student_id]
+	for day in REQUIRED_DAYS:
+		if not sched.has(day):
+			return false
+	return true
+
+
+## Pushes every student's scheduled state and the current index onto the
+## strip. Called after _setup_students() and from _switch_card(), so the
+## strip and the carousel never disagree.
+func _sync_roster_strip() -> void:
+	var strip := get_node_or_null("RosterStrip")
+	if strip == null:
+		return
+	for i in range(active_students.size()):
+		var avatar := strip.get_node_or_null("Avatar%d" % (i + 1))
+		if avatar == null:
+			continue
+		var student: Dictionary = active_students[i]
+		avatar.portrait_texture = load(student.get("portrait", ""))
+		avatar.is_scheduled = _is_student_scheduled(student)
+		avatar.is_current = (i == current_card_index)
+		if not avatar.pressed.is_connected(_on_avatar_pressed):
+			avatar.pressed.connect(_on_avatar_pressed.bind(i))
+
+
+## Jumps straight to a student instead of paging. Reuses the carousel's
+## own switch so the slide direction and the animation guard still apply.
+func _on_avatar_pressed(index: int) -> void:
+	if card_animating or index == current_card_index:
+		return
+	var direction := 1 if index > current_card_index else -1
+	_switch_card(index, direction)
+
 
 func _build_page_indicators():
 	if not page_indicator:
@@ -293,10 +351,7 @@ func _build_page_indicators():
 		child.queue_free()
 
 	for i in range(card_nodes.size()):
-		var dot = Label.new()
-		dot.text = "●"
-		dot.theme_type_variation = &"H2Label"
-		page_indicator.add_child(dot)
+		page_indicator.add_child(PageDotScene.instantiate())
 
 func _init_carousel_state():
 	if card_nodes.is_empty():
@@ -326,12 +381,13 @@ func _update_page_indicators():
 	var tokens := DesignTokens.load_default()
 	if page_indicator:
 		var dots = page_indicator.get_children()
-		for i in range(dots.size()):
-			if dots[i] is Label:
-				if i == current_card_index:
-					dots[i].self_modulate = tokens.currency_gold
-				else:
-					dots[i].self_modulate = tokens.text_secondary
+		for i in range(min(dots.size(), active_students.size())):
+			if i == current_card_index:
+				dots[i].self_modulate = tokens.currency_gold
+			elif _is_student_scheduled(active_students[i]):
+				dots[i].self_modulate = tokens.state_success
+			else:
+				dots[i].self_modulate = tokens.state_danger
 
 	if left_arrow:
 		left_arrow.visible = (card_nodes.size() > 1)
@@ -397,6 +453,8 @@ func _switch_card(new_index: int, direction: int):
 
 	_stagger_card_notes(new_card)
 	card_animating = false
+
+	_sync_roster_strip()
 
 	# If in tutorial Step 1 (Navigasi Card), advance to Step 2 after card transition completes
 	if tutorial_active and current_step == 1:

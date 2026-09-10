@@ -83,7 +83,7 @@ const BASELINE: Dictionary = {
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 9,
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
 	"res://Scripts/StudentCard/student_card.gd": 1,
-	"res://Scripts/StudentList/student_list.gd": 8,
+	"res://Scripts/StudentList/student_list.gd": 7,
 	"res://Scripts/TutorialArrow.gd": 1,
 }
 

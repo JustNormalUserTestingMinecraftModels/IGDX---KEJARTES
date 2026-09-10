@@ -359,3 +359,33 @@ func test_sticky_notes_carry_a_category_icon() -> void:
 	assert_true(note != null, "missing Senin note")
 	assert_true("icon_texture" in note,
 		"StickyNote must expose an icon_texture export")
+
+
+## The roster strip above the carousel: one RosterAvatar per student, so
+## roster progress reads without paging through every card.
+func test_roster_strip_holds_four_avatars() -> void:
+	var strip := _list.get_node_or_null("RosterStrip")
+	assert_true(strip != null, "missing RosterStrip")
+	for i in range(1, 5):
+		var a := strip.get_node_or_null("Avatar%d" % i)
+		assert_true(a != null, "missing RosterStrip/Avatar%d" % i)
+		assert_true(a is RosterAvatar, "Avatar%d must be a RosterAvatar" % i)
+
+
+## The arrows used to sit pinned to the vertical centre of a 1920-tall
+## screen, which is nowhere near a thumb. They move to a nav row with
+## the page dots.
+func test_navigation_sits_in_thumb_reach() -> void:
+	for n in ["LeftArrow", "RightArrow", "PageIndicator"]:
+		var c := _list.get_node_or_null(n) as Control
+		assert_true(c != null, "missing " + n)
+		assert_true(c.offset_top >= 1600.0,
+			"%s must sit in the lower third, got offset_top %f" % [n, c.offset_top])
+
+
+func test_header_sits_on_the_papan_plaque() -> void:
+	var papan := _list.get_node_or_null("Papan") as TextureRect
+	assert_true(papan != null, "missing Papan plaque behind the header")
+	var header := _list.get_node_or_null("HeaderLabel") as Label
+	assert_true(header != null, "missing HeaderLabel")
+	assert_eq(header.theme_type_variation, &"H1Label", "HeaderLabel variation")

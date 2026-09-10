@@ -5,8 +5,8 @@
 [ext_resource type="Material" uid="uid://dv5bscxw2v678" path="res://Scripts/Shaders/soft_shadow_material.tres" id="3_4blsr"]
 [ext_resource type="Texture2D" uid="uid://bmxugmsumo04o" path="res://Assets/Images/UI/whiteboard.png" id="3_de1xv"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
-[ext_resource type="Texture2D" uid="uid://dlyxcrhuswotn" path="res://Assets/Images/UI/paper.png" id="3_paper"]
 [ext_resource type="PackedScene" uid="uid://b701oo028pqff" path="res://Scenes/StudentList/RosterCard.tscn" id="5_cv71g"]
+[ext_resource type="Texture2D" uid="uid://b2cqwcxjou7dm" path="res://Assets/Images/UI/paper_card.png" id="5_de1xv"]
 [ext_resource type="Texture2D" uid="uid://cbmut1181ahes" path="res://Assets/Images/MuridPotrait/Marcel.png" id="6_b6t1o"]
 [ext_resource type="Texture2D" uid="uid://cqflsfhsknjiv" path="res://Assets/Images/MuridPotrait/Doni.png" id="7_hlb7e"]
 [ext_resource type="Texture2D" uid="uid://cut6sidb6r2ak" path="res://Assets/Images/MuridPotrait/Andi.png" id="8_de1xv"]
@@ -87,7 +87,7 @@ offset_bottom = 22.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("3_paper")
+texture = ExtResource("5_de1xv")
 expand_mode = 1
 
 [node name="Murid1" parent="CardContainer" unique_id=1291523057 instance=ExtResource("5_cv71g")]

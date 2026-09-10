@@ -1235,6 +1235,7 @@ corner_radius_top_right = 999
 corner_radius_bottom_right = 999
 corner_radius_bottom_left = 999
 shadow_color = Color(0.23, 0.14, 0.06, 0.3)
+shadow_size = 5
 shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k0pdn"]
@@ -1332,13 +1333,23 @@ shadow_offset = Vector2(0, 2)
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_u5gyi"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bs7nc"]
+content_margin_left = 44.0
+content_margin_top = 30.0
+content_margin_right = 44.0
+content_margin_bottom = 30.0
 bg_color = Color(0.9411765, 0.8862745, 0.8039216, 1)
+border_width_left = 6
 border_width_top = 2
+border_width_right = 6
+border_width_bottom = 6
 border_color = Color(0.82823527, 0.7799216, 0.707451, 1)
 corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
 corner_radius_bottom_left = 24
+shadow_color = Color(0.23, 0.14, 0.06, 0.3)
+shadow_size = 12
+shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_1t4b3"]
 color = Color(0.8627451, 0.8117647, 0.73333335, 1)
@@ -1746,6 +1757,7 @@ corner_radius_top_right = 999
 corner_radius_bottom_right = 999
 corner_radius_bottom_left = 999
 shadow_color = Color(0.23, 0.14, 0.06, 0.3)
+shadow_size = 12
 shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t3mj5"]
@@ -1840,6 +1852,7 @@ corner_radius_top_right = 999
 corner_radius_bottom_right = 999
 corner_radius_bottom_left = 999
 shadow_color = Color(0.23, 0.14, 0.06, 0.3)
+shadow_size = 12
 shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g6j2x"]
@@ -1933,6 +1946,9 @@ corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
 corner_radius_bottom_left = 24
+shadow_color = Color(0.23, 0.14, 0.06, 0.3)
+shadow_size = 12
+shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ap2b7"]
 content_margin_left = 16.0
@@ -1940,10 +1956,18 @@ content_margin_top = 8.0
 content_margin_right = 16.0
 content_margin_bottom = 8.0
 bg_color = Color(0.9372549, 0.8784314, 0.79607844, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.47843137, 0.2901961, 0.16862746, 1)
 corner_radius_top_left = 999
 corner_radius_top_right = 999
 corner_radius_bottom_right = 999
 corner_radius_bottom_left = 999
+shadow_color = Color(0.23, 0.14, 0.06, 0.3)
+shadow_size = 12
+shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e51d3"]
 content_margin_left = 18.0
@@ -2367,6 +2391,7 @@ corner_radius_top_right = 999
 corner_radius_bottom_right = 999
 corner_radius_bottom_left = 999
 shadow_color = Color(0.23, 0.14, 0.06, 0.3)
+shadow_size = 6
 shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vf0mo"]
@@ -2876,6 +2901,10 @@ region_rect = Rect2(60, 66, 148, 124)
 modulate_color = Color(0.9098039, 0.43529412, 0.65882355, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_xckff"]
+content_margin_left = 32.0
+content_margin_top = 4.0
+content_margin_right = 32.0
+content_margin_bottom = 4.0
 texture = ExtResource("10_lhyuc")
 texture_margin_left = 24.0
 texture_margin_top = 24.0
@@ -3189,6 +3218,9 @@ CardSectionLabel/colors/font_outline_color = Color(1, 0.9647059, 0.9098039, 1)
 CardSectionLabel/constants/outline_size = 2
 CardSectionLabel/font_sizes/font_size = 36
 CardSectionLabel/fonts/font = ExtResource("1_c56gm")
+CatatanLabel/base_type = &"Label"
+CatatanLabel/colors/font_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
+CatatanLabel/font_sizes/font_size = 36
 CoinLabel/base_type = &"Label"
 CoinLabel/colors/font_color = Color(1, 0.7882353, 0.23529412, 1)
 CoinLabel/colors/font_shadow_color = Color(0.23, 0.14, 0.06, 0.85)

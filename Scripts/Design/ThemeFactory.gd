@@ -572,6 +572,14 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# the screen. Also used by StatDetailPopup and
 		# EventStudentSelectDialog, which want the same bump.
 		["EventBodyLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# The StudentList card's teacher's-note strip. Same story as
+		# EventBodyLabel one line up: it shipped in 22px CaptionLabel and
+		# was reported unreadable on a phone without squinting. Body face
+		# over font_body_size + 8, and text_primary rather than
+		# CaptionLabel's text_secondary -- it sits on cream paper, where
+		# the secondary brown is the half of the problem the size alone
+		# does not fix.
+		["CatatanLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
 		# The trait popup's header sits on a per-trait tinted panel
 		# (TraitPopupHeader, self_modulated brand_primary for a quirk and
 		# cat_istirahat for a persona), so its two labels need CREAM text.

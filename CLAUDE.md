@@ -351,7 +351,18 @@ and the 2026-09-10 StudentList Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
 `stamp_belum.svg` (status-badge rubber-stamp rings), and
 `UI/StudentList/photo_corner.png` / `roster_avatar_frame.png` / `catatan_rule.png`
 (portrait tape, the avatar state ring, the teacher's-note rule — the last two
-drawn white so `self_modulate` tints them from tokens).
+drawn white so `self_modulate` tints them from tokens), and
+`UI/StudentList/page_dot.png` (a filled dot -- tinting the hollow ring above
+it reads as invisible on a phone).
+
+**`Assets/Images/UI/paper_card.png` is `paper.png` cropped to its opaque
+area.** `paper.png` is 1080x1920 but only opaque across rows 262..1578 and
+columns 47..1033 -- roughly a third of it is transparent margin, so content
+laid out against the full node rect renders on the desk behind the card.
+`paper_card.png` is that bbox rescaled to 1080x1440, opaque edge to edge,
+which is why the StudentList RosterCard can address its own full rect. Use it
+for a card that must fill its node; keep `paper.png` where the torn margin is
+wanted. Measure before laying out on either.
 
 Three carry constraints a replacement **must** honour:
 

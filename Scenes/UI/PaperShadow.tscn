@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dbpxkqo7wrn8e"]
+
+[ext_resource type="Material" uid="uid://dv5bscxw2v678" path="res://Scripts/Shaders/soft_shadow_material.tres" id="1_cldr3"]
+[ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="2_i5kdb"]
+
+[node name="PaperShadow" type="TextureRect" unique_id=1373524025]
+show_behind_parent = true
+mouse_filter = 2
+
+[node name="Silhouette" type="TextureRect" parent="." unique_id=2073103325]
+self_modulate = Color(0, 0, 0, 0.33)
+material = ExtResource("1_cldr3")
+layout_mode = 0
+offset_left = 14.0
+offset_top = 18.0
+offset_right = 1094.0
+offset_bottom = 1938.0
+scale = Vector2(1.03, 1.03)
+mouse_filter = 2
+texture = ExtResource("2_i5kdb")
+expand_mode = 1

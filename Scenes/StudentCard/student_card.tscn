@@ -3,13 +3,13 @@
 [ext_resource type="Script" uid="uid://csmj7c70fnwm1" path="res://Scripts/StudentCard/student_card.gd" id="1_ao2t8"]
 [ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="1_jsirh"]
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="2_ly60b"]
-[ext_resource type="Material" uid="uid://dv5bscxw2v678" path="res://Scripts/Shaders/soft_shadow_material.tres" id="3_1k4ux"]
 [ext_resource type="Texture2D" uid="uid://croetdw7smqvd" path="res://Assets/Images/MuridPotrait/Murid3.jpg" id="3_33k3e"]
 [ext_resource type="Texture2D" uid="uid://brotcydbytvmj" path="res://Assets/Images/MuridPotrait/Murid6.jpg" id="3_a1isy"]
 [ext_resource type="Texture2D" uid="uid://dpuj0ix84a0r4" path="res://Assets/Images/MuridPotrait/Murid4.jpg" id="3_osw5o"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
 [ext_resource type="Texture2D" uid="uid://ddqatfjpqc4ev" path="res://Assets/Images/MuridPotrait/Murid2.jpg" id="4_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://cn7kemflfrhci" path="res://Assets/Images/MuridPotrait/Murid5.jpg" id="4_hodfn"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="4_jyy3b"]
 [ext_resource type="Texture2D" uid="uid://whtj1qktee40" path="res://Assets/Images/StudentCard/portrait_frame.png" id="6_kiyav"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
@@ -49,18 +49,6 @@ texture = ExtResource("2_ly60b")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Shadow" type="TextureRect" parent="." unique_id=1102027981]
-self_modulate = Color(0, 0, 0, 0.33)
-material = ExtResource("3_1k4ux")
-layout_mode = 0
-offset_left = -56.0
-offset_top = -236.0
-offset_right = 1024.0
-offset_bottom = 1684.0
-scale = Vector2(1.03, 1.03)
-mouse_filter = 2
-texture = ExtResource("8_hodfn")
-
 [node name="KertasMurid6" type="TextureRect" parent="." unique_id=1627899928]
 visible = false
 layout_mode = 0
@@ -69,6 +57,10 @@ offset_top = -254.0
 offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
+
+[node name="PaperShadow" parent="KertasMurid6" unique_id=1373524025 instance=ExtResource("4_jyy3b")]
+layout_mode = 0
+anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid6" unique_id=1221180924]
 layout_mode = 1
@@ -320,6 +312,10 @@ offset_top = -254.0
 offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
+
+[node name="PaperShadow" parent="KertasMurid5" unique_id=662012139 instance=ExtResource("4_jyy3b")]
+layout_mode = 0
+anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid5" unique_id=91004226]
 layout_mode = 1
@@ -573,6 +569,10 @@ offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
+[node name="PaperShadow" parent="KertasMurid4" unique_id=476270661 instance=ExtResource("4_jyy3b")]
+layout_mode = 0
+anchors_preset = 0
+
 [node name="TextureRect" type="TextureRect" parent="KertasMurid4" unique_id=464091592]
 layout_mode = 1
 anchors_preset = -1
@@ -824,6 +824,10 @@ offset_top = -254.0
 offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
+
+[node name="PaperShadow" parent="KertasMurid3" unique_id=1612073677 instance=ExtResource("4_jyy3b")]
+layout_mode = 0
+anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid3" unique_id=158931283]
 layout_mode = 1
@@ -1077,6 +1081,10 @@ offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
 
+[node name="PaperShadow" parent="KertasMurid2" unique_id=770458292 instance=ExtResource("4_jyy3b")]
+layout_mode = 0
+anchors_preset = 0
+
 [node name="TextureRect" type="TextureRect" parent="KertasMurid2" unique_id=1137421456]
 layout_mode = 1
 anchors_preset = -1
@@ -1327,6 +1335,10 @@ offset_top = -254.0
 offset_right = 1010.0
 offset_bottom = 1666.0
 texture = ExtResource("8_hodfn")
+
+[node name="PaperShadow" parent="KertasMurid1" unique_id=1328964949 instance=ExtResource("4_jyy3b")]
+layout_mode = 0
+anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid1" unique_id=981490411]
 layout_mode = 1

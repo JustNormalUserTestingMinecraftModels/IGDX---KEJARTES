@@ -67,24 +67,35 @@ stretch_mode = 5
 [node name="Nama" type="Label" parent="." unique_id=1733212225]
 layout_mode = 0
 offset_left = 30.0
-offset_top = 30.0
+offset_top = 24.0
 offset_right = 600.0
-offset_bottom = 130.0
+offset_bottom = 134.0
 theme_type_variation = &"H2Label"
 vertical_alignment = 1
 
 [node name="PortraitFrame" type="Control" parent="." unique_id=428478704]
 anchors_preset = 0
-offset_left = 190.0
-offset_top = 150.0
-offset_right = 750.0
-offset_bottom = 770.0
+offset_left = 150.0
+offset_top = 148.0
+offset_right = 790.0
+offset_bottom = 788.0
 mouse_filter = 2
+
+[node name="Backdrop" type="Panel" parent="PortraitFrame" unique_id=1201417250]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_type_variation = &"SunkenPanel"
 
 [node name="Portrait" type="TextureRect" parent="PortraitFrame" unique_id=11649935]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = -14.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
@@ -111,63 +122,57 @@ flip_v = true
 
 [node name="StickyNotesContainer" type="Control" parent="." unique_id=283858632]
 anchors_preset = 0
-offset_left = 30.0
-offset_top = 910.0
-offset_right = 910.0
-offset_bottom = 1180.0
+offset_left = 20.0
+offset_top = 936.0
+offset_right = 920.0
+offset_bottom = 1216.0
 mouse_filter = 2
 
 [node name="Senin" parent="StickyNotesContainer" unique_id=159726911 instance=ExtResource("3_2cr6j")]
-custom_minimum_size = Vector2(160, 270)
 layout_mode = 0
-offset_left = 30.0
-offset_right = 190.0
-offset_bottom = 270.0
+offset_right = 172.0
+offset_bottom = 280.0
 mouse_filter = 2
 day_name = "SEN"
 
 [node name="Selasa" parent="StickyNotesContainer" unique_id=1799566043 instance=ExtResource("3_2cr6j")]
-custom_minimum_size = Vector2(160, 270)
 layout_mode = 0
-offset_left = 210.0
-offset_right = 370.0
-offset_bottom = 270.0
+offset_left = 182.0
+offset_right = 354.0
+offset_bottom = 280.0
 mouse_filter = 2
 day_name = "SEL"
 
 [node name="Rabu" parent="StickyNotesContainer" unique_id=1024822765 instance=ExtResource("3_2cr6j")]
-custom_minimum_size = Vector2(160, 270)
 layout_mode = 0
-offset_left = 390.0
-offset_right = 550.0
-offset_bottom = 270.0
+offset_left = 364.0
+offset_right = 536.0
+offset_bottom = 280.0
 mouse_filter = 2
 day_name = "RAB"
 
 [node name="Kamis" parent="StickyNotesContainer" unique_id=820140775 instance=ExtResource("3_2cr6j")]
-custom_minimum_size = Vector2(160, 270)
 layout_mode = 0
-offset_left = 570.0
-offset_right = 730.0
-offset_bottom = 270.0
+offset_left = 546.0
+offset_right = 718.0
+offset_bottom = 280.0
 mouse_filter = 2
 day_name = "KAM"
 
 [node name="Jumat" parent="StickyNotesContainer" unique_id=1309994276 instance=ExtResource("3_2cr6j")]
-custom_minimum_size = Vector2(160, 270)
 layout_mode = 0
-offset_left = 750.0
-offset_right = 910.0
-offset_bottom = 270.0
+offset_left = 728.0
+offset_right = 900.0
+offset_bottom = 280.0
 mouse_filter = 2
 day_name = "JUM"
 
 [node name="TraitRow" type="HBoxContainer" parent="." unique_id=517615274]
 layout_mode = 0
 offset_left = 30.0
-offset_top = 790.0
+offset_top = 806.0
 offset_right = 910.0
-offset_bottom = 886.0
+offset_bottom = 918.0
 mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
@@ -178,7 +183,7 @@ layout_mode = 2
 size_flags_horizontal = 0
 focus_mode = 0
 mouse_filter = 2
-theme_type_variation = &"SpecialtyBadgeS"
+theme_type_variation = &"SpecialtyBadgeM"
 
 [node name="PersonaChip" type="Button" parent="TraitRow" unique_id=934576774]
 custom_minimum_size = Vector2(0, 96)
@@ -186,7 +191,7 @@ layout_mode = 2
 size_flags_horizontal = 0
 focus_mode = 0
 mouse_filter = 2
-theme_type_variation = &"PersonaBadgeS"
+theme_type_variation = &"PersonaBadgeM"
 
 [node name="QuirkChip" type="Button" parent="TraitRow" unique_id=909514293]
 custom_minimum_size = Vector2(0, 96)
@@ -194,14 +199,14 @@ layout_mode = 2
 size_flags_horizontal = 0
 focus_mode = 0
 mouse_filter = 2
-theme_type_variation = &"QuirkBadgeS"
+theme_type_variation = &"QuirkBadgeM"
 
 [node name="CatatanGuru" type="Control" parent="." unique_id=1031197187]
 anchors_preset = 0
 offset_left = 30.0
-offset_top = 1205.0
+offset_top = 1232.0
 offset_right = 910.0
-offset_bottom = 1360.0
+offset_bottom = 1366.0
 mouse_filter = 2
 
 [node name="Rule" type="TextureRect" parent="CatatanGuru" unique_id=445468317]

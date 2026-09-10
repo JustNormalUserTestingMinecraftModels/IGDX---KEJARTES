@@ -4,8 +4,8 @@
 [ext_resource type="Script" uid="uid://c47ib8or275b3" path="res://Scripts/StudentList/StickyNote.gd" id="2_o72i2"]
 
 [node name="StickyNote" type="TextureRect" unique_id=159726911]
-self_modulate = Color(0.47843137, 0.36078432, 0.2509804, 1)
-custom_minimum_size = Vector2(260, 260)
+self_modulate = Color(0.765, 0.712, 0.663, 1)
+custom_minimum_size = Vector2(172, 280)
 texture = ExtResource("1_iwtuy")
 expand_mode = 1
 script = ExtResource("2_o72i2")
@@ -14,9 +14,9 @@ script = ExtResource("2_o72i2")
 layout_mode = 0
 anchor_right = 1.0
 offset_left = 8.0
-offset_top = 12.0
+offset_top = 10.0
 offset_right = -8.0
-offset_bottom = 62.0
+offset_bottom = 64.0
 rotation = -0.05
 theme_type_variation = &"TitleLabel"
 text = "SENIN"
@@ -26,12 +26,11 @@ horizontal_alignment = 1
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 66.0
-offset_right = -8.0
-offset_bottom = -52.0
+offset_left = 6.0
+offset_top = 156.0
+offset_right = -6.0
+offset_bottom = -14.0
 rotation = -0.05
-theme_type_variation = &"CaptionLabel"
 text = "-"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -40,13 +39,11 @@ autowrap_mode = 2
 [node name="Icon" type="TextureRect" parent="." unique_id=834816331]
 layout_mode = 0
 anchor_left = 0.5
-anchor_top = 1.0
 anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -24.0
-offset_top = -48.0
-offset_right = 24.0
-offset_bottom = -8.0
+offset_left = -38.0
+offset_top = 72.0
+offset_right = 38.0
+offset_bottom = 148.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6

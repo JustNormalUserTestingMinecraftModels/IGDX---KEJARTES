@@ -193,6 +193,15 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_constant("icon_max_width", chip + "S",
 			tokens.space_md + tokens.space_xs)
 
+		# ...and an M step, the one the StudentList card actually wears.
+		# S turned out to be a phone-hostile 22px -- under Material's 12sp
+		# caption floor once the 1080-wide design space is scaled down to
+		# a real handset. M lifts the word to body size and keeps the
+		# horizontal padding tight so three chips still share one row.
+		_add_size_step(theme, tokens, chip, "M",
+			tokens.font_body_size, tokens.space_sm, tokens.space_sm)
+		theme.set_constant("icon_max_width", chip + "M", tokens.space_lg)
+
 	# The lobby's three destination tiles. Icon stacked over label: at
 	# the L step there is room for a 64px icon, an 8px gap and a
 	# font_title line inside the 120px content box, and the icon is what

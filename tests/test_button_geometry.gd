@@ -41,6 +41,12 @@ const RADIUS_EXEMPT := {
 		"the compact S step of a chip -- inherits radius_pill from its base",
 	"QuirkBadgeS":
 		"the compact S step of a chip -- inherits radius_pill from its base",
+	"SpecialtyBadgeM":
+		"the M step of a chip -- inherits radius_pill from its base",
+	"PersonaBadgeM":
+		"the M step of a chip -- inherits radius_pill from its base",
+	"QuirkBadgeM":
+		"the M step of a chip -- inherits radius_pill from its base",
 	"EventSelectCard":
 		"reads as a card, not a button -- radius_lg",
 	"CardArrowButton":

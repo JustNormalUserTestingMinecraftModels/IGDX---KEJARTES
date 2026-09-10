@@ -35,6 +35,12 @@ const REQUIRED_DAYS := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 @onready var left_arrow = $LeftArrow
 @onready var right_arrow = $RightArrow
 @onready var page_indicator = $PageIndicator
+## The card's cast shadow. It is a sibling drawn *behind* the cards
+## rather than a child (a child would draw on top of the paper), so
+## every animation that moves a card has to move this in lockstep --
+## otherwise the card slides away and leaves its own shadow sitting on
+## the desk. See _drive_shadow().
+@onready var card_shadow: TextureRect = $CardContainer/Shadow
 
 static var tutorial_shown := false  # <-- penanda global
 
@@ -431,6 +437,22 @@ func _prev_card():
 	var target_index = (current_card_index - 1 + card_nodes.size()) % card_nodes.size()
 	_switch_card(target_index, 1)
 
+## Add the cast shadow to a card tween so the two move as one object.
+##
+## The shadow sits behind the cards as a sibling, offset down-right, and
+## is not parented to any of them -- so a card that slides, tilts or
+## fades without this leaves a full card-sized dark slab behind on the
+## desk. Mirrors whatever the card is doing, one tween line each.
+func _drive_shadow(tw: Tween, offset_x: float, degrees: float,
+		alpha: float, duration: float) -> void:
+	if not (card_shadow and is_instance_valid(card_shadow)):
+		return
+	card_shadow.pivot_offset = card_shadow.size / 2.0
+	tw.tween_property(card_shadow, "position:x", offset_x, duration)
+	tw.tween_property(card_shadow, "rotation_degrees", degrees, duration)
+	tw.tween_property(card_shadow, "modulate:a", alpha, duration)
+
+
 func _switch_card(new_index: int, direction: int):
 	if card_animating or new_index == current_card_index:
 		return
@@ -450,6 +472,7 @@ func _switch_card(new_index: int, direction: int):
 	tween_out.tween_property(old_card, "position:x", orig_pos.x + throw_distance, 0.20)
 	tween_out.tween_property(old_card, "rotation_degrees", 12.0 * direction, 0.20)
 	tween_out.tween_property(old_card, "modulate:a", 0.0, 0.20)
+	_drive_shadow(tween_out, throw_distance, 12.0 * direction, 0.0, 0.20)
 
 	await tween_out.finished
 
@@ -465,6 +488,13 @@ func _switch_card(new_index: int, direction: int):
 	new_card.rotation_degrees = -12.0 * direction
 	new_card.modulate.a = 0.0
 
+	# Park the shadow off-screen with the incoming card so it flies in
+	# underneath it rather than popping into place at the end.
+	if card_shadow and is_instance_valid(card_shadow):
+		card_shadow.position.x = -throw_distance
+		card_shadow.rotation_degrees = -12.0 * direction
+		card_shadow.modulate.a = 0.0
+
 	_update_page_indicators()
 
 	# Step 2: Sequential Tween IN (Slide new card in smoothly)
@@ -473,6 +503,7 @@ func _switch_card(new_index: int, direction: int):
 	tween_in.tween_property(new_card, "position", orig_pos, 0.20)
 	tween_in.tween_property(new_card, "rotation_degrees", 0.0, 0.20)
 	tween_in.tween_property(new_card, "modulate:a", 1.0, 0.20)
+	_drive_shadow(tween_in, 0.0, 0.0, 1.0, 0.20)
 
 	await tween_in.finished
 
@@ -556,6 +587,7 @@ func _on_student_selected(student: Dictionary, card_node: Control = null):
 		tw2.tween_property(card_node, "position:x", card_node.position.x + screen_width, 0.25)
 		tw2.tween_property(card_node, "rotation_degrees", 15.0, 0.25)
 		tw2.tween_property(card_node, "modulate:a", 0.0, 0.22)
+		_drive_shadow(tw2, card_node.position.x + screen_width, 15.0, 0.0, 0.25)
 		await tw2.finished
 
 	AudioDirector.play_sfx(&"select")

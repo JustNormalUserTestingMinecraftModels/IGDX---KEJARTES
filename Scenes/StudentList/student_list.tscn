@@ -80,10 +80,10 @@ layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 14.0
-offset_top = 18.0
-offset_right = 14.0
-offset_bottom = 18.0
+offset_left = 16.0
+offset_top = 22.0
+offset_right = 16.0
+offset_bottom = 22.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -219,10 +219,10 @@ stretch_mode = 6
 
 [node name="PageIndicator" type="HBoxContainer" parent="." unique_id=654321100]
 layout_mode = 1
-offset_left = 440.0
-offset_top = 1770.0
-offset_right = 640.0
-offset_bottom = 1810.0
+offset_left = 400.0
+offset_top = 1752.0
+offset_right = 680.0
+offset_bottom = 1836.0
 alignment = 1
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=1408146570]

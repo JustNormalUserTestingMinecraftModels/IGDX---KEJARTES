@@ -343,6 +343,7 @@ const DISPLAY_ROSTER := [
 	# the compact S step all three chips use in the trait row.
 	"SpecialtyBadge",
 	"SpecialtyBadgeS", "PersonaBadgeS", "QuirkBadgeS",
+	"SpecialtyBadgeM", "PersonaBadgeM", "QuirkBadgeM",
 ]
 
 

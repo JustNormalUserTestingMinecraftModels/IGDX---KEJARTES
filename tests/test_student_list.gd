@@ -328,13 +328,18 @@ func test_the_week_strip_is_one_row_of_five() -> void:
 ## The chips are display, not controls -- mouse_filter IGNORE so a tap in
 ## that band reaches CardButton instead of press-animating a chip that
 ## does nothing. So this pins the thing that actually matters: they carry
-## the COMPACT S step. At the full-size badge they measured 160x290 each
-## and three of them overflowed the 880px row, clipping every label.
+## a SIZE-STEPPED variation rather than the full-size badge. At the
+## full-size badge they measured 160x290 each and three of them
+## overflowed the 880px row, clipping every label.
+##
+## The step is M, not S: S was reported unreadable on a real handset
+## (22px in a 1080-wide design space is under Material's 12sp caption
+## floor once scaled down), so it was lifted to body size.
 func test_trait_row_holds_three_compact_chips_that_do_not_eat_taps() -> void:
 	var expected := {
-		"SpecialtyChip": &"SpecialtyBadgeS",
-		"PersonaChip": &"PersonaBadgeS",
-		"QuirkChip": &"QuirkBadgeS",
+		"SpecialtyChip": &"SpecialtyBadgeM",
+		"PersonaChip": &"PersonaBadgeM",
+		"QuirkChip": &"QuirkBadgeM",
 	}
 	for i in range(1, 5):
 		var row := _list.get_node_or_null(
@@ -347,7 +352,7 @@ func test_trait_row_holds_three_compact_chips_that_do_not_eat_taps() -> void:
 				"CardContainer/Murid%d/TraitRow/%s" % [i, chip_name]) as Button
 			assert_true(chip != null, "missing %s on Murid%d" % [chip_name, i])
 			assert_eq(chip.theme_type_variation, expected[chip_name],
-				"%s must use the compact S step on Murid%d" % [chip_name, i])
+				"%s must use the M size step on Murid%d" % [chip_name, i])
 			assert_eq(chip.mouse_filter, Control.MOUSE_FILTER_IGNORE,
 				"%s on Murid%d must not swallow card taps" % [chip_name, i])
 
@@ -534,3 +539,62 @@ func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
 		last = at
 	assert_eq(body.split("[").size() - 1, 4,
 		"the tutorial must have exactly four steps")
+
+
+## The cast shadow is a SIBLING of the cards, not a child (a child would
+## draw on top of the paper instead of behind it). So every animation
+## that moves a card has to move the shadow too -- otherwise the card
+## slides off and leaves a full card-sized dark slab on the desk, which
+## is exactly what shipped before this test existed.
+func test_every_card_animation_also_drives_the_shadow() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("func _drive_shadow("),
+		"the shadow helper must exist")
+	# Named individually rather than counted, so a call that gets
+	# deleted names the animation that lost its shadow.
+	for tween_var in ["tween_out", "tween_in", "tw2"]:
+		assert_true(src.contains("_drive_shadow(%s" % tween_var),
+			"the %s card tween must drive the shadow too" % tween_var)
+
+
+## The page dots are tinted via self_modulate, so the texture underneath
+## has to be a filled shape. It was a hollow ring for one release and the
+## dots were reported invisible on a phone.
+func test_page_dot_uses_a_filled_texture() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/StudentList/PageDot.tscn")
+	assert_true(src.contains("page_dot.png"),
+		"PageDot must use the filled dot, not the hollow avatar frame")
+	assert_false(src.contains("roster_avatar_frame.png"),
+		"PageDot must not reuse the hollow ring")
+
+
+## The portrait sits on a rounded sunken panel rather than straight on
+## the paper, so a short or transparent portrait still reads as a framed
+## photo instead of floating.
+func test_each_portrait_has_a_rounded_backdrop_behind_it() -> void:
+	for i in range(1, 5):
+		var backdrop := _list.get_node_or_null(
+			"CardContainer/Murid%d/PortraitFrame/Backdrop" % i) as Panel
+		assert_true(backdrop != null, "missing portrait Backdrop on Murid%d" % i)
+		assert_eq(backdrop.theme_type_variation, &"SunkenPanel",
+			"portrait Backdrop on Murid%d must use SunkenPanel" % i)
+		var portrait := _list.get_node_or_null(
+			"CardContainer/Murid%d/PortraitFrame/Portrait" % i) as Control
+		assert_true(portrait != null, "missing Portrait on Murid%d" % i)
+		assert_true(backdrop.get_index() < portrait.get_index(),
+			"Backdrop must draw behind the portrait on Murid%d" % i)
+
+
+## self_modulate MULTIPLIES the note texture, so the raw category token
+## drives the paper too dark for its own dark-brown label text. The wash
+## toward white is what keeps the note legible on a phone.
+func test_sticky_note_tint_is_washed_before_it_is_applied() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentList/StickyNote.gd")
+	assert_true(src.contains("const TINT_WASH"),
+		"the wash factor must be a named constant, not inline")
+	assert_true(src.contains("lerp(Color.WHITE, TINT_WASH)"),
+		"the category color must be washed toward white before tinting")
+	assert_false(src.contains("self_modulate = DesignTokens.load_default()"),
+		"no call site may apply a raw category color to self_modulate")

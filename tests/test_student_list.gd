@@ -535,6 +535,39 @@ func test_category_icons_cover_the_schedule_categories() -> void:
 			"CATEGORY_ICONS is missing the %s category" % cat)
 
 
+## The notes hang at one of three heights so the strip reads as
+## hand-pinned. Two things have to hold: the spread must stay inside the
+## strip's own band, and a given student's day must always get the SAME
+## height -- a note that moves on every visit reads as a bug.
+func test_sticky_notes_hang_at_three_contained_pin_heights() -> void:
+	var note_src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentList/StickyNote.gd")
+	assert_true(note_src.contains("const PIN_STEP"),
+		"the pin spacing must be a named constant, not inline")
+	assert_true(note_src.contains("@export_range(0, 2) var pin_slot"),
+		"pin_slot must be a bounded export on the note's own root")
+
+	# Containment: deepest slot must still finish inside the band.
+	var note := preload("res://Scenes/StudentList/StickyNote.tscn").instantiate()
+	var note_h: float = note.custom_minimum_size.y
+	var deepest: float = 2.0 * note.PIN_STEP + note_h
+	note.free()
+	var card := _list.get_node_or_null("CardContainer/Murid1")
+	var strip := card.get_node_or_null("StickyNotesContainer") as Control
+	assert_true(strip != null, "missing StickyNotesContainer")
+	var band: float = strip.offset_bottom - strip.offset_top
+	assert_true(deepest <= band,
+		"a bottom-slot note (%f) must stay inside the %f strip" % [deepest, band])
+
+	# Determinism: the same student and day must hash to the same slot.
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("func _pin_slot_for("),
+		"the slot must come from a named helper")
+	assert_false(src.contains("randi") or src.contains("RandomNumberGenerator"),
+		"pin slots must be hashed, not drawn from a RNG -- notes would " +
+		"jump to a new height on every swipe back")
+
+
 ## Both small-icon maps -- the day notes' CATEGORY_ICONS and the trait
 ## chip's SPECIALTY_ICONS -- must use the team's authored art, not the
 ## generated placeholder set, and must agree with each other so one

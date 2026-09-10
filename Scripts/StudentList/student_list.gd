@@ -220,6 +220,20 @@ func _setup_navigation_arrows():
 		if not right_arrow.pressed.is_connected(_next_card):
 			right_arrow.pressed.connect(_next_card)
 
+## Deal one day-note its pin height: 0 up, 1 middle, 2 down.
+##
+## Hashed from the student and the day rather than drawn from a RNG, on
+## purpose. The strip should look hand-pinned, but a given student's
+## Wednesday has to hang at the SAME height every time the player swipes
+## back to that card -- a note that jumps on every visit reads as a bug,
+## not as charm. Hashing the pair also varies the five days within one
+## card and varies the pattern between students, which one shared
+## sequence would not.
+func _pin_slot_for(student: Dictionary, day_name: String) -> int:
+	var key: String = str(student.get("id", student.get("name", "")))
+	return absi(("%s|%s" % [key, day_name]).hash()) % 3
+
+
 func _setup_students():
 	var students = GameState.approved_students
 	if students.is_empty():
@@ -307,6 +321,9 @@ func _setup_students():
 						var icon_path: String = CATEGORY_ICONS.get(cat, "")
 						sticky_node.icon_texture = (
 							load(icon_path) if icon_path != "" else null)
+
+						sticky_node.pin_slot = _pin_slot_for(
+							student_data, day_name)
 
 			# Attach CardButton signals for 100% click & swipe reliability
 			var card_button = murid_node.get_node_or_null("CardButton")

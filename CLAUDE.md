@@ -28,11 +28,10 @@ passes.
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
 Splashscreen still exists and is tested but nothing routes to it (the game
-boots straight to MainMenu, which loads in one hop). Loading is back in the
-CutScene→StudentCard hand-off: CutScene wipes to it via `Transition` with the
-real target parked in `GameState.next_scene`, Loading threads that target in
-behind its progress bar, then wipes on to it — entry and exit both carry the
-shared cover. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+boots straight to MainMenu, which loads in one hop). The Loading screen was
+deleted on 2026-09-10: the shared `Transition` wipe covers the scene-load gap,
+so the intermediate screen was dead weight. All navigation is a single
+`Transition.change_scene(target, …)`. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
 **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
 to the hub rather than the Lobby.
 

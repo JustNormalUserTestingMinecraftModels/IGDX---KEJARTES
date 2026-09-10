@@ -358,7 +358,7 @@ func test_every_snapshot_key_names_a_real_game_state_property() -> void:
 const _DELIBERATELY_UNSNAPSHOTTED := {
 	"run_stats": "handled separately -- a Resource, duplicated in snapshot()/restore()",
 	"max_minggu": "derived by current_grade's setter; restoring the grade restores it",
-	"next_scene": "transient routing scratch for the Loading scene, never read by the end-game sequence",
+	"next_scene": "transient scene-routing scratch, unused since the Loading screen was deleted; never read by the end-game sequence",
 	"selected_day": "transient UI selection (AturJadwal), never read by the end-game sequence",
 	"debug_level_select_enabled": "debug flag, not run state",
 	"daily_login_day": "daily-login streak counter, unrelated to the end-of-grade run a rehearsal replays",

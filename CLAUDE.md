@@ -343,9 +343,15 @@ result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
 event-popup set (`icon_event_*`, `bg_event_*`, `particle_burst.png`),
 `shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`,
-`EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, and the
+`EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, the
 2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,
-`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`).
+`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
+and the 2026-09-10 StudentList Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
+(completes the six-category icon set), `UI/Placeholders/stamp_sudah.svg` /
+`stamp_belum.svg` (status-badge rubber-stamp rings), and
+`UI/StudentList/photo_corner.png` / `roster_avatar_frame.png` / `catatan_rule.png`
+(portrait tape, the avatar state ring, the teacher's-note rule — the last two
+drawn white so `self_modulate` tints them from tokens).
 
 Three carry constraints a replacement **must** honour:
 
@@ -428,8 +434,9 @@ what each would need, is in the authoring guide's "Known gaps" section.
 ## Current work
 
 Branch `feat/asset-refresh-ui-pass`, off `Textures` (main), with `Textures`
-merged back into it on 2026-09-10. The asset refresh and UI pass is complete
-and pushed, not yet merged. See `docs/superpowers/CHANGELOG.md`.
+merged back into it on 2026-09-10. The asset refresh and UI pass, and the
+StudentList Warm UI Part 3 pass on top of it, are complete and pushed, not yet
+merged. See `docs/superpowers/CHANGELOG.md`.
 
 Open: Plan C's RunResult redesign,
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass

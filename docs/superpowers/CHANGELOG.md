@@ -8,6 +8,75 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-10 — StudentList: roster strip and card relayout (Warm UI, Part 3)
+
+Spec `docs/superpowers/specs/2026-09-10-studentlist-part-3-design.md`, plan
+`docs/superpowers/plans/2026-09-10-studentlist-part-3.md`. The last
+TutorialPanel-hosting screen without a dedicated design pass.
+
+**Why.** StudentList is the scheduling hub — AturJadwal routes here, you tap a
+student's paper card, it sends you back to AturJadwal to set their week. Four
+problems: (1) no roster-wide progress — you saw one student's `BELUM`/`SUDAH`
+state at a time and the page dots carried none, so finding the unscheduled
+student cost up to four taps; (2) ~330px of dead paper below a lopsided 3+2
+sticky-note grid; (3) nav arrows were literal `<` `>` pinned to the vertical
+centre of a 1920-tall screen; (4) `hobby_category` / `personality` / `quirk`
+were in the data and reached nothing on screen.
+
+**RosterCard extraction.** The four near-identical ~130-line `Murid1..4` card
+subtrees (~600 lines of `student_list.tscn`) became one `RosterCard.tscn` +
+`@tool class_name RosterCard` script, instanced four times. The instance names
+stay `Murid1..4` — `tests/test_student_list.gd` resolves `CardContainer/Murid%d`
+and the tutorial's step 1 targets `CardContainer` — so both contracts held with
+every pre-existing test still green. Six `@export`s on the root
+(`student_name`, `portrait_texture`, `specialty`, `persona`, `quirk`,
+`is_scheduled`) plus `static compose_catatan(persona, quirk)`: five persona
+openers × six quirk observations, thirty teacher's-notes from eleven strings,
+authored Indonesian in a `const` block.
+
+**Screen.** A `whiteboard.png` papan plaque behind `DAFTAR MURID`; a
+`RosterStrip` of four `RosterAvatar` slots above the carousel, each a portrait
+in a ring `self_modulate`-tinted `state_success` / `state_danger` by that
+student's scheduled state, tap to jump; nav row (arrows + page dots) dropped to
+y1730 where a thumb rests; `CardContainer` at x70–1010 / y310–1700.
+
+**Card interior.** Six bands: name + status stamp, framed portrait with
+photo-corner tape, a trait-chip row, the week as five sticky notes in one row
+(`SEN SEL RAB KAM JUM`, each with its schedule-category glyph), and the catatan
+guru filling the former dead band on a tiling rule.
+
+**Theme.** No new component and no `TraitChip` variation — `QuirkBadge` and
+`PersonaBadge` already ship as pill trait chips and a Godot `Button` has a
+native `icon`, so a chip is a themed `Button`. One new variation,
+`SpecialtyBadge` (neutral `surface_sunken` pill — the category colour rides on
+the chip's icon), built from existing tokens, added to `DISPLAY_ROSTER` and
+`test_button_geometry`'s `RADIUS_EXEMPT`, and the theme rebaked. `RosterAvatar`
+uses the existing `GhostButton` variation. The trait row is 96 tall, not the
+spec's 90, so the chip Buttons clear `touch_target_min`.
+
+**Page dots.** Moved from a runtime `Label.new()` with a bullet glyph to a
+`PageDot.tscn` template, lowering `test_viewport_editability`'s `BASELINE` for
+`student_list.gd` from **8 to 7**. `_update_page_indicators()` now tints the
+current dot gold and the rest by scheduled state, so roster progress reads in
+two places.
+
+**Tutorial.** Three steps to four — a new "Status Jadwal" step at index 1
+spotlights `RosterStrip`. The plan's "no new machinery" held for the spotlight
+target but not for the tutorial's `current_step` / `index` special-casing:
+inserting at 1 shifted Navigasi Card 1→2 and Pilih Murid 2→3, so `_switch_card`,
+`_on_card_pressed` and `_show_step`'s per-step branches were remapped.
+
+**Art.** Six generated placeholders (see CLAUDE.md's grouped list):
+`icon_wirausaha.svg` — a genuine gap, `StickyNote` tinted for Wirausaha but had
+no glyph — plus the two status stamps, photo-corner tape, the avatar state ring
+and the catatan rule.
+
+**Late fixes from the live pass.** Status badge text shortened to `BELUM` /
+`SUDAH` (the stamp ring carries the phrase) with `clip_text`; nav-arrow
+placeholder rotated sideways; nav arrows resized to the 128px `btn_h_m` step;
+`test_confirm_pair_semantics` repointed at `RosterCard.tscn` after the badges
+moved there.
+
 ## 2026-09-10 — Delete the Loading screen
 
 `Scenes/Loading/loading.tscn` and `Scripts/Loading/loading.gd` are gone. The

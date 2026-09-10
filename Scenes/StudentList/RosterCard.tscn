@@ -31,7 +31,8 @@ offset_right = 910.0
 offset_bottom = 126.0
 mouse_filter = 2
 theme_type_variation = &"DangerButton"
-text = "BELUM TERJADWALKAN"
+text = "BELUM"
+clip_text = true
 
 [node name="Stamp" type="TextureRect" parent="Belum" unique_id=1727905095]
 layout_mode = 0
@@ -51,7 +52,8 @@ offset_right = 910.0
 offset_bottom = 126.0
 mouse_filter = 2
 theme_type_variation = &"SuccessButton"
-text = "SUDAH TERJADWALKAN"
+text = "SUDAH"
+clip_text = true
 
 [node name="Stamp" type="TextureRect" parent="Sudah" unique_id=1217424049]
 layout_mode = 0

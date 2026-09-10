@@ -15,9 +15,9 @@ corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
 corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.12)
-shadow_size = 4
-shadow_offset = Vector2(0, 2)
+shadow_color = Color(0, 0, 0, 0.22)
+shadow_size = 12
+shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge"]
 content_margin_left = 5.0

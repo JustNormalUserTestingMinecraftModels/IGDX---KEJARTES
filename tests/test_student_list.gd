@@ -325,22 +325,31 @@ func test_the_week_strip_is_one_row_of_five() -> void:
 			last_x = note.offset_left
 
 
-func test_trait_row_holds_three_chips_that_clear_the_touch_minimum() -> void:
-	var tokens := DesignTokens.load_default()
+## The chips are display, not controls -- mouse_filter IGNORE so a tap in
+## that band reaches CardButton instead of press-animating a chip that
+## does nothing. So this pins the thing that actually matters: they carry
+## the COMPACT S step. At the full-size badge they measured 160x290 each
+## and three of them overflowed the 880px row, clipping every label.
+func test_trait_row_holds_three_compact_chips_that_do_not_eat_taps() -> void:
 	var expected := {
-		"SpecialtyChip": &"SpecialtyBadge",
-		"PersonaChip": &"PersonaBadge",
-		"QuirkChip": &"QuirkBadge",
+		"SpecialtyChip": &"SpecialtyBadgeS",
+		"PersonaChip": &"PersonaBadgeS",
+		"QuirkChip": &"QuirkBadgeS",
 	}
 	for i in range(1, 5):
+		var row := _list.get_node_or_null(
+			"CardContainer/Murid%d/TraitRow" % i) as Control
+		assert_true(row != null, "missing TraitRow on Murid%d" % i)
+		assert_eq(row.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"TraitRow on Murid%d must not swallow card taps" % i)
 		for chip_name in expected:
 			var chip := _list.get_node_or_null(
 				"CardContainer/Murid%d/TraitRow/%s" % [i, chip_name]) as Button
 			assert_true(chip != null, "missing %s on Murid%d" % [chip_name, i])
 			assert_eq(chip.theme_type_variation, expected[chip_name],
-				"%s variation on Murid%d" % [chip_name, i])
-			assert_true(chip.get_combined_minimum_size().y >= float(tokens.touch_target_min),
-				"%s must clear the touch minimum on Murid%d" % [chip_name, i])
+				"%s must use the compact S step on Murid%d" % [chip_name, i])
+			assert_eq(chip.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+				"%s on Murid%d must not swallow card taps" % [chip_name, i])
 
 
 ## The card's dead band becomes the teacher's note.

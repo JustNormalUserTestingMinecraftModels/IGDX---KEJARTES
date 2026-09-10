@@ -175,6 +175,24 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.brand_primary, tokens.text_primary,
 		tokens.radius_pill)
 
+	# Compact S step for all three chips. The full-size badges are
+	# font_title over btn_pad_v_s and space_lg -- about 160x290 each, so
+	# three of them overflow StudentList's 880px trait row and clip every
+	# label ("Semangat Juang" -> "SEMANGAT J"). The S step drops to
+	# font_caption with space_xs/space_md padding, which fits the worst
+	# case (Citra's "Seni Dalam Kesunyian") with room to spare. The
+	# accents, rim and radius_pill are inherited, so an S chip is
+	# unmistakably the same chip.
+	for chip in ["SpecialtyBadge", "PersonaBadge", "QuirkBadge"]:
+		_add_size_step(theme, tokens, chip, "S",
+			tokens.font_caption, tokens.space_xs, tokens.space_md)
+		# The category SVGs rasterise at their 100px viewBox, taller than
+		# the whole compact chip. Capping here rather than with
+		# expand_icon keeps the glyph a fixed size beside the word instead
+		# of stretching with whatever the label happens to be.
+		theme.set_constant("icon_max_width", chip + "S",
+			tokens.space_md + tokens.space_xs)
+
 	# The lobby's three destination tiles. Icon stacked over label: at
 	# the L step there is room for a 64px icon, an 8px gap and a
 	# font_title line inside the 120px content box, and the icon is what
@@ -368,13 +386,18 @@ static func _add_button_variation(
 ## Only font_size differs -- the fill, rim and radius are the role's, so
 ## a PrimaryButtonL is unmistakably a PrimaryButton. Height comes from
 ## the step's own vertical padding, which is why this also re-pads.
+## `pad_h` defaults to -1, meaning "keep the role's own horizontal
+## padding". The S chip step passes a real value: a compact chip has to
+## give back width as well as height, and space_lg (44px per side) is
+## most of what makes a three-chip row overflow an 880px card.
 static func _add_size_step(
 	theme: Theme,
 	tokens: DesignTokens,
 	base: String,
 	suffix: String,
 	font_size: int,
-	pad_v: int
+	pad_v: int,
+	pad_h: int = -1
 ) -> void:
 	var name := base + suffix
 	theme.add_type(name)
@@ -384,6 +407,9 @@ static func _add_size_step(
 		var sb := (theme.get_stylebox(state, base) as StyleBoxFlat).duplicate()
 		sb.content_margin_top = pad_v
 		sb.content_margin_bottom = pad_v
+		if pad_h >= 0:
+			sb.content_margin_left = pad_h
+			sb.content_margin_right = pad_h
 		theme.set_stylebox(state, name, sb)
 
 	for key in ["font_color", "font_hover_color", "font_pressed_color",

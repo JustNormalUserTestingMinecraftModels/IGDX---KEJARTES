@@ -339,8 +339,10 @@ const DISPLAY_ROSTER := [
 	# 2026-09-10: the daily-login claim button, display face over the
 	# panel art's own gold pill.
 	"GhostButton",
-	# 2026-09-10 StudentList Part 3 -- roster card specialty chip.
+	# 2026-09-10 StudentList Part 3 -- roster card specialty chip, plus
+	# the compact S step all three chips use in the trait row.
 	"SpecialtyBadge",
+	"SpecialtyBadgeS", "PersonaBadgeS", "QuirkBadgeS",
 ]
 
 

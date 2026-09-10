@@ -127,16 +127,14 @@ func _ready() -> void:
 	_apply_scheduled()
 
 
-## The specialty chip is icon-only. Three labelled pills do not fit across
-## the card's 880px trait row -- the chips are Button variations whose
-## styleboxes are 160 tall and wide to match, and forcing all three to
-## share the width clipped every label ("Akademis" -> "AKA"). The category
-## glyph is the same vocabulary the week strip's notes use, so it carries
-## the specialty on its own and hands its width to the two word chips.
-## The full word stays available as the tooltip.
+## Glyph plus word. The chips sit on the compact SpecialtyBadgeS /
+## PersonaBadgeS / QuirkBadgeS step -- font_caption over space_xs/space_md
+## rather than font_title over btn_pad_v_s/space_lg -- which is what makes
+## three labelled pills fit the card's 880px trait row. At the full size
+## they overflowed it and clipped every label ("Akademis" -> "AKA").
 func _apply_specialty() -> void:
 	var chip: Button = $TraitRow/SpecialtyChip
-	chip.text = ""
+	chip.text = specialty
 	chip.tooltip_text = specialty
 	if SPECIALTY_ICONS.has(specialty):
 		chip.icon = load(SPECIALTY_ICONS[specialty])

@@ -127,3 +127,26 @@ func test_tutorial_scrim_is_gone() -> void:
 	assert_true(scene.get_node_or_null("ColorRect") == null,
 		"the vestigial tutorial ColorRect is still in the scene")
 	scene.free()
+
+
+## The papers sit on a wood desk with nothing lifting them off it. A
+## sibling TextureRect wearing the same soft_shadow material DayStickyNote
+## uses, drawn behind the card stack, blurs card_bg.png's own alpha
+## silhouette so the edge goes soft while the fill stays flat.
+func test_the_paper_stack_casts_a_soft_shadow() -> void:
+	var scene = load(_SCENE_PATH).instantiate()
+	var shadow := scene.get_node_or_null("Shadow") as TextureRect
+	# Resolve everything to bools BEFORE freeing: a freed Object reference
+	# compares equal to null in GDScript, so asserting on `shadow` itself
+	# after scene.free() would fail regardless of whether Shadow was there
+	# (test_run_result.gd:242 has the same hazard spelled out).
+	var found: bool = shadow != null
+	var is_shader: bool = shadow != null and shadow.material is ShaderMaterial
+	var behind: bool = shadow != null \
+		and shadow.get_index() < scene.get_node("KertasMurid6").get_index()
+	var tinted: bool = shadow != null and shadow.self_modulate.a < 1.0
+	scene.free()
+	assert_true(found, "report_card.tscn needs a Shadow TextureRect")
+	assert_true(is_shader, "Shadow needs the soft_shadow ShaderMaterial")
+	assert_true(behind, "Shadow must draw behind the paper stack")
+	assert_true(tinted, "Shadow must be a translucent tint, not opaque")

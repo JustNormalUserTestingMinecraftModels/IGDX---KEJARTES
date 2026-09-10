@@ -154,7 +154,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 91 suites, 1253 tests (2026-09-10).
+the Godot AI MCP `test_run` tool. 93 suites, 1309 tests (2026-09-11).
 
 Hard constraints, learned the hard way:
 
@@ -433,8 +433,15 @@ backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
 has to lead somewhere; nothing behind it is designed.
 
 **Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
-unscripted, nothing references it. The real win screen is `EndCutscene`'s win
-branch. Safe to delete.
+unscripted, nothing references it. The real win screen is `WinStage.tscn`,
+which EndCutscene shows and RunResult keeps blurred behind its report. Safe to
+delete.
+
+**Unreadable RunResult row names (2026-09-11).** `RunResultRow.tscn`'s
+`NameLabel` uses `ResultBodyLabel` (cream `text_on_brand`) on a `Card` panel,
+so "Minigame selesai" and the other five row names are nearly invisible. The
+bug predates the WinStage pass, which found it. The fix wants a dark body
+variation; check `ResultBodyLabel`'s other users before recolouring it.
 
 **Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove

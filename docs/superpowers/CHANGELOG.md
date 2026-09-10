@@ -8,6 +8,42 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — StatCheck on StudentCard's paper; one win stage for EndCutscene and RunResult
+
+Spec `docs/superpowers/specs/2026-09-11-statcheck-paper-and-shared-win-stage-design.md`,
+plan `docs/superpowers/plans/2026-09-11-statcheck-paper-and-shared-win-stage.md`.
+
+**StatCheck.** Each student's page is now StudentCard's own paper: `card_bg.png`
+with its `PaperShadow`, authored at native 1080×1920 inside `StatCheckCard.tscn`
+and scaled 0.757, so the 1321px sheet fills the 1000px card.
+- The photo sits in the frame printed on the paper.
+- The name sits alone on the printed brown plate, in the new `PlateNameLabel`
+  (Boohong 96, cream).
+- The three rows use the `StudentCard/stat_*.png` icons at StudentCard's
+  proportions (128px icon, 68px bar).
+- The bio lines are gone.
+
+Two tests guard the layout:
+- `card_bg.png`'s paper covers only x 52..1045, y 238..1558 of the texture. One
+  test maps that sheet through the paper's transform and fails if it leaves the
+  card or underfills it.
+- Another re-measures every roster name against the plate at the real font
+  size.
+
+**RunResult.** EndCutscene's painting, letterbox bars and posed roster moved
+into `Scenes/EndGame/WinStage.tscn` (`WinStage.gd`). EndCutscene and RunResult
+both instance it and dress it with the same line.
+
+RunResult used to cover the screen with the painting alone, cropped to
+1440×1920 with no students, so the blur hand-off jumped. Now its first frame is
+EndCutscene's last. Both verdicts were checked live through the rehearsal:
+- win: stage scale 0.703125 at y 240, with four students
+- loss: full-screen `cg_lose.jpg`
+
+The letterbox put RunResult's dark title on the navy bar, so the title moved to
+`ResultHeroLabel`. WinStage's root is a bare anchor that sizes its children in
+`dress()`, following the authoring guide's rule for instanced roots.
+
 ## 2026-09-10 — LombaMenari note camera
 
 Friday Night Funkin's note camera for the dance minigame. A successful arrow

@@ -223,3 +223,22 @@ func test_motion_is_wired() -> void:
 		"the visible cards must stagger in")
 	assert_true(src.contains("Juice.stagger_in(sticky_container.get_children()"),
 		"each card's five notes must stagger in when the card opens")
+
+
+## Part 3's generated art. All six are System.Drawing / hand-written SVG
+## placeholders, drop-replaceable at the same path with no code change.
+## icon_wirausaha is a genuine gap fix: StickyNote already tints for
+## Wirausaha via category_color(), so without it a Wirausaha day would be
+## the only note in the week strip with no glyph.
+func test_part_three_art_exists_and_loads() -> void:
+	var paths := [
+		"res://Assets/Images/UI/Placeholders/icon_wirausaha.svg",
+		"res://Assets/Images/UI/Placeholders/stamp_sudah.svg",
+		"res://Assets/Images/UI/Placeholders/stamp_belum.svg",
+		"res://Assets/Images/UI/StudentList/photo_corner.png",
+		"res://Assets/Images/UI/StudentList/roster_avatar_frame.png",
+		"res://Assets/Images/UI/StudentList/catatan_rule.png",
+	]
+	for p in paths:
+		assert_true(ResourceLoader.exists(p), "missing asset: " + p)
+		assert_true(load(p) is Texture2D, "not a Texture2D: " + p)

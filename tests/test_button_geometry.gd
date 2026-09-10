@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## Guards the button geometry system introduced 2026-09-08.
 ##
@@ -33,10 +33,26 @@ const RADIUS_EXEMPT := {
 		"chip -- stays radius_pill by design",
 	"PersonaBadge":
 		"chip -- stays radius_pill by design",
+	"SpecialtyBadge":
+		"chip -- stays radius_pill by design, like QuirkBadge and PersonaBadge",
+	"SpecialtyBadgeS":
+		"the compact S step of a chip -- inherits radius_pill from its base",
+	"PersonaBadgeS":
+		"the compact S step of a chip -- inherits radius_pill from its base",
+	"QuirkBadgeS":
+		"the compact S step of a chip -- inherits radius_pill from its base",
+	"SpecialtyBadgeM":
+		"the M step of a chip -- inherits radius_pill from its base",
+	"PersonaBadgeM":
+		"the M step of a chip -- inherits radius_pill from its base",
+	"QuirkBadgeM":
+		"the M step of a chip -- inherits radius_pill from its base",
 	"EventSelectCard":
 		"reads as a card, not a button -- radius_lg",
 	"CardArrowButton":
 		"fixed 120x120 square, so radius_pill yields an exact circle -- no height-dependent-radius risk",
+	"GhostButton":
+		"wash sits over the daily-login panel's baked capsule art (day1.png) -- radius_pill so the corner tracks the button's own height and always matches the art's rounded ends, deliberately height-dependent",
 }
 
 

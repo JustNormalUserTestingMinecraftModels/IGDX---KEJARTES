@@ -8,6 +8,18 @@ extends TextureRect
 ## schedule category via DesignTokens.category_color(), applied to
 ## self_modulate (not modulate) so the tint never bleeds into the
 ## child labels' own theme-driven font colors.
+##
+## The tint is washed toward white before it is applied. self_modulate
+## *multiplies* the paper texture, so a full-strength category color --
+## or text_secondary, which an unscheduled "-" day resolves to -- drives
+## the note dark enough that the dark-brown label text sitting on top of
+## it stops being legible on a phone. TINT_WASH keeps the category
+## readable as a hue while leaving the note light enough to write on.
+
+## How far each category color is pulled toward white before it is
+## multiplied into the paper. 0.0 is the raw token (illegible), 1.0 is
+## plain white paper with no category read at all.
+const TINT_WASH := 0.42
 
 ## Shown uppercased on DayLabel (e.g. "Senin" -> "SENIN").
 @export var day_name: String = "Senin":
@@ -23,10 +35,57 @@ extends TextureRect
 		activity = value
 		if is_node_ready():
 			$ActivityLabel.text = value
-			self_modulate = DesignTokens.load_default().category_color(value)
+			_apply_tint()
+
+## How far apart the three pin heights sit, in pixels. The note is 200
+## tall inside a 240 band, so slots 0/1/2 land at +0/+20/+40 and the
+## whole spread stays inside the strip -- it can never reach the trait
+## chips above or the teacher's note below.
+const PIN_STEP := 20.0
+
+## Which of the three heights this note hangs at: 0 up, 1 middle, 2
+## down. The five days on a card are dealt different slots so the strip
+## reads as hand-pinned rather than machine-aligned. The dealing is
+## deterministic per student and day (see _setup_students in
+## student_list.gd) -- a note must not jump to a new height every time
+## the player swipes back to that card.
+@export_range(0, 2) var pin_slot: int = 1:
+	set(value):
+		pin_slot = clampi(value, 0, 2)
+		if is_node_ready():
+			_apply_pin()
+
+## The schedule category's glyph, shown beside the activity name. Set
+## from student_list.gd per the day's scheduled category so every day in
+## the week strip reads at a glance.
+@export var icon_texture: Texture2D:
+	set(value):
+		icon_texture = value
+		if is_node_ready():
+			$Icon.texture = value
+
+
+## Wash this day's category color toward white and multiply it into the
+## paper. Kept in one place so the setter and _ready() cannot drift.
+func _apply_tint() -> void:
+	var raw: Color = DesignTokens.load_default().category_color(activity)
+	self_modulate = raw.lerp(Color.WHITE, TINT_WASH)
+
+
+## Drop the note to its pin height.
+##
+## Writes offset_top/bottom rather than `position` so the note keeps its
+## authored height: Juice.pop_in animates scale and alpha only, so this
+## offset survives the card's stagger-in untouched.
+func _apply_pin() -> void:
+	var drop := pin_slot * PIN_STEP
+	offset_top = drop
+	offset_bottom = drop + custom_minimum_size.y
 
 
 func _ready() -> void:
 	$DayLabel.text = day_name.to_upper()
 	$ActivityLabel.text = activity
-	self_modulate = DesignTokens.load_default().category_color(activity)
+	_apply_tint()
+	_apply_pin()
+	$Icon.texture = icon_texture

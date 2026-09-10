@@ -120,43 +120,67 @@ func test_no_hardcoded_colors_remain_in_the_script() -> void:
 	assert_eq(re.search_all(src).size(), 0, "script must read colors from DesignTokens, not Color() literals")
 
 
-## The mockup supplies the panel as art (cutscene_dialogue.png), so the box
-## draws a texture instead of the Card stylebox. The art is 1:1 with its
-## on-screen size, so it sits at its native 1080x1080 offset (0, 940),
-## which lands the opaque panel within 1px of the mockup on every edge --
-## see the spec, section 5.
-func test_dialogue_box_draws_the_mockup_panel_art() -> void:
-	var box := _scene.find_child("DialogueBox", true, false) as TextureRect
+## The mockup's panel art is gone: the box is now a themed rounded panel
+## on the Card variation, so a colour or radius change in design_tokens
+## reaches it like every other surface. It also no longer hangs 100px off
+## the bottom of a 1920-tall screen, which the art-backed version did.
+func test_dialogue_box_is_a_themed_rounded_panel() -> void:
+	var box := _scene.find_child("DialogueBox", true, false) as Panel
 	assert_true(box != null,
-		"DialogueBox is missing or is no longer a TextureRect")
-	assert_true(box.texture != null, "DialogueBox has no texture")
-	assert_eq(box.texture.resource_path,
-		"res://Assets/Images/UI/cutscene_dialogue.png",
-		"DialogueBox is not drawing the mockup's panel art")
-	assert_eq(box.offset_left, 0.0, "panel left")
-	assert_eq(box.offset_top, 940.0, "panel top")
-	assert_eq(box.offset_right, 1080.0, "panel right")
-	assert_eq(box.offset_bottom, 2020.0, "panel bottom (native 1080 tall)")
+		"DialogueBox is missing or is no longer a Panel")
+	assert_eq(box.theme_type_variation, &"Card",
+		"DialogueBox must take its rounded chrome from the theme")
+	assert_true(box.offset_bottom <= 1920.0,
+		"the panel must sit inside the screen, got bottom %f" % box.offset_bottom)
+	assert_true(box.offset_left >= 44.0,
+		"and clear the screen margin on the left, got %f" % box.offset_left)
+	assert_true(box.offset_right <= 1036.0,
+		"and on the right, got %f" % box.offset_right)
 
 
-## The text and the tap hint must both sit inside the panel's white content
-## area -- screen x 110-967, y 1148-1815, which is x 110-967, y 208-875 in
-## the box's own coordinates. Outside it they print over the orange frame.
-func test_dialogue_text_sits_inside_the_panel_content_area() -> void:
+## Retired with the art: nothing should still reference the panel PNG.
+func test_the_mockup_panel_art_is_no_longer_referenced() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/CutScene/cut_scene.tscn")
+	assert_false(src.contains("cutscene_dialogue.png"),
+		"the panel is a theme variation now, not a texture")
+
+
+func test_dialogue_text_uses_the_bigger_variation() -> void:
 	var label := _scene.get_node_or_null(
-		"DialogueBox/DialogueLabel") as Control
-	assert_true(label != null, "DialogueLabel is missing")
-	assert_true(label.offset_left >= 110.0, "text starts left of the frame")
-	assert_true(label.offset_right <= 967.0, "text runs past the right frame")
-	assert_true(label.offset_top >= 208.0, "text starts above the frame")
-	assert_true(label.offset_bottom <= 875.0, "text runs past the bottom frame")
+		"DialogueBox/DialogueLabel") as RichTextLabel
+	assert_true(label != null, "DialogueLabel is missing or is not a RichTextLabel")
+	assert_eq(label.theme_type_variation, &"CutsceneDialogue",
+		"the dialogue must take its larger size from the theme")
 
-	var hint := _scene.get_node_or_null("HintLabel") as Control
-	assert_true(hint != null, "HintLabel is missing")
-	assert_true(hint.offset_top >= 1148.0,
-		"the tap hint sits above the panel's content area")
-	assert_true(hint.offset_bottom <= 1815.0,
-		"the tap hint runs past the panel's content area")
+
+func test_dialogue_text_sits_inside_its_panel() -> void:
+	var box := _scene.find_child("DialogueBox", true, false) as Control
+	var label := _scene.get_node_or_null("DialogueBox/DialogueLabel") as Control
+	assert_true(box != null and label != null, "panel and label must both exist")
+	assert_true(label.offset_left >= 28.0,
+		"text is inset from the panel's left edge, got %f" % label.offset_left)
+	assert_true(label.offset_top >= 28.0,
+		"and from its top, got %f" % label.offset_top)
+	assert_true(label.offset_right <= box.size.x - 28.0,
+		"and stops before its right edge")
+	assert_true(label.offset_bottom <= box.size.y - 28.0,
+		"and before its bottom")
+
+
+## The old panel art had a hardcoded-position guard for HintLabel that
+## pinned it against superseded geometry. That test went away with the art,
+## leaving the hint unguarded. This replaces it by asserting the semantic
+## relationships that survive re-tuning: the hint sits below the new themed
+## panel and stays within the screen.
+func test_hint_label_sits_below_dialogue_box_within_screen() -> void:
+	var box := _scene.find_child("DialogueBox", true, false) as Control
+	var hint := _scene.find_child("HintLabel", true, false) as Control
+	assert_true(box != null and hint != null,
+		"both DialogueBox and HintLabel must exist")
+	assert_true(hint.offset_top >= box.offset_bottom,
+		"HintLabel must start below DialogueBox, got hint top %f vs box bottom %f" % [hint.offset_top, box.offset_bottom])
+	assert_true(hint.offset_bottom <= 1920.0,
+		"HintLabel must stay within the 1920-tall screen, got bottom %f" % hint.offset_bottom)
 
 
 ## Both were authored as hardcoded rects that miss 1080x1920 -- the CG

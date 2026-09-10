@@ -7,6 +7,235 @@ need to know why something is the way it is.
 Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
+
+## 2026-09-10 — StudentList: roster strip and card relayout (Warm UI, Part 3)
+
+Spec `docs/superpowers/specs/2026-09-10-studentlist-part-3-design.md`, plan
+`docs/superpowers/plans/2026-09-10-studentlist-part-3.md`. The last
+TutorialPanel-hosting screen without a dedicated design pass.
+
+**Why.** StudentList is the scheduling hub — AturJadwal routes here, you tap a
+student's paper card, it sends you back to AturJadwal to set their week. Four
+problems: (1) no roster-wide progress — you saw one student's `BELUM`/`SUDAH`
+state at a time and the page dots carried none, so finding the unscheduled
+student cost up to four taps; (2) ~330px of dead paper below a lopsided 3+2
+sticky-note grid; (3) nav arrows were literal `<` `>` pinned to the vertical
+centre of a 1920-tall screen; (4) `hobby_category` / `personality` / `quirk`
+were in the data and reached nothing on screen.
+
+**RosterCard extraction.** The four near-identical ~130-line `Murid1..4` card
+subtrees (~600 lines of `student_list.tscn`) became one `RosterCard.tscn` +
+`@tool class_name RosterCard` script, instanced four times. The instance names
+stay `Murid1..4` — `tests/test_student_list.gd` resolves `CardContainer/Murid%d`
+and the tutorial's step 1 targets `CardContainer` — so both contracts held with
+every pre-existing test still green. Six `@export`s on the root
+(`student_name`, `portrait_texture`, `specialty`, `persona`, `quirk`,
+`is_scheduled`) plus `static compose_catatan(persona, quirk)`: five persona
+openers × six quirk observations, thirty teacher's-notes from eleven strings,
+authored Indonesian in a `const` block.
+
+**Screen.** A `whiteboard.png` papan plaque behind `DAFTAR MURID`; a
+`RosterStrip` of four `RosterAvatar` slots above the carousel, each a portrait
+in a ring `self_modulate`-tinted `state_success` / `state_danger` by that
+student's scheduled state, tap to jump; nav row (arrows + page dots) dropped to
+y1730 where a thumb rests; `CardContainer` at x70–1010 / y310–1700.
+
+**Card interior.** Six bands: name + status stamp, framed portrait with
+photo-corner tape, a trait-chip row, the week as five sticky notes in one row
+(`SEN SEL RAB KAM JUM`, each with its schedule-category glyph), and the catatan
+guru filling the former dead band on a tiling rule.
+
+**Theme.** No new component and no `TraitChip` variation — `QuirkBadge` and
+`PersonaBadge` already ship as pill trait chips and a Godot `Button` has a
+native `icon`, so a chip is a themed `Button`. One new variation,
+`SpecialtyBadge` (neutral `surface_sunken` pill — the category colour rides on
+the chip's icon), built from existing tokens, added to `DISPLAY_ROSTER` and
+`test_button_geometry`'s `RADIUS_EXEMPT`, and the theme rebaked. `RosterAvatar`
+uses the existing `GhostButton` variation. The trait row is 96 tall, not the
+spec's 90, so the chip Buttons clear `touch_target_min`.
+
+**Page dots.** Moved from a runtime `Label.new()` with a bullet glyph to a
+`PageDot.tscn` template, lowering `test_viewport_editability`'s `BASELINE` for
+`student_list.gd` from **8 to 7**. `_update_page_indicators()` now tints the
+current dot gold and the rest by scheduled state, so roster progress reads in
+two places.
+
+**Tutorial.** Three steps to four — a new "Status Jadwal" step at index 1
+spotlights `RosterStrip`. The plan's "no new machinery" held for the spotlight
+target but not for the tutorial's `current_step` / `index` special-casing:
+inserting at 1 shifted Navigasi Card 1→2 and Pilih Murid 2→3, so `_switch_card`,
+`_on_card_pressed` and `_show_step`'s per-step branches were remapped.
+
+**Art.** Six generated placeholders (see CLAUDE.md's grouped list):
+`icon_wirausaha.svg` — a genuine gap, `StickyNote` tinted for Wirausaha but had
+no glyph — plus the two status stamps, photo-corner tape, the avatar state ring
+and the catatan rule.
+
+**Late fixes from the live pass.** Status badge text shortened to `BELUM` /
+`SUDAH` (the stamp ring carries the phrase) with `clip_text`; nav-arrow
+placeholder rotated sideways; nav arrows resized to the 128px `btn_h_m` step;
+`test_confirm_pair_semantics` repointed at `RosterCard.tscn` after the badges
+moved there.
+## 2026-09-10 — Minigame, sky and paper fixes
+
+Six independent fixes. Spec:
+`docs/superpowers/specs/2026-09-10-minigame-sky-and-paper-fixes-design.md`. Plan:
+`docs/superpowers/plans/2026-09-10-minigame-sky-and-paper-fixes.md`.
+
+**Badminton shuttle.** Twice the size, hit circle included (`puck_radius_frac`
+0.08), stood upright, and the cork now leads the flight: a racket hit turns it
+180°, a serve snaps it toward the receiver. The growth bug was the hit punch
+reading the sprite's live scale as its rest — a hit every 0.22 s against a
+0.52 s punch ratcheted it up. The shuttle's look moved into
+`ShuttlecockSprite.gd`, which remembers its authored pose and is tested by
+behaviour with `Tween.custom_step()`; the racket squash had the same flaw and
+got the same fix.
+
+**MainBola goalie.** `_setup_layout()` measured `get_viewport_rect()`, a 2×2
+stub inside the editor, so the whole scene was laid out in a 2×2 box and the
+goalie was rewritten on every layout. It now measures the root's `size`; the
+goalie's scene position is the truth, left alone in the editor and mapped onto
+the real screen in game by `design_to_screen()`. `goalie_depth_frac` is
+retired, and the scene is re-saved in design space.
+
+**BuatBatik pictures.** The tool slots are shuffled, then pictures were dealt
+by slot index. Each tool now authors its own `ToolTextureRect` (anchors mode,
+so its anchors are actually saved), so the picture travels with the tool; the
+emoji `IconLabel`s are gone and the ratchet dropped 8 → 7.
+
+**The day's sky.** A full turn, dawn 60 → evening −300, from the darkest frame
+back round to it, easing out — QUAD/OUT over 1.64 s per phase, tuned in Motion
+Lab, so a school day now takes 3.28 s on screen (was 4.0 s); smoothstep off.
+
+**Paper shadows.** `Scenes/UI/PaperShadow.tscn` inside each of the twelve
+StudentCard/ReportCard papers, drawn behind it, so a thrown paper takes its
+shadow along. The template is two nodes: an instance root under a plain
+`Control` is saved with a `layout_mode = 0` override that zeroes its rect on
+load, so the root is a bare anchor and a `Silhouette` child draws. The two
+static stack shadows are deleted.
+
+**LombaMenari backdrop.** `budaya_background.jpg` replaces `Gawang.jpg`,
+MainBola's football goal, and covers taller screens instead of stretching.
+
+**On the way.** Three editor traps, now in the authoring guide and CLAUDE.md:
+instance roots losing their rect, position-mode Controls not saving anchors,
+and `script_patch` matching bytes exactly on CRLF files. A scene save also
+reverted `BuatBatik.gd` from a stale script tab (rule 4b) before it was
+re-applied. Suite: 91 suites, 1258 tests, green.
+
+## 2026-09-10 — Delete the Loading screen
+
+`Scenes/Loading/loading.tscn` and `Scripts/Loading/loading.gd` are gone. The
+earlier transition pass had already routed CutScene and Splashscreen straight
+through the shared `Transition` wipe, and that wipe covers the scene-load gap on
+its own — the intermediate screen (a placeholder with a progress bar) added a
+second scene change for no benefit. A short-lived follow-up had re-wired
+CutScene → Loading → StudentCard through the wipe; this reverts that too, so
+both CutScene exits are a single `Transition.change_scene(_next_scene_path(),
+WIPE)` again.
+
+`tests/test_boot_screens.gd` drops its Loading half and now covers Splashscreen
+only. `GameState.next_scene` is left in place — an unused one-line `String` with
+a sensible MainMenu default, kept against a future scene heavy enough to want a
+real threaded-load screen.
+
+## 2026-09-10 — Asset refresh and UI pass
+
+Six independent changes driven by a batch of new art. Spec:
+`docs/superpowers/specs/2026-09-10-asset-refresh-and-ui-pass-design.md`. Plan:
+`docs/superpowers/plans/2026-09-10-asset-refresh-and-ui-pass.md`.
+
+**Asset intake.** 18 files in. Four were downscaled on the way: the project
+imports at `compress/mode=0`, so a source's pixel dimensions are its VRAM cost,
+and the seven daily-login panels at their native 7281x3231 would have been
+94 MB each — 658 MB. They ship at 1600x710. The sky went 3998² to 2048², the
+coin 1484x1192 to 256x206, the rank badges 1521x1471 to 512x495. Transparent
+PNGs were resized with alpha premultiplied and unpremultiplied; a straight
+LANCZOS resize on RGBA drags the RGB under fully-transparent pixels into the
+edges and fringes every rounded corner.
+
+**Two new theme variations.** `CutsceneDialogue` (RichTextLabel, body face,
+title size) and `GhostButton` (draws nothing at rest so baked art can be the
+button). Both built only from existing tokens, so no `DesignTokens` export was
+added and no editor restart was needed. `GhostButton` keeps `radius_pill` and
+is registered in `test_button_geometry`'s `RADIUS_EXEMPT`, because its one call
+site overlays a capsule baked into the daily-login art — the project's fixed
+20px radius undershoots it.
+
+**Intro cutscene.** The dialogue box was a `TextureRect` wearing
+`cutscene_dialogue.png`, 1080 tall from y=940 — 100px of it hung off the bottom
+of a 1920-tall screen. Now a `Panel` on the `Card` variation, inside the screen,
+sized to its text, with the copy stepping from 28 to 36. CG 2 and CG 4 replaced
+in place; `cut_scene.gd` preloads by path, so no code changed.
+
+**The sky sweeps once across the day.** `midday_rotation_degrees` is gone: the
+arc is one lerp between dawn and evening, and `SchoolDay` sweeps it once across
+both phases instead of resting the sky at a midday pose while the event popup
+is up. Total travel is unchanged. Accepted consequence: the event is
+player-blocking, so a slow player sees the sky reach evening early and hold.
+
+**Soft shadows.** `report_card.tscn`'s paper stack gets the same soft-shadow
+sibling `student_card.tscn` and `DayStickyNote` already use. The two Akademis
+minigames' cards shipped a 0.12-alpha 4px shadow that was invisible; deepened
+to 0.22/12/(0,6), and PilihanGanda's three choice-button styleboxes to
+0.25/12/(0,6). Those three already carried deliberate colour-coded fills —
+saturated green for correct, crimson for wrong — so only the shadow moved.
+
+**Lobby money chip and daily login.** `DisplayUang` was a 1920x1080
+pink/magenta landscape PNG with a label on top, and the only reason the chip
+was 332x187 instead of the 332x96 the layout wanted. Now a `Panel` on `Card` at
+332x96, bottom-aligned with `DailyLogin`, holding the shared coin and a
+`CoinLabel`; Koperasi and Inventory read the same coin. Daily login moved onto
+the new panel art, which bakes the whole seven-slot calendar with slot N lit —
+so the seven overlay tiles, their fourteen labels and the per-tile tint loop
+are all gone, and the day is a single texture swap.
+
+**RunResult.** Ten `+`/`-` bands collapse to five ranks (S 90 / A 75 / B 60 /
+C 45 / D) with badge art; `GradeLetter` is replaced by a `GradeBadge`
+`TextureRect` fed by five Inspector-assigned textures. The win backdrop was a
+wiring bug, not a redesign: `RunResult.gd` has always documented its backdrop
+as "the SAME image EndCutscene shows" but pointed at `cg_win.jpg` (735x865)
+while EndCutscene had moved to `win_background.png` (1536x2048). Blur lod,
+darkness and stretch already matched.
+
+**Placeholders and debt this pass left behind.** The new sky art has a stray
+night-street layer in its bottom-left corner that should be erased at source
+(it sits outside the visible area — see `CLAUDE.md`). The five rank thresholds
+are estimates awaiting the balance pass. `EndGameRehearsal.gd`'s comment
+still points at a spec describing the retired ten-band scheme, and
+`Assets/Images/CG/cg_win.jpg` is now orphaned. On RunResult the row *name*
+labels read faintly against the white rows — pre-existing, not touched here.
+The daily-login header reads "Daily Login" in English against the project's
+Indonesian-UI rule, at the user's explicit request.
+
+Suite went 1170 to 1198 tests across 84 to 86 suites, green throughout.
+
+**Merging `Textures` back in (2026-09-10).** Three files conflicted.
+`kejartes_theme.tres` is generated — resolved by taking either side and
+rebaking, which a full `test_run` does in-process. `CLAUDE.md` took the
+collaborator's audit, with this branch's two facts re-applied (the
+`BookClockWidget.tscn` `scene_open` hang, the stray layer in the
+day-transition sky) and their now-stale `DisplayUang` off-palette entry
+dropped, since the money-chip rebuild removed the last reference to that
+texture.
+
+Three breakages git could not see, all fixed here:
+
+- `test_cream_panel_tokens` and `test_ghost_track` call `assert_not_null()`,
+  which this branch's addon update deleted. They now extend
+  `McpTestSuiteCompat` like the project's other 22 such suites.
+- `test_the_lobby_claim_stays_a_success` asserted the claim button is a
+  `SuccessButton`. The daily-login rebuild moved the gold "claim me" pill
+  into the panel art, so the button is deliberately chrome-less
+  `GhostButton`. The test now checks the rule the colour split actually
+  protects — the claim is never an ordinary confirm or a destructive
+  action — and is renamed to say so.
+- `default_bus_layout.tres` arrived with the BGM bus muted
+  (`volume_db = inf_neg`), swept into `6367a31` by an editor boot rather
+  than intended. Reverted to the unmuted value.
+
+Merged suite: 1225 tests across 89 suites, green.
+
 ## 2026-09-10 — Cream panel language (Warm UI, Part 2)
 
 The mentor's second review: the AturJadwal card's olive green is drab, and each

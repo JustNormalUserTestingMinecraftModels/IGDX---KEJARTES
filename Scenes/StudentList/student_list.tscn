@@ -2,10 +2,14 @@
 
 [ext_resource type="Script" uid="uid://d3u4r180wpqlp" path="res://Scripts/StudentList/student_list.gd" id="1_wr76l"]
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="2_j8vmn"]
-[ext_resource type="Texture2D" uid="uid://d2cvc7nosdip2" path="res://Assets/Images/MuridPotrait/Murid1.jpg" id="2_v3e4w"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="3_ovxc5"]
-[ext_resource type="Texture2D" uid="uid://dlyxcrhuswotn" path="res://Assets/Images/UI/paper.png" id="3_paper"]
-[ext_resource type="PackedScene" uid="uid://cries6nb441ve" path="res://Scenes/StudentList/StickyNote.tscn" id="5_stickynote"]
+[ext_resource type="PackedScene" uid="uid://b701oo028pqff" path="res://Scenes/StudentList/RosterCard.tscn" id="5_cv71g"]
+[ext_resource type="Texture2D" uid="uid://cbmut1181ahes" path="res://Assets/Images/MuridPotrait/Marcel.png" id="6_b6t1o"]
+[ext_resource type="Texture2D" uid="uid://cqflsfhsknjiv" path="res://Assets/Images/MuridPotrait/Doni.png" id="7_hlb7e"]
+[ext_resource type="Texture2D" uid="uid://cut6sidb6r2ak" path="res://Assets/Images/MuridPotrait/Andi.png" id="8_de1xv"]
+[ext_resource type="Texture2D" uid="uid://d3cj0sh5sowq6" path="res://Assets/Images/MuridPotrait/Citra.png" id="9_y2vk7"]
+[ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="11_y2vk7"]
+[ext_resource type="PackedScene" uid="uid://c50fsdshij16h" path="res://Scenes/StudentList/RosterAvatar.tscn" id="13_35ggc"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_spotlight"]
 shader = ExtResource("3_ovxc5")
@@ -38,604 +42,156 @@ stretch_mode = 6
 
 [node name="HeaderLabel" type="Label" parent="." unique_id=892341201]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -300.0
-offset_top = 30.0
-offset_right = 300.0
-offset_bottom = 110.0
-grow_horizontal = 2
+offset_left = 190.0
+offset_top = 24.0
+offset_right = 890.0
+offset_bottom = 140.0
 theme_type_variation = &"H1Label"
-text = "DAFTAR MURID"
+text = "MURIDMU"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CardContainer" type="Control" parent="." unique_id=987123456]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -470.0
-offset_top = -830.0
-offset_right = 470.0
-offset_bottom = 750.0
+anchors_preset = 0
+offset_left = 50.0
+offset_top = 310.0
+offset_right = 1030.0
+offset_bottom = 1720.0
+
+[node name="Murid1" parent="CardContainer" unique_id=1291523057 instance=ExtResource("5_cv71g")]
+layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
+student_name = "Marcel"
+portrait_texture = ExtResource("6_b6t1o")
+specialty = "Akademis"
+persona = "Tekun"
+quirk = "Kutu Buku"
 
-[node name="Murid1" type="TextureRect" parent="CardContainer" unique_id=1144113555]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 0
-texture = ExtResource("3_paper")
-expand_mode = 1
-
-[node name="CardButton" type="Button" parent="CardContainer/Murid1" unique_id=1144113556]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Belum" type="Button" parent="CardContainer/Murid1" unique_id=1607246098]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 360.0
-offset_bottom = 141.0
-mouse_filter = 2
-theme_type_variation = &"DangerButton"
-text = "BELUM TERJADWALKAN"
-
-[node name="Sudah" type="Button" parent="CardContainer/Murid1" unique_id=123021075]
-visible = false
-layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 360.0
-offset_bottom = 141.0
-mouse_filter = 2
-theme_type_variation = &"SuccessButton"
-text = "SUDAH TERJADWALKAN"
-
-[node name="Nama" type="Label" parent="CardContainer/Murid1" unique_id=1164132710]
-layout_mode = 0
-offset_left = 380.0
-offset_top = 45.0
-offset_right = 900.0
-offset_bottom = 125.0
-theme_type_variation = &"H2Label"
-text = "Hamamiya"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="Portrait" type="TextureRect" parent="CardContainer/Murid1" unique_id=543210987]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -230.0
-offset_top = 155.0
-offset_right = 230.0
-offset_bottom = 615.0
-grow_horizontal = 2
-mouse_filter = 2
-texture = ExtResource("2_v3e4w")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="StickyNotesContainer" type="Control" parent="CardContainer/Murid1" unique_id=765432109]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -440.0
-offset_top = -920.0
-offset_right = 440.0
-offset_bottom = -30.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-
-[node name="Senin" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=857761668 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 20.0
-offset_top = 40.0
-offset_right = 280.0
-offset_bottom = 300.0
-mouse_filter = 2
-
-[node name="Selasa" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=1499677925 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 310.0
-offset_top = 40.0
-offset_right = 570.0
-offset_bottom = 300.0
-mouse_filter = 2
-day_name = "Selasa"
-
-[node name="Rabu" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=323241185 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 600.0
-offset_top = 40.0
-offset_right = 860.0
-offset_bottom = 300.0
-mouse_filter = 2
-day_name = "Rabu"
-
-[node name="Kamis" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=1607444755 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 165.0
-offset_top = 330.0
-offset_right = 425.0
-offset_bottom = 590.0
-mouse_filter = 2
-day_name = "Kamis"
-
-[node name="Jumat" parent="CardContainer/Murid1/StickyNotesContainer" unique_id=880559361 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 455.0
-offset_top = 330.0
-offset_right = 715.0
-offset_bottom = 590.0
-mouse_filter = 2
-day_name = "Jumat"
-
-[node name="Murid2" type="TextureRect" parent="CardContainer" unique_id=981124888]
+[node name="Murid2" parent="CardContainer" unique_id=1830802273 instance=ExtResource("5_cv71g")]
 visible = false
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
-texture = ExtResource("3_paper")
-expand_mode = 1
+student_name = "Doni"
+portrait_texture = ExtResource("7_hlb7e")
+specialty = "Olahraga"
+persona = "Aktif"
+quirk = "Semangat Juang"
 
-[node name="CardButton" type="Button" parent="CardContainer/Murid2" unique_id=981124889]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Belum" type="Button" parent="CardContainer/Murid2" unique_id=1656984498]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 360.0
-offset_bottom = 141.0
-mouse_filter = 2
-theme_type_variation = &"DangerButton"
-text = "BELUM TERJADWALKAN"
-
-[node name="Sudah" type="Button" parent="CardContainer/Murid2" unique_id=2109842934]
-visible = false
-layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 360.0
-offset_bottom = 141.0
-mouse_filter = 2
-theme_type_variation = &"SuccessButton"
-text = "SUDAH TERJADWALKAN"
-
-[node name="Nama" type="Label" parent="CardContainer/Murid2" unique_id=1575886457]
-layout_mode = 0
-offset_left = 380.0
-offset_top = 45.0
-offset_right = 900.0
-offset_bottom = 125.0
-theme_type_variation = &"H2Label"
-text = "Ambatukam"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="Portrait" type="TextureRect" parent="CardContainer/Murid2" unique_id=543210988]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -230.0
-offset_top = 155.0
-offset_right = 230.0
-offset_bottom = 615.0
-grow_horizontal = 2
-mouse_filter = 2
-texture = ExtResource("2_v3e4w")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="StickyNotesContainer" type="Control" parent="CardContainer/Murid2" unique_id=765432110]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -440.0
-offset_top = -920.0
-offset_right = 440.0
-offset_bottom = -30.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-
-[node name="Senin" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=475777445 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 20.0
-offset_top = 40.0
-offset_right = 280.0
-offset_bottom = 300.0
-mouse_filter = 2
-
-[node name="Selasa" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=1479542953 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 310.0
-offset_top = 40.0
-offset_right = 570.0
-offset_bottom = 300.0
-mouse_filter = 2
-day_name = "Selasa"
-
-[node name="Rabu" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=486030669 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 600.0
-offset_top = 40.0
-offset_right = 860.0
-offset_bottom = 300.0
-mouse_filter = 2
-day_name = "Rabu"
-
-[node name="Kamis" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=1132963549 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 165.0
-offset_top = 330.0
-offset_right = 425.0
-offset_bottom = 590.0
-mouse_filter = 2
-day_name = "Kamis"
-
-[node name="Jumat" parent="CardContainer/Murid2/StickyNotesContainer" unique_id=472368283 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 455.0
-offset_top = 330.0
-offset_right = 715.0
-offset_bottom = 590.0
-mouse_filter = 2
-day_name = "Jumat"
-
-[node name="Murid3" type="TextureRect" parent="CardContainer" unique_id=311519847]
+[node name="Murid3" parent="CardContainer" unique_id=1911810822 instance=ExtResource("5_cv71g")]
 visible = false
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
-texture = ExtResource("3_paper")
-expand_mode = 1
+student_name = "Andi"
+portrait_texture = ExtResource("8_de1xv")
+specialty = "SeniBudaya"
+persona = "Kreatif"
+quirk = "Penasaran"
 
-[node name="CardButton" type="Button" parent="CardContainer/Murid3" unique_id=311519848]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Belum" type="Button" parent="CardContainer/Murid3" unique_id=973775119]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 360.0
-offset_bottom = 141.0
-mouse_filter = 2
-theme_type_variation = &"DangerButton"
-text = "BELUM TERJADWALKAN"
-
-[node name="Sudah" type="Button" parent="CardContainer/Murid3" unique_id=844380401]
-visible = false
-layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 360.0
-offset_bottom = 141.0
-mouse_filter = 2
-theme_type_variation = &"SuccessButton"
-text = "SUDAH TERJADWALKAN"
-
-[node name="Nama" type="Label" parent="CardContainer/Murid3" unique_id=218609318]
-layout_mode = 0
-offset_left = 380.0
-offset_top = 45.0
-offset_right = 900.0
-offset_bottom = 125.0
-theme_type_variation = &"H2Label"
-text = "Zeta"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="Portrait" type="TextureRect" parent="CardContainer/Murid3" unique_id=543210989]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -230.0
-offset_top = 155.0
-offset_right = 230.0
-offset_bottom = 615.0
-grow_horizontal = 2
-mouse_filter = 2
-texture = ExtResource("2_v3e4w")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="StickyNotesContainer" type="Control" parent="CardContainer/Murid3" unique_id=765432111]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -440.0
-offset_top = -920.0
-offset_right = 440.0
-offset_bottom = -30.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-
-[node name="Senin" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=196663787 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 20.0
-offset_top = 40.0
-offset_right = 280.0
-offset_bottom = 300.0
-mouse_filter = 2
-
-[node name="Selasa" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=1381663213 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 310.0
-offset_top = 40.0
-offset_right = 570.0
-offset_bottom = 300.0
-mouse_filter = 2
-day_name = "Selasa"
-
-[node name="Rabu" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=437369894 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 600.0
-offset_top = 40.0
-offset_right = 860.0
-offset_bottom = 300.0
-mouse_filter = 2
-day_name = "Rabu"
-
-[node name="Kamis" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=2115518920 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 165.0
-offset_top = 330.0
-offset_right = 425.0
-offset_bottom = 590.0
-mouse_filter = 2
-day_name = "Kamis"
-
-[node name="Jumat" parent="CardContainer/Murid3/StickyNotesContainer" unique_id=928317486 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 455.0
-offset_top = 330.0
-offset_right = 715.0
-offset_bottom = 590.0
-mouse_filter = 2
-day_name = "Jumat"
-
-[node name="Murid4" type="TextureRect" parent="CardContainer" unique_id=1912832907]
+[node name="Murid4" parent="CardContainer" unique_id=651970866 instance=ExtResource("5_cv71g")]
 visible = false
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
-texture = ExtResource("3_paper")
-expand_mode = 1
+student_name = "Citra"
+portrait_texture = ExtResource("9_y2vk7")
+specialty = "Olahraga"
+persona = "Seni Dalam Kesunyian"
+quirk = "Penyendiri"
 
-[node name="CardButton" type="Button" parent="CardContainer/Murid4" unique_id=1912832908]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="RosterStrip" type="Control" parent="." unique_id=1975431278]
+anchors_preset = 0
+offset_left = 70.0
+offset_top = 128.0
+offset_right = 1010.0
+offset_bottom = 278.0
+mouse_filter = 2
 
-[node name="Belum" type="Button" parent="CardContainer/Murid4" unique_id=1893544]
+[node name="Avatar1" parent="RosterStrip" unique_id=575583481 instance=ExtResource("13_35ggc")]
+modulate = Color(1, 1, 1, 0.55)
 layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 360.0
-offset_bottom = 141.0
-mouse_filter = 2
-theme_type_variation = &"DangerButton"
-text = "BELUM TERJADWALKAN"
+offset_left = 68.0
+offset_right = 218.0
+offset_bottom = 150.0
 
-[node name="Sudah" type="Button" parent="CardContainer/Murid4" unique_id=488498106]
-visible = false
+[node name="Avatar2" parent="RosterStrip" unique_id=1908388971 instance=ExtResource("13_35ggc")]
+modulate = Color(1, 1, 1, 0.55)
 layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 360.0
-offset_bottom = 141.0
-mouse_filter = 2
-theme_type_variation = &"SuccessButton"
-text = "SUDAH TERJADWALKAN"
+offset_left = 286.0
+offset_right = 436.0
+offset_bottom = 150.0
 
-[node name="Nama" type="Label" parent="CardContainer/Murid4" unique_id=132510110]
+[node name="Avatar3" parent="RosterStrip" unique_id=1778939044 instance=ExtResource("13_35ggc")]
+modulate = Color(1, 1, 1, 0.55)
 layout_mode = 0
-offset_left = 380.0
-offset_top = 45.0
-offset_right = 900.0
-offset_bottom = 125.0
-theme_type_variation = &"H2Label"
-text = "Bocchi"
-horizontal_alignment = 2
-vertical_alignment = 1
+offset_left = 504.0
+offset_right = 654.0
+offset_bottom = 150.0
 
-[node name="Portrait" type="TextureRect" parent="CardContainer/Murid4" unique_id=543210990]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -230.0
-offset_top = 155.0
-offset_right = 230.0
-offset_bottom = 615.0
-grow_horizontal = 2
-mouse_filter = 2
-texture = ExtResource("2_v3e4w")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="StickyNotesContainer" type="Control" parent="CardContainer/Murid4" unique_id=765432112]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -440.0
-offset_top = -920.0
-offset_right = 440.0
-offset_bottom = -30.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-
-[node name="Senin" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=426519226 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
+[node name="Avatar4" parent="RosterStrip" unique_id=481300966 instance=ExtResource("13_35ggc")]
+modulate = Color(1, 1, 1, 0.55)
 layout_mode = 0
-offset_left = 20.0
-offset_top = 40.0
-offset_right = 280.0
-offset_bottom = 300.0
-mouse_filter = 2
-
-[node name="Selasa" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=964603021 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 310.0
-offset_top = 40.0
-offset_right = 570.0
-offset_bottom = 300.0
-mouse_filter = 2
-day_name = "Selasa"
-
-[node name="Rabu" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=655103121 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 600.0
-offset_top = 40.0
-offset_right = 860.0
-offset_bottom = 300.0
-mouse_filter = 2
-day_name = "Rabu"
-
-[node name="Kamis" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=1917549899 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 165.0
-offset_top = 330.0
-offset_right = 425.0
-offset_bottom = 590.0
-mouse_filter = 2
-day_name = "Kamis"
-
-[node name="Jumat" parent="CardContainer/Murid4/StickyNotesContainer" unique_id=1218424600 instance=ExtResource("5_stickynote")]
-self_modulate = Color(0.41960785, 0.45490196, 0.5647059, 1)
-layout_mode = 0
-offset_left = 455.0
-offset_top = 330.0
-offset_right = 715.0
-offset_bottom = 590.0
-mouse_filter = 2
-day_name = "Jumat"
+offset_left = 722.0
+offset_right = 872.0
+offset_bottom = 150.0
 
 [node name="LeftArrow" type="Button" parent="." unique_id=654321098]
-custom_minimum_size = Vector2(0, 96)
+custom_minimum_size = Vector2(160, 96)
 layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 10.0
-offset_top = -80.0
-offset_right = 90.0
-offset_bottom = 80.0
-grow_vertical = 2
+offset_left = 70.0
+offset_top = 1772.0
+offset_right = 230.0
+offset_bottom = 1900.0
 theme_type_variation = &"SecondaryButtonL"
-text = "<"
+
+[node name="Arrow" type="TextureRect" parent="LeftArrow" unique_id=878613917]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 28.0
+offset_right = -40.0
+offset_bottom = -28.0
+rotation = 1.5708
+pivot_offset = Vector2(40, 36)
+mouse_filter = 2
+texture = ExtResource("11_y2vk7")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="RightArrow" type="Button" parent="." unique_id=654321099]
-custom_minimum_size = Vector2(0, 96)
+custom_minimum_size = Vector2(160, 96)
 layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -90.0
-offset_top = -80.0
-offset_right = -10.0
-offset_bottom = 80.0
-grow_horizontal = 0
-grow_vertical = 2
+offset_left = 850.0
+offset_top = 1772.0
+offset_right = 1010.0
+offset_bottom = 1900.0
 theme_type_variation = &"SecondaryButtonL"
-text = ">"
+
+[node name="Arrow" type="TextureRect" parent="RightArrow" unique_id=231399703]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 28.0
+offset_right = -40.0
+offset_bottom = -28.0
+rotation = -1.5708
+pivot_offset = Vector2(40, 36)
+mouse_filter = 2
+texture = ExtResource("11_y2vk7")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="PageIndicator" type="HBoxContainer" parent="." unique_id=654321100]
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = -80.0
-offset_right = 200.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 0
+offset_left = 400.0
+offset_top = 1794.0
+offset_right = 680.0
+offset_bottom = 1878.0
 alignment = 1
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=1408146570]

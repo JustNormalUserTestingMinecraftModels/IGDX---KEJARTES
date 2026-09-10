@@ -1,9 +1,9 @@
 @tool
 extends McpTestSuiteCompat
 
-## The school day used to be one continuous sky sweep with the event
-## landing at a random 50-80% of it. It is now three named poses and two
-## transitions, with the event pinned to midday.
+## The school day was one continuous sweep, then three named poses with
+## the event pinned to midday, and is now two poses and one uninterrupted
+## sweep: the sky no longer rests mid-day while the event popup is up.
 ##
 ## Must be @tool; no test here may be a coroutine -- which is why
 ## transition_to is tested by inspecting the Tween it returns rather
@@ -24,43 +24,48 @@ func _widget() -> BookClockWidget:
 	return w
 
 
-func test_three_poses_are_exports_not_magic_numbers() -> void:
+func test_both_poses_are_exports_not_magic_numbers() -> void:
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
-	for knob in ["dawn_rotation_degrees", "midday_rotation_degrees",
-			"evening_rotation_degrees"]:
+	for knob in ["dawn_rotation_degrees", "evening_rotation_degrees"]:
 		assert_contains(src, "@export var %s" % knob,
 			"each pose must be tunable in the Inspector")
+
+
+func test_retired_the_midday_pose() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_false(src.contains("midday_rotation_degrees"),
+		"the midday angle is derived from the arc now, not authored")
 
 
 func test_retired_the_single_sweep_exports() -> void:
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
 	for retired in ["start_rotation_degrees", "total_rotation_degrees"]:
 		assert_false(src.contains(retired),
-			"%s is superseded by the three pose exports" % retired)
+			"%s is superseded by the two pose exports" % retired)
 
 
 func test_each_pose_sits_on_the_sky_it_is_named_for() -> void:
-	# The arc was 0 / -90 / -180 -- inherited from the old start 0 /
-	# total -180 sweep -- until a screenshot showed 0 renders as NIGHT.
-	# The original docstring claimed 0 was "morning", so the art and the
-	# naming had disagreed since the sweep was written. Shifted one
-	# quarter-turn so dawn is morning breaking, midday is full day and
-	# evening is dusk.
+	# Picked from a 12-angle contact sheet of the real composite on
+	# 2026-09-10: 60 shows the same frame as -300, the darkest one.
 	var w := _widget()
-	assert_eq(w.dawn_rotation_degrees, -90.0, "dawn should be morning breaking")
-	assert_eq(w.midday_rotation_degrees, -180.0, "midday should be full bright day")
-	assert_eq(w.evening_rotation_degrees, -270.0, "evening should be dusk")
+	assert_eq(w.dawn_rotation_degrees, 60.0, "dawn should open on the dark sky")
+	assert_eq(w.evening_rotation_degrees, -300.0, "evening should close on the dark sky")
+	w.free()
+
+
+func test_the_day_is_one_full_turn() -> void:
+	# Dark to dark on the same frame: dawn sits exactly one turn above
+	# evening, so sunrise, midday and dusk all pass in between.
+	var w := _widget()
+	assert_true(is_equal_approx(w.dawn_rotation_degrees - w.evening_rotation_degrees, 360.0),
+		"the sky should turn exactly one full circle across the day")
 	w.free()
 
 
 func test_the_day_still_sweeps_counter_clockwise() -> void:
-	# The mechanism reference's arrows: the sky turns one way across the
-	# day. Re-anchoring the arc must not have flipped its direction.
 	var w := _widget()
-	assert_true(w.midday_rotation_degrees < w.dawn_rotation_degrees,
-		"midday must sit further counter-clockwise than dawn")
-	assert_true(w.evening_rotation_degrees < w.midday_rotation_degrees,
-		"evening must sit further counter-clockwise than midday")
+	assert_true(w.evening_rotation_degrees < w.dawn_rotation_degrees,
+		"evening must sit further counter-clockwise than dawn")
 	w.free()
 
 
@@ -70,9 +75,6 @@ func test_set_phase_snaps_the_sky_to_each_pose() -> void:
 	w.set_phase(BookClockWidget.Phase.DAWN)
 	assert_true(is_equal_approx(sky.rotation_degrees, w.dawn_rotation_degrees),
 		"DAWN should place the sky at its dawn angle")
-	w.set_phase(BookClockWidget.Phase.MIDDAY)
-	assert_true(is_equal_approx(sky.rotation_degrees, w.midday_rotation_degrees),
-		"MIDDAY should place the sky at its midday angle")
 	w.set_phase(BookClockWidget.Phase.EVENING)
 	assert_true(is_equal_approx(sky.rotation_degrees, w.evening_rotation_degrees),
 		"EVENING should place the sky at its evening angle")
@@ -81,7 +83,7 @@ func test_set_phase_snaps_the_sky_to_each_pose() -> void:
 
 func test_transition_to_returns_its_tween_so_schoolday_can_await_it() -> void:
 	var w := _widget()
-	var tween := w.transition_to(BookClockWidget.Phase.MIDDAY, 1.0)
+	var tween := w.transition_to(BookClockWidget.Phase.EVENING, 1.0)
 	assert_not_null(tween, "transition_to must hand its Tween back to the caller")
 	assert_true(tween is Tween, "and it must actually be a Tween")
 	tween.kill()
@@ -96,15 +98,16 @@ func test_transition_duration_is_a_single_tunable_knob() -> void:
 
 
 func test_transition_carries_the_tuned_motion_lab_preset() -> void:
-	# Chosen in motion-lab on 2026-09-07: SINE/IN_OUT over 2.0s. A sine
-	# ease-in-out is the gentlest of the twelve at both ends, which is
-	# what a sky wheeling overhead wants -- no snap into or out of rest.
+	# Tuned in motion-lab on 2026-09-10 for the full-turn day: QUAD/OUT over
+	# 1.64s per phase. The day sets off briskly from dawn and settles into
+	# evening, and the whole sweep (two phases) takes 3.28s.
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
-	assert_contains(src, "Tween.TRANS_SINE", "the tuned transition is SINE")
-	assert_contains(src, "Tween.EASE_IN_OUT", "the tuned ease is IN_OUT")
+	assert_contains(src, "Tween.TRANS_QUAD", "the tuned transition is QUAD")
+	assert_contains(src, "Tween.EASE_OUT", "the day eases out")
+	assert_false(src.contains("Tween.EASE_IN_OUT"), "the in-out ease is retired")
 	var w := _widget()
-	assert_true(is_equal_approx(w.transition_duration, 2.0),
-		"the tuned duration is 2.0s, got %f" % w.transition_duration)
+	assert_true(is_equal_approx(w.transition_duration, 1.64),
+		"the tuned duration is 1.64s per phase, got %f" % w.transition_duration)
 	w.free()
 
 
@@ -123,26 +126,30 @@ func test_schoolday_paces_both_phases_off_the_clock() -> void:
 		"both day phases should take their length from the clock")
 
 
-func test_set_progress_still_maps_through_the_midday_pose() -> void:
-	# Old callers and the day progress bar keep working, and the middle
-	# of the day now lands exactly on the midday pose rather than
-	# halfway along one long sweep.
+func test_the_arc_is_one_straight_lerp_between_the_two_poses() -> void:
+	# With midday gone, progress 0.5 is the arithmetic middle of the arc
+	# by construction rather than a separately authored angle.
 	var w := _widget()
 	w.set_progress(0.5)
-	assert_true(is_equal_approx(w.current_rotation_degrees(), w.midday_rotation_degrees),
-		"progress 0.5 should sit on the midday pose, got %f" % w.current_rotation_degrees())
+	var want := (w.dawn_rotation_degrees + w.evening_rotation_degrees) * 0.5
+	assert_true(is_equal_approx(w.current_rotation_degrees(), want),
+		"progress 0.5 should sit halfway along the arc, got %f want %f"
+			% [w.current_rotation_degrees(), want])
 	w.free()
 
 
-func test_midday_pose_can_be_moved_independently() -> void:
-	# The point of naming the middle pose: it is no longer forced to be
-	# the arithmetic mean of the other two.
-	var w := _widget()
-	w.midday_rotation_degrees = -120.0
-	w.set_progress(0.5)
-	assert_true(is_equal_approx(w.current_rotation_degrees(), -120.0),
-		"a retuned midday pose should be honoured, got %f" % w.current_rotation_degrees())
-	w.free()
+func test_schoolday_sweeps_the_sky_once_across_the_whole_day() -> void:
+	# The sky used to be handed two transitions with the event between
+	# them, so it visibly froze at midday behind the popup. One call now,
+	# spanning both phases.
+	var src := FileAccess.get_file_as_string(SCHOOLDAY_SCRIPT)
+	# Count CALL sites, not mentions: each one is guarded by a
+	# has_method("transition_to") test, so the bare string appears twice
+	# per sweep and counting it would read 2 for a single call.
+	assert_eq(src.count(".call(\"transition_to\""), 1,
+		"the sky is swept exactly once per day")
+	assert_false(src.contains("BookClockWidget.Phase.MIDDAY"),
+		"nothing drives the sky to a midday pose any more")
 
 
 func test_rotation_stays_monotone_across_the_whole_day() -> void:
@@ -157,11 +164,11 @@ func test_rotation_stays_monotone_across_the_whole_day() -> void:
 	w.free()
 
 
-func test_event_fires_at_midday_not_at_a_random_afternoon_point() -> void:
+func test_event_fires_at_the_days_halfway_point_not_a_random_afternoon_point() -> void:
 	var src := FileAccess.get_file_as_string(SCHOOLDAY_SCRIPT)
 	assert_contains(src, "EVENT_TRIGGER_PCT",
 		"the event trigger point must be a named const")
 	assert_contains(src, "const EVENT_TRIGGER_PCT := 50.0",
-		"the event must land on the midday pose")
+		"the event must land at the 50% point of the day, there is no midday pose to land on any more")
 	assert_false(src.contains("randf_range(0.5, 0.8)"),
 		"the event should no longer land at a random point in the day")

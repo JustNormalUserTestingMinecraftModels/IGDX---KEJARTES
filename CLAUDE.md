@@ -27,9 +27,11 @@ passes.
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay (simulate
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
-Splashscreen and Loading still exist and are tested but are no longer reached at
-all: CutScene and Splashscreen went through `Transition` on 2026-09-10, so
-nothing routes to Loading any more. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+Splashscreen still exists and is tested but nothing routes to it (the game
+boots straight to MainMenu, which loads in one hop). The Loading screen was
+deleted on 2026-09-10: the shared `Transition` wipe covers the scene-load gap,
+so the intermediate screen was dead weight. All navigation is a single
+`Transition.change_scene(target, …)`. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
 **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
 to the hub rather than the Lobby.
 
@@ -152,7 +154,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 85 suites, 1133 tests (2026-09-10).
+the Godot AI MCP `test_run` tool. 91 suites, 1253 tests (2026-09-10).
 
 Hard constraints, learned the hard way:
 
@@ -202,6 +204,11 @@ godot-ai`, kill those, leave `Godot_v*.exe` alone. If instead
 
 `logs_read(source="editor")` catches parse errors that never reach the game
 log; `source="game"` misses boot-time failures entirely.
+
+`scene_open` on `Scenes/SchoolSimulation/BookClockWidget.tscn` hangs the
+editor — the call times out, the MCP transport write-pauses, the plugin
+disconnects, and the editor needs a restart. Cause unconfirmed; verify that
+widget via `project_run` instead, which exercises it fine.
 
 ## Working efficiently here
 
@@ -259,14 +266,21 @@ through the editor: `scene_open` → `node_create` / `node_set_property` /
 node in one call. Gotchas: `anchors_preset` is inert (set the four anchors),
 numbers must be unquoted (`1`, not `"1.0"`), `node_create` appends last so
 z-order needs `move_node`, and a node's *type* can only be changed by
-delete-and-recreate.
+delete-and-recreate. A `Control` created under a plain `Control` starts in
+position mode, where anchors are **not saved** — set `layout_mode = 1` first;
+and an instanced scene's root loses its rect on load under a plain `Control`,
+so draw from a child (authoring guide, Pattern C).
 
 **4b. Two save hazards that silently eat work.**
 
 - *`scene_save` flushes stale script buffers.* The editor holds `.gd` files
-  open and writes them over whatever you patched; `script_patch` does not
-  protect you. Do **scene work first, script work second**, and after any
-  `scene_save` check `git diff HEAD -- '*.gd'` for files you were not editing.
+  open in script tabs and writes every tab back on each scene save, over
+  whatever you patched; `script_patch` does not protect you. Do **scene work
+  first, script work second**; after any `scene_save` check
+  `git diff HEAD -- '*.gd'` for files you were not editing; and once you have
+  patched a script, restart the editor before the next `scene_save` — a
+  force-kill is safe once scenes are saved, and the relaunch reloads every tab
+  from disk (2026-09-10: skipping it reverted `BuatBatik.gd`).
 - *Overrides serialise only on an instanced scene's ROOT.* Properties set on an
   instance's **children** report success and are dropped on save. Give the
   sub-scene `@export`s on its root instead — why `ShopHubTile` carries
@@ -278,7 +292,9 @@ delete-and-recreate.
 edited from *outside* the editor (any plain write, including a subagent's), a
 **no-op `script_patch` on that same file** forces the reload — it logs a benign
 `GDScript reload failed with error code 43` and then works. Cheapest reliable
-fix: make edits through `script_patch` in the first place.
+fix: make edits through `script_patch` in the first place. It matches bytes
+exactly: on a CRLF file a multi-line anchor misses, so normalise the file to LF
+first (git stores LF either way, `* text=auto eol=lf`).
 
 **Editing a `class_name` script breaks the next game run.** After patching
 `DesignTokens.gd` or similar, `project_run` fails with *Could not find script
@@ -336,9 +352,34 @@ result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
 event-popup set (`icon_event_*`, `bg_event_*`, `particle_burst.png`),
 `shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`,
-`EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, and the
+`EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, the
 2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,
-`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`).
+`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
+and the 2026-09-10 StudentList Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
+(completed the six-category placeholder set; now UNREFERENCED -- StudentList's
+category and specialty glyphs use the team's authored `StudentCard/stat_*`
+art instead, so this is kept only as the one wirausaha glyph in the
+placeholder family), `UI/Placeholders/stamp_sudah.svg` /
+`stamp_belum.svg` (status-badge rubber-stamp rings), and
+`UI/StudentList/photo_corner.png` / `roster_avatar_frame.png` / `catatan_rule.png`
+(portrait tape, the avatar state ring, the teacher's-note rule — the last two
+drawn white so `self_modulate` tints them from tokens), and
+`UI/StudentList/page_dot.png` (a filled dot -- tinting the hollow ring above
+it reads as invisible on a phone).
+
+**`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
+opaque only across rows 262..1578 and columns 47..1033, its bottom-right
+corner is cut away to a transparent wedge, and its body is flat pure white
+(96% of sampled opaque pixels are exactly 255,255,255) -- there is no paper
+texture in it to preserve. So a card stretching it paints across only the
+middle two thirds of its own rect, with a diagonal hole near the bottom, and
+any band laid out against the full rect lands on the desk behind. Cropping
+does not fix this: the wedge is interior, not margin. StudentList's
+RosterCard therefore carries a `Sheet` Panel on the `Card` variation instead
+-- an opaque themed surface that fills the node and brings its own stylebox
+shadow. Prefer that for any new card; reach for `paper.png` only where the
+cut corner is the point. Measure the alpha before laying out on any
+soft-edged texture.
 
 Three carry constraints a replacement **must** honour:
 
@@ -351,9 +392,14 @@ Three carry constraints a replacement **must** honour:
   rasterises SVG through ThorVG, which drops text elements on import.
   `tests/test_end_cutscene.gd` guards this with a pixel check.
 
-**Off-palette art.** `Assets/Images/UI/Desain tanpa judul.png` (`DisplayUang`)
-is pink/magenta against warm chrome, and is a 1920x1080 landscape image — which
-is why the lobby HUD chip is 332x187 rather than 332x96.
+**Stray layer in the day-transition sky (2026-09-10).**
+`Assets/Images/SchoolDay/transition_background.png` has a bluish night street
+scene pasted into its bottom-left corner (texture space roughly x 0..375,
+y 1833..2047) that should be erased at source. It sits outside the texture's
+inscribed circle — `BookClockWidget.gd`'s `_fit_layers()` makes the visible
+radius exactly `1024 / sky_cover_margin` regardless of pivot or screen size,
+and the artifact sits at radius ~1041, so any `sky_cover_margin` at or above
+1.0 keeps it off screen. Do not "fix" it by lowering that margin.
 
 **Audio placeholders.** These `AudioDirector` cue ids alias existing streams:
 `sfx_specialty_match`, `tally`, `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
@@ -378,19 +424,17 @@ the ban in `## Conventions` forbids. The trait popup was fixed the same way on
 `MONEY_FULL_MARKS`) are estimates; `LombaMenari.best_combo` is tracked but not
 fed into the star rubric; the item skill-boost values in
 `ItemDatabase.DEFAULT_ITEMS` (3–8) are untested against
-`tests/test_balance_pacing.gd`.
+`tests/test_balance_pacing.gd`. `RunGrade.LETTER_BANDS`' five rank
+floors (S 90 / A 75 / B 60 / C 45) are estimates set when the scheme collapsed
+from ten +/- bands on 2026-09-10, never played against a real run.
 
 **Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` is a blurred
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
 has to lead somewhere; nothing behind it is designed.
 
-**Dead scenes.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
+**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
 unscripted, nothing references it. The real win screen is `EndCutscene`'s win
-branch. Safe to delete. `Scenes/Loading/loading.tscn` joined it on 2026-09-10 —
-kept deliberately, unwired, against a future scene slow enough to need a real
-threaded-load screen. Its script and `GameState.next_scene` are intact and
-`tests/test_boot_screens.gd` still covers them, but no call site reaches it, so
-nothing proves it still works in a running game.
+branch. Safe to delete.
 
 **Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
@@ -417,10 +461,16 @@ what each would need, is in the authoring guide's "Known gaps" section.
 
 ## Current work
 
-Branch `Textures` (also main). Nothing in flight.
+Branch `feat/asset-refresh-ui-pass`, off `Textures` (main), with `Textures`
+merged back into it on 2026-09-10. The asset refresh and UI pass is complete
+and pushed, not yet merged; the StudentList Warm UI Part 3 pass, and the
+minigame, sky and paper fixes, are committed on top. See
+`docs/superpowers/CHANGELOG.md`.
 
 Open: Plan C's RunResult redesign,
-`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
+`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass
+already replaced RunResult's grade letter with five rank badges and fixed its
+win backdrop, so re-read the plan against the current screen before acting.
 
 ## Maintaining this file
 

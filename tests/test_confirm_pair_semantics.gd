@@ -80,18 +80,31 @@ func test_the_cutscene_skip_and_grade_choice_are_not_destructive() -> void:
 ## they are status badges reading BELUM/SUDAH TERJADWALKAN. The colour IS
 ## the information, so the confirm-pair rule must not touch them.
 func test_the_schedule_status_badges_keep_their_colours() -> void:
-	var src := _read("res://Scenes/StudentList/student_list.tscn")
-	assert_ne(src, "", "could not open student_list.tscn")
+	# The status badges moved into RosterCard.tscn when the four inline
+	# Murid card subtrees were extracted into one template (2026-09-10
+	# Warm UI Part 3). The intent is unchanged: BELUM/SUDAH still encode
+	# state with colour, so the confirm-pair rule must not touch them.
+	var src := _read("res://Scenes/StudentList/RosterCard.tscn")
+	assert_ne(src, "", "could not open RosterCard.tscn")
 	assert_contains(src, "DangerButton",
-		"BELUM TERJADWALKAN encodes state, not a destructive action")
+		"the BELUM badge encodes state, not a destructive action")
 	assert_contains(src, "SuccessButton",
-		"SUDAH TERJADWALKAN encodes state, not a reward")
+		"the SUDAH badge encodes state, not a reward")
 
 
 ## Claiming a reward is the one case where something is genuinely earned
-## rather than confirmed, which is what SuccessButton is for.
-func test_the_lobby_claim_stays_a_success() -> void:
+## rather than confirmed. It used to say so with SuccessButton. Since the
+## 2026-09-10 daily-login rebuild the panel art bakes the bright gold
+## "claim me" pill itself, so the button is GhostButton and draws no chrome
+## of its own -- a SuccessButton here would paint a green pill on top of the
+## gold one. The rule the colour split protects is unchanged: the claim is
+## never restyled as an ordinary confirm or as a destructive action.
+func test_the_lobby_claim_is_never_a_confirm_or_a_danger() -> void:
 	var src := _read("res://Scenes/Lobby/loby.tscn")
 	assert_ne(src, "", "could not open loby.tscn")
-	assert_contains(src, "SuccessButton",
-		"CLAIM is a reward, not a confirmation")
+	assert_contains(src, "GhostButton",
+		"CLAIM sits on the panel art's own pill and must draw no chrome")
+	assert_false(src.contains("DangerButton"),
+		"CLAIM is a reward, not a destructive action")
+	assert_false(src.contains("SecondaryButton"),
+		"CLAIM is a reward, not an ordinary confirm")

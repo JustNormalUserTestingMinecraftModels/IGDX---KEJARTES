@@ -4,17 +4,19 @@
 [ext_resource type="Script" uid="uid://c47ib8or275b3" path="res://Scripts/StudentList/StickyNote.gd" id="2_o72i2"]
 
 [node name="StickyNote" type="TextureRect" unique_id=159726911]
-custom_minimum_size = Vector2(260, 260)
+self_modulate = Color(0.765, 0.712, 0.663, 1)
+custom_minimum_size = Vector2(162, 200)
 texture = ExtResource("1_iwtuy")
 expand_mode = 1
 script = ExtResource("2_o72i2")
 
 [node name="DayLabel" type="Label" parent="." unique_id=594998491]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 56.0
 rotation = -0.05
 theme_type_variation = &"TitleLabel"
 text = "SENIN"
@@ -22,13 +24,26 @@ horizontal_alignment = 1
 
 [node name="ActivityLabel" type="Label" parent="." unique_id=1314440149]
 layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 134.0
+offset_right = -6.0
+offset_bottom = -6.0
 rotation = -0.05
-theme_type_variation = &"CaptionLabel"
 text = "-"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
+
+[node name="Icon" type="TextureRect" parent="." unique_id=834816331]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -34.0
+offset_top = 60.0
+offset_right = 34.0
+offset_bottom = 128.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6

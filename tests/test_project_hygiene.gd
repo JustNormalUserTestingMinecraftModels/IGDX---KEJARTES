@@ -143,3 +143,47 @@ func test_semester_end_and_its_row_template_are_gone() -> void:
 			"res://Scenes/EndGame/ResultStatRow.tscn",
 			"res://Scripts/EndGame/ResultStatRow.gd"]:
 		assert_false(FileAccess.file_exists(path), path + " must be deleted")
+
+
+## Every suite calling the restored non-null assertion must extend
+## McpTestSuiteCompat rather than McpTestSuite.
+##
+## The 2026-09-09 godot-ai addon update deleted that assertion from the
+## vendored addons/godot_ai/testing/test_suite.gd with no replacement.
+## tests/mcp_test_suite_compat.gd restores it and every caller was moved onto
+## the shim -- except three, missed until 2026-09-10, when the editor logged
+## them as "Failed to load script ... Parse error".
+##
+## This is worth a guard because of where the failure hides. test_run does
+## name a broken suite, under `load_errors`, but it cannot instantiate it, so
+## none of its tests run and `failed` stays 0. A run that reads as green is
+## therefore compatible with a suite that never executed: the three misses
+## cost 3 suites and 14 tests without moving the failure count off zero.
+## Asserting it here turns that quiet line into a red test.
+##
+## Two deliberate details. It reads each file as TEXT instead of loading it,
+## because the very failure being guarded is a script that cannot be loaded.
+## And it builds the method name by concatenation so this file does not match
+## its own needle -- writing the literal here would make the guard report
+## itself as an offender.
+func test_every_non_null_assertion_caller_extends_the_compat_shim() -> void:
+	var needle := "assert_not_" + "null("
+	var offenders: Array[String] = []
+	for suite_path in _all_files_under("res://tests", ".gd"):
+		# The shim declares the method; it cannot be asked to extend itself.
+		if suite_path.ends_with("/mcp_test_suite_compat.gd"):
+			continue
+		var text := FileAccess.get_file_as_string(suite_path)
+		if not text.contains(needle):
+			continue
+		var on_the_shim := false
+		for line in text.split("\n"):
+			if line.strip_edges() == "extends McpTestSuiteCompat":
+				on_the_shim = true
+				break
+		if not on_the_shim:
+			offenders.append(suite_path)
+	assert_eq(offenders.size(), 0,
+		"the non-null assertion lives on McpTestSuiteCompat, not the vendored "
+			+ "McpTestSuite -- these call it without extending the shim: "
+			+ ", ".join(offenders))

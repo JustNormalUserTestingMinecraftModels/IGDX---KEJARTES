@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dv5bscxw2v678"]
+
+[ext_resource type="Shader" uid="uid://bmdrhc1vicis" path="res://Scripts/Shaders/soft_shadow.gdshader" id="1_qq6w2"]
+
+[resource]
+shader = ExtResource("1_qq6w2")
+shader_parameter/blur = 2.5

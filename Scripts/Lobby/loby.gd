@@ -58,15 +58,8 @@ const HAND_FALLBACK_NAME := "Doni"
 @onready var daily_login_btn = $DailyLogin
 @onready var daily_reward = $DailyReward
 @onready var claim_button = $DailyReward/ButtonClaim
-@onready var day_nodes = {
-	1: $DailyReward/Day1,
-	2: $DailyReward/Day2,
-	3: $DailyReward/Day3,
-	4: $DailyReward/Day4,
-	5: $DailyReward/Day5,
-	6: $DailyReward/Day6,
-	7: $DailyReward/Day7,
-}
+@onready var reward_coin = $DailyReward/RewardCoin
+@onready var reward_amount = $DailyReward/RewardAmount
 
 @onready var portraits_back: Control = $StudentPortraitsContainer_Back
 @onready var portraits_front: Control = $StudentPortraitsContainer_Front
@@ -85,6 +78,26 @@ const HAND_FALLBACK_NAME := "Doni"
 ]
 
 const DAILY_REWARD := 10
+
+## Modulate alpha applied to ButtonClaim / RewardCoin / RewardAmount once
+## today's reward is already claimed. The panel art always draws the same
+## bright gold "claim me" pill regardless of state, and GhostButton draws no
+## chrome of its own, so this dim is the only visible cue that the day's
+## claim is done once the button goes disabled.
+const CLAIMED_CUE_DIM_ALPHA := 0.4
+
+## The daily-login panel, one frame per streak day. The art bakes all
+## seven slots with the active one lit, so the whole calendar is a single
+## texture swap -- there are no per-day nodes to tint any more.
+const DAY_PANELS: Array[Texture2D] = [
+	preload("res://Assets/Images/UI/DailyLogin/day1.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day2.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day3.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day4.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day5.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day6.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day7.png"),
+]
 
 @export_group("Tutorial")
 ## Steps shown the first time the player reaches the Lobby.
@@ -639,34 +652,24 @@ func _check_daily_login_reset():
 		# lewat lebih dari 1 hari tanpa klaim, streak reset ke Day1
 		GameState.daily_login_day = 1
 
-func _update_daily_login_visual():
-	var today = Time.get_date_string_from_system()
-	var already_claimed_today = GameState.last_claim_date == today
-	var tokens := DesignTokens.load_default()
+func _update_daily_login_visual() -> void:
+	var today := Time.get_date_string_from_system()
+	var already_claimed_today: bool = GameState.last_claim_date == today
 
-	# Claimed/past days dim to text_disabled; today's still-unclaimed day
-	# glows with the project's currency color; future days stay a
-	# half-opacity white preview.
-	var claimed_tint := tokens.text_disabled
-	claimed_tint.a = 1.0
-	var current_tint := tokens.currency_gold
-	current_tint.a = 1.0
-	var future_tint := Color.WHITE
-	future_tint.a = 0.5
-
-	for day_num in day_nodes.keys():
-		var node = day_nodes[day_num]
-		if not node:
-			continue
-		if day_num < GameState.daily_login_day:
-			node.modulate = claimed_tint
-		elif day_num == GameState.daily_login_day:
-			node.modulate = claimed_tint if already_claimed_today else current_tint
-		else:
-			node.modulate = future_tint
+	if daily_reward:
+		var day := clampi(GameState.daily_login_day, 1, DAY_PANELS.size())
+		daily_reward.texture = DAY_PANELS[day - 1]
 
 	if claim_button and claim_button is BaseButton:
 		claim_button.disabled = already_claimed_today
+
+	# The art has no separate "claimed" frame, so dim the affordance nodes
+	# directly -- restore full modulate once a new day makes the claim
+	# available again.
+	var claim_dim_alpha := CLAIMED_CUE_DIM_ALPHA if already_claimed_today else 1.0
+	for node in [claim_button, reward_coin, reward_amount]:
+		if node:
+			node.modulate.a = claim_dim_alpha
 
 func _on_daily_login_pressed():
 	if reward_popup_open:
@@ -685,15 +688,10 @@ func _show_daily_reward():
 	blur_mat.set_shader_parameter("lod", 0.0)
 	blur_mat.set_shader_parameter("darkness", 0.0)
 
-	# Pop the whole popup in, then stagger the seven day tiles in behind it
-	# so the panel doesn't read as a flat, static screenshot.
+	# Pop the whole panel in -- the art bakes all seven slots, so there are
+	# no separate tiles left to stagger in behind it.
 	daily_reward.visible = true
 	Juice.pop_in(daily_reward)
-	var ordered_days: Array = []
-	for day_num in range(1, 8):
-		if day_nodes.has(day_num):
-			ordered_days.append(day_nodes[day_num])
-	Juice.stagger_in(ordered_days)
 
 	var tween = create_tween().set_parallel(true)
 	tween.tween_method(_set_blur_lod, 0.0, 3.0, 0.25).set_ease(Tween.EASE_OUT)
@@ -768,7 +766,6 @@ func _on_claim_pressed():
 		AudioDirector.play_sfx(&"error")
 		return
 
-	var claimed_day := GameState.daily_login_day
 	var old_money := GameState.player_money
 
 	GameState.player_money += DAILY_REWARD
@@ -777,9 +774,9 @@ func _on_claim_pressed():
 	_update_money_display(old_money)
 	_update_daily_login_visual()
 
-	var claimed_node: Control = day_nodes.get(claimed_day)
-	if claimed_node:
-		Juice.pop_in(claimed_node)
+	# The tiles are gone -- the panel itself is what pops now.
+	if daily_reward:
+		Juice.pop_in(daily_reward)
 	AudioDirector.play_sfx(&"reward")
 
 	GameState.daily_login_day += 1

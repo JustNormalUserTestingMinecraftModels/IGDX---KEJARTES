@@ -23,8 +23,10 @@ const PRESET_CAMPUR := "campur"
 ## rather than the win/lose narrative above -- see RunGrade.gd's weights
 ## (targets 55%, minigames 20%, money 15%, events 10%). Each is tuned so
 ## RunGrade.score()/letter() lands solidly inside one band, assuming the
-## debug roster's fixed 4 students / 12 academic targets. Full arithmetic:
-## docs/superpowers/specs/2026-09-05-tesnotice-grade-scenarios-design.md
+## debug roster's fixed 4 students / 12 academic targets. Full arithmetic is
+## inline on REHEARSAL_STATS below, not in
+## docs/superpowers/specs/2026-09-05-tesnotice-grade-scenarios-design.md,
+## which still describes the retired ten-band scheme.
 const PRESET_GRADE_A := "grade_a"
 const PRESET_GRADE_B := "grade_b"
 const PRESET_GRADE_C := "grade_c"
@@ -200,10 +202,11 @@ const ENTRY_SCENE := "res://Scenes/EndGame/TesNotice.tscn"
 ##
 ## RunGrade weights targets 55%, minigame win-rate 20%, wirausaha money 15%
 ## and event participation 10% (Scripts/EndGame/RunGrade.gd:15-21). An
-## empty tally would therefore cap even a perfect roster near a C+ and hide
-## the A-range the lulus preset exists to show, so each preset carries a
-## tally matching its ambition. `money` is measured against
-## RunGrade.MONEY_FULL_MARKS (20000).
+## empty tally would therefore cap even a perfect roster at a plain C (the
+## 55-point target component alone, with the five-rank C band running
+## 45-60) and hide the A-range the lulus preset exists to show, so each
+## preset carries a tally matching its ambition. `money` is measured
+## against RunGrade.MONEY_FULL_MARKS (20000).
 const REHEARSAL_STATS := {
 	PRESET_LULUS: {
 		"won": 8, "lost": 1, "points": 64.0, "items": 6,
@@ -219,10 +222,19 @@ const REHEARSAL_STATS := {
 	},
 	# Grade-letter scenarios. Cleared-ratio comes from CLEARED_COUNTS above;
 	# money/minigames/events here are tuned to land the total score a few
-	# points inside the target band (see the design spec for the arithmetic).
+	# points inside the target band for RunGrade's five ranks (S >= 90,
+	# A >= 75, B >= 60, C >= 45, else D -- see RunGrade.LETTER_BANDS). Against
+	# the fixed 4-student / 12-target debug roster and RunGrade.score()'s
+	# arithmetic: grade A lands at 82.41 (A band 75-90, ~7 points clear of
+	# both the A floor and the S floor above it); grade B lands at 67.25 (B
+	# band 60-75); grade C lands at 52.17 (C band 45-60, ~7 points clear of
+	# both the C floor and the B floor above it); grade D lands at 25.19, but
+	# its letter is forced to "D" regardless of score because 4/12 targets
+	# (1.0 of 3.0 stars) fails check_semester_passed()'s 2.0-star threshold.
+	# Re-run RunGrade.score() by hand before retuning any of these.
 	PRESET_GRADE_A: {
 		"won": 6, "lost": 5, "points": 20.0, "items": 4,
-		"money": 20000, "events": 4,
+		"money": 12000, "events": 3,
 	},
 	PRESET_GRADE_B: {
 		"won": 6, "lost": 4, "points": 24.0, "items": 3,
@@ -230,7 +242,7 @@ const REHEARSAL_STATS := {
 	},
 	PRESET_GRADE_C: {
 		"won": 0, "lost": 0, "points": 0.0, "items": 1,
-		"money": 10000, "events": 0,
+		"money": 14000, "events": 2,
 	},
 	PRESET_GRADE_D: {
 		"won": 1, "lost": 6, "points": -18.0, "items": 1,

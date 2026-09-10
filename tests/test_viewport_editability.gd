@@ -71,7 +71,7 @@ const BASELINE: Dictionary = {
 	"res://Scripts/Minigames/Akademis/Variabel.gd": 4,
 	"res://Scripts/Minigames/Olahraga/Badminton.gd": 8,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd": 2,
-	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 8,
+	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 7,
 	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 4,
 	"res://Scripts/Minigames/UI/BaseMinigame.gd": 4,
 	"res://Scripts/Minigames/UI/MinigameTutorial.gd": 12,
@@ -83,7 +83,7 @@ const BASELINE: Dictionary = {
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 9,
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
 	"res://Scripts/StudentCard/student_card.gd": 1,
-	"res://Scripts/StudentList/student_list.gd": 8,
+	"res://Scripts/StudentList/student_list.gd": 7,
 	"res://Scripts/TutorialArrow.gd": 1,
 }
 

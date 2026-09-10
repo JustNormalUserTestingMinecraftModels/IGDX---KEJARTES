@@ -37,12 +37,25 @@ extends Control
 ## than the blur and made the swap read as a sudden drop in brightness.
 @export var blur_darkness: float = 0.3
 
+@export_group("Rank badges")
+## Shown for an S rank. The art draws its own letter and RANK ribbon, so
+## there is no text label beside it.
+@export var rank_badge_s: Texture2D
+## Shown for an A rank.
+@export var rank_badge_a: Texture2D
+## Shown for a B rank.
+@export var rank_badge_b: Texture2D
+## Shown for a C rank.
+@export var rank_badge_c: Texture2D
+## Shown for a D rank, which is also every failed run.
+@export var rank_badge_d: Texture2D
+
 @onready var backdrop: TextureRect = $Backdrop
 ## Between Backdrop and the report UI: the shader samples what is already
 ## drawn, so the image blurs and the report stays sharp.
 @onready var blur_layer: ColorRect = $BlurLayer
 @onready var rows_box: VBoxContainer = $MarginContainer/Column/RowsBox
-@onready var grade_letter: Label = $MarginContainer/Column/GradeCard/GradeStack/GradeLetter
+@onready var grade_badge: TextureRect = $MarginContainer/Column/GradeCard/GradeStack/GradeBadge
 @onready var grade_caption: Label = $MarginContainer/Column/GradeCard/GradeStack/GradeCaption
 @onready var title_label: Label = $MarginContainer/Column/TitleLabel
 @onready var btn_selesai: Button = $MarginContainer/Column/BtnSelesai
@@ -59,18 +72,13 @@ const ICON_BARANG := preload("res://Assets/Images/UI/Placeholders/icon_barang.sv
 const ICON_UANG := preload("res://Assets/Images/UI/Placeholders/icon_uang.svg")
 const ICON_EVENT := preload("res://Assets/Images/UI/Placeholders/icon_event.svg")
 
-## One caption per letter band, so the grade says something rather than
-## just scoring something.
+## One caption per rank, so the grade says something rather than just
+## scoring something.
 const GRADE_CAPTIONS := {
-	"A+": "Sempurna. Tidak ada yang tertinggal.",
+	"S": "Sempurna. Tidak ada yang tertinggal.",
 	"A": "Luar biasa. Kelas ini beruntung punya kamu.",
-	"A-": "Sangat baik. Hampir sempurna.",
-	"B+": "Baik sekali. Masih ada ruang untuk rapi.",
 	"B": "Baik. Targetnya tercapai.",
-	"B-": "Cukup baik. Beberapa hal bisa lebih halus.",
-	"C+": "Lulus, dengan perjuangan.",
 	"C": "Lulus tipis. Lain kali lebih awal.",
-	"C-": "Nyaris tidak lulus, tapi lulus.",
 	"D": "Belum berhasil. Mereka masih menunggumu.",
 }
 
@@ -86,7 +94,7 @@ func _ready() -> void:
 	_dress_backdrop()
 
 	title_label.text = "Hasil %s" % GameState.get_grade_name()
-	grade_letter.text = ""
+	grade_badge.texture = null
 	grade_caption.text = ""
 
 	_build_rows()
@@ -178,26 +186,33 @@ func _play_reveal() -> void:
 	_slam_grade()
 
 
-func _slam_grade() -> void:
-	var tokens := DesignTokens.load_default()
-	grade_letter.text = _grade_text
-	grade_caption.text = String(GRADE_CAPTIONS.get(_grade_text, ""))
-	grade_letter.add_theme_color_override("font_color",
-		tokens.state_success if RunGrade.is_top_grade(_grade_text)
-		else (tokens.state_danger if _grade_text == "D" else tokens.currency_gold))
+## The badge for a rank. Falls back to D, which is also the failed-run
+## rank, so an unmapped string can never leave the card empty.
+func _badge_for(rank: String) -> Texture2D:
+	match rank:
+		"S": return rank_badge_s
+		"A": return rank_badge_a
+		"B": return rank_badge_b
+		"C": return rank_badge_c
+		_: return rank_badge_d
 
-	Juice.set_pivot_center(grade_letter)
-	grade_letter.scale = Vector2(3.0, 3.0)
-	grade_letter.modulate.a = 0.0
+
+func _slam_grade() -> void:
+	grade_badge.texture = _badge_for(_grade_text)
+	grade_caption.text = String(GRADE_CAPTIONS.get(_grade_text, ""))
+
+	Juice.set_pivot_center(grade_badge)
+	grade_badge.scale = Vector2(3.0, 3.0)
+	grade_badge.modulate.a = 0.0
 
 	var t := Juice.tokens()
-	var tw := grade_letter.create_tween().set_parallel(true)
-	tw.tween_property(grade_letter, "scale", Vector2.ONE, t.dur_fast) \
+	var tw := grade_badge.create_tween().set_parallel(true)
+	tw.tween_property(grade_badge, "scale", Vector2.ONE, t.dur_fast) \
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
-	tw.tween_property(grade_letter, "modulate:a", 1.0, t.dur_instant)
+	tw.tween_property(grade_badge, "modulate:a", 1.0, t.dur_instant)
 	tw.chain().tween_callback(func() -> void:
 		AudioDirector.play_sfx(&"stamp")
-		Juice.shake(grade_letter.get_parent(), 8.0)
+		Juice.shake(grade_badge.get_parent(), 8.0)
 		if RunGrade.is_top_grade(_grade_text):
 			AudioDirector.play_sfx(&"reward")
 		elif _grade_text == "D":

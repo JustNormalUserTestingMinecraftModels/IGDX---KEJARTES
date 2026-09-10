@@ -127,3 +127,8 @@ func test_tutorial_scrim_is_gone() -> void:
 	assert_true(scene.get_node_or_null("ColorRect") == null,
 		"the vestigial tutorial ColorRect is still in the scene")
 	scene.free()
+
+
+## The papers' soft shadow is no longer one static node behind the stack: each
+## paper carries its own PaperShadow.tscn so it flies with the paper. That
+## contract lives in tests/test_paper_shadow.gd (2026-09-10).

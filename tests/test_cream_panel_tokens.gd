@@ -1,5 +1,5 @@
 @tool
-extends McpTestSuite
+extends McpTestSuiteCompat
 
 ## The four tokens behind AturJadwal's cream activity row.
 ##

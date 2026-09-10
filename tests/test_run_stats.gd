@@ -117,21 +117,19 @@ func test_letter_is_d_when_the_run_failed() -> void:
 	assert_eq(RunGrade.letter(100.0, false), "D", "a loss is always D")
 
 
+## Updated 2026-09-10 for the five-rank scheme (Task 9) -- the exact floor
+## edges are covered precisely by tests/test_run_grade_ranks.gd; this keeps
+## one representative value per band here, same as before the collapse.
 func test_letter_bands_on_a_win() -> void:
-	assert_eq(RunGrade.letter(96.0, true), "A+", "95+ is A+")
-	assert_eq(RunGrade.letter(88.0, true), "A", "88 is A")
-	assert_eq(RunGrade.letter(80.0, true), "A-", "80 is A-")
-	assert_eq(RunGrade.letter(72.0, true), "B+", "72 is B+")
-	assert_eq(RunGrade.letter(64.0, true), "B", "64 is B")
-	assert_eq(RunGrade.letter(56.0, true), "B-", "56 is B-")
-	assert_eq(RunGrade.letter(48.0, true), "C+", "48 is C+")
-	assert_eq(RunGrade.letter(40.0, true), "C", "40 is C")
-	assert_eq(RunGrade.letter(0.0, true), "C-", "below 40 is C-")
+	assert_eq(RunGrade.letter(92.0, true), "S", "90+ is S")
+	assert_eq(RunGrade.letter(80.0, true), "A", "75-89 is A")
+	assert_eq(RunGrade.letter(64.0, true), "B", "60-74 is B")
+	assert_eq(RunGrade.letter(48.0, true), "C", "45-59 is C")
+	assert_eq(RunGrade.letter(0.0, true), "D", "below 45 is D")
 
 
-func test_is_top_grade_only_for_the_a_band() -> void:
-	assert_true(RunGrade.is_top_grade("A+"), "A+ is top")
+func test_is_top_grade_only_for_s_and_a() -> void:
+	assert_true(RunGrade.is_top_grade("S"), "S is top")
 	assert_true(RunGrade.is_top_grade("A"), "A is top")
-	assert_true(RunGrade.is_top_grade("A-"), "A- is top")
-	assert_false(RunGrade.is_top_grade("B+"), "B+ is not top")
+	assert_false(RunGrade.is_top_grade("B"), "B is not top")
 	assert_false(RunGrade.is_top_grade("D"), "D is not top")

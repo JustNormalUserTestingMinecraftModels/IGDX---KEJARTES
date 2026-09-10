@@ -93,12 +93,13 @@ func test_money_label_uses_count_up_not_a_direct_set() -> void:
 		"a coin sfx must fire when money increases")
 
 
-func test_daily_login_uses_stagger_and_pop_in() -> void:
+func test_daily_login_uses_pop_in() -> void:
+	# The seven day tiles (and their stagger_in) are gone with them -- the
+	# panel art bakes the whole calendar, so opening and claiming both just
+	# pop the one panel node.
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("Juice.stagger_in("),
-		"the seven day tiles must stagger in when the panel opens")
 	assert_true(src.contains("Juice.pop_in("),
-		"the claimed tile must pop in")
+		"the panel must pop in on open and on claim")
 	assert_true(src.contains('AudioDirector.play_sfx(&"reward")'),
 		"claiming a day must play a reward sfx")
 
@@ -114,9 +115,6 @@ func test_scene_instantiates() -> void:
 	assert_true(_lobby.get_node_or_null("DisplayUang/Label") != null, "missing money label")
 	assert_true(_lobby.get_node_or_null("DailyReward/ButtonClaim") != null,
 		"missing claim button")
-	for i in range(1, 8):
-		assert_true(_lobby.get_node_or_null("DailyReward/Day%d" % i) != null,
-			"missing Day%d" % i)
 
 
 func test_scene_has_no_theme_overrides() -> void:
@@ -195,18 +193,11 @@ func test_labels_use_theme_variations() -> void:
 
 	var money := _lobby.get_node_or_null("DisplayUang/Label") as Label
 	assert_true(money != null, "missing money label")
-	assert_eq(money.theme_type_variation, &"BarLabel", "money label variation")
+	assert_eq(money.theme_type_variation, &"CoinLabel", "money label variation")
 
 	var header := _lobby.get_node_or_null("DailyReward/Label") as Label
 	assert_true(header != null, "missing Daily Reward header label")
 	assert_eq(header.theme_type_variation, &"H1Label", "Daily Reward header variation")
-
-	for i in range(1, 8):
-		for sub in ["Label", "Label2"]:
-			var lbl := _lobby.get_node_or_null(
-				"DailyReward/Day%d/%s" % [i, sub]) as Label
-			assert_true(lbl != null, "missing Day%d/%s" % [i, sub])
-			assert_eq(lbl.theme_type_variation, &"CaptionLabel", "Day%d/%s variation" % [i, sub])
 
 
 func _lobby_source() -> String:
@@ -233,10 +224,13 @@ func test_inventory_button_is_wired() -> void:
 		"Inventory must route to the inventory scene")
 
 
-func test_claim_button_uses_success_button_variation() -> void:
+## Changed with the panel-art rebuild: the baked art now draws its own gold
+## claim pill, so the button itself must draw nothing (GhostButton) rather
+## than layering a second, redundant SuccessButton chrome on top of it.
+func test_claim_button_uses_ghost_button_variation() -> void:
 	var claim := _lobby.get_node_or_null("DailyReward/ButtonClaim") as Button
 	assert_true(claim != null, "missing claim button")
-	assert_eq(claim.theme_type_variation, &"SuccessButton", "claim button variation")
+	assert_eq(claim.theme_type_variation, &"GhostButton", "claim button variation")
 
 
 func test_loose_stylebox_files_are_gone_and_unreferenced() -> void:
@@ -254,6 +248,23 @@ func test_theme_factory_bakes_lobby_nav_button_variation() -> void:
 		"baked theme must include the LobbyNavTile variation")
 	assert_true(theme.get_type_list().has("LobbyCtaButton"),
 		"baked theme must include the LobbyCtaButton variation")
+
+
+## Regression guard (2026-09-10). The claim pill's own art never changes
+## between claimed/unclaimed, and GhostButton draws no stylebox chrome at
+## all, so a disabled ButtonClaim with no font_disabled_color of its own
+## fell through to Godot's stock translucent white -- the only remaining
+## "already claimed" cue, and it read as broken rather than intentional.
+func test_ghost_button_defines_font_disabled_color() -> void:
+	# CACHE_MODE_IGNORE matters: the editor holds kejartes_theme.tres in
+	# memory from startup, so a plain load() returns that cached copy --
+	# which would hide a real rebake from this test. See
+	# test_theme_factory.gd's test_baked_theme_matches_what_the_factory_builds.
+	var theme: Theme = ResourceLoader.load(
+		_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	assert_true(theme != null, "baked theme must load")
+	assert_true(theme.has_color("font_disabled_color", &"GhostButton"),
+		"GhostButton must define font_disabled_color, or a disabled claim button falls back to Godot's stock translucent white")
 
 
 func test_idle_bob_is_exported_and_wired_to_the_portrait_containers() -> void:
@@ -281,3 +292,119 @@ func test_report_student_button_is_wired() -> void:
 		"the ReportStudent button must have a handler")
 	assert_true(src.contains("res://Scenes/ReportCard/report_card.tscn"),
 		"ReportStudent must route to the report card scene")
+
+
+## The money readout was a 1920x1080 pink landscape PNG with a label on
+## top -- off-palette, and the reason the chip was 332x187 rather than the
+## 332x96 the layout wanted. It is a themed rounded panel now, with the
+## coin as a real icon beside the number.
+func test_the_money_chip_is_a_themed_panel_with_a_coin_icon() -> void:
+	var chip := _lobby.get_node_or_null("DisplayUang") as Panel
+	assert_true(chip != null, "DisplayUang must be a Panel now, not a TextureRect")
+	assert_eq(chip.theme_type_variation, &"Card",
+		"the chip takes its chrome from the theme")
+	assert_eq(chip.size.y, 96.0,
+		"the chip is 96 tall, matching DailyLogin, got %f" % chip.size.y)
+
+	var icon := _lobby.get_node_or_null("DisplayUang/CoinIcon") as TextureRect
+	assert_true(icon != null, "the chip needs a coin icon")
+	assert_eq(icon.texture.resource_path, "res://Assets/Images/UI/uang.png",
+		"and it is the new coin art")
+
+
+func test_the_off_palette_chip_art_is_gone() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Lobby/loby.tscn")
+	assert_false(src.contains("Desain tanpa judul.png"),
+		"the pink chip background must no longer be referenced")
+
+
+## Both shop screens read the same coin as the lobby, so money looks like
+## one currency across the game.
+func test_the_shop_screens_use_the_same_coin() -> void:
+	for path in ["res://Scenes/Koperasi/koprasi.tscn",
+			"res://Scenes/Inventory/inventory.tscn"]:
+		var src := FileAccess.get_file_as_string(path)
+		assert_true(src.contains("Assets/Images/UI/uang.png"),
+			"%s should show the shared coin" % path)
+
+
+## The panel art carries the whole calendar -- seven slots with the
+## active one lit and holding a gift. The seven overlay tiles and their
+## "10G"/"DayN" labels are gone with it.
+func test_the_day_tiles_are_gone() -> void:
+	for i in range(1, 8):
+		assert_true(_lobby.get_node_or_null("DailyReward/Day%d" % i) == null,
+			"Day%d should be gone -- the panel art shows the day" % i)
+
+
+func test_the_panel_swaps_art_per_day() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
+	assert_true(src.contains("DAY_PANELS"),
+		"the seven panels must be a named const, not seven inline loads")
+	for i in range(1, 8):
+		assert_true(src.contains("DailyLogin/day%d.png" % i),
+			"day %d's panel must be referenced" % i)
+	assert_false(src.contains("day_nodes"),
+		"the per-tile tint bookkeeping goes with the tiles")
+
+
+func test_the_lobby_button_wears_the_calendar_icon() -> void:
+	var btn := _lobby.get_node_or_null("DailyLogin") as TextureButton
+	assert_true(btn != null, "the DailyLogin button is missing")
+	assert_eq(btn.texture_normal.resource_path,
+		"res://Assets/Images/UI/icon_daily_login.png",
+		"it wears the calendar icon")
+
+
+## Header top-centre, claim button bottom-centre, both on the display
+## face -- the panel art bakes a cream title plate and a gold pill for
+## exactly these two, so they sit on top of the art rather than beside it.
+func test_the_header_and_claim_button_sit_on_the_baked_art() -> void:
+	var header := _lobby.get_node_or_null("DailyReward/Label") as Label
+	assert_true(header != null, "missing the panel header")
+	assert_eq(header.text, "Daily Login", "the header names the feature")
+	assert_eq(header.theme_type_variation, &"H1Label",
+		"the header is on the display face")
+
+	var panel := _lobby.get_node_or_null("DailyReward") as Control
+	var claim := _lobby.get_node_or_null("DailyReward/ButtonClaim") as Button
+	assert_true(claim != null, "missing the claim button")
+	assert_eq(claim.theme_type_variation, &"GhostButton",
+		"the claim button draws nothing -- the baked gold pill is the button")
+	var claim_mid: float = claim.offset_left + claim.size.x * 0.5
+	assert_true(absf(claim_mid - panel.size.x * 0.5) < 40.0,
+		"the claim button is centred, its middle is at %f of %f"
+			% [claim_mid, panel.size.x])
+	assert_true(claim.offset_top > panel.size.y * 0.6,
+		"and sits in the panel's lower third")
+
+
+## Regression guard (2026-09-10). ButtonClaim carries custom_minimum_size =
+## Vector2(0, 96) to satisfy the touch-target floor (see the test below), but
+## Godot's Control clamps a node's REAL rect up to
+## get_combined_minimum_size() no matter what its own offset_top/offset_bottom
+## say -- a button authored at a shorter rect than its minimum still renders
+## and hit-tests at the minimum height. That is exactly how ButtonClaim once
+## spilled past DailyReward's bottom edge while every offset-only check above
+## kept passing: the authored offsets looked fine, the *clamped* size did
+## not. This compares the clamped height, not the authored offsets, against
+## the panel's real height, and reads both from the nodes so a future
+## re-tune of either stays honest.
+func test_claim_buttons_clamped_height_fits_inside_the_panel() -> void:
+	var panel := _lobby.get_node_or_null("DailyReward") as Control
+	var claim := _lobby.get_node_or_null("DailyReward/ButtonClaim") as Control
+	assert_true(panel != null, "missing the DailyReward panel")
+	assert_true(claim != null, "missing the claim button")
+	var clamped_height: float = maxf(claim.size.y, claim.get_combined_minimum_size().y)
+	var clamped_bottom: float = claim.offset_top + clamped_height
+	assert_true(clamped_bottom <= panel.size.y,
+		"claim button's clamped height %f pushes its bottom to %f, past the panel's %f bottom edge"
+			% [clamped_height, clamped_bottom, panel.size.y])
+
+
+func test_the_panel_grew_to_the_arts_aspect() -> void:
+	var panel := _lobby.get_node_or_null("DailyReward") as Control
+	assert_true(panel != null, "missing the DailyReward panel")
+	var aspect: float = panel.size.x / panel.size.y
+	assert_true(absf(aspect - 2.253) < 0.05,
+		"the panel must match the art's 2.253:1, got %f" % aspect)

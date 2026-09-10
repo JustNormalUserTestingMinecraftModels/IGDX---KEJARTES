@@ -71,6 +71,50 @@ static func _add_shop_hub_tile_label(theme: Theme, tokens: DesignTokens) -> void
 		theme.set_font("font", NAME, tokens.font_display)
 
 
+## A button with no chrome of its own, for sitting on top of art that
+## already draws the button -- the daily-login panel's baked gold pill.
+##
+## Modelled on ShopHubTile, which solves the same problem for the shop
+## hub's panel-less tiles: nothing in the resting state, and only the
+## touch states wash in.
+##
+## Unlike ShopHubTile, the wash radius here is radius_pill, not
+## radius_button. The two solve different shapes: ShopHubTile's icon card
+## is squarish, so its fixed radius_button corner is correct. This button
+## sits on Task 8's baked claim-button art (day1.png), which is a full
+## capsule -- corner radius roughly half the button's own height. Only
+## radius_pill gets that: Godot clamps 999 to half the box's smaller
+## dimension at draw time, so the wash always matches the capsule under
+## it regardless of the button's authored size. A fixed radius_button
+## (20px) undershoots that curve and pokes square-ish corners past the
+## art's rounded ends on hover/press. Do not "fix" this back to
+## radius_button -- see RADIUS_EXEMPT in tests/test_button_geometry.gd.
+static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "GhostButton"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Button")
+
+	theme.set_stylebox("normal", NAME, StyleBoxEmpty.new())
+	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
+	theme.set_stylebox("disabled", NAME, StyleBoxEmpty.new())
+
+	var wash := StyleBoxFlat.new()
+	wash.bg_color = Color(1, 1, 1, 0.14)
+	wash.set_corner_radius_all(tokens.radius_pill)
+	theme.set_stylebox("hover", NAME, wash)
+
+	var pressed := StyleBoxFlat.new()
+	pressed.bg_color = Color(0, 0, 0, 0.12)
+	pressed.set_corner_radius_all(tokens.radius_pill)
+	theme.set_stylebox("pressed", NAME, pressed)
+
+	theme.set_font_size("font_size", NAME, tokens.font_h2)
+	theme.set_color("font_color", NAME, tokens.text_primary)
+	theme.set_color("font_disabled_color", NAME, tokens.text_disabled)
+	if tokens.font_display != null:
+		theme.set_font("font", NAME, tokens.font_display)
+
+
 # ---------------------------------------------------------------- buttons
 
 static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
@@ -94,6 +138,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 
 	_add_shop_hub_tile(theme, tokens)
 	_add_shop_hub_tile_label(theme, tokens)
+	_add_ghost_button(theme, tokens)
 
 	# The event dialog's per-student card. The whole card is the toggle,
 	# so its "pressed" state has to read as SELECTED rather than as a
@@ -121,6 +166,41 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.cat_istirahat.lightened(0.18), tokens.cat_istirahat.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand,
 		tokens.radius_pill)
+
+	# The roster card's third chip. Quirk and Persona carry their own
+	# accents; specialty stays neutral because its category colour
+	# varies per student and rides on the chip's icon instead.
+	_add_button_variation(theme, tokens, "SpecialtyBadge",
+		tokens.surface_sunken, tokens.surface_sunken.darkened(0.18),
+		tokens.brand_primary, tokens.text_primary,
+		tokens.radius_pill)
+
+	# Compact S step for all three chips. The full-size badges are
+	# font_title over btn_pad_v_s and space_lg -- about 160x290 each, so
+	# three of them overflow StudentList's 880px trait row and clip every
+	# label ("Semangat Juang" -> "SEMANGAT J"). The S step drops to
+	# font_caption with space_xs/space_md padding, which fits the worst
+	# case (Citra's "Seni Dalam Kesunyian") with room to spare. The
+	# accents, rim and radius_pill are inherited, so an S chip is
+	# unmistakably the same chip.
+	for chip in ["SpecialtyBadge", "PersonaBadge", "QuirkBadge"]:
+		_add_size_step(theme, tokens, chip, "S",
+			tokens.font_caption, tokens.space_xs, tokens.space_md)
+		# The category SVGs rasterise at their 100px viewBox, taller than
+		# the whole compact chip. Capping here rather than with
+		# expand_icon keeps the glyph a fixed size beside the word instead
+		# of stretching with whatever the label happens to be.
+		theme.set_constant("icon_max_width", chip + "S",
+			tokens.space_md + tokens.space_xs)
+
+		# ...and an M step, the one the StudentList card actually wears.
+		# S turned out to be a phone-hostile 22px -- under Material's 12sp
+		# caption floor once the 1080-wide design space is scaled down to
+		# a real handset. M lifts the word to body size and keeps the
+		# horizontal padding tight so three chips still share one row.
+		_add_size_step(theme, tokens, chip, "M",
+			tokens.font_body_size, tokens.space_sm, tokens.space_sm)
+		theme.set_constant("icon_max_width", chip + "M", tokens.space_lg)
 
 	# The lobby's three destination tiles. Icon stacked over label: at
 	# the L step there is room for a 64px icon, an 8px gap and a
@@ -315,13 +395,18 @@ static func _add_button_variation(
 ## Only font_size differs -- the fill, rim and radius are the role's, so
 ## a PrimaryButtonL is unmistakably a PrimaryButton. Height comes from
 ## the step's own vertical padding, which is why this also re-pads.
+## `pad_h` defaults to -1, meaning "keep the role's own horizontal
+## padding". The S chip step passes a real value: a compact chip has to
+## give back width as well as height, and space_lg (44px per side) is
+## most of what makes a three-chip row overflow an 880px card.
 static func _add_size_step(
 	theme: Theme,
 	tokens: DesignTokens,
 	base: String,
 	suffix: String,
 	font_size: int,
-	pad_v: int
+	pad_v: int,
+	pad_h: int = -1
 ) -> void:
 	var name := base + suffix
 	theme.add_type(name)
@@ -331,6 +416,9 @@ static func _add_size_step(
 		var sb := (theme.get_stylebox(state, base) as StyleBoxFlat).duplicate()
 		sb.content_margin_top = pad_v
 		sb.content_margin_bottom = pad_v
+		if pad_h >= 0:
+			sb.content_margin_left = pad_h
+			sb.content_margin_right = pad_h
 		theme.set_stylebox(state, name, sb)
 
 	for key in ["font_color", "font_hover_color", "font_pressed_color",
@@ -428,6 +516,21 @@ static func _build_panels(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_stylebox("panel", "TraitPopupHeader", trait_header)
 
 
+## The cutscene's dialogue text: one step up the scale from body, on the
+## body face, over the Card panel Task 3 puts behind it.
+##
+## RichTextLabel's theme items are NOT the Label ones. Its size key is
+## "normal_font_size" and its colour key is "default_color"; setting
+## "font_size"/"font_color" here compiles and does nothing, which is the
+## same trap _build_base_overrides already documents for the base type.
+static func _add_cutscene_dialogue(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "CutsceneDialogue"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "RichTextLabel")
+	theme.set_font_size("normal_font_size", NAME, tokens.font_title)
+	theme.set_color("default_color", NAME, tokens.text_primary)
+
+
 # ----------------------------------------------------------------- labels
 
 static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
@@ -469,6 +572,14 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# the screen. Also used by StatDetailPopup and
 		# EventStudentSelectDialog, which want the same bump.
 		["EventBodyLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# The StudentList card's teacher's-note strip. Same story as
+		# EventBodyLabel one line up: it shipped in 22px CaptionLabel and
+		# was reported unreadable on a phone without squinting. Body face
+		# over font_body_size + 8, and text_primary rather than
+		# CaptionLabel's text_secondary -- it sits on cream paper, where
+		# the secondary brown is the half of the problem the size alone
+		# does not fix.
+		["CatatanLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
 		# The trait popup's header sits on a per-trait tinted panel
 		# (TraitPopupHeader, self_modulated brand_primary for a quirk and
 		# cat_istirahat for a persona), so its two labels need CREAM text.
@@ -574,6 +685,8 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("ResultBodyLabel", "Label")
 	theme.set_font_size("font_size", "ResultBodyLabel", tokens.font_caption)
 	theme.set_color("font_color", "ResultBodyLabel", tokens.text_on_brand)
+
+	_add_cutscene_dialogue(theme, tokens)
 
 
 # --------------------------------------------------------------- progress

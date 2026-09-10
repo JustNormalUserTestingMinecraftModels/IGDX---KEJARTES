@@ -101,11 +101,11 @@ const DAY_FILL_DURATION = 2.0
 
 ## Where in the school day the event rolls, as a percentage of it.
 ##
-## Fixed at midday -- the BookClock's middle pose -- rather than the
-## randomised afternoon point it used to be. The day is now two
-## transitions, dawn to midday and midday to evening, and the event
-## belongs on the pose between them rather than at a random point in
-## the afternoon.
+## The day's progress bar still fills in two phases with the event between
+## them, but the sky is swept once across both -- so the event lands at
+## the middle of the day without the sky stopping there. It was pinned to
+## a named midday pose until 2026-09-10, and to a randomised afternoon
+## point before that.
 const EVENT_TRIGGER_PCT := 50.0
 
 # Event distribution chances (total 100)
@@ -384,11 +384,14 @@ func _run_single_day() -> void:
 	# clock widget and the decay bars are optional, so without this the
 	# tween could end up with no tweeners at all and abort.
 	day_tween.tween_interval(phase1_dur)
-	# Transition 1: dawn to midday. The widget owns its own easing, so
-	# this hands it only the duration -- day_tween's interval above is
-	# what this function actually awaits.
+	# One sweep across the whole day. The sky is deliberately NOT paused
+	# for the event: it used to rest at a midday pose while the popup was
+	# up, which read as the day stopping. Because the event is
+	# player-blocking, a slow player will see the sky reach evening before
+	# the day's second half finishes and hold there -- accepted.
 	if book_clock_widget and book_clock_widget.has_method("transition_to"):
-		book_clock_widget.call("transition_to", BookClockWidget.Phase.MIDDAY, phase1_dur)
+		book_clock_widget.call("transition_to", BookClockWidget.Phase.EVENING,
+			phase1_dur + _phase_duration())
 
 	_animate_embedded_decay_bars(day_tween, decay_results, phase1_dur)
 	await day_tween.finished
@@ -406,9 +409,6 @@ func _run_single_day() -> void:
 	Juice.fill_bar(progress_bar, 100.0, phase2_dur)
 	var bar_phase2 = create_tween().set_parallel(true)
 	bar_phase2.tween_interval(phase2_dur)
-	# Transition 2: midday to evening.
-	if book_clock_widget and book_clock_widget.has_method("transition_to"):
-		book_clock_widget.call("transition_to", BookClockWidget.Phase.EVENING, phase2_dur)
 	await bar_phase2.finished
 	if is_skipped:
 		return

@@ -1,4 +1,23 @@
+## The roster hub. AturJadwal routes here; tapping a student's paper card
+## sends that student back to AturJadwal to have their week set, and the
+## player returns. So this screen exists to answer one question -- "who
+## still needs a schedule?" -- which is why the RosterStrip above the
+## carousel carries every student's state at once rather than making the
+## player page through four cards to find out.
+##
+## Deliberately NOT @tool. This scene's runtime setup reads the GameState
+## autoload and builds the tutorial panel dynamically, and Godot only runs
+## a plain script's lifecycle callbacks inside an actually-running game
+## tree -- so under the MCP test runner _ready() never fires and the suite
+## asserts authored .tscn structure and source text instead. See
+## tests/test_student_list.gd's header for the full finding.
 extends Control
+
+const PageDotScene: PackedScene = preload("res://Scenes/StudentList/PageDot.tscn")
+## Weekdays every student must have a category assigned for to count as
+## fully scheduled. Single source shared by _setup_students() and
+## _is_student_scheduled() so the strip, the badge and the dots agree.
+const REQUIRED_DAYS := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 
 @export_group("Paper Card Design")
 ## Custom paper card texture override.
@@ -148,6 +167,33 @@ var card_animating: bool = false
 
 # Tutorial UI variables
 const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
+
+## Schedule category -> week-strip glyph, keyed by every spelling the
+## day_schedules data can carry. Anything unresolved (an empty category,
+## the "-" placeholder for an unscheduled day) falls back to the libur
+## icon. Mirrors DesignTokens.category_color()'s key set.
+## The glyph each schedule category shows on its sticky note.
+##
+## These are the team's own authored art, not the generated placeholder
+## set: the four skill/needs icons are the same 128x128 StudentCard
+## stat_* icons the stat rows use, so a day's note and that student's
+## stat row carry the identical symbol. Istirahat borrows stat_energy
+## (rest is what restores it) and Libur borrows stat_mood; Wirausaha
+## takes UI/uang.png, since Shop/Koin.png is only 33px and goes soft at
+## note size.
+##
+## A category absent from this map draws no glyph at all -- see the
+## lookup in _setup_students().
+const CATEGORY_ICONS := {
+	"Akademis": "res://Assets/Images/StudentCard/stat_akademis.png",
+	"Akademik": "res://Assets/Images/StudentCard/stat_akademis.png",
+	"SeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+	"Seni Budaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+	"Olahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
+	"Istirahat": "res://Assets/Images/StudentCard/stat_energy.png",
+	"Wirausaha": "res://Assets/Images/UI/uang.png",
+	"Libur": "res://Assets/Images/StudentCard/stat_mood.png",
+}
 var current_step := 0
 var tutorial_active := true
 var _tutorial_panel: PanelContainer
@@ -174,13 +220,27 @@ func _setup_navigation_arrows():
 		if not right_arrow.pressed.is_connected(_next_card):
 			right_arrow.pressed.connect(_next_card)
 
+## Deal one day-note its pin height: 0 up, 1 middle, 2 down.
+##
+## Hashed from the student and the day rather than drawn from a RNG, on
+## purpose. The strip should look hand-pinned, but a given student's
+## Wednesday has to hang at the SAME height every time the player swipes
+## back to that card -- a note that jumps on every visit reads as a bug,
+## not as charm. Hashing the pair also varies the five days within one
+## card and varies the pattern between students, which one shared
+## sequence would not.
+func _pin_slot_for(student: Dictionary, day_name: String) -> int:
+	var key: String = str(student.get("id", student.get("name", "")))
+	return absi(("%s|%s" % [key, day_name]).hash()) % 3
+
+
 func _setup_students():
 	var students = GameState.approved_students
 	if students.is_empty():
 		students = default_students
 	active_students = students
 
-	var required_days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
+	var required_days = REQUIRED_DAYS
 	card_nodes.clear()
 
 	for i in range(4):
@@ -197,7 +257,9 @@ func _setup_students():
 				murid_node.texture = paper_texture
 
 			# Set Portrait
-			var portrait_node = murid_node.get_node_or_null("Portrait")
+			# RosterCard wraps the portrait in a PortraitFrame node (Task 4
+			# extraction), so it is no longer a direct child of the card.
+			var portrait_node = murid_node.get_node_or_null("PortraitFrame/Portrait")
 			var portrait_path = student_data.get("portrait", "")
 			if portrait_node and portrait_path != "" and ResourceLoader.exists(portrait_path):
 				portrait_node.texture = load(portrait_path)
@@ -209,15 +271,20 @@ func _setup_students():
 
 			# Schedule calculation
 			var student_id = student_data.get("id", null)
-			var fully_scheduled := false
+			var fully_scheduled := _is_student_scheduled(student_data)
 			var day_schedules_for_student: Dictionary = {}
 			if student_id != null and GameState.day_schedules.has(student_id):
 				day_schedules_for_student = GameState.day_schedules[student_id]
-				fully_scheduled = true
-				for day in required_days:
-					if not day_schedules_for_student.has(day):
-						fully_scheduled = false
-						break
+
+			# Drive RosterCard's trait chips and catatan guru. specialty is
+			# hobby_category; persona is the clean `personality` value
+			# ("Tekun") -- NOT the `persona` key, which is the prefixed
+			# "Persona Tekun". Both approved_students and default_students
+			# carry personality/quirk/hobby_category as clean strings.
+			murid_node.specialty = student_data.get("hobby_category", "")
+			murid_node.persona = student_data.get("personality", "")
+			murid_node.quirk = student_data.get("quirk", "")
+			murid_node.is_scheduled = fully_scheduled
 
 			# Status Badges
 			var belum_btn = murid_node.get_node_or_null("Belum")
@@ -239,11 +306,24 @@ func _setup_students():
 							sticky_node.texture = sticky_note_texture
 
 						var is_day_set = day_schedules_for_student.has(day_name)
+						var cat := ""
 						if is_day_set:
-							var cat = day_schedules_for_student[day_name].get("category", "")
+							cat = day_schedules_for_student[day_name].get("category", "")
 							sticky_node.activity = cat if cat != "" else "Terjadwal"
 						else:
 							sticky_node.activity = "-"
+
+						# Category glyph for the week strip (Part 3). An
+						# unscheduled day gets NO glyph rather than a
+						# stand-in: giving every blank day the same icon
+						# made all five notes read as identical, which is
+						# the opposite of what the strip is for.
+						var icon_path: String = CATEGORY_ICONS.get(cat, "")
+						sticky_node.icon_texture = (
+							load(icon_path) if icon_path != "" else null)
+
+						sticky_node.pin_slot = _pin_slot_for(
+							student_data, day_name)
 
 			# Attach CardButton signals for 100% click & swipe reliability
 			var card_button = murid_node.get_node_or_null("CardButton")
@@ -256,11 +336,70 @@ func _setup_students():
 				if not murid_node.gui_input.is_connected(_on_card_gui_input.bind(student_data, murid_node)):
 					murid_node.gui_input.connect(_on_card_gui_input.bind(student_data, murid_node))
 
+			# Wire the matching roster-strip avatar ONCE here, not in the
+			# per-sync loop -- _sync_roster_strip() runs on every page turn
+			# and its is_connected() guard can never match a bound callable.
+			var roster_avatar = get_node_or_null("RosterStrip/Avatar%d" % (i + 1))
+			if roster_avatar and not roster_avatar.pressed.is_connected(_on_avatar_pressed.bind(i)):
+				roster_avatar.pressed.connect(_on_avatar_pressed.bind(i))
+
 		else:
 			murid_node.hide()
 
 	_build_page_indicators()
 	_init_carousel_state()
+	_sync_roster_strip()
+
+
+## True when every weekday in REQUIRED_DAYS has a category assigned for this
+## student. Same source as the Belum/Sudah badge in _setup_students(), so
+## the strip and the stamp can never disagree.
+func _is_student_scheduled(student: Dictionary) -> bool:
+	var student_id = student.get("id", null)
+	if student_id == null or not GameState.day_schedules.has(student_id):
+		return false
+	var sched = GameState.day_schedules[student_id]
+	for day in REQUIRED_DAYS:
+		if not sched.has(day):
+			return false
+	return true
+
+
+## Pushes every student's scheduled state and the current index onto the
+## strip. Called after _setup_students() and from _switch_card(), so the
+## strip and the carousel never disagree.
+func _sync_roster_strip() -> void:
+	var strip := get_node_or_null("RosterStrip")
+	if strip == null:
+		return
+	for i in range(active_students.size()):
+		var avatar := strip.get_node_or_null("Avatar%d" % (i + 1))
+		if avatar == null:
+			continue
+		avatar.visible = true
+		var student: Dictionary = active_students[i]
+		var portrait_path: String = student.get("portrait", "")
+		if portrait_path != "" and ResourceLoader.exists(portrait_path):
+			avatar.portrait_texture = load(portrait_path)
+		avatar.is_scheduled = _is_student_scheduled(student)
+		avatar.is_current = (i == current_card_index)
+
+	# A roster smaller than four (grade 7's fallback is two students)
+	# leaves surplus avatars stranded in red rings -- hide them.
+	for i in range(active_students.size(), 4):
+		var extra := strip.get_node_or_null("Avatar%d" % (i + 1))
+		if extra:
+			extra.visible = false
+
+
+## Jumps straight to a student instead of paging. Reuses the carousel's
+## own switch so the slide direction and the animation guard still apply.
+func _on_avatar_pressed(index: int) -> void:
+	if card_animating or index == current_card_index:
+		return
+	var direction := 1 if index > current_card_index else -1
+	_switch_card(index, direction)
+
 
 func _build_page_indicators():
 	if not page_indicator:
@@ -269,10 +408,7 @@ func _build_page_indicators():
 		child.queue_free()
 
 	for i in range(card_nodes.size()):
-		var dot = Label.new()
-		dot.text = "●"
-		dot.theme_type_variation = &"H2Label"
-		page_indicator.add_child(dot)
+		page_indicator.add_child(PageDotScene.instantiate())
 
 func _init_carousel_state():
 	if card_nodes.is_empty():
@@ -302,12 +438,13 @@ func _update_page_indicators():
 	var tokens := DesignTokens.load_default()
 	if page_indicator:
 		var dots = page_indicator.get_children()
-		for i in range(dots.size()):
-			if dots[i] is Label:
-				if i == current_card_index:
-					dots[i].self_modulate = tokens.currency_gold
-				else:
-					dots[i].self_modulate = tokens.text_secondary
+		for i in range(min(dots.size(), active_students.size())):
+			if i == current_card_index:
+				dots[i].self_modulate = tokens.currency_gold
+			elif _is_student_scheduled(active_students[i]):
+				dots[i].self_modulate = tokens.state_success
+			else:
+				dots[i].self_modulate = tokens.state_danger
 
 	if left_arrow:
 		left_arrow.visible = (card_nodes.size() > 1)
@@ -374,15 +511,18 @@ func _switch_card(new_index: int, direction: int):
 	_stagger_card_notes(new_card)
 	card_animating = false
 
-	# If in tutorial Step 1 (Navigasi Card), advance to Step 2 after card transition completes
-	if tutorial_active and current_step == 1:
+	_sync_roster_strip()
+
+	# The Navigasi Card step (index 2 since the Status Jadwal step was
+	# inserted at 1) auto-advances once the card slide it asked for lands.
+	if tutorial_active and current_step == 2:
 		_next_step()
 
 func _on_card_pressed(student_data: Dictionary, card_node: Control):
 	if card_animating:
 		return
 	if tutorial_active:
-		if current_step == 2:  # Step 2: Pilih Murid (Final step locks onto card)
+		if current_step == 3:  # Pilih Murid, the final step, locks onto the card
 			_end_tutorial()
 			_on_student_selected(student_data, card_node)
 		return
@@ -505,7 +645,8 @@ func _setup_tutorial():
 
 func _populate_default_tutorial_steps():
 	var defaults = [
-		["Daftar Murid", "Disini kalian bebas memilih murid-murid yang belum terjadwalkan untuk belajar selama seminggu!", "CardContainer"],
+		["Muridmu", "Disini kalian bebas memilih murid-murid yang belum terjadwalkan untuk belajar selama seminggu!", "CardContainer"],
+		["Status Jadwal", "Hijau berarti sudah terjadwal, merah berarti belum. Ketuk untuk langsung ke murid itu!", "RosterStrip"],
 		["Navigasi Card", "Geser layar atau tekan tombol panah kanan untuk melihat murid lainnya!", "RightArrow"],
 		["Pilih Murid", "Bagus! Sekarang tekan kertas dokumen murid ini untuk mulai mengatur jadwal belajarnya!", ""]
 	]
@@ -627,11 +768,11 @@ func _show_step(index: int):
 	_tutorial_body_label.text = step.text
 
 	var targets: Array[Control] = []
-	if index == 1:
+	if index == 2:
 		var arrow_target = right_arrow if right_arrow else left_arrow
 		if arrow_target and is_instance_valid(arrow_target):
 			targets.append(arrow_target)
-	elif index == 2 and not card_nodes.is_empty():
+	elif index == 3 and not card_nodes.is_empty():
 		var active_card = card_nodes[current_card_index]
 		if active_card and is_instance_valid(active_card):
 			targets.append(active_card)
@@ -651,9 +792,9 @@ func _show_step(index: int):
 
 	if step.prompt_text != "":
 		_tutorial_prompt_label.text = step.prompt_text
-	elif index == 1:
-		_tutorial_prompt_label.text = "TEKAN PANAH ATAU GESER UNTUK PINDAH MURID!"
 	elif index == 2:
+		_tutorial_prompt_label.text = "TEKAN PANAH ATAU GESER UNTUK PINDAH MURID!"
+	elif index == 3:
 		_tutorial_prompt_label.text = "TEKAN KERTAS UNTUK MEMILIH MURID!"
 	else:
 		_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
@@ -667,15 +808,17 @@ func _show_step(index: int):
 	_panel_tween.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.12)
 	_panel_tween.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.10)
 
-	if index == 0:
+	if index == 0 or index == 1:
+		# Muridmu and Status Jadwal are spotlight-only: the scrim
+		# blocks, a tap anywhere advances.
 		color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
-	elif index == 1:
+	elif index == 2:
 		color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if left_arrow: left_arrow.mouse_filter = Control.MOUSE_FILTER_STOP
 		if right_arrow: right_arrow.mouse_filter = Control.MOUSE_FILTER_STOP
-	elif index == 2:
+	elif index == 3:
 		color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -765,7 +908,9 @@ func _end_tutorial():
 		color_rect.hide()
 
 func _on_click_area_gui_input(event: InputEvent):
-	if tutorial_active and current_step == 0:
+	# Steps 0 (Muridmu) and 1 (Status Jadwal) are both spotlight-only
+	# -- a tap anywhere advances.
+	if tutorial_active and (current_step == 0 or current_step == 1):
 		if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) or (event is InputEventScreenTouch and event.pressed):
 			_next_step()
 

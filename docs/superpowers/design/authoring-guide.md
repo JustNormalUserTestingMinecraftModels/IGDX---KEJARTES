@@ -83,6 +83,32 @@ The honest answer for procedural layout is to keep it procedural and make it
 previewable — not to fake static positions that would break the moment the
 game runs on a different aspect ratio.
 
+**Measure the root, never the viewport.** Inside the editor
+`get_viewport_rect()` is a 2×2 stub, so `@tool` layout code that reads it
+collapses the whole scene into the top-left corner — MainBola did, until
+2026-09-10. A full-rect root `Control` reports its real `size` in both places
+(1080×1920 in the editor, the screen in game), so measure that and re-run the
+layout on `NOTIFICATION_RESIZED`. When a human should place something by hand —
+MainBola's goalie — leave its position to the scene in the editor and only map
+it onto the real screen at runtime.
+
+**Two ways the editor silently drops a `Control`'s rect** (both found
+2026-09-10):
+
+- *An instanced scene's root under a plain (non-container) `Control`* is saved
+  with a `layout_mode = 0` override, and loading that snaps the instance root's
+  rect to its parent's top-left corner, sized from a cache that is still zero
+  before the node enters the tree. Never let an instance root carry the
+  geometry: make it a bare anchor and draw from a child, which no override
+  touches — see `Scenes/UI/PaperShadow.tscn` and its `Silhouette`.
+- *A `Control` created under a plain `Control`* starts in position mode
+  (`layout_mode = 0`), where anchors are **not written to the file**: it looks
+  right in the editor and reloads zero-size. Set `layout_mode = 1` (anchors)
+  before relying on anchors — BuatBatik's `ToolTextureRect`s.
+
+Both pass a texture-path test and fail on screen, so test the loaded rect —
+`tests/test_paper_shadow.gd` and `test_each_batik_picture_fills_its_slot`.
+
 ## Asset references
 
 Art a person might swap is an `@export var … : Texture2D`, so it accepts a

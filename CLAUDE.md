@@ -355,17 +355,19 @@ drawn white so `self_modulate` tints them from tokens), and
 `UI/StudentList/page_dot.png` (a filled dot -- tinting the hollow ring above
 it reads as invisible on a phone).
 
-**`Assets/Images/UI/paper_card.png` is a generated full-bleed sheet.**
-`paper.png` is 1080x1920 but only opaque across rows 262..1578 and columns
-47..1033, and its bottom-right corner is cut away to a transparent wedge --
-so a card stretching it paints paper across only the middle two thirds of
-itself, with a diagonal hole near the bottom. Its body is otherwise flat
-pure white (96% of sampled opaque pixels are exactly 255,255,255), so
-`paper_card.png` reproduces it as a clean 1080x1440 rounded rectangle,
-opaque edge to edge, with a faint warm inner edge. That is why the
-StudentList RosterCard can address its own full rect. Use it for a card that
-must fill its node; keep `paper.png` where the cut corner and torn margin
-are wanted. Measure before laying out on either.
+**`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
+opaque only across rows 262..1578 and columns 47..1033, its bottom-right
+corner is cut away to a transparent wedge, and its body is flat pure white
+(96% of sampled opaque pixels are exactly 255,255,255) -- there is no paper
+texture in it to preserve. So a card stretching it paints across only the
+middle two thirds of its own rect, with a diagonal hole near the bottom, and
+any band laid out against the full rect lands on the desk behind. Cropping
+does not fix this: the wedge is interior, not margin. StudentList's
+RosterCard therefore carries a `Sheet` Panel on the `Card` variation instead
+-- an opaque themed surface that fills the node and brings its own stylebox
+shadow. Prefer that for any new card; reach for `paper.png` only where the
+cut corner is the point. Measure the alpha before laying out on any
+soft-edged texture.
 
 Three carry constraints a replacement **must** honour:
 

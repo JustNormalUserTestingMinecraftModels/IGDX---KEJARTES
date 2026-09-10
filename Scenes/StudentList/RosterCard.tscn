@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://b701oo028pqff"]
 
-[ext_resource type="Texture2D" uid="uid://b2cqwcxjou7dm" path="res://Assets/Images/UI/paper_card.png" id="1_t5dal"]
 [ext_resource type="Script" uid="uid://cmgc7mel8ba5n" path="res://Scripts/StudentList/RosterCard.gd" id="2_dawm1"]
 [ext_resource type="PackedScene" uid="uid://cries6nb441ve" path="res://Scenes/StudentList/StickyNote.tscn" id="3_2cr6j"]
 [ext_resource type="Texture2D" uid="uid://retitw0qwkrw" path="res://Assets/Images/UI/Placeholders/stamp_belum.svg" id="3_t5dal"]
@@ -13,9 +12,15 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 0
-texture = ExtResource("1_t5dal")
 expand_mode = 1
 script = ExtResource("2_dawm1")
+
+[node name="Sheet" type="Panel" parent="." unique_id=879590734]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_type_variation = &"Card"
 
 [node name="CardButton" type="Button" parent="." unique_id=1821756309]
 modulate = Color(1, 1, 1, 0)

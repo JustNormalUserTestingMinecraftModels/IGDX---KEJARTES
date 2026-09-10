@@ -541,20 +541,42 @@ func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
 		"the tutorial must have exactly four steps")
 
 
-## The cast shadow is a SIBLING of the cards, not a child (a child would
-## draw on top of the paper instead of behind it). So every animation
-## that moves a card has to move the shadow too -- otherwise the card
-## slides off and leaves a full card-sized dark slab on the desk, which
-## is exactly what shipped before this test existed.
-func test_every_card_animation_also_drives_the_shadow() -> void:
+## The card's surface is an opaque themed Panel filling its whole rect,
+## not a paper TEXTURE on the root.
+##
+## Two bugs came out of the texture version. paper.png is only opaque
+## across the middle of its own rect, so bands laid out against the full
+## card rect rendered on the desk behind it; and the cast shadow was a
+## separate sibling node, so every card animation left it behind. The
+## Card variation's stylebox carries its own shadow, which means the
+## shadow is part of the card and cannot be left behind by anything.
+func test_each_card_surface_is_an_opaque_themed_panel() -> void:
+	for i in range(1, 5):
+		var sheet := _list.get_node_or_null(
+			"CardContainer/Murid%d/Sheet" % i) as Panel
+		assert_true(sheet != null, "missing Sheet panel on Murid%d" % i)
+		assert_eq(sheet.theme_type_variation, &"Card",
+			"Murid%d's Sheet must use the Card variation" % i)
+		assert_eq(sheet.get_index(), 0,
+			"Murid%d's Sheet must draw behind every other band" % i)
+		assert_eq(sheet.anchor_right, 1.0,
+			"Murid%d's Sheet must span the full card width" % i)
+		assert_eq(sheet.anchor_bottom, 1.0,
+			"Murid%d's Sheet must span the full card height" % i)
+
+
+## The separate shadow node and the tween plumbing that dragged it along
+## are gone; the Card stylebox's own shadow replaced both.
+func test_the_card_shadow_is_not_a_separate_node() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("func _drive_shadow("),
-		"the shadow helper must exist")
-	# Named individually rather than counted, so a call that gets
-	# deleted names the animation that lost its shadow.
-	for tween_var in ["tween_out", "tween_in", "tw2"]:
-		assert_true(src.contains("_drive_shadow(%s" % tween_var),
-			"the %s card tween must drive the shadow too" % tween_var)
+	assert_false(src.contains("_drive_shadow"),
+		"the shadow-follow helper is obsolete -- Card's stylebox owns it")
+	assert_false(src.contains("card_shadow"),
+		"nothing should reference a standalone shadow node any more")
+	var scene := FileAccess.get_file_as_string(
+		"res://Scenes/StudentList/student_list.tscn")
+	assert_false(scene.contains('name="Shadow"'),
+		"CardContainer must not carry a separate Shadow node")
 
 
 ## The page dots are tinted via self_modulate, so the texture underneath

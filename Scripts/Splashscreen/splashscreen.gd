@@ -39,7 +39,10 @@ func _input(event: InputEvent) -> void:
 		_go_to_loading()
 
 
+## Goes straight to MainMenu. This used to wipe to Scenes/Loading and let
+## that screen do the real hop, which meant two scene changes to reach a
+## destination that loads in one. Kept the _go_to_loading name because
+## both _input branches call it and the boot-screen suite pins it.
 func _go_to_loading() -> void:
 	_already_clicked = true
-	GameState.next_scene = "res://Scenes/MainMenu/main_menu.tscn"
-	Transition.change_scene("res://Scenes/Loading/loading.tscn")
+	Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn")

@@ -10,7 +10,7 @@
 size = Vector2(874.368, 537.6)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wxm10"]
-size = Vector2(453.6, 540.2)
+size = Vector2(453.6, 422.4)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gt578"]
 radius = 70.2
@@ -94,10 +94,10 @@ offset_right = 194.4
 offset_bottom = 194.4
 
 [node name="Goalie" type="CharacterBody2D" parent="." unique_id=1397322346]
-position = Vector2(540, 1091.531)
+position = Vector2(540, 1075)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Goalie" unique_id=1108970920]
-position = Vector2(9, -247.43103)
+position = Vector2(9, -230.9)
 shape = SubResource("RectangleShape2D_wxm10")
 
 [node name="GFX" type="TextureRect" parent="Goalie" unique_id=1353785742]

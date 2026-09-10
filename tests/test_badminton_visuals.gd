@@ -51,3 +51,55 @@ func test_textures_still_come_from_exports_on_the_root() -> void:
 			"enemy_racket_texture", "racket_hit_texture"]:
 		assert_contains(text, export_name,
 			"%s is no longer assigned in the scene" % export_name)
+
+
+const SCRIPT_PATH := "res://Scripts/Minigames/Olahraga/Badminton.gd"
+## puck.png is a 1240x1754 canvas; the old scale drew it in an 86.4px box,
+## the hit circle's diameter. Doubled on 2026-09-10.
+const _PUCK_SCALE := Vector2(0.1393548, 0.0985176)
+
+
+func test_the_puck_is_twice_its_old_size() -> void:
+	var root: Node = load(SCENE_PATH).instantiate()
+	track(root)
+	var sprite := root.get_node("Puck/Sprite2D") as Sprite2D
+	assert_true(sprite.scale.is_equal_approx(_PUCK_SCALE),
+		"Puck/Sprite2D should be drawn at 2x its old scale, got %s" % sprite.scale)
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_contains(src, "@export var puck_radius_frac: float = 0.08",
+		"the hit circle doubles with the picture, as an Inspector knob")
+	assert_false(src.contains("screen_size.x * 0.04"), "the old literal hit radius must be gone")
+
+
+func test_the_shuttle_stands_cork_up_in_the_scene() -> void:
+	var root: Node = load(SCENE_PATH).instantiate()
+	track(root)
+	var sprite := root.get_node("Puck/Sprite2D") as Sprite2D
+	assert_true(is_equal_approx(sprite.rotation_degrees, 90.0),
+		"puck.png draws the cork on the left; 90 degrees clockwise stands it up")
+	assert_eq(sprite.get_script().resource_path,
+		"res://Scripts/Minigames/Olahraga/ShuttlecockSprite.gd",
+		"the shuttle's look is owned by ShuttlecockSprite.gd")
+
+
+func test_hits_drive_the_shuttle_rather_than_flipping_it() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_false(src.contains("flip_v"),
+		"flip_v mirrors a sideways shuttle invisibly; the cork turns instead")
+	assert_false(src.contains("var base_scale: Vector2 = puck_sprite.scale"),
+		"reading the live, mid-punch scale as the base is what grew the puck")
+	assert_contains(src, "puck_sprite.punch()", "a hit swells the shuttle through ShuttlecockSprite")
+	assert_contains(src, "puck_sprite.face(puck.linear_velocity.y)",
+		"a hit turns the cork to lead the new flight")
+	assert_contains(src, "puck_sprite.reset_pose(target_vel.y < 0.0)",
+		"a serve snaps the cork toward the receiver")
+
+
+func test_the_racket_squash_returns_to_remembered_values() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_false(src.contains("var base_scale: Vector2 = sprite.scale"),
+		"the racket squash must not read its rest scale off a mid-squash sprite")
+	assert_false(src.contains("var idle_texture: Texture2D = sprite.texture"),
+		"the racket must not capture its idle art mid-swap")
+	assert_contains(src, "_racket_rest_scale", "each racket's rest scale is stored once")
+	assert_contains(src, "_racket_idle_texture", "each racket's idle art is stored once")

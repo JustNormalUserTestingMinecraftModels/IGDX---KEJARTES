@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cmnd3wco3mg3y" path="res://Assets/Images/Textures/puck.png" id="2_budfj"]
 [ext_resource type="Texture2D" uid="uid://bon5iadqi8atu" path="res://Assets/Images/Textures/raket_1.png" id="3_77y7n"]
 [ext_resource type="Texture2D" uid="uid://bwvbm0e3qoemv" path="res://Assets/Images/Textures/raket_2.png" id="4_8t8ik"]
+[ext_resource type="Script" uid="uid://dgnuip2j7os0p" path="res://Scripts/Minigames/Olahraga/ShuttlecockSprite.gd" id="5_8t8ik"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_77y7n"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_puck"]
@@ -51,8 +52,10 @@ linear_damp_mode = 1
 shape = SubResource("CircleShape2D_puck")
 
 [node name="Sprite2D" type="Sprite2D" parent="Puck" unique_id=221089689]
-scale = Vector2(0.0696774, 0.0492588)
+rotation = 1.5707964
+scale = Vector2(0.1393548, 0.0985176)
 texture = ExtResource("2_budfj")
+script = ExtResource("5_8t8ik")
 
 [node name="PlayerPaddle" type="CharacterBody2D" parent="." unique_id=1366122061]
 position = Vector2(540, 1500)

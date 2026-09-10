@@ -48,6 +48,10 @@ extends BaseMinigame
 @export_group("Configuration")
 ## Speed cap (px/s) on the player paddle's drag-follow movement.
 @export var max_paddle_speed: float = 2400.0
+## The shuttle's hit circle radius, as a fraction of screen width. Doubled
+## from 0.04 with the shuttle's picture on 2026-09-10, so the circle still
+## matches the art's box (Puck/Sprite2D's scale sets the picture's size).
+@export var puck_radius_frac: float = 0.08
 
 var player_score: int = 0
 var enemy_score: int = 0
@@ -77,7 +81,7 @@ var puck_start_pos: Vector2
 # The @export textures on this script still win at runtime so an artist can
 # override the scene's choice from the root's Inspector without opening the
 # subtree.
-@onready var puck_sprite: Sprite2D = $Puck/Sprite2D
+@onready var puck_sprite: ShuttlecockSprite = $Puck/Sprite2D
 @onready var player_paddle_sprite: Sprite2D = $PlayerPaddle/Sprite2D
 @onready var enemy_paddle_sprite: Sprite2D = $EnemyPaddle/Sprite2D
 
@@ -191,7 +195,7 @@ func _ready() -> void:
 		puck.body_entered.connect(_on_puck_body_entered)
 		var col = puck.get_node_or_null("CollisionShape2D")
 		if col and col.shape is CircleShape2D:
-			col.shape.radius = screen_size.x * 0.04
+			col.shape.radius = screen_size.x * puck_radius_frac
 
 	if player_paddle:
 		player_paddle.global_position = Vector2(screen_size.x / 2, screen_size.y * 0.8)
@@ -206,6 +210,7 @@ func _ready() -> void:
 			col.shape.radius = screen_size.x * 0.06
 
 	_apply_visual_exports()
+	_remember_racket_poses()
 
 	if player_goal:
 		player_goal.body_entered.connect(_on_player_goal)
@@ -253,18 +258,25 @@ func _add_background() -> void:
 	move_child(bg, 0)
 
 var _puck_hit_cooldown: float = 0.0
+## Each racket sprite's resting scale and idle art, remembered once in
+## _ready() so a squash always returns to them -- never to values read off a
+## sprite that is still mid-squash or mid-swap.
+var _racket_rest_scale: Dictionary = {}
+var _racket_idle_texture: Dictionary = {}
+## The running squash per racket sprite, killed before the next one starts.
+var _racket_tweens: Dictionary = {}
 
-# Hit Bounce Arc Scale Animation on Puck Visual + Cute Racket Squash Animation
+# Racket hit: re-aim the puck, swell the shuttle, turn its cork to lead the
+# new flight, and squash the racket that hit it.
 func _on_puck_body_entered(body: Node) -> void:
 	if is_scoring_delay:
 		return
 	if (body == player_paddle or body == enemy_paddle) and _puck_hit_cooldown <= 0.0:
 		_puck_hit_cooldown = 0.22 # Prevent multi-hit trigger jitter
 		_redirect_puck_towards_opponent(body)
-		_play_hit_bounce_animation()
+		puck_sprite.punch()
+		puck_sprite.face(puck.linear_velocity.y)
 		_play_racket_squash_animation(body as CharacterBody2D)
-		if puck_sprite:
-			puck_sprite.flip_v = not puck_sprite.flip_v
 
 func _redirect_puck_towards_opponent(body: Node) -> void:
 	if not puck: return
@@ -280,39 +292,37 @@ func _redirect_puck_towards_opponent(body: Node) -> void:
 	var desired_dir = Vector2(normalized_offset_x, target_y_dir * 1.8).normalized()
 	puck.linear_velocity = desired_dir * cur_speed
 
-func _play_hit_bounce_animation() -> void:
-	if not puck: return
-
-	# Punch relative to the node's resting scale -- a Sprite2D showing a
-	# texture much larger than its display size (see shuttlecock_texture)
-	# rests at a fractional scale, not 1.0, so animating to absolute
-	# values here would permanently blow it up to native texture size.
-	var base_scale: Vector2 = puck_sprite.scale
-
-	var tw = create_tween()
-	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	# Scale the sprite only so collision shape stays constant (prevents physics jitter)
-	tw.tween_property(puck_sprite, "scale", base_scale * 1.6, 0.26).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.tween_property(puck_sprite, "scale", base_scale, 0.26).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+## Remember each racket sprite's resting scale and idle art, once, after the
+## @export art has been applied. The idle art is whatever the sprite really
+## shows -- the scene's baked texture when the @export is null.
+func _remember_racket_poses() -> void:
+	for sprite in [player_paddle_sprite, enemy_paddle_sprite]:
+		if sprite:
+			_racket_rest_scale[sprite] = sprite.scale
+			_racket_idle_texture[sprite] = sprite.texture
 
 func _play_racket_squash_animation(racket: CharacterBody2D) -> void:
 	if not racket or not is_instance_valid(racket): return
 	var sprite: Sprite2D = player_paddle_sprite if racket == player_paddle else enemy_paddle_sprite
+	if not _racket_rest_scale.has(sprite):
+		return
 
-	# Swap to the "hit" pose for the duration of the squash, then back to
-	# whatever the sprite was actually showing -- not the @export texture,
-	# which may be null while the scene's own baked texture is what is
-	# really on screen.
-	var idle_texture: Texture2D = sprite.texture
+	# Squash relative to the REMEMBERED rest scale: a racket texture rests at
+	# a fractional scale sized to its touch target, and a hit can land while
+	# the previous squash is still running.
+	var base_scale: Vector2 = _racket_rest_scale[sprite]
+	var idle_texture: Texture2D = _racket_idle_texture[sprite]
+
+	var previous: Tween = _racket_tweens.get(sprite)
+	if previous and previous.is_valid():
+		previous.kill()
+
+	# Swap to the "hit" pose for the duration of the squash.
 	if racket_hit_texture:
 		sprite.texture = racket_hit_texture
 
-	# Punch relative to the node's resting scale -- see _play_hit_bounce_animation's
-	# note on why an absolute (1,1) target would be wrong once a racket texture
-	# is assigned (its rest scale is a fraction, sized to fit the touch target).
-	var base_scale: Vector2 = sprite.scale
-
 	var tw = create_tween()
+	_racket_tweens[sprite] = tw
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tw.tween_property(sprite, "scale", base_scale * Vector2(1.35, 0.72), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.tween_property(sprite, "scale", base_scale * Vector2(0.78, 1.35), 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -563,7 +573,13 @@ func _reset_puck(receiver_side: String = "player") -> void:
 
 		puck.global_position = serve_origin
 		puck.scale = Vector2(1.0, 1.0)
+		# The cork leads: it faces the receiver before the serve flies.
+		puck_sprite.reset_pose(target_vel.y < 0.0)
 		
+		# One serve at a time -- a second lob tween would fight this one over
+		# the body's position and scale.
+		if _serve_tween and _serve_tween.is_valid():
+			_serve_tween.kill()
 		var tween = create_tween()
 		_serve_tween = tween
 		

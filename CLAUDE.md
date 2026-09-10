@@ -486,15 +486,15 @@ the previous three. See `docs/superpowers/CHANGELOG.md`.
 
 ## Current work
 
-Branch `Textures` (also main). Two 2026-09-07 passes are merged and green at
-1061 tests -- the sprite-rig pass (two-state goalie, layered `DancerRig`, the
-event dialog on DaySummary chrome, the three-pose day cycle, the shop hub) and
-the collaborator's inventory mobile-layout & item-apply pass. Both are written
-up in `docs/superpowers/CHANGELOG.md`, including every placeholder each one
-left behind.
+Branch `feat/asset-refresh-ui-pass`, off `Textures` (main). The 2026-09-10
+asset refresh and UI pass is complete and green at 1198 tests / 86 suites,
+not yet merged. See `docs/superpowers/CHANGELOG.md` for what it changed and
+every placeholder it left behind.
 
-Plan C's RunResult redesign also remains open, tracked in
-`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md`.
+Plan C's RunResult redesign remains open, tracked in
+`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` -- note this pass
+already replaced RunResult's grade letter with five rank badges and fixed its
+win backdrop, so re-read that plan against the current screen before acting.
 
 
 ## Maintaining this file

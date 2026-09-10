@@ -201,8 +201,8 @@ func test_sticky_notes_are_stickynote_instances_wired_per_day() -> void:
 			assert_true(note is StickyNote,
 				"Murid%d/StickyNotesContainer/%s must be a StickyNote instance" % [i, day])
 			if note is StickyNote:
-				assert_eq(note.day_name, day,
-					"Murid%d/%s day_name export" % [i, day])
+				assert_eq(note.name, day,
+					"Murid%d/%s node name" % [i, day])
 
 
 func test_stickynote_scene_has_no_theme_overrides() -> void:
@@ -301,3 +301,61 @@ func test_catatan_composes_persona_then_quirk() -> void:
 	assert_eq(RosterCard.compose_catatan("", ""),
 		"Belum ada catatan untuk murid ini.",
 		"an unknown pairing must still produce a sentence")
+
+
+## Five notes in one row replaces the 3+2 grid, which left a lopsided
+## hole in the second row and ~330px of dead paper below it.
+func test_the_week_strip_is_one_row_of_five() -> void:
+	var days := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
+	for i in range(1, 5):
+		var container := _list.get_node_or_null(
+			"CardContainer/Murid%d/StickyNotesContainer" % i)
+		assert_true(container != null, "missing StickyNotesContainer on Murid%d" % i)
+		var last_x := -1.0
+		var first_y := -1.0
+		for d in days:
+			var note := container.get_node_or_null(d) as StickyNote
+			assert_true(note != null, "missing note %s on Murid%d" % [d, i])
+			if first_y < 0.0:
+				first_y = note.offset_top
+			assert_eq(note.offset_top, first_y,
+				"%s must share the row's y on Murid%d" % [d, i])
+			assert_true(note.offset_left > last_x,
+				"%s must sit right of the previous note on Murid%d" % [d, i])
+			last_x = note.offset_left
+
+
+func test_trait_row_holds_three_chips_that_clear_the_touch_minimum() -> void:
+	var tokens := DesignTokens.load_default()
+	var expected := {
+		"SpecialtyChip": &"SpecialtyBadge",
+		"PersonaChip": &"PersonaBadge",
+		"QuirkChip": &"QuirkBadge",
+	}
+	for i in range(1, 5):
+		for chip_name in expected:
+			var chip := _list.get_node_or_null(
+				"CardContainer/Murid%d/TraitRow/%s" % [i, chip_name]) as Button
+			assert_true(chip != null, "missing %s on Murid%d" % [chip_name, i])
+			assert_eq(chip.theme_type_variation, expected[chip_name],
+				"%s variation on Murid%d" % [chip_name, i])
+			assert_true(chip.get_combined_minimum_size().y >= float(tokens.touch_target_min),
+				"%s must clear the touch minimum on Murid%d" % [chip_name, i])
+
+
+## The card's dead band becomes the teacher's note.
+func test_catatan_strip_is_populated_per_student() -> void:
+	for i in range(1, 5):
+		var label := _list.get_node_or_null(
+			"CardContainer/Murid%d/CatatanGuru/CatatanLabel" % i) as Label
+		assert_true(label != null, "missing CatatanLabel on Murid%d" % i)
+		assert_true(label.text.length() > 0,
+			"catatan must never be blank on Murid%d" % i)
+
+
+func test_sticky_notes_carry_a_category_icon() -> void:
+	var note := _list.get_node_or_null(
+		"CardContainer/Murid1/StickyNotesContainer/Senin") as StickyNote
+	assert_true(note != null, "missing Senin note")
+	assert_true("icon_texture" in note,
+		"StickyNote must expose an icon_texture export")

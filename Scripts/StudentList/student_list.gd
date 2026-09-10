@@ -148,6 +148,22 @@ var card_animating: bool = false
 
 # Tutorial UI variables
 const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
+
+## Schedule category -> week-strip glyph, keyed by every spelling the
+## day_schedules data can carry. Anything unresolved (an empty category,
+## the "-" placeholder for an unscheduled day) falls back to the libur
+## icon. Mirrors DesignTokens.category_color()'s key set.
+const CATEGORY_ICONS := {
+	"Akademis": "res://Assets/Images/UI/Placeholders/icon_akademis.svg",
+	"Akademik": "res://Assets/Images/UI/Placeholders/icon_akademis.svg",
+	"SeniBudaya": "res://Assets/Images/UI/Placeholders/icon_seni.svg",
+	"Seni Budaya": "res://Assets/Images/UI/Placeholders/icon_seni.svg",
+	"Olahraga": "res://Assets/Images/UI/Placeholders/icon_olahraga.svg",
+	"Istirahat": "res://Assets/Images/UI/Placeholders/icon_istirahat.svg",
+	"Wirausaha": "res://Assets/Images/UI/Placeholders/icon_wirausaha.svg",
+	"Libur": "res://Assets/Images/UI/Placeholders/icon_libur.svg",
+}
+const CATEGORY_ICON_FALLBACK := "res://Assets/Images/UI/Placeholders/icon_libur.svg"
 var current_step := 0
 var tutorial_active := true
 var _tutorial_panel: PanelContainer
@@ -241,11 +257,17 @@ func _setup_students():
 							sticky_node.texture = sticky_note_texture
 
 						var is_day_set = day_schedules_for_student.has(day_name)
+						var cat := ""
 						if is_day_set:
-							var cat = day_schedules_for_student[day_name].get("category", "")
+							cat = day_schedules_for_student[day_name].get("category", "")
 							sticky_node.activity = cat if cat != "" else "Terjadwal"
 						else:
 							sticky_node.activity = "-"
+
+						# Category glyph for the week strip (Part 3). Falls
+						# back to the libur icon for an empty/unscheduled day.
+						var icon_path: String = CATEGORY_ICONS.get(cat, CATEGORY_ICON_FALLBACK)
+						sticky_node.icon_texture = load(icon_path)
 
 			# Attach CardButton signals for 100% click & swipe reliability
 			var card_button = murid_node.get_node_or_null("CardButton")

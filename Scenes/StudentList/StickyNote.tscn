@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://c47ib8or275b3" path="res://Scripts/StudentList/StickyNote.gd" id="2_o72i2"]
 
 [node name="StickyNote" type="TextureRect" unique_id=159726911]
+self_modulate = Color(0.47843137, 0.36078432, 0.2509804, 1)
 custom_minimum_size = Vector2(260, 260)
 texture = ExtResource("1_iwtuy")
 expand_mode = 1
@@ -32,3 +33,13 @@ text = "-"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
+
+[node name="Icon" type="TextureRect" parent="." unique_id=834816331]
+layout_mode = 0
+offset_left = 100.0
+offset_top = 185.0
+offset_right = 160.0
+offset_bottom = 245.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6

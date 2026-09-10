@@ -25,8 +25,18 @@ extends TextureRect
 			$ActivityLabel.text = value
 			self_modulate = DesignTokens.load_default().category_color(value)
 
+## The schedule category's glyph, shown beside the activity name. Set
+## from student_list.gd per the day's scheduled category so every day in
+## the week strip reads at a glance.
+@export var icon_texture: Texture2D:
+	set(value):
+		icon_texture = value
+		if is_node_ready():
+			$Icon.texture = value
+
 
 func _ready() -> void:
 	$DayLabel.text = day_name.to_upper()
 	$ActivityLabel.text = activity
 	self_modulate = DesignTokens.load_default().category_color(activity)
+	$Icon.texture = icon_texture

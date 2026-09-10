@@ -120,20 +120,16 @@ func test_rotation_is_monotone_across_the_day() -> void:
 		previous = current
 
 
-func test_the_sweep_eases_in_and_out() -> void:
-	# smoothstep's defining property: it is slower than linear in the
-	# first quarter, faster than linear across the middle.
+func test_the_tween_owns_the_easing() -> void:
+	# Since 2026-09-10 the sweep eases OUT in transition_to()'s tween. The
+	# smoothstep layer would put an ease-in back under it, so it ships off
+	# and progress maps onto the arc linearly.
 	var w := _sized_widget()
-	assert_true(w.get("ease_in_out"), "the widget must ship with easing on")
-	w.call("set_progress", 0.25)
-	assert_true(w.call("eased_progress") < 0.25,
-		"the first quarter of the day must move less than linear (ease in)")
-	w.call("set_progress", 0.75)
-	assert_true(w.call("eased_progress") > 0.75,
-		"the last quarter must have already covered more than linear (ease out)")
-	w.call("set_progress", 0.5)
-	assert_true(absf(float(w.call("eased_progress")) - 0.5) < 0.001,
-		"the easing must stay symmetric about the midpoint")
+	assert_false(w.get("ease_in_out"), "the smoothstep layer must ship off")
+	for p in [0.25, 0.5, 0.75]:
+		w.call("set_progress", p)
+		assert_true(absf(float(w.call("eased_progress")) - p) < 0.001,
+			"with the layer off, progress %f must map linearly" % p)
 
 
 func test_progress_is_clamped() -> void:

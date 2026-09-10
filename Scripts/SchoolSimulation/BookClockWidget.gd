@@ -7,8 +7,9 @@ class_name BookClockWidget
 ## Two full-screen layers: a square sky texture that rotates about a
 ## pivot near the bottom of the screen, and a stationary school-on-a-hill
 ## foreground painted over it. As the school day advances, set_progress()
-## turns the sky so the bright half sweeps away and the night half swings
-## in, and the whole screen reads as one day passing.
+## turns the sky one full circle -- from the dark of dawn, through sunrise
+## and the bright midday, back round to the dark of evening -- and the whole
+## screen reads as one day passing.
 ##
 ## This file used to draw a procedural cat pocket-watch. It no longer
 ## draws anything: both layers are authored TextureRects in the scene,
@@ -43,41 +44,43 @@ enum Phase { DAWN, MIDDAY, EVENING }
 @export_group("Motion")
 ## The two angles the school day rests at, in degrees.
 ##
-## The defaults reproduce the old single -180 sweep exactly. The day was
-## two deliberate transitions between three named poses from 2026-09-07,
-## with the event pinned to the middle one; from 2026-09-10 it is one
-## continuous sweep between these two poses, and the event still rolls at
-## the midpoint but the sky no longer stops there.
+## The day was two deliberate transitions between three named poses from
+## 2026-09-07, with the event pinned to the middle one; from 2026-09-10 it
+## is one continuous sweep between these two poses, and the event still
+## rolls at the midpoint but the sky no longer stops there. Later that day
+## the sweep grew from a half turn to a full one, starting and ending on
+## the darkest frame of the sky art.
 ##
 ## Godot's rotation is clockwise-positive with y down, so the
 ## counter-clockwise sweep the mechanism reference asks for runs toward
 ## NEGATIVE angles.
 
-## The sky's angle at the start of the school day: morning breaking,
-## bright sky opening out of the night half.
+## The sky's angle at the start of the school day: still dark, just
+## before sunrise.
 ##
-## Dawn and evening were 0 / -180 until a 2026-09-07 screenshot pass
-## showed 0 renders as NIGHT, not morning -- the single sweep this
-## replaced started at the same value and made the same "morning" claim
-## in its docstring, so the art and the naming had disagreed since the
-## sweep was written. Shifting the whole arc one quarter-turn puts
-## each pose on the sky it is named for, and keeps the sweep
-## counter-clockwise (monotonically decreasing) as the mechanism
-## reference asks. A third, midday pose sat between them from
-## 2026-09-07 until 2026-09-10, when it was retired -- see
-## current_rotation_degrees().
-@export var dawn_rotation_degrees: float = -90.0:
+## 60 is the same view as -300, the darkest frame of the sky art, picked
+## from a 12-angle contact sheet of the real composite on 2026-09-10 --
+## the old -90 opened the day half dark, half bright blue. Dawn sits one
+## full turn above evening, so the day sweeps dark -> orange sunrise ->
+## blue midday -> dusk -> dark, counter-clockwise (monotonically
+## decreasing) as the mechanism reference asks. The poses were 0 / -180
+## before 2026-09-07 and -90 / -270 until 2026-09-10; a third, midday pose
+## sat between them until it was retired -- see current_rotation_degrees().
+@export var dawn_rotation_degrees: float = 60.0:
 	set(value):
 		dawn_rotation_degrees = value
 		_apply_rotation()
-## The sky's angle when the school day ends: dusk, first stars returning.
-@export var evening_rotation_degrees: float = -270.0:
+## The sky's angle when the school day ends: dark again, on the same frame
+## the day started on, one full turn later.
+@export var evening_rotation_degrees: float = -300.0:
 	set(value):
 		evening_rotation_degrees = value
 		_apply_rotation()
 ## How long one phase of the school day takes, in seconds -- the day has
-## two, dawn-to-midday and midday-to-evening, each this length. Chosen in
-## motion-lab on 2026-09-07 alongside SINE/IN_OUT.
+## two, dawn-to-midday and midday-to-evening, each this length, and the
+## sky sweeps once across both. 2.0 was chosen in motion-lab on 2026-09-07
+## for a half turn; the full turn of 2026-09-10 kept it, so the sky now
+## spins twice as fast -- retune it in motion-lab alongside the ease.
 ##
 ## SchoolDay reads this to pace the day's progress bar across its two
 ## phases and the sky in a single sweep spanning both, so all three stay
@@ -86,8 +89,9 @@ enum Phase { DAWN, MIDDAY, EVENING }
 @export var transition_duration: float = 2.0
 ## When true, progress runs through smoothstep before it maps to an
 ## angle, so the sweep eases in and out even under a linear driver.
-## SchoolDay.gd also eases its own tween; the two compose harmlessly.
-@export var ease_in_out: bool = true:
+## Off since 2026-09-10: transition_to()'s tween eases OUT, and smoothstep
+## underneath it would put the ease-in back.
+@export var ease_in_out: bool = false:
 	set(value):
 		ease_in_out = value
 		_apply_rotation()
@@ -212,7 +216,7 @@ func transition_to(phase: Phase, duration: float = -1.0) -> Tween:
 	var seconds: float = transition_duration if duration < 0.0 else duration
 	var tween := create_tween()
 	tween.tween_method(set_progress, _progress, progress_for_phase(phase), seconds) \
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	return tween
 
 

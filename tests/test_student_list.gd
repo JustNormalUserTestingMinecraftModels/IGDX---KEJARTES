@@ -446,6 +446,61 @@ func test_setup_students_drives_every_rostercard_band() -> void:
 		"persona must come from the clean `personality` key, not the prefixed `persona`")
 
 
+## The regression that killed swipe and tap-to-schedule: instancing a
+## Control writes `layout_mode = 0` (Position mode), which ZEROES the
+## anchors it would otherwise inherit from the sub-scene root. The four
+## RosterCard instances collapsed to 0x0, so CardButton -- anchored to
+## fill its parent -- fell back to its 88x60 stylebox minimum in the
+## card's top-left corner and every tap outside that patch hit nothing.
+## The card must fill CardContainer, or the whole screen is inert.
+func test_each_card_fills_its_container() -> void:
+	for i in range(1, 5):
+		var card := _list.get_node_or_null("CardContainer/Murid%d" % i) as Control
+		assert_true(card != null, "missing CardContainer/Murid%d" % i)
+		assert_eq(card.anchor_right, 1.0,
+			"Murid%d must anchor to its container's right edge, not collapse" % i)
+		assert_eq(card.anchor_bottom, 1.0,
+			"Murid%d must anchor to its container's bottom edge, not collapse" % i)
+		var btn := card.get_node_or_null("CardButton") as Control
+		assert_true(btn != null, "missing Murid%d/CardButton" % i)
+		assert_eq(btn.anchor_right, 1.0, "Murid%d/CardButton must fill the card" % i)
+		assert_eq(btn.anchor_bottom, 1.0, "Murid%d/CardButton must fill the card" % i)
+
+
+## The trait chips are Button variations whose styleboxes are 160 tall --
+## custom_minimum_size is a floor, not a cap -- so the row overran the
+## week strip by 40px. Bands must not overlap, whatever the chips measure.
+func test_the_card_bands_do_not_overlap() -> void:
+	var card := _list.get_node_or_null("CardContainer/Murid1") as Control
+	assert_true(card != null, "missing Murid1")
+	var bands := ["PortraitFrame", "TraitRow", "StickyNotesContainer", "CatatanGuru"]
+	var prev_bottom := 0.0
+	for name in bands:
+		var band := card.get_node_or_null(name) as Control
+		assert_true(band != null, "missing band " + name)
+		assert_true(band.offset_top >= prev_bottom,
+			"%s starts at %f, above the previous band's bottom %f"
+				% [name, band.offset_top, prev_bottom])
+		prev_bottom = band.offset_bottom
+
+
+## StickyNote's children were authored in absolute offsets for a 260x260
+## note; the week strip instances them at 160x190, which pushed the Icon
+## below the note's bottom edge and spilled both labels past its right.
+## Anchored children scale with whatever size the instance is given.
+func test_sticky_note_children_scale_with_the_note() -> void:
+	var scene: PackedScene = load("res://Scenes/StudentList/StickyNote.tscn")
+	var note := scene.instantiate()
+	track(note)
+	for child_name in ["DayLabel", "ActivityLabel", "Icon"]:
+		var child := note.get_node_or_null(child_name) as Control
+		assert_true(child != null, "missing StickyNote/" + child_name)
+		assert_true(child.anchor_right > 0.0 or child.anchor_bottom > 0.0,
+			"%s is pinned to absolute offsets and will not fit a resized note"
+				% child_name)
+	note.free()
+
+
 ## CATEGORY_ICONS must cover every category category_color() knows, or a
 ## scheduled day gets no glyph. The header comment claims it mirrors that
 ## key set -- this makes the claim enforceable.

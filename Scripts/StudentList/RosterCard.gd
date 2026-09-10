@@ -127,9 +127,17 @@ func _ready() -> void:
 	_apply_scheduled()
 
 
+## The specialty chip is icon-only. Three labelled pills do not fit across
+## the card's 880px trait row -- the chips are Button variations whose
+## styleboxes are 160 tall and wide to match, and forcing all three to
+## share the width clipped every label ("Akademis" -> "AKA"). The category
+## glyph is the same vocabulary the week strip's notes use, so it carries
+## the specialty on its own and hands its width to the two word chips.
+## The full word stays available as the tooltip.
 func _apply_specialty() -> void:
 	var chip: Button = $TraitRow/SpecialtyChip
-	chip.text = specialty
+	chip.text = ""
+	chip.tooltip_text = specialty
 	if SPECIALTY_ICONS.has(specialty):
 		chip.icon = load(SPECIALTY_ICONS[specialty])
 	else:

@@ -112,9 +112,9 @@ flip_v = true
 [node name="StickyNotesContainer" type="Control" parent="." unique_id=283858632]
 anchors_preset = 0
 offset_left = 30.0
-offset_top = 906.0
+offset_top = 975.0
 offset_right = 910.0
-offset_bottom = 1096.0
+offset_bottom = 1165.0
 mouse_filter = 2
 
 [node name="Senin" parent="StickyNotesContainer" unique_id=159726911 instance=ExtResource("3_2cr6j")]
@@ -165,15 +165,16 @@ day_name = "JUM"
 [node name="TraitRow" type="HBoxContainer" parent="." unique_id=517615274]
 layout_mode = 0
 offset_left = 30.0
-offset_top = 786.0
+offset_top = 790.0
 offset_right = 910.0
-offset_bottom = 882.0
+offset_bottom = 950.0
 mouse_filter = 2
 theme_override_constants/separation = 16
 
 [node name="SpecialtyChip" type="Button" parent="TraitRow" unique_id=1755543310]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
+size_flags_horizontal = 0
 focus_mode = 0
 mouse_filter = 2
 theme_type_variation = &"SpecialtyBadge"
@@ -181,23 +182,27 @@ theme_type_variation = &"SpecialtyBadge"
 [node name="PersonaChip" type="Button" parent="TraitRow" unique_id=934576774]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 mouse_filter = 2
 theme_type_variation = &"PersonaBadge"
+clip_text = true
 
 [node name="QuirkChip" type="Button" parent="TraitRow" unique_id=909514293]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 mouse_filter = 2
 theme_type_variation = &"QuirkBadge"
+clip_text = true
 
 [node name="CatatanGuru" type="Control" parent="." unique_id=1031197187]
 anchors_preset = 0
 offset_left = 30.0
-offset_top = 1126.0
+offset_top = 1190.0
 offset_right = 910.0
-offset_bottom = 1346.0
+offset_bottom = 1360.0
 mouse_filter = 2
 
 [node name="Rule" type="TextureRect" parent="CatatanGuru" unique_id=445468317]

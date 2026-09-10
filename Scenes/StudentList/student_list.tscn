@@ -91,10 +91,7 @@ texture = ExtResource("3_paper")
 expand_mode = 1
 
 [node name="Murid1" parent="CardContainer" unique_id=1291523057 instance=ExtResource("5_cv71g")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
+layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
 student_name = "Marcel"
@@ -105,10 +102,7 @@ quirk = "Kutu Buku"
 
 [node name="Murid2" parent="CardContainer" unique_id=1830802273 instance=ExtResource("5_cv71g")]
 visible = false
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
+layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
 student_name = "Doni"
@@ -119,10 +113,7 @@ quirk = "Semangat Juang"
 
 [node name="Murid3" parent="CardContainer" unique_id=1911810822 instance=ExtResource("5_cv71g")]
 visible = false
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
+layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
 student_name = "Andi"
@@ -133,10 +124,7 @@ quirk = "Penasaran"
 
 [node name="Murid4" parent="CardContainer" unique_id=651970866 instance=ExtResource("5_cv71g")]
 visible = false
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
+layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
 student_name = "Citra"

@@ -12,10 +12,11 @@ script = ExtResource("2_o72i2")
 
 [node name="DayLabel" type="Label" parent="." unique_id=594998491]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 35.0
-offset_right = 240.0
-offset_bottom = 85.0
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 12.0
+offset_right = -8.0
+offset_bottom = 62.0
 rotation = -0.05
 theme_type_variation = &"TitleLabel"
 text = "SENIN"
@@ -23,10 +24,12 @@ horizontal_alignment = 1
 
 [node name="ActivityLabel" type="Label" parent="." unique_id=1314440149]
 layout_mode = 0
-offset_left = 15.0
-offset_top = 110.0
-offset_right = 245.0
-offset_bottom = 220.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 66.0
+offset_right = -8.0
+offset_bottom = -52.0
 rotation = -0.05
 theme_type_variation = &"CaptionLabel"
 text = "-"
@@ -36,10 +39,14 @@ autowrap_mode = 2
 
 [node name="Icon" type="TextureRect" parent="." unique_id=834816331]
 layout_mode = 0
-offset_left = 100.0
-offset_top = 185.0
-offset_right = 160.0
-offset_bottom = 245.0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -24.0
+offset_top = -48.0
+offset_right = 24.0
+offset_bottom = -8.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6

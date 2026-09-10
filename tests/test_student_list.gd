@@ -397,12 +397,22 @@ func test_navigation_sits_in_thumb_reach() -> void:
 			"%s must sit in the lower third, got offset_top %f" % [n, c.offset_top])
 
 
-func test_header_sits_on_the_papan_plaque() -> void:
-	var papan := _list.get_node_or_null("Papan") as TextureRect
-	assert_true(papan != null, "missing Papan plaque behind the header")
+## The header is an outlined H1Label straight on the desk, with no
+## plaque behind it.
+##
+## There WAS a "Papan" TextureRect there, and it never once rendered as
+## a plaque: whiteboard.png is a portrait 1080x1920 image and the node
+## was a 700x116 strip on STRETCH_KEEP_ASPECT_CENTERED, so it fitted to
+## a 65x116 sliver dead centre -- read on review as a stray icon
+## clipping the title. Removed rather than restretched; H1Label is
+## outlined and carries itself on the wood.
+func test_the_header_has_no_plaque_behind_it() -> void:
+	assert_true(_list.get_node_or_null("Papan") == null,
+		"the Papan sliver must stay removed, not be restretched back in")
 	var header := _list.get_node_or_null("HeaderLabel") as Label
 	assert_true(header != null, "missing HeaderLabel")
 	assert_eq(header.theme_type_variation, &"H1Label", "HeaderLabel variation")
+	assert_eq(header.text, "MURIDMU", "the screen is titled MURIDMU")
 
 
 ## Source scans, not behaviour: student_list.gd is deliberately NOT
@@ -562,7 +572,7 @@ func test_the_small_icons_are_the_teams_authored_art() -> void:
 func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := src.get_slice("var defaults = [", 1).get_slice("\n\t]", 0)
-	var titles := ["Daftar Murid", "Status Jadwal", "Navigasi Card", "Pilih Murid"]
+	var titles := ["Muridmu", "Status Jadwal", "Navigasi Card", "Pilih Murid"]
 	var last := -1
 	for t in titles:
 		var at := body.find("\"%s\"" % t)

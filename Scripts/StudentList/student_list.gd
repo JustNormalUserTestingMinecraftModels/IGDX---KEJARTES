@@ -628,7 +628,7 @@ func _setup_tutorial():
 
 func _populate_default_tutorial_steps():
 	var defaults = [
-		["Daftar Murid", "Disini kalian bebas memilih murid-murid yang belum terjadwalkan untuk belajar selama seminggu!", "CardContainer"],
+		["Muridmu", "Disini kalian bebas memilih murid-murid yang belum terjadwalkan untuk belajar selama seminggu!", "CardContainer"],
 		["Status Jadwal", "Hijau berarti sudah terjadwal, merah berarti belum. Ketuk untuk langsung ke murid itu!", "RosterStrip"],
 		["Navigasi Card", "Geser layar atau tekan tombol panah kanan untuk melihat murid lainnya!", "RightArrow"],
 		["Pilih Murid", "Bagus! Sekarang tekan kertas dokumen murid ini untuk mulai mengatur jadwal belajarnya!", ""]
@@ -792,7 +792,7 @@ func _show_step(index: int):
 	_panel_tween.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.10)
 
 	if index == 0 or index == 1:
-		# Daftar Murid and Status Jadwal are spotlight-only: the scrim
+		# Muridmu and Status Jadwal are spotlight-only: the scrim
 		# blocks, a tap anywhere advances.
 		color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -891,7 +891,7 @@ func _end_tutorial():
 		color_rect.hide()
 
 func _on_click_area_gui_input(event: InputEvent):
-	# Steps 0 (Daftar Murid) and 1 (Status Jadwal) are both spotlight-only
+	# Steps 0 (Muridmu) and 1 (Status Jadwal) are both spotlight-only
 	# -- a tap anywhere advances.
 	if tutorial_active and (current_step == 0 or current_step == 1):
 		if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) or (event is InputEventScreenTouch and event.pressed):

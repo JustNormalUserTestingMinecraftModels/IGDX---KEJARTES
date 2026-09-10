@@ -89,15 +89,22 @@ func test_nothing_clips_the_screen_rim() -> void:
 		# The full-bleed backdrop and card layers are meant to overhang.
 		#
 		# The Meja_* desk overlays belong to that same class and were
-		# added to this list on 2026-09-10, when they were deliberately
-		# nudged 8-10px during the per-student desk-art pass. They are
-		# full-bleed art sized to the screen, not controls positioned
-		# inside it: their offsets are a bleed against the rim, which is
-		# exactly what this rule is meant to allow rather than catch.
+		# added to this list on 2026-09-10. They were nudged 8-10px in
+		# the per-student desk-art pass to fix a real defect: at their
+		# committed positions the desks did not quite cover the bottom of
+		# the students' bodies, so each figure ended in a visible seam
+		# where the art stopped instead of disappearing behind the desk.
+		# The overlap IS the fix -- do not "correct" these offsets back
+		# to zero without checking the front-row figures in the lobby.
+		#
+		# They are also full-bleed art sized to the screen, not controls
+		# positioned inside it, so their offsets are a bleed against the
+		# rim -- what this rule is meant to allow rather than catch.
 		if name in ["Backdrop", "BGLayer", "ColorRect", "TutorialOverlay"]:
 			continue
 		if name.begins_with("Meja_"):
 			continue
+
 		if r["l"] < RIM_CLEARANCE or r["r"] > SCREEN_W - RIM_CLEARANCE:
 			offenders.append("%s spans %f..%f" % [name, r["l"], r["r"]])
 	assert_eq(offenders.size(), 0,

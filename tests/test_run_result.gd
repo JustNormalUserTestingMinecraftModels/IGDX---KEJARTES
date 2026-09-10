@@ -108,7 +108,7 @@ func test_the_script_actually_compiles() -> void:
 
 func test_the_screen_has_a_backdrop_grade_card_and_rows_box() -> void:
 	var screen = load(_SCENE_PATH).instantiate()
-	var has_all := screen.get_node_or_null("Backdrop") != null \
+	var has_all := screen.get_node_or_null("WinStage") != null \
 		and screen.get_node_or_null("BlurLayer") != null \
 		and screen.get_node_or_null(
 			"MarginContainer/Column/GradeCard/GradeStack/GradeBadge") != null \
@@ -205,15 +205,19 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 		_collect_overrides(child, out)
 
 
-# ────────────────────────────────── the backdrop carried over from EndCutscene
+# ──────────────────────────────── the win stage shared with EndCutscene
 
 const _BLUR_SHADER := "res://Scripts/Shaders/blur.gdshader"
 const _CUTSCENE_SCRIPT := "res://Scripts/EndGame/EndCutscene.gd"
+## The line EndCutscene dresses the stage with, verbatim -- see
+## test_end_cutscene.gd's copy. Same call, same inputs, same frame.
+const _DRESS_CALL := "win_stage.dress(GameState.run_failed, WinStage.names_of(GameState.approved_students))"
 
 
-## RunResult opens on the very image EndCutscene just blurred, so the swap
-## between them is invisible. Same CG, same shader, same lod, same darkness --
-## if any of those drift, the hand-off becomes a visible cut.
+## RunResult opens on the very frame EndCutscene just blurred, so the swap
+## between them is invisible: the same WinStage scene, the same shader, the
+## same lod, the same darkness. If any of those drift, the hand-off becomes
+## a visible cut.
 func test_the_backdrop_is_the_same_blurred_cg_the_cutscene_ended_on() -> void:
 	var screen = load(_SCENE_PATH).instantiate()
 	var layer = screen.get_node_or_null("BlurLayer")
@@ -228,8 +232,8 @@ func test_the_backdrop_is_the_same_blurred_cg_the_cutscene_ended_on() -> void:
 	assert_true(is_rect, "BlurLayer is an authored ColorRect")
 	assert_eq(shader_path, _BLUR_SHADER,
 		"it reuses the same blur shader EndCutscene exits through")
-	assert_true(order.find("Backdrop") < order.find("BlurLayer"),
-		"the backdrop draws first, so the shader samples it")
+	assert_true(order.find("WinStage") < order.find("BlurLayer"),
+		"the win stage draws first, so the shader samples it")
 	assert_true(order.find("BlurLayer") < order.find("MarginContainer"),
 		"and the report UI draws after it, so the UI stays sharp")
 
@@ -249,16 +253,17 @@ func test_the_scrim_no_longer_double_darkens_the_backdrop() -> void:
 		+ "otherwise the two screens cannot match")
 
 
-## Which CG is chosen is StatCheck's verdict, read exactly the way
-## EndCutscene reads it. RunResult must not recompute the decision.
+## Which picture is shown is StatCheck's verdict, passed to the shared stage
+## exactly the way EndCutscene passes it. RunResult must not recompute it.
 func test_the_backdrop_is_dressed_from_the_same_verdict_flag() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("@export var win_backdrop"), "a win backdrop is exported")
-	assert_true(src.contains("@export var lose_backdrop"), "and a lose one")
+	assert_false(src.contains("@export var win_backdrop"),
+		"the painting moved to WinStage.tscn -- one art source for both screens")
+	assert_false(src.contains("@export var lose_backdrop"), "and so did the lose CG")
 	# Scoped to _dress_backdrop's own body, not the whole file: _compute_grade
 	# legitimately calls check_semester_passed() to letter the run. It is only
 	# the BACKDROP that must not re-decide anything -- it has to agree with the
-	# image EndCutscene just showed, which was chosen from run_failed alone.
+	# frame EndCutscene just showed, which was chosen from run_failed alone.
 	var from := src.find("func _dress_backdrop()")
 	assert_true(from != -1, "_dress_backdrop exists")
 	var to := src.find("\nfunc ", from + 1)
@@ -285,17 +290,50 @@ func test_both_screens_dim_the_blur_by_the_same_amount() -> void:
 		"as EndCutscene reaches")
 
 
-## RunResult.gd's own docstring has always promised "the SAME image
-## EndCutscene shows". It pointed at cg_win.jpg while EndCutscene's win
-## branch moved to win_background.png, so the hand-off was a visible cut.
-func test_the_win_backdrop_is_the_image_the_cutscene_actually_ends_on() -> void:
+## RunResult's header always promised "the SAME image EndCutscene shows". It
+## pointed at cg_win.jpg while EndCutscene moved on, then showed the right
+## painting cropped differently and without the students. Now both screens
+## instance one scene, and the art is referenced in exactly one file.
+func test_both_screens_open_on_the_one_win_stage() -> void:
 	var run_src := FileAccess.get_file_as_string(_SCENE_PATH)
-	var cut_src := FileAccess.get_file_as_string(
-		"res://Scenes/EndGame/EndCutscene.tscn")
-	var want := "Assets/Images/CG/Win/win_background.png"
-	assert_true(cut_src.contains(want),
-		"EndCutscene's win branch shows the win background")
-	assert_true(run_src.contains(want),
-		"and RunResult must open on that same image, not cg_win.jpg")
-	assert_false(run_src.contains("cg_win.jpg"),
-		"the old, smaller win CG must no longer be referenced")
+	var cut_src := FileAccess.get_file_as_string("res://Scenes/EndGame/EndCutscene.tscn")
+	var stage_src := FileAccess.get_file_as_string("res://Scenes/EndGame/WinStage.tscn")
+	var stage_scene := "res://Scenes/EndGame/WinStage.tscn"
+	var painting := "Assets/Images/CG/Win/win_background.png"
+	assert_true(run_src.contains(stage_scene), "RunResult instances WinStage")
+	assert_true(cut_src.contains(stage_scene), "and so does EndCutscene")
+	assert_true(stage_src.contains(painting), "the painting is wired in WinStage.tscn")
+	assert_false(run_src.contains(painting) or cut_src.contains(painting),
+		"and nowhere else -- no host keeps or overrides its own copy")
+	assert_false(run_src.contains("cg_win.jpg"), "the old, smaller win CG stays gone")
+
+
+func test_both_screens_dress_the_stage_with_the_identical_call() -> void:
+	var run_src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var cut_src := FileAccess.get_file_as_string(_CUTSCENE_SCRIPT)
+	assert_true(run_src.contains(_DRESS_CALL),
+		"RunResult dresses the stage from the verdict and roster")
+	assert_true(cut_src.contains(_DRESS_CALL), "exactly as EndCutscene does")
+
+
+func test_the_old_backdrop_node_is_gone() -> void:
+	var screen = load(_SCENE_PATH).instantiate()
+	# Resolve to plain values BEFORE freeing -- see the Scrim test above.
+	var has_backdrop: bool = screen.get_node_or_null("Backdrop") != null
+	var first_name := String(screen.get_child(0).name)
+	screen.free()
+	assert_false(has_backdrop, "the cropped painting is replaced by the win stage")
+	assert_eq(first_name, "WinStage", "which draws first")
+
+
+## Letterboxed, the win stage puts the navy bar behind the title, where
+## H1Label's dark brown vanished. The title takes the results screens' own
+## light-on-dark label instead: gold display face with a dark outline, which
+## reads on the bar and, on shorter screens with no bar, on the blurred
+## painting.
+func test_the_title_reads_over_the_letterbox_bar() -> void:
+	var screen = load(_SCENE_PATH).instantiate()
+	var variation := String(
+		screen.get_node("MarginContainer/Column/TitleLabel").theme_type_variation)
+	screen.free()
+	assert_eq(variation, "ResultHeroLabel", "gold with a dark outline, not dark brown")

@@ -225,14 +225,14 @@ func test_motion_is_wired() -> void:
 		"each card's five notes must stagger in when the card opens")
 
 
-## Part 3's generated art. All six are System.Drawing / hand-written SVG
+## Part 3's generated art. These are System.Drawing / hand-written SVG
 ## placeholders, drop-replaceable at the same path with no code change.
-## icon_wirausaha is a genuine gap fix: StickyNote already tints for
-## Wirausaha via category_color(), so without it a Wirausaha day would be
-## the only note in the week strip with no glyph.
+##
+## The category and specialty glyphs are deliberately NOT in this list
+## any more: they were swapped to the team's authored StudentCard stat_*
+## art, pinned by test_the_small_icons_are_the_teams_authored_art.
 func test_part_three_art_exists_and_loads() -> void:
 	var paths := [
-		"res://Assets/Images/UI/Placeholders/icon_wirausaha.svg",
 		"res://Assets/Images/UI/Placeholders/stamp_sudah.svg",
 		"res://Assets/Images/UI/Placeholders/stamp_belum.svg",
 		"res://Assets/Images/UI/StudentList/photo_corner.png",
@@ -523,6 +523,37 @@ func test_category_icons_cover_the_schedule_categories() -> void:
 	for cat in ["Akademis", "Akademik", "SeniBudaya", "Olahraga", "Istirahat", "Wirausaha", "Libur"]:
 		assert_true(src.contains("\"%s\":" % cat),
 			"CATEGORY_ICONS is missing the %s category" % cat)
+
+
+## Both small-icon maps -- the day notes' CATEGORY_ICONS and the trait
+## chip's SPECIALTY_ICONS -- must use the team's authored art, not the
+## generated placeholder set, and must agree with each other so one
+## subject reads as one symbol across the card.
+func test_the_small_icons_are_the_teams_authored_art() -> void:
+	var maps := {
+		_SCRIPT_PATH: "CATEGORY_ICONS",
+		"res://Scripts/StudentList/RosterCard.gd": "SPECIALTY_ICONS",
+	}
+	var expected := {
+		"Akademis": "res://Assets/Images/StudentCard/stat_akademis.png",
+		"SeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+		"Olahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
+		"Istirahat": "res://Assets/Images/StudentCard/stat_energy.png",
+		"Wirausaha": "res://Assets/Images/UI/uang.png",
+		"Libur": "res://Assets/Images/StudentCard/stat_mood.png",
+	}
+	for path in maps:
+		var src := FileAccess.get_file_as_string(path)
+		assert_false(src.contains("UI/Placeholders/icon_akademis"),
+			"%s must not fall back to the placeholder glyphs" % maps[path])
+		for cat in expected:
+			assert_true(src.contains('"%s": "%s"' % [cat, expected[cat]]),
+				"%s must map %s to the team's %s" % [maps[path], cat, expected[cat]])
+	# And the art has to actually be there and load.
+	for cat in expected:
+		var p: String = expected[cat]
+		assert_true(ResourceLoader.exists(p), "missing team icon: " + p)
+		assert_true(load(p) is Texture2D, "not a Texture2D: " + p)
 
 
 ## The tutorial's index-keyed logic (auto-advance, end-tutorial, per-step

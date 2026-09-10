@@ -347,7 +347,10 @@ event-popup set (`icon_event_*`, `bg_event_*`, `particle_burst.png`),
 2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
 and the 2026-09-10 StudentList Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
-(completes the six-category icon set), `UI/Placeholders/stamp_sudah.svg` /
+(completed the six-category placeholder set; now UNREFERENCED -- StudentList's
+category and specialty glyphs use the team's authored `StudentCard/stat_*`
+art instead, so this is kept only as the one wirausaha glyph in the
+placeholder family), `UI/Placeholders/stamp_sudah.svg` /
 `stamp_belum.svg` (status-badge rubber-stamp rings), and
 `UI/StudentList/photo_corner.png` / `roster_avatar_frame.png` / `catatan_rule.png`
 (portrait tape, the avatar state ring, the teacher's-note rule — the last two

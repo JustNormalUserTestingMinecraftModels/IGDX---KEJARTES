@@ -69,15 +69,20 @@ extends TextureRect
 ## Category icon per specialty, keyed by every spelling the data uses --
 ## hobby_category ships "Akademik" where the schedule normalises to
 ## "Akademis", and both must resolve.
+##
+## The team's authored art, matching the same categories on the day
+## notes -- see CATEGORY_ICONS in student_list.gd. Both maps point at
+## the StudentCard stat_* set so a student's specialty chip, their day
+## notes and their stat rows all carry the one symbol per subject.
 const SPECIALTY_ICONS := {
-	"Akademis": "res://Assets/Images/UI/Placeholders/icon_akademis.svg",
-	"Akademik": "res://Assets/Images/UI/Placeholders/icon_akademis.svg",
-	"SeniBudaya": "res://Assets/Images/UI/Placeholders/icon_seni.svg",
-	"Seni Budaya": "res://Assets/Images/UI/Placeholders/icon_seni.svg",
-	"Olahraga": "res://Assets/Images/UI/Placeholders/icon_olahraga.svg",
-	"Istirahat": "res://Assets/Images/UI/Placeholders/icon_istirahat.svg",
-	"Wirausaha": "res://Assets/Images/UI/Placeholders/icon_wirausaha.svg",
-	"Libur": "res://Assets/Images/UI/Placeholders/icon_libur.svg",
+	"Akademis": "res://Assets/Images/StudentCard/stat_akademis.png",
+	"Akademik": "res://Assets/Images/StudentCard/stat_akademis.png",
+	"SeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+	"Seni Budaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+	"Olahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
+	"Istirahat": "res://Assets/Images/StudentCard/stat_energy.png",
+	"Wirausaha": "res://Assets/Images/UI/uang.png",
+	"Libur": "res://Assets/Images/StudentCard/stat_mood.png",
 }
 
 ## Opening line of the catatan guru, keyed by personality. First-draft

@@ -172,17 +172,28 @@ const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
 ## day_schedules data can carry. Anything unresolved (an empty category,
 ## the "-" placeholder for an unscheduled day) falls back to the libur
 ## icon. Mirrors DesignTokens.category_color()'s key set.
+## The glyph each schedule category shows on its sticky note.
+##
+## These are the team's own authored art, not the generated placeholder
+## set: the four skill/needs icons are the same 128x128 StudentCard
+## stat_* icons the stat rows use, so a day's note and that student's
+## stat row carry the identical symbol. Istirahat borrows stat_energy
+## (rest is what restores it) and Libur borrows stat_mood; Wirausaha
+## takes UI/uang.png, since Shop/Koin.png is only 33px and goes soft at
+## note size.
+##
+## A category absent from this map draws no glyph at all -- see the
+## lookup in _setup_students().
 const CATEGORY_ICONS := {
-	"Akademis": "res://Assets/Images/UI/Placeholders/icon_akademis.svg",
-	"Akademik": "res://Assets/Images/UI/Placeholders/icon_akademis.svg",
-	"SeniBudaya": "res://Assets/Images/UI/Placeholders/icon_seni.svg",
-	"Seni Budaya": "res://Assets/Images/UI/Placeholders/icon_seni.svg",
-	"Olahraga": "res://Assets/Images/UI/Placeholders/icon_olahraga.svg",
-	"Istirahat": "res://Assets/Images/UI/Placeholders/icon_istirahat.svg",
-	"Wirausaha": "res://Assets/Images/UI/Placeholders/icon_wirausaha.svg",
-	"Libur": "res://Assets/Images/UI/Placeholders/icon_libur.svg",
+	"Akademis": "res://Assets/Images/StudentCard/stat_akademis.png",
+	"Akademik": "res://Assets/Images/StudentCard/stat_akademis.png",
+	"SeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+	"Seni Budaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+	"Olahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
+	"Istirahat": "res://Assets/Images/StudentCard/stat_energy.png",
+	"Wirausaha": "res://Assets/Images/UI/uang.png",
+	"Libur": "res://Assets/Images/StudentCard/stat_mood.png",
 }
-const CATEGORY_ICON_FALLBACK := "res://Assets/Images/UI/Placeholders/icon_libur.svg"
 var current_step := 0
 var tutorial_active := true
 var _tutorial_panel: PanelContainer
@@ -288,10 +299,14 @@ func _setup_students():
 						else:
 							sticky_node.activity = "-"
 
-						# Category glyph for the week strip (Part 3). Falls
-						# back to the libur icon for an empty/unscheduled day.
-						var icon_path: String = CATEGORY_ICONS.get(cat, CATEGORY_ICON_FALLBACK)
-						sticky_node.icon_texture = load(icon_path)
+						# Category glyph for the week strip (Part 3). An
+						# unscheduled day gets NO glyph rather than a
+						# stand-in: giving every blank day the same icon
+						# made all five notes read as identical, which is
+						# the opposite of what the strip is for.
+						var icon_path: String = CATEGORY_ICONS.get(cat, "")
+						sticky_node.icon_texture = (
+							load(icon_path) if icon_path != "" else null)
 
 			# Attach CardButton signals for 100% click & swipe reliability
 			var card_button = murid_node.get_node_or_null("CardButton")

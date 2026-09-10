@@ -242,3 +242,39 @@ func test_part_three_art_exists_and_loads() -> void:
 	for p in paths:
 		assert_true(ResourceLoader.exists(p), "missing asset: " + p)
 		assert_true(load(p) is Texture2D, "not a Texture2D: " + p)
+
+
+## RosterAvatar is @tool, so unlike student_list.gd its _ready DOES fire
+## when the suite adds it to the editor root -- the ring tint below is
+## applied state, not an authored default.
+func test_roster_avatar_tints_its_ring_from_state_tokens() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	assert_true(packed != null, "RosterAvatar.tscn must exist")
+	var tokens := DesignTokens.load_default()
+
+	var done: RosterAvatar = packed.instantiate()
+	done.is_scheduled = true
+	Engine.get_main_loop().root.add_child(done)
+	track(done)
+	assert_eq(done.get_node("Ring").self_modulate, tokens.state_success,
+		"a scheduled student's ring must read state_success")
+
+	var todo: RosterAvatar = packed.instantiate()
+	todo.is_scheduled = false
+	Engine.get_main_loop().root.add_child(todo)
+	track(todo)
+	assert_eq(todo.get_node("Ring").self_modulate, tokens.state_danger,
+		"an unscheduled student's ring must read state_danger")
+
+
+func test_roster_avatar_uses_ghost_button_and_clears_touch_minimum() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	var a: RosterAvatar = packed.instantiate()
+	Engine.get_main_loop().root.add_child(a)
+	track(a)
+	assert_eq(a.theme_type_variation, &"GhostButton",
+		"the avatar is baked art behind a transparent button")
+	var tokens := DesignTokens.load_default()
+	var m := a.get_combined_minimum_size()
+	assert_true(minf(m.x, m.y) >= float(tokens.touch_target_min),
+		"avatar must clear the touch minimum, got %s" % m)

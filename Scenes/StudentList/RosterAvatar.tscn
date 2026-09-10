@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://c50fsdshij16h"]
+
+[ext_resource type="Script" uid="uid://d1287e4rjo1qy" path="res://Scripts/StudentList/RosterAvatar.gd" id="1_ec2i0"]
+[ext_resource type="Texture2D" uid="uid://daavxmvhxpbb3" path="res://Assets/Images/UI/StudentList/roster_avatar_frame.png" id="2_4c6ve"]
+
+[node name="RosterAvatar" type="Button" unique_id=575583481]
+custom_minimum_size = Vector2(150, 150)
+theme_type_variation = &"GhostButton"
+script = ExtResource("1_ec2i0")
+
+[node name="Portrait" type="TextureRect" parent="." unique_id=1424415727]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = -14.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Ring" type="TextureRect" parent="." unique_id=1692590827]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_4c6ve")
+expand_mode = 1
+stretch_mode = 6

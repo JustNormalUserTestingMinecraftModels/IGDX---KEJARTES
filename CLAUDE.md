@@ -421,6 +421,9 @@ placeholder SVGs; `InventorySlot`'s high-count `Shine` overlay is a plain white
 yet fed into the star rubric. The item skill-boost values in
 `ItemDatabase.DEFAULT_ITEMS` (`akademis`/`seni_budaya`/`olahraga`, 3–8) are
 conservative starting numbers, untested against `tests/test_balance_pacing.gd`.
+`RunGrade.LETTER_BANDS`' five rank floors (S 90 / A 75 / B 60 / C 45) are
+estimates set when the scheme collapsed from ten +/- bands on 2026-09-10,
+never played against a real run.
 
 **Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` ships as a
 blurred backdrop, a "Segera Hadir" line and a back button. The shop hub's

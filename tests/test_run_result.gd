@@ -111,7 +111,7 @@ func test_the_screen_has_a_backdrop_grade_card_and_rows_box() -> void:
 	var has_all := screen.get_node_or_null("Backdrop") != null \
 		and screen.get_node_or_null("BlurLayer") != null \
 		and screen.get_node_or_null(
-			"MarginContainer/Column/GradeCard/GradeStack/GradeLetter") != null \
+			"MarginContainer/Column/GradeCard/GradeStack/GradeBadge") != null \
 		and screen.get_node_or_null("MarginContainer/Column/RowsBox") != null
 	screen.free()
 	assert_true(has_all, "the report's structural nodes are all present")
@@ -283,3 +283,19 @@ func test_both_screens_dim_the_blur_by_the_same_amount() -> void:
 		"RunResult blurs by the same lod")
 	assert_true(cut_src.contains("@export var blur_lod: float = 3.0"),
 		"as EndCutscene reaches")
+
+
+## RunResult.gd's own docstring has always promised "the SAME image
+## EndCutscene shows". It pointed at cg_win.jpg while EndCutscene's win
+## branch moved to win_background.png, so the hand-off was a visible cut.
+func test_the_win_backdrop_is_the_image_the_cutscene_actually_ends_on() -> void:
+	var run_src := FileAccess.get_file_as_string(_SCENE_PATH)
+	var cut_src := FileAccess.get_file_as_string(
+		"res://Scenes/EndGame/EndCutscene.tscn")
+	var want := "Assets/Images/CG/Win/win_background.png"
+	assert_true(cut_src.contains(want),
+		"EndCutscene's win branch shows the win background")
+	assert_true(run_src.contains(want),
+		"and RunResult must open on that same image, not cg_win.jpg")
+	assert_false(run_src.contains("cg_win.jpg"),
+		"the old, smaller win CG must no longer be referenced")

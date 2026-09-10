@@ -1,7 +1,7 @@
 class_name RunGrade
 extends RefCounted
 
-## Turns a finished run into a 0-100 score and a letter grade.
+## Turns a finished run into a 0-100 score and one of five ranks.
 ##
 ## Pure static math over a RunStats plus the roster's target tally -- no
 ## nodes, no GameState reads, so it is cheap to test directly. RunResult
@@ -20,13 +20,16 @@ const WEIGHT_EVENTS := 10.0
 ## Wirausaha rupiah that earns full marks on the money component.
 const MONEY_FULL_MARKS := 20000
 
-## Score floors for each letter, highest first. Read top-down.
+## Score floors for each rank, highest first. Read top-down.
+##
+## Five ranks, one per badge, since 2026-09-10 -- ten +/- bands could not
+## be told apart on a badge that draws its own letter. Like
+## MONEY_FULL_MARKS above, these floors are estimates awaiting the balance
+## pass, not tuned numbers.
 const LETTER_BANDS := [
-	[95.0, "A+"], [88.0, "A"], [80.0, "A-"],
-	[72.0, "B+"], [64.0, "B"], [56.0, "B-"],
-	[48.0, "C+"], [40.0, "C"],
+	[90.0, "S"], [75.0, "A"], [60.0, "B"], [45.0, "C"],
 ]
-const LETTER_FLOOR := "C-"
+const LETTER_FLOOR := "D"
 const LETTER_FAILED := "D"
 
 
@@ -64,5 +67,6 @@ static func letter(run_score: float, passed: bool) -> String:
 	return LETTER_FLOOR
 
 
+## S and A both light the success colour and the reward sting.
 static func is_top_grade(letter_text: String) -> bool:
-	return letter_text.begins_with("A")
+	return letter_text == "S" or letter_text == "A"

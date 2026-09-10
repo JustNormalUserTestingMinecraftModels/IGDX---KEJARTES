@@ -76,6 +76,52 @@ and the catatan rule.
 placeholder rotated sideways; nav arrows resized to the 128px `btn_h_m` step;
 `test_confirm_pair_semantics` repointed at `RosterCard.tscn` after the badges
 moved there.
+## 2026-09-10 — Minigame, sky and paper fixes
+
+Six independent fixes. Spec:
+`docs/superpowers/specs/2026-09-10-minigame-sky-and-paper-fixes-design.md`. Plan:
+`docs/superpowers/plans/2026-09-10-minigame-sky-and-paper-fixes.md`.
+
+**Badminton shuttle.** Twice the size, hit circle included (`puck_radius_frac`
+0.08), stood upright, and the cork now leads the flight: a racket hit turns it
+180°, a serve snaps it toward the receiver. The growth bug was the hit punch
+reading the sprite's live scale as its rest — a hit every 0.22 s against a
+0.52 s punch ratcheted it up. The shuttle's look moved into
+`ShuttlecockSprite.gd`, which remembers its authored pose and is tested by
+behaviour with `Tween.custom_step()`; the racket squash had the same flaw and
+got the same fix.
+
+**MainBola goalie.** `_setup_layout()` measured `get_viewport_rect()`, a 2×2
+stub inside the editor, so the whole scene was laid out in a 2×2 box and the
+goalie was rewritten on every layout. It now measures the root's `size`; the
+goalie's scene position is the truth, left alone in the editor and mapped onto
+the real screen in game by `design_to_screen()`. `goalie_depth_frac` is
+retired, and the scene is re-saved in design space.
+
+**BuatBatik pictures.** The tool slots are shuffled, then pictures were dealt
+by slot index. Each tool now authors its own `ToolTextureRect` (anchors mode,
+so its anchors are actually saved), so the picture travels with the tool; the
+emoji `IconLabel`s are gone and the ratchet dropped 8 → 7.
+
+**The day's sky.** A full turn, dawn 60 → evening −300, from the darkest frame
+back round to it, easing out — QUAD/OUT over 1.64 s per phase, tuned in Motion
+Lab, so a school day now takes 3.28 s on screen (was 4.0 s); smoothstep off.
+
+**Paper shadows.** `Scenes/UI/PaperShadow.tscn` inside each of the twelve
+StudentCard/ReportCard papers, drawn behind it, so a thrown paper takes its
+shadow along. The template is two nodes: an instance root under a plain
+`Control` is saved with a `layout_mode = 0` override that zeroes its rect on
+load, so the root is a bare anchor and a `Silhouette` child draws. The two
+static stack shadows are deleted.
+
+**LombaMenari backdrop.** `budaya_background.jpg` replaces `Gawang.jpg`,
+MainBola's football goal, and covers taller screens instead of stretching.
+
+**On the way.** Three editor traps, now in the authoring guide and CLAUDE.md:
+instance roots losing their rect, position-mode Controls not saving anchors,
+and `script_patch` matching bytes exactly on CRLF files. A scene save also
+reverted `BuatBatik.gd` from a stale script tab (rule 4b) before it was
+re-applied. Suite: 91 suites, 1258 tests, green.
 
 ## 2026-09-10 — Delete the Loading screen
 

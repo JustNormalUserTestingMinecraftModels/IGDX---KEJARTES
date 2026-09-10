@@ -204,17 +204,15 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_6wcp2")
 
-[node name="IconLabel" type="Label" parent="ToolsContainer/Tool0" unique_id=2012515086]
+[node name="ToolTextureRect" type="TextureRect" parent="ToolsContainer/Tool0" unique_id=1098143081]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 96
-text = "✏"
-horizontal_alignment = 1
-vertical_alignment = 1
+mouse_filter = 2
+texture = ExtResource("4_11aq8")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Tool1" type="Control" parent="ToolsContainer" unique_id=600421237]
 custom_minimum_size = Vector2(200, 200)
@@ -231,17 +229,15 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_11aq8")
 
-[node name="IconLabel" type="Label" parent="ToolsContainer/Tool1" unique_id=1959026790]
+[node name="ToolTextureRect" type="TextureRect" parent="ToolsContainer/Tool1" unique_id=264258213]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 96
-text = "🖊"
-horizontal_alignment = 1
-vertical_alignment = 1
+mouse_filter = 2
+texture = ExtResource("5_2sjcu")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Tool2" type="Control" parent="ToolsContainer" unique_id=1362480527]
 custom_minimum_size = Vector2(200, 200)
@@ -258,17 +254,15 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_2sjcu")
 
-[node name="IconLabel" type="Label" parent="ToolsContainer/Tool2" unique_id=623213172]
+[node name="ToolTextureRect" type="TextureRect" parent="ToolsContainer/Tool2" unique_id=2120831536]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 96
-text = "🎨"
-horizontal_alignment = 1
-vertical_alignment = 1
+mouse_filter = 2
+texture = ExtResource("6_brsgn")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Tool3" type="Control" parent="ToolsContainer" unique_id=1479460138]
 custom_minimum_size = Vector2(200, 200)
@@ -285,17 +279,15 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_brsgn")
 
-[node name="IconLabel" type="Label" parent="ToolsContainer/Tool3" unique_id=1079899411]
+[node name="ToolTextureRect" type="TextureRect" parent="ToolsContainer/Tool3" unique_id=1762462214]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 96
-text = "🔥"
-horizontal_alignment = 1
-vertical_alignment = 1
+mouse_filter = 2
+texture = ExtResource("7_3e0kn")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TooltipPanel" type="PanelContainer" parent="." unique_id=983644849]
 visible = false

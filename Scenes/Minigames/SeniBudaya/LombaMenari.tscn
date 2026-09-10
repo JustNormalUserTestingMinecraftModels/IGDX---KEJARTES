@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bbm17rabr5qr6"]
 
 [ext_resource type="Script" uid="uid://c13xremdb4lpx" path="res://Scripts/Minigames/SeniBudaya/LombaMenari.gd" id="1_lombamenari"]
-[ext_resource type="Texture2D" uid="uid://co5rcx5gefm1v" path="res://Assets/Images/Textures/Gawang.jpg" id="2_g7u23"]
+[ext_resource type="Texture2D" uid="uid://32vps8suf6fa" path="res://Assets/Images/Textures/budaya_background.jpg" id="2_cwgfm"]
 [ext_resource type="PackedScene" uid="uid://cvcji5ahomyaj" path="res://Scenes/Minigames/SeniBudaya/DancerRig.tscn" id="3_cwgfm"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="9_g7u23"]
 
@@ -13,7 +13,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_lombamenari")
-background_texture = ExtResource("2_g7u23")
+background_texture = ExtResource("2_cwgfm")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1772325959]
 layout_mode = 1
@@ -22,7 +22,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = ExtResource("2_cwgfm")
 expand_mode = 1
+stretch_mode = 6
 
 [node name="HitZone" type="TextureRect" parent="." unique_id=2036345891]
 layout_mode = 1

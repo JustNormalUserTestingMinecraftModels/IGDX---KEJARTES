@@ -177,7 +177,7 @@ func _ready() -> void:
 		tool.mouse_entered.connect(_on_tool_mouse_entered.bind(tool))
 		tool.mouse_exited.connect(_on_tool_mouse_exited.bind(tool))
 		
-		# Prevent tool children (Bg ColorRect, IconLabel) from stealing input focus
+		# Prevent tool children (Bg, ToolTextureRect) from stealing input focus
 		for child in tool.get_children():
 			if child is Control:
 				child.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -220,23 +220,21 @@ func _apply_visual_exports() -> void:
 		elif canvas_bg is ColorRect:
 			canvas_bg.color = canvas_cloth_color
 
-	# Tool textures
-	var tool_texs = [tool0_texture, tool1_texture, tool2_texture, tool3_texture]
-	for i in range(min(4, tools_container.get_child_count())):
-		var tool_node = tools_container.get_child(i)
-		var icon_lbl = tool_node.get_node_or_null("IconLabel") as Label
-		var tool_tex = tool_texs[i]
-		if tool_tex:
-			if icon_lbl: icon_lbl.visible = false
-			var tex_rect = tool_node.get_node_or_null("ToolTextureRect") as TextureRect
-			if not tex_rect:
-				tex_rect = TextureRect.new()
-				tex_rect.name = "ToolTextureRect"
-				tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				tex_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-				tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				tool_node.add_child(tex_rect)
+	# Tool textures. Each ToolN authors its own ToolTextureRect in the scene,
+	# so its picture travels with it through _ready()'s shuffle. These exports
+	# only override that art, matched by NODE NAME -- the slots have already
+	# been shuffled by now, so a slot index would deal a picture to the wrong
+	# tool.
+	var tool_texs := {
+		"Tool0": tool0_texture,
+		"Tool1": tool1_texture,
+		"Tool2": tool2_texture,
+		"Tool3": tool3_texture,
+	}
+	for tool_node in tools_container.get_children():
+		var tool_tex: Texture2D = tool_texs.get(str(tool_node.name))
+		var tex_rect := tool_node.get_node_or_null("ToolTextureRect") as TextureRect
+		if tool_tex and tex_rect:
 			tex_rect.texture = tool_tex
 
 	# Tooltip style
@@ -431,14 +429,6 @@ func _get_tool_color(tool_name: String) -> Color:
 		"Tool2": return Color(0.1, 0.2, 0.6, 1)
 		"Tool3": return Color(0.85, 0.75, 0.1, 1)
 	return Color.WHITE
-
-func _get_tool_icon(tool_name: String) -> String:
-	match tool_name:
-		"Tool0": return "✏"
-		"Tool1": return "🖊"
-		"Tool2": return "🎨"
-		"Tool3": return "🔥"
-	return "?"
 
 func _check_tool_drop() -> void:
 	if not active_tool:

@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cmnd3wco3mg3y" path="res://Assets/Images/Textures/puck.png" id="2_budfj"]
 [ext_resource type="Texture2D" uid="uid://bon5iadqi8atu" path="res://Assets/Images/Textures/raket_1.png" id="3_77y7n"]
 [ext_resource type="Texture2D" uid="uid://bwvbm0e3qoemv" path="res://Assets/Images/Textures/raket_2.png" id="4_8t8ik"]
+[ext_resource type="Script" uid="uid://dgnuip2j7os0p" path="res://Scripts/Minigames/Olahraga/ShuttlecockSprite.gd" id="5_8t8ik"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_77y7n"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_puck"]
@@ -14,7 +15,7 @@ bounce = 1.0
 radius = 30.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_paddle"]
-radius = 50.0
+radius = 104.0769
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_goal"]
 size = Vector2(1037, 110)
@@ -51,8 +52,10 @@ linear_damp_mode = 1
 shape = SubResource("CircleShape2D_puck")
 
 [node name="Sprite2D" type="Sprite2D" parent="Puck" unique_id=221089689]
-scale = Vector2(0.0696774, 0.0492588)
+rotation = 1.5707964
+scale = Vector2(0.1393548, 0.0985176)
 texture = ExtResource("2_budfj")
+script = ExtResource("5_8t8ik")
 
 [node name="PlayerPaddle" type="CharacterBody2D" parent="." unique_id=1366122061]
 position = Vector2(540, 1500)
@@ -61,7 +64,8 @@ position = Vector2(540, 1500)
 shape = SubResource("CircleShape2D_paddle")
 
 [node name="Sprite2D" type="Sprite2D" parent="PlayerPaddle" unique_id=230033909]
-scale = Vector2(0.1045161, 0.0738882)
+position = Vector2(-14.000015, 41.999992)
+scale = Vector2(0.3418952, 0.28401384)
 texture = ExtResource("3_77y7n")
 
 [node name="EnemyPaddle" type="CharacterBody2D" parent="." unique_id=147574036]
@@ -71,7 +75,8 @@ position = Vector2(540, 420)
 shape = SubResource("CircleShape2D_paddle")
 
 [node name="Sprite2D" type="Sprite2D" parent="EnemyPaddle" unique_id=1374491768]
-scale = Vector2(0.1045161, 0.0738882)
+position = Vector2(-14.000015, 41.999992)
+scale = Vector2(0.3418952, 0.28401384)
 texture = ExtResource("3_77y7n")
 
 [node name="PlayerGoal" type="Area2D" parent="." unique_id=255239337]

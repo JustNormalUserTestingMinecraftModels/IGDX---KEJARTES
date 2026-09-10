@@ -45,9 +45,20 @@ func test_retired_the_single_sweep_exports() -> void:
 
 
 func test_each_pose_sits_on_the_sky_it_is_named_for() -> void:
+	# Picked from a 12-angle contact sheet of the real composite on
+	# 2026-09-10: 60 shows the same frame as -300, the darkest one.
 	var w := _widget()
-	assert_eq(w.dawn_rotation_degrees, -90.0, "dawn should be morning breaking")
-	assert_eq(w.evening_rotation_degrees, -270.0, "evening should be dusk")
+	assert_eq(w.dawn_rotation_degrees, 60.0, "dawn should open on the dark sky")
+	assert_eq(w.evening_rotation_degrees, -300.0, "evening should close on the dark sky")
+	w.free()
+
+
+func test_the_day_is_one_full_turn() -> void:
+	# Dark to dark on the same frame: dawn sits exactly one turn above
+	# evening, so sunrise, midday and dusk all pass in between.
+	var w := _widget()
+	assert_true(is_equal_approx(w.dawn_rotation_degrees - w.evening_rotation_degrees, 360.0),
+		"the sky should turn exactly one full circle across the day")
 	w.free()
 
 
@@ -87,15 +98,16 @@ func test_transition_duration_is_a_single_tunable_knob() -> void:
 
 
 func test_transition_carries_the_tuned_motion_lab_preset() -> void:
-	# Chosen in motion-lab on 2026-09-07: SINE/IN_OUT over 2.0s. A sine
-	# ease-in-out is the gentlest of the twelve at both ends, which is
-	# what a sky wheeling overhead wants -- no snap into or out of rest.
+	# Tuned in motion-lab on 2026-09-10 for the full-turn day: QUAD/OUT over
+	# 1.64s per phase. The day sets off briskly from dawn and settles into
+	# evening, and the whole sweep (two phases) takes 3.28s.
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
-	assert_contains(src, "Tween.TRANS_SINE", "the tuned transition is SINE")
-	assert_contains(src, "Tween.EASE_IN_OUT", "the tuned ease is IN_OUT")
+	assert_contains(src, "Tween.TRANS_QUAD", "the tuned transition is QUAD")
+	assert_contains(src, "Tween.EASE_OUT", "the day eases out")
+	assert_false(src.contains("Tween.EASE_IN_OUT"), "the in-out ease is retired")
 	var w := _widget()
-	assert_true(is_equal_approx(w.transition_duration, 2.0),
-		"the tuned duration is 2.0s, got %f" % w.transition_duration)
+	assert_true(is_equal_approx(w.transition_duration, 1.64),
+		"the tuned duration is 1.64s per phase, got %f" % w.transition_duration)
 	w.free()
 
 

@@ -27,9 +27,12 @@ passes.
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay (simulate
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
-Splashscreen and Loading still exist and are tested but are no longer reached at
-all: CutScene and Splashscreen went through `Transition` on 2026-09-10, so
-nothing routes to Loading any more. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+Splashscreen still exists and is tested but nothing routes to it (the game
+boots straight to MainMenu, which loads in one hop). Loading is back in the
+CutScene→StudentCard hand-off: CutScene wipes to it via `Transition` with the
+real target parked in `GameState.next_scene`, Loading threads that target in
+behind its progress bar, then wipes on to it — entry and exit both carry the
+shared cover. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
 **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
 to the hub rather than the Lobby.
 
@@ -396,13 +399,9 @@ from ten +/- bands on 2026-09-10, never played against a real run.
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
 has to lead somewhere; nothing behind it is designed.
 
-**Dead scenes.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
+**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
 unscripted, nothing references it. The real win screen is `EndCutscene`'s win
-branch. Safe to delete. `Scenes/Loading/loading.tscn` joined it on 2026-09-10 —
-kept deliberately, unwired, against a future scene slow enough to need a real
-threaded-load screen. Its script and `GameState.next_scene` are intact and
-`tests/test_boot_screens.gd` still covers them, but no call site reaches it, so
-nothing proves it still works in a running game.
+branch. Safe to delete.
 
 **Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove

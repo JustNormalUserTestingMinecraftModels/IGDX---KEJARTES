@@ -251,8 +251,10 @@ func _function_body(src: String, func_name: String) -> String:
 func test_go_to_gameplay_always_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "go_to_gameplay")
-	assert_true(body.contains("Transition.change_scene(_next_scene_path()"),
-		"must delegate routing to _next_scene_path()")
+	assert_true(body.contains("GameState.next_scene = _next_scene_path()"),
+		"must delegate routing to _next_scene_path(), parked in GameState.next_scene for the Loading screen")
+	assert_true(body.contains("Transition.change_scene(\"res://Scenes/Loading/loading.tscn\""),
+		"must wipe to the Loading screen, which threads the real target in and wipes on to it")
 	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
 		"go_to_gameplay must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")
@@ -282,8 +284,10 @@ func test_next_scene_path_defaults_to_student_card() -> void:
 func test_on_skip_pressed_also_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "_on_skip_pressed")
-	assert_true(body.contains("Transition.change_scene(_next_scene_path()"),
+	assert_true(body.contains("GameState.next_scene = _next_scene_path()"),
 		"Skip Intro must delegate routing to _next_scene_path(), same as go_to_gameplay()")
+	assert_true(body.contains("Transition.change_scene(\"res://Scenes/Loading/loading.tscn\""),
+		"Skip Intro must wipe to the Loading screen, same as go_to_gameplay()")
 	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
 		"Skip Intro must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")

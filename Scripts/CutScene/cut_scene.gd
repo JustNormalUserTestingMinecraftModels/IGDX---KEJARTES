@@ -260,7 +260,8 @@ func _on_skip_pressed() -> void:
 	# is_transitioning is still raised by hand because _fade_to_black()
 	# used to do it, and _input() reads it to ignore taps mid-exit.
 	is_transitioning = true
-	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)
+	GameState.next_scene = _next_scene_path()
+	Transition.change_scene("res://Scenes/Loading/loading.tscn", Transition.Style.WIPE)
 
 
 func show_level_select_modal() -> void:
@@ -371,14 +372,16 @@ func transition_to_next():
 func _next_scene_path() -> String:
 	return "res://Scenes/StudentCard/student_card.tscn"
 
-## Both exits from this scene (here and _on_skip_pressed) now hand off to
-## Transition rather than hopping through Scenes/Loading. These were the
-## last two raw change_scene_to_file() calls in the project, and the only
-## navigation a player could reach that did not wipe like every other
-## screen change -- which is what made the loading screen read as
-## unfinished. Going through Transition also picks up the inventory flush
-## and the one-frame wait that the raw call silently skipped.
+## Both exits from this scene (here and _on_skip_pressed) hand off through
+## Transition, wiping to the Loading screen with the real target parked in
+## GameState.next_scene. Loading runs the threaded load of StudentCard
+## behind its progress bar, then wipes on to it (see loading.gd). Every
+## hop uses the shared cover, so the loading screen reads as a real beat
+## in the sequence rather than the un-wiped raw change_scene_to_file() it
+## used to be. Going through Transition also picks up the inventory flush
+## and the one-frame anti-flash wait.
 func go_to_gameplay():
 	# See _on_skip_pressed() for why the black fade is gone.
 	is_transitioning = true
-	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)
+	GameState.next_scene = _next_scene_path()
+	Transition.change_scene("res://Scenes/Loading/loading.tscn", Transition.Style.WIPE)

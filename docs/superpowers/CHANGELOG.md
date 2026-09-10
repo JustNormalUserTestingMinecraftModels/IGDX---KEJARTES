@@ -8,6 +8,29 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-10 — LombaMenari note camera
+
+Friday Night Funkin's note camera for the dance minigame. A successful arrow
+leans the camera the way it points — RIGHT right, LEFT left, TOP_LEFT up-left,
+TOP_RIGHT up-right — holds the lean, then eases home; a miss, wrong swipe or
+early swipe sends it home at once. The stage (Background and dancer) slides
+opposite the lean, as the world does under a panning camera. The notes, hit
+zone and score HUD hold still, as FNF's HUD camera does, so the target never
+moves under a swiping thumb.
+
+The logic is `Scripts/Minigames/SeniBudaya/DanceCamera.gd`, a `@tool`
+`RefCounted` tested by behaviour in `tests/test_dance_camera.gd`; LombaMenari
+only wires it. The follow is frame-rate independent (`1 - e^(-speed·delta)`),
+not FNF's frame-counted lerp. Knobs sit on LombaMenari's root under *Motion -
+Camera Follow*: `camera_look_distance` 30 px (negative flips it),
+`camera_follow_speed` 4.0, `camera_hold_duration` 0.6 s — first guesses, not
+playtested. `_handle_swipe()`'s direction table became the shared
+`ARROW_DIRECTIONS` const, so the swipe and the camera cannot disagree.
+
+The camera needs the Background to overscan the screen, or a lean bares a
+strip of nothing at the edge. A test fails if any edge the stage slides away
+from has less than one lean of spare art.
+
 ## 2026-09-10 — Minigame, sky and paper fixes
 
 Six independent fixes. Spec:

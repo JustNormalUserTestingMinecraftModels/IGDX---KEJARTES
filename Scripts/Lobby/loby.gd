@@ -4,7 +4,7 @@ extends Control
 ## other screen (StudentCard, AturJadwal, Koperasi, Inventory, ReportCard).
 ##
 ## Draws the roster diorama from GameState.approved_students -- a portrait
-## and matching hand art per approved student slot, keyed by persona -- and
+## and matching desk art per approved student slot, keyed by name -- and
 ## the daily-login reward strip. Writes GameState.player_money,
 ## daily_login_day and last_claim_date when the reward is claimed, and
 ## GameState.lobby_tutorial_completed once its own tutorial finishes;
@@ -17,17 +17,17 @@ extends Control
 ## StudentData.avatar_texture of their own.
 @export var default_portrait: Texture2D = preload("res://Assets/Images/MuridPotrait/Thea.png")
 
-@export_group("Hand Portraits by Persona")
-## Hand art layered behind the "Tekun" persona's portrait slot.
-@export var hand_tekun: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_tekun.png")
-## Same as hand_tekun, for "Aktif".
-@export var hand_aktif: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_aktif.png")
-## Same as hand_tekun, for "Kreatif".
-@export var hand_kreatif: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_kreatif.png")
-## Same as hand_tekun, for "Pendiam" ("Seni Dalam Kesunyian").
-@export var hand_pendiam: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_pendiam.png")
-## Same as hand_tekun, for "Santai".
-@export var hand_santai: Texture2D = preload("res://Assets/Images/Lobby/Hands/hand_santai.png")
+## Name prefix marking a slot child as one student's desk art. Everything
+## after the prefix is the student name it belongs to, so adding a
+## character means duplicating a Hand_* node in loby.tscn and renaming it
+## -- no code change here.
+const HAND_NODE_PREFIX := "Hand_"
+
+## Which Hand_* node stands in for a student with no node of their own.
+## Doni's is the deliberate choice: his art is desk props with no arms, so
+## a wrong match reads as a plain desk rather than as another character's
+## hands.
+const HAND_FALLBACK_NAME := "Doni"
 
 @export_group("Idle Motion")
 ## Subtle looping vertical bob applied to the diorama's portrait
@@ -42,7 +42,7 @@ extends Control
 ## that have one. A rig is matched to a roster slot by its own student_name,
 ## so adding a character is a matter of dropping their .tscn in here; a
 ## student with no rig keeps the flat portrait. Left empty, _ready() falls
-## back to Citra's rig, the same shape as the hand_* fallbacks above.
+## back to Citra's rig, the same shape as hand_fallback above.
 @export var face_rigs: Array[PackedScene] = []
 
 
@@ -119,16 +119,7 @@ func _ready():
 		
 
 
-	if not hand_tekun:
-		hand_tekun = load("res://Assets/Images/Lobby/Hands/hand_tekun.png")
-	if not hand_aktif:
-		hand_aktif = load("res://Assets/Images/Lobby/Hands/hand_aktif.png")
-	if not hand_kreatif:
-		hand_kreatif = load("res://Assets/Images/Lobby/Hands/hand_kreatif.png")
-	if not hand_pendiam:
-		hand_pendiam = load("res://Assets/Images/Lobby/Hands/hand_pendiam.png")
-	if not hand_santai:
-		hand_santai = load("res://Assets/Images/Lobby/Hands/hand_santai.png")
+
 
 	if face_rigs.is_empty():
 		face_rigs = [load("res://Scenes/Lobby/CitraFace.tscn")]
@@ -227,6 +218,37 @@ func _ready():
 	_create_blur_overlay()
 	_setup_daily_login()
 
+## Shows the one Hand_<Name> node in this slot that matches the student
+## sitting here, and hides its five siblings.
+##
+## Every slot carries a hand node per student, each positioned and scaled
+## by hand in the 2D viewport against the real desks. That is deliberate:
+## the six art files were drawn at different scales and cropped without a
+## shared registration point, so no single rule lines all of them up with
+## the shoulders. The transforms are authored data, not something this
+## script computes -- it only picks which one is visible, and must never
+## write position, size or scale, or it would clobber that authoring.
+##
+## A name with no matching node (a stock Murid1-6 portrait, or a roster
+## seeded by a test) falls back to HAND_FALLBACK_NAME's node, so the slot
+## shows a plain desk rather than nothing.
+func _show_hand_for(h_slot: Node, student_name: String) -> void:
+	var matched: Node = null
+	var fallback: Node = null
+	for child in h_slot.get_children():
+		if not child.name.begins_with(HAND_NODE_PREFIX):
+			continue
+		child.hide()
+		var who := String(child.name).substr(HAND_NODE_PREFIX.length())
+		if who == student_name:
+			matched = child
+		elif who == HAND_FALLBACK_NAME:
+			fallback = child
+	var chosen: Node = matched if matched != null else fallback
+	if chosen != null:
+		chosen.show()
+
+
 func _setup_students():
 	var students = GameState.approved_students.duplicate()
 	if students.size() == 0:
@@ -243,27 +265,13 @@ func _setup_students():
 			h_slot.show()
 			var s = ordered[i]
 			var portrait_node = p_slot.get_node("Portrait")
-			var hand_node = h_slot.get_node("Hand")
-			
 			var port_path = s.get("portrait", "")
 			if port_path != "" and ResourceLoader.exists(port_path):
 				portrait_node.texture = load(port_path)
 			else:
 				portrait_node.texture = default_portrait
 				
-			var p_val = str(s.get("persona", "")) + " " + str(s.get("personality", ""))
-			if "Tekun" in p_val:
-				hand_node.texture = hand_tekun
-			elif "Aktif" in p_val:
-				hand_node.texture = hand_aktif
-			elif "Kreatif" in p_val:
-				hand_node.texture = hand_kreatif
-			elif "Pendiam" in p_val or "Kesunyian" in p_val:
-				hand_node.texture = hand_pendiam
-			else:
-				hand_node.texture = hand_santai
-			
-			hand_node.show()
+			_show_hand_for(h_slot, str(s.get("name", "")))
 			var breathing_delay = float(i) * 0.4
 			# A student with a layered rig gets it instead of the flat
 			# portrait; both breathe identically, so the diorama reads the

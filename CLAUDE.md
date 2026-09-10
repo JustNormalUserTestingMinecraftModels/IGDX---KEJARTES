@@ -152,7 +152,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 89 suites, 1225 tests (2026-09-10).
+the Godot AI MCP `test_run` tool. 91 suites, 1258 tests (2026-09-10).
 
 Hard constraints, learned the hard way:
 
@@ -264,14 +264,21 @@ through the editor: `scene_open` → `node_create` / `node_set_property` /
 node in one call. Gotchas: `anchors_preset` is inert (set the four anchors),
 numbers must be unquoted (`1`, not `"1.0"`), `node_create` appends last so
 z-order needs `move_node`, and a node's *type* can only be changed by
-delete-and-recreate.
+delete-and-recreate. A `Control` created under a plain `Control` starts in
+position mode, where anchors are **not saved** — set `layout_mode = 1` first;
+and an instanced scene's root loses its rect on load under a plain `Control`,
+so draw from a child (authoring guide, Pattern C).
 
 **4b. Two save hazards that silently eat work.**
 
 - *`scene_save` flushes stale script buffers.* The editor holds `.gd` files
-  open and writes them over whatever you patched; `script_patch` does not
-  protect you. Do **scene work first, script work second**, and after any
-  `scene_save` check `git diff HEAD -- '*.gd'` for files you were not editing.
+  open in script tabs and writes every tab back on each scene save, over
+  whatever you patched; `script_patch` does not protect you. Do **scene work
+  first, script work second**; after any `scene_save` check
+  `git diff HEAD -- '*.gd'` for files you were not editing; and once you have
+  patched a script, restart the editor before the next `scene_save` — a
+  force-kill is safe once scenes are saved, and the relaunch reloads every tab
+  from disk (2026-09-10: skipping it reverted `BuatBatik.gd`).
 - *Overrides serialise only on an instanced scene's ROOT.* Properties set on an
   instance's **children** report success and are dropped on save. Give the
   sub-scene `@export`s on its root instead — why `ShopHubTile` carries
@@ -283,7 +290,9 @@ delete-and-recreate.
 edited from *outside* the editor (any plain write, including a subagent's), a
 **no-op `script_patch` on that same file** forces the reload — it logs a benign
 `GDScript reload failed with error code 43` and then works. Cheapest reliable
-fix: make edits through `script_patch` in the first place.
+fix: make edits through `script_patch` in the first place. It matches bytes
+exactly: on a CRLF file a multi-line anchor misses, so normalise the file to LF
+first (git stores LF either way, `* text=auto eol=lf`).
 
 **Editing a `class_name` script breaks the next game run.** After patching
 `DesignTokens.gd` or similar, `project_run` fails with *Could not find script
@@ -431,7 +440,12 @@ what each would need, is in the authoring guide's "Known gaps" section.
 
 Branch `feat/asset-refresh-ui-pass`, off `Textures` (main), with `Textures`
 merged back into it on 2026-09-10. The asset refresh and UI pass is complete
-and pushed, not yet merged. See `docs/superpowers/CHANGELOG.md`.
+and pushed, not yet merged; the minigame, sky and paper fixes are committed on
+top, not yet pushed. See `docs/superpowers/CHANGELOG.md`.
+
+Open: the day sky's Motion Lab tuning — `BookClockWidget.transition_to()` ships
+SINE/OUT until a token re-tunes it (the token's duration is
+`transition_duration`, one of the day's two phases).
 
 Open: Plan C's RunResult redesign,
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass

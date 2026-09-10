@@ -279,3 +279,28 @@ because SchoolDay needs a scheduled week to reach.
 - `student_list.tscn`'s own soft shadow.
 - The sky art's stray bottom-left layer. Rotation never brings it on screen
   while `sky_cover_margin` ≥ 1.0 (CLAUDE.md, Outstanding debt).
+
+## Implementation notes (2026-09-10)
+
+Where the build deviated from the design above, and why.
+
+- **§5 — the shadow template is two nodes.** A one-node `PaperShadow` (its
+  root drawing the shadow) came back zero-size on every paper. An instanced
+  scene's root under a plain `Control` is saved with a `layout_mode = 0`
+  override, and loading that snaps the root's rect to its parent's corner from
+  a size cache that is still zero before the node enters the tree. The root is
+  now a bare anchor on the paper's corner, and a child `Silhouette` (1080×1920,
+  +14/+18, `card_bg.png`, the soft-shadow material) draws the shadow. The
+  existing twelve instances needed no rebuild. `tests/test_paper_shadow.gd`
+  checks the rect after loading, which is what caught it.
+- **§3 — the tool pictures need anchors mode.** A `TextureRect` created under a
+  plain `Control` starts in position mode, where anchors are not saved; the
+  pictures looked right in the editor and would have reloaded zero-size. Each
+  `ToolTextureRect` is saved with `layout_mode = 1`, and
+  `test_each_batik_picture_fills_its_slot` guards it.
+- **Editor hazards met on the way.** A scene save wrote a stale script-tab
+  buffer over `BuatBatik.gd`'s patches (CLAUDE.md rule 4b); they were
+  re-applied and the editor force-restarted before the next save. And
+  `script_patch` matches bytes exactly: `MainBola.gd` and its test were CRLF in
+  the working tree, so multi-line anchors missed until both were normalised to
+  LF (git stores LF either way, `* text=auto eol=lf`).

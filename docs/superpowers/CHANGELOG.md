@@ -55,6 +55,22 @@ and `script_patch` matching bytes exactly on CRLF files. A scene save also
 reverted `BuatBatik.gd` from a stale script tab (rule 4b) before it was
 re-applied. Suite: 91 suites, 1258 tests, green.
 
+## 2026-09-10 — Delete the Loading screen
+
+`Scenes/Loading/loading.tscn` and `Scripts/Loading/loading.gd` are gone. The
+earlier transition pass had already routed CutScene and Splashscreen straight
+through the shared `Transition` wipe, and that wipe covers the scene-load gap on
+its own — the intermediate screen (a placeholder with a progress bar) added a
+second scene change for no benefit. A short-lived follow-up had re-wired
+CutScene → Loading → StudentCard through the wipe; this reverts that too, so
+both CutScene exits are a single `Transition.change_scene(_next_scene_path(),
+WIPE)` again.
+
+`tests/test_boot_screens.gd` drops its Loading half and now covers Splashscreen
+only. `GameState.next_scene` is left in place — an unused one-line `String` with
+a sensible MainMenu default, kept against a future scene heavy enough to want a
+real threaded-load screen.
+
 ## 2026-09-10 — Asset refresh and UI pass
 
 Six independent changes driven by a batch of new art. Spec:

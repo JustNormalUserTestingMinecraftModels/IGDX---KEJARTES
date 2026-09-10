@@ -27,9 +27,11 @@ passes.
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay (simulate
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
-Splashscreen and Loading still exist and are tested but are no longer reached at
-all: CutScene and Splashscreen went through `Transition` on 2026-09-10, so
-nothing routes to Loading any more. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+Splashscreen still exists and is tested but nothing routes to it (the game
+boots straight to MainMenu, which loads in one hop). The Loading screen was
+deleted on 2026-09-10: the shared `Transition` wipe covers the scene-load gap,
+so the intermediate screen was dead weight. All navigation is a single
+`Transition.change_scene(target, …)`. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
 **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
 to the hub rather than the Lobby.
 
@@ -152,7 +154,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 91 suites, 1258 tests (2026-09-10).
+the Godot AI MCP `test_run` tool. 91 suites, 1252 tests (2026-09-10).
 
 Hard constraints, learned the hard way:
 
@@ -405,13 +407,9 @@ from ten +/- bands on 2026-09-10, never played against a real run.
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
 has to lead somewhere; nothing behind it is designed.
 
-**Dead scenes.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
+**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
 unscripted, nothing references it. The real win screen is `EndCutscene`'s win
-branch. Safe to delete. `Scenes/Loading/loading.tscn` joined it on 2026-09-10 —
-kept deliberately, unwired, against a future scene slow enough to need a real
-threaded-load screen. Its script and `GameState.next_scene` are intact and
-`tests/test_boot_screens.gd` still covers them, but no call site reaches it, so
-nothing proves it still works in a running game.
+branch. Safe to delete.
 
 **Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
@@ -441,7 +439,7 @@ what each would need, is in the authoring guide's "Known gaps" section.
 Branch `feat/asset-refresh-ui-pass`, off `Textures` (main), with `Textures`
 merged back into it on 2026-09-10. The asset refresh and UI pass is complete
 and pushed, not yet merged; the minigame, sky and paper fixes are committed on
-top, not yet pushed. See `docs/superpowers/CHANGELOG.md`.
+top and pushed. See `docs/superpowers/CHANGELOG.md`.
 
 Open: Plan C's RunResult redesign,
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass

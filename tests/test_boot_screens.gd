@@ -1,9 +1,8 @@
 @tool
 extends McpTestSuite
 
-## Covers both boot screens (Task 10): Splashscreen and Loading. See
-## tests/test_main_menu.gd's header notes for the two runner quirks this
-## suite also has to respect:
+## Covers the Splashscreen boot screen (Task 10). See tests/test_main_menu.gd's
+## header notes for the two runner quirks this suite also has to respect:
 ##
 ## 1. `_collect_overrides` below is copied VERBATIM from test_main_menu.gd.
 ##    Godot 4.6's Control does not expose
@@ -12,28 +11,29 @@ extends McpTestSuite
 ##    get_property_list() and cross-checks each theme_override_* entry
 ##    against the matching has_theme_*_override() call.
 ##
-## 2. Neither scene has a real button, so
+## 2. The scene has no real button, so
 ##    test_interactive_controls_meet_touch_minimum from the shared brief
 ##    template does not apply as written -- there is nothing with a
 ##    combined minimum size to measure against touch_target_min. It is
 ##    intentionally omitted rather than faked into a vacuous pass.
 ##
-## Both scene scripts are @tool (see their own header notes for why):
-## the MCP test runner instantiates scenes from inside the editor
-## process, and a plain (non-@tool) script attached to a scene root
-## becomes a placeholder instance there, which breaks traversal-based
-## checks like _collect_overrides the moment it reaches that node.
+## splashscreen.gd is @tool (see its own header note for why): the MCP
+## test runner instantiates scenes from inside the editor process, and a
+## plain (non-@tool) script attached to a scene root becomes a placeholder
+## instance there, which breaks traversal-based checks like
+## _collect_overrides the moment it reaches that node.
+##
+## The Loading screen this suite used to also cover was deleted on
+## 2026-09-10 -- the shared Transition wipe covers the scene-load gap, so
+## the intermediate screen was dead weight. See the changelog.
 
 func suite_name() -> String:
-	return "boot_screens"
+	return "boot_screens"  # Splashscreen only since the Loading screen was deleted
 
 const _SPLASH_SCENE := "res://Scenes/Splashscreen/Splashscreen.tscn"
 const _SPLASH_SCRIPT := "res://Scripts/Splashscreen/splashscreen.gd"
-const _LOADING_SCENE := "res://Scenes/Loading/loading.tscn"
-const _LOADING_SCRIPT := "res://Scripts/Loading/loading.gd"
 
 var _splash: Control
-var _loading: Control
 
 
 func setup() -> void:
@@ -41,18 +41,11 @@ func setup() -> void:
 	Engine.get_main_loop().root.add_child(_splash)
 	track(_splash)
 
-	_loading = (load(_LOADING_SCENE) as PackedScene).instantiate()
-	Engine.get_main_loop().root.add_child(_loading)
-	track(_loading)
-
 
 func teardown() -> void:
 	if is_instance_valid(_splash):
 		_splash.queue_free()
 	_splash = null
-	if is_instance_valid(_loading):
-		_loading.queue_free()
-	_loading = null
 
 
 ## Copied verbatim from tests/test_main_menu.gd -- see that file's header
@@ -129,51 +122,4 @@ func test_splashscreen_routes_straight_to_main_menu_via_transition() -> void:
 	assert_true(src.contains("Transition.change_scene(\"res://Scenes/MainMenu/main_menu.tscn\")"),
 		"splashscreen must transition straight to MainMenu")
 	assert_false(src.contains("res://Scenes/Loading/loading.tscn"),
-		"splashscreen must no longer detour through the Loading scene")
-
-
-# ---------------------------------------------------------------------
-# Loading
-# ---------------------------------------------------------------------
-
-func test_loading_has_no_theme_overrides() -> void:
-	var offenders: Array[String] = []
-	_collect_overrides(_loading, offenders)
-	assert_eq(offenders.size(), 0,
-		"found theme_override_* on: " + ", ".join(offenders))
-
-
-func test_loading_instantiates_without_errors() -> void:
-	assert_true(_loading != null, "scene must instantiate")
-
-
-func test_loading_no_hardcoded_colors_remain_in_the_script() -> void:
-	var src := FileAccess.get_file_as_string(_LOADING_SCRIPT)
-	var re := RegEx.create_from_string("Color\\s*\\(")
-	assert_eq(re.search_all(src).size(), 0,
-		"script must read colors from DesignTokens, not Color() literals")
-
-
-func test_loading_controls_use_theme_variations() -> void:
-	var bar := _loading.find_child("LoadingBar", true, false) as ProgressBar
-	assert_true(bar != null, "missing LoadingBar")
-	assert_eq(bar.theme_type_variation, &"StatBar",
-		"the progress bar must use the StatBar variation")
-	var label := _loading.find_child("LoadingLabel", true, false) as Label
-	assert_true(label != null, "missing LoadingLabel")
-	assert_eq(label.theme_type_variation, &"TitleLabel",
-		"the loading label must use the TitleLabel variation")
-
-
-func test_loading_reads_its_target_from_game_state() -> void:
-	var src := FileAccess.get_file_as_string(_LOADING_SCRIPT)
-	assert_true(src.contains("GameState.next_scene"),
-		"loading must route via GameState.next_scene as it does today")
-
-
-func test_loading_uses_real_threaded_progress_not_a_fake_timer() -> void:
-	var src := FileAccess.get_file_as_string(_LOADING_SCRIPT)
-	assert_true(src.contains("load_threaded_get_status"),
-		"the bar must reflect genuine load progress")
-	assert_false(src.contains("tween_property(loading_bar, \"value\""),
-		"must not fake progress with a fixed-duration tween")
+		"splashscreen must no longer detour through the deleted Loading scene")

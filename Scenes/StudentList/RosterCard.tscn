@@ -168,21 +168,28 @@ offset_left = 30.0
 offset_top = 786.0
 offset_right = 910.0
 offset_bottom = 882.0
+mouse_filter = 2
 theme_override_constants/separation = 16
 
 [node name="SpecialtyChip" type="Button" parent="TraitRow" unique_id=1755543310]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
+focus_mode = 0
+mouse_filter = 2
 theme_type_variation = &"SpecialtyBadge"
 
 [node name="PersonaChip" type="Button" parent="TraitRow" unique_id=934576774]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
+focus_mode = 0
+mouse_filter = 2
 theme_type_variation = &"PersonaBadge"
 
 [node name="QuirkChip" type="Button" parent="TraitRow" unique_id=909514293]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
+focus_mode = 0
+mouse_filter = 2
 theme_type_variation = &"QuirkBadge"
 
 [node name="CatatanGuru" type="Control" parent="." unique_id=1031197187]

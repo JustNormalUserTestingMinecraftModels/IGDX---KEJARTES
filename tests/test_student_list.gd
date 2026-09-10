@@ -430,3 +430,43 @@ func test_tutorial_teaches_the_roster_strip() -> void:
 		"step 1 must still target CardContainer")
 	assert_true(src.contains("\"RightArrow\""),
 		"the navigation step must still target RightArrow")
+
+
+## The Critical bug the final review caught: _setup_students displayed the
+## name and portrait from GameState.approved_students but left the trait
+## chips and catatan guru on the .tscn's authored defaults. These four
+## writes are what connect the rest of the card to the real roster.
+func test_setup_students_drives_every_rostercard_band() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for prop in ["specialty", "persona", "quirk", "is_scheduled"]:
+		assert_true(src.contains("murid_node.%s = " % prop),
+			"_setup_students must push %s onto the RosterCard instance" % prop)
+	assert_true(src.contains("student_data.get(\"personality\"")
+			and not src.contains("murid_node.persona = student_data.get(\"persona\""),
+		"persona must come from the clean `personality` key, not the prefixed `persona`")
+
+
+## CATEGORY_ICONS must cover every category category_color() knows, or a
+## scheduled day gets no glyph. The header comment claims it mirrors that
+## key set -- this makes the claim enforceable.
+func test_category_icons_cover_the_schedule_categories() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for cat in ["Akademis", "Akademik", "SeniBudaya", "Olahraga", "Istirahat", "Wirausaha", "Libur"]:
+		assert_true(src.contains("\"%s\":" % cat),
+			"CATEGORY_ICONS is missing the %s category" % cat)
+
+
+## The tutorial's index-keyed logic (auto-advance, end-tutorial, per-step
+## spotlight) assumes exactly four steps in a fixed order. A fifth step or
+## a reorder silently breaks _switch_card / _on_card_pressed / _show_step.
+func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := src.get_slice("var defaults = [", 1).get_slice("\n\t]", 0)
+	var titles := ["Daftar Murid", "Status Jadwal", "Navigasi Card", "Pilih Murid"]
+	var last := -1
+	for t in titles:
+		var at := body.find("\"%s\"" % t)
+		assert_true(at > last, "tutorial step '%s' missing or out of order" % t)
+		last = at
+	assert_eq(body.split("[").size() - 1, 4,
+		"the tutorial must have exactly four steps")

@@ -251,6 +251,16 @@ func _setup_students():
 			if student_id != null and GameState.day_schedules.has(student_id):
 				day_schedules_for_student = GameState.day_schedules[student_id]
 
+			# Drive RosterCard's trait chips and catatan guru. specialty is
+			# hobby_category; persona is the clean `personality` value
+			# ("Tekun") -- NOT the `persona` key, which is the prefixed
+			# "Persona Tekun". Both approved_students and default_students
+			# carry personality/quirk/hobby_category as clean strings.
+			murid_node.specialty = student_data.get("hobby_category", "")
+			murid_node.persona = student_data.get("personality", "")
+			murid_node.quirk = student_data.get("quirk", "")
+			murid_node.is_scheduled = fully_scheduled
+
 			# Status Badges
 			var belum_btn = murid_node.get_node_or_null("Belum")
 			var sudah_btn = murid_node.get_node_or_null("Sudah")
@@ -294,6 +304,13 @@ func _setup_students():
 				if not murid_node.gui_input.is_connected(_on_card_gui_input.bind(student_data, murid_node)):
 					murid_node.gui_input.connect(_on_card_gui_input.bind(student_data, murid_node))
 
+			# Wire the matching roster-strip avatar ONCE here, not in the
+			# per-sync loop -- _sync_roster_strip() runs on every page turn
+			# and its is_connected() guard can never match a bound callable.
+			var roster_avatar = get_node_or_null("RosterStrip/Avatar%d" % (i + 1))
+			if roster_avatar and not roster_avatar.pressed.is_connected(_on_avatar_pressed.bind(i)):
+				roster_avatar.pressed.connect(_on_avatar_pressed.bind(i))
+
 		else:
 			murid_node.hide()
 
@@ -327,12 +344,20 @@ func _sync_roster_strip() -> void:
 		var avatar := strip.get_node_or_null("Avatar%d" % (i + 1))
 		if avatar == null:
 			continue
+		avatar.visible = true
 		var student: Dictionary = active_students[i]
-		avatar.portrait_texture = load(student.get("portrait", ""))
+		var portrait_path: String = student.get("portrait", "")
+		if portrait_path != "" and ResourceLoader.exists(portrait_path):
+			avatar.portrait_texture = load(portrait_path)
 		avatar.is_scheduled = _is_student_scheduled(student)
 		avatar.is_current = (i == current_card_index)
-		if not avatar.pressed.is_connected(_on_avatar_pressed):
-			avatar.pressed.connect(_on_avatar_pressed.bind(i))
+
+	# A roster smaller than four (grade 7's fallback is two students)
+	# leaves surplus avatars stranded in red rings -- hide them.
+	for i in range(active_students.size(), 4):
+		var extra := strip.get_node_or_null("Avatar%d" % (i + 1))
+		if extra:
+			extra.visible = false
 
 
 ## Jumps straight to a student instead of paging. Reuses the carousel's

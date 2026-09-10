@@ -40,14 +40,27 @@ Implementation must re-point these at new node paths, not rewrite them.
 ### 1. Basket tray replaces the popup
 
 `ReturPanel`'s `ScrollContainer` + `GridContainer` become a `BasketTray`
-sub-scene (a `PackedScene` row/slot template, per the authoring guide —
-no runtime visual construction).
+sub-scene (a `PackedScene` slot template, per the authoring guide — no
+runtime visual construction).
 
-- A themed `Card` surface with a shelf-plank rule across it, so the cart
-  reuses the shelf language the scene already has rather than an
-  app-style list.
-- Items sit bottom-aligned at their own heights, as physical objects, not
-  centred in uniform grid cells.
+Surface and separation:
+
+- Warm cream vertical gradient as a theme stylebox, with a dot-grid tile
+  over it — reads as school exercise-book paper. The pattern MUST be a
+  tiling texture in `Assets/Images/Shop/UI/`, not drawn at runtime; a
+  procedural stripe or dot field would land on
+  `tests/test_viewport_editability.gd`'s BASELINE.
+- The shelf behind is BLURRED, not dimmed. Reuse the scene's existing
+  `BlurLayer`/`BlurRect` and `shop_hub_blur_material.tres` rather than
+  introducing a new material. A ~10% warm brown wash sits over the blur;
+  without it the blurred shelf competes with the tray contents.
+- No black anywhere in the tray: no neutral scrim, no cool-white
+  surface, no gray hairlines. Rules and slot borders are amber.
+
+Layout:
+
+- Items sit bottom-aligned at their own heights, as physical objects,
+  not centred in uniform grid cells.
 - `×N` badge on each slot corner, fed by `Cart.cart[item]["quantity"]`.
 - Existing hold-to-remove affordance retained.
 - One row below the tray: `Total` left, a single `PrimaryButton` "Beli"
@@ -104,9 +117,9 @@ plain text.
 
 ## Constraints this pass must honour
 
-- No `theme_override_*`. New `ThemeFactory` type variations
-  (`PriceTag`, `BasketTray`, and whatever the tray slot needs), then a
-  rebake of `Assets/Theme/kejartes_theme.tres`.
+- No `theme_override_*`. New `ThemeFactory` type variations (`PriceTag`,
+  `BasketTray`, and whatever the tray slot needs), then a rebake of
+  `Assets/Theme/kejartes_theme.tres`.
 - No runtime visual construction: static chrome in the `.tscn`, repeated
   slots as a `PackedScene`, responsive geometry in a `@tool` script.
 - Every script gets a `##` file header and a `##` line per `@export`.
@@ -125,7 +138,31 @@ plain text.
 - Source-text scans where the UI cannot be instantiated headlessly,
   following the established pattern.
 
+## Delivery order
+
+Deadline is 2026-09-11 (same day). Work ships in two commits, ordered by
+impact per unit of risk, so there is something pushable if the second
+does not land.
+
+**Commit 1 — script and asset only, no scene restructure.** Coin-pill
+price tag with the wipe-to-Beli state, the B3 basket SVG, shelf item life
+(shadow, idle bob, lift on press, unaffordable dim), and the emoji
+cleanup. Carries almost no scene risk and covers the bulk of the "bland
+and dead" complaint.
+
+**Commit 2 — the tray.** Gradient + dot tile, blurred backdrop, the
+basket-tray layout replacing the popup grid. Highest risk: it is editor
+scene work, where `scene_save` can flush stale script buffers over
+patched `.gd` files, and the flight's landing coordinates must be
+re-pointed.
+
+Sequencing rule for commit 2: scene work first, script work second; after
+any `scene_save`, check `git diff HEAD -- '*.gd'` for files not being
+edited.
+
 ## Open items
 
-None. Basket (B3), tag reading (R2 with the left-to-right wipe), and the
-tray layout (L3) are all confirmed by the mentor.
+None. Basket (B3), tag reading (R2 with the left-to-right wipe), tray
+layout (L3), tray warmth (W1 with a blurred rather than dimmed backdrop),
+and surface treatment (gradient base plus dot grid) are all confirmed by
+the mentor.

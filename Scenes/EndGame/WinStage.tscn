@@ -1,0 +1,112 @@
+[gd_scene format=3 uid="uid://dfh48usjg5eib"]
+
+[ext_resource type="Script" uid="uid://3dm0den6vxbm" path="res://Scripts/EndGame/WinStage.gd" id="1_wrd3a"]
+[ext_resource type="Texture2D" uid="uid://56hidkmdh1e" path="res://Assets/Images/CG/Win/win_background.png" id="2_wb5ui"]
+[ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="3_b6t4e"]
+[ext_resource type="Texture2D" uid="uid://cuyc81is5j5cw" path="res://Assets/Images/CG/Win/win_doni.png" id="4_kr0vg"]
+[ext_resource type="Texture2D" uid="uid://vy7mt58k6soa" path="res://Assets/Images/CG/Win/win_andi.png" id="5_35nyv"]
+[ext_resource type="Texture2D" uid="uid://b2l4voypyvro" path="res://Assets/Images/CG/Win/win_citra.png" id="6_y18f4"]
+[ext_resource type="Texture2D" uid="uid://brw8ol65pyxih" path="res://Assets/Images/CG/Win/win_shinta.png" id="7_f7fel"]
+[ext_resource type="Texture2D" uid="uid://dvgv63qybi5yj" path="res://Assets/Images/CG/Win/win_marcel.png" id="8_85inx"]
+[ext_resource type="Texture2D" uid="uid://bhu1aabi2ko2f" path="res://Assets/Images/CG/Win/win_thea.png" id="9_0pxgx"]
+[ext_resource type="Texture2D" uid="uid://v5uiy2v54wcr" path="res://Assets/Images/UI/Placeholders/shadow_ellipse.png" id="10_cxwa7"]
+
+[node name="WinStage" type="Control" unique_id=702781057]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_wrd3a")
+win_backdrop = ExtResource("2_wb5ui")
+lose_backdrop = ExtResource("3_b6t4e")
+win_splash_doni = ExtResource("4_kr0vg")
+win_splash_andi = ExtResource("5_35nyv")
+win_splash_citra = ExtResource("6_y18f4")
+win_splash_shinta = ExtResource("7_f7fel")
+win_splash_marcel = ExtResource("8_85inx")
+win_splash_thea = ExtResource("9_0pxgx")
+shadow_texture = ExtResource("10_cxwa7")
+
+[node name="BarFill" type="ColorRect" parent="." unique_id=830075432]
+layout_mode = 0
+offset_right = 1080.0
+offset_bottom = 1920.0
+mouse_filter = 2
+color = Color(0.078431375, 0.101960786, 0.18039216, 1)
+
+[node name="Stage" type="Control" parent="." unique_id=369356524]
+anchors_preset = 0
+offset_right = 1536.0
+offset_bottom = 2048.0
+mouse_filter = 2
+
+[node name="Backdrop" type="TextureRect" parent="Stage" unique_id=934465005]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_wb5ui")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Shadows" type="Control" parent="Stage" unique_id=1365091336]
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Shadow1" type="TextureRect" parent="Stage/Shadows" unique_id=37815168]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("10_cxwa7")
+expand_mode = 1
+
+[node name="Shadow2" type="TextureRect" parent="Stage/Shadows" unique_id=2051836190]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("10_cxwa7")
+expand_mode = 1
+
+[node name="Shadow3" type="TextureRect" parent="Stage/Shadows" unique_id=2012981082]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("10_cxwa7")
+expand_mode = 1
+
+[node name="Shadow4" type="TextureRect" parent="Stage/Shadows" unique_id=638805850]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+texture = ExtResource("10_cxwa7")
+expand_mode = 1
+
+[node name="Students" type="Control" parent="Stage" unique_id=1187504884]
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Student1" type="TextureRect" parent="Stage/Students" unique_id=1114318510]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Student2" type="TextureRect" parent="Stage/Students" unique_id=505551122]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Student3" type="TextureRect" parent="Stage/Students" unique_id=528979659]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Student4" type="TextureRect" parent="Stage/Students" unique_id=194445621]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1

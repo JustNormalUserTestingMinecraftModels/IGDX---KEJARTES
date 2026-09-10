@@ -362,6 +362,29 @@ func test_the_header_and_claim_button_sit_on_the_baked_art() -> void:
 		"and sits in the panel's lower third")
 
 
+## Regression guard (2026-09-10). ButtonClaim carries custom_minimum_size =
+## Vector2(0, 96) to satisfy the touch-target floor (see the test below), but
+## Godot's Control clamps a node's REAL rect up to
+## get_combined_minimum_size() no matter what its own offset_top/offset_bottom
+## say -- a button authored at a shorter rect than its minimum still renders
+## and hit-tests at the minimum height. That is exactly how ButtonClaim once
+## spilled past DailyReward's bottom edge while every offset-only check above
+## kept passing: the authored offsets looked fine, the *clamped* size did
+## not. This compares the clamped height, not the authored offsets, against
+## the panel's real height, and reads both from the nodes so a future
+## re-tune of either stays honest.
+func test_claim_buttons_clamped_height_fits_inside_the_panel() -> void:
+	var panel := _lobby.get_node_or_null("DailyReward") as Control
+	var claim := _lobby.get_node_or_null("DailyReward/ButtonClaim") as Control
+	assert_true(panel != null, "missing the DailyReward panel")
+	assert_true(claim != null, "missing the claim button")
+	var clamped_height: float = maxf(claim.size.y, claim.get_combined_minimum_size().y)
+	var clamped_bottom: float = claim.offset_top + clamped_height
+	assert_true(clamped_bottom <= panel.size.y,
+		"claim button's clamped height %f pushes its bottom to %f, past the panel's %f bottom edge"
+			% [clamped_height, clamped_bottom, panel.size.y])
+
+
 func test_the_panel_grew_to_the_arts_aspect() -> void:
 	var panel := _lobby.get_node_or_null("DailyReward") as Control
 	assert_true(panel != null, "missing the DailyReward panel")

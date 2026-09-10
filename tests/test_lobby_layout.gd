@@ -33,7 +33,8 @@ func _rects() -> Dictionary:
 	# A flat, unscoped scan collected every nested node too and reported
 	# false rim offenders that were actually correctly-positioned children
 	# inside their parents: a Hand under a StudentHandsContainer_*/Slot*,
-	# and a Label and Label2 under DailyReward/Day1..Day7. The scene root
+	# and labels under DailyReward (its baked panel art replaced the old
+	# Day1..Day7 tiles this comment used to name). The scene root
 	# itself carries no `parent=` attribute at all and is excluded too --
 	# it is the screen, so it cannot clip against itself.
 	var src := FileAccess.get_file_as_string(SCENE)

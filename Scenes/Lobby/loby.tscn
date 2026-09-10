@@ -448,9 +448,9 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 0
 offset_left = 330.0
-offset_top = 345.0
+offset_top = 322.0
 offset_right = 612.0
-offset_bottom = 412.0
+offset_bottom = 418.0
 theme_type_variation = &"GhostButton"
 text = "KLAIM"
 

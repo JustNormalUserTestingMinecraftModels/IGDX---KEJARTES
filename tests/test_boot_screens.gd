@@ -121,14 +121,15 @@ func test_splashscreen_labels_use_theme_variations() -> void:
 		"hint must use the CaptionLabel variation")
 
 
-func test_splashscreen_routes_via_game_state_and_transition() -> void:
-	# Function must not change: still sets GameState.next_scene then
-	# hands off to Loading via Transition.
+func test_splashscreen_routes_straight_to_main_menu_via_transition() -> void:
+	# Splashscreen used to wipe to Loading and let that screen hop on to
+	# MainMenu -- two scene changes for a destination that loads in one.
+	# It now transitions straight there, like every other navigation.
 	var src := FileAccess.get_file_as_string(_SPLASH_SCRIPT)
-	assert_true(src.contains("GameState.next_scene"),
-		"splashscreen must set GameState.next_scene as it does today")
-	assert_true(src.contains("res://Scenes/Loading/loading.tscn"),
-		"splashscreen must still transition to the Loading scene")
+	assert_true(src.contains("Transition.change_scene(\"res://Scenes/MainMenu/main_menu.tscn\")"),
+		"splashscreen must transition straight to MainMenu")
+	assert_false(src.contains("res://Scenes/Loading/loading.tscn"),
+		"splashscreen must no longer detour through the Loading scene")
 
 
 # ---------------------------------------------------------------------

@@ -237,14 +237,6 @@ func _on_debug_toggle_pressed() -> void:
 	if GameState.debug_level_select_enabled and not is_showing_level_select:
 		show_level_select_modal()
 
-## Shared with go_to_gameplay(): both exits from this scene fade to black
-## the same way before the scene change.
-func _fade_to_black(duration: float = 0.8) -> void:
-	is_transitioning = true
-	var tween = create_tween()
-	tween.tween_property(fade_overlay, "color:a", 1.0, duration)
-	await tween.finished
-
 ## Skip must route through StudentCard exactly like finishing the cutscene
 ## normally does (go_to_gameplay, below) -- this scene is only ever reached
 ## fresh from MainMenu (see main_menu.gd; nothing else routes here), so
@@ -263,9 +255,13 @@ func _on_skip_pressed() -> void:
 	# project's convention allows -- see student_card.gd's
 	# _on_belajar_pressed note).
 	print("Skip Cutscene pressed")
-	await _fade_to_black()
-	GameState.next_scene = _next_scene_path()
-	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")
+	# No _fade_to_black() here: Transition's wipe is the transition now,
+	# and fading to black first just stacked a second one in front of it.
+	# is_transitioning is still raised by hand because _fade_to_black()
+	# used to do it, and _input() reads it to ignore taps mid-exit.
+	is_transitioning = true
+	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)
+
 
 func show_level_select_modal() -> void:
 	is_showing_level_select = true
@@ -375,7 +371,14 @@ func transition_to_next():
 func _next_scene_path() -> String:
 	return "res://Scenes/StudentCard/student_card.tscn"
 
+## Both exits from this scene (here and _on_skip_pressed) now hand off to
+## Transition rather than hopping through Scenes/Loading. These were the
+## last two raw change_scene_to_file() calls in the project, and the only
+## navigation a player could reach that did not wipe like every other
+## screen change -- which is what made the loading screen read as
+## unfinished. Going through Transition also picks up the inventory flush
+## and the one-frame wait that the raw call silently skipped.
 func go_to_gameplay():
-	await _fade_to_black()
-	GameState.next_scene = _next_scene_path()
-	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")
+	# See _on_skip_pressed() for why the black fade is gone.
+	is_transitioning = true
+	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)

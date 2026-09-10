@@ -28,7 +28,8 @@ passes.
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
 Splashscreen and Loading still exist and are tested but are no longer reached at
-boot. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+all: CutScene and Splashscreen went through `Transition` on 2026-09-10, so
+nothing routes to Loading any more. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
 **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
 to the hub rather than the Lobby.
 
@@ -383,9 +384,13 @@ fed into the star rubric; the item skill-boost values in
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
 has to lead somewhere; nothing behind it is designed.
 
-**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
+**Dead scenes.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
 unscripted, nothing references it. The real win screen is `EndCutscene`'s win
-branch. Safe to delete.
+branch. Safe to delete. `Scenes/Loading/loading.tscn` joined it on 2026-09-10 —
+kept deliberately, unwired, against a future scene slow enough to need a real
+threaded-load screen. Its script and `GameState.next_scene` are intact and
+`tests/test_boot_screens.gd` still covers them, but no call site reaches it, so
+nothing proves it still works in a running game.
 
 **Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove

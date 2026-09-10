@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dbnuioqchwagy"
-path="res://.godot/imported/hand_kreatif.png-8f12feb9352b6afb1182d041855a18d0.ctex"
+uid="uid://ckls11l3yiniv"
+path="res://.godot/imported/Andi_Table.png-a2e0c94d4b55d01abd0a76ef8ea4b0d7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/Lobby/Hands/hand_kreatif.png"
-dest_files=["res://.godot/imported/hand_kreatif.png-8f12feb9352b6afb1182d041855a18d0.ctex"]
+source_file="res://Assets/Images/MuridPotrait/TanganItems/Andi_Table.png"
+dest_files=["res://.godot/imported/Andi_Table.png-a2e0c94d4b55d01abd0a76ef8ea4b0d7.ctex"]
 
 [params]
 

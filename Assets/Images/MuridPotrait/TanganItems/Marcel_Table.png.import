@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bq14xo61b2de6"
-path="res://.godot/imported/hand_pendiam.png-2233fa78b7e3fc2730a226e334509ef0.ctex"
+uid="uid://vwe02tlwbjjg"
+path="res://.godot/imported/Marcel_Table.png-692049f2fdb4d5b18f3d1c5700516b83.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/Lobby/Hands/hand_pendiam.png"
-dest_files=["res://.godot/imported/hand_pendiam.png-2233fa78b7e3fc2730a226e334509ef0.ctex"]
+source_file="res://Assets/Images/MuridPotrait/TanganItems/Marcel_Table.png"
+dest_files=["res://.godot/imported/Marcel_Table.png-692049f2fdb4d5b18f3d1c5700516b83.ctex"]
 
 [params]
 

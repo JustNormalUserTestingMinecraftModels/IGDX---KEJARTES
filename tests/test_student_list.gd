@@ -201,8 +201,8 @@ func test_sticky_notes_are_stickynote_instances_wired_per_day() -> void:
 			assert_true(note is StickyNote,
 				"Murid%d/StickyNotesContainer/%s must be a StickyNote instance" % [i, day])
 			if note is StickyNote:
-				assert_eq(note.day_name, day,
-					"Murid%d/%s day_name export" % [i, day])
+				assert_eq(note.name, day,
+					"Murid%d/%s node name" % [i, day])
 
 
 func test_stickynote_scene_has_no_theme_overrides() -> void:
@@ -223,3 +223,474 @@ func test_motion_is_wired() -> void:
 		"the visible cards must stagger in")
 	assert_true(src.contains("Juice.stagger_in(sticky_container.get_children()"),
 		"each card's five notes must stagger in when the card opens")
+
+
+## Part 3's generated art. These are System.Drawing / hand-written SVG
+## placeholders, drop-replaceable at the same path with no code change.
+##
+## The category and specialty glyphs are deliberately NOT in this list
+## any more: they were swapped to the team's authored StudentCard stat_*
+## art, pinned by test_the_small_icons_are_the_teams_authored_art.
+func test_part_three_art_exists_and_loads() -> void:
+	var paths := [
+		"res://Assets/Images/UI/Placeholders/stamp_sudah.svg",
+		"res://Assets/Images/UI/Placeholders/stamp_belum.svg",
+		"res://Assets/Images/UI/StudentList/photo_corner.png",
+		"res://Assets/Images/UI/StudentList/roster_avatar_frame.png",
+		"res://Assets/Images/UI/StudentList/catatan_rule.png",
+	]
+	for p in paths:
+		assert_true(ResourceLoader.exists(p), "missing asset: " + p)
+		assert_true(load(p) is Texture2D, "not a Texture2D: " + p)
+
+
+## RosterAvatar is @tool, so unlike student_list.gd its _ready DOES fire
+## when the suite adds it to the editor root -- the ring tint below is
+## applied state, not an authored default.
+func test_roster_avatar_tints_its_ring_from_state_tokens() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	assert_true(packed != null, "RosterAvatar.tscn must exist")
+	var tokens := DesignTokens.load_default()
+
+	var done: RosterAvatar = packed.instantiate()
+	done.is_scheduled = true
+	Engine.get_main_loop().root.add_child(done)
+	track(done)
+	assert_eq(done.get_node("Ring").self_modulate, tokens.state_success,
+		"a scheduled student's ring must read state_success")
+
+	var todo: RosterAvatar = packed.instantiate()
+	todo.is_scheduled = false
+	Engine.get_main_loop().root.add_child(todo)
+	track(todo)
+	assert_eq(todo.get_node("Ring").self_modulate, tokens.state_danger,
+		"an unscheduled student's ring must read state_danger")
+
+
+func test_roster_avatar_uses_ghost_button_and_clears_touch_minimum() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	var a: RosterAvatar = packed.instantiate()
+	Engine.get_main_loop().root.add_child(a)
+	track(a)
+	assert_eq(a.theme_type_variation, &"GhostButton",
+		"the avatar is baked art behind a transparent button")
+	var tokens := DesignTokens.load_default()
+	var m := a.get_combined_minimum_size()
+	assert_true(minf(m.x, m.y) >= float(tokens.touch_target_min),
+		"avatar must clear the touch minimum, got %s" % m)
+
+
+## The four cards are one template instanced four times now. The instance
+## NAMES stay Murid1..4 because test_scene_instantiates resolves
+## CardContainer/Murid%d and the tutorial's first step targets
+## CardContainer -- keeping the names keeps both contracts.
+func test_the_four_cards_are_rostercard_instances_under_their_old_names() -> void:
+	for i in range(1, 5):
+		var card := _list.get_node_or_null("CardContainer/Murid%d" % i)
+		assert_true(card != null, "missing CardContainer/Murid%d" % i)
+		assert_true(card is RosterCard,
+			"CardContainer/Murid%d must be a RosterCard instance" % i)
+
+
+## Composed from two small tables rather than a 30-entry lookup: five
+## persona openers x six quirk observations.
+func test_catatan_composes_persona_then_quirk() -> void:
+	assert_eq(RosterCard.compose_catatan("Tekun", "Kutu Buku"),
+		"Duduk paling depan, catatannya rapi. Perpustakaan sudah seperti rumah kedua.",
+		"catatan must read persona opener then quirk observation")
+	assert_eq(RosterCard.compose_catatan("", ""),
+		"Belum ada catatan untuk murid ini.",
+		"an unknown pairing must still produce a sentence")
+
+
+## Five notes in one row replaces the 3+2 grid, which left a lopsided
+## hole in the second row and ~330px of dead paper below it.
+func test_the_week_strip_is_one_row_of_five() -> void:
+	var days := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
+	for i in range(1, 5):
+		var container := _list.get_node_or_null(
+			"CardContainer/Murid%d/StickyNotesContainer" % i)
+		assert_true(container != null, "missing StickyNotesContainer on Murid%d" % i)
+		var last_x := -1.0
+		var first_y := -1.0
+		for d in days:
+			var note := container.get_node_or_null(d) as StickyNote
+			assert_true(note != null, "missing note %s on Murid%d" % [d, i])
+			if first_y < 0.0:
+				first_y = note.offset_top
+			assert_eq(note.offset_top, first_y,
+				"%s must share the row's y on Murid%d" % [d, i])
+			assert_true(note.offset_left > last_x,
+				"%s must sit right of the previous note on Murid%d" % [d, i])
+			last_x = note.offset_left
+
+
+## The chips are display, not controls -- mouse_filter IGNORE so a tap in
+## that band reaches CardButton instead of press-animating a chip that
+## does nothing. So this pins the thing that actually matters: they carry
+## a SIZE-STEPPED variation rather than the full-size badge. At the
+## full-size badge they measured 160x290 each and three of them
+## overflowed the 880px row, clipping every label.
+##
+## The step is M, not S: S was reported unreadable on a real handset
+## (22px in a 1080-wide design space is under Material's 12sp caption
+## floor once scaled down), so it was lifted to body size.
+func test_trait_row_holds_three_compact_chips_that_do_not_eat_taps() -> void:
+	var expected := {
+		"SpecialtyChip": &"SpecialtyBadgeM",
+		"PersonaChip": &"PersonaBadgeM",
+		"QuirkChip": &"QuirkBadgeM",
+	}
+	for i in range(1, 5):
+		var row := _list.get_node_or_null(
+			"CardContainer/Murid%d/TraitRow" % i) as Control
+		assert_true(row != null, "missing TraitRow on Murid%d" % i)
+		assert_eq(row.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"TraitRow on Murid%d must not swallow card taps" % i)
+		for chip_name in expected:
+			var chip := _list.get_node_or_null(
+				"CardContainer/Murid%d/TraitRow/%s" % [i, chip_name]) as Button
+			assert_true(chip != null, "missing %s on Murid%d" % [chip_name, i])
+			assert_eq(chip.theme_type_variation, expected[chip_name],
+				"%s must use the M size step on Murid%d" % [chip_name, i])
+			assert_eq(chip.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+				"%s on Murid%d must not swallow card taps" % [chip_name, i])
+
+
+## The card's dead band becomes the teacher's note.
+func test_catatan_strip_is_populated_per_student() -> void:
+	for i in range(1, 5):
+		var label := _list.get_node_or_null(
+			"CardContainer/Murid%d/CatatanGuru/CatatanLabel" % i) as Label
+		assert_true(label != null, "missing CatatanLabel on Murid%d" % i)
+		assert_true(label.text.length() > 0,
+			"catatan must never be blank on Murid%d" % i)
+
+
+func test_sticky_notes_carry_a_category_icon() -> void:
+	var note := _list.get_node_or_null(
+		"CardContainer/Murid1/StickyNotesContainer/Senin") as StickyNote
+	assert_true(note != null, "missing Senin note")
+	assert_true("icon_texture" in note,
+		"StickyNote must expose an icon_texture export")
+
+
+## The roster strip above the carousel: one RosterAvatar per student, so
+## roster progress reads without paging through every card.
+func test_roster_strip_holds_four_avatars() -> void:
+	var strip := _list.get_node_or_null("RosterStrip")
+	assert_true(strip != null, "missing RosterStrip")
+	for i in range(1, 5):
+		var a := strip.get_node_or_null("Avatar%d" % i)
+		assert_true(a != null, "missing RosterStrip/Avatar%d" % i)
+		assert_true(a is RosterAvatar, "Avatar%d must be a RosterAvatar" % i)
+
+
+## The arrows used to sit pinned to the vertical centre of a 1920-tall
+## screen, which is nowhere near a thumb. They move to a nav row with
+## the page dots.
+func test_navigation_sits_in_thumb_reach() -> void:
+	for n in ["LeftArrow", "RightArrow", "PageIndicator"]:
+		var c := _list.get_node_or_null(n) as Control
+		assert_true(c != null, "missing " + n)
+		assert_true(c.offset_top >= 1600.0,
+			"%s must sit in the lower third, got offset_top %f" % [n, c.offset_top])
+
+
+## The header is an outlined H1Label straight on the desk, with no
+## plaque behind it.
+##
+## There WAS a "Papan" TextureRect there, and it never once rendered as
+## a plaque: whiteboard.png is a portrait 1080x1920 image and the node
+## was a 700x116 strip on STRETCH_KEEP_ASPECT_CENTERED, so it fitted to
+## a 65x116 sliver dead centre -- read on review as a stray icon
+## clipping the title. Removed rather than restretched; H1Label is
+## outlined and carries itself on the wood.
+func test_the_header_has_no_plaque_behind_it() -> void:
+	assert_true(_list.get_node_or_null("Papan") == null,
+		"the Papan sliver must stay removed, not be restretched back in")
+	var header := _list.get_node_or_null("HeaderLabel") as Label
+	assert_true(header != null, "missing HeaderLabel")
+	assert_eq(header.theme_type_variation, &"H1Label", "HeaderLabel variation")
+	assert_eq(header.text, "MURIDMU", "the screen is titled MURIDMU")
+
+
+## Source scans, not behaviour: student_list.gd is deliberately NOT
+## @tool, so its _ready never fires in the editor and nothing it would
+## populate can be asserted live. See this suite's header note.
+func test_roster_strip_is_wired_to_the_carousel() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("func _sync_roster_strip"),
+		"the strip must resync when the card changes")
+	assert_true(src.contains("func _on_avatar_pressed"),
+		"tapping an avatar must jump the carousel")
+	assert_true(src.contains("_switch_card("),
+		"the jump must reuse the existing carousel switch")
+
+
+func test_page_dots_come_from_a_template_not_from_code() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("res://Scenes/StudentList/PageDot.tscn"),
+		"page dots must instance the PageDot template")
+	assert_false(src.contains("var dot = Label.new()"),
+		"the page-dot loop must not construct Labels at runtime")
+
+
+func test_the_script_carries_a_file_header() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.begins_with("##"),
+		"student_list.gd must open with a ## file header")
+
+## Three steps become four. The new one teaches the only genuinely new
+## mechanic; the other three keep their targets, which still resolve
+## after the relayout.
+func test_tutorial_teaches_the_roster_strip() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("\"Status Jadwal\""),
+		"a tutorial step must introduce the roster strip")
+	assert_true(src.contains("\"RosterStrip\""),
+		"that step must spotlight RosterStrip")
+	assert_true(src.contains("\"CardContainer\""),
+		"step 1 must still target CardContainer")
+	assert_true(src.contains("\"RightArrow\""),
+		"the navigation step must still target RightArrow")
+
+
+## The Critical bug the final review caught: _setup_students displayed the
+## name and portrait from GameState.approved_students but left the trait
+## chips and catatan guru on the .tscn's authored defaults. These four
+## writes are what connect the rest of the card to the real roster.
+func test_setup_students_drives_every_rostercard_band() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for prop in ["specialty", "persona", "quirk", "is_scheduled"]:
+		assert_true(src.contains("murid_node.%s = " % prop),
+			"_setup_students must push %s onto the RosterCard instance" % prop)
+	assert_true(src.contains("student_data.get(\"personality\"")
+			and not src.contains("murid_node.persona = student_data.get(\"persona\""),
+		"persona must come from the clean `personality` key, not the prefixed `persona`")
+
+
+## The regression that killed swipe and tap-to-schedule: instancing a
+## Control writes `layout_mode = 0` (Position mode), which ZEROES the
+## anchors it would otherwise inherit from the sub-scene root. The four
+## RosterCard instances collapsed to 0x0, so CardButton -- anchored to
+## fill its parent -- fell back to its 88x60 stylebox minimum in the
+## card's top-left corner and every tap outside that patch hit nothing.
+## The card must fill CardContainer, or the whole screen is inert.
+func test_each_card_fills_its_container() -> void:
+	for i in range(1, 5):
+		var card := _list.get_node_or_null("CardContainer/Murid%d" % i) as Control
+		assert_true(card != null, "missing CardContainer/Murid%d" % i)
+		assert_eq(card.anchor_right, 1.0,
+			"Murid%d must anchor to its container's right edge, not collapse" % i)
+		assert_eq(card.anchor_bottom, 1.0,
+			"Murid%d must anchor to its container's bottom edge, not collapse" % i)
+		var btn := card.get_node_or_null("CardButton") as Control
+		assert_true(btn != null, "missing Murid%d/CardButton" % i)
+		assert_eq(btn.anchor_right, 1.0, "Murid%d/CardButton must fill the card" % i)
+		assert_eq(btn.anchor_bottom, 1.0, "Murid%d/CardButton must fill the card" % i)
+
+
+## The trait chips are Button variations whose styleboxes are 160 tall --
+## custom_minimum_size is a floor, not a cap -- so the row overran the
+## week strip by 40px. Bands must not overlap, whatever the chips measure.
+func test_the_card_bands_do_not_overlap() -> void:
+	var card := _list.get_node_or_null("CardContainer/Murid1") as Control
+	assert_true(card != null, "missing Murid1")
+	var bands := ["PortraitFrame", "TraitRow", "StickyNotesContainer", "CatatanGuru"]
+	var prev_bottom := 0.0
+	for name in bands:
+		var band := card.get_node_or_null(name) as Control
+		assert_true(band != null, "missing band " + name)
+		assert_true(band.offset_top >= prev_bottom,
+			"%s starts at %f, above the previous band's bottom %f"
+				% [name, band.offset_top, prev_bottom])
+		prev_bottom = band.offset_bottom
+
+
+## StickyNote's children were authored in absolute offsets for a 260x260
+## note; the week strip instances them at 160x190, which pushed the Icon
+## below the note's bottom edge and spilled both labels past its right.
+## Anchored children scale with whatever size the instance is given.
+func test_sticky_note_children_scale_with_the_note() -> void:
+	var scene: PackedScene = load("res://Scenes/StudentList/StickyNote.tscn")
+	var note := scene.instantiate()
+	track(note)
+	for child_name in ["DayLabel", "ActivityLabel", "Icon"]:
+		var child := note.get_node_or_null(child_name) as Control
+		assert_true(child != null, "missing StickyNote/" + child_name)
+		assert_true(child.anchor_right > 0.0 or child.anchor_bottom > 0.0,
+			"%s is pinned to absolute offsets and will not fit a resized note"
+				% child_name)
+	note.free()
+
+
+## CATEGORY_ICONS must cover every category category_color() knows, or a
+## scheduled day gets no glyph. The header comment claims it mirrors that
+## key set -- this makes the claim enforceable.
+func test_category_icons_cover_the_schedule_categories() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for cat in ["Akademis", "Akademik", "SeniBudaya", "Olahraga", "Istirahat", "Wirausaha", "Libur"]:
+		assert_true(src.contains("\"%s\":" % cat),
+			"CATEGORY_ICONS is missing the %s category" % cat)
+
+
+## The notes hang at one of three heights so the strip reads as
+## hand-pinned. Two things have to hold: the spread must stay inside the
+## strip's own band, and a given student's day must always get the SAME
+## height -- a note that moves on every visit reads as a bug.
+func test_sticky_notes_hang_at_three_contained_pin_heights() -> void:
+	var note_src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentList/StickyNote.gd")
+	assert_true(note_src.contains("const PIN_STEP"),
+		"the pin spacing must be a named constant, not inline")
+	assert_true(note_src.contains("@export_range(0, 2) var pin_slot"),
+		"pin_slot must be a bounded export on the note's own root")
+
+	# Containment: deepest slot must still finish inside the band.
+	var note := preload("res://Scenes/StudentList/StickyNote.tscn").instantiate()
+	var note_h: float = note.custom_minimum_size.y
+	var deepest: float = 2.0 * note.PIN_STEP + note_h
+	note.free()
+	var card := _list.get_node_or_null("CardContainer/Murid1")
+	var strip := card.get_node_or_null("StickyNotesContainer") as Control
+	assert_true(strip != null, "missing StickyNotesContainer")
+	var band: float = strip.offset_bottom - strip.offset_top
+	assert_true(deepest <= band,
+		"a bottom-slot note (%f) must stay inside the %f strip" % [deepest, band])
+
+	# Determinism: the same student and day must hash to the same slot.
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("func _pin_slot_for("),
+		"the slot must come from a named helper")
+	assert_false(src.contains("randi") or src.contains("RandomNumberGenerator"),
+		"pin slots must be hashed, not drawn from a RNG -- notes would " +
+		"jump to a new height on every swipe back")
+
+
+## Both small-icon maps -- the day notes' CATEGORY_ICONS and the trait
+## chip's SPECIALTY_ICONS -- must use the team's authored art, not the
+## generated placeholder set, and must agree with each other so one
+## subject reads as one symbol across the card.
+func test_the_small_icons_are_the_teams_authored_art() -> void:
+	var maps := {
+		_SCRIPT_PATH: "CATEGORY_ICONS",
+		"res://Scripts/StudentList/RosterCard.gd": "SPECIALTY_ICONS",
+	}
+	var expected := {
+		"Akademis": "res://Assets/Images/StudentCard/stat_akademis.png",
+		"SeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+		"Olahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
+		"Istirahat": "res://Assets/Images/StudentCard/stat_energy.png",
+		"Wirausaha": "res://Assets/Images/UI/uang.png",
+		"Libur": "res://Assets/Images/StudentCard/stat_mood.png",
+	}
+	for path in maps:
+		var src := FileAccess.get_file_as_string(path)
+		assert_false(src.contains("UI/Placeholders/icon_akademis"),
+			"%s must not fall back to the placeholder glyphs" % maps[path])
+		for cat in expected:
+			assert_true(src.contains('"%s": "%s"' % [cat, expected[cat]]),
+				"%s must map %s to the team's %s" % [maps[path], cat, expected[cat]])
+	# And the art has to actually be there and load.
+	for cat in expected:
+		var p: String = expected[cat]
+		assert_true(ResourceLoader.exists(p), "missing team icon: " + p)
+		assert_true(load(p) is Texture2D, "not a Texture2D: " + p)
+
+
+## The tutorial's index-keyed logic (auto-advance, end-tutorial, per-step
+## spotlight) assumes exactly four steps in a fixed order. A fifth step or
+## a reorder silently breaks _switch_card / _on_card_pressed / _show_step.
+func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := src.get_slice("var defaults = [", 1).get_slice("\n\t]", 0)
+	var titles := ["Muridmu", "Status Jadwal", "Navigasi Card", "Pilih Murid"]
+	var last := -1
+	for t in titles:
+		var at := body.find("\"%s\"" % t)
+		assert_true(at > last, "tutorial step '%s' missing or out of order" % t)
+		last = at
+	assert_eq(body.split("[").size() - 1, 4,
+		"the tutorial must have exactly four steps")
+
+
+## The card's surface is an opaque themed Panel filling its whole rect,
+## not a paper TEXTURE on the root.
+##
+## Two bugs came out of the texture version. paper.png is only opaque
+## across the middle of its own rect, so bands laid out against the full
+## card rect rendered on the desk behind it; and the cast shadow was a
+## separate sibling node, so every card animation left it behind. The
+## Card variation's stylebox carries its own shadow, which means the
+## shadow is part of the card and cannot be left behind by anything.
+func test_each_card_surface_is_an_opaque_themed_panel() -> void:
+	for i in range(1, 5):
+		var sheet := _list.get_node_or_null(
+			"CardContainer/Murid%d/Sheet" % i) as Panel
+		assert_true(sheet != null, "missing Sheet panel on Murid%d" % i)
+		assert_eq(sheet.theme_type_variation, &"Card",
+			"Murid%d's Sheet must use the Card variation" % i)
+		assert_eq(sheet.get_index(), 0,
+			"Murid%d's Sheet must draw behind every other band" % i)
+		assert_eq(sheet.anchor_right, 1.0,
+			"Murid%d's Sheet must span the full card width" % i)
+		assert_eq(sheet.anchor_bottom, 1.0,
+			"Murid%d's Sheet must span the full card height" % i)
+
+
+## The separate shadow node and the tween plumbing that dragged it along
+## are gone; the Card stylebox's own shadow replaced both.
+func test_the_card_shadow_is_not_a_separate_node() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_false(src.contains("_drive_shadow"),
+		"the shadow-follow helper is obsolete -- Card's stylebox owns it")
+	assert_false(src.contains("card_shadow"),
+		"nothing should reference a standalone shadow node any more")
+	var scene := FileAccess.get_file_as_string(
+		"res://Scenes/StudentList/student_list.tscn")
+	assert_false(scene.contains('name="Shadow"'),
+		"CardContainer must not carry a separate Shadow node")
+
+
+## The page dots are tinted via self_modulate, so the texture underneath
+## has to be a filled shape. It was a hollow ring for one release and the
+## dots were reported invisible on a phone.
+func test_page_dot_uses_a_filled_texture() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/StudentList/PageDot.tscn")
+	assert_true(src.contains("page_dot.png"),
+		"PageDot must use the filled dot, not the hollow avatar frame")
+	assert_false(src.contains("roster_avatar_frame.png"),
+		"PageDot must not reuse the hollow ring")
+
+
+## The portrait sits on a rounded sunken panel rather than straight on
+## the paper, so a short or transparent portrait still reads as a framed
+## photo instead of floating.
+func test_each_portrait_has_a_rounded_backdrop_behind_it() -> void:
+	for i in range(1, 5):
+		var backdrop := _list.get_node_or_null(
+			"CardContainer/Murid%d/PortraitFrame/Backdrop" % i) as Panel
+		assert_true(backdrop != null, "missing portrait Backdrop on Murid%d" % i)
+		assert_eq(backdrop.theme_type_variation, &"SunkenPanel",
+			"portrait Backdrop on Murid%d must use SunkenPanel" % i)
+		var portrait := _list.get_node_or_null(
+			"CardContainer/Murid%d/PortraitFrame/Portrait" % i) as Control
+		assert_true(portrait != null, "missing Portrait on Murid%d" % i)
+		assert_true(backdrop.get_index() < portrait.get_index(),
+			"Backdrop must draw behind the portrait on Murid%d" % i)
+
+
+## self_modulate MULTIPLIES the note texture, so the raw category token
+## drives the paper too dark for its own dark-brown label text. The wash
+## toward white is what keeps the note legible on a phone.
+func test_sticky_note_tint_is_washed_before_it_is_applied() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/StudentList/StickyNote.gd")
+	assert_true(src.contains("const TINT_WASH"),
+		"the wash factor must be a named constant, not inline")
+	assert_true(src.contains("lerp(Color.WHITE, TINT_WASH)"),
+		"the category color must be washed toward white before tinting")
+	assert_false(src.contains("self_modulate = DesignTokens.load_default()"),
+		"no call site may apply a raw category color to self_modulate")

@@ -167,6 +167,41 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.outline_card, tokens.text_on_brand,
 		tokens.radius_pill)
 
+	# The roster card's third chip. Quirk and Persona carry their own
+	# accents; specialty stays neutral because its category colour
+	# varies per student and rides on the chip's icon instead.
+	_add_button_variation(theme, tokens, "SpecialtyBadge",
+		tokens.surface_sunken, tokens.surface_sunken.darkened(0.18),
+		tokens.brand_primary, tokens.text_primary,
+		tokens.radius_pill)
+
+	# Compact S step for all three chips. The full-size badges are
+	# font_title over btn_pad_v_s and space_lg -- about 160x290 each, so
+	# three of them overflow StudentList's 880px trait row and clip every
+	# label ("Semangat Juang" -> "SEMANGAT J"). The S step drops to
+	# font_caption with space_xs/space_md padding, which fits the worst
+	# case (Citra's "Seni Dalam Kesunyian") with room to spare. The
+	# accents, rim and radius_pill are inherited, so an S chip is
+	# unmistakably the same chip.
+	for chip in ["SpecialtyBadge", "PersonaBadge", "QuirkBadge"]:
+		_add_size_step(theme, tokens, chip, "S",
+			tokens.font_caption, tokens.space_xs, tokens.space_md)
+		# The category SVGs rasterise at their 100px viewBox, taller than
+		# the whole compact chip. Capping here rather than with
+		# expand_icon keeps the glyph a fixed size beside the word instead
+		# of stretching with whatever the label happens to be.
+		theme.set_constant("icon_max_width", chip + "S",
+			tokens.space_md + tokens.space_xs)
+
+		# ...and an M step, the one the StudentList card actually wears.
+		# S turned out to be a phone-hostile 22px -- under Material's 12sp
+		# caption floor once the 1080-wide design space is scaled down to
+		# a real handset. M lifts the word to body size and keeps the
+		# horizontal padding tight so three chips still share one row.
+		_add_size_step(theme, tokens, chip, "M",
+			tokens.font_body_size, tokens.space_sm, tokens.space_sm)
+		theme.set_constant("icon_max_width", chip + "M", tokens.space_lg)
+
 	# The lobby's three destination tiles. Icon stacked over label: at
 	# the L step there is room for a 64px icon, an 8px gap and a
 	# font_title line inside the 120px content box, and the icon is what
@@ -360,13 +395,18 @@ static func _add_button_variation(
 ## Only font_size differs -- the fill, rim and radius are the role's, so
 ## a PrimaryButtonL is unmistakably a PrimaryButton. Height comes from
 ## the step's own vertical padding, which is why this also re-pads.
+## `pad_h` defaults to -1, meaning "keep the role's own horizontal
+## padding". The S chip step passes a real value: a compact chip has to
+## give back width as well as height, and space_lg (44px per side) is
+## most of what makes a three-chip row overflow an 880px card.
 static func _add_size_step(
 	theme: Theme,
 	tokens: DesignTokens,
 	base: String,
 	suffix: String,
 	font_size: int,
-	pad_v: int
+	pad_v: int,
+	pad_h: int = -1
 ) -> void:
 	var name := base + suffix
 	theme.add_type(name)
@@ -376,6 +416,9 @@ static func _add_size_step(
 		var sb := (theme.get_stylebox(state, base) as StyleBoxFlat).duplicate()
 		sb.content_margin_top = pad_v
 		sb.content_margin_bottom = pad_v
+		if pad_h >= 0:
+			sb.content_margin_left = pad_h
+			sb.content_margin_right = pad_h
 		theme.set_stylebox(state, name, sb)
 
 	for key in ["font_color", "font_hover_color", "font_pressed_color",
@@ -529,6 +572,14 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# the screen. Also used by StatDetailPopup and
 		# EventStudentSelectDialog, which want the same bump.
 		["EventBodyLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# The StudentList card's teacher's-note strip. Same story as
+		# EventBodyLabel one line up: it shipped in 22px CaptionLabel and
+		# was reported unreadable on a phone without squinting. Body face
+		# over font_body_size + 8, and text_primary rather than
+		# CaptionLabel's text_secondary -- it sits on cream paper, where
+		# the secondary brown is the half of the problem the size alone
+		# does not fix.
+		["CatatanLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
 		# The trait popup's header sits on a per-trait tinted panel
 		# (TraitPopupHeader, self_modulated brand_primary for a quirk and
 		# cat_istirahat for a persona), so its two labels need CREAM text.

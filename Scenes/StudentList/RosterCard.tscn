@@ -1,0 +1,238 @@
+[gd_scene format=3 uid="uid://b701oo028pqff"]
+
+[ext_resource type="Script" uid="uid://cmgc7mel8ba5n" path="res://Scripts/StudentList/RosterCard.gd" id="2_dawm1"]
+[ext_resource type="PackedScene" uid="uid://cries6nb441ve" path="res://Scenes/StudentList/StickyNote.tscn" id="3_2cr6j"]
+[ext_resource type="Texture2D" uid="uid://retitw0qwkrw" path="res://Assets/Images/UI/Placeholders/stamp_belum.svg" id="3_t5dal"]
+[ext_resource type="Texture2D" uid="uid://hs2c4dugvtc" path="res://Assets/Images/UI/Placeholders/stamp_sudah.svg" id="4_6wrao"]
+[ext_resource type="Texture2D" uid="uid://cp7laphu1c8fb" path="res://Assets/Images/UI/StudentList/photo_corner.png" id="5_nfd4g"]
+[ext_resource type="Texture2D" uid="uid://bg1373ll7wros" path="res://Assets/Images/UI/StudentList/catatan_rule.png" id="7_gvl25"]
+
+[node name="RosterCard" type="TextureRect" unique_id=1291523057]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+expand_mode = 1
+script = ExtResource("2_dawm1")
+
+[node name="Sheet" type="Panel" parent="." unique_id=879590734]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_type_variation = &"Card"
+
+[node name="CardButton" type="Button" parent="." unique_id=1821756309]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Belum" type="Button" parent="." unique_id=727038106]
+layout_mode = 0
+offset_left = 610.0
+offset_top = 40.0
+offset_right = 935.0
+offset_bottom = 168.0
+mouse_filter = 2
+theme_type_variation = &"DangerButton"
+text = "BELUM"
+clip_text = true
+
+[node name="Stamp" type="TextureRect" parent="Belum" unique_id=1727905095]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_t5dal")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Sudah" type="Button" parent="." unique_id=547041322]
+visible = false
+layout_mode = 0
+offset_left = 610.0
+offset_top = 40.0
+offset_right = 935.0
+offset_bottom = 168.0
+mouse_filter = 2
+theme_type_variation = &"SuccessButton"
+text = "SUDAH"
+clip_text = true
+
+[node name="Stamp" type="TextureRect" parent="Sudah" unique_id=1217424049]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("4_6wrao")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Nama" type="Label" parent="." unique_id=1733212225]
+layout_mode = 0
+offset_left = 45.0
+offset_top = 40.0
+offset_right = 590.0
+offset_bottom = 155.0
+theme_type_variation = &"H2Label"
+vertical_alignment = 1
+
+[node name="PortraitFrame" type="Control" parent="." unique_id=428478704]
+anchors_preset = 0
+offset_left = 190.0
+offset_top = 175.0
+offset_right = 790.0
+offset_bottom = 795.0
+mouse_filter = 2
+
+[node name="Backdrop" type="Panel" parent="PortraitFrame" unique_id=1201417250]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_type_variation = &"SunkenPanel"
+
+[node name="Portrait" type="TextureRect" parent="PortraitFrame" unique_id=11649935]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = -14.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CornerTL" type="TextureRect" parent="PortraitFrame" unique_id=579347845]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+mouse_filter = 2
+texture = ExtResource("5_nfd4g")
+
+[node name="CornerBR" type="TextureRect" parent="PortraitFrame" unique_id=1756228071]
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -64.0
+mouse_filter = 2
+texture = ExtResource("5_nfd4g")
+flip_h = true
+flip_v = true
+
+[node name="StickyNotesContainer" type="Control" parent="." unique_id=283858632]
+anchors_preset = 0
+offset_left = 40.0
+offset_top = 928.0
+offset_right = 940.0
+offset_bottom = 1168.0
+mouse_filter = 2
+
+[node name="Senin" parent="StickyNotesContainer" unique_id=159726911 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
+layout_mode = 0
+offset_right = 172.0
+offset_bottom = 200.0
+mouse_filter = 2
+day_name = "SEN"
+
+[node name="Selasa" parent="StickyNotesContainer" unique_id=1799566043 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
+layout_mode = 0
+offset_left = 182.0
+offset_right = 354.0
+offset_bottom = 200.0
+mouse_filter = 2
+day_name = "SEL"
+
+[node name="Rabu" parent="StickyNotesContainer" unique_id=1024822765 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
+layout_mode = 0
+offset_left = 364.0
+offset_right = 536.0
+offset_bottom = 200.0
+mouse_filter = 2
+day_name = "RAB"
+
+[node name="Kamis" parent="StickyNotesContainer" unique_id=820140775 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
+layout_mode = 0
+offset_left = 546.0
+offset_right = 718.0
+offset_bottom = 200.0
+mouse_filter = 2
+day_name = "KAM"
+
+[node name="Jumat" parent="StickyNotesContainer" unique_id=1309994276 instance=ExtResource("3_2cr6j")]
+self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
+layout_mode = 0
+offset_left = 728.0
+offset_right = 900.0
+offset_bottom = 200.0
+mouse_filter = 2
+day_name = "JUM"
+
+[node name="TraitRow" type="HBoxContainer" parent="." unique_id=517615274]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 812.0
+offset_right = 940.0
+offset_bottom = 912.0
+mouse_filter = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="SpecialtyChip" type="Button" parent="TraitRow" unique_id=1755543310]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+mouse_filter = 2
+theme_type_variation = &"SpecialtyBadgeM"
+
+[node name="PersonaChip" type="Button" parent="TraitRow" unique_id=934576774]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+mouse_filter = 2
+theme_type_variation = &"PersonaBadgeM"
+
+[node name="QuirkChip" type="Button" parent="TraitRow" unique_id=909514293]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+mouse_filter = 2
+theme_type_variation = &"QuirkBadgeM"
+
+[node name="CatatanGuru" type="Control" parent="." unique_id=1031197187]
+anchors_preset = 0
+offset_left = 45.0
+offset_top = 1185.0
+offset_right = 935.0
+offset_bottom = 1370.0
+mouse_filter = 2
+
+[node name="Rule" type="TextureRect" parent="CatatanGuru" unique_id=445468317]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("7_gvl25")
+stretch_mode = 1
+
+[node name="CatatanLabel" type="Label" parent="CatatanGuru" unique_id=534992870]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_type_variation = &"CatatanLabel"
+text = "Belum ada catatan untuk murid ini."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

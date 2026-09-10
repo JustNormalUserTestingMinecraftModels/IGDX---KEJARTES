@@ -13,8 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://whtj1qktee40" path="res://Assets/Images/StudentCard/portrait_frame.png" id="6_kiyav"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
-[ext_resource type="Texture2D" uid="uid://0n6i1ep0ugkv" path="res://Assets/Images/UI/Nav/icon_chevron_right.png" id="11_1k4ux"]
-[ext_resource type="Texture2D" uid="uid://cwvk65ofc5rgl" path="res://Assets/Images/UI/Nav/icon_chevron_left.png" id="12_kiyav"]
+[ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="13_kiyav"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
@@ -1584,25 +1583,53 @@ mouse_filter = 2
 texture = ExtResource("6_kiyav")
 
 [node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
+custom_minimum_size = Vector2(160, 96)
 layout_mode = 0
-offset_left = 800.0
-offset_top = 1526.0
-offset_right = 920.0
-offset_bottom = 1646.0
-theme_type_variation = &"CardArrowButton"
-icon = ExtResource("11_1k4ux")
-expand_icon = true
+offset_left = 790.0
+offset_top = 1524.0
+offset_right = 950.0
+offset_bottom = 1652.0
+theme_type_variation = &"SecondaryButtonL"
+
+[node name="Arrow" type="TextureRect" parent="NextButtonKanan" unique_id=1794432009]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 28.0
+offset_right = -40.0
+offset_bottom = -28.0
+rotation = -1.5708
+pivot_offset = Vector2(40, 36)
+mouse_filter = 2
+texture = ExtResource("13_kiyav")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="NextButtonKiri" type="Button" parent="." unique_id=1513661131]
 visible = false
+custom_minimum_size = Vector2(160, 96)
 layout_mode = 0
 offset_left = 20.0
-offset_top = 1526.0
-offset_right = 140.0
-offset_bottom = 1646.0
-theme_type_variation = &"CardArrowButton"
-icon = ExtResource("12_kiyav")
-expand_icon = true
+offset_top = 1524.0
+offset_right = 180.0
+offset_bottom = 1652.0
+theme_type_variation = &"SecondaryButtonL"
+
+[node name="Arrow" type="TextureRect" parent="NextButtonKiri" unique_id=1879901438]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 28.0
+offset_right = -40.0
+offset_bottom = -28.0
+rotation = 1.5708
+pivot_offset = Vector2(40, 36)
+mouse_filter = 2
+texture = ExtResource("13_kiyav")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="PilihMurid" type="Label" parent="." unique_id=983198317]
 layout_mode = 0

@@ -80,12 +80,16 @@ func test_the_cutscene_skip_and_grade_choice_are_not_destructive() -> void:
 ## they are status badges reading BELUM/SUDAH TERJADWALKAN. The colour IS
 ## the information, so the confirm-pair rule must not touch them.
 func test_the_schedule_status_badges_keep_their_colours() -> void:
-	var src := _read("res://Scenes/StudentList/student_list.tscn")
-	assert_ne(src, "", "could not open student_list.tscn")
+	# The status badges moved into RosterCard.tscn when the four inline
+	# Murid card subtrees were extracted into one template (2026-09-10
+	# Warm UI Part 3). The intent is unchanged: BELUM/SUDAH still encode
+	# state with colour, so the confirm-pair rule must not touch them.
+	var src := _read("res://Scenes/StudentList/RosterCard.tscn")
+	assert_ne(src, "", "could not open RosterCard.tscn")
 	assert_contains(src, "DangerButton",
-		"BELUM TERJADWALKAN encodes state, not a destructive action")
+		"the BELUM badge encodes state, not a destructive action")
 	assert_contains(src, "SuccessButton",
-		"SUDAH TERJADWALKAN encodes state, not a reward")
+		"the SUDAH badge encodes state, not a reward")
 
 
 ## Claiming a reward is the one case where something is genuinely earned

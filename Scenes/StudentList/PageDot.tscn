@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://v3jhjy4cnqkh"]
+
+[ext_resource type="Texture2D" uid="uid://dbqcgfj33mt40" path="res://Assets/Images/UI/StudentList/page_dot.png" id="1_yi325"]
+
+[node name="PageDot" type="TextureRect" unique_id=2072564524]
+custom_minimum_size = Vector2(44, 44)
+mouse_filter = 2
+texture = ExtResource("1_yi325")
+expand_mode = 1
+stretch_mode = 6

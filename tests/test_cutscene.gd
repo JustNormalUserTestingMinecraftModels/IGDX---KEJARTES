@@ -251,13 +251,14 @@ func _function_body(src: String, func_name: String) -> String:
 func test_go_to_gameplay_always_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "go_to_gameplay")
-	assert_true(body.contains("GameState.next_scene = _next_scene_path()"),
+	assert_true(body.contains("Transition.change_scene(_next_scene_path()"),
 		"must delegate routing to _next_scene_path()")
 	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
 		"go_to_gameplay must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")
-	assert_true(body.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
-		"must still hand off through the Loading scene")
+	assert_false(body.contains("change_scene_to_file"),
+		"must hand off through Transition, not a raw change_scene_to_file -- " +
+		"a raw call skips the wipe, the inventory flush and the anti-flash frame")
 
 
 ## _next_scene_path() is the routing table go_to_gameplay() now delegates
@@ -281,13 +282,14 @@ func test_next_scene_path_defaults_to_student_card() -> void:
 func test_on_skip_pressed_also_routes_through_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "_on_skip_pressed")
-	assert_true(body.contains("GameState.next_scene = _next_scene_path()"),
+	assert_true(body.contains("Transition.change_scene(_next_scene_path()"),
 		"Skip Intro must delegate routing to _next_scene_path(), same as go_to_gameplay()")
 	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
 		"Skip Intro must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")
-	assert_true(body.contains("get_tree().change_scene_to_file(\"res://Scenes/Loading/loading.tscn\")"),
-		"must still hand off through the Loading scene")
+	assert_false(body.contains("change_scene_to_file"),
+		"must hand off through Transition, not a raw change_scene_to_file -- " +
+		"a raw call skips the wipe, the inventory flush and the anti-flash frame")
 
 
 func test_show_current_starts_with_a_hold_before_revealing() -> void:

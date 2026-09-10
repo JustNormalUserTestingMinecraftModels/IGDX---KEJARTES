@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cnukipbs51her"
-path="res://.godot/imported/hand_pendiam.svg-5e397df5328d8aaccf55958927ada0c8.ctex"
+uid="uid://dvotkc0awnd16"
+path="res://.godot/imported/Doni_Table.png-73cd92917a414c58a9a8be61fde47605.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/Lobby/Hands/hand_pendiam.svg"
-dest_files=["res://.godot/imported/hand_pendiam.svg-5e397df5328d8aaccf55958927ada0c8.ctex"]
+source_file="res://Assets/Images/MuridPotrait/TanganItems/Doni_Table.png"
+dest_files=["res://.godot/imported/Doni_Table.png-73cd92917a414c58a9a8be61fde47605.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

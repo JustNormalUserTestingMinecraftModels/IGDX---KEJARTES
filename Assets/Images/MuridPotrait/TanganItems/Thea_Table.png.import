@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://clvcrfhywsqjh"
-path="res://.godot/imported/hand_tekun.svg-cdd271de2be80d6fa39b826914d04b97.ctex"
+uid="uid://ce1kfh8jybbhh"
+path="res://.godot/imported/Thea_Table.png-3c47696feeb1d267cbae24786a3ebb1d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/Lobby/Hands/hand_tekun.svg"
-dest_files=["res://.godot/imported/hand_tekun.svg-cdd271de2be80d6fa39b826914d04b97.ctex"]
+source_file="res://Assets/Images/MuridPotrait/TanganItems/Thea_Table.png"
+dest_files=["res://.godot/imported/Thea_Table.png-3c47696feeb1d267cbae24786a3ebb1d.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

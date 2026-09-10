@@ -264,8 +264,7 @@ func _on_skip_pressed() -> void:
 	# _on_belajar_pressed note).
 	print("Skip Cutscene pressed")
 	await _fade_to_black()
-	GameState.next_scene = _next_scene_path()
-	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")
+	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)
 
 func show_level_select_modal() -> void:
 	is_showing_level_select = true
@@ -375,7 +374,13 @@ func transition_to_next():
 func _next_scene_path() -> String:
 	return "res://Scenes/StudentCard/student_card.tscn"
 
+## Both exits from this scene (here and _on_skip_pressed) now hand off to
+## Transition rather than hopping through Scenes/Loading. These were the
+## last two raw change_scene_to_file() calls in the project, and the only
+## navigation a player could reach that did not wipe like every other
+## screen change -- which is what made the loading screen read as
+## unfinished. Going through Transition also picks up the inventory flush
+## and the one-frame wait that the raw call silently skipped.
 func go_to_gameplay():
 	await _fade_to_black()
-	GameState.next_scene = _next_scene_path()
-	get_tree().change_scene_to_file("res://Scenes/Loading/loading.tscn")
+	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)

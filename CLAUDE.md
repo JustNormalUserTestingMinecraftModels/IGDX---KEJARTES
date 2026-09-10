@@ -360,11 +360,6 @@ are not illustration. Drop-replaceable at the same paths.
 also PowerShell + `System.Drawing` -- standing in for a hand-painted gold
 gloss.
 
-**`DisplayUang`'s texture is off-palette.** `Assets/Images/UI/Desain tanpa
-judul.png` is pink/magenta and now visibly clashes with the warm chrome around
-it. It is also a 1920x1080 landscape image, which is why the lobby HUD chip is
-sized 332x187 rather than the 332x96 the layout would otherwise want.
-
 **Stray layer in the day-transition sky (2026-09-10).**
 `Assets/Images/SchoolDay/transition_background.png` has a bluish night
 street scene pasted into its bottom-left corner -- a layer the artist left

@@ -195,7 +195,7 @@ func test_labels_use_theme_variations() -> void:
 
 	var money := _lobby.get_node_or_null("DisplayUang/Label") as Label
 	assert_true(money != null, "missing money label")
-	assert_eq(money.theme_type_variation, &"BarLabel", "money label variation")
+	assert_eq(money.theme_type_variation, &"CoinLabel", "money label variation")
 
 	var header := _lobby.get_node_or_null("DailyReward/Label") as Label
 	assert_true(header != null, "missing Daily Reward header label")
@@ -281,3 +281,37 @@ func test_report_student_button_is_wired() -> void:
 		"the ReportStudent button must have a handler")
 	assert_true(src.contains("res://Scenes/ReportCard/report_card.tscn"),
 		"ReportStudent must route to the report card scene")
+
+
+## The money readout was a 1920x1080 pink landscape PNG with a label on
+## top -- off-palette, and the reason the chip was 332x187 rather than the
+## 332x96 the layout wanted. It is a themed rounded panel now, with the
+## coin as a real icon beside the number.
+func test_the_money_chip_is_a_themed_panel_with_a_coin_icon() -> void:
+	var chip := _lobby.get_node_or_null("DisplayUang") as Panel
+	assert_true(chip != null, "DisplayUang must be a Panel now, not a TextureRect")
+	assert_eq(chip.theme_type_variation, &"Card",
+		"the chip takes its chrome from the theme")
+	assert_eq(chip.size.y, 96.0,
+		"the chip is 96 tall, matching DailyLogin, got %f" % chip.size.y)
+
+	var icon := _lobby.get_node_or_null("DisplayUang/CoinIcon") as TextureRect
+	assert_true(icon != null, "the chip needs a coin icon")
+	assert_eq(icon.texture.resource_path, "res://Assets/Images/UI/uang.png",
+		"and it is the new coin art")
+
+
+func test_the_off_palette_chip_art_is_gone() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Lobby/loby.tscn")
+	assert_false(src.contains("Desain tanpa judul.png"),
+		"the pink chip background must no longer be referenced")
+
+
+## Both shop screens read the same coin as the lobby, so money looks like
+## one currency across the game.
+func test_the_shop_screens_use_the_same_coin() -> void:
+	for path in ["res://Scenes/Koperasi/koprasi.tscn",
+			"res://Scenes/Inventory/inventory.tscn"]:
+		var src := FileAccess.get_file_as_string(path)
+		assert_true(src.contains("Assets/Images/UI/uang.png"),
+			"%s should show the shared coin" % path)

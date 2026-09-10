@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://bkfpjbok5vgg5" path="res://Scripts/Lobby/loby.gd" id="1_ao7fi"]
 [ext_resource type="Texture2D" uid="uid://b70nke1156k3l" path="res://Assets/Images/UI/pngwing.com (4).png" id="2_2gra1"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_e1w2y"]
-[ext_resource type="Texture2D" uid="uid://cd3yusfuaqa0h" path="res://Assets/Images/UI/Desain tanpa judul.png" id="3_2gra1"]
 [ext_resource type="Texture2D" uid="uid://i6ar7lc7f23j" path="res://Assets/Images/UI/pngwing.com (5).png" id="4_q6pla"]
 [ext_resource type="Texture2D" uid="uid://cjoky7bj16ciw" path="res://Assets/Images/UI/Koin.png" id="5_6pr0q"]
 [ext_resource type="Texture2D" uid="uid://c5uf1bkw1f3ui" path="res://Assets/Images/UI/Nav/icon_cta_student.png" id="9_dyk4g"]
@@ -11,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://ddjx1gmpupjvv" path="res://Assets/Images/UI/Nav/icon_nav_rapor.png" id="11_4w5lf"]
 [ext_resource type="Texture2D" uid="uid://b83solgop708f" path="res://Assets/Images/UI/Nav/icon_nav_inventory.png" id="12_fb4vu"]
 [ext_resource type="Texture2D" uid="uid://ccu4bm5rdto8r" path="res://Assets/Images/UI/Nav/icon_cta_jadwal.png" id="13_85cl3"]
+[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://rdxrs4jl1r5r" path="res://Assets/Images/MuridPotrait/tanganThea.png" id="default_hand_tex"]
 [ext_resource type="Texture2D" uid="uid://dic0qp1gbfmij" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
@@ -383,30 +383,36 @@ offset_bottom = 140.0
 theme_type_variation = &"DisplayLabel"
 text = "KELAS"
 
-[node name="DisplayUang" type="TextureRect" parent="." unique_id=102747421]
+[node name="DisplayUang" type="Panel" parent="." unique_id=259983175]
 layout_mode = 0
 offset_left = 700.0
-offset_top = 1301.0
+offset_top = 1392.0
 offset_right = 1032.0
 offset_bottom = 1488.0
-texture = ExtResource("3_2gra1")
-expand_mode = 1
-flip_h = true
+mouse_filter = 2
+theme_type_variation = &"Card"
 
-[node name="Label" type="Label" parent="DisplayUang" unique_id=1444294720]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.293
-anchor_top = 0.423
-anchor_right = 0.5
-anchor_bottom = 0.62
-offset_left = -2.904869
-offset_top = 0.051002502
-offset_right = -3.888855
-offset_bottom = 1.9400024
-theme_type_variation = &"BarLabel"
+[node name="CoinIcon" type="TextureRect" parent="DisplayUang" unique_id=1731951124]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 20.0
+offset_right = 88.0
+offset_bottom = 76.0
+mouse_filter = 2
+texture = ExtResource("14_dyk4g")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="DisplayUang" unique_id=664496077]
+layout_mode = 0
+offset_left = 100.0
+offset_top = 18.0
+offset_right = 314.0
+offset_bottom = 78.0
+theme_type_variation = &"CoinLabel"
 text = "50"
 horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="DailyLogin" type="TextureButton" parent="." unique_id=1799090163]
 layout_mode = 0

@@ -301,3 +301,77 @@ func test_lomba_menari_backdrop_shows_in_the_editor_and_covers_tall_screens() ->
 		"the Background node must carry the art itself, so the 2D editor shows it")
 	assert_eq(bg.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_COVERED,
 		"a taller phone must crop the sides, not stretch the art")
+
+## Which picture each BuatBatik tool shows, keyed by the tool's NODE NAME.
+## _ready() shuffles the four slots -- finding the order is the puzzle -- so a
+## picture dealt by slot index lands on the wrong tool (fixed 2026-09-10).
+const _BATIK_TOOL_ART: Dictionary = {
+	"Tool0": "res://Assets/Images/Textures/batik_tool_pencil.png",
+	"Tool1": "res://Assets/Images/Textures/batik_tool_canting.png",
+	"Tool2": "res://Assets/Images/Textures/batik_tool_pewarna.png",
+	"Tool3": "res://Assets/Images/Textures/batik_tool_kompor.png",
+}
+const _BATIK_SCENE := "res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn"
+const _BATIK_SCRIPT := "res://Scripts/Minigames/SeniBudaya/BuatBatik.gd"
+
+## Each tool's authored picture, read by tool name, in whatever order the
+## slots currently sit.
+func _batik_art_by_tool(tools: Node) -> Dictionary:
+	var out := {}
+	for tool in tools.get_children():
+		var tex_rect := tool.get_node_or_null("ToolTextureRect") as TextureRect
+		out[str(tool.name)] = tex_rect.texture.resource_path if tex_rect != null and tex_rect.texture != null else ""
+	return out
+
+func test_each_batik_tool_carries_its_own_picture_through_a_shuffle() -> void:
+	var root: Node = (load(_BATIK_SCENE) as PackedScene).instantiate()
+	track(root)
+	var tools := root.get_node("ToolsContainer")
+	assert_eq(_batik_art_by_tool(tools), _BATIK_TOOL_ART,
+		"each tool slot must author its own picture in the scene")
+	# Reorder the slots the way _ready()'s shuffle does.
+	var kids := tools.get_children()
+	kids.reverse()
+	for i in range(kids.size()):
+		tools.move_child(kids[i], i)
+	assert_eq(_batik_art_by_tool(tools), _BATIK_TOOL_ART,
+		"a picture must travel with its tool when the slots are reordered")
+
+func test_batik_export_overrides_match_by_tool_name_not_slot() -> void:
+	var src := FileAccess.get_file_as_string(_BATIK_SCRIPT)
+	assert_false(src.contains("tool_texs[i]"),
+		"a picture dealt by slot index lands on the wrong tool after the shuffle")
+	assert_true(src.contains("\"Tool0\": tool0_texture"),
+		"export overrides must be matched to a tool by its node name")
+	assert_false(src.contains("tex_rect.name = \"ToolTextureRect\""),
+		"the tool picture is authored in the scene now, not built at runtime")
+
+func test_batik_tools_carry_no_emoji() -> void:
+	var root: Node = (load(_BATIK_SCENE) as PackedScene).instantiate()
+	track(root)
+	for tool in root.get_node("ToolsContainer").get_children():
+		assert_true(tool.get_node_or_null("IconLabel") == null,
+			"%s still carries an emoji IconLabel; its picture is authored now" % tool.name)
+	assert_false(FileAccess.get_file_as_string(_BATIK_SCRIPT).contains("func _get_tool_icon"),
+		"_get_tool_icon() only ever returned emoji, and nothing called it")
+
+## Each picture must fill its slot once the scene is loaded back. A
+## TextureRect left in position mode (layout_mode = 0) is saved WITHOUT its
+## anchors, so it reloads as a zero-size rect and the tool shows no picture
+## at all -- which the texture-path check above cannot see (2026-09-10).
+func test_each_batik_picture_fills_its_slot() -> void:
+	var root: Node = (load(_BATIK_SCENE) as PackedScene).instantiate()
+	track(root)
+	for tool in root.get_node("ToolsContainer").get_children():
+		var tex_rect := tool.get_node_or_null("ToolTextureRect") as TextureRect
+		assert_true(tex_rect != null, "%s has no ToolTextureRect" % tool.name)
+		if tex_rect == null:
+			continue
+		var anchors := Vector4(tex_rect.anchor_left, tex_rect.anchor_top,
+			tex_rect.anchor_right, tex_rect.anchor_bottom)
+		assert_eq(anchors, Vector4(0, 0, 1, 1),
+			"%s's picture must be anchored to fill its slot, got %s" % [tool.name, anchors])
+		var offsets := Vector4(tex_rect.offset_left, tex_rect.offset_top,
+			tex_rect.offset_right, tex_rect.offset_bottom)
+		assert_eq(offsets, Vector4.ZERO,
+			"%s's picture must sit flush in its slot, got %s" % [tool.name, offsets])

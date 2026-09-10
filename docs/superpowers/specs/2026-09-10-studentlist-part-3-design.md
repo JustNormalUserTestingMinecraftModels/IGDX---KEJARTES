@@ -61,12 +61,14 @@ property poked into a child:
 | `quirk` | `String` | drives the quirk chip and the catatan observation |
 | `is_scheduled` | `bool` | swaps `Belum` / `Sudah` |
 
-Two more small templates come out of the same principle:
+One more component comes out of the same principle:
 
-- `Scenes/StudentList/TraitChip.tscn` + `TraitChip.gd` — `@export icon_texture`,
-  `@export caption_text` on the root.
 - `Scenes/StudentList/RosterAvatar.tscn` + `RosterAvatar.gd` — `@export
   portrait_texture`, `@export is_scheduled`, `@export is_current` on the root.
+
+A `TraitChip` component was drafted here and **dropped during planning**: Godot's
+`Button` carries a native `icon`, so a chip is a themed `Button`, not a scene.
+See Section 5.
 
 ## Section 2 — Screen layout
 
@@ -110,11 +112,15 @@ under "Deferred".
 | `Nama` | x 30–600, y 30–130 | H2Label, left-aligned (test pins the variation) |
 | `Belum` / `Sudah` | x 620–910, y 30–126 | 290x96, clears touch minimum. Stay `Button` on `DangerButton` / `SuccessButton` — both pinned by test |
 | `Portrait` | x 190–750, y 150–770 | 560x620, framed, `photo_corner.png` tape at two corners |
-| `TraitRow` | x 30–910, y 790–880 | HBoxContainer, `separation = space_sm` (16), three `TraitChip` instances |
-| `StickyNotesContainer` | x 30–910, y 900–1090 | five notes, 160x190, at x 30, 210, 390, 570, 750 |
-| `CatatanGuru` | x 30–910, y 1120–1340 | ruled strip on `catatan_rule.png` |
+| `TraitRow` | x 30–910, y 786–882 | HBoxContainer, `separation = space_sm` (16), three chip `Button`s: `SpecialtyBadge`, `PersonaBadge`, `QuirkBadge` |
+| `StickyNotesContainer` | x 30–910, y 906–1096 | five notes, 160x190, at x 30, 210, 390, 570, 750 |
+| `CatatanGuru` | x 30–910, y 1126–1346 | ruled strip on `catatan_rule.png` |
 
-Bottom margin 1340–1390 = 50. No dead band remains.
+Bottom margin 1346–1390 = 44. No dead band remains.
+
+The trait row is **96 tall, not 90**: the chips are `Button` variations and so
+are swept by `test_interactive_controls_meet_the_minimum_touch_target`, which
+enforces `tokens.touch_target_min` = 96.
 
 **The stamp.** `Belum` / `Sudah` keep their button type and variation so the
 tests hold, but are re-skinned with a generated rubber stamp behind the label,
@@ -182,15 +188,34 @@ would be the only note in the week strip without a glyph.
 
 ## Section 5 — Theme
 
-One new variation, `TraitChip`, a `PanelContainer` pill: `surface_sunken`
-ground, `radius_pill`, `text_secondary` ink.
+**Revised during planning after reading `ThemeFactory` properly.** The original
+draft of this section proposed a new `TraitChip` `PanelContainer` variation. That
+was redundant:
 
-It is **built only from existing tokens**. No new `DesignTokens` `@export` is
-added, so no editor restart is needed — the same discipline that let
-`GhostButton` and `CutsceneDialogue` land in Part 2. A rebake is still required.
+- `QuirkBadge` and `PersonaBadge` **already exist** as pill-geometry trait chips
+  (`_add_button_variation(..., tokens.radius_pill)`), are already in
+  `DISPLAY_ROSTER`, and are already in the bake. `ThemeFactory`'s own comment
+  calls them "Trait chips (Quirk / Persona)".
+- Godot's `Button` has a native `icon` property, so a chip is a `Button` with
+  `icon` + `text` + variation. No `TraitChip.tscn` component is needed.
+- `RosterAvatar` uses the existing **`GhostButton`** variation, which draws
+  nothing at rest specifically so baked art can be the button — exactly this
+  case.
 
-The chip's icon and label live inside `TraitChip.tscn` as a TextureRect plus a
-Label on `MicroLabel`; the variation supplies only the pill ground.
+So the pass adds **one** variation, `SpecialtyBadge`: `surface_sunken` ground,
+`radius_pill`, `brand_primary` border, `text_primary` ink. Specialty gets its own
+rather than borrowing a trait badge, because otherwise the three chip kinds would
+be indistinguishable. Its accent stays neutral — the category's own colour varies
+per student, so it rides on the chip's icon rather than living in a static
+variation.
+
+`SpecialtyBadge` is built only from existing tokens, so no new `DesignTokens`
+`@export` is added and no editor restart is needed — the discipline that let
+`GhostButton` and `CutsceneDialogue` land in Part 2. It **must** be added to
+`DISPLAY_ROSTER` (`_add_button_variation` assigns the display font) and the theme
+**must** be rebaked, or it renders as an unstyled default `Button` in game while
+the suite stays green. It may also need a `RADIUS_EXEMPT` entry in
+`tests/test_button_geometry.gd`, as `QuirkBadge` and `PersonaBadge` do.
 
 No `theme_override_*` anywhere. `test_scene_has_no_theme_overrides` and
 `test_stickynote_scene_has_no_theme_overrides` both stay green, and the new

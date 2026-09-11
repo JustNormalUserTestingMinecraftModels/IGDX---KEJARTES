@@ -351,3 +351,47 @@ func test_shop_shows_a_scene_empty_state_not_a_built_label() -> void:
 		"empty cart state should show the scene's retur_empty_state node")
 	assert_false(src.contains("Label.new()"),
 		"empty state must not be built as a runtime Label")
+
+
+# ───────────────────────────────── Part 2: the shop's colours are tokens
+
+## Every Koperasi stylebox, built from a throwaway token set, must follow the
+## tokens. set() rather than assignment, so the test fails on its assertions
+## (not a script error) while the tokens do not exist yet.
+func test_koperasi_variations_read_their_colours_from_tokens() -> void:
+	var t := DesignTokens.new()
+	var picks := {
+		"koperasi_tag_fill": Color("ff0000"),
+		"koperasi_tag_border": Color("00ff00"),
+		"koperasi_tag_pressed_fill": Color("0000ff"),
+		"koperasi_tag_pressed_border": Color("ffff00"),
+		"koperasi_tag_disabled_fill": Color("ff00ff"),
+		"koperasi_tag_disabled_border": Color("00ffff"),
+		"koperasi_tray_fill": Color("123456"),
+		"koperasi_tray_rule": Color("654321"),
+	}
+	for key in picks:
+		t.set(key, picks[key])
+	var theme := ThemeFactory.build(t)
+	var want := {
+		"PriceTag": [Color("ff0000"), Color("00ff00")],
+		"PriceTagPressed": [Color("0000ff"), Color("ffff00")],
+		"PriceTagDisabled": [Color("ff00ff"), Color("00ffff")],
+		"BasketTray": [Color("123456"), Color("654321")],
+	}
+	for variation in want:
+		assert_true(theme.has_stylebox("panel", variation),
+			"%s has no panel stylebox" % variation)
+		if not theme.has_stylebox("panel", variation):
+			continue
+		var box := theme.get_stylebox("panel", variation) as StyleBoxFlat
+		assert_eq(box.bg_color, want[variation][0], "%s fill follows its token" % variation)
+		assert_eq(box.border_color, want[variation][1], "%s border follows its token" % variation)
+
+
+func test_price_tag_wipe_colour_comes_from_a_token() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/PriceTag.gd")
+	assert_false(src.contains("Color(\"#"),
+		"the wipe colour must come from DesignTokens, not a hex literal")
+	assert_true(src.contains("koperasi_tag_pressed_fill"),
+		"the wipe paints the pressed-fill token")

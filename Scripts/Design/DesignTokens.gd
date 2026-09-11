@@ -161,6 +161,25 @@ static func load_default() -> DesignTokens:
 ## Coin/money label colour -- CoinLabel, ShopCoinLabel, ResultHeroLabel.
 @export var currency_gold: Color = Color("ffc93c")
 
+@export_group("Koperasi")
+## The price tag's resting pill (PriceTag). Bright green so a price reads as
+## "you can buy this" against the shelf's warm wood.
+@export var koperasi_tag_fill: Color = Color("639922")
+## The resting pill's border (PriceTag).
+@export var koperasi_tag_border: Color = Color("3B6D11")
+## The dark green the buy wipe paints across the pill, and PriceTagPressed's fill.
+@export var koperasi_tag_pressed_fill: Color = Color("2F5A0D")
+## PriceTagPressed's border.
+@export var koperasi_tag_pressed_border: Color = Color("173404")
+## PriceTagDisabled's fill: the neutral grey of an item the player cannot afford.
+@export var koperasi_tag_disabled_fill: Color = Color("B4B2A9")
+## PriceTagDisabled's border.
+@export var koperasi_tag_disabled_border: Color = Color("5F5E5A")
+## The basket tray's cream surface (BasketTray).
+@export var koperasi_tray_fill: Color = Color("FBEBC8")
+## The tray's amber: its top rule, the plank items stand on, the ×N badge rim.
+@export var koperasi_tray_rule: Color = Color("A86A1C")
+
 @export_group("Radii")
 ## Unused since the mockup-rescale that moved the schedule pill's corner
 ## radius to radius_md -- see tests/test_activity_row.gd's regression note.

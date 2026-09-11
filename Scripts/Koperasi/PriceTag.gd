@@ -35,7 +35,7 @@ var _price: int = 0
 func _ready() -> void:
 	clip_contents = true
 	if is_instance_valid(_wipe):
-		_wipe.color = Color("#2F5A0D")
+		_wipe.color = DesignTokens.load_default().koperasi_tag_pressed_fill
 		_wipe.size.x = 0.0
 	_ignore_mouse_so_taps_reach_the_button_beneath()
 

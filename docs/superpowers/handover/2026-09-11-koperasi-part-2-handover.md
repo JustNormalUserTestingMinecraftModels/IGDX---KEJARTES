@@ -1,5 +1,15 @@
 # Koperasi rework — Part 2 handover
 
+> **Status, 2026-09-11: Part 2 is built.** What was done, and why, is in the
+> plan `docs/superpowers/plans/2026-09-11-koperasi-part-2.md` and the
+> CHANGELOG entry "2026-09-11 — Koperasi rework, Part 2". Branch
+> `feat/koperasi-part-2`, opened as a PR into `feat/koperasi-rework` (#15).
+> The mentor screenshot review asked for below was **not held**: the user
+> chose to go ahead without it, so nothing came back from it. The open visual
+> question under "Deferred minors" is moot: the basket popup and
+> `KeranjangDepan` are gone, and landed items now stand in the docked tray.
+> The rest of this document is the brief as it was written for Part 2.
+
 **For a team picking this up cold.** Part 1 shipped on 2026-09-11 as
 PR #15 (`feat/koperasi-rework` → `Textures`). This document is what you
 need to finish the job without repeating our mistakes.

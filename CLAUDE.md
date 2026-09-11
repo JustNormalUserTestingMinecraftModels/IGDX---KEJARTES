@@ -356,7 +356,7 @@ event-popup set (`icon_event_*`, `bg_event_*`, `particle_burst.png`),
 2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
 the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
-`icon_keranjang_kosong.svg`, `icon_retur.svg`, `tray_dots.png` (this last must
+`icon_keranjang_kosong.svg`, `tray_dots.png` (this last must
 stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
 those exact dimensions; in Godot 4 the repeat comes from the node's
 `texture_repeat`, not a texture import flag), and the 2026-09-10 StudentList

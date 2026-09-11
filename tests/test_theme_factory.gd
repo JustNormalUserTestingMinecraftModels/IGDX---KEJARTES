@@ -346,6 +346,8 @@ const DISPLAY_ROSTER := [
 	"SpecialtyBadgeM", "PersonaBadgeM", "QuirkBadgeM",
 	# 2026-09-11: the student's name alone on StatCheck's painted plate.
 	"PlateNameLabel",
+	# 2026-09-11 Koperasi Part 2: the tray's ×N and count badges.
+	"TrayBadgeLabel",
 ]
 
 

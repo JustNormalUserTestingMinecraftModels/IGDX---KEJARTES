@@ -40,9 +40,14 @@ func clear() -> void:
 	cart_changed.emit()
 
 func get_total() -> int:
+	return total_of(cart)
+
+## Sum of price x quantity over Cart-shaped entries. Static so the basket
+## tray can total exactly what it was handed -- one sum, never two.
+static func total_of(entries: Dictionary) -> int:
 	var total: int = 0
-	for key in cart:
-		total += cart[key]["data"].price * cart[key]["quantity"]
+	for key in entries:
+		total += entries[key]["data"].price * entries[key]["quantity"]
 	return total
 
 func get_item_count() -> int:

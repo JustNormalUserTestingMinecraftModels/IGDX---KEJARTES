@@ -8,6 +8,89 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — Koperasi rework, Part 2
+
+Plan `docs/superpowers/plans/2026-09-11-koperasi-part-2.md`, from the Part 2
+handover. 11 commits, full suite 1339/1339 across 92 suites, verified in the
+running game.
+
+**Two decisions, taken with the user.** The basket tray is **docked**: always
+visible at the bottom of the shelf screen. Bought items fly from the shelf
+into it and stand on its plank at their own heights. That changes where the
+flight lands, which the handover had fenced off. The split-arc tweens, the
+tumble, the landing bounce and floating text, and hold-to-return keep their
+behaviour. And there is **one Beli, in the tray**: the loose BELI button and
+the "Harga++" label are gone, and the tray's footer carries the total and the
+button.
+
+**BasketTray.** `Scenes/Koperasi/BasketTray.tscn` and `@tool class_name
+BasketTray`. The root is a bare anchor and `Body` carries the geometry
+(Pattern C). `Body` holds:
+- the cream sheet, the dot grid and a hint
+- the plank and the items
+- an empty state
+- the basket emblem with a unit count
+- a footer reading "Total: 2.400 koin" beside a `PrimaryButtonM` Beli
+
+Slots are placed by hand rather than by a container, so layout is synchronous
+and tests assert real positions. Feet sit on the plank line, the row is
+centred, and it shrinks evenly when it would overflow (`item_gap`,
+`item_scale`). `hold_for_landing()` keeps a bought unit hidden until its flight
+arrives, and the flight now targets that item's own slot. `Cart.total_of()` is
+the one sum behind both the cart and the tray.
+
+**TraySlot.** One item standing in the tray: its art at the item's display
+height, with width from the art's own aspect, a soft shadow, and a ×N badge.
+Holding it for 0.35s returns one, a tap wobbles it, and right-click returns one
+at once. The gesture rule is a pure static, `classify_release()`, so it is
+tested without waiting. The art is cropped to its opaque pixels (see the
+findings below).
+
+**Tokens and variations.** Eight colours moved into a "Koperasi" group on
+`DesignTokens`: `koperasi_tag_*` for the three tag states, `koperasi_tray_fill`
+and `koperasi_tray_rule`. `_add_koperasi_variations` reads them, and the price
+tag's wipe reads `koperasi_tag_pressed_fill`. New variations `TrayBadge`,
+`TrayBadgeLabel` (display face, so it is on `DISPLAY_ROSTER`) and `TrayPlank`.
+
+**Rim glow.** Each shelf item carries a `Glow` node behind it: the shared
+radial `Assets/Images/Shop/UI/item_glow.tres`, tinted `currency_gold`.
+`ShelfItem.lift()` swells and fades it in with the lift, and returns its
+`Tween`.
+
+**Part 1's minors.** The price tag now lets taps through by scene: `mouse_filter`
+is authored on `PriceTag.tscn`, and the runtime pass is gone. Saving the tag
+through the editor also records the wipe's rest state, which its `@tool`
+`_ready()` sets on load. The SVG scan now rejects `<tspan>` and `<use>` as well
+as `<text>`, over both tray icons.
+
+**Deleted.** The modal basket chrome in `koprasi.tscn` went: `Rak1/Keranjang`,
+`BlurLayer`, `PopupLayer`, the loose BELI and "Harga++". So did
+`ReturSlot.tscn`/`.gd`, `icon_retur.svg`, and `tests/test_rakbarang_blur_layer.gd`
+(4 tests, whose subject is gone by design). `rakbarang_1.gd` shrank to glue, and
+its `test_viewport_editability.gd` `BASELINE` entry went **2 → 1**.
+
+**Tests.** New suite `tests/test_basket_tray.gd`, 28 tests;
+`tests/test_koperasi_tray.gd` went from 26 to 32.
+
+**Not held: the mentor screenshot review.** The user chose to ship without
+waiting for it.
+
+**Three findings from this pass, worth remembering:**
+
+- Item art carries transparent padding. A slot bottom-aligned on the plank
+  still left the art floating above it, with its badge adrift. `TraySlot`
+  crops each texture to `Image.get_used_rect()` with an `AtlasTexture`, cached
+  per texture. Measure the alpha before laying out on any item art.
+- A theme rebake run beside scene operations corrupted the bake. After a
+  rebake, the editor reloads its cached theme in place, matching sub-resources
+  by id, so stale properties merge in. A later `scene_save` then writes that
+  theme back: `TrayPlank` picked up another stylebox's 16px content margins.
+  Rebake alone, restart the editor before any `scene_save`, and diff the bake
+  before every commit.
+- `class_name` `@tool` scripts (`ThemeFactory`, `TraySlot`, `BasketTray`)
+  refused hot reload with error 43 even when valid. A headless
+  `--check-only --script` run proves the file parses; then restart the editor.
+
 ## 2026-09-11 — Koperasi rework
 
 12 commits, full suite 1309/1309 green, verified in the running game.

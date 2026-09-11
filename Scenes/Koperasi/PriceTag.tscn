@@ -5,6 +5,7 @@
 
 [node name="PriceTag" type="PanelContainer" unique_id=1175429763]
 clip_contents = true
+mouse_filter = 2
 theme_type_variation = &"PriceTag"
 script = ExtResource("1_p5r18")
 
@@ -14,17 +15,19 @@ mouse_filter = 2
 
 [node name="Wipe" type="ColorRect" parent="WipeHost" unique_id=1945945087]
 layout_mode = 0
-offset_right = 61.0
 offset_bottom = 50.0
 mouse_filter = 2
+color = Color(0.18431373, 0.3529412, 0.050980393, 1)
 
 [node name="Row" type="HBoxContainer" parent="." unique_id=446337390]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 10
 
 [node name="Coin" type="TextureRect" parent="Row" unique_id=1785617119]
 custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
+mouse_filter = 2
 texture = ExtResource("2_h5trw")
 stretch_mode = 5
 

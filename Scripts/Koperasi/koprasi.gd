@@ -38,10 +38,13 @@ func _ready():
 		GameState.money_changed.connect(_on_money_changed)
 
 func _setup_beli_button():
-	# Find the existing BELI button in Rak1
-	beli_button = rak1_panel.get_node_or_null("TextureButton")
-	if beli_button and not beli_button.pressed.is_connected(_on_beli_pressed):
-		beli_button.pressed.connect(_on_beli_pressed)
+	# Beli lives in the basket tray's footer.
+	var tray = rak1_panel.get_node_or_null("BasketTray")
+	if tray == null:
+		return
+	beli_button = tray.get_beli_button()
+	if not tray.buy_pressed.is_connected(_on_beli_pressed):
+		tray.buy_pressed.connect(_on_beli_pressed)
 
 func _notification(what):
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:

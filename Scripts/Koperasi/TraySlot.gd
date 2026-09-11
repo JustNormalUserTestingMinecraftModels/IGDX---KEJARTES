@@ -40,13 +40,44 @@ var _press_tween: Tween
 func bind(item: ItemData, quantity: int) -> void:
 	_ensure_nodes()
 	_item_name = item.item_name
-	_icon.texture = item.icon
+	var art := _cropped(item.icon)
+	_icon.texture = art
 	var h: float = item.display_size.y if item.display_size.y > 0.0 else 200.0
 	var w: float = item.display_size.x if item.display_size.x > 0.0 else h
-	if item.icon != null and item.icon.get_height() > 0:
-		w = h * float(item.icon.get_width()) / float(item.icon.get_height())
+	if art != null and art.get_height() > 0:
+		w = h * float(art.get_width()) / float(art.get_height())
 	natural_size = Vector2(w, h)
 	set_quantity(quantity)
+
+
+## Crops keyed by source texture, so a line re-bound on every refresh never
+## decodes its image twice.
+static var _crops: Dictionary = {}
+
+
+## The art cropped to its opaque pixels. Item PNGs carry transparent
+## padding, and padded art floats above the plank with its badge adrift; the
+## crop puts the art's own foot on the plank. An AtlasTexture is a resource,
+## not a node, so nothing visual is built here. Art with no opaque pixel,
+## nothing to trim, or an unreadable image comes back as it was.
+static func _cropped(tex: Texture2D) -> Texture2D:
+	if tex == null:
+		return null
+	if _crops.has(tex):
+		return _crops[tex]
+	var out: Texture2D = tex
+	var img := tex.get_image()
+	if img != null:
+		if img.is_compressed():
+			img.decompress()
+		var used := img.get_used_rect()
+		if used.size.x > 0 and used.size.y > 0 and used.size != img.get_size():
+			var crop := AtlasTexture.new()
+			crop.atlas = tex
+			crop.region = Rect2(used)
+			out = crop
+	_crops[tex] = out
+	return out
 
 
 ## Updates the ×N badge.

@@ -376,3 +376,24 @@ func test_items_pop_and_shrink_from_their_foot() -> void:
 	var slot: Control = tray.get_slot("Raket")
 	assert_eq(slot.pivot_offset, Vector2(slot.size.x * 0.5, slot.size.y),
 		"the pivot sits at the item's foot, mid-width")
+
+
+## Item PNGs carry transparent padding; a padded icon floats above the plank
+## with its badge adrift (seen live, 2026-09-11). The slot crops the art to
+## its opaque bounds, so the art's own foot stands on the plank. The opaque
+## block's 1:2 aspect differs from the padded texture's 1:3 on purpose.
+func test_a_slot_crops_its_arts_transparent_padding() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	var img := Image.create_empty(100, 300, false, Image.FORMAT_RGBA8)
+	img.fill_rect(Rect2i(20, 180, 60, 120), Color.WHITE)
+	var item := _item("Pop Ice", 400, Vector2(160, 240))
+	item.icon = ImageTexture.create_from_image(img)
+	slot.bind(item, 1)
+	assert_eq(slot.natural_size, Vector2(120, 240),
+		"the opaque block's own 1:2 aspect, not the padded texture's 1:3")
+	var shown = slot.get_node("Icon").texture
+	assert_true(shown is AtlasTexture, "the slot shows a crop of the art")
+	if shown is AtlasTexture:
+		assert_eq(shown.region, Rect2(20, 180, 60, 120), "cropped to the opaque rect")

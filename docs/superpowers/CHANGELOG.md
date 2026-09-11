@@ -8,6 +8,49 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — Minigame result and HUD labels readable; TesNotice's real bug found
+
+Three minigame labels still wore `ResultBodyLabel` on light surfaces. That
+variation is 22px cream `text_on_brand`, made for a dark ground:
+- `MinigameResultPopup`'s `NameLabel`, on the card (`popup_bg.svg`, #F5F2EB):
+  1.04:1
+- its `ScorePrefixLabel` ("Skor:"), on `ResultStatPanel`: 1.21:1
+- `MinigameScoreHUD`'s `ComboLabel` ("x3"), on its `ResultBadgePanel` chip:
+  1.05:1
+
+Two new variations fix them, both `text_primary` at the caption size the labels
+already used: `ResultCardBodyLabel` for the popup's two and
+`ScoreHudComboLabel` for the combo count. They measure 12.98:1, 11.19:1 and
+14.28:1. The HUD's `TargetLabel` keeps `ResultBodyLabel`: it sits on the dark
+translucent `ScoreHudPanel`, where cream holds 3.4:1 even over white art, and
+dark ink would fall to 1.3:1 over dark art.
+
+`tests/test_light_ground_text.gd` resolves each label the way the game draws it
+(the baked theme, in the tree) and measures it against the stylebox behind it:
+- the three at WCAG AA (4.5:1)
+- `TargetLabel` at 3:1 over both extremes of art
+- every variation declared by the bake
+
+**TesNotice was deliberately left alone.** The brief put its `BodyLabel` on
+the tan `notice.png` card at ~1.7:1. Live, the card isn't there. `NoticeCard`
+is a `NinePatchRect`, which does not size to the anchored `Content`. It
+collapses to its 96px patch minimum, and the text floats on the dark scrim.
+Measured with the glyphs hidden, the cream body reads (6.9:1 at worst); dark
+ink would have dropped it to 1.1:1. The labels that do fail there are `Kicker`
+(1.8:1) and `GradeLabel` (1.4:1). CLAUDE.md's outstanding debt now describes
+it, with both ways out.
+
+Also:
+- The stale "Unreadable RunResult row names" debt entry is gone; the entry
+  below resolved it.
+- Saving `MinigameScoreHUD.tscn` through the editor wrote
+  `grow_horizontal/vertical = 2` on its `Panel`. `anchors_preset = 15`
+  already applies both at load, so nothing moves.
+- Live verification found the rest of the result card has the same problem
+  through other routes. The delta rows, the category badge's name and several
+  placeholder icons measure 1.0–2.6:1. They're logged in CLAUDE.md's
+  outstanding debt, not fixed.
+
 ## 2026-09-11 — RunResult's row names readable
 
 The six row names on RunResult ("Minigame selesai" … "Murid ikut event") wore

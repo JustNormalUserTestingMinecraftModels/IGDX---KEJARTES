@@ -68,6 +68,11 @@ hand. As of this pass:
   `ResultBodyLabel` is cream and all but vanishes on a `Card`.
 - `RunResultNameLabel` — dark body text on a light `Card` at the phone step
   (`font_body_size + 8`): the name beside each figure in RunResult's report.
+- `ResultCardBodyLabel` — dark caption-size text on the minigame result card
+  and its sunken stat panel: the minigame's name, and "Skor:".
+- `ScoreHudComboLabel` — dark caption-size text on the score HUD's light
+  combo chip. The HUD's `TargetLabel` beside it stays on `ResultBodyLabel`:
+  it sits on the dark translucent pill itself.
 
 **Progress**:
 - `StatBar` — the mood/energy/skill bars. Fill renders white so callers tint

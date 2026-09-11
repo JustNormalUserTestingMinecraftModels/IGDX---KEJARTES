@@ -589,6 +589,19 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# above; at 36px the widest name, "Uang dari wirausaha", takes 352 of
 		# the 579px beside "24000G" (measured live, lulus rehearsal).
 		["RunResultNameLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# The minigame result card's small labels on light ground: the
+		# minigame's name on the card itself (popup_bg.svg, #F5F2EB) and
+		# "Skor:" on its sunken stat panel. Both shipped in ResultBodyLabel
+		# and measured 1.04:1 and 1.21:1 (2026-09-11). Dark ink at the
+		# caption size they shipped with: each is a few words beside
+		# something larger -- the stars, the display-size score -- so the
+		# fix is the ink, not the size.
+		["ResultCardBodyLabel", tokens.font_caption, tokens.text_primary, false, false],
+		# The score HUD's combo count ("x3") on its light ResultBadgePanel
+		# chip: 1.05:1 in ResultBodyLabel. TargetLabel beside it keeps that
+		# cream -- it sits on the dark translucent ScoreHudPanel itself,
+		# where dark ink would fall to 1.3:1 over dark art.
+		["ScoreHudComboLabel", tokens.font_caption, tokens.text_primary, false, false],
 		# The trait popup's header sits on a per-trait tinted panel
 		# (TraitPopupHeader, self_modulated brand_primary for a quirk and
 		# cat_istirahat for a persona), so its two labels need CREAM text.
@@ -676,7 +689,11 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 
 	# SemesterEnd, which these two were made for, is gone (Plan A); both
 	# outlived it. They still assume a DARK ground -- ResultBodyLabel is
-	# cream and vanishes on a light Card (see RunResultNameLabel above).
+	# cream and vanishes on a light surface, which is why RunResult's rows,
+	# the minigame result card and the HUD's combo chip each moved to a dark
+	# variation above. What still wears it sits on dark: the HUD's
+	# TargetLabel on the translucent ScoreHudPanel, and TesNotice's body,
+	# which today floats on that screen's scrim.
 	# SemesterEnd was the one screen that deliberately kept a dark,
 	# certificate-like backdrop instead of the app's usual light surface
 	# (the payoff/results reveal), so its outer labels needed their own

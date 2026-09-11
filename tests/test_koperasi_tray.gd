@@ -14,15 +14,16 @@ func test_basket_icon_exists() -> void:
 		"B3 basket icon missing at %s" % BASKET_ICON)
 
 func test_basket_icon_has_no_text_elements() -> void:
-	# Godot rasterises SVG through ThorVG, which silently drops <text>.
-	# Everything must be a path, rect, or circle.
-	var f := FileAccess.open(BASKET_ICON, FileAccess.READ)
-	assert_not_null(f, "could not open %s" % BASKET_ICON)
-	if f == null:
-		return
-	var src := f.get_as_text()
-	assert_false(src.contains("<text"),
-		"SVG uses <text>, which ThorVG drops on import")
+	# ThorVG drops <text> on import. <tspan> lives inside text, and <use> can
+	# pull a text node in by reference, so all three are checked.
+	for path in [BASKET_ICON, "res://Assets/Images/Shop/UI/icon_keranjang_kosong.svg"]:
+		var f := FileAccess.open(path, FileAccess.READ)
+		assert_not_null(f, "%s missing" % path)
+		if f == null:
+			continue
+		var src := f.get_as_text()
+		for element in ["<text", "<tspan", "<use"]:
+			assert_false(src.contains(element), "%s must not contain %s" % [path, element])
 
 const THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
@@ -246,8 +247,8 @@ func test_shelf_item_documents_every_export() -> void:
 				"undocumented @export on line %d" % (i + 1))
 		i += 1
 	assert_true(export_count >= 5,
-		"expected at least 5 @export vars on ShelfItem, found %d -- the scan " \
-		+ "above passes vacuously with none" % export_count)
+		("expected at least 5 @export vars on ShelfItem, found %d -- the scan "
+		+ "above passes vacuously with none") % export_count)
 
 func test_shelf_item_bobs_with_a_phase_offset() -> void:
 	var f := FileAccess.open(SHELF_ITEM_SRC, FileAccess.READ)
@@ -454,3 +455,24 @@ func test_each_shelf_item_has_a_glow_behind_it() -> void:
 		assert_true(glow.show_behind_parent, "Barang%d's glow draws behind the item" % i)
 		assert_eq(glow.modulate.a, 0.0, "Barang%d's glow is dark at rest" % i)
 		assert_eq(glow.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the glow never eats a tap")
+
+
+# ────────────────────────────────── Part 2: Part 1's deferred minors
+
+## Part 1 set these in _ready() because the bridge was down when the fix
+## landed; they belong in the scene. Checked on an instance that never ran
+## _ready, so only the scene's own values count.
+func test_price_tag_lets_taps_through_by_scene() -> void:
+	var packed = load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	track(tag)
+	for path in [".", "Row", "Row/Coin", "Row/Value"]:
+		var node: Control = tag.get_node(path)
+		assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"%s must let a tap through to the shelf button" % path)
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/PriceTag.gd")
+	assert_false(src.contains("_ignore_mouse_so_taps_reach_the_button_beneath"),
+		"the runtime pass is gone now that the scene says it")

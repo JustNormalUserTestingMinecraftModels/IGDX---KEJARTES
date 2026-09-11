@@ -266,3 +266,49 @@ func test_shelf_no_longer_builds_retur_entries_at_runtime() -> void:
 		"tray slots must come from ReturSlot.tscn, not runtime construction")
 	assert_false(src.contains("add_theme_font_size_override"),
 		"use theme type variations, never font-size overrides")
+
+func test_tray_panel_uses_the_basket_tray_variation() -> void:
+	var f := FileAccess.open("res://Scenes/Koperasi/koprasi.tscn", FileAccess.READ)
+	assert_not_null(f, "koprasi.tscn missing")
+	if f == null:
+		return
+	var src := f.get_as_text()
+	assert_true(src.contains("BasketTray"),
+		"the tray surface should carry the BasketTray type variation")
+	assert_true(src.contains("tray_dots.png"),
+		"tray should wear the dot-grid tile")
+	assert_true(src.contains("icon_keranjang.svg"),
+		"basket should use the B3 icon, not the black silhouette")
+	assert_false(src.contains("pngwing.com (6).png"),
+		"the black basket silhouette should no longer be referenced")
+	assert_true(src.contains("EmptyState"),
+		"the empty-basket state should be a scene node, not built in code")
+	assert_true(src.contains("texture_repeat = 2"),
+		"the dot tile must set texture_repeat on the node -- in Godot 4 "
+		+ "repeat is a CanvasItem property, not a texture import flag")
+
+func test_shop_scripts_only_use_real_gamestate_members() -> void:
+	# Source scans cannot catch a wrong property name: GameState.money
+	# looked fine to every string assertion and crashed the scene on boot.
+	var paths := [
+		"res://Scripts/Koperasi/rakbarang_1.gd",
+		"res://Scripts/Koperasi/koprasi.gd",
+	]
+	var re := RegEx.new()
+	re.compile(r"GameState\.([A-Za-z_][A-Za-z0-9_]*)")
+	for path in paths:
+		var f := FileAccess.open(path, FileAccess.READ)
+		assert_not_null(f, "%s missing" % path)
+		if f == null:
+			continue
+		var property_names := {}
+		for prop in GameState.get_property_list():
+			property_names[prop.name] = true
+		for m in re.search_all(f.get_as_text()):
+			var member := m.get_string(1)
+			var member_exists := property_names.has(member) \
+				or GameState.has_method(member) \
+				or GameState.has_signal(member)
+			assert_true(member_exists,
+				"%s references GameState.%s, which does not exist"
+					% [path, member])

@@ -153,9 +153,9 @@ func _refresh_affordability() -> void:
 		var tag = _price_tags[i]
 		if not is_instance_valid(tag) or i >= item_data_list.size():
 			continue
-		tag.set_affordable(GameState.money >= item_data_list[i].price)
+		tag.set_affordable(GameState.player_money >= item_data_list[i].price)
 		if i < _shelf_items.size() and is_instance_valid(_shelf_items[i]):
-			_shelf_items[i].set_dimmed(GameState.money < item_data_list[i].price)
+			_shelf_items[i].set_dimmed(GameState.player_money < item_data_list[i].price)
 
 ## Returns the display size for an item. Uses ItemData.display_size, falls back to source button size or default.
 func get_item_effective_size(item: ItemData, source_button: TextureButton = null) -> Vector2:

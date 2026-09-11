@@ -432,11 +432,6 @@ from ten +/- bands on 2026-09-10, never played against a real run.
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
 has to lead somewhere; nothing behind it is designed.
 
-**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
-unscripted, nothing references it. The real win screen is `WinStage.tscn`,
-which EndCutscene shows and RunResult keeps blurred behind its report. Safe to
-delete.
-
 **Unreadable RunResult row names (2026-09-11).** `RunResultRow.tscn`'s
 `NameLabel` uses `ResultBodyLabel` (cream `text_on_brand`) on a `Card` panel,
 so "Minigame selesai" and the other five row names are nearly invisible. The

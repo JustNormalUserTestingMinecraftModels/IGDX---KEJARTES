@@ -8,6 +8,42 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — Unused assets and scenes deleted
+
+178 tracked files the game no longer uses. Every scene, script, resource and
+test was scanned for each file's `res://` path, `uid://` and file name; each
+hit, and every path built at runtime, was then checked by hand:
+- 41 fonts: every Open Sans weight but Medium, and the retired Baloo 2,
+  Nunito, Milker, Catfiles, Catcut and Brocats, with the OFL texts that came
+  with Baloo 2 and Nunito. `Assets/Fonts/README.md` says how to restore one.
+- 45 images, among them the legacy `SplashMurid*.jpg` batch, `cg_win.jpg`,
+  `paper_placeholder.jpg`, old minigame textures (`Textures/Fail`, `Idle`,
+  `Left`, `Right`, `KiperRight`, `field_bg`, `soccer_ball`), old Lobby
+  overlays, unused Shop panels, stock `pngwing.com` and Pngtree placeholders,
+  and seven `UI/Placeholders/` files. Tests already pinned several as gone.
+- 4 scenes: `WinScreen.tscn` (from the debt list), `AnswerRow.tscn` and
+  `QuestionRow.tscn` (superseded by `AnswerCard`/`QuestionCard`), and
+  `Scripts/Inventory/item_database.tscn` (the autoload is the `.gd`).
+
+Each asset's `.import` went with it.
+
+Kept, although a name scan calls them unreferenced. Check these before the next
+cleanup:
+- `SchoolDay._get_playful_texture()` asks for a `.png` and falls back to the
+  `.svg` of the same name. None of those PNGs exist, so the SVGs are what it
+  draws: `icon_istirahat`, `icon_libur`, `icon_warning`, `dialogue_box`,
+  `student_card_bg`. Deleting one blanks its icon without an error.
+- `StudentCard/icon_info.png`, `icon_info_red.png` and `pill_fill.png` load
+  through a directory joined to a file name at runtime.
+- `MinigameMenu.tscn` is a developer launcher, opened by hand.
+- `UI/Placeholders/icon_wirausaha.svg` is kept deliberately (see `CLAUDE.md`).
+
+The same day, outside git: eight stale worktrees under `.claude/worktrees/`
+(16,477 files, four of them registered to another PC's path) moved to a backup
+outside the project. Every file in them was first matched to a git object by
+hash. They, not the repo, are why this folder had 20k files against a fresh
+clone's ~5k.
+
 ## 2026-09-11 — StatCheck on StudentCard's paper; one win stage for EndCutscene and RunResult
 
 Spec `docs/superpowers/specs/2026-09-11-statcheck-paper-and-shared-win-stage-design.md`,

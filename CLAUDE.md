@@ -500,10 +500,6 @@ what each would need, is in the authoring guide's "Known gaps" section.
 
 ## Current work
 
-Branch `feat/pr-automation`: the pull-request automation. Once its setup PR is
-merged by hand, the live test in
-`docs/superpowers/plans/2026-09-11-pr-automation.md` (Task 6) still has to run.
-
 Open: Plan C's RunResult redesign,
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass
 already replaced RunResult's grade letter with five rank badges and fixed its

@@ -192,25 +192,109 @@ const _SCRIPT := "res://Scripts/EndGame/StatCheck.gd"
 const _METER_SCRIPT := "res://Scripts/EndGame/StarMeter.gd"
 
 
-func test_card_scene_has_the_mockup_parts() -> void:
+const _CARD_SCRIPT := "res://Scripts/EndGame/StatCheckCard.gd"
+const _PAPER_ART := "res://Assets/Images/StudentCard/card_bg.png"
+const _SHADOW_SCENE := "res://Scenes/UI/PaperShadow.tscn"
+const _ICON_DIR := "res://Assets/Images/StudentCard/"
+
+## card_bg.png is 1080x1920 but paper only across this rect (alpha > 200,
+## measured 2026-09-11); everything outside is transparent. The card must be
+## filled by the SHEET, not by the texture's empty margin.
+const _SHEET := Rect2(52, 238, 994, 1321)
+## The frame printed on card_bg.png -- StudentCard's own PortraitFrame rect.
+const _PHOTO_RECT := Rect2(136, 294, 283, 376)
+## The six students the game ships. Kept here rather than read from
+## student_card.gd, whose roster is a script variable, not a constant.
+const _ROSTER := ["Marcel", "Doni", "Andi", "Citra", "Shinta", "Thea"]
+## The art StudentCard, StudentList and AturJadwal already use for the
+## three skills -- not the placeholder SVGs the page shipped with.
+const _STAT_ICONS := {
+	"Akademis": "stat_akademis.png",
+	"SeniBudaya": "stat_senibudaya.png",
+	"Olahraga": "stat_olahraga.png",
+}
+
+
+func test_card_is_studentcards_paper() -> void:
 	var card = load(_CARD_SCENE).instantiate()
 	track(card)
-	assert_true(card.get_node_or_null("Paper") is Panel, "the paper backing")
-	assert_true(card.get_node_or_null("Paper/Header/BioPanel/Bio/Nama") is Label, "Nama")
-	assert_true(card.get_node_or_null("Paper/Header/BioPanel/Bio/Profil") is Label, "Profil lines")
-	assert_true(card.get_node_or_null("Paper/Header/Portrait") is TextureRect, "Portrait")
+	var paper = card.get_node_or_null("Paper")
+	assert_true(paper is TextureRect, "the page is a TextureRect, not a themed panel")
+	assert_eq(String(paper.texture.resource_path), _PAPER_ART,
+		"the same paper StudentCard draws")
+	var shadow = card.get_node_or_null("Paper/PaperShadow")
+	assert_true(shadow != null, "the paper casts StudentCard's shadow")
+	assert_eq(shadow.scene_file_path, _SHADOW_SCENE,
+		"instanced from PaperShadow.tscn, not rebuilt")
+	assert_true(card.get_node_or_null("Paper/Header") == null,
+		"the old bio-panel header is gone")
+
+
+## Mapped through the paper's own offsets and scale, the measured sheet must
+## sit inside the 760x1000 card and fill its height -- lay out against the
+## alpha, not the texture rect (CLAUDE.md's paper.png lesson).
+func test_the_paper_sheet_fills_the_card() -> void:
+	var card = load(_CARD_SCENE).instantiate()
+	track(card)
+	var paper: TextureRect = card.get_node("Paper")
+	assert_true(is_equal_approx(paper.scale.x, paper.scale.y),
+		"the paper is scaled uniformly, so the art is not distorted")
+	var origin := Vector2(paper.offset_left, paper.offset_top)
+	var top_left := origin + _SHEET.position * paper.scale
+	var bottom_right := origin + _SHEET.end * paper.scale
+	var card_size: Vector2 = card.custom_minimum_size
+	assert_true(top_left.x >= -1.0 and top_left.y >= -1.0,
+		"the sheet's top-left %s stays inside the card" % top_left)
+	assert_true(bottom_right.x <= card_size.x + 1.0 and bottom_right.y <= card_size.y + 1.0,
+		"the sheet's bottom-right %s stays inside %s" % [bottom_right, card_size])
+	assert_true(bottom_right.y - top_left.y >= card_size.y - 2.0,
+		"and the sheet fills the card's height")
+
+
+func test_the_photo_and_name_sit_on_the_printed_frame_and_plate() -> void:
+	var card = load(_CARD_SCENE).instantiate()
+	track(card)
+	for n in ["Photo", "PortraitFrame"]:
+		var r: TextureRect = card.get_node_or_null("Paper/" + n)
+		assert_true(r != null, n + " exists")
+		var rect := Rect2(r.offset_left, r.offset_top,
+			r.offset_right - r.offset_left, r.offset_bottom - r.offset_top)
+		assert_eq(rect, _PHOTO_RECT, n + " covers the printed photo frame")
+	assert_eq(String(card.get_node("Paper/PortraitFrame").texture.resource_path),
+		"res://Assets/Images/StudentCard/portrait_frame.png", "StudentCard's frame art")
+	var name_label: Label = card.get_node_or_null("Paper/Name")
+	assert_true(name_label != null, "a Name label")
+	var plate: Rect2 = StudentCardView.BIO_PANEL_RECT
+	var name_rect := Rect2(name_label.offset_left, name_label.offset_top,
+		name_label.offset_right - name_label.offset_left,
+		name_label.offset_bottom - name_label.offset_top)
+	assert_true(plate.encloses(name_rect), "Name %s sits on the plate %s" % [name_rect, plate])
+	assert_eq(String(name_label.theme_type_variation), "PlateNameLabel",
+		"cream display text for the brown plate")
 	for n in ["Akademis", "Seni", "Olahraga"]:
 		assert_true(card.get_node_or_null("Paper/Rows/" + n) is StatCheckRow,
 			"%s row is a StatCheckRow" % n)
 
 
-func test_card_bind_fills_name_profil_portrait_and_arms_three_rows() -> void:
+## "Put only the student name": nothing from the bio file but the name.
+func test_the_name_is_the_only_text_on_the_page() -> void:
+	var card = load(_CARD_SCENE).instantiate()
+	track(card)
+	var labels: Array = card.find_children("*", "Label", true, false)
+	assert_eq(labels.size(), 1, "one Label on the page: %s" % str(labels))
+	var src := FileAccess.get_file_as_string(_CARD_SCRIPT)
+	assert_false(src.contains("profil"),
+		"StatCheckCard never shows the Agama / Jenis Kelamin lines")
+
+
+func test_card_bind_fills_name_and_photo_and_arms_three_rows() -> void:
 	var card = load(_CARD_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(card)
 	track(card)
+	var photo: Texture2D = load("res://Assets/Images/MuridPotrait/Murid3.jpg")
 	var s := StudentData.new()
 	s.student_name = "Citra"
-	s.profil = "Agama: Katolik\nJenis Kelamin: Perempuan"
+	s.avatar_texture = photo
 	s.akademis = 70.0
 	s.target_akademis1 = 60.0
 	s.seni_budaya = 30.0
@@ -218,9 +302,8 @@ func test_card_bind_fills_name_profil_portrait_and_arms_three_rows() -> void:
 	s.olahraga = 60.0
 	s.target_akademis3 = 60.0
 	card.bind(s)
-	assert_eq(card.get_node("Paper/Header/BioPanel/Bio/Nama").text, "Citra", "name")
-	assert_true(card.get_node("Paper/Header/BioPanel/Bio/Profil").text.contains("Jenis Kelamin"),
-		"profil lines are shown verbatim")
+	assert_eq(card.get_node("Paper/Name").text, "Citra", "the name lands on the plate")
+	assert_true(card.get_node("Paper/Photo").texture == photo, "the photo lands in the frame")
 	var rows: Array = card.rows()
 	assert_eq(rows.size(), 3, "three rows, akademis/seni/olahraga")
 	assert_true(is_equal_approx(rows[0].target_ratio, 100.0), "akademis 70/60 caps at 100")
@@ -239,8 +322,39 @@ func test_card_rows_carry_the_right_categories_and_icons() -> void:
 	assert_eq(rows[1].category, "SeniBudaya", "row 1 is SeniBudaya")
 	assert_eq(rows[2].category, "Olahraga", "row 2 is Olahraga")
 	for r in rows:
-		assert_true(r.icon != null, "every row has an icon texture")
+		assert_eq(String(r.icon.resource_path), _ICON_DIR + _STAT_ICONS[r.category],
+			"%s wears the game's own stat icon" % r.category)
 	Engine.get_main_loop().root.remove_child(card)
+
+
+## Every roster name has to fit the plate at the label's real font and size.
+## The widest, MARCEL, measured ~413px in Boohong at 96 against a 457px slot
+## on 2026-09-11 -- close enough that a size bump would clip it on screen
+## while every structural test stayed green.
+func test_every_roster_name_fits_on_the_plate() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	var font: Font = theme.get_font("font", "PlateNameLabel")
+	var size: int = theme.get_font_size("font_size", "PlateNameLabel")
+	var card = load(_CARD_SCENE).instantiate()
+	track(card)
+	var label: Label = card.get_node("Paper/Name")
+	var slot := label.offset_right - label.offset_left
+	for student_name in _ROSTER:
+		var text: String = student_name.to_upper() if label.uppercase else student_name
+		var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+		assert_true(width <= slot,
+			"%s is %.0fpx at %dpx; the plate's Name slot is %.0fpx" % [text, width, size, slot])
+
+
+## StudentCard's proportions: a 128px icon beside a 68px-tall bar.
+func test_row_matches_studentcards_proportions() -> void:
+	var row = load(_ROW_SCENE).instantiate()
+	track(row)
+	var icon: TextureRect = row.get_node("Icon")
+	assert_eq(icon.custom_minimum_size, Vector2(128, 128), "a 128px icon, like StudentCard's")
+	assert_eq(String(icon.texture.resource_path), _ICON_DIR + "stat_akademis.png",
+		"a bare row shows the real akademis art")
+	assert_eq(row.get_node("Bar").custom_minimum_size.y, 68.0, "StudentCard's pill height")
 
 
 # ───────────────────────────────────────────────────────────────── StarMeter
@@ -380,7 +494,7 @@ func test_a_tap_rushes_the_current_student() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT)
 	assert_true(src.contains("func _input("),
 		"the screen listens for a tap via _input, not _unhandled_input -- "
-		+ "the Scrim and Paper Panels default to MOUSE_FILTER_STOP and would "
+		+ "the full-screen Scrim Panel defaults to MOUSE_FILTER_STOP and would "
 		+ "consume the event first")
 	assert_false(src.contains("_unhandled_input"),
 		"must never revert to _unhandled_input -- the covering Panels would "

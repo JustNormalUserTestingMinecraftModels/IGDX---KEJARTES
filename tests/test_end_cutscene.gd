@@ -8,6 +8,10 @@ extends McpTestSuiteCompat
 ## fade-out, the badge slam and the button reveal are a tween/timer chain the
 ## runner cannot await (see test_lobby.gd's no-coroutine note). Suite is
 ## @tool and no test is a coroutine.
+##
+## The painting, the letterbox bars and the posed roster moved into the
+## shared WinStage scene on 2026-09-11; their tests moved with them, to
+## tests/test_win_stage.gd. What stays here is how EndCutscene hosts it.
 
 const _SCENE := "res://Scenes/EndGame/EndCutscene.tscn"
 const _SCRIPT := "res://Scripts/EndGame/EndCutscene.gd"
@@ -62,7 +66,7 @@ func _scene() -> Node:
 func test_scene_has_the_chrome() -> void:
 	var s := _scene()
 	assert_true(s is EndCutscene, "the scene wears EndCutscene.gd")
-	assert_true(s.get_node_or_null("Stage/Backdrop") is TextureRect, "Backdrop")
+	assert_true(s.get_node_or_null("WinStage") is WinStage, "the shared win stage")
 	assert_true(s.get_node_or_null("Badge") is TextureRect, "Badge")
 	assert_true(s.get_node_or_null("BtnNext") is Button, "BtnNext")
 	assert_true(s.get_node_or_null("WhiteFade") is ColorRect, "WhiteFade")
@@ -108,14 +112,14 @@ func test_next_button_starts_hidden_and_disabled() -> void:
 ## win_badge is still assigned on the win path (EndCutscene.gd's
 ## _dress_for_verdict()) but never slammed there -- see
 ## test_the_win_path_skips_the_badge below for that. This only pins what
-## still actually renders: the two backdrops differ, and the lose badge
-## (which the lose path does stamp) is a real texture.
+## still actually renders: the stage carries both verdicts' art, and the
+## lose badge (which the lose path does stamp) is a real texture.
 func test_both_verdicts_are_dressed_from_exports() -> void:
 	var s := _scene()
-	assert_true(s.win_backdrop is Texture2D, "a win backdrop is assigned")
-	assert_true(s.lose_backdrop is Texture2D, "a lose backdrop is assigned")
+	var stage: WinStage = s.get_node("WinStage")
+	assert_true(stage.win_backdrop is Texture2D, "the stage carries a win painting")
+	assert_true(stage.lose_backdrop is Texture2D, "and a lose CG")
 	assert_true(s.lose_badge is Texture2D, "a lose badge is assigned")
-	assert_ne(s.win_backdrop, s.lose_backdrop, "the two outcomes look different")
 	assert_eq(String(s.win_bgm), "result_win", "win BGM")
 	assert_eq(String(s.lose_bgm), "result_lose", "lose BGM")
 
@@ -214,20 +218,20 @@ func test_the_blur_layer_starts_inert() -> void:
 
 
 ## Draw order is the whole mechanism: the shader samples what is already on
-## screen, so only siblings BEFORE it get blurred. Stage and its contents must
-## be behind it; Badge and BtnNext must stay in front and stay sharp.
+## screen, so only siblings BEFORE it get blurred. The WinStage and everything
+## in it must be behind it; Badge and BtnNext must stay in front and sharp.
 func test_the_blur_layer_blurs_the_backdrop_but_not_the_badge_or_button() -> void:
 	var s := _scene()
 	var order: Array[String] = []
 	for c in s.get_children():
 		order.append(String(c.name))
-	var stage_at := order.find("Stage")
+	var stage_at := order.find("WinStage")
 	var blur_at := order.find("BlurLayer")
 	var badge_at := order.find("Badge")
 	var btn_at := order.find("BtnNext")
-	assert_gt(stage_at, -1, "Stage is a direct child of the root")
+	assert_gt(stage_at, -1, "WinStage is a direct child of the root")
 	assert_true(stage_at < blur_at,
-		"Stage draws first, so the shader samples the painting and its figures")
+		"WinStage draws first, so the shader samples the painting and its figures")
 	assert_true(blur_at < badge_at and blur_at < btn_at,
 		"Badge and BtnNext draw after the blur, so they stay sharp")
 	assert_eq(String(s.get_children()[s.get_child_count() - 1].name), "WhiteFade",
@@ -258,73 +262,13 @@ func test_the_exit_blurs_before_it_hands_off() -> void:
 		"the blur is animated by tweening the shader parameters")
 
 
-func test_the_scene_carries_an_art_space_stage() -> void:
-	var s := _scene()
-	var stage := s.get_node_or_null("Stage")
-	assert_true(stage is Control, "Stage holds the painting and its figures")
-	assert_true(stage.get_node_or_null("Backdrop") is TextureRect,
-		"the backdrop moved under Stage")
-	assert_true(stage.get_node_or_null("Shadows") is Control, "the Shadows layer")
-	assert_true(stage.get_node_or_null("Students") is Control, "the Students layer")
-
-
-## All shadows are drawn before all figures, rather than pairing each
-## shadow with its own sprite. Pairing would let Doni's wide crouch-shadow
-## smear across the side students' shoes.
-func test_shadows_draw_beneath_every_student() -> void:
-	var stage := _scene().get_node("Stage")
-	var shadows: int = stage.get_node("Shadows").get_index()
-	var students: int = stage.get_node("Students").get_index()
-	var backdrop: int = stage.get_node("Backdrop").get_index()
-	assert_true(backdrop < shadows, "the backdrop is behind the shadows")
-	assert_true(shadows < students, "every shadow is behind every figure")
-
-
-## Lose regressed once already (2026-09-09): before EndCutscene grew a Stage
-## node, Backdrop was a direct child with full anchors and
-## KEEP_ASPECT_COVERED, so cg_lose.jpg filled the screen, centred and
-## cropped. Once Backdrop moved under Stage, a Stage left at its authored
-## 1536x2048 art size showed only the CG's top-left corner.
-## _fit_stage_cover() is what restores the old framing on the lose path --
-## Stage is resized to the viewport so Backdrop's own KEEP_ASPECT_COVERED
-## does the covering, same as it always did.
-func test_the_lose_path_covers_the_viewport_like_it_used_to() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT)
-	assert_true(src.contains("func _fit_stage_cover() -> void:"),
-		"_fit_stage_cover() exists")
-
-	var dress_at := src.find("func _dress_for_verdict()")
-	var next_func_at := src.find("func _fit_stage()")
-	assert_true(dress_at != -1 and next_func_at != -1,
-		"both _dress_for_verdict() and _fit_stage() are present")
-	var dress_body := src.substr(dress_at, next_func_at - dress_at)
-	var else_at := dress_body.find("else:")
-	var cover_call_at := dress_body.find("_fit_stage_cover()")
-	assert_true(else_at != -1 and cover_call_at != -1 and else_at < cover_call_at,
-		"the lose (else) branch of _dress_for_verdict() is what calls " +
-		"_fit_stage_cover(), not the win branch")
-
-	var backdrop: TextureRect = _scene().get_node("Stage/Backdrop")
-	assert_eq(backdrop.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_COVERED,
-		"Backdrop is authored to cover whatever Stage it sits in, on both verdicts")
-
-
-func test_the_stage_has_four_authored_slots_and_four_shadows() -> void:
-	var stage := _scene().get_node("Stage")
-	for i in range(1, 5):
-		assert_true(stage.get_node_or_null("Students/Student%d" % i) is TextureRect,
-			"Student%d is authored in the scene, not built at runtime" % i)
-		assert_true(stage.get_node_or_null("Shadows/Shadow%d" % i) is TextureRect,
-			"Shadow%d is authored in the scene, not built at runtime" % i)
-
-
 ## The exit blur samples what is already drawn, so it must sit above the
-## whole Stage -- otherwise the painting softens on the way to RunResult
+## whole stage -- otherwise the painting softens on the way to RunResult
 ## while the students stay sharp.
 func test_the_blur_layer_draws_above_the_stage() -> void:
 	var s := _scene()
-	assert_true(s.get_node("Stage").get_index() < s.get_node("BlurLayer").get_index(),
-		"BlurLayer is above Stage, so the students blur out with the backdrop")
+	assert_true(s.get_node("WinStage").get_index() < s.get_node("BlurLayer").get_index(),
+		"BlurLayer is above WinStage, so the students blur out with the backdrop")
 
 
 func test_the_next_button_sits_in_the_bottom_letterbox_bar() -> void:
@@ -333,22 +277,6 @@ func test_the_next_button_sits_in_the_bottom_letterbox_bar() -> void:
 	var btn: Button = _scene().get_node("BtnNext")
 	assert_gt(btn.offset_top, 1680.0, "the button clears the bottom of the art")
 	assert_true(btn.offset_bottom <= 1920.0, "and stays on screen")
-
-
-func test_the_stage_fits_by_computed_scale_not_a_hardcoded_transform() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT)
-	assert_true(src.contains("func _fit_stage()"), "the stage is fitted by script")
-	assert_true(src.contains("minf("), "it fits by the smaller of the two ratios")
-	assert_false(src.contains("0.703125"),
-		"the letterbox scale is derived from the viewport, not pasted in")
-
-
-func test_the_lineup_comes_from_win_lineup() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT)
-	assert_true(src.contains("WinLineup.assign("),
-		"slot assignment lives in WinLineup, not here")
-	assert_true(src.contains("WinLineup.shadow_for("),
-		"so does shadow geometry")
 
 
 func test_the_win_path_skips_the_badge() -> void:
@@ -360,27 +288,28 @@ func test_the_win_path_skips_the_badge() -> void:
 	assert_true(src.contains("_slam_badge()"), "the lose path still stamps")
 
 
-func test_the_shadow_knobs_are_exported() -> void:
+# ─────────────────────────────────────────────────── the shared win stage
+
+const _WIN_STAGE_SCENE := "res://Scenes/EndGame/WinStage.tscn"
+## The one line EndCutscene and RunResult both dress the stage with. Pinned
+## verbatim in both suites: the same call with the same inputs is what makes
+## RunResult open on the frame this screen blurred out on.
+const _DRESS_CALL := "win_stage.dress(GameState.run_failed, WinStage.names_of(GameState.approved_students))"
+
+
+func test_the_painting_and_lineup_come_from_the_shared_win_stage() -> void:
 	var s := _scene()
-	for prop in ["shadow_opacity", "shadow_spread", "shadow_flatness",
-			"bar_color", "win_splash_doni"]:
-		assert_true(prop in s, prop + " is tunable in the Inspector")
+	var first := s.get_child(0)
+	assert_eq(first.name, &"WinStage", "the stage is the first thing drawn")
+	assert_eq(first.scene_file_path, _WIN_STAGE_SCENE,
+		"an instance of the shared scene, not a local copy")
+	assert_true(s.get_node_or_null("Stage") == null and s.get_node_or_null("BarFill") == null,
+		"the old local Stage and BarFill are gone")
 
 
-## Six typed Texture2D exports, not one Dictionary -- a Dictionary's nested
-## values cannot be wired as Resources through the editor's property API, so
-## this proves _splash_for() resolves every roster name to a real texture,
-## not merely that a property exists.
-func test_every_roster_name_has_a_splash_wired() -> void:
-	var s := _scene()
-	for name in ["Doni", "Andi", "Citra", "Shinta", "Marcel", "Thea"]:
-		assert_true(s._splash_for(name) is Texture2D, name + "'s splash is a texture")
-
-
-func test_the_letterbox_bars_are_painted() -> void:
-	var s := _scene()
-	var bars := s.get_node_or_null("BarFill")
-	assert_true(bars is ColorRect, "a ColorRect fills the letterbox bars")
-	assert_true(bars.get_index() < s.get_node("Stage").get_index(),
-		"the bars are behind the painting")
-	assert_true(bars.color.a > 0.9, "the bars are opaque -- nothing shows through")
+func test_it_dresses_the_stage_with_the_shared_call() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains(_DRESS_CALL), "the verdict and roster go to WinStage.dress()")
+	for gone in ["func _dress_lineup(", "func _fit_stage(", "func _splash_for(",
+			"@export var win_backdrop", "@export var win_splash_doni"]:
+		assert_false(src.contains(gone), "EndCutscene no longer owns '%s'" % gone)

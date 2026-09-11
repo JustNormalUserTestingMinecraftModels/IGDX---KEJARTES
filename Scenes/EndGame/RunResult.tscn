@@ -1,12 +1,11 @@
 [gd_scene format=3 uid="uid://c801ue56jdtke"]
 
 [ext_resource type="Script" uid="uid://cmy1pxe01ahu2" path="res://Scripts/EndGame/RunResult.gd" id="1_ka631"]
-[ext_resource type="Texture2D" uid="uid://56hidkmdh1e" path="res://Assets/Images/CG/Win/win_background.png" id="2_24cmp"]
-[ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="3_top1l"]
 [ext_resource type="Texture2D" uid="uid://8s4m1bjdwty8" path="res://Assets/Images/EndGame/Ranks/rank_s.png" id="4_30rfq"]
 [ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="4_hifyx"]
 [ext_resource type="Texture2D" uid="uid://c7ubtk2rb5ect" path="res://Assets/Images/EndGame/Ranks/rank_a.png" id="5_nyppn"]
 [ext_resource type="Texture2D" uid="uid://bnm364mi3r0aq" path="res://Assets/Images/EndGame/Ranks/rank_b.png" id="6_imurd"]
+[ext_resource type="PackedScene" uid="uid://dfh48usjg5eib" path="res://Scenes/EndGame/WinStage.tscn" id="7_54rll"]
 [ext_resource type="Texture2D" uid="uid://dwmcqi38xt14y" path="res://Assets/Images/EndGame/Ranks/rank_c.png" id="7_sjw3o"]
 [ext_resource type="Texture2D" uid="uid://bsgic6jr8lxol" path="res://Assets/Images/EndGame/Ranks/rank_d.png" id="8_1u8qo"]
 
@@ -23,22 +22,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ka631")
-win_backdrop = ExtResource("2_24cmp")
-lose_backdrop = ExtResource("3_top1l")
 rank_badge_s = ExtResource("4_30rfq")
 rank_badge_a = ExtResource("5_nyppn")
 rank_badge_b = ExtResource("6_imurd")
 rank_badge_c = ExtResource("7_sjw3o")
 rank_badge_d = ExtResource("8_1u8qo")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=1312377068]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = ExtResource("2_24cmp")
-expand_mode = 1
-stretch_mode = 6
+[node name="WinStage" parent="." unique_id=702781057 instance=ExtResource("7_54rll")]
+layout_mode = 1
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=1247280518]
 material = SubResource("ShaderMaterial_rclo1")
@@ -64,7 +57,7 @@ theme_override_constants/separation = 36
 
 [node name="TitleLabel" type="Label" parent="MarginContainer/Column" unique_id=339627810]
 layout_mode = 2
-theme_type_variation = &"H1Label"
+theme_type_variation = &"ResultHeroLabel"
 text = "Hasil Tahun Ajaran"
 horizontal_alignment = 1
 

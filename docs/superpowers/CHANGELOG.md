@@ -49,6 +49,65 @@ Unicode codepoint range rather than a list of known glyphs.
   `MOUSE_FILTER_STOP`, and the tag sits on top of the shelf's `TextureButton`,
   so tapping the pill bought nothing. Caught by review, not by tests.
 
+## 2026-09-11 — StatCheck on StudentCard's paper; one win stage for EndCutscene and RunResult
+
+Spec `docs/superpowers/specs/2026-09-11-statcheck-paper-and-shared-win-stage-design.md`,
+plan `docs/superpowers/plans/2026-09-11-statcheck-paper-and-shared-win-stage.md`.
+
+**StatCheck.** Each student's page is now StudentCard's own paper: `card_bg.png`
+with its `PaperShadow`, authored at native 1080×1920 inside `StatCheckCard.tscn`
+and scaled 0.757, so the 1321px sheet fills the 1000px card.
+- The photo sits in the frame printed on the paper.
+- The name sits alone on the printed brown plate, in the new `PlateNameLabel`
+  (Boohong 96, cream).
+- The three rows use the `StudentCard/stat_*.png` icons at StudentCard's
+  proportions (128px icon, 68px bar).
+- The bio lines are gone.
+
+Two tests guard the layout:
+- `card_bg.png`'s paper covers only x 52..1045, y 238..1558 of the texture. One
+  test maps that sheet through the paper's transform and fails if it leaves the
+  card or underfills it.
+- Another re-measures every roster name against the plate at the real font
+  size.
+
+**RunResult.** EndCutscene's painting, letterbox bars and posed roster moved
+into `Scenes/EndGame/WinStage.tscn` (`WinStage.gd`). EndCutscene and RunResult
+both instance it and dress it with the same line.
+
+RunResult used to cover the screen with the painting alone, cropped to
+1440×1920 with no students, so the blur hand-off jumped. Now its first frame is
+EndCutscene's last. Both verdicts were checked live through the rehearsal:
+- win: stage scale 0.703125 at y 240, with four students
+- loss: full-screen `cg_lose.jpg`
+
+The letterbox put RunResult's dark title on the navy bar, so the title moved to
+`ResultHeroLabel`. WinStage's root is a bare anchor that sizes its children in
+`dress()`, following the authoring guide's rule for instanced roots.
+
+## 2026-09-10 — LombaMenari note camera
+
+Friday Night Funkin's note camera for the dance minigame. A successful arrow
+leans the camera the way it points — RIGHT right, LEFT left, TOP_LEFT up-left,
+TOP_RIGHT up-right — holds the lean, then eases home; a miss, wrong swipe or
+early swipe sends it home at once. The stage (Background and dancer) slides
+opposite the lean, as the world does under a panning camera. The notes, hit
+zone and score HUD hold still, as FNF's HUD camera does, so the target never
+moves under a swiping thumb.
+
+The logic is `Scripts/Minigames/SeniBudaya/DanceCamera.gd`, a `@tool`
+`RefCounted` tested by behaviour in `tests/test_dance_camera.gd`; LombaMenari
+only wires it. The follow is frame-rate independent (`1 - e^(-speed·delta)`),
+not FNF's frame-counted lerp. Knobs sit on LombaMenari's root under *Motion -
+Camera Follow*: `camera_look_distance` 30 px (negative flips it),
+`camera_follow_speed` 4.0, `camera_hold_duration` 0.6 s — first guesses, not
+playtested. `_handle_swipe()`'s direction table became the shared
+`ARROW_DIRECTIONS` const, so the swipe and the camera cannot disagree.
+
+The camera needs the Background to overscan the screen, or a lean bares a
+strip of nothing at the edge. A test fails if any edge the stage slides away
+from has less than one lean of spare art.
+
 ## 2026-09-10 — StudentList: roster strip and card relayout (Warm UI, Part 3)
 
 Spec `docs/superpowers/specs/2026-09-10-studentlist-part-3-design.md`, plan
@@ -117,6 +176,7 @@ and the catatan rule.
 placeholder rotated sideways; nav arrows resized to the 128px `btn_h_m` step;
 `test_confirm_pair_semantics` repointed at `RosterCard.tscn` after the badges
 moved there.
+
 ## 2026-09-10 — Minigame, sky and paper fixes
 
 Six independent fixes. Spec:

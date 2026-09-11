@@ -23,12 +23,7 @@ extends Control
 ## Pause after the last row before the letter grade slams in.
 @export var grade_delay: float = 0.5
 
-@export_group("Backdrop")
-## Backdrop when the run passed. The SAME image EndCutscene shows, so this
-## screen opens on the frame that one blurred out on.
-@export var win_backdrop: Texture2D
-## Backdrop when the run failed. Likewise paired with EndCutscene's.
-@export var lose_backdrop: Texture2D
+@export_group("Backdrop blur")
 ## Blur strength, as a screen-texture mip level. Must equal EndCutscene's
 ## blur_lod -- the hand-off is only invisible if both match.
 @export var blur_lod: float = 3.0
@@ -50,8 +45,10 @@ extends Control
 ## Shown for a D rank, which is also every failed run.
 @export var rank_badge_d: Texture2D
 
-@onready var backdrop: TextureRect = $Backdrop
-## Between Backdrop and the report UI: the shader samples what is already
+## The painting, the letterbox bars and the posed roster: the same scene
+## EndCutscene shows, dressed the same way (_dress_backdrop()).
+@onready var win_stage: WinStage = $WinStage
+## Between WinStage and the report UI: the shader samples what is already
 ## drawn, so the image blurs and the report stays sharp.
 @onready var blur_layer: ColorRect = $BlurLayer
 @onready var rows_box: VBoxContainer = $MarginContainer/Column/RowsBox
@@ -102,16 +99,17 @@ func _ready() -> void:
 	_play_reveal()
 
 
-## Opens on the frame EndCutscene blurred out on: the same CG for the same
-## verdict, at the same blur and the same dim. StatCheck decided the verdict
-## and EndCutscene already showed it -- this only re-dresses, it never
-## recomputes.
+## Opens on the frame EndCutscene blurred out on -- literally the same
+## scene, WinStage, dressed by the same call from the same two inputs, then
+## blurred by the same shader at the same strength and dim. StatCheck
+## decided the verdict and EndCutscene already showed it -- this only
+## re-dresses, it never recomputes.
 ##
 ## The blur is live rather than a pre-blurred image so the two screens cannot
 ## drift apart: one shader, one pair of numbers, both read from exports that
 ## a test pins to EndCutscene's.
 func _dress_backdrop() -> void:
-	backdrop.texture = lose_backdrop if GameState.run_failed else win_backdrop
+	win_stage.dress(GameState.run_failed, WinStage.names_of(GameState.approved_students))
 	var mat: ShaderMaterial = blur_layer.material
 	mat.set_shader_parameter("lod", blur_lod)
 	mat.set_shader_parameter("darkness", blur_darkness)

@@ -5,17 +5,23 @@ extends Control
 ## The win / lose beat between StatCheck and RunResult (2026-09-05).
 ##
 ## One scene for both outcomes: StatCheck writes GameState.run_failed on its
-## way out, this screen reads it once in _ready() and picks a backdrop, a
-## badge and a BGM from the paired exports below. Nothing else here
-## branches, and it never recomputes the verdict.
+## way out, this screen reads it once in _ready() and dresses itself from
+## it -- the shared WinStage, a badge and a BGM from the paired exports
+## below. Nothing else here branches, and it never recomputes the verdict.
+##
+## The painting, the letterbox bars and the posed roster live in
+## WinStage.tscn, not here, since 2026-09-11: RunResult instances the same
+## scene behind its report, so the frame this screen blurs out on is the
+## frame RunResult opens on.
 ##
 ## Sequence: the scene opens under an opaque white overlay -- completing the
 ## fade StatCheck ends on, which is why that hand-off deliberately bypasses
 ## Transition -- fades it out over the image, holds so the image reads,
-## slams the badge into the top-left, holds again, then reveals the Next
-## button. The button is the only way forward, and is disabled until then.
+## slams the badge into the top-left (lose only), holds again, then reveals
+## the Next button. The button is the only way forward, and is disabled
+## until then.
 ##
-## Pressing it blurs the backdrop in place and swaps RunResult in underneath.
+## Pressing it blurs the stage in place and swaps RunResult in underneath.
 ## That blur is the transition: this screen does not call Transition, exactly
 ## as StatCheck does not on the way in, so the three screens read as one
 ## continuous beat instead of three wipes.
@@ -25,8 +31,6 @@ extends Control
 ## signal is wired before that guard so the wiring stays testable.
 
 @export_group("Win")
-## Backdrop shown when the run passed. Real graduation artwork; students and shadows compose on top.
-@export var win_backdrop: Texture2D
 ## Assigned to Badge.texture on the win path (_dress_for_verdict()) but
 ## never stamped there -- only the lose path stamps this badge (method name
 ## avoided here since the test scans the file for it, comments included). The
@@ -38,39 +42,10 @@ extends Control
 @export var win_bgm: StringName = &"result_win"
 
 @export_group("Lose")
-## Backdrop shown when the run failed.
-@export var lose_backdrop: Texture2D
 ## Badge stamped into the top-left when the run failed.
 @export var lose_badge: Texture2D
 ## BGM started when the run failed.
 @export var lose_bgm: StringName = &"result_lose"
-
-@export_group("Win lineup")
-## Splash art for roster name "Doni". Null leaves its slot hidden.
-@export var win_splash_doni: Texture2D
-## Splash art for roster name "Andi". Null leaves its slot hidden.
-@export var win_splash_andi: Texture2D
-## Splash art for roster name "Citra". Null leaves its slot hidden.
-@export var win_splash_citra: Texture2D
-## Splash art for roster name "Shinta". Null leaves its slot hidden.
-@export var win_splash_shinta: Texture2D
-## Splash art for roster name "Marcel". Null leaves its slot hidden.
-@export var win_splash_marcel: Texture2D
-## Splash art for roster name "Thea". Null leaves its slot hidden.
-@export var win_splash_thea: Texture2D
-## Fills the letterbox bars above and below the painting. Defaults to the
-## surface_overlay token so the bars read as the game's own chrome rather
-## than as a video letterbox.
-@export var bar_color: Color = Color("141a2e")
-## Texture every ground shadow wears. Drop-replacement point for real art.
-@export var shadow_texture: Texture2D
-## Alpha of every ground shadow, 0-1.
-@export var shadow_opacity: float = 0.28
-## Multiplies each student's measured foot span to get its shadow width.
-@export var shadow_spread: float = 1.25
-## Ellipse height as a fraction of its width. Lower reads as a flatter
-## floor, higher as a softer pool.
-@export var shadow_flatness: float = 0.28
 
 @export_group("Pacing")
 ## Seconds the opaque white overlay takes to clear.
@@ -95,20 +70,14 @@ extends Control
 ## Where the button goes.
 const RUN_RESULT_SCENE := "res://Scenes/EndGame/RunResult.tscn"
 
-## The backdrop's native size. Students are positioned in this space and
-## the whole Stage is scaled into the viewport, so numbers measured off
-## the mockup transfer 1:1 and the composition never drifts from the art.
-const ART_SIZE := Vector2(1536.0, 2048.0)
-
-@onready var backdrop: TextureRect = $Stage/Backdrop
+## The painting, the letterbox bars and the posed roster -- the scene
+## RunResult instances too. Drawn first, so BlurLayer samples all of it.
+@onready var win_stage: WinStage = $WinStage
 @onready var badge: TextureRect = $Badge
 @onready var btn_next: Button = $BtnNext
 @onready var white_fade: ColorRect = $WhiteFade
-@onready var stage: Control = $Stage
-@onready var shadows: Control = $Stage/Shadows
-@onready var students: Control = $Stage/Students
-## Sits between Backdrop and Badge on purpose: the shader samples what is
-## already drawn, so only the backdrop blurs and the badge stays sharp.
+## Sits between WinStage and Badge on purpose: the shader samples what is
+## already drawn, so only the stage blurs and the badge stays sharp.
 @onready var blur_layer: ColorRect = $BlurLayer
 
 var _exiting: bool = false
@@ -123,10 +92,6 @@ func _ready() -> void:
 	badge.modulate.a = 0.0
 	btn_next.modulate.a = 0.0
 	btn_next.disabled = true
-
-	# Authored at the token's value too, but re-asserted so changing the
-	# export is enough -- the bars and the export must not drift apart.
-	$BarFill.color = bar_color
 
 	# Park the blur inert. lod 0 makes textureLod an identity sample and
 	# darkness 0 leaves the colour alone, so the layer is a no-op even if it
@@ -145,112 +110,15 @@ func _ready() -> void:
 ## Reads the verdict once and dresses the screen for it. StatCheck decided
 ## it; this screen is only the reveal.
 ##
-## The two paths diverge more than they used to. Lose keeps the CG and the
-## stamp. Win puts the roster on the new backdrop and shows no badge --
-## the chalkboard already reads "Selamat Kelulusan", so a LULUS stamp over
-## it would be redundant and would cover the art.
+## The stage dresses itself for either verdict (the roster on the painting
+## for a win, the covering CG for a loss). The badge differs too: win shows
+## none -- the chalkboard already reads "Selamat Kelulusan", so a LULUS
+## stamp over it would be redundant and would cover the art.
 func _dress_for_verdict() -> void:
 	var failed: bool = GameState.run_failed
-	backdrop.texture = lose_backdrop if failed else win_backdrop
+	win_stage.dress(GameState.run_failed, WinStage.names_of(GameState.approved_students))
 	badge.texture = lose_badge if failed else win_badge
-	# Stage stays visible either way -- Backdrop lives under it and carries
-	# both verdicts' art. Win letterboxes Stage to the art size and poses
-	# the roster on it. Lose keeps the framing the CG had before Stage
-	# existed: Stage fills the viewport so Backdrop's KEEP_ASPECT_COVERED
-	# crops cg_lose.jpg the way it always did. The lineup slots are
-	# authored hidden and are only ever shown by _dress_lineup(), so the
-	# lose path never sees them.
-	if not failed:
-		_fit_stage()
-		_dress_lineup()
-	else:
-		_fit_stage_cover()
 	AudioDirector.play_bgm(lose_bgm if failed else win_bgm)
-
-
-## Letterbox the painting into the viewport: scale by the smaller ratio so
-## the whole 3:4 image survives on a 9:16 screen, and centre it. At
-## 1080x1920 this gives 1080x1440 with 240px bars top and bottom -- which
-## is where BtnNext sits, clear of the art.
-func _fit_stage() -> void:
-	var vp := get_viewport_rect().size
-	var s := minf(vp.x / ART_SIZE.x, vp.y / ART_SIZE.y)
-	stage.size = ART_SIZE
-	stage.scale = Vector2(s, s)
-	stage.position = (vp - ART_SIZE * s) * 0.5
-
-
-## The lose path keeps the framing the CG had before the Stage existed:
-## Stage fills the viewport and Backdrop covers it (KEEP_ASPECT_COVERED),
-## so cg_lose.jpg is centred and cropped rather than stretched. Without
-## this, Stage would keep its authored 1536x2048 art size and the lose CG
-## would show only its top-left corner.
-func _fit_stage_cover() -> void:
-	stage.size = get_viewport_rect().size
-	stage.scale = Vector2.ONE
-	stage.position = Vector2.ZERO
-
-
-## Splash art for a roster name, or null when the name is unknown.
-##
-## Six separate exports rather than one Dictionary: a Dictionary's nested
-## values cannot be wired as Resources through the editor's property API,
-## so the paths stayed strings and the textures never loaded.
-func _splash_for(student_name: String) -> Texture2D:
-	match student_name:
-		"Doni": return win_splash_doni
-		"Andi": return win_splash_andi
-		"Citra": return win_splash_citra
-		"Shinta": return win_splash_shinta
-		"Marcel": return win_splash_marcel
-		"Thea": return win_splash_thea
-	return null
-
-
-## Put the run's own roster on the stage. Called only on the win path --
-## the lose branch keeps its CG and its stamp.
-##
-## Slots and shadows are authored nodes; this only sets texture, size,
-## position and visibility on them. Nothing is constructed here.
-func _dress_lineup() -> void:
-	var names: Array = []
-	for s in GameState.approved_students:
-		names.append(s.get("name", ""))
-
-	var placed := WinLineup.assign(names)
-	for i in range(4):
-		var sprite: TextureRect = students.get_node("Student%d" % (i + 1))
-		var shadow: TextureRect = shadows.get_node("Shadow%d" % (i + 1))
-		if i >= placed.size():
-			sprite.hide()
-			shadow.hide()
-			continue
-
-		var p: Dictionary = placed[i]
-		var tex: Texture2D = _splash_for(p["name"])
-		if tex == null:
-			push_warning("EndCutscene: no win splash for '%s'" % p["name"])
-			sprite.hide()
-			shadow.hide()
-			continue
-
-		# The splash is anchored bottom-centre: its canvas is square, so
-		# half its scaled width sits either side of the anchor and its
-		# full scaled height sits above it.
-		var side: float = tex.get_width() * float(p["scale"])
-		sprite.texture = tex
-		sprite.size = Vector2(side, side)
-		sprite.position = Vector2(p["anchor"]) - Vector2(side * 0.5, side)
-		sprite.show()
-
-		var sh := WinLineup.shadow_for(p, shadow_spread, shadow_flatness)
-		var sh_size: Vector2 = sh["size"]
-		var sh_centre: Vector2 = sh["centre"]
-		shadow.texture = shadow_texture
-		shadow.size = sh_size
-		shadow.position = sh_centre - sh_size * 0.5
-		shadow.modulate = Color(0.0, 0.0, 0.0, shadow_opacity)
-		shadow.show()
 
 
 ## The beat, as a coroutine -- never call this from a test.
@@ -299,8 +167,8 @@ func _set_blur(lod: float, darkness: float) -> void:
 	mat.set_shader_parameter("darkness", darkness)
 
 
-## The hand-off: the backdrop blurs where it stands, and RunResult is swapped
-## in underneath it. A coroutine -- never call it from a test.
+## The hand-off: the stage blurs where it stands, and RunResult is swapped in
+## underneath it. A coroutine -- never call it from a test.
 ##
 ## Deliberately bypasses the project-wide wipe. The blur is the transition; a
 ## wipe over the top would read as two of them. StatCheck bypasses it on the

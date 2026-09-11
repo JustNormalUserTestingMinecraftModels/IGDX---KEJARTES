@@ -131,7 +131,7 @@ func test_everyone_else_fills_in_roster_order() -> void:
 	assert_eq(by_name["Citra"], WinLineup.SLOT_FRONT_MID, "third non-Doni")
 
 
-## The array is returned in DRAW order, back to front, so EndCutscene can
+## The array is returned in DRAW order, back to front, so WinStage can
 ## map element i onto sibling Student{i+1} and get z-order for free. The
 ## front-low figure is closest to camera and must therefore be last.
 func test_placements_come_back_in_draw_order_back_to_front() -> void:

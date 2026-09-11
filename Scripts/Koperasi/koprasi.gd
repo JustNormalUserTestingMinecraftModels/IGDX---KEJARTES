@@ -114,7 +114,7 @@ func _on_beli_pressed():
 
 	if Cart.is_empty():
 		AudioDirector.play_sfx(&"error")
-		_show_message("Keranjang kosong! 🛒", &"ShopMessageWarning")
+		_show_message("Keranjang kosong!", &"ShopMessageWarning")
 		return
 
 	var total = Cart.get_total()

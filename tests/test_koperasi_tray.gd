@@ -23,3 +23,77 @@ func test_basket_icon_has_no_text_elements() -> void:
 	var src := f.get_as_text()
 	assert_false(src.contains("<text"),
 		"SVG uses <text>, which ThorVG drops on import")
+
+const THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+
+func _baked_theme() -> Theme:
+	return load(THEME_PATH) as Theme
+
+func test_price_tag_variations_registered() -> void:
+	var theme := _baked_theme()
+	assert_not_null(theme, "baked theme missing at %s" % THEME_PATH)
+	if theme == null:
+		return
+	for v in ["PriceTag", "PriceTagPressed", "PriceTagDisabled", "BasketTray"]:
+		assert_true(theme.has_stylebox("panel", v),
+			"variation %s has no panel stylebox" % v)
+
+func test_price_tag_is_green_and_pressed_is_darker() -> void:
+	var theme := _baked_theme()
+	var rest := theme.get_stylebox("panel", "PriceTag") as StyleBoxFlat
+	var pressed := theme.get_stylebox("panel", "PriceTagPressed") as StyleBoxFlat
+	assert_not_null(rest, "PriceTag panel is not a StyleBoxFlat")
+	if rest == null:
+		return
+	assert_not_null(pressed, "PriceTagPressed panel is not a StyleBoxFlat")
+	if pressed == null:
+		return
+	assert_true(rest.bg_color.g > rest.bg_color.r,
+		"PriceTag should read green")
+	assert_true(pressed.bg_color.v < rest.bg_color.v,
+		"pressed state must be darker than rest")
+
+func test_basket_tray_has_no_black() -> void:
+	# The mentor's note: nothing in the tray may read as premium-black.
+	var theme := _baked_theme()
+	assert_not_null(theme, "baked theme missing at %s" % THEME_PATH)
+	if theme == null:
+		return
+	assert_true(theme.has_stylebox("panel", "BasketTray"),
+		"BasketTray variation is not registered")
+	if not theme.has_stylebox("panel", "BasketTray"):
+		return
+	var tray := theme.get_stylebox("panel", "BasketTray") as StyleBoxFlat
+	assert_not_null(tray, "BasketTray panel is not a StyleBoxFlat")
+	if tray == null:
+		return
+	assert_true(tray.bg_color.v > 0.75, "tray surface must stay light and warm")
+	assert_true(tray.bg_color.r > tray.bg_color.b, "tray surface must be warm, not cool")
+
+
+func test_koperasi_scripts_carry_no_emoji() -> void:
+	# Project convention bans emoji as UI iconography (2026-09-02).
+	var paths := [
+		"res://Scripts/Koperasi/koprasi.gd",
+		"res://Scripts/Koperasi/rakbarang_1.gd",
+	]
+	for path in paths:
+		var f := FileAccess.open(path, FileAccess.READ)
+		assert_not_null(f, "%s missing" % path)
+		if f == null:
+			continue
+		var src := f.get_as_text()
+		for glyph in [char(0x1F6D2), char(0x21A9)]:
+			assert_false(src.contains(glyph),
+				"%s still contains an emoji glyph" % path)
+
+const TRAY_DOTS := "res://Assets/Images/Shop/UI/tray_dots.png"
+
+func test_tray_dot_tile_exists_and_tiles() -> void:
+	assert_true(ResourceLoader.exists(TRAY_DOTS), "tray dot tile missing")
+	var tex := load(TRAY_DOTS) as Texture2D
+	assert_not_null(tex, "tray dot tile did not load as a texture")
+	if tex == null:
+		return
+	assert_eq(tex.get_width(), 26, "tile must be 26px wide to repeat cleanly")
+	assert_eq(tex.get_height(), 26, "tile must be 26px tall to repeat cleanly")

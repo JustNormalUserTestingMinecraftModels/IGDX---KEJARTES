@@ -515,6 +515,53 @@ static func _build_panels(theme: Theme, tokens: DesignTokens) -> void:
 	trait_header.content_margin_bottom = tokens.space_sm
 	theme.set_stylebox("panel", "TraitPopupHeader", trait_header)
 
+	_add_koperasi_variations(theme, tokens)
+
+
+## Koperasi rework (2026-09-11): the coin-pill price tag in its three
+## states, and the warm tray surface that replaces the popup box.
+static func _add_koperasi_variations(theme: Theme, tokens: DesignTokens) -> void:
+	var rest := StyleBoxFlat.new()
+	rest.bg_color = Color("#639922")
+	rest.border_color = Color("#3B6D11")
+	rest.set_border_width_all(4)
+	rest.set_corner_radius_all(40)
+	rest.content_margin_left = 12
+	rest.content_margin_right = 28
+	rest.content_margin_top = 8
+	rest.content_margin_bottom = 8
+	theme.add_type("PriceTag")
+	theme.set_type_variation("PriceTag", "Panel")
+	theme.set_stylebox("panel", "PriceTag", rest)
+
+	var pressed := rest.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color("#2F5A0D")
+	pressed.border_color = Color("#173404")
+	theme.add_type("PriceTagPressed")
+	theme.set_type_variation("PriceTagPressed", "Panel")
+	theme.set_stylebox("panel", "PriceTagPressed", pressed)
+
+	var disabled := rest.duplicate() as StyleBoxFlat
+	disabled.bg_color = Color("#B4B2A9")
+	disabled.border_color = Color("#5F5E5A")
+	theme.add_type("PriceTagDisabled")
+	theme.set_type_variation("PriceTagDisabled", "Panel")
+	theme.set_stylebox("panel", "PriceTagDisabled", disabled)
+
+	var tray := StyleBoxFlat.new()
+	tray.bg_color = Color("#FBEBC8")
+	tray.border_color = Color("#A86A1C")
+	tray.border_width_top = 6
+	tray.corner_radius_top_left = 40
+	tray.corner_radius_top_right = 40
+	tray.content_margin_left = 28
+	tray.content_margin_right = 28
+	tray.content_margin_top = 20
+	tray.content_margin_bottom = 24
+	theme.add_type("BasketTray")
+	theme.set_type_variation("BasketTray", "Panel")
+	theme.set_stylebox("panel", "BasketTray", tray)
+
 
 ## The cutscene's dialogue text: one step up the scale from body, on the
 ## body face, over the Card panel Task 3 puts behind it.

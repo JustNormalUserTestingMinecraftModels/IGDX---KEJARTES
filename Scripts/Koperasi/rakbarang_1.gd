@@ -347,7 +347,7 @@ func _populate_retur_panel():
 
 	if Cart.is_empty():
 		var empty_label = Label.new()
-		empty_label.text = "🛒 Keranjang kosong"
+		empty_label.text = "Keranjang kosong"
 		empty_label.add_theme_font_size_override("font_size", 28)
 		retur_grid.add_child(empty_label)
 		return
@@ -379,7 +379,7 @@ func _add_retur_entry(item: ItemData, quantity: int):
 	box.add_child(name_label)
 
 	var retur_button = Button.new()
-	retur_button.text = "↩ Retur 1"
+	retur_button.text = "Retur 1"
 	retur_button.custom_minimum_size = Vector2(180, 55)
 	retur_button.add_theme_font_size_override("font_size", 24)
 	retur_button.pressed.connect(_on_retur_button_pressed.bind(item.item_name, retur_button, icon))

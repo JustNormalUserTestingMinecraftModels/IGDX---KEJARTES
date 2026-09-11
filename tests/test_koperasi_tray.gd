@@ -27,7 +27,12 @@ func test_basket_icon_has_no_text_elements() -> void:
 const THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 func _baked_theme() -> Theme:
-	return load(THEME_PATH) as Theme
+	# CACHE_MODE_IGNORE matters: the editor holds kejartes_theme.tres in
+	# memory from startup, so a plain load() returns that cached copy and
+	# never sees a fresh rebake.
+	return ResourceLoader.load(
+		THEME_PATH, "",
+		ResourceLoader.CACHE_MODE_IGNORE) as Theme
 
 func test_price_tag_variations_registered() -> void:
 	var theme := _baked_theme()

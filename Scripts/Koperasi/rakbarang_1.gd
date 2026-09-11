@@ -12,6 +12,7 @@ var keranjang_depan: Control
 var retur_panel: Control
 var retur_grid: GridContainer
 var retur_back_button: TextureButton
+var retur_empty_state: Control
 
 var shelf_buttons: Array[TextureButton] = []
 var item_data_list: Array[ItemData] = []
@@ -20,6 +21,7 @@ var item_data_list: Array[ItemData] = []
 var _price_tags: Array = []
 
 const PRICE_TAG_SCENE := preload("res://Scenes/Koperasi/PriceTag.tscn")
+const RETUR_SLOT_SCENE := preload("res://Scenes/Koperasi/ReturSlot.tscn")
 const ShelfItemScript := preload("res://Scripts/Koperasi/ShelfItem.gd")
 
 ## ShelfItem helper per shelf button, parallel to shelf_buttons.
@@ -76,6 +78,7 @@ func _resolve_nodes():
 		retur_original_parent = retur_panel.get_parent()
 		retur_grid = retur_panel.find_child("GridContainer", true, false)
 		retur_back_button = retur_panel.find_child("BackButton", true, false)
+		retur_empty_state = retur_panel.find_child("EmptyState", true, false)
 
 func _find_shelf_buttons():
 	shelf_buttons.clear()
@@ -403,61 +406,21 @@ func _populate_retur_panel():
 		child.queue_free()
 
 	if Cart.is_empty():
-		var empty_label = Label.new()
-		empty_label.text = "Keranjang kosong"
-		empty_label.add_theme_font_size_override("font_size", 28)
-		retur_grid.add_child(empty_label)
+		if is_instance_valid(retur_empty_state):
+			retur_empty_state.show()
 		return
+	if is_instance_valid(retur_empty_state):
+		retur_empty_state.hide()
 
 	for item_name in Cart.cart:
 		var entry = Cart.cart[item_name]
-		var item: ItemData = entry["data"]
-		var quantity: int = entry["quantity"]
-		_add_retur_entry(item, quantity)
+		var slot = RETUR_SLOT_SCENE.instantiate()
+		retur_grid.add_child(slot)
+		slot.bind(entry["data"], entry["quantity"])
+		slot.retur_requested.connect(_on_retur_button_pressed)
+		AnimUtils.spring_pop_in(slot, 0.8)
 
-func _add_retur_entry(item: ItemData, quantity: int):
-	var box = VBoxContainer.new()
-	box.add_theme_constant_override("separation", 8)
-	box.custom_minimum_size = Vector2(300, 380)
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
-
-	var icon = TextureRect.new()
-	icon.texture = item.icon
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.custom_minimum_size = Vector2(300, 300)
-	icon.pivot_offset = Vector2(150, 150)
-	box.add_child(icon)
-
-	var name_label = Label.new()
-	name_label.text = "%s ×%d" % [item.item_name, quantity]
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 28)
-	box.add_child(name_label)
-
-	var retur_button = Button.new()
-	retur_button.text = "Retur 1"
-	retur_button.custom_minimum_size = Vector2(180, 55)
-	retur_button.add_theme_font_size_override("font_size", 24)
-	retur_button.pressed.connect(_on_retur_button_pressed.bind(item.item_name, retur_button, icon))
-	box.add_child(retur_button)
-
-	retur_grid.add_child(box)
-
-	# Entry entrance animation
-	AnimUtils.spring_pop_in(box, 0.8)
-
-func _on_retur_button_pressed(item_name: String, btn: Button = null, icon: TextureRect = null):
-	if btn and is_instance_valid(btn):
-		AnimUtils.squash_bounce(btn)
+func _on_retur_button_pressed(item_name: String):
 	AudioDirector.play_sfx(&"pop")
-
-	# Icon shrink animation
-	if icon and is_instance_valid(icon):
-		icon.pivot_offset = icon.size / 2
-		var icon_tween = create_tween()
-		icon_tween.tween_property(icon, "scale", Vector2(0.7, 0.7), 0.12).set_trans(Tween.TRANS_QUAD)
-		icon_tween.tween_property(icon, "scale", Vector2(1.0, 1.0), 0.14).set_trans(Tween.TRANS_BACK)
-
 	_remove_last_icon_by_name(item_name)
 	_populate_retur_panel()

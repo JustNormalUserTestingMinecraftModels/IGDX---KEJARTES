@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://bfk2wcyi2da3v"]
+
+[ext_resource type="Script" path="res://Scripts/Koperasi/ReturSlot.gd" id="1_lwhq7"]
+[ext_resource type="Texture2D" uid="uid://b7luejs33rujy" path="res://Assets/Images/Shop/UI/icon_retur.svg" id="2_oneb0"]
+
+[node name="ReturSlot" type="VBoxContainer" unique_id=515392361]
+custom_minimum_size = Vector2(300, 380)
+theme_override_constants/separation = 8
+alignment = 1
+script = ExtResource("1_lwhq7")
+
+[node name="Icon" type="TextureRect" parent="." unique_id=979301194]
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Caption" type="Label" parent="." unique_id=954789122]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+horizontal_alignment = 1
+
+[node name="ReturButton" type="Button" parent="." unique_id=1809029539]
+custom_minimum_size = Vector2(180, 55)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Retur 1"
+icon = ExtResource("2_oneb0")

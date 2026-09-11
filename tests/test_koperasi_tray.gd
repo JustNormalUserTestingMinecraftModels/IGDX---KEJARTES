@@ -240,3 +240,29 @@ func test_shelf_item_bobs_with_a_phase_offset() -> void:
 		return
 	assert_true(f.get_as_text().contains("phase"),
 		"items must bob out of sync, so the shelf does not pulse in unison")
+
+const RETUR_SLOT_SCENE := "res://Scenes/Koperasi/ReturSlot.tscn"
+
+func test_retur_slot_scene_exists() -> void:
+	assert_true(ResourceLoader.exists(RETUR_SLOT_SCENE), "ReturSlot.tscn missing")
+
+func test_retur_slot_binds_name_and_quantity() -> void:
+	var packed := load(RETUR_SLOT_SCENE)
+	assert_not_null(packed, "ReturSlot.tscn missing")
+	if packed == null:
+		return
+	var slot = packed.instantiate()
+	var item := ItemData.new()
+	item.item_name = "Susu Murni"
+	item.price = 1000
+	slot.bind(item, 2)
+	assert_eq(slot.get_caption(), "Susu Murni ×2",
+		"slot caption should carry the name and quantity")
+	slot.free()
+
+func test_shelf_no_longer_builds_retur_entries_at_runtime() -> void:
+	var src := _rak_source()
+	assert_false(src.contains("VBoxContainer.new()"),
+		"tray slots must come from ReturSlot.tscn, not runtime construction")
+	assert_false(src.contains("add_theme_font_size_override"),
+		"use theme type variations, never font-size overrides")

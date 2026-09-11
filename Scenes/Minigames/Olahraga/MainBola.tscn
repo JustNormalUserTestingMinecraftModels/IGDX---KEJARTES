@@ -94,9 +94,10 @@ offset_right = 194.4
 offset_bottom = 194.4
 
 [node name="Goalie" type="CharacterBody2D" parent="." unique_id=1397322346]
-position = Vector2(540, 946.176)
+position = Vector2(540, 1075)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Goalie" unique_id=1108970920]
+position = Vector2(9, -230.9)
 shape = SubResource("RectangleShape2D_wxm10")
 
 [node name="GFX" type="TextureRect" parent="Goalie" unique_id=1353785742]

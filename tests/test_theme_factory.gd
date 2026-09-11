@@ -344,9 +344,27 @@ const DISPLAY_ROSTER := [
 	"SpecialtyBadge",
 	"SpecialtyBadgeS", "PersonaBadgeS", "QuirkBadgeS",
 	"SpecialtyBadgeM", "PersonaBadgeM", "QuirkBadgeM",
+	# 2026-09-11: the student's name alone on StatCheck's painted plate.
+	"PlateNameLabel",
 	# 2026-09-11 Koperasi Part 2: the tray's ×N and count badges.
 	"TrayBadgeLabel",
 ]
+
+
+## StatCheck's page shows the student's name alone on StudentCard's
+## painted brown plate (2026-09-11). Cream, because the plate is dark; the
+## display step, because it is the only text on the page.
+func test_plate_name_label_is_cream_display_text() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	assert_true(theme.get_type_list().has("PlateNameLabel"),
+		"ThemeFactory must build a PlateNameLabel variation")
+	assert_eq(theme.get_type_variation_base("PlateNameLabel"), &"Label",
+		"PlateNameLabel varies Label")
+	assert_eq(theme.get_font_size("font_size", "PlateNameLabel"),
+		tokens.font_display_size, "the display step")
+	assert_eq(theme.get_color("font_color", "PlateNameLabel"),
+		tokens.text_on_brand, "cream, to read on the brown plate")
 
 
 ## Every type ThemeFactory builds must also be in the BAKED theme.

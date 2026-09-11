@@ -1079,6 +1079,21 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "BioValue", tokens.font_h2)
 	theme.set_color("font_color", "BioValue", tokens.text_on_brand)
 
+	# -- A name alone on the painted plate: StatCheck's page (2026-09-11).
+	# StudentCard stacks three bio rows on that plate in BioLabel/BioValue;
+	# StatCheck shows only the name, so it takes the display face at the
+	# display step and fills the plate. Cream for the same reason as the bio
+	# text. No outline: the plate is opaque and flat, so an outline would
+	# only thicken the letterforms (the call TraitPopupNameLabel makes too).
+	# At 96px the widest roster name, MARCEL, is ~413px against the 457px
+	# Name slot in StatCheckCard.tscn -- tests/test_stat_check.gd measures it. --
+	theme.add_type("PlateNameLabel")
+	theme.set_type_variation("PlateNameLabel", "Label")
+	theme.set_font_size("font_size", "PlateNameLabel", tokens.font_display_size)
+	theme.set_color("font_color", "PlateNameLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "PlateNameLabel", tokens.font_display)
+
 	# -- Penjadwalan row: a plain cream slab on the sheet. Before the
 	# 2026-09-10 pass this was a brown slab with a 3px stroke and a hard
 	# drop shadow; with the card behind it and the pill inside it, that

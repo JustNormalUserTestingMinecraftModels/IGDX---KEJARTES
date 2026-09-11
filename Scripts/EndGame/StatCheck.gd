@@ -140,12 +140,12 @@ func _run_check() -> void:
 
 ## A tap anywhere rushes the current student. This must be _input(), not
 ## Node's *other* input callback -- the one that only sees events no
-## Control claimed first. The screen's Scrim (StatCheck.tscn) and the
-## card's Paper (StatCheckCard.tscn) are Panels at the default
-## MOUSE_FILTER_STOP, which consumes pointer events and marks them handled
-## before that other callback would ever get a look -- so it would never
-## fire here. _input() runs before GUI input handling, so the covering
-## Panels cannot swallow it first; this follows the precedent in
+## Control claimed first. The screen's full-screen Scrim (StatCheck.tscn)
+## is a Panel at the default MOUSE_FILTER_STOP, which consumes pointer
+## events and marks them handled before that other callback would ever get
+## a look -- so it would never fire here. _input() runs before GUI input
+## handling, so the covering Scrim cannot swallow it first; this follows
+## the precedent in
 ## cut_scene.gd's _input(), the other full-screen tap-anywhere beat in this
 ## codebase. Do not "tidy" this back to the post-GUI callback -- the tap
 ## would silently stop firing.

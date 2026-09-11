@@ -17,6 +17,8 @@ const CHECK_WORKFLOW := "res://.github/workflows/project-check.yml"
 const REVIEW_WORKFLOW := "res://.github/workflows/claude-review.yml"
 ## The workflow that runs the gate.
 const MERGE_WORKFLOW := "res://.github/workflows/auto-merge.yml"
+## The local finish-a-branch procedure.
+const SKILL := "res://.claude/skills/ship-pr/SKILL.md"
 
 
 ## The runner's name for this suite.
@@ -71,3 +73,12 @@ func test_every_action_is_pinned_to_a_commit() -> void:
 				offenders.append(path.get_file() + ": " + line.strip_edges())
 	assert_eq(offenders, PackedStringArray(),
 		"every uses: must name a 40-character commit; unpinned: %s" % [offenders])
+
+
+func test_the_skill_posts_exactly_the_stamps_the_gate_requires() -> void:
+	var gate := _read(GATE)
+	var skill := _read(SKILL)
+	var stamps: Array[String] = ["kejartes/editor-tests", "kejartes/local-review"]
+	for stamp in stamps:
+		assert_true(gate.contains("\"" + stamp + "\""), "auto_merge.sh requires " + stamp)
+		assert_true(skill.contains("context=" + stamp), "SKILL.md posts " + stamp)

@@ -1415,15 +1415,25 @@ static func _build_minigame_result(theme: Theme, tokens: DesignTokens) -> void:
 	# font_color is white, not tokens.text_primary -- MinigameResultPopup
 	# always overrides this label's colour via self_modulate (green for a
 	# gain, red for a loss), and self_modulate *multiplies* the base colour.
-	# text_primary is a dark navy; multiplying green/red by near-black
+	# text_primary is a dark brown; multiplying green/red by near-black
 	# collapsed both to near-black, destroying the +/- colour coding. White
 	# is the multiplicative identity, so self_modulate's colour reads as-is.
+	#
+	# So the OUTLINE carries the text, and it is dark. Every user of this
+	# variation sits on a light ground -- the result card's delta rows and
+	# category badge, the item sheet's "+N", the apply-item preview -- where
+	# no bright tint can read: the green measured 1.13:1 and the red 2.54:1
+	# on surface_sunken, the untinted white 1.02:1 on surface_card, and the
+	# cream outline it shipped with did no better (2026-09-11).
+	# self_modulate multiplies the outline too, but a dark rim stays dark
+	# under any tint: the tint keeps the colour code, the rim does the
+	# reading. Guarded by tests/test_light_ground_text.gd.
 	theme.add_type("ResultDeltaLabel")
 	theme.set_type_variation("ResultDeltaLabel", "Label")
 	theme.set_font_size("font_size", "ResultDeltaLabel", tokens.font_caption)
 	theme.set_color("font_color", "ResultDeltaLabel", Color.WHITE)
 	theme.set_constant("outline_size", "ResultDeltaLabel", 4)
-	theme.set_color("font_outline_color", "ResultDeltaLabel", tokens.text_outline_color)
+	theme.set_color("font_outline_color", "ResultDeltaLabel", tokens.text_primary)
 
 	# -- ScoreHudPanel: a translucent dark pill for the in-run score HUD,
 	# so the readout stays legible over any minigame's own background art. --

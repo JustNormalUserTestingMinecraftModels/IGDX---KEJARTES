@@ -73,6 +73,13 @@ hand. As of this pass:
 - `ScoreHudComboLabel` — dark caption-size text on the score HUD's light
   combo chip. The HUD's `TargetLabel` beside it stays on `ResultBodyLabel`:
   it sits on the dark translucent pill itself.
+- `ResultDeltaLabel` — white caption text with a 4px dark (`text_primary`)
+  outline, made to be tinted: callers colour-code it through `self_modulate`
+  (the result card's green gain and red loss, the apply-item preview's
+  `state_success`). The tint multiplies the outline too but cannot lighten
+  it, so on a light ground the rim carries the text; untinted, it reads as
+  white letters with a dark edge. Keep the base white: a dark base would
+  crush the tint to near-black.
 
 **Progress**:
 - `StatBar` — the mood/energy/skill bars. Fill renders white so callers tint

@@ -8,6 +8,44 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — Delta rows, badge and Inventory values readable; the delta rows show at all
+
+`ResultDeltaLabel` bakes white so `self_modulate` can colour-code it, and all
+four of its users sit on light grounds:
+- the minigame result card's delta rows, bright green and red on
+  `ResultStatPanel`: 1.13:1 and 2.54:1
+- the card's category badge name, untinted white on its white chip: 1.02:1
+- the item detail sheet's "+N" effect values, untinted white on its `Card`:
+  1.02:1
+- the apply-item row's preview, "(+5)" in `state_success` on its `Card`:
+  3.26:1. Until a row is first toggled, its "--" is untinted white too.
+
+The fix, chosen over darker tints and over a variation per outcome, keeps the
+tint (it is the colour code) and lets the outline carry the text:
+`ResultDeltaLabel`'s 4px outline went from cream `text_outline_color` to
+`text_primary`. `self_modulate` multiplies the outline too, but a dark rim
+stays dark under any tint. The white base is unchanged, so
+`test_result_delta_label_bakes_white_so_self_modulate_survives` still holds.
+Measured live in a 1080×1920 `SubViewport` (phone resolution), glyphs hidden
+and shown: the rim reads at 9–14:1 (p90) on every label, while the fills stay
+bright, so the letters read as coloured or white with a dark edge.
+
+**The delta rows never showed.** `_configure_delta_label()` zeroed each row's
+`modulate.a`, but `play()` fades only `DeltaPanel` back in, so the panel
+revealed empty. The live pass found it by measuring zero drawn pixels under
+the rows. The per-row zeroing is gone, and
+`test_configure_leaves_the_delta_rows_to_their_panels_fade` holds it. No
+minigame sets `last_*_delta` or `minigame_category` yet, so no player has seen
+the rows or the badge either way.
+
+`tests/test_light_ground_text.gd` now also measures the badge, the delta rows
+(as a gain and as a loss) and both Inventory rows, in every state they can be
+left in. A label passes on its fill, or on an outline at least 4px thick, each
+measured under its tint.
+
+The faint placeholder icons were left alone by decision; CLAUDE.md's
+outstanding debt keeps their numbers.
+
 ## 2026-09-11 — Minigame result and HUD labels readable; TesNotice's real bug found
 
 Three minigame labels still wore `ResultBodyLabel` on light surfaces. That

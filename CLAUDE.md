@@ -154,7 +154,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 93 suites, 1309 tests (2026-09-11).
+the Godot AI MCP `test_run` tool. 94 suites, 1323 tests (2026-09-11).
 
 Hard constraints, learned the hard way:
 
@@ -432,16 +432,15 @@ Either rebuild the card as a `Card` panel (text goes dark on cream, the
 megaphone becomes an icon) or commit to text over the scrim (the two dark
 labels go cream).
 
-**Minigame result card: deltas, badge and icons unreadable (2026-09-11).**
-`ResultDeltaLabel` bakes white so `self_modulate` can tint it green or red, but
-it lands on light grounds. On `ResultStatPanel` the delta rows measure 1.13:1
-(gain) and 2.55:1 (loss). The category badge's name, untinted, is 1.02:1 on its
-`ResultBadgePanel` chip. Placeholder icons (floor 3:1) are no better:
-`icon_skor.svg` 1.30:1, `icon_mood`/`icon_energy`/the delta `icon_akademis`
-1.28/1.69/2.43:1, and `icon_kombo.svg` is white on the HUD's white chip.
-Measured live, glyphs hidden. The white base is pinned by
-`test_result_delta_label_bakes_white_so_self_modulate_survives`, so the fix
-needs a design call: darker gain/loss inks, or a variation per outcome.
+**Faint placeholder icons on the minigame result card and HUD (2026-09-11).**
+Left as they are by decision, for the art pass; the labels beside them were
+fixed. Against the 3:1 non-text floor: on `ResultStatPanel`, white
+`icon_skor.svg` 1.30:1, `icon_mood` 1.28, `icon_energy` 1.69, and the stat
+row's icon 1.29 (`icon_poin`, the fallback every minigame gets today), 2.43
+(`icon_akademis`) or 1.62 (`icon_seni`); white `icon_kombo.svg` on the HUD's
+white combo chip, 1.02. The same files sit on other light grounds (stat popup,
+item sheet, RunResult rows, week-recap pills), so recolouring the art would
+help everywhere but the HUD's dark pill; a multiply tint muddies coloured art.
 
 **Pending a balance pass.** `RunGrade`'s scoring weights (especially
 `MONEY_FULL_MARKS`) are estimates; `LombaMenari.best_combo` is tracked but not

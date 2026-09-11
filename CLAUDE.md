@@ -355,7 +355,12 @@ event-popup set (`icon_event_*`, `bg_event_*`, `particle_burst.png`),
 `EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, the
 2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
-and the 2026-09-10 StudentList Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
+the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
+`icon_keranjang_kosong.svg`, `icon_retur.svg`, `tray_dots.png` (this last must
+stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
+those exact dimensions; in Godot 4 the repeat comes from the node's
+`texture_repeat`, not a texture import flag), and the 2026-09-10 StudentList
+Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
 (completed the six-category placeholder set; now UNREFERENCED -- StudentList's
 category and specialty glyphs use the team's authored `StudentCard/stat_*`
 art instead, so this is kept only as the one wirausaha glyph in the

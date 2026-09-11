@@ -8,6 +8,47 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — Koperasi rework
+
+12 commits, full suite 1309/1309 green, verified in the running game.
+
+**Price tags.** Green coin pills carrying a rupiah coin disc. On purchase a
+dark green wipe crosses the pill left-to-right over 0.18s and the price swaps
+to "Beli" with a scale pop at 0.23s. Unaffordable items grey out but still
+show their price. New variations `PriceTag`, `PriceTagPressed`,
+`PriceTagDisabled`.
+
+**Basket.** The black basket silhouette (a stock pngwing PNG) is replaced by a
+drawn slatted market basket. Shelf items gained a soft shadow, an idle bob at
+a per-item random phase, a lift on press, and a dim when unaffordable.
+
+**Return popup.** Became a warm cream tray: a Sheet Panel on a new
+`BasketTray` theme variation, a tiling dot-grid surface, and a warm wash over
+the existing blur rather than a neutral dim. Its runtime-built rows moved into
+`ReturSlot.tscn`, lowering `rakbarang_1.gd`'s entry in
+`tests/test_viewport_editability.gd`'s `BASELINE` from 7 to 2 and removing
+every `add_theme_*` call from that file.
+
+**Emoji.** Six removed from the shop scripts; the guarding test now scans by
+Unicode codepoint range rather than a list of known glyphs.
+
+**New suite.** `tests/test_koperasi_tray.gd`, 26 tests.
+
+**Three findings from this pass, worth remembering:**
+
+- A test passed before the thing it tested existed: `Theme.get_stylebox()`
+  falls back to the base type's stylebox rather than returning null, and this
+  project's cream Panel box is itself a warm light `StyleBoxFlat`, so a
+  tray-colour assertion passed vacuously. Reading a stylebox in a test now
+  requires a `has_stylebox` guard first.
+- A wrong autoload property (`GameState.money`; the real one is
+  `player_money`) crashed the shop on entry while every test passed, because
+  they were source-text scans. There is now a test that resolves every
+  `GameState.<name>` reference in the shop scripts against the live autoload.
+- The price pill swallowed taps: a `PanelContainer` defaults to
+  `MOUSE_FILTER_STOP`, and the tag sits on top of the shelf's `TextureButton`,
+  so tapping the pill bought nothing. Caught by review, not by tests.
+
 ## 2026-09-10 — StudentList: roster strip and card relayout (Warm UI, Part 3)
 
 Spec `docs/superpowers/specs/2026-09-10-studentlist-part-3-design.md`, plan

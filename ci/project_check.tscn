@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c4kmb4ig23rx8"]
+
+[ext_resource type="Script" uid="uid://0dxmsygvou3p" path="res://ci/project_check.gd" id="1_8oppv"]
+
+[node name="ProjectCheck" type="Node" unique_id=881164870]
+script = ExtResource("1_8oppv")

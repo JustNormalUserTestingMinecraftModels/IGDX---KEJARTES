@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://d37air8ke4qwn" path="res://Assets/Images/Shop/rak2.jpg" id="6_tf5nh"]
 [ext_resource type="Texture2D" uid="uid://cnvh1ppktmvnx" path="res://Assets/Images/Shop/ItemRak/LKS.png" id="7_jfwhh"]
 [ext_resource type="Texture2D" uid="uid://t6ana4kpuktm" path="res://Assets/Images/Shop/ItemRak/lompat tali.png" id="8_4x77x"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/item_glow.tres" id="8_st3ia"]
 [ext_resource type="Texture2D" uid="uid://3pb4r7jsijbc" path="res://Assets/Images/Shop/ItemRak/raket.png" id="9_uhev2"]
 [ext_resource type="PackedScene" uid="uid://0ais0usytajp" path="res://Scenes/Koperasi/BasketTray.tscn" id="11_rr7aj"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_pstwm"]
@@ -88,6 +89,21 @@ texture_normal = SubResource("AtlasTexture_hhv1e")
 ignore_texture_size = true
 stretch_mode = 5
 
+[node name="Glow" type="TextureRect" parent="Rak1/Barang1" unique_id=1881876776]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
 [node name="Button" type="Button" parent="Rak1/Barang1" unique_id=733754100]
 modulate = Color(0, 1, 0, 1)
 layout_mode = 0
@@ -107,6 +123,21 @@ offset_bottom = 382.72803
 texture_normal = SubResource("AtlasTexture_unjo2")
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Rak1/Barang2" unique_id=1603985744]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
 
 [node name="Button2" type="Button" parent="Rak1/Barang2" unique_id=362247762]
 modulate = Color(0, 1, 0, 1)
@@ -128,6 +159,21 @@ texture_normal = SubResource("AtlasTexture_s1vid")
 ignore_texture_size = true
 stretch_mode = 5
 
+[node name="Glow" type="TextureRect" parent="Rak1/Barang3" unique_id=578291136]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
 [node name="Button3" type="Button" parent="Rak1/Barang3" unique_id=675803450]
 modulate = Color(0, 1, 0, 1)
 layout_mode = 0
@@ -147,6 +193,21 @@ offset_bottom = 808.0
 texture_normal = SubResource("AtlasTexture_f61rs")
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Rak1/Barang4" unique_id=337609033]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
 
 [node name="Button4" type="Button" parent="Rak1/Barang4" unique_id=580763565]
 modulate = Color(0, 1, 0, 1)

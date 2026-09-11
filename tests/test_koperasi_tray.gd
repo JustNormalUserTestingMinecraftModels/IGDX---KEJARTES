@@ -408,3 +408,49 @@ func test_the_approved_flight_is_unchanged() -> void:
 		"randf_range(-20.0, 20.0)",
 	]:
 		assert_true(src.contains(line), "the flight lost: %s" % line)
+
+
+# ───────────────────────────────────────────── Part 2: rim glow on press
+
+## Stepped by hand with Tween.custom_step, so no test waits on real time.
+func test_lift_swells_and_fades_the_rim_glow() -> void:
+	var button := TextureButton.new()
+	button.size = Vector2(200, 200)
+	var glow := TextureRect.new()
+	glow.name = "Glow"
+	button.add_child(glow)
+	Engine.get_main_loop().root.add_child(button)
+	track(button)
+	var life = load(SHELF_ITEM_SRC).new()
+	button.add_child(life)
+	life.attach_to(button)
+	assert_eq(glow.modulate.a, 0.0, "no glow at rest")
+	var tween = life.lift()
+	assert_true(tween is Tween, "lift() hands back its tween")
+	if not tween is Tween:
+		return
+	tween.pause()
+	tween.custom_step(life.lift_duration)
+	assert_true(absf(glow.modulate.a - life.glow_alpha) < 0.01,
+		"the glow peaks as the item tops out")
+	tween.custom_step(life.lift_duration)
+	assert_true(glow.modulate.a < 0.01, "and is gone once it settles")
+	assert_eq(glow.self_modulate, DesignTokens.load_default().currency_gold,
+		"gold, from the tokens")
+
+
+func test_each_shelf_item_has_a_glow_behind_it() -> void:
+	var packed = load("res://Scenes/Koperasi/koprasi.tscn")
+	assert_not_null(packed, "koprasi.tscn missing")
+	if packed == null:
+		return
+	var shop = packed.instantiate()
+	track(shop)
+	for i in range(1, 5):
+		var glow = shop.get_node_or_null("Rak1/Barang%d/Glow" % i)
+		assert_true(glow is TextureRect, "Barang%d has a Glow" % i)
+		if glow == null:
+			continue
+		assert_true(glow.show_behind_parent, "Barang%d's glow draws behind the item" % i)
+		assert_eq(glow.modulate.a, 0.0, "Barang%d's glow is dark at rest" % i)
+		assert_eq(glow.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the glow never eats a tap")

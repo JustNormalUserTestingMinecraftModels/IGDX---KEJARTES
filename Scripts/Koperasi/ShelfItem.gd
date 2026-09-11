@@ -23,6 +23,9 @@ extends Node
 ## Opacity applied when the item is unaffordable.
 @export var dim_alpha: float = 0.55
 
+## Peak opacity of the gold rim glow behind the item while it is lifted.
+@export var glow_alpha: float = 0.85
+
 ## Shadow texture laid under the item on the shelf plank.
 @export var shadow_texture: Texture2D = preload("res://Assets/Images/UI/Placeholders/shadow_ellipse.png")
 
@@ -30,6 +33,7 @@ var _button: TextureButton
 var _shadow: TextureRect
 var _phase: float = 0.0
 var _base_y: float = 0.0
+var _glow: CanvasItem
 
 ## True while lift()'s tween owns _button.position.y -- _process must not
 ## write the bob over it, or the lift is invisible (the bob wins every frame).
@@ -54,24 +58,34 @@ func attach_to(button: TextureButton) -> void:
 		button.add_child(_shadow)
 		button.move_child(_shadow, 0)
 
+	_glow = button.get_node_or_null("Glow")
+	if is_instance_valid(_glow):
+		_glow.self_modulate = DesignTokens.load_default().currency_gold
+		_glow.modulate.a = 0.0
+
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or not is_instance_valid(_button) or _lifting:
 		return
 	_phase += delta * TAU / bob_period
 	_button.position.y = _base_y + sin(_phase) * bob_distance
 
-## Rises and settles, for the moment the item is bought. Suspends the idle
-## bob for the duration so the tween isn't stomped by _process every frame.
-func lift() -> void:
+## Rises and settles, for the moment the item is bought, with a gold rim glow
+## that swells on the way up and fades on the way down. Suspends the idle bob
+## for the duration so the tween isn't stomped by _process every frame.
+## Returns the tween, so tests can step it.
+func lift() -> Tween:
 	if not is_instance_valid(_button):
-		return
+		return null
 	_lifting = true
 	var tween := _button.create_tween()
-	tween.tween_property(_button, "position:y", _base_y - lift_distance, lift_duration) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_button, "position:y", _base_y, lift_duration) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(_button, "position:y", _base_y - lift_distance, lift_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(_glow):
+		tween.parallel().tween_property(_glow, "modulate:a", glow_alpha, lift_duration)
+	tween.tween_property(_button, "position:y", _base_y, lift_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	if is_instance_valid(_glow):
+		tween.parallel().tween_property(_glow, "modulate:a", 0.0, lift_duration)
 	tween.tween_callback(_on_lift_finished)
+	return tween
 
 ## Clears the lift lock and pins the button back to its resting y so the
 ## bob resumes from _base_y rather than wherever the tween stopped.

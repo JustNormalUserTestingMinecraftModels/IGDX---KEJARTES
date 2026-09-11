@@ -120,7 +120,7 @@ func _on_beli_pressed():
 	var total = Cart.get_total()
 	if GameState.player_money < total:
 		AudioDirector.play_sfx(&"error")
-		_show_message("Koin tidak cukup! 🪙", &"ShopMessageDanger")
+		_show_message("Koin tidak cukup!", &"ShopMessageDanger")
 		return
 
 	# Deduct money
@@ -138,7 +138,7 @@ func _on_beli_pressed():
 		rak1_script.clear_basket_visuals()
 
 	AudioDirector.play_sfx(&"coin")
-	_show_message("✨ Pembelian berhasil! ✨", &"ShopMessageSuccess")
+	_show_message("Pembelian berhasil!", &"ShopMessageSuccess")
 
 ## Show a purchase-feedback message. `variation` selects one of the
 ## semantic ShopMessage* ThemeFactory variations (Warning/Danger/Success)

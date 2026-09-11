@@ -20,6 +20,7 @@ mouse_filter = 2
 
 [node name="Row" type="HBoxContainer" parent="." unique_id=446337390]
 layout_mode = 2
+theme_override_constants/separation = 10
 
 [node name="Coin" type="TextureRect" parent="Row" unique_id=1785617119]
 custom_minimum_size = Vector2(44, 44)

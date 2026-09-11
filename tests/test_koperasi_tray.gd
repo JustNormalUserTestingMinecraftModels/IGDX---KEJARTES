@@ -77,10 +77,14 @@ func test_basket_tray_has_no_black() -> void:
 
 
 func test_koperasi_scripts_carry_no_emoji() -> void:
-	# Project convention bans emoji as UI iconography (2026-09-02).
+	# Project convention bans emoji as UI iconography (2026-09-02). This
+	# scans by codepoint range rather than by a list of known glyphs --
+	# an earlier two-glyph version of this test passed while three other
+	# emoji were still present in koprasi.gd.
 	var paths := [
 		"res://Scripts/Koperasi/koprasi.gd",
 		"res://Scripts/Koperasi/rakbarang_1.gd",
+		"res://Scripts/Koperasi/PriceTag.gd",
 	]
 	for path in paths:
 		var f := FileAccess.open(path, FileAccess.READ)
@@ -88,9 +92,17 @@ func test_koperasi_scripts_carry_no_emoji() -> void:
 		if f == null:
 			continue
 		var src := f.get_as_text()
-		for glyph in [char(0x1F6D2), char(0x21A9)]:
-			assert_false(src.contains(glyph),
-				"%s still contains an emoji glyph" % path)
+		var offender := -1
+		for i in src.length():
+			var c := src.unicode_at(i)
+			if (c >= 0x1F000 and c <= 0x1FAFF) \
+			or (c >= 0x2600 and c <= 0x27BF) \
+			or (c >= 0x2B00 and c <= 0x2BFF) \
+			or (c >= 0x2190 and c <= 0x21FF):
+				offender = c
+				break
+		assert_eq(offender, -1,
+			"%s contains an emoji codepoint (0x%x)" % [path, offender])
 
 const TRAY_DOTS := "res://Assets/Images/Shop/UI/tray_dots.png"
 
@@ -173,3 +185,31 @@ func test_price_tag_wipe_node_resolves() -> void:
 		assert_false(host is Container,
 			"WipeHost must be a plain Control, not a Container")
 	tag.free()
+
+const RAK_SRC := "res://Scripts/Koperasi/rakbarang_1.gd"
+
+func _rak_source() -> String:
+	var f := FileAccess.open(RAK_SRC, FileAccess.READ)
+	assert_not_null(f, "rakbarang_1.gd missing")
+	if f == null:
+		return ""
+	return f.get_as_text()
+
+func test_shelf_instances_price_tags() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("PriceTag.tscn"),
+		"shelf should instance the PriceTag scene")
+	assert_true(src.contains("set_price("),
+		"shelf should push prices through set_price")
+
+func test_shelf_plays_buy_on_press() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("play_buy()"),
+		"_on_barang_pressed should run the tag's buy transition")
+
+func test_shelf_refreshes_affordability() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("_refresh_affordability"),
+		"shelf must recompute which items the player can afford")
+	assert_true(src.contains("set_affordable("),
+		"affordability must reach the tags")

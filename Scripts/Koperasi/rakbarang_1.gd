@@ -15,6 +15,11 @@ var retur_back_button: TextureButton
 
 var shelf_buttons: Array[TextureButton] = []
 var item_data_list: Array[ItemData] = []
+
+## Instanced PriceTag per shelf button, parallel to shelf_buttons.
+var _price_tags: Array = []
+
+const PRICE_TAG_SCENE := preload("res://Scenes/Koperasi/PriceTag.tscn")
 var basket_visuals: Dictionary = {}  # item_name -> Array[Node]
 var retur_original_parent: Node
 
@@ -42,6 +47,9 @@ func _ready():
 	if not Cart.cart_changed.is_connected(_update_total_label):
 		Cart.cart_changed.connect(_update_total_label)
 	_update_total_label()
+
+	if not GameState.money_changed.is_connected(_on_money_changed_refresh):
+		GameState.money_changed.connect(_on_money_changed_refresh)
 
 	# Klik area keranjang untuk buka panel retur
 	if keranjang:
@@ -88,10 +96,10 @@ func setup_random_items():
 			btn.ignore_texture_size = true
 			btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 
-			# Find price label / button inside btn
-			var price_node = _find_price_display(btn)
-			if price_node:
-				price_node.text = "%d" % item.price
+			# Find price tag inside btn
+			var tag = _ensure_price_tag(btn)
+			if tag:
+				tag.set_price(item.price)
 
 			# Connect click signal
 			for conn in btn.pressed.get_connections():
@@ -100,11 +108,38 @@ func setup_random_items():
 		else:
 			btn.hide()
 
+	_price_tags.clear()
+	for btn in shelf_buttons:
+		_price_tags.append(btn.get_node_or_null("PriceTag"))
+	_refresh_affordability()
+
 func _find_price_display(btn: TextureButton) -> Node:
 	for child in btn.get_children():
 		if child is Button or child is Label:
 			return child
 	return null
+
+## Returns the PriceTag under a shelf button, instancing it on first use
+## and freeing whatever placeholder label or button the scene shipped with.
+func _ensure_price_tag(btn: TextureButton) -> Node:
+	var existing = btn.get_node_or_null("PriceTag")
+	if existing:
+		return existing
+	var legacy = _find_price_display(btn)
+	if legacy:
+		legacy.queue_free()
+	var tag = PRICE_TAG_SCENE.instantiate()
+	tag.name = "PriceTag"
+	btn.add_child(tag)
+	return tag
+
+## Greys out tags for items the player cannot currently afford.
+func _refresh_affordability() -> void:
+	for i in range(_price_tags.size()):
+		var tag = _price_tags[i]
+		if not is_instance_valid(tag) or i >= item_data_list.size():
+			continue
+		tag.set_affordable(GameState.money >= item_data_list[i].price)
 
 ## Returns the display size for an item. Uses ItemData.display_size, falls back to source button size or default.
 func get_item_effective_size(item: ItemData, source_button: TextureButton = null) -> Vector2:
@@ -113,6 +148,11 @@ func get_item_effective_size(item: ItemData, source_button: TextureButton = null
 	if source_button != null and source_button.size != Vector2.ZERO:
 		return source_button.size * global_item_scale
 	return Vector2(200, 200) * global_item_scale
+
+## GameState.money_changed passes the new amount; affordability recomputes
+## from GameState directly, so the argument is unused.
+func _on_money_changed_refresh(_new_amount: int) -> void:
+	_refresh_affordability()
 
 func _update_total_label():
 	if not is_instance_valid(total_label):
@@ -129,6 +169,8 @@ func _on_barang_pressed(index: int):
 	var btn = shelf_buttons[index]
 
 	AnimUtils.squash_bounce(btn)
+	if index < _price_tags.size() and is_instance_valid(_price_tags[index]):
+		_price_tags[index].play_buy()
 	AudioDirector.play_sfx(&"tap")
 
 	Cart.add_item(item)

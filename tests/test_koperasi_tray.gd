@@ -97,3 +97,56 @@ func test_tray_dot_tile_exists_and_tiles() -> void:
 		return
 	assert_eq(tex.get_width(), 26, "tile must be 26px wide to repeat cleanly")
 	assert_eq(tex.get_height(), 26, "tile must be 26px tall to repeat cleanly")
+
+const PRICE_TAG_SCENE := "res://Scenes/Koperasi/PriceTag.tscn"
+
+func test_price_tag_scene_exists() -> void:
+	assert_true(ResourceLoader.exists(PRICE_TAG_SCENE),
+		"PriceTag.tscn missing")
+
+func test_price_tag_shows_price_at_rest() -> void:
+	var packed := load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	tag.set_price(800)
+	assert_eq(tag.get_label_text(), "800",
+		"tag should show the bare price at rest")
+	tag.free()
+
+func test_price_tag_swaps_to_beli_on_buy() -> void:
+	var packed := load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	tag.set_price(800)
+	tag.play_buy()
+	# play_buy sets the label synchronously; only the tween is deferred,
+	# so this test never needs to await.
+	assert_eq(tag.get_label_text(), "Beli",
+		"pressed state must read Beli, not the number")
+	tag.free()
+
+func test_price_tag_unaffordable_keeps_the_price_visible() -> void:
+	var packed := load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	tag.set_price(1200)
+	tag.set_affordable(false)
+	assert_eq(tag.get_label_text(), "1200",
+		"unaffordable tags still show what the item costs")
+	assert_eq(tag.theme_type_variation, &"PriceTagDisabled",
+		"unaffordable tag should use the neutral variation")
+	tag.free()
+
+func test_price_tag_uses_no_theme_overrides() -> void:
+	var f := FileAccess.open("res://Scripts/Koperasi/PriceTag.gd", FileAccess.READ)
+	assert_not_null(f, "PriceTag.gd missing")
+	if f == null:
+		return
+	assert_false(f.get_as_text().contains("add_theme_"),
+		"PriceTag must use type variations, never theme overrides")

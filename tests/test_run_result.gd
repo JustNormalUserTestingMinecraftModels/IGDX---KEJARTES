@@ -72,6 +72,96 @@ func test_set_row_keeps_the_suffix() -> void:
 	assert_eq(suffix, "G", "suffix stored")
 
 
+# ────────────────────────── the row's name has to read on the row's own card
+
+const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+## WCAG 2.x AA, the floor for text at body size.
+const _AA_BODY_TEXT := 4.5
+
+
+## The name shipped as ResultBodyLabel: cream text_on_brand, made for a dark
+## ground, on the near-white Card -- all six names barely showed (live
+## screenshot, 2026-09-11). Compares what the game draws: the Label's own
+## variation chain against the Card's own fill, both from the baked theme.
+func test_the_row_name_contrasts_with_its_card() -> void:
+	var seen := _resolve_row_name()
+	assert_true(seen["ground_is_flat"],
+		"the Card must be a flat fill for its colour to be measured")
+	var ratio := _contrast(seen["ink"], seen["ground"])
+	assert_true(ratio >= _AA_BODY_TEXT,
+		"the row name is %.2f:1 on its card; body text needs %.1f:1"
+		% [ratio, _AA_BODY_TEXT])
+
+
+## It also shipped at the 22px caption step, the size EventBodyLabel and
+## CatatanLabel were each raised from after being called unreadable on a
+## phone. A figure's name says what the number means, so it gets body text.
+func test_the_row_name_is_at_least_body_size() -> void:
+	var seen := _resolve_row_name()
+	var body := DesignTokens.load_default().font_body_size
+	assert_true(seen["size"] >= body,
+		"the row name is %dpx; a phone needs at least the %dpx body size"
+		% [seen["size"], body])
+
+
+## A variation the bake does not declare raises no error: Godot quietly falls
+## back to the plain Label, so the row drops its own size and ink with nothing
+## to say so. That fallback happens to be dark body text, which is why the
+## two tests above cannot see it.
+func test_the_row_name_wears_a_variation_the_bake_declares() -> void:
+	var seen := _resolve_row_name()
+	assert_true(seen["declared"],
+		"NameLabel's variation '%s' is not in the baked theme -- rebake?"
+		% seen["variation"])
+
+
+## One row, themed and resolved the way the game draws it: it wears the BAKED
+## theme and goes into the tree like test_activity_row.gd's rows, so theme
+## lookup runs as it does in game. Returns plain values; track() frees the
+## row after the test.
+func _resolve_row_name() -> Dictionary:
+	var row = load(_ROW_PATH).instantiate()
+	# CACHE_MODE_IGNORE: the editor holds the startup bake in memory, so a
+	# plain load() would hand back the stale copy after a rebake.
+	var baked := ResourceLoader.load(_THEME_PATH, "",
+		ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	row.theme = baked
+	Engine.get_main_loop().root.add_child(row)
+	track(row)
+	var name_label: Label = row.get_node("Row/NameLabel")
+	var variation := String(name_label.theme_type_variation)
+	var card := row.get_theme_stylebox("panel") as StyleBoxFlat
+	return {
+		"variation": variation,
+		"declared": baked.get_type_list().has(variation),
+		"ink": name_label.get_theme_color("font_color"),
+		"size": name_label.get_theme_font_size("font_size"),
+		"ground": card.bg_color if card != null else Color.BLACK,
+		"ground_is_flat": card != null,
+	}
+
+
+## sRGB relative luminance, per WCAG 2.x. Copied verbatim from
+## tests/test_bar_contrast.gd, with _contrast() below.
+static func _relative_luminance(c: Color) -> float:
+	var out := 0.0
+	var weights := [0.2126, 0.7152, 0.0722]
+	var channels := [c.r, c.g, c.b]
+	for i in 3:
+		var v: float = channels[i]
+		var lin: float = v / 12.92 if v <= 0.04045 else pow((v + 0.055) / 1.055, 2.4)
+		out += weights[i] * lin
+	return out
+
+
+static func _contrast(a: Color, b: Color) -> float:
+	var la := _relative_luminance(a)
+	var lb := _relative_luminance(b)
+	var hi: float = max(la, lb)
+	var lo: float = min(la, lb)
+	return (hi + 0.05) / (lo + 0.05)
+
+
 const _SCENE_PATH := "res://Scenes/EndGame/RunResult.tscn"
 const _SCRIPT_PATH := "res://Scripts/EndGame/RunResult.gd"
 

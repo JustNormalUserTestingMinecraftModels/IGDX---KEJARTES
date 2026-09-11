@@ -221,6 +221,10 @@ func _stat_delta_suffix(category: String) -> String:
 ## just the label) when delta is exactly 0.0, so a hidden row takes its icon
 ## with it -- the shipped rule is that a student who gained nothing in that
 ## stat gets no row for it, not a "+0" row.
+##
+## A shown row is not faded here: play() fades all three in together through
+## delta_panel, their one fade slot. A row zeroed on its own never came back,
+## and until 2026-09-11 the panel faded in empty.
 func _configure_delta_label(label: Label, delta: float, suffix: String) -> void:
 	var row: Control = label.get_parent()
 	row.visible = delta != 0.0
@@ -228,7 +232,6 @@ func _configure_delta_label(label: Label, delta: float, suffix: String) -> void:
 		return
 	label.text = "%s%d %s" % ["+" if delta > 0 else "", int(delta), suffix]
 	label.self_modulate = Color(0.3, 0.95, 0.5) if delta > 0 else Color(0.95, 0.35, 0.35)
-	row.modulate.a = 0.0
 
 
 ## Run the full reveal -> wait for the player -> fade out -> free sequence.

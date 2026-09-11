@@ -237,6 +237,20 @@ func test_each_delta_label_hides_independently_when_its_delta_is_zero() -> void:
 	assert_contains(node.mood_delta_label.text, "-3")
 
 
+## play() fades the three delta rows in together, through delta_panel -- the
+## one fade slot they share. A row configure() also zeroed on its own would
+## never come back: until 2026-09-11 each one was, and the panel faded in
+## empty (found measuring the rows live).
+func test_configure_leaves_the_delta_rows_to_their_panels_fade() -> void:
+	var node := _make()
+	node.configure(true, 1, -1, -1, "Budi", "Akademis", 5.0, -2.0, -3.0, STYLE)
+	assert_eq(node.delta_panel.modulate.a, 0.0, "the panel is the slot play() fades in")
+	for row in ["StatDeltaRow", "EnergyDeltaRow", "MoodDeltaRow"]:
+		var r: Control = node.get_node("Dim/Center/Card/Layout/DeltaPanel/DeltaList/" + row)
+		assert_eq(r.modulate.a, 1.0,
+			"%s must be left to the panel's fade -- play() never fades a row itself" % row)
+
+
 func test_base_minigame_no_longer_builds_the_result_card() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/BaseMinigame.gd")
 	assert_contains(src, "MinigameResultPopup", "BaseMinigame should instantiate the scene")

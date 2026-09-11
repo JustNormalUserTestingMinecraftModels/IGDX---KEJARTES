@@ -1,0 +1,72 @@
+# The headless Godot check every pull request must pass
+# (docs/superpowers/specs/2026-09-11-pr-automation-design.md). The job's name,
+# project-check, is the check-run name ci/auto_merge.sh requires.
+
+name: Project check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [Textures]
+  workflow_dispatch:
+
+concurrency:
+  group: project-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Must match the editor the team uses; tests/test_pr_automation.gd checks
+  # it against project.godot's feature version.
+  GODOT_VERSION: 4.6.2-stable
+  GODOT_ZIP: Godot_v4.6.2-stable_linux.x86_64.zip
+  # From the release's SHA512-SUMS.txt.
+  GODOT_SHA512: b6e4d5a716085e9649905be2afe77f723f97853544fb33392ce3d32594c730a95d9eb4d1042ed51508904c9e1d996bd36b7c7a2bf4f93f5b1885e98d81b792e7
+
+jobs:
+  project-check:
+    name: project-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Merge-gate unit tests
+        run: bash ci/test_auto_merge.sh
+
+      - name: Install Godot
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/$GODOT_ZIP" \
+            "https://github.com/godotengine/godot/releases/download/$GODOT_VERSION/$GODOT_ZIP"
+          echo "$GODOT_SHA512  $RUNNER_TEMP/$GODOT_ZIP" | sha512sum --check --strict -
+          unzip -q "$RUNNER_TEMP/$GODOT_ZIP" -d "$RUNNER_TEMP/godot"
+          chmod +x "$RUNNER_TEMP/godot/${GODOT_ZIP%.zip}"
+          echo "GODOT=$RUNNER_TEMP/godot/${GODOT_ZIP%.zip}" >> "$GITHUB_ENV"
+
+      - name: Import the project
+        # A first import logs ERROR lines for textures the theme loads before
+        # they are imported. That is ordering noise; only a crash fails here.
+        run: |
+          if ! "$GODOT" --headless --path . --import > import.log 2>&1; then
+            tail -50 import.log
+            exit 1
+          fi
+
+      - name: Load every script, scene and resource
+        run: |
+          set +e
+          "$GODOT" --headless --path . res://ci/project_check.tscn > check.log 2>&1
+          status=$?
+          set -e
+          cat check.log
+          if grep -E '^WARNING:' check.log > warnings.txt; then
+            { echo '### Godot warnings'; echo '```'; cat warnings.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if grep -qE '^(ERROR|SCRIPT ERROR):' check.log; then
+            echo "::error::Godot logged errors while loading the project; see the log above."
+            exit 1
+          fi
+          exit "$status"

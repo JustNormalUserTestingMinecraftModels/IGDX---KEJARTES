@@ -659,6 +659,28 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# the secondary brown is the half of the problem the size alone
 		# does not fix.
 		["CatatanLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# RunResult's report rows: the name beside each figure, on the
+		# near-white Card. It shipped in ResultBodyLabel, whose cream
+		# text_on_brand measures 1.05:1 on surface_card -- all six names
+		# barely showed (2026-09-11). Not a recolour of that variation: the
+		# minigame score HUD still sets it on a dark translucent pill, where
+		# cream is what reads. Body face at the same phone step as the two
+		# above; at 36px the widest name, "Uang dari wirausaha", takes 352 of
+		# the 579px beside "24000G" (measured live, lulus rehearsal).
+		["RunResultNameLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# The minigame result card's small labels on light ground: the
+		# minigame's name on the card itself (popup_bg.svg, #F5F2EB) and
+		# "Skor:" on its sunken stat panel. Both shipped in ResultBodyLabel
+		# and measured 1.04:1 and 1.21:1 (2026-09-11). Dark ink at the
+		# caption size they shipped with: each is a few words beside
+		# something larger -- the stars, the display-size score -- so the
+		# fix is the ink, not the size.
+		["ResultCardBodyLabel", tokens.font_caption, tokens.text_primary, false, false],
+		# The score HUD's combo count ("x3") on its light ResultBadgePanel
+		# chip: 1.05:1 in ResultBodyLabel. TargetLabel beside it keeps that
+		# cream -- it sits on the dark translucent ScoreHudPanel itself,
+		# where dark ink would fall to 1.3:1 over dark art.
+		["ScoreHudComboLabel", tokens.font_caption, tokens.text_primary, false, false],
 		# The trait popup's header sits on a per-trait tinted panel
 		# (TraitPopupHeader, self_modulated brand_primary for a quirk and
 		# cat_istirahat for a persona), so its two labels need CREAM text.
@@ -744,8 +766,13 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_constant("shadow_offset_x", name, 2)
 		theme.set_constant("shadow_offset_y", name, 2)
 
-	# (Unused since Plan A deleted SemesterEnd -- kept baked; removing a
-	# variation needs a theme rebake, which is out of scope.)
+	# SemesterEnd, which these two were made for, is gone (Plan A); both
+	# outlived it. They still assume a DARK ground -- ResultBodyLabel is
+	# cream and vanishes on a light surface, which is why RunResult's rows,
+	# the minigame result card and the HUD's combo chip each moved to a dark
+	# variation above. What still wears it sits on dark: the HUD's
+	# TargetLabel on the translucent ScoreHudPanel, and TesNotice's body,
+	# which today floats on that screen's scrim.
 	# SemesterEnd was the one screen that deliberately kept a dark,
 	# certificate-like backdrop instead of the app's usual light surface
 	# (the payoff/results reveal), so its outer labels needed their own
@@ -1467,15 +1494,25 @@ static func _build_minigame_result(theme: Theme, tokens: DesignTokens) -> void:
 	# font_color is white, not tokens.text_primary -- MinigameResultPopup
 	# always overrides this label's colour via self_modulate (green for a
 	# gain, red for a loss), and self_modulate *multiplies* the base colour.
-	# text_primary is a dark navy; multiplying green/red by near-black
+	# text_primary is a dark brown; multiplying green/red by near-black
 	# collapsed both to near-black, destroying the +/- colour coding. White
 	# is the multiplicative identity, so self_modulate's colour reads as-is.
+	#
+	# So the OUTLINE carries the text, and it is dark. Every user of this
+	# variation sits on a light ground -- the result card's delta rows and
+	# category badge, the item sheet's "+N", the apply-item preview -- where
+	# no bright tint can read: the green measured 1.13:1 and the red 2.54:1
+	# on surface_sunken, the untinted white 1.02:1 on surface_card, and the
+	# cream outline it shipped with did no better (2026-09-11).
+	# self_modulate multiplies the outline too, but a dark rim stays dark
+	# under any tint: the tint keeps the colour code, the rim does the
+	# reading. Guarded by tests/test_light_ground_text.gd.
 	theme.add_type("ResultDeltaLabel")
 	theme.set_type_variation("ResultDeltaLabel", "Label")
 	theme.set_font_size("font_size", "ResultDeltaLabel", tokens.font_caption)
 	theme.set_color("font_color", "ResultDeltaLabel", Color.WHITE)
 	theme.set_constant("outline_size", "ResultDeltaLabel", 4)
-	theme.set_color("font_outline_color", "ResultDeltaLabel", tokens.text_outline_color)
+	theme.set_color("font_outline_color", "ResultDeltaLabel", tokens.text_primary)
 
 	# -- ScoreHudPanel: a translucent dark pill for the in-run score HUD,
 	# so the readout stays legible over any minigame's own background art. --

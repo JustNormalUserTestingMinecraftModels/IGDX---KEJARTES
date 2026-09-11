@@ -199,3 +199,180 @@ func test_the_badge_face_can_draw_the_times_sign() -> void:
 	assert_true(font != null and font.has_char(0x00D7),
 		"the badge's face has a × glyph -- if not, give TrayBadgeLabel the "
 		+ "body face and take it off DISPLAY_ROSTER")
+
+
+# ───────────────────────────────────────────── the row on the plank
+
+func _floor_of(tray) -> float:
+	return tray.get_node("Body/Items").size.y
+
+
+func test_items_stand_at_their_own_heights_on_the_plank() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({
+		"Raket": _entry(_item("Raket", 1500, Vector2(180, 280)), 1),
+		"Mie Instan": _entry(_item("Mie Instan", 700, Vector2(200, 200)), 1),
+	})
+	var raket: Control = tray.get_slot("Raket")
+	var mie: Control = tray.get_slot("Mie Instan")
+	assert_eq(raket.size.y, 280.0, "the racket at its own height")
+	assert_eq(mie.size.y, 200.0, "the noodles at theirs")
+	assert_eq(raket.position.y + raket.size.y, _floor_of(tray), "the racket stands on the plank")
+	assert_eq(mie.position.y + mie.size.y, _floor_of(tray), "and so do the noodles")
+
+
+func test_the_row_is_centred_on_the_plank() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({
+		"Raket": _entry(_item("Raket", 1500, Vector2(180, 280)), 1),
+		"Mie Instan": _entry(_item("Mie Instan", 700, Vector2(200, 200)), 1),
+	})
+	var room: float = tray.get_node("Body/Items").size.x
+	var first: Control = tray.get_slot("Raket")
+	var last: Control = tray.get_slot("Mie Instan")
+	var left := first.position.x
+	var right := room - (last.position.x + last.size.x)
+	assert_true(absf(left - right) < 0.5, "equal margins: %s vs %s" % [left, right])
+
+
+func test_a_crowded_row_shrinks_evenly_to_fit() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var entries := {}
+	for i in 6:
+		entries["Barang %d" % i] = _entry(_item("Barang %d" % i, 100, Vector2(240, 220)), 1)
+	tray.refresh(entries)
+	var room: float = tray.get_node("Body/Items").size.x
+	var first: Control = tray.get_slot("Barang 0")
+	var last: Control = tray.get_slot("Barang 5")
+	assert_true(first.position.x >= -0.5, "the row starts on the plank")
+	assert_true(last.position.x + last.size.x <= room + 0.5, "and ends on it")
+	assert_true(absf(first.size.x / first.size.y - 240.0 / 220.0) < 0.01, "aspect kept")
+
+
+func test_a_line_that_left_the_cart_leaves_the_row() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var raket := _entry(_item("Raket", 1500), 1)
+	tray.refresh({"Raket": raket, "Pop Ice": _entry(_item("Pop Ice", 400), 1)})
+	tray.refresh({"Raket": raket})
+	assert_true(tray.get_slot("Pop Ice") == null, "the returned item's slot is gone")
+	assert_true(tray.get_slot("Raket") != null, "the other stays")
+
+
+func test_the_emblem_counts_every_unit() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({
+		"Susu Kotak": _entry(_item("Susu Kotak", 1000), 2),
+		"Pop Ice": _entry(_item("Pop Ice", 400), 1),
+	})
+	assert_eq(tray.get_emblem_count_text(), "3")
+	assert_true(tray.get_node("Body/Emblem/CountBadge").visible, "the count shows")
+	tray.refresh({})
+	assert_false(tray.get_node("Body/Emblem/CountBadge").visible, "no count on an empty basket")
+
+
+func test_a_unit_in_flight_is_hidden_until_it_lands() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var entries := {"Pop Ice": _entry(_item("Pop Ice", 400), 1)}
+	tray.hold_for_landing("Pop Ice")
+	tray.refresh(entries)
+	var slot: Control = tray.get_slot("Pop Ice")
+	assert_eq(slot.modulate.a, 0.0, "its place is kept, but it waits for the flight")
+	assert_eq(tray.get_emblem_count_text(), "0", "not in the basket until it lands")
+	tray.land("Pop Ice")
+	assert_eq(slot.modulate.a, 1.0, "it shows the moment the item lands")
+	assert_eq(slot.get_badge_text(), "×1")
+
+
+func test_a_second_unit_in_flight_keeps_the_first_on_show() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var entries := {"Pop Ice": _entry(_item("Pop Ice", 400), 2)}
+	tray.hold_for_landing("Pop Ice")
+	tray.refresh(entries)
+	var slot: Control = tray.get_slot("Pop Ice")
+	assert_eq(slot.modulate.a, 1.0, "the first unit is already there")
+	assert_eq(slot.get_badge_text(), "×1", "counting only what has landed")
+	tray.land("Pop Ice")
+	assert_eq(slot.get_badge_text(), "×2")
+
+
+func test_clearing_held_units_shows_everything() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.hold_for_landing("Pop Ice")
+	tray.clear_held()
+	tray.refresh({"Pop Ice": _entry(_item("Pop Ice", 400), 1)})
+	assert_eq(tray.get_slot("Pop Ice").modulate.a, 1.0)
+
+
+func test_the_landing_rect_is_the_items_own_slot() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({"Raket": _entry(_item("Raket", 1500, Vector2(180, 280)), 1)})
+	assert_eq(tray.landing_rect_for("Raket"), tray.get_slot("Raket").get_global_rect())
+
+
+func test_a_slot_hold_reaches_the_tray() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({"Raket": _entry(_item("Raket", 1500), 1)})
+	var heard := [""]
+	tray.remove_requested.connect(func(n: String) -> void: heard[0] = n)
+	tray.get_slot("Raket").remove_requested.emit("Raket")
+	assert_eq(heard[0], "Raket", "the tray forwards a slot's hold")
+
+
+func test_items_and_their_shadows_draw_over_the_plank() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var body: Node = tray.get_node("Body")
+	var plank: Node = body.get_node_or_null("Plank")
+	assert_true(plank is Panel, "a Plank panel")
+	if plank == null:
+		return
+	assert_eq(String(plank.theme_type_variation), "TrayPlank")
+	assert_true(plank.get_index() < body.get_node("Items").get_index(),
+		"the plank draws first, so each item's shadow lands on it")
+
+
+func test_a_line_that_keeps_units_comes_back_full_size() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var item := _item("Pop Ice", 400)
+	tray.refresh({"Pop Ice": _entry(item, 2)})
+	var slot: Control = tray.get_slot("Pop Ice")
+	slot.scale = Vector2(0.1, 0.1)  # what a hold-to-return's shrink leaves behind
+	tray.refresh({"Pop Ice": _entry(item, 1)})
+	assert_eq(slot.scale, Vector2.ONE, "one left, and it stands at full size again")
+	assert_eq(slot.get_badge_text(), "×1")
+
+
+## spawn_pop and shrink_and_fade scale about the pivot without setting it, so
+## the tray pins each slot's pivot to its foot: a landing grows up from the
+## plank and a return shrinks back down onto it.
+func test_items_pop_and_shrink_from_their_foot() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({"Raket": _entry(_item("Raket", 1500, Vector2(180, 280)), 1)})
+	var slot: Control = tray.get_slot("Raket")
+	assert_eq(slot.pivot_offset, Vector2(slot.size.x * 0.5, slot.size.y),
+		"the pivot sits at the item's foot, mid-width")

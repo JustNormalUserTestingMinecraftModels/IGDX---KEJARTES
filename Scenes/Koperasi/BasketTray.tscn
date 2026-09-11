@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dt4t2ee6fok7w" path="res://Scripts/Koperasi/BasketTray.gd" id="1_tray"]
 [ext_resource type="Texture2D" uid="uid://bnttf7a0tc07v" path="res://Assets/Images/Shop/UI/tray_dots.png" id="2_dots"]
 [ext_resource type="Texture2D" uid="uid://dk836e3bixfdh" path="res://Assets/Images/Shop/UI/icon_keranjang_kosong.svg" id="3_empty"]
+[ext_resource type="Texture2D" uid="uid://cyt0bmd5wkn8m" path="res://Assets/Images/Shop/UI/icon_keranjang.svg" id="4_n8x6c"]
 
 [node name="BasketTray" type="Control" unique_id=1330054252]
 layout_mode = 3
@@ -48,6 +49,15 @@ offset_right = 820.0
 offset_bottom = 56.0
 theme_type_variation = &"CaptionLabel"
 text = "Tahan barang untuk mengembalikan"
+
+[node name="Plank" type="Panel" parent="Body" unique_id=1182249114]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 344.0
+offset_right = 1004.0
+offset_bottom = 356.0
+mouse_filter = 2
+theme_type_variation = &"TrayPlank"
 
 [node name="Items" type="Control" parent="Body" unique_id=2038917609]
 anchors_preset = 0
@@ -99,3 +109,34 @@ custom_minimum_size = Vector2(280, 128)
 layout_mode = 2
 theme_type_variation = &"PrimaryButtonM"
 text = "Beli"
+
+[node name="Emblem" type="TextureRect" parent="Body" unique_id=1365065097]
+layout_mode = 0
+offset_left = 876.0
+offset_top = -64.0
+offset_right = 1004.0
+offset_bottom = 64.0
+mouse_filter = 2
+texture = ExtResource("4_n8x6c")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CountBadge" type="PanelContainer" parent="Body/Emblem" unique_id=1274971204]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_top = -8.0
+offset_right = 16.0
+offset_bottom = 40.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_type_variation = &"TrayBadge"
+
+[node name="Count" type="Label" parent="Body/Emblem/CountBadge" unique_id=524688216]
+layout_mode = 2
+theme_type_variation = &"TrayBadgeLabel"
+text = "0"
+horizontal_alignment = 1

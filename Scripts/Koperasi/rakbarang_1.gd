@@ -109,10 +109,7 @@ func setup_random_items():
 			if tag:
 				tag.set_price(item.price)
 
-			var life = ShelfItemScript.new()
-			life.name = "ShelfItem"
-			btn.add_child(life)
-			life.attach_to(btn)
+			var life = _ensure_shelf_item(btn)
 			_shelf_items.append(life)
 
 			# Connect click signal
@@ -146,6 +143,20 @@ func _ensure_price_tag(btn: TextureButton) -> Node:
 	tag.name = "PriceTag"
 	btn.add_child(tag)
 	return tag
+
+## Returns the ShelfItem helper under a shelf button, instancing it on first
+## use and re-attaching it (re-sampling the resting position) otherwise, so
+## repeated calls to setup_random_items() never pile up extra helper nodes.
+func _ensure_shelf_item(btn: TextureButton) -> Node:
+	var existing = btn.get_node_or_null("ShelfItem")
+	if existing:
+		existing.attach_to(btn)
+		return existing
+	var life = ShelfItemScript.new()
+	life.name = "ShelfItem"
+	btn.add_child(life)
+	life.attach_to(btn)
+	return life
 
 ## Greys out tags for items the player cannot currently afford.
 func _refresh_affordability() -> void:

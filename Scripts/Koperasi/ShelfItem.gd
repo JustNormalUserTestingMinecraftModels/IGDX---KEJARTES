@@ -31,6 +31,10 @@ var _shadow: TextureRect
 var _phase: float = 0.0
 var _base_y: float = 0.0
 
+## True while lift()'s tween owns _button.position.y -- _process must not
+## write the bob over it, or the lift is invisible (the bob wins every frame).
+var _lifting: bool = false
+
 ## Wires this helper to a shelf button: adds the shadow, records the
 ## resting position, and picks a random bob phase.
 func attach_to(button: TextureButton) -> void:
@@ -51,20 +55,30 @@ func attach_to(button: TextureButton) -> void:
 		button.move_child(_shadow, 0)
 
 func _process(delta: float) -> void:
-	if Engine.is_editor_hint() or not is_instance_valid(_button):
+	if Engine.is_editor_hint() or not is_instance_valid(_button) or _lifting:
 		return
 	_phase += delta * TAU / bob_period
 	_button.position.y = _base_y + sin(_phase) * bob_distance
 
-## Rises and settles, for the moment the item is bought.
+## Rises and settles, for the moment the item is bought. Suspends the idle
+## bob for the duration so the tween isn't stomped by _process every frame.
 func lift() -> void:
 	if not is_instance_valid(_button):
 		return
+	_lifting = true
 	var tween := _button.create_tween()
 	tween.tween_property(_button, "position:y", _base_y - lift_distance, lift_duration) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_button, "position:y", _base_y, lift_duration) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(_on_lift_finished)
+
+## Clears the lift lock and pins the button back to its resting y so the
+## bob resumes from _base_y rather than wherever the tween stopped.
+func _on_lift_finished() -> void:
+	_lifting = false
+	if is_instance_valid(_button):
+		_button.position.y = _base_y
 
 ## Fades the item when its price is out of reach.
 func set_dimmed(dim: bool) -> void:

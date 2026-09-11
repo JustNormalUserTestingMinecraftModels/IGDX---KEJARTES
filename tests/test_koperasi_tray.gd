@@ -45,6 +45,17 @@ func test_price_tag_variations_registered() -> void:
 
 func test_price_tag_is_green_and_pressed_is_darker() -> void:
 	var theme := _baked_theme()
+	assert_not_null(theme, "baked theme missing at %s" % THEME_PATH)
+	if theme == null:
+		return
+	assert_true(theme.has_stylebox("panel", "PriceTag"),
+		"PriceTag variation is not registered")
+	if not theme.has_stylebox("panel", "PriceTag"):
+		return
+	assert_true(theme.has_stylebox("panel", "PriceTagPressed"),
+		"PriceTagPressed variation is not registered")
+	if not theme.has_stylebox("panel", "PriceTagPressed"):
+		return
 	var rest := theme.get_stylebox("panel", "PriceTag") as StyleBoxFlat
 	var pressed := theme.get_stylebox("panel", "PriceTagPressed") as StyleBoxFlat
 	assert_not_null(rest, "PriceTag panel is not a StyleBoxFlat")
@@ -226,20 +237,28 @@ func test_shelf_item_documents_every_export() -> void:
 		return
 	var lines := f.get_as_text().split("\n")
 	var i := 0
+	var export_count := 0
 	while i < lines.size():
 		if lines[i].strip_edges().begins_with("@export"):
+			export_count += 1
 			var prev := lines[i - 1].strip_edges() if i > 0 else ""
 			assert_true(prev.begins_with("##"),
 				"undocumented @export on line %d" % (i + 1))
 		i += 1
+	assert_true(export_count >= 5,
+		"expected at least 5 @export vars on ShelfItem, found %d -- the scan " \
+		+ "above passes vacuously with none" % export_count)
 
 func test_shelf_item_bobs_with_a_phase_offset() -> void:
 	var f := FileAccess.open(SHELF_ITEM_SRC, FileAccess.READ)
 	assert_not_null(f, "ShelfItem.gd missing")
 	if f == null:
 		return
-	assert_true(f.get_as_text().contains("phase"),
-		"items must bob out of sync, so the shelf does not pulse in unison")
+	var src := f.get_as_text()
+	assert_true(src.contains("randf() * TAU"),
+		"each item must seed a random phase, so the shelf does not pulse in unison")
+	assert_true(src.contains("sin(_phase)"),
+		"the bob itself must be driven by sin(_phase)")
 
 const RETUR_SLOT_SCENE := "res://Scenes/Koperasi/ReturSlot.tscn"
 
@@ -312,3 +331,23 @@ func test_shop_scripts_only_use_real_gamestate_members() -> void:
 			assert_true(member_exists,
 				"%s references GameState.%s, which does not exist"
 					% [path, member])
+
+## The Beli test exercises play_buy() on an un-parented tag, which hits the
+## early "not is_inside_tree()" return and never touches the wipe tween --
+## so the wipe animation itself has had no coverage at all.
+func test_price_tag_wipe_is_driven_by_a_tween() -> void:
+	var f := FileAccess.open("res://Scripts/Koperasi/PriceTag.gd", FileAccess.READ)
+	assert_not_null(f, "PriceTag.gd missing")
+	if f == null:
+		return
+	assert_true(f.get_as_text().contains("tween_property(_wipe, \"size:x\""),
+		"the buy wipe must be driven by tweening _wipe's size:x")
+
+## _populate_retur_panel must show the scene's EmptyState node rather than
+## building a Label at runtime when the cart is empty.
+func test_shop_shows_a_scene_empty_state_not_a_built_label() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("retur_empty_state"),
+		"empty cart state should show the scene's retur_empty_state node")
+	assert_false(src.contains("Label.new()"),
+		"empty state must not be built as a runtime Label")

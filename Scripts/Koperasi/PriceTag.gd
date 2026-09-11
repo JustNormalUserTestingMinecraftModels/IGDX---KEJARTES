@@ -37,6 +37,25 @@ func _ready() -> void:
 	if is_instance_valid(_wipe):
 		_wipe.color = Color("#2F5A0D")
 		_wipe.size.x = 0.0
+	_ignore_mouse_so_taps_reach_the_button_beneath()
+
+## PanelContainer (and its Row/Coin/Value children) default to
+## MOUSE_FILTER_STOP, which swallows taps landing on the pill instead of
+## letting them reach the shelf TextureButton it sits on top of -- the most
+## likely place a player aims. Set in code rather than the scene since this
+## needs to apply without editing PriceTag.tscn.
+func _ignore_mouse_so_taps_reach_the_button_beneath() -> void:
+	if is_instance_valid(self):
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var row := get_node_or_null("Row")
+	if is_instance_valid(row):
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var coin := get_node_or_null("Row/Coin")
+	if is_instance_valid(coin):
+		coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var value := get_node_or_null("Row/Value")
+	if is_instance_valid(value):
+		value.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 ## Sets the displayed price and returns the tag to its rest state.
 func set_price(value: int) -> void:

@@ -201,8 +201,10 @@ with `kejartes/editor-tests` and `kejartes/local-review`. GitHub adds
 `claude-review` once the owner adds a key. `ci/auto_merge.sh` then merges
 **only `brineoutxd`'s PRs into `Textures`**, and only when every gate is green
 on a commit that already contains `Textures`. Label a PR `hold`, or leave it a
-draft, to stop it; anyone can still merge by hand. A stamp belongs to one
-commit: never post one for a commit the suite did not run on.
+draft, to stop it; anyone can still merge by hand, and must for a PR that
+changes `.github/workflows/` (GitHub's workflow token cannot merge those). A
+stamp belongs to one commit: never post one for a commit the suite did not run
+on.
 
 ## Godot MCP
 

@@ -1405,3 +1405,22 @@ git worktree remove .claude/worktrees/pr-automation
 ```
 
 Quit any worktree editor you started with `editor_manage(op="quit", session_id=<its id>)`. Leave the user's own editor alone. Report to the user what merged, what waited, and anything that differed from the expectations above.
+
+---
+
+## Execution notes (2026-09-11)
+
+Deviations found while executing, already applied to the code:
+
+- **Task 1, Step 1.** The worktree editor restarted itself on its first boot, and
+  the relaunched copy died when the background task that launched it ended.
+  Launching it inside a loop that keeps the task alive while any editor for the
+  worktree is running avoids that.
+- **Task 3.** `test_every_action_is_pinned_to_a_commit` first matched
+  `statuses:` in a permissions block as a `uses:` line. It now matches the
+  `uses:` key itself and names any unpinned line; the code above carries the fix.
+- **Task 5, local review.** GitHub's workflow token cannot merge a PR that
+  changes `.github/workflows/`, so the gate would have retried such a PR
+  forever. `gate_decision` takes a `workflows` key and skips those PRs with a
+  reason; `main` reads each eligible PR's file list to set it. The skill,
+  `CLAUDE.md` and the spec tell authors to merge those by hand.

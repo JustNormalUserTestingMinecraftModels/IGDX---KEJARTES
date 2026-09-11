@@ -20,17 +20,20 @@ REVIEW_RUN="claude-review"
 TESTS_STAMP="kejartes/editor-tests"
 REVIEW_STAMP="kejartes/local-review"
 OUTDATED_STAMP="kejartes/up-to-date"
+WORKFLOWS_DIR=".github/workflows/"
 
 # gate_decision key=value...  prints exactly one line:
 #   merge            every gate is green
 #   outdated         every gate is green, but the base has moved on
 #   wait: <reasons>  a PR this gate merges, but a gate is not green yet
 #   skip: <reason>   not a PR this gate merges
-# Keys: author base draft hold project_check editor_tests local_review
-# cloud_review(on|off) claude_review behind_by mergeable. A missing key counts
-# as not green. Returns 2 on an unknown key.
+# Keys: author base draft hold workflows project_check editor_tests
+# local_review cloud_review(on|off) claude_review behind_by mergeable. A missing
+# key counts as not green. workflows=true means the PR changes a file under
+# .github/workflows/, which GitHub's workflow token is not allowed to merge.
+# Returns 2 on an unknown key.
 gate_decision() {
-  local author="" base="" draft="" hold="" project_check="" editor_tests=""
+  local author="" base="" draft="" hold="" workflows="" project_check="" editor_tests=""
   local local_review="" cloud_review="off" claude_review="" behind_by="" mergeable="" kv
   for kv in "$@"; do
     case "$kv" in
@@ -38,6 +41,7 @@ gate_decision() {
       base=*)          base="${kv#*=}" ;;
       draft=*)         draft="${kv#*=}" ;;
       hold=*)          hold="${kv#*=}" ;;
+      workflows=*)     workflows="${kv#*=}" ;;
       project_check=*) project_check="${kv#*=}" ;;
       editor_tests=*)  editor_tests="${kv#*=}" ;;
       local_review=*)  local_review="${kv#*=}" ;;
@@ -53,6 +57,10 @@ gate_decision() {
   if [[ "$base" != "$AUTO_MERGE_BASE" ]]; then echo "skip: base is ${base:-unknown}"; return 0; fi
   if [[ "$draft" == "true" ]]; then echo "skip: draft"; return 0; fi
   if [[ "$hold" == "true" ]]; then echo "skip: labelled $HOLD_LABEL"; return 0; fi
+  if [[ "$workflows" == "true" ]]; then
+    echo "skip: changes $WORKFLOWS_DIR, which the workflow token cannot merge; merge it by hand"
+    return 0
+  fi
 
   local reasons=()
   [[ "$project_check" == "success" ]] || reasons+=("$CHECK_RUN is ${project_check:-missing}")
@@ -103,6 +111,12 @@ commits_behind() {
   gh api "repos/{owner}/{repo}/compare/$AUTO_MERGE_BASE...$1" --jq '.behind_by' < /dev/null
 }
 
+# "true" when PR $1 changes a file under .github/workflows/, else "false".
+changes_workflows() {
+  gh pr view "$1" --json files \
+    --jq "[.files[].path | select(startswith(\"$WORKFLOWS_DIR\"))] | length > 0" < /dev/null
+}
+
 # Re-points this author's open PRs based on branch $1 at branch $2.
 retarget_children() {
   local from="$1" to="$2" child
@@ -127,6 +141,7 @@ main() {
       continue
     fi
     decision="$(gate_decision author="$author" base="$base" draft="$draft" hold="$hold" \
+      workflows="$(changes_workflows "$number")" \
       project_check="$(check_conclusion "$sha" "$CHECK_RUN")" \
       editor_tests="$(status_state "$sha" "$TESTS_STAMP")" \
       local_review="$(status_state "$sha" "$REVIEW_STAMP")" \

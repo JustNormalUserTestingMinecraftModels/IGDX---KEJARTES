@@ -205,6 +205,7 @@ PR's current head commit:
 | Gate | Source |
 |---|---|
 | author is `brineoutxd`, base is `Textures`, not a draft, no `hold` label | the PR |
+| changes nothing under `.github/workflows/` (GitHub's workflow token is not allowed to merge such a PR, so it is always merged by hand) | the PR's file list |
 | check run `project-check` concluded `success` | GitHub |
 | status `kejartes/editor-tests` is `success` | the local session |
 | status `kejartes/local-review` is `success` | the local session |

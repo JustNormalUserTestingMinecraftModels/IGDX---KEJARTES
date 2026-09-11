@@ -112,3 +112,7 @@ on a red check, a merge conflict or a review comment.
 ## Stopping a merge
 
 Label the PR `hold`, or mark it as a draft. Anyone can still merge by hand.
+
+A PR that changes anything under `.github/workflows/` never merges itself:
+GitHub's workflow token is not allowed to change workflow files, so the gate
+skips it. Merge those by hand.

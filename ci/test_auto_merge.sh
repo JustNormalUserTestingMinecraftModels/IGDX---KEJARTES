@@ -8,7 +8,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/auto_merge.sh"
 
 failures=0
 # A PR every gate would merge; each case overrides only what it is about.
-GREEN=(author=brineoutxd base=Textures draft=false hold=false
+GREEN=(author=brineoutxd base=Textures draft=false hold=false workflows=false
        project_check=success editor_tests=success local_review=success
        cloud_review=off claude_review=missing behind_by=0 mergeable=MERGEABLE)
 
@@ -30,6 +30,7 @@ expect "skip: author"   "another author's PR is never merged" author=JustNormalU
 expect "skip: base"     "a PR stacked on another branch is not merged" base=feat/koperasi-rework
 expect "skip: draft"    "a draft is not merged" draft=true
 expect "skip: labelled" "a PR labelled hold is not merged" hold=true
+expect "skip: changes"  "a PR that changes workflow files is left for a person" workflows=true
 expect "wait:"          "a failed project check blocks" project_check=failure
 expect "wait:"          "a project check still running blocks" project_check=pending
 expect "wait:"          "a missing editor-tests stamp blocks" editor_tests=missing

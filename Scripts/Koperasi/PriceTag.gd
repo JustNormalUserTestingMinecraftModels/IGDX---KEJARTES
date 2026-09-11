@@ -27,7 +27,7 @@ const BELI_TEXT := "Beli"
 ## Scale the label springs up from when it swaps to "Beli".
 @export var pop_from_scale: float = 0.55
 
-@onready var _wipe: ColorRect = $Wipe
+@onready var _wipe: ColorRect = $WipeHost/Wipe
 @onready var _value: Label = $Row/Value
 
 var _price: int = 0
@@ -70,10 +70,11 @@ func play_buy() -> void:
 		return
 
 	if is_instance_valid(_wipe):
-		_wipe.size.y = size.y
-		_wipe.size.x = 0.0
+		var host := _wipe.get_parent() as Control
+		_wipe.position = Vector2.ZERO
+		_wipe.size = Vector2(0.0, host.size.y if host != null else size.y)
 		var wipe_tween := create_tween()
-		wipe_tween.tween_property(_wipe, "size:x", size.x, wipe_duration) \
+		wipe_tween.tween_property(_wipe, "size:x", host.size.x if host != null else size.x, wipe_duration) \
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 
 	_value.pivot_offset = _value.size / 2.0
@@ -89,4 +90,4 @@ func _ensure_nodes() -> void:
 	if not is_instance_valid(_value):
 		_value = get_node_or_null("Row/Value")
 	if not is_instance_valid(_wipe):
-		_wipe = get_node_or_null("Wipe")
+		_wipe = get_node_or_null("WipeHost/Wipe")

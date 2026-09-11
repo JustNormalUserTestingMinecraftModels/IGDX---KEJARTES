@@ -155,3 +155,21 @@ func test_price_tag_uses_no_theme_overrides() -> void:
 		return
 	assert_false(f.get_as_text().contains("add_theme_"),
 		"PriceTag must use type variations, never theme overrides")
+
+func test_price_tag_wipe_node_resolves() -> void:
+	# The wipe must live under a plain Control, not directly under the
+	# PanelContainer root -- a container overwrites its children's size on
+	# every sort, which would stomp the wipe's tweened width.
+	var packed := load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	var wipe = tag.get_node_or_null("WipeHost/Wipe")
+	assert_not_null(wipe, "Wipe must resolve at WipeHost/Wipe")
+	var host = tag.get_node_or_null("WipeHost")
+	assert_not_null(host, "WipeHost must exist")
+	if host != null:
+		assert_false(host is Container,
+			"WipeHost must be a plain Control, not a Container")
+	tag.free()

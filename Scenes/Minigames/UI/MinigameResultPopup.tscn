@@ -60,7 +60,7 @@ layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="Dim/Center/Card/Layout" unique_id=255216878]
 layout_mode = 2
-theme_type_variation = &"ResultBodyLabel"
+theme_type_variation = &"ResultCardBodyLabel"
 horizontal_alignment = 1
 
 [node name="ScorePanel" type="PanelContainer" parent="Dim/Center/Card/Layout" unique_id=1083119830]
@@ -81,7 +81,7 @@ stretch_mode = 5
 
 [node name="ScorePrefixLabel" type="Label" parent="Dim/Center/Card/Layout/ScorePanel/ScoreRow" unique_id=346597186]
 layout_mode = 2
-theme_type_variation = &"ResultBodyLabel"
+theme_type_variation = &"ResultCardBodyLabel"
 text = "Skor:"
 
 [node name="ScoreValueLabel" type="Label" parent="Dim/Center/Card/Layout/ScorePanel/ScoreRow" unique_id=434410521]

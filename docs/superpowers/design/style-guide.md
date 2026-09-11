@@ -63,9 +63,23 @@ hand. As of this pass:
 - `CaptionLabel` / `MicroLabel` — secondary, smaller text.
 - `BarLabel` — text drawn directly on a `StatBar` fill (light text, thinner
   dark outline than `DisplayLabel` so it doesn't swallow small text).
-- `ResultHeroLabel` / `ResultBodyLabel` — SemesterEnd-only, light-on-dark
-  variants for its certificate-style dark backdrop (the one screen that
-  intentionally doesn't use the light-surface defaults).
+- `ResultHeroLabel` / `ResultBodyLabel` — light-on-dark variants, made for
+  SemesterEnd's dark backdrop and outliving it. They need a **dark ground**:
+  `ResultBodyLabel` is cream and all but vanishes on a `Card`.
+- `RunResultNameLabel` — dark body text on a light `Card` at the phone step
+  (`font_body_size + 8`): the name beside each figure in RunResult's report.
+- `ResultCardBodyLabel` — dark caption-size text on the minigame result card
+  and its sunken stat panel: the minigame's name, and "Skor:".
+- `ScoreHudComboLabel` — dark caption-size text on the score HUD's light
+  combo chip. The HUD's `TargetLabel` beside it stays on `ResultBodyLabel`:
+  it sits on the dark translucent pill itself.
+- `ResultDeltaLabel` — white caption text with a 4px dark (`text_primary`)
+  outline, made to be tinted: callers colour-code it through `self_modulate`
+  (the result card's green gain and red loss, the apply-item preview's
+  `state_success`). The tint multiplies the outline too but cannot lighten
+  it, so on a light ground the rim carries the text; untinted, it reads as
+  white letters with a dark edge. Keep the base white: a dark base would
+  crush the tint to near-black.
 
 **Progress**:
 - `StatBar` — the mood/energy/skill bars. Fill renders white so callers tint

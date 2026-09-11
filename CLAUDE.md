@@ -154,7 +154,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 93 suites, 1309 tests (2026-09-11).
+the Godot AI MCP `test_run` tool. 94 suites, 1323 tests (2026-09-11).
 
 Hard constraints, learned the hard way:
 
@@ -420,6 +420,28 @@ falls back to `info["glyph"]` from `StatInfo`, and those glyphs are emoji, which
 the ban in `## Conventions` forbids. The trait popup was fixed the same way on
 2026-09-09 — real textures plus a display-font heading; this wants the same.
 
+**TesNotice's card collapses (2026-09-11).** `NoticeCard` is a
+`NinePatchRect`, not a Container, so the anchored `Content` never sizes it. It
+shrinks to its 96px patch minimum and every line floats on the dark scrim; it
+has shipped like this since the screen was built (2026-09-02). Measured live,
+glyphs hidden: `BodyLabel`'s cream `ResultBodyLabel` reads there (6.9:1 at
+worst; dark ink would fall to 1.1:1), but `Kicker` "PENGUMUMAN" is 1.8:1 and
+`GradeLabel` "Kelas 7" 1.4:1. The title's 1033px minimum width also overruns
+the 80px margins, and `notice.png` is a megaphone icon, not a card surface.
+Either rebuild the card as a `Card` panel (text goes dark on cream, the
+megaphone becomes an icon) or commit to text over the scrim (the two dark
+labels go cream).
+
+**Faint placeholder icons on the minigame result card and HUD (2026-09-11).**
+Left as they are by decision, for the art pass; the labels beside them were
+fixed. Against the 3:1 non-text floor: on `ResultStatPanel`, white
+`icon_skor.svg` 1.30:1, `icon_mood` 1.28, `icon_energy` 1.69, and the stat
+row's icon 1.29 (`icon_poin`, the fallback every minigame gets today), 2.43
+(`icon_akademis`) or 1.62 (`icon_seni`); white `icon_kombo.svg` on the HUD's
+white combo chip, 1.02. The same files sit on other light grounds (stat popup,
+item sheet, RunResult rows, week-recap pills), so recolouring the art would
+help everywhere but the HUD's dark pill; a multiply tint muddies coloured art.
+
 **Pending a balance pass.** `RunGrade`'s scoring weights (especially
 `MONEY_FULL_MARKS`) are estimates; `LombaMenari.best_combo` is tracked but not
 fed into the star rubric; the item skill-boost values in
@@ -436,12 +458,6 @@ has to lead somewhere; nothing behind it is designed.
 unscripted, nothing references it. The real win screen is `WinStage.tscn`,
 which EndCutscene shows and RunResult keeps blurred behind its report. Safe to
 delete.
-
-**Unreadable RunResult row names (2026-09-11).** `RunResultRow.tscn`'s
-`NameLabel` uses `ResultBodyLabel` (cream `text_on_brand`) on a `Card` panel,
-so "Minigame selesai" and the other five row names are nearly invisible. The
-bug predates the WinStage pass, which found it. The fix wants a dark body
-variation; check `ResultBodyLabel`'s other users before recolouring it.
 
 **Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove

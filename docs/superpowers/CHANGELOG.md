@@ -8,6 +8,113 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — Delta rows, badge and Inventory values readable; the delta rows show at all
+
+`ResultDeltaLabel` bakes white so `self_modulate` can colour-code it, and all
+four of its users sit on light grounds:
+- the minigame result card's delta rows, bright green and red on
+  `ResultStatPanel`: 1.13:1 and 2.54:1
+- the card's category badge name, untinted white on its white chip: 1.02:1
+- the item detail sheet's "+N" effect values, untinted white on its `Card`:
+  1.02:1
+- the apply-item row's preview, "(+5)" in `state_success` on its `Card`:
+  3.26:1. Until a row is first toggled, its "--" is untinted white too.
+
+The fix, chosen over darker tints and over a variation per outcome, keeps the
+tint (it is the colour code) and lets the outline carry the text:
+`ResultDeltaLabel`'s 4px outline went from cream `text_outline_color` to
+`text_primary`. `self_modulate` multiplies the outline too, but a dark rim
+stays dark under any tint. The white base is unchanged, so
+`test_result_delta_label_bakes_white_so_self_modulate_survives` still holds.
+Measured live in a 1080×1920 `SubViewport` (phone resolution), glyphs hidden
+and shown: the rim reads at 9–14:1 (p90) on every label, while the fills stay
+bright, so the letters read as coloured or white with a dark edge.
+
+**The delta rows never showed.** `_configure_delta_label()` zeroed each row's
+`modulate.a`, but `play()` fades only `DeltaPanel` back in, so the panel
+revealed empty. The live pass found it by measuring zero drawn pixels under
+the rows. The per-row zeroing is gone, and
+`test_configure_leaves_the_delta_rows_to_their_panels_fade` holds it. No
+minigame sets `last_*_delta` or `minigame_category` yet, so no player has seen
+the rows or the badge either way.
+
+`tests/test_light_ground_text.gd` now also measures the badge, the delta rows
+(as a gain and as a loss) and both Inventory rows, in every state they can be
+left in. A label passes on its fill, or on an outline at least 4px thick, each
+measured under its tint.
+
+The faint placeholder icons were left alone by decision; CLAUDE.md's
+outstanding debt keeps their numbers.
+
+## 2026-09-11 — Minigame result and HUD labels readable; TesNotice's real bug found
+
+Three minigame labels still wore `ResultBodyLabel` on light surfaces. That
+variation is 22px cream `text_on_brand`, made for a dark ground:
+- `MinigameResultPopup`'s `NameLabel`, on the card (`popup_bg.svg`, #F5F2EB):
+  1.04:1
+- its `ScorePrefixLabel` ("Skor:"), on `ResultStatPanel`: 1.21:1
+- `MinigameScoreHUD`'s `ComboLabel` ("x3"), on its `ResultBadgePanel` chip:
+  1.05:1
+
+Two new variations fix them, both `text_primary` at the caption size the labels
+already used: `ResultCardBodyLabel` for the popup's two and
+`ScoreHudComboLabel` for the combo count. They measure 12.98:1, 11.19:1 and
+14.28:1. The HUD's `TargetLabel` keeps `ResultBodyLabel`: it sits on the dark
+translucent `ScoreHudPanel`, where cream holds 3.4:1 even over white art, and
+dark ink would fall to 1.3:1 over dark art.
+
+`tests/test_light_ground_text.gd` resolves each label the way the game draws it
+(the baked theme, in the tree) and measures it against the stylebox behind it:
+- the three at WCAG AA (4.5:1)
+- `TargetLabel` at 3:1 over both extremes of art
+- every variation declared by the bake
+
+**TesNotice was deliberately left alone.** The brief put its `BodyLabel` on
+the tan `notice.png` card at ~1.7:1. Live, the card isn't there. `NoticeCard`
+is a `NinePatchRect`, which does not size to the anchored `Content`. It
+collapses to its 96px patch minimum, and the text floats on the dark scrim.
+Measured with the glyphs hidden, the cream body reads (6.9:1 at worst); dark
+ink would have dropped it to 1.1:1. The labels that do fail there are `Kicker`
+(1.8:1) and `GradeLabel` (1.4:1). CLAUDE.md's outstanding debt now describes
+it, with both ways out.
+
+Also:
+- The stale "Unreadable RunResult row names" debt entry is gone; the entry
+  below resolved it.
+- Saving `MinigameScoreHUD.tscn` through the editor wrote
+  `grow_horizontal/vertical = 2` on its `Panel`. `anchors_preset = 15`
+  already applies both at load, so nothing moves.
+- Live verification found the rest of the result card has the same problem
+  through other routes. The delta rows, the category badge's name and several
+  placeholder icons measure 1.0–2.6:1. They're logged in CLAUDE.md's
+  outstanding debt, not fixed.
+
+## 2026-09-11 — RunResult's row names readable
+
+The six row names on RunResult ("Minigame selesai" … "Murid ikut event") wore
+`ResultBodyLabel`: 22px cream `text_on_brand`, made for a dark ground, on the
+near-white `Card`. That measures 1.05:1, and the names barely showed.
+
+`RunResultRow.tscn`'s `NameLabel` now wears a new `RunResultNameLabel`:
+`text_primary` in the body face at `font_body_size + 8` (36px), the phone step
+`EventBodyLabel` and `CatatanLabel` already use. It measures 14.28:1. A runtime
+A/B on the live screen compared 28px and 36px; 28 was legible but small beside
+the 72px icons and 48px values.
+
+`ResultBodyLabel` itself is unchanged: the minigame score HUD's `TargetLabel`
+sits on a dark translucent pill and needs the cream. Its four other users are
+also on light grounds; that is logged in CLAUDE.md's outstanding debt.
+
+Three tests in `tests/test_run_result.gd` resolve a row the way the game draws
+it (the baked theme, in the tree):
+- the name contrasts with its card at WCAG AA (4.5:1) or better
+- it is at least the body size
+- its variation is one the bake declares. The plain-Label fallback is dark
+  body text, so the first two cannot see a missing variation.
+
+Verified live through the `lulus` rehearsal: all six rows at 36px and 14.28:1
+with no overrides; the widest name takes 352px of a 579px slot.
+
 ## 2026-09-11 — StatCheck on StudentCard's paper; one win stage for EndCutscene and RunResult
 
 Spec `docs/superpowers/specs/2026-09-11-statcheck-paper-and-shared-win-stage-design.md`,

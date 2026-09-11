@@ -1,0 +1,56 @@
+# Merges brineoutxd's pull requests into Textures once every gate is green,
+# flags PRs whose base moved on, and re-points stacked PRs after a merge. The
+# rules live in ci/auto_merge.sh
+# (docs/superpowers/specs/2026-09-11-pr-automation-design.md); this file only
+# decides when to run it and with which permissions.
+
+name: Auto-merge
+
+on:
+  workflow_run:
+    workflows: [Project check, Claude review]
+    types: [completed]
+  status:
+  pull_request:
+    types: [closed, labeled, unlabeled, ready_for_review]
+  push:
+    branches: [Textures]
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: auto-merge
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  statuses: write
+  checks: read
+
+jobs:
+  auto-merge:
+    name: auto-merge
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Always the rules on Textures, never a pull request's copy of them.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: Textures
+
+      - name: Evaluate open pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CLOUD_REVIEW: ${{ (secrets.CLAUDE_CODE_OAUTH_TOKEN != '' || secrets.ANTHROPIC_API_KEY != '') && 'on' || 'off' }}
+          CLOSED_PR_HEAD: ${{ github.event.action == 'closed' && github.event.pull_request.merged && github.event.pull_request.head.ref || '' }}
+          CLOSED_PR_BASE: ${{ github.event.action == 'closed' && github.event.pull_request.merged && github.event.pull_request.base.ref || '' }}
+        run: |
+          # Until the setup PR lands, Textures has no gate to run.
+          if [ ! -f ci/auto_merge.sh ]; then
+            echo "::notice::ci/auto_merge.sh is not on Textures yet; nothing to do."
+            exit 0
+          fi
+          bash ci/auto_merge.sh

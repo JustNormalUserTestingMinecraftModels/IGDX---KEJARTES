@@ -35,6 +35,9 @@ signal slot_tapped(item_name: String)
 			_layout_slots()
 
 const SLOT_SCENE := preload("res://Scenes/Koperasi/TraySlot.tscn")
+## Cart's script, so its static total_of() is called on the type rather than
+## through the autoload instance (which GDScript warns about).
+const CART_SCRIPT := preload("res://Scripts/Inventory/Cart.gd")
 
 @onready var _items: Control = $Body/Items
 @onready var _empty_state: Control = $Body/EmptyState
@@ -91,7 +94,7 @@ func refresh(entries: Dictionary) -> void:
 	_hint.visible = not empty
 	_emblem_count.text = str(shown_units)
 	_emblem_badge.visible = shown_units > 0
-	_total_label.text = "Total: %s koin" % format_koin(Cart.total_of(entries))
+	_total_label.text = "Total: %s koin" % format_koin(CART_SCRIPT.total_of(entries))
 
 
 ## Call BEFORE Cart.add_item(): the refresh that follows keeps the new unit

@@ -131,6 +131,9 @@ const ALLOWED: Dictionary = {
 	# shape as RunResult's rows. Every visual lives in a .tscn; scans as 0.
 	"res://Scripts/EndGame/StatCheck.gd": 0,
 	"res://Scripts/EndGame/StatCheckRow.gd": 0,
+	# attach_to()'s shadow TextureRect: per-call-dynamic content attached to
+	# a runtime-randomised shelf item (Koperasi rework Task 5).
+	"res://Scripts/Koperasi/ShelfItem.gd": 1,
 }
 
 

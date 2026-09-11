@@ -20,6 +20,10 @@ var item_data_list: Array[ItemData] = []
 var _price_tags: Array = []
 
 const PRICE_TAG_SCENE := preload("res://Scenes/Koperasi/PriceTag.tscn")
+const ShelfItemScript := preload("res://Scripts/Koperasi/ShelfItem.gd")
+
+## ShelfItem helper per shelf button, parallel to shelf_buttons.
+var _shelf_items: Array = []
 var basket_visuals: Dictionary = {}  # item_name -> Array[Node]
 var retur_original_parent: Node
 
@@ -87,6 +91,7 @@ func setup_random_items():
 
 	item_data_list = ItemDatabase.get_random_items(shelf_buttons.size())
 
+	_shelf_items.clear()
 	for i in range(shelf_buttons.size()):
 		var btn = shelf_buttons[i]
 		if i < item_data_list.size():
@@ -100,6 +105,12 @@ func setup_random_items():
 			var tag = _ensure_price_tag(btn)
 			if tag:
 				tag.set_price(item.price)
+
+			var life = ShelfItemScript.new()
+			life.name = "ShelfItem"
+			btn.add_child(life)
+			life.attach_to(btn)
+			_shelf_items.append(life)
 
 			# Connect click signal
 			for conn in btn.pressed.get_connections():
@@ -140,6 +151,8 @@ func _refresh_affordability() -> void:
 		if not is_instance_valid(tag) or i >= item_data_list.size():
 			continue
 		tag.set_affordable(GameState.money >= item_data_list[i].price)
+		if i < _shelf_items.size() and is_instance_valid(_shelf_items[i]):
+			_shelf_items[i].set_dimmed(GameState.money < item_data_list[i].price)
 
 ## Returns the display size for an item. Uses ItemData.display_size, falls back to source button size or default.
 func get_item_effective_size(item: ItemData, source_button: TextureButton = null) -> Vector2:
@@ -171,6 +184,8 @@ func _on_barang_pressed(index: int):
 	AnimUtils.squash_bounce(btn)
 	if index < _price_tags.size() and is_instance_valid(_price_tags[index]):
 		_price_tags[index].play_buy()
+	if index < _shelf_items.size() and is_instance_valid(_shelf_items[index]):
+		_shelf_items[index].lift()
 	AudioDirector.play_sfx(&"tap")
 
 	Cart.add_item(item)

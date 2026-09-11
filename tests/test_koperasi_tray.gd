@@ -213,3 +213,30 @@ func test_shelf_refreshes_affordability() -> void:
 		"shelf must recompute which items the player can afford")
 	assert_true(src.contains("set_affordable("),
 		"affordability must reach the tags")
+
+const SHELF_ITEM_SRC := "res://Scripts/Koperasi/ShelfItem.gd"
+
+func test_shelf_item_script_exists() -> void:
+	assert_true(ResourceLoader.exists(SHELF_ITEM_SRC), "ShelfItem.gd missing")
+
+func test_shelf_item_documents_every_export() -> void:
+	var f := FileAccess.open(SHELF_ITEM_SRC, FileAccess.READ)
+	assert_not_null(f, "ShelfItem.gd missing")
+	if f == null:
+		return
+	var lines := f.get_as_text().split("\n")
+	var i := 0
+	while i < lines.size():
+		if lines[i].strip_edges().begins_with("@export"):
+			var prev := lines[i - 1].strip_edges() if i > 0 else ""
+			assert_true(prev.begins_with("##"),
+				"undocumented @export on line %d" % (i + 1))
+		i += 1
+
+func test_shelf_item_bobs_with_a_phase_offset() -> void:
+	var f := FileAccess.open(SHELF_ITEM_SRC, FileAccess.READ)
+	assert_not_null(f, "ShelfItem.gd missing")
+	if f == null:
+		return
+	assert_true(f.get_as_text().contains("phase"),
+		"items must bob out of sync, so the shelf does not pulse in unison")

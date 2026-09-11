@@ -769,14 +769,18 @@ func test_ci_runs_the_godot_minor_version_the_project_targets() -> void:
 
 
 func test_every_action_is_pinned_to_a_commit() -> void:
+	# The `uses:` key itself, not any line containing the text: `statuses:`
+	# in a permissions block contains it too.
+	var uses_key := RegEx.create_from_string("^\\s*(-\\s+)?uses:")
 	var pinned := RegEx.create_from_string("uses: [\\w.-]+/[\\w.-]+@[0-9a-f]{40}(\\s|$)")
 	var workflows: Array[String] = [CHECK_WORKFLOW, REVIEW_WORKFLOW, MERGE_WORKFLOW]
 	var offenders := PackedStringArray()
 	for path in workflows:
 		for line in _read(path).split("\n"):
-			if line.contains("uses:") and pinned.search(line) == null:
+			if uses_key.search(line) != null and pinned.search(line) == null:
 				offenders.append(path.get_file() + ": " + line.strip_edges())
-	assert_eq(offenders, PackedStringArray(), "every uses: must name a 40-character commit")
+	assert_eq(offenders, PackedStringArray(),
+		"every uses: must name a 40-character commit; unpinned: %s" % [offenders])
 ```
 
 - [ ] **Step 2: Run it and watch it fail**

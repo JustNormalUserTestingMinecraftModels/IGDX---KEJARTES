@@ -29,6 +29,10 @@ Every PR had been opened and merged by hand, and the repo had no CI. Now:
 Spec: `docs/superpowers/specs/2026-09-11-pr-automation-design.md`. Plan:
 `docs/superpowers/plans/2026-09-11-pr-automation.md`.
 
+Live test, 2026-09-11: a stamped PR merged itself; this entry's own PR waited
+while unstamped, was skipped while labelled `hold`, and was flagged out of
+date when the first PR landed, then merged itself once re-tested.
+
 ## 2026-09-11 — Delta rows, badge and Inventory values readable; the delta rows show at all
 
 `ResultDeltaLabel` bakes white so `self_modulate` can colour-code it, and all

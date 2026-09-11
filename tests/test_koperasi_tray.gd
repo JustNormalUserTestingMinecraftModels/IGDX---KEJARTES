@@ -1,0 +1,478 @@
+@tool
+extends McpTestSuiteCompat
+
+## Suite for the 2026-09-11 Koperasi rework: basket icon, coin-pill price
+## tag, shelf item life, and the warm basket tray that replaces the popup.
+
+func suite_name() -> String:
+	return "koperasi_tray"
+
+const BASKET_ICON := "res://Assets/Images/Shop/UI/icon_keranjang.svg"
+
+func test_basket_icon_exists() -> void:
+	assert_true(ResourceLoader.exists(BASKET_ICON),
+		"B3 basket icon missing at %s" % BASKET_ICON)
+
+func test_basket_icon_has_no_text_elements() -> void:
+	# ThorVG drops <text> on import. <tspan> lives inside text, and <use> can
+	# pull a text node in by reference, so all three are checked.
+	for path in [BASKET_ICON, "res://Assets/Images/Shop/UI/icon_keranjang_kosong.svg"]:
+		var f := FileAccess.open(path, FileAccess.READ)
+		assert_not_null(f, "%s missing" % path)
+		if f == null:
+			continue
+		var src := f.get_as_text()
+		for element in ["<text", "<tspan", "<use"]:
+			assert_false(src.contains(element), "%s must not contain %s" % [path, element])
+
+const THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+
+func _baked_theme() -> Theme:
+	# CACHE_MODE_IGNORE matters: the editor holds kejartes_theme.tres in
+	# memory from startup, so a plain load() returns that cached copy and
+	# never sees a fresh rebake.
+	return ResourceLoader.load(
+		THEME_PATH, "",
+		ResourceLoader.CACHE_MODE_IGNORE) as Theme
+
+func test_price_tag_variations_registered() -> void:
+	var theme := _baked_theme()
+	assert_not_null(theme, "baked theme missing at %s" % THEME_PATH)
+	if theme == null:
+		return
+	for v in ["PriceTag", "PriceTagPressed", "PriceTagDisabled", "BasketTray"]:
+		assert_true(theme.has_stylebox("panel", v),
+			"variation %s has no panel stylebox" % v)
+
+func test_price_tag_is_green_and_pressed_is_darker() -> void:
+	var theme := _baked_theme()
+	assert_not_null(theme, "baked theme missing at %s" % THEME_PATH)
+	if theme == null:
+		return
+	assert_true(theme.has_stylebox("panel", "PriceTag"),
+		"PriceTag variation is not registered")
+	if not theme.has_stylebox("panel", "PriceTag"):
+		return
+	assert_true(theme.has_stylebox("panel", "PriceTagPressed"),
+		"PriceTagPressed variation is not registered")
+	if not theme.has_stylebox("panel", "PriceTagPressed"):
+		return
+	var rest := theme.get_stylebox("panel", "PriceTag") as StyleBoxFlat
+	var pressed := theme.get_stylebox("panel", "PriceTagPressed") as StyleBoxFlat
+	assert_not_null(rest, "PriceTag panel is not a StyleBoxFlat")
+	if rest == null:
+		return
+	assert_not_null(pressed, "PriceTagPressed panel is not a StyleBoxFlat")
+	if pressed == null:
+		return
+	assert_true(rest.bg_color.g > rest.bg_color.r,
+		"PriceTag should read green")
+	assert_true(pressed.bg_color.v < rest.bg_color.v,
+		"pressed state must be darker than rest")
+
+func test_basket_tray_has_no_black() -> void:
+	# The mentor's note: nothing in the tray may read as premium-black.
+	var theme := _baked_theme()
+	assert_not_null(theme, "baked theme missing at %s" % THEME_PATH)
+	if theme == null:
+		return
+	assert_true(theme.has_stylebox("panel", "BasketTray"),
+		"BasketTray variation is not registered")
+	if not theme.has_stylebox("panel", "BasketTray"):
+		return
+	var tray := theme.get_stylebox("panel", "BasketTray") as StyleBoxFlat
+	assert_not_null(tray, "BasketTray panel is not a StyleBoxFlat")
+	if tray == null:
+		return
+	assert_true(tray.bg_color.v > 0.75, "tray surface must stay light and warm")
+	assert_true(tray.bg_color.r > tray.bg_color.b, "tray surface must be warm, not cool")
+
+
+func test_koperasi_scripts_carry_no_emoji() -> void:
+	# Project convention bans emoji as UI iconography (2026-09-02). This
+	# scans by codepoint range rather than by a list of known glyphs --
+	# an earlier two-glyph version of this test passed while three other
+	# emoji were still present in koprasi.gd.
+	var paths := [
+		"res://Scripts/Koperasi/koprasi.gd",
+		"res://Scripts/Koperasi/rakbarang_1.gd",
+		"res://Scripts/Koperasi/PriceTag.gd",
+	]
+	for path in paths:
+		var f := FileAccess.open(path, FileAccess.READ)
+		assert_not_null(f, "%s missing" % path)
+		if f == null:
+			continue
+		var src := f.get_as_text()
+		var offender := -1
+		for i in src.length():
+			var c := src.unicode_at(i)
+			if (c >= 0x1F000 and c <= 0x1FAFF) \
+			or (c >= 0x2600 and c <= 0x27BF) \
+			or (c >= 0x2B00 and c <= 0x2BFF) \
+			or (c >= 0x2190 and c <= 0x21FF):
+				offender = c
+				break
+		assert_eq(offender, -1,
+			"%s contains an emoji codepoint (0x%x)" % [path, offender])
+
+const TRAY_DOTS := "res://Assets/Images/Shop/UI/tray_dots.png"
+
+func test_tray_dot_tile_exists_and_tiles() -> void:
+	assert_true(ResourceLoader.exists(TRAY_DOTS), "tray dot tile missing")
+	var tex := load(TRAY_DOTS) as Texture2D
+	assert_not_null(tex, "tray dot tile did not load as a texture")
+	if tex == null:
+		return
+	assert_eq(tex.get_width(), 26, "tile must be 26px wide to repeat cleanly")
+	assert_eq(tex.get_height(), 26, "tile must be 26px tall to repeat cleanly")
+
+const PRICE_TAG_SCENE := "res://Scenes/Koperasi/PriceTag.tscn"
+
+func test_price_tag_scene_exists() -> void:
+	assert_true(ResourceLoader.exists(PRICE_TAG_SCENE),
+		"PriceTag.tscn missing")
+
+func test_price_tag_shows_price_at_rest() -> void:
+	var packed := load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	tag.set_price(800)
+	assert_eq(tag.get_label_text(), "800",
+		"tag should show the bare price at rest")
+	tag.free()
+
+func test_price_tag_swaps_to_beli_on_buy() -> void:
+	var packed := load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	tag.set_price(800)
+	tag.play_buy()
+	# play_buy sets the label synchronously; only the tween is deferred,
+	# so this test never needs to await.
+	assert_eq(tag.get_label_text(), "Beli",
+		"pressed state must read Beli, not the number")
+	tag.free()
+
+func test_price_tag_unaffordable_keeps_the_price_visible() -> void:
+	var packed := load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	tag.set_price(1200)
+	tag.set_affordable(false)
+	assert_eq(tag.get_label_text(), "1200",
+		"unaffordable tags still show what the item costs")
+	assert_eq(tag.theme_type_variation, &"PriceTagDisabled",
+		"unaffordable tag should use the neutral variation")
+	tag.free()
+
+func test_price_tag_uses_no_theme_overrides() -> void:
+	var f := FileAccess.open("res://Scripts/Koperasi/PriceTag.gd", FileAccess.READ)
+	assert_not_null(f, "PriceTag.gd missing")
+	if f == null:
+		return
+	assert_false(f.get_as_text().contains("add_theme_"),
+		"PriceTag must use type variations, never theme overrides")
+
+func test_price_tag_wipe_node_resolves() -> void:
+	# The wipe must live under a plain Control, not directly under the
+	# PanelContainer root -- a container overwrites its children's size on
+	# every sort, which would stomp the wipe's tweened width.
+	var packed := load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	var wipe = tag.get_node_or_null("WipeHost/Wipe")
+	assert_not_null(wipe, "Wipe must resolve at WipeHost/Wipe")
+	var host = tag.get_node_or_null("WipeHost")
+	assert_not_null(host, "WipeHost must exist")
+	if host != null:
+		assert_false(host is Container,
+			"WipeHost must be a plain Control, not a Container")
+	tag.free()
+
+const RAK_SRC := "res://Scripts/Koperasi/rakbarang_1.gd"
+
+func _rak_source() -> String:
+	var f := FileAccess.open(RAK_SRC, FileAccess.READ)
+	assert_not_null(f, "rakbarang_1.gd missing")
+	if f == null:
+		return ""
+	return f.get_as_text()
+
+func test_shelf_instances_price_tags() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("PriceTag.tscn"),
+		"shelf should instance the PriceTag scene")
+	assert_true(src.contains("set_price("),
+		"shelf should push prices through set_price")
+
+func test_shelf_plays_buy_on_press() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("play_buy()"),
+		"_on_barang_pressed should run the tag's buy transition")
+
+func test_shelf_refreshes_affordability() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("_refresh_affordability"),
+		"shelf must recompute which items the player can afford")
+	assert_true(src.contains("set_affordable("),
+		"affordability must reach the tags")
+
+const SHELF_ITEM_SRC := "res://Scripts/Koperasi/ShelfItem.gd"
+
+func test_shelf_item_script_exists() -> void:
+	assert_true(ResourceLoader.exists(SHELF_ITEM_SRC), "ShelfItem.gd missing")
+
+func test_shelf_item_documents_every_export() -> void:
+	var f := FileAccess.open(SHELF_ITEM_SRC, FileAccess.READ)
+	assert_not_null(f, "ShelfItem.gd missing")
+	if f == null:
+		return
+	var lines := f.get_as_text().split("\n")
+	var i := 0
+	var export_count := 0
+	while i < lines.size():
+		if lines[i].strip_edges().begins_with("@export"):
+			export_count += 1
+			var prev := lines[i - 1].strip_edges() if i > 0 else ""
+			assert_true(prev.begins_with("##"),
+				"undocumented @export on line %d" % (i + 1))
+		i += 1
+	assert_true(export_count >= 5,
+		("expected at least 5 @export vars on ShelfItem, found %d -- the scan "
+		+ "above passes vacuously with none") % export_count)
+
+func test_shelf_item_bobs_with_a_phase_offset() -> void:
+	var f := FileAccess.open(SHELF_ITEM_SRC, FileAccess.READ)
+	assert_not_null(f, "ShelfItem.gd missing")
+	if f == null:
+		return
+	var src := f.get_as_text()
+	assert_true(src.contains("randf() * TAU"),
+		"each item must seed a random phase, so the shelf does not pulse in unison")
+	assert_true(src.contains("sin(_phase)"),
+		"the bob itself must be driven by sin(_phase)")
+
+
+func test_shelf_no_longer_builds_retur_entries_at_runtime() -> void:
+	var src := _rak_source()
+	assert_false(src.contains("VBoxContainer.new()"),
+		"tray slots must come from ReturSlot.tscn, not runtime construction")
+	assert_false(src.contains("add_theme_font_size_override"),
+		"use theme type variations, never font-size overrides")
+
+func test_shop_scripts_only_use_real_gamestate_members() -> void:
+	# Source scans cannot catch a wrong property name: GameState.money
+	# looked fine to every string assertion and crashed the scene on boot.
+	var paths := [
+		"res://Scripts/Koperasi/rakbarang_1.gd",
+		"res://Scripts/Koperasi/koprasi.gd",
+	]
+	var re := RegEx.new()
+	re.compile(r"GameState\.([A-Za-z_][A-Za-z0-9_]*)")
+	for path in paths:
+		var f := FileAccess.open(path, FileAccess.READ)
+		assert_not_null(f, "%s missing" % path)
+		if f == null:
+			continue
+		var property_names := {}
+		for prop in GameState.get_property_list():
+			property_names[prop.name] = true
+		for m in re.search_all(f.get_as_text()):
+			var member := m.get_string(1)
+			var member_exists := property_names.has(member) \
+				or GameState.has_method(member) \
+				or GameState.has_signal(member)
+			assert_true(member_exists,
+				"%s references GameState.%s, which does not exist"
+					% [path, member])
+
+## The Beli test exercises play_buy() on an un-parented tag, which hits the
+## early "not is_inside_tree()" return and never touches the wipe tween --
+## so the wipe animation itself has had no coverage at all.
+func test_price_tag_wipe_is_driven_by_a_tween() -> void:
+	var f := FileAccess.open("res://Scripts/Koperasi/PriceTag.gd", FileAccess.READ)
+	assert_not_null(f, "PriceTag.gd missing")
+	if f == null:
+		return
+	assert_true(f.get_as_text().contains("tween_property(_wipe, \"size:x\""),
+		"the buy wipe must be driven by tweening _wipe's size:x")
+
+# ───────────────────────────────── Part 2: the shop's colours are tokens
+
+## Every Koperasi stylebox, built from a throwaway token set, must follow the
+## tokens. set() rather than assignment, so the test fails on its assertions
+## (not a script error) while the tokens do not exist yet.
+func test_koperasi_variations_read_their_colours_from_tokens() -> void:
+	var t := DesignTokens.new()
+	var picks := {
+		"koperasi_tag_fill": Color("ff0000"),
+		"koperasi_tag_border": Color("00ff00"),
+		"koperasi_tag_pressed_fill": Color("0000ff"),
+		"koperasi_tag_pressed_border": Color("ffff00"),
+		"koperasi_tag_disabled_fill": Color("ff00ff"),
+		"koperasi_tag_disabled_border": Color("00ffff"),
+		"koperasi_tray_fill": Color("123456"),
+		"koperasi_tray_rule": Color("654321"),
+	}
+	for key in picks:
+		t.set(key, picks[key])
+	var theme := ThemeFactory.build(t)
+	var want := {
+		"PriceTag": [Color("ff0000"), Color("00ff00")],
+		"PriceTagPressed": [Color("0000ff"), Color("ffff00")],
+		"PriceTagDisabled": [Color("ff00ff"), Color("00ffff")],
+		"BasketTray": [Color("123456"), Color("654321")],
+	}
+	for variation in want:
+		assert_true(theme.has_stylebox("panel", variation),
+			"%s has no panel stylebox" % variation)
+		if not theme.has_stylebox("panel", variation):
+			continue
+		var box := theme.get_stylebox("panel", variation) as StyleBoxFlat
+		assert_eq(box.bg_color, want[variation][0], "%s fill follows its token" % variation)
+		assert_eq(box.border_color, want[variation][1], "%s border follows its token" % variation)
+
+
+func test_price_tag_wipe_colour_comes_from_a_token() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/PriceTag.gd")
+	assert_false(src.contains("Color(\"#"),
+		"the wipe colour must come from DesignTokens, not a hex literal")
+	assert_true(src.contains("koperasi_tag_pressed_fill"),
+		"the wipe paints the pressed-fill token")
+
+
+# ─────────────────────────── Part 2: the tray docked into the shop
+
+const TRAY_SCENE := "res://Scenes/Koperasi/BasketTray.tscn"
+
+
+func test_tray_panel_uses_the_basket_tray_variation() -> void:
+	var shop := FileAccess.get_file_as_string("res://Scenes/Koperasi/koprasi.tscn")
+	var tray := FileAccess.get_file_as_string(TRAY_SCENE)
+	assert_true(shop.contains("res://Scenes/Koperasi/BasketTray.tscn"),
+		"the shop docks the basket tray scene")
+	assert_true(tray.contains("BasketTray"), "the tray surface carries the BasketTray variation")
+	assert_true(tray.contains("tray_dots.png"), "tray should wear the dot-grid tile")
+	assert_true(tray.contains("icon_keranjang.svg"), "the tray's emblem is the B3 basket")
+	assert_false(shop.contains("pngwing.com (6).png") or tray.contains("pngwing.com (6).png"),
+		"the black basket silhouette should no longer be referenced")
+	assert_true(tray.contains("EmptyState"), "the empty-basket state is a scene node")
+	assert_true(tray.contains("texture_repeat = 2"),
+		"the dot tile must set texture_repeat on the node -- in Godot 4 "
+		+ "repeat is a CanvasItem property, not a texture import flag")
+
+
+## The empty state is the tray scene's own node; BasketTray.gd never builds a
+## Label. Its behaviour is exercised live in test_basket_tray.gd.
+func test_shop_shows_a_scene_empty_state_not_a_built_label() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/BasketTray.gd")
+	assert_true(src.contains("_empty_state"), "the tray shows its scene EmptyState")
+	assert_false(src.contains("Label.new()"), "empty state must not be built as a runtime Label")
+
+
+func test_the_docked_tray_replaced_the_modal() -> void:
+	var shop := FileAccess.get_file_as_string("res://Scenes/Koperasi/koprasi.tscn")
+	for gone in ["name=\"ReturPanel\"", "name=\"PopupLayer\"", "name=\"BlurLayer\"",
+			"name=\"Keranjang\"", "text = \"Harga++\"", "text = \"BELI\""]:
+		assert_false(shop.contains(gone), "koprasi.tscn still carries %s" % gone)
+
+
+func test_the_flight_lands_on_the_items_tray_slot() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("tray.landing_rect_for(item.item_name)"),
+		"the arc's target is the item's own tray slot")
+	assert_true(src.contains("tray.land(item.item_name)"), "landing shows the unit in the tray")
+	var hold := src.find("tray.hold_for_landing(item.item_name)")
+	var add := src.find("Cart.add_item(item)")
+	assert_true(hold != -1 and add != -1 and hold < add,
+		"the unit is held before the cart hears of it, so it cannot pop in early")
+
+
+## The mentor approved the flight itself; Part 2 moves only its target. A
+## regression guard: it passes before this task and must still pass after.
+func test_the_approved_flight_is_unchanged() -> void:
+	var src := _rak_source()
+	for line in [
+		"var duplikat = TextureRect.new()",
+		"tween_property(duplikat, \"global_position:x\", target_pos.x, 0.45)",
+		"tween_property(duplikat, \"global_position:y\", mid_y, 0.14)",
+		"tween_property(duplikat, \"global_position:y\", target_pos.y, 0.31)",
+		"randf_range(-20.0, 20.0)",
+	]:
+		assert_true(src.contains(line), "the flight lost: %s" % line)
+
+
+# ───────────────────────────────────────────── Part 2: rim glow on press
+
+## Stepped by hand with Tween.custom_step, so no test waits on real time.
+func test_lift_swells_and_fades_the_rim_glow() -> void:
+	var button := TextureButton.new()
+	button.size = Vector2(200, 200)
+	var glow := TextureRect.new()
+	glow.name = "Glow"
+	button.add_child(glow)
+	Engine.get_main_loop().root.add_child(button)
+	track(button)
+	var life = load(SHELF_ITEM_SRC).new()
+	button.add_child(life)
+	life.attach_to(button)
+	assert_eq(glow.modulate.a, 0.0, "no glow at rest")
+	var tween = life.lift()
+	assert_true(tween is Tween, "lift() hands back its tween")
+	if not tween is Tween:
+		return
+	tween.pause()
+	tween.custom_step(life.lift_duration)
+	assert_true(absf(glow.modulate.a - life.glow_alpha) < 0.01,
+		"the glow peaks as the item tops out")
+	tween.custom_step(life.lift_duration)
+	assert_true(glow.modulate.a < 0.01, "and is gone once it settles")
+	assert_eq(glow.self_modulate, DesignTokens.load_default().currency_gold,
+		"gold, from the tokens")
+
+
+func test_each_shelf_item_has_a_glow_behind_it() -> void:
+	var packed = load("res://Scenes/Koperasi/koprasi.tscn")
+	assert_not_null(packed, "koprasi.tscn missing")
+	if packed == null:
+		return
+	var shop = packed.instantiate()
+	track(shop)
+	for i in range(1, 5):
+		var glow = shop.get_node_or_null("Rak1/Barang%d/Glow" % i)
+		assert_true(glow is TextureRect, "Barang%d has a Glow" % i)
+		if glow == null:
+			continue
+		assert_true(glow.show_behind_parent, "Barang%d's glow draws behind the item" % i)
+		assert_eq(glow.modulate.a, 0.0, "Barang%d's glow is dark at rest" % i)
+		assert_eq(glow.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the glow never eats a tap")
+
+
+# ────────────────────────────────── Part 2: Part 1's deferred minors
+
+## Part 1 set these in _ready() because the bridge was down when the fix
+## landed; they belong in the scene. Checked on an instance that never ran
+## _ready, so only the scene's own values count.
+func test_price_tag_lets_taps_through_by_scene() -> void:
+	var packed = load(PRICE_TAG_SCENE)
+	assert_not_null(packed, "PriceTag.tscn missing")
+	if packed == null:
+		return
+	var tag = packed.instantiate()
+	track(tag)
+	for path in [".", "Row", "Row/Coin", "Row/Value"]:
+		var node: Control = tag.get_node(path)
+		assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"%s must let a tap through to the shelf button" % path)
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/PriceTag.gd")
+	assert_false(src.contains("_ignore_mouse_so_taps_reach_the_button_beneath"),
+		"the runtime pass is gone now that the scene says it")

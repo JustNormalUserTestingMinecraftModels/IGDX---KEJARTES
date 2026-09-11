@@ -1,69 +1,46 @@
 extends Control  # script Rak1
 
+## The koperasi shelf screen (koprasi.tscn:Rak1): four random items on the
+## shelf, each with a coin-pill price tag and a little life, and the basket
+## tray docked beneath them.
+##
+## Tapping an item puts one in Cart and flies a copy of its art, in the
+## mentor-approved split arc, onto that item's own slot in the tray. The tray
+## (BasketTray.tscn) redraws itself from Cart; this script only wires the
+## shelf, the flight and the hold-to-return gesture to it.
+
 @export_group("Global Settings")
 ## Global scale multiplier for all items (1.0 = normal)
 @export var global_item_scale: float = 1.0
 
-@onready var keranjang: Control = $Keranjang
-@onready var total_label: Label = $Label
-
-var basket_area: Control
-var keranjang_depan: Control
-var retur_panel: Control
-var retur_grid: GridContainer
-var retur_back_button: TextureButton
+## The basket tray docked at the bottom of the shelf screen.
+@onready var tray: BasketTray = $BasketTray
 
 var shelf_buttons: Array[TextureButton] = []
 var item_data_list: Array[ItemData] = []
-var basket_visuals: Dictionary = {}  # item_name -> Array[Node]
-var retur_original_parent: Node
 
-## Permanent shop chrome (koprasi.tscn:Rak1/BlurLayer, Rak1/PopupLayer) --
-## dim/blur backdrop and the layer the shop reparents ReturPanel into
-## while it's open. Built once in the scene, just shown/hidden here.
-@onready var blur_layer: CanvasLayer = $BlurLayer
-@onready var input_blocker: ColorRect = $BlurLayer/InputBlocker
-@onready var popup_layer: CanvasLayer = $PopupLayer
-@onready var popup_container: Control = $PopupLayer/PopupContainer
+## Instanced PriceTag per shelf button, parallel to shelf_buttons.
+var _price_tags: Array = []
+
+const PRICE_TAG_SCENE := preload("res://Scenes/Koperasi/PriceTag.tscn")
+const ShelfItemScript := preload("res://Scripts/Koperasi/ShelfItem.gd")
+
+## ShelfItem helper per shelf button, parallel to shelf_buttons.
+var _shelf_items: Array = []
 
 func _ready():
-	_resolve_nodes()
 	setup_random_items()
 
-	if keranjang_depan:
-		keranjang_depan.z_index = 100
-		keranjang_depan.mouse_filter = Control.MOUSE_FILTER_STOP
-		if not keranjang_depan.gui_input.is_connected(_on_keranjang_input):
-			keranjang_depan.gui_input.connect(_on_keranjang_input)
-	if basket_area:
-		basket_area.z_index = 0
-		basket_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	if not Cart.cart_changed.is_connected(_update_total_label):
-		Cart.cart_changed.connect(_update_total_label)
-	_update_total_label()
-
-	# Klik area keranjang untuk buka panel retur
-	if keranjang:
-		keranjang.mouse_filter = Control.MOUSE_FILTER_STOP
-		if not keranjang.gui_input.is_connected(_on_keranjang_input):
-			keranjang.gui_input.connect(_on_keranjang_input)
-
-	if retur_panel:
-		retur_panel.hide()
-
-	# Wire the back button on the popup
-	if retur_back_button and not retur_back_button.pressed.is_connected(_on_retur_back_pressed):
-		retur_back_button.pressed.connect(_on_retur_back_pressed)
-
-func _resolve_nodes():
-	basket_area = find_child("BasketArea", true, false)
-	keranjang_depan = find_child("KeranjangDepan", true, false)
-	retur_panel = find_child("ReturPanel", true, false)
-	if retur_panel:
-		retur_original_parent = retur_panel.get_parent()
-		retur_grid = retur_panel.find_child("GridContainer", true, false)
-		retur_back_button = retur_panel.find_child("BackButton", true, false)
+	if not Cart.cart_changed.is_connected(_on_cart_changed):
+		Cart.cart_changed.connect(_on_cart_changed)
+	if not GameState.money_changed.is_connected(_on_money_changed_refresh):
+		GameState.money_changed.connect(_on_money_changed_refresh)
+	if is_instance_valid(tray):
+		if not tray.remove_requested.is_connected(_on_tray_remove_requested):
+			tray.remove_requested.connect(_on_tray_remove_requested)
+		if not tray.slot_tapped.is_connected(_on_tray_slot_tapped):
+			tray.slot_tapped.connect(_on_tray_slot_tapped)
+	_on_cart_changed()
 
 func _find_shelf_buttons():
 	shelf_buttons.clear()
@@ -79,6 +56,7 @@ func setup_random_items():
 
 	item_data_list = ItemDatabase.get_random_items(shelf_buttons.size())
 
+	_shelf_items.clear()
 	for i in range(shelf_buttons.size()):
 		var btn = shelf_buttons[i]
 		if i < item_data_list.size():
@@ -88,10 +66,13 @@ func setup_random_items():
 			btn.ignore_texture_size = true
 			btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 
-			# Find price label / button inside btn
-			var price_node = _find_price_display(btn)
-			if price_node:
-				price_node.text = "%d" % item.price
+			# Find price tag inside btn
+			var tag = _ensure_price_tag(btn)
+			if tag:
+				tag.set_price(item.price)
+
+			var life = _ensure_shelf_item(btn)
+			_shelf_items.append(life)
 
 			# Connect click signal
 			for conn in btn.pressed.get_connections():
@@ -100,11 +81,54 @@ func setup_random_items():
 		else:
 			btn.hide()
 
+	_price_tags.clear()
+	for btn in shelf_buttons:
+		_price_tags.append(btn.get_node_or_null("PriceTag"))
+	_refresh_affordability()
+
 func _find_price_display(btn: TextureButton) -> Node:
 	for child in btn.get_children():
 		if child is Button or child is Label:
 			return child
 	return null
+
+## Returns the PriceTag under a shelf button, instancing it on first use
+## and freeing whatever placeholder label or button the scene shipped with.
+func _ensure_price_tag(btn: TextureButton) -> Node:
+	var existing = btn.get_node_or_null("PriceTag")
+	if existing:
+		return existing
+	var legacy = _find_price_display(btn)
+	if legacy:
+		legacy.queue_free()
+	var tag = PRICE_TAG_SCENE.instantiate()
+	tag.name = "PriceTag"
+	btn.add_child(tag)
+	return tag
+
+## Returns the ShelfItem helper under a shelf button, instancing it on first
+## use and re-attaching it (re-sampling the resting position) otherwise, so
+## repeated calls to setup_random_items() never pile up extra helper nodes.
+func _ensure_shelf_item(btn: TextureButton) -> Node:
+	var existing = btn.get_node_or_null("ShelfItem")
+	if existing:
+		existing.attach_to(btn)
+		return existing
+	var life = ShelfItemScript.new()
+	life.name = "ShelfItem"
+	btn.add_child(life)
+	life.attach_to(btn)
+	return life
+
+## Greys out tags for items the player cannot currently afford.
+func _refresh_affordability() -> void:
+	for i in range(_price_tags.size()):
+		var tag = _price_tags[i]
+		if not is_instance_valid(tag) or i >= item_data_list.size():
+			continue
+		tag.set_affordable(GameState.player_money >= item_data_list[i].price)
+		if i < _shelf_items.size() and is_instance_valid(_shelf_items[i]):
+			_shelf_items[i].set_dimmed(GameState.player_money < item_data_list[i].price)
 
 ## Returns the display size for an item. Uses ItemData.display_size, falls back to source button size or default.
 func get_item_effective_size(item: ItemData, source_button: TextureButton = null) -> Vector2:
@@ -114,13 +138,15 @@ func get_item_effective_size(item: ItemData, source_button: TextureButton = null
 		return source_button.size * global_item_scale
 	return Vector2(200, 200) * global_item_scale
 
-func _update_total_label():
-	if not is_instance_valid(total_label):
-		return
-	if Cart.is_empty():
-		total_label.text = ""
-	else:
-		total_label.text = "Total: %d koin (%d item)" % [Cart.get_total(), Cart.get_item_count()]
+## GameState.money_changed passes the new amount; affordability recomputes
+## from GameState directly, so the argument is unused.
+func _on_money_changed_refresh(_new_amount: int) -> void:
+	_refresh_affordability()
+
+## Cart.cart_changed: the tray redraws from the cart itself.
+func _on_cart_changed() -> void:
+	if is_instance_valid(tray):
+		tray.refresh(Cart.cart)
 
 func _on_barang_pressed(index: int):
 	if index < 0 or index >= item_data_list.size():
@@ -129,14 +155,21 @@ func _on_barang_pressed(index: int):
 	var btn = shelf_buttons[index]
 
 	AnimUtils.squash_bounce(btn)
+	if index < _price_tags.size() and is_instance_valid(_price_tags[index]):
+		_price_tags[index].play_buy()
+	if index < _shelf_items.size() and is_instance_valid(_shelf_items[index]):
+		_shelf_items[index].lift()
 	AudioDirector.play_sfx(&"tap")
 
+	# Hold the unit before the cart hears of it: the refresh that
+	# Cart.add_item() triggers then keeps it hidden until its flight lands.
+	tray.hold_for_landing(item.item_name)
 	Cart.add_item(item)
 	_spawn_falling_item(btn, item)
 
 func _spawn_falling_item(source_button: TextureButton, item: ItemData):
-	if not is_instance_valid(keranjang):
-		push_warning("Node keranjang tidak ditemukan!")
+	if not is_instance_valid(tray):
+		push_warning("BasketTray tidak ditemukan!")
 		return
 
 	# Use exact size configured in ItemData
@@ -154,7 +187,9 @@ func _spawn_falling_item(source_button: TextureButton, item: ItemData):
 	get_tree().current_scene.add_child(duplikat)
 
 	var start_pos = duplikat.global_position
-	var target_pos = keranjang.global_position + (keranjang.size - item_size) / 2
+	# Land centred on the item's own slot in the tray.
+	var slot_rect: Rect2 = tray.landing_rect_for(item.item_name)
+	var target_pos = slot_rect.position + (slot_rect.size - item_size) / 2
 
 	# Playful arc trajectory + tumble
 	var tween_x = create_tween()
@@ -176,8 +211,8 @@ func _spawn_falling_item(source_button: TextureButton, item: ItemData):
 
 func _on_item_landed(flying_node: Node, item: ItemData, item_size: Vector2, land_pos: Vector2 = Vector2.ZERO):
 	flying_node.queue_free()
-	_add_item_visual(item, item_size)
-	AnimUtils.basket_bounce(keranjang)
+	tray.land(item.item_name)
+	AnimUtils.basket_bounce(tray.get_emblem())
 	AudioDirector.play_sfx(&"pop")
 	AnimUtils.create_floating_text(
 		get_tree().current_scene,
@@ -186,221 +221,25 @@ func _on_item_landed(flying_node: Node, item: ItemData, item_size: Vector2, land
 		Color(1.0, 0.9, 0.2)
 	)
 
-func _add_item_visual(item: ItemData, item_size: Vector2):
-	if not is_instance_valid(basket_area):
-		return
-
-	var icon_node = TextureRect.new()
-	icon_node.texture = item.icon
-	icon_node.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon_node.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-
-	# Retain full original / inspector-configured size
-	icon_node.size = item_size
-	icon_node.custom_minimum_size = item_size
-	icon_node.pivot_offset = item_size / 2
-
-	var area_size = basket_area.size
-	var max_x = max(area_size.x - item_size.x, 0.0)
-	var max_y = max(area_size.y - item_size.y, 0.0)
-	var pos_x = randf_range(0, max_x) if area_size.x >= item_size.x else (area_size.x - item_size.x) * 0.5
-	var pos_y = randf_range(0, max_y) if area_size.y >= item_size.y else (area_size.y - item_size.y) * 0.5
-	icon_node.position = Vector2(pos_x, pos_y)
-
-	icon_node.rotation_degrees = randf_range(-12, 12)
-	icon_node.z_index = min(basket_area.get_child_count() + 1, 99)
-
-	icon_node.mouse_filter = Control.MOUSE_FILTER_STOP
-	icon_node.gui_input.connect(_on_item_icon_input.bind(icon_node, item))
-
-	AnimUtils.spawn_pop(icon_node)
-	basket_area.add_child(icon_node)
-
-	if not basket_visuals.has(item.item_name):
-		basket_visuals[item.item_name] = []
-	basket_visuals[item.item_name].append(icon_node)
-
-func _notification(what):
-	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		if retur_panel and retur_panel.visible:
-			_on_retur_back_pressed()
-
-var _icon_touch_data: Dictionary = {}
-
-func _on_item_icon_input(event: InputEvent, icon_node: Node, item: ItemData):
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				var tween = create_tween()
-				tween.tween_property(icon_node, "scale", Vector2(1.15, 1.15), 0.35)\
-					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-				_icon_touch_data[icon_node] = {
-					"time": Time.get_ticks_msec(),
-					"pos": event.global_position,
-					"tween": tween
-				}
-			else:
-				if _icon_touch_data.has(icon_node):
-					var data = _icon_touch_data[icon_node]
-					var elapsed = (Time.get_ticks_msec() - data["time"]) / 1000.0
-					var dist = data["pos"].distance_to(event.global_position)
-					if data["tween"] and is_instance_valid(data["tween"]):
-						data["tween"].kill()
-					icon_node.scale = Vector2.ONE
-					_icon_touch_data.erase(icon_node)
-
-					if dist < 30.0:
-						if elapsed >= 0.35:
-							# Mobile Long-Press gesture: directly return item with animation
-							_animate_and_remove_icon(icon_node, item.item_name)
-						else:
-							# Mobile Tap: open return panel
-							_open_retur_panel()
-		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-			accept_event()
-			_remove_specific_icon(icon_node, item.item_name)
-
-func _animate_and_remove_icon(icon_node: Node, item_name: String):
-	if not is_instance_valid(icon_node):
-		return
-	AnimUtils.cart_press(keranjang)
+## A tray item was held: shrink it away, then return one to the shelf.
+func _on_tray_remove_requested(item_name: String) -> void:
+	AnimUtils.cart_press(tray.get_emblem())
 	AudioDirector.play_sfx(&"pop")
-	var tween = AnimUtils.shrink_and_fade(icon_node)
-	tween.tween_callback(_remove_specific_icon.bind(icon_node, item_name))
-
-func _remove_specific_icon(icon_node: Node, item_name: String):
-	Cart.remove_one(item_name)
-
-	if basket_visuals.has(item_name):
-		basket_visuals[item_name].erase(icon_node)
-		if basket_visuals[item_name].is_empty():
-			basket_visuals.erase(item_name)
-
-	if is_instance_valid(icon_node):
-		icon_node.queue_free()
-
-func _remove_last_icon_by_name(item_name: String):
-	if not basket_visuals.has(item_name) or basket_visuals[item_name].is_empty():
+	var slot: Control = tray.get_slot(item_name)
+	if slot == null or not slot.is_inside_tree():
+		Cart.remove_one(item_name)
 		return
-	var icon_node = basket_visuals[item_name][-1]
-	_remove_specific_icon(icon_node, item_name)
+	var tween := AnimUtils.shrink_and_fade(slot)
+	tween.tween_callback(Cart.remove_one.bind(item_name))
 
+## A quick tap on a tray item: a wobble says "hold me" without words.
+func _on_tray_slot_tapped(item_name: String) -> void:
+	var slot: Control = tray.get_slot(item_name)
+	if slot != null:
+		AnimUtils.wobble(slot)
+
+## Beli and Back empty the cart (the tray redraws from Cart.cart_changed);
+## this forgets any unit still flying in. Kept by name: koprasi.gd calls it.
 func clear_basket_visuals():
-	_icon_touch_data.clear()
-	for key in basket_visuals:
-		for node in basket_visuals[key]:
-			if is_instance_valid(node):
-				node.queue_free()
-	basket_visuals.clear()
-
-# ============ SISTEM RETUR ============
-
-func _on_keranjang_input(event: InputEvent):
-	if event is InputEventMouseButton \
-	and event.button_index == MOUSE_BUTTON_LEFT \
-	and event.pressed:
-		accept_event()
-		AnimUtils.cart_press(keranjang)
-		AudioDirector.play_sfx(&"tap")
-		_open_retur_panel()
-
-func _open_retur_panel():
-	if not retur_panel or retur_panel.visible:
-		return
-	AnimUtils.cart_press(keranjang)
-	_populate_retur_panel()
-
-	retur_original_parent = retur_panel.get_parent()
-	retur_panel.reparent(popup_container)
-
-	blur_layer.show()
-	popup_layer.show()
-	retur_panel.show()
-
-	AnimUtils.spring_pop_in(retur_panel, 0.5)
-
-func _on_retur_back_pressed():
-	if not retur_panel:
-		return
-
-	if retur_back_button:
-		AnimUtils.back_bounce(retur_back_button)
-	AudioDirector.play_sfx(&"whoosh")
-
-	AnimUtils.spring_pop_out(retur_panel, _finish_retur_close)
-
-func _finish_retur_close():
-	retur_panel.hide()
-	popup_layer.hide()
-	blur_layer.hide()
-
-	if is_instance_valid(retur_original_parent):
-		retur_panel.reparent(retur_original_parent)
-	retur_panel.scale = Vector2(1.0, 1.0)
-	retur_panel.modulate.a = 1.0
-
-func _populate_retur_panel():
-	if not retur_grid:
-		return
-	for child in retur_grid.get_children():
-		child.queue_free()
-
-	if Cart.is_empty():
-		var empty_label = Label.new()
-		empty_label.text = "🛒 Keranjang kosong"
-		empty_label.add_theme_font_size_override("font_size", 28)
-		retur_grid.add_child(empty_label)
-		return
-
-	for item_name in Cart.cart:
-		var entry = Cart.cart[item_name]
-		var item: ItemData = entry["data"]
-		var quantity: int = entry["quantity"]
-		_add_retur_entry(item, quantity)
-
-func _add_retur_entry(item: ItemData, quantity: int):
-	var box = VBoxContainer.new()
-	box.add_theme_constant_override("separation", 8)
-	box.custom_minimum_size = Vector2(300, 380)
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
-
-	var icon = TextureRect.new()
-	icon.texture = item.icon
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.custom_minimum_size = Vector2(300, 300)
-	icon.pivot_offset = Vector2(150, 150)
-	box.add_child(icon)
-
-	var name_label = Label.new()
-	name_label.text = "%s ×%d" % [item.item_name, quantity]
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 28)
-	box.add_child(name_label)
-
-	var retur_button = Button.new()
-	retur_button.text = "↩ Retur 1"
-	retur_button.custom_minimum_size = Vector2(180, 55)
-	retur_button.add_theme_font_size_override("font_size", 24)
-	retur_button.pressed.connect(_on_retur_button_pressed.bind(item.item_name, retur_button, icon))
-	box.add_child(retur_button)
-
-	retur_grid.add_child(box)
-
-	# Entry entrance animation
-	AnimUtils.spring_pop_in(box, 0.8)
-
-func _on_retur_button_pressed(item_name: String, btn: Button = null, icon: TextureRect = null):
-	if btn and is_instance_valid(btn):
-		AnimUtils.squash_bounce(btn)
-	AudioDirector.play_sfx(&"pop")
-
-	# Icon shrink animation
-	if icon and is_instance_valid(icon):
-		icon.pivot_offset = icon.size / 2
-		var icon_tween = create_tween()
-		icon_tween.tween_property(icon, "scale", Vector2(0.7, 0.7), 0.12).set_trans(Tween.TRANS_QUAD)
-		icon_tween.tween_property(icon, "scale", Vector2(1.0, 1.0), 0.14).set_trans(Tween.TRANS_BACK)
-
-	_remove_last_icon_by_name(item_name)
-	_populate_retur_panel()
+	if is_instance_valid(tray):
+		tray.clear_held()

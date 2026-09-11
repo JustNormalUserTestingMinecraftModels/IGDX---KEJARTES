@@ -38,10 +38,13 @@ func _ready():
 		GameState.money_changed.connect(_on_money_changed)
 
 func _setup_beli_button():
-	# Find the existing BELI button in Rak1
-	beli_button = rak1_panel.get_node_or_null("TextureButton")
-	if beli_button and not beli_button.pressed.is_connected(_on_beli_pressed):
-		beli_button.pressed.connect(_on_beli_pressed)
+	# Beli lives in the basket tray's footer.
+	var tray = rak1_panel.get_node_or_null("BasketTray")
+	if tray == null:
+		return
+	beli_button = tray.get_beli_button()
+	if not tray.buy_pressed.is_connected(_on_beli_pressed):
+		tray.buy_pressed.connect(_on_beli_pressed)
 
 func _notification(what):
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
@@ -114,13 +117,13 @@ func _on_beli_pressed():
 
 	if Cart.is_empty():
 		AudioDirector.play_sfx(&"error")
-		_show_message("Keranjang kosong! 🛒", &"ShopMessageWarning")
+		_show_message("Keranjang kosong!", &"ShopMessageWarning")
 		return
 
 	var total = Cart.get_total()
 	if GameState.player_money < total:
 		AudioDirector.play_sfx(&"error")
-		_show_message("Koin tidak cukup! 🪙", &"ShopMessageDanger")
+		_show_message("Koin tidak cukup!", &"ShopMessageDanger")
 		return
 
 	# Deduct money
@@ -138,7 +141,7 @@ func _on_beli_pressed():
 		rak1_script.clear_basket_visuals()
 
 	AudioDirector.play_sfx(&"coin")
-	_show_message("✨ Pembelian berhasil! ✨", &"ShopMessageSuccess")
+	_show_message("Pembelian berhasil!", &"ShopMessageSuccess")
 
 ## Show a purchase-feedback message. `variation` selects one of the
 ## semantic ShopMessage* ThemeFactory variations (Warning/Danger/Success)

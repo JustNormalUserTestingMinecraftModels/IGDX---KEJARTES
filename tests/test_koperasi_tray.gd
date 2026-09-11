@@ -260,24 +260,6 @@ func test_shelf_item_bobs_with_a_phase_offset() -> void:
 	assert_true(src.contains("sin(_phase)"),
 		"the bob itself must be driven by sin(_phase)")
 
-const RETUR_SLOT_SCENE := "res://Scenes/Koperasi/ReturSlot.tscn"
-
-func test_retur_slot_scene_exists() -> void:
-	assert_true(ResourceLoader.exists(RETUR_SLOT_SCENE), "ReturSlot.tscn missing")
-
-func test_retur_slot_binds_name_and_quantity() -> void:
-	var packed := load(RETUR_SLOT_SCENE)
-	assert_not_null(packed, "ReturSlot.tscn missing")
-	if packed == null:
-		return
-	var slot = packed.instantiate()
-	var item := ItemData.new()
-	item.item_name = "Susu Murni"
-	item.price = 1000
-	slot.bind(item, 2)
-	assert_eq(slot.get_caption(), "Susu Murni ×2",
-		"slot caption should carry the name and quantity")
-	slot.free()
 
 func test_shelf_no_longer_builds_retur_entries_at_runtime() -> void:
 	var src := _rak_source()
@@ -285,26 +267,6 @@ func test_shelf_no_longer_builds_retur_entries_at_runtime() -> void:
 		"tray slots must come from ReturSlot.tscn, not runtime construction")
 	assert_false(src.contains("add_theme_font_size_override"),
 		"use theme type variations, never font-size overrides")
-
-func test_tray_panel_uses_the_basket_tray_variation() -> void:
-	var f := FileAccess.open("res://Scenes/Koperasi/koprasi.tscn", FileAccess.READ)
-	assert_not_null(f, "koprasi.tscn missing")
-	if f == null:
-		return
-	var src := f.get_as_text()
-	assert_true(src.contains("BasketTray"),
-		"the tray surface should carry the BasketTray type variation")
-	assert_true(src.contains("tray_dots.png"),
-		"tray should wear the dot-grid tile")
-	assert_true(src.contains("icon_keranjang.svg"),
-		"basket should use the B3 icon, not the black silhouette")
-	assert_false(src.contains("pngwing.com (6).png"),
-		"the black basket silhouette should no longer be referenced")
-	assert_true(src.contains("EmptyState"),
-		"the empty-basket state should be a scene node, not built in code")
-	assert_true(src.contains("texture_repeat = 2"),
-		"the dot tile must set texture_repeat on the node -- in Godot 4 "
-		+ "repeat is a CanvasItem property, not a texture import flag")
 
 func test_shop_scripts_only_use_real_gamestate_members() -> void:
 	# Source scans cannot catch a wrong property name: GameState.money
@@ -342,16 +304,6 @@ func test_price_tag_wipe_is_driven_by_a_tween() -> void:
 		return
 	assert_true(f.get_as_text().contains("tween_property(_wipe, \"size:x\""),
 		"the buy wipe must be driven by tweening _wipe's size:x")
-
-## _populate_retur_panel must show the scene's EmptyState node rather than
-## building a Label at runtime when the cart is empty.
-func test_shop_shows_a_scene_empty_state_not_a_built_label() -> void:
-	var src := _rak_source()
-	assert_true(src.contains("retur_empty_state"),
-		"empty cart state should show the scene's retur_empty_state node")
-	assert_false(src.contains("Label.new()"),
-		"empty state must not be built as a runtime Label")
-
 
 # ───────────────────────────────── Part 2: the shop's colours are tokens
 
@@ -395,3 +347,64 @@ func test_price_tag_wipe_colour_comes_from_a_token() -> void:
 		"the wipe colour must come from DesignTokens, not a hex literal")
 	assert_true(src.contains("koperasi_tag_pressed_fill"),
 		"the wipe paints the pressed-fill token")
+
+
+# ─────────────────────────── Part 2: the tray docked into the shop
+
+const TRAY_SCENE := "res://Scenes/Koperasi/BasketTray.tscn"
+
+
+func test_tray_panel_uses_the_basket_tray_variation() -> void:
+	var shop := FileAccess.get_file_as_string("res://Scenes/Koperasi/koprasi.tscn")
+	var tray := FileAccess.get_file_as_string(TRAY_SCENE)
+	assert_true(shop.contains("res://Scenes/Koperasi/BasketTray.tscn"),
+		"the shop docks the basket tray scene")
+	assert_true(tray.contains("BasketTray"), "the tray surface carries the BasketTray variation")
+	assert_true(tray.contains("tray_dots.png"), "tray should wear the dot-grid tile")
+	assert_true(tray.contains("icon_keranjang.svg"), "the tray's emblem is the B3 basket")
+	assert_false(shop.contains("pngwing.com (6).png") or tray.contains("pngwing.com (6).png"),
+		"the black basket silhouette should no longer be referenced")
+	assert_true(tray.contains("EmptyState"), "the empty-basket state is a scene node")
+	assert_true(tray.contains("texture_repeat = 2"),
+		"the dot tile must set texture_repeat on the node -- in Godot 4 "
+		+ "repeat is a CanvasItem property, not a texture import flag")
+
+
+## The empty state is the tray scene's own node; BasketTray.gd never builds a
+## Label. Its behaviour is exercised live in test_basket_tray.gd.
+func test_shop_shows_a_scene_empty_state_not_a_built_label() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/BasketTray.gd")
+	assert_true(src.contains("_empty_state"), "the tray shows its scene EmptyState")
+	assert_false(src.contains("Label.new()"), "empty state must not be built as a runtime Label")
+
+
+func test_the_docked_tray_replaced_the_modal() -> void:
+	var shop := FileAccess.get_file_as_string("res://Scenes/Koperasi/koprasi.tscn")
+	for gone in ["name=\"ReturPanel\"", "name=\"PopupLayer\"", "name=\"BlurLayer\"",
+			"name=\"Keranjang\"", "text = \"Harga++\"", "text = \"BELI\""]:
+		assert_false(shop.contains(gone), "koprasi.tscn still carries %s" % gone)
+
+
+func test_the_flight_lands_on_the_items_tray_slot() -> void:
+	var src := _rak_source()
+	assert_true(src.contains("tray.landing_rect_for(item.item_name)"),
+		"the arc's target is the item's own tray slot")
+	assert_true(src.contains("tray.land(item.item_name)"), "landing shows the unit in the tray")
+	var hold := src.find("tray.hold_for_landing(item.item_name)")
+	var add := src.find("Cart.add_item(item)")
+	assert_true(hold != -1 and add != -1 and hold < add,
+		"the unit is held before the cart hears of it, so it cannot pop in early")
+
+
+## The mentor approved the flight itself; Part 2 moves only its target. A
+## regression guard: it passes before this task and must still pass after.
+func test_the_approved_flight_is_unchanged() -> void:
+	var src := _rak_source()
+	for line in [
+		"var duplikat = TextureRect.new()",
+		"tween_property(duplikat, \"global_position:x\", target_pos.x, 0.45)",
+		"tween_property(duplikat, \"global_position:y\", mid_y, 0.14)",
+		"tween_property(duplikat, \"global_position:y\", target_pos.y, 0.31)",
+		"randf_range(-20.0, 20.0)",
+	]:
+		assert_true(src.contains(line), "the flight lost: %s" % line)

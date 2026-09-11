@@ -9,12 +9,8 @@
 [ext_resource type="Texture2D" uid="uid://cnvh1ppktmvnx" path="res://Assets/Images/Shop/ItemRak/LKS.png" id="7_jfwhh"]
 [ext_resource type="Texture2D" uid="uid://t6ana4kpuktm" path="res://Assets/Images/Shop/ItemRak/lompat tali.png" id="8_4x77x"]
 [ext_resource type="Texture2D" uid="uid://3pb4r7jsijbc" path="res://Assets/Images/Shop/ItemRak/raket.png" id="9_uhev2"]
-[ext_resource type="Texture2D" uid="uid://cyt0bmd5wkn8m" path="res://Assets/Images/Shop/UI/icon_keranjang.svg" id="11_4x5n3"]
-[ext_resource type="Texture2D" uid="uid://d17fahj54oxbx" path="res://Assets/Images/Shop/pngwing.com (2).png" id="12_vylns"]
-[ext_resource type="Texture2D" uid="uid://bnttf7a0tc07v" path="res://Assets/Images/Shop/UI/tray_dots.png" id="13_2tf15"]
-[ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="13_pstwm"]
+[ext_resource type="PackedScene" uid="uid://0ais0usytajp" path="res://Scenes/Koperasi/BasketTray.tscn" id="11_rr7aj"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_pstwm"]
-[ext_resource type="Texture2D" uid="uid://dk836e3bixfdh" path="res://Assets/Images/Shop/UI/icon_keranjang_kosong.svg" id="14_tjany"]
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tf5nh"]
@@ -36,11 +32,6 @@ region = Rect2(16.906647, 517.7832, 1130.2561, 649.15674)
 [sub_resource type="AtlasTexture" id="AtlasTexture_f61rs"]
 atlas = ExtResource("9_uhev2")
 region = Rect2(277.81873, 23.927307, 567.7704, 1601.428)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_0nmov"]
-shader = ExtResource("13_pstwm")
-shader_parameter/lod = 3.0
-shader_parameter/darkness = 0.4
 
 [node name="Koprasi" type="Control" unique_id=1906875452]
 layout_mode = 3
@@ -79,10 +70,10 @@ script = ExtResource("5_jfwhh")
 
 [node name="BackButton" type="TextureButton" parent="Rak1" unique_id=617180507]
 layout_mode = 0
-offset_left = 18.0
-offset_top = 1543.0
-offset_right = 203.0
-offset_bottom = 1728.0
+offset_left = 24.0
+offset_top = 1040.0
+offset_right = 209.0
+offset_bottom = 1225.0
 texture_normal = ExtResource("5_46s2e")
 ignore_texture_size = true
 stretch_mode = 0
@@ -167,163 +158,8 @@ offset_bottom = 398.0
 theme_override_font_sizes/font_size = 34
 text = "1500"
 
-[node name="Keranjang" type="TextureRect" parent="Rak1" unique_id=1859166842]
+[node name="BasketTray" parent="Rak1" unique_id=1330054252 instance=ExtResource("11_rr7aj")]
 layout_mode = 0
-offset_left = 218.0
-offset_top = 1245.0
-offset_right = 888.0
-offset_bottom = 1915.0
-mouse_filter = 2
-expand_mode = 1
-
-[node name="BasketArea" type="Control" parent="Rak1/Keranjang" unique_id=919839537]
-anchors_preset = 0
-offset_left = 114.0
-offset_top = 191.0
-offset_right = 569.0
-offset_bottom = 457.0
-
-[node name="KeranjangDepan" type="TextureButton" parent="Rak1/Keranjang" unique_id=166640385]
-layout_mode = 0
-offset_left = -7.0
-offset_top = -50.0
-offset_right = 686.0
-offset_bottom = 615.0
-texture_normal = ExtResource("11_4x5n3")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="ReturPanel" type="TextureRect" parent="Rak1/Keranjang/KeranjangDepan" unique_id=315158298]
-visible = false
-layout_mode = 0
-offset_left = -134.0
-offset_top = -834.0
-offset_right = 811.0
-offset_bottom = -204.0
-texture = ExtResource("12_vylns")
-expand_mode = 1
-
-[node name="Sheet" type="Panel" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel" unique_id=1451207028]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-theme_type_variation = &"BasketTray"
-
-[node name="Dots" type="TextureRect" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel" unique_id=321510084]
-texture_repeat = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = ExtResource("13_2tf15")
-stretch_mode = 1
-
-[node name="BackButton" type="TextureButton" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel" unique_id=2025734139]
-layout_mode = 0
-offset_left = 19.0
-offset_top = 512.0
-offset_right = 128.0
-offset_bottom = 619.0
-texture_normal = ExtResource("5_46s2e")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="ScrollContainer" type="ScrollContainer" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel" unique_id=203625621]
-layout_mode = 0
-offset_left = 119.0
-offset_top = 85.0
-offset_right = 811.0
-offset_bottom = 529.0
-
-[node name="GridContainer" type="GridContainer" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel/ScrollContainer" unique_id=390431771]
-layout_mode = 2
-columns = 2
-
-[node name="EmptyState" type="VBoxContainer" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel" unique_id=1265290159]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -160.0
-offset_top = -120.0
-offset_right = 160.0
-offset_bottom = 120.0
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="Icon" type="TextureRect" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel/EmptyState" unique_id=549975137]
-custom_minimum_size = Vector2(128, 128)
-layout_mode = 2
-texture = ExtResource("14_tjany")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Caption" type="Label" parent="Rak1/Keranjang/KeranjangDepan/ReturPanel/EmptyState" unique_id=217735739]
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Keranjang kosong"
-horizontal_alignment = 1
-
-[node name="TextureButton" type="Button" parent="Rak1" unique_id=128901155]
-layout_mode = 0
-offset_left = 829.0
-offset_top = 1025.0
-offset_right = 1013.0
-offset_bottom = 1149.0
-theme_override_font_sizes/font_size = 85
-text = "BELI"
-
-[node name="Label" type="Label" parent="Rak1" unique_id=1321203376]
-layout_mode = 0
-offset_left = 51.0
-offset_top = 1043.0
-offset_right = 253.0
-offset_bottom = 1112.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 50
-text = "Harga++"
-
-[node name="BlurLayer" type="CanvasLayer" parent="Rak1" unique_id=1074984630]
-layer = 50
-visible = false
-
-[node name="BlurRect" type="ColorRect" parent="Rak1/BlurLayer" unique_id=1620123108]
-material = SubResource("ShaderMaterial_0nmov")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-
-[node name="WarmWash" type="ColorRect" parent="Rak1/BlurLayer" unique_id=59475079]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-color = Color(0.52, 0.31, 0.04, 0.1)
-
-[node name="InputBlocker" type="ColorRect" parent="Rak1/BlurLayer" unique_id=803246311]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0, 0, 0, 0)
-
-[node name="PopupLayer" type="CanvasLayer" parent="Rak1" unique_id=818735196]
-layer = 60
-visible = false
-
-[node name="PopupContainer" type="Control" parent="Rak1/PopupLayer" unique_id=78354091]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 
 [node name="CoinHUD" type="HBoxContainer" parent="." unique_id=396070269]
 z_index = 10

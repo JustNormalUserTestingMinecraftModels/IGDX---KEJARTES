@@ -344,6 +344,8 @@ const DISPLAY_ROSTER := [
 	"SpecialtyBadge",
 	"SpecialtyBadgeS", "PersonaBadgeS", "QuirkBadgeS",
 	"SpecialtyBadgeM", "PersonaBadgeM", "QuirkBadgeM",
+	# 2026-09-11 Koperasi Part 2: the tray's ×N and count badges.
+	"TrayBadgeLabel",
 ]
 
 

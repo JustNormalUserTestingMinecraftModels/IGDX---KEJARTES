@@ -110,3 +110,92 @@ func test_the_tray_is_themed_not_overridden() -> void:
 	assert_true(src.contains("&\"PrimaryButtonM\""), "Beli is theme chrome at the M step")
 	for banned in ["theme_override_colors", "theme_override_font_sizes", "theme_override_styles"]:
 		assert_false(src.contains(banned), "no %s in the tray" % banned)
+
+
+# ────────────────────────────────────────────── one item on the plank
+
+const _SLOT := "res://Scenes/Koperasi/TraySlot.tscn"
+const _THEME := "res://Assets/Theme/kejartes_theme.tres"
+
+
+func _slot() -> Node:
+	var packed = load(_SLOT)
+	assert_not_null(packed, "TraySlot.tscn missing")
+	if packed == null:
+		return null
+	var slot = packed.instantiate()
+	Engine.get_main_loop().root.add_child(slot)
+	track(slot)
+	return slot
+
+
+func test_a_slot_wears_its_quantity_as_a_badge() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	slot.bind(_item("Raket", 1500, Vector2(180, 280)), 3)
+	assert_eq(slot.get_badge_text(), "×3")
+	slot.set_quantity(1)
+	assert_eq(slot.get_badge_text(), "×1")
+
+
+func test_a_slot_without_art_is_its_display_size() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	slot.bind(_item("Raket", 1500, Vector2(180, 280)), 1)
+	assert_eq(slot.natural_size, Vector2(180, 280))
+
+
+func test_a_slots_width_follows_its_arts_aspect() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	var item := _item("Pop Ice", 400, Vector2(160, 240))
+	item.icon = ImageTexture.create_from_image(
+		Image.create_empty(100, 300, false, Image.FORMAT_RGBA8))
+	slot.bind(item, 1)
+	assert_eq(slot.natural_size, Vector2(80, 240),
+		"the display height, at the art's own 1:3 aspect")
+
+
+func test_hold_and_tap_are_told_apart() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	assert_eq(slot.classify_release(0.5, 5.0, 0.35, 30.0), &"hold")
+	assert_eq(slot.classify_release(0.1, 5.0, 0.35, 30.0), &"tap")
+	assert_eq(slot.classify_release(0.5, 50.0, 0.35, 30.0), &"none", "a drag is neither")
+
+
+func test_a_right_click_returns_one_at_once() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	slot.bind(_item("Raket", 1500), 2)
+	var heard := [""]
+	slot.remove_requested.connect(func(n: String) -> void: heard[0] = n)
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_RIGHT
+	click.pressed = true
+	slot._gui_input(click)
+	assert_eq(heard[0], "Raket")
+
+
+func test_the_tray_badge_and_plank_are_baked() -> void:
+	var theme := ResourceLoader.load(_THEME, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	for variation in ["TrayBadge", "TrayPlank"]:
+		assert_true(theme.has_stylebox("panel", variation), "%s is baked" % variation)
+	assert_true(theme.get_type_list().has("TrayBadgeLabel"), "TrayBadgeLabel is baked")
+	if theme.has_stylebox("panel", "TrayBadge"):
+		var box := theme.get_stylebox("panel", "TrayBadge") as StyleBoxFlat
+		assert_eq(box.border_color, DesignTokens.load_default().koperasi_tray_rule,
+			"the badge rim is the tray's amber")
+
+
+func test_the_badge_face_can_draw_the_times_sign() -> void:
+	var theme := ResourceLoader.load(_THEME, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	var font := theme.get_font("font", "TrayBadgeLabel")
+	assert_true(font != null and font.has_char(0x00D7),
+		"the badge's face has a × glyph -- if not, give TrayBadgeLabel the "
+		+ "body face and take it off DISPLAY_ROSTER")

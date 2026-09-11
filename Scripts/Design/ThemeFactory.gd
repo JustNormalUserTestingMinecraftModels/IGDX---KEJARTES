@@ -562,6 +562,38 @@ static func _add_koperasi_variations(theme: Theme, tokens: DesignTokens) -> void
 	theme.set_type_variation("BasketTray", "Panel")
 	theme.set_stylebox("panel", "BasketTray", tray)
 
+	# -- The ×N on a tray slot and the count on the basket emblem: a cream
+	# pill with an amber rim, the tray's own colours. PanelContainer base,
+	# because both badges are PanelContainers. --
+	var badge := StyleBoxFlat.new()
+	badge.bg_color = tokens.surface_card
+	badge.border_color = tokens.koperasi_tray_rule
+	badge.set_border_width_all(3)
+	badge.set_corner_radius_all(tokens.radius_pill)
+	badge.content_margin_left = 12
+	badge.content_margin_right = 12
+	badge.content_margin_top = 2
+	badge.content_margin_bottom = 2
+	theme.add_type("TrayBadge")
+	theme.set_type_variation("TrayBadge", "PanelContainer")
+	theme.set_stylebox("panel", "TrayBadge", badge)
+
+	# Display face: CLAUDE.md gives badges Boohong. Body step, dark ink.
+	theme.add_type("TrayBadgeLabel")
+	theme.set_type_variation("TrayBadgeLabel", "Label")
+	theme.set_font_size("font_size", "TrayBadgeLabel", tokens.font_body_size)
+	theme.set_color("font_color", "TrayBadgeLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "TrayBadgeLabel", tokens.font_display)
+
+	# -- The plank the tray's items stand on: one amber rule. --
+	var plank := StyleBoxFlat.new()
+	plank.bg_color = tokens.koperasi_tray_rule
+	plank.set_corner_radius_all(tokens.radius_sm)
+	theme.add_type("TrayPlank")
+	theme.set_type_variation("TrayPlank", "Panel")
+	theme.set_stylebox("panel", "TrayPlank", plank)
+
 
 ## The cutscene's dialogue text: one step up the scale from body, on the
 ## body face, over the Card panel Task 3 puts behind it.

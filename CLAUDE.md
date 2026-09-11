@@ -154,7 +154,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 94 suites, 1323 tests (2026-09-11).
+the Godot AI MCP `test_run` tool. 96 suites, 1339 tests (2026-09-11).
 
 Hard constraints, learned the hard way:
 
@@ -189,6 +189,20 @@ behavioral, because a lot of the UI can't be instantiated headlessly. Follow
 that pattern where it's established. Note what that buys and what it does not:
 a scan asserts the value you *set*, so it can confirm you changed what you
 meant to and can never tell you that you changed the wrong things.
+
+## Pull requests
+
+PRs open, check, review and merge through automation
+(`docs/superpowers/specs/2026-09-11-pr-automation-design.md`). **Finish a
+branch with the `ship-pr` skill** (`.claude/skills/ship-pr/SKILL.md`): it runs
+the full suite and a local review, opens the PR, and stamps the tested commit
+with `kejartes/editor-tests` and `kejartes/local-review`. GitHub adds
+`project-check` (headless Godot 4.6.2 loading every file) on every PR, and
+`claude-review` once the owner adds a key. `ci/auto_merge.sh` then merges
+**only `brineoutxd`'s PRs into `Textures`**, and only when every gate is green
+on a commit that already contains `Textures`. Label a PR `hold`, or leave it a
+draft, to stop it; anyone can still merge by hand. A stamp belongs to one
+commit: never post one for a commit the suite did not run on.
 
 ## Godot MCP
 
@@ -484,11 +498,9 @@ what each would need, is in the authoring guide's "Known gaps" section.
 
 ## Current work
 
-Branch `feat/asset-refresh-ui-pass`, off `Textures` (main), with `Textures`
-merged back into it on 2026-09-10. The asset refresh and UI pass is complete
-and pushed, not yet merged; the StudentList Warm UI Part 3 pass, and the
-minigame, sky and paper fixes, are committed on top. See
-`docs/superpowers/CHANGELOG.md`.
+Branch `feat/pr-automation`: the pull-request automation. Once its setup PR is
+merged by hand, the live test in
+`docs/superpowers/plans/2026-09-11-pr-automation.md` (Task 6) still has to run.
 
 Open: Plan C's RunResult redesign,
 `docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass

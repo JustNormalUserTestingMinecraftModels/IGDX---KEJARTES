@@ -8,6 +8,27 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — Pull requests open, check, review and merge themselves
+
+Every PR had been opened and merged by hand, and the repo had no CI. Now:
+
+- **`project-check`** runs on GitHub for every PR: headless Godot 4.6.2
+  imports the project and loads every script, scene and resource, checking
+  that each dependency exists. A scene pointing at a missing texture needs
+  that explicit check, because Godot logs the error and loads the scene
+  anyway. The walk skips nested projects the way the editor does; a naive one
+  reports 62 false failures in `-REFERENCE-/prototype`.
+- **`claude-review`** is a cloud Claude review with a `pass`/`block` verdict.
+  It stays skipped until the repo owner adds a key.
+- **The `ship-pr` skill** runs the full suite and a local review, pushes,
+  opens the PR and stamps the tested commit.
+- **`ci/auto_merge.sh`** merges `brineoutxd`'s PRs into `Textures` when every
+  gate is green on a commit that already contains `Textures`, flags PRs whose
+  base moved on, and re-points stacked PRs.
+
+Spec: `docs/superpowers/specs/2026-09-11-pr-automation-design.md`. Plan:
+`docs/superpowers/plans/2026-09-11-pr-automation.md`.
+
 ## 2026-09-11 — Delta rows, badge and Inventory values readable; the delta rows show at all
 
 `ResultDeltaLabel` bakes white so `self_modulate` can colour-code it, and all

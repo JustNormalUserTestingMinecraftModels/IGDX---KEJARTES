@@ -8,6 +8,32 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-11 — RunResult's row names readable
+
+The six row names on RunResult ("Minigame selesai" … "Murid ikut event") wore
+`ResultBodyLabel`: 22px cream `text_on_brand`, made for a dark ground, on the
+near-white `Card`. That measures 1.05:1, and the names barely showed.
+
+`RunResultRow.tscn`'s `NameLabel` now wears a new `RunResultNameLabel`:
+`text_primary` in the body face at `font_body_size + 8` (36px), the phone step
+`EventBodyLabel` and `CatatanLabel` already use. It measures 14.28:1. A runtime
+A/B on the live screen compared 28px and 36px; 28 was legible but small beside
+the 72px icons and 48px values.
+
+`ResultBodyLabel` itself is unchanged: the minigame score HUD's `TargetLabel`
+sits on a dark translucent pill and needs the cream. Its four other users are
+also on light grounds; that is logged in CLAUDE.md's outstanding debt.
+
+Three tests in `tests/test_run_result.gd` resolve a row the way the game draws
+it (the baked theme, in the tree):
+- the name contrasts with its card at WCAG AA (4.5:1) or better
+- it is at least the body size
+- its variation is one the bake declares. The plain-Label fallback is dark
+  body text, so the first two cannot see a missing variation.
+
+Verified live through the `lulus` rehearsal: all six rows at 36px and 14.28:1
+with no overrides; the widest name takes 352px of a 579px slot.
+
 ## 2026-09-11 — StatCheck on StudentCard's paper; one win stage for EndCutscene and RunResult
 
 Spec `docs/superpowers/specs/2026-09-11-statcheck-paper-and-shared-win-stage-design.md`,

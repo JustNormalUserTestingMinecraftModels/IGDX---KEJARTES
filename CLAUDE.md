@@ -420,6 +420,15 @@ falls back to `info["glyph"]` from `StatInfo`, and those glyphs are emoji, which
 the ban in `## Conventions` forbids. The trait popup was fixed the same way on
 2026-09-09 — real textures plus a display-font heading; this wants the same.
 
+**Cream `ResultBodyLabel` on light grounds (2026-09-11).** The variation is
+`text_on_brand` cream, made for a dark ground; only `MinigameScoreHUD`'s
+`TargetLabel` (on the dark translucent `ScoreHudPanel`) still has one. Four
+users sit on light surfaces and barely read: `TesNotice`'s `BodyLabel` on
+`notice.png` (~1.7:1), `MinigameResultPopup`'s `NameLabel` on `popup_bg.svg`
+(~1.04:1) and `ScorePrefixLabel` on `ResultStatPanel` (~1.2:1), and the HUD's
+`ComboLabel` on `ResultBadgePanel` (~1.05:1). RunResult's rows had the same
+bug and moved to `RunResultNameLabel`; a dark body variation fits these too.
+
 **Pending a balance pass.** `RunGrade`'s scoring weights (especially
 `MONEY_FULL_MARKS`) are estimates; `LombaMenari.best_combo` is tracked but not
 fed into the star rubric; the item skill-boost values in

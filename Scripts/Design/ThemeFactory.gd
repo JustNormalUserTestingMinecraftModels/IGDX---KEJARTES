@@ -580,6 +580,15 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# the secondary brown is the half of the problem the size alone
 		# does not fix.
 		["CatatanLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
+		# RunResult's report rows: the name beside each figure, on the
+		# near-white Card. It shipped in ResultBodyLabel, whose cream
+		# text_on_brand measures 1.05:1 on surface_card -- all six names
+		# barely showed (2026-09-11). Not a recolour of that variation: the
+		# minigame score HUD still sets it on a dark translucent pill, where
+		# cream is what reads. Body face at the same phone step as the two
+		# above; at 36px the widest name, "Uang dari wirausaha", takes 352 of
+		# the 579px beside "24000G" (measured live, lulus rehearsal).
+		["RunResultNameLabel", tokens.font_body_size + 8, tokens.text_primary, false, false],
 		# The trait popup's header sits on a per-trait tinted panel
 		# (TraitPopupHeader, self_modulated brand_primary for a quirk and
 		# cat_istirahat for a persona), so its two labels need CREAM text.
@@ -665,8 +674,9 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_constant("shadow_offset_x", name, 2)
 		theme.set_constant("shadow_offset_y", name, 2)
 
-	# (Unused since Plan A deleted SemesterEnd -- kept baked; removing a
-	# variation needs a theme rebake, which is out of scope.)
+	# SemesterEnd, which these two were made for, is gone (Plan A); both
+	# outlived it. They still assume a DARK ground -- ResultBodyLabel is
+	# cream and vanishes on a light Card (see RunResultNameLabel above).
 	# SemesterEnd was the one screen that deliberately kept a dark,
 	# certificate-like backdrop instead of the app's usual light surface
 	# (the payoff/results reveal), so its outer labels needed their own

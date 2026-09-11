@@ -63,9 +63,11 @@ hand. As of this pass:
 - `CaptionLabel` / `MicroLabel` — secondary, smaller text.
 - `BarLabel` — text drawn directly on a `StatBar` fill (light text, thinner
   dark outline than `DisplayLabel` so it doesn't swallow small text).
-- `ResultHeroLabel` / `ResultBodyLabel` — SemesterEnd-only, light-on-dark
-  variants for its certificate-style dark backdrop (the one screen that
-  intentionally doesn't use the light-surface defaults).
+- `ResultHeroLabel` / `ResultBodyLabel` — light-on-dark variants, made for
+  SemesterEnd's dark backdrop and outliving it. They need a **dark ground**:
+  `ResultBodyLabel` is cream and all but vanishes on a `Card`.
+- `RunResultNameLabel` — dark body text on a light `Card` at the phone step
+  (`font_body_size + 8`): the name beside each figure in RunResult's report.
 
 **Progress**:
 - `StatBar` — the mood/energy/skill bars. Fill renders white so callers tint

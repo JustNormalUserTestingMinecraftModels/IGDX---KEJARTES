@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dnunxu5lmnlca"]
 
-[ext_resource type="Script" path="res://Scripts/EndGame/RunResultRow.gd" id="1_2ghnb"]
+[ext_resource type="Script" uid="uid://c4lrp72amh5ls" path="res://Scripts/EndGame/RunResultRow.gd" id="1_2ghnb"]
 [ext_resource type="Texture2D" uid="uid://88na4148i5d" path="res://Assets/Images/UI/Placeholders/icon_poin.svg" id="2_osbgl"]
 
 [node name="RunResultRow" type="PanelContainer" unique_id=1802971213]
@@ -21,7 +21,7 @@ stretch_mode = 5
 [node name="NameLabel" type="Label" parent="Row" unique_id=2129082973]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"ResultBodyLabel"
+theme_type_variation = &"RunResultNameLabel"
 
 [node name="ValueLabel" type="Label" parent="Row" unique_id=944812355]
 layout_mode = 2

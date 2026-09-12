@@ -432,7 +432,11 @@ existing cues rather than a dedicated `sfx_item_apply`.
 every `desc` string in `ItemDatabase.DEFAULT_ITEMS` (shown verbatim in
 `ItemDetailSheet`), is marked `[PLACEHOLDER]`.
 
-**Other art gaps.** `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in
+**Other art gaps.** `Assets/Images/EndGame/ujian_sekolah.png` (TesNotice's
+Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to
+alpha, colour un-premultiplied, cropped -- not exported transparent; swap in a
+real transparent export at the same path when one exists.
+`EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in
 for final art (an `@export`, so an Inspector swap). `InventorySlot`'s high-count
 `Shine` overlay is a plain white `ColorRect` with no texture.
 
@@ -447,8 +451,10 @@ shrinks to its 96px patch minimum and every line floats on the dark scrim; it
 has shipped like this since the screen was built (2026-09-02). Measured live,
 glyphs hidden: `BodyLabel`'s cream `ResultBodyLabel` reads there (6.9:1 at
 worst; dark ink would fall to 1.1:1), but `Kicker` "PENGUMUMAN" is 1.8:1 and
-`GradeLabel` "Kelas 7" 1.4:1. The title's 1033px minimum width also overruns
-the 80px margins, and `notice.png` is a megaphone icon, not a card surface.
+`GradeLabel` "Kelas 7" 1.4:1. (Since 2026-09-12 the title is per-grade logo
+art -- `ujian_sekolah.png` for Kelas 7-8, `ujian_nasional.png` for Kelas 9 --
+so the old text title's margin overrun is gone.)
+`notice.png` is a megaphone icon, not a card surface.
 Either rebuild the card as a `Card` panel (text goes dark on cream, the
 megaphone becomes an icon) or commit to text over the scrim (the two dark
 labels go cream).

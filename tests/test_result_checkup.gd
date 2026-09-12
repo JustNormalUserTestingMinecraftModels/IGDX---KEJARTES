@@ -541,6 +541,25 @@ func test_checkup_scene_carries_an_idle_confetti_node() -> void:
 	inst.free()
 
 
+## The weekly celebration is the two-cannon paper burst, not the shared
+## top-down CelebrationConfetti (2026-09-12 paper confetti spec). The
+## ApplyItemScreen keeps CelebrationConfetti; only the checkup moved.
+func test_checkup_fires_the_paper_confetti() -> void:
+	var src := _source(_CHECKUP_SCRIPT)
+	assert_true(src.contains("PaperConfetti.tscn"),
+		"the checkup must fire PaperConfetti.tscn")
+	assert_true(not src.contains("CelebrationConfetti.tscn"),
+		"the checkup must no longer fire CelebrationConfetti.tscn")
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	var fx := inst.get_node_or_null("Celebration")
+	assert_true(fx != null and fx.scene_file_path.ends_with("PaperConfetti.tscn"),
+		"the Celebration marker must be a PaperConfetti instance")
+	if fx != null:
+		assert_true(fx.position.x < 0.0 and fx.position.y > 1500.0,
+			"the marker must sit at the bottom-left corner")
+	inst.free()
+
+
 ## The four variations the recap banner and tab bar need. Without these
 ## the screen would have to reach for theme_override_*, which the project
 ## forbids (2026-09-03 spec section 8).

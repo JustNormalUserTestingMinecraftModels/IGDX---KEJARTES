@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_ouvge"]
 [ext_resource type="PackedScene" uid="uid://df8hmrsqlb12n" path="res://Scenes/SchoolSimulation/WeekRecapBanner.tscn" id="4_5y4mq"]
 [ext_resource type="PackedScene" uid="uid://nb2qunnb3b44" path="res://Scenes/SchoolSimulation/WeekHistoryRow.tscn" id="4_qpkja"]
-[ext_resource type="PackedScene" uid="uid://q8q7bf0kakwd" path="res://Scenes/SchoolSimulation/CelebrationConfetti.tscn" id="4_yy1v4"]
+[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/PaperConfetti.tscn" id="6_qpkja"]
 
 [sub_resource type="Gradient" id="Gradient_qpkja"]
 colors = PackedColorArray(0.93333334, 0.9529412, 1, 0.8, 0.93333334, 0.9529412, 1, 0)
@@ -141,6 +141,6 @@ size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
 text = "Selesai & Lanjut"
 
-[node name="Celebration" parent="." unique_id=1147740379 instance=ExtResource("4_yy1v4")]
+[node name="Celebration" parent="." unique_id=2021659799 instance=ExtResource("6_qpkja")]
 z_index = 100
-position = Vector2(540, -40)
+position = Vector2(-40, 1780)

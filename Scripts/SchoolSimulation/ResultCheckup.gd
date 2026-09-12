@@ -67,7 +67,7 @@ const PANE_SLIDE_DISTANCE := 40.0
 ## The history row template, WeekHistoryRow.tscn.
 @export var history_row_scene: PackedScene
 
-const _CELEBRATION_SCENE := "res://Scenes/SchoolSimulation/CelebrationConfetti.tscn"
+const _CELEBRATION_SCENE := "res://Scenes/SchoolSimulation/PaperConfetti.tscn"
 
 @onready var title_label: Label = $Margin/VBox/HeaderPanel/TitleLabel
 @onready var subtitle_label: Label = $Margin/VBox/HeaderPanel/SubtitleLabel

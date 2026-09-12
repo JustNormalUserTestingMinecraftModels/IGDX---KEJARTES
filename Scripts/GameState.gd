@@ -364,41 +364,48 @@ func _ready():
 	load_inventory()
 
 # --- Converter: Dictionary → StudentData (for simulation) ---
+## One roster entry as a simulation StudentData. The single conversion rule:
+## convert_to_student_data_array() and the item screen's student cards both
+## go through here, so a student can never be converted two different ways.
+func student_data_from_dict(dict: Dictionary) -> StudentData:
+	var sd = StudentData.new()
+	sd.id = dict.get("id", 0)
+	sd.student_name = dict.get("name", "")
+	sd.akademis = dict.get("akademis1", 50.0)
+	sd.seni_budaya = dict.get("akademis2", 50.0)
+	sd.olahraga = dict.get("akademis3", 50.0)
+	sd.mood = dict.get("kepribadian1", 80.0)
+	sd.energy = dict.get("kepribadian2", 80.0)
+
+	# 0.0, not 50.0: count_targets_cleared() reads the same three keys
+	# with a 0.0 default, and the two sides of the bridge must agree on
+	# what an uninitialized target looks like. See target_cleared().
+	sd.target_akademis1 = dict.get("target_akademis1", 0.0)
+	sd.target_akademis2 = dict.get("target_akademis2", 0.0)
+	sd.target_akademis3 = dict.get("target_akademis3", 0.0)
+	sd.target_kepribadian1 = dict.get("target_kepribadian1", 50.0)
+	sd.target_kepribadian2 = dict.get("target_kepribadian2", 50.0)
+	sd.quirk = dict.get("quirk", "")
+	sd.persona = dict.get("persona", "")
+	sd.personality = dict.get("personality", "Santai")
+	sd.profil = dict.get("profil", "")
+	sd.splash_path = dict.get("splash", "")
+
+	var port_path = dict.get("portrait", "")
+	if port_path != "" and ResourceLoader.exists(port_path):
+		sd.avatar_texture = load(port_path)
+
+	# Map hobby_category: "Akademik" → "Akademis"
+	var hobby = dict.get("hobby_category", "")
+	sd.specialty_category = "Akademis" if hobby == "Akademik" else hobby
+	sd.record_initial_stats()
+	return sd
+
+
 func convert_to_student_data_array() -> Array[StudentData]:
 	var result: Array[StudentData] = []
 	for dict in approved_students:
-		var sd = StudentData.new()
-		sd.id = dict.get("id", 0)
-		sd.student_name = dict.get("name", "")
-		sd.akademis = dict.get("akademis1", 50.0)
-		sd.seni_budaya = dict.get("akademis2", 50.0)
-		sd.olahraga = dict.get("akademis3", 50.0)
-		sd.mood = dict.get("kepribadian1", 80.0)
-		sd.energy = dict.get("kepribadian2", 80.0)
-		
-		# 0.0, not 50.0: count_targets_cleared() reads the same three keys
-		# with a 0.0 default, and the two sides of the bridge must agree on
-		# what an uninitialized target looks like. See target_cleared().
-		sd.target_akademis1 = dict.get("target_akademis1", 0.0)
-		sd.target_akademis2 = dict.get("target_akademis2", 0.0)
-		sd.target_akademis3 = dict.get("target_akademis3", 0.0)
-		sd.target_kepribadian1 = dict.get("target_kepribadian1", 50.0)
-		sd.target_kepribadian2 = dict.get("target_kepribadian2", 50.0)
-		sd.quirk = dict.get("quirk", "")
-		sd.persona = dict.get("persona", "")
-		sd.personality = dict.get("personality", "Santai")
-		sd.profil = dict.get("profil", "")
-		sd.splash_path = dict.get("splash", "")
-		
-		var port_path = dict.get("portrait", "")
-		if port_path != "" and ResourceLoader.exists(port_path):
-			sd.avatar_texture = load(port_path)
-		
-		# Map hobby_category: "Akademik" → "Akademis"
-		var hobby = dict.get("hobby_category", "")
-		sd.specialty_category = "Akademis" if hobby == "Akademik" else hobby
-		sd.record_initial_stats()
-		result.append(sd)
+		result.append(student_data_from_dict(dict))
 	return result
 
 # Get jadwal for a day across all approved students

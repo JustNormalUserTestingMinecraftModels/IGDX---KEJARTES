@@ -58,7 +58,7 @@ func test_caption_reads_on_the_panel() -> void:
 
 func _luminance(c: Color) -> float:
 	var ch := func(v: float) -> float:
-		return v / 12.92 if v <= 0.03928 else pow((v + 0.055) / 1.055, 2.4)
+		return v / 12.92 if v <= 0.04045 else pow((v + 0.055) / 1.055, 2.4)
 	return 0.2126 * ch.call(c.r) + 0.7152 * ch.call(c.g) + 0.0722 * ch.call(c.b)
 
 

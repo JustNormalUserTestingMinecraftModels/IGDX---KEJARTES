@@ -36,12 +36,10 @@ signal _summary_closed
 @export var buat_batik_scene: PackedScene
 ## Same as buat_batik_scene, for the LombaMenari minigame.
 @export var lomba_menari_scene: PackedScene
-## Popup shown before an interactive random event (accept/decline).
+## The sliding warning shown before every minigame and random event.
 @export var event_warning_scene: PackedScene
 ## Popup shown at the end of the week's simulation with the final tally.
 @export var result_checkup_scene: PackedScene
-## Popup shown for a non-interactive random event (applies automatically).
-@export var event_announcement_scene: PackedScene
 ## Dialog for interactive events that need the player to pick which
 ## students take part.
 @export var event_student_select_scene: PackedScene
@@ -926,18 +924,17 @@ func _roll_event(day_name: String) -> void:
 	elif outcome == "Minigame":
 		var category_selected = _pick_minigame_category(w_akademis, w_olahraga, w_seni)
 
-		var tokens := Juice.tokens()
 		if category_selected == "Akademis":
 			var scene = akademis_scenes[randi() % akademis_scenes.size()]
-			await _show_event_warning("KEGIATAN AKADEMIS!", tokens.cat_akademis)
+			await _show_event_warning("KEGIATAN AKADEMIS!")
 			await _play_minigame(scene, "Akademis")
 		elif category_selected == "Olahraga":
 			var scene = olahraga_scenes[randi() % olahraga_scenes.size()]
-			await _show_event_warning("KEGIATAN OLAHRAGA!", tokens.cat_olahraga)
+			await _show_event_warning("KEGIATAN OLAHRAGA!")
 			await _play_minigame(scene, "Olahraga")
 		else:
 			var scene = seni_scenes[randi() % seni_scenes.size()]
-			await _show_event_warning("KEGIATAN SENI BUDAYA!", tokens.cat_senibudaya)
+			await _show_event_warning("KEGIATAN SENI BUDAYA!")
 			await _play_minigame(scene, "SeniBudaya")
 
 	else:
@@ -997,7 +994,7 @@ func _trigger_random_event(day_name: String) -> void:
 			var nrg_val := Balance.EVENT_AKADEMIS_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
-				"Les Tambahan Akademis 📚",
+				"Les Tambahan Akademis",
 				"Sekolah membuka kelas Les Bimbingan Intensif setelah jam pelajaran.",
 				"Akademis +%d" % int(stat_val),
 				"Energy %d" % int(nrg_val),
@@ -1009,7 +1006,7 @@ func _trigger_random_event(day_name: String) -> void:
 			var nrg_val := Balance.EVENT_OLAHRAGA_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
-				"Latihan Olahraga Ekstra ⚽",
+				"Latihan Olahraga Ekstra",
 				"Fasilitas lapangan terbuka gratis untuk sesi latihan bersama.",
 				"Olahraga +%d, Mood +%d" % [int(stat_val), int(mood_val)],
 				"Energy %d" % int(nrg_val),
@@ -1021,14 +1018,14 @@ func _trigger_random_event(day_name: String) -> void:
 			var nrg_val := Balance.EVENT_SENI_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
-				"Workshop Sanggar Seni 🎨",
+				"Workshop Sanggar Seni",
 				"Terdapat workshop pembuatan kerajinan dan tari daerah setempat.",
 				"Seni Budaya +%d, Mood +%d" % [int(stat_val), int(mood_val)],
 				"Energy %d" % int(nrg_val),
 				"SeniBudaya", stat_val, nrg_val, mood_val
 			)
 		3:
-			await _show_event_announcement("Kejutan Nasi Kotak Orang Tua!")
+			await _show_event_warning("Kejutan Nasi Kotak Orang Tua!")
 			# Biang Onar: global positive events are stronger
 			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1041,7 +1038,7 @@ func _trigger_random_event(day_name: String) -> void:
 			await _animate_embedded_stat_updates(0.6)
 			await get_tree().create_timer(0.8).timeout
 		4:
-			await _show_event_announcement("Hujan Deras & Jalanan Licin!")
+			await _show_event_warning("Hujan Deras & Jalanan Licin!")
 			# Biang Onar: global negative events are worse
 			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1059,7 +1056,7 @@ func _handle_interactive_event(
 	benefit: String, cost: String, category: String,
 	stat_boost: float, energy_cost: float, mood_boost: float
 ) -> void:
-	await _show_event_announcement(title)
+	await _show_event_warning(title)
 	
 	var dialog_scene = event_student_select_scene
 	if dialog_scene == null:
@@ -1455,7 +1452,10 @@ func _minigame_bgm_id(game_scene: PackedScene, category: String) -> StringName:
 	return &""
 
 # ─────────────────────────────────────────────────────────────────────────────
-func _show_event_warning(event_label: String, accent_color: Color) -> void:
+## Slide the full-screen event warning through once, captioned with what is
+## coming -- a minigame's subject or a random event's name -- and wait for it
+## to leave (2026-09-12 event-cards spec, 2.3). The warning plays its own cue.
+func _show_event_warning(caption: String) -> void:
 	var warning_scene = event_warning_scene
 	if warning_scene == null:
 		warning_scene = load("res://Scenes/SchoolSimulation/EventWarning.tscn")
@@ -1463,33 +1463,14 @@ func _show_event_warning(event_label: String, accent_color: Color) -> void:
 	if warning_scene == null:
 		return
 
-	AudioDirector.play_sfx(&"popup_open")
 	var warning_instance = warning_scene.instantiate()
 	add_child(warning_instance)
-	
+
 	if warning_instance.has_method("play_warning"):
-		await warning_instance.play_warning(event_label, accent_color)
+		await warning_instance.play_warning(caption)
 	else:
 		await get_tree().create_timer(1.5).timeout
 		warning_instance.queue_free()
-
-func _show_event_announcement(event_label: String) -> void:
-	var ann_scene = event_announcement_scene
-	if ann_scene == null:
-		ann_scene = load("res://Scenes/SchoolSimulation/EventAnnouncement.tscn")
-
-	if ann_scene == null:
-		return
-
-	AudioDirector.play_sfx(&"popup_open")
-	var ann_instance = ann_scene.instantiate()
-	add_child(ann_instance)
-	
-	if ann_instance.has_method("play_announcement"):
-		await ann_instance.play_announcement(event_label)
-	else:
-		await get_tree().create_timer(1.5).timeout
-		ann_instance.queue_free()
 
 func force_event(event_id: int) -> void:
 	# Trigger a specific event immediately during simulation
@@ -1515,7 +1496,7 @@ func force_event(event_id: int) -> void:
 			var nrg_val := Balance.EVENT_AKADEMIS_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
-				"Les Tambahan Akademis 📚",
+				"Les Tambahan Akademis",
 				"Sekolah membuka kelas Les Bimbingan Intensif setelah jam pelajaran.",
 				"Akademis +%d" % int(stat_val),
 				"Energy %d" % int(nrg_val),
@@ -1527,7 +1508,7 @@ func force_event(event_id: int) -> void:
 			var nrg_val := Balance.EVENT_OLAHRAGA_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
-				"Latihan Olahraga Ekstra ⚽",
+				"Latihan Olahraga Ekstra",
 				"Fasilitas lapangan terbuka gratis untuk sesi latihan bersama.",
 				"Olahraga +%d, Mood +%d" % [int(stat_val), int(mood_val)],
 				"Energy %d" % int(nrg_val),
@@ -1539,14 +1520,14 @@ func force_event(event_id: int) -> void:
 			var nrg_val := Balance.EVENT_SENI_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			await _handle_interactive_event(
 				day_name,
-				"Workshop Sanggar Seni 🎨",
+				"Workshop Sanggar Seni",
 				"Terdapat workshop pembuatan kerajinan dan tari daerah setempat.",
 				"Seni Budaya +%d, Mood +%d" % [int(stat_val), int(mood_val)],
 				"Energy %d" % int(nrg_val),
 				"SeniBudaya", stat_val, nrg_val, mood_val
 			)
 		3:
-			await _show_event_announcement("Kejutan Nasi Kotak Orang Tua!")
+			await _show_event_warning("Kejutan Nasi Kotak Orang Tua!")
 			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var names: Array[String] = []
@@ -1557,7 +1538,7 @@ func force_event(event_id: int) -> void:
 			await _animate_embedded_stat_updates(0.6)
 			await get_tree().create_timer(0.8).timeout
 		4:
-			await _show_event_announcement("Hujan Deras & Jalanan Licin!")
+			await _show_event_warning("Hujan Deras & Jalanan Licin!")
 			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var names: Array[String] = []

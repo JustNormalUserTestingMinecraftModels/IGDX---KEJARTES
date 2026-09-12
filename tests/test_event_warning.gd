@@ -135,3 +135,38 @@ func test_one_cue_and_nothing_built() -> void:
 	assert_false(src.contains("popup_open"), "SchoolDay's old second cue is gone")
 	assert_false(src.contains(".new("), "the scene is fully authored")
 	assert_false(src.contains("⚠"), "no emoji fallback")
+
+
+# ── SchoolDay uses it for everything ─────────────────────────────────────────
+
+const _SCHOOL_DAY := "res://Scripts/SchoolSimulation/SchoolDay.gd"
+
+
+func test_school_day_sends_every_interruption_through_the_slide() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY)
+	assert_false(src.contains("_show_event_announcement"), "one warning for both paths")
+	assert_false(src.contains("event_announcement_scene"), "the announcement export is gone")
+	assert_contains(src, "func _show_event_warning(caption: String)")
+	for caption in ["KEGIATAN AKADEMIS!", "KEGIATAN OLAHRAGA!", "KEGIATAN SENI BUDAYA!"]:
+		assert_contains(src, '_show_event_warning("%s")' % caption)
+	var start := src.find("func _show_event_warning")
+	var body := src.substr(start, src.find("\nfunc ", start + 1) - start)
+	assert_false(body.contains("popup_open"), "the warning plays its own single cue")
+
+
+## Scoped to the three interactive event titles, which become the warning's
+## caption. SchoolDay's mid-day pill code still uses these glyphs as internal
+## markers that it strips before display; that is existing debt outside this
+## change, logged for the final review.
+func test_event_titles_carry_no_emoji() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY)
+	for title in ["Les Tambahan Akademis", "Latihan Olahraga Ekstra", "Workshop Sanggar Seni"]:
+		assert_contains(src, '"%s"' % title, "the event title %s is still there" % title)
+	for tagged in ["Les Tambahan Akademis 📚", "Latihan Olahraga Ekstra ⚽", "Workshop Sanggar Seni 🎨"]:
+		assert_false(src.contains(tagged),
+			"event titles reach the warning's caption; \"%s\" still carries emoji iconography" % tagged)
+
+
+func test_school_day_scene_no_longer_wires_the_announcement() -> void:
+	var scene := FileAccess.get_file_as_string("res://Scenes/SchoolSimulation/SchoolDay.tscn")
+	assert_false(scene.contains("EventAnnouncement.tscn"))

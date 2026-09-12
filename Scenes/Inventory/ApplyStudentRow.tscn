@@ -1,68 +1,44 @@
-[gd_scene format=3 uid="uid://chyglpo7i20kv"]
+[gd_scene format=3 uid="uid://jgyb1h4fd31w"]
 
-[ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="1_theme"]
-[ext_resource type="Script" uid="uid://yn6ejdk25ver" path="res://Scripts/Inventory/ApplyStudentRow.gd" id="2_script"]
-[ext_resource type="PackedScene" uid="uid://djqecanahebv5" path="res://Scenes/Inventory/StatBarRow.tscn" id="3_barrow"]
+[ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="1_sqjgo"]
+[ext_resource type="Script" uid="uid://yn6ejdk25ver" path="res://Scripts/Inventory/ApplyStudentRow.gd" id="2_l2rim"]
+[ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="3_kqifd"]
+[ext_resource type="Texture2D" uid="uid://cx2se7may2fvu" path="res://Assets/Images/UI/Placeholders/icon_check.svg" id="4_fis8l"]
 
-[node name="ApplyStudentRow" type="PanelContainer" unique_id=1677160895]
+[node name="ApplyStudentRow" type="Button" unique_id=1010597170]
 size_flags_horizontal = 3
-theme = ExtResource("1_theme")
-theme_type_variation = &"Card"
-script = ExtResource("2_script")
-
-[node name="Margin" type="MarginContainer" parent="." unique_id=829482806]
-layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 16
-
-[node name="HBox" type="HBoxContainer" parent="Margin" unique_id=1530897872]
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="Check" type="CheckBox" parent="Margin/HBox" unique_id=1467424881]
-custom_minimum_size = Vector2(110, 110)
-layout_mode = 2
-size_flags_vertical = 4
 focus_mode = 0
+theme = ExtResource("1_sqjgo")
+theme_type_variation = &"EventSelectCard"
+toggle_mode = true
+script = ExtResource("2_l2rim")
 
-[node name="Portrait" type="TextureRect" parent="Margin/HBox" unique_id=109704464]
-custom_minimum_size = Vector2(120, 120)
-layout_mode = 2
-size_flags_vertical = 4
+[node name="Card" parent="." unique_id=385890646 instance=ExtResource("3_kqifd")]
+layout_mode = 0
+
+[node name="SelectBadge" type="TextureRect" parent="Card" unique_id=705421495]
+visible = false
+layout_mode = 0
+offset_left = 900.0
+offset_top = 318.0
+offset_right = 972.0
+offset_bottom = 390.0
+mouse_filter = 2
+texture = ExtResource("4_fis8l")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Col" type="VBoxContainer" parent="Margin/HBox" unique_id=778824612]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
+[node name="LelahChip" type="PanelContainer" parent="Card" unique_id=269153989]
+visible = false
+layout_mode = 0
+offset_left = 262.0
+offset_top = 30.0
+mouse_filter = 2
+theme_type_variation = &"SunkenPanel"
 
-[node name="HeaderRow" type="HBoxContainer" parent="Margin/HBox/Col" unique_id=585574732]
+[node name="Text" type="Label" parent="Card/LelahChip" unique_id=1752736101]
 layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="NameLabel" type="Label" parent="Margin/HBox/Col/HeaderRow" unique_id=534068657]
-layout_mode = 2
-theme_type_variation = &"H2Label"
-text = "Nama Siswa"
-
-[node name="BadgeSlot" type="HBoxContainer" parent="Margin/HBox/Col/HeaderRow" unique_id=437460707]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="BarRowAkademis" parent="Margin/HBox/Col" unique_id=1482620063 instance=ExtResource("3_barrow")]
-layout_mode = 2
-
-[node name="BarRowSeni" parent="Margin/HBox/Col" unique_id=1388802523 instance=ExtResource("3_barrow")]
-layout_mode = 2
-
-[node name="BarRowOlahraga" parent="Margin/HBox/Col" unique_id=1163804452 instance=ExtResource("3_barrow")]
-layout_mode = 2
-
-[node name="BarRowMood" parent="Margin/HBox/Col" unique_id=1294043261 instance=ExtResource("3_barrow")]
-layout_mode = 2
-
-[node name="BarRowEnergy" parent="Margin/HBox/Col" unique_id=1028250587 instance=ExtResource("3_barrow")]
-layout_mode = 2
+theme_type_variation = &"BarLabel"
+text = " LELAH "
+horizontal_alignment = 1
+vertical_alignment = 1

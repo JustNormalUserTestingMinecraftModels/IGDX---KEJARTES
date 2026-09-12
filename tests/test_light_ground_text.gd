@@ -171,21 +171,19 @@ func test_the_item_sheets_effect_values_read_on_its_card() -> void:
 		_assert_reads(label, ground, "in the item sheet's %s" % row)
 
 
-## The apply-item preview beside each bar, in every state it can be left in:
-## white "--" straight after setup(), then set_preview()'s "(+5)" tinted
-## state_success and "MAKS" and "--" tinted text_secondary. Its ground is
-## the row's own Card.
+## The apply-item preview readout. Since 2026-09-12 it is the DaySummary
+## card's stat number laid over its dark track, so it is measured on the
+## track's own flat fill in each state the preview leaves it in: standing,
+## previewing, and back.
 func test_the_apply_rows_preview_reads_on_its_card() -> void:
 	var row := _apply_row()
-	var ground := _flat_fill(row)
-	var gain: Label = row.get_node("Margin/HBox/Col/BarRowAkademis/DeltaLabel")
-	var full: Label = row.get_node("Margin/HBox/Col/BarRowMood/DeltaLabel")
-	_assert_reads(gain, ground, "in the apply-item row before any preview")
+	var value: Label = row.get_node("Card/StatRow1/Value")
+	var ground := _track_fill(row.get_node("Card/StatRow1/Track"))
+	_assert_reads(value, ground, "on the apply-item card before any preview")
 	row.set_preview(true)
-	_assert_reads(gain, ground, "in the apply-item preview")
-	_assert_reads(full, ground, "in the apply-item preview")
+	_assert_reads(value, ground, "in the apply-item preview")
 	row.set_preview(false)
-	_assert_reads(gain, ground, "in the apply-item row after the preview")
+	_assert_reads(value, ground, "on the apply-item card after the preview")
 
 
 # ─────────────────────────────────────────────────────── every label
@@ -204,7 +202,7 @@ func test_every_label_here_wears_a_variation_the_bake_declares() -> void:
 		hud.get_node("Panel/Row/ComboChip/ComboRow/ComboLabel"),
 		hud.get_node("Panel/Row/TargetLabel"),
 		_item_sheet().get_node("Sheet/Margin/VBox/EfekList/RowAkademis/ValueLabel"),
-		_apply_row().get_node("Margin/HBox/Col/BarRowAkademis/DeltaLabel")]
+		_apply_row().get_node("Card/StatRow1/Value")]
 	for direction in [1.0, -1.0]:
 		var configured := _configured_popup("Akademis", direction)
 		labels.append(configured.get_node(_BADGE + "/BadgeRow/BadgeLabel"))
@@ -342,6 +340,14 @@ func _flat_fill(panel: Control) -> Color:
 	assert_true(box.bg_color.a >= 0.99,
 		"%s's fill is translucent; measure what shows through it" % panel.name)
 	return box.bg_color
+
+
+## A ProgressBar's empty-track colour: the flat fill of its "background"
+## stylebox, which is what a label laid over the track reads against.
+func _track_fill(bar: Control) -> Color:
+	var box := bar.get_theme_stylebox("background") as StyleBoxFlat
+	assert_true(box != null, "%s's track must be a flat fill to be measured" % bar.name)
+	return box.bg_color if box != null else Color.BLACK
 
 
 ## The colour a textured panel paints behind its content: the mean of the

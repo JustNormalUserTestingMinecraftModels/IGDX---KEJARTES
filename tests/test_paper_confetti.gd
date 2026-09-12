@@ -113,6 +113,37 @@ func test_paper_falls_rather_than_parking() -> void:
 		root.free()
 
 
+## Turbulence drains the launch: it blends each particle's velocity toward
+## the noise field every frame, and at influence 0.08-0.16 it held the whole
+## arc below y 1300 when the spec wants the upper third (live check,
+## 2026-09-12). Spin, flip and drag carry the paper feel without it.
+func test_turbulence_stays_off() -> void:
+	var root := _instance()
+	for c in _cannons(root):
+		var mat := c.process_material as ParticleProcessMaterial
+		if mat != null:
+			assert_true(not mat.turbulence_enabled,
+				"%s turbulence must stay off -- it drains the launch" % c.name)
+	if root != null:
+		root.free()
+
+
+## Without particle_flag_disable_z a 2D emitter ignores angle and
+## angular_velocity: every piece stood upright in the live check
+## (2026-09-12), CelebrationConfetti's included. The spin is half of what
+## makes a flat sheet read as paper.
+func test_pieces_can_spin() -> void:
+	var root := _instance()
+	for c in _cannons(root):
+		var mat := c.process_material as ParticleProcessMaterial
+		if mat != null:
+			assert_true(mat.particle_flag_disable_z,
+				"%s needs particle_flag_disable_z or angle/spin are ignored" % c.name)
+			assert_gt(mat.angular_velocity_max, 0.0, "%s must spin" % c.name)
+	if root != null:
+		root.free()
+
+
 ## One ShaderMaterial, shared, running the flutter shader.
 func test_both_cannons_share_the_flutter_shader() -> void:
 	var root := _instance()

@@ -8,6 +8,37 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-12 — Paper confetti on the week-end checkup
+
+Plan `docs/superpowers/plans/2026-09-12-paper-confetti.md`. ResultCheckup's
+celebration is now `PaperConfetti.tscn`: two cannons at the bottom corners
+fire red, yellow and blue sheets up and inward, and they spin and flutter
+down. `Scripts/Shaders/paper_flutter.gdshader` fakes the 3D flip by
+squashing each quad on its own x axis by a per-particle cosine, and shades
+the back face. Air drag set below gravity makes the pieces hang instead of
+dropping. The week-gained gate and its timing are unchanged.
+`CelebrationConfetti.tscn` is untouched and still serves ApplyItemScreen.
+
+**The live check changed two planned values.** Turbulence (influence
+0.08–0.16) blends velocity toward the noise field every frame and held the
+whole arc below y 1300, so it is off. And a 2D `ParticleProcessMaterial`
+ignores `angle` and `angular_velocity` unless `particle_flag_disable_z` is
+set, so every piece stood upright until that flag went on. That is also true
+of the older `CelebrationConfetti`, whose white chips have never spun. Both
+values are pinned by tests.
+
+**Two verification traps.** At `Engine.time_scale = 0` every
+`GPUParticles2D` is invisible, so particle screenshots need 0.02. And
+deleting a property line from a `.tscn` does not reset it in the editor's
+cache: an in-place reload applies only the properties written in the file,
+so the editor kept `turbulence_enabled = true` while a fresh game load
+correctly read false.
+
+On screens wider than 9:16 the right cannon lands short of the edge. That
+was accepted, not fixed. At 1.2 s a few pieces reach the top edge, a little
+above the spec's "upper third". Lower `initial_velocity` if that reads as
+too much.
+
 ## 2026-09-11 — Koperasi rework, Part 2
 
 Plan `docs/superpowers/plans/2026-09-11-koperasi-part-2.md`, from the Part 2

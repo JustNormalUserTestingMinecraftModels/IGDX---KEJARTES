@@ -1,0 +1,85 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" uid="uid://skr3tjxap0qw" path="res://Assets/Images/Particles/particle_confetti.png" id="1_paper"]
+[ext_resource type="Script" uid="uid://dirvyxt44yitc" path="res://Scripts/SchoolSimulation/RewardParticles.gd" id="2_paper"]
+[ext_resource type="Shader" path="res://Scripts/Shaders/paper_flutter.gdshader" id="3_paper"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flutter"]
+shader = ExtResource("3_paper")
+shader_parameter/flip_speed = 7.0
+shader_parameter/flip_speed_jitter = 0.5
+shader_parameter/back_shade = 0.35
+
+[sub_resource type="Gradient" id="Gradient_rgb"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.3333, 0.6667)
+colors = PackedColorArray(0.8980392, 0.28235295, 0.3019608, 1, 1, 0.7882353, 0.23529412, 1, 0.23137255, 0.50980395, 0.9647059, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_rgb"]
+gradient = SubResource("Gradient_rgb")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_left"]
+emission_shape = 1
+emission_sphere_radius = 20.0
+angle_max = 360.0
+direction = Vector3(0.45, -1, 0)
+spread = 14.0
+initial_velocity_min = 1800.0
+initial_velocity_max = 2400.0
+angular_velocity_min = -180.0
+angular_velocity_max = 180.0
+gravity = Vector3(0, 900, 0)
+damping_min = 560.0
+damping_max = 640.0
+scale_min = 0.25
+scale_max = 0.4
+color_initial_ramp = SubResource("GradientTexture1D_rgb")
+turbulence_enabled = true
+turbulence_noise_strength = 1.5
+turbulence_influence_min = 0.08
+turbulence_influence_max = 0.16
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_right"]
+emission_shape = 1
+emission_sphere_radius = 20.0
+angle_max = 360.0
+direction = Vector3(-0.45, -1, 0)
+spread = 14.0
+initial_velocity_min = 1800.0
+initial_velocity_max = 2400.0
+angular_velocity_min = -180.0
+angular_velocity_max = 180.0
+gravity = Vector3(0, 900, 0)
+damping_min = 560.0
+damping_max = 640.0
+scale_min = 0.25
+scale_max = 0.4
+color_initial_ramp = SubResource("GradientTexture1D_rgb")
+turbulence_enabled = true
+turbulence_noise_strength = 1.5
+turbulence_influence_min = 0.08
+turbulence_influence_max = 0.16
+
+[node name="PaperConfetti" type="GPUParticles2D"]
+material = SubResource("ShaderMaterial_flutter")
+emitting = false
+amount = 60
+texture = ExtResource("1_paper")
+lifetime = 3.2
+one_shot = true
+explosiveness = 0.9
+visibility_rect = Rect2(-100, -1900, 1300, 2100)
+process_material = SubResource("ParticleProcessMaterial_left")
+script = ExtResource("2_paper")
+
+[node name="RightCannon" type="GPUParticles2D" parent="."]
+material = SubResource("ShaderMaterial_flutter")
+position = Vector2(1160, 0)
+emitting = false
+amount = 60
+texture = ExtResource("1_paper")
+lifetime = 3.2
+one_shot = true
+explosiveness = 0.9
+visibility_rect = Rect2(-1200, -1900, 1300, 2100)
+process_material = SubResource("ParticleProcessMaterial_right")

@@ -137,10 +137,7 @@ static func shows_chevron(delta: float) -> bool:
 
 
 func set_stat(stat_key: String, delta: float, target: float, current: float) -> void:
-	if ICON_FOR.has(stat_key):
-		icon.texture = load(ICON_FOR[stat_key])
-	if TRACK_VARIATION_FOR.has(stat_key):
-		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
+	_apply_stat_chrome(stat_key)
 	_delta = delta
 	_target = target
 	value.text = format_value(delta, target)
@@ -149,8 +146,7 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 	# student must undo that, or a row that is set up but never animated
 	# shows an invisible arrow.
 	chevron.visible = shows_chevron(delta)
-	chevron.modulate.a = 1.0
-	chevron.scale = Vector2.ONE
+	_reset_chevron()
 	_fill_from = track_ratio_before(current, delta, target)
 	_fill_to = track_ratio(current, target)
 	track.value = _fill_to
@@ -167,17 +163,13 @@ static func format_standing(current: float, target: float) -> String:
 ## current/target, the number as format_standing, no chevron. Caches both
 ## ends so show_preview() can layer a change over them.
 func set_standing(stat_key: String, target: float, current: float) -> void:
-	if ICON_FOR.has(stat_key):
-		icon.texture = load(ICON_FOR[stat_key])
-	if TRACK_VARIATION_FOR.has(stat_key):
-		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
+	_apply_stat_chrome(stat_key)
 	_standing_current = current
 	_target = target
 	_delta = 0.0
 	value.text = format_standing(current, target)
 	chevron.visible = false
-	chevron.modulate.a = 1.0
-	chevron.scale = Vector2.ONE
+	_reset_chevron()
 	track.value = track_ratio(current, target)
 
 
@@ -203,6 +195,23 @@ func show_preview(delta: float, capped: bool = false) -> void:
 		track.value = to_ratio
 	else:
 		Juice.fill_bar(track, to_ratio)
+
+
+## The icon and track colour a stat wears. Shared by set_stat and
+## set_standing so the two readouts can never dress a row differently.
+func _apply_stat_chrome(stat_key: String) -> void:
+	if ICON_FOR.has(stat_key):
+		icon.texture = load(ICON_FOR[stat_key])
+	if TRACK_VARIATION_FOR.has(stat_key):
+		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
+
+
+## Undo what Juice.pop_in leaves on the chevron -- zeroed alpha and a
+## shrunk scale -- so a row re-armed for another student never shows an
+## invisible arrow.
+func _reset_chevron() -> void:
+	chevron.modulate.a = 1.0
+	chevron.scale = Vector2.ONE
 
 
 ## Replay today's movement: rewind the track to where it stood this

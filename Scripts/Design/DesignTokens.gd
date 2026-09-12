@@ -374,6 +374,15 @@ static func load_default() -> DesignTokens:
 ## test_needs_bar_word_fits_its_pill.
 @export var day_needs_label_size: int = 30
 
+## Event warning (2026-09-12 slide warning, mockup_eventwarning.png).
+## The full-screen panel the warning slides through the screen on.
+@export var event_warning_bg: Color = Color("9E8830")
+## The navy of eventwarning_icon.png's outline. The caption's rim wears it,
+## so the words and the megaphone read as one mark.
+@export var event_warning_ink: Color = Color("1D196E")
+## Thickness of the warning caption's navy rim, in design pixels.
+@export var event_warning_caption_outline: int = 16
+
 
 ## Resolve a schedule category name to its accent color.
 ## Returns text_secondary for anything unrecognized so callers never

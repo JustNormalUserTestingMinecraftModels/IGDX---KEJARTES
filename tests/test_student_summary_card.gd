@@ -25,6 +25,7 @@ extends McpTestSuiteCompat
 ## builds its own content as a child of Margin, exactly as before.
 ##
 ## Must be @tool; no test here may be a coroutine.
+## (EventStudentSelectDialog left this chrome on 2026-09-07; its cards are EventStudentCard.)
 
 func suite_name() -> String:
 	return "student_summary_card"
@@ -33,7 +34,6 @@ func suite_name() -> String:
 const SCENE_PATH := "res://Scenes/SchoolSimulation/StudentSummaryCard.tscn"
 const SCHOOL_DAY_PATH := "res://Scripts/SchoolSimulation/SchoolDay.gd"
 const DECAY_PATH := "res://Scripts/SchoolSimulation/DailyDecayOverview.gd"
-const EVENT_SELECT_PATH := "res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd"
 
 
 func _make() -> StudentSummaryCard:
@@ -89,7 +89,7 @@ func test_content_goes_under_margin() -> void:
 
 
 func test_all_three_screens_use_the_shared_card_chrome() -> void:
-	for path in [SCHOOL_DAY_PATH, DECAY_PATH, EVENT_SELECT_PATH]:
+	for path in [SCHOOL_DAY_PATH, DECAY_PATH]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_contains(src, "StudentSummaryCard", "%s should use the shared card chrome" % path)
 		assert_false(src.contains("PanelContainer.new("),

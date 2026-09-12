@@ -107,7 +107,6 @@ const ALLOWED: Dictionary = {
 	# @export icon texture is actually supplied, in place of the emoji
 	# fallback label -- the conditional texture-or-procedural swap.
 	"res://Scripts/SchoolSimulation/EventAnnouncement.gd": 2,
-	"res://Scripts/SchoolSimulation/EventWarning.gd": 2,
 	# Answer buttons: text and shuffled order regenerate per question: not
 	# fixed layout.
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,

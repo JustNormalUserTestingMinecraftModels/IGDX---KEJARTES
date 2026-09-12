@@ -52,8 +52,8 @@ func test_announcement_no_longer_uses_emoji() -> void:
 func test_warning_no_longer_uses_emoji() -> void:
 	var src := _read("res://Scenes/SchoolSimulation/EventWarning.tscn")
 	assert_false(src.contains('"⚠️"'), "Warning emoji glyph must be gone")
-	assert_true(src.contains("icon_event_warning.png"),
-		"Warning should reference the polished icon PNG")
+	assert_true(src.contains("eventwarning_icon.png"),
+		"The warning carries the megaphone art (2026-09-12 slide warning)")
 
 
 func test_announce_scene_wires_burst() -> void:

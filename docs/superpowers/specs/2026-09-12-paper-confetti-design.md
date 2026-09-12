@@ -62,7 +62,9 @@ Shared by both emitters (one sub-resource each, referenced twice):
 
 - `texture` = `particle_confetti.png` (white rounded rect, tinted by the ramp)
 - `material` = one `ShaderMaterial` using `paper_flutter.gdshader`
-- `color_initial_ramp` = one `GradientTexture1D` over a `Gradient` with
+- one `GradientTexture1D`, set as `color_initial_ramp` on **each** cannon's
+  `ParticleProcessMaterial` (the property lives on the process material, not
+  the node), over a `Gradient` with
   `interpolation_mode = 1` (constant), offsets `[0.0, 0.3333, 0.6667]`,
   colors **red `#E5484D`, yellow `#FFC93C`, blue `#3B82F6`** — each piece
   draws a uniform random point on the ramp, so it lands on exactly one of the

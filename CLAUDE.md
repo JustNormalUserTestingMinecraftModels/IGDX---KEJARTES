@@ -366,7 +366,7 @@ with no code change: the five `Assets/Images/UI/Nav/` icons,
 `Assets/Images/StudentCard/menu_button.png`, three `Particles/particle_*.png`, the minigame
 result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
-event-popup set (`icon_event_*`, `bg_event_*`, `particle_burst.png`),
+event-popup set (`icon_event.svg`, `bg_event_dialog.png`),
 `shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`,
 `EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, the
 2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,

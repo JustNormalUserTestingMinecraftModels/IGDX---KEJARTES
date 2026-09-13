@@ -661,7 +661,7 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# 36); kept as the shipped literal rather than nudging the size.
 		["EmptyStateLabel", 32, tokens.text_disabled, false, false],
 		# 2026-09-08 mobile-readability pass: the mid-simulation event
-		# popups (EventAnnouncement, EventWarning, EventStudentSelectDialog)
+		# popups (the event warning and EventStudentSelectDialog)
 		# needed a title bigger than H1Label without becoming a second
 		# DisplayLabel -- H1+6 in the display face, no outline (these titles
 		# sit on their own opaque card/scrim, not over busy art).

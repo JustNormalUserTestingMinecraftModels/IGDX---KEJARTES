@@ -2,12 +2,12 @@
 class_name StudentSummaryCard
 extends PanelContainer
 
-## The Card+Margin chrome shared by SchoolDay's day-summary card,
-## DailyDecayOverview's decay card and EventStudentSelectDialog's picker
-## card. Each screen's actual content (name/badge layout, stat rows,
-## checkboxes, tinting) stays hand-built as a child of `margin` -- the
-## three screens' content differs in node type and shape, not just
-## numbers, so only the genuinely shared outer frame lives here.
+## The Card+Margin chrome shared by SchoolDay's day-summary card and
+## DailyDecayOverview's decay card. Each screen's actual content (name/badge
+## layout, stat rows, tinting) stays hand-built as a child of `margin` -- the
+## two screens' content differs in node type and shape, not just numbers, so
+## only the genuinely shared outer frame lives here. (EventStudentSelectDialog
+## used it too until 2026-09-07; its cards are EventStudentCard now.)
 
 ## Margin between the Card surface and its content. Defaults match
 ## DailyDecayOverview and EventStudentSelectDialog (both 20/16/20/16);

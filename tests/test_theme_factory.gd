@@ -324,6 +324,8 @@ const DISPLAY_ROSTER := [
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-08: event popup title, display face at H1+6.
 	"EventDialogHeaderLabel",
+	# 2026-09-12: the slide warning's caption, display face at DisplayLabel size.
+	"EventWarningCaptionLabel",
 	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
 	# this roster in the same pass -- LobbyNavTile and LobbyCtaButton
 	# replaced it.

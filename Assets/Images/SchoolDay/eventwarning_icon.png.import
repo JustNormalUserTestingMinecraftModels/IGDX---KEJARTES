@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cmrsf07ysvuh6"
-path="res://.godot/imported/icon_event_announce.png-30fcd330dd1c79657aada070fcc83586.ctex"
+uid="uid://ctgt3msw50o3e"
+path="res://.godot/imported/eventwarning_icon.png-47c2baed3011dcd83e057f5af173a533.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/UI/Placeholders/icon_event_announce.png"
-dest_files=["res://.godot/imported/icon_event_announce.png-30fcd330dd1c79657aada070fcc83586.ctex"]
+source_file="res://Assets/Images/SchoolDay/eventwarning_icon.png"
+dest_files=["res://.godot/imported/eventwarning_icon.png-47c2baed3011dcd83e057f5af173a533.ctex"]
 
 [params]
 

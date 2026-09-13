@@ -1,173 +1,56 @@
 [gd_scene format=3 uid="uid://craeedngps4vg"]
 
 [ext_resource type="Script" uid="uid://c5pqgisyy552d" path="res://Scripts/SchoolSimulation/EventStudentCard.gd" id="1_d65yh"]
-[ext_resource type="Texture2D" uid="uid://cwehitensta2x" path="res://Assets/Images/DaySummary/card_bg.png" id="2_7d5ir"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn" id="3_ytr6r"]
-[ext_resource type="Script" uid="uid://xm5t6rwv1ddu" path="res://Scripts/SchoolSimulation/DaySummaryNeedsBar.gd" id="4_a25lc"]
-[ext_resource type="PackedScene" uid="uid://badokp3g1xb25" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="5_0ytrm"]
+[ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_ja1pf"]
 [ext_resource type="Texture2D" uid="uid://cx2se7may2fvu" path="res://Assets/Images/UI/Placeholders/icon_check.svg" id="6_c4364"]
 [ext_resource type="Texture2D" uid="uid://c44gv8jwfmk3x" path="res://Assets/Images/UI/Placeholders/icon_tired.svg" id="7_fa73o"]
 [ext_resource type="Texture2D" uid="uid://bxr0nynyliitp" path="res://Assets/Images/UI/Placeholders/icon_star.svg" id="8_8prce"]
 
 [node name="EventStudentCard" type="Button" unique_id=829660794]
-custom_minimum_size = Vector2(992, 410)
+custom_minimum_size = Vector2(0, 410)
+offset_right = 992.0
+offset_bottom = 410.0
 focus_mode = 0
 theme_type_variation = &"EventSelectCard"
 toggle_mode = true
 script = ExtResource("1_d65yh")
 
-[node name="CardArt" type="TextureRect" parent="." unique_id=253310114]
+[node name="Card" parent="." unique_id=385890646 instance=ExtResource("2_ja1pf")]
 layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = ExtResource("2_7d5ir")
-expand_mode = 1
-
-[node name="Avatar" parent="." unique_id=757447317 instance=ExtResource("3_ytr6r")]
-layout_mode = 0
-offset_left = 50.0
-offset_top = 52.0
-offset_right = 319.0
-offset_bottom = 338.0
+offset_right = 992.0
+offset_bottom = 410.0
 mouse_filter = 2
 
-[node name="NameLabel" type="Label" parent="." unique_id=189522357]
-layout_mode = 0
-offset_left = 336.0
-offset_top = 40.0
-offset_right = 660.0
-offset_bottom = 100.0
-theme_type_variation = &"DaySummaryName"
-text = "Marcel"
-vertical_alignment = 1
-
-[node name="EnergyBar" type="ProgressBar" parent="." unique_id=1670411396]
-layout_mode = 0
-offset_left = 336.0
-offset_top = 113.0
-offset_right = 579.0
-offset_bottom = 181.0
-mouse_filter = 2
-theme_type_variation = &"DaySummaryEnergyBar"
-show_percentage = false
-script = ExtResource("4_a25lc")
-
-[node name="Icon" type="TextureRect" parent="EnergyBar" unique_id=1767316851]
-layout_mode = 0
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 14.0
-offset_top = -22.0
-offset_right = 58.0
-offset_bottom = 22.0
-grow_vertical = 2
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Word" type="Label" parent="EnergyBar" unique_id=1612405397]
-layout_mode = 0
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 84.0
-offset_top = -26.0
-offset_right = 220.0
-offset_bottom = 26.0
-grow_vertical = 2
-theme_type_variation = &"DaySummaryNeedsLabel"
-vertical_alignment = 1
-
-[node name="MoodBar" type="ProgressBar" parent="." unique_id=1729923778]
-layout_mode = 0
-offset_left = 336.0
-offset_top = 201.0
-offset_right = 579.0
-offset_bottom = 268.0
-mouse_filter = 2
-theme_type_variation = &"DaySummaryMoodBar"
-show_percentage = false
-script = ExtResource("4_a25lc")
-
-[node name="Icon" type="TextureRect" parent="MoodBar" unique_id=1456131115]
-layout_mode = 0
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 14.0
-offset_top = -22.0
-offset_right = 58.0
-offset_bottom = 22.0
-grow_vertical = 2
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Word" type="Label" parent="MoodBar" unique_id=1305424708]
-layout_mode = 0
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 84.0
-offset_top = -26.0
-offset_right = 220.0
-offset_bottom = 26.0
-grow_vertical = 2
-theme_type_variation = &"DaySummaryNeedsLabel"
-vertical_alignment = 1
-
-[node name="StatRow1" parent="." unique_id=835751283 instance=ExtResource("5_0ytrm")]
-layout_mode = 0
-offset_left = 595.0
-offset_top = 57.0
-offset_right = 982.0
-offset_bottom = 153.0
-mouse_filter = 2
-
-[node name="StatRow2" parent="." unique_id=1215356735 instance=ExtResource("5_0ytrm")]
-layout_mode = 0
-offset_left = 595.0
-offset_top = 154.0
-offset_right = 982.0
-offset_bottom = 250.0
-mouse_filter = 2
-
-[node name="StatRow3" parent="." unique_id=509991163 instance=ExtResource("5_0ytrm")]
-layout_mode = 0
-offset_left = 595.0
-offset_top = 251.0
-offset_right = 982.0
-offset_bottom = 347.0
-mouse_filter = 2
-
-[node name="SelectBadge" type="TextureRect" parent="." unique_id=710234561]
+[node name="SelectBadge" type="TextureRect" parent="Card" unique_id=94232369]
 visible = false
 layout_mode = 0
-offset_left = 892.0
-offset_top = 356.0
-offset_right = 964.0
-offset_bottom = 428.0
+offset_left = 900.0
+offset_top = 318.0
+offset_right = 972.0
+offset_bottom = 390.0
 mouse_filter = 2
 texture = ExtResource("6_c4364")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TiredBadge" type="TextureRect" parent="." unique_id=783669363]
+[node name="TiredBadge" type="TextureRect" parent="Card" unique_id=354283216]
 visible = false
 layout_mode = 0
-offset_left = 672.0
-offset_top = 40.0
-offset_right = 732.0
+offset_left = 262.0
+offset_top = 30.0
+offset_right = 332.0
 offset_bottom = 100.0
 mouse_filter = 2
 texture = ExtResource("7_fa73o")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="SpecialtyBadge" type="TextureRect" parent="." unique_id=1636515246]
+[node name="SpecialtyBadge" type="TextureRect" parent="Card" unique_id=1129810019]
 visible = false
 layout_mode = 0
-offset_left = 672.0
-offset_top = 40.0
-offset_right = 732.0
+offset_left = 262.0
+offset_top = 30.0
+offset_right = 332.0
 offset_bottom = 100.0
 mouse_filter = 2
 texture = ExtResource("8_8prce")

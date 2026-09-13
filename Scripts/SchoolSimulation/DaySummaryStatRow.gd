@@ -57,6 +57,10 @@ const TRACK_VARIATION_FOR := {
 	"olahraga": &"DaySummaryStatTrackOlahraga",
 }
 
+## What a capped preview reads: the stat is already at its ceiling, so an
+## item or event would add nothing.
+const MAX_TEXT := "MAKS"
+
 @onready var icon: TextureRect = $Icon
 @onready var chevron: TextureRect = $Chevron
 @onready var track: ProgressBar = $Track
@@ -74,6 +78,10 @@ var _fill_to: float = 0.0
 ## rewinds the track -- see play_gain.
 var _delta: float = 0.0
 var _target: float = 0.0
+
+## The standing value set_standing() last wrote, so show_preview() can layer
+## a change on top and restore it again.
+var _standing_current: float = 0.0
 
 
 ## "+12/65" -- the sign rides with the number so a loss reads "-3/65"
@@ -129,10 +137,7 @@ static func shows_chevron(delta: float) -> bool:
 
 
 func set_stat(stat_key: String, delta: float, target: float, current: float) -> void:
-	if ICON_FOR.has(stat_key):
-		icon.texture = load(ICON_FOR[stat_key])
-	if TRACK_VARIATION_FOR.has(stat_key):
-		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
+	_apply_stat_chrome(stat_key)
 	_delta = delta
 	_target = target
 	value.text = format_value(delta, target)
@@ -141,11 +146,72 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 	# student must undo that, or a row that is set up but never animated
 	# shows an invisible arrow.
 	chevron.visible = shows_chevron(delta)
-	chevron.modulate.a = 1.0
-	chevron.scale = Vector2.ONE
+	_reset_chevron()
 	_fill_from = track_ratio_before(current, delta, target)
 	_fill_to = track_ratio(current, target)
 	track.value = _fill_to
+
+
+## "42/60": where the student stands now against the run's target, with no
+## sign because nothing moved. The event picker and the item screen read
+## the card this way; the day summary never does.
+static func format_standing(current: float, target: float) -> String:
+	return "%d/%d" % [int(round(current)), int(round(target))]
+
+
+## Show where the student stands, with no movement behind it: the track at
+## current/target, the number as format_standing, no chevron. Caches both
+## ends so show_preview() can layer a change over them.
+func set_standing(stat_key: String, target: float, current: float) -> void:
+	_apply_stat_chrome(stat_key)
+	_standing_current = current
+	_target = target
+	_delta = 0.0
+	value.text = format_standing(current, target)
+	chevron.visible = false
+	_reset_chevron()
+	track.value = track_ratio(current, target)
+
+
+## Layer a proposed change over the standing view: the number reads
+## format_value's "+15/60", the chevron shows on a gain, and the track
+## travels to where the change would leave it. `capped` means the stat is
+## already at 100: the number reads MAKS and nothing moves. A zero delta,
+## uncapped, restores the standing view. Deliberately quiet -- no star
+## burst and no tally cue, which belong to the day summary's reward.
+func show_preview(delta: float, capped: bool = false) -> void:
+	var to_ratio := track_ratio(_standing_current + delta, _target)
+	if capped:
+		value.text = MAX_TEXT
+		chevron.visible = false
+		to_ratio = track_ratio(_standing_current, _target)
+	elif is_zero_approx(delta):
+		value.text = format_standing(_standing_current, _target)
+		chevron.visible = false
+	else:
+		value.text = format_value(delta, _target)
+		chevron.visible = shows_chevron(delta)
+	if Engine.is_editor_hint() or not is_inside_tree():
+		track.value = to_ratio
+	else:
+		Juice.fill_bar(track, to_ratio)
+
+
+## The icon and track colour a stat wears. Shared by set_stat and
+## set_standing so the two readouts can never dress a row differently.
+func _apply_stat_chrome(stat_key: String) -> void:
+	if ICON_FOR.has(stat_key):
+		icon.texture = load(ICON_FOR[stat_key])
+	if TRACK_VARIATION_FOR.has(stat_key):
+		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
+
+
+## Undo what Juice.pop_in leaves on the chevron -- zeroed alpha and a
+## shrunk scale -- so a row re-armed for another student never shows an
+## invisible arrow.
+func _reset_chevron() -> void:
+	chevron.modulate.a = 1.0
+	chevron.scale = Vector2.ONE
 
 
 ## Replay today's movement: rewind the track to where it stood this

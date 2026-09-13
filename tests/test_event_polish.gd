@@ -2,9 +2,10 @@
 extends McpTestSuite
 
 ## 2026-09-08 mobile-readability and asset-polish pass over the mid-
-## simulation event popups: EventStudentSelectDialog (the calmed
-## background and bigger body text) and EventAnnouncement/EventWarning
-## (real PNG icons replacing emoji, per CLAUDE.md's no-emoji rule).
+## simulation event popups: EventStudentSelectDialog (the calmed background
+## and bigger body text) and the event warning (real art replacing emoji, per
+## CLAUDE.md's no-emoji rule). EventAnnouncement was folded into the sliding
+## EventWarning on 2026-09-12.
 
 func suite_name() -> String:
 	return "event_polish"
@@ -42,38 +43,11 @@ func test_dialog_instructions_use_h2() -> void:
 		"StudentsHeaderLabel must upgrade from CaptionLabel to H2Label")
 
 
-func test_announcement_no_longer_uses_emoji() -> void:
-	var src := _read("res://Scenes/SchoolSimulation/EventAnnouncement.tscn")
-	assert_false(src.contains('"📢"'), "Emoji glyph must be gone from announcement scene")
-	assert_true(src.contains("icon_event_announce.png"),
-		"Announcement should reference the polished icon PNG")
-
-
 func test_warning_no_longer_uses_emoji() -> void:
 	var src := _read("res://Scenes/SchoolSimulation/EventWarning.tscn")
 	assert_false(src.contains('"⚠️"'), "Warning emoji glyph must be gone")
-	assert_true(src.contains("icon_event_warning.png"),
-		"Warning should reference the polished icon PNG")
-
-
-func test_announce_scene_wires_burst() -> void:
-	var src := _read("res://Scenes/SchoolSimulation/EventAnnouncement.tscn")
-	assert_true(src.contains("AnnouncementBurst.tscn"),
-		"EventAnnouncement should instance the burst")
-
-
-func test_announce_script_plays_sfx() -> void:
-	var src := _read("res://Scripts/SchoolSimulation/EventAnnouncement.gd")
-	assert_true(src.contains('play_sfx(&"event_announce")'),
-		"Announcement should play the new SFX cue")
-
-
-func test_announce_script_has_no_emoji_fallback() -> void:
-	var src := _read("res://Scripts/SchoolSimulation/EventAnnouncement.gd")
-	assert_false(src.contains("announcement_symbol_text"),
-		"The emoji-fallback export must be removed, not just unused")
-	assert_false(src.contains("📢"),
-		"No emoji glyph should remain anywhere in the script")
+	assert_true(src.contains("eventwarning_icon.png"),
+		"The warning carries the megaphone art (2026-09-12 slide warning)")
 
 
 func test_school_day_event_titles_free_of_emoji() -> void:

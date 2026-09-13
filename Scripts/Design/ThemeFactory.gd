@@ -24,9 +24,32 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_student_card(theme, tokens)
 	_build_week_recap(theme, tokens)
 	_build_minigame_result(theme, tokens)
+	_build_event_warning(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
+
+
+## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard
+## panel from the mockup, and a display-face caption in the light brand text
+## colour rimmed in the icon's navy, so the words and the megaphone read as
+## one mark.
+static func _build_event_warning(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("EventWarningPanel")
+	theme.set_type_variation("EventWarningPanel", "Panel")
+	var panel := StyleBoxFlat.new()
+	panel.bg_color = tokens.event_warning_bg
+	theme.set_stylebox("panel", "EventWarningPanel", panel)
+
+	theme.add_type("EventWarningCaptionLabel")
+	theme.set_type_variation("EventWarningCaptionLabel", "Label")
+	theme.set_font_size("font_size", "EventWarningCaptionLabel", tokens.font_display_size)
+	theme.set_color("font_color", "EventWarningCaptionLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "EventWarningCaptionLabel",
+		tokens.event_warning_caption_outline)
+	theme.set_color("font_outline_color", "EventWarningCaptionLabel", tokens.event_warning_ink)
+	if tokens.font_display != null:
+		theme.set_font("font", "EventWarningCaptionLabel", tokens.font_display)
 
 
 ## The shop hub's two destination tiles, panel-less by design.
@@ -638,7 +661,7 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# 36); kept as the shipped literal rather than nudging the size.
 		["EmptyStateLabel", 32, tokens.text_disabled, false, false],
 		# 2026-09-08 mobile-readability pass: the mid-simulation event
-		# popups (EventAnnouncement, EventWarning, EventStudentSelectDialog)
+		# popups (the event warning and EventStudentSelectDialog)
 		# needed a title bigger than H1Label without becoming a second
 		# DisplayLabel -- H1+6 in the display face, no outline (these titles
 		# sit on their own opaque card/scrim, not over busy art).

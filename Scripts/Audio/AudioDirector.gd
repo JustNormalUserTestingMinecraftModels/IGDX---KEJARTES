@@ -90,9 +90,9 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"specialty_match")`: AturJadwal, a day is assigned to the
 ## selected student's specialty subject. Placeholder: aliases sfx_reward.
 @export var sfx_specialty_match: AudioStream
-## `play_sfx(&"event_announce")`: a mid-simulation event popup
-## (EventAnnouncement/EventWarning) opens. Placeholder: aliases
-## reward.ogg via a dedicated copy (event_announce.ogg) until a real
+## `play_sfx(&"event_announce")`: the sliding event warning starts its pass
+## (EventWarning, before every minigame and random event). Placeholder:
+## aliases reward.ogg via a dedicated copy (event_announce.ogg) until a real
 ## chime lands.
 @export var sfx_event_announce: AudioStream = preload("res://Assets/Audio/SFX/event_announce.ogg")
 ## `play_sfx(&"pill_popup_open")`: WeekRecapPillInfoPopup opens. A

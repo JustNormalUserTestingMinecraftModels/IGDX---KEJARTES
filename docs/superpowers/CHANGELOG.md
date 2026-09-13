@@ -8,6 +8,34 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-12 — Event cards, the sliding warning, and EventAnnouncement's retirement
+
+Plan `docs/superpowers/plans/2026-09-12-event-cards-and-slide-warning.md`,
+spec `docs/superpowers/specs/2026-09-12-event-cards-and-slide-warning-design.md`.
+The event picker (`EventStudentSelectDialog`) and the item-preview list
+(`ApplyItemScreen`) now show the real DaySummary card
+(`DaySummaryStudentRow`) instead of their own ad hoc rows, wrapped in a new
+`StudentCardButton` (`Scripts/UI/StudentCardButton.gd`) that owns the card's
+rect and toggles it as a selectable button. The card itself gained a
+"current stats" mode on `DaySummaryStatRow` (`set_standing`,
+`format_standing`) so it can show `current/target` (no sign, no chevron)
+instead of DaySummary's own gain preview — DaySummary and ResultCheckup keep
+their existing `setup_row`/`setup_week_row` paths untouched. A card that
+cannot be picked dims the hosted card rather than the wrapper, whose alpha
+the list's own entrance animation owns, and the item screen's LELAH chip
+sits on the avatar's lower-left.
+
+`EventAnnouncement` is retired. Both the minigame banner and the mid-day
+random-event popup now go through a single sliding mustard `EventWarning`:
+a full-bleed panel, `eventwarning_icon.png` (a cropped Drive icon) centred,
+and a caption with a navy outline. Deleted along with it: the popup's scene
+and script, `AnnouncementBurst.tscn`/`.gd` and the particle burst it fired,
+`HazardStripeShader.gdshader`, and the three placeholders only it used
+(`icon_event_warning.png`, `icon_event_announce.png`, `bg_event_announce.png`,
+plus `particle_burst.png`). `sfx_event_announce` now docs itself against
+`EventWarning`; `ThemeFactory.gd`'s and `StudentSummaryCard.gd`'s header
+comments no longer name the dead scene.
+
 ## 2026-09-12 — Paper confetti on the week-end checkup
 
 Plan `docs/superpowers/plans/2026-09-12-paper-confetti.md`. ResultCheckup's

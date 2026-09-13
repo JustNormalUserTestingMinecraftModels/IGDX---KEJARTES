@@ -1,15 +1,7 @@
 [gd_scene format=3 uid="uid://co2d26egr4c2e"]
 
 [ext_resource type="Script" uid="uid://dqfujm6sko67i" path="res://Scripts/SchoolSimulation/EventWarning.gd" id="1_warning"]
-[ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="2_i1ddl"]
-[ext_resource type="Shader" uid="uid://b2xh6q6jw0oep" path="res://Scripts/SchoolSimulation/HazardStripeShader.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://8nqwtq5fanll" path="res://Assets/Images/UI/Placeholders/icon_event_warning.png" id="3_i1ddl"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_stripes"]
-shader = ExtResource("2_shader")
-shader_parameter/speed = 2.0
-shader_parameter/stripe_width = 16.0
-shader_parameter/angle = 45.0
+[ext_resource type="Texture2D" uid="uid://ctgt3msw50o3e" path="res://Assets/Images/SchoolDay/eventwarning_icon.png" id="2_47ycc"]
 
 [node name="EventWarning" type="Control" unique_id=1118244677]
 layout_mode = 3
@@ -19,59 +11,40 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_warning")
-background_texture = ExtResource("2_i1ddl")
-caution_icon_texture = ExtResource("3_i1ddl")
-icon_font_size = 320
 
-[node name="Background" type="Panel" parent="." unique_id=1563674738]
+[node name="Panel" type="Panel" parent="." unique_id=2116463392]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_type_variation = &"Scrim"
+mouse_filter = 2
+theme_type_variation = &"EventWarningPanel"
 
-[node name="TopBar" type="ColorRect" parent="." unique_id=241330505]
-material = SubResource("ShaderMaterial_stripes")
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 60.0
-grow_horizontal = 2
-
-[node name="BottomBar" type="ColorRect" parent="." unique_id=1822022293]
-material = SubResource("ShaderMaterial_stripes")
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -60.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="Center" type="CenterContainer" parent="." unique_id=779048480]
+[node name="Center" type="CenterContainer" parent="Panel" unique_id=1607092403]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="Center" unique_id=200154272]
+[node name="Content" type="VBoxContainer" parent="Panel/Center" unique_id=112836667]
 layout_mode = 2
-theme_override_constants/separation = 24
+mouse_filter = 2
+theme_override_constants/separation = 32
 alignment = 1
 
-[node name="CautionLabel" type="Label" parent="Center/VBox" unique_id=2038317300]
+[node name="Icon" type="TextureRect" parent="Panel/Center/Content" unique_id=1104850390]
+custom_minimum_size = Vector2(0, 560)
 layout_mode = 2
-theme_type_variation = &"DisplayLabel"
-horizontal_alignment = 1
+mouse_filter = 2
+texture = ExtResource("2_47ycc")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="EventLabel" type="Label" parent="Center/VBox" unique_id=837575490]
+[node name="Caption" type="Label" parent="Panel/Center/Content" unique_id=2059625304]
+custom_minimum_size = Vector2(920, 0)
 layout_mode = 2
-theme_type_variation = &"EventDialogHeaderLabel"
-text = "EVENT WARNING"
+theme_type_variation = &"EventWarningCaptionLabel"
+text = "KEGIATAN AKADEMIS!"
 horizontal_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3

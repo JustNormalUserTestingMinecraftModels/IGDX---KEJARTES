@@ -103,16 +103,11 @@ const ALLOWED: Dictionary = {
 	# category on every refresh() call (Wirausaha shows a money chip,
 	# Istirahat shows none, etc).
 	"res://Scripts/AturJadwal/ActivityRow.gd": 2,
-	# _apply_visual_exports()'s icon TextureRect: only created when an
-	# @export icon texture is actually supplied, in place of the emoji
-	# fallback label -- the conditional texture-or-procedural swap.
-	"res://Scripts/SchoolSimulation/EventAnnouncement.gd": 2,
-	"res://Scripts/SchoolSimulation/EventWarning.gd": 2,
 	# Answer buttons: text and shuffled order regenerate per question: not
 	# fixed layout.
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,
-	# _apply_visual_exports()'s overlay TextureRect: same conditional
-	# texture-or-procedural swap as EventAnnouncement/EventWarning above.
+	# _apply_visual_exports()'s overlay TextureRect: only created when an
+	# @export texture is supplied -- a conditional texture-or-procedural swap.
 	"res://Scripts/Minigames/UI/PauseMenu.gd": 1,
 	# _sync_label()'s optional value-label overlay: created only when the
 	# show_value_label export is toggled on for that particular bar

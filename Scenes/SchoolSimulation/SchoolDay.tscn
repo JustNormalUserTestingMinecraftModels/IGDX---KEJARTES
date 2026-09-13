@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://4jmdeoilk6nk" path="res://Scripts/SchoolSimulation/SchoolDay.gd" id="1_schoolday"]
 [ext_resource type="PackedScene" uid="uid://bi1vea4233njp" path="res://Scenes/SchoolSimulation/ResultCheckup.tscn" id="2_checkup"]
-[ext_resource type="PackedScene" uid="uid://rneo43oike8g" path="res://Scenes/SchoolSimulation/EventAnnouncement.tscn" id="3_announcement"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn" id="4_student_select"]
 [ext_resource type="PackedScene" uid="uid://cx6n3hr2evpn1" path="res://Scenes/SchoolSimulation/BookClockWidget.tscn" id="5_bookclock"]
 [ext_resource type="PackedScene" uid="uid://blgxgwieuhoky" path="res://Scenes/SchoolSimulation/DaySummaryPopup.tscn" id="6_summary"]
@@ -18,7 +17,6 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_schoolday")
 result_checkup_scene = ExtResource("2_checkup")
-event_announcement_scene = ExtResource("3_announcement")
 event_student_select_scene = ExtResource("4_student_select")
 day_summary_popup_scene = ExtResource("6_summary")
 

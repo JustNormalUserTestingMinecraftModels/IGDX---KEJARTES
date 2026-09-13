@@ -49,7 +49,6 @@ const _SCENES := {
 	"DaySummaryStudentRow": "res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn",
 	"DaySummaryBadge": "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn",
 	"DaySummaryPill": "res://Scenes/SchoolSimulation/DaySummaryPill.tscn",
-	"EventAnnouncement": "res://Scenes/SchoolSimulation/EventAnnouncement.tscn",
 	"EventWarning": "res://Scenes/SchoolSimulation/EventWarning.tscn",
 	"EventStudentSelectDialog": "res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn",
 	"DailyDecayOverview": "res://Scenes/SchoolSimulation/DailyDecayOverview.tscn",
@@ -64,7 +63,6 @@ const _SCRIPTS := [
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd",
 	"res://Scripts/SchoolSimulation/DaySummaryPopup.gd",
 	"res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd",
-	"res://Scripts/SchoolSimulation/EventAnnouncement.gd",
 	"res://Scripts/SchoolSimulation/EventWarning.gd",
 	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd",
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd",
@@ -295,22 +293,6 @@ func test_day_summary_deltas_count_up_with_audio_feedback() -> void:
 		"a net gain above target must play the success sfx")
 	assert_true(popup.contains("AudioDirector.play_sfx(&\"fail\")"),
 		"a net loss must play the fail sfx")
-
-
-func test_hazard_stripe_color_comes_from_tokens_at_runtime() -> void:
-	var warning := FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/EventWarning.gd")
-	assert_true(warning.contains("set_shader_parameter"),
-		"EventWarning must drive the hazard shader from script")
-	assert_true(warning.contains("state_warning"),
-		"the hazard stripe color must come from tokens.state_warning")
-	var scene_src := FileAccess.get_file_as_string(
-		"res://Scenes/SchoolSimulation/EventWarning.tscn")
-	assert_false(scene_src.contains("shader_parameter/color1 = Color("),
-		"the stripe color must not stay baked into the scene's ShaderMaterial")
-	# The shader itself stays.
-	assert_true(scene_src.contains("HazardStripeShader.gdshader"),
-		"the hazard shader must be kept")
 
 
 func test_simulation_bgm_is_requested() -> void:

@@ -3,10 +3,10 @@ extends Control
 ## "Who takes part in this event?" — one selectable card per student with
 ## a live preview of what accepting would do to their stats.
 ##
-## Every card, bar and chip is now theme-driven: cards are &"Card"
-## PanelContainers tinted by state, the three preview bars are StatBars
-## (category-tinted, animated through Juice), and the state chips reuse
-## the shared DaySummaryBadge scene. Nothing here builds a StyleBoxFlat.
+## Each student is an EventStudentCard: the real DaySummary card inside a
+## toggle Button (StudentCardButton), showing where the student stands now.
+## Selecting a card layers the event's effect on top. The dialog's own
+## chrome is theme-driven; nothing here builds a StyleBoxFlat.
 
 signal event_decision_made(accepted: bool, selected_students: Array[StudentData])
 
@@ -42,10 +42,9 @@ signal event_decision_made(accepted: bool, selected_students: Array[StudentData]
 ## screen. Null keeps the theme's default font.
 @export var font: Font = null
 
-# Each selectable student is now EventStudentCard.tscn, which wears the
-# DaySummary chrome. The StudentSummaryCard scene, the badge scene and
-# the card-tint constant that used to be assembled here all went with
-# the runtime card construction on 2026-09-07.
+# Each selectable student is EventStudentCard.tscn: the real DaySummary card
+# inside a toggle Button. The cards used to be assembled here at runtime;
+# that went on 2026-09-07.
 const CARD_SCENE := preload("res://Scenes/SchoolSimulation/EventStudentCard.tscn")
 
 
@@ -168,7 +167,7 @@ func _populate_student_cards() -> void:
 	var cards: Array = []
 	for student in student_list:
 		var card: EventStudentCard = CARD_SCENE.instantiate()
-		card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		card.size_flags_horizontal = Control.SIZE_FILL
 		students_container.add_child(card)
 		# setup() only after the card is in the tree: its stat rows tween
 		# through Juice, which needs the bar parented before it can make

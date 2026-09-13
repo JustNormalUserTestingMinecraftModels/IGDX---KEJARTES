@@ -86,7 +86,8 @@ func test_tired_student_cannot_be_selected() -> void:
 	assert_true(row.disabled, "tired -> the card refuses the tap")
 	assert_false(row.is_selected(), "tired student not selected")
 	assert_true(row.lelah_chip.visible, "LELAH shows")
-	assert_true(absf(row.modulate.a - 0.55) <= 0.01, "and the card dims")
+	assert_true(absf(row.card.modulate.a - row.unavailable_alpha) <= 0.01, "the hosted card dims")
+	assert_eq(row.modulate.a, 1.0, "the wrapper's own alpha belongs to the list's entrance animation")
 
 
 func test_toggle_emits_argumentless_selection_changed() -> void:

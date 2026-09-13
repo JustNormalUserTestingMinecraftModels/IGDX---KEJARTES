@@ -71,10 +71,22 @@ func test_unselectable_card_dims_and_drops_selection() -> void:
 	b.set_selectable(false)
 	assert_true(b.disabled)
 	assert_false(b.is_selected(), "an unselectable card drops its selection")
-	assert_true(absf(b.modulate.a - 0.55) <= 0.01)
+	assert_true(absf(b.card.modulate.a - b.unavailable_alpha) <= 0.01)
 	assert_eq(b.card.avatar.modulate, Color(0.7, 0.7, 0.75, 1.0))
+	assert_eq(b.modulate.a, 1.0, "the wrapper's own alpha belongs to the list's entrance animation")
+
+	# What both hosts do to reveal their lists: Juice.stagger_in -> pop_in,
+	# which writes the wrapper's modulate.a synchronously. The dim must
+	# survive it, so run this check while still unselectable.
+	Juice.pop_in(b)
+	assert_true(absf(b.card.modulate.a - b.unavailable_alpha) <= 0.01,
+		"pop_in overwrites the wrapper's alpha; the card's dim must not move")
+
+	# pop_in left the wrapper at 0 (its tween never advances inside a test).
 	b.set_selectable(true)
-	assert_eq(b.modulate.a, 1.0)
+	assert_eq(b.card.modulate.a, 1.0)
+	assert_eq(b.modulate.a, 0.0,
+		"set_selectable leaves the wrapper's alpha where the entrance put it")
 	assert_eq(b.card.avatar.modulate, Color.WHITE)
 
 

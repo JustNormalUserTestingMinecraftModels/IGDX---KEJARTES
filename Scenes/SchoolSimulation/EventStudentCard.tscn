@@ -7,7 +7,9 @@
 [ext_resource type="Texture2D" uid="uid://bxr0nynyliitp" path="res://Assets/Images/UI/Placeholders/icon_star.svg" id="8_8prce"]
 
 [node name="EventStudentCard" type="Button" unique_id=829660794]
-custom_minimum_size = Vector2(0, 36.370968)
+custom_minimum_size = Vector2(0, 410)
+offset_right = 992.0
+offset_bottom = 410.0
 focus_mode = 0
 theme_type_variation = &"EventSelectCard"
 toggle_mode = true
@@ -17,7 +19,7 @@ script = ExtResource("1_d65yh")
 layout_mode = 0
 offset_right = 992.0
 offset_bottom = 410.0
-scale = Vector2(0.088709675, 0.088709675)
+mouse_filter = 2
 
 [node name="SelectBadge" type="TextureRect" parent="Card" unique_id=94232369]
 visible = false

@@ -56,5 +56,5 @@ func student() -> StudentData:
 	return _student
 
 
-func _selection_toggled(pressed: bool) -> void:
-	selection_changed.emit(pressed)
+func _selection_toggled(toggled_on: bool) -> void:
+	selection_changed.emit(toggled_on)

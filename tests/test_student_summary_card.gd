@@ -88,7 +88,7 @@ func test_content_goes_under_margin() -> void:
 	assert_eq(label.get_parent(), card.margin)
 
 
-func test_all_three_screens_use_the_shared_card_chrome() -> void:
+func test_both_screens_use_the_shared_card_chrome() -> void:
 	for path in [SCHOOL_DAY_PATH, DECAY_PATH]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_contains(src, "StudentSummaryCard", "%s should use the shared card chrome" % path)

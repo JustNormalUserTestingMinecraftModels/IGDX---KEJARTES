@@ -43,16 +43,16 @@ func test_the_bake_declares_both_variations() -> void:
 			variation + " must be in the baked theme -- rebake")
 
 
-## WCAG large-text floor (3:1). The caption is display-size, and its navy rim
-## must hold the floor on its own.
+## WCAG large-text floor (3:1). The caption's cream fill and its navy rim
+## must each hold the 3:1 large-text floor on the mustard panel,
+## independently of one another.
 func test_caption_reads_on_the_panel() -> void:
 	var t := DesignTokens.load_default()
 	var theme := ThemeFactory.build(t)
 	var fill := _contrast(theme.get_color("font_color", "EventWarningCaptionLabel"),
 		t.event_warning_bg)
 	var rim := _contrast(t.event_warning_ink, t.event_warning_bg)
-	assert_true(maxf(fill, rim) >= 3.0,
-		"caption fill %.2f:1, rim %.2f:1 on the panel" % [fill, rim])
+	assert_true(fill >= 3.0, "the cream fill alone must hold 3:1, got %.2f" % fill)
 	assert_true(rim >= 3.0, "the navy rim alone must hold 3:1, got %.2f" % rim)
 
 
@@ -120,6 +120,20 @@ func test_panel_passes_right_to_left() -> void:
 	assert_eq(script.panel_x(&"enter", 1080.0), 1080.0, "enters from the right edge")
 	assert_eq(script.panel_x(&"rest", 1080.0), 0.0)
 	assert_eq(script.panel_x(&"exit", 1080.0), -1080.0, "leaves through the left edge")
+
+
+## Scoped to play_warning's own body: _ready also calls panel_x(&"enter", ...)
+## to pre-position the panel, so an unscoped scan of the whole file would
+## still pass even if play_warning stopped using the authored motion calls.
+func test_play_warning_runs_the_authored_motion() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	var start := src.find("func play_warning")
+	assert_true(start >= 0, "play_warning must exist")
+	var next_func := src.find("\nfunc ", start + 1)
+	var body := src.substr(start, (src.length() - start) if next_func == -1 else (next_func - start))
+	for needle in ['panel_x(&"enter"', 'panel_x(&"rest"', 'panel_x(&"exit"',
+		"Juice.pop_in(icon)", "Juice.fade_in(caption)"]:
+		assert_contains(body, needle, "play_warning must still drive the authored motion")
 
 
 func test_timings_match_the_spec() -> void:

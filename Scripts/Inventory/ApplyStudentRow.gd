@@ -77,8 +77,8 @@ func selected_student_id() -> int:
 	return int(student.get("id", -1))
 
 
-func _selection_toggled(pressed: bool) -> void:
+func _selection_toggled(toggled_on: bool) -> void:
 	if not Engine.is_editor_hint():
 		AudioDirector.play_sfx(&"select")
-	set_preview(pressed)
+	set_preview(toggled_on)
 	selection_changed.emit()

@@ -154,7 +154,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 96 suites, 1339 tests (2026-09-11).
+the Godot AI MCP `test_run` tool. 102 suites, 1446 tests (2026-09-13).
 
 Hard constraints, learned the hard way:
 
@@ -508,6 +508,23 @@ offsets, dropped into `loby.gd`'s `face_rigs`.
 **Ratchet debt.** `tests/test_viewport_editability.gd`'s `BASELINE` still lists
 real unconverted runtime UI construction across roughly 20 files. The list, and
 what each would need, is in the authoring guide's "Known gaps" section.
+
+**Loose ends from the event-cards pass (2026-09-12).**
+`EventStudentSelectDialog._apply_visual_exports()` looks up a `Background`
+node but the scene's is `BackgroundDim`, so `background_texture` never swaps
+in -- the one `viewport_editability` BASELINE count for that file is this
+dead `TextureRect.new()`. `tests/test_result_checkup.gd`'s
+`test_the_checkup_sets_each_card_up_only_once_it_is_in_the_tree` asserts on a
+`students_container.add_child(card)` string the script no longer has (it's
+`students_pane`), so it always passes. The authoring guide's "Known gaps"
+still lists `EventStudentSelectDialog.gd (11)`; the baseline is now 1.
+SchoolDay's `_add_pill()` schedule-pill builder uses 📚/⚽/🎨 as internal
+markers in label text before stripping them -- emoji in source, and
+brittle. `EventStudentCard.set_preview()` never passes `preview_stat()`'s
+`capped` argument, so the event picker's gain preview has no MAKS cap where
+`ApplyStudentRow.set_preview()`'s does. And `test_bar_contrast.gd`,
+`test_light_ground_text.gd` and `test_event_warning.gd` each carry their own
+copy of the WCAG contrast/luminance helper; wants one shared test utility.
 
 ## Current work
 

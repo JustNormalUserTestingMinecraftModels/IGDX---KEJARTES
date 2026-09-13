@@ -26,7 +26,10 @@ extends Button
 	set(v):
 		max_card_scale = v
 		_fit_card()
-## Opacity of a card that cannot be picked (a student too tired to go).
+## Opacity of the hosted card (not the wrapper) when it cannot be picked (a
+## student too tired to go). The wrapper's own modulate is left alone --
+## the host list's Juice.stagger_in entrance (pop_in) tweens it from 0 to 1
+## on reveal and would silently overwrite a dim set there.
 @export_range(0.0, 1.0, 0.01) var unavailable_alpha: float = 0.55
 ## Avatar tint on a card that cannot be picked, so it reads as unavailable
 ## at a glance rather than only when tapped.
@@ -63,13 +66,18 @@ static func fit_scale(width: float, design_width: float, max_scale: float) -> fl
 
 
 ## A card that cannot be picked refuses the tap, drops any selection it
-## held, dims, and greys its avatar.
+## held, dims the hosted card, and greys its avatar. The dim lands on
+## `card`, not the wrapper's own modulate: both hosts reveal their lists
+## with Juice.stagger_in -> Juice.pop_in, which tweens the wrapper's
+## modulate.a from 0 to 1 on entrance and would overwrite a dim set there.
 func set_selectable(on: bool) -> void:
 	disabled = not on
 	if not on:
 		button_pressed = false
-	modulate.a = 1.0 if on else unavailable_alpha
-	if card != null and card.avatar != null:
+	if card == null:
+		return
+	card.modulate.a = 1.0 if on else unavailable_alpha
+	if card.avatar != null:
 		card.avatar.modulate = Color.WHITE if on else unavailable_avatar_tint
 
 
@@ -105,12 +113,12 @@ func _ignore_mouse_below(node: Node) -> void:
 		_ignore_mouse_below(child)
 
 
-func _on_toggled(pressed: bool) -> void:
+func _on_toggled(toggled_on: bool) -> void:
 	if select_badge:
-		select_badge.visible = pressed
-	_selection_toggled(pressed)
+		select_badge.visible = toggled_on
+	_selection_toggled(toggled_on)
 
 
 ## Override to announce a toggle in the subclass's own signal shape.
-func _selection_toggled(_pressed: bool) -> void:
+func _selection_toggled(_toggled_on: bool) -> void:
 	pass

@@ -6,6 +6,9 @@
 [ext_resource type="Texture2D" uid="uid://cx2se7may2fvu" path="res://Assets/Images/UI/Placeholders/icon_check.svg" id="4_fis8l"]
 
 [node name="ApplyStudentRow" type="Button" unique_id=1010597170]
+custom_minimum_size = Vector2(0, 410)
+offset_right = 992.0
+offset_bottom = 410.0
 size_flags_horizontal = 3
 focus_mode = 0
 theme = ExtResource("1_sqjgo")
@@ -15,6 +18,9 @@ script = ExtResource("2_l2rim")
 
 [node name="Card" parent="." unique_id=385890646 instance=ExtResource("3_kqifd")]
 layout_mode = 0
+offset_right = 992.0
+offset_bottom = 410.0
+mouse_filter = 2
 
 [node name="SelectBadge" type="TextureRect" parent="Card" unique_id=705421495]
 visible = false
@@ -31,8 +37,10 @@ stretch_mode = 5
 [node name="LelahChip" type="PanelContainer" parent="Card" unique_id=269153989]
 visible = false
 layout_mode = 0
-offset_left = 262.0
-offset_top = 30.0
+offset_left = 105.0
+offset_top = 297.0
+offset_right = 264.0
+offset_bottom = 379.0
 mouse_filter = 2
 theme_type_variation = &"SunkenPanel"
 

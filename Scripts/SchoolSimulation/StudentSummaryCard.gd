@@ -10,8 +10,9 @@ extends PanelContainer
 ## used it too until 2026-09-07; its cards are EventStudentCard now.)
 
 ## Margin between the Card surface and its content. Defaults match
-## DailyDecayOverview and EventStudentSelectDialog (both 20/16/20/16);
-## SchoolDay overrides to its own 24/14/24/12.
+## DailyDecayOverview (20/16/20/16); SchoolDay overrides to its own
+## 24/14/24/12 (SchoolDay.gd:469-472). EventStudentSelectDialog left this
+## chrome on 2026-09-07 -- its cards are EventStudentCard now.
 @export var margin_left: int = 20:
 	set(value):
 		margin_left = value

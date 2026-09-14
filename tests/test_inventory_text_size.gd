@@ -68,6 +68,33 @@ func test_no_text_here_wears_a_retired_small_style() -> void:
 		root.free()
 
 
+## The effect rows' value column must hold a two-digit "+NN" at its font and
+## size, or a wider value pushes that row's explanation out of line with the
+## others (seen live 2026-09-14: "+10" at 48 px measured 83 px, against an 80
+## px column).
+func test_the_effect_value_column_holds_a_two_digit_value() -> void:
+	var row: Control = load("res://Scenes/Inventory/EfekRow.tscn").instantiate()
+	var value: Label = row.get_node("ValueLabel")
+	var px := _font_size(value)
+	var width := _font(value).get_string_size("+10", HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+	assert_true(value.custom_minimum_size.x >= width,
+		"ValueLabel's minimum width %d must hold \"+10\" at %d px (%.0f px wide)"
+		% [value.custom_minimum_size.x, px, width])
+	row.free()
+
+
+func _font(node: Control) -> Font:
+	var t := String(node.theme_type_variation)
+	while t != "":
+		if _theme.has_font("font", t):
+			return _theme.get_font("font", t)
+		t = String(_theme.get_type_variation_base(t))
+	var cls := "Button" if node is Button else "Label"
+	if _theme.has_font("font", cls):
+		return _theme.get_font("font", cls)
+	return _theme.default_font if _theme.default_font != null else ThemeDB.fallback_font
+
+
 func _text_nodes(root: Node) -> Array:
 	var out := []
 	var stack: Array = [root]

@@ -95,6 +95,28 @@ func test_all_event_history_reports_no_minigames() -> void:
 	assert_eq(r["events_count"], 2, "both counted as events")
 
 
+func test_minigames_lost_counts_played_losses_only() -> void:
+	var m := _manager([
+		_entry("Senin", "Olahraga", true),
+		_entry("Selasa", "Akademis", false),
+		_entry("Rabu", "Event", true),
+		_entry("Kamis", "SeniBudaya", false),
+	], {})
+	var r: Dictionary = WeekRecap.compute(m)
+	assert_eq(r["minigames_won"], 1, "one played win")
+	assert_eq(r["minigames_lost"], 2, "two played losses")
+	assert_eq(r["minigames_won"] + r["minigames_lost"], r["minigames_total"],
+		"won + lost = played")
+
+
+## Random events are recorded won and cannot fail -- even an entry that
+## says otherwise is never counted as a lost minigame.
+func test_an_event_is_never_a_loss() -> void:
+	var m := _manager([_entry("Rabu", "Event", false)], {})
+	assert_eq(WeekRecap.compute(m)["minigames_lost"], 0,
+		"an Event entry is not a minigame")
+
+
 func test_null_manager_reports_zeroes_rather_than_erroring() -> void:
 	var r: Dictionary = WeekRecap.compute(null)
 	assert_eq(r["money_earned"], 0, "a null manager is survivable")

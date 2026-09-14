@@ -37,6 +37,7 @@ static func compute(manager: StudentManager) -> Dictionary:
 		"money_earned": _sum_pending_earnings(),
 		"net_skill_delta": 0,
 		"minigames_won": 0,
+		"minigames_lost": 0,
 		"minigames_total": 0,
 		"events_count": 0,
 	}
@@ -57,6 +58,8 @@ static func compute(manager: StudentManager) -> Dictionary:
 			result["minigames_total"] += 1
 			if entry.get("won", false):
 				result["minigames_won"] += 1
+			else:
+				result["minigames_lost"] += 1
 
 	return result
 

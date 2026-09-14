@@ -24,7 +24,7 @@ the day.
 **Generated placeholder art.** Produced with PowerShell + `System.Drawing`, not
 hand-authored. All are transparent PNG/SVG, drop-replaceable at the same path
 with no code change: the five `Assets/Images/UI/Nav/` icons,
-`Assets/Images/StudentCard/menu_button.png`, three `Particles/particle_*.png`, the minigame
+three `Particles/particle_*.png`, the minigame
 result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
 event-popup set (`icon_event.svg`, `bg_event_dialog.png`),
@@ -112,6 +112,25 @@ blanket `[PLACEHOLDER]` comment above the table rather than one by one. Every `l
 shows in-game.
 
 ## Known bugs and gaps
+
+**Koperasi's first shelf button is 27 px wider than authored (2026-09-14).**
+`Rak1` in `Scenes/Koperasi/koprasi.tscn` is laid out 442 px wide
+(offsets 303..745), but "KEBUTUHAN SEKOLAH" at its 40 px
+`theme_override_font_sizes` override needs 469 px with `ShopShelfButton`'s
+20 px side margins. A Button grows to its minimum size, so it renders 27 px
+past its box. That predates the lobby-style-buttons pass, which keeps the
+body-font label so it gets no worse (the display face would need 495 px). Fix
+it by widening the node, trimming the margins, or replacing the override with
+a smaller size step.
+
+**Saving RosterCard.tscn in the editor moves its sticky notes (2026-09-14).**
+`Scripts/StudentList/StickyNote.gd` is `@tool`, and its `_ready()` calls
+`_apply_pin()`, which writes `offset_top = pin_slot * PIN_STEP`. In the editor
+every note drops to its pin height, and a `scene_save` bakes that into the
+scene: all five notes went from `offset_top 0 / offset_bottom 200` to
+`20 / 220`. The lobby-style-buttons pass changed the badges by text instead.
+The fix is to gate `_apply_pin()` on `not Engine.is_editor_hint()`, then check
+StudentList still pins each note at runtime.
 
 **Emoji as iconography on the stat popup.** `Scripts/UI/StatDetailPopup.gd`
 falls back to `info["glyph"]` from `StatInfo`, and those glyphs are emoji, which

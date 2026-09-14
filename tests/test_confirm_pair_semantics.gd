@@ -16,6 +16,13 @@ extends McpTestSuite
 ## audit found both by reading the button text rather than trusting the
 ## plan: status badges that encode state rather than action, and rewards.
 ##
+## Since the 2026-09-14 lobby-style-buttons pass every framed action button
+## wears the Lobby's brown look, so these roles no longer differ in colour:
+## the pair still NAMES PrimaryButton + SecondaryButton and the quit dialog
+## still names DangerButton, so a later pass can split them again, but only
+## the BELUM/SUDAH status badges (RosterStatus*) keep red and green. The
+## tests below guard the names, which is what that later pass needs.
+##
 ## Source-text scans, following the established pattern: most of this UI
 ## cannot be instantiated headlessly.
 
@@ -85,11 +92,13 @@ func test_the_schedule_status_badges_keep_their_colours() -> void:
 	# Murid card subtrees were extracted into one template (2026-09-10
 	# Warm UI Part 3). The intent is unchanged: BELUM/SUDAH still encode
 	# state with colour, so the confirm-pair rule must not touch them.
+	# Since 2026-09-14 they carry their own RosterStatus* styles: the
+	# lobby-style-buttons pass turned DangerButton/SuccessButton Lobby brown.
 	var src := _read("res://Scenes/StudentList/RosterCard.tscn")
 	assert_ne(src, "", "could not open RosterCard.tscn")
-	assert_contains(src, "DangerButton",
+	assert_contains(src, "RosterStatusBelum",
 		"the BELUM badge encodes state, not a destructive action")
-	assert_contains(src, "SuccessButton",
+	assert_contains(src, "RosterStatusSudah",
 		"the SUDAH badge encodes state, not a reward")
 
 

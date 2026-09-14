@@ -39,16 +39,25 @@ effect everywhere. That's the point of the system.
 the existing variation that matches intent rather than styling a node by
 hand. As of this pass:
 
-**Buttons** (`theme_type_variation` on a `Button`):
-- `PrimaryButton` — the screen's main call-to-action / forward navigation.
-- `SecondaryButton` — a lower-emphasis action alongside a primary one.
-- `DangerButton` — destructive or cancel actions (red).
-- `SuccessButton` — affirmative actions that aren't the screen's main nav
-  (e.g. StudentCard's APPROVE) — green, distinct from brand blue.
-- `QuirkBadge` / `PersonaBadge` — StudentCard's trait chips; same pill
-  geometry, different accent so the two trait kinds stay distinguishable.
-- `LobbyNavButton` — Lobby's hub nav buttons (replaced three loose
-  hand-authored StyleBoxFlat `.tres` files).
+**Buttons** (`theme_type_variation` on a `Button`). Since the 2026-09-14
+lobby-style-buttons pass, every framed action button wears the Lobby's look
+through `ThemeFactory._add_lobby_button()`: `brand_primary_light` over the
+darker bevel, a cream rim and cream display text. The role names below say
+what a button is for, not how it looks:
+- `LobbyCtaButton` / `LobbyNavTile`: the Lobby's own buttons, the look every
+  other role copies.
+- `PrimaryButton`: the screen's main call-to-action or forward navigation.
+- `SecondaryButton`: a lower-emphasis action alongside a primary one.
+- `DangerButton`: destructive or cancel actions.
+- `SuccessButton`: affirmative actions that aren't the screen's main nav.
+- `StudentCardSecondaryButtonL`: StudentCard's cream secondary (Batal and the
+  page arrows). StudentCard is the one screen that keeps the pre-2026-09-14
+  look.
+- `RosterStatusBelum` / `RosterStatusSudah`: StudentList's red and green
+  status badges, where the colour is the information.
+- `QuirkBadge` / `PersonaBadge`: StudentCard's trait chips. They share one
+  pill geometry and differ in accent, so the two trait kinds stay
+  distinguishable.
 
 **Panels**:
 - `Card` — the standard raised surface (white bg, border, shadow).

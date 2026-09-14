@@ -36,6 +36,33 @@ have not been playtested (`CLAUDE.md`, "Pending a balance pass").
 highest target never exceeds the shots and leaves two spare, and 60 real
 `start_minigame()` starts per difficulty never break it.
 
+## 2026-09-14 — `/gamecode` skill
+
+Added `.claude/skills/gamecode/SKILL.md`, one command that takes a game
+feature from idea to code without the user naming the skill sequence:
+`superpowers:brainstorming`, then one short Brief in game terms (place in the
+loop, rules, `GameState`/`StudentData` fields with both bridge names, grade
+scaling, files, decisions with bold defaults, branch), then on the user's yes
+branch → spec → `writing-plans` → `executing-plans` with no further stops,
+and a single "Ship it?" before `ship-pr`. The skill only overrides the
+sub-skills' gates, all listed in its table: section-by-section design
+approval, the spec-review wait, the execution-mode question,
+subagent-driven execution (the Godot bridge takes one client) and the
+finishing menu.
+
+Built test-first per `superpowers:writing-skills` on three features (a
+quirk, a Koperasi item, a Piket duty). Without the skill, even with the whole
+sequence typed out, summaries ran 350–500 words in a different shape each
+time and two of three runs finished on the three-option merge menu. With it,
+every Brief had the same shape at about 300 words and every run ended on
+"Ship it?". Two refactor rounds fixed: the branch now exists before the spec
+is committed; *this checkout* vs *worktree* is decided by
+`git status --porcelain --untracked-files=no` plus the editor's unsaved tabs
+(plain `--porcelain` tripped on untracked files); a new suite must override
+`suite_name()` (the base returns `"unnamed"`); a red step the plan predicts is
+not a stop; and a premise the code contradicts becomes a Decision with the
+user's own ask in bold.
+
 ## 2026-09-12 — Event cards, the sliding warning, and EventAnnouncement's retirement
 
 Plan `docs/superpowers/plans/2026-09-12-event-cards-and-slide-warning.md`,

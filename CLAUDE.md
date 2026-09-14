@@ -52,8 +52,8 @@ auto-takes "Izin" (forced Istirahat).
 **Personalities** (`Aktif`/`Tekun`/`Kreatif`/`Santai`/`Seni Dalam Kesunyian`)
 drive daily decay rates; **quirks** (`Kutu Buku`, `Penyendiri`, `Semangat
 Juang`, `Penasaran`, `Biang Onar`, `Pekerja Keras`) modify gains and costs.
-Every coefficient is an `@export` on `StudentData.gd` — tune in the Inspector,
-never hardcode.
+Their coefficients are `static var`s in `Balance.gd` (`DECAY_*`, `SIFAT_*`),
+read-only for us.
 
 ## Architecture
 
@@ -570,12 +570,11 @@ Rationale and the full restructure record:
   load-bearing — do not "fix" them).
 - Commits: Conventional Commits with a scope, e.g.
   `fix(lobby): wire the dead ReportStudent button`.
-- Tunable gameplay numbers belong in a named `const` block or an `@export`,
-  not inline. See `StudentManager.gd`'s `WIRAUSAHA_*` block.
-- **`Balance.gd` values are owned by a collaborator, not by us.** Read them
-  freely; never change them. If a task appears to need a different value, say
-  so and propose it rather than editing. On merge, take their version of that
-  file.
+- **`Balance.gd` values are owned by a collaborator, not by us.** It holds
+  most of the simulation's tuning: read it freely, never edit it, propose
+  changes instead, and on merge take their version. A **new** tunable number
+  of ours goes in a named `const` block or an `@export` in the script that
+  owns the behaviour, never inline — like `RunGrade.gd`'s `WEIGHT_*` block.
 - **No emoji as UI iconography.** Use real transparent SVG textures instead —
   explicitly banned during the 2026-09-02 end-of-grade pass after report icons
   briefly used emoji glyphs.

@@ -119,7 +119,7 @@ func test_hud_does_not_sit_on_the_front_row_faces() -> void:
 	var heads := [Vector2(225, 389), Vector2(845, 389)]
 	var radius := 110.0
 	var rects := _rects()
-	for name in ["DisplayUang", "DailyLogin"]:
+	for name in ["DisplayUang", "DailyLogin", "ShortenButton"]:
 		assert_true(rects.has(name), "lobby is missing node: " + name)
 		var r: Dictionary = rects[name]
 		for head in heads:

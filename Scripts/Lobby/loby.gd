@@ -29,6 +29,10 @@ const HAND_NODE_PREFIX := "Hand_"
 ## hands.
 const HAND_FALLBACK_NAME := "Doni"
 
+## The Shorten popup (2026-09-14 shorten-dialog spec), instanced over the hub
+## when ShortenButton is pressed. It frees itself when it closes.
+const SHORTEN_PANEL_SCENE := preload("res://Scenes/Lobby/ShortenPanel.tscn")
+
 @export_group("Idle Motion")
 ## Subtle looping vertical bob applied to the diorama's portrait
 ## containers, so the hub does not read as a still image.
@@ -53,6 +57,7 @@ const HAND_FALLBACK_NAME := "Doni"
 @onready var koperasi_button = $Koperasi
 @onready var report_student_button = $ReportStudent
 @onready var inventory_button = $Inventory
+@onready var shorten_button = $ShortenButton
 
 @onready var money_label = $DisplayUang/Label
 @onready var daily_login_btn = $DailyLogin
@@ -160,10 +165,13 @@ func _ready():
 
 	_build_tutorial_panel()
 
-	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, daily_login_btn, claim_button]:
+	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, shorten_button, daily_login_btn, claim_button]:
 		_setup_button_juice(btn)
 
 	color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	if not shorten_button.pressed.is_connected(_on_shorten_pressed):
+		shorten_button.pressed.connect(_on_shorten_pressed)
 
 	AudioDirector.play_bgm_playlist(&"lobby")
 
@@ -782,6 +790,13 @@ func _on_claim_pressed():
 	GameState.daily_login_day += 1
 	if GameState.daily_login_day > 7:
 		GameState.daily_login_day = 1
+
+## Opens the Shorten panel over the hub.
+func _on_shorten_pressed() -> void:
+	var panel = SHORTEN_PANEL_SCENE.instantiate()
+	add_child(panel)
+	panel.open()
+
 
 func _on_student_pressed():
 	_animate_button_click_bounce(student_button)

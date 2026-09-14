@@ -148,3 +148,47 @@ func test_the_panel_is_authored_and_never_saves_from_the_editor() -> void:
 	var scene := FileAccess.get_file_as_string(_PANEL_SCENE)
 	for kind in ["theme_override_colors", "theme_override_font_sizes", "theme_override_fonts", "theme_override_styles"]:
 		assert_false(scene.contains(kind), "no " + kind + " in ShortenPanel.tscn")
+
+
+# ── the Lobby button ─────────────────────────────────────────────────────────
+
+## The source block of one node, from its header to the next section.
+func _node_block(src: String, node_name: String) -> String:
+	var start := src.find('[node name="%s" ' % node_name)
+	if start == -1:
+		return ""
+	var end := src.find("\n[", start + 1)
+	return src.substr(start, (end if end != -1 else src.length()) - start)
+
+
+func test_the_shorten_button_sits_on_the_money_row() -> void:
+	var block := _node_block(FileAccess.get_file_as_string(_LOBBY_SCENE), "ShortenButton")
+	assert_contains(block, 'type="Button" parent="."')
+	assert_contains(block, 'theme_type_variation = &"SecondaryButton"')
+	assert_contains(block, 'text = "Shorten"')
+	assert_contains(block, "offset_top = 1392.0")
+	assert_contains(block, "offset_bottom = 1488.0")
+	var left := float(block.get_slice("offset_left = ", 1).get_slice("\n", 0))
+	var right := float(block.get_slice("offset_right = ", 1).get_slice("\n", 0))
+	assert_true(left > 144.0 and right < 700.0,
+		"between the daily-login icon (..144) and the money chip (700..), got %f..%f" % [left, right])
+
+
+func test_the_popups_draw_over_the_shorten_button() -> void:
+	var src := FileAccess.get_file_as_string(_LOBBY_SCENE)
+	var btn := src.find('[node name="ShortenButton" ')
+	assert_true(btn != -1, "ShortenButton exists")
+	assert_true(btn < src.find('[node name="DailyReward" '), "the reward popup covers it")
+	assert_true(btn < src.find('[node name="ColorRect" '), "the tutorial overlay covers it")
+
+
+func test_the_shorten_button_opens_the_panel() -> void:
+	var src := FileAccess.get_file_as_string(_LOBBY_SCRIPT)
+	assert_contains(src, 'const SHORTEN_PANEL_SCENE := preload("res://Scenes/Lobby/ShortenPanel.tscn")')
+	var wire := src.find("shorten_button.pressed.connect(_on_shorten_pressed)")
+	var gate := src.find("if GameState.lobby_tutorial_completed or GameState.minggu_ke > 1:")
+	assert_true(wire != -1 and wire < gate, "wired once, before the tutorial split")
+	var body := _body(src, "_on_shorten_pressed")
+	assert_contains(body, "SHORTEN_PANEL_SCENE.instantiate()")
+	assert_contains(body, "add_child(panel)")
+	assert_contains(body, "panel.open()")

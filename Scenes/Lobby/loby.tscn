@@ -820,6 +820,15 @@ texture_normal = ExtResource("15_d385k")
 ignore_texture_size = true
 stretch_mode = 0
 
+[node name="ShortenButton" type="Button" parent="." unique_id=575693895]
+layout_mode = 1
+offset_left = 168.0
+offset_top = 1392.0
+offset_right = 408.0
+offset_bottom = 1488.0
+theme_type_variation = &"SecondaryButton"
+text = "Shorten"
+
 [node name="DailyReward" type="TextureRect" parent="." unique_id=889996430]
 visible = false
 layout_mode = 1

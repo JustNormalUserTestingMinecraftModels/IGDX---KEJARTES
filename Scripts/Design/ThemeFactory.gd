@@ -343,7 +343,10 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void:
 	_add_lobby_button(theme, tokens, "ShopShelfButton")
 	_set_content_margins(theme, "ShopShelfButton", 20, 10)
-	theme.clear_font("font", "ShopShelfButton")
+	# Only set when tokens carry a display face; clearing a font that was never
+	# set logs an engine error (the null-font theme tests build exactly that).
+	if theme.get_font_list("ShopShelfButton").has("font"):
+		theme.clear_font("font", "ShopShelfButton")
 
 
 ## Weekly Results' Logs and Selanjutnya, in the Lobby look (2026-09-14

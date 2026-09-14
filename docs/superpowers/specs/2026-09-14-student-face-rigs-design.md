@@ -97,3 +97,34 @@ committed; its results are frozen in the new test suite.
 
 Re-importing Citra; turning idle blinking on; per-student gaze tuning;
 committing the solver script.
+
+## As built
+
+What the art turned out to be, and what that changed:
+
+- **Numbering.** The Drive numbers did not follow Base, Sclera, Pupil,
+  Eyelashes, Eyelid, Eyebrows for every student. File 4 is the closed eyelid
+  and 5 the lashes for all five, and 2/3 are pupil/sclera for Doni, Marcel,
+  Shinta and Thea (Andi's 2/3 are as stated). Established by which layer
+  plugs the eye cut-outs, which matches the portrait, and a contact sheet.
+  The files are named by role.
+- **Citra's Drive copies** are byte-identical to the imported art; nothing
+  to report.
+- **Eyelid fallback** was never needed: every base has cut-outs to pin it.
+- **Shinta** shows one eye (the other is under her hair). Her portrait is a
+  darker grade of her base, so matching ran through a per-channel recolour
+  fitted base -> portrait. Her base's second transparent hole is a gap in the
+  hair, also transparent in the portrait, so it is left open.
+- **Marcel's glasses** are the top layer, as his portrait shows. Their lens
+  is additive in the portrait while the frame is opaque. That needed two
+  files the Brief did not list: `Scripts/Shaders/glasses_lens.gdshader`
+  (`blend_premul_alpha`) and `Scenes/Lobby/marcel_glasses_lens.tres`
+  (`lens_gain` 1.173, fitted). His lashes sit under the tinted lens and were
+  found by where they darken the face.
+- **See-through budget.** A few anti-aliased cut-out rim pixels are covered
+  by no layer in any placement: Doni 5, Marcel 10. The suite freezes them.
+- **Andi's** layered eye opening is shorter than his pupil art, so the top
+  of the iris always tucks under the lash line.
+- **Citra's committed rig** leaves 114 cut-out pixels uncovered at Sclera
+  y=578 (y=579 covers them). Recorded in DEBT.md and handed off; not changed
+  here.

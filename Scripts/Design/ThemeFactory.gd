@@ -22,7 +22,6 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_progress(theme, tokens)
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
-	_build_week_recap(theme, tokens)
 	_build_minigame_result(theme, tokens)
 	_build_event_warning(theme, tokens)
 	_build_event_dialogue(theme, tokens)
@@ -325,6 +324,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 
 	_build_main_menu_button(theme, tokens)
 	_build_shop_shelf_button(theme, tokens)
+	_build_result_button(theme, tokens)
 
 	# Size steps. M covers the 116-148 px call sites (TesNotice, RunResult,
 	# QuitConfirmDialog, EndCutscene, AturJadwal's StartWeek); L covers the
@@ -380,6 +380,44 @@ static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void
 		Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.75))
 	theme.set_constant("shadow_offset_x", NAME, 2)
 	theme.set_constant("shadow_offset_y", NAME, 2)
+
+
+## Weekly Results' two cream buttons, Logs and Selanjutnya (2026-09-14
+## weekly-results spec). The student card's own card_bg.png, 9-sliced, so
+## the buttons read as the same material as the cards above them, with the
+## card's white display text and purple glyph outline (the "+12/65" look).
+##
+## A StyleBoxTexture, so the corner lives in the art: test_button_geometry
+## exempts it from the radius rule and checks the texture path instead, as
+## it does for MainMenuButton.
+static func _build_result_button(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "ResultButton"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Button")
+
+	var normal := StyleBoxTexture.new()
+	normal.texture = load("res://Assets/Images/DaySummary/card_bg.png")
+	normal.texture_margin_left = 40
+	normal.texture_margin_right = 40
+	normal.texture_margin_top = 40
+	normal.texture_margin_bottom = 48
+	normal.content_margin_left = 24
+	normal.content_margin_right = 24
+	normal.content_margin_top = 0
+	normal.content_margin_bottom = 12
+	# The art carries no state variants; press feedback is UIPolish's Juice.
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		theme.set_stylebox(state, NAME, normal)
+	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
+
+	for color_name in ["font_color", "font_hover_color", "font_pressed_color",
+			"font_hover_pressed_color", "font_focus_color", "font_disabled_color"]:
+		theme.set_color(color_name, NAME, Color.WHITE)
+	theme.set_color("font_outline_color", NAME, tokens.day_glyph_outline)
+	theme.set_constant("outline_size", NAME, maxi(2, tokens.text_outline_size / 2))
+	theme.set_font_size("font_size", NAME, tokens.day_stat_size)
+	if tokens.font_display != null:
+		theme.set_font("font", NAME, tokens.font_display)
 
 
 ## The main menu's three nav buttons.
@@ -1445,68 +1483,6 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.day_glyph_outline)
 	if tokens.font_display != null:
 		theme.set_font("font", "DaySummaryNeedsLabel", tokens.font_display)
-
-
-# ------------------------------------------------------------ week recap
-
-static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
-	# The banner is a raised card that must not read as another student
-	# card, so it takes the card surface with the brand's own edge.
-	theme.add_type("RecapBannerPanel")
-	theme.set_type_variation("RecapBannerPanel", "Panel")
-	var recap_banner := StyleBoxFlat.new()
-	recap_banner.bg_color = tokens.surface_card
-	recap_banner.set_corner_radius_all(tokens.radius_md)
-	recap_banner.border_color = tokens.brand_primary
-	recap_banner.set_border_width_all(int(tokens.outline_width) / 2)
-	recap_banner.content_margin_left = tokens.space_md
-	recap_banner.content_margin_right = tokens.space_md
-	recap_banner.content_margin_top = tokens.space_sm
-	recap_banner.content_margin_bottom = tokens.space_sm
-	theme.set_stylebox("panel", "RecapBannerPanel", recap_banner)
-
-	# A pill is a sunken capsule -- the counter-form to the banner it sits
-	# inside.
-	theme.add_type("RecapPillPanel")
-	theme.set_type_variation("RecapPillPanel", "Panel")
-	var recap_pill := StyleBoxFlat.new()
-	recap_pill.bg_color = tokens.surface_sunken
-	recap_pill.set_corner_radius_all(tokens.radius_pill)
-	recap_pill.content_margin_left = tokens.space_sm
-	recap_pill.content_margin_right = tokens.space_sm
-	recap_pill.content_margin_top = tokens.space_xs
-	recap_pill.content_margin_bottom = tokens.space_xs
-	theme.set_stylebox("panel", "RecapPillPanel", recap_pill)
-
-	# The pill's number. Tinted per-pill via self_modulate, so the
-	# variation itself stays neutral.
-	theme.add_type("RecapPillValueLabel")
-	theme.set_type_variation("RecapPillValueLabel", "Label")
-	theme.set_font_size("font_size", "RecapPillValueLabel", tokens.font_h2)
-	theme.set_color("font_color", "RecapPillValueLabel", tokens.text_primary)
-	if tokens.font_display != null:
-		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
-
-	# The tab. A real pressed state is what makes the active tab legible
-	# without any manual tint at the call site.
-	theme.add_type("WeekTabButton")
-	theme.set_type_variation("WeekTabButton", "Button")
-	var tab_normal := StyleBoxFlat.new()
-	tab_normal.bg_color = tokens.surface_sunken
-	tab_normal.corner_radius_top_left = tokens.radius_button
-	tab_normal.corner_radius_top_right = tokens.radius_button
-	tab_normal.content_margin_top = tokens.space_sm
-	tab_normal.content_margin_bottom = tokens.space_sm
-	var tab_pressed := tab_normal.duplicate() as StyleBoxFlat
-	tab_pressed.bg_color = tokens.brand_primary
-	theme.set_stylebox("normal", "WeekTabButton", tab_normal)
-	theme.set_stylebox("hover", "WeekTabButton", tab_normal)
-	theme.set_stylebox("pressed", "WeekTabButton", tab_pressed)
-	theme.set_stylebox("focus", "WeekTabButton", tab_normal)
-	theme.set_color("font_color", "WeekTabButton", tokens.text_secondary)
-	theme.set_color("font_pressed_color", "WeekTabButton", tokens.text_on_brand)
-	theme.set_color("font_hover_color", "WeekTabButton", tokens.text_primary)
-	theme.set_font_size("font_size", "WeekTabButton", tokens.font_title)
 
 
 # ---------------------------------------------------- minigame result card

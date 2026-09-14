@@ -27,6 +27,8 @@ func setup() -> void:
 const RADIUS_EXEMPT := {
 	"MainMenuButton":
 		"StyleBoxTexture -- the gold gloss is painted, so the corner lives in menu_button.png",
+	"ResultButton":
+		"StyleBoxTexture -- Weekly Results' cream buttons are the student card's own card_bg.png, so the corner lives in the art",
 	"TraitPill":
 		"chip, StyleBoxTexture, stays fully round so it reads as a label not a control",
 	"QuirkBadge":
@@ -54,6 +56,18 @@ const RADIUS_EXEMPT := {
 	"GhostButton":
 		"wash sits over the daily-login panel's baked capsule art (day1.png) -- radius_pill so the corner tracks the button's own height and always matches the art's rounded ends, deliberately height-dependent",
 }
+
+
+## ResultButton is exempt from the radius rule because its corner is
+## painted into card_bg.png -- so pin that it really draws that art
+## (2026-09-14 weekly-results spec).
+func test_result_button_draws_the_card_art() -> void:
+	var sb := _theme.get_stylebox("normal", "ResultButton") as StyleBoxTexture
+	assert_true(sb != null and sb.texture != null,
+		"ResultButton/normal must be a textured StyleBoxTexture")
+	if sb != null and sb.texture != null:
+		assert_eq(sb.texture.resource_path, "res://Assets/Images/DaySummary/card_bg.png",
+			"ResultButton must use the student card's own art")
 
 
 ## Collect every type whose variation base is Button.

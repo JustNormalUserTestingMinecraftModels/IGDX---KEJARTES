@@ -68,18 +68,27 @@ func test_no_text_here_wears_a_retired_small_style() -> void:
 		root.free()
 
 
-## The effect rows' value column must hold a two-digit "+NN" at its font and
-## size, or a wider value pushes that row's explanation out of line with the
-## others (seen live 2026-09-14: "+10" at 48 px measured 83 px, against an 80
-## px column).
-func test_the_effect_value_column_holds_a_two_digit_value() -> void:
+## The effect rows' value column must hold the widest two-digit "+NN" at its
+## font and size. Items grant up to +35 today (ItemDatabase), and a value wider
+## than the column pushes that row's explanation out of line with the others
+## (seen live 2026-09-14: "+10" at 48 px measured 83 px, against an 80 px
+## column). Measuring every "+10".."+99" covers a future item too.
+func test_the_effect_value_column_holds_any_two_digit_value() -> void:
 	var row: Control = load("res://Scenes/Inventory/EfekRow.tscn").instantiate()
 	var value: Label = row.get_node("ValueLabel")
 	var px := _font_size(value)
-	var width := _font(value).get_string_size("+10", HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+	var font := _font(value)
+	var widest := ""
+	var width := 0.0
+	for n in range(10, 100):
+		var s := "+%d" % n
+		var w := font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+		if w > width:
+			width = w
+			widest = s
 	assert_true(value.custom_minimum_size.x >= width,
-		"ValueLabel's minimum width %d must hold \"+10\" at %d px (%.0f px wide)"
-		% [value.custom_minimum_size.x, px, width])
+		"ValueLabel's minimum width %d must hold \"%s\" at %d px (%.0f px wide)"
+		% [value.custom_minimum_size.x, widest, px, width])
 	row.free()
 
 

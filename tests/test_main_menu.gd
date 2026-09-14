@@ -22,7 +22,7 @@ extends McpTestSuite
 ## 2026-09-01: the three stacked MULAI / PENGATURAN / KELUAR buttons were
 ## replaced by a minimal layout -- MULAI is now a blinking "ketuk di mana
 ## saja" prompt and a tap anywhere starts the game; PENGATURAN and KELUAR
-## are icon-only buttons (still the yellow MainMenuButton art) in a
+## are icon-only MainMenuButtons (Lobby brown since 2026-09-14) in a
 ## bottom IconBar. See Scripts/MainMenu/main_menu.gd.
 
 func suite_name() -> String:
@@ -177,7 +177,7 @@ func test_icon_buttons_keep_the_yellow_menu_art() -> void:
 		if b == null:
 			continue
 		assert_eq(b.theme_type_variation, &"MainMenuButton",
-			name + " must keep the MainMenuButton (yellow box) variation")
+			name + " must keep the MainMenuButton variation")
 
 
 func test_icon_buttons_show_an_icon_and_no_text() -> void:

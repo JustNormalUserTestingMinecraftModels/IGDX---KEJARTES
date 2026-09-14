@@ -59,7 +59,6 @@ texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid6" unique_id=1373524025 instance=ExtResource("4_jyy3b")]
 layout_mode = 0
-anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid6" unique_id=1221180924]
 layout_mode = 1
@@ -275,7 +274,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SecondaryButtonL"
+theme_type_variation = &"StudentCardSecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid6" unique_id=1413363287]
@@ -314,7 +313,6 @@ texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid5" unique_id=662012139 instance=ExtResource("4_jyy3b")]
 layout_mode = 0
-anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid5" unique_id=91004226]
 layout_mode = 1
@@ -530,7 +528,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SecondaryButtonL"
+theme_type_variation = &"StudentCardSecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid5" unique_id=211728033]
@@ -570,7 +568,6 @@ texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid4" unique_id=476270661 instance=ExtResource("4_jyy3b")]
 layout_mode = 0
-anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid4" unique_id=464091592]
 layout_mode = 1
@@ -786,7 +783,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SecondaryButtonL"
+theme_type_variation = &"StudentCardSecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid4" unique_id=2012391498]
@@ -826,7 +823,6 @@ texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid3" unique_id=1612073677 instance=ExtResource("4_jyy3b")]
 layout_mode = 0
-anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid3" unique_id=158931283]
 layout_mode = 1
@@ -1042,7 +1038,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SecondaryButtonL"
+theme_type_variation = &"StudentCardSecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid3" unique_id=948563813]
@@ -1082,7 +1078,6 @@ texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid2" unique_id=770458292 instance=ExtResource("4_jyy3b")]
 layout_mode = 0
-anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid2" unique_id=1137421456]
 layout_mode = 1
@@ -1298,7 +1293,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SecondaryButtonL"
+theme_type_variation = &"StudentCardSecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid2" unique_id=1923656077]
@@ -1337,7 +1332,6 @@ texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid1" unique_id=1328964949 instance=ExtResource("4_jyy3b")]
 layout_mode = 0
-anchors_preset = 0
 
 [node name="TextureRect" type="TextureRect" parent="KertasMurid1" unique_id=981490411]
 layout_mode = 1
@@ -1553,7 +1547,7 @@ offset_left = 260.0
 offset_top = 1600.0
 offset_right = 780.0
 offset_bottom = 1760.0
-theme_type_variation = &"SecondaryButtonL"
+theme_type_variation = &"StudentCardSecondaryButtonL"
 text = "BATAL"
 
 [node name="MinatLabel" type="Label" parent="KertasMurid1" unique_id=1707616966]
@@ -1589,7 +1583,7 @@ offset_left = 790.0
 offset_top = 1524.0
 offset_right = 950.0
 offset_bottom = 1652.0
-theme_type_variation = &"SecondaryButtonL"
+theme_type_variation = &"StudentCardSecondaryButtonL"
 
 [node name="Arrow" type="TextureRect" parent="NextButtonKanan" unique_id=1794432009]
 layout_mode = 0
@@ -1614,7 +1608,7 @@ offset_left = 20.0
 offset_top = 1524.0
 offset_right = 180.0
 offset_bottom = 1652.0
-theme_type_variation = &"SecondaryButtonL"
+theme_type_variation = &"StudentCardSecondaryButtonL"
 
 [node name="Arrow" type="TextureRect" parent="NextButtonKiri" unique_id=1879901438]
 layout_mode = 0

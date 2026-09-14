@@ -170,11 +170,14 @@ func test_header_and_status_badges_use_theme_variations() -> void:
 	for i in range(1, 5):
 		var belum := _list.get_node_or_null("CardContainer/Murid%d/Belum" % i) as Button
 		assert_true(belum != null, "missing Murid%d/Belum" % i)
-		assert_eq(belum.theme_type_variation, &"DangerButton", "Murid%d/Belum variation" % i)
+		# Their own styles since the 2026-09-14 lobby-style-buttons pass, which
+		# turned DangerButton/SuccessButton Lobby brown: the red and green are
+		# the information these badges carry.
+		assert_eq(belum.theme_type_variation, &"RosterStatusBelum", "Murid%d/Belum variation" % i)
 
 		var sudah := _list.get_node_or_null("CardContainer/Murid%d/Sudah" % i) as Button
 		assert_true(sudah != null, "missing Murid%d/Sudah" % i)
-		assert_eq(sudah.theme_type_variation, &"SuccessButton", "Murid%d/Sudah variation" % i)
+		assert_eq(sudah.theme_type_variation, &"RosterStatusSudah", "Murid%d/Sudah variation" % i)
 
 		var nama := _list.get_node_or_null("CardContainer/Murid%d/Nama" % i) as Label
 		assert_true(nama != null, "missing Murid%d/Nama" % i)

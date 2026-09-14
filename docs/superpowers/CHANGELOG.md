@@ -8,6 +8,117 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — Project guide audit: the debt list leaves CLAUDE.md
+
+`CLAUDE.md` had grown from 24,644 characters after the 2026-09-10 audit to
+33,665. Of the 9,021 added, 6,101 were feature passes appending to
+`## Outstanding debt & placeholders`. The debt list now lives in
+`docs/superpowers/DEBT.md`, which sessions read on demand. The constraints
+that were riding inside it came up into `CLAUDE.md`'s `## Visual system`,
+because the `claude-review` bot reads only that file: the BarFill rules, the
+1080x1080 Penjadwalan card, the badge SVG paths, `tray_dots.png`'s 26x26, and
+leaving `sky_cover_margin` alone. `## Current work` held Plan C, untouched
+since 2026-09-11, so Plan C moved to DEBT.md too. The result is 22,852
+characters. The soft budget rises from 20,000 to 23,000, because two audits
+could not reach 20,000 without deleting live rules. The rationale for this
+file's structure is still
+`docs/superpowers/specs/2026-09-05-project-guide-restructure-and-memory-seeding-design.md`.
+
+Every moved entry was checked against the source first. That check found:
+
+- `penjadwalan_card_bg.png` has one hardcoded `region_rect` (the Peringatan
+  dialog), not two.
+- `tests/test_bar_contrast.gd` checks only the BarFill luminance floor.
+  `Assets/Images/UI/BarFill/README.md` says it checks both rules; the
+  tile-period rule has no test (new DEBT entry).
+- `exam_cutscene` no longer exists. `event_announce` plays its own file, a
+  byte-identical copy of `reward.ogg`, rather than an alias.
+- The exam and win cutscene lines the copy entry covered are gone, and the
+  item descriptions carry one blanket `[PLACEHOLDER]` comment, not one each.
+- The lose backdrop's `@export` lives on `WinStage`.
+- The AturJadwal shelf diff is in the plan's Task 2 section, not its STATUS
+  block.
+- `paper.png` is about 98% pure white, not 96%. `Particles/` holds seven
+  placeholders, not three. Only two of the five "faint" icons are white. A
+  fourth WCAG helper sits in `test_run_result.gd`. `BASELINE` has 23 entries.
+- New debt: `SchoolDay`'s playful textures never load (`.png` paths, `.svg`
+  files), and `WinScreen.tscn`, deleted in `0dc9fa9`, came back in `7cc8a07`.
+
+The audit also adds a rule to `## Working efficiently here`: "The main
+checkout is shared too". This audit's own `git switch -c` in the shared main
+checkout, taken on a `git status` reading ten minutes old, moved a live
+session off `feat/shorten-dialog`. That session's next six commits landed on
+the audit branch, and its spec and plan left the disk. It was asked to move
+them back, and the audit went on in a worktree.
+
+Text moved out of `CLAUDE.md` verbatim:
+
+- The Loading screen was deleted on 2026-09-10: the shared `Transition` wipe
+  covers the scene-load gap, so the intermediate screen was dead weight.
+- Every script's documentation (a `##` file header, a `##` line on every
+  `@export`) is a hard rule now (`tests/test_script_documentation.gd`) — the
+  2026-08-31 21-task sweep closed that ratchet.
+- A scaled-down capture cannot show 1px detail, spacing or weight, and signing
+  off a visual change from one is how the 2026-09-10 cream pass shipped a
+  half-finished layout.
+- Do **scene work first, script work second**; after any `scene_save` check
+  `git diff HEAD -- '*.gd'` for files you were not editing; and once you have
+  patched a script, restart the editor before the next `scene_save` — a
+  force-kill is safe once scenes are saved, and the relaunch reloads every tab
+  from disk (2026-09-10: skipping it reverted `BuatBatik.gd`).
+- **A full `test_run` drops the bridge.** Observed four times on 2026-09-10,
+  each immediately after a full run and never after a targeted one. The first
+  explanation was memory pressure — the machine had ~1 GB free of 16 GB — but
+  the fourth drop happened with **8.9 GB free**, which rules that out. What is
+  left is duration: a full run is 15-20s of near-continuous main-thread work,
+  and the plugin's transport does not survive it (the `test_run` docs warn
+  that a single test blocking for 20s+ can drop the session).
+- Soft budget: **20,000 characters**. History: 27,547 on 2026-09-05 (39%
+  completed-pass narrative), 30,936 on 2026-09-10, 24,000 after that day's
+  audit. The 2026-09-10 pass could not reach 20k without deleting live
+  operational rules — if it must come down further, the honest lever is
+  moving `## Outstanding debt` to its own file, not thinning the rules.
+
+- That tab also carries **🎭 Gladi Resik Akhir Kelas** — one-click rehearsals of
+  the whole end-of-grade sequence with a fixed roster: *Semua Lulus*, *Semua
+  Gagal*, and *Campur*, which ladders 3/2/1/0 cleared targets so one pass of
+  StatCheck lights the meter 3, 2, 1 and 0 shares in turn (6 of 12 = 1.5 stars, a
+  loss).
+- Logic lives in `Scripts/Debug/EndGameRehearsal.gd`, tested in
+  `tests/test_end_game_rehearsal.gd`; `DebugManager.gd` only holds the buttons.
+- `Scripts/AnimUtils.gd` — came in with the ported shop/inventory
+  (`squash_bounce`, `popup_spring_in/out`, `coin_pulse`, `create_floating_text`,
+  …).
+- Same for a **new** `@export`. This is why the theme rebake has no headless
+  path.
+- Hard constraints, learned the hard way:
+- Rationale and the full restructure record:
+  `docs/superpowers/specs/2026-09-05-project-guide-restructure-and-memory-seeding-design.md`.
+
+Wording the source check replaced, verbatim:
+
+- **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
+  opaque only across rows 262..1578 and columns 47..1033, its bottom-right
+  corner is cut away to a transparent wedge, and its body is flat pure white
+  (96% of sampled opaque pixels are exactly 255,255,255) -- there is no paper
+  texture in it to preserve.
+- The `fill_*` tiles and `track_ghost.png` — rules in
+  `Assets/Images/UI/BarFill/README.md`, enforced by `tests/test_bar_contrast.gd`
+  and `tests/test_ghost_track.gd`.
+- `penjadwalan_card_bg.png` must stay exactly 1080x1080; two call sites address
+  it with hardcoded `region_rect`s.
+- These `AudioDirector` cue ids alias existing streams: `sfx_specialty_match`,
+  `tally`, `sparkle`, `star_earn_1/2/3`, `result_fanfare`, `score_tick`,
+  `combo_up`, `sfx_event_announce`, and the BGM ids `exam_notice`,
+  `exam_cutscene`, `run_result`.
+- **Copy placeholders.** Every cutscene line in the exam and win branches, and
+  every `desc` string in `ItemDatabase.DEFAULT_ITEMS` (shown verbatim in
+  `ItemDetailSheet`), is marked `[PLACEHOLDER]`.
+- `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in for final art (an
+  `@export`, so an Inspector swap).
+- The exact diff is in the STATUS block of
+  `docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`.
+
 ## 2026-09-14 — EventDialogue: a line before every minigame and event
 
 Every mid-day interruption now has a character speak first. After the sliding

@@ -71,3 +71,80 @@ func test_school_day_skips_before_it_builds_anything() -> void:
 	var build := body.find("dialogue_scene.instantiate()")
 	assert_true(skip != -1 and build > skip, "Shorten returns before the dialogue is instanced")
 	assert_contains(body.substr(skip, 120), "return true", "a skipped dialogue lets the minigame carry on")
+
+
+# ── the panel ────────────────────────────────────────────────────────────────
+
+## Instantiated with the baked theme under the editor root, tracked for
+## cleanup. Untyped: typed as Control, GDScript rejects the script members.
+func _panel():
+	var p = (load(_PANEL_SCENE) as PackedScene).instantiate()
+	p.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(p)
+	track(p)
+	return p
+
+
+func test_the_panel_offers_the_two_options_as_written() -> void:
+	var p = _panel()
+	assert_eq((p.get_node("Center/Card/Content/TitleLabel") as Label).text, "Shorten")
+	assert_eq(p.skip_button.text, "Skip Dialog")
+	assert_eq(p.keep_button.text, "Jangan Skip Dialog")
+	assert_eq(p.skip_button.theme_type_variation, &"PrimaryButton", "an ordinary choice: one filled")
+	assert_eq(p.keep_button.theme_type_variation, &"SecondaryButton", "and one quiet")
+
+
+func test_skip_dialog_turns_shorten_on_and_closes() -> void:
+	GameSettings.skip_event_dialogue = false
+	var p = _panel()
+	var closed := [false]
+	p.closed.connect(func(): closed[0] = true)
+	p.skip_button.pressed.emit()
+	assert_true(GameSettings.skip_event_dialogue, "Skip Dialog turns Shorten on")
+	assert_true(closed[0], "and closes the panel")
+
+
+func test_jangan_skip_dialog_turns_shorten_off_and_closes() -> void:
+	GameSettings.skip_event_dialogue = true
+	var p = _panel()
+	var closed := [false]
+	p.closed.connect(func(): closed[0] = true)
+	p.keep_button.pressed.emit()
+	assert_false(GameSettings.skip_event_dialogue, "Jangan Skip Dialog turns Shorten off")
+	assert_true(closed[0], "and closes the panel")
+
+
+func test_the_status_line_follows_the_setting() -> void:
+	GameSettings.skip_event_dialogue = true
+	var p = _panel()
+	assert_eq(p.status_label.text, "Sekarang: dialog minigame dilewati.")
+	GameSettings.skip_event_dialogue = false
+	p.refresh()
+	assert_eq(p.status_label.text, "Sekarang: dialog minigame ditampilkan.")
+
+
+func test_the_scrim_waits_for_the_open_then_closes_unchanged() -> void:
+	GameSettings.skip_event_dialogue = true
+	var p = _panel()
+	assert_eq(p.scrim.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"popup-dismiss rule: the opening tap must not also close it")
+	p.open()
+	assert_eq(p.scrim.mouse_filter, Control.MOUSE_FILTER_STOP, "after the open, the dim closes")
+	var closed := [false]
+	p.closed.connect(func(): closed[0] = true)
+	var tap := InputEventMouseButton.new()
+	tap.button_index = MOUSE_BUTTON_LEFT
+	tap.pressed = true
+	p._on_scrim_gui_input(tap)
+	assert_true(closed[0], "tapping the dim closes the panel")
+	assert_true(GameSettings.skip_event_dialogue, "without changing the setting")
+
+
+func test_the_panel_is_authored_and_never_saves_from_the_editor() -> void:
+	var src := FileAccess.get_file_as_string(_PANEL_SCRIPT)
+	assert_false(src.contains(".new("), "the panel is fully authored")
+	assert_contains(src, "if not Engine.is_editor_hint():\n\t\tGameSettings.save_settings()",
+		"tests must never write the real settings file")
+	var scene := FileAccess.get_file_as_string(_PANEL_SCENE)
+	for kind in ["theme_override_colors", "theme_override_font_sizes", "theme_override_fonts", "theme_override_styles"]:
+		assert_false(scene.contains(kind), "no " + kind + " in ShortenPanel.tscn")

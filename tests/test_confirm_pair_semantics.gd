@@ -25,6 +25,7 @@ const NON_DESTRUCTIVE_SCENES := [
 	"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn",
 	"res://Scenes/Inventory/ApplyItemScreen.tscn",
 	"res://Scenes/StudentCard/student_card.tscn",
+	"res://Scenes/Lobby/ShortenPanel.tscn",
 ]
 
 ## Quitting a minigame discards the run in progress.

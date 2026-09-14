@@ -304,6 +304,123 @@ func test_the_week_cards_needs_delta_text_is_untouched_by_play_gain() -> void:
 		"same for mood")
 
 
+# ------------------------------------------------ the week reveal's API
+
+## The tweens `action` creates, found the way _run_and_step finds them.
+func _new_tweens(action: Callable) -> Array:
+	var before: Array = Engine.get_main_loop().get_processed_tweens()
+	action.call()
+	var out: Array = []
+	for tw in Engine.get_main_loop().get_processed_tweens():
+		if not before.has(tw) and is_instance_valid(tw):
+			out.append(tw)
+	return out
+
+
+## A card set up for the week, 26 -> 52 akademis against 65 (40% -> 80%)
+## and energy 80 -> 62, mood 40 -> 55.
+func _week_card() -> DaySummaryStudentRow:
+	var inst := _card()
+	inst.setup_week_row(_student_with_week(
+		{"akademis": 26.0, "energy": 80.0, "mood": 40.0},
+		{"akademis": 52.0, "energy": 62.0, "mood": 55.0}))
+	return inst
+
+
+func test_a_stat_row_reports_the_delta_it_shows() -> void:
+	var inst := _week_card()
+	assert_eq(inst.stat_rows[0].shown_delta(), 26.0, "the week's akademis gain")
+	assert_eq(inst.stat_rows[1].shown_delta(), 0.0, "seni did not move")
+
+
+## Before its turn a card waits on Monday: every number at +0, every
+## track and needs bar where the week began, the chevron not yet shown.
+func test_a_rewound_week_card_waits_on_monday() -> void:
+	var inst := _week_card()
+	inst.rewind_week()
+	var row: DaySummaryStatRow = inst.stat_rows[0]
+	assert_true(absf(row.track.value - 40.0) <= 0.01, "the track is back on Monday's 26/65")
+	assert_eq(row.value.text, "+0/65", "the number waits at +0")
+	assert_true(row.chevron.visible and row.chevron.modulate.a == 0.0,
+		"the chevron is armed but not yet shown")
+	assert_true(absf(inst.energy_bar.value - 80.0) <= 0.01, "energy on Monday's 80")
+	assert_true(absf(inst.mood_bar.value - 40.0) <= 0.01, "mood on Monday's 40")
+
+
+func test_a_rows_count_lands_on_the_week_in_its_own_time() -> void:
+	var inst := _week_card()
+	inst.rewind_week()
+	_run_and_step(func(): inst.stat_rows[0].play_count(0.2), 0.3)
+	assert_eq(inst.stat_rows[0].value.text, "+26/65", "the count lands on the week's gain")
+	assert_true(absf(inst.stat_rows[0].track.value - 80.0) <= 0.01, "and the track on 52/65")
+
+
+func test_a_rows_count_is_still_running_before_its_time_is_up() -> void:
+	var inst := _week_card()
+	inst.rewind_week()
+	_run_and_step(func(): inst.stat_rows[0].play_count(0.4), 0.1)
+	assert_true(inst.stat_rows[0].value.text != "+26/65",
+		"a quarter of the way in, the number has not landed")
+
+
+## A skip lands everything at once, and whatever it interrupted -- the
+## count, the fill, the chevron's pop, the needs bars' travel -- must not
+## keep writing half-way values over it.
+func test_landing_a_week_card_stops_its_counts() -> void:
+	var inst := _week_card()
+	inst.rewind_week()
+	var tweens := _new_tweens(func():
+		inst.play_needs_week()
+		inst.stat_rows[0].play_count(0.4))
+	assert_true(tweens.size() >= 5, "needs travel x2, fill, count and the chevron pop")
+	inst.land_week()
+	assert_eq(inst.stat_rows[0].value.text, "+26/65", "final number at once")
+	assert_true(absf(inst.stat_rows[0].track.value - 80.0) <= 0.01, "final track at once")
+	assert_true(absf(inst.energy_bar.value - 62.0) <= 0.01, "final energy at once")
+	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01, "final mood at once")
+	assert_true(inst.stat_rows[0].chevron.modulate.a == 1.0, "the chevron shown")
+	for tw in tweens:
+		if tw.is_valid():
+			assert_false(tw.is_running(), "an interrupted count must be stopped")
+
+
+func test_the_needs_bars_travel_the_week_on_their_own_call() -> void:
+	var inst := _week_card()
+	inst.rewind_week()
+	var tokens := DesignTokens.load_default()
+	_run_and_step(func(): inst.play_needs_week(), tokens.dur_slow + 0.2)
+	assert_true(absf(inst.energy_bar.value - 62.0) <= 0.01, "energy travels to tonight's 62")
+	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01, "mood travels to tonight's 55")
+
+
+## The pop grows from the number itself: the stat number is right-aligned
+## on a wide label, so its pivot sits right of the label's middle.
+func test_a_pop_punches_about_the_number() -> void:
+	var inst := _week_card()
+	inst.land_week()
+	var row: DaySummaryStatRow = inst.stat_rows[0]
+	var tokens := DesignTokens.load_default()
+	var tweens := _new_tweens(func(): row.land_pop(1.2))
+	for tw in tweens:
+		tw.custom_step(tokens.dur_instant)
+	assert_true(row.value.scale.x > 1.1, "mid-pop the number is punched up")
+	assert_true(row.value.pivot_offset.x > row.value.size.x * 0.5,
+		"about the right-aligned text, not the label's middle")
+	for tw in tweens:
+		tw.custom_step(tokens.dur_normal + 0.1)
+	assert_true(absf(row.value.scale.x - 1.0) <= 0.02, "and it settles back")
+
+
+## The nightly popup's own path is untouched by the weekly API.
+func test_the_week_api_leaves_the_nightly_play_gain_alone() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/DaySummaryStatRow.gd")
+	var start := src.find("func play_gain(")
+	var body := src.substr(start, src.find("func _play_burst(") - start)
+	assert_false(body.contains("_reveal_tweens"), "play_gain keeps its own, untracked tweens")
+	assert_contains(src, 'play_sfx(&"tally", pitch)', "the week pop climbs")
+	assert_contains(src, 'play_sfx(&"tally")', "the nightly burst still plays the plain tally")
+
+
 ## The daily card's needs bars now animate too (2026-08-31 request:
 ## ease-out motion on every progress bar in both screens) -- the same
 ## rewind-then-grow the weekly card already does, just over one day's

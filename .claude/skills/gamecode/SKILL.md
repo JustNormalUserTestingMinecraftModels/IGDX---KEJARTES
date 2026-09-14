@@ -93,10 +93,12 @@ other is folded in.
 
 Then, in one unbroken run:
 
-1. **Branch.** `git fetch origin`, then create the Brief's branch from
-   `origin/Textures`. In this checkout, restart the editor after the switch so
-   its buffers match the tree. A worktree goes through
-   `superpowers:using-git-worktrees`, then gets its own editor per `ship-pr` §3.
+1. **Branch.** Re-check the **Branch** rule first — the user may have edited
+   since the Brief — and use a worktree if it no longer holds. Then
+   `git fetch origin` and create the branch from `origin/Textures`. In this
+   checkout, restart the editor after the switch so its buffers match the tree.
+   A worktree goes through `superpowers:using-git-worktrees`, then gets its own
+   editor per `ship-pr` §3.
 2. **Spec.** Save the agreed Brief, decisions resolved, as
    `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`; self-review; commit.
 3. **REQUIRED SUB-SKILL:** `superpowers:writing-plans`. Test steps read

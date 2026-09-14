@@ -44,9 +44,16 @@ same style as the card's "+12/65".
 
 - **The student card is unchanged.** `DaySummaryStudentRow.setup_week_row()`
   and `play_week_gain()` keep doing what they do today.
-- **Money** is `WeekRecap.compute().money_earned`, the week's unpaid Wirausaha
-  earnings. It reads `"+" + format_money(v)` for a positive week and
-  `format_money(v)` otherwise, and counts up on entrance.
+- **Money** is the week's Wirausaha payout. It reads `"+" + format_money(v)`
+  for a positive week and `format_money(v)` otherwise, and counts up on
+  entrance. **This fixes an existing bug.** `SchoolDay._on_week_complete()`
+  calls `_pay_out_wirausaha()`, which clears `GameState.pending_earnings`,
+  and only then instances the checkup. `WeekRecap.compute()` read
+  `pending_earnings`, so the old banner's "uang" pill always showed 0. The
+  new screen takes the paid total as a parameter:
+  `initialize_checkup(student_manager, week_earnings)`. SchoolDay passes
+  `wirausaha_total`. `WeekRecap` drops `money_earned` and
+  `_sum_pending_earnings()`.
 - **EVENT BERHASIL** counts the minigames won, and **EVENT GAGAL** the
   minigames lost (`minigames_total - minigames_won`, a new `minigames_lost`
   key). Random events (`category == "Event"`) are always recorded as won and

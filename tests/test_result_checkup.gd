@@ -577,18 +577,20 @@ func test_the_checkup_no_longer_hand_builds_its_stat_bars() -> void:
 		"the card is built inline, after add_child -- there is no builder left")
 	assert_true(src.contains("setup_week_row("),
 		"the checkup must feed the card the week")
-	assert_true(src.contains("play_week_gain("),
-		"the checkup must replay the week")
+	assert_true(src.contains("play_count("),
+		"the checkup must replay the week, row by row")
 
 
-## Same rhythm the daily popup uses: cards land first, then their gauges
-## start moving, offset card by card.
-func test_the_checkup_fills_its_cards_after_they_land() -> void:
+## The weekly report is one reward at a time now (2026-09-14 reveal spec):
+## the cards no longer stagger in together, the screen plays the
+## WeekReportReveal timeline, each card waiting rewound until its turn.
+func test_the_checkup_plays_its_cards_through_the_reveal_timeline() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
-	assert_true(src.contains("Juice.stagger_in(cards)"),
-		"the cards must still stagger in")
-	assert_true(src.find("Juice.stagger_in(cards)") < src.find("play_week_gain("),
-		"the fill must be kicked off after stagger_in, not before it")
+	assert_false(src.contains("Juice.stagger_in(cards)"),
+		"the cards no longer land together")
+	assert_true(src.contains("WeekReportReveal.build("), "the screen plays the timeline")
+	assert_true(src.contains("rewind_week()"), "each card waits on Monday")
+	assert_true(src.contains("play_needs_week()"), "and travels its needs bars as it lands")
 
 
 ## A card's @onready nodes are null until it enters the tree, so setting it
@@ -723,6 +725,133 @@ func test_selanjutnya_hands_control_back() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
 	assert_contains(src.substr(src.find("func _on_next_pressed")), "checkup_closed.emit()",
 		"Selanjutnya returns to SchoolDay, which goes on to the Lobby")
+
+
+# ------------------------------------------------------- the reveal
+
+## A screen filled for a week in which the first student gained 12 akademis
+## and the minigames went 2 won / 1 lost, with 1.000 coins earned.
+func _revealed_checkup():
+	var inst = _themed_checkup()
+	var manager := StudentManager.new()
+	track(manager)
+	manager.students[0].akademis += 12.0
+	manager.minigame_history.assign([
+		{"day": "Senin", "category": "Akademis", "game_name": "Uji", "won": true},
+		{"day": "Selasa", "category": "Olahraga", "game_name": "Lomba", "won": false},
+		{"day": "Kamis", "category": "SeniBudaya", "game_name": "Batik", "won": true},
+	])
+	inst.initialize_checkup(manager, 1000)
+	return inst
+
+
+func test_each_pop_sounds_one_step_higher_and_caps() -> void:
+	var script = load(_CHECKUP_SCRIPT)
+	assert_eq(script.pop_pitch(0, 0.06, 1.6), 1.0, "the first pop is at normal pitch")
+	assert_true(absf(script.pop_pitch(3, 0.06, 1.6) - 1.18) <= 0.0001, "three steps up")
+	assert_eq(script.pop_pitch(100, 0.06, 1.6), 1.6, "never past the ceiling")
+
+
+func test_the_reveal_pacing_is_exported() -> void:
+	var inst = _themed_checkup()
+	var names: Array = []
+	for p in inst.get_property_list():
+		names.append(p.name)
+	for knob in ["card_lead_seconds", "count_seconds", "row_gap_seconds",
+			"quiet_row_seconds", "card_gap_seconds", "line_gap_seconds",
+			"finale_gap_seconds", "pitch_step", "pitch_max"]:
+		assert_true(names.has(knob), "the Reveal group exports " + knob)
+
+
+## The opening frame is the backdrop alone: ribbon, cards and summary lines
+## transparent, each card rewound to Monday, each line reading 0.
+func test_the_reveal_opens_on_the_backdrop_alone() -> void:
+	var inst = _revealed_checkup()
+	inst._prepare_reveal()
+	assert_eq(inst.title_banner.modulate.a, 0.0, "the ribbon waits")
+	var list: Node = inst.get_node("Margin/Layout/CardsScroll/CardsList")
+	for card in list.get_children():
+		assert_eq(card.modulate.a, 0.0, "every card waits")
+	var first: DaySummaryStudentRow = list.get_child(0)
+	assert_eq(first.stat_rows[0].value.text,
+		"+0/%d" % int(round(first.stat_rows[0]._target)), "rewound to +0")
+	for path in ["Margin/Layout/Summary/Lines/CoinRow",
+			"Margin/Layout/Summary/Lines/EventWonLabel",
+			"Margin/Layout/Summary/Lines/EventLostLabel"]:
+		assert_eq(inst.get_node(path).modulate.a, 0.0, path + " waits")
+	assert_eq(inst.money_label.text, "0", "the coins wait at 0")
+	assert_eq(inst.event_won_label.text, "EVENT BERHASIL : 0", "won waits at 0")
+
+
+## A skip's landing: every card and line fully shown on its final value.
+func test_landing_the_reveal_shows_every_final_value() -> void:
+	var inst = _revealed_checkup()
+	inst._prepare_reveal()
+	inst._land_all()
+	var list: Node = inst.get_node("Margin/Layout/CardsScroll/CardsList")
+	for card in list.get_children():
+		assert_eq(card.modulate.a, 1.0, "every card shown")
+	var first: DaySummaryStudentRow = list.get_child(0)
+	assert_eq(first.stat_rows[0].value.text,
+		"+12/%d" % int(round(first.stat_rows[0]._target)), "the week's gain")
+	assert_eq(inst.title_banner.modulate.a, 1.0, "the ribbon shown")
+	assert_eq(inst.money_label.text, "+1.000", "the coins")
+	assert_eq(inst.event_won_label.text, "EVENT BERHASIL : 2", "won")
+	assert_eq(inst.event_lost_label.text, "EVENT GAGAL : 1", "lost")
+	assert_eq(inst.get_node("Margin/Layout/Summary/Lines/CoinRow").modulate.a, 1.0,
+		"the coin row shown")
+
+
+## The screen feeds the timeline every card's rows and the three lines.
+func test_the_timeline_reads_every_card_and_line() -> void:
+	var inst = _revealed_checkup()
+	var steps: Array = inst._build_steps()
+	var rows := 0
+	var lines := 0
+	var pops := 0
+	for s in steps:
+		if s["kind"] == WeekReportReveal.ROW_COUNT:
+			rows += 1
+		elif s["kind"] == WeekReportReveal.LINE:
+			lines += 1
+		elif s["kind"] == WeekReportReveal.ROW_POP:
+			pops += 1
+	var list: Node = inst.get_node("Margin/Layout/CardsScroll/CardsList")
+	assert_eq(rows, list.get_child_count() * 3, "three rows per card")
+	assert_eq(lines, 3, "coins, won, lost")
+	assert_eq(pops, 1, "only the student who gained pops")
+
+
+## A tap anywhere skips -- but only while the reveal is playing, so Logs,
+## Selanjutnya and the drag-scroll behave normally afterwards. It is
+## _input() for StatCheck's reason: the full-screen controls would claim
+## the tap first.
+func test_a_tap_skips_only_while_the_reveal_plays() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	var input_at := src.find("func _input(")
+	assert_true(input_at != -1, "the skip listens in _input()")
+	var body := src.substr(input_at, src.find("\nfunc ", input_at + 1) - input_at)
+	assert_contains(body, "_revealing", "gated on the reveal playing")
+	assert_contains(body, "skip_reveal()", "and it skips")
+	var skip_at := src.find("func skip_reveal(")
+	var skip := src.substr(skip_at, src.find("\nfunc ", skip_at + 1) - skip_at)
+	assert_contains(skip, "_reveal_tween.kill()", "the timeline stops")
+	assert_contains(skip, "_land_all()", "everything lands")
+	assert_contains(skip, "_finale(true)", "and the finale plays")
+
+
+## Under the editor the entrance returns before scheduling anything, and a
+## skip with nothing playing does nothing -- in particular it never lands
+## the cards over the values setup_week_row wrote.
+func test_the_editor_never_plays_or_skips_the_reveal() -> void:
+	var inst = _revealed_checkup()
+	assert_false(inst._revealing, "under the editor the reveal never starts")
+	assert_true(inst._reveal_tween == null, "and nothing is ever scheduled")
+	inst._prepare_reveal()
+	inst.skip_reveal()
+	var first: DaySummaryStudentRow = inst.get_node("Margin/Layout/CardsScroll/CardsList").get_child(0)
+	assert_eq(first.modulate.a, 0.0,
+		"a skip while nothing plays is a no-op: the rewound card stays put")
 
 
 func _source(path: String) -> String:

@@ -120,12 +120,6 @@ const ROLL_WEIGHT_NORMAL_PER_RESTING := 10
 const ROLL_WEIGHT_MINIGAME_PER_STUDYING := 15
 ## Event weight a day starts with while the week's event cap has room.
 const ROLL_WEIGHT_EVENT_BASE := 25
-
-# Event distribution chances (total 100)
-const CHANCE_NOTHING  = 20
-const CHANCE_MINIGAME = 40
-const CHANCE_EVENT    = 40
-
 # National Holidays definition
 const HOLIDAYS = {
 	3: { "Rabu": "Hari Kemerdekaan RI" },

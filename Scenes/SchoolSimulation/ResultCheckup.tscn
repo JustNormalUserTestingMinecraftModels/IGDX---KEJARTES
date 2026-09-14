@@ -3,20 +3,10 @@
 [ext_resource type="Script" uid="uid://dox5plhrtr0wi" path="res://Scripts/SchoolSimulation/ResultCheckup.gd" id="1_checkup"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_frxit"]
 [ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_ouvge"]
-[ext_resource type="PackedScene" uid="uid://df8hmrsqlb12n" path="res://Scenes/SchoolSimulation/WeekRecapBanner.tscn" id="4_5y4mq"]
-[ext_resource type="PackedScene" uid="uid://nb2qunnb3b44" path="res://Scenes/SchoolSimulation/WeekHistoryRow.tscn" id="4_qpkja"]
+[ext_resource type="PackedScene" uid="uid://cqfjyfn2r4ljw" path="res://Scenes/SchoolSimulation/WeekLogsPopup.tscn" id="3_67i1b"]
+[ext_resource type="Texture2D" uid="uid://bnfvsylsdp68k" path="res://Assets/Images/DaySummary/title_weekly_results.png" id="5_3es6k"]
+[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="6_4hjoa"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/PaperConfetti.tscn" id="6_qpkja"]
-
-[sub_resource type="Gradient" id="Gradient_qpkja"]
-colors = PackedColorArray(0.93333334, 0.9529412, 1, 0.8, 0.93333334, 0.9529412, 1, 0)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_67i1b"]
-gradient = SubResource("Gradient_qpkja")
-width = 4
-height = 96
-fill = 1
-fill_from = Vector2(0.5, 0)
-fill_to = Vector2(0.5, 1)
 
 [node name="ResultCheckup" type="Control" unique_id=1540732834]
 layout_mode = 3
@@ -26,120 +16,108 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_checkup")
-background_texture = ExtResource("2_frxit")
 student_card_scene = ExtResource("2_ouvge")
-history_row_scene = ExtResource("4_qpkja")
+logs_popup_scene = ExtResource("3_67i1b")
 
-[node name="Background" type="Panel" parent="." unique_id=384830439]
+[node name="Backdrop" type="TextureRect" parent="." unique_id=1967296963]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = &"SunkenPanel"
+mouse_filter = 2
+texture = ExtResource("2_frxit")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="Margin" type="MarginContainer" parent="." unique_id=1659625348]
+[node name="Margin" type="MarginContainer" parent="." unique_id=1081917605]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 36
-theme_override_constants/margin_top = 36
-theme_override_constants/margin_right = 36
-theme_override_constants/margin_bottom = 36
+theme_override_constants/margin_left = 44
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 44
+theme_override_constants/margin_bottom = 60
 
-[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=1245057866]
+[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=894301146]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 24
 
-[node name="Banner" parent="Margin/VBox" unique_id=2085513516 instance=ExtResource("4_5y4mq")]
+[node name="TitleBanner" type="TextureRect" parent="Margin/Layout" unique_id=44079694]
+custom_minimum_size = Vector2(932, 286)
 layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("5_3es6k")
+expand_mode = 1
 
-[node name="HeaderPanel" type="VBoxContainer" parent="Margin/VBox" unique_id=1251977570]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="TitleLabel" type="Label" parent="Margin/VBox/HeaderPanel" unique_id=241908414]
-layout_mode = 2
-theme_type_variation = &"H1Label"
-text = "Evaluasi Mingguan Siswa"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="SubtitleLabel" type="Label" parent="Margin/VBox/HeaderPanel" unique_id=469791151]
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Rapor perkembangan stats dan catatan minigame"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="TabBar" type="HBoxContainer" parent="Margin/VBox" unique_id=1119643677]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="TabSiswa" type="Button" parent="Margin/VBox/TabBar" unique_id=145519704]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"WeekTabButton"
-toggle_mode = true
-button_pressed = true
-text = "SISWA (0)"
-
-[node name="TabRiwayat" type="Button" parent="Margin/VBox/TabBar" unique_id=521380428]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"WeekTabButton"
-toggle_mode = true
-text = "RIWAYAT (0)"
-
-[node name="ScrollContainer" type="ScrollContainer" parent="Margin/VBox" unique_id=1062953009]
+[node name="CardsScroll" type="ScrollContainer" parent="Margin/Layout" unique_id=303494539]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
 
-[node name="PaneStack" type="VBoxContainer" parent="Margin/VBox/ScrollContainer" unique_id=1092045683]
+[node name="CardsList" type="VBoxContainer" parent="Margin/Layout/CardsScroll" unique_id=1160252851]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 0
+theme_override_constants/separation = 56
 
-[node name="StudentsPane" type="VBoxContainer" parent="Margin/VBox/ScrollContainer/PaneStack" unique_id=312188741]
+[node name="Summary" type="MarginContainer" parent="Margin/Layout" unique_id=498874893]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 28
+theme_override_constants/margin_left = 36
+
+[node name="Lines" type="VBoxContainer" parent="Margin/Layout/Summary" unique_id=951420331]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CoinRow" type="HBoxContainer" parent="Margin/Layout/Summary/Lines" unique_id=1698657401]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="CoinIcon" type="TextureRect" parent="Margin/Layout/Summary/Lines/CoinRow" unique_id=1778661813]
+custom_minimum_size = Vector2(140, 112)
+layout_mode = 2
+texture = ExtResource("6_4hjoa")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MoneyLabel" type="Label" parent="Margin/Layout/Summary/Lines/CoinRow" unique_id=904060168]
+layout_mode = 2
+theme_type_variation = &"DaySummaryStat"
+text = "+0"
+vertical_alignment = 1
+
+[node name="EventWonLabel" type="Label" parent="Margin/Layout/Summary/Lines" unique_id=1548775061]
+layout_mode = 2
+theme_type_variation = &"DaySummaryStat"
+text = "EVENT BERHASIL : 0"
+
+[node name="EventLostLabel" type="Label" parent="Margin/Layout/Summary/Lines" unique_id=483243685]
+layout_mode = 2
+theme_type_variation = &"DaySummaryStat"
+text = "EVENT GAGAL : 0"
+
+[node name="Buttons" type="HBoxContainer" parent="Margin/Layout" unique_id=703580223]
+layout_mode = 2
+theme_override_constants/separation = 120
 alignment = 1
 
-[node name="HistoryPane" type="VBoxContainer" parent="Margin/VBox/ScrollContainer/PaneStack" unique_id=1279232314]
-visible = false
+[node name="LogsButton" type="Button" parent="Margin/Layout/Buttons" unique_id=1551982694]
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 16
+theme_type_variation = &"ResultButton"
+text = "Logs"
 
-[node name="EmptyLabel" type="Label" parent="Margin/VBox/ScrollContainer/PaneStack/HistoryPane" unique_id=1735744402]
-visible = false
-layout_mode = 2
-theme_type_variation = &"EmptyStateLabel"
-text = "Tidak ada minigame yang dimainkan minggu ini."
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="ScrollFade" type="TextureRect" parent="Margin/VBox" unique_id=708678333]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
-mouse_filter = 2
-texture = SubResource("GradientTexture2D_67i1b")
-expand_mode = 1
-
-[node name="BtnClose" type="Button" parent="Margin/VBox" unique_id=1028157195]
-custom_minimum_size = Vector2(0, 96)
+[node name="NextButton" type="Button" parent="Margin/Layout/Buttons" unique_id=300758073]
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"PrimaryButton"
-text = "Selesai & Lanjut"
+theme_type_variation = &"ResultButton"
+text = "Selanjutnya"
 
 [node name="Celebration" parent="." unique_id=2021659799 instance=ExtResource("6_qpkja")]
 z_index = 100

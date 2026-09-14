@@ -1283,7 +1283,9 @@ func _on_week_complete() -> void:
 		var checkup_instance = result_checkup_scene.instantiate()
 		game_container.add_child(checkup_instance)
 		checkup_instance.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		checkup_instance.initialize_checkup(student_manager)
+		# _pay_out_wirausaha() above already emptied pending_earnings, so the
+		# week's coins travel in by hand.
+		checkup_instance.initialize_checkup(student_manager, wirausaha_total)
 		await checkup_instance.checkup_closed
 		checkup_instance.queue_free()
 

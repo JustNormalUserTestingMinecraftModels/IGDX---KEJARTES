@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://bjgfxgeyi7llw" path="res://Assets/Images/UI/progress_bar_fill.png" id="4_pbfill"]
 [ext_resource type="Texture2D" uid="uid://dwfy8cexijoio" path="res://Assets/Images/UI/BarFill/fill_akademis.png" id="5_uxcam"]
 [ext_resource type="Texture2D" uid="uid://kcuu6v5rkalj" path="res://Assets/Images/UI/BarFill/fill_energi.png" id="6_fnuwu"]
+[ext_resource type="Texture2D" uid="uid://cwehitensta2x" path="res://Assets/Images/DaySummary/card_bg.png" id="6_irwde"]
 [ext_resource type="FontFile" uid="uid://dfhsot8fqaqow" path="res://Assets/Fonts/OpenSans-Medium.ttf" id="6_pjunx"]
 [ext_resource type="Texture2D" uid="uid://6pels6i8oahg" path="res://Assets/Images/UI/BarFill/fill_istirahat.png" id="7_ss02d"]
 [ext_resource type="Texture2D" uid="uid://byluojw1v75oj" path="res://Assets/Images/UI/BarFill/fill_libur.png" id="8_irwde"]
@@ -2010,33 +2011,6 @@ shadow_size = 12
 shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_70qeu"]
-content_margin_left = 28.0
-content_margin_top = 16.0
-content_margin_right = 28.0
-content_margin_bottom = 16.0
-bg_color = Color(1, 0.99215686, 0.972549, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.47843137, 0.2901961, 0.16862746, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ccyrr"]
-content_margin_left = 16.0
-content_margin_top = 8.0
-content_margin_right = 16.0
-content_margin_bottom = 8.0
-bg_color = Color(0.9372549, 0.8784314, 0.79607844, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u3p0a"]
 content_margin_left = 18.0
 content_margin_top = 8.0
 content_margin_right = 18.0
@@ -2046,6 +2020,19 @@ corner_radius_top_left = 999
 corner_radius_top_right = 999
 corner_radius_bottom_right = 999
 corner_radius_bottom_left = 999
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ccyrr"]
+content_margin_left = 24.0
+content_margin_top = 0.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+texture = ExtResource("6_irwde")
+texture_margin_left = 40.0
+texture_margin_top = 40.0
+texture_margin_right = 40.0
+texture_margin_bottom = 48.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_u3p0a"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r6o3q"]
 content_margin_left = 32.0
@@ -3244,20 +3231,6 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sveku"]
-content_margin_top = 16.0
-content_margin_bottom = 16.0
-bg_color = Color(0.9372549, 0.8784314, 0.79607844, 1)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w67kq"]
-content_margin_top = 16.0
-content_margin_bottom = 16.0
-bg_color = Color(0.47843137, 0.2901961, 0.16862746, 1)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-
 [resource]
 default_font = ExtResource("6_pjunx")
 default_font_size = 28
@@ -3685,19 +3658,27 @@ QuirkBadgeS/styles/focus = SubResource("StyleBoxFlat_2qh2m")
 QuirkBadgeS/styles/hover = SubResource("StyleBoxFlat_ytshn")
 QuirkBadgeS/styles/normal = SubResource("StyleBoxFlat_0pi1a")
 QuirkBadgeS/styles/pressed = SubResource("StyleBoxFlat_8xafc")
-RecapBannerPanel/base_type = &"Panel"
-RecapBannerPanel/styles/panel = SubResource("StyleBoxFlat_70qeu")
-RecapPillPanel/base_type = &"Panel"
-RecapPillPanel/styles/panel = SubResource("StyleBoxFlat_ccyrr")
-RecapPillValueLabel/base_type = &"Label"
-RecapPillValueLabel/colors/font_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
-RecapPillValueLabel/font_sizes/font_size = 48
-RecapPillValueLabel/fonts/font = ExtResource("1_c56gm")
 ResultBadgePanel/base_type = &"Panel"
-ResultBadgePanel/styles/panel = SubResource("StyleBoxFlat_u3p0a")
+ResultBadgePanel/styles/panel = SubResource("StyleBoxFlat_70qeu")
 ResultBodyLabel/base_type = &"Label"
 ResultBodyLabel/colors/font_color = Color(1, 0.9647059, 0.9098039, 1)
 ResultBodyLabel/font_sizes/font_size = 22
+ResultButton/base_type = &"Button"
+ResultButton/colors/font_color = Color(1, 1, 1, 1)
+ResultButton/colors/font_disabled_color = Color(1, 1, 1, 1)
+ResultButton/colors/font_focus_color = Color(1, 1, 1, 1)
+ResultButton/colors/font_hover_color = Color(1, 1, 1, 1)
+ResultButton/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+ResultButton/colors/font_outline_color = Color(0.18039216, 0.12941177, 0.09411765, 1)
+ResultButton/colors/font_pressed_color = Color(1, 1, 1, 1)
+ResultButton/constants/outline_size = 6
+ResultButton/font_sizes/font_size = 52
+ResultButton/fonts/font = ExtResource("1_c56gm")
+ResultButton/styles/disabled = SubResource("StyleBoxTexture_ccyrr")
+ResultButton/styles/focus = SubResource("StyleBoxEmpty_u3p0a")
+ResultButton/styles/hover = SubResource("StyleBoxTexture_ccyrr")
+ResultButton/styles/normal = SubResource("StyleBoxTexture_ccyrr")
+ResultButton/styles/pressed = SubResource("StyleBoxTexture_ccyrr")
 ResultCardBodyLabel/base_type = &"Label"
 ResultCardBodyLabel/colors/font_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
 ResultCardBodyLabel/font_sizes/font_size = 22
@@ -4009,12 +3990,3 @@ TrayBadgeLabel/fonts/font = ExtResource("1_c56gm")
 TrayPlank/base_type = &"Panel"
 TrayPlank/styles/panel = SubResource("StyleBoxFlat_symha")
 VBoxContainer/constants/separation = 28
-WeekTabButton/base_type = &"Button"
-WeekTabButton/colors/font_color = Color(0.47843137, 0.36078432, 0.2509804, 1)
-WeekTabButton/colors/font_hover_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
-WeekTabButton/colors/font_pressed_color = Color(1, 0.9647059, 0.9098039, 1)
-WeekTabButton/font_sizes/font_size = 36
-WeekTabButton/styles/focus = SubResource("StyleBoxFlat_sveku")
-WeekTabButton/styles/hover = SubResource("StyleBoxFlat_sveku")
-WeekTabButton/styles/normal = SubResource("StyleBoxFlat_sveku")
-WeekTabButton/styles/pressed = SubResource("StyleBoxFlat_w67kq")

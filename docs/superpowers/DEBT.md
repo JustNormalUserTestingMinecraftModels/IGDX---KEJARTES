@@ -51,7 +51,10 @@ it reads as invisible on a phone), and the 2026-09-14 EventDialogue set in
 `Assets/Images/EventDialogue/`: `splash_gurusenibudaya.png` (a flat
 silhouette for the Seni Budaya teacher, on the same 1080x1920 frame as every
 splash), `hujan_background.png` (the school tinted dusk-blue with seeded rain
-streaks) and `calendar_badge.png`.
+streaks) and `calendar_badge.png`, and the 2026-09-14 Weekly Results ribbon,
+`Assets/Images/DaySummary/title_weekly_results.png` (cut out of the mockup
+and given `title_daily_results.png`'s alpha -- drop-replaceable at the same
+path).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
@@ -145,10 +148,7 @@ help everywhere but the HUD's dark pill; a multiply tint muddies coloured art.
 `EventStudentSelectDialog._apply_visual_exports()` looks up a `Background`
 node but the scene's is `BackgroundDim`, so `background_texture` never swaps
 in -- the one `viewport_editability` BASELINE count for that file is this
-dead `TextureRect.new()`. `tests/test_result_checkup.gd`'s
-`test_the_checkup_sets_each_card_up_only_once_it_is_in_the_tree` asserts on a
-`students_container.add_child(card)` string the script no longer has (it's
-`students_pane`), so it always passes. The authoring guide's "Known gaps"
+dead `TextureRect.new()`. The authoring guide's "Known gaps"
 still lists `EventStudentSelectDialog.gd (11)`; the baseline is now 1.
 SchoolDay's `_add_pill()` schedule-pill builder uses 📚/⚽/🎨 as internal
 markers in label text before stripping them -- emoji in source, and

@@ -64,10 +64,6 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"sparkle")`: a reward burst or the weekly celebration
 ## confetti fires. Placeholder: aliases SFX/reward.ogg.
 @export var sfx_sparkle: AudioStream = preload("res://Assets/Audio/SFX/reward.ogg")
-## `play_sfx(&"pill_tap")`: tapping a headline pill on ResultCheckup's
-## week recap banner. A dedicated copy of SFX/tap.ogg (not a second id
-## on the same file) so it can be retuned independently later.
-@export var sfx_pill_tap: AudioStream = preload("res://Assets/Audio/SFX/pill_tap.ogg")
 ## `play_sfx(&"star_earn_1")`: first star of the result card's reveal.
 ## Placeholder: aliases pop.ogg. The three star_earn_* cues are meant to
 ## rise in pitch; swap in real assets before ship.
@@ -95,15 +91,6 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## aliases reward.ogg via a dedicated copy (event_announce.ogg) until a real
 ## chime lands.
 @export var sfx_event_announce: AudioStream = preload("res://Assets/Audio/SFX/event_announce.ogg")
-## `play_sfx(&"pill_popup_open")`: WeekRecapPillInfoPopup opens. A
-## dedicated copy of SFX/popup_open.ogg.
-@export var sfx_pill_popup_open: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_open.ogg")
-## `play_sfx(&"pill_popup_close")`: WeekRecapPillInfoPopup closes. A
-## dedicated copy of SFX/popup_close.ogg.
-@export var sfx_pill_popup_close: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_close.ogg")
-## `play_sfx(&"pane_swipe")`: ResultCheckup's SISWA<->RIWAYAT pane
-## transition. A dedicated copy of SFX/swipe.ogg.
-@export var sfx_pane_swipe: AudioStream = preload("res://Assets/Audio/SFX/pane_swipe.ogg")
 
 @export_group("BGM")
 ## `play_bgm(&"titlescreen")`: Splashscreen/MainMenu.
@@ -243,10 +230,6 @@ func _resolve_sfx(id: StringName) -> AudioStream:
 		&"reward": return sfx_reward
 		&"tally": return sfx_tally
 		&"sparkle": return sfx_sparkle
-		&"pill_tap": return sfx_pill_tap
-		&"pill_popup_open": return sfx_pill_popup_open
-		&"pill_popup_close": return sfx_pill_popup_close
-		&"pane_swipe": return sfx_pane_swipe
 		&"star_earn_1": return sfx_star_earn_1
 		&"star_earn_2": return sfx_star_earn_2
 		&"star_earn_3": return sfx_star_earn_3

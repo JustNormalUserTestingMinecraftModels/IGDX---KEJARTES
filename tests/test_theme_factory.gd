@@ -200,10 +200,10 @@ func test_main_menu_button_variation_exists_and_is_sized_for_the_mockup() -> voi
 	assert_eq(theme.get_type_variation_base("MainMenuButton"), &"Button",
 		"MainMenuButton must vary the Button type")
 
-	# The mockup's buttons are trait_button.png recoloured: same 9-slice art.
-	var normal := theme.get_stylebox("normal", "MainMenuButton")
-	assert_true(normal is StyleBoxTexture,
-		"MainMenuButton must draw the trait_button.png 9-slice, not a flat box")
+	# Since the 2026-09-14 lobby-style-buttons pass it is the Lobby's flat box.
+	var normal := theme.get_stylebox("normal", "MainMenuButton") as StyleBoxFlat
+	assert_true(normal != null and normal.bg_color == tokens.brand_primary_light,
+		"MainMenuButton wears the Lobby's fill")
 
 	# Font size 80, not the mockup-implied 100: see the spec's typography
 	# section -- PENGATURAN at 100 overflows the 624 px inner box by 131 px.
@@ -325,6 +325,11 @@ const DISPLAY_ROSTER := [
 	"ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
+	# 2026-09-14 lobby-style-buttons: the two kept looks.
+	"StudentCardSecondaryButton", "StudentCardSecondaryButtonL",
+	"RosterStatusBelum", "RosterStatusSudah",
+	# ...and the shelf button, which joined the Lobby recipe in the same pass.
+	"ShopShelfButton",
 	# 2026-09-08: event popup title, display face at H1+6.
 	"EventDialogHeaderLabel",
 	# 2026-09-12: the slide warning's caption, display face at DisplayLabel size.

@@ -199,21 +199,22 @@ static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
 # ---------------------------------------------------------------- buttons
 
 static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
-	_add_button_variation(theme, tokens, "PrimaryButton",
-		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+	# The Lobby's STUDENT/JADWAL look (2026-09-14 lobby-style-buttons spec):
+	# every framed action button wears it, whatever its role name says.
+	for role in ["PrimaryButton", "SecondaryButton", "DangerButton", "SuccessButton"]:
+		_add_lobby_button(theme, tokens, role)
 
-	_add_button_variation(theme, tokens, "SecondaryButton",
+	# StudentCard keeps the cream secondary look it had before that pass...
+	_add_button_variation(theme, tokens, "StudentCardSecondaryButton",
 		tokens.surface_card, tokens.surface_sunken,
 		tokens.brand_primary, tokens.brand_primary)
 
-	_add_button_variation(theme, tokens, "DangerButton",
+	# ...and StudentList's BELUM/SUDAH badges keep their colour, which is the
+	# information they carry.
+	_add_button_variation(theme, tokens, "RosterStatusBelum",
 		tokens.state_danger.lightened(0.18), tokens.state_danger.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
-
-	# StudentCard's APPROVE is an affirmative, not the screen's primary
-	# navigation, so it needs its own green rather than brand blue.
-	_add_button_variation(theme, tokens, "SuccessButton",
+	_add_button_variation(theme, tokens, "RosterStatusSudah",
 		tokens.state_success.lightened(0.18), tokens.state_success.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
 
@@ -288,18 +289,14 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# font_title line inside the 120px content box, and the icon is what
 	# makes a destination scannable. Retired LobbyNavButton, which was
 	# one variation stretched across five boxes of five different sizes.
-	_add_button_variation(theme, tokens, "LobbyNavTile",
-		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+	_add_lobby_button(theme, tokens, "LobbyNavTile")
 	theme.set_constant("icon_max_width", "LobbyNavTile", tokens.btn_icon_m)
 	theme.set_constant("h_separation", "LobbyNavTile", 8)
 
 	# The week's primary call to action. Horizontal rather than stacked:
 	# it is 984px wide, and a stacked icon in a banner that shape leaves
 	# exactly the horizontal emptiness this pass exists to remove.
-	_add_button_variation(theme, tokens, "LobbyCtaButton",
-		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+	_add_lobby_button(theme, tokens, "LobbyCtaButton")
 	theme.set_font_size("font_size", "LobbyCtaButton", tokens.font_h1)
 	theme.set_constant("icon_max_width", "LobbyCtaButton", tokens.btn_icon_l)
 	theme.set_constant("h_separation", "LobbyCtaButton", 24)
@@ -334,136 +331,56 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		_add_size_step(theme, tokens, base, "M", tokens.font_h2, tokens.btn_pad_v_m)
 	for base in ["PrimaryButton", "SecondaryButton", "DangerButton", "SuccessButton"]:
 		_add_size_step(theme, tokens, base, "L", tokens.font_h1, tokens.btn_pad_v_l)
+	_add_size_step(theme, tokens, "StudentCardSecondaryButton", "L", tokens.font_h1, tokens.btn_pad_v_l)
 
 
-## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"). A flat
-## rounded rectangle with a heavier bottom border for a pressed-tab look,
-## not the pill shape _button_box()/_add_button_variation() produce, and its
-## hover state recolours the text gold rather than lightening the fill --
-## neither shape matches an existing variation closely enough to reuse.
+## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"), in the Lobby
+## look since the 2026-09-14 lobby-style-buttons pass (it was a flat brown
+## tab with a gold hover). Keeps its 20/10 padding so the shelf row fits.
 static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void:
-	const NAME := "ShopShelfButton"
-	theme.add_type(NAME)
-	theme.set_type_variation(NAME, "Button")
-
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = tokens.brand_primary
-	normal.set_corner_radius_all(tokens.radius_button)
-	normal.border_width_left = 3
-	normal.border_width_top = 3
-	normal.border_width_right = 3
-	normal.border_width_bottom = 5
-	normal.border_color = tokens.outline_card
-	normal.shadow_size = 6
-	normal.shadow_offset = Vector2(0, 4)
-	normal.shadow_color = Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.45)
-	normal.content_margin_left = 20
-	normal.content_margin_right = 20
-	normal.content_margin_top = 10
-	normal.content_margin_bottom = 10
-	theme.set_stylebox("normal", NAME, normal)
-
-	var hover: StyleBoxFlat = normal.duplicate()
-	hover.bg_color = tokens.brand_primary.lightened(0.15)
-	theme.set_stylebox("hover", NAME, hover)
-
-	var pressed: StyleBoxFlat = normal.duplicate()
-	pressed.bg_color = tokens.brand_primary.darkened(0.2)
-	pressed.border_width_bottom = 2
-	pressed.shadow_offset = Vector2(0, 1)
-	theme.set_stylebox("pressed", NAME, pressed)
-
-	theme.set_color("font_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_hover_color", NAME, tokens.currency_gold)
-	theme.set_color("font_pressed_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_shadow_color", NAME,
-		Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.75))
-	theme.set_constant("shadow_offset_x", NAME, 2)
-	theme.set_constant("shadow_offset_y", NAME, 2)
+	_add_lobby_button(theme, tokens, "ShopShelfButton")
+	_set_content_margins(theme, "ShopShelfButton", 20, 10)
 
 
-## Weekly Results' two cream buttons, Logs and Selanjutnya (2026-09-14
-## weekly-results spec). The student card's own card_bg.png, 9-sliced, so
-## the buttons read as the same material as the cards above them, with the
-## card's white display text and purple glyph outline (the "+12/65" look).
-##
-## A StyleBoxTexture, so the corner lives in the art: test_button_geometry
-## exempts it from the radius rule and checks the texture path instead, as
-## it does for MainMenuButton.
+## Weekly Results' Logs and Selanjutnya, in the Lobby look (2026-09-14
+## lobby-style-buttons spec; the cream card_bg.png art is retired). Keeps
+## its 24 px sides and the card's 52 px text, so SELANJUTNYA still fits the
+## 436 px half-row it was laid out for.
 static func _build_result_button(theme: Theme, tokens: DesignTokens) -> void:
-	const NAME := "ResultButton"
-	theme.add_type(NAME)
-	theme.set_type_variation(NAME, "Button")
-
-	var normal := StyleBoxTexture.new()
-	normal.texture = load("res://Assets/Images/DaySummary/card_bg.png")
-	normal.texture_margin_left = 40
-	normal.texture_margin_right = 40
-	normal.texture_margin_top = 40
-	normal.texture_margin_bottom = 48
-	normal.content_margin_left = 24
-	normal.content_margin_right = 24
-	normal.content_margin_top = 0
-	normal.content_margin_bottom = 12
-	# The art carries no state variants; press feedback is UIPolish's Juice.
-	for state in ["normal", "hover", "pressed", "disabled"]:
-		theme.set_stylebox(state, NAME, normal)
-	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
-
-	for color_name in ["font_color", "font_hover_color", "font_pressed_color",
-			"font_hover_pressed_color", "font_focus_color", "font_disabled_color"]:
-		theme.set_color(color_name, NAME, Color.WHITE)
-	theme.set_color("font_outline_color", NAME, tokens.day_glyph_outline)
-	theme.set_constant("outline_size", NAME, maxi(2, tokens.text_outline_size / 2))
-	theme.set_font_size("font_size", NAME, tokens.day_stat_size)
-	if tokens.font_display != null:
-		theme.set_font("font", NAME, tokens.font_display)
+	_add_lobby_button(theme, tokens, "ResultButton")
+	_set_content_margins(theme, "ResultButton", 24, tokens.btn_pad_v_s)
+	theme.set_font_size("font_size", "ResultButton", tokens.day_stat_size)
 
 
-## The main menu's three nav buttons.
-##
-## Uses menu_button.png, NOT trait_button.png. The two were one asset
-## until 2026-09-08: the menu mockup is the chip art recoloured, so
-## reusing it reproduced the mockup exactly. That stopped working when
-## buttons moved to a fixed 20px corner and chips stayed fully round --
-## one asset cannot be both shapes. See the spec's "a split, not an edit".
-##
-## Still a StyleBoxTexture rather than a stylebox because the gold gloss
-## is painted; the corner therefore lives in the art, which is why
-## test_button_geometry allow-lists this variation and then checks the
-## texture path instead.
+## The main menu's icon buttons, in the Lobby look (2026-09-14
+## lobby-style-buttons spec; the painted gold menu_button.png is retired).
+## Icon-only boxes, so the sides stay tight and the vertical padding zero --
+## the Lobby recipe's space_lg sides would squeeze the icon.
 static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
-	const NAME := "MainMenuButton"
-	theme.add_type(NAME)
-	theme.set_type_variation(NAME, "Button")
+	_add_lobby_button(theme, tokens, "MainMenuButton")
+	_set_content_margins(theme, "MainMenuButton", 20, 0)
+	theme.set_font_size("font_size", "MainMenuButton", 80)
 
-	var normal := StyleBoxTexture.new()
-	normal.texture = load(_CARD_ART + "menu_button.png")
-	normal.region_rect = Rect2(0, 0, 256, 128)
-	normal.set_texture_margin_all(28)
-	# Icon-only button (128x128, tooltip_text, no text) -- these margins
-	# just centre the painted gloss inside the texture region.
-	normal.content_margin_left = 20
-	normal.content_margin_right = 20
-	normal.content_margin_top = 0
-	normal.content_margin_bottom = 0
-	theme.set_stylebox("normal", NAME, normal)
 
-	# The art carries no separate state variants, so hover/pressed reuse it
-	# and the press feedback comes from UIPolish's automatic Juice scale.
-	theme.set_stylebox("hover", NAME, normal)
-	theme.set_stylebox("pressed", NAME, normal)
-	theme.set_stylebox("disabled", NAME, normal)
-	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
+## The Lobby's STUDENT / JADWAL button: brand_primary_light over the darker
+## bevel, the cream card rim and cream display text. Every framed action
+## button wears it since the 2026-09-14 lobby-style-buttons pass; what
+## differs between them is size, text and icon, never the surface.
+static func _add_lobby_button(theme: Theme, tokens: DesignTokens, name: String) -> void:
+	_add_button_variation(theme, tokens, name,
+		tokens.brand_primary_light, tokens.brand_primary_dark,
+		tokens.outline_card, tokens.text_on_brand)
 
-	theme.set_font_size("font_size", NAME, 80)
-	theme.set_color("font_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_hover_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_pressed_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_focus_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_disabled_color", NAME, tokens.text_on_brand)
-	if tokens.font_display != null:
-		theme.set_font("font", NAME, tokens.font_display)
+
+## Re-pad every state of a flat button variation: `pad_h` on both sides,
+## `pad_v` top and bottom.
+static func _set_content_margins(theme: Theme, name: String, pad_h: int, pad_v: int) -> void:
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var sb := theme.get_stylebox(state, name) as StyleBoxFlat
+		sb.content_margin_left = pad_h
+		sb.content_margin_right = pad_h
+		sb.content_margin_top = pad_v
+		sb.content_margin_bottom = pad_v
 
 
 static func _add_button_variation(

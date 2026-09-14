@@ -775,3 +775,21 @@ func test_school_day_hands_the_payout_to_the_checkup() -> void:
 	var handoff := src.find("checkup_instance.initialize_checkup(student_manager, wirausaha_total)")
 	assert_true(payout != -1 and handoff > payout,
 		"the checkup gets the total the payout just made")
+
+
+## The old banner, its pills, their info popup and the SISWA/RIWAYAT tabs
+## are retired with the 2026-09-14 revamp, and WeekRecap stops reading the
+## dict SchoolDay empties.
+func test_the_old_banner_and_tabs_are_gone() -> void:
+	for path in ["res://Scenes/SchoolSimulation/WeekRecapBanner.tscn",
+			"res://Scenes/SchoolSimulation/WeekRecapPill.tscn",
+			"res://Scenes/UI/WeekRecapPillInfoPopup.tscn",
+			"res://Scenes/SchoolSimulation/CoinShower.tscn"]:
+		assert_false(FileAccess.file_exists(path), path + " is retired")
+	var theme: Theme = load(_THEME_PATH)
+	for variation in ["RecapBannerPanel", "RecapPillPanel", "RecapPillValueLabel",
+			"WeekTabButton"]:
+		assert_false(theme.get_type_list().has(variation), variation + " left the bake")
+	assert_false(FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecap.gd").contains("pending_earnings"),
+		"WeekRecap no longer reads the dict the payout empties")

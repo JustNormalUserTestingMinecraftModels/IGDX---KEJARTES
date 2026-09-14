@@ -322,7 +322,7 @@ const DISPLAY_ROSTER := [
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill", "PreviewRowLabel",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
-	"RecapPillValueLabel", "ScoreHudValueLabel",
+	"ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
 	# 2026-09-08: event popup title, display face at H1+6.

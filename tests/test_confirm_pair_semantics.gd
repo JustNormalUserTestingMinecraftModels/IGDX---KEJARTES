@@ -100,12 +100,22 @@ func test_the_schedule_status_badges_keep_their_colours() -> void:
 ## of its own -- a SuccessButton here would paint a green pill on top of the
 ## gold one. The rule the colour split protects is unchanged: the claim is
 ## never restyled as an ordinary confirm or as a destructive action.
+##
+## Scoped to the ButtonClaim NODE rather than the whole of loby.tscn. The
+## file-wide scan failed on 2026-09-14 as soon as the Lobby gained an
+## ordinary SecondaryButton (Shorten), which it was never meant to police.
+## test_popup_dismiss.gd documents the same trap. The invariant was always
+## about the claim alone.
 func test_the_lobby_claim_is_never_a_confirm_or_a_danger() -> void:
 	var src := _read("res://Scenes/Lobby/loby.tscn")
 	assert_ne(src, "", "could not open loby.tscn")
-	assert_contains(src, "GhostButton",
+	var start := src.find('[node name="ButtonClaim" ')
+	assert_true(start != -1, "loby.tscn has no ButtonClaim node")
+	var end := src.find("\n[", start + 1)
+	var claim := src.substr(start, (end if end != -1 else src.length()) - start)
+	assert_contains(claim, "GhostButton",
 		"CLAIM sits on the panel art's own pill and must draw no chrome")
-	assert_false(src.contains("DangerButton"),
+	assert_false(claim.contains("DangerButton"),
 		"CLAIM is a reward, not a destructive action")
-	assert_false(src.contains("SecondaryButton"),
+	assert_false(claim.contains("SecondaryButton"),
 		"CLAIM is a reward, not an ordinary confirm")

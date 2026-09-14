@@ -2,8 +2,14 @@
 
 [ext_resource type="Script" uid="uid://bkfpjbok5vgg5" path="res://Scripts/Lobby/loby.gd" id="1_ao7fi"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_e1w2y"]
+[ext_resource type="PackedScene" uid="uid://bi8meefllkb7d" path="res://Scenes/Lobby/CitraFace.tscn" id="3_oohd3"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/AndiFace.tscn" id="4_yhuud"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/DoniFace.tscn" id="5_ikpat"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/MarcelFace.tscn" id="6_dx44p"]
 [ext_resource type="Texture2D" uid="uid://dvotkc0awnd16" path="res://Assets/Images/MuridPotrait/TanganItems/Doni_Table.png" id="6_dyk4g"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/ShintaFace.tscn" id="7_62a4m"]
 [ext_resource type="Texture2D" uid="uid://w2eebv4y4ue0" path="res://Assets/Images/MuridPotrait/TanganItems/Citra_Table.png" id="7_ek62u"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/TheaFace.tscn" id="8_gbno3"]
 [ext_resource type="Texture2D" uid="uid://ckls11l3yiniv" path="res://Assets/Images/MuridPotrait/TanganItems/Andi_Table.png" id="9_bfy74"]
 [ext_resource type="Texture2D" uid="uid://c5uf1bkw1f3ui" path="res://Assets/Images/UI/Nav/icon_cta_student.png" id="9_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://vwe02tlwbjjg" path="res://Assets/Images/MuridPotrait/TanganItems/Marcel_Table.png" id="9_q4xuc"]
@@ -41,6 +47,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ao7fi")
 bg_texture = ExtResource("bg_tex")
+face_rigs = Array[PackedScene]([ExtResource("3_oohd3"), ExtResource("4_yhuud"), ExtResource("5_ikpat"), ExtResource("6_dx44p"), ExtResource("7_62a4m"), ExtResource("8_gbno3")])
 
 [node name="BGLayer" type="TextureRect" parent="." unique_id=18068981]
 layout_mode = 1

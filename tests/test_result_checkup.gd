@@ -763,3 +763,15 @@ func test_script_carries_no_emoji() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
 	for glyph in ["📊", "📝", "📢"]:
 		assert_false(src.contains(glyph), "emoji are banned")
+
+
+## SchoolDay pays the Wirausaha earnings out -- and empties
+## GameState.pending_earnings -- BEFORE it opens this screen, so the week's
+## coins must be handed over, not re-read. Before 2026-09-14 the old
+## banner's money pill read that emptied dict and always showed 0.
+func test_school_day_hands_the_payout_to_the_checkup() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	var payout := src.find("var wirausaha_total := _pay_out_wirausaha()")
+	var handoff := src.find("checkup_instance.initialize_checkup(student_manager, wirausaha_total)")
+	assert_true(payout != -1 and handoff > payout,
+		"the checkup gets the total the payout just made")

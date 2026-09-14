@@ -98,7 +98,9 @@ func test_main_menu_and_weekly_results_keep_their_fit() -> void:
 ## made it 495 (code review, 2026-09-14). So the shelf label keeps the body
 ## font, and this pass leaves the fit no worse than it found it.
 func test_the_shelf_button_keeps_its_body_font_label() -> void:
-	assert_false(_theme.has_font("font", "ShopShelfButton"),
+	# get_font_list, not has_font: Theme.has_font() is also true whenever the
+	# theme has a default font, which this one always does.
+	assert_false(_theme.get_font_list("ShopShelfButton").has("font"),
 		"ShopShelfButton sets no font of its own, so it inherits the body font")
 	var font := _theme.get_font("font", "ShopShelfButton")
 	var sb := _flat("normal", "ShopShelfButton")

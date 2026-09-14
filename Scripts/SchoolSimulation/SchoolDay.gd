@@ -1553,6 +1553,9 @@ static func minigame_dialogue_key(scene: PackedScene) -> String:
 func _show_event_dialogue(key: String) -> bool:
 	if not EventDialogueCatalog.has_entry(key):
 		return true
+	# Shorten (Lobby): the player chose to skip the choice-free minigame lines.
+	if GameSettings.skip_event_dialogue and EventDialogueCatalog.shorten_skips(key):
+		return true
 	var dialogue_scene = event_dialogue_scene
 	if dialogue_scene == null:
 		dialogue_scene = load("res://Scenes/SchoolSimulation/EventDialogue.tscn")

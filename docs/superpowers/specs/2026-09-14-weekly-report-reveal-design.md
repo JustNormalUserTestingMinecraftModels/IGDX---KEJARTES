@@ -53,8 +53,9 @@ touched: it keeps calling `play_gain()` and its all-at-once fill.
   screen.
 - **Tap to skip.** A tap anywhere during the reveal kills the timeline and
   lands everything at once: every card visible on its final values, every
-  summary line on its final text, one `tally` cue (not one per row), then the
-  finale. Taps after the reveal do nothing special. It is `_input()` for the
+  summary line on its final text, then the finale. The skip makes one sound,
+  not one per row: the finale's reward chime when the week gained, otherwise
+  a single `tally`. Taps after the reveal do nothing special. It is `_input()` for the
   same reason as `StatCheck`'s: the full-screen controls would otherwise
   claim the tap first.
 - **Timing knobs.** `@export`s in a "Reveal" group on `ResultCheckup`, each
@@ -92,12 +93,13 @@ are the existing `DaySummaryStudentRow.tscn`, and no scene file changes.
   money → won → lost order; no `LINE_POP` for a zero line; `FINALE` last);
   `pop_index` climbs by one per pop across stats and lines; an empty roster
   goes straight to the lines; `scroll_to_show` math.
-- **`result_checkup`:** entrance scans updated from `stagger_in(cards)` to the
+- **`result_checkup`** (it owns the card's weekly reading): the card's and
+  row's `rewind_week`/`play_count`/`land_week`/`land_pop` behave
+  (tween-stepped); entrance scans updated from `stagger_in(cards)` to the
   timeline; `pop_pitch` climbs and caps; `_land_all()` puts every card and line
   on its final values; `skip_reveal` and `_input` exist and are gated on
-  `_revealing`; the week-card tests stay.
-- **`day_summary`:** the stat row's `rewind`/`play_count`/`land`/`land_pop`
-  behave (tween-stepped); the nightly `play_gain` tests keep passing.
+  `_revealing`; the existing week-card tests stay.
+- **`day_summary`:** unchanged; the nightly `play_gain` tests keep passing.
 - **`juice`:** `punch` ends at scale 1; `text_center` for left, centre and
   right alignment; `count_up_formatted` honours `duration` and returns a tween.
 - **`audio_director`:** `play_sfx` with a pitch sets the player's

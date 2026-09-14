@@ -136,3 +136,147 @@ func test_student_speakers_wear_their_own_splash() -> void:
 	assert_eq(EventDialogueCatalog.splash_path_for(EventDialogueCatalog.entry("nasi_kotak"), thea), EventDialogueCatalog.SPLASH_MOM)
 	assert_eq(EventDialogueCatalog.splash_path_for(EventDialogueCatalog.entry("hujan"), thea), "")
 	assert_eq(EventDialogueCatalog.splash_path_for(EventDialogueCatalog.entry("BuatBatik"), null), "")
+
+
+# ── the screen ───────────────────────────────────────────────────────────────
+
+## Instantiated with the baked theme under the editor root, tracked for
+## cleanup -- the same helper shape as test_school_day.gd's _instantiate().
+## Untyped on purpose: typed as Control, GDScript rejects d.tap() and the
+## other script members at compile time.
+func _dialogue(key: String, featured: StudentData = null):
+	var d = (load(_SCENE) as PackedScene).instantiate()
+	d.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(d)
+	track(d)
+	d.open(EventDialogueCatalog.entry(key), featured, 2, 6, "Senin")
+	return d
+
+
+func test_a_tap_dialogue_takes_two_taps() -> void:
+	var d = _dialogue("nasi_kotak")
+	var got: Array = []
+	d.closed.connect(func(accepted: bool): got.append(accepted))
+	assert_true(d.line_label.visible_ratio < 1.0, "the line starts unrevealed")
+	d.tap()
+	assert_eq(got, [], "the first tap never closes")
+	assert_eq(d.line_label.visible_ratio, 1.0, "the first tap finishes the line")
+	assert_true(d.armed and d.hint.visible, "and shows the hint")
+	d.tap()
+	assert_eq(got, [true], "the second tap closes")
+
+
+func test_a_finished_line_still_takes_two_taps() -> void:
+	var d = _dialogue("hujan")
+	var got: Array = []
+	d.closed.connect(func(accepted: bool): got.append(accepted))
+	d.line_label.visible_ratio = 1.0
+	d.tap()
+	assert_eq(got, [], "a first tap on a finished line only arms")
+	d.tap()
+	assert_eq(got, [true])
+
+
+func test_a_tap_dialogue_has_no_buttons() -> void:
+	var d = _dialogue("MainBola")
+	d.tap()
+	assert_false(d.choices.visible, "TAP entries never show Tolak / Terima")
+
+
+func test_a_choice_dialogue_ignores_taps() -> void:
+	var d = _dialogue("les_akademis")
+	var got: Array = []
+	d.closed.connect(func(accepted: bool): got.append(accepted))
+	assert_false(d.choices.visible, "buttons wait for the line")
+	d.tap()
+	assert_true(d.choices.visible, "a tap finishes the line and shows the buttons")
+	d.tap()
+	d.tap()
+	assert_eq(got, [], "taps never close a CHOICE dialogue")
+	assert_false(d.hint.visible, "the tap hint is for TAP dialogues")
+
+
+func test_terima_accepts_and_tolak_declines() -> void:
+	var yes = _dialogue("workshop_seni")
+	var got_yes: Array = []
+	yes.closed.connect(func(accepted: bool): got_yes.append(accepted))
+	yes.tap()
+	yes.terima_button.pressed.emit()
+	assert_eq(got_yes, [true])
+	var no = _dialogue("latihan_olahraga")
+	var got_no: Array = []
+	no.closed.connect(func(accepted: bool): got_no.append(accepted))
+	no.tap()
+	no.tolak_button.pressed.emit()
+	assert_eq(got_no, [false])
+
+
+func test_open_dresses_the_screen() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var d = _dialogue("BuatBatik", thea)
+	assert_eq(d.splash.texture.resource_path, _THEA_SPLASH, "the student's own splash")
+	assert_true(d.splash.visible and d.blur.visible)
+	assert_eq(d.background.texture.resource_path, EventDialogueCatalog.DEFAULT_BACKGROUND)
+	assert_eq(d.week_label.text, "2/6")
+	assert_eq(d.day_label.text, "Senin")
+
+
+func test_nama_reaches_the_screen() -> void:
+	var d = _dialogue("nasi_kotak", _student("Thea", "SeniBudaya"))
+	assert_true(d.line_label.text.contains("Kudengar Thea"), d.line_label.text)
+	assert_eq(d.splash.texture.resource_path, EventDialogueCatalog.SPLASH_MOM)
+
+
+func test_hujan_hides_the_splash_and_the_blur() -> void:
+	var d = _dialogue("hujan", _student("Thea", "SeniBudaya", _THEA_SPLASH))
+	assert_false(d.splash.visible, "rain has no speaker")
+	assert_false(d.blur.visible, "and a sharp backdrop")
+	assert_eq(d.background.texture.resource_path, EventDialogueCatalog.HUJAN_BACKGROUND)
+
+
+func test_only_a_left_press_counts_as_a_tap() -> void:
+	var d = _dialogue("nasi_kotak")
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	assert_true(d.is_tap(press))
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	assert_false(d.is_tap(release), "a release is not a tap")
+	var right := InputEventMouseButton.new()
+	right.button_index = MOUSE_BUTTON_RIGHT
+	right.pressed = true
+	assert_false(d.is_tap(right))
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	assert_false(d.is_tap(touch), "a touch also arrives as a click; counting both doubles every tap")
+
+
+func test_the_scene_is_authored_and_themed() -> void:
+	var d = _dialogue("nasi_kotak")
+	var want := {
+		"DialogueBox": &"EventDialoguePanel", "DialogueBox/Content/Line": &"EventDialogueText",
+		"DialogueBox/Content/Hint": &"CaptionLabel",
+		"DialogueBox/Content/Choices/TolakButton": &"SecondaryButton",
+		"DialogueBox/Content/Choices/TerimaButton": &"PrimaryButton",
+		"Header/DayBanner": &"DayBannerPanel", "Header/DayBanner/DayLabel": &"DayBannerLabel",
+		"Header/Calendar/Text/MingguLabel": &"CalendarLabel", "Header/Calendar/Text/WeekLabel": &"DayBannerLabel",
+	}
+	for path in want:
+		var n := d.get_node_or_null(path) as Control
+		assert_true(n != null, "missing node " + path)
+		if n != null:
+			assert_eq(n.theme_type_variation, want[path], path)
+	assert_eq(d.mouse_filter, Control.MOUSE_FILTER_STOP, "the root takes the taps")
+	for path in ["Background", "Blur", "Splash", "Header", "DialogueBox", "DialogueBox/Content/Line"]:
+		assert_eq((d.get_node(path) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			path + " must let taps through to the root")
+	assert_eq((d.get_node("Blur") as ColorRect).material.resource_path,
+		"res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres")
+	assert_eq((d.get_node("Header/Calendar") as TextureRect).texture.resource_path,
+		EventDialogueCatalog.CALENDAR_BADGE)
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/EventDialogue.gd")
+	assert_false(src.contains(".new("), "the screen is fully authored")
+	var scene := FileAccess.get_file_as_string(_SCENE)
+	for kind in ["theme_override_colors", "theme_override_font_sizes", "theme_override_fonts", "theme_override_styles"]:
+		assert_false(scene.contains(kind), "no " + kind + " in EventDialogue.tscn")

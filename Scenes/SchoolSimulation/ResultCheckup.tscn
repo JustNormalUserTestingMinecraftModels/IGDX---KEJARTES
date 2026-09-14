@@ -24,6 +24,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_frxit")
 expand_mode = 1
@@ -34,6 +36,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/margin_left = 44
 theme_override_constants/margin_top = 40
 theme_override_constants/margin_right = 44
@@ -54,6 +58,7 @@ expand_mode = 1
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
 
 [node name="CardsList" type="VBoxContainer" parent="Margin/Layout/CardsScroll" unique_id=1160252851]
 layout_mode = 2
@@ -97,18 +102,20 @@ text = "EVENT GAGAL : 0"
 
 [node name="Buttons" type="HBoxContainer" parent="Margin/Layout" unique_id=703580223]
 layout_mode = 2
-theme_override_constants/separation = 172
+theme_override_constants/separation = 120
 alignment = 1
 
 [node name="LogsButton" type="Button" parent="Margin/Layout/Buttons" unique_id=1551982694]
-custom_minimum_size = Vector2(368, 160)
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"ResultButton"
 text = "Logs"
 
 [node name="NextButton" type="Button" parent="Margin/Layout/Buttons" unique_id=300758073]
-custom_minimum_size = Vector2(368, 160)
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"ResultButton"
 text = "Selanjutnya"
 

@@ -8,6 +8,29 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — Exam art and readable inventory text
+
+ExamProgress now shows the user's `cg_ujian.png` (1920x1920, from their Google
+Drive) behind the fill, in place of the `cg_test.jpg` placeholder, which is
+deleted. The pan is unchanged: 216 px over the 4 s fill, across the middle
+1296 of the art's 1920 columns.
+
+The Inventory item sheet and the item-application screen had thirteen texts (five
+kinds of label) at 18 or 22 px, about 6-7 sp on a phone. They now use existing variations: the item
+description, each effect's explanation, the effect summary and "Sisa ×N" are
+`EventBodyLabel` (36 px, dark ink), and each effect's "+N" is `H2Label` (48 px,
+display face, dark ink). The Brief had offered the student cards' 52 px
+`DaySummaryStat` for "+N", but that style is white with a dark rim, made for
+the cards' dark tracks, so it would not read on the sheet's near-white Card.
+The effect value column's minimum width went from 80 to 104 px: at 48 px a
+"+10" is 83 px wide, which pushed its row's explanation out of line, items
+grant up to +35, and the widest two-digit value ("+44") is 101 px.
+No token changed and nothing was rebaked. The new suite `inventory_text_size`
+holds every text on these screens at 36 px or more, with two reviewed shared
+exceptions (the 30 px need words, the 32 px empty-state hint). Checked at full
+size with Bank Soal, the longest description: the sheet's content ends at
+y 1527 of 1852, so it needed no scrolling.
+
 ## 2026-09-14 — Weekly Results: the week-end screen rebuilt to the mockup
 
 Plan `docs/superpowers/plans/2026-09-14-weekly-results.md`, spec

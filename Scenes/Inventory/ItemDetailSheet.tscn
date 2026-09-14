@@ -78,7 +78,7 @@ size_flags_horizontal = 0
 
 [node name="DescLabel" type="Label" parent="Sheet/Margin/VBox" unique_id=1836201033]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"EventBodyLabel"
 text = "Deskripsi item."
 autowrap_mode = 3
 

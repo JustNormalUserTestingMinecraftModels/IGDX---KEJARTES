@@ -158,10 +158,11 @@ func test_the_hud_target_keeps_reading_on_its_dark_pill() -> void:
 		% worst + "art; it needs %.1f:1 over both" % _AA_LARGE_TEXT)
 
 
-# ──────────────────────── Inventory, which shares ResultDeltaLabel
+# ──────────────────────── Inventory's item sheet
 
-## The item sheet's "+N" beside each stat an item moves. Nothing tints it,
-## so its letters are white on the sheet's white Card.
+## The item sheet's "+N" beside each stat an item moves. Since 2026-09-14 it
+## is H2Label's dark ink (it was white ResultDeltaLabel before), measured on
+## the sheet's white Card.
 func test_the_item_sheets_effect_values_read_on_its_card() -> void:
 	var sheet := _item_sheet()
 	var ground := _flat_fill(sheet.get_node("Sheet"))

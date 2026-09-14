@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://571oain8ppk6"]
 
 [ext_resource type="Script" uid="uid://bl4mmiltrkt4l" path="res://Scripts/EndGame/ExamProgress.gd" id="1_6eyov"]
-[ext_resource type="Texture2D" uid="uid://cyiemn8h8wqnw" path="res://Assets/Images/CG/cg_test.jpg" id="2_6eyov"]
+[ext_resource type="Texture2D" uid="uid://dl4stmlxl1dav" path="res://Assets/Images/CG/cg_ujian.png" id="2_6eyov"]
 
 [node name="ExamProgress" type="Control" unique_id=1018216631]
 layout_mode = 3

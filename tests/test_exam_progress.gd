@@ -112,6 +112,15 @@ func test_the_scene_hands_the_script_a_real_pan_distance() -> void:
 		"negative: the image translates left, which reads as the camera panning right")
 
 
+func test_the_backdrop_shows_the_exam_art() -> void:
+	var backdrop: TextureRect = _screen.get_node("Backdrop")
+	assert_true(backdrop.texture != null, "Backdrop has a texture")
+	assert_eq(backdrop.texture.resource_path, "res://Assets/Images/CG/cg_ujian.png",
+		"ExamProgress shows the user's cg_ujian art (2026-09-14), not the cg_test placeholder")
+	assert_false(FileAccess.file_exists("res://Assets/Images/CG/cg_test.jpg"),
+		"cg_test.jpg is deleted: ExamProgress was its only user")
+
+
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:
 		var c := node as Control

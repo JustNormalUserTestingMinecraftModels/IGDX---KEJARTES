@@ -182,7 +182,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 105 suites, 1496 tests (2026-09-14).
+the Godot AI MCP `test_run` tool. 106 suites, 1502 tests (2026-09-14).
 
 Hard constraints:
 
@@ -282,7 +282,7 @@ rather than eyeballing a screenshot — and re-read it after any window resize.
 shallow `max_depth`:
 
     game_manage(op="get_ui_elements",
-                params={"root_path": "/root/Inventory/MainLayout", "max_depth": 3})
+                params={"root_path": "/root/Inventory/MainColumn", "max_depth": 3})
 
 Autoloads answer to `/root/<Name>` but the reply echoes scene-relative paths
 (`/Inventory/../DebugManager`). Bare `/root` returns nothing.

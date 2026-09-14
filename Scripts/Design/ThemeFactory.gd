@@ -325,6 +325,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 
 	_build_main_menu_button(theme, tokens)
 	_build_shop_shelf_button(theme, tokens)
+	_build_result_button(theme, tokens)
 
 	# Size steps. M covers the 116-148 px call sites (TesNotice, RunResult,
 	# QuitConfirmDialog, EndCutscene, AturJadwal's StartWeek); L covers the
@@ -380,6 +381,44 @@ static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void
 		Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.75))
 	theme.set_constant("shadow_offset_x", NAME, 2)
 	theme.set_constant("shadow_offset_y", NAME, 2)
+
+
+## Weekly Results' two cream buttons, Logs and Selanjutnya (2026-09-14
+## weekly-results spec). The student card's own card_bg.png, 9-sliced, so
+## the buttons read as the same material as the cards above them, with the
+## card's white display text and purple glyph outline (the "+12/65" look).
+##
+## A StyleBoxTexture, so the corner lives in the art: test_button_geometry
+## exempts it from the radius rule and checks the texture path instead, as
+## it does for MainMenuButton.
+static func _build_result_button(theme: Theme, tokens: DesignTokens) -> void:
+	const NAME := "ResultButton"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Button")
+
+	var normal := StyleBoxTexture.new()
+	normal.texture = load("res://Assets/Images/DaySummary/card_bg.png")
+	normal.texture_margin_left = 40
+	normal.texture_margin_right = 40
+	normal.texture_margin_top = 40
+	normal.texture_margin_bottom = 48
+	normal.content_margin_left = 24
+	normal.content_margin_right = 24
+	normal.content_margin_top = 0
+	normal.content_margin_bottom = 12
+	# The art carries no state variants; press feedback is UIPolish's Juice.
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		theme.set_stylebox(state, NAME, normal)
+	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
+
+	for color_name in ["font_color", "font_hover_color", "font_pressed_color",
+			"font_hover_pressed_color", "font_focus_color", "font_disabled_color"]:
+		theme.set_color(color_name, NAME, Color.WHITE)
+	theme.set_color("font_outline_color", NAME, tokens.day_glyph_outline)
+	theme.set_constant("outline_size", NAME, maxi(2, tokens.text_outline_size / 2))
+	theme.set_font_size("font_size", NAME, tokens.day_stat_size)
+	if tokens.font_display != null:
+		theme.set_font("font", NAME, tokens.font_display)
 
 
 ## The main menu's three nav buttons.

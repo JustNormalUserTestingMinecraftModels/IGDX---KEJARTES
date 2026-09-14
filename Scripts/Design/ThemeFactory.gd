@@ -25,9 +25,68 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_week_recap(theme, tokens)
 	_build_minigame_result(theme, tokens)
 	_build_event_warning(theme, tokens)
+	_build_event_dialogue(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
+
+
+## Measured off mockup_eventdialogue.png: the dialogue card's corner radius
+## and the day banner's brown rim. No token matches either; both are
+## single-screen values.
+const EVENT_DIALOGUE_RADIUS := 80
+const DAY_BANNER_OUTLINE := 12
+
+
+## The event dialogue (2026-09-14 event-dialogue spec): a white rounded card
+## with dark bold text, and the header's day banner and calendar labels, all
+## in the bold body face the mockup uses.
+static func _build_event_dialogue(theme: Theme, tokens: DesignTokens) -> void:
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+
+	theme.add_type("EventDialoguePanel")
+	theme.set_type_variation("EventDialoguePanel", "PanelContainer")
+	var card := StyleBoxFlat.new()
+	card.bg_color = tokens.surface_card
+	card.set_corner_radius_all(EVENT_DIALOGUE_RADIUS)
+	card.shadow_color = tokens.shadow_color
+	card.shadow_size = tokens.shadow_size
+	card.shadow_offset = tokens.shadow_offset
+	card.content_margin_left = tokens.space_xl
+	card.content_margin_right = tokens.space_xl
+	card.content_margin_top = tokens.space_lg
+	card.content_margin_bottom = tokens.space_lg
+	theme.set_stylebox("panel", "EventDialoguePanel", card)
+
+	# RichTextLabel's theme items are "normal_font"/"normal_font_size"/
+	# "default_color", not the Label names -- see _add_cutscene_dialogue.
+	theme.add_type("EventDialogueText")
+	theme.set_type_variation("EventDialogueText", "RichTextLabel")
+	theme.set_font_size("normal_font_size", "EventDialogueText", tokens.font_title + 8)
+	theme.set_color("default_color", "EventDialogueText", tokens.text_primary)
+	if bold != null:
+		theme.set_font("normal_font", "EventDialogueText", bold)
+
+	theme.add_type("DayBannerPanel")
+	theme.set_type_variation("DayBannerPanel", "PanelContainer")
+	var pill := StyleBoxFlat.new()
+	pill.bg_color = tokens.surface_card
+	pill.border_color = tokens.brand_primary_dark
+	pill.set_border_width_all(DAY_BANNER_OUTLINE)
+	pill.set_corner_radius_all(tokens.radius_pill)
+	# The calendar badge overlaps the banner's left end in the mockup.
+	pill.content_margin_left = tokens.space_xl + tokens.space_lg
+	pill.content_margin_right = tokens.space_lg
+	theme.set_stylebox("panel", "DayBannerPanel", pill)
+
+	for spec in [["DayBannerLabel", tokens.font_h1], ["CalendarLabel", tokens.font_body_size]]:
+		var variation: String = spec[0]
+		theme.add_type(variation)
+		theme.set_type_variation(variation, "Label")
+		theme.set_font_size("font_size", variation, spec[1])
+		theme.set_color("font_color", variation, tokens.text_primary)
+		if bold != null:
+			theme.set_font("font", variation, bold)
 
 
 ## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard

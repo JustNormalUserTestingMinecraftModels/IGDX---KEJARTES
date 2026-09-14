@@ -280,3 +280,45 @@ func test_the_scene_is_authored_and_themed() -> void:
 	var scene := FileAccess.get_file_as_string(_SCENE)
 	for kind in ["theme_override_colors", "theme_override_font_sizes", "theme_override_fonts", "theme_override_styles"]:
 		assert_false(scene.contains(kind), "no " + kind + " in EventDialogue.tscn")
+
+
+# ── theme ────────────────────────────────────────────────────────────────────
+
+const _VARIATIONS := {
+	"EventDialoguePanel": &"PanelContainer", "EventDialogueText": &"RichTextLabel",
+	"DayBannerPanel": &"PanelContainer", "DayBannerLabel": &"Label", "CalendarLabel": &"Label",
+}
+
+
+func test_the_bold_token_is_open_sans_bold() -> void:
+	var t := DesignTokens.load_default()
+	assert_true(t.font_body_bold != null, "font_body_bold is set")
+	if t.font_body_bold != null:
+		assert_eq(t.font_body_bold.resource_path, "res://Assets/Fonts/OpenSans-Bold.ttf")
+
+
+func test_factory_builds_the_dialogue_variations() -> void:
+	var t := DesignTokens.load_default()
+	var theme := ThemeFactory.build(t)
+	for v in _VARIATIONS:
+		assert_eq(theme.get_type_variation_base(v), _VARIATIONS[v], v + " base type")
+	assert_eq(theme.get_font("normal_font", "EventDialogueText"), t.font_body_bold)
+	assert_eq(theme.get_color("default_color", "EventDialogueText"), t.text_primary)
+	assert_eq(theme.get_font("font", "DayBannerLabel"), t.font_body_bold)
+	assert_eq(theme.get_font("font", "CalendarLabel"), t.font_body_bold)
+	var card := theme.get_stylebox("panel", "EventDialoguePanel") as StyleBoxFlat
+	assert_true(card != null, "the card is a flat box")
+	if card != null:
+		assert_eq(card.bg_color, t.surface_card)
+		assert_eq(card.corner_radius_top_left, ThemeFactory.EVENT_DIALOGUE_RADIUS)
+	var pill := theme.get_stylebox("panel", "DayBannerPanel") as StyleBoxFlat
+	assert_true(pill != null, "the banner is a flat box")
+	if pill != null:
+		assert_eq(pill.border_color, t.brand_primary_dark)
+		assert_eq(pill.border_width_left, ThemeFactory.DAY_BANNER_OUTLINE)
+
+
+func test_the_bake_declares_the_dialogue_variations() -> void:
+	var baked := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	for v in _VARIATIONS:
+		assert_true(baked.get_type_list().has(v), v + " must be in the baked theme -- rebake")

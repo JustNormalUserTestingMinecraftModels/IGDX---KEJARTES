@@ -344,7 +344,7 @@ func test_minigames_hear_their_line_between_warning_and_play() -> void:
 	var body := _body(FileAccess.get_file_as_string(_SCHOOL_DAY), "_roll_event")
 	for pair in [["KEGIATAN AKADEMIS!", "Akademis"], ["KEGIATAN OLAHRAGA!", "Olahraga"], ["KEGIATAN SENI BUDAYA!", "SeniBudaya"]]:
 		var warn := body.find('_show_event_warning("%s")' % pair[0])
-		var talk := body.find("_show_event_dialogue(EventDialogueCatalog.minigame_key(scene.resource_path))", warn)
+		var talk := body.find("_show_event_dialogue(minigame_dialogue_key(scene))", warn)
 		var play := body.find('_play_minigame(scene, "%s")' % pair[1], warn)
 		assert_true(warn != -1 and talk > warn and play > talk,
 			pair[1] + ": warning, then dialogue, then minigame")
@@ -355,6 +355,16 @@ func test_every_minigame_scene_school_day_loads_has_a_line() -> void:
 	for path in _MINIGAME_SCENES:
 		assert_true(src.contains(path), "SchoolDay no longer loads " + path)
 		assert_true(EventDialogueCatalog.has_entry(EventDialogueCatalog.minigame_key(path)), path)
+
+
+## Code review, 2026-09-14: _roll_event used to read scene.resource_path for
+## the dialogue key before _play_minigame's null guard, so a minigame scene
+## that failed to load crashed the day instead of being skipped.
+func test_a_minigame_scene_that_failed_to_load_has_no_dialogue_key() -> void:
+	var school_day = load(_SCHOOL_DAY)
+	assert_eq(school_day.minigame_dialogue_key(null), "",
+		"a null scene must reach _play_minigame's own guard, not crash on .resource_path")
+	assert_eq(school_day.minigame_dialogue_key(load(_MINIGAME_SCENES[1])), "Variabel")
 
 
 func test_global_events_speak_before_they_apply() -> void:

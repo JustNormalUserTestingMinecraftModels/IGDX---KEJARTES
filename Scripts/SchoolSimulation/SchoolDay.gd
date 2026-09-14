@@ -978,17 +978,17 @@ func _roll_event(day_name: String) -> void:
 		if category_selected == "Akademis":
 			var scene = akademis_scenes[randi() % akademis_scenes.size()]
 			await _show_event_warning("KEGIATAN AKADEMIS!")
-			await _show_event_dialogue(EventDialogueCatalog.minigame_key(scene.resource_path))
+			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "Akademis")
 		elif category_selected == "Olahraga":
 			var scene = olahraga_scenes[randi() % olahraga_scenes.size()]
 			await _show_event_warning("KEGIATAN OLAHRAGA!")
-			await _show_event_dialogue(EventDialogueCatalog.minigame_key(scene.resource_path))
+			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "Olahraga")
 		else:
 			var scene = seni_scenes[randi() % seni_scenes.size()]
 			await _show_event_warning("KEGIATAN SENI BUDAYA!")
-			await _show_event_dialogue(EventDialogueCatalog.minigame_key(scene.resource_path))
+			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "SeniBudaya")
 
 	else:
@@ -1535,6 +1535,15 @@ func _show_event_warning(caption: String) -> void:
 	else:
 		await get_tree().create_timer(1.5).timeout
 		warning_instance.queue_free()
+
+
+## The EventDialogue catalog key for a minigame `scene`, or "" when the scene
+## failed to load. "" has no dialogue, so a null scene falls through to
+## _play_minigame()'s own null guard instead of crashing on .resource_path.
+static func minigame_dialogue_key(scene: PackedScene) -> String:
+	if scene == null:
+		return ""
+	return EventDialogueCatalog.minigame_key(scene.resource_path)
 
 
 ## Shows the EventDialogue for catalog `key` over the day and waits for it

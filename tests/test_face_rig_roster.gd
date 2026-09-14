@@ -206,7 +206,7 @@ func test_no_eye_cut_out_is_left_see_through() -> void:
 			if entry[0] in ["Base", "Pupil", "Eyelid"]:
 				continue
 			var node := _layer(face, entry[0])
-			covers.append([node.texture.get_image(), Vector2i(node.position)])
+			covers.append([node.texture.get_image(), Vector2i(node.position), _cover_alpha(node)])
 		var r := Rect2i(Vector2i(sclera.position) - Vector2i(4, 4),
 			Vector2i(sclera.size) + Vector2i(8, 8))
 		var open := 0
@@ -219,7 +219,7 @@ func test_no_eye_cut_out_is_left_see_through() -> void:
 					var local: Vector2i = Vector2i(x, y) - c[1]
 					var img: Image = c[0]
 					if local.x >= 0 and local.y >= 0 and local.x < img.get_width() \
-						and local.y < img.get_height() and img.get_pixel(local.x, local.y).a >= 0.5:
+						and local.y < img.get_height() and img.get_pixel(local.x, local.y).a >= c[2]:
 						covered = true
 						break
 				if not covered and _inside_face(base_img, x, y):
@@ -227,6 +227,17 @@ func test_no_eye_cut_out_is_left_see_through() -> void:
 		assert_true(open <= _SEE_THROUGH_MAX[student],
 			"%s: %d eye cut-out pixels show the lobby through the face (max %d)"
 				% [student, open, _SEE_THROUGH_MAX[student]])
+
+
+## The texture alpha from which a layer hides what is behind it. A plain layer
+## covers from 0.5. glasses_lens.gdshader emits alpha 0 below its
+## frame_alpha_from -- the lens only adds light and hides nothing -- so on a
+## lens-shaded layer only the frame counts as cover.
+func _cover_alpha(node: TextureRect) -> float:
+	var mat := node.material as ShaderMaterial
+	if mat != null and mat.shader != null and mat.shader.resource_path == _LENS_SHADER:
+		return float(mat.get_shader_parameter("frame_alpha_from"))
+	return 0.5
 
 
 ## True when (x, y) is enclosed by the base horizontally -- opaque base on

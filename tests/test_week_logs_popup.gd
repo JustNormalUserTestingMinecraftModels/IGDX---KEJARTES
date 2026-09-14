@@ -126,3 +126,17 @@ func test_the_rows_entrance_keeps_stamp_and_shake() -> void:
 	assert_contains(src, 'play_sfx(&"stamp")', "a won minigame stamps")
 	assert_contains(src, "Juice.shake(row)", "a lost one shakes")
 	assert_contains(src, "row.is_event()", "an event does neither")
+
+
+## Code review, 2026-09-14: open() used to await a SceneTree timer before
+## the rows' entrance, and tapping Tutup during that wait freed the sheet
+## under the suspended coroutine. The entrance rides the sheet's own tween
+## now, which dies with it.
+func test_the_rows_entrance_rides_a_tween_not_an_await() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	var start := src.find("func open(")
+	var end := src.find("\nfunc ", start + 1)
+	var body := src.substr(start, end - start)
+	assert_false(body.contains("await"), "open() never suspends on something that outlives the sheet")
+	assert_contains(body, "arm.tween_callback(_play_rows_entrance)",
+		"the entrance is a callback on the sheet's own tween")

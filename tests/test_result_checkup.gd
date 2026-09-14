@@ -793,3 +793,15 @@ func test_the_old_banner_and_tabs_are_gone() -> void:
 	assert_false(FileAccess.get_file_as_string(
 		"res://Scripts/SchoolSimulation/WeekRecap.gd").contains("pending_earnings"),
 		"WeekRecap no longer reads the dict the payout empties")
+
+
+## Code review, 2026-09-14: both buttons stayed live through the 0.32 s
+## fade-out, so a double tap emitted checkup_closed twice and a tap on Logs
+## opened a sheet on a closing screen.
+func test_selanjutnya_disables_both_buttons_before_the_fade() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	var body := src.substr(src.find("func _on_next_pressed"))
+	var fade := body.find("create_tween()")
+	for line in ["next_button.disabled = true", "logs_button.disabled = true"]:
+		var at := body.find(line)
+		assert_true(at != -1 and at < fade, line + " happens before the fade-out starts")

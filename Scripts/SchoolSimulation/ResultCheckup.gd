@@ -204,6 +204,10 @@ func _on_scroll_gui_input(event: InputEvent) -> void:
 
 
 func _on_next_pressed() -> void:
+	# One exit only: the fade-out below takes dur_normal, and a second tap on
+	# Selanjutnya -- or a tap on Logs -- during it must not fire again.
+	next_button.disabled = true
+	logs_button.disabled = true
 	AudioDirector.play_sfx(&"confirm")
 	var fade_out := create_tween()
 	fade_out.tween_property(self, "modulate:a", 0.0, Juice.tokens().dur_normal)

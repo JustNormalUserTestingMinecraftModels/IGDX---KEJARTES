@@ -80,10 +80,12 @@ func open(animate_rows: bool = true) -> void:
 	arm.tween_interval(t.dur_normal)
 	arm.tween_callback(func(): scrim.mouse_filter = Control.MOUSE_FILTER_STOP)
 	if animate_rows and not _rows.is_empty():
-		# A beat between popup_open and the first stamp, so the two cues land
-		# as two gestures (tests/test_audio_coverage.gd's double-fire guard).
-		await get_tree().create_timer(t.dur_normal).timeout
-		_play_rows_entrance()
+		# The rows' entrance rides the same tween, a beat after popup_open, so
+		# the two cues land as two gestures (tests/test_audio_coverage.gd's
+		# double-fire guard). A tween dies with the sheet; an awaited
+		# SceneTree timer would resume on a freed sheet if Tutup is tapped
+		# during the pop-in.
+		arm.tween_callback(_play_rows_entrance)
 
 
 ## Close the sheet and hand control back. Safe to call twice.

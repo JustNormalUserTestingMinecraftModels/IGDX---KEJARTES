@@ -65,9 +65,10 @@ The midday roll itself (`_roll_event`, `_todays_roll_weights`) is unchanged.
 ## The catalog: 13 entries
 
 Event keys: `les_akademis`, `latihan_olahraga`, `workshop_seni`, `nasi_kotak`,
-`hujan`. Minigame keys are the scene names `_scene_name()` already returns:
-`Menjodohkan`, `Variabel`, `PilihanGanda`, `Password`, `MainBola`,
-`Badminton`, `BuatBatik`, `LombaMenari`.
+`hujan`. Minigame keys are the scene **file** basenames: `Menjodohkan`,
+`Variabel`, `PilihanGanda`, `Password`, `MainBola`, `Badminton`,
+`BuatBatik`, `LombaMenari`. These are not `_scene_name()`'s values; that
+returns display text such as "Variabel Matematika".
 
 These lines are drafts. The owner's writer may rewrite them, and they are
 listed under CLAUDE.md's copy placeholders.
@@ -120,6 +121,13 @@ release juice from `UIPolish`.
 `open(entry, featured, week, max_weeks, day_name)`. A TAP dialogue always
 closes with `accepted = true`.
 
+**What counts as a tap.** Only a left mouse-button press delivered to the
+root's `_gui_input`. `project.godot` sets `emulate_touch_from_mouse`, and
+Godot's default `emulate_mouse_from_touch` is on, so a desktop click and a
+phone touch each arrive as both a touch and a mouse event. Counting both would
+turn one tap into two, and one tap would close a TAP dialogue. A
+`ScreenTouch` counts only if mouse-from-touch emulation has been turned off.
+
 ## Theme
 
 - **New token.** `font_body_bold` (`Assets/Fonts/OpenSans-Bold.ttf`) on
@@ -165,7 +173,7 @@ closes with `accepted = true`.
 | `splash_gurusenibudaya.png` | Generated placeholder; not in the Drive |
 | `hujan_background.png` | Generated placeholder, 1080×1920; not in the Drive |
 | `calendar_badge.png` | Generated placeholder; the repo has no calendar art |
-| `event_dialogue_blur_material.tres` | New ShaderMaterial on the existing blur shader |
+| `Scenes/SchoolSimulation/event_dialogue_blur_material.tres` | New ShaderMaterial on the existing blur shader. It sits next to its scene, as ShopHub's does |
 
 The placeholders are drop-replaceable at the same paths. They join
 CLAUDE.md's generated-art list.

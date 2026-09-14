@@ -225,3 +225,14 @@ offsets, dropped into `loby.gd`'s `face_rigs`.
 real unconverted runtime UI construction across roughly 20 files. The list, and
 what each would need, is in the authoring guide's "Known gaps" section.
 (Checked 2026-09-14: 23 entries, 22 of them nonzero, 131 constructions in all.)
+
+**ExamProgress shows only the middle of cg_ujian (2026-09-14).** The art is
+1920x1920, but `Backdrop` is 1296 wide and pans 216 px, so the outer 312 px on
+each side never show. Showing it all means a 1920-wide `Backdrop` and
+`pan_pixels = -840` (a faster pan over the same 4 s), plus the 1296 in
+`tests/test_exam_progress.gd`'s width test.
+
+**The inventory grid is wider than the screen (found 2026-09-14).** Measured
+live, `inventory.tscn`'s `MainColumn/GridArea/Scroll` is 1107 px wide and
+starts at x -13.5 on the 1080 canvas, holding three 358 px slots. The outer
+slot columns are clipped by about 14 px on each side.

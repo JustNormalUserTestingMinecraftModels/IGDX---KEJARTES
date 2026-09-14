@@ -8,6 +8,34 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — MainBola: every goal target is reachable
+
+Kelas 9 MainBola games could not be won. Every game gave eight shots and
+refunded none, while `start_minigame()` rolled Kelas 9's goal target as 8, 9
+or 10 (Kelas 8's as 6–8): two Kelas 9 games in three asked for more goals
+than there were shots, and the third needed eight from eight.
+
+`MainBola.gd` now carries two per-difficulty tables, `ATTEMPTS_BY_DIFFICULTY`
+(8 / 10 / 10 shots) and `TARGET_RANGE_BY_DIFFICULTY` (4–6 / 6–8 / 6–8 goals),
+read through the static `attempts_for()`, `target_range_for()` and
+`roll_target()`. The highest target always leaves two shots to miss, as
+Kelas 7's six-from-eight already did. The star ratio counts shots taken from
+the shots the game started with (`max_attempts`), not from a fixed eight.
+
+Two facts shaped the numbers. The clock binds too: SchoolDay gives the game
+30 s × `Balance.MINIGAME_WAKTU_SKALA_*` (30 / 24 / 18 s), the clock runs while
+a shot resolves, and a shot costs about a second at least -- so twelve shots
+at Kelas 9 would only have moved the wall from the shot count to the clock.
+And a shot aimed at the target box always scores, because the keeper dives
+away from it; what `GOALIE_SPEED_INCREASE` actually speeds up is the box. So
+Kelas 9 is harder than Kelas 8 through its faster box and shorter clock, not
+a higher target. The numbers assume a player lands about 70% of shots and
+have not been playtested (`CLAUDE.md`, "Pending a balance pass").
+
+`tests/test_main_bola_targets.gd` holds the rule: at every difficulty the
+highest target never exceeds the shots and leaves two spare, and 60 real
+`start_minigame()` starts per difficulty never break it.
+
 ## 2026-09-12 — Event cards, the sliding warning, and EventAnnouncement's retirement
 
 Plan `docs/superpowers/plans/2026-09-12-event-cards-and-slide-warning.md`,

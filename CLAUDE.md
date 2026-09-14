@@ -476,6 +476,8 @@ fed into the star rubric; the item skill-boost values in
 `tests/test_balance_pacing.gd`. `RunGrade.LETTER_BANDS`' five rank
 floors (S 90 / A 75 / B 60 / C 45) are estimates set when the scheme collapsed
 from ten +/- bands on 2026-09-10, never played against a real run.
+`MainBola`'s per-grade tables (8/10/10 shots, 4–6/6–8/6–8 goal targets,
+2026-09-14) assume a player lands about 70% of shots; never playtested.
 
 **Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` is a blurred
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile

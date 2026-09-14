@@ -163,6 +163,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 	var tokens := DesignTokens.load_default()
 	var paths := _NAV_BUTTONS.duplicate()
 	paths.append("DailyReward/ButtonClaim")
+	paths.append("ShortenButton")
 	for p in paths:
 		var b := _lobby.get_node_or_null(p) as Control
 		assert_true(b != null, "missing control: " + p)

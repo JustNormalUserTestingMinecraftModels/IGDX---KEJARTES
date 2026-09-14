@@ -18,7 +18,7 @@ that were riding inside it came up into `CLAUDE.md`'s `## Visual system`,
 because the `claude-review` bot reads only that file: the BarFill rules, the
 1080x1080 Penjadwalan card, the badge SVG paths, `tray_dots.png`'s 26x26, and
 leaving `sky_cover_margin` alone. `## Current work` held Plan C, untouched
-since 2026-09-11, so Plan C moved to DEBT.md too. The result is 22,852
+since 2026-09-11, so Plan C moved to DEBT.md too. The result is 22,965
 characters. The soft budget rises from 20,000 to 23,000, because two audits
 could not reach 20,000 without deleting live rules. The rationale for this
 file's structure is still
@@ -118,6 +118,39 @@ Wording the source check replaced, verbatim:
   `@export`, so an Inspector swap).
 - The exact diff is in the STATUS block of
   `docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`.
+
+## 2026-09-14 — Shorten: skip the minigame dialogue from the Lobby
+
+A tiny **Shorten** button on the Lobby's money row, between the daily-login
+icon and the coins, opens a panel with **Jangan Skip Dialog** and **Skip
+Dialog**. With Skip Dialog on, the eight minigames go straight from the
+EventWarning into play, with no character line in between.
+
+What Shorten skips is one catalog rule: `EventDialogueCatalog.shorten_skips()`
+is true for TAP entries except `SHORTEN_KEEPS` (Nasi Kotak and Hujan). Today
+that is exactly the eight minigames. The three Tolak / Terima events keep
+their dialogue, because the choice lives there. SchoolDay's
+`_show_event_dialogue()` returns early, before instancing anything.
+
+The setting is `GameSettings.skip_event_dialogue`, off by default. It is saved
+next to the minigame-tutorial switch as `[pengaturan] skip_dialog` in
+`user://settings.cfg`; the owner approved that persistence in the Brief.
+
+The panel (`Scenes/Lobby/ShortenPanel.tscn`) names the current mode. Its
+options are a Primary/Secondary pair, per the confirm-pair rule. It saves only
+outside the editor, so tests never write the real settings file. Its scrim
+follows the popup-dismiss rule: it starts ignoring input and only closes on a
+tap once the panel has opened. The button is the smallest button step
+(96 px, the touch minimum). It sits under the reward popup and the tutorial
+overlay in draw order, so neither leaves it tappable.
+
+A new `var` on the GameSettings autoload is invisible to a running editor until
+it restarts. Hot reload does not give the live autoload instance the new
+member, which is the same limit CLAUDE.md records for a new `@export`.
+
+Spec: `docs/superpowers/specs/2026-09-14-shorten-dialog-design.md`. Plan:
+`docs/superpowers/plans/2026-09-14-shorten-dialog.md`. Tests:
+`tests/test_shorten.gd`.
 
 ## 2026-09-14 — EventDialogue: a line before every minigame and event
 

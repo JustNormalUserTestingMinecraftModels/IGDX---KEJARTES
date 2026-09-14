@@ -29,7 +29,9 @@ passes.
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
 Every mid-day minigame and random event opens with the sliding EventWarning,
 then an EventDialogue line (`EventDialogueCatalog`); the three pick-students
-events ask Tolak / Terima there, before their picker.
+events ask Tolak / Terima there, before their picker. The Lobby's **Shorten**
+button (`GameSettings.skip_event_dialogue`, saved) skips the minigame lines;
+Nasi Kotak, Hujan and the choice events keep theirs.
 Splashscreen still exists and is tested but nothing routes to it (the game
 boots straight to MainMenu, which loads in one hop). There is no Loading
 screen: the shared `Transition` wipe covers the scene-load gap.
@@ -179,7 +181,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 104 suites, 1490 tests (2026-09-14).
+the Godot AI MCP `test_run` tool. 105 suites, 1505 tests (2026-09-14).
 
 Hard constraints:
 
@@ -375,8 +377,7 @@ savings come from cheaper verification loops, not from fewer tests.
 
 Placeholders, deferred passes and known bugs live in `docs/superpowers/DEBT.md`,
 read on demand: grep it before changing a screen or asset. New debt goes there,
-and an entry is deleted once resolved, not marked done. Only constraints on
-future changes belong here, under `## Visual system`.
+and an entry is deleted once resolved, not marked done. Constraints on future changes stay here, under `## Visual system`.
 
 ## Current work
 
@@ -401,8 +402,8 @@ it costs context on every single run, so it earns its place or it moves.
   it moves to the changelog.
 - **Point at the README, do not restate it.** If a folder README or a
   spec already documents the rules for an asset, link it and keep one line.
-- Soft budget: **23,000 characters**, about the floor once history and debt are
-  out; size history is in the changelog. A pass that would exceed it moves
+- Soft budget: **23,000 characters**, about the floor once history and debt
+  are out. A pass that would exceed it moves
   something out first; it does not thin the live rules.
 
 ## Conventions

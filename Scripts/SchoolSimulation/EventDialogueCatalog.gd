@@ -101,6 +101,19 @@ const ENTRIES := {
 }
 
 
+## TAP entries the Lobby's Shorten switch never skips: the parent's lunch and
+## the rain are scenes in their own right, not minigame intros (2026-09-14
+## shorten-dialog spec).
+const SHORTEN_KEEPS := ["nasi_kotak", "hujan"]
+
+
+## True when Shorten skips this entry's dialogue: a TAP entry (there is no
+## choice to make) that is not in SHORTEN_KEEPS. An unknown key is never
+## skipped.
+static func shorten_skips(key: String) -> bool:
+	return entry(key).get("mode", "") == MODE_TAP and not SHORTEN_KEEPS.has(key)
+
+
 ## True when `key` has a dialogue. SchoolDay skips the screen otherwise.
 static func has_entry(key: String) -> bool:
 	return ENTRIES.has(key)

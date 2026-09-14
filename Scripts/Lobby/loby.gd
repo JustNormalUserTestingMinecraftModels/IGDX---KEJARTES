@@ -29,6 +29,10 @@ const HAND_NODE_PREFIX := "Hand_"
 ## hands.
 const HAND_FALLBACK_NAME := "Doni"
 
+## The Shorten popup (2026-09-14 shorten-dialog spec), instanced over the hub
+## when ShortenButton is pressed. It frees itself when it closes.
+const SHORTEN_PANEL_SCENE := preload("res://Scenes/Lobby/ShortenPanel.tscn")
+
 @export_group("Idle Motion")
 ## Subtle looping vertical bob applied to the diorama's portrait
 ## containers, so the hub does not read as a still image.
@@ -53,6 +57,7 @@ const HAND_FALLBACK_NAME := "Doni"
 @onready var koperasi_button = $Koperasi
 @onready var report_student_button = $ReportStudent
 @onready var inventory_button = $Inventory
+@onready var shorten_button = $ShortenButton
 
 @onready var money_label = $DisplayUang/Label
 @onready var daily_login_btn = $DailyLogin
@@ -160,10 +165,13 @@ func _ready():
 
 	_build_tutorial_panel()
 
-	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, daily_login_btn, claim_button]:
+	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, shorten_button, daily_login_btn, claim_button]:
 		_setup_button_juice(btn)
 
 	color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	if not shorten_button.pressed.is_connected(_on_shorten_pressed):
+		shorten_button.pressed.connect(_on_shorten_pressed)
 
 	AudioDirector.play_bgm_playlist(&"lobby")
 
@@ -607,10 +615,12 @@ func _create_blur_overlay():
 	# DailyReward is now a sibling of DailyLogin, not its child (Task 10
 	# re-anchored it to the scene root). Place blur_overlay just before
 	# DailyLogin, i.e. at DailyLogin's own index -- DailyReward sits right
-	# after DailyLogin in child order (index 17, with the root's own
-	# ColorRect following at 18), so inserting here still puts blur_overlay
-	# ahead of DailyReward -- so it renders on top of the rest of the lobby
-	# UI but behind the popup.
+	# after DailyLogin in child order (with the root's own ColorRect after
+	# it), so inserting here still puts blur_overlay ahead of DailyReward --
+	# so it renders on top of the rest of the lobby UI but behind the popup.
+	# Any HUD node the popup must cover (ShortenButton, 2026-09-14) has to
+	# sit BEFORE DailyLogin: one between DailyLogin and DailyReward stays
+	# sharp and tappable over the open popup.
 	move_child(blur_overlay, daily_login_btn.get_index())
 	# Connect click on blur overlay to close popup
 	blur_overlay.gui_input.connect(_on_blur_overlay_input)
@@ -782,6 +792,13 @@ func _on_claim_pressed():
 	GameState.daily_login_day += 1
 	if GameState.daily_login_day > 7:
 		GameState.daily_login_day = 1
+
+## Opens the Shorten panel over the hub.
+func _on_shorten_pressed() -> void:
+	var panel = SHORTEN_PANEL_SCENE.instantiate()
+	add_child(panel)
+	panel.open()
+
 
 func _on_student_pressed():
 	_animate_button_click_bounce(student_button)

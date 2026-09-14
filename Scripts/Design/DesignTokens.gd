@@ -246,6 +246,10 @@ static func load_default() -> DesignTokens:
 ## The theme's default_font, applied project-wide unless a variation
 ## overrides it with font_display.
 @export var font_body: FontFile
+## Bold body face (Open Sans Bold) for EventDialogueText, DayBannerLabel and
+## CalendarLabel: mockup_eventdialogue.png sets its line, day and week in it.
+## Null falls back to font_body.
+@export var font_body_bold: FontFile = preload("res://Assets/Fonts/OpenSans-Bold.ttf")
 ## Font size for MicroLabel.
 @export var font_micro: int = 18
 ## Font size for CaptionLabel, StatBar's value label, ResultBodyLabel.

@@ -27,6 +27,9 @@ passes.
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay (simulate
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
+Every mid-day minigame and random event opens with the sliding EventWarning,
+then an EventDialogue line (`EventDialogueCatalog`); the three pick-students
+events ask Tolak / Terima there, before their picker.
 Splashscreen still exists and is tested but nothing routes to it (the game
 boots straight to MainMenu, which loads in one hop). The Loading screen was
 deleted on 2026-09-10: the shared `Transition` wipe covers the scene-load gap,
@@ -154,7 +157,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 102 suites, 1446 tests (2026-09-13).
+the Godot AI MCP `test_run` tool. 104 suites, 1490 tests (2026-09-14).
 
 Hard constraints, learned the hard way:
 
@@ -386,7 +389,11 @@ placeholder family), `UI/Placeholders/stamp_sudah.svg` /
 (portrait tape, the avatar state ring, the teacher's-note rule — the last two
 drawn white so `self_modulate` tints them from tokens), and
 `UI/StudentList/page_dot.png` (a filled dot -- tinting the hollow ring above
-it reads as invisible on a phone).
+it reads as invisible on a phone), and the 2026-09-14 EventDialogue set in
+`Assets/Images/EventDialogue/`: `splash_gurusenibudaya.png` (a flat
+silhouette for the Seni Budaya teacher, on the same 1080x1920 frame as every
+splash), `hujan_background.png` (the school tinted dusk-blue with seeded rain
+streaks) and `calendar_badge.png`.
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
 opaque only across rows 262..1578 and columns 47..1033, its bottom-right
@@ -430,7 +437,9 @@ existing cues rather than a dedicated `sfx_item_apply`.
 
 **Copy placeholders.** Every cutscene line in the exam and win branches, and
 every `desc` string in `ItemDatabase.DEFAULT_ITEMS` (shown verbatim in
-`ItemDetailSheet`), is marked `[PLACEHOLDER]`.
+`ItemDetailSheet`), is marked `[PLACEHOLDER]`. Every `line` in
+`EventDialogueCatalog.ENTRIES` (2026-09-14) is a draft, unmarked because it
+shows in-game.
 
 **Other art gaps.** `Assets/Images/EndGame/ujian_sekolah.png` (TesNotice's
 Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to

@@ -8,6 +8,45 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — Lobby-style buttons everywhere but StudentCard
+
+Plan `docs/superpowers/plans/2026-09-14-lobby-style-buttons.md`, spec
+`docs/superpowers/specs/2026-09-14-lobby-style-buttons-design.md`.
+
+Every framed action button now wears the Lobby's STUDENT / JADWAL look:
+
+- the `brand_primary_light` fill with the `brand_primary_dark` bevel;
+- the cream `outline_card` rim;
+- cream display text.
+
+A new `ThemeFactory._add_lobby_button()` is the one recipe for
+`PrimaryButton`, `SecondaryButton`, `DangerButton`, `SuccessButton` (and
+their generated M/L steps), `LobbyCtaButton`, `LobbyNavTile`,
+`MainMenuButton`, `ShopShelfButton` and `ResultButton`.
+
+The main menu's icon buttons, the shelf button and Weekly Results' buttons
+keep their own padding and text sizes. The main menu's painted
+`menu_button.png` is retired and deleted, and the Weekly Results cream art no
+longer drives its buttons.
+
+**Two exceptions keep their look through new variations:**
+
+- StudentCard's eight cream buttons (the six Batal and the two page arrows)
+  use `StudentCardSecondaryButtonL`.
+- StudentList's BELUM/SUDAH badges use `RosterStatusBelum` and
+  `RosterStatusSudah`.
+
+**Unchanged:** frameless, toggle, card and chip buttons.
+
+**Retired rule:** `confirm_pair_semantics`' "one filled, one quiet" pair
+rule. The pairs keep their `PrimaryButton` / `SecondaryButton` names, so a
+later pass can split them again.
+
+**Found while here:** an editor save of `RosterCard.tscn` bakes a 20 px drop
+into its five StickyNotes, because `StickyNote.gd` is `@tool` and its
+`_apply_pin()` writes offsets in `_ready()`. The badge change was applied by
+text instead, and the trap is listed in `DEBT.md`.
+
 ## 2026-09-14 — Exam art and readable inventory text
 
 ExamProgress now shows the user's `cg_ujian.png` (1920x1920, from their Google

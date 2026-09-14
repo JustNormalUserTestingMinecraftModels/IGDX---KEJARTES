@@ -120,7 +120,7 @@ the roster and `ThemeFactory` together, or the suite fails.
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
 variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
-`SuccessButton`, `LobbyNavButton`, `Card`, `SunkenPanel`, `Scrim`,
+`SuccessButton`, `LobbyCtaButton`, `Card`, `SunkenPanel`, `Scrim`,
 `DisplayLabel`, `H1Label`, `H2Label`, `TitleLabel`, `CaptionLabel`,
 `MicroLabel`, `BarLabel`, `StatBar`, …). If none fits, add a new variation in
 `ThemeFactory.gd` and rebake. Only accepted exception: layout-only constant
@@ -182,7 +182,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 106 suites, 1502 tests (2026-09-14).
+the Godot AI MCP `test_run` tool. 107 suites, 1508 tests (2026-09-14).
 
 Hard constraints:
 

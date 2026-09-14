@@ -5,8 +5,8 @@ sessions; `CLAUDE.md` is. Anything here is history — read it on demand when yo
 need to know why something is the way it is.
 
 Facts that still govern how you work on the project belong in `CLAUDE.md`, not
-here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
-section. See `CLAUDE.md`'s `## Maintaining this file`.
+here. Unfinished placeholders and
+deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
 ## 2026-09-14 — Project guide audit: the debt list leaves CLAUDE.md
 
@@ -18,7 +18,7 @@ that were riding inside it came up into `CLAUDE.md`'s `## Visual system`,
 because the `claude-review` bot reads only that file: the BarFill rules, the
 1080x1080 Penjadwalan card, the badge SVG paths, `tray_dots.png`'s 26x26, and
 leaving `sky_cover_margin` alone. `## Current work` held Plan C, untouched
-since 2026-09-11, so Plan C moved to DEBT.md too. The result is 22,965
+since 2026-09-11, so Plan C moved to DEBT.md too. The result is 22,982
 characters. The soft budget rises from 20,000 to 23,000, because two audits
 could not reach 20,000 without deleting live rules. The rationale for this
 file's structure is still
@@ -48,8 +48,9 @@ The audit also adds a rule to `## Working efficiently here`: "The main
 checkout is shared too". This audit's own `git switch -c` in the shared main
 checkout, taken on a `git status` reading ten minutes old, moved a live
 session off `feat/shorten-dialog`. That session's next six commits landed on
-the audit branch, and its spec and plan left the disk. It was asked to move
-them back, and the audit went on in a worktree.
+the audit branch, and its spec and plan left the disk. It moved them back
+onto its own branch before shipping (PR #32), and the audit went on in a
+worktree.
 
 Text moved out of `CLAUDE.md` verbatim:
 

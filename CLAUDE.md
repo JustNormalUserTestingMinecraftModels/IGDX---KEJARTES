@@ -142,8 +142,9 @@ gaps" section.
 Full detail: `docs/superpowers/design/authoring-guide.md`.
 
 **Cards.** Build a new card on a `Sheet` Panel with the `Card` variation
-(StudentList's `RosterCard`), not on `paper.png`, which is opaque over only
-the middle of its rect (numbers in `docs/superpowers/DEBT.md`). Measure the
+(StudentList's `RosterCard`). Use `paper.png` only where its cut corner is
+the point: it is opaque over only the middle of its rect (numbers in
+`docs/superpowers/DEBT.md`). Measure the
 alpha before laying out on any soft-edged texture.
 
 **Asset constraints.** Placeholder art is drop-replaceable at the same path
@@ -375,8 +376,8 @@ savings come from cheaper verification loops, not from fewer tests.
 
 ## Outstanding debt & placeholders
 
-Placeholders, deferred passes and known bugs live in `docs/superpowers/DEBT.md`,
-read on demand: grep it before changing a screen or asset. New debt goes there,
+Placeholders, deferred passes and known bugs live in `docs/superpowers/DEBT.md`;
+grep it before changing a screen or asset. New debt goes there,
 and an entry is deleted once resolved, not marked done. Constraints on future changes stay here, under `## Visual system`.
 
 ## Current work

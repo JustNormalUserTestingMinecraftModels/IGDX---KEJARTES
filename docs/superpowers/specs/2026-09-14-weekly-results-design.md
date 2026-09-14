@@ -30,7 +30,7 @@ Entry and exit are unchanged: SchoolDay instances `ResultCheckup.tscn`, calls
 | `Summary/EventWonLabel` | "EVENT BERHASIL : 4" | y ~1430 |
 | `Summary/EventLostLabel` | "EVENT GAGAL : 3" | y ~1515 |
 | `Buttons/LogsButton`, `Buttons/NextButton` | "Logs", "Selanjutnya" | two ~370-wide buttons, y ~1655..1810 |
-| `Logs` | the `WeekLogsPopup` instance, hidden until opened | overlay |
+| — | `WeekLogsPopup` is instanced on each Logs tap (like the Lobby's Shorten panel), not authored in the scene: a scene instance under a plain `Control` loses its rect on load (authoring guide, Pattern C) | overlay |
 | `Celebration` | the existing idle `PaperConfetti` anchor | unchanged |
 
 When the roster doesn't fit in the space between the ribbon and the summary,

@@ -8,6 +8,39 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — Shorten: skip the minigame dialogue from the Lobby
+
+A tiny **Shorten** button on the Lobby's money row, between the daily-login
+icon and the coins, opens a panel with **Jangan Skip Dialog** and **Skip
+Dialog**. With Skip Dialog on, the eight minigames go straight from the
+EventWarning into play, with no character line in between.
+
+What Shorten skips is one catalog rule: `EventDialogueCatalog.shorten_skips()`
+is true for TAP entries except `SHORTEN_KEEPS` (Nasi Kotak and Hujan). Today
+that is exactly the eight minigames. The three Tolak / Terima events keep
+their dialogue, because the choice lives there. SchoolDay's
+`_show_event_dialogue()` returns early, before instancing anything.
+
+The setting is `GameSettings.skip_event_dialogue`, off by default. It is saved
+next to the minigame-tutorial switch as `[pengaturan] skip_dialog` in
+`user://settings.cfg`; the owner approved that persistence in the Brief.
+
+The panel (`Scenes/Lobby/ShortenPanel.tscn`) names the current mode. Its
+options are a Primary/Secondary pair, per the confirm-pair rule. It saves only
+outside the editor, so tests never write the real settings file. Its scrim
+follows the popup-dismiss rule: it starts ignoring input and only closes on a
+tap once the panel has opened. The button is the smallest button step
+(96 px, the touch minimum). It sits under the reward popup and the tutorial
+overlay in draw order, so neither leaves it tappable.
+
+A new `var` on the GameSettings autoload is invisible to a running editor until
+it restarts. Hot reload does not give the live autoload instance the new
+member, which is the same limit CLAUDE.md records for a new `@export`.
+
+Spec: `docs/superpowers/specs/2026-09-14-shorten-dialog-design.md`. Plan:
+`docs/superpowers/plans/2026-09-14-shorten-dialog.md`. Tests:
+`tests/test_shorten.gd`.
+
 ## 2026-09-14 — EventDialogue: a line before every minigame and event
 
 Every mid-day interruption now has a character speak first. After the sliding

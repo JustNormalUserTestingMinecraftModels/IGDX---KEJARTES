@@ -28,6 +28,9 @@ extends Node
 ## runs the same way in both contexts.
 
 var minigame_tutorial_enabled: bool = true
+## Shorten (Lobby panel, 2026-09-14): true skips the EventDialogue line before
+## each minigame. Saved beside the tutorial switch.
+var skip_event_dialogue: bool = false
 
 
 const SAVE_PATH: String = "user://settings.cfg"
@@ -43,6 +46,7 @@ func save_settings() -> void:
 	# only "pengaturan" set would otherwise overwrite the whole file.
 	config.load(SAVE_PATH)
 	config.set_value("pengaturan", "minigame_tutorial", minigame_tutorial_enabled)
+	config.set_value("pengaturan", "skip_dialog", skip_event_dialogue)
 	if not Engine.is_editor_hint():
 		config.set_value("progres", "is_game_beaten", GameState.is_game_beaten)
 		config.set_value("progres", "debug_level_select", GameState.debug_level_select_enabled)
@@ -52,6 +56,7 @@ func load_settings() -> void:
 	var config = ConfigFile.new()
 	if config.load(SAVE_PATH) == OK:
 		minigame_tutorial_enabled = config.get_value("pengaturan", "minigame_tutorial", true)
+		skip_event_dialogue = config.get_value("pengaturan", "skip_dialog", false)
 		if not Engine.is_editor_hint():
 			GameState.is_game_beaten = config.get_value("progres", "is_game_beaten", false)
 			GameState.debug_level_select_enabled = config.get_value("progres", "debug_level_select", true)

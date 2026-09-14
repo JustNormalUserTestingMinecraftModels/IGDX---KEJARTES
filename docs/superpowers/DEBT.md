@@ -231,14 +231,19 @@ them deliberately, or give them a consumer.
 is the Task 2 section of `docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`,
 which its STATUS block points to.
 
-**Deferred: blinking on the layered faces.** `CitraFace.tscn`'s `Eyelid` layer
+**Deferred: blinking on the layered faces.** Every face rig's `Eyelid` layer
 and `StudentFace.blink()` are wired and tested, but `idle_blink_enabled`
 defaults **false** — held back deliberately. A real pass wants a half-lid frame
 (the art has none) or an alpha/scale ease rather than the current hard cut.
 
-**Layered faces exist for Citra only.** The other four use the flat portrait.
-Adding one means a new `<Name>Face.tscn` with that character's own solved layer
-offsets, dropped into `loby.gd`'s `face_rigs`.
+**Bug: Citra's eye rims show the lobby through.** `CitraFace.tscn`'s `Sclera`
+sits at canvas y=578, where 114 of `citra_base.png`'s eye cut-out pixels are
+covered by no layer (alpha down to 0.24) -- a faint line along the top of each
+eye. y=579 (and `Eyelid` 579) covers them all and matches `Citra.png` better;
+the fix also means updating `tests/test_student_face.gd`'s `_GEOMETRY`. The
+other rigs keep a few anti-aliased rim pixels no placement covers (Doni 5,
+Marcel 10), frozen as a budget in `tests/test_face_rig_roster.gd`; only new
+art removes them.
 
 **Ratchet debt.** `tests/test_viewport_editability.gd`'s `BASELINE` still lists
 real unconverted runtime UI construction across roughly 20 files. The list, and

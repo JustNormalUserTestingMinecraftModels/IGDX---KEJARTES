@@ -8,6 +8,46 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — Lobby: layered faces for the whole roster
+
+Plan `docs/superpowers/plans/2026-09-14-student-face-rigs.md`, spec
+`docs/superpowers/specs/2026-09-14-student-face-rigs-design.md`.
+
+Andi, Doni, Marcel, Shinta and Thea now get a `StudentFace` rig in the
+Lobby diorama, like Citra's: `Scenes/Lobby/<Name>Face.tscn`, each with its
+own `<name>_eye_mask.tres`, and `loby.tscn`'s `face_rigs` lists all six. The
+art is in `Assets/Images/MuridPotrait/<Name>/<name>_<layer>.png`.
+
+The layers came from the artist's Drive numbered 1-6 (7 for Marcel's
+glasses) with no offsets, so every placement was solved against the
+student's flat `MuridPotrait/<Name>.png` by a scratch Python solver. The
+solver is not committed; `tests/test_face_rig_roster.gd` freezes its output.
+
+- **Sclera and Eyelid** are pinned where they plug the base's eye cut-outs,
+  and never nudged: a 1 px nudge opens a rim of cut-out and the lobby shows
+  through.
+- **Pupil, lashes and brows** are placed by evidence: the pixels a layer
+  changes must agree with the portrait, inside a window near the eyes.
+  Plain colour matching had put a black brow anywhere in Shinta's black hair
+  and Doni's lashes on his chin.
+
+Worth remembering:
+
+- **The Drive numbers were not the stated order.** File 4 is the closed
+  eyelid and 5 the lashes for all five students, and 2/3 are pupil/sclera for
+  everyone but Andi. The names on disk follow the art.
+- **Shinta's portrait is a darker grade** (about 25 per channel) of her base,
+  and she shows one eye. Her matching ran through a per-channel recolour.
+- **Marcel's glasses lens is additive** in his portrait (an alpha mix greys
+  his eyes), while the frame is opaque. The new
+  `Scripts/Shaders/glasses_lens.gdshader` uses `blend_premul_alpha`: the lens
+  emits alpha 0 and adds light, the frame emits alpha 1. Its `lens_gain` of
+  1.173 was fitted over cheek seen through the lens and lives in
+  `marcel_glasses_lens.tres`. His lashes, tinted by the lens, were found by
+  where they darken the face rather than by colour.
+- **Citra's committed rig bleeds at the eye rims** (DEBT.md). It was found
+  here and handed off as its own task rather than changed on this branch.
+
 ## 2026-09-14 — Lobby-style buttons everywhere but StudentCard
 
 Plan `docs/superpowers/plans/2026-09-14-lobby-style-buttons.md`, spec

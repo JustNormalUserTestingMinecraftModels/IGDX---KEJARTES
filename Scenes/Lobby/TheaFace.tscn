@@ -1,0 +1,85 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Lobby/StudentFace.gd" id="1_face"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Thea/thea_base.png" id="2_base"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Thea/thea_sclera.png" id="3_sclera"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Thea/thea_pupil.png" id="4_pupil"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Thea/thea_eyelashes.png" id="5_eyelashes"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Thea/thea_eyelid.png" id="6_eyelid"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Thea/thea_eyebrows.png" id="7_eyebrows"]
+[ext_resource type="Material" path="res://Scenes/Lobby/thea_eye_mask.tres" id="20_mask"]
+
+[node name="TheaFace" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 400.0
+offset_bottom = 450.0
+mouse_filter = 2
+script = ExtResource("1_face")
+student_name = "Thea"
+
+[node name="Canvas" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 1280.0
+offset_bottom = 1280.0
+mouse_filter = 2
+
+[node name="Base" type="TextureRect" parent="Canvas"]
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 1280.0
+mouse_filter = 2
+texture = ExtResource("2_base")
+expand_mode = 1
+
+[node name="Sclera" type="TextureRect" parent="Canvas"]
+layout_mode = 0
+offset_left = 435.0
+offset_top = 564.0
+offset_right = 845.0
+offset_bottom = 666.0
+mouse_filter = 2
+texture = ExtResource("3_sclera")
+expand_mode = 1
+
+[node name="Pupil" type="TextureRect" parent="Canvas"]
+material = ExtResource("20_mask")
+layout_mode = 0
+offset_left = 482.0
+offset_top = 556.0
+offset_right = 798.0
+offset_bottom = 682.0
+mouse_filter = 2
+texture = ExtResource("4_pupil")
+expand_mode = 1
+
+[node name="Eyelashes" type="TextureRect" parent="Canvas"]
+layout_mode = 0
+offset_left = 369.0
+offset_top = 537.0
+offset_right = 911.0
+offset_bottom = 647.0
+mouse_filter = 2
+texture = ExtResource("5_eyelashes")
+expand_mode = 1
+
+[node name="Eyelid" type="TextureRect" parent="Canvas"]
+visible = false
+layout_mode = 0
+offset_left = 374.0
+offset_top = 558.0
+offset_right = 906.0
+offset_bottom = 715.0
+mouse_filter = 2
+texture = ExtResource("6_eyelid")
+expand_mode = 1
+
+[node name="Eyebrows" type="TextureRect" parent="Canvas"]
+layout_mode = 0
+offset_left = 492.0
+offset_top = 444.0
+offset_right = 788.0
+offset_bottom = 486.0
+mouse_filter = 2
+texture = ExtResource("7_eyebrows")
+expand_mode = 1

@@ -106,11 +106,6 @@ const DAY_FILL_DURATION = 2.0
 ## point before that.
 const EVENT_TRIGGER_PCT := 50.0
 
-# Event distribution chances (total 100)
-const CHANCE_NOTHING  = 20
-const CHANCE_MINIGAME = 40
-const CHANCE_EVENT    = 40
-
 # National Holidays definition
 const HOLIDAYS = {
 	3: { "Rabu": "Hari Kemerdekaan RI" },

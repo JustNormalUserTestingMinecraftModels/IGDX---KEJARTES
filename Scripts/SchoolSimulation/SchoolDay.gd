@@ -43,6 +43,10 @@ signal _summary_closed
 ## Dialog for interactive events that need the player to pick which
 ## students take part.
 @export var event_student_select_scene: PackedScene
+## The per-event character line between the warning and a minigame or event
+## (2026-09-14 event-dialogue spec). Null lazy-loads
+## Scenes/SchoolSimulation/EventDialogue.tscn.
+@export var event_dialogue_scene: PackedScene
 ## Popup shown at the end of each simulated day with that day's summary.
 @export var day_summary_popup_scene: PackedScene
 
@@ -974,14 +978,17 @@ func _roll_event(day_name: String) -> void:
 		if category_selected == "Akademis":
 			var scene = akademis_scenes[randi() % akademis_scenes.size()]
 			await _show_event_warning("KEGIATAN AKADEMIS!")
+			await _show_event_dialogue(EventDialogueCatalog.minigame_key(scene.resource_path))
 			await _play_minigame(scene, "Akademis")
 		elif category_selected == "Olahraga":
 			var scene = olahraga_scenes[randi() % olahraga_scenes.size()]
 			await _show_event_warning("KEGIATAN OLAHRAGA!")
+			await _show_event_dialogue(EventDialogueCatalog.minigame_key(scene.resource_path))
 			await _play_minigame(scene, "Olahraga")
 		else:
 			var scene = seni_scenes[randi() % seni_scenes.size()]
 			await _show_event_warning("KEGIATAN SENI BUDAYA!")
+			await _show_event_dialogue(EventDialogueCatalog.minigame_key(scene.resource_path))
 			await _play_minigame(scene, "SeniBudaya")
 
 	else:
@@ -1022,8 +1029,14 @@ func _trigger_random_event(day_name: String) -> void:
 	# an event marks the whole roster as having participated.
 	for s in GameState.approved_students:
 		GameState.run_stats.record_event_student(int(s.get("id", -1)))
-	var event_id = randi() % 5
-	
+	await _run_event(randi() % 5, day_name)
+
+
+## Plays random event `event_id` (0-4) on `day_name`: its warning, its
+## dialogue, then its effect. The one copy of the event list --
+## _trigger_random_event() rolls the id, force_event() takes it from the
+## debug overlay.
+func _run_event(event_id: int, day_name: String) -> void:
 	# ── Quirk: Biang Onar — events are ±20% stronger when active ──
 	# Check if any student with Biang Onar is in the roster (affects all events)
 	var biang_onar_active: bool = false
@@ -1034,7 +1047,7 @@ func _trigger_random_event(day_name: String) -> void:
 				biang_onar_active = true
 				biang_onar_scale = Balance.SIFAT_BIANG_ONAR_EVENT_BAGUS
 				break
-	
+
 	match event_id:
 		0:
 			var stat_val := Balance.EVENT_AKADEMIS_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1045,7 +1058,8 @@ func _trigger_random_event(day_name: String) -> void:
 				"Sekolah membuka kelas Les Bimbingan Intensif setelah jam pelajaran.",
 				"Akademis +%d" % int(stat_val),
 				"Energy %d" % int(nrg_val),
-				"Akademis", stat_val, nrg_val, 0.0
+				"Akademis", stat_val, nrg_val, 0.0,
+				"les_akademis"
 			)
 		1:
 			var stat_val := Balance.EVENT_OLAHRAGA_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1057,7 +1071,8 @@ func _trigger_random_event(day_name: String) -> void:
 				"Fasilitas lapangan terbuka gratis untuk sesi latihan bersama.",
 				"Olahraga +%d, Mood +%d" % [int(stat_val), int(mood_val)],
 				"Energy %d" % int(nrg_val),
-				"Olahraga", stat_val, nrg_val, mood_val
+				"Olahraga", stat_val, nrg_val, mood_val,
+				"latihan_olahraga"
 			)
 		2:
 			var stat_val := Balance.EVENT_SENI_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1069,10 +1084,12 @@ func _trigger_random_event(day_name: String) -> void:
 				"Terdapat workshop pembuatan kerajinan dan tari daerah setempat.",
 				"Seni Budaya +%d, Mood +%d" % [int(stat_val), int(mood_val)],
 				"Energy %d" % int(nrg_val),
-				"SeniBudaya", stat_val, nrg_val, mood_val
+				"SeniBudaya", stat_val, nrg_val, mood_val,
+				"workshop_seni"
 			)
 		3:
 			await _show_event_warning("Kejutan Nasi Kotak Orang Tua!")
+			await _show_event_dialogue("nasi_kotak")
 			# Biang Onar: global positive events are stronger
 			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1086,6 +1103,7 @@ func _trigger_random_event(day_name: String) -> void:
 			await get_tree().create_timer(0.8).timeout
 		4:
 			await _show_event_warning("Hujan Deras & Jalanan Licin!")
+			await _show_event_dialogue("hujan")
 			# Biang Onar: global negative events are worse
 			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1101,10 +1119,16 @@ func _trigger_random_event(day_name: String) -> void:
 func _handle_interactive_event(
 	day_name: String, title: String, description: String,
 	benefit: String, cost: String, category: String,
-	stat_boost: float, energy_cost: float, mood_boost: float
+	stat_boost: float, energy_cost: float, mood_boost: float,
+	dialogue_key: String = ""
 ) -> void:
 	await _show_event_warning(title)
-	
+	# Tolak skips the event: no picker, nothing applied or recorded. It still
+	# counted toward the week's limit when it was rolled.
+	var wants_in: bool = await _show_event_dialogue(dialogue_key)
+	if not wants_in:
+		return
+
 	var dialog_scene = event_student_select_scene
 	if dialog_scene == null:
 		dialog_scene = load("res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn")
@@ -1512,6 +1536,33 @@ func _show_event_warning(caption: String) -> void:
 		await get_tree().create_timer(1.5).timeout
 		warning_instance.queue_free()
 
+
+## Shows the EventDialogue for catalog `key` over the day and waits for it
+## (2026-09-14 event-dialogue spec). Returns the player's answer: false only
+## for Tolak. With no catalog entry, such as a new minigame without a line
+## yet, there is nothing to show and it returns true.
+func _show_event_dialogue(key: String) -> bool:
+	if not EventDialogueCatalog.has_entry(key):
+		return true
+	var dialogue_scene = event_dialogue_scene
+	if dialogue_scene == null:
+		dialogue_scene = load("res://Scenes/SchoolSimulation/EventDialogue.tscn")
+	if dialogue_scene == null:
+		return true
+	var e: Dictionary = EventDialogueCatalog.entry(key)
+	var roster: Array = []
+	if student_manager:
+		roster = student_manager.students
+	var featured: StudentData = EventDialogueCatalog.pick_featured(roster, e.get("category", ""))
+	var day_name: String = DAYS[current_day] if current_day < DAYS.size() else ""
+	var dialogue = dialogue_scene.instantiate()
+	add_child(dialogue)
+	dialogue.open(e, featured, GameState.minggu_ke, GameState.get_max_weeks(), day_name)
+	var accepted: bool = await dialogue.closed
+	dialogue.queue_free()
+	return accepted
+
+
 func force_event(event_id: int) -> void:
 	# Trigger a specific event immediately during simulation
 	var day_name = DAYS[current_day] if current_day < DAYS.size() else "Senin"
@@ -1520,71 +1571,4 @@ func force_event(event_id: int) -> void:
 	# an event marks the whole roster as having participated.
 	for s in GameState.approved_students:
 		GameState.run_stats.record_event_student(int(s.get("id", -1)))
-
-	var biang_onar_active: bool = false
-	var biang_onar_scale: float = 0.0
-	if student_manager:
-		for s in student_manager.students:
-			if s.quirk == "Biang Onar":
-				biang_onar_active = true
-				biang_onar_scale = Balance.SIFAT_BIANG_ONAR_EVENT_BAGUS
-				break
-
-	match event_id:
-		0:
-			var stat_val := Balance.EVENT_AKADEMIS_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := Balance.EVENT_AKADEMIS_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			await _handle_interactive_event(
-				day_name,
-				"Les Tambahan Akademis",
-				"Sekolah membuka kelas Les Bimbingan Intensif setelah jam pelajaran.",
-				"Akademis +%d" % int(stat_val),
-				"Energy %d" % int(nrg_val),
-				"Akademis", stat_val, nrg_val, 0.0
-			)
-		1:
-			var stat_val := Balance.EVENT_OLAHRAGA_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_val := Balance.EVENT_OLAHRAGA_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := Balance.EVENT_OLAHRAGA_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			await _handle_interactive_event(
-				day_name,
-				"Latihan Olahraga Ekstra",
-				"Fasilitas lapangan terbuka gratis untuk sesi latihan bersama.",
-				"Olahraga +%d, Mood +%d" % [int(stat_val), int(mood_val)],
-				"Energy %d" % int(nrg_val),
-				"Olahraga", stat_val, nrg_val, mood_val
-			)
-		2:
-			var stat_val := Balance.EVENT_SENI_POIN * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_val := Balance.EVENT_SENI_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var nrg_val := Balance.EVENT_SENI_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			await _handle_interactive_event(
-				day_name,
-				"Workshop Sanggar Seni",
-				"Terdapat workshop pembuatan kerajinan dan tari daerah setempat.",
-				"Seni Budaya +%d, Mood +%d" % [int(stat_val), int(mood_val)],
-				"Energy %d" % int(nrg_val),
-				"SeniBudaya", stat_val, nrg_val, mood_val
-			)
-		3:
-			await _show_event_warning("Kejutan Nasi Kotak Orang Tua!")
-			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var names: Array[String] = []
-			for s in student_manager.students:
-				s.apply_event_effects("", 0.0, energy_bonus, mood_bonus)
-				names.append(s.student_name)
-			student_manager.record_event_result(day_name, "Nasi Kotak Berbagi", names, "Semua siswa mendapat Energy +%d dan Mood +%d" % [int(energy_bonus), int(mood_bonus)])
-			await _animate_embedded_stat_updates(0.6)
-			await get_tree().create_timer(0.8).timeout
-		4:
-			await _show_event_warning("Hujan Deras & Jalanan Licin!")
-			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var names: Array[String] = []
-			for s in student_manager.students:
-				s.apply_event_effects("", 0.0, energy_penalty, mood_penalty)
-				names.append(s.student_name)
-			student_manager.record_event_result(day_name, "Kehujanan & Terpeleset", names, "Semua siswa mendapat Energy %d dan Mood %d" % [int(energy_penalty), int(mood_penalty)])
-			await _animate_embedded_stat_updates(0.6)
-			await get_tree().create_timer(0.8).timeout
+	await _run_event(event_id, day_name)

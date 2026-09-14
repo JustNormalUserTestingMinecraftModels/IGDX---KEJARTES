@@ -322,3 +322,69 @@ func test_the_bake_declares_the_dialogue_variations() -> void:
 	var baked := ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	for v in _VARIATIONS:
 		assert_true(baked.get_type_list().has(v), v + " must be in the baked theme -- rebake")
+
+
+# ── SchoolDay wiring (source scans) ──────────────────────────────────────────
+
+func _body(src: String, fn: String) -> String:
+	var start := src.find("\nfunc %s(" % fn)
+	if start == -1:
+		return ""
+	var end := src.find("\nfunc ", start + 1)
+	return src.substr(start, (end if end != -1 else src.length()) - start)
+
+
+func test_the_dialogue_scene_is_lazy_loaded() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY)
+	assert_contains(src, "@export var event_dialogue_scene: PackedScene")
+	assert_contains(src, 'load("res://Scenes/SchoolSimulation/EventDialogue.tscn")')
+
+
+func test_minigames_hear_their_line_between_warning_and_play() -> void:
+	var body := _body(FileAccess.get_file_as_string(_SCHOOL_DAY), "_roll_event")
+	for pair in [["KEGIATAN AKADEMIS!", "Akademis"], ["KEGIATAN OLAHRAGA!", "Olahraga"], ["KEGIATAN SENI BUDAYA!", "SeniBudaya"]]:
+		var warn := body.find('_show_event_warning("%s")' % pair[0])
+		var talk := body.find("_show_event_dialogue(EventDialogueCatalog.minigame_key(scene.resource_path))", warn)
+		var play := body.find('_play_minigame(scene, "%s")' % pair[1], warn)
+		assert_true(warn != -1 and talk > warn and play > talk,
+			pair[1] + ": warning, then dialogue, then minigame")
+
+
+func test_every_minigame_scene_school_day_loads_has_a_line() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY)
+	for path in _MINIGAME_SCENES:
+		assert_true(src.contains(path), "SchoolDay no longer loads " + path)
+		assert_true(EventDialogueCatalog.has_entry(EventDialogueCatalog.minigame_key(path)), path)
+
+
+func test_global_events_speak_before_they_apply() -> void:
+	var body := _body(FileAccess.get_file_as_string(_SCHOOL_DAY), "_run_event")
+	for trio in [["Kejutan Nasi Kotak Orang Tua!", "nasi_kotak", "EVENT_NASI_KOTAK_ENERGI"],
+			["Hujan Deras & Jalanan Licin!", "hujan", "EVENT_HUJAN_ENERGI"]]:
+		var warn := body.find('_show_event_warning("%s")' % trio[0])
+		var talk := body.find('_show_event_dialogue("%s")' % trio[1], warn)
+		var apply := body.find(trio[2], warn)
+		assert_true(warn != -1 and talk > warn and apply > talk, trio[1] + ": warning, dialogue, effect")
+
+
+func test_pick_students_events_pass_their_key() -> void:
+	var body := _body(FileAccess.get_file_as_string(_SCHOOL_DAY), "_run_event")
+	for key in _CHOICE_KEYS:
+		assert_contains(body, '"%s"' % key)
+
+
+func test_tolak_returns_before_the_picker() -> void:
+	var body := _body(FileAccess.get_file_as_string(_SCHOOL_DAY), "_handle_interactive_event")
+	var warn := body.find("await _show_event_warning(title)")
+	var ask := body.find("_show_event_dialogue(dialogue_key)")
+	var bail := body.find("return", ask)
+	var picker := body.find("dialog_scene.instantiate()")
+	assert_true(warn != -1 and ask > warn and bail > ask and picker > bail,
+		"warning, dialogue, and a declined dialogue returns before the picker exists")
+
+
+func test_the_event_list_exists_once() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY)
+	assert_eq(src.count('"Les Tambahan Akademis"'), 1, "one copy of the event table")
+	assert_contains(_body(src, "_trigger_random_event"), "_run_event(randi() % 5, day_name)")
+	assert_contains(_body(src, "force_event"), "_run_event(event_id, day_name)")

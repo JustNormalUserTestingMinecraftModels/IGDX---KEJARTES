@@ -174,12 +174,22 @@ func test_the_shorten_button_sits_on_the_money_row() -> void:
 		"between the daily-login icon (..144) and the money chip (700..), got %f..%f" % [left, right])
 
 
+## loby.gd's _create_blur_overlay() inserts the reward popup's blur at
+## DailyLogin's child index, so only nodes BEFORE DailyLogin end up under it.
+## Code review, 2026-09-14: ShortenButton first sat between DailyLogin and
+## DailyReward, so it stayed sharp and tappable over the open reward popup;
+## it now sits just before DailyLogin.
 func test_the_popups_draw_over_the_shorten_button() -> void:
 	var src := FileAccess.get_file_as_string(_LOBBY_SCENE)
 	var btn := src.find('[node name="ShortenButton" ')
 	assert_true(btn != -1, "ShortenButton exists")
+	assert_true(btn < src.find('[node name="DailyLogin" '),
+		"the reward popup's blur, inserted at DailyLogin's index, must cover it")
 	assert_true(btn < src.find('[node name="DailyReward" '), "the reward popup covers it")
 	assert_true(btn < src.find('[node name="ColorRect" '), "the tutorial overlay covers it")
+	assert_contains(FileAccess.get_file_as_string(_LOBBY_SCRIPT),
+		"move_child(blur_overlay, daily_login_btn.get_index())",
+		"if the blur's insertion point moves, re-check which HUD nodes it covers")
 
 
 func test_the_shorten_button_opens_the_panel() -> void:

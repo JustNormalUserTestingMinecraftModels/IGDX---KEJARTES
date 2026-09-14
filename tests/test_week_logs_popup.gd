@@ -136,7 +136,11 @@ func test_the_rows_entrance_rides_a_tween_not_an_await() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT)
 	var start := src.find("func open(")
 	var end := src.find("\nfunc ", start + 1)
-	var body := src.substr(start, end - start)
-	assert_false(body.contains("await"), "open() never suspends on something that outlives the sheet")
-	assert_contains(body, "arm.tween_callback(_play_rows_entrance)",
+	# Code lines only: the comment explaining this very fix names the word.
+	var code := ""
+	for line in src.substr(start, end - start).split("\n"):
+		if not line.strip_edges().begins_with("#"):
+			code += line + "\n"
+	assert_false(code.contains("await"), "open() never suspends on something that outlives the sheet")
+	assert_contains(code, "arm.tween_callback(_play_rows_entrance)",
 		"the entrance is a callback on the sheet's own tween")

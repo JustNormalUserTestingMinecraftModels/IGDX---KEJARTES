@@ -91,6 +91,26 @@ func test_main_menu_and_weekly_results_keep_their_fit() -> void:
 		"ResultButton keeps the card's 52 px text")
 
 
+## Koperasi's Rak1 ("KEBUTUHAN SEKOLAH") is authored 442 px wide with a
+## 40 px text override, and a Button grows to its minimum size. In the body
+## font it always used, that label already needs 469 px with the 20 px
+## margins (27 px over, listed in DEBT.md); the Lobby recipe's display face
+## made it 495 (code review, 2026-09-14). So the shelf label keeps the body
+## font, and this pass leaves the fit no worse than it found it.
+func test_the_shelf_button_keeps_its_body_font_label() -> void:
+	assert_false(_theme.has_font("font", "ShopShelfButton"),
+		"ShopShelfButton sets no font of its own, so it inherits the body font")
+	var font := _theme.get_font("font", "ShopShelfButton")
+	var sb := _flat("normal", "ShopShelfButton")
+	assert_true(font != null and sb != null, "the shelf button has a font and a flat box")
+	if font == null or sb == null:
+		return
+	var text_w := font.get_string_size("KEBUTUHAN SEKOLAH", HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x
+	var need := text_w + sb.content_margin_left + sb.content_margin_right
+	assert_true(need <= 470.0,
+		"no wider than the 469 px it needed before this pass, got %d" % int(need))
+
+
 func test_student_card_points_its_cream_buttons_at_its_own_style() -> void:
 	var src := FileAccess.get_file_as_string(_STUDENT_CARD)
 	assert_false(src.contains('&"SecondaryButtonL"'),

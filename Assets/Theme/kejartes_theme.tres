@@ -4393,7 +4393,6 @@ ShopShelfButton/colors/font_focus_color = Color(1, 0.9647059, 0.9098039, 1)
 ShopShelfButton/colors/font_hover_color = Color(1, 0.9647059, 0.9098039, 1)
 ShopShelfButton/colors/font_pressed_color = Color(1, 0.9647059, 0.9098039, 1)
 ShopShelfButton/font_sizes/font_size = 36
-ShopShelfButton/fonts/font = ExtResource("1_c56gm")
 ShopShelfButton/styles/disabled = SubResource("StyleBoxFlat_6e4ra")
 ShopShelfButton/styles/focus = SubResource("StyleBoxFlat_1bifn")
 ShopShelfButton/styles/hover = SubResource("StyleBoxFlat_jbb0v")

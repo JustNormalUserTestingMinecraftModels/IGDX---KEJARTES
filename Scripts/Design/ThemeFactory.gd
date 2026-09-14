@@ -336,10 +336,14 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 
 ## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"), in the Lobby
 ## look since the 2026-09-14 lobby-style-buttons pass (it was a flat brown
-## tab with a gold hover). Keeps its 20/10 padding so the shelf row fits.
+## tab with a gold hover). Keeps its 20/10 padding and its body-font label:
+## Rak1 is authored 442 px wide with a 40 px text override, and the display
+## face would need 495 px for "KEBUTUHAN SEKOLAH", stretching the button off
+## its spot (test_lobby_style_buttons pins the fit).
 static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void:
 	_add_lobby_button(theme, tokens, "ShopShelfButton")
 	_set_content_margins(theme, "ShopShelfButton", 20, 10)
+	theme.clear_font("font", "ShopShelfButton")
 
 
 ## Weekly Results' Logs and Selanjutnya, in the Lobby look (2026-09-14

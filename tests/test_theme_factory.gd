@@ -328,8 +328,6 @@ const DISPLAY_ROSTER := [
 	# 2026-09-14 lobby-style-buttons: the two kept looks.
 	"StudentCardSecondaryButton", "StudentCardSecondaryButtonL",
 	"RosterStatusBelum", "RosterStatusSudah",
-	# ...and the shelf button, which joined the Lobby recipe in the same pass.
-	"ShopShelfButton",
 	# 2026-09-08: event popup title, display face at H1+6.
 	"EventDialogHeaderLabel",
 	# 2026-09-12: the slide warning's caption, display face at DisplayLabel size.

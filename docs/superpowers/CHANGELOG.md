@@ -25,7 +25,11 @@ their generated M/L steps), `LobbyCtaButton`, `LobbyNavTile`,
 `MainMenuButton`, `ShopShelfButton` and `ResultButton`.
 
 The main menu's icon buttons, the shelf button and Weekly Results' buttons
-keep their own padding and text sizes. The main menu's painted
+keep their own padding and text sizes.
+
+The shelf button also keeps its body-font label. Code review found that the
+display face would have stretched Koperasi's `Rak1` 53 px past its 442 px
+box. It already overflows by 27 px, which is now listed in `DEBT.md`. The main menu's painted
 `menu_button.png` is retired and deleted, and the Weekly Results cream art no
 longer drives its buttons.
 

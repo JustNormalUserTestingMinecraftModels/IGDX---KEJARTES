@@ -113,6 +113,16 @@ shows in-game.
 
 ## Known bugs and gaps
 
+**Koperasi's first shelf button is 27 px wider than authored (2026-09-14).**
+`Rak1` in `Scenes/Koperasi/koprasi.tscn` is laid out 442 px wide
+(offsets 303..745), but "KEBUTUHAN SEKOLAH" at its 40 px
+`theme_override_font_sizes` override needs 469 px with `ShopShelfButton`'s
+20 px side margins. A Button grows to its minimum size, so it renders 27 px
+past its box. That predates the lobby-style-buttons pass, which keeps the
+body-font label so it gets no worse (the display face would need 495 px). Fix
+it by widening the node, trimming the margins, or replacing the override with
+a smaller size step.
+
 **Saving RosterCard.tscn in the editor moves its sticky notes (2026-09-14).**
 `Scripts/StudentList/StickyNote.gd` is `@tool`, and its `_ready()` calls
 `_apply_pin()`, which writes `offset_top = pin_slot * PIN_STEP`. In the editor

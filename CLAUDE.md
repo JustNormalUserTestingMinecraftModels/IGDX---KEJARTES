@@ -306,7 +306,7 @@ position mode, where anchors are **not saved** — set `layout_mode = 1` first;
 and an instanced scene's root loses its rect on load under a plain `Control`,
 so draw from a child (authoring guide, Pattern C).
 
-**4b. Two save hazards that silently eat work.**
+**4b. Three save hazards that silently eat work.**
 
 - *`scene_save` flushes stale script buffers.* The editor holds `.gd` files
   open in script tabs and writes every tab back on each scene save, over
@@ -321,6 +321,11 @@ so draw from a child (authoring guide, Pattern C).
   sub-scene `@export`s on its root instead — why `ShopHubTile` carries
   `icon_texture`/`caption_text` rather than the hub reaching into
   `Content/Icon`, and why `ActivityRow` carries `watermark_texture`.
+- *An editor left open across a pull writes its stale tabs back.* Close Godot
+  **without saving** before every pull, or any checkout or merge that rewrites
+  tracked files, then fully restart it (a new Resource `@export` needs one; see
+  below). Left open, it can recreate a scene the pull deleted, or save an open
+  scene without a script whose new base class it has not registered.
 
 **5. Rescan after editing a `.gd`, before running tests.** `test_run` serves a
 **stale** autoload otherwise. A scan is not always enough: when the file was

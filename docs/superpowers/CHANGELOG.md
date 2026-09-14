@@ -8,6 +8,21 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — Close Godot before every pull
+
+The laptop pulled 831929b, which retired `EventAnnouncement` and deleted
+`AnnouncementBurst.tscn`, `AnnouncementBurst.gd` and `particle_burst.png`,
+while Godot had `AnnouncementBurst.tscn` open. The editor wrote its stale tabs
+back. It recreated the deleted scene as an untracked file pointing at the two
+deleted files, which logged 5 "File not found" errors on every load. Worse, it
+silently saved `ApplyStudentRow.tscn` without its script: the pull made
+`ApplyStudentRow.gd` extend the new `StudentCardButton` class, which the stale
+editor had not registered. It also rewrote `project.godot`'s `main_scene` to a
+uid and added sky-layer offsets to `BookClockWidget.tscn`, both harmless. The
+laptop was repaired by restoring the damaged files and deleting the recreated
+scene. The PC was checked the same day and never had the damage, because
+831929b was authored there. The rule is now `CLAUDE.md`'s third 4b save hazard.
+
 ## 2026-09-14 — Project guide audit: the debt list leaves CLAUDE.md
 
 `CLAUDE.md` had grown from 24,644 characters after the 2026-09-10 audit to

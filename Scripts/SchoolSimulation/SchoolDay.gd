@@ -106,6 +106,20 @@ const DAY_FILL_DURATION = 2.0
 ## point before that.
 const EVENT_TRIGGER_PCT := 50.0
 
+# Day-roll weights. Each school day rolls Normal / Minigame / Event in
+# proportion to these -- shares of the day's total, not percentages -- and
+# day_roll_weights() is their only reader. Biang Onar's extra event weight,
+# in the same units, is Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT.
+
+## Normal-day weight every day starts with.
+const ROLL_WEIGHT_NORMAL_BASE := 20
+## Extra normal-day weight for each student resting (Istirahat) that day.
+const ROLL_WEIGHT_NORMAL_PER_RESTING := 10
+## Minigame weight for each student studying Akademis, Olahraga or
+## SeniBudaya that day, while the week's minigame cap has room.
+const ROLL_WEIGHT_MINIGAME_PER_STUDYING := 15
+## Event weight a day starts with while the week's event cap has room.
+const ROLL_WEIGHT_EVENT_BASE := 25
 # National Holidays definition
 const HOLIDAYS = {
 	3: { "Rabu": "Hari Kemerdekaan RI" },
@@ -859,6 +873,67 @@ func _phase_duration() -> float:
 	return DAY_FILL_DURATION * 0.5
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+## A school day's Normal / Minigame / Event roll weights, as
+## {"normal": int, "minigame": int, "event": int}.
+##
+## `counts` is GameState.get_jadwal_for_day(day_name), `roster` the
+## simulated StudentData and `schedules` GameState.day_schedules. Resting
+## students add normal-day weight and studying students minigame weight;
+## each Biang Onar student scheduled for anything but rest that day adds
+## Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT to the event weight. Once the
+## week's minigame or event cap is reached, that weight is 0 -- the bonus
+## included.
+##
+## Static and pure so a test can call it without the scene. Shared by
+## _roll_event() and skip_to_results(), through _todays_roll_weights(), so
+## the two simulation paths can't drift apart: skipping once rolled
+## without Biang Onar's bonus.
+static func day_roll_weights(counts: Dictionary, roster: Array, schedules: Dictionary,
+		day_name: String, minigames_played: int, max_minigames: int,
+		events_triggered: int, max_events: int) -> Dictionary:
+	var active_studying: int = (counts.get("Akademis", 0) + counts.get("Olahraga", 0)
+		+ counts.get("SeniBudaya", 0))
+	var resting_count: int = counts.get("Istirahat", 0)
+
+	var w_minigame := 0
+	if minigames_played < max_minigames:
+		w_minigame = active_studying * ROLL_WEIGHT_MINIGAME_PER_STUDYING
+
+	var w_event := 0
+	if events_triggered < max_events:
+		w_event = ROLL_WEIGHT_EVENT_BASE
+
+		# ── Quirk: Biang Onar — extra event weight per one who isn't resting ──
+		for s in roster:
+			if s.quirk == "Biang Onar":
+				var sid = s.id
+				if sid != 0 and schedules.has(sid):
+					var cat = schedules[sid].get(day_name, {}).get("category", "")
+					# Anything but rest counts, Wirausaha included
+					if cat != "" and cat != "DayOff" and cat != "Istirahat":
+						w_event += Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT
+
+	return {
+		"normal": ROLL_WEIGHT_NORMAL_BASE + resting_count * ROLL_WEIGHT_NORMAL_PER_RESTING,
+		"minigame": w_minigame,
+		"event": w_event,
+	}
+
+
+## day_roll_weights() for `day_name`, fed from this screen's live state --
+## the week's minigame and event counters, the simulated roster and
+## GameState's schedules. Both simulation paths make this one call, so they
+## can't hand the helper different inputs either.
+func _todays_roll_weights(day_name: String, counts: Dictionary) -> Dictionary:
+	var roster: Array = []
+	if student_manager:
+		roster = student_manager.students
+	return day_roll_weights(counts, roster, GameState.day_schedules, day_name,
+		minigames_played_this_week, max_minigames_this_week,
+		events_triggered_this_week, max_events_this_week)
+
+
 func _roll_event(day_name: String) -> void:
 	var week = GameState.minggu_ke
 	if HOLIDAYS.has(week) and HOLIDAYS[week].has(day_name):
@@ -871,34 +946,11 @@ func _roll_event(day_name: String) -> void:
 	var w_akademis = counts.get("Akademis", 0)
 	var w_olahraga = counts.get("Olahraga", 0)
 	var w_seni = counts.get("SeniBudaya", 0)
-	var active_studying = w_akademis + w_olahraga + w_seni
-	var resting_count = counts.get("Istirahat", 0)
 
-	# Dynamic weight calculation:
-	# Minigame weight scales with active studying students (0 to 4 * 15 = 0 to 60)
-	var w_minigame: int = 0
-	if minigames_played_this_week < max_minigames_this_week:
-		w_minigame = active_studying * 15
-
-	# Event weight capped at 1-2 per week
-	var w_event: int = 0
-	if events_triggered_this_week < max_events_this_week:
-		w_event = 25
-		
-		# ── Quirk: Biang Onar — adds +10 event weight when this student is studying ──
-		if student_manager:
-			for s in student_manager.students:
-				if s.quirk == "Biang Onar":
-					var sid = s.id
-					if sid != 0 and GameState.day_schedules.has(sid):
-						var day_sched = GameState.day_schedules[sid].get(day_name, {})
-						var cat = day_sched.get("category", "")
-						# Only boost if Biang Onar student is actively studying (not resting)
-						if cat != "" and cat != "DayOff" and cat != "Istirahat":
-							w_event += Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT
-	
-	# Normal day weight scales inversely with active studying (base 20 + resting * 10)
-	var w_normal: int = 20 + (resting_count * 10)
+	var weights := _todays_roll_weights(day_name, counts)
+	var w_normal: int = weights["normal"]
+	var w_minigame: int = weights["minigame"]
+	var w_event: int = weights["event"]
 
 	var total_weight = w_normal + w_minigame + w_event
 
@@ -1254,18 +1306,11 @@ func skip_to_results() -> void:
 		var w_akademis = counts.get("Akademis", 0)
 		var w_olahraga = counts.get("Olahraga", 0)
 		var w_seni = counts.get("SeniBudaya", 0)
-		var active_studying = w_akademis + w_olahraga + w_seni
-		var resting_count = counts.get("Istirahat", 0)
 
-		var w_minigame: int = 0
-		if minigames_played_this_week < max_minigames_this_week:
-			w_minigame = active_studying * 15
-
-		var w_event: int = 0
-		if events_triggered_this_week < max_events_this_week:
-			w_event = 25
-
-		var w_normal: int = 20 + (resting_count * 10)
+		var weights := _todays_roll_weights(day_name, counts)
+		var w_normal: int = weights["normal"]
+		var w_minigame: int = weights["minigame"]
+		var w_event: int = weights["event"]
 		var total_weight = w_normal + w_minigame + w_event
 
 		var outcome = "Normal"

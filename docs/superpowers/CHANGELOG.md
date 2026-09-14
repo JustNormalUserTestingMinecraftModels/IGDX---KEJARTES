@@ -8,6 +8,49 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
 section. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — EventDialogue: a line before every minigame and event
+
+Every mid-day interruption now has a character speak first. After the sliding
+EventWarning, `EventDialogue.tscn` shows one line over a blurred picture of
+the school, laid out like `mockup_eventdialogue.png`: a calendar badge
+("Minggu x/y") and day banner on top, a full-frame splash in the middle, and a
+white rounded box with the typed line at the bottom.
+
+Two modes, chosen per entry in `EventDialogueCatalog`:
+
+- **TAP** — the eight minigames, *Kejutan Nasi Kotak Orang Tua* and *Hujan
+  Deras & Jalanan Licin*. No buttons. It always takes two taps: the first
+  finishes the line and shows "Ketuk sekali lagi untuk lanjut", the second
+  closes.
+- **CHOICE** — *Les Tambahan Akademis*, *Latihan Olahraga Ekstra*, *Workshop
+  Sanggar Seni*. Tolak / Terima appear once the line is shown. Terima opens
+  EventStudentSelectDialog as before. Tolak skips the event before the picker
+  exists: nothing is applied or recorded, and it still counts toward the
+  week's event limit.
+
+Speakers: `splash_mom` for Nasi Kotak, `splash_gurupenjas` for Latihan
+Olahraga and MainBola, and a placeholder `splash_gurusenibudaya` for Workshop
+Seni. The other minigames and Les are voiced by a random roster student whose
+specialty matches the subject, or by anyone if nobody's does. Hujan has no
+speaker; its unblurred `hujan_background` (also a placeholder) is the scene.
+`{nama}` in a line becomes the featured student's name. All 13 lines are
+drafts.
+
+SchoolDay's event table now exists once, in `_run_event()`. `force_event()`
+used to carry a full second copy of it.
+
+Only a left mouse press counts as a tap. `project.godot` emulates touch from
+mouse, and Godot emulates mouse from touch, so counting `ScreenTouch` as well
+would close a TAP dialogue on its first tap.
+
+Theme: a `font_body_bold` token (Open Sans Bold) and five variations:
+`EventDialoguePanel`, `EventDialogueText`, `DayBannerPanel`, `DayBannerLabel`
+and `CalendarLabel`.
+
+Spec: `docs/superpowers/specs/2026-09-14-event-dialogue-design.md`. Plan:
+`docs/superpowers/plans/2026-09-14-event-dialogue.md`. Tests:
+`tests/test_event_dialogue.gd`.
+
 ## 2026-09-14 — MainBola: every goal target is reachable
 
 Kelas 9 MainBola games could not be won. Every game gave eight shots and

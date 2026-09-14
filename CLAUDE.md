@@ -569,10 +569,10 @@ Rationale and the full restructure record:
 - Commits: Conventional Commits with a scope, e.g.
   `fix(lobby): wire the dead ReportStudent button`.
 - **`Balance.gd` values are owned by a collaborator, not by us.** It holds
-  the simulation's tuning: read it freely, never edit it, propose changes
-  instead, and on merge take their version. A **new** tunable number of ours
-  goes in a named `const` block or an `@export` in the script that owns the
-  behaviour, never inline — like `RunGrade.gd`'s `WEIGHT_*` block.
+  most of the simulation's tuning: read it freely, never edit it, propose
+  changes instead, and on merge take their version. A **new** tunable number
+  of ours goes in a named `const` block or an `@export` in the script that
+  owns the behaviour, never inline — like `RunGrade.gd`'s `WEIGHT_*` block.
 - **No emoji as UI iconography.** Use real transparent SVG textures instead —
   explicitly banned during the 2026-09-02 end-of-grade pass after report icons
   briefly used emoji glyphs.

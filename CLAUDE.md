@@ -29,7 +29,9 @@ passes.
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
 Every mid-day minigame and random event opens with the sliding EventWarning,
 then an EventDialogue line (`EventDialogueCatalog`); the three pick-students
-events ask Tolak / Terima there, before their picker.
+events ask Tolak / Terima there, before their picker. The Lobby's **Shorten**
+button (`GameSettings.skip_event_dialogue`, saved) skips the minigame lines;
+Nasi Kotak, Hujan and the choice events keep theirs.
 Splashscreen still exists and is tested but nothing routes to it (the game
 boots straight to MainMenu, which loads in one hop). The Loading screen was
 deleted on 2026-09-10: the shared `Transition` wipe covers the scene-load gap,

@@ -229,7 +229,7 @@ entries, as candidates for a future pass:
   `Badminton.gd`, `MainBola.gd`, `BuatBatik.gd`, `LombaMenari.gd`, each
   2-8) and screens (`loby.gd`, `inventory.gd`, `rakbarang_1.gd`,
   `student_list.gd`, `StudentCardView.gd`, `DailyDecayOverview.gd`,
-  `ResultCheckup.gd`, `SchoolDay.gd`, `student_card.gd`,
+  `SchoolDay.gd`, `student_card.gd`,
   `TutorialArrow.gd`) — smaller counts, mostly single-purpose chrome
   (a background swap, a fallback drawer) not yet surveyed for whether a
   scene conversion is worthwhile. The 2026-09-04 reward pass converted the

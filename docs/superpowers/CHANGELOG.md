@@ -8,6 +8,59 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — Weekly Results: the week-end screen rebuilt to the mockup
+
+Plan `docs/superpowers/plans/2026-09-14-weekly-results.md`, spec
+`docs/superpowers/specs/2026-09-14-weekly-results-design.md`, mockup
+`docs/superpowers/mockups/mockup_weeklyresults.png`.
+
+ResultCheckup now matches the Weekly Results mockup:
+
+- A red WEEKLY RESULTS ribbon, then one DaySummary card per student in week
+  mode.
+- The week's coins, then two lines: EVENT BERHASIL and EVENT GAGAL, the
+  minigames won and lost. Random events cannot fail, so they appear only in
+  Logs.
+- Two cream buttons in the new `ResultButton` style. **Logs** opens the new
+  `WeekLogsPopup` with the week's history rows; **Selanjutnya** closes the
+  screen.
+
+`ResultButton` is a new textured variation over the card's own
+`card_bg.png`. The ribbon is a placeholder, cut from the mockup and given
+the daily ribbon's alpha.
+
+**Two deliberate departures from the mockup,** found in the live check:
+
+- The two buttons split the row equally, 436 px each, instead of the
+  mockup's 368. The display face renders SELANJUTNYA in capitals, which
+  needs about 435 px, so a fixed 368 left the row lopsided.
+- The card list scrolls with its scrollbar hidden, since the mockup shows
+  none.
+
+The project's display font sets the labels in capitals ("LOGS"), and the
+card keeps its existing look (the BUGAR/SENANG needs words), as agreed in
+the Brief.
+
+**Fixed while here:**
+
+- SchoolDay paid out the Wirausaha earnings, which empties
+  `pending_earnings`, before it opened the screen, so the old banner's money
+  pill always read 0. SchoolDay now passes the paid total to
+  `initialize_checkup()`.
+- `test_result_checkup`'s set-up-in-the-tree test always passed: it searched
+  for a container name the script no longer had. It now checks that both
+  calls exist.
+
+**Retired:**
+
+- `WeekRecapBanner`, `WeekRecapPill`, `WeekRecapPillInfoPopup`,
+  `CoinShower.tscn` and the SISWA/RIWAYAT tabs.
+- The `RecapBannerPanel`, `RecapPillPanel`, `RecapPillValueLabel` and
+  `WeekTabButton` variations.
+- The `pill_tap`, `pill_popup_open`, `pill_popup_close` and `pane_swipe`
+  cues, with their dedicated `.ogg` copies.
+- `WeekRecap`'s `net_skill_delta`, `format_skill_delta` and money read.
+
 ## 2026-09-14 — Close Godot before every pull
 
 The laptop pulled 831929b, which retired `EventAnnouncement` and deleted

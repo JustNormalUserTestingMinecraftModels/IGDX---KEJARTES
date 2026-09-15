@@ -83,6 +83,10 @@ var _target: float = 0.0
 ## a change on top and restore it again.
 var _standing_current: float = 0.0
 
+## The in-flight fill and count of this row's weekly reveal, held so land()
+## can stop them: a skip must not leave a number still counting.
+var _reveal_tweens: Array[Tween] = []
+
 
 ## "+12/65" -- the sign rides with the number so a loss reads "-3/65"
 ## rather than "+-3/65".
@@ -256,3 +260,78 @@ func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	add_child(fx)
 	fx.fire(delay)
 	AudioDirector.play_sfx(&"tally")
+
+
+# ── The weekly reveal (2026-09-14 weekly-report-reveal spec) ─────────
+# ResultCheckup plays a card's rows one at a time rather than all at once,
+# so the row splits play_gain's single gesture into its beats. play_gain
+# and _play_burst above stay exactly as the nightly popup uses them.
+
+## The delta set_stat last cached: what ResultCheckup's reveal timeline
+## reads to decide whether this row pops.
+func shown_delta() -> float:
+	return _delta
+
+
+## The reveal's opening state: the track back on Monday, the number at +0,
+## the chevron armed but transparent until play_count pops it in. Call
+## set_stat first.
+func rewind() -> void:
+	_stop_reveal()
+	track.value = _fill_from
+	value.text = format_value(0.0, _target)
+	value.scale = Vector2.ONE
+	if chevron.visible:
+		chevron.modulate.a = 0.0
+
+
+## This row's turn: the track fills and the number counts up over
+## `seconds`, and a gaining row's chevron pops in as it starts. Never
+## awaited; the caller schedules land_pop() for when the count lands.
+func play_count(seconds: float) -> void:
+	_stop_reveal()
+	var fill := Juice.fill_bar(track, _fill_to, seconds)
+	var count := Juice.count_up_formatted(value, 0.0, _delta,
+		func(v: float) -> String: return format_value(v, _target), 0.0, seconds)
+	for tw in [fill, count]:
+		if tw != null:
+			_reveal_tweens.append(tw)
+	if chevron.visible:
+		var pop := Juice.pop_in(chevron)
+		if pop != null:
+			_reveal_tweens.append(pop)
+
+
+## A gaining row's reward, on the beat its count lands: the number punches
+## about its own text, the authored burst fires from it, and the tally
+## plays at `pitch`, the report's climbing step. The burst stays silent so
+## the climbing tally is the one sound. Editor-gated like _play_burst.
+func land_pop(pitch: float) -> void:
+	var center := Juice.text_center(value)
+	Juice.punch(value, center)
+	if Engine.is_editor_hint():
+		return
+	var burst_scene: PackedScene = load(BURST_SCENE)
+	var fx := burst_scene.instantiate() as RewardParticles
+	fx.plays_sfx = false
+	fx.position = value.position + center
+	add_child(fx)
+	fx.fire()
+	AudioDirector.play_sfx(&"tally", pitch)
+
+
+## The row on its final values at once: the skip's landing. Stops the
+## reveal's fill and count first, so neither writes over it afterwards.
+func land() -> void:
+	_stop_reveal()
+	track.value = _fill_to
+	value.text = format_value(_delta, _target)
+	value.scale = Vector2.ONE
+	_reset_chevron()
+
+
+func _stop_reveal() -> void:
+	for tw in _reveal_tweens:
+		if tw != null and tw.is_valid():
+			tw.kill()
+	_reveal_tweens.clear()

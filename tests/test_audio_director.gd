@@ -538,3 +538,18 @@ func test_the_end_of_grade_bgm_ids_all_resolve() -> void:
 	for id in [&"exam_notice", &"run_result"]:
 		assert_true(_director._resolve_bgm(id) != null,
 			"BGM id %s resolves to a stream" % id)
+
+
+## The weekly report climbs its pops in pitch. The usual random spread
+## still rides on top, so the voice lands within that spread of the pitch
+## asked for -- not at 1.0.
+func test_play_sfx_scales_the_voice_by_the_given_pitch() -> void:
+	_director.set("sfx_tap", AudioStreamGenerator.new())
+	var next: int = _director._sfx_next
+	_director.play_sfx(&"tap", 1.5)
+	var player: AudioStreamPlayer = _director._sfx_pool[next]
+	var spread: float = _director.sfx_pitch_variance
+	assert_true(player.pitch_scale >= 1.5 * (1.0 - spread) - 0.001
+		and player.pitch_scale <= 1.5 * (1.0 + spread) + 0.001,
+		"pitch 1.5 must land within the spread around 1.5, got %f" % player.pitch_scale)
+	player.stop()

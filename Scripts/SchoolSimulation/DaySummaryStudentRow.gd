@@ -61,6 +61,15 @@ var _mood_from: float = 0.0
 var _energy_delta: float = 0.0
 var _mood_delta: float = 0.0
 
+## Where the two needs bars end the week, cached by setup_week_row so the
+## weekly reveal can rewind them to Monday and travel back.
+var _energy_to: float = 0.0
+var _mood_to: float = 0.0
+
+## The needs bars' in-flight travel in the weekly reveal, held so
+## land_week() can stop it rather than let it write over the landing.
+var _needs_tweens: Array[Tween] = []
+
 ## Whether any of the three skills moved UP on the day (or week) this
 ## card is currently showing. Written by _write_stat_rows, read by
 ## gained_ground() -- the screens use it to decide whether to celebrate.
@@ -187,6 +196,8 @@ func setup_week_row(student: StudentData) -> void:
 		mood_bar.set_need("mood", 0.0)
 		_energy_from = 0.0
 		_mood_from = 0.0
+		_energy_to = 0.0
+		_mood_to = 0.0
 		_energy_delta = 0.0
 		_mood_delta = 0.0
 		energy_delta_label.hide()
@@ -205,6 +216,8 @@ func setup_week_row(student: StudentData) -> void:
 	# documents for the stat tracks.
 	_energy_from = clampf(student.energy - energy_delta, 0.0, 100.0)
 	_mood_from = clampf(student.mood - mood_delta, 0.0, 100.0)
+	_energy_to = student.energy
+	_mood_to = student.mood
 	_energy_delta = energy_delta
 	_mood_delta = mood_delta
 	_show_needs_delta(energy_delta_label, energy_delta_chevron, energy_delta)
@@ -274,6 +287,45 @@ func play_gain(delay: float = 0.0) -> void:
 ## week. Kept as its own name for callers that mean "replay the week".
 func play_week_gain(delay: float = 0.0) -> void:
 	play_gain(delay)
+
+
+## The weekly reveal's opening state (2026-09-14 weekly-report-reveal
+## spec): every stat row back on Monday with its number at +0, and both
+## needs bars on Monday's values. Call setup_week_row first.
+func rewind_week() -> void:
+	_stop_needs_travel()
+	for row in stat_rows:
+		row.rewind()
+	energy_bar.value = _energy_from
+	mood_bar.value = _mood_from
+
+
+## A card's opening gesture in the weekly reveal, played as it lands: both
+## needs bars travel from Monday to tonight. The stat rows wait for their
+## own turns (DaySummaryStatRow.play_count).
+func play_needs_week() -> void:
+	_stop_needs_travel()
+	energy_bar.value = _energy_from
+	mood_bar.value = _mood_from
+	for tw in [Juice.fill_bar(energy_bar, _energy_to), Juice.fill_bar(mood_bar, _mood_to)]:
+		if tw != null:
+			_needs_tweens.append(tw)
+
+
+## Everything on its final values at once: the skip's landing.
+func land_week() -> void:
+	_stop_needs_travel()
+	for row in stat_rows:
+		row.land()
+	energy_bar.value = _energy_to
+	mood_bar.value = _mood_to
+
+
+func _stop_needs_travel() -> void:
+	for tw in _needs_tweens:
+		if tw != null and tw.is_valid():
+			tw.kill()
+	_needs_tweens.clear()
 
 
 func _play_needs_travel(bar: ProgressBar, from_value: float, delay: float) -> void:

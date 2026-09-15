@@ -6,9 +6,9 @@ extends Control
 ## The actual shelf/cart/checkout logic lives on rakbarang_1.gd (the Rak1
 ## panel this screen shows/hides); this file only owns the entry button,
 ## the money display (kept in sync via GameState.money_changed) and
-## routing back to the shop hub. It writes nothing to GameState directly --
-## _on_beli_pressed() deducts GameState.player_money and calls
-## GameState.add_to_inventory() on behalf of the Cart autoload's contents.
+## routing back to the shop hub. _on_beli_pressed() deducts
+## GameState.player_money, calls GameState.add_to_inventory() for each basket
+## line and marks it sold for the week (GameState.mark_shop_sold()).
 
 @onready var rak1_button = $TextureRect/Rak1
 @onready var rak1_panel = $Rak1
@@ -17,6 +17,9 @@ extends Control
 @onready var coin_hud: HBoxContainer = %CoinHUD
 @onready var coin_label: Label = get_node("%CoinHUD/CoinLabel")
 @onready var message_label: Label = $MessageLabel
+
+## Shown on opening the shelf when every item this week has been bought.
+const SOLD_OUT_TEXT := "Stok habis! Datang lagi minggu depan."
 
 var beli_button: Button
 
@@ -67,8 +70,8 @@ func _on_rak1_pressed():
 	var tokens := DesignTokens.load_default()
 	AnimUtils.squash_bounce(rak1_button, 4.0)
 
-	if rak1_panel.has_method("setup_random_items"):
-		rak1_panel.setup_random_items()
+	if rak1_panel.has_method("setup_shelf"):
+		rak1_panel.setup_shelf()
 
 	rak1_panel.visible = true
 	rak1_panel.modulate = Color(1.0, 1.0, 1.0, 0.0)
@@ -81,6 +84,9 @@ func _on_rak1_pressed():
 	tween.tween_property(rak1_panel, "modulate:a", 1.0, tokens.dur_fast)
 	tween.tween_property(rak1_panel, "scale", Vector2.ONE, tokens.dur_fast) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+	if GameState.is_shop_sold_out():
+		_show_message(SOLD_OUT_TEXT, &"ShopMessageWarning")
 
 func _on_back_pressed():
 	var tokens := DesignTokens.load_default()
@@ -130,10 +136,12 @@ func _on_beli_pressed():
 	# Deduct money
 	GameState.player_money -= total
 
-	# Transfer items to inventory
+	# Transfer items to inventory. Each is sold for the rest of the week --
+	# marked here, before the cart empties below, so the shelf keeps it hidden.
 	for item_name in Cart.cart:
 		var quantity = Cart.cart[item_name]["quantity"]
 		GameState.add_to_inventory(item_name, quantity)
+		GameState.mark_shop_sold(item_name)
 
 	# Clear cart and visuals
 	Cart.clear()

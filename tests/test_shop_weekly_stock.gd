@@ -135,3 +135,54 @@ func test_forget_session_clears_the_shop() -> void:
 	var body := _body(FileAccess.get_file_as_string(GAME_STATE_PATH), "func forget_session()")
 	for reset in ["shop_week_key = \"\"", "shop_stock = []", "shop_sold = []"]:
 		assert_true(body.contains(reset), "forget_session() does " + reset)
+
+
+# ─── the shelf
+
+const RAK_PATH := "res://Scripts/Koperasi/rakbarang_1.gd"
+const KOPERASI_PATH := "res://Scripts/Koperasi/koprasi.gd"
+## rakbarang_1.gd declares no class_name; reached through a preloaded const.
+const RakScript := preload("res://Scripts/Koperasi/rakbarang_1.gd")
+
+
+func test_an_item_is_on_sale_until_basketed_or_sold() -> void:
+	assert_true(RakScript.is_on_sale("Bank Soal", {}, []), "on the shelf by default")
+	assert_false(RakScript.is_on_sale("Bank Soal", {"Bank Soal": {}}, []),
+		"off the shelf while it is in the basket")
+	assert_false(RakScript.is_on_sale("Bank Soal", {}, ["Bank Soal"]),
+		"off the shelf once bought this week")
+	assert_true(RakScript.is_on_sale("Bank Soal", {"Kamus": {}}, ["Kamus"]),
+		"other items leaving do not take it with them")
+
+
+func test_the_shelf_stocks_from_the_weekly_roll() -> void:
+	var src := FileAccess.get_file_as_string(RAK_PATH)
+	assert_true(src.contains("GameState.shop_stock_for_week()"), "the shelf reads this week's stock")
+	assert_false(src.contains("get_random_items("), "and never rolls its own")
+	assert_false(src.contains("func setup_random_items"), "the per-visit reshuffle is gone")
+
+
+func test_every_cart_change_rechecks_the_shelf() -> void:
+	var body := _body(FileAccess.get_file_as_string(RAK_PATH), "func _on_cart_changed()")
+	assert_true(body.contains("_refresh_shelf_visibility()"),
+		"tap, hold-to-return, Back and Beli all move the cart, so one refresh covers them")
+
+
+func test_a_second_tap_cannot_add_a_second_unit() -> void:
+	var body := _body(FileAccess.get_file_as_string(RAK_PATH), "func _on_barang_pressed(")
+	assert_true(body.contains("is_on_sale("), "the tap handler refuses an item not on sale")
+
+
+func test_beli_marks_the_basket_sold_before_emptying_it() -> void:
+	var body := _body(FileAccess.get_file_as_string(KOPERASI_PATH), "func _on_beli_pressed()")
+	var mark := body.find("GameState.mark_shop_sold(")
+	assert_gt(mark, -1, "Beli marks each item sold")
+	assert_true(mark < body.find("Cart.clear()"),
+		"before the cart empties, so the shelf never flickers them back")
+
+
+func test_opening_the_shelf_restocks_it_for_the_week() -> void:
+	var src := FileAccess.get_file_as_string(KOPERASI_PATH)
+	assert_true(src.contains("setup_shelf()"), "the Rak1 button restocks via setup_shelf()")
+	assert_false(src.contains("setup_random_items"), "not the old reshuffle")
+	assert_true(src.contains("GameState.is_shop_sold_out()"), "an empty shelf explains itself")

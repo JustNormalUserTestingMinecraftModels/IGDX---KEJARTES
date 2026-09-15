@@ -1,13 +1,18 @@
 extends Control  # script Rak1
 
-## The koperasi shelf screen (koprasi.tscn:Rak1): four random items on the
-## shelf, each with a coin-pill price tag and a little life, and the basket
-## tray docked beneath them.
+## The koperasi shelf screen (koprasi.tscn:Rak1): this week's four items on
+## the shelf, each with a coin-pill price tag and a little life, and the
+## basket tray docked beneath them.
+##
+## The shelf is rolled once a week (GameState.shop_stock_for_week()) and each
+## item sells once that week. A button shows only while its item is on sale:
+## not bought this week and not already in the basket (is_on_sale()).
 ##
 ## Tapping an item puts one in Cart and flies a copy of its art, in the
-## mentor-approved split arc, onto that item's own slot in the tray. The tray
-## (BasketTray.tscn) redraws itself from Cart; this script only wires the
-## shelf, the flight and the hold-to-return gesture to it.
+## mentor-approved split arc, onto that item's own slot in the tray, and the
+## item leaves the shelf. The tray (BasketTray.tscn) redraws itself from Cart;
+## this script only wires the shelf, the flight and the hold-to-return gesture
+## to it.
 
 @export_group("Global Settings")
 ## Global scale multiplier for all items (1.0 = normal)
@@ -29,7 +34,7 @@ const ShelfItemScript := preload("res://Scripts/Koperasi/ShelfItem.gd")
 var _shelf_items: Array = []
 
 func _ready():
-	setup_random_items()
+	setup_shelf()
 
 	if not Cart.cart_changed.is_connected(_on_cart_changed):
 		Cart.cart_changed.connect(_on_cart_changed)
@@ -49,42 +54,71 @@ func _find_shelf_buttons():
 			shelf_buttons.append(child)
 	shelf_buttons.sort_custom(func(a, b): return a.name.naturalnocasecmp_to(b.name) < 0)
 
-func setup_random_items():
+## Stock the shelf buttons from this week's shelf and hide whatever is no
+## longer on sale. Safe to call again: within a week it restocks the same
+## items in the same slots.
+func setup_shelf():
 	_find_shelf_buttons()
 	if shelf_buttons.is_empty():
 		return
 
-	item_data_list = ItemDatabase.get_random_items(shelf_buttons.size())
+	item_data_list.clear()
+	for item_name in GameState.shop_stock_for_week():
+		var stocked: ItemData = ItemDatabase.get_item(item_name)
+		if stocked != null:
+			item_data_list.append(stocked)
 
 	_shelf_items.clear()
 	for i in range(shelf_buttons.size()):
+		if i >= item_data_list.size():
+			continue
 		var btn = shelf_buttons[i]
-		if i < item_data_list.size():
-			var item = item_data_list[i]
-			btn.show()
-			btn.texture_normal = item.icon
-			btn.ignore_texture_size = true
-			btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+		var item = item_data_list[i]
+		btn.texture_normal = item.icon
+		btn.ignore_texture_size = true
+		btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 
-			# Find price tag inside btn
-			var tag = _ensure_price_tag(btn)
-			if tag:
-				tag.set_price(item.price)
+		# Find price tag inside btn
+		var tag = _ensure_price_tag(btn)
+		if tag:
+			tag.set_price(item.price)
 
-			var life = _ensure_shelf_item(btn)
-			_shelf_items.append(life)
+		var life = _ensure_shelf_item(btn)
+		_shelf_items.append(life)
 
-			# Connect click signal
-			for conn in btn.pressed.get_connections():
-				btn.pressed.disconnect(conn["callable"])
-			btn.pressed.connect(_on_barang_pressed.bind(i))
-		else:
-			btn.hide()
+		# Connect click signal
+		for conn in btn.pressed.get_connections():
+			btn.pressed.disconnect(conn["callable"])
+		btn.pressed.connect(_on_barang_pressed.bind(i))
 
 	_price_tags.clear()
 	for btn in shelf_buttons:
 		_price_tags.append(btn.get_node_or_null("PriceTag"))
 	_refresh_affordability()
+	_refresh_shelf_visibility()
+
+
+## Whether `item_name` belongs on the shelf right now: not bought this week
+## (`sold`) and not already in the basket (`cart`, Cart.cart-shaped).
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func is_on_sale(item_name: String, cart: Dictionary, sold: Array) -> bool:
+	return not sold.has(item_name) and not cart.has(item_name)
+
+
+## Show each shelf button only while its item is on sale. Derived from Cart
+## and GameState every time, so tap, hold-to-return, Back and Beli agree
+## without this script tracking anything. An item returning to a visible
+## shelf pops back in.
+func _refresh_shelf_visibility() -> void:
+	for i in range(shelf_buttons.size()):
+		var btn: TextureButton = shelf_buttons[i]
+		var on_sale: bool = i < item_data_list.size() \
+			and is_on_sale(item_data_list[i].item_name, Cart.cart, GameState.shop_sold)
+		var was_hidden := not btn.visible
+		btn.visible = on_sale
+		if on_sale and was_hidden and btn.is_visible_in_tree():
+			Juice.pop_in(btn)
 
 func _find_price_display(btn: TextureButton) -> Node:
 	for child in btn.get_children():
@@ -143,15 +177,21 @@ func get_item_effective_size(item: ItemData, source_button: TextureButton = null
 func _on_money_changed_refresh(_new_amount: int) -> void:
 	_refresh_affordability()
 
-## Cart.cart_changed: the tray redraws from the cart itself.
+## Cart.cart_changed: the tray redraws from the cart itself, and the shelf
+## re-derives which items are still on sale.
 func _on_cart_changed() -> void:
 	if is_instance_valid(tray):
 		tray.refresh(Cart.cart)
+	_refresh_shelf_visibility()
 
 func _on_barang_pressed(index: int):
 	if index < 0 or index >= item_data_list.size():
 		return
 	var item = item_data_list[index]
+	# One of each per week: a second tap landing before the button hides
+	# must not add a second unit.
+	if not is_on_sale(item.item_name, Cart.cart, GameState.shop_sold):
+		return
 	var btn = shelf_buttons[index]
 
 	AnimUtils.squash_bounce(btn)

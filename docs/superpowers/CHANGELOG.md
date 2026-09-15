@@ -8,6 +8,32 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-15 — Debug: Laporan Mingguan preview
+
+Plan `docs/superpowers/plans/2026-09-15-debug-weekly-report.md`, spec
+`docs/superpowers/specs/2026-09-15-debug-weekly-report-design.md`.
+
+The debug overlay's Scenes tab has a new button, **📊 Laporan Mingguan
+(ResultCheckup)**. It opens the weekly report over the current screen,
+filled with a fixed sample week, so the reveal can be watched in one click
+instead of played for a week.
+
+- **`WeekReportRehearsal`** (new, `Scripts/Debug/`) is a pure jig. It puts a
+  ladder of skill gains onto a throwaway `StudentManager`: all three up; two
+  up and one down; one up; flat. Energy falls 12 and mood rises 6, and the
+  history holds three minigames (2 won, 1 lost) and one event. It hands back
+  1.500 coins. Suite `week_report_rehearsal`.
+- **`DebugManager._open_week_report_preview()`** approves the default roster
+  only when none is approved, then builds the manager from `GameState`
+  before the sample moves anything. It hosts `ResultCheckup` on its own
+  `CanvasLayer` (124) under the current scene, and frees the manager once
+  the report has read it. `checkup_closed` frees the layer.
+- **The run is not touched:** the sample lives on the manager's `StudentData`
+  copies. Checked live: money, week and the stored stats were unchanged.
+- `EndGameRehearsal`'s debug-only ratchet now covers both jigs.
+- Touch-feedback ripples (`TouchFeedbackManager`, layer 125) draw above the
+  preview. That is by design; they were the only thing seen above it.
+
 ## 2026-09-14 — Lobby: Citra's eye whites plug their cut-outs
 
 `CitraFace.tscn`'s Sclera sat 1 px high, at (427, 578). `citra_base.png`

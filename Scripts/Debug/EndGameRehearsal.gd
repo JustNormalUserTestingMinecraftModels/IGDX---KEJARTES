@@ -127,7 +127,7 @@ static func build_roster(preset: String, grade: int,
 ## roster, so all of that has to be captured up front.
 const SNAPSHOT_KEYS := [
 	"approved_students", "selected_student", "day_schedules",
-	"pending_earnings", "grade7_student_ids", "inventory",
+	"pending_earnings", "grade7_student_ids", "grade8_student_ids", "inventory",
 	# The weekly minigame-gain budget. A rehearsal reaches
 	# RunResult's progression, which calls
 	# GameState.reset_roster_for_new_grade() -- and that clears this

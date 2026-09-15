@@ -30,17 +30,6 @@ texture = ExtResource("2_cwgfm")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="HitZone" type="TextureRect" parent="." unique_id=2036345891]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.3
-anchor_top = 0.72
-anchor_right = 0.7
-anchor_bottom = 0.88
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
 [node name="CharacterDisplay" parent="." unique_id=878431887 instance=ExtResource("3_cwgfm")]
 layout_mode = 1
 anchors_preset = -1
@@ -54,6 +43,17 @@ offset_right = 10.919983
 offset_bottom = 677.05005
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="HitZone" type="TextureRect" parent="." unique_id=2036345891]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.3
+anchor_top = 0.72
+anchor_right = 0.7
+anchor_bottom = 0.88
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
 
 [node name="NotesParent" type="Control" parent="." unique_id=1296841459]
 layout_mode = 1

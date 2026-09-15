@@ -80,6 +80,22 @@ func test_the_stage_has_four_authored_slots_and_four_shadows() -> void:
 			"Shadow%d is authored in the scene, not built at runtime" % i)
 
 
+## The win painting sits on a white print: PhotoFrame draws after the bars
+## and before Stage, so the painting covers its middle and only the border
+## shows around it.
+func test_a_photo_frame_sits_between_the_bars_and_the_painting() -> void:
+	var s := _stage()
+	var frame = s.get_node_or_null("PhotoFrame")
+	assert_true(frame is Panel, "PhotoFrame is an authored Panel")
+	if frame == null:
+		return
+	assert_eq(String(frame.theme_type_variation), "PhotoFrame",
+		"styled by the PhotoFrame variation, not an override")
+	assert_true(s.get_node("BarFill").get_index() < frame.get_index(), "in front of the bars")
+	assert_true(frame.get_index() < s.get_node("Stage").get_index(), "behind the painting")
+	assert_eq(frame.mouse_filter, Control.MOUSE_FILTER_IGNORE, "it never eats a host's clicks")
+
+
 ## The art lives here and only here -- neither host overrides it, which is
 ## what guarantees the two screens show the same picture.
 func test_both_verdicts_art_is_wired() -> void:

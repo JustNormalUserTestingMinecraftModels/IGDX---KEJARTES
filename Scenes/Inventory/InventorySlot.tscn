@@ -5,15 +5,51 @@
 [node name="InventorySlot" type="PanelContainer" unique_id=156201867]
 custom_minimum_size = Vector2(260, 340)
 size_flags_horizontal = 3
+mouse_filter = 1
 script = ExtResource("1_w8tn1")
 
 [node name="Layout" type="VBoxContainer" parent="." unique_id=1819306915]
 layout_mode = 2
 mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Band" type="PanelContainer" parent="Layout" unique_id=1585907713]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CategoryChip" type="Label" parent="Layout/Band" unique_id=1518152712]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Kategori"
+horizontal_alignment = 1
+
+[node name="Body" type="MarginContainer" parent="Layout" unique_id=1355233271]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="BodyCol" type="VBoxContainer" parent="Layout/Body" unique_id=1376748916]
+layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Icon" type="TextureRect" parent="Layout" unique_id=797531944]
-custom_minimum_size = Vector2(200, 260)
+[node name="IconStack" type="PanelContainer" parent="Layout/Body/BodyCol" unique_id=214671815]
+custom_minimum_size = Vector2(0, 340)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Glow" type="TextureRect" parent="Layout/Body/BodyCol/IconStack" unique_id=1215742852]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Icon" type="TextureRect" parent="Layout/Body/BodyCol/IconStack" unique_id=797531944]
+custom_minimum_size = Vector2(0, 340)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -21,12 +57,12 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="QuantityRow" type="HBoxContainer" parent="Layout" unique_id=296016358]
+[node name="QuantityRow" type="HBoxContainer" parent="Layout/Body/BodyCol" unique_id=296016358]
 layout_mode = 2
 mouse_filter = 2
 alignment = 2
 
-[node name="QuantityLabel" type="Label" parent="Layout/QuantityRow" unique_id=1224538772]
+[node name="QuantityLabel" type="Label" parent="Layout/Body/BodyCol/QuantityRow" unique_id=1224538772]
 layout_mode = 2
 theme_type_variation = &"CoinLabel"
 

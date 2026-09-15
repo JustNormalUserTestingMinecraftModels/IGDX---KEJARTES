@@ -76,11 +76,41 @@ layout_mode = 2
 theme_type_variation = &"EventBodyLabel"
 text = "Sisa ×0"
 
-[node name="EffectSummary" type="Label" parent="Margin/Card/Margin/VBox" unique_id=1327952809]
+[node name="EffectSummary" type="HFlowContainer" parent="Margin/Card/Margin/VBox" unique_id=1440102439]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 8
+
+[node name="Caption" type="Label" parent="Margin/Card/Margin/VBox/EffectSummary" unique_id=1836012358]
 layout_mode = 2
 theme_type_variation = &"EventBodyLabel"
-text = "Menambah: ... per siswa."
-autowrap_mode = 3
+text = "Menambah:"
+vertical_alignment = 1
+
+[node name="ChipAkademis" type="Label" parent="Margin/Card/Margin/VBox/EffectSummary" unique_id=468395634]
+layout_mode = 2
+theme_type_variation = &"EventBodyLabel"
+vertical_alignment = 1
+
+[node name="ChipSeni" type="Label" parent="Margin/Card/Margin/VBox/EffectSummary" unique_id=1877740351]
+layout_mode = 2
+theme_type_variation = &"EventBodyLabel"
+vertical_alignment = 1
+
+[node name="ChipOlahraga" type="Label" parent="Margin/Card/Margin/VBox/EffectSummary" unique_id=607691035]
+layout_mode = 2
+theme_type_variation = &"EventBodyLabel"
+vertical_alignment = 1
+
+[node name="ChipMood" type="Label" parent="Margin/Card/Margin/VBox/EffectSummary" unique_id=41642185]
+layout_mode = 2
+theme_type_variation = &"EventBodyLabel"
+vertical_alignment = 1
+
+[node name="ChipEnergi" type="Label" parent="Margin/Card/Margin/VBox/EffectSummary" unique_id=887530510]
+layout_mode = 2
+theme_type_variation = &"EventBodyLabel"
+vertical_alignment = 1
 
 [node name="Scroll" type="ScrollContainer" parent="Margin/Card/Margin/VBox" unique_id=2056101922]
 layout_mode = 2
@@ -115,5 +145,5 @@ text = "Batal"
 [node name="ConfirmButton" type="Button" parent="Margin/Card/Margin/VBox/Actions" unique_id=1196808454]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
-theme_type_variation = &"PrimaryButton"
+theme_type_variation = &"SuccessButton"
 text = "Pakai (0 Siswa)"

@@ -11,6 +11,7 @@ offset_right = 992.0
 offset_bottom = 410.0
 size_flags_horizontal = 3
 focus_mode = 0
+mouse_filter = 1
 theme = ExtResource("1_sqjgo")
 theme_type_variation = &"EventSelectCard"
 toggle_mode = true
@@ -49,4 +50,36 @@ layout_mode = 2
 theme_type_variation = &"BarLabel"
 text = " LELAH "
 horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Header" type="Control" parent="." unique_id=407873311]
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="HeaderPanel" type="PanelContainer" parent="Header" unique_id=385366565]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="HeaderStripes" type="TextureRect" parent="Header" unique_id=765704113]
+texture_repeat = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+stretch_mode = 1
+
+[node name="HeaderName" type="Label" parent="Header" unique_id=1993933581]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_right = -28.0
+theme_type_variation = &"TitleLabel"
+text = "Nama"
 vertical_alignment = 1

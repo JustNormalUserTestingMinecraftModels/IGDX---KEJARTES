@@ -1,24 +1,41 @@
 [gd_scene format=3 uid="uid://dhtknn6ud6sk"]
 
 [node name="EfekRow" type="HBoxContainer" unique_id=148632534]
+size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
-[node name="NeedIcon" type="TextureRect" parent="." unique_id=1841589733]
-custom_minimum_size = Vector2(64, 64)
+[node name="Card" type="PanelContainer" parent="." unique_id=1144965199]
 layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Inner" type="HBoxContainer" parent="Card" unique_id=2111116679]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="IconTile" type="PanelContainer" parent="Card/Inner" unique_id=1790304631]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+
+[node name="NeedIcon" type="TextureRect" parent="Card/Inner/IconTile" unique_id=1841589733]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ValueLabel" type="Label" parent="." unique_id=295930136]
-custom_minimum_size = Vector2(104, 0)
-layout_mode = 2
-theme_type_variation = &"H2Label"
-text = "+0"
-
-[node name="ExplainLabel" type="Label" parent="." unique_id=729471077]
+[node name="ExplainLabel" type="Label" parent="Card/Inner" unique_id=729471077]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"EventBodyLabel"
 text = "Penjelasan efek."
 autowrap_mode = 3
+
+[node name="ValueLabel" type="Label" parent="Card/Inner" unique_id=295930136]
+custom_minimum_size = Vector2(104, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"H2Label"
+text = "+0"

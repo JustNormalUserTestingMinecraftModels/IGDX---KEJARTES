@@ -1186,6 +1186,7 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	tween_out.tween_property(day_screen, "modulate:a", 0.0, 0.4)
 	await tween_out.finished
 	day_screen.hide()
+	day_screen.process_mode = Node.PROCESS_MODE_DISABLED
 
 	AudioDirector.pause_bgm()
 	AudioDirector.play_minigame_bgm(_minigame_bgm_id(game_scene, category))
@@ -1243,6 +1244,7 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	for child in game_container.get_children():
 		child.queue_free()
 
+	day_screen.process_mode = Node.PROCESS_MODE_INHERIT
 	day_screen.show()
 	AudioDirector.resume_bgm()
 	var tween_back = create_tween()
@@ -1280,6 +1282,7 @@ func _on_week_complete() -> void:
 
 	if result_checkup_scene:
 		day_screen.hide()
+		day_screen.process_mode = Node.PROCESS_MODE_DISABLED
 		var checkup_instance = result_checkup_scene.instantiate()
 		game_container.add_child(checkup_instance)
 		checkup_instance.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -1290,6 +1293,7 @@ func _on_week_complete() -> void:
 		checkup_instance.queue_free()
 
 	day_screen.modulate.a = 0.0
+	day_screen.process_mode = Node.PROCESS_MODE_INHERIT
 	day_screen.show()
 	var fade = create_tween()
 	fade.tween_property(day_screen, "modulate:a", 1.0, 0.6)

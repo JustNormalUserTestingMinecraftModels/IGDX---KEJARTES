@@ -151,6 +151,14 @@ func _ready():
 	_start_day_button_sway()
 	AudioDirector.play_bgm_playlist(&"lobby")
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_EXIT_TREE:
+		if get_tree() and get_tree().root.size_changed.is_connected(_fit_color_rect_to_viewport):
+			get_tree().root.size_changed.disconnect(_fit_color_rect_to_viewport)
+		if is_instance_valid(select_student_button):
+			select_student_button.texture_normal = null
+
+
 func _setup_back_button():
 	if back_button:
 		back_button.show()

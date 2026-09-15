@@ -296,11 +296,11 @@ const _STAT_ROW_SCENE := "res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn"
 
 
 func test_stat_row_maps_each_key_to_its_mockup_icon() -> void:
-	assert_eq(DaySummaryStatRow.ICON_FOR["akademis"],
+	assert_eq(DaySummaryStatRow.ICON_FOR["akademis"].resource_path,
 		"res://Assets/Images/DaySummary/icon_akademis.png")
-	assert_eq(DaySummaryStatRow.ICON_FOR["seni_budaya"],
+	assert_eq(DaySummaryStatRow.ICON_FOR["seni_budaya"].resource_path,
 		"res://Assets/Images/DaySummary/icon_seni.png")
-	assert_eq(DaySummaryStatRow.ICON_FOR["olahraga"],
+	assert_eq(DaySummaryStatRow.ICON_FOR["olahraga"].resource_path,
 		"res://Assets/Images/DaySummary/icon_olahraga.png")
 
 

@@ -31,8 +31,8 @@ const TIER_CUTS := [33.0, 66.0]
 ## icons rather than the placeholder SVGs, so this card and StudentCard
 ## read as the same need with the same glyph.
 const ICON_FOR := {
-	"energy": "res://Assets/Images/StudentCard/stat_energy.png",
-	"mood": "res://Assets/Images/StudentCard/stat_mood.png",
+	"energy": preload("res://Assets/Images/StudentCard/stat_energy.png"),
+	"mood": preload("res://Assets/Images/StudentCard/stat_mood.png"),
 }
 
 @onready var icon: TextureRect = $Icon
@@ -58,5 +58,5 @@ static func word_for(need_key: String, value: float) -> String:
 func set_need(need_key: String, need_value: float) -> void:
 	value = need_value
 	if ICON_FOR.has(need_key):
-		icon.texture = load(ICON_FOR[need_key])
+		icon.texture = ICON_FOR[need_key]
 	word_label.text = word_for(need_key, need_value)

@@ -42,16 +42,17 @@ const _CATEGORY_COLORS := {
 }
 ## Category -> icon texture. Replaces the emoji glyph map the shipped card
 ## used; the project banned emoji as UI iconography during the 2026-09-02 pass.
+const _SCORE_ICON: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_skor.svg")
 const _CATEGORY_ICON_PATHS := {
-	"Akademis": "res://Assets/Images/UI/Placeholders/icon_akademis.svg",
-	"SeniBudaya": "res://Assets/Images/UI/Placeholders/icon_seni.svg",
-	"Olahraga": "res://Assets/Images/UI/Placeholders/icon_olahraga.svg",
+	"Akademis": preload("res://Assets/Images/UI/Placeholders/icon_akademis.svg"),
+	"SeniBudaya": preload("res://Assets/Images/UI/Placeholders/icon_seni.svg"),
+	"Olahraga": preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"),
 }
 ## Icon for a category the map above does not know.
-const _CATEGORY_ICON_FALLBACK := "res://Assets/Images/UI/Placeholders/icon_poin.svg"
+const _CATEGORY_ICON_FALLBACK: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_poin.svg")
 ## The two need-delta rows' icons.
-const _ENERGY_ICON := "res://Assets/Images/UI/Placeholders/icon_energy.svg"
-const _MOOD_ICON := "res://Assets/Images/UI/Placeholders/icon_mood.svg"
+const _ENERGY_ICON: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_energy.svg")
+const _MOOD_ICON: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_mood.svg")
 
 ## Per-star pop scale, ascending. The shipped reveal popped all three to the
 ## same 1.18, so the third star landed no harder than the first and the whole
@@ -171,7 +172,7 @@ func configure(is_win: bool, stars: int, score: int, max_score: int,
 
 	# ── Score row ──
 	score_panel.visible = score >= 0 and max_score > 0
-	score_icon.texture = load("res://Assets/Images/UI/Placeholders/icon_skor.svg")
+	score_icon.texture = _SCORE_ICON
 	# Seeded at zero so play() has something to count up from -- the "0" is
 	# never actually seen, since the whole panel fades in already ticking.
 	score_value_label.text = "0 / %d" % max_score
@@ -182,15 +183,15 @@ func configure(is_win: bool, stars: int, score: int, max_score: int,
 	# ── Category badge ──
 	category_badge.visible = category != ""
 	if category != "":
-		badge_icon.texture = load(_CATEGORY_ICON_PATHS.get(category, _CATEGORY_ICON_FALLBACK))
+		badge_icon.texture = _CATEGORY_ICON_PATHS.get(category, _CATEGORY_ICON_FALLBACK)
 		badge_icon.self_modulate = _CATEGORY_COLORS.get(category, Color(0.3, 0.3, 0.4))
 		category_badge_label.text = category
 	category_badge.modulate.a = 0.0
 
 	# ── Stat deltas ──
-	stat_delta_icon.texture = load(_CATEGORY_ICON_PATHS.get(category, _CATEGORY_ICON_FALLBACK))
-	energy_delta_icon.texture = load(_ENERGY_ICON)
-	mood_delta_icon.texture = load(_MOOD_ICON)
+	stat_delta_icon.texture = _CATEGORY_ICON_PATHS.get(category, _CATEGORY_ICON_FALLBACK)
+	energy_delta_icon.texture = _ENERGY_ICON
+	mood_delta_icon.texture = _MOOD_ICON
 	_configure_delta_label(stat_delta_label, stat_delta, _stat_delta_suffix(category))
 	_configure_delta_label(energy_delta_label, energy_delta, "Energy")
 	_configure_delta_label(mood_delta_label, mood_delta, "Mood")

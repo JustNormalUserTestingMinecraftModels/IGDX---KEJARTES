@@ -24,6 +24,7 @@ const POP_SCALE: float = 1.28
 const POP_TIME: float = 0.12
 ## Burst fired at the readout when the score goes up.
 const BURST_SCENE := "res://Scenes/Minigames/UI/ScorePopBurst.tscn"
+const _BURST_PACKED: PackedScene = preload("res://Scenes/Minigames/UI/ScorePopBurst.tscn")
 
 @onready var panel: PanelContainer = $Panel
 @onready var icon: TextureRect = $Panel/Row/Icon
@@ -106,7 +107,7 @@ func set_score(value: int) -> void:
 	if Engine.is_editor_hint():
 		return
 	AudioDirector.play_sfx(&"score_tick")
-	var burst: Node = load(BURST_SCENE).instantiate()
+	var burst: Node = _BURST_PACKED.instantiate()
 	burst_slot.add_child(burst)
 	burst.fire()
 	Juice.set_pivot_center(value_label)

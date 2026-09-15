@@ -81,6 +81,16 @@ func test_safe_area_can_be_disabled() -> void:
 		"with safe area off, margin is exactly screen_margin")
 
 
+## The clamp warning is for devices only. In an editor or desktop run the
+## monitor's safe area always exceeds the window, so it fired once for every
+## SafeAreaMargin on screen -- noise once every screen has one (tall-phone
+## layout spec, 2026-09-15).
+func test_safe_area_clamp_warning_is_device_only() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/SafeAreaMargin.gd")
+	assert_true(src.contains('if clamped != inset and OS.has_feature("mobile"):'),
+		"the clamp warning must be gated to mobile devices")
+
+
 ## Renamed from test_statbar_tints_itself_from_its_category: a StatBar-family
 ## bar no longer tints via self_modulate (that multiplied the WHOLE node,
 ## including the track behind the fill, so a value-0 bar rendered as a

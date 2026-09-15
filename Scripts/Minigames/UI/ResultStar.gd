@@ -26,6 +26,7 @@ const DEFAULT_FILLED_TEXTURE := "res://Assets/Images/UI/Placeholders/icon_bintan
 const DEFAULT_EMPTY_TEXTURE := "res://Assets/Images/UI/Placeholders/icon_bintang_kosong.svg"
 ## Scene fired at this star's centre when it lands earned.
 const BURST_SCENE := "res://Scenes/Minigames/UI/StarBurst.tscn"
+const _BURST_PACKED: PackedScene = preload("res://Scenes/Minigames/UI/StarBurst.tscn")
 ## Peak alpha the glow layer reaches on celebrate().
 const GLOW_PEAK_ALPHA: float = 0.85
 ## Seconds the glow takes to bloom before settling back.
@@ -73,7 +74,7 @@ func celebrate(index: int) -> void:
 	if Engine.is_editor_hint() or not is_filled:
 		return
 	AudioDirector.play_sfx(StringName("star_earn_%d" % clampi(index + 1, 1, 3)))
-	var burst: Node = load(BURST_SCENE).instantiate()
+	var burst: Node = _BURST_PACKED.instantiate()
 	burst_slot.add_child(burst)
 	burst.plays_sfx = false
 	burst.fire()

@@ -42,11 +42,12 @@ const VALUE_RIGHT_MARGIN := 20
 ## The authored one-shot burst thrown at a row that gained. Instanced,
 ## never built -- see the project's "no visual is built at runtime" rule.
 const BURST_SCENE := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
+const _BURST_PACKED: PackedScene = preload("res://Scenes/SchoolSimulation/RewardBurst.tscn")
 
 const ICON_FOR := {
-	"akademis": "res://Assets/Images/DaySummary/icon_akademis.png",
-	"seni_budaya": "res://Assets/Images/DaySummary/icon_seni.png",
-	"olahraga": "res://Assets/Images/DaySummary/icon_olahraga.png",
+	"akademis": preload("res://Assets/Images/DaySummary/icon_akademis.png"),
+	"seni_budaya": preload("res://Assets/Images/DaySummary/icon_seni.png"),
+	"olahraga": preload("res://Assets/Images/DaySummary/icon_olahraga.png"),
 }
 
 ## Which baked variation each stat's track wears. The fills are the
@@ -86,6 +87,11 @@ var _standing_current: float = 0.0
 ## The in-flight fill and count of this row's weekly reveal, held so land()
 ## can stop them: a skip must not leave a number still counting.
 var _reveal_tweens: Array[Tween] = []
+
+## Reused burst node: created on first fire, reused while still alive,
+## recreated after it self-frees. Cuts peak GPUParticles2D count in half
+## during the ResultCheckup reveal (one per row instead of two).
+var _burst_node: RewardParticles = null
 
 
 ## "+12/65" -- the sign rides with the number so a loss reads "-3/65"
@@ -205,7 +211,7 @@ func show_preview(delta: float, capped: bool = false) -> void:
 ## set_standing so the two readouts can never dress a row differently.
 func _apply_stat_chrome(stat_key: String) -> void:
 	if ICON_FOR.has(stat_key):
-		icon.texture = load(ICON_FOR[stat_key])
+		icon.texture = ICON_FOR[stat_key]
 	if TRACK_VARIATION_FOR.has(stat_key):
 		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
 
@@ -253,11 +259,8 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	if Engine.is_editor_hint():
 		return
-	var burst_scene: PackedScene = load(BURST_SCENE)
-	var fx := burst_scene.instantiate() as RewardParticles
+	var fx := _get_or_make_burst(chevron.position + chevron.size * 0.5)
 	fx.plays_sfx = plays_sparkle
-	fx.position = chevron.position + chevron.size * 0.5
-	add_child(fx)
 	fx.fire(delay)
 	AudioDirector.play_sfx(&"tally")
 
@@ -311,13 +314,21 @@ func land_pop(pitch: float) -> void:
 	Juice.punch(value, center)
 	if Engine.is_editor_hint():
 		return
-	var burst_scene: PackedScene = load(BURST_SCENE)
-	var fx := burst_scene.instantiate() as RewardParticles
+	var fx := _get_or_make_burst(value.position + center)
 	fx.plays_sfx = false
-	fx.position = value.position + center
-	add_child(fx)
 	fx.fire()
 	AudioDirector.play_sfx(&"tally", pitch)
+
+
+## Returns the row's reusable burst node, creating it if it has already
+## self-freed. Positions it at `pos` (in this node's local coordinates)
+## before returning so the caller can fire() immediately.
+func _get_or_make_burst(pos: Vector2) -> RewardParticles:
+	if not is_instance_valid(_burst_node):
+		_burst_node = _BURST_PACKED.instantiate() as RewardParticles
+		add_child(_burst_node)
+	_burst_node.position = pos
+	return _burst_node
 
 
 ## The row on its final values at once: the skip's landing. Stops the

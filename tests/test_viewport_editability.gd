@@ -131,7 +131,6 @@ const ALLOWED: Dictionary = {
 	# PatternOverlay (category-tinted wash, varies per item) and TintCircle
 	# (stat-colored icon backdrop, one per visible EfekRow): both
 	# per-call-dynamic content whose color depends on the item shown.
-	"res://Scripts/Inventory/ItemDetailSheet.gd": 2,
 }
 
 

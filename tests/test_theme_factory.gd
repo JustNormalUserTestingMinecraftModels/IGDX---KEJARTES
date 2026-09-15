@@ -24,7 +24,7 @@ func test_every_declared_variation_exists() -> void:
 	# because Godot silently falls back to the base type.
 	var expected := [
 		"PrimaryButton", "SecondaryButton", "DangerButton",
-		"Card", "SunkenPanel", "Scrim",
+		"Card", "SunkenPanel", "Scrim", "PhotoFrame",
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
 		"CaptionLabel", "MicroLabel", "StatBar", "FilterChipButton",
 		"EventDialoguePanel", "EventDialogueText", "DayBannerPanel", "DayBannerLabel", "CalendarLabel",
@@ -32,6 +32,17 @@ func test_every_declared_variation_exists() -> void:
 	var actual := _theme.get_type_list()
 	for variation in expected:
 		assert_true(actual.has(variation), "theme must declare type: " + variation)
+
+
+## WinStage's PhotoFrame: the win painting's white print.
+func test_photo_frame_is_an_opaque_white_print() -> void:
+	var sb := _theme.get_stylebox("panel", "PhotoFrame") as StyleBoxFlat
+	assert_true(sb != null, "PhotoFrame has a flat panel stylebox")
+	if sb == null:
+		return
+	assert_eq(sb.bg_color.a, 1.0, "opaque, so the bars never show through the border")
+	assert_gt(sb.bg_color.get_luminance(), 0.9, "and white, like photo paper")
+	assert_gt(sb.shadow_size, 0, "lifted off the ground by a shadow")
 
 
 func test_button_variations_have_all_four_states() -> void:

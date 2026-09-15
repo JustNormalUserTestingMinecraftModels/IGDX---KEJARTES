@@ -156,7 +156,7 @@ func test_dressing_a_win_poses_the_roster_on_the_letterboxed_painting() -> void:
 	var s := _live_stage()
 	s.dress(false, _FOUR)
 	var vp: Vector2 = s.get_viewport_rect().size
-	var fit: Dictionary = WinStage.letterbox(vp)
+	var fit: Dictionary = WinStage.letterbox(vp, s.photo_border + s.photo_gap)
 	var stage: Control = s.get_node("Stage")
 	var backdrop_tex: Texture2D = s.get_node("Stage/Backdrop").texture
 	var shown := 0
@@ -209,3 +209,52 @@ func test_the_stage_never_decides_the_verdict() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT)
 	assert_false(src.contains("check_semester_passed"),
 		"WinStage must not recompute the verdict")
+
+
+# ───────────────────────────────────────────────────────────── photo frame
+
+## The frame needs room: an inset shrinks the painting by that much on every
+## side and keeps it centred. 64 = the default 28px border + 36px gap.
+func test_the_letterbox_can_leave_room_for_a_frame() -> void:
+	var framed: Dictionary = WinStage.letterbox(Vector2(1080, 1920), 64.0)
+	var s: float = 952.0 / 1536.0
+	assert_true(is_equal_approx(framed["scale"], s), "the painting shrinks to leave 64px a side")
+	var expect := Vector2(64.0, (1920.0 - 2048.0 * s) * 0.5)
+	assert_true((framed["position"] as Vector2).is_equal_approx(expect), "and stays centred")
+
+
+func test_the_frame_knobs_are_documented_exports() -> void:
+	var lines := FileAccess.get_file_as_string(_SCRIPT).split("\n")
+	for knob in ["photo_border", "photo_gap"]:
+		var found := -1
+		for i in range(lines.size()):
+			if lines[i].begins_with("@export var " + knob):
+				found = i
+				break
+		assert_gt(found, 0, knob + " is an @export")
+		assert_true(lines[found - 1].begins_with("##"), knob + " has a ## doc line")
+
+
+func test_a_win_frames_the_painting_in_a_white_print() -> void:
+	var s := _live_stage()
+	s.dress(false, _FOUR)
+	var stage: Control = s.get_node("Stage")
+	var frame: Control = s.get_node("PhotoFrame")
+	var painting := Rect2(stage.position, stage.size * stage.scale)
+	var frame_rect := Rect2(frame.position, frame.size)
+	var shown := frame.visible
+	var border: float = s.photo_border
+	Engine.get_main_loop().root.remove_child(s)
+	assert_true(shown, "the print shows on a win")
+	assert_true(frame_rect.is_equal_approx(painting.grow(border)),
+		"exactly photo_border wider than the painting on every side")
+	assert_gt(frame_rect.position.x, 0.0, "with a gap to the screen's edge")
+
+
+func test_a_loss_hides_the_frame() -> void:
+	var s := _live_stage()
+	s.dress(false, _FOUR)
+	s.dress(true, _FOUR)
+	var shown: bool = s.get_node("PhotoFrame").visible
+	Engine.get_main_loop().root.remove_child(s)
+	assert_false(shown, "the lose CG covers the screen with no print under it")

@@ -109,7 +109,8 @@ static func is_on_sale(item_name: String, cart: Dictionary, sold: Array) -> bool
 ## Show each shelf button only while its item is on sale. Derived from Cart
 ## and GameState every time, so tap, hold-to-return, Back and Beli agree
 ## without this script tracking anything. An item returning to a visible
-## shelf pops back in.
+## shelf bounces back in -- scale only, so an unaffordable item keeps
+## ShelfItem.set_dimmed()'s alpha rather than fading up to full.
 func _refresh_shelf_visibility() -> void:
 	for i in range(shelf_buttons.size()):
 		var btn: TextureButton = shelf_buttons[i]
@@ -118,7 +119,7 @@ func _refresh_shelf_visibility() -> void:
 		var was_hidden := not btn.visible
 		btn.visible = on_sale
 		if on_sale and was_hidden and btn.is_visible_in_tree():
-			Juice.pop_in(btn)
+			AnimUtils.squash_bounce(btn)
 
 func _find_price_display(btn: TextureButton) -> Node:
 	for child in btn.get_children():

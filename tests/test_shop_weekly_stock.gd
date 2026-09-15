@@ -186,3 +186,41 @@ func test_opening_the_shelf_restocks_it_for_the_week() -> void:
 	assert_true(src.contains("setup_shelf()"), "the Rak1 button restocks via setup_shelf()")
 	assert_false(src.contains("setup_random_items"), "not the old reshuffle")
 	assert_true(src.contains("GameState.is_shop_sold_out()"), "an empty shelf explains itself")
+
+
+## Review finding: pop_in fades a node to full alpha, which overwrote
+## ShelfItem.set_dimmed()'s 0.55 on an item the player cannot afford.
+func test_a_returning_item_keeps_its_dimming() -> void:
+	var body := _body(FileAccess.get_file_as_string(RAK_PATH), "func _refresh_shelf_visibility()")
+	assert_false(body.contains("Juice.pop_in("), "no alpha fade on a returning item")
+	assert_true(body.contains("AnimUtils.squash_bounce("), "a scale-only bounce instead")
+
+
+# ─── a new run is a new week
+
+const RUN_RESULT_PATH := "res://Scripts/EndGame/RunResult.gd"
+
+
+func test_resetting_the_shop_week_forces_a_fresh_roll() -> void:
+	_at(7, 1)
+	GameState.shop_week_key = "7-1"
+	GameState.shop_stock = [FAKE_ITEM]
+	GameState.shop_sold = [FAKE_ITEM]
+	GameState.reset_shop_week()
+	assert_eq(GameState.shop_week_key, "", "no week is stocked")
+	assert_true(GameState.shop_sold.is_empty(), "nothing is sold")
+	assert_false(GameState.shop_stock_for_week().has(FAKE_ITEM),
+		"the same grade and week, reached again, rolls a fresh shelf")
+
+
+## Review finding: a run restart resets minggu_ke to 1 without touching the
+## shop, so a retried grade -- or Kelas 7 after a loss or after beating the
+## game -- landed on the last run's key and inherited its sold list.
+func test_every_run_restart_clears_the_shop() -> void:
+	var gs := _body(FileAccess.get_file_as_string(GAME_STATE_PATH), "func set_grade(")
+	assert_true(gs.contains("reset_shop_week()"),
+		"set_grade() -- new game, level select, beating the game -- starts a fresh shelf")
+	var rr := _body(FileAccess.get_file_as_string(RUN_RESULT_PATH), "func _apply_progression()")
+	var failed_branch := rr.substr(0, rr.find("if GameState.current_grade < 9:"))
+	assert_true(failed_branch.contains("GameState.reset_shop_week()"),
+		"a lost run's retry starts a fresh shelf too")

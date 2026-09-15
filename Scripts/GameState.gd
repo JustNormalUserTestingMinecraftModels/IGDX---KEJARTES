@@ -98,6 +98,7 @@ func set_grade(grade_num: int) -> void:
 	minggu_ke = 1
 	run_stats.reset()
 	run_failed = false
+	reset_shop_week()
 	if current_grade != previous_grade:
 		reset_roster_for_new_grade()  # no-op when the roster is empty
 	print("GameState grade set to: Kelas ", current_grade, " (Minggu ", minggu_ke, ", Max Minggu ", max_minggu, ")")
@@ -251,6 +252,16 @@ func clear_inventory_save() -> void:
 		return
 	if FileAccess.file_exists(INVENTORY_SAVE_PATH):
 		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
+
+## Forget the stocked week, so the next shop_stock_for_week() rolls a fresh
+## shelf with nothing sold. Every run restart calls this: it resets
+## minggu_ke to 1, and without it a retried grade -- or Kelas 7 after a loss
+## or after beating the game -- would land on the last run's key.
+func reset_shop_week() -> void:
+	shop_week_key = ""
+	shop_stock = []
+	shop_sold = []
+
 
 ## The key a week's Koperasi shelf is stored under. The grade is part of it
 ## because a new grade restarts minggu_ke at 1.

@@ -161,34 +161,45 @@ func _node_block(src: String, node_name: String) -> String:
 	return src.substr(start, (end if end != -1 else src.length()) - start)
 
 
+## Since the 2026-09-15 tall-phone pass the money row rides in
+## Safe/UI/BottomBar, so the button is checked against its row-mates there
+## rather than by screen offsets.
 func test_the_shorten_button_sits_on_the_money_row() -> void:
-	var block := _node_block(FileAccess.get_file_as_string(_LOBBY_SCENE), "ShortenButton")
-	assert_contains(block, 'type="Button" parent="."')
-	assert_contains(block, 'theme_type_variation = &"SecondaryButton"')
-	assert_contains(block, 'text = "Shorten"')
-	assert_contains(block, "offset_top = 1392.0")
-	assert_contains(block, "offset_bottom = 1488.0")
-	var left := float(block.get_slice("offset_left = ", 1).get_slice("\n", 0))
-	var right := float(block.get_slice("offset_right = ", 1).get_slice("\n", 0))
-	assert_true(left > 144.0 and right < 700.0,
-		"between the daily-login icon (..144) and the money chip (700..), got %f..%f" % [left, right])
+	var lobby := (load(_LOBBY_SCENE) as PackedScene).instantiate() as Control
+	track(lobby)
+	var btn := lobby.get_node_or_null("%ShortenButton") as Button
+	var login := lobby.get_node_or_null("%DailyLogin") as Control
+	var chip := lobby.get_node_or_null("%DisplayUang") as Control
+	assert_true(btn != null and login != null and chip != null,
+		"ShortenButton, DailyLogin and DisplayUang must be unique names")
+	if btn == null or login == null or chip == null:
+		return
+	assert_eq(btn.theme_type_variation, &"SecondaryButton")
+	assert_eq(btn.text, "Shorten")
+	assert_eq(btn.get_parent(), chip.get_parent(), "it rides in the same bar as the money chip")
+	assert_eq(btn.offset_top, chip.offset_top, "on the money row")
+	assert_eq(btn.offset_bottom, chip.offset_bottom, "on the money row")
+	assert_true(btn.offset_left > login.offset_right and btn.offset_right < chip.offset_left,
+		"between the daily-login icon (..%f) and the money chip (%f..), got %f..%f"
+			% [login.offset_right, chip.offset_left, btn.offset_left, btn.offset_right])
 
 
 ## loby.gd's _create_blur_overlay() inserts the reward popup's blur at
-## DailyLogin's child index, so only nodes BEFORE DailyLogin end up under it.
-## Code review, 2026-09-14: ShortenButton first sat between DailyLogin and
-## DailyReward, so it stayed sharp and tappable over the open reward popup;
-## it now sits just before DailyLogin.
+## DailyReward's child index, so every node serialized before DailyReward --
+## the Classroom and the whole Safe HUD, ShortenButton and DailyLogin
+## included -- ends up under it. (Until the 2026-09-15 tall-phone pass the
+## insertion point was DailyLogin's index, while the HUD nodes were direct
+## children of the root; a 2026-09-14 review had found ShortenButton sharp
+## and tappable over the open popup.)
 func test_the_popups_draw_over_the_shorten_button() -> void:
 	var src := FileAccess.get_file_as_string(_LOBBY_SCENE)
 	var btn := src.find('[node name="ShortenButton" ')
 	assert_true(btn != -1, "ShortenButton exists")
-	assert_true(btn < src.find('[node name="DailyLogin" '),
-		"the reward popup's blur, inserted at DailyLogin's index, must cover it")
-	assert_true(btn < src.find('[node name="DailyReward" '), "the reward popup covers it")
+	assert_true(btn < src.find('[node name="DailyReward" '),
+		"the reward popup's blur, inserted at DailyReward's index, must cover it")
 	assert_true(btn < src.find('[node name="ColorRect" '), "the tutorial overlay covers it")
 	assert_contains(FileAccess.get_file_as_string(_LOBBY_SCRIPT),
-		"move_child(blur_overlay, daily_login_btn.get_index())",
+		"move_child(blur_overlay, daily_reward.get_index())",
 		"if the blur's insertion point moves, re-check which HUD nodes it covers")
 
 

@@ -52,34 +52,36 @@ const SHORTEN_PANEL_SCENE := preload("res://Scenes/Lobby/ShortenPanel.tscn")
 
 @onready var color_rect = $ColorRect
 @onready var click_area = $ColorRect/ClickArea
-@onready var student_button = $Student
-@onready var jadwal_button = $Jadwal
-@onready var koperasi_button = $Koperasi
-@onready var report_student_button = $ReportStudent
-@onready var inventory_button = $Inventory
-@onready var shorten_button = $ShortenButton
+# The HUD sits in Safe/UI/BottomBar and the diorama in Classroom since the
+# 2026-09-15 tall-phone pass; unique names find them wherever they sit.
+@onready var student_button = %Student
+@onready var jadwal_button = %Jadwal
+@onready var koperasi_button = %Koperasi
+@onready var report_student_button = %ReportStudent
+@onready var inventory_button = %Inventory
+@onready var shorten_button = %ShortenButton
 
-@onready var money_label = $DisplayUang/Label
-@onready var daily_login_btn = $DailyLogin
+@onready var money_label = get_node("%DisplayUang/Label")
+@onready var daily_login_btn = %DailyLogin
 @onready var daily_reward = $DailyReward
 @onready var claim_button = $DailyReward/ButtonClaim
 @onready var reward_coin = $DailyReward/RewardCoin
 @onready var reward_amount = $DailyReward/RewardAmount
 
-@onready var portraits_back: Control = $StudentPortraitsContainer_Back
-@onready var portraits_front: Control = $StudentPortraitsContainer_Front
+@onready var portraits_back: Control = %StudentPortraitsContainer_Back
+@onready var portraits_front: Control = %StudentPortraitsContainer_Front
 
 @onready var portrait_slots = [
-	$StudentPortraitsContainer_Back/Slot1,
-	$StudentPortraitsContainer_Back/Slot2,
-	$StudentPortraitsContainer_Front/Slot3,
-	$StudentPortraitsContainer_Front/Slot4,
+	get_node("%StudentPortraitsContainer_Back/Slot1"),
+	get_node("%StudentPortraitsContainer_Back/Slot2"),
+	get_node("%StudentPortraitsContainer_Front/Slot3"),
+	get_node("%StudentPortraitsContainer_Front/Slot4"),
 ]
 @onready var hand_slots = [
-	$StudentHandsContainer_Back/Slot1,
-	$StudentHandsContainer_Back/Slot2,
-	$StudentHandsContainer_Front/Slot3,
-	$StudentHandsContainer_Front/Slot4,
+	get_node("%StudentHandsContainer_Back/Slot1"),
+	get_node("%StudentHandsContainer_Back/Slot2"),
+	get_node("%StudentHandsContainer_Front/Slot3"),
+	get_node("%StudentHandsContainer_Front/Slot4"),
 ]
 
 const DAILY_REWARD := 10
@@ -127,7 +129,7 @@ var _tutorial_arrow: Control = null
 var blur_overlay: ColorRect
 var reward_popup_open := false
 
-@onready var bg_layer = $BGLayer
+@onready var bg_layer = %BGLayer
 
 func _ready():
 	if bg_texture:
@@ -612,16 +614,12 @@ func _create_blur_overlay():
 	blur_overlay.visible = false
 	blur_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(blur_overlay)
-	# DailyReward is now a sibling of DailyLogin, not its child (Task 10
-	# re-anchored it to the scene root). Place blur_overlay just before
-	# DailyLogin, i.e. at DailyLogin's own index -- DailyReward sits right
-	# after DailyLogin in child order (with the root's own ColorRect after
-	# it), so inserting here still puts blur_overlay ahead of DailyReward --
-	# so it renders on top of the rest of the lobby UI but behind the popup.
-	# Any HUD node the popup must cover (ShortenButton, 2026-09-14) has to
-	# sit BEFORE DailyLogin: one between DailyLogin and DailyReward stays
-	# sharp and tappable over the open popup.
-	move_child(blur_overlay, daily_login_btn.get_index())
+	# Place blur_overlay at DailyReward's index, just before it: it then
+	# renders over the Classroom and the whole HUD (Safe and everything in
+	# it, DailyLogin and ShortenButton included) but behind the popup. Since
+	# the 2026-09-15 tall-phone pass the HUD sits in Safe/UI/BottomBar, so a
+	# HUD node's own index says nothing about the root's draw order.
+	move_child(blur_overlay, daily_reward.get_index())
 	# Connect click on blur overlay to close popup
 	blur_overlay.gui_input.connect(_on_blur_overlay_input)
 
@@ -868,7 +866,11 @@ func _show_step(index: int):
 		for p in paths:
 			var trimmed = p.strip_edges()
 			if trimmed != "":
-				var target = get_node_or_null(trimmed)
+				# A bare name ("Jadwal") is a HUD button, found by unique name
+				# wherever it sits; anything else is a path from the root.
+				var target = get_node_or_null("%" + trimmed)
+				if target == null:
+					target = get_node_or_null(trimmed)
 				if target and target is Control:
 					targets.append(target)
 		if not targets.is_empty():

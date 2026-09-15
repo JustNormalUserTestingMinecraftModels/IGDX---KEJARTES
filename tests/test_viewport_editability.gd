@@ -128,10 +128,6 @@ const ALLOWED: Dictionary = {
 	# attach_to()'s shadow TextureRect: per-call-dynamic content attached to
 	# a runtime-randomised shelf item (Koperasi rework Task 5).
 	"res://Scripts/Koperasi/ShelfItem.gd": 1,
-	# PatternOverlay (category-tinted wash, varies per item) and TintCircle
-	# (stat-colored icon backdrop, one per visible EfekRow): both
-	# per-call-dynamic content whose color depends on the item shown.
-	"res://Scripts/Inventory/ItemDetailSheet.gd": 2,
 }
 
 

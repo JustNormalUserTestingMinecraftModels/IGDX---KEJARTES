@@ -98,16 +98,17 @@ func test_transition_duration_is_a_single_tunable_knob() -> void:
 
 
 func test_transition_carries_the_tuned_motion_lab_preset() -> void:
-	# Tuned in motion-lab on 2026-09-10 for the full-turn day: QUAD/OUT over
-	# 1.64s per phase. The day sets off briskly from dawn and settles into
-	# evening, and the whole sweep (two phases) takes 3.28s.
+	# Set on 2026-09-15: QUAD/IN_OUT over 1.5s per phase, so the whole sweep
+	# (two phases) takes exactly 3.0s: it eases out of dawn, is fastest at
+	# midday and eases into evening. It was QUAD/OUT over 1.64s before.
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
 	assert_contains(src, "Tween.TRANS_QUAD", "the tuned transition is QUAD")
-	assert_contains(src, "Tween.EASE_OUT", "the day eases out")
-	assert_false(src.contains("Tween.EASE_IN_OUT"), "the in-out ease is retired")
+	assert_contains(src, "Tween.EASE_IN_OUT", "the day eases in and out")
+	assert_false(src.contains("Tween.EASE_OUT)"), "the out-only ease is retired")
 	var w := _widget()
-	assert_true(is_equal_approx(w.transition_duration, 1.64),
-		"the tuned duration is 1.64s per phase, got %f" % w.transition_duration)
+	assert_true(is_equal_approx(w.transition_duration * 2.0, 3.0),
+		"a whole day should sweep in 3.0s (1.5s a phase), got %fs"
+			% (w.transition_duration * 2.0))
 	w.free()
 
 

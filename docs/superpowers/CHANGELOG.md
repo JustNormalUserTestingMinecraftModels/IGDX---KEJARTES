@@ -8,6 +8,14 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-15 — SchoolDay: the sky's day sweep is 3 s, easing in and out
+
+`BookClockWidget.gd`'s `transition_duration` is 1.5 s a phase (was 1.64), so
+the one sky sweep across both phases takes 3.0 s (was 3.28 s), and
+`transition_to()` now eases QUAD/IN_OUT (was QUAD/OUT). SchoolDay paces its
+progress bar off the same knob, so the whole simulated day is 0.28 s
+shorter. Smoothstep (`ease_in_out`) stays off, or the sweep would ease twice.
+
 ## 2026-09-14 — Lobby: layered faces for the whole roster
 
 Plan `docs/superpowers/plans/2026-09-14-student-face-rigs.md`, spec

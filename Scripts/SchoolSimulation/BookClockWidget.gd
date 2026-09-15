@@ -78,19 +78,19 @@ enum Phase { DAWN, MIDDAY, EVENING }
 		_apply_rotation()
 ## How long one phase of the school day takes, in seconds -- the day has
 ## two, dawn-to-midday and midday-to-evening, each this length, and the
-## sky sweeps once across both. Tuned in motion-lab on 2026-09-10 for the
-## full-turn day, alongside QUAD/OUT: 1.64s a phase, 3.28s a day (it was
-## 2.0 for the old half turn).
+## sky sweeps once across both. Set to 1.5s a phase on 2026-09-15, so the
+## whole day sweeps in 3.0s under QUAD/IN_OUT (it was 1.64s and QUAD/OUT
+## from 2026-09-10, and 2.0 for the old half turn).
 ##
 ## SchoolDay reads this to pace the day's progress bar across its two
 ## phases and the sky in a single sweep spanning both, so all three stay
 ## in lockstep -- changing it here changes how long a simulated school
 ## day takes on screen.
-@export var transition_duration: float = 1.64
+@export var transition_duration: float = 1.5
 ## When true, progress runs through smoothstep before it maps to an
 ## angle, so the sweep eases in and out even under a linear driver.
-## Off since 2026-09-10: transition_to()'s tween eases OUT, and smoothstep
-## underneath it would put the ease-in back.
+## Off since 2026-09-10: transition_to()'s tween already eases IN_OUT, and
+## smoothstep underneath it would ease the sweep twice.
 @export var ease_in_out: bool = false:
 	set(value):
 		ease_in_out = value
@@ -216,7 +216,7 @@ func transition_to(phase: Phase, duration: float = -1.0) -> Tween:
 	var seconds: float = transition_duration if duration < 0.0 else duration
 	var tween := create_tween()
 	tween.tween_method(set_progress, _progress, progress_for_phase(phase), seconds) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	return tween
 
 

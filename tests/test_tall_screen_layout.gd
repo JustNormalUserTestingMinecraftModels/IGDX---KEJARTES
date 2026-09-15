@@ -353,3 +353,83 @@ func test_student_card_at_the_design_size_is_unchanged() -> void:
 		Vector2(55, 352), "StampApprove")
 	assert_eq(_authored_rect(card.get_node("%PilihMurid") as Control).position,
 		Vector2(160, 44), "PilihMurid")
+
+
+# ── StudentList ──────────────────────────────────────────────────────────────
+
+const STUDENT_LIST := "res://Scenes/StudentList/student_list.tscn"
+
+
+func test_student_list_backdrop_fills() -> void:
+	_assert_background_fills(_scene(STUDENT_LIST).get_node_or_null("Backdrop") as TextureRect,
+		"StudentList Backdrop")
+
+
+## The roster cards are one Center-anchored piece at their 980x1410 rect.
+func test_student_list_cards_are_centred() -> void:
+	var cards := _scene(STUDENT_LIST).get_node_or_null("CardContainer") as Control
+	assert_true(cards != null, "missing CardContainer")
+	if cards == null:
+		return
+	assert_eq(_anchors(cards), Vector4(0.5, 0.5, 0.5, 0.5), "CardContainer is Center-anchored")
+	assert_eq(_offsets(cards), Vector4(-490, -650, 490, 760), "CardContainer keeps its rect")
+
+
+## The header and avatar strip on the top edge; the arrows and page dots in a
+## Bottom Wide bar; all inside the safe area. The tutorial overlay stays the
+## last child, over the HUD.
+func test_student_list_ui_is_pinned_inside_the_safe_area() -> void:
+	var list := _scene(STUDENT_LIST)
+	_assert_under_safe_area(list.get_node_or_null("%HeaderLabel"), "HeaderLabel")
+	_assert_under_safe_area(list.get_node_or_null("%RosterStrip"), "RosterStrip")
+	var bar := list.get_node_or_null("Safe/UI/BottomBar") as Control
+	assert_true(bar != null, "StudentList needs Safe/UI/BottomBar")
+	if bar == null:
+		return
+	assert_eq(_anchors(bar), Vector4(0, 1, 1, 1), "BottomBar is Bottom Wide")
+	assert_eq(bar.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BottomBar lets taps through")
+	for n in ["LeftArrow", "RightArrow", "PageIndicator"]:
+		var c := list.get_node_or_null("%" + n)
+		assert_true(c != null and c.get_parent() == bar, n + " rides in BottomBar")
+	var overlay := list.get_node_or_null("ColorRect")
+	assert_true(overlay != null and overlay.get_index() == list.get_child_count() - 1,
+		"the tutorial overlay stays the last child, over the HUD")
+
+
+## On a 1080x2400 phone the cards sit centred and the nav row rides the
+## bottom edge; the header stays on top.
+func test_student_list_on_a_tall_phone() -> void:
+	var list := _stood_up(STUDENT_LIST, TALL)
+	_assert_placed((list.get_node("CardContainer") as Control),
+		Rect2(50, 550, 980, 1410), "CardContainer")
+	_assert_placed((list.get_node("%RightArrow") as Control),
+		Rect2(850, 2252, 160, 128), "RightArrow")
+	assert_eq(_authored_rect(list.get_node("%HeaderLabel") as Control).position,
+		Vector2(190, 24), "the header stays at the top")
+
+
+## At 1080x1920 the StudentList is where it was.
+func test_student_list_at_the_design_size_is_unchanged() -> void:
+	var list := _stood_up(STUDENT_LIST, DESIGN)
+	_assert_placed((list.get_node("CardContainer") as Control),
+		Rect2(50, 310, 980, 1410), "CardContainer")
+	_assert_placed((list.get_node("%LeftArrow") as Control),
+		Rect2(70, 1772, 160, 128), "LeftArrow")
+	_assert_placed((list.get_node("%RosterStrip") as Control),
+		Rect2(70, 128, 940, 150), "RosterStrip")
+	assert_eq(_authored_rect(list.get_node("%PageIndicator") as Control).position,
+		Vector2(400, 1794), "PageIndicator")
+
+
+## A unique-name path used as a format string ("%RosterStrip/Avatar%d" % i)
+## reads its leading "%R" as a format character and fails at run time, which
+## the stood-up screens above never reach (their scripts' _ready does not run
+## here). Such a string writes its leading "%" as "%%".
+func test_unique_name_paths_are_not_format_strings() -> void:
+	var re := RegEx.create_from_string("\"%[A-WYZabeghijklmnpqrtuwyz_][^\"]*\"\\s*%[^=]")
+	for path in ["res://Scripts/Lobby/loby.gd", "res://Scripts/Koperasi/koprasi.gd",
+			"res://Scripts/StudentCard/student_card.gd",
+			"res://Scripts/StudentList/student_list.gd"]:
+		var m := re.search(FileAccess.get_file_as_string(path))
+		assert_true(m == null, "%s formats a unique-name path: %s"
+			% [path, m.get_string() if m else ""])

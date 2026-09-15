@@ -133,14 +133,31 @@ extends BaseMinigame
 @export var hint_color: Color       = Color(1, 1, 1, 0.65)
 
 # ─── Constants ───────────────────────────────────────────────────────────────
-const MAX_ATTEMPTS: int = 8
+## Shots a game gives, by difficulty. SchoolDay passes
+## clampi(current_grade - 6, 1, 3), so 1 is Kelas 7, 2 Kelas 8, 3 Kelas 9.
+## No shot is ever refunded.
+const ATTEMPTS_BY_DIFFICULTY: Dictionary = {1: 8, 2: 10, 3: 10}
+## Goals needed to win, by difficulty, as Vector2i(min, max) -- both
+## inclusive; each game rolls one. The max must leave at least two shots to
+## miss, which tests/test_main_bola_targets.gd enforces. Kelas 9 asks what
+## Kelas 8 does: its target box starts faster (goalie_speed_mult 1.5) and its
+## clock is shorter (30 s x Balance.MINIGAME_WAKTU_SKALA_KELAS_9 = 18 s), and
+## that clock, not the shot count, caps how many shots it has time for.
+const TARGET_RANGE_BY_DIFFICULTY: Dictionary = {
+	1: Vector2i(4, 6),
+	2: Vector2i(6, 8),
+	3: Vector2i(6, 8),
+}
 const TIMER_DURATION: float = 60.0
 const GOALIE_SPEED_INCREASE: float = 0.15  # +15% per goal
 
 # ─── Game State ──────────────────────────────────────────────────────────────
 var score: int = 0
 var target_score: int = 5
-var attempts_left: int = MAX_ATTEMPTS
+## Shots this game started with: attempts_for() at its difficulty. Shots
+## taken count down from this, not from a fixed number.
+var max_attempts: int = attempts_for(1)
+var attempts_left: int = attempts_for(1)
 var is_game_over: bool = false
 var is_resolving: bool = false   # true while ball/goalie animation plays
 var goalie_speed_mult: float = 1.0
@@ -193,8 +210,9 @@ var _goalie_design_captured: bool = false
 func _ready() -> void:
 	super._ready()
 
-	target_score = randi() % 3 + 4   # 4 – 6 goals to win
-	attempts_left = MAX_ATTEMPTS
+	target_score = roll_target(1)
+	max_attempts = attempts_for(1)
+	attempts_left = max_attempts
 
 	_setup_layout()
 	_setup_field_markings()
@@ -212,19 +230,42 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED and is_node_ready():
 		_setup_layout()
 
+## Shots a game at this difficulty gives. A difficulty outside 1-3 plays as
+## the nearest end, as start_minigame() has always treated one.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func attempts_for(game_difficulty: int) -> int:
+	return ATTEMPTS_BY_DIFFICULTY[clampi(game_difficulty, 1, 3)]
+
+
+## The goal target's range at this difficulty: Vector2i(min, max), inclusive.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func target_range_for(game_difficulty: int) -> Vector2i:
+	return TARGET_RANGE_BY_DIFFICULTY[clampi(game_difficulty, 1, 3)]
+
+
+## One goal target for a game at this difficulty, drawn uniformly from
+## target_range_for().
+##
+## Affects: the global random state only.
+static func roll_target(game_difficulty: int) -> int:
+	var targets := target_range_for(game_difficulty)
+	return randi_range(targets.x, targets.y)
+
+
 func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 	super.start_minigame(game_difficulty, time_limit)
 	if difficulty == 2:
-		target_score = randi() % 3 + 6
 		goalie_speed_mult = 1.25
 	elif difficulty >= 3:
-		target_score = randi() % 3 + 8
 		goalie_speed_mult = 1.50
 	else:
-		target_score = randi() % 3 + 4
 		goalie_speed_mult = 1.0
+	target_score = roll_target(difficulty)
 	score = 0
-	attempts_left = MAX_ATTEMPTS
+	max_attempts = attempts_for(difficulty)
+	attempts_left = max_attempts
 	if score_hud:
 		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), target_score)
 	_update_hud()
@@ -781,9 +822,9 @@ func _reset_shot() -> void:
 
 
 ## Shot accuracy: goals scored per shot taken. Reaching the goal target with
-## every shot on target is a three-star run; grinding it out over all eight
-## attempts is not. Returns STAR_RATIO_UNKNOWN before the first shot, so a win
-## that somehow took no shots is not rated a zero.
+## every shot on target is a three-star run; grinding it out over every shot
+## the game gave is not. Returns STAR_RATIO_UNKNOWN before the first shot, so
+## a win that somehow took no shots is not rated a zero.
 ##
 ## Affects: nothing. Pure. Static so a test can call it with no instance.
 static func _shot_accuracy_ratio(score: int, shots_taken: int) -> float:
@@ -796,7 +837,7 @@ static func _shot_accuracy_ratio(score: int, shots_taken: int) -> float:
 ##
 ## Affects: nothing. Pure. Read by BaseMinigame._show_result_overlay().
 func get_star_ratio() -> float:
-	return _shot_accuracy_ratio(score, MAX_ATTEMPTS - attempts_left)
+	return _shot_accuracy_ratio(score, max_attempts - attempts_left)
 
 
 # ─── Override lose_game to bypass BaseMinigame's score-check shortcut ────────

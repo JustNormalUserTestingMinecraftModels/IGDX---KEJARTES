@@ -158,7 +158,9 @@ func test_action_buttons_use_theme_variations() -> void:
 		# (the lobby's CLAIM) and DangerButton for something discarded
 		# (quitting a minigame mid-run).
 		"KertasMurid1/Aprove": &"PrimaryButtonL",
-		"KertasMurid1/Batal": &"SecondaryButtonL",
+		# StudentCard keeps the cream secondary it had before the 2026-09-14
+		# lobby-style-buttons pass turned every other SecondaryButton brown.
+		"KertasMurid1/Batal": &"StudentCardSecondaryButtonL",
 		"KertasMurid1/KutuBuku": &"TraitPill",
 		"KertasMurid1/KutuBuku2": &"TraitPill",
 		"BelajarButton": &"PrimaryButtonL",

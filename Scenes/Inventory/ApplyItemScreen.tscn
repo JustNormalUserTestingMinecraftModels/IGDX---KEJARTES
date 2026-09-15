@@ -73,12 +73,12 @@ text = "Nama Item"
 
 [node name="RecapCount" type="Label" parent="Margin/Card/Margin/VBox/RecapStrip" unique_id=1064730365]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"EventBodyLabel"
 text = "Sisa ×0"
 
 [node name="EffectSummary" type="Label" parent="Margin/Card/Margin/VBox" unique_id=1327952809]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"EventBodyLabel"
 text = "Menambah: ... per siswa."
 autowrap_mode = 3
 

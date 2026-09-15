@@ -27,11 +27,16 @@ passes.
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay (simulate
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
+Every mid-day minigame and random event opens with the sliding EventWarning,
+then an EventDialogue line (`EventDialogueCatalog`); the three pick-students
+events ask Tolak / Terima there, before their picker. The Lobby's **Shorten**
+button (`GameSettings.skip_event_dialogue`, saved) skips the minigame lines;
+Nasi Kotak, Hujan and the choice events keep theirs.
 Splashscreen still exists and is tested but nothing routes to it (the game
-boots straight to MainMenu, which loads in one hop). The Loading screen was
-deleted on 2026-09-10: the shared `Transition` wipe covers the scene-load gap,
-so the intermediate screen was dead weight. All navigation is a single
-`Transition.change_scene(target, …)`. **Lobby hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+boots straight to MainMenu, which loads in one hop). There is no Loading
+screen: the shared `Transition` wipe covers the scene-load gap.
+All navigation is a single `Transition.change_scene(target, …)`. **Lobby
+hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
 **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
 to the hub rather than the Lobby.
 
@@ -52,8 +57,8 @@ auto-takes "Izin" (forced Istirahat).
 **Personalities** (`Aktif`/`Tekun`/`Kreatif`/`Santai`/`Seni Dalam Kesunyian`)
 drive daily decay rates; **quirks** (`Kutu Buku`, `Penyendiri`, `Semangat
 Juang`, `Penasaran`, `Biang Onar`, `Pekerja Keras`) modify gains and costs.
-Every coefficient is an `@export` on `StudentData.gd` — tune in the Inspector,
-never hardcode.
+Their coefficients are `static var`s in `Balance.gd` (`DECAY_*`, `SIFAT_*`),
+read-only for us.
 
 ## Architecture
 
@@ -115,7 +120,7 @@ the roster and `ThemeFactory` together, or the suite fails.
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
 variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
-`SuccessButton`, `LobbyNavButton`, `Card`, `SunkenPanel`, `Scrim`,
+`SuccessButton`, `LobbyCtaButton`, `Card`, `SunkenPanel`, `Scrim`,
 `DisplayLabel`, `H1Label`, `H2Label`, `TitleLabel`, `CaptionLabel`,
 `MicroLabel`, `BarLabel`, `StatBar`, …). If none fits, add a new variation in
 `ThemeFactory.gd` and rebake. Only accepted exception: layout-only constant
@@ -127,23 +132,46 @@ Full detail: `docs/superpowers/design/style-guide.md`.
 the `.tscn`; repeated rows are a `PackedScene` template; responsive geometry
 is a `@tool` script driven by documented `@export` knobs. Every script's
 documentation (a `##` file header, a `##` line on every `@export`) is a hard
-rule now (`tests/test_script_documentation.gd`) — the 2026-08-31 21-task
-sweep closed that ratchet. Runtime visual construction is still a ratchet
-(`tests/test_viewport_editability.gd`): a `BASELINE` dict of real remaining
-debt, frozen and only ever lowered, plus an `ALLOWED` dict of reviewed,
-commented, permanent exceptions (per-call-dynamic content, or a conditional
-texture-vs-procedural swap) — see the authoring guide's "Known gaps" section.
+rule (`tests/test_script_documentation.gd`). Runtime visual construction is
+still a ratchet (`tests/test_viewport_editability.gd`): a `BASELINE` dict of
+real remaining debt, frozen and only ever lowered, plus an `ALLOWED` dict of
+reviewed, commented, permanent exceptions (per-call-dynamic content, or a
+conditional texture-vs-procedural swap) — see the authoring guide's "Known
+gaps" section.
 
 Full detail: `docs/superpowers/design/authoring-guide.md`.
+
+**Cards.** Build a new card on a `Sheet` Panel with the `Card` variation
+(StudentList's `RosterCard`). Use `paper.png` only where its cut corner is
+the point: it is opaque over only the middle of its rect (numbers in
+`docs/superpowers/DEBT.md`). Measure the
+alpha before laying out on any soft-edged texture.
+
+**Asset constraints.** Placeholder art is drop-replaceable at the same path
+(inventory in `docs/superpowers/DEBT.md`), but a replacement **must** honour:
+
+- `fill_*` tiles and `track_ghost.png`: the rules in
+  `Assets/Images/UI/BarFill/README.md`. `tests/test_bar_contrast.gd` checks
+  the luminance floor, `tests/test_ghost_track.gd` the ghost track; nothing
+  tests the tile period.
+- `penjadwalan_card_bg.png` stays exactly 1080x1080: `atur_jadwal.tscn`'s
+  Peringatan dialog crops it with a hardcoded `region_rect` that
+  `tests/test_atur_jadwal.gd` pins.
+- `EndCutscene`'s badge words are stroked **paths**, not SVG `<text>`, which
+  ThorVG drops on import; `tests/test_end_cutscene.gd` pixel-checks them.
+- `tray_dots.png` stays 26x26 (`tests/test_koperasi_tray.gd`); it tiles via
+  the node's `texture_repeat`, not an import flag.
+- `transition_background.png` has a stray layer that any `sky_cover_margin`
+  at or above 1.0 keeps off screen. Do not "fix" it by lowering that margin.
 
 **Two animation APIs, both live:**
 - `Scripts/Design/Juice.gd` — the project's own (`press`, `release`, `pop_in`,
   `stagger_in`, `count_up`, `fill_bar`, `shake`). Buttons get press/release
   wired automatically by `UIPolish`; opt out with
   `node.set_meta(Juice.NO_AUTO_JUICE, true)`.
-- `Scripts/AnimUtils.gd` — came in with the ported shop/inventory
-  (`squash_bounce`, `popup_spring_in/out`, `coin_pulse`, `create_floating_text`,
-  …). It is a plain static-function script, **not** an autoload.
+- `Scripts/AnimUtils.gd` (`squash_bounce`, `popup_spring_in/out`,
+  `coin_pulse`, `create_floating_text`, …). It is a plain
+  static-function script, **not** an autoload.
 
 Minigames (`Scenes/Minigames/**`) and the debug overlay
 (`Scripts/Debug/DebugManager.gd`) are explicitly **out of scope** for the
@@ -154,9 +182,9 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 96 suites, 1339 tests (2026-09-11).
+the Godot AI MCP `test_run` tool. 110 suites, 1577 tests (2026-09-15).
 
-Hard constraints, learned the hard way:
+Hard constraints:
 
 1. **The suite must be `@tool`** or the runner reports it abstract/broken.
 2. **No test may be a coroutine.** The runner does `suite.call(name)` without
@@ -172,7 +200,7 @@ Hard constraints, learned the hard way:
 5. **The suite cannot be run headless.** Proven on 2026-09-09: `--script`
    registers no autoloads, and running a *scene* makes `Engine.is_editor_hint()`
    false so every `@tool` guard fires its real side effects (~143 failures).
-   The bridge is the only real way. Details in the changelog.
+   The bridge is the only real way. Details in commit `39a1b9b`'s message.
 
 **A full `test_run` writes two tracked files.** The `theme_rebake` suite calls
 `ResourceSaver.save()` in-process, so a full run rebakes
@@ -192,19 +220,15 @@ meant to and can never tell you that you changed the wrong things.
 
 ## Pull requests
 
-PRs open, check, review and merge through automation
-(`docs/superpowers/specs/2026-09-11-pr-automation-design.md`). **Finish a
-branch with the `ship-pr` skill** (`.claude/skills/ship-pr/SKILL.md`): it runs
-the full suite and a local review, opens the PR, and stamps the tested commit
-with `kejartes/editor-tests` and `kejartes/local-review`. GitHub adds
-`project-check` (headless Godot 4.6.2 loading every file) on every PR, and
-`claude-review` once the owner adds a key. `ci/auto_merge.sh` then merges
-**only `brineoutxd`'s PRs into `Textures`**, and only when every gate is green
-on a commit that already contains `Textures`. Label a PR `hold`, or leave it a
-draft, to stop it; anyone can still merge by hand, and must for a PR that
-changes `.github/workflows/` (GitHub's workflow token cannot merge those). A
-stamp belongs to one commit: never post one for a commit the suite did not run
-on.
+**Finish a branch with the `ship-pr` skill** (`.claude/skills/ship-pr/SKILL.md`;
+design in `docs/superpowers/specs/2026-09-11-pr-automation-design.md`): it runs
+the full suite and a local review, opens the PR and stamps the tested commit.
+`ci/auto_merge.sh` then merges **only `brineoutxd`'s PRs into `Textures`**,
+and only when every gate is green on a commit that already contains
+`Textures`. Label a PR `hold`, or leave it a draft, to stop it; anyone can
+still merge by hand, and must for a PR that changes `.github/workflows/`
+(GitHub's workflow token cannot merge those). A stamp belongs to one commit:
+never post one for a commit the suite did not run on.
 
 ## Godot MCP
 
@@ -236,17 +260,16 @@ Verification, not implementation, dominates the cost of a session here.
 to MainMenu / Lobby / StudentCard / AturJadwal / SchoolDay / SemesterEnd /
 Splashscreen. Seed, teleport, screenshot once. The seed does **not** fill
 `day_schedules`, so schedule-driven screens (SchoolDay, AturJadwal) still need
-a pass through Atur Jadwal first.
+a pass through Atur Jadwal first. The weekly report needs neither: the Scenes
+tab's **📊 Laporan Mingguan** opens ResultCheckup over the current screen with
+a fixed sample week, leaving the run untouched.
 
-That tab also carries **🎭 Gladi Resik Akhir Kelas** — one-click rehearsals of
-the whole end-of-grade sequence with a fixed roster: *Semua Lulus*, *Semua
-Gagal*, and *Campur*, which ladders 3/2/1/0 cleared targets so one pass of
-StatCheck lights the meter 3, 2, 1 and 0 shares in turn (6 of 12 = 1.5 stars, a
-loss). Arming one snapshots the run; **↩ Pulihkan Run Sebelum Gladi Resik**
+That tab also carries **🎭 Gladi Resik Akhir Kelas**: one-click rehearsals of
+the end-of-grade sequence with a fixed roster (*Semua Lulus*, *Semua Gagal*,
+and *Campur*, which ladders 3/2/1/0 cleared targets for 1.5 stars, a loss).
+Arming one snapshots the run; **↩ Pulihkan Run Sebelum Gladi Resik**
 restores it, which matters because RunResult otherwise advances the grade and
-clears the roster on its way out. Logic lives in
-`Scripts/Debug/EndGameRehearsal.gd`, tested in
-`tests/test_end_game_rehearsal.gd`; `DebugManager.gd` only holds the buttons.
+clears the roster on its way out.
 
 **Clicking, when you must.** Send a `motion` event to the target before the
 `button` press — Godot will not route a click without the hover state first,
@@ -261,7 +284,7 @@ rather than eyeballing a screenshot — and re-read it after any window resize.
 shallow `max_depth`:
 
     game_manage(op="get_ui_elements",
-                params={"root_path": "/root/Inventory/MainLayout", "max_depth": 3})
+                params={"root_path": "/root/Inventory/MainColumn", "max_depth": 3})
 
 Autoloads answer to `/root/<Name>` but the reply echoes scene-relative paths
 (`/Inventory/../DebugManager`). Bare `/root` returns nothing.
@@ -269,9 +292,7 @@ Autoloads answer to `/root/<Name>` but the reply echoes scene-relative paths
 **3. Prefer `test_run` over screenshots.** The whole suite returns compact JSON
 in seconds; one screenshot costs more tokens than the entire run. Reach for a
 screenshot only to judge something genuinely visual — and when you do, judge it
-at full size. A scaled-down capture cannot show 1px detail, spacing or weight,
-and signing off a visual change from one is how the 2026-09-10 cream pass
-shipped a half-finished layout.
+at full size. A scaled-down capture cannot show 1px detail, spacing or weight.
 
 **4. Never hand-edit a `.tscn` while the editor is attached.** Its in-memory
 copy wins and the next `scene_save` silently overwrites your text edit — `scan`,
@@ -287,7 +308,7 @@ position mode, where anchors are **not saved** — set `layout_mode = 1` first;
 and an instanced scene's root loses its rect on load under a plain `Control`,
 so draw from a child (authoring guide, Pattern C).
 
-**4b. Two save hazards that silently eat work.**
+**4b. Three save hazards that silently eat work.**
 
 - *`scene_save` flushes stale script buffers.* The editor holds `.gd` files
   open in script tabs and writes every tab back on each scene save, over
@@ -296,12 +317,17 @@ so draw from a child (authoring guide, Pattern C).
   `git diff HEAD -- '*.gd'` for files you were not editing; and once you have
   patched a script, restart the editor before the next `scene_save` — a
   force-kill is safe once scenes are saved, and the relaunch reloads every tab
-  from disk (2026-09-10: skipping it reverted `BuatBatik.gd`).
+  from disk.
 - *Overrides serialise only on an instanced scene's ROOT.* Properties set on an
   instance's **children** report success and are dropped on save. Give the
   sub-scene `@export`s on its root instead — why `ShopHubTile` carries
   `icon_texture`/`caption_text` rather than the hub reaching into
   `Content/Icon`, and why `ActivityRow` carries `watermark_texture`.
+- *An editor left open across a pull writes its stale tabs back.* Close Godot
+  **without saving** before every pull, or any checkout or merge that rewrites
+  tracked files, then fully restart it (a new Resource `@export` needs one; see
+  below). Left open, it can recreate a scene the pull deleted, or save an open
+  scene without a script whose new base class it has not registered.
 
 **5. Rescan after editing a `.gd`, before running tests.** `test_run` serves a
 **stale** autoload otherwise. A scan is not always enough: when the file was
@@ -318,8 +344,7 @@ for class* until you `project_manage(op="stop")`, `filesystem_manage(op="scan")`
 and relaunch. Worse, a **changed default on a Resource `@export` needs a full
 editor restart** — `load_default()` keeps serving the cached instance, so the
 new value silently does not take effect and a test asserting it fails for no
-visible reason. Same for a **new** `@export`. This is why the theme rebake has
-no headless path.
+visible reason. Same for a **new** `@export`.
 
 **Rebaking without File > Run.** `Scripts/Design/BakeTheme.gd` is an
 `EditorScript` with no MCP entry point. Write a transient `@tool`
@@ -328,23 +353,24 @@ plus `ResourceSaver.save()`, run it with `test_run`, then delete it.
 
 **The bridge is single-client.** Only one client holds the backend at a time. A
 subagent that connects displaces your session and gets nothing itself, and both
-then see "A different Godot AI backend is already running". Recovery is
-`taskkill` on stray `godot-ai.exe` processes, leaving `Godot_v*.exe` alone. So:
-subagents write code, you run the editor and hand them the results.
+then see "A different Godot AI backend is already running" (recovery is under
+`## Godot MCP`). So: subagents write code, you run the editor and hand them the
+results.
 
-**A full `test_run` drops the bridge.** Observed four times on 2026-09-10, each
-immediately after a full run and never after a targeted one. The first
-explanation was memory pressure — the machine had ~1 GB free of 16 GB — but the
-fourth drop happened with **8.9 GB free**, which rules that out. What is left is
-duration: a full run is 15-20s of near-continuous main-thread work, and the
-plugin's transport does not survive it (the `test_run` docs warn that a single
-test blocking for 20s+ can drop the session).
+**The main checkout is shared too.** Several sessions often work in it at once:
+never `git switch` or `git checkout` there on an old reading. Re-check
+`git status` and `git reflog -1` in the same command, or put a second task in a
+worktree.
+
+**A full `test_run` drops the bridge.** A full run is 15-20s of
+near-continuous main-thread work, and the plugin's transport does not survive
+it (the `test_run` docs warn that a single test blocking for 20s+ can drop the
+session). It is not memory pressure; that was ruled out.
 
 So: **prefer targeted `test_run(suite=...)`** — milliseconds, never dropped.
 Budget one editor restart for each full run you take, and take them at
 milestones rather than between tasks. A full run's results are still valid when
-the drop happens after the reply arrives; check `git status` afterwards, because
-a full run also rewrites the two tracked files noted under `## Testing`.
+the drop happens after the reply arrives.
 
 One smaller habit: grep before reading — the two largest scripts here exceed
 1,500 lines, so read the range you need, not the file.
@@ -357,158 +383,14 @@ savings come from cheaper verification loops, not from fewer tests.
 
 ## Outstanding debt & placeholders
 
-Live, unfinished items. Delete an entry when it is resolved — do not mark it
-done and leave it here.
-
-**Generated placeholder art.** Produced with PowerShell + `System.Drawing`, not
-hand-authored. All are transparent PNG/SVG, drop-replaceable at the same path
-with no code change: the five `Assets/Images/UI/Nav/` icons,
-`Assets/Images/StudentCard/menu_button.png`, three `Particles/particle_*.png`, the minigame
-result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
-(`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
-event-popup set (`icon_event_*`, `bg_event_*`, `particle_burst.png`),
-`shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`,
-`EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, the
-2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,
-`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
-the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
-`icon_keranjang_kosong.svg`, `tray_dots.png` (this last must
-stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
-those exact dimensions; in Godot 4 the repeat comes from the node's
-`texture_repeat`, not a texture import flag), and the 2026-09-10 StudentList
-Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
-(completed the six-category placeholder set; now UNREFERENCED -- StudentList's
-category and specialty glyphs use the team's authored `StudentCard/stat_*`
-art instead, so this is kept only as the one wirausaha glyph in the
-placeholder family), `UI/Placeholders/stamp_sudah.svg` /
-`stamp_belum.svg` (status-badge rubber-stamp rings), and
-`UI/StudentList/photo_corner.png` / `roster_avatar_frame.png` / `catatan_rule.png`
-(portrait tape, the avatar state ring, the teacher's-note rule — the last two
-drawn white so `self_modulate` tints them from tokens), and
-`UI/StudentList/page_dot.png` (a filled dot -- tinting the hollow ring above
-it reads as invisible on a phone).
-
-**`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
-opaque only across rows 262..1578 and columns 47..1033, its bottom-right
-corner is cut away to a transparent wedge, and its body is flat pure white
-(96% of sampled opaque pixels are exactly 255,255,255) -- there is no paper
-texture in it to preserve. So a card stretching it paints across only the
-middle two thirds of its own rect, with a diagonal hole near the bottom, and
-any band laid out against the full rect lands on the desk behind. Cropping
-does not fix this: the wedge is interior, not margin. StudentList's
-RosterCard therefore carries a `Sheet` Panel on the `Card` variation instead
--- an opaque themed surface that fills the node and brings its own stylebox
-shadow. Prefer that for any new card; reach for `paper.png` only where the
-cut corner is the point. Measure the alpha before laying out on any
-soft-edged texture.
-
-Three carry constraints a replacement **must** honour:
-
-- The `fill_*` tiles and `track_ghost.png` — rules in
-  `Assets/Images/UI/BarFill/README.md`, enforced by `tests/test_bar_contrast.gd`
-  and `tests/test_ghost_track.gd`.
-- `penjadwalan_card_bg.png` must stay exactly 1080x1080; two call sites address
-  it with hardcoded `region_rect`s.
-- `EndCutscene`'s badge words are stroked **paths**, not SVG `<text>` — Godot
-  rasterises SVG through ThorVG, which drops text elements on import.
-  `tests/test_end_cutscene.gd` guards this with a pixel check.
-
-**Stray layer in the day-transition sky (2026-09-10).**
-`Assets/Images/SchoolDay/transition_background.png` has a bluish night street
-scene pasted into its bottom-left corner (texture space roughly x 0..375,
-y 1833..2047) that should be erased at source. It sits outside the texture's
-inscribed circle — `BookClockWidget.gd`'s `_fit_layers()` makes the visible
-radius exactly `1024 / sky_cover_margin` regardless of pivot or screen size,
-and the artifact sits at radius ~1041, so any `sky_cover_margin` at or above
-1.0 keeps it off screen. Do not "fix" it by lowering that margin.
-
-**Audio placeholders.** These `AudioDirector` cue ids alias existing streams:
-`sfx_specialty_match`, `tally`, `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
-`score_tick`, `combo_up`, `sfx_event_announce`, and the BGM ids `exam_notice`,
-`exam_cutscene`, `run_result`. `ApplyItemScreen`'s payoff likewise reuses
-existing cues rather than a dedicated `sfx_item_apply`.
-
-**Copy placeholders.** Every cutscene line in the exam and win branches, and
-every `desc` string in `ItemDatabase.DEFAULT_ITEMS` (shown verbatim in
-`ItemDetailSheet`), is marked `[PLACEHOLDER]`.
-
-**Other art gaps.** `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in
-for final art (an `@export`, so an Inspector swap). `InventorySlot`'s high-count
-`Shine` overlay is a plain white `ColorRect` with no texture.
-
-**Emoji as iconography on the stat popup.** `Scripts/UI/StatDetailPopup.gd`
-falls back to `info["glyph"]` from `StatInfo`, and those glyphs are emoji, which
-the ban in `## Conventions` forbids. The trait popup was fixed the same way on
-2026-09-09 — real textures plus a display-font heading; this wants the same.
-
-**TesNotice's card collapses (2026-09-11).** `NoticeCard` is a
-`NinePatchRect`, not a Container, so the anchored `Content` never sizes it. It
-shrinks to its 96px patch minimum and every line floats on the dark scrim; it
-has shipped like this since the screen was built (2026-09-02). Measured live,
-glyphs hidden: `BodyLabel`'s cream `ResultBodyLabel` reads there (6.9:1 at
-worst; dark ink would fall to 1.1:1), but `Kicker` "PENGUMUMAN" is 1.8:1 and
-`GradeLabel` "Kelas 7" 1.4:1. The title's 1033px minimum width also overruns
-the 80px margins, and `notice.png` is a megaphone icon, not a card surface.
-Either rebuild the card as a `Card` panel (text goes dark on cream, the
-megaphone becomes an icon) or commit to text over the scrim (the two dark
-labels go cream).
-
-**Faint placeholder icons on the minigame result card and HUD (2026-09-11).**
-Left as they are by decision, for the art pass; the labels beside them were
-fixed. Against the 3:1 non-text floor: on `ResultStatPanel`, white
-`icon_skor.svg` 1.30:1, `icon_mood` 1.28, `icon_energy` 1.69, and the stat
-row's icon 1.29 (`icon_poin`, the fallback every minigame gets today), 2.43
-(`icon_akademis`) or 1.62 (`icon_seni`); white `icon_kombo.svg` on the HUD's
-white combo chip, 1.02. The same files sit on other light grounds (stat popup,
-item sheet, RunResult rows, week-recap pills), so recolouring the art would
-help everywhere but the HUD's dark pill; a multiply tint muddies coloured art.
-
-**Pending a balance pass.** `RunGrade`'s scoring weights (especially
-`MONEY_FULL_MARKS`) are estimates; `LombaMenari.best_combo` is tracked but not
-fed into the star rubric; the item skill-boost values in
-`ItemDatabase.DEFAULT_ITEMS` (3–8) are untested against
-`tests/test_balance_pacing.gd`. `RunGrade.LETTER_BANDS`' five rank
-floors (S 90 / A 75 / B 60 / C 45) are estimates set when the scheme collapsed
-from ten +/- bands on 2026-09-10, never played against a real run.
-
-**Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` is a blurred
-backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
-has to lead somewhere; nothing behind it is designed.
-
-**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
-unscripted, nothing references it. The real win screen is `WinStage.tscn`,
-which EndCutscene shows and RunResult keeps blurred behind its report. Safe to
-delete.
-
-**Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
-`_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
-them deliberately, or give them a consumer.
-
-**Deferred: the AturJadwal shelf.** Ships as two `ColorRect`s rather than a
-`ShelfEdge` variation. Needs an editor restart plus a manual rebake (a new
-`@export` on `DesignTokens` is invisible to a running editor). The exact diff is
-in the STATUS block of
-`docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`.
-
-**Deferred: blinking on the layered faces.** `CitraFace.tscn`'s `Eyelid` layer
-and `StudentFace.blink()` are wired and tested, but `idle_blink_enabled`
-defaults **false** — held back deliberately. A real pass wants a half-lid frame
-(the art has none) or an alpha/scale ease rather than the current hard cut.
-
-**Layered faces exist for Citra only.** The other four use the flat portrait.
-Adding one means a new `<Name>Face.tscn` with that character's own solved layer
-offsets, dropped into `loby.gd`'s `face_rigs`.
-
-**Ratchet debt.** `tests/test_viewport_editability.gd`'s `BASELINE` still lists
-real unconverted runtime UI construction across roughly 20 files. The list, and
-what each would need, is in the authoring guide's "Known gaps" section.
+Placeholders, deferred passes and known bugs live in `docs/superpowers/DEBT.md`;
+grep it before changing a screen or asset. New debt goes there,
+and an entry is deleted once resolved, not marked done. Constraints on future changes stay here, under `## Visual system`.
 
 ## Current work
 
-Open: Plan C's RunResult redesign,
-`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass
-already replaced RunResult's grade letter with five rank badges and fixed its
-win backdrop, so re-read the plan against the current screen before acting.
+Nothing recorded. Plan C's RunResult redesign is parked in
+`docs/superpowers/DEBT.md`.
 
 ## Maintaining this file
 
@@ -518,24 +400,19 @@ it costs context on every single run, so it earns its place or it moves.
 - A **completed pass** gets an entry in `docs/superpowers/CHANGELOG.md`, newest
   first — not a paragraph here.
 - A fact that **changes how you work on the project** goes in the topical
-  section it governs, not in `## Current work`.
-- An **unfinished placeholder or deferred item** goes in `## Outstanding debt &
-  placeholders`, and is deleted when resolved.
+  section it governs, not in `## Current work`. Keep the rule; the story of
+  how it was learned goes in the changelog.
+- An **unfinished placeholder or deferred item** goes in
+  `docs/superpowers/DEBT.md` (grouped, not one entry per asset), and is deleted
+  when resolved. Only a constraint it imposes on future changes comes up into
+  this file.
 - `## Current work` holds **only what is in flight right now**. When it lands,
   it moves to the changelog.
-- **Group placeholders, do not list them.** A dozen entries each saying "X is
-  generated `System.Drawing` art, drop-replaceable" is one entry with a path
-  list. Keep the prose only for the ones carrying a real constraint.
 - **Point at the README, do not restate it.** If a folder README or a
   spec already documents the rules for an asset, link it and keep one line.
-- Soft budget: **20,000 characters**. History: 27,547 on 2026-09-05 (39%
-  completed-pass narrative), 30,936 on 2026-09-10, 24,000 after that day's
-  audit. The 2026-09-10 pass could not reach 20k without deleting live
-  operational rules — if it must come down further, the honest lever is moving
-  `## Outstanding debt` to its own file, not thinning the rules.
-
-Rationale and the full restructure record:
-`docs/superpowers/specs/2026-09-05-project-guide-restructure-and-memory-seeding-design.md`.
+- Soft budget: **23,000 characters**, about the floor once history and debt
+  are out. A pass that would exceed it moves
+  something out first; it does not thin the live rules.
 
 ## Conventions
 
@@ -545,12 +422,11 @@ Rationale and the full restructure record:
   load-bearing — do not "fix" them).
 - Commits: Conventional Commits with a scope, e.g.
   `fix(lobby): wire the dead ReportStudent button`.
-- Tunable gameplay numbers belong in a named `const` block or an `@export`,
-  not inline. See `StudentManager.gd`'s `WIRAUSAHA_*` block.
-- **`Balance.gd` values are owned by a collaborator, not by us.** Read them
-  freely; never change them. If a task appears to need a different value, say
-  so and propose it rather than editing. On merge, take their version of that
-  file.
+- **`Balance.gd` values are owned by a collaborator, not by us.** It holds
+  most of the simulation's tuning: read it freely, never edit it, propose
+  changes instead, and on merge take their version. A **new** tunable number
+  of ours goes in a named `const` block or an `@export` in the script that
+  owns the behaviour, never inline — like `RunGrade.gd`'s `WEIGHT_*` block.
 - **No emoji as UI iconography.** Use real transparent SVG textures instead —
   explicitly banned during the 2026-09-02 end-of-grade pass after report icons
   briefly used emoji glyphs.

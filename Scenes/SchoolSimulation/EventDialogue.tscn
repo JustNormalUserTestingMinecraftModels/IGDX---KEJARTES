@@ -1,0 +1,153 @@
+[gd_scene format=3 uid="uid://bbwd0ewrjvuib"]
+
+[ext_resource type="Script" uid="uid://bm1fbja44olip" path="res://Scripts/SchoolSimulation/EventDialogue.gd" id="1_qh523"]
+[ext_resource type="Texture2D" uid="uid://536bltunh8rl" path="res://Assets/Images/EventDialogue/sekolah_background.jpg" id="2_gv18b"]
+[ext_resource type="Material" path="res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres" id="3_qxown"]
+[ext_resource type="Texture2D" uid="uid://buqajwg3j13h2" path="res://Assets/Images/EventDialogue/splash_mom.png" id="4_5xvqv"]
+[ext_resource type="Texture2D" uid="uid://t3h8jmypjfe8" path="res://Assets/Images/EventDialogue/calendar_badge.png" id="5_esryj"]
+
+[node name="EventDialogue" type="Control" unique_id=490646120]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_qh523")
+
+[node name="Background" type="TextureRect" parent="." unique_id=2078275385]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_gv18b")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Blur" type="ColorRect" parent="." unique_id=1710863248]
+material = ExtResource("3_qxown")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Splash" type="TextureRect" parent="." unique_id=1499473738]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("4_5xvqv")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Header" type="Control" parent="." unique_id=519676879]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 300.0
+mouse_filter = 2
+
+[node name="DayBanner" type="PanelContainer" parent="Header" unique_id=1774093673]
+layout_mode = 1
+offset_left = 250.0
+offset_top = 100.0
+offset_right = 936.0
+offset_bottom = 236.0
+mouse_filter = 2
+theme_type_variation = &"DayBannerPanel"
+
+[node name="DayLabel" type="Label" parent="Header/DayBanner" unique_id=850006046]
+layout_mode = 2
+theme_type_variation = &"DayBannerLabel"
+text = "Senin"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Calendar" type="TextureRect" parent="Header" unique_id=2105387367]
+layout_mode = 1
+offset_left = 104.0
+offset_top = 44.0
+offset_right = 312.0
+offset_bottom = 292.0
+mouse_filter = 2
+texture = ExtResource("5_esryj")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="Header/Calendar" unique_id=977086369]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.42
+anchor_right = 1.0
+anchor_bottom = 0.96
+mouse_filter = 2
+theme_override_constants/separation = -10
+alignment = 1
+
+[node name="MingguLabel" type="Label" parent="Header/Calendar/Text" unique_id=864199323]
+layout_mode = 2
+theme_type_variation = &"CalendarLabel"
+text = "Minggu"
+horizontal_alignment = 1
+
+[node name="WeekLabel" type="Label" parent="Header/Calendar/Text" unique_id=94852154]
+layout_mode = 2
+theme_type_variation = &"DayBannerLabel"
+text = "2/6"
+horizontal_alignment = 1
+
+[node name="DialogueBox" type="PanelContainer" parent="." unique_id=835106298]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 92.0
+offset_top = -644.0
+offset_right = -92.0
+offset_bottom = -184.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"EventDialoguePanel"
+
+[node name="Content" type="VBoxContainer" parent="DialogueBox" unique_id=607750054]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="Line" type="RichTextLabel" parent="DialogueBox/Content" unique_id=485758436]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_type_variation = &"EventDialogueText"
+text = "Kudengar Thea dan teman-temannya sedang bekerja keras, semoga ini dapat menyemangati mereka!"
+fit_content = true
+scroll_active = false
+
+[node name="Hint" type="Label" parent="DialogueBox/Content" unique_id=595139892]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Ketuk sekali lagi untuk lanjut"
+horizontal_alignment = 1
+
+[node name="Choices" type="HBoxContainer" parent="DialogueBox/Content" unique_id=1928257313]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 32
+alignment = 1
+
+[node name="TolakButton" type="Button" parent="DialogueBox/Content/Choices" unique_id=1758249014]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Tolak"
+
+[node name="TerimaButton" type="Button" parent="DialogueBox/Content/Choices" unique_id=882763902]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PrimaryButton"
+text = "Terima"

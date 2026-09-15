@@ -49,7 +49,6 @@ const _SCENES := {
 	"DaySummaryStudentRow": "res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn",
 	"DaySummaryBadge": "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn",
 	"DaySummaryPill": "res://Scenes/SchoolSimulation/DaySummaryPill.tscn",
-	"EventAnnouncement": "res://Scenes/SchoolSimulation/EventAnnouncement.tscn",
 	"EventWarning": "res://Scenes/SchoolSimulation/EventWarning.tscn",
 	"EventStudentSelectDialog": "res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn",
 	"DailyDecayOverview": "res://Scenes/SchoolSimulation/DailyDecayOverview.tscn",
@@ -64,7 +63,6 @@ const _SCRIPTS := [
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd",
 	"res://Scripts/SchoolSimulation/DaySummaryPopup.gd",
 	"res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd",
-	"res://Scripts/SchoolSimulation/EventAnnouncement.gd",
 	"res://Scripts/SchoolSimulation/EventWarning.gd",
 	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd",
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd",
@@ -240,7 +238,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		"res://Scenes/SchoolSimulation/DailyDecayOverview.tscn": [
 			"Margin/Panel/Margin/VBox/ContinueButton"],
 		"res://Scenes/SchoolSimulation/ResultCheckup.tscn": [
-			"Margin/VBox/BtnClose"],
+			"Margin/Layout/Buttons/LogsButton", "Margin/Layout/Buttons/NextButton"],
 	}
 	for scene_path in targets.keys():
 		var inst := _instantiate(scene_path)
@@ -295,22 +293,6 @@ func test_day_summary_deltas_count_up_with_audio_feedback() -> void:
 		"a net gain above target must play the success sfx")
 	assert_true(popup.contains("AudioDirector.play_sfx(&\"fail\")"),
 		"a net loss must play the fail sfx")
-
-
-func test_hazard_stripe_color_comes_from_tokens_at_runtime() -> void:
-	var warning := FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/EventWarning.gd")
-	assert_true(warning.contains("set_shader_parameter"),
-		"EventWarning must drive the hazard shader from script")
-	assert_true(warning.contains("state_warning"),
-		"the hazard stripe color must come from tokens.state_warning")
-	var scene_src := FileAccess.get_file_as_string(
-		"res://Scenes/SchoolSimulation/EventWarning.tscn")
-	assert_false(scene_src.contains("shader_parameter/color1 = Color("),
-		"the stripe color must not stay baked into the scene's ShaderMaterial")
-	# The shader itself stays.
-	assert_true(scene_src.contains("HazardStripeShader.gdshader"),
-		"the hazard shader must be kept")
 
 
 func test_simulation_bgm_is_requested() -> void:
@@ -514,3 +496,183 @@ func test_minigame_category_has_uniform_noise() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
 	assert_true(src.contains("Balance.MINIGAME_KATEGORI_ACAK_PELUANG"),
 		"the minigame category pick must branch on the uniform-noise chance")
+
+
+# ------------------------------------------------ day-roll weights
+
+## Each school day rolls Normal / Minigame / Event from three weights. The
+## day loop (_roll_event) and the skip button (skip_to_results) used to
+## compute them separately, and the skip copy had lost Biang Onar's event
+## bonus -- a skipped week rolled events at different odds than a watched
+## one. SchoolDay.day_roll_weights() is now the one place they are
+## computed; it is static and pure, so these tests call it straight off the
+## script with hand-built counts and roster: no scene, no GameState.
+##
+## Expectations are written in terms of the script's ROLL_WEIGHT_* tuning
+## and Balance's bonus, so retuning a number never fails a test -- only a
+## wrong formula does.
+
+## The week's minigame cap these tests run under. It differs from the event
+## cap on purpose, so a helper that checked a counter against the other cap
+## fails.
+const _ROLL_MINIGAME_CAP := 3
+## The week's event cap these tests run under.
+const _ROLL_EVENT_CAP := 2
+
+
+## day_roll_weights() for a Senin, called straight off SchoolDay.gd.
+func _roll_weights(counts: Dictionary, roster: Array = [], schedules: Dictionary = {},
+		minigames_played: int = 0, events_triggered: int = 0) -> Dictionary:
+	var school_day = load(_SCHOOL_DAY_SCRIPT)
+	var weights: Dictionary = school_day.day_roll_weights(counts, roster, schedules, "Senin",
+		minigames_played, _ROLL_MINIGAME_CAP, events_triggered, _ROLL_EVENT_CAP)
+	return weights
+
+
+## One of SchoolDay.gd's ROLL_WEIGHT_* tuning constants.
+func _roll_tuning(const_name: String) -> int:
+	var school_day = load(_SCHOOL_DAY_SCRIPT)
+	return int(school_day.get(const_name))
+
+
+## A roster student carrying `quirk`, for the day-roll tests.
+func _roll_student(id: int, quirk: String) -> StudentData:
+	var s := StudentData.new()
+	s.id = id
+	s.quirk = quirk
+	return s
+
+
+## Studying students raise the minigame weight, resting students the normal
+## weight, and a Wirausaha student neither. Breaks if the helper mixes the
+## two counts up, or starts counting Wirausaha as either.
+func test_day_roll_weights_scale_with_who_studies_and_who_rests() -> void:
+	var counts := {"Akademis": 2, "Olahraga": 1, "SeniBudaya": 1, "Istirahat": 3, "Wirausaha": 2}
+	var weights: Dictionary = _roll_weights(counts)
+
+	assert_eq(weights.get("normal"), _roll_tuning("ROLL_WEIGHT_NORMAL_BASE")
+		+ 3 * _roll_tuning("ROLL_WEIGHT_NORMAL_PER_RESTING"),
+		"normal weight is the base plus one share per resting student")
+	assert_eq(weights.get("minigame"), 4 * _roll_tuning("ROLL_WEIGHT_MINIGAME_PER_STUDYING"),
+		"minigame weight is one share per student in Akademis, Olahraga or SeniBudaya")
+	assert_eq(weights.get("event"), _roll_tuning("ROLL_WEIGHT_EVENT_BASE"),
+		"with no Biang Onar on the roster the event weight is the flat base")
+
+
+## The bug this section exists for: a Biang Onar student in class that day
+## adds Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT to the event weight. The skip
+## path's old inline copy dropped exactly this term.
+func test_a_biang_onar_student_in_class_adds_the_event_bonus() -> void:
+	assert_gt(Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT, 0,
+		"precondition: a zero bonus cannot tell applied from dropped")
+	var roster := [_roll_student(1, "Biang Onar")]
+	var schedules := {1: {"Senin": {"category": "Akademis"}}}
+	var weights: Dictionary = _roll_weights({"Akademis": 1}, roster, schedules)
+
+	assert_eq(weights.get("event"),
+		_roll_tuning("ROLL_WEIGHT_EVENT_BASE") + Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT,
+		"a Biang Onar student studying that day adds the quirk's event bonus")
+
+
+## The bonus is per student, and anything but rest counts as in class --
+## Wirausaha included, as the day loop has always had it.
+func test_each_active_biang_onar_student_adds_their_own_bonus() -> void:
+	var roster := [_roll_student(1, "Biang Onar"), _roll_student(2, "Biang Onar")]
+	var schedules := {
+		1: {"Senin": {"category": "Olahraga"}},
+		2: {"Senin": {"category": "Wirausaha"}},
+	}
+	var weights: Dictionary = _roll_weights({"Olahraga": 1, "Wirausaha": 1}, roster, schedules)
+
+	assert_eq(weights.get("event"),
+		_roll_tuning("ROLL_WEIGHT_EVENT_BASE") + 2 * Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT,
+		"two Biang Onar students out of rest add the bonus twice")
+
+
+## No bonus from a Biang Onar student who is resting, off, scheduled only on
+## another day or not scheduled at all; from a student without the quirk;
+## or from id 0, the "no real student" id a placeholder schedule carries.
+func test_a_biang_onar_student_out_of_class_adds_nothing() -> void:
+	var roster := [
+		_roll_student(1, "Biang Onar"),  # resting
+		_roll_student(2, "Biang Onar"),  # day off
+		_roll_student(3, "Biang Onar"),  # scheduled on another day only
+		_roll_student(4, "Biang Onar"),  # no schedule at all
+		_roll_student(5, "Kutu Buku"),   # in class, but not the quirk
+		_roll_student(0, "Biang Onar"),  # in class, but id 0
+	]
+	var schedules := {
+		1: {"Senin": {"category": "Istirahat"}},
+		2: {"Senin": {"category": "DayOff"}},
+		3: {"Selasa": {"category": "Akademis"}},
+		5: {"Senin": {"category": "Akademis"}},
+		0: {"Senin": {"category": "Akademis"}},
+	}
+	var weights: Dictionary = _roll_weights({"Akademis": 2, "Istirahat": 1}, roster, schedules)
+
+	assert_eq(weights.get("event"), _roll_tuning("ROLL_WEIGHT_EVENT_BASE"),
+		"only a Biang Onar student with a real id and a non-rest activity that day earns the bonus")
+
+
+## The week's minigame cap zeroes the minigame weight once it is reached,
+## not a day before, and leaves the event weight alone.
+func test_the_minigame_cap_zeroes_the_minigame_weight() -> void:
+	var counts := {"Akademis": 3}
+	var open: Dictionary = _roll_weights(counts, [], {}, _ROLL_MINIGAME_CAP - 1)
+	var reached: Dictionary = _roll_weights(counts, [], {}, _ROLL_MINIGAME_CAP)
+
+	assert_eq(open.get("minigame"), 3 * _roll_tuning("ROLL_WEIGHT_MINIGAME_PER_STUDYING"),
+		"one minigame short of the cap, the day can still roll a minigame")
+	assert_eq(reached.get("minigame"), 0,
+		"at the cap the minigame weight is 0")
+	assert_eq(reached.get("event"), _roll_tuning("ROLL_WEIGHT_EVENT_BASE"),
+		"the minigame cap does not touch the event weight")
+
+
+## The week's event cap zeroes the event weight -- Biang Onar's bonus with
+## it -- once it is reached, not a day before, and leaves the minigame
+## weight alone.
+func test_the_event_cap_zeroes_the_event_weight_bonus_included() -> void:
+	var roster := [_roll_student(1, "Biang Onar")]
+	var schedules := {1: {"Senin": {"category": "Akademis"}}}
+	var counts := {"Akademis": 1}
+	var open: Dictionary = _roll_weights(counts, roster, schedules, 0, _ROLL_EVENT_CAP - 1)
+	var reached: Dictionary = _roll_weights(counts, roster, schedules, 0, _ROLL_EVENT_CAP)
+
+	assert_eq(open.get("event"),
+		_roll_tuning("ROLL_WEIGHT_EVENT_BASE") + Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT,
+		"one event short of the cap, the day keeps its event weight and the bonus")
+	assert_eq(reached.get("event"), 0,
+		"at the cap the event weight is 0, Biang Onar's bonus included")
+	assert_eq(reached.get("minigame"), _roll_tuning("ROLL_WEIGHT_MINIGAME_PER_STUDYING"),
+		"the event cap does not touch the minigame weight")
+
+
+## Both simulation paths must take their weights from the one helper, so a
+## watched week and a skipped week roll at the same odds. A source scan,
+## because neither path runs without the live scene (see the file header);
+## the tests above prove what the helper returns, this proves both ask it.
+func test_both_day_rolls_take_their_weights_from_the_shared_helper() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	for fn_name in ["_roll_event", "skip_to_results"]:
+		var body := _function_body(src, fn_name)
+		assert_true(body.contains("_todays_roll_weights("),
+			"%s() must take its day-roll weights from the shared helper" % fn_name)
+		assert_false(body.contains("SIFAT_BIANG_ONAR_PELUANG_EVENT"),
+			"%s() must not add Biang Onar's bonus itself -- the helper does" % fn_name)
+		assert_false(body.contains("active_studying"),
+			"%s() must not compute its own weights -- the helper does" % fn_name)
+
+
+## The source of `func <fn_name>(` up to the next top-level function, or ""
+## when there is no such function.
+func _function_body(src: String, fn_name: String) -> String:
+	var start := src.find("\nfunc %s(" % fn_name)
+	if start == -1:
+		return ""
+	var end := src.length()
+	for marker in ["\nfunc ", "\nstatic func "]:
+		var at := src.find(marker, start + 1)
+		if at != -1 and at < end:
+			end = at
+	return src.substr(start, end - start)

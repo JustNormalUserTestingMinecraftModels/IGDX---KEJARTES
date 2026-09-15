@@ -1278,6 +1278,13 @@ func _build_scenes_panel(parent: Control) -> void:
 		btn.pressed.connect(func(): _teleport_to_scene(sc["path"]))
 		vbox.add_child(btn)
 
+	var btn_week_report = Button.new()
+	btn_week_report.text = " 📊 Laporan Mingguan (ResultCheckup) "
+	btn_week_report.custom_minimum_size = Vector2(0, 95)
+	btn_week_report.add_theme_font_size_override("font_size", 21)
+	btn_week_report.pressed.connect(_open_week_report_preview)
+	vbox.add_child(btn_week_report)
+
 	var sep_rehearsal = HSeparator.new()
 	vbox.add_child(sep_rehearsal)
 
@@ -1381,6 +1388,49 @@ func _restore_before_rehearsal() -> void:
 	log_message("Run sebelum gladi resik dipulihkan: %s, minggu %d." % [
 		GameState.get_grade_name(), GameState.minggu_ke])
 	_refresh_ui_fields()
+
+## The weekly report preview's host layer, or null when none is open.
+var _week_report_canvas: CanvasLayer = null
+## The preview's layer: just under the standalone minigame launcher's (125)
+## and the overlay's own (128).
+const WEEK_REPORT_LAYER := 124
+
+## Opens the weekly report (ResultCheckup) over the current screen, filled
+## with WeekReportRehearsal's sample week, so its reveal can be watched in
+## one click. Nothing in the run changes: the sample lands on a throwaway
+## StudentManager, and the report writes nothing. The host layer hangs off
+## the current scene, so a teleport takes it down too.
+func _open_week_report_preview() -> void:
+	if is_instance_valid(_week_report_canvas):
+		log_message("Laporan mingguan sudah terbuka.")
+		return
+	if GameState.approved_students.is_empty():
+		_auto_approve_students()
+	var manager: StudentManager = StudentManager.new()
+	manager.initialize_from_gamestate()
+	var coins: int = WeekReportRehearsal.apply_sample_week(manager)
+	_set_time_scale(1.0)
+	var host: Node = get_tree().current_scene if get_tree().current_scene != null else self
+	_week_report_canvas = CanvasLayer.new()
+	_week_report_canvas.layer = WEEK_REPORT_LAYER
+	host.add_child(_week_report_canvas)
+	var report = load(WeekReportRehearsal.REPORT_SCENE).instantiate()
+	_week_report_canvas.add_child(report)
+	report.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	report.initialize_checkup(manager, coins)
+	# The report has copied everything it reads; the manager is a Node.
+	manager.free()
+	report.checkup_closed.connect(_close_week_report_preview)
+	if debug_ui_root and debug_ui_root.visible:
+		toggle_overlay()
+	log_message("Laporan mingguan dibuka dengan minggu contoh (%d murid)." % GameState.approved_students.size())
+
+
+## Frees the preview once its Selanjutnya has faded it out.
+func _close_week_report_preview() -> void:
+	if is_instance_valid(_week_report_canvas):
+		_week_report_canvas.queue_free()
+	_week_report_canvas = null
 
 # --- Logs/Console Panel ---
 func _build_logs_panel(parent: Control) -> void:

@@ -5,8 +5,567 @@ sessions; `CLAUDE.md` is. Anything here is history — read it on demand when yo
 need to know why something is the way it is.
 
 Facts that still govern how you work on the project belong in `CLAUDE.md`, not
-here. Unfinished placeholders belong in its `## Outstanding debt & placeholders`
-section. See `CLAUDE.md`'s `## Maintaining this file`.
+here. Unfinished placeholders and
+deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
+
+## 2026-09-15 — Debug: Laporan Mingguan preview
+
+Plan `docs/superpowers/plans/2026-09-15-debug-weekly-report.md`, spec
+`docs/superpowers/specs/2026-09-15-debug-weekly-report-design.md`.
+
+The debug overlay's Scenes tab has a new button, **📊 Laporan Mingguan
+(ResultCheckup)**. It opens the weekly report over the current screen,
+filled with a fixed sample week, so the reveal can be watched in one click
+instead of played for a week.
+
+- **`WeekReportRehearsal`** (new, `Scripts/Debug/`) is a pure jig. It puts a
+  ladder of skill gains onto a throwaway `StudentManager`: all three up; two
+  up and one down; one up; flat. Energy falls 12 and mood rises 6, and the
+  history holds three minigames (2 won, 1 lost) and one event. It hands back
+  1.500 coins. Suite `week_report_rehearsal`.
+- **`DebugManager._open_week_report_preview()`** approves the default roster
+  only when none is approved, then builds the manager from `GameState`
+  before the sample moves anything. It hosts `ResultCheckup` on its own
+  `CanvasLayer` (124) under the current scene, and frees the manager once
+  the report has read it. `checkup_closed` frees the layer.
+- **The run is not touched:** the sample lives on the manager's `StudentData`
+  copies. Checked live: money, week and the stored stats were unchanged.
+- `EndGameRehearsal`'s debug-only ratchet now covers both jigs.
+- Touch-feedback ripples (`TouchFeedbackManager`, layer 125) draw above the
+  preview. That is by design; they were the only thing seen above it.
+
+## 2026-09-14 — Lobby: Citra's eye whites plug their cut-outs
+
+`CitraFace.tscn`'s Sclera sat 1 px high, at (427, 578). `citra_base.png`
+has transparent eye cut-outs, and at that height 114 of their pixels were
+covered by no layer, some at a combined alpha of 0.24. The Lobby background
+showed through as a faint line along the top rim of each eye. Sclera now
+sits at (427, 579), and the same solve moves Eyelid from (419, 578) to
+(419, 579).
+
+- **How it was solved.** Holes are the base's alpha < 128 regions that do not
+  touch the image border. The sclera goes where its alpha best overlaps
+  them (IoU), and that position is unique. At 579 the resting face leaves
+  none of them see-through. The Sclera alone leaves two anti-aliased rim
+  pixels at (438–439, 581), and the lashes cover those. A composite of the
+  layers also matches the flat `Citra.png` better: mean abs error 5.70
+  against 6.14 over the eye region.
+- **Pinned.** `tests/test_student_face.gd` adds
+  `test_no_eye_cut_out_is_left_see_through`, which counts 114 open pixels at
+  the old position and 0 now. Citra's rig predates the roster suite, so
+  that suite's matching check never covered her.
+- **Left alone.** The same solve would move Eyebrows 1 px right and Pupil
+  1 px up. That is cosmetic, so both stay where they are.
+  `citra_eye_mask.tres`'s saved `mask_uv_offset` still reflects the old
+  Sclera; `StudentFace` recomputes it on `_ready`.
+
+## 2026-09-14 — Weekly report: one reward at a time
+
+Plan `docs/superpowers/plans/2026-09-14-weekly-report-reveal.md`, spec
+`docs/superpowers/specs/2026-09-14-weekly-report-reveal-design.md`.
+
+ResultCheckup now opens on the backdrop alone and plays the week back one
+reward at a time. Each card pops in, its needs bars travel, and the list
+scrolls to it. Then its three stats count one after another, and each gain
+punches its number and fires the `RewardBurst` from it. The coins, EVENT
+BERHASIL and EVENT GAGAL lines follow in order, each popping when it lands,
+and last come the confetti and the buttons. Every pop sounds one
+`pitch_step` higher than the one before. A tap anywhere during the reveal
+lands everything at once.
+
+- **`WeekReportReveal`** (new) works out the whole timeline as data, before
+  anything moves. `ResultCheckup` plays it through one parallel tween of
+  delayed callbacks, so a skip is one `kill()`. Suite `week_report_reveal`.
+- **The card's week API.** `DaySummaryStatRow` has `rewind`, `play_count`,
+  `land_pop`, `land` and `shown_delta`. `DaySummaryStudentRow` has
+  `rewind_week`, `play_needs_week` and `land_week`. Landing stops every
+  tween the reveal started on the card, so a skip never leaves a number
+  still counting over its final value. `play_gain` and the nightly popup are
+  untouched.
+- **Shared API.** `Juice.punch` and `Juice.text_center` are new;
+  `count_up_formatted` takes a duration; `pop_in` and `count_up_formatted`
+  return their tweens. `AudioDirector.play_sfx` takes an optional pitch.
+- **Only gains pop.** A row that did not go up settles on a short, silent
+  beat, and a zero summary line arrives reading 0. This is the game's
+  standing no-gain-no-celebration rule.
+- The pacing is a Reveal group of `@export`s on `ResultCheckup`. With the
+  defaults, four gaining Kelas 9 students take about 9 s.
+
+## 2026-09-14 — Lobby: layered faces for the whole roster
+
+Plan `docs/superpowers/plans/2026-09-14-student-face-rigs.md`, spec
+`docs/superpowers/specs/2026-09-14-student-face-rigs-design.md`.
+
+Andi, Doni, Marcel, Shinta and Thea now get a `StudentFace` rig in the
+Lobby diorama, like Citra's: `Scenes/Lobby/<Name>Face.tscn`, each with its
+own `<name>_eye_mask.tres`, and `loby.tscn`'s `face_rigs` lists all six. The
+art is in `Assets/Images/MuridPotrait/<Name>/<name>_<layer>.png`.
+
+The layers came from the artist's Drive numbered 1-6 (7 for Marcel's
+glasses) with no offsets, so every placement was solved against the
+student's flat `MuridPotrait/<Name>.png` by a scratch Python solver. The
+solver is not committed; `tests/test_face_rig_roster.gd` freezes its output.
+
+- **Sclera and Eyelid** are pinned where they plug the base's eye cut-outs,
+  and never nudged: a 1 px nudge opens a rim of cut-out and the lobby shows
+  through.
+- **Pupil, lashes and brows** are placed by evidence: the pixels a layer
+  changes must agree with the portrait, inside a window near the eyes.
+  Plain colour matching had put a black brow anywhere in Shinta's black hair
+  and Doni's lashes on his chin.
+
+Worth remembering:
+
+- **The Drive numbers were not the stated order.** File 4 is the closed
+  eyelid and 5 the lashes for all five students, and 2/3 are pupil/sclera for
+  everyone but Andi. The names on disk follow the art.
+- **Shinta's portrait is a darker grade** (about 25 per channel) of her base,
+  and she shows one eye. Her matching ran through a per-channel recolour.
+- **Marcel's glasses lens is additive** in his portrait (an alpha mix greys
+  his eyes), while the frame is opaque. The new
+  `Scripts/Shaders/glasses_lens.gdshader` uses `blend_premul_alpha`: the lens
+  emits alpha 0 and adds light, the frame emits alpha 1. Its `lens_gain` of
+  1.173 was fitted over cheek seen through the lens and lives in
+  `marcel_glasses_lens.tres`. His lashes, tinted by the lens, were found by
+  where they darken the face rather than by colour.
+- **Citra's committed rig bleeds at the eye rims** (DEBT.md). It was found
+  here and handed off as its own task rather than changed on this branch.
+
+## 2026-09-14 — Lobby-style buttons everywhere but StudentCard
+
+Plan `docs/superpowers/plans/2026-09-14-lobby-style-buttons.md`, spec
+`docs/superpowers/specs/2026-09-14-lobby-style-buttons-design.md`.
+
+Every framed action button now wears the Lobby's STUDENT / JADWAL look:
+
+- the `brand_primary_light` fill with the `brand_primary_dark` bevel;
+- the cream `outline_card` rim;
+- cream display text.
+
+A new `ThemeFactory._add_lobby_button()` is the one recipe for
+`PrimaryButton`, `SecondaryButton`, `DangerButton`, `SuccessButton` (and
+their generated M/L steps), `LobbyCtaButton`, `LobbyNavTile`,
+`MainMenuButton`, `ShopShelfButton` and `ResultButton`.
+
+The main menu's icon buttons, the shelf button and Weekly Results' buttons
+keep their own padding and text sizes.
+
+The shelf button also keeps its body-font label. Code review found that the
+display face would have stretched Koperasi's `Rak1` 53 px past its 442 px
+box. It already overflows by 27 px, which is now listed in `DEBT.md`. The main menu's painted
+`menu_button.png` is retired and deleted, and the Weekly Results cream art no
+longer drives its buttons.
+
+**Two exceptions keep their look through new variations:**
+
+- StudentCard's eight cream buttons (the six Batal and the two page arrows)
+  use `StudentCardSecondaryButtonL`.
+- StudentList's BELUM/SUDAH badges use `RosterStatusBelum` and
+  `RosterStatusSudah`.
+
+**Unchanged:** frameless, toggle, card and chip buttons.
+
+**Retired rule:** `confirm_pair_semantics`' "one filled, one quiet" pair
+rule. The pairs keep their `PrimaryButton` / `SecondaryButton` names, so a
+later pass can split them again.
+
+**Found while here:** an editor save of `RosterCard.tscn` bakes a 20 px drop
+into its five StickyNotes, because `StickyNote.gd` is `@tool` and its
+`_apply_pin()` writes offsets in `_ready()`. The badge change was applied by
+text instead, and the trap is listed in `DEBT.md`.
+
+## 2026-09-14 — Exam art and readable inventory text
+
+ExamProgress now shows the user's `cg_ujian.png` (1920x1920, from their Google
+Drive) behind the fill, in place of the `cg_test.jpg` placeholder, which is
+deleted. The pan is unchanged: 216 px over the 4 s fill, across the middle
+1296 of the art's 1920 columns.
+
+The Inventory item sheet and the item-application screen had thirteen texts (five
+kinds of label) at 18 or 22 px, about 6-7 sp on a phone. They now use existing variations: the item
+description, each effect's explanation, the effect summary and "Sisa ×N" are
+`EventBodyLabel` (36 px, dark ink), and each effect's "+N" is `H2Label` (48 px,
+display face, dark ink). The Brief had offered the student cards' 52 px
+`DaySummaryStat` for "+N", but that style is white with a dark rim, made for
+the cards' dark tracks, so it would not read on the sheet's near-white Card.
+The effect value column's minimum width went from 80 to 104 px: at 48 px a
+"+10" is 83 px wide, which pushed its row's explanation out of line, items
+grant up to +35, and the widest two-digit value ("+44") is 101 px.
+No token changed and nothing was rebaked. The new suite `inventory_text_size`
+holds every text on these screens at 36 px or more, with two reviewed shared
+exceptions (the 30 px need words, the 32 px empty-state hint). Checked at full
+size with Bank Soal, the longest description: the sheet's content ends at
+y 1527 of 1852, so it needed no scrolling.
+
+## 2026-09-14 — Weekly Results: the week-end screen rebuilt to the mockup
+
+Plan `docs/superpowers/plans/2026-09-14-weekly-results.md`, spec
+`docs/superpowers/specs/2026-09-14-weekly-results-design.md`, mockup
+`docs/superpowers/mockups/mockup_weeklyresults.png`.
+
+ResultCheckup now matches the Weekly Results mockup:
+
+- A red WEEKLY RESULTS ribbon, then one DaySummary card per student in week
+  mode.
+- The week's coins, then two lines: EVENT BERHASIL and EVENT GAGAL, the
+  minigames won and lost. Random events cannot fail, so they appear only in
+  Logs.
+- Two cream buttons in the new `ResultButton` style. **Logs** opens the new
+  `WeekLogsPopup` with the week's history rows; **Selanjutnya** closes the
+  screen.
+
+`ResultButton` is a new textured variation over the card's own
+`card_bg.png`. The ribbon is a placeholder, cut from the mockup and given
+the daily ribbon's alpha.
+
+**Two deliberate departures from the mockup,** found in the live check:
+
+- The two buttons split the row equally, 436 px each, instead of the
+  mockup's 368. The display face renders SELANJUTNYA in capitals, which
+  needs about 435 px, so a fixed 368 left the row lopsided.
+- The card list scrolls with its scrollbar hidden, since the mockup shows
+  none.
+
+The project's display font sets the labels in capitals ("LOGS"), and the
+card keeps its existing look (the BUGAR/SENANG needs words), as agreed in
+the Brief.
+
+**Fixed while here:**
+
+- SchoolDay paid out the Wirausaha earnings, which empties
+  `pending_earnings`, before it opened the screen, so the old banner's money
+  pill always read 0. SchoolDay now passes the paid total to
+  `initialize_checkup()`.
+- `test_result_checkup`'s set-up-in-the-tree test always passed: it searched
+  for a container name the script no longer had. It now checks that both
+  calls exist.
+
+**Retired:**
+
+- `WeekRecapBanner`, `WeekRecapPill`, `WeekRecapPillInfoPopup`,
+  `CoinShower.tscn` and the SISWA/RIWAYAT tabs.
+- The `RecapBannerPanel`, `RecapPillPanel`, `RecapPillValueLabel` and
+  `WeekTabButton` variations.
+- The `pill_tap`, `pill_popup_open`, `pill_popup_close` and `pane_swipe`
+  cues, with their dedicated `.ogg` copies.
+- `WeekRecap`'s `net_skill_delta`, `format_skill_delta` and money read.
+
+## 2026-09-14 — Close Godot before every pull
+
+The laptop pulled 831929b, which retired `EventAnnouncement` and deleted
+`AnnouncementBurst.tscn`, `AnnouncementBurst.gd` and `particle_burst.png`,
+while Godot had `AnnouncementBurst.tscn` open. The editor wrote its stale tabs
+back. It recreated the deleted scene as an untracked file pointing at the two
+deleted files, which logged 5 "File not found" errors on every load. Worse, it
+silently saved `ApplyStudentRow.tscn` without its script: the pull made
+`ApplyStudentRow.gd` extend the new `StudentCardButton` class, which the stale
+editor had not registered. It also rewrote `project.godot`'s `main_scene` to a
+uid and added sky-layer offsets to `BookClockWidget.tscn`, both harmless. The
+laptop was repaired by restoring the damaged files and deleting the recreated
+scene. The PC was checked the same day and never had the damage, because
+831929b was authored there. The rule is now `CLAUDE.md`'s third 4b save hazard.
+
+## 2026-09-14 — Project guide audit: the debt list leaves CLAUDE.md
+
+`CLAUDE.md` had grown from 24,644 characters after the 2026-09-10 audit to
+33,665. Of the 9,021 added, 6,101 were feature passes appending to
+`## Outstanding debt & placeholders`. The debt list now lives in
+`docs/superpowers/DEBT.md`, which sessions read on demand. The constraints
+that were riding inside it came up into `CLAUDE.md`'s `## Visual system`,
+because the `claude-review` bot reads only that file: the BarFill rules, the
+1080x1080 Penjadwalan card, the badge SVG paths, `tray_dots.png`'s 26x26, and
+leaving `sky_cover_margin` alone. `## Current work` held Plan C, untouched
+since 2026-09-11, so Plan C moved to DEBT.md too. The result is 22,982
+characters. The soft budget rises from 20,000 to 23,000, because two audits
+could not reach 20,000 without deleting live rules. The rationale for this
+file's structure is still
+`docs/superpowers/specs/2026-09-05-project-guide-restructure-and-memory-seeding-design.md`.
+
+Every moved entry was checked against the source first. That check found:
+
+- `penjadwalan_card_bg.png` has one hardcoded `region_rect` (the Peringatan
+  dialog), not two.
+- `tests/test_bar_contrast.gd` checks only the BarFill luminance floor.
+  `Assets/Images/UI/BarFill/README.md` says it checks both rules; the
+  tile-period rule has no test (new DEBT entry).
+- `exam_cutscene` no longer exists. `event_announce` plays its own file, a
+  byte-identical copy of `reward.ogg`, rather than an alias.
+- The exam and win cutscene lines the copy entry covered are gone, and the
+  item descriptions carry one blanket `[PLACEHOLDER]` comment, not one each.
+- The lose backdrop's `@export` lives on `WinStage`.
+- The AturJadwal shelf diff is in the plan's Task 2 section, not its STATUS
+  block.
+- `paper.png` is about 98% pure white, not 96%. `Particles/` holds seven
+  placeholders, not three. Only two of the five "faint" icons are white. A
+  fourth WCAG helper sits in `test_run_result.gd`. `BASELINE` has 23 entries.
+- New debt: `SchoolDay`'s playful textures never load (`.png` paths, `.svg`
+  files), and `WinScreen.tscn`, deleted in `0dc9fa9`, came back in `7cc8a07`.
+
+The audit also adds a rule to `## Working efficiently here`: "The main
+checkout is shared too". This audit's own `git switch -c` in the shared main
+checkout, taken on a `git status` reading ten minutes old, moved a live
+session off `feat/shorten-dialog`. That session's next six commits landed on
+the audit branch, and its spec and plan left the disk. It moved them back
+onto its own branch before shipping (PR #32), and the audit went on in a
+worktree.
+
+Text moved out of `CLAUDE.md` verbatim:
+
+- The Loading screen was deleted on 2026-09-10: the shared `Transition` wipe
+  covers the scene-load gap, so the intermediate screen was dead weight.
+- Every script's documentation (a `##` file header, a `##` line on every
+  `@export`) is a hard rule now (`tests/test_script_documentation.gd`) — the
+  2026-08-31 21-task sweep closed that ratchet.
+- A scaled-down capture cannot show 1px detail, spacing or weight, and signing
+  off a visual change from one is how the 2026-09-10 cream pass shipped a
+  half-finished layout.
+- Do **scene work first, script work second**; after any `scene_save` check
+  `git diff HEAD -- '*.gd'` for files you were not editing; and once you have
+  patched a script, restart the editor before the next `scene_save` — a
+  force-kill is safe once scenes are saved, and the relaunch reloads every tab
+  from disk (2026-09-10: skipping it reverted `BuatBatik.gd`).
+- **A full `test_run` drops the bridge.** Observed four times on 2026-09-10,
+  each immediately after a full run and never after a targeted one. The first
+  explanation was memory pressure — the machine had ~1 GB free of 16 GB — but
+  the fourth drop happened with **8.9 GB free**, which rules that out. What is
+  left is duration: a full run is 15-20s of near-continuous main-thread work,
+  and the plugin's transport does not survive it (the `test_run` docs warn
+  that a single test blocking for 20s+ can drop the session).
+- Soft budget: **20,000 characters**. History: 27,547 on 2026-09-05 (39%
+  completed-pass narrative), 30,936 on 2026-09-10, 24,000 after that day's
+  audit. The 2026-09-10 pass could not reach 20k without deleting live
+  operational rules — if it must come down further, the honest lever is
+  moving `## Outstanding debt` to its own file, not thinning the rules.
+
+- That tab also carries **🎭 Gladi Resik Akhir Kelas** — one-click rehearsals of
+  the whole end-of-grade sequence with a fixed roster: *Semua Lulus*, *Semua
+  Gagal*, and *Campur*, which ladders 3/2/1/0 cleared targets so one pass of
+  StatCheck lights the meter 3, 2, 1 and 0 shares in turn (6 of 12 = 1.5 stars, a
+  loss).
+- Logic lives in `Scripts/Debug/EndGameRehearsal.gd`, tested in
+  `tests/test_end_game_rehearsal.gd`; `DebugManager.gd` only holds the buttons.
+- `Scripts/AnimUtils.gd` — came in with the ported shop/inventory
+  (`squash_bounce`, `popup_spring_in/out`, `coin_pulse`, `create_floating_text`,
+  …).
+- Same for a **new** `@export`. This is why the theme rebake has no headless
+  path.
+- Hard constraints, learned the hard way:
+- Rationale and the full restructure record:
+  `docs/superpowers/specs/2026-09-05-project-guide-restructure-and-memory-seeding-design.md`.
+
+Wording the source check replaced, verbatim:
+
+- **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
+  opaque only across rows 262..1578 and columns 47..1033, its bottom-right
+  corner is cut away to a transparent wedge, and its body is flat pure white
+  (96% of sampled opaque pixels are exactly 255,255,255) -- there is no paper
+  texture in it to preserve.
+- The `fill_*` tiles and `track_ghost.png` — rules in
+  `Assets/Images/UI/BarFill/README.md`, enforced by `tests/test_bar_contrast.gd`
+  and `tests/test_ghost_track.gd`.
+- `penjadwalan_card_bg.png` must stay exactly 1080x1080; two call sites address
+  it with hardcoded `region_rect`s.
+- These `AudioDirector` cue ids alias existing streams: `sfx_specialty_match`,
+  `tally`, `sparkle`, `star_earn_1/2/3`, `result_fanfare`, `score_tick`,
+  `combo_up`, `sfx_event_announce`, and the BGM ids `exam_notice`,
+  `exam_cutscene`, `run_result`.
+- **Copy placeholders.** Every cutscene line in the exam and win branches, and
+  every `desc` string in `ItemDatabase.DEFAULT_ITEMS` (shown verbatim in
+  `ItemDetailSheet`), is marked `[PLACEHOLDER]`.
+- `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in for final art (an
+  `@export`, so an Inspector swap).
+- The exact diff is in the STATUS block of
+  `docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`.
+
+## 2026-09-14 — Shorten: skip the minigame dialogue from the Lobby
+
+A tiny **Shorten** button on the Lobby's money row, between the daily-login
+icon and the coins, opens a panel with **Jangan Skip Dialog** and **Skip
+Dialog**. With Skip Dialog on, the eight minigames go straight from the
+EventWarning into play, with no character line in between.
+
+What Shorten skips is one catalog rule: `EventDialogueCatalog.shorten_skips()`
+is true for TAP entries except `SHORTEN_KEEPS` (Nasi Kotak and Hujan). Today
+that is exactly the eight minigames. The three Tolak / Terima events keep
+their dialogue, because the choice lives there. SchoolDay's
+`_show_event_dialogue()` returns early, before instancing anything.
+
+The setting is `GameSettings.skip_event_dialogue`, off by default. It is saved
+next to the minigame-tutorial switch as `[pengaturan] skip_dialog` in
+`user://settings.cfg`; the owner approved that persistence in the Brief.
+
+The panel (`Scenes/Lobby/ShortenPanel.tscn`) names the current mode. Its
+options are a Primary/Secondary pair, per the confirm-pair rule. It saves only
+outside the editor, so tests never write the real settings file. Its scrim
+follows the popup-dismiss rule: it starts ignoring input and only closes on a
+tap once the panel has opened. The button is the smallest button step
+(96 px, the touch minimum). It sits under the reward popup and the tutorial
+overlay in draw order, so neither leaves it tappable.
+
+A new `var` on the GameSettings autoload is invisible to a running editor until
+it restarts. Hot reload does not give the live autoload instance the new
+member, which is the same limit CLAUDE.md records for a new `@export`.
+
+Spec: `docs/superpowers/specs/2026-09-14-shorten-dialog-design.md`. Plan:
+`docs/superpowers/plans/2026-09-14-shorten-dialog.md`. Tests:
+`tests/test_shorten.gd`.
+
+## 2026-09-14 — EventDialogue: a line before every minigame and event
+
+Every mid-day interruption now has a character speak first. After the sliding
+EventWarning, `EventDialogue.tscn` shows one line over a blurred picture of
+the school, laid out like `mockup_eventdialogue.png`: a calendar badge
+("Minggu x/y") and day banner on top, a full-frame splash in the middle, and a
+white rounded box with the typed line at the bottom.
+
+Two modes, chosen per entry in `EventDialogueCatalog`:
+
+- **TAP** — the eight minigames, *Kejutan Nasi Kotak Orang Tua* and *Hujan
+  Deras & Jalanan Licin*. No buttons. It always takes two taps: the first
+  finishes the line and shows "Ketuk sekali lagi untuk lanjut", the second
+  closes.
+- **CHOICE** — *Les Tambahan Akademis*, *Latihan Olahraga Ekstra*, *Workshop
+  Sanggar Seni*. Tolak / Terima appear once the line is shown. Terima opens
+  EventStudentSelectDialog as before. Tolak skips the event before the picker
+  exists: nothing is applied or recorded, and it still counts toward the
+  week's event limit.
+
+Speakers: `splash_mom` for Nasi Kotak, `splash_gurupenjas` for Latihan
+Olahraga and MainBola, and a placeholder `splash_gurusenibudaya` for Workshop
+Seni. The other minigames and Les are voiced by a random roster student whose
+specialty matches the subject, or by anyone if nobody's does. Hujan has no
+speaker; its unblurred `hujan_background` (also a placeholder) is the scene.
+`{nama}` in a line becomes the featured student's name. All 13 lines are
+drafts.
+
+SchoolDay's event table now exists once, in `_run_event()`. `force_event()`
+used to carry a full second copy of it.
+
+Only a left mouse press counts as a tap. `project.godot` emulates touch from
+mouse, and Godot emulates mouse from touch, so counting `ScreenTouch` as well
+would close a TAP dialogue on its first tap.
+
+Theme: a `font_body_bold` token (Open Sans Bold) and five variations:
+`EventDialoguePanel`, `EventDialogueText`, `DayBannerPanel`, `DayBannerLabel`
+and `CalendarLabel`.
+
+Spec: `docs/superpowers/specs/2026-09-14-event-dialogue-design.md`. Plan:
+`docs/superpowers/plans/2026-09-14-event-dialogue.md`. Tests:
+`tests/test_event_dialogue.gd`.
+
+## 2026-09-14 — MainBola: every goal target is reachable
+
+Kelas 9 MainBola games could not be won. Every game gave eight shots and
+refunded none, while `start_minigame()` rolled Kelas 9's goal target as 8, 9
+or 10 (Kelas 8's as 6–8): two Kelas 9 games in three asked for more goals
+than there were shots, and the third needed eight from eight.
+
+`MainBola.gd` now carries two per-difficulty tables, `ATTEMPTS_BY_DIFFICULTY`
+(8 / 10 / 10 shots) and `TARGET_RANGE_BY_DIFFICULTY` (4–6 / 6–8 / 6–8 goals),
+read through the static `attempts_for()`, `target_range_for()` and
+`roll_target()`. The highest target always leaves two shots to miss, as
+Kelas 7's six-from-eight already did. The star ratio counts shots taken from
+the shots the game started with (`max_attempts`), not from a fixed eight.
+
+Two facts shaped the numbers. The clock binds too: SchoolDay gives the game
+30 s × `Balance.MINIGAME_WAKTU_SKALA_*` (30 / 24 / 18 s), the clock runs while
+a shot resolves, and a shot costs about a second at least -- so twelve shots
+at Kelas 9 would only have moved the wall from the shot count to the clock.
+And a shot aimed at the target box always scores, because the keeper dives
+away from it; what `GOALIE_SPEED_INCREASE` actually speeds up is the box. So
+Kelas 9 is harder than Kelas 8 through its faster box and shorter clock, not
+a higher target. The numbers assume a player lands about 70% of shots and
+have not been playtested (`CLAUDE.md`, "Pending a balance pass").
+
+`tests/test_main_bola_targets.gd` holds the rule: at every difficulty the
+highest target never exceeds the shots and leaves two spare, and 60 real
+`start_minigame()` starts per difficulty never break it.
+
+## 2026-09-14 — `/gamecode` skill
+
+Added `.claude/skills/gamecode/SKILL.md`, one command that takes a game
+feature from idea to code without the user naming the skill sequence:
+`superpowers:brainstorming`, then one short Brief in game terms (place in the
+loop, rules, `GameState`/`StudentData` fields with both bridge names, grade
+scaling, files, decisions with bold defaults, branch), then on the user's yes
+branch → spec → `writing-plans` → `executing-plans` with no further stops,
+and a single "Ship it?" before `ship-pr`. The skill only overrides the
+sub-skills' gates, all listed in its table: section-by-section design
+approval, the spec-review wait, the execution-mode question,
+subagent-driven execution (the Godot bridge takes one client) and the
+finishing menu.
+
+Built test-first per `superpowers:writing-skills` on three features (a
+quirk, a Koperasi item, a Piket duty). Without the skill, even with the whole
+sequence typed out, summaries ran 350–500 words in a different shape each
+time and two of three runs finished on the three-option merge menu. With it,
+every Brief had the same shape at about 300 words and every run ended on
+"Ship it?". Two refactor rounds fixed: the branch now exists before the spec
+is committed; *this checkout* vs *worktree* is decided by
+`git status --porcelain --untracked-files=no` plus the editor's unsaved tabs
+(plain `--porcelain` tripped on untracked files); a new suite must override
+`suite_name()` (the base returns `"unnamed"`); a red step the plan predicts is
+not a stop; and a premise the code contradicts becomes a Decision with the
+user's own ask in bold.
+
+## 2026-09-12 — Event cards, the sliding warning, and EventAnnouncement's retirement
+
+Plan `docs/superpowers/plans/2026-09-12-event-cards-and-slide-warning.md`,
+spec `docs/superpowers/specs/2026-09-12-event-cards-and-slide-warning-design.md`.
+The event picker (`EventStudentSelectDialog`) and the item-preview list
+(`ApplyItemScreen`) now show the real DaySummary card
+(`DaySummaryStudentRow`) instead of their own ad hoc rows, wrapped in a new
+`StudentCardButton` (`Scripts/UI/StudentCardButton.gd`) that owns the card's
+rect and toggles it as a selectable button. The card itself gained a
+"current stats" mode on `DaySummaryStatRow` (`set_standing`,
+`format_standing`) so it can show `current/target` (no sign, no chevron)
+instead of DaySummary's own gain preview — DaySummary and ResultCheckup keep
+their existing `setup_row`/`setup_week_row` paths untouched. A card that
+cannot be picked dims the hosted card rather than the wrapper, whose alpha
+the list's own entrance animation owns, and the item screen's LELAH chip
+sits on the avatar's lower-left.
+
+`EventAnnouncement` is retired. Both the minigame banner and the mid-day
+random-event popup now go through a single sliding mustard `EventWarning`:
+a full-bleed panel, `eventwarning_icon.png` (a cropped Drive icon) centred,
+and a caption with a navy outline. Deleted along with it: the popup's scene
+and script, `AnnouncementBurst.tscn`/`.gd` and the particle burst it fired,
+`HazardStripeShader.gdshader`, and the three placeholders only it used
+(`icon_event_warning.png`, `icon_event_announce.png`, `bg_event_announce.png`,
+plus `particle_burst.png`). `sfx_event_announce` now docs itself against
+`EventWarning`; `ThemeFactory.gd`'s and `StudentSummaryCard.gd`'s header
+comments no longer name the dead scene.
+
+## 2026-09-12 — Paper confetti on the week-end checkup
+
+Plan `docs/superpowers/plans/2026-09-12-paper-confetti.md`. ResultCheckup's
+celebration is now `PaperConfetti.tscn`: two cannons at the bottom corners
+fire red, yellow and blue sheets up and inward, and they spin and flutter
+down. `Scripts/Shaders/paper_flutter.gdshader` fakes the 3D flip by
+squashing each quad on its own x axis by a per-particle cosine, and shades
+the back face. Air drag set below gravity makes the pieces hang instead of
+dropping. The week-gained gate and its timing are unchanged.
+`CelebrationConfetti.tscn` is untouched and still serves ApplyItemScreen.
+
+**The live check changed two planned values.** Turbulence (influence
+0.08–0.16) blends velocity toward the noise field every frame and held the
+whole arc below y 1300, so it is off. And a 2D `ParticleProcessMaterial`
+ignores `angle` and `angular_velocity` unless `particle_flag_disable_z` is
+set, so every piece stood upright until that flag went on. That is also true
+of the older `CelebrationConfetti`, whose white chips have never spun. Both
+values are pinned by tests.
+
+**Two verification traps.** At `Engine.time_scale = 0` every
+`GPUParticles2D` is invisible, so particle screenshots need 0.02. And
+deleting a property line from a `.tscn` does not reset it in the editor's
+cache: an in-place reload applies only the properties written in the file,
+so the editor kept `turbulence_enabled = true` while a fresh game load
+correctly read false.
+
+On screens wider than 9:16 the right cannon lands short of the edge. That
+was accepted, not fixed. At 1.2 s a few pieces reach the top edge, a little
+above the spec's "upper third". Lower `initial_velocity` if that reads as
+too much.
 
 ## 2026-09-11 — Koperasi rework, Part 2
 

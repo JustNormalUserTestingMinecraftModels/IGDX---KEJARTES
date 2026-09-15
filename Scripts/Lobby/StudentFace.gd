@@ -5,7 +5,8 @@ extends Control
 ## A multi-layer student face for the lobby diorama, in place of the single
 ## flat portrait TextureRect.
 ##
-## The art is authored on a fixed square canvas (1280x1280 for Citra) and every
+## The art is authored on a fixed square canvas (1280x1280 for every student so
+## far) and every
 ## layer is a TextureRect placed at its own canvas pixel offset in the rig's
 ## .tscn -- nothing here is built at runtime. This script only does the two
 ## things a .tscn cannot express: it scales that canvas to fit whatever rect
@@ -16,7 +17,10 @@ extends Control
 ## Layer order, back to front: Base, Sclera, Pupil, Eyelashes, Eyelid,
 ## Eyebrows. Eyebrows are drawn last on purpose -- they sit over the fringe,
 ## and the base has hair, not brows, underneath them. Eyelid is the closed-eye
-## pose and is the one layer that starts hidden.
+## pose and is the one layer that starts hidden. A rig may carry extra
+## always-visible layers of its own after these -- Marcel's Glasses, drawn
+## through Scripts/Shaders/glasses_lens.gdshader -- which this script never
+## touches: they simply draw, and breathe with the rest.
 ##
 ## Idle motion is two independent parts:
 ##  * Gaze -- the Pupil layer saccades to a new point inside a small ellipse,

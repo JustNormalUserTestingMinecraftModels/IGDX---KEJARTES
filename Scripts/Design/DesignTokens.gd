@@ -246,6 +246,10 @@ static func load_default() -> DesignTokens:
 ## The theme's default_font, applied project-wide unless a variation
 ## overrides it with font_display.
 @export var font_body: FontFile
+## Bold body face (Open Sans Bold) for EventDialogueText, DayBannerLabel and
+## CalendarLabel: mockup_eventdialogue.png sets its line, day and week in it.
+## Null falls back to font_body.
+@export var font_body_bold: FontFile = preload("res://Assets/Fonts/OpenSans-Bold.ttf")
 ## Font size for MicroLabel.
 @export var font_micro: int = 18
 ## Font size for CaptionLabel, StatBar's value label, ResultBodyLabel.
@@ -373,6 +377,15 @@ static func load_default() -> DesignTokens:
 ## under ~32 unless EnergyBar/MoodBar's own width also grows -- see
 ## test_needs_bar_word_fits_its_pill.
 @export var day_needs_label_size: int = 30
+
+## Event warning (2026-09-12 slide warning, mockup_eventwarning.png).
+## The full-screen panel the warning slides through the screen on.
+@export var event_warning_bg: Color = Color("9E8830")
+## The navy of eventwarning_icon.png's outline. The caption's rim wears it,
+## so the words and the megaphone read as one mark.
+@export var event_warning_ink: Color = Color("1D196E")
+## Thickness of the warning caption's navy rim, in design pixels.
+@export var event_warning_caption_outline: int = 16
 
 
 ## Resolve a schedule category name to its accent color.

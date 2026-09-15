@@ -22,11 +22,92 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_progress(theme, tokens)
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
-	_build_week_recap(theme, tokens)
 	_build_minigame_result(theme, tokens)
+	_build_event_warning(theme, tokens)
+	_build_event_dialogue(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
+
+
+## Measured off mockup_eventdialogue.png: the dialogue card's corner radius
+## and the day banner's brown rim. No token matches either; both are
+## single-screen values.
+const EVENT_DIALOGUE_RADIUS := 80
+const DAY_BANNER_OUTLINE := 12
+
+
+## The event dialogue (2026-09-14 event-dialogue spec): a white rounded card
+## with dark bold text, and the header's day banner and calendar labels, all
+## in the bold body face the mockup uses.
+static func _build_event_dialogue(theme: Theme, tokens: DesignTokens) -> void:
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+
+	theme.add_type("EventDialoguePanel")
+	theme.set_type_variation("EventDialoguePanel", "PanelContainer")
+	var card := StyleBoxFlat.new()
+	card.bg_color = tokens.surface_card
+	card.set_corner_radius_all(EVENT_DIALOGUE_RADIUS)
+	card.shadow_color = tokens.shadow_color
+	card.shadow_size = tokens.shadow_size
+	card.shadow_offset = tokens.shadow_offset
+	card.content_margin_left = tokens.space_xl
+	card.content_margin_right = tokens.space_xl
+	card.content_margin_top = tokens.space_lg
+	card.content_margin_bottom = tokens.space_lg
+	theme.set_stylebox("panel", "EventDialoguePanel", card)
+
+	# RichTextLabel's theme items are "normal_font"/"normal_font_size"/
+	# "default_color", not the Label names -- see _add_cutscene_dialogue.
+	theme.add_type("EventDialogueText")
+	theme.set_type_variation("EventDialogueText", "RichTextLabel")
+	theme.set_font_size("normal_font_size", "EventDialogueText", tokens.font_title + 8)
+	theme.set_color("default_color", "EventDialogueText", tokens.text_primary)
+	if bold != null:
+		theme.set_font("normal_font", "EventDialogueText", bold)
+
+	theme.add_type("DayBannerPanel")
+	theme.set_type_variation("DayBannerPanel", "PanelContainer")
+	var pill := StyleBoxFlat.new()
+	pill.bg_color = tokens.surface_card
+	pill.border_color = tokens.brand_primary_dark
+	pill.set_border_width_all(DAY_BANNER_OUTLINE)
+	pill.set_corner_radius_all(tokens.radius_pill)
+	# The calendar badge overlaps the banner's left end in the mockup.
+	pill.content_margin_left = tokens.space_xl + tokens.space_lg
+	pill.content_margin_right = tokens.space_lg
+	theme.set_stylebox("panel", "DayBannerPanel", pill)
+
+	for spec in [["DayBannerLabel", tokens.font_h1], ["CalendarLabel", tokens.font_body_size]]:
+		var variation: String = spec[0]
+		theme.add_type(variation)
+		theme.set_type_variation(variation, "Label")
+		theme.set_font_size("font_size", variation, spec[1])
+		theme.set_color("font_color", variation, tokens.text_primary)
+		if bold != null:
+			theme.set_font("font", variation, bold)
+
+
+## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard
+## panel from the mockup, and a display-face caption in the light brand text
+## colour rimmed in the icon's navy, so the words and the megaphone read as
+## one mark.
+static func _build_event_warning(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("EventWarningPanel")
+	theme.set_type_variation("EventWarningPanel", "Panel")
+	var panel := StyleBoxFlat.new()
+	panel.bg_color = tokens.event_warning_bg
+	theme.set_stylebox("panel", "EventWarningPanel", panel)
+
+	theme.add_type("EventWarningCaptionLabel")
+	theme.set_type_variation("EventWarningCaptionLabel", "Label")
+	theme.set_font_size("font_size", "EventWarningCaptionLabel", tokens.font_display_size)
+	theme.set_color("font_color", "EventWarningCaptionLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "EventWarningCaptionLabel",
+		tokens.event_warning_caption_outline)
+	theme.set_color("font_outline_color", "EventWarningCaptionLabel", tokens.event_warning_ink)
+	if tokens.font_display != null:
+		theme.set_font("font", "EventWarningCaptionLabel", tokens.font_display)
 
 
 ## The shop hub's two destination tiles, panel-less by design.
@@ -118,21 +199,22 @@ static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
 # ---------------------------------------------------------------- buttons
 
 static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
-	_add_button_variation(theme, tokens, "PrimaryButton",
-		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+	# The Lobby's STUDENT/JADWAL look (2026-09-14 lobby-style-buttons spec):
+	# every framed action button wears it, whatever its role name says.
+	for role in ["PrimaryButton", "SecondaryButton", "DangerButton", "SuccessButton"]:
+		_add_lobby_button(theme, tokens, role)
 
-	_add_button_variation(theme, tokens, "SecondaryButton",
+	# StudentCard keeps the cream secondary look it had before that pass...
+	_add_button_variation(theme, tokens, "StudentCardSecondaryButton",
 		tokens.surface_card, tokens.surface_sunken,
 		tokens.brand_primary, tokens.brand_primary)
 
-	_add_button_variation(theme, tokens, "DangerButton",
+	# ...and StudentList's BELUM/SUDAH badges keep their colour, which is the
+	# information they carry.
+	_add_button_variation(theme, tokens, "RosterStatusBelum",
 		tokens.state_danger.lightened(0.18), tokens.state_danger.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
-
-	# StudentCard's APPROVE is an affirmative, not the screen's primary
-	# navigation, so it needs its own green rather than brand blue.
-	_add_button_variation(theme, tokens, "SuccessButton",
+	_add_button_variation(theme, tokens, "RosterStatusSudah",
 		tokens.state_success.lightened(0.18), tokens.state_success.darkened(0.24),
 		tokens.outline_card, tokens.text_on_brand)
 
@@ -207,18 +289,14 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# font_title line inside the 120px content box, and the icon is what
 	# makes a destination scannable. Retired LobbyNavButton, which was
 	# one variation stretched across five boxes of five different sizes.
-	_add_button_variation(theme, tokens, "LobbyNavTile",
-		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+	_add_lobby_button(theme, tokens, "LobbyNavTile")
 	theme.set_constant("icon_max_width", "LobbyNavTile", tokens.btn_icon_m)
 	theme.set_constant("h_separation", "LobbyNavTile", 8)
 
 	# The week's primary call to action. Horizontal rather than stacked:
 	# it is 984px wide, and a stacked icon in a banner that shape leaves
 	# exactly the horizontal emptiness this pass exists to remove.
-	_add_button_variation(theme, tokens, "LobbyCtaButton",
-		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+	_add_lobby_button(theme, tokens, "LobbyCtaButton")
 	theme.set_font_size("font_size", "LobbyCtaButton", tokens.font_h1)
 	theme.set_constant("icon_max_width", "LobbyCtaButton", tokens.btn_icon_l)
 	theme.set_constant("h_separation", "LobbyCtaButton", 24)
@@ -243,6 +321,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 
 	_build_main_menu_button(theme, tokens)
 	_build_shop_shelf_button(theme, tokens)
+	_build_result_button(theme, tokens)
 
 	# Size steps. M covers the 116-148 px call sites (TesNotice, RunResult,
 	# QuitConfirmDialog, EndCutscene, AturJadwal's StartWeek); L covers the
@@ -252,98 +331,63 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		_add_size_step(theme, tokens, base, "M", tokens.font_h2, tokens.btn_pad_v_m)
 	for base in ["PrimaryButton", "SecondaryButton", "DangerButton", "SuccessButton"]:
 		_add_size_step(theme, tokens, base, "L", tokens.font_h1, tokens.btn_pad_v_l)
+	_add_size_step(theme, tokens, "StudentCardSecondaryButton", "L", tokens.font_h1, tokens.btn_pad_v_l)
 
 
-## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"). A flat
-## rounded rectangle with a heavier bottom border for a pressed-tab look,
-## not the pill shape _button_box()/_add_button_variation() produce, and its
-## hover state recolours the text gold rather than lightening the fill --
-## neither shape matches an existing variation closely enough to reuse.
+## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"), in the Lobby
+## look since the 2026-09-14 lobby-style-buttons pass (it was a flat brown
+## tab with a gold hover). Keeps its 20/10 padding and its body-font label:
+## Rak1 is authored 442 px wide with a 40 px text override, and the display
+## face would need 495 px for "KEBUTUHAN SEKOLAH", stretching the button off
+## its spot (test_lobby_style_buttons pins the fit).
 static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void:
-	const NAME := "ShopShelfButton"
-	theme.add_type(NAME)
-	theme.set_type_variation(NAME, "Button")
-
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = tokens.brand_primary
-	normal.set_corner_radius_all(tokens.radius_button)
-	normal.border_width_left = 3
-	normal.border_width_top = 3
-	normal.border_width_right = 3
-	normal.border_width_bottom = 5
-	normal.border_color = tokens.outline_card
-	normal.shadow_size = 6
-	normal.shadow_offset = Vector2(0, 4)
-	normal.shadow_color = Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.45)
-	normal.content_margin_left = 20
-	normal.content_margin_right = 20
-	normal.content_margin_top = 10
-	normal.content_margin_bottom = 10
-	theme.set_stylebox("normal", NAME, normal)
-
-	var hover: StyleBoxFlat = normal.duplicate()
-	hover.bg_color = tokens.brand_primary.lightened(0.15)
-	theme.set_stylebox("hover", NAME, hover)
-
-	var pressed: StyleBoxFlat = normal.duplicate()
-	pressed.bg_color = tokens.brand_primary.darkened(0.2)
-	pressed.border_width_bottom = 2
-	pressed.shadow_offset = Vector2(0, 1)
-	theme.set_stylebox("pressed", NAME, pressed)
-
-	theme.set_color("font_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_hover_color", NAME, tokens.currency_gold)
-	theme.set_color("font_pressed_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_shadow_color", NAME,
-		Color(tokens.shadow_color.r, tokens.shadow_color.g, tokens.shadow_color.b, 0.75))
-	theme.set_constant("shadow_offset_x", NAME, 2)
-	theme.set_constant("shadow_offset_y", NAME, 2)
+	_add_lobby_button(theme, tokens, "ShopShelfButton")
+	_set_content_margins(theme, "ShopShelfButton", 20, 10)
+	# Only set when tokens carry a display face; clearing a font that was never
+	# set logs an engine error (the null-font theme tests build exactly that).
+	if theme.get_font_list("ShopShelfButton").has("font"):
+		theme.clear_font("font", "ShopShelfButton")
 
 
-## The main menu's three nav buttons.
-##
-## Uses menu_button.png, NOT trait_button.png. The two were one asset
-## until 2026-09-08: the menu mockup is the chip art recoloured, so
-## reusing it reproduced the mockup exactly. That stopped working when
-## buttons moved to a fixed 20px corner and chips stayed fully round --
-## one asset cannot be both shapes. See the spec's "a split, not an edit".
-##
-## Still a StyleBoxTexture rather than a stylebox because the gold gloss
-## is painted; the corner therefore lives in the art, which is why
-## test_button_geometry allow-lists this variation and then checks the
-## texture path instead.
+## Weekly Results' Logs and Selanjutnya, in the Lobby look (2026-09-14
+## lobby-style-buttons spec; the cream card_bg.png art is retired). Keeps
+## its 24 px sides and the card's 52 px text, so SELANJUTNYA still fits the
+## 436 px half-row it was laid out for.
+static func _build_result_button(theme: Theme, tokens: DesignTokens) -> void:
+	_add_lobby_button(theme, tokens, "ResultButton")
+	_set_content_margins(theme, "ResultButton", 24, tokens.btn_pad_v_s)
+	theme.set_font_size("font_size", "ResultButton", tokens.day_stat_size)
+
+
+## The main menu's icon buttons, in the Lobby look (2026-09-14
+## lobby-style-buttons spec; the painted gold menu_button.png is retired).
+## Icon-only boxes, so the sides stay tight and the vertical padding zero --
+## the Lobby recipe's space_lg sides would squeeze the icon.
 static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
-	const NAME := "MainMenuButton"
-	theme.add_type(NAME)
-	theme.set_type_variation(NAME, "Button")
+	_add_lobby_button(theme, tokens, "MainMenuButton")
+	_set_content_margins(theme, "MainMenuButton", 20, 0)
+	theme.set_font_size("font_size", "MainMenuButton", 80)
 
-	var normal := StyleBoxTexture.new()
-	normal.texture = load(_CARD_ART + "menu_button.png")
-	normal.region_rect = Rect2(0, 0, 256, 128)
-	normal.set_texture_margin_all(28)
-	# Icon-only button (128x128, tooltip_text, no text) -- these margins
-	# just centre the painted gloss inside the texture region.
-	normal.content_margin_left = 20
-	normal.content_margin_right = 20
-	normal.content_margin_top = 0
-	normal.content_margin_bottom = 0
-	theme.set_stylebox("normal", NAME, normal)
 
-	# The art carries no separate state variants, so hover/pressed reuse it
-	# and the press feedback comes from UIPolish's automatic Juice scale.
-	theme.set_stylebox("hover", NAME, normal)
-	theme.set_stylebox("pressed", NAME, normal)
-	theme.set_stylebox("disabled", NAME, normal)
-	theme.set_stylebox("focus", NAME, StyleBoxEmpty.new())
+## The Lobby's STUDENT / JADWAL button: brand_primary_light over the darker
+## bevel, the cream card rim and cream display text. Every framed action
+## button wears it since the 2026-09-14 lobby-style-buttons pass; what
+## differs between them is size, text and icon, never the surface.
+static func _add_lobby_button(theme: Theme, tokens: DesignTokens, name: String) -> void:
+	_add_button_variation(theme, tokens, name,
+		tokens.brand_primary_light, tokens.brand_primary_dark,
+		tokens.outline_card, tokens.text_on_brand)
 
-	theme.set_font_size("font_size", NAME, 80)
-	theme.set_color("font_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_hover_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_pressed_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_focus_color", NAME, tokens.text_on_brand)
-	theme.set_color("font_disabled_color", NAME, tokens.text_on_brand)
-	if tokens.font_display != null:
-		theme.set_font("font", NAME, tokens.font_display)
+
+## Re-pad every state of a flat button variation: `pad_h` on both sides,
+## `pad_v` top and bottom.
+static func _set_content_margins(theme: Theme, name: String, pad_h: int, pad_v: int) -> void:
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var sb := theme.get_stylebox(state, name) as StyleBoxFlat
+		sb.content_margin_left = pad_h
+		sb.content_margin_right = pad_h
+		sb.content_margin_top = pad_v
+		sb.content_margin_bottom = pad_v
 
 
 static func _add_button_variation(
@@ -638,7 +682,7 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# 36); kept as the shipped literal rather than nudging the size.
 		["EmptyStateLabel", 32, tokens.text_disabled, false, false],
 		# 2026-09-08 mobile-readability pass: the mid-simulation event
-		# popups (EventAnnouncement, EventWarning, EventStudentSelectDialog)
+		# popups (the event warning and EventStudentSelectDialog)
 		# needed a title bigger than H1Label without becoming a second
 		# DisplayLabel -- H1+6 in the display face, no outline (these titles
 		# sit on their own opaque card/scrim, not over busy art).
@@ -1363,68 +1407,6 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 		tokens.day_glyph_outline)
 	if tokens.font_display != null:
 		theme.set_font("font", "DaySummaryNeedsLabel", tokens.font_display)
-
-
-# ------------------------------------------------------------ week recap
-
-static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
-	# The banner is a raised card that must not read as another student
-	# card, so it takes the card surface with the brand's own edge.
-	theme.add_type("RecapBannerPanel")
-	theme.set_type_variation("RecapBannerPanel", "Panel")
-	var recap_banner := StyleBoxFlat.new()
-	recap_banner.bg_color = tokens.surface_card
-	recap_banner.set_corner_radius_all(tokens.radius_md)
-	recap_banner.border_color = tokens.brand_primary
-	recap_banner.set_border_width_all(int(tokens.outline_width) / 2)
-	recap_banner.content_margin_left = tokens.space_md
-	recap_banner.content_margin_right = tokens.space_md
-	recap_banner.content_margin_top = tokens.space_sm
-	recap_banner.content_margin_bottom = tokens.space_sm
-	theme.set_stylebox("panel", "RecapBannerPanel", recap_banner)
-
-	# A pill is a sunken capsule -- the counter-form to the banner it sits
-	# inside.
-	theme.add_type("RecapPillPanel")
-	theme.set_type_variation("RecapPillPanel", "Panel")
-	var recap_pill := StyleBoxFlat.new()
-	recap_pill.bg_color = tokens.surface_sunken
-	recap_pill.set_corner_radius_all(tokens.radius_pill)
-	recap_pill.content_margin_left = tokens.space_sm
-	recap_pill.content_margin_right = tokens.space_sm
-	recap_pill.content_margin_top = tokens.space_xs
-	recap_pill.content_margin_bottom = tokens.space_xs
-	theme.set_stylebox("panel", "RecapPillPanel", recap_pill)
-
-	# The pill's number. Tinted per-pill via self_modulate, so the
-	# variation itself stays neutral.
-	theme.add_type("RecapPillValueLabel")
-	theme.set_type_variation("RecapPillValueLabel", "Label")
-	theme.set_font_size("font_size", "RecapPillValueLabel", tokens.font_h2)
-	theme.set_color("font_color", "RecapPillValueLabel", tokens.text_primary)
-	if tokens.font_display != null:
-		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
-
-	# The tab. A real pressed state is what makes the active tab legible
-	# without any manual tint at the call site.
-	theme.add_type("WeekTabButton")
-	theme.set_type_variation("WeekTabButton", "Button")
-	var tab_normal := StyleBoxFlat.new()
-	tab_normal.bg_color = tokens.surface_sunken
-	tab_normal.corner_radius_top_left = tokens.radius_button
-	tab_normal.corner_radius_top_right = tokens.radius_button
-	tab_normal.content_margin_top = tokens.space_sm
-	tab_normal.content_margin_bottom = tokens.space_sm
-	var tab_pressed := tab_normal.duplicate() as StyleBoxFlat
-	tab_pressed.bg_color = tokens.brand_primary
-	theme.set_stylebox("normal", "WeekTabButton", tab_normal)
-	theme.set_stylebox("hover", "WeekTabButton", tab_normal)
-	theme.set_stylebox("pressed", "WeekTabButton", tab_pressed)
-	theme.set_stylebox("focus", "WeekTabButton", tab_normal)
-	theme.set_color("font_color", "WeekTabButton", tokens.text_secondary)
-	theme.set_color("font_pressed_color", "WeekTabButton", tokens.text_on_brand)
-	theme.set_color("font_hover_color", "WeekTabButton", tokens.text_primary)
-	theme.set_font_size("font_size", "WeekTabButton", tokens.font_title)
 
 
 # ---------------------------------------------------- minigame result card

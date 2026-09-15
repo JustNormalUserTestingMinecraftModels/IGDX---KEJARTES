@@ -16,6 +16,13 @@ extends McpTestSuite
 ## audit found both by reading the button text rather than trusting the
 ## plan: status badges that encode state rather than action, and rewards.
 ##
+## Since the 2026-09-14 lobby-style-buttons pass every framed action button
+## wears the Lobby's brown look, so these roles no longer differ in colour:
+## the pair still NAMES PrimaryButton + SecondaryButton and the quit dialog
+## still names DangerButton, so a later pass can split them again, but only
+## the BELUM/SUDAH status badges (RosterStatus*) keep red and green. The
+## tests below guard the names, which is what that later pass needs.
+##
 ## Source-text scans, following the established pattern: most of this UI
 ## cannot be instantiated headlessly.
 
@@ -25,6 +32,7 @@ const NON_DESTRUCTIVE_SCENES := [
 	"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn",
 	"res://Scenes/Inventory/ApplyItemScreen.tscn",
 	"res://Scenes/StudentCard/student_card.tscn",
+	"res://Scenes/Lobby/ShortenPanel.tscn",
 ]
 
 ## Quitting a minigame discards the run in progress.
@@ -84,11 +92,13 @@ func test_the_schedule_status_badges_keep_their_colours() -> void:
 	# Murid card subtrees were extracted into one template (2026-09-10
 	# Warm UI Part 3). The intent is unchanged: BELUM/SUDAH still encode
 	# state with colour, so the confirm-pair rule must not touch them.
+	# Since 2026-09-14 they carry their own RosterStatus* styles: the
+	# lobby-style-buttons pass turned DangerButton/SuccessButton Lobby brown.
 	var src := _read("res://Scenes/StudentList/RosterCard.tscn")
 	assert_ne(src, "", "could not open RosterCard.tscn")
-	assert_contains(src, "DangerButton",
+	assert_contains(src, "RosterStatusBelum",
 		"the BELUM badge encodes state, not a destructive action")
-	assert_contains(src, "SuccessButton",
+	assert_contains(src, "RosterStatusSudah",
 		"the SUDAH badge encodes state, not a reward")
 
 
@@ -99,12 +109,22 @@ func test_the_schedule_status_badges_keep_their_colours() -> void:
 ## of its own -- a SuccessButton here would paint a green pill on top of the
 ## gold one. The rule the colour split protects is unchanged: the claim is
 ## never restyled as an ordinary confirm or as a destructive action.
+##
+## Scoped to the ButtonClaim NODE rather than the whole of loby.tscn. The
+## file-wide scan failed on 2026-09-14 as soon as the Lobby gained an
+## ordinary SecondaryButton (Shorten), which it was never meant to police.
+## test_popup_dismiss.gd documents the same trap. The invariant was always
+## about the claim alone.
 func test_the_lobby_claim_is_never_a_confirm_or_a_danger() -> void:
 	var src := _read("res://Scenes/Lobby/loby.tscn")
 	assert_ne(src, "", "could not open loby.tscn")
-	assert_contains(src, "GhostButton",
+	var start := src.find('[node name="ButtonClaim" ')
+	assert_true(start != -1, "loby.tscn has no ButtonClaim node")
+	var end := src.find("\n[", start + 1)
+	var claim := src.substr(start, (end if end != -1 else src.length()) - start)
+	assert_contains(claim, "GhostButton",
 		"CLAIM sits on the panel art's own pill and must draw no chrome")
-	assert_false(src.contains("DangerButton"),
+	assert_false(claim.contains("DangerButton"),
 		"CLAIM is a reward, not a destructive action")
-	assert_false(src.contains("SecondaryButton"),
+	assert_false(claim.contains("SecondaryButton"),
 		"CLAIM is a reward, not an ordinary confirm")

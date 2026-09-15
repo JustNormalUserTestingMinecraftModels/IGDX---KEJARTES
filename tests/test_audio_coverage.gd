@@ -102,9 +102,14 @@ func test_atur_jadwal_interactions_have_sfx() -> void:
 
 func test_school_day_has_sfx_at_all() -> void:
 	var src := _source("res://Scripts/SchoolSimulation/SchoolDay.gd")
-	for id in ["popup_open", "reward"]:
-		assert_true(src.contains('play_sfx(&"%s")' % id),
-			"SchoolDay must play sfx: " + id)
+	assert_true(src.contains('play_sfx(&"reward")'),
+		"SchoolDay must play sfx: reward")
+	# The mid-day interruption cue moved into the sliding EventWarning
+	# (2026-09-12): it plays event_announce once per warning, so SchoolDay
+	# no longer plays its own popup_open before a minigame or event.
+	var warning_src := _source("res://Scripts/SchoolSimulation/EventWarning.gd")
+	assert_true(warning_src.contains('play_sfx(&"event_announce")'),
+		"EventWarning must play sfx: event_announce")
 
 
 func test_cutscene_grade_selection_has_sfx() -> void:
@@ -120,7 +125,6 @@ func test_every_play_sfx_id_in_the_project_is_known() -> void:
 		"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
 		"popup_close", "select", "error", "reward", "tally", "sparkle",
 		"specialty_match",
-		"pill_tap", "pill_popup_open", "pill_popup_close", "pane_swipe",
 		"star_earn_1", "star_earn_2", "star_earn_3", "result_fanfare",
 		"score_tick", "combo_up", "event_announce",
 		]

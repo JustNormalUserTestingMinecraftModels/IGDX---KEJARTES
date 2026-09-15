@@ -90,6 +90,14 @@ func test_pop_in_makes_a_hidden_node_visible_at_unit_scale() -> void:
 	assert_true(absf((c.modulate.a) - (1.0)) <= 0.03, "pop_in ends fully opaque")
 
 
+## pop_in hands back its tween so a caller can stop it mid-flight: a
+## skipped weekly reveal must not let a half-faded chevron keep fading.
+func test_pop_in_returns_its_tween() -> void:
+	var c := _make_control()
+	assert_true(Juice.pop_in(c) is Tween, "pop_in returns its tween")
+	assert_true(Juice.pop_in(null) == null, "and null for a dead node")
+
+
 func test_count_up_lands_exactly_on_the_target() -> void:
 	# Off-by-one on a displayed stat is the kind of bug players screenshot.
 	var tokens := DesignTokens.load_default()
@@ -185,3 +193,74 @@ func test_shake_returns_the_node_to_its_start_position() -> void:
 	_run_and_step(func(): Juice.shake(c), tokens.dur_normal + 0.25)
 	assert_true(absf((c.position.x) - (50.0)) <= 0.5, "shake must restore x")
 	assert_true(absf((c.position.y) - (60.0)) <= 0.5, "shake must restore y")
+
+
+## A number "landing": the punch overshoots past unit scale and settles
+## exactly back on it.
+func test_punch_overshoots_then_settles_at_unit_scale() -> void:
+	var tokens := DesignTokens.load_default()
+	var c := _make_control()
+	var tw := Juice.punch(c)
+	tw.custom_step(tokens.dur_instant)
+	assert_true(c.scale.x > 1.2, "mid-punch the node must be past unit scale, got %f" % c.scale.x)
+	tw.custom_step(tokens.dur_normal + 0.1)
+	assert_true(absf(c.scale.x - 1.0) <= 0.02, "the punch must settle at exactly 1.0")
+
+
+## The punch grows from the pivot it is handed -- the number's own centre --
+## and from the middle when handed none.
+func test_punch_uses_the_given_pivot() -> void:
+	var c := _make_control()
+	Juice.punch(c, Vector2(30, 20))
+	assert_eq(c.pivot_offset, Vector2(30, 20), "an explicit pivot is used as given")
+	var d := _make_control()
+	Juice.punch(d)
+	assert_eq(d.pivot_offset, Vector2(100, 50), "no pivot means the centre")
+
+
+func test_punch_tolerates_a_null_node() -> void:
+	assert_true(Juice.punch(null) == null, "punch on a null node is a no-op")
+
+
+## Where the words actually are: a wide right-aligned label's text sits at
+## its right end, a left-aligned one's at its left, a centred one's in the
+## middle. Left and right mirror each other about the middle.
+func test_text_center_follows_the_alignment() -> void:
+	var label := Label.new()
+	label.text = "+12/65"
+	label.size = Vector2(400, 60)
+	_root.add_child(label)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	var left := Juice.text_center(label)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var right := Juice.text_center(label)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var mid := Juice.text_center(label)
+	assert_true(left.x > 0.0 and left.x < 200.0, "left text centres left of middle")
+	assert_true(right.x > 200.0 and right.x < 400.0, "right text centres right of middle")
+	assert_true(absf(left.x + right.x - 400.0) <= 0.5, "left and right mirror about the middle")
+	assert_true(absf(mid.x - 200.0) <= 0.5, "centred text sits in the middle")
+	assert_true(absf(mid.y - 30.0) <= 0.5, "vertically, the rect's centre")
+
+
+## A count can be paced by its caller -- the weekly reveal counts each row
+## in its own count_seconds -- and hands back its tween.
+func test_count_up_formatted_honours_its_duration() -> void:
+	var label := Label.new()
+	_root.add_child(label)
+	var fmt := func(v: float) -> String: return str(int(round(v)))
+	var tw = Juice.count_up_formatted(label, 0.0, 40.0, fmt, 0.0, 0.1)
+	assert_true(tw is Tween, "the count returns its tween")
+	if tw is Tween:
+		tw.custom_step(0.15)
+	assert_eq(label.text, "40", "a 0.1 s count has landed after 0.15 s")
+
+
+func test_count_up_formatted_defaults_to_dur_slow() -> void:
+	var label := Label.new()
+	_root.add_child(label)
+	var fmt := func(v: float) -> String: return str(int(round(v)))
+	var tw = Juice.count_up_formatted(label, 0.0, 40.0, fmt)
+	if tw is Tween:
+		tw.custom_step(0.15)
+	assert_true(label.text != "40", "a default-length count is still running at 0.15 s")

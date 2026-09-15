@@ -61,10 +61,28 @@ var _mood_from: float = 0.0
 var _energy_delta: float = 0.0
 var _mood_delta: float = 0.0
 
+## Where the two needs bars end the week, cached by setup_week_row so the
+## weekly reveal can rewind them to Monday and travel back.
+var _energy_to: float = 0.0
+var _mood_to: float = 0.0
+
+## The needs bars' in-flight travel in the weekly reveal, held so
+## land_week() can stop it rather than let it write over the landing.
+var _needs_tweens: Array[Tween] = []
+
 ## Whether any of the three skills moved UP on the day (or week) this
 ## card is currently showing. Written by _write_stat_rows, read by
 ## gained_ground() -- the screens use it to decide whether to celebrate.
 var _gained_ground: bool = false
+
+## Each key's standing value and target, cached by setup_current_row so the
+## previews and show_only() can work without the StudentData in hand.
+var _standing: Dictionary = {}
+var _targets: Dictionary = {}
+
+## Which stat row currently shows which skill key. setup_current_row fills it
+## in STAT_ORDER; show_only() reassigns it so visible skills fill from the top.
+var _row_for_key: Dictionary = {}
 
 
 ## "+8" / "-12" -- the week's movement on a needs bar. Same sign rule as
@@ -178,6 +196,8 @@ func setup_week_row(student: StudentData) -> void:
 		mood_bar.set_need("mood", 0.0)
 		_energy_from = 0.0
 		_mood_from = 0.0
+		_energy_to = 0.0
+		_mood_to = 0.0
 		_energy_delta = 0.0
 		_mood_delta = 0.0
 		energy_delta_label.hide()
@@ -196,6 +216,8 @@ func setup_week_row(student: StudentData) -> void:
 	# documents for the stat tracks.
 	_energy_from = clampf(student.energy - energy_delta, 0.0, 100.0)
 	_mood_from = clampf(student.mood - mood_delta, 0.0, 100.0)
+	_energy_to = student.energy
+	_mood_to = student.mood
 	_energy_delta = energy_delta
 	_mood_delta = mood_delta
 	_show_needs_delta(energy_delta_label, energy_delta_chevron, energy_delta)
@@ -267,7 +289,126 @@ func play_week_gain(delay: float = 0.0) -> void:
 	play_gain(delay)
 
 
+## The weekly reveal's opening state (2026-09-14 weekly-report-reveal
+## spec): every stat row back on Monday with its number at +0, and both
+## needs bars on Monday's values. Call setup_week_row first.
+func rewind_week() -> void:
+	_stop_needs_travel()
+	for row in stat_rows:
+		row.rewind()
+	energy_bar.value = _energy_from
+	mood_bar.value = _mood_from
+
+
+## A card's opening gesture in the weekly reveal, played as it lands: both
+## needs bars travel from Monday to tonight. The stat rows wait for their
+## own turns (DaySummaryStatRow.play_count).
+func play_needs_week() -> void:
+	_stop_needs_travel()
+	energy_bar.value = _energy_from
+	mood_bar.value = _mood_from
+	for tw in [Juice.fill_bar(energy_bar, _energy_to), Juice.fill_bar(mood_bar, _mood_to)]:
+		if tw != null:
+			_needs_tweens.append(tw)
+
+
+## Everything on its final values at once: the skip's landing.
+func land_week() -> void:
+	_stop_needs_travel()
+	for row in stat_rows:
+		row.land()
+	energy_bar.value = _energy_to
+	mood_bar.value = _mood_to
+
+
+func _stop_needs_travel() -> void:
+	for tw in _needs_tweens:
+		if tw != null and tw.is_valid():
+			tw.kill()
+	_needs_tweens.clear()
+
+
 func _play_needs_travel(bar: ProgressBar, from_value: float, delay: float) -> void:
 	var to_value: float = bar.value
 	bar.value = from_value
 	Juice.fill_bar(bar, to_value, -1.0, delay)
+
+
+## The card as it stands right now, with no day or week behind it. The
+## event picker and the item screen read the card this way (2026-09-12
+## event-cards spec, 1.1). Both needs bars at their current values with no
+## chevron; every stat row at current/target via set_standing().
+func setup_current_row(student: StudentData) -> void:
+	name_label.text = student.student_name if student != null else ""
+	avatar.set_student(student)
+	_standing.clear()
+	_targets.clear()
+	_row_for_key.clear()
+	_standing["energy"] = student.energy if student != null else 0.0
+	_standing["mood"] = student.mood if student != null else 0.0
+	energy_bar.set_need("energy", float(_standing["energy"]))
+	mood_bar.set_need("mood", float(_standing["mood"]))
+	energy_bar.show()
+	mood_bar.show()
+	for label in [energy_delta_label, mood_delta_label]:
+		label.hide()
+	for chevron in [energy_delta_chevron, mood_delta_chevron]:
+		chevron.hide()
+	for i in STAT_ORDER.size():
+		var key: String = STAT_ORDER[i]
+		_standing[key] = float(student.get(key)) if student != null else 0.0
+		_targets[key] = float(student.get(TARGET_FOR[key])) if student != null else 0.0
+		_row_for_key[key] = stat_rows[i]
+		stat_rows[i].show()
+		stat_rows[i].set_standing(key, float(_targets[key]), float(_standing[key]))
+	_gained_ground = false
+
+
+## Layer a proposed change on one skill's row. A zero delta (uncapped)
+## restores it; `capped` makes the row read MAKS because the stat is at 100.
+func preview_stat(stat_key: String, delta: float, capped: bool = false) -> void:
+	var row: DaySummaryStatRow = _row_for_key.get(stat_key)
+	if row != null:
+		row.show_preview(delta, capped)
+
+
+## Move one needs bar to where a proposed change would leave it, with its
+## chevron pointing the change's way. A zero delta restores the bar.
+func preview_need(need_key: String, delta: float) -> void:
+	var is_energy := need_key == "energy"
+	var bar: DaySummaryNeedsBar = energy_bar if is_energy else mood_bar
+	var label: Label = energy_delta_label if is_energy else mood_delta_label
+	var chevron: TextureRect = energy_delta_chevron if is_energy else mood_delta_chevron
+	var from_value: float = bar.value
+	var to_value := clampf(float(_standing.get(need_key, 0.0)) + delta, 0.0, 100.0)
+	bar.set_need(need_key, to_value)
+	if not Engine.is_editor_hint() and is_inside_tree():
+		bar.value = from_value
+		Juice.fill_bar(bar, to_value)
+	_show_needs_delta(label, chevron, delta)
+
+
+## Show only the listed keys ("akademis", "seni_budaya", "olahraga",
+## "energy", "mood"). Visible skills fill the stat rows top-down in
+## STAT_ORDER, so one boosted skill sits in the top slot; unused rows hide.
+## The needs bars keep their slots and hide when not listed. An empty list
+## shows everything. Call setup_current_row() first: reassigned rows are
+## re-written from its cache.
+func show_only(keys: Array) -> void:
+	var want_all := keys.is_empty()
+	energy_bar.visible = want_all or keys.has("energy")
+	mood_bar.visible = want_all or keys.has("mood")
+	var shown: Array[String] = []
+	for key in STAT_ORDER:
+		if want_all or keys.has(key):
+			shown.append(key)
+	_row_for_key.clear()
+	for i in stat_rows.size():
+		if i < shown.size():
+			var key: String = shown[i]
+			_row_for_key[key] = stat_rows[i]
+			stat_rows[i].show()
+			stat_rows[i].set_standing(key, float(_targets.get(key, 0.0)),
+				float(_standing.get(key, 0.0)))
+		else:
+			stat_rows[i].hide()

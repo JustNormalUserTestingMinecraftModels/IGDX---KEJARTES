@@ -15,8 +15,8 @@ duplicate files already on disk. No proposals before this table.
 finished-work narrative has live facts embedded in it.
 - **Current state** (changes how you work today, or contradicts a section
   above) → merge UP into the section it governs
-- **Live debt** (placeholder, deferred item, known gap) → one standing
-  `## Outstanding debt` section
+- **Live debt** (placeholder, deferred item, known gap) → one standing `## Outstanding debt` section, or the debt file that
+  section points to
 - **History** (finished pass) → `docs/CHANGELOG.md`, verbatim
 
 Lock the classification as a table with line ranges against a pinned SHA
@@ -55,7 +55,7 @@ writing. A mined constraint that contradicts the context file is the pass's
 best finding — fix the file too, don't just record it.
 
 **7. Maintenance rule.** Add `## Maintaining this file`: completed passes →
-changelog; working facts → topical section; unfinished → debt section, deleted
+changelog; working facts → topical section; unfinished → debt section (or its file), deleted
 when resolved; in-flight section holds only in-flight work; soft char budget.
 Self-enforcing because always loaded.
 

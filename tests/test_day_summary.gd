@@ -1462,36 +1462,87 @@ const EVENT_CARD_SCENE := "res://Scenes/SchoolSimulation/EventStudentCard.tscn"
 
 
 func test_event_card_reuses_the_day_summary_parts() -> void:
+	# Since 2026-09-12 the event card hosts the REAL DaySummary card rather
+	# than a hand-made copy of its layout, so the two can never drift again.
 	var packed := load(EVENT_CARD_SCENE) as PackedScene
 	assert_not_null(packed, "EventStudentCard.tscn should load")
 	var card := packed.instantiate()
-	assert_not_null(card.get_node_or_null("Avatar"),
-		"the event card should reuse DaySummaryAvatar")
-	assert_not_null(card.get_node_or_null("EnergyBar"),
-		"the event card should reuse the DaySummary needs bars")
-	assert_not_null(card.get_node_or_null("MoodBar"), "ditto mood")
-	for i in range(1, 4):
-		assert_not_null(card.get_node_or_null("StatRow%d" % i),
-			"the event card should carry all three DaySummaryStatRows")
+	var inner := card.get_node_or_null("Card")
+	assert_true(inner is DaySummaryStudentRow, "the event card hosts DaySummaryStudentRow")
+	if inner != null:
+		assert_eq(inner.scene_file_path,
+			"res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	for part in ["Avatar", "EnergyBar", "MoodBar", "StatRow1", "StatRow2", "StatRow3"]:
+		assert_not_null(card.get_node_or_null("Card/" + part), part + " comes from the real card")
 	card.free()
 
 
 func test_event_card_needs_bars_carry_their_icon_and_word() -> void:
-	# DaySummaryNeedsBar.set_need writes into $Icon and $Word; without
-	# those children every call would crash on a null.
 	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
 	for bar_name in ["EnergyBar", "MoodBar"]:
-		var bar := card.get_node("%s" % bar_name)
-		assert_not_null(bar.get_node_or_null("Icon"),
-			"%s needs an Icon child" % bar_name)
-		assert_not_null(bar.get_node_or_null("Word"),
-			"%s needs a Word child" % bar_name)
+		var bar := card.get_node("Card/%s" % bar_name)
+		assert_not_null(bar.get_node_or_null("Icon"), "%s needs an Icon child" % bar_name)
+		assert_not_null(bar.get_node_or_null("Word"), "%s needs a Word child" % bar_name)
+	card.free()
+
+
+func test_event_card_shows_current_stats_and_previews() -> void:
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as EventStudentCard
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	var s := StudentData.new()
+	s.student_name = "Budi"
+	s.akademis = 30.0
+	s.target_akademis1 = 60.0
+	s.energy = 60.0
+	s.mood = 50.0
+	card.setup(s, "Akademis")
+	var row := card.get_node("Card/StatRow1") as DaySummaryStatRow
+	assert_eq(row.value.text, "30/60", "the card shows where the student stands")
+	assert_true((card.get_node("Card/EnergyBar/Icon") as TextureRect).texture != null,
+		"the energy bar carries its icon now")
+	card.set_preview(15.0, -15.0, 0.0)
+	assert_eq(row.value.text, "+15/60", "selecting layers the event's gain")
+	assert_eq((card.get_node("Card/EnergyBar") as DaySummaryNeedsBar).value, 45.0)
+	card.set_preview(0.0, 0.0, 0.0)
+	assert_eq(row.value.text, "30/60", "zeroes rewind to the standing view")
+
+
+## Pattern C: an instanced card under a plain Control loses its rect on load
+## unless something owns it. StudentCardButton does; this checks the loaded,
+## in-tree result, not the scene text.
+func test_event_card_keeps_its_card_rect_after_loading() -> void:
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as Control
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	card.size = Vector2(992, 410)
+	# Run the fit directly rather than waiting on NOTIFICATION_RESIZED.
+	card.call("_fit_card")
+	var inner := card.get_node("Card") as Control
+	assert_eq(inner.position, Vector2.ZERO)
+	assert_eq(inner.size, Vector2(992, 410))
+	assert_eq(inner.scale, Vector2.ONE, "992 wide is native size")
+
+
+func test_event_card_badges_sit_on_the_card() -> void:
+	# The select badge used to hang 18 px below the card's bottom edge.
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
+	var bounds := Rect2(Vector2.ZERO, Vector2(992, 410))
+	for badge in ["SelectBadge", "TiredBadge", "SpecialtyBadge"]:
+		var node := card.get_node_or_null("Card/" + badge) as Control
+		assert_true(node != null, badge + " lives under Card so it scales with it")
+		if node == null:
+			continue
+		var r := Rect2(Vector2(node.offset_left, node.offset_top),
+			Vector2(node.offset_right - node.offset_left, node.offset_bottom - node.offset_top))
+		assert_true(bounds.encloses(r), "%s must sit inside the card" % badge)
 	card.free()
 
 
 func test_event_card_is_a_toggle_not_a_scaled_checkbox() -> void:
 	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
 	assert_true(card is Button, "the whole card should be the tap target")
+	assert_true(card is StudentCardButton, "the card uses the shared tappable wrapper")
 	assert_true(card.toggle_mode, "the card should latch when selected")
 	assert_eq(card.theme_type_variation, &"EventSelectCard",
 		"selection state should come from the theme, not a bespoke stylebox")
@@ -1585,10 +1636,16 @@ func test_event_dialog_action_buttons_keep_the_shared_variations() -> void:
 
 
 func test_event_card_children_do_not_swallow_the_tap() -> void:
-	# The whole 992x410 card is the tap target; a child left on the
-	# default mouse filter would eat the click over its own rect.
+	# The whole card is the tap target. Any part left on the default mouse
+	# filter would eat the click over its own rect. StudentCardButton sets
+	# every Card descendant to IGNORE when it enters the tree.
 	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
-	for child in card.get_children():
-		assert_eq(child.mouse_filter, Control.MOUSE_FILTER_IGNORE,
-			"%s should ignore the mouse so the card gets the tap" % child.name)
-	card.free()
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	var stack: Array[Node] = [card.get_node("Card")]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is Control:
+			assert_eq((n as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
+				"%s should ignore the mouse so the card gets the tap" % n.name)
+		stack.append_array(n.get_children())

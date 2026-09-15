@@ -8,6 +8,10 @@ extends McpTestSuite
 
 const _ART := "res://Assets/Images/StudentCard/"
 
+## Settles Containers in the same frame: since the 2026-09-15 tall-phone
+## pass the page arrows and PageLabel sit in Safe/UI/BottomBar.
+const LayoutFrame := preload("res://tests/layout_frame.gd")
+
 const _EXPECTED_ART: Array[String] = [
 	"card_bg.png", "pill_fill.png", "trait_button.png", "icon_info.png",
 	"stat_akademis.png", "stat_senibudaya.png", "stat_olahraga.png",
@@ -528,7 +532,10 @@ func test_page_label_sits_between_the_arrows() -> void:
 		Engine.get_main_loop().root.add_child(inst)
 		track(inst)
 		inst.size = Vector2(1080, 1920)
-		var page_label := inst.get_node("PageLabel") as Control
+		LayoutFrame.settle(inst)
+		var page_label := inst.get_node_or_null("%PageLabel") as Control
+		if page_label == null:
+			page_label = inst.get_node("PageLabel") as Control
 		var card := inst.get_node("KertasMurid1") as Control
 		var kutu2 := card.get_node("KutuBuku2") as Control
 		assert_false(page_label.get_global_rect().intersects(kutu2.get_global_rect()),
@@ -625,9 +632,10 @@ func test_the_action_row_is_not_crowded_against_the_paper() -> void:
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 	inst.size = Vector2(1080, 1920)
+	LayoutFrame.settle(inst)
 
-	var left_arrow := inst.get_node("NextButtonKiri") as Control
-	var right_arrow := inst.get_node("NextButtonKanan") as Control
+	var left_arrow := inst.get_node("%NextButtonKiri") as Control
+	var right_arrow := inst.get_node("%NextButtonKanan") as Control
 
 	for i in range(1, 7):
 		var card := inst.get_node("KertasMurid%d" % i) as Control

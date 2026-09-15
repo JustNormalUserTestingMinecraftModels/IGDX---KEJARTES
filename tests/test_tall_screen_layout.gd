@@ -272,3 +272,84 @@ func test_koperasi_at_the_design_size_is_unchanged() -> void:
 		Vector2(303, 1401), "landing sign")
 	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
 		Vector2(20, 20), "coins")
+
+
+# ── StudentCard ──────────────────────────────────────────────────────────────
+
+const STUDENT_CARD := "res://Scenes/StudentCard/student_card.tscn"
+
+
+## The root carries no inset, and the wood fills and covers.
+func test_student_card_backdrop_fills() -> void:
+	var card := _scene(STUDENT_CARD)
+	assert_eq(_offsets(card), Vector4.ZERO, "the StudentCard root is not inset")
+	_assert_background_fills(card.get_node_or_null("Backdrop") as TextureRect,
+		"StudentCard Backdrop")
+
+
+## Each paper sheet and the approval stamp are Center-anchored at their
+## 1080x1920 rects, so a paper and its stamp stay together, centred.
+func test_student_card_papers_are_centred() -> void:
+	var card := _scene(STUDENT_CARD)
+	for i in range(1, 7):
+		var sheet := card.get_node_or_null("KertasMurid%d" % i) as Control
+		assert_true(sheet != null, "missing KertasMurid%d" % i)
+		if sheet == null:
+			continue
+		assert_eq(_anchors(sheet), Vector4(0.5, 0.5, 0.5, 0.5),
+			"KertasMurid%d is Center-anchored" % i)
+		assert_eq(_offsets(sheet), Vector4(-540, -960, 540, 960),
+			"KertasMurid%d stays 1080x1920" % i)
+	var stamp := card.get_node_or_null("StampApprove") as Control
+	assert_true(stamp != null, "missing StampApprove")
+	if stamp == null:
+		return
+	assert_eq(_anchors(stamp), Vector4(0.5, 0.5, 0.5, 0.5), "StampApprove rides with the paper")
+	assert_eq(_offsets(stamp), Vector4(-485, -608, 514, 212), "StampApprove keeps its rect")
+
+
+## The title on the top edge; page arrows and page label in a Bottom Wide
+## bar; all inside the safe area.
+func test_student_card_ui_is_pinned_inside_the_safe_area() -> void:
+	var card := _scene(STUDENT_CARD)
+	_assert_under_safe_area(card.get_node_or_null("%PilihMurid"), "PilihMurid")
+	var bar := card.get_node_or_null("Safe/UI/BottomBar") as Control
+	assert_true(bar != null, "StudentCard needs Safe/UI/BottomBar")
+	if bar == null:
+		return
+	assert_eq(_anchors(bar), Vector4(0, 1, 1, 1), "BottomBar is Bottom Wide")
+	assert_eq(bar.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BottomBar lets taps through")
+	for n in ["NextButtonKiri", "NextButtonKanan", "PageLabel"]:
+		var c := card.get_node_or_null("%" + n)
+		assert_true(c != null and c.get_parent() == bar, n + " rides in BottomBar")
+
+
+## On a 1080x2400 phone the paper sits 240 px down, centred, and the page
+## row rides the bottom edge.
+func test_student_card_on_a_tall_phone() -> void:
+	var card := _stood_up(STUDENT_CARD, TALL)
+	_assert_placed((card.get_node("Backdrop") as Control),
+		Rect2(0, 0, 1080, 2400), "Backdrop")
+	_assert_placed((card.get_node("KertasMurid1") as Control),
+		Rect2(0, 240, 1080, 1920), "KertasMurid1")
+	_assert_placed((card.get_node("%NextButtonKanan") as Control),
+		Rect2(860, 2258, 160, 128), "NextButtonKanan")
+	assert_eq(_authored_rect(card.get_node("%PilihMurid") as Control).position,
+		Vector2(160, 44), "the title stays at the top")
+
+
+## At 1080x1920 the StudentCard is where it was.
+func test_student_card_at_the_design_size_is_unchanged() -> void:
+	var card := _stood_up(STUDENT_CARD, DESIGN)
+	_assert_placed((card.get_node("KertasMurid1") as Control),
+		Rect2(0, 0, 1080, 1920), "KertasMurid1")
+	_assert_placed((card.get_node("%NextButtonKiri") as Control),
+		Rect2(90, 1778, 160, 128), "NextButtonKiri")
+	_assert_placed((card.get_node("%NextButtonKanan") as Control),
+		Rect2(860, 1778, 160, 128), "NextButtonKanan")
+	assert_eq(_authored_rect(card.get_node("%PageLabel") as Control).position,
+		Vector2(440, 1805), "PageLabel")
+	assert_eq(_authored_rect(card.get_node("StampApprove") as Control).position,
+		Vector2(55, 352), "StampApprove")
+	assert_eq(_authored_rect(card.get_node("%PilihMurid") as Control).position,
+		Vector2(160, 44), "PilihMurid")

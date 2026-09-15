@@ -73,10 +73,10 @@ var _tutorial_arrow: Control = null
 
 # --- Paginasi Kertas Murid ---
 @onready var kertas_murid: Array = [$KertasMurid1, $KertasMurid2, $KertasMurid3, $KertasMurid4, $KertasMurid5, $KertasMurid6]
-@onready var next_kanan: BaseButton = $NextButtonKanan
-@onready var next_kiri: BaseButton = $NextButtonKiri
+@onready var next_kanan: BaseButton = %NextButtonKanan
+@onready var next_kiri: BaseButton = %NextButtonKiri
 @onready var stamp: TextureRect = $StampApprove
-@onready var page_label: Label = $PageLabel
+@onready var page_label: Label = %PageLabel
 @onready var belajar_button: BaseButton = $BelajarButton
 
 var current_page := 0
@@ -427,7 +427,11 @@ func _show_step(index: int):
 		for p in paths:
 			var trimmed = p.strip_edges()
 			if trimmed != "":
-				var target = get_node_or_null(trimmed)
+				# A bare name is found by unique name wherever it sits (the page
+				# row moved into Safe/UI/BottomBar); card paths resolve as before.
+				var target = get_node_or_null("%" + trimmed)
+				if target == null:
+					target = get_node_or_null(trimmed)
 				if target and target is Control:
 					targets.append(target)
 		if not targets.is_empty():

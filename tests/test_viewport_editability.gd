@@ -78,7 +78,6 @@ const BASELINE: Dictionary = {
 	"res://Scripts/Pengaturan.gd": 12,
 	"res://Scripts/SchoolSimulation/BookClockWidget.gd": 0,
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd": 6,
-	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 1,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 9,
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
 	"res://Scripts/StudentCard/student_card.gd": 1,
@@ -128,9 +127,6 @@ const ALLOWED: Dictionary = {
 	# attach_to()'s shadow TextureRect: per-call-dynamic content attached to
 	# a runtime-randomised shelf item (Koperasi rework Task 5).
 	"res://Scripts/Koperasi/ShelfItem.gd": 1,
-	# PatternOverlay (category-tinted wash, varies per item) and TintCircle
-	# (stat-colored icon backdrop, one per visible EfekRow): both
-	# per-call-dynamic content whose color depends on the item shown.
 }
 
 

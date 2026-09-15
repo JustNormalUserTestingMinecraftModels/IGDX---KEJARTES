@@ -15,7 +15,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
 expand_mode = 1
-stretch_mode = 2
 
 [node name="Center" type="CenterContainer" parent="." unique_id=955806392]
 anchors_preset = 15

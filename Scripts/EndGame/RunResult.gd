@@ -236,14 +236,24 @@ func _on_selesai_pressed() -> void:
 
 func _apply_progression() -> String:
 	if GameState.run_failed:
-		# A loss returns to the main menu; the normal MainMenu -> CutScene
-		# bootstrap handles the restart from there (a fresh grade-7 run, or
-		# the level-select modal if already unlocked).
 		GameState.day_schedules.clear()
 		GameState.minggu_ke = 1
 		GameState.run_stats.reset()
 		GameState.run_failed = false
-		return "res://Scenes/MainMenu/main_menu.tscn"
+		if GameState.current_grade == 7:
+			# Grade-7 loss: full restart. Clear everything and go to MainMenu;
+			# the MainMenu -> CutScene bootstrap picks up from there.
+			GameState.approved_students.clear()
+			GameState.grade7_student_ids.clear()
+			GameState.grade8_student_ids.clear()
+			GameState.returned_from_student_card = false
+			return "res://Scenes/MainMenu/main_menu.tscn"
+		else:
+			# Grade 8/9 loss: retry the same grade at StudentCard. Keep the
+			# roster and grade7_student_ids so locked students stay locked and
+			# the player only needs to re-pick the new-grade slot(s).
+			GameState.returned_from_student_card = false
+			return "res://Scenes/StudentCard/student_card.tscn"
 
 	if GameState.current_grade < 9:
 		GameState.current_grade += 1
@@ -269,6 +279,7 @@ func _apply_progression() -> String:
 		GameState.day_schedules.clear()
 		GameState.approved_students.clear()
 		GameState.grade7_student_ids.clear()
+		GameState.grade8_student_ids.clear()
 		GameState.lobby_tutorial_completed = false
 
 		# Tutorial flags, carried over from the now-deleted SemesterEnd's old grade-7

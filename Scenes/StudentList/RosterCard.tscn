@@ -136,8 +136,9 @@ mouse_filter = 2
 [node name="Senin" parent="StickyNotesContainer" unique_id=159726911 instance=ExtResource("3_2cr6j")]
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
+offset_top = 20.0
 offset_right = 172.0
-offset_bottom = 200.0
+offset_bottom = 220.0
 mouse_filter = 2
 day_name = "SEN"
 
@@ -145,8 +146,9 @@ day_name = "SEN"
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_left = 182.0
+offset_top = 20.0
 offset_right = 354.0
-offset_bottom = 200.0
+offset_bottom = 220.0
 mouse_filter = 2
 day_name = "SEL"
 
@@ -154,8 +156,9 @@ day_name = "SEL"
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_left = 364.0
+offset_top = 20.0
 offset_right = 536.0
-offset_bottom = 200.0
+offset_bottom = 220.0
 mouse_filter = 2
 day_name = "RAB"
 
@@ -163,8 +166,9 @@ day_name = "RAB"
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_left = 546.0
+offset_top = 20.0
 offset_right = 718.0
-offset_bottom = 200.0
+offset_bottom = 220.0
 mouse_filter = 2
 day_name = "KAM"
 
@@ -172,8 +176,9 @@ day_name = "KAM"
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_left = 728.0
+offset_top = 20.0
 offset_right = 900.0
-offset_bottom = 200.0
+offset_bottom = 220.0
 mouse_filter = 2
 day_name = "JUM"
 

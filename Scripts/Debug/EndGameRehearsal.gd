@@ -135,6 +135,11 @@ const SNAPSHOT_KEYS := [
 	# a fresh minigame budget and reopen the farming exploit the cap
 	# exists to close.
 	"minigame_gain_this_week",
+	# The Koperasi's weekly shelf and what sold from it. Nothing in the
+	# end-of-grade sequence writes them, but a visit to the shop between
+	# arming and restoring does, and restoring hands the run back exactly
+	# as it was -- an item bought during a rehearsal must not stay sold.
+	"shop_week_key", "shop_stock", "shop_sold",
 	"minggu_ke", "current_grade", "player_money",
 	"run_failed", "is_game_beaten",
 	"lobby_tutorial_completed", "tutorials_bypassed",

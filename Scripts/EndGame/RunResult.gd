@@ -238,6 +238,9 @@ func _apply_progression() -> String:
 	if GameState.run_failed:
 		GameState.day_schedules.clear()
 		GameState.minggu_ke = 1
+		# The retry's week 1 is a new week: without this it would reuse the
+		# lost attempt's Koperasi shelf and sold list (same grade, week 1).
+		GameState.reset_shop_week()
 		GameState.run_stats.reset()
 		GameState.run_failed = false
 		if GameState.current_grade == 7:

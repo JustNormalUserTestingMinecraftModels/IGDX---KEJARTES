@@ -8,6 +8,25 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-15 — Weekly shop and minigame polish
+
+Plan `docs/superpowers/plans/2026-09-15-weekly-shop-minigame-polish.md`, spec
+`docs/superpowers/specs/2026-09-15-weekly-shop-minigame-polish-design.md`.
+
+- **Koperasi** rolls its four items once per week (`GameState.shop_stock_for_week()`,
+  keyed by grade and `minggu_ke`) instead of on every visit. Each item sells
+  once a week: it leaves the shelf when it goes into the basket, comes back if
+  it is held out or the player backs out, and stays gone after Beli
+  (`GameState.shop_sold`). Session-scoped, like the rest of GameState.
+- **LombaMenari**'s hit window is 170 px (BAGUS) and 70 px (SEMPURNA), up from
+  120/45, and a note is only missed once it leaves the whole window -- it used
+  to be dropped 80 px past centre, so late hits were impossible. Feedback is
+  UPS!/BAGUS!/SEMPURNA!; the dancer draws behind the hit zone.
+- **Win screen**: WinStage puts the painting on a white `PhotoFrame` print
+  (new ThemeFactory variation); RunResult opens on the same framed picture.
+- **MainBola**: an off-target shot ends in the keeper's hands, and the target
+  box respawns somewhere new (x and height) after every goal.
+
 ## 2026-09-15 — Tall phones, Phase 1: Lobby, Koperasi, StudentCard, StudentList
 
 Plan `docs/superpowers/plans/2026-09-15-tall-phone-layout-phase-1.md`, spec

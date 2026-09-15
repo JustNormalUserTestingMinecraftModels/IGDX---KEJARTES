@@ -44,6 +44,17 @@ var day_schedules: Dictionary = {}
 ## (reset_roster_for_new_grade). Session-scoped like everything here.
 var minigame_gain_this_week: Dictionary = {}
 
+## How many items the Koperasi shelf shows -- one per Barang* button on
+## koprasi.tscn's Rak1.
+const SHOP_SHELF_SIZE: int = 4
+## The week the Koperasi shelf was rolled for, as shop_week_key_for(); ""
+## until the first visit. Session-scoped like everything here.
+var shop_week_key: String = ""
+## Item names on the Koperasi shelf this week, in slot order.
+var shop_stock: Array[String] = []
+## Item names bought this week. Each shelf item sells once a week.
+var shop_sold: Array[String] = []
+
 # Week tracking  
 var minggu_ke: int = 1
 var max_minggu: int = 6
@@ -87,6 +98,7 @@ func set_grade(grade_num: int) -> void:
 	minggu_ke = 1
 	run_stats.reset()
 	run_failed = false
+	reset_shop_week()
 	if current_grade != previous_grade:
 		reset_roster_for_new_grade()  # no-op when the roster is empty
 	print("GameState grade set to: Kelas ", current_grade, " (Minggu ", minggu_ke, ", Max Minggu ", max_minggu, ")")
@@ -241,6 +253,58 @@ func clear_inventory_save() -> void:
 	if FileAccess.file_exists(INVENTORY_SAVE_PATH):
 		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
 
+## Forget the stocked week, so the next shop_stock_for_week() rolls a fresh
+## shelf with nothing sold. Every run restart calls this: it resets
+## minggu_ke to 1, and without it a retried grade -- or Kelas 7 after a loss
+## or after beating the game -- would land on the last run's key.
+func reset_shop_week() -> void:
+	shop_week_key = ""
+	shop_stock = []
+	shop_sold = []
+
+
+## The key a week's Koperasi shelf is stored under. The grade is part of it
+## because a new grade restarts minggu_ke at 1.
+static func shop_week_key_for(grade: int, week: int) -> String:
+	return "%d-%d" % [grade, week]
+
+
+## This week's Koperasi shelf. The first call in a (grade, week) rolls
+## SHOP_SHELF_SIZE items from ItemDatabase and clears shop_sold; every later
+## call that week returns the same items in the same order.
+func shop_stock_for_week() -> Array[String]:
+	var key := shop_week_key_for(current_grade, minggu_ke)
+	if key != shop_week_key:
+		shop_week_key = key
+		shop_sold = []
+		shop_stock = []
+		for item in ItemDatabase.get_random_items(SHOP_SHELF_SIZE):
+			shop_stock.append(item.item_name)
+	return shop_stock.duplicate()
+
+
+## Record that `item_name` was bought this week. Idempotent.
+func mark_shop_sold(item_name: String) -> void:
+	if not shop_sold.has(item_name):
+		shop_sold.append(item_name)
+
+
+## True when `item_name` was bought this week.
+func is_shop_sold(item_name: String) -> bool:
+	return shop_sold.has(item_name)
+
+
+## True once every item on this week's shelf has been bought. False before
+## the shelf is first rolled.
+func is_shop_sold_out() -> bool:
+	if shop_stock.is_empty():
+		return false
+	for item_name in shop_stock:
+		if not shop_sold.has(item_name):
+			return false
+	return true
+
+
 ## Debug: return every session run-state field to its declared default and
 ## drop the on-disk inventory save. Deliberately leaves is_game_beaten and
 ## debug_level_select_enabled alone -- those are persisted progress flags
@@ -253,6 +317,9 @@ func forget_session() -> void:
 	selected_day = ""
 	day_schedules = {}
 	minigame_gain_this_week = {}
+	shop_week_key = ""
+	shop_stock = []
+	shop_sold = []
 	minggu_ke = 1
 	lobby_tutorial_completed = false
 	tutorials_bypassed = false

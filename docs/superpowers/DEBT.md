@@ -184,12 +184,17 @@ help everywhere but the HUD's dark pill; a multiply tint muddies coloured art.
 (Checked 2026-09-14: only `icon_skor` and `icon_kombo` are drawn white;
 `icon_mood`, `icon_energy` and `icon_poin` are yellow, orange and gold.)
 
+**`DailyDecayOverview`'s photo swap can never run (found 2026-09-15, by
+reading the source; not run).** `_apply_visual_exports()` looks up a
+`Background` Panel, but the scene's scrim is `BackgroundDim` -- the same
+mismatch `EventStudentSelectDialog` had until 2026-09-15. Nothing sets its
+`background_texture` today, so nothing looks wrong, but setting that export
+would silently do nothing. Fix it the way the picker was fixed: an authored
+`Background` TextureRect that the script toggles against the Scrim. That also
+retires the `TextureRect.new()` among the file's six `viewport_editability`
+BASELINE counts.
+
 **Loose ends from the event-cards pass (2026-09-12).**
-`EventStudentSelectDialog._apply_visual_exports()` looks up a `Background`
-node but the scene's is `BackgroundDim`, so `background_texture` never swaps
-in -- the one `viewport_editability` BASELINE count for that file is this
-dead `TextureRect.new()`. The authoring guide's "Known gaps"
-still lists `EventStudentSelectDialog.gd (11)`; the baseline is now 1.
 SchoolDay's `_add_pill()` schedule-pill builder uses 📚/⚽/🎨 as internal
 markers in label text before stripping them -- emoji in source, and
 brittle. `EventStudentCard.set_preview()` never passes `preview_stat()`'s

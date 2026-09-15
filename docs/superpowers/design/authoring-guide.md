@@ -218,9 +218,8 @@ entries, as candidates for a future pass:
   candidates similar to TutorialPanel.
 - `Scripts/CutScene/cut_scene.gd` (15) — dialogue/choice UI, never surveyed
   for extraction.
-- `Scripts/Minigames/UI/MinigameTutorial.gd` (12) and
-  `Scripts/SchoolSimulation/EventStudentSelectDialog.gd` (11) — both build a
-  full popup by hand; likely Pattern B candidates.
+- `Scripts/Minigames/UI/MinigameTutorial.gd` (12) — builds a full popup by
+  hand; a likely Pattern B candidate.
 - `Scripts/Minigames/UI/BaseMinigame.gd` (4) — `ui_layer`, `pause_button`
   (with its procedural fallback-draw `Control`), and `visual_timer` are
   built once per game session; a real extraction here needs to account for

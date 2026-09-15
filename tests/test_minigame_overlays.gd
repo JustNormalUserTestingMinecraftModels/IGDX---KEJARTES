@@ -62,6 +62,25 @@ func test_quit_dialog_emits_confirmed_and_cancelled() -> void:
 	assert_true(node.has_signal("cancelled"), "QuitConfirmDialog needs a cancelled signal")
 
 
+## The backdrop is a full-rect TextureRect showing either an artist's PNG or
+## a 1x1 white fill tinted by quit_dialog_bg_color. STRETCH_KEEP draws a
+## texture at its own size, so the fill dimmed one pixel in the top-left and
+## nothing else (measured live 2026-09-15). The hand-built dialog this scene
+## replaced filled the whole screen either way, as PauseMenu's scrim does.
+func test_quit_dialog_backdrop_dims_the_whole_screen() -> void:
+	var node := _make(QUIT_PATH)
+	node.configure("Yakin?", "Iya", "Tidak", null, Color(0, 0, 0, 0.75), null,
+		Color.WHITE, Color.RED, null, null, null, 46, Color.WHITE)
+	var backdrop := node.get_node("Backdrop") as TextureRect
+	assert_eq(backdrop.stretch_mode, TextureRect.STRETCH_SCALE,
+		"the backdrop must stretch its texture over the screen, not draw it at its own size")
+	assert_eq(backdrop.expand_mode, TextureRect.EXPAND_IGNORE_SIZE,
+		"the backdrop must not take its minimum size from the texture")
+	assert_eq(Vector4(backdrop.anchor_left, backdrop.anchor_top,
+		backdrop.anchor_right, backdrop.anchor_bottom), Vector4(0, 0, 1, 1),
+		"the backdrop must be anchored to the full screen")
+
+
 ## The text of one top-level function's body, from its `func name(` line up
 ## to (but not including) the next top-level `func` line. Used to scope a
 ## scan to one function instead of the whole file, since other functions in

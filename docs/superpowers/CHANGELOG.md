@@ -8,6 +8,32 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-15 — Two dead backdrops: the minigame quit dim and the event-picker photo
+
+Both came from a read-only audit and were confirmed in the running game before
+anything changed.
+
+- **`QuitConfirmDialog` dimmed one pixel.** Its `Backdrop` is a full-rect
+  TextureRect holding a 1x1 white fill tinted by `quit_dialog_bg_color` (or an
+  artist's PNG), but it used `STRETCH_KEEP`, which draws a texture at its own
+  size. Framebuffer samples outside the card did not change when the dialog
+  opened; only (0,0) darkened. It now uses `STRETCH_SCALE`, as the hand-built
+  dialog did before the 2026-08-31 extraction, and every sample drops to about
+  25%. Suite `minigame_overlays`.
+- **`EventStudentSelectDialog`'s photo never showed.** The scene has always
+  set `background_texture` to `bg_event_dialog.png`, but
+  `_apply_visual_exports()` looked up a `Background` node when the scrim is
+  named `BackgroundDim`, so the Scrim always stayed. The photo now has an
+  authored `Background` TextureRect (index 0, full rect, SCALE), and the
+  script only chooses between it and the Scrim. The visible change is the
+  16 px frame around the card, which now shows the pale photo instead of the
+  dimmed day. That removed the file's last runtime `TextureRect.new()`, so its
+  `viewport_editability` BASELINE entry and its line in the authoring guide's
+  "Known gaps" are gone. The node holds no texture in the .tscn (the export
+  fills it at runtime), so the editor still previews the Scrim. Suite
+  `event_polish`, which also gained a general check that every node path the
+  script names exists in its scene.
+
 ## 2026-09-15 — Debug: Laporan Mingguan preview
 
 Plan `docs/superpowers/plans/2026-09-15-debug-weekly-report.md`, spec

@@ -159,15 +159,24 @@ func test_restore_handler_clears_the_snapshot_after_using_it() -> void:
 ## real game loop.
 func test_nothing_in_the_shipped_game_calls_the_rehearsal() -> void:
 	var offenders: Array[String] = []
-	_scan_for_rehearsal_callers("res://Scripts", offenders)
+	_scan_for_debug_callers("res://Scripts", "EndGameRehearsal", offenders)
 	assert_eq(offenders.size(), 0,
 		"EndGameRehearsal is debug-only; found shipped callers in: "
 			+ ", ".join(offenders))
 
 
-## Walks res://Scripts for references to EndGameRehearsal outside
-## Scripts/Debug/, which is the only directory allowed to name it.
-func _scan_for_rehearsal_callers(dir_path: String, out: Array[String]) -> void:
+## The same ratchet for the weekly report's sample week.
+func test_nothing_in_the_shipped_game_calls_the_week_report_rehearsal() -> void:
+	var offenders: Array[String] = []
+	_scan_for_debug_callers("res://Scripts", "WeekReportRehearsal", offenders)
+	assert_eq(offenders.size(), 0,
+		"WeekReportRehearsal is debug-only; found shipped callers in: "
+			+ ", ".join(offenders))
+
+
+## Walks res://Scripts for references to `name` outside Scripts/Debug/,
+## the only directory allowed to name a debug jig.
+func _scan_for_debug_callers(dir_path: String, name: String, out: Array[String]) -> void:
 	var dir := DirAccess.open(dir_path)
 	if dir == null:
 		return
@@ -177,10 +186,10 @@ func _scan_for_rehearsal_callers(dir_path: String, out: Array[String]) -> void:
 		var full := dir_path.path_join(entry)
 		if dir.current_is_dir():
 			if entry != "Debug":
-				_scan_for_rehearsal_callers(full, out)
+				_scan_for_debug_callers(full, name, out)
 		elif entry.ends_with(".gd"):
 			var f := FileAccess.open(full, FileAccess.READ)
-			if f != null and f.get_as_text().contains("EndGameRehearsal"):
+			if f != null and f.get_as_text().contains(name):
 				out.append(full)
 		entry = dir.get_next()
 	dir.list_dir_end()
@@ -199,3 +208,58 @@ func test_restore_resyncs_persisted_settings_after_restoring() -> void:
 		"restore must re-save GameSettings so a persisted is_game_beaten is undone on disk too")
 	assert_true(restore_at != -1 and save_at > restore_at,
 		"the re-save must come AFTER the restore, or it persists the pre-restore value")
+
+
+# ──────────────────────────────────────────────── weekly report preview
+
+func test_the_scenes_tab_opens_the_weekly_report_preview() -> void:
+	var body := _function_body(_source(), "_build_scenes_panel")
+	assert_true(body.contains(".pressed.connect(_open_week_report_preview)"),
+		"the Scenes tab must offer the weekly report preview")
+	assert_true(body.contains("Laporan Mingguan"), "and say what it opens")
+
+
+## The report measures every card from the Monday snapshot, so the manager
+## must be built from GameState before the sample week moves anything.
+## The default roster is approved only when none is.
+func test_the_preview_builds_the_sample_week_from_the_real_roster() -> void:
+	var body := _function_body(_source(), "_open_week_report_preview")
+	var empty_at := body.find("if GameState.approved_students.is_empty():")
+	var approve_at := body.find("_auto_approve_students()")
+	assert_true(empty_at != -1 and approve_at > empty_at,
+		"approve the default roster only when nothing is approved")
+	var init_at := body.find("initialize_from_gamestate()")
+	var sample_at := body.find("WeekReportRehearsal.apply_sample_week(")
+	assert_true(init_at != -1 and sample_at > init_at,
+		"the snapshot comes first, then the sample week")
+	assert_true(body.contains("initialize_checkup(manager, coins)"),
+		"the report reads the sample week and its coins")
+
+
+## StudentManager is a Node: leaving it unfreed leaks one per press. The
+## report has copied what it reads by the end of initialize_checkup.
+func test_the_preview_frees_its_manager_once_the_report_has_read_it() -> void:
+	var body := _function_body(_source(), "_open_week_report_preview")
+	var read_at := body.find("initialize_checkup(manager, coins)")
+	var free_at := body.find("manager.free()")
+	assert_true(read_at != -1 and free_at > read_at, "free the manager after the report reads it")
+
+
+func test_the_preview_hangs_off_the_current_scene_and_closes_itself() -> void:
+	var body := _function_body(_source(), "_open_week_report_preview")
+	assert_true(body.contains("get_tree().current_scene"),
+		"a teleport must take the preview down with the scene it covers")
+	assert_true(body.contains("checkup_closed.connect(_close_week_report_preview)"),
+		"Selanjutnya must close the preview")
+	assert_true(body.contains("_set_time_scale(1.0)"), "the reveal plays at normal speed")
+	var close := _function_body(_source(), "_close_week_report_preview")
+	assert_true(close.contains("_week_report_canvas.queue_free()"), "closing frees the host layer")
+	assert_true(close.contains("_week_report_canvas = null"), "and forgets it")
+
+
+func test_a_second_press_while_open_does_not_stack_another() -> void:
+	var body := _function_body(_source(), "_open_week_report_preview")
+	var guard_at := body.find("if is_instance_valid(_week_report_canvas):")
+	var build_at := body.find("CanvasLayer.new()")
+	assert_true(guard_at != -1 and build_at > guard_at,
+		"an open preview makes a second press a no-op")

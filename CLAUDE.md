@@ -182,7 +182,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 109 suites, 1562 tests (2026-09-15).
+the Godot AI MCP `test_run` tool. 110 suites, 1577 tests (2026-09-15).
 
 Hard constraints:
 
@@ -260,7 +260,9 @@ Verification, not implementation, dominates the cost of a session here.
 to MainMenu / Lobby / StudentCard / AturJadwal / SchoolDay / SemesterEnd /
 Splashscreen. Seed, teleport, screenshot once. The seed does **not** fill
 `day_schedules`, so schedule-driven screens (SchoolDay, AturJadwal) still need
-a pass through Atur Jadwal first.
+a pass through Atur Jadwal first. The weekly report needs neither: the Scenes
+tab's **📊 Laporan Mingguan** opens ResultCheckup over the current screen with
+a fixed sample week, leaving the run untouched.
 
 That tab also carries **🎭 Gladi Resik Akhir Kelas**: one-click rehearsals of
 the end-of-grade sequence with a fixed roster (*Semua Lulus*, *Semua Gagal*,

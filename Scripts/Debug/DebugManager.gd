@@ -216,12 +216,14 @@ func _build_ui() -> void:
 	backdrop.color = Color(0.04, 0.06, 0.1, 0.92)
 	debug_ui_root.add_child(backdrop)
 	
-	# Mini Toggle Button (Floating visual helper, always visible unless closed)
+	# Mini Toggle Button — hidden so it stays off-screen during trailers.
+	# Use F1 / ~ or the 5-tap top-right gesture to open the overlay.
 	toggle_btn = Button.new()
 	toggle_btn.text = "🔧 DBG"
 	toggle_btn.custom_minimum_size = Vector2(160, 80)
 	toggle_btn.position = Vector2(30, 30)
 	toggle_btn.add_theme_font_size_override("font_size", 21)
+	toggle_btn.visible = false
 	toggle_btn.pressed.connect(toggle_overlay)
 	
 	var style_toggle = StyleBoxFlat.new()

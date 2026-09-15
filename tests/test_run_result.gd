@@ -228,6 +228,30 @@ func test_it_grades_through_run_grade() -> void:
 	assert_true(src.contains("GameState.run_failed"), "a failed run is honoured")
 
 
+func test_grade7_loss_clears_roster_grade8_9_loss_preserves_it() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	# Grade-7 loss is a full restart: approved_students and grade7_student_ids
+	# must be cleared so StudentCard buttons render correctly on re-entry.
+	# Grade-8/9 loss retries the same grade: the roster is KEPT so locked
+	# grade-7 students remain locked and the player only re-picks new slots.
+	assert_true(src.contains("GameState.approved_students.clear()"),
+		"grade-7 loss branch clears the roster")
+	assert_true(src.contains("GameState.grade7_student_ids.clear()"),
+		"grade-7 loss branch clears grade-7 id cache")
+	assert_true(src.contains("GameState.returned_from_student_card = false"),
+		"loss branch resets returned_from_student_card")
+
+
+func test_grade7_loss_goes_to_main_menu_grade8_9_restarts_same_grade() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	# Grade-7 loss is a full restart (MainMenu); grade 8/9 loss retries the
+	# same grade at StudentCard so the punishment is not losing all progress.
+	assert_true(src.contains("GameState.current_grade == 7"),
+		"loss branch checks grade to pick destination")
+	assert_true(src.contains("res://Scenes/StudentCard/student_card.tscn"),
+		"grade 8/9 loss routes back to StudentCard")
+
+
 func test_it_applies_grade_progression_and_exits_to_the_menu() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("GameState.current_grade += 1"),

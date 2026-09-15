@@ -59,6 +59,7 @@ var current_grade: int = 7:
 var is_game_beaten: bool = false
 var debug_level_select_enabled: bool = true
 var grade7_student_ids: Array = []
+var grade8_student_ids: Array = []
 
 ## Per-grade tally consumed by the run-result screen. Never null; reset by
 ## set_grade() and by the grade-advance path in RunResult.
@@ -258,6 +259,7 @@ func forget_session() -> void:
 	current_grade = 7
 	max_minggu = get_max_weeks()
 	grade7_student_ids = []
+	grade8_student_ids = []
 	run_failed = false
 	player_money = 0
 	pending_earnings = {}

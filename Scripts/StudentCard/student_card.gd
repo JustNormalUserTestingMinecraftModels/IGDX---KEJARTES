@@ -727,10 +727,9 @@ func _show_stamp_if_approved(index: int):
 			approve_btn.visible = false
 		if batal_btn:
 			var s_data = student_data_list[index]
-			if GameState.grade7_student_ids.has(s_data.get("id")):
-				batal_btn.visible = false
-			else:
-				batal_btn.visible = true
+			var locked = GameState.grade7_student_ids.has(s_data.get("id")) \
+				or GameState.grade8_student_ids.has(s_data.get("id"))
+			batal_btn.visible = not locked
 	else:
 		stamp.visible = false
 		if approve_btn:
@@ -1214,6 +1213,10 @@ func _on_belajar_pressed():
 		GameState.grade7_student_ids.clear()
 		for approved_s in GameState.approved_students:
 			GameState.grade7_student_ids.append(approved_s.get("id"))
+	elif GameState.current_grade == 8:
+		GameState.grade8_student_ids.clear()
+		for approved_s in GameState.approved_students:
+			GameState.grade8_student_ids.append(approved_s.get("id"))
 			
 	Transition.change_scene("res://Scenes/Lobby/loby.tscn")
 

@@ -27,6 +27,7 @@ static func stand_up(scene_path: String, screen: Vector2) -> Control:
 	frame.size = screen
 	frame.theme = load(THEME_PATH)
 	var root := (load(scene_path) as PackedScene).instantiate() as Control
+	_ignore_host_safe_area(root)
 	frame.add_child(root)
 	Engine.get_main_loop().root.add_child(frame)
 	settle(root)
@@ -40,3 +41,16 @@ static func settle(node: Node) -> void:
 		node.notification(Container.NOTIFICATION_SORT_CHILDREN)
 	for child in node.get_children():
 		settle(child)
+
+
+## Turns off the device-inset read on every SafeAreaMargin under `node`, so
+## each one keeps the bare screen margin (48 px). In the editor
+## get_display_safe_area() reports the host desktop's usable rect: a taskbar
+## docked top or left, or a monitor away from the desktop origin, would add
+## an inset and shift every screen's UI past the rects the tests assert.
+## Called before `node` enters the tree, so _ready() applies it.
+static func _ignore_host_safe_area(node: Node) -> void:
+	if node is SafeAreaMargin:
+		node.use_safe_area = false
+	for child in node.get_children():
+		_ignore_host_safe_area(child)

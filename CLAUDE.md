@@ -141,6 +141,13 @@ gaps" section.
 
 Full detail: `docs/superpowers/design/authoring-guide.md`.
 
+**The third rule: every screen fills any phone.** A 20:9 phone runs the game
+at 1080×2400 (`aspect="expand"`); the editor's embedded run is locked to
+9:16 and never shows it. Backgrounds are Full Rect + Keep Aspect Covered; UI
+is re-anchored to its edge inside `SafeAreaMargin` → `UI`; a picture and its
+items move as one piece. Pinned by `tests/test_tall_screen_layout.gd`; how-to
+in the authoring guide's "Tall phones".
+
 **Cards.** Build a new card on a `Sheet` Panel with the `Card` variation
 (StudentList's `RosterCard`). Use `paper.png` only where its cut corner is
 the point: it is opaque over only the middle of its rect (numbers in
@@ -182,7 +189,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 110 suites, 1577 tests (2026-09-15).
+the Godot AI MCP `test_run` tool. 111 suites, 1603 tests (2026-09-15).
 
 Hard constraints:
 
@@ -245,11 +252,6 @@ godot-ai`, kill those, leave `Godot_v*.exe` alone. If instead
 `logs_read(source="editor")` catches parse errors that never reach the game
 log; `source="game"` misses boot-time failures entirely.
 
-`scene_open` on `Scenes/SchoolSimulation/BookClockWidget.tscn` hangs the
-editor — the call times out, the MCP transport write-pauses, the plugin
-disconnects, and the editor needs a restart. Cause unconfirmed; verify that
-widget via `project_run` instead, which exercises it fine.
-
 ## Working efficiently here
 
 Verification, not implementation, dominates the cost of a session here.
@@ -270,14 +272,6 @@ and *Campur*, which ladders 3/2/1/0 cleared targets for 1.5 stars, a loss).
 Arming one snapshots the run; **↩ Pulihkan Run Sebelum Gladi Resik**
 restores it, which matters because RunResult otherwise advances the grade and
 clears the roster on its way out.
-
-**Clicking, when you must.** Send a `motion` event to the target before the
-`button` press — Godot will not route a click without the hover state first,
-and a bare press/release pair silently does nothing. Rescale coordinates:
-`global_rect` is in the 1080-wide design space while input events take window
-pixels, and `editor_screenshot` reports the real size as `original_width`, so
-`window_x = global_x * original_width / 1080`. Read the target's `global_rect`
-rather than eyeballing a screenshot — and re-read it after any window resize.
 
 **2. Scope every `get_ui_elements` call.** Bare, it serialises the whole tree
 (the debug overlay alone is 58 verbose nodes). Always pass `root_path` and a
@@ -346,11 +340,6 @@ editor restart** — `load_default()` keeps serving the cached instance, so the
 new value silently does not take effect and a test asserting it fails for no
 visible reason. Same for a **new** `@export`.
 
-**Rebaking without File > Run.** `Scripts/Design/BakeTheme.gd` is an
-`EditorScript` with no MCP entry point. Write a transient `@tool`
-`McpTestSuite` into `res://tests/` whose one test does `ThemeFactory.build()`
-plus `ResourceSaver.save()`, run it with `test_run`, then delete it.
-
 **The bridge is single-client.** Only one client holds the backend at a time. A
 subagent that connects displaces your session and gets nothing itself, and both
 then see "A different Godot AI backend is already running" (recovery is under
@@ -374,9 +363,6 @@ the drop happens after the reply arrives.
 
 One smaller habit: grep before reading — the two largest scripts here exceed
 1,500 lines, so read the range you need, not the file.
-
-**Tuning how something animates** goes through the `motion-lab` skill
-(`.claude/skills/motion-lab/SKILL.md`), not edit-run-watch.
 
 None of this trades away test coverage. Coverage is the quality floor; the
 savings come from cheaper verification loops, not from fewer tests.

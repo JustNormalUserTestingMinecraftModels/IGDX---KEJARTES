@@ -109,6 +109,93 @@ it onto the real screen at runtime.
 Both pass a texture-path test and fail on screen, so test the loaded rect —
 `tests/test_paper_shadow.gd` and `test_each_batik_picture_fills_its_slot`.
 
+## Tall phones: fill the screen
+
+The game runs `window/stretch/aspect="expand"`, so a 20:9 phone gets a
+1080×2400 viewport, and a 21:9 one gets 1080×2520. The editor never shows
+this: its embedded run is locked to the 360×640 window override (Godot
+logs `Embedded window can't be resized`). Author every screen at 1080×1920,
+and apply four rules (spec
+`docs/superpowers/specs/2026-09-15-tall-phone-layout-design.md`):
+
+1. **Backgrounds fill.** Use a `TextureRect` with anchors `0,0,1,1`,
+   offsets 0, `expand_mode = 1` and `stretch_mode = 6` (Keep Aspect
+   Covered). Stretch (0) distorts the art; fit (5) leaves bars.
+2. **UI sits on its edge.** Pick the preset by role: header Top Wide, back
+   button Top Left, action row Bottom Wide, card or popup Center.
+   **Re-anchor, don't move:** set the anchors, then each offset to
+   `old_global − (parent_origin + anchor × parent_size)` measured at
+   1080×1920. The node keeps its rect there and follows its edge on taller
+   screens.
+3. **UI inside the margin.** Use a Full Rect `SafeAreaMargin` named `Safe`
+   (`mouse_filter` IGNORE), holding one plain `Control` named `UI`, then
+   the edge groups. A container places its children itself, so presets on
+   `Safe`'s direct children do nothing. Inside `UI` at 1080×1920, the rect
+   is (48,48)–(1032,1872).
+4. **Pictures carry their items.** A picture and anything placed on it
+   (seats on desks, items on shelves) form one fixed-size Control, anchored
+   as a whole. The Lobby's `Classroom` is Center-anchored at 1080×1920,
+   with black behind it.
+
+**Doing it through the bridge.**
+- `reparent_node` keeps local offsets and appends the node as the last
+  child. Set its offsets explicitly afterwards, and fix its order with
+  `move_node`.
+- `reparent_node` also makes the scene root the owner of every descendant.
+  Under an **instanced** sub-scene that means the next save writes the
+  instance's internals out again as new typed nodes: StudentList's four
+  `RosterAvatar`s each gained a second `Portrait` and `Ring` (2026-09-15).
+  After reparenting an instance, diff the `.tscn`. Any
+  `[node … parent=".../<Instance>"]` block without `instance=` is spurious:
+  close the editor without saving, delete those blocks (and any
+  `ext_resource` only they used) by text, then relaunch.
+- Set `layout_mode = 1` before anchors on any Control under a plain
+  Control.
+- Mark anything a script or tutorial looks up as a unique name, and find it
+  with `%Name` or `get_node("%Name/Child")`. In a format string the prefix
+  is written `%%`, as in `"%%RosterStrip/Avatar%d" % i`. A bare `"%Roster…"`
+  reads `%R` as a format character and fails only at run time
+  (`test_unique_name_paths_are_not_format_strings`).
+
+**Testing.**
+- `tests/layout_frame.gd` stands a screen up at any size in the editor's
+  tree. It sends every Container `NOTIFICATION_SORT_CHILDREN` by hand, so
+  rects are final in the same frame. Containers otherwise sort a frame
+  late, while anchored children follow at once.
+- `tests/test_tall_screen_layout.gd` checks each screen's contract and its
+  rects at 1080×2400 and 1080×1920. Placement asserts compare the node's
+  **authored** rect (its parent's settled rect, placed by its own anchors
+  and offsets), not `get_global_rect()`. A control grows to its text's
+  minimum size, and the editor's font metrics measure wider than a
+  device's: the Lobby's `ShortenButton` draws 265 px wide in the editor
+  against its 240.
+- For a picture of the result, render the scene into 1080×1920 and
+  1080×2400 `SubViewport`s inside the running game (spec, Appendix B).
+  `bare` counts Godot's gray clear colour, and must be 0 at 2400.
+
+**Desktop preview.** To see a tall phone on the desktop, set
+`display/window/size/window_height_override` to 800 (width 360) and run:
+the embedded run then gets a 1080×2400 viewport in a 317×705 window. Set it
+back to 640 afterwards, and never commit the override.
+
+## Editor and game recipes
+
+**Clicking, when you must.** Send a `motion` event to the target before the
+`button` press — Godot will not route a click without the hover state first,
+and a bare press/release pair silently does nothing. Rescale coordinates:
+`global_rect` is in the 1080-wide design space while input events take window
+pixels, and `editor_screenshot` reports the real size as `original_width`, so
+`window_x = global_x * original_width / 1080`. Read the target's `global_rect`
+rather than eyeballing a screenshot — and re-read it after any window resize.
+
+**Rebaking without File > Run.** `Scripts/Design/BakeTheme.gd` is an
+`EditorScript` with no MCP entry point. Write a transient `@tool`
+`McpTestSuite` into `res://tests/` whose one test does `ThemeFactory.build()`
+plus `ResourceSaver.save()`, run it with `test_run`, then delete it.
+
+**Tuning how something animates** goes through the `motion-lab` skill
+(`.claude/skills/motion-lab/SKILL.md`), not edit-run-watch.
+
 ## Asset references
 
 Art a person might swap is an `@export var … : Texture2D`, so it accepts a

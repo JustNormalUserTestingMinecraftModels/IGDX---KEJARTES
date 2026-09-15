@@ -8,6 +8,54 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-15 — Tall phones, Phase 1: Lobby, Koperasi, StudentCard, StudentList
+
+Plan `docs/superpowers/plans/2026-09-15-tall-phone-layout-phase-1.md`, spec
+`docs/superpowers/specs/2026-09-15-tall-phone-layout-design.md`.
+
+A 20:9 phone runs the game at 1080×2400, and these four screens were laid out
+for exactly 1080×1920. Their fixed backgrounds left a bare gray band, and the
+Lobby's classroom slid down while the seats stayed put, so the students sat
+at the wrong desks. The editor never showed it, because its embedded run is
+locked to 9:16. Each screen now follows four rules:
+
+- the background fills;
+- the UI is re-anchored to its edge, without moving, inside a
+  `SafeAreaMargin`;
+- a picture keeps its items.
+
+At 1080×1920 nothing moved.
+
+- **Lobby.** `Classroom` holds the background, desks, seats and hands,
+  Center-anchored at 1080×1920 over a black `Backdrop`. The title and
+  button block sit in `Safe/UI`. `loby.gd` uses unique names, and the
+  reward blur is inserted at `DailyReward`'s index.
+- **Koperasi.** The room covers. The shelf view moves as one piece pinned
+  to the bottom, so the tray reaches the edge. The coins sit in the safe
+  area.
+- **StudentCard.** The root's 70/254 inset is gone. The papers and stamp
+  are centred, and the page row pins to the bottom.
+- **StudentList.** The cards are centred. The header and strip sit on top,
+  and the nav row at the bottom.
+- **Tests.** New `tests/layout_frame.gd` settles Containers in the same
+  frame, and new suite `tall_screen_layout` checks each screen at
+  1080×2400 and 1080×1920. Placement asserts compare authored rects, because
+  the editor's font metrics grow some controls past theirs. `lobby_layout`
+  and `student_card_layout` now stand their screens up the same way.
+  `SafeAreaMargin` now warns only on a device.
+- **Desktop preview:** works. A 360×800 window override gives the embedded
+  run a 1080×2400 viewport; set it back to 640 afterwards.
+- **Caught on the way.** Moving an instanced scene with `reparent_node`
+  re-owned its internals, and the save duplicated StudentList's avatar
+  `Portrait`/`Ring` nodes; they were removed by text (authoring guide,
+  "Tall phones"). A `"%RosterStrip/Avatar%d" %` lookup read `%R` as a format
+  character; it is now `%%` and guarded by a scan. Two failures already on
+  `Textures` were fixed in their own commits: `viewport_editability`'s stale
+  `ItemDetailSheet` baseline entry, and `atur_jadwal.tscn`'s splash_marcel
+  UID left behind by `c3149e0`.
+
+Suite: 111 suites, 1603 tests, green.
+
 ## 2026-09-15 — Debug: Laporan Mingguan preview
 
 Plan `docs/superpowers/plans/2026-09-15-debug-weekly-report.md`, spec

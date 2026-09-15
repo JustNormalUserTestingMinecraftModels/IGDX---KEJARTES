@@ -538,6 +538,26 @@ func _assert_rect(got: Rect2, want: Rect2, label: String) -> void:
 	assert_true(close, "%s sits at %s, expected %s" % [label, str(got), str(want)])
 
 
+## `c`'s authored rect on screen: its parent's settled global rect, placed by
+## its own anchors and offsets. A control whose text needs more room still
+## grows past this when drawn, to a minimum size that depends on font metrics
+## (the editor measures wider than a device); the layout promises this rect.
+func _authored_rect(c: Control) -> Rect2:
+	var pr := (c.get_parent() as Control).get_global_rect()
+	var tl := pr.position + pr.size * Vector2(c.anchor_left, c.anchor_top) \
+		+ Vector2(c.offset_left, c.offset_top)
+	var br := pr.position + pr.size * Vector2(c.anchor_right, c.anchor_bottom) \
+		+ Vector2(c.offset_right, c.offset_bottom)
+	return Rect2(tl, br - tl)
+
+
+## `c` is placed at `want` on screen (its authored rect; see _authored_rect).
+func _assert_placed(c: Control, want: Rect2, label: String) -> void:
+	assert_true(c != null, label + " is missing")
+	if c != null:
+		_assert_rect(_authored_rect(c), want, label)
+
+
 # ── Lobby ────────────────────────────────────────────────────────────────────
 
 ## The classroom -- background, four desk layers, seats and hands -- is one
@@ -608,19 +628,19 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 ## the bottom edge 48 px up; the title stays on top; the popup stays centred.
 func test_lobby_on_a_tall_phone() -> void:
 	var lobby := _stood_up(LOBBY, TALL)
-	_assert_rect((lobby.get_node("Backdrop") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("Backdrop") as Control),
 		Rect2(0, 0, 1080, 2400), "Backdrop")
-	_assert_rect((lobby.get_node("Classroom") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("Classroom") as Control),
 		Rect2(0, 240, 1080, 1920), "Classroom")
-	_assert_rect((lobby.get_node("%Jadwal") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("%Jadwal") as Control),
 		Rect2(48, 2000, 984, 160), "Jadwal")
-	_assert_rect((lobby.get_node("%ReportStudent") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("%ReportStudent") as Control),
 		Rect2(724, 2192, 306, 160), "ReportStudent")
-	_assert_rect((lobby.get_node("%DailyLogin") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("%DailyLogin") as Control),
 		Rect2(48, 1872, 96, 96), "DailyLogin")
-	_assert_rect((lobby.get_node("%JUDUL") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("%JUDUL") as Control),
 		Rect2(381, 40, 323, 100), "JUDUL")
-	_assert_rect((lobby.get_node("DailyReward") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 798, 942, 418), "DailyReward")
 
 
@@ -628,9 +648,9 @@ func test_lobby_on_a_tall_phone() -> void:
 ## (The HUD's design rects are pinned in test_lobby_layout.gd.)
 func test_lobby_at_the_design_size_is_unchanged() -> void:
 	var lobby := _stood_up(LOBBY, DESIGN)
-	_assert_rect((lobby.get_node("Classroom") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("Classroom") as Control),
 		Rect2(0, 0, 1080, 1920), "Classroom")
-	_assert_rect((lobby.get_node("DailyReward") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 558, 942, 418), "DailyReward")
 ```
 
@@ -708,12 +728,26 @@ func _hud(n: String) -> Control:
 	return c
 
 
+## `c`'s authored rect on screen: its parent's settled global rect, placed by
+## its own anchors and offsets. A control whose text needs more room still
+## grows past this when drawn, to a minimum size that depends on font metrics
+## (the editor measures wider than a device -- ShortenButton's text needs
+## 265 px here against its 240); the layout promises this rect.
+func _authored_rect(c: Control) -> Rect2:
+	var pr := (c.get_parent() as Control).get_global_rect()
+	var tl := pr.position + pr.size * Vector2(c.anchor_left, c.anchor_top) \
+		+ Vector2(c.offset_left, c.offset_top)
+	var br := pr.position + pr.size * Vector2(c.anchor_right, c.anchor_bottom) \
+		+ Vector2(c.offset_right, c.offset_bottom)
+	return Rect2(tl, br - tl)
+
+
 func test_the_hud_keeps_its_design_rects() -> void:
 	for n in DESIGN_RECTS:
 		var c := _hud(n)
 		if c == null:
 			continue
-		var got := c.get_global_rect()
+		var got := _authored_rect(c)
 		var want: Rect2 = DESIGN_RECTS[n]
 		assert_true(got.position.distance_to(want.position) < 0.5
 				and got.end.distance_to(want.end) < 0.5,
@@ -1186,12 +1220,12 @@ top of both. No test pins any koprasi.tscn geometry.
 
   old_text (the suite's last two lines, from Task 3):
 ```gdscript
-	_assert_rect((lobby.get_node("DailyReward") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 558, 942, 418), "DailyReward")
 ```
   new_text:
 ```gdscript
-	_assert_rect((lobby.get_node("DailyReward") as Control).get_global_rect(),
+	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 558, 942, 418), "DailyReward")
 
 
@@ -1250,26 +1284,26 @@ func test_koperasi_coin_hud_sits_in_the_safe_area() -> void:
 ## and the coins stay at the top.
 func test_koperasi_on_a_tall_phone() -> void:
 	var shop := _stood_up(KOPERASI, TALL)
-	_assert_rect((shop.get_node("TextureRect") as Control).get_global_rect(),
+	_assert_placed((shop.get_node("TextureRect") as Control),
 		Rect2(0, 0, 1080, 2400), "room picture")
-	_assert_rect((shop.get_node("Rak1") as Control).get_global_rect(),
+	_assert_placed((shop.get_node("Rak1") as Control),
 		Rect2(0, 597, 1080, 1711), "shelf view")
-	_assert_rect((shop.get_node("Rak1/BasketTray/Body") as Control).get_global_rect(),
+	_assert_placed((shop.get_node("Rak1/BasketTray/Body") as Control),
 		Rect2(24, 1840, 1032, 560), "basket tray")
-	assert_eq((shop.get_node("TextureRect/Rak1") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(shop.get_node("TextureRect/Rak1") as Control).position,
 		Vector2(303, 1881), "the sign stays on the counter")
-	assert_eq((shop.get_node("%CoinHUD") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
 		Vector2(20, 20), "the coins stay top-left")
 
 
 ## At 1080x1920 the Koperasi is where it was.
 func test_koperasi_at_the_design_size_is_unchanged() -> void:
 	var shop := _stood_up(KOPERASI, DESIGN)
-	_assert_rect((shop.get_node("Rak1") as Control).get_global_rect(),
+	_assert_placed((shop.get_node("Rak1") as Control),
 		Rect2(0, 117, 1080, 1711), "shelf view")
-	assert_eq((shop.get_node("TextureRect/Rak1") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(shop.get_node("TextureRect/Rak1") as Control).position,
 		Vector2(303, 1401), "landing sign")
-	assert_eq((shop.get_node("%CoinHUD") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
 		Vector2(20, 20), "coins")
 ```
 
@@ -1418,12 +1452,12 @@ margin. The bar keeps that, following "re-anchor, don't move".
 
   old_text (the suite's last two lines, from Task 4):
 ```gdscript
-	assert_eq((shop.get_node("%CoinHUD") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
 		Vector2(20, 20), "coins")
 ```
   new_text:
 ```gdscript
-	assert_eq((shop.get_node("%CoinHUD") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
 		Vector2(20, 20), "coins")
 
 
@@ -1481,30 +1515,30 @@ func test_student_card_ui_is_pinned_inside_the_safe_area() -> void:
 ## row rides the bottom edge.
 func test_student_card_on_a_tall_phone() -> void:
 	var card := _stood_up(STUDENT_CARD, TALL)
-	_assert_rect((card.get_node("Backdrop") as Control).get_global_rect(),
+	_assert_placed((card.get_node("Backdrop") as Control),
 		Rect2(0, 0, 1080, 2400), "Backdrop")
-	_assert_rect((card.get_node("KertasMurid1") as Control).get_global_rect(),
+	_assert_placed((card.get_node("KertasMurid1") as Control),
 		Rect2(0, 240, 1080, 1920), "KertasMurid1")
-	_assert_rect((card.get_node("%NextButtonKanan") as Control).get_global_rect(),
+	_assert_placed((card.get_node("%NextButtonKanan") as Control),
 		Rect2(860, 2258, 160, 128), "NextButtonKanan")
-	assert_eq((card.get_node("%PilihMurid") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(card.get_node("%PilihMurid") as Control).position,
 		Vector2(160, 44), "the title stays at the top")
 
 
 ## At 1080x1920 the StudentCard is where it was.
 func test_student_card_at_the_design_size_is_unchanged() -> void:
 	var card := _stood_up(STUDENT_CARD, DESIGN)
-	_assert_rect((card.get_node("KertasMurid1") as Control).get_global_rect(),
+	_assert_placed((card.get_node("KertasMurid1") as Control),
 		Rect2(0, 0, 1080, 1920), "KertasMurid1")
-	_assert_rect((card.get_node("%NextButtonKiri") as Control).get_global_rect(),
+	_assert_placed((card.get_node("%NextButtonKiri") as Control),
 		Rect2(90, 1778, 160, 128), "NextButtonKiri")
-	_assert_rect((card.get_node("%NextButtonKanan") as Control).get_global_rect(),
+	_assert_placed((card.get_node("%NextButtonKanan") as Control),
 		Rect2(860, 1778, 160, 128), "NextButtonKanan")
-	assert_eq((card.get_node("%PageLabel") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(card.get_node("%PageLabel") as Control).position,
 		Vector2(440, 1805), "PageLabel")
-	assert_eq((card.get_node("StampApprove") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(card.get_node("StampApprove") as Control).position,
 		Vector2(55, 352), "StampApprove")
-	assert_eq((card.get_node("%PilihMurid") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(card.get_node("%PilihMurid") as Control).position,
 		Vector2(160, 44), "PilihMurid")
 ```
 
@@ -1735,12 +1769,12 @@ saving the list itself is safe.
 
   old_text (the suite's last two lines, from Task 5):
 ```gdscript
-	assert_eq((card.get_node("%PilihMurid") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(card.get_node("%PilihMurid") as Control).position,
 		Vector2(160, 44), "PilihMurid")
 ```
   new_text:
 ```gdscript
-	assert_eq((card.get_node("%PilihMurid") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(card.get_node("%PilihMurid") as Control).position,
 		Vector2(160, 44), "PilihMurid")
 
 
@@ -1789,24 +1823,24 @@ func test_student_list_ui_is_pinned_inside_the_safe_area() -> void:
 ## bottom edge; the header stays on top.
 func test_student_list_on_a_tall_phone() -> void:
 	var list := _stood_up(STUDENT_LIST, TALL)
-	_assert_rect((list.get_node("CardContainer") as Control).get_global_rect(),
+	_assert_placed((list.get_node("CardContainer") as Control),
 		Rect2(50, 550, 980, 1410), "CardContainer")
-	_assert_rect((list.get_node("%RightArrow") as Control).get_global_rect(),
+	_assert_placed((list.get_node("%RightArrow") as Control),
 		Rect2(850, 2252, 160, 128), "RightArrow")
-	assert_eq((list.get_node("%HeaderLabel") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(list.get_node("%HeaderLabel") as Control).position,
 		Vector2(190, 24), "the header stays at the top")
 
 
 ## At 1080x1920 the StudentList is where it was.
 func test_student_list_at_the_design_size_is_unchanged() -> void:
 	var list := _stood_up(STUDENT_LIST, DESIGN)
-	_assert_rect((list.get_node("CardContainer") as Control).get_global_rect(),
+	_assert_placed((list.get_node("CardContainer") as Control),
 		Rect2(50, 310, 980, 1410), "CardContainer")
-	_assert_rect((list.get_node("%LeftArrow") as Control).get_global_rect(),
+	_assert_placed((list.get_node("%LeftArrow") as Control),
 		Rect2(70, 1772, 160, 128), "LeftArrow")
-	_assert_rect((list.get_node("%RosterStrip") as Control).get_global_rect(),
+	_assert_placed((list.get_node("%RosterStrip") as Control),
 		Rect2(70, 128, 940, 150), "RosterStrip")
-	assert_eq((list.get_node("%PageIndicator") as Control).get_global_rect().position,
+	assert_eq(_authored_rect(list.get_node("%PageIndicator") as Control).position,
 		Vector2(400, 1794), "PageIndicator")
 ```
 
@@ -1943,7 +1977,10 @@ git diff HEAD --stat -- '*.gd'
   2. `@onready var right_arrow = $RightArrow` → `@onready var right_arrow = %RightArrow`
   3. `@onready var page_indicator = $PageIndicator` → `@onready var page_indicator = %PageIndicator`
   4. `get_node_or_null("RosterStrip/Avatar%d" % (i + 1))` →
-     `get_node_or_null("%RosterStrip/Avatar%d" % (i + 1))`
+     `get_node_or_null("%%RosterStrip/Avatar%d" % (i + 1))` — the leading
+     `%` is escaped as `%%`, or the format reads `%R` as a format character
+     and the lookup fails at run time (caught in execution; guarded by
+     `test_unique_name_paths_are_not_format_strings`)
   5. `	var strip := get_node_or_null("RosterStrip")` →
      `	var strip := get_node_or_null("%RosterStrip")`
   6. old_text:

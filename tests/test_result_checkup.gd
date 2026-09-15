@@ -854,6 +854,28 @@ func test_the_editor_never_plays_or_skips_the_reveal() -> void:
 		"a skip while nothing plays is a no-op: the rewound card stays put")
 
 
+## A skip's tap must not also press a button. The tap reaches _input()
+## before the GUI, so a button enabled inside skip_reveal() would take the
+## same press -- tapping near the bottom to skip would open Logs, or leave
+## the report unread. The buttons enable only once they have faded in.
+func test_a_skip_never_hands_its_tap_to_the_buttons() -> void:
+	var inst = _revealed_checkup()
+	inst._prepare_reveal()
+	for b in [inst.logs_button, inst.next_button]:
+		b.disabled = true
+		b.modulate.a = 0.0
+	inst._revealing = true
+	var tweens := _new_tweens(func(): inst.skip_reveal())
+	assert_true(inst.next_button.disabled and inst.logs_button.disabled,
+		"the tap that skipped must find both buttons still disabled")
+	var tokens := DesignTokens.load_default()
+	for tw in tweens:
+		if tw.is_valid():
+			tw.custom_step(tokens.dur_fast + 0.1)
+	assert_false(inst.next_button.disabled, "Selanjutnya enables once it has faded in")
+	assert_false(inst.logs_button.disabled, "and so does Logs")
+
+
 func _source(path: String) -> String:
 	var f := FileAccess.open(path, FileAccess.READ)
 	assert_true(f != null, "script must exist: " + path)

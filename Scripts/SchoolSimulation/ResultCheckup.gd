@@ -382,7 +382,10 @@ func _finale(skipped: bool) -> void:
 	for b in [logs_button, next_button]:
 		var tw := create_tween()
 		tw.tween_property(b, "modulate:a", 1.0, t.dur_fast)
-		b.disabled = false
+		# Enabled only once shown. A skip reaches here from _input(), and the
+		# same press then goes on to the GUI: a button enabled now would take
+		# it, opening Logs or leaving the report unread.
+		tw.tween_callback(func(): b.disabled = false)
 
 
 ## A tap anywhere skips the reveal to its end. _input(), like StatCheck's,

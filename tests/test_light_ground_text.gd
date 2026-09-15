@@ -37,6 +37,7 @@ const _POPUP_PATH := "res://Scenes/Minigames/UI/MinigameResultPopup.tscn"
 const _HUD_PATH := "res://Scenes/Minigames/UI/MinigameScoreHUD.tscn"
 const _ITEM_SHEET_PATH := "res://Scenes/Inventory/ItemDetailSheet.tscn"
 const _APPLY_ROW_PATH := "res://Scenes/Inventory/ApplyStudentRow.tscn"
+const _INVENTORY_PATH := "res://Scenes/Inventory/inventory.tscn"
 
 ## The result card's layout, and the two boxes on it whose labels are
 ## measured below.
@@ -187,6 +188,36 @@ func test_the_apply_rows_preview_reads_on_its_card() -> void:
 	_assert_reads(value, ground, "on the apply-item card after the preview")
 
 
+# ──────────────────────── Inventory's filter chips
+
+## The category chips' icons are white placeholder glyphs, and a Button draws
+## its icon untinted unless its variation names an icon colour. FilterChipButton
+## named none, and on its cream pill white measured 1.02:1 at rest and 1.30:1
+## selected: on a phone (2026-09-15) only the selected chip showed an icon. Each
+## icon is measured the way it is drawn -- its art times the state's icon colour
+## and every modulate above it -- on the fill behind it, against WCAG's 3:1
+## floor for UI graphics, in the two states a phone shows.
+func test_the_inventory_filter_chip_icons_read_on_their_chips() -> void:
+	var chips := _inventory().get_node("MainColumn/FilterRow/Scroll/Chips")
+	for chip in chips.get_children():
+		var button := chip as Button
+		assert_true(button.icon != null, "%s must carry its category icon" % button.name)
+		if button.icon == null:
+			continue
+		var art := _art_ink(button.icon)
+		for state in ["normal", "pressed"]:
+			var box := button.get_theme_stylebox(state) as StyleBoxFlat
+			assert_true(box != null,
+				"%s's %s box must be a flat fill to be measured" % [button.name, state])
+			if box == null:
+				continue
+			var ink := art * button.get_theme_color("icon_%s_color" % state) * _tint(button)
+			var ratio := _contrast(ink, box.bg_color)
+			assert_true(ratio >= _AA_LARGE_TEXT,
+				"%s's icon on its %s chip is %.2f:1; a UI graphic needs %.1f:1"
+				% [button.name, state, ratio, _AA_LARGE_TEXT])
+
+
 # ─────────────────────────────────────────────────────── every label
 
 ## A variation the bake does not declare raises no error: Godot quietly falls
@@ -297,6 +328,41 @@ func _apply_row() -> Control:
 		"akademis3": 50.0, "kepribadian1": 100.0, "kepribadian2": 50.0},
 		{"akademis": 5, "mood": 5})
 	return row
+
+
+## The Inventory screen, themed from the bake and in the tree. Its script is
+## not @tool, so _ready() never runs here and the chips stay exactly as
+## authored; both states are read off the theme regardless of which is on.
+func _inventory() -> Control:
+	var inv: Control = load(_INVENTORY_PATH).instantiate()
+	inv.theme = _baked()
+	Engine.get_main_loop().root.add_child(inv)
+	track(inv)
+	return inv
+
+
+## The colour an icon's art paints: the mean of its opaque texels.
+func _art_ink(texture: Texture2D) -> Color:
+	var image := texture.get_image()
+	if image.is_compressed():
+		image.decompress()
+	var r := 0.0
+	var g := 0.0
+	var b := 0.0
+	var count := 0
+	for y in image.get_height():
+		for x in image.get_width():
+			var c := image.get_pixel(x, y)
+			if c.a < 0.5:
+				continue
+			r += c.r
+			g += c.g
+			b += c.b
+			count += 1
+	assert_true(count > 0, "%s paints nothing" % texture.resource_path)
+	if count == 0:
+		return Color.WHITE
+	return Color(r / count, g / count, b / count)
 
 
 ## Asserts `label` reads on `ground` at body-text contrast, by its fill or

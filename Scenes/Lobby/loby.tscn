@@ -22,6 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="20_yhuud"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
@@ -42,14 +43,37 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ao7fi")
 bg_texture = ExtResource("bg_tex")
 face_rigs = Array[PackedScene]([ExtResource("3_oohd3"), ExtResource("4_yhuud"), ExtResource("5_ikpat"), ExtResource("6_dx44p"), ExtResource("7_62a4m"), ExtResource("8_gbno3")])
 
-[node name="BGLayer" type="TextureRect" parent="." unique_id=18068981]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=543524766]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Classroom" type="Control" parent="." unique_id=1683191108]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -960.0
+offset_right = 540.0
+offset_bottom = 960.0
+mouse_filter = 2
+
+[node name="BGLayer" type="TextureRect" parent="Classroom" unique_id=18068981]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -58,9 +82,9 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("bg_tex")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 
-[node name="Meja_KiriAtas" type="TextureRect" parent="." unique_id=141187056]
+[node name="Meja_KiriAtas" type="TextureRect" parent="Classroom" unique_id=141187056]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -74,7 +98,7 @@ texture = ExtResource("meja_ka_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Meja_KananAtas" type="TextureRect" parent="." unique_id=1566337339]
+[node name="Meja_KananAtas" type="TextureRect" parent="Classroom" unique_id=1566337339]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -90,7 +114,8 @@ texture = ExtResource("meja_kna_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="StudentPortraitsContainer_Back" type="Control" parent="." unique_id=2097219157]
+[node name="StudentPortraitsContainer_Back" type="Control" parent="Classroom" unique_id=2097219157]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -98,13 +123,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Slot1" type="Control" parent="StudentPortraitsContainer_Back" unique_id=1634846153]
+[node name="Slot1" type="Control" parent="Classroom/StudentPortraitsContainer_Back" unique_id=1634846153]
 anchors_preset = 0
 offset_left = 50.0
 offset_right = 450.0
 offset_bottom = 450.0
 
-[node name="Portrait" type="TextureRect" parent="StudentPortraitsContainer_Back/Slot1" unique_id=1112210571]
+[node name="Portrait" type="TextureRect" parent="Classroom/StudentPortraitsContainer_Back/Slot1" unique_id=1112210571]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -119,13 +144,13 @@ texture = ExtResource("default_portrait_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Slot2" type="Control" parent="StudentPortraitsContainer_Back" unique_id=414336718]
+[node name="Slot2" type="Control" parent="Classroom/StudentPortraitsContainer_Back" unique_id=414336718]
 anchors_preset = 0
 offset_left = 620.0
 offset_right = 1020.0
 offset_bottom = 450.0
 
-[node name="Portrait" type="TextureRect" parent="StudentPortraitsContainer_Back/Slot2" unique_id=1454500660]
+[node name="Portrait" type="TextureRect" parent="Classroom/StudentPortraitsContainer_Back/Slot2" unique_id=1454500660]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -140,7 +165,8 @@ texture = ExtResource("default_portrait_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="StudentHandsContainer_Back" type="Control" parent="." unique_id=696016454]
+[node name="StudentHandsContainer_Back" type="Control" parent="Classroom" unique_id=696016454]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -149,14 +175,14 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Slot1" type="Control" parent="StudentHandsContainer_Back" unique_id=1309285055]
+[node name="Slot1" type="Control" parent="Classroom/StudentHandsContainer_Back" unique_id=1309285055]
 anchors_preset = 0
 offset_left = 84.0
 offset_top = -88.0
 offset_right = 484.0
 offset_bottom = 362.0
 
-[node name="Hand_Andi" type="TextureRect" parent="StudentHandsContainer_Back/Slot1" unique_id=1069990093]
+[node name="Hand_Andi" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot1" unique_id=1069990093]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -175,7 +201,7 @@ texture = ExtResource("9_bfy74")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Citra" type="TextureRect" parent="StudentHandsContainer_Back/Slot1" unique_id=1441938456]
+[node name="Hand_Citra" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot1" unique_id=1441938456]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -194,7 +220,7 @@ texture = ExtResource("7_ek62u")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Doni" type="TextureRect" parent="StudentHandsContainer_Back/Slot1" unique_id=24226062]
+[node name="Hand_Doni" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot1" unique_id=24226062]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -212,7 +238,7 @@ texture = ExtResource("6_dyk4g")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Marcel" type="TextureRect" parent="StudentHandsContainer_Back/Slot1" unique_id=1806363820]
+[node name="Hand_Marcel" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot1" unique_id=1806363820]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -231,7 +257,7 @@ texture = ExtResource("9_q4xuc")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Shinta" type="TextureRect" parent="StudentHandsContainer_Back/Slot1" unique_id=337767282]
+[node name="Hand_Shinta" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot1" unique_id=337767282]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -250,7 +276,7 @@ texture = ExtResource("10_3lohg")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Thea" type="TextureRect" parent="StudentHandsContainer_Back/Slot1" unique_id=1533997835]
+[node name="Hand_Thea" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot1" unique_id=1533997835]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -269,14 +295,14 @@ texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Slot2" type="Control" parent="StudentHandsContainer_Back" unique_id=616363659]
+[node name="Slot2" type="Control" parent="Classroom/StudentHandsContainer_Back" unique_id=616363659]
 anchors_preset = 0
 offset_left = 625.0
 offset_top = -85.0
 offset_right = 1025.0
 offset_bottom = 365.0
 
-[node name="Hand_Andi" type="TextureRect" parent="StudentHandsContainer_Back/Slot2" unique_id=397972223]
+[node name="Hand_Andi" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot2" unique_id=397972223]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -295,7 +321,7 @@ texture = ExtResource("9_bfy74")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Citra" type="TextureRect" parent="StudentHandsContainer_Back/Slot2" unique_id=2050109560]
+[node name="Hand_Citra" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot2" unique_id=2050109560]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -314,7 +340,7 @@ texture = ExtResource("7_ek62u")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Doni" type="TextureRect" parent="StudentHandsContainer_Back/Slot2" unique_id=43024304]
+[node name="Hand_Doni" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot2" unique_id=43024304]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -333,7 +359,7 @@ texture = ExtResource("6_dyk4g")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Marcel" type="TextureRect" parent="StudentHandsContainer_Back/Slot2" unique_id=344255062]
+[node name="Hand_Marcel" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot2" unique_id=344255062]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -352,7 +378,7 @@ texture = ExtResource("9_q4xuc")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Shinta" type="TextureRect" parent="StudentHandsContainer_Back/Slot2" unique_id=1332688156]
+[node name="Hand_Shinta" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot2" unique_id=1332688156]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -371,7 +397,7 @@ texture = ExtResource("10_3lohg")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Thea" type="TextureRect" parent="StudentHandsContainer_Back/Slot2" unique_id=1752655893]
+[node name="Hand_Thea" type="TextureRect" parent="Classroom/StudentHandsContainer_Back/Slot2" unique_id=1752655893]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -390,7 +416,7 @@ texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Meja_KiriBawah" type="TextureRect" parent="." unique_id=1666960600]
+[node name="Meja_KiriBawah" type="TextureRect" parent="Classroom" unique_id=1666960600]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -402,7 +428,7 @@ texture = ExtResource("meja_kb_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Meja_KananBawah" type="TextureRect" parent="." unique_id=1660970638]
+[node name="Meja_KananBawah" type="TextureRect" parent="Classroom" unique_id=1660970638]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -414,7 +440,8 @@ texture = ExtResource("meja_knb_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="StudentPortraitsContainer_Front" type="Control" parent="." unique_id=1730743039]
+[node name="StudentPortraitsContainer_Front" type="Control" parent="Classroom" unique_id=1730743039]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -422,14 +449,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Slot3" type="Control" parent="StudentPortraitsContainer_Front" unique_id=858493737]
+[node name="Slot3" type="Control" parent="Classroom/StudentPortraitsContainer_Front" unique_id=858493737]
 anchors_preset = 0
 offset_left = 50.0
 offset_top = 370.0
 offset_right = 450.0
 offset_bottom = 820.0
 
-[node name="Portrait" type="TextureRect" parent="StudentPortraitsContainer_Front/Slot3" unique_id=1600612014]
+[node name="Portrait" type="TextureRect" parent="Classroom/StudentPortraitsContainer_Front/Slot3" unique_id=1600612014]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -444,14 +471,14 @@ texture = ExtResource("default_portrait_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Slot4" type="Control" parent="StudentPortraitsContainer_Front" unique_id=85502973]
+[node name="Slot4" type="Control" parent="Classroom/StudentPortraitsContainer_Front" unique_id=85502973]
 anchors_preset = 0
 offset_left = 620.0
 offset_top = 370.0
 offset_right = 1020.0
 offset_bottom = 820.0
 
-[node name="Portrait" type="TextureRect" parent="StudentPortraitsContainer_Front/Slot4" unique_id=1101838453]
+[node name="Portrait" type="TextureRect" parent="Classroom/StudentPortraitsContainer_Front/Slot4" unique_id=1101838453]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -466,7 +493,8 @@ texture = ExtResource("default_portrait_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="StudentHandsContainer_Front" type="Control" parent="." unique_id=927537512]
+[node name="StudentHandsContainer_Front" type="Control" parent="Classroom" unique_id=927537512]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -475,14 +503,14 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Slot3" type="Control" parent="StudentHandsContainer_Front" unique_id=1517080695]
+[node name="Slot3" type="Control" parent="Classroom/StudentHandsContainer_Front" unique_id=1517080695]
 anchors_preset = 0
 offset_left = 45.0
 offset_top = 370.0
 offset_right = 445.0
 offset_bottom = 820.0
 
-[node name="Hand_Andi" type="TextureRect" parent="StudentHandsContainer_Front/Slot3" unique_id=1515879549]
+[node name="Hand_Andi" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot3" unique_id=1515879549]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -500,7 +528,7 @@ texture = ExtResource("9_bfy74")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Citra" type="TextureRect" parent="StudentHandsContainer_Front/Slot3" unique_id=2035720]
+[node name="Hand_Citra" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot3" unique_id=2035720]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -519,7 +547,7 @@ texture = ExtResource("7_ek62u")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Doni" type="TextureRect" parent="StudentHandsContainer_Front/Slot3" unique_id=379927227]
+[node name="Hand_Doni" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot3" unique_id=379927227]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -538,7 +566,7 @@ texture = ExtResource("6_dyk4g")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Marcel" type="TextureRect" parent="StudentHandsContainer_Front/Slot3" unique_id=103314952]
+[node name="Hand_Marcel" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot3" unique_id=103314952]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -557,7 +585,7 @@ texture = ExtResource("9_q4xuc")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Shinta" type="TextureRect" parent="StudentHandsContainer_Front/Slot3" unique_id=693423398]
+[node name="Hand_Shinta" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot3" unique_id=693423398]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -576,7 +604,7 @@ texture = ExtResource("10_3lohg")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Thea" type="TextureRect" parent="StudentHandsContainer_Front/Slot3" unique_id=1270190136]
+[node name="Hand_Thea" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot3" unique_id=1270190136]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -595,14 +623,14 @@ texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Slot4" type="Control" parent="StudentHandsContainer_Front" unique_id=1684173298]
+[node name="Slot4" type="Control" parent="Classroom/StudentHandsContainer_Front" unique_id=1684173298]
 anchors_preset = 0
 offset_left = 620.0
 offset_top = 370.0
 offset_right = 1020.0
 offset_bottom = 820.0
 
-[node name="Hand_Andi" type="TextureRect" parent="StudentHandsContainer_Front/Slot4" unique_id=1794435452]
+[node name="Hand_Andi" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot4" unique_id=1794435452]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -621,7 +649,7 @@ texture = ExtResource("9_bfy74")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Citra" type="TextureRect" parent="StudentHandsContainer_Front/Slot4" unique_id=1187726315]
+[node name="Hand_Citra" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot4" unique_id=1187726315]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -640,7 +668,7 @@ texture = ExtResource("7_ek62u")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Doni" type="TextureRect" parent="StudentHandsContainer_Front/Slot4" unique_id=1238697973]
+[node name="Hand_Doni" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot4" unique_id=1238697973]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -659,7 +687,7 @@ texture = ExtResource("6_dyk4g")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Marcel" type="TextureRect" parent="StudentHandsContainer_Front/Slot4" unique_id=147415357]
+[node name="Hand_Marcel" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot4" unique_id=147415357]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -678,7 +706,7 @@ texture = ExtResource("9_q4xuc")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Shinta" type="TextureRect" parent="StudentHandsContainer_Front/Slot4" unique_id=1382477295]
+[node name="Hand_Shinta" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot4" unique_id=1382477295]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -697,7 +725,7 @@ texture = ExtResource("10_3lohg")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Thea" type="TextureRect" parent="StudentHandsContainer_Front/Slot4" unique_id=549175006]
+[node name="Hand_Thea" type="TextureRect" parent="Classroom/StudentHandsContainer_Front/Slot4" unique_id=549175006]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -716,23 +744,48 @@ texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Student" type="Button" parent="." unique_id=1238526272]
+[node name="Safe" type="MarginContainer" parent="." unique_id=1588675940]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("20_yhuud")
+
+[node name="UI" type="Control" parent="Safe" unique_id=626973675]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BottomBar" type="Control" parent="Safe/UI" unique_id=162709174]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -480.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Student" type="Button" parent="Safe/UI/BottomBar" unique_id=1238526272]
+unique_name_in_owner = true
 layout_mode = 0
-offset_left = 48.0
-offset_top = 1520.0
-offset_right = 1032.0
-offset_bottom = 1680.0
+offset_top = 128.0
+offset_right = 984.0
+offset_bottom = 288.0
 theme_type_variation = &"LobbyCtaButton"
 text = "STUDENT"
 icon = ExtResource("9_dyk4g")
 expand_icon = true
 
-[node name="Koperasi" type="Button" parent="." unique_id=247017516]
+[node name="Koperasi" type="Button" parent="Safe/UI/BottomBar" unique_id=247017516]
+unique_name_in_owner = true
 layout_mode = 0
-offset_left = 48.0
-offset_top = 1712.0
-offset_right = 354.0
-offset_bottom = 1872.0
+offset_top = 320.0
+offset_right = 306.0
+offset_bottom = 480.0
 theme_type_variation = &"LobbyNavTile"
 text = "Koperasi"
 icon = ExtResource("10_bfy74")
@@ -740,12 +793,13 @@ icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
 
-[node name="ReportStudent" type="Button" parent="." unique_id=803503757]
+[node name="ReportStudent" type="Button" parent="Safe/UI/BottomBar" unique_id=803503757]
+unique_name_in_owner = true
 layout_mode = 0
-offset_left = 724.0
-offset_top = 1712.0
-offset_right = 1030.0
-offset_bottom = 1872.0
+offset_left = 676.0
+offset_top = 320.0
+offset_right = 982.0
+offset_bottom = 480.0
 theme_type_variation = &"LobbyNavTile"
 text = "Rapor"
 icon = ExtResource("11_4w5lf")
@@ -753,12 +807,13 @@ icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
 
-[node name="Inventory" type="Button" parent="." unique_id=1524317152]
+[node name="Inventory" type="Button" parent="Safe/UI/BottomBar" unique_id=1524317152]
+unique_name_in_owner = true
 layout_mode = 0
-offset_left = 386.0
-offset_top = 1712.0
-offset_right = 692.0
-offset_bottom = 1872.0
+offset_left = 338.0
+offset_top = 320.0
+offset_right = 644.0
+offset_bottom = 480.0
 theme_type_variation = &"LobbyNavTile"
 text = "INVENTORY"
 icon = ExtResource("12_fb4vu")
@@ -766,36 +821,27 @@ icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
 
-[node name="Jadwal" type="Button" parent="." unique_id=2126015085]
+[node name="Jadwal" type="Button" parent="Safe/UI/BottomBar" unique_id=2126015085]
+unique_name_in_owner = true
 layout_mode = 0
-offset_left = 48.0
-offset_top = 1520.0
-offset_right = 1032.0
-offset_bottom = 1680.0
+offset_top = 128.0
+offset_right = 984.0
+offset_bottom = 288.0
 theme_type_variation = &"LobbyCtaButton"
 text = "JADWAL!"
 icon = ExtResource("13_85cl3")
 expand_icon = true
 
-[node name="JUDUL" type="Label" parent="." unique_id=1317986974]
+[node name="DisplayUang" type="Panel" parent="Safe/UI/BottomBar" unique_id=259983175]
+unique_name_in_owner = true
 layout_mode = 0
-offset_left = 381.0
-offset_top = 40.0
-offset_right = 704.0
-offset_bottom = 140.0
-theme_type_variation = &"DisplayLabel"
-text = "KELAS"
-
-[node name="DisplayUang" type="Panel" parent="." unique_id=259983175]
-layout_mode = 0
-offset_left = 700.0
-offset_top = 1392.0
-offset_right = 1032.0
-offset_bottom = 1488.0
+offset_left = 652.0
+offset_right = 984.0
+offset_bottom = 96.0
 mouse_filter = 2
 theme_type_variation = &"Card"
 
-[node name="CoinIcon" type="TextureRect" parent="DisplayUang" unique_id=1731951124]
+[node name="CoinIcon" type="TextureRect" parent="Safe/UI/BottomBar/DisplayUang" unique_id=1731951124]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 20.0
@@ -806,7 +852,7 @@ texture = ExtResource("14_dyk4g")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="DisplayUang" unique_id=664496077]
+[node name="Label" type="Label" parent="Safe/UI/BottomBar/DisplayUang" unique_id=664496077]
 layout_mode = 0
 offset_left = 100.0
 offset_top = 18.0
@@ -817,33 +863,49 @@ text = "50"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="ShortenButton" type="Button" parent="." unique_id=575693895]
+[node name="ShortenButton" type="Button" parent="Safe/UI/BottomBar" unique_id=575693895]
+unique_name_in_owner = true
 layout_mode = 1
-offset_left = 168.0
-offset_top = 1392.0
-offset_right = 408.0
-offset_bottom = 1488.0
+offset_left = 120.0
+offset_right = 360.0
+offset_bottom = 96.0
 theme_type_variation = &"SecondaryButton"
 text = "Shorten"
 
-[node name="DailyLogin" type="TextureButton" parent="." unique_id=1799090163]
+[node name="DailyLogin" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=1799090163]
+unique_name_in_owner = true
 layout_mode = 0
-offset_left = 48.0
-offset_top = 1392.0
-offset_right = 144.0
-offset_bottom = 1488.0
+offset_right = 96.0
+offset_bottom = 96.0
 texture_normal = ExtResource("15_d385k")
 ignore_texture_size = true
 stretch_mode = 0
+
+[node name="JUDUL" type="Label" parent="Safe/UI" unique_id=1317986974]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -159.0
+offset_top = -8.0
+offset_right = 164.0
+offset_bottom = 92.0
+theme_type_variation = &"DisplayLabel"
+text = "KELAS"
 
 [node name="DailyReward" type="TextureRect" parent="." unique_id=889996430]
 visible = false
 layout_mode = 1
 anchors_preset = -1
-offset_left = 80.0
-offset_top = 558.0
-offset_right = 1022.0
-offset_bottom = 976.0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -460.0
+offset_top = -402.0
+offset_right = 482.0
+offset_bottom = 16.0
 grow_vertical = 0
 texture = ExtResource("16_dyk4g")
 expand_mode = 1

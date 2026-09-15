@@ -13,8 +13,9 @@ extends Control
 @onready var rak1_button = $TextureRect/Rak1
 @onready var rak1_panel = $Rak1
 @onready var rak1_back_button = $Rak1/BackButton
-@onready var coin_hud: HBoxContainer = $CoinHUD
-@onready var coin_label: Label = $CoinHUD/CoinLabel
+# CoinHUD sits in Safe/UI since the 2026-09-15 tall-phone pass.
+@onready var coin_hud: HBoxContainer = %CoinHUD
+@onready var coin_label: Label = get_node("%CoinHUD/CoinLabel")
 @onready var message_label: Label = $MessageLabel
 
 var beli_button: Button

@@ -32,9 +32,9 @@ const REQUIRED_DAYS := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 @onready var color_rect = $ColorRect
 @onready var click_area = $ColorRect/ClickArea
 @onready var card_container = $CardContainer
-@onready var left_arrow = $LeftArrow
-@onready var right_arrow = $RightArrow
-@onready var page_indicator = $PageIndicator
+@onready var left_arrow = %LeftArrow
+@onready var right_arrow = %RightArrow
+@onready var page_indicator = %PageIndicator
 
 static var tutorial_shown := false  # <-- penanda global
 
@@ -339,7 +339,8 @@ func _setup_students():
 			# Wire the matching roster-strip avatar ONCE here, not in the
 			# per-sync loop -- _sync_roster_strip() runs on every page turn
 			# and its is_connected() guard can never match a bound callable.
-			var roster_avatar = get_node_or_null("RosterStrip/Avatar%d" % (i + 1))
+			# "%%" is a literal "%": the unique-name prefix, escaped for the format.
+			var roster_avatar = get_node_or_null("%%RosterStrip/Avatar%d" % (i + 1))
 			if roster_avatar and not roster_avatar.pressed.is_connected(_on_avatar_pressed.bind(i)):
 				roster_avatar.pressed.connect(_on_avatar_pressed.bind(i))
 
@@ -369,7 +370,7 @@ func _is_student_scheduled(student: Dictionary) -> bool:
 ## strip. Called after _setup_students() and from _switch_card(), so the
 ## strip and the carousel never disagree.
 func _sync_roster_strip() -> void:
-	var strip := get_node_or_null("RosterStrip")
+	var strip := get_node_or_null("%RosterStrip")
 	if strip == null:
 		return
 	for i in range(active_students.size()):
@@ -823,7 +824,12 @@ func _show_step(index: int):
 		click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _find_target_node(path_str: String) -> Node:
-	var node = get_node_or_null(path_str)
+	# A bare name ("RightArrow", "RosterStrip") is found by unique name wherever
+	# it sits (Safe/UI since the 2026-09-15 tall-phone pass).
+	var node = get_node_or_null("%" + path_str)
+	if node:
+		return node
+	node = get_node_or_null(path_str)
 	if node:
 		return node
 	if card_container:

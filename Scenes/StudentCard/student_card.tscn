@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/pngwing.com (3).png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
 [ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="13_kiyav"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="15_jyy3b"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
@@ -29,20 +30,15 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 70.0
-offset_top = 254.0
-offset_right = -77.0
-offset_bottom = -352.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ao2t8")
 
 [node name="Backdrop" type="TextureRect" parent="." unique_id=1581590975]
-layout_mode = 0
-offset_left = -70.0
-offset_top = -254.0
-offset_right = 1010.0
-offset_bottom = 1666.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 mouse_filter = 2
 texture = ExtResource("2_ly60b")
 expand_mode = 1
@@ -50,11 +46,16 @@ stretch_mode = 6
 
 [node name="KertasMurid6" type="TextureRect" parent="." unique_id=1627899928]
 visible = false
-layout_mode = 0
-offset_left = -70.0
-offset_top = -254.0
-offset_right = 1010.0
-offset_bottom = 1666.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -960.0
+offset_right = 540.0
+offset_bottom = 960.0
 texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid6" unique_id=1373524025 instance=ExtResource("4_jyy3b")]
@@ -304,11 +305,16 @@ mouse_filter = 2
 texture = ExtResource("6_kiyav")
 
 [node name="KertasMurid5" type="TextureRect" parent="." unique_id=1004659439]
-layout_mode = 0
-offset_left = -70.0
-offset_top = -254.0
-offset_right = 1010.0
-offset_bottom = 1666.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -960.0
+offset_right = 540.0
+offset_bottom = 960.0
 texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid5" unique_id=662012139 instance=ExtResource("4_jyy3b")]
@@ -559,11 +565,16 @@ texture = ExtResource("6_kiyav")
 
 [node name="KertasMurid4" type="TextureRect" parent="." unique_id=74882940]
 visible = false
-layout_mode = 0
-offset_left = -70.0
-offset_top = -254.0
-offset_right = 1010.0
-offset_bottom = 1666.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -960.0
+offset_right = 540.0
+offset_bottom = 960.0
 texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid4" unique_id=476270661 instance=ExtResource("4_jyy3b")]
@@ -814,11 +825,16 @@ texture = ExtResource("6_kiyav")
 
 [node name="KertasMurid3" type="TextureRect" parent="." unique_id=2031333750]
 visible = false
-layout_mode = 0
-offset_left = -70.0
-offset_top = -254.0
-offset_right = 1010.0
-offset_bottom = 1666.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -960.0
+offset_right = 540.0
+offset_bottom = 960.0
 texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid3" unique_id=1612073677 instance=ExtResource("4_jyy3b")]
@@ -1069,11 +1085,16 @@ texture = ExtResource("6_kiyav")
 
 [node name="KertasMurid2" type="TextureRect" parent="." unique_id=465108679]
 visible = false
-layout_mode = 0
-offset_left = -70.0
-offset_top = -254.0
-offset_right = 1010.0
-offset_bottom = 1666.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -960.0
+offset_right = 540.0
+offset_bottom = 960.0
 texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid2" unique_id=770458292 instance=ExtResource("4_jyy3b")]
@@ -1323,11 +1344,16 @@ mouse_filter = 2
 texture = ExtResource("6_kiyav")
 
 [node name="KertasMurid1" type="TextureRect" parent="." unique_id=1772494297]
-layout_mode = 0
-offset_left = -70.0
-offset_top = -254.0
-offset_right = 1010.0
-offset_bottom = 1666.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -960.0
+offset_right = 540.0
+offset_bottom = 960.0
 texture = ExtResource("8_hodfn")
 
 [node name="PaperShadow" parent="KertasMurid1" unique_id=1328964949 instance=ExtResource("4_jyy3b")]
@@ -1576,70 +1602,12 @@ offset_bottom = 670.0
 mouse_filter = 2
 texture = ExtResource("6_kiyav")
 
-[node name="NextButtonKanan" type="Button" parent="." unique_id=1157739970]
-custom_minimum_size = Vector2(160, 96)
-layout_mode = 0
-offset_left = 790.0
-offset_top = 1524.0
-offset_right = 950.0
-offset_bottom = 1652.0
-theme_type_variation = &"StudentCardSecondaryButtonL"
-
-[node name="Arrow" type="TextureRect" parent="NextButtonKanan" unique_id=1794432009]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 28.0
-offset_right = -40.0
-offset_bottom = -28.0
-rotation = -1.5708
-pivot_offset = Vector2(40, 36)
-mouse_filter = 2
-texture = ExtResource("13_kiyav")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="NextButtonKiri" type="Button" parent="." unique_id=1513661131]
-visible = false
-custom_minimum_size = Vector2(160, 96)
-layout_mode = 0
-offset_left = 20.0
-offset_top = 1524.0
-offset_right = 180.0
-offset_bottom = 1652.0
-theme_type_variation = &"StudentCardSecondaryButtonL"
-
-[node name="Arrow" type="TextureRect" parent="NextButtonKiri" unique_id=1879901438]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 28.0
-offset_right = -40.0
-offset_bottom = -28.0
-rotation = 1.5708
-pivot_offset = Vector2(40, 36)
-mouse_filter = 2
-texture = ExtResource("13_kiyav")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="PilihMurid" type="Label" parent="." unique_id=983198317]
-layout_mode = 0
-offset_left = 90.0
-offset_top = -210.0
-offset_right = 990.0
-offset_bottom = -60.0
-theme_type_variation = &"DisplayLabel"
-text = "Pilih Muridmu"
-
 [node name="BelajarButton" type="Button" parent="." unique_id=219827255]
 layout_mode = 0
-offset_left = 328.0
-offset_top = 1740.0
-offset_right = 818.0
-offset_bottom = 1900.0
+offset_left = 398.0
+offset_top = 1994.0
+offset_right = 888.0
+offset_bottom = 2154.0
 theme_type_variation = &"PrimaryButtonL"
 text = "BELAJAR"
 
@@ -1672,23 +1640,117 @@ grow_vertical = 2
 
 [node name="StampApprove" type="TextureRect" parent="." unique_id=1739287175]
 visible = false
-layout_mode = 0
-offset_left = -15.0
-offset_top = 98.0
-offset_right = 984.0
-offset_bottom = 918.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -485.0
+offset_top = -608.0
+offset_right = 514.0
+offset_bottom = 212.0
 mouse_filter = 2
 texture = ExtResource("8_6vhdp")
 
-[node name="PageLabel" type="Label" parent="." unique_id=977170758]
+[node name="Safe" type="MarginContainer" parent="." unique_id=2101829253]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("15_jyy3b")
+
+[node name="UI" type="Control" parent="Safe" unique_id=1700152361]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BottomBar" type="Control" parent="Safe/UI" unique_id=24589487]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -94.0
+offset_bottom = 34.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="NextButtonKiri" type="Button" parent="Safe/UI/BottomBar" unique_id=1513661131]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(160, 96)
 layout_mode = 0
-offset_left = 370.0
-offset_top = 1551.0
-offset_right = 570.0
-offset_bottom = 1621.0
+offset_left = 42.0
+offset_right = 202.0
+offset_bottom = 128.0
+theme_type_variation = &"StudentCardSecondaryButtonL"
+
+[node name="Arrow" type="TextureRect" parent="Safe/UI/BottomBar/NextButtonKiri" unique_id=1879901438]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 28.0
+offset_right = -40.0
+offset_bottom = -28.0
+rotation = 1.5708
+pivot_offset = Vector2(40, 36)
+mouse_filter = 2
+texture = ExtResource("13_kiyav")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="NextButtonKanan" type="Button" parent="Safe/UI/BottomBar" unique_id=1157739970]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 96)
+layout_mode = 0
+offset_left = 812.0
+offset_right = 972.0
+offset_bottom = 128.0
+theme_type_variation = &"StudentCardSecondaryButtonL"
+
+[node name="Arrow" type="TextureRect" parent="Safe/UI/BottomBar/NextButtonKanan" unique_id=1794432009]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 28.0
+offset_right = -40.0
+offset_bottom = -28.0
+rotation = -1.5708
+pivot_offset = Vector2(40, 36)
+mouse_filter = 2
+texture = ExtResource("13_kiyav")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="PageLabel" type="Label" parent="Safe/UI/BottomBar" unique_id=977170758]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 392.0
+offset_top = 27.0
+offset_right = 592.0
+offset_bottom = 97.0
 theme_type_variation = &"CardSectionLabel"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[connection signal="pressed" from="NextButtonKanan" to="." method="_on_next_button_kanan_pressed"]
-[connection signal="pressed" from="NextButtonKiri" to="." method="_on_next_button_kiri_pressed"]
+[node name="PilihMurid" type="Label" parent="Safe/UI" unique_id=983198317]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -380.0
+offset_top = -4.0
+offset_right = 520.0
+offset_bottom = 146.0
+theme_type_variation = &"DisplayLabel"
+text = "Pilih Muridmu"
+
+[connection signal="pressed" from="Safe/UI/BottomBar/NextButtonKiri" to="." method="_on_next_button_kiri_pressed"]
+[connection signal="pressed" from="Safe/UI/BottomBar/NextButtonKanan" to="." method="_on_next_button_kanan_pressed"]

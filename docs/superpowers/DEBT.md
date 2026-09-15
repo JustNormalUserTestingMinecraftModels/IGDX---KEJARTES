@@ -218,6 +218,12 @@ or correct the README.
 fails, so it returns nothing unless the `energy_icon_texture` /
 `mood_icon_texture` exports are set.
 
+**Opening BookClockWidget.tscn hangs the editor (moved from CLAUDE.md, 2026-09-15).**
+`scene_open` on `Scenes/SchoolSimulation/BookClockWidget.tscn` hangs the
+editor — the call times out, the MCP transport write-pauses, the plugin
+disconnects, and the editor needs a restart. Cause unconfirmed; verify that
+widget via `project_run` instead, which exercises it fine.
+
 ## Deferred and pending
 
 **Pending a balance pass.** `RunGrade`'s scoring weights (especially
@@ -289,3 +295,15 @@ the grid's outer slot columns included. The 2026-09-14 reading (`GridArea/Scroll
 added 1 px. Each coin digit adds about 20 px, so any balance of three digits
 or more overflows. Fix it in the header, where the display-size title is the
 bulk of the width, not in the grid.
+
+**Deferred: tall phones, Phases 2 and 3 (2026-09-15).** Phase 1 made the
+Lobby, Koperasi, StudentCard and StudentList fill a 1080×2400 screen (spec
+`docs/superpowers/specs/2026-09-15-tall-phone-layout-design.md`; its
+Appendix A maps every screen). Still laid out for exactly 1080×1920:
+Phase 2's AturJadwal, CutScene, Rapor and Inventory (Rapor waits for the
+separate `KEMBALI` overlap fix, which edits that scene; Inventory's glyph
+fix merged as `fd3bba7`, and its header overflow is the entry above), and
+Phase 3's ExamProgress, StatCheck, EndCutscene, the
+ResultCheckup confetti and MainBola. The Lobby's classroom stays a centred
+1080×1920 picture, so a tall phone shows black bands above and below it;
+filling them wants taller classroom art.

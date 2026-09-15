@@ -199,14 +199,17 @@ func _make_bgm_player() -> AudioStreamPlayer:
 
 # -------------------------------------------------------------------- sfx
 
-func play_sfx(id: StringName) -> void:
+## Play one sfx cue. `pitch` scales the voice on top of the usual random
+## spread: 1.0, every call's default, leaves it exactly as before; the
+## weekly report's reveal climbs it one step per pop.
+func play_sfx(id: StringName, pitch: float = 1.0) -> void:
 	var stream := _resolve_sfx(id)
 	if stream == null:
 		return
 	var player := _sfx_pool[_sfx_next]
 	_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
 	player.stream = stream
-	player.pitch_scale = 1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance)
+	player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
 	player.play()
 
 

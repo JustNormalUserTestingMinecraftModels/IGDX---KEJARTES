@@ -33,6 +33,38 @@ sits at (427, 579), and the same solve moves Eyelid from (419, 578) to
   `citra_eye_mask.tres`'s saved `mask_uv_offset` still reflects the old
   Sclera; `StudentFace` recomputes it on `_ready`.
 
+## 2026-09-14 — Weekly report: one reward at a time
+
+Plan `docs/superpowers/plans/2026-09-14-weekly-report-reveal.md`, spec
+`docs/superpowers/specs/2026-09-14-weekly-report-reveal-design.md`.
+
+ResultCheckup now opens on the backdrop alone and plays the week back one
+reward at a time. Each card pops in, its needs bars travel, and the list
+scrolls to it. Then its three stats count one after another, and each gain
+punches its number and fires the `RewardBurst` from it. The coins, EVENT
+BERHASIL and EVENT GAGAL lines follow in order, each popping when it lands,
+and last come the confetti and the buttons. Every pop sounds one
+`pitch_step` higher than the one before. A tap anywhere during the reveal
+lands everything at once.
+
+- **`WeekReportReveal`** (new) works out the whole timeline as data, before
+  anything moves. `ResultCheckup` plays it through one parallel tween of
+  delayed callbacks, so a skip is one `kill()`. Suite `week_report_reveal`.
+- **The card's week API.** `DaySummaryStatRow` has `rewind`, `play_count`,
+  `land_pop`, `land` and `shown_delta`. `DaySummaryStudentRow` has
+  `rewind_week`, `play_needs_week` and `land_week`. Landing stops every
+  tween the reveal started on the card, so a skip never leaves a number
+  still counting over its final value. `play_gain` and the nightly popup are
+  untouched.
+- **Shared API.** `Juice.punch` and `Juice.text_center` are new;
+  `count_up_formatted` takes a duration; `pop_in` and `count_up_formatted`
+  return their tweens. `AudioDirector.play_sfx` takes an optional pitch.
+- **Only gains pop.** A row that did not go up settles on a short, silent
+  beat, and a zero summary line arrives reading 0. This is the game's
+  standing no-gain-no-celebration rule.
+- The pacing is a Reveal group of `@export`s on `ResultCheckup`. With the
+  defaults, four gaining Kelas 9 students take about 9 s.
+
 ## 2026-09-14 — Lobby: layered faces for the whole roster
 
 Plan `docs/superpowers/plans/2026-09-14-student-face-rigs.md`, spec

@@ -23,7 +23,7 @@
 [ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
-[ext_resource type="Texture2D" uid="uid://dic0qp1gbfmij" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
+[ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
 [ext_resource type="Texture2D" uid="uid://bflgqwew54uyi" path="res://Assets/Images/MuridPotrait/Meja/kiri bawah.png" id="meja_kb_tex"]
 [ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPotrait/Meja/kanan atas.png" id="meja_kna_tex"]

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dp782uxn7g7n0" path="res://Scripts/Inventory/inventory.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://con7qmuqu4d1t" path="res://Assets/Images/Shop/UI/bg_inventory_blur.png" id="3_o4jeo"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="4_47018"]
+[ext_resource type="Texture2D" uid="uid://cbfye2gpgwcp2" path="res://Assets/Images/UI/Placeholders/icon_back.svg" id="4_o4jeo"]
 [ext_resource type="ButtonGroup" uid="uid://cickcww0680kq" path="res://Scenes/Inventory/inventory_filter_group.tres" id="6_s8uyb"]
 [ext_resource type="Texture2D" uid="uid://dey14dn1mvtfh" path="res://Assets/Images/UI/Placeholders/icon_filter_semua.svg" id="7_n1gkd"]
 [ext_resource type="Texture2D" uid="uid://bu2g3a828kmfk" path="res://Assets/Images/UI/Placeholders/icon_filter_buku.svg" id="8_37qp6"]
@@ -51,8 +52,8 @@ custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_vertical = 4
 theme_type_variation = &"SecondaryButton"
-text = "‹ Kembali"
-icon_alignment = 1
+text = "Kembali"
+icon = ExtResource("4_o4jeo")
 
 [node name="TitleLabel" type="Label" parent="MainColumn/Header/Row" unique_id=1251409474]
 layout_mode = 2

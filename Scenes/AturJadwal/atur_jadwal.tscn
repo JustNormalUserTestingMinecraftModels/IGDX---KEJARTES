@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://bmxugmsumo04o" path="res://Assets/Images/UI/whiteboard.png" id="2_0xkhc"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_shader"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="4_f4ced"]
-[ext_resource type="Texture2D" uid="uid://dd3bvl367ysl3" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
+[ext_resource type="Texture2D" uid="uid://bvc6vlo87qpl0" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
 [ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
 [ext_resource type="Texture2D" uid="uid://cixngx8hgvgmn" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
 [ext_resource type="Texture2D" uid="uid://fuwhxl8ethbp" path="res://Assets/Images/Shop/return.png" id="10_return"]

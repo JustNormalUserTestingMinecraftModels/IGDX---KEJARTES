@@ -28,9 +28,14 @@ three `Particles/particle_*.png`, the minigame
 result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
 event-popup set (`icon_event.svg`, `bg_event_dialog.png`),
-`shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`,
-`EndCutscene`'s two badges, the eight `BarFill/fill_*` motif tiles, the
-2026-09-10 cream-pass assets (`penjadwalan_card_bg.png`,
+`shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`
+(white on purpose: `FilterChipButton` inks its icons `brand_primary`, so a
+replacement must stay a white glyph, or that tint comes out of `ThemeFactory`
+with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
+Inventory's back chevron `icon_back.svg` (2026-09-15; 16x36, one pixel wider
+on the button than the glyph it replaced), `EndCutscene`'s two badges, the
+eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
+(`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
 the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
 `icon_keranjang_kosong.svg`, `tray_dots.png` (this last must
@@ -136,6 +141,22 @@ StudentList still pins each note at runtime.
 falls back to `info["glyph"]` from `StatInfo`, and those glyphs are emoji, which
 the ban in `## Conventions` forbids. The trait popup was fixed the same way on
 2026-09-09 — real textures plus a display-font heading; this wants the same.
+
+**Boohong draws some punctuation as quote marks, and lacks more (found
+2026-09-15).** `Assets/Fonts/Boohong.otf`'s cmap sends `‹`, `›` and `‚` to its
+apostrophe glyph and `«`/`»` to its double quote. The font claims them, so
+system fallback never runs: Inventory's "‹ Kembali" shipped as "' KEMBALI" on
+desktop and Android alike, until the chevron became `icon_back.svg`. It has no
+`•`, `…`, `—`, `←` or `→` at all; those fall back to whatever system font the
+device picks. Buttons, titles and headings wear Boohong, so keep such
+characters out of their text, and draw an arrow or chevron as an SVG icon.
+Still in display text: SchoolDay's `BackButton` (authored hidden) reads
+"🔙 Kembali ke Menu", and CutScene's grade picker (`cut_scene.gd`'s
+`_create_grade_button`, which the file calls the first-boot picker every
+player sees) titles its Primary/SecondaryButtons with 🏫/🎓 emoji over
+"•"-separated subtitles -- emoji the ban in `## Conventions` forbids.
+`LombaMenari`'s ←/→/↖/↗ are body text, but Open Sans has no `←` either, so
+they ride system fallback too (minigames sit outside the design system).
 
 **TesNotice's card collapses (2026-09-11).** `NoticeCard` is a
 `NinePatchRect`, not a Container, so the anchored `Content` never sizes it. It
@@ -252,7 +273,14 @@ each side never show. Showing it all means a 1920-wide `Backdrop` and
 `pan_pixels = -840` (a faster pan over the same 4 s), plus the 1296 in
 `tests/test_exam_progress.gd`'s width test.
 
-**The inventory grid is wider than the screen (found 2026-09-14).** Measured
-live, `inventory.tscn`'s `MainColumn/GridArea/Scroll` is 1107 px wide and
-starts at x -13.5 on the 1080 canvas, holding three 358 px slots. The outer
-slot columns are clipped by about 14 px on each side.
+**The Inventory screen is wider than the screen (found 2026-09-14; cause found
+2026-09-15).** `inventory.tscn`'s `MainColumn` grows to its widest child's
+minimum width, and that child is the `Header` row, not the grid. Measured live
+on 2026-09-15 with the seed's 999999G: `BackButton` 277 + `TitleLabel`
+"INVENTORY" 582 + `CoinDisplay` 181, three 20 px gaps and the `Card`'s two
+28 px margins make 1156 px, so the column sits at x -38 and every row clips,
+the grid's outer slot columns included. The 2026-09-14 reading (`GridArea/Scroll`
+1107 px at x -13.5) is the same 1155 px header, from before the back chevron
+added 1 px. Each coin digit adds about 20 px, so any balance of three digits
+or more overflows. Fix it in the header, where the display-size title is the
+bulk of the width, not in the grid.

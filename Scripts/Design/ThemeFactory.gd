@@ -307,6 +307,15 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	_add_button_variation(theme, tokens, "FilterChipButton",
 		tokens.surface_card, tokens.surface_sunken,
 		tokens.brand_primary, tokens.brand_primary)
+	# Its category icons are white placeholder glyphs, and a Button draws its
+	# icon untinted unless its variation names an icon colour: white on this
+	# cream pill measured 1.02:1 at rest and 1.30:1 selected, so on a phone
+	# only the selected chip showed an icon (2026-09-15). Ink them like the
+	# label -- which is why a replacement icon has to stay a white glyph.
+	for slot in ["icon_normal_color", "icon_hover_color", "icon_pressed_color",
+			"icon_hover_pressed_color", "icon_focus_color"]:
+		theme.set_color(slot, "FilterChipButton", tokens.brand_primary)
+	theme.set_color("icon_disabled_color", "FilterChipButton", tokens.text_disabled)
 
 	# The student card's page arrows. Fixed 120x120, so radius_pill yields a
 	# circle rather than a height-dependent capsule -- the one place that

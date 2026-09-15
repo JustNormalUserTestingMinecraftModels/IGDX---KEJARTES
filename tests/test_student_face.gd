@@ -13,10 +13,16 @@ extends McpTestSuiteCompat
 ## freezes that solve -- if someone nudges a layer in the viewport, this suite
 ## says so.
 ##
-## The one correction worth remembering: citra_eyebrows.png was originally
-## delivered as "citra_eyelashes_closed" and first wired as the lower half of a
-## blink. It is the eyebrows, it is always visible, and it is the topmost layer
-## because the base has hair (not brows) beneath it.
+## Two corrections worth remembering:
+##  * citra_eyebrows.png was originally delivered as "citra_eyelashes_closed"
+##    and first wired as the lower half of a blink. It is the eyebrows, it is
+##    always visible, and it is the topmost layer because the base has hair
+##    (not brows) beneath it.
+##  * Sclera and Eyelid first shipped 1 px high, at y=578. That left 114 eye
+##    cut-out pixels covered by no layer, and the lobby showed through as a
+##    faint line along the top rim of each eye. The plug is at y=579, the one
+##    placement where the sclera best fills the holes; the see-through test
+##    below counts what is left open.
 ##
 ## Blink is deliberately inert. The Eyelid layer is in the rig and blink()
 ## works, but idle_blink_enabled defaults false, so nothing closes the eyes on
@@ -48,12 +54,23 @@ const _LAYERS: Array[String] = [
 ## for how these were derived; they are art facts, not preferences.
 const _GEOMETRY: Array = [
 	["Base", Vector2(0, 0), Vector2(1280, 1280)],
-	["Sclera", Vector2(427, 578), Vector2(426, 95)],
+	["Sclera", Vector2(427, 579), Vector2(426, 95)],
 	["Pupil", Vector2(476, 571), Vector2(328, 99)],
 	["Eyelashes", Vector2(391, 534), Vector2(498, 93)],
-	["Eyelid", Vector2(419, 578), Vector2(442, 106)],
+	["Eyelid", Vector2(419, 579), Vector2(442, 106)],
 	["Eyebrows", Vector2(447, 499), Vector2(384, 26)],
 ]
+
+## The layers that hide what is behind them in the resting face. Pupil is
+## left out because the eye-mask shader clips it to the sclera, so it can
+## never cover more than the sclera does. Eyelid is left out because it is
+## hidden until a blink.
+const _COVER_LAYERS: Array[String] = ["Sclera", "Eyelashes", "Eyebrows"]
+
+## Where citra_base.png's eye cut-outs are, in canvas pixels: the Sclera's
+## solved rect plus a 4 px rim. It is fixed rather than read off the Sclera
+## node, so a moved Sclera cannot drag the scan away from the holes.
+const _EYE_WINDOW := Rect2i(423, 575, 434, 103)
 
 ## One PNG per layer, named after the layer it feeds.
 const _ART_FILES: Array[String] = [
@@ -110,6 +127,73 @@ func test_each_layer_sits_at_its_solved_canvas_offset() -> void:
 		assert_true(node.size.is_equal_approx(entry[2]),
 			"%s is no longer drawn at its native size: %s, expected %s"
 				% [layer_name, node.size, entry[2]])
+
+
+func test_no_eye_cut_out_is_left_see_through() -> void:
+	# A cut-out pixel is see-through when the base is transparent there and no
+	# resting layer covers it at alpha >= 0.5; the lobby shows through it.
+	# The Sclera alone leaves two anti-aliased rim pixels, at (438-439, 581),
+	# and the lashes cover both. With the Sclera at y=578 this counts 114.
+	var holes := _cut_out_pixels(_layer("Base").texture.get_image(), _EYE_WINDOW)
+	assert_gt(holes.size(), 0,
+		"citra_base.png must still have eye cut-outs, or this test proves nothing")
+	var covers: Array = []
+	for layer_name in _COVER_LAYERS:
+		var node := _layer(layer_name)
+		covers.append([node.texture.get_image(), Vector2i(node.position)])
+	var open: Array[Vector2i] = []
+	for p in holes:
+		var covered := false
+		for c in covers:
+			var img: Image = c[0]
+			var local: Vector2i = p - c[1]
+			if local.x >= 0 and local.y >= 0 and local.x < img.get_width() \
+				and local.y < img.get_height() and img.get_pixelv(local).a >= 0.5:
+				covered = true
+				break
+		if not covered:
+			open.append(p)
+	assert_eq(open.size(), 0,
+		"%d eye cut-out pixels show the lobby through Citra's face, first %s"
+			% [open.size(), open.slice(0, 6)])
+
+
+## The base's eye cut-outs inside `window`: its transparent pixels (alpha
+## below 0.5) that are not connected 4-way to the window's edge. Transparency
+## that reaches the edge is the canvas around the face, not a hole in it.
+func _cut_out_pixels(img: Image, window: Rect2i) -> Array[Vector2i]:
+	var w := window.size.x
+	var h := window.size.y
+	var outside := PackedByteArray()
+	outside.resize(w * h)
+	var queue: Array[Vector2i] = []
+	for x in range(w):
+		queue.append(Vector2i(x, 0))
+		queue.append(Vector2i(x, h - 1))
+	for y in range(h):
+		queue.append(Vector2i(0, y))
+		queue.append(Vector2i(w - 1, y))
+	var head := 0
+	while head < queue.size():
+		var p: Vector2i = queue[head]
+		head += 1
+		if p.x < 0 or p.y < 0 or p.x >= w or p.y >= h:
+			continue
+		var i := p.y * w + p.x
+		if outside[i] == 1 or img.get_pixelv(window.position + p).a >= 0.5:
+			continue
+		outside[i] = 1
+		queue.append(p + Vector2i.RIGHT)
+		queue.append(p + Vector2i.LEFT)
+		queue.append(p + Vector2i.DOWN)
+		queue.append(p + Vector2i.UP)
+	var holes: Array[Vector2i] = []
+	for y in range(h):
+		for x in range(w):
+			var p := window.position + Vector2i(x, y)
+			if outside[y * w + x] == 0 and img.get_pixelv(p).a < 0.5:
+				holes.append(p)
+	return holes
 
 
 func test_the_eyelid_is_the_only_layer_that_starts_hidden() -> void:

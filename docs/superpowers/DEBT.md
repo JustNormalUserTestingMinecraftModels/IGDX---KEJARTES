@@ -236,14 +236,10 @@ and `StudentFace.blink()` are wired and tested, but `idle_blink_enabled`
 defaults **false** — held back deliberately. A real pass wants a half-lid frame
 (the art has none) or an alpha/scale ease rather than the current hard cut.
 
-**Bug: Citra's eye rims show the lobby through.** `CitraFace.tscn`'s `Sclera`
-sits at canvas y=578, where 114 of `citra_base.png`'s eye cut-out pixels are
-covered by no layer (alpha down to 0.24) -- a faint line along the top of each
-eye. y=579 (and `Eyelid` 579) covers them all and matches `Citra.png` better;
-the fix also means updating `tests/test_student_face.gd`'s `_GEOMETRY`. The
-other rigs keep a few anti-aliased rim pixels no placement covers (Doni 5,
-Marcel 10), frozen as a budget in `tests/test_face_rig_roster.gd`; only new
-art removes them.
+**Art: a few eye-rim pixels stay see-through on Doni and Marcel.** Their
+bases keep some anti-aliased cut-out rim pixels that no layer placement
+covers (Doni 5, Marcel 10). The counts are frozen as a budget in
+`tests/test_face_rig_roster.gd`, and only new art removes them.
 
 **Ratchet debt.** `tests/test_viewport_editability.gd`'s `BASELINE` still lists
 real unconverted runtime UI construction across roughly 20 files. The list, and

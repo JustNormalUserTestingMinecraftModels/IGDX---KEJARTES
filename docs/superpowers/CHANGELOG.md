@@ -8,6 +8,31 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-14 — Lobby: Citra's eye whites plug their cut-outs
+
+`CitraFace.tscn`'s Sclera sat 1 px high, at (427, 578). `citra_base.png`
+has transparent eye cut-outs, and at that height 114 of their pixels were
+covered by no layer, some at a combined alpha of 0.24. The Lobby background
+showed through as a faint line along the top rim of each eye. Sclera now
+sits at (427, 579), and the same solve moves Eyelid from (419, 578) to
+(419, 579).
+
+- **How it was solved.** Holes are the base's alpha < 128 regions that do not
+  touch the image border. The sclera goes where its alpha best overlaps
+  them (IoU), and that position is unique. At 579 the resting face leaves
+  none of them see-through. The Sclera alone leaves two anti-aliased rim
+  pixels at (438–439, 581), and the lashes cover those. A composite of the
+  layers also matches the flat `Citra.png` better: mean abs error 5.70
+  against 6.14 over the eye region.
+- **Pinned.** `tests/test_student_face.gd` adds
+  `test_no_eye_cut_out_is_left_see_through`, which counts 114 open pixels at
+  the old position and 0 now. Citra's rig predates the roster suite, so
+  that suite's matching check never covered her.
+- **Left alone.** The same solve would move Eyebrows 1 px right and Pupil
+  1 px up. That is cosmetic, so both stay where they are.
+  `citra_eye_mask.tres`'s saved `mask_uv_offset` still reflects the old
+  Sclera; `StudentFace` recomputes it on `_ready`.
+
 ## 2026-09-14 — Weekly report: one reward at a time
 
 Plan `docs/superpowers/plans/2026-09-14-weekly-report-reveal.md`, spec

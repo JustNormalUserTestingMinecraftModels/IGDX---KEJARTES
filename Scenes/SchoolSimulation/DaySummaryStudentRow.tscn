@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://c1dstgm0d4nvr"]
 
 [ext_resource type="Script" uid="uid://crbnane4dchyf" path="res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd" id="1_row"]
+[ext_resource type="Texture2D" uid="uid://d3m8a4urdqbpp" path="res://Assets/Images/UI/header_stripes.svg" id="2_jftq2"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn" id="3_avatar"]
 [ext_resource type="Script" uid="uid://xm5t6rwv1ddu" path="res://Scripts/SchoolSimulation/DaySummaryNeedsBar.gd" id="4_0kar2"]
 [ext_resource type="PackedScene" uid="uid://badokp3g1xb25" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
@@ -26,11 +27,24 @@ mouse_filter = 2
 theme_type_variation = &"IdCardPanel"
 
 [node name="HeaderBand" type="Panel" parent="." unique_id=549684914]
+clip_contents = true
 layout_mode = 1
 offset_right = 992.0
 offset_bottom = 76.0
 mouse_filter = 2
 theme_type_variation = &"RecapMastheadPanel"
+
+[node name="HeaderStripes" type="TextureRect" parent="HeaderBand" unique_id=427210066]
+texture_repeat = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_jftq2")
+stretch_mode = 1
 
 [node name="NameLabel" type="Label" parent="." unique_id=1171610888]
 layout_mode = 1

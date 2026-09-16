@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://ryxe5fwlwclr"]
+
+[ext_resource type="Script" path="res://Scripts/UI/WeekRecapPillInfoPopup.gd" id="1_frim4"]
+
+[node name="WeekRecapPillInfoPopup" type="CanvasLayer" unique_id=302381559]
+layer = 100
+script = ExtResource("1_frim4")
+
+[node name="Scrim" type="ColorRect" parent="." unique_id=820837921]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Card" type="PanelContainer" parent="Scrim" unique_id=5741108]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 0
+offset_right = 760.0
+theme_type_variation = &"Card"
+
+[node name="Layout" type="VBoxContainer" parent="Scrim/Card" unique_id=11329071]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Scrim/Card/Layout" unique_id=1820023744]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="IconRect" type="TextureRect" parent="Scrim/Card/Layout/Header" unique_id=394937855]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="Scrim/Card/Layout/Header" unique_id=424370299]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"H2Label"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Scrim/Card/Layout/Header" unique_id=2042367519]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"SecondaryButton"
+text = "✕"
+
+[node name="BodyLabel" type="Label" parent="Scrim/Card/Layout" unique_id=1651205694]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+autowrap_mode = 3

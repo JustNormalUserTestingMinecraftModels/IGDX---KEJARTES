@@ -20,7 +20,7 @@ signal cancelled
 ## Seconds between one student's payoff and the next.
 @export var payoff_stagger: float = 0.18
 
-const _CONFIRM_FMT := "Pakai (%d Siswa)"
+const _CONFIRM_FMT := ">>>  Pakai ke %d Siswa!  <<<"
 const _LABELS := {"akademis": "Akademis", "seni_budaya": "Seni", "olahraga": "Olahraga",
 	"mood": "Mood", "energy": "Energi"}
 const _DELTA_LABELS := [
@@ -33,7 +33,13 @@ const _DELTA_LABELS := [
 @onready var _recap_icon: TextureRect = $Margin/Card/Margin/VBox/RecapStrip/RecapIcon
 @onready var _recap_name: Label = $Margin/Card/Margin/VBox/RecapStrip/RecapName
 @onready var _recap_count: Label = $Margin/Card/Margin/VBox/RecapStrip/RecapCount
-@onready var _effect_summary: Label = $Margin/Card/Margin/VBox/EffectSummary
+@onready var _summary_chips := {
+	"akademis": $Margin/Card/Margin/VBox/EffectSummary/ChipAkademis,
+	"seni_budaya": $Margin/Card/Margin/VBox/EffectSummary/ChipSeni,
+	"olahraga": $Margin/Card/Margin/VBox/EffectSummary/ChipOlahraga,
+	"mood": $Margin/Card/Margin/VBox/EffectSummary/ChipMood,
+	"energy": $Margin/Card/Margin/VBox/EffectSummary/ChipEnergi,
+}
 @onready var _select_all_button: Button = $Margin/Card/Margin/VBox/Actions/SecondaryRow/SelectAllButton
 @onready var _cancel_button: Button = $Margin/Card/Margin/VBox/Actions/SecondaryRow/CancelButton
 @onready var _confirm_button: Button = $Margin/Card/Margin/VBox/Actions/ConfirmButton
@@ -44,6 +50,7 @@ var _drag := false
 var _drag_y := 0.0
 var _drag_v0 := 0
 var _committing := false
+var _confirm_idle: Tween = null
 
 func _ready() -> void:
 	_select_all_button.text = "Pilih Semua"
@@ -52,6 +59,14 @@ func _ready() -> void:
 	($Margin/Card/Margin/VBox/TitleLabel as Label).text = "Pakai ke Siapa?"
 	if Engine.is_editor_hint():
 		return
+	var pill := StyleBoxFlat.new()
+	pill.bg_color = DesignTokens.load_default().surface_sunken
+	pill.set_corner_radius_all(22)
+	pill.content_margin_left = 20
+	pill.content_margin_right = 20
+	pill.content_margin_top = 4
+	pill.content_margin_bottom = 6
+	_recap_count.add_theme_stylebox_override("normal", pill)
 	AudioDirector.play_sfx(&"popup_open")
 	modulate.a = 0.0
 	create_tween().tween_property(self, "modulate:a", 1.0, 0.18)
@@ -65,7 +80,7 @@ func setup(p_item: ItemData) -> void:
 	_recap_icon.texture = p_item.icon
 	_recap_name.text = p_item.item_name
 	_recap_count.text = "Sisa ×%d" % GameState.get_inventory_quantity(p_item.item_name)
-	_effect_summary.text = _summary_text(p_item)
+	_style_summary_chips(p_item)
 
 	for c in _rows_box.get_children():
 		c.queue_free()
@@ -90,12 +105,30 @@ func _boosts_of(it: ItemData) -> Dictionary:
 			out[k] = int(raw[k])
 	return out
 
-func _summary_text(it: ItemData) -> String:
-	var b := _boosts_of(it)
-	var parts: Array[String] = []
-	for k in b:
-		parts.append("%s +%d" % [_LABELS[k], b[k]])
-	return "Menambah: %s per siswa." % ", ".join(parts)
+## Fill the "Menambah" strip: one coloured pill per boosted stat, the rest
+## hidden. Each pill's colour is the stat's accent -- a per-instance stylebox,
+## the accepted per-call-dynamic exception.
+func _style_summary_chips(it: ItemData) -> void:
+	var tokens := DesignTokens.load_default()
+	var to_cat := {"akademis": "Akademis", "seni_budaya": "SeniBudaya",
+		"olahraga": "Olahraga", "mood": "Istirahat", "energy": "Libur"}
+	var boosts := _boosts_of(it)
+	for key in _summary_chips:
+		var chip: Label = _summary_chips[key]
+		var amount: int = int(boosts.get(key, 0))
+		chip.visible = amount != 0
+		if amount == 0:
+			continue
+		chip.text = "%s +%d" % [_LABELS[key], amount]
+		chip.add_theme_color_override("font_color", tokens.surface_card)
+		var pill := StyleBoxFlat.new()
+		pill.bg_color = tokens.category_color(to_cat.get(key, ""))
+		pill.set_corner_radius_all(16)
+		pill.content_margin_left = 16
+		pill.content_margin_right = 16
+		pill.content_margin_top = 4
+		pill.content_margin_bottom = 4
+		chip.add_theme_stylebox_override("normal", pill)
 
 func _selected_ids() -> Array:
 	var ids: Array = []
@@ -109,6 +142,36 @@ func _refresh_confirm() -> void:
 	var owned := GameState.get_inventory_quantity(_item.item_name) if _item != null else 0
 	_confirm_button.text = _CONFIRM_FMT % n
 	_confirm_button.disabled = n == 0 or n > owned
+	# Each pick will spend one item, so show the stock dropping live.
+	if n > 0:
+		_recap_count.text = "Sisa ×%d → ×%d" % [owned, maxi(owned - n, 0)]
+	else:
+		_recap_count.text = "Sisa ×%d" % owned
+	# Out of stock for more picks: grey the unpicked students so it is clear
+	# you cannot add another.
+	var at_cap := n >= owned
+	for row in _rows:
+		row.apply_cap(at_cap)
+	_update_confirm_idle()
+
+
+## Keep a slow breathing glow on the confirm CTA while it is usable, and stop
+## it (resetting the tint) whenever nothing is picked, so a greyed-out button
+## never pulses.
+func _update_confirm_idle() -> void:
+	if Engine.is_editor_hint():
+		return
+	if _confirm_button.disabled:
+		if _confirm_idle != null:
+			_confirm_idle.kill()
+			_confirm_idle = null
+		_confirm_button.self_modulate = Color.WHITE
+	elif _confirm_idle == null or not _confirm_idle.is_valid():
+		_confirm_idle = _confirm_button.create_tween().set_loops()
+		_confirm_idle.tween_property(_confirm_button, "self_modulate",
+			Color(1.15, 1.15, 1.15), 0.8).set_trans(Tween.TRANS_SINE)
+		_confirm_idle.tween_property(_confirm_button, "self_modulate",
+			Color(1, 1, 1), 0.8).set_trans(Tween.TRANS_SINE)
 
 func _on_select_all() -> void:
 	if not Engine.is_editor_hint():
@@ -145,8 +208,21 @@ func _on_confirm() -> void:
 	_confirm_button.disabled = true
 	_select_all_button.disabled = true
 	await _play_payoff(res["results"])
+	await _pop_out()
 	applied.emit(res["results"])
 	queue_free()
+
+
+## Close with a little pop: the card scales up, then shrinks away as the
+## whole screen fades.
+func _pop_out() -> void:
+	var target := $Margin/Card as Control
+	target.pivot_offset = target.size * 0.5
+	var tw := create_tween()
+	tw.tween_property(target, "scale", Vector2(1.06, 1.06), 0.12).set_trans(Tween.TRANS_BACK)
+	tw.tween_property(target, "scale", Vector2(0.7, 0.7), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(self, "modulate:a", 0.0, 0.22)
+	await tw.finished
 
 func _play_payoff(results: Array) -> void:
 	var all_gained := true
@@ -157,6 +233,7 @@ func _play_payoff(results: Array) -> void:
 		if lines == "":
 			all_gained = false
 		if row != null:
+			row.play_apply_rise()
 			var burst = reward_burst_scene.instantiate()
 			burst.plays_sfx = false
 			row.add_child(burst)
@@ -168,7 +245,8 @@ func _play_payoff(results: Array) -> void:
 					DesignTokens.load_default().state_success)
 		AudioDirector.play_sfx([&"star_earn_1", &"star_earn_2", &"star_earn_3"][mini(tier, 2)])
 		tier += 1
-		await get_tree().create_timer(payoff_stagger).timeout
+		# Give the bar's rise time to read before the next student's.
+		await get_tree().create_timer(maxf(payoff_stagger, 0.45)).timeout
 	if all_gained and not results.is_empty():
 		var confetti = confetti_scene.instantiate()
 		add_child(confetti)

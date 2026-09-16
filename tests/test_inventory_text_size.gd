@@ -75,7 +75,7 @@ func test_no_text_here_wears_a_retired_small_style() -> void:
 ## column). Measuring every "+10".."+99" covers a future item too.
 func test_the_effect_value_column_holds_any_two_digit_value() -> void:
 	var row: Control = load("res://Scenes/Inventory/EfekRow.tscn").instantiate()
-	var value: Label = row.get_node("ValueLabel")
+	var value: Label = row.find_child("ValueLabel", true, false)
 	var px := _font_size(value)
 	var font := _font(value)
 	var widest := ""

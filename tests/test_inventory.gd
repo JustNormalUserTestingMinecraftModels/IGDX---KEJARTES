@@ -36,15 +36,12 @@ func test_sidebar_and_old_modals_are_gone() -> void:
 		assert_true(s.find_child(n, true, false) == null, n + " must be gone")
 	s.free()
 
-func test_four_category_chips_share_a_button_group() -> void:
+func test_four_category_tabs_and_a_selector_thumb_present() -> void:
 	var s := (load(_SCENE) as PackedScene).instantiate()
-	var groups := {}
-	for n in ["CatSemua", "CatBuku", "CatOlahraga", "CatMakanan"]:
+	for n in ["TabSemua", "TabBuku", "TabOlahraga", "TabMakanan"]:
 		var b = s.find_child(n, true, false)
-		assert_true(b != null and b is Button, "missing chip " + n)
-		assert_not_null(b.button_group, n + " needs a ButtonGroup")
-		groups[b.button_group] = true
-	assert_eq(groups.size(), 1, "all four chips share ONE ButtonGroup")
+		assert_true(b != null and b is Button, "missing tab " + n)
+	assert_not_null(s.find_child("Thumb", true, false), "selector thumb present")
 	s.free()
 
 func test_scene_has_no_styleboxflat_overrides() -> void:

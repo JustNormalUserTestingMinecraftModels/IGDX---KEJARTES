@@ -307,3 +307,26 @@ Phase 3's ExamProgress, StatCheck, EndCutscene, the
 ResultCheckup confetti and MainBola. The Lobby's classroom stays a centred
 1080×1920 picture, so a tall phone shows black bands above and below it;
 filling them wants taller classroom art.
+
+**Ghost-preview bars land only on the item apply screen (2026-09-16).** The
+`ApplyItemScreen` student cards (`ApplyStudentRow`) show, while a student is
+picked, a two-tone "ghost" bar: the underlying `DaySummaryStudentRow` bar goes
+to the boosted target but translucent (`set_preview`'s ghost pass), and a solid
+"current" overlay is laid on top so the gap between them reads as the pending
+gain. The overlay (`_build_overlays`) is a `duplicate()` of the bar with its
+children stripped and its `background` stylebox replaced by a see-through copy
+that keeps the same fill margins (`_transparent_bg`, so skill tracks — which
+inset their fill — still line up), parented INTO the bar at child index 0 so it
+draws over the bar's fill but under the bar's own icon/word/chevron children.
+On apply, `play_apply_rise` fills each overlay from current up into the target.
+`_clear_overlays` tears them down on deselect. The **event student picker** in
+SchoolSimulation (`EventStudentSelectDialog` + `EventStudentCard`, which hosts
+the same `DaySummaryStudentRow`) still uses the plain `preview_stat`/
+`preview_need` fill and no ghost. To match, port `ApplyStudentRow`'s ghost
+helpers (`_build_overlays`, `_transparent_bg`, `_clear_overlays`,
+`play_apply_rise`, `_capture_bar_current`, `_visible_bars`) onto
+`EventStudentCard`, or lift them into a shared mixin both cards call. Out of
+scope for the inventory pass; pick up in its own session. (Note: a per-instance
+`fill_*.png` pattern on these bars was tried and reverted — the tiles render as
+a broken white fill on the `DaySummary` bar variations; a real pattern needs
+the bars restyled, not a stylebox override.)

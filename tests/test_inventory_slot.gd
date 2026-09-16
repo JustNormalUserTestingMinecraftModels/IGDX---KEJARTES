@@ -40,7 +40,8 @@ func _sample_item(category: String = "Buku") -> ItemData:
 func test_scene_exists_and_carries_its_nodes() -> void:
 	assert_true(ResourceLoader.exists(SCENE_PATH), "%s is missing" % SCENE_PATH)
 	var slot := _make()
-	for path in ["Layout/Icon", "Layout/QuantityRow/QuantityLabel"]:
+	for path in ["Layout/Band/CategoryChip", "Layout/Body/BodyCol/IconStack/Icon",
+			"Layout/Body/BodyCol/QuantityRow/QuantityLabel"]:
 		assert_not_null(slot.get_node_or_null(path), "missing node: %s" % path)
 
 
@@ -48,24 +49,28 @@ func test_setup_fills_the_icon_and_quantity() -> void:
 	var slot := _make()
 	var item := _sample_item()
 	slot.setup(item, 7)
-	assert_eq((slot.get_node("Layout/QuantityRow/QuantityLabel") as Label).text, "×7")
+	assert_eq((slot.get_node("Layout/Body/BodyCol/QuantityRow/QuantityLabel") as Label).text, "×7")
 	assert_eq(slot.item, item)
 
 
-func test_setup_tints_the_border_by_category() -> void:
+func test_setup_tints_the_band_and_border_by_category() -> void:
 	# The category accent varies per item, so this is the one place a
 	# runtime stylebox is still built -- same exception already used for
-	# TraitPopupHeader and the quit dialog's card.
-	slot_category_check("Buku")
-	slot_category_check("Olahraga")
+	# TraitPopupHeader and the quit dialog's card. The band fill and the
+	# card border both take the DesignTokens colour for the item's category.
+	slot_category_check("Buku", "Akademis")
+	slot_category_check("Olahraga", "Olahraga")
+	slot_category_check("Makanan", "Libur")
 
 
-func slot_category_check(category: String) -> void:
+func slot_category_check(category: String, schedule_cat: String) -> void:
 	var slot := _make()
-	slot.category_colors = {"Buku": Color.BLUE, "Olahraga": Color.RED, "Makanan": Color.GREEN}
 	slot.setup(_sample_item(category), 1)
-	var style: StyleBoxFlat = slot.get_theme_stylebox("panel")
-	assert_eq(style.border_color, slot.category_colors[category].darkened(0.3))
+	var expected: Color = DesignTokens.load_default().category_color(schedule_cat)
+	var card: StyleBoxFlat = slot.get_theme_stylebox("panel")
+	assert_eq(card.border_color, expected, "card border should be the category colour")
+	var band: StyleBoxFlat = slot.get_node("Layout/Band").get_theme_stylebox("panel")
+	assert_eq(band.bg_color, expected, "band fill should be the category colour")
 
 
 func test_selection_swaps_styleboxes_without_rebuilding_them() -> void:

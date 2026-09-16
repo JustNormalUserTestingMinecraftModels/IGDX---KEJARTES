@@ -112,7 +112,9 @@ func test_rows_are_hidden_before_they_stagger_in() -> void:
 ## convention.
 func test_header_reads_as_a_report_not_a_chooser() -> void:
 	var scene := (load(_SCENE_PATH) as PackedScene).instantiate()
-	var header := scene.get_node_or_null("PilihMurid") as Label
+	# The header moved into Safe/UI on 2026-09-16 with the tall-phone pass and
+	# is reached by its unique name, which is stable wherever it sits.
+	var header := scene.get_node_or_null("%PilihMurid") as Label
 	assert_true(header != null, "PilihMurid header label is missing")
 	assert_eq(header.text, "Rapor Murid",
 		"header still carries StudentCard's chooser copy")

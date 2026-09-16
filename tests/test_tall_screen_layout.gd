@@ -421,6 +421,87 @@ func test_student_list_at_the_design_size_is_unchanged() -> void:
 		Vector2(400, 1794), "PageIndicator")
 
 
+# ── Rapor ────────────────────────────────────────────────────────────────────
+
+const REPORT_CARD := "res://Scenes/ReportCard/report_card.tscn"
+
+
+## Rapor was StudentCard before the tall-phone pass: a root inset by
+## 70/254/-77/-352 with every child carrying a negative offset that cancels
+## it. The inset is gone and the desk fills, which is what closes the 480px
+## of empty grey a 1080x2400 phone used to show below it.
+func test_report_card_backdrop_fills() -> void:
+	var rapor := _scene(REPORT_CARD)
+	assert_eq(_offsets(rapor), Vector4.ZERO, "the Rapor root is not inset")
+	_assert_background_fills(rapor.get_node_or_null("Backdrop") as TextureRect,
+		"Rapor Backdrop")
+
+
+## Each paper sheet is Center-anchored at its 1080x1920 rect, as
+## StudentCard's are, so the stack sits centred on any screen.
+func test_report_card_papers_are_centred() -> void:
+	var rapor := _scene(REPORT_CARD)
+	for i in range(1, 7):
+		var sheet := rapor.get_node_or_null("KertasMurid%d" % i) as Control
+		assert_true(sheet != null, "missing KertasMurid%d" % i)
+		if sheet == null:
+			continue
+		assert_eq(_anchors(sheet), Vector4(0.5, 0.5, 0.5, 0.5),
+			"KertasMurid%d is Center-anchored" % i)
+		assert_eq(_offsets(sheet), Vector4(-540, -960, 540, 960),
+			"KertasMurid%d stays 1080x1920" % i)
+
+
+## Title and KEMBALI on the top edge, page arrows and page label in a Bottom
+## Wide bar, all inside the safe area -- the same group StudentCard carries.
+func test_report_card_ui_is_pinned_inside_the_safe_area() -> void:
+	var rapor := _scene(REPORT_CARD)
+	_assert_under_safe_area(rapor.get_node_or_null("%PilihMurid"), "PilihMurid")
+	_assert_under_safe_area(rapor.get_node_or_null("%BackButton"), "BackButton")
+	var bar := rapor.get_node_or_null("Safe/UI/BottomBar") as Control
+	assert_true(bar != null, "Rapor needs Safe/UI/BottomBar")
+	if bar == null:
+		return
+	assert_eq(_anchors(bar), Vector4(0, 1, 1, 1), "BottomBar is Bottom Wide")
+	assert_eq(bar.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BottomBar lets taps through")
+	for n in ["NextButtonKiri", "NextButtonKanan", "PageLabel"]:
+		var c := rapor.get_node_or_null("%" + n)
+		assert_true(c != null and c.get_parent() == bar, n + " rides in BottomBar")
+
+
+## On a 1080x2400 phone the paper sits 240px down, centred, and the page row
+## rides the bottom edge instead of stopping at 1920.
+func test_report_card_on_a_tall_phone() -> void:
+	var rapor := _stood_up(REPORT_CARD, TALL)
+	_assert_placed((rapor.get_node("Backdrop") as Control),
+		Rect2(0, 0, 1080, 2400), "Backdrop")
+	_assert_placed((rapor.get_node("KertasMurid1") as Control),
+		Rect2(0, 240, 1080, 1920), "KertasMurid1")
+	_assert_placed((rapor.get_node("%NextButtonKanan") as Control),
+		Rect2(870, 2260, 120, 120), "NextButtonKanan")
+	assert_eq(_authored_rect(rapor.get_node("%PilihMurid") as Control).position,
+		Vector2(160, 82), "the title stays at the top")
+
+
+## At 1080x1920 every piece of Rapor is exactly where it was.
+func test_report_card_at_the_design_size_is_unchanged() -> void:
+	var rapor := _stood_up(REPORT_CARD, DESIGN)
+	_assert_placed((rapor.get_node("KertasMurid1") as Control),
+		Rect2(0, 0, 1080, 1920), "KertasMurid1")
+	_assert_placed((rapor.get_node("%NextButtonKiri") as Control),
+		Rect2(90, 1780, 120, 120), "NextButtonKiri")
+	_assert_placed((rapor.get_node("%NextButtonKanan") as Control),
+		Rect2(870, 1780, 120, 120), "NextButtonKanan")
+	assert_eq(_authored_rect(rapor.get_node("%PageLabel") as Control).position,
+		Vector2(440, 1805), "PageLabel")
+	assert_eq(_authored_rect(rapor.get_node("%PilihMurid") as Control).position,
+		Vector2(160, 82), "PilihMurid")
+	assert_eq(_authored_rect(rapor.get_node("%BackButton") as Control).position,
+		Vector2(90, 82), "BackButton")
+
+
+# ── Cross-screen ─────────────────────────────────────────────────────────────
+
 ## A unique-name path used as a format string ("%RosterStrip/Avatar%d" % i)
 ## reads its leading "%R" as a format character and fails at run time, which
 ## the stood-up screens above never reach (their scripts' _ready does not run

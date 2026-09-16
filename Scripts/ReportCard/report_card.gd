@@ -40,10 +40,10 @@ var _active_popup: Node = null
 
 # --- Paginasi Kertas Murid ---
 @onready var kertas_murid: Array = [$KertasMurid1, $KertasMurid2, $KertasMurid3, $KertasMurid4, $KertasMurid5, $KertasMurid6]
-@onready var next_kanan: BaseButton = $NextButtonKanan
-@onready var next_kiri: BaseButton = $NextButtonKiri
-@onready var back_button: Button = $BackButton
-@onready var page_label: Label = $PageLabel
+@onready var next_kanan: BaseButton = %NextButtonKanan
+@onready var next_kiri: BaseButton = %NextButtonKiri
+@onready var back_button: Button = %BackButton
+@onready var page_label: Label = %PageLabel
 
 var current_page := 0
 var is_animating := false

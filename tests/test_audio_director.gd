@@ -555,7 +555,7 @@ func test_play_sfx_scales_the_voice_by_the_given_pitch() -> void:
 	player.stop()
 
 
-func test_pill_and_pane_sfx_are_registered() -> void:
-	for id in [&"pill_tap", &"pill_popup_open", &"pill_popup_close", &"pane_swipe"]:
+func test_pill_sfx_are_registered() -> void:
+	for id in [&"pill_tap", &"pill_popup_open", &"pill_popup_close"]:
 		assert_true(AudioDirector.has_sfx(id),
 			"AudioDirector has no stream registered for %s" % id)

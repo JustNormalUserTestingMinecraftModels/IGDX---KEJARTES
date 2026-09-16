@@ -101,9 +101,6 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"pill_popup_close")`: WeekRecapPillInfoPopup closes. A
 ## dedicated copy of SFX/popup_close.ogg.
 @export var sfx_pill_popup_close: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_close.ogg")
-## `play_sfx(&"pane_swipe")`: ResultCheckup's SISWA<->RIWAYAT pane
-## transition. A dedicated copy of SFX/swipe.ogg.
-@export var sfx_pane_swipe: AudioStream = preload("res://Assets/Audio/SFX/pane_swipe.ogg")
 
 @export_group("BGM")
 ## `play_bgm(&"titlescreen")`: Splashscreen/MainMenu.
@@ -249,7 +246,6 @@ func _resolve_sfx(id: StringName) -> AudioStream:
 		&"pill_tap": return sfx_pill_tap
 		&"pill_popup_open": return sfx_pill_popup_open
 		&"pill_popup_close": return sfx_pill_popup_close
-		&"pane_swipe": return sfx_pane_swipe
 		&"star_earn_1": return sfx_star_earn_1
 		&"star_earn_2": return sfx_star_earn_2
 		&"star_earn_3": return sfx_star_earn_3

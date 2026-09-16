@@ -1472,27 +1472,6 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
 
-	# The tab. A real pressed state is what makes the active tab legible
-	# without any manual tint at the call site.
-	theme.add_type("WeekTabButton")
-	theme.set_type_variation("WeekTabButton", "Button")
-	var tab_normal := StyleBoxFlat.new()
-	tab_normal.bg_color = tokens.surface_sunken
-	tab_normal.corner_radius_top_left = tokens.radius_button
-	tab_normal.corner_radius_top_right = tokens.radius_button
-	tab_normal.content_margin_top = tokens.space_sm
-	tab_normal.content_margin_bottom = tokens.space_sm
-	var tab_pressed := tab_normal.duplicate() as StyleBoxFlat
-	tab_pressed.bg_color = tokens.brand_primary
-	theme.set_stylebox("normal", "WeekTabButton", tab_normal)
-	theme.set_stylebox("hover", "WeekTabButton", tab_normal)
-	theme.set_stylebox("pressed", "WeekTabButton", tab_pressed)
-	theme.set_stylebox("focus", "WeekTabButton", tab_normal)
-	theme.set_color("font_color", "WeekTabButton", tokens.text_secondary)
-	theme.set_color("font_pressed_color", "WeekTabButton", tokens.text_on_brand)
-	theme.set_color("font_hover_color", "WeekTabButton", tokens.text_primary)
-	theme.set_font_size("font_size", "WeekTabButton", tokens.font_title)
-
 
 # ---------------------------------------------------- minigame result card
 

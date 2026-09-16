@@ -559,18 +559,26 @@ func test_checkup_fires_the_paper_confetti() -> void:
 	inst.free()
 
 
-## The four variations the recap banner and tab bar need. Without these
+## The three variations the recap banner and its pills need. Without these
 ## the screen would have to reach for theme_override_*, which the project
 ## forbids (2026-09-03 spec section 8).
+##
+## Read off get_type_list(), NOT has_stylebox()/has_font_size(). Those fall
+## through to the default theme and return true for ANY type name, so the
+## version of this test that used them passed while asserting a variation
+## called "ThisVariationDefinitelyDoesNotExist" -- it could never fail, and
+## it was the only guard these three had (2026-09-16). test_button_geometry
+## reads the type list for the same reason.
 func test_theme_carries_the_recap_variations() -> void:
 	var theme: Theme = load(_THEME_PATH)
 	assert_not_null(theme, "the baked theme loads")
+	var types: PackedStringArray = theme.get_type_list()
 	for variation in ["RecapBannerPanel", "RecapPillPanel",
-			"RecapPillValueLabel", "WeekTabButton"]:
-		assert_true(theme.has_stylebox("panel", variation)
-				or theme.has_stylebox("normal", variation)
-				or theme.has_font_size("font_size", variation),
+			"RecapPillValueLabel"]:
+		assert_true(types.has(variation),
 			"%s is baked into the theme" % variation)
+	assert_false(types.has("WeekTabButton"),
+		"the tab variation was retired with the SISWA/RIWAYAT tabs")
 
 
 const _PILL_SCENE := "res://Scenes/SchoolSimulation/WeekRecapPill.tscn"

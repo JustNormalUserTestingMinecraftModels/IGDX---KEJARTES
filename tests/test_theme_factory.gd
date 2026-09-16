@@ -333,7 +333,7 @@ const DISPLAY_ROSTER := [
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill", "PreviewRowLabel",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
-	"ScoreHudValueLabel",
+	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
 	# 2026-09-14 lobby-style-buttons: the two kept looks.

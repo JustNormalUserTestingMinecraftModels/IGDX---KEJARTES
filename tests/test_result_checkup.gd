@@ -20,6 +20,7 @@ const _ROW_SCENE := "res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn"
 const _ROW_SCRIPT := "res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd"
 const _CHECKUP_SCENE := "res://Scenes/SchoolSimulation/ResultCheckup.tscn"
 const _CHECKUP_SCRIPT := "res://Scripts/SchoolSimulation/ResultCheckup.gd"
+const _LOGS_SCENE := "res://Scenes/SchoolSimulation/WeekLogsPopup.tscn"
 
 
 func suite_name() -> String:
@@ -405,7 +406,7 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 	inst.initialize_checkup(manager)
 
 	var container := inst.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
+		"Margin/VBox/ScrollContainer/StudentsPane")
 	assert_eq(container.get_child_count(), manager.students.size(),
 		"one card per student in the roster")
 	var first = container.get_child(0)
@@ -468,7 +469,7 @@ func test_the_checkup_sets_each_card_up_only_once_it_is_in_the_tree() -> void:
 
 ## The history log and the close button are the week's own chrome and
 ## must survive the card swap.
-func test_the_checkup_keeps_its_history_and_its_close_button() -> void:
+func test_the_checkup_keeps_the_weeks_history_for_the_sheet() -> void:
 	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
 	inst.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(inst)
@@ -483,15 +484,13 @@ func test_the_checkup_keeps_its_history_and_its_close_button() -> void:
 
 	inst.initialize_checkup(manager)
 
-	var history := inst.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane")
-	# HistoryPane always keeps its EmptyLabel child (visibility toggles,
-	# it is never freed), so the row count is the pane's children minus
-	# that one authored label.
-	assert_eq(history.get_child_count() - 1, 1,
-		"the week's minigame log must still be built")
-	assert_not_null(inst.get_node_or_null("Margin/VBox/BtnClose"),
-		"the close button must survive the card swap")
+	# The RIWAYAT pane that used to hold these rows was retired on
+	# 2026-09-16; the week's log is now kept as data and handed to the
+	# Logs sheet on demand.
+	assert_eq(inst._history.size(), 1,
+		"the week's minigame log is kept for the Logs sheet")
+	assert_not_null(inst.get_node_or_null("Margin/VBox/Buttons/NextButton"),
+		"Selanjutnya must survive the tab removal")
 
 
 ## The screen ships with a themed SunkenPanel backdrop and an @export that
@@ -745,33 +744,31 @@ func _row_text(row: Control, path: String) -> String:
 	return (row.get_node("Body/Lines/" + path) as Label).text
 
 
-func test_screen_authors_the_banner_tabs_and_both_panes() -> void:
+func test_screen_authors_the_banner_the_list_and_the_buttons() -> void:
 	var screen: Control = load(_CHECKUP_SCENE).instantiate()
 	for path in ["Margin/VBox/Banner",
-			"Margin/VBox/TabBar/TabSiswa",
-			"Margin/VBox/TabBar/TabRiwayat",
-			"Margin/VBox/ScrollContainer/PaneStack/StudentsPane",
-			"Margin/VBox/ScrollContainer/PaneStack/HistoryPane",
-			"Margin/VBox/ScrollContainer/PaneStack/HistoryPane/EmptyLabel"]:
+			"Margin/VBox/ScrollContainer/StudentsPane",
+			"Margin/VBox/Buttons/LogsButton",
+			"Margin/VBox/Buttons/NextButton"]:
 		assert_not_null(screen.get_node_or_null(path),
 			"%s is authored in the scene" % path)
 	screen.free()
 
 
-func test_banner_and_tabs_sit_outside_the_scroll() -> void:
+func test_the_banner_and_buttons_sit_outside_the_scroll() -> void:
 	var screen: Control = load(_CHECKUP_SCENE).instantiate()
 	var scroll: Node = screen.get_node("Margin/VBox/ScrollContainer")
 	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/Banner")),
-		"the banner must stay pinned while the panes scroll")
-	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/TabBar")),
-		"and so must the tab bar")
+		"the banner must stay pinned while the cards scroll")
+	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/Buttons")),
+		"and so must the button row")
 	screen.free()
 
 
 func test_students_pane_uses_the_spec_separation() -> void:
 	var screen: Control = load(_CHECKUP_SCENE).instantiate()
 	var pane: VBoxContainer = screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
+		"Margin/VBox/ScrollContainer/StudentsPane")
 	assert_eq(pane.get_theme_constant("separation"), 28,
 		"card separation drops 56 -> 28 (spec section 3)")
 	screen.free()
@@ -814,78 +811,6 @@ func test_script_carries_no_emoji() -> void:
 	for glyph in ["📊", "📝", "📢"]:
 		assert_false(src.contains(glyph), "emoji are banned")
 
-
-func test_default_tab_is_siswa() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	_add_themed(screen)
-	assert_true(screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane").visible,
-		"the screen opens on the students pane")
-	assert_false(screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane").visible,
-		"the history pane starts hidden")
-	screen.queue_free()
-
-
-func test_switching_tabs_swaps_pane_visibility_without_freeing() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	_add_themed(screen)
-	var students: Node = screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
-	var history: Node = screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane")
-	screen.show_pane(1)
-	assert_false(students.visible, "students pane hides")
-	assert_true(history.visible, "history pane shows")
-	assert_true(is_instance_valid(students),
-		"panes are hidden, never freed")
-	screen.show_pane(0)
-	assert_true(students.visible, "and it comes back")
-	screen.queue_free()
-
-
-func test_each_pane_keeps_its_own_scroll_offset() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	_add_themed(screen)
-	var scroll: ScrollContainer = screen.get_node(
-		"Margin/VBox/ScrollContainer")
-	# ScrollContainer.scroll_vertical clamps synchronously against its
-	# scrollbar's max_value, computed from child content size. Nothing
-	# was added via initialize_checkup, so the panes are empty and the
-	# scrollable range is 0 -- without this, "400" would clamp straight
-	# back to 0 before show_pane ever runs, and the test would pass
-	# trivially without exercising the offset-memory logic at all.
-	scroll.get_v_scroll_bar().max_value = 1000
-	scroll.scroll_vertical = 400
-	screen.show_pane(1)
-	assert_eq(scroll.scroll_vertical, 0,
-		"the history pane opens at its own top")
-	screen.show_pane(0)
-	assert_eq(scroll.scroll_vertical, 400,
-		"returning to SISWA restores where you were reading")
-	screen.queue_free()
-
-
-func test_history_pane_animation_latch_fires_only_once() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	_add_themed(screen)
-	screen.show_pane(1)
-	assert_true(screen._history_animated,
-		"the first open latches the animation")
-	screen.show_pane(0)
-	screen.show_pane(1)
-	assert_true(screen._history_animated,
-		"and it stays latched, so audio never re-fires")
-	screen.queue_free()
-
-
-## Adds a screen to the tree with the baked theme assigned. ThemeDB's
-## project-theme fallback does not populate under the editor's own root,
-## so the theme is set explicitly -- the same pattern the suite's other
-## in-tree tests use.
-func _add_themed(screen: Control) -> void:
-	screen.theme = load(_THEME_PATH)
-	Engine.get_main_loop().root.add_child(screen)
 
 
 ## Finding 1 fix (2026-09-03 Task 9 review): win/loss must be read from
@@ -1037,30 +962,8 @@ func test_pill_cascade_step_is_a_named_constant() -> void:
 		"the stagger between one pill starting and the next is named, not a literal")
 
 
-## show_pane's transition is a coroutine under real play, but every test
-## that already calls it directly (test_default_tab_is_siswa,
-## test_switching_tabs_swaps_pane_visibility_without_freeing, the
-## scroll-offset and latch tests) runs inside the editor process, where
-## Engine.is_editor_hint() is true -- this test confirms the transition
-## code stays behind that SAME existing guard, so none of those tests'
-## synchronous assumptions (pane.visible flips immediately) can break.
-func test_pane_transition_is_gated_on_editor_hint() -> void:
-	var src := FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/ResultCheckup.gd")
-	assert_contains(src, "PANE_SLIDE_DISTANCE",
-		"a named constant drives the pane transition, not a literal")
-
-
-func test_pane_transition_direction_is_derived_not_hardcoded() -> void:
-	var src := FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/ResultCheckup.gd")
-	assert_contains(src, "signi(",
-		"the transition direction comes from signi(pane - _active_pane), " +
-			"not two hardcoded literal directions")
-
-
 ## ScrollFade was a flat SunkenPanel -- an unexplained white box between
-## the scrollable pane and BtnClose. It's a gradient now: an actual
+## the scrollable list and the buttons. It's a gradient now: an actual
 ## fade-to-transparent cue, not a themed surface (2026-09-03
 ## interactivity spec, section 7).
 func test_scroll_fade_is_a_gradient_not_a_flat_panel() -> void:
@@ -1075,3 +978,82 @@ func test_scroll_fade_is_a_gradient_not_a_flat_panel() -> void:
 	var block := src.substr(node_start, next_node - node_start)
 	assert_false(block.contains("theme_type_variation"),
 		"ScrollFade is textured, not themed -- no SunkenPanel variation left on it")
+
+
+# ------------------------------------------------- Logs and Selanjutnya
+#
+# The 2026-09-16 hybrid: the SISWA / RIWAYAT tabs are gone and the week's
+# history moved into WeekLogsPopup, reached by the Logs button.
+
+
+## The Logs sheet is a scene of its own, instanced on each Logs tap.
+func test_the_checkup_scene_supplies_the_logs_sheet() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	var packed: PackedScene = inst.logs_popup_scene
+	assert_not_null(packed, "ResultCheckup.tscn must assign logs_popup_scene")
+	assert_eq(packed.resource_path, _LOGS_SCENE, "Logs opens WeekLogsPopup")
+	inst.free()
+
+
+func test_the_buttons_read_as_the_mockup() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	assert_eq(inst.logs_button.text, "Logs", "the left button is Logs")
+	assert_eq(inst.next_button.text, "Selanjutnya", "the right one moves on")
+
+
+func test_the_buttons_wear_the_result_style() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
+	for n in ["LogsButton", "NextButton"]:
+		assert_true(src.contains(n), "%s is authored in the scene" % n)
+	assert_true(src.contains('theme_type_variation = &"ResultButton"'),
+		"both buttons use the ResultButton variation, not an override")
+	assert_false(src.contains("theme_override_styles"),
+		"no stylebox override sneaks in with them")
+
+
+func test_logs_opens_one_sheet_with_the_weeks_history() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	var manager := StudentManager.new()
+	track(manager)
+	manager.minigame_history.assign([
+		{"day": "Senin", "category": "Akademis", "game_name": "Uji", "won": true},
+		{"day": "Rabu", "category": "Event", "game_name": "Hujan Deras", "won": true},
+	])
+	inst.initialize_checkup(manager)
+	inst.logs_button.pressed.emit()
+	inst.logs_button.pressed.emit()
+	var sheets: Array = []
+	for child in inst.get_children():
+		if child is WeekLogsPopup:
+			sheets.append(child)
+	assert_eq(sheets.size(), 1,
+		"Logs opens the sheet, and a second tap never stacks another")
+	if sheets.size() == 1:
+		assert_eq(sheets[0].row_count(), 2,
+			"every minigame and event of the week reaches the sheet")
+
+
+func test_the_rows_entrance_plays_on_the_first_open_only() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	inst.initialize_checkup(null)
+	assert_false(inst._logs_seen, "nothing opened yet")
+	inst.open_logs()
+	assert_true(inst._logs_seen, "the first open latches")
+
+
+func test_the_script_no_longer_carries_the_tabs() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	for dead in ["enum Pane", "PANE_SLIDE_DISTANCE", "show_pane",
+			"_sync_tab_buttons", "_update_tab_counts", "tab_siswa",
+			"tab_riwayat", "history_pane", "pane_swipe"]:
+		assert_false(src.contains(dead),
+			"%s belongs to the retired tabs" % dead)

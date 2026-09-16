@@ -1,16 +1,17 @@
 @tool
 extends Control
 
-## The end-of-week report: a pinned WeekRecapBanner over two tabbed
-## panes -- SISWA (one DaySummaryStudentRow per student, read one week
-## wide) and RIWAYAT (the week's minigames and events as WeekHistoryRows)
-## -- rebuilt to the 2026-09-03 spec.
+## The end-of-week report: a pinned WeekRecapBanner over one scrolling
+## list of DaySummaryStudentRows, each read a week wide, with Logs and
+## Selanjutnya beneath it. Built to the 2026-09-03 spec; the SISWA /
+## RIWAYAT tabs it shipped with were retired on 2026-09-16, and the
+## week's history moved into the Logs sheet (WeekLogsPopup).
 ##
 ## Everything visual is an authored scene. This script only decides
-## WHICH deltas a card shows (DaySummaryStudentRow.setup_week_row), which
-## pane is visible, and when the entrance's five stages fire. Stages 1-3
-## belong to the banner; stages 4-5 are here, because this is what owns
-## the cards.
+## WHICH deltas a card shows (DaySummaryStudentRow.setup_week_row), when
+## the entrance's five stages fire, and what the Logs sheet is handed.
+## Stages 1-3 belong to the banner; stages 4-5 are here, because this is
+## what owns the cards.
 ##
 ## @tool so the in-editor test runner can build the screen and inspect it
 ## (CLAUDE.md, testing constraint 3). Everything with a real side effect
@@ -21,14 +22,6 @@ extends Control
 ## this script builds no StyleBoxFlat and holds no Color literal.
 
 signal checkup_closed
-
-## The two panes, in tab order. Indices into _panes and the argument
-## show_pane takes.
-enum Pane { SISWA = 0, RIWAYAT = 1 }
-
-## How far a pane slides horizontally during the SISWA<->RIWAYAT
-## transition, in pixels.
-const PANE_SLIDE_DISTANCE := 40.0
 
 # ── Visual - Background Overlay ───────────────────────────────────────
 @export_group("Visual - Background Overlay")
@@ -45,76 +38,61 @@ const PANE_SLIDE_DISTANCE := 40.0
 ## the theme's default font.
 @export var font: Font = null
 
-# ── Visual - Tabs ────────────────────────────────────────────────────
-@export_group("Visual - Tabs")
-## Label on the students tab. The live count is appended in brackets.
-@export var tab_students_text: String = "SISWA"
-## Label on the history tab. The live count is appended in brackets.
-@export var tab_history_text: String = "RIWAYAT"
-
 # ── Visual - Buttons ─────────────────────────────────────────────────
 @export_group("Visual - Buttons")
-## Art-supplied close-button texture. Null keeps the theme's button
-## styling and shows close_button_text as a plain label instead.
-@export var button_close_texture: Texture2D = null
-## Label shown on the close button when button_close_texture is null.
-@export var close_button_text: String = "Selesai Evaluasi"
+## The Logs button's label.
+@export var logs_button_text: String = "Logs"
+## The Selanjutnya button's label.
+@export var next_button_text: String = "Selanjutnya"
 
 # ── Wiring ───────────────────────────────────────────────────────────
 ## The per-student card. Assigned in ResultCheckup.tscn to
 ## DaySummaryStudentRow.tscn -- the same scene the nightly popup uses.
 @export var student_card_scene: PackedScene
-## The history row template, WeekHistoryRow.tscn.
-@export var history_row_scene: PackedScene
+## The Logs sheet, WeekLogsPopup.tscn, instanced on each Logs tap.
+@export var logs_popup_scene: PackedScene
 
 const _CELEBRATION_SCENE := "res://Scenes/SchoolSimulation/PaperConfetti.tscn"
 
 @onready var title_label: Label = $Margin/VBox/HeaderPanel/TitleLabel
 @onready var subtitle_label: Label = $Margin/VBox/HeaderPanel/SubtitleLabel
 @onready var banner: WeekRecapBanner = $Margin/VBox/Banner
-@onready var tab_siswa: Button = $Margin/VBox/TabBar/TabSiswa
-@onready var tab_riwayat: Button = $Margin/VBox/TabBar/TabRiwayat
 @onready var scroll_container: ScrollContainer = $Margin/VBox/ScrollContainer
-@onready var students_pane: VBoxContainer = $Margin/VBox/ScrollContainer/PaneStack/StudentsPane
-@onready var history_pane: VBoxContainer = $Margin/VBox/ScrollContainer/PaneStack/HistoryPane
-@onready var history_empty_label: Label = $Margin/VBox/ScrollContainer/PaneStack/HistoryPane/EmptyLabel
-@onready var btn_close: Button = $Margin/VBox/BtnClose
+@onready var students_pane: VBoxContainer = $Margin/VBox/ScrollContainer/StudentsPane
+@onready var logs_button: Button = $Margin/VBox/Buttons/LogsButton
+@onready var next_button: Button = $Margin/VBox/Buttons/NextButton
 
 var is_dragging_scroll: bool = false
 var drag_start_y: float = 0.0
 var initial_scroll_v: int = 0
 
-## The active tab, as a Pane value.
-var _active_pane: int = Pane.SISWA
-## Each pane's own last scroll offset, so switching back returns to the
-## card you were reading rather than snapping to the top.
-var _pane_scroll: Array[int] = [0, 0]
-## Latched the first time RIWAYAT opens. Its rows stagger in once; every
-## later switch is an instant show, so tabbing back and forth never
-## re-fires the stamp cue.
-var _history_animated: bool = false
-## The instanced history rows, kept so the lazy first animation can reach
-## them without re-walking the tree.
-var _history_rows: Array = []
+## This week's history, handed to each Logs sheet.
+var _history: Array = []
+## Latched on the first Logs open: the rows' stamp-and-shake entrance plays
+## once, so reopening the sheet never re-fires the stamp cue.
+var _logs_seen: bool = false
+## The open Logs sheet, or null.
+var _logs_popup: Control = null
 
 
 func _ready() -> void:
 	# Signal wiring stays ungated so the editor's test runner can
 	# exercise it; everything below the guard is a real side effect.
-	btn_close.pressed.connect(_on_close_pressed)
-	tab_siswa.pressed.connect(show_pane.bind(Pane.SISWA))
-	tab_riwayat.pressed.connect(show_pane.bind(Pane.RIWAYAT))
+	logs_button.pressed.connect(open_logs)
+	next_button.pressed.connect(_on_close_pressed)
+	logs_button.text = logs_button_text
+	next_button.text = next_button_text
 	if scroll_container:
 		scroll_container.gui_input.connect(_on_scroll_gui_input)
-	_sync_tab_buttons()
 	if Engine.is_editor_hint():
 		return
 
 	AudioDirector.play_sfx(&"popup_open")
 	modulate.a = 0.0
 	_apply_visual_exports()
-	btn_close.modulate.a = 0.0
-	btn_close.disabled = true
+	for b in [logs_button, next_button]:
+		b.modulate.a = 0.0
+		b.disabled = true
 
 
 ## `week_earnings` is the Wirausaha payout SchoolDay made just before opening
@@ -134,13 +112,9 @@ func initialize_checkup(student_manager: StudentManager, week_earnings: int = 0)
 
 	for child in students_pane.get_children():
 		child.queue_free()
-	for child in history_pane.get_children():
-		if child != history_empty_label:
-			child.queue_free()
-	_history_rows.clear()
+	_history = []
 
 	if student_manager == null:
-		_update_tab_counts(0, 0)
 		return
 
 	var cards: Array = []
@@ -154,131 +128,24 @@ func initialize_checkup(student_manager: StudentManager, week_earnings: int = 0)
 		_set_mouse_filter_pass(card)
 		cards.append(card)
 
-	var history: Array = student_manager.minigame_history
-	history_empty_label.visible = history.is_empty()
-	for entry in history:
-		var row := history_row_scene.instantiate() as WeekHistoryRow
-		history_pane.add_child(row)
-		row.set_entry(entry)
-		_set_mouse_filter_pass(row)
-		_history_rows.append(row)
-
-	_update_tab_counts(cards.size(), history.size())
+	_history = student_manager.minigame_history.duplicate()
 	_play_entrance_animations(cards)
 
 
-## Show one pane and hide the other, remembering where each was scrolled
-## to. Safe to call with the already-active pane: it is a no-op and plays
-## nothing, so a second tap on the live tab is silent.
-func show_pane(pane: int) -> void:
-	if pane == _active_pane and students_pane.visible != history_pane.visible:
+## Open the week's history as a sheet. Refuses to stack a second one, so a
+## double tap on Logs is harmless; the rows' entrance plays on the first
+## open only.
+func open_logs() -> void:
+	if is_instance_valid(_logs_popup):
 		return
-	if scroll_container:
-		_pane_scroll[_active_pane] = scroll_container.scroll_vertical
-	var outgoing_pane := _active_pane
-	_active_pane = pane
-	_sync_tab_buttons()
-
-	if Engine.is_editor_hint():
-		students_pane.visible = pane == Pane.SISWA
-		history_pane.visible = pane == Pane.RIWAYAT
-		if scroll_container:
-			scroll_container.scroll_vertical = _pane_scroll[pane]
-		_history_animated = _history_animated or pane == Pane.RIWAYAT
-		return
-
-	AudioDirector.play_sfx(&"pane_swipe")
-	await _transition_panes(outgoing_pane, pane)
-	if scroll_container:
-		# Deliberately synchronous, not set_deferred. A deferred write is
-		# the theoretically correct fix for the ScrollContainer's
-		# scrollbar max_value being narrowly one layout pass stale right
-		# after the visibility flip above -- but show_pane is called
-		# directly by tests (suite.call(name), no frame processing
-		# in-between, no coroutines allowed here per this file's own
-		# testing constraints) and there is no supported way to flush a
-		# deferred call inside that harness. A deferred write would
-		# silently break both of this file's passing scroll-memory
-		# tests with no way to re-cover them. The risk window this
-		# leaves open is narrow: it only matters when the two panes'
-		# content heights differ AND the read happens before the next
-		# idle frame resyncs the scrollbar. Documented and accepted
-		# rather than fixed, per 2026-09-03 review (Task 9 fix round).
-		scroll_container.scroll_vertical = _pane_scroll[pane]
-
-	AudioDirector.play_sfx(&"select")
-	if pane == Pane.RIWAYAT and not _history_animated:
-		_history_animated = true
-		# A beat of separation before the stamp cue: tapping RIWAYAT for
-		# the first time triggers two distinct gestures (the tab select,
-		# and the lazy history entrance's stamp/shake per row) that would
-		# otherwise land in the same synchronous frame. The audio-hygiene
-		# scanner (tests/test_audio_coverage.gd) flags any function that
-		# fires two SFX cues on one path with no await between them, and
-		# rightly so here too -- a genuine gap reads as two intentional
-		# beats rather than a simultaneous double-hit.
-		await get_tree().create_timer(Juice.tokens().dur_instant).timeout
-		_play_history_entrance()
-
-
-## The SISWA<->RIWAYAT slide+fade itself. `outgoing`/`incoming` are Pane
-## values; direction is derived from their difference so a third pane
-## would need no change here. The outgoing pane's own `visible` flips to
-## false only once its exit tween finishes -- never before, so it's never
-## cut off mid-slide. The incoming pane starts from the opposite offset
-## and fades/slides back to its authored position, chained (not
-## parallel) after the outgoing tween, so the two panes -- which occupy
-## the same rect -- never visually overlap mid-transition.
-##
-## A coroutine; only ever called from show_pane, which is itself only
-## reached here when Engine.is_editor_hint() is false.
-func _transition_panes(outgoing: int, incoming: int) -> void:
-	var dir := signi(incoming - outgoing)
-	var outgoing_node: Control = students_pane if outgoing == Pane.SISWA else history_pane
-	var incoming_node: Control = students_pane if incoming == Pane.SISWA else history_pane
-	if outgoing_node == incoming_node:
-		return
-
-	var t := Juice.tokens()
-	var out_tw := outgoing_node.create_tween().set_parallel(true)
-	out_tw.tween_property(outgoing_node, "position:x",
-		float(dir) * -PANE_SLIDE_DISTANCE, t.dur_fast)
-	out_tw.tween_property(outgoing_node, "modulate:a", 0.0, t.dur_fast)
-	await out_tw.finished
-	if not is_instance_valid(outgoing_node):
-		return
-	outgoing_node.visible = false
-	outgoing_node.position.x = 0.0
-	outgoing_node.modulate.a = 1.0
-
-	if not is_instance_valid(incoming_node):
-		return
-	incoming_node.position.x = float(dir) * PANE_SLIDE_DISTANCE
-	incoming_node.modulate.a = 0.0
-	incoming_node.visible = true
-	var in_tw := incoming_node.create_tween().set_parallel(true)
-	in_tw.tween_property(incoming_node, "position:x", 0.0, t.dur_fast)
-	in_tw.tween_property(incoming_node, "modulate:a", 1.0, t.dur_fast)
-	await in_tw.finished
-
-
-## Keep the two toggle buttons agreeing with _active_pane. The pressed
-## state is what the WeekTabButton variation styles, so no manual tint is
-## needed here.
-func _sync_tab_buttons() -> void:
-	if tab_siswa:
-		tab_siswa.button_pressed = _active_pane == Pane.SISWA
-	if tab_riwayat:
-		tab_riwayat.button_pressed = _active_pane == Pane.RIWAYAT
-
-
-## "SISWA (4)" / "RIWAYAT (7)" -- so the player can see there is
-## something worth tapping before tapping it.
-func _update_tab_counts(student_count: int, history_count: int) -> void:
-	if tab_siswa:
-		tab_siswa.text = "%s (%d)" % [tab_students_text, student_count]
-	if tab_riwayat:
-		tab_riwayat.text = "%s (%d)" % [tab_history_text, history_count]
+	var popup := logs_popup_scene.instantiate() as WeekLogsPopup
+	add_child(popup)
+	popup.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	popup.set_history(_history)
+	popup.closed.connect(func(): _logs_popup = null)
+	_logs_popup = popup
+	popup.open(not _logs_seen)
+	_logs_seen = true
 
 
 func _apply_visual_exports() -> void:
@@ -305,15 +172,10 @@ func _apply_visual_exports() -> void:
 		subtitle_label.text = header_subtitle_text
 		if font: subtitle_label.add_theme_font_override("font", font)
 
-	if btn_close:
-		btn_close.text = "" if button_close_texture else close_button_text
-		if font: btn_close.add_theme_font_override("font", font)
-		if button_close_texture:
-			var sb = StyleBoxTexture.new()
-			sb.texture = button_close_texture
-			btn_close.add_theme_stylebox_override("normal", sb)
-			btn_close.add_theme_stylebox_override("hover", sb)
-			btn_close.add_theme_stylebox_override("pressed", sb)
+	if font:
+		for b in [logs_button, next_button]:
+			if b:
+				b.add_theme_font_override("font", font)
 
 
 func _set_mouse_filter_pass(node: Node) -> void:
@@ -322,20 +184,6 @@ func _set_mouse_filter_pass(node: Node) -> void:
 			node.mouse_filter = Control.MOUSE_FILTER_PASS
 	for child in node.get_children():
 		_set_mouse_filter_pass(child)
-
-
-## RIWAYAT's lazy first open: rows stagger in, a win stamping into place
-## and a loss shaking. Latched by show_pane, so this runs at most once.
-func _play_history_entrance() -> void:
-	Juice.stagger_in(_history_rows)
-	for i in _history_rows.size():
-		var row: WeekHistoryRow = _history_rows[i]
-		if row.is_event():
-			continue  # events get neither the stamp nor the shake
-		if row.is_win():
-			AudioDirector.play_sfx(&"stamp")
-		else:
-			Juice.shake(row)
 
 
 func _play_entrance_animations(cards: Array = []) -> void:
@@ -380,9 +228,13 @@ func _play_entrance_animations(cards: Array = []) -> void:
 
 	await get_tree().create_timer(t.dur_slow).timeout
 
-	var button_tween = create_tween()
-	button_tween.tween_property(btn_close, "modulate:a", 1.0, t.dur_fast)
-	btn_close.disabled = false
+	for b in [logs_button, next_button]:
+		var button_tween := create_tween()
+		button_tween.tween_property(b, "modulate:a", 1.0, t.dur_fast)
+		# Enabled only once shown, like the rebuild's own finale: a button
+		# enabled while still invisible can take a tap meant for something
+		# else.
+		button_tween.tween_callback(func(): b.disabled = false)
 	banner.start_idle_bounce()
 
 
@@ -400,6 +252,10 @@ func _on_scroll_gui_input(event: InputEvent) -> void:
 
 
 func _on_close_pressed() -> void:
+	# One exit only: the fade-out below takes dur_normal, and a second tap
+	# on Selanjutnya -- or a tap on Logs -- during it must not fire again.
+	next_button.disabled = true
+	logs_button.disabled = true
 	banner.stop_idle_bounce()
 	AudioDirector.play_sfx(&"confirm")
 	var fade_out = create_tween()

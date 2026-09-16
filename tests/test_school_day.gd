@@ -238,7 +238,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		"res://Scenes/SchoolSimulation/DailyDecayOverview.tscn": [
 			"Margin/Panel/Margin/VBox/ContinueButton"],
 		"res://Scenes/SchoolSimulation/ResultCheckup.tscn": [
-			"Margin/VBox/BtnClose"],
+			"Margin/VBox/Buttons/LogsButton", "Margin/VBox/Buttons/NextButton"],
 	}
 	for scene_path in targets.keys():
 		var inst := _instantiate(scene_path)

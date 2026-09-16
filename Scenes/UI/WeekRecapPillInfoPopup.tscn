@@ -51,6 +51,11 @@ size_flags_vertical = 0
 theme_type_variation = &"SecondaryButton"
 text = "✕"
 
+[node name="ValueLabel" type="Label" parent="Scrim/Card/Layout" unique_id=1249756782]
+layout_mode = 2
+theme_type_variation = &"DisplayLabel"
+horizontal_alignment = 1
+
 [node name="BodyLabel" type="Label" parent="Scrim/Card/Layout" unique_id=1651205694]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"

@@ -108,7 +108,12 @@ func _on_pill_tapped(pill_key: String) -> void:
 	}.get(pill_key)
 	var popup: WeekRecapPillInfoPopup = load(_POPUP_SCENE).instantiate()
 	get_tree().root.add_child(popup)
-	popup.configure(icon, info.get("title", ""), info.get("body", ""))
+	var pill: WeekRecapPill = {
+		"uang": pill_uang, "poin": pill_poin,
+		"menang": pill_menang, "event": pill_event,
+	}.get(pill_key)
+	var value: String = pill.value_label.text if pill else ""
+	popup.configure(icon, info.get("title", ""), info.get("body", ""), value)
 	popup.closed.connect(_on_popup_closed)
 	popup.open()
 

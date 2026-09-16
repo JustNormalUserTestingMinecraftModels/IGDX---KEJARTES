@@ -47,6 +47,7 @@ static func compute(manager: StudentManager) -> Dictionary:
 		"minigames_lost": 0,
 		"minigames_total": 0,
 		"events_count": 0,
+		"stars": 0.0,
 	}
 	if manager == null:
 		return result
@@ -68,6 +69,10 @@ static func compute(manager: StudentManager) -> Dictionary:
 			else:
 				result["minigames_lost"] += 1
 
+
+	## Stars is display-only here; the end-of-grade screens remain the
+	## pass/fail authority.
+	result["stars"] = GameState.run_stars()
 	return result
 
 

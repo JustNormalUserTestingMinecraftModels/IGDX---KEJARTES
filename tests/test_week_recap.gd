@@ -118,6 +118,13 @@ func test_an_event_is_never_a_loss() -> void:
 
 
 func test_null_manager_reports_zeroes_rather_than_erroring() -> void:
+
+
+func test_compute_includes_stars() -> void:
+	var sm := _manager([], {})
+	var recap: Dictionary = WeekRecap.compute(sm)
+	assert_true(recap.has("stars"), "recap must carry a stars field")
+	assert_eq(typeof(recap["stars"]), TYPE_FLOAT, "stars is a float")
 	var r: Dictionary = WeekRecap.compute(null)
 	assert_eq(r["money_earned"], 0, "a null manager is survivable")
 	assert_eq(r["minigames_total"], 0, "and reports an empty week")

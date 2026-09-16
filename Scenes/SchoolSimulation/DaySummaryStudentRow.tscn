@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://c1dstgm0d4nvr"]
 
 [ext_resource type="Script" uid="uid://crbnane4dchyf" path="res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd" id="1_row"]
-[ext_resource type="Texture2D" uid="uid://cwehitensta2x" path="res://Assets/Images/DaySummary/card_bg.png" id="2_card_bg"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryAvatar.tscn" id="3_avatar"]
 [ext_resource type="Script" uid="uid://xm5t6rwv1ddu" path="res://Scripts/SchoolSimulation/DaySummaryNeedsBar.gd" id="4_0kar2"]
 [ext_resource type="PackedScene" uid="uid://badokp3g1xb25" path="res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn" id="4_statrow"]
@@ -16,15 +15,15 @@ anchors_preset = 0
 size_flags_horizontal = 4
 script = ExtResource("1_row")
 
-[node name="CardArt" type="TextureRect" parent="." unique_id=686736351]
+[node name="CardBg" type="Panel" parent="." unique_id=105063282]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_card_bg")
-expand_mode = 1
+mouse_filter = 2
+theme_type_variation = &"IdCardPanel"
 
 [node name="Avatar" parent="." unique_id=1319450655 instance=ExtResource("3_avatar")]
 layout_mode = 1

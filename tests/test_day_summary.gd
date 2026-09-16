@@ -691,9 +691,10 @@ func test_row_carries_the_card_art_and_the_three_stat_rows() -> void:
 	var inst := scene.instantiate()
 	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 
-	var bg := inst.get_node_or_null("CardArt") as TextureRect
-	assert_not_null(bg, "row is missing its CardArt")
-	assert_not_null(bg.texture, "CardArt has no texture assigned")
+	var bg := inst.get_node_or_null("CardBg") as Panel
+	assert_not_null(bg, "row is missing its CardBg")
+	assert_eq(bg.theme_type_variation, &"IdCardPanel",
+		"CardBg must use the IdCardPanel variation, not the retired card_bg art")
 
 	assert_not_null(inst.get_node_or_null("Avatar"), "row is missing Avatar")
 	for i in range(1, 4):
@@ -962,17 +963,19 @@ func test_card_art_fills_the_card_box_without_letterboxing() -> void:
 	var inst := scene.instantiate()
 	assert_eq(inst.custom_minimum_size, Vector2(992, 410),
 		"card box must equal the card art's content box")
-	var art := inst.get_node_or_null("CardArt") as TextureRect
-	assert_not_null(art, "row is missing CardArt")
-	assert_eq(art.stretch_mode, TextureRect.STRETCH_SCALE,
-		"CardArt must STRETCH_SCALE -- KEEP_ASPECT_CENTERED squares the art")
-	var tex: Texture2D = art.texture
-	assert_not_null(tex, "CardArt has no texture")
-	var box_aspect := 992.0 / 410.0
-	var tex_aspect := float(tex.get_width()) / float(tex.get_height())
-	assert_true(absf(box_aspect - tex_aspect) < 0.01,
-		"card box aspect %f does not match the texture's %f" % [box_aspect, tex_aspect])
+	var bg := inst.get_node_or_null("CardBg") as Panel
+	assert_not_null(bg, "row is missing CardBg")
+	assert_eq(bg.theme_type_variation, &"IdCardPanel",
+		"the card frame is the IdCardPanel variation now, not textured art")
 	inst.free()
+
+
+func test_card_retires_the_green_card_art() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCENE)
+	assert_false(src.contains("DaySummary/card_bg.png"),
+		"the green card_bg art must be retired")
+	assert_true(src.contains("IdCardPanel"),
+		"the card frame uses the IdCardPanel variation")
 
 
 func test_banner_box_matches_the_banner_art_aspect() -> void:

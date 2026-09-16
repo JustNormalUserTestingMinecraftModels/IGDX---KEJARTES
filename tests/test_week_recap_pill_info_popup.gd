@@ -32,10 +32,10 @@ func test_scene_exists_and_instantiates() -> void:
 
 func test_scene_supplies_every_node_the_script_binds() -> void:
 	var popup := _make()
-	for path in ["Scrim", "Scrim/Card", "Scrim/Card/Layout/Header",
-			"Scrim/Card/Layout/Header/IconRect",
-			"Scrim/Card/Layout/Header/TitleLabel",
-			"Scrim/Card/Layout/Header/CloseButton",
+	for path in ["Scrim", "Scrim/Card", "Scrim/Card/Layout/HeaderBand/Header",
+			"Scrim/Card/Layout/HeaderBand/Header/IconRect",
+			"Scrim/Card/Layout/HeaderBand/Header/TitleLabel",
+			"Scrim/Card/Layout/HeaderBand/Header/CloseButton",
 			"Scrim/Card/Layout/BodyLabel"]:
 		assert_not_null(popup.get_node_or_null(path), "missing node: %s" % path)
 

@@ -34,9 +34,9 @@ signal closed
 
 @onready var scrim: ColorRect = $Scrim
 @onready var card: PanelContainer = $Scrim/Card
-@onready var icon_rect: TextureRect = $Scrim/Card/Layout/Header/IconRect
-@onready var title_label: Label = $Scrim/Card/Layout/Header/TitleLabel
-@onready var close_button: Button = $Scrim/Card/Layout/Header/CloseButton
+@onready var icon_rect: TextureRect = $Scrim/Card/Layout/HeaderBand/Header/IconRect
+@onready var title_label: Label = $Scrim/Card/Layout/HeaderBand/Header/TitleLabel
+@onready var close_button: Button = $Scrim/Card/Layout/HeaderBand/Header/CloseButton
 @onready var body_label: Label = $Scrim/Card/Layout/BodyLabel
 
 ## Guards against a double close: the exit tween and the scrim tap can

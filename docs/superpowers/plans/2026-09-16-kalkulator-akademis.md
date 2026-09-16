@@ -797,7 +797,8 @@ func test_password_background_export_matches_its_background_node() -> void:
 	var meja_id := ""
 	for raw in src.split("\n"):
 		if raw.begins_with("[ext_resource") and raw.contains(MEJA):
-			meja_id = raw.split("id=\"")[1].split("\"")[0]
+			# Leading space matters: a bare `id="` also matches inside `uid="`.
+			meja_id = raw.split(" id=\"")[1].split("\"")[0]
 	assert_eq(id, meja_id, "the export must point at the same desk the node draws")
 
 

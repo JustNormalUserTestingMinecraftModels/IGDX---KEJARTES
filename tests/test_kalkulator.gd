@@ -212,3 +212,55 @@ func test_variabel_fits_its_question_to_the_card() -> void:
 	assert_true(src.contains("SoalFit.font_size("), "Variabel measures, not guesses")
 	assert_true(src.contains("resized.connect(_refit_equation)"),
 		"and refits once the card has its real size")
+
+
+func test_password_sits_on_the_desk() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Password.tscn")
+	assert_true(src.contains(MEJA), "Password.tscn must draw meja_background")
+	for stale in _STALE_ART:
+		assert_false(src.contains(stale), "Password.tscn still references " + stale)
+
+
+## The regression this pass fixes: background_texture pointed at a badminton
+## court, and _apply_visual_exports() paints it over the desk at runtime, so
+## the Background node's own texture was never what the player saw.
+func test_password_background_export_matches_its_background_node() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Password.tscn")
+	var line := ""
+	for raw in src.split("\n"):
+		if raw.begins_with("background_texture = "):
+			line = raw
+	assert_true(line != "", "Password.tscn still sets a background_texture export")
+	var id := line.split("\"")[1]
+	var meja_id := ""
+	for raw in src.split("\n"):
+		if raw.begins_with("[ext_resource") and raw.contains(MEJA):
+			# Leading space matters: a bare `id="` also matches inside `uid="`.
+			meja_id = raw.split(" id=\"")[1].split("\"")[0]
+	assert_eq(id, meja_id, "the export must point at the same desk the node draws")
+
+
+func test_password_uses_the_shared_calculator_and_question_card() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Password.tscn")
+	assert_true(src.contains(KALK_SCENE), "Password.tscn instances the calculator")
+	assert_true(src.contains(CARD_SCENE), "the white paper is Menjodohkan's QuestionCard")
+	assert_false(src.contains("show_zero_key = false"),
+		"Password's answers run to three digits, so it keeps the zero key")
+
+
+func test_password_action_buttons_use_the_lobby_design() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Password.tscn")
+	assert_eq(src.count("theme_type_variation = &\"LobbyCtaButton\""), 2,
+		"Hapus and Kirim both wear the Lobby CTA design")
+	assert_true(src.contains("text = \"Hapus\""), "clear reads Hapus")
+	assert_true(src.contains("text = \"Kirim\""), "submit reads Kirim")
+
+
+func test_password_builds_no_keypad_at_runtime() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/Password.gd")
+	assert_false(src.contains("Button.new("), "the keys are authored nodes now")
+
+
+func test_password_fits_its_question_to_the_card() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/Password.gd")
+	assert_true(src.contains("SoalFit.font_size("), "Password measures, not guesses")

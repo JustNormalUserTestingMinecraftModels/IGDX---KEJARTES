@@ -110,9 +110,9 @@ func test_scene_instantiates() -> void:
 	assert_true(_lobby != null, "scene must instantiate")
 	assert_true(_lobby.is_inside_tree(), "scene must enter the tree cleanly")
 	for name in _NAV_BUTTONS:
-		assert_true(_lobby.get_node_or_null(name) != null, "missing nav button: " + name)
-	assert_true(_lobby.get_node_or_null("JUDUL") != null, "missing JUDUL")
-	assert_true(_lobby.get_node_or_null("DisplayUang/Label") != null, "missing money label")
+		assert_true(_lobby.get_node_or_null("%" + name) != null, "missing nav button: " + name)
+	assert_true(_lobby.get_node_or_null("%JUDUL") != null, "missing JUDUL")
+	assert_true(_lobby.get_node_or_null("%DisplayUang/Label") != null, "missing money label")
 	assert_true(_lobby.get_node_or_null("DailyReward/ButtonClaim") != null,
 		"missing claim button")
 
@@ -161,9 +161,11 @@ func test_no_hardcoded_colors_remain_in_the_script() -> void:
 
 func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 	var tokens := DesignTokens.load_default()
-	var paths := _NAV_BUTTONS.duplicate()
+	var paths := []
+	for n in _NAV_BUTTONS:
+		paths.append("%" + n)
 	paths.append("DailyReward/ButtonClaim")
-	paths.append("ShortenButton")
+	paths.append("%ShortenButton")
 	for p in paths:
 		var b := _lobby.get_node_or_null(p) as Control
 		assert_true(b != null, "missing control: " + p)
@@ -178,21 +180,21 @@ func test_nav_buttons_use_lobby_nav_tile_or_cta_button_variation() -> void:
 	var tile_buttons := ["Koperasi", "Inventory", "ReportStudent"]
 	var cta_buttons := ["Student", "Jadwal"]
 	for name in tile_buttons:
-		var b := _lobby.get_node_or_null(name) as Button
+		var b := _lobby.get_node_or_null("%" + name) as Button
 		assert_true(b != null, "missing nav button: " + name)
 		assert_eq(b.theme_type_variation, &"LobbyNavTile", name + " variation")
 	for name in cta_buttons:
-		var b := _lobby.get_node_or_null(name) as Button
+		var b := _lobby.get_node_or_null("%" + name) as Button
 		assert_true(b != null, "missing nav button: " + name)
 		assert_eq(b.theme_type_variation, &"LobbyCtaButton", name + " variation")
 
 
 func test_labels_use_theme_variations() -> void:
-	var judul := _lobby.get_node_or_null("JUDUL") as Label
+	var judul := _lobby.get_node_or_null("%JUDUL") as Label
 	assert_true(judul != null, "missing JUDUL")
 	assert_eq(judul.theme_type_variation, &"DisplayLabel", "JUDUL variation")
 
-	var money := _lobby.get_node_or_null("DisplayUang/Label") as Label
+	var money := _lobby.get_node_or_null("%DisplayUang/Label") as Label
 	assert_true(money != null, "missing money label")
 	assert_eq(money.theme_type_variation, &"CoinLabel", "money label variation")
 
@@ -300,14 +302,14 @@ func test_report_student_button_is_wired() -> void:
 ## 332x96 the layout wanted. It is a themed rounded panel now, with the
 ## coin as a real icon beside the number.
 func test_the_money_chip_is_a_themed_panel_with_a_coin_icon() -> void:
-	var chip := _lobby.get_node_or_null("DisplayUang") as Panel
+	var chip := _lobby.get_node_or_null("%DisplayUang") as Panel
 	assert_true(chip != null, "DisplayUang must be a Panel now, not a TextureRect")
 	assert_eq(chip.theme_type_variation, &"Card",
 		"the chip takes its chrome from the theme")
 	assert_eq(chip.size.y, 96.0,
 		"the chip is 96 tall, matching DailyLogin, got %f" % chip.size.y)
 
-	var icon := _lobby.get_node_or_null("DisplayUang/CoinIcon") as TextureRect
+	var icon := _lobby.get_node_or_null("%DisplayUang/CoinIcon") as TextureRect
 	assert_true(icon != null, "the chip needs a coin icon")
 	assert_eq(icon.texture.resource_path, "res://Assets/Images/UI/uang.png",
 		"and it is the new coin art")
@@ -350,7 +352,7 @@ func test_the_panel_swaps_art_per_day() -> void:
 
 
 func test_the_lobby_button_wears_the_calendar_icon() -> void:
-	var btn := _lobby.get_node_or_null("DailyLogin") as TextureButton
+	var btn := _lobby.get_node_or_null("%DailyLogin") as TextureButton
 	assert_true(btn != null, "the DailyLogin button is missing")
 	assert_eq(btn.texture_normal.resource_path,
 		"res://Assets/Images/UI/icon_daily_login.png",

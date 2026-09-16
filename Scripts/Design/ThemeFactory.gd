@@ -307,6 +307,15 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	_add_button_variation(theme, tokens, "FilterChipButton",
 		tokens.surface_card, tokens.surface_sunken,
 		tokens.brand_primary, tokens.brand_primary)
+	# Its category icons are white placeholder glyphs, and a Button draws its
+	# icon untinted unless its variation names an icon colour: white on this
+	# cream pill measured 1.02:1 at rest and 1.30:1 selected, so on a phone
+	# only the selected chip showed an icon (2026-09-15). Ink them like the
+	# label -- which is why a replacement icon has to stay a white glyph.
+	for slot in ["icon_normal_color", "icon_hover_color", "icon_pressed_color",
+			"icon_hover_pressed_color", "icon_focus_color"]:
+		theme.set_color(slot, "FilterChipButton", tokens.brand_primary)
+	theme.set_color("icon_disabled_color", "FilterChipButton", tokens.text_disabled)
 
 	# The student card's page arrows. Fixed 120x120, so radius_pill yields a
 	# circle rather than a height-dependent capsule -- the one place that
@@ -541,6 +550,19 @@ static func _build_panels(theme: Theme, tokens: DesignTokens) -> void:
 	var scrim := StyleBoxFlat.new()
 	scrim.bg_color = tokens.scrim_color()
 	theme.set_stylebox("panel", "Scrim", scrim)
+
+	# The win painting's photo print (WinStage/PhotoFrame): an opaque warm
+	# white border with the Card's drop shadow, so the end-of-grade picture
+	# reads as a photograph lying on the dark ground.
+	theme.add_type("PhotoFrame")
+	theme.set_type_variation("PhotoFrame", "Panel")
+	var photo := StyleBoxFlat.new()
+	photo.bg_color = tokens.surface_card
+	photo.set_corner_radius_all(tokens.radius_sm)
+	photo.shadow_color = tokens.shadow_color
+	photo.shadow_size = tokens.shadow_size
+	photo.shadow_offset = tokens.shadow_offset
+	theme.set_stylebox("panel", "PhotoFrame", photo)
 
 	# A card header whose accent is chosen at runtime. The background is
 	# white so the caller can tint it with self_modulate -- the accent is the

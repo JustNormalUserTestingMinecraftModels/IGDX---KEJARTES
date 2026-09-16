@@ -8,6 +8,100 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-15 — Weekly shop and minigame polish
+
+Plan `docs/superpowers/plans/2026-09-15-weekly-shop-minigame-polish.md`, spec
+`docs/superpowers/specs/2026-09-15-weekly-shop-minigame-polish-design.md`.
+
+- **Koperasi** rolls its four items once per week (`GameState.shop_stock_for_week()`,
+  keyed by grade and `minggu_ke`) instead of on every visit. Each item sells
+  once a week: it leaves the shelf when it goes into the basket, comes back if
+  it is held out or the player backs out, and stays gone after Beli
+  (`GameState.shop_sold`). Session-scoped, like the rest of GameState.
+- **LombaMenari**'s hit window is 170 px (BAGUS) and 70 px (SEMPURNA), up from
+  120/45, and a note is only missed once it leaves the whole window -- it used
+  to be dropped 80 px past centre, so late hits were impossible. Feedback is
+  UPS!/BAGUS!/SEMPURNA!; the dancer draws behind the hit zone.
+- **Win screen**: WinStage puts the painting on a white `PhotoFrame` print
+  (new ThemeFactory variation); RunResult opens on the same framed picture.
+- **MainBola**: an off-target shot ends in the keeper's hands, and the target
+  box respawns somewhere new (x and height) after every goal.
+
+## 2026-09-15 — Tall phones, Phase 1: Lobby, Koperasi, StudentCard, StudentList
+
+Plan `docs/superpowers/plans/2026-09-15-tall-phone-layout-phase-1.md`, spec
+`docs/superpowers/specs/2026-09-15-tall-phone-layout-design.md`.
+
+A 20:9 phone runs the game at 1080×2400, and these four screens were laid out
+for exactly 1080×1920. Their fixed backgrounds left a bare gray band, and the
+Lobby's classroom slid down while the seats stayed put, so the students sat
+at the wrong desks. The editor never showed it, because its embedded run is
+locked to 9:16. Each screen now follows four rules:
+
+- the background fills;
+- the UI is re-anchored to its edge, without moving, inside a
+  `SafeAreaMargin`;
+- a picture keeps its items.
+
+At 1080×1920 nothing moved.
+
+- **Lobby.** `Classroom` holds the background, desks, seats and hands,
+  Center-anchored at 1080×1920 over a black `Backdrop`. The title and
+  button block sit in `Safe/UI`. `loby.gd` uses unique names, and the
+  reward blur is inserted at `DailyReward`'s index.
+- **Koperasi.** The room covers. The shelf view moves as one piece pinned
+  to the bottom, so the tray reaches the edge. The coins sit in the safe
+  area.
+- **StudentCard.** The root's 70/254 inset is gone. The papers and stamp
+  are centred, and the page row pins to the bottom.
+- **StudentList.** The cards are centred. The header and strip sit on top,
+  and the nav row at the bottom.
+- **Tests.** New `tests/layout_frame.gd` settles Containers in the same
+  frame, and new suite `tall_screen_layout` checks each screen at
+  1080×2400 and 1080×1920. Placement asserts compare authored rects, because
+  the editor's font metrics grow some controls past theirs. `lobby_layout`
+  and `student_card_layout` now stand their screens up the same way.
+  `SafeAreaMargin` now warns only on a device.
+- **Desktop preview:** works. A 360×800 window override gives the embedded
+  run a 1080×2400 viewport; set it back to 640 afterwards.
+- **Caught on the way.** Moving an instanced scene with `reparent_node`
+  re-owned its internals, and the save duplicated StudentList's avatar
+  `Portrait`/`Ring` nodes; they were removed by text (authoring guide,
+  "Tall phones"). A `"%RosterStrip/Avatar%d" %` lookup read `%R` as a format
+  character; it is now `%%` and guarded by a scan. Two failures already on
+  `Textures` were fixed in their own commits: `viewport_editability`'s stale
+  `ItemDetailSheet` baseline entry, and `atur_jadwal.tscn`'s splash_marcel
+  UID left behind by `c3149e0`. `Textures`' `6cac82b` fixed the same two in
+  parallel; the merge kept one copy of each.
+
+Suite: 111 suites, 1603 tests, green.
+
+## 2026-09-15 — Two dead backdrops: the minigame quit dim and the event-picker photo
+
+Both came from a read-only audit and were confirmed in the running game before
+anything changed.
+
+- **`QuitConfirmDialog` dimmed one pixel.** Its `Backdrop` is a full-rect
+  TextureRect holding a 1x1 white fill tinted by `quit_dialog_bg_color` (or an
+  artist's PNG), but it used `STRETCH_KEEP`, which draws a texture at its own
+  size. Framebuffer samples outside the card did not change when the dialog
+  opened; only (0,0) darkened. It now uses `STRETCH_SCALE`, as the hand-built
+  dialog did before the 2026-08-31 extraction, and every sample drops to about
+  25%. Suite `minigame_overlays`.
+- **`EventStudentSelectDialog`'s photo never showed.** The scene has always
+  set `background_texture` to `bg_event_dialog.png`, but
+  `_apply_visual_exports()` looked up a `Background` node when the scrim is
+  named `BackgroundDim`, so the Scrim always stayed. The photo now has an
+  authored `Background` TextureRect (index 0, full rect, SCALE), and the
+  script only chooses between it and the Scrim. The visible change is the
+  16 px frame around the card, which now shows the pale photo instead of the
+  dimmed day. That removed the file's last runtime `TextureRect.new()`, so its
+  `viewport_editability` BASELINE entry and its line in the authoring guide's
+  "Known gaps" are gone. The node holds no texture in the .tscn (the export
+  fills it at runtime), so the editor still previews the Scrim. Suite
+  `event_polish`, which also gained a general check that every node path the
+  script names exists in its scene.
+
 ## 2026-09-15 — Debug: Laporan Mingguan preview
 
 Plan `docs/superpowers/plans/2026-09-15-debug-weekly-report.md`, spec

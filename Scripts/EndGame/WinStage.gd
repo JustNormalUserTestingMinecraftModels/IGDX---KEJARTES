@@ -3,8 +3,8 @@ class_name WinStage
 extends Control
 
 ## The end-of-grade painting with the run's roster posed on it (2026-09-11):
-## the letterbox bars, win_background.png, four student slots and their
-## ground shadows. EndCutscene and RunResult both instance this one scene,
+## the letterbox bars, a white photo-print frame (PhotoFrame), win_background.png,
+## four student slots and their ground shadows. EndCutscene and RunResult both instance this one scene,
 ## so the frame RunResult opens on is the frame EndCutscene blurred out on --
 ## the same art, the same framing, the same students -- rather than two
 ## layouts kept in step by hand. It used to live inside EndCutscene; it moved
@@ -57,12 +57,21 @@ extends Control
 ## floor, higher as a softer pool.
 @export var shadow_flatness: float = 0.28
 
+@export_group("Photo frame")
+## Width, in viewport pixels, of the white print border around the win
+## painting. 0 hides the frame and lets the painting fill the width again.
+@export var photo_border: float = 28.0
+## Gap, in viewport pixels, between the frame's outer edge and the nearest
+## screen edge, so the print reads as lying on the dark ground.
+@export var photo_gap: float = 36.0
+
 ## The painting's native size. Students are positioned in this space and the
 ## whole Stage is scaled into the viewport, so numbers measured off the
 ## mockup transfer 1:1 and the composition never drifts from the art.
 const ART_SIZE := Vector2(1536.0, 2048.0)
 
 @onready var bar_fill: ColorRect = $BarFill
+@onready var photo_frame: Panel = $PhotoFrame
 @onready var stage: Control = $Stage
 @onready var backdrop: TextureRect = $Stage/Backdrop
 @onready var shadows: Control = $Stage/Shadows
@@ -85,19 +94,22 @@ static func names_of(roster: Array) -> Array:
 	return names
 
 
-## Where the letterboxed painting lands in a viewport of `area`: scaled by
-## the smaller ratio so the whole 3:4 image survives on a 9:16 screen, and
-## centred. At 1080x1920 that is 1080x1440 with 240px bars top and bottom.
+## Where the letterboxed painting lands in a viewport of `area`, leaving
+## `inset` pixels clear on every side: scaled by the smaller ratio so the
+## whole 3:4 image survives on a 9:16 screen, and centred. With no inset, at
+## 1080x1920 that is 1080x1440 with 240px bars top and bottom.
 ## Returns {"scale": float, "position": Vector2}.
-static func letterbox(area: Vector2) -> Dictionary:
-	var s := minf(area.x / ART_SIZE.x, area.y / ART_SIZE.y)
+static func letterbox(area: Vector2, inset: float = 0.0) -> Dictionary:
+	var room := area - Vector2(inset, inset) * 2.0
+	var s := minf(room.x / ART_SIZE.x, room.y / ART_SIZE.y)
 	return {"scale": s, "position": (area - ART_SIZE * s) * 0.5}
 
 
-## Dress the stage for a verdict. Win letterboxes the painting and poses
-## `names` on it; lose covers the viewport with the lose CG and hides every
-## slot. Sets BarFill, Stage's transform, Backdrop's texture and every
-## Student/Shadow slot -- nothing is constructed.
+## Dress the stage for a verdict. Win letterboxes the painting inside its
+## white PhotoFrame and poses `names` on it; lose covers the viewport with the
+## lose CG and hides the frame and every slot. Sets BarFill, PhotoFrame,
+## Stage's transform, Backdrop's texture and every Student/Shadow slot --
+## nothing is constructed.
 func dress(failed: bool, names: Array) -> void:
 	var vp := get_viewport_rect().size
 	bar_fill.position = Vector2.ZERO
@@ -109,15 +121,28 @@ func dress(failed: bool, names: Array) -> void:
 	else:
 		_fit_stage_cover(vp)
 		_hide_lineup()
+		photo_frame.hide()
 
 
-## Letterbox the painting into `vp` (see letterbox()).
+## Letterbox the painting into `vp`, leaving room for the frame (see
+## letterbox()), and put the frame around it.
 func _fit_stage(vp: Vector2) -> void:
-	var fit := letterbox(vp)
+	var fit := letterbox(vp, photo_border + photo_gap)
 	var s: float = fit["scale"]
 	stage.size = ART_SIZE
 	stage.scale = Vector2(s, s)
 	stage.position = fit["position"]
+	_frame_photo(Rect2(stage.position, ART_SIZE * s))
+
+
+## Place PhotoFrame around the painting's on-screen rect, photo_border wider
+## on every side, and show it. The frame is an authored node; this only
+## sizes and positions it.
+func _frame_photo(painting: Rect2) -> void:
+	var grown := painting.grow(photo_border)
+	photo_frame.position = grown.position
+	photo_frame.size = grown.size
+	photo_frame.visible = photo_border > 0.0
 
 
 ## The lose path keeps the framing the CG has always had: Stage fills the

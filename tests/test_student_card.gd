@@ -104,7 +104,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 	var paths := [
 		"KertasMurid1/Aprove", "KertasMurid1/Batal",
 		"KertasMurid1/KutuBuku", "KertasMurid1/KutuBuku2",
-		"BelajarButton", "NextButtonKanan", "NextButtonKiri",
+		"BelajarButton", "%NextButtonKanan", "%NextButtonKiri",
 	]
 	for p in paths:
 		var b := _card.get_node_or_null(p) as Control

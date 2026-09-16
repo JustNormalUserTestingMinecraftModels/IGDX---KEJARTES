@@ -48,6 +48,8 @@ signal event_decision_made(accepted: bool, selected_students: Array[StudentData]
 const CARD_SCENE := preload("res://Scenes/SchoolSimulation/EventStudentCard.tscn")
 
 
+@onready var background: TextureRect = $Background
+@onready var background_dim: Panel = $BackgroundDim
 @onready var dialog_panel: PanelContainer = $Margin/DialogPanel
 @onready var title_label: Label = $Margin/DialogPanel/Margin/MainVBox/TitleLabel
 @onready var desc_label: Label = $Margin/DialogPanel/Margin/MainVBox/DescLabel
@@ -116,19 +118,11 @@ func setup_event(
 
 func _apply_visual_exports() -> void:
 	# The Scrim panel is the default backdrop; an art-supplied photo
-	# replaces it outright. Guarded on `is Panel` so a second call cannot
-	# stack another TextureRect.
-	var bg = get_node_or_null("Background")
-	if bg is Panel and background_texture:
-		var tex_rect = TextureRect.new()
-		tex_rect.name = "Background"
-		tex_rect.texture = background_texture
-		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tex_rect.stretch_mode = TextureRect.STRETCH_SCALE
-		tex_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		bg.queue_free()
-		add_child(tex_rect)
-		move_child(tex_rect, 0)
+	# replaces it outright. Both are authored in the scene -- this only
+	# picks which one shows.
+	background.texture = background_texture
+	background.visible = background_texture != null
+	background_dim.visible = background_texture == null
 
 	# A texture card still wins over the theme, for the art-swap workflow.
 	if dialog_panel and dialog_card_texture:

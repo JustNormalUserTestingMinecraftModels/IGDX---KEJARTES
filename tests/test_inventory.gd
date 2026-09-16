@@ -10,6 +10,7 @@ func suite_name() -> String:
 
 const _SCENE := "res://Scenes/Inventory/inventory.tscn"
 const _SCRIPT := "res://Scripts/Inventory/inventory.gd"
+const _THEME := "res://Assets/Theme/kejartes_theme.tres"
 
 func _src() -> String:
 	return FileAccess.get_file_as_string(_SCRIPT)
@@ -83,3 +84,40 @@ func test_no_global_player_stat_refs() -> void:
 	var src := _src()
 	assert_false(src.contains("GameState.player_mood"), "no global mood")
 	assert_false(src.contains("GameState.player_energy"), "no global energy")
+
+## Boohong, the face every button label wears, has no single guillemet: its
+## cmap sends "‹" (and "›", "‚") to its apostrophe glyph and "«"/"»" to its
+## double quote. "‹ Kembali" therefore shipped as "' KEMBALI", on desktop and
+## Android alike (2026-09-15). The chevron is an SVG texture beside the word.
+func test_back_button_draws_its_chevron_as_an_svg_icon() -> void:
+	var s := (load(_SCENE) as PackedScene).instantiate()
+	var back := s.get_node("MainColumn/Header/Row/BackButton") as Button
+	assert_not_null(back.icon, "the back chevron must be a texture on the button")
+	if back.icon != null:
+		assert_true(back.icon.resource_path.ends_with(".svg"),
+			"the chevron must be an SVG texture, not %s" % back.icon.resource_path)
+	assert_eq(back.icon_alignment, HORIZONTAL_ALIGNMENT_LEFT,
+		"the chevron leads the word; centred, the text would draw over it")
+	s.free()
+
+## Guards the label itself. Resolved through the bake the way the game
+## resolves it, no character may draw as the font's quote mark.
+func test_back_button_text_draws_no_character_as_a_quote_mark() -> void:
+	var s := (load(_SCENE) as PackedScene).instantiate()
+	var back := s.get_node("MainColumn/Header/Row/BackButton") as Button
+	var theme := ResourceLoader.load(_THEME, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	var variation := String(back.theme_type_variation)
+	var font := theme.get_font("font", variation)
+	var size := theme.get_font_size("font_size", variation)
+	var ts := TextServerManager.get_primary_interface()
+	var rid: RID = font.get_rids()[0]
+	var quotes := [ts.font_get_glyph_index(rid, size, "'".unicode_at(0), 0),
+		ts.font_get_glyph_index(rid, size, "\"".unicode_at(0), 0)]
+	for i in back.text.length():
+		var c := back.text.unicode_at(i)
+		if c == "'".unicode_at(0) or c == "\"".unicode_at(0):
+			continue
+		assert_false(quotes.has(ts.font_get_glyph_index(rid, size, c, 0)),
+			"\"%s\" in \"%s\" draws as a quote mark in %s"
+			% [char(c), back.text, font.get_font_name()])
+	s.free()

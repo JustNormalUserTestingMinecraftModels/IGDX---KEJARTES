@@ -8,6 +8,17 @@ extends McpTestSuite
 ## and a 14px shadow, so it clipped; DisplayUang spanned to x=1120, i.e.
 ## 40px off-screen entirely; and DisplayUang and DailyLogin sat centred
 ## on the two front-row students' heads (x~845 y~389 and x~225 y~389).
+##
+## Since the 2026-09-15 tall-phone pass the HUD lives in Safe/UI/BottomBar
+## and the art in a centred Classroom, so a node's offsets are no longer
+## screen coordinates. The Lobby is stood up on the 1080x1920 design screen
+## (tests/layout_frame.gd) and every check reads real global rects.
+##
+## The Meja_* desk layers' 8-10 px nudges inside the Classroom are deliberate
+## (2026-09-10): at zero offset the desks stopped short of the students'
+## bodies and left a seam. Do not "correct" them.
+
+const LayoutFrame := preload("res://tests/layout_frame.gd")
 
 const SCREEN_W := 1080.0
 const SCREEN_H := 1920.0
@@ -17,96 +28,91 @@ const SCENE := "res://Scenes/Lobby/loby.tscn"
 
 const NAV_TILES := ["Koperasi", "Inventory", "ReportStudent"]
 
+## Where every HUD control sits on the 1080x1920 design screen. The
+## tall-phone pass re-anchored them without moving them: these are the rects
+## they had before it, less the root's stray 3 px left offset it removed.
+const DESIGN_RECTS := {
+	"Student": Rect2(48, 1520, 984, 160),
+	"Jadwal": Rect2(48, 1520, 984, 160),
+	"Koperasi": Rect2(48, 1712, 306, 160),
+	"Inventory": Rect2(386, 1712, 306, 160),
+	"ReportStudent": Rect2(724, 1712, 306, 160),
+	"DisplayUang": Rect2(700, 1392, 332, 96),
+	"ShortenButton": Rect2(168, 1392, 240, 96),
+	"DailyLogin": Rect2(48, 1392, 96, 96),
+	"JUDUL": Rect2(381, 40, 323, 100),
+}
+
+var _lobby: Control
+
 
 func suite_name() -> String:
 	return "lobby_layout"
 
 
-func _rects() -> Dictionary:
-	# Source-text scan rather than instantiation: the lobby pulls in
-	# shaders, autoload state and layered face rigs, and cannot be stood
-	# up headlessly. This follows the project's established pattern.
-	#
-	# Restricted to direct children of the scene root (`parent="."`).
-	# A .tscn's offset_* values are relative to the node's PARENT, not the
-	# screen -- only a root child's offsets are screen-space coordinates.
-	# A flat, unscoped scan collected every nested node too and reported
-	# false rim offenders that were actually correctly-positioned children
-	# inside their parents: a Hand under a StudentHandsContainer_*/Slot*,
-	# and labels under DailyReward (its baked panel art replaced the old
-	# Day1..Day7 tiles this comment used to name). The scene root
-	# itself carries no `parent=` attribute at all and is excluded too --
-	# it is the screen, so it cannot clip against itself.
-	var src := FileAccess.get_file_as_string(SCENE)
-	var out := {}
-	var name := ""
-	var r := {}
-	var is_root_child := false
-	for line in src.split("\n"):
-		if line.begins_with("[node "):
-			if is_root_child and name != "" and r.has("l") and r.has("r"):
-				out[name] = r
-			name = line.get_slice("name=\"", 1).get_slice("\"", 0)
-			is_root_child = line.contains("parent=\".\"")
-			r = {}
-		elif line.begins_with("offset_left = "):
-			r["l"] = float(line.get_slice("= ", 1))
-		elif line.begins_with("offset_right = "):
-			r["r"] = float(line.get_slice("= ", 1))
-		elif line.begins_with("offset_top = "):
-			r["t"] = float(line.get_slice("= ", 1))
-		elif line.begins_with("offset_bottom = "):
-			r["b"] = float(line.get_slice("= ", 1))
-	if is_root_child and name != "" and r.has("l") and r.has("r"):
-		out[name] = r
-	return out
+func setup() -> void:
+	var frame := track(LayoutFrame.stand_up(SCENE, Vector2(SCREEN_W, SCREEN_H))) as Control
+	_lobby = frame.get_child(0) as Control
+
+
+## The HUD control named `n` (a unique name), or null after a recorded failure.
+func _hud(n: String) -> Control:
+	var c := _lobby.get_node_or_null("%" + n) as Control
+	assert_true(c != null, "lobby is missing HUD node %" + n)
+	return c
+
+
+## `c`'s authored rect on screen: its parent's settled global rect, placed by
+## its own anchors and offsets. A control whose text needs more room still
+## grows past this when drawn, to a minimum size that depends on font metrics
+## (the editor measures wider than a device -- ShortenButton's text needs
+## 265 px here against its 240); the layout promises this rect.
+func _authored_rect(c: Control) -> Rect2:
+	var pr := (c.get_parent() as Control).get_global_rect()
+	var tl := pr.position + pr.size * Vector2(c.anchor_left, c.anchor_top) \
+		+ Vector2(c.offset_left, c.offset_top)
+	var br := pr.position + pr.size * Vector2(c.anchor_right, c.anchor_bottom) \
+		+ Vector2(c.offset_right, c.offset_bottom)
+	return Rect2(tl, br - tl)
+
+
+func test_the_hud_keeps_its_design_rects() -> void:
+	for n in DESIGN_RECTS:
+		var c := _hud(n)
+		if c == null:
+			continue
+		var got := _authored_rect(c)
+		var want: Rect2 = DESIGN_RECTS[n]
+		assert_true(got.position.distance_to(want.position) < 0.5
+				and got.end.distance_to(want.end) < 0.5,
+			"%s sits at %s on the design screen, expected %s" % [n, str(got), str(want)])
 
 
 func test_nav_tiles_share_one_height_and_one_baseline() -> void:
-	var rects := _rects()
-	var heights := []
-	var tops := []
-	for n in NAV_TILES:
-		assert_true(rects.has(n), "lobby is missing node: " + n)
-		heights.append(rects[n]["b"] - rects[n]["t"])
-		tops.append(rects[n]["t"])
-	for i in range(1, heights.size()):
-		assert_eq(heights[i], heights[0],
-			"%s height %f differs from %s height %f -- the three tiles are one row"
-				% [NAV_TILES[i], heights[i], NAV_TILES[0], heights[0]])
-		assert_eq(tops[i], tops[0],
-			"%s top %f differs from %s top %f -- they must share a baseline"
-				% [NAV_TILES[i], tops[i], NAV_TILES[0], tops[0]])
+	var first := _hud(NAV_TILES[0])
+	if first == null:
+		return
+	for i in range(1, NAV_TILES.size()):
+		var tile := _hud(NAV_TILES[i])
+		if tile == null:
+			continue
+		assert_eq(tile.get_global_rect().size.y, first.get_global_rect().size.y,
+			"%s height differs from %s -- the three tiles are one row"
+				% [NAV_TILES[i], NAV_TILES[0]])
+		assert_eq(tile.get_global_rect().position.y, first.get_global_rect().position.y,
+			"%s top differs from %s -- they must share a baseline"
+				% [NAV_TILES[i], NAV_TILES[0]])
 
 
 func test_nothing_clips_the_screen_rim() -> void:
-	var rects := _rects()
 	var offenders := []
-	for name in rects:
-		var r: Dictionary = rects[name]
-		if not (r.has("l") and r.has("r")):
+	for n in DESIGN_RECTS:
+		var c := _hud(n)
+		if c == null:
 			continue
-		# The full-bleed backdrop and card layers are meant to overhang.
-		#
-		# The Meja_* desk overlays belong to that same class and were
-		# added to this list on 2026-09-10. They were nudged 8-10px in
-		# the per-student desk-art pass to fix a real defect: at their
-		# committed positions the desks did not quite cover the bottom of
-		# the students' bodies, so each figure ended in a visible seam
-		# where the art stopped instead of disappearing behind the desk.
-		# The overlap IS the fix -- do not "correct" these offsets back
-		# to zero without checking the front-row figures in the lobby.
-		#
-		# They are also full-bleed art sized to the screen, not controls
-		# positioned inside it, so their offsets are a bleed against the
-		# rim -- what this rule is meant to allow rather than catch.
-		if name in ["Backdrop", "BGLayer", "ColorRect", "TutorialOverlay"]:
-			continue
-		if name.begins_with("Meja_"):
-			continue
-
-		if r["l"] < RIM_CLEARANCE or r["r"] > SCREEN_W - RIM_CLEARANCE:
-			offenders.append("%s spans %f..%f" % [name, r["l"], r["r"]])
+		var r := c.get_global_rect()
+		if r.position.x < RIM_CLEARANCE or r.end.x > SCREEN_W - RIM_CLEARANCE:
+			offenders.append("%s spans %f..%f" % [n, r.position.x, r.end.x])
 	assert_eq(offenders.size(), 0,
 		"lobby controls within %fpx of the rim:\n  " % RIM_CLEARANCE
 			+ "\n  ".join(offenders))
@@ -118,13 +124,13 @@ func test_hud_does_not_sit_on_the_front_row_faces() -> void:
 	# mapped through Slot3 and Slot4's rects.
 	var heads := [Vector2(225, 389), Vector2(845, 389)]
 	var radius := 110.0
-	var rects := _rects()
-	for name in ["DisplayUang", "DailyLogin", "ShortenButton"]:
-		assert_true(rects.has(name), "lobby is missing node: " + name)
-		var r: Dictionary = rects[name]
+	for n in ["DisplayUang", "DailyLogin", "ShortenButton"]:
+		var c := _hud(n)
+		if c == null:
+			continue
+		var r := c.get_global_rect()
 		for head in heads:
-			var overlaps: bool = head.x + radius > r["l"] and head.x - radius < r["r"] \
-				and head.y + radius > r["t"] and head.y - radius < r["b"]
+			var overlaps: bool = head.x + radius > r.position.x and head.x - radius < r.end.x \
+				and head.y + radius > r.position.y and head.y - radius < r.end.y
 			assert_true(not overlaps,
-				"%s (%f..%f, %f..%f) covers a student's head at %s"
-					% [name, r["l"], r["r"], r["t"], r["b"], str(head)])
+				"%s %s covers a student's head at %s" % [n, str(r), str(head)])

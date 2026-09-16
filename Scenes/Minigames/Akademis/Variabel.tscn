@@ -1,9 +1,10 @@
 [gd_scene format=3 uid="uid://dd2yx1erpwhwo"]
 
 [ext_resource type="Script" uid="uid://dctb8hswqsc5w" path="res://Scripts/Minigames/Akademis/Variabel.gd" id="1_variabel"]
-[ext_resource type="Texture2D" uid="uid://nm11wxrdebo2" path="res://Assets/Images/Textures/DiagonalLeft.jpg" id="2_gma8s"]
-[ext_resource type="Texture2D" uid="uid://ch0pg0l4inpsq" path="res://Assets/Images/Textures/DiagonalRight.jpg" id="3_wmj8b"]
+[ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="2_wyrkd"]
+[ext_resource type="PackedScene" uid="uid://b7q8saw0x1y20" path="res://Scenes/Minigames/Akademis/QuestionCard.tscn" id="4_0wcns"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="4_wmj8b"]
+[ext_resource type="PackedScene" uid="uid://c8523u3cqsu87" path="res://Scenes/Minigames/Akademis/Kalkulator.tscn" id="5_v4tda"]
 
 [node name="Variabel" type="Control" unique_id=677104855]
 layout_mode = 3
@@ -13,8 +14,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_variabel")
-numpad_btn_normal_texture = ExtResource("2_gma8s")
-submit_btn_normal_texture = ExtResource("3_wmj8b")
+background_texture = ExtResource("2_wyrkd")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1592266905]
 layout_mode = 1
@@ -23,45 +23,64 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = ExtResource("2_wyrkd")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1995615035]
+[node name="HeaderRow" type="HBoxContainer" parent="." unique_id=1350689598]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.05
-anchor_top = 0.05
-anchor_right = 0.95
-anchor_bottom = 0.95
-grow_horizontal = 2
-grow_vertical = 2
+anchor_left = 0.25
+anchor_top = 0.0146
+anchor_right = 0.75
+anchor_bottom = 0.0875
+mouse_filter = 2
 alignment = 1
 
-[node name="ScoreHUD" parent="VBoxContainer" unique_id=584836618 instance=ExtResource("4_wmj8b")]
+[node name="ScoreHUD" parent="HeaderRow" unique_id=584836618 instance=ExtResource("4_wmj8b")]
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 4
 
-[node name="ProgressLabel" type="Label" parent="VBoxContainer" unique_id=593051902]
-layout_mode = 2
-text = "Soal 1 dari 3  |  Skor: 0"
-horizontal_alignment = 1
+[node name="SoalCard" parent="." unique_id=82108006 instance=ExtResource("4_0wcns")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1685
+anchor_top = 0.0938
+anchor_right = 0.8306
+anchor_bottom = 0.2734
+offset_right = 0.0
+offset_bottom = 0.0
 
-[node name="EquationLabel" type="Label" parent="VBoxContainer" unique_id=724524481]
-layout_mode = 2
-text = "Burger + Fries = 5"
-horizontal_alignment = 1
+[node name="KalkulatorSlot" type="Control" parent="." unique_id=1116326643]
+layout_mode = 1
+anchor_top = 0.2896
+anchor_right = 1.0
+anchor_bottom = 0.8328
+mouse_filter = 2
 
-[node name="InputLineEdit" type="LineEdit" parent="VBoxContainer" unique_id=2025955897]
-layout_mode = 2
-placeholder_text = "Jawaban"
-alignment = 1
-editable = false
+[node name="Kalkulator" parent="KalkulatorSlot" unique_id=984734372 instance=ExtResource("5_v4tda")]
+layout_mode = 1
+show_zero_key = false
 
-[node name="NumpadGrid" type="GridContainer" parent="VBoxContainer" unique_id=455858059]
-layout_mode = 2
-size_flags_horizontal = 4
-columns = 3
+[node name="AksiRow" type="HBoxContainer" parent="." unique_id=1444221622]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0778
+anchor_top = 0.8635
+anchor_right = 0.9333
+anchor_bottom = 0.9448
+theme_override_constants/separation = 76
 
-[node name="SubmitButton" type="Button" parent="VBoxContainer" unique_id=412012270]
+[node name="BtnHapus" type="Button" parent="AksiRow" unique_id=1845003456]
 layout_mode = 2
-text = "SUBMIT"
+size_flags_horizontal = 3
+theme_type_variation = &"LobbyCtaButton"
+text = "Hapus"
+
+[node name="BtnKirim" type="Button" parent="AksiRow" unique_id=1233537524]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"LobbyCtaButton"
+text = "Kirim"

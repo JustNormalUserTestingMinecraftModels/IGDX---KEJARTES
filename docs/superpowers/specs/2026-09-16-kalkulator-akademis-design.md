@@ -134,13 +134,19 @@ What moves inside the scripts:
 
 `SoalCard` is 715x345 where Menjodohkan's wheel card is 850x480, and
 Variabel shows the longest text either game produces — four equation lines
-plus the question, and five more on the post-answer variable reveal. Both
-scripts therefore size the card's `TextLabel` from the text length, the way
-`Menjodohkan._instantiate_cards()` already does, but on a shorter ladder:
-Password's one-line sums land at the top rung, Variabel's multi-line blocks
-near the bottom. `TextLabel.clip_text` stays on, so an overflow crops rather
-than bursting the card — which is exactly why the rungs have to be checked
-against a real screenshot, not just against the tests.
+plus the question, and two more on the post-answer variable reveal.
+
+**As built (changed during Task 3):** the plan's line-count ladder
+(64/52/44/36) clipped "BERAPAKAH NILAI SPIDOL?" off the card on the first
+playtest, because Variabel's item names wrap unpredictably. Both scripts now
+call `Scripts/Minigames/Akademis/SoalFit.gd` (a preloaded static helper),
+which measures the text with the label's own font
+(`Font.get_multiline_string_size` plus the Label's `line_spacing`) and steps
+down 2 px from `equation_font_size` (64) to `min_equation_font_size` (28)
+until it fits. It keeps a badge-height strip (+12 px) clear top and bottom so
+centred text never runs under the `Soal N/M` badge. The first question is set
+from `_ready()` before the card is laid out, so the scripts refit on the
+label's `resized` signal.
 
 ## Kelas 7 / 8 / 9
 

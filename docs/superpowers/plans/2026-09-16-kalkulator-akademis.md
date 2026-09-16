@@ -871,10 +871,11 @@ func _ready() -> void:
 ```
 
 `input_label` becomes the same `typed_answer: String` + `kalkulator.set_layar()`
-pair as Task 3, with the same colour calls. Password has no font ladder of its
-own beyond the shared helper — copy `_fit_font_size` verbatim from
-`Variabel.gd` (its `problem_text` is always one line, so it lands on the top
-rung), and set `problem_label`'s size from it in `_show_current_question()`.
+pair as Task 3, with the same colour calls. Fit `problem_label` through the
+shared `SoalFit.font_size()` exactly as `Variabel.gd` does after Task 3
+(`const SoalFit := preload(...)`, `_fit_font_size()`, `_refit_equation` on
+`resized`) — its one-line sums keep the full size. (Task 3 replaced the
+line-count ladder with this measured fit after it clipped on playtest.)
 `progress_label.text` becomes `"Soal %d/%d"`.
 
 The old in-grid `Enter` and `C` keys are gone; `_on_enter_pressed` and

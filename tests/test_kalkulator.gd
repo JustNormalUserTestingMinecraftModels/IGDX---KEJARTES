@@ -128,3 +128,87 @@ func test_disabling_the_keys_disables_every_one() -> void:
 		assert_true(key.disabled, "%s must lock while an answer is being judged" % key.name)
 	kalk.set_keys_disabled(false)
 	assert_false((kalk.get_node("Body/KeyGrid/Key1") as Button).disabled, "and unlock after")
+
+
+const MEJA := "res://Assets/Images/UI/meja_background.png"
+const CARD_SCENE := "res://Scenes/Minigames/Akademis/QuestionCard.tscn"
+
+## Every placeholder these two scenes used to draw. Password rendered a
+## badminton court over the desk because its background_texture export
+## pointed at one and _apply_visual_exports() applies it at runtime.
+const _STALE_ART := ["lapanganBadminton", "KiperLeft", "DiagonalLeft", "DiagonalRight"]
+
+
+func test_variabel_sits_on_the_desk() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Variabel.tscn")
+	assert_true(src.contains(MEJA), "Variabel.tscn must draw meja_background, like Menjodohkan")
+	for stale in _STALE_ART:
+		assert_false(src.contains(stale), "Variabel.tscn still references " + stale)
+
+
+func test_variabel_uses_the_shared_calculator_and_question_card() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Variabel.tscn")
+	assert_true(src.contains(KALK_SCENE), "Variabel.tscn instances the calculator")
+	assert_true(src.contains(CARD_SCENE), "the white paper is Menjodohkan's QuestionCard")
+	assert_true(src.contains("show_zero_key = false"),
+		"Variabel's answers are always 1-9, so its zero key stays hidden")
+
+
+func test_variabel_action_buttons_use_the_lobby_design() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Variabel.tscn")
+	assert_eq(src.count("theme_type_variation = &\"LobbyCtaButton\""), 2,
+		"Hapus and Kirim both wear the Lobby CTA design")
+	assert_true(src.contains("text = \"Hapus\""), "clear reads Hapus, not CLear")
+	assert_true(src.contains("text = \"Kirim\""), "submit reads Kirim, not submit")
+
+
+func test_variabel_builds_no_numpad_at_runtime() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/Variabel.gd")
+	assert_false(src.contains("Button.new("), "the keys are authored nodes now")
+	assert_false(src.contains("HBoxContainer.new("), "so is the zero row")
+
+
+const SOAL_FIT := "res://Scripts/Minigames/Akademis/SoalFit.gd"
+
+
+## A card-sized label, laid out at the SoalCard's content size.
+func _card_label() -> Label:
+	var lbl := Label.new()
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.size = Vector2(699, 333)
+	track(lbl)
+	return lbl
+
+
+func test_a_short_question_keeps_the_full_size() -> void:
+	var fit = load(SOAL_FIT)
+	assert_eq(fit.font_size(_card_label(), null, "10 + 20 = ?", 64, 28), 64,
+		"a one-line sum needs no shrinking")
+
+
+## The regression from the first playtest: a four-line Variabel block at a
+## fixed size clipped "BERAPAKAH NILAI ..." off the bottom of the card.
+func test_a_long_question_shrinks_but_not_below_the_floor() -> void:
+	var fit = load(SOAL_FIT)
+	var text := "PENGGARIS - SPIDOL = 4\nPENGGARIS + PENGGARIS = 16\n\nBERAPAKAH NILAI SPIDOL?\n─────────────\nPENGGARIS = 8   SPIDOL = 4"
+	var size: int = fit.font_size(_card_label(), null, text, 64, 28)
+	assert_true(size < 64, "a long block must shrink to fit (got %d)" % size)
+	assert_true(size >= 28, "and never below the floor (got %d)" % size)
+
+
+func test_the_badge_takes_room_from_the_fit() -> void:
+	var fit = load(SOAL_FIT)
+	var text := "BUKU + BUKU = 6\nBUKU + BUKU + PENSIL = 7\n\nBERAPAKAH NILAI PENSIL?"
+	var badge := Control.new()
+	badge.size = Vector2(120, 44)
+	track(badge)
+	var without: int = fit.font_size(_card_label(), null, text, 64, 28)
+	var with_badge: int = fit.font_size(_card_label(), badge, text, 64, 28)
+	assert_true(with_badge <= without, "clearing the badge can only shrink the text")
+
+
+func test_variabel_fits_its_question_to_the_card() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/Variabel.gd")
+	assert_true(src.contains("SoalFit.font_size("), "Variabel measures, not guesses")
+	assert_true(src.contains("resized.connect(_refit_equation)"),
+		"and refits once the card has its real size")

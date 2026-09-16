@@ -681,7 +681,7 @@ func test_row_reserves_the_mockup_card_box() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
 	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
-	assert_eq(inst.custom_minimum_size, Vector2(992, 410),
+	assert_eq(inst.custom_minimum_size, Vector2(992, 486),
 		"card box drifted from the card art's cropped content box")
 	inst.free()
 
@@ -961,8 +961,8 @@ func test_school_day_still_renders_its_embedded_day_cards() -> void:
 func test_card_art_fills_the_card_box_without_letterboxing() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	assert_eq(inst.custom_minimum_size, Vector2(992, 410),
-		"card box must equal the card art's content box")
+	assert_eq(inst.custom_minimum_size, Vector2(992, 486),
+		"card box grew to fit the kartu-pelajar header band")
 	var bg := inst.get_node_or_null("CardBg") as Panel
 	assert_not_null(bg, "row is missing CardBg")
 	assert_eq(bg.theme_type_variation, &"IdCardPanel",
@@ -1518,19 +1518,19 @@ func test_event_card_keeps_its_card_rect_after_loading() -> void:
 	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as Control
 	Engine.get_main_loop().root.add_child(card)
 	track(card)
-	card.size = Vector2(992, 410)
+	card.size = Vector2(992, 486)
 	# Run the fit directly rather than waiting on NOTIFICATION_RESIZED.
 	card.call("_fit_card")
 	var inner := card.get_node("Card") as Control
 	assert_eq(inner.position, Vector2.ZERO)
-	assert_eq(inner.size, Vector2(992, 410))
+	assert_eq(inner.size, Vector2(992, 486))
 	assert_eq(inner.scale, Vector2.ONE, "992 wide is native size")
 
 
 func test_event_card_badges_sit_on_the_card() -> void:
 	# The select badge used to hang 18 px below the card's bottom edge.
 	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
-	var bounds := Rect2(Vector2.ZERO, Vector2(992, 410))
+	var bounds := Rect2(Vector2.ZERO, Vector2(992, 486))
 	for badge in ["SelectBadge", "TiredBadge", "SpecialtyBadge"]:
 		var node := card.get_node_or_null("Card/" + badge) as Control
 		assert_true(node != null, badge + " lives under Card so it scales with it")

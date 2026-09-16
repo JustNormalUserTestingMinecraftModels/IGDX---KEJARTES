@@ -527,3 +527,12 @@ func test_ghost_button_draws_no_resting_chrome() -> void:
 		"and on press")
 	assert_eq(_theme.get_type_variation_base("GhostButton"), &"Button",
 		"it varies Button")
+
+
+## The 2026-09-16 Weekly Results hybrid pass shares three panel variations
+## across the masthead, the kartu-pelajar header and the pill popup/logs
+## sheet so they read as one visual family.
+func test_weekly_results_polish_variations_exist() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	for v in ["RecapMastheadPanel", "IdCardPanel", "RecapChipPanel"]:
+		assert_true(theme.has_stylebox("panel", v), "%s missing" % v)

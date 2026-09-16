@@ -41,15 +41,15 @@ func test_wrapper_owns_the_card_rect_at_944() -> void:
 	b._fit_card()
 	var card := b.get_node("Card") as Control
 	assert_eq(card.position, Vector2.ZERO)
-	assert_eq(card.size, Vector2(992, 410), "the card keeps its design size")
+	assert_eq(card.size, Vector2(992, 486), "the card keeps its design size")
 	assert_true(absf(card.scale.x - 944.0 / 992.0) < 0.001, "and scales to fit")
-	assert_true(absf(b.custom_minimum_size.y - 410.0 * 944.0 / 992.0) < 0.5,
+	assert_true(absf(b.custom_minimum_size.y - 486.0 * 944.0 / 992.0) < 0.5,
 		"the wrapper's height follows the scale")
 
 
 func test_wrapper_draws_native_size_at_992() -> void:
 	var b := _wrapper()
-	b.size = Vector2(992, 410)
+	b.size = Vector2(992, 486)
 	b._fit_card()
 	assert_eq((b.get_node("Card") as Control).scale, Vector2.ONE)
 

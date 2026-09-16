@@ -620,7 +620,7 @@ const _BANNER_SCENE := "res://Scenes/SchoolSimulation/WeekRecapBanner.tscn"
 func test_banner_authors_all_four_pills() -> void:
 	var banner: Control = load(_BANNER_SCENE).instantiate()
 	for pill_name in ["PillUang", "PillPoin", "PillMenang", "PillEvent"]:
-		assert_not_null(banner.get_node_or_null("Pills/" + pill_name),
+		assert_not_null(banner.get_node_or_null("MainColumn/ChipStrip/Pills/" + pill_name),
 			"%s is authored, not built at runtime" % pill_name)
 	banner.free()
 
@@ -682,7 +682,7 @@ func test_the_banner_shows_the_weeks_paid_earnings() -> void:
 
 
 func _pill_text(banner: Control, pill_name: String) -> String:
-	return (banner.get_node("Pills/" + pill_name).get_node("Value")
+	return (banner.get_node("MainColumn/ChipStrip/Pills/" + pill_name).get_node("Value")
 		as Label).text
 
 
@@ -1065,3 +1065,31 @@ func test_the_script_no_longer_carries_the_tabs() -> void:
 			"tab_riwayat", "history_pane", "pane_swipe"]:
 		assert_false(src.contains(dead),
 			"%s belongs to the retired tabs" % dead)
+
+
+# --------------------------------------------- the masthead (2026-09-16)
+
+## The masthead band now owns the week/grade words; the screen's own
+## HeaderPanel (TitleLabel/SubtitleLabel) was a duplicate and is gone.
+func test_duplicate_header_removed() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
+	assert_false(src.contains("HeaderPanel"),
+		"the redundant header must be gone")
+
+
+## The banner surfaces the roster's run-stars figure now, not just the
+## four pills.
+func test_masthead_shows_stars() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_true(src.contains("stars_value.text"),
+		"banner wires the stars figure into its label, not just reads the key")
+
+
+## The masthead rebuild reuses the existing shared pill icon set rather
+## than introducing a new DaySummary icon path -- a controller ruling
+## during this pass, so this only pins that the old icons are still wired.
+func test_masthead_keeps_pill_icons() -> void:
+	var src := FileAccess.get_file_as_string(_BANNER_SCENE)
+	assert_true(src.contains("Placeholders/icon_uang"),
+		"the masthead keeps using the existing shared icon set")

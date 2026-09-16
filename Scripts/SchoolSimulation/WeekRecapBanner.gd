@@ -53,13 +53,17 @@ const IDLE_CYCLE_PAUSE := 1.2
 
 const _POPUP_SCENE := "res://Scenes/UI/WeekRecapPillInfoPopup.tscn"
 
-@onready var week_label: Label = $Header/WeekLabel
-@onready var grade_label: Label = $Header/GradeLabel
-@onready var pill_uang: WeekRecapPill = $Pills/PillUang
-@onready var pill_poin: WeekRecapPill = $Pills/PillPoin
-@onready var pill_menang: WeekRecapPill = $Pills/PillMenang
-@onready var pill_event: WeekRecapPill = $Pills/PillEvent
+@onready var week_label: Label = $MainColumn/MastheadBand/BandRow/TitleCol/WeekLabel
+@onready var grade_label: Label = $MainColumn/MastheadBand/BandRow/TitleCol/GradeLabel
+@onready var pill_uang: WeekRecapPill = $MainColumn/ChipStrip/Pills/PillUang
+@onready var pill_poin: WeekRecapPill = $MainColumn/ChipStrip/Pills/PillPoin
+@onready var pill_menang: WeekRecapPill = $MainColumn/ChipStrip/Pills/PillMenang
+@onready var pill_event: WeekRecapPill = $MainColumn/ChipStrip/Pills/PillEvent
 @onready var coin_shower: RewardParticles = $CoinShower
+
+## The run-stars readout in the masthead's StarsBox, written by set_recap
+## as "X.XX / 3.0" -- the same run_stars() figure RunGrade gates on.
+@onready var stars_value: Label = $MainColumn/MastheadBand/BandRow/StarsBox/StarsValue
 
 # ── Visual - Icons ───────────────────────────────────────────────────
 @export_group("Visual - Icons")
@@ -103,8 +107,17 @@ func _on_pill_tapped(pill_key: String) -> void:
 		"menang": icon_menang, "event": icon_event,
 	}.get(pill_key)
 	var popup: WeekRecapPillInfoPopup = load(_POPUP_SCENE).instantiate()
-	get_tree().root.add_child(popup)
-	popup.configure(icon, info.get("title", ""), info.get("body", ""))
+	# Parent the popup into this banner's scene (like TraitDetailPopup adds to
+	# its card's scene), NOT get_tree().root -- at the window root the recap
+	# scene does not render behind the scrim, so the card looks stranded on a
+	# blank overlay (worse when ResultCheckup itself is a debug overlay).
+	add_child(popup)
+	var pill: WeekRecapPill = {
+		"uang": pill_uang, "poin": pill_poin,
+		"menang": pill_menang, "event": pill_event,
+	}.get(pill_key)
+	var value: String = pill.value_label.text if pill else ""
+	popup.configure(icon, info.get("title", ""), info.get("body", ""), value)
 	popup.closed.connect(_on_popup_closed)
 	popup.open()
 
@@ -158,6 +171,8 @@ func set_recap(recap: Dictionary) -> void:
 		week_label.text = "MINGGU %d" % GameState.minggu_ke
 	if grade_label:
 		grade_label.text = "%s · Evaluasi Mingguan" % GameState.get_grade_name()
+	if stars_value:
+		stars_value.text = "%.2f / 3.0" % recap.get("stars", 0.0)
 
 	var money: int = recap.get("money_earned", 0)
 	pill_uang.set_pill(icon_uang, WeekRecap.format_money(money),

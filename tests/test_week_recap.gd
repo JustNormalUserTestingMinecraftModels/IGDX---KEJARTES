@@ -123,6 +123,12 @@ func test_null_manager_reports_zeroes_rather_than_erroring() -> void:
 	assert_eq(r["minigames_total"], 0, "and reports an empty week")
 
 
+func test_compute_includes_stars() -> void:
+	var sm := _manager([], {})
+	var recap: Dictionary = WeekRecap.compute(sm)
+	assert_true(recap.has("stars"), "recap must carry a stars field")
+	assert_eq(typeof(recap["stars"]), TYPE_FLOAT, "stars is a float")
+
 func test_format_money_groups_thousands_with_a_dot() -> void:
 	assert_eq(WeekRecap.format_money(4200), "4.200",
 		"Indonesian thousands separator")

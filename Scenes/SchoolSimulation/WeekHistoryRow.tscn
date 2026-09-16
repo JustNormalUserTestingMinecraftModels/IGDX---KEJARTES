@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://nb2qunnb3b44"]
 
-[ext_resource type="Script" path="res://Scripts/SchoolSimulation/WeekHistoryRow.gd" id="1_85ux1"]
+[ext_resource type="Script" uid="uid://2nloqr1ln8oy" path="res://Scripts/SchoolSimulation/WeekHistoryRow.gd" id="1_85ux1"]
 [ext_resource type="Texture2D" uid="uid://bg1retxhhcvhi" path="res://Assets/Images/UI/Placeholders/icon_minigame_menang.svg" id="2_nyglq"]
 [ext_resource type="Texture2D" uid="uid://dhj3feltff0b0" path="res://Assets/Images/UI/Placeholders/icon_minigame_kalah.svg" id="3_qmp57"]
 [ext_resource type="Texture2D" uid="uid://yfyflcrgpn6o" path="res://Assets/Images/UI/Placeholders/icon_event.svg" id="4_pat4i"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/DaySummaryBadge.tscn" id="5_okxpj"]
 
 [node name="WeekHistoryRow" type="PanelContainer" unique_id=1791349445]
+custom_minimum_size = Vector2(0, 128)
 size_flags_horizontal = 3
 theme_type_variation = &"SunkenPanel"
 script = ExtResource("1_85ux1")
@@ -16,10 +17,10 @@ icon_event = ExtResource("4_pat4i")
 
 [node name="Body" type="HBoxContainer" parent="." unique_id=1894918875]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 28
 
 [node name="Icon" type="TextureRect" parent="Body" unique_id=953184773]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(84, 84)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
@@ -47,5 +48,5 @@ layout_mode = 2
 
 [node name="DetailLabel" type="Label" parent="Body/Lines" unique_id=540007980]
 layout_mode = 2
-theme_type_variation = &"MicroLabel"
+theme_type_variation = &"CaptionLabel"
 autowrap_mode = 2

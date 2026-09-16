@@ -337,3 +337,12 @@ scope for the inventory pass; pick up in its own session. (Note: a per-instance
 `fill_*.png` pattern on these bars was tried and reverted — the tiles render as
 a broken white fill on the `DaySummary` bar variations; a real pattern needs
 the bars restyled, not a stylebox override.)
+
+## Weekly Results pill/logs icons are the shared placeholder set
+
+The four masthead pills (uang/poin/menang/event) and the Logs rows use
+`Assets/Images/UI/Placeholders/icon_*` — the canonical shared icon set used by
+16 scenes (EndGame, Inventory, Koperasi, Minigames, RunResult.gd). The mentor
+read them as still placeholder-grade on 2026-09-16. Replacing them properly is a
+**game-wide** icon pass, not a Weekly-Results-only swap (a local swap would fork
+the screen visually). Do it across all consumers at once, at the same paths.

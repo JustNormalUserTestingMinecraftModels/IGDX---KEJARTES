@@ -53,28 +53,10 @@ theme_override_constants/margin_bottom = 36
 
 [node name="VBox" type="VBoxContainer" parent="Margin" unique_id=1245057866]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 44
 
 [node name="Banner" parent="Margin/VBox" unique_id=2085513516 instance=ExtResource("4_5y4mq")]
 layout_mode = 2
-
-[node name="HeaderPanel" type="VBoxContainer" parent="Margin/VBox" unique_id=1251977570]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="TitleLabel" type="Label" parent="Margin/VBox/HeaderPanel" unique_id=241908414]
-layout_mode = 2
-theme_type_variation = &"H1Label"
-text = "Evaluasi Mingguan Siswa"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="SubtitleLabel" type="Label" parent="Margin/VBox/HeaderPanel" unique_id=469791151]
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Rapor perkembangan stats dan catatan minigame"
-horizontal_alignment = 1
-autowrap_mode = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Margin/VBox" unique_id=1062953009]
 layout_mode = 2

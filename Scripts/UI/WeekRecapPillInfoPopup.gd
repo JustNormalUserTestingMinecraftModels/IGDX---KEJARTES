@@ -34,10 +34,13 @@ signal closed
 
 @onready var scrim: ColorRect = $Scrim
 @onready var card: PanelContainer = $Scrim/Card
-@onready var icon_rect: TextureRect = $Scrim/Card/Layout/Header/IconRect
-@onready var title_label: Label = $Scrim/Card/Layout/Header/TitleLabel
-@onready var close_button: Button = $Scrim/Card/Layout/Header/CloseButton
+@onready var icon_rect: TextureRect = $Scrim/Card/Layout/HeaderBand/Header/IconRect
+@onready var title_label: Label = $Scrim/Card/Layout/HeaderBand/Header/TitleLabel
+@onready var close_button: Button = $Scrim/Card/Layout/HeaderBand/Header/CloseButton
 @onready var body_label: Label = $Scrim/Card/Layout/BodyLabel
+## The pill's own number, restated large above the explanation. Hidden when
+## the caller passes no value (keeps old callers working).
+@onready var value_label: Label = $Scrim/Card/Layout/ValueLabel
 
 ## Guards against a double close: the exit tween and the scrim tap can
 ## both fire, and freeing twice crashes.
@@ -62,10 +65,12 @@ func _scrim_color(alpha_scale: float = 1.0) -> Color:
 ## Fill the icon, title, and body from one pill's fixed copy. Call before
 ## adding the popup to the tree, or immediately after -- it needs the
 ## @onready references, so it must run inside the tree.
-func configure(icon: Texture2D, title: String, body: String) -> void:
+func configure(icon: Texture2D, title: String, body: String, value: String = "") -> void:
 	icon_rect.texture = icon
 	title_label.text = title
 	body_label.text = body
+	value_label.text = value
+	value_label.visible = not value.is_empty()
 
 
 ## Reveal: place the card above the bottom edge, pop it in, fade the

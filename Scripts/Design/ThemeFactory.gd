@@ -24,6 +24,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_student_card(theme, tokens)
 	_build_week_recap(theme, tokens)
 	_build_minigame_result(theme, tokens)
+	_build_weekly_results_polish(theme, tokens)
 	_build_event_warning(theme, tokens)
 	_build_event_dialogue(theme, tokens)
 	_build_base_overrides(theme, tokens)
@@ -1585,3 +1586,58 @@ static func _build_minigame_result(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_outline_color", "ScoreHudValueLabel", tokens.text_primary)
 	if tokens.font_display != null:
 		theme.set_font("font", "ScoreHudValueLabel", tokens.font_display)
+
+
+# ------------------------------------------------------ weekly results polish
+
+## The 2026-09-16 Weekly Results hybrid pass: three panel variations shared by
+## the masthead, the kartu-pelajar (ID card) header and the pill popup/logs
+## sheet so they read as one visual family, per
+## docs/superpowers/sdd/2026-09-16-weekly-results-polish.
+static func _build_weekly_results_polish(theme: Theme, tokens: DesignTokens) -> void:
+	# -- RecapMastheadPanel: the brand-primary band behind the masthead's
+	# title/meta/star row -- only the top corners round, since it sits flush
+	# against the screen's top edge. --
+	theme.add_type("RecapMastheadPanel")
+	theme.set_type_variation("RecapMastheadPanel", "Panel")
+	var masthead := StyleBoxFlat.new()
+	masthead.bg_color = tokens.brand_primary
+	masthead.corner_radius_top_left = tokens.radius_md
+	masthead.corner_radius_top_right = tokens.radius_md
+	masthead.content_margin_left = tokens.space_md
+	masthead.content_margin_right = tokens.space_md
+	masthead.content_margin_top = tokens.space_sm
+	masthead.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "RecapMastheadPanel", masthead)
+
+	# -- IdCardPanel: the cream card frame shared by the student card header
+	# and the popup/logs sheet header, with a brand top rule tying it back
+	# to RecapMastheadPanel. Derived from ResultCardPanel's cream/radius_md
+	# idiom, but a flat StyleBoxFlat rather than the nine-patch art, since
+	# this frame needs a real border edge to carry the rule. --
+	theme.add_type("IdCardPanel")
+	theme.set_type_variation("IdCardPanel", "Panel")
+	var id_card := StyleBoxFlat.new()
+	id_card.bg_color = tokens.surface_card
+	id_card.set_corner_radius_all(tokens.radius_md)
+	id_card.border_color = tokens.brand_primary
+	id_card.border_width_top = int(tokens.outline_width)
+	id_card.content_margin_left = tokens.space_md
+	id_card.content_margin_right = tokens.space_md
+	id_card.content_margin_top = tokens.space_sm
+	id_card.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "IdCardPanel", id_card)
+
+	# -- RecapChipPanel: the quiet ground for the masthead's four pills --
+	# sunken rather than card-white so it reads quieter next to the brand
+	# band above it. --
+	theme.add_type("RecapChipPanel")
+	theme.set_type_variation("RecapChipPanel", "Panel")
+	var recap_chip := StyleBoxFlat.new()
+	recap_chip.bg_color = tokens.surface_sunken
+	recap_chip.set_corner_radius_all(tokens.radius_pill)
+	recap_chip.content_margin_left = tokens.space_sm
+	recap_chip.content_margin_right = tokens.space_sm
+	recap_chip.content_margin_top = tokens.space_xs
+	recap_chip.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "RecapChipPanel", recap_chip)

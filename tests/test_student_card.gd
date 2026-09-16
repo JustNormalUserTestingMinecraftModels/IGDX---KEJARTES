@@ -220,6 +220,32 @@ func test_page_transition_leaves_the_belajar_slide_to_the_shift() -> void:
 		"the button must still be thrown off with the old card")
 
 
+## _transition_page parks the incoming card a full screen-width off to the
+## side and only then tweens it home -- and it calls _update_nav_buttons, and
+## so _shift_approve_for_belajar, while the card is still parked there. A
+## target computed from the card's live position therefore lands BELAJAR a
+## screen-width out (measured at 1640 on a 1080x2400 phone, against Batal's
+## 30). The settled position is the original_position meta, which
+## _transition_page itself already trusts as the tween's destination.
+func test_the_belajar_shift_reads_the_cards_settled_position() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var start := src.find("func _shift_approve_for_belajar")
+	assert_true(start != -1, "_shift_approve_for_belajar is gone")
+	if start == -1:
+		return
+	var body := src.substr(start)
+	var stop := body.find("func _reset_approve_position")
+	assert_true(stop != -1, "_reset_approve_position must follow the shift")
+	if stop == -1:
+		return
+	body = body.substr(0, stop)
+	assert_true(body.contains("original_position"),
+		"the shift must place BELAJAR from the card's settled " +
+		"original_position meta, not from its mid-animation position")
+	assert_false(body.contains("var kertas_pos = active_kertas.position"),
+		"active_kertas.position is the parked position during a page change")
+
+
 func test_student_card_view_class_exists() -> void:
 	assert_true(ResourceLoader.exists("res://Scripts/StudentCard/StudentCardView.gd"),
 		"the shared card view must exist")

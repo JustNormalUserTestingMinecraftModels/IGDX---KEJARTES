@@ -809,7 +809,14 @@ func _shift_approve_for_belajar(index: int):
 
 	var is_locked = (approve_btn and not approve_btn.visible) and (batal_btn and not batal_btn.visible)
 	var shifted_x = orig_pos.x
-	var kertas_pos = active_kertas.position
+	# The card's SETTLED position, not its live one. _transition_page parks the
+	# incoming card a full screen-width off to the side and only tweens it home
+	# afterwards, but it calls _update_nav_buttons -- and so this -- while the
+	# card is still parked. A target computed from the live position put
+	# BELAJAR at x 1640 on a 1080x2400 phone, a screen-width right of Batal.
+	# The meta is the same settled value _transition_page tweens the card to.
+	var kertas_pos = active_kertas.get_meta("original_position") \
+		if active_kertas.has_meta("original_position") else active_kertas.position
 	var belajar_target = Vector2.ZERO
 
 	if is_locked:

@@ -1,0 +1,156 @@
+[gd_scene format=3 uid="uid://c8523u3cqsu87"]
+
+[ext_resource type="Script" uid="uid://che82gx17xxwd" path="res://Scripts/Minigames/Akademis/Kalkulator.gd" id="1_f3fd5"]
+[ext_resource type="Texture2D" uid="uid://dtmog6agbr3bg" path="res://Assets/Images/UI/Kalkulator/kalkulator_base.png" id="2_msie0"]
+[ext_resource type="PackedScene" uid="uid://b6gae3mog63id" path="res://Scenes/Minigames/Akademis/KalkulatorKey.tscn" id="3_84ox4"]
+
+[node name="Kalkulator" type="AspectRatioContainer" unique_id=984734372]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+ratio = 0.7263
+script = ExtResource("1_f3fd5")
+
+[node name="Body" type="Control" parent="." unique_id=182561960]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BodyTexture" type="TextureRect" parent="Body" unique_id=610943167]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_msie0")
+expand_mode = 1
+
+[node name="Layar" type="Label" parent="Body" unique_id=49057292]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0968
+anchor_top = 0.0943
+anchor_right = 0.9028
+anchor_bottom = 0.274
+offset_left = 28.0
+offset_right = -28.0
+theme_type_variation = &"DisplayLabel"
+theme_override_constants/outline_size = 0
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 1
+clip_text = true
+
+[node name="KeyGrid" type="GridContainer" parent="Body" unique_id=922673989]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1242
+anchor_top = 0.2896
+anchor_right = 0.856
+anchor_bottom = 0.8188
+mouse_filter = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="Key1" parent="Body/KeyGrid" unique_id=78758206 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+metadata/no_auto_juice = true
+
+[node name="Key2" parent="Body/KeyGrid" unique_id=1434218802 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "2"
+metadata/no_auto_juice = true
+
+[node name="Key3" parent="Body/KeyGrid" unique_id=313854224 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "3"
+metadata/no_auto_juice = true
+
+[node name="Key4" parent="Body/KeyGrid" unique_id=912545394 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "4"
+metadata/no_auto_juice = true
+
+[node name="Key5" parent="Body/KeyGrid" unique_id=196992200 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "5"
+metadata/no_auto_juice = true
+
+[node name="Key6" parent="Body/KeyGrid" unique_id=121075425 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "6"
+metadata/no_auto_juice = true
+
+[node name="Key7" parent="Body/KeyGrid" unique_id=224308920 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "7"
+metadata/no_auto_juice = true
+
+[node name="Key8" parent="Body/KeyGrid" unique_id=2016522531 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "8"
+metadata/no_auto_juice = true
+
+[node name="Key9" parent="Body/KeyGrid" unique_id=1490735082 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "9"
+metadata/no_auto_juice = true
+
+[node name="ZeroRow" type="HBoxContainer" parent="Body" unique_id=384263541]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1242
+anchor_top = 0.8245
+anchor_right = 0.856
+anchor_bottom = 0.9971
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="SpacerKiri" type="Control" parent="Body/ZeroRow" unique_id=1372999956]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Key0" parent="Body/ZeroRow" unique_id=872951319 instance=ExtResource("3_84ox4")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+key_text = "0"
+metadata/no_auto_juice = true
+
+[node name="SpacerKanan" type="Control" parent="Body/ZeroRow" unique_id=929038050]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2

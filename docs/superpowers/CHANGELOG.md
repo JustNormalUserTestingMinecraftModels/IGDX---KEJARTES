@@ -27,6 +27,130 @@ Plan `docs/superpowers/plans/2026-09-15-weekly-shop-minigame-polish.md`, spec
 - **MainBola**: an off-target shot ends in the keeper's hands, and the target
   box respawns somewhere new (x and height) after every goal.
 
+## 2026-09-16 — Weekly Results: tabs out, Logs and Selanjutnya in
+
+Plan `docs/superpowers/plans/2026-09-16-weekly-results-hybrid.md`, spec
+`docs/superpowers/specs/2026-09-16-weekly-results-hybrid-design.md`.
+
+Immediately after the revert below, the screen keeps its banner, pills,
+header and student cards but loses the SISWA / RIWAYAT tabs and gains the
+rebuild's two-button row: **Logs** and **Selanjutnya**.
+
+The week's history is not dropped — it moves. `initialize_checkup` keeps a
+duplicate of `minigame_history`, and `open_logs` hands it to `WeekLogsPopup`.
+That sheet has existed and been covered by `week_logs_popup` all along: the
+2026-09-14 rebuild borrowed a popup that was already orphaned, the revert
+re-orphaned it, and this borrows it back.
+
+**What went.** `TabBar`, `HistoryPane` and the `PaneStack` that held them;
+`StudentsPane` now sits directly under `ScrollContainer`. In the script: the
+`Pane` enum, `PANE_SLIDE_DISTANCE`, `show_pane`, `_transition_panes`,
+`_sync_tab_buttons`, `_update_tab_counts`, `_play_history_entrance`, and the
+four vars behind them.
+
+**What came back.** The `Buttons` row — `ResultButton`, 160 tall, separation
+120, both `size_flags_horizontal = 3` so the row splits equally, because the
+display face sets SELANJUTNYA in capitals and needs about 435 px. Plus
+`logs_popup_scene`, `open_logs`, `_history`, `_logs_seen` and `_logs_popup`,
+lifted unchanged.
+
+**The entrance's finale** now fades in both buttons and enables each only
+once it is visible — the rebuild's own rule, so a tap meant for something
+else cannot land on a freshly-enabled button. `_on_close_pressed` disables
+both before its fade, so a second tap during the exit can neither re-fire nor
+open Logs.
+
+**Retired one commit after being restored:** the `WeekTabButton` variation
+(with a rebake) and the `pane_swipe` cue with its `.ogg`. Both existed only
+for the tabs. The three pill/banner variations and the three pill cues stay,
+because the pills stay.
+
+**Debt resolved.** `ResultButton` and `WeekLogsPopup` both have call sites
+again, so two of the three orphans the revert recorded are gone from
+`DEBT.md`. `title_weekly_results.png` is still orphaned and still kept.
+
+**Tests.** The six tab and pane tests — default tab, pane visibility, the
+two scroll-memory tests, the history latch, and the two transition tests —
+are deleted with the feature rather than adapted: there is nothing left to
+assert. Five replace them, covering the sheet's wiring, both labels, the
+`ResultButton` variation, the no-second-sheet rule and the first-open latch,
+plus a scan that the tab machinery is really gone.
+`viewport_editability`'s entry for this screen stays at 1: it was earned by
+building history rows and is now earned by instancing the sheet, checked by
+removing the entry and reading what the suite asked for rather than assuming.
+
+Suite: 114 suites, 1632/1637 — the same totals as the revert below, because
+the six deleted tests were replaced one for one. The five failures are
+`inventory` (2) and `light_ground_text` (3), pre-existing on `Textures` from
+PR #48.
+
+## 2026-09-16 — Weekly Results reverted to the 2026-09-03 report
+
+Plan `docs/superpowers/plans/2026-09-16-revert-weekly-results.md`, spec
+`docs/superpowers/specs/2026-09-16-revert-weekly-results-design.md`.
+
+The end-of-week screen goes back to the design that stood before 2026-09-14:
+`EVALUASI MINGGUAN SISWA`, the SISWA / RIWAYAT tabs with their slide-and-fade,
+the pinned `WeekRecapBanner` with its tappable pills and info popup, the
+RIWAYAT pane of `WeekHistoryRow`s, `CoinShower`, and `Selesai Evaluasi`. Out
+go the red ribbon, the coins / EVENT BERHASIL / EVENT GAGAL lines, the Logs
+and Selanjutnya buttons, and `WeekReportReveal`'s one-reward-at-a-time
+playback with tap-to-skip.
+
+**The confetti was never part of the redesign**, which is why this was a
+revert and not a rebuild. `PaperConfetti.tscn` landed on 2026-09-12 in
+`c346f62`, two days *before* the rebuild in `27ce108`, and the 2026-09-03
+screen already instances it from the same `_CELEBRATION_SCENE` constant, at
+the same `Celebration` position, behind the same "did any card gain ground"
+gate. Nothing was ported; the scene and `paper_flutter.gdshader` are
+untouched. The old call passes the cards' stagger as a delay, so the burst
+lands just behind the last card's own fill again.
+
+**Three things were deliberately kept.**
+
+- `initialize_checkup(manager, week_earnings)`. SchoolDay pays the Wirausaha
+  total out — which empties `GameState.pending_earnings` — before it opens
+  the screen, so `WeekRecap._sum_pending_earnings` reads 0 by then and the
+  banner's money pill would show nothing the player earned. `DebugManager`'s
+  📊 Laporan Mingguan also calls the two-argument form. A non-zero argument
+  overwrites `money_earned`; a caller that has not paid out yet omits it and
+  keeps WeekRecap's own read. Two doc comments that still claimed the screen
+  runs *before* the payout were corrected rather than reverted.
+- `Juice.punch` / `text_center` / the paced count, and `play_sfx`'s optional
+  pitch. Both landed under weekly-reveal commits but are general utilities on
+  shared autoloads with their own coverage.
+- `DaySummaryStudentRow` and `DaySummaryStatRow`. Today's card is a superset
+  of the API the old screen drives, so it needed no change at all;
+  `rewind_week`, `play_needs_week`, `land_week` and `play_count` are simply
+  unused by this screen now.
+
+**Why it was done per file.** The redesign is eight commits — `27ce108`,
+`6043538`, `e7fc308`, `205e3eb`, `feebf96`, `4911165`, `dc5c4d7`, `c9c8ef9` —
+but they are interleaved in history with the face rigs, lobby buttons, exam
+CG, the inventory redesign and the mobile perf pass, so no range revert was
+available. Files only the redesign touched (`ResultCheckup.tscn`, its script
+and suite; `WeekRecap.gd` and its suite) were restored wholesale from
+`27ce108^` / `e7fc308^`. The twenty files `e7fc308` deleted came back from
+`e7fc308^`. `ThemeFactory.gd` and `AudioDirector.gd` were patched by hand,
+because `12461f1`, `6c9f873`, `d33c62f`, `fd3bba7`, `63eff34` and `85a2c3f`
+have edited them since; the restored code sits alongside that work.
+`kejartes_theme.tres` was regenerated by `BakeTheme.gd` and verified by
+content, never hand-merged.
+
+**Caught on the way.** Two files the plan had not listed still carried the
+new layout: `test_school_day`'s touch-target map named
+`Margin/Layout/Buttons/LogsButton`, and `viewport_editability`'s `BASELINE`
+had lost this screen's entry. Both were put back to what `27ce108` changed
+them from — the ratchet entry restored to the `1` the 2026-09-03 screen
+legitimately had, not raised. `ResultButton` was kept despite losing its
+only call site, because `lobby_style_buttons` asserts it; that, the ribbon
+art and the re-orphaned `WeekLogsPopup` are recorded in `DEBT.md`.
+
+Suite: 114 suites, 1632/1637. The five failures are `inventory` (2) and
+`light_ground_text` (3), pre-existing on `Textures` from PR #48's inventory
+redesign — they survive a clean editor restart and full rescan and are
+unrelated to this branch.
+
 ## 2026-09-15 — Tall phones, Phase 1: Lobby, Koperasi, StudentCard, StudentList
 
 Plan `docs/superpowers/plans/2026-09-15-tall-phone-layout-phase-1.md`, spec

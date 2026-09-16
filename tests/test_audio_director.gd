@@ -553,3 +553,9 @@ func test_play_sfx_scales_the_voice_by_the_given_pitch() -> void:
 		and player.pitch_scale <= 1.5 * (1.0 + spread) + 0.001,
 		"pitch 1.5 must land within the spread around 1.5, got %f" % player.pitch_scale)
 	player.stop()
+
+
+func test_pill_sfx_are_registered() -> void:
+	for id in [&"pill_tap", &"pill_popup_open", &"pill_popup_close"]:
+		assert_true(AudioDirector.has_sfx(id),
+			"AudioDirector has no stream registered for %s" % id)

@@ -2,9 +2,9 @@
 extends PanelContainer
 class_name WeekHistoryRow
 
-## One line of Weekly Results' Logs sheet (WeekLogsPopup): a minigame that
-## was played or an event that fired (2026-09-03 spec section 5; moved from
-## the retired RIWAYAT tab on 2026-09-14).
+## One line of the week's Logs sheet (WeekLogsPopup): a minigame that was
+## played or an event that fired (2026-09-03 spec section 5; the RIWAYAT tab
+## that first held these rows was retired on 2026-09-16).
 ##
 ## Replaces ResultCheckup._create_history_item(), which built the same
 ## row node-by-node at runtime -- debt that

@@ -257,6 +257,13 @@ it again along with 177 other unused files.)
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
 them deliberately, or give them a consumer.
 
+**The WEEKLY RESULTS ribbon is orphaned (2026-09-16).**
+`Assets/Images/DaySummary/title_weekly_results.png` is referenced by nothing
+since ResultCheckup was reverted off the 2026-09-14 rebuild. Kept on disk by
+decision — it is the only artwork that pass produced, and it is cheap to
+hold. (The same revert briefly orphaned `ResultButton` and `WeekLogsPopup`;
+the hybrid that followed gave both their call sites back.)
+
 **Deferred: the AturJadwal shelf.** Ships as two `ColorRect`s rather than a
 `ShelfEdge` variation. Needs an editor restart plus a manual rebake (a new
 `@export` on `DesignTokens` is invisible to a running editor). The exact diff

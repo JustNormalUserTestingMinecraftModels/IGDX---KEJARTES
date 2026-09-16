@@ -1,29 +1,48 @@
 extends RefCounted
 class_name WeekRecap
 
-## The week's minigame tallies, computed from one StudentManager, and the
-## Indonesian money format Weekly Results shows (2026-09-14 weekly-results
-## spec; first written for the 2026-09-03 banner, since retired).
+## The week's four headline totals, computed from one StudentManager
+## (2026-09-03 spec section 4).
 ##
-## A plain RefCounted rather than a node or an autoload, so the numbers can
-## be tested without instantiating a scene. Nothing here is persisted.
+## A plain RefCounted rather than a node or an autoload: the numbers on
+## ResultCheckup's banner are the most likely thing in this screen to be
+## argued about during balancing, and keeping them here means they can be
+## tested without instantiating a scene.
 ##
-## The week's coins are NOT computed here. SchoolDay pays the Wirausaha
-## earnings out -- emptying GameState's pending-earnings dict -- before
-## Weekly Results opens, so it hands the paid total to
-## ResultCheckup.initialize_checkup() instead.
+## Nothing here is persisted. The week's totals are recomputed on demand
+## from the live StudentManager, matching GameState's session-scoped
+## design.
+##
+## One caveat on money_earned: SchoolDay pays the Wirausaha earnings out --
+## emptying GameState.pending_earnings, which is what _sum_pending_earnings
+## reads -- before it opens ResultCheckup, so by then this read is 0.
+## ResultCheckup.initialize_checkup() takes the paid total as an argument
+## and overwrites the key. The read still stands for a caller that has not
+## paid out yet, which is why it is computed here at all.
 
-## The history category that marks an entry as a random event rather than a
-## played minigame. Everything else is a minigame.
+## The three skill keys that count toward net_skill_delta. energy and
+## mood are deliberately absent: summing a mood drop into the same
+## integer as an academic gain produces a number that means nothing --
+## -12 mood against +12 akademis would cancel to 0 and report a flat week
+## that was not flat.
+const SKILL_KEYS := ["akademis", "seni_budaya", "olahraga"]
+
+## The history category that marks an entry as a random event rather than
+## a played minigame. Everything else is a minigame.
 const EVENT_CATEGORY := "Event"
 
+## Shown by the poin pill at exactly zero, in place of a bare "0".
+const NEUTRAL_WORD := "Netral"
 
-## The week's minigame tallies for `manager`. Random events are counted
-## apart: they are recorded as won and cannot fail. Safe on a null manager,
-## which reports an empty week -- the editor's test runner builds
-## ResultCheckup with no simulation behind it.
+
+## Every headline total for the week `manager` just simulated. Safe on a
+## null manager, which reports an empty week rather than erroring -- the
+## editor's test runner builds ResultCheckup with no simulation behind
+## it.
 static func compute(manager: StudentManager) -> Dictionary:
 	var result := {
+		"money_earned": _sum_pending_earnings(),
+		"net_skill_delta": 0,
 		"minigames_won": 0,
 		"minigames_lost": 0,
 		"minigames_total": 0,
@@ -31,6 +50,13 @@ static func compute(manager: StudentManager) -> Dictionary:
 	}
 	if manager == null:
 		return result
+
+	var net := 0.0
+	for day_name in manager.daily_stat_log:
+		for change in manager.daily_stat_log[day_name]:
+			if SKILL_KEYS.has(change.get("stat_key", "")):
+				net += change.get("delta", 0.0)
+	result["net_skill_delta"] = int(round(net))
 
 	for entry in manager.minigame_history:
 		if entry.get("category", "") == EVENT_CATEGORY:
@@ -45,6 +71,18 @@ static func compute(manager: StudentManager) -> Dictionary:
 	return result
 
 
+## This week's un-paid Wirausaha earnings. GameState empties
+## pending_earnings at week end, so this only reports anything to a caller
+## that runs BEFORE SchoolDay's payout. ResultCheckup no longer does --
+## 6043538 moved the payout ahead of the screen -- so it hands the paid
+## total to initialize_checkup(), which overwrites money_earned with it.
+static func _sum_pending_earnings() -> int:
+	var total := 0
+	for amount in GameState.pending_earnings.values():
+		total += int(amount)
+	return total
+
+
 ## "4.200" -- Indonesian thousands grouping, which uses a dot where
 ## English uses a comma.
 static func format_money(value: int) -> String:
@@ -57,3 +95,13 @@ static func format_money(value: int) -> String:
 		if count % 3 == 0 and i > 0:
 			grouped = "." + grouped
 	return ("-" if value < 0 else "") + grouped
+
+
+## "+37" / "-4" / "Netral". The "+" is explicit and the "-" comes free
+## from %d, the same sign rule DaySummaryStudentRow.format_needs_delta
+## uses. Zero reads as a word because a bare "0" beside a coloured pill
+## looks like the pill failed to populate.
+static func format_skill_delta(value: int) -> String:
+	if value == 0:
+		return NEUTRAL_WORD
+	return "%s%d" % ["+" if value > 0 else "", value]

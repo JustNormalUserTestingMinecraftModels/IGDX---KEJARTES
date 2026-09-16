@@ -73,3 +73,58 @@ func test_a_key_renders_its_digit_and_reports_it() -> void:
 	assert_eq(digit.text, "7", "the key shows the digit it is configured with")
 	key.emit_signal("pressed")
 	assert_eq(seen, ["7"] as Array[String], "a press reports its own digit")
+
+
+const KALK_SCENE := "res://Scenes/Minigames/Akademis/Kalkulator.tscn"
+const BODY_TEXTURE := "res://Assets/Images/UI/Kalkulator/kalkulator_base.png"
+
+
+func test_body_texture_imports_as_texture2d() -> void:
+	assert_true(ResourceLoader.exists(BODY_TEXTURE), "missing art: " + BODY_TEXTURE)
+	assert_true(load(BODY_TEXTURE) as Texture2D != null,
+		BODY_TEXTURE + " did not import as a Texture2D")
+
+
+func test_kalkulator_instances_ten_authored_keys() -> void:
+	var src := FileAccess.get_file_as_string(KALK_SCENE)
+	assert_eq(src.count("instance=ExtResource"), 10,
+		"nine digit keys plus the wide zero, all authored -- none built at runtime")
+	assert_true(src.contains(BODY_TEXTURE), "Kalkulator.tscn must draw the body art")
+
+
+## Guards the mapping, not mere presence: a transposed 3 and 7 leaves every
+## key_text still in the file.
+func test_every_digit_zero_to_nine_has_exactly_one_key() -> void:
+	var kalk = _live(KALK_SCENE)
+	var seen: Array[String] = []
+	for key in kalk.find_children("*", "Button", true, false):
+		seen.append(str(key.key_text))
+	seen.sort()
+	assert_eq(seen, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] as Array[String],
+		"exactly one key per digit")
+
+
+func test_hiding_the_zero_key_hides_only_that_row() -> void:
+	var kalk = _live(KALK_SCENE)
+	kalk.show_zero_key = false
+	assert_false(kalk.get_node("Body/ZeroRow").visible, "Variabel needs no zero")
+	assert_true(kalk.get_node("Body/KeyGrid").visible, "the 1-9 grid always shows")
+	kalk.show_zero_key = true
+	assert_true(kalk.get_node("Body/ZeroRow").visible, "Password needs the zero back")
+
+
+func test_a_key_press_reaches_the_kalkulator_as_a_digit() -> void:
+	var kalk = _live(KALK_SCENE)
+	var seen: Array[String] = []
+	kalk.digit_pressed.connect(func(d: String): seen.append(d))
+	kalk.get_node("Body/KeyGrid/Key5").emit_signal("pressed")
+	assert_eq(seen, ["5"] as Array[String], "the key's digit relays out of the calculator")
+
+
+func test_disabling_the_keys_disables_every_one() -> void:
+	var kalk = _live(KALK_SCENE)
+	kalk.set_keys_disabled(true)
+	for key in kalk.find_children("*", "Button", true, false):
+		assert_true(key.disabled, "%s must lock while an answer is being judged" % key.name)
+	kalk.set_keys_disabled(false)
+	assert_false((kalk.get_node("Body/KeyGrid/Key1") as Button).disabled, "and unlock after")

@@ -340,47 +340,39 @@ func test_kalkulator_instances_ten_authored_keys() -> void:
 ## Guards the mapping, not mere presence: a transposed 3 and 7 leaves every
 ## key_text still in the file.
 func test_every_digit_zero_to_nine_has_exactly_one_key() -> void:
-	var kalk := (load(KALK_SCENE) as PackedScene).instantiate()
-	add_child(kalk)
+	var kalk = _live(KALK_SCENE)
 	var seen: Array[String] = []
 	for key in kalk.find_children("*", "Button", true, false):
 		seen.append(str(key.key_text))
 	seen.sort()
 	assert_eq(seen, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] as Array[String],
 		"exactly one key per digit")
-	kalk.queue_free()
 
 
 func test_hiding_the_zero_key_hides_only_that_row() -> void:
-	var kalk := (load(KALK_SCENE) as PackedScene).instantiate()
-	add_child(kalk)
+	var kalk = _live(KALK_SCENE)
 	kalk.show_zero_key = false
 	assert_false(kalk.get_node("Body/ZeroRow").visible, "Variabel needs no zero")
 	assert_true(kalk.get_node("Body/KeyGrid").visible, "the 1-9 grid always shows")
 	kalk.show_zero_key = true
 	assert_true(kalk.get_node("Body/ZeroRow").visible, "Password needs the zero back")
-	kalk.queue_free()
 
 
 func test_a_key_press_reaches_the_kalkulator_as_a_digit() -> void:
-	var kalk := (load(KALK_SCENE) as PackedScene).instantiate()
-	add_child(kalk)
+	var kalk = _live(KALK_SCENE)
 	var seen: Array[String] = []
 	kalk.digit_pressed.connect(func(d: String): seen.append(d))
 	kalk.get_node("Body/KeyGrid/Key5").emit_signal("pressed")
 	assert_eq(seen, ["5"] as Array[String], "the key's digit relays out of the calculator")
-	kalk.queue_free()
 
 
 func test_disabling_the_keys_disables_every_one() -> void:
-	var kalk := (load(KALK_SCENE) as PackedScene).instantiate()
-	add_child(kalk)
+	var kalk = _live(KALK_SCENE)
 	kalk.set_keys_disabled(true)
 	for key in kalk.find_children("*", "Button", true, false):
 		assert_true(key.disabled, "%s must lock while an answer is being judged" % key.name)
 	kalk.set_keys_disabled(false)
 	assert_false((kalk.get_node("Body/KeyGrid/Key1") as Button).disabled, "and unlock after")
-	kalk.queue_free()
 ```
 
 - [ ] **Step 2: Run it to make sure it fails**
@@ -437,7 +429,8 @@ func _ready() -> void:
 		layar.add_theme_color_override("font_color", layar_color)
 		layar.text = layar_placeholder
 	for key in _keys():
-		key.key_pressed.connect(func(d: String): digit_pressed.emit(d))
+		# By name: the loop variable is typed Node, which has no key_pressed.
+		key.connect("key_pressed", func(d: String): digit_pressed.emit(d))
 
 ## Every authored key, in tree order.
 func _keys() -> Array[Node]:
@@ -460,7 +453,7 @@ func reset_layar_color() -> void:
 ## Locks or unlocks every key at once, while an answer is being judged.
 func set_keys_disabled(disabled: bool) -> void:
 	for key in _keys():
-		key.disabled = disabled
+		(key as Button).disabled = disabled
 ```
 
 `add_theme_color_override` on a Label is a runtime colour change on a

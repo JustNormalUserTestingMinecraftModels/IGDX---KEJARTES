@@ -66,8 +66,13 @@ of `kalkulator_button.png` itself — so the grid is free geometry, constrained
 only by the mockup's proportions (180x180 cells, 6 px separation).
 
 `KeyGrid` holds nine `KalkulatorKey.tscn` instances, `Key1`..`Key9`.
-`ZeroRow` holds one more, `Key0`, at `custom_minimum_size = (274, 180)`,
-centred — the double-width zero of a real calculator. Password needs it
+`ZeroRow` holds one more, `Key0`, between two expanding spacer Controls
+(`SpacerKiri`, `SpacerKanan`) at the grid's 6 px separation, so it is
+exactly one column wide and centred at every screen size. (A fixed
+`custom_minimum_size` was tried first and drifted wider or narrower than
+the grid cells as the calculator scaled.) The LCD label drops
+`DisplayLabel`'s outline (`outline_size = 0`): a cream halo reads wrong
+on a segment display. Password needs it
 (answers run to 198); Variabel does not (its answers are always 1–9, as
 `Variabel.gd` already comments), so Variabel sets `show_zero_key = false` and
 the row hides, leaving the plain body space the mockup shows.

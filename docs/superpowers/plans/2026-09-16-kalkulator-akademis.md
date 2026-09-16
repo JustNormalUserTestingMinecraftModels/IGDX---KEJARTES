@@ -118,6 +118,16 @@ func test_key_press_squishes_and_darkens() -> void:
 		"the key opts out of UIPolish so there is only one press animation")
 
 
+## User amendment 2026-09-16: key digits use the heading font, in white.
+## DisplayLabel is on test_theme_factory's DISPLAY_ROSTER, so it is Boohong.
+func test_key_digit_is_the_heading_font_in_white() -> void:
+	var src := FileAccess.get_file_as_string(KEY_SCENE)
+	assert_true(src.contains("theme_type_variation = &\"DisplayLabel\""),
+		"the digit uses the heading face")
+	assert_true(src.contains("theme_override_colors/font_color = Color(1, 1, 1, 1)"),
+		"the digit is white")
+
+
 func test_a_key_renders_its_digit_and_reports_it() -> void:
 	var key := (load(KEY_SCENE) as PackedScene).instantiate()
 	key.key_text = "7"
@@ -254,7 +264,9 @@ Then one `batch_execute` (plugin command names, unquoted numbers):
   `layout_mode = 1`, four anchors 0/0/1/1, `mouse_filter = 2`,
   `horizontal_alignment = 1`, `vertical_alignment = 1`,
   `theme_type_variation = "DisplayLabel"`, `text = "1"`, and
-  `theme_override_colors/font_color = Color(0.92, 0.93, 0.95, 1)` — the cap is
+  `theme_override_colors/font_color = Color(1, 1, 1, 1)` — the user's
+  2026-09-16 amendment: the heading face (Boohong, which `DisplayLabel`
+  carries per `DISPLAY_ROSTER`), coloured white. The cap is
   near-black, and CLAUDE.md puts minigames outside the design system, which is
   why `Menjodohkan.tscn` carries the same kind of override.
 
@@ -263,7 +275,7 @@ Then `scene_save(session_id=...)`.
 - [ ] **Step 5: Run the test to verify it passes**
 
 Run: `test_run(suite="kalkulator", session_id="kalkulator-akademis@17ec")`
-Expected: PASS, 4 tests.
+Expected: PASS, 5 tests.
 
 If `test_a_key_renders_its_digit_and_reports_it` fails on the digit, the
 `Digit` label is at the wrong path — check with
@@ -505,7 +517,7 @@ One more `KalkulatorKey.tscn` instance under `Body/ZeroRow` named `Key0`:
 - [ ] **Step 5: Run the test to verify it passes**
 
 Run: `test_run(suite="kalkulator", session_id="kalkulator-akademis@17ec")`
-Expected: PASS, 10 tests.
+Expected: PASS, 11 tests.
 
 `test_kalkulator_instances_ten_authored_keys` counts
 `instance=ExtResource` lines; if it reads 11 the body texture was instanced

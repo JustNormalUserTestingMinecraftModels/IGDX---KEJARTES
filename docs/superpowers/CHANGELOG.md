@@ -23,6 +23,29 @@ for mobile. New reusable theme variations: `RecapMastheadPanel`, `IdCardPanel`,
 `RecapChipPanel`. The four pill/logs icons deliberately stay the shared
 `UI/Placeholders/` set (canonical across 16 scenes) — a real-icon pass is game-wide,
 logged in DEBT.
+## 2026-09-16 — Kalkulator for Variabel and Password
+
+Plan `docs/superpowers/plans/2026-09-16-kalkulator-akademis.md`, spec
+`docs/superpowers/specs/2026-09-16-kalkulator-akademis-design.md`.
+
+- **Variabel** and **Password** now sit on `meja_background.png` (like
+  Menjodohkan), show the question on Menjodohkan's `QuestionCard.tscn`, take
+  input from a drawn calculator, and submit through **Hapus** / **Kirim**
+  (`LobbyCtaButton`). Password's `background_texture` export had been painting
+  `lapanganBadminton.jpg` over the desk at runtime.
+- The calculator is shared: `Kalkulator.tscn` (an `AspectRatioContainer` at the
+  body art's ratio, a green LCD label, a 3x3 key grid and a `show_zero_key`
+  row that Variabel hides) instancing ten `KalkulatorKey.tscn`. A key squishes
+  toward its bottom edge and darkens while held, opts out of `UIPolish`, and
+  shows its digit in the heading face, white.
+- Question text is fitted by measurement (`SoalFit.gd`), not a size ladder: the
+  planned ladder clipped Variabel's last line on the first playtest. It
+  refits on `resized`, since the first question is set before layout.
+- Both numpads were built with `Button.new()`; they are authored nodes now.
+  `viewport_editability` BASELINE: Password 4 → gone, Variabel 4 → 1 (the
+  `+20s` popup).
+- Textures arrived at 7458x10265 and 1716x1620 and are stored downscaled in
+  `Assets/Images/UI/Kalkulator/` (1080x1487, 360x340).
 
 ## 2026-09-15 — Weekly shop and minigame polish
 

@@ -118,6 +118,21 @@ shows in-game.
 
 ## Known bugs and gaps
 
+**`Textures` is red: five Inventory tests look up moved nodes (2026-09-16).**
+`feat(inventory): mobile redesign` (`431cc5d`) restructured
+`Scenes/Inventory/inventory.tscn` without updating two suites, so a full
+`test_run` on a clean `Textures` fails five tests and blocks every PR's merge
+gate. `tests/test_inventory.gd:94,107` want
+`MainColumn/Header/Row/BackButton`, which is now
+`MainColumn/Header/HeaderCol/Row/BackButton` — a path fix.
+`tests/test_light_ground_text.gd:201` wants `MainColumn/FilterRow/Scroll/Chips`,
+which is now `MainColumn/FilterRow/SegBar/Tabs`, and its children are
+`TabSemua`/`TabBuku`/`TabOlahraga`/`TabMakanan` carrying a child `Ico`
+`TextureRect` rather than a Button `icon`, so that test needs rewriting, not
+repointing — it measures the icon's contrast and must now read the child node.
+`:244` and `:373-390` follow the item sheet's own moved nodes. Belongs to
+whoever owns the redesign.
+
 **Koperasi's first shelf button is 27 px wider than authored (2026-09-14).**
 `Rak1` in `Scenes/Koperasi/koprasi.tscn` is laid out 442 px wide
 (offsets 303..745), but "KEBUTUHAN SEKOLAH" at its 40 px

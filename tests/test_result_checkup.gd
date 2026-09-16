@@ -1082,8 +1082,8 @@ func test_duplicate_header_removed() -> void:
 func test_masthead_shows_stars() -> void:
 	var src := FileAccess.get_file_as_string(
 		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
-	assert_true(src.contains("stars"),
-		"banner surfaces the stars figure")
+	assert_true(src.contains("stars_value.text"),
+		"banner wires the stars figure into its label, not just reads the key")
 
 
 ## The masthead rebuild reuses the existing shared pill icon set rather

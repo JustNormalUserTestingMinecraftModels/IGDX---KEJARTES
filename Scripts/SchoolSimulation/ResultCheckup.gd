@@ -28,8 +28,8 @@ signal checkup_closed
 ## Optional photo behind the report. When set it replaces the panel.
 @export var background_texture: Texture2D = null
 
-# ── Visual - Header & Typography ──────────────────────────────────────
-@export_group("Visual - Header & Typography")
+# ── Visual - Typography ──────────────────────────────────────────────
+@export_group("Visual - Typography")
 ## Optional font override applied across the screen's labels. Null keeps
 ## the theme's default font.
 @export var font: Font = null

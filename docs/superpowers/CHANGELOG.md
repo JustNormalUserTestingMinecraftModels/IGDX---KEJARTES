@@ -150,6 +150,31 @@ Suite: 114 suites, 1632/1637. The five failures are `inventory` (2) and
 `light_ground_text` (3), pre-existing on `Textures` from PR #48's inventory
 redesign — they survive a clean editor restart and full rescan and are
 unrelated to this branch.
+## 2026-09-16 — `/gamecode`'s review gate moves from the design to the plan
+
+The Brief is gone. Brainstorm, branch, spec and plan now all run unattended,
+and the single pre-code gate is a **Plan Summary** (§4) — the user reviews a
+concrete plan instead of a design sketch, still before any code is written.
+"Ship it?" is unchanged.
+
+§4 is a contract, not a hint: 200 words or fewer, the user's language,
+repo-relative paths, one line per task, and a **required** `Paling perlu
+dilihat` line naming the single guess most likely to be wrong — usually an
+invented tuning number — with its cheaper alternative and what changing it
+costs now versus after the tests are written.
+
+The cap and the contract came out of testing. Three agents told only to "give
+a quick and clear summary" all stopped correctly, but wrote 400, 380 and 330
+words; one pasted absolute Windows paths, and the language drifted between
+English and Indonesian across reps. Against the written §4 the same three
+scenarios produced 167, 158 and 160 words, all Indonesian, all repo-relative,
+each with a real `Paling perlu dilihat`. The element worth keeping was one all
+three invented on their own: naming the number they had guessed.
+
+`/gamecode-instant` follows the gate. It is still "`/gamecode` minus the wait",
+so its Receipt collapsed into the same §4 message, sent and never awaited —
+the two files now differ by one pause.
+
 ## 2026-09-16 — `/gamecode-instant`, the unattended variant of `/gamecode`
 
 `.claude/skills/gamecode-instant/SKILL.md`. Same pipeline as `/gamecode`, with

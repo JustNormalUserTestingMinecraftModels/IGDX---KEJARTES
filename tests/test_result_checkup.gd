@@ -20,7 +20,6 @@ const _ROW_SCENE := "res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn"
 const _ROW_SCRIPT := "res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd"
 const _CHECKUP_SCENE := "res://Scenes/SchoolSimulation/ResultCheckup.tscn"
 const _CHECKUP_SCRIPT := "res://Scripts/SchoolSimulation/ResultCheckup.gd"
-const _LOGS_SCENE := "res://Scenes/SchoolSimulation/WeekLogsPopup.tscn"
 
 
 func suite_name() -> String:
@@ -304,123 +303,6 @@ func test_the_week_cards_needs_delta_text_is_untouched_by_play_gain() -> void:
 		"same for mood")
 
 
-# ------------------------------------------------ the week reveal's API
-
-## The tweens `action` creates, found the way _run_and_step finds them.
-func _new_tweens(action: Callable) -> Array:
-	var before: Array = Engine.get_main_loop().get_processed_tweens()
-	action.call()
-	var out: Array = []
-	for tw in Engine.get_main_loop().get_processed_tweens():
-		if not before.has(tw) and is_instance_valid(tw):
-			out.append(tw)
-	return out
-
-
-## A card set up for the week, 26 -> 52 akademis against 65 (40% -> 80%)
-## and energy 80 -> 62, mood 40 -> 55.
-func _week_card() -> DaySummaryStudentRow:
-	var inst := _card()
-	inst.setup_week_row(_student_with_week(
-		{"akademis": 26.0, "energy": 80.0, "mood": 40.0},
-		{"akademis": 52.0, "energy": 62.0, "mood": 55.0}))
-	return inst
-
-
-func test_a_stat_row_reports_the_delta_it_shows() -> void:
-	var inst := _week_card()
-	assert_eq(inst.stat_rows[0].shown_delta(), 26.0, "the week's akademis gain")
-	assert_eq(inst.stat_rows[1].shown_delta(), 0.0, "seni did not move")
-
-
-## Before its turn a card waits on Monday: every number at +0, every
-## track and needs bar where the week began, the chevron not yet shown.
-func test_a_rewound_week_card_waits_on_monday() -> void:
-	var inst := _week_card()
-	inst.rewind_week()
-	var row: DaySummaryStatRow = inst.stat_rows[0]
-	assert_true(absf(row.track.value - 40.0) <= 0.01, "the track is back on Monday's 26/65")
-	assert_eq(row.value.text, "+0/65", "the number waits at +0")
-	assert_true(row.chevron.visible and row.chevron.modulate.a == 0.0,
-		"the chevron is armed but not yet shown")
-	assert_true(absf(inst.energy_bar.value - 80.0) <= 0.01, "energy on Monday's 80")
-	assert_true(absf(inst.mood_bar.value - 40.0) <= 0.01, "mood on Monday's 40")
-
-
-func test_a_rows_count_lands_on_the_week_in_its_own_time() -> void:
-	var inst := _week_card()
-	inst.rewind_week()
-	_run_and_step(func(): inst.stat_rows[0].play_count(0.2), 0.3)
-	assert_eq(inst.stat_rows[0].value.text, "+26/65", "the count lands on the week's gain")
-	assert_true(absf(inst.stat_rows[0].track.value - 80.0) <= 0.01, "and the track on 52/65")
-
-
-func test_a_rows_count_is_still_running_before_its_time_is_up() -> void:
-	var inst := _week_card()
-	inst.rewind_week()
-	_run_and_step(func(): inst.stat_rows[0].play_count(0.4), 0.1)
-	assert_true(inst.stat_rows[0].value.text != "+26/65",
-		"a quarter of the way in, the number has not landed")
-
-
-## A skip lands everything at once, and whatever it interrupted -- the
-## count, the fill, the chevron's pop, the needs bars' travel -- must not
-## keep writing half-way values over it.
-func test_landing_a_week_card_stops_its_counts() -> void:
-	var inst := _week_card()
-	inst.rewind_week()
-	var tweens := _new_tweens(func():
-		inst.play_needs_week()
-		inst.stat_rows[0].play_count(0.4))
-	assert_true(tweens.size() >= 5, "needs travel x2, fill, count and the chevron pop")
-	inst.land_week()
-	assert_eq(inst.stat_rows[0].value.text, "+26/65", "final number at once")
-	assert_true(absf(inst.stat_rows[0].track.value - 80.0) <= 0.01, "final track at once")
-	assert_true(absf(inst.energy_bar.value - 62.0) <= 0.01, "final energy at once")
-	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01, "final mood at once")
-	assert_true(inst.stat_rows[0].chevron.modulate.a == 1.0, "the chevron shown")
-	for tw in tweens:
-		if tw.is_valid():
-			assert_false(tw.is_running(), "an interrupted count must be stopped")
-
-
-func test_the_needs_bars_travel_the_week_on_their_own_call() -> void:
-	var inst := _week_card()
-	inst.rewind_week()
-	var tokens := DesignTokens.load_default()
-	_run_and_step(func(): inst.play_needs_week(), tokens.dur_slow + 0.2)
-	assert_true(absf(inst.energy_bar.value - 62.0) <= 0.01, "energy travels to tonight's 62")
-	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01, "mood travels to tonight's 55")
-
-
-## The pop grows from the number itself: the stat number is right-aligned
-## on a wide label, so its pivot sits right of the label's middle.
-func test_a_pop_punches_about_the_number() -> void:
-	var inst := _week_card()
-	inst.land_week()
-	var row: DaySummaryStatRow = inst.stat_rows[0]
-	var tokens := DesignTokens.load_default()
-	var tweens := _new_tweens(func(): row.land_pop(1.2))
-	for tw in tweens:
-		tw.custom_step(tokens.dur_instant)
-	assert_true(row.value.scale.x > 1.1, "mid-pop the number is punched up")
-	assert_true(row.value.pivot_offset.x > row.value.size.x * 0.5,
-		"about the right-aligned text, not the label's middle")
-	for tw in tweens:
-		tw.custom_step(tokens.dur_normal + 0.1)
-	assert_true(absf(row.value.scale.x - 1.0) <= 0.02, "and it settles back")
-
-
-## The nightly popup's own path is untouched by the weekly API.
-func test_the_week_api_leaves_the_nightly_play_gain_alone() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/DaySummaryStatRow.gd")
-	var start := src.find("func play_gain(")
-	var body := src.substr(start, src.find("func _play_burst(") - start)
-	assert_false(body.contains("_reveal_tweens"), "play_gain keeps its own, untracked tweens")
-	assert_contains(src, 'play_sfx(&"tally", pitch)', "the week pop climbs")
-	assert_contains(src, 'play_sfx(&"tally")', "the nightly burst still plays the plain tally")
-
-
 ## The daily card's needs bars now animate too (2026-08-31 request:
 ## ease-out motion on every progress bar in both screens) -- the same
 ## rewind-then-grow the weekly card already does, just over one day's
@@ -508,45 +390,22 @@ func test_the_checkup_scene_supplies_the_week_card() -> void:
 	inst.free()
 
 
-## The Logs sheet is a scene of its own, instanced on each Logs tap.
-func test_the_checkup_scene_supplies_the_logs_sheet() -> void:
-	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
-	var packed: PackedScene = inst.logs_popup_scene
-	assert_not_null(packed, "ResultCheckup.tscn must assign logs_popup_scene")
-	assert_eq(packed.resource_path, _LOGS_SCENE, "Logs opens WeekLogsPopup")
-	inst.free()
-
-
-## The screen with the baked theme, in the tree, freed by the runner.
-## Untyped: typed as Control, GDScript rejects the script members.
-func _themed_checkup():
-	var inst = (load(_CHECKUP_SCENE) as PackedScene).instantiate()
-	inst.theme = load(_THEME_PATH)
-	Engine.get_main_loop().root.add_child(inst)
-	track(inst)
-	return inst
-
-
-## The source block of one node, from its header to the next section.
-func _node_block(src: String, node_name: String) -> String:
-	var start := src.find('[node name="%s" ' % node_name)
-	if start == -1:
-		return ""
-	var end := src.find("\n[", start + 1)
-	return src.substr(start, (end if end != -1 else src.length()) - start)
-
-
 ## The screen end to end: a StudentManager whose first default has moved,
 ## one card per student, each reading its own week.
 func test_the_checkup_builds_one_week_card_per_student() -> void:
-	var inst = _themed_checkup()
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
 	var manager := StudentManager.new()
 	track(manager)
 	manager.students[0].akademis += 12.0
 
 	inst.initialize_checkup(manager)
 
-	var container: Node = inst.get_node("Margin/Layout/CardsScroll/CardsList")
+	var container := inst.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
 	assert_eq(container.get_child_count(), manager.students.size(),
 		"one card per student in the roster")
 	var first = container.get_child(0)
@@ -557,6 +416,9 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 	assert_eq(first.stat_rows[0].value.text,
 		"+12/%d" % int(round(manager.students[0].target_akademis1)),
 		"the card must read the WEEK's gain against that student's target")
+	# The number label is never rendered any more (2026-09-03
+	# interactivity spec, section 4); the DeltaChevron is what shows
+	# the weekly movement now.
 	assert_false(first.energy_delta_label.visible,
 		"the number itself stays hidden")
 	var chevron: TextureRect = first.get_node("EnergyBar/DeltaChevron")
@@ -564,7 +426,8 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 
 
 ## The old screen hand-built a five-StatBar panel per student, plus an
-## avatar loader and a gradient placeholder. None of it may come back.
+## avatar loader and a gradient placeholder. All of it goes -- leaving it
+## beside the card would be a second, silently diverging report.
 func test_the_checkup_no_longer_hand_builds_its_stat_bars() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
 	assert_false(src.contains("func _add_stat_bar"),
@@ -577,303 +440,75 @@ func test_the_checkup_no_longer_hand_builds_its_stat_bars() -> void:
 		"the card is built inline, after add_child -- there is no builder left")
 	assert_true(src.contains("setup_week_row("),
 		"the checkup must feed the card the week")
-	assert_true(src.contains("play_count("),
-		"the checkup must replay the week, row by row")
+	assert_true(src.contains("play_week_gain("),
+		"the checkup must replay the week")
 
 
-## The weekly report is one reward at a time now (2026-09-14 reveal spec):
-## the cards no longer stagger in together, the screen plays the
-## WeekReportReveal timeline, each card waiting rewound until its turn.
-func test_the_checkup_plays_its_cards_through_the_reveal_timeline() -> void:
+## Same rhythm the daily popup uses: cards land first, then their gauges
+## start moving, offset card by card. Filling before the cards are
+## visible wastes the whole gesture.
+func test_the_checkup_fills_its_cards_after_they_land() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
-	assert_false(src.contains("Juice.stagger_in(cards)"),
-		"the cards no longer land together")
-	assert_true(src.contains("WeekReportReveal.build("), "the screen plays the timeline")
-	assert_true(src.contains("rewind_week()"), "each card waits on Monday")
-	assert_true(src.contains("play_needs_week()"), "and travels its needs bars as it lands")
+	assert_true(src.contains("Juice.stagger_in(cards)"),
+		"the cards must still stagger in")
+	assert_true(src.find("Juice.stagger_in(cards)") < src.find("play_week_gain("),
+		"the fill must be kicked off after stagger_in, not before it")
 
 
-## A card's @onready nodes are null until it enters the tree, so setting it
-## up before add_child crashes. Both strings must exist: the old version of
-## this test searched for a container name the script no longer had, so
-## find() returned -1 and the test always passed (CLAUDE.md debt entry,
-## fixed 2026-09-14).
+## A card's @onready nodes -- name_label, energy_bar, stat_rows -- are
+## null until it enters the tree, so setting it up before add_child
+## crashes on the first assignment. DaySummaryPopup already adds first
+## and sets up second; this pins the checkup to the same order.
 func test_the_checkup_sets_each_card_up_only_once_it_is_in_the_tree() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
-	var add := src.find("cards_list.add_child(card)")
-	var setup := src.find("card.setup_week_row(")
-	assert_true(add != -1 and setup != -1, "both calls exist")
-	assert_true(add < setup,
+	assert_true(
+		src.find("students_container.add_child(card)") < src.find("card.setup_week_row("),
 		"add_child must come before setup_week_row -- @onready nodes are null outside the tree")
 
 
-## Mockup order, top to bottom: ribbon, cards, summary, buttons.
-func test_the_screen_authors_the_mockup_layout_in_order() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	var order := []
-	for child in screen.get_node("Margin/Layout").get_children():
-		order.append(String(child.name))
-	assert_eq(order, ["TitleBanner", "CardsScroll", "Summary", "Buttons"],
-		"top to bottom as in the mockup")
-	for path in ["Backdrop", "Margin/Layout/CardsScroll/CardsList",
-			"Margin/Layout/Summary/Lines/CoinRow/CoinIcon",
-			"Margin/Layout/Summary/Lines/CoinRow/MoneyLabel",
-			"Margin/Layout/Summary/Lines/EventWonLabel",
-			"Margin/Layout/Summary/Lines/EventLostLabel",
-			"Margin/Layout/Buttons/LogsButton",
-			"Margin/Layout/Buttons/NextButton", "Celebration"]:
-		assert_not_null(screen.get_node_or_null(path), path + " is authored")
-	screen.free()
+## The history log and the close button are the week's own chrome and
+## must survive the card swap.
+func test_the_checkup_keeps_its_history_and_its_close_button() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
 
-
-func test_the_ribbon_is_the_cut_out_weekly_art() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	var ribbon := screen.get_node("Margin/Layout/TitleBanner") as TextureRect
-	assert_eq(ribbon.texture.resource_path,
-		"res://Assets/Images/DaySummary/title_weekly_results.png")
-	assert_eq(ribbon.texture.get_image().get_pixel(0, 0).a, 0.0,
-		"the ribbon is cut out, not a rectangle of the mockup")
-	screen.free()
-
-
-## The blurred school is an authored node now; the old runtime
-## TextureRect swap is gone (and so is its viewport_editability debt).
-func test_the_backdrop_is_the_blurred_school_authored_in_the_scene() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	var backdrop := screen.get_node("Backdrop") as TextureRect
-	assert_eq(backdrop.texture.resource_path, "res://Assets/Images/UI/blur_background.png")
-	assert_false(FileAccess.get_file_as_string(_CHECKUP_SCRIPT).contains(".new("),
-		"nothing visual is built at runtime")
-	screen.free()
-
-
-## The summary is the card's own "+12/65" text; the buttons are the card's
-## own cream art.
-func test_the_summary_and_buttons_wear_the_card_styles() -> void:
-	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
-	for n in ["MoneyLabel", "EventWonLabel", "EventLostLabel"]:
-		assert_contains(_node_block(src, n), 'theme_type_variation = &"DaySummaryStat"', n)
-	for n in ["LogsButton", "NextButton"]:
-		assert_contains(_node_block(src, n), 'theme_type_variation = &"ResultButton"', n)
-
-
-func test_the_buttons_read_as_the_mockup() -> void:
-	var inst = _themed_checkup()
-	assert_eq(inst.logs_button.text, "Logs")
-	assert_eq(inst.next_button.text, "Selanjutnya")
-
-
-func test_the_summary_reads_the_week() -> void:
-	var inst = _themed_checkup()
 	var manager := StudentManager.new()
 	track(manager)
-	manager.minigame_history.assign([
-		{"day": "Senin", "category": "Akademis", "game_name": "Uji", "won": true},
-		{"day": "Selasa", "category": "Olahraga", "game_name": "Lomba", "won": false},
-		{"day": "Rabu", "category": "Event", "game_name": "Hujan Deras", "won": true},
-		{"day": "Kamis", "category": "SeniBudaya", "game_name": "Batik", "won": true},
-	])
-	inst.initialize_checkup(manager, 1000)
-	assert_eq(inst.money_label.text, "+1.000", "the week's payout, grouped and signed")
-	assert_eq(inst.event_won_label.text, "EVENT BERHASIL : 2",
-		"two minigames won; the random event is not counted")
-	assert_eq(inst.event_lost_label.text, "EVENT GAGAL : 1", "one minigame lost")
+	manager.minigame_history.append({
+		"day": "Senin", "category": "Akademis",
+		"game_name": "Uji", "won": true,
+	})
 
-
-func test_a_week_that_earned_nothing_reads_zero() -> void:
-	var script = load(_CHECKUP_SCRIPT)
-	assert_eq(script.format_earnings(0), "0", "no sign on an empty week")
-	assert_eq(script.format_earnings(4200), "+4.200", "a positive week is signed")
-
-
-func test_logs_opens_one_sheet_with_the_weeks_history() -> void:
-	var inst = _themed_checkup()
-	var manager := StudentManager.new()
-	track(manager)
-	manager.minigame_history.assign([
-		{"day": "Senin", "category": "Akademis", "game_name": "Uji", "won": true},
-		{"day": "Rabu", "category": "Event", "game_name": "Hujan Deras", "won": true},
-	])
 	inst.initialize_checkup(manager)
-	inst.logs_button.pressed.emit()
-	inst.logs_button.pressed.emit()
-	var sheets: Array = []
-	for child in inst.get_children():
-		if child is WeekLogsPopup:
-			sheets.append(child)
-	assert_eq(sheets.size(), 1, "Logs opens the sheet, and a second tap never stacks another")
-	if sheets.size() == 1:
-		assert_eq(sheets[0].row_count(), 2, "every minigame and event of the week")
+
+	var history := inst.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane")
+	# HistoryPane always keeps its EmptyLabel child (visibility toggles,
+	# it is never freed), so the row count is the pane's children minus
+	# that one authored label.
+	assert_eq(history.get_child_count() - 1, 1,
+		"the week's minigame log must still be built")
+	assert_not_null(inst.get_node_or_null("Margin/VBox/BtnClose"),
+		"the close button must survive the card swap")
 
 
-func test_the_rows_entrance_plays_on_the_first_open_only() -> void:
-	var inst = _themed_checkup()
-	inst.initialize_checkup(null)
-	assert_false(inst._logs_seen, "nothing opened yet")
-	inst.open_logs()
-	assert_true(inst._logs_seen, "the first open latches")
-	assert_contains(FileAccess.get_file_as_string(_CHECKUP_SCRIPT),
-		"popup.open(not _logs_seen)", "only the first open animates the rows")
+## The screen ships with a themed SunkenPanel backdrop and an @export that
+## replaces it with art. Assigning the blurred classroom there keeps the
+## weekly report in the same setting as the nightly popup, and reuses the
+## existing swap in _apply_visual_exports rather than adding a node.
+func test_screen_declares_the_blurred_backdrop_texture() -> void:
+	var scene := load(_CHECKUP_SCENE) as PackedScene
+	assert_not_null(scene, "ResultCheckup.tscn failed to load")
+	var inst := scene.instantiate()
 
+	var tex: Texture2D = inst.background_texture
+	assert_not_null(tex, "background_texture export is not assigned")
+	assert_eq(tex.resource_path, "res://Assets/Images/UI/blur_background.png",
+		"background_texture is not blur_background.png")
 
-func test_selanjutnya_hands_control_back() -> void:
-	var inst = _themed_checkup()
-	assert_true(inst.next_button.pressed.is_connected(Callable(inst, "_on_next_pressed")),
-		"Selanjutnya is wired")
-	assert_true(inst.logs_button.pressed.is_connected(Callable(inst, "open_logs")),
-		"and so is Logs")
-	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
-	assert_contains(src.substr(src.find("func _on_next_pressed")), "checkup_closed.emit()",
-		"Selanjutnya returns to SchoolDay, which goes on to the Lobby")
-
-
-# ------------------------------------------------------- the reveal
-
-## A screen filled for a week in which the first student gained 12 akademis
-## and the minigames went 2 won / 1 lost, with 1.000 coins earned.
-func _revealed_checkup():
-	var inst = _themed_checkup()
-	var manager := StudentManager.new()
-	track(manager)
-	manager.students[0].akademis += 12.0
-	manager.minigame_history.assign([
-		{"day": "Senin", "category": "Akademis", "game_name": "Uji", "won": true},
-		{"day": "Selasa", "category": "Olahraga", "game_name": "Lomba", "won": false},
-		{"day": "Kamis", "category": "SeniBudaya", "game_name": "Batik", "won": true},
-	])
-	inst.initialize_checkup(manager, 1000)
-	return inst
-
-
-func test_each_pop_sounds_one_step_higher_and_caps() -> void:
-	var script = load(_CHECKUP_SCRIPT)
-	assert_eq(script.pop_pitch(0, 0.06, 1.6), 1.0, "the first pop is at normal pitch")
-	assert_true(absf(script.pop_pitch(3, 0.06, 1.6) - 1.18) <= 0.0001, "three steps up")
-	assert_eq(script.pop_pitch(100, 0.06, 1.6), 1.6, "never past the ceiling")
-
-
-func test_the_reveal_pacing_is_exported() -> void:
-	var inst = _themed_checkup()
-	var names: Array = []
-	for p in inst.get_property_list():
-		names.append(p.name)
-	for knob in ["card_lead_seconds", "count_seconds", "row_gap_seconds",
-			"quiet_row_seconds", "card_gap_seconds", "line_gap_seconds",
-			"finale_gap_seconds", "pitch_step", "pitch_max"]:
-		assert_true(names.has(knob), "the Reveal group exports " + knob)
-
-
-## The opening frame is the backdrop alone: ribbon, cards and summary lines
-## transparent, each card rewound to Monday, each line reading 0.
-func test_the_reveal_opens_on_the_backdrop_alone() -> void:
-	var inst = _revealed_checkup()
-	inst._prepare_reveal()
-	assert_eq(inst.title_banner.modulate.a, 0.0, "the ribbon waits")
-	var list: Node = inst.get_node("Margin/Layout/CardsScroll/CardsList")
-	for card in list.get_children():
-		assert_eq(card.modulate.a, 0.0, "every card waits")
-	var first: DaySummaryStudentRow = list.get_child(0)
-	assert_eq(first.stat_rows[0].value.text,
-		"+0/%d" % int(round(first.stat_rows[0]._target)), "rewound to +0")
-	for path in ["Margin/Layout/Summary/Lines/CoinRow",
-			"Margin/Layout/Summary/Lines/EventWonLabel",
-			"Margin/Layout/Summary/Lines/EventLostLabel"]:
-		assert_eq(inst.get_node(path).modulate.a, 0.0, path + " waits")
-	assert_eq(inst.money_label.text, "0", "the coins wait at 0")
-	assert_eq(inst.event_won_label.text, "EVENT BERHASIL : 0", "won waits at 0")
-
-
-## A skip's landing: every card and line fully shown on its final value.
-func test_landing_the_reveal_shows_every_final_value() -> void:
-	var inst = _revealed_checkup()
-	inst._prepare_reveal()
-	inst._land_all()
-	var list: Node = inst.get_node("Margin/Layout/CardsScroll/CardsList")
-	for card in list.get_children():
-		assert_eq(card.modulate.a, 1.0, "every card shown")
-	var first: DaySummaryStudentRow = list.get_child(0)
-	assert_eq(first.stat_rows[0].value.text,
-		"+12/%d" % int(round(first.stat_rows[0]._target)), "the week's gain")
-	assert_eq(inst.title_banner.modulate.a, 1.0, "the ribbon shown")
-	assert_eq(inst.money_label.text, "+1.000", "the coins")
-	assert_eq(inst.event_won_label.text, "EVENT BERHASIL : 2", "won")
-	assert_eq(inst.event_lost_label.text, "EVENT GAGAL : 1", "lost")
-	assert_eq(inst.get_node("Margin/Layout/Summary/Lines/CoinRow").modulate.a, 1.0,
-		"the coin row shown")
-
-
-## The screen feeds the timeline every card's rows and the three lines.
-func test_the_timeline_reads_every_card_and_line() -> void:
-	var inst = _revealed_checkup()
-	var steps: Array = inst._build_steps()
-	var rows := 0
-	var lines := 0
-	var pops := 0
-	for s in steps:
-		if s["kind"] == WeekReportReveal.ROW_COUNT:
-			rows += 1
-		elif s["kind"] == WeekReportReveal.LINE:
-			lines += 1
-		elif s["kind"] == WeekReportReveal.ROW_POP:
-			pops += 1
-	var list: Node = inst.get_node("Margin/Layout/CardsScroll/CardsList")
-	assert_eq(rows, list.get_child_count() * 3, "three rows per card")
-	assert_eq(lines, 3, "coins, won, lost")
-	assert_eq(pops, 1, "only the student who gained pops")
-
-
-## A tap anywhere skips -- but only while the reveal is playing, so Logs,
-## Selanjutnya and the drag-scroll behave normally afterwards. It is
-## _input() for StatCheck's reason: the full-screen controls would claim
-## the tap first.
-func test_a_tap_skips_only_while_the_reveal_plays() -> void:
-	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
-	var input_at := src.find("func _input(")
-	assert_true(input_at != -1, "the skip listens in _input()")
-	var body := src.substr(input_at, src.find("\nfunc ", input_at + 1) - input_at)
-	assert_contains(body, "_revealing", "gated on the reveal playing")
-	assert_contains(body, "skip_reveal()", "and it skips")
-	var skip_at := src.find("func skip_reveal(")
-	var skip := src.substr(skip_at, src.find("\nfunc ", skip_at + 1) - skip_at)
-	assert_contains(skip, "_reveal_tween.kill()", "the timeline stops")
-	assert_contains(skip, "_land_all()", "everything lands")
-	assert_contains(skip, "_finale(true)", "and the finale plays")
-
-
-## Under the editor the entrance returns before scheduling anything, and a
-## skip with nothing playing does nothing -- in particular it never lands
-## the cards over the values setup_week_row wrote.
-func test_the_editor_never_plays_or_skips_the_reveal() -> void:
-	var inst = _revealed_checkup()
-	assert_false(inst._revealing, "under the editor the reveal never starts")
-	assert_true(inst._reveal_tween == null, "and nothing is ever scheduled")
-	inst._prepare_reveal()
-	inst.skip_reveal()
-	var first: DaySummaryStudentRow = inst.get_node("Margin/Layout/CardsScroll/CardsList").get_child(0)
-	assert_eq(first.modulate.a, 0.0,
-		"a skip while nothing plays is a no-op: the rewound card stays put")
-
-
-## A skip's tap must not also press a button. The tap reaches _input()
-## before the GUI, so a button enabled inside skip_reveal() would take the
-## same press -- tapping near the bottom to skip would open Logs, or leave
-## the report unread. The buttons enable only once they have faded in.
-func test_a_skip_never_hands_its_tap_to_the_buttons() -> void:
-	var inst = _revealed_checkup()
-	inst._prepare_reveal()
-	for b in [inst.logs_button, inst.next_button]:
-		b.disabled = true
-		b.modulate.a = 0.0
-	inst._revealing = true
-	var tweens := _new_tweens(func(): inst.skip_reveal())
-	assert_true(inst.next_button.disabled and inst.logs_button.disabled,
-		"the tap that skipped must find both buttons still disabled")
-	var tokens := DesignTokens.load_default()
-	for tw in tweens:
-		if tw.is_valid():
-			tw.custom_step(tokens.dur_fast + 0.1)
-	assert_false(inst.next_button.disabled, "Selanjutnya enables once it has faded in")
-	assert_false(inst.logs_button.disabled, "and so does Logs")
+	inst.free()
 
 
 func _source(path: String) -> String:
@@ -907,7 +542,8 @@ func test_checkup_scene_carries_an_idle_confetti_node() -> void:
 
 
 ## The weekly celebration is the two-cannon paper burst, not the shared
-## top-down CelebrationConfetti (2026-09-12 paper confetti spec).
+## top-down CelebrationConfetti (2026-09-12 paper confetti spec). The
+## ApplyItemScreen keeps CelebrationConfetti; only the checkup moved.
 func test_checkup_fires_the_paper_confetti() -> void:
 	var src := _source(_CHECKUP_SCRIPT)
 	assert_true(src.contains("PaperConfetti.tscn"),
@@ -924,12 +560,132 @@ func test_checkup_fires_the_paper_confetti() -> void:
 	inst.free()
 
 
+## The four variations the recap banner and tab bar need. Without these
+## the screen would have to reach for theme_override_*, which the project
+## forbids (2026-09-03 spec section 8).
+func test_theme_carries_the_recap_variations() -> void:
+	var theme: Theme = load(_THEME_PATH)
+	assert_not_null(theme, "the baked theme loads")
+	for variation in ["RecapBannerPanel", "RecapPillPanel",
+			"RecapPillValueLabel", "WeekTabButton"]:
+		assert_true(theme.has_stylebox("panel", variation)
+				or theme.has_stylebox("normal", variation)
+				or theme.has_font_size("font_size", variation),
+			"%s is baked into the theme" % variation)
+
+
+const _PILL_SCENE := "res://Scenes/SchoolSimulation/WeekRecapPill.tscn"
+
+
+func test_pill_scene_has_its_three_authored_nodes() -> void:
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	assert_not_null(pill.get_node_or_null("Icon"), "Icon is authored")
+	assert_not_null(pill.get_node_or_null("Value"), "Value is authored")
+	assert_not_null(pill.get_node_or_null("Ring"), "Ring emitter is authored")
+	pill.free()
+
+
+func test_pill_uses_the_theme_variation_not_an_override() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/WeekRecapPill.tscn")
+	assert_contains(src, "RecapPillPanel", "the pill takes its variation")
+	assert_false(src.contains("theme_override_styles"),
+		"no stylebox override on the pill")
+
+
+func test_pill_set_pill_writes_text_and_tint() -> void:
+	# set_pill writes through @onready fields, which Godot only populates
+	# once the node enters the tree -- the same requirement
+	# DaySummaryStudentRow documents for its own setup_row/setup_week_row.
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(pill)
+	pill.set_pill(null, "4.200", Color.RED)
+	assert_eq((pill.get_node("Value") as Label).text, "4.200",
+		"the value label carries the formatted number")
+	assert_eq((pill.get_node("Value") as Label).self_modulate, Color.RED,
+		"and the caller's tint")
+	pill.queue_free()
+
+
+const _BANNER_SCENE := "res://Scenes/SchoolSimulation/WeekRecapBanner.tscn"
+
+
+func test_banner_authors_all_four_pills() -> void:
+	var banner: Control = load(_BANNER_SCENE).instantiate()
+	for pill_name in ["PillUang", "PillPoin", "PillMenang", "PillEvent"]:
+		assert_not_null(banner.get_node_or_null("Pills/" + pill_name),
+			"%s is authored, not built at runtime" % pill_name)
+	banner.free()
+
+
+func test_banner_writes_every_total_into_its_pills() -> void:
+	# set_recap writes through the pills' @onready fields (and its own),
+	# which Godot only populates once the node enters the tree -- same
+	# rule as WeekRecapPill's own set_pill test.
+	var banner: Control = load(_BANNER_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(banner)
+	banner.set_recap({
+		"money_earned": 4200, "net_skill_delta": 37,
+		"minigames_won": 3, "minigames_total": 5, "events_count": 2,
+	})
+	assert_eq(_pill_text(banner, "PillUang"), "4.200", "money is grouped")
+	assert_eq(_pill_text(banner, "PillPoin"), "+37", "poin is signed")
+	assert_eq(_pill_text(banner, "PillMenang"), "3/5", "won over total")
+	assert_eq(_pill_text(banner, "PillEvent"), "2", "a bare event count")
+	banner.queue_free()
+
+
+func test_banner_shows_a_negative_week_as_negative() -> void:
+	var banner: Control = load(_BANNER_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(banner)
+	banner.set_recap({
+		"money_earned": 0, "net_skill_delta": -4,
+		"minigames_won": 0, "minigames_total": 2, "events_count": 0,
+	})
+	assert_eq(_pill_text(banner, "PillPoin"), "-4",
+		"a losing week is not hidden")
+	banner.queue_free()
+
+
+## SchoolDay pays the week's Wirausaha total out before it opens this screen,
+## and paying out empties GameState.pending_earnings -- which is exactly what
+## WeekRecap._sum_pending_earnings reads. So by the time the banner is filled
+## that read is 0, and the money pill has to come from the argument instead.
+## Regression test for the bug 6043538 found; the argument is deliberately
+## kept across the 2026-09-16 revert of this screen.
+func test_the_banner_shows_the_weeks_paid_earnings() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var manager := StudentManager.new()
+	track(manager)
+
+	# The post-payout state SchoolDay actually leaves behind.
+	var saved: Dictionary = GameState.pending_earnings.duplicate()
+	GameState.pending_earnings = {}
+	inst.initialize_checkup(manager, 1000)
+	GameState.pending_earnings = saved
+
+	assert_eq(_pill_text(inst.get_node("Margin/VBox/Banner"), "PillUang"),
+		WeekRecap.format_money(1000),
+		"the money pill shows the payout the caller handed over, not the "
+		+ "emptied pending_earnings")
+
+
+func _pill_text(banner: Control, pill_name: String) -> String:
+	return (banner.get_node("Pills/" + pill_name).get_node("Value")
+		as Label).text
+
+
 const _HISTORY_ROW_SCENE := "res://Scenes/SchoolSimulation/WeekHistoryRow.tscn"
 
 
 func test_history_row_renders_a_minigame_win() -> void:
-	# set_entry writes through @onready fields, which Godot only populates
-	# once the node enters the tree.
+	# set_entry writes through @onready fields, which Godot only
+	# populates once the node enters the tree -- same rule as
+	# WeekRecapPill's own set_pill test.
 	var row: Control = load(_HISTORY_ROW_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(row)
 	row.set_entry({
@@ -989,8 +745,156 @@ func _row_text(row: Control, path: String) -> String:
 	return (row.get_node("Body/Lines/" + path) as Label).text
 
 
-## Win/loss must be read from WeekHistoryRow's own accessors, not inferred
-## from the badge's tint (2026-09-03 Task 9 review, finding 1).
+func test_screen_authors_the_banner_tabs_and_both_panes() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	for path in ["Margin/VBox/Banner",
+			"Margin/VBox/TabBar/TabSiswa",
+			"Margin/VBox/TabBar/TabRiwayat",
+			"Margin/VBox/ScrollContainer/PaneStack/StudentsPane",
+			"Margin/VBox/ScrollContainer/PaneStack/HistoryPane",
+			"Margin/VBox/ScrollContainer/PaneStack/HistoryPane/EmptyLabel"]:
+		assert_not_null(screen.get_node_or_null(path),
+			"%s is authored in the scene" % path)
+	screen.free()
+
+
+func test_banner_and_tabs_sit_outside_the_scroll() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	var scroll: Node = screen.get_node("Margin/VBox/ScrollContainer")
+	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/Banner")),
+		"the banner must stay pinned while the panes scroll")
+	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/TabBar")),
+		"and so must the tab bar")
+	screen.free()
+
+
+func test_students_pane_uses_the_spec_separation() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	var pane: VBoxContainer = screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
+	assert_eq(pane.get_theme_constant("separation"), 28,
+		"card separation drops 56 -> 28 (spec section 3)")
+	screen.free()
+
+
+func test_scene_carries_no_emoji_and_no_dead_section_headers() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
+	for glyph in ["📊", "📝", "📢"]:
+		assert_false(src.contains(glyph),
+			"emoji are banned as UI iconography")
+	assert_false(src.contains("StudentsHeader"),
+		"the emoji section headers are replaced by the tab labels")
+	assert_false(src.contains("HistoryHeader"),
+		"both of them")
+
+
+func test_script_no_longer_builds_history_rows_at_runtime() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	assert_false(src.contains("_create_history_item"),
+		"the runtime row builder is replaced by WeekHistoryRow.tscn")
+	assert_false(src.contains("PanelContainer.new()"),
+		"no PanelContainer is constructed at runtime")
+	assert_false(src.contains("Label.new()"),
+		"nor the empty-state Label")
+
+
+func test_script_drops_the_dead_section_header_exports() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	for dead in ["students_section_header_text",
+			"history_section_header_text",
+			"students_header_icon_texture",
+			"history_header_icon_texture",
+			"StudentsSectionHeader", "HistorySectionHeader"]:
+		assert_false(src.contains(dead),
+			"%s never rendered -- it is removed, not repaired" % dead)
+
+
+func test_script_carries_no_emoji() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	for glyph in ["📊", "📝", "📢"]:
+		assert_false(src.contains(glyph), "emoji are banned")
+
+
+func test_default_tab_is_siswa() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	_add_themed(screen)
+	assert_true(screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane").visible,
+		"the screen opens on the students pane")
+	assert_false(screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane").visible,
+		"the history pane starts hidden")
+	screen.queue_free()
+
+
+func test_switching_tabs_swaps_pane_visibility_without_freeing() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	_add_themed(screen)
+	var students: Node = screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
+	var history: Node = screen.get_node(
+		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane")
+	screen.show_pane(1)
+	assert_false(students.visible, "students pane hides")
+	assert_true(history.visible, "history pane shows")
+	assert_true(is_instance_valid(students),
+		"panes are hidden, never freed")
+	screen.show_pane(0)
+	assert_true(students.visible, "and it comes back")
+	screen.queue_free()
+
+
+func test_each_pane_keeps_its_own_scroll_offset() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	_add_themed(screen)
+	var scroll: ScrollContainer = screen.get_node(
+		"Margin/VBox/ScrollContainer")
+	# ScrollContainer.scroll_vertical clamps synchronously against its
+	# scrollbar's max_value, computed from child content size. Nothing
+	# was added via initialize_checkup, so the panes are empty and the
+	# scrollable range is 0 -- without this, "400" would clamp straight
+	# back to 0 before show_pane ever runs, and the test would pass
+	# trivially without exercising the offset-memory logic at all.
+	scroll.get_v_scroll_bar().max_value = 1000
+	scroll.scroll_vertical = 400
+	screen.show_pane(1)
+	assert_eq(scroll.scroll_vertical, 0,
+		"the history pane opens at its own top")
+	screen.show_pane(0)
+	assert_eq(scroll.scroll_vertical, 400,
+		"returning to SISWA restores where you were reading")
+	screen.queue_free()
+
+
+func test_history_pane_animation_latch_fires_only_once() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	_add_themed(screen)
+	screen.show_pane(1)
+	assert_true(screen._history_animated,
+		"the first open latches the animation")
+	screen.show_pane(0)
+	screen.show_pane(1)
+	assert_true(screen._history_animated,
+		"and it stays latched, so audio never re-fires")
+	screen.queue_free()
+
+
+## Adds a screen to the tree with the baked theme assigned. ThemeDB's
+## project-theme fallback does not populate under the editor's own root,
+## so the theme is set explicitly -- the same pattern the suite's other
+## in-tree tests use.
+func _add_themed(screen: Control) -> void:
+	screen.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(screen)
+
+
+## Finding 1 fix (2026-09-03 Task 9 review): win/loss must be read from
+## WeekHistoryRow's own accessors, not inferred from the badge's tint --
+## an event row is tinted brand_primary, which matched neither
+## state_success nor state_danger and used to fall through to the "lost"
+## branch and shake. These three set_entry() calls exercise an event, a
+## won minigame, and a lost minigame; none needs tree-entry since
+## is_event()/is_win() are now plain field reads, not @onready.
 func test_history_row_exposes_event_and_win_state() -> void:
 	var event_row: Control = load(_HISTORY_ROW_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(event_row)
@@ -1021,55 +925,153 @@ func test_history_row_exposes_event_and_win_state() -> void:
 	lost_row.queue_free()
 
 
-func test_scene_carries_no_emoji() -> void:
+func test_pill_root_stops_mouse_input() -> void:
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	assert_eq(pill.mouse_filter, Control.MOUSE_FILTER_STOP,
+		"the pill must consume clicks, not pass them through")
+	pill.free()
+
+
+func test_pill_tapped_fires_on_a_clean_press_release() -> void:
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(pill)
+	pill.size = Vector2(228, 132)
+	# A plain int local would be captured BY VALUE inside the lambda below
+	# (GDScript closures snapshot value-type locals rather than
+	# referencing the caller's own variable), so "fired += 1" would mutate
+	# a copy the assertion below can never see. A one-element Array is
+	# captured by reference, which is what a closure needs to write back.
+	var fired := [0]
+	pill.pill_tapped.connect(func() -> void: fired[0] += 1)
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(50, 50)
+	pill._gui_input(press)
+
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = Vector2(60, 60)
+	pill._gui_input(release)
+
+	assert_eq(fired[0], 1, "one clean tap fires the signal exactly once")
+	pill.queue_free()
+
+
+func test_pill_tapped_does_not_fire_on_drag_off() -> void:
+	var pill: Control = load(_PILL_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(pill)
+	pill.size = Vector2(228, 132)
+	# See the note in test_pill_tapped_fires_on_a_clean_press_release --
+	# a plain int local is captured by value inside the lambda below, so
+	# a one-element Array is used instead to catch a real false-positive
+	# firing rather than accidentally asserting a copy that never moves.
+	var fired := [0]
+	pill.pill_tapped.connect(func() -> void: fired[0] += 1)
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(50, 50)
+	pill._gui_input(press)
+
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = Vector2(9999, 9999)
+	pill._gui_input(release)
+
+	assert_eq(fired[0], 0, "releasing outside the rect cancels the tap")
+	pill.queue_free()
+
+## _on_pill_tapped, start_idle_bounce, and stop_idle_bounce all gate on
+## Engine.is_editor_hint() -- the same convention play_entrance() already
+## uses on this class, matching every other animated/side-effecting
+## method on this screen (CLAUDE.md testing constraint 3). Since
+## test_run itself runs INSIDE the editor process, that guard is always
+## true here, so calling these methods directly can only ever exercise
+## the early return -- never the real behaviour. Source-scan tests are
+## this codebase's established substitute for exactly this situation
+## (see the existing pill/entrance tests earlier in this suite).
+func test_pill_tap_wires_to_the_info_popup_with_the_right_content() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, "pill_tapped.connect", "each pill's tap signal is wired")
+	assert_contains(src, "WeekRecapPillInfoPopup", "opens the pill info popup")
+	assert_contains(src, "PILL_INFO", "content comes from the fixed per-pill copy")
+	assert_contains(src, "AudioDirector.play_sfx(&\"pill_tap\")",
+		"a tap plays the dedicated pill_tap cue")
+
+
+func test_idle_bounce_start_stop_pause_are_present() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, "func start_idle_bounce", "the banner exposes start_idle_bounce")
+	assert_contains(src, "func stop_idle_bounce", "and stop_idle_bounce")
+	assert_contains(src, "_idle_tween.pause()",
+		"a live popup pauses the bounce so a pill never bounces under the scrim")
+	assert_contains(src, "_idle_tween.play()",
+		"and the bounce resumes once that popup closes")
+
+
+## The cascade itself is a coroutine (play_entrance), so this test only
+## checks the SETUP each pill's tween needs before it can slide+fade in
+## -- that every pill starts the cascade at alpha 0 and offset above its
+## slot, per the 2026-09-03 interactivity spec section 5. It does not
+## await play_entrance() itself.
+func test_pills_start_the_cascade_transparent_and_offset() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, "modulate.a = 0.0",
+		"each pill starts fully transparent before its slide-in")
+	assert_contains(src, "PILL_SLIDE_DISTANCE",
+		"a named constant drives the pill's start offset, not a literal")
+
+
+func test_pill_cascade_step_is_a_named_constant() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, "PILL_CASCADE_STEP",
+		"the stagger between one pill starting and the next is named, not a literal")
+
+
+## show_pane's transition is a coroutine under real play, but every test
+## that already calls it directly (test_default_tab_is_siswa,
+## test_switching_tabs_swaps_pane_visibility_without_freeing, the
+## scroll-offset and latch tests) runs inside the editor process, where
+## Engine.is_editor_hint() is true -- this test confirms the transition
+## code stays behind that SAME existing guard, so none of those tests'
+## synchronous assumptions (pane.visible flips immediately) can break.
+func test_pane_transition_is_gated_on_editor_hint() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_contains(src, "PANE_SLIDE_DISTANCE",
+		"a named constant drives the pane transition, not a literal")
+
+
+func test_pane_transition_direction_is_derived_not_hardcoded() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_contains(src, "signi(",
+		"the transition direction comes from signi(pane - _active_pane), " +
+			"not two hardcoded literal directions")
+
+
+## ScrollFade was a flat SunkenPanel -- an unexplained white box between
+## the scrollable pane and BtnClose. It's a gradient now: an actual
+## fade-to-transparent cue, not a themed surface (2026-09-03
+## interactivity spec, section 7).
+func test_scroll_fade_is_a_gradient_not_a_flat_panel() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
-	for glyph in ["📊", "📝", "📢"]:
-		assert_false(src.contains(glyph), "emoji are banned as UI iconography")
-
-
-func test_script_carries_no_emoji() -> void:
-	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
-	for glyph in ["📊", "📝", "📢"]:
-		assert_false(src.contains(glyph), "emoji are banned")
-
-
-## SchoolDay pays the Wirausaha earnings out -- and empties
-## GameState.pending_earnings -- BEFORE it opens this screen, so the week's
-## coins must be handed over, not re-read. Before 2026-09-14 the old
-## banner's money pill read that emptied dict and always showed 0.
-func test_school_day_hands_the_payout_to_the_checkup() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
-	var payout := src.find("var wirausaha_total := _pay_out_wirausaha()")
-	var handoff := src.find("checkup_instance.initialize_checkup(student_manager, wirausaha_total)")
-	assert_true(payout != -1 and handoff > payout,
-		"the checkup gets the total the payout just made")
-
-
-## The old banner, its pills, their info popup and the SISWA/RIWAYAT tabs
-## are retired with the 2026-09-14 revamp, and WeekRecap stops reading the
-## dict SchoolDay empties.
-func test_the_old_banner_and_tabs_are_gone() -> void:
-	for path in ["res://Scenes/SchoolSimulation/WeekRecapBanner.tscn",
-			"res://Scenes/SchoolSimulation/WeekRecapPill.tscn",
-			"res://Scenes/UI/WeekRecapPillInfoPopup.tscn",
-			"res://Scenes/SchoolSimulation/CoinShower.tscn"]:
-		assert_false(FileAccess.file_exists(path), path + " is retired")
-	var theme: Theme = load(_THEME_PATH)
-	for variation in ["RecapBannerPanel", "RecapPillPanel", "RecapPillValueLabel",
-			"WeekTabButton"]:
-		assert_false(theme.get_type_list().has(variation), variation + " left the bake")
-	assert_false(FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/WeekRecap.gd").contains("pending_earnings"),
-		"WeekRecap no longer reads the dict the payout empties")
-
-
-## Code review, 2026-09-14: both buttons stayed live through the 0.32 s
-## fade-out, so a double tap emitted checkup_closed twice and a tap on Logs
-## opened a sheet on a closing screen.
-func test_selanjutnya_disables_both_buttons_before_the_fade() -> void:
-	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
-	var body := src.substr(src.find("func _on_next_pressed"))
-	var fade := body.find("create_tween()")
-	for line in ["next_button.disabled = true", "logs_button.disabled = true"]:
-		var at := body.find(line)
-		assert_true(at != -1 and at < fade, line + " happens before the fade-out starts")
+	assert_contains(src, "GradientTexture2D",
+		"ScrollFade must render an actual fade, not a flat SunkenPanel")
+	# Isolate ScrollFade's own node block and confirm it carries no
+	# theme_type_variation -- a gradient texture is not a themed surface.
+	var node_start := src.find('[node name="ScrollFade"')
+	assert_true(node_start != -1, "ScrollFade node exists")
+	var next_node := src.find("[node name=", node_start + 1)
+	var block := src.substr(node_start, next_node - node_start)
+	assert_false(block.contains("theme_type_variation"),
+		"ScrollFade is textured, not themed -- no SunkenPanel variation left on it")

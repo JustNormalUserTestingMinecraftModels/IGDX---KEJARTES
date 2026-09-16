@@ -1,177 +1,319 @@
 @tool
 extends Control
 
-## Weekly Results: the end-of-week report, rebuilt to
-## docs/superpowers/mockups/mockup_weeklyresults.png (2026-09-14
-## weekly-results spec). A red ribbon; one DaySummaryStudentRow per student,
-## read one week wide; the week's Wirausaha coins; how many minigames were
-## won and lost; and two buttons -- Logs (the week's history, in a
-## WeekLogsPopup) and Selanjutnya (back to SchoolDay, then the Lobby).
+## The end-of-week report: a pinned WeekRecapBanner over two tabbed
+## panes -- SISWA (one DaySummaryStudentRow per student, read one week
+## wide) and RIWAYAT (the week's minigames and events as WeekHistoryRows)
+## -- rebuilt to the 2026-09-03 spec.
 ##
-## Everything visual is an authored scene. This script fills the labels,
-## instances the cards and the Logs sheet, and plays the reveal
-## (2026-09-14 weekly-report-reveal spec): one reward at a time -- each
-## card lands, its three stats count and pop in turn, the three summary
-## lines follow, and a tap anywhere lands the lot at once. The rhythm is
-## worked out by WeekReportReveal and paced by the Reveal exports.
+## Everything visual is an authored scene. This script only decides
+## WHICH deltas a card shows (DaySummaryStudentRow.setup_week_row), which
+## pane is visible, and when the entrance's five stages fire. Stages 1-3
+## belong to the banner; stages 4-5 are here, because this is what owns
+## the cards.
 ##
 ## @tool so the in-editor test runner can build the screen and inspect it
-## (CLAUDE.md, testing constraint 3). Everything with a real side effect is
-## gated on Engine.is_editor_hint(); signal wiring deliberately is not.
+## (CLAUDE.md, testing constraint 3). Everything with a real side effect
+## is gated on Engine.is_editor_hint(); signal wiring deliberately is
+## not.
+##
+## Every surface is a theme variation and every accent is a DesignToken;
+## this script builds no StyleBoxFlat and holds no Color literal.
 
 signal checkup_closed
 
-# ── Copy ─────────────────────────────────────────────────────────────
-@export_group("Copy")
-## Prefix of the minigames-won line; the count follows it.
-@export var event_won_prefix: String = "EVENT BERHASIL : "
-## Prefix of the minigames-lost line; the count follows it.
-@export var event_lost_prefix: String = "EVENT GAGAL : "
-## The Logs button's label.
-@export var logs_button_text: String = "Logs"
-## The Selanjutnya button's label.
-@export var next_button_text: String = "Selanjutnya"
+## The two panes, in tab order. Indices into _panes and the argument
+## show_pane takes.
+enum Pane { SISWA = 0, RIWAYAT = 1 }
+
+## How far a pane slides horizontally during the SISWA<->RIWAYAT
+## transition, in pixels.
+const PANE_SLIDE_DISTANCE := 40.0
+
+# ── Visual - Background Overlay ───────────────────────────────────────
+@export_group("Visual - Background Overlay")
+## Optional photo behind the report. When set it replaces the panel.
+@export var background_texture: Texture2D = null
+
+# ── Visual - Header & Typography ──────────────────────────────────────
+@export_group("Visual - Header & Typography")
+## Main header title.
+@export var header_title_text: String = "EVALUASI MINGGUAN SISWA"
+## Main header subtitle, under header_title_text.
+@export var header_subtitle_text: String = "Perkembangan statistik & riwayat kegiatan selama satu minggu"
+## Optional font override applied across the screen's labels. Null keeps
+## the theme's default font.
+@export var font: Font = null
+
+# ── Visual - Tabs ────────────────────────────────────────────────────
+@export_group("Visual - Tabs")
+## Label on the students tab. The live count is appended in brackets.
+@export var tab_students_text: String = "SISWA"
+## Label on the history tab. The live count is appended in brackets.
+@export var tab_history_text: String = "RIWAYAT"
+
+# ── Visual - Buttons ─────────────────────────────────────────────────
+@export_group("Visual - Buttons")
+## Art-supplied close-button texture. Null keeps the theme's button
+## styling and shows close_button_text as a plain label instead.
+@export var button_close_texture: Texture2D = null
+## Label shown on the close button when button_close_texture is null.
+@export var close_button_text: String = "Selesai Evaluasi"
 
 # ── Wiring ───────────────────────────────────────────────────────────
-@export_group("Wiring")
 ## The per-student card. Assigned in ResultCheckup.tscn to
 ## DaySummaryStudentRow.tscn -- the same scene the nightly popup uses.
 @export var student_card_scene: PackedScene
-## The Logs sheet, WeekLogsPopup.tscn, instanced on each Logs tap.
-@export var logs_popup_scene: PackedScene
-
-# ── Reveal ───────────────────────────────────────────────────────────
-@export_group("Reveal")
-## Seconds between a card popping in and its first stat row starting.
-@export var card_lead_seconds: float = 0.35
-## Seconds a gaining stat row, or a non-zero summary line, takes to count.
-@export var count_seconds: float = 0.35
-## Pause after a gaining row pops before the next row starts.
-@export var row_gap_seconds: float = 0.08
-## Seconds a row that did not gain takes to settle: short, and silent.
-@export var quiet_row_seconds: float = 0.15
-## Pause after a card's last row before the next card lands.
-@export var card_gap_seconds: float = 0.15
-## Pause between one summary line and the next.
-@export var line_gap_seconds: float = 0.12
-## Pause after the last summary line before the confetti and the buttons.
-@export var finale_gap_seconds: float = 0.2
-## How much higher each pop sounds than the one before (1.0 = normal).
-@export var pitch_step: float = 0.06
-## The highest a pop climbs, however many gains the week has.
-@export var pitch_max: float = 1.6
+## The history row template, WeekHistoryRow.tscn.
+@export var history_row_scene: PackedScene
 
 const _CELEBRATION_SCENE := "res://Scenes/SchoolSimulation/PaperConfetti.tscn"
 
-@onready var title_banner: TextureRect = $Margin/Layout/TitleBanner
-@onready var cards_scroll: ScrollContainer = $Margin/Layout/CardsScroll
-@onready var cards_list: VBoxContainer = $Margin/Layout/CardsScroll/CardsList
-@onready var coin_row: HBoxContainer = $Margin/Layout/Summary/Lines/CoinRow
-@onready var money_label: Label = $Margin/Layout/Summary/Lines/CoinRow/MoneyLabel
-@onready var event_won_label: Label = $Margin/Layout/Summary/Lines/EventWonLabel
-@onready var event_lost_label: Label = $Margin/Layout/Summary/Lines/EventLostLabel
-@onready var logs_button: Button = $Margin/Layout/Buttons/LogsButton
-@onready var next_button: Button = $Margin/Layout/Buttons/NextButton
+@onready var title_label: Label = $Margin/VBox/HeaderPanel/TitleLabel
+@onready var subtitle_label: Label = $Margin/VBox/HeaderPanel/SubtitleLabel
+@onready var banner: WeekRecapBanner = $Margin/VBox/Banner
+@onready var tab_siswa: Button = $Margin/VBox/TabBar/TabSiswa
+@onready var tab_riwayat: Button = $Margin/VBox/TabBar/TabRiwayat
+@onready var scroll_container: ScrollContainer = $Margin/VBox/ScrollContainer
+@onready var students_pane: VBoxContainer = $Margin/VBox/ScrollContainer/PaneStack/StudentsPane
+@onready var history_pane: VBoxContainer = $Margin/VBox/ScrollContainer/PaneStack/HistoryPane
+@onready var history_empty_label: Label = $Margin/VBox/ScrollContainer/PaneStack/HistoryPane/EmptyLabel
+@onready var btn_close: Button = $Margin/VBox/BtnClose
 
 var is_dragging_scroll: bool = false
 var drag_start_y: float = 0.0
 var initial_scroll_v: int = 0
 
-## This week's history, handed to each Logs sheet.
-var _history: Array = []
-## Latched on the first Logs open: the rows' stamp-and-shake entrance plays
-## once, so reopening the sheet never re-fires the stamp cue.
-var _logs_seen: bool = false
-## The open Logs sheet, or null.
-var _logs_popup: Control = null
-## The cards this report shows, top to bottom.
-var _cards: Array = []
-## The values the summary lines count to, top to bottom: coins, won, lost.
-var _line_values: Array = [0, 0, 0]
-## True while the reveal plays; a tap only skips while it is.
-var _revealing: bool = false
-## The reveal's one timeline tween, held so a skip can kill it.
-var _reveal_tween: Tween = null
-## The screen's own in-flight pops, counts and scrolls, held so a skip can
-## stop them rather than let them write over the landing.
-var _reveal_tweens: Array[Tween] = []
+## The active tab, as a Pane value.
+var _active_pane: int = Pane.SISWA
+## Each pane's own last scroll offset, so switching back returns to the
+## card you were reading rather than snapping to the top.
+var _pane_scroll: Array[int] = [0, 0]
+## Latched the first time RIWAYAT opens. Its rows stagger in once; every
+## later switch is an instant show, so tabbing back and forth never
+## re-fires the stamp cue.
+var _history_animated: bool = false
+## The instanced history rows, kept so the lazy first animation can reach
+## them without re-walking the tree.
+var _history_rows: Array = []
 
 
 func _ready() -> void:
-	# Signal wiring stays ungated so the editor's test runner can exercise
-	# it; everything below the guard is a real side effect.
-	logs_button.pressed.connect(open_logs)
-	next_button.pressed.connect(_on_next_pressed)
-	cards_scroll.gui_input.connect(_on_scroll_gui_input)
-	logs_button.text = logs_button_text
-	next_button.text = next_button_text
+	# Signal wiring stays ungated so the editor's test runner can
+	# exercise it; everything below the guard is a real side effect.
+	btn_close.pressed.connect(_on_close_pressed)
+	tab_siswa.pressed.connect(show_pane.bind(Pane.SISWA))
+	tab_riwayat.pressed.connect(show_pane.bind(Pane.RIWAYAT))
+	if scroll_container:
+		scroll_container.gui_input.connect(_on_scroll_gui_input)
+	_sync_tab_buttons()
 	if Engine.is_editor_hint():
 		return
 
 	AudioDirector.play_sfx(&"popup_open")
 	modulate.a = 0.0
-	for b in [logs_button, next_button]:
-		b.modulate.a = 0.0
-		b.disabled = true
+	_apply_visual_exports()
+	btn_close.modulate.a = 0.0
+	btn_close.disabled = true
 
 
-## Fill the screen for the week `student_manager` just simulated.
 ## `week_earnings` is the Wirausaha payout SchoolDay made just before opening
-## this screen -- it has already left GameState.pending_earnings, so it is
-## handed over rather than re-read.
+## this screen. Paying it out empties GameState.pending_earnings, which is
+## what WeekRecap._sum_pending_earnings reads, so by now that read is 0 and
+## the banner's money pill would show nothing the player earned. The paid
+## total is handed over instead (2026-09-14, kept across the 2026-09-16
+## revert). A caller that has not paid out yet -- the debug rehearsal --
+## omits it and keeps WeekRecap's own read.
 func initialize_checkup(student_manager: StudentManager, week_earnings: int = 0) -> void:
-	var recap: Dictionary = WeekRecap.compute(student_manager)
-	money_label.text = format_earnings(week_earnings)
-	event_won_label.text = event_won_prefix + str(recap["minigames_won"])
-	event_lost_label.text = event_lost_prefix + str(recap["minigames_lost"])
-	_line_values = [week_earnings, int(recap["minigames_won"]), int(recap["minigames_lost"])]
+	_apply_visual_exports()
 
-	for child in cards_list.get_children():
+	var recap: Dictionary = WeekRecap.compute(student_manager)
+	if week_earnings != 0:
+		recap["money_earned"] = week_earnings
+	banner.set_recap(recap)
+
+	for child in students_pane.get_children():
 		child.queue_free()
-	_history = []
+	for child in history_pane.get_children():
+		if child != history_empty_label:
+			child.queue_free()
+	_history_rows.clear()
+
 	if student_manager == null:
-		_cards = []
+		_update_tab_counts(0, 0)
 		return
 
 	var cards: Array = []
 	for student in student_manager.students:
 		var card := student_card_scene.instantiate() as DaySummaryStudentRow
-		cards_list.add_child(card)
-		# Set up only once the card is in the tree: its @onready nodes are
-		# null until then. Same order DaySummaryPopup.setup_summary uses.
+		students_pane.add_child(card)
+		# Set up only once the card is in the tree: its @onready nodes
+		# are null until then. Same order DaySummaryPopup.setup_summary
+		# uses.
 		card.setup_week_row(student)
 		_set_mouse_filter_pass(card)
 		cards.append(card)
 
-	_history = student_manager.minigame_history.duplicate()
-	_cards = cards
-	_play_entrance()
+	var history: Array = student_manager.minigame_history
+	history_empty_label.visible = history.is_empty()
+	for entry in history:
+		var row := history_row_scene.instantiate() as WeekHistoryRow
+		history_pane.add_child(row)
+		row.set_entry(entry)
+		_set_mouse_filter_pass(row)
+		_history_rows.append(row)
+
+	_update_tab_counts(cards.size(), history.size())
+	_play_entrance_animations(cards)
 
 
-## "+1.000" for a week that earned, "0" for one that did not.
-static func format_earnings(value: int) -> String:
-	return ("+" if value > 0 else "") + WeekRecap.format_money(value)
-
-
-## The pitch of a report's `index`-th pop: one `step` higher per pop, never
-## past `ceiling`. Restarts each week, because each report is a new screen.
-static func pop_pitch(index: int, step: float, ceiling: float) -> float:
-	return minf(1.0 + float(index) * step, ceiling)
-
-
-## Open the Logs sheet over the screen. One at a time; the rows' entrance
-## plays on the first open only.
-func open_logs() -> void:
-	if is_instance_valid(_logs_popup):
+## Show one pane and hide the other, remembering where each was scrolled
+## to. Safe to call with the already-active pane: it is a no-op and plays
+## nothing, so a second tap on the live tab is silent.
+func show_pane(pane: int) -> void:
+	if pane == _active_pane and students_pane.visible != history_pane.visible:
 		return
-	var popup := logs_popup_scene.instantiate() as WeekLogsPopup
-	add_child(popup)
-	popup.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	popup.set_history(_history)
-	popup.closed.connect(func(): _logs_popup = null)
-	_logs_popup = popup
-	popup.open(not _logs_seen)
-	_logs_seen = true
+	if scroll_container:
+		_pane_scroll[_active_pane] = scroll_container.scroll_vertical
+	var outgoing_pane := _active_pane
+	_active_pane = pane
+	_sync_tab_buttons()
+
+	if Engine.is_editor_hint():
+		students_pane.visible = pane == Pane.SISWA
+		history_pane.visible = pane == Pane.RIWAYAT
+		if scroll_container:
+			scroll_container.scroll_vertical = _pane_scroll[pane]
+		_history_animated = _history_animated or pane == Pane.RIWAYAT
+		return
+
+	AudioDirector.play_sfx(&"pane_swipe")
+	await _transition_panes(outgoing_pane, pane)
+	if scroll_container:
+		# Deliberately synchronous, not set_deferred. A deferred write is
+		# the theoretically correct fix for the ScrollContainer's
+		# scrollbar max_value being narrowly one layout pass stale right
+		# after the visibility flip above -- but show_pane is called
+		# directly by tests (suite.call(name), no frame processing
+		# in-between, no coroutines allowed here per this file's own
+		# testing constraints) and there is no supported way to flush a
+		# deferred call inside that harness. A deferred write would
+		# silently break both of this file's passing scroll-memory
+		# tests with no way to re-cover them. The risk window this
+		# leaves open is narrow: it only matters when the two panes'
+		# content heights differ AND the read happens before the next
+		# idle frame resyncs the scrollbar. Documented and accepted
+		# rather than fixed, per 2026-09-03 review (Task 9 fix round).
+		scroll_container.scroll_vertical = _pane_scroll[pane]
+
+	AudioDirector.play_sfx(&"select")
+	if pane == Pane.RIWAYAT and not _history_animated:
+		_history_animated = true
+		# A beat of separation before the stamp cue: tapping RIWAYAT for
+		# the first time triggers two distinct gestures (the tab select,
+		# and the lazy history entrance's stamp/shake per row) that would
+		# otherwise land in the same synchronous frame. The audio-hygiene
+		# scanner (tests/test_audio_coverage.gd) flags any function that
+		# fires two SFX cues on one path with no await between them, and
+		# rightly so here too -- a genuine gap reads as two intentional
+		# beats rather than a simultaneous double-hit.
+		await get_tree().create_timer(Juice.tokens().dur_instant).timeout
+		_play_history_entrance()
+
+
+## The SISWA<->RIWAYAT slide+fade itself. `outgoing`/`incoming` are Pane
+## values; direction is derived from their difference so a third pane
+## would need no change here. The outgoing pane's own `visible` flips to
+## false only once its exit tween finishes -- never before, so it's never
+## cut off mid-slide. The incoming pane starts from the opposite offset
+## and fades/slides back to its authored position, chained (not
+## parallel) after the outgoing tween, so the two panes -- which occupy
+## the same rect -- never visually overlap mid-transition.
+##
+## A coroutine; only ever called from show_pane, which is itself only
+## reached here when Engine.is_editor_hint() is false.
+func _transition_panes(outgoing: int, incoming: int) -> void:
+	var dir := signi(incoming - outgoing)
+	var outgoing_node: Control = students_pane if outgoing == Pane.SISWA else history_pane
+	var incoming_node: Control = students_pane if incoming == Pane.SISWA else history_pane
+	if outgoing_node == incoming_node:
+		return
+
+	var t := Juice.tokens()
+	var out_tw := outgoing_node.create_tween().set_parallel(true)
+	out_tw.tween_property(outgoing_node, "position:x",
+		float(dir) * -PANE_SLIDE_DISTANCE, t.dur_fast)
+	out_tw.tween_property(outgoing_node, "modulate:a", 0.0, t.dur_fast)
+	await out_tw.finished
+	if not is_instance_valid(outgoing_node):
+		return
+	outgoing_node.visible = false
+	outgoing_node.position.x = 0.0
+	outgoing_node.modulate.a = 1.0
+
+	if not is_instance_valid(incoming_node):
+		return
+	incoming_node.position.x = float(dir) * PANE_SLIDE_DISTANCE
+	incoming_node.modulate.a = 0.0
+	incoming_node.visible = true
+	var in_tw := incoming_node.create_tween().set_parallel(true)
+	in_tw.tween_property(incoming_node, "position:x", 0.0, t.dur_fast)
+	in_tw.tween_property(incoming_node, "modulate:a", 1.0, t.dur_fast)
+	await in_tw.finished
+
+
+## Keep the two toggle buttons agreeing with _active_pane. The pressed
+## state is what the WeekTabButton variation styles, so no manual tint is
+## needed here.
+func _sync_tab_buttons() -> void:
+	if tab_siswa:
+		tab_siswa.button_pressed = _active_pane == Pane.SISWA
+	if tab_riwayat:
+		tab_riwayat.button_pressed = _active_pane == Pane.RIWAYAT
+
+
+## "SISWA (4)" / "RIWAYAT (7)" -- so the player can see there is
+## something worth tapping before tapping it.
+func _update_tab_counts(student_count: int, history_count: int) -> void:
+	if tab_siswa:
+		tab_siswa.text = "%s (%d)" % [tab_students_text, student_count]
+	if tab_riwayat:
+		tab_riwayat.text = "%s (%d)" % [tab_history_text, history_count]
+
+
+func _apply_visual_exports() -> void:
+	# The themed panel is the default backdrop; an art-supplied photo
+	# replaces it outright. Guarded on `is Panel` so a second call cannot
+	# stack another TextureRect.
+	var bg = get_node_or_null("Background")
+	if bg is Panel and background_texture:
+		var tex_rect = TextureRect.new()
+		tex_rect.name = "Background"
+		tex_rect.texture = background_texture
+		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tex_rect.stretch_mode = TextureRect.STRETCH_SCALE
+		tex_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		bg.queue_free()
+		add_child(tex_rect)
+		move_child(tex_rect, 0)
+
+	if title_label:
+		title_label.text = header_title_text
+		if font: title_label.add_theme_font_override("font", font)
+
+	if subtitle_label:
+		subtitle_label.text = header_subtitle_text
+		if font: subtitle_label.add_theme_font_override("font", font)
+
+	if btn_close:
+		btn_close.text = "" if button_close_texture else close_button_text
+		if font: btn_close.add_theme_font_override("font", font)
+		if button_close_texture:
+			var sb = StyleBoxTexture.new()
+			sb.texture = button_close_texture
+			btn_close.add_theme_stylebox_override("normal", sb)
+			btn_close.add_theme_stylebox_override("hover", sb)
+			btn_close.add_theme_stylebox_override("pressed", sb)
 
 
 func _set_mouse_filter_pass(node: Node) -> void:
@@ -182,190 +324,49 @@ func _set_mouse_filter_pass(node: Node) -> void:
 		_set_mouse_filter_pass(child)
 
 
-## The entrance: the screen fades in on the backdrop alone, the ribbon pops,
-## then the timeline plays -- one parallel tween of delayed callbacks, so a
-## skip is a single kill().
-func _play_entrance() -> void:
+## RIWAYAT's lazy first open: rows stagger in, a win stamping into place
+## and a loss shaking. Latched by show_pane, so this runs at most once.
+func _play_history_entrance() -> void:
+	Juice.stagger_in(_history_rows)
+	for i in _history_rows.size():
+		var row: WeekHistoryRow = _history_rows[i]
+		if row.is_event():
+			continue  # events get neither the stamp nor the shake
+		if row.is_win():
+			AudioDirector.play_sfx(&"stamp")
+		else:
+			Juice.shake(row)
+
+
+func _play_entrance_animations(cards: Array = []) -> void:
 	# The runner builds this screen to inspect it, not to watch it. Under
 	# the editor the cards stay exactly where setup_week_row left them.
 	if Engine.is_editor_hint():
 		return
-	_prepare_reveal()
+
 	var t := Juice.tokens()
-	var fader := create_tween()
+	modulate.a = 0.0
+	var fader = create_tween()
 	fader.tween_property(self, "modulate:a", 1.0, t.dur_normal)
 	await fader.finished
-	if not is_inside_tree():
-		return
-	_track(Juice.pop_in(title_banner))
-	_revealing = true
-	_reveal_tween = create_tween().set_parallel(true)
-	for step in _build_steps(t.dur_fast):
-		_reveal_tween.tween_callback(_run_step.bind(step)).set_delay(float(step["at"]))
 
+	# Stages 1-3 belong to the banner: slide, four pill count-ups, and
+	# the gated coin shower.
+	banner.play_entrance()
+	await get_tree().create_timer(t.dur_normal).timeout
 
-## The reveal's opening frame: the backdrop alone. The ribbon, every card
-## and every summary line wait transparent (modulate, so nothing reflows as
-## they arrive); each card is rewound to Monday and each line reads 0. Not
-## editor-gated: it only writes state, so the suite can check it.
-func _prepare_reveal() -> void:
-	title_banner.modulate.a = 0.0
-	for card in _cards:
-		card.modulate.a = 0.0
-		card.rewind_week()
-	for i in _line_values.size():
-		_line_node(i).modulate.a = 0.0
-		_line_label(i).text = _line_text(i, 0.0)
+	# Stage 4. Cards land one at a time, each card's five gauges moving
+	# on the beat that card ARRIVES on -- the nightly popup's own
+	# cadence, one week long.
+	Juice.stagger_in(cards)
+	for i in cards.size():
+		cards[i].play_week_gain(float(i) * t.stagger_step)
 
-
-## This week's reveal as a timeline: every card's three stat deltas and the
-## three summary values, paced by the Reveal exports, starting at `start`.
-func _build_steps(start: float = 0.0) -> Array:
-	var rows: Array = []
-	for card in _cards:
-		var deltas: Array = []
-		for row in card.stat_rows:
-			deltas.append(row.shown_delta())
-		rows.append(deltas)
-	return WeekReportReveal.build(rows, _line_values, {
-		"start": start,
-		"card_lead": card_lead_seconds,
-		"count": count_seconds,
-		"row_gap": row_gap_seconds,
-		"quiet_row": quiet_row_seconds,
-		"card_gap": card_gap_seconds,
-		"line_gap": line_gap_seconds,
-		"finale_gap": finale_gap_seconds,
-	})
-
-
-## One beat of the timeline. An if/elif chain rather than a match: the
-## audio suite's double-fire scan reads elif as "these branches exclude each
-## other", and a match's arms as one straight path.
-func _run_step(step: Dictionary) -> void:
-	var kind: StringName = step["kind"]
-	if kind == WeekReportReveal.CARD:
-		_land_card(int(step["card"]))
-	elif kind == WeekReportReveal.ROW_COUNT:
-		_cards[int(step["card"])].stat_rows[int(step["row"])].play_count(float(step["seconds"]))
-	elif kind == WeekReportReveal.ROW_POP:
-		_cards[int(step["card"])].stat_rows[int(step["row"])].land_pop(
-			pop_pitch(int(step["pop_index"]), pitch_step, pitch_max))
-	elif kind == WeekReportReveal.LINE:
-		_show_line(int(step["row"]), float(step["seconds"]))
-	elif kind == WeekReportReveal.LINE_POP:
-		_pop_line(int(step["row"]), pop_pitch(int(step["pop_index"]), pitch_step, pitch_max))
-	elif kind == WeekReportReveal.FINALE:
-		_finale(false)
-
-
-## A card's arrival: it pops in, its needs bars travel, and the list
-## scrolls just far enough to show all of it (two cards fit on screen).
-func _land_card(i: int) -> void:
-	var card: Control = _cards[i]
-	_track(Juice.pop_in(card))
-	card.play_needs_week()
-	var target := WeekReportReveal.scroll_to_show(card.position.y,
-		card.position.y + card.size.y, cards_scroll.size.y,
-		float(cards_scroll.scroll_vertical))
-	if int(target) != cards_scroll.scroll_vertical:
-		var tw := create_tween()
-		tw.tween_property(cards_scroll, "scroll_vertical", int(target),
-			Juice.tokens().dur_normal).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-		_track(tw)
-
-
-## The summary line that pops in, top to bottom: the coin row, then the
-## two event tallies.
-func _line_node(i: int) -> Control:
-	return [coin_row, event_won_label, event_lost_label][i]
-
-
-## The label a summary line counts on.
-func _line_label(i: int) -> Label:
-	return [money_label, event_won_label, event_lost_label][i]
-
-
-## How a summary line reads at value `v`.
-func _line_text(i: int, v: float) -> String:
-	var n := int(round(v))
-	if i == 0:
-		return format_earnings(n)
-	elif i == 1:
-		return event_won_prefix + str(n)
-	return event_lost_prefix + str(n)
-
-
-## A summary line's turn: it pops in and counts from 0 over `seconds`. A
-## zero line (seconds 0) has nothing to count and arrives reading 0.
-func _show_line(i: int, seconds: float) -> void:
-	_track(Juice.pop_in(_line_node(i)))
-	if seconds > 0.0:
-		_track(Juice.count_up_formatted(_line_label(i), 0.0, float(_line_values[i]),
-			func(v: float) -> String: return _line_text(i, v), 0.0, seconds))
-
-
-## A non-zero summary line lands: the number punches about its own text,
-## with the coin cue for the money line and the pop cue for the tallies,
-## both at the report's climbing pitch.
-func _pop_line(i: int, pitch: float) -> void:
-	var label := _line_label(i)
-	Juice.punch(label, Juice.text_center(label))
-	if i == 0:
-		AudioDirector.play_sfx(&"coin", pitch)
-	else:
-		AudioDirector.play_sfx(&"pop", pitch)
-
-
-## Hold one of the screen's own reveal tweens so a skip can stop it.
-func _track(tw: Tween) -> void:
-	if tw != null:
-		_reveal_tweens.append(tw)
-
-
-## Land the whole reveal at once: the timeline stops, every card and line
-## shows its final values, and the finale plays. Killing is safe here --
-## unlike StatCheck's rush, nothing awaits this tween.
-func skip_reveal() -> void:
-	if not _revealing:
-		return
-	if _reveal_tween != null and _reveal_tween.is_valid():
-		_reveal_tween.kill()
-	_reveal_tween = null
-	_land_all()
-	_finale(true)
-
-
-## Every card and summary line fully shown on its final value: the skip's
-## landing. Not editor-gated: it only writes state.
-func _land_all() -> void:
-	for tw in _reveal_tweens:
-		if tw.is_valid():
-			tw.kill()
-	_reveal_tweens.clear()
-	title_banner.modulate.a = 1.0
-	title_banner.scale = Vector2.ONE
-	for card in _cards:
-		card.modulate.a = 1.0
-		card.scale = Vector2.ONE
-		card.land_week()
-	for i in _line_values.size():
-		var node := _line_node(i)
-		node.modulate.a = 1.0
-		node.scale = Vector2.ONE
-		var label := _line_label(i)
-		label.scale = Vector2.ONE
-		label.text = _line_text(i, float(_line_values[i]))
-
-
-## The end of the reveal, played or skipped: the paper confetti and the
-## reward cue when a card gained ground, then the buttons. A skipped flat
-## week still gets one tally, so the tap lands on a sound. A flat or losing
-## week gets the report without the party.
-func _finale(skipped: bool) -> void:
-	_revealing = false
+	# Stage 5. One celebration for the whole week, landing just behind
+	# the last card's own burst -- and only if the week went somewhere. A
+	# flat or losing week gets the report without the party.
 	var week_gained := false
-	for card in _cards:
+	for card in cards:
 		if card.gained_ground():
 			week_gained = true
 			break
@@ -375,33 +376,14 @@ func _finale(skipped: bool) -> void:
 		var celebration := celebration_scene.instantiate() as RewardParticles
 		celebration.position = get_node("Celebration").position
 		add_child(celebration)
-		celebration.fire()
-	elif skipped:
-		AudioDirector.play_sfx(&"tally")
-	var t := Juice.tokens()
-	for b in [logs_button, next_button]:
-		var tw := create_tween()
-		tw.tween_property(b, "modulate:a", 1.0, t.dur_fast)
-		# Enabled only once shown. A skip reaches here from _input(), and the
-		# same press then goes on to the GUI: a button enabled now would take
-		# it, opening Logs or leaving the report unread.
-		tw.tween_callback(func(): b.disabled = false)
+		celebration.fire(float(cards.size()) * t.stagger_step)
 
+	await get_tree().create_timer(t.dur_slow).timeout
 
-## A tap anywhere skips the reveal to its end. _input(), like StatCheck's,
-## because the full-screen scroll and cards would otherwise claim the tap
-## first. It acts only while the reveal plays, so Logs, Selanjutnya and the
-## drag-scroll behave normally afterwards. The tap is not marked handled,
-## also like StatCheck's: the debug overlay's own tap gesture must still
-## see it.
-func _input(event: InputEvent) -> void:
-	if Engine.is_editor_hint() or not _revealing:
-		return
-	var pressed: bool = (event is InputEventScreenTouch and event.pressed) \
-		or (event is InputEventMouseButton and event.pressed \
-			and event.button_index == MOUSE_BUTTON_LEFT)
-	if pressed:
-		skip_reveal()
+	var button_tween = create_tween()
+	button_tween.tween_property(btn_close, "modulate:a", 1.0, t.dur_fast)
+	btn_close.disabled = false
+	banner.start_idle_bounce()
 
 
 func _on_scroll_gui_input(event: InputEvent) -> void:
@@ -409,21 +391,18 @@ func _on_scroll_gui_input(event: InputEvent) -> void:
 		if event.pressed:
 			is_dragging_scroll = true
 			drag_start_y = event.global_position.y
-			initial_scroll_v = cards_scroll.scroll_vertical
+			initial_scroll_v = scroll_container.scroll_vertical
 		else:
 			is_dragging_scroll = false
 	elif event is InputEventMouseMotion and is_dragging_scroll:
 		var delta_y = event.global_position.y - drag_start_y
-		cards_scroll.scroll_vertical = int(initial_scroll_v - delta_y)
+		scroll_container.scroll_vertical = int(initial_scroll_v - delta_y)
 
 
-func _on_next_pressed() -> void:
-	# One exit only: the fade-out below takes dur_normal, and a second tap on
-	# Selanjutnya -- or a tap on Logs -- during it must not fire again.
-	next_button.disabled = true
-	logs_button.disabled = true
+func _on_close_pressed() -> void:
+	banner.stop_idle_bounce()
 	AudioDirector.play_sfx(&"confirm")
-	var fade_out := create_tween()
+	var fade_out = create_tween()
 	fade_out.tween_property(self, "modulate:a", 0.0, Juice.tokens().dur_normal)
 	await fade_out.finished
 	checkup_closed.emit()

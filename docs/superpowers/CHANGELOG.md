@@ -150,6 +150,28 @@ Suite: 114 suites, 1632/1637. The five failures are `inventory` (2) and
 `light_ground_text` (3), pre-existing on `Textures` from PR #48's inventory
 redesign — they survive a clean editor restart and full rescan and are
 unrelated to this branch.
+## 2026-09-16 — `/gamecode-instant`, the unattended variant of `/gamecode`
+
+`.claude/skills/gamecode-instant/SKILL.md`. Same pipeline as `/gamecode`, with
+the design gate removed: the Brief becomes a Receipt that is sent and never
+awaited, so brainstorm → spec → plan → build runs in one turn.
+
+It delegates to `/gamecode` rather than restating it, and overrides only the
+gates. Written against a baseline: three agents given the idea without the
+skill all correctly refused to wait for approval, but produced five different
+stop lists across three runs — `Balance.gd`, refactors, red suites, new
+persistence, pinned test baselines, a dirty tree, force-killing Godot. An
+unattended run would have parked on a different thing each time.
+
+So the skill's core is a **closed list of five stops** (ship, `Balance.gd`,
+new persistence, a pinned invariant, someone else's uncommitted work) beside a
+table of nine things that look like stops and are not. Re-run with the skill,
+all three reps converged on exactly that list and on the same worktree call.
+
+"Ship it?" survives, because pushing hands the branch to `ci/auto_merge.sh`
+unattended; `--ship` in the invocation is that permission given in advance.
+A harness permission prompt still pauses a run — an allowlist question, named
+in the skill so it is not re-litigated mid-run.
 
 ## 2026-09-15 — Tall phones, Phase 1: Lobby, Koperasi, StudentCard, StudentList
 

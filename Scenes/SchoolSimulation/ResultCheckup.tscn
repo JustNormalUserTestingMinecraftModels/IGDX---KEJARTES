@@ -53,7 +53,7 @@ theme_override_constants/margin_bottom = 36
 
 [node name="VBox" type="VBoxContainer" parent="Margin" unique_id=1245057866]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 44
 
 [node name="Banner" parent="Margin/VBox" unique_id=2085513516 instance=ExtResource("4_5y4mq")]
 layout_mode = 2

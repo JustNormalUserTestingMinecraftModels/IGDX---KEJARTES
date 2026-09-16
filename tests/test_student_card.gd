@@ -192,6 +192,34 @@ func test_motion_and_audio_feedback_are_wired() -> void:
 
 # ------------------------------------------------------ StudentCardView
 
+## _transition_page captures belajar_orig_pos before the page changes, which
+## for a still-hidden button is its authored rect. It then calls
+## _update_nav_buttons -> _shift_approve_for_belajar, which tweens the button
+## to the correct spot beside Aprove/Batal -- and used to follow that with a
+## second tween back to the stale belajar_orig_pos, undoing it. The swipe that
+## first revealed BELAJAR therefore flew it off the bottom of the screen.
+## The reveal belongs to _shift_approve_for_belajar alone, which parks the
+## button off-screen right and slides it in on every page change
+## (_reset_all_approve_positions clears approve_shifted first).
+func test_page_transition_leaves_the_belajar_slide_to_the_shift() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var start := src.find("func _transition_page")
+	assert_true(start != -1, "_transition_page is gone")
+	if start == -1:
+		return
+	var body := src.substr(start)
+	var stop := body.find("func _update_nav_buttons")
+	assert_true(stop != -1, "_update_nav_buttons must follow _transition_page")
+	if stop == -1:
+		return
+	body = body.substr(0, stop)
+	assert_false(body.contains("tween_in.tween_property(belajar_button"),
+		"_transition_page must not tween belajar_button back to the position " +
+		"it captured before the page changed -- that undoes the shift")
+	assert_true(body.contains("tween_out.tween_property(belajar_button"),
+		"the button must still be thrown off with the old card")
+
+
 func test_student_card_view_class_exists() -> void:
 	assert_true(ResourceLoader.exists("res://Scripts/StudentCard/StudentCardView.gd"),
 		"the shared card view must exist")

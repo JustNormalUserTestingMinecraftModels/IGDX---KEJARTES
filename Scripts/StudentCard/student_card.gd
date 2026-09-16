@@ -688,11 +688,12 @@ func _transition_page(old_index: int, new_index: int, direction: int):
 		tween_in.tween_property(stamp, "rotation_degrees", 0, 0.35)
 		tween_in.tween_property(stamp, "modulate:a", 1.0, 0.35)
 
-	if belajar_button.visible:
-		belajar_button.position = belajar_orig_pos - Vector2(throw_distance, 0)
-		belajar_button.modulate.a = 0.0
-		tween_in.tween_property(belajar_button, "position", belajar_orig_pos, 0.35)
-		tween_in.tween_property(belajar_button, "modulate:a", 1.0, 0.35)
+	# BELAJAR is not slid in here. _update_nav_buttons above has already
+	# called _shift_approve_for_belajar, which parks it off-screen right and
+	# tweens it to the spot beside Aprove/Batal. Tweening it to
+	# belajar_orig_pos as well undid that: the position was captured before
+	# the page changed, so on the swipe that first reveals the button it is
+	# the authored rest rect, 74px below a 1080x1920 screen.
 
 	await tween_in.finished
 

@@ -355,6 +355,29 @@ func test_student_card_at_the_design_size_is_unchanged() -> void:
 		Vector2(160, 44), "PilihMurid")
 
 
+## BELAJAR belongs to the paper, not to the screen. Phase 1 pushed every
+## child's offsets by the root's old (70, 254) inset and left this one in
+## position mode, which put its rest position at y 1994 -- 74px below a
+## 1080x1920 screen. Center-anchored like StampApprove, it is back at its
+## authored 1740 and rides the paper's 240px drop on a tall phone.
+func test_student_card_belajar_button_rides_the_paper() -> void:
+	var card := _scene(STUDENT_CARD)
+	var belajar := card.get_node_or_null("BelajarButton") as Control
+	assert_true(belajar != null, "missing BelajarButton")
+	if belajar == null:
+		return
+	assert_eq(_anchors(belajar), Vector4(0.5, 0.5, 0.5, 0.5),
+		"BelajarButton rides with the paper")
+	assert_eq(_offsets(belajar), Vector4(-142, 780, 348, 940),
+		"BelajarButton keeps its 398,1740-888,1900 rect")
+	var design := _stood_up(STUDENT_CARD, DESIGN)
+	_assert_placed((design.get_node("BelajarButton") as Control),
+		Rect2(398, 1740, 490, 160), "BelajarButton at the design size")
+	var tall := _stood_up(STUDENT_CARD, TALL)
+	_assert_placed((tall.get_node("BelajarButton") as Control),
+		Rect2(398, 1980, 490, 160), "BelajarButton on a tall phone")
+
+
 # ── StudentList ──────────────────────────────────────────────────────────────
 
 const STUDENT_LIST := "res://Scenes/StudentList/student_list.tscn"

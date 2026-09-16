@@ -107,7 +107,11 @@ func _on_pill_tapped(pill_key: String) -> void:
 		"menang": icon_menang, "event": icon_event,
 	}.get(pill_key)
 	var popup: WeekRecapPillInfoPopup = load(_POPUP_SCENE).instantiate()
-	get_tree().root.add_child(popup)
+	# Parent the popup into this banner's scene (like TraitDetailPopup adds to
+	# its card's scene), NOT get_tree().root -- at the window root the recap
+	# scene does not render behind the scrim, so the card looks stranded on a
+	# blank overlay (worse when ResultCheckup itself is a debug overlay).
+	add_child(popup)
 	var pill: WeekRecapPill = {
 		"uang": pill_uang, "poin": pill_poin,
 		"menang": pill_menang, "event": pill_event,

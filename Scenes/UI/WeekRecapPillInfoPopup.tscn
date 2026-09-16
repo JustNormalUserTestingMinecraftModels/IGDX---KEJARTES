@@ -15,9 +15,9 @@ grow_vertical = 2
 color = Color(0.18039216, 0.12941177, 0.09411765, 0)
 
 [node name="Card" type="PanelContainer" parent="Scrim" unique_id=5741108]
-custom_minimum_size = Vector2(760, 0)
+custom_minimum_size = Vector2(960, 0)
 layout_mode = 0
-offset_right = 760.0
+offset_right = 960.0
 theme_type_variation = &"IdCardPanel"
 
 [node name="Layout" type="VBoxContainer" parent="Scrim/Card" unique_id=11329071]

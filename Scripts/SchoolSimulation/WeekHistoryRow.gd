@@ -2,8 +2,9 @@
 extends PanelContainer
 class_name WeekHistoryRow
 
-## One line of the week's RIWAYAT: a minigame that was played or an event
-## that fired (2026-09-03 spec section 5).
+## One line of the week's Logs sheet (WeekLogsPopup): a minigame that was
+## played or an event that fired (2026-09-03 spec section 5; the RIWAYAT tab
+## that first held these rows was retired on 2026-09-16).
 ##
 ## Replaces ResultCheckup._create_history_item(), which built the same
 ## row node-by-node at runtime -- debt that
@@ -30,7 +31,7 @@ const DETAIL_JOIN := "  ·  "
 @onready var detail_label: Label = $Body/Lines/DetailLabel
 
 ## Whether this row is rendering an event rather than a played minigame.
-## Read by ResultCheckup._play_history_entrance to choose stamp vs. shake
+## Read by WeekLogsPopup._play_rows_entrance to choose stamp vs. shake
 ## without inferring it from the badge's tint.
 var _is_event: bool = false
 ## Whether this row's minigame was won. Meaningless when _is_event is

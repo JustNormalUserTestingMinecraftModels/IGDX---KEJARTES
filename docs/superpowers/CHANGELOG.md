@@ -27,6 +27,63 @@ Plan `docs/superpowers/plans/2026-09-15-weekly-shop-minigame-polish.md`, spec
 - **MainBola**: an off-target shot ends in the keeper's hands, and the target
   box respawns somewhere new (x and height) after every goal.
 
+## 2026-09-16 — Weekly Results: tabs out, Logs and Selanjutnya in
+
+Plan `docs/superpowers/plans/2026-09-16-weekly-results-hybrid.md`, spec
+`docs/superpowers/specs/2026-09-16-weekly-results-hybrid-design.md`.
+
+Immediately after the revert below, the screen keeps its banner, pills,
+header and student cards but loses the SISWA / RIWAYAT tabs and gains the
+rebuild's two-button row: **Logs** and **Selanjutnya**.
+
+The week's history is not dropped — it moves. `initialize_checkup` keeps a
+duplicate of `minigame_history`, and `open_logs` hands it to `WeekLogsPopup`.
+That sheet has existed and been covered by `week_logs_popup` all along: the
+2026-09-14 rebuild borrowed a popup that was already orphaned, the revert
+re-orphaned it, and this borrows it back.
+
+**What went.** `TabBar`, `HistoryPane` and the `PaneStack` that held them;
+`StudentsPane` now sits directly under `ScrollContainer`. In the script: the
+`Pane` enum, `PANE_SLIDE_DISTANCE`, `show_pane`, `_transition_panes`,
+`_sync_tab_buttons`, `_update_tab_counts`, `_play_history_entrance`, and the
+four vars behind them.
+
+**What came back.** The `Buttons` row — `ResultButton`, 160 tall, separation
+120, both `size_flags_horizontal = 3` so the row splits equally, because the
+display face sets SELANJUTNYA in capitals and needs about 435 px. Plus
+`logs_popup_scene`, `open_logs`, `_history`, `_logs_seen` and `_logs_popup`,
+lifted unchanged.
+
+**The entrance's finale** now fades in both buttons and enables each only
+once it is visible — the rebuild's own rule, so a tap meant for something
+else cannot land on a freshly-enabled button. `_on_close_pressed` disables
+both before its fade, so a second tap during the exit can neither re-fire nor
+open Logs.
+
+**Retired one commit after being restored:** the `WeekTabButton` variation
+(with a rebake) and the `pane_swipe` cue with its `.ogg`. Both existed only
+for the tabs. The three pill/banner variations and the three pill cues stay,
+because the pills stay.
+
+**Debt resolved.** `ResultButton` and `WeekLogsPopup` both have call sites
+again, so two of the three orphans the revert recorded are gone from
+`DEBT.md`. `title_weekly_results.png` is still orphaned and still kept.
+
+**Tests.** The six tab and pane tests — default tab, pane visibility, the
+two scroll-memory tests, the history latch, and the two transition tests —
+are deleted with the feature rather than adapted: there is nothing left to
+assert. Five replace them, covering the sheet's wiring, both labels, the
+`ResultButton` variation, the no-second-sheet rule and the first-open latch,
+plus a scan that the tab machinery is really gone.
+`viewport_editability`'s entry for this screen stays at 1: it was earned by
+building history rows and is now earned by instancing the sheet, checked by
+removing the entry and reading what the suite asked for rather than assuming.
+
+Suite: 114 suites, 1632/1637 — the same totals as the revert below, because
+the six deleted tests were replaced one for one. The five failures are
+`inventory` (2) and `light_ground_text` (3), pre-existing on `Textures` from
+PR #48.
+
 ## 2026-09-16 — Weekly Results reverted to the 2026-09-03 report
 
 Plan `docs/superpowers/plans/2026-09-16-revert-weekly-results.md`, spec

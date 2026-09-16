@@ -53,13 +53,17 @@ const IDLE_CYCLE_PAUSE := 1.2
 
 const _POPUP_SCENE := "res://Scenes/UI/WeekRecapPillInfoPopup.tscn"
 
-@onready var week_label: Label = $Header/WeekLabel
-@onready var grade_label: Label = $Header/GradeLabel
-@onready var pill_uang: WeekRecapPill = $Pills/PillUang
-@onready var pill_poin: WeekRecapPill = $Pills/PillPoin
-@onready var pill_menang: WeekRecapPill = $Pills/PillMenang
-@onready var pill_event: WeekRecapPill = $Pills/PillEvent
+@onready var week_label: Label = $MainColumn/MastheadBand/BandRow/TitleCol/WeekLabel
+@onready var grade_label: Label = $MainColumn/MastheadBand/BandRow/TitleCol/GradeLabel
+@onready var pill_uang: WeekRecapPill = $MainColumn/ChipStrip/Pills/PillUang
+@onready var pill_poin: WeekRecapPill = $MainColumn/ChipStrip/Pills/PillPoin
+@onready var pill_menang: WeekRecapPill = $MainColumn/ChipStrip/Pills/PillMenang
+@onready var pill_event: WeekRecapPill = $MainColumn/ChipStrip/Pills/PillEvent
 @onready var coin_shower: RewardParticles = $CoinShower
+
+## The run-stars readout in the masthead's StarsBox, written by set_recap
+## as "X.XX / 3.0" -- the same run_stars() figure RunGrade gates on.
+@onready var stars_value: Label = $MainColumn/MastheadBand/BandRow/StarsBox/StarsValue
 
 # ── Visual - Icons ───────────────────────────────────────────────────
 @export_group("Visual - Icons")
@@ -158,6 +162,8 @@ func set_recap(recap: Dictionary) -> void:
 		week_label.text = "MINGGU %d" % GameState.minggu_ke
 	if grade_label:
 		grade_label.text = "%s · Evaluasi Mingguan" % GameState.get_grade_name()
+	if stars_value:
+		stars_value.text = "%.2f / 3.0" % recap.get("stars", 0.0)
 
 	var money: int = recap.get("money_earned", 0)
 	pill_uang.set_pill(icon_uang, WeekRecap.format_money(money),

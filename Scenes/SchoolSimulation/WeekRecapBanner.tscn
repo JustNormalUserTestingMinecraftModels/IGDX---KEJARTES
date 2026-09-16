@@ -7,6 +7,19 @@
 [ext_resource type="Texture2D" uid="uid://yfyflcrgpn6o" path="res://Assets/Images/UI/Placeholders/icon_event.svg" id="5_80yyh"]
 [ext_resource type="PackedScene" uid="uid://ch10k6jbp1fe1" path="res://Scenes/SchoolSimulation/WeekRecapPill.tscn" id="6_bg3l5"]
 [ext_resource type="PackedScene" uid="uid://da1j2twwbqj4d" path="res://Scenes/SchoolSimulation/CoinShower.tscn" id="7_1fr3o"]
+[ext_resource type="Texture2D" uid="uid://c72nldobl75au" path="res://Assets/Images/UI/logo.png" id="7_bg3l5"]
+[ext_resource type="PackedScene" uid="uid://ctpvyoynd3ggr" path="res://Scenes/SchoolSimulation/RewardBurst.tscn" id="9_1fr3o"]
+[ext_resource type="Texture2D" uid="uid://bndvoaecmhkfc" path="res://Assets/Images/Particles/particle_ring.png" id="10_kyn1k"]
+[ext_resource type="Texture2D" uid="uid://kikb5b4oefbr" path="res://Assets/Images/Particles/particle_plus.png" id="11_ylk2r"]
+[ext_resource type="Script" uid="uid://dirvyxt44yitc" path="res://Scripts/SchoolSimulation/RewardParticles.gd" id="12_cnsed"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_qsdhe"]
+direction = Vector3(0, -1, 0)
+initial_velocity_min = 90.0
+initial_velocity_max = 150.0
+gravity = Vector3(0, 260, 0)
+scale_min = 0.16
+scale_max = 0.24
 
 [node name="WeekRecapBanner" type="PanelContainer" unique_id=2085513516]
 custom_minimum_size = Vector2(0, 340)
@@ -17,40 +30,197 @@ icon_poin = ExtResource("3_nu073")
 icon_menang = ExtResource("4_eia8w")
 icon_event = ExtResource("5_80yyh")
 
-[node name="Header" type="HBoxContainer" parent="." unique_id=2072295213]
-layout_mode = 2
+[node name="CoinShower" parent="." unique_id=1082865761 instance=ExtResource("7_1fr3o")]
+z_index = 50
+position = Vector2(114, 250)
 
-[node name="WeekLabel" type="Label" parent="Header" unique_id=1914646388]
+[node name="MainColumn" type="VBoxContainer" parent="." unique_id=402070218]
 layout_mode = 2
-theme_type_variation = &"H1Label"
+theme_override_constants/separation = 12
 
-[node name="GradeLabel" type="Label" parent="Header" unique_id=1283570457]
+[node name="MastheadBand" type="PanelContainer" parent="MainColumn" unique_id=2010726571]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"CaptionLabel"
-horizontal_alignment = 2
+theme_type_variation = &"RecapMastheadPanel"
 
-[node name="Pills" type="HBoxContainer" parent="." unique_id=275182380]
+[node name="BandRow" type="HBoxContainer" parent="MainColumn/MastheadBand" unique_id=1913077172]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="PillUang" parent="Pills" unique_id=593429704 instance=ExtResource("6_bg3l5")]
+[node name="Crest" type="TextureRect" parent="MainColumn/MastheadBand/BandRow" unique_id=2130191770]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+texture = ExtResource("7_bg3l5")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleCol" type="VBoxContainer" parent="MainColumn/MastheadBand/BandRow" unique_id=1206946849]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PillPoin" parent="Pills" unique_id=2118184385 instance=ExtResource("6_bg3l5")]
+[node name="WeekLabel" type="Label" parent="MainColumn/MastheadBand/BandRow/TitleCol" unique_id=1914646388]
+layout_mode = 2
+theme_type_variation = &"ResultHeroLabel"
+text = "MINGGU 3"
+
+[node name="GradeLabel" type="Label" parent="MainColumn/MastheadBand/BandRow/TitleCol" unique_id=1283570457]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ResultBodyLabel"
+text = "Kelas 7 · Evaluasi Mingguan"
+
+[node name="StarsBox" type="VBoxContainer" parent="MainColumn/MastheadBand/BandRow" unique_id=311558051]
+layout_mode = 2
+
+[node name="StarsCaption" type="Label" parent="MainColumn/MastheadBand/BandRow/StarsBox" unique_id=1275798660]
+layout_mode = 2
+theme_type_variation = &"ResultBodyLabel"
+text = "Bintang"
+horizontal_alignment = 2
+
+[node name="StarsValue" type="Label" parent="MainColumn/MastheadBand/BandRow/StarsBox" unique_id=1876266458]
+layout_mode = 2
+theme_type_variation = &"ResultHeroLabel"
+text = "2.25 / 3.0"
+horizontal_alignment = 2
+
+[node name="ChipStrip" type="PanelContainer" parent="MainColumn" unique_id=1411178399]
+layout_mode = 2
+theme_type_variation = &"RecapChipPanel"
+
+[node name="Pills" type="HBoxContainer" parent="MainColumn/ChipStrip" unique_id=275182380]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="PillUang" parent="MainColumn/ChipStrip/Pills" unique_id=593429704 instance=ExtResource("6_bg3l5")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PillMenang" parent="Pills" unique_id=98421677 instance=ExtResource("6_bg3l5")]
+[node name="Icon" type="TextureRect" parent="MainColumn/ChipStrip/Pills/PillUang" unique_id=276348365]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="MainColumn/ChipStrip/Pills/PillUang" unique_id=1801363007]
+layout_mode = 2
+theme_type_variation = &"RecapPillValueLabel"
+horizontal_alignment = 1
+
+[node name="Ring" parent="MainColumn/ChipStrip/Pills/PillUang" unique_id=2106305868 instance=ExtResource("9_1fr3o")]
+position = Vector2(114, 66)
+amount = 10
+texture = ExtResource("10_kyn1k")
+explosiveness = 1.0
+plays_sfx = false
+
+[node name="PlusBurst" type="GPUParticles2D" parent="MainColumn/ChipStrip/Pills/PillUang/Ring" unique_id=1671892598]
+emitting = false
+amount = 5
+texture = ExtResource("11_ylk2r")
+lifetime = 0.8
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_qsdhe")
+script = ExtResource("12_cnsed")
+plays_sfx = false
+
+[node name="PillPoin" parent="MainColumn/ChipStrip/Pills" unique_id=2118184385 instance=ExtResource("6_bg3l5")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PillEvent" parent="Pills" unique_id=1613000695 instance=ExtResource("6_bg3l5")]
+[node name="Icon" type="TextureRect" parent="MainColumn/ChipStrip/Pills/PillPoin" unique_id=1357650246]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="MainColumn/ChipStrip/Pills/PillPoin" unique_id=924409724]
+layout_mode = 2
+theme_type_variation = &"RecapPillValueLabel"
+horizontal_alignment = 1
+
+[node name="Ring" parent="MainColumn/ChipStrip/Pills/PillPoin" unique_id=139129140 instance=ExtResource("9_1fr3o")]
+position = Vector2(114, 66)
+amount = 10
+texture = ExtResource("10_kyn1k")
+explosiveness = 1.0
+plays_sfx = false
+
+[node name="PlusBurst" type="GPUParticles2D" parent="MainColumn/ChipStrip/Pills/PillPoin/Ring" unique_id=414293354]
+emitting = false
+amount = 5
+texture = ExtResource("11_ylk2r")
+lifetime = 0.8
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_qsdhe")
+script = ExtResource("12_cnsed")
+plays_sfx = false
+
+[node name="PillMenang" parent="MainColumn/ChipStrip/Pills" unique_id=98421677 instance=ExtResource("6_bg3l5")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CoinShower" parent="." unique_id=1082865761 instance=ExtResource("7_1fr3o")]
-z_index = 50
-position = Vector2(114, 250)
+[node name="Icon" type="TextureRect" parent="MainColumn/ChipStrip/Pills/PillMenang" unique_id=1471256762]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="MainColumn/ChipStrip/Pills/PillMenang" unique_id=1975895835]
+layout_mode = 2
+theme_type_variation = &"RecapPillValueLabel"
+horizontal_alignment = 1
+
+[node name="Ring" parent="MainColumn/ChipStrip/Pills/PillMenang" unique_id=116174436 instance=ExtResource("9_1fr3o")]
+position = Vector2(114, 66)
+amount = 10
+texture = ExtResource("10_kyn1k")
+explosiveness = 1.0
+plays_sfx = false
+
+[node name="PlusBurst" type="GPUParticles2D" parent="MainColumn/ChipStrip/Pills/PillMenang/Ring" unique_id=989799825]
+emitting = false
+amount = 5
+texture = ExtResource("11_ylk2r")
+lifetime = 0.8
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_qsdhe")
+script = ExtResource("12_cnsed")
+plays_sfx = false
+
+[node name="PillEvent" parent="MainColumn/ChipStrip/Pills" unique_id=1613000695 instance=ExtResource("6_bg3l5")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Icon" type="TextureRect" parent="MainColumn/ChipStrip/Pills/PillEvent" unique_id=1629190882]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="MainColumn/ChipStrip/Pills/PillEvent" unique_id=107087360]
+layout_mode = 2
+theme_type_variation = &"RecapPillValueLabel"
+horizontal_alignment = 1
+
+[node name="Ring" parent="MainColumn/ChipStrip/Pills/PillEvent" unique_id=519343270 instance=ExtResource("9_1fr3o")]
+position = Vector2(114, 66)
+amount = 10
+texture = ExtResource("10_kyn1k")
+explosiveness = 1.0
+plays_sfx = false
+
+[node name="PlusBurst" type="GPUParticles2D" parent="MainColumn/ChipStrip/Pills/PillEvent/Ring" unique_id=2098976380]
+emitting = false
+amount = 5
+texture = ExtResource("11_ylk2r")
+lifetime = 0.8
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_qsdhe")
+script = ExtResource("12_cnsed")
+plays_sfx = false

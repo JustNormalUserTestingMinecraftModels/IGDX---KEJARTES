@@ -257,6 +257,22 @@ it again along with 177 other unused files.)
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
 them deliberately, or give them a consumer.
 
+**Three orphans from the Weekly Results revert (2026-09-16).** Reverting
+ResultCheckup to its 2026-09-03 design left the rebuild's pieces behind:
+
+- `Assets/Images/DaySummary/title_weekly_results.png`, the red WEEKLY RESULTS
+  ribbon, is referenced by nothing. Kept on disk by decision — it is the only
+  artwork of the rebuild and is cheap to hold.
+- The `ResultButton` theme variation has no call site, but
+  `tests/test_lobby_style_buttons.gd` asserts its 24 px sides and 52 px text,
+  so it cannot be removed without retiring that test with it.
+- `Scenes/SchoolSimulation/WeekLogsPopup.tscn` and its script are reachable
+  from nothing again, exactly as before 2026-09-14 — the rebuild borrowed a
+  sheet that was already orphaned. Still covered by `week_logs_popup`.
+
+Resolve as one piece or not at all: deleting the ribbon and the popup is easy,
+but `ResultButton` costs a test.
+
 **Deferred: the AturJadwal shelf.** Ships as two `ColorRect`s rather than a
 `ShelfEdge` variation. Needs an editor restart plus a manual rebake (a new
 `@export` on `DesignTokens` is invisible to a running editor). The exact diff

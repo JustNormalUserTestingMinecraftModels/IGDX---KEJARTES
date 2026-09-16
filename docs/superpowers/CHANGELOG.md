@@ -8,6 +8,22 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-16 — Weekly Results polish (masthead, kartu-pelajar card, popup, logs)
+
+Mentor pass on ResultCheckup. The redundant screen title is gone: `WeekRecapBanner`
+became a brown **report masthead** (`RecapMastheadPanel`) carrying the week/grade,
+a crest (reused `UI/logo.png`), and the run-stars figure (`WeekRecap.compute` now
+exposes `stars` from `GameState.run_stars()`), with the four totals on a sunken
+`RecapChipPanel` strip. The "green card of doom" (`DaySummary/card_bg.png`) is
+retired for a cream `IdCardPanel` frame with a striped brown name-header band
+(`header_stripes.svg`), modelled on the inventory `ApplyStudentRow` card so the two
+screens read alike — shared by the nightly Daily Results popup too. The pill
+explainer and the Logs rows were brought into the same id-card family and enlarged
+for mobile. New reusable theme variations: `RecapMastheadPanel`, `IdCardPanel`,
+`RecapChipPanel`. The four pill/logs icons deliberately stay the shared
+`UI/Placeholders/` set (canonical across 16 scenes) — a real-icon pass is game-wide,
+logged in DEBT.
+
 ## 2026-09-15 — Weekly shop and minigame polish
 
 Plan `docs/superpowers/plans/2026-09-15-weekly-shop-minigame-polish.md`, spec

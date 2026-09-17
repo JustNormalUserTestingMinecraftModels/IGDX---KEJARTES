@@ -81,7 +81,7 @@ func setup_shelf():
 		# Find price tag inside btn
 		var tag = _ensure_price_tag(btn)
 		if tag:
-			tag.set_price(item.price)
+			tag.set_price(Cart.price_of(item))
 
 		var life = _ensure_shelf_item(btn)
 		_shelf_items.append(life)
@@ -161,9 +161,9 @@ func _refresh_affordability() -> void:
 		var tag = _price_tags[i]
 		if not is_instance_valid(tag) or i >= item_data_list.size():
 			continue
-		tag.set_affordable(GameState.player_money >= item_data_list[i].price)
+		tag.set_affordable(GameState.player_money >= Cart.price_of(item_data_list[i]))
 		if i < _shelf_items.size() and is_instance_valid(_shelf_items[i]):
-			_shelf_items[i].set_dimmed(GameState.player_money < item_data_list[i].price)
+			_shelf_items[i].set_dimmed(GameState.player_money < Cart.price_of(item_data_list[i]))
 
 ## Returns the display size for an item. Uses ItemData.display_size, falls back to source button size or default.
 func get_item_effective_size(item: ItemData, source_button: TextureButton = null) -> Vector2:

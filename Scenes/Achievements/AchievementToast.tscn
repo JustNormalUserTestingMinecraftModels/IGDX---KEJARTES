@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Achievements/AchievementToast.gd" id="1_toast"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Achievements/Icons/grade_7.png" id="2_icon"]
+
+[node name="AchievementToast" type="CanvasLayer"]
+process_mode = 3
+layer = 120
+script = ExtResource("1_toast")
+
+[node name="Banner" type="Panel" parent="."]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -330.0
+offset_top = -170.0
+offset_right = 342.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"AchievementToastPanel"
+
+[node name="Icon" type="TextureRect" parent="Banner"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 25.0
+offset_right = 134.0
+offset_bottom = 145.0
+mouse_filter = 2
+texture = ExtResource("2_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Banner"]
+layout_mode = 1
+anchors_preset = -1
+anchor_bottom = 1.0
+offset_left = 150.0
+offset_top = 10.0
+offset_right = 662.0
+offset_bottom = -10.0
+theme_type_variation = &"AchievementToastTitleLabel"
+text = "Sudah bukan pemula lagi nih!"
+vertical_alignment = 1
+autowrap_mode = 3

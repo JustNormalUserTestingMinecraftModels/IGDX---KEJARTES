@@ -335,6 +335,7 @@ func forget_session() -> void:
 	last_claim_date = ""
 	run_stats.reset()
 	clear_inventory_save()
+	Achievements.reset()
 	inventory_changed.emit()
 
 

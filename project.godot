@@ -31,6 +31,8 @@ DebugManager="*res://Scripts/Debug/DebugManager.gd"
 ItemDatabase="*res://Scripts/Inventory/ItemDatabase.gd"
 Cart="*res://Scripts/Inventory/Cart.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
+Achievements="*res://Scripts/Achievements/Achievements.gd"
+AchievementToast="*res://Scenes/Achievements/AchievementToast.tscn"
 
 [display]
 

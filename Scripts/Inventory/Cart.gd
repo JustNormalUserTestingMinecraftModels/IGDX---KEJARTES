@@ -13,6 +13,8 @@ extends Node
 
 signal cart_changed
 
+const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
+
 # Maps item_name -> { "data": ItemData, "quantity": int }
 var cart: Dictionary = {}
 
@@ -47,8 +49,13 @@ func get_total() -> int:
 static func total_of(entries: Dictionary) -> int:
 	var total: int = 0
 	for key in entries:
-		total += entries[key]["data"].price * entries[key]["quantity"]
+		total += price_of(entries[key]["data"]) * entries[key]["quantity"]
 	return total
+
+## What `item` costs right now: its price after Pembimbing Legendaris's
+## claimed shop discount. The shelf shows and checks this same number.
+static func price_of(item: ItemData) -> int:
+	return roundi(item.price * AchievementsScript.multiplier("shop_price"))
 
 func get_item_count() -> int:
 	var count: int = 0

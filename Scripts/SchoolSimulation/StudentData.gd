@@ -18,6 +18,8 @@ class_name StudentData
 ## file has no quirk-coefficient exports at all. Flagged for the user
 ## rather than silently changed.
 
+const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
+
 ## Shown on every card/list/summary that identifies this student. Also
 ## the Dictionary key StudentManager.write_back_to_gamestate() and
 ## SchoolDay's `embedded_widgets` use to find this student's widgets again.
@@ -160,6 +162,10 @@ func apply_minigame_result(category: String, won: bool, score: int = -1, max_sco
 		stat_change = lose_stat
 		energy_change = lose_energy
 		mood_change = lose_mood
+
+	# Calon Asisten Einstein's claimed prize: a win's stat gain goes further.
+	if won and stat_change > 0:
+		stat_change = roundf(stat_change * AchievementsScript.multiplier("minigame_stat"))
 		
 	# Apply specialty multiplier to costs
 	var mult = get_category_efficiency_multiplier(category)

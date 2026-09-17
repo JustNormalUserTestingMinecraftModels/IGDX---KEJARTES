@@ -157,6 +157,13 @@ var has_time_limit: bool = false
 ## Drag a PNG here to replace the in-game Pause (⏸) button icon.
 @export var pause_button_texture: Texture2D = null
 
+# ─── Achievements ────────────────────────────────────────────────────────────
+const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
+## Stars the last result card showed (0 on a loss). SchoolDay reads it.
+var last_result_stars: int = 0
+## Share of the time limit left when the result card showed; -1 without a limit.
+var last_time_left_ratio: float = -1.0
+
 # ─── Custom Time Management ──────────────────────────────────────────────────
 var max_game_time: float   = 30.0
 var game_time_left: float  = 30.0
@@ -197,6 +204,8 @@ func _get_or_create_ui_layer() -> CanvasLayer:
 func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 	difficulty = game_difficulty
 	if time_limit > 0:
+		# The Bejo "The Flash" achievement's claimed prize stretches the clock.
+		time_limit *= AchievementsScript.multiplier("minigame_time")
 		max_game_time = time_limit
 		game_time_left = time_limit
 		has_time_limit = true
@@ -679,6 +688,9 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 	if "minigame_category" in self: mg_category = self.minigame_category
 
 	var stars := _calculate_stars(get_star_ratio(), is_win)
+	last_result_stars = stars
+	last_time_left_ratio = clampf(game_time_left / max_game_time, 0.0, 1.0) \
+		if has_time_limit and max_game_time > 0.0 else -1.0
 
 	var popup: MinigameResultPopup = result_popup_scene.instantiate()
 	add_child(popup)

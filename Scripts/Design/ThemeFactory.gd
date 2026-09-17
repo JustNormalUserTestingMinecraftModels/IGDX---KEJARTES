@@ -26,6 +26,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_minigame_result(theme, tokens)
 	_build_event_warning(theme, tokens)
 	_build_event_dialogue(theme, tokens)
+	_build_achievements(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -87,6 +88,99 @@ static func _build_event_dialogue(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_color("font_color", variation, tokens.text_primary)
 		if bold != null:
 			theme.set_font("font", variation, bold)
+
+
+## Measured off Achievement mockup.psd (2026-09-17): single-screen values
+## no token matches. The card is 865x306 with a 24px corner; Klaim is a
+## 202x64 olive pill with a 6px rim.
+const ACHIEVEMENT_RADIUS := 24
+const ACHIEVEMENT_INK := Color.BLACK
+const ACHIEVEMENT_CLAIM_FILL := Color("B2C73B")
+const ACHIEVEMENT_CLAIM_RIM := Color("8D8A2F")
+const ACHIEVEMENT_CLAIM_RIM_WIDTH := 6
+const ACHIEVEMENT_TITLE_SIZE := 44
+const ACHIEVEMENT_BODY_SIZE := 29
+## Smaller than the card title so the longest names wrap to three lines in the banner.
+const ACHIEVEMENT_TOAST_TITLE_SIZE := 40
+## The claimed card's gradient and glow, baked 9-slice: 24px glow + 24px corner.
+const _ACHIEVEMENT_CLAIMED_ART := "res://Assets/Images/Achievements/card_claimed.png"
+const _ACHIEVEMENT_CLAIMED_GLOW := 24
+
+## The Achievements screen (spec: docs/superpowers/specs/2026-09-17-achievements-design.md):
+## white and claimed cards, their title and body text, the Klaim pill, and
+## the unlock banner.
+static func _build_achievements(theme: Theme, tokens: DesignTokens) -> void:
+	var margins := func(box: StyleBox) -> void:
+		box.content_margin_left = 25
+		box.content_margin_top = 30
+		box.content_margin_right = 25
+		box.content_margin_bottom = 28
+
+	theme.add_type("AchievementCard")
+	theme.set_type_variation("AchievementCard", "PanelContainer")
+	var card := StyleBoxFlat.new()
+	card.bg_color = Color.WHITE
+	card.set_corner_radius_all(ACHIEVEMENT_RADIUS)
+	margins.call(card)
+	theme.set_stylebox("panel", "AchievementCard", card)
+
+	theme.add_type("AchievementCardClaimed")
+	theme.set_type_variation("AchievementCardClaimed", "PanelContainer")
+	var claimed := StyleBoxTexture.new()
+	claimed.texture = load(_ACHIEVEMENT_CLAIMED_ART)
+	claimed.set_texture_margin_all(_ACHIEVEMENT_CLAIMED_GLOW + ACHIEVEMENT_RADIUS)
+	claimed.set_expand_margin_all(_ACHIEVEMENT_CLAIMED_GLOW)
+	margins.call(claimed)
+	theme.set_stylebox("panel", "AchievementCardClaimed", claimed)
+
+	theme.add_type("AchievementTitleLabel")
+	theme.set_type_variation("AchievementTitleLabel", "Label")
+	theme.set_font_size("font_size", "AchievementTitleLabel", ACHIEVEMENT_TITLE_SIZE)
+	theme.set_color("font_color", "AchievementTitleLabel", ACHIEVEMENT_INK)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementTitleLabel", tokens.font_display)
+
+	theme.add_type("AchievementDescLabel")
+	theme.set_type_variation("AchievementDescLabel", "Label")
+	theme.set_font_size("font_size", "AchievementDescLabel", ACHIEVEMENT_BODY_SIZE)
+	theme.set_color("font_color", "AchievementDescLabel", ACHIEVEMENT_INK)
+
+	const CLAIM := "AchievementClaimButton"
+	theme.add_type(CLAIM)
+	theme.set_type_variation(CLAIM, "Button")
+	var states := {
+		"normal": ACHIEVEMENT_CLAIM_FILL,
+		"hover": ACHIEVEMENT_CLAIM_FILL.lightened(0.08),
+		"pressed": ACHIEVEMENT_CLAIM_FILL.darkened(0.12),
+		"focus": ACHIEVEMENT_CLAIM_FILL,
+	}
+	for state in states:
+		var pill := StyleBoxFlat.new()
+		pill.bg_color = states[state]
+		pill.border_color = ACHIEVEMENT_CLAIM_RIM
+		pill.set_border_width_all(ACHIEVEMENT_CLAIM_RIM_WIDTH)
+		pill.set_corner_radius_all(tokens.radius_pill)
+		theme.set_stylebox(state, CLAIM, pill)
+	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		theme.set_color(key, CLAIM, Color.WHITE)
+	theme.set_font_size("font_size", CLAIM, ACHIEVEMENT_BODY_SIZE)
+	if tokens.font_display != null:
+		theme.set_font("font", CLAIM, tokens.font_display)
+
+	theme.add_type("AchievementToastPanel")
+	theme.set_type_variation("AchievementToastPanel", "Panel")
+	var toast := StyleBoxFlat.new()
+	toast.bg_color = Color.WHITE
+	toast.corner_radius_bottom_left = ACHIEVEMENT_RADIUS
+	toast.corner_radius_bottom_right = ACHIEVEMENT_RADIUS
+	theme.set_stylebox("panel", "AchievementToastPanel", toast)
+
+	theme.add_type("AchievementToastTitleLabel")
+	theme.set_type_variation("AchievementToastTitleLabel", "Label")
+	theme.set_font_size("font_size", "AchievementToastTitleLabel", ACHIEVEMENT_TOAST_TITLE_SIZE)
+	theme.set_color("font_color", "AchievementToastTitleLabel", ACHIEVEMENT_INK)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementToastTitleLabel", tokens.font_display)
 
 
 ## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard

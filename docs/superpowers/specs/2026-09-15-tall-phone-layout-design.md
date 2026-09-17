@@ -247,9 +247,9 @@ Each phase is its own PR.
 
 1. The new suite, the `SafeAreaMargin` warning, then the **Lobby**,
    **Koperasi**, **StudentCard** and **StudentList**.
-2. **AturJadwal**, **CutScene**, **Rapor** and **Inventory**. Rapor and
-   Inventory wait until the two separate fixes that edit those scenes have
-   merged.
+2. **AturJadwal**, **CutScene**, **Rapor** and **Inventory**. Rapor is done
+   (2026-09-16), as is AturJadwal's board; AturJadwal's wall, top band and
+   `StartWeek` are still open. Inventory waits for the glyph fix to merge.
 3. **ExamProgress**, **StatCheck**, **EndCutscene**, the **ResultCheckup**
    confetti and **MainBola**.
 

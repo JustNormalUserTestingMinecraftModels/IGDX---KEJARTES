@@ -8,6 +8,53 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-16 — Papan tulis, Rapor's fill and the Belajar button
+
+Plan `docs/superpowers/plans/2026-09-16-papantulis-rapor-belajar.md`, spec
+`docs/superpowers/specs/2026-09-16-papantulis-rapor-belajar-design.md`. Phase 2
+of the 2026-09-15 tall-phone pass, for the two screens the user asked for.
+
+- **AturJadwal's board** is `papantulis.png`, the same art as `whiteboard.png`
+  with its shelf 493 px higher in the frame, so 1570 px of board hangs below it
+  instead of 1077. `BGHari` stops being a full-rect node that stretched 1.25×
+  on a 20:9 phone (sliding the baked shelf from y 766 to 957, doubling the
+  `ShelfFace`/`ShelfEdge` `ColorRect`s) and becomes a fixed 1080×1920 picture
+  unit at offsets `(0, 493, 1080, 2413)`. 493 = 766 − 273 puts the art's baked
+  shelf exactly on the `ColorRect`s, and the 1:1 draw is what keeps them
+  coincident — any scale slides the bands out and thickens the dark edge. The
+  five sticky notes lost 493 from their offsets and ride the board as one
+  piece. A new `BoardFill` `ColorRect` (`#E0E0E0`, the art's bottom-centre
+  tone) runs from y 843 to the screen bottom behind the board, so a 21:9 phone
+  at 2520 is covered too. Verified in the running game at 1080×2400.
+  `whiteboard.png` is now unreferenced.
+- **Rapor** was StudentCard before the tall-phone pass: a root inset by
+  70/254/−77/−352 with every child carrying a negative offset that cancelled it
+  back out, so a 1080×2400 screen showed 480 px of empty grey below the desk.
+  The inset is gone, `Backdrop` is Full Rect and Keep Aspect Covered, the six
+  papers are Center-anchored at ±540/±960, and the page arrows and page label
+  moved into a `Safe`/`UI`/`BottomBar` group copied from StudentCard's. The
+  five moved nodes carry `unique_name_in_owner`, so `report_card.gd` reads
+  `%NextButtonKanan` and friends and no longer depends on where they sit.
+- **StudentCard's BELAJAR button** had two compounding faults. Phase 1 pushed
+  every child's offsets by the root's old (70, 254) inset and left this one in
+  position mode, putting its rest rect at y 1994 — 74 px below a 1080×1920
+  screen. It is now Center-anchored with the paper, like `StampApprove`.
+  `_transition_page` then tweened it to exactly that stale rect, undoing the
+  shift that had just placed it beside Aprove/Batal; that tween is gone, and
+  the reveal belongs to `_shift_approve_for_belajar` alone. Removing it exposed
+  a third fault underneath: `_transition_page` parks the incoming card a full
+  screen-width off to the side and calls `_update_nav_buttons` — and so the
+  shift — while it is still parked, so the target landed at x 1640 on a
+  1080×2400 phone. The shift now reads the card's `original_position` meta, the
+  same settled value `_transition_page` tweens it to.
+
+**Still open on these screens.** AturJadwal's wall backdrop, top band and
+`StartWeek` are the rest of Phase 2 and untouched, so a tall phone shows board
+below `StartWeek`. Rapor's `KEMBALI` button still covers its "Rapor Murid"
+title; both nodes kept their current screen rects here, because every fix for
+it is a judgement about the screen's composition rather than a consequence of
+this restructure. It stays filed in the Phase 1 spec's out-of-scope list.
+
 ## 2026-09-16 — Kalkulator for Variabel and Password
 
 Plan `docs/superpowers/plans/2026-09-16-kalkulator-akademis.md`, spec

@@ -49,6 +49,8 @@ const RADIUS_EXEMPT := {
 		"reads as a card, not a button -- radius_lg",
 	"CardArrowButton":
 		"fixed 120x120 square, so radius_pill yields an exact circle -- no height-dependent-radius risk",
+	"AchievementClaimButton":
+		"the Achievements mockup's Klaim is a full capsule with a 6px olive rim -- radius_pill, like the chips",
 	"GhostButton":
 		"wash sits over the daily-login panel's baked capsule art (day1.png) -- radius_pill so the corner tracks the button's own height and always matches the art's rounded ends, deliberately height-dependent",
 }
@@ -168,6 +170,8 @@ func test_natural_height_matches_the_size_step() -> void:
 ## shape as test_viewport_editability.gd's dict. An entry needs a reason.
 const HEIGHT_ALLOWED := {
 	# "Scenes/Foo/bar.tscn::SomeButton": "why this one is off-step",
+	"Scenes/Achievements/AchievementRow.tscn::HBox/Content/ClaimRow/ClaimButton":
+		"Klaim is measured off Achievement mockup.psd at 202x64, a pill inside the card, not a screen action",
 }
 
 const SCENE_GLOB := "res://Scenes"

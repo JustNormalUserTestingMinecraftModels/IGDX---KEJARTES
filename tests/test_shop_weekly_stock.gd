@@ -295,9 +295,10 @@ func test_beli_marks_the_basket_sold_before_emptying_it() -> void:
 		"before the cart empties, so the shelf never flickers them back")
 
 
-func test_opening_the_shelf_restocks_it_for_the_week() -> void:
+func test_arriving_restocks_the_shelf_for_the_week() -> void:
+	var rak := _body(FileAccess.get_file_as_string(RAK_PATH), "func _ready()")
+	assert_true(rak.contains("setup_shelf()"), "the Stage restocks itself on arrival")
 	var src := FileAccess.get_file_as_string(KOPERASI_PATH)
-	assert_true(src.contains("setup_shelf()"), "the Rak1 button restocks via setup_shelf()")
 	assert_false(src.contains("setup_random_items"), "not the old reshuffle")
 	assert_true(src.contains("GameState.is_shop_sold_out()"), "an empty shelf explains itself")
 

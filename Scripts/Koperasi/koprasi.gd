@@ -1,49 +1,47 @@
 extends Control
 
-## Koperasi (the shop) hub: the rak1 shelf toggle, the coin HUD and the
-## purchase-feedback message.
+## Koperasi (the shop): Pak Herman's counter. The Stage (rakbarang_1.gd)
+## owns the shelf, the flight into the basket and the basket tray; this file
+## owns the back button, the coin HUD, the purchase-feedback message and
+## Beli.
 ##
-## The actual shelf/cart/checkout logic lives on rakbarang_1.gd (the Rak1
-## panel this screen shows/hides); this file only owns the entry button,
-## the money display (kept in sync via GameState.money_changed) and
-## routing back to the shop hub. _on_beli_pressed() deducts
-## GameState.player_money, calls GameState.add_to_inventory() for each basket
-## line and marks it sold for the week (GameState.mark_shop_sold()).
+## _on_beli_pressed() deducts GameState.player_money, calls
+## GameState.add_to_inventory() for each basket line and marks every unit
+## sold for the week (GameState.mark_shop_sold(), once per unit).
 
-@onready var rak1_button = $TextureRect/Rak1
-@onready var rak1_panel = $Rak1
-@onready var rak1_back_button = $Rak1/BackButton
-# CoinHUD sits in Safe/UI since the 2026-09-15 tall-phone pass.
+@onready var stage: Control = $Stage
+@onready var back_button: TextureButton = $Stage/BackButton
+# CoinHUD stands on the counter ledge, part of the Stage, since the
+# 2026-09-17 revamp.
 @onready var coin_hud: HBoxContainer = %CoinHUD
 @onready var coin_label: Label = get_node("%CoinHUD/CoinLabel")
 @onready var message_label: Label = $MessageLabel
 
-## Shown on opening the shelf when every item this week has been bought.
+## Shown on arrival when every item this week has been bought.
 const SOLD_OUT_TEXT := "Stok habis! Datang lagi minggu depan."
 
 var beli_button: Button
 
 func _ready():
-	rak1_panel.hide()
+	if back_button:
+		back_button.pivot_offset = back_button.size / 2
+		if not back_button.pressed.is_connected(_on_back_pressed):
+			back_button.pressed.connect(_on_back_pressed)
 
-	if rak1_button and not rak1_button.pressed.is_connected(_on_rak1_pressed):
-		rak1_button.pressed.connect(_on_rak1_pressed)
-
-	if rak1_back_button and not rak1_back_button.pressed.is_connected(_on_back_pressed):
-		rak1_back_button.pressed.connect(_on_back_pressed)
-
-	_setup_main_buttons()
 	_setup_beli_button()
-
 	_update_coin_display()
 
 	# Signal-driven coin updates
 	if not GameState.money_changed.is_connected(_on_money_changed):
 		GameState.money_changed.connect(_on_money_changed)
 
+	# The Stage, a child, has already stocked the shelf in its own _ready.
+	if GameState.is_shop_sold_out():
+		_show_message(SOLD_OUT_TEXT, &"ShopMessageWarning")
+
 func _setup_beli_button():
 	# Beli lives in the basket tray's footer.
-	var tray = rak1_panel.get_node_or_null("BasketTray")
+	var tray = stage.get_node_or_null("TrayDock/BasketTray")
 	if tray == null:
 		return
 	beli_button = tray.get_beli_button()
@@ -52,63 +50,15 @@ func _setup_beli_button():
 
 func _notification(what):
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		if rak1_panel and rak1_panel.visible:
-			_on_back_pressed()
+		_on_back_pressed()
 
-## Idle-pulse the shelf button and centre both buttons' pivots. Styling
-## (colours, border, shadow) now lives in the ShopShelfButton ThemeFactory
-## variation set on rak1_button in the scene.
-func _setup_main_buttons():
-	if rak1_button:
-		rak1_button.pivot_offset = rak1_button.size / 2
-		AnimUtils.idle_pulse(rak1_button)
-
-	if rak1_back_button:
-		rak1_back_button.pivot_offset = rak1_back_button.size / 2
-
-func _on_rak1_pressed():
-	var tokens := DesignTokens.load_default()
-	AnimUtils.squash_bounce(rak1_button, 4.0)
-
-	if rak1_panel.has_method("setup_shelf"):
-		rak1_panel.setup_shelf()
-
-	rak1_panel.visible = true
-	rak1_panel.modulate = Color(1.0, 1.0, 1.0, 0.0)
-	rak1_panel.pivot_offset = rak1_panel.size * 0.5
-	rak1_panel.scale = Vector2(0.9, 0.9)
-
-	AudioDirector.play_sfx(&"popup_open")
-
-	var tween := create_tween().set_parallel(true)
-	tween.tween_property(rak1_panel, "modulate:a", 1.0, tokens.dur_fast)
-	tween.tween_property(rak1_panel, "scale", Vector2.ONE, tokens.dur_fast) \
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-	if GameState.is_shop_sold_out():
-		_show_message(SOLD_OUT_TEXT, &"ShopMessageWarning")
-
+## Leave without buying: the basket empties and the shop hub wipes in.
 func _on_back_pressed():
-	var tokens := DesignTokens.load_default()
-	AnimUtils.back_bounce(rak1_back_button)
-
-	# Clear cart and basket visuals
+	AnimUtils.back_bounce(back_button)
 	Cart.clear()
-	if rak1_panel.has_method("clear_basket_visuals"):
-		rak1_panel.clear_basket_visuals()
-
+	if stage.has_method("clear_basket_visuals"):
+		stage.clear_basket_visuals()
 	AudioDirector.play_sfx(&"popup_close")
-
-	var tween := create_tween().set_parallel(true)
-	tween.tween_property(rak1_panel, "modulate:a", 0.0, tokens.dur_fast)
-	tween.tween_property(rak1_panel, "scale", Vector2(0.9, 0.9), tokens.dur_fast) \
-		.set_ease(Tween.EASE_IN)
-	tween.chain().tween_callback(_finish_back_close)
-
-func _finish_back_close():
-	rak1_panel.hide()
-	rak1_panel.scale = Vector2(1.0, 1.0)
-	rak1_panel.modulate.a = 1.0
 	Transition.change_scene("res://Scenes/Koperasi/ShopHub.tscn", Transition.Style.WIPE)
 
 func _on_money_changed(new_amount: int):
@@ -136,8 +86,8 @@ func _on_beli_pressed():
 	# Deduct money
 	GameState.player_money -= total
 
-	# Transfer items to inventory. Each is sold for the rest of the week --
-	# marked here, before the cart empties below, so the shelf keeps it hidden.
+	# Transfer items to inventory. Each unit is sold for the rest of the week --
+	# marked here, before the cart empties below, so the shelf keeps its slot empty.
 	for item_name in Cart.cart:
 		var quantity = Cart.cart[item_name]["quantity"]
 		GameState.add_to_inventory(item_name, quantity)
@@ -146,9 +96,8 @@ func _on_beli_pressed():
 
 	# Clear cart and visuals
 	Cart.clear()
-	var rak1_script = rak1_panel as Control
-	if rak1_script.has_method("clear_basket_visuals"):
-		rak1_script.clear_basket_visuals()
+	if stage.has_method("clear_basket_visuals"):
+		stage.clear_basket_visuals()
 
 	AudioDirector.play_sfx(&"coin")
 	_show_message("Pembelian berhasil!", &"ShopMessageSuccess")

@@ -1161,6 +1161,8 @@ Expected: all PASS. If `tall_screen_layout`'s CoinHUD position is off by the HBo
 
 `project_run(session_id=$SID)`. Then one `game_manage(op="game_eval")`: `GameState.player_money = 999999; get_tree().change_scene_to_file("res://Scenes/Koperasi/koprasi.tscn")`. Then `editor_screenshot` of the game at full size. Judge four things: the layers line up with the mockup; items sit in the circle spots with tags below; the bubble box and tail meet without a seam; the coins sit on the ledge clear of Herman's arms and the tray. Tap one pair's second copy with `game_eval` calling `$Stage._on_barang_pressed(<index>)`, then screenshot and confirm only that slot emptied. Stop the game. Revert `Assets/Audio/default_bus_layout.tres` and any rewritten `*.png.import` outside `Assets/Images/Shop/Koperasi/`.
 
+> **Amended during Step 6:** in the windowed editor run, `SafeAreaMargin` added a 768 px bottom inset and lifted a bottom-anchored CoinHUD onto Herman's forehead. CoinHUD was reparented into `Stage` at (732,1230)–(1032,1290), and `test_koperasi_coin_hud_sits_in_the_safe_area` became `test_koperasi_coin_hud_rides_the_stage`. The expected positions are unchanged.
+
 - [ ] **Step 7: Commit**
 
 ```

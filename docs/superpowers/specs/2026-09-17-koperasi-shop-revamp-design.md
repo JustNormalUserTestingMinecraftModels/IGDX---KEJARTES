@@ -58,8 +58,8 @@ Koprasi (Control, Full Rect, koprasi.gd)
 │  ├─ BackButton  TextureButton return.png, (24,1157)–(209,1342) — unchanged rect
 │  └─ TrayDock    Control (0,117)–(1080,1828), mouse IGNORE — the old Rak1 rect
 │      └─ BasketTray  BasketTray.tscn instance at the dock's origin, as under Rak1
-├─ Safe (SafeAreaMargin) / UI
-│  └─ CoinHUD     anchored bottom-right, on the counter ledge (see below)
+│  (Stage also holds CoinHUD, last, on the counter ledge; see below)
+├─ Safe (SafeAreaMargin) / UI   (now empty; kept for future edge UI)
 └─ MessageLabel  unchanged
 ```
 
@@ -88,17 +88,17 @@ instance's `Body`, because overrides on an instance's children are dropped on
 save (CLAUDE.md 4b).
 
 **CoinHUD moves.** At the design size its old top-left spot lies inside the
-bubble. It moves to `Safe/UI` bottom-right (anchors `1,1,1,1`,
-`grow_horizontal` begin), right edge on UI's right edge (x 1032), vertically
-centred on y 1260, the counter ledge between Herman's arms (ending ~1160)
-and the tray top (1360). The ledge and the back button form one row above
-the tray.
+bubble. It stands on the counter ledge instead, as a child of `Stage` at
+(732,1230)–(1032,1290), right-aligned (`alignment` end). That puts it between
+Herman's arms (ending ~1160) and the tray top (1360), in one row with the back
+button. It is part of the picture, not bottom-anchored in `Safe`, because
+`SafeAreaMargin`'s bottom inset would lift it off the ledge: by a gesture bar
+on a phone, and by 768 px in a windowed editor run, where it landed on
+Herman's forehead (found in the Task 5 live check).
 
 **Tall phones (1080×2400).** Stage pins to the bottom, so it spans y 480–2400.
 Tray, counter and back button keep their relation to the bottom edge. WallFill
-covers the 480 px above with the flat wall strip. CoinHUD rides the bottom edge
-with Stage. A bottom safe inset lifts it by that inset, and the ledge band has
-~60 px of slack either way.
+covers the 480 px above with the flat wall strip. CoinHUD rides with Stage.
 
 ## Chat bubble
 

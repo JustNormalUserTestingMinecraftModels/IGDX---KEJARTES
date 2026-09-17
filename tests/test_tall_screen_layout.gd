@@ -201,77 +201,65 @@ func test_lobby_at_the_design_size_is_unchanged() -> void:
 const KOPERASI := "res://Scenes/Koperasi/koprasi.tscn"
 
 
-## The room picture behind both views fills the screen and covers.
-func test_koperasi_room_fills() -> void:
-	_assert_background_fills(_scene(KOPERASI).get_node_or_null("TextureRect") as TextureRect,
-		"Koperasi room picture (TextureRect)")
+## A flat wall strip fills the screen and covers; it only shows above the
+## counter on a phone taller than 9:16.
+func test_koperasi_wall_fills() -> void:
+	_assert_background_fills(_scene(KOPERASI).get_node_or_null("WallFill") as TextureRect,
+		"Koperasi wall strip (WallFill)")
 
 
-## The shelf view -- shelf picture, items, back button and basket tray -- is
-## one piece pinned to the bottom edge, so the tray still ends flush with it.
-func test_koperasi_shelf_view_is_one_piece_pinned_bottom() -> void:
-	var shelf := _scene(KOPERASI).get_node_or_null("Rak1") as Control
-	assert_true(shelf != null, "missing the Rak1 shelf view")
-	if shelf == null:
+## The counter -- art layers, six items, bubble, back button and tray -- is
+## one 1080x1920 piece pinned to the bottom edge, so the tray still ends
+## flush with it.
+func test_koperasi_stage_is_one_piece_pinned_bottom() -> void:
+	var stage := _scene(KOPERASI).get_node_or_null("Stage") as Control
+	assert_true(stage != null, "missing the Stage")
+	if stage == null:
 		return
-	assert_eq(_anchors(shelf), Vector4(0, 1, 0, 1), "Rak1 pins to the bottom edge")
-	assert_eq(_offsets(shelf), Vector4(0, -1803, 1080, -92), "Rak1 keeps its 1080x1711 rect")
-	for n in ["BackButton", "Barang1", "Barang2", "Barang3", "Barang4", "BasketTray"]:
-		assert_true(shelf.get_node_or_null(n) != null, n + " moves with the shelf")
+	assert_eq(_anchors(stage), Vector4(0, 1, 0, 1), "Stage pins to the bottom edge")
+	assert_eq(_offsets(stage), Vector4(0, -1920, 1080, 0), "and keeps its 1080x1920 rect")
+	for n in ["Background", "Barang1", "Barang6", "Herman", "Foreground", "ChatBubble",
+			"BackButton", "TrayDock/BasketTray"]:
+		assert_true(stage.get_node_or_null(n) != null, n + " moves with the stage")
 
 
-## The landing's "KEBUTUHAN SEKOLAH" sign pins to the bottom edge, which keeps
-## it on the counter's glass front from 9:16 to 9:21.
-func test_koperasi_landing_sign_pins_bottom() -> void:
-	# Not `sign`: that name shadows the built-in sign() and warns.
-	var shelf_sign := _scene(KOPERASI).get_node_or_null("TextureRect/Rak1") as Control
-	assert_true(shelf_sign != null, "missing the landing sign TextureRect/Rak1")
-	if shelf_sign == null:
-		return
-	assert_eq(_anchors(shelf_sign), Vector4(0, 1, 0, 1), "the sign pins to the bottom edge")
-	assert_eq(_offsets(shelf_sign), Vector4(303, -519, 745, -423), "and keeps its 1080x1920 rect")
-
-
-## The coin readout sits in the safe area, top-left; Safe lets taps through
-## to the shelf underneath.
-func test_koperasi_coin_hud_sits_in_the_safe_area() -> void:
+## The coin readout stands on the counter ledge, so it is part of the Stage
+## picture like the back button -- not bottom-anchored in Safe, whose bottom
+## inset (768 px in a windowed editor run, a gesture bar on a phone) would
+## lift it off the ledge. Nothing over the shelf eats a tap.
+func test_koperasi_coin_hud_rides_the_stage() -> void:
 	var shop := _scene(KOPERASI)
 	var hud := shop.get_node_or_null("%CoinHUD") as Control
-	_assert_under_safe_area(hud, "CoinHUD")
-	if hud == null:
-		return
-	assert_eq(_anchors(hud), Vector4.ZERO, "CoinHUD pins top-left")
-	for p in ["Safe", "Safe/UI"]:
+	assert_true(hud != null and hud.get_parent() == shop.get_node_or_null("Stage"),
+		"CoinHUD is a child of the Stage")
+	for p in ["Safe", "Safe/UI", "WallFill", "Stage", "Stage/TrayDock"]:
 		var c := shop.get_node_or_null(p) as Control
 		assert_true(c != null and c.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 			p + " must let taps through to the shelf")
 
 
-## On a 1080x2400 phone the tray reaches the bottom edge, the shelf rides it,
-## and the coins stay at the top.
+## On a 1080x2400 phone the counter rides the bottom edge and the coins ride
+## with it.
 func test_koperasi_on_a_tall_phone() -> void:
 	var shop := _stood_up(KOPERASI, TALL)
-	_assert_placed((shop.get_node("TextureRect") as Control),
-		Rect2(0, 0, 1080, 2400), "room picture")
-	_assert_placed((shop.get_node("Rak1") as Control),
-		Rect2(0, 597, 1080, 1711), "shelf view")
-	_assert_placed((shop.get_node("Rak1/BasketTray/Body") as Control),
+	_assert_placed((shop.get_node("WallFill") as Control), Rect2(0, 0, 1080, 2400), "wall strip")
+	_assert_placed((shop.get_node("Stage") as Control), Rect2(0, 480, 1080, 1920), "stage")
+	_assert_placed((shop.get_node("Stage/TrayDock/BasketTray/Body") as Control),
 		Rect2(24, 1840, 1032, 560), "basket tray")
-	assert_eq(_authored_rect(shop.get_node("TextureRect/Rak1") as Control).position,
-		Vector2(303, 1881), "the sign stays on the counter")
 	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
-		Vector2(20, 20), "the coins stay top-left")
+		Vector2(732, 1710), "the coins stay on the counter ledge")
 
 
-## At 1080x1920 the Koperasi is where it was.
-func test_koperasi_at_the_design_size_is_unchanged() -> void:
+## At 1080x1920 the tray and back button are where they were.
+func test_koperasi_at_the_design_size() -> void:
 	var shop := _stood_up(KOPERASI, DESIGN)
-	_assert_placed((shop.get_node("Rak1") as Control),
-		Rect2(0, 117, 1080, 1711), "shelf view")
-	assert_eq(_authored_rect(shop.get_node("TextureRect/Rak1") as Control).position,
-		Vector2(303, 1401), "landing sign")
+	_assert_placed((shop.get_node("Stage") as Control), Rect2(0, 0, 1080, 1920), "stage")
+	_assert_placed((shop.get_node("Stage/TrayDock/BasketTray/Body") as Control),
+		Rect2(24, 1360, 1032, 560), "basket tray, unchanged")
+	_assert_placed((shop.get_node("Stage/BackButton") as Control),
+		Rect2(24, 1157, 185, 185), "back button, unchanged")
 	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
-		Vector2(20, 20), "coins")
+		Vector2(732, 1230), "coins on the ledge")
 
 
 # ── StudentCard ──────────────────────────────────────────────────────────────

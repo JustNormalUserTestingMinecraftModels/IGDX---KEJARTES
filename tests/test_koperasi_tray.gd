@@ -447,8 +447,8 @@ func test_each_shelf_item_has_a_glow_behind_it() -> void:
 		return
 	var shop = packed.instantiate()
 	track(shop)
-	for i in range(1, 5):
-		var glow = shop.get_node_or_null("Rak1/Barang%d/Glow" % i)
+	for i in range(1, 7):
+		var glow = shop.get_node_or_null("Stage/Barang%d/Glow" % i)
 		assert_true(glow is TextureRect, "Barang%d has a Glow" % i)
 		if glow == null:
 			continue

@@ -161,16 +161,19 @@ func test_the_hud_target_keeps_reading_on_its_dark_pill() -> void:
 
 # ──────────────────────── Inventory's item sheet
 
-## The item sheet's "+N" beside each stat an item moves. Since 2026-09-14 it
-## is H2Label's dark ink (it was white ResultDeltaLabel before), measured on
-## the sheet's white Card.
+## The item sheet's "+N" beside each stat an item moves. Since the 2026-09-16
+## mobile redesign it is light ink on a chip filled with the stat's accent
+## (ItemDetailSheet._style_efek_row), so it is measured on that chip's fill.
 func test_the_item_sheets_effect_values_read_on_its_card() -> void:
 	var sheet := _item_sheet()
-	var ground := _flat_fill(sheet.get_node("Sheet"))
 	for row in ["RowAkademis", "RowSeni", "RowOlahraga", "RowMood", "RowEnergy"]:
 		var label: Label = sheet.get_node(
-			"Sheet/Margin/VBox/EfekList/%s/ValueLabel" % row)
-		_assert_reads(label, ground, "in the item sheet's %s" % row)
+			"Sheet/Margin/VBox/EfekList/%s/Card/Inner/ValueLabel" % row)
+		var chip := label.get_theme_stylebox("normal") as StyleBoxFlat
+		assert_true(chip != null, "%s's value must sit on a flat chip" % row)
+		if chip == null:
+			continue
+		_assert_reads_large(label, chip.bg_color, "on the item sheet's %s chip" % row)
 
 
 ## The apply-item preview readout. Since 2026-09-12 it is the DaySummary
@@ -188,34 +191,41 @@ func test_the_apply_rows_preview_reads_on_its_card() -> void:
 	_assert_reads(value, ground, "on the apply-item card after the preview")
 
 
-# ──────────────────────── Inventory's filter chips
+# ──────────────────────── Inventory's filter tabs
 
-## The category chips' icons are white placeholder glyphs, and a Button draws
-## its icon untinted unless its variation names an icon colour. FilterChipButton
-## named none, and on its cream pill white measured 1.02:1 at rest and 1.30:1
-## selected: on a phone (2026-09-15) only the selected chip showed an icon. Each
-## icon is measured the way it is drawn -- its art times the state's icon colour
-## and every modulate above it -- on the fill behind it, against WCAG's 3:1
-## floor for UI graphics, in the two states a phone shows.
-func test_the_inventory_filter_chip_icons_read_on_their_chips() -> void:
-	var chips := _inventory().get_node("MainColumn/FilterRow/Scroll/Chips")
-	for chip in chips.get_children():
-		var button := chip as Button
-		assert_true(button.icon != null, "%s must carry its category icon" % button.name)
-		if button.icon == null:
+## The category tabs' icons are white placeholder glyphs (the 2026-09-15 bug:
+## on a cream chip only the selected icon showed). Since the 2026-09-16 mobile
+## redesign each tab's `Ico` is tinted by inventory._update_tab_visuals():
+## text_secondary at rest on the SunkenPanel bar, surface_card when selected on
+## the thumb, which _move_thumb() fills with the category accent (brand_primary
+## for Semua). Each icon is measured as drawn, against WCAG's 3:1 floor for UI
+## graphics, in both states.
+func test_the_inventory_filter_tab_icons_read_on_their_ground() -> void:
+	var inv := _inventory()
+	var tokens := DesignTokens.load_default()
+	var consts := (load("res://Scripts/Inventory/inventory.gd") as GDScript).get_script_constant_map()
+	var rest_ground := _flat_fill(inv.get_node("MainColumn/FilterRow"))
+	var tabs := inv.get_node("MainColumn/FilterRow/SegBar/Tabs")
+	var index := 0
+	for tab in tabs.get_children():
+		if not tab is Button:
 			continue
-		var art := _art_ink(button.icon)
-		for state in ["normal", "pressed"]:
-			var box := button.get_theme_stylebox(state) as StyleBoxFlat
-			assert_true(box != null,
-				"%s's %s box must be a flat fill to be measured" % [button.name, state])
-			if box == null:
-				continue
-			var ink := art * button.get_theme_color("icon_%s_color" % state) * _tint(button)
-			var ratio := _contrast(ink, box.bg_color)
+		var ico := tab.get_node_or_null("Ico") as TextureRect
+		assert_true(ico != null and ico.texture != null, "%s must carry its category icon" % tab.name)
+		if ico == null or ico.texture == null:
+			index += 1
+			continue
+		var art := _art_ink(ico.texture)
+		var category: String = consts["CATEGORIES"][index]
+		var sched: String = consts["_CAT_TO_SCHEDULE"].get(category, "")
+		var thumb := tokens.category_color(sched) if sched else tokens.brand_primary
+		for pair in [["at rest", art * tokens.text_secondary, rest_ground],
+				["selected", art * tokens.surface_card, thumb]]:
+			var ratio := _contrast(pair[1], pair[2])
 			assert_true(ratio >= _AA_LARGE_TEXT,
-				"%s's icon on its %s chip is %.2f:1; a UI graphic needs %.1f:1"
-				% [button.name, state, ratio, _AA_LARGE_TEXT])
+				"%s's icon %s is %.2f:1; a UI graphic needs %.1f:1"
+				% [tab.name, pair[0], ratio, _AA_LARGE_TEXT])
+		index += 1
 
 
 # ─────────────────────────────────────────────────────── every label
@@ -233,7 +243,7 @@ func test_every_label_here_wears_a_variation_the_bake_declares() -> void:
 		popup.get_node("Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScorePrefixLabel"),
 		hud.get_node("Panel/Row/ComboChip/ComboRow/ComboLabel"),
 		hud.get_node("Panel/Row/TargetLabel"),
-		_item_sheet().get_node("Sheet/Margin/VBox/EfekList/RowAkademis/ValueLabel"),
+		_item_sheet().get_node("Sheet/Margin/VBox/EfekList/RowAkademis/Card/Inner/ValueLabel"),
 		_apply_row().get_node("Card/StatRow1/Value")]
 	for direction in [1.0, -1.0]:
 		var configured := _configured_popup("Akademis", direction)
@@ -394,6 +404,14 @@ static func _tint(item: CanvasItem) -> Color:
 		node = node.get_parent()
 	tint.a = 1.0
 	return tint
+
+
+## Like _assert_reads, at the large-text floor: for display-size numerals such
+## as the item sheet's H2 "+N" chips, which WCAG measures at 3:1.
+func _assert_reads_large(label: Label, ground: Color, where: String) -> void:
+	var ratio := _contrast(label.get_theme_color("font_color") * _tint(label), ground)
+	assert_true(ratio >= _AA_LARGE_TEXT,
+		"\"%s\" %s is %.2f:1; large text needs %.1f:1" % [label.text, where, ratio, _AA_LARGE_TEXT])
 
 
 ## The fill a flat panel paints behind its content. Asserted opaque: a

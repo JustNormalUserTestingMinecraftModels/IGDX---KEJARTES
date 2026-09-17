@@ -241,6 +241,12 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
+  shows as *segera hadir* because there is no skin system (CosmeticShop is a
+  stub). Masa Depan yang Indah's Level Selection was already unlocked by
+  beating the game, and there is no settings button to reset achievement
+  progress (only Debug > Forget Session).
+
 **Pending a balance pass.** `RunGrade`'s scoring weights (especially
 `MONEY_FULL_MARKS`) are estimates; `LombaMenari.best_combo` is tracked but not
 fed into the star rubric; the item skill-boost values in

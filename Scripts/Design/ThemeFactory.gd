@@ -100,7 +100,8 @@ const ACHIEVEMENT_CLAIM_RIM := Color("8D8A2F")
 const ACHIEVEMENT_CLAIM_RIM_WIDTH := 6
 const ACHIEVEMENT_TITLE_SIZE := 44
 const ACHIEVEMENT_BODY_SIZE := 29
-const ACHIEVEMENT_TOAST_TITLE_SIZE := 48
+## Smaller than the card title so the longest names wrap to three lines in the banner.
+const ACHIEVEMENT_TOAST_TITLE_SIZE := 40
 ## The claimed card's gradient and glow, baked 9-slice: 24px glow + 24px corner.
 const _ACHIEVEMENT_CLAIMED_ART := "res://Assets/Images/Achievements/card_claimed.png"
 const _ACHIEVEMENT_CLAIMED_GLOW := 24

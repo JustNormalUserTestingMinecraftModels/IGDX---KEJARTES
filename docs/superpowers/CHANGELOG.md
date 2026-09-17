@@ -8,6 +8,25 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-17 — Achievements
+
+Plan `docs/superpowers/plans/2026-09-17-achievements.md`, spec
+`docs/superpowers/specs/2026-09-17-achievements-design.md`.
+
+- 26 achievements from the design PDF (`AchievementCatalog.gd`), tracked by the
+  `Achievements` autoload and saved to `user://achievements.cfg`, the one save
+  added on the user's request. The renames the user asked for are applied.
+- Reported from SchoolDay (real plays only: stars and time left now kept on
+  `BaseMinigame`), RunResult (grade passed) and `GameState.money_changed`.
+- Klaim turns a prize on: minigame stat +5%, Wirausaha +5% twice, shop -10%
+  (`Cart.price_of`) and minigame time +5%.
+- Lobby trophy button, the `achievements.tscn` screen (row template
+  `AchievementRow.tscn`) and the `AchievementToast` unlock banner autoload.
+  Ribbon and back arrow are cut from `Achievement mockup.psd`; the claimed
+  card is a baked 9-slice. Drive icon file names were wrong for the
+  play-all, three-star and speed sets, so they were matched by colour against
+  the artist's board.
+
 ## 2026-09-16 — Papan tulis, Rapor's fill and the Belajar button
 
 Plan `docs/superpowers/plans/2026-09-16-papantulis-rapor-belajar.md`, spec

@@ -74,6 +74,7 @@ read-only for us.
 | `TouchFeedbackManager` | Touch ripple effects. |
 | `DebugManager` | In-game debug overlay (5-tap gesture). Week/grade/money/stat editors, scene teleport, minigame launcher, cheats. |
 | `ItemDatabase`, `Cart` | Shop item catalog and cart. |
+| `Achievements`, `AchievementToast` | Achievement tracker (saved), prize multipliers, unlock banner. |
 | `_mcp_game_helper` | Godot AI MCP runtime hook. |
 
 ### The two student representations — know which you're holding
@@ -95,7 +96,8 @@ and `DayOff`→`Istirahat`.
 
 Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
 disk (`user://inventory.cfg`, flushed at the top of every
-`Transition.change_scene`, loaded in `GameState._ready`). Roster, money, week,
+`Transition.change_scene`, loaded in `GameState._ready`), plus achievement
+progress (`user://achievements.cfg`, saved by `Achievements` on every change). Roster, money, week,
 grade and schedules are session-scoped by design. **Do not add further
 persistence without being asked.** Item boosts land on `approved_students`,
 which is not persisted, so a boost applied and not simulated before quit is

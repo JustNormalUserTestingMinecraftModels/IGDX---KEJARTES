@@ -114,7 +114,10 @@ existing cues rather than a dedicated `sfx_item_apply`.
 (shown verbatim in `ItemDetailSheet`) is placeholder copy, marked by one
 blanket `[PLACEHOLDER]` comment above the table rather than one by one. Every `line` in
 `EventDialogueCatalog.ENTRIES` (2026-09-14) is a draft, unmarked because it
-shows in-game.
+shows in-game. Pak Herman's chat bubble in Koperasi
+(`Stage/ChatBubble/Body/Text` in `Scenes/Koperasi/koprasi.tscn`, 2026-09-17)
+says the placeholder "Selamat datang di Koperasi! Mau beli apa hari ini?"
+until his real lines are written.
 
 ## Known bugs and gaps
 
@@ -133,15 +136,14 @@ repointing — it measures the icon's contrast and must now read the child node.
 `:244` and `:373-390` follow the item sheet's own moved nodes. Belongs to
 whoever owns the redesign.
 
-**Koperasi's first shelf button is 27 px wider than authored (2026-09-14).**
-`Rak1` in `Scenes/Koperasi/koprasi.tscn` is laid out 442 px wide
-(offsets 303..745), but "KEBUTUHAN SEKOLAH" at its 40 px
-`theme_override_font_sizes` override needs 469 px with `ShopShelfButton`'s
-20 px side margins. A Button grows to its minimum size, so it renders 27 px
-past its box. That predates the lobby-style-buttons pass, which keeps the
-body-font label so it gets no worse (the display face would need 495 px). Fix
-it by widening the node, trimming the margins, or replacing the override with
-a smaller size step.
+**Koperasi leftovers after the 2026-09-17 counter revamp.** Nothing references
+`Assets/Images/Shop/rak 1.jpg` or `Assets/Images/Shop/rak2.jpg` any more
+(`Illustration4.jpg` stays: ShopHub and CosmeticShop blur it). The
+`ShopShelfButton` ThemeFactory variation is unused since the "KEBUTUHAN
+SEKOLAH" sign went, but
+`tests/test_lobby_style_buttons.gd:test_the_shelf_button_keeps_its_body_font_label`
+still pins it. Delete the two JPGs, the variation and that test together, then
+rebake.
 
 **Saving RosterCard.tscn in the editor moves its sticky notes (2026-09-14).**
 `Scripts/StudentList/StickyNote.gd` is `@tool`, and its `_ready()` calls

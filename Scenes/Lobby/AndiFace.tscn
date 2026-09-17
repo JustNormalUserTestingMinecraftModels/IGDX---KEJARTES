@@ -1,15 +1,15 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dvj3i0ppctiq3"]
 
-[ext_resource type="Script" path="res://Scripts/Lobby/StudentFace.gd" id="1_face"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Andi/andi_base.png" id="2_base"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Andi/andi_sclera.png" id="3_sclera"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Andi/andi_pupil.png" id="4_pupil"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Andi/andi_eyelashes.png" id="5_eyelashes"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Andi/andi_eyelid.png" id="6_eyelid"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Andi/andi_eyebrows.png" id="7_eyebrows"]
+[ext_resource type="Script" uid="uid://6u5oau2rmsa0" path="res://Scripts/Lobby/StudentFace.gd" id="1_face"]
+[ext_resource type="Texture2D" uid="uid://c2rnaxuf6ar1m" path="res://Assets/Images/MuridPotrait/Andi/andi_base.png" id="2_base"]
+[ext_resource type="Texture2D" uid="uid://urx7m1shm2jd" path="res://Assets/Images/MuridPotrait/Andi/andi_sclera.png" id="3_sclera"]
+[ext_resource type="Texture2D" uid="uid://d2uxks0ww8whs" path="res://Assets/Images/MuridPotrait/Andi/andi_pupil.png" id="4_pupil"]
+[ext_resource type="Texture2D" uid="uid://4ehn68ytllry" path="res://Assets/Images/MuridPotrait/Andi/andi_eyelashes.png" id="5_eyelashes"]
+[ext_resource type="Texture2D" uid="uid://dku34a3bprj4y" path="res://Assets/Images/MuridPotrait/Andi/andi_eyelid.png" id="6_eyelid"]
+[ext_resource type="Texture2D" uid="uid://xelmrgru14md" path="res://Assets/Images/MuridPotrait/Andi/andi_eyebrows.png" id="7_eyebrows"]
 [ext_resource type="Material" path="res://Scenes/Lobby/andi_eye_mask.tres" id="20_mask"]
 
-[node name="AndiFace" type="Control"]
+[node name="AndiFace" type="Control" unique_id=758441702]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 400.0
@@ -18,13 +18,15 @@ mouse_filter = 2
 script = ExtResource("1_face")
 student_name = "Andi"
 
-[node name="Canvas" type="Control" parent="."]
+[node name="Canvas" type="Control" parent="." unique_id=1439849282]
 anchors_preset = 0
+offset_top = 25.0
 offset_right = 1280.0
-offset_bottom = 1280.0
+offset_bottom = 1305.0
+scale = Vector2(0.3125, 0.3125)
 mouse_filter = 2
 
-[node name="Base" type="TextureRect" parent="Canvas"]
+[node name="Base" type="TextureRect" parent="Canvas" unique_id=391841309]
 layout_mode = 0
 offset_right = 1280.0
 offset_bottom = 1280.0
@@ -32,7 +34,7 @@ mouse_filter = 2
 texture = ExtResource("2_base")
 expand_mode = 1
 
-[node name="Sclera" type="TextureRect" parent="Canvas"]
+[node name="Sclera" type="TextureRect" parent="Canvas" unique_id=1817914510]
 layout_mode = 0
 offset_left = 404.0
 offset_top = 556.0
@@ -42,7 +44,7 @@ mouse_filter = 2
 texture = ExtResource("3_sclera")
 expand_mode = 1
 
-[node name="Pupil" type="TextureRect" parent="Canvas"]
+[node name="Pupil" type="TextureRect" parent="Canvas" unique_id=1179070868]
 material = ExtResource("20_mask")
 layout_mode = 0
 offset_left = 477.0
@@ -53,17 +55,17 @@ mouse_filter = 2
 texture = ExtResource("4_pupil")
 expand_mode = 1
 
-[node name="Eyelashes" type="TextureRect" parent="Canvas"]
+[node name="Eyelashes" type="TextureRect" parent="Canvas" unique_id=398149196]
 layout_mode = 0
-offset_left = 369.0
-offset_top = 521.0
-offset_right = 911.0
-offset_bottom = 604.0
+offset_left = 371.2
+offset_top = 540.8
+offset_right = 913.2
+offset_bottom = 623.8
 mouse_filter = 2
 texture = ExtResource("5_eyelashes")
 expand_mode = 1
 
-[node name="Eyelid" type="TextureRect" parent="Canvas"]
+[node name="Eyelid" type="TextureRect" parent="Canvas" unique_id=1686203727]
 visible = false
 layout_mode = 0
 offset_left = 404.0
@@ -74,7 +76,7 @@ mouse_filter = 2
 texture = ExtResource("6_eyelid")
 expand_mode = 1
 
-[node name="Eyebrows" type="TextureRect" parent="Canvas"]
+[node name="Eyebrows" type="TextureRect" parent="Canvas" unique_id=400606738]
 layout_mode = 0
 offset_left = 450.0
 offset_top = 424.0

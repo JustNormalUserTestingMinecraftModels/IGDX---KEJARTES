@@ -110,6 +110,49 @@ func test_a_new_grade_is_a_new_week() -> void:
 		"Kelas 8's first week does not inherit Kelas 7's shelf")
 
 
+## Nine names, like the catalog, so the roll's odds match the game's.
+func _nine() -> Array[String]:
+	return ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+
+
+## Six slots, filled from a bag holding every item twice (2026-09-17 revamp).
+func test_a_roll_fills_every_slot_and_caps_copies() -> void:
+	var full := true
+	var capped := true
+	for _i in range(200):
+		var stock: Array[String] = GameState.roll_shop_stock(_nine(), 6, 2)
+		full = full and stock.size() == 6
+		for item_name in stock:
+			capped = capped and stock.count(item_name) <= 2
+	assert_true(full, "every roll fills all six slots")
+	assert_true(capped, "no roll holds an item more than twice")
+
+
+func test_pairs_turn_up() -> void:
+	var paired := false
+	for _i in range(200):
+		var stock: Array[String] = GameState.roll_shop_stock(_nine(), 6, 2)
+		for item_name in stock:
+			paired = paired or stock.count(item_name) == 2
+	assert_true(paired, "about 71% of rolls hold a pair; 200 rolls without one is ~0 odds")
+
+
+func test_a_small_catalog_cannot_overfill() -> void:
+	var names: Array[String] = ["A", "B"]
+	assert_eq(GameState.roll_shop_stock(names, 6, 2).size(), 4,
+		"two items, two copies each: four units is all the bag holds")
+
+
+func test_the_weekly_shelf_is_six_with_pairs_at_most() -> void:
+	assert_eq(GameState.SHOP_SHELF_SIZE, 6, "one per Barang slot on the Stage")
+	assert_eq(GameState.SHOP_MAX_COPIES, 2, "a pair at most")
+	_at(7, 2)
+	var stock: Array[String] = GameState.shop_stock_for_week()
+	for item_name in stock:
+		assert_true(stock.count(item_name) <= GameState.SHOP_MAX_COPIES,
+			item_name + " appears at most twice")
+
+
 # ─── what sold
 
 func test_an_item_sells_once() -> void:

@@ -159,7 +159,7 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 	assert_eq(_anchors(bar), Vector4(0, 1, 1, 1), "BottomBar is Bottom Wide")
 	assert_eq(bar.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BottomBar lets clicks through")
 	for n in ["Student", "Jadwal", "Koperasi", "Inventory", "ReportStudent",
-			"DisplayUang", "ShortenButton", "DailyLogin"]:
+			"DisplayUang", "SettingsButton", "DailyLogin"]:
 		var c := lobby.get_node_or_null("%" + n) as Control
 		assert_true(c != null, n + " must be a unique name")
 		if c != null:

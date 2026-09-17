@@ -1235,6 +1235,14 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	if student_manager:
 		student_manager.record_minigame_result(day_name, category, game_name, won, mg_score, mg_max_score)
 
+	# Only a minigame really played here counts toward achievements.
+	var mg_stars: int = 0
+	var mg_time_left: float = -1.0
+	if current_minigame and "last_result_stars" in current_minigame:
+		mg_stars = current_minigame.last_result_stars
+		mg_time_left = current_minigame.last_time_left_ratio
+	Achievements.record_minigame(category, game_name, won, mg_stars, mg_time_left)
+
 	AudioDirector.stop_minigame_bgm()
 	var tween_close = create_tween()
 	tween_close.tween_property(current_minigame, "modulate:a", 0.0, 0.4)
@@ -1261,6 +1269,8 @@ func _pay_out_wirausaha() -> int:
 	var total: int = 0
 	for student_id in GameState.pending_earnings:
 		total += GameState.pending_earnings[student_id]
+	# Claimed Wirausaha prizes (Pembimbing Sepuh, Seorang CEO) scale the payout.
+	total = roundi(total * Achievements.effect_multiplier("wirausaha"))
 	GameState.run_stats.record_wirausaha(total)
 	GameState.pending_earnings.clear()
 	if total > 0:

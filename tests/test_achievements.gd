@@ -181,6 +181,33 @@ func test_reset_clears_everything() -> void:
 	assert_eq(a.minigames_played, 0)
 
 
+func _src(path: String) -> String:
+	return FileAccess.get_file_as_string(path)
+
+
+func test_school_day_reports_real_minigames_only() -> void:
+	var src := _src("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("Achievements.record_minigame(category, game_name, won"), "real path reports")
+	var cheat_block := src.substr(src.find("Debug Cheat Interception"), 700)
+	assert_false(cheat_block.contains("record_minigame("), "the cheat must not count")
+	assert_true(src.contains("Achievements.effect_multiplier(\"wirausaha\")"))
+
+
+func test_base_minigame_exposes_result_and_scales_time() -> void:
+	var src := _src("res://Scripts/Minigames/UI/BaseMinigame.gd")
+	assert_true(src.contains("last_result_stars = stars"))
+	assert_true(src.contains("last_time_left_ratio"))
+	assert_true(src.contains("multiplier(\"minigame_time\")"))
+
+
+func test_prize_hooks_are_wired() -> void:
+	assert_true(_src("res://Scripts/SchoolSimulation/StudentData.gd").contains("multiplier(\"minigame_stat\")"))
+	assert_true(_src("res://Scripts/Inventory/Cart.gd").contains("multiplier(\"shop_price\")"))
+	assert_true(_src("res://Scripts/Koperasi/rakbarang_1.gd").contains("Cart.price_of("))
+	assert_true(_src("res://Scripts/EndGame/RunResult.gd").contains("Achievements.record_grade_passed(GameState.current_grade)"))
+	assert_true(_src("res://Scripts/GameState.gd").contains("Achievements.reset()"))
+
+
 func test_static_multiplier_is_neutral_without_claims() -> void:
 	# The editor's own autoload instance never loads a save (editor-hint gate).
 	assert_eq(ACHIEVEMENTS.multiplier("shop_price"), 1.0)

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Reset achievements on every launch (a debug switch), a blurred claim celebration with glowing rays and confetti, and a white outline on every achievement icon.
+**Goal:** Reset achievements on every launch (a debug switch), a blurred claim celebration with glowing rays and confetti, a white outline on every achievement icon, and a Lobby Settings button that replaces Shorten.
 
 **Architecture:** One const switch in the `Achievements` autoload. Two canvas_item
 shaders: an additive ray glow, and an alpha-following outline. One authored
@@ -528,7 +528,29 @@ position = Vector2(-40, 1780)
 - [ ] In the game: claim an unlocked achievement and screenshot the popup at full size. Check the blur, the rays moving, the outline and the confetti.
 - [ ] Commit `feat(achievements): claim celebration with glow rays and confetti`.
 
-### Task 5: Docs and the full suite
+### Task 5: Lobby Settings button replaces Shorten
+
+The user's addition: remove the Shorten button, add a Settings button to the
+Lobby, and move Shorten's switch into Settings.
+
+**Files:**
+- Delete `Scenes/Lobby/ShortenPanel.tscn` and `Scripts/Lobby/ShortenPanel.gd`.
+- Modify `Scenes/Lobby/loby.tscn`, through the editor: delete `ShortenButton`; add `SettingsButton`, a TextureButton in `Safe/UI/BottomBar` at 120–216 × 0–96 with `custom_minimum_size` 96×96, `Assets/Images/UI/setting.png`, ignore_texture_size and keep-aspect-centred; move `AchievementButton` to 240–336.
+- Modify `Scripts/Lobby/loby.gd`: drop `SHORTEN_PANEL_SCENE`, `shorten_button` and `_on_shorten_pressed`. Add `settings_button` and `_on_settings_pressed()`, which sets `SettingsScript.return_scene = LOBBY` and changes to `res://Scenes/UI/Settings.tscn` with WIPE.
+- Modify `Scenes/UI/Settings.tscn`: a `SkipDialogCard`, a copy of `TutorialCard` whose label reads "Lewati Dialog Minigame" and whose `%SkipDialogToggle` is a CheckButton, placed after `TutorialCard`.
+- Modify `Scripts/UI/Settings.gd`:
+  - `static var return_scene := "res://Scenes/MainMenu/main_menu.tscn"`, the screen Back returns to. The Lobby sets it; Back resets it to MainMenu after use.
+  - The toggle mirrors and writes `GameSettings.skip_event_dialogue`, then calls `save_settings()`.
+  - `play_bgm(&"titlescreen")` runs only when opened from MainMenu, so the Lobby's music keeps playing.
+- Tests: `test_shorten.gd` is rewritten as the Settings toggle (keeping its SchoolDay "Shorten skips the minigame line" scans). `test_settings.gd` gains the toggle and `return_scene` tests. `test_lobby.gd`, `test_lobby_layout.gd` and `test_tall_screen_layout.gd` swap `ShortenButton` for `SettingsButton` (rect `Rect2(168, 1392, 96, 96)`). `test_achievement_screen.gd` checks `AchievementButton` at 240.
+- Docs: CLAUDE.md's Loop paragraph ("The Lobby's **Shorten** button …") now says Settings → *Lewati Dialog Minigame*.
+
+- [ ] Rewrite and extend the tests above so they fail on the current tree. Run `shorten`, `settings`, `lobby`, `lobby_layout` and `tall_screen_layout`: FAIL.
+- [ ] Do the scene work first (loby.tscn and Settings.tscn through the editor, then `scene_save`), then the scripts, then restart the editor (CLAUDE.md 4b).
+- [ ] Run the same suites plus `achievement_screen`: PASS.
+- [ ] Commit `feat(lobby): Settings button replaces Shorten; skip-dialog switch moves to Settings`.
+
+### Task 6: Docs and the full suite
 
 - [ ] Add a CHANGELOG entry. Add a DEBT entry: "RESET_ON_LAUNCH is on for debugging; turn it off before release." CLAUDE.md's persistence line notes the switch.
 - [ ] Run: full `test_run`. Expected: all pass. Revert editor noise (`default_bus_layout.tres`, the portrait `.import` files).

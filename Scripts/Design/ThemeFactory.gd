@@ -124,6 +124,12 @@ const ACHIEVEMENT_TITLE_SIZE := 44
 const ACHIEVEMENT_BODY_SIZE := 29
 ## Smaller than the card title so the longest names wrap to three lines in the banner.
 const ACHIEVEMENT_TOAST_TITLE_SIZE := 40
+## The claim celebration's lettering (achievementclaim_mockup.png): white
+## display text rimmed in the event navy, and a white body hint.
+const ACHIEVEMENT_CLAIM_HEADLINE_SIZE := 88
+const ACHIEVEMENT_CLAIM_TITLE_SIZE := 76
+const ACHIEVEMENT_CLAIM_HINT_SIZE := 52
+const ACHIEVEMENT_CLAIM_OUTLINE := 22
 ## The claimed card's gradient and glow, baked 9-slice: 24px glow + 24px corner.
 const _ACHIEVEMENT_CLAIMED_ART := "res://Assets/Images/Achievements/card_claimed.png"
 const _ACHIEVEMENT_CLAIMED_GLOW := 24
@@ -203,6 +209,23 @@ static func _build_achievements(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "AchievementToastTitleLabel", ACHIEVEMENT_INK)
 	if tokens.font_display != null:
 		theme.set_font("font", "AchievementToastTitleLabel", tokens.font_display)
+
+	for pair in [["AchievementClaimHeadlineLabel", ACHIEVEMENT_CLAIM_HEADLINE_SIZE],
+			["AchievementClaimTitleLabel", ACHIEVEMENT_CLAIM_TITLE_SIZE]]:
+		var claim_name: String = pair[0]
+		theme.add_type(claim_name)
+		theme.set_type_variation(claim_name, "Label")
+		theme.set_font_size("font_size", claim_name, pair[1])
+		theme.set_color("font_color", claim_name, Color.WHITE)
+		theme.set_constant("outline_size", claim_name, ACHIEVEMENT_CLAIM_OUTLINE)
+		theme.set_color("font_outline_color", claim_name, tokens.event_warning_ink)
+		if tokens.font_display != null:
+			theme.set_font("font", claim_name, tokens.font_display)
+
+	theme.add_type("AchievementClaimHintLabel")
+	theme.set_type_variation("AchievementClaimHintLabel", "Label")
+	theme.set_font_size("font_size", "AchievementClaimHintLabel", ACHIEVEMENT_CLAIM_HINT_SIZE)
+	theme.set_color("font_color", "AchievementClaimHintLabel", Color.WHITE)
 
 
 ## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard

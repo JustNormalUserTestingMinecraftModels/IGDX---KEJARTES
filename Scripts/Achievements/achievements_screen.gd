@@ -10,6 +10,8 @@ const LOBBY := "res://Scenes/Lobby/loby.tscn"
 
 ## The card template, one instance per achievement.
 @export var row_scene: PackedScene = preload("res://Scenes/Achievements/AchievementRow.tscn")
+## The celebration shown after a successful claim.
+@export var claim_popup_scene: PackedScene = preload("res://Scenes/Achievements/AchievementClaimPopup.tscn")
 
 @onready var list: VBoxContainer = %List
 @onready var back_button: TextureButton = %BackButton
@@ -35,6 +37,9 @@ func _on_claim_pressed(id: String, row: Control) -> void:
 	AudioDirector.play_sfx(&"tap")
 	row.set_state(AchievementsScript.STATE_CLAIMED)
 	Juice.pop_in(row)
+	var popup := claim_popup_scene.instantiate()
+	add_child(popup)
+	popup.open(AchievementCatalog.get_entry(id))
 
 
 func _on_back_pressed() -> void:

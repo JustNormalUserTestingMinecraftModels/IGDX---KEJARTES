@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/Achievements/AchievementToast.gd" id="1_toast"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Achievements/Icons/grade_7.png" id="2_icon"]
+[ext_resource type="Material" path="res://Assets/Images/Achievements/icon_outline_material.tres" id="3_outline"]
 
 [node name="AchievementToast" type="CanvasLayer"]
 process_mode = 3
@@ -21,6 +22,7 @@ mouse_filter = 2
 theme_type_variation = &"AchievementToastPanel"
 
 [node name="Icon" type="TextureRect" parent="Banner"]
+material = ExtResource("3_outline")
 layout_mode = 0
 offset_left = 20.0
 offset_top = 25.0

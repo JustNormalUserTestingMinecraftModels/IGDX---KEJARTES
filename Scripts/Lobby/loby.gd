@@ -29,9 +29,8 @@ const HAND_NODE_PREFIX := "Hand_"
 ## hands.
 const HAND_FALLBACK_NAME := "Doni"
 
-## The Shorten popup (2026-09-14 shorten-dialog spec), instanced over the hub
-## when ShortenButton is pressed. It frees itself when it closes.
-const SHORTEN_PANEL_SCENE := preload("res://Scenes/Lobby/ShortenPanel.tscn")
+## The Settings screen's script; the gear sets where its back button returns.
+const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 
 @export_group("Idle Motion")
 ## Subtle looping vertical bob applied to the diorama's portrait
@@ -59,7 +58,8 @@ const SHORTEN_PANEL_SCENE := preload("res://Scenes/Lobby/ShortenPanel.tscn")
 @onready var koperasi_button = %Koperasi
 @onready var report_student_button = %ReportStudent
 @onready var inventory_button = %Inventory
-@onready var shorten_button = %ShortenButton
+@onready var settings_button = %SettingsButton
+@onready var achievement_button = %AchievementButton
 
 @onready var money_label = get_node("%DisplayUang/Label")
 @onready var daily_login_btn = %DailyLogin
@@ -167,13 +167,15 @@ func _ready():
 
 	_build_tutorial_panel()
 
-	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, shorten_button, daily_login_btn, claim_button]:
+	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, settings_button, achievement_button, daily_login_btn, claim_button]:
 		_setup_button_juice(btn)
 
 	color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	if not shorten_button.pressed.is_connected(_on_shorten_pressed):
-		shorten_button.pressed.connect(_on_shorten_pressed)
+	if not settings_button.pressed.is_connected(_on_settings_pressed):
+		settings_button.pressed.connect(_on_settings_pressed)
+	if not achievement_button.pressed.is_connected(_on_achievement_pressed):
+		achievement_button.pressed.connect(_on_achievement_pressed)
 
 	AudioDirector.play_bgm_playlist(&"lobby")
 
@@ -616,7 +618,7 @@ func _create_blur_overlay():
 	add_child(blur_overlay)
 	# Place blur_overlay at DailyReward's index, just before it: it then
 	# renders over the Classroom and the whole HUD (Safe and everything in
-	# it, DailyLogin and ShortenButton included) but behind the popup. Since
+	# it, DailyLogin and SettingsButton included) but behind the popup. Since
 	# the 2026-09-15 tall-phone pass the HUD sits in Safe/UI/BottomBar, so a
 	# HUD node's own index says nothing about the root's draw order.
 	move_child(blur_overlay, daily_reward.get_index())
@@ -791,11 +793,12 @@ func _on_claim_pressed():
 	if GameState.daily_login_day > 7:
 		GameState.daily_login_day = 1
 
-## Opens the Shorten panel over the hub.
-func _on_shorten_pressed() -> void:
-	var panel = SHORTEN_PANEL_SCENE.instantiate()
-	add_child(panel)
-	panel.open()
+## Opens Settings (volumes, the minigame tutorial and "Lewati Dialog
+## Minigame", which used to be the Shorten button), returning here.
+func _on_settings_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	SettingsScript.return_scene = "res://Scenes/Lobby/loby.tscn"
+	Transition.change_scene("res://Scenes/UI/Settings.tscn", Transition.Style.WIPE)
 
 
 func _on_student_pressed():
@@ -819,6 +822,10 @@ func _on_koperasi_pressed() -> void:
 func _on_inventory_pressed() -> void:
 	AudioDirector.play_sfx(&"tap")
 	Transition.change_scene("res://Scenes/Inventory/inventory.tscn", Transition.Style.WIPE)
+
+func _on_achievement_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	Transition.change_scene("res://Scenes/Achievements/achievements.tscn", Transition.Style.WIPE)
 
 func _on_report_student_pressed() -> void:
 	AudioDirector.play_sfx(&"tap")

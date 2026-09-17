@@ -349,6 +349,9 @@ const DISPLAY_ROSTER := [
 	"PrimaryButtonM", "SecondaryButtonM", "DangerButtonM",
 	"PrimaryButtonL", "SecondaryButtonL", "DangerButtonL", "SuccessButtonL",
 	"LobbyNavTile", "LobbyCtaButton",
+	# 2026-09-17 achievements: card titles, the Klaim pill, the unlock banner.
+	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
+	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",
 	# 2026-09-09 student card arrow buttons: circles with brand fill.
 	"CardArrowButton",
 	# 2026-09-09 trait popup readability: cream display labels for the

@@ -1,12 +1,15 @@
-extends Control  # script Rak1
+extends Control  # script Stage
 
-## The koperasi shelf screen (koprasi.tscn:Rak1): this week's four items on
-## the shelf, each with a coin-pill price tag and a little life, and the
-## basket tray docked beneath them.
+## The koperasi Stage (koprasi.tscn:Stage): Pak Herman's counter as one
+## 1080x1920 piece -- the art layers, this week's six items on the shelf,
+## each with a coin-pill price tag and a little life, the chat bubble, the
+## back button and the basket tray.
 ##
-## The shelf is rolled once a week (GameState.shop_stock_for_week()) and each
-## item sells once that week. A button shows only while its item is on sale:
-## not bought this week and not already in the basket (is_on_sale()).
+## The shelf is rolled once a week (GameState.shop_stock_for_week()) and can
+## hold two copies of an item. Each slot sells once. Cart stays keyed by
+## name, so the shelf keeps which SLOT emptied itself (_taken_slots) and
+## re-derives it from Cart and GameState.shop_sold on every cart change
+## (reconcile_taken()).
 ##
 ## Tapping an item puts one in Cart and flies a copy of its art, in the
 ## mentor-approved split arc, onto that item's own slot in the tray, and the
@@ -18,11 +21,17 @@ extends Control  # script Rak1
 ## Global scale multiplier for all items (1.0 = normal)
 @export var global_item_scale: float = 1.0
 
-## The basket tray docked at the bottom of the shelf screen.
-@onready var tray: BasketTray = $BasketTray
+## The basket tray, docked at the bottom of the Stage.
+@onready var tray: BasketTray = $TrayDock/BasketTray
 
 var shelf_buttons: Array[TextureButton] = []
 var item_data_list: Array[ItemData] = []
+
+## Item name per shelf slot, parallel to item_data_list. A pair shows twice.
+var _stock_names: Array[String] = []
+## Slots emptied -- tapped into the basket or sold this week -- in the order
+## they emptied. Rebuilt by reconcile_taken() on every cart change.
+var _taken_slots: Array[int] = []
 
 ## Instanced PriceTag per shelf button, parallel to shelf_buttons.
 var _price_tags: Array = []
@@ -67,6 +76,9 @@ func setup_shelf():
 		var stocked: ItemData = ItemDatabase.get_item(item_name)
 		if stocked != null:
 			item_data_list.append(stocked)
+	_stock_names.clear()
+	for stocked in item_data_list:
+		_stock_names.append(stocked.item_name)
 
 	_shelf_items.clear()
 	for i in range(shelf_buttons.size()):
@@ -81,7 +93,7 @@ func setup_shelf():
 		# Find price tag inside btn
 		var tag = _ensure_price_tag(btn)
 		if tag:
-			tag.set_price(item.price)
+			tag.set_price(Cart.price_of(item))
 
 		var life = _ensure_shelf_item(btn)
 		_shelf_items.append(life)
@@ -98,24 +110,52 @@ func setup_shelf():
 	_refresh_shelf_visibility()
 
 
-## Whether `item_name` belongs on the shelf right now: not bought this week
-## (`sold`) and not already in the basket (`cart`, Cart.cart-shaped).
+## Which slots are empty, given what the player took (`taken`, in the order
+## they took it), the basket (`cart`, Cart.cart-shaped) and this week's
+## sales (`sold`, one entry per unit). For each item the empty-slot count is
+## its sold units plus its basket units, capped at its copies on the shelf:
+## extra slots leave from the end of `taken` (hold-to-return brings back the
+## latest), missing ones are taken lowest index first (a sale from an
+## earlier visit).
 ##
 ## Affects: nothing. Pure. Static so a test can call it with no instance.
-static func is_on_sale(item_name: String, cart: Dictionary, sold: Array) -> bool:
-	return not sold.has(item_name) and not cart.has(item_name)
+static func reconcile_taken(stock: Array, taken: Array, cart: Dictionary, sold: Array) -> Array[int]:
+	var result: Array[int] = []
+	for slot in taken:
+		if slot >= 0 and slot < stock.size() and not result.has(slot):
+			result.append(slot)
+	var names: Array = []
+	for item_name in stock:
+		if not names.has(item_name):
+			names.append(item_name)
+	for item_name in names:
+		var in_cart: int = int(cart[item_name].get("quantity", 0)) if cart.has(item_name) else 0
+		var want := mini(stock.count(item_name), sold.count(item_name) + in_cart)
+		var mine: Array[int] = []
+		for slot in result:
+			if stock[slot] == item_name:
+				mine.append(slot)
+		while mine.size() > want:
+			result.erase(mine.pop_back())
+		for slot in range(stock.size()):
+			if mine.size() >= want:
+				break
+			if stock[slot] == item_name and not mine.has(slot):
+				mine.append(slot)
+				result.append(slot)
+	return result
 
 
-## Show each shelf button only while its item is on sale. Derived from Cart
-## and GameState every time, so tap, hold-to-return, Back and Beli agree
-## without this script tracking anything. An item returning to a visible
-## shelf bounces back in -- scale only, so an unaffordable item keeps
-## ShelfItem.set_dimmed()'s alpha rather than fading up to full.
+## Show each shelf slot only while it is not taken. Derived from Cart and
+## GameState every time (reconcile_taken), so tap, hold-to-return, Back and
+## Beli agree. A slot returning to a visible shelf bounces back in -- scale
+## only, so an unaffordable item keeps ShelfItem.set_dimmed()'s alpha rather
+## than fading up to full.
 func _refresh_shelf_visibility() -> void:
+	_taken_slots = reconcile_taken(_stock_names, _taken_slots, Cart.cart, GameState.shop_sold)
 	for i in range(shelf_buttons.size()):
 		var btn: TextureButton = shelf_buttons[i]
-		var on_sale: bool = i < item_data_list.size() \
-			and is_on_sale(item_data_list[i].item_name, Cart.cart, GameState.shop_sold)
+		var on_sale: bool = i < _stock_names.size() and not _taken_slots.has(i)
 		var was_hidden := not btn.visible
 		btn.visible = on_sale
 		if on_sale and was_hidden and btn.is_visible_in_tree():
@@ -161,9 +201,9 @@ func _refresh_affordability() -> void:
 		var tag = _price_tags[i]
 		if not is_instance_valid(tag) or i >= item_data_list.size():
 			continue
-		tag.set_affordable(GameState.player_money >= item_data_list[i].price)
+		tag.set_affordable(GameState.player_money >= Cart.price_of(item_data_list[i]))
 		if i < _shelf_items.size() and is_instance_valid(_shelf_items[i]):
-			_shelf_items[i].set_dimmed(GameState.player_money < item_data_list[i].price)
+			_shelf_items[i].set_dimmed(GameState.player_money < Cart.price_of(item_data_list[i]))
 
 ## Returns the display size for an item. Uses ItemData.display_size, falls back to source button size or default.
 func get_item_effective_size(item: ItemData, source_button: TextureButton = null) -> Vector2:
@@ -189,9 +229,9 @@ func _on_barang_pressed(index: int):
 	if index < 0 or index >= item_data_list.size():
 		return
 	var item = item_data_list[index]
-	# One of each per week: a second tap landing before the button hides
+	# Each slot sells once: a second tap landing before the button hides
 	# must not add a second unit.
-	if not is_on_sale(item.item_name, Cart.cart, GameState.shop_sold):
+	if _taken_slots.has(index):
 		return
 	var btn = shelf_buttons[index]
 
@@ -202,6 +242,9 @@ func _on_barang_pressed(index: int):
 		_shelf_items[index].lift()
 	AudioDirector.play_sfx(&"tap")
 
+	# Take the slot before the cart hears of it, so the refresh that
+	# Cart.add_item() triggers empties THIS slot, not the pair's other copy.
+	_taken_slots.append(index)
 	# Hold the unit before the cart hears of it: the refresh that
 	# Cart.add_item() triggers then keeps it hidden until its flight lands.
 	tray.hold_for_landing(item.item_name)

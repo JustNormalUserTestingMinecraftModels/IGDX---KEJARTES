@@ -114,19 +114,36 @@ existing cues rather than a dedicated `sfx_item_apply`.
 (shown verbatim in `ItemDetailSheet`) is placeholder copy, marked by one
 blanket `[PLACEHOLDER]` comment above the table rather than one by one. Every `line` in
 `EventDialogueCatalog.ENTRIES` (2026-09-14) is a draft, unmarked because it
-shows in-game.
+shows in-game. Pak Herman's chat bubble in Koperasi
+(`Stage/ChatBubble/Body/Text` in `Scenes/Koperasi/koprasi.tscn`, 2026-09-17)
+says the placeholder "Selamat datang di Koperasi! Mau beli apa hari ini?"
+until his real lines are written.
 
 ## Known bugs and gaps
 
-**Koperasi's first shelf button is 27 px wider than authored (2026-09-14).**
-`Rak1` in `Scenes/Koperasi/koprasi.tscn` is laid out 442 px wide
-(offsets 303..745), but "KEBUTUHAN SEKOLAH" at its 40 px
-`theme_override_font_sizes` override needs 469 px with `ShopShelfButton`'s
-20 px side margins. A Button grows to its minimum size, so it renders 27 px
-past its box. That predates the lobby-style-buttons pass, which keeps the
-body-font label so it gets no worse (the display face would need 495 px). Fix
-it by widening the node, trimming the margins, or replacing the override with
-a smaller size step.
+**`Textures` is red: five Inventory tests look up moved nodes (2026-09-16).**
+`feat(inventory): mobile redesign` (`431cc5d`) restructured
+`Scenes/Inventory/inventory.tscn` without updating two suites, so a full
+`test_run` on a clean `Textures` fails five tests and blocks every PR's merge
+gate. `tests/test_inventory.gd:94,107` want
+`MainColumn/Header/Row/BackButton`, which is now
+`MainColumn/Header/HeaderCol/Row/BackButton` — a path fix.
+`tests/test_light_ground_text.gd:201` wants `MainColumn/FilterRow/Scroll/Chips`,
+which is now `MainColumn/FilterRow/SegBar/Tabs`, and its children are
+`TabSemua`/`TabBuku`/`TabOlahraga`/`TabMakanan` carrying a child `Ico`
+`TextureRect` rather than a Button `icon`, so that test needs rewriting, not
+repointing — it measures the icon's contrast and must now read the child node.
+`:244` and `:373-390` follow the item sheet's own moved nodes. Belongs to
+whoever owns the redesign.
+
+**Koperasi leftovers after the 2026-09-17 counter revamp.** Nothing references
+`Assets/Images/Shop/rak 1.jpg` or `Assets/Images/Shop/rak2.jpg` any more
+(`Illustration4.jpg` stays: ShopHub and CosmeticShop blur it). The
+`ShopShelfButton` ThemeFactory variation is unused since the "KEBUTUHAN
+SEKOLAH" sign went, but
+`tests/test_lobby_style_buttons.gd:test_the_shelf_button_keeps_its_body_font_label`
+still pins it. Delete the two JPGs, the variation and that test together, then
+rebake.
 
 **Saving RosterCard.tscn in the editor moves its sticky notes (2026-09-14).**
 `Scripts/StudentList/StickyNote.gd` is `@tool`, and its `_ready()` calls
@@ -225,6 +242,15 @@ disconnects, and the editor needs a restart. Cause unconfirmed; verify that
 widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
+
+- **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
+  wipes achievement progress and claimed prizes. Turn it off before release.
+
+- **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
+  shows as *segera hadir* because there is no skin system (CosmeticShop is a
+  stub). Masa Depan yang Indah's Level Selection was already unlocked by
+  beating the game, and there is no settings button to reset achievement
+  progress (only Debug > Forget Session).
 
 **Pending a balance pass.** `RunGrade`'s scoring weights (especially
 `MONEY_FULL_MARKS`) are estimates; `LombaMenari.best_combo` is tracked but not

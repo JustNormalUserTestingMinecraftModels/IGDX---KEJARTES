@@ -29,8 +29,9 @@ passes.
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
 Every mid-day minigame and random event opens with the sliding EventWarning,
 then an EventDialogue line (`EventDialogueCatalog`); the three pick-students
-events ask Tolak / Terima there, before their picker. The Lobby's **Shorten**
-button (`GameSettings.skip_event_dialogue`, saved) skips the minigame lines;
+events ask Tolak / Terima there, before their picker. Settings' **Lewati Dialog
+Minigame** toggle (`GameSettings.skip_event_dialogue`, saved; the Lobby's gear
+opens Settings) skips the minigame lines;
 Nasi Kotak, Hujan and the choice events keep theirs.
 Splashscreen still exists and is tested but nothing routes to it (the game
 boots straight to MainMenu, which loads in one hop). There is no Loading
@@ -74,6 +75,7 @@ read-only for us.
 | `TouchFeedbackManager` | Touch ripple effects. |
 | `DebugManager` | In-game debug overlay (5-tap gesture). Week/grade/money/stat editors, scene teleport, minigame launcher, cheats. |
 | `ItemDatabase`, `Cart` | Shop item catalog and cart. |
+| `Achievements`, `AchievementToast` | Achievement tracker (saved), prize multipliers, unlock banner. |
 | `_mcp_game_helper` | Godot AI MCP runtime hook. |
 
 ### The two student representations — know which you're holding
@@ -95,7 +97,9 @@ and `DayOff`→`Istirahat`.
 
 Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
 disk (`user://inventory.cfg`, flushed at the top of every
-`Transition.change_scene`, loaded in `GameState._ready`). Roster, money, week,
+`Transition.change_scene`, loaded in `GameState._ready`), plus achievement
+progress (`user://achievements.cfg`, saved by `Achievements` on every change,
+but wiped on every launch while the debug `Achievements.RESET_ON_LAUNCH` is on). Roster, money, week,
 grade and schedules are session-scoped by design. **Do not add further
 persistence without being asked.** Item boosts land on `approved_students`,
 which is not persisted, so a boost applied and not simulated before quit is

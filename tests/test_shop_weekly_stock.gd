@@ -110,14 +110,86 @@ func test_a_new_grade_is_a_new_week() -> void:
 		"Kelas 8's first week does not inherit Kelas 7's shelf")
 
 
+## Nine names, like the catalog, so the roll's odds match the game's.
+func _nine() -> Array[String]:
+	return ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+
+
+## Six slots, filled from a bag holding every item twice (2026-09-17 revamp).
+func test_a_roll_fills_every_slot_and_caps_copies() -> void:
+	var full := true
+	var capped := true
+	for _i in range(200):
+		var stock: Array[String] = GameState.roll_shop_stock(_nine(), 6, 2)
+		full = full and stock.size() == 6
+		for item_name in stock:
+			capped = capped and stock.count(item_name) <= 2
+	assert_true(full, "every roll fills all six slots")
+	assert_true(capped, "no roll holds an item more than twice")
+
+
+func test_pairs_turn_up() -> void:
+	var paired := false
+	for _i in range(200):
+		var stock: Array[String] = GameState.roll_shop_stock(_nine(), 6, 2)
+		for item_name in stock:
+			paired = paired or stock.count(item_name) == 2
+	assert_true(paired, "about 71% of rolls hold a pair; 200 rolls without one is ~0 odds")
+
+
+func test_a_small_catalog_cannot_overfill() -> void:
+	var names: Array[String] = ["A", "B"]
+	assert_eq(GameState.roll_shop_stock(names, 6, 2).size(), 4,
+		"two items, two copies each: four units is all the bag holds")
+
+
+func test_the_weekly_shelf_is_six_with_pairs_at_most() -> void:
+	assert_eq(GameState.SHOP_SHELF_SIZE, 6, "one per Barang slot on the Stage")
+	assert_eq(GameState.SHOP_MAX_COPIES, 2, "a pair at most")
+	_at(7, 2)
+	var stock: Array[String] = GameState.shop_stock_for_week()
+	for item_name in stock:
+		assert_true(stock.count(item_name) <= GameState.SHOP_MAX_COPIES,
+			item_name + " appears at most twice")
+
+
 # ─── what sold
 
-func test_an_item_sells_once() -> void:
+func test_a_single_copy_sells_once() -> void:
+	GameState.shop_stock = ["Bank Soal", "Komik"]
 	GameState.mark_shop_sold("Bank Soal")
 	GameState.mark_shop_sold("Bank Soal")
 	assert_eq(GameState.shop_sold.count("Bank Soal"), 1, "marked once, however often Beli sees it")
 	assert_true(GameState.is_shop_sold("Bank Soal"), "and reads back as sold")
 	assert_false(GameState.is_shop_sold(FAKE_ITEM), "another item is not")
+
+
+func test_a_pair_sells_twice() -> void:
+	GameState.shop_stock = ["Bank Soal", "Komik", "Bank Soal"]
+	for _i in range(3):
+		GameState.mark_shop_sold("Bank Soal")
+	assert_eq(GameState.shop_sold.count("Bank Soal"), 2, "one sale per copy on the shelf, no more")
+
+
+func test_an_unstocked_item_still_sells_once() -> void:
+	GameState.mark_shop_sold("Bank Soal")
+	GameState.mark_shop_sold("Bank Soal")
+	assert_eq(GameState.shop_sold.count("Bank Soal"), 1, "an unrolled shelf counts as one copy")
+
+
+func test_a_pair_is_sold_out_only_once_both_sold() -> void:
+	GameState.shop_stock = ["Bank Soal", "Komik", "Bank Soal"]
+	GameState.mark_shop_sold("Bank Soal")
+	GameState.mark_shop_sold("Komik")
+	assert_false(GameState.is_shop_sold_out(), "the second Bank Soal is still on the shelf")
+	GameState.mark_shop_sold("Bank Soal")
+	assert_true(GameState.is_shop_sold_out(), "both copies gone")
+
+
+func test_beli_marks_every_unit() -> void:
+	var body := _body(FileAccess.get_file_as_string(KOPERASI_PATH), "func _on_beli_pressed()")
+	assert_true(body.contains("for _unit in range(quantity):"),
+		"a line of two marks two sales, so the pair's second slot stays empty")
 
 
 func test_the_shelf_is_sold_out_only_once_every_item_sold() -> void:
@@ -145,14 +217,61 @@ const KOPERASI_PATH := "res://Scripts/Koperasi/koprasi.gd"
 const RakScript := preload("res://Scripts/Koperasi/rakbarang_1.gd")
 
 
-func test_an_item_is_on_sale_until_basketed_or_sold() -> void:
-	assert_true(RakScript.is_on_sale("Bank Soal", {}, []), "on the shelf by default")
-	assert_false(RakScript.is_on_sale("Bank Soal", {"Bank Soal": {}}, []),
-		"off the shelf while it is in the basket")
-	assert_false(RakScript.is_on_sale("Bank Soal", {}, ["Bank Soal"]),
-		"off the shelf once bought this week")
-	assert_true(RakScript.is_on_sale("Bank Soal", {"Kamus": {}}, ["Kamus"]),
-		"other items leaving do not take it with them")
+## Slot 0 and 2 hold the pair.
+func _pair_shelf() -> Array:
+	return ["Bank Soal", "Komik", "Bank Soal"]
+
+
+func _reconciled(taken: Array, cart: Dictionary, sold: Array) -> String:
+	return str(RakScript.reconcile_taken(_pair_shelf(), taken, cart, sold))
+
+
+func test_a_fresh_shelf_has_nothing_taken() -> void:
+	assert_eq(_reconciled([], {}, []), "[]")
+
+
+func test_the_tapped_copy_is_the_one_that_empties() -> void:
+	assert_eq(_reconciled([2], {"Bank Soal": {"quantity": 1}}, []), "[2]",
+		"tapping the second copy leaves the first on the shelf")
+
+
+func test_hold_to_return_brings_back_the_latest_copy() -> void:
+	assert_eq(_reconciled([0, 2], {"Bank Soal": {"quantity": 1}}, []), "[0]",
+		"one unit returned: the slot taken last comes back")
+
+
+func test_a_sale_seen_on_a_later_visit_empties_the_lowest_slot() -> void:
+	assert_eq(_reconciled([], {}, ["Bank Soal"]), "[0]")
+
+
+func test_back_returns_every_unsold_slot() -> void:
+	assert_eq(_reconciled([0, 1], {}, []), "[]")
+
+
+func test_beli_keeps_the_bought_slots_empty() -> void:
+	assert_eq(_reconciled([2, 1], {}, ["Bank Soal", "Komik"]), "[2, 1]")
+
+
+func test_out_of_range_slots_are_dropped() -> void:
+	assert_eq(_reconciled([7], {}, []), "[]")
+
+
+func test_one_items_units_never_move_another() -> void:
+	assert_eq(_reconciled([1], {"Komik": {"quantity": 1}}, ["Bank Soal"]), "[1, 0]")
+
+
+func test_a_taken_slot_refuses_a_second_tap() -> void:
+	var body := _body(FileAccess.get_file_as_string(RAK_PATH), "func _on_barang_pressed(")
+	assert_true(body.contains("if _taken_slots.has(index):"), "a double tap cannot add a second unit")
+	var take := body.find("_taken_slots.append(index)")
+	assert_true(take != -1 and take < body.find("Cart.add_item(item)"),
+		"the slot is taken before the cart hears of it, so the refresh keeps it empty")
+
+
+func test_visibility_comes_from_reconcile() -> void:
+	var src := FileAccess.get_file_as_string(RAK_PATH)
+	assert_true(_body(src, "func _refresh_shelf_visibility()").contains("reconcile_taken("))
+	assert_false(src.contains("func is_on_sale("), "the name-only check is gone")
 
 
 func test_the_shelf_stocks_from_the_weekly_roll() -> void:
@@ -168,11 +287,6 @@ func test_every_cart_change_rechecks_the_shelf() -> void:
 		"tap, hold-to-return, Back and Beli all move the cart, so one refresh covers them")
 
 
-func test_a_second_tap_cannot_add_a_second_unit() -> void:
-	var body := _body(FileAccess.get_file_as_string(RAK_PATH), "func _on_barang_pressed(")
-	assert_true(body.contains("is_on_sale("), "the tap handler refuses an item not on sale")
-
-
 func test_beli_marks_the_basket_sold_before_emptying_it() -> void:
 	var body := _body(FileAccess.get_file_as_string(KOPERASI_PATH), "func _on_beli_pressed()")
 	var mark := body.find("GameState.mark_shop_sold(")
@@ -181,9 +295,10 @@ func test_beli_marks_the_basket_sold_before_emptying_it() -> void:
 		"before the cart empties, so the shelf never flickers them back")
 
 
-func test_opening_the_shelf_restocks_it_for_the_week() -> void:
+func test_arriving_restocks_the_shelf_for_the_week() -> void:
+	var rak := _body(FileAccess.get_file_as_string(RAK_PATH), "func _ready()")
+	assert_true(rak.contains("setup_shelf()"), "the Stage restocks itself on arrival")
 	var src := FileAccess.get_file_as_string(KOPERASI_PATH)
-	assert_true(src.contains("setup_shelf()"), "the Rak1 button restocks via setup_shelf()")
 	assert_false(src.contains("setup_random_items"), "not the old reshuffle")
 	assert_true(src.contains("GameState.is_shop_sold_out()"), "an empty shelf explains itself")
 

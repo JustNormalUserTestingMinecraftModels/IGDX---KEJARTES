@@ -688,11 +688,12 @@ func _transition_page(old_index: int, new_index: int, direction: int):
 		tween_in.tween_property(stamp, "rotation_degrees", 0, 0.35)
 		tween_in.tween_property(stamp, "modulate:a", 1.0, 0.35)
 
-	if belajar_button.visible:
-		belajar_button.position = belajar_orig_pos - Vector2(throw_distance, 0)
-		belajar_button.modulate.a = 0.0
-		tween_in.tween_property(belajar_button, "position", belajar_orig_pos, 0.35)
-		tween_in.tween_property(belajar_button, "modulate:a", 1.0, 0.35)
+	# BELAJAR is not slid in here. _update_nav_buttons above has already
+	# called _shift_approve_for_belajar, which parks it off-screen right and
+	# tweens it to the spot beside Aprove/Batal. Tweening it to
+	# belajar_orig_pos as well undid that: the position was captured before
+	# the page changed, so on the swipe that first reveals the button it is
+	# the authored rest rect, 74px below a 1080x1920 screen.
 
 	await tween_in.finished
 
@@ -808,7 +809,14 @@ func _shift_approve_for_belajar(index: int):
 
 	var is_locked = (approve_btn and not approve_btn.visible) and (batal_btn and not batal_btn.visible)
 	var shifted_x = orig_pos.x
-	var kertas_pos = active_kertas.position
+	# The card's SETTLED position, not its live one. _transition_page parks the
+	# incoming card a full screen-width off to the side and only tweens it home
+	# afterwards, but it calls _update_nav_buttons -- and so this -- while the
+	# card is still parked. A target computed from the live position put
+	# BELAJAR at x 1640 on a 1080x2400 phone, a screen-width right of Batal.
+	# The meta is the same settled value _transition_page tweens the card to.
+	var kertas_pos = active_kertas.get_meta("original_position") \
+		if active_kertas.has_meta("original_position") else active_kertas.position
 	var belajar_target = Vector2.ZERO
 
 	if is_locked:

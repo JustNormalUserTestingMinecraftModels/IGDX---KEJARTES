@@ -224,16 +224,17 @@ func test_stat_pills_are_not_inside_the_splash_button() -> void:
 
 
 ## The mockup's top band: blurred classroom from y=0 to the shelf at 766,
-## then the wooden divider to 843, then the untouched whiteboard.
+## then the wooden divider to 843, then the board.
 ##
 ## 2026-09-01, hand-tuned: the splash art's box grew tall enough to spill
 ## over the sticky-note row beneath the shelf. Rather than re-clip the
-## TextureButton, the z-order puts BGHari (whiteboard) IN FRONT of the
-## splash -- whiteboard.png is transparent above y~766 (letting the splash
-## show through there) and opaque below it, so the whiteboard's own alpha
-## channel masks off whatever the splash draws past the shelf line. Order
-## is therefore Backdrop -> splash -> whiteboard -> shelf, not the
-## whiteboard-first order the original mockup-match pass used.
+## TextureButton, the z-order puts BGHari (the board) IN FRONT of the
+## splash -- papantulis.png is transparent above its own row 273, which the
+## board's 493px offset puts at screen 766 (letting the splash show through
+## there), and opaque below it, so the board's own alpha channel masks off
+## whatever the splash draws past the shelf line. Order is therefore
+## Backdrop -> splash -> BoardFill -> board -> shelf, not the board-first
+## order the original mockup-match pass used.
 func test_top_band_matches_the_mockup() -> void:
 	var backdrop := _screen.get_node_or_null("Backdrop") as TextureRect
 	assert_true(backdrop != null, "Backdrop TextureRect is missing")
@@ -287,22 +288,76 @@ func test_splash_is_sized_to_the_mockup_window() -> void:
 		"splash bottom")
 
 
-## The whiteboard art itself is still out of scope for the restyle and must
-## survive untouched. The five sticky notes were polished on 2026-09-01
-## (docs/superpowers/plans/2026-09-01-atur-jadwal-sticky-note-polish.md):
-## each is now a DayStickyNote whose Paper still draws stickynotes.png.
-func test_the_whiteboard_is_unchanged_and_notes_are_stickynotes() -> void:
+## The board is papantulis.png, drawn 1:1 as a fixed 1080x1920 picture unit
+## pinned 493px down -- 766 minus the art's own shelf row 273 -- so the art's
+## baked shelf lands exactly on the ShelfFace/ShelfEdge ColorRects at 766-843
+## and cannot drift on a taller viewport. Its board face then reaches y 2413,
+## which covers a 20:9 phone's 2400 with room to spare. Any scale other than
+## 1:1 slides the baked shelf bands out from under the ColorRects.
+func test_the_board_is_papantulis_pinned_so_its_shelf_cannot_move() -> void:
 	var board := _screen.get_node_or_null("BGHari") as TextureRect
 	assert_true(board != null, "BGHari is gone")
-	assert_eq(board.texture.resource_path, "res://Assets/Images/UI/whiteboard.png",
-		"the whiteboard texture changed")
-	for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
+	assert_eq(board.texture.resource_path, "res://Assets/Images/UI/papantulis.png",
+		"the board must draw papantulis.png")
+	assert_eq(Vector4(board.anchor_left, board.anchor_top,
+		board.anchor_right, board.anchor_bottom), Vector4.ZERO,
+		"the board is a fixed picture unit, not a stretching full-rect node")
+	assert_eq(Vector4(board.offset_left, board.offset_top,
+		board.offset_right, board.offset_bottom),
+		Vector4(0, 493, 1080, 2413),
+		"the board keeps its 1080x1920 art 1:1, with its shelf row on 766")
+
+
+## The five notes are children of the board, so they ride it as one piece.
+## Their offsets are in the board's local space, which now starts 493px down
+## the screen, so each sits 493 above where it used to -- and lands on the
+## same screen pixel as before. They were polished on 2026-09-01
+## (docs/superpowers/plans/2026-09-01-atur-jadwal-sticky-note-polish.md):
+## each is a DayStickyNote whose Paper still draws stickynotes.png.
+func test_the_sticky_notes_ride_the_board_at_their_old_screen_rows() -> void:
+	var want := {
+		"Senin": Vector2(507, 774), "Selasa": Vector2(713, 980),
+		"Rabu": Vector2(524, 791), "Kamis": Vector2(921, 1188),
+		"Jumat": Vector2(933, 1200),
+	}
+	for day in want:
 		var note := _screen.get_node_or_null("BGHari/%s" % day) as DayStickyNote
 		assert_true(note != null, "sticky note %s is gone or was reparented" % day)
+		if note == null:
+			continue
+		assert_eq(Vector2(note.offset_top, note.offset_bottom), want[day],
+			"%s must keep its screen row" % day)
 		var paper := note.get_node_or_null("Paper") as TextureButton
 		assert_true(paper != null and paper.texture_normal != null
 			and paper.texture_normal.resource_path == "res://Assets/Images/UI/stickynotes.png",
 			"%s Paper must still draw stickynotes.png" % day)
+
+
+## Below 2413 the art runs out. BoardFill continues it in the art's own
+## bottom-centre tone for any screen taller than that -- a 21:9 phone gets
+## 2520 -- and is invisible at every height up to it, because the opaque
+## board draws over it. It sits above the splash and below the board, so the
+## z-order the top band depends on is unchanged.
+func test_board_fill_continues_the_board_past_the_art() -> void:
+	var fill := _screen.get_node_or_null("BoardFill") as ColorRect
+	assert_true(fill != null, "BoardFill is missing")
+	if fill == null:
+		return
+	assert_eq(Vector4(fill.anchor_left, fill.anchor_top,
+		fill.anchor_right, fill.anchor_bottom), Vector4(0, 0, 1, 1),
+		"BoardFill follows the screen's bottom edge")
+	assert_eq(Vector4(fill.offset_left, fill.offset_top,
+		fill.offset_right, fill.offset_bottom), Vector4(0, 843, 0, 0),
+		"BoardFill starts under the shelf and runs to the bottom")
+	assert_eq(fill.color, Color(0.8784314, 0.8784314, 0.8784314, 1.0),
+		"BoardFill matches the art's bottom-centre tone")
+	assert_eq(fill.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"BoardFill is art: no clicks")
+	var splash := _screen.get_node_or_null("TextureButton")
+	var board := _screen.get_node_or_null("BGHari")
+	assert_true(splash.get_index() < fill.get_index()
+		and fill.get_index() < board.get_index(),
+		"BoardFill draws over the splash and under the board")
 
 
 ## Uniform 126px pitch from y=129. The mockup's own pitch drifts (129,

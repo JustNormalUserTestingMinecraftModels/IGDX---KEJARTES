@@ -159,7 +159,7 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 	assert_eq(_anchors(bar), Vector4(0, 1, 1, 1), "BottomBar is Bottom Wide")
 	assert_eq(bar.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BottomBar lets clicks through")
 	for n in ["Student", "Jadwal", "Koperasi", "Inventory", "ReportStudent",
-			"DisplayUang", "ShortenButton", "DailyLogin"]:
+			"DisplayUang", "SettingsButton", "DailyLogin"]:
 		var c := lobby.get_node_or_null("%" + n) as Control
 		assert_true(c != null, n + " must be a unique name")
 		if c != null:
@@ -201,77 +201,65 @@ func test_lobby_at_the_design_size_is_unchanged() -> void:
 const KOPERASI := "res://Scenes/Koperasi/koprasi.tscn"
 
 
-## The room picture behind both views fills the screen and covers.
-func test_koperasi_room_fills() -> void:
-	_assert_background_fills(_scene(KOPERASI).get_node_or_null("TextureRect") as TextureRect,
-		"Koperasi room picture (TextureRect)")
+## A flat wall strip fills the screen and covers; it only shows above the
+## counter on a phone taller than 9:16.
+func test_koperasi_wall_fills() -> void:
+	_assert_background_fills(_scene(KOPERASI).get_node_or_null("WallFill") as TextureRect,
+		"Koperasi wall strip (WallFill)")
 
 
-## The shelf view -- shelf picture, items, back button and basket tray -- is
-## one piece pinned to the bottom edge, so the tray still ends flush with it.
-func test_koperasi_shelf_view_is_one_piece_pinned_bottom() -> void:
-	var shelf := _scene(KOPERASI).get_node_or_null("Rak1") as Control
-	assert_true(shelf != null, "missing the Rak1 shelf view")
-	if shelf == null:
+## The counter -- art layers, six items, bubble, back button and tray -- is
+## one 1080x1920 piece pinned to the bottom edge, so the tray still ends
+## flush with it.
+func test_koperasi_stage_is_one_piece_pinned_bottom() -> void:
+	var stage := _scene(KOPERASI).get_node_or_null("Stage") as Control
+	assert_true(stage != null, "missing the Stage")
+	if stage == null:
 		return
-	assert_eq(_anchors(shelf), Vector4(0, 1, 0, 1), "Rak1 pins to the bottom edge")
-	assert_eq(_offsets(shelf), Vector4(0, -1803, 1080, -92), "Rak1 keeps its 1080x1711 rect")
-	for n in ["BackButton", "Barang1", "Barang2", "Barang3", "Barang4", "BasketTray"]:
-		assert_true(shelf.get_node_or_null(n) != null, n + " moves with the shelf")
+	assert_eq(_anchors(stage), Vector4(0, 1, 0, 1), "Stage pins to the bottom edge")
+	assert_eq(_offsets(stage), Vector4(0, -1920, 1080, 0), "and keeps its 1080x1920 rect")
+	for n in ["Background", "Barang1", "Barang6", "Herman", "Foreground", "ChatBubble",
+			"BackButton", "TrayDock/BasketTray"]:
+		assert_true(stage.get_node_or_null(n) != null, n + " moves with the stage")
 
 
-## The landing's "KEBUTUHAN SEKOLAH" sign pins to the bottom edge, which keeps
-## it on the counter's glass front from 9:16 to 9:21.
-func test_koperasi_landing_sign_pins_bottom() -> void:
-	# Not `sign`: that name shadows the built-in sign() and warns.
-	var shelf_sign := _scene(KOPERASI).get_node_or_null("TextureRect/Rak1") as Control
-	assert_true(shelf_sign != null, "missing the landing sign TextureRect/Rak1")
-	if shelf_sign == null:
-		return
-	assert_eq(_anchors(shelf_sign), Vector4(0, 1, 0, 1), "the sign pins to the bottom edge")
-	assert_eq(_offsets(shelf_sign), Vector4(303, -519, 745, -423), "and keeps its 1080x1920 rect")
-
-
-## The coin readout sits in the safe area, top-left; Safe lets taps through
-## to the shelf underneath.
-func test_koperasi_coin_hud_sits_in_the_safe_area() -> void:
+## The coin readout stands on the counter ledge, so it is part of the Stage
+## picture like the back button -- not bottom-anchored in Safe, whose bottom
+## inset (768 px in a windowed editor run, a gesture bar on a phone) would
+## lift it off the ledge. Nothing over the shelf eats a tap.
+func test_koperasi_coin_hud_rides_the_stage() -> void:
 	var shop := _scene(KOPERASI)
 	var hud := shop.get_node_or_null("%CoinHUD") as Control
-	_assert_under_safe_area(hud, "CoinHUD")
-	if hud == null:
-		return
-	assert_eq(_anchors(hud), Vector4.ZERO, "CoinHUD pins top-left")
-	for p in ["Safe", "Safe/UI"]:
+	assert_true(hud != null and hud.get_parent() == shop.get_node_or_null("Stage"),
+		"CoinHUD is a child of the Stage")
+	for p in ["Safe", "Safe/UI", "WallFill", "Stage", "Stage/TrayDock"]:
 		var c := shop.get_node_or_null(p) as Control
 		assert_true(c != null and c.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 			p + " must let taps through to the shelf")
 
 
-## On a 1080x2400 phone the tray reaches the bottom edge, the shelf rides it,
-## and the coins stay at the top.
+## On a 1080x2400 phone the counter rides the bottom edge and the coins ride
+## with it.
 func test_koperasi_on_a_tall_phone() -> void:
 	var shop := _stood_up(KOPERASI, TALL)
-	_assert_placed((shop.get_node("TextureRect") as Control),
-		Rect2(0, 0, 1080, 2400), "room picture")
-	_assert_placed((shop.get_node("Rak1") as Control),
-		Rect2(0, 597, 1080, 1711), "shelf view")
-	_assert_placed((shop.get_node("Rak1/BasketTray/Body") as Control),
+	_assert_placed((shop.get_node("WallFill") as Control), Rect2(0, 0, 1080, 2400), "wall strip")
+	_assert_placed((shop.get_node("Stage") as Control), Rect2(0, 480, 1080, 1920), "stage")
+	_assert_placed((shop.get_node("Stage/TrayDock/BasketTray/Body") as Control),
 		Rect2(24, 1840, 1032, 560), "basket tray")
-	assert_eq(_authored_rect(shop.get_node("TextureRect/Rak1") as Control).position,
-		Vector2(303, 1881), "the sign stays on the counter")
 	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
-		Vector2(20, 20), "the coins stay top-left")
+		Vector2(732, 1710), "the coins stay on the counter ledge")
 
 
-## At 1080x1920 the Koperasi is where it was.
-func test_koperasi_at_the_design_size_is_unchanged() -> void:
+## At 1080x1920 the tray and back button are where they were.
+func test_koperasi_at_the_design_size() -> void:
 	var shop := _stood_up(KOPERASI, DESIGN)
-	_assert_placed((shop.get_node("Rak1") as Control),
-		Rect2(0, 117, 1080, 1711), "shelf view")
-	assert_eq(_authored_rect(shop.get_node("TextureRect/Rak1") as Control).position,
-		Vector2(303, 1401), "landing sign")
+	_assert_placed((shop.get_node("Stage") as Control), Rect2(0, 0, 1080, 1920), "stage")
+	_assert_placed((shop.get_node("Stage/TrayDock/BasketTray/Body") as Control),
+		Rect2(24, 1360, 1032, 560), "basket tray, unchanged")
+	_assert_placed((shop.get_node("Stage/BackButton") as Control),
+		Rect2(24, 1157, 185, 185), "back button, unchanged")
 	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
-		Vector2(20, 20), "coins")
+		Vector2(732, 1230), "coins on the ledge")
 
 
 # ── StudentCard ──────────────────────────────────────────────────────────────
@@ -355,6 +343,29 @@ func test_student_card_at_the_design_size_is_unchanged() -> void:
 		Vector2(160, 44), "PilihMurid")
 
 
+## BELAJAR belongs to the paper, not to the screen. Phase 1 pushed every
+## child's offsets by the root's old (70, 254) inset and left this one in
+## position mode, which put its rest position at y 1994 -- 74px below a
+## 1080x1920 screen. Center-anchored like StampApprove, it is back at its
+## authored 1740 and rides the paper's 240px drop on a tall phone.
+func test_student_card_belajar_button_rides_the_paper() -> void:
+	var card := _scene(STUDENT_CARD)
+	var belajar := card.get_node_or_null("BelajarButton") as Control
+	assert_true(belajar != null, "missing BelajarButton")
+	if belajar == null:
+		return
+	assert_eq(_anchors(belajar), Vector4(0.5, 0.5, 0.5, 0.5),
+		"BelajarButton rides with the paper")
+	assert_eq(_offsets(belajar), Vector4(-142, 780, 348, 940),
+		"BelajarButton keeps its 398,1740-888,1900 rect")
+	var design := _stood_up(STUDENT_CARD, DESIGN)
+	_assert_placed((design.get_node("BelajarButton") as Control),
+		Rect2(398, 1740, 490, 160), "BelajarButton at the design size")
+	var tall := _stood_up(STUDENT_CARD, TALL)
+	_assert_placed((tall.get_node("BelajarButton") as Control),
+		Rect2(398, 1980, 490, 160), "BelajarButton on a tall phone")
+
+
 # ── StudentList ──────────────────────────────────────────────────────────────
 
 const STUDENT_LIST := "res://Scenes/StudentList/student_list.tscn"
@@ -420,6 +431,87 @@ func test_student_list_at_the_design_size_is_unchanged() -> void:
 	assert_eq(_authored_rect(list.get_node("%PageIndicator") as Control).position,
 		Vector2(400, 1794), "PageIndicator")
 
+
+# ── Rapor ────────────────────────────────────────────────────────────────────
+
+const REPORT_CARD := "res://Scenes/ReportCard/report_card.tscn"
+
+
+## Rapor was StudentCard before the tall-phone pass: a root inset by
+## 70/254/-77/-352 with every child carrying a negative offset that cancels
+## it. The inset is gone and the desk fills, which is what closes the 480px
+## of empty grey a 1080x2400 phone used to show below it.
+func test_report_card_backdrop_fills() -> void:
+	var rapor := _scene(REPORT_CARD)
+	assert_eq(_offsets(rapor), Vector4.ZERO, "the Rapor root is not inset")
+	_assert_background_fills(rapor.get_node_or_null("Backdrop") as TextureRect,
+		"Rapor Backdrop")
+
+
+## Each paper sheet is Center-anchored at its 1080x1920 rect, as
+## StudentCard's are, so the stack sits centred on any screen.
+func test_report_card_papers_are_centred() -> void:
+	var rapor := _scene(REPORT_CARD)
+	for i in range(1, 7):
+		var sheet := rapor.get_node_or_null("KertasMurid%d" % i) as Control
+		assert_true(sheet != null, "missing KertasMurid%d" % i)
+		if sheet == null:
+			continue
+		assert_eq(_anchors(sheet), Vector4(0.5, 0.5, 0.5, 0.5),
+			"KertasMurid%d is Center-anchored" % i)
+		assert_eq(_offsets(sheet), Vector4(-540, -960, 540, 960),
+			"KertasMurid%d stays 1080x1920" % i)
+
+
+## Title and KEMBALI on the top edge, page arrows and page label in a Bottom
+## Wide bar, all inside the safe area -- the same group StudentCard carries.
+func test_report_card_ui_is_pinned_inside_the_safe_area() -> void:
+	var rapor := _scene(REPORT_CARD)
+	_assert_under_safe_area(rapor.get_node_or_null("%PilihMurid"), "PilihMurid")
+	_assert_under_safe_area(rapor.get_node_or_null("%BackButton"), "BackButton")
+	var bar := rapor.get_node_or_null("Safe/UI/BottomBar") as Control
+	assert_true(bar != null, "Rapor needs Safe/UI/BottomBar")
+	if bar == null:
+		return
+	assert_eq(_anchors(bar), Vector4(0, 1, 1, 1), "BottomBar is Bottom Wide")
+	assert_eq(bar.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BottomBar lets taps through")
+	for n in ["NextButtonKiri", "NextButtonKanan", "PageLabel"]:
+		var c := rapor.get_node_or_null("%" + n)
+		assert_true(c != null and c.get_parent() == bar, n + " rides in BottomBar")
+
+
+## On a 1080x2400 phone the paper sits 240px down, centred, and the page row
+## rides the bottom edge instead of stopping at 1920.
+func test_report_card_on_a_tall_phone() -> void:
+	var rapor := _stood_up(REPORT_CARD, TALL)
+	_assert_placed((rapor.get_node("Backdrop") as Control),
+		Rect2(0, 0, 1080, 2400), "Backdrop")
+	_assert_placed((rapor.get_node("KertasMurid1") as Control),
+		Rect2(0, 240, 1080, 1920), "KertasMurid1")
+	_assert_placed((rapor.get_node("%NextButtonKanan") as Control),
+		Rect2(870, 2260, 120, 120), "NextButtonKanan")
+	assert_eq(_authored_rect(rapor.get_node("%PilihMurid") as Control).position,
+		Vector2(160, 82), "the title stays at the top")
+
+
+## At 1080x1920 every piece of Rapor is exactly where it was.
+func test_report_card_at_the_design_size_is_unchanged() -> void:
+	var rapor := _stood_up(REPORT_CARD, DESIGN)
+	_assert_placed((rapor.get_node("KertasMurid1") as Control),
+		Rect2(0, 0, 1080, 1920), "KertasMurid1")
+	_assert_placed((rapor.get_node("%NextButtonKiri") as Control),
+		Rect2(90, 1780, 120, 120), "NextButtonKiri")
+	_assert_placed((rapor.get_node("%NextButtonKanan") as Control),
+		Rect2(870, 1780, 120, 120), "NextButtonKanan")
+	assert_eq(_authored_rect(rapor.get_node("%PageLabel") as Control).position,
+		Vector2(440, 1805), "PageLabel")
+	assert_eq(_authored_rect(rapor.get_node("%PilihMurid") as Control).position,
+		Vector2(160, 82), "PilihMurid")
+	assert_eq(_authored_rect(rapor.get_node("%BackButton") as Control).position,
+		Vector2(90, 82), "BackButton")
+
+
+# ── Cross-screen ─────────────────────────────────────────────────────────────
 
 ## A unique-name path used as a format string ("%RosterStrip/Avatar%d" % i)
 ## reads its leading "%R" as a format character and fails at run time, which

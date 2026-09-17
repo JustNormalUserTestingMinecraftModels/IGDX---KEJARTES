@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://cbc4ofmd2bktf"]
 
 [ext_resource type="Script" uid="uid://cbxv7sbybkdh2" path="res://Scripts/AturJadwal/atur_jadwal.gd" id="1_atur"]
-[ext_resource type="Texture2D" uid="uid://bmxugmsumo04o" path="res://Assets/Images/UI/whiteboard.png" id="2_0xkhc"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_shader"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="4_f4ced"]
+[ext_resource type="Texture2D" uid="uid://bpayde6glp1hm" path="res://Assets/Images/UI/papantulis.png" id="4_ulthj"]
 [ext_resource type="Texture2D" uid="uid://bvc6vlo87qpl0" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
 [ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
 [ext_resource type="Texture2D" uid="uid://cixngx8hgvgmn" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
@@ -56,55 +56,63 @@ texture_normal = ExtResource("5_f4ced")
 ignore_texture_size = true
 stretch_mode = 0
 
+[node name="BoardFill" type="ColorRect" parent="." unique_id=134762357]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 843.0
+mouse_filter = 2
+color = Color(0.8784314, 0.8784314, 0.8784314, 1)
+
 [node name="BGHari" type="TextureRect" parent="." unique_id=2055391558]
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 1.039
-anchor_bottom = 0.99500006
-offset_right = -42.119995
-offset_bottom = 9.5998535
+offset_top = 493.0
+offset_right = 1080.0
+offset_bottom = 2413.0
 mouse_filter = 2
-texture = ExtResource("2_0xkhc")
+texture = ExtResource("4_ulthj")
 expand_mode = 1
 
 [node name="Senin" parent="BGHari" unique_id=2030438336 instance=ExtResource("5_ulthj")]
 layout_mode = 0
 offset_left = 50.0
-offset_top = 1000.0
+offset_top = 507.0
 offset_right = 321.41193
-offset_bottom = 1267.0
+offset_bottom = 774.0
 pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Selasa" parent="BGHari" unique_id=1474646409 instance=ExtResource("5_ulthj")]
 layout_mode = 0
 offset_left = 396.0
-offset_top = 1206.0
+offset_top = 713.0
 offset_right = 667.4119
-offset_bottom = 1473.0
+offset_bottom = 980.0
 pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Rabu" parent="BGHari" unique_id=369629270 instance=ExtResource("5_ulthj")]
 layout_mode = 0
 offset_left = 710.0
-offset_top = 1017.0
+offset_top = 524.0
 offset_right = 981.41187
-offset_bottom = 1284.0
+offset_bottom = 791.0
 pivot_offset = Vector2(135.70593, 133.5)
 
 [node name="Kamis" parent="BGHari" unique_id=684348886 instance=ExtResource("5_ulthj")]
 layout_mode = 0
 offset_left = 55.0
-offset_top = 1414.0
+offset_top = 921.0
 offset_right = 326.41193
-offset_bottom = 1681.0
+offset_bottom = 1188.0
 pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Jumat" parent="BGHari" unique_id=152305377 instance=ExtResource("5_ulthj")]
 layout_mode = 0
 offset_left = 731.0
-offset_top = 1426.0
+offset_top = 933.0
 offset_right = 1002.41187
-offset_bottom = 1693.0
+offset_bottom = 1200.0
 pivot_offset = Vector2(135.70593, 133.5)
 
 [node name="ShelfFace" type="ColorRect" parent="." unique_id=540110925]

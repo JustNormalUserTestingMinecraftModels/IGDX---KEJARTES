@@ -258,6 +258,7 @@ func _apply_progression() -> String:
 			GameState.returned_from_student_card = false
 			return "res://Scenes/StudentCard/student_card.tscn"
 
+	Achievements.record_grade_passed(GameState.current_grade)
 	if GameState.current_grade < 9:
 		GameState.current_grade += 1
 		GameState.reset_roster_for_new_grade()

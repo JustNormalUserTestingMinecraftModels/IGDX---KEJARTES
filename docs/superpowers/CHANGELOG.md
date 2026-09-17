@@ -8,6 +8,104 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-17 — Achievement claim celebration, Lobby Settings
+
+Plan `docs/superpowers/plans/2026-09-17-achievement-claim-celebration.md`, spec
+`docs/superpowers/specs/2026-09-17-achievement-claim-celebration-design.md`.
+
+- **Klaim** opens `AchievementClaimPopup`: the screen blurs (shared shop-hub
+  blur), "SELAMAT, ANDA MENDAPATKAN", the icon large over
+  `achievement_glow.gdshader` (additive, counter-rotating flickering rays and
+  a pulsing core), the title, paper confetti, and tap-anywhere to close.
+- Every achievement icon wears `icon_outline_material.tres`, a shader that
+  shrinks the art and rings its alpha in white.
+- Debug: `Achievements.RESET_ON_LAUNCH` wipes progress on every launch.
+- The Lobby's Shorten button and `ShortenPanel` are gone. A Settings gear
+  (`setting.png`) opens the existing Settings screen, which gained a "Lewati
+  Dialog Minigame" toggle and returns to wherever it was opened from.
+
+## 2026-09-17 — Koperasi revamp: Pak Herman's counter
+
+Plan `docs/superpowers/plans/2026-09-17-koperasi-shop-revamp.md`, spec
+`docs/superpowers/specs/2026-09-17-koperasi-shop-revamp-design.md`.
+
+Koperasi opens on a three-layer counter (background, Pak Herman, glass case)
+pinned to the bottom edge, with a flat wall strip above on tall phones. Six
+shelf slots sit on the mockup's circles. The weekly roll draws from a bag of
+every item twice, so pairs turn up (~71% of weeks) and each copy sells once.
+`rakbarang_1.gd` tracks which slot emptied (`reconcile_taken`), leaving `Cart`
+and the basket tray unchanged. A placeholder speech bubble uses the new
+`ShopChatBubble` variation. The coin HUD moved onto the counter ledge inside
+the Stage, because a bottom-anchored HUD in `Safe` rode the editor run's
+768 px safe-area inset onto Herman's forehead. The "KEBUTUHAN SEKOLAH"
+landing and its pop-up are gone.
+
+## 2026-09-17 — Achievements
+
+Plan `docs/superpowers/plans/2026-09-17-achievements.md`, spec
+`docs/superpowers/specs/2026-09-17-achievements-design.md`.
+
+- 26 achievements from the design PDF (`AchievementCatalog.gd`), tracked by the
+  `Achievements` autoload and saved to `user://achievements.cfg`, the one save
+  added on the user's request. The renames the user asked for are applied.
+- Reported from SchoolDay (real plays only: stars and time left now kept on
+  `BaseMinigame`), RunResult (grade passed) and `GameState.money_changed`.
+- Klaim turns a prize on: minigame stat +5%, Wirausaha +5% twice, shop -10%
+  (`Cart.price_of`) and minigame time +5%.
+- Lobby trophy button, the `achievements.tscn` screen (row template
+  `AchievementRow.tscn`) and the `AchievementToast` unlock banner autoload.
+  Ribbon and back arrow are cut from `Achievement mockup.psd`; the claimed
+  card is a baked 9-slice. Drive icon file names were wrong for the
+  play-all, three-star and speed sets, so they were matched by colour against
+  the artist's board.
+
+## 2026-09-16 — Papan tulis, Rapor's fill and the Belajar button
+
+Plan `docs/superpowers/plans/2026-09-16-papantulis-rapor-belajar.md`, spec
+`docs/superpowers/specs/2026-09-16-papantulis-rapor-belajar-design.md`. Phase 2
+of the 2026-09-15 tall-phone pass, for the two screens the user asked for.
+
+- **AturJadwal's board** is `papantulis.png`, the same art as `whiteboard.png`
+  with its shelf 493 px higher in the frame, so 1570 px of board hangs below it
+  instead of 1077. `BGHari` stops being a full-rect node that stretched 1.25×
+  on a 20:9 phone (sliding the baked shelf from y 766 to 957, doubling the
+  `ShelfFace`/`ShelfEdge` `ColorRect`s) and becomes a fixed 1080×1920 picture
+  unit at offsets `(0, 493, 1080, 2413)`. 493 = 766 − 273 puts the art's baked
+  shelf exactly on the `ColorRect`s, and the 1:1 draw is what keeps them
+  coincident — any scale slides the bands out and thickens the dark edge. The
+  five sticky notes lost 493 from their offsets and ride the board as one
+  piece. A new `BoardFill` `ColorRect` (`#E0E0E0`, the art's bottom-centre
+  tone) runs from y 843 to the screen bottom behind the board, so a 21:9 phone
+  at 2520 is covered too. Verified in the running game at 1080×2400.
+  `whiteboard.png` is now unreferenced.
+- **Rapor** was StudentCard before the tall-phone pass: a root inset by
+  70/254/−77/−352 with every child carrying a negative offset that cancelled it
+  back out, so a 1080×2400 screen showed 480 px of empty grey below the desk.
+  The inset is gone, `Backdrop` is Full Rect and Keep Aspect Covered, the six
+  papers are Center-anchored at ±540/±960, and the page arrows and page label
+  moved into a `Safe`/`UI`/`BottomBar` group copied from StudentCard's. The
+  five moved nodes carry `unique_name_in_owner`, so `report_card.gd` reads
+  `%NextButtonKanan` and friends and no longer depends on where they sit.
+- **StudentCard's BELAJAR button** had two compounding faults. Phase 1 pushed
+  every child's offsets by the root's old (70, 254) inset and left this one in
+  position mode, putting its rest rect at y 1994 — 74 px below a 1080×1920
+  screen. It is now Center-anchored with the paper, like `StampApprove`.
+  `_transition_page` then tweened it to exactly that stale rect, undoing the
+  shift that had just placed it beside Aprove/Batal; that tween is gone, and
+  the reveal belongs to `_shift_approve_for_belajar` alone. Removing it exposed
+  a third fault underneath: `_transition_page` parks the incoming card a full
+  screen-width off to the side and calls `_update_nav_buttons` — and so the
+  shift — while it is still parked, so the target landed at x 1640 on a
+  1080×2400 phone. The shift now reads the card's `original_position` meta, the
+  same settled value `_transition_page` tweens it to.
+
+**Still open on these screens.** AturJadwal's wall backdrop, top band and
+`StartWeek` are the rest of Phase 2 and untouched, so a tall phone shows board
+below `StartWeek`. Rapor's `KEMBALI` button still covers its "Rapor Murid"
+title; both nodes kept their current screen rects here, because every fix for
+it is a judgement about the screen's composition rather than a consequence of
+this restructure. It stays filed in the Phase 1 spec's out-of-scope list.
+
 ## 2026-09-16 — Kalkulator for Variabel and Password
 
 Plan `docs/superpowers/plans/2026-09-16-kalkulator-akademis.md`, spec
@@ -174,6 +272,53 @@ Suite: 114 suites, 1632/1637. The five failures are `inventory` (2) and
 `light_ground_text` (3), pre-existing on `Textures` from PR #48's inventory
 redesign — they survive a clean editor restart and full rescan and are
 unrelated to this branch.
+## 2026-09-16 — `/gamecode`'s review gate moves from the design to the plan
+
+The Brief is gone. Brainstorm, branch, spec and plan now all run unattended,
+and the single pre-code gate is a **Plan Summary** (§4) — the user reviews a
+concrete plan instead of a design sketch, still before any code is written.
+"Ship it?" is unchanged.
+
+§4 is a contract, not a hint: 200 words or fewer, the user's language,
+repo-relative paths, one line per task, and a **required** `Paling perlu
+dilihat` line naming the single guess most likely to be wrong — usually an
+invented tuning number — with its cheaper alternative and what changing it
+costs now versus after the tests are written.
+
+The cap and the contract came out of testing. Three agents told only to "give
+a quick and clear summary" all stopped correctly, but wrote 400, 380 and 330
+words; one pasted absolute Windows paths, and the language drifted between
+English and Indonesian across reps. Against the written §4 the same three
+scenarios produced 167, 158 and 160 words, all Indonesian, all repo-relative,
+each with a real `Paling perlu dilihat`. The element worth keeping was one all
+three invented on their own: naming the number they had guessed.
+
+`/gamecode-instant` follows the gate. It is still "`/gamecode` minus the wait",
+so its Receipt collapsed into the same §4 message, sent and never awaited —
+the two files now differ by one pause.
+
+## 2026-09-16 — `/gamecode-instant`, the unattended variant of `/gamecode`
+
+`.claude/skills/gamecode-instant/SKILL.md`. Same pipeline as `/gamecode`, with
+the design gate removed: the Brief becomes a Receipt that is sent and never
+awaited, so brainstorm → spec → plan → build runs in one turn.
+
+It delegates to `/gamecode` rather than restating it, and overrides only the
+gates. Written against a baseline: three agents given the idea without the
+skill all correctly refused to wait for approval, but produced five different
+stop lists across three runs — `Balance.gd`, refactors, red suites, new
+persistence, pinned test baselines, a dirty tree, force-killing Godot. An
+unattended run would have parked on a different thing each time.
+
+So the skill's core is a **closed list of five stops** (ship, `Balance.gd`,
+new persistence, a pinned invariant, someone else's uncommitted work) beside a
+table of nine things that look like stops and are not. Re-run with the skill,
+all three reps converged on exactly that list and on the same worktree call.
+
+"Ship it?" survives, because pushing hands the branch to `ci/auto_merge.sh`
+unattended; `--ship` in the invocation is that permission given in advance.
+A harness permission prompt still pauses a run — an allowlist question, named
+in the skill so it is not re-litigated mid-run.
 
 ## 2026-09-15 — Tall phones, Phase 1: Lobby, Koperasi, StudentCard, StudentList
 

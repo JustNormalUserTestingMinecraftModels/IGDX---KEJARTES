@@ -1,41 +1,24 @@
 [gd_scene format=3 uid="uid://dgdiebg5vu00j"]
 
 [ext_resource type="Script" uid="uid://ioeh8qtnpgo5" path="res://Scripts/Koperasi/koprasi.gd" id="1_ap2qe"]
-[ext_resource type="Texture2D" uid="uid://bsa3lvahggq2b" path="res://Assets/Images/Shop/Illustration4.jpg" id="2_vylns"]
+[ext_resource type="Texture2D" uid="uid://c508i2o3te6ur" path="res://Assets/Images/Shop/Koperasi/shop_background.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://bc5b3cryjeq32" path="res://Assets/Images/Shop/Koperasi/shop_herman.png" id="3_herman"]
+[ext_resource type="Texture2D" uid="uid://dhivb8qhdvt0x" path="res://Assets/Images/Shop/Koperasi/shop_foreground.png" id="4_fg"]
 [ext_resource type="Texture2D" uid="uid://fuwhxl8ethbp" path="res://Assets/Images/Shop/return.png" id="5_46s2e"]
 [ext_resource type="Script" uid="uid://bgp5ht1pwg3s1" path="res://Scripts/Koperasi/rakbarang_1.gd" id="5_jfwhh"]
-[ext_resource type="Texture2D" uid="uid://1x5rfg1qq3la" path="res://Assets/Images/Shop/ItemRak/bank soal.png" id="5_tf5nh"]
-[ext_resource type="Texture2D" uid="uid://d37air8ke4qwn" path="res://Assets/Images/Shop/rak2.jpg" id="6_tf5nh"]
-[ext_resource type="Texture2D" uid="uid://cnvh1ppktmvnx" path="res://Assets/Images/Shop/ItemRak/LKS.png" id="7_jfwhh"]
-[ext_resource type="Texture2D" uid="uid://t6ana4kpuktm" path="res://Assets/Images/Shop/ItemRak/lompat tali.png" id="8_4x77x"]
+[ext_resource type="Texture2D" uid="uid://chs5y1k0f18x2" path="res://Assets/Images/Shop/UI/chat_bubble_tail.svg" id="6_tail"]
 [ext_resource type="Texture2D" uid="uid://ku8mk6u7pm31" path="res://Assets/Images/Shop/UI/item_glow.tres" id="8_st3ia"]
-[ext_resource type="Texture2D" uid="uid://3pb4r7jsijbc" path="res://Assets/Images/Shop/ItemRak/raket.png" id="9_uhev2"]
+[ext_resource type="PackedScene" uid="uid://dwgcebdsp5rjh" path="res://Scenes/Koperasi/PriceTag.tscn" id="9_tag"]
 [ext_resource type="PackedScene" uid="uid://0ais0usytajp" path="res://Scenes/Koperasi/BasketTray.tscn" id="11_rr7aj"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="13_pstwm"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_pstwm"]
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_tf5nh"]
-atlas = ExtResource("6_tf5nh")
-region = Rect2(0, 259.02414, 1080, 1660.9758)
+[sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
+atlas = ExtResource("2_bg")
+region = Rect2(0, 0, 1080, 160)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_hhv1e"]
-atlas = ExtResource("5_tf5nh")
-region = Rect2(86.29141, 42.939575, 1019.0138, 1425.621)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_unjo2"]
-atlas = ExtResource("7_jfwhh")
-region = Rect2(24.843414, 362.78232, 1196.902, 1083.5895)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_s1vid"]
-atlas = ExtResource("8_4x77x")
-region = Rect2(16.906647, 517.7832, 1130.2561, 649.15674)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_f61rs"]
-atlas = ExtResource("9_uhev2")
-region = Rect2(277.81873, 23.927307, 567.7704, 1601.428)
-
-[node name="Koprasi" type="Control" unique_id=1906875452]
+[node name="Koprasi" type="Control" unique_id=2082264977]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,239 +28,357 @@ grow_vertical = 2
 theme = ExtResource("kejartes_theme")
 script = ExtResource("1_ap2qe")
 
-[node name="TextureRect" type="TextureRect" parent="." unique_id=1902439476]
+[node name="WallFill" type="TextureRect" parent="." unique_id=946961831]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_vylns")
+mouse_filter = 2
+texture = SubResource("AtlasTexture_wall")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Rak1" type="Button" parent="TextureRect" unique_id=891978456]
+[node name="Stage" type="Control" parent="." unique_id=358025086]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 303.0
-offset_top = -519.0
-offset_right = 745.0
-offset_bottom = -423.0
-theme_type_variation = &"ShopShelfButton"
-theme_override_font_sizes/font_size = 40
-text = "KEBUTUHAN SEKOLAH"
-
-[node name="Rak1" type="TextureRect" parent="." unique_id=648768245]
-visible = false
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -1803.0
+offset_top = -1920.0
 offset_right = 1080.0
-offset_bottom = -92.0
-texture = SubResource("AtlasTexture_tf5nh")
+grow_vertical = 0
+mouse_filter = 2
 script = ExtResource("5_jfwhh")
 
-[node name="BackButton" type="TextureButton" parent="Rak1" unique_id=617180507]
+[node name="Background" type="TextureRect" parent="Stage" unique_id=1368498906]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+
+[node name="Barang1" type="TextureButton" parent="Stage" unique_id=2025160246]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 310.0
+offset_right = 216.0
+offset_bottom = 490.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang1" unique_id=1676951368]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang1" unique_id=392810126 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="Barang2" type="TextureButton" parent="Stage" unique_id=1035531758]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 310.0
+offset_right = 580.0
+offset_bottom = 490.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang2" unique_id=1390363136]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang2" unique_id=1933280770 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="Barang3" type="TextureButton" parent="Stage" unique_id=146454907]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 586.0
+offset_right = 216.0
+offset_bottom = 766.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang3" unique_id=1453679314]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang3" unique_id=592658879 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="Barang4" type="TextureButton" parent="Stage" unique_id=1939537762]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 586.0
+offset_right = 580.0
+offset_bottom = 766.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang4" unique_id=1676197223]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang4" unique_id=1403381806 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="Barang5" type="TextureButton" parent="Stage" unique_id=1855709326]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 854.0
+offset_right = 216.0
+offset_bottom = 1034.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang5" unique_id=1888714187]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang5" unique_id=1225937581 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="Barang6" type="TextureButton" parent="Stage" unique_id=1304589263]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 854.0
+offset_right = 580.0
+offset_bottom = 1034.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang6" unique_id=1649495211]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang6" unique_id=1612572044 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="Herman" type="TextureRect" parent="Stage" unique_id=2135616178]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_herman")
+expand_mode = 1
+
+[node name="Foreground" type="TextureRect" parent="Stage" unique_id=1358581353]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_fg")
+expand_mode = 1
+
+[node name="ChatBubble" type="Control" parent="Stage" unique_id=111727118]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 36.0
+offset_top = 23.0
+offset_right = 1046.0
+offset_bottom = 368.0
+mouse_filter = 2
+
+[node name="Body" type="PanelContainer" parent="Stage/ChatBubble" unique_id=1413313847]
+layout_mode = 1
+offset_right = 1010.0
+offset_bottom = 233.0
+mouse_filter = 2
+theme_type_variation = &"ShopChatBubble"
+
+[node name="Text" type="RichTextLabel" parent="Stage/ChatBubble/Body" unique_id=1055143642]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"EventDialogueText"
+text = "Selamat datang di Koperasi! Mau beli apa hari ini?"
+scroll_active = false
+vertical_alignment = 1
+
+[node name="Tail" type="TextureRect" parent="Stage/ChatBubble" unique_id=1574868225]
+layout_mode = 1
+offset_left = 751.0
+offset_top = 230.0
+offset_right = 816.0
+offset_bottom = 345.0
+mouse_filter = 2
+texture = ExtResource("6_tail")
+expand_mode = 1
+
+[node name="BackButton" type="TextureButton" parent="Stage" unique_id=903998956]
 layout_mode = 0
 offset_left = 24.0
-offset_top = 1040.0
+offset_top = 1157.0
 offset_right = 209.0
-offset_bottom = 1225.0
+offset_bottom = 1342.0
 texture_normal = ExtResource("5_46s2e")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="Barang1" type="TextureButton" parent="Rak1" unique_id=1130164186]
-layout_mode = 0
-offset_left = 117.0
-offset_top = 78.0
-offset_right = 367.0
-offset_bottom = 392.151
-texture_normal = SubResource("AtlasTexture_hhv1e")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="Glow" type="TextureRect" parent="Rak1/Barang1" unique_id=1881876776]
-modulate = Color(1, 1, 1, 0)
-show_behind_parent = true
+[node name="TrayDock" type="Control" parent="Stage" unique_id=1980279394]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -32.0
-offset_top = -32.0
-offset_right = 32.0
-offset_bottom = 32.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("8_st3ia")
-expand_mode = 1
-
-[node name="Button" type="Button" parent="Rak1/Barang1" unique_id=733754100]
-modulate = Color(0, 1, 0, 1)
-layout_mode = 0
-offset_left = 75.0
-offset_top = 320.0
-offset_right = 141.0
-offset_bottom = 375.0
-theme_override_font_sizes/font_size = 34
-text = "500"
-
-[node name="Barang2" type="TextureButton" parent="Rak1" unique_id=1198733625]
-layout_mode = 0
-offset_left = 628.0
-offset_top = 76.0
-offset_right = 933.0
-offset_bottom = 382.72803
-texture_normal = SubResource("AtlasTexture_unjo2")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="Glow" type="TextureRect" parent="Rak1/Barang2" unique_id=1603985744]
-modulate = Color(1, 1, 1, 0)
-show_behind_parent = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -32.0
-offset_top = -32.0
-offset_right = 32.0
-offset_bottom = 32.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("8_st3ia")
-expand_mode = 1
-
-[node name="Button2" type="Button" parent="Rak1/Barang2" unique_id=362247762]
-modulate = Color(0, 1, 0, 1)
-layout_mode = 0
-offset_left = 150.0
-offset_top = 325.0
-offset_right = 216.0
-offset_bottom = 380.0
-theme_override_font_sizes/font_size = 34
-text = "400"
-
-[node name="Barang3" type="TextureButton" parent="Rak1" unique_id=1077778766]
-layout_mode = 0
-offset_left = 650.0
-offset_top = 527.0
-offset_right = 968.3066
-offset_bottom = 807.9944
-texture_normal = SubResource("AtlasTexture_s1vid")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="Glow" type="TextureRect" parent="Rak1/Barang3" unique_id=578291136]
-modulate = Color(1, 1, 1, 0)
-show_behind_parent = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -32.0
-offset_top = -32.0
-offset_right = 32.0
-offset_bottom = 32.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("8_st3ia")
-expand_mode = 1
-
-[node name="Button3" type="Button" parent="Rak1/Barang3" unique_id=675803450]
-modulate = Color(0, 1, 0, 1)
-layout_mode = 0
-offset_left = 105.0
-offset_top = 342.0
-offset_right = 191.0
-offset_bottom = 397.0
-theme_override_font_sizes/font_size = 34
-text = "1200"
-
-[node name="Barang4" type="TextureButton" parent="Rak1" unique_id=1495600601]
-layout_mode = 0
-offset_left = 117.0
-offset_top = 527.0
-offset_right = 367.0
-offset_bottom = 808.0
-texture_normal = SubResource("AtlasTexture_f61rs")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="Glow" type="TextureRect" parent="Rak1/Barang4" unique_id=337609033]
-modulate = Color(1, 1, 1, 0)
-show_behind_parent = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -32.0
-offset_top = -32.0
-offset_right = 32.0
-offset_bottom = 32.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("8_st3ia")
-expand_mode = 1
-
-[node name="Button4" type="Button" parent="Rak1/Barang4" unique_id=580763565]
-modulate = Color(0, 1, 0, 1)
-layout_mode = 0
-offset_left = 78.0
-offset_top = 343.0
-offset_right = 164.0
-offset_bottom = 398.0
-theme_override_font_sizes/font_size = 34
-text = "1500"
-
-[node name="BasketTray" parent="Rak1" unique_id=1330054252 instance=ExtResource("11_rr7aj")]
-layout_mode = 0
-
-[node name="Safe" type="MarginContainer" parent="." unique_id=500980433]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("13_pstwm")
-
-[node name="UI" type="Control" parent="Safe" unique_id=851616937]
-layout_mode = 2
+anchors_preset = 0
+offset_top = 117.0
+offset_right = 1080.0
+offset_bottom = 1828.0
 mouse_filter = 2
 
-[node name="CoinHUD" type="HBoxContainer" parent="Safe/UI" unique_id=396070269]
+[node name="BasketTray" parent="Stage/TrayDock" unique_id=560263619 instance=ExtResource("11_rr7aj")]
+layout_mode = 0
+
+[node name="CoinHUD" type="HBoxContainer" parent="Stage" unique_id=152403238]
 unique_name_in_owner = true
 z_index = 10
 layout_mode = 0
-offset_left = -28.0
-offset_top = -28.0
-offset_right = -11.0
+offset_left = 732.0
+offset_top = 1230.0
+offset_right = 1032.0
+offset_bottom = 1290.0
 theme_override_constants/separation = 10
+alignment = 2
 
-[node name="CoinIcon" type="TextureRect" parent="Safe/UI/CoinHUD" unique_id=65902655]
+[node name="CoinIcon" type="TextureRect" parent="Stage/CoinHUD" unique_id=247332116]
 custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
 texture = ExtResource("14_pstwm")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CoinLabel" type="Label" parent="Safe/UI/CoinHUD" unique_id=797032672]
+[node name="CoinLabel" type="Label" parent="Stage/CoinHUD" unique_id=526578915]
 layout_mode = 2
 theme_type_variation = &"ShopCoinLabel"
 vertical_alignment = 1
 
-[node name="MessageLabel" type="Label" parent="." unique_id=754434092]
+[node name="Safe" type="MarginContainer" parent="." unique_id=259420622]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+script = ExtResource("13_pstwm")
+
+[node name="UI" type="Control" parent="Safe" unique_id=984193724]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MessageLabel" type="Label" parent="." unique_id=1813194977]
 z_index = 20
 layout_mode = 1
 anchors_preset = -1

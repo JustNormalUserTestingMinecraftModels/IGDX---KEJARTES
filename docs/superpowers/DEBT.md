@@ -243,6 +243,9 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
+  wipes achievement progress and claimed prizes. Turn it off before release.
+
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a
   stub). Masa Depan yang Indah's Level Selection was already unlocked by

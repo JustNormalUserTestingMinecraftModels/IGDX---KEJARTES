@@ -91,7 +91,7 @@ func test_no_global_player_stat_refs() -> void:
 ## Android alike (2026-09-15). The chevron is an SVG texture beside the word.
 func test_back_button_draws_its_chevron_as_an_svg_icon() -> void:
 	var s := (load(_SCENE) as PackedScene).instantiate()
-	var back := s.get_node("MainColumn/Header/Row/BackButton") as Button
+	var back := s.get_node("MainColumn/Header/HeaderCol/Row/BackButton") as Button
 	assert_not_null(back.icon, "the back chevron must be a texture on the button")
 	if back.icon != null:
 		assert_true(back.icon.resource_path.ends_with(".svg"),
@@ -104,7 +104,7 @@ func test_back_button_draws_its_chevron_as_an_svg_icon() -> void:
 ## resolves it, no character may draw as the font's quote mark.
 func test_back_button_text_draws_no_character_as_a_quote_mark() -> void:
 	var s := (load(_SCENE) as PackedScene).instantiate()
-	var back := s.get_node("MainColumn/Header/Row/BackButton") as Button
+	var back := s.get_node("MainColumn/Header/HeaderCol/Row/BackButton") as Button
 	var theme := ResourceLoader.load(_THEME, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	var variation := String(back.theme_type_variation)
 	var font := theme.get_font("font", variation)

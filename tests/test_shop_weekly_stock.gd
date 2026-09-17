@@ -155,12 +155,41 @@ func test_the_weekly_shelf_is_six_with_pairs_at_most() -> void:
 
 # ─── what sold
 
-func test_an_item_sells_once() -> void:
+func test_a_single_copy_sells_once() -> void:
+	GameState.shop_stock = ["Bank Soal", "Komik"]
 	GameState.mark_shop_sold("Bank Soal")
 	GameState.mark_shop_sold("Bank Soal")
 	assert_eq(GameState.shop_sold.count("Bank Soal"), 1, "marked once, however often Beli sees it")
 	assert_true(GameState.is_shop_sold("Bank Soal"), "and reads back as sold")
 	assert_false(GameState.is_shop_sold(FAKE_ITEM), "another item is not")
+
+
+func test_a_pair_sells_twice() -> void:
+	GameState.shop_stock = ["Bank Soal", "Komik", "Bank Soal"]
+	for _i in range(3):
+		GameState.mark_shop_sold("Bank Soal")
+	assert_eq(GameState.shop_sold.count("Bank Soal"), 2, "one sale per copy on the shelf, no more")
+
+
+func test_an_unstocked_item_still_sells_once() -> void:
+	GameState.mark_shop_sold("Bank Soal")
+	GameState.mark_shop_sold("Bank Soal")
+	assert_eq(GameState.shop_sold.count("Bank Soal"), 1, "an unrolled shelf counts as one copy")
+
+
+func test_a_pair_is_sold_out_only_once_both_sold() -> void:
+	GameState.shop_stock = ["Bank Soal", "Komik", "Bank Soal"]
+	GameState.mark_shop_sold("Bank Soal")
+	GameState.mark_shop_sold("Komik")
+	assert_false(GameState.is_shop_sold_out(), "the second Bank Soal is still on the shelf")
+	GameState.mark_shop_sold("Bank Soal")
+	assert_true(GameState.is_shop_sold_out(), "both copies gone")
+
+
+func test_beli_marks_every_unit() -> void:
+	var body := _body(FileAccess.get_file_as_string(KOPERASI_PATH), "func _on_beli_pressed()")
+	assert_true(body.contains("for _unit in range(quantity):"),
+		"a line of two marks two sales, so the pair's second slot stays empty")
 
 
 func test_the_shelf_is_sold_out_only_once_every_item_sold() -> void:

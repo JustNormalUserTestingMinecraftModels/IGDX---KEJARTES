@@ -141,7 +141,8 @@ func _on_beli_pressed():
 	for item_name in Cart.cart:
 		var quantity = Cart.cart[item_name]["quantity"]
 		GameState.add_to_inventory(item_name, quantity)
-		GameState.mark_shop_sold(item_name)
+		for _unit in range(quantity):
+			GameState.mark_shop_sold(item_name)
 
 	# Clear cart and visuals
 	Cart.clear()

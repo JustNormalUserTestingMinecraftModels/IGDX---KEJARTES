@@ -55,7 +55,8 @@ var shop_week_key: String = ""
 ## Item names on the Koperasi shelf this week, in slot order. An item can
 ## fill up to SHOP_MAX_COPIES slots.
 var shop_stock: Array[String] = []
-## Item names bought this week. Each shelf item sells once a week.
+## Item names bought this week, one entry per unit. An item sells once per
+## copy on the shelf.
 var shop_sold: Array[String] = []
 
 # Week tracking  
@@ -303,9 +304,10 @@ func shop_stock_for_week() -> Array[String]:
 	return shop_stock.duplicate()
 
 
-## Record that `item_name` was bought this week. Idempotent.
+## Record one unit of `item_name` bought this week. Capped at the copies on
+## the shelf (at least one, so an unstocked name still sells once).
 func mark_shop_sold(item_name: String) -> void:
-	if not shop_sold.has(item_name):
+	if shop_sold.count(item_name) < maxi(1, shop_stock.count(item_name)):
 		shop_sold.append(item_name)
 
 
@@ -314,13 +316,13 @@ func is_shop_sold(item_name: String) -> bool:
 	return shop_sold.has(item_name)
 
 
-## True once every item on this week's shelf has been bought. False before
+## True once every copy on this week's shelf has been bought. False before
 ## the shelf is first rolled.
 func is_shop_sold_out() -> bool:
 	if shop_stock.is_empty():
 		return false
 	for item_name in shop_stock:
-		if not shop_sold.has(item_name):
+		if shop_sold.count(item_name) < shop_stock.count(item_name):
 			return false
 	return true
 

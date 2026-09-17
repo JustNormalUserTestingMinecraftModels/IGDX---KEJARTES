@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="20_yhuud"]
 [ext_resource type="Texture2D" uid="uid://bed2fo2wc4bd7" path="res://Assets/Images/Achievements/achievement_button.png" id="28_ikpat"]
+[ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
@@ -864,14 +865,16 @@ text = "50"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="ShortenButton" type="Button" parent="Safe/UI/BottomBar" unique_id=575693895]
+[node name="SettingsButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=575693895]
 unique_name_in_owner = true
-layout_mode = 1
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
 offset_left = 120.0
-offset_right = 360.0
+offset_right = 216.0
 offset_bottom = 96.0
-theme_type_variation = &"SecondaryButton"
-text = "Shorten"
+texture_normal = ExtResource("29_gear")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="DailyLogin" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=1799090163]
 unique_name_in_owner = true
@@ -885,8 +888,8 @@ stretch_mode = 0
 [node name="AchievementButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=919427951]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 400.0
-offset_right = 496.0
+offset_left = 240.0
+offset_right = 336.0
 offset_bottom = 96.0
 texture_normal = ExtResource("28_ikpat")
 ignore_texture_size = true

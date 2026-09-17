@@ -165,7 +165,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 	for n in _NAV_BUTTONS:
 		paths.append("%" + n)
 	paths.append("DailyReward/ButtonClaim")
-	paths.append("%ShortenButton")
+	paths.append("%SettingsButton")
 	for p in paths:
 		var b := _lobby.get_node_or_null(p) as Control
 		assert_true(b != null, "missing control: " + p)

@@ -22,7 +22,12 @@ extends Control
 @onready var _bgm: HSlider = %BgmSlider
 @onready var _sfx: HSlider = %SfxSlider
 @onready var _tutorial: CheckButton = %TutorialToggle
+@onready var _skip_dialog: CheckButton = %SkipDialogToggle
 @onready var _back: Button = %BackButton
+
+## The screen Back returns to. MainMenu by default; the Lobby's Settings gear
+## sets it to the Lobby before opening this screen, and Back resets it.
+static var return_scene: String = "res://Scenes/MainMenu/main_menu.tscn"
 
 
 func _ready() -> void:
@@ -30,11 +35,13 @@ func _ready() -> void:
 	_bgm.value = AudioDirector.get_bus_volume(&"BGM")
 	_sfx.value = AudioDirector.get_bus_volume(&"SFX")
 	_tutorial.button_pressed = GameSettings.minigame_tutorial_enabled
+	_skip_dialog.button_pressed = GameSettings.skip_event_dialogue
 
 	_master.value_changed.connect(_on_volume_changed.bind(&"Master"))
 	_bgm.value_changed.connect(_on_volume_changed.bind(&"BGM"))
 	_sfx.value_changed.connect(_on_volume_changed.bind(&"SFX"))
 	_tutorial.toggled.connect(_on_tutorial_toggled)
+	_skip_dialog.toggled.connect(_on_skip_dialog_toggled)
 	_back.pressed.connect(_on_back_pressed)
 
 	if Engine.is_editor_hint():
@@ -44,7 +51,9 @@ func _ready() -> void:
 		return
 
 	Juice.stagger_in(_collect_rows())
-	AudioDirector.play_bgm(&"titlescreen")
+	# Opened from the Lobby, its music keeps playing.
+	if return_scene == "res://Scenes/MainMenu/main_menu.tscn":
+		AudioDirector.play_bgm(&"titlescreen")
 
 
 func _collect_rows() -> Array:
@@ -74,8 +83,18 @@ func _on_tutorial_toggled(pressed: bool) -> void:
 	GameSettings.save_settings()
 
 
+## "Lewati Dialog Minigame" (formerly the Lobby's Shorten button): skips the
+## EventDialogue line before each minigame. Saved like the tutorial switch.
+func _on_skip_dialog_toggled(pressed: bool) -> void:
+	GameSettings.skip_event_dialogue = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
 func _on_back_pressed() -> void:
 	if not Engine.is_editor_hint():
 		AudioDirector.play_sfx(&"cancel")
-	Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn",
+	var destination := return_scene
+	return_scene = "res://Scenes/MainMenu/main_menu.tscn"
+	Transition.change_scene(destination,
 		Transition.Style.FADE)

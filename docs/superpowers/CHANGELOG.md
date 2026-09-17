@@ -8,6 +8,22 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-17 — Achievement claim celebration, Lobby Settings
+
+Plan `docs/superpowers/plans/2026-09-17-achievement-claim-celebration.md`, spec
+`docs/superpowers/specs/2026-09-17-achievement-claim-celebration-design.md`.
+
+- **Klaim** opens `AchievementClaimPopup`: the screen blurs (shared shop-hub
+  blur), "SELAMAT, ANDA MENDAPATKAN", the icon large over
+  `achievement_glow.gdshader` (additive, counter-rotating flickering rays and
+  a pulsing core), the title, paper confetti, and tap-anywhere to close.
+- Every achievement icon wears `icon_outline_material.tres`, a shader that
+  shrinks the art and rings its alpha in white.
+- Debug: `Achievements.RESET_ON_LAUNCH` wipes progress on every launch.
+- The Lobby's Shorten button and `ShortenPanel` are gone. A Settings gear
+  (`setting.png`) opens the existing Settings screen, which gained a "Lewati
+  Dialog Minigame" toggle and returns to wherever it was opened from.
+
 ## 2026-09-17 — Koperasi revamp: Pak Herman's counter
 
 Plan `docs/superpowers/plans/2026-09-17-koperasi-shop-revamp.md`, spec

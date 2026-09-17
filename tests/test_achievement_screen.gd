@@ -85,3 +85,31 @@ func test_lobby_has_the_trophy_button() -> void:
 		assert_eq(btn.texture_normal.resource_path, "res://Assets/Images/Achievements/achievement_button.png")
 	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
 	assert_true(src.contains("res://Scenes/Achievements/achievements.tscn"))
+
+
+const OUTLINE_MATERIAL := "res://Assets/Images/Achievements/icon_outline_material.tres"
+
+
+func test_outline_material_is_white() -> void:
+	var mat := load(OUTLINE_MATERIAL) as ShaderMaterial
+	assert_true(mat != null and mat.shader != null)
+	assert_true(mat.shader.code.contains("outline_width"))
+	assert_eq(mat.get_shader_parameter("outline_color"), Color.WHITE)
+	assert_gt(float(mat.get_shader_parameter("outline_width")), 0.0)
+
+
+func test_card_and_banner_icons_wear_the_outline() -> void:
+	for pair in [[ROW, "HBox/Icon"], ["res://Scenes/Achievements/AchievementToast.tscn", "Banner/Icon"]]:
+		var root := (load(pair[0]) as PackedScene).instantiate()
+		track(root)
+		var icon := root.get_node(pair[1]) as TextureRect
+		assert_true(icon.material != null and icon.material.resource_path == OUTLINE_MATERIAL,
+			"%s's icon must use the shared outline material" % pair[0])
+
+
+func test_trophy_sits_after_the_settings_gear() -> void:
+	var lobby := (load(LOBBY) as PackedScene).instantiate()
+	track(lobby)
+	var btn := lobby.get_node("Safe/UI/BottomBar/AchievementButton") as Control
+	assert_eq(btn.offset_left, 240.0)
+	assert_eq(btn.offset_right, 336.0)

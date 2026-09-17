@@ -38,7 +38,7 @@ const DESIGN_RECTS := {
 	"Inventory": Rect2(386, 1712, 306, 160),
 	"ReportStudent": Rect2(724, 1712, 306, 160),
 	"DisplayUang": Rect2(700, 1392, 332, 96),
-	"ShortenButton": Rect2(168, 1392, 240, 96),
+	"SettingsButton": Rect2(168, 1392, 96, 96),
 	"DailyLogin": Rect2(48, 1392, 96, 96),
 	"JUDUL": Rect2(381, 40, 323, 100),
 }
@@ -65,8 +65,8 @@ func _hud(n: String) -> Control:
 ## `c`'s authored rect on screen: its parent's settled global rect, placed by
 ## its own anchors and offsets. A control whose text needs more room still
 ## grows past this when drawn, to a minimum size that depends on font metrics
-## (the editor measures wider than a device -- ShortenButton's text needs
-## 265 px here against its 240); the layout promises this rect.
+## (the editor measures wider than a device, so a text button can need
+## more than its authored width); the layout promises this rect.
 func _authored_rect(c: Control) -> Rect2:
 	var pr := (c.get_parent() as Control).get_global_rect()
 	var tl := pr.position + pr.size * Vector2(c.anchor_left, c.anchor_top) \
@@ -124,7 +124,7 @@ func test_hud_does_not_sit_on_the_front_row_faces() -> void:
 	# mapped through Slot3 and Slot4's rects.
 	var heads := [Vector2(225, 389), Vector2(845, 389)]
 	var radius := 110.0
-	for n in ["DisplayUang", "DailyLogin", "ShortenButton"]:
+	for n in ["DisplayUang", "DailyLogin", "SettingsButton"]:
 		var c := _hud(n)
 		if c == null:
 			continue

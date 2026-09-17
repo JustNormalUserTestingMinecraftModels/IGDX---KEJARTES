@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/Achievements/AchievementRow.gd" id="1_row"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Achievements/Icons/grade_7.png" id="2_icon"]
+[ext_resource type="Material" path="res://Assets/Images/Achievements/icon_outline_material.tres" id="3_outline"]
 
 [node name="AchievementRow" type="PanelContainer"]
 custom_minimum_size = Vector2(865, 306)
@@ -13,6 +14,7 @@ layout_mode = 2
 theme_override_constants/separation = 24
 
 [node name="Icon" type="TextureRect" parent="HBox"]
+material = ExtResource("3_outline")
 unique_name_in_owner = true
 custom_minimum_size = Vector2(258, 239)
 layout_mode = 2

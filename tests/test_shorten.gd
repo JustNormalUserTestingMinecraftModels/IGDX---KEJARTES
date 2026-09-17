@@ -2,14 +2,16 @@
 extends McpTestSuite
 
 ## Shorten (2026-09-14 shorten-dialog spec): the GameSettings switch, which
-## dialogues it skips, SchoolDay's early return, the Lobby button and its panel.
+## dialogues it skips and SchoolDay's early return. Since 2026-09-17 the switch
+## is the "Lewati Dialog Minigame" toggle on the Settings screen, which the
+## Lobby's Settings gear opens; the Shorten button and its panel are gone.
 
 const _GAME_SETTINGS := "res://Scripts/GameSettings.gd"
 const _SCHOOL_DAY := "res://Scripts/SchoolSimulation/SchoolDay.gd"
 const _LOBBY_SCENE := "res://Scenes/Lobby/loby.tscn"
 const _LOBBY_SCRIPT := "res://Scripts/Lobby/loby.gd"
-const _PANEL_SCENE := "res://Scenes/Lobby/ShortenPanel.tscn"
-const _PANEL_SCRIPT := "res://Scripts/Lobby/ShortenPanel.gd"
+const _SETTINGS_SCENE := "res://Scenes/UI/Settings.tscn"
+const _SETTINGS_SCRIPT := "res://Scripts/UI/Settings.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 const _MINIGAME_KEYS := ["Menjodohkan", "Variabel", "PilihanGanda", "Password",
 	"MainBola", "Badminton", "BuatBatik", "LombaMenari"]
@@ -73,143 +75,83 @@ func test_school_day_skips_before_it_builds_anything() -> void:
 	assert_contains(body.substr(skip, 120), "return true", "a skipped dialogue lets the minigame carry on")
 
 
-# ── the panel ────────────────────────────────────────────────────────────────
+# ── the Settings toggle ──────────────────────────────────────────────────────
 
-## Instantiated with the baked theme under the editor root, tracked for
-## cleanup. Untyped: typed as Control, GDScript rejects the script members.
-func _panel():
-	var p = (load(_PANEL_SCENE) as PackedScene).instantiate()
-	p.theme = load(_THEME_PATH)
-	Engine.get_main_loop().root.add_child(p)
-	track(p)
-	return p
-
-
-func test_the_panel_offers_the_two_options_as_written() -> void:
-	var p = _panel()
-	assert_eq((p.get_node("Center/Card/Content/TitleLabel") as Label).text, "Shorten")
-	assert_eq(p.skip_button.text, "Skip Dialog")
-	assert_eq(p.keep_button.text, "Jangan Skip Dialog")
-	assert_eq(p.skip_button.theme_type_variation, &"PrimaryButton", "an ordinary choice: one filled")
-	assert_eq(p.keep_button.theme_type_variation, &"SecondaryButton", "and one quiet")
+## Settings, themed from the bake and in the editor root, tracked for cleanup.
+func _settings() -> Control:
+	var s := (load(_SETTINGS_SCENE) as PackedScene).instantiate() as Control
+	s.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(s)
+	track(s)
+	return s
 
 
-func test_skip_dialog_turns_shorten_on_and_closes() -> void:
-	GameSettings.skip_event_dialogue = false
-	var p = _panel()
-	var closed := [false]
-	p.closed.connect(func(): closed[0] = true)
-	p.skip_button.pressed.emit()
-	assert_true(GameSettings.skip_event_dialogue, "Skip Dialog turns Shorten on")
-	assert_true(closed[0], "and closes the panel")
+func test_settings_has_the_skip_dialog_toggle() -> void:
+	var s := _settings()
+	var toggle := s.find_child("SkipDialogToggle", true, false) as CheckButton
+	assert_true(toggle != null, "Settings carries the skip-dialog toggle")
+	var label := s.find_child("SkipDialogLabel", true, false) as Label
+	assert_true(label != null and label.text == "Lewati Dialog Minigame")
 
 
-func test_jangan_skip_dialog_turns_shorten_off_and_closes() -> void:
+func test_the_toggle_reflects_and_writes_the_setting() -> void:
 	GameSettings.skip_event_dialogue = true
-	var p = _panel()
-	var closed := [false]
-	p.closed.connect(func(): closed[0] = true)
-	p.keep_button.pressed.emit()
-	assert_false(GameSettings.skip_event_dialogue, "Jangan Skip Dialog turns Shorten off")
-	assert_true(closed[0], "and closes the panel")
+	var s := _settings()
+	var toggle := s.find_child("SkipDialogToggle", true, false) as CheckButton
+	assert_true(toggle.button_pressed, "it opens showing the current setting")
+	toggle.button_pressed = false
+	assert_false(GameSettings.skip_event_dialogue, "turning it off shows the minigame lines again")
+	toggle.button_pressed = true
+	assert_true(GameSettings.skip_event_dialogue, "turning it on skips them")
 
 
-func test_the_status_line_follows_the_setting() -> void:
-	GameSettings.skip_event_dialogue = true
-	var p = _panel()
-	assert_eq(p.status_label.text, "Sekarang: dialog minigame dilewati.")
-	GameSettings.skip_event_dialogue = false
-	p.refresh()
-	assert_eq(p.status_label.text, "Sekarang: dialog minigame ditampilkan.")
+# ── the Lobby ────────────────────────────────────────────────────────────────
+
+func test_the_shorten_button_and_panel_are_gone() -> void:
+	var scene := FileAccess.get_file_as_string(_LOBBY_SCENE)
+	assert_false(scene.contains('[node name="ShortenButton" '), "no Shorten button in the Lobby")
+	var src := FileAccess.get_file_as_string(_LOBBY_SCRIPT)
+	assert_false(src.contains("SHORTEN_PANEL_SCENE"), "the Lobby no longer opens a Shorten panel")
+	assert_false(FileAccess.file_exists("res://Scenes/Lobby/ShortenPanel.tscn"), "ShortenPanel is deleted")
 
 
-func test_the_scrim_waits_for_the_open_then_closes_unchanged() -> void:
-	GameSettings.skip_event_dialogue = true
-	var p = _panel()
-	assert_eq(p.scrim.mouse_filter, Control.MOUSE_FILTER_IGNORE,
-		"popup-dismiss rule: the opening tap must not also close it")
-	p.open()
-	assert_eq(p.scrim.mouse_filter, Control.MOUSE_FILTER_STOP, "after the open, the dim closes")
-	var closed := [false]
-	p.closed.connect(func(): closed[0] = true)
-	var tap := InputEventMouseButton.new()
-	tap.button_index = MOUSE_BUTTON_LEFT
-	tap.pressed = true
-	p._on_scrim_gui_input(tap)
-	assert_true(closed[0], "tapping the dim closes the panel")
-	assert_true(GameSettings.skip_event_dialogue, "without changing the setting")
-
-
-func test_the_panel_is_authored_and_never_saves_from_the_editor() -> void:
-	var src := FileAccess.get_file_as_string(_PANEL_SCRIPT)
-	assert_false(src.contains(".new("), "the panel is fully authored")
-	assert_contains(src, "if not Engine.is_editor_hint():\n\t\tGameSettings.save_settings()",
-		"tests must never write the real settings file")
-	var scene := FileAccess.get_file_as_string(_PANEL_SCENE)
-	for kind in ["theme_override_colors", "theme_override_font_sizes", "theme_override_fonts", "theme_override_styles"]:
-		assert_false(scene.contains(kind), "no " + kind + " in ShortenPanel.tscn")
-
-
-# ── the Lobby button ─────────────────────────────────────────────────────────
-
-## The source block of one node, from its header to the next section.
-func _node_block(src: String, node_name: String) -> String:
-	var start := src.find('[node name="%s" ' % node_name)
-	if start == -1:
-		return ""
-	var end := src.find("\n[", start + 1)
-	return src.substr(start, (end if end != -1 else src.length()) - start)
-
-
-## Since the 2026-09-15 tall-phone pass the money row rides in
-## Safe/UI/BottomBar, so the button is checked against its row-mates there
-## rather than by screen offsets.
-func test_the_shorten_button_sits_on_the_money_row() -> void:
+func test_the_settings_gear_sits_on_the_money_row() -> void:
 	var lobby := (load(_LOBBY_SCENE) as PackedScene).instantiate() as Control
 	track(lobby)
-	var btn := lobby.get_node_or_null("%ShortenButton") as Button
+	var btn := lobby.get_node_or_null("%SettingsButton") as TextureButton
 	var login := lobby.get_node_or_null("%DailyLogin") as Control
 	var chip := lobby.get_node_or_null("%DisplayUang") as Control
 	assert_true(btn != null and login != null and chip != null,
-		"ShortenButton, DailyLogin and DisplayUang must be unique names")
+		"SettingsButton, DailyLogin and DisplayUang must be unique names")
 	if btn == null or login == null or chip == null:
 		return
-	assert_eq(btn.theme_type_variation, &"SecondaryButton")
-	assert_eq(btn.text, "Shorten")
+	assert_eq(btn.texture_normal.resource_path, "res://Assets/Images/UI/setting.png")
 	assert_eq(btn.get_parent(), chip.get_parent(), "it rides in the same bar as the money chip")
 	assert_eq(btn.offset_top, chip.offset_top, "on the money row")
 	assert_eq(btn.offset_bottom, chip.offset_bottom, "on the money row")
 	assert_true(btn.offset_left > login.offset_right and btn.offset_right < chip.offset_left,
-		"between the daily-login icon (..%f) and the money chip (%f..), got %f..%f"
-			% [login.offset_right, chip.offset_left, btn.offset_left, btn.offset_right])
+		"between the daily-login icon and the money chip")
 
 
-## loby.gd's _create_blur_overlay() inserts the reward popup's blur at
-## DailyReward's child index, so every node serialized before DailyReward --
-## the Classroom and the whole Safe HUD, ShortenButton and DailyLogin
-## included -- ends up under it. (Until the 2026-09-15 tall-phone pass the
-## insertion point was DailyLogin's index, while the HUD nodes were direct
-## children of the root; a 2026-09-14 review had found ShortenButton sharp
-## and tappable over the open popup.)
-func test_the_popups_draw_over_the_shorten_button() -> void:
+## The reward popup's blur is inserted at DailyReward's index, so the gear
+## must be serialized before DailyReward to sit under it.
+func test_the_popups_draw_over_the_settings_gear() -> void:
 	var src := FileAccess.get_file_as_string(_LOBBY_SCENE)
-	var btn := src.find('[node name="ShortenButton" ')
-	assert_true(btn != -1, "ShortenButton exists")
+	var btn := src.find('[node name="SettingsButton" ')
+	assert_true(btn != -1, "SettingsButton exists")
 	assert_true(btn < src.find('[node name="DailyReward" '),
 		"the reward popup's blur, inserted at DailyReward's index, must cover it")
 	assert_true(btn < src.find('[node name="ColorRect" '), "the tutorial overlay covers it")
-	assert_contains(FileAccess.get_file_as_string(_LOBBY_SCRIPT),
-		"move_child(blur_overlay, daily_reward.get_index())",
-		"if the blur's insertion point moves, re-check which HUD nodes it covers")
 
 
-func test_the_shorten_button_opens_the_panel() -> void:
+func test_the_gear_opens_settings_and_comes_back_to_the_lobby() -> void:
 	var src := FileAccess.get_file_as_string(_LOBBY_SCRIPT)
-	assert_contains(src, 'const SHORTEN_PANEL_SCENE := preload("res://Scenes/Lobby/ShortenPanel.tscn")')
-	var wire := src.find("shorten_button.pressed.connect(_on_shorten_pressed)")
+	var wire := src.find("settings_button.pressed.connect(_on_settings_pressed)")
 	var gate := src.find("if GameState.lobby_tutorial_completed or GameState.minggu_ke > 1:")
 	assert_true(wire != -1 and wire < gate, "wired once, before the tutorial split")
-	var body := _body(src, "_on_shorten_pressed")
-	assert_contains(body, "SHORTEN_PANEL_SCENE.instantiate()")
-	assert_contains(body, "add_child(panel)")
-	assert_contains(body, "panel.open()")
+	var body := _body(src, "_on_settings_pressed")
+	assert_contains(body, "SettingsScript.return_scene = ")
+	assert_contains(body, "res://Scenes/UI/Settings.tscn")
+	var settings_src := FileAccess.get_file_as_string(_SETTINGS_SCRIPT)
+	assert_contains(settings_src, "static var return_scene")
+	assert_contains(_body(settings_src, "_on_back_pressed"), "return_scene")

@@ -16,6 +16,9 @@ signal unlocked(id: String)
 signal claimed(id: String)
 
 const SAVE_PATH := "user://achievements.cfg"
+## DEBUG (2026-09-17): wipe all achievement progress on every launch, so each
+## play session starts fresh. Set false to keep progress between launches.
+const RESET_ON_LAUNCH := true
 
 const STATE_LOCKED := 0
 const STATE_UNLOCKED := 1
@@ -59,7 +62,10 @@ var claimed_ids: Dictionary = {}
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
-	load_progress()
+	if RESET_ON_LAUNCH:
+		reset()
+	else:
+		load_progress()
 	GameState.money_changed.connect(record_money)
 
 

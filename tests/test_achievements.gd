@@ -181,6 +181,12 @@ func test_reset_clears_everything() -> void:
 	assert_eq(a.minigames_played, 0)
 
 
+func test_debug_reset_on_launch_is_on() -> void:
+	assert_true(ACHIEVEMENTS.RESET_ON_LAUNCH, "debug: every launch starts with no achievement progress")
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/Achievements.gd")
+	assert_true(src.contains("if RESET_ON_LAUNCH:\n\t\treset()"), "_ready resets instead of loading")
+
+
 func _src(path: String) -> String:
 	return FileAccess.get_file_as_string(path)
 

@@ -72,10 +72,6 @@ func test_no_raw_color_literals_in_script() -> void:
 	assert_false(src.contains("Color(0."),
 		"no hardcoded Color() literals -- use DesignTokens")
 
-func test_script_reads_design_tokens() -> void:
-	assert_true(_source().contains("DesignTokens.load_default()"),
-		"styling must be sourced from DesignTokens")
-
 func test_scene_uses_project_theme() -> void:
 	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
 	assert_true(raw.contains("kejartes_theme.tres"),

@@ -26,6 +26,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_minigame_result(theme, tokens)
 	_build_event_warning(theme, tokens)
 	_build_event_dialogue(theme, tokens)
+	_build_shop_chat_bubble(theme, tokens)
 	_build_achievements(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
@@ -37,6 +38,27 @@ static func build(tokens: DesignTokens) -> Theme:
 ## single-screen values.
 const EVENT_DIALOGUE_RADIUS := 80
 const DAY_BANNER_OUTLINE := 12
+
+## Measured off newshop_mockup.png: the Koperasi chat bubble's ~24 px corner
+## at the mockup's 5/6 scale. No token matches; a single-screen value.
+const SHOP_CHAT_BUBBLE_RADIUS := 28
+
+
+## Koperasi's chat bubble (2026-09-17 shop revamp spec): Pak Herman's
+## speech, a flat card-white rounded box with no shadow. Its tail is
+## chat_bubble_tail.svg, filled with the same surface_card colour
+## (test_koperasi_shop_layout pins that). Body font, so not on DISPLAY_ROSTER.
+static func _build_shop_chat_bubble(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("ShopChatBubble")
+	theme.set_type_variation("ShopChatBubble", "PanelContainer")
+	var bubble := StyleBoxFlat.new()
+	bubble.bg_color = tokens.surface_card
+	bubble.set_corner_radius_all(SHOP_CHAT_BUBBLE_RADIUS)
+	bubble.content_margin_left = tokens.space_xl
+	bubble.content_margin_right = tokens.space_xl
+	bubble.content_margin_top = tokens.space_lg
+	bubble.content_margin_bottom = tokens.space_lg
+	theme.set_stylebox("panel", "ShopChatBubble", bubble)
 
 
 ## The event dialogue (2026-09-14 event-dialogue spec): a white rounded card

@@ -44,15 +44,19 @@ var day_schedules: Dictionary = {}
 ## (reset_roster_for_new_grade). Session-scoped like everything here.
 var minigame_gain_this_week: Dictionary = {}
 
-## How many items the Koperasi shelf shows -- one per Barang* button on
-## koprasi.tscn's Rak1.
-const SHOP_SHELF_SIZE: int = 4
+## How many items the Koperasi shelf shows -- one per Barang* slot on
+## koprasi.tscn's Stage.
+const SHOP_SHELF_SIZE: int = 6
+## The most copies of one item a week's shelf can hold.
+const SHOP_MAX_COPIES: int = 2
 ## The week the Koperasi shelf was rolled for, as shop_week_key_for(); ""
 ## until the first visit. Session-scoped like everything here.
 var shop_week_key: String = ""
-## Item names on the Koperasi shelf this week, in slot order.
+## Item names on the Koperasi shelf this week, in slot order. An item can
+## fill up to SHOP_MAX_COPIES slots.
 var shop_stock: Array[String] = []
-## Item names bought this week. Each shelf item sells once a week.
+## Item names bought this week, one entry per unit. An item sells once per
+## copy on the shelf.
 var shop_sold: Array[String] = []
 
 # Week tracking  
@@ -269,23 +273,41 @@ static func shop_week_key_for(grade: int, week: int) -> String:
 	return "%d-%d" % [grade, week]
 
 
+## A shelf of `size` names drawn from a bag holding every name
+## `max_copies` times, in slot order. Pure, apart from the global RNG
+## that shuffle() uses.
+static func roll_shop_stock(names: Array[String], size: int, max_copies: int) -> Array[String]:
+	var bag: Array[String] = []
+	for item_name in names:
+		for _copy in range(max_copies):
+			bag.append(item_name)
+	bag.shuffle()
+	var stock: Array[String] = []
+	for i in range(mini(size, bag.size())):
+		stock.append(bag[i])
+	return stock
+
+
 ## This week's Koperasi shelf. The first call in a (grade, week) rolls
-## SHOP_SHELF_SIZE items from ItemDatabase and clears shop_sold; every later
-## call that week returns the same items in the same order.
+## SHOP_SHELF_SIZE items from ItemDatabase (roll_shop_stock, so a pair can
+## turn up) and clears shop_sold; every later call that week returns the
+## same items in the same order.
 func shop_stock_for_week() -> Array[String]:
 	var key := shop_week_key_for(current_grade, minggu_ke)
 	if key != shop_week_key:
 		shop_week_key = key
 		shop_sold = []
-		shop_stock = []
-		for item in ItemDatabase.get_random_items(SHOP_SHELF_SIZE):
-			shop_stock.append(item.item_name)
+		var names: Array[String] = []
+		for item in ItemDatabase.get_all_items():
+			names.append(item.item_name)
+		shop_stock = roll_shop_stock(names, SHOP_SHELF_SIZE, SHOP_MAX_COPIES)
 	return shop_stock.duplicate()
 
 
-## Record that `item_name` was bought this week. Idempotent.
+## Record one unit of `item_name` bought this week. Capped at the copies on
+## the shelf (at least one, so an unstocked name still sells once).
 func mark_shop_sold(item_name: String) -> void:
-	if not shop_sold.has(item_name):
+	if shop_sold.count(item_name) < maxi(1, shop_stock.count(item_name)):
 		shop_sold.append(item_name)
 
 
@@ -294,13 +316,13 @@ func is_shop_sold(item_name: String) -> bool:
 	return shop_sold.has(item_name)
 
 
-## True once every item on this week's shelf has been bought. False before
+## True once every copy on this week's shelf has been bought. False before
 ## the shelf is first rolled.
 func is_shop_sold_out() -> bool:
 	if shop_stock.is_empty():
 		return false
 	for item_name in shop_stock:
-		if not shop_sold.has(item_name):
+		if shop_sold.count(item_name) < shop_stock.count(item_name):
 			return false
 	return true
 

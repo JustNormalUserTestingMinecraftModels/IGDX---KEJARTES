@@ -8,6 +8,22 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-17 — Koperasi revamp: Pak Herman's counter
+
+Plan `docs/superpowers/plans/2026-09-17-koperasi-shop-revamp.md`, spec
+`docs/superpowers/specs/2026-09-17-koperasi-shop-revamp-design.md`.
+
+Koperasi opens on a three-layer counter (background, Pak Herman, glass case)
+pinned to the bottom edge, with a flat wall strip above on tall phones. Six
+shelf slots sit on the mockup's circles. The weekly roll draws from a bag of
+every item twice, so pairs turn up (~71% of weeks) and each copy sells once.
+`rakbarang_1.gd` tracks which slot emptied (`reconcile_taken`), leaving `Cart`
+and the basket tray unchanged. A placeholder speech bubble uses the new
+`ShopChatBubble` variation. The coin HUD moved onto the counter ledge inside
+the Stage, because a bottom-anchored HUD in `Safe` rode the editor run's
+768 px safe-area inset onto Herman's forehead. The "KEBUTUHAN SEKOLAH"
+landing and its pop-up are gone.
+
 ## 2026-09-17 — Achievements
 
 Plan `docs/superpowers/plans/2026-09-17-achievements.md`, spec

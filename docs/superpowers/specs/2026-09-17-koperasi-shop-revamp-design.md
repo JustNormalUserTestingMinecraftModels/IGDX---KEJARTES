@@ -56,7 +56,8 @@ Koprasi (Control, Full Rect, koprasi.gd)
 │  │   │   └─ Text    RichTextLabel, variation EventDialogueText, placeholder copy
 │  │   └─ Tail      TextureRect (751,230)–(816,345), chat_bubble_tail.svg
 │  ├─ BackButton  TextureButton return.png, (24,1157)–(209,1342) — unchanged rect
-│  └─ BasketTray  BasketTray.tscn instance, root offset (0,117) — unchanged rect
+│  └─ TrayDock    Control (0,117)–(1080,1828), mouse IGNORE — the old Rak1 rect
+│      └─ BasketTray  BasketTray.tscn instance at the dock's origin, as under Rak1
 ├─ Safe (SafeAreaMargin) / UI
 │  └─ CoinHUD     anchored bottom-right, on the counter ledge (see below)
 └─ MessageLabel  unchanged
@@ -80,9 +81,11 @@ hangs below its item, within the 96 px gap to the next row.
 **Tray and back button.** Both keep the global rects they have today:
 the tray body (24,1360)–(1056,1920), flush with the bottom edge, and the back
 button on the counter's left end. The tray covers the lower glass case. That
-is the "cart stays the same" rule taken literally. The BasketTray instance's
-position is set on its **root** (offset top 117), never on `Body`, because
-overrides on an instance's children are dropped on save (CLAUDE.md 4b).
+is the "cart stays the same" rule taken literally. The tray keeps its old
+parent geometry: `TrayDock` reproduces Rak1's rect, and the instance sits at
+its origin exactly as it sat under Rak1. Nothing is overridden on the
+instance's `Body`, because overrides on an instance's children are dropped on
+save (CLAUDE.md 4b).
 
 **CoinHUD moves.** At the design size its old top-left spot lies inside the
 bubble. It moves to `Safe/UI` bottom-right (anchors `1,1,1,1`,
@@ -226,7 +229,7 @@ a new week (`set_grade` → `reset_shop_week`, unchanged).
 | `tests/test_koperasi_shop_layout.gd` | new: layers, slots, bubble, tail colour |
 | `tests/test_tall_screen_layout.gd` | Koperasi section rewritten for Stage |
 | `tests/test_koperasi_tray.gd` | glow test → six slots under Stage |
-| `tests/test_koperasi.gd`, `test_koperasi_hud.gd`, `test_lobby_style_buttons.gd` | follow the removed sign |
+| `tests/test_koperasi.gd` | drop `test_script_reads_design_tokens` (the script no longer styles anything) |
 | `docs/superpowers/DEBT.md`, `CHANGELOG.md` | placeholder copy, removed sign's width entry |
 
 ## Not doing

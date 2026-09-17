@@ -217,14 +217,61 @@ const KOPERASI_PATH := "res://Scripts/Koperasi/koprasi.gd"
 const RakScript := preload("res://Scripts/Koperasi/rakbarang_1.gd")
 
 
-func test_an_item_is_on_sale_until_basketed_or_sold() -> void:
-	assert_true(RakScript.is_on_sale("Bank Soal", {}, []), "on the shelf by default")
-	assert_false(RakScript.is_on_sale("Bank Soal", {"Bank Soal": {}}, []),
-		"off the shelf while it is in the basket")
-	assert_false(RakScript.is_on_sale("Bank Soal", {}, ["Bank Soal"]),
-		"off the shelf once bought this week")
-	assert_true(RakScript.is_on_sale("Bank Soal", {"Kamus": {}}, ["Kamus"]),
-		"other items leaving do not take it with them")
+## Slot 0 and 2 hold the pair.
+func _pair_shelf() -> Array:
+	return ["Bank Soal", "Komik", "Bank Soal"]
+
+
+func _reconciled(taken: Array, cart: Dictionary, sold: Array) -> String:
+	return str(RakScript.reconcile_taken(_pair_shelf(), taken, cart, sold))
+
+
+func test_a_fresh_shelf_has_nothing_taken() -> void:
+	assert_eq(_reconciled([], {}, []), "[]")
+
+
+func test_the_tapped_copy_is_the_one_that_empties() -> void:
+	assert_eq(_reconciled([2], {"Bank Soal": {"quantity": 1}}, []), "[2]",
+		"tapping the second copy leaves the first on the shelf")
+
+
+func test_hold_to_return_brings_back_the_latest_copy() -> void:
+	assert_eq(_reconciled([0, 2], {"Bank Soal": {"quantity": 1}}, []), "[0]",
+		"one unit returned: the slot taken last comes back")
+
+
+func test_a_sale_seen_on_a_later_visit_empties_the_lowest_slot() -> void:
+	assert_eq(_reconciled([], {}, ["Bank Soal"]), "[0]")
+
+
+func test_back_returns_every_unsold_slot() -> void:
+	assert_eq(_reconciled([0, 1], {}, []), "[]")
+
+
+func test_beli_keeps_the_bought_slots_empty() -> void:
+	assert_eq(_reconciled([2, 1], {}, ["Bank Soal", "Komik"]), "[2, 1]")
+
+
+func test_out_of_range_slots_are_dropped() -> void:
+	assert_eq(_reconciled([7], {}, []), "[]")
+
+
+func test_one_items_units_never_move_another() -> void:
+	assert_eq(_reconciled([1], {"Komik": {"quantity": 1}}, ["Bank Soal"]), "[1, 0]")
+
+
+func test_a_taken_slot_refuses_a_second_tap() -> void:
+	var body := _body(FileAccess.get_file_as_string(RAK_PATH), "func _on_barang_pressed(")
+	assert_true(body.contains("if _taken_slots.has(index):"), "a double tap cannot add a second unit")
+	var take := body.find("_taken_slots.append(index)")
+	assert_true(take != -1 and take < body.find("Cart.add_item(item)"),
+		"the slot is taken before the cart hears of it, so the refresh keeps it empty")
+
+
+func test_visibility_comes_from_reconcile() -> void:
+	var src := FileAccess.get_file_as_string(RAK_PATH)
+	assert_true(_body(src, "func _refresh_shelf_visibility()").contains("reconcile_taken("))
+	assert_false(src.contains("func is_on_sale("), "the name-only check is gone")
 
 
 func test_the_shelf_stocks_from_the_weekly_roll() -> void:
@@ -238,11 +285,6 @@ func test_every_cart_change_rechecks_the_shelf() -> void:
 	var body := _body(FileAccess.get_file_as_string(RAK_PATH), "func _on_cart_changed()")
 	assert_true(body.contains("_refresh_shelf_visibility()"),
 		"tap, hold-to-return, Back and Beli all move the cart, so one refresh covers them")
-
-
-func test_a_second_tap_cannot_add_a_second_unit() -> void:
-	var body := _body(FileAccess.get_file_as_string(RAK_PATH), "func _on_barang_pressed(")
-	assert_true(body.contains("is_on_sale("), "the tap handler refuses an item not on sale")
 
 
 func test_beli_marks_the_basket_sold_before_emptying_it() -> void:

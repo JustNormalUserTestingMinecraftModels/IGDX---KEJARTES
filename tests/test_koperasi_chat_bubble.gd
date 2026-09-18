@@ -287,3 +287,36 @@ func test_idle_chatter_disabled_makes_timeout_a_noop() -> void:
 
 	assert_eq(bubble.get_state(), ChatBubble.State.IDLE,
 		"idle_chatter_enabled = false must make the timeout a no-op")
+
+
+# ----- pivot_offset (review fix: must not mutate the node before the
+#       editor-hint guard, so opening koprasi.tscn cannot bake a change) -----
+
+## _live_bubble() adds a bare, un-owned instance straight to the tree, so
+## is_part_of_edited_scene() is false and _ready() runs past the guard --
+## the pivot must still land, computed from the Tail's authored rect.
+func test_live_bubble_still_gets_a_tail_based_pivot() -> void:
+	var bubble := _live_bubble()
+	var tail := bubble.get_node("Tail") as Control
+	var expected := tail.position + Vector2(tail.size.x * 0.5, tail.size.y)
+	assert_eq(bubble.pivot_offset, expected,
+		"a live bubble must still compute pivot_offset from the Tail rect")
+
+
+## Source scan, since a scene actually opened for editing (is_part_of_edited_
+## scene() == true) can't be exercised from a McpTestSuiteCompat. The pivot
+## assignment must sit textually after the editor-hint early return, not
+## before it -- otherwise merely opening koprasi.tscn mutates the live node
+## and a save bakes the value into the scene.
+func test_pivot_offset_assignment_comes_after_the_editor_guard() -> void:
+	var f := FileAccess.open("res://Scripts/Koperasi/ChatBubble.gd", FileAccess.READ)
+	assert_not_null(f, "ChatBubble.gd missing")
+	if f == null:
+		return
+	var src := f.get_as_text()
+	var guard_pos := src.find("is_part_of_edited_scene()")
+	var pivot_pos := src.find("pivot_offset = _tail.position")
+	assert_true(guard_pos != -1, "the editor-hint guard must still exist")
+	assert_true(pivot_pos != -1, "the tail-based pivot_offset assignment must still exist")
+	assert_true(guard_pos < pivot_pos,
+		"pivot_offset must be assigned after the is_editor_hint()/is_part_of_edited_scene() guard")

@@ -99,14 +99,17 @@ var _tween: Tween
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint() and is_part_of_edited_scene():
+		return
+
 	if _tail:
 		# Pivot toward the tail's tip (its bottom, centred on its width) so
 		# the bubble shrinks/grows into Herman rather than from its own
-		# centre or a hardcoded corner.
+		# centre or a hardcoded corner. Set after the editor guard above --
+		# assigning it before that return mutated the node whenever
+		# koprasi.tscn was merely opened in the editor, baking pivot_offset
+		# into the scene on the next save.
 		pivot_offset = _tail.position + Vector2(_tail.size.x * 0.5, _tail.size.y)
-
-	if Engine.is_editor_hint() and is_part_of_edited_scene():
-		return
 
 	_linger_timer = Timer.new()
 	_linger_timer.one_shot = true

@@ -76,3 +76,20 @@ func test_scene_uses_project_theme() -> void:
 	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
 	assert_true(raw.contains("kejartes_theme.tres"),
 		"the scene root must carry the project theme")
+
+## Task 3: Pak Herman's talk/idle animation. HermanAP must exist with all
+## three named animations, and must never key `position` -- the Stage
+## re-anchors on tall phones (test_tall_screen_layout.gd), so an absolute
+## position key on Herman would pin him instead of moving with the layout.
+func test_herman_animation_player_has_idle_talk_and_reset() -> void:
+	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
+	assert_true(raw.contains("name=\"HermanAP\""),
+		"Stage/Herman must carry a HermanAP AnimationPlayer")
+	assert_true(raw.contains("\"idle\": SubResource") or raw.contains("&\"idle\": SubResource"),
+		"HermanAP's library must register an idle animation")
+	assert_true(raw.contains("\"talk\": SubResource") or raw.contains("&\"talk\": SubResource"),
+		"HermanAP's library must register a talk animation")
+	assert_true(raw.contains("\"RESET\": SubResource") or raw.contains("&\"RESET\": SubResource"),
+		"HermanAP's library must register a RESET animation, so the editor never saves a mid-animation pose")
+	assert_false(raw.contains(":position\")"),
+		"Herman's animations must not key position -- the stage re-anchors on tall phones")

@@ -12,7 +12,10 @@ extends Control
 ## Pak Herman's chat bubble (Stage/ChatBubble, ChatBubble.gd) reacts to cart
 ## events and purchase outcomes -- WELCOME or a sticky SOLD_OUT line on
 ## arrival, ADD/REMOVE from Cart's granular signals, EMPTY/POOR on a failed
-## Beli, THANKS on a successful one. Lines come from DialogueCatalog.
+## Beli, THANKS on a successful one. Lines come from DialogueCatalog. The
+## bubble also drives Stage/Herman/HermanAP's idle/talk animation and an
+## idle-chatter timer -- Cart.cart_changed resets that timer so any cart
+## activity pushes the next ambient line back out.
 
 @onready var stage: Control = $Stage
 @onready var back_button: TextureButton = $Stage/BackButton
@@ -22,6 +25,7 @@ extends Control
 @onready var coin_label: Label = get_node("%CoinHUD/CoinLabel")
 @onready var message_label: Label = $MessageLabel
 @onready var bubble: ChatBubble = $Stage/ChatBubble
+@onready var herman_ap: AnimationPlayer = get_node_or_null("Stage/Herman/HermanAP") as AnimationPlayer
 
 var beli_button: Button
 
@@ -42,6 +46,11 @@ func _ready():
 		Cart.item_added.connect(_on_cart_item_added)
 	if not Cart.item_removed.is_connected(_on_cart_item_removed):
 		Cart.item_removed.connect(_on_cart_item_removed)
+	if not Cart.cart_changed.is_connected(_on_cart_changed):
+		Cart.cart_changed.connect(_on_cart_changed)
+
+	if bubble and herman_ap:
+		bubble.set_herman_ap(herman_ap)
 
 	# The Stage, a child, has already stocked the shelf in its own _ready.
 	if bubble:
@@ -57,6 +66,14 @@ func _exit_tree() -> void:
 		Cart.item_added.disconnect(_on_cart_item_added)
 	if Cart.item_removed.is_connected(_on_cart_item_removed):
 		Cart.item_removed.disconnect(_on_cart_item_removed)
+	if Cart.cart_changed.is_connected(_on_cart_changed):
+		Cart.cart_changed.disconnect(_on_cart_changed)
+
+## Any cart activity (add, remove, clear) pushes Pak Herman's idle-chatter
+## timer back out, so he doesn't ramble mid-shopping.
+func _on_cart_changed() -> void:
+	if bubble:
+		bubble.reset_idle_timer()
 
 func _on_cart_item_added(item_name: String) -> void:
 	if bubble:

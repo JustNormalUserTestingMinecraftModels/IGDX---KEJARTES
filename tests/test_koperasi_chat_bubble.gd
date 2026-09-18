@@ -10,6 +10,13 @@ extends McpTestSuiteCompat
 ## its finish callback must not touch state), and say_sticky()'s
 ## same-text idempotency. Nothing here touches Cart, GameState or needs a
 ## scene open. Suite is @tool and no test here is a coroutine.
+##
+## Task 3: Herman's talk/idle AnimationPlayer swap and the idle-chatter
+## Timer (reset_idle_timer(), idle_chatter_enabled). The AnimationPlayer
+## used here is real (added to the tree), with two stub, trackless
+## Animation resources named "idle"/"talk" -- enough for current_animation
+## to prove which one _set_state() requested, without needing real tracks
+## or a process tick.
 
 func suite_name() -> String:
 	return "koperasi_chat_bubble"
@@ -208,3 +215,75 @@ func test_say_sticky_twice_with_same_text_emits_showing_once() -> void:
 
 	assert_eq(showing_count["n"], 1, "same-text say_sticky() must not re-tween")
 	assert_eq(bubble._label.text, "stuck")
+
+
+# ----- Herman AP + idle chatter (Task 3) -----
+
+## A real, in-tree AnimationPlayer holding two stub, trackless Animation
+## resources named "idle"/"talk". Trackless because nothing here needs the
+## bubble's own pivot/tall-phone rules; current_animation alone proves
+## which one _update_herman_animation() requested.
+func _make_stub_herman_ap() -> AnimationPlayer:
+	var ap := AnimationPlayer.new()
+	var lib := AnimationLibrary.new()
+	for anim_name in ["idle", "talk"]:
+		lib.add_animation(anim_name, Animation.new())
+	ap.add_animation_library("", lib)
+	return ap
+
+
+func test_state_showing_plays_talk_and_idle_plays_idle() -> void:
+	var bubble := _live_bubble()
+	var ap := _make_stub_herman_ap()
+	bubble.add_child(ap)
+	bubble.set_herman_ap(ap)
+	assert_eq(ap.current_animation, "idle", "handing in the AP should sync to the current (IDLE) state")
+
+	bubble.say(&"WELCOME")
+	assert_eq(bubble.get_state(), ChatBubble.State.SHOWING)
+	assert_eq(ap.current_animation, "talk", "SHOWING should play Herman's talk animation")
+
+	bubble._set_state(ChatBubble.State.LINGERING)
+	assert_eq(ap.current_animation, "talk", "LINGERING should keep Herman talking")
+
+	bubble._set_state(ChatBubble.State.IDLE)
+	assert_eq(ap.current_animation, "idle", "IDLE should play Herman's idle animation")
+
+
+func test_idle_timer_arms_on_reaching_idle() -> void:
+	var bubble := _live_bubble()
+	bubble.say(&"WELCOME")
+	assert_eq(bubble.get_state(), ChatBubble.State.SHOWING)
+
+	bubble._set_state(ChatBubble.State.IDLE)
+	assert_true(bubble._idle_timer.time_left > 0.0, "idle timer should arm on reaching IDLE")
+
+
+## Spec: "The timer is paused while SOLD_OUT sticky is up." Asserting
+## `_sticky == true` alone proves nothing about the timer -- this drives
+## reset_idle_timer() and the timeout handler directly while sticky and
+## checks neither arms the timer nor speaks an IDLE line.
+func test_sticky_blocks_idle_chatter() -> void:
+	var bubble := _live_bubble()
+	bubble.say_sticky("stuck")
+	assert_eq(bubble.get_state(), ChatBubble.State.SHOWING)
+
+	bubble.reset_idle_timer()
+	assert_eq(bubble._idle_timer.time_left, 0.0,
+		"reset_idle_timer() must not arm the idle timer while sticky")
+
+	bubble._on_idle_timeout()
+	assert_eq(bubble.get_state(), ChatBubble.State.SHOWING,
+		"a timeout while sticky must not speak an IDLE line")
+	assert_eq(bubble._label.text, "stuck", "the sticky line must survive an idle timeout")
+
+
+func test_idle_chatter_disabled_makes_timeout_a_noop() -> void:
+	var bubble := _live_bubble()
+	bubble.idle_chatter_enabled = false
+	assert_eq(bubble.get_state(), ChatBubble.State.IDLE)
+
+	bubble._on_idle_timeout()
+
+	assert_eq(bubble.get_state(), ChatBubble.State.IDLE,
+		"idle_chatter_enabled = false must make the timeout a no-op")

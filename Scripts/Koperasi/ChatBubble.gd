@@ -30,6 +30,14 @@ extends Control
 ## surviving tween's finish callback also checks it is still `_tween`
 ## before touching state, so even a callback that slips through a kill()
 ## race can never flip state on behalf of a superseded animation.
+##
+## set_herman_ap() hands in Stage/Herman/HermanAP so state_changed can swap
+## Herman between his "talk" (SHOWING/LINGERING, including a sticky line)
+## and "idle" animations. Reaching IDLE (and not sticky) also arms a
+## randomised idle-chatter Timer (IDLE_MIN_S..IDLE_MAX_S) that speaks an
+## IDLE line on timeout if the bubble is still idle, not sticky, and
+## idle_chatter_enabled is true -- koprasi.gd resets it on Cart activity,
+## and Task 5's tray wires idle_chatter_enabled to its collapsed state.
 
 signal state_changed(state: int)
 
@@ -44,10 +52,20 @@ const FADE_OUT_S := 0.28
 ## instead of fading in place.
 const HERMAN_ANCHOR_OFFSET := Vector2(60.0, 40.0)
 const SHRUNK_SCALE := Vector2(0.2, 0.2)
+## Idle-chatter timer range, randomised each time it (re)arms.
+const IDLE_MIN_S := 8.0
+const IDLE_MAX_S := 14.0
 
 ## Where the bubble rests while SHOWING/LINGERING, in the parent's frame.
 ## Defaults to the node's authored position in koprasi.tscn (36, 23).
 @export var rest_position: Vector2 = Vector2(36.0, 23.0)
+
+## Task 5 sets this false while the basket tray is collapsed, so an idle
+## Herman doesn't heckle an empty room. Checked by the idle timer's timeout
+## handler, not by reset_idle_timer() -- a disabled timer still tracks time
+## so it starts chattering immediately once re-enabled, matching the
+## LINGER_S auto-hide's pattern of never losing its own state.
+var idle_chatter_enabled: bool = true
 
 var _state: int = State.IDLE
 var _sticky: bool = false
@@ -55,6 +73,14 @@ var _sticky: bool = false
 ## for that event, for the per-event cooldown.
 var _last_say_time: Dictionary = {}
 var _linger_timer: Timer
+## Fires an ambient IDLE line after IDLE_MIN_S..IDLE_MAX_S of silence.
+## Armed on reaching IDLE (when not sticky) and by reset_idle_timer(),
+## which koprasi.gd calls on every Cart change.
+var _idle_timer: Timer
+## Stage/Herman/HermanAP, handed in by koprasi.gd via set_herman_ap(). Left
+## null in tests that don't care about the animation side of the FSM --
+## every use is guarded.
+var _herman_ap: AnimationPlayer
 ## The Tween currently animating this bubble in or out, if any. Compared by
 ## reference in the finish callbacks so a killed/superseded tween's own
 ## callback (should one ever still fire) is a no-op instead of touching
@@ -80,12 +106,58 @@ func _ready() -> void:
 	add_child(_linger_timer)
 	_linger_timer.timeout.connect(_on_linger_timeout)
 
+	_idle_timer = Timer.new()
+	_idle_timer.one_shot = true
+	add_child(_idle_timer)
+	_idle_timer.timeout.connect(_on_idle_timeout)
+
 	scale = SHRUNK_SCALE
 	modulate.a = 0.0
 
 
 func get_state() -> int:
 	return _state
+
+
+## Hand in Stage/Herman/HermanAP so state_changed can drive its idle/talk
+## animations. Syncs Herman to the bubble's current state immediately, so
+## call order relative to the first say() doesn't matter.
+func set_herman_ap(ap: AnimationPlayer) -> void:
+	_herman_ap = ap
+	_update_herman_animation(_state)
+
+
+## Re-arms the idle-chatter timer for another IDLE_MIN_S..IDLE_MAX_S window.
+## koprasi.gd calls this on every Cart change so activity keeps pushing the
+## next ambient line out; a no-op while sticky (a sticky line, e.g.
+## SOLD_OUT, must not be undercut by an idle line the moment it clears) or
+## before _ready() has built the timer (editor-edited-scene bubbles never
+## get one).
+func reset_idle_timer() -> void:
+	if _idle_timer and not _sticky:
+		_idle_timer.start(randf_range(IDLE_MIN_S, IDLE_MAX_S))
+
+
+func _on_idle_timeout() -> void:
+	if not idle_chatter_enabled:
+		return
+	if _state == State.IDLE and not _sticky:
+		say(&"IDLE")
+
+
+## Swaps Herman between "talk" (bubble SHOWING/LINGERING, including a
+## sticky line) and "idle" (otherwise). Guarded against the edited-scene
+## case for consistency with the rest of the file, though in practice
+## _herman_ap is only ever populated by real gameplay/tests, never by the
+## editor poking an edited scene.
+func _update_herman_animation(s: int) -> void:
+	if Engine.is_editor_hint() and is_part_of_edited_scene():
+		return
+	if not _herman_ap:
+		return
+	var anim_name := "talk" if s == State.SHOWING or s == State.LINGERING else "idle"
+	if _herman_ap.has_animation(anim_name) and _herman_ap.current_animation != anim_name:
+		_herman_ap.play(anim_name)
 
 
 ## Speak a line from DialogueCatalog.LINES[event]. Ignored while sticky, or
@@ -227,3 +299,6 @@ func _set_state(s: int) -> void:
 		return
 	_state = s
 	state_changed.emit(s)
+	_update_herman_animation(s)
+	if s == State.IDLE and not _sticky:
+		reset_idle_timer()

@@ -46,6 +46,22 @@ extends Control
 ## (1080-40-320=720, 1920-40-320=1560).
 @export var crate_pos_collapsed: Vector2 = Vector2(720.0, 1560.0)
 
+## BackButton's authored position (Stage-local) while the tray is EXPANDED --
+## kept equal to BackButton's own authored offset_left/offset_top (24, 1157)
+## in koprasi.tscn so nothing jumps on load; test_tall_screen_layout.gd pins
+## that authored rect as "unchanged". The tray's own visible top (Body) sits
+## at 1360 (117 TrayDock + 1243 Body offset_top, see crate_pos_expanded's own
+## comment above), so BackButton's authored bottom edge (1157+185=1342)
+## already sits a comfortable 18px above it.
+@export var back_pos_expanded: Vector2 = Vector2(24.0, 1157.0)
+## BackButton's position while the tray is COLLAPSED -- 12px above the
+## collapsed crate handle's top edge. CrateHandle's own pivot is (0,0) and
+## its COLLAPSED scale is 1.0 (see _on_tray_state_changed), so
+## crate_pos_collapsed.y (1560) IS its on-screen top at that state:
+## 1560 - 185 (BackButton's own height) - 12 (gap) = 1363. x matches
+## back_pos_expanded.x -- the back button never moves sideways.
+@export var back_pos_collapsed: Vector2 = Vector2(24.0, 1363.0)
+
 var beli_button: Button
 ## The tween sliding/scaling the crate handle to match the tray's state;
 ## killed before a new one starts so two quick toggles never fight.
@@ -56,6 +72,12 @@ func _ready():
 		back_button.pivot_offset = back_button.size / 2
 		if not back_button.pressed.is_connected(_on_back_pressed):
 			back_button.pressed.connect(_on_back_pressed)
+		# Place it at whichever position matches the tray's current state
+		# (no animation) -- the tray always starts EXPANDED (no persistence,
+		# spec section "Cross-cutting"), so this is back_pos_expanded unless
+		# a future change starts the tray COLLAPSED.
+		var tray_expanded := not is_instance_valid(tray) or tray.is_expanded()
+		back_button.position = back_pos_expanded if tray_expanded else back_pos_collapsed
 
 	_setup_beli_button()
 	_update_coin_display()
@@ -229,6 +251,12 @@ func _on_tray_state_changed(state: int) -> void:
 		Vector2(0.35, 0.35) if expanded else Vector2.ONE, 0.28)
 	_crate_tween.tween_property(crate, "position",
 		crate_pos_expanded if expanded else crate_pos_collapsed, 0.28)
+	# The back button rides down/up with the crate as one piece -- same
+	# tween, same duration/trans/ease, same parallel() group (spec section 4
+	# "Cross-cutting: one tween per user gesture").
+	if back_button:
+		_crate_tween.tween_property(back_button, "position",
+			back_pos_expanded if expanded else back_pos_collapsed, 0.28)
 	var ap := crate.get_node_or_null("AP") as AnimationPlayer
 	if ap:
 		ap.play("RESET" if expanded else "idle_bounce")

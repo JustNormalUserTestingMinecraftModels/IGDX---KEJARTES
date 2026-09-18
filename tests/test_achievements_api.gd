@@ -64,14 +64,14 @@ func test_first_unclaimed_id_is_catalog_order() -> void:
 	assert_eq(a.first_unclaimed_id(), "grade_8")
 
 
-func test_total_unclaimed_gold_counts_unlocked_unclaimed() -> void:
+func test_total_unclaimed_count_counts_unlocked_unclaimed() -> void:
 	var a := _fresh()
-	assert_eq(a.total_unclaimed_gold(), 0)
+	assert_eq(a.total_unclaimed_count(), 0)
 	a.record_grade_passed(7)
 	a.record_grade_passed(8)
-	assert_eq(a.total_unclaimed_gold(), 2)
+	assert_eq(a.total_unclaimed_count(), 2)
 	a.claim("grade_7")
-	assert_eq(a.total_unclaimed_gold(), 1)
+	assert_eq(a.total_unclaimed_count(), 1)
 
 
 func test_total_counts() -> void:
@@ -128,6 +128,17 @@ func test_relock_drops_a_claimed_entry_back_to_locked() -> void:
 	a.claim("grade_7")
 	a.relock("grade_7")
 	assert_eq(a.state_of("grade_7"), ACHIEVEMENTS.STATE_LOCKED)
+
+
+## Task 7: relock() on an id the catalog doesn't recognise must be a true
+## no-op -- no save, no state_changed -- rather than silently erasing keys
+## that were never there.
+func test_relock_unknown_id_is_a_no_op() -> void:
+	var a := _fresh()
+	var count := [0]
+	a.state_changed.connect(func(): count[0] += 1)
+	a.relock("no_such_id")
+	assert_eq(count[0], 0, "unknown id must not emit state_changed")
 
 
 func test_state_changed_fires_once_on_reset_all() -> void:

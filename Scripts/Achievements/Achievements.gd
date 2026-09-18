@@ -175,6 +175,8 @@ func reset_all() -> void:
 ## claimed. Saves and notifies listeners; unlike reset_all() this touches
 ## only one entry.
 func relock(id: String) -> void:
+	if AchievementCatalog.get_entry(id).is_empty():
+		return
 	unlocked_ids.erase(id)
 	claimed_ids.erase(id)
 	_save()
@@ -247,7 +249,7 @@ func total_count() -> int:
 ## effect labels, not gold values, so this pass returns a count instead and
 ## the pill reads "%d hadiah belum diambil". Revisit if claimed prizes ever
 ## grant real G (see the polish plan's Achievements.gd section).
-func total_unclaimed_gold() -> int:
+func total_unclaimed_count() -> int:
 	var n := 0
 	for id in unlocked_ids.keys():
 		if not claimed_ids.has(id):

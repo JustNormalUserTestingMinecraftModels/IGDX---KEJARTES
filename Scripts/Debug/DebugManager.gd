@@ -1594,7 +1594,7 @@ func _refresh_achievements_panel() -> void:
 	if not is_instance_valid(_lbl_achievements_readout):
 		return
 	var total: int = Achievements.total_count()
-	var unclaimed: int = Achievements.total_unclaimed_gold()
+	var unclaimed: int = Achievements.total_unclaimed_count()
 	var opened_or_claimed: int = 0
 	for entry in AchievementCatalog.ENTRIES:
 		if Achievements.state_of(entry.id) != Achievements.STATE_LOCKED:

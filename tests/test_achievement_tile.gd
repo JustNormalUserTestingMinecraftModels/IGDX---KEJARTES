@@ -149,11 +149,73 @@ func test_tile_pressed_emits_the_achievement_id() -> void:
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
 	var got := []
 	tile.tile_pressed.connect(func(id): got.append(id))
+	tile._gui_input(_mouse_button(true, Vector2(10, 10)))
+	tile._gui_input(_mouse_button(false, Vector2(10, 10)))
+	assert_eq(got, [PLAIN_ID])
+
+
+## Press then release at (near) the same position is a clean tap: exactly
+## one emit. Covers the drag-scroll fix (Task 1): a bare PRESS must no
+## longer emit on its own.
+func test_press_then_release_same_position_emits_once() -> void:
+	var tile := _new_tile()
+	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
+	var got := []
+	tile.tile_pressed.connect(func(id): got.append(id))
+	tile._gui_input(_mouse_button(true, Vector2(100, 100)))
+	assert_eq(got.size(), 0, "a bare press must not emit")
+	tile._gui_input(_mouse_button(false, Vector2(104, 101)))
+	assert_eq(got, [PLAIN_ID])
+
+
+## Press, drag past the threshold, release: zero emits (a scroll gesture
+## that started on a tile must not open the detail sheet).
+func test_press_motion_beyond_threshold_release_emits_nothing() -> void:
+	var tile := _new_tile()
+	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
+	var got := []
+	tile.tile_pressed.connect(func(id): got.append(id))
+	tile._gui_input(_mouse_button(true, Vector2(100, 100)))
+	tile._gui_input(_mouse_button(false, Vector2(100, 100 + AchievementTile.TAP_MOVE_THRESHOLD + 10)))
+	assert_eq(got.size(), 0, "a drag past the threshold must not emit")
+
+
+## Same two cases via touch events, since the shipped device path is touch,
+## not mouse.
+func test_touch_press_release_same_position_emits_once() -> void:
+	var tile := _new_tile()
+	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
+	var got := []
+	tile.tile_pressed.connect(func(id): got.append(id))
+	tile._gui_input(_screen_touch(true, Vector2(50, 50)))
+	tile._gui_input(_screen_touch(false, Vector2(52, 51)))
+	assert_eq(got, [PLAIN_ID])
+
+
+func test_touch_press_motion_beyond_threshold_emits_nothing() -> void:
+	var tile := _new_tile()
+	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
+	var got := []
+	tile.tile_pressed.connect(func(id): got.append(id))
+	tile._gui_input(_screen_touch(true, Vector2(50, 50)))
+	tile._gui_input(_screen_touch(false, Vector2(50, 50 + AchievementTile.TAP_MOVE_THRESHOLD + 10)))
+	assert_eq(got.size(), 0)
+
+
+func _mouse_button(pressed: bool, pos: Vector2) -> InputEventMouseButton:
 	var event := InputEventMouseButton.new()
 	event.button_index = MOUSE_BUTTON_LEFT
-	event.pressed = true
-	tile._gui_input(event)
-	assert_eq(got, [PLAIN_ID])
+	event.pressed = pressed
+	event.global_position = pos
+	event.position = pos
+	return event
+
+
+func _screen_touch(pressed: bool, pos: Vector2) -> InputEventScreenTouch:
+	var event := InputEventScreenTouch.new()
+	event.pressed = pressed
+	event.position = pos
+	return event
 
 
 func test_scene_has_no_theme_overrides() -> void:
@@ -226,6 +288,16 @@ func test_relock_clears_baru_shown_so_it_replays_on_reunlock() -> void:
 	tile.refresh()
 	assert_true(tile.baru_badge.visible)
 	assert_true(AchievementTile._baru_shown.has(PLAIN_ID), "re-unlock must be able to replay the BARU pop_in")
+
+
+## Task 8: StatBar's min height (~36px) wins over the tile's 4px
+## custom_minimum_size override, so the progress bar must use the dedicated
+## thin AchievementTileBar variation instead.
+func test_progress_bar_uses_the_thin_achievement_tile_bar_variation() -> void:
+	var src := FileAccess.get_file_as_string(TILE)
+	assert_true(src.contains('theme_type_variation = &"AchievementTileBar"'),
+		"ProgressBar must use AchievementTileBar, not StatBar")
+	assert_false(src.contains('theme_type_variation = &"StatBar"'))
 
 
 func test_root_expands_to_fill_grid_column() -> void:

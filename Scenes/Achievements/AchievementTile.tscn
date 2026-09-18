@@ -11,7 +11,7 @@ custom_minimum_size = Vector2(420, 260)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"Card"
-mouse_filter = 0
+mouse_filter = 1
 script = ExtResource("1_tile")
 
 [node name="Content" type="VBoxContainer" parent="."]
@@ -88,7 +88,7 @@ text = "—"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
-theme_type_variation = &"StatBar"
+theme_type_variation = &"AchievementTileBar"
 show_percentage = false
 
 [node name="BaruBadge" type="PanelContainer" parent="."]

@@ -27,6 +27,12 @@ signal tile_pressed(id: String)
 
 const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
 
+## Tap-vs-scroll gesture threshold, in px: a release further than this from
+## its matching press is a drag-scroll (26 tiles fill a ScrollContainer), not
+## a tap, so it must not open the detail sheet. Mirrors the 20px guard
+## Scripts/Inventory/InventorySlot.gd already uses for the same problem.
+const TAP_MOVE_THRESHOLD := 16.0
+
 ## Tint applied to the whole tile when its achievement is still locked.
 @export var locked_modulate: Color = Color(1.0, 1.0, 1.0, 0.55)
 
@@ -41,6 +47,10 @@ const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd"
 
 var achievement_id: String = ""
 
+## Global position of the press that started the current gesture, used by
+## _gui_input to tell a tap from a drag-scroll on release.
+var _press_pos: Vector2 = Vector2.ZERO
+
 ## Session-scoped: ids whose "BARU" pip has already played its pop_in this
 ## session, so re-entering the screen (or a state_changed refresh) does not
 ## replay the animation on every redraw. Static so it survives across tile
@@ -48,10 +58,22 @@ var achievement_id: String = ""
 static var _baru_shown: Dictionary = {}
 
 
+## Emits tile_pressed only on a clean tap: press then release with less than
+## TAP_MOVE_THRESHOLD px of movement between them. A release on PRESS opened
+## the detail sheet under every drag-scroll starting on a tile; this mirrors
+## InventorySlot._on_gui_input's release+distance guard. Handles both mouse
+## (desktop/editor) and touch (device) events.
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed \
-			and event.button_index == MOUSE_BUTTON_LEFT:
-		tile_pressed.emit(achievement_id)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_press_pos = event.global_position
+		elif _press_pos.distance_to(event.global_position) < TAP_MOVE_THRESHOLD:
+			tile_pressed.emit(achievement_id)
+	elif event is InputEventScreenTouch:
+		if event.pressed:
+			_press_pos = event.position
+		elif _press_pos.distance_to(event.position) < TAP_MOVE_THRESHOLD:
+			tile_pressed.emit(achievement_id)
 
 
 ## Fills the tile from catalog entry `entry` and the Achievements autoload's

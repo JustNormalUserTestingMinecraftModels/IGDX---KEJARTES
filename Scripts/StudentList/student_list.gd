@@ -260,7 +260,7 @@ func _setup_students():
 			# RosterCard wraps the portrait in a PortraitFrame node (Task 4
 			# extraction), so it is no longer a direct child of the card.
 			var portrait_node = murid_node.get_node_or_null("PortraitFrame/Portrait")
-			var portrait_path = student_data.get("portrait", "")
+			var portrait_path = StudentSkins.portrait_for(student_data)
 			if portrait_node and portrait_path != "" and ResourceLoader.exists(portrait_path):
 				portrait_node.texture = load(portrait_path)
 
@@ -379,7 +379,7 @@ func _sync_roster_strip() -> void:
 			continue
 		avatar.visible = true
 		var student: Dictionary = active_students[i]
-		var portrait_path: String = student.get("portrait", "")
+		var portrait_path: String = StudentSkins.portrait_for(student)
 		if portrait_path != "" and ResourceLoader.exists(portrait_path):
 			avatar.portrait_texture = load(portrait_path)
 		avatar.is_scheduled = _is_student_scheduled(student)

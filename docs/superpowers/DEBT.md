@@ -248,6 +248,19 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Skins (2026-09-18).** No way to earn or buy a skin yet: every shipped
+  skin starts unlocked (`StudentSkins.UNLOCKED_BY_DEFAULT`) and only the debug
+  toggle locks them; the Cosmetic Shop stub is the likely home. Worn skins
+  are session-scoped like the roster (not saved). The artist's
+  `<Name>Skin1(itemonly).png` clothes-only images (kosmetik.zip) are not
+  imported -- probably future shop icons. The flat Skin1 portraits are baked,
+  not drawn: re-run `Scripts/Skins/BakeSkinPortraits.gd` (headless, see its
+  header) when a skin's face base changes; Marcel's glasses bake with a
+  flat grey lens instead of `glasses_lens.gdshader`'s tint. In a windowed
+  desktop run `SafeAreaMargin` clamps the monitor's safe area to a large
+  bottom inset, so the skin card (like the Lobby's bottom bar) sits high;
+  on a phone it is centred.
+
 - **Koperasi polish leftovers (2026-09-18).** `ShopMessageWarning` and
   `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `koprasi.gd` after
   the final polish pass -- nothing in the shop currently shows a warning or

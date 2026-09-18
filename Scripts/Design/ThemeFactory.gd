@@ -46,6 +46,13 @@ const DAY_BANNER_OUTLINE := 12
 ## at the mockup's 5/6 scale. No token matches; a single-screen value.
 const SHOP_CHAT_BUBBLE_RADIUS := 28
 
+## Measured off skinselect_mockup.png: the student frames' corner radius and
+## brown outline width. No token matches; the colours still come from tokens.
+const SKIN_FRAME_RADIUS := 72
+const SKIN_BORDER_WIDTH := 10
+## The option column's corner radius (skinselectoption_mockup.png).
+const SKIN_COLUMN_RADIUS := 60
+
 
 ## Koperasi's chat bubble (2026-09-17 shop revamp spec): Pak Herman's
 ## speech, a flat card-white rounded box with no shadow. Its tail is
@@ -826,6 +833,34 @@ static func _build_panels(theme: Theme, tokens: DesignTokens) -> void:
 	photo.shadow_size = tokens.shadow_size
 	photo.shadow_offset = tokens.shadow_offset
 	theme.set_stylebox("panel", "PhotoFrame", photo)
+
+	# The skin popup's masked student art (SkinFrame.tscn): an opaque rounded
+	# fill that clip_children uses as the mask, and a fill-less brown outline
+	# drawn over the art.
+	theme.add_type("SkinFrameMask")
+	theme.set_type_variation("SkinFrameMask", "Panel")
+	var skin_mask := StyleBoxFlat.new()
+	skin_mask.bg_color = tokens.surface_card
+	skin_mask.set_corner_radius_all(SKIN_FRAME_RADIUS)
+	theme.set_stylebox("panel", "SkinFrameMask", skin_mask)
+
+	theme.add_type("SkinFrameBorder")
+	theme.set_type_variation("SkinFrameBorder", "Panel")
+	var skin_border := StyleBoxFlat.new()
+	skin_border.draw_center = false
+	skin_border.border_color = tokens.brand_primary
+	skin_border.set_border_width_all(SKIN_BORDER_WIDTH)
+	skin_border.set_corner_radius_all(SKIN_FRAME_RADIUS)
+	theme.set_stylebox("panel", "SkinFrameBorder", skin_border)
+
+	theme.add_type("SkinOptionColumn")
+	theme.set_type_variation("SkinOptionColumn", "Panel")
+	var skin_column := StyleBoxFlat.new()
+	skin_column.bg_color = tokens.surface_card
+	skin_column.border_color = tokens.brand_primary
+	skin_column.set_border_width_all(SKIN_BORDER_WIDTH)
+	skin_column.set_corner_radius_all(SKIN_COLUMN_RADIUS)
+	theme.set_stylebox("panel", "SkinOptionColumn", skin_column)
 
 	# A card header whose accent is chosen at runtime. The background is
 	# white so the caller can tint it with self_modulate -- the accent is the

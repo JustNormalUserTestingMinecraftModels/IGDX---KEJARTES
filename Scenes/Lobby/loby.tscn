@@ -25,6 +25,7 @@
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="20_yhuud"]
 [ext_resource type="Texture2D" uid="uid://bed2fo2wc4bd7" path="res://Assets/Images/Achievements/achievement_button.png" id="28_ikpat"]
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
+[ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
@@ -892,6 +893,17 @@ offset_left = 240.0
 offset_right = 336.0
 offset_bottom = 96.0
 texture_normal = ExtResource("28_ikpat")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="SkinSwitchButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=1019305615]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
+offset_left = 360.0
+offset_right = 456.0
+offset_bottom = 96.0
+texture_normal = ExtResource("30_62a4m")
 ignore_texture_size = true
 stretch_mode = 5
 

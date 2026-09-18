@@ -627,11 +627,11 @@ func _update_student_display():
 	if name_label:
 		name_label.text = student.get("name", "Murid")
 
-	var splash_path = student.get("splash", "")
+	var splash_path = StudentSkins.splash_for(student)
 	if splash_path != "" and ResourceLoader.exists(splash_path):
 		select_student_button.texture_normal = load(splash_path)
 	else:
-		var portrait_path = student.get("portrait", "")
+		var portrait_path = StudentSkins.portrait_for(student)
 		if portrait_path != "" and ResourceLoader.exists(portrait_path):
 			select_student_button.texture_normal = load(portrait_path)
 

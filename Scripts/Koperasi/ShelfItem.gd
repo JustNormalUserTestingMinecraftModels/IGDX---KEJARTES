@@ -99,3 +99,24 @@ func set_dimmed(dim: bool) -> void:
 	if not is_instance_valid(_button):
 		return
 	_button.modulate.a = dim_alpha if dim else 1.0
+
+## Sets the stock-pip badge under the shelf button: `total` copies of this
+## slot's item are on this week's shelf, `remaining` of them still unsold
+## and uncarted. Looks up PipRow -- a static HBoxContainer of Pip1..Pip3
+## authored as a sibling of this helper, under the button, in koprasi.tscn
+## -- rather than building anything at runtime. Each PipN shows while
+## `i < total` and carries a "Fill" child shown while `i < remaining`, so a
+## hollow dot (Fill hidden) reads as sold/carted and a hidden PipN reads as
+## never on the shelf at all (an item stocked only once or twice).
+func set_stock_pips(remaining: int, total: int) -> void:
+	if not is_instance_valid(_button):
+		return
+	var row: Node = _button.get_node_or_null("PipRow")
+	if row == null:
+		return
+	for i in range(row.get_child_count()):
+		var pip: CanvasItem = row.get_child(i)
+		pip.visible = i < total
+		var fill: CanvasItem = pip.get_node_or_null("Fill")
+		if fill != null:
+			fill.visible = i < remaining

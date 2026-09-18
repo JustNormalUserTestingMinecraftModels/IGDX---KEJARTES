@@ -12,10 +12,12 @@ extends Control
 ## Pak Herman's chat bubble (Stage/ChatBubble, ChatBubble.gd) reacts to cart
 ## events and purchase outcomes -- WELCOME or a sticky SOLD_OUT line on
 ## arrival, ADD/REMOVE from Cart's granular signals, EMPTY/POOR on a failed
-## Beli, THANKS on a successful one. Lines come from DialogueCatalog. The
-## bubble also drives Stage/Herman/HermanAP's idle/talk animation and an
-## idle-chatter timer -- Cart.cart_changed resets that timer so any cart
-## activity pushes the next ambient line back out.
+## Beli, THANKS on a successful one, OUT_OF_STOCK on the Stage's
+## shelf_dead_tap (a tap landing on a slot that just sold or emptied).
+## Lines come from DialogueCatalog. The bubble also drives
+## Stage/Herman/HermanAP's idle/talk animation and an idle-chatter timer --
+## Cart.cart_changed resets that timer so any cart activity pushes the next
+## ambient line back out.
 
 @onready var stage: Control = $Stage
 @onready var back_button: TextureButton = $Stage/BackButton
@@ -49,6 +51,14 @@ func _ready():
 	if not Cart.cart_changed.is_connected(_on_cart_changed):
 		Cart.cart_changed.connect(_on_cart_changed)
 
+	# rakbarang_1.gd declares no class_name, so `stage` is typed as plain
+	# Control -- go through Signal(object, name) rather than a static
+	# `stage.shelf_dead_tap` member access, which the parser would reject.
+	if stage and stage.has_signal("shelf_dead_tap"):
+		var dead_tap := Signal(stage, "shelf_dead_tap")
+		if not dead_tap.is_connected(_on_shelf_dead_tap):
+			dead_tap.connect(_on_shelf_dead_tap)
+
 	if bubble and herman_ap:
 		bubble.set_herman_ap(herman_ap)
 
@@ -68,6 +78,10 @@ func _exit_tree() -> void:
 		Cart.item_removed.disconnect(_on_cart_item_removed)
 	if Cart.cart_changed.is_connected(_on_cart_changed):
 		Cart.cart_changed.disconnect(_on_cart_changed)
+	if stage and stage.has_signal("shelf_dead_tap"):
+		var dead_tap := Signal(stage, "shelf_dead_tap")
+		if dead_tap.is_connected(_on_shelf_dead_tap):
+			dead_tap.disconnect(_on_shelf_dead_tap)
 
 ## Any cart activity (add, remove, clear) pushes Pak Herman's idle-chatter
 ## timer back out, so he doesn't ramble mid-shopping.
@@ -82,6 +96,14 @@ func _on_cart_item_added(item_name: String) -> void:
 func _on_cart_item_removed(item_name: String) -> void:
 	if bubble:
 		bubble.say_for_item(&"REMOVE", item_name)
+
+## The Stage's shelf_dead_tap: a tap landed on a slot that already sold or
+## is sitting in the basket. `item_name` is unused today (OUT_OF_STOCK has
+## no per-item pool) but kept so a future per-item line needs no signal
+## change.
+func _on_shelf_dead_tap(_item_name: String) -> void:
+	if bubble:
+		bubble.say(&"OUT_OF_STOCK")
 
 func _setup_beli_button():
 	# Beli lives in the basket tray's footer.

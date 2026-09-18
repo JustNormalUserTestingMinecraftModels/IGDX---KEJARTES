@@ -59,7 +59,10 @@ splash), `hujan_background.png` (the school tinted dusk-blue with seeded rain
 streaks) and `calendar_badge.png`, and the 2026-09-14 Weekly Results ribbon,
 `Assets/Images/DaySummary/title_weekly_results.png` (cut out of the mockup
 and given `title_daily_results.png`'s alpha -- drop-replaceable at the same
-path).
+path), and the 2026-09-18 Koperasi stock-pip set:
+`Assets/Images/Shop/UI/pip_filled.svg` / `pip_hollow.svg` (a plain filled
+dot and a matching ring, coloured from `koperasi_tag_fill`/`koperasi_tray_rule`
+to stay warm and shop-consistent -- drop-replaceable at the same path).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and

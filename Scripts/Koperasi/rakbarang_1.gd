@@ -6,16 +6,33 @@ extends Control  # script Stage
 ## back button and the basket tray.
 ##
 ## The shelf is rolled once a week (GameState.shop_stock_for_week()) and can
-## hold two copies of an item. Each slot sells once. Cart stays keyed by
-## name, so the shelf keeps which SLOT emptied itself (_taken_slots) and
-## re-derives it from Cart and GameState.shop_sold on every cart change
-## (reconcile_taken()).
+## hold up to SHOP_MAX_COPIES (3) copies of an item. Each slot
+## sells once. Cart stays keyed by name, so the shelf keeps which SLOT
+## emptied itself (_taken_slots) and re-derives it from Cart and
+## GameState.shop_sold on every cart change (reconcile_taken()).
 ##
 ## Tapping an item puts one in Cart and flies a copy of its art, in the
 ## mentor-approved split arc, onto that item's own slot in the tray, and the
 ## item leaves the shelf. The tray (BasketTray.tscn) redraws itself from Cart;
 ## this script only wires the shelf, the flight and the hold-to-return gesture
 ## to it.
+##
+## Each shelf slot also carries a stock-pip badge (ShelfItem.set_stock_pips,
+## PipRow in the .tscn) showing remaining_of(name) filled out of that name's
+## copies on this week's shelf. remaining_of() depends only on
+## _stock_names/GameState.shop_stock, GameState.shop_sold and Cart, so a
+## test can call it on a bare instance that was never added to the tree
+## (this script is not @tool, so _ready() never runs under the editor's
+## test bridge unless the node enters a live tree).
+
+## Emitted when a tap lands on a slot that is already taken or sold this
+## week. The button is hidden the moment a slot empties
+## (_refresh_shelf_visibility), so in practice this only fires for a second
+## tap landing in the same frame as the first, before the hide takes
+## effect -- _on_barang_pressed()'s existing "_taken_slots.has(index)" guard
+## is the one reachable dead-tap path in the current UI. koprasi.gd connects
+## this to Pak Herman's OUT_OF_STOCK line.
+signal shelf_dead_tap(item_name: String)
 
 @export_group("Global Settings")
 ## Global scale multiplier for all items (1.0 = normal)
@@ -27,7 +44,8 @@ extends Control  # script Stage
 var shelf_buttons: Array[TextureButton] = []
 var item_data_list: Array[ItemData] = []
 
-## Item name per shelf slot, parallel to item_data_list. A pair shows twice.
+## Item name per shelf slot, parallel to item_data_list. A name can repeat
+## up to SHOP_MAX_COPIES times.
 var _stock_names: Array[String] = []
 ## Slots emptied -- tapped into the basket or sold this week -- in the order
 ## they emptied. Rebuilt by reconcile_taken() on every cart change.
@@ -108,6 +126,7 @@ func setup_shelf():
 		_price_tags.append(btn.get_node_or_null("PriceTag"))
 	_refresh_affordability()
 	_refresh_shelf_visibility()
+	_refresh_stock_pips()
 
 
 ## Which slots are empty, given what the player took (`taken`, in the order
@@ -160,6 +179,46 @@ func _refresh_shelf_visibility() -> void:
 		btn.visible = on_sale
 		if on_sale and was_hidden and btn.is_visible_in_tree():
 			AnimUtils.squash_bounce(btn)
+
+## Copies of `item_name` on this week's shelf. Reads _stock_names once
+## setup_shelf() has populated it; falls back to GameState.shop_stock so
+## remaining_of() and the pip totals are still correct on a bare instance
+## that never ran setup_shelf() (a test), or before the Stage's own
+## _ready() has (a race that cannot happen in the running game, since
+## GameState.shop_stock_for_week() is called synchronously inside it).
+func _stock_count(item_name: String) -> int:
+	if _stock_names.size() > 0:
+		return _stock_names.count(item_name)
+	return GameState.shop_stock.count(item_name)
+
+
+## Units of `item_name` still available to tap this week: its copies on
+## the shelf, minus what has sold, minus what already sits in the basket.
+## Floored at 0. Depends only on _stock_names/GameState.shop_stock,
+## GameState.shop_sold and Cart -- no node lookups -- so it can be called
+## on a bare, untree'd instance in a test.
+func remaining_of(item_name: String) -> int:
+	var stock: int = _stock_count(item_name)
+	var sold: int = GameState.shop_sold.count(item_name)
+	var carted: int = Cart.get_quantity(item_name)
+	return maxi(0, stock - sold - carted)
+
+
+## Recomputes every shelf slot's stock-pip badge (remaining/total copies of
+## its name on this week's shelf) through the ShelfItem helper already
+## sitting under its button. Called after setup_shelf() and on every cart
+## or money change, so a purchase, a hold-to-return or an affordability
+## shift all keep the dots honest.
+func _refresh_stock_pips() -> void:
+	for i in range(_shelf_items.size()):
+		if i >= _stock_names.size():
+			continue
+		var life = _shelf_items[i]
+		if not is_instance_valid(life):
+			continue
+		var item_name: String = _stock_names[i]
+		life.set_stock_pips(remaining_of(item_name), mini(_stock_count(item_name), 3))
+
 
 func _find_price_display(btn: TextureButton) -> Node:
 	for child in btn.get_children():
@@ -217,6 +276,7 @@ func get_item_effective_size(item: ItemData, source_button: TextureButton = null
 ## from GameState directly, so the argument is unused.
 func _on_money_changed_refresh(_new_amount: int) -> void:
 	_refresh_affordability()
+	_refresh_stock_pips()
 
 ## Cart.cart_changed: the tray redraws from the cart itself, and the shelf
 ## re-derives which items are still on sale.
@@ -224,6 +284,7 @@ func _on_cart_changed() -> void:
 	if is_instance_valid(tray):
 		tray.refresh(Cart.cart)
 	_refresh_shelf_visibility()
+	_refresh_stock_pips()
 
 func _on_barang_pressed(index: int):
 	if index < 0 or index >= item_data_list.size():
@@ -232,6 +293,7 @@ func _on_barang_pressed(index: int):
 	# Each slot sells once: a second tap landing before the button hides
 	# must not add a second unit.
 	if _taken_slots.has(index):
+		shelf_dead_tap.emit(item.item_name)
 		return
 	var btn = shelf_buttons[index]
 

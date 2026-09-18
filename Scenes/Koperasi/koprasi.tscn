@@ -14,6 +14,8 @@
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_pstwm"]
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 [ext_resource type="Script" path="res://Scripts/Koperasi/ChatBubble.gd" id="15_chatbubble"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/pip_hollow.svg" id="16_piphollow"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/pip_filled.svg" id="17_pipfilled"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -176,6 +178,76 @@ offset_top = 176.0
 offset_right = 150.0
 offset_bottom = 226.0
 
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang1" unique_id=152245713]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 6.0
+offset_right = 176.0
+offset_bottom = 24.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=1147589431]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang1/PipRow/Pip1" unique_id=1704950127]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=650704110]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang1/PipRow/Pip2" unique_id=1625275599]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=725558168]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang1/PipRow/Pip3" unique_id=1951248597]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Barang2" type="TextureButton" parent="Stage" unique_id=1035531758]
 layout_mode = 0
 offset_left = 400.0
@@ -208,6 +280,76 @@ offset_left = 30.0
 offset_top = 176.0
 offset_right = 150.0
 offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang2" unique_id=1014717160]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 6.0
+offset_right = 176.0
+offset_bottom = 24.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=1014947454]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang2/PipRow/Pip1" unique_id=569120470]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=1176432292]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang2/PipRow/Pip2" unique_id=818834988]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=357828217]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang2/PipRow/Pip3" unique_id=1061426864]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Barang3" type="TextureButton" parent="Stage" unique_id=146454907]
 layout_mode = 0
@@ -242,6 +384,76 @@ offset_top = 176.0
 offset_right = 150.0
 offset_bottom = 226.0
 
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang3" unique_id=871021906]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 6.0
+offset_right = 176.0
+offset_bottom = 24.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1251214989]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang3/PipRow/Pip1" unique_id=1792405716]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1320150119]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang3/PipRow/Pip2" unique_id=1456214491]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1885664185]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang3/PipRow/Pip3" unique_id=593939420]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Barang4" type="TextureButton" parent="Stage" unique_id=1939537762]
 layout_mode = 0
 offset_left = 400.0
@@ -274,6 +486,76 @@ offset_left = 30.0
 offset_top = 176.0
 offset_right = 150.0
 offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang4" unique_id=1913242402]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 6.0
+offset_right = 176.0
+offset_bottom = 24.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=537563283]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang4/PipRow/Pip1" unique_id=1503456351]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=1048468601]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang4/PipRow/Pip2" unique_id=617701114]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=1597974320]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang4/PipRow/Pip3" unique_id=737409031]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Barang5" type="TextureButton" parent="Stage" unique_id=1855709326]
 layout_mode = 0
@@ -308,6 +590,76 @@ offset_top = 176.0
 offset_right = 150.0
 offset_bottom = 226.0
 
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang5" unique_id=946587675]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 6.0
+offset_right = 176.0
+offset_bottom = 24.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1168279158]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang5/PipRow/Pip1" unique_id=589624512]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1402280116]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang5/PipRow/Pip2" unique_id=512546524]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1026545289]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang5/PipRow/Pip3" unique_id=380031057]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Barang6" type="TextureButton" parent="Stage" unique_id=1304589263]
 layout_mode = 0
 offset_left = 400.0
@@ -340,6 +692,76 @@ offset_left = 30.0
 offset_top = 176.0
 offset_right = 150.0
 offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang6" unique_id=610613472]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 6.0
+offset_right = 176.0
+offset_bottom = 24.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=289289198]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang6/PipRow/Pip1" unique_id=1765155189]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=371058406]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang6/PipRow/Pip2" unique_id=1607862616]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=967511406]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang6/PipRow/Pip3" unique_id=1871016044]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Herman" type="TextureRect" parent="Stage" unique_id=2135616178]
 layout_mode = 1

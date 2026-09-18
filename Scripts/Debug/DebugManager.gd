@@ -399,6 +399,14 @@ func _build_general_panel(parent: Control) -> void:
 	btn_forget.add_theme_font_size_override("font_size", 23)
 	btn_forget.pressed.connect(_forget_session)
 	vbox.add_child(btn_forget)
+
+	var btn_skins = Button.new()
+	btn_skins.text = " 🎨 Kunci/Buka Semua Skin "
+	btn_skins.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_skins.custom_minimum_size = Vector2(0, 95)
+	btn_skins.add_theme_font_size_override("font_size", 23)
+	btn_skins.pressed.connect(_toggle_skin_locks)
+	vbox.add_child(btn_skins)
 	vbox.add_child(HSeparator.new())
 
 	# Row 1: Week tracking & Grade
@@ -699,6 +707,13 @@ func _seed_playtest_state() -> void:
 	_refresh_ui_fields()
 
 ## Debug: wipe in-memory GameState + the inventory save, then boot fresh.
+## Locks every non-default skin, or unlocks them again, so the skin popup's
+## darkened locked tiles can be seen while every shipped skin starts unlocked.
+func _toggle_skin_locks() -> void:
+	GameState.set_all_skins_locked(not GameState.all_skins_locked())
+	log_message("Skin: %s" % ("semua terkunci" if GameState.all_skins_locked() else "semua terbuka"))
+
+
 func _forget_session() -> void:
 	GameState.forget_session()
 	if debug_ui_root:

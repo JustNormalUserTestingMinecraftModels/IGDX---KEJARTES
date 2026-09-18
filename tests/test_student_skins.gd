@@ -155,3 +155,9 @@ func test_consumers_use_the_resolver() -> void:
 func test_result_screens_keep_their_own_art() -> void:
 	for path in ["res://Scripts/EndGame/WinStage.gd", "res://Scripts/EndGame/WinLineup.gd"]:
 		assert_false(FileAccess.get_file_as_string(path).contains("StudentSkins"), path)
+
+
+func test_debug_overlay_toggles_skin_locks() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
+	assert_true(src.contains("Kunci/Buka Semua Skin"))
+	assert_true(src.contains("GameState.set_all_skins_locked(not GameState.all_skins_locked())"))

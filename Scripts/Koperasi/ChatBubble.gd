@@ -22,6 +22,14 @@ extends Control
 ## test_run also executes inside the editor and still needs the real
 ## behaviour. Saving koprasi.tscn from the editor must never bake the
 ## shrunk/hidden pose into the file.
+##
+## _play()/_hide() each kill any tween still running from a previous call
+## before starting their own (ADD then REMOVE within one frame, or a say()
+## mid-hide, must not leave two tweens fighting over scale/modulate/
+## position -- spec "Different events still interrupt normally"). The
+## surviving tween's finish callback also checks it is still `_tween`
+## before touching state, so even a callback that slips through a kill()
+## race can never flip state on behalf of a superseded animation.
 
 signal state_changed(state: int)
 
@@ -47,6 +55,11 @@ var _sticky: bool = false
 ## for that event, for the per-event cooldown.
 var _last_say_time: Dictionary = {}
 var _linger_timer: Timer
+## The Tween currently animating this bubble in or out, if any. Compared by
+## reference in the finish callbacks so a killed/superseded tween's own
+## callback (should one ever still fire) is a no-op instead of touching
+## state on the new animation's behalf.
+var _tween: Tween
 
 @onready var _label: RichTextLabel = get_node_or_null("Body/Text") as RichTextLabel
 @onready var _tail: Control = get_node_or_null("Tail") as Control
@@ -78,29 +91,35 @@ func get_state() -> int:
 ## Speak a line from DialogueCatalog.LINES[event]. Ignored while sticky, or
 ## within SAY_COOLDOWN of the previous accepted say() of the same event.
 func say(event: StringName) -> void:
-	if _sticky or not _pass_cooldown(event):
-		return
-	var text := DialogueCatalog.pick(event)
-	if text.is_empty():
-		return
-	_play(text)
+	_say_gated(event, func(): return DialogueCatalog.pick(event))
 
 
 ## Like say(), but for &"ADD"/&"REMOVE" where `item_name` may have its own
 ## DialogueCatalog.ITEM_LINES pool (falls back to the generic pool).
 func say_for_item(event: StringName, item_name: String) -> void:
+	_say_gated(event, func(): return DialogueCatalog.pick_for_item(event, item_name))
+
+
+## Shared cooldown/sticky gate for say() and say_for_item(). `resolve_text`
+## is only called once the gate passes -- it must stay lazy (a Callable, not
+## an already-picked String), or a blocked call would still burn a pick()
+## from DialogueCatalog's anti-repetition state for a line nobody sees.
+func _say_gated(event: StringName, resolve_text: Callable) -> void:
 	if _sticky or not _pass_cooldown(event):
 		return
-	var text := DialogueCatalog.pick_for_item(event, item_name)
+	var text: String = resolve_text.call()
 	if text.is_empty():
 		return
 	_play(text)
 
 
-## Pin `text` until clear_sticky(). Bypasses the cooldown (idempotent: the
-## text does not change while already sticky) and every later say()/
-## say_for_item() is ignored until cleared.
+## Pin `text` until clear_sticky(). Bypasses the cooldown and every later
+## say()/say_for_item() is ignored until cleared. Idempotent: calling this
+## again with the text already showing does nothing -- no re-tween, per the
+## tap-spam safeguard spec ("same text, no re-tween").
 func say_sticky(text: String) -> void:
+	if _sticky and _label and _label.text == text:
+		return
 	_sticky = true
 	if _linger_timer:
 		_linger_timer.stop()
@@ -130,16 +149,27 @@ func _play(text: String) -> void:
 	if Engine.is_editor_hint() and is_part_of_edited_scene():
 		return
 
+	if _linger_timer:
+		_linger_timer.stop()
+	_kill_tween()
+
 	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_tween = tw
 	tw.set_parallel(true)
 	tw.tween_property(self, "scale", Vector2.ONE, FADE_IN_S)
 	tw.tween_property(self, "modulate:a", 1.0, FADE_IN_S)
 	tw.tween_property(self, "position", rest_position, FADE_IN_S)
 	tw.set_parallel(false)
-	tw.tween_callback(_on_shown)
+	tw.tween_callback(_on_shown.bind(tw))
 
 
-func _on_shown() -> void:
+## `tw` is the Tween that finished; if a newer say()/say_sticky()/_hide()
+## has since killed and replaced `_tween`, this is a superseded callback
+## and must not touch state (finding: a stray callback flipping LINGERING
+## back to IDLE, or arming the linger timer, behind a fresher animation).
+func _on_shown(tw: Tween) -> void:
+	if tw != _tween:
+		return
 	_set_state(State.LINGERING)
 	if _sticky:
 		return
@@ -160,18 +190,36 @@ func _hide() -> void:
 		_set_state(State.IDLE)
 		return
 
+	if _linger_timer:
+		_linger_timer.stop()
+	_kill_tween()
+
 	var end_pos := rest_position + HERMAN_ANCHOR_OFFSET
 	var tw := create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_tween = tw
 	tw.set_parallel(true)
 	tw.tween_property(self, "scale", SHRUNK_SCALE, FADE_OUT_S)
 	tw.tween_property(self, "modulate:a", 0.0, FADE_OUT_S)
 	tw.tween_property(self, "position", end_pos, FADE_OUT_S)
 	tw.set_parallel(false)
-	tw.tween_callback(_on_hidden)
+	tw.tween_callback(_on_hidden.bind(tw))
 
 
-func _on_hidden() -> void:
+## See _on_shown()'s note -- same staleness guard.
+func _on_hidden(tw: Tween) -> void:
+	if tw != _tween:
+		return
 	_set_state(State.IDLE)
+
+
+## Stop and invalidate the in-flight tween, if any, before starting a new
+## one. Godot's Tween.kill() prevents any of its remaining steps (including
+## a queued tween_callback) from ever running; _on_shown()/_on_hidden()'s
+## own `tw != _tween` check is the second, belt-and-braces layer.
+func _kill_tween() -> void:
+	if _tween != null and is_instance_valid(_tween):
+		_tween.kill()
+	_tween = null
 
 
 func _set_state(s: int) -> void:

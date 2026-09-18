@@ -5,10 +5,11 @@ extends McpTestSuite
 ## _ready() every time the shop scene loaded -- permanent chrome, not
 ## per-item content, so it belongs in the scene (Pattern A).
 ##
-## The dynamic per-call message colour (state_warning/danger/success) is now
-## three ThemeFactory variations the screen swaps between via
-## theme_type_variation, instead of add_theme_color_override with a token
-## colour picked at runtime.
+## The dynamic per-call message colour is a ThemeFactory variation swapped
+## via theme_type_variation, instead of add_theme_color_override with a
+## token colour picked at runtime. Since the 2026-09-17 chat-bubble pass,
+## koprasi.gd only ever shows the success variation on MessageLabel --
+## EMPTY/POOR now speak through Pak Herman's ChatBubble instead.
 ##
 ## Must be @tool; no test here may be a coroutine.
 
@@ -40,9 +41,17 @@ func test_coin_label_uses_the_shop_coin_variation() -> void:
 	assert_contains(text, 'theme_type_variation = &"ShopCoinLabel"')
 
 
-func test_show_message_swaps_theme_variation_not_a_colour_override() -> void:
+## The 2026-09-17 chat-bubble pass (Task 2) moved the EMPTY/POOR failure
+## paths off MessageLabel and into Pak Herman's bubble (DialogueCatalog's
+## &"EMPTY"/&"POOR" events) -- see the polish spec, "Contextual dialogue
+## bubble" section. MessageLabel is now success-only, so it needs just the
+## one ThemeFactory variation; ShopMessageWarning/ShopMessageDanger stay
+## registered in ThemeFactory for any other caller, they are just no longer
+## koprasi.gd's job to reach for.
+func test_show_message_swaps_theme_variation_and_errors_route_through_the_bubble() -> void:
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
 	assert_false(src.contains('add_theme_color_override("font_color"'),
 		"the message label must swap theme_type_variation, not override a colour")
-	for variation in ["ShopMessageWarning", "ShopMessageDanger", "ShopMessageSuccess"]:
-		assert_contains(src, variation, "missing message variation: %s" % variation)
+	assert_contains(src, "ShopMessageSuccess", "missing message variation: ShopMessageSuccess")
+	assert_contains(src, 'say(&"EMPTY")', "empty-cart Beli should route through the bubble")
+	assert_contains(src, 'say(&"POOR")', "insufficient-funds Beli should route through the bubble")

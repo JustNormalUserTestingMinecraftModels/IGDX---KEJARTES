@@ -130,6 +130,33 @@ func test_cart_adds_capped_per_frame() -> void:
 		"a dropped add must not emit item_added")
 
 
+## Fix round 2: add_item() must report the drop so a caller that already
+## spent state (rakbarang_1.gd's taken slot / tray hold / flight) can undo
+## it, instead of the drop being silently invisible to the caller.
+func test_add_item_returns_false_once_the_frame_cap_is_hit() -> void:
+	var data: ItemData = ItemDatabase.get_item(ITEM_NAME)
+	var results: Array = []
+	for i in range(4):
+		results.append(Cart.add_item(data))
+	assert_eq(results, [true, true, true, false],
+		"the 4th same-frame add should be refused once MAX_ADDS_PER_FRAME (3) is hit")
+	var emitted: Array = []
+	var handler := func(name: String): emitted.append(name)
+	Cart.item_added.connect(handler)
+	Cart.add_item(data)
+	Cart.item_added.disconnect(handler)
+	assert_eq(emitted.size(), 0, "a refused add must not emit item_added")
+
+
+func test_rakbarang_press_handler_checks_add_item_result() -> void:
+	var src := FileAccess.get_file_as_string(RAK_PATH)
+	var body := _body(src, "func _on_barang_pressed(")
+	assert_true(body.contains("Cart.add_item(item)"),
+		"the press handler must still call Cart.add_item(item)")
+	assert_true(body.contains("if not Cart.add_item(item):") or body.contains("if Cart.add_item(item):"),
+		"the press handler must branch on Cart.add_item()'s return value before committing the slot/hold/flight")
+
+
 func test_cart_clear_resets_the_per_frame_budget() -> void:
 	var data: ItemData = ItemDatabase.get_item(ITEM_NAME)
 	for i in range(Cart.MAX_ADDS_PER_FRAME):
@@ -176,6 +203,39 @@ func test_shelf_item_on_flight_finished_unlocks() -> void:
 	btn.queue_free()
 
 
+## Fix round 2: _unlock() (and the on_tap() ghost) must compose with the
+## affordability dim recorded by set_dimmed(), not always snap back to full
+## opacity -- otherwise an item that goes unaffordable mid-flight (or was
+## unaffordable when tapped) reads as buyable again the instant the lock
+## lifts, letting the player cart it.
+func test_unlock_restores_dim_when_item_is_unaffordable() -> void:
+	var pair := _live_shelf_item()
+	var life = pair[0]
+	var btn: TextureButton = pair[1]
+	life.set_dimmed(true)
+	assert_true(_nearly(btn.modulate.a, life.dim_alpha),
+		"set_dimmed(true) should dim the button")
+	life.on_tap()
+	assert_true(_nearly(btn.modulate.a, life.locked_alpha),
+		"on_tap() should still ghost to locked_alpha while locked")
+	life.on_flight_finished()
+	assert_true(_nearly(btn.modulate.a, life.dim_alpha),
+		"unlocking an unaffordable item must restore the dim, not full alpha")
+	btn.queue_free()
+
+
+func test_unlock_restores_full_alpha_when_item_is_affordable() -> void:
+	var pair := _live_shelf_item()
+	var life = pair[0]
+	var btn: TextureButton = pair[1]
+	life.set_dimmed(false)
+	life.on_tap()
+	life.on_flight_finished()
+	assert_true(_nearly(btn.modulate.a, 1.0),
+		"unlocking an affordable item should restore full alpha")
+	btn.queue_free()
+
+
 func test_rakbarang_press_handler_checks_on_tap_and_reports_flight_finished() -> void:
 	var src := FileAccess.get_file_as_string(RAK_PATH)
 	var body := _body(src, "func _on_barang_pressed(")
@@ -183,6 +243,21 @@ func test_rakbarang_press_handler_checks_on_tap_and_reports_flight_finished() ->
 		"the press handler must gate on ShelfItem.on_tap() (shelf debounce)")
 	assert_true(src.contains(".on_flight_finished()"),
 		"the flight's completion (and its early-return paths) must call on_flight_finished()")
+
+
+## Fix round 2 (item 4): the taken-slot check must come BEFORE the
+## on_tap() lock, so a dead tap on an already-taken/sold slot always
+## reaches Herman even while the slot happens to be locked -- gating it
+## behind on_tap() first let a lock refusal swallow shelf_dead_tap.
+func test_taken_slot_check_precedes_the_on_tap_lock() -> void:
+	var src := FileAccess.get_file_as_string(RAK_PATH)
+	var body := _body(src, "func _on_barang_pressed(")
+	var taken_at := body.find("_taken_slots.has(index)")
+	var lock_at := body.find(".on_tap()")
+	assert_true(taken_at >= 0 and lock_at >= 0,
+		"both the taken-slot check and the on_tap() lock must be present")
+	assert_true(taken_at < lock_at,
+		"the taken-slot check (shelf_dead_tap) must run before the on_tap() lock")
 
 
 ## The text of one function: from `signature` to the next top-level func.

@@ -53,6 +53,13 @@ var _lifting: bool = false
 ## While true, on_tap() refuses further taps on this slot.
 var _locked: bool = false
 
+## Last value passed to set_dimmed(), so _unlock() (and on_tap's ghost)
+## restore the AFFORDABILITY dim rather than always snapping back to full
+## opacity -- otherwise a slot that went unaffordable mid-flight (or was
+## already unaffordable when tapped) would read as buyable again the moment
+## the lock lifts, even though the button is still not tappable at that price.
+var _dimmed: bool = false
+
 ## Wires this helper to a shelf button: adds the shadow, records the
 ## resting position, and picks a random bob phase.
 func attach_to(button: TextureButton) -> void:
@@ -142,11 +149,14 @@ func _on_flight_timeout() -> void:
 func _unlock() -> void:
 	_locked = false
 	if is_instance_valid(_button):
-		_button.modulate.a = 1.0
+		_button.modulate.a = dim_alpha if _dimmed else 1.0
 
 ## Fades the item when its price is out of reach.
 func set_dimmed(dim: bool) -> void:
+	_dimmed = dim
 	if not is_instance_valid(_button):
+		return
+	if _locked:
 		return
 	_button.modulate.a = dim_alpha if dim else 1.0
 

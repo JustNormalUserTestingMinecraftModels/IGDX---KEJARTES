@@ -267,3 +267,17 @@ func test_koprasi_gd_stops_idle_bounce_on_crate_press() -> void:
 	var body := src.substr(start, next_func - start)
 	assert_true(body.contains("ap.stop()") and body.contains("idle_bounce"),
 		"pressing the crate must stop idle_bounce before toggling the tray")
+
+
+## Review fix: UIPolish auto-juices every BaseButton it sees, including the
+## 320px CrateHandle -- Juice.press/release would recentre its pivot_offset
+## and fight the crate's own _crate_tween (pivot (0,0) math above). koprasi.gd
+## must opt it out. A source scan, per this suite's own convention just
+## above: the Stage/crate cannot be instantiated headlessly against live
+## autoload state, so this confirms what was authored, not runtime behaviour.
+func test_koprasi_gd_opts_crate_out_of_auto_juice() -> void:
+	var src := _read("res://Scripts/Koperasi/koprasi.gd")
+	if src.is_empty():
+		return
+	assert_true(src.contains("crate.set_meta(Juice.NO_AUTO_JUICE, true)"),
+		"koprasi.gd must opt CrateHandle out of UIPolish's auto-juice via Juice.NO_AUTO_JUICE")

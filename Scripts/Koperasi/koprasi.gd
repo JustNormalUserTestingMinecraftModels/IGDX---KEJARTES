@@ -108,6 +108,19 @@ func _ready():
 		tray.state_changed.connect(_on_tray_state_changed)
 	if is_instance_valid(crate) and not crate.pressed.is_connected(_on_crate_pressed):
 		crate.pressed.connect(_on_crate_pressed)
+	if is_instance_valid(crate):
+		# CrateHandle is a 320px TextureButton positioned/scaled by our own
+		# _crate_tween (pivot (0,0), see crate_pos_expanded/collapsed above)
+		# and already gets press feedback from _on_crate_pressed's idle_bounce
+		# stop + _on_tray_state_changed's tween. UIPolish auto-juices every
+		# BaseButton it sees (Scripts/UI/UIPolish.gd): Juice.press/release
+		# would recentre its pivot_offset and tween scale, which both breaks
+		# the (0,0)-pivot math above and fights the crate's own tween. Opting
+		# out here is honoured even though UIPolish wires its handlers at
+		# node_added time (before this _ready runs) -- its _skip() re-checks
+		# has_meta(Juice.NO_AUTO_JUICE) at press time, not wire time, so a
+		# meta set anywhere in _ready still works.
+		crate.set_meta(Juice.NO_AUTO_JUICE, true)
 	_refresh_crate_badge()
 
 	# The Stage, a child, has already stocked the shelf in its own _ready.

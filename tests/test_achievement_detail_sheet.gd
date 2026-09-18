@@ -129,3 +129,27 @@ func test_no_theme_overrides_and_scrim_variation_present() -> void:
 			or line.begins_with("theme_override_constants/margin")
 		assert_true(is_layout, "unexpected theme override in AchievementDetailSheet.tscn: " + line)
 	assert_true(src.contains('theme_type_variation = &"Scrim"'), "Scrim variation must be present")
+
+
+func test_root_and_scrim_stop_mouse_input() -> void:
+	# A scrim tap that closes the sheet must not also reach whatever is
+	# underneath (the grid tile that opened it). PASS (1) or IGNORE (2) on
+	# either the sheet root or the Scrim would let that tap fall through.
+	var src := FileAccess.get_file_as_string(SHEET)
+	var lines := src.split("\n")
+	var i := 0
+	while i < lines.size():
+		var line := lines[i]
+		if line.begins_with('[node name="AchievementDetailSheet"') \
+				or line.begins_with('[node name="Scrim"'):
+			var j := i + 1
+			while j < lines.size() and not lines[j].begins_with("[node") and not lines[j].begins_with("["):
+				assert_false(lines[j].begins_with("mouse_filter = 1"), line + " must not be mouse_filter PASS: " + lines[j])
+				assert_false(lines[j].begins_with("mouse_filter = 2"), line + " must not be mouse_filter IGNORE: " + lines[j])
+				j += 1
+		i += 1
+
+
+func test_sheet_starts_hidden() -> void:
+	var sheet := _new_sheet()
+	assert_false(sheet.visible)

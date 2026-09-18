@@ -182,3 +182,47 @@ func test_every_label_uses_a_theme_type_variation() -> void:
 				j += 1
 			assert_true(found, "Label node at line %d has no theme_type_variation" % i)
 		i += 1
+
+
+func test_badges_stay_top_right_corner() -> void:
+	# BaruBadge/CheckBadge sit directly under the root PanelContainer, so
+	# their size_flags decide corner placement: horizontal 8 (SHRINK_END,
+	# right) + vertical 0 (SHRINK_BEGIN, top). Vertical 0 is "shrink to
+	# minimum size and align to top", not FILL (FILL is bit 1) -- pinning
+	# this so nobody "fixes" it into stretching to full height.
+	var src := FileAccess.get_file_as_string(TILE)
+	var lines := src.split("\n")
+	var i := 0
+	while i < lines.size():
+		var line := lines[i]
+		if line.begins_with('[node name="BaruBadge"') or line.begins_with('[node name="CheckBadge"'):
+			var got_h := false
+			var got_v := false
+			var j := i + 1
+			while j < lines.size() and not lines[j].begins_with("[node") and not lines[j].begins_with("["):
+				if lines[j].begins_with("size_flags_horizontal"):
+					assert_eq(lines[j], "size_flags_horizontal = 8", line + " must stay right-anchored: " + lines[j])
+					got_h = true
+				if lines[j].begins_with("size_flags_vertical"):
+					assert_eq(lines[j], "size_flags_vertical = 0", line + " must stay top-anchored: " + lines[j])
+					got_v = true
+				j += 1
+			assert_true(got_h and got_v, line + " must set both size_flags for corner placement")
+		i += 1
+
+
+func test_relock_clears_baru_shown_so_it_replays_on_reunlock() -> void:
+	_touched_ids.append(PLAIN_ID)
+	_achievements().debug_unlock(PLAIN_ID)
+	var tile := _new_tile()
+	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
+	assert_true(AchievementTile._baru_shown.has(PLAIN_ID))
+
+	_achievements().relock(PLAIN_ID)
+	tile.refresh()
+	assert_false(AchievementTile._baru_shown.has(PLAIN_ID), "relock must clear the once-per-session BARU flag")
+
+	_achievements().debug_unlock(PLAIN_ID)
+	tile.refresh()
+	assert_true(tile.baru_badge.visible)
+	assert_true(AchievementTile._baru_shown.has(PLAIN_ID), "re-unlock must be able to replay the BARU pop_in")

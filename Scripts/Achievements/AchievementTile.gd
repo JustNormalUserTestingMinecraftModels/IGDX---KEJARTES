@@ -104,6 +104,8 @@ func _apply_state(state: int, progress: float) -> void:
 	var locked := state == AchievementsScript.STATE_LOCKED
 	modulate = locked_modulate if locked else Color.WHITE
 	lock_icon.visible = locked
+	if locked:
+		_baru_shown.erase(achievement_id)
 
 	var unlocked := state == AchievementsScript.STATE_UNLOCKED
 	baru_badge.visible = unlocked

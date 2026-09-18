@@ -65,7 +65,7 @@ func test_waiting_state_after_debug_unlock() -> void:
 	assert_true(pill.waiting_state.visible)
 	assert_false(pill.idle_state.visible)
 	assert_eq(pill.waiting_label.text, "1 hadiah belum diambil")
-	assert_true(pill.coin_icon.visible or pill.waiting_state.visible)
+	assert_true(pill.coin_icon.visible)
 
 
 func test_returns_to_idle_after_claim() -> void:
@@ -110,3 +110,15 @@ func test_refresh_false_applies_state_without_creating_a_tween() -> void:
 	assert_true(pill.is_waiting())
 	assert_false(pill.is_morphing(), "refresh(false) must not start a morph tween")
 	assert_eq(pill.scale, Vector2.ONE)
+
+
+func test_scene_has_no_theme_overrides() -> void:
+	# The project rule: styling flows from the theme, never from per-node
+	# overrides. Layout-only constants (separation, margin_*) are exempt.
+	var src := FileAccess.get_file_as_string(PILL)
+	for line in src.split("\n"):
+		if not line.begins_with("theme_override_"):
+			continue
+		var is_layout := line.begins_with("theme_override_constants/separation") \
+			or line.begins_with("theme_override_constants/margin")
+		assert_true(is_layout, "unexpected theme override in AchievementStatusPill.tscn: " + line)

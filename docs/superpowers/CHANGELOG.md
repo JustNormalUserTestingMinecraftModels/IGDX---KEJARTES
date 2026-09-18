@@ -8,6 +8,33 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-18 — Skin system
+
+Spec `docs/superpowers/specs/2026-09-18-skin-system-design.md`, plan
+`docs/superpowers/plans/2026-09-18-skin-system.md`.
+
+- Each of the six students has a `default` and a `skin1` look
+  (`Scripts/Skins/StudentSkins.gd`, paths by convention under
+  `Assets/Images/Skins/<Name>/`). `GameState.equipped_skins` /
+  `skin_unlock_overrides` hold the session's choice; `equip_skin` refuses a
+  locked skin. Skins are keyed by name and survive grade changes.
+- Splash, flat portrait, lobby face-rig base and desk hands all resolve
+  through `StudentSkins`; AturJadwal, StudentCard, StudentList, the Lobby and
+  the `StudentData` bridge (DaySummary, EventDialogue, StatCheck) show the
+  worn skin. WinStage / WinLineup / RunResult keep their own art.
+- Lobby `SkinSwitchButton` opens `SkinSelectPopup`: blurred Lobby, up to four
+  roster cards (`SkinSlot`, masked `SkinFrame`), SETUJU; tapping a card opens
+  a scrollable column of `SkinOptionTile`s over it with a second, lighter
+  blur (`BackBufferCopy` + `skin_option_blur_material.tres`). Locked tiles are
+  darkened and disabled. Closing re-seats the Lobby.
+- The flat Skin1 portraits were baked from the face rigs by
+  `Scripts/Skins/BakeSkinPortraits.gd` (default bakes match the shipped
+  portraits to <0.011 mean difference, except Shinta at 0.031: her shipped
+  portrait is a darker grade than her rig art).
+- Debug › General › **🎨 Kunci/Buka Semua Skin** locks every non-default skin.
+- The Lobby's breathing tween is now bound to the node it animates, so
+  re-seating no longer leaves a looping tween on a freed face rig.
+
 ## 2026-09-18 — Achievements polish
 
 Plan `docs/superpowers/specs/2026-09-18-achievements-polish-plan.md`.

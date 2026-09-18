@@ -140,6 +140,10 @@ const SNAPSHOT_KEYS := [
 	# arming and restoring does, and restoring hands the run back exactly
 	# as it was -- an item bought during a rehearsal must not stay sold.
 	"shop_week_key", "shop_stock", "shop_sold",
+	# Worn skins and the debug lock overrides. Nothing in the sequence
+	# writes them, but a skin picked between arming and restoring must not
+	# outlive the rehearsal, same as a shop purchase.
+	"equipped_skins", "skin_unlock_overrides",
 	"minggu_ke", "current_grade", "player_money",
 	"run_failed", "is_game_beaten",
 	"lobby_tutorial_completed", "tutorials_bypassed",

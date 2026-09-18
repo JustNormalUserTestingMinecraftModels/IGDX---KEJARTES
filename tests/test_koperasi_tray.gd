@@ -286,9 +286,19 @@ func test_shop_scripts_only_use_real_gamestate_members() -> void:
 		var property_names := {}
 		for prop in GameState.get_property_list():
 			property_names[prop.name] = true
+		# get_property_list() does not list `const` declarations (they are
+		# not properties), but GameState.SOME_CONST is a real, referenceable
+		# member -- read them off the script's constant map instead so a
+		# genuine constant (e.g. SHOP_MAX_COPIES) is not mistaken for a typo.
+		var const_names := {}
+		var gs_script: Script = GameState.get_script()
+		if gs_script != null:
+			for const_name in gs_script.get_script_constant_map():
+				const_names[const_name] = true
 		for m in re.search_all(f.get_as_text()):
 			var member := m.get_string(1)
 			var member_exists := property_names.has(member) \
+				or const_names.has(member) \
 				or GameState.has_method(member) \
 				or GameState.has_signal(member)
 			assert_true(member_exists,

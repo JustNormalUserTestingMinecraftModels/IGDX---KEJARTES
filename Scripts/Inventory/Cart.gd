@@ -13,32 +13,75 @@ extends Node
 
 signal cart_changed
 
+## Emitted when a unit of `item_name` enters the cart, immediately before
+## cart_changed. Not emitted by clear().
+signal item_added(item_name: String)
+
+## Emitted when a unit of `item_name` leaves the cart (via remove_one or
+## remove_item), immediately before cart_changed. Not emitted by clear().
+signal item_removed(item_name: String)
+
 const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
+
+## Belt-and-braces tap-spam guard: at most this many units can enter the
+## cart within a single engine frame, no matter how many add_item() calls
+## land (a normal player, gated by ShelfItem's own per-slot lock, never gets
+## near it -- this exists for scripted/bot input that bypasses that lock).
+const MAX_ADDS_PER_FRAME: int = 3
 
 # Maps item_name -> { "data": ItemData, "quantity": int }
 var cart: Dictionary = {}
 
-func add_item(item: ItemData) -> void:
+## Units already added during _adds_frame_number. Compared against
+## Engine.get_process_frames() rather than reset in _process(), so the
+## budget also holds correctly across the many test methods a `test_run`
+## executes back-to-back inside a single frame.
+var _adds_this_frame: int = 0
+var _adds_frame_number: int = -1
+
+## Returns true when the unit was actually added, false when the per-frame
+## cap silently dropped it. Callers that spent state before calling (a
+## shelf slot's taken/held bookkeeping, a flight tween) must check this and
+## undo that state -- and release any lock they took -- on false, rather
+## than assuming the add always lands. Existing callers that ignore the
+## return value keep compiling (GDScript does not require using it).
+func add_item(item: ItemData) -> bool:
+	var current_frame := Engine.get_process_frames()
+	if current_frame != _adds_frame_number:
+		_adds_frame_number = current_frame
+		_adds_this_frame = 0
+	if _adds_this_frame >= MAX_ADDS_PER_FRAME:
+		return false
+	_adds_this_frame += 1
 	if cart.has(item.item_name):
 		cart[item.item_name]["quantity"] += 1
 	else:
 		cart[item.item_name] = { "data": item, "quantity": 1 }
+	item_added.emit(item.item_name)
 	cart_changed.emit()
+	return true
 
 func remove_one(item_name: String) -> void:
 	if cart.has(item_name):
 		cart[item_name]["quantity"] -= 1
 		if cart[item_name]["quantity"] <= 0:
 			cart.erase(item_name)
+		item_removed.emit(item_name)
 		cart_changed.emit()
 
 func remove_item(item_name: String) -> void:
 	if cart.has(item_name):
 		cart.erase(item_name)
+		item_removed.emit(item_name)
 		cart_changed.emit()
 
 func clear() -> void:
 	cart.clear()
+	# A fresh basket starts a fresh per-frame budget -- otherwise a test (or
+	# a real Beli-then-rebuy in the same frame) that clears and re-adds
+	# would still be throttled by units it already emptied out.
+	_adds_this_frame = 0
+	_adds_frame_number = Engine.get_process_frames()
 	cart_changed.emit()
 
 func get_total() -> int:

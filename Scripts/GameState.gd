@@ -48,7 +48,7 @@ var minigame_gain_this_week: Dictionary = {}
 ## koprasi.tscn's Stage.
 const SHOP_SHELF_SIZE: int = 6
 ## The most copies of one item a week's shelf can hold.
-const SHOP_MAX_COPIES: int = 2
+const SHOP_MAX_COPIES: int = 3
 ## The week the Koperasi shelf was rolled for, as shop_week_key_for(); ""
 ## until the first visit. Session-scoped like everything here.
 var shop_week_key: String = ""

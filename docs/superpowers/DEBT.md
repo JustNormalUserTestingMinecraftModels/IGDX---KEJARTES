@@ -59,7 +59,10 @@ splash), `hujan_background.png` (the school tinted dusk-blue with seeded rain
 streaks) and `calendar_badge.png`, and the 2026-09-14 Weekly Results ribbon,
 `Assets/Images/DaySummary/title_weekly_results.png` (cut out of the mockup
 and given `title_daily_results.png`'s alpha -- drop-replaceable at the same
-path).
+path), and the 2026-09-18 Koperasi stock-pip set:
+`Assets/Images/Shop/UI/pip_filled.svg` / `pip_hollow.svg` (a plain filled
+dot and a matching ring, coloured from `koperasi_tag_fill`/`koperasi_tray_rule`
+to stay warm and shop-consistent -- drop-replaceable at the same path).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
@@ -114,10 +117,7 @@ existing cues rather than a dedicated `sfx_item_apply`.
 (shown verbatim in `ItemDetailSheet`) is placeholder copy, marked by one
 blanket `[PLACEHOLDER]` comment above the table rather than one by one. Every `line` in
 `EventDialogueCatalog.ENTRIES` (2026-09-14) is a draft, unmarked because it
-shows in-game. Pak Herman's chat bubble in Koperasi
-(`Stage/ChatBubble/Body/Text` in `Scenes/Koperasi/koprasi.tscn`, 2026-09-17)
-says the placeholder "Selamat datang di Koperasi! Mau beli apa hari ini?"
-until his real lines are written.
+shows in-game.
 
 ## Known bugs and gaps
 
@@ -242,6 +242,17 @@ disconnects, and the editor needs a restart. Cause unconfirmed; verify that
 widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
+
+- **Koperasi polish leftovers (2026-09-18).** `ShopMessageWarning` and
+  `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `koprasi.gd` after
+  the final polish pass -- nothing in the shop currently shows a warning or
+  danger message panel. The tray crate sits at `scale = Vector2(0.35, 0.35)`
+  while collapsed, which renders roughly 112px against the 128px tray
+  emblem it sits beside -- a visible size mismatch, not yet reconciled. A
+  purchase flight already airborne when the player collapses the tray still
+  lands at the tray's EXPANDED position (cosmetic only -- the unit still
+  reaches the cart correctly). Herman's `talk` head-bob animation has not
+  been tuned against the final counter art.
 
 - **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
   wipes achievement progress and claimed prizes. Turn it off before release.

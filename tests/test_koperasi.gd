@@ -91,5 +91,18 @@ func test_herman_animation_player_has_idle_talk_and_reset() -> void:
 		"HermanAP's library must register a talk animation")
 	assert_true(raw.contains("\"RESET\": SubResource") or raw.contains("&\"RESET\": SubResource"),
 		"HermanAP's library must register a RESET animation, so the editor never saves a mid-animation pose")
-	assert_false(raw.contains(":position\")"),
-		"Herman's animations must not key position -- the stage re-anchors on tall phones")
+	# Scan only the Animation sub_resources Herman's own library refers to
+	# (Animation_herman_*), not the whole file -- other Stage nodes (like the
+	# crate handle) legitimately key their own local position.
+	for id in ["Animation_herman_reset", "Animation_herman_idle", "Animation_herman_talk"]:
+		var marker := "id=\"%s\"]" % id
+		var start := raw.find(marker)
+		assert_true(start != -1, "%s sub_resource not found" % id)
+		if start == -1:
+			continue
+		var next_block := raw.find("[sub_resource", start + 1)
+		if next_block == -1:
+			next_block = raw.find("[node ", start + 1)
+		var block := raw.substr(start, next_block - start)
+		assert_false(block.contains(":position\")"),
+			"Herman's animations must not key position -- the stage re-anchors on tall phones (%s)" % id)

@@ -13,16 +13,23 @@ const TRAY_SCENE := preload("res://Scenes/Koperasi/BasketTray.tscn")
 const KOPRASI_TSCN := "res://Scenes/Koperasi/koprasi.tscn"
 
 
-func test_tray_starts_expanded() -> void:
+## McpTestSuiteCompat is not itself a Node, so an instantiated BasketTray
+## needs a real place in the tree -- same pattern as
+## test_koperasi_chat_bubble.gd's _live_bubble().
+func _live_tray() -> Control:
 	var t: Control = TRAY_SCENE.instantiate()
-	add_child(t)
+	Engine.get_main_loop().root.add_child(t)
+	return t
+
+
+func test_tray_starts_expanded() -> void:
+	var t: Control = _live_tray()
 	assert_true(t.is_expanded(), "a fresh tray should be expanded")
 	t.queue_free()
 
 
 func test_set_state_false_moves_by_exact_offset_and_emits_once() -> void:
-	var t: Control = TRAY_SCENE.instantiate()
-	add_child(t)
+	var t: Control = _live_tray()
 	var y0: float = t.position.y
 	var seen: Array = []
 	t.state_changed.connect(func(s): seen.append(s))
@@ -35,8 +42,7 @@ func test_set_state_false_moves_by_exact_offset_and_emits_once() -> void:
 
 
 func test_set_state_same_state_is_a_noop() -> void:
-	var t: Control = TRAY_SCENE.instantiate()
-	add_child(t)
+	var t: Control = _live_tray()
 	var emits := 0
 	t.state_changed.connect(func(_s): emits += 1)
 	t.set_state(t.ViewState.EXPANDED, false)
@@ -51,8 +57,7 @@ func test_set_state_same_state_is_a_noop() -> void:
 
 
 func test_toggle_flips_is_expanded() -> void:
-	var t: Control = TRAY_SCENE.instantiate()
-	add_child(t)
+	var t: Control = _live_tray()
 	assert_true(t.is_expanded())
 	t.toggle()
 	assert_false(t.is_expanded(), "toggle() from EXPANDED should land on COLLAPSED")
@@ -67,8 +72,7 @@ func test_toggle_flips_is_expanded() -> void:
 ## set_state() itself creates: it must exist, be running, and target the
 ## correct value.
 func test_animated_set_state_creates_a_tween_to_the_right_target() -> void:
-	var t: Control = TRAY_SCENE.instantiate()
-	add_child(t)
+	var t: Control = _live_tray()
 	var y0: float = t.position.y
 	t.set_state(t.ViewState.COLLAPSED, true)
 	assert_true(is_instance_valid(t._tray_tween), "set_state(animate=true) must create a tween")
@@ -81,15 +85,13 @@ func test_animated_set_state_creates_a_tween_to_the_right_target() -> void:
 
 
 func test_state_changed_signal_declared() -> void:
-	var t: Control = TRAY_SCENE.instantiate()
-	add_child(t)
+	var t: Control = _live_tray()
 	assert_true(t.has_signal("state_changed"), "BasketTray must declare state_changed")
 	t.queue_free()
 
 
 func test_basket_tray_scene_has_header_button() -> void:
-	var t: Control = TRAY_SCENE.instantiate()
-	add_child(t)
+	var t: Control = _live_tray()
 	var header := t.get_node_or_null("Body/Emblem/HeaderButton")
 	assert_not_null(header, "BasketTray.tscn must have a Body/Emblem/HeaderButton")
 	assert_true(header is TextureButton, "HeaderButton must be a TextureButton")

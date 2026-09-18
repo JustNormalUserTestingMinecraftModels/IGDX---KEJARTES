@@ -148,13 +148,53 @@ func test_add_item_returns_false_once_the_frame_cap_is_hit() -> void:
 	assert_eq(emitted.size(), 0, "a refused add must not emit item_added")
 
 
-func test_rakbarang_press_handler_checks_add_item_result() -> void:
+## The slot/hold must still be taken BEFORE Cart.add_item() (so the
+## cart_changed refresh it triggers empties the right slot and hides the
+## right held unit -- test_koperasi_tray.gd and test_shop_weekly_stock.gd
+## pin that ordering). A dropped add (Cart's per-frame cap) must instead be
+## rolled back: untake the slot, release the tray hold, refresh shelf
+## visibility, and report the flight as finished without ever spawning it.
+func test_rakbarang_press_handler_rolls_back_a_refused_add() -> void:
 	var src := FileAccess.get_file_as_string(RAK_PATH)
 	var body := _body(src, "func _on_barang_pressed(")
-	assert_true(body.contains("Cart.add_item(item)"),
-		"the press handler must still call Cart.add_item(item)")
-	assert_true(body.contains("if not Cart.add_item(item):") or body.contains("if Cart.add_item(item):"),
-		"the press handler must branch on Cart.add_item()'s return value before committing the slot/hold/flight")
+	var take_at := body.find("_taken_slots.append(index)")
+	var hold_at := body.find("tray.hold_for_landing(")
+	var add_at := body.find("if not Cart.add_item(item):")
+	assert_true(take_at >= 0 and hold_at >= 0 and add_at >= 0,
+		"the handler must take the slot, hold the tray unit, then branch on Cart.add_item()")
+	assert_true(take_at < add_at and hold_at < add_at,
+		"the slot/hold must be taken BEFORE Cart.add_item() is called")
+	var rollback := body.substr(add_at, body.length() - add_at)
+	assert_true(rollback.contains("_taken_slots.erase(index)"),
+		"a refused add must un-take the slot")
+	assert_true(rollback.contains("tray.release_hold("),
+		"a refused add must release the tray hold")
+	assert_true(rollback.contains("_refresh_shelf_visibility()"),
+		"a refused add must refresh shelf visibility after rolling back")
+	assert_true(rollback.contains(".on_flight_finished()"),
+		"a refused add must still report the flight as finished")
+
+
+const _TRAY_SCENE := "res://Scenes/Koperasi/BasketTray.tscn"
+
+## BasketTray.release_hold() is hold_for_landing()'s inverse: it must undo
+## exactly one held unit (not clear the whole line) and re-refresh so a
+## slot rolled back this way doesn't sit hidden forever. Uses the real
+## scene (like test_basket_tray.gd) rather than a bare BasketTray.new(),
+## since release_hold() calls refresh(), which touches the authored
+## Body/EmptyState etc. nodes that a bare node would not have.
+func test_basket_tray_release_hold_undoes_one_unit() -> void:
+	var packed: PackedScene = load(_TRAY_SCENE)
+	var tray = packed.instantiate()
+	Engine.get_main_loop().root.add_child(tray)
+	tray.hold_for_landing(ITEM_NAME)
+	tray.hold_for_landing(ITEM_NAME)
+	assert_eq(int(tray._held.get(ITEM_NAME, 0)), 2, "two holds should be recorded")
+	tray.release_hold(ITEM_NAME)
+	assert_eq(int(tray._held.get(ITEM_NAME, 0)), 1, "release_hold() should undo exactly one unit")
+	tray.release_hold(ITEM_NAME)
+	assert_false(tray._held.has(ITEM_NAME), "the last release_hold() should erase the entry")
+	tray.queue_free()
 
 
 func test_cart_clear_resets_the_per_frame_budget() -> void:

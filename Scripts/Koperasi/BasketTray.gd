@@ -129,6 +129,19 @@ func hold_for_landing(item_name: String) -> void:
 	_held[item_name] = int(_held.get(item_name, 0)) + 1
 
 
+## Inverse of hold_for_landing(): undoes a hold whose Cart.add_item() then
+## failed (the per-frame cap dropped the unit), so the flight that would
+## have called land() never spawns. Without this the held count would sit
+## one too high forever, permanently hiding a future real unit of
+## item_name behind a hold nothing will ever clear.
+func release_hold(item_name: String) -> void:
+	if _held.has(item_name):
+		_held[item_name] -= 1
+		if _held[item_name] <= 0:
+			_held.erase(item_name)
+	refresh(_entries)
+
+
 ## One unit of item_name has landed: show it and pop its slot. Returns the
 ## slot, or null if the line left the cart mid-flight.
 func land(item_name: String) -> Control:

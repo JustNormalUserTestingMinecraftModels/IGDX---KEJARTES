@@ -315,24 +315,22 @@ func _on_barang_pressed(index: int):
 		_shelf_items[index].lift()
 	AudioDirector.play_sfx(&"tap")
 
-	# Cart.add_item() BEFORE committing the slot/hold/flight: its per-frame
-	# cap (Cart.MAX_ADDS_PER_FRAME) can silently drop the unit, and nothing
-	# must be taken off the shelf, held in the tray, or flown in for a unit
-	# that never actually entered the cart.
+	# Take the slot before the cart hears of it, so the refresh that
+	# Cart.add_item() triggers empties THIS slot, not the pair's other copy.
+	_taken_slots.append(index)
+	# Hold the unit before the cart hears of it: the refresh that
+	# Cart.add_item() triggers then keeps it hidden until its flight lands.
+	tray.hold_for_landing(item.item_name)
 	if not Cart.add_item(item):
+		# Cart's per-frame cap (Cart.MAX_ADDS_PER_FRAME) dropped the unit:
+		# roll back everything taken above instead of flying in art for a
+		# unit the cart never received.
+		_taken_slots.erase(index)
+		tray.release_hold(item.item_name)
+		_refresh_shelf_visibility()
 		if is_instance_valid(life):
 			life.on_flight_finished()
 		return
-
-	# Take the slot now that the cart accepted the unit, so the refresh
-	# Cart.add_item() just triggered empties THIS slot, not the pair's
-	# other copy.
-	_taken_slots.append(index)
-	# Hold the unit now the cart has it: the refresh already fired, so hold
-	# it retroactively and re-refresh the tray to keep it hidden until its
-	# flight lands.
-	tray.hold_for_landing(item.item_name)
-	tray.refresh(Cart.cart)
 	_spawn_falling_item(btn, item, life)
 
 func _spawn_falling_item(source_button: TextureButton, item: ItemData, life = null):

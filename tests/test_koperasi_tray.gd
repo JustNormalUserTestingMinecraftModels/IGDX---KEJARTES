@@ -291,7 +291,7 @@ func test_shop_scripts_only_use_real_gamestate_members() -> void:
 		# member -- read them off the script's constant map instead so a
 		# genuine constant (e.g. SHOP_MAX_COPIES) is not mistaken for a typo.
 		var const_names := {}
-		var gs_script := GameState.get_script()
+		var gs_script: Script = GameState.get_script()
 		if gs_script != null:
 			for const_name in gs_script.get_script_constant_map():
 				const_names[const_name] = true

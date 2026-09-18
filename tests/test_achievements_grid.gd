@@ -97,6 +97,17 @@ func test_screen_script_back_guard_does_not_leave_screen_while_sheet_open() -> v
 		"return happens before any later _on_back_pressed() call in this branch")
 
 
+func test_state_changed_reapplies_the_active_filter() -> void:
+	var src := _script_src()
+	var idx := src.find("func _on_state_changed(")
+	assert_true(idx != -1)
+	var next_func_idx := src.find("\nfunc ", idx + 1)
+	var body := src.substr(idx, next_func_idx - idx)
+	assert_true(body.contains("tile.refresh()"), "still refreshes every tile")
+	assert_true(body.contains("_on_filter_selected(filter_button.selected)"),
+		"reapplies the active filter via _on_filter_selected instead of duplicating the visibility loop")
+
+
 func test_old_achievement_row_is_gone() -> void:
 	assert_false(FileAccess.file_exists("res://Scenes/Achievements/AchievementRow.tscn"))
 	assert_false(FileAccess.file_exists("res://Scripts/Achievements/AchievementRow.gd"))

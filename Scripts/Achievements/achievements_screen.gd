@@ -74,6 +74,7 @@ func _on_claim_requested(id: String) -> void:
 func _on_state_changed() -> void:
 	for tile in _tiles:
 		tile.refresh()
+	_on_filter_selected(filter_button.selected)
 
 
 func _on_filter_selected(index: int) -> void:

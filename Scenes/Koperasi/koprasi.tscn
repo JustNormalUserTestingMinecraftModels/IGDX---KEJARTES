@@ -14,8 +14,8 @@
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_pstwm"]
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 [ext_resource type="Script" path="res://Scripts/Koperasi/ChatBubble.gd" id="15_chatbubble"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/pip_hollow.svg" id="16_piphollow"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/pip_filled.svg" id="17_pipfilled"]
+[ext_resource type="Texture2D" uid="uid://5fkevoxgxj3r" path="res://Assets/Images/Shop/UI/pip_hollow.svg" id="16_piphollow"]
+[ext_resource type="Texture2D" uid="uid://cpcnblan2tm6i" path="res://Assets/Images/Shop/UI/pip_filled.svg" id="17_pipfilled"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -180,16 +180,16 @@ offset_bottom = 226.0
 
 [node name="PipRow" type="HBoxContainer" parent="Stage/Barang1" unique_id=152245713]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 6.0
-offset_right = 176.0
-offset_bottom = 24.0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
 mouse_filter = 2
-theme_override_constants/separation = 3
+theme_override_constants/separation = 6
 alignment = 2
 
 [node name="Pip1" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=1147589431]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -209,7 +209,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip2" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=650704110]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -229,7 +229,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip3" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=725558168]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -283,16 +283,16 @@ offset_bottom = 226.0
 
 [node name="PipRow" type="HBoxContainer" parent="Stage/Barang2" unique_id=1014717160]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 6.0
-offset_right = 176.0
-offset_bottom = 24.0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
 mouse_filter = 2
-theme_override_constants/separation = 3
+theme_override_constants/separation = 6
 alignment = 2
 
 [node name="Pip1" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=1014947454]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -312,7 +312,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip2" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=1176432292]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -332,7 +332,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip3" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=357828217]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -386,16 +386,16 @@ offset_bottom = 226.0
 
 [node name="PipRow" type="HBoxContainer" parent="Stage/Barang3" unique_id=871021906]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 6.0
-offset_right = 176.0
-offset_bottom = 24.0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
 mouse_filter = 2
-theme_override_constants/separation = 3
+theme_override_constants/separation = 6
 alignment = 2
 
 [node name="Pip1" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1251214989]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -415,7 +415,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip2" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1320150119]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -435,7 +435,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip3" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1885664185]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -489,16 +489,16 @@ offset_bottom = 226.0
 
 [node name="PipRow" type="HBoxContainer" parent="Stage/Barang4" unique_id=1913242402]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 6.0
-offset_right = 176.0
-offset_bottom = 24.0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
 mouse_filter = 2
-theme_override_constants/separation = 3
+theme_override_constants/separation = 6
 alignment = 2
 
 [node name="Pip1" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=537563283]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -518,7 +518,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip2" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=1048468601]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -538,7 +538,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip3" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=1597974320]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -592,16 +592,16 @@ offset_bottom = 226.0
 
 [node name="PipRow" type="HBoxContainer" parent="Stage/Barang5" unique_id=946587675]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 6.0
-offset_right = 176.0
-offset_bottom = 24.0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
 mouse_filter = 2
-theme_override_constants/separation = 3
+theme_override_constants/separation = 6
 alignment = 2
 
 [node name="Pip1" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1168279158]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -621,7 +621,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip2" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1402280116]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -641,7 +641,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip3" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1026545289]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -695,16 +695,16 @@ offset_bottom = 226.0
 
 [node name="PipRow" type="HBoxContainer" parent="Stage/Barang6" unique_id=610613472]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 6.0
-offset_right = 176.0
-offset_bottom = 24.0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
 mouse_filter = 2
-theme_override_constants/separation = 3
+theme_override_constants/separation = 6
 alignment = 2
 
 [node name="Pip1" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=289289198]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -724,7 +724,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip2" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=371058406]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")
@@ -744,7 +744,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Pip3" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=967511406]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("16_piphollow")

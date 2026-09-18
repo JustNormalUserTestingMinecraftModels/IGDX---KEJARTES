@@ -271,3 +271,37 @@ func test_every_barang_slot_has_a_pip_row_with_three_pips() -> void:
 			assert_true(
 				src.contains("[node name=\"Fill\" type=\"TextureRect\" parent=\"%s/PipRow/Pip%d\"" % [parent, p]),
 				"%s/PipRow/Pip%d is missing its Fill child" % [parent, p])
+
+
+## Pins every Pip's custom_minimum_size at >= 32x32: at 14x14 (the original
+## size) each pip renders around 5px on a 360-wide phone window -- illegible
+## specks that defeat "visible per-slot stock" (2026-09-18 review, fix
+## round 1). Scans each Pip's own node block in the .tscn text (from its
+## "[node name=\"PipN\" ...]" line to the next "[node") so a regression on
+## any single slot is caught, not just an average.
+func test_every_pip_is_at_least_32px() -> void:
+	var src := FileAccess.get_file_as_string(KOPRASI_SCENE)
+	assert_true(not src.is_empty(), "koprasi.tscn missing or unreadable")
+	var size_re := RegEx.new()
+	size_re.compile("custom_minimum_size = Vector2\\(([\\d.]+), ([\\d.]+)\\)")
+	for i in range(1, 7):
+		var parent := "Stage/Barang%d" % i
+		for p in range(1, 4):
+			var header := "[node name=\"Pip%d\" type=\"TextureRect\" parent=\"%s/PipRow\"" % [p, parent]
+			var at := src.find(header)
+			assert_true(at != -1, "%s/PipRow/Pip%d node not found" % [parent, p])
+			if at == -1:
+				continue
+			var next_node := src.find("\n[node", at + 1)
+			if next_node < 0:
+				next_node = src.length()
+			var block := src.substr(at, next_node - at)
+			var m := size_re.search(block)
+			assert_true(m != null,
+				"%s/PipRow/Pip%d has no custom_minimum_size" % [parent, p])
+			if m == null:
+				continue
+			var w := float(m.get_string(1))
+			var h := float(m.get_string(2))
+			assert_true(w >= 32.0 and h >= 32.0,
+				"%s/PipRow/Pip%d is %sx%s, below the 32px legibility floor" % [parent, p, w, h])

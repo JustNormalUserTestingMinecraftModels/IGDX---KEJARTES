@@ -8,6 +8,41 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-18 — Achievements polish
+
+Plan `docs/superpowers/specs/2026-09-18-achievements-polish-plan.md`.
+
+Whole-branch review fixes on top of the grid/pill/sheet rework:
+
+- `AchievementTile._gui_input` now emits `tile_pressed` on release (within a
+  small move threshold of its press), not on press, and the root's
+  `mouse_filter` moved from STOP to PASS so the parent `ScrollContainer`
+  still receives a drag that starts on a tile -- previously every
+  drag-scroll on the 26-tile grid opened the detail sheet.
+- The status pill's tap-to-jump now switches the filter back to "Semua"
+  before scrolling when the first unclaimed achievement is hidden by the
+  active filter, deferring the actual scroll a frame so the grid has
+  re-laid out.
+- Android back now closes an open `AchievementClaimPopup` before the detail
+  sheet underneath it, then the sheet, then leaves the screen.
+- `AchievementStatusPill` re-centres its pivot on `resized` (and again
+  before its morph/breathe tweens start), instead of only once in `_ready`
+  before layout has run -- fixes a scale-pop from the corner.
+- `Achievements.total_unclaimed_gold()` renamed to `total_unclaimed_count()`
+  throughout, matching what it actually returns.
+- `Achievements.relock(id)` is now a no-op (no save, no signal) for an
+  unrecognised id.
+- New thin `AchievementTileBar` `ThemeFactory` variation for the tile's
+  progress bar -- the shared `StatBar` variation's min height was winning
+  over the tile's 4px override, rendering the bar ~36px tall.
+
+Deliberate decisions carried from the plan: the waiting pill counts
+"hadiah" (unclaimed rewards) rather than a G amount, because the catalog's
+prizes are effect labels, not currency; there is no tier ladder
+(Perunggu/Perak/Emas has no art); `icon_outline.gdshader` also got a fix on
+this branch, to clear a CI project-check shader ERROR unrelated to the
+polish work itself.
+
 ## 2026-09-18 — Koperasi polish pass, plus a tap-spam guard
 
 Plan `.superpowers/sdd/2026-09-17-koperasi-polish-plan/`, spec

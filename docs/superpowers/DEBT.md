@@ -262,6 +262,13 @@ widget via `project_run` instead, which exercises it fine.
 - **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
   wipes achievement progress and claimed prizes. Turn it off before release.
 
+- **Achievements polish (2026-09-18).** The debug Prestasi tab's "Buka
+  semua" loops `Achievements.debug_unlock(id)` over all 26 catalog entries,
+  firing 26 separate `state_changed` signals (one per unlock) instead of a
+  single batched emit. Fine today -- every listener's redraw is cheap -- but
+  batch it (e.g. a `_suppress_signal` flag plus one `state_changed.emit()`
+  after the loop) if it ever becomes a perf problem.
+
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a
   stub). Masa Depan yang Indah's Level Selection was already unlocked by

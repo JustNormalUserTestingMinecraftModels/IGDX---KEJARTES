@@ -13,6 +13,14 @@ extends Node
 
 signal cart_changed
 
+## Emitted when a unit of `item_name` enters the cart, immediately before
+## cart_changed. Not emitted by clear().
+signal item_added(item_name: String)
+
+## Emitted when a unit of `item_name` leaves the cart (via remove_one or
+## remove_item), immediately before cart_changed. Not emitted by clear().
+signal item_removed(item_name: String)
+
 const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
 
 # Maps item_name -> { "data": ItemData, "quantity": int }
@@ -23,6 +31,7 @@ func add_item(item: ItemData) -> void:
 		cart[item.item_name]["quantity"] += 1
 	else:
 		cart[item.item_name] = { "data": item, "quantity": 1 }
+	item_added.emit(item.item_name)
 	cart_changed.emit()
 
 func remove_one(item_name: String) -> void:
@@ -30,11 +39,13 @@ func remove_one(item_name: String) -> void:
 		cart[item_name]["quantity"] -= 1
 		if cart[item_name]["quantity"] <= 0:
 			cart.erase(item_name)
+		item_removed.emit(item_name)
 		cart_changed.emit()
 
 func remove_item(item_name: String) -> void:
 	if cart.has(item_name):
 		cart.erase(item_name)
+		item_removed.emit(item_name)
 		cart_changed.emit()
 
 func clear() -> void:

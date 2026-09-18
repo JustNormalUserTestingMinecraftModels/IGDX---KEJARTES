@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="13_pstwm"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_pstwm"]
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
+[ext_resource type="Script" path="res://Scripts/Koperasi/ChatBubble.gd" id="15_chatbubble"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -290,6 +291,8 @@ offset_top = 23.0
 offset_right = 1046.0
 offset_bottom = 368.0
 mouse_filter = 2
+script = ExtResource("15_chatbubble")
+rest_position = Vector2(36, 23)
 
 [node name="Body" type="PanelContainer" parent="Stage/ChatBubble" unique_id=1413313847]
 layout_mode = 1

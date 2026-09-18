@@ -114,10 +114,7 @@ existing cues rather than a dedicated `sfx_item_apply`.
 (shown verbatim in `ItemDetailSheet`) is placeholder copy, marked by one
 blanket `[PLACEHOLDER]` comment above the table rather than one by one. Every `line` in
 `EventDialogueCatalog.ENTRIES` (2026-09-14) is a draft, unmarked because it
-shows in-game. Pak Herman's chat bubble in Koperasi
-(`Stage/ChatBubble/Body/Text` in `Scenes/Koperasi/koprasi.tscn`, 2026-09-17)
-says the placeholder "Selamat datang di Koperasi! Mau beli apa hari ini?"
-until his real lines are written.
+shows in-game.
 
 ## Known bugs and gaps
 

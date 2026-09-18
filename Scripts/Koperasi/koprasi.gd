@@ -8,6 +8,11 @@ extends Control
 ## _on_beli_pressed() deducts GameState.player_money, calls
 ## GameState.add_to_inventory() for each basket line and marks every unit
 ## sold for the week (GameState.mark_shop_sold(), once per unit).
+##
+## Pak Herman's chat bubble (Stage/ChatBubble, ChatBubble.gd) reacts to cart
+## events and purchase outcomes -- WELCOME or a sticky SOLD_OUT line on
+## arrival, ADD/REMOVE from Cart's granular signals, EMPTY/POOR on a failed
+## Beli, THANKS on a successful one. Lines come from DialogueCatalog.
 
 @onready var stage: Control = $Stage
 @onready var back_button: TextureButton = $Stage/BackButton
@@ -16,9 +21,7 @@ extends Control
 @onready var coin_hud: HBoxContainer = %CoinHUD
 @onready var coin_label: Label = get_node("%CoinHUD/CoinLabel")
 @onready var message_label: Label = $MessageLabel
-
-## Shown on arrival when every item this week has been bought.
-const SOLD_OUT_TEXT := "Stok habis! Datang lagi minggu depan."
+@onready var bubble: ChatBubble = $Stage/ChatBubble
 
 var beli_button: Button
 
@@ -35,9 +38,33 @@ func _ready():
 	if not GameState.money_changed.is_connected(_on_money_changed):
 		GameState.money_changed.connect(_on_money_changed)
 
+	if not Cart.item_added.is_connected(_on_cart_item_added):
+		Cart.item_added.connect(_on_cart_item_added)
+	if not Cart.item_removed.is_connected(_on_cart_item_removed):
+		Cart.item_removed.connect(_on_cart_item_removed)
+
 	# The Stage, a child, has already stocked the shelf in its own _ready.
-	if GameState.is_shop_sold_out():
-		_show_message(SOLD_OUT_TEXT, &"ShopMessageWarning")
+	if bubble:
+		if GameState.is_shop_sold_out():
+			bubble.say_sticky(DialogueCatalog.LINES[&"SOLD_OUT"][0])
+		else:
+			bubble.say(&"WELCOME")
+
+## Cart is an autoload that outlives this scene -- drop our connections so a
+## re-entered Koperasi does not stack duplicate listeners on the same Cart.
+func _exit_tree() -> void:
+	if Cart.item_added.is_connected(_on_cart_item_added):
+		Cart.item_added.disconnect(_on_cart_item_added)
+	if Cart.item_removed.is_connected(_on_cart_item_removed):
+		Cart.item_removed.disconnect(_on_cart_item_removed)
+
+func _on_cart_item_added(item_name: String) -> void:
+	if bubble:
+		bubble.say_for_item(&"ADD", item_name)
+
+func _on_cart_item_removed(item_name: String) -> void:
+	if bubble:
+		bubble.say_for_item(&"REMOVE", item_name)
 
 func _setup_beli_button():
 	# Beli lives in the basket tray's footer.
@@ -74,13 +101,15 @@ func _on_beli_pressed():
 
 	if Cart.is_empty():
 		AudioDirector.play_sfx(&"error")
-		_show_message("Keranjang kosong!", &"ShopMessageWarning")
+		if bubble:
+			bubble.say(&"EMPTY")
 		return
 
 	var total = Cart.get_total()
 	if GameState.player_money < total:
 		AudioDirector.play_sfx(&"error")
-		_show_message("Koin tidak cukup!", &"ShopMessageDanger")
+		if bubble:
+			bubble.say(&"POOR")
 		return
 
 	# Deduct money
@@ -101,6 +130,8 @@ func _on_beli_pressed():
 
 	AudioDirector.play_sfx(&"coin")
 	_show_message("Pembelian berhasil!", &"ShopMessageSuccess")
+	if bubble:
+		bubble.say(&"THANKS")
 
 ## Show a purchase-feedback message. `variation` selects one of the
 ## semantic ShopMessage* ThemeFactory variations (Warning/Danger/Success)

@@ -23,6 +23,15 @@ extends Node
 ## Opacity applied when the item is unaffordable.
 @export var dim_alpha: float = 0.55
 
+## Opacity applied to the shelf button while a tap is locked in (ghost
+## feedback), so a mashed slot visibly registers the tap instead of looking
+## unresponsive.
+@export var locked_alpha: float = 0.6
+
+## Failsafe: on_tap() unlocks after this many seconds even if
+## on_flight_finished() never arrives (e.g. a scene change mid-flight).
+const FLIGHT_TIMEOUT: float = 0.6
+
 ## Peak opacity of the gold rim glow behind the item while it is lifted.
 @export var glow_alpha: float = 0.85
 
@@ -38,6 +47,11 @@ var _glow: CanvasItem
 ## True while lift()'s tween owns _button.position.y -- _process must not
 ## write the bob over it, or the lift is invisible (the bob wins every frame).
 var _lifting: bool = false
+
+## Third safeguard layer (shelf debounce): true from a successful on_tap()
+## until on_flight_finished() or the FLIGHT_TIMEOUT failsafe clears it.
+## While true, on_tap() refuses further taps on this slot.
+var _locked: bool = false
 
 ## Wires this helper to a shelf button: adds the shadow, records the
 ## resting position, and picks a random bob phase.
@@ -93,6 +107,42 @@ func _on_lift_finished() -> void:
 	_lifting = false
 	if is_instance_valid(_button):
 		_button.position.y = _base_y
+
+## Called by rakbarang_1.gd's press handler before it acts on a shelf tap.
+## Returns false (and does nothing) while already locked, so a second tap
+## landing before the first's flight lands is silently ignored. On success,
+## ghosts the button to locked_alpha and arms the FLIGHT_TIMEOUT failsafe --
+## the caller must still call on_flight_finished() itself once the flight
+## tween ends, on every path (including an early return), or the slot would
+## otherwise sit ghosted for up to FLIGHT_TIMEOUT for no visible reason.
+func on_tap() -> bool:
+	if _locked:
+		return false
+	_locked = true
+	if is_instance_valid(_button):
+		_button.modulate.a = locked_alpha
+	if is_inside_tree():
+		get_tree().create_timer(FLIGHT_TIMEOUT).timeout.connect(_on_flight_timeout)
+	return true
+
+## The flight tween landed (or the caller bailed out after a successful
+## on_tap()): release the lock immediately rather than waiting on the
+## failsafe timer.
+func on_flight_finished() -> void:
+	_unlock()
+
+## The FLIGHT_TIMEOUT failsafe fired. Godot auto-disconnects a signal whose
+## connected object was freed, so this only ever runs on a live instance --
+## still guarded for safety since the scene can change mid-flight.
+func _on_flight_timeout() -> void:
+	if not is_instance_valid(self):
+		return
+	_unlock()
+
+func _unlock() -> void:
+	_locked = false
+	if is_instance_valid(_button):
+		_button.modulate.a = 1.0
 
 ## Fades the item when its price is out of reach.
 func set_dimmed(dim: bool) -> void:

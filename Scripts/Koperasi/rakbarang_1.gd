@@ -290,10 +290,17 @@ func _on_barang_pressed(index: int):
 	if index < 0 or index >= item_data_list.size():
 		return
 	var item = item_data_list[index]
+	# Shelf debounce (tap-spam safeguard layer 2): a slot already mid-flight
+	# ignores further taps until on_flight_finished()/the failsafe unlocks it.
+	var life = _shelf_items[index] if index < _shelf_items.size() else null
+	if is_instance_valid(life) and not life.on_tap():
+		return
 	# Each slot sells once: a second tap landing before the button hides
 	# must not add a second unit.
 	if _taken_slots.has(index):
 		shelf_dead_tap.emit(item.item_name)
+		if is_instance_valid(life):
+			life.on_flight_finished()
 		return
 	var btn = shelf_buttons[index]
 
@@ -311,11 +318,13 @@ func _on_barang_pressed(index: int):
 	# Cart.add_item() triggers then keeps it hidden until its flight lands.
 	tray.hold_for_landing(item.item_name)
 	Cart.add_item(item)
-	_spawn_falling_item(btn, item)
+	_spawn_falling_item(btn, item, life)
 
-func _spawn_falling_item(source_button: TextureButton, item: ItemData):
+func _spawn_falling_item(source_button: TextureButton, item: ItemData, life = null):
 	if not is_instance_valid(tray):
 		push_warning("BasketTray tidak ditemukan!")
+		if is_instance_valid(life):
+			life.on_flight_finished()
 		return
 
 	# Use exact size configured in ItemData
@@ -353,9 +362,9 @@ func _spawn_falling_item(source_button: TextureButton, item: ItemData):
 	var tumble_angle = randf_range(-20.0, 20.0)
 	tween_rot.tween_property(duplikat, "rotation_degrees", tumble_angle, 0.45)
 
-	tween_y.tween_callback(_on_item_landed.bind(duplikat, item, item_size, target_pos))
+	tween_y.tween_callback(_on_item_landed.bind(duplikat, item, item_size, target_pos, life))
 
-func _on_item_landed(flying_node: Node, item: ItemData, item_size: Vector2, land_pos: Vector2 = Vector2.ZERO):
+func _on_item_landed(flying_node: Node, item: ItemData, item_size: Vector2, land_pos: Vector2 = Vector2.ZERO, life = null):
 	flying_node.queue_free()
 	tray.land(item.item_name)
 	AnimUtils.basket_bounce(tray.get_emblem())
@@ -366,6 +375,8 @@ func _on_item_landed(flying_node: Node, item: ItemData, item_size: Vector2, land
 		land_pos + item_size / 2,
 		Color(1.0, 0.9, 0.2)
 	)
+	if is_instance_valid(life):
+		life.on_flight_finished()
 
 ## A tray item was held: shrink it away, then return one to the shelf.
 func _on_tray_remove_requested(item_name: String) -> void:

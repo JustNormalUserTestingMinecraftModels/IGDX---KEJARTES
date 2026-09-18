@@ -23,10 +23,30 @@ signal item_removed(item_name: String)
 
 const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
 
+## Belt-and-braces tap-spam guard: at most this many units can enter the
+## cart within a single engine frame, no matter how many add_item() calls
+## land (a normal player, gated by ShelfItem's own per-slot lock, never gets
+## near it -- this exists for scripted/bot input that bypasses that lock).
+const MAX_ADDS_PER_FRAME: int = 3
+
 # Maps item_name -> { "data": ItemData, "quantity": int }
 var cart: Dictionary = {}
 
+## Units already added during _adds_frame_number. Compared against
+## Engine.get_process_frames() rather than reset in _process(), so the
+## budget also holds correctly across the many test methods a `test_run`
+## executes back-to-back inside a single frame.
+var _adds_this_frame: int = 0
+var _adds_frame_number: int = -1
+
 func add_item(item: ItemData) -> void:
+	var current_frame := Engine.get_process_frames()
+	if current_frame != _adds_frame_number:
+		_adds_frame_number = current_frame
+		_adds_this_frame = 0
+	if _adds_this_frame >= MAX_ADDS_PER_FRAME:
+		return
+	_adds_this_frame += 1
 	if cart.has(item.item_name):
 		cart[item.item_name]["quantity"] += 1
 	else:
@@ -50,6 +70,11 @@ func remove_item(item_name: String) -> void:
 
 func clear() -> void:
 	cart.clear()
+	# A fresh basket starts a fresh per-frame budget -- otherwise a test (or
+	# a real Beli-then-rebuy in the same frame) that clears and re-adds
+	# would still be throttled by units it already emptied out.
+	_adds_this_frame = 0
+	_adds_frame_number = Engine.get_process_frames()
 	cart_changed.emit()
 
 func get_total() -> int:

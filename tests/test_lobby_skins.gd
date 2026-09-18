@@ -50,3 +50,22 @@ func test_setup_students_wires_both() -> void:
 	assert_true(src.contains("_apply_hand_skins(h_slot)"))
 	assert_true(src.contains("StudentSkins.face_base_for("))
 	assert_true(src.contains("face.set_base_texture("))
+
+
+func test_lobby_has_the_skin_switch_button() -> void:
+	var scene := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
+	track(scene)
+	var btn := scene.get_node("Safe/UI/BottomBar/SkinSwitchButton") as TextureButton
+	assert_true(btn != null)
+	assert_true(btn.unique_name_in_owner)
+	assert_eq(btn.texture_normal.resource_path, "res://Assets/Images/UI/skin_switch.png")
+	assert_eq(Vector2(btn.offset_left, btn.offset_right), Vector2(360, 456), "beside AchievementButton")
+	assert_eq(btn.offset_bottom, 96.0)
+
+
+func test_lobby_opens_the_popup_and_reseats_on_close() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
+	assert_true(src.contains("skin_select_scene.instantiate()"))
+	assert_true(src.contains(".open(GameState.approved_students)"))
+	assert_true(src.contains(".closed.connect(_setup_students)"))
+	assert_true(src.contains("skin_switch_button.pressed.connect(_on_skin_switch_pressed)"))

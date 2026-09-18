@@ -48,6 +48,10 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 ## back to Citra's rig, the same shape as hand_fallback above.
 @export var face_rigs: Array[PackedScene] = []
 
+@export_group("Skins")
+## The skin picker opened by SkinSwitchButton.
+@export var skin_select_scene: PackedScene = preload("res://Scenes/Skins/SkinSelectPopup.tscn")
+
 
 @onready var color_rect = $ColorRect
 @onready var click_area = $ColorRect/ClickArea
@@ -60,6 +64,7 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 @onready var inventory_button = %Inventory
 @onready var settings_button = %SettingsButton
 @onready var achievement_button = %AchievementButton
+@onready var skin_switch_button = %SkinSwitchButton
 
 @onready var money_label = get_node("%DisplayUang/Label")
 @onready var daily_login_btn = %DailyLogin
@@ -167,7 +172,7 @@ func _ready():
 
 	_build_tutorial_panel()
 
-	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, settings_button, achievement_button, daily_login_btn, claim_button]:
+	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, settings_button, achievement_button, skin_switch_button, daily_login_btn, claim_button]:
 		_setup_button_juice(btn)
 
 	color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -176,6 +181,9 @@ func _ready():
 		settings_button.pressed.connect(_on_settings_pressed)
 	if not achievement_button.pressed.is_connected(_on_achievement_pressed):
 		achievement_button.pressed.connect(_on_achievement_pressed)
+	if not skin_switch_button.pressed.is_connected(_on_skin_switch_pressed):
+		skin_switch_button.pressed.connect(_on_skin_switch_pressed)
+	skin_switch_button.disabled = GameState.approved_students.is_empty()
 
 	AudioDirector.play_bgm_playlist(&"lobby")
 
@@ -844,6 +852,17 @@ func _on_koperasi_pressed() -> void:
 func _on_inventory_pressed() -> void:
 	AudioDirector.play_sfx(&"tap")
 	Transition.change_scene("res://Scenes/Inventory/inventory.tscn", Transition.Style.WIPE)
+
+## Opens the skin picker over the Lobby. Skins apply the moment one is
+## picked; closing re-seats the diorama so its faces and desks wear them.
+func _on_skin_switch_pressed() -> void:
+	if GameState.approved_students.is_empty():
+		return
+	var popup := skin_select_scene.instantiate() as SkinSelectPopup
+	add_child(popup)
+	popup.closed.connect(_setup_students)
+	popup.open(GameState.approved_students)
+
 
 func _on_achievement_pressed() -> void:
 	AudioDirector.play_sfx(&"tap")

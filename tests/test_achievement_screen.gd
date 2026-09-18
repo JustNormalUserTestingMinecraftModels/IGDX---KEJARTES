@@ -96,6 +96,36 @@ func test_screen_wires_tile_and_sheet_signals() -> void:
 	assert_true(src.contains("if detail_sheet.visible:"), "back-guard: sheet swallows Android back while open")
 
 
+## Task 4: Android back must close an open claim popup before the sheet
+## underneath it, since AchievementClaimPopup has no back handling of its
+## own. Source-scanned because the popup can't be instantiated headlessly
+## with the full claim flow.
+func test_back_guard_closes_claim_popup_before_sheet() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	assert_true(src.contains("_open_claim_popup"), "screen must track the open claim popup")
+	var notif_idx := src.find("func _notification(")
+	assert_true(notif_idx != -1)
+	var popup_idx := src.find("_open_claim_popup", notif_idx)
+	var sheet_idx := src.find("detail_sheet.visible", notif_idx)
+	assert_true(popup_idx != -1 and sheet_idx != -1 and popup_idx < sheet_idx,
+		"_notification must check the claim popup before the detail sheet")
+
+
+## Task 2: a jump from the status pill must reset the filter to "Semua"
+## before scrolling when the target tile is hidden by the active filter,
+## and defer the actual scroll so the grid has re-laid out first.
+func test_jump_requested_resets_filter_before_scrolling() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	var jump_idx := src.find("func _on_jump_requested(")
+	assert_true(jump_idx != -1)
+	var next_func_idx := src.find("\nfunc ", jump_idx + 1)
+	var body := src.substr(jump_idx, next_func_idx - jump_idx)
+	assert_true(body.contains("filter_button.select(0)"), "must reset the filter to Semua (index 0)")
+	assert_true(body.contains("_on_filter_selected(0)"), "must re-apply the reset filter")
+	assert_true(body.contains("call_deferred(\"_scroll_to_tile_deferred\""),
+		"the scroll must be deferred a frame so the grid has re-laid out")
+
+
 func test_lobby_has_the_trophy_button() -> void:
 	var lobby := (load(LOBBY) as PackedScene).instantiate()
 	track(lobby)

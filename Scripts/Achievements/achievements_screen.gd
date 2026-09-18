@@ -26,6 +26,9 @@ const LOBBY := "res://Scenes/Lobby/loby.tscn"
 @onready var detail_sheet: AchievementDetailSheet = %DetailSheet
 
 var _tiles: Array[AchievementTile] = []
+## The currently-open claim celebration popup, if any. Tracked so Android
+## back can close it first, before the detail sheet underneath it.
+var _open_claim_popup: Node = null
 
 
 func _ready() -> void:
@@ -50,8 +53,13 @@ func _exit_tree() -> void:
 		achievements.state_changed.disconnect(_on_state_changed)
 
 
+## Android back: claim popup first (it has no back handling of its own),
+## then the detail sheet underneath it, then leave the screen.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if is_instance_valid(_open_claim_popup):
+			_open_claim_popup.close()
+			return
 		if detail_sheet.visible:
 			detail_sheet.close()
 			return
@@ -68,7 +76,13 @@ func _on_claim_requested(id: String) -> void:
 	AudioDirector.play_sfx(&"tap")
 	var popup := claim_popup_scene.instantiate()
 	add_child(popup)
+	_open_claim_popup = popup
+	popup.closed.connect(_on_claim_popup_closed)
 	popup.open(AchievementCatalog.get_entry(id))
+
+
+func _on_claim_popup_closed() -> void:
+	_open_claim_popup = null
 
 
 func _on_state_changed() -> void:
@@ -82,6 +96,13 @@ func _on_filter_selected(index: int) -> void:
 		tile.visible = tile.matches_filter(index)
 
 
+## Status pill tap in the WAITING state. If the target tile is hidden by the
+## active filter (e.g. "Belum dibuka" selected while the first unclaimed
+## tile is elsewhere), the scroll would silently do nothing -- so reset the
+## filter to "Semua" first. The grid only re-lays out one frame after
+## visibility changes, so the actual scroll+shake is deferred to
+## _scroll_to_tile_deferred() rather than awaited here, keeping this
+## function callable synchronously from a test.
 func _on_jump_requested() -> void:
 	var achievements := _achievements()
 	if achievements == null:
@@ -89,13 +110,26 @@ func _on_jump_requested() -> void:
 	var id: String = achievements.first_unclaimed_id()
 	if id == "":
 		return
-	for tile in _tiles:
-		if tile.achievement_id == id:
-			var scroll := list.get_parent().get_parent() as ScrollContainer
-			if scroll != null:
-				scroll.ensure_control_visible(tile)
-			Juice.shake(tile, 6.0)
+	var tile: AchievementTile = null
+	for t in _tiles:
+		if t.achievement_id == id:
+			tile = t
 			break
+	if tile == null:
+		return
+	if not tile.visible:
+		filter_button.select(0)
+		_on_filter_selected(0)
+	call_deferred("_scroll_to_tile_deferred", tile)
+
+
+## Deferred half of _on_jump_requested(): runs a frame after any filter
+## reset so the grid has already re-laid out the now-visible tile.
+func _scroll_to_tile_deferred(tile: AchievementTile) -> void:
+	var scroll := list.get_parent().get_parent() as ScrollContainer
+	if scroll != null:
+		scroll.ensure_control_visible(tile)
+	Juice.shake(tile, 6.0)
 
 
 func _on_back_pressed() -> void:

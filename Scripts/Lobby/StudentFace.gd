@@ -88,6 +88,12 @@ const LAYER_NAMES := ["Base", "Sclera", "Pupil", "Eyelashes", "Eyelid", "Eyebrow
 
 var _canvas: Control
 var _layers: Dictionary = {}
+
+
+## Swaps the Base layer's art -- how a skin re-dresses the rig. Every other
+## layer (eyes, brows, Marcel's glasses) is shared by all of a student's skins.
+func set_base_texture(tex: Texture2D) -> void:
+	(get_node(CANVAS_PATH).get_node(^"Base") as TextureRect).texture = tex
 var _pupil_home: Vector2 = Vector2.ZERO
 var _pupil_home_valid: bool = false
 var _rng := RandomNumberGenerator.new()

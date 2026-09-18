@@ -274,6 +274,24 @@ func _show_hand_for(h_slot: Node, student_name: String) -> void:
 		chosen.show()
 
 
+## Dresses every Hand_<Name> node in this slot in its student's equipped
+## skin, restoring the authored texture for the default. Only the texture is
+## touched: the per-node transforms are hand-authored (see _show_hand_for).
+## The first call stashes each node's authored texture in its
+## "default_texture" meta so a later default can put it back. Static so the
+## test runner can call it without an instance of this non-@tool script.
+static func _apply_hand_skins(h_slot: Node) -> void:
+	for child in h_slot.get_children():
+		if not child.name.begins_with(HAND_NODE_PREFIX) or not child is TextureRect:
+			continue
+		var hand := child as TextureRect
+		if not hand.has_meta(&"default_texture"):
+			hand.set_meta(&"default_texture", hand.texture)
+		var who := String(hand.name).substr(HAND_NODE_PREFIX.length())
+		var path := StudentSkins.hand_for(who)
+		hand.texture = load(path) if path != "" else hand.get_meta(&"default_texture")
+
+
 func _setup_students():
 	var students = GameState.approved_students.duplicate()
 	if students.size() == 0:
@@ -297,12 +315,16 @@ func _setup_students():
 				portrait_node.texture = default_portrait
 				
 			_show_hand_for(h_slot, str(s.get("name", "")))
+			_apply_hand_skins(h_slot)
 			var breathing_delay = float(i) * 0.4
 			# A student with a layered rig gets it instead of the flat
 			# portrait; both breathe identically, so the diorama reads the
 			# same either way.
 			var face := _acquire_face(p_slot, str(s.get("name", "")))
 			if face != null:
+				var skin_base := StudentSkins.face_base_for(str(s.get("name", "")))
+				if skin_base != "":
+					face.set_base_texture(load(skin_base))
 				_match_rect(face, portrait_node)
 				portrait_node.hide()
 				face.show()

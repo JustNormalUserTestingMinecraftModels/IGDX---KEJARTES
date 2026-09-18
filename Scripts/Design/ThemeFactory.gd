@@ -29,6 +29,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_shop_chat_bubble(theme, tokens)
 	_build_achievements(theme, tokens)
 	_build_achievement_tile(theme, tokens)
+	_build_achievement_status_pill(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -293,6 +294,60 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "AchievementBaruBadgeLabel", tokens.text_on_brand)
 	if tokens.font_display != null:
 		theme.set_font("font", "AchievementBaruBadgeLabel", tokens.font_display)
+
+
+## The header's morphing status pill (2026-09-18 achievements-polish spec,
+## Task 4): a cream IDLE background and a green WAITING background, each
+## with a label variation whose font color reads on top of it, plus the
+## IDLE dash bar's two segment fills.
+static func _build_achievement_status_pill(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("AchievementStatusPillIdle")
+	theme.set_type_variation("AchievementStatusPillIdle", "PanelContainer")
+	var idle_box := StyleBoxFlat.new()
+	idle_box.bg_color = tokens.surface_card
+	idle_box.set_corner_radius_all(tokens.radius_pill)
+	idle_box.content_margin_left = tokens.space_md
+	idle_box.content_margin_right = tokens.space_md
+	idle_box.content_margin_top = tokens.space_xs
+	idle_box.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementStatusPillIdle", idle_box)
+
+	theme.add_type("AchievementStatusPillWaiting")
+	theme.set_type_variation("AchievementStatusPillWaiting", "PanelContainer")
+	var waiting_box := StyleBoxFlat.new()
+	waiting_box.bg_color = tokens.state_success
+	waiting_box.set_corner_radius_all(tokens.radius_pill)
+	waiting_box.content_margin_left = tokens.space_md
+	waiting_box.content_margin_right = tokens.space_md
+	waiting_box.content_margin_top = tokens.space_xs
+	waiting_box.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementStatusPillWaiting", waiting_box)
+
+	theme.add_type("AchievementStatusPillIdleLabel")
+	theme.set_type_variation("AchievementStatusPillIdleLabel", "Label")
+	theme.set_color("font_color", "AchievementStatusPillIdleLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementStatusPillIdleLabel", tokens.font_display)
+
+	theme.add_type("AchievementStatusPillWaitingLabel")
+	theme.set_type_variation("AchievementStatusPillWaitingLabel", "Label")
+	theme.set_color("font_color", "AchievementStatusPillWaitingLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementStatusPillWaitingLabel", tokens.font_display)
+
+	theme.add_type("AchievementDashSegmentFilled")
+	theme.set_type_variation("AchievementDashSegmentFilled", "Panel")
+	var seg_filled := StyleBoxFlat.new()
+	seg_filled.bg_color = tokens.state_success
+	seg_filled.set_corner_radius_all(2)
+	theme.set_stylebox("panel", "AchievementDashSegmentFilled", seg_filled)
+
+	theme.add_type("AchievementDashSegmentEmpty")
+	theme.set_type_variation("AchievementDashSegmentEmpty", "Panel")
+	var seg_empty := StyleBoxFlat.new()
+	seg_empty.bg_color = tokens.surface_sunken
+	seg_empty.set_corner_radius_all(2)
+	theme.set_stylebox("panel", "AchievementDashSegmentEmpty", seg_empty)
 
 
 ## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard

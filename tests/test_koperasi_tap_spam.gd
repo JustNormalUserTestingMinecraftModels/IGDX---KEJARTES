@@ -78,30 +78,41 @@ func test_bubble_cooldown_absorbs_repeat_events_same_frame() -> void:
 	bubble.queue_free()
 
 
+## Fix round 1: a same-frame test can never see a second SHOWING emission
+## for an already-SHOWING bubble -- _set_state() early-returns on a
+## same-state transition (by design, see ChatBubble.gd's header), so an
+## accepted say() while already SHOWING re-tweens and re-texts but does not
+## re-fire state_changed. Read the cooldown gate's own bookkeeping
+## (_last_say_time) and the resulting label text instead of counting
+## state_changed emissions.
 func test_bubble_cooldown_lets_a_different_event_interrupt() -> void:
 	var bubble := _live_bubble()
-	var seen: Array = []
-	bubble.state_changed.connect(func(s): seen.append(s))
 	bubble.say(&"ADD")
+	assert_false(bubble._last_say_time.has(&"REMOVE"),
+		"REMOVE should not have a recorded cooldown timestamp yet")
 	bubble.say(&"REMOVE")
-	assert_true(seen.size() >= 2, "a different event must still interrupt within the same cooldown window")
+	assert_true(bubble._last_say_time.has(&"REMOVE"),
+		"a different event must still pass its own cooldown gate (ADD then REMOVE, per spec)")
 	assert_true(DialogueCatalog.LINES[&"REMOVE"].has(bubble._label.text),
 		"the bubble should now show a REMOVE line, not the stale ADD one")
 	bubble.queue_free()
 
 
+## Same fix-round-1 reasoning as above: the bubble is already SHOWING after
+## the first say(), so a second, accepted say() of the same event cannot be
+## proven via state_changed. _pass_cooldown() unconditionally stamps
+## _last_say_time[event] = now on every accepted call, so a later timestamp
+## than our backdated one is direct proof the gate passed and _play() ran.
 func test_bubble_accepts_same_event_again_after_cooldown_elapses() -> void:
 	var bubble := _live_bubble()
 	bubble.say(&"ADD")
 	# Backdate the recorded time past SAY_COOLDOWN instead of waiting/awaiting
 	# (no coroutine tests allowed here).
-	bubble._last_say_time[&"ADD"] = Time.get_ticks_msec() - int(ChatBubble.SAY_COOLDOWN * 1000.0) - 5
-	var accepted: Array = []
-	bubble.state_changed.connect(func(s):
-		if s == ChatBubble.State.SHOWING:
-			accepted.append(s))
+	var backdated: int = Time.get_ticks_msec() - int(ChatBubble.SAY_COOLDOWN * 1000.0) - 5
+	bubble._last_say_time[&"ADD"] = backdated
 	bubble.say(&"ADD")
-	assert_eq(accepted.size(), 1, "a same-event say() after the cooldown window must be accepted")
+	assert_true(int(bubble._last_say_time[&"ADD"]) > backdated,
+		"a same-event say() after the cooldown window must be accepted (advances the gate's timestamp)")
 	bubble.queue_free()
 
 
@@ -131,16 +142,25 @@ func test_cart_clear_resets_the_per_frame_budget() -> void:
 		"clear() should start a fresh per-frame budget, in the same frame")
 
 
+## Color components (btn.modulate) are 32-bit floats; a GDScript float
+## literal like 0.6 is a 64-bit double. Comparing them with assert_eq's exact
+## `!=` fails on the truncation (0.6 as float32 != 0.6 as double) even
+## though the value is functionally correct -- compare with a tolerance
+## instead. This suite has no assert_almost_eq, so roll a tiny local one.
+func _nearly(a: float, b: float) -> bool:
+	return absf(a - b) < 0.001
+
+
 func test_shelf_item_on_tap_locks_and_second_tap_is_refused() -> void:
 	var pair := _live_shelf_item()
 	var life = pair[0]
 	var btn: TextureButton = pair[1]
 	assert_true(life.on_tap(), "first tap should succeed and lock the slot")
 	assert_false(life.on_tap(), "a second tap while locked must be refused")
-	assert_eq(btn.modulate.a, life.locked_alpha,
+	assert_true(_nearly(btn.modulate.a, life.locked_alpha),
 		"a locked slot should ghost to locked_alpha")
 	life._unlock()
-	assert_eq(btn.modulate.a, 1.0, "_unlock() should restore full alpha")
+	assert_true(_nearly(btn.modulate.a, 1.0), "_unlock() should restore full alpha")
 	assert_true(life.on_tap(), "after _unlock(), a new tap should succeed again")
 	btn.queue_free()
 
@@ -152,7 +172,7 @@ func test_shelf_item_on_flight_finished_unlocks() -> void:
 	life.on_tap()
 	life.on_flight_finished()
 	assert_false(life._locked, "on_flight_finished() should clear the lock")
-	assert_eq(btn.modulate.a, 1.0, "on_flight_finished() should restore full alpha")
+	assert_true(_nearly(btn.modulate.a, 1.0), "on_flight_finished() should restore full alpha")
 	btn.queue_free()
 
 

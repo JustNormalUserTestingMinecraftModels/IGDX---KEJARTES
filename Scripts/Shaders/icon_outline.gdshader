@@ -16,11 +16,11 @@ void vertex() {
 	v_modulate = COLOR;
 }
 
-float alpha_at(sampler2D tex, vec2 uv) {
-	if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) {
-		return 0.0;
-	}
-	return texture(tex, uv).a;
+// 1.0 inside the unit square, 0.0 outside. TEXTURE is sampled in fragment()
+// itself: passing it into a function trips the shader compiler's
+// custom_samplers check (servers/rendering/shader_compiler.cpp) on load.
+float in_bounds(vec2 uv) {
+	return (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) ? 0.0 : 1.0;
 }
 
 void fragment() {
@@ -35,8 +35,10 @@ void fragment() {
 	for (int i = 0; i < DIRECTIONS; i++) {
 		float a = TAU * float(i) / float(DIRECTIONS);
 		vec2 dir = vec2(cos(a), sin(a));
-		ring = max(ring, alpha_at(TEXTURE, uv + dir * reach));
-		ring = max(ring, alpha_at(TEXTURE, uv + dir * reach * 0.5));
+		vec2 far = uv + dir * reach;
+		vec2 near = uv + dir * reach * 0.5;
+		ring = max(ring, texture(TEXTURE, far).a * in_bounds(far));
+		ring = max(ring, texture(TEXTURE, near).a * in_bounds(near));
 	}
 	vec3 rgb = mix(outline_color.rgb, art.rgb, art.a);
 	float alpha = max(art.a, ring * outline_color.a);

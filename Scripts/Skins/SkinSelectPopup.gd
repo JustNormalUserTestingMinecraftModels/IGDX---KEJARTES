@@ -5,9 +5,11 @@ extends Control
 ## The Lobby's skin picker (SkinSelectPopup.tscn; mockups
 ## skinselect_mockup.png and skinselectoption_mockup.png). A blurred screen,
 ## a card of up to four roster students in their current skin, and SETUJU.
-## Tapping a student opens OptionLayer: a second blur over the card (a
-## BackBufferCopy gives it a fresh screen copy, card included) and a
+## Tapping a student opens OptionLayer: a second, lighter blur over the whole
+## screen (a BackBufferCopy gives it a fresh screen copy, card included) and a
 ## scrollable column of that student's skins, lined up over the tapped card.
+## OptionLayer sits outside the SafeAreaMargin so its blur reaches every
+## edge; the column is aligned to the card at runtime instead.
 ## Picking an unlocked skin equips it at once (GameState.equip_skin) and
 ## closes the column; a tap on the blur closes it unchanged. SETUJU or back
 ## closes the popup, emits `closed` and frees it.
@@ -38,7 +40,7 @@ func _ready() -> void:
 	var setuju := get_node(^"Safe/UI/Card/Setuju") as Button
 	if not setuju.pressed.is_connected(close):
 		setuju.pressed.connect(close)
-	var blur2 := get_node(^"Safe/UI/OptionLayer/Blur2") as Control
+	var blur2 := get_node(^"OptionLayer/Blur2") as Control
 	if not blur2.gui_input.is_connected(_on_blur2_input):
 		blur2.gui_input.connect(_on_blur2_input)
 
@@ -65,7 +67,7 @@ func open_column(index: int) -> void:
 		return
 	_open_slot = index
 	var student_name := str(_students[index].get("name", ""))
-	var list := get_node(^"Safe/UI/OptionLayer/Column/Scroll/List")
+	var list := get_node(^"OptionLayer/Column/Scroll/List")
 	for old in list.get_children():
 		list.remove_child(old)
 		old.queue_free()
@@ -74,16 +76,19 @@ func open_column(index: int) -> void:
 		list.add_child(tile)
 		tile.show_skin(student_name, id, not GameState.is_skin_unlocked(student_name, id))
 		tile.pressed.connect(_on_tile_pressed.bind(id))
-	var column := get_node(^"Safe/UI/OptionLayer/Column") as Control
+	var column := get_node(^"OptionLayer/Column") as Control
 	var slot := _slot(index)
 	if slot.is_inside_tree() and column.is_inside_tree():
-		column.global_position.x = slot.global_position.x + (slot.size.x - column.size.x) * 0.5
-	(get_node(^"Safe/UI/OptionLayer") as Control).show()
+		var card := get_node(^"Safe/UI/Card") as Control
+		column.global_position = Vector2(
+			slot.global_position.x + (slot.size.x - column.size.x) * 0.5,
+			card.global_position.y)
+	(get_node(^"OptionLayer") as Control).show()
 
 
 func close_column() -> void:
 	_open_slot = -1
-	(get_node(^"Safe/UI/OptionLayer") as Control).hide()
+	(get_node(^"OptionLayer") as Control).hide()
 
 
 ## Fades out, emits `closed` and frees the popup. Idempotent.

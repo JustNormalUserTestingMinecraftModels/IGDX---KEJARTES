@@ -351,7 +351,10 @@ func _animate_breathing(node: Control, delay: float):
 	if not is_instance_valid(node): return
 	
 	node.pivot_offset = Vector2(node.size.x / 2.0, node.size.y)
-	var tw = create_tween().set_loops()
+	# Bound to the node, not the Lobby: re-seating after the skin picker
+	# frees the old face rigs, and a Lobby-owned looping tween would keep
+	# stepping a dead node ("Infinite loop detected").
+	var tw = node.create_tween().set_loops()
 	
 	# Start with a delay so they don't breathe perfectly in sync
 	if delay > 0:

@@ -89,12 +89,12 @@ func test_popup_contract() -> void:
 	assert_eq(setuju.text, "SETUJU")
 	assert_eq(setuju.theme_type_variation, &"PrimaryButton")
 	assert_eq(p.get_node("Safe/UI/Card/Slots").get_child_count(), 4)
-	var layer := p.get_node("Safe/UI/OptionLayer") as Control
+	var layer := p.get_node("OptionLayer") as Control
 	assert_false(layer.visible)
 	var bb := layer.get_node("BackBuffer") as BackBufferCopy
 	assert_eq(bb.copy_mode, BackBufferCopy.COPY_MODE_VIEWPORT)
 	assert_lt_index(layer, "BackBuffer", "Blur2")
-	assert_eq((layer.get_node("Blur2") as ColorRect).material.resource_path, "res://Scenes/Koperasi/shop_hub_blur_material.tres")
+	assert_eq((layer.get_node("Blur2") as ColorRect).material.resource_path, "res://Scenes/Skins/skin_option_blur_material.tres")
 	assert_eq((layer.get_node("Column") as Panel).theme_type_variation, &"SkinOptionColumn")
 	assert_true(layer.get_node("Column/Scroll") is ScrollContainer)
 
@@ -122,8 +122,8 @@ func test_slot_press_opens_one_tile_per_skin() -> void:
 	var p := _popup()
 	p.open(_roster())
 	(p.get_node("Safe/UI/Card/Slots/Slot1") as SkinSlot).pressed.emit()
-	assert_true((p.get_node("Safe/UI/OptionLayer") as Control).visible)
-	var list := p.get_node("Safe/UI/OptionLayer/Column/Scroll/List")
+	assert_true((p.get_node("OptionLayer") as Control).visible)
+	var list := p.get_node("OptionLayer/Column/Scroll/List")
 	assert_eq(list.get_child_count(), StudentSkins.skins_for("Thea").size())
 	assert_eq((list.get_child(1) as SkinOptionTile).skin_id, "skin1")
 
@@ -133,7 +133,7 @@ func test_reopening_the_column_does_not_stack_tiles() -> void:
 	p.open(_roster())
 	p.open_column(0)
 	p.open_column(1)
-	var list := p.get_node("Safe/UI/OptionLayer/Column/Scroll/List")
+	var list := p.get_node("OptionLayer/Column/Scroll/List")
 	var live := 0
 	for c in list.get_children():
 		if not c.is_queued_for_deletion():
@@ -146,7 +146,7 @@ func test_locked_tiles_are_dark() -> void:
 	var p := _popup()
 	p.open(_roster())
 	p.open_column(1)
-	var list := p.get_node("Safe/UI/OptionLayer/Column/Scroll/List")
+	var list := p.get_node("OptionLayer/Column/Scroll/List")
 	assert_false((list.get_child(0) as SkinOptionTile).disabled, "default is never locked")
 	assert_true((list.get_child(1) as SkinOptionTile).disabled)
 
@@ -155,10 +155,10 @@ func test_picking_a_tile_equips_and_closes_the_column() -> void:
 	var p := _popup()
 	p.open(_roster())
 	p.open_column(2)
-	var tile := p.get_node("Safe/UI/OptionLayer/Column/Scroll/List").get_child(1) as SkinOptionTile
+	var tile := p.get_node("OptionLayer/Column/Scroll/List").get_child(1) as SkinOptionTile
 	tile.pressed.emit()
 	assert_eq(GameState.equipped_skin("Marcel"), "skin1")
-	assert_false((p.get_node("Safe/UI/OptionLayer") as Control).visible)
+	assert_false((p.get_node("OptionLayer") as Control).visible)
 	var art := p.get_node("Safe/UI/Card/Slots/Slot3/Frame/Mask/Art") as TextureRect
 	assert_eq(art.texture.resource_path, "res://Assets/Images/Skins/Marcel/splash_marcel_skin1.png")
 
@@ -170,8 +170,8 @@ func test_blur2_tap_closes_the_column() -> void:
 	var ev := InputEventMouseButton.new()
 	ev.button_index = MOUSE_BUTTON_LEFT
 	ev.pressed = true
-	(p.get_node("Safe/UI/OptionLayer/Blur2") as Control).gui_input.emit(ev)
-	assert_false((p.get_node("Safe/UI/OptionLayer") as Control).visible)
+	(p.get_node("OptionLayer/Blur2") as Control).gui_input.emit(ev)
+	assert_false((p.get_node("OptionLayer") as Control).visible)
 
 
 func test_setuju_closes_once() -> void:

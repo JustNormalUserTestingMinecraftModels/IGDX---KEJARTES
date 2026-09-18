@@ -18,6 +18,16 @@ signal buy_pressed
 signal remove_requested(item_name: String)
 ## Emitted on a quick tap on a tray item.
 signal slot_tapped(item_name: String)
+## Emitted whenever the tray's expanded/collapsed state actually changes
+## (never for a set_state() call that repeats the current state).
+signal state_changed(state: int)
+
+## EXPANDED is the tray docked on the shelf; COLLAPSED slides it down by
+## tray_offset_collapsed, out of the way, leaving only the crate handle.
+enum ViewState { EXPANDED, COLLAPSED }
+
+## How far down (px) the tray slides when collapsed.
+@export var tray_offset_collapsed: float = 190.0
 
 ## Gap between two items on the plank, in pixels, before the row is fitted.
 @export var item_gap: float = 20.0:
@@ -47,6 +57,7 @@ const CART_SCRIPT := preload("res://Scripts/Inventory/Cart.gd")
 @onready var _emblem: Control = $Body/Emblem
 @onready var _emblem_badge: Control = $Body/Emblem/CountBadge
 @onready var _emblem_count: Label = $Body/Emblem/CountBadge/Count
+@onready var _header_button: TextureButton = $Body/Emblem/HeaderButton
 
 ## item_name -> TraySlot, in the order the lines entered the cart.
 var _slots: Dictionary = {}
@@ -55,11 +66,23 @@ var _entries: Dictionary = {}
 ## item_name -> units bought but still flying in; refresh() hides them.
 var _held: Dictionary = {}
 
+## Current EXPANDED/COLLAPSED state; see set_state().
+var _state: int = ViewState.EXPANDED
+## position.y as authored in the scene, captured once in _ready(); every
+## slide is relative to this so repeated toggles never drift.
+var _base_y: float = 0.0
+## The tween driving the current slide, if any -- killed before a new one
+## starts so two quick toggles never fight.
+var _tray_tween: Tween
+
 
 func _ready() -> void:
 	_ensure_nodes()
+	_base_y = position.y
 	if is_instance_valid(_beli_button) and not _beli_button.pressed.is_connected(_on_beli_pressed):
 		_beli_button.pressed.connect(_on_beli_pressed)
+	if is_instance_valid(_header_button) and not _header_button.pressed.is_connected(_on_header_pressed):
+		_header_button.pressed.connect(_on_header_pressed)
 
 
 ## Redraws the tray from Cart-shaped entries:
@@ -135,6 +158,40 @@ func landing_rect_for(item_name: String) -> Rect2:
 ## The slot showing item_name, or null.
 func get_slot(item_name: String) -> TraySlot:
 	return _slots.get(item_name)
+
+
+## Flips between EXPANDED and COLLAPSED, animated.
+func toggle() -> void:
+	set_state(ViewState.COLLAPSED if _state == ViewState.EXPANDED else ViewState.EXPANDED)
+
+
+## Slides the tray to state. A repeat of the current state is a no-op (no
+## tween, no signal). animate=false snaps immediately -- used by _ready-time
+## setup and by tests, which never advance a frame for a tween to run.
+func set_state(state: int, animate: bool = true) -> void:
+	if state == _state:
+		return
+	_state = state
+	var target_y := _base_y + (tray_offset_collapsed if state == ViewState.COLLAPSED else 0.0)
+	var emblem_alpha := 0.0 if state == ViewState.COLLAPSED else 1.0
+	if is_instance_valid(_tray_tween) and _tray_tween.is_valid():
+		_tray_tween.kill()
+	if animate:
+		_tray_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_tray_tween.set_parallel(true)
+		_tray_tween.tween_property(self, "position:y", target_y, 0.28)
+		if is_instance_valid(_emblem):
+			_tray_tween.tween_property(_emblem, "modulate:a", emblem_alpha, 0.28)
+	else:
+		position.y = target_y
+		if is_instance_valid(_emblem):
+			_emblem.modulate.a = emblem_alpha
+	state_changed.emit(state)
+
+
+## True while the tray is docked on the shelf (not slid away).
+func is_expanded() -> bool:
+	return _state == ViewState.EXPANDED
 
 
 ## The basket emblem, which bounces when an item lands.
@@ -215,6 +272,10 @@ func _on_slot_tapped(item_name: String) -> void:
 	slot_tapped.emit(item_name)
 
 
+func _on_header_pressed() -> void:
+	toggle()
+
+
 ## Resolves @onready nodes when a method runs before _ready.
 func _ensure_nodes() -> void:
 	if not is_instance_valid(_items):
@@ -233,3 +294,5 @@ func _ensure_nodes() -> void:
 		_emblem_badge = get_node_or_null("Body/Emblem/CountBadge")
 	if not is_instance_valid(_emblem_count):
 		_emblem_count = get_node_or_null("Body/Emblem/CountBadge/Count")
+	if not is_instance_valid(_header_button):
+		_header_button = get_node_or_null("Body/Emblem/HeaderButton")

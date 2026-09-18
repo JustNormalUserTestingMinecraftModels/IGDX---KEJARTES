@@ -28,8 +28,20 @@ extends Control
 @onready var message_label: Label = $MessageLabel
 @onready var bubble: ChatBubble = $Stage/ChatBubble
 @onready var herman_ap: AnimationPlayer = get_node_or_null("Stage/Herman/HermanAP") as AnimationPlayer
+@onready var tray: BasketTray = get_node_or_null("Stage/TrayDock/BasketTray") as BasketTray
+@onready var crate: TextureButton = get_node_or_null("Stage/CrateHandle") as TextureButton
+
+## CrateHandle's authored position (top-left) while the tray is EXPANDED --
+## sitting small at the tray header emblem's spot.
+@export var crate_pos_expanded: Vector2 = Vector2(804.0, 1104.0)
+## CrateHandle's position while the tray is COLLAPSED -- large, bottom-right
+## of the Stage.
+@export var crate_pos_collapsed: Vector2 = Vector2(760.0, 1530.0)
 
 var beli_button: Button
+## The tween sliding/scaling the crate handle to match the tray's state;
+## killed before a new one starts so two quick toggles never fight.
+var _crate_tween: Tween
 
 func _ready():
 	if back_button:
@@ -61,6 +73,11 @@ func _ready():
 
 	if bubble and herman_ap:
 		bubble.set_herman_ap(herman_ap)
+
+	if is_instance_valid(tray) and not tray.state_changed.is_connected(_on_tray_state_changed):
+		tray.state_changed.connect(_on_tray_state_changed)
+	if is_instance_valid(crate) and not crate.pressed.is_connected(_on_crate_pressed):
+		crate.pressed.connect(_on_crate_pressed)
 
 	# The Stage, a child, has already stocked the shelf in its own _ready.
 	if bubble:
@@ -107,8 +124,7 @@ func _on_shelf_dead_tap(_item_name: String) -> void:
 
 func _setup_beli_button():
 	# Beli lives in the basket tray's footer.
-	var tray = stage.get_node_or_null("TrayDock/BasketTray")
-	if tray == null:
+	if not is_instance_valid(tray):
 		return
 	beli_button = tray.get_beli_button()
 	if not tray.buy_pressed.is_connected(_on_beli_pressed):
@@ -171,6 +187,33 @@ func _on_beli_pressed():
 	_show_message("Pembelian berhasil!", &"ShopMessageSuccess")
 	if bubble:
 		bubble.say(&"THANKS")
+
+## The big crate icon: toggles the tray exactly like its header emblem does.
+func _on_crate_pressed() -> void:
+	if is_instance_valid(tray):
+		tray.toggle()
+
+## Mirrors the crate handle's pose and idle animation to the tray's state,
+## and mutes Pak Herman's idle chatter while the tray is tucked away (a
+## collapsed tray means the player is busy browsing the shelf, not the cart).
+func _on_tray_state_changed(state: int) -> void:
+	if not is_instance_valid(crate):
+		return
+	var expanded: bool = state == BasketTray.ViewState.EXPANDED
+	if is_instance_valid(_crate_tween) and _crate_tween.is_valid():
+		_crate_tween.kill()
+	_crate_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_crate_tween.set_parallel(true)
+	_crate_tween.tween_property(crate, "scale",
+		Vector2(0.35, 0.35) if expanded else Vector2.ONE, 0.28)
+	_crate_tween.tween_property(crate, "position",
+		crate_pos_expanded if expanded else crate_pos_collapsed, 0.28)
+	var ap := crate.get_node_or_null("AP") as AnimationPlayer
+	if ap:
+		ap.play("RESET" if expanded else "idle_bounce")
+	if bubble:
+		bubble.idle_chatter_enabled = expanded
+		bubble.reset_idle_timer()
 
 ## Show a purchase-feedback message. `variation` selects one of the
 ## semantic ShopMessage* ThemeFactory variations (Warning/Danger/Success)

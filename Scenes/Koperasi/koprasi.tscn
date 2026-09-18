@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://Scripts/Koperasi/ChatBubble.gd" id="15_chatbubble"]
 [ext_resource type="Texture2D" uid="uid://5fkevoxgxj3r" path="res://Assets/Images/Shop/UI/pip_hollow.svg" id="16_piphollow"]
 [ext_resource type="Texture2D" uid="uid://cpcnblan2tm6i" path="res://Assets/Images/Shop/UI/pip_filled.svg" id="17_pipfilled"]
+[ext_resource type="Texture2D" uid="uid://cyt0bmd5wkn8m" path="res://Assets/Images/Shop/UI/icon_keranjang.svg" id="18_crate"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -99,6 +100,68 @@ _data = {
 &"RESET": SubResource("Animation_herman_reset"),
 &"idle": SubResource("Animation_herman_idle"),
 &"talk": SubResource("Animation_herman_talk")
+}
+
+[sub_resource type="Animation" id="Animation_crate_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Art:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Art:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_crate_idle_bounce"]
+resource_name = "idle_bounce"
+length = 1.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Art:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.8, 1.1, 1.35, 1.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(0.96, 1.05), Vector2(1.06, 0.94), Vector2(0.99, 1.02), Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Art:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.8, 1.1, 1.35, 1.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, -6), Vector2(0, 0), Vector2(0, -2), Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_crate"]
+_data = {
+&"RESET": SubResource("Animation_crate_reset"),
+&"idle_bounce": SubResource("Animation_crate_idle_bounce")
 }
 
 [node name="Koprasi" type="Control" unique_id=2082264977]
@@ -872,6 +935,34 @@ stretch_mode = 5
 layout_mode = 2
 theme_type_variation = &"ShopCoinLabel"
 vertical_alignment = 1
+
+[node name="CrateHandle" type="TextureButton" parent="Stage" unique_id=1601273984]
+layout_mode = 0
+offset_left = 804.0
+offset_top = 1104.0
+offset_right = 1124.0
+offset_bottom = 1424.0
+pivot_offset = Vector2(160, 320)
+scale = Vector2(0.35, 0.35)
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Art" type="TextureRect" parent="Stage/CrateHandle" unique_id=1601273985]
+layout_mode = 0
+offset_right = 320.0
+offset_bottom = 320.0
+pivot_offset = Vector2(160, 320)
+mouse_filter = 2
+texture = ExtResource("18_crate")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AP" type="AnimationPlayer" parent="Stage/CrateHandle" unique_id=1601273986]
+root_node = NodePath("..")
+libraries = {
+"": SubResource("AnimationLibrary_crate")
+}
+autoplay = "RESET"
 
 [node name="Safe" type="MarginContainer" parent="." unique_id=259420622]
 layout_mode = 1

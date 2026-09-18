@@ -79,7 +79,13 @@ func test_remaining_of_reflects_sold_and_cart() -> void:
 	Cart.add_item(ItemDatabase.get_item("Cilok"))
 
 	var stage = RakScript.new()
-	stage._stock_names = ["Cilok", "Cilok", "Mie Instan"]
+	# stage is untyped (RakScript.new() carries no static type), so this
+	# assignment goes through Object.set() dynamically -- an untyped array
+	# literal there does not coerce to the property's Array[String] and
+	# Godot raises "Invalid assignment". Build a typed local first so the
+	# value itself carries Array[String] at runtime.
+	var stock_names: Array[String] = ["Cilok", "Cilok", "Mie Instan"]
+	stage._stock_names = stock_names
 
 	assert_eq(stage.remaining_of("Cilok"), 0, "2 stock - 1 sold - 1 in cart = 0")
 	assert_eq(stage.remaining_of("Mie Instan"), 1, "1 stock, untouched")
@@ -92,7 +98,9 @@ func test_remaining_of_never_goes_negative() -> void:
 	Cart.add_item(ItemDatabase.get_item("Cilok"))
 
 	var stage = RakScript.new()
-	stage._stock_names = ["Cilok"]
+	# Same typed-array pitfall as test_remaining_of_reflects_sold_and_cart().
+	var stock_names: Array[String] = ["Cilok"]
+	stage._stock_names = stock_names
 
 	assert_eq(stage.remaining_of("Cilok"), 0,
 		"sold + carted overshoots the single copy on the shelf; floors at 0")

@@ -57,8 +57,14 @@ func test_global_controls_are_present() -> void:
 	assert_true(body.contains("Buka semua"), "must have a 'Buka semua' button")
 	assert_true(body.contains("Reset semua"), "must have a 'Reset semua' button")
 	assert_true(body.contains("Buka acak"), "must have a 'Buka acak' button")
-	assert_true(body.contains("dibuka") and body.contains("belum diambil"),
-		"must have a live readout label mentioning opened/unclaimed counts")
+	assert_true(body.contains("_lbl_achievements_readout"),
+		"must build a live readout label")
+	# The readout's actual text is set in _refresh_achievements_panel (called
+	# once at the end of _build_achievements_panel, then again on every
+	# refresh), not inline where the Label node is created.
+	var refresh_body := _function_body(_source(), "_refresh_achievements_panel")
+	assert_true(refresh_body.contains("dibuka") and refresh_body.contains("belum diambil"),
+		"the readout's format string must mention opened/unclaimed counts")
 
 
 func test_global_controls_call_the_achievements_api() -> void:

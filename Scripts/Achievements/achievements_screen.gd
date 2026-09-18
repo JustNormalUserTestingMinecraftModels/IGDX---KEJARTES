@@ -54,10 +54,13 @@ func _exit_tree() -> void:
 
 
 ## Android back: claim popup first (it has no back handling of its own),
-## then the detail sheet underneath it, then leave the screen.
+## then the detail sheet underneath it, then leave the screen. A popup that
+## is already fading out (a second fast back before `closed` fires) is
+## invisible to the player, so it counts as gone and back falls through to
+## the sheet instead of re-closing it.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		if is_instance_valid(_open_claim_popup):
+		if is_instance_valid(_open_claim_popup) and not _open_claim_popup._closing:
 			_open_claim_popup.close()
 			return
 		if detail_sheet.visible:

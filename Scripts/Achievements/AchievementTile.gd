@@ -61,18 +61,21 @@ static var _baru_shown: Dictionary = {}
 ## Emits tile_pressed only on a clean tap: press then release with less than
 ## TAP_MOVE_THRESHOLD px of movement between them. A release on PRESS opened
 ## the detail sheet under every drag-scroll starting on a tile; this mirrors
-## InventorySlot._on_gui_input's release+distance guard. Handles both mouse
-## (desktop/editor) and touch (device) events.
+## InventorySlot._on_gui_input's release+distance guard.
+##
+## Mouse-only by design: project.godot sets emulate_touch_from_mouse=true and
+## emulate_mouse_from_touch defaults on, so every real tap already arrives as
+## BOTH an InputEventScreenTouch (local `position`) and an emulated
+## InputEventMouseButton (`global_position`). Handling both used to write
+## _press_pos from two different coordinate spaces and only worked by luck of
+## event ordering. Touch input reaches this via that emulation, so handling
+## only the mouse path (and comparing global_position on both press and
+## release) covers touch too without a double-fire risk.
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			_press_pos = event.global_position
 		elif _press_pos.distance_to(event.global_position) < TAP_MOVE_THRESHOLD:
-			tile_pressed.emit(achievement_id)
-	elif event is InputEventScreenTouch:
-		if event.pressed:
-			_press_pos = event.position
-		elif _press_pos.distance_to(event.position) < TAP_MOVE_THRESHOLD:
 			tile_pressed.emit(achievement_id)
 
 

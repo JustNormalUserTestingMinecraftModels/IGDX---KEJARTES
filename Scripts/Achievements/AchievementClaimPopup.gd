@@ -50,8 +50,12 @@ func _gui_input(event: InputEvent) -> void:
 		close()
 
 
-## Fades the popup out, emits `closed` and frees it.
+## Fades the popup out, emits `closed` and frees it. Idempotent: a second
+## call (e.g. a fast double Android back) is a no-op instead of starting a
+## second fade tween and double-emitting/double-freeing.
 func close() -> void:
+	if _closing:
+		return
 	_closing = true
 	var tw := create_tween()
 	tw.tween_property(self, "modulate:a", 0.0, fade_out_time)

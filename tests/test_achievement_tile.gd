@@ -180,26 +180,20 @@ func test_press_motion_beyond_threshold_release_emits_nothing() -> void:
 	assert_eq(got.size(), 0, "a drag past the threshold must not emit")
 
 
-## Same two cases via touch events, since the shipped device path is touch,
-## not mouse.
-func test_touch_press_release_same_position_emits_once() -> void:
+## The device path is touch, but the tile now handles only the emulated
+## mouse events those touches produce (project.godot's
+## emulate_touch_from_mouse / emulate_mouse_from_touch); a bare
+## InputEventScreenTouch, with no mouse emulation delivering the matching
+## InputEventMouseButton, must not emit at all. Proves there is exactly one
+## input path, not two racing ones.
+func test_bare_screen_touch_alone_emits_nothing() -> void:
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
 	var got := []
 	tile.tile_pressed.connect(func(id): got.append(id))
 	tile._gui_input(_screen_touch(true, Vector2(50, 50)))
 	tile._gui_input(_screen_touch(false, Vector2(52, 51)))
-	assert_eq(got, [PLAIN_ID])
-
-
-func test_touch_press_motion_beyond_threshold_emits_nothing() -> void:
-	var tile := _new_tile()
-	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
-	var got := []
-	tile.tile_pressed.connect(func(id): got.append(id))
-	tile._gui_input(_screen_touch(true, Vector2(50, 50)))
-	tile._gui_input(_screen_touch(false, Vector2(50, 50 + AchievementTile.TAP_MOVE_THRESHOLD + 10)))
-	assert_eq(got.size(), 0)
+	assert_eq(got.size(), 0, "ScreenTouch alone must not emit; only the emulated mouse path does")
 
 
 func _mouse_button(pressed: bool, pos: Vector2) -> InputEventMouseButton:

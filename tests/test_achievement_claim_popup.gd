@@ -66,6 +66,19 @@ func test_factory_builds_the_claim_labels() -> void:
 	assert_eq(theme.get_type_variation_base("AchievementClaimHintLabel"), &"Label")
 
 
+func test_close_twice_is_idempotent() -> void:
+	var p := _popup()
+	Engine.get_main_loop().root.add_child(p)
+	var closed_count := [0]
+	p.closed.connect(func() -> void: closed_count[0] += 1)
+	p.close()
+	assert_true(p._closing, "first close starts fading out")
+	var tween_count_after_first := p.get_tree().get_processed_tweens().size()
+	p.close()
+	assert_eq(p.get_tree().get_processed_tweens().size(), tween_count_after_first, "second close does not start another tween")
+	assert_eq(closed_count[0], 0, "closed has not fired yet (tween still running)")
+
+
 func test_screen_opens_the_popup_on_claim() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
 	assert_true(src.contains("claim_popup_scene.instantiate()"))

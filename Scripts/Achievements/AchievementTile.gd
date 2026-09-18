@@ -10,6 +10,14 @@ extends PanelContainer
 ## setup(). @tool so the test runner can drive it directly; it has no
 ## side effects of its own (the "BARU" pop-in dict is session-scoped data,
 ## not a scene mutation).
+##
+## Sizing: the root's size_flags_horizontal = 3 (EXPAND_FILL) so the parent
+## GridContainer splits its width evenly between the two columns. Its
+## custom_minimum_size.x (420) must fit two columns plus List's h_separation
+## (24) inside Scroll's List width: Scroll is Safe/UI width (1080) minus its
+## offset_left/right (84 + 83 = 167) = 913, minus Margin's 24px each side
+## (48) = 865, so each column gets (865 - 24) / 2 = 420.5px — 420 fits with
+## room to spare.
 
 ## Filter values matches_filter() understands (mirrors the plan's filter
 ## OptionButton, Task 5's screen wires the options to these).

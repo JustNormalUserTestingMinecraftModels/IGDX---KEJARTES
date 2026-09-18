@@ -226,3 +226,13 @@ func test_relock_clears_baru_shown_so_it_replays_on_reunlock() -> void:
 	tile.refresh()
 	assert_true(tile.baru_badge.visible)
 	assert_true(AchievementTile._baru_shown.has(PLAIN_ID), "re-unlock must be able to replay the BARU pop_in")
+
+
+func test_root_expands_to_fill_grid_column() -> void:
+	var src := FileAccess.get_file_as_string(TILE)
+	var root_idx := src.find('[node name="AchievementTile" type="PanelContainer"]')
+	assert_true(root_idx != -1, "tile root found")
+	var next_idx := src.find("[node name=", root_idx + 1)
+	var body := src.substr(root_idx, next_idx - root_idx)
+	assert_true(body.contains("size_flags_horizontal = 3"),
+		"root must EXPAND_FILL so the GridContainer splits width evenly between columns")

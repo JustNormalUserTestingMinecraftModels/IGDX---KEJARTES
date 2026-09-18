@@ -61,8 +61,11 @@ stretch_mode = 5
 [node name="Header" type="HBoxContainer" parent="Safe/UI"]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
+anchor_left = 0.0
+anchor_top = 0.0
 anchor_right = 1.0
+anchor_bottom = 0.0
 offset_left = 84.0
 offset_top = 350.0
 offset_right = -83.0
@@ -74,10 +77,12 @@ theme_override_constants/separation = 16
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 
 [node name="FilterButton" type="OptionButton" parent="Safe/UI/Header"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 4
 size_flags_horizontal = 0
 theme_type_variation = &"SecondaryButton"
 item_count = 4

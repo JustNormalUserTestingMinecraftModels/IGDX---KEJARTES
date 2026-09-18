@@ -100,3 +100,25 @@ func test_screen_script_back_guard_does_not_leave_screen_while_sheet_open() -> v
 func test_old_achievement_row_is_gone() -> void:
 	assert_false(FileAccess.file_exists("res://Scenes/Achievements/AchievementRow.tscn"))
 	assert_false(FileAccess.file_exists("res://Scripts/Achievements/AchievementRow.gd"))
+
+
+func test_header_is_top_wide_not_full_rect() -> void:
+	var src := _scene_src()
+	var header_idx := src.find('[node name="Header" type="HBoxContainer" parent="Safe/UI"]')
+	assert_true(header_idx != -1, "Header node found")
+	var next_idx := src.find("[node name=", header_idx + 1)
+	var body := src.substr(header_idx, next_idx - header_idx)
+	assert_true(body.contains("anchors_preset = 10"), "Header uses the top-wide preset, not 15 (full rect)")
+	assert_true(body.contains("anchor_bottom = 0.0"), "Header does not stretch to the bottom of the screen")
+
+
+func test_header_children_shrink_center_vertically() -> void:
+	var src := _scene_src()
+	var pill_idx := src.find('[node name="StatusPill" parent="Safe/UI/Header"')
+	var filter_idx := src.find('[node name="FilterButton" type="OptionButton" parent="Safe/UI/Header"]')
+	assert_true(pill_idx != -1 and filter_idx != -1)
+	var scroll_idx := src.find('[node name="Scroll"', filter_idx)
+	var pill_body := src.substr(pill_idx, filter_idx - pill_idx)
+	var filter_body := src.substr(filter_idx, scroll_idx - filter_idx)
+	assert_true(pill_body.contains("size_flags_vertical = 4"), "StatusPill shrink-centers instead of stretching tall")
+	assert_true(filter_body.contains("size_flags_vertical = 4"), "FilterButton shrink-centers instead of stretching tall")

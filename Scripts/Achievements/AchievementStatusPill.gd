@@ -12,7 +12,7 @@ extends Button
 ##   authored with 24 segments (a round number that still reads cleanly at
 ##   pill width) — filled count is `round(claimed / total * 24)`, so the
 ##   bar is an approximate visual, not a 1:1 tally of entries.
-## - WAITING (`Achievements.total_unclaimed_gold() > 0`): green background,
+## - WAITING (`Achievements.total_unclaimed_count() > 0`): green background,
 ##   coin icon, "%d hadiah belum diambil" text, and a slow breathe loop.
 ##
 ## refresh() reads Achievements' live counters and morphs between the two
@@ -59,6 +59,8 @@ func _ready() -> void:
 		return
 	set_meta(Juice.NO_AUTO_JUICE, true)
 	Juice.set_pivot_center(self)
+	if not resized.is_connected(_on_resized):
+		resized.connect(_on_resized)
 	if not pressed.is_connected(_on_pressed):
 		pressed.connect(_on_pressed)
 	var achievements := _achievements()
@@ -71,6 +73,14 @@ func _exit_tree() -> void:
 	var achievements := _achievements()
 	if achievements != null and achievements.state_changed.is_connected(_on_state_changed):
 		achievements.state_changed.disconnect(_on_state_changed)
+
+
+## The pill's size is 0 in _ready (layout hasn't run yet), so the initial
+## set_pivot_center there can pop from the corner. Re-centre whenever the
+## node's size actually settles, so a later resize (e.g. the label's first
+## text assignment changing the pill's width) keeps the pivot correct too.
+func _on_resized() -> void:
+	Juice.set_pivot_center(self)
 
 
 func _on_state_changed() -> void:
@@ -103,7 +113,7 @@ func refresh(animate: bool = true) -> void:
 	var achievements := _achievements()
 	var claimed: int = achievements.total_claimed_count() if achievements != null else 0
 	var total: int = achievements.total_count() if achievements != null else 0
-	var waiting_count: int = achievements.total_unclaimed_gold() if achievements != null else 0
+	var waiting_count: int = achievements.total_unclaimed_count() if achievements != null else 0
 	var waiting := waiting_count > 0
 	var do_animate := animate and _initialized
 
@@ -165,6 +175,7 @@ func _apply_state(waiting: bool, animate: bool) -> void:
 
 	_kill_morph()
 	_kill_breathe()
+	Juice.set_pivot_center(self)
 	scale = Vector2.ONE
 
 	var showing := waiting_state if waiting else idle_state
@@ -193,6 +204,7 @@ func _on_morph_finished(hiding: Control, waiting: bool) -> void:
 
 
 func _start_breathe() -> void:
+	Juice.set_pivot_center(self)
 	_kill_breathe()
 	_breathe_tween = create_tween()
 	_breathe_tween.set_loops()

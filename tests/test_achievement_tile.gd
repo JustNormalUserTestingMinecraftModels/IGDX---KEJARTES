@@ -98,7 +98,7 @@ func test_claimed_state_shows_check_badge() -> void:
 func test_progress_bar_reflects_progress_of() -> void:
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PROGRESS_ID))
-	var expected := _achievements().progress_of(PROGRESS_ID) * 100.0
+	var expected: float = _achievements().progress_of(PROGRESS_ID) * 100.0
 	assert_true(absf(tile.progress_bar.value - expected) < 0.01)
 
 

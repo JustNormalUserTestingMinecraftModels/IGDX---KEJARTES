@@ -74,7 +74,7 @@ func test_claimed_shows_caption_and_hides_claim_and_lock() -> void:
 func test_fraction_text_matches_progress_fraction_of() -> void:
 	var sheet := _new_sheet()
 	sheet.open_for(PROGRESS_ID)
-	var frac := _achievements().progress_fraction_of(PROGRESS_ID)
+	var frac: Vector2i = _achievements().progress_fraction_of(PROGRESS_ID)
 	var label := sheet.get_node("%ProgressLabel") as Label
 	assert_true(label.visible)
 	assert_eq(label.text, "%d / %d" % [frac.x, frac.y])

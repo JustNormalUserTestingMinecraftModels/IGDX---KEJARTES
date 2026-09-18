@@ -45,8 +45,8 @@ func test_idle_state_with_no_unclaimed() -> void:
 	assert_false(pill.is_waiting())
 	assert_true(pill.idle_state.visible)
 	assert_false(pill.waiting_state.visible)
-	var claimed := achievements.total_claimed_count()
-	var total := achievements.total_count()
+	var claimed: int = achievements.total_claimed_count()
+	var total: int = achievements.total_count()
 	assert_eq(pill.idle_label.text, "%d / %d dibuka" % [claimed, total])
 	var expected_filled := int(round(float(claimed) / float(total) * AchievementStatusPill.DASH_SEGMENT_COUNT))
 	var filled := 0
@@ -71,14 +71,14 @@ func test_waiting_state_after_debug_unlock() -> void:
 func test_returns_to_idle_after_claim() -> void:
 	_touched_ids.append(PLAIN_ID)
 	var achievements := _achievements()
-	var claimed_before := achievements.total_claimed_count()
+	var claimed_before: int = achievements.total_claimed_count()
 	achievements.debug_unlock(PLAIN_ID)
 	achievements.claim(PLAIN_ID)
 	var pill := _new_pill()
 	pill.refresh(false)
 	assert_false(pill.is_waiting())
 	assert_true(pill.idle_state.visible)
-	var total := achievements.total_count()
+	var total: int = achievements.total_count()
 	assert_eq(pill.idle_label.text, "%d / %d dibuka" % [claimed_before + 1, total])
 
 

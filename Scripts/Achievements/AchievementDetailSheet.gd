@@ -115,7 +115,7 @@ func _refresh_content() -> void:
 
 	_progress_label.visible = not (entry.kind in _ONE_SHOT_KINDS)
 	if _progress_label.visible and achievements != null:
-		var frac := achievements.progress_fraction_of(achievement_id)
+		var frac: Vector2i = achievements.progress_fraction_of(achievement_id)
 		_progress_label.text = "%d / %d" % [frac.x, frac.y]
 
 	_claim_button.visible = state == AchievementsScript.STATE_UNLOCKED

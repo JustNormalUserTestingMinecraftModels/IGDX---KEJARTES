@@ -1,0 +1,135 @@
+[gd_scene format=3 uid="uid://qwfmy7eav7ng"]
+
+[ext_resource type="Script" uid="uid://be6an48uaq110" path="res://Scripts/Skins/SkinSelectPopup.gd" id="1_84sx3"]
+[ext_resource type="Material" uid="uid://cw2ydcnw0g4b" path="res://Scenes/Koperasi/shop_hub_blur_material.tres" id="2_honiv"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="3_s616c"]
+[ext_resource type="PackedScene" uid="uid://b1yx37ff5x8h7" path="res://Scenes/Skins/SkinSlot.tscn" id="4_qnmwb"]
+
+[node name="SkinSelectPopup" type="Control" unique_id=2107213033]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_84sx3")
+
+[node name="Blur" type="ColorRect" parent="." unique_id=1919001173]
+material = ExtResource("2_honiv")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Safe" type="MarginContainer" parent="." unique_id=334974406]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("3_s616c")
+
+[node name="UI" type="Control" parent="Safe" unique_id=1979891291]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Card" type="Panel" parent="Safe/UI" unique_id=1139256412]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -489.0
+offset_top = -501.0
+offset_right = 489.0
+offset_bottom = 383.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"Card"
+
+[node name="Slots" type="HBoxContainer" parent="Safe/UI/Card" unique_id=1847243110]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 60.0
+offset_right = -24.0
+offset_bottom = 640.0
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="Slot1" parent="Safe/UI/Card/Slots" unique_id=1396987722 instance=ExtResource("4_qnmwb")]
+layout_mode = 2
+
+[node name="Slot2" parent="Safe/UI/Card/Slots" unique_id=260959484 instance=ExtResource("4_qnmwb")]
+layout_mode = 2
+
+[node name="Slot3" parent="Safe/UI/Card/Slots" unique_id=685278212 instance=ExtResource("4_qnmwb")]
+layout_mode = 2
+
+[node name="Slot4" parent="Safe/UI/Card/Slots" unique_id=692593297 instance=ExtResource("4_qnmwb")]
+layout_mode = 2
+
+[node name="Setuju" type="Button" parent="Safe/UI/Card" unique_id=1647450173]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -224.0
+offset_top = -205.0
+offset_right = 224.0
+offset_bottom = -57.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"PrimaryButton"
+text = "SETUJU"
+
+[node name="OptionLayer" type="Control" parent="Safe/UI" unique_id=1365361410]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="BackBuffer" type="BackBufferCopy" parent="Safe/UI/OptionLayer" unique_id=1527481505]
+copy_mode = 2
+
+[node name="Blur2" type="ColorRect" parent="Safe/UI/OptionLayer" unique_id=1648120061]
+material = ExtResource("2_honiv")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Column" type="Panel" parent="Safe/UI/OptionLayer" unique_id=1842573353]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -484.0
+offset_top = -498.0
+offset_right = -244.0
+offset_bottom = 250.0
+theme_type_variation = &"SkinOptionColumn"
+
+[node name="Scroll" type="ScrollContainer" parent="Safe/UI/OptionLayer/Column" unique_id=1812192603]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 28.0
+offset_right = -20.0
+offset_bottom = -28.0
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="Safe/UI/OptionLayer/Column/Scroll" unique_id=1309345324]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 24

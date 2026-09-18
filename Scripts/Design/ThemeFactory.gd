@@ -20,6 +20,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_panels(theme, tokens)
 	_build_labels(theme, tokens)
 	_build_progress(theme, tokens)
+	_build_achievement_tile_bar(theme, tokens)
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
 	_build_week_recap(theme, tokens)
@@ -28,6 +29,8 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_event_dialogue(theme, tokens)
 	_build_shop_chat_bubble(theme, tokens)
 	_build_achievements(theme, tokens)
+	_build_achievement_tile(theme, tokens)
+	_build_achievement_status_pill(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -226,6 +229,126 @@ static func _build_achievements(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("AchievementClaimHintLabel", "Label")
 	theme.set_font_size("font_size", "AchievementClaimHintLabel", ACHIEVEMENT_CLAIM_HINT_SIZE)
 	theme.set_color("font_color", "AchievementClaimHintLabel", Color.WHITE)
+
+
+## The 2-column achievement grid tile (2026-09-18 achievements-polish spec):
+## a small prize chip (neutral when the entry carries no effect, amber when
+## it does) and a tiny "BARU" unlock pip. Both chips reuse the Card
+## variation's radius_pill shape so they read as siblings of the trait
+## chips (QuirkBadge/PersonaBadge) despite being Panels, not Buttons -- the
+## tile itself is the tappable surface (AchievementTile.gd's _gui_input),
+## so these inner chips must stay non-interactive Panels.
+static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("AchievementPrizeChip")
+	theme.set_type_variation("AchievementPrizeChip", "Panel")
+	var neutral := StyleBoxFlat.new()
+	neutral.bg_color = tokens.surface_sunken
+	neutral.set_corner_radius_all(tokens.radius_pill)
+	neutral.content_margin_left = tokens.space_md
+	neutral.content_margin_right = tokens.space_md
+	neutral.content_margin_top = tokens.space_xs
+	neutral.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementPrizeChip", neutral)
+
+	theme.add_type("AchievementPrizeChipAmber")
+	theme.set_type_variation("AchievementPrizeChipAmber", "Panel")
+	var amber := StyleBoxFlat.new()
+	amber.bg_color = tokens.state_warning.lightened(0.35)
+	amber.border_color = tokens.state_warning
+	amber.set_border_width_all(int(tokens.outline_width / 2.0))
+	amber.set_corner_radius_all(tokens.radius_pill)
+	amber.content_margin_left = tokens.space_md
+	amber.content_margin_right = tokens.space_md
+	amber.content_margin_top = tokens.space_xs
+	amber.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementPrizeChipAmber", amber)
+
+	theme.add_type("AchievementPrizeChipLabel")
+	theme.set_type_variation("AchievementPrizeChipLabel", "Label")
+	theme.set_font_size("font_size", "AchievementPrizeChipLabel", tokens.font_micro)
+	theme.set_color("font_color", "AchievementPrizeChipLabel", tokens.text_secondary)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementPrizeChipLabel", tokens.font_display)
+
+	theme.add_type("AchievementPrizeChipLabelAmber")
+	theme.set_type_variation("AchievementPrizeChipLabelAmber", "Label")
+	theme.set_font_size("font_size", "AchievementPrizeChipLabelAmber", tokens.font_micro)
+	theme.set_color("font_color", "AchievementPrizeChipLabelAmber", tokens.state_warning.darkened(0.35))
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementPrizeChipLabelAmber", tokens.font_display)
+
+	# The "BARU" unlock pip, top-right corner of the tile.
+	theme.add_type("AchievementBaruBadge")
+	theme.set_type_variation("AchievementBaruBadge", "Panel")
+	var baru := StyleBoxFlat.new()
+	baru.bg_color = tokens.state_success
+	baru.set_corner_radius_all(tokens.radius_pill)
+	baru.content_margin_left = tokens.space_xs
+	baru.content_margin_right = tokens.space_xs
+	baru.content_margin_top = tokens.space_xs / 2.0
+	baru.content_margin_bottom = tokens.space_xs / 2.0
+	theme.set_stylebox("panel", "AchievementBaruBadge", baru)
+
+	theme.add_type("AchievementBaruBadgeLabel")
+	theme.set_type_variation("AchievementBaruBadgeLabel", "Label")
+	theme.set_font_size("font_size", "AchievementBaruBadgeLabel", tokens.font_micro)
+	theme.set_color("font_color", "AchievementBaruBadgeLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementBaruBadgeLabel", tokens.font_display)
+
+
+## The header's morphing status pill (2026-09-18 achievements-polish spec,
+## Task 4): a cream IDLE background and a green WAITING background, each
+## with a label variation whose font color reads on top of it, plus the
+## IDLE dash bar's two segment fills.
+static func _build_achievement_status_pill(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("AchievementStatusPillIdle")
+	theme.set_type_variation("AchievementStatusPillIdle", "PanelContainer")
+	var idle_box := StyleBoxFlat.new()
+	idle_box.bg_color = tokens.surface_card
+	idle_box.set_corner_radius_all(tokens.radius_pill)
+	idle_box.content_margin_left = tokens.space_md
+	idle_box.content_margin_right = tokens.space_md
+	idle_box.content_margin_top = tokens.space_xs
+	idle_box.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementStatusPillIdle", idle_box)
+
+	theme.add_type("AchievementStatusPillWaiting")
+	theme.set_type_variation("AchievementStatusPillWaiting", "PanelContainer")
+	var waiting_box := StyleBoxFlat.new()
+	waiting_box.bg_color = tokens.state_success
+	waiting_box.set_corner_radius_all(tokens.radius_pill)
+	waiting_box.content_margin_left = tokens.space_md
+	waiting_box.content_margin_right = tokens.space_md
+	waiting_box.content_margin_top = tokens.space_xs
+	waiting_box.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementStatusPillWaiting", waiting_box)
+
+	theme.add_type("AchievementStatusPillIdleLabel")
+	theme.set_type_variation("AchievementStatusPillIdleLabel", "Label")
+	theme.set_color("font_color", "AchievementStatusPillIdleLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementStatusPillIdleLabel", tokens.font_display)
+
+	theme.add_type("AchievementStatusPillWaitingLabel")
+	theme.set_type_variation("AchievementStatusPillWaitingLabel", "Label")
+	theme.set_color("font_color", "AchievementStatusPillWaitingLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementStatusPillWaitingLabel", tokens.font_display)
+
+	theme.add_type("AchievementDashSegmentFilled")
+	theme.set_type_variation("AchievementDashSegmentFilled", "Panel")
+	var seg_filled := StyleBoxFlat.new()
+	seg_filled.bg_color = tokens.state_success
+	seg_filled.set_corner_radius_all(2)
+	theme.set_stylebox("panel", "AchievementDashSegmentFilled", seg_filled)
+
+	theme.add_type("AchievementDashSegmentEmpty")
+	theme.set_type_variation("AchievementDashSegmentEmpty", "Panel")
+	var seg_empty := StyleBoxFlat.new()
+	seg_empty.bg_color = tokens.surface_sunken
+	seg_empty.set_corner_radius_all(2)
+	theme.set_stylebox("panel", "AchievementDashSegmentEmpty", seg_empty)
 
 
 ## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard
@@ -1169,6 +1292,37 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_stylebox("fill", lname, _progress_fill_stylebox(lcolor, lspec[2]))
 		theme.set_font_size("font_size", lname, tokens.font_caption)
 		theme.set_color("font_color", lname, tokens.text_primary)
+
+
+## AchievementTile's progress bar (Task 8, 2026-09-18 polish pass): StatBar's
+## min height wins over any scene-level custom_minimum_size override on a
+## ProgressBar using "StatBar", rendering it ~36px tall on a tile that wants
+## a thin 4-6px sliver. A dedicated thin variation, built the same way as
+## StatBar above but flat (no textured fill/rim/shadow chrome -- a tile-sized
+## sliver is too small for that detail to read), sidesteps the min-height
+## fight entirely instead of trying to override it per-instance.
+static func _build_achievement_tile_bar(theme: Theme, tokens: DesignTokens) -> void:
+	const BAR_HEIGHT := 5.0
+
+	theme.add_type("AchievementTileBar")
+	theme.set_type_variation("AchievementTileBar", "ProgressBar")
+
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = tokens.stat_bar_track
+	bg.set_corner_radius_all(int(BAR_HEIGHT / 2.0))
+	bg.content_margin_top = 0
+	bg.content_margin_bottom = 0
+	theme.set_stylebox("background", "AchievementTileBar", bg)
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = tokens.cat_akademis_on_dark
+	fill.set_corner_radius_all(int(BAR_HEIGHT / 2.0))
+	fill.content_margin_top = 0
+	fill.content_margin_bottom = 0
+	theme.set_stylebox("fill", "AchievementTileBar", fill)
+
+	theme.set_font_size("font_size", "AchievementTileBar", tokens.font_caption)
+	theme.set_color("font_color", "AchievementTileBar", tokens.text_primary)
 
 
 # ------------------------------------------------- student card redesign

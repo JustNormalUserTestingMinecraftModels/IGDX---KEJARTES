@@ -26,7 +26,7 @@ func test_every_declared_variation_exists() -> void:
 		"PrimaryButton", "SecondaryButton", "DangerButton",
 		"Card", "SunkenPanel", "Scrim", "PhotoFrame",
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
-		"CaptionLabel", "MicroLabel", "StatBar", "FilterChipButton",
+		"CaptionLabel", "MicroLabel", "StatBar", "AchievementTileBar", "FilterChipButton",
 		"EventDialoguePanel", "EventDialogueText", "DayBannerPanel", "DayBannerLabel", "CalendarLabel",
 	]
 	var actual := _theme.get_type_list()
@@ -352,6 +352,11 @@ const DISPLAY_ROSTER := [
 	# 2026-09-17 achievements: card titles, the Klaim pill, the unlock banner.
 	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
 	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",
+	# 2026-09-18 achievements-polish: the grid tile's prize chip and BARU pip.
+	"AchievementPrizeChipLabel", "AchievementPrizeChipLabelAmber", "AchievementBaruBadgeLabel",
+	# 2026-09-18 achievements-polish Task 4: the header status pill's two
+	# state labels.
+	"AchievementStatusPillIdleLabel", "AchievementStatusPillWaitingLabel",
 	# 2026-09-09 student card arrow buttons: circles with brand fill.
 	"CardArrowButton",
 	# 2026-09-09 trait popup readability: cream display labels for the

@@ -68,6 +68,11 @@ to stay warm and shop-consistent -- drop-replaceable at the same path).
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
 `bg_event_dialog.png` by `EventStudentSelectDialog`.)
 
+**Achievements polish (2026-09-18).** `AchievementTile`'s lock overlay is a
+placeholder `Assets/Images/UI/Placeholders/icon_lock.svg` (plain padlock
+glyph, drop-replaceable at the same path); the CLAIMED check badge reuses
+the existing `icon_check.svg` from the same folder, no new asset needed.
+
 **Other art gaps.** `Assets/Images/EndGame/ujian_sekolah.png` (TesNotice's
 Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to
 alpha, colour un-premultiplied, cropped -- not exported transparent; swap in a
@@ -256,6 +261,13 @@ widget via `project_run` instead, which exercises it fine.
 
 - **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
   wipes achievement progress and claimed prizes. Turn it off before release.
+
+- **Achievements polish (2026-09-18).** The debug Prestasi tab's "Buka
+  semua" loops `Achievements.debug_unlock(id)` over all 26 catalog entries,
+  firing 26 separate `state_changed` signals (one per unlock) instead of a
+  single batched emit. Fine today -- every listener's redraw is cheap -- but
+  batch it (e.g. a `_suppress_signal` flag plus one `state_changed.emit()`
+  after the loop) if it ever becomes a perf problem.
 
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a

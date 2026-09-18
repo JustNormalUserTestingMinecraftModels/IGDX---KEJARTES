@@ -282,7 +282,7 @@ func _build_ui() -> void:
 	tabs_hbox.add_theme_constant_override("separation", 12)
 	outer_vbox.add_child(tabs_hbox)
 	
-	var tab_names = ["General", "Students", "Minigames", "Scenes", "Logs"]
+	var tab_names = ["General", "Students", "Minigames", "Scenes", "Prestasi", "Logs"]
 	for tab in tab_names:
 		var btn = Button.new()
 		btn.text = tab
@@ -316,10 +316,18 @@ func _build_ui() -> void:
 	_build_students_panel(content_area)
 	_build_minigames_panel(content_area)
 	_build_scenes_panel(content_area)
+	_build_achievements_panel(content_area)
 	_build_logs_panel(content_area)
-	
+
 	# Default tab selection
 	_switch_tab("General")
+
+	if Achievements and not Achievements.state_changed.is_connected(_refresh_achievements_panel):
+		Achievements.state_changed.connect(_refresh_achievements_panel)
+
+func _exit_tree() -> void:
+	if Achievements and Achievements.state_changed.is_connected(_refresh_achievements_panel):
+		Achievements.state_changed.disconnect(_refresh_achievements_panel)
 
 func _switch_tab(tab_name: String) -> void:
 	for tab in panels:
@@ -731,6 +739,7 @@ func _toggle_minigames_tutorial() -> void:
 	_refresh_ui_fields()
 
 func _refresh_ui_fields() -> void:
+	_refresh_achievements_panel()
 	if _lbl_week:
 		_lbl_week.text = "Minggu %d (Grade %d)" % [GameState.minggu_ke, GameState.current_grade]
 	if _lbl_money:
@@ -1431,6 +1440,182 @@ func _close_week_report_preview() -> void:
 	if is_instance_valid(_week_report_canvas):
 		_week_report_canvas.queue_free()
 	_week_report_canvas = null
+
+# --- Achievements (Prestasi) Tab Panel ---
+## Row widgets keyed by achievement id, so the state_changed refresh can
+## update labels/buttons live without rebuilding the whole list.
+var _achievement_rows: Dictionary = {}
+var _lbl_achievements_readout: Label
+
+func _build_achievements_panel(parent: Control) -> void:
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	panels["Prestasi"] = scroll
+
+	var margin_container = MarginContainer.new()
+	margin_container.add_theme_constant_override("margin_left", 30)
+	margin_container.add_theme_constant_override("margin_top", 30)
+	margin_container.add_theme_constant_override("margin_right", 30)
+	margin_container.add_theme_constant_override("margin_bottom", 30)
+	margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin_container)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 20)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin_container.add_child(vbox)
+
+	var lbl_title = Label.new()
+	lbl_title.text = "Debug Prestasi (Achievements):"
+	lbl_title.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_title)
+
+	# Global controls
+	var grid_global_btns = GridContainer.new()
+	grid_global_btns.columns = 3
+	grid_global_btns.add_theme_constant_override("h_separation", 15)
+	grid_global_btns.add_theme_constant_override("v_separation", 15)
+	grid_global_btns.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(grid_global_btns)
+
+	var btn_unlock_all = Button.new()
+	btn_unlock_all.text = " 🔓 Buka semua "
+	btn_unlock_all.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_unlock_all.custom_minimum_size = Vector2(0, 90)
+	btn_unlock_all.add_theme_font_size_override("font_size", 21)
+	btn_unlock_all.pressed.connect(_debug_unlock_all_achievements)
+	grid_global_btns.add_child(btn_unlock_all)
+
+	var btn_reset_all = Button.new()
+	btn_reset_all.text = " 🧹 Reset semua "
+	btn_reset_all.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_reset_all.custom_minimum_size = Vector2(0, 90)
+	btn_reset_all.add_theme_font_size_override("font_size", 21)
+	btn_reset_all.pressed.connect(_debug_reset_all_achievements)
+	grid_global_btns.add_child(btn_reset_all)
+
+	var btn_random = Button.new()
+	btn_random.text = " 🎲 Buka acak "
+	btn_random.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_random.custom_minimum_size = Vector2(0, 90)
+	btn_random.add_theme_font_size_override("font_size", 21)
+	btn_random.pressed.connect(_debug_unlock_random_achievement)
+	grid_global_btns.add_child(btn_random)
+
+	_lbl_achievements_readout = Label.new()
+	_lbl_achievements_readout.add_theme_font_size_override("font_size", 24)
+	_lbl_achievements_readout.add_theme_color_override("font_color", Color(0.3, 0.8, 1.0))
+	vbox.add_child(_lbl_achievements_readout)
+
+	vbox.add_child(HSeparator.new())
+
+	# One row per catalog entry
+	_achievement_rows.clear()
+	for entry in AchievementCatalog.ENTRIES:
+		var row = HBoxContainer.new()
+		row.add_theme_constant_override("separation", 15)
+		vbox.add_child(row)
+
+		var icon_tex = load(AchievementCatalog.icon_path(entry.id)) if ResourceLoader.exists(AchievementCatalog.icon_path(entry.id)) else null
+		if icon_tex:
+			var icon_rect = TextureRect.new()
+			icon_rect.texture = icon_tex
+			icon_rect.custom_minimum_size = Vector2(16, 16)
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			row.add_child(icon_rect)
+
+		var lbl_row_title = Label.new()
+		lbl_row_title.text = String(entry.title)
+		lbl_row_title.add_theme_font_size_override("font_size", 18)
+		lbl_row_title.custom_minimum_size = Vector2(360, 0)
+		lbl_row_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(lbl_row_title)
+
+		var lbl_state = Label.new()
+		lbl_state.add_theme_font_size_override("font_size", 18)
+		lbl_state.custom_minimum_size = Vector2(110, 0)
+		row.add_child(lbl_state)
+
+		var btn_unlock = Button.new()
+		btn_unlock.text = "Buka"
+		btn_unlock.custom_minimum_size = Vector2(0, 70)
+		btn_unlock.pressed.connect(func(): Achievements.debug_unlock(entry.id))
+		row.add_child(btn_unlock)
+
+		var btn_claim = Button.new()
+		btn_claim.text = "Klaim"
+		btn_claim.custom_minimum_size = Vector2(0, 70)
+		btn_claim.pressed.connect(func(): Achievements.claim(entry.id))
+		row.add_child(btn_claim)
+
+		var btn_relock = Button.new()
+		btn_relock.text = "Kunci lagi"
+		btn_relock.custom_minimum_size = Vector2(0, 70)
+		btn_relock.pressed.connect(func(): Achievements.relock(entry.id))
+		row.add_child(btn_relock)
+
+		_achievement_rows[entry.id] = {
+			"state_label": lbl_state,
+			"claim_btn": btn_claim,
+			"relock_btn": btn_relock,
+		}
+
+	_refresh_achievements_panel()
+
+## Fires debug_unlock for every catalog entry -- queues up to 26 toasts
+## through AchievementToast; a stress test for the toast queue.
+func _debug_unlock_all_achievements() -> void:
+	for entry in AchievementCatalog.ENTRIES:
+		Achievements.debug_unlock(entry.id)
+	log_message("Prestasi: semua entri dibuka (debug_unlock).")
+
+func _debug_reset_all_achievements() -> void:
+	Achievements.reset_all()
+	log_message("Prestasi: semua progres direset.")
+
+## Unlocks one random locked entry; no-op (with a log line) when none remain.
+func _debug_unlock_random_achievement() -> void:
+	var locked_ids: Array = []
+	for entry in AchievementCatalog.ENTRIES:
+		if Achievements.state_of(entry.id) == Achievements.STATE_LOCKED:
+			locked_ids.append(entry.id)
+	if locked_ids.is_empty():
+		log_message("Prestasi: tidak ada entri terkunci untuk dibuka.")
+		return
+	var id: String = locked_ids[randi() % locked_ids.size()]
+	Achievements.debug_unlock(id)
+
+## Keeps the readout and every row's state label/button enabled-ness in sync
+## with Achievements. Connected to Achievements.state_changed and also
+## called whenever the tab is (re)built or shown.
+func _refresh_achievements_panel() -> void:
+	if not is_instance_valid(_lbl_achievements_readout):
+		return
+	var total: int = Achievements.total_count()
+	var unclaimed: int = Achievements.total_unclaimed_count()
+	var opened_or_claimed: int = 0
+	for entry in AchievementCatalog.ENTRIES:
+		if Achievements.state_of(entry.id) != Achievements.STATE_LOCKED:
+			opened_or_claimed += 1
+	_lbl_achievements_readout.text = "%d / %d dibuka · %d belum diambil" % [opened_or_claimed, total, unclaimed]
+
+	for id in _achievement_rows:
+		var widgets: Dictionary = _achievement_rows[id]
+		var state: int = Achievements.state_of(id)
+		var lbl_state: Label = widgets["state_label"]
+		var btn_claim: Button = widgets["claim_btn"]
+		var btn_relock: Button = widgets["relock_btn"]
+		match state:
+			Achievements.STATE_LOCKED:
+				lbl_state.text = "Terkunci"
+			Achievements.STATE_UNLOCKED:
+				lbl_state.text = "Terbuka"
+			Achievements.STATE_CLAIMED:
+				lbl_state.text = "Diambil"
+		btn_claim.disabled = state != Achievements.STATE_UNLOCKED
+		btn_relock.disabled = state == Achievements.STATE_LOCKED
 
 # --- Logs/Console Panel ---
 func _build_logs_panel(parent: Control) -> void:

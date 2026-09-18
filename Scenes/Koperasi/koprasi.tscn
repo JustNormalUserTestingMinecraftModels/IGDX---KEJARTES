@@ -938,11 +938,10 @@ vertical_alignment = 1
 
 [node name="CrateHandle" type="TextureButton" parent="Stage" unique_id=1601273984]
 layout_mode = 0
-offset_left = 804.0
-offset_top = 1104.0
-offset_right = 1124.0
-offset_bottom = 1424.0
-pivot_offset = Vector2(160, 320)
+offset_left = 900.0
+offset_top = 1296.0
+offset_right = 1220.0
+offset_bottom = 1616.0
 scale = Vector2(0.35, 0.35)
 ignore_texture_size = true
 stretch_mode = 0
@@ -963,6 +962,26 @@ libraries = {
 "": SubResource("AnimationLibrary_crate")
 }
 autoplay = "RESET"
+
+[node name="CountBadge" type="PanelContainer" parent="Stage/CrateHandle" unique_id=1601273987]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -96.0
+offset_top = -8.0
+offset_right = -8.0
+offset_bottom = 80.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_type_variation = &"TrayBadge"
+
+[node name="Count" type="Label" parent="Stage/CrateHandle/CountBadge" unique_id=1601273988]
+layout_mode = 2
+theme_type_variation = &"TrayBadgeLabel"
+text = "0"
+horizontal_alignment = 1
 
 [node name="Safe" type="MarginContainer" parent="." unique_id=259420622]
 layout_mode = 1

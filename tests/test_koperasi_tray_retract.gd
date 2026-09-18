@@ -43,14 +43,17 @@ func test_set_state_false_moves_by_exact_offset_and_emits_once() -> void:
 
 func test_set_state_same_state_is_a_noop() -> void:
 	var t: Control = _live_tray()
-	var emits := 0
-	t.state_changed.connect(func(_s): emits += 1)
+	# A plain `var emits := 0` closed over by the lambda is captured BY
+	# VALUE in GDScript, so `emits += 1` inside the lambda would never be
+	# seen from here -- a single-element Array is captured by reference.
+	var emits := [0]
+	t.state_changed.connect(func(_s): emits[0] += 1)
 	t.set_state(t.ViewState.EXPANDED, false)
-	assert_eq(emits, 0, "re-asserting the current state must not emit")
+	assert_eq(emits[0], 0, "re-asserting the current state must not emit")
 	var y0: float = t.position.y
 	t.set_state(t.ViewState.COLLAPSED, false)
 	t.set_state(t.ViewState.COLLAPSED, false)
-	assert_eq(emits, 1, "a second identical set_state call must not emit again")
+	assert_eq(emits[0], 1, "a second identical set_state call must not emit again")
 	assert_eq(t.position.y, y0 + t.tray_offset_collapsed,
 		"the no-op call must not move the tray a second time")
 	t.queue_free()
@@ -95,6 +98,18 @@ func test_basket_tray_scene_has_header_button() -> void:
 	var header := t.get_node_or_null("Body/Emblem/HeaderButton")
 	assert_not_null(header, "BasketTray.tscn must have a Body/Emblem/HeaderButton")
 	assert_true(header is TextureButton, "HeaderButton must be a TextureButton")
+	t.queue_free()
+
+
+## Spec section 3: collapsing must hide the badge itself (visible = false),
+## not just fade the emblem's alpha -- a caller checking .visible (rather
+## than reading pixels) must see it gone.
+func test_collapse_hides_emblem_badge_outright() -> void:
+	var t: Control = _live_tray()
+	t._emblem_badge.visible = true
+	t.set_state(t.ViewState.COLLAPSED, false)
+	assert_false(t._emblem_badge.visible,
+		"a collapsed tray must hide its own count badge outright")
 	t.queue_free()
 
 
@@ -168,3 +183,87 @@ func test_koprasi_gd_wires_crate_to_tray_toggle() -> void:
 		"crate_pos_expanded must be an @export, not a hardcoded literal")
 	assert_true(src.contains("@export var crate_pos_collapsed"),
 		"crate_pos_collapsed must be an @export, not a hardcoded literal")
+
+
+## The EXPANDED pose must land the (scale-0.35) crate visually on top of the
+## tray header emblem, not overlapping the coin HUD above it. CrateHandle's
+## own pivot is (0,0) (top-left, unlike Art's foot-centre pivot used only by
+## idle_bounce), so its authored top-left offset IS its on-screen top-left at
+## any scale -- it must equal Body/Emblem's authored top-left in Stage-local
+## coordinates: 24 (Body's left inset) + 876 (Emblem offset_left) = 900,
+## and 117 (TrayDock offset_top) + 1243 (Body offset_top) - 64 (Emblem
+## offset_top) = 1296.
+func test_crate_expanded_pose_matches_emblem_top_left() -> void:
+	var scene_src := _read(KOPRASI_TSCN)
+	var script_src := _read("res://Scripts/Koperasi/koprasi.gd")
+	if scene_src.is_empty() or script_src.is_empty():
+		return
+	var crate_start := scene_src.find("[node name=\"CrateHandle\" type=\"TextureButton\" parent=\"Stage\"")
+	assert_true(crate_start != -1, "Stage/CrateHandle not found")
+	if crate_start != -1:
+		var crate_end := scene_src.find("[node ", crate_start + 1)
+		var crate_block := scene_src.substr(crate_start, crate_end - crate_start)
+		assert_true(crate_block.contains("offset_left = 900.0") and crate_block.contains("offset_top = 1296.0"),
+			"CrateHandle's authored rect must start at the emblem's top-left (900, 1296)")
+		assert_false(crate_block.contains("pivot_offset"),
+			"CrateHandle itself must keep the default (0,0) pivot -- only Art's idle_bounce uses a foot-centre pivot")
+	assert_true(script_src.contains("Vector2(900.0, 1296.0)"),
+		"crate_pos_expanded must match CrateHandle's authored top-left")
+
+
+func test_koprasi_scene_has_mirrored_count_badge_on_crate() -> void:
+	var src := _read(KOPRASI_TSCN)
+	if src.is_empty():
+		return
+	assert_true(src.contains("[node name=\"CountBadge\" type=\"PanelContainer\" parent=\"Stage/CrateHandle\""),
+		"CrateHandle must carry a mirrored CountBadge, reusing the tray's PanelContainer+Label shape")
+	assert_true(src.contains("[node name=\"Count\" type=\"Label\" parent=\"Stage/CrateHandle/CountBadge\""),
+		"CrateHandle/CountBadge must carry a Count label like the tray's own badge")
+	# Same variations as BasketTray's own badge -- no theme_override_*, no
+	# new ThemeFactory type invented just for this mirror.
+	var badge_start := src.find("[node name=\"CountBadge\" type=\"PanelContainer\" parent=\"Stage/CrateHandle\"")
+	if badge_start == -1:
+		return
+	var badge_end := src.find("[node ", badge_start + 1)
+	var badge_block := src.substr(badge_start, badge_end - badge_start)
+	assert_true(badge_block.contains("&\"TrayBadge\""),
+		"the mirrored badge must reuse the TrayBadge variation")
+	assert_true(badge_block.contains("visible = false"),
+		"the mirrored badge must start hidden (tray starts EXPANDED)")
+
+
+func test_koprasi_gd_refreshes_crate_badge_from_cart() -> void:
+	var src := _read("res://Scripts/Koperasi/koprasi.gd")
+	if src.is_empty():
+		return
+	assert_true(src.contains("func _refresh_crate_badge"),
+		"koprasi.gd must define _refresh_crate_badge()")
+	assert_true(src.contains("Cart.get_item_count()"),
+		"the mirrored badge must read Cart.get_item_count()")
+	assert_true(src.contains("_refresh_crate_badge()"),
+		"_refresh_crate_badge must actually be called somewhere")
+	# Called from the existing cart-changed handler, not a new standalone
+	# Cart connection -- avoids a second listener to disconnect in _exit_tree.
+	var cart_changed_start := src.find("func _on_cart_changed()")
+	assert_true(cart_changed_start != -1, "_on_cart_changed must still exist")
+	if cart_changed_start != -1:
+		var next_func := src.find("\nfunc ", cart_changed_start + 1)
+		var body := src.substr(cart_changed_start, next_func - cart_changed_start)
+		assert_true(body.contains("_refresh_crate_badge()"),
+			"_on_cart_changed must refresh the crate badge on every cart change")
+
+
+## Spec section 3: on press, idle_bounce stops before the tray reacts (it
+## resumes, or switches to RESET, from _on_tray_state_changed right after).
+func test_koprasi_gd_stops_idle_bounce_on_crate_press() -> void:
+	var src := _read("res://Scripts/Koperasi/koprasi.gd")
+	if src.is_empty():
+		return
+	var start := src.find("func _on_crate_pressed()")
+	assert_true(start != -1, "_on_crate_pressed must exist")
+	if start == -1:
+		return
+	var next_func := src.find("\nfunc ", start + 1)
+	var body := src.substr(start, next_func - start)
+	assert_true(body.contains("ap.stop()") and body.contains("idle_bounce"),
+		"pressing the crate must stop idle_bounce before toggling the tray")

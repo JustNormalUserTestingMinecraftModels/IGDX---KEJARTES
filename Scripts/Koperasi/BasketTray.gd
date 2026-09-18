@@ -116,7 +116,10 @@ func refresh(entries: Dictionary) -> void:
 	_empty_state.visible = empty
 	_hint.visible = not empty
 	_emblem_count.text = str(shown_units)
-	_emblem_badge.visible = shown_units > 0
+	# The badge only ever shows on the EXPANDED header emblem; a collapsed
+	# tray hides it outright (spec section 3) -- the mirrored badge on
+	# CrateHandle, driven by koprasi.gd, takes over while collapsed.
+	_emblem_badge.visible = _state == ViewState.EXPANDED and shown_units > 0
 	_total_label.text = "Total: %s koin" % format_koin(CART_SCRIPT.total_of(entries))
 
 
@@ -186,7 +189,22 @@ func set_state(state: int, animate: bool = true) -> void:
 		position.y = target_y
 		if is_instance_valid(_emblem):
 			_emblem.modulate.a = emblem_alpha
+	# The badge itself (not just the emblem's alpha) must not read as
+	# visible while collapsed -- an alpha fade alone would leave it
+	# "visible" to anything checking the property rather than the pixels.
+	if is_instance_valid(_emblem_badge):
+		_emblem_badge.visible = state == ViewState.EXPANDED and _shown_unit_count() > 0
 	state_changed.emit(state)
+
+
+## The number of units currently shown on the plank (excludes units still
+## flying in). Shared by refresh() and set_state()'s badge visibility.
+func _shown_unit_count() -> int:
+	var total := 0
+	for item_name in _entries:
+		var shown := int(_entries[item_name]["quantity"]) - int(_held.get(item_name, 0))
+		total += maxi(shown, 0)
+	return total
 
 
 ## True while the tray is docked on the shelf (not slid away).

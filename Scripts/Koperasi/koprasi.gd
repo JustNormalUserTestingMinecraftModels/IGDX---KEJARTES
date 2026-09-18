@@ -31,12 +31,20 @@ extends Control
 @onready var tray: BasketTray = get_node_or_null("Stage/TrayDock/BasketTray") as BasketTray
 @onready var crate: TextureButton = get_node_or_null("Stage/CrateHandle") as TextureButton
 
-## CrateHandle's authored position (top-left) while the tray is EXPANDED --
-## sitting small at the tray header emblem's spot.
-@export var crate_pos_expanded: Vector2 = Vector2(804.0, 1104.0)
-## CrateHandle's position while the tray is COLLAPSED -- large, bottom-right
-## of the Stage.
-@export var crate_pos_collapsed: Vector2 = Vector2(760.0, 1530.0)
+## CrateHandle's authored position (top-left, Stage-local -- Stage itself is
+## the one 1080x1920 piece that re-anchors as a whole on tall phones, so a
+## fixed offset here is correct at any phone height) while the tray is
+## EXPANDED. CrateHandle's own pivot is (0,0) (top-left), so this is also its
+## on-screen top-left at any scale: it is set to Body/Emblem's authored rect
+## top-left (24 (Body's left inset) + 876 (Emblem's own offset_left) = 900,
+## 1360 (Body's absolute top, itself 117 (TrayDock) + 1243 (Emblem's parent
+## Body offset_top)) - 64 (Emblem's offset_top) = 1296) -- see
+## docs/superpowers/specs/2026-09-17-koperasi-polish-design.md section 3.
+@export var crate_pos_expanded: Vector2 = Vector2(900.0, 1296.0)
+## CrateHandle's position while the tray is COLLAPSED -- large (scale 1.0),
+## bottom-right of the Stage with a 40px margin off both edges
+## (1080-40-320=720, 1920-40-320=1560).
+@export var crate_pos_collapsed: Vector2 = Vector2(720.0, 1560.0)
 
 var beli_button: Button
 ## The tween sliding/scaling the crate handle to match the tray's state;
@@ -78,6 +86,7 @@ func _ready():
 		tray.state_changed.connect(_on_tray_state_changed)
 	if is_instance_valid(crate) and not crate.pressed.is_connected(_on_crate_pressed):
 		crate.pressed.connect(_on_crate_pressed)
+	_refresh_crate_badge()
 
 	# The Stage, a child, has already stocked the shelf in its own _ready.
 	if bubble:
@@ -101,10 +110,13 @@ func _exit_tree() -> void:
 			dead_tap.disconnect(_on_shelf_dead_tap)
 
 ## Any cart activity (add, remove, clear) pushes Pak Herman's idle-chatter
-## timer back out, so he doesn't ramble mid-shopping.
+## timer back out, so he doesn't ramble mid-shopping, and refreshes the
+## crate handle's own mirrored count badge (the header emblem's badge is
+## hidden while collapsed, so the crate carries the count instead).
 func _on_cart_changed() -> void:
 	if bubble:
 		bubble.reset_idle_timer()
+	_refresh_crate_badge()
 
 func _on_cart_item_added(item_name: String) -> void:
 	if bubble:
@@ -189,9 +201,18 @@ func _on_beli_pressed():
 		bubble.say(&"THANKS")
 
 ## The big crate icon: toggles the tray exactly like its header emblem does.
+## Stops idle_bounce first -- _on_tray_state_changed() resumes the right
+## animation (RESET or idle_bounce) for the new state right after. UIPolish
+## already wires this TextureButton's own press/release Juice pulse, so no
+## extra Juice.press()/release() call is added here (that would double it).
 func _on_crate_pressed() -> void:
-	if is_instance_valid(tray):
-		tray.toggle()
+	if not is_instance_valid(tray):
+		return
+	if is_instance_valid(crate):
+		var ap := crate.get_node_or_null("AP") as AnimationPlayer
+		if ap and ap.current_animation == "idle_bounce":
+			ap.stop()
+	tray.toggle()
 
 ## Mirrors the crate handle's pose and idle animation to the tray's state,
 ## and mutes Pak Herman's idle chatter while the tray is tucked away (a
@@ -214,6 +235,24 @@ func _on_tray_state_changed(state: int) -> void:
 	if bubble:
 		bubble.idle_chatter_enabled = expanded
 		bubble.reset_idle_timer()
+	_refresh_crate_badge()
+
+## Mirrors Cart's item count onto CrateHandle/CountBadge (spec section 3):
+## visible only while the tray is COLLAPSED and the count is non-zero -- the
+## header emblem's own badge (BasketTray._emblem_badge) already handles the
+## EXPANDED case and hides itself while collapsed.
+func _refresh_crate_badge() -> void:
+	if not is_instance_valid(crate):
+		return
+	var badge := crate.get_node_or_null("CountBadge")
+	if badge == null:
+		return
+	var count: int = Cart.get_item_count()
+	var label := badge.get_node_or_null("Count") as Label
+	if label:
+		label.text = str(count)
+	var collapsed: bool = not (is_instance_valid(tray) and tray.is_expanded())
+	badge.visible = collapsed and count > 0
 
 ## Show a purchase-feedback message. `variation` selects one of the
 ## semantic ShopMessage* ThemeFactory variations (Warning/Danger/Success)

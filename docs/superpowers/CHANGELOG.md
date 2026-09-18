@@ -8,6 +8,43 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-18 — Koperasi polish pass, plus a tap-spam guard
+
+Plan `.superpowers/sdd/2026-09-17-koperasi-polish-plan/`, spec
+`docs/superpowers/specs/2026-09-17-koperasi-polish-design.md`.
+
+Five polish passes on the Koperasi shop, closed out with a three-layer
+tap-spam safeguard and a final whole-branch review:
+
+- ShelfItem items get a soft plank shadow, a per-item idle bob, a lift +
+  gold rim glow on purchase, and an affordability dim that now survives a
+  shelf-debounce lock/unlock cycle correctly (a slot that goes unaffordable
+  mid-flight no longer snaps back to full opacity when it unlocks).
+- Herman's speech bubble (`ChatBubble.gd`) drives a small state machine off
+  `DialogueCatalog` lines, with a per-event cooldown and randomised idle
+  chatter that mutes (not pauses) while the basket tray is collapsed and
+  re-arms on expand.
+- The basket tray's crate handle, back button and idle chatter all follow
+  the tray's expanded/collapsed state through one shared tween per gesture.
+- Stock pips (`PipRow`, `pip_filled.svg` / `pip_hollow.svg`) show
+  remaining/total copies per shelf slot; `GameState.SHOP_MAX_COPIES` went
+  2 → 3 to make pairs-and-triples possible.
+- Tap-spam guard: `ShelfItem._locked` debounces a single slot,
+  `Cart.MAX_ADDS_PER_FRAME` caps same-frame adds across the whole cart, and
+  `ChatBubble`'s per-event `SAY_COOLDOWN` stops repeat dialogue. `Cart.add_item()`
+  now returns whether the unit actually landed, and `rakbarang_1.gd` calls it
+  *before* committing the shelf slot / tray hold / flight tween, undoing them
+  on a dropped add instead of spawning a flight for a unit the cart never
+  received. The taken-slot check in `_on_barang_pressed` also now runs before
+  the shelf-debounce lock, so a dead tap on an already-sold slot always
+  reaches Herman instead of sometimes being swallowed by the lock.
+
+Deliberate deviations from the plan/spec: the back button's expanded-state
+gap is 18px, not the spec's 12px (`tests/test_tall_screen_layout.gd` pins
+the real `BackButton` rect); the crate at `scale = 0.35` renders ~112px
+against the 128px tray emblem (tracked in `docs/superpowers/DEBT.md`,
+not yet reconciled to a matching size).
+
 ## 2026-09-17 — Achievement claim celebration, Lobby Settings
 
 Plan `docs/superpowers/plans/2026-09-17-achievement-claim-celebration.md`, spec

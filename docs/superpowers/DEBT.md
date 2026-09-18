@@ -243,6 +243,17 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Koperasi polish leftovers (2026-09-18).** `ShopMessageWarning` and
+  `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `koprasi.gd` after
+  the final polish pass -- nothing in the shop currently shows a warning or
+  danger message panel. The tray crate sits at `scale = Vector2(0.35, 0.35)`
+  while collapsed, which renders roughly 112px against the 128px tray
+  emblem it sits beside -- a visible size mismatch, not yet reconciled. A
+  purchase flight already airborne when the player collapses the tray still
+  lands at the tray's EXPANDED position (cosmetic only -- the unit still
+  reaches the cart correctly). Herman's `talk` head-bob animation has not
+  been tuned against the final counter art.
+
 - **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
   wipes achievement progress and claimed prizes. Turn it off before release.
 

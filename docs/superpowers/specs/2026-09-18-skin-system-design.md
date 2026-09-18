@@ -144,16 +144,16 @@ SkinSelectPopup (Control, full rect)
 ```
 
   The option tiles are per-call dynamic content (one per catalog entry of the
-  tapped student): instanced from the `SkinOptionTile` template into `List`,
-  recorded in the viewport-editability `ALLOWED` list with a comment.
+  tapped student): instanced from the `SkinOptionTile` template into `List`.
+  The viewport-editability scan counts `.new(` calls, not `instantiate()`, so
+  no `ALLOWED` entry is needed.
 
 **Flow.** Lobby `SkinSwitchButton` → `Transition`-free overlay: instance the
 popup over the Lobby (same pattern as the Achievements claim popup), fill the
 slots from `approved_students` in roster order. Tap slot *i* → `OptionLayer`
-shows, `Column` moves to slot *i*'s x, tiles listed and scrolled so the
-equipped one is visible. Tap an unlocked tile → `GameState.equip_skin()`,
-slot *i* redraws, column closes. Tap a locked tile → `Juice.shake`, nothing
-else. Tap the blurred area → column closes. **SETUJU** (or Android back) →
+shows, `Column` moves to slot *i*'s x, tiles listed. Tap an unlocked tile →
+`GameState.equip_skin()`, slot *i* redraws, column closes. A locked tile is
+disabled, so tapping it does nothing. Tap the blurred area → column closes. **SETUJU** (or Android back) →
 popup closes, emits `closed`, frees itself; the Lobby re-applies seats.
 
 **Lobby button.** `Safe/UI/BottomBar/SkinSwitchButton`, a `TextureButton`
@@ -161,10 +161,10 @@ popup closes, emits `closed`, frees itself; the Lobby re-applies seats.
 0, Settings 120, Achievements 240), `skin_switch.png`, `stretch_mode = 5`.
 Disabled while the roster is empty.
 
-**New ThemeFactory variations:** `SkinFrameMask` (Panel, white fill, radius
-≈ 90 for tall / scales with height), `SkinFrameBorder` (Panel, no fill, 10 px
-brown border, same radius), `SkinOptionColumn` (Panel, white fill, 10 px brown
-border, radius ≈ 60). The popup card reuses `Card`; the name label reuses an
+**New ThemeFactory variations:** `SkinFrameMask` (Panel, opaque fill, radius
+72), `SkinFrameBorder` (Panel, no fill, 10 px `brand_primary` border, radius
+72), `SkinOptionColumn` (Panel, `surface_card` fill, 10 px `brand_primary`
+border, radius 60) — mockup-measured `const`s in ThemeFactory. The popup card reuses `Card`; the name label reuses an
 existing display-face variation. Colours come from existing tokens (the
 mockup brown is the primary button's brown). Rebake.
 
@@ -199,8 +199,8 @@ while every shipped skin is unlocked by default.
   `face_base_for` / `hand_for` (source scan + behaviour where instantiable).
 - Source scans: each consumer in the table above calls `StudentSkins`;
   `WinStage.gd` / `WinLineup.gd` do not.
-- Existing ratchets: script documentation, viewport editability (ALLOWED entry
-  for the tile list), tall-screen layout for the popup.
+- Existing ratchets: script documentation, viewport editability, tall-screen
+  layout for the popup.
 
 ## Not doing
 

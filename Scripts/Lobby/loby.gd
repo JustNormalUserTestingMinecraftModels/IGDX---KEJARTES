@@ -290,7 +290,7 @@ func _setup_students():
 			h_slot.show()
 			var s = ordered[i]
 			var portrait_node = p_slot.get_node("Portrait")
-			var port_path = s.get("portrait", "")
+			var port_path = StudentSkins.portrait_for(s)
 			if port_path != "" and ResourceLoader.exists(port_path):
 				portrait_node.texture = load(port_path)
 			else:

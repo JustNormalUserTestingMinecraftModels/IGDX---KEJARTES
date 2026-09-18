@@ -71,7 +71,7 @@ static func populate(card: Control, student: Dictionary,
 	# Update Portrait Texture
 	var portrait_node = card.get_node_or_null("TextureRect")
 	if portrait_node and portrait_node is TextureRect:
-		var p_path = student.get("portrait", "")
+		var p_path = StudentSkins.portrait_for(student)
 		if p_path != "" and ResourceLoader.exists(p_path):
 			portrait_node.texture = load(p_path)
 

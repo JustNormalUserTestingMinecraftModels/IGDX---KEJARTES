@@ -134,3 +134,24 @@ func test_grade_reset_keeps_skins() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
 	var body := src.substr(src.find("func reset_roster_for_new_grade"), 900)
 	assert_false(body.contains("equipped_skins"), "a skin follows the character across grades")
+
+
+## Every screen that draws a student from a roster dict goes through the
+## resolver (a scan: most of these screens cannot be built headlessly).
+func test_consumers_use_the_resolver() -> void:
+	var sites := {
+		"res://Scripts/AturJadwal/atur_jadwal.gd": ["StudentSkins.splash_for(", "StudentSkins.portrait_for("],
+		"res://Scripts/StudentCard/StudentCardView.gd": ["StudentSkins.portrait_for("],
+		"res://Scripts/StudentList/student_list.gd": ["StudentSkins.portrait_for("],
+		"res://Scripts/Lobby/loby.gd": ["StudentSkins.portrait_for("],
+	}
+	for path in sites:
+		var src := FileAccess.get_file_as_string(path)
+		for needle in sites[path]:
+			assert_true(src.contains(needle), "%s must call %s" % [path, needle])
+		assert_false(src.contains("get(\"portrait\""), "%s still reads the raw portrait key" % path)
+
+
+func test_result_screens_keep_their_own_art() -> void:
+	for path in ["res://Scripts/EndGame/WinStage.gd", "res://Scripts/EndGame/WinLineup.gd"]:
+		assert_false(FileAccess.get_file_as_string(path).contains("StudentSkins"), path)

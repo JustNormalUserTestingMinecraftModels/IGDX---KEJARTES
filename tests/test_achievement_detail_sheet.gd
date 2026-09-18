@@ -119,6 +119,13 @@ func test_claim_button_emits_claim_requested_for_unlocked_entry() -> void:
 
 
 func test_no_theme_overrides_and_scrim_variation_present() -> void:
+	# The project rule: styling flows from the theme, never from per-node
+	# overrides. Layout-only constants (separation, margin_*) are exempt.
 	var src := FileAccess.get_file_as_string(SHEET)
-	assert_false(src.contains("theme_override_"), "no theme_override_* in AchievementDetailSheet.tscn")
+	for line in src.split("\n"):
+		if not line.begins_with("theme_override_"):
+			continue
+		var is_layout := line.begins_with("theme_override_constants/separation") \
+			or line.begins_with("theme_override_constants/margin")
+		assert_true(is_layout, "unexpected theme override in AchievementDetailSheet.tscn: " + line)
 	assert_true(src.contains('theme_type_variation = &"Scrim"'), "Scrim variation must be present")

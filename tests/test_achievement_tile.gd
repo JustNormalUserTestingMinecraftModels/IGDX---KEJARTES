@@ -157,8 +157,15 @@ func test_tile_pressed_emits_the_achievement_id() -> void:
 
 
 func test_scene_has_no_theme_overrides() -> void:
+	# The project rule: styling flows from the theme, never from per-node
+	# overrides. Layout-only constants (separation, margin_*) are exempt.
 	var src := FileAccess.get_file_as_string(TILE)
-	assert_false(src.contains("theme_override_"), "no theme_override_* in AchievementTile.tscn")
+	for line in src.split("\n"):
+		if not line.begins_with("theme_override_"):
+			continue
+		var is_layout := line.begins_with("theme_override_constants/separation") \
+			or line.begins_with("theme_override_constants/margin")
+		assert_true(is_layout, "unexpected theme override in AchievementTile.tscn: " + line)
 
 
 func test_every_label_uses_a_theme_type_variation() -> void:

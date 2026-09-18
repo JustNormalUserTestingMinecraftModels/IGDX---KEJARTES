@@ -39,13 +39,19 @@ var cart: Dictionary = {}
 var _adds_this_frame: int = 0
 var _adds_frame_number: int = -1
 
-func add_item(item: ItemData) -> void:
+## Returns true when the unit was actually added, false when the per-frame
+## cap silently dropped it. Callers that spent state before calling (a
+## shelf slot's taken/held bookkeeping, a flight tween) must check this and
+## undo that state -- and release any lock they took -- on false, rather
+## than assuming the add always lands. Existing callers that ignore the
+## return value keep compiling (GDScript does not require using it).
+func add_item(item: ItemData) -> bool:
 	var current_frame := Engine.get_process_frames()
 	if current_frame != _adds_frame_number:
 		_adds_frame_number = current_frame
 		_adds_this_frame = 0
 	if _adds_this_frame >= MAX_ADDS_PER_FRAME:
-		return
+		return false
 	_adds_this_frame += 1
 	if cart.has(item.item_name):
 		cart[item.item_name]["quantity"] += 1
@@ -53,6 +59,7 @@ func add_item(item: ItemData) -> void:
 		cart[item.item_name] = { "data": item, "quantity": 1 }
 	item_added.emit(item.item_name)
 	cart_changed.emit()
+	return true
 
 func remove_one(item_name: String) -> void:
 	if cart.has(item_name):

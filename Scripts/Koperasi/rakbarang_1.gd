@@ -217,7 +217,11 @@ func _refresh_stock_pips() -> void:
 		if not is_instance_valid(life):
 			continue
 		var item_name: String = _stock_names[i]
-		life.set_stock_pips(remaining_of(item_name), mini(_stock_count(item_name), 3))
+		# Clamped to GameState.SHOP_MAX_COPIES, not a literal 3: PipRow is
+		# authored with exactly Pip1..Pip3 in koprasi.tscn, so raising
+		# SHOP_MAX_COPIES again needs a Pip4+ node added there too, or this
+		# clamp silently keeps hiding the extra copies.
+		life.set_stock_pips(remaining_of(item_name), mini(_stock_count(item_name), GameState.SHOP_MAX_COPIES))
 
 
 func _find_price_display(btn: TextureButton) -> Node:
@@ -290,17 +294,17 @@ func _on_barang_pressed(index: int):
 	if index < 0 or index >= item_data_list.size():
 		return
 	var item = item_data_list[index]
-	# Shelf debounce (tap-spam safeguard layer 2): a slot already mid-flight
-	# ignores further taps until on_flight_finished()/the failsafe unlocks it.
 	var life = _shelf_items[index] if index < _shelf_items.size() else null
-	if is_instance_valid(life) and not life.on_tap():
-		return
 	# Each slot sells once: a second tap landing before the button hides
-	# must not add a second unit.
+	# must not add a second unit. Checked BEFORE the shelf-debounce lock so
+	# a dead tap always reaches Herman -- gating it behind on_tap() first
+	# let a lock refusal swallow OUT_OF_STOCK / shelf_dead_tap silently.
 	if _taken_slots.has(index):
 		shelf_dead_tap.emit(item.item_name)
-		if is_instance_valid(life):
-			life.on_flight_finished()
+		return
+	# Shelf debounce (tap-spam safeguard layer 2): a slot already mid-flight
+	# ignores further taps until on_flight_finished()/the failsafe unlocks it.
+	if is_instance_valid(life) and not life.on_tap():
 		return
 	var btn = shelf_buttons[index]
 
@@ -311,13 +315,24 @@ func _on_barang_pressed(index: int):
 		_shelf_items[index].lift()
 	AudioDirector.play_sfx(&"tap")
 
-	# Take the slot before the cart hears of it, so the refresh that
-	# Cart.add_item() triggers empties THIS slot, not the pair's other copy.
+	# Cart.add_item() BEFORE committing the slot/hold/flight: its per-frame
+	# cap (Cart.MAX_ADDS_PER_FRAME) can silently drop the unit, and nothing
+	# must be taken off the shelf, held in the tray, or flown in for a unit
+	# that never actually entered the cart.
+	if not Cart.add_item(item):
+		if is_instance_valid(life):
+			life.on_flight_finished()
+		return
+
+	# Take the slot now that the cart accepted the unit, so the refresh
+	# Cart.add_item() just triggered empties THIS slot, not the pair's
+	# other copy.
 	_taken_slots.append(index)
-	# Hold the unit before the cart hears of it: the refresh that
-	# Cart.add_item() triggers then keeps it hidden until its flight lands.
+	# Hold the unit now the cart has it: the refresh already fired, so hold
+	# it retroactively and re-refresh the tray to keep it hidden until its
+	# flight lands.
 	tray.hold_for_landing(item.item_name)
-	Cart.add_item(item)
+	tray.refresh(Cart.cart)
 	_spawn_falling_item(btn, item, life)
 
 func _spawn_falling_item(source_button: TextureButton, item: ItemData, life = null):

@@ -207,6 +207,14 @@ func set_state(state: int, animate: bool = true) -> void:
 	# "visible" to anything checking the property rather than the pixels.
 	if is_instance_valid(_emblem_badge):
 		_emblem_badge.visible = state == ViewState.EXPANDED and _shown_unit_count() > 0
+	# HeaderButton sits inside Body/Emblem, which only fades to alpha 0
+	# above -- an alpha-0 Control is still hit-testable, so a collapsed
+	# tray left it clickable underneath whatever is drawn on top. Applied
+	# unconditionally (outside the animate/no-animate branch above) so it
+	# takes effect immediately in both paths, matching the badge-visible
+	# fix just above: state, not the tween, is what must gate input.
+	if is_instance_valid(_header_button):
+		_header_button.mouse_filter = MOUSE_FILTER_IGNORE if state == ViewState.COLLAPSED else MOUSE_FILTER_STOP
 	state_changed.emit(state)
 
 

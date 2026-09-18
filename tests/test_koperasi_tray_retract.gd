@@ -281,3 +281,24 @@ func test_koprasi_gd_opts_crate_out_of_auto_juice() -> void:
 		return
 	assert_true(src.contains("crate.set_meta(Juice.NO_AUTO_JUICE, true)"),
 		"koprasi.gd must opt CrateHandle out of UIPolish's auto-juice via Juice.NO_AUTO_JUICE")
+
+
+## Review fix: a COLLAPSED tray only fades Body/Emblem's alpha, which leaves
+## the HeaderButton inside it hit-testable. set_state() must gate its
+## mouse_filter directly, both when snapped (animate=false, used here since
+## no test advances a frame) and by construction when animated (the filter
+## change sits outside the animate/no-animate branch in the source).
+func test_collapsed_tray_ignores_mouse_on_header_button() -> void:
+	var t: Control = _live_tray()
+	var header := t.get_node_or_null("Body/Emblem/HeaderButton") as TextureButton
+	assert_not_null(header, "BasketTray.tscn must have a Body/Emblem/HeaderButton")
+	if header == null:
+		t.queue_free()
+		return
+	t.set_state(t.ViewState.COLLAPSED, false)
+	assert_eq(header.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"a collapsed tray must not let its HeaderButton catch mouse input")
+	t.set_state(t.ViewState.EXPANDED, false)
+	assert_eq(header.mouse_filter, Control.MOUSE_FILTER_STOP,
+		"re-expanding must restore the HeaderButton's normal mouse filter")
+	t.queue_free()

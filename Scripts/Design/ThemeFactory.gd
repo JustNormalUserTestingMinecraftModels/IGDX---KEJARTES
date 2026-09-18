@@ -28,6 +28,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_event_dialogue(theme, tokens)
 	_build_shop_chat_bubble(theme, tokens)
 	_build_achievements(theme, tokens)
+	_build_achievement_tile(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -226,6 +227,72 @@ static func _build_achievements(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("AchievementClaimHintLabel", "Label")
 	theme.set_font_size("font_size", "AchievementClaimHintLabel", ACHIEVEMENT_CLAIM_HINT_SIZE)
 	theme.set_color("font_color", "AchievementClaimHintLabel", Color.WHITE)
+
+
+## The 2-column achievement grid tile (2026-09-18 achievements-polish spec):
+## a small prize chip (neutral when the entry carries no effect, amber when
+## it does) and a tiny "BARU" unlock pip. Both chips reuse the Card
+## variation's radius_pill shape so they read as siblings of the trait
+## chips (QuirkBadge/PersonaBadge) despite being Panels, not Buttons -- the
+## tile itself is the tappable surface (AchievementTile.gd's _gui_input),
+## so these inner chips must stay non-interactive Panels.
+static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("AchievementPrizeChip")
+	theme.set_type_variation("AchievementPrizeChip", "Panel")
+	var neutral := StyleBoxFlat.new()
+	neutral.bg_color = tokens.surface_sunken
+	neutral.set_corner_radius_all(tokens.radius_pill)
+	neutral.content_margin_left = tokens.space_md
+	neutral.content_margin_right = tokens.space_md
+	neutral.content_margin_top = tokens.space_xs
+	neutral.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementPrizeChip", neutral)
+
+	theme.add_type("AchievementPrizeChipAmber")
+	theme.set_type_variation("AchievementPrizeChipAmber", "Panel")
+	var amber := StyleBoxFlat.new()
+	amber.bg_color = tokens.state_warning.lightened(0.35)
+	amber.border_color = tokens.state_warning
+	amber.set_border_width_all(int(tokens.outline_width / 2.0))
+	amber.set_corner_radius_all(tokens.radius_pill)
+	amber.content_margin_left = tokens.space_md
+	amber.content_margin_right = tokens.space_md
+	amber.content_margin_top = tokens.space_xs
+	amber.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementPrizeChipAmber", amber)
+
+	theme.add_type("AchievementPrizeChipLabel")
+	theme.set_type_variation("AchievementPrizeChipLabel", "Label")
+	theme.set_font_size("font_size", "AchievementPrizeChipLabel", tokens.font_micro)
+	theme.set_color("font_color", "AchievementPrizeChipLabel", tokens.text_secondary)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementPrizeChipLabel", tokens.font_display)
+
+	theme.add_type("AchievementPrizeChipLabelAmber")
+	theme.set_type_variation("AchievementPrizeChipLabelAmber", "Label")
+	theme.set_font_size("font_size", "AchievementPrizeChipLabelAmber", tokens.font_micro)
+	theme.set_color("font_color", "AchievementPrizeChipLabelAmber", tokens.state_warning.darkened(0.35))
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementPrizeChipLabelAmber", tokens.font_display)
+
+	# The "BARU" unlock pip, top-right corner of the tile.
+	theme.add_type("AchievementBaruBadge")
+	theme.set_type_variation("AchievementBaruBadge", "Panel")
+	var baru := StyleBoxFlat.new()
+	baru.bg_color = tokens.state_success
+	baru.set_corner_radius_all(tokens.radius_pill)
+	baru.content_margin_left = tokens.space_xs
+	baru.content_margin_right = tokens.space_xs
+	baru.content_margin_top = tokens.space_xs / 2.0
+	baru.content_margin_bottom = tokens.space_xs / 2.0
+	theme.set_stylebox("panel", "AchievementBaruBadge", baru)
+
+	theme.add_type("AchievementBaruBadgeLabel")
+	theme.set_type_variation("AchievementBaruBadgeLabel", "Label")
+	theme.set_font_size("font_size", "AchievementBaruBadgeLabel", tokens.font_micro)
+	theme.set_color("font_color", "AchievementBaruBadgeLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementBaruBadgeLabel", tokens.font_display)
 
 
 ## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard

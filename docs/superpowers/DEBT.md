@@ -68,6 +68,11 @@ to stay warm and shop-consistent -- drop-replaceable at the same path).
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
 `bg_event_dialog.png` by `EventStudentSelectDialog`.)
 
+**Achievements polish (2026-09-18).** `AchievementTile`'s lock overlay is a
+placeholder `Assets/Images/UI/Placeholders/icon_lock.svg` (plain padlock
+glyph, drop-replaceable at the same path); the CLAIMED check badge reuses
+the existing `icon_check.svg` from the same folder, no new asset needed.
+
 **Other art gaps.** `Assets/Images/EndGame/ujian_sekolah.png` (TesNotice's
 Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to
 alpha, colour un-premultiplied, cropped -- not exported transparent; swap in a

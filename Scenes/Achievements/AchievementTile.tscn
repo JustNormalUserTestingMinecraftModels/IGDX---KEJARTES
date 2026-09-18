@@ -1,0 +1,118 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Achievements/AchievementTile.gd" id="1_tile"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Achievements/Icons/grade_7.png" id="2_icon"]
+[ext_resource type="Material" path="res://Assets/Images/Achievements/icon_outline_material.tres" id="3_outline"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="4_lock"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/Placeholders/icon_check.svg" id="5_check"]
+
+[node name="AchievementTile" type="PanelContainer"]
+custom_minimum_size = Vector2(420, 260)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"Card"
+mouse_filter = 0
+script = ExtResource("1_tile")
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="IconSlot" type="Control" parent="Content"]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="Content/IconSlot"]
+unique_name_in_owner = true
+material = ExtResource("3_outline")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LockIcon" type="TextureRect" parent="Content/IconSlot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_lock")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+max_lines_visible = 2
+text_overrun_behavior = 3
+text = "Sudah bukan pemula lagi nih!"
+
+[node name="PrizeChip" type="PanelContainer" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"AchievementPrizeChip"
+mouse_filter = 2
+
+[node name="PrizeLabel" type="Label" parent="Content/PrizeChip"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"AchievementPrizeChipLabel"
+horizontal_alignment = 1
+text = "—"
+
+[node name="ProgressBar" type="ProgressBar" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_type_variation = &"StatBar"
+show_percentage = false
+
+[node name="BaruBadge" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_type_variation = &"AchievementBaruBadge"
+mouse_filter = 2
+
+[node name="BaruLabel" type="Label" parent="BaruBadge"]
+layout_mode = 2
+theme_type_variation = &"AchievementBaruBadgeLabel"
+text = "BARU"
+
+[node name="CheckBadge" type="TextureRect" parent="."]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+mouse_filter = 2
+texture = ExtResource("5_check")
+expand_mode = 1
+stretch_mode = 5

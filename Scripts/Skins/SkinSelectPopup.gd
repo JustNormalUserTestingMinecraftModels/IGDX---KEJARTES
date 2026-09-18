@@ -109,6 +109,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	if Engine.is_editor_hint() or not event.is_action_pressed(&"ui_cancel"):
 		return
 	get_viewport().set_input_as_handled()
+	go_back()
+
+
+## Android's back button arrives as a notification, not ui_cancel -- the
+## same route inventory.gd and the achievement sheets use.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		go_back()
+
+
+## One step back: closes the open skin column, else the whole popup.
+func go_back() -> void:
 	if _open_slot >= 0:
 		close_column()
 	else:

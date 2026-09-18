@@ -174,6 +174,17 @@ func test_blur2_tap_closes_the_column() -> void:
 	assert_false((p.get_node("OptionLayer") as Control).visible)
 
 
+func test_android_back_closes_column_then_popup() -> void:
+	var p := _popup()
+	p.open(_roster())
+	p.open_column(0)
+	p.notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	assert_false((p.get_node("OptionLayer") as Control).visible, "first back closes the column")
+	assert_false(p._closing)
+	p.notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	assert_true(p._closing, "second back closes the popup")
+
+
 func test_setuju_closes_once() -> void:
 	var p := _popup()
 	p.open(_roster())

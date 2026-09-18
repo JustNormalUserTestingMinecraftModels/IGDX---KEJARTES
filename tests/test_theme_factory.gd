@@ -26,7 +26,7 @@ func test_every_declared_variation_exists() -> void:
 		"PrimaryButton", "SecondaryButton", "DangerButton",
 		"Card", "SunkenPanel", "Scrim", "PhotoFrame",
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
-		"CaptionLabel", "MicroLabel", "StatBar", "FilterChipButton",
+		"CaptionLabel", "MicroLabel", "StatBar", "AchievementTileBar", "FilterChipButton",
 		"EventDialoguePanel", "EventDialogueText", "DayBannerPanel", "DayBannerLabel", "CalendarLabel",
 	]
 	var actual := _theme.get_type_list()

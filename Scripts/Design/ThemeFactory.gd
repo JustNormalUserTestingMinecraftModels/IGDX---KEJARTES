@@ -20,6 +20,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_panels(theme, tokens)
 	_build_labels(theme, tokens)
 	_build_progress(theme, tokens)
+	_build_achievement_tile_bar(theme, tokens)
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
 	_build_week_recap(theme, tokens)
@@ -1291,6 +1292,37 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_stylebox("fill", lname, _progress_fill_stylebox(lcolor, lspec[2]))
 		theme.set_font_size("font_size", lname, tokens.font_caption)
 		theme.set_color("font_color", lname, tokens.text_primary)
+
+
+## AchievementTile's progress bar (Task 8, 2026-09-18 polish pass): StatBar's
+## min height wins over any scene-level custom_minimum_size override on a
+## ProgressBar using "StatBar", rendering it ~36px tall on a tile that wants
+## a thin 4-6px sliver. A dedicated thin variation, built the same way as
+## StatBar above but flat (no textured fill/rim/shadow chrome -- a tile-sized
+## sliver is too small for that detail to read), sidesteps the min-height
+## fight entirely instead of trying to override it per-instance.
+static func _build_achievement_tile_bar(theme: Theme, tokens: DesignTokens) -> void:
+	const BAR_HEIGHT := 5.0
+
+	theme.add_type("AchievementTileBar")
+	theme.set_type_variation("AchievementTileBar", "ProgressBar")
+
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = tokens.stat_bar_track
+	bg.set_corner_radius_all(int(BAR_HEIGHT / 2.0))
+	bg.content_margin_top = 0
+	bg.content_margin_bottom = 0
+	theme.set_stylebox("background", "AchievementTileBar", bg)
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = tokens.cat_akademis_on_dark
+	fill.set_corner_radius_all(int(BAR_HEIGHT / 2.0))
+	fill.content_margin_top = 0
+	fill.content_margin_bottom = 0
+	theme.set_stylebox("fill", "AchievementTileBar", fill)
+
+	theme.set_font_size("font_size", "AchievementTileBar", tokens.font_caption)
+	theme.set_color("font_color", "AchievementTileBar", tokens.text_primary)
 
 
 # ------------------------------------------------- student card redesign

@@ -85,7 +85,7 @@ func _on_jump_requested() -> void:
 	var achievements := _achievements()
 	if achievements == null:
 		return
-	var id := achievements.first_unclaimed_id()
+	var id: String = achievements.first_unclaimed_id()
 	if id == "":
 		return
 	for tile in _tiles:

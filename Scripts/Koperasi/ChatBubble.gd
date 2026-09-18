@@ -57,14 +57,21 @@ const IDLE_MIN_S := 8.0
 const IDLE_MAX_S := 14.0
 
 ## Where the bubble rests while SHOWING/LINGERING, in the parent's frame.
-## Defaults to the node's authored position in koprasi.tscn (36, 23).
+## Defaults to the node's authored position in koprasi.tscn (36, 23). This
+## default is NOT read from the node -- it is a duplicated literal, so it
+## must be kept in sync by hand if the bubble is ever repositioned in the
+## scene; a mismatch would make it rest somewhere other than where it was
+## placed. If you move the node, update this value too.
 @export var rest_position: Vector2 = Vector2(36.0, 23.0)
 
 ## Task 5 sets this false while the basket tray is collapsed, so an idle
 ## Herman doesn't heckle an empty room. Checked by the idle timer's timeout
-## handler, not by reset_idle_timer() -- a disabled timer still tracks time
-## so it starts chattering immediately once re-enabled, matching the
-## LINGER_S auto-hide's pattern of never losing its own state.
+## handler, not by reset_idle_timer(): a disabled timer still counts down
+## and, on timeout, simply declines to speak (_on_idle_timeout returns
+## without saying a line or rearming) -- chatter is muted, not paused. It
+## resumes only once koprasi.gd flips this back true AND calls
+## reset_idle_timer() (on tray expand), which arms a fresh
+## IDLE_MIN_S..IDLE_MAX_S window; re-enabling alone does not make it speak.
 var idle_chatter_enabled: bool = true
 
 var _state: int = State.IDLE

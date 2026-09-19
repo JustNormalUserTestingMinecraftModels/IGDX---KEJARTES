@@ -5,7 +5,8 @@ extends McpTestSuite
 ## the Lobby's STUDENT/JADWAL look -- brand_primary_light fill,
 ## brand_primary_dark bevel, outline_card rim, text_on_brand -- except
 ## StudentCard's cream secondary buttons and StudentList's red/green status
-## badges, which keep theirs.
+## badges, which keep theirs, and Weekly Results' light-red Logs button
+## (ResultLogsButton, 2026-09-19).
 
 ## The restyled roles, with every generated size step.
 const LOBBY_LOOK := [

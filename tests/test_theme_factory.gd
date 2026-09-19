@@ -336,6 +336,8 @@ const DISPLAY_ROSTER := [
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
+	# 2026-09-19 weekly results mockup: the light-red Logs button.
+	"ResultLogsButton",
 	# 2026-09-14 lobby-style-buttons: the two kept looks.
 	"StudentCardSecondaryButton", "StudentCardSecondaryButtonL",
 	"RosterStatusBelum", "RosterStatusSudah",

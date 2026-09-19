@@ -668,6 +668,13 @@ static func _build_result_button(theme: Theme, tokens: DesignTokens) -> void:
 	_add_lobby_button(theme, tokens, "ResultButton")
 	_set_content_margins(theme, "ResultButton", 24, tokens.btn_pad_v_s)
 	theme.set_font_size("font_size", "ResultButton", tokens.day_stat_size)
+	# 2026-09-19: Logs is the ribbon's red, lightened; Selanjutnya keeps the
+	# brown as the one primary action.
+	_add_button_variation(theme, tokens, "ResultLogsButton",
+		tokens.result_logs_fill, tokens.result_logs_dark,
+		tokens.outline_card, tokens.text_on_brand)
+	_set_content_margins(theme, "ResultLogsButton", 24, tokens.btn_pad_v_s)
+	theme.set_font_size("font_size", "ResultLogsButton", tokens.day_stat_size)
 
 
 ## The main menu's icon buttons, in the Lobby look (2026-09-14
@@ -1795,32 +1802,24 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 # ------------------------------------------------------------ week recap
 
 static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
-	# The banner is a raised card that must not read as another student
-	# card, so it takes the card surface with the brand's own edge.
+	# The 2026-09-19 mockup's butter-yellow panel: a borderless rounded
+	# block the three white tiles sit in.
 	theme.add_type("RecapBannerPanel")
 	theme.set_type_variation("RecapBannerPanel", "Panel")
 	var recap_banner := StyleBoxFlat.new()
-	recap_banner.bg_color = tokens.surface_card
-	recap_banner.set_corner_radius_all(tokens.radius_md)
-	recap_banner.border_color = tokens.brand_primary
-	recap_banner.set_border_width_all(int(tokens.outline_width) / 2)
-	recap_banner.content_margin_left = tokens.space_md
-	recap_banner.content_margin_right = tokens.space_md
-	recap_banner.content_margin_top = tokens.space_sm
-	recap_banner.content_margin_bottom = tokens.space_sm
+	recap_banner.bg_color = tokens.recap_banner_fill
+	recap_banner.set_corner_radius_all(tokens.radius_lg)
+	recap_banner.set_content_margin_all(tokens.space_md)
 	theme.set_stylebox("panel", "RecapBannerPanel", recap_banner)
 
-	# A pill is a sunken capsule -- the counter-form to the banner it sits
-	# inside.
+	# A tile is a near-white rounded square (not a capsule), icon above
+	# number, per the same mockup.
 	theme.add_type("RecapPillPanel")
 	theme.set_type_variation("RecapPillPanel", "Panel")
 	var recap_pill := StyleBoxFlat.new()
-	recap_pill.bg_color = tokens.surface_sunken
-	recap_pill.set_corner_radius_all(tokens.radius_pill)
-	recap_pill.content_margin_left = tokens.space_sm
-	recap_pill.content_margin_right = tokens.space_sm
-	recap_pill.content_margin_top = tokens.space_xs
-	recap_pill.content_margin_bottom = tokens.space_xs
+	recap_pill.bg_color = tokens.recap_tile_fill
+	recap_pill.set_corner_radius_all(tokens.radius_md)
+	recap_pill.set_content_margin_all(tokens.space_sm)
 	theme.set_stylebox("panel", "RecapPillPanel", recap_pill)
 
 	# The pill's number. Tinted per-pill via self_modulate, so the
@@ -1829,6 +1828,8 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("RecapPillValueLabel", "Label")
 	theme.set_font_size("font_size", "RecapPillValueLabel", tokens.font_h2)
 	theme.set_color("font_color", "RecapPillValueLabel", tokens.text_primary)
+	theme.set_constant("outline_size", "RecapPillValueLabel", tokens.text_outline_size)
+	theme.set_color("font_outline_color", "RecapPillValueLabel", tokens.text_outline_color)
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
 

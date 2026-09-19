@@ -341,19 +341,24 @@ func test_every_portrait_slot_has_a_chat_anchor() -> void:
 
 func test_lobby_has_one_bubble_and_a_chatter() -> void:
 	var src := FileAccess.get_file_as_string(_LOBY_TSCN)
-	assert_true(src.contains('[node name="ChatBubble" parent="Classroom"'), "bubble under Classroom")
+	assert_true(src.contains('[node name="ChatBubble" parent="."'), "bubble is a child of the Lobby root")
 	assert_true(src.contains('path="res://Scenes/Lobby/StudentChatBubble.tscn"'), "bubble is the instanced scene")
 	assert_true(src.contains('[node name="Chatter" type="Node" parent="."'), "Chatter node")
-	assert_true(src.contains('bubble_path = NodePath("../Classroom/ChatBubble")'), "Chatter wired to the bubble")
+	assert_true(src.contains('bubble_path = NodePath("../ChatBubble")'), "Chatter wired to the bubble")
 
 
-func test_bubble_is_classrooms_last_child() -> void:
+## Found on screen 2026-09-19: under Classroom, the HUD's KELAS title drew
+## over the bubble. It sits right after Safe (the HUD), so it covers the HUD
+## but stays under the daily reward and the tutorial overlay.
+func test_bubble_draws_above_the_hud() -> void:
 	var scene := (load(_LOBY_TSCN) as PackedScene).get_state()
-	var last_under_classroom := ""
+	var root_children: Array = []
 	for i in range(scene.get_node_count()):
-		if str(scene.get_node_path(i, true)).trim_prefix("./") == "Classroom":
-			last_under_classroom = str(scene.get_node_name(i))
-	assert_eq(last_under_classroom, "ChatBubble", "drawn above every desk and student")
+		if str(scene.get_node_path(i, true)) == ".":
+			root_children.append(str(scene.get_node_name(i)))
+	var safe := root_children.find("Safe")
+	assert_true(safe >= 0, "Safe is a root child")
+	assert_eq(root_children.find("ChatBubble"), safe + 1, "ChatBubble right after Safe: %s" % [root_children])
 
 
 func test_loby_hands_seats_and_gate_to_chatter() -> void:

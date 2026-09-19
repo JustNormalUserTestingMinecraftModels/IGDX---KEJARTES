@@ -785,9 +785,6 @@ texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="ChatBubble" parent="Classroom" unique_id=1758543249 instance=ExtResource("20_su0mk")]
-layout_mode = 1
-
 [node name="Safe" type="MarginContainer" parent="." unique_id=1588675940]
 layout_mode = 1
 anchors_preset = 15
@@ -962,6 +959,9 @@ grow_horizontal = 2
 theme_type_variation = &"DisplayLabel"
 text = "KELAS"
 
+[node name="ChatBubble" parent="." unique_id=1758543249 instance=ExtResource("20_su0mk")]
+layout_mode = 1
+
 [node name="DailyReward" type="TextureRect" parent="." unique_id=889996430]
 visible = false
 layout_mode = 1
@@ -1042,4 +1042,4 @@ grow_vertical = 2
 
 [node name="Chatter" type="Node" parent="." unique_id=1817944739]
 script = ExtResource("34_f2e4j")
-bubble_path = NodePath("../Classroom/ChatBubble")
+bubble_path = NodePath("../ChatBubble")

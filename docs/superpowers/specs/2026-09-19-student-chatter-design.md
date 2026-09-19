@@ -146,7 +146,7 @@ No difference. Lines, timings and triggers are the same in every grade.
 | `Scripts/Lobby/StudentChatterPicker.gd` | new — shuffle bags, anti-repeat |
 | `Scripts/Lobby/StudentChatBubble.gd` + `Scenes/Lobby/StudentChatBubble.tscn` | new — the bubble |
 | `Scripts/Lobby/LobbyChatter.gd` | new — taps, spam guard, idle timer, gate |
-| `Scenes/Lobby/loby.tscn` | `ChatAnchor` in each portrait slot; `ChatBubble` instance as Classroom's last child; `Chatter` node |
+| `Scenes/Lobby/loby.tscn` | `ChatAnchor` in each portrait slot; `ChatBubble` instance as a root child right after `Safe` (the HUD) — above the HUD's KELAS title, below the daily reward and tutorial overlay; `Chatter` node with `bubble_path` |
 | `Scripts/Lobby/loby.gd` | hand seats + gate to `Chatter`; dismiss on skin picker |
 | `Scripts/Design/ThemeFactory.gd` + rebake | `StudentChatBubble` (PanelContainer) and `StudentChatText` (Label, bold body face, `font_title`, `text_primary`) — body face, not on `DISPLAY_ROSTER` |
 | `tests/test_student_chatter.gd` | new suite |

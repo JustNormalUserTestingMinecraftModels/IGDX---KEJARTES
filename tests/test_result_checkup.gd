@@ -622,18 +622,19 @@ func test_pill_set_pill_writes_text_and_tint() -> void:
 const _BANNER_SCENE := "res://Scenes/SchoolSimulation/WeekRecapBanner.tscn"
 
 
-func test_banner_authors_all_four_pills() -> void:
+func test_banner_authors_the_mockups_three_tiles_in_order() -> void:
 	var banner: Control = load(_BANNER_SCENE).instantiate()
-	for pill_name in ["PillUang", "PillPoin", "PillMenang", "PillEvent"]:
-		assert_not_null(banner.get_node_or_null("Pills/" + pill_name),
-			"%s is authored, not built at runtime" % pill_name)
+	var names: Array = []
+	for child in banner.get_node("Pills").get_children():
+		names.append(String(child.name))
+	assert_eq(names, ["PillUang", "PillMenang", "PillEvent"],
+		"money, minigames, events, left to right; Poin is gone")
+	assert_true(banner.get_node_or_null("Header") == null,
+		"the mockup has no week/grade line")
 	banner.free()
 
 
-func test_banner_writes_every_total_into_its_pills() -> void:
-	# set_recap writes through the pills' @onready fields (and its own),
-	# which Godot only populates once the node enters the tree -- same
-	# rule as WeekRecapPill's own set_pill test.
+func test_banner_writes_its_three_totals_in_one_ink() -> void:
 	var banner: Control = load(_BANNER_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(banner)
 	banner.set_recap({
@@ -641,23 +642,33 @@ func test_banner_writes_every_total_into_its_pills() -> void:
 		"minigames_won": 3, "minigames_total": 5, "events_count": 2,
 	})
 	assert_eq(_pill_text(banner, "PillUang"), "4.200", "money is grouped")
-	assert_eq(_pill_text(banner, "PillPoin"), "+37", "poin is signed")
 	assert_eq(_pill_text(banner, "PillMenang"), "3/5", "won over total")
 	assert_eq(_pill_text(banner, "PillEvent"), "2", "a bare event count")
+	var ink := Juice.tokens().text_primary
+	for n in ["PillUang", "PillMenang", "PillEvent"]:
+		assert_eq((banner.get_node("Pills/%s/Column/Value" % n) as Label).self_modulate,
+			ink, "%s is text_primary: gold is unreadable on a white tile" % n)
 	banner.queue_free()
 
 
-func test_banner_shows_a_negative_week_as_negative() -> void:
-	var banner: Control = load(_BANNER_SCENE).instantiate()
-	Engine.get_main_loop().root.add_child(banner)
-	banner.set_recap({
-		"money_earned": 0, "net_skill_delta": -4,
-		"minigames_won": 0, "minigames_total": 2, "events_count": 0,
-	})
-	assert_eq(_pill_text(banner, "PillPoin"), "-4",
-		"a losing week is not hidden")
-	banner.queue_free()
+func test_banner_script_drops_poin() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, 'const PILL_ORDER := ["uang", "menang", "event"]',
+		"three tiles, in the mockup's order")
+	for dead in ["pill_poin", "icon_poin", "net_skill_delta", "format_skill_delta", "week_label"]:
+		assert_false(src.contains(dead), "%s left with the Poin tile / week line" % dead)
 
+
+func test_banner_uses_the_new_tile_icons() -> void:
+	var banner = load(_BANNER_SCENE).instantiate()
+	assert_eq(banner.icon_uang.resource_path, "res://Assets/Images/UI/Placeholders/icon_uang.svg",
+		"money keeps its existing icon")
+	assert_eq(banner.icon_menang.resource_path, "res://Assets/Images/ResultCheckup/icon_minigame.png",
+		"minigames wear the soccer ball")
+	assert_eq(banner.icon_event.resource_path, "res://Assets/Images/ResultCheckup/icon_event.png",
+		"events wear the checklist notebook")
+	banner.free()
 
 ## SchoolDay pays the week's Wirausaha total out before it opens this screen,
 ## and paying out empties GameState.pending_earnings -- which is exactly what

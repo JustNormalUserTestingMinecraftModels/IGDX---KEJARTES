@@ -21,9 +21,11 @@ var is_filled: bool = false
 ## Before 2026-09-04 both slots defaulted to null, so every minigame fell
 ## through to _draw()'s procedural polygon and the star row was the one part
 ## of the result card that never matched the rest of the game's art.
-const DEFAULT_FILLED_TEXTURE := "res://Assets/Images/UI/Placeholders/icon_bintang.svg"
-## Shipped art for an unearned star.
-const DEFAULT_EMPTY_TEXTURE := "res://Assets/Images/UI/Placeholders/icon_bintang_kosong.svg"
+## Since 2026-09-19 it is the glossy star.png shared with StatCheck.
+const DEFAULT_FILLED_TEXTURE := "res://Assets/Images/UI/star.png"
+## Shipped art for an unearned star: the same star.png, darkened by
+## popup_star_empty_color.
+const DEFAULT_EMPTY_TEXTURE := "res://Assets/Images/UI/star.png"
 ## Scene fired at this star's centre when it lands earned.
 const BURST_SCENE := "res://Scenes/Minigames/UI/StarBurst.tscn"
 const _BURST_PACKED: PackedScene = preload("res://Scenes/Minigames/UI/StarBurst.tscn")

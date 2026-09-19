@@ -319,12 +319,12 @@ it again along with 177 other unused files.)
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
 them deliberately, or give them a consumer.
 
-**The WEEKLY RESULTS ribbon is orphaned (2026-09-16).**
-`Assets/Images/DaySummary/title_weekly_results.png` is referenced by nothing
-since ResultCheckup was reverted off the 2026-09-14 rebuild. Kept on disk by
-decision — it is the only artwork that pass produced, and it is cheap to
-hold. (The same revert briefly orphaned `ResultButton` and `WeekLogsPopup`;
-the hybrid that followed gave both their call sites back.)
+**The green day card art is retired (2026-09-19).**
+`Assets/Images/DaySummary/card_bg.png` and `card_bg_uncropped.png` are drawn
+by nothing since every `DaySummaryStudentRow` took PR #53's cream
+`IdCardPanel` frame; only `test_day_summary`'s asset list still loads
+`card_bg.png`. Kept so the green card is a drop-in if it ever returns.
+Delete both (and that asset-list line) once that is off the table.
 
 **Deferred: the AturJadwal shelf.** Ships as two `ColorRect`s rather than a
 `ShelfEdge` variation. Needs an editor restart plus a manual rebake (a new

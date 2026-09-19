@@ -271,8 +271,7 @@ func test_star_calculation_stayed_on_base_minigame() -> void:
 ## banned emoji as UI iconography during the 2026-09-02 pass; these are the
 ## replacements.
 const RESULT_ICONS := [
-	"res://Assets/Images/UI/Placeholders/icon_bintang.svg",
-	"res://Assets/Images/UI/Placeholders/icon_bintang_kosong.svg",
+	"res://Assets/Images/UI/star.png",
 	"res://Assets/Images/UI/Placeholders/icon_skor.svg",
 	"res://Assets/Images/UI/Placeholders/icon_target.svg",
 	"res://Assets/Images/UI/Placeholders/icon_akurasi.svg",
@@ -375,3 +374,19 @@ func test_celebrate_is_not_a_coroutine() -> void:
 	var body: String = src.split("func celebrate(")[1].split("\nfunc ")[0]
 	assert_false(body.contains("await "),
 		"celebrate() must be callable from a test and from the reveal loop")
+
+func test_result_stars_default_to_the_new_star_art() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/ResultStar.gd")
+	assert_contains(src, 'DEFAULT_FILLED_TEXTURE := "res://Assets/Images/UI/star.png"',
+		"an earned star is star.png")
+	assert_contains(src, 'DEFAULT_EMPTY_TEXTURE := "res://Assets/Images/UI/star.png"',
+		"so is an unearned one; popup_star_empty_color darkens it")
+	var base := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/BaseMinigame.gd")
+	assert_contains(base, "@export var popup_star_color: Color = Color.WHITE",
+		"the art is already gold, so the default tint must not re-tint it")
+
+
+func test_event_student_card_wears_the_new_star() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/SchoolSimulation/EventStudentCard.tscn")
+	assert_contains(src, 'path="res://Assets/Images/UI/star.png"', "the card's star is star.png")
+	assert_false(src.contains("icon_star.svg"), "the old placeholder is gone")

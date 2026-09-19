@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gr4r7dryin8u"
-path="res://.godot/imported/icon_bintang.svg-ae1ed9b989fd5b158afa2072fd0ba841.ctex"
+uid="uid://dwndrgjat4di8"
+path="res://.godot/imported/star.png-448594f80946667a87a5a2d14aaa696f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/UI/Placeholders/icon_bintang.svg"
-dest_files=["res://.godot/imported/icon_bintang.svg-ae1ed9b989fd5b158afa2072fd0ba841.ctex"]
+source_file="res://Assets/Images/UI/star.png"
+dest_files=["res://.godot/imported/star.png-448594f80946667a87a5a2d14aaa696f.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

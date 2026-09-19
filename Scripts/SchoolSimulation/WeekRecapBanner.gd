@@ -2,8 +2,9 @@
 extends PanelContainer
 class_name WeekRecapBanner
 
-## ResultCheckup's pinned week summary: the week and grade, and the four
-## headline totals as WeekRecapPills (2026-09-03 spec sections 3 and 4).
+## ResultCheckup's pinned week summary: the three headline totals (money,
+## minigames, events) as WeekRecapPill tiles. Poin and the week line left
+## with the 2026-09-19 mockup pass (2026-09-03 spec sections 3 and 4).
 ##
 ## Pinned means it lives OUTSIDE the screen's ScrollContainer, so the
 ## week's totals stay on screen while the player reads student cards.
@@ -14,7 +15,7 @@ class_name WeekRecapBanner
 ## @tool so the editor's test runner can instantiate and inspect it.
 
 ## Gap between one pill's count-up and the next, in seconds. Long enough
-## to read as four separate events rather than one chord.
+## to read as three separate events rather than one chord.
 const PILL_STEP := 0.14
 
 ## How far each pill starts above its authored slot before sliding down
@@ -22,7 +23,7 @@ const PILL_STEP := 0.14
 const PILL_SLIDE_DISTANCE := 20.0
 
 ## Gap between one pill's slide-in STARTING and the next pill's starting
-## -- a cascade, not four simultaneous tweens. Each pill's own number
+## -- a cascade, not three simultaneous tweens. Each pill's own number
 ## count-up begins only once THAT pill's slide-in finishes, so the
 ## numbers read left-to-right in the same rhythm as the pills landing.
 const PILL_CASCADE_STEP := 0.10
@@ -34,29 +35,25 @@ const SLIDE_DISTANCE := 48.0
 ## fixed left-to-right order they're authored in the scene. Read by both
 ## the idle bounce cycle and the tap handler, so both agree on order and
 ## on which pill maps to which explainer.
-const PILL_ORDER := ["uang", "poin", "menang", "event"]
+const PILL_ORDER := ["uang", "menang", "event"]
 
 ## One sentence per pill, shown by WeekRecapPillInfoPopup on tap. Indonesian,
 ## matching the project's explanatory tone (2026-09-03 interactivity spec,
 ## section 3.3).
 const PILL_INFO := {
 	"uang": {"title": "Uang", "body": "Total penghasilan Wirausaha yang terkumpul minggu ini."},
-	"poin": {"title": "Poin", "body": "Total kenaikan Akademis, Seni Budaya, dan Olahraga minggu ini -- bisa minus jika menurun."},
 	"menang": {"title": "Menang", "body": "Jumlah minigame yang dimenangkan dari total yang dimainkan minggu ini."},
 	"event": {"title": "Event", "body": "Jumlah kejadian acak yang terjadi minggu ini."},
 }
 
 ## Gap between one idle-bounce pill and the next, and the pause after the
-## fourth before the cycle repeats.
+## last before the cycle repeats.
 const IDLE_STEP := 0.9
 const IDLE_CYCLE_PAUSE := 1.2
 
 const _POPUP_SCENE := "res://Scenes/UI/WeekRecapPillInfoPopup.tscn"
 
-@onready var week_label: Label = $Header/WeekLabel
-@onready var grade_label: Label = $Header/GradeLabel
 @onready var pill_uang: WeekRecapPill = $Pills/PillUang
-@onready var pill_poin: WeekRecapPill = $Pills/PillPoin
 @onready var pill_menang: WeekRecapPill = $Pills/PillMenang
 @onready var pill_event: WeekRecapPill = $Pills/PillEvent
 @onready var coin_shower: RewardParticles = $CoinShower
@@ -65,8 +62,6 @@ const _POPUP_SCENE := "res://Scenes/UI/WeekRecapPillInfoPopup.tscn"
 @export_group("Visual - Icons")
 ## Icon on the money pill.
 @export var icon_uang: Texture2D = null
-## Icon on the net-skill pill.
-@export var icon_poin: Texture2D = null
 ## Icon on the minigame win/loss pill.
 @export var icon_menang: Texture2D = null
 ## Icon on the event-count pill.
@@ -84,7 +79,6 @@ var _idle_tween: Tween = null
 
 func _ready() -> void:
 	pill_uang.pill_tapped.connect(_on_pill_tapped.bind("uang"))
-	pill_poin.pill_tapped.connect(_on_pill_tapped.bind("poin"))
 	pill_menang.pill_tapped.connect(_on_pill_tapped.bind("menang"))
 	pill_event.pill_tapped.connect(_on_pill_tapped.bind("event"))
 
@@ -99,8 +93,7 @@ func _on_pill_tapped(pill_key: String) -> void:
 	AudioDirector.play_sfx(&"pill_tap")
 	var info: Dictionary = PILL_INFO.get(pill_key, {})
 	var icon: Texture2D = {
-		"uang": icon_uang, "poin": icon_poin,
-		"menang": icon_menang, "event": icon_event,
+		"uang": icon_uang, "menang": icon_menang, "event": icon_event,
 	}.get(pill_key)
 	var popup: WeekRecapPillInfoPopup = load(_POPUP_SCENE).instantiate()
 	get_tree().root.add_child(popup)
@@ -124,7 +117,7 @@ func start_idle_bounce() -> void:
 	if Engine.is_editor_hint():
 		return
 	stop_idle_bounce()
-	var pills: Array = [pill_uang, pill_poin, pill_menang, pill_event]
+	var pills: Array = [pill_uang, pill_menang, pill_event]
 	_idle_tween = create_tween().set_loops()
 	for pill in pills:
 		Juice.set_pivot_center(pill)
@@ -143,46 +136,25 @@ func stop_idle_bounce() -> void:
 	if _idle_tween and _idle_tween.is_valid():
 		_idle_tween.kill()
 	_idle_tween = null
-	for pill in [pill_uang, pill_poin, pill_menang, pill_event]:
+	for pill in [pill_uang, pill_menang, pill_event]:
 		if is_instance_valid(pill):
 			pill.scale = Vector2.ONE
 
 
-## Write the week's header line and all four pills. Idempotent -- calling
-## it twice simply rewrites the same labels.
+## Write all three tiles. Idempotent -- calling it twice simply rewrites
+## the same labels. One ink for all three: the mockup's white tiles leave
+## the old gold money tint unreadable.
 func set_recap(recap: Dictionary) -> void:
 	_recap = recap
-	var t := Juice.tokens()
-
-	if week_label:
-		week_label.text = "MINGGU %d" % GameState.minggu_ke
-	if grade_label:
-		grade_label.text = "%s · Evaluasi Mingguan" % GameState.get_grade_name()
-
-	var money: int = recap.get("money_earned", 0)
-	pill_uang.set_pill(icon_uang, WeekRecap.format_money(money),
-		t.currency_gold if money > 0 else t.text_primary)
-
-	# The one pill that can report bad news, so the one pill that changes
-	# colour with its sign.
-	var poin: int = recap.get("net_skill_delta", 0)
-	var poin_tint := t.text_primary
-	if poin > 0:
-		poin_tint = t.state_success
-	elif poin < 0:
-		poin_tint = t.state_danger
-	pill_poin.set_pill(icon_poin, WeekRecap.format_skill_delta(poin),
-		poin_tint)
-
+	var ink := Juice.tokens().text_primary
+	pill_uang.set_pill(icon_uang,
+		WeekRecap.format_money(recap.get("money_earned", 0)), ink)
 	pill_menang.set_pill(icon_menang, "%d/%d" % [
-		recap.get("minigames_won", 0), recap.get("minigames_total", 0)],
-		t.text_primary)
-
-	pill_event.set_pill(icon_event,
-		str(recap.get("events_count", 0)), t.text_primary)
+		recap.get("minigames_won", 0), recap.get("minigames_total", 0)], ink)
+	pill_event.set_pill(icon_event, str(recap.get("events_count", 0)), ink)
 
 
-## Entrance stages 1-3: the banner slides down, the four pills count up
+## Entrance stages 1-3: the banner slides down, the three tiles count up
 ## in sequence, and -- only if the week actually earned money -- coins
 ## fall from the money pill.
 ##
@@ -201,16 +173,14 @@ func play_entrance() -> void:
 	slide.tween_property(self, "modulate:a", 1.0, t.dur_normal)
 	await slide.finished
 
-	var pills: Array = [pill_uang, pill_poin, pill_menang, pill_event]
+	var pills: Array = [pill_uang, pill_menang, pill_event]
 	var values: Array = [
 		float(_recap.get("money_earned", 0)),
-		float(_recap.get("net_skill_delta", 0)),
 		float(_recap.get("minigames_won", 0)),
 		float(_recap.get("events_count", 0)),
 	]
 	var formatters: Array = [
 		func(v: float) -> String: return WeekRecap.format_money(int(v)),
-		func(v: float) -> String: return WeekRecap.format_skill_delta(int(v)),
 		func(v: float) -> String: return "%d/%d" % [int(v),
 			_recap.get("minigames_total", 0)],
 		func(v: float) -> String: return "%d" % int(v),
@@ -232,7 +202,7 @@ func play_entrance() -> void:
 ## `delay` is this pill's position in the cascade (§5 of the 2026-09-03
 ## interactivity spec) -- pill 0 starts immediately, pill 1 starts
 ## PILL_CASCADE_STEP later, and so on, each pill's tween running
-## independently once started rather than all four waiting on a shared
+## independently once started rather than all three waiting on a shared
 ## clock.
 ##
 ## A coroutine; called only from play_entrance(), never directly by a

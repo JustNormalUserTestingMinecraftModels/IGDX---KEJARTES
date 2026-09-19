@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7ewjtcm0sex2"
-path="res://.godot/imported/icon_bintang_kosong.svg-550f477d7fb5b2104fc372ccbc8dd948.ctex"
+uid="uid://wfu31vam0k2"
+path="res://.godot/imported/icon_minigame.png-e07249058b4219b392054eeb7e4b073b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/UI/Placeholders/icon_bintang_kosong.svg"
-dest_files=["res://.godot/imported/icon_bintang_kosong.svg-550f477d7fb5b2104fc372ccbc8dd948.ctex"]
+source_file="res://Assets/Images/ResultCheckup/icon_minigame.png"
+dest_files=["res://.godot/imported/icon_minigame.png-e07249058b4219b392054eeb7e4b073b.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

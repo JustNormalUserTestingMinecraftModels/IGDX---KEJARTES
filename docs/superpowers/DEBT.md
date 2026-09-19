@@ -332,11 +332,6 @@ the hybrid that followed gave both their call sites back.)
 is the Task 2 section of `docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`,
 which its STATUS block points to.
 
-**Deferred: blinking on the layered faces.** Every face rig's `Eyelid` layer
-and `StudentFace.blink()` are wired and tested, but `idle_blink_enabled`
-defaults **false** — held back deliberately. A real pass wants a half-lid frame
-(the art has none) or an alpha/scale ease rather than the current hard cut.
-
 **Art: a few eye-rim pixels stay see-through on Doni and Marcel.** Their
 bases keep some anti-aliased cut-out rim pixels that no layer placement
 covers (Doni 5, Marcel 10). The counts are frozen as a budget in

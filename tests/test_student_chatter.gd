@@ -318,6 +318,23 @@ func test_seat_at_finds_the_tapped_face() -> void:
 	_free_chatter(c)
 
 
+## Review finding 2026-09-19: the Lobby's HUD buttons (daily login, gear,
+## trophy, JADWAL, money) sit on top of the front-row faces, and _input sees
+## taps before the GUI, so a button tap made the student under it talk.
+func test_a_tap_on_a_hud_button_over_a_face_is_not_a_seat_tap() -> void:
+	var c := _make_chatter(2)
+	var button := Button.new()
+	button.position = Vector2(150, 450)
+	button.size = Vector2(100, 100)
+	c.get_parent().add_child(button)
+	c.tap_blockers = [button]
+	assert_true(c.is_blocked(Vector2(200, 500)), "inside the button")
+	assert_false(c.is_blocked(Vector2(350, 650)), "face outside the button")
+	button.hide()
+	assert_false(c.is_blocked(Vector2(200, 500)), "a hidden button blocks nothing")
+	_free_chatter(c)
+
+
 func test_no_seats_no_chatter() -> void:
 	var c := _make_chatter(0)
 	assert_false(c.speak_idle())
@@ -368,3 +385,4 @@ func test_loby_hands_seats_and_gate_to_chatter() -> void:
 	assert_true(src.contains("func _chatter_allowed() -> bool:"))
 	assert_true(src.contains("not tutorial_active and not reward_popup_open and not _skin_popup_open"))
 	assert_true(src.contains("chatter.dismiss()"))
+	assert_true(src.contains("chatter.tap_blockers = ["), "the HUD blocks taps over the faces")

@@ -160,6 +160,12 @@ func _ready():
 
 	if chatter:
 		chatter.can_speak = _chatter_allowed
+		# The HUD sits over the front-row faces; its taps are not the
+		# students'.
+		chatter.tap_blockers = [student_button, jadwal_button, koperasi_button,
+			report_student_button, inventory_button, settings_button,
+			achievement_button, skin_switch_button, daily_login_btn,
+			get_node("%DisplayUang")]
 	_setup_students()
 	_start_idle_bob(portraits_back, 0.0)
 	_start_idle_bob(portraits_front, idle_bob_period * 0.25)

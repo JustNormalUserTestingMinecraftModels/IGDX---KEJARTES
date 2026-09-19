@@ -13,7 +13,7 @@ extends Node
 ## line on screen exactly as it was.
 
 ## Path to the one bubble every student speaks through (loby.tscn's
-## Classroom/ChatBubble); resolved into `bubble` in _ready().
+## root-level ChatBubble, above the HUD); resolved into `bubble` in _ready().
 @export var bubble_path: NodePath
 ## Shortest wait, in seconds, before an idle student pipes up.
 @export var idle_min_s: float = 20.0
@@ -24,6 +24,10 @@ extends Node
 
 ## The bubble in use: bubble_path's node, or one a test hands in directly.
 var bubble: StudentChatBubble
+## Controls drawn over the faces (the Lobby HUD's buttons and money pill):
+## _input sees a tap before the GUI does, so a tap inside a visible one is
+## that control's, not the student's under it. loby.gd hands them in.
+var tap_blockers: Array = []
 ## Returns whether anyone may talk right now; loby.gd replaces it.
 var can_speak: Callable = func() -> bool: return true
 
@@ -124,9 +128,22 @@ func _input(event: InputEvent) -> void:
 	if not pressed:
 		return
 	reset_idle_timer()
-	var i := seat_at(event.get("position") as Vector2)
+	var pos := event.get("position") as Vector2
+	if is_blocked(pos):
+		return
+	var i := seat_at(pos)
 	if i >= 0:
 		request_line(i)
+
+
+## True when `global_pos` is on a visible tap blocker.
+func is_blocked(global_pos: Vector2) -> bool:
+	for b in tap_blockers:
+		var ctl := b as Control
+		if ctl != null and is_instance_valid(ctl) and ctl.is_visible_in_tree() \
+				and ctl.get_global_rect().has_point(global_pos):
+			return true
+	return false
 
 
 func _on_idle_timeout() -> void:

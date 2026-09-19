@@ -24,6 +24,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
 	_build_week_recap(theme, tokens)
+	_build_id_card(theme, tokens)
 	_build_minigame_result(theme, tokens)
 	_build_event_warning(theme, tokens)
 	_build_event_dialogue(theme, tokens)
@@ -1832,6 +1833,43 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_outline_color", "RecapPillValueLabel", tokens.text_outline_color)
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
+
+
+# ----------------------------------------------------------------- id card
+
+## The cream ID-card frame and its brown name band, shared by every
+## DaySummaryStudentRow (from PR #53, 2026-09-16; adopted 2026-09-19).
+static func _build_id_card(theme: Theme, tokens: DesignTokens) -> void:
+	# -- RecapMastheadPanel: the brand-primary band across the card's top,
+	# holding the student's name -- only the top corners round, since it
+	# sits flush against the card's top edge. --
+	theme.add_type("RecapMastheadPanel")
+	theme.set_type_variation("RecapMastheadPanel", "Panel")
+	var masthead := StyleBoxFlat.new()
+	masthead.bg_color = tokens.brand_primary
+	masthead.corner_radius_top_left = tokens.radius_md
+	masthead.corner_radius_top_right = tokens.radius_md
+	masthead.content_margin_left = tokens.space_md
+	masthead.content_margin_right = tokens.space_md
+	masthead.content_margin_top = tokens.space_sm
+	masthead.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "RecapMastheadPanel", masthead)
+
+	# -- IdCardPanel: the cream card frame, with a brand top rule tying it
+	# to the band above. A flat StyleBoxFlat rather than nine-patch art,
+	# since the frame needs a real border edge to carry the rule. --
+	theme.add_type("IdCardPanel")
+	theme.set_type_variation("IdCardPanel", "Panel")
+	var id_card := StyleBoxFlat.new()
+	id_card.bg_color = tokens.surface_card
+	id_card.set_corner_radius_all(tokens.radius_md)
+	id_card.border_color = tokens.brand_primary
+	id_card.border_width_top = int(tokens.outline_width)
+	id_card.content_margin_left = tokens.space_md
+	id_card.content_margin_right = tokens.space_md
+	id_card.content_margin_top = tokens.space_sm
+	id_card.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "IdCardPanel", id_card)
 
 
 # ---------------------------------------------------- minigame result card

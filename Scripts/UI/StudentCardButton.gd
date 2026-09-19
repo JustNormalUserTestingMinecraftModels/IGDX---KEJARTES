@@ -17,7 +17,7 @@ extends Button
 
 ## The card art's native size. Every offset inside DaySummaryStudentRow is
 ## measured against it, so the whole card scales as one.
-@export var card_design_size: Vector2 = Vector2(992, 410):
+@export var card_design_size: Vector2 = Vector2(992, 486):
 	set(v):
 		card_design_size = v
 		_fit_card()

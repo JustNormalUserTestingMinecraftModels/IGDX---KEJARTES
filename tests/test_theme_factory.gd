@@ -537,3 +537,10 @@ func test_ghost_button_draws_no_resting_chrome() -> void:
 		"and on press")
 	assert_eq(_theme.get_type_variation_base("GhostButton"), &"Button",
 		"it varies Button")
+
+## 2026-09-19: the weekly report takes PR #53's cream ID card; its frame
+## and brown name band are these two variations.
+func test_id_card_variations_exist() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	for v in ["IdCardPanel", "RecapMastheadPanel"]:
+		assert_true(theme.get_type_list().has(v), "%s missing" % v)

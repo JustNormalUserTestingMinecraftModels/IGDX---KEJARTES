@@ -224,3 +224,102 @@ func test_every_line_fits_three_lines_of_the_bubble() -> void:
 		assert_true(h <= limit, "wraps past 3 lines: %s" % line)
 
 
+
+
+# ----- LobbyChatter -----
+
+func _make_seat(x: float, who: String) -> Dictionary:
+	var hit := Control.new()
+	hit.position = Vector2(x, 400)
+	hit.size = Vector2(300, 300)
+	var anchor := Control.new()
+	anchor.position = Vector2(x + 150, 500)
+	return {"student": {"name": who, "personality": "Tekun", "quirk": "Kutu Buku",
+		"kepribadian1": 50, "kepribadian2": 50}, "hit": hit, "anchor": anchor}
+
+
+func _make_chatter(seat_count: int = 2) -> LobbyChatter:
+	var root := Control.new()
+	root.size = Vector2(1080, 1920)
+	Engine.get_main_loop().root.add_child(root)
+	var c := LobbyChatter.new()
+	c.bubble = _make_bubble()
+	c.bubble.reparent(root)
+	root.add_child(c)
+	var seats: Array = []
+	for i in range(seat_count):
+		var s := _make_seat(100.0 + 520.0 * i, "S%d" % i)
+		root.add_child(s.hit)
+		root.add_child(s.anchor)
+		seats.append(s)
+	c.set_seats(seats)
+	return c
+
+
+func _free_chatter(c: LobbyChatter) -> void:
+	c.get_parent().queue_free()
+
+
+func test_tap_speaks_then_spam_is_refused() -> void:
+	var c := _make_chatter()
+	assert_true(c.request_line(0), "first tap speaks")
+	var shown := c.bubble.get_text()
+	for i in range(10):
+		assert_false(c.request_line(1), "spam while busy is refused")
+	assert_eq(c.bubble.get_text(), shown, "the line on screen is untouched")
+	_free_chatter(c)
+
+
+func test_cooldown_after_bubble_finishes() -> void:
+	var c := _make_chatter()
+	c._on_bubble_finished()
+	assert_false(c.request_line(0), "within tap_cooldown_s of the last line")
+	c._idle_since_ms = Time.get_ticks_msec() - int(c.tap_cooldown_s * 1000.0) - 1
+	assert_true(c.request_line(0))
+	_free_chatter(c)
+
+
+func test_gate_blocks_everything() -> void:
+	var c := _make_chatter()
+	c.can_speak = func() -> bool: return false
+	assert_false(c.request_line(0))
+	assert_false(c.speak_idle())
+	assert_false(c.bubble.is_busy())
+	_free_chatter(c)
+
+
+func test_idle_delay_is_twenty_to_fifty_seconds() -> void:
+	var c := LobbyChatter.new()
+	assert_eq(c.idle_min_s, 20.0)
+	assert_eq(c.idle_max_s, 50.0)
+	for i in range(50):
+		var d := c.next_idle_delay()
+		assert_true(d >= 20.0 and d <= 50.0, "delay %f" % d)
+	c.free()
+
+
+func test_idle_speaker_differs_from_previous() -> void:
+	var c := _make_chatter(2)
+	for i in range(8):
+		var before := c.get_last_speaker()
+		c.bubble._kill_tween()
+		c.bubble._set_state(StudentChatBubble.State.IDLE)
+		c._idle_since_ms = -100000
+		assert_true(c.speak_idle())
+		assert_ne(c.get_last_speaker(), before)
+	_free_chatter(c)
+
+
+func test_seat_at_finds_the_tapped_face() -> void:
+	var c := _make_chatter(2)
+	assert_eq(c.seat_at(Vector2(200, 500)), 0)
+	assert_eq(c.seat_at(Vector2(750, 500)), 1)
+	assert_eq(c.seat_at(Vector2(540, 50)), -1)
+	_free_chatter(c)
+
+
+func test_no_seats_no_chatter() -> void:
+	var c := _make_chatter(0)
+	assert_false(c.speak_idle())
+	assert_false(c.request_line(0))
+	_free_chatter(c)

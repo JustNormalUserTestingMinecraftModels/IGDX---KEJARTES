@@ -174,3 +174,28 @@ construction); every script gets a `##` header and `##` on every `@export`.
 - Grade-specific or week-specific lines.
 - A talk animation on the face rigs, and a speech SFX.
 - Generalising Herman's `ChatBubble` into a shared base class.
+
+## Addendum: the students blink
+
+Added 2026-09-19 at the user's request: the Lobby faces stare without ever
+blinking, which feels inhuman.
+
+- The closed-eye art is already in the repo. Each rig's `Eyelid` layer is
+  `Assets/Images/MuridPotrait/<Nama>/<nama>_eyelid.png`, the per-student
+  closed-eye picture, and `StudentFace.blink()` already works. Idle blinking was
+  held back (`idle_blink_enabled = false`, DEBT "Deferred: blinking on the
+  layered faces") because the blink was a hard cut.
+- `StudentFace` turns idle blinking **on** by default, with
+  `blink_hold_range = (5, 10)` s: each rig rolls its own 5–10 s wait before
+  every blink, from its own randomised RNG, so the four students never blink
+  together.
+- **Seamless blink**: the lid fades in over `blink_fade_seconds` (0.05 s),
+  stays shut for `blink_close_seconds` (0.08 s), then fades out over the same
+  fade. It is stepped inside `advance_motion()` (not a Tween), so tests can
+  still drive it synchronously. Gaze keeps running underneath, and breathing
+  (loby.gd) scales the whole rig as before.
+- The DEBT entry is deleted once this lands.
+- Files: `Scripts/Lobby/StudentFace.gd`, `tests/test_student_face.gd`
+  (whose "switched off" test flips to "on by default, 5–10 s"),
+  `docs/superpowers/DEBT.md`.
+- Kelas 7/8/9: no difference.

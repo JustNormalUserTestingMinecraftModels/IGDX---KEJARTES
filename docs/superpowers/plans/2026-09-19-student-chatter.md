@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Lobby students speak short trait/quirk/mood-based lines in a chat bubble that pops from their own seat, on tap or after 20–50 s idle, one at a time, spam-proof.
+**Goal:** Lobby students blink every 5–10 s and speak short trait/quirk/mood-based lines in a chat bubble that pops from their own seat, on tap or after 20–50 s idle, one at a time, spam-proof.
 
 **Architecture:** A static line catalog + a shuffle-bag picker pick the text; a `StudentChatBubble` PackedScene (Herman's pop motion, mirrored tail) shows it at a per-seat `ChatAnchor`; a `LobbyChatter` node in `loby.tscn` owns taps, the spam guard, the idle timer and the gate that `loby.gd` hands it.
 
@@ -32,6 +32,7 @@ Spec: `docs/superpowers/specs/2026-09-19-student-chatter-design.md`.
 | `Scenes/Lobby/loby.tscn`, `Scripts/Lobby/loby.gd` | anchors, bubble instance, `Chatter`, wiring |
 | `Scripts/Design/ThemeFactory.gd` | `StudentChatBubble`, `StudentChatText` |
 | `tests/test_student_chatter.gd` | suite `student_chatter` |
+| `Scripts/Lobby/StudentFace.gd`, `tests/test_student_face.gd` | idle blink on, faded lid (addendum) |
 
 ---
 
@@ -1193,6 +1194,134 @@ func _chatter_allowed() -> bool:
 
 - [ ] **Step 5:** `test_run(suite="student_chatter")`, `test_run(suite="lobby")`, `lobby_layout`, `lobby_skins`, `viewport_editability`, `script_documentation`, `tall_screen_layout` — Expected: PASS. (Use each suite's real `suite_name()`; grep it first.)
 - [ ] **Step 6: commit** `feat(lobby): students chat in the lobby`.
+
+### Task 5b: Students blink (addendum)
+
+**Files:** Modify `Scripts/Lobby/StudentFace.gd`, `tests/test_student_face.gd`, `docs/superpowers/DEBT.md`.
+
+**Consumes:** the existing `Eyelid` layer (`<nama>_eyelid.png`, the closed-eye art) and `blink()` / `advance_motion()`.
+**Produces:** `StudentFace.idle_blink_enabled` default `true`, `blink_hold_range` default `Vector2(5, 10)`, new `@export var blink_fade_seconds: float = 0.05`, and `get_eyelid_alpha() -> float`.
+
+- [ ] **Step 1: failing tests** — in `tests/test_student_face.gd`, replace `test_a_blink_closes_the_eye_and_lifts_again` and `test_idle_blinking_is_wired_in_but_switched_off` with the following (keep `test_switching_idle_blinking_on_makes_the_eye_blink` as is), and update the header comment "Blink is deliberately inert…" to say idle blinking is on, 5–10 s apart, with a faded lid:
+
+```gdscript
+func test_a_blink_fades_the_lid_in_holds_and_fades_out() -> void:
+	var eyelid := _layer("Eyelid")
+	assert_false(eyelid.visible, "eyes start open")
+	_face.blink()
+	assert_true(eyelid.visible, "blink() starts lowering the lid")
+	assert_true(_face.get_eyelid_alpha() < 0.01, "the lid fades in, it does not cut")
+	_face.advance_motion(_face.blink_fade_seconds * 0.5)
+	var half := _face.get_eyelid_alpha()
+	assert_true(half > 0.2 and half < 0.8, "half-way through the fade (got %f)" % half)
+	_face.advance_motion(_face.blink_fade_seconds * 0.5 + 0.001)
+	assert_true(_face.get_eyelid_alpha() > 0.99, "fully shut after the fade")
+	_face.advance_motion(_face.blink_close_seconds)
+	assert_true(eyelid.visible, "still shut or lifting after the hold")
+	_face.advance_motion(_face.blink_fade_seconds + 0.01)
+	assert_false(eyelid.visible, "the lid is gone once the fade-out ends")
+	assert_true(_face.get_eyelid_alpha() > 0.99, "alpha reset for the next blink")
+
+
+func test_idle_blinking_is_on_every_five_to_ten_seconds() -> void:
+	assert_true(_face.idle_blink_enabled, "students blink by default")
+	assert_eq(_face.blink_hold_range, Vector2(5.0, 10.0))
+	var eyelid := _layer("Eyelid")
+	var closes: Array = []
+	var was_closed := false
+	var t := 0.0
+	for _i in range(4000):  # 64 s
+		_face.advance_motion(0.016)
+		t += 0.016
+		if eyelid.visible and not was_closed:
+			closes.append(t)
+		was_closed = eyelid.visible
+	assert_true(closes.size() >= 5, "about one blink every 5-10 s (got %d)" % closes.size())
+	assert_true(closes[0] <= 10.1, "the first blink comes within 10 s")
+	for i in range(1, closes.size()):
+		var gap: float = closes[i] - closes[i - 1]
+		assert_true(gap >= 5.0 and gap <= 10.5, "gap %f outside 5-10 s" % gap)
+```
+
+Also in `tests/test_face_rig_roster.gd`, `test_only_the_eyelid_starts_hidden` stays valid (the lid still starts hidden). Grep the other face suites for `idle_blink_enabled` and flip any assertion that pins it off.
+
+- [ ] **Step 2:** `test_run(suite=<test_student_face's suite_name>)` — Expected: FAIL (`get_eyelid_alpha` missing, idle blink off).
+
+- [ ] **Step 3: implement** in `StudentFace.gd`:
+  - Header "Blink" bullet → `the Eyelid layer (the student's closed-eye art) fades in over blink_fade_seconds, holds blink_close_seconds and fades out; on by default, every blink_hold_range seconds.`
+  - Exports:
+
+```gdscript
+@export_group("Blink")
+## Idle blinking: each rig closes its eyes on its own every blink_hold_range
+## seconds (its own RNG, so the four seats never blink in step).
+@export var idle_blink_enabled: bool = true
+## How long the eyes stay fully shut per blink, in seconds.
+@export var blink_close_seconds: float = 0.08
+## How long the lid takes to fade in, and again to fade out, in seconds --
+## what makes the blink read as a blink rather than a hard cut.
+@export var blink_fade_seconds: float = 0.05
+## Shortest and longest pause between idle blinks, in seconds.
+@export var blink_hold_range: Vector2 = Vector2(5.0, 10.0)
+```
+
+  - Replace `_blink_remaining` with `var _blink_t: float = -1.0` (seconds into the current blink; < 0 means none).
+  - Replace `set_eyes_closed`, `blink`, `_advance_blink`, and add `get_eyelid_alpha`:
+
+```gdscript
+## Shows or hides the blink pose at full strength. That is the Eyelid layer
+## alone -- it carries both the lid and its own lash line, and it is drawn
+## above the open eye, so nothing else has to be toggled with it.
+func set_eyes_closed(closed: bool) -> void:
+	_blink_t = -1.0
+	_set_eyelid(closed, 1.0)
+
+
+## The lid's current opacity, 0..1.
+func get_eyelid_alpha() -> float:
+	var eyelid := _layer("Eyelid")
+	return eyelid.modulate.a if eyelid != null else 0.0
+
+
+## Plays one blink: fade in, hold, fade out, stepped by advance_motion().
+func blink() -> void:
+	_blink_t = 0.0
+	_set_eyelid(true, 0.0)
+
+
+func _set_eyelid(shown: bool, alpha: float) -> void:
+	var eyelid := _layer("Eyelid")
+	if eyelid == null:
+		return
+	eyelid.visible = shown
+	eyelid.modulate.a = alpha
+
+
+func _advance_blink(delta: float) -> void:
+	if _blink_t >= 0.0:
+		_blink_t += delta
+		var fade := maxf(blink_fade_seconds, 0.0001)
+		var shut_end := fade + maxf(blink_close_seconds, 0.0)
+		if _blink_t < fade:
+			_set_eyelid(true, _blink_t / fade)
+		elif _blink_t < shut_end:
+			_set_eyelid(true, 1.0)
+		elif _blink_t < shut_end + fade:
+			_set_eyelid(true, 1.0 - (_blink_t - shut_end) / fade)
+		else:
+			set_eyes_closed(false)
+		return
+	if not idle_blink_enabled:
+		return
+	_blink_hold -= delta
+	if _blink_hold <= 0.0:
+		_blink_hold = _rng.randf_range(blink_hold_range.x, blink_hold_range.y)
+		blink()
+```
+
+  - Check the six `*Face.tscn` for saved `idle_blink_enabled`/`blink_hold_range` overrides (`grep`); there are none today — if one appears, remove it in the editor.
+- [ ] **Step 4:** no-op `script_patch` on `StudentFace.gd`; run the face suites (`test_student_face`, `test_face_rig_roster`, and any other `grep -l StudentFace tests/`), plus `script_documentation` — Expected: PASS.
+- [ ] **Step 5:** delete the DEBT entry "Deferred: blinking on the layered faces" (its whole paragraph). Commit `feat(lobby): students blink every 5-10 s with a faded lid`.
 
 ### Task 6: Look at it, tune anchors, changelog, full run
 

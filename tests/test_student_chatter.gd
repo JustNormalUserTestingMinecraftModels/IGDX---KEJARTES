@@ -141,3 +141,86 @@ func test_pick_uses_state_pool_sometimes_and_trait_pool_otherwise() -> void:
 	var pool := StudentChatterCatalog.trait_pool(fine)
 	for i in range(20):
 		assert_true(picker.pick(fine) in pool)
+
+
+# ----- Bubble -----
+
+const _BUBBLE_SCENE := "res://Scenes/Lobby/StudentChatBubble.tscn"
+
+
+func _make_bubble() -> StudentChatBubble:
+	var b := (load(_BUBBLE_SCENE) as PackedScene).instantiate() as StudentChatBubble
+	b.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(b)
+	return b
+
+
+func test_flip_rule_is_left_half_of_screen() -> void:
+	assert_true(StudentChatBubble.flip_for(200.0, 1080.0))
+	assert_false(StudentChatBubble.flip_for(800.0, 1080.0))
+
+
+func test_tip_mirrors_with_flip() -> void:
+	var b := _make_bubble()
+	assert_eq(b.tip_local(false), Vector2(532, 274))
+	assert_eq(b.tip_local(true), Vector2(28, 274))
+	b.queue_free()
+
+
+func test_placement_puts_tip_on_anchor_when_room() -> void:
+	var p := StudentChatBubble.placement(Vector2(700, 400), Vector2(532, 274), Vector2(560, 274), Rect2(0, 0, 1080, 1920), 24.0)
+	assert_eq(p, Vector2(168, 126))
+
+
+func test_placement_clamps_inside_bounds() -> void:
+	var bounds := Rect2(0, 0, 1080, 1920)
+	var top := StudentChatBubble.placement(Vector2(700, 100), Vector2(532, 274), Vector2(560, 274), bounds, 24.0)
+	assert_eq(top.y, 24.0, "clamped below the top margin")
+	var left := StudentChatBubble.placement(Vector2(300, 400), Vector2(532, 274), Vector2(560, 274), bounds, 24.0)
+	assert_eq(left.x, 24.0, "clamped right of the left margin")
+
+
+func test_show_line_flips_tail_and_sets_pivot_and_text() -> void:
+	var b := _make_bubble()
+	b.show_line("Halo, Pak!", Vector2(300, 600), true)
+	var tail := b.get_node("Tail") as TextureRect
+	assert_true(tail.flip_h)
+	assert_eq(tail.position.x, 28.0)
+	assert_eq(b.pivot_offset, b.tip_local(true))
+	assert_eq(b.get_text(), "Halo, Pak!")
+	assert_eq(b.get_state(), StudentChatBubble.State.SHOWING)
+	assert_true(b.is_busy())
+	b.show_line("Halo, Pak!", Vector2(800, 600), false)
+	assert_false(tail.flip_h)
+	assert_eq(tail.position.x, 488.0)
+	b.queue_free()
+
+
+func test_dismiss_starts_hiding() -> void:
+	var b := _make_bubble()
+	b.show_line("Halo, Pak!", Vector2(300, 600), true)
+	b.dismiss()
+	assert_eq(b.get_state(), StudentChatBubble.State.HIDING)
+	assert_true(b.is_busy())
+	b.queue_free()
+
+
+func test_fresh_bubble_is_idle_and_hidden() -> void:
+	var b := _make_bubble()
+	assert_eq(b.get_state(), StudentChatBubble.State.IDLE)
+	assert_false(b.is_busy())
+	assert_eq(b.modulate.a, 0.0)
+	b.queue_free()
+
+
+func test_every_line_fits_three_lines_of_the_bubble() -> void:
+	var tokens := load(_TOKENS_PATH) as DesignTokens
+	var font: Font = tokens.font_body_bold
+	var size := tokens.font_title
+	var width := float(StudentChatBubble.BODY_SIZE.x - 2 * tokens.space_md)
+	var limit := font.get_height(size) * 3.0 + 1.0
+	for line in _all_lines():
+		var h := font.get_multiline_string_size(str(line), HORIZONTAL_ALIGNMENT_LEFT, width, size).y
+		assert_true(h <= limit, "wraps past 3 lines: %s" % line)
+
+

@@ -8,6 +8,33 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-19 — Lobby student chatter and blinking
+
+Spec `docs/superpowers/specs/2026-09-19-student-chatter-design.md`, plan
+`docs/superpowers/plans/2026-09-19-student-chatter.md`.
+
+- Tap a seated student and they say a line in a chat bubble that pops out of
+  their own seat; after 20–50 s without a tap, a random student (never the
+  previous idle speaker) talks on their own. One bubble, one speaker: taps
+  are ignored while it shows and for 0.5 s after, so spam leaves the line
+  untouched. Muted during the tutorial, the daily reward and the skin picker.
+- Lines (`StudentChatterCatalog`): 8 per personality and 8 per quirk, so 16
+  per student, plus 6 each for `LELAH` (energy ≤ 30), `BETE` (mood ≤ 30) and
+  `SENANG` (mood ≥ 75), drawn 40% of the time while a state applies.
+  `StudentChatterPicker` shuffle-bags each pool per student: nothing repeats
+  until the pool is spent.
+- `StudentChatBubble.tscn` (`StudentChatBubble` / `StudentChatText`
+  variations) lands its tail tip on the seat's `ChatAnchor`, mirrors the tail
+  for left-hand seats, clamps inside the visible screen and pops in/out from
+  that tip. It is a root child right after `Safe`: under `Classroom` the
+  KELAS title drew over it.
+- Tunables: `LobbyChatter.idle_min_s`/`idle_max_s`/`tap_cooldown_s`,
+  `StudentChatBubble.linger_s`, `StudentChatterCatalog.STATE_CHANCE` and the
+  mood/energy thresholds; the four `ChatAnchor` positions in `loby.tscn`.
+- The face rigs blink: idle blinking is on, each rig rolls its own 5–10 s
+  wait, and the `Eyelid` layer fades in 0.05 s, holds 0.08 s and fades out.
+  The DEBT entry that held blinking back is gone.
+
 ## 2026-09-18 — Skin system
 
 Spec `docs/superpowers/specs/2026-09-18-skin-system-design.md`, plan

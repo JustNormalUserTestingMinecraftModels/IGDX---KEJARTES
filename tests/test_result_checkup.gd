@@ -584,10 +584,15 @@ func test_theme_carries_the_recap_variations() -> void:
 const _PILL_SCENE := "res://Scenes/SchoolSimulation/WeekRecapPill.tscn"
 
 
-func test_pill_scene_has_its_three_authored_nodes() -> void:
+func test_pill_scene_stacks_its_icon_above_its_value() -> void:
 	var pill: Control = load(_PILL_SCENE).instantiate()
-	assert_not_null(pill.get_node_or_null("Icon"), "Icon is authored")
-	assert_not_null(pill.get_node_or_null("Value"), "Value is authored")
+	var column := pill.get_node_or_null("Column") as VBoxContainer
+	assert_not_null(column, "Icon and Value share one column (mockup tile)")
+	assert_not_null(pill.get_node_or_null("Column/Icon"), "Icon is authored")
+	assert_not_null(pill.get_node_or_null("Column/Value"), "Value is authored")
+	if column != null and column.get_node_or_null("Icon") and column.get_node_or_null("Value"):
+		assert_true(column.get_node("Icon").get_index() < column.get_node("Value").get_index(),
+			"the icon sits above its number, not under it")
 	assert_not_null(pill.get_node_or_null("Ring"), "Ring emitter is authored")
 	pill.free()
 
@@ -607,9 +612,9 @@ func test_pill_set_pill_writes_text_and_tint() -> void:
 	var pill: Control = load(_PILL_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(pill)
 	pill.set_pill(null, "4.200", Color.RED)
-	assert_eq((pill.get_node("Value") as Label).text, "4.200",
+	assert_eq((pill.get_node("Column/Value") as Label).text, "4.200",
 		"the value label carries the formatted number")
-	assert_eq((pill.get_node("Value") as Label).self_modulate, Color.RED,
+	assert_eq((pill.get_node("Column/Value") as Label).self_modulate, Color.RED,
 		"and the caller's tint")
 	pill.queue_free()
 
@@ -682,7 +687,7 @@ func test_the_banner_shows_the_weeks_paid_earnings() -> void:
 
 
 func _pill_text(banner: Control, pill_name: String) -> String:
-	return (banner.get_node("Pills/" + pill_name).get_node("Value")
+	return (banner.get_node("Pills/" + pill_name).get_node("Column/Value")
 		as Label).text
 
 

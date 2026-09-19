@@ -6,7 +6,9 @@ class_name WeekRecapPill
 ## and a ring pulse that fires as the number lands (2026-09-03 spec
 ## section 4).
 ##
-## A template, instanced four times by WeekRecapBanner. It knows nothing
+## Icon above number, the 2026-09-19 mockup tile.
+##
+## A template, instanced three times by WeekRecapBanner. It knows nothing
 ## about which total it is showing -- the banner supplies the icon, the
 ## formatted text and the tint -- so adding a fifth pill later needs no
 ## change here.
@@ -20,10 +22,10 @@ signal pill_tapped
 
 ## The pill's icon. Left null the pill still lays out; the icon slot
 ## simply renders empty.
-@onready var icon: TextureRect = $Icon
+@onready var icon: TextureRect = $Column/Icon
 ## The formatted number. Tinted via self_modulate by set_pill, never by a
 ## font colour override.
-@onready var value_label: Label = $Value
+@onready var value_label: Label = $Column/Value
 ## The one-shot pulse fired when this pill's count-up lands.
 @onready var ring: RewardParticles = $Ring
 

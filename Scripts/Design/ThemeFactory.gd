@@ -28,6 +28,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_event_warning(theme, tokens)
 	_build_event_dialogue(theme, tokens)
 	_build_shop_chat_bubble(theme, tokens)
+	_build_student_chat(theme, tokens)
 	_build_achievements(theme, tokens)
 	_build_achievement_tile(theme, tokens)
 	_build_achievement_status_pill(theme, tokens)
@@ -45,6 +46,13 @@ const DAY_BANNER_OUTLINE := 12
 ## Measured off newshop_mockup.png: the Koperasi chat bubble's ~24 px corner
 ## at the mockup's 5/6 scale. No token matches; a single-screen value.
 const SHOP_CHAT_BUBBLE_RADIUS := 28
+
+## The Lobby students' chat bubble (2026-09-19 student-chatter spec): a
+## smaller corner than Herman's for a bubble about half his width, and a
+## vertical pad between the space_sm and space_md tokens so three lines of
+## text fit its 200 px body.
+const STUDENT_CHAT_BUBBLE_RADIUS := 24
+const STUDENT_CHAT_BUBBLE_PAD_Y := 20
 
 ## Measured off skinselect_mockup.png: the student frames' corner radius and
 ## brown outline width. No token matches; the colours still come from tokens.
@@ -70,6 +78,30 @@ static func _build_shop_chat_bubble(theme: Theme, tokens: DesignTokens) -> void:
 	bubble.content_margin_bottom = tokens.space_lg
 	theme.set_stylebox("panel", "ShopChatBubble", bubble)
 
+
+
+## The Lobby students' chat bubble (2026-09-19 student-chatter spec): the
+## same card-white box as Herman's with tighter margins for its 560 px
+## width, and bold body text at font_title. Body font, so not on
+## DISPLAY_ROSTER.
+static func _build_student_chat(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("StudentChatBubble")
+	theme.set_type_variation("StudentChatBubble", "PanelContainer")
+	var bubble := StyleBoxFlat.new()
+	bubble.bg_color = tokens.surface_card
+	bubble.set_corner_radius_all(STUDENT_CHAT_BUBBLE_RADIUS)
+	bubble.content_margin_left = tokens.space_md
+	bubble.content_margin_right = tokens.space_md
+	bubble.content_margin_top = STUDENT_CHAT_BUBBLE_PAD_Y
+	bubble.content_margin_bottom = STUDENT_CHAT_BUBBLE_PAD_Y
+	theme.set_stylebox("panel", "StudentChatBubble", bubble)
+
+	theme.add_type("StudentChatText")
+	theme.set_type_variation("StudentChatText", "Label")
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+	theme.set_font("font", "StudentChatText", bold)
+	theme.set_font_size("font_size", "StudentChatText", tokens.font_title)
+	theme.set_color("font_color", "StudentChatText", tokens.text_primary)
 
 ## The event dialogue (2026-09-14 event-dialogue spec): a white rounded card
 ## with dark bold text, and the header's day banner and calendar labels, all

@@ -8,6 +8,36 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-19 — Weekly Results mockup pass
+
+Spec `docs/superpowers/specs/2026-09-19-weekly-results-mockup-design.md`, plan
+`docs/superpowers/plans/2026-09-19-weekly-results-mockup.md`.
+
+- ResultCheckup opens under the red WEEKLY RESULTS ribbon
+  (`title_weekly_results.png`, orphaned since the 2026-09-16 revert, now
+  `TitleRibbon`); the EVALUASI MINGGUAN SISWA title and subtitle, and their
+  exports, are gone.
+- `WeekRecapBanner` is a butter-yellow panel (`recap_banner_fill`) of three
+  near-white tiles (`recap_tile_fill`), left to right money, minigames, events;
+  each `WeekRecapPill` now stacks its icon over its number in a `Column`. The
+  Poin tile and the MINGGU/grade line are removed (`WeekRecap.compute` still
+  returns `net_skill_delta`). Minigames wear `ResultCheckup/icon_minigame.png`
+  (the soccer ball), events `icon_event.png` (the checklist notebook); money
+  keeps `icon_uang.svg`. All three numbers are `text_primary` with a white rim.
+- Logs wears the new `ResultLogsButton` (`result_logs_fill` `E0574B`, the
+  ribbon's red lightened); Selanjutnya keeps the brown `ResultButton`.
+- Every `DaySummaryStudentRow` takes PR #53's (`feat/weekly-results-polish`)
+  cream `IdCardPanel` card with the brown striped `RecapMastheadPanel` name
+  band, so the weekly and daily cards match and SchoolDay and the event picker
+  follow; the card is 992×486 (was 410) and `StudentCardButton`'s design size
+  follows. PR #53's masthead, stars row and popup changes were not taken, so
+  that PR is superseded.
+- Every result star is `Assets/Images/UI/star.png` (the artist's star padded
+  to 360×360): StatCheck's meter (`nine_patch_stretch` into its 180 px
+  cells), the event student card, and `ResultStar`'s filled and empty
+  defaults. `popup_star_color` defaults to white so the art keeps its gold.
+  `icon_star.svg`, `icon_bintang.svg` and `icon_bintang_kosong.svg` are
+  deleted.
 ## 2026-09-19 — Lobby student chatter and blinking
 
 Spec `docs/superpowers/specs/2026-09-19-student-chatter-design.md`, plan

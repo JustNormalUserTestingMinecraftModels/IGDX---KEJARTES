@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://df8hmrsqlb12n" path="res://Scenes/SchoolSimulation/WeekRecapBanner.tscn" id="4_5y4mq"]
 [ext_resource type="PackedScene" uid="uid://cqfjyfn2r4ljw" path="res://Scenes/SchoolSimulation/WeekLogsPopup.tscn" id="4_qpkja"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/PaperConfetti.tscn" id="6_qpkja"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/title_weekly_results.png" id="7_ribbon"]
 
 [sub_resource type="Gradient" id="Gradient_qpkja"]
 colors = PackedColorArray(0.93333334, 0.9529412, 1, 0.8, 0.93333334, 0.9529412, 1, 0)
@@ -55,26 +56,16 @@ theme_override_constants/margin_bottom = 36
 layout_mode = 2
 theme_override_constants/separation = 12
 
+[node name="TitleRibbon" type="TextureRect" parent="Margin/VBox" unique_id=1733019024]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_ribbon")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Banner" parent="Margin/VBox" unique_id=2085513516 instance=ExtResource("4_5y4mq")]
 layout_mode = 2
-
-[node name="HeaderPanel" type="VBoxContainer" parent="Margin/VBox" unique_id=1251977570]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="TitleLabel" type="Label" parent="Margin/VBox/HeaderPanel" unique_id=241908414]
-layout_mode = 2
-theme_type_variation = &"H1Label"
-text = "Evaluasi Mingguan Siswa"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="SubtitleLabel" type="Label" parent="Margin/VBox/HeaderPanel" unique_id=469791151]
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Rapor perkembangan stats dan catatan minigame"
-horizontal_alignment = 1
-autowrap_mode = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Margin/VBox" unique_id=1062953009]
 layout_mode = 2
@@ -103,7 +94,7 @@ alignment = 1
 custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"ResultButton"
+theme_type_variation = &"ResultLogsButton"
 text = "Logs"
 
 [node name="NextButton" type="Button" parent="Margin/VBox/Buttons" unique_id=559825078]

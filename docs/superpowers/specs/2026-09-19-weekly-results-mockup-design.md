@@ -132,6 +132,30 @@ lighter.
 Rebake after the token edits. `DISPLAY_ROSTER` in `test_theme_factory.gd`
 gains `ResultLogsButton`.
 
+## Student cards: PR #53's cream ID card
+
+Added after the first summary. The user asked for the weekly cards to match
+the daily ones, then chose PR #53's (`feat/weekly-results-polish`, open and
+unmerged since 2026-09-16) cream ID card over the current green
+`card_bg.png`.
+
+Both screens already share `DaySummaryStudentRow.tscn`, so the new look
+lands on the weekly report, the daily popup, SchoolDay's embedded cards and
+every `StudentCardButton` wrapper at once. What comes across from PR #53:
+
+- The card: a `CardBg` Panel wearing `IdCardPanel` (cream, a brand-brown top
+  rule), a 76 px brown `HeaderBand` (`RecapMastheadPanel`) with faint
+  `header_stripes.svg`, and the name in the band as `TraitPopupNameLabel`.
+  The card grows from 992×410 to 992×486, and everything below the band
+  shifts down 76 px.
+- `StudentCardButton.card_design_size` changes from 410 to 486.
+- The theme variations `IdCardPanel` and `RecapMastheadPanel`. PR #53's
+  `RecapChipPanel`, masthead, stars row and popup changes are not taken.
+  This pass's ribbon and tiles replace them.
+
+Textures has not touched these files since PR #53's merge-base, so they come
+across unchanged. PR #53 is then superseded; closing it is the user's call.
+
 ## Stars
 
 The new art lives at `Assets/Images/UI/star.png` (345×357). It is already

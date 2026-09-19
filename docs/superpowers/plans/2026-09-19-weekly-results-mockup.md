@@ -505,7 +505,80 @@ stretch_mode = 5
 
 ---
 
-### Task 6: Every result star uses `star.png`
+### Task 6: The student card becomes PR #53's cream ID card
+
+The user chose PR #53's (`origin/feat/weekly-results-polish`) cream ID-card
+look over the green `card_bg.png`. `DaySummaryStudentRow` is shared, so this
+changes the weekly report, the daily popup, SchoolDay's embedded cards and
+the `StudentCardButton` wrappers together. Textures has not touched any of
+these files since that branch's merge-base (`cdf7b27`), so its versions come
+across whole.
+
+**Files:**
+- Take from `origin/feat/weekly-results-polish` unchanged:
+  `Scenes/SchoolSimulation/DaySummaryStudentRow.tscn`,
+  `Assets/Images/UI/header_stripes.svg` (+ `.import`),
+  `Scripts/UI/StudentCardButton.gd` (`card_design_size` 410→486),
+  `tests/test_day_summary.gd`, `tests/test_student_card_button.gd`.
+- Modify: `Scripts/Design/ThemeFactory.gd`, porting only `IdCardPanel` and
+  `RecapMastheadPanel` from its `_build_weekly_results_polish`.
+  `RecapChipPanel` stays behind; nothing here uses it.
+- Test: `tests/test_theme_factory.gd`
+
+**Interfaces:**
+- Produces: theme variations `IdCardPanel` and `RecapMastheadPanel`. The card
+  box is 992×486 with nodes `CardBg`, `HeaderBand/HeaderStripes`,
+  `NameLabel`. The `DaySummaryStudentRow.gd` API is unchanged.
+
+- [ ] **Step 1: Tests first.** Quit `<WT>`, then:
+
+```powershell
+git checkout origin/feat/weekly-results-polish -- tests/test_day_summary.gd tests/test_student_card_button.gd
+```
+
+Append to `tests/test_theme_factory.gd`:
+
+```gdscript
+## 2026-09-19: the weekly report takes PR #53's cream ID card; its frame
+## and brown name band are these two variations.
+func test_id_card_variations_exist() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	for v in ["IdCardPanel", "RecapMastheadPanel"]:
+		assert_true(theme.get_type_list().has(v), "%s missing" % v)
+```
+
+- [ ] **Step 2: Red.** Relaunch, then `test_run` suites `day_summary`,
+  `student_card_button`, `theme_factory`. Expect failures on `CardBg`, 486,
+  and the missing variations.
+
+- [ ] **Step 3: Theme.** In `ThemeFactory.gd`, add
+  `_build_id_card(theme, tokens)` to `build()` after `_build_week_recap`,
+  holding PR #53's `RecapMastheadPanel` and `IdCardPanel` blocks verbatim
+  (`git show 58364b0 -- Scripts/Design/ThemeFactory.gd`), with the `##`
+  header: "The cream ID-card frame and its brown name band, shared by every
+  DaySummaryStudentRow (from PR #53, 2026-09-16; adopted 2026-09-19)."
+
+- [ ] **Step 4: Scene and wrapper (editor closed).** Quit `<WT>`, then:
+
+```powershell
+git checkout origin/feat/weekly-results-polish -- Scenes/SchoolSimulation/DaySummaryStudentRow.tscn Scripts/UI/StudentCardButton.gd Assets/Images/UI/header_stripes.svg Assets/Images/UI/header_stripes.svg.import
+```
+
+- [ ] **Step 5: Restart, rebake, green.** Relaunch, then
+  `test_run(suite="theme_rebake")`, then `day_summary`,
+  `student_card_button`, `theme_factory`, `result_checkup`,
+  `tall_screen_layout`, `viewport_editability`, `event_polish`.
+
+- [ ] **Step 6: Orphan.** `card_bg.png` / `card_bg_uncropped.png`: if
+  `git grep -n "DaySummary/card_bg" -- . ":!docs"` is empty, note them in
+  `DEBT.md` as retired-but-kept (drop-in if the green card ever returns).
+  Do not delete them.
+
+- [ ] **Step 7: Commit**: `feat(day-summary): adopt PR #53's cream ID card for every student card`.
+
+---
+
+### Task 7: Every result star uses `star.png`
 
 **Files:**
 - Modify: `Scenes/EndGame/StatCheck.tscn`,
@@ -587,7 +660,7 @@ func test_event_student_card_wears_the_new_star() -> void:
 
 ---
 
-### Task 7: Docs, the visual check, and the full suite
+### Task 8: Docs, the visual check, and the full suite
 
 **Files:**
 - Modify: `docs/superpowers/CHANGELOG.md` (a new entry at the top),

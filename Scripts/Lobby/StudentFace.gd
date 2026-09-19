@@ -27,8 +27,9 @@ extends Control
 ##    holds, and jumps again. The pupil is clipped to the Sclera's alpha by
 ##    Scripts/Shaders/eye_mask.gdshader, so a gaze offset can never paint the
 ##    iris onto the cheek however far it travels.
-##  * Blink -- the Eyelid layer appears for a few frames, hiding the eye
-##    beneath it. Wired but idle-off by default: see idle_blink_enabled.
+##  * Blink -- the Eyelid layer (the student's closed-eye art) fades in over
+##    blink_fade_seconds, holds blink_close_seconds and fades out again, on
+##    its own every blink_hold_range seconds (5-10 s by default).
 ##
 ## Breathing is NOT here. It stays the lobby's job (loby.gd's
 ## _animate_breathing), which scales this node as a whole exactly as it scaled
@@ -72,13 +73,16 @@ const LAYER_NAMES := ["Base", "Sclera", "Pupil", "Eyelashes", "Eyelid", "Eyebrow
 @export_range(0.0, 1.0) var gaze_recentre_chance: float = 0.35
 
 @export_group("Blink")
-## Idle blinking is off by default: the Eyelid layer is wired into the rig and
-## blink() works, but nothing triggers it on its own until this is switched on.
-@export var idle_blink_enabled: bool = false
-## How long the eyes stay shut per blink, in seconds.
+## Idle blinking: each rig closes its eyes on its own every blink_hold_range
+## seconds, from its own RNG, so the four seats never blink in step.
+@export var idle_blink_enabled: bool = true
+## How long the eyes stay fully shut per blink, in seconds.
 @export var blink_close_seconds: float = 0.08
+## How long the lid takes to fade in, and again to fade out, in seconds --
+## what makes the blink read as a blink rather than a hard cut.
+@export var blink_fade_seconds: float = 0.05
 ## Shortest and longest pause between idle blinks, in seconds.
-@export var blink_hold_range: Vector2 = Vector2(2.6, 6.4)
+@export var blink_hold_range: Vector2 = Vector2(5.0, 10.0)
 
 @export_group("Determinism")
 ## Seed for this rig's own motion RNG. 0 randomises, so four slots on screen
@@ -104,7 +108,8 @@ var _gaze_to: Vector2 = Vector2.ZERO
 var _gaze_elapsed: float = 0.0
 var _gaze_hold: float = 0.0
 
-var _blink_remaining: float = 0.0
+## Seconds into the current blink; below zero when the eyes are open.
+var _blink_t: float = -1.0
 var _blink_hold: float = 0.0
 
 
@@ -219,9 +224,22 @@ func get_gaze() -> Vector2:
 ## both the lid and its own lash line, and it is drawn above the open eye, so
 ## nothing else has to be toggled with it.
 func set_eyes_closed(closed: bool) -> void:
+	_blink_t = -1.0
+	_set_eyelid(closed, 1.0)
+
+
+## The lid's current opacity, 0..1.
+func get_eyelid_alpha() -> float:
 	var eyelid := _layer("Eyelid")
-	if eyelid != null:
-		eyelid.visible = closed
+	return eyelid.modulate.a if eyelid != null else 0.0
+
+
+func _set_eyelid(shown: bool, alpha: float) -> void:
+	var eyelid := _layer("Eyelid")
+	if eyelid == null:
+		return
+	eyelid.visible = shown
+	eyelid.modulate.a = alpha
 
 
 ## True while the blink pose is showing.
@@ -230,11 +248,11 @@ func are_eyes_closed() -> bool:
 	return eyelid != null and eyelid.visible
 
 
-## Plays one blink. Nothing calls this on its own unless idle_blink_enabled is
-## on -- it is the hook the lobby (or a future reaction) drives.
+## Plays one blink: fade in, hold, fade out, stepped by advance_motion().
+## Idle blinking calls it; so can the lobby or a future reaction.
 func blink() -> void:
-	set_eyes_closed(true)
-	_blink_remaining = maxf(blink_close_seconds, 0.0)
+	_blink_t = 0.0
+	_set_eyelid(true, 0.0)
 
 
 ## Advances gaze and blink by `delta` seconds. _process() calls this every
@@ -277,10 +295,17 @@ func _pick_gaze_target() -> Vector2:
 
 
 func _advance_blink(delta: float) -> void:
-	if _blink_remaining > 0.0:
-		_blink_remaining -= delta
-		if _blink_remaining <= 0.0:
-			_blink_remaining = 0.0
+	if _blink_t >= 0.0:
+		_blink_t += delta
+		var fade := maxf(blink_fade_seconds, 0.0001)
+		var shut_end := fade + maxf(blink_close_seconds, 0.0)
+		if _blink_t < fade:
+			_set_eyelid(true, _blink_t / fade)
+		elif _blink_t < shut_end:
+			_set_eyelid(true, 1.0)
+		elif _blink_t < shut_end + fade:
+			_set_eyelid(true, 1.0 - (_blink_t - shut_end) / fade)
+		else:
 			set_eyes_closed(false)
 		return
 	if not idle_blink_enabled:

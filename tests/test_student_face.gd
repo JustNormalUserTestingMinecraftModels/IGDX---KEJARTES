@@ -24,9 +24,9 @@ extends McpTestSuiteCompat
 ##    placement where the sclera best fills the holes; the see-through test
 ##    below counts what is left open.
 ##
-## Blink is deliberately inert. The Eyelid layer is in the rig and blink()
-## works, but idle_blink_enabled defaults false, so nothing closes the eyes on
-## its own yet; two tests below pin both halves of that.
+## Blink is on (2026-09-19 student-chatter spec, addendum): each rig closes
+## its eyes on its own every 5-10 s, and the Eyelid layer -- the student's
+## closed-eye art -- fades in, holds and fades out rather than cutting.
 ##
 ## Technique notes, per this project's runner:
 ##  * This suite must be @tool or the runner reports the class abstract.
@@ -307,26 +307,42 @@ func test_the_gaze_can_be_frozen() -> void:
 		"with idle_gaze_enabled off the pupil must stay at rest")
 
 
-func test_a_blink_closes_the_eye_and_lifts_again() -> void:
+func test_a_blink_fades_the_lid_in_holds_and_fades_out() -> void:
 	var eyelid := _layer("Eyelid")
 	assert_false(eyelid.visible, "eyes start open")
 	_face.blink()
-	assert_true(eyelid.visible, "blink() lowers the lid")
-	_face.advance_motion(_face.blink_close_seconds + 0.01)
-	assert_false(eyelid.visible, "the lid lifts once blink_close_seconds elapses")
+	assert_true(eyelid.visible, "blink() starts lowering the lid")
+	assert_true(_face.get_eyelid_alpha() < 0.01, "the lid fades in, it does not cut")
+	_face.advance_motion(_face.blink_fade_seconds * 0.5)
+	var half := _face.get_eyelid_alpha()
+	assert_true(half > 0.2 and half < 0.8, "half-way through the fade (got %f)" % half)
+	_face.advance_motion(_face.blink_fade_seconds * 0.5 + 0.001)
+	assert_true(_face.get_eyelid_alpha() > 0.99, "fully shut after the fade")
+	_face.advance_motion(_face.blink_close_seconds)
+	assert_true(eyelid.visible, "still shut or lifting after the hold")
+	_face.advance_motion(_face.blink_fade_seconds + 0.01)
+	assert_false(eyelid.visible, "the lid is gone once the fade-out ends")
+	assert_true(_face.get_eyelid_alpha() > 0.99, "alpha reset for the next blink")
 
 
-func test_idle_blinking_is_wired_in_but_switched_off() -> void:
-	# The eyelid layer is present and blink() works; nothing drives it yet.
-	assert_false(_face.idle_blink_enabled,
-		"idle blinking stays off until the blink pass is actually done")
+func test_idle_blinking_is_on_every_five_to_ten_seconds() -> void:
+	assert_true(_face.idle_blink_enabled, "students blink by default")
+	assert_eq(_face.blink_hold_range, Vector2(5.0, 10.0))
 	var eyelid := _layer("Eyelid")
-	for _i in range(2000):
-		_face.advance_motion(0.05)
-		if eyelid.visible:
-			break
-	assert_false(eyelid.visible,
-		"nothing may close the eyes across 100s while idle blinking is off")
+	var closes: Array = []
+	var was_closed := false
+	var t := 0.0
+	for _i in range(4000):  # 64 s
+		_face.advance_motion(0.016)
+		t += 0.016
+		if eyelid.visible and not was_closed:
+			closes.append(t)
+		was_closed = eyelid.visible
+	assert_true(closes.size() >= 5, "about one blink every 5-10 s (got %d)" % closes.size())
+	assert_true(closes[0] <= 10.1, "the first blink comes within 10 s")
+	for i in range(1, closes.size()):
+		var gap: float = closes[i] - closes[i - 1]
+		assert_true(gap >= 5.0 and gap <= 10.5, "gap %f outside 5-10 s" % gap)
 
 
 func test_switching_idle_blinking_on_makes_the_eye_blink() -> void:

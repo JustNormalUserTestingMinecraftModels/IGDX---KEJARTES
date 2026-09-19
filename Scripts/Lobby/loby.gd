@@ -136,6 +136,12 @@ var reward_popup_open := false
 
 @onready var bg_layer = %BGLayer
 
+## Seated students' chatter (2026-09-19 student-chatter spec); null in an
+## older scene without the Chatter node.
+@onready var chatter: LobbyChatter = get_node_or_null("Chatter") as LobbyChatter
+## True while a SkinSelectPopup is open; mutes the chatter.
+var _skin_popup_open := false
+
 func _ready():
 	if bg_texture:
 		bg_layer.texture = bg_texture
@@ -152,6 +158,14 @@ func _ready():
 	if GameState.has_method("initialize_grade_targets"):
 		GameState.initialize_grade_targets()
 
+	if chatter:
+		chatter.can_speak = _chatter_allowed
+		# The HUD sits over the front-row faces; its taps are not the
+		# students'.
+		chatter.tap_blockers = [student_button, jadwal_button, koperasi_button,
+			report_student_button, inventory_button, settings_button,
+			achievement_button, skin_switch_button, daily_login_btn,
+			get_node("%DisplayUang")]
 	_setup_students()
 	_start_idle_bob(portraits_back, 0.0)
 	_start_idle_bob(portraits_front, idle_bob_period * 0.25)
@@ -305,9 +319,12 @@ func _setup_students():
 	if students.size() == 0:
 		for s in portrait_slots: s.hide()
 		for h in hand_slots: h.hide()
+		if chatter:
+			chatter.set_seats([])
 		return
 
 	var ordered = _compute_seat_order(students)
+	var seats: Array = []
 	for i in range(portrait_slots.size()):
 		var p_slot = portrait_slots[i]
 		var h_slot = hand_slots[i]
@@ -340,9 +357,15 @@ func _setup_students():
 			else:
 				portrait_node.show()
 				_animate_breathing(portrait_node, breathing_delay)
+			var hit: Control = face if face != null else portrait_node
+			var anchor := p_slot.get_node_or_null("ChatAnchor") as Control
+			if anchor:
+				seats.append({"student": s, "hit": hit, "anchor": anchor})
 		else:
 			p_slot.hide()
 			h_slot.hide()
+	if chatter:
+		chatter.set_seats(seats)
 
 func _animate_breathing(node: Control, delay: float):
 	if not node: return
@@ -862,9 +885,19 @@ func _on_skin_switch_pressed() -> void:
 	if GameState.approved_students.is_empty():
 		return
 	var popup := skin_select_scene.instantiate() as SkinSelectPopup
+	_skin_popup_open = true
+	if chatter:
+		chatter.dismiss()
 	add_child(popup)
+	popup.closed.connect(func(): _skin_popup_open = false)
 	popup.closed.connect(_setup_students)
 	popup.open(GameState.approved_students)
+
+
+## LobbyChatter's gate: nobody talks over the tutorial, the daily reward
+## or the skin picker.
+func _chatter_allowed() -> bool:
+	return not tutorial_active and not reward_popup_open and not _skin_popup_open
 
 
 func _on_achievement_pressed() -> void:

@@ -12,8 +12,9 @@ extends Node
 ## and for tap_cooldown_s after it finishes, so spamming taps leaves the
 ## line on screen exactly as it was.
 
-## The one bubble every student speaks through (loby.tscn's ChatBubble).
-@export var bubble: StudentChatBubble
+## Path to the one bubble every student speaks through (loby.tscn's
+## Classroom/ChatBubble); resolved into `bubble` in _ready().
+@export var bubble_path: NodePath
 ## Shortest wait, in seconds, before an idle student pipes up.
 @export var idle_min_s: float = 20.0
 ## Longest wait, in seconds, before an idle student pipes up.
@@ -21,6 +22,8 @@ extends Node
 ## After a line retracts, taps are ignored for this long, in seconds.
 @export var tap_cooldown_s: float = 0.5
 
+## The bubble in use: bubble_path's node, or one a test hands in directly.
+var bubble: StudentChatBubble
 ## Returns whether anyone may talk right now; loby.gd replaces it.
 var can_speak: Callable = func() -> bool: return true
 
@@ -39,6 +42,8 @@ func _ready() -> void:
 	_idle_timer.one_shot = true
 	add_child(_idle_timer)
 	_idle_timer.timeout.connect(_on_idle_timeout)
+	if bubble == null and not bubble_path.is_empty():
+		bubble = get_node_or_null(bubble_path) as StudentChatBubble
 	if bubble and not bubble.finished.is_connected(_on_bubble_finished):
 		bubble.finished.connect(_on_bubble_finished)
 	reset_idle_timer()

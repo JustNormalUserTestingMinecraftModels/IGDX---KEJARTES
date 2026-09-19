@@ -1142,7 +1142,7 @@ func test_loby_hands_seats_and_gate_to_chatter() -> void:
   - `scene_open("res://Scenes/Lobby/loby.tscn")`.
   - In each `Classroom/StudentPortraitsContainer_*/SlotN` create `ChatAnchor` (Control, `layout_mode = 1`, anchors 0, `mouse_filter = 2`, zero size) at slot-local positions — Slot1 (330, 300), Slot2 (70, 300), Slot3 (330, 250), Slot4 (70, 250). These are starting guesses: Task 6 tunes them on a screenshot.
   - Instance `res://Scenes/Lobby/StudentChatBubble.tscn` as `Classroom/ChatBubble`, `layout_mode = 1`, anchors 0, offsets (0,0,560,274); `move_node` it to Classroom's last index.
-  - Create `Chatter` (Node) as a root child, attach `Scripts/Lobby/LobbyChatter.gd`, set `bubble = NodePath("../Classroom/ChatBubble")`.
+  - Create `Chatter` (Node) as a root child, attach `Scripts/Lobby/LobbyChatter.gd`, set `bubble_path = NodePath("../Classroom/ChatBubble")`. (As built: the MCP cannot assign a Node-typed export, so `LobbyChatter` exports `bubble_path: NodePath` and resolves the plain `bubble` var in `_ready()`.)
   - `scene_save`; `git diff HEAD -- '*.gd'` must be empty; `git diff --stat` must show only `loby.tscn` (plus `StudentChatBubble.tscn` if touched — revert that).
 
 - [ ] **Step 4: script** — `script_patch` `Scripts/Lobby/loby.gd`:

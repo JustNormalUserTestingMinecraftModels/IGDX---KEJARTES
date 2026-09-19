@@ -46,6 +46,11 @@ func _ready() -> void:
 		_tail_x = _tail.position.x
 	if Engine.is_editor_hint() and is_part_of_edited_scene():
 		return
+	# An instanced scene's root can load without its rect under a plain
+	# Control parent (authoring guide, Pattern C), so re-derive it from the
+	# children that do keep theirs: the body's width, down to the tail tip.
+	if _tail:
+		size = Vector2(float(BODY_SIZE.x), _tail.position.y + _tail.size.y)
 	_linger_timer = Timer.new()
 	_linger_timer.one_shot = true
 	add_child(_linger_timer)

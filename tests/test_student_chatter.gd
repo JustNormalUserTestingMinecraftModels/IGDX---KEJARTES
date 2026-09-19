@@ -323,3 +323,43 @@ func test_no_seats_no_chatter() -> void:
 	assert_false(c.speak_idle())
 	assert_false(c.request_line(0))
 	_free_chatter(c)
+
+
+# ----- Lobby wiring -----
+
+const _LOBY_TSCN := "res://Scenes/Lobby/loby.tscn"
+const _LOBY_GD := "res://Scripts/Lobby/loby.gd"
+
+
+func test_every_portrait_slot_has_a_chat_anchor() -> void:
+	var src := FileAccess.get_file_as_string(_LOBY_TSCN)
+	for slot in ["StudentPortraitsContainer_Back/Slot1", "StudentPortraitsContainer_Back/Slot2",
+			"StudentPortraitsContainer_Front/Slot3", "StudentPortraitsContainer_Front/Slot4"]:
+		assert_true(src.contains('[node name="ChatAnchor" type="Control" parent="Classroom/%s"' % slot),
+			"ChatAnchor missing in %s" % slot)
+
+
+func test_lobby_has_one_bubble_and_a_chatter() -> void:
+	var src := FileAccess.get_file_as_string(_LOBY_TSCN)
+	assert_true(src.contains('[node name="ChatBubble" parent="Classroom"'), "bubble under Classroom")
+	assert_true(src.contains('path="res://Scenes/Lobby/StudentChatBubble.tscn"'), "bubble is the instanced scene")
+	assert_true(src.contains('[node name="Chatter" type="Node" parent="."'), "Chatter node")
+	assert_true(src.contains('bubble_path = NodePath("../Classroom/ChatBubble")'), "Chatter wired to the bubble")
+
+
+func test_bubble_is_classrooms_last_child() -> void:
+	var scene := (load(_LOBY_TSCN) as PackedScene).get_state()
+	var last_under_classroom := ""
+	for i in range(scene.get_node_count()):
+		if str(scene.get_node_path(i, true)).trim_prefix("./") == "Classroom":
+			last_under_classroom = str(scene.get_node_name(i))
+	assert_eq(last_under_classroom, "ChatBubble", "drawn above every desk and student")
+
+
+func test_loby_hands_seats_and_gate_to_chatter() -> void:
+	var src := FileAccess.get_file_as_string(_LOBY_GD)
+	assert_true(src.contains("chatter.set_seats("))
+	assert_true(src.contains("chatter.can_speak = _chatter_allowed"))
+	assert_true(src.contains("func _chatter_allowed() -> bool:"))
+	assert_true(src.contains("not tutorial_active and not reward_popup_open and not _skin_popup_open"))
+	assert_true(src.contains("chatter.dismiss()"))

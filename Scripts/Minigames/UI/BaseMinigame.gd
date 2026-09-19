@@ -75,9 +75,10 @@ var has_time_limit: bool = false
 @export var popup_star_texture: Texture2D = null
 ## Optional PNG for an empty (unearned) star outline. Leave empty for procedural gray star.
 @export var popup_star_empty_texture: Texture2D = null
-## Tint for the procedural filled star, ignored when popup_star_texture is set.
-@export var popup_star_color: Color = Color(1.0, 0.85, 0.2)
-## Tint for the procedural empty star, ignored when popup_star_empty_texture is set.
+## Tint multiplied onto the filled star. White keeps star.png's own gold.
+@export var popup_star_color: Color = Color.WHITE
+## Tint multiplied onto the empty star; the dark grey turns the shared
+## star.png into an unearned silhouette.
 @export var popup_star_empty_color: Color = Color(0.28, 0.28, 0.32)
 ## Size (px) of each of the three star slots on the result card.
 @export var popup_star_size: Vector2 = Vector2(88, 88)

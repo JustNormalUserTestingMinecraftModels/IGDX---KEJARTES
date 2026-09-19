@@ -45,6 +45,17 @@ static var _stripe_tex: ImageTexture = null
 ## rest of the card art).
 const HEADER_DESIGN_H := 104.0
 
+## Where the avatar sits in this row's 410-tall design box. The hosted
+## DaySummaryStudentRow moved its avatar 76 px down for its own name band
+## (2026-09-19, PR #53's ID card); this row hides that band and draws its
+## own header, so it puts the avatar back beside the restacked bars.
+const AVATAR_TOP := 52.0
+## The avatar's bottom edge in the same box.
+const AVATAR_BOTTOM := 338.0
+## The hosted card's own chrome, hidden because this row's stylebox and
+## Header replace it.
+const HOSTED_CHROME := ["CardBg", "HeaderBand"]
+
 ## The roster entry this row stands for.
 var student: Dictionary = {}
 var _boosts: Dictionary = {}
@@ -97,8 +108,8 @@ func set_selectable(on: bool) -> void:
 		_header.modulate.a = 1.0 if on else 0.45
 
 
-## Swap the shared green card art for a bright paper card the mentor is happy
-## with: hide the hosted card's CardArt and give this wrapper button its own
+## Swap the shared card frame for a bright paper card the mentor is happy
+## with: hide the hosted card's HOSTED_CHROME and give this wrapper button its own
 ## cream stylebox, with a bold accent border when picked. The accent is the
 ## first boosted stat's colour, so the pick reads in the item's own hue.
 func _decorate_card() -> void:
@@ -110,9 +121,10 @@ func _decorate_card() -> void:
 			accent = tokens.category_color(cat)
 			break
 	if card != null:
-		var art := card.get_node_or_null("CardArt")
-		if art is CanvasItem:
-			(art as CanvasItem).visible = false
+		for chrome_name in HOSTED_CHROME:
+			var chrome := card.get_node_or_null(chrome_name)
+			if chrome is CanvasItem:
+				(chrome as CanvasItem).visible = false
 		# The header band shows the name now, so hide the card's own label.
 		var name_label := card.get_node_or_null("NameLabel") as Label
 		if name_label != null:
@@ -146,6 +158,10 @@ func _decorate_card() -> void:
 func _relayout_bars() -> void:
 	if card == null:
 		return
+	var avatar := card.get_node_or_null("Avatar") as Control
+	if avatar != null:
+		avatar.offset_top = AVATAR_TOP
+		avatar.offset_bottom = AVATAR_BOTTOM
 	var left := 336.0
 	var right := 952.0
 	var h := 92.0

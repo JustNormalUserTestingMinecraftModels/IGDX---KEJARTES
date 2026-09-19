@@ -16,6 +16,7 @@ theme = ExtResource("1_sqjgo")
 theme_type_variation = &"EventSelectCard"
 toggle_mode = true
 script = ExtResource("2_l2rim")
+card_design_size = Vector2(992, 410)
 
 [node name="Card" parent="." unique_id=385890646 instance=ExtResource("3_kqifd")]
 layout_mode = 0

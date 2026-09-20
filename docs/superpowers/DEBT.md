@@ -375,8 +375,10 @@ Appendix A maps every screen). Still laid out for exactly 1080×1920:
 Phase 2's AturJadwal, CutScene, Rapor and Inventory (Rapor waits for the
 separate `KEMBALI` overlap fix, which edits that scene; Inventory's glyph
 fix merged as `fd3bba7`, and its header overflow is the entry above), and
-Phase 3's ExamProgress, StatCheck, EndCutscene, the
-ResultCheckup confetti and MainBola. The Lobby's classroom stays a centred
+Phase 3's StatCheck, EndCutscene, the
+ResultCheckup confetti and MainBola (ExamProgress left this list on
+2026-09-20: its backdrop is anchored to all four edges and its status strip
+to the real screen bottom). The Lobby's classroom stays a centred
 1080×1920 picture, so a tall phone shows black bands above and below it;
 filling them wants taller classroom art.
 

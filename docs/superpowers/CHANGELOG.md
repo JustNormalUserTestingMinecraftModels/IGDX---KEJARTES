@@ -72,6 +72,27 @@ Four existing pins moved with the architecture rather than being deleted:
 tests, and `theme_factory`'s `DISPLAY_ROSTER`. New suite:
 `tests/test_minigame_typography.gd` (18 tests).
 
+## 2026-09-20 — ExamProgress shows the exam art undarkened
+
+- The `Scrim` panel is gone, so `cg_ujian` reads at full brightness behind the
+  pacing beat. Legibility over the busy art comes from what those variations
+  already carry: `H1Label`'s chunky light outline and `StatBar`'s opaque
+  track. Measured before removing it — the art's bottom band averages ~145
+  sRGB luminance against `text_primary` #3B2412, about 4.6:1 even before the
+  outline.
+- The status line and fill bar moved out of the screen's centre into a strip
+  anchored to the bottom edge (`MarginContainer` anchored top/bottom 1.0,
+  offsets -380/-100), clearing the picture's subject and leaving 100 px under
+  the bar for the system gesture area.
+- `Backdrop` went from a fixed 1296×1920 rect to all-four-edge anchors with
+  `offset_right = 216` (still |`pan_pixels`|) and a `custom_minimum_size` of
+  1296×1920. It now fills a 1080×2400 phone instead of ending in a black band
+  under the newly bottom-anchored text; the minimum size is what keeps the
+  suite's off-tree width and height measurements reading the authored numbers.
+  ExamProgress accordingly left DEBT's deferred tall-phone list.
+- `tests/test_exam_progress.gd`: the scrim assertion inverted, plus two new
+  tests pinning the bottom anchoring and the backdrop's edge anchors. 14/14.
+
 ## 2026-09-19 — Weekly Results mockup pass
 
 Spec `docs/superpowers/specs/2026-09-19-weekly-results-mockup-design.md`, plan

@@ -7,6 +7,12 @@ extends Control
 ## off to StatCheck. Purely a pacing beat -- it carries no verdict, same
 ## contract as TesNotice.
 ##
+## The exam art is shown undarkened: there is no scrim, and the status
+## line and bar sit in a strip anchored to the bottom of the screen so
+## they clear the picture's subject. Legibility over the busy art comes
+## from H1Label's chunky light outline and StatBar's own opaque track,
+## which is what those two variations are for.
+##
 ## @tool for the same reason every other end-of-grade screen is: without
 ## it, this becomes a placeholder instance when the MCP test suite
 ## instantiates the scene inside the editor process. The runtime side
@@ -27,9 +33,11 @@ const STAT_CHECK_SCENE := "res://Scenes/EndGame/StatCheck.tscn"
 
 ## How far the backdrop drifts during the fill, in px. Negative moves the
 ## image left, which reads as the camera panning right. The Backdrop node
-## is authored 1296 px wide (viewport 1080 + |pan|) under
-## KEEP_ASPECT_COVERED, so the drift never exposes an edge -- if you widen
-## the pan, widen the node to match.
+## is anchored to all four edges with offset_right = |pan| under
+## KEEP_ASPECT_COVERED, so it is viewport width + |pan| on any phone and
+## the drift never exposes an edge -- if you widen the pan, widen that
+## offset (and the node's custom_minimum_size, which keeps the authored
+## 1296x1920 when the scene is measured outside a tree) to match.
 @export var pan_pixels: float = -216.0
 
 var _advancing: bool = false

@@ -115,14 +115,23 @@ the slot better rather than worse.
 | 4 choices @ 130 + 3 gaps @ 12 | 556 |
 | **total** | **1658** |
 
-Inside the 960 card: 24 padding + 620 image slot + 24 gap + 268 text + 24
-padding. The question text runs through `SoalFit.font_size(label, badge, text,
-64, 36)`, the same call Password and Variabel already make, so a long question
-steps down the ladder instead of clipping.
+The question text runs through `SoalFit.font_size(label, badge, text, 64, 36)`,
+the same call Password and Variabel already make, so a long question steps
+down the ladder instead of clipping.
 
-The card takes `size_flags_vertical = 3` (EXPAND) with the 960 as
-`custom_minimum_size`, so on a 1080×2400 phone the extra 418px goes into the
-picture rather than into dead margin above and below.
+**Corrected after seeing it on device (2026-09-21).** The first build reserved
+the full 960 on every question so the choice buttons could not move. That kept
+the layout still, but about 10 of the 11 fallback questions have no picture,
+and on those the card was a 960px empty field around a single line of text —
+optimising for the rare case at the expense of the common one.
+
+What shipped instead: the card **sizes to its content** (~250 text-only, ~960
+with a picture), and an authored `Spacer` Control between it and `ChoicesGrid`
+absorbs the difference. The choices sit at the bottom in both cases, verified
+by screenshot across a picture question and a text-only one. `VBoxContainer`
+takes `alignment = 0` (BEGIN) and `SoalCard` `size_flags_vertical = 0`, so the
+card hangs from the top and the Spacer, not the card, carries the slack —
+including the extra 480px on a 1080×2400 phone.
 
 ## Decision: choice rows 100 → 130
 

@@ -40,7 +40,7 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [node name="QuestionCard" type="PanelContainer" unique_id=82108006]
-custom_minimum_size = Vector2(850, 960)
+custom_minimum_size = Vector2(850, 0)
 offset_right = 850.0
 offset_bottom = 480.0
 pivot_offset = Vector2(425, 240)
@@ -66,10 +66,10 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="TextLabel" type="Label" parent="VBox" unique_id=956164476]
-custom_minimum_size = Vector2(0, 268)
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
+size_flags_vertical = 1
 theme_type_variation = &"MinigameQuestionLabel"
 text = "Pertanyaan"
 horizontal_alignment = 1

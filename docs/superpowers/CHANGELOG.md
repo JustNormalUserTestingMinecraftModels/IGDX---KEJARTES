@@ -28,9 +28,18 @@ change was subtractive: seven new variations, three rungs, nothing else.
 **The shared card was the lever.** `QuestionCard.tscn` (and its sibling
 `AnswerCard.tscn`) were already instanced by Password, Variabel and
 Menjodohkan. PilihanGanda joined them, so fixing the cards' typography once
-fixed four screens. Both cards grew 850×480/430 → 850×960 with a 620px image
-slot, sized off the real art: `monas.png` is 1080×1920 and `borobudur.png`
-1920×1920, so a short wide slot would have letterboxed them to a narrow column.
+fixed four screens. Both gained a 620px image slot, sized off the real art:
+`monas.png` is 1080×1920 and `borobudur.png` 1920×1920, so a short wide slot
+would have letterboxed them to a narrow column.
+
+**The reserved-height version was wrong, and only a screenshot showed it.**
+The first build pinned the card at 960 on every question so the choices could
+not move. Tests were green; on device, the ~10 of 11 fallback questions with
+no picture rendered as a 960px empty field around one line of text. What
+shipped instead: the card sizes to its content and an authored `Spacer` holds
+the choices at the bottom, so they stay put whether or not a question has a
+picture — the same guarantee, without the dead space. Pinned by
+`test_pilihan_ganda_pins_the_choices_without_reserving_dead_space`.
 
 **PilihanGanda's layout had two real bugs**, both cured by the move. The image
 sat *above* the progress counter, which sat above the question — so "Dari

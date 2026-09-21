@@ -128,6 +128,23 @@ func test_pilihan_ganda_drops_the_loose_trio() -> void:
 			"PilihanGanda.tscn must no longer declare %s -- the card owns it" % gone)
 
 
+## The card sizes to its content and the choices are held at the bottom by
+## an authored Spacer, rather than the card reserving a fixed height.
+##
+## Reserving the image slot on every question was the first attempt: it kept
+## the choices still, but ~10 of the 11 fallback questions have no picture,
+## and on those the card was a 960px empty field around one line of text
+## (seen on device, 2026-09-21). Sizing to content fixes that without
+## bringing back the reflow -- the Spacer absorbs the difference, so the
+## buttons sit in the same place whether or not the question has a picture.
+func test_pilihan_ganda_pins_the_choices_without_reserving_dead_space() -> void:
+	var src := FileAccess.get_file_as_string(PILIHAN)
+	assert_true(src.contains('name="Spacer"'),
+		"a Spacer must hold the choices at the bottom")
+	assert_false(src.contains("custom_minimum_size = Vector2(0, 960)"),
+		"the card must size to its content, not reserve 960px on every question")
+
+
 func test_pilihan_ganda_carries_no_font_size_override() -> void:
 	var src := FileAccess.get_file_as_string(PILIHAN)
 	assert_false(src.contains("theme_override_font_sizes/font_size"),

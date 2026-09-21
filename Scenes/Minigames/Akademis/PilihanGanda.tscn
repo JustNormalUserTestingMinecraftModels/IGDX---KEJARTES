@@ -96,17 +96,21 @@ anchor_bottom = 0.95
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 16
-alignment = 1
 
 [node name="ScoreHUD" parent="VBoxContainer" unique_id=584836618 instance=ExtResource("5_b17uc")]
 layout_mode = 2
 size_flags_horizontal = 4
 
 [node name="SoalCard" parent="VBoxContainer" unique_id=82108006 instance=ExtResource("5_4ughg")]
-custom_minimum_size = Vector2(0, 960)
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="Spacer" type="Control" parent="VBoxContainer" unique_id=1859218808]
+layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="ChoicesGrid" type="GridContainer" parent="VBoxContainer" unique_id=1089490452]
 layout_mode = 2

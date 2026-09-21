@@ -363,6 +363,10 @@ func _run_single_day() -> void:
 	if book_clock_widget and book_clock_widget.has_method("set_day"):
 		book_clock_widget.call("reset")
 		book_clock_widget.call("set_day", day_name)
+		# The same two values EventDialogue is handed, so the day banner and
+		# the dialogue's header can never disagree about which week it is.
+		book_clock_widget.call("set_week",
+			GameState.minggu_ke, GameState.get_max_weeks())
 
 	# Render embedded student status UI on DayScreen
 	_render_embedded_student_status()

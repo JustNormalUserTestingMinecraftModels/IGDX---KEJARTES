@@ -172,3 +172,58 @@ func test_event_fires_at_the_days_halfway_point_not_a_random_afternoon_point() -
 		"the event must land at the 50% point of the day, there is no midday pose to land on any more")
 	assert_false(src.contains("randf_range(0.5, 0.8)"),
 		"the event should no longer land at a random point in the day")
+
+
+# ───────────────────────────── the day/week header (2026-09-21)
+# BookClockWidget took the weekday through set_day() and displayed nothing;
+# the player's only day readout was two bare labels in SchoolDay's corner,
+# with no week count anywhere on the screen.
+
+func test_set_week_formats_like_the_event_dialogue() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	w.set_week(3, 6)
+	assert_eq(w.week_text(), "3/6",
+		'the week must read "%d/%d", exactly as EventDialogue writes it')
+	w.free()
+
+
+func test_set_day_writes_the_banner_not_just_the_variable() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	w.set_day("Selasa")
+	assert_eq(w.day_name(), "Selasa", "set_day still records the name")
+	assert_eq(w.day_text(), "Selasa", "and now it reaches the banner too")
+	w.free()
+
+
+## The grade ladder, which needs no code of its own: get_max_weeks() returns
+## 6/12/16 for Kelas 7/8/9. A hard-coded 6 would pass every Kelas 7 test and
+## be wrong for two thirds of the game.
+func test_the_week_count_follows_the_grade() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	for pair in [[3, 6], [9, 12], [14, 16]]:
+		w.set_week(pair[0], pair[1])
+		assert_eq(w.week_text(), "%d/%d" % [pair[0], pair[1]],
+			"Kelas with %d weeks must read %d/%d" % [pair[1], pair[0], pair[1]])
+	w.free()
+
+
+func test_reset_clears_the_header() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	w.set_day("Rabu")
+	w.set_week(2, 6)
+	w.reset()
+	assert_eq(w.day_text(), "", "reset must clear the banner")
+	assert_eq(w.week_text(), "", "reset must clear the week")
+	w.free()
+
+
+## The source, not just the format: both screens must read the same two
+## GameState values, or they can drift apart by a week.
+func test_school_day_feeds_the_header_from_gamestate() -> void:
+	var src := FileAccess.get_file_as_string(SCHOOLDAY_SCRIPT)
+	# `.call("set_week", ...)`, matching how this file already drives the
+	# widget -- book_clock_widget is typed Control, not BookClockWidget.
+	assert_true(src.contains('"set_week"'),
+		"SchoolDay must tell the widget which week it is")
+	assert_true(src.contains("GameState.get_max_weeks()"),
+		"the week count must come from GameState, not a literal")

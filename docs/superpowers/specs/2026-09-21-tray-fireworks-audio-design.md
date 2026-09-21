@@ -273,6 +273,77 @@ loop flag — a looping one-shot is the classic way a UI click becomes a drone.
 
 ---
 
+## 3b. The device back button
+
+Android delivers the hardware/gesture back press as
+`NOTIFICATION_WM_GO_BACK_REQUEST` — **not** as `ui_cancel`, so an `_input`
+handler never sees it. Six screens already answer it, in one consistent shape:
+
+```gdscript
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_pressed()
+```
+
+(`koprasi.gd:181`, `inventory.gd:265`, `achievements_screen.gd:62`,
+`AchievementDetailSheet.gd:145`, `ItemDetailSheet.gd:285`,
+`ApplyItemScreen.gd:198`, `SkinSelectPopup.gd:118`.)
+
+Seven screens have a working in-game back button and **no** handler:
+
+| screen | script |
+|---|---|
+| Atur Jadwal | `Scripts/AturJadwal/atur_jadwal.gd` |
+| Shop Hub | `Scripts/Koperasi/shop_hub.gd` |
+| Cosmetic Shop | `Scripts/Koperasi/cosmetic_shop.gd` |
+| Report Card | `Scripts/ReportCard/report_card.gd` |
+| Pengaturan | `Scripts/Pengaturan.gd` |
+| Settings | `Scripts/UI/Settings.gd` |
+| SchoolDay | `Scripts/SchoolSimulation/SchoolDay.gd` |
+
+### Why this is a bug, not just a gap
+
+`project.godot` does not set `application/config/quit_on_go_back`, so it takes
+Godot's default of **true**: on a screen that consumes nothing, the back press
+**quits the game outright**. Today, pressing back in Atur Jadwal or mid-week in
+SchoolDay drops the player to the home screen and loses the run — roster,
+money, week and schedules are all session-scoped by design and none of them
+reach disk.
+
+So this is two changes:
+
+1. **Every screen answers the notification**, routing to the same
+   `_on_back_pressed()` the on-screen button calls. Same animation, same
+   `AudioDirector` cue, same destination — "works the same as the return
+   button" is the literal requirement.
+2. **`quit_on_go_back` is turned off** in `project.godot`, so a screen that
+   forgets a handler stops rather than quits. MainMenu then owns the only
+   deliberate exit, behind a confirmation — leaving the game is a decision, not
+   a mis-swipe.
+
+### Two screens that are not a plain "go back"
+
+- **SchoolDay** is mid-simulation. Its back press does what its on-screen
+  control does, which is *not* "leave the week" — whatever that button does
+  today is what the notification routes to. Read it before wiring it.
+- **BaseMinigame** already owns a pause menu with a quit confirmation
+  (`quit_dialog_message_text`: *"Apakah anda yakin?\nSeluruh progress minigame
+  anda akan dianggap gagal!"*). Back opens **that**, never an instant exit — a
+  mis-swipe must not forfeit a minigame.
+
+### Overlays win
+
+Where a sheet or popup is open, the overlay consumes the press and the screen
+underneath must not also act, or one back press walks two steps. `inventory.gd`
+already shows the shape:
+
+```gdscript
+	if _sheet != null or _apply_screen != null:
+		return
+```
+
+Every screen that can raise an overlay gets the same guard.
+
 ## 4. UI consistency
 
 `/design-audit-ui` critiques a screen from a picture. "Throughout the game" is
@@ -309,6 +380,14 @@ that hides the real changes above.
 | `Scripts/Audio/AudioDirector.gd` | new slots, ambience player, real streams |
 | `Assets/Audio/SFX/**`, `Assets/Audio/Ambient/**` | **new** — 49 files |
 | `Scripts/Lobby/StudentFace.gd` | unchanged — verified only |
+| `project.godot` | `quit_on_go_back=false` |
+| `Scripts/AturJadwal/atur_jadwal.gd` | back notification |
+| `Scripts/Koperasi/shop_hub.gd` | back notification |
+| `Scripts/Koperasi/cosmetic_shop.gd` | back notification |
+| `Scripts/ReportCard/report_card.gd` | back notification |
+| `Scripts/Pengaturan.gd`, `Scripts/UI/Settings.gd` | back notification |
+| `Scripts/SchoolSimulation/SchoolDay.gd` | back notification |
+| `Scripts/Minigames/UI/BaseMinigame.gd` | back opens the pause menu |
 | `docs/superpowers/DEBT.md` | the override inventory |
 
 ## 6. Grades 7/8/9

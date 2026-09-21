@@ -8,7 +8,8 @@
 
 **Goal:** Make the koperasi basket tray draggable and tap-to-return, replace
 the per-star particle spray with three authored confetti fireworks, wire the
-collaborator's 49 real sounds behind AudioDirector's export slots, pin the
+collaborator's 49 real sounds behind AudioDirector's export slots, make the
+Android back button do what each screen's own back button does, pin the
 already-shipped lobby blink with tests, and clear the theme-override debt on
 the screens this branch touches.
 
@@ -1371,7 +1372,232 @@ Message: `test(lobby): pin the 5-10 s idle blink and its eyelid art`
 
 ---
 
-### Task 8: The UI consistency pass
+### Task 8: The device back button
+
+Android delivers the hardware/gesture back press as
+`NOTIFICATION_WM_GO_BACK_REQUEST` — **not** as `ui_cancel`, so an `_input`
+handler never sees it. Six screens already answer it; seven with a working
+on-screen back button do not, and because `quit_on_go_back` defaults to
+**true** a back press on those **quits the game and loses the run**.
+
+**Files:**
+- Modify: `project.godot`
+- Modify: `Scripts/AturJadwal/atur_jadwal.gd`, `Scripts/Koperasi/shop_hub.gd`,
+  `Scripts/Koperasi/cosmetic_shop.gd`, `Scripts/ReportCard/report_card.gd`,
+  `Scripts/Pengaturan.gd`, `Scripts/UI/Settings.gd`,
+  `Scripts/SchoolSimulation/SchoolDay.gd`,
+  `Scripts/Minigames/UI/BaseMinigame.gd`
+- Test: `tests/test_device_back_button.gd` (new)
+
+**Interfaces:**
+- Consumes: each screen's existing `_on_back_pressed()` (or its local name —
+  `grep` per file; they are not all spelled the same).
+- Produces: nothing new. The point is that back routes to the *existing*
+  handler, so the animation, the `AudioDirector` cue and the destination are
+  identical to the on-screen button.
+
+- [ ] **Step 1: Write the failing test**
+
+Create `tests/test_device_back_button.gd`:
+
+```gdscript
+@tool
+extends McpTestSuite
+
+## The Android hardware/gesture back button must do what the screen's own
+## back button does.
+##
+## Source scans, like test_audio_coverage: these screens cannot be
+## instantiated headlessly, and Godot delivers the press as a notification
+## the runner has no way to post. What this buys: every screen HAS a
+## handler and it routes to the screen's own back path. What it does not:
+## that the handler runs at the right moment on a real device. The plan's
+## Step 5 is a real Android build for that.
+
+func suite_name() -> String:
+	return "device_back_button"
+
+
+## Every screen with an on-screen back button, and the handler its device
+## back press must reach. Seven of these had no handler at all before
+## 2026-09-21, and because quit_on_go_back defaults to true a back press on
+## them quit the game outright.
+const SCREENS := {
+	"res://Scripts/AturJadwal/atur_jadwal.gd": "_on_back_pressed",
+	"res://Scripts/Koperasi/shop_hub.gd": "_on_back_pressed",
+	"res://Scripts/Koperasi/cosmetic_shop.gd": "_on_back_pressed",
+	"res://Scripts/ReportCard/report_card.gd": "_on_back_pressed",
+	"res://Scripts/Pengaturan.gd": "_on_back_pressed",
+	"res://Scripts/UI/Settings.gd": "_on_back_pressed",
+	"res://Scripts/SchoolSimulation/SchoolDay.gd": "_on_back_pressed",
+	"res://Scripts/Koperasi/koprasi.gd": "_on_back_pressed",
+	"res://Scripts/Inventory/inventory.gd": "_on_back_pressed",
+	"res://Scripts/Achievements/achievements_screen.gd": "_on_back_pressed",
+}
+
+
+func _source(path: String) -> String:
+	var f := FileAccess.open(path, FileAccess.READ)
+	assert_true(f != null, "script must exist: " + path)
+	if f == null:
+		return ""
+	return f.get_as_text()
+
+
+func test_every_screen_answers_the_go_back_notification() -> void:
+	for path in SCREENS:
+		assert_true(_source(path).contains("NOTIFICATION_WM_GO_BACK_REQUEST"),
+			"%s must answer the device back button" % path)
+
+
+func test_the_notification_routes_to_the_screens_own_back_handler() -> void:
+	# "Works the same as the return button" is the literal requirement: the
+	# notification must call the same function, not a second path that drifts
+	# from it.
+	for path in SCREENS:
+		var src := _source(path)
+		var handler: String = SCREENS[path]
+		var at := src.find("NOTIFICATION_WM_GO_BACK_REQUEST")
+		assert_true(at >= 0, "%s must answer the back button" % path)
+		# The handler call must appear within the notification block, not
+		# merely somewhere in the file (the on-screen button calls it too).
+		var after := src.substr(at, 400)
+		assert_true(after.contains(handler + "("),
+			"%s's back notification must call %s()" % [path, handler])
+
+
+func test_the_game_no_longer_quits_on_a_back_press() -> void:
+	# Without this, a screen that forgets a handler drops the player to the
+	# home screen and the run is gone -- roster, money, week and schedules
+	# are all session-scoped and none of them reach disk.
+	assert_false(ProjectSettings.get_setting("application/config/quit_on_go_back", true),
+		"quit_on_go_back must be false so a stray back press cannot end a run")
+
+
+func test_a_minigame_back_press_opens_the_pause_menu() -> void:
+	# Never an instant exit: a mis-swipe must not forfeit a minigame, and
+	# BaseMinigame already owns a quit confirmation for exactly this.
+	var src := _source("res://Scripts/Minigames/UI/BaseMinigame.gd")
+	assert_true(src.contains("NOTIFICATION_WM_GO_BACK_REQUEST"),
+		"a minigame must answer the back button")
+	var at := src.find("NOTIFICATION_WM_GO_BACK_REQUEST")
+	var after := src.substr(at, 400)
+	assert_false(after.contains("change_scene("),
+		"a minigame's back press must open the pause menu, not leave outright")
+```
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `test_run(suite="device_back_button", session_id=<id>)`
+Expected: FAIL — seven screens have no handler and `quit_on_go_back` is unset
+(so it reads back as its `true` default).
+
+- [ ] **Step 3: Find each screen's real handler name**
+
+They are **not** all spelled `_on_back_pressed`. Check before writing, and fix
+the `SCREENS` dict above to match reality rather than bending the code to the
+test:
+
+```bash
+grep -n "func _on_back\|func _on_kembali\|func _on_back_button" Scripts/AturJadwal/atur_jadwal.gd Scripts/Koperasi/shop_hub.gd Scripts/Koperasi/cosmetic_shop.gd Scripts/ReportCard/report_card.gd Scripts/Pengaturan.gd Scripts/UI/Settings.gd Scripts/SchoolSimulation/SchoolDay.gd
+```
+
+- [ ] **Step 4: Add the handler to each screen**
+
+The established shape, copied from `koprasi.gd:181`. For a screen with no
+overlay:
+
+```gdscript
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel, so an _input handler never sees it. Routed to the same function
+## the on-screen back button calls, so both do exactly the same thing.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_pressed()
+```
+
+For a screen that can raise a sheet or popup, add the guard — otherwise one
+back press walks two steps:
+
+```gdscript
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
+		return
+	# The open overlay handles its own back press and frees itself; only fall
+	# through to leaving the screen when nothing is up.
+	if _sheet != null:
+		return
+	_on_back_pressed()
+```
+
+Where a screen already defines `_notification` (e.g. `report_card.gd:78`
+handles `NOTIFICATION_WM_WINDOW_FOCUS_IN`), **add a branch to the existing
+function** — a second `_notification` in the same script silently replaces the
+first.
+
+For `BaseMinigame.gd`, route to the pause menu rather than an exit — find the
+function the on-screen pause button calls and call that.
+
+For `SchoolDay.gd`, read what its on-screen back control actually does before
+wiring it; mid-simulation, "back" is not necessarily "leave the week".
+
+- [ ] **Step 5: Stop the game quitting on back**
+
+Add to `project.godot` under `[application]`:
+
+```
+config/quit_on_go_back=false
+```
+
+MainMenu then owns the only deliberate exit. If MainMenu has no quit path at
+all, leave it — adding one is out of scope for this branch, and a back press
+that does nothing on the title screen is strictly better than one that ends a
+run from Atur Jadwal.
+
+- [ ] **Step 6: Run the test to verify it passes**
+
+Run: `test_run(suite="device_back_button", session_id=<id>)`
+Expected: PASS.
+
+`project.godot` is read at boot, so **restart the second editor** before
+believing the `quit_on_go_back` assertion — `ProjectSettings` serves the
+value the editor started with.
+
+- [ ] **Step 7: Check nothing else regressed**
+
+Run: `test_run(suite="koperasi", session_id=<id>)`,
+`test_run(suite="atur_jadwal", session_id=<id>)`,
+`test_run(suite="skin_select_popup", session_id=<id>)`
+Expected: PASS. The last one already owns a go-back test and is the one most
+likely to notice a double-handled press.
+
+- [ ] **Step 8: Press it on a real device**
+
+A source scan cannot tell you a back press fires at the right moment, and the
+editor cannot post the notification. Export an Android build (or run the
+remote-deploy target) and press the gesture back on: Atur Jadwal, Shop Hub, the
+Koperasi with a loaded tray, a minigame mid-round, and SchoolDay mid-week.
+
+Watch for the two failure shapes a scan cannot see: **one press, two steps**
+(an overlay and the screen under it both acting) and **a press that quits**
+(a screen still falling through).
+
+If no device or export template is available, say so plainly in the final
+report rather than claiming this step passed — the code change is still
+correct, but it will be unverified on the one platform it exists for.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add project.godot Scripts tests/test_device_back_button.gd
+git commit -F <message file>
+```
+
+Message: `feat(nav): the device back button does what the screen's back button does`
+
+---
+
+### Task 9: The UI consistency pass
 
 **Files:**
 - Modify: `Scripts/Design/ThemeFactory.gd`, `Assets/Theme/kejartes_theme.tres`
@@ -1435,7 +1661,7 @@ Message: `refactor(design): move this branch's screens off theme overrides`
 
 ---
 
-### Task 9: The full suite and the changelog
+### Task 10: The full suite and the changelog
 
 - [ ] **Step 1: Restart the second editor**
 
@@ -1493,8 +1719,9 @@ Message: `docs(changelog): record the tray, fireworks and audio pass`
 
 **Spec coverage.** §1 tray drag → Task 1; §1 tap-to-return → Task 2; §2 star
 art → Task 3; §2 fireworks + placement scene → Task 4; §3 sounds → Tasks 5–6;
-§0 blink → Task 7; §4 UI consistency → Task 8. §5 (files) and §6 (grades, no
-change) need no task. §7 (state) is covered by Task 2 touching only `Cart`.
+§3b device back button → Task 8; §0 blink → Task 7; §4 UI consistency →
+Task 9. §5 (files) and §6 (grades, no change) need no task. §7 (state) is
+covered by Task 2 touching only `Cart`.
 
 **Placeholder scan.** Every code step carries real code. Task 6 deliberately
 tells the implementer to `grep` for the real script paths rather than naming

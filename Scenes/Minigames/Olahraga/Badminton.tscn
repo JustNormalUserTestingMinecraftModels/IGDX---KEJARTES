@@ -117,8 +117,10 @@ position = Vector2(540, 1910)
 shape = SubResource("RectangleShape2D_wall_h")
 
 [node name="ScoreHUD" parent="." unique_id=584836618 instance=ExtResource("5_77y7n")]
-layout_mode = 0
-offset_left = 390.0
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
 offset_top = 40.0
-offset_right = 390.0
 offset_bottom = 40.0
+grow_horizontal = 2

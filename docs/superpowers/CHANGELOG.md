@@ -8,6 +8,70 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-21 — Minigame type ladder
+
+A `/design-audit-ui` pass over Menjodohkan, the Shop, Variabel, Password,
+PilihanGanda, BuatBatik, Badminton and Achievements. Shop and Achievements came
+back clean and were left alone — both already ran `ThemeFactory` variations.
+The six minigames carried **25 hand-written text sizes** between them (14, 16,
+18, 26, 30, 32, 36, 40, 44, 48, 60, 70, 80, 90), of which only five were token
+rungs.
+
+**φ was already in the tokens.** The ask was to re-space the type scale at
+×1.618. Doing that to `DesignTokens.gd` would give 28/45/73/118, change every
+screen in the game on rebake, and overflow Boohong's tracking on a 1080px
+canvas. It was not needed: `font_title` 36 → `font_h1` 64 →
+`font_display_size` 96 runs 1.78 then 1.50, a geometric mean of **1.63** — φ
+within rounding, already baked, and already used by `MinigameScoreHUD`. So the
+change was subtractive: seven new variations, three rungs, nothing else.
+
+**The shared card was the lever.** `QuestionCard.tscn` (and its sibling
+`AnswerCard.tscn`) were already instanced by Password, Variabel and
+Menjodohkan. PilihanGanda joined them, so fixing the cards' typography once
+fixed four screens. Both gained a 620px image slot, sized off the real art:
+`monas.png` is 1080×1920 and `borobudur.png` 1920×1920, so a short wide slot
+would have letterboxed them to a narrow column.
+
+**The reserved-height version was wrong, and only a screenshot showed it.**
+The first build pinned the card at 960 on every question so the choices could
+not move. Tests were green; on device, the ~10 of 11 fallback questions with
+no picture rendered as a 960px empty field around one line of text. What
+shipped instead: the card sizes to its content and an authored `Spacer` holds
+the choices at the bottom, so they stay put whether or not a question has a
+picture — the same guarantee, without the dead space. Pinned by
+`test_pilihan_ganda_pins_the_choices_without_reserving_dead_space`.
+
+**PilihanGanda's layout had two real bugs**, both cured by the move. The image
+sat *above* the progress counter, which sat above the question — so "Dari
+gambar di atas…" pointed at a picture with the score wedged between. And the
+script toggled the image's `visible` inside a centre-aligned `VBoxContainer`,
+so the whole stack re-centred between questions and the choice buttons moved
+under the player's thumb mid-game. The counter became the card's "Soal N/M"
+badge, which is what `SoalFit` was built around.
+
+**Contrast, measured.** Four inks could not reach the 4.5:1 body floor on any
+ground: Menjodohkan's two wheel headers and both cards' borders, at relative
+luminance 0.27 (orange) and 0.21 (blue) — 3.3:1 and 4.0:1 against *pure white*,
+falling toward 1.5:1 on the cards they sat on. They became `brand_primary`
+(7.2:1) and `cat_akademis` (5.1:1), keeping the warm/cool split. BuatBatik's
+two layer labels shipped at **16px**, 57% of the body floor, one of them the
+only feedback telling the player they stacked the layers wrong.
+
+**Also retired:** three `🔒` emoji locks (CLAUDE.md bans emoji iconography —
+they became `icon_lock.svg`), BuatBatik's `⚠` glyph (neither house font carries
+it), two copies of a four-branch 90/80/70/60 if-chain plus a third literal
+(all three now call `SoalFit`, which measures how text actually wraps),
+PilihanGanda's 100px choice rows (→ 130, the ~48dp touch floor), and
+Badminton's `ScoreHUD` at a raw (390, 40) offset (→ top-centre anchored).
+
+`SoalFit`'s `FALLBACK_BOX` was corrected from 699×333 to 802×268 — it had been
+describing a 715×345 card that grew to 850×480 some time before this pass.
+
+Four existing pins moved with the architecture rather than being deleted:
+`minigame_art`'s `H2Label` assertion, its display-font and wood-table ink
+tests, and `theme_factory`'s `DISPLAY_ROSTER`. New suite:
+`tests/test_minigame_typography.gd` (18 tests).
+
 ## 2026-09-19 — Weekly Results mockup pass
 
 Spec `docs/superpowers/specs/2026-09-19-weekly-results-mockup-design.md`, plan

@@ -194,6 +194,14 @@ Either rebuild the card as a `Card` panel (text goes dark on cream, the
 megaphone becomes an icon) or commit to text over the scrim (the two dark
 labels go cream).
 
+**Minigame question art is background-sized (2026-09-21).** `monas.png` is
+1080x1920 and `borobudur.png` 1920x1920 -- portrait and square assets standing
+in as question illustrations. `QuestionCard`'s 620px slot centres them with
+`stretch_mode` KEEP_ASPECT_CENTERED so neither distorts (monas renders
+349x620), but a cropped landscape export at the same paths would fill the slot
+properly rather than leaving air either side. Drop-replaceable at the same
+paths.
+
 **Faint placeholder icons on the minigame result card and HUD (2026-09-11).**
 Left as they are by decision, for the art pass; the labels beside them were
 fixed. Against the 3:1 non-text floor: on `ResultStatPanel`, white

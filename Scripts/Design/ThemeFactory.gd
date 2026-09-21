@@ -26,6 +26,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_week_recap(theme, tokens)
 	_build_id_card(theme, tokens)
 	_build_minigame_result(theme, tokens)
+	_build_minigame_typography(theme, tokens)
 	_build_event_warning(theme, tokens)
 	_build_event_dialogue(theme, tokens)
 	_build_shop_chat_bubble(theme, tokens)
@@ -1197,6 +1198,78 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "ResultBodyLabel", tokens.text_on_brand)
 
 	_add_cutscene_dialogue(theme, tokens)
+
+
+# ----------------------------------------------------- minigame typography
+
+## The minigames' three rungs. 36 -> 64 is 1.78 and 64 -> 96 is 1.50, a
+## geometric mean of 1.63 -- the golden ratio within rounding, already in the
+## tokens as font_title / font_h1 / font_display_size. Re-spacing DesignTokens
+## itself at phi would give 28/45/73/118, change every screen in the game on
+## rebake, and overflow Boohong's tracking on a 1080 px canvas.
+##
+## Before this block the six minigame scenes carried 25 hand-written sizes
+## between them (14, 16, 18, 26, 30, 32, 36, 40, 44, 48, 60, 70, 80, 90), two
+## of them below the 28 px body floor. CLAUDE.md puts minigames outside the
+## design system, which is how they drifted; these variations bring the text
+## back in without touching the games' own logic.
+static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> void:
+	# The question itself is body copy, not a heading, so it keeps the theme's
+	# body face (Open Sans) rather than taking font_display.
+	theme.add_type("MinigameQuestionLabel")
+	theme.set_type_variation("MinigameQuestionLabel", "Label")
+	theme.set_font_size("font_size", "MinigameQuestionLabel", tokens.font_h1)
+	theme.set_color("font_color", "MinigameQuestionLabel", tokens.text_primary)
+
+	# Counters and meta sitting on a card, where the ink can be quiet.
+	theme.add_type("MinigameMetaLabel")
+	theme.set_type_variation("MinigameMetaLabel", "Label")
+	theme.set_font_size("font_size", "MinigameMetaLabel", tokens.font_title)
+	theme.set_color("font_color", "MinigameMetaLabel", tokens.text_secondary)
+
+	# QuestionCard's "Soal N/M" badge: cream on the brand fill. A badge, so
+	# the display face, per the house rule.
+	theme.add_type("MinigameBadgeLabel")
+	theme.set_type_variation("MinigameBadgeLabel", "Label")
+	theme.set_font_size("font_size", "MinigameBadgeLabel", tokens.font_title)
+	theme.set_color("font_color", "MinigameBadgeLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "MinigameBadgeLabel", tokens.font_display)
+
+	# Text drawn straight onto art, where no panel can carry the contrast:
+	# cream with the same 8 px black rim ShopHubTileLabel uses. BuatBatik's
+	# layer labels shipped at 16 px white with a 6 px rim until 2026-09-21.
+	theme.add_type("MinigameOverlayLabel")
+	theme.set_type_variation("MinigameOverlayLabel", "Label")
+	theme.set_font_size("font_size", "MinigameOverlayLabel", tokens.font_title)
+	theme.set_color("font_color", "MinigameOverlayLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "MinigameOverlayLabel", 8)
+	theme.set_color("font_outline_color", "MinigameOverlayLabel", Color(0, 0, 0, 0.75))
+
+	# Menjodohkan's two carousel headers. The colours these replace --
+	# Color(0.85,0.45,0.1) and Color(0.2,0.5,0.85) -- are mid-tone (relative
+	# luminance 0.27 and 0.21) and unoutlined over painted card art: they cap
+	# at 3.3:1 and 4.0:1 against pure white and fall toward 1.5:1 on the card
+	# they actually sit on, so neither could reach the 4.5:1 body floor on any
+	# ground. brand_primary measures 7.2:1 and cat_akademis 5.1:1 on
+	# surface_card, keeping a warm/cool split that now reads.
+	for pair in [["MinigameWheelHeaderWarm", tokens.brand_primary],
+			["MinigameWheelHeaderCool", tokens.cat_akademis]]:
+		var wheel: String = pair[0]
+		theme.add_type(wheel)
+		theme.set_type_variation(wheel, "Label")
+		theme.set_font_size("font_size", wheel, tokens.font_title)
+		theme.set_color("font_color", wheel, pair[1])
+		if tokens.font_display != null:
+			theme.set_font("font", wheel, tokens.font_display)
+
+	# PilihanGanda's answer buttons. The house helper gives them the full
+	# five-state set at radius_button, plus font_title and the display face,
+	# which is the whole rung -- a hand-rolled block here shipped with a 0
+	# radius and tests/test_button_geometry.gd caught it.
+	_add_button_variation(theme, tokens, "MinigameChoiceButton",
+		tokens.surface_card, tokens.surface_sunken,
+		tokens.brand_primary, tokens.text_primary)
 
 
 # --------------------------------------------------------------- progress

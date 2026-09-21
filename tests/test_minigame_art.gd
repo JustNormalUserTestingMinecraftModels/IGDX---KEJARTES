@@ -117,8 +117,12 @@ func test_menjodohkan_cards_are_rounded_and_use_heading_text() -> void:
 		var src := FileAccess.get_file_as_string(p)
 		assert_true(src.contains("corner_radius_top_left = 24"),
 			p + " card needs the radius_md corner")
-		assert_true(src.contains("theme_type_variation = &\"H2Label\""),
-			p + " TextLabel needs the H2Label heading variation")
+		# 2026-09-21: the two cards left H2Label (48) for the minigame type
+		# ladder's own rung, MinigameQuestionLabel (64 = font_h1). The pin
+		# stays -- the card's text must still reach its size through a
+		# variation, just the one built for it.
+		assert_true(src.contains("theme_type_variation = &\"MinigameQuestionLabel\""),
+			p + " TextLabel needs the MinigameQuestionLabel variation")
 		assert_false(src.contains("theme_override_font_sizes/font_size = 42"),
 			p + " must drop the static 42px TextLabel override")
 
@@ -137,10 +141,18 @@ func test_pilihanganda_answer_buttons_are_rounded_rects() -> void:
 	assert_false(src.contains("choice_btn_normal_texture = ExtResource"),
 		"the meme placeholder texture must be cleared")
 
+## 2026-09-21: the scene's raw `font` export went away with the type ladder.
+## The display face still reaches this screen, but through variations that
+## DISPLAY_ROSTER pins in tests/test_theme_factory.gd -- MinigameBadgeLabel on
+## the card's "Soal N/M" chip and MinigameChoiceButton on the answers. The
+## question itself is deliberately body-face: it is body copy, not a heading.
 func test_pilihanganda_uses_the_display_font() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
-	assert_true(src.contains("Boohong.otf"),
-		"the scene must set its font export to the Boohong display face for heading text")
+	var scene := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
+	assert_true(scene.contains("QuestionCard.tscn"),
+		"the badge that carries the display face lives on the shared card")
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
+	assert_true(src.contains("MinigameChoiceButton"),
+		"the answer buttons must take the display-face choice variation")
 
 func test_choice_buttons_animate_on_both_style_paths() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
@@ -257,9 +269,16 @@ func test_pilihanganda_flash_styles_are_not_transposed() -> void:
 		"the wrong-answer flash must resolve to the red fill")
 
 func test_quiz_labels_use_ink_that_reads_on_the_wood_table() -> void:
+	# 2026-09-21: the counter is no longer a loose label on the wood table --
+	# it is the card's "Soal N/M" badge, cream on the brand_primary chip at
+	# 6.9:1. The pale-blue failure this pinned cannot recur by construction,
+	# so the assertion moves to the arrangement that guarantees it.
 	var pg := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
-	assert_true(pg.contains("progress_label_color = Color(0.11764706, 0.14117648, 0.21176471, 1)"),
-		"the progress label must keep the dark ink; pale blue vanished on the wood table")
+	assert_true(pg.contains("QuestionCard.tscn"),
+		"the counter must sit on the card, not bare on the wood table")
+	var pg_gd := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
+	assert_true(pg_gd.contains('find_child("BadgeLabel"'),
+		"the counter must be driven as the card's badge")
 	var mj := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Menjodohkan.tscn")
 	assert_false(mj.contains("Color(0.4, 0.7, 1, 1)"),
 		"Menjodohkan's answer header must not go back to the pale blue")

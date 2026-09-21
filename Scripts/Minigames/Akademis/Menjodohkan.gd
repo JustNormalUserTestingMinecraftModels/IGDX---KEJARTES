@@ -27,6 +27,16 @@ extends BaseMinigame
 	"Bali"
 ]
 
+## Fits tile text to its card, the same helper Password, Variabel and
+## PilihanGanda use.
+const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
+
+## The rungs a tile's text may take, font_display_size down to font_title.
+## A tile is a short phrase on a big card, so it starts at the top of the
+## ladder rather than the question rung.
+const TILE_TEXT_MAX := 96
+const TILE_TEXT_MIN := 36
+
 @export_group("Card Templates")
 ## Template instantiated once per question into the question carousel.
 @export var question_card_scene: PackedScene = preload("res://Scenes/Minigames/Akademis/QuestionCard.tscn")
@@ -85,10 +95,6 @@ extends BaseMinigame
 @export var correct_color: Color         = Color(0.3, 0.85, 0.4, 1)
 ## Flash tint for an incorrect submission.
 @export var wrong_color: Color           = Color(0.9, 0.3, 0.3, 1)
-## Text colour for the question carousel's header.
-@export var question_header_color: Color = Color(1.0, 0.7, 0.3, 1)
-## Text colour for the answer carousel's header.
-@export var answer_header_color: Color   = Color(0.4, 0.7, 1.0, 1)
 ## Default tint for a progress badge before it is locked.
 @export var badge_default_color: Color   = Color(0.85, 0.85, 0.9, 1)
 ## Background fill behind each progress badge.
@@ -99,14 +105,16 @@ extends BaseMinigame
 ## Optional font override applied across the game. Null keeps the theme
 ## default.
 @export var font: Font = null
-## Font size for the game's title label.
-@export var title_font_size: int  = 48
-## Font size for both carousels' headers.
-@export var header_font_size: int = 32
-## Font size for the Lock/Submit button labels.
-@export var button_font_size: int = 36
-## Font size for the progress badges.
-@export var badge_font_size: int  = 26
+## Font size for the progress badges. 36 is the font_title rung; this was
+## 26, under the 28px body floor, until 2026-09-21.
+##
+## The title, header and button sizes that used to sit beside it were
+## removed in the same pass, along with the two header colours: nothing read
+## any of them and nothing set them, and the colours were the pale inks --
+## Color(1, 0.7, 0.3) and Color(0.4, 0.7, 1) -- that
+## tests/test_minigame_art.gd forbids on this screen, so wiring them up
+## would have quietly failed the contrast floor.
+@export var badge_font_size: int  = 36
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
@@ -404,6 +412,19 @@ func _build_progress_badges() -> void:
 		progress_hbox.add_child(badge)
 		progress_badges.append(lbl)
 
+## Fits a tile's text to its card, from the font_display_size rung down to
+## font_title. This replaced two copies of a four-branch if-chain that picked
+## 90/80/70/60 by string length, plus a third literal for the picture case:
+## a length ladder cannot see how the text actually wraps, which is the bug
+## SoalFit was written for (see its header). The badge argument is the card's
+## own "Soal N/M" chip where it has one -- AnswerCard does not, and SoalFit
+## accepts null.
+func _fit_card_text(card: Control, label: Label) -> void:
+	var badge := card.find_child("StatusBadge", true, false) as Control
+	label.add_theme_font_size_override("font_size",
+		SoalFit.font_size(label, badge, label.text, TILE_TEXT_MAX, TILE_TEXT_MIN))
+
+
 func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 	# Question cards
 	for i in range(questions.size()):
@@ -415,18 +436,8 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 		var txt_lbl = card.find_child("TextLabel", true, false) as Label
 		if txt_lbl:
 			txt_lbl.text = questions[i]
-			# 2.5x the original 36/32/28/24 ladder. The card grew to 480 tall to
-			# keep the longest question inside the box at these sizes.
-			var q_len = questions[i].length()
-			if q_len <= 15:
-				txt_lbl.add_theme_font_size_override("font_size", 90)
-			elif q_len <= 32:
-				txt_lbl.add_theme_font_size_override("font_size", 80)
-			elif q_len <= 55:
-				txt_lbl.add_theme_font_size_override("font_size", 70)
-			else:
-				txt_lbl.add_theme_font_size_override("font_size", 60)
-				
+			_fit_card_text(card, txt_lbl)
+
 		var img_rect = card.find_child("RowImage", true, false) as TextureRect
 		if img_rect:
 			var img_path = selected_pairs_data[pair_q_idx].get("image", "")
@@ -434,9 +445,12 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 				img_rect.texture = load(img_path)
 				img_rect.visible = true
 				if txt_lbl:
-					# Smallest rung of the 2.5x ladder: the picture takes the
-					# upper half of the card, so the text gets what is left.
-					txt_lbl.add_theme_font_size_override("font_size", 60)
+					# Re-fit now the picture is showing. Both calls land in
+					# the same frame, so both measure SoalFit's FALLBACK_BOX
+					# and agree -- this one earns its place only if the fit
+					# ever moves to after layout, where the visible image
+					# really would leave the text less room.
+					_fit_card_text(card, txt_lbl)
 			else:
 				img_rect.visible = false
 				
@@ -466,17 +480,8 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 		var txt_lbl = card.find_child("TextLabel", true, false) as Label
 		if txt_lbl:
 			txt_lbl.text = answers[i]
-			# Same 2.5x scale as the question ladder above.
-			var a_len = answers[i].length()
-			if a_len <= 15:
-				txt_lbl.add_theme_font_size_override("font_size", 90)
-			elif a_len <= 30:
-				txt_lbl.add_theme_font_size_override("font_size", 80)
-			elif a_len <= 50:
-				txt_lbl.add_theme_font_size_override("font_size", 70)
-			else:
-				txt_lbl.add_theme_font_size_override("font_size", 60)
-			
+			_fit_card_text(card, txt_lbl)
+
 		var img_rect = card.find_child("RowImage", true, false) as TextureRect
 		if img_rect:
 			var img_path = selected_pairs_data[pair_a_idx].get("answer_image", "")

@@ -345,6 +345,13 @@ const DISPLAY_ROSTER := [
 	"EventDialogHeaderLabel",
 	# 2026-09-12: the slide warning's caption, display face at DisplayLabel size.
 	"EventWarningCaptionLabel",
+	# 2026-09-21 minigame type ladder: the badge, the two Menjodohkan wheel
+	# headers and PilihanGanda's choice buttons. The other three variations
+	# from that pass -- MinigameQuestionLabel, MinigameMetaLabel and
+	# MinigameOverlayLabel -- are deliberately absent: a quiz question and
+	# its meta are body copy, so they keep the body face.
+	"MinigameBadgeLabel", "MinigameWheelHeaderWarm", "MinigameWheelHeaderCool",
+	"MinigameChoiceButton",
 	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
 	# this roster in the same pass -- LobbyNavTile and LobbyCtaButton
 	# replaced it.

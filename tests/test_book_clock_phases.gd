@@ -227,3 +227,69 @@ func test_school_day_feeds_the_header_from_gamestate() -> void:
 		"SchoolDay must tell the widget which week it is")
 	assert_true(src.contains("GameState.get_max_weeks()"),
 		"the week count must come from GameState, not a literal")
+
+
+## The header is authored, and it is EventDialogue's header rather than a
+## lookalike: the same variations, not a set of overrides that happen to
+## match. The project's rule forbids the overrides anyway.
+func test_the_header_is_authored_with_the_shared_variations() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	for path in [BookClockWidget.DAY_LABEL_PATH, BookClockWidget.WEEK_LABEL_PATH]:
+		assert_true(w.get_node_or_null(path) != null,
+			"the scene must author %s" % path)
+	var banner: Control = w.get_node_or_null("Header/DayBanner")
+	assert_true(banner != null, "the day banner must exist")
+	if banner != null:
+		assert_eq(String(banner.theme_type_variation), "DayBannerPanel",
+			"the banner must use EventDialogue's own panel variation")
+	var day_label: Label = w.get_node_or_null(BookClockWidget.DAY_LABEL_PATH)
+	if day_label != null:
+		assert_eq(String(day_label.theme_type_variation), "DayBannerLabel",
+			"the day must use EventDialogue's own label variation")
+	var minggu: Label = w.get_node_or_null("Header/Calendar/Text/MingguLabel")
+	if minggu != null:
+		assert_eq(String(minggu.theme_type_variation), "CalendarLabel",
+			"the Minggu caption must use the shared calendar variation")
+	w.free()
+
+
+## The illustration asked for by name: the lobby's daily-login calendar, not
+## EventDialogue's flat calendar_badge.png and nothing newly drawn.
+func test_the_badge_wears_the_daily_login_calendar() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	var cal: TextureRect = w.get_node_or_null("Header/Calendar")
+	assert_true(cal != null, "the calendar badge must exist")
+	if cal != null:
+		assert_true(cal.texture != null, "the badge must have art")
+		if cal.texture != null:
+			assert_true(String(cal.texture.resource_path).ends_with("icon_daily_login.png"),
+				"the badge must wear the daily-login calendar")
+	w.free()
+
+
+## The daily-login calendar is drawn in perspective: its paper rises to the
+## right. Straight text on it reads as sliding off the page. -9 degrees is
+## measured from the art -- a least-squares fit through the first cream
+## pixel in each of 48 columns gave a slope of -0.1579, or -8.97 degrees --
+## not eyeballed.
+func test_the_badge_text_is_rotated_onto_the_paper() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	var text_box: Control = w.get_node_or_null("Header/Calendar/Text")
+	assert_true(text_box != null, "the badge's text container must exist")
+	if text_box != null:
+		assert_true(absf(text_box.rotation_degrees - (-9.0)) < 0.5,
+			"the text must sit on the tilted paper, got %f" % text_box.rotation_degrees)
+	w.free()
+
+
+## The header draws over the day screen, so it must not eat taps meant for
+## the screen above it -- SchoolDay closes its day summary on a tap anywhere.
+func test_the_header_ignores_the_mouse() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	for path in ["Header", "Header/Calendar", "Header/DayBanner"]:
+		var n: Control = w.get_node_or_null(path)
+		assert_true(n != null, "%s must exist" % path)
+		if n != null:
+			assert_eq(n.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+				"%s must not take input from the screen above it" % path)
+	w.free()

@@ -117,8 +117,12 @@ func test_menjodohkan_cards_are_rounded_and_use_heading_text() -> void:
 		var src := FileAccess.get_file_as_string(p)
 		assert_true(src.contains("corner_radius_top_left = 24"),
 			p + " card needs the radius_md corner")
-		assert_true(src.contains("theme_type_variation = &\"H2Label\""),
-			p + " TextLabel needs the H2Label heading variation")
+		# 2026-09-21: the two cards left H2Label (48) for the minigame type
+		# ladder's own rung, MinigameQuestionLabel (64 = font_h1). The pin
+		# stays -- the card's text must still reach its size through a
+		# variation, just the one built for it.
+		assert_true(src.contains("theme_type_variation = &\"MinigameQuestionLabel\""),
+			p + " TextLabel needs the MinigameQuestionLabel variation")
 		assert_false(src.contains("theme_override_font_sizes/font_size = 42"),
 			p + " must drop the static 42px TextLabel override")
 

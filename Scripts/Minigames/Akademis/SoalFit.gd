@@ -1,7 +1,7 @@
 extends RefCounted
 
-## Fits question text to the SoalCard (QuestionCard.tscn) on the two
-## calculator quizzes, Variabel and Password.
+## Fits question text to the SoalCard (QuestionCard.tscn) on the Akademis
+## quizzes: Variabel, Password, PilihanGanda and Menjodohkan's tiles.
 ##
 ## Returns the largest font size at which the text fits the card's label once
 ## wrapped, measured with the label's own font rather than guessed from a line

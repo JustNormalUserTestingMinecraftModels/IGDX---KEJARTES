@@ -134,6 +134,45 @@ func test_pilihan_ganda_carries_no_font_size_override() -> void:
 		"PilihanGanda.tscn's authored 14px and 18px overrides must be gone")
 
 
+const PILIHAN_GD := "res://Scripts/Minigames/Akademis/PilihanGanda.gd"
+
+
+## A size written straight into the call, e.g.
+## add_theme_font_size_override("font_size", 48). A call whose size comes
+## from SoalFit is the supported form and is not matched here.
+func _has_literal_size_override(src: String) -> bool:
+	var needle := 'add_theme_font_size_override("font_size", '
+	var at := src.find(needle)
+	while at != -1:
+		var ch := src.substr(at + needle.length(), 1)
+		if ch.is_valid_int():
+			return true
+		at = src.find(needle, at + needle.length())
+	return false
+
+
+func test_pilihan_ganda_has_no_literal_font_size() -> void:
+	var src := FileAccess.get_file_as_string(PILIHAN_GD)
+	assert_false(src.is_empty(), "PilihanGanda.gd must be readable")
+	assert_false(_has_literal_size_override(src),
+		"PilihanGanda.gd must reach its sizes through SoalFit and variations")
+
+
+func test_pilihan_ganda_choice_rows_clear_the_touch_floor() -> void:
+	var src := FileAccess.get_file_as_string(PILIHAN_GD)
+	assert_true(src.contains("answer_btn_min_height: int       = 130"),
+		"answer_btn_min_height must be 130 -- 100 is under the ~48dp touch "
+		+ "floor in the 1080-wide design space")
+
+
+func test_pilihan_ganda_fits_the_question_with_soalfit() -> void:
+	var src := FileAccess.get_file_as_string(PILIHAN_GD)
+	assert_true(src.contains("SoalFit.font_size"),
+		"the question must step down the ladder rather than clip")
+	assert_true(src.contains("MinigameChoiceButton"),
+		"the answer buttons must take the choice-button variation")
+
+
 func test_question_card_has_no_emoji_lock() -> void:
 	for path in BOTH_CARDS:
 		var src := FileAccess.get_file_as_string(path)

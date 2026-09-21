@@ -104,7 +104,9 @@ extends BaseMinigame
 ## Margin (pixels) inside the button texture where the text is drawn.
 @export var choice_btn_texture_margin: int   = 12
 ## Minimum height (px) of each answer button, regardless of text length.
-@export var answer_btn_min_height: int       = 100
+## 130 is the project's ~48dp touch floor in the 1080-wide design space;
+## this shipped at 100 until 2026-09-21.
+@export var answer_btn_min_height: int       = 130
 ## StyleBox used for answer buttons when no texture is assigned. Left null the
 ## buttons fall back to the theme's pill Button, which answer_btn_font_color's
 ## dark ink is not designed for -- assign a light rounded StyleBoxFlat instead.
@@ -123,19 +125,18 @@ extends BaseMinigame
 @export var correct_color: Color        = Color(0.2, 0.75, 0.35, 1)
 ## Procedural-mode tint matching answer_btn_wrong_style's flash.
 @export var wrong_color: Color          = Color(0.85, 0.25, 0.25, 1)
-## Text colour for the "question N of total_questions_per_game" label.
-@export var progress_label_color: Color = Color(0.75, 0.85, 1.0, 1)
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
-## Assign a custom Font resource. Leave null to use the project theme font.
-@export var font: Font = null
-## Font size for the progress label.
-@export var progress_font_size: int  = 32
-## Font size for the question text.
-@export var question_font_size: int  = 48
-## Font size for each answer button's label.
-@export var answer_btn_font_size: int = 36
+## Fits the question to the card, the same helper Password and Variabel use.
+const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
+
+## Largest size for the question text; SoalFit shrinks from here when a
+## long question will not fit the card. 64 is the font_h1 rung.
+@export var question_font_size: int  = 64
+## Smallest size SoalFit will shrink a long question to. 36 is the
+## font_title rung and the floor for this screen.
+@export var min_question_font_size: int = 36
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
@@ -159,15 +160,28 @@ var score: int = 0
 var max_score: int = 3
 
 @onready var score_hud: MinigameScoreHUD  = $VBoxContainer/ScoreHUD
-@onready var progress_label: Label        = $VBoxContainer/ProgressLabel
-@onready var question_label: Label        = $VBoxContainer/QuestionLabel
-@onready var question_image: TextureRect  = $VBoxContainer/QuestionImage
+## The shared QuestionCard (Password and Variabel instance the same scene).
+## It owns the picture, the question and the "Soal N/M" badge, which used to
+## be three loose siblings here in the wrong reading order.
+@onready var soal_card: Control           = $VBoxContainer/SoalCard
+@onready var question_label: Label = soal_card.find_child("TextLabel", true, false) as Label
+@onready var question_image: TextureRect = soal_card.find_child("RowImage", true, false) as TextureRect
+@onready var progress_label: Label = soal_card.find_child("BadgeLabel", true, false) as Label
+@onready var status_badge: Control = soal_card.find_child("StatusBadge", true, false) as Control
 @onready var choices_container: GridContainer = $VBoxContainer/ChoicesGrid
 
 func _ready() -> void:
 	super._ready()
 	_apply_visual_exports()
 	setup_game()
+
+## Largest size, from question_font_size down to min_question_font_size, at
+## which the question fits the card without running under its "Soal N/M"
+## badge. Password and Variabel fit their problem text the same way.
+func _fit_font_size(text: String) -> int:
+	return SoalFit.font_size(question_label, status_badge, text,
+		question_font_size, min_question_font_size)
+
 
 func _apply_visual_exports() -> void:
 	var bg = get_node_or_null("Background") as TextureRect
@@ -233,20 +247,17 @@ func _show_current_question() -> void:
 	is_submitting_answer = false
 	var q_data = active_questions[current_question_index]
 
+	# The card's badge is a short chip, so it carries the counter only --
+	# the score already has a home on MinigameScoreHUD.
 	if progress_label:
-		progress_label.text = "Pertanyaan %d dari %d | Skor: %d" % [current_question_index + 1, active_questions.size(), score]
-		progress_label.add_theme_font_size_override("font_size", progress_font_size)
-		progress_label.add_theme_color_override("font_color", progress_label_color)
-		if font:
-			progress_label.add_theme_font_override("font", font)
+		progress_label.text = "Soal %d/%d" % [current_question_index + 1, active_questions.size()]
 
 	if question_label:
 		question_label.text = q_data.get("question", "")
-		question_label.add_theme_font_size_override("font_size", question_font_size)
-		if font:
-			question_label.add_theme_font_override("font", font)
 		question_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		question_label.add_theme_font_size_override("font_size",
+			_fit_font_size(question_label.text))
 
 	if question_image:
 		var img_path = q_data.get("image", null)
@@ -300,9 +311,7 @@ func _show_current_question() -> void:
 			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			btn.custom_minimum_size = Vector2(0, answer_btn_min_height)
 			btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			btn.add_theme_font_size_override("font_size", answer_btn_font_size)
-			if font:
-				btn.add_theme_font_override("font", font)
+			btn.theme_type_variation = &"MinigameChoiceButton"
 			_apply_choice_btn_textures(btn)
 			btn.pressed.connect(_on_choice_pressed.bind(i, btn))
 			choices_container.add_child(btn)

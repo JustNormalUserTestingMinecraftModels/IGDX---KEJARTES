@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://j0ixncgl13v1" path="res://Scripts/Minigames/Akademis/PilihanGanda.gd" id="1_pilihanganda"]
 [ext_resource type="FontFile" uid="uid://bbmfoy35ubh2t" path="res://Assets/Fonts/Boohong.otf" id="3_doxun"]
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="4_doxun"]
+[ext_resource type="PackedScene" uid="uid://b7q8saw0x1y20" path="res://Scenes/Minigames/Akademis/QuestionCard.tscn" id="5_4ughg"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_b17uc"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_doxun"]
@@ -104,29 +105,14 @@ alignment = 1
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="QuestionImage" type="TextureRect" parent="VBoxContainer" unique_id=1846160863]
-visible = false
-custom_minimum_size = Vector2(0, 420)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="ProgressLabel" type="Label" parent="VBoxContainer" unique_id=952582965]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "Soal 1 dari 3 | Skor: 0"
-horizontal_alignment = 1
-
-[node name="QuestionLabel" type="Label" parent="VBoxContainer" unique_id=345345602]
+[node name="SoalCard" parent="VBoxContainer" unique_id=82108006 instance=ExtResource("5_4ughg")]
+custom_minimum_size = Vector2(0, 960)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
-text = "Question text here?"
-horizontal_alignment = 1
-autowrap_mode = 2
+size_flags_vertical = 3
 
 [node name="ChoicesGrid" type="GridContainer" parent="VBoxContainer" unique_id=1089490452]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
+theme_override_constants/v_separation = 12

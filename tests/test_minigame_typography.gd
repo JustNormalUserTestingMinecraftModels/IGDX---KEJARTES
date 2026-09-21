@@ -104,6 +104,36 @@ func test_question_card_border_clears_the_contrast_floor() -> void:
 				"%s still carries the mid-tone ink %s" % [path, ink])
 
 
+# ----------------------------------------------------------- PilihanGanda
+
+const PILIHAN := "res://Scenes/Minigames/Akademis/PilihanGanda.tscn"
+
+
+func test_pilihan_ganda_instances_the_shared_card() -> void:
+	var src := FileAccess.get_file_as_string(PILIHAN)
+	assert_false(src.is_empty(), "PilihanGanda.tscn must be readable")
+	assert_true(src.contains("QuestionCard.tscn"),
+		"PilihanGanda.tscn must instance the shared QuestionCard")
+	assert_true(src.contains('name="SoalCard"'),
+		"the instance must be named SoalCard, as Password and Variabel name theirs")
+
+
+func test_pilihan_ganda_drops_the_loose_trio() -> void:
+	var src := FileAccess.get_file_as_string(PILIHAN)
+	# The image used to sit ABOVE the progress counter, which sat above the
+	# question -- so "Dari gambar di atas..." pointed at a picture with the
+	# score wedged between. The card owns all three now.
+	for gone in ['name="QuestionImage"', 'name="ProgressLabel"', 'name="QuestionLabel"']:
+		assert_false(src.contains(gone),
+			"PilihanGanda.tscn must no longer declare %s -- the card owns it" % gone)
+
+
+func test_pilihan_ganda_carries_no_font_size_override() -> void:
+	var src := FileAccess.get_file_as_string(PILIHAN)
+	assert_false(src.contains("theme_override_font_sizes/font_size"),
+		"PilihanGanda.tscn's authored 14px and 18px overrides must be gone")
+
+
 func test_question_card_has_no_emoji_lock() -> void:
 	for path in BOTH_CARDS:
 		var src := FileAccess.get_file_as_string(path)

@@ -4,16 +4,15 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c5rpq1x16q574"
 path.s3tc="res://.godot/imported/splash_citra.png-75336bdba7bfa8e1fee27ea7f42ed0e3.s3tc.ctex"
-path.etc2="res://.godot/imported/splash_citra.png-75336bdba7bfa8e1fee27ea7f42ed0e3.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/splash_citra.png"
-dest_files=["res://.godot/imported/splash_citra.png-75336bdba7bfa8e1fee27ea7f42ed0e3.s3tc.ctex", "res://.godot/imported/splash_citra.png-75336bdba7bfa8e1fee27ea7f42ed0e3.etc2.ctex"]
+dest_files=["res://.godot/imported/splash_citra.png-75336bdba7bfa8e1fee27ea7f42ed0e3.s3tc.ctex"]
 
 [params]
 

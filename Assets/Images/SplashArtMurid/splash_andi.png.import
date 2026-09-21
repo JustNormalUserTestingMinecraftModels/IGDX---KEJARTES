@@ -4,16 +4,15 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b0mc2ssixlr2p"
 path.s3tc="res://.godot/imported/splash_andi.png-4ed90449af51a9524369eebdf2880f81.s3tc.ctex"
-path.etc2="res://.godot/imported/splash_andi.png-4ed90449af51a9524369eebdf2880f81.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/splash_andi.png"
-dest_files=["res://.godot/imported/splash_andi.png-4ed90449af51a9524369eebdf2880f81.s3tc.ctex", "res://.godot/imported/splash_andi.png-4ed90449af51a9524369eebdf2880f81.etc2.ctex"]
+dest_files=["res://.godot/imported/splash_andi.png-4ed90449af51a9524369eebdf2880f81.s3tc.ctex"]
 
 [params]
 

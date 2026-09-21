@@ -4,16 +4,15 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b1iwn8u5urqt2"
 path.s3tc="res://.godot/imported/splash_thea.png-406ee71b7cead431eb454a81967ab2be.s3tc.ctex"
-path.etc2="res://.godot/imported/splash_thea.png-406ee71b7cead431eb454a81967ab2be.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/splash_thea.png"
-dest_files=["res://.godot/imported/splash_thea.png-406ee71b7cead431eb454a81967ab2be.s3tc.ctex", "res://.godot/imported/splash_thea.png-406ee71b7cead431eb454a81967ab2be.etc2.ctex"]
+dest_files=["res://.godot/imported/splash_thea.png-406ee71b7cead431eb454a81967ab2be.s3tc.ctex"]
 
 [params]
 

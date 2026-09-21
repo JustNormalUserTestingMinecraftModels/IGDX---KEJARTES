@@ -4,16 +4,15 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bvc6vlo87qpl0"
 path.s3tc="res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.s3tc.ctex"
-path.etc2="res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/splash_marcel.png"
-dest_files=["res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.s3tc.ctex", "res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.etc2.ctex"]
+dest_files=["res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.s3tc.ctex"]
 
 [params]
 

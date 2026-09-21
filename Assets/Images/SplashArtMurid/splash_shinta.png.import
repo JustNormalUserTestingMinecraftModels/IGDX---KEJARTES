@@ -4,16 +4,15 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bm7ij0w17eoiy"
 path.s3tc="res://.godot/imported/splash_shinta.png-904c4c1ee07e7e75c95de04735df620b.s3tc.ctex"
-path.etc2="res://.godot/imported/splash_shinta.png-904c4c1ee07e7e75c95de04735df620b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/splash_shinta.png"
-dest_files=["res://.godot/imported/splash_shinta.png-904c4c1ee07e7e75c95de04735df620b.s3tc.ctex", "res://.godot/imported/splash_shinta.png-904c4c1ee07e7e75c95de04735df620b.etc2.ctex"]
+dest_files=["res://.godot/imported/splash_shinta.png-904c4c1ee07e7e75c95de04735df620b.s3tc.ctex"]
 
 [params]
 

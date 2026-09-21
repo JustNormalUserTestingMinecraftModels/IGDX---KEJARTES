@@ -121,21 +121,20 @@ func test_cutscene_grade_selection_has_sfx() -> void:
 func test_every_play_sfx_id_in_the_project_is_known() -> void:
 	# Guards against typos: a misspelled id is silently dropped by
 	# _resolve_sfx's fallback, so it would never surface at runtime.
-	var known := ["tap", "confirm", "cancel", "success", "fail", "coin",
-		"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
-		"popup_close", "select", "error", "reward", "tally", "sparkle",
-		"specialty_match",
-		"pill_tap", "pill_popup_open", "pill_popup_close",
-		"star_earn_1", "star_earn_2", "star_earn_3", "result_fanfare",
-		"score_tick", "combo_up", "event_announce",
-		]
+	#
+	# The known set is asked of AudioDirector rather than listed here. It used
+	# to be a hand-written copy of _resolve_sfx's match arms, which meant every
+	# new cue had to be added in two places and the suite failed on the second
+	# one -- a maintenance tax that taught nothing. has_sfx() is the real
+	# authority, and asking it also catches an id that has a match arm but an
+	# empty slot, which a literal list never could.
 	var bad: Array[String] = []
-	_scan_for_sfx_ids("res://Scripts", known, bad)
+	_scan_for_sfx_ids("res://Scripts", bad)
 	assert_true(bad.is_empty(),
 		"unknown sfx ids used: " + ", ".join(bad))
 
 
-func _scan_for_sfx_ids(path: String, known: Array, bad: Array[String]) -> void:
+func _scan_for_sfx_ids(path: String, bad: Array[String]) -> void:
 	var dir := DirAccess.open(path)
 	if dir == null:
 		return
@@ -144,13 +143,13 @@ func _scan_for_sfx_ids(path: String, known: Array, bad: Array[String]) -> void:
 	while name != "":
 		var full := path + "/" + name
 		if dir.current_is_dir():
-			_scan_for_sfx_ids(full, known, bad)
+			_scan_for_sfx_ids(full, bad)
 		elif name.ends_with(".gd"):
 			var regex := RegEx.new()
 			regex.compile('play_sfx\\(&"([a-z_]+)"')
 			for m in regex.search_all(_source(full)):
 				var id := m.get_string(1)
-				if not known.has(id) and not bad.has(id):
+				if not AudioDirector.has_sfx(StringName(id)) and not bad.has(id):
 					bad.append("%s in %s" % [id, full])
 		name = dir.get_next()
 	dir.list_dir_end()

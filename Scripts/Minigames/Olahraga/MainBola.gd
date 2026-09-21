@@ -255,7 +255,14 @@ func _ready() -> void:
 ## Re-lay out whenever the root is resized, in the editor as well as in
 ## game. NOTIFICATION_RESIZED can arrive before _ready(), while the @onready
 ## node references are still null; is_node_ready() skips that one.
+## Chained explicitly: BaseMinigame's _notification answers the Android back
+## press by opening the pause menu, and this override must not be the reason a
+## player cannot leave Main Bola. GDScript does walk the script chain for
+## _notification, so this is belt and braces rather than a fix -- but the back
+## button is the kind of thing nobody notices is broken until a player
+## complains, and one call costs nothing.
 func _notification(what: int) -> void:
+	super._notification(what)
 	if what == NOTIFICATION_RESIZED and is_node_ready():
 		_setup_layout()
 
@@ -640,6 +647,9 @@ func _end_swipe(end_pos: Vector2) -> void:
 # ─── Shoot ───────────────────────────────────────────────────────────────────
 func _shoot_ball(swipe_vec: Vector2) -> void:
 	is_resolving = true
+	# Four kick samples picked at random. is_resolving guards re-entry, so
+	# one swipe is one kick.
+	AudioDirector.play_sfx_variant(&"ball_kick")
 
 	# Deduct attempt & update HUD
 	attempts_left -= 1

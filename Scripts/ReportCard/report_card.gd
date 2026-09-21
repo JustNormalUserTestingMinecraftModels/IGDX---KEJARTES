@@ -75,6 +75,12 @@ func _refresh_current_page() -> void:
 
 
 func _notification(what: int) -> void:
+	# Android delivers the hardware/gesture back press as a notification, not
+	# as ui_cancel. A new branch here rather than a second _notification: a
+	# second one would silently replace this focus refresh.
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_pressed()
+		return
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		_refresh_current_page()
 

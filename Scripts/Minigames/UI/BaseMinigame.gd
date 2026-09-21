@@ -283,6 +283,19 @@ func _create_pause_button() -> void:
 	pause_button.pressed.connect(_on_pause_button_pressed)
 	_get_or_create_ui_layer().add_child(pause_button)
 
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel. A minigame answers it by opening the pause menu -- never by
+## leaving outright: the pause menu owns the quit confirmation
+## ("Seluruh progress minigame anda akan dianggap gagal!"), and a mis-swipe
+## must not forfeit a round without being asked.
+##
+## _on_pause_button_pressed already no-ops while the game is over or already
+## paused, so a second back press cannot stack another menu.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_pause_button_pressed()
+
+
 func _on_pause_button_pressed() -> void:
 	if not is_game_active or is_paused:
 		return

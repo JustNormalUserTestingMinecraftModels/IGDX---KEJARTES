@@ -152,6 +152,14 @@ func _ready():
 	AudioDirector.play_bgm_playlist(&"lobby")
 
 func _notification(what: int) -> void:
+	# Android delivers the hardware/gesture back press as a notification, not
+	# as ui_cancel, so an _input handler never sees it. Routed to the same
+	# function the on-screen back button calls, so both do the same thing.
+	# A new branch here rather than a second _notification: a second one
+	# would silently replace this EXIT_TREE cleanup.
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_button_pressed()
+		return
 	if what == NOTIFICATION_EXIT_TREE:
 		if get_tree() and get_tree().root.size_changed.is_connected(_fit_color_rect_to_viewport):
 			get_tree().root.size_changed.disconnect(_fit_color_rect_to_viewport)
@@ -784,8 +792,10 @@ func _on_start_week_pressed():
 		_show_incomplete_schedule_warning()
 		return
 
-	# 5. Everything optimal
-	AudioDirector.play_sfx(&"confirm")
+	# 5. Everything optimal. The cue lives in _proceed_start_week() so every
+	# route into the week sounds the same -- the warning paths reach it too,
+	# and the generic `confirm` that used to fire only here would have
+	# stacked on top of the chime.
 	_proceed_start_week()
 
 func _get_mentally_tired_students() -> Array[String]:
@@ -938,6 +948,9 @@ func _on_peringatan_no():
 	_switch_to_flagged_student()
 
 func _proceed_start_week():
+	# The week is committed here -- the one moment in AturJadwal that is a
+	# decision rather than an adjustment, so it gets its own chime.
+	AudioDirector.play_sfx(&"schedule_confirm")
 	Transition.change_scene("res://Scenes/SchoolSimulation/SchoolDay.tscn")
 
 # ================= PENJADWALAN POPUP =================

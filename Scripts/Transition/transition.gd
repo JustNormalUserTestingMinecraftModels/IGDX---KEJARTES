@@ -181,7 +181,9 @@ func change_scene(path: String, style: Style = Style.WIPE, duration_override: fl
 	# consecutive scene changes rarely show the same motif.
 	_pattern.texture = _pick_pattern()
 
-	AudioDirector.play_sfx(&"whoosh")
+	# Three sweeps picked at random: navigation is the most-repeated sound in
+	# the game, and one sample on every scene change turns into a tic.
+	AudioDirector.play_sfx_variant(&"transition_sweep")
 	await _cover_in(style, duration_override)
 
 	var err := get_tree().change_scene_to_file(path)

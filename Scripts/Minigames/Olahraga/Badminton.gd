@@ -271,6 +271,10 @@ func _on_puck_body_entered(body: Node) -> void:
 		return
 	if (body == player_paddle or body == enemy_paddle) and _puck_hit_cooldown <= 0.0:
 		_puck_hit_cooldown = 0.22 # Prevent multi-hit trigger jitter
+		# Three racket samples picked at random: a rally is the same action
+		# a dozen times in ten seconds, and one sample reads as a metronome.
+		# Inside the cooldown branch so the jitter guard covers the cue too.
+		AudioDirector.play_sfx_variant(&"racket_hit")
 		_redirect_puck_towards_opponent(body)
 		puck_sprite.punch()
 		puck_sprite.face(puck.linear_velocity.y)

@@ -313,7 +313,10 @@ func _on_barang_pressed(index: int):
 		_price_tags[index].play_buy()
 	if index < _shelf_items.size() and is_instance_valid(_shelf_items[index]):
 		_shelf_items[index].lift()
-	AudioDirector.play_sfx(&"tap")
+	# The shelf's own browse tap, in place of the generic UI tap: picking an
+	# item off a shelf is the shop's most-repeated action and deserves to
+	# sound like the shop rather than like a menu.
+	AudioDirector.play_sfx(&"shop_browse")
 
 	# Take the slot before the cart hears of it, so the refresh that
 	# Cart.add_item() triggers empties THIS slot, not the pair's other copy.
@@ -391,7 +394,9 @@ func _on_item_landed(flying_node: Node, item: ItemData, item_size: Vector2, land
 	if is_instance_valid(life):
 		life.on_flight_finished()
 
-## A tray item was held: shrink it away, then return one to the shelf.
+## A tray item was tapped or held: shrink it away, then return one to the
+## shelf. Since 2026-09-21 a plain tap returns too, so this is the common
+## path rather than the deliberate one.
 func _on_tray_remove_requested(item_name: String) -> void:
 	AnimUtils.cart_press(tray.get_emblem())
 	AudioDirector.play_sfx(&"pop")
@@ -402,11 +407,17 @@ func _on_tray_remove_requested(item_name: String) -> void:
 	var tween := AnimUtils.shrink_and_fade(slot)
 	tween.tween_callback(Cart.remove_one.bind(item_name))
 
-## A quick tap on a tray item: a wobble says "hold me" without words.
-func _on_tray_slot_tapped(item_name: String) -> void:
-	var slot: Control = tray.get_slot(item_name)
-	if slot != null:
-		AnimUtils.wobble(slot)
+## A quick tap on a tray item. Deliberately does nothing now: the wobble here
+## used to say "hold me" without words, but since 2026-09-21 a tap returns the
+## item outright, so there is nothing left to hint at. Worse, TraySlot emits
+## remove_requested before tapped, so the wobble would land on a slot
+## _on_tray_remove_requested has already started shrinking away and the two
+## tweens would fight over the same node.
+##
+## The connection is kept rather than dropped: `tapped` is public API, and a
+## listener that only wants to know the player touched a slot still gets it.
+func _on_tray_slot_tapped(_item_name: String) -> void:
+	pass
 
 ## Beli and Back empty the cart (the tray redraws from Cart.cart_changed);
 ## this forgets any unit still flying in. Kept by name: koprasi.gd calls it.

@@ -695,6 +695,24 @@ func test_the_day_name_is_not_shown_twice() -> void:
 		"DayLabel must be hidden now the header carries the day")
 
 
+## Hiding it in the scene is not enough. _set_day_chrome_visible(true) runs
+## after every day-summary popup and sets `visible = true` on everything in
+## _DAY_CHROME_PATHS, so leaving DayLabel in that list un-hides the duplicate
+## day name for the rest of the run -- and a test that only reads the .tscn
+## passes while the screen is wrong.
+func test_the_hidden_day_label_is_not_un_hidden_by_the_chrome_toggle() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var at := src.find("const _DAY_CHROME_PATHS")
+	assert_true(at >= 0, "_DAY_CHROME_PATHS must exist")
+	if at < 0:
+		return
+	var block := src.substr(at, src.find("]", at) - at)
+	assert_false(block.contains('"DayScreen/DayLabel"'),
+		"a permanently hidden label must not be in the show/hide list")
+	assert_true(block.contains('"DayScreen/DayNumberLabel"'),
+		"the day counter still hides for the summary popup")
+
+
 ## One node's block in SchoolDay.tscn: from its [node] header to the next
 ## one. A fixed character window is not good enough here -- DayNumberLabel
 ## and DayLabel are seven lines apart, so a 400-char window read one node's

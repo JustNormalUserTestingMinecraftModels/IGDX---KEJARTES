@@ -724,9 +724,13 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 ##
 ## The sky cinematic is deliberately absent: it is the screen's backdrop
 ## now, not chrome, and should keep turning behind the summary's scrim.
+## What the day-summary popup hides behind itself, and shows again on the way
+## out. DayScreen/DayLabel is deliberately NOT here: since 2026-09-21 the
+## BookClockWidget header carries the day name and the scene hides this label
+## permanently, so listing it would set visible = true on the way out and
+## bring the duplicate back for the rest of the run.
 const _DAY_CHROME_PATHS := [
 	"DayScreen/DayNumberLabel",
-	"DayScreen/DayLabel",
 	"DayScreen/ProgressBar",
 	"DayScreen/StatusLabel",
 ]

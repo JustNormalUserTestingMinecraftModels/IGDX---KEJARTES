@@ -29,43 +29,28 @@ extends Control
 @onready var bubble: ChatBubble = $Stage/ChatBubble
 @onready var herman_ap: AnimationPlayer = get_node_or_null("Stage/Herman/HermanAP") as AnimationPlayer
 @onready var tray: BasketTray = get_node_or_null("Stage/TrayDock/BasketTray") as BasketTray
-@onready var crate: TextureButton = get_node_or_null("Stage/CrateHandle") as TextureButton
-
-## CrateHandle's authored position (top-left, Stage-local -- Stage itself is
-## the one 1080x1920 piece that re-anchors as a whole on tall phones, so a
-## fixed offset here is correct at any phone height) while the tray is
-## EXPANDED. CrateHandle's own pivot is (0,0) (top-left), so this is also its
-## on-screen top-left at any scale: it is set to Body/Emblem's authored rect
-## top-left (24 (Body's left inset) + 876 (Emblem's own offset_left) = 900,
-## 1360 (Body's absolute top, itself 117 (TrayDock) + 1243 (Emblem's parent
-## Body offset_top)) - 64 (Emblem's offset_top) = 1296) -- see
-## docs/superpowers/specs/2026-09-17-koperasi-polish-design.md section 3.
-@export var crate_pos_expanded: Vector2 = Vector2(900.0, 1296.0)
-## CrateHandle's position while the tray is COLLAPSED -- large (scale 1.0),
-## bottom-right of the Stage with a 40px margin off both edges
-## (1080-40-320=720, 1920-40-320=1560).
-@export var crate_pos_collapsed: Vector2 = Vector2(720.0, 1560.0)
 
 ## BackButton's authored position (Stage-local) while the tray is EXPANDED --
 ## kept equal to BackButton's own authored offset_left/offset_top (24, 1157)
 ## in koprasi.tscn so nothing jumps on load; test_tall_screen_layout.gd pins
 ## that authored rect as "unchanged". The tray's own visible top (Body) sits
-## at 1360 (117 TrayDock + 1243 Body offset_top, see crate_pos_expanded's own
-## comment above), so BackButton's authored bottom edge (1157+185=1342)
-## already sits a comfortable 18px above it.
+## at 1360 (117 TrayDock + 1243 Body offset_top), so BackButton's authored
+## bottom edge (1157+185=1342) already sits a comfortable 18px above it.
 @export var back_pos_expanded: Vector2 = Vector2(24.0, 1157.0)
-## BackButton's position while the tray is COLLAPSED -- 12px above the
-## collapsed crate handle's top edge. CrateHandle's own pivot is (0,0) and
-## its COLLAPSED scale is 1.0 (see _on_tray_state_changed), so
-## crate_pos_collapsed.y (1560) IS its on-screen top at that state:
-## 1560 - 185 (BackButton's own height) - 12 (gap) = 1363. x matches
-## back_pos_expanded.x -- the back button never moves sideways.
+## BackButton's position while the tray is COLLAPSED. 1363 was originally
+## 12px above the collapsed crate handle's top edge (1560 - 185 (the
+## button's own height) - 12). The crate was removed on 2026-09-21 and the
+## number stayed: it keeps the button clear of the collapsed tray, whose own
+## top sits at 1550 (1360 + the tray's 190px slide), and moving it would be
+## a visual change nobody asked for. x matches back_pos_expanded.x -- the
+## back button never moves sideways.
 @export var back_pos_collapsed: Vector2 = Vector2(24.0, 1363.0)
 
 var beli_button: Button
-## The tween sliding/scaling the crate handle to match the tray's state;
-## killed before a new one starts so two quick toggles never fight.
-var _crate_tween: Tween
+## The tween sliding the back button to match the tray's state; killed
+## before a new one starts so two quick toggles never fight. It moved the
+## crate handle too until 2026-09-21.
+var _back_tween: Tween
 
 func _ready():
 	if back_button:
@@ -106,22 +91,6 @@ func _ready():
 
 	if is_instance_valid(tray) and not tray.state_changed.is_connected(_on_tray_state_changed):
 		tray.state_changed.connect(_on_tray_state_changed)
-	if is_instance_valid(crate) and not crate.pressed.is_connected(_on_crate_pressed):
-		crate.pressed.connect(_on_crate_pressed)
-	if is_instance_valid(crate):
-		# CrateHandle is a 320px TextureButton positioned/scaled by our own
-		# _crate_tween (pivot (0,0), see crate_pos_expanded/collapsed above)
-		# and already gets press feedback from _on_crate_pressed's idle_bounce
-		# stop + _on_tray_state_changed's tween. UIPolish auto-juices every
-		# BaseButton it sees (Scripts/UI/UIPolish.gd): Juice.press/release
-		# would recentre its pivot_offset and tween scale, which both breaks
-		# the (0,0)-pivot math above and fights the crate's own tween. Opting
-		# out here is honoured even though UIPolish wires its handlers at
-		# node_added time (before this _ready runs) -- its _skip() re-checks
-		# has_meta(Juice.NO_AUTO_JUICE) at press time, not wire time, so a
-		# meta set anywhere in _ready still works.
-		crate.set_meta(Juice.NO_AUTO_JUICE, true)
-	_refresh_crate_badge()
 
 	# The Stage, a child, has already stocked the shelf in its own _ready.
 	if bubble:
@@ -145,13 +114,13 @@ func _exit_tree() -> void:
 			dead_tap.disconnect(_on_shelf_dead_tap)
 
 ## Any cart activity (add, remove, clear) pushes Pak Herman's idle-chatter
-## timer back out, so he doesn't ramble mid-shopping, and refreshes the
-## crate handle's own mirrored count badge (the header emblem's badge is
-## hidden while collapsed, so the crate carries the count instead).
+## timer back out, so he doesn't ramble mid-shopping. It also refreshed the
+## crate handle's mirrored count badge until 2026-09-21; with both that
+## badge and the tray's own emblem gone, the cart's running total is the
+## footer's "Total: N koin" and each slot's own xN.
 func _on_cart_changed() -> void:
 	if bubble:
 		bubble.reset_idle_timer()
-	_refresh_crate_badge()
 
 func _on_cart_item_added(item_name: String) -> void:
 	if bubble:
@@ -241,69 +210,28 @@ func _on_beli_pressed():
 	if bubble:
 		bubble.say(&"THANKS")
 
-## The big crate icon: toggles the tray exactly like its header emblem does.
-## Stops idle_bounce first -- _on_tray_state_changed() resumes the right
-## animation (RESET or idle_bounce) for the new state right after. UIPolish
-## already wires this TextureButton's own press/release Juice pulse, so no
-## extra Juice.press()/release() call is added here (that would double it).
-func _on_crate_pressed() -> void:
-	if not is_instance_valid(tray):
-		return
-	if is_instance_valid(crate):
-		var ap := crate.get_node_or_null("AP") as AnimationPlayer
-		if ap and ap.current_animation == "idle_bounce":
-			ap.stop()
-	tray.toggle()
-
-## Mirrors the crate handle's pose and idle animation to the tray's state,
-## and mutes Pak Herman's idle chatter while the tray is tucked away (a
-## collapsed tray means the player is busy browsing the shelf, not the cart).
+## Slides the back button clear of the tray as it opens and closes, and
+## mutes Pak Herman's idle chatter while the tray is tucked away (a
+## collapsed tray means the player is busy browsing the shelf, not the
+## cart).
+##
+## This drove the crate handle's pose and idle animation too until
+## 2026-09-21. The early `if not is_instance_valid(crate): return` went with
+## it -- with the crate gone that guard would have taken the back button and
+## the chatter down with it.
 func _on_tray_state_changed(state: int) -> void:
-	if not is_instance_valid(crate):
-		return
 	var expanded: bool = state == BasketTray.ViewState.EXPANDED
-	if is_instance_valid(_crate_tween) and _crate_tween.is_valid():
-		_crate_tween.kill()
-	_crate_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_crate_tween.set_parallel(true)
-	_crate_tween.tween_property(crate, "scale",
-		Vector2(0.35, 0.35) if expanded else Vector2.ONE, 0.28)
-	_crate_tween.tween_property(crate, "position",
-		crate_pos_expanded if expanded else crate_pos_collapsed, 0.28)
-	# The back button rides down/up with the crate as one piece -- same
-	# tween, same duration/trans/ease, same parallel() group (spec section 4
-	# "Cross-cutting: one tween per user gesture").
+	if is_instance_valid(_back_tween) and _back_tween.is_valid():
+		_back_tween.kill()
+	# Same duration/trans/ease the crate's shared tween used, so the back
+	# button's ride is unchanged (spec section 4, "one tween per gesture").
 	if back_button:
-		_crate_tween.tween_property(back_button, "position",
+		_back_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_back_tween.tween_property(back_button, "position",
 			back_pos_expanded if expanded else back_pos_collapsed, 0.28)
-	var ap := crate.get_node_or_null("AP") as AnimationPlayer
-	if ap:
-		ap.play("RESET" if expanded else "idle_bounce")
 	if bubble:
 		bubble.idle_chatter_enabled = expanded
 		bubble.reset_idle_timer()
-	_refresh_crate_badge()
-
-## Mirrors Cart's item count onto CrateHandle/CountBadge: visible whenever
-## the count is non-zero, in either tray state.
-##
-## It used to hide while the tray was EXPANDED, and only because the tray's
-## own top-right emblem carried the count in that state. That emblem was
-## removed on 2026-09-21, so hiding here would leave the cart's total
-## showing nowhere at all while the tray is open. CrateHandle already sits
-## at the emblem's old top-left when expanded (see crate_pos_expanded), so
-## the count stays exactly where the player last saw it.
-func _refresh_crate_badge() -> void:
-	if not is_instance_valid(crate):
-		return
-	var badge := crate.get_node_or_null("CountBadge")
-	if badge == null:
-		return
-	var count: int = Cart.get_item_count()
-	var label := badge.get_node_or_null("Count") as Label
-	if label:
-		label.text = str(count)
-	badge.visible = count > 0
 
 ## Show a purchase-feedback message. `variation` selects one of the
 ## semantic ShopMessage* ThemeFactory variations (Warning/Danger/Success)

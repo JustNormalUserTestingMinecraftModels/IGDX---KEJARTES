@@ -2,13 +2,13 @@
 extends McpTestSuiteCompat
 
 ## Suite for Task 6 of the 2026-09-17 Koperasi polish: the back button's two
-## export positions and its ride inside the crate's shared tween.
+## export positions and its ride as the tray opens and closes.
 ##
 ## koprasi.gd is not @tool and its Stage children have real side effects in
 ## _ready(), so (matching test_koperasi_tray_retract.gd's established
 ## pattern for this same script) none of these tests instantiate
 ## koprasi.tscn -- they scan its source text and koprasi.gd's, the same way
-## the crate-handle tests in that suite already do.
+## its sibling tests already do.
 
 func suite_name() -> String:
 	return "koperasi_back_follows_tray"
@@ -127,7 +127,7 @@ func test_authored_back_button_position_equals_back_pos_expanded() -> void:
 
 ## Flushness against the tray's own visible top (Body, whose Stage-local top
 ## is 117 (TrayDock) + 1243 (Body offset_top) = 1360 -- see
-## crate_pos_expanded's doc comment in koprasi.gd) and BackButton's authored
+## back_pos_expanded's doc comment in koprasi.gd) and BackButton's authored
 ## height (185px, offset_bottom(1342) - offset_top(1157)). The gap comes out
 ## to 18px here rather than a flat 12, because back_pos_expanded was pinned
 ## to BackButton's PRE-EXISTING authored position (test_tall_screen_layout.gd
@@ -155,27 +155,31 @@ func test_expanded_gap_against_tray_top_is_locked() -> void:
 			[tray_top, expanded.y + back_height, gap])
 
 
-## Flushness against the collapsed crate handle's top edge: crate_pos_collapsed
-## is CrateHandle's authored top-left (pivot (0,0), COLLAPSED scale 1.0 --
-## see _on_tray_state_changed), so its .y IS the crate's on-screen top there.
-func test_collapsed_gap_against_crate_top_is_12px() -> void:
+## The collapsed position must still clear the collapsed TRAY.
+##
+## 1363 was originally 12px above the collapsed crate handle's top edge
+## (1560 - 185 - 12). The crate was removed on 2026-09-21 and the number
+## stayed, so this now measures what actually matters: the button's bottom
+## edge must sit above the collapsed tray's top, which is the expanded top
+## (1360) plus the tray's own 190px slide.
+func test_collapsed_back_button_clears_the_collapsed_tray() -> void:
 	var script_src := _read(KOPRASI_GD)
 	var scene_src := _read(KOPRASI_TSCN)
 	if script_src.is_empty() or scene_src.is_empty():
 		return
 	var collapsed := _vector2_after(script_src, "@export var back_pos_collapsed: Vector2 =")
-	var crate_pos_collapsed := _vector2_after(script_src, "@export var crate_pos_collapsed: Vector2 =")
 	var back_block := _node_block(scene_src, "[node name=\"BackButton\" type=\"TextureButton\" parent=\"Stage\"")
 	var back_height := _prop_float(back_block, "offset_bottom") - _prop_float(back_block, "offset_top")
-	var gap := crate_pos_collapsed.y - (collapsed.y + back_height)
-	assert_true(absf(gap - 12.0) < 0.5,
-		"collapsed gap against the crate's top edge should be 12px, got %s" % gap)
+	var collapsed_tray_top := 1360.0 + 190.0
+	assert_true(collapsed.y + back_height <= collapsed_tray_top,
+		"the back button's bottom (%s) must clear the collapsed tray's top (%s)"
+			% [collapsed.y + back_height, collapsed_tray_top])
 
 
 ## Spec section 4 / "Cross-cutting: one tween per user gesture" -- the back
-## button's tween_property must live in the SAME tween the crate uses
-## (_crate_tween), not a second create_tween() of its own.
-func test_back_button_animates_inside_the_shared_crate_tween() -> void:
+## button's move is one tween, with the same duration/trans/ease the crate's
+## shared tween used before it was removed on 2026-09-21.
+func test_back_button_animates_in_a_single_tween() -> void:
 	var src := _read(KOPRASI_GD)
 	if src.is_empty():
 		return
@@ -187,12 +191,14 @@ func test_back_button_animates_inside_the_shared_crate_tween() -> void:
 	if next_func == -1:
 		next_func = src.length()
 	var body := src.substr(start, next_func - start)
-	assert_true(body.contains("_crate_tween.tween_property(back_button,"),
-		"the back button must be animated on _crate_tween, the same shared tween as the crate")
+	assert_true(body.contains("_back_tween.tween_property(back_button,"),
+		"the back button must be animated on the handler's own tween")
 	assert_eq(body.count("create_tween()"), 1,
-		"there must be exactly one create_tween() call in this handler -- no second tween for the back button")
+		"there must be exactly one create_tween() call in this handler")
 	assert_true(body.contains("back_pos_expanded if expanded else back_pos_collapsed"),
-		"the back button's tween target must switch on the same `expanded` flag as the crate's")
+		"the back button's tween target must switch on the tray's expanded flag")
+	assert_true(body.contains("TRANS_CUBIC") and body.contains("EASE_OUT"),
+		"and keep the crate tween's original trans/ease so the ride is unchanged")
 
 
 ## On _ready(), the back button is placed to match the tray's current state

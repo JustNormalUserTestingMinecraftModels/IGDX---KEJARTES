@@ -267,9 +267,10 @@ func test_a_line_that_left_the_cart_leaves_the_row() -> void:
 
 
 ## The top-right basket emblem was removed on 2026-09-21. It carried the
-## cart's running total and a toggle button; koprasi.gd's CrateHandle badge
-## now carries the count in both tray states, and the drag and CrateHandle
-## carry the toggle.
+## cart's running total and a toggle button. The crate handle that briefly
+## took both over was itself removed the same day, so the running total is
+## now the footer's "Total: N koin" plus each slot's own xN, and the drag is
+## the only way to open and close the tray.
 func test_the_tray_has_no_emblem_in_its_corner() -> void:
 	var tray = _tray()
 	if tray == null:

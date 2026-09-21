@@ -55,6 +55,11 @@ const FLICK_VELOCITY: float = 900.0
 ## Fraction of the full travel a slow drag must cross to commit to the far
 ## state. 0.5 is the midpoint: past it the tray goes, short of it it returns.
 const COMMIT_FRACTION: float = 0.5
+## Drag distance (px) past which the slots under the finger give up their own
+## press to the tray. Matches TraySlot.hold_slop's default -- a gesture that
+## is a drag to the tray must not also be a tap to a slot, and since
+## 2026-09-21 a tap returns an item, so a stolen gesture would empty the cart.
+const DRAG_STEALS_AFTER: float = 30.0
 
 const SLOT_SCENE := preload("res://Scenes/Koperasi/TraySlot.tscn")
 ## Cart's script, so its static total_of() is called on the type rather than
@@ -99,6 +104,9 @@ var _drag_last_y: float = 0.0
 var _drag_last_msec: int = 0
 ## Release speed in px/s, positive downward. Fed to classify_drag().
 var _drag_velocity: float = 0.0
+## Whether this drag has already taken the gesture from its slots. Latched so
+## the cancel runs once, not on every motion event of the drag.
+var _slots_cancelled: bool = false
 
 
 func _ready() -> void:
@@ -229,6 +237,7 @@ func begin_drag(at_y: float) -> void:
 	_drag_last_y = at_y
 	_drag_last_msec = Time.get_ticks_msec()
 	_drag_velocity = 0.0
+	_slots_cancelled = false
 
 
 ## Moves the tray to follow a finger at global y `at_y`, clamped to the dock so
@@ -237,6 +246,15 @@ func update_drag(at_y: float) -> void:
 	if not _dragging:
 		return
 	var delta_y: float = at_y - _drag_from_y
+	# Once the finger has clearly moved, the slots it started on let go: a
+	# tap returns an item, so a drag that also counted as a tap would empty
+	# the cart a unit at a time.
+	if absf(delta_y) > DRAG_STEALS_AFTER and not _slots_cancelled:
+		_slots_cancelled = true
+		for item_name in _slots:
+			var slot: TraySlot = _slots[item_name]
+			if is_instance_valid(slot):
+				slot.cancel_press()
 	var start_y: float = _base_y + (tray_offset_collapsed \
 		if _state == ViewState.COLLAPSED else 0.0)
 	position.y = clampf(start_y + delta_y, _base_y, _base_y + tray_offset_collapsed)

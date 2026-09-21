@@ -300,6 +300,76 @@ func test_taken_slot_check_precedes_the_on_tap_lock() -> void:
 		"the taken-slot check (shelf_dead_tap) must run before the on_tap() lock")
 
 
+## The tray-slot gesture (2026-09-21): a tap on an item in the basket returns
+## one to the shelf, where it used to only nudge. The hold stays, so nobody
+## who learned the old gesture loses it.
+##
+## These build a bare TraySlot with .new() and drive _end_press() directly.
+## Nothing here needs the tree: _end_press touches only the press bookkeeping
+## and emits, and the press tween it would kill is null on a slot that never
+## had _begin_press() called.
+func test_a_quick_tap_returns_one_unit() -> void:
+	var slot := TraySlot.new()
+	var returned: Array[String] = []
+	slot.remove_requested.connect(func(n: String) -> void: returned.append(n))
+	slot._item_name = "Susu"
+	# 0.10 s held, 2 px of drift: well under hold_seconds, well under slop.
+	slot._press_msec = Time.get_ticks_msec() - 100
+	slot._press_pos = Vector2.ZERO
+	slot._end_press(Vector2(2.0, 0.0))
+	assert_eq(returned.size(), 1, "a quick tap must return exactly one unit")
+	assert_eq(returned[0], "Susu", "the returned line must be the tapped one")
+	slot.free()
+
+
+func test_a_hold_still_returns_one_unit() -> void:
+	var slot := TraySlot.new()
+	var returned: Array[String] = []
+	slot.remove_requested.connect(func(n: String) -> void: returned.append(n))
+	slot._item_name = "Susu"
+	# 0.60 s: past hold_seconds (0.35).
+	slot._press_msec = Time.get_ticks_msec() - 600
+	slot._press_pos = Vector2.ZERO
+	slot._end_press(Vector2(2.0, 0.0))
+	assert_eq(returned.size(), 1, "the hold gesture must still return one")
+	slot.free()
+
+
+func test_a_drag_across_a_slot_returns_nothing() -> void:
+	# Dragging the tray starts on a slot as often as not. Drift past the slop
+	# must yield the gesture to the tray, not return an item.
+	var slot := TraySlot.new()
+	var returned: Array[String] = []
+	slot.remove_requested.connect(func(n: String) -> void: returned.append(n))
+	slot._item_name = "Susu"
+	slot._press_msec = Time.get_ticks_msec() - 100
+	slot._press_pos = Vector2.ZERO
+	slot._end_press(Vector2(0.0, 80.0))  # 80 px > hold_slop (30)
+	assert_true(returned.is_empty(), "a drag must not return an item")
+	slot.free()
+
+
+func test_cancel_press_forgets_the_gesture() -> void:
+	var slot := TraySlot.new()
+	var returned: Array[String] = []
+	slot.remove_requested.connect(func(n: String) -> void: returned.append(n))
+	slot._item_name = "Susu"
+	slot._press_msec = Time.get_ticks_msec() - 100
+	slot._press_pos = Vector2.ZERO
+	slot.cancel_press()
+	slot._end_press(Vector2.ZERO)
+	assert_true(returned.is_empty(),
+		"a cancelled press must return nothing even on a clean release")
+	slot.free()
+
+
+## The tray steals the gesture from its slots once a drag passes the slop, so
+## one finger movement never both drags the tray and returns an item.
+func test_the_tray_cancels_its_slots_once_a_drag_takes_over() -> void:
+	assert_eq(BasketTray.DRAG_STEALS_AFTER, TraySlot.new().hold_slop,
+		"the tray must steal the gesture at exactly the slot's own slop")
+
+
 ## The text of one function: from `signature` to the next top-level func.
 ## Same pattern as test_shop_weekly_stock.gd's _body().
 func _body(src: String, signature: String) -> String:

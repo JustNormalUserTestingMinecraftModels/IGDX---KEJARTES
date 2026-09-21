@@ -26,9 +26,6 @@ const DEFAULT_FILLED_TEXTURE := "res://Assets/Images/UI/star.png"
 ## Shipped art for an unearned star: the same star.png, darkened by
 ## popup_star_empty_color.
 const DEFAULT_EMPTY_TEXTURE := "res://Assets/Images/UI/star.png"
-## Scene fired at this star's centre when it lands earned.
-const BURST_SCENE := "res://Scenes/Minigames/UI/StarBurst.tscn"
-const _BURST_PACKED: PackedScene = preload("res://Scenes/Minigames/UI/StarBurst.tscn")
 ## Peak alpha the glow layer reaches on celebrate().
 const GLOW_PEAK_ALPHA: float = 0.85
 ## Seconds the glow takes to bloom before settling back.
@@ -36,7 +33,9 @@ const GLOW_BLOOM_TIME: float = 0.18
 
 @onready var icon: TextureRect = $Icon
 @onready var glow: TextureRect = $Glow
-@onready var burst_slot: Control = $BurstSlot
+# BurstSlot stays in ResultStar.tscn -- test_minigame_result_popup pins it --
+# but nothing mounts into it any more, so there is no @onready for it here.
+# MinigameScoreHUD keeps its own BurstSlot and still fires StarBurst.tscn.
 
 
 func _ready() -> void:
@@ -63,23 +62,23 @@ func set_filled(filled: bool, filled_tex: Texture2D, empty_tex: Texture2D,
 	queue_redraw()
 
 
-## Land this star: bloom the glow, fire a burst, play the matching rung of the
-## three-cue ladder. `index` is 0-based, so the third star gets star_earn_3 --
-## three rising cues read as a climb where three identical ones read as a list.
+## Land this star: bloom the glow and play the matching rung of the three-cue
+## ladder. `index` is 0-based, so the third star gets star_earn_3 -- three
+## rising cues read as a climb where three identical ones read as a list.
+##
+## Until 2026-09-21 this also instanced StarBurst.tscn into BurstSlot, a
+## star-shaped spray behind each star. That is now the card's job:
+## MinigameResultPopup fires one ConfettiFireworks burst per star, at the
+## burst's own authored place on the screen rather than behind the star.
 ##
 ## Not a coroutine: play() drives it from its reveal loop, and a test must be
-## able to call it. Fire-and-forget -- the burst frees itself.
+## able to call it.
 ##
-## Affects: this star's Glow layer, and adds a self-freeing burst under
-## BurstSlot.
+## Affects: this star's Glow layer only.
 func celebrate(index: int) -> void:
 	if Engine.is_editor_hint() or not is_filled:
 		return
 	AudioDirector.play_sfx(StringName("star_earn_%d" % clampi(index + 1, 1, 3)))
-	var burst: Node = _BURST_PACKED.instantiate()
-	burst_slot.add_child(burst)
-	burst.plays_sfx = false
-	burst.fire()
 	var tw := create_tween()
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tw.tween_property(glow, "modulate:a", GLOW_PEAK_ALPHA, GLOW_BLOOM_TIME)

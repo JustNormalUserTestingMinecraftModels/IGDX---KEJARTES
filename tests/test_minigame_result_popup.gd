@@ -366,7 +366,11 @@ func test_the_star_scene_carries_a_glow_and_a_burst_slot() -> void:
 	var star: Control = load(STAR_PATH).instantiate()
 	track(star)
 	assert_true(star.has_node("Glow"), "an authored Glow layer, not a runtime one")
-	assert_true(star.has_node("BurstSlot"), "an authored slot the burst mounts into")
+	# BurstSlot is vestigial since 2026-09-21: the per-star spray became the
+	# card's three ConfettiFireworks bursts and nothing mounts into it now.
+	# Still pinned, because removing a node from a shipped scene is a
+	# separate decision from moving the effect off it.
+	assert_true(star.has_node("BurstSlot"), "the authored slot is still there")
 
 
 func test_celebrate_is_not_a_coroutine() -> void:

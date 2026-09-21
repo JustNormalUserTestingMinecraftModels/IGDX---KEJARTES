@@ -66,6 +66,7 @@ const SLOT_SCENE := preload("res://Scenes/Koperasi/TraySlot.tscn")
 ## through the autoload instance (which GDScript warns about).
 const CART_SCRIPT := preload("res://Scripts/Inventory/Cart.gd")
 
+@onready var _body: Control = $Body
 @onready var _items: Control = $Body/Items
 @onready var _empty_state: Control = $Body/EmptyState
 @onready var _hint: Label = $Body/Hint
@@ -112,9 +113,13 @@ var _slots_cancelled: bool = false
 func _ready() -> void:
 	_ensure_nodes()
 	_base_y = position.y
-	# PASS, not STOP: _gui_input needs the press for the drag gesture, but the
-	# slots and the Beli button inside must still get their own.
-	mouse_filter = MOUSE_FILTER_PASS
+	# The drag listens on Body, NOT on this root. The root is a bare anchor
+	# (authoring guide, Pattern C): anchors_preset = 0, no offsets, so its
+	# rect is zero-sized and it can never be hit-tested. A _gui_input here
+	# would never fire however its mouse_filter is set -- which is exactly
+	# how the drag shipped broken on first write. Body carries the geometry.
+	if is_instance_valid(_body) and not _body.gui_input.is_connected(_on_body_gui_input):
+		_body.gui_input.connect(_on_body_gui_input)
 	if is_instance_valid(_beli_button) and not _beli_button.pressed.is_connected(_on_beli_pressed):
 		_beli_button.pressed.connect(_on_beli_pressed)
 	if is_instance_valid(_header_button) and not _header_button.pressed.is_connected(_on_header_pressed):
@@ -287,9 +292,12 @@ func end_drag() -> void:
 	set_state(settled, true)
 
 
-## The drag gesture. mouse_filter is PASS (set in _ready), not STOP, so the
-## slots and the Beli button inside still receive their own presses.
-func _gui_input(event: InputEvent) -> void:
+## The drag gesture, received from Body (see _ready). TraySlot's root is
+## MOUSE_FILTER_PASS, so a press that lands on an item reaches Body too and a
+## drag can start from on top of the cart's contents -- which is where a
+## thumb naturally falls. The slot still gets its own press; update_drag()
+## takes the gesture off it once the finger passes DRAG_STEALS_AFTER.
+func _on_body_gui_input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed:
@@ -443,6 +451,8 @@ func _on_header_pressed() -> void:
 
 ## Resolves @onready nodes when a method runs before _ready.
 func _ensure_nodes() -> void:
+	if not is_instance_valid(_body):
+		_body = get_node_or_null("Body")
 	if not is_instance_valid(_items):
 		_items = get_node_or_null("Body/Items")
 	if not is_instance_valid(_empty_state):

@@ -433,6 +433,41 @@ func test_classify_drag_clamps_a_nonsense_span() -> void:
 		"a zero span must settle expanded rather than divide by zero")
 
 
+## The plumbing, not the rule. classify_drag() being right is worthless if the
+## events never arrive, and that is exactly how the drag first shipped: the
+## handler sat on the scene root, which is a bare anchor (Pattern C) with
+## anchors_preset = 0 and no offsets. A zero-rect Control is never
+## hit-tested, so _gui_input on it could not fire however its mouse_filter
+## was set -- and every test here still passed, because they call
+## begin_drag()/update_drag() directly.
+func test_the_drag_listens_on_a_node_that_can_actually_be_hit() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var body: Control = tray.get_node_or_null("Body")
+	assert_true(body != null, "Body must exist")
+	if body == null:
+		return
+	assert_true(body.size.x > 0.0 and body.size.y > 0.0,
+		"the drag surface must have a real rect, or no press ever reaches it")
+	assert_true(body.gui_input.is_connected(tray._on_body_gui_input),
+		"Body's gui_input must drive the drag")
+	assert_false(tray.has_method("_gui_input"),
+		"the root is a zero-rect anchor; a _gui_input here would never fire")
+
+
+## A thumb reaching for the tray lands on the items standing on it as often as
+## on bare plank, so a slot must let the press through to Body as well as
+## handling its own. Without this the drag works only on the empty strip and
+## reads as broken whenever the cart has anything in it.
+func test_a_slot_passes_its_press_through_to_the_drag_surface() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	assert_eq(slot.mouse_filter, Control.MOUSE_FILTER_PASS,
+		"a tray slot must pass its press through to Body")
+
+
 ## A drag must never fling the tray off its dock, however far the finger goes.
 func test_a_drag_is_clamped_to_the_dock() -> void:
 	var tray = _tray()

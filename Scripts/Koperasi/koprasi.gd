@@ -284,10 +284,15 @@ func _on_tray_state_changed(state: int) -> void:
 		bubble.reset_idle_timer()
 	_refresh_crate_badge()
 
-## Mirrors Cart's item count onto CrateHandle/CountBadge (spec section 3):
-## visible only while the tray is COLLAPSED and the count is non-zero -- the
-## header emblem's own badge (BasketTray._emblem_badge) already handles the
-## EXPANDED case and hides itself while collapsed.
+## Mirrors Cart's item count onto CrateHandle/CountBadge: visible whenever
+## the count is non-zero, in either tray state.
+##
+## It used to hide while the tray was EXPANDED, and only because the tray's
+## own top-right emblem carried the count in that state. That emblem was
+## removed on 2026-09-21, so hiding here would leave the cart's total
+## showing nowhere at all while the tray is open. CrateHandle already sits
+## at the emblem's old top-left when expanded (see crate_pos_expanded), so
+## the count stays exactly where the player last saw it.
 func _refresh_crate_badge() -> void:
 	if not is_instance_valid(crate):
 		return
@@ -298,8 +303,7 @@ func _refresh_crate_badge() -> void:
 	var label := badge.get_node_or_null("Count") as Label
 	if label:
 		label.text = str(count)
-	var collapsed: bool = not (is_instance_valid(tray) and tray.is_expanded())
-	badge.visible = collapsed and count > 0
+	badge.visible = count > 0
 
 ## Show a purchase-feedback message. `variation` selects one of the
 ## semantic ShopMessage* ThemeFactory variations (Warning/Danger/Success)

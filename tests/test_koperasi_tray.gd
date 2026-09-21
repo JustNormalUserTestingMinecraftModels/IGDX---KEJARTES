@@ -372,7 +372,11 @@ func test_tray_panel_uses_the_basket_tray_variation() -> void:
 		"the shop docks the basket tray scene")
 	assert_true(tray.contains("BasketTray"), "the tray surface carries the BasketTray variation")
 	assert_true(tray.contains("tray_dots.png"), "tray should wear the dot-grid tile")
-	assert_true(tray.contains("icon_keranjang.svg"), "the tray's emblem is the B3 basket")
+	# The B3 basket emblem was removed from the tray's top-right corner on
+	# 2026-09-21; icon_keranjang_kosong.svg (the empty-state icon INSIDE the
+	# tray) is a different asset and stays.
+	assert_false(tray.contains('path="res://Assets/Images/Shop/UI/icon_keranjang.svg"'),
+		"the corner emblem's art must no longer be referenced")
 	assert_false(shop.contains("pngwing.com (6).png") or tray.contains("pngwing.com (6).png"),
 		"the black basket silhouette should no longer be referenced")
 	assert_true(tray.contains("EmptyState"), "the empty-basket state is a scene node")

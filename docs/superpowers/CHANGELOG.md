@@ -8,6 +8,76 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-21 — Tray gestures, confetti fireworks, the sound pack, the back button
+
+Five asks in one run. Two of them turned out to be already built, which
+changed the shape of the work more than anything else did.
+
+**Already shipped, so pinned rather than rebuilt.** The lobby blink was asked
+for as new work; `StudentFace.gd` had done it since `27ae2cc` — 5–10 s apart,
+from the Eyelid layer, seeded per rig so no two seats blink in step. And
+`star.png` had been the result card's art since `ed7bcf9`. What both lacked
+was anything stopping a later edit dropping them, so this pass added the tests
+and swapped in the artist's own 345×357 crop over the 360×360 re-export.
+Reading the code before building saved two rewrites.
+
+**The koperasi tray.** It had three states but one way to move: a press. It
+now follows a finger, with `classify_drag()` as a pure static function because
+the runner cannot await — a flick past 900 px/s decides outright, below that
+the halfway point wins. A tap on a tray item returns it, where it used to
+wobble a "hold me" hint; holding to undo a mis-tap is a slow answer to a fast
+mistake. That forced a gesture-stealing rule: a drag starting on a slot
+cancels that slot's press, or one finger movement would both drag the tray and
+empty the cart a unit at a time.
+
+**Three confetti fireworks** replace the star-shaped spray each result star
+used to mount into its own `BurstSlot`. Three bursts at three authored points
+read as a celebration; three sprays behind three stars read as the stars
+fizzing. Placement is the deliverable, so it is authored: real
+`GPUParticles2D` children, and the `@tool` script draws a crosshair at each in
+the editor viewport. `ResultConfetti` — the separate full-house rain — was
+left alone, and `StarBurst.tscn` stays because `MinigameScoreHUD` still uses
+it.
+
+**49 sounds** from the collaborator's Drive folder, taken as one zip through
+the user's own Chrome session: the folder is not publicly shared, and 13 MB of
+base64 through a connector was not viable. Four cues were *replaced* rather
+than stacked, because two on one beat is the double-fire the audio suite
+already guards against — `card_flip` for `swipe` on StudentCard's page turn,
+`stat_up` for `tally` on the chevron, `result_checkup` for `popup_open`, and
+`transaction` for `coin` on a purchase, `coin` now being `earnMoney`, which is
+the opposite of what a purchase does. A falling stat row had no cue at all
+before this. That guard also caught two real stacks the pass introduced, and
+four pairings it cannot see through (an `await` on the event's own line,
+mutual exclusion through a call) which went to the reviewed allowlist.
+
+`test_audio_coverage`'s known-id list had been a hand-written copy of
+`_resolve_sfx`'s match arms, so every new cue had to be added twice. It now
+asks `AudioDirector.has_sfx()`.
+
+**The device back button was a bug, not a gap.** Android delivers the press as
+`NOTIFICATION_WM_GO_BACK_REQUEST`, never as `ui_cancel`. Six screens answered
+it; seven with a working on-screen back button did not — and because
+`quit_on_go_back` defaults to **true**, a back press on any of those *quit the
+game and took the run with it*, roster, money, week and schedules all being
+session-scoped. Now false, and every screen routes the notification to the
+function its own button already calls. A minigame opens the pause menu
+instead: the pause menu owns the quit confirmation, and a mis-swipe must not
+forfeit a round unasked. Not verified on a real device — this machine has no
+Android export templates.
+
+**The UI audit found the opposite of what was expected.** In scene files the
+"never add a `theme_override_*`" rule already holds completely: all 66
+non-layout overrides sit inside `Scenes/Minigames/`, which is out of scope by
+declaration. The real debt is **57 runtime `add_theme_*_override` calls across
+14 `.gd` files**, which a grep for the scene-file property name misses
+entirely — which is why they had never been counted. Inventoried in
+`DEBT.md`, none fixed: the two this branch touched apply an `@export`ed font,
+so removing them is a design decision about those screens rather than a
+cleanup.
+
+Full suite green: **2025 tests, 140 suites, 0 failures.**
+
 ## 2026-09-21 — Minigame type ladder
 
 A `/design-audit-ui` pass over Menjodohkan, the Shop, Variabel, Password,

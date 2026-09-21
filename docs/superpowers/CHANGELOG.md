@@ -8,6 +8,50 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-21 — The SchoolDay calendar header
+
+`BookClockWidget` took the weekday through `set_day()` and **displayed
+nothing** — `day_name()` existed only so tests could read it back. The day the
+player actually saw was two bare labels in SchoolDay's top-left corner, and
+the week they were in appeared nowhere on the screen at all.
+
+It now carries EventDialogue's header: a day banner and a calendar badge
+reading "Minggu 3/6". The same `DayBannerPanel` / `DayBannerLabel` /
+`CalendarLabel` variations, not a lookalike — which also meant no theme
+override was needed. Both screens are fed from `GameState.minggu_ke` and
+`get_max_weeks()`, so they cannot disagree about which week it is, and
+because `get_max_weeks()` is grade-scaled the badge reads 3/6 in Kelas 7 and
+3/16 in Kelas 9 with no code for it. A test covers all three grades rather
+than only the Kelas 7 case a hard-coded 6 would have passed.
+
+**The illustration is the lobby's daily-login calendar**, asked for by name;
+nothing new was drawn and EventDialogue keeps its own flat
+`calendar_badge.png`. That calendar is drawn in perspective, so straight text
+on it reads as sliding off the page. The correction was **measured, not
+eyeballed**: a least-squares fit through the first cream pixel in each of 48
+columns gives the paper's top edge a slope of −0.1579, or −8.97°. The text box
+sits at −9.0°, parallel within 0.03°, pivoting about its own centre.
+
+`DayScreen/DayLabel` is hidden now the banner carries the day — hidden, not
+deleted, since the suite pins the path and `SchoolDay.gd` still writes its
+text. `DayNumberLabel` stays: "Hari 1 dari 5" is the day's place in the week,
+which the header does not carry.
+
+**Two process notes worth keeping.** A `scene_save` flushed a stale editor tab
+over `SchoolDay.gd` and silently deleted the `set_week()` call written minutes
+earlier — the hazard CLAUDE.md documents. It was caught by the working-tree
+diff check the plan mandates after every save, and cured by restarting the
+editor. And the first version of the duplicate-label guard read a fixed
+400-character window after each `[node]` header; `DayNumberLabel` and
+`DayLabel` are seven lines apart, so it read one node's properties as the
+other's. It now bounds each block at the next `[node]` marker.
+
+The second ask of the same request — dragging the koperasi `BasketTray` with
+the mouse — needed no work: it had shipped in PR #65 and merged that morning.
+Verified by running its suites rather than rewritten.
+
+Full suite green: **2039 tests, 140 suites, 0 failures.**
+
 ## 2026-09-21 — Tray gestures, confetti fireworks, the sound pack, the back button
 
 Five asks in one run. Two of them turned out to be already built, which

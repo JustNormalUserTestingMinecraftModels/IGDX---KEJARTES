@@ -110,6 +110,18 @@ func suite_name() -> String:
 	return "face_rig_roster"
 
 
+## Every rig's Eyelid layer must have art on disk. A rig whose lid texture is
+## missing blinks invisibly: the layer fades in, nothing is drawn, and the
+## eyes simply never close. Cheap to assert, and the one failure mode the
+## placement tests above cannot see.
+func test_every_rig_has_eyelid_art() -> void:
+	for student_name in StudentSkins.NAMES:
+		var path := "res://Assets/Images/MuridPotrait/%s/%s_eyelid.png" % [
+			student_name, student_name.to_lower()]
+		assert_true(ResourceLoader.exists(path),
+			"%s must have eyelid art at %s" % [student_name, path])
+
+
 func _rig(student: String) -> StudentFace:
 	var scene: PackedScene = load(_RIGS[student]["rig"])
 	var face := scene.instantiate() as StudentFace

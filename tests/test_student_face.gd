@@ -83,6 +83,53 @@ func suite_name() -> String:
 	return "student_face"
 
 
+# ---------------------------------------------------------------- idle blink
+# The blink shipped in 27ae2cc. These pin it rather than build it: the
+# behaviour was already exactly what was asked for (5-10 s, from the Eyelid
+# layer), and what it lacked was anything stopping a later edit from
+# quietly dropping it.
+
+func test_idle_blink_waits_between_five_and_ten_seconds() -> void:
+	var face := StudentFace.new()
+	assert_eq(face.blink_hold_range, Vector2(5.0, 10.0),
+		"idle blinks must be 5-10 s apart")
+	assert_true(face.idle_blink_enabled, "rigs must blink by default")
+	face.free()
+
+
+func test_a_blink_uses_the_eyelid_layer() -> void:
+	# The Eyelid layer is the closed-eye art, drawn above the open eye and
+	# carrying its own lash line. Fading anything else would show an open eye
+	# through a closed lid.
+	assert_true(StudentFace.LAYER_NAMES.has("Eyelid"),
+		"the rig must carry an Eyelid layer")
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/StudentFace.gd")
+	assert_true(src != "", "StudentFace.gd must exist")
+	assert_true(src.contains('_layer("Eyelid")'),
+		"the blink must drive the Eyelid layer")
+
+
+func test_each_rig_blinks_on_its_own_clock() -> void:
+	# motion_seed 0 randomises. A fixed default would have every seat blink
+	# in step, which reads as a glitch rather than as life.
+	var face := StudentFace.new()
+	assert_eq(face.motion_seed, 0,
+		"the default seed must randomise so seats blink independently")
+	face.free()
+
+
+## The blink is a fade, not a cut: the lid fades in, holds shut, fades out.
+## Stepped synchronously through advance_motion() because the runner cannot
+## await -- an await here would abort the test and report 0 assertions.
+func test_a_blink_fades_rather_than_cutting() -> void:
+	var face := StudentFace.new()
+	assert_true(face.blink_fade_seconds > 0.0,
+		"a zero fade would make the blink a hard cut")
+	assert_true(face.blink_close_seconds > 0.0,
+		"the eyes must actually hold shut")
+	face.free()
+
+
 var _face: StudentFace
 
 

@@ -1401,6 +1401,15 @@ func skip_to_results() -> void:
 		
 	_on_week_complete()
 
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel, so an _input handler never sees it. Routed to the same function
+## the on-screen continue button calls, so both do exactly the same thing --
+## which here means advancing the week, not abandoning it.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_pressed()
+
+
 func _on_back_pressed() -> void:
 	# Belt and braces: _on_week_complete() already stops the bed on both the
 	# normal and the skipped path, but leaving the screen by any route must

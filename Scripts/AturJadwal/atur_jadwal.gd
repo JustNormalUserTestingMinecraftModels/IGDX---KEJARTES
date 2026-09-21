@@ -152,6 +152,14 @@ func _ready():
 	AudioDirector.play_bgm_playlist(&"lobby")
 
 func _notification(what: int) -> void:
+	# Android delivers the hardware/gesture back press as a notification, not
+	# as ui_cancel, so an _input handler never sees it. Routed to the same
+	# function the on-screen back button calls, so both do the same thing.
+	# A new branch here rather than a second _notification: a second one
+	# would silently replace this EXIT_TREE cleanup.
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_button_pressed()
+		return
 	if what == NOTIFICATION_EXIT_TREE:
 		if get_tree() and get_tree().root.size_changed.is_connected(_fit_color_rect_to_viewport):
 			get_tree().root.size_changed.disconnect(_fit_color_rect_to_viewport)

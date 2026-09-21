@@ -91,6 +91,14 @@ func _on_skip_dialog_toggled(pressed: bool) -> void:
 		GameSettings.save_settings()
 
 
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel, so an _input handler never sees it. Routed to the same function
+## the on-screen back button calls, so both do exactly the same thing.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_pressed()
+
+
 func _on_back_pressed() -> void:
 	if not Engine.is_editor_hint():
 		AudioDirector.play_sfx(&"cancel")

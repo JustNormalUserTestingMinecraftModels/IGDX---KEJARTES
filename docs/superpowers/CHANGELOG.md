@@ -71,6 +71,62 @@ Four existing pins moved with the architecture rather than being deleted:
 `minigame_art`'s `H2Label` assertion, its display-font and wood-table ink
 tests, and `theme_factory`'s `DISPLAY_ROSTER`. New suite:
 `tests/test_minigame_typography.gd` (18 tests).
+## 2026-09-20 — `/design-audit-ui` skill: ranked design critique of a posted mockup
+
+- `.claude/skills/design-audit-ui/SKILL.md`. The user posts a mockup of a
+  scene; the skill answers as a senior product designer with a verdict, at
+  most three critical flaws, at most four minor ones, and the corrected
+  screen drawn. It delegates the drawing to `showwidget` rather than
+  restating that contract — one difference, recorded in the skill: the
+  audit's visual is one corrected screen labelled with what changed, not
+  `showwidget`'s two-option pick.
+- Seven passes, of which four had no representation in the baseline at all:
+  touch and reach (~130px minimum in the 1080-wide space, which the lobby's
+  own 96px gear fails), contrast over art (the project's tested floor is
+  3.0:1, `tests/test_bar_contrast.gd:15`), 1080x2400 behaviour, and the
+  Boohong/Open Sans role split.
+- Baseline, per `superpowers:writing-skills`: three agents reviewed real
+  mockups from `docs/superpowers/mockups/` without the skill. Their findings
+  were sharp and code-grounded — one caught a live counting bug in
+  `WeekRecap.compute()` — but every response was an unranked essay of 1374,
+  1656 and 2128 words with one severity word between them, no touch, contrast
+  or tall-phone pass, and all three ended by asking the user questions
+  instead of showing a corrected screen.
+- With the skill, the same two mockups came back at 525 and 554 words of
+  prose, in verdict / critical / worth-fixing / alternative order, exactly
+  three criticals each, every finding landing on a real value — that
+  "MINGGU 1 DARI 24" matches no grade (`JUMLAH_MINGGU_KELAS_7/8/9` is 6, 12,
+  16), that `EVENT BERHASIL` is counting minigames, that the empty stat
+  tracks are missing `cat_*_on_dark` fills.
+- The cap is the mechanism, not decoration: the baseline's problem was never
+  finding too little, it was weighting a data bug the same as a grey slab.
+
+## 2026-09-20 — `/showwidget` skill: design options as a rendered pick
+
+- `.claude/skills/showwidget/SKILL.md`. The user names a surface that looks
+  wrong; the skill answers with two or three faithful mockups of it rendered
+  inline by `mcp__visualize__show_widget`, varying exactly one named thing,
+  and stops until they pick.
+- Written against a baseline, per `superpowers:writing-skills`. Three agents
+  ran the same asks without the skill: all three produced three or four
+  options that each varied a *different* dimension (stylebox vs node type vs
+  new art), so there was nothing to compare; none labelled the options inside
+  the widget; viewBoxes came out 760, 880 and one response with three separate
+  SVGs on negative coordinates; 8-14 constructs the widget host bans
+  (gradients, `feDropShadow`, `<!-- -->`, `<style>` colour blocks, weight 600)
+  per response; and 200-400 words of prose on each side of the visual.
+- Two agents re-ran the same asks with the skill: two options each, both
+  varying one named dimension ("the card's ground", "gear treatment"), label
+  band inside the widget, zero banned constructs, and 64-77 words of prose per
+  side.
+- The fix is a positive recipe, not a prohibition list — `writing-skills` is
+  explicit that a wrong-shaped-output failure gets worse under "don't do X".
+  The skill states what the response *is*, part by part.
+- The fidelity rule it encodes: a KejarTes `.tscn` carries no colours, so a
+  mockup resolves `theme_type_variation` → `ThemeFactory.gd` → `tokens.<field>`
+  → the literal hex in `DesignTokens.gd`, and takes its strings out of the
+  scene. Approximated colour is what made the baseline mockups read as
+  drawings of a different game.
 
 ## 2026-09-20 — ExamProgress shows the exam art undarkened
 

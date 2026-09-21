@@ -390,3 +390,21 @@ func test_event_student_card_wears_the_new_star() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/SchoolSimulation/EventStudentCard.tscn")
 	assert_contains(src, 'path="res://Assets/Images/UI/star.png"', "the card's star is star.png")
 	assert_false(src.contains("icon_star.svg"), "the old placeholder is gone")
+
+
+## The art itself, not just the path. The 2026-09-19 bake was a 360x360
+## re-export; the artist's own crop is 345x357. Pinned so a stray re-export
+## cannot silently swap the two back and forth -- star.png also feeds
+## StatCheck and EventStudentCard, so a size change moves three screens.
+func test_star_art_is_the_artists_own_crop() -> void:
+	var tex: Texture2D = load(ResultStar.DEFAULT_FILLED_TEXTURE)
+	assert_true(tex != null, "star.png must load")
+	assert_eq(tex.get_width(), 345, "star.png must be the artist's 345x357 crop")
+	assert_eq(tex.get_height(), 357, "star.png must be the artist's 345x357 crop")
+
+
+func test_both_star_slots_use_the_same_art() -> void:
+	# A lost star is the same star darkened by popup_star_empty_color, not a
+	# different drawing -- that is what makes an empty slot read as "not yet".
+	assert_eq(ResultStar.DEFAULT_FILLED_TEXTURE, ResultStar.DEFAULT_EMPTY_TEXTURE,
+		"filled and empty stars must share one texture")

@@ -1322,8 +1322,15 @@ func test_stat_row_bursts_exactly_when_it_shows_a_chevron() -> void:
 		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd")
 	assert_true(src.contains("BURST_SCENE"),
 		"the stat row must instance the authored burst scene")
-	assert_true(src.contains('play_sfx(&"tally")'),
-		"the chevron pop must play the tally cue")
+	# stat_up replaced the generic `tally` tick here with the 2026-09-21
+	# sound pack: the chevron means the number went UP, and the pack has a
+	# rising ding for exactly that. `tally` is still right in StatCheck and
+	# WeekRecapPill, where a number is being counted rather than climbing.
+	assert_true(src.contains('play_sfx(&"stat_up")'),
+		"the chevron pop must play the rising stat cue")
+	# And a falling row, which had no cue at all before the pack.
+	assert_true(src.contains('play_sfx(&"stat_down")'),
+		"a losing row must not fall in silence")
 	assert_true(not src.contains("GPUParticles2D.new()"),
 		"particles must come from the .tscn, never be built at runtime")
 

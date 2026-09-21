@@ -640,6 +640,9 @@ func _end_swipe(end_pos: Vector2) -> void:
 # ─── Shoot ───────────────────────────────────────────────────────────────────
 func _shoot_ball(swipe_vec: Vector2) -> void:
 	is_resolving = true
+	# Four kick samples picked at random. is_resolving guards re-entry, so
+	# one swipe is one kick.
+	AudioDirector.play_sfx_variant(&"ball_kick")
 
 	# Deduct attempt & update HUD
 	attempts_left -= 1

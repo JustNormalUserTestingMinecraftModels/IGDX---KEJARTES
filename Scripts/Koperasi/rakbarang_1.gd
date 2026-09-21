@@ -313,7 +313,10 @@ func _on_barang_pressed(index: int):
 		_price_tags[index].play_buy()
 	if index < _shelf_items.size() and is_instance_valid(_shelf_items[index]):
 		_shelf_items[index].lift()
-	AudioDirector.play_sfx(&"tap")
+	# The shelf's own browse tap, in place of the generic UI tap: picking an
+	# item off a shelf is the shop's most-repeated action and deserves to
+	# sound like the shop rather than like a menu.
+	AudioDirector.play_sfx(&"shop_browse")
 
 	# Take the slot before the cart hears of it, so the refresh that
 	# Cart.add_item() triggers empties THIS slot, not the pair's other copy.

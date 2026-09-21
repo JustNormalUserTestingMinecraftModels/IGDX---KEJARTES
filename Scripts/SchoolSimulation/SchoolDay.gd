@@ -296,6 +296,9 @@ func start_simulation() -> void:
 	student_manager.initialize_from_gamestate()
 	if skip_button:
 		skip_button.show()
+	# The classroom bed runs under the whole week. _on_week_complete() stops
+	# it; a bed left running would murmur on under the shop and the lobby.
+	AudioDirector.play_ambience(&"classroom_1")
 	_run_day()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -321,6 +324,9 @@ func _run_day() -> void:
 # the driver loop above, which re-checks is_skipped and stops.
 func _run_single_day() -> void:
 	var day_name = DAYS[current_day]
+	# One bell per day, not per student: this is the top of the day loop, and
+	# the per-student work happens further down.
+	AudioDirector.play_sfx(&"school_bell")
 
 	# ── Background color and pattern transitions ─────────────────────────────
 	# Each weekday takes one of the project's category accents, mixed into
@@ -1279,6 +1285,7 @@ func _pay_out_wirausaha() -> int:
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _on_week_complete() -> void:
+	AudioDirector.stop_ambience()
 	AudioDirector.play_sfx(&"reward")
 	is_running = false
 	if skip_button:
@@ -1395,6 +1402,10 @@ func skip_to_results() -> void:
 	_on_week_complete()
 
 func _on_back_pressed() -> void:
+	# Belt and braces: _on_week_complete() already stops the bed on both the
+	# normal and the skipped path, but leaving the screen by any route must
+	# not leave a classroom murmuring under the lobby.
+	AudioDirector.stop_ambience()
 	AudioDirector.play_sfx(&"cancel")
 	if student_manager:
 		student_manager.write_back_to_gamestate()

@@ -784,8 +784,10 @@ func _on_start_week_pressed():
 		_show_incomplete_schedule_warning()
 		return
 
-	# 5. Everything optimal
-	AudioDirector.play_sfx(&"confirm")
+	# 5. Everything optimal. The cue lives in _proceed_start_week() so every
+	# route into the week sounds the same -- the warning paths reach it too,
+	# and the generic `confirm` that used to fire only here would have
+	# stacked on top of the chime.
 	_proceed_start_week()
 
 func _get_mentally_tired_students() -> Array[String]:
@@ -938,6 +940,9 @@ func _on_peringatan_no():
 	_switch_to_flagged_student()
 
 func _proceed_start_week():
+	# The week is committed here -- the one moment in AturJadwal that is a
+	# decision rather than an adjustment, so it gets its own chime.
+	AudioDirector.play_sfx(&"schedule_confirm")
 	Transition.change_scene("res://Scenes/SchoolSimulation/SchoolDay.tscn")
 
 # ================= PENJADWALAN POPUP =================

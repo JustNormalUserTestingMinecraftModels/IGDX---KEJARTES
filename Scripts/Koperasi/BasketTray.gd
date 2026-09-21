@@ -315,8 +315,9 @@ func set_state(state: int, animate: bool = true) -> void:
 	if is_instance_valid(_tray_tween) and _tray_tween.is_valid():
 		_tray_tween.kill()
 	if animate:
+		# No set_parallel(): the emblem's alpha was the second property in
+		# this tween until 2026-09-21, and one property needs no group.
 		_tray_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		_tray_tween.set_parallel(true)
 		_tray_tween.tween_property(self, "position:y", target_y, 0.28)
 	else:
 		position.y = target_y

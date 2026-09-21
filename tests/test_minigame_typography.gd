@@ -201,6 +201,29 @@ func test_menjodohkan_has_one_size_ladder_not_two_chains() -> void:
 		"Menjodohkan.gd must fit tile text with SoalFit")
 
 
+# -------------------------------------------------------------- BuatBatik
+
+const BATIK_GD := "res://Scripts/Minigames/SeniBudaya/BuatBatik.gd"
+
+
+func test_buat_batik_has_no_sub_floor_text() -> void:
+	var src := FileAccess.get_file_as_string(BATIK_GD)
+	assert_false(src.is_empty(), "BuatBatik.gd must be readable")
+	# 16px is 57% of font_body_size, on the one label that tells the player
+	# they stacked the layers in the wrong order.
+	assert_false(src.contains('add_theme_font_size_override("font_size", 16)'),
+		"16px is below the 28px body floor")
+	assert_true(src.contains("MinigameOverlayLabel"),
+		"BuatBatik's layer labels must use the overlay variation")
+
+
+func test_buat_batik_drops_the_warning_glyph() -> void:
+	var src := FileAccess.get_file_as_string(BATIK_GD)
+	assert_false(src.contains("⚠"),
+		"neither Boohong nor Open Sans carries this glyph, so it rides "
+		+ "whatever system font the device picks -- see DEBT.md")
+
+
 func test_question_card_has_no_emoji_lock() -> void:
 	for path in BOTH_CARDS:
 		var src := FileAccess.get_file_as_string(path)

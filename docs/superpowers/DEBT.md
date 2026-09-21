@@ -117,6 +117,17 @@ which gave real streams to `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
 `exam_notice` and `run_result`. `specialty_match`'s alias is set only in
 `audio_director.tscn`; the script default is null.
 
+**`classroomAmbient3.ogg` is corrupt at source (2026-09-21).** The Drive pack's
+third classroom bed is a 4 KB stub whose Vorbis identification header declares
+**zero channels**; the file on Drive is the same 4022 bytes, so it did not
+break in transit. Godot loads it without failing, but logs
+`Error parsing header packet 0: -133` (`OV_EBADHEADER`), and `project-check`
+fails the build on any `ERROR:` line. The file and its `amb_classroom_3` slot
+are out of the tree until the collaborator re-exports it. `classroom_1` and
+`classroom_2` are fine and cover the need. Worth checking the source export
+settings rather than just re-uploading — a zero-channel header suggests the
+encode itself failed.
+
 **Unused pack cues (2026-09-21).** The pack shipped 49 files; these have
 `AudioDirector` slots but no call site yet, because the screens that would
 fire them were not otherwise being touched: `times_up`, `timer_tick`,

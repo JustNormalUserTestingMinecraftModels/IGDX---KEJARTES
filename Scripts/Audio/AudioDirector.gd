@@ -187,10 +187,12 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export_group("Ambience")
 ## `play_ambience(&"classroom_1")`: classroom murmur under a simulated day.
 @export var amb_classroom_1: AudioStream = preload("res://Assets/Audio/Ambient/classroomAmbient1.ogg")
-## Second classroom bed.
+## Second classroom bed. Two, not the pack's three: classroomAmbient3.ogg
+## arrived corrupt -- a 4 KB stub whose Vorbis identification header declares
+## zero channels. Godot loads it but logs OV_EBADHEADER, which fails CI's
+## error scan, so the file is out until it is re-exported at source. See
+## DEBT.md.
 @export var amb_classroom_2: AudioStream = preload("res://Assets/Audio/Ambient/classroomAmbient2.ogg")
-## Third classroom bed.
-@export var amb_classroom_3: AudioStream = preload("res://Assets/Audio/Ambient/classroomAmbient3.ogg")
 ## `play_ambience(&"thunderstorm")`: the Hujan random event.
 @export var amb_thunderstorm: AudioStream = preload("res://Assets/Audio/Ambient/thunderstorm1.ogg")
 ## `play_ambience(&"writing")`: pencils and paper under an academic day.

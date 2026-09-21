@@ -559,3 +559,107 @@ func test_pill_sfx_are_registered() -> void:
 	for id in [&"pill_tap", &"pill_popup_open", &"pill_popup_close"]:
 		assert_true(AudioDirector.has_sfx(id),
 			"AudioDirector has no stream registered for %s" % id)
+
+
+# ------------------------------------------------ the Drive pack, 2026-09-21
+
+## Before the pack landed these ids all aliased pop.ogg or reward.ogg. A cue
+## still pointing at a placeholder is a cue nobody will notice is missing.
+func test_the_placeholder_aliases_are_gone() -> void:
+	for id in ["star_earn_1", "star_earn_2", "star_earn_3", "result_fanfare",
+			"sparkle", "coin"]:
+		var stream: AudioStream = AudioDirector.get("sfx_%s" % id)
+		assert_true(stream != null, "sfx_%s must have a stream" % id)
+		if stream == null:
+			continue
+		var path := String(stream.resource_path)
+		assert_false(path.ends_with("/pop.ogg") or path.ends_with("/reward.ogg"),
+			"sfx_%s must no longer alias a placeholder (got %s)" % [id, path])
+
+
+## The ladder only reads as a climb if the rungs differ.
+func test_the_three_star_cues_are_three_different_sounds() -> void:
+	var one := String(AudioDirector.sfx_star_earn_1.resource_path)
+	var two := String(AudioDirector.sfx_star_earn_2.resource_path)
+	var three := String(AudioDirector.sfx_star_earn_3.resource_path)
+	assert_true(one != two and two != three and one != three,
+		"star_earn_1/2/3 must be three distinct streams")
+
+
+## Asserted through has_sfx, not through the property: _resolve_sfx is an
+## explicit match, so a slot with no match arm is a slot play_sfx can never
+## reach however well the @export is filled in.
+func test_new_cue_ids_resolve() -> void:
+	for id in [&"school_bell", &"stat_up", &"stat_down", &"card_flip",
+			&"schedule_confirm", &"timer_tick", &"times_up", &"back_tap",
+			&"shop_browse", &"transaction", &"item_applied", &"apply",
+			&"tutorial_popup", &"result_checkup", &"daily_claim"]:
+		assert_true(AudioDirector.has_sfx(id),
+			"AudioDirector has no stream registered for %s" % id)
+
+
+func test_randomised_families_have_their_variants() -> void:
+	assert_eq(AudioDirector.sfx_transition_sweep.size(), 3,
+		"three sweeps, so a scene change never sounds identical twice")
+	assert_eq(AudioDirector.sfx_ball_kick.size(), 4, "four ball kicks")
+	assert_eq(AudioDirector.sfx_racket_hit.size(), 3, "three racket hits")
+
+
+func test_a_variant_family_plays_without_erroring() -> void:
+	AudioDirector.play_sfx_variant(&"ball_kick")
+	AudioDirector.play_sfx_variant(&"nonexistent_family")
+	assert_true(true, "an unknown family must be a no-op, not an error")
+
+
+func test_badge_reveal_is_a_tier_not_one_cue() -> void:
+	var seen: Array[String] = []
+	for band in ["Amazing", "Good", "Normal", "Bad", "Disaster"]:
+		var stream: AudioStream = AudioDirector.badge_reveal_stream(band)
+		assert_true(stream != null, "band %s must have a stream" % band)
+		if stream == null:
+			continue
+		var path := String(stream.resource_path)
+		assert_false(seen.has(path), "band %s must have its own sound" % band)
+		seen.append(path)
+
+
+func test_an_unknown_badge_band_falls_back_rather_than_erroring() -> void:
+	assert_true(AudioDirector.badge_reveal_stream("Nonsense") != null,
+		"an unknown band must fall back, not return null into a player")
+
+
+## The one that bites: a looping one-shot turns a UI click into a drone, and
+## an ambience bed that does not loop stops dead a minute into the day.
+func test_ambience_loops_and_sfx_do_not() -> void:
+	for id in ["classroom_1", "thunderstorm", "writing"]:
+		var stream: AudioStream = AudioDirector.get("amb_%s" % id)
+		assert_true(stream != null, "amb_%s must have a stream" % id)
+		if stream == null:
+			continue
+		assert_true(stream.loop, "amb_%s must loop" % id)
+	# Schoolring lives in the Ambient/ folder because that is where the
+	# collaborator filed it, but it is a one-shot bell. The folder is not the
+	# contract; the usage is.
+	assert_false(AudioDirector.sfx_school_bell.loop, "a bell must not loop")
+	assert_false(AudioDirector.sfx_card_flip.loop, "a card flip must not loop")
+
+
+## No third bus: default_bus_layout.tres is rewritten on boot and a new bus
+## would need a new settings slider to be honest about. Ambience follows the
+## SFX slider, which is what a player expects from a "sound effects" control.
+func test_ambience_plays_on_the_sfx_bus() -> void:
+	AudioDirector.play_ambience(&"classroom_1")
+	var player: AudioStreamPlayer = AudioDirector.get_ambience_player()
+	assert_true(player != null, "the ambience player must exist")
+	if player == null:
+		return
+	assert_eq(String(player.bus), "SFX", "ambience must sit on the SFX bus")
+	AudioDirector.stop_ambience()
+	assert_false(player.playing, "stop_ambience must actually stop it")
+
+
+func test_play_ambience_ignores_an_unknown_bed() -> void:
+	AudioDirector.stop_ambience()
+	AudioDirector.play_ambience(&"not_a_real_bed")
+	var player: AudioStreamPlayer = AudioDirector.get_ambience_player()
+	assert_false(player.playing, "an unknown bed must leave the player quiet")

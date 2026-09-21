@@ -81,7 +81,10 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
-	AudioDirector.play_sfx(&"popup_open")
+	# The weekly report's own arrival cue, in place of the generic popup
+	# whoosh: two cues on the same beat is the double-fire this suite guards
+	# against, and the report is a screen arriving, not a popup opening.
+	AudioDirector.play_sfx(&"result_checkup")
 	modulate.a = 0.0
 	_apply_visual_exports()
 	for b in [logs_button, next_button]:

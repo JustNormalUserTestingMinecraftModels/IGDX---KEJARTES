@@ -296,6 +296,9 @@ func start_simulation() -> void:
 	student_manager.initialize_from_gamestate()
 	if skip_button:
 		skip_button.show()
+	# The classroom bed runs under the whole week. _on_week_complete() stops
+	# it; a bed left running would murmur on under the shop and the lobby.
+	AudioDirector.play_ambience(&"classroom_1")
 	_run_day()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -321,6 +324,9 @@ func _run_day() -> void:
 # the driver loop above, which re-checks is_skipped and stops.
 func _run_single_day() -> void:
 	var day_name = DAYS[current_day]
+	# One bell per day, not per student: this is the top of the day loop, and
+	# the per-student work happens further down.
+	AudioDirector.play_sfx(&"school_bell")
 
 	# ── Background color and pattern transitions ─────────────────────────────
 	# Each weekday takes one of the project's category accents, mixed into
@@ -357,6 +363,10 @@ func _run_single_day() -> void:
 	if book_clock_widget and book_clock_widget.has_method("set_day"):
 		book_clock_widget.call("reset")
 		book_clock_widget.call("set_day", day_name)
+		# The same two values EventDialogue is handed, so the day banner and
+		# the dialogue's header can never disagree about which week it is.
+		book_clock_widget.call("set_week",
+			GameState.minggu_ke, GameState.get_max_weeks())
 
 	# Render embedded student status UI on DayScreen
 	_render_embedded_student_status()
@@ -714,9 +724,13 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 ##
 ## The sky cinematic is deliberately absent: it is the screen's backdrop
 ## now, not chrome, and should keep turning behind the summary's scrim.
+## What the day-summary popup hides behind itself, and shows again on the way
+## out. DayScreen/DayLabel is deliberately NOT here: since 2026-09-21 the
+## BookClockWidget header carries the day name and the scene hides this label
+## permanently, so listing it would set visible = true on the way out and
+## bring the duplicate back for the rest of the run.
 const _DAY_CHROME_PATHS := [
 	"DayScreen/DayNumberLabel",
-	"DayScreen/DayLabel",
 	"DayScreen/ProgressBar",
 	"DayScreen/StatusLabel",
 ]
@@ -1279,6 +1293,7 @@ func _pay_out_wirausaha() -> int:
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _on_week_complete() -> void:
+	AudioDirector.stop_ambience()
 	AudioDirector.play_sfx(&"reward")
 	is_running = false
 	if skip_button:
@@ -1394,7 +1409,20 @@ func skip_to_results() -> void:
 		
 	_on_week_complete()
 
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel, so an _input handler never sees it. Routed to the same function
+## the on-screen continue button calls, so both do exactly the same thing --
+## which here means advancing the week, not abandoning it.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_pressed()
+
+
 func _on_back_pressed() -> void:
+	# Belt and braces: _on_week_complete() already stops the bed on both the
+	# normal and the skipped path, but leaving the screen by any route must
+	# not leave a classroom murmuring under the lobby.
+	AudioDirector.stop_ambience()
 	AudioDirector.play_sfx(&"cancel")
 	if student_manager:
 		student_manager.write_back_to_gamestate()

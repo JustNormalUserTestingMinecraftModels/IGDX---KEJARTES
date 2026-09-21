@@ -593,7 +593,9 @@ func _on_next_kanan_pressed():
 	if tutorial_active or is_animating:
 		return
 	if current_page < kertas_murid.size() - 1:
-		AudioDirector.play_sfx(&"swipe")
+		# card_flip, not the generic swipe: these are paper cards turning.
+		# ReportCard and StatCheck keep `swipe`, where nothing is a card.
+		AudioDirector.play_sfx(&"card_flip")
 		var old_page = current_page
 		current_page += 1
 		_transition_page(old_page, current_page, -1)
@@ -602,7 +604,7 @@ func _on_next_kiri_pressed():
 	if tutorial_active or is_animating:
 		return
 	if current_page > 0:
-		AudioDirector.play_sfx(&"swipe")
+		AudioDirector.play_sfx(&"card_flip")
 		var old_page = current_page
 		current_page -= 1
 		_transition_page(old_page, current_page, 1)

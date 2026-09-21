@@ -16,6 +16,12 @@ class_name Pengaturan
 
 signal back_pressed
 
+## The Kembali button, kept so the device back press can route to the same
+## handler the tap does. _on_back_pressed takes the button it bounces, and
+## this sheet builds its controls rather than authoring them, so there is no
+## node path to find it by.
+var _back_button: Button
+
 func _ready() -> void:
 	layer = 250
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -105,11 +111,23 @@ func _ready() -> void:
 	btn_back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	btn_back.add_theme_font_size_override("font_size", 48)
 	btn_back.pressed.connect(_on_back_pressed.bind(btn_back))
+	# Kept so the device back press can reach the same handler: it takes the
+	# button it should bounce, and this sheet builds its button rather than
+	# authoring it, so there is no node path to look it up by.
+	_back_button = btn_back
 	vbox.add_child(btn_back)
 
 func _on_tutorial_toggled(toggled_on: bool) -> void:
 	GameSettings.minigame_tutorial_enabled = toggled_on
 	GameSettings.save_settings()
+
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel, so an _input handler never sees it. Routed to the same handler
+## the Kembali tap calls, bounce and all, so both do exactly the same thing.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and is_instance_valid(_back_button):
+		_on_back_pressed(_back_button)
+
 
 func _on_back_pressed(btn: Button) -> void:
 	_play_button_boing(btn, func():

@@ -94,6 +94,11 @@ const SCORE_COUNT_TIME: float = 0.6
 @onready var continue_button_center: CenterContainer = $Dim/Center/Card/Layout/ContinueButtonCenter
 @onready var continue_button: Button = $Dim/Center/Card/Layout/ContinueButtonCenter/ContinueButton
 @onready var confetti: RewardParticles = $Dim/ResultConfetti
+## The three placed fireworks, one fired per star as it lands. Separate from
+## `confetti` above, which is the full-house rain from above the top edge:
+## that one is gated at three stars and still fires. These replace the
+## star-shaped spray ResultStar used to mount into its own BurstSlot.
+@onready var fireworks: ConfettiFireworks = $Dim/ConfettiFireworks
 
 ## Cached so play()'s reveal sequence can skip hidden rows in the shipped
 ## order without re-deriving visibility.
@@ -275,6 +280,11 @@ func play() -> void:
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		await tw_star.finished
 		star.celebrate(star_index)
+		# One firework per star, at the burst's own authored place on the
+		# screen rather than behind the star. An out-of-range index is
+		# ignored, so a one- or two-star finish fires a short volley and the
+		# remaining burst stays quiet.
+		fireworks.fire_burst(star_index)
 		await get_tree().create_timer(
 			STAR_HOLD_TIMES[mini(star_index, STAR_HOLD_TIMES.size() - 1)]).timeout
 		var tw_settle := get_tree().create_tween()

@@ -6,9 +6,12 @@ extends Control
 ## height, a soft shadow where it meets the plank, and a ×N badge on its
 ## corner. BasketTray sizes and places it; the slot only knows its own shape.
 ##
-## Hold it to return one to the shelf -- the gesture the basket always had,
-## moved here from rakbarang_1.gd's _on_item_icon_input when the tray
-## replaced the basket popup. A right-click returns one at once.
+## Tap it or hold it to return one to the shelf. The hold is the gesture the
+## basket always had, moved here from rakbarang_1.gd's _on_item_icon_input
+## when the tray replaced the basket popup; the tap was added 2026-09-21,
+## because holding to undo a mis-tap is a slow answer to a fast mistake.
+## A right-click returns one at once. A press that drifts past hold_slop is a
+## tray drag, and the slot yields it -- see cancel_press().
 
 ## Emitted when the player holds the item long enough to return one.
 signal remove_requested(item_name: String)
@@ -129,16 +132,31 @@ func _begin_press(at: Vector2) -> void:
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
+## Forgets the press in progress, so the release that follows does nothing.
+## BasketTray calls this once a drag passes its DRAG_STEALS_AFTER: a gesture
+## that started on a slot but became a tray drag must move the tray, not
+## return an item.
+func cancel_press() -> void:
+	_press_msec = -1
+	if _press_tween != null and _press_tween.is_valid():
+		_press_tween.kill()
+	scale = Vector2.ONE
+
+
 func _end_press(at: Vector2) -> void:
+	if _press_msec < 0:
+		return
 	var held := (Time.get_ticks_msec() - _press_msec) / 1000.0
 	_press_msec = -1
 	if _press_tween != null and _press_tween.is_valid():
 		_press_tween.kill()
 	scale = Vector2.ONE
+	# Both gestures return one. `tapped` still fires so a listener that only
+	# wants to know the player touched a slot is unaffected -- koprasi.gd
+	# connects to it, and dropping the signal would be a silent API break.
 	match classify_release(held, _press_pos.distance_to(at), hold_seconds, hold_slop):
-		&"hold":
+		&"hold", &"tap":
 			remove_requested.emit(_item_name)
-		&"tap":
 			tapped.emit(_item_name)
 
 

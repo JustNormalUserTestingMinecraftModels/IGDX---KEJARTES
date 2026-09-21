@@ -214,6 +214,10 @@ func _on_beli_pressed():
 			bubble.say(&"POOR")
 		return
 
+	# The purchase goes through. `coin` still fires on the money change; this
+	# is the till, not the money.
+	AudioDirector.play_sfx(&"transaction")
+
 	# Deduct money
 	GameState.player_money -= total
 
@@ -230,7 +234,9 @@ func _on_beli_pressed():
 	if stage.has_method("clear_basket_visuals"):
 		stage.clear_basket_visuals()
 
-	AudioDirector.play_sfx(&"coin")
+	# `transaction` above is the till. `coin` used to double as the purchase
+	# sound, but since 2026-09-21 it is earnMoney -- money coming in, which
+	# is the opposite of what just happened here.
 	_show_message("Pembelian berhasil!", &"ShopMessageSuccess")
 	if bubble:
 		bubble.say(&"THANKS")

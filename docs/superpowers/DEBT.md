@@ -110,19 +110,92 @@ and the artifact sits at radius ~1041, so any `sky_cover_margin` at or above
 
 ## Audio and copy
 
-**Audio placeholders.** These `AudioDirector` cue ids alias existing streams:
-`specialty_match`, `tally`, `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
-`score_tick`, `combo_up`, and the BGM ids `exam_notice` and `run_result`.
-`specialty_match`'s alias is set only in `audio_director.tscn`; the script
-default is null. `event_announce` plays its own `event_announce.ogg`, but that
-file is a byte-identical copy of `reward.ogg`. `ApplyItemScreen`'s payoff likewise reuses
-existing cues rather than a dedicated `sfx_item_apply`.
+**Audio placeholders.** Mostly resolved by the 2026-09-21 Drive sound pack,
+which gave real streams to `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
+`coin` and `event_announce`. Still aliasing existing streams:
+`specialty_match`, `tally`, `score_tick`, `combo_up`, and the BGM ids
+`exam_notice` and `run_result`. `specialty_match`'s alias is set only in
+`audio_director.tscn`; the script default is null.
+
+**`classroomAmbient3.ogg` is corrupt at source (2026-09-21).** The Drive pack's
+third classroom bed is a 4 KB stub whose Vorbis identification header declares
+**zero channels**; the file on Drive is the same 4022 bytes, so it did not
+break in transit. Godot loads it without failing, but logs
+`Error parsing header packet 0: -133` (`OV_EBADHEADER`), and `project-check`
+fails the build on any `ERROR:` line. The file and its `amb_classroom_3` slot
+are out of the tree until the collaborator re-exports it. `classroom_1` and
+`classroom_2` are fine and cover the need. Worth checking the source export
+settings rather than just re-uploading — a zero-channel header suggests the
+encode itself failed.
+
+**Unused pack cues (2026-09-21).** The pack shipped 49 files; these have
+`AudioDirector` slots but no call site yet, because the screens that would
+fire them were not otherwise being touched: `times_up`, `timer_tick`,
+`back_tap`, `item_applied`, `apply`, `tutorial_popup`, `daily_claim`,
+`achievement_prize`, `achievement_success`, the `sfx_achievement` family,
+the `badge_reveal_*` tier (and its `badge_reveal_stream()` accessor), and the
+ambience beds `classroom_2/3`, `schoolyard_1/2`, `writing` and `thunderstorm`
+— only `classroom_1` is played, by SchoolDay. Wiring each is a one-line
+`play_sfx`/`play_ambience` at the right moment; finding that moment is the
+work.
 
 **Copy placeholders.** Every `desc` string in `ItemDatabase.DEFAULT_ITEMS`
 (shown verbatim in `ItemDetailSheet`) is placeholder copy, marked by one
 blanket `[PLACEHOLDER]` comment above the table rather than one by one. Every `line` in
 `EventDialogueCatalog.ENTRIES` (2026-09-14) is a draft, unmarked because it
 shows in-game.
+
+## Theme override debt (2026-09-21)
+
+The project's hard rule is **never add a `theme_override_*`** — use a
+`ThemeFactory` type variation instead. Audited on 2026-09-21. Two separate
+findings, and the second is the one that matters:
+
+**`.tscn` properties: clean where it counts.** 66 non-layout overrides
+(`font_sizes`, `styles`, `colors`) exist in scene files, and **every one is
+inside `Scenes/Minigames/**`**, which CLAUDE.md declares out of scope for the
+design system. Outside the minigames there are zero. Every remaining
+`theme_override_constants` outside the minigames is `separation`, `margin_*`,
+`v_separation` or `h_separation` — the documented layout-only exception — plus
+two `line_spacing`.
+
+**Runtime calls: 57 real violations, in `.gd` not `.tscn`.** A grep for the
+scene-file property name misses these entirely, which is why they had not been
+counted before. `add_theme_font_override` / `add_theme_font_size_override` /
+`add_theme_color_override` / `add_theme_stylebox_override`, outside the
+minigames, the debug overlay and `ThemeFactory` itself (which is allowed to):
+
+| File | Calls |
+|---|---|
+| `Scripts/Inventory/ItemDetailSheet.gd` | 10 |
+| `Scripts/SchoolSimulation/DailyDecayOverview.gd` | 9 |
+| `Scripts/Pengaturan.gd` | 7 |
+| `Scripts/Inventory/InventorySlot.gd` | 5 |
+| `Scripts/Inventory/ApplyStudentRow.gd` | 5 |
+| `Scripts/AturJadwal/atur_jadwal.gd` | 5 |
+| `Scripts/SchoolSimulation/EventStudentSelectDialog.gd` | 3 |
+| `Scripts/Inventory/ApplyItemScreen.gd` | 3 |
+| `Scripts/AnimUtils.gd` | 3 |
+| `Scripts/SchoolSimulation/StudentStatRow.gd` | 2 |
+| `Scripts/Inventory/inventory.gd` | 2 |
+| `Scripts/SchoolSimulation/StudentSummaryCard.gd` | 1 |
+| `Scripts/SchoolSimulation/SchoolDay.gd` | 1 |
+| `Scripts/SchoolSimulation/ResultCheckup.gd` | 1 |
+
+Inventory is the worst cluster (25 across five files).
+
+**Why none were fixed on 2026-09-21.** The two the tray/audio branch touched
+(`SchoolDay.gd:564`, `ResultCheckup.gd:167`) are both
+`add_theme_font_override("font", font)` applying an `@export`ed font to a
+control. Replacing them with a variation means deleting that `@export` knob —
+a design decision about those screens, not a mechanical cleanup, and one with
+no cheap way to verify beyond a screenshot. `Pengaturan.gd` is worse: it
+builds its whole UI at runtime (also a "no visual is built at runtime"
+violation), so its 7 calls cannot move to a variation until the sheet is
+authored as a `.tscn`.
+
+Work this as one pass per cluster, starting with Inventory, not as a
+by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
 

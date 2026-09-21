@@ -172,3 +172,124 @@ func test_event_fires_at_the_days_halfway_point_not_a_random_afternoon_point() -
 		"the event must land at the 50% point of the day, there is no midday pose to land on any more")
 	assert_false(src.contains("randf_range(0.5, 0.8)"),
 		"the event should no longer land at a random point in the day")
+
+
+# ───────────────────────────── the day/week header (2026-09-21)
+# BookClockWidget took the weekday through set_day() and displayed nothing;
+# the player's only day readout was two bare labels in SchoolDay's corner,
+# with no week count anywhere on the screen.
+
+func test_set_week_formats_like_the_event_dialogue() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	w.set_week(3, 6)
+	assert_eq(w.week_text(), "3/6",
+		'the week must read "%d/%d", exactly as EventDialogue writes it')
+	w.free()
+
+
+func test_set_day_writes_the_banner_not_just_the_variable() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	w.set_day("Selasa")
+	assert_eq(w.day_name(), "Selasa", "set_day still records the name")
+	assert_eq(w.day_text(), "Selasa", "and now it reaches the banner too")
+	w.free()
+
+
+## The grade ladder, which needs no code of its own: get_max_weeks() returns
+## 6/12/16 for Kelas 7/8/9. A hard-coded 6 would pass every Kelas 7 test and
+## be wrong for two thirds of the game.
+func test_the_week_count_follows_the_grade() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	for pair in [[3, 6], [9, 12], [14, 16]]:
+		w.set_week(pair[0], pair[1])
+		assert_eq(w.week_text(), "%d/%d" % [pair[0], pair[1]],
+			"Kelas with %d weeks must read %d/%d" % [pair[1], pair[0], pair[1]])
+	w.free()
+
+
+func test_reset_clears_the_header() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	w.set_day("Rabu")
+	w.set_week(2, 6)
+	w.reset()
+	assert_eq(w.day_text(), "", "reset must clear the banner")
+	assert_eq(w.week_text(), "", "reset must clear the week")
+	w.free()
+
+
+## The source, not just the format: both screens must read the same two
+## GameState values, or they can drift apart by a week.
+func test_school_day_feeds_the_header_from_gamestate() -> void:
+	var src := FileAccess.get_file_as_string(SCHOOLDAY_SCRIPT)
+	# `.call("set_week", ...)`, matching how this file already drives the
+	# widget -- book_clock_widget is typed Control, not BookClockWidget.
+	assert_true(src.contains('"set_week"'),
+		"SchoolDay must tell the widget which week it is")
+	assert_true(src.contains("GameState.get_max_weeks()"),
+		"the week count must come from GameState, not a literal")
+
+
+## The header is authored, and it is EventDialogue's header rather than a
+## lookalike: the same variations, not a set of overrides that happen to
+## match. The project's rule forbids the overrides anyway.
+func test_the_header_is_authored_with_the_shared_variations() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	for path in [BookClockWidget.DAY_LABEL_PATH, BookClockWidget.WEEK_LABEL_PATH]:
+		assert_true(w.get_node_or_null(path) != null,
+			"the scene must author %s" % path)
+	var banner: Control = w.get_node_or_null("Header/DayBanner")
+	assert_true(banner != null, "the day banner must exist")
+	if banner != null:
+		assert_eq(String(banner.theme_type_variation), "DayBannerPanel",
+			"the banner must use EventDialogue's own panel variation")
+	var day_label: Label = w.get_node_or_null(BookClockWidget.DAY_LABEL_PATH)
+	if day_label != null:
+		assert_eq(String(day_label.theme_type_variation), "DayBannerLabel",
+			"the day must use EventDialogue's own label variation")
+	var minggu: Label = w.get_node_or_null("Header/Calendar/Text/MingguLabel")
+	if minggu != null:
+		assert_eq(String(minggu.theme_type_variation), "CalendarLabel",
+			"the Minggu caption must use the shared calendar variation")
+	w.free()
+
+
+## The illustration asked for by name: the lobby's daily-login calendar, not
+## EventDialogue's flat calendar_badge.png and nothing newly drawn.
+func test_the_badge_wears_the_daily_login_calendar() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	var cal: TextureRect = w.get_node_or_null("Header/Calendar")
+	assert_true(cal != null, "the calendar badge must exist")
+	if cal != null:
+		assert_true(cal.texture != null, "the badge must have art")
+		if cal.texture != null:
+			assert_true(String(cal.texture.resource_path).ends_with("icon_daily_login.png"),
+				"the badge must wear the daily-login calendar")
+	w.free()
+
+
+## The daily-login calendar is drawn in perspective: its paper rises to the
+## right. Straight text on it reads as sliding off the page. -9 degrees is
+## measured from the art -- a least-squares fit through the first cream
+## pixel in each of 48 columns gave a slope of -0.1579, or -8.97 degrees --
+## not eyeballed.
+func test_the_badge_text_is_rotated_onto_the_paper() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	var text_box: Control = w.get_node_or_null("Header/Calendar/Text")
+	assert_true(text_box != null, "the badge's text container must exist")
+	if text_box != null:
+		assert_true(absf(text_box.rotation_degrees - (-9.0)) < 0.5,
+			"the text must sit on the tilted paper, got %f" % text_box.rotation_degrees)
+	w.free()
+
+
+## The header draws over the day screen, so it must not eat taps meant for
+## the screen above it -- SchoolDay closes its day summary on a tap anywhere.
+func test_the_header_ignores_the_mouse() -> void:
+	var w = load(SCENE_PATH).instantiate()
+	for path in ["Header", "Header/Calendar", "Header/DayBanner"]:
+		var n: Control = w.get_node_or_null(path)
+		assert_true(n != null, "%s must exist" % path)
+		if n != null:
+			assert_eq(n.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+				"%s must not take input from the screen above it" % path)
+	w.free()

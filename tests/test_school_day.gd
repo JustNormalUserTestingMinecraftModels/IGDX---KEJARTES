@@ -676,3 +676,65 @@ func _function_body(src: String, fn_name: String) -> String:
 		if at != -1 and at < end:
 			end = at
 	return src.substr(start, end - start)
+
+
+# ───────────────────────────── the day/week header (2026-09-21)
+
+## With BookClockWidget's banner showing "Senin", DayScreen/DayLabel showed
+## it a second time a few hundred pixels away. Hidden, not deleted: this
+## suite pins the node path, and removing a node from a shipped scene is a
+## bigger decision than de-duplicating a label needs to be. SchoolDay.gd
+## still writes its text, so one edit brings it back if this is wrong on a
+## real screen.
+func test_the_day_name_is_not_shown_twice() -> void:
+	var block := _scene_node_block('[node name="DayLabel" type="Label" parent="DayScreen"')
+	assert_true(block != "", "DayScreen/DayLabel must still exist")
+	if block == "":
+		return
+	assert_true(block.contains("visible = false"),
+		"DayLabel must be hidden now the header carries the day")
+
+
+## Hiding it in the scene is not enough. _set_day_chrome_visible(true) runs
+## after every day-summary popup and sets `visible = true` on everything in
+## _DAY_CHROME_PATHS, so leaving DayLabel in that list un-hides the duplicate
+## day name for the rest of the run -- and a test that only reads the .tscn
+## passes while the screen is wrong.
+func test_the_hidden_day_label_is_not_un_hidden_by_the_chrome_toggle() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var at := src.find("const _DAY_CHROME_PATHS")
+	assert_true(at >= 0, "_DAY_CHROME_PATHS must exist")
+	if at < 0:
+		return
+	var block := src.substr(at, src.find("]", at) - at)
+	assert_false(block.contains('"DayScreen/DayLabel"'),
+		"a permanently hidden label must not be in the show/hide list")
+	assert_true(block.contains('"DayScreen/DayNumberLabel"'),
+		"the day counter still hides for the summary popup")
+
+
+## One node's block in SchoolDay.tscn: from its [node] header to the next
+## one. A fixed character window is not good enough here -- DayNumberLabel
+## and DayLabel are seven lines apart, so a 400-char window read one node's
+## properties as the other's.
+func _scene_node_block(header: String) -> String:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/SchoolDay.tscn")
+	var start := src.find(header)
+	if start < 0:
+		return ""
+	var next := src.find("[node ", start + header.length())
+	return src.substr(start, (next - start) if next > 0 else -1)
+
+
+## DayNumberLabel stays: "Hari 1 dari 5" is the day's place in the WEEK,
+## which the header does not carry -- the header is the day's name and the
+## week's place in the grade. Three facts, no repeats.
+func test_the_day_number_is_still_shown() -> void:
+	var block := _scene_node_block(
+		'[node name="DayNumberLabel" type="Label" parent="DayScreen"')
+	assert_true(block != "", "DayScreen/DayNumberLabel must exist")
+	if block == "":
+		return
+	assert_false(block.contains("visible = false"),
+		"the day-of-week counter must stay visible")

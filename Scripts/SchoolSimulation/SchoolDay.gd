@@ -363,6 +363,10 @@ func _run_single_day() -> void:
 	if book_clock_widget and book_clock_widget.has_method("set_day"):
 		book_clock_widget.call("reset")
 		book_clock_widget.call("set_day", day_name)
+		# The same two values EventDialogue is handed, so the day banner and
+		# the dialogue's header can never disagree about which week it is.
+		book_clock_widget.call("set_week",
+			GameState.minggu_ke, GameState.get_max_weeks())
 
 	# Render embedded student status UI on DayScreen
 	_render_embedded_student_status()
@@ -720,9 +724,13 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 ##
 ## The sky cinematic is deliberately absent: it is the screen's backdrop
 ## now, not chrome, and should keep turning behind the summary's scrim.
+## What the day-summary popup hides behind itself, and shows again on the way
+## out. DayScreen/DayLabel is deliberately NOT here: since 2026-09-21 the
+## BookClockWidget header carries the day name and the scene hides this label
+## permanently, so listing it would set visible = true on the way out and
+## bring the duplicate back for the rest of the run.
 const _DAY_CHROME_PATHS := [
 	"DayScreen/DayNumberLabel",
-	"DayScreen/DayLabel",
 	"DayScreen/ProgressBar",
 	"DayScreen/StatusLabel",
 ]

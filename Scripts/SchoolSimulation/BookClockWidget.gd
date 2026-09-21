@@ -18,6 +18,13 @@ class_name BookClockWidget
 ## (set_day / set_progress / reset) are unchanged so SchoolDay.gd drives
 ## it exactly as before.
 ##
+## Since 2026-09-21 it also carries the header the player reads the day from:
+## a day banner and a calendar badge, authored in the .tscn as a mirror of
+## EventDialogue's -- same DayBannerPanel / DayBannerLabel / CalendarLabel
+## variations, same "%d/%d" week format, fed from the same two GameState
+## values, so the two screens cannot disagree. set_day() used to record the
+## weekday and display nothing; set_week() is its partner.
+##
 ## Direction: Godot's rotation is clockwise-positive with y down, so the
 ## counter-clockwise sweep the mechanism reference asks for runs from 0
 ## to a NEGATIVE angle. See docs/superpowers/mockups/
@@ -36,6 +43,12 @@ class_name BookClockWidget
 const SKY_NODE := "SkyBackground"
 ## Child that holds the stationary school and hill.
 const FOREGROUND_NODE := "SchoolForeground"
+
+## The banner Label carrying the weekday, and the Label carrying "3/6" on the
+## calendar badge. Both are authored in this widget's .tscn, mirroring
+## EventDialogue's header so the two screens read identically.
+const DAY_LABEL_PATH := ^"Header/DayBanner/DayLabel"
+const WEEK_LABEL_PATH := ^"Header/Calendar/Text/WeekLabel"
 
 ## The day's two resting poses, plus MIDDAY as the arc's midpoint -- the
 ## event still rolls there, but the sky no longer stops for it.
@@ -118,6 +131,8 @@ enum Phase { DAWN, MIDDAY, EVENING }
 # ── Internal state ────────────────────────────────────────────────────────────
 var _progress: float = 0.0
 var _day_name: String = ""
+## "3/6" as the calendar badge shows it, or "" before a week is set.
+var _week_text: String = ""
 
 
 func _ready() -> void:
@@ -132,10 +147,22 @@ func _notification(what: int) -> void:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-## Starts a fresh day. Records the weekday and rewinds the sky to morning.
+## Starts a fresh day. Records the weekday, writes it to the banner and
+## rewinds the sky to morning.
 func set_day(day_name_in: String) -> void:
 	_day_name = day_name_in
+	_write_header()
 	set_progress(0.0)
+
+
+## The week this day belongs to, in EventDialogue's format: "3/6".
+##
+## max_weeks is grade-scaled (GameState.get_max_weeks() returns 6/12/16 for
+## Kelas 7/8/9), so the same call reads 3/6 in Kelas 7 and 3/16 in Kelas 9
+## with nothing here to change.
+func set_week(week: int, max_weeks: int) -> void:
+	_week_text = "%d/%d" % [week, max_weeks]
+	_write_header()
 
 
 ## Places the sky for a point in the school day, 0.0 (morning) to 1.0
@@ -146,15 +173,42 @@ func set_progress(value: float) -> void:
 	_apply_rotation()
 
 
-## Rewinds to morning and forgets the weekday.
+## Rewinds to morning and clears the header.
 func reset() -> void:
 	_day_name = ""
+	_week_text = ""
+	_write_header()
 	set_progress(0.0)
 
 
 ## The weekday currently being simulated, as handed in by set_day().
 func day_name() -> String:
 	return _day_name
+
+
+## What the banner reads. Exists so tests need not know node paths.
+func day_text() -> String:
+	var label := get_node_or_null(DAY_LABEL_PATH) as Label
+	return label.text if label != null else ""
+
+
+## What the calendar badge reads.
+func week_text() -> String:
+	var label := get_node_or_null(WEEK_LABEL_PATH) as Label
+	return label.text if label != null else ""
+
+
+## Pushes both strings into the authored Labels. Missing nodes are ignored
+## rather than erroring: the widget is instanced bare in tests and previewed
+## in the editor, and a half-built scene must not take the day cinematic
+## down with it.
+func _write_header() -> void:
+	var day_label := get_node_or_null(DAY_LABEL_PATH) as Label
+	if day_label != null:
+		day_label.text = _day_name
+	var week_label := get_node_or_null(WEEK_LABEL_PATH) as Label
+	if week_label != null:
+		week_label.text = _week_text
 
 
 ## Raw progress through the day, 0.0 to 1.0, before easing.

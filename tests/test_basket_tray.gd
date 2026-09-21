@@ -397,3 +397,52 @@ func test_a_slot_crops_its_arts_transparent_padding() -> void:
 	assert_true(shown is AtlasTexture, "the slot shows a crop of the art")
 	if shown is AtlasTexture:
 		assert_eq(shown.region, Rect2(20, 180, 60, 120), "cropped to the opaque rect")
+
+
+## The drag gesture (2026-09-21): the tray follows a finger between its docked
+## and hidden positions, and the release decides where it settles. The rule
+## lives in a pure static function because the runner cannot await -- a test
+## that waited for the settle tween would abort mid-way and report "0
+## assertions".
+func test_classify_drag_commits_past_the_halfway_point() -> void:
+	# span is tray_offset_collapsed: the full travel between docked and hidden.
+	assert_eq(BasketTray.classify_drag(120.0, 0.0, 190.0),
+		BasketTray.ViewState.COLLAPSED,
+		"a slow drag past halfway must settle collapsed")
+	assert_eq(BasketTray.classify_drag(70.0, 0.0, 190.0),
+		BasketTray.ViewState.EXPANDED,
+		"a slow drag short of halfway must spring back expanded")
+
+
+func test_classify_drag_lets_a_flick_win_outright() -> void:
+	# A fast, short downward flick must collapse even though travel is tiny --
+	# otherwise a real flick reads as "barely moved, snap back".
+	assert_eq(BasketTray.classify_drag(18.0, 1400.0, 190.0),
+		BasketTray.ViewState.COLLAPSED,
+		"a downward flick must collapse regardless of travel")
+	# And the same flick upward must expand from a nearly-collapsed tray.
+	assert_eq(BasketTray.classify_drag(172.0, -1400.0, 190.0),
+		BasketTray.ViewState.EXPANDED,
+		"an upward flick must expand regardless of travel")
+
+
+func test_classify_drag_clamps_a_nonsense_span() -> void:
+	# A zero span must not divide by zero; it settles expanded.
+	assert_eq(BasketTray.classify_drag(50.0, 0.0, 0.0),
+		BasketTray.ViewState.EXPANDED,
+		"a zero span must settle expanded rather than divide by zero")
+
+
+## A drag must never fling the tray off its dock, however far the finger goes.
+func test_a_drag_is_clamped_to_the_dock() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var base_y: float = tray.position.y
+	tray.begin_drag(0.0)
+	tray.update_drag(10000.0)
+	assert_eq(tray.position.y, base_y + tray.tray_offset_collapsed,
+		"dragging far past the dock stops at the collapsed position")
+	tray.update_drag(-10000.0)
+	assert_eq(tray.position.y, base_y,
+		"dragging far above the dock stops at the docked position")

@@ -7,6 +7,11 @@ extends Control
 ## with a ×N badge, and its footer carries the running total and the one
 ## Beli button.
 ##
+## Three ways to move it, all landing in set_state(): the header emblem, the
+## CrateHandle koprasi.gd owns, and (since 2026-09-21) a drag -- the tray
+## follows a finger between docked and hidden, and classify_drag() decides
+## where the release settles.
+##
 ## The root is a bare anchor (authoring guide, Pattern C); Body carries the
 ## geometry. Slots are placed by hand rather than by a container, so layout is
 ## synchronous: tests assert real positions, and the shop reads a slot's
@@ -44,6 +49,13 @@ enum ViewState { EXPANDED, COLLAPSED }
 		if is_inside_tree():
 			_layout_slots()
 
+## Drag speed (px/s) past which a flick decides the tray's resting state on
+## its own, whatever the distance covered. Below this the halfway rule wins.
+const FLICK_VELOCITY: float = 900.0
+## Fraction of the full travel a slow drag must cross to commit to the far
+## state. 0.5 is the midpoint: past it the tray goes, short of it it returns.
+const COMMIT_FRACTION: float = 0.5
+
 const SLOT_SCENE := preload("res://Scenes/Koperasi/TraySlot.tscn")
 ## Cart's script, so its static total_of() is called on the type rather than
 ## through the autoload instance (which GDScript warns about).
@@ -75,10 +87,26 @@ var _base_y: float = 0.0
 ## starts so two quick toggles never fight.
 var _tray_tween: Tween
 
+## True while a finger is dragging the tray. The slide tween is killed when a
+## drag starts, so a drag that interrupts a toggle takes over cleanly instead
+## of fighting it for position.y.
+var _dragging: bool = false
+## Global y where the current drag began.
+var _drag_from_y: float = 0.0
+## The most recent drag sample, for the release velocity.
+var _drag_last_y: float = 0.0
+## Time of the most recent drag sample, in milliseconds.
+var _drag_last_msec: int = 0
+## Release speed in px/s, positive downward. Fed to classify_drag().
+var _drag_velocity: float = 0.0
+
 
 func _ready() -> void:
 	_ensure_nodes()
 	_base_y = position.y
+	# PASS, not STOP: _gui_input needs the press for the drag gesture, but the
+	# slots and the Beli button inside must still get their own.
+	mouse_filter = MOUSE_FILTER_PASS
 	if is_instance_valid(_beli_button) and not _beli_button.pressed.is_connected(_on_beli_pressed):
 		_beli_button.pressed.connect(_on_beli_pressed)
 	if is_instance_valid(_header_button) and not _header_button.pressed.is_connected(_on_header_pressed):
@@ -174,6 +202,86 @@ func landing_rect_for(item_name: String) -> Rect2:
 ## The slot showing item_name, or null.
 func get_slot(item_name: String) -> TraySlot:
 	return _slots.get(item_name)
+
+
+## Where a released drag settles. `travel` is how far the tray has moved down
+## from its docked position, `velocity` the release speed in px/s (positive =
+## downward), `span` the full travel between docked and hidden. Returns a
+## ViewState value.
+##
+## Pure on purpose: the runner cannot await, so the rule has to be checkable
+## without a frame. end_drag() is the only caller at runtime.
+static func classify_drag(travel: float, velocity: float, span: float) -> int:
+	if absf(velocity) >= FLICK_VELOCITY:
+		return ViewState.COLLAPSED if velocity > 0.0 else ViewState.EXPANDED
+	if span <= 0.0:
+		return ViewState.EXPANDED
+	return ViewState.COLLAPSED if travel >= span * COMMIT_FRACTION else ViewState.EXPANDED
+
+
+## Begins a drag at global y `at_y`. Kills any running slide first so a drag
+## that interrupts a toggle takes over cleanly instead of fighting it.
+func begin_drag(at_y: float) -> void:
+	if is_instance_valid(_tray_tween) and _tray_tween.is_valid():
+		_tray_tween.kill()
+	_dragging = true
+	_drag_from_y = at_y
+	_drag_last_y = at_y
+	_drag_last_msec = Time.get_ticks_msec()
+	_drag_velocity = 0.0
+
+
+## Moves the tray to follow a finger at global y `at_y`, clamped to the dock so
+## a long drag can never fling it off screen.
+func update_drag(at_y: float) -> void:
+	if not _dragging:
+		return
+	var delta_y: float = at_y - _drag_from_y
+	var start_y: float = _base_y + (tray_offset_collapsed \
+		if _state == ViewState.COLLAPSED else 0.0)
+	position.y = clampf(start_y + delta_y, _base_y, _base_y + tray_offset_collapsed)
+	var now := Time.get_ticks_msec()
+	var dt: float = maxf(float(now - _drag_last_msec) / 1000.0, 0.0001)
+	_drag_velocity = (at_y - _drag_last_y) / dt
+	_drag_last_y = at_y
+	_drag_last_msec = now
+
+
+## Ends a drag and settles the tray. The settle goes through set_state(), so
+## the existing tween, emblem fade, badge rule, HeaderButton hit-test gate and
+## state_changed signal all keep working untouched -- koprasi.gd's CrateHandle
+## mirror needs no edit.
+func end_drag() -> void:
+	if not _dragging:
+		return
+	_dragging = false
+	var travel: float = position.y - _base_y
+	var settled: int = classify_drag(travel, _drag_velocity, tray_offset_collapsed)
+	if settled == _state:
+		# set_state() no-ops on a repeat, which would leave the tray parked
+		# mid-slide where the finger dropped it. Slide it home by hand.
+		var home_y: float = _base_y + (tray_offset_collapsed \
+			if _state == ViewState.COLLAPSED else 0.0)
+		if not is_equal_approx(position.y, home_y):
+			_tray_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			_tray_tween.tween_property(self, "position:y", home_y, 0.2)
+		return
+	set_state(settled, true)
+
+
+## The drag gesture. mouse_filter is PASS (set in _ready), not STOP, so the
+## slots and the Beli button inside still receive their own presses.
+func _gui_input(event: InputEvent) -> void:
+	var button := event as InputEventMouseButton
+	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
+		if button.pressed:
+			begin_drag(button.global_position.y)
+		else:
+			end_drag()
+		return
+	var motion := event as InputEventMouseMotion
+	if motion != null and _dragging:
+		update_drag(motion.global_position.y)
 
 
 ## Flips between EXPANDED and COLLAPSED, animated.

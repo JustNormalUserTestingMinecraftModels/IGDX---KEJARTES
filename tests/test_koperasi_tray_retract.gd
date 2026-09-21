@@ -93,23 +93,17 @@ func test_state_changed_signal_declared() -> void:
 	t.queue_free()
 
 
-func test_basket_tray_scene_has_header_button() -> void:
+## The emblem in the tray's top-right corner -- its basket icon, its count
+## badge and the HeaderButton inside it -- was removed on 2026-09-21. Three
+## tests here existed only to keep that button and badge honest across a
+## collapse; with the node gone they are replaced by one that pins its
+## absence, so nothing quietly puts an invisible button back.
+func test_the_tray_has_no_corner_emblem_or_header_button() -> void:
 	var t: Control = _live_tray()
-	var header := t.get_node_or_null("Body/Emblem/HeaderButton")
-	assert_not_null(header, "BasketTray.tscn must have a Body/Emblem/HeaderButton")
-	assert_true(header is TextureButton, "HeaderButton must be a TextureButton")
-	t.queue_free()
-
-
-## Spec section 3: collapsing must hide the badge itself (visible = false),
-## not just fade the emblem's alpha -- a caller checking .visible (rather
-## than reading pixels) must see it gone.
-func test_collapse_hides_emblem_badge_outright() -> void:
-	var t: Control = _live_tray()
-	t._emblem_badge.visible = true
-	t.set_state(t.ViewState.COLLAPSED, false)
-	assert_false(t._emblem_badge.visible,
-		"a collapsed tray must hide its own count badge outright")
+	assert_true(t.get_node_or_null("Body/Emblem") == null,
+		"the corner emblem must be gone")
+	assert_true(t.get_node_or_null("Body/Emblem/HeaderButton") == null,
+		"and with it the toggle button it contained")
 	t.queue_free()
 
 
@@ -189,11 +183,16 @@ func test_koprasi_gd_wires_crate_to_tray_toggle() -> void:
 ## tray header emblem, not overlapping the coin HUD above it. CrateHandle's
 ## own pivot is (0,0) (top-left, unlike Art's foot-centre pivot used only by
 ## idle_bounce), so its authored top-left offset IS its on-screen top-left at
-## any scale -- it must equal Body/Emblem's authored top-left in Stage-local
-## coordinates: 24 (Body's left inset) + 876 (Emblem offset_left) = 900,
-## and 117 (TrayDock offset_top) + 1243 (Body offset_top) - 64 (Emblem
-## offset_top) = 1296.
-func test_crate_expanded_pose_matches_emblem_top_left() -> void:
+## any scale.
+##
+## (900, 1296) was originally derived from the tray's corner emblem: 24
+## (Body's left inset) + 876 (Emblem offset_left), and 117 (TrayDock
+## offset_top) + 1243 (Body offset_top) - 64 (Emblem offset_top). That emblem
+## was removed on 2026-09-21 and the number stayed, because it is now the
+## only cart affordance in that corner and carries the count badge the
+## emblem used to -- the position is load-bearing on its own, not because of
+## a node that no longer exists.
+func test_crate_expanded_pose_matches_the_trays_corner() -> void:
 	var scene_src := _read(KOPRASI_TSCN)
 	var script_src := _read("res://Scripts/Koperasi/koprasi.gd")
 	if scene_src.is_empty() or script_src.is_empty():
@@ -283,22 +282,19 @@ func test_koprasi_gd_opts_crate_out_of_auto_juice() -> void:
 		"koprasi.gd must opt CrateHandle out of UIPolish's auto-juice via Juice.NO_AUTO_JUICE")
 
 
-## Review fix: a COLLAPSED tray only fades Body/Emblem's alpha, which leaves
-## the HeaderButton inside it hit-testable. set_state() must gate its
-## mouse_filter directly, both when snapped (animate=false, used here since
-## no test advances a frame) and by construction when animated (the filter
-## change sits outside the animate/no-animate branch in the source).
-func test_collapsed_tray_ignores_mouse_on_header_button() -> void:
-	var t: Control = _live_tray()
-	var header := t.get_node_or_null("Body/Emblem/HeaderButton") as TextureButton
-	assert_not_null(header, "BasketTray.tscn must have a Body/Emblem/HeaderButton")
-	if header == null:
-		t.queue_free()
+## The cart count must still be readable while the tray is OPEN. It used to
+## live on the emblem's own badge; koprasi.gd's CrateHandle badge hid itself
+## while expanded precisely because of that, so removing the emblem without
+## this change would leave the total showing nowhere at all.
+func test_the_crate_badge_carries_the_count_in_both_states() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/Koperasi/koprasi.gd")
+	var at := src.find("func _refresh_crate_badge")
+	assert_true(at >= 0, "_refresh_crate_badge must exist")
+	if at < 0:
 		return
-	t.set_state(t.ViewState.COLLAPSED, false)
-	assert_eq(header.mouse_filter, Control.MOUSE_FILTER_IGNORE,
-		"a collapsed tray must not let its HeaderButton catch mouse input")
-	t.set_state(t.ViewState.EXPANDED, false)
-	assert_eq(header.mouse_filter, Control.MOUSE_FILTER_STOP,
-		"re-expanding must restore the HeaderButton's normal mouse filter")
-	t.queue_free()
+	var body := src.substr(at, 600)
+	assert_true(body.contains("badge.visible = count > 0"),
+		"the crate badge must show on count alone, in either tray state")
+	assert_false(body.contains("collapsed and count > 0"),
+		"it must no longer hide itself while the tray is expanded")

@@ -382,8 +382,9 @@ func _spawn_falling_item(source_button: TextureButton, item: ItemData, life = nu
 
 func _on_item_landed(flying_node: Node, item: ItemData, item_size: Vector2, land_pos: Vector2 = Vector2.ZERO, life = null):
 	flying_node.queue_free()
+	# tray.land() pops the item on the plank -- that is the landing feedback
+	# now the top-right basket emblem this used to bounce is gone.
 	tray.land(item.item_name)
-	AnimUtils.basket_bounce(tray.get_emblem())
 	AudioDirector.play_sfx(&"pop")
 	AnimUtils.create_floating_text(
 		get_tree().current_scene,
@@ -398,7 +399,8 @@ func _on_item_landed(flying_node: Node, item: ItemData, item_size: Vector2, land
 ## shelf. Since 2026-09-21 a plain tap returns too, so this is the common
 ## path rather than the deliberate one.
 func _on_tray_remove_requested(item_name: String) -> void:
-	AnimUtils.cart_press(tray.get_emblem())
+	# The slot's own shrink_and_fade below is the feedback; the emblem this
+	# used to press no longer exists.
 	AudioDirector.play_sfx(&"pop")
 	var slot: Control = tray.get_slot(item_name)
 	if slot == null or not slot.is_inside_tree():

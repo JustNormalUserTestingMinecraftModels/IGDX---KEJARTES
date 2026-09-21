@@ -266,7 +266,25 @@ func test_a_line_that_left_the_cart_leaves_the_row() -> void:
 	assert_true(tray.get_slot("Raket") != null, "the other stays")
 
 
-func test_the_emblem_counts_every_unit() -> void:
+## The top-right basket emblem was removed on 2026-09-21. It carried the
+## cart's running total and a toggle button; koprasi.gd's CrateHandle badge
+## now carries the count in both tray states, and the drag and CrateHandle
+## carry the toggle.
+func test_the_tray_has_no_emblem_in_its_corner() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	assert_true(tray.get_node_or_null("Body/Emblem") == null,
+		"the basket emblem must be gone from the tray's corner")
+	assert_false(tray.has_method("get_emblem"),
+		"and its accessor with it, so nothing animates a missing node")
+	var src := FileAccess.get_file_as_string(_SCENE)
+	assert_false(src.contains("icon_keranjang.svg"),
+		"the emblem's own art must no longer be referenced")
+
+
+## Per-slot badges are what count units now, and they are unaffected.
+func test_every_slot_still_counts_its_own_units() -> void:
 	var tray = _tray()
 	if tray == null:
 		return
@@ -274,10 +292,8 @@ func test_the_emblem_counts_every_unit() -> void:
 		"Susu Kotak": _entry(_item("Susu Kotak", 1000), 2),
 		"Pop Ice": _entry(_item("Pop Ice", 400), 1),
 	})
-	assert_eq(tray.get_emblem_count_text(), "3")
-	assert_true(tray.get_node("Body/Emblem/CountBadge").visible, "the count shows")
-	tray.refresh({})
-	assert_false(tray.get_node("Body/Emblem/CountBadge").visible, "no count on an empty basket")
+	assert_eq(tray.get_slot("Susu Kotak").get_badge_text(), "×2")
+	assert_eq(tray.get_slot("Pop Ice").get_badge_text(), "×1")
 
 
 func test_a_unit_in_flight_is_hidden_until_it_lands() -> void:
@@ -289,7 +305,6 @@ func test_a_unit_in_flight_is_hidden_until_it_lands() -> void:
 	tray.refresh(entries)
 	var slot: Control = tray.get_slot("Pop Ice")
 	assert_eq(slot.modulate.a, 0.0, "its place is kept, but it waits for the flight")
-	assert_eq(tray.get_emblem_count_text(), "0", "not in the basket until it lands")
 	tray.land("Pop Ice")
 	assert_eq(slot.modulate.a, 1.0, "it shows the moment the item lands")
 	assert_eq(slot.get_badge_text(), "×1")

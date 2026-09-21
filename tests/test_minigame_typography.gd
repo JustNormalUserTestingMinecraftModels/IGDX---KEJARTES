@@ -173,6 +173,34 @@ func test_pilihan_ganda_fits_the_question_with_soalfit() -> void:
 		"the answer buttons must take the choice-button variation")
 
 
+# ------------------------------------------------------------ Menjodohkan
+
+const MENJODOHKAN := "res://Scenes/Minigames/Akademis/Menjodohkan.tscn"
+const MENJODOHKAN_GD := "res://Scripts/Minigames/Akademis/Menjodohkan.gd"
+
+
+func test_menjodohkan_headers_clear_the_contrast_floor() -> void:
+	var src := FileAccess.get_file_as_string(MENJODOHKAN)
+	assert_false(src.is_empty(), "Menjodohkan.tscn must be readable")
+	for ink in DEAD_INKS:
+		assert_false(src.contains(ink),
+			"Menjodohkan.tscn still carries the mid-tone ink %s" % ink)
+	for name in ["MinigameWheelHeaderWarm", "MinigameWheelHeaderCool"]:
+		assert_true(src.contains(name),
+			"Menjodohkan.tscn must use the %s variation" % name)
+
+
+func test_menjodohkan_has_one_size_ladder_not_two_chains() -> void:
+	var src := FileAccess.get_file_as_string(MENJODOHKAN_GD)
+	assert_false(src.is_empty(), "Menjodohkan.gd must be readable")
+	# The same four-branch ladder was written out twice, at the question
+	# wheel and the answer wheel. Fitting is SoalFit's job.
+	assert_false(_has_literal_size_override(src),
+		"the hand-rolled 90/80/70/60 chains must be SoalFit's job")
+	assert_true(src.contains("SoalFit.font_size"),
+		"Menjodohkan.gd must fit tile text with SoalFit")
+
+
 func test_question_card_has_no_emoji_lock() -> void:
 	for path in BOTH_CARDS:
 		var src := FileAccess.get_file_as_string(path)

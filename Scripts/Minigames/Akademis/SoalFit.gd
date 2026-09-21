@@ -19,9 +19,12 @@ const STEP := 2
 const SIDE_PADDING := 24.0
 ## Clear space between the badge and the text's first line.
 const BADGE_GAP := 12.0
-## The SoalCard's 715x345 design size less its content margins -- used only
-## when the label has not been laid out yet.
-const FALLBACK_BOX := Vector2(699, 333)
+## The card's TextLabel row at its design size -- used only when the label
+## has not been laid out yet, which is the case for tiles measured in the
+## same frame they are instantiated. 850 wide less the card's 24px content
+## margins is 802; 268 is the row's own minimum inside the 960 card.
+## (Was 699x333, for the 850x480 card this replaced on 2026-09-21.)
+const FALLBACK_BOX := Vector2(802, 268)
 
 
 ## Largest size from `max_size` down to `min_size` at which `text` fits

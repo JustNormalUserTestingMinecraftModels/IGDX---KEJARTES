@@ -29,6 +29,16 @@ extends BaseMinigame
 
 @export_group("Card Templates")
 ## Template instantiated once per question into the question carousel.
+## Fits tile text to its card, the same helper Password, Variabel and
+## PilihanGanda use.
+const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
+
+## The rungs a tile's text may take, font_display_size down to font_title.
+## A tile is a short phrase on a big card, so it starts at the top of the
+## ladder rather than the question rung.
+const TILE_TEXT_MAX := 96
+const TILE_TEXT_MIN := 36
+
 @export var question_card_scene: PackedScene = preload("res://Scenes/Minigames/Akademis/QuestionCard.tscn")
 ## Template instantiated once per answer into the answer carousel.
 @export var answer_card_scene: PackedScene   = preload("res://Scenes/Minigames/Akademis/AnswerCard.tscn")
@@ -404,6 +414,19 @@ func _build_progress_badges() -> void:
 		progress_hbox.add_child(badge)
 		progress_badges.append(lbl)
 
+## Fits a tile's text to its card, from the font_display_size rung down to
+## font_title. This replaced two copies of a four-branch if-chain that picked
+## 90/80/70/60 by string length, plus a third literal for the picture case:
+## a length ladder cannot see how the text actually wraps, which is the bug
+## SoalFit was written for (see its header). The badge argument is the card's
+## own "Soal N/M" chip where it has one -- AnswerCard does not, and SoalFit
+## accepts null.
+func _fit_card_text(card: Control, label: Label) -> void:
+	var badge := card.find_child("StatusBadge", true, false) as Control
+	label.add_theme_font_size_override("font_size",
+		SoalFit.font_size(label, badge, label.text, TILE_TEXT_MAX, TILE_TEXT_MIN))
+
+
 func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 	# Question cards
 	for i in range(questions.size()):
@@ -415,18 +438,8 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 		var txt_lbl = card.find_child("TextLabel", true, false) as Label
 		if txt_lbl:
 			txt_lbl.text = questions[i]
-			# 2.5x the original 36/32/28/24 ladder. The card grew to 480 tall to
-			# keep the longest question inside the box at these sizes.
-			var q_len = questions[i].length()
-			if q_len <= 15:
-				txt_lbl.add_theme_font_size_override("font_size", 90)
-			elif q_len <= 32:
-				txt_lbl.add_theme_font_size_override("font_size", 80)
-			elif q_len <= 55:
-				txt_lbl.add_theme_font_size_override("font_size", 70)
-			else:
-				txt_lbl.add_theme_font_size_override("font_size", 60)
-				
+			_fit_card_text(card, txt_lbl)
+
 		var img_rect = card.find_child("RowImage", true, false) as TextureRect
 		if img_rect:
 			var img_path = selected_pairs_data[pair_q_idx].get("image", "")
@@ -434,9 +447,9 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 				img_rect.texture = load(img_path)
 				img_rect.visible = true
 				if txt_lbl:
-					# Smallest rung of the 2.5x ladder: the picture takes the
-					# upper half of the card, so the text gets what is left.
-					txt_lbl.add_theme_font_size_override("font_size", 60)
+					# The picture takes the top of the card, so re-fit: the
+					# text now has the slot's height less the image.
+					_fit_card_text(card, txt_lbl)
 			else:
 				img_rect.visible = false
 				
@@ -466,17 +479,8 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 		var txt_lbl = card.find_child("TextLabel", true, false) as Label
 		if txt_lbl:
 			txt_lbl.text = answers[i]
-			# Same 2.5x scale as the question ladder above.
-			var a_len = answers[i].length()
-			if a_len <= 15:
-				txt_lbl.add_theme_font_size_override("font_size", 90)
-			elif a_len <= 30:
-				txt_lbl.add_theme_font_size_override("font_size", 80)
-			elif a_len <= 50:
-				txt_lbl.add_theme_font_size_override("font_size", 70)
-			else:
-				txt_lbl.add_theme_font_size_override("font_size", 60)
-			
+			_fit_card_text(card, txt_lbl)
+
 		var img_rect = card.find_child("RowImage", true, false) as TextureRect
 		if img_rect:
 			var img_path = selected_pairs_data[pair_a_idx].get("answer_image", "")

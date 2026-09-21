@@ -95,10 +95,6 @@ const TILE_TEXT_MIN := 36
 @export var correct_color: Color         = Color(0.3, 0.85, 0.4, 1)
 ## Flash tint for an incorrect submission.
 @export var wrong_color: Color           = Color(0.9, 0.3, 0.3, 1)
-## Text colour for the question carousel's header.
-@export var question_header_color: Color = Color(1.0, 0.7, 0.3, 1)
-## Text colour for the answer carousel's header.
-@export var answer_header_color: Color   = Color(0.4, 0.7, 1.0, 1)
 ## Default tint for a progress badge before it is locked.
 @export var badge_default_color: Color   = Color(0.85, 0.85, 0.9, 1)
 ## Background fill behind each progress badge.
@@ -109,14 +105,16 @@ const TILE_TEXT_MIN := 36
 ## Optional font override applied across the game. Null keeps the theme
 ## default.
 @export var font: Font = null
-## Font size for the game's title label.
-@export var title_font_size: int  = 48
-## Font size for both carousels' headers.
-@export var header_font_size: int = 32
-## Font size for the Lock/Submit button labels.
-@export var button_font_size: int = 36
-## Font size for the progress badges.
-@export var badge_font_size: int  = 26
+## Font size for the progress badges. 36 is the font_title rung; this was
+## 26, under the 28px body floor, until 2026-09-21.
+##
+## The title, header and button sizes that used to sit beside it were
+## removed in the same pass, along with the two header colours: nothing read
+## any of them and nothing set them, and the colours were the pale inks --
+## Color(1, 0.7, 0.3) and Color(0.4, 0.7, 1) -- that
+## tests/test_minigame_art.gd forbids on this screen, so wiring them up
+## would have quietly failed the contrast floor.
+@export var badge_font_size: int  = 36
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
@@ -447,8 +445,11 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 				img_rect.texture = load(img_path)
 				img_rect.visible = true
 				if txt_lbl:
-					# The picture takes the top of the card, so re-fit: the
-					# text now has the slot's height less the image.
+					# Re-fit now the picture is showing. Both calls land in
+					# the same frame, so both measure SoalFit's FALLBACK_BOX
+					# and agree -- this one earns its place only if the fit
+					# ever moves to after layout, where the visible image
+					# really would leave the text less room.
 					_fit_card_text(card, txt_lbl)
 			else:
 				img_rect.visible = false

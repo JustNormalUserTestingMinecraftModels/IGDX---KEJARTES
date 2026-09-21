@@ -107,17 +107,15 @@ extends BaseMinigame
 ## 130 is the project's ~48dp touch floor in the 1080-wide design space;
 ## this shipped at 100 until 2026-09-21.
 @export var answer_btn_min_height: int       = 130
-## StyleBox used for answer buttons when no texture is assigned. Left null the
-## buttons fall back to the theme's pill Button, which answer_btn_font_color's
-## dark ink is not designed for -- assign a light rounded StyleBoxFlat instead.
+## StyleBox used for answer buttons when no texture is assigned. Left null
+## the buttons fall back to MinigameChoiceButton, which carries the full
+## five-state set at radius_button -- assign a StyleBoxFlat only to override
+## that deliberately, as this scene does.
 @export var answer_btn_normal_style:  StyleBox = null
 ## Style flashed on the button holding the correct answer.
 @export var answer_btn_correct_style: StyleBox = null
 ## Style flashed on a button the player picked incorrectly.
 @export var answer_btn_wrong_style:   StyleBox = null
-## Ink for answer buttons on the flat-StyleBox path. The theme's Button font
-## colour is text_on_brand (white), which vanishes on a light card.
-@export var answer_btn_font_color: Color = Color("1e2436")
 
 # ─── Visual - Colors ─────────────────────────────────────────────────────────
 @export_group("Visual - Colors")
@@ -340,11 +338,10 @@ func _apply_choice_btn_textures(btn: Button) -> void:
 			if sb_disabled_flat:
 				sb_disabled_flat.bg_color = sb_disabled_flat.bg_color * choice_btn_disabled_tint
 				btn.add_theme_stylebox_override("disabled", sb_disabled_flat)
-		# Every state, not just normal: the theme leaves font_hover_color and
-		# friends at Godot's near-white defaults, which wash out on a light card.
-		for state in ["font_color", "font_hover_color", "font_pressed_color",
-				"font_focus_color", "font_disabled_color"]:
-			btn.add_theme_color_override(state, answer_btn_font_color)
+		# The ink comes from MinigameChoiceButton, which sets all five states
+		# explicitly -- that is what this loop used to work around, back when
+		# the buttons fell through to the theme's bare Button and its
+		# near-white hover/pressed defaults washed out on a light card.
 	else:
 		var sb_normal   = _make_btn_stylebox(choice_btn_normal_texture, Color.WHITE)
 		var sb_pressed  = _make_btn_stylebox(choice_btn_normal_texture, choice_btn_pressed_tint)

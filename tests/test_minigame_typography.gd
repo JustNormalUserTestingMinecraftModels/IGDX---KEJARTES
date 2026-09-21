@@ -207,6 +207,45 @@ func test_menjodohkan_headers_clear_the_contrast_floor() -> void:
 			"Menjodohkan.tscn must use the %s variation" % name)
 
 
+## Every `@export var *_font_size` default across the six minigames.
+## _has_literal_size_override only catches a number written into the call;
+## a size parked in an export and applied through the variable slips past
+## it, which is how Menjodohkan's 26px progress badge survived the first
+## pass of this suite.
+const SIZE_EXPORT_FILES: Array[String] = [
+	"res://Scripts/Minigames/Akademis/PilihanGanda.gd",
+	"res://Scripts/Minigames/Akademis/Menjodohkan.gd",
+	"res://Scripts/Minigames/Akademis/Password.gd",
+	"res://Scripts/Minigames/Akademis/Variabel.gd",
+	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd",
+	"res://Scripts/Minigames/Olahraga/Badminton.gd",
+]
+
+## font_body_size. Nothing on these screens may be authored below it.
+const BODY_FLOOR := 28
+
+
+func test_no_minigame_export_parks_a_sub_floor_size() -> void:
+	for path in SIZE_EXPORT_FILES:
+		var src := FileAccess.get_file_as_string(path)
+		assert_false(src.is_empty(), "%s must be readable" % path)
+		for line in src.split("\n"):
+			var trimmed := line.strip_edges()
+			if not trimmed.begins_with("@export var"):
+				continue
+			if not trimmed.contains("font_size"):
+				continue
+			var eq := trimmed.rfind("=")
+			if eq == -1:
+				continue
+			var value := trimmed.substr(eq + 1).strip_edges()
+			if not value.is_valid_int():
+				continue
+			assert_true(int(value) >= BODY_FLOOR,
+				"%s: %s is below the %d px body floor"
+					% [path, trimmed, BODY_FLOOR])
+
+
 func test_menjodohkan_has_one_size_ladder_not_two_chains() -> void:
 	var src := FileAccess.get_file_as_string(MENJODOHKAN_GD)
 	assert_false(src.is_empty(), "Menjodohkan.gd must be readable")

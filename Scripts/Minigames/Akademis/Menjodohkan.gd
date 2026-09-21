@@ -27,8 +27,6 @@ extends BaseMinigame
 	"Bali"
 ]
 
-@export_group("Card Templates")
-## Template instantiated once per question into the question carousel.
 ## Fits tile text to its card, the same helper Password, Variabel and
 ## PilihanGanda use.
 const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
@@ -39,6 +37,8 @@ const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
 const TILE_TEXT_MAX := 96
 const TILE_TEXT_MIN := 36
 
+@export_group("Card Templates")
+## Template instantiated once per question into the question carousel.
 @export var question_card_scene: PackedScene = preload("res://Scenes/Minigames/Akademis/QuestionCard.tscn")
 ## Template instantiated once per answer into the answer carousel.
 @export var answer_card_scene: PackedScene   = preload("res://Scenes/Minigames/Akademis/AnswerCard.tscn")

@@ -1263,19 +1263,13 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 		if tokens.font_display != null:
 			theme.set_font("font", wheel, tokens.font_display)
 
-	_add_minigame_choice_button(theme, tokens)
-
-
-## PilihanGanda's answer buttons. Display face at font_title, dark ink on the
-## card surface, so a choice reads as tappable against the page art.
-static func _add_minigame_choice_button(theme: Theme, tokens: DesignTokens) -> void:
-	const NAME := "MinigameChoiceButton"
-	theme.add_type(NAME)
-	theme.set_type_variation(NAME, "Button")
-	theme.set_font_size("font_size", NAME, tokens.font_title)
-	theme.set_color("font_color", NAME, tokens.text_primary)
-	if tokens.font_display != null:
-		theme.set_font("font", NAME, tokens.font_display)
+	# PilihanGanda's answer buttons. The house helper gives them the full
+	# five-state set at radius_button, plus font_title and the display face,
+	# which is the whole rung -- a hand-rolled block here shipped with a 0
+	# radius and tests/test_button_geometry.gd caught it.
+	_add_button_variation(theme, tokens, "MinigameChoiceButton",
+		tokens.surface_card, tokens.surface_sunken,
+		tokens.brand_primary, tokens.text_primary)
 
 
 # --------------------------------------------------------------- progress

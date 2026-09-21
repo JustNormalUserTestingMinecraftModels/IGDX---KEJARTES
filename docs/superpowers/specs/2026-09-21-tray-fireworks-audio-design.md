@@ -156,12 +156,24 @@ Knobs, all `@export` and documented:
 Art is the existing `Assets/Images/Particles/particle_confetti.png` — already
 in the repo, already the right thing, no new asset needed.
 
-### Where it fires
+### Where it fires — and what it does *not* replace
 
-`Scripts/Minigames/UI/MinigameResultPopup.gd` adds the scene once, above the
-card, and fires it when the result lands. `ResultStar.celebrate()` keeps its
-glow bloom and its `star_earn_N` cue but **stops instancing `StarBurst`** — the
-per-star star spray is what the three fireworks replace.
+The card already has **two** celebration effects, and they are not the same
+thing:
+
+- `Dim/ResultConfetti` (`Scenes/Minigames/UI/ResultConfetti.tscn`) at
+  `position = Vector2(540, -20)` — one emitter above the top edge raining
+  confetti down the whole screen, gated at `CONFETTI_STAR_THRESHOLD = 3`.
+  **This stays exactly as it is.** It is the full-house rain, not a firework.
+- `ResultStar.celebrate()` instancing `StarBurst.tscn` into each star's own
+  `BurstSlot` — a star-shaped spray behind each star as it lands. **This is
+  the "3 star particle" the user asked to replace.**
+
+So `ConfettiFireworks` takes over the second one: `MinigameResultPopup.gd`
+holds one instance above the card, and the reveal loop fires burst *i* as star
+*i* lands, at the burst's own authored screen position rather than at the
+star's. `ResultStar.celebrate()` keeps its glow bloom and its `star_earn_N`
+cue and stops instancing `StarBurst`.
 
 `StarBurst.tscn` is left in the tree: `RewardParticles.gd` and other callers
 may still use it, and deleting it is out of scope for this branch.

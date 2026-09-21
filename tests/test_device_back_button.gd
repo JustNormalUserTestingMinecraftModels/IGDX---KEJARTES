@@ -96,6 +96,43 @@ func test_the_game_no_longer_quits_on_a_back_press() -> void:
 		"quit_on_go_back must be false so a stray back press cannot end a run")
 
 
+## A BaseMinigame subclass that declares its own _notification must call
+## super, or its back press may never reach the pause menu.
+##
+## GDScript walks the whole script chain for _notification, unlike _ready, so
+## in today's engine the parent handler still runs. This test does not rely on
+## that: the back button is the kind of thing nobody notices is broken until a
+## player complains, and one explicit super call costs nothing and is correct
+## under either behaviour. MainBola declares one for NOTIFICATION_RESIZED.
+func test_minigame_subclasses_chain_their_notification() -> void:
+	var dir := DirAccess.open("res://Scripts/Minigames")
+	assert_true(dir != null, "Scripts/Minigames must be readable")
+	var offenders: Array[String] = []
+	_scan_minigame_notifications("res://Scripts/Minigames", offenders)
+	assert_true(offenders.is_empty(),
+		"BaseMinigame subclasses must call super._notification(): "
+			+ ", ".join(offenders))
+
+
+func _scan_minigame_notifications(path: String, offenders: Array[String]) -> void:
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var name := dir.get_next()
+	while name != "":
+		var full := path + "/" + name
+		if dir.current_is_dir():
+			_scan_minigame_notifications(full, offenders)
+		elif name.ends_with(".gd") and not full.ends_with("BaseMinigame.gd"):
+			var src := _source(full)
+			if src.contains("extends BaseMinigame") and src.contains("func _notification("):
+				if not src.contains("super._notification("):
+					offenders.append(full)
+		name = dir.get_next()
+	dir.list_dir_end()
+
+
 ## Never an instant exit from a minigame: a mis-swipe must not forfeit a
 ## round, and BaseMinigame already owns a quit confirmation for exactly this.
 func test_a_minigame_back_press_opens_the_pause_menu() -> void:

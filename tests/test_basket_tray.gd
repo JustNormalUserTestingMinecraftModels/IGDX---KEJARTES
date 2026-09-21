@@ -468,6 +468,72 @@ func test_a_slot_passes_its_press_through_to_the_drag_surface() -> void:
 		"a tray slot must pass its press through to Body")
 
 
+## The real input path, end to end: a press, a move and a release delivered as
+## actual InputEvents through Body's gui_input signal -- not begin_drag() and
+## update_drag() called by hand.
+##
+## Every other drag test here passes even when the gesture is completely dead,
+## because they drive the methods directly and classify_drag() is pure. That
+## is exactly how the drag first shipped broken (handler on a zero-rect node),
+## and it is the only kind of test that would have caught it.
+func test_a_real_mouse_press_and_drag_moves_the_tray() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var body: Control = tray.get_node_or_null("Body")
+	assert_true(body != null, "Body must exist")
+	if body == null:
+		return
+	var base_y: float = tray.position.y
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.global_position = Vector2(540.0, 1300.0)
+	body.gui_input.emit(press)
+
+	var move := InputEventMouseMotion.new()
+	move.global_position = Vector2(540.0, 1400.0)
+	body.gui_input.emit(move)
+
+	assert_true(tray.position.y > base_y,
+		"a real press-and-move must actually move the tray, got %f from %f"
+			% [tray.position.y, base_y])
+
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.global_position = Vector2(540.0, 1400.0)
+	body.gui_input.emit(release)
+	assert_false(tray._dragging, "the release must end the drag")
+
+
+## The same path upward, from a collapsed tray.
+func test_a_real_drag_upward_reopens_a_collapsed_tray() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var body: Control = tray.get_node_or_null("Body")
+	if body == null:
+		return
+	tray.set_state(BasketTray.ViewState.COLLAPSED, false)
+	var collapsed_y: float = tray.position.y
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.global_position = Vector2(540.0, 1500.0)
+	body.gui_input.emit(press)
+
+	var move := InputEventMouseMotion.new()
+	move.global_position = Vector2(540.0, 1380.0)
+	body.gui_input.emit(move)
+
+	assert_true(tray.position.y < collapsed_y,
+		"dragging up from collapsed must raise the tray, got %f from %f"
+			% [tray.position.y, collapsed_y])
+
+
 ## A drag must never fling the tray off its dock, however far the finger goes.
 func test_a_drag_is_clamped_to_the_dock() -> void:
 	var tray = _tray()

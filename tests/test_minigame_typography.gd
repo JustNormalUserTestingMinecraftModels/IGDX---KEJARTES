@@ -224,6 +224,23 @@ func test_buat_batik_drops_the_warning_glyph() -> void:
 		+ "whatever system font the device picks -- see DEBT.md")
 
 
+# --------------------------------------------------------------- Badminton
+
+const BADMINTON := "res://Scenes/Minigames/Olahraga/Badminton.tscn"
+
+
+## The court itself needs nothing -- Badminton.gd rebuilds its walls, goals
+## and paddles from get_viewport_rect(), so it already fills a 20:9 phone.
+## Only the HUD was pinned at a raw offset.
+func test_badminton_hud_is_anchored_not_offset() -> void:
+	var src := FileAccess.get_file_as_string(BADMINTON)
+	assert_false(src.is_empty(), "Badminton.tscn must be readable")
+	assert_false(src.contains("offset_left = 390.0"),
+		"the HUD must be anchored, not pinned at a raw 390px offset")
+	assert_true(src.contains("anchor_left = 0.5"),
+		"the HUD must be top-centre anchored")
+
+
 func test_question_card_has_no_emoji_lock() -> void:
 	for path in BOTH_CARDS:
 		var src := FileAccess.get_file_as_string(path)

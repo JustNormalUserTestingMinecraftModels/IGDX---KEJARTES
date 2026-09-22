@@ -194,7 +194,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 141 suites, 2061 tests (2026-09-22).
+the Godot AI MCP `test_run` tool. 144 suites, 2095 tests (2026-09-22).
 
 Hard constraints:
 
@@ -209,10 +209,10 @@ Hard constraints:
    returns a `scene_warning` when it isn't, naming the scene it wants. Open
    `Scenes/MainMenu/main_menu.tscn` before trusting a failure.
 
-5. **The suite cannot be run headless.** Proven on 2026-09-09: `--script`
-   registers no autoloads, and running a *scene* makes `Engine.is_editor_hint()`
-   false so every `@tool` guard fires its real side effects (~143 failures).
-   The bridge is the only real way. Details in commit `39a1b9b`'s message.
+5. **The suite cannot be run headless** — the bridge is the only way.
+   (`--script` registers no autoloads; running a *scene* makes
+   `Engine.is_editor_hint()` false, so every `@tool` guard fires for real.
+   Proven 2026-09-09; details in commit `39a1b9b`.)
 
 **A full `test_run` writes two tracked files.** The `theme_rebake` suite calls
 `ResourceSaver.save()` in-process, so a full run rebakes
@@ -380,8 +380,12 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Nothing recorded. Plan C's RunResult redesign is parked in
-`docs/superpowers/DEBT.md`.
+**The "premium look" programme.** Decisions and an 11-item costed checklist
+are in `.superpowers/gamecode/premium-look/` — read `HANDOFF.md`, then
+`recon.md` §0. Item 11 is cut; the rest ship as several PRs. PR 1 is done;
+PR 2 is `PaperShadow` generic, then contact shadows.
+
+Plan C's RunResult redesign is parked in `docs/superpowers/DEBT.md`.
 
 ## Maintaining this file
 

@@ -8,6 +8,60 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-22 — Premium-look PR 1: mechanical crispness
+
+First slice of the "premium look" programme
+(`.superpowers/gamecode/premium-look/`, items 2, 3 and 4 of eleven). No art,
+no new systems: three mechanical changes that lift every screen.
+
+**The recon's mipmap plan was a no-op, and a live probe is why we know.** The
+survey proposed setting `mipmaps/generate=true` on the worst downscalers and
+explicitly forbade touching the project's texture filter. But
+`default_texture_filter` was `1` (Linear, **no** mipmaps), and in Godot the
+filter mode — not the import flag — decides whether a mip chain is ever
+sampled. Every generated chain would have been dead weight.
+
+The filter had to move too. The recon's objection to flipping it globally was
+that it would blur the bar-fill tiles, `tray_dots.png` and the 9-sliced
+styleboxes. Probing the imported textures showed that fear was unfounded:
+those assets carry a **single mip level**, and a mipmapped sampler on a 1-mip
+texture can only ever read level 0. So `default_texture_filter = 3` (Linear
+Mipmap) is provably a no-op on all 383 textures that have no chain, and only
+the 29 we deliberately gave one change behaviour.
+`tests/test_texture_mipmaps.gd` pins both halves of that argument, so the day
+the premise stops holding the suite says so.
+
+**Static ratios were wrong; the offenders were measured live.** The recon
+derived downscale ratios by parsing `.tscn` offsets. Standing the five
+high-traffic screens up at 1080×1920 through `tests/layout_frame.gd` settled
+its two flagged unknowns and corrected one: `arrow.png` is 7.11×, not the
+12.8× alternative, and the six Lobby faces are 3.2–3.5×, not the 1.19×
+nominal. No static parse could have found the faces at all — `StudentSkins`
+assigns them at runtime, and `loby.gd` gives each rig the rect of its seat's
+Portrait node. 29 assets from 3.20× to 12.49× now generate mipmaps; the
+project default stays off.
+
+**The transition wipe was drawn under eight things.** `Transition` sat at
+layer 100 while `MinigameResultPopup` (999), `MinigameTutorial` (500),
+`Pengaturan` (250), `QuitConfirmDialog` (210), `MinigameCountdown` (150),
+`TouchFeedbackManager` (125) and `AchievementToast` (120) all drew over it, so
+leaving a minigame with the result popup up punched it straight through the
+cover. The wipe is now 1000. The debug overlay's three canvases moved with it
+(124/125/128 → 1124/1125/1128), keeping their internal order and staying above
+the wipe on purpose: a developer tool should not be hidden by a scene change.
+
+The old guard here asserted `layer >= 100` — true of the broken value, and
+therefore never able to fail. It now asserts `> 999`, and a second test scans
+every `.tscn` and `.gd` for a CanvasLayer number and fails if any outranks the
+wipe, so a screen added later cannot quietly reintroduce the defect.
+
+**MSAA 2D on, at 2×.** Worth it despite the game being mostly textured quads:
+`TouchFeedbackEffect._draw()` draws ripple circles on every screen, and
+`StickyNote` and `BookClockWidget` draw rotated quads.
+
+Full suite 2095/2095 across 144 suites. Verified in a live Lobby screenshot —
+text, icons and faces all crisp, nothing softened.
+
 ## 2026-09-22 — Achievements layout pass, and a full-screen SkinSelect
 
 **The grid's uneven columns were one label, not the container.** The

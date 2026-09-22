@@ -27,6 +27,22 @@ func _ready() -> void:
 	items_tile.pressed.connect(_on_items_pressed)
 	cosmetics_tile.pressed.connect(_on_cosmetics_pressed)
 	back_button.pressed.connect(_on_back_pressed)
+	# Not in the editor: pop_in starts a node at zero alpha and 0.82 scale, so
+	# a suite that stands this screen up would measure a tile that has not
+	# arrived yet. play_entrance() is public so a test can drive it instead.
+	if not Engine.is_editor_hint():
+		play_entrance()
+
+
+## Cascades the two shop tiles in.
+##
+## This screen is two big choices and nothing else, so staggering them reads
+## as the fork offering them one after the other rather than as a page that
+## simply exists. UIPolish already gives every button press-scale and a tap
+## SFX for free, so what this screen was missing was never the press -- it
+## was the entrance.
+func play_entrance() -> void:
+	Juice.stagger_in([items_tile, cosmetics_tile])
 
 
 func _on_items_pressed() -> void:

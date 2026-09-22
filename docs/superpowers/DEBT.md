@@ -23,7 +23,9 @@ the day.
 
 **Generated placeholder art.** Produced with PowerShell + `System.Drawing`, not
 hand-authored. All are transparent PNG/SVG, drop-replaceable at the same path
-with no code change: the five `Assets/Images/UI/Nav/` icons,
+with no code change: the five generated `Assets/Images/UI/Nav/` icons
+(**not** `UI/Nav/return_button.png`, which is authored art delivered
+2026-09-22 — do not regenerate that one over the top of it),
 three `Particles/particle_*.png`, the minigame
 result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
@@ -32,8 +34,7 @@ event-popup set (`icon_event.svg`, `bg_event_dialog.png`),
 (white on purpose: `FilterChipButton` inks its icons `brand_primary`, so a
 replacement must stay a white glyph, or that tint comes out of `ThemeFactory`
 with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
-Inventory's back chevron `icon_back.svg` (2026-09-15; 16x36, one pixel wider
-on the button than the glyph it replaced), `EndCutscene`'s two badges, the
+`EndCutscene`'s two badges, the
 eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
@@ -241,17 +242,49 @@ the ban in `## Conventions` forbids. The trait popup was fixed the same way on
 2026-09-15).** `Assets/Fonts/Boohong.otf`'s cmap sends `‹`, `›` and `‚` to its
 apostrophe glyph and `«`/`»` to its double quote. The font claims them, so
 system fallback never runs: Inventory's "‹ Kembali" shipped as "' KEMBALI" on
-desktop and Android alike, until the chevron became `icon_back.svg`. It has no
+desktop and Android alike, until the chevron became a texture — now the shared
+`UI/Nav/return_button.png` on all twelve back controls. It has no
 `•`, `…`, `—`, `←` or `→` at all; those fall back to whatever system font the
 device picks. Buttons, titles and headings wear Boohong, so keep such
-characters out of their text, and draw an arrow or chevron as an SVG icon.
-Still in display text: SchoolDay's `BackButton` (authored hidden) reads
-"🔙 Kembali ke Menu", and CutScene's grade picker (`cut_scene.gd`'s
+characters out of their text, and draw an arrow or chevron as a real texture.
+Still in display text: CutScene's grade picker (`cut_scene.gd`'s
 `_create_grade_button`, which the file calls the first-boot picker every
 player sees) titles its Primary/SecondaryButtons with 🏫/🎓 emoji over
 "•"-separated subtitles -- emoji the ban in `## Conventions` forbids.
 `LombaMenari`'s ←/→/↖/↗ are body text, but Open Sans has no `←` either, so
 they ride system fallback too (minigames sit outside the design system).
+
+**SchoolDay still puts emoji in display text (swept 2026-09-22).** CLAUDE.md's
+`## Conventions` bans emoji as UI iconography and says to use real transparent
+textures instead, so these want an art pass, not a deletion. The back-button
+pass fixed two of them -- `SchoolDay.tscn:105`'s back arrow became the shared
+`UI/Nav/return_button.png`, and `SchoolDay.gd`'s "Minggu selesai!" lost its
+party popper -- and left the rest, because six strings is a real pass:
+
+| Where | Glyph |
+|---|---|
+| `SchoolDay.gd:78` `end_tutorial_title` (an `@export` default) | graduation cap |
+| `SchoolDay.gd:80` `end_tutorial_text` (an `@export` default) | dart, and an arrow twice |
+| `SchoolDay.gd:437` -> `status_label` | check mark |
+| `SchoolDay.gd:959` -> `status_label` | herb |
+| `SchoolDay.tscn:95` `ClickToContinueLabel` | sparkles, arrow |
+| `SchoolDay.tscn:113` `SkipButton` | next-track |
+
+Two traps for whoever takes this. The first two are **`@export` defaults**, so
+per CLAUDE.md a changed default needs a **full editor restart** before it takes
+effect -- `load_default()` keeps serving the cached instance. And the
+emoji at `SchoolDay.gd:537-538` and `:628-655` are **not** display text: they
+are icon keys that `_add_pill()` strips at `:660-682` and swaps for a texture.
+Leave those alone.
+
+**The remaining `pngwing.com` stock files want replacing (2026-09-22).**
+`pngwing.com (1).png` went with the back-button pass, which was a licensing
+tidy-up as well as a visual one: the filename is verbatim from a free-PNG
+aggregator, the project records no licence for it, and most of that catalogue
+is non-commercial. Still in the tree: `(2).png` (pinned out of the Peringatan
+dialog by `test_atur_jadwal.gd:641`), `(3).png` (live at
+`student_card.tscn:14`) and `(6).png` (already replaced on Koperasi's basket
+per `CHANGELOG.md:1461`). Replace them with authored art before any release.
 
 **TesNotice's card collapses (2026-09-11).** `NoticeCard` is a
 `NinePatchRect`, not a Container, so the anchored `Content` never sizes it. It
@@ -429,25 +462,12 @@ each side never show. Showing it all means a 1920-wide `Backdrop` and
 `pan_pixels = -840` (a faster pan over the same 4 s), plus the 1296 in
 `tests/test_exam_progress.gd`'s width test.
 
-**The Inventory screen is wider than the screen (found 2026-09-14; cause found
-2026-09-15).** `inventory.tscn`'s `MainColumn` grows to its widest child's
-minimum width, and that child is the `Header` row, not the grid. Measured live
-on 2026-09-15 with the seed's 999999G: `BackButton` 277 + `TitleLabel`
-"INVENTORY" 582 + `CoinDisplay` 181, three 20 px gaps and the `Card`'s two
-28 px margins make 1156 px, so the column sits at x -38 and every row clips,
-the grid's outer slot columns included. The 2026-09-14 reading (`GridArea/Scroll`
-1107 px at x -13.5) is the same 1155 px header, from before the back chevron
-added 1 px. Each coin digit adds about 20 px, so any balance of three digits
-or more overflows. Fix it in the header, where the display-size title is the
-bulk of the width, not in the grid.
-
 **Deferred: tall phones, Phases 2 and 3 (2026-09-15).** Phase 1 made the
 Lobby, Koperasi, StudentCard and StudentList fill a 1080×2400 screen (spec
 `docs/superpowers/specs/2026-09-15-tall-phone-layout-design.md`; its
 Appendix A maps every screen). Still laid out for exactly 1080×1920:
-Phase 2's AturJadwal, CutScene, Rapor and Inventory (Rapor waits for the
-separate `KEMBALI` overlap fix, which edits that scene; Inventory's glyph
-fix merged as `fd3bba7`, and its header overflow is the entry above), and
+Phase 2's AturJadwal, CutScene, Rapor and Inventory (Inventory's glyph
+fix merged as `fd3bba7`), and
 Phase 3's StatCheck, EndCutscene, the
 ResultCheckup confetti and MainBola (ExamProgress left this list on
 2026-09-20: its backdrop is anchored to all four edges and its status strip

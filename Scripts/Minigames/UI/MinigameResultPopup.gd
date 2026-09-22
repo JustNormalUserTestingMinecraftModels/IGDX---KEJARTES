@@ -280,11 +280,13 @@ func play() -> void:
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		await tw_star.finished
 		star.celebrate(star_index)
-		# One firework per star, at the burst's own authored place on the
-		# screen rather than behind the star. An out-of-range index is
-		# ignored, so a one- or two-star finish fires a short volley and the
-		# remaining burst stays quiet.
-		fireworks.fire_burst(star_index)
+		# One firework per EARNED star, at the burst's own authored place on
+		# the screen rather than behind the star. star_row always holds three
+		# children, so the index is never out of range and the gate has to be
+		# the star count: a one- or two-star finish fires a short volley and
+		# the remaining bursts stay quiet.
+		if star_index < _star_count:
+			fireworks.fire_burst(star_index)
 		await get_tree().create_timer(
 			STAR_HOLD_TIMES[mini(star_index, STAR_HOLD_TIMES.size() - 1)]).timeout
 		var tw_settle := get_tree().create_tween()

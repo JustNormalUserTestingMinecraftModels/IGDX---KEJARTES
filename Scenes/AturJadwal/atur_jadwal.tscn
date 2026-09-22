@@ -7,8 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bvc6vlo87qpl0" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
 [ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
 [ext_resource type="Texture2D" uid="uid://cixngx8hgvgmn" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
-[ext_resource type="Texture2D" uid="uid://fuwhxl8ethbp" path="res://Assets/Images/Shop/return.png" id="10_return"]
-[ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="11_left_arrow"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="10_return"]
 [ext_resource type="PackedScene" uid="uid://bs3nadqta0083" path="res://Scenes/AturJadwal/ActivityRow.tscn" id="12_activityrow"]
 [ext_resource type="Texture2D" uid="uid://buen031hxfvy4" path="res://Assets/Images/StudentCard/stat_akademis.png" id="13_icon_akademis"]
 [ext_resource type="Texture2D" uid="uid://dkwph7530y25f" path="res://Assets/Images/StudentCard/stat_senibudaya.png" id="14_icon_seni"]
@@ -363,7 +362,7 @@ offset_top = -160.0
 offset_right = 160.0
 offset_bottom = -60.0
 grow_vertical = 0
-texture_normal = ExtResource("11_left_arrow")
+texture_normal = ExtResource("10_return")
 ignore_texture_size = true
 stretch_mode = 5
 

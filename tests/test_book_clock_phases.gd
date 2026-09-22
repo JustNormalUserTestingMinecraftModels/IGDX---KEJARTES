@@ -16,11 +16,22 @@ func suite_name() -> String:
 const SCRIPT_PATH := "res://Scripts/SchoolSimulation/BookClockWidget.gd"
 const SCENE_PATH := "res://Scenes/SchoolSimulation/BookClockWidget.tscn"
 const SCHOOLDAY_SCRIPT := "res://Scripts/SchoolSimulation/SchoolDay.gd"
+const THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+
+## The day banner pill's text box: 686 px wide (x 250..936) minus
+## DayBannerPanel's content_margin_left 116 and content_margin_right 44
+## (ThemeFactory.gd:144-146).
+const BANNER_TEXT_WIDTH := 526.0
 
 
+## The baked theme is assigned deliberately. Without it `get_theme_font` falls
+## back to the engine default face at its default size, and any width assert
+## measured from it passes at every string length -- a guard that cannot fail,
+## which reads as coverage and is worse than none.
 func _widget() -> BookClockWidget:
 	var w := (load(SCENE_PATH) as PackedScene).instantiate() as BookClockWidget
 	w.size = Vector2(1080, 1920)
+	w.theme = load(THEME_PATH)
 	return w
 
 
@@ -292,4 +303,65 @@ func test_the_header_ignores_the_mouse() -> void:
 		if n != null:
 			assert_eq(n.mouse_filter, Control.MOUSE_FILTER_IGNORE,
 				"%s must not take input from the screen above it" % path)
+	w.free()
+
+
+## set_day() also rewinds the sky to morning, which is wrong for the week's
+## closing screen: "Akhir Pekan" shows over an evening sky. set_banner()
+## writes the text and leaves the sky alone, and set_day() now delegates to
+## it, so the two cannot drift apart.
+func test_set_banner_writes_the_day_without_rewinding_the_sky() -> void:
+	var w := _widget()
+	w.set_progress(0.8)
+	w.set_banner("Akhir Pekan")
+	assert_eq(w.day_text(), "Akhir Pekan",
+		"set_banner must write the banner text")
+	assert_true(absf(w.progress() - 0.8) < 0.001,
+		"set_banner must not move the sky, progress is %f" % w.progress())
+	w.free()
+
+
+## set_day keeps its old contract: it writes the banner AND rewinds the sky.
+func test_set_day_still_rewinds_the_sky() -> void:
+	var w := _widget()
+	w.set_progress(0.8)
+	w.set_day("Senin")
+	assert_eq(w.day_text(), "Senin", "set_day must still write the banner")
+	assert_true(absf(w.progress()) < 0.001,
+		"set_day must rewind the sky to morning, progress is %f" % w.progress())
+	w.free()
+
+
+## DayBanner is a PanelContainer and BookClockWidget's root clips its contents,
+## so a banner wider than the pill's text box grows the pill past its authored
+## x 936 and is then cut at the widget's edge, mid-word. "Akhir Pekan" is the
+## longest string the banner ever carries.
+##
+## The face and size are asserted BEFORE the measurement: without the theme
+## resolving to the real font, the width check below could never fail.
+func test_the_week_end_banner_fits_the_pill() -> void:
+	var w := _widget()
+	var label := w.get_node_or_null(BookClockWidget.DAY_LABEL_PATH) as Label
+	assert_true(label != null, "the day banner label must exist")
+	if label == null:
+		w.free()
+		return
+	assert_eq(label.theme_type_variation, &"DayBannerLabel",
+		"the banner label must wear the DayBannerLabel variation")
+	# Read the face off the baked theme by variation, the way
+	# tests/test_event_dialogue.gd:307 pins it. Going through the label's own
+	# get_theme_font() would depend on tree membership, and a silent fallback
+	# to the engine default face would make the width assert below unfailable.
+	var tokens := DesignTokens.load_default()
+	var theme: Theme = load(THEME_PATH)
+	var f: Font = theme.get_font("font", "DayBannerLabel")
+	var s: int = theme.get_font_size("font_size", "DayBannerLabel")
+	assert_eq(f, tokens.font_body_bold,
+		"DayBannerLabel must resolve to the bold body face, not a fallback")
+	assert_eq(s, tokens.font_h1, "DayBannerLabel must resolve to font_h1")
+	var width: float = f.get_string_size(
+		"Akhir Pekan", HORIZONTAL_ALIGNMENT_LEFT, -1, s).x
+	assert_true(width <= BANNER_TEXT_WIDTH,
+		"\"Akhir Pekan\" measures %d px at font_size %d; the pill's text box is %d px"
+			% [int(width), s, int(BANNER_TEXT_WIDTH)])
 	w.free()

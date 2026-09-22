@@ -84,7 +84,6 @@ signal _summary_closed
 # ── Node references ───────────────────────────────────────────────────────────
 @onready var day_screen: VBoxContainer    = $DayScreen
 @onready var day_number_label: Label      = $DayScreen/DayNumberLabel
-@onready var day_label: Label             = $DayScreen/DayLabel
 @onready var book_clock_widget: Control   = $BookClockWidget
 @onready var progress_bar: StatBar        = $DayScreen/ProgressBar
 @onready var status_label: Label          = $DayScreen/StatusLabel
@@ -356,7 +355,6 @@ func _run_single_day() -> void:
 		progress_bar.category = day_category
 
 	day_number_label.text = "Hari %d dari %d" % [current_day + 1, DAYS.size()]
-	day_label.text        = day_name
 	status_label.text     = "Perjalanan ke sekolah..."
 
 	# Reset and configure book-clock widget for the new day
@@ -1324,8 +1322,9 @@ func _on_week_complete() -> void:
 	fade.tween_property(day_screen, "modulate:a", 1.0, 0.6)
 	await fade.finished
 
-	day_number_label.text = "Minggu selesai! 🎉"
-	day_label.text        = "Akhir Pekan"
+	day_number_label.text = "Minggu selesai!"
+	if book_clock_widget and book_clock_widget.has_method("set_banner"):
+		book_clock_widget.call("set_banner", "Akhir Pekan")
 	progress_bar.show()
 	Juice.fill_bar(progress_bar, 100.0)
 	status_label.text     = "Selamat! Minggu sekolah telah selesai."
@@ -1520,7 +1519,6 @@ func _reset_day_ui() -> void:
 	var scroll = get_node_or_null("DayScreen/StudentScroll")
 	if scroll:
 		scroll.hide()
-	day_label.text        = ""
 	day_number_label.text = ""
 	status_label.text     = ""
 	back_button.hide()

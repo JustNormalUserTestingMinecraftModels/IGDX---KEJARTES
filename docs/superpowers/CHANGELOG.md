@@ -8,6 +8,100 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-22 — Three reported defects: the header collision, the fake fireworks, one back arrow
+
+**The old texts over the calendar header.** PR #66's calendar badge and day
+pill landed, but SchoolDay's own `DayScreen` chrome still drew on top of them.
+Anchored at `0.06 x 1920 = 115.2`, the stack put "Hari 1 dari 5" across the top
+of the pill and ran the progress bar through "Senin", "Minggu" and "2/6".
+`DayScreen` is re-anchored to all four edges at offsets `54 / 320 / -54 / -144`
+— 28 px below the badge, and the bar clears it by 76 px. No reparent and no
+renamed node: every child keeps its path and variation. `DayNumberLabel` and
+`StatusLabel` were moved rather than deleted, because they carry the day's
+place in the week and the day's phase, which the header does not.
+
+The fractional top anchor was independently a tall-phone bug: at 2400 it pushed
+the stack 29 px further from a header that is pixel-anchored and had not moved.
+
+`DayScreen/DayLabel` was deleted outright — the one duplicated text, which
+`ba98d10` had only hidden while saying in as many words that deleting a node
+from a shipped scene was a bigger call than de-duplicating a label needed to
+be. That deletion exposed a live regression: `"Akhir Pekan"` was being written
+into that permanently invisible node, so **the end-of-week banner had never
+reached the player**. It now routes through a new `BookClockWidget.set_banner()`,
+which writes the text without rewinding the sky — `set_day()` would have snapped
+the week's closing screen back to sunrise.
+
+**The three-star "fireworks" were a second helping of confetti.** Not a tuning
+problem: `ConfettiFireworks`' bursts referenced the *same texture uid* as
+`ResultConfetti`'s rain, with the same rounded-chip silhouette, the same
+±320 °/s spin and no colour at all, so both rendered white. Only the ballistics
+differed, and ballistics cannot distinguish two emitters throwing an identical
+white paper chip. `55504cd` introduced it by replacing StarBurst's gold spray
+with confetti and keeping the filename.
+
+Fixed by appearance alone — the authored placement and the editor-only
+crosshair gizmo are untouched, because placement was the point of `55504cd`.
+The bursts now throw `particle_spark.png`, which turned out to be a
+four-pointed flare (alpha on both axes, zero on every diagonal) already used by
+two other burst effects; spin is written as an explicit `0.0` rather than
+deleted, since a removed `.tscn` line does not reset a cached value; and each
+burst wears one shell hue — amber, rose, turquoise — over a shared fade ramp
+that ends at alpha 0, deliberately sharing no hue with PaperConfetti's
+red/yellow/blue, which is the palette the effect was being mistaken for.
+
+Separately, the volley fired on losses: `fire_burst` was called unconditionally
+inside a loop over `star_row`, which always holds three children, so the index
+was never out of range and a one-star finish got a full-house celebration.
+
+`visibility_rect` was set as hygiene, **not** as a bug fix — it gates whether
+the node is processed and never clips, and all three bursts were always on
+screen. Nothing was being culled.
+
+**One canonical back arrow.** Twelve back/return controls across nine scenes
+drew four different pictures plus an emoji: a 160×145 white arrow, the same
+silhouette at 512×512 with a different alpha bbox, a 16×36 chevron, a pure
+`#FF0000` stock clipart arrow, and `"🔙 Kembali ke Menu"`. Nothing asserted
+they should match, which is how the fourth divergent asset arrived.
+
+All twelve now draw `UI/Nav/return_button.png`. The plain buttons keep their
+"Kembali" label beside it; Rapor is the one exception, because its 260 px box
+cannot hold the word beside *any* icon — Inventory's measured 277 px minimum
+for the label plus a 16 px chevron proves it. Rapor goes icon-only, which
+shrinks the button to 96 px and, with a 42 px nudge of the title, takes a
+**190 px overlap to zero**. The title had been rendering as "…OR MURID" with
+"Rap" hidden under the button.
+
+Sizing goes through the theme: `icon_max_width` 36 on the S step, because
+`2 × btn_pad_v_s + font_title = 96` is also `touch_target_min` and a larger cap
+would make the icon the tallest content; 48 on the M step, which needs its own
+entry because `_add_size_step` sets `base_type` to `Button` rather than to the
+parent variation. `icon_alignment` is deliberately *not* written into the
+scenes — LEFT is Godot's default, so the editor omits it on save and the
+property cannot be pinned in a `.tscn` at all; a test asserts it instead.
+
+Four superseded assets were deleted, each verified unreferenced first. One,
+`pngwing.com (1).png`, was a licensing tidy-up as well: a stock-aggregator
+filename with no recorded licence.
+
+**Three DEBT entries closed, two opened.** Deleted: the Inventory header
+overflow (measured live at 668 px of free space, so the standing 1156 px claim
+was wrong by ~600 px — it predated `431cc5d` moving the title out of the row),
+Rapor's parked `KEMBALI` overlap, and the `icon_back.svg` placeholder. Added:
+the grouped ledger of SchoolDay's six remaining display emoji, which want an
+art pass rather than deletion, and a line on the remaining stock `pngwing`
+files.
+
+Also corrected: `DEBT.md`'s claim that opening `BookClockWidget.tscn` hangs the
+editor. It opened cleanly through MCP and the suite then ran green against it.
+
+Full run afterwards: **141 suites, 2061 tests, 0 failures**, with 19 new tests
+across `back_controls` (new), `school_day`, `confetti_fireworks`,
+`book_clock_phases` and `inventory`. Deliberately not done: making every
+illustration and UI element draggable in the 2D viewport, which the user
+deferred mid-run — sized in `DEBT.md` at 123 runtime-constructed nodes across
+20 files plus ~265 container subtrees.
+
 ## 2026-09-21 — The SchoolDay calendar header
 
 `BookClockWidget` took the weekday through `set_day()` and **displayed

@@ -1,49 +1,92 @@
-[gd_scene load_steps=6 format=3 uid="uid://b1kjq7vxnf2ca"]
+[gd_scene load_steps=14 format=3 uid="uid://b1kjq7vxnf2ca"]
 
 [ext_resource type="Script" uid="uid://cbywxdwkotb6k" path="res://Scripts/Minigames/UI/ConfettiFireworks.gd" id="1_cfwk0"]
-[ext_resource type="Texture2D" uid="uid://skr3tjxap0qw" path="res://Assets/Images/Particles/particle_confetti.png" id="2_cfwk1"]
+[ext_resource type="Texture2D" uid="uid://d4lt82q0pi5xe" path="res://Assets/Images/Particles/particle_spark.png" id="2_cfwk1"]
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+offsets = PackedFloat32Array(0, 0.55, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fade"]
+gradient = SubResource("Gradient_fade")
+
+[sub_resource type="Gradient" id="Gradient_shell1"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.5)
+colors = PackedColorArray(1, 0.5411765, 0.23921569, 1, 1, 0.85098039, 0.69019608, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_shell1"]
+gradient = SubResource("Gradient_shell1")
+
+[sub_resource type="Gradient" id="Gradient_shell2"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.5)
+colors = PackedColorArray(1, 0.37254902, 0.63529412, 1, 1, 0.76078431, 0.8627451, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_shell2"]
+gradient = SubResource("Gradient_shell2")
+
+[sub_resource type="Gradient" id="Gradient_shell3"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.5)
+colors = PackedColorArray(0.29019608, 0.87058824, 0.87058824, 1, 0.76862745, 0.98431373, 0.98431373, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_shell3"]
+gradient = SubResource("Gradient_shell3")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_burst1"]
 particle_flag_disable_z = true
 emission_shape = 1
-emission_sphere_radius = 14.0
+emission_sphere_radius = 6.0
 direction = Vector3(0, -1, 0)
-spread = 55.0
-initial_velocity_min = 260.0
-initial_velocity_max = 520.0
-angular_velocity_min = -320.0
-angular_velocity_max = 320.0
-gravity = Vector3(0, 620, 0)
-scale_min = 0.25
-scale_max = 0.5
+spread = 180.0
+initial_velocity_min = 320.0
+initial_velocity_max = 400.0
+angular_velocity_min = 0.0
+angular_velocity_max = 0.0
+damping_min = 90.0
+damping_max = 140.0
+gravity = Vector3(0, 180, 0)
+scale_min = 0.26
+scale_max = 0.44
+color_ramp = SubResource("GradientTexture1D_fade")
+color_initial_ramp = SubResource("GradientTexture1D_shell1")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_burst2"]
 particle_flag_disable_z = true
 emission_shape = 1
-emission_sphere_radius = 14.0
+emission_sphere_radius = 6.0
 direction = Vector3(0, -1, 0)
-spread = 55.0
-initial_velocity_min = 260.0
-initial_velocity_max = 520.0
-angular_velocity_min = -320.0
-angular_velocity_max = 320.0
-gravity = Vector3(0, 620, 0)
-scale_min = 0.25
-scale_max = 0.5
+spread = 180.0
+initial_velocity_min = 360.0
+initial_velocity_max = 450.0
+angular_velocity_min = 0.0
+angular_velocity_max = 0.0
+damping_min = 90.0
+damping_max = 140.0
+gravity = Vector3(0, 180, 0)
+scale_min = 0.26
+scale_max = 0.44
+color_ramp = SubResource("GradientTexture1D_fade")
+color_initial_ramp = SubResource("GradientTexture1D_shell2")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_burst3"]
 particle_flag_disable_z = true
 emission_shape = 1
-emission_sphere_radius = 14.0
+emission_sphere_radius = 6.0
 direction = Vector3(0, -1, 0)
-spread = 55.0
-initial_velocity_min = 260.0
-initial_velocity_max = 520.0
-angular_velocity_min = -320.0
-angular_velocity_max = 320.0
-gravity = Vector3(0, 620, 0)
-scale_min = 0.25
-scale_max = 0.5
+spread = 180.0
+initial_velocity_min = 400.0
+initial_velocity_max = 500.0
+angular_velocity_min = 0.0
+angular_velocity_max = 0.0
+damping_min = 90.0
+damping_max = 140.0
+gravity = Vector3(0, 180, 0)
+scale_min = 0.28
+scale_max = 0.48
+color_ramp = SubResource("GradientTexture1D_fade")
+color_initial_ramp = SubResource("GradientTexture1D_shell3")
 
 [node name="ConfettiFireworks" type="Control"]
 layout_mode = 3
@@ -67,29 +110,32 @@ mouse_filter = 2
 [node name="Burst1" type="GPUParticles2D" parent="Bursts"]
 position = Vector2(250, 760)
 emitting = false
-amount = 26
+amount = 48
 texture = ExtResource("2_cfwk1")
-lifetime = 1.1
+lifetime = 1.35
 one_shot = true
-explosiveness = 0.95
+explosiveness = 1.0
+visibility_rect = Rect2(-900, -900, 1800, 1800)
 process_material = SubResource("ParticleProcessMaterial_burst1")
 
 [node name="Burst2" type="GPUParticles2D" parent="Bursts"]
 position = Vector2(830, 700)
 emitting = false
-amount = 26
+amount = 48
 texture = ExtResource("2_cfwk1")
-lifetime = 1.1
+lifetime = 1.35
 one_shot = true
-explosiveness = 0.95
+explosiveness = 1.0
+visibility_rect = Rect2(-900, -900, 1800, 1800)
 process_material = SubResource("ParticleProcessMaterial_burst2")
 
 [node name="Burst3" type="GPUParticles2D" parent="Bursts"]
 position = Vector2(540, 1020)
 emitting = false
-amount = 26
+amount = 48
 texture = ExtResource("2_cfwk1")
-lifetime = 1.1
+lifetime = 1.35
 one_shot = true
-explosiveness = 0.95
+explosiveness = 1.0
+visibility_rect = Rect2(-900, -900, 1800, 1800)
 process_material = SubResource("ParticleProcessMaterial_burst3")

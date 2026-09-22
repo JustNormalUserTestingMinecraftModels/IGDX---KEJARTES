@@ -147,11 +147,17 @@ func _notification(what: int) -> void:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+## Writes the banner without moving the sky. The week's closing screen shows
+## "Akhir Pekan" over an evening sky, so it must not rewind to morning.
+func set_banner(text: String) -> void:
+	_day_name = text
+	_write_header()
+
+
 ## Starts a fresh day. Records the weekday, writes it to the banner and
 ## rewinds the sky to morning.
 func set_day(day_name_in: String) -> void:
-	_day_name = day_name_in
-	_write_header()
+	set_banner(day_name_in)
 	set_progress(0.0)
 
 

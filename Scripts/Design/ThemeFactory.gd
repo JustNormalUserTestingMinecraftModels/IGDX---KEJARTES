@@ -85,6 +85,23 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	chip.content_margin_bottom = tokens.space_xs
 	theme.set_stylebox("panel", "SkinWornChip", chip)
 
+	# The carousel's page dots, one per skin of the open student. Two
+	# variations rather than a runtime modulate, so the colours stay in the
+	# theme like everything else that is drawn.
+	var dot := func(fill: Color) -> StyleBoxFlat:
+		var box := StyleBoxFlat.new()
+		box.bg_color = fill
+		box.set_corner_radius_all(tokens.radius_pill)
+		return box
+
+	theme.add_type("SkinDotOn")
+	theme.set_type_variation("SkinDotOn", "Panel")
+	theme.set_stylebox("panel", "SkinDotOn", dot.call(tokens.brand_primary))
+
+	theme.add_type("SkinDotOff")
+	theme.set_type_variation("SkinDotOff", "Panel")
+	theme.set_stylebox("panel", "SkinDotOff", dot.call(tokens.surface_sunken))
+
 	theme.add_type("SkinWornChipLabel")
 	theme.set_type_variation("SkinWornChipLabel", "Label")
 	theme.set_font_size("font_size", "SkinWornChipLabel", tokens.font_micro)

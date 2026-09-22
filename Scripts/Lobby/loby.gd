@@ -50,7 +50,7 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 
 @export_group("Skins")
 ## The skin picker opened by SkinSwitchButton.
-@export var skin_select_scene: PackedScene = preload("res://Scenes/Skins/SkinSelectPopup.tscn")
+@export var skin_select_scene: PackedScene = preload("res://Scenes/Skins/SkinSelect.tscn")
 
 
 @onready var color_rect = $ColorRect
@@ -139,8 +139,8 @@ var reward_popup_open := false
 ## Seated students' chatter (2026-09-19 student-chatter spec); null in an
 ## older scene without the Chatter node.
 @onready var chatter: LobbyChatter = get_node_or_null("Chatter") as LobbyChatter
-## True while a SkinSelectPopup is open; mutes the chatter.
-var _skin_popup_open := false
+## True while SkinSelect is open; mutes the chatter.
+var _skin_select_open := false
 
 func _ready():
 	if bg_texture:
@@ -884,20 +884,22 @@ func _on_inventory_pressed() -> void:
 func _on_skin_switch_pressed() -> void:
 	if GameState.approved_students.is_empty():
 		return
-	var popup := skin_select_scene.instantiate() as SkinSelectPopup
-	_skin_popup_open = true
+	var screen := skin_select_scene.instantiate() as SkinSelect
+	_skin_select_open = true
 	if chatter:
 		chatter.dismiss()
-	add_child(popup)
-	popup.closed.connect(func(): _skin_popup_open = false)
-	popup.closed.connect(_setup_students)
-	popup.open(GameState.approved_students)
+	add_child(screen)
+	screen.closed.connect(func(): _skin_select_open = false)
+	screen.closed.connect(_setup_students)
+	# No argument: SkinSelect reads StudentSkins.NAMES, not the roster --
+	# equipped_skins is keyed by name, so all six characters are dressable.
+	screen.open()
 
 
 ## LobbyChatter's gate: nobody talks over the tutorial, the daily reward
 ## or the skin picker.
 func _chatter_allowed() -> bool:
-	return not tutorial_active and not reward_popup_open and not _skin_popup_open
+	return not tutorial_active and not reward_popup_open and not _skin_select_open
 
 
 func _on_achievement_pressed() -> void:

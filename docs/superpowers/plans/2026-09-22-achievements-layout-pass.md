@@ -27,31 +27,91 @@ and `docs/superpowers/specs/2026-09-22-skin-select-screen-design.md` (Tasks 9-11
 
 ---
 
-### Task 1: Symmetric two-column grid
+### Task 1: Stop one prize label widening its column
 
-The `GridContainer` hands its leftover width to one column — measured live at 420 left, 478 right. A `BoxContainer` splits leftover space evenly among equal-ratio expanding children, so the grid becomes an `HBoxContainer` of two `VBoxContainer`s, filled round-robin so reading order survives.
+**Corrected during execution, 2026-09-22.** The plan first blamed
+`GridContainer` and proposed replacing it with an `HBoxContainer` of two
+`VBoxContainer`s. Building the two containers side by side at the grid's real
+measurements disproved that: a `GridContainer` with two equal-minimum
+expanding columns splits 922 evenly, exactly as a `BoxContainer` does.
+
+Measuring the live screen instead found the real cause. Column minimums are
+`[420, 478]`, and exactly one tile of the 26 is responsible:
+
+```
+5 streak_6 min=478.0 lbl_min=366.0 text=Poin stat murid dari minigame +5%
+```
+
+`%PrizeLabel` has no autowrap, so a `Label` reports its **whole text width**
+as its minimum — 366px, which plus the chip's `space_md` margins and the
+`Card` stylebox's content margins pushes that tile to 478. `streak_6` is
+catalogue index 5, which is odd, so it lands in column 1 and drags the column
+with it. Five of the six entries carrying a prize sit at odd indices; only
+`total_25`, whose prize string is much shorter, is even. The asymmetry is a
+content bug wearing a layout bug's clothes.
+
+So the `GridContainer` stays, and the fix is to stop that label reporting a
+366px minimum. Confirmed live before writing this: with autowrap on, every
+tile's minimum drops to 420 and both columns come out equal.
 
 **Files:**
-- Modify: `Scenes/Achievements/achievements.tscn` (`Safe/UI/Scroll/Margin/List`)
-- Modify: `Scripts/Achievements/achievements_screen.gd`
+- Modify: `Scenes/Achievements/AchievementTile.tscn` (`Content/PrizeChip/PrizeLabel`)
 - Test: `tests/test_achievements_grid.gd`
 
 **Interfaces:**
-- Consumes: nothing from earlier tasks.
-- Produces: `achievements_screen.gd` gains `_columns: Array[VBoxContainer]` and `func _relayout_columns(filter: int) -> void`. `%Columns` (HBoxContainer), `%Left` and `%Right` (VBoxContainer) become the unique names; `%List` is gone. Tasks 2–4 do not touch these.
+- Consumes: nothing.
+- Produces: nothing later tasks depend on. `achievements_screen.gd` and the
+  scene's `%List` `GridContainer` are untouched, so Tasks 2-4 build on the
+  tile exactly as it stands today.
 
 - [ ] **Step 1: Write the failing tests**
 
-Replace `test_scene_has_grid_columns_two` in `tests/test_achievements_grid.gd` with these four, and add the `Container` import-free helper:
+In `tests/test_achievements_grid.gd`, replace `test_scene_has_grid_columns_two`
+with these three:
 
 ```gdscript
-## A BoxContainer splits leftover width evenly between equal-ratio
-## expanding children; a GridContainer does not. This test builds both at
-## the grid's real measurements (list width 922, h_separation 24, tile
-## minimum width 420) and records the difference, so the reason this screen
-## stopped using a GridContainer cannot be lost. NOTIFICATION_SORT_CHILDREN
-## is sent by hand because the runner forbids awaiting a frame.
-func test_hbox_splits_evenly_where_gridcontainer_does_not() -> void:
+## The grid was measured at 420 left / 478 right. This pins the cause: a
+## Label with autowrap OFF reports its whole text width as its minimum, so
+## streak_6's "Poin stat murid dari minigame +5%" (366px) pushed its tile to
+## 478 and its column with it. Every tile must cost the same 420 whatever
+## its prize string says.
+func test_every_tile_has_the_same_minimum_width() -> void:
+	var scene := load("res://Scenes/Achievements/AchievementTile.tscn") as PackedScene
+	var worst_id := ""
+	var worst := 0.0
+	for entry in AchievementCatalog.ENTRIES:
+		var tile: AchievementTile = scene.instantiate()
+		Engine.get_main_loop().root.add_child(tile)
+		track(tile)
+		tile.setup(entry)
+		var m: float = tile.get_combined_minimum_size().x
+		if m > worst:
+			worst = m
+			worst_id = entry.id
+	assert_true(absf(worst - 420.0) < 0.5,
+		"every tile must have a 420px minimum; %s reports %s" % [worst_id, worst])
+
+
+## The label settings that keep the minimum at 420. Autowrap is what drops a
+## Label's minimum width; max_lines_visible and the ellipsis are what stop
+## the wrap from turning into a second line and reflowing the tile.
+func test_prize_label_cannot_report_its_full_text_width() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Achievements/AchievementTile.tscn")
+	var at := src.find('[node name="PrizeLabel"')
+	assert_true(at != -1, "PrizeLabel must exist")
+	var block := src.substr(at, src.find("[node", at + 1) - at if src.find("[node", at + 1) != -1 else -1)
+	assert_true(block.contains("autowrap_mode = 1"), "ARBITRARY autowrap is what frees the minimum width")
+	assert_true(block.contains("max_lines_visible = 1"), "one line only -- a wrap must not grow the tile")
+	assert_true(block.contains("text_overrun_behavior = 3"), "overflow ellipsizes")
+
+
+## Why the GridContainer was kept. Built at the grid's real measurements
+## (list width 922, h_separation 24, two 420-minimum expanding columns) it
+## splits evenly -- so replacing it with an HBoxContainer of two
+## VBoxContainers, which the first draft of this plan proposed, would have
+## fixed nothing. NOTIFICATION_SORT_CHILDREN is sent by hand because the
+## runner forbids awaiting a frame.
+func test_gridcontainer_splits_evenly_once_the_minimums_match() -> void:
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 24)
@@ -64,171 +124,49 @@ func test_hbox_splits_evenly_where_gridcontainer_does_not() -> void:
 	track(grid)
 	grid.size = Vector2(922, 600)
 	grid.notification(Container.NOTIFICATION_SORT_CHILDREN)
-	var grid_even: bool = absf(grid.get_child(0).size.x - grid.get_child(1).size.x) < 0.5
-
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 24)
-	for i in 2:
-		var c := VBoxContainer.new()
-		c.custom_minimum_size = Vector2(420, 260)
-		c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		hbox.add_child(c)
-	Engine.get_main_loop().root.add_child(hbox)
-	track(hbox)
-	hbox.size = Vector2(922, 600)
-	hbox.notification(Container.NOTIFICATION_SORT_CHILDREN)
-	assert_true(absf(hbox.get_child(0).size.x - hbox.get_child(1).size.x) < 0.5,
-		"HBoxContainer must split 922 evenly, got %s and %s" %
-			[hbox.get_child(0).size.x, hbox.get_child(1).size.x])
-	assert_false(grid_even,
-		"GridContainer is expected to split unevenly here -- if this ever passes, " +
-		"the reason for the two-column HBox is gone and this suite should be revisited")
+	assert_true(absf(grid.get_child(0).size.x - grid.get_child(1).size.x) < 0.5,
+		"equal minimums must split evenly, got %s and %s" %
+			[grid.get_child(0).size.x, grid.get_child(1).size.x])
+	assert_true(src_columns_still_two(), "and the screen must still use that GridContainer")
 
 
-func test_scene_has_two_expanding_columns_and_no_grid() -> void:
+func src_columns_still_two() -> bool:
 	var src := _scene_src()
-	assert_false(src.contains('type="GridContainer"'),
-		"the GridContainer split its columns 420/478; it must be gone")
-	assert_true(src.contains('[node name="Columns" type="HBoxContainer"'))
-	assert_true(src.contains('[node name="Left" type="VBoxContainer"'))
-	assert_true(src.contains('[node name="Right" type="VBoxContainer"'))
-	var expand_count := src.count("size_flags_horizontal = 3")
-	assert_true(expand_count >= 2, "both columns must be EXPAND_FILL, found %d" % expand_count)
-
-
-func test_script_distributes_tiles_round_robin() -> void:
-	var src := _script_src()
-	assert_true(src.contains("_relayout_columns"), "filtering must go through _relayout_columns")
-	assert_true(src.contains("_columns[n % 2]"), "the n-th visible tile goes to column n % 2")
-	assert_true(src.contains("move_child(tile, n / 2)"), "and to row n / 2 inside it")
-
-
-## ensure_control_visible needs the ScrollContainer. The old code walked up
-## from %List with get_parent().get_parent(); the tree is a level deeper
-## now, so it must use the unique name instead of counting hops.
-func test_scroll_is_reached_by_unique_name() -> void:
-	var src := _script_src()
-	assert_false(src.contains("list.get_parent().get_parent()"),
-		"walking up from the list breaks with the extra column level")
-	assert_true(src.contains("%Scroll"), "the ScrollContainer must be reached by unique name")
+	return src.contains('type="GridContainer"') and src.contains("columns = 2")
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
 Run: `test_run(suite="achievements_grid")`
-Expected: FAIL — `test_scene_has_two_expanding_columns_and_no_grid` reports the GridContainer still present; the two script tests report the missing anchors. `test_hbox_splits_evenly_where_gridcontainer_does_not` should already PASS (it tests engine behaviour, not our code).
+Expected: `test_every_tile_has_the_same_minimum_width` FAILS naming `streak_6`
+at 478, and `test_prize_label_cannot_report_its_full_text_width` FAILS on the
+missing `autowrap_mode`. `test_gridcontainer_splits_evenly_once_the_minimums_match`
+should already PASS — it tests engine behaviour and the scene as it stands.
 
-- [ ] **Step 3: Rebuild the scene's list as two columns**
+- [ ] **Step 3: Free the label's minimum width**
 
-Through the editor only:
+`scene_open(path="res://Scenes/Achievements/AchievementTile.tscn")`, then
+`batch_execute`:
 
-```
-scene_open(path="res://Scenes/Achievements/achievements.tscn")
-```
-
-Then `batch_execute` with these commands, in order:
-
-1. `delete_node` `/Achievements/Safe/UI/Scroll/Margin/List`
-2. `create_node` parent `/Achievements/Safe/UI/Scroll/Margin`, type `HBoxContainer`, name `Columns`
-3. `set_property` `/Achievements/Safe/UI/Scroll/Margin/Columns` `unique_name_in_owner` = `true`
-4. `set_property` … `size_flags_horizontal` = `3`
-5. `set_property` … `theme_override_constants/separation` = `24`
-6. `create_node` parent `…/Columns`, type `VBoxContainer`, name `Left`
-7. `set_property` `…/Columns/Left` `unique_name_in_owner` = `true`
-8. `set_property` `…/Columns/Left` `size_flags_horizontal` = `3`
-9. `set_property` `…/Columns/Left` `theme_override_constants/separation` = `24`
-10. `create_node` parent `…/Columns`, type `VBoxContainer`, name `Right`
-11. `set_property` `…/Columns/Right` `unique_name_in_owner` = `true`
-12. `set_property` `…/Columns/Right` `size_flags_horizontal` = `3`
-13. `set_property` `…/Columns/Right` `theme_override_constants/separation` = `24`
+1. `set_property` `/AchievementTile/Content/PrizeChip/PrizeLabel` `autowrap_mode` = `1`
+2. `set_property` … `max_lines_visible` = `1`
+3. `set_property` … `text_overrun_behavior` = `3`
 
 Then `scene_save()`.
 
-Numbers must be unquoted (`3`, not `"3"`); `anchors_preset` is inert here and is not set.
+`autowrap_mode = 1` is `TextServer.AUTOWRAP_ARBITRARY`; `text_overrun_behavior = 3`
+is `OVERRUN_TRIM_ELLIPSIS`, the same value `Content/Title` already uses.
 
-- [ ] **Step 4: Rewire the screen script**
+- [ ] **Step 4: Run the tests to verify they pass**
 
-`script_patch` on `Scripts/Achievements/achievements_screen.gd`.
+Run: `test_run(suite="achievements_grid")` and `test_run(suite="achievement_tile")`
+Expected: PASS.
 
-Replace the `@onready var list` line:
-
-```gdscript
-@onready var columns_box: HBoxContainer = %Columns
-@onready var scroll: ScrollContainer = %Scroll
-```
-
-Add below `var _tiles`:
-
-```gdscript
-## The two grid columns, left first. Tiles are distributed round-robin
-## across them (see _relayout_columns) rather than filled top-to-bottom, so
-## the catalogue's reading order survives the split.
-var _columns: Array[VBoxContainer] = []
-```
-
-In `_ready()`, replace `list.add_child(tile)` with an initial distribution: build `_columns` first, then add each tile.
-
-```gdscript
-	_columns = [%Left, %Right]
-	var n := 0
-	for entry in AchievementCatalog.ENTRIES:
-		var tile: AchievementTile = tile_scene.instantiate()
-		_columns[n % 2].add_child(tile)
-		tile.setup(entry)
-		tile.tile_pressed.connect(_on_tile_pressed)
-		_tiles.append(tile)
-		n += 1
-```
-
-Replace `_on_filter_selected` with:
-
-```gdscript
-func _on_filter_selected(index: int) -> void:
-	_relayout_columns(index)
-
-
-## Applies `filter` and re-deals the surviving tiles across the two
-## columns. Filtering cannot just toggle `visible`: a hidden tile would
-## leave a hole in its own column while the other column packed tight, and
-## the two would stop lining up row for row. So the n-th tile the filter
-## admits is moved to column n % 2 at index n / 2, which keeps row-major
-## reading order and keeps the rows aligned.
-##
-## remove_child + add_child rather than reparent(): reparent keeps a global
-## transform, which means nothing to a child of a container.
-func _relayout_columns(filter: int) -> void:
-	var n := 0
-	for tile in _tiles:
-		tile.visible = tile.matches_filter(filter)
-		if not tile.visible:
-			continue
-		var col: VBoxContainer = _columns[n % 2]
-		if tile.get_parent() != col:
-			tile.get_parent().remove_child(tile)
-			col.add_child(tile)
-		col.move_child(tile, n / 2)
-		n += 1
-```
-
-In `_scroll_to_tile_deferred`, replace the parent walk:
-
-```gdscript
-func _scroll_to_tile_deferred(tile: AchievementTile) -> void:
-	if scroll != null:
-		scroll.ensure_control_visible(tile)
-	Juice.shake(tile, 6.0)
-```
-
-- [ ] **Step 5: Run the tests to verify they pass**
-
-Run: `test_run(suite="achievements_grid")` then `test_run(suite="achievement_screen")`
-Expected: both PASS. If `achievement_screen` fails on a `%List` node lookup, fix that lookup in the suite to `%Columns`.
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add Scenes/Achievements/achievements.tscn Scripts/Achievements/achievements_screen.gd tests/test_achievements_grid.gd tests/test_achievement_screen.gd
-git commit -m "fix(achievements): split the grid evenly with two HBox columns"
+git add Scenes/Achievements/AchievementTile.tscn tests/test_achievements_grid.gd
+git commit -m "fix(achievements): stop one prize label widening the right column"
 ```
 
 ---

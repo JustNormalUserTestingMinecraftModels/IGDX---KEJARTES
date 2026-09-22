@@ -30,64 +30,46 @@ several decisions below:
 
 ---
 
-## 1. Grid symmetry — `achievements.tscn`, `achievements_screen.gd`
+## 1. Grid symmetry -- `AchievementTile.tscn`
 
-### The cause
+### The cause (corrected 2026-09-22, during execution)
 
-`Safe/UI/Scroll/Margin/List` is a `GridContainer` with `columns = 2`. Both
-tiles set `size_flags_horizontal = 3` (EXPAND_FILL) and both have the same
-`custom_minimum_size.x` of 420, but `GridContainer` does not split its
-leftover width evenly between expanding columns — it hands the remainder to
-one of them. Measured live: list width 922, `h_separation` 24, leftover 58,
-all 58 landing in column 1.
+This section first blamed `GridContainer` for not splitting leftover width
+evenly and proposed replacing it with an `HBoxContainer` of two
+`VBoxContainer`s filled round-robin. Building both containers side by side at
+the grid's real measurements disproved that: a `GridContainer` with two
+equal-minimum expanding columns splits 922 evenly, exactly as a
+`BoxContainer` does.
 
-This is a container-choice problem, not a sizing problem. Raising the tile's
-minimum width to an exact half would work only at one viewport width.
+The live screen's column minimums are `[420, 478]` -- the container is
+distributing correctly, it is being handed unequal minimums. Exactly one tile
+of 26 is responsible:
+
+```
+5 streak_6 min=478.0 lbl_min=366.0 text=Poin stat murid dari minigame +5%
+```
+
+`Content/PrizeChip/PrizeLabel` has autowrap off, and a `Label` with autowrap
+off reports its **whole text width** as its minimum size. 366px, plus the
+chip's two `space_md` (28) content margins and the `Card` stylebox's own
+margins, is 478. `streak_6` is catalogue index 5 -- odd, so column 1 -- and
+five of the six entries that carry a prize sit at odd indices; only
+`total_25`, whose prize string is far shorter, is even. A content bug wearing
+a layout bug's clothes.
 
 ### The fix
 
-Replace the `GridContainer` with an `HBoxContainer` named `Columns`
-(`h_separation` 24) holding two `VBoxContainer`s, `Left` and `Right`, each
-with `size_flags_horizontal = 3` and `v_separation` 24. `BoxContainer`
-distributes leftover space by `stretch_ratio` among its expanding children,
-which is an even split at the default ratio of 1.0 — symmetric at any
-viewport width, with no magic number to maintain.
+The `GridContainer` stays. `PrizeLabel` gets `autowrap_mode = 1`
+(`AUTOWRAP_ARBITRARY`), which frees its minimum width, plus
+`max_lines_visible = 1` and `text_overrun_behavior = 3`
+(`OVERRUN_TRIM_ELLIPSIS`) so the freed wrap cannot become a second line and
+reflow the tile. Verified live: every tile's minimum then reads 420 and both
+columns come out equal.
 
-Tiles keep `custom_minimum_size.x = 420` as a floor.
-
-### Reading order and filtering
-
-Two independent columns fill top-to-bottom, which would turn the
-catalogue's reading order sideways. So tiles are distributed **round-robin**:
-the *n*-th tile the current filter admits goes to `_columns[n % 2]` at index
-`n / 2`. Row-major order is preserved, and because every tile is the same
-height, the two columns stay row-aligned.
-
-Filtering re-runs that distribution rather than only toggling `visible`:
-
-```
-_relayout_columns():
-    n = 0
-    for tile in _tiles (catalogue order):
-        tile.visible = tile.matches_filter(current_filter)
-        if not tile.visible: continue
-        col = _columns[n % 2]
-        if tile.get_parent() != col:
-            tile.get_parent().remove_child(tile)
-            col.add_child(tile)
-        col.move_child(tile, n / 2)
-        n += 1
-```
-
-`remove_child` + `add_child` rather than `reparent`, which carries a global
-transform that means nothing inside a container.
-
-`_on_jump_requested`'s `scroll.ensure_control_visible(tile)` currently reaches
-the `ScrollContainer` with `list.get_parent().get_parent()`. With the deeper
-tree that becomes a `%Scroll` unique-name lookup, which is what it should
-have been.
-
----
+`achievements_screen.gd` is not touched at all -- no round-robin
+distribution, no `_relayout_columns`, no `%Scroll` rename. Filtering keeps
+working exactly as it does today, because `GridContainer` already reflows
+around hidden children.
 
 ## 2. The tile — `AchievementTile.tscn`, `AchievementTile.gd`, `ThemeFactory.gd`
 
@@ -389,10 +371,8 @@ question has to be answered rather than assumed:
 ## Files
 
 **Changed**
-- `Scenes/Achievements/achievements.tscn` — grid to two columns
 - `Scenes/Achievements/AchievementTile.tscn` — geometry, notice badge
 - `Scenes/Achievements/AchievementDetailSheet.tscn` — full relayout
-- `Scripts/Achievements/achievements_screen.gd` — round-robin distribution
 - `Scripts/Achievements/AchievementTile.gd` — locked icon tint, chip, badge
 - `Scripts/Achievements/AchievementDetailSheet.gd` — relayout, auto-claim
 - `Scripts/Achievements/AchievementCatalog.gd` — delete `description_of()`

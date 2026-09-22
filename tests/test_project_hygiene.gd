@@ -127,6 +127,27 @@ func test_the_rendering_crispness_settings_are_on() -> void:
 			+ "every screen, plus the rotated StickyNote and BookClockWidget quads")
 
 
+## Why both VRAM variants are imported even though this is a desktop editor.
+##
+## Sixteen textures are VRAM-compressed. With both of these settings false --
+## which is how the project stood until 2026-09-22 -- no machine imports a
+## deterministic set, so each one rewrites those .import files to whatever it
+## needs and they flip-flop in git forever. That is the churn the premium-look
+## handoff described as machine noise to be reverted before every commit; it
+## was a missing setting. With both true, a cold boot plus a full suite run
+## leaves `git status` clean.
+##
+## Turning either off reintroduces the churn, and turning etc2 off would also
+## ship an Android build with no ETC2 textures.
+func test_both_vram_variants_are_imported_so_the_import_files_stay_stable() -> void:
+	assert_true(
+		ProjectSettings.get_setting("rendering/textures/vram_compression/import_s3tc_bptc", false),
+		"without this, every desktop machine rewrites the VRAM .import files")
+	assert_true(
+		ProjectSettings.get_setting("rendering/textures/vram_compression/import_etc2_astc", false),
+		"without this, the committed .import files and an Android build disagree")
+
+
 func test_the_run_result_icons_all_exist_and_load_as_textures() -> void:
 	var icons := [
 		"icon_minigame_menang", "icon_minigame_kalah", "icon_poin",

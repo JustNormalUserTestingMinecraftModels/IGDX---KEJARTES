@@ -380,10 +380,10 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-**The "premium look" programme.** Decisions and an 11-item costed checklist
-are in `.superpowers/gamecode/premium-look/` — read `HANDOFF.md`, then
-`recon.md` §0. Item 11 is cut; the rest ship as several PRs. PR 1 is done;
-PR 2 is `PaperShadow` generic, then contact shadows.
+Nothing in flight. The **"premium look" programme** is done: items 1-10 ship,
+item 11 was cut by the brief and item 12 was built and reverted (it breaks the
+full suite — see `docs/superpowers/DEBT.md`). Survey and decisions are in
+`.superpowers/gamecode/premium-look/`.
 
 Plan C's RunResult redesign is parked in `docs/superpowers/DEBT.md`.
 

@@ -362,6 +362,49 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Premium-look leftovers (2026-09-22, PRs 2-6).** The programme in
+  `.superpowers/gamecode/premium-look/` shipped items 1-10 and 12; item 11
+  (the Lobby's black bands at 20:9) was cut by the brief. What was
+  deliberately left:
+  - **TesNotice's NoticeCard gets no contact shadow.** It is a 512px
+    NinePatchRect, and PaperShadow's Silhouette is a plain TextureRect, which
+    would scale that texture instead of 9-slicing it. Needs a NinePatch
+    silhouette variant.
+  - **SchoolDay has no parallax.** Its two bands (SkyBackground,
+    SchoolForeground) live inside BookClockWidget, whose root already runs
+    BookClockWidget.gd, so the driver cannot be added beside them the way it
+    was for Classroom and Stage -- it would have to fold into that script.
+    Its sky already rotates, so it is the least flat of the three dioramas.
+  - **Koperasi gets no entrance animation**, and this one is a trap rather
+    than a gap. `ShelfItem.set_dimmed` writes `_button.modulate.a` to signal
+    affordability, and `Juice.pop_in` tweens that same property to 1.0, so an
+    entrance would un-dim every item the player cannot afford. Herman's
+    `scale` likewise belongs to HermanAP. `tests/test_motion_adoption.gd`
+    asserts the shelf stays untouched.
+  - **The face rigs' eye layers are ungraded.** The illustration grade is on
+    each face's `Base`; `Pupil` already carries `eye_mask.gdshader` and a
+    CanvasItem has one material slot. It is a few hundred pixels of iris and
+    reads fine, but a CanvasGroup pass would close it.
+  - **Item 12, VRAM compression, is built and reverted, not skipped.** The
+    project holds 1182 MB of uncompressed RGBA8 texture data, 1069 MB of it
+    Lossless. Compressing the 160 textures at 512x512 or larger cuts 975 MB
+    to 244 MB and every suite still passes individually -- but a FULL
+    `test_run` then never completes: the editor climbs to ~2 GB, stops
+    responding and has to be killed. Reverting the 160 `.import` files and
+    keeping only the project setting brought the full run back at 2123/2123
+    in 9 s, so the compression is the cause, and disabling ETC2 alone did not
+    help. To redo it: `compress/mode=2` on every texture .import whose source
+    is >= 512x512, EXCLUDING `Assets/Images/UI/BarFill/**` and
+    `Shop/UI/tray_dots.png` (their sharpness is asserted) and every `.svg`
+    (test_end_cutscene pixel-checks the badges). The 195 smaller textures
+    should stay lossless regardless: block artifacts show on small crisp UI
+    and the saving is minor. Land it only together with a way to run the
+    suite -- coverage is the quality floor.
+  - **ETC2 is on but nothing is built for Android yet.** There is no
+    `export_presets.cfg`. `import_etc2_astc` is enabled so the committed
+    `.import` files stay deterministic across machines; it costs import time
+    on a desktop that never samples those variants.
+
 - **Mipmap follow-ups (2026-09-22, premium-look PR 1).** 29 measured
   downscale offenders now generate mipmaps and the canvas filter samples them
   (`tests/test_texture_mipmaps.gd` holds the list and the reasoning). Three

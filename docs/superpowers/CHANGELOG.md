@@ -8,6 +8,78 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-22 — Premium-look PRs 2-6: depth, parallax, a look layer, motion, VRAM
+
+The rest of the programme in `.superpowers/gamecode/premium-look/`. Item 11
+was cut by the brief; everything else shipped. Five commits, each with its own
+message; this records what the recon got wrong and what the work found.
+
+**The recon's shaping constraint for the grade did not exist.** It expected
+the illustration colour grade to need `CanvasGroup` wrapping, because 28 nodes
+already carry a material and a `CanvasItem` has one slot — and wrapping
+`Classroom` and `Stage` is awkward, since `test_tall_screen_layout` pins their
+anchors literally and `CanvasGroup` is a `Node2D`, so it cannot even hold
+those anchors. Listing the 29 material-carrying nodes showed the premise was
+wrong: each face rig uses its material only on `Pupil` (and Marcel's
+`Glasses`), and every large illustration plate is free. The grade is assigned
+directly to fifteen plates and no `CanvasGroup` exists anywhere. The only
+ungraded illustration pixels are the irises.
+
+**Two properties in this codebase are already spoken for, and both bit.**
+`PaperShadow`'s first draft bought its overscan by setting `scale` about each
+band's centre; Herman is authored with pivot `(540, 1920)` so `HermanAP` can
+scale him from the floor, and that animation writes `scale` every frame.
+`ParallaxDiorama` hit the same wall and now grows a band's *offsets* instead.
+Then `ShelfItem.set_dimmed` turned out to write `_button.modulate.a` — the
+affordability signal — which is exactly what `Juice.pop_in` tweens to 1.0, so
+Koperasi gets no entrance animation and a test says why. A screen can be flat
+because nobody polished it or because its properties are owned; those want
+different answers.
+
+**Hazard 6 was not machine churn to be tolerated — it was a missing setting.**
+The handoff said to revert twelve `.import` files before every commit because
+the editor re-drops an `etc2` variant on boot. The cause was that
+`rendering/textures/vram_compression/import_etc2_astc` and `import_s3tc_bptc`
+were *both false*, so no machine imported a deterministic set and each wrote
+whichever variant it needed — this PC writing `s3tc`, the committed files
+declaring both, the pair fighting on every boot. Turning both on ends it:
+after a cold boot and a full suite run, `git status` shows **zero** dirty
+`.import` files. The standing "revert before every commit" step is gone, and
+an Android build will now get real ETC2 textures.
+
+**Item 12's mass compression was built, measured, and then reverted.** The
+project holds **1182 MB** of uncompressed RGBA8 texture data, 1069 MB of it
+Lossless, so the case for VRAM compression is real: 160 textures at 512×512
+or larger would have cut 975 MB to 244 MB.
+
+It was reverted because it broke the suite. With those 160 compressed, a full
+`test_run` stopped completing at all — the editor climbed to ~2 GB, stopped
+responding, and had to be killed, every time, across five attempts. Every
+suite still passed *individually*, which is what made it worth isolating
+rather than guessing: PR 4's full run had taken 6987 ms with the look layer,
+parallax and shadows already in, and PR 5 added two small script edits, so
+PR 6 was the only candidate. Reverting the 160 `.import` files and keeping
+only the setting brought the full run back at 2123/2123 in 9055 ms. Disabling
+ETC2 alone did not help, which ruled out the second variant as the cause.
+
+Coverage is the quality floor here, and a memory optimisation that costs the
+ability to run the tests is not worth 731 MB. It is also the one item in the
+whole programme that can only *reduce* image quality, which is the opposite
+of the brief. The work is recoverable — the threshold, the exclusions and the
+measured saving are in `DEBT.md` — but it should land with a way to run the
+suite, not instead of one.
+
+**Measuring beat looking, twice.** The editor runs the game embedded at half
+size, so a screenshot cannot be judged at full resolution — the vignette was
+verified numerically instead: corners darken 5–8.5%, the centre moves +0.0%.
+And the window light's intensity was found by sweeping it over a frozen frame
+and counting pixels driven to pure white: 0.16 pushed 20 sample points over,
+0.12 and below pushed one, so it ships at 0.11. A first attempt read the light
+as +0.312 luminance, well over its own theoretical maximum — that was the
+students' breathing animation moving between the two captures. Freezing the
+tree gave +0.1414, which matches the shader. The same trap waits for anyone
+measuring a visual change on an animated screen.
+
 ## 2026-09-22 — Premium-look PR 1: mechanical crispness
 
 First slice of the "premium look" programme

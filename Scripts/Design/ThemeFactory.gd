@@ -50,7 +50,10 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 		box.bg_color = bg
 		box.border_color = border
 		box.set_border_width_all(int(tokens.outline_width))
-		box.set_corner_radius_all(tokens.radius_md)
+		# radius_button, not radius_md: these are Buttons, and
+		# tests/test_button_geometry.gd holds every button variation to the
+		# one fixed radius.
+		box.set_corner_radius_all(tokens.radius_button)
 		return box
 
 	theme.add_type("SkinStudentTile")

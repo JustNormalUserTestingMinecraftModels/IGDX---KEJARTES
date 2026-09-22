@@ -113,6 +113,21 @@ func test_unlocked_tile_restores_the_icon_tint() -> void:
 	assert_false(tile.lock_icon.visible)
 
 
+## The chip must fill the tile's width. Shrink-centred, its label's minimum
+## width is now ~0 (autowrap, added so one long prize string could not widen
+## a whole grid column) so the chip collapsed to a pill reading just an
+## ellipsis -- seen on Calon Asisten Einstein in the 2026-09-22 screenshot
+## pass.
+func test_prize_chip_fills_the_tile_width() -> void:
+	var src := FileAccess.get_file_as_string(TILE)
+	var at := src.find('[node name="PrizeChip"')
+	assert_true(at != -1, "PrizeChip must exist")
+	var next := src.find("[node", at + 1)
+	var block := src.substr(at, (next - at) if next != -1 else src.length() - at)
+	assert_true(block.contains("size_flags_horizontal = 3"),
+		"the chip must EXPAND_FILL or its autowrapped label ellipsises to nothing")
+
+
 func test_prize_chip_non_empty_is_amber() -> void:
 	var tile := _new_tile()
 	var entry := AchievementCatalog.get_entry(PRIZE_ID)

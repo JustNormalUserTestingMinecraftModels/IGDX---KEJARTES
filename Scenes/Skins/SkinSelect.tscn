@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://b74inkag7vafv" path="res://Scenes/Skins/StudentTile.tscn" id="3_tile"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="4_back"]
 
-[node name="SkinSelect" type="Control"]
+[node name="SkinSelect" type="Control" unique_id=488291167]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_84sx3")
 
-[node name="Blur" type="ColorRect" parent="."]
+[node name="Blur" type="ColorRect" parent="." unique_id=70384708]
 material = ExtResource("2_honiv")
 layout_mode = 1
 anchors_preset = 15
@@ -23,19 +23,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Carousel" type="Control" parent="."]
+[node name="Carousel" type="Control" parent="." unique_id=1011116275]
 unique_name_in_owner = true
 clip_contents = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 200.0
 offset_bottom = -583.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Track" type="HBoxContainer" parent="Carousel"]
+[node name="Track" type="HBoxContainer" parent="Carousel" unique_id=791256449]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 4
@@ -45,7 +44,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 60
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="Label" parent="." unique_id=1532581445]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 10
@@ -53,13 +52,12 @@ anchor_right = 1.0
 offset_top = 80.0
 offset_bottom = 200.0
 grow_horizontal = 2
-mouse_filter = 2
 theme_type_variation = &"DisplayLabel"
 text = "SHINTA"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Dots" type="HBoxContainer" parent="."]
+[node name="Dots" type="HBoxContainer" parent="." unique_id=1242078273]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 12
@@ -74,37 +72,37 @@ mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="Dot1" type="Panel" parent="Dots"]
+[node name="Dot1" type="Panel" parent="Dots" unique_id=824474585]
 custom_minimum_size = Vector2(24, 24)
-theme_type_variation = &"SkinDotOff"
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-
-[node name="Dot2" type="Panel" parent="Dots"]
-custom_minimum_size = Vector2(24, 24)
 theme_type_variation = &"SkinDotOff"
+
+[node name="Dot2" type="Panel" parent="Dots" unique_id=2055080375]
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
+theme_type_variation = &"SkinDotOff"
 
-[node name="Dot3" type="Panel" parent="Dots"]
+[node name="Dot3" type="Panel" parent="Dots" unique_id=1215196992]
 visible = false
 custom_minimum_size = Vector2(24, 24)
-theme_type_variation = &"SkinDotOff"
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
+theme_type_variation = &"SkinDotOff"
 
-[node name="Dot4" type="Panel" parent="Dots"]
+[node name="Dot4" type="Panel" parent="Dots" unique_id=506902253]
 visible = false
 custom_minimum_size = Vector2(24, 24)
-theme_type_variation = &"SkinDotOff"
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
+theme_type_variation = &"SkinDotOff"
 
-[node name="Tray" type="Panel" parent="."]
+[node name="Tray" type="Panel" parent="." unique_id=468099100]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 12
@@ -116,36 +114,36 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_type_variation = &"SunkenPanel"
 
-[node name="Rail" type="HBoxContainer" parent="Tray"]
+[node name="Rail" type="HBoxContainer" parent="Tray" unique_id=1893455654]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_top = 94.0
-offset_bottom = 244.0
+offset_bottom = 222.0
 grow_horizontal = 2
 theme_override_constants/separation = 23
 alignment = 1
 
-[node name="Tile1" parent="Tray/Rail" instance=ExtResource("3_tile")]
+[node name="Tile1" parent="Tray/Rail" unique_id=417783110 instance=ExtResource("3_tile")]
 layout_mode = 2
 
-[node name="Tile2" parent="Tray/Rail" instance=ExtResource("3_tile")]
+[node name="Tile2" parent="Tray/Rail" unique_id=2127359922 instance=ExtResource("3_tile")]
 layout_mode = 2
 
-[node name="Tile3" parent="Tray/Rail" instance=ExtResource("3_tile")]
+[node name="Tile3" parent="Tray/Rail" unique_id=236415606 instance=ExtResource("3_tile")]
 layout_mode = 2
 
-[node name="Tile4" parent="Tray/Rail" instance=ExtResource("3_tile")]
+[node name="Tile4" parent="Tray/Rail" unique_id=937447595 instance=ExtResource("3_tile")]
 layout_mode = 2
 
-[node name="Tile5" parent="Tray/Rail" instance=ExtResource("3_tile")]
+[node name="Tile5" parent="Tray/Rail" unique_id=240774783 instance=ExtResource("3_tile")]
 layout_mode = 2
 
-[node name="Tile6" parent="Tray/Rail" instance=ExtResource("3_tile")]
+[node name="Tile6" parent="Tray/Rail" unique_id=178671831 instance=ExtResource("3_tile")]
 layout_mode = 2
 
-[node name="SkinName" type="Label" parent="Tray"]
+[node name="SkinName" type="Label" parent="Tray" unique_id=1644366027]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 10
@@ -153,37 +151,34 @@ anchor_right = 1.0
 offset_top = 264.0
 offset_bottom = 316.0
 grow_horizontal = 2
-mouse_filter = 2
 theme_type_variation = &"SkinNameLabel"
 text = "Seragam Sekolah"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="WornChip" type="PanelContainer" parent="Tray"]
+[node name="WornChip" type="PanelContainer" parent="Tray" unique_id=692940348]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 8
+anchors_preset = 5
 anchor_left = 0.5
-anchor_top = 0.0
 anchor_right = 0.5
-anchor_bottom = 0.0
 offset_top = 324.0
 offset_bottom = 372.0
 grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"SkinWornChip"
 
-[node name="WornChipLabel" type="Label" parent="Tray/WornChip"]
+[node name="WornChipLabel" type="Label" parent="Tray/WornChip" unique_id=3957450]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SkinWornChipLabel"
 text = "SEDANG DIPAKAI"
 horizontal_alignment = 1
 
-[node name="BackButton" type="TextureButton" parent="Tray"]
+[node name="BackButton" type="TextureButton" parent="Tray" unique_id=1977965933]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 40.0
 offset_top = 353.0
 offset_right = 240.0
@@ -192,13 +187,12 @@ texture_normal = ExtResource("4_back")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="Terapkan" type="Button" parent="Tray"]
+[node name="Terapkan" type="Button" parent="Tray" unique_id=1947257829]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 505.0
 offset_top = 373.0
 offset_right = 998.0
-offset_bottom = 506.0
+offset_bottom = 501.0
 theme_type_variation = &"PrimaryButton"
 text = "TERAPKAN"

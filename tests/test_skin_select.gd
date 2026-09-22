@@ -183,6 +183,13 @@ func test_the_carousel_stretches_to_the_trays_top_edge() -> void:
 	assert_true(block.contains("offset_bottom = -583.0"),
 		"the carousel's bottom must track the tray's height, not a fixed y")
 	assert_true(block.contains("anchor_bottom = 1.0"))
+	# And it runs from the very top, with the title floating over it. At
+	# offset_top = 200 the band was 1137 tall on a 1920 phone and clipped
+	# 200px off a 1337-tall card -- re-cropping the outfit the card's own
+	# size exists to stop cropping. A zero offset is the default, so Godot
+	# omits the line entirely: assert its ABSENCE, not "offset_top = 0.0".
+	assert_false(block.contains("offset_top ="),
+		"the splash band must start at the top (no offset_top); the title overlays it")
 
 
 func test_no_theme_overrides_beyond_layout_constants() -> void:

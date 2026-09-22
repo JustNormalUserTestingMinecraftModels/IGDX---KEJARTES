@@ -35,6 +35,7 @@
 [ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPotrait/Meja/kanan atas.png" id="meja_kna_tex"]
 [ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPotrait/Meja/kanan bawah.png" id="meja_knb_tex"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
+[ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
@@ -817,6 +818,14 @@ pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
+
+[node name="Parallax" type="Control" parent="Classroom"]
+layout_mode = 1
+mouse_filter = 2
+script = ExtResource("parallax_diorama")
+travel = Vector2(14, 8)
+depth_by_child = {"BGLayer": 0.15, "Meja_KiriAtas": 0.45, "Meja_KananAtas": 0.45, "StudentPortraitsContainer_Back": 0.45, "StudentHandsContainer_Back": 0.45, "Meja_KiriBawah": 0.75, "Meja_KananBawah": 0.75, "StudentPortraitsContainer_Front": 0.75, "StudentHandsContainer_Front": 0.75}
+overscan_children = Array[StringName]([&"BGLayer"])
 
 [node name="Safe" type="MarginContainer" parent="." unique_id=1588675940]
 layout_mode = 1

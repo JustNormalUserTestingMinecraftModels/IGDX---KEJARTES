@@ -362,6 +362,28 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Mipmap follow-ups (2026-09-22, premium-look PR 1).** 29 measured
+  downscale offenders now generate mipmaps and the canvas filter samples them
+  (`tests/test_texture_mipmaps.gd` holds the list and the reasoning). Three
+  things were deliberately left:
+  - The Lobby face rigs' **eye layers** (`*_sclera`, `*_pupil`, `*_eyelashes`,
+    `*_eyelid`, `*_eyebrows`, 30 files) minify at the same 3.2-3.5x as the
+    `*_base.png` that did get a chain, and they animate. Left out to keep the
+    change reviewable; add them the same way if blinking shimmers.
+  - `UI/loby_no_tables.png` is 768x1376 drawn full-screen — **upscaled 1.41x**,
+    the largest surface on the highest-traffic screen. No code fix exists;
+    this one needs a bigger source from the artist. Same for
+    `Shop/UI/bg_inventory_blur.png` (1.41x up) and `UI/BG.jpg` (1.47x up,
+    CutScene and Settings).
+  - **Source resizes** would beat mipmaps for the static UI offenders and cut
+    VRAM, but five textures are shared across 2-12 scenes at different drawn
+    sizes (`return_button.png` in 12, `uang.png` in 4, `star.png` in 6), so
+    any resize has to satisfy the largest call site. Not attempted.
+
+  Note `detect_3d/compress_to=1` is set on all 402 texture imports: any
+  texture that ever touches a 3D material gets silently re-imported as VRAM
+  with mipmaps. Nothing in the game is 3D today.
+
 - **Skins (2026-09-18).** No way to earn or buy a skin yet: every shipped
   skin starts unlocked (`StudentSkins.UNLOCKED_BY_DEFAULT`) and only the debug
   toggle locks them; the Cosmetic Shop stub is the likely home. Worn skins

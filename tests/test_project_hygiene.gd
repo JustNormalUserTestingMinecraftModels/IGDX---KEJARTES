@@ -103,6 +103,30 @@ func test_the_boot_scene_is_the_main_menu() -> void:
 		"the boot scene must actually exist")
 
 
+## Two rendering settings the 2026-09-22 crispness pass turned on. Both are
+## one-line project settings with no other trace in the repo, so nothing else
+## would notice if a merge or an editor session dropped them.
+##
+## `default_texture_filter = 3` is Linear Mipmap. It is safe to set globally
+## only because 383 of the project's 412 textures are imported with
+## `mipmaps/generate=false` and therefore carry a single mip level: a
+## mipmapped sampler on a 1-mip texture can only ever read level 0, so the
+## bar-fill tiles, `tray_dots.png` and every 9-sliced StyleBox are provably
+## unaffected. Pinned by tests/test_texture_mipmaps.gd, which fails if that
+## premise stops holding. NOTE the enum here is NOT CanvasItem's: in
+## ProjectSettings 0=Nearest, 1=Linear, 2=Nearest Mipmap, 3=Linear Mipmap,
+## while CanvasItem.TEXTURE_FILTER_LINEAR is 2 and its
+## LINEAR_WITH_MIPMAPS is 4.
+func test_the_rendering_crispness_settings_are_on() -> void:
+	assert_eq(
+		ProjectSettings.get_setting("rendering/textures/canvas_textures/default_texture_filter", -1),
+		3, "canvas textures must sample mipmaps, or every generated mip chain is dead weight")
+	assert_eq(
+		ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_2d", -1),
+		1, "MSAA 2D at 2x: antialiases TouchFeedbackEffect's ripple circles on "
+			+ "every screen, plus the rotated StickyNote and BookClockWidget quads")
+
+
 func test_the_run_result_icons_all_exist_and_load_as_textures() -> void:
 	var icons := [
 		"icon_minigame_menang", "icon_minigame_kalah", "icon_poin",

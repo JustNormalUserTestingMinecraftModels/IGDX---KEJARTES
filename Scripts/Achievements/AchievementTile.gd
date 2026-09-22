@@ -33,8 +33,13 @@ const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd"
 ## Scripts/Inventory/InventorySlot.gd already uses for the same problem.
 const TAP_MOVE_THRESHOLD := 16.0
 
-## Tint applied to the whole tile when its achievement is still locked.
-@export var locked_modulate: Color = Color(1.0, 1.0, 1.0, 0.55)
+## Tint applied to the ICON ONLY while the achievement is locked.
+## Deliberately not on the tile root: fading the root took a locked title
+## to 1.78:1 against its own card (measured live, 2026-09-22), under the
+## 3.0 floor tests/test_bar_contrast.gd pins and far under the 4.5 body
+## copy wants. Locked now reads from the greyed icon, the lock overlay on
+## it, and the absent corner badge -- none of which is text.
+@export var locked_icon_modulate: Color = Color(0.62, 0.62, 0.62, 1.0)
 
 @onready var icon: TextureRect = %Icon
 @onready var lock_icon: TextureRect = %LockIcon
@@ -119,23 +124,24 @@ func matches_filter(filter: int) -> bool:
 	return true
 
 
+## Shows the prize chip only when the entry has one. Twenty of the 26
+## catalogue entries set prize to "", and a chip reading "—" on 77% of the
+## grid teaches nothing while costing the 38px the enlarged icon needs.
 func _apply_prize(entry: Dictionary) -> void:
 	var prize := String(entry.get("prize", ""))
-	if prize == "":
-		prize_label.text = "—"
-		prize_chip.theme_type_variation = &"AchievementPrizeChip"
-		prize_label.theme_type_variation = &"AchievementPrizeChipLabel"
-	else:
-		prize_label.text = prize
-		prize_chip.theme_type_variation = &"AchievementPrizeChipAmber"
-		prize_label.theme_type_variation = &"AchievementPrizeChipLabelAmber"
+	prize_chip.visible = prize != ""
+	if not prize_chip.visible:
+		return
+	prize_label.text = prize
+	prize_chip.theme_type_variation = &"AchievementPrizeChipAmber"
+	prize_label.theme_type_variation = &"AchievementPrizeChipLabelAmber"
 
 
 func _apply_state(state: int, progress: float) -> void:
 	progress_bar.value = progress * 100.0
 
 	var locked := state == AchievementsScript.STATE_LOCKED
-	modulate = locked_modulate if locked else Color.WHITE
+	icon.modulate = locked_icon_modulate if locked else Color.WHITE
 	lock_icon.visible = locked
 	if locked:
 		_baru_shown.erase(achievement_id)

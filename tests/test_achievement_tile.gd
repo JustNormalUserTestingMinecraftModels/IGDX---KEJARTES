@@ -72,11 +72,36 @@ func test_setup_shows_title_and_icon() -> void:
 	assert_eq(tile.achievement_id, PLAIN_ID)
 
 
-func test_prize_chip_empty_is_neutral_dash() -> void:
+## 20 of the 26 catalogue entries set prize to "". A chip reading "—" on
+## 77% of the grid teaches nothing and costs the 38px the bigger icon
+## needs, so the chip is hidden outright.
+func test_prize_chip_is_hidden_when_the_entry_has_no_prize() -> void:
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
-	assert_eq(tile.prize_label.text, "—")
-	assert_eq(tile.prize_chip.theme_type_variation, &"AchievementPrizeChip")
+	assert_false(tile.prize_chip.visible, "an entry with no prize shows no chip")
+
+
+## The contrast fix. Fading the tile ROOT took a locked title to 1.78:1
+## against its own card (measured live, 2026-09-22) -- under the 3.0 floor
+## tests/test_bar_contrast.gd pins and far under the 4.5 body copy wants.
+## The root now stays opaque in every state and only the icon is greyed;
+## the lock overlay already drawn on it carries the state.
+func test_locked_tile_root_stays_fully_opaque() -> void:
+	var tile := _new_tile()
+	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
+	assert_eq(tile.modulate, Color.WHITE, "the tile root must never be faded")
+	assert_eq(tile.icon.modulate, tile.locked_icon_modulate, "only the icon is greyed while locked")
+	assert_true(tile.lock_icon.visible)
+
+
+func test_unlocked_tile_restores_the_icon_tint() -> void:
+	_touched_ids.append(PLAIN_ID)
+	_achievements().debug_unlock(PLAIN_ID)
+	var tile := _new_tile()
+	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
+	assert_eq(tile.modulate, Color.WHITE)
+	assert_eq(tile.icon.modulate, Color.WHITE)
+	assert_false(tile.lock_icon.visible)
 
 
 func test_prize_chip_non_empty_is_amber() -> void:
@@ -87,13 +112,12 @@ func test_prize_chip_non_empty_is_amber() -> void:
 	assert_eq(tile.prize_chip.theme_type_variation, &"AchievementPrizeChipAmber")
 
 
-func test_locked_state_dims_tile_and_shows_lock() -> void:
+func test_locked_state_shows_lock_and_no_badges() -> void:
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
 	assert_true(tile.lock_icon.visible)
 	assert_false(tile.baru_badge.visible)
 	assert_false(tile.check_badge.visible)
-	assert_true(absf(tile.modulate.a - tile.locked_modulate.a) < 0.01)
 
 
 func test_unlocked_state_shows_baru_badge() -> void:

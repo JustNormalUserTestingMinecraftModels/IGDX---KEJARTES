@@ -23,6 +23,7 @@ extends Control
 @onready var _sfx: HSlider = %SfxSlider
 @onready var _tutorial: CheckButton = %TutorialToggle
 @onready var _skip_dialog: CheckButton = %SkipDialogToggle
+@onready var _look_layer: CheckButton = %LookLayerToggle
 @onready var _back: Button = %BackButton
 
 ## The screen Back returns to. MainMenu by default; the Lobby's Settings gear
@@ -36,12 +37,14 @@ func _ready() -> void:
 	_sfx.value = AudioDirector.get_bus_volume(&"SFX")
 	_tutorial.button_pressed = GameSettings.minigame_tutorial_enabled
 	_skip_dialog.button_pressed = GameSettings.skip_event_dialogue
+	_look_layer.button_pressed = GameSettings.look_layer_enabled
 
 	_master.value_changed.connect(_on_volume_changed.bind(&"Master"))
 	_bgm.value_changed.connect(_on_volume_changed.bind(&"BGM"))
 	_sfx.value_changed.connect(_on_volume_changed.bind(&"SFX"))
 	_tutorial.toggled.connect(_on_tutorial_toggled)
 	_skip_dialog.toggled.connect(_on_skip_dialog_toggled)
+	_look_layer.toggled.connect(_on_look_layer_toggled)
 	_back.pressed.connect(_on_back_pressed)
 
 	if Engine.is_editor_hint():
@@ -87,6 +90,17 @@ func _on_tutorial_toggled(pressed: bool) -> void:
 ## EventDialogue line before each minigame. Saved like the tutorial switch.
 func _on_skip_dialog_toggled(pressed: bool) -> void:
 	GameSettings.skip_event_dialogue = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Efek Visual": the global vignette and film grain the LookLayer autoload
+## draws over every screen. Off by default -- the grain is a per-pixel term
+## over the whole screen every frame and the hardware floor is unknown, so it
+## is opt-in. Setting the property emits look_layer_changed, which LookLayer
+## is listening to, so the layer fades in without leaving this screen.
+func _on_look_layer_toggled(pressed: bool) -> void:
+	GameSettings.look_layer_enabled = pressed
 	if not Engine.is_editor_hint():
 		GameSettings.save_settings()
 

@@ -36,6 +36,8 @@
 [ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPotrait/Meja/kanan bawah.png" id="meja_knb_tex"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
@@ -80,6 +82,7 @@ offset_bottom = 960.0
 mouse_filter = 2
 
 [node name="BGLayer" type="TextureRect" parent="Classroom" unique_id=18068981]
+material = ExtResource("illus_grade")
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -92,6 +95,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="Meja_KiriAtas" type="TextureRect" parent="Classroom" unique_id=141187056]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -114,6 +118,7 @@ shadow_alpha = 0.28
 blur = 3.0
 
 [node name="Meja_KananAtas" type="TextureRect" parent="Classroom" unique_id=1566337339]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -458,6 +463,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Meja_KiriBawah" type="TextureRect" parent="Classroom" unique_id=1666960600]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -478,6 +484,7 @@ shadow_alpha = 0.28
 blur = 3.0
 
 [node name="Meja_KananBawah" type="TextureRect" parent="Classroom" unique_id=1660970638]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -818,6 +825,19 @@ pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
+
+[node name="WindowLight" type="ColorRect" parent="Classroom"]
+material = ExtResource("window_light")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -420.0
+offset_right = -120.0
+offset_bottom = -560.0
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
 
 [node name="Parallax" type="Control" parent="Classroom"]
 layout_mode = 1

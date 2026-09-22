@@ -32,6 +32,25 @@ var minigame_tutorial_enabled: bool = true
 ## each minigame. Saved beside the tutorial switch.
 var skip_event_dialogue: bool = false
 
+## Premium-look pass (2026-09-22): whether the global look layer -- the
+## vignette and film grain LookLayer draws over every screen -- is on.
+##
+## DEFAULT OFF and opt-in. The hardware floor for this game is not known, and
+## the grain is a per-pixel term evaluated over the whole screen every frame,
+## so it is the one thing in that pass expensive enough to want a switch.
+## LookLayer listens to look_layer_changed so a flip takes effect at once
+## rather than on the next scene load.
+var look_layer_enabled: bool = false:
+	set(value):
+		if look_layer_enabled == value:
+			return
+		look_layer_enabled = value
+		look_layer_changed.emit(value)
+
+## Emitted when look_layer_enabled flips, so the autoload can react without
+## polling the setting every frame.
+signal look_layer_changed(enabled: bool)
+
 
 const SAVE_PATH: String = "user://settings.cfg"
 
@@ -47,6 +66,7 @@ func save_settings() -> void:
 	config.load(SAVE_PATH)
 	config.set_value("pengaturan", "minigame_tutorial", minigame_tutorial_enabled)
 	config.set_value("pengaturan", "skip_dialog", skip_event_dialogue)
+	config.set_value("pengaturan", "look_layer", look_layer_enabled)
 	if not Engine.is_editor_hint():
 		config.set_value("progres", "is_game_beaten", GameState.is_game_beaten)
 		config.set_value("progres", "debug_level_select", GameState.debug_level_select_enabled)
@@ -57,6 +77,7 @@ func load_settings() -> void:
 	if config.load(SAVE_PATH) == OK:
 		minigame_tutorial_enabled = config.get_value("pengaturan", "minigame_tutorial", true)
 		skip_event_dialogue = config.get_value("pengaturan", "skip_dialog", false)
+		look_layer_enabled = config.get_value("pengaturan", "look_layer", false)
 		if not Engine.is_editor_hint():
 			GameState.is_game_beaten = config.get_value("progres", "is_game_beaten", false)
 			GameState.debug_level_select_enabled = config.get_value("progres", "debug_level_select", true)

@@ -18,6 +18,7 @@
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -137,6 +138,7 @@ mouse_filter = 2
 script = ExtResource("5_jfwhh")
 
 [node name="Background" type="TextureRect" parent="Stage" unique_id=1368498906]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -766,6 +768,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Herman" type="TextureRect" parent="Stage" unique_id=2135616178]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -790,6 +793,7 @@ libraries/ = SubResource("AnimationLibrary_herman")
 autoplay = &"idle"
 
 [node name="Foreground" type="TextureRect" parent="Stage" unique_id=1358581353]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://bhty6iiub1ksm" path="res://Assets/Images/MuridPotrait/Citra/citra_eyelashes.png" id="6_twlee"]
 [ext_resource type="Texture2D" uid="uid://bf5hynupnst2v" path="res://Assets/Images/MuridPotrait/Citra/citra_eyelid.png" id="7_tk1sx"]
 [ext_resource type="Texture2D" uid="uid://d4aeqtmswleav" path="res://Assets/Images/MuridPotrait/Citra/citra_eyebrows.png" id="8_t0ygo"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 
 [node name="CitraFace" type="Control" unique_id=202289195]
 layout_mode = 3
@@ -25,6 +26,7 @@ offset_bottom = 1280.0
 mouse_filter = 2
 
 [node name="Base" type="TextureRect" parent="Canvas" unique_id=1183136420]
+material = ExtResource("illus_grade")
 layout_mode = 0
 offset_right = 1280.0
 offset_bottom = 1280.0

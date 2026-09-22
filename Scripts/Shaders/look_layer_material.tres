@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://Scripts/Shaders/look_layer.gdshader" id="1_look"]
+
+[resource]
+shader = ExtResource("1_look")
+shader_parameter/vignette_strength = 0.34
+shader_parameter/vignette_radius = 0.92
+shader_parameter/vignette_softness = 0.62
+shader_parameter/vignette_color = Color(0.129, 0.078, 0.035, 1)
+shader_parameter/grain_amount = 0.022
+shader_parameter/grain_rate = 14.0
+shader_parameter/viewport_size = Vector2(1080, 1920)

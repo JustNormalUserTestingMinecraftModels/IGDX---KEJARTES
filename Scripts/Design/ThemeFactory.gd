@@ -34,9 +34,63 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_achievements(theme, tokens)
 	_build_achievement_tile(theme, tokens)
 	_build_achievement_status_pill(theme, tokens)
+	_build_skin_select(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
+
+
+## SkinSelect (spec:
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md): the six
+## student squares in their two states, the skin's name, and the "sedang
+## dipakai" chip that is the only visible proof TERAPKAN did anything.
+static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
+	var square := func(bg: Color, border: Color) -> StyleBoxFlat:
+		var box := StyleBoxFlat.new()
+		box.bg_color = bg
+		box.border_color = border
+		box.set_border_width_all(int(tokens.outline_width))
+		box.set_corner_radius_all(tokens.radius_md)
+		return box
+
+	theme.add_type("SkinStudentTile")
+	theme.set_type_variation("SkinStudentTile", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SkinStudentTile",
+			square.call(tokens.surface_card, tokens.text_primary))
+
+	theme.add_type("SkinStudentTileActive")
+	theme.set_type_variation("SkinStudentTileActive", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SkinStudentTileActive",
+			square.call(tokens.outline_card, tokens.brand_primary))
+
+	theme.add_type("SkinNameLabel")
+	theme.set_type_variation("SkinNameLabel", "Label")
+	theme.set_font_size("font_size", "SkinNameLabel", tokens.font_title)
+	theme.set_color("font_color", "SkinNameLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinNameLabel", tokens.font_display)
+
+	theme.add_type("SkinWornChip")
+	theme.set_type_variation("SkinWornChip", "PanelContainer")
+	var chip := StyleBoxFlat.new()
+	chip.bg_color = tokens.state_success.lightened(0.7)
+	chip.border_color = tokens.state_success
+	chip.set_border_width_all(int(tokens.outline_width / 2.0))
+	chip.set_corner_radius_all(tokens.radius_pill)
+	chip.content_margin_left = tokens.space_md
+	chip.content_margin_right = tokens.space_md
+	chip.content_margin_top = tokens.space_xs
+	chip.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "SkinWornChip", chip)
+
+	theme.add_type("SkinWornChipLabel")
+	theme.set_type_variation("SkinWornChipLabel", "Label")
+	theme.set_font_size("font_size", "SkinWornChipLabel", tokens.font_micro)
+	theme.set_color("font_color", "SkinWornChipLabel", tokens.state_success.darkened(0.45))
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinWornChipLabel", tokens.font_display)
 
 
 ## Measured off mockup_eventdialogue.png: the dialogue card's corner radius

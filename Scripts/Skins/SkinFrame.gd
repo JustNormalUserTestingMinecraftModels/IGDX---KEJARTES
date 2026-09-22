@@ -23,6 +23,15 @@ extends Control
 	set(v):
 		face_y_ratio = v
 		_layout()
+## Whether the frame draws its own brown outline. StudentTile turns it off
+## because its Button stylebox already draws the box, and two borders on the
+## same 150px square read as a smudge. The knob is on this root, not on the
+## Border node, because a property set on an instanced scene's CHILD is
+## reported as saved and then dropped.
+@export var show_border: bool = true:
+	set(v):
+		show_border = v
+		_apply_border()
 
 var _texture: Texture2D
 var _center: Vector2 = Vector2.ZERO
@@ -39,6 +48,16 @@ func show_art(tex: Texture2D, center: Vector2) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		_layout()
+	# The setter runs before the children exist when a scene authored
+	# show_border = false is instanced, so re-apply it once they do.
+	elif what == NOTIFICATION_READY:
+		_apply_border()
+
+
+func _apply_border() -> void:
+	var border := get_node_or_null(^"Border") as Control
+	if border != null:
+		border.visible = show_border
 
 
 func _layout() -> void:

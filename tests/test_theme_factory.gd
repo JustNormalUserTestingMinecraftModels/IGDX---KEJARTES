@@ -365,6 +365,8 @@ const DISPLAY_ROSTER := [
 	# AchievementBaruBadgeLabel left on 2026-09-22 with the BARU pip itself,
 	# replaced by the notice_icon TextureRect, which carries no text.
 	"AchievementPrizeChipLabel", "AchievementPrizeChipLabelAmber",
+	# 2026-09-22 SkinSelect: the skin's name and the "sedang dipakai" chip.
+	"SkinNameLabel", "SkinWornChipLabel",
 	# 2026-09-18 achievements-polish Task 4: the header status pill's two
 	# state labels.
 	"AchievementStatusPillIdleLabel", "AchievementStatusPillWaitingLabel",

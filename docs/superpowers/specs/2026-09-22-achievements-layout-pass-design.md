@@ -165,8 +165,11 @@ ellipsizes rather than reflowing the tile.
 
 `Assets/Images/Achievements/notice_icon.png` (256x256 RGBA, copied from the
 user's Downloads folder). It replaces the green "BARU" pill in the same
-top-right corner slot, drawn at 72x72 and offset to overhang the tile's
-corner by 16px, as the mockup places it.
+top-right corner slot, drawn at 72x72. The slot is
+`size_flags_horizontal = 8` (SHRINK_END) plus `size_flags_vertical = 0`
+(SHRINK_BEGIN) on a direct child of the tile's root `PanelContainer`, which
+`tests/test_achievement_tile.gd` already pins -- so the badge sits inside
+the corner rather than overhanging it as the mockup's paste-up does.
 
 Visibility is unchanged from `BaruBadge`: shown when
 `state == STATE_UNLOCKED` (unlocked, prize not yet taken), hidden otherwise.

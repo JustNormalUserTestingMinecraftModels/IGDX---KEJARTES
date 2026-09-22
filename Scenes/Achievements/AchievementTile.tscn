@@ -5,6 +5,7 @@
 [ext_resource type="Material" path="res://Assets/Images/Achievements/icon_outline_material.tres" id="3_outline"]
 [ext_resource type="Texture2D" uid="uid://bsu4hxxxajoaa" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="4_lock"]
 [ext_resource type="Texture2D" uid="uid://cx2se7may2fvu" path="res://Assets/Images/UI/Placeholders/icon_check.svg" id="5_check"]
+[ext_resource type="Texture2D" uid="uid://bx4yr0iokp7oq" path="res://Assets/Images/Achievements/notice_icon.png" id="6_oclg0"]
 
 [node name="AchievementTile" type="PanelContainer" unique_id=97765837]
 custom_minimum_size = Vector2(420, 310)
@@ -12,6 +13,7 @@ size_flags_horizontal = 3
 mouse_filter = 1
 theme_type_variation = &"Card"
 script = ExtResource("1_tile")
+locked_icon_modulate = null
 
 [node name="Content" type="VBoxContainer" parent="." unique_id=533250544]
 layout_mode = 2
@@ -93,28 +95,26 @@ layout_mode = 2
 theme_type_variation = &"AchievementTileBar"
 show_percentage = false
 
-[node name="BaruBadge" type="PanelContainer" parent="." unique_id=668068413]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 0
-mouse_filter = 2
-theme_type_variation = &"AchievementBaruBadge"
-
-[node name="BaruLabel" type="Label" parent="BaruBadge" unique_id=2031927619]
-layout_mode = 2
-theme_type_variation = &"AchievementBaruBadgeLabel"
-text = "BARU"
-
 [node name="CheckBadge" type="TextureRect" parent="." unique_id=2108465524]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
 mouse_filter = 2
 texture = ExtResource("5_check")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NoticeBadge" type="TextureRect" parent="." unique_id=1874297059]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+mouse_filter = 2
+texture = ExtResource("6_oclg0")
 expand_mode = 1
 stretch_mode = 5

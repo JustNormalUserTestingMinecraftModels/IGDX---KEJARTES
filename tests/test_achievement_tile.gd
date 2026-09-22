@@ -10,6 +10,8 @@ extends McpTestSuite
 
 const ACHIEVEMENTS := preload("res://Scripts/Achievements/Achievements.gd")
 const TILE := "res://Scenes/Achievements/AchievementTile.tscn"
+const NOTICE_ICON := "res://Assets/Images/Achievements/notice_icon.png"
+
 
 ## An id with no prize, for the "neutral chip" / plain states.
 const PLAIN_ID := "three_star_akademis"
@@ -62,7 +64,14 @@ func test_tile_geometry_matches_the_mockup() -> void:
 	assert_true(src.contains("custom_minimum_size = Vector2(0, 80)"), "title band fits two 28px lines")
 	assert_true(src.contains('theme_type_variation = &"AchievementTileTitleLabel"'))
 	assert_false(src.contains("Vector2(0, 58)"), "the old 58px caption band must be gone")
-	assert_false(src.contains("Vector2(72, 72)"), "the old 72px icon slot must be gone")
+	# Scoped to IconSlot's own block: the NoticeBadge is also 72x72, so a
+	# bare search for that vector matches the badge and passes for the
+	# wrong reason.
+	var at := src.find('[node name="IconSlot"')
+	assert_true(at != -1, "IconSlot must exist")
+	var next := src.find("[node", at + 1)
+	var block := src.substr(at, (next - at) if next != -1 else src.length() - at)
+	assert_false(block.contains("Vector2(72, 72)"), "the old 72px icon slot must be gone")
 
 
 func test_setup_shows_title_and_icon() -> void:
@@ -116,17 +125,26 @@ func test_locked_state_shows_lock_and_no_badges() -> void:
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
 	assert_true(tile.lock_icon.visible)
-	assert_false(tile.baru_badge.visible)
+	assert_false(tile.notice_badge.visible)
 	assert_false(tile.check_badge.visible)
 
 
-func test_unlocked_state_shows_baru_badge() -> void:
+func test_notice_badge_wears_the_notice_icon_at_72px() -> void:
+	var src := FileAccess.get_file_as_string(TILE)
+	assert_true(src.contains(NOTICE_ICON), "the badge must use the notice_icon asset")
+	assert_true(src.contains('[node name="NoticeBadge" type="TextureRect"'))
+	assert_true(src.contains("custom_minimum_size = Vector2(72, 72)"))
+	assert_false(src.contains('[node name="BaruBadge"'), "the BARU pill is replaced")
+	assert_false(src.contains("BARU"))
+
+
+func test_unlocked_state_shows_the_notice_badge() -> void:
 	_touched_ids.append(PLAIN_ID)
 	_achievements().debug_unlock(PLAIN_ID)
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
 	assert_false(tile.lock_icon.visible)
-	assert_true(tile.baru_badge.visible)
+	assert_true(tile.notice_badge.visible)
 	assert_false(tile.check_badge.visible)
 	assert_true(absf(tile.modulate.a - 1.0) < 0.01, "not dimmed once unlocked")
 
@@ -138,7 +156,7 @@ func test_claimed_state_shows_check_badge() -> void:
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
 	assert_false(tile.lock_icon.visible)
-	assert_false(tile.baru_badge.visible)
+	assert_false(tile.notice_badge.visible)
 	assert_true(tile.check_badge.visible)
 
 
@@ -157,7 +175,7 @@ func test_refresh_picks_up_a_new_state_without_setup() -> void:
 	_achievements().debug_unlock(PLAIN_ID)
 	tile.refresh()
 	assert_false(tile.lock_icon.visible)
-	assert_true(tile.baru_badge.visible)
+	assert_true(tile.notice_badge.visible)
 
 
 func test_matches_filter_truth_table() -> void:
@@ -288,7 +306,7 @@ func test_every_label_uses_a_theme_type_variation() -> void:
 
 
 func test_badges_stay_top_right_corner() -> void:
-	# BaruBadge/CheckBadge sit directly under the root PanelContainer, so
+	# NoticeBadge/CheckBadge sit directly under the root PanelContainer, so
 	# their size_flags decide corner placement: horizontal 8 (SHRINK_END,
 	# right) + vertical 0 (SHRINK_BEGIN, top). Vertical 0 is "shrink to
 	# minimum size and align to top", not FILL (FILL is bit 1) -- pinning
@@ -298,7 +316,7 @@ func test_badges_stay_top_right_corner() -> void:
 	var i := 0
 	while i < lines.size():
 		var line := lines[i]
-		if line.begins_with('[node name="BaruBadge"') or line.begins_with('[node name="CheckBadge"'):
+		if line.begins_with('[node name="NoticeBadge"') or line.begins_with('[node name="CheckBadge"'):
 			var got_h := false
 			var got_v := false
 			var j := i + 1
@@ -314,21 +332,21 @@ func test_badges_stay_top_right_corner() -> void:
 		i += 1
 
 
-func test_relock_clears_baru_shown_so_it_replays_on_reunlock() -> void:
+func test_relock_clears_notice_shown_so_it_replays_on_reunlock() -> void:
 	_touched_ids.append(PLAIN_ID)
 	_achievements().debug_unlock(PLAIN_ID)
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))
-	assert_true(AchievementTile._baru_shown.has(PLAIN_ID))
+	assert_true(AchievementTile._notice_shown.has(PLAIN_ID))
 
 	_achievements().relock(PLAIN_ID)
 	tile.refresh()
-	assert_false(AchievementTile._baru_shown.has(PLAIN_ID), "relock must clear the once-per-session BARU flag")
+	assert_false(AchievementTile._notice_shown.has(PLAIN_ID), "relock must clear the once-per-session notice flag")
 
 	_achievements().debug_unlock(PLAIN_ID)
 	tile.refresh()
-	assert_true(tile.baru_badge.visible)
-	assert_true(AchievementTile._baru_shown.has(PLAIN_ID), "re-unlock must be able to replay the BARU pop_in")
+	assert_true(tile.notice_badge.visible)
+	assert_true(AchievementTile._notice_shown.has(PLAIN_ID), "re-unlock must be able to replay the notice pop_in")
 
 
 ## Task 8: StatBar's min height (~36px) wins over the tile's 4px

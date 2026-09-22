@@ -329,24 +329,10 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_body != null:
 		theme.set_font("font", "AchievementTileTitleLabel", tokens.font_body)
 
-	# The "BARU" unlock pip, top-right corner of the tile.
-	theme.add_type("AchievementBaruBadge")
-	theme.set_type_variation("AchievementBaruBadge", "Panel")
-	var baru := StyleBoxFlat.new()
-	baru.bg_color = tokens.state_success
-	baru.set_corner_radius_all(tokens.radius_pill)
-	baru.content_margin_left = tokens.space_xs
-	baru.content_margin_right = tokens.space_xs
-	baru.content_margin_top = tokens.space_xs / 2.0
-	baru.content_margin_bottom = tokens.space_xs / 2.0
-	theme.set_stylebox("panel", "AchievementBaruBadge", baru)
-
-	theme.add_type("AchievementBaruBadgeLabel")
-	theme.set_type_variation("AchievementBaruBadgeLabel", "Label")
-	theme.set_font_size("font_size", "AchievementBaruBadgeLabel", tokens.font_micro)
-	theme.set_color("font_color", "AchievementBaruBadgeLabel", tokens.text_on_brand)
-	if tokens.font_display != null:
-		theme.set_font("font", "AchievementBaruBadgeLabel", tokens.font_display)
+	# The "BARU" unlock pip that used to sit in the tile's top-right corner
+	# was replaced on 2026-09-22 by a notice_icon.png TextureRect, so its
+	# AchievementBaruBadge / AchievementBaruBadgeLabel variations went with
+	# it (and AchievementBaruBadgeLabel left DISPLAY_ROSTER).
 
 
 ## The header's morphing status pill (2026-09-18 achievements-polish spec,

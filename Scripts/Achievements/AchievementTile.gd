@@ -8,8 +8,8 @@ extends PanelContainer
 ## 3). refresh() re-reads live state/progress from the Achievements autoload
 ## so the screen can call it on Achievements.state_changed without redoing
 ## setup(). @tool so the test runner can drive it directly; it has no
-## side effects of its own (the "BARU" pop-in dict is session-scoped data,
-## not a scene mutation).
+## side effects of its own (the notice-badge pop-in dict is session-scoped
+## data, not a scene mutation).
 ##
 ## Sizing: the root's size_flags_horizontal = 3 (EXPAND_FILL) so the parent
 ## GridContainer splits its width evenly between the two columns. Its
@@ -47,7 +47,7 @@ const TAP_MOVE_THRESHOLD := 16.0
 @onready var prize_chip: PanelContainer = %PrizeChip
 @onready var prize_label: Label = %PrizeLabel
 @onready var progress_bar: ProgressBar = %ProgressBar
-@onready var baru_badge: PanelContainer = %BaruBadge
+@onready var notice_badge: TextureRect = %NoticeBadge
 @onready var check_badge: TextureRect = %CheckBadge
 
 var achievement_id: String = ""
@@ -56,11 +56,11 @@ var achievement_id: String = ""
 ## _gui_input to tell a tap from a drag-scroll on release.
 var _press_pos: Vector2 = Vector2.ZERO
 
-## Session-scoped: ids whose "BARU" pip has already played its pop_in this
+## Session-scoped: ids whose notice badge has already played its pop_in this
 ## session, so re-entering the screen (or a state_changed refresh) does not
 ## replay the animation on every redraw. Static so it survives across tile
 ## instances (the grid recreates tiles each time the screen opens).
-static var _baru_shown: Dictionary = {}
+static var _notice_shown: Dictionary = {}
 
 
 ## Emits tile_pressed only on a clean tap: press then release with less than
@@ -144,16 +144,16 @@ func _apply_state(state: int, progress: float) -> void:
 	icon.modulate = locked_icon_modulate if locked else Color.WHITE
 	lock_icon.visible = locked
 	if locked:
-		_baru_shown.erase(achievement_id)
+		_notice_shown.erase(achievement_id)
 
 	var unlocked := state == AchievementsScript.STATE_UNLOCKED
-	baru_badge.visible = unlocked
+	notice_badge.visible = unlocked
 	check_badge.visible = state == AchievementsScript.STATE_CLAIMED
 
-	if unlocked and not _baru_shown.has(achievement_id):
-		_baru_shown[achievement_id] = true
+	if unlocked and not _notice_shown.has(achievement_id):
+		_notice_shown[achievement_id] = true
 		if not Engine.is_editor_hint() and Engine.get_main_loop() != null:
-			Juice.pop_in(baru_badge)
+			Juice.pop_in(notice_badge)
 
 
 func _achievements() -> Node:

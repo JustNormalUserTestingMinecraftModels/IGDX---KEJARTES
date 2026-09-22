@@ -2,13 +2,14 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild the Achievements grid, tile and detail popup around the user's mockups, and land two small fixes — a white outline on AturJadwal's student splash and the removal of Koperasi's crate handle.
+**Goal:** Rebuild the Achievements grid, tile and detail popup and the skin picker around the user's mockups, and land two small fixes — a white outline on AturJadwal's student splash and the removal of Koperasi's crate handle.
 
-**Architecture:** The grid's asymmetry is a container-choice bug, so `GridContainer` is replaced by an `HBoxContainer` of two `VBoxContainer`s filled round-robin. The tile and popup are re-proportioned in their `.tscn` files with two new `ThemeFactory` variations; no `theme_override_*` is added. The popup's Klaim button is deleted and claiming moves to opening the popup, with the new `notice_icon` badge on the tile carrying the affordance.
+**Architecture:** The grid's asymmetry is a container-choice bug, so `GridContainer` is replaced by an `HBoxContainer` of two `VBoxContainer`s filled round-robin. The tile and popup are re-proportioned in their `.tscn` files with new `ThemeFactory` variations; no `theme_override_*` is added. The popup's Klaim button is deleted and claiming moves to opening the popup, with the new `notice_icon` badge on the tile carrying the affordance. `SkinSelectPopup` becomes `SkinSelect`: still a Lobby overlay, because only an overlay can blur the live screen, but rebuilt as a full-bleed carousel of one student's skins over a rail of all six characters, committing through one TERAPKAN button.
 
 **Tech Stack:** Godot 4.6, GDScript, `McpTestSuite` suites driven by the Godot AI MCP `test_run` tool.
 
-**Spec:** `docs/superpowers/specs/2026-09-22-achievements-layout-pass-design.md`
+**Specs:** `docs/superpowers/specs/2026-09-22-achievements-layout-pass-design.md` (Tasks 1-8)
+and `docs/superpowers/specs/2026-09-22-skin-select-screen-design.md` (Tasks 9-11)
 
 ## Global Constraints
 
@@ -1220,7 +1221,835 @@ git commit -m "fix(koperasi): drop the crate handle and let the drag own the tra
 
 ---
 
-### Task 9: Full suite, screenshots, and the docs
+### Task 9: The student rail's tile
+
+The six squares in the mockup are all six characters, not the roster. Each shows that student's face cropped out of the splash they are pending, through the existing `SkinFrame`.
+
+**Files:**
+- Create: `Scenes/Skins/StudentTile.tscn`, `Scripts/Skins/StudentTile.gd`
+- Modify: `Scripts/Skins/SkinFrame.gd` (a `show_border` knob)
+- Modify: `Scripts/Design/ThemeFactory.gd`
+- Test: `tests/test_skin_frame.gd`, and a new `tests/test_student_tile.gd`
+
+**Interfaces:**
+- Consumes: `SkinFrame.show_art(tex, center)` and `StudentSkins.layer_path(name, id, "splash")`, both already public.
+- Produces: `class_name StudentTile extends Button`, with `student_name: String`, `func show_student(name: String, skin_id: String) -> void` and `func set_open(open: bool) -> void`. `SkinFrame` gains `@export var show_border: bool`. Theme variations `SkinStudentTile`, `SkinStudentTileActive`, `SkinNameLabel`, `SkinWornChip`, `SkinWornChipLabel`. Task 11 instances six tiles and uses the other three variations.
+
+- [ ] **Step 1: Write the failing tests**
+
+New file `tests/test_student_tile.gd`:
+
+```gdscript
+@tool
+extends McpTestSuite
+
+## StudentTile.tscn / .gd: one of the six squares in SkinSelect's rail
+## (spec: docs/superpowers/specs/2026-09-22-skin-select-screen-design.md
+## section 4, "The six squares"). Shows a student's face cropped out of the
+## splash of whichever skin they are pending.
+
+const TILE := "res://Scenes/Skins/StudentTile.tscn"
+
+
+func suite_name() -> String:
+	return "student_tile"
+
+
+func _new_tile() -> StudentTile:
+	var tile: StudentTile = (load(TILE) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(tile)
+	track(tile)
+	return tile
+
+
+func test_show_student_loads_that_skins_splash() -> void:
+	var tile := _new_tile()
+	tile.show_student("Shinta", StudentSkins.DEFAULT_ID)
+	assert_eq(tile.student_name, "Shinta")
+	var art := tile.get_node("Frame/Mask/Art") as TextureRect
+	assert_not_null(art.texture, "the crop must have a texture")
+	assert_eq(art.texture.resource_path,
+		StudentSkins.layer_path("Shinta", StudentSkins.DEFAULT_ID, "splash"))
+
+
+func test_show_student_follows_the_pending_skin_not_the_equipped_one() -> void:
+	var tile := _new_tile()
+	tile.show_student("Shinta", "skin1")
+	var art := tile.get_node("Frame/Mask/Art") as TextureRect
+	assert_eq(art.texture.resource_path, StudentSkins.layer_path("Shinta", "skin1", "splash"))
+
+
+## The open student is marked by a stylebox swap, not by resizing: growing
+## the square would re-lay the whole rail out on every switch, for
+## legibility the ring already buys.
+func test_set_open_swaps_the_variation_and_keeps_the_size() -> void:
+	var tile := _new_tile()
+	tile.show_student("Andi", StudentSkins.DEFAULT_ID)
+	var size_before := tile.custom_minimum_size
+	tile.set_open(false)
+	assert_eq(tile.theme_type_variation, &"SkinStudentTile")
+	tile.set_open(true)
+	assert_eq(tile.theme_type_variation, &"SkinStudentTileActive")
+	assert_eq(tile.custom_minimum_size, size_before, "the tile must not resize on select")
+
+
+func test_tile_is_150_square_and_meets_the_touch_floor() -> void:
+	var src := FileAccess.get_file_as_string(TILE)
+	assert_true(src.contains("custom_minimum_size = Vector2(150, 150)"))
+
+
+## SkinFrame draws its own brown border. Inside a StudentTile the box is the
+## Button's own stylebox, so the frame's border would double it -- hence the
+## show_border knob, which is an @export on SkinFrame's ROOT because
+## overrides set on an instanced scene's CHILDREN are dropped on save.
+func test_tile_turns_the_frames_own_border_off() -> void:
+	var src := FileAccess.get_file_as_string(TILE)
+	assert_true(src.contains("show_border = false"))
+
+
+func test_variations_differ_in_ring_colour() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	assert_eq(theme.get_type_variation_base("SkinStudentTile"), &"Button")
+	assert_eq(theme.get_type_variation_base("SkinStudentTileActive"), &"Button")
+	var idle := theme.get_stylebox("normal", "SkinStudentTile") as StyleBoxFlat
+	var open := theme.get_stylebox("normal", "SkinStudentTileActive") as StyleBoxFlat
+	assert_eq(idle.border_color, tokens.text_primary)
+	assert_eq(open.border_color, tokens.brand_primary)
+	assert_eq(open.bg_color, tokens.outline_card)
+```
+
+Add to `tests/test_skin_frame.gd`:
+
+```gdscript
+## StudentTile draws its own box, so it needs the frame's border off. The
+## knob is on SkinFrame's root, not on Border, because a property set on an
+## instanced scene's child does not serialise.
+func test_show_border_hides_the_border_node() -> void:
+	var frame: SkinFrame = (load("res://Scenes/Skins/SkinFrame.tscn") as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(frame)
+	track(frame)
+	assert_true(frame.get_node("Border").visible, "the border is on by default")
+	frame.show_border = false
+	assert_false(frame.get_node("Border").visible)
+	frame.show_border = true
+	assert_true(frame.get_node("Border").visible)
+```
+
+- [ ] **Step 2: Run the tests to verify they fail**
+
+Run: `test_run(suite="student_tile")` and `test_run(suite="skin_frame")`
+Expected: FAIL — `StudentTile.tscn` does not exist (the `load` returns null), and `show_border` is not a property.
+
+- [ ] **Step 3: Add the theme variations**
+
+`script_patch` on `Scripts/Design/ThemeFactory.gd`: add a `_build_skin_select(theme, tokens)` and call it from `build()` beside the other `_build_*` calls.
+
+```gdscript
+## SkinSelect (spec:
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md): the six
+## student squares in two states, the skin's name, and the "sedang dipakai"
+## chip that is the only visible proof TERAPKAN did anything.
+static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
+	var square := func(bg: Color, border: Color) -> StyleBoxFlat:
+		var box := StyleBoxFlat.new()
+		box.bg_color = bg
+		box.border_color = border
+		box.set_border_width_all(int(tokens.outline_width))
+		box.set_corner_radius_all(tokens.radius_md)
+		return box
+
+	theme.add_type("SkinStudentTile")
+	theme.set_type_variation("SkinStudentTile", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SkinStudentTile",
+			square.call(tokens.surface_card, tokens.text_primary))
+
+	theme.add_type("SkinStudentTileActive")
+	theme.set_type_variation("SkinStudentTileActive", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SkinStudentTileActive",
+			square.call(tokens.outline_card, tokens.brand_primary))
+
+	theme.add_type("SkinNameLabel")
+	theme.set_type_variation("SkinNameLabel", "Label")
+	theme.set_font_size("font_size", "SkinNameLabel", tokens.font_title)
+	theme.set_color("font_color", "SkinNameLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinNameLabel", tokens.font_display)
+
+	theme.add_type("SkinWornChip")
+	theme.set_type_variation("SkinWornChip", "PanelContainer")
+	var chip := StyleBoxFlat.new()
+	chip.bg_color = tokens.state_success.lightened(0.7)
+	chip.border_color = tokens.state_success
+	chip.set_border_width_all(int(tokens.outline_width / 2.0))
+	chip.set_corner_radius_all(tokens.radius_pill)
+	chip.content_margin_left = tokens.space_md
+	chip.content_margin_right = tokens.space_md
+	chip.content_margin_top = tokens.space_xs
+	chip.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "SkinWornChip", chip)
+
+	theme.add_type("SkinWornChipLabel")
+	theme.set_type_variation("SkinWornChipLabel", "Label")
+	theme.set_font_size("font_size", "SkinWornChipLabel", tokens.font_micro)
+	theme.set_color("font_color", "SkinWornChipLabel", tokens.state_success.darkened(0.45))
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinWornChipLabel", tokens.font_display)
+```
+
+`SkinNameLabel` and `SkinWornChipLabel` both take `font_display`, so add both to `DISPLAY_ROSTER` in `tests/test_theme_factory.gd`:
+
+```gdscript
+	# 2026-09-22 SkinSelect: the skin's name and the "sedang dipakai" chip.
+	"SkinNameLabel", "SkinWornChipLabel",
+```
+
+- [ ] **Step 4: Rebake the theme, then restart the editor**
+
+Run `Scripts/Design/BakeTheme.gd` alone via File > Run (Ctrl+Shift+X), check `git diff --stat` shows only `Assets/Theme/kejartes_theme.tres`, then restart the editor.
+
+- [ ] **Step 5: Add the `show_border` knob**
+
+`script_patch` on `Scripts/Skins/SkinFrame.gd`, next to the other exports:
+
+```gdscript
+## Whether the frame draws its own brown outline. StudentTile turns it off
+## because its Button stylebox already draws the box, and two borders on the
+## same 150px square read as a smudge. The knob is on this root, not on the
+## Border node, because a property set on an instanced scene's CHILD is
+## reported as saved and then dropped.
+@export var show_border: bool = true:
+	set(v):
+		show_border = v
+		var border := get_node_or_null(^"Border") as Control
+		if border != null:
+			border.visible = v
+```
+
+And re-apply it once the children exist, by extending the existing `_notification`:
+
+```gdscript
+	if what == NOTIFICATION_READY:
+		var border := get_node_or_null(^"Border") as Control
+		if border != null:
+			border.visible = show_border
+```
+
+- [ ] **Step 6: Create the tile**
+
+`script_create` `res://Scripts/Skins/StudentTile.gd`:
+
+```gdscript
+@tool
+class_name StudentTile
+extends Button
+
+## One of the six squares in SkinSelect's rail (StudentTile.tscn; mockup
+## skinselection_mockup.png, spec
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md). It shows
+## a character's face, cropped out of the splash of whichever skin they are
+## pending, and marks whether the rail has that character open.
+##
+## All six characters get a tile, not just the approved roster:
+## GameState.equipped_skins is keyed by NAME, not roster id, so a skin
+## follows a character across the grade change that clears the roster.
+##
+## @tool so the test runner can drive it; it has no side effects of its own.
+
+## The character shown, "" before show_student().
+var student_name: String = ""
+
+
+## Shows `name`'s face out of skin `skin_id`'s splash. An unknown student or
+## skin clears the crop rather than erroring -- layer_path returns "".
+func show_student(name: String, skin_id: String) -> void:
+	student_name = name
+	var path := StudentSkins.layer_path(name, skin_id, "splash")
+	var tex: Texture2D = load(path) if path != "" and ResourceLoader.exists(path) else null
+	(get_node(^"Frame") as SkinFrame).show_art(tex, StudentSkins.bust_center(name))
+
+
+## Marks this tile as the one the rail has open. A stylebox swap, never a
+## resize: growing the square would re-lay the whole rail out on every
+## switch, and the ring already carries the state.
+func set_open(open: bool) -> void:
+	theme_type_variation = &"SkinStudentTileActive" if open else &"SkinStudentTile"
+```
+
+Then build the scene through the editor:
+
+```
+scene_manage(op="create", path="res://Scenes/Skins/StudentTile.tscn", root_type="Button", root_name="StudentTile")
+scene_open(path="res://Scenes/Skins/StudentTile.tscn")
+```
+
+`batch_execute`:
+1. `attach_script` `/StudentTile` → `res://Scripts/Skins/StudentTile.gd`
+2. `set_property` `/StudentTile` `custom_minimum_size` = `Vector2(150, 150)`
+3. `set_property` `/StudentTile` `theme_type_variation` = `SkinStudentTile`
+4. `create_node` parent `/StudentTile`, instance `res://Scenes/Skins/SkinFrame.tscn`, name `Frame`
+5. `set_property` `/StudentTile/Frame` `layout_mode` = `1`
+6. `set_property` `/StudentTile/Frame` `anchor_right` = `1`
+7. `set_property` `/StudentTile/Frame` `anchor_bottom` = `1`
+8. `set_property` `/StudentTile/Frame` `grow_horizontal` = `2`
+9. `set_property` `/StudentTile/Frame` `grow_vertical` = `2`
+10. `set_property` `/StudentTile/Frame` `show_border` = `false`
+11. `set_property` `/StudentTile/Frame` `visible_source_height` = `520`
+12. `set_property` `/StudentTile/Frame` `face_y_ratio` = `0.5`
+
+Then `scene_save()`.
+
+Steps 10–12 set properties on the instance's **root**, which is the only place an override on an instanced scene serialises. An instanced scene's root also loses its rect under a plain parent, which is why steps 5–9 set `layout_mode` first and then the four anchors — `anchors_preset` is inert.
+
+- [ ] **Step 7: Run the tests to verify they pass**
+
+Run: `test_run(suite="student_tile")`, `test_run(suite="skin_frame")`, `test_run(suite="theme_factory")`
+Expected: PASS.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add Scenes/Skins/StudentTile.tscn Scripts/Skins/StudentTile.gd Scripts/Skins/SkinFrame.gd Scripts/Design/ThemeFactory.gd Assets/Theme/kejartes_theme.tres tests/test_student_tile.gd tests/test_skin_frame.gd tests/test_theme_factory.gd
+git commit -m "feat(skins): add the SkinSelect student rail tile"
+```
+
+---
+
+### Task 10: The skin card and the carousel's snap maths
+
+One card per skin, the centred one crisp and the rest dimmed and blurred. The snap rule is a `static func` so it is testable without a tree or a frame, exactly as `BasketTray.classify_drag` is.
+
+**Files:**
+- Create: `Scenes/Skins/SkinCard.tscn`, `Scripts/Skins/SkinCard.gd`
+- Test: new `tests/test_skin_card.gd`
+
+**Interfaces:**
+- Consumes: `Scenes/Skins/skin_option_blur_material.tres` (already in the tree) and `StudentSkins.layer_path`.
+- Produces: `class_name SkinCard extends Control`, with `skin_id: String`, `func show_skin(name: String, id: String, locked: bool) -> void`, `func set_selected(sel: bool) -> void`, `@export var unselected_modulate: Color`, and `static func settle_index(current: int, travel: float, velocity: float, pitch: float, count: int) -> int`. Task 11 drives all of it.
+
+- [ ] **Step 1: Write the failing tests**
+
+New file `tests/test_skin_card.gd`:
+
+```gdscript
+@tool
+extends McpTestSuite
+
+## SkinCard.tscn / .gd: one skin in SkinSelect's carousel, and the static
+## snap rule the carousel settles with (spec:
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md section 4,
+## "The carousel"). settle_index is static so it is testable without a tree
+## or a frame, the same shape as BasketTray.classify_drag.
+
+const CARD := "res://Scenes/Skins/SkinCard.tscn"
+const BLUR := "res://Scenes/Skins/skin_option_blur_material.tres"
+
+
+func suite_name() -> String:
+	return "skin_card"
+
+
+func _new_card() -> SkinCard:
+	var card: SkinCard = (load(CARD) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	return card
+
+
+func test_show_skin_loads_that_skins_splash() -> void:
+	var card := _new_card()
+	card.show_skin("Shinta", "skin1", false)
+	assert_eq(card.skin_id, "skin1")
+	var art := card.get_node("Art") as TextureRect
+	assert_eq(art.texture.resource_path, StudentSkins.layer_path("Shinta", "skin1", "splash"))
+	assert_false(card.get_node("Lock").visible)
+
+
+func test_locked_skin_shows_the_lock() -> void:
+	var card := _new_card()
+	card.show_skin("Shinta", "skin1", true)
+	assert_true(card.get_node("Lock").visible)
+
+
+## The two-state swap from the spec: selected is crisp and full colour,
+## unselected is dimmed and carries the blur material. Assigning a preloaded
+## material is a reference swap, not runtime construction.
+func test_selected_card_is_crisp_and_unselected_is_dimmed_and_blurred() -> void:
+	var card := _new_card()
+	card.show_skin("Shinta", StudentSkins.DEFAULT_ID, false)
+	var art := card.get_node("Art") as TextureRect
+
+	card.set_selected(true)
+	assert_eq(art.modulate, Color.WHITE)
+	assert_null(art.material, "the selected card must not be blurred")
+
+	card.set_selected(false)
+	assert_eq(art.modulate, card.unselected_modulate)
+	assert_not_null(art.material)
+	assert_eq(art.material.resource_path, BLUR)
+
+
+## The splash art is 1080x1920 but the band above the tray is 1080x1337, so
+## a card that filled the screen would crop the outfit at the knees -- on
+## the one screen whose job is showing the outfit. 1337 tall at the art's
+## own 9:16 is 752 wide.
+func test_card_is_sized_to_fit_the_whole_figure_above_the_tray() -> void:
+	var src := FileAccess.get_file_as_string(CARD)
+	assert_true(src.contains("custom_minimum_size = Vector2(752, 1337)"))
+
+
+func test_settle_index_stays_put_for_a_small_slow_drag() -> void:
+	assert_eq(SkinCard.settle_index(0, 40.0, 0.0, 812.0, 2), 0)
+
+
+func test_settle_index_advances_past_the_halfway_mark() -> void:
+	assert_eq(SkinCard.settle_index(0, -500.0, 0.0, 812.0, 2), 1)
+
+
+## A flick decides on its own, whatever distance it covered.
+func test_settle_index_follows_a_fast_flick() -> void:
+	assert_eq(SkinCard.settle_index(0, -20.0, -900.0, 812.0, 2), 1)
+	assert_eq(SkinCard.settle_index(1, 20.0, 900.0, 812.0, 2), 0)
+
+
+func test_settle_index_clamps_at_both_ends() -> void:
+	assert_eq(SkinCard.settle_index(0, 900.0, 2000.0, 812.0, 2), 0)
+	assert_eq(SkinCard.settle_index(1, -900.0, -2000.0, 812.0, 2), 1)
+```
+
+- [ ] **Step 2: Run the tests to verify they fail**
+
+Run: `test_run(suite="skin_card")`
+Expected: FAIL — `SkinCard.tscn` does not exist, so `load` returns null.
+
+- [ ] **Step 3: Write the script**
+
+`script_create` `res://Scripts/Skins/SkinCard.gd`:
+
+```gdscript
+@tool
+class_name SkinCard
+extends Control
+
+## One skin in SkinSelect's carousel (SkinCard.tscn; mockup
+## skinselection_mockup.png, spec
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md). The
+## centred card is crisp and full colour; the ones either side are dimmed
+## and blurred so the middle one reads as the selection.
+##
+## The card is 752x1337, not 1080x1920: the tray's top edge is at y=1337, so
+## a full-screen splash would lose its bottom 583px -- the shoes and the
+## skirt hem, on the one screen whose job is showing an outfit. Scaled to
+## the band's height the figure is 752 wide and wholly visible, which also
+## leaves 328px for the neighbouring card to peek into.
+##
+## @tool so the test runner can drive it; it has no side effects of its own.
+
+## The blur worn by every card except the centred one. A preloaded resource
+## swapped onto Art, never built at runtime.
+const BLUR_MATERIAL := preload("res://Scenes/Skins/skin_option_blur_material.tres")
+
+## Drag speed (px/s) past which a flick picks the next card on its own,
+## whatever distance it covered. Mirrors BasketTray's own flick threshold so
+## the two drag gestures in the game settle the same way.
+const FLICK_SPEED := 600.0
+## Fraction of one card's pitch a slow drag must cross to commit to the next
+## card. 0.5 is the midpoint: past it the carousel moves on, short of it it
+## springs back.
+const COMMIT_RATIO := 0.5
+
+## Tint on a card that is not the centred one.
+@export var unselected_modulate: Color = Color(0.55, 0.55, 0.62, 1.0)
+
+## The skin id shown, "" before show_skin().
+var skin_id: String = ""
+
+
+## Where a released drag settles. `travel` is how far the track has moved
+## (negative is leftwards, towards a higher index) and `velocity` is the
+## release speed in px/s, same sign convention. `pitch` is one card's width
+## plus the track's separation. Static and tree-free so it can be tested
+## without a frame -- the same shape as BasketTray.classify_drag.
+static func settle_index(current: int, travel: float, velocity: float,
+		pitch: float, count: int) -> int:
+	var step := 0
+	if absf(velocity) >= FLICK_SPEED:
+		step = 1 if velocity < 0.0 else -1
+	elif absf(travel) >= pitch * COMMIT_RATIO:
+		step = 1 if travel < 0.0 else -1
+	return clampi(current + step, 0, maxi(count - 1, 0))
+
+
+## Shows skin `id` of `name`. `locked` draws the lock overlay; the card is
+## still shown, because a player should see what they have not earned.
+func show_skin(name: String, id: String, locked: bool) -> void:
+	skin_id = id
+	var path := StudentSkins.layer_path(name, id, "splash")
+	var art := get_node(^"Art") as TextureRect
+	art.texture = load(path) if path != "" and ResourceLoader.exists(path) else null
+	(get_node(^"Lock") as Control).visible = locked
+
+
+## Crisp and full colour when centred, dimmed and blurred otherwise.
+func set_selected(sel: bool) -> void:
+	var art := get_node(^"Art") as TextureRect
+	art.modulate = Color.WHITE if sel else unselected_modulate
+	art.material = null if sel else BLUR_MATERIAL
+```
+
+- [ ] **Step 4: Build the scene**
+
+```
+scene_manage(op="create", path="res://Scenes/Skins/SkinCard.tscn", root_type="Control", root_name="SkinCard")
+scene_open(path="res://Scenes/Skins/SkinCard.tscn")
+```
+
+`batch_execute`:
+1. `attach_script` `/SkinCard` → `res://Scripts/Skins/SkinCard.gd`
+2. `set_property` `/SkinCard` `custom_minimum_size` = `Vector2(752, 1337)`
+3. `set_property` `/SkinCard` `mouse_filter` = `2`
+4. `create_node` parent `/SkinCard`, type `TextureRect`, name `Art`
+5. `set_property` `/SkinCard/Art` `layout_mode` = `1`
+6. `set_property` `/SkinCard/Art` `anchor_right` = `1`
+7. `set_property` `/SkinCard/Art` `anchor_bottom` = `1`
+8. `set_property` `/SkinCard/Art` `grow_horizontal` = `2`
+9. `set_property` `/SkinCard/Art` `grow_vertical` = `2`
+10. `set_property` `/SkinCard/Art` `expand_mode` = `1`
+11. `set_property` `/SkinCard/Art` `stretch_mode` = `5`
+12. `set_property` `/SkinCard/Art` `mouse_filter` = `2`
+13. `create_node` parent `/SkinCard`, type `TextureRect`, name `Lock`
+14. `set_property` `/SkinCard/Lock` `visible` = `false`
+15. `set_property` `/SkinCard/Lock` `layout_mode` = `1`
+16. `set_property` `/SkinCard/Lock` `anchor_left` = `0.5`
+17. `set_property` `/SkinCard/Lock` `anchor_top` = `0.5`
+18. `set_property` `/SkinCard/Lock` `anchor_right` = `0.5`
+19. `set_property` `/SkinCard/Lock` `anchor_bottom` = `0.5`
+20. `set_property` `/SkinCard/Lock` `offset_left` = `-72`
+21. `set_property` `/SkinCard/Lock` `offset_top` = `-72`
+22. `set_property` `/SkinCard/Lock` `offset_right` = `72`
+23. `set_property` `/SkinCard/Lock` `offset_bottom` = `72`
+24. `set_property` `/SkinCard/Lock` `grow_horizontal` = `2`
+25. `set_property` `/SkinCard/Lock` `grow_vertical` = `2`
+26. `set_property` `/SkinCard/Lock` `texture` = `res://Assets/Images/UI/Placeholders/icon_lock.svg`
+27. `set_property` `/SkinCard/Lock` `expand_mode` = `1`
+28. `set_property` `/SkinCard/Lock` `stretch_mode` = `5`
+29. `set_property` `/SkinCard/Lock` `mouse_filter` = `2`
+
+Then `scene_save()`.
+
+A `Control` created under a plain `Control` starts in position mode, where anchors are **not saved** — which is why `layout_mode = 1` is set before the anchors on both children.
+
+- [ ] **Step 5: Run the tests to verify they pass**
+
+Run: `test_run(suite="skin_card")`
+Expected: PASS.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add Scenes/Skins/SkinCard.tscn Scripts/Skins/SkinCard.gd tests/test_skin_card.gd
+git commit -m "feat(skins): add the SkinSelect carousel card and its snap rule"
+```
+
+---
+
+### Task 11: Rebuild SkinSelect around them
+
+The card popup becomes the full-bleed screen: title, carousel, dots, the six-square rail, the skin's name and worn chip, back and TERAPKAN. `SkinSelectPopup` is renamed `SkinSelect`, and the two nodes the old option column used are deleted.
+
+**Files:**
+- Rename: `Scenes/Skins/SkinSelectPopup.tscn` → `Scenes/Skins/SkinSelect.tscn`; `Scripts/Skins/SkinSelectPopup.gd` → `Scripts/Skins/SkinSelect.gd`; `tests/test_skin_select_popup.gd` → `tests/test_skin_select.gd`
+- Delete: `Scenes/Skins/SkinSlot.tscn`, `Scripts/Skins/SkinSlot.gd`, `Scenes/Skins/SkinOptionTile.tscn`, `Scripts/Skins/SkinOptionTile.gd`
+- Modify: `Scripts/Lobby/loby.gd`
+- Test: `tests/test_skin_select.gd`, `tests/test_lobby_skins.gd`
+
+**Interfaces:**
+- Consumes: `StudentTile.show_student/set_open` (Task 9), `SkinCard.show_skin/set_selected/settle_index` (Task 10).
+- Produces: `class_name SkinSelect extends Control`, with `open()` (no argument — it reads `StudentSkins.NAMES`, not the roster), `current_student()`, `pending_id(name)`, `select_skin(index)`, `select_student(index)`, `apply()`, `apply_without_closing()`, `close()`, `go_back()`, and the `closed` signal. `loby.gd` calls `open()`.
+
+- [ ] **Step 1: Write the failing tests**
+
+Rename the suite file, set `suite_name()` to `"skin_select"`, keep whatever in it still describes surviving behaviour (the blur material, the back-request handling), and replace the popup-era tests with:
+
+```gdscript
+const SCREEN := "res://Scenes/Skins/SkinSelect.tscn"
+
+var _saved: Dictionary
+
+
+func setup() -> void:
+	_saved = GameState.equipped_skins.duplicate()
+	GameState.equipped_skins = {}
+
+
+func teardown() -> void:
+	GameState.equipped_skins = _saved
+
+
+func _new_screen() -> SkinSelect:
+	var s: SkinSelect = (load(SCREEN) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(s)
+	track(s)
+	s.open()
+	return s
+
+
+## All six characters, not the roster: equipped_skins is keyed by NAME, so a
+## skin follows a character across the grade change that clears the roster.
+func test_rail_holds_all_six_characters_in_catalogue_order() -> void:
+	var s := _new_screen()
+	var rail := s.get_node("%Rail")
+	assert_eq(rail.get_child_count(), StudentSkins.NAMES.size())
+	for i in StudentSkins.NAMES.size():
+		assert_eq((rail.get_child(i) as StudentTile).student_name, StudentSkins.NAMES[i])
+
+
+func test_open_takes_no_argument_and_first_student_is_open() -> void:
+	var s := _new_screen()
+	assert_eq(s.current_student(), StudentSkins.NAMES[0])
+	var rail := s.get_node("%Rail")
+	assert_eq((rail.get_child(0) as StudentTile).theme_type_variation, &"SkinStudentTileActive")
+	assert_eq((rail.get_child(1) as StudentTile).theme_type_variation, &"SkinStudentTile")
+
+
+func test_carousel_holds_one_card_per_skin_of_the_open_student() -> void:
+	var s := _new_screen()
+	assert_eq(s.get_node("%Track").get_child_count(),
+		StudentSkins.skins_for(StudentSkins.NAMES[0]).size())
+
+
+## Sliding is a PENDING choice. Nothing is equipped until TERAPKAN, which is
+## what lets one button serve all six characters in one visit.
+func test_selecting_a_skin_does_not_equip_it() -> void:
+	var s := _new_screen()
+	var name := s.current_student()
+	s.select_skin(1)
+	assert_eq(s.pending_id(name), StudentSkins.skins_for(name)[1])
+	assert_eq(GameState.equipped_skin(name), StudentSkins.DEFAULT_ID,
+		"sliding must not equip -- TERAPKAN does")
+
+
+func test_apply_commits_every_pending_student_at_once() -> void:
+	var s := _new_screen()
+	var first := StudentSkins.NAMES[0]
+	var second := StudentSkins.NAMES[1]
+	s.select_skin(1)
+	s.select_student(1)
+	s.select_skin(1)
+	s.apply_without_closing()
+	assert_eq(GameState.equipped_skin(first), StudentSkins.skins_for(first)[1])
+	assert_eq(GameState.equipped_skin(second), StudentSkins.skins_for(second)[1])
+
+
+func test_back_discards_every_pending_change() -> void:
+	var s := _new_screen()
+	var name := s.current_student()
+	s.select_skin(1)
+	s.go_back()
+	assert_eq(GameState.equipped_skin(name), StudentSkins.DEFAULT_ID)
+
+
+## The chip keys off the COMMITTED skin, not the centred one, so it
+## disappears the moment the carousel moves and comes back after TERAPKAN.
+## With two skins and both unlocked, that is the only on-screen proof the
+## button did anything.
+func test_worn_chip_tracks_the_committed_skin_not_the_selection() -> void:
+	var s := _new_screen()
+	assert_true(s.get_node("%WornChip").visible, "the default skin starts worn")
+	s.select_skin(1)
+	assert_false(s.get_node("%WornChip").visible)
+	s.apply_without_closing()
+	assert_true(s.get_node("%WornChip").visible)
+
+
+func test_switching_students_keeps_each_ones_pending_choice() -> void:
+	var s := _new_screen()
+	var first := StudentSkins.NAMES[0]
+	s.select_skin(1)
+	s.select_student(1)
+	s.select_student(0)
+	assert_eq(s.pending_id(first), StudentSkins.skins_for(first)[1])
+
+
+func test_commit_button_is_indonesian_and_not_danger_red() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(src.contains('text = "TERAPKAN"'), "UI text is Indonesian; APPLY is not")
+	assert_false(src.contains('text = "APPLY"'))
+	assert_true(src.contains('theme_type_variation = &"PrimaryButton"'),
+		"brand brown, so the commit button and the red back arrow do not read as a pair")
+
+
+func test_backdrop_still_blurs_the_live_lobby() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(src.contains("shop_hub_blur_material.tres"),
+		"the live-screen blur is why this stays an overlay instead of a scene change")
+
+
+func test_the_popup_era_nodes_are_gone() -> void:
+	assert_false(ResourceLoader.exists("res://Scenes/Skins/SkinSlot.tscn"))
+	assert_false(ResourceLoader.exists("res://Scenes/Skins/SkinOptionTile.tscn"))
+	assert_false(ResourceLoader.exists("res://Scenes/Skins/SkinSelectPopup.tscn"))
+```
+
+In `tests/test_lobby_skins.gd`, rename `test_lobby_opens_the_popup_and_reseats_on_close` to `test_lobby_opens_skin_select_and_reseats_on_close` and point its class and scene references at `SkinSelect`.
+
+- [ ] **Step 2: Run the tests to verify they fail**
+
+Run: `test_run(suite="skin_select")`
+Expected: FAIL — `SkinSelect.tscn` does not exist yet.
+
+- [ ] **Step 3: Rename and delete the files**
+
+The editor was restarted at the end of Task 10, so it is not holding these open.
+
+```bash
+git mv Scenes/Skins/SkinSelectPopup.tscn Scenes/Skins/SkinSelect.tscn
+git mv Scripts/Skins/SkinSelectPopup.gd Scripts/Skins/SkinSelect.gd
+git mv Scripts/Skins/SkinSelectPopup.gd.uid Scripts/Skins/SkinSelect.gd.uid
+git mv tests/test_skin_select_popup.gd tests/test_skin_select.gd
+git mv tests/test_skin_select_popup.gd.uid tests/test_skin_select.gd.uid
+git rm Scenes/Skins/SkinSlot.tscn Scripts/Skins/SkinSlot.gd Scripts/Skins/SkinSlot.gd.uid
+git rm Scenes/Skins/SkinOptionTile.tscn Scripts/Skins/SkinOptionTile.gd Scripts/Skins/SkinOptionTile.gd.uid
+sed -i 's#Scripts/Skins/SkinSelectPopup.gd#Scripts/Skins/SkinSelect.gd#' Scenes/Skins/SkinSelect.tscn
+```
+
+The `sed` fixes the scene's `ext_resource` path, which still points at the old script. This is the one moment a text edit to a `.tscn` is safe here: the editor has just been restarted and does not hold the file.
+
+Then `filesystem_manage(op="scan")` and restart the editor, so the global `class_name` table drops `SkinSelectPopup`, `SkinSlot` and `SkinOptionTile`. A renamed `class_name` breaks the next `project_run` with *Could not find script for class* until that rescan has happened.
+
+- [ ] **Step 4: Rebuild the scene**
+
+`scene_open(path="res://Scenes/Skins/SkinSelect.tscn")`, delete `Safe` and `OptionLayer` entirely, keep `Blur`, and build this tree. Geometry is the spec's measured table; `%` marks `unique_name_in_owner = true`.
+
+```
+SkinSelect   Control, full rect
+  Blur       ColorRect, full rect, shop_hub_blur_material.tres      [kept as-is]
+  Title      %, Label, anchors top-wide, y 80..200, DisplayLabel, centred
+  Carousel   %, Control, anchors wide, y 200..1337, clip_contents = true
+    Track    %, HBoxContainer, separation 60, alignment 1
+  Dots       %, HBoxContainer, anchors top-wide, y 1262..1302, separation 16, alignment 1
+  Tray       Panel, anchors bottom-wide, y 1337..1920, SunkenPanel
+    Rail       %, HBoxContainer, anchors top-wide, y 1431..1581, separation 23, alignment 1
+    SkinName   %, Label, anchors top-wide, y 1601..1653, SkinNameLabel, centred
+    WornChip   %, PanelContainer, anchors top-centre, y 1661..1709, SkinWornChip
+      WornChipLabel  %, Label, SkinWornChipLabel, text "SEDANG DIPAKAI"
+    BackButton %, TextureButton, x 40..240, y 1690..1845, return_button.png,
+               ignore_texture_size = true, stretch_mode = 5
+    Terapkan   %, Button, x 505..998, y 1710..1843, PrimaryButton, text "TERAPKAN"
+```
+
+`Rail`'s six `StudentTile` instances and `Dots`' two circles are **authored as nodes**, not built at runtime: `StudentSkins.NAMES` is a fixed six, and a student with more skins hides unused dots rather than creating any.
+
+`Track`'s `SkinCard`s **are** per-call dynamic — the count depends on the open student — so they are instanced in `_rebuild_carousel()` from an `@export var card_scene: PackedScene`. That is the same exception `SkinSelectPopup` already held for its option column; carry its `##` justification across so `tests/test_viewport_editability.gd`'s `ALLOWED` entry still reads true.
+
+Then `scene_save()`, and restart the editor before the script work in Step 5.
+
+- [ ] **Step 5: Rewrite the script**
+
+`script_patch` `Scripts/Skins/SkinSelect.gd`: `class_name SkinSelectPopup` → `class_name SkinSelect`, rewrite the `##` header for the new screen, and replace the body. The parts the tests pin:
+
+```gdscript
+## The character the rail currently has open.
+func current_student() -> String:
+	return StudentSkins.NAMES[_student_index]
+
+
+## The skin `name` will be wearing after TERAPKAN -- their pending choice if
+## they have one, else whatever they are wearing now.
+func pending_id(name: String) -> String:
+	return _pending.get(name, GameState.equipped_skin(name))
+
+
+## Centres card `index` of the open student and records it as pending.
+## Nothing is equipped here: TERAPKAN commits, which is what lets one button
+## serve all six characters in one visit.
+func select_skin(index: int) -> void:
+	var ids := StudentSkins.skins_for(current_student())
+	if index < 0 or index >= ids.size():
+		return
+	_skin_index = index
+	_pending[current_student()] = ids[index]
+	_apply_card_states()
+	_slide_to(index)
+	_refresh_tray()
+
+
+## Opens character `index`'s skins, keeping every other character's pending
+## choice. Jumps the carousel rather than animating -- every card under it
+## has just been replaced, so a slide would animate the wrong art.
+func select_student(index: int) -> void:
+	if index < 0 or index >= StudentSkins.NAMES.size():
+		return
+	_student_index = index
+	for i in StudentSkins.NAMES.size():
+		(_rail.get_child(i) as StudentTile).set_open(i == index)
+	_rebuild_carousel()
+	_refresh_tray()
+
+
+## Commits every pending choice and closes. equip_skin already returns false
+## for a locked or unknown skin and no-ops when re-equipping the worn one,
+## so the loop needs no guard of its own.
+func apply() -> void:
+	apply_without_closing()
+	close()
+
+
+## The half of apply() that does not close, so a test can watch the worn
+## chip flip without the node freeing itself out from under it.
+func apply_without_closing() -> void:
+	for name in _pending:
+		GameState.equip_skin(str(name), str(_pending[name]))
+	_pending.clear()
+	for i in StudentSkins.NAMES.size():
+		var n: String = StudentSkins.NAMES[i]
+		(_rail.get_child(i) as StudentTile).show_student(n, pending_id(n))
+	_refresh_tray()
+
+
+## The player-facing name of a skin id. One place to hang real names when
+## the catalogue grows past "default" and "skin1".
+static func skin_label(id: String) -> String:
+	if id == StudentSkins.DEFAULT_ID:
+		return "Seragam Sekolah"
+	return "Seragam %s" % id.trim_prefix("skin")
+```
+
+`_refresh_tray()` sets `%SkinName.text` to `skin_label(pending_id(current_student()))`, and `%WornChip.visible` to `pending_id(name) == GameState.equipped_skin(name)` — the **committed** skin, not the centred one. A locked centred skin hides the chip and puts TERKUNCI in `%SkinName`'s place.
+
+`open()` takes no argument: it builds the rail from `StudentSkins.NAMES`, calls `select_student(0)`, and keeps the existing fade-in and `AudioDirector.play_sfx(&"tap")`.
+
+`go_back()` keeps its shape but has only one level now — there is no option column to close first — so it calls `close()`. `_unhandled_input`'s `ui_cancel` route and the `NOTIFICATION_WM_GO_BACK_REQUEST` route both stay.
+
+The drag lives on `%Carousel`'s `gui_input`: record the press x and time, move `%Track.position.x` on motion, and on release call `SkinCard.settle_index(_skin_index, travel, velocity, pitch, count)` and pass the result to `select_skin()`. `pitch` is one card's width plus `%Track`'s separation, read from the first card rather than hardcoded.
+
+- [ ] **Step 6: Rewire the Lobby**
+
+`script_patch` `Scripts/Lobby/loby.gd`:
+
+```gdscript
+@export var skin_select_scene: PackedScene = preload("res://Scenes/Skins/SkinSelect.tscn")
+```
+
+`_skin_popup_open` → `_skin_select_open` (`replace_all`), `as SkinSelectPopup` → `as SkinSelect`, and drop the argument from the `popup.open(GameState.approved_students)` call.
+
+- [ ] **Step 7: Run the tests to verify they pass**
+
+Run: `test_run(suite="skin_select")`, `test_run(suite="lobby_skins")`, `test_run(suite="student_skins")`, `test_run(suite="skin_frame")`, `test_run(suite="student_tile")`, `test_run(suite="skin_card")`, `test_run(suite="viewport_editability")`
+Expected: all PASS. If `viewport_editability` fails, its `ALLOWED` entry still names `SkinSelectPopup` — rename it to `SkinSelect` rather than adding a new entry.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add -A Scenes/Skins Scripts/Skins Scripts/Lobby/loby.gd tests/test_skin_select.gd tests/test_lobby_skins.gd tests/test_viewport_editability.gd
+git commit -m "feat(skins): rebuild SkinSelect as a full-screen carousel picker"
+```
+
+---
+
+### Task 12: Full suite, screenshots, and the docs
 
 **Files:**
 - Modify: `docs/superpowers/DEBT.md`
@@ -1259,6 +2088,14 @@ Capture each with `editor_screenshot(source="game", max_resolution=0)` and check
 - the popup's spacing reads as roomy, and the card has no dead band
 - the student splash has a white outline
 - Koperasi has no crate, and dragging the tray still collapses and re-opens it
+- SkinSelect shows the whole figure with its feet, the open student's square is
+  ringed, the neighbour skin is dimmed and blurred, and TERAPKAN makes the
+  SEDANG DIPAKAI chip come back
+
+SkinSelect is reached from the Lobby's skin-switch button, so it needs no
+teleport — seed, go to the Lobby, tap it. Drag the splash sideways to check the
+snap, and tap two different squares to check that each keeps its own pending
+choice.
 
 - [ ] **Step 4: Update DEBT.md**
 
@@ -1282,6 +2119,23 @@ Add, under the audit leftovers:
 and `%FilterButton` (96px) and the pill (64px) are both under the ~130px
 touch floor. Found in the 2026-09-22 design audit, deliberately left out of
 that pass's scope.
+```
+
+And, under the skins group:
+
+```markdown
+**SkinSelect is still an overlay, not a scene (2026-09-22).** The brief
+asked for a scene; it stayed a full-screen Lobby overlay because only an
+overlay can blur the *live* lobby through `shop_hub_blur_material.tres` —
+a `Transition.change_scene` would need a baked backdrop like
+`bg_achievements_blur.jpg` and would stop showing the room the student is
+standing in. Revisit only if the Lobby ever stops being the sole entry
+point.
+
+**SkinSelect's skin names are derived (2026-09-22).** `SkinSelect.skin_label`
+turns `default` into "Seragam Sekolah" and `skin1` into "Seragam 1". Real
+names belong in `StudentSkins.SKINS` once there is more than one extra skin
+per character.
 ```
 
 - [ ] **Step 5: Update CHANGELOG.md**

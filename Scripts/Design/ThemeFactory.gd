@@ -329,6 +329,16 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_body != null:
 		theme.set_font("font", "AchievementTileTitleLabel", tokens.font_body)
 
+	# The detail sheet's description. CaptionLabel (22) was too small for a
+	# full sentence on an 864-wide card; this is the body step in the
+	# secondary ink, so the H2 title above it keeps the hierarchy.
+	theme.add_type("AchievementSheetBodyLabel")
+	theme.set_type_variation("AchievementSheetBodyLabel", "Label")
+	theme.set_font_size("font_size", "AchievementSheetBodyLabel", tokens.font_body_size)
+	theme.set_color("font_color", "AchievementSheetBodyLabel", tokens.text_secondary)
+	if tokens.font_body != null:
+		theme.set_font("font", "AchievementSheetBodyLabel", tokens.font_body)
+
 	# The "BARU" unlock pip that used to sit in the tile's top-right corner
 	# was replaced on 2026-09-22 by a notice_icon.png TextureRect, so its
 	# AchievementBaruBadge / AchievementBaruBadgeLabel variations went with

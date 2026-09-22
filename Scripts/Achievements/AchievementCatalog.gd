@@ -63,8 +63,8 @@ static func icon_path(id: String) -> String:
 	return ICON_DIR + id + ".png"
 
 
-## The card's body text: the requirement, plus the prize line when it has one.
-static func description_of(entry: Dictionary) -> String:
-	if String(entry.get("prize", "")) == "":
-		return entry.desc
-	return "%s\nHadiah: %s" % [entry.desc, entry.prize]
+# description_of() was deleted on 2026-09-22. It appended
+# "\nHadiah: <prize>" to the desc for the detail sheet, which then printed
+# the same string a second time in its own label underneath. The sheet reads
+# entry.desc directly now and the prize lives in a chip, so it had no
+# callers left.

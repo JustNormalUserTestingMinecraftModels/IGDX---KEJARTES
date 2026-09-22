@@ -1,8 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3 uid="uid://cmdpmweorw68l"]
 
-[ext_resource type="Script" path="res://Scripts/Achievements/AchievementDetailSheet.gd" id="1_sheet"]
+[ext_resource type="Script" uid="uid://m0op07rs3m7k" path="res://Scripts/Achievements/AchievementDetailSheet.gd" id="1_sheet"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="2_back"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="3_lock"]
 [ext_resource type="Material" path="res://Assets/Images/Achievements/icon_outline_material.tres" id="4_outline"]
 
 [node name="AchievementDetailSheet" type="Control" unique_id=1001]
@@ -12,7 +11,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 script = ExtResource("1_sheet")
 
 [node name="Scrim" type="Panel" parent="." unique_id=1002]
@@ -23,36 +21,39 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 theme_type_variation = &"Scrim"
 
 [node name="Sheet" type="PanelContainer" parent="." unique_id=1003]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.08
-anchor_top = 0.3
-anchor_right = 0.92
-anchor_bottom = 0.78
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -432.0
+offset_top = -60.0
+offset_right = 432.0
+offset_bottom = 60.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"Card"
 
 [node name="Margin" type="MarginContainer" parent="Sheet" unique_id=1004]
 layout_mode = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_left = 56
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 56
+theme_override_constants/margin_bottom = 64
 
 [node name="VBox" type="VBoxContainer" parent="Sheet/Margin" unique_id=1005]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 44
 alignment = 1
 
 [node name="BackButton" type="TextureButton" parent="Sheet/Margin/VBox" unique_id=1006]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_horizontal = 0
 texture_normal = ExtResource("2_back")
@@ -60,7 +61,7 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="IconSlot" type="Control" parent="Sheet/Margin/VBox" unique_id=1007]
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
@@ -74,10 +75,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -80.0
-offset_top = -80.0
-offset_right = 80.0
-offset_bottom = 80.0
+offset_left = -150.0
+offset_top = -150.0
+offset_right = 150.0
+offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -88,55 +89,50 @@ stretch_mode = 5
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"H2Label"
+text = "Judul Pencapaian"
 horizontal_alignment = 1
 autowrap_mode = 3
-text = "Judul Pencapaian"
 
 [node name="Desc" type="Label" parent="Sheet/Margin/VBox" unique_id=1010]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"AchievementSheetBodyLabel"
+text = "Deskripsi pencapaian."
 horizontal_alignment = 1
 autowrap_mode = 3
-text = "Deskripsi pencapaian."
 
-[node name="PrizeLabel" type="Label" parent="Sheet/Margin/VBox" unique_id=1011]
+[node name="PrizeChip" type="PanelContainer" parent="Sheet/Margin/VBox" unique_id=261148215]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"MicroLabel"
-horizontal_alignment = 1
-text = "—"
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"AchievementPrizeChipAmber"
 
-[node name="ProgressLabel" type="Label" parent="Sheet/Margin/VBox" unique_id=1012]
+[node name="PrizeChipLabel" type="Label" parent="Sheet/Margin/VBox/PrizeChip" unique_id=1850913566]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"MicroLabel"
+theme_type_variation = &"AchievementPrizeChipLabelAmber"
 horizontal_alignment = 1
+
+[node name="StateRow" type="HBoxContainer" parent="Sheet/Margin/VBox" unique_id=1812365377]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="ProgressLabel" type="Label" parent="Sheet/Margin/VBox/StateRow" unique_id=1943649478]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
 text = "0 / 1"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="ActionArea" type="CenterContainer" parent="Sheet/Margin/VBox" unique_id=1013]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-
-[node name="ClaimButton" type="Button" parent="Sheet/Margin/VBox/ActionArea" unique_id=1014]
+[node name="StateIcon" type="TextureRect" parent="Sheet/Margin/VBox/StateRow" unique_id=258305312]
 unique_name_in_owner = true
-visible = false
+custom_minimum_size = Vector2(72, 72)
 layout_mode = 2
-theme_type_variation = &"SuccessButton"
-text = "Klaim"
-
-[node name="LockIcon" type="TextureRect" parent="Sheet/Margin/VBox/ActionArea" unique_id=1015]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-texture = ExtResource("3_lock")
+size_flags_vertical = 4
+mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
-
-[node name="ClaimedLabel" type="Label" parent="Sheet/Margin/VBox/ActionArea" unique_id=1016]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Sudah diambil"

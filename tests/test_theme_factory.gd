@@ -362,7 +362,11 @@ const DISPLAY_ROSTER := [
 	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
 	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",
 	# 2026-09-18 achievements-polish: the grid tile's prize chip and BARU pip.
-	"AchievementPrizeChipLabel", "AchievementPrizeChipLabelAmber", "AchievementBaruBadgeLabel",
+	# AchievementBaruBadgeLabel left on 2026-09-22 with the BARU pip itself,
+	# replaced by the notice_icon TextureRect, which carries no text.
+	"AchievementPrizeChipLabel", "AchievementPrizeChipLabelAmber",
+	# 2026-09-22 SkinSelect: the skin's name and the "sedang dipakai" chip.
+	"SkinNameLabel", "SkinWornChipLabel",
 	# 2026-09-18 achievements-polish Task 4: the header status pill's two
 	# state labels.
 	"AchievementStatusPillIdleLabel", "AchievementStatusPillWaitingLabel",

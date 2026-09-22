@@ -34,9 +34,83 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_achievements(theme, tokens)
 	_build_achievement_tile(theme, tokens)
 	_build_achievement_status_pill(theme, tokens)
+	_build_skin_select(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
+
+
+## SkinSelect (spec:
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md): the six
+## student squares in their two states, the skin's name, and the "sedang
+## dipakai" chip that is the only visible proof TERAPKAN did anything.
+static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
+	var square := func(bg: Color, border: Color) -> StyleBoxFlat:
+		var box := StyleBoxFlat.new()
+		box.bg_color = bg
+		box.border_color = border
+		box.set_border_width_all(int(tokens.outline_width))
+		# radius_button, not radius_md: these are Buttons, and
+		# tests/test_button_geometry.gd holds every button variation to the
+		# one fixed radius.
+		box.set_corner_radius_all(tokens.radius_button)
+		return box
+
+	theme.add_type("SkinStudentTile")
+	theme.set_type_variation("SkinStudentTile", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SkinStudentTile",
+			square.call(tokens.surface_card, tokens.text_primary))
+
+	theme.add_type("SkinStudentTileActive")
+	theme.set_type_variation("SkinStudentTileActive", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SkinStudentTileActive",
+			square.call(tokens.outline_card, tokens.brand_primary))
+
+	theme.add_type("SkinNameLabel")
+	theme.set_type_variation("SkinNameLabel", "Label")
+	theme.set_font_size("font_size", "SkinNameLabel", tokens.font_title)
+	theme.set_color("font_color", "SkinNameLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinNameLabel", tokens.font_display)
+
+	theme.add_type("SkinWornChip")
+	theme.set_type_variation("SkinWornChip", "PanelContainer")
+	var chip := StyleBoxFlat.new()
+	chip.bg_color = tokens.state_success.lightened(0.7)
+	chip.border_color = tokens.state_success
+	chip.set_border_width_all(int(tokens.outline_width / 2.0))
+	chip.set_corner_radius_all(tokens.radius_pill)
+	chip.content_margin_left = tokens.space_md
+	chip.content_margin_right = tokens.space_md
+	chip.content_margin_top = tokens.space_xs
+	chip.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "SkinWornChip", chip)
+
+	# The carousel's page dots, one per skin of the open student. Two
+	# variations rather than a runtime modulate, so the colours stay in the
+	# theme like everything else that is drawn.
+	var dot := func(fill: Color) -> StyleBoxFlat:
+		var box := StyleBoxFlat.new()
+		box.bg_color = fill
+		box.set_corner_radius_all(tokens.radius_pill)
+		return box
+
+	theme.add_type("SkinDotOn")
+	theme.set_type_variation("SkinDotOn", "Panel")
+	theme.set_stylebox("panel", "SkinDotOn", dot.call(tokens.brand_primary))
+
+	theme.add_type("SkinDotOff")
+	theme.set_type_variation("SkinDotOff", "Panel")
+	theme.set_stylebox("panel", "SkinDotOff", dot.call(tokens.surface_sunken))
+
+	theme.add_type("SkinWornChipLabel")
+	theme.set_type_variation("SkinWornChipLabel", "Label")
+	theme.set_font_size("font_size", "SkinWornChipLabel", tokens.font_micro)
+	theme.set_color("font_color", "SkinWornChipLabel", tokens.state_success.darkened(0.45))
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinWornChipLabel", tokens.font_display)
 
 
 ## Measured off mockup_eventdialogue.png: the dialogue card's corner radius
@@ -318,24 +392,31 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "AchievementPrizeChipLabelAmber", tokens.font_display)
 
-	# The "BARU" unlock pip, top-right corner of the tile.
-	theme.add_type("AchievementBaruBadge")
-	theme.set_type_variation("AchievementBaruBadge", "Panel")
-	var baru := StyleBoxFlat.new()
-	baru.bg_color = tokens.state_success
-	baru.set_corner_radius_all(tokens.radius_pill)
-	baru.content_margin_left = tokens.space_xs
-	baru.content_margin_right = tokens.space_xs
-	baru.content_margin_top = tokens.space_xs / 2.0
-	baru.content_margin_bottom = tokens.space_xs / 2.0
-	theme.set_stylebox("panel", "AchievementBaruBadge", baru)
+	# The tile's own title. CaptionLabel (22) put the tile's most important
+	# text on the scale's second-smallest step; this is the body step (28)
+	# in the primary ink. Body face, not display -- it wraps to two lines,
+	# and Boohong at 28 over two lines reads as a banner, not a caption.
+	theme.add_type("AchievementTileTitleLabel")
+	theme.set_type_variation("AchievementTileTitleLabel", "Label")
+	theme.set_font_size("font_size", "AchievementTileTitleLabel", tokens.font_body_size)
+	theme.set_color("font_color", "AchievementTileTitleLabel", tokens.text_primary)
+	if tokens.font_body != null:
+		theme.set_font("font", "AchievementTileTitleLabel", tokens.font_body)
 
-	theme.add_type("AchievementBaruBadgeLabel")
-	theme.set_type_variation("AchievementBaruBadgeLabel", "Label")
-	theme.set_font_size("font_size", "AchievementBaruBadgeLabel", tokens.font_micro)
-	theme.set_color("font_color", "AchievementBaruBadgeLabel", tokens.text_on_brand)
-	if tokens.font_display != null:
-		theme.set_font("font", "AchievementBaruBadgeLabel", tokens.font_display)
+	# The detail sheet's description. CaptionLabel (22) was too small for a
+	# full sentence on an 864-wide card; this is the body step in the
+	# secondary ink, so the H2 title above it keeps the hierarchy.
+	theme.add_type("AchievementSheetBodyLabel")
+	theme.set_type_variation("AchievementSheetBodyLabel", "Label")
+	theme.set_font_size("font_size", "AchievementSheetBodyLabel", tokens.font_body_size)
+	theme.set_color("font_color", "AchievementSheetBodyLabel", tokens.text_secondary)
+	if tokens.font_body != null:
+		theme.set_font("font", "AchievementSheetBodyLabel", tokens.font_body)
+
+	# The "BARU" unlock pip that used to sit in the tile's top-right corner
+	# was replaced on 2026-09-22 by a notice_icon.png TextureRect, so its
+	# AchievementBaruBadge / AchievementBaruBadgeLabel variations went with
+	# it (and AchievementBaruBadgeLabel left DISPLAY_ROSTER).
 
 
 ## The header's morphing status pill (2026-09-18 achievements-polish spec,

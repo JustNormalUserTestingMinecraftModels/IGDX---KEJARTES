@@ -383,6 +383,8 @@ func test_loby_hands_seats_and_gate_to_chatter() -> void:
 	assert_true(src.contains("chatter.set_seats("))
 	assert_true(src.contains("chatter.can_speak = _chatter_allowed"))
 	assert_true(src.contains("func _chatter_allowed() -> bool:"))
-	assert_true(src.contains("not tutorial_active and not reward_popup_open and not _skin_popup_open"))
+	# _skin_popup_open became _skin_select_open on 2026-09-22, when
+	# SkinSelectPopup was rebuilt as the full-screen SkinSelect.
+	assert_true(src.contains("not tutorial_active and not reward_popup_open and not _skin_select_open"))
 	assert_true(src.contains("chatter.dismiss()"))
 	assert_true(src.contains("chatter.tap_blockers = ["), "the HUD blocks taps over the faces")

@@ -267,9 +267,9 @@ func test_a_line_that_left_the_cart_leaves_the_row() -> void:
 
 
 ## The top-right basket emblem was removed on 2026-09-21. It carried the
-## cart's running total and a toggle button; koprasi.gd's CrateHandle badge
-## now carries the count in both tray states, and the drag and CrateHandle
-## carry the toggle.
+## cart's running total and a toggle button. The CrateHandle that took over
+## its badge was itself removed on 2026-09-22, so the tray's own slots carry
+## the count now and the drag is the only toggle.
 func test_the_tray_has_no_emblem_in_its_corner() -> void:
 	var tray = _tray()
 	if tray == null:

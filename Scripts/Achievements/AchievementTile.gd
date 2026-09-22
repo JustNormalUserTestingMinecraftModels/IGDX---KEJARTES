@@ -8,8 +8,8 @@ extends PanelContainer
 ## 3). refresh() re-reads live state/progress from the Achievements autoload
 ## so the screen can call it on Achievements.state_changed without redoing
 ## setup(). @tool so the test runner can drive it directly; it has no
-## side effects of its own (the "BARU" pop-in dict is session-scoped data,
-## not a scene mutation).
+## side effects of its own (the notice-badge pop-in dict is session-scoped
+## data, not a scene mutation).
 ##
 ## Sizing: the root's size_flags_horizontal = 3 (EXPAND_FILL) so the parent
 ## GridContainer splits its width evenly between the two columns. Its
@@ -33,8 +33,13 @@ const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd"
 ## Scripts/Inventory/InventorySlot.gd already uses for the same problem.
 const TAP_MOVE_THRESHOLD := 16.0
 
-## Tint applied to the whole tile when its achievement is still locked.
-@export var locked_modulate: Color = Color(1.0, 1.0, 1.0, 0.55)
+## Tint applied to the ICON ONLY while the achievement is locked.
+## Deliberately not on the tile root: fading the root took a locked title
+## to 1.78:1 against its own card (measured live, 2026-09-22), under the
+## 3.0 floor tests/test_bar_contrast.gd pins and far under the 4.5 body
+## copy wants. Locked now reads from the greyed icon, the lock overlay on
+## it, and the absent corner badge -- none of which is text.
+@export var locked_icon_modulate: Color = Color(0.62, 0.62, 0.62, 1.0)
 
 @onready var icon: TextureRect = %Icon
 @onready var lock_icon: TextureRect = %LockIcon
@@ -42,7 +47,7 @@ const TAP_MOVE_THRESHOLD := 16.0
 @onready var prize_chip: PanelContainer = %PrizeChip
 @onready var prize_label: Label = %PrizeLabel
 @onready var progress_bar: ProgressBar = %ProgressBar
-@onready var baru_badge: PanelContainer = %BaruBadge
+@onready var notice_badge: TextureRect = %NoticeBadge
 @onready var check_badge: TextureRect = %CheckBadge
 
 var achievement_id: String = ""
@@ -51,11 +56,11 @@ var achievement_id: String = ""
 ## _gui_input to tell a tap from a drag-scroll on release.
 var _press_pos: Vector2 = Vector2.ZERO
 
-## Session-scoped: ids whose "BARU" pip has already played its pop_in this
+## Session-scoped: ids whose notice badge has already played its pop_in this
 ## session, so re-entering the screen (or a state_changed refresh) does not
 ## replay the animation on every redraw. Static so it survives across tile
 ## instances (the grid recreates tiles each time the screen opens).
-static var _baru_shown: Dictionary = {}
+static var _notice_shown: Dictionary = {}
 
 
 ## Emits tile_pressed only on a clean tap: press then release with less than
@@ -119,35 +124,36 @@ func matches_filter(filter: int) -> bool:
 	return true
 
 
+## Shows the prize chip only when the entry has one. Twenty of the 26
+## catalogue entries set prize to "", and a chip reading "—" on 77% of the
+## grid teaches nothing while costing the 38px the enlarged icon needs.
 func _apply_prize(entry: Dictionary) -> void:
 	var prize := String(entry.get("prize", ""))
-	if prize == "":
-		prize_label.text = "—"
-		prize_chip.theme_type_variation = &"AchievementPrizeChip"
-		prize_label.theme_type_variation = &"AchievementPrizeChipLabel"
-	else:
-		prize_label.text = prize
-		prize_chip.theme_type_variation = &"AchievementPrizeChipAmber"
-		prize_label.theme_type_variation = &"AchievementPrizeChipLabelAmber"
+	prize_chip.visible = prize != ""
+	if not prize_chip.visible:
+		return
+	prize_label.text = prize
+	prize_chip.theme_type_variation = &"AchievementPrizeChipAmber"
+	prize_label.theme_type_variation = &"AchievementPrizeChipLabelAmber"
 
 
 func _apply_state(state: int, progress: float) -> void:
 	progress_bar.value = progress * 100.0
 
 	var locked := state == AchievementsScript.STATE_LOCKED
-	modulate = locked_modulate if locked else Color.WHITE
+	icon.modulate = locked_icon_modulate if locked else Color.WHITE
 	lock_icon.visible = locked
 	if locked:
-		_baru_shown.erase(achievement_id)
+		_notice_shown.erase(achievement_id)
 
 	var unlocked := state == AchievementsScript.STATE_UNLOCKED
-	baru_badge.visible = unlocked
+	notice_badge.visible = unlocked
 	check_badge.visible = state == AchievementsScript.STATE_CLAIMED
 
-	if unlocked and not _baru_shown.has(achievement_id):
-		_baru_shown[achievement_id] = true
+	if unlocked and not _notice_shown.has(achievement_id):
+		_notice_shown[achievement_id] = true
 		if not Engine.is_editor_hint() and Engine.get_main_loop() != null:
-			Juice.pop_in(baru_badge)
+			Juice.pop_in(notice_badge)
 
 
 func _achievements() -> Node:

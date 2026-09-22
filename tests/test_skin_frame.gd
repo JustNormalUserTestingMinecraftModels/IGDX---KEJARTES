@@ -9,6 +9,20 @@ func suite_name() -> String:
 	return "skin_frame"
 
 
+## StudentTile draws its own box, so it needs the frame's border off. The
+## knob is on SkinFrame's root, not on Border, because a property set on an
+## instanced scene's CHILD is reported as saved and then dropped.
+func test_show_border_hides_the_border_node() -> void:
+	var frame: SkinFrame = (load("res://Scenes/Skins/SkinFrame.tscn") as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(frame)
+	track(frame)
+	assert_true(frame.get_node("Border").visible, "the border is on by default")
+	frame.show_border = false
+	assert_false(frame.get_node("Border").visible)
+	frame.show_border = true
+	assert_true(frame.get_node("Border").visible)
+
+
 func test_factory_builds_the_skin_panels() -> void:
 	var t := DesignTokens.load_default()
 	var theme := ThemeFactory.build(t)

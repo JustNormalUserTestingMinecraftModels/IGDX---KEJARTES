@@ -8,6 +8,87 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-22 — Achievements layout pass, and a full-screen SkinSelect
+
+**The grid's uneven columns were one label, not the container.** The
+Achievements grid measured 420 left and 478 right, and the plan opened by
+blaming `GridContainer` and proposing an `HBoxContainer` of two
+`VBoxContainer`s filled round-robin. Built side by side at the grid's real
+measurements — list width 922, `h_separation` 24, two 420-minimum expanding
+columns — a `GridContainer` splits evenly, exactly as a `BoxContainer` does.
+That swap would have fixed nothing.
+
+Measuring the live screen found the real cause: the column minimums genuinely
+differ, and exactly one tile of 26 is responsible. `streak_6`'s prize label
+had autowrap off, and a `Label` with autowrap off reports its **whole text
+width** as its minimum — 366px for "Poin stat murid dari minigame +5%", which
+with the chip's and the `Card`'s content margins pushes that tile past 420.
+`streak_6` is catalogue index 5, so the damage lands in column 1; five of the
+six prize-carrying entries sit at odd indices. `autowrap_mode = ARBITRARY`
+frees the minimum, and `max_lines_visible = 1` plus `TRIM_ELLIPSIS` stop the
+freed wrap becoming a second line. Three properties, and
+`achievements_screen.gd` was never touched.
+
+That fix then exposed a second one in the screenshot pass: with the label's
+minimum at ~0 the shrink-centred chip collapsed to a pill reading just an
+ellipsis. It EXPAND_FILLs the tile now.
+
+**Locked tiles were at 1.78:1.** `locked_modulate` put `Color(1,1,1,0.55)` on
+the tile *root*, so the card, the title and the icon all blended into the
+painted background. Measured live off the running build: a locked title reads
+1.78:1 against its own card, under the 3.0 floor `test_bar_contrast.gd` pins
+and far under the 4.5 body copy wants; the same title unlocked reads 5.29:1.
+On a fresh save 20 of the 26 tiles are locked, so that was the screen's
+default state. The export became `locked_icon_modulate` and tints only the
+icon; the root stays opaque in every state and the lock overlay carries the
+state.
+
+**The rest of the tile.** Icon 72 → 132 in a 420 × 310 tile (it was 3% of the
+tile's area), title from `CaptionLabel` 22 to a new `AchievementTileTitleLabel`
+at the body step 28 in `text_primary`, the prize chip hidden on the 20 entries
+that have no prize, and the green "BARU" pip replaced by the user's
+`notice_icon.png`.
+
+**The detail popup.** Anchored 0.3–0.78 vertically it stood 922px tall at
+1080×1920 and 1152px at 1080×2400 to hold ~350px of content — emptier the
+taller the phone. Centred anchors with `GROW_DIRECTION_BOTH` make it exactly
+as tall as its content: 969px measured, against the spec's predicted 968. The
+stack moved from a 12px separation to `space_lg` (44). The prize had been
+printing twice, because `AchievementCatalog.description_of()` appended
+"Hadiah: …" to the desc *and* a label repeated it underneath; that helper is
+deleted and the prize lives in a chip. The Klaim button is gone — opening the
+popup on an unclaimed achievement is the claim.
+
+**SkinSelect.** `SkinSelectPopup`'s card of up to four roster students became
+one full-bleed surface: the open character's splash in a horizontal carousel
+of their skins, a rail of all six characters underneath, one TERAPKAN. It
+stays an overlay rather than a scene, because only an overlay can blur the
+live Lobby — a `change_scene` would need a baked backdrop and would stop
+showing the room the student is standing in. The rail is all six characters,
+not the roster, because `equipped_skins` is keyed by name so a skin survives
+the grade change that clears the roster. Choices are pending until TERAPKAN
+commits them all at once.
+
+The design audit on the mockup changed four things in it: the card is
+752×1337 rather than full-screen, so the tray stops cropping the outfit at
+the knees; the open student's square is ringed; APPLY became TERAPKAN in
+`PrimaryButton` brown rather than an off-palette red that read as a pair with
+the red back arrow; and a locked skin now says TERKUNCI.
+
+**Two smaller fixes.** AturJadwal's student splash — the button that opens the
+picker — carried no affordance at all, and now wears a white silhouette
+outline through the existing `icon_outline.gdshader` at `outline_width` 0.009
+(0.03 would be a 21px stroke on its 700px rect). Koperasi's crate handle is
+deleted; the tray's own drag already toggled it in both directions, and the
+back button that used to ride the crate's tween owns `_back_tween` now.
+
+**Two process notes.** A minimum-size test handed a Control to the editor's
+root measures the *editor's* theme, not the game's — every tile read a flat
+420 and the test passed while measuring nothing until it was given the baked
+theme by hand. And an editor shutdown wrote a cached theme back over the
+bake, merging content margins and a shadow into unrelated styleboxes by
+matching id; the fix is to discard and rebake, never to hand-merge.
+
 ## 2026-09-22 — Three reported defects: the header collision, the fake fireworks, one back arrow
 
 **The old texts over the calendar header.** PR #66's calendar badge and day

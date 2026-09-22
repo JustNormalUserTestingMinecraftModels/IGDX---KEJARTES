@@ -25,10 +25,76 @@ func _script_src() -> String:
 	return FileAccess.get_file_as_string(SCREEN_SCRIPT)
 
 
-func test_scene_has_grid_columns_two() -> void:
+## The grid was measured live at 420 left / 478 right. This pins the cause:
+## a Label with autowrap OFF reports its whole text width as its minimum, so
+## streak_6's "Poin stat murid dari minigame +5%" (366px) pushed its tile
+## past 420 and its column with it. Every tile must cost the same 420
+## whatever its prize string says.
+##
+## The tile is given the baked theme by hand. Added to the editor's root a
+## Control inherits the EDITOR's theme, whose fonts and Card stylebox are
+## not the game's -- without this line every tile measures a flat 420 and
+## the test passes green while measuring nothing. It reads 494 here against
+## 478 in the running game for the same reason: near enough, same tile,
+## same cause, and the assertion is on the fixed 420 either way.
+func test_every_tile_has_the_same_minimum_width() -> void:
+	var scene := load("res://Scenes/Achievements/AchievementTile.tscn") as PackedScene
+	var theme := load("res://Assets/Theme/kejartes_theme.tres") as Theme
+	var worst_id := ""
+	var worst := 0.0
+	for entry in AchievementCatalog.ENTRIES:
+		var tile: AchievementTile = scene.instantiate()
+		tile.theme = theme
+		Engine.get_main_loop().root.add_child(tile)
+		track(tile)
+		tile.setup(entry)
+		var m: float = tile.get_combined_minimum_size().x
+		if m > worst:
+			worst = m
+			worst_id = entry.id
+	assert_true(absf(worst - 420.0) < 0.5,
+		"every tile must have a 420px minimum; %s reports %s" % [worst_id, worst])
+
+
+## The label settings that keep the minimum at 420. Autowrap is what drops a
+## Label's minimum width; max_lines_visible and the ellipsis are what stop
+## the wrap from turning into a second line and reflowing the tile.
+func test_prize_label_cannot_report_its_full_text_width() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/Achievements/AchievementTile.tscn")
+	var at := src.find('[node name="PrizeLabel"')
+	assert_true(at != -1, "PrizeLabel must exist")
+	var next := src.find("[node", at + 1)
+	var block := src.substr(at, (next - at) if next != -1 else src.length() - at)
+	assert_true(block.contains("autowrap_mode = 1"), "ARBITRARY autowrap is what frees the minimum width")
+	assert_true(block.contains("max_lines_visible = 1"), "one line only -- a wrap must not grow the tile")
+	assert_true(block.contains("text_overrun_behavior = 3"), "overflow ellipsizes")
+
+
+## Why the GridContainer was kept. Built at the grid's real measurements
+## (list width 922, h_separation 24, two 420-minimum expanding columns) it
+## splits evenly -- so replacing it with an HBoxContainer of two
+## VBoxContainers, which the first draft of this plan proposed, would have
+## fixed nothing. NOTIFICATION_SORT_CHILDREN is sent by hand because the
+## runner forbids awaiting a frame.
+func test_gridcontainer_splits_evenly_once_the_minimums_match() -> void:
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 24)
+	for i in 2:
+		var c := Control.new()
+		c.custom_minimum_size = Vector2(420, 260)
+		c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_child(c)
+	Engine.get_main_loop().root.add_child(grid)
+	track(grid)
+	grid.size = Vector2(922, 600)
+	grid.notification(Container.NOTIFICATION_SORT_CHILDREN)
+	assert_true(absf(grid.get_child(0).size.x - grid.get_child(1).size.x) < 0.5,
+		"equal minimums must split evenly, got %s and %s" %
+			[grid.get_child(0).size.x, grid.get_child(1).size.x])
 	var src := _scene_src()
-	assert_true(src.contains('type="GridContainer"'), "%List is a GridContainer")
-	assert_true(src.contains("columns = 2"))
+	assert_true(src.contains('type="GridContainer"') and src.contains("columns = 2"),
+		"and the screen must still use that GridContainer")
 
 
 func test_scene_has_status_pill_and_filter() -> void:

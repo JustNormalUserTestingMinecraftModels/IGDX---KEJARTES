@@ -89,9 +89,11 @@ func _ready() -> void:
 	# MinigameCountdown (150), TouchFeedbackManager (125),
 	# AchievementToast (120) and the debug overlay -- so leaving a minigame
 	# with the result popup up punched it straight through the cover.
-	# 1000 clears the highest of those (999). The debug overlay and its two
-	# canvases deliberately stay above, at 1124/1125/1128: a developer tool
-	# should not be hidden by a wipe.
+	# 1000 clears the highest of those (999). The debug OVERLAY deliberately
+	# stays above, at 1128: a developer tool should not be hidden by a wipe.
+	# Its two content canvases do not -- the standalone minigame launcher
+	# (125) and the weekly-report preview (124) host real screens that bring
+	# their own CanvasLayers, so they belong down here with game content.
 	layer = 1000
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var tokens := DesignTokens.load_default()

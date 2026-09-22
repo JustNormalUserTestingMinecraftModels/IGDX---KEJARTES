@@ -1204,7 +1204,14 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 	log_message("Loading standalone minigame: " + scene_path)
 	
 	minigame_canvas = CanvasLayer.new()
-	minigame_canvas.layer = 1125 # Just below debug menu (1128)
+	# 125, NOT up with the rest of the debug block at 1124-1128. This canvas
+	# hosts a REAL minigame, which brings its own CanvasLayers with it: UI at
+	# 100, the countdown at 150, the tutorial at 500 and the result popup at
+	# 999. Host it above those and it covers them -- at 1125 the standalone
+	# launcher's result popup rendered underneath the minigame and was simply
+	# invisible. Game content belongs below the wipe; only the overlay chrome
+	# needs to sit above it.
+	minigame_canvas.layer = 125
 	add_child(minigame_canvas)
 	
 	var m_scene = load(scene_path)
@@ -1415,10 +1422,11 @@ func _restore_before_rehearsal() -> void:
 
 ## The weekly report preview's host layer, or null when none is open.
 var _week_report_canvas: CanvasLayer = null
-## The preview's layer: just under the standalone minigame launcher's (1125)
-## and the overlay's own (1128). The whole debug block sits above the
-## transition wipe (1000) so a scene change never hides a developer tool.
-const WEEK_REPORT_LAYER := 1124
+## The preview's layer: just under the standalone minigame launcher's (125).
+## Like that one this hosts a real screen (ResultCheckup) rather than overlay
+## chrome, so it stays below the transition wipe with the game content. Only
+## the overlay itself (1128) sits above the wipe.
+const WEEK_REPORT_LAYER := 124
 
 ## Opens the weekly report (ResultCheckup) over the current screen, filled
 ## with WeekReportRehearsal's sample week, so its reveal can be watched in

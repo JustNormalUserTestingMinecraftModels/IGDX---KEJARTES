@@ -117,7 +117,7 @@ const DEFAULT_STUDENTS = [
 func _ready() -> void:
 	# Ensure the debug manager runs always, even when game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	layer = 128 # Above everything (Transition is 100)
+	layer = 1128 # Above everything, including the wipe (Transition is 1000)
 
 	_apply_playtest_defaults()
 
@@ -1204,7 +1204,7 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 	log_message("Loading standalone minigame: " + scene_path)
 	
 	minigame_canvas = CanvasLayer.new()
-	minigame_canvas.layer = 125 # Just below debug menu (128)
+	minigame_canvas.layer = 1125 # Just below debug menu (1128)
 	add_child(minigame_canvas)
 	
 	var m_scene = load(scene_path)
@@ -1415,9 +1415,10 @@ func _restore_before_rehearsal() -> void:
 
 ## The weekly report preview's host layer, or null when none is open.
 var _week_report_canvas: CanvasLayer = null
-## The preview's layer: just under the standalone minigame launcher's (125)
-## and the overlay's own (128).
-const WEEK_REPORT_LAYER := 124
+## The preview's layer: just under the standalone minigame launcher's (1125)
+## and the overlay's own (1128). The whole debug block sits above the
+## transition wipe (1000) so a scene change never hides a developer tool.
+const WEEK_REPORT_LAYER := 1124
 
 ## Opens the weekly report (ResultCheckup) over the current screen, filled
 ## with WeekReportRehearsal's sample week, so its reveal can be watched in

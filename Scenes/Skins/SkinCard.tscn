@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://ciq0pw7nx0ra6"]
+
+[ext_resource type="Script" uid="uid://cu2gfvctamp47" path="res://Scripts/Skins/SkinCard.gd" id="1_1owxx"]
+[ext_resource type="Texture2D" uid="uid://bsu4hxxxajoaa" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="2_k647m"]
+
+[node name="SkinCard" type="Control" unique_id=1651751090]
+custom_minimum_size = Vector2(752, 1337)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("1_1owxx")
+
+[node name="Art" type="TextureRect" parent="." unique_id=1253486339]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Lock" type="TextureRect" parent="." unique_id=2023295989]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -72.0
+offset_top = -72.0
+offset_right = 72.0
+offset_bottom = 72.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_k647m")
+expand_mode = 1
+stretch_mode = 5

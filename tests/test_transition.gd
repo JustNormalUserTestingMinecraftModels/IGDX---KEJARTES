@@ -37,10 +37,84 @@ func test_scene_changed_signal_exists() -> void:
 		"screens need a hook to start their entry animation")
 
 
+## The wipe's job is to hide the scene swap, so nothing that can still be on
+## screen when one starts may draw over it. This used to assert `>= 100`,
+## which the old value of 100 satisfied while eight CanvasLayers -- up to
+## MinigameResultPopup at 999 -- punched straight through the cover. The
+## assertion was true and the property it named was false.
+##
+## Only the debug overlay's three canvases are allowed above: hiding a
+## developer tool behind a wipe helps nobody.
 func test_transition_layer_is_above_everything() -> void:
 	var t: Node = Engine.get_main_loop().root.get_node("Transition")
-	assert_true(t.layer >= 100,
-		"the transition must draw above all game content")
+	assert_true(t.layer > 999,
+		"the wipe must outrank MinigameResultPopup (999); got %d" % t.layer)
+
+
+## The real ratchet: scan every scene and script for a CanvasLayer number and
+## prove the wipe still outranks all of them. A source scan rather than a
+## hand-kept list, so a screen added later cannot quietly reintroduce the
+## defect. DebugManager owns the only exempt layers.
+func test_no_canvaslayer_outranks_the_wipe() -> void:
+	var t: Node = Engine.get_main_loop().root.get_node("Transition")
+	var wipe: int = t.layer
+	var offenders := PackedStringArray()
+	for path in _all_source_files():
+		if path == "res://Scripts/Debug/DebugManager.gd":
+			continue
+		if path == "res://Scenes/Transition/transition.tscn":
+			continue
+		if path == "res://Scripts/Transition/transition.gd":
+			continue
+		var src := FileAccess.get_file_as_string(path)
+		for line in src.split("\n"):
+			var stripped := line.strip_edges()
+			if stripped.begins_with("#"):
+				continue
+			# Drop a trailing comment first, or a line like
+			# `tut_canvas.layer = 101 # Trait popups are layer 100` would be
+			# read as 100 -- the comment's number, not the assignment's.
+			var hash_at := stripped.find("#")
+			if hash_at != -1:
+				stripped = stripped.substr(0, hash_at).strip_edges()
+			if not (stripped.contains("layer = ") or stripped.contains("layer=")):
+				continue
+			# `layer`, `ui_layer` and `_canvas.layer` are all real
+			# CanvasLayer numbers, so matching the bare suffix is correct.
+			var tail := stripped.substr(stripped.rfind("layer"))
+			var digits := ""
+			for ch in tail:
+				if ch >= "0" and ch <= "9":
+					digits += ch
+				elif digits != "":
+					break
+			if digits == "":
+				continue
+			var value := int(digits)
+			if value >= wipe:
+				offenders.append("%s: %s" % [path.get_file(), stripped])
+	assert_eq(offenders.size(), 0,
+		"these draw over the transition wipe (layer %d): %s"
+			% [wipe, ", ".join(offenders)])
+
+
+## Every .tscn under Scenes/ and .gd under Scripts/.
+func _all_source_files() -> PackedStringArray:
+	var out := PackedStringArray()
+	_collect_files("res://Scenes", ".tscn", out)
+	_collect_files("res://Scripts", ".gd", out)
+	return out
+
+
+func _collect_files(dir_path: String, suffix: String, out: PackedStringArray) -> void:
+	var d := DirAccess.open(dir_path)
+	if d == null:
+		return
+	for f in d.get_files():
+		if f.ends_with(suffix):
+			out.append(dir_path.path_join(f))
+	for sub in d.get_directories():
+		_collect_files(dir_path.path_join(sub), suffix, out)
 
 
 func test_overlay_does_not_block_input_when_idle() -> void:
@@ -86,7 +160,7 @@ func test_cover_has_a_gradient_and_a_pattern_layer() -> void:
 
 
 ## Both layers must ignore input for the same reason the ColorRect does:
-## the overlay sits at layer 100 over every screen.
+## the overlay sits at layer 1000 over every screen.
 func test_cover_layers_never_intercept_taps() -> void:
 	var t: Node = Engine.get_main_loop().root.get_node("Transition")
 	for path in ["ColorRect/Gradient", "ColorRect/Pattern"]:

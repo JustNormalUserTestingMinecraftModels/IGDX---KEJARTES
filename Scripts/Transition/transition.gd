@@ -82,7 +82,17 @@ var _pattern_cache: Dictionary = {}
 
 
 func _ready() -> void:
-	layer = 100
+	# 1000, not 100: the wipe's whole job is to hide the scene swap, so it
+	# must cover everything that can still be on screen when one starts.
+	# At 100 it was drawn UNDER eight things -- MinigameResultPopup (999),
+	# MinigameTutorial (500), Pengaturan (250), QuitConfirmDialog (210),
+	# MinigameCountdown (150), TouchFeedbackManager (125),
+	# AchievementToast (120) and the debug overlay -- so leaving a minigame
+	# with the result popup up punched it straight through the cover.
+	# 1000 clears the highest of those (999). The debug overlay and its two
+	# canvases deliberately stay above, at 1124/1125/1128: a developer tool
+	# should not be hidden by a wipe.
+	layer = 1000
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var tokens := DesignTokens.load_default()
 	if tokens != null:

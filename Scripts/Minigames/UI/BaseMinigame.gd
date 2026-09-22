@@ -679,7 +679,29 @@ static func _calculate_stars(ratio: float, is_win: bool) -> int:
 ## continues (the popup frees itself). `custom_subtitle` is accepted for
 ## call-site compatibility but is not displayed -- the shipped overlay never
 ## rendered it either.
+## True once a result overlay has been built, so a second end call cannot
+## stack another one. See the guard at the top of _show_result_overlay().
+var _result_shown: bool = false
+
+
 func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
+	# A minigame ends once. Without this, LombaMenari -- which scores per
+	# swipe and calls win_game() inline the moment score >= target_score --
+	# built a fresh popup on EVERY later note hit: thirty CanvasLayers at 999,
+	# thirty sets of tweens, a hundred and twenty GPUParticles2D and thirty
+	# overlapping fanfares. Thirty translucent dim overlays composite to
+	# opaque black and each LANJUTKAN press dismissed only one of them, so the
+	# game looked frozen.
+	#
+	# The guard belongs here rather than in win_game(). Copying lose_game()'s
+	# `if not is_game_active: return` into win_game() looks like the obvious
+	# fix and is wrong: lose_game() clears that flag at its top and THEN
+	# routes to win_game() when the score cleared the threshold, so the guard
+	# would suppress the win-on-timeout result entirely and hang the game for
+	# real. "The result is shown once" is the invariant that actually holds.
+	if _result_shown:
+		return
+	_result_shown = true
 	process_mode = Node.PROCESS_MODE_INHERIT
 
 	# Gather score data from the child minigame

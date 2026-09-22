@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://c508i2o3te6ur" path="res://Assets/Images/Shop/Koperasi/shop_background.png" id="2_bg"]
 [ext_resource type="Texture2D" uid="uid://bc5b3cryjeq32" path="res://Assets/Images/Shop/Koperasi/shop_herman.png" id="3_herman"]
 [ext_resource type="Texture2D" uid="uid://dhivb8qhdvt0x" path="res://Assets/Images/Shop/Koperasi/shop_foreground.png" id="4_fg"]
-[ext_resource type="Texture2D" uid="uid://fuwhxl8ethbp" path="res://Assets/Images/Shop/return.png" id="5_46s2e"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="5_46s2e"]
 [ext_resource type="Script" uid="uid://bgp5ht1pwg3s1" path="res://Scripts/Koperasi/rakbarang_1.gd" id="5_jfwhh"]
 [ext_resource type="Texture2D" uid="uid://chs5y1k0f18x2" path="res://Assets/Images/Shop/UI/chat_bubble_tail.svg" id="6_tail"]
 [ext_resource type="Texture2D" uid="uid://ku8mk6u7pm31" path="res://Assets/Images/Shop/UI/item_glow.tres" id="8_st3ia"]

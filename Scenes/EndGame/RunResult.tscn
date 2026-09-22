@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://dfh48usjg5eib" path="res://Scenes/EndGame/WinStage.tscn" id="7_54rll"]
 [ext_resource type="Texture2D" uid="uid://dwmcqi38xt14y" path="res://Assets/Images/EndGame/Ranks/rank_c.png" id="7_sjw3o"]
 [ext_resource type="Texture2D" uid="uid://bsgic6jr8lxol" path="res://Assets/Images/EndGame/Ranks/rank_d.png" id="8_1u8qo"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="9_ret"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rclo1"]
 shader = ExtResource("4_hifyx")
@@ -93,3 +94,4 @@ custom_minimum_size = Vector2(0, 128)
 layout_mode = 2
 theme_type_variation = &"PrimaryButtonM"
 text = "Kembali ke Menu"
+icon = ExtResource("9_ret")

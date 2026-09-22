@@ -646,6 +646,23 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		_add_size_step(theme, tokens, base, "L", tokens.font_h1, tokens.btn_pad_v_l)
 	_add_size_step(theme, tokens, "StudentCardSecondaryButton", "L", tokens.font_h1, tokens.btn_pad_v_l)
 
+	# The back arrow beside "Kembali", on every screen that has one. Capped
+	# rather than expand_icon'd so the glyph is a fixed size next to the word
+	# instead of stretching with whatever the label happens to be -- the same
+	# reason the badge chips cap theirs. 36 is the display font's line at the
+	# S step, so the button keeps its 96px height (2*btn_pad_v_s + font_title),
+	# which is also touch_target_min; a larger cap would make the icon the
+	# tallest content and grow the button. Godot's built-in h_separation is
+	# 4px, far too tight beside a 36px glyph, so space_sm is set with it.
+	for base in ["PrimaryButton", "SecondaryButton"]:
+		theme.set_constant("icon_max_width", base, tokens.space_md + tokens.space_xs)
+		theme.set_constant("h_separation", base, tokens.space_sm)
+	# _add_size_step sets base_type to Button, not to the parent variation, so
+	# the M step inherits none of the above and needs its own entry. It is
+	# 128px tall (2*btn_pad_v_m + font_h2), which carries a 48px arrow.
+	theme.set_constant("icon_max_width", "PrimaryButtonM", tokens.btn_icon_s)
+	theme.set_constant("h_separation", "PrimaryButtonM", tokens.space_sm)
+
 
 ## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"), in the Lobby
 ## look since the 2026-09-14 lobby-style-buttons pass (it was a flat brown

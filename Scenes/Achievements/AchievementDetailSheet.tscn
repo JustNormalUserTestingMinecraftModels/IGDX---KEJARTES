@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://Scripts/Achievements/AchievementDetailSheet.gd" id="1_sheet"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Achievements/back_arrow.png" id="2_back"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="2_back"]
 [ext_resource type="Texture2D" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="3_lock"]
 [ext_resource type="Material" path="res://Assets/Images/Achievements/icon_outline_material.tres" id="4_outline"]
 

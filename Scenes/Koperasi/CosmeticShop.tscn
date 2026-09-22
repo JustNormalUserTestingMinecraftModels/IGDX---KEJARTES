@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://c3v6nevrey78g" path="res://Scripts/Koperasi/cosmetic_shop.gd" id="1_nhexx"]
 [ext_resource type="Texture2D" uid="uid://bsa3lvahggq2b" path="res://Assets/Images/Shop/Illustration4.jpg" id="2_bnvsf"]
 [ext_resource type="Material" uid="uid://cw2ydcnw0g4b" path="res://Scenes/Koperasi/shop_hub_blur_material.tres" id="3_we22b"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="4_ret"]
 
 [node name="CosmeticShop" type="Control" unique_id=1688013111]
 layout_mode = 3
@@ -59,3 +60,4 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_type_variation = &"SecondaryButton"
 text = "Kembali"
+icon = ExtResource("4_ret")

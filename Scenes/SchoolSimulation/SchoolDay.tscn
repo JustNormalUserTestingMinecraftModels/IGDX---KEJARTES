@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://blgxgwieuhoky" path="res://Scenes/SchoolSimulation/DaySummaryPopup.tscn" id="6_summary"]
 [ext_resource type="Script" uid="uid://ca6bou6m1loq6" path="res://Scripts/SchoolSimulation/SimulationBackground.gd" id="7_bgscript"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="8_statbar"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="9_ret"]
 
 [node name="SchoolDay" type="Control" unique_id=310225723]
 layout_mode = 3
@@ -95,7 +96,8 @@ custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
-text = "🔙 Kembali ke Menu"
+text = "Kembali ke Menu"
+icon = ExtResource("9_ret")
 
 [node name="SkipButton" type="Button" parent="DayScreen" unique_id=987654321]
 visible = false

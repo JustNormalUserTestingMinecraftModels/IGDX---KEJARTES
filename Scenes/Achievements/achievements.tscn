@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://Assets/Images/Achievements/bg_achievements_blur.jpg" id="2_bg"]
 [ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="3_safe"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Achievements/ribbon_achievements.png" id="4_ribbon"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Achievements/back_arrow.png" id="5_back"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="5_back"]
 [ext_resource type="PackedScene" path="res://Scenes/Achievements/AchievementStatusPill.tscn" id="6_pill"]
 [ext_resource type="PackedScene" path="res://Scenes/Achievements/AchievementDetailSheet.tscn" id="7_sheet"]
 

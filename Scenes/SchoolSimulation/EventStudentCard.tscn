@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_ja1pf"]
 [ext_resource type="Texture2D" uid="uid://cx2se7may2fvu" path="res://Assets/Images/UI/Placeholders/icon_check.svg" id="6_c4364"]
 [ext_resource type="Texture2D" uid="uid://c44gv8jwfmk3x" path="res://Assets/Images/UI/Placeholders/icon_tired.svg" id="7_fa73o"]
-[ext_resource type="Texture2D" uid="uid://bxr0nynyliitp" path="res://Assets/Images/UI/Placeholders/icon_star.svg" id="8_8prce"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/star.png" id="8_8prce"]
 
 [node name="EventStudentCard" type="Button" unique_id=829660794]
 custom_minimum_size = Vector2(0, 410)

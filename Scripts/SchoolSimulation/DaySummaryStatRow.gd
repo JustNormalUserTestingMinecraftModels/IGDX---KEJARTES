@@ -247,22 +247,31 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	if chevron.visible:
 		Juice.pop_in(chevron, delay)
 		_play_burst(delay, plays_sparkle)
+	elif _delta < 0.0 and not Engine.is_editor_hint():
+		# A losing row had no cue at all before the 2026-09-21 sound pack: the
+		# chevron only shows on a gain, so the whole fall happened in silence.
+		AudioDirector.play_sfx(&"stat_down")
 	Juice.count_up_formatted(value, 0.0, _delta,
 		func(v: float) -> String: return format_value(v, _target), delay)
 
 
-## The gain's reward: a star burst centred on the chevron, plus the tally
-## tick on the same beat -- the tally always plays on a real gain; only
+## The gain's reward: a star burst centred on the chevron, plus the rising
+## stat cue on the same beat -- that cue always plays on a real gain; only
 ## the burst's own sparkle cue is deduplicated across a card's gesture
 ## (see DaySummaryStudentRow.play_gain). Editor-gated -- the test runner
 ## builds these rows to inspect them, not to watch them.
+##
+## The cue was the generic `tally` tick until the 2026-09-21 sound pack
+## brought a real rising ding. `tally` is still the right cue elsewhere
+## (StatCheck's count-up, WeekRecapPill), where the number is being counted
+## rather than going up.
 func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	if Engine.is_editor_hint():
 		return
 	var fx := _get_or_make_burst(chevron.position + chevron.size * 0.5)
 	fx.plays_sfx = plays_sparkle
 	fx.fire(delay)
-	AudioDirector.play_sfx(&"tally")
+	AudioDirector.play_sfx(&"stat_up")
 
 
 # ── The weekly reveal (2026-09-14 weekly-report-reveal spec) ─────────

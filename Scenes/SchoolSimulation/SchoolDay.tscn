@@ -2,11 +2,12 @@
 
 [ext_resource type="Script" uid="uid://4jmdeoilk6nk" path="res://Scripts/SchoolSimulation/SchoolDay.gd" id="1_schoolday"]
 [ext_resource type="PackedScene" uid="uid://bi1vea4233njp" path="res://Scenes/SchoolSimulation/ResultCheckup.tscn" id="2_checkup"]
-[ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn" id="4_student_select"]
+[ext_resource type="PackedScene" uid="uid://cc0owmbxv4r3g" path="res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn" id="4_student_select"]
 [ext_resource type="PackedScene" uid="uid://cx6n3hr2evpn1" path="res://Scenes/SchoolSimulation/BookClockWidget.tscn" id="5_bookclock"]
 [ext_resource type="PackedScene" uid="uid://blgxgwieuhoky" path="res://Scenes/SchoolSimulation/DaySummaryPopup.tscn" id="6_summary"]
 [ext_resource type="Script" uid="uid://ca6bou6m1loq6" path="res://Scripts/SchoolSimulation/SimulationBackground.gd" id="7_bgscript"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="8_statbar"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="9_ret"]
 
 [node name="SchoolDay" type="Control" unique_id=310225723]
 layout_mode = 3
@@ -35,10 +36,12 @@ layout_mode = 1
 [node name="DayScreen" type="VBoxContainer" parent="." unique_id=689888867]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.05
-anchor_top = 0.06
-anchor_right = 0.95
-anchor_bottom = 0.94
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 54.0
+offset_top = 320.0
+offset_right = -54.0
+offset_bottom = -144.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 18
@@ -50,20 +53,11 @@ theme_type_variation = &"CaptionLabel"
 text = "Hari 1 dari 5"
 horizontal_alignment = 1
 
-[node name="DayLabel" type="Label" parent="DayScreen" unique_id=1074097941]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"H1Label"
-text = "Senin"
-horizontal_alignment = 1
-autowrap_mode = 2
-
 [node name="ProgressBar" type="ProgressBar" parent="DayScreen" unique_id=1144036598]
-self_modulate = Color(1, 0.7882353, 0.23529412, 1)
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"StatBar"
+theme_type_variation = &"StatBarLibur"
 show_percentage = false
 script = ExtResource("8_statbar")
 category = "Libur"
@@ -102,7 +96,8 @@ custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
-text = "🔙 Kembali ke Menu"
+text = "Kembali ke Menu"
+icon = ExtResource("9_ret")
 
 [node name="SkipButton" type="Button" parent="DayScreen" unique_id=987654321]
 visible = false

@@ -2,13 +2,13 @@
 
 [ext_resource type="Script" uid="uid://cbxv7sbybkdh2" path="res://Scripts/AturJadwal/atur_jadwal.gd" id="1_atur"]
 [ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_shader"]
+[ext_resource type="Material" path="res://Assets/Images/SplashArtMurid/splash_outline_material.tres" id="3_ulthj"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="4_f4ced"]
 [ext_resource type="Texture2D" uid="uid://bpayde6glp1hm" path="res://Assets/Images/UI/papantulis.png" id="4_ulthj"]
 [ext_resource type="Texture2D" uid="uid://bvc6vlo87qpl0" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
 [ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
 [ext_resource type="Texture2D" uid="uid://cixngx8hgvgmn" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
-[ext_resource type="Texture2D" uid="uid://fuwhxl8ethbp" path="res://Assets/Images/Shop/return.png" id="10_return"]
-[ext_resource type="Texture2D" uid="uid://c8uw72nl2167r" path="res://Assets/Images/UI/pngwing.com (1).png" id="11_left_arrow"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="10_return"]
 [ext_resource type="PackedScene" uid="uid://bs3nadqta0083" path="res://Scenes/AturJadwal/ActivityRow.tscn" id="12_activityrow"]
 [ext_resource type="Texture2D" uid="uid://buen031hxfvy4" path="res://Assets/Images/StudentCard/stat_akademis.png" id="13_icon_akademis"]
 [ext_resource type="Texture2D" uid="uid://dkwph7530y25f" path="res://Assets/Images/StudentCard/stat_senibudaya.png" id="14_icon_seni"]
@@ -46,6 +46,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="TextureButton" type="TextureButton" parent="." unique_id=1727823902]
+material = ExtResource("3_ulthj")
 layout_mode = 1
 anchors_preset = -1
 offset_left = -76.0
@@ -62,6 +63,8 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = 843.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.8784314, 0.8784314, 0.8784314, 1)
 
@@ -363,7 +366,7 @@ offset_top = -160.0
 offset_right = 160.0
 offset_bottom = -60.0
 grow_vertical = 0
-texture_normal = ExtResource("11_left_arrow")
+texture_normal = ExtResource("10_return")
 ignore_texture_size = true
 stretch_mode = 5
 

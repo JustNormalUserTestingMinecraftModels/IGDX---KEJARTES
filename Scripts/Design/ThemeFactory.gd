@@ -20,17 +20,97 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_panels(theme, tokens)
 	_build_labels(theme, tokens)
 	_build_progress(theme, tokens)
+	_build_achievement_tile_bar(theme, tokens)
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
 	_build_week_recap(theme, tokens)
+	_build_id_card(theme, tokens)
 	_build_minigame_result(theme, tokens)
+	_build_minigame_typography(theme, tokens)
 	_build_event_warning(theme, tokens)
 	_build_event_dialogue(theme, tokens)
 	_build_shop_chat_bubble(theme, tokens)
+	_build_student_chat(theme, tokens)
 	_build_achievements(theme, tokens)
+	_build_achievement_tile(theme, tokens)
+	_build_achievement_status_pill(theme, tokens)
+	_build_skin_select(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
+
+
+## SkinSelect (spec:
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md): the six
+## student squares in their two states, the skin's name, and the "sedang
+## dipakai" chip that is the only visible proof TERAPKAN did anything.
+static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
+	var square := func(bg: Color, border: Color) -> StyleBoxFlat:
+		var box := StyleBoxFlat.new()
+		box.bg_color = bg
+		box.border_color = border
+		box.set_border_width_all(int(tokens.outline_width))
+		# radius_button, not radius_md: these are Buttons, and
+		# tests/test_button_geometry.gd holds every button variation to the
+		# one fixed radius.
+		box.set_corner_radius_all(tokens.radius_button)
+		return box
+
+	theme.add_type("SkinStudentTile")
+	theme.set_type_variation("SkinStudentTile", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SkinStudentTile",
+			square.call(tokens.surface_card, tokens.text_primary))
+
+	theme.add_type("SkinStudentTileActive")
+	theme.set_type_variation("SkinStudentTileActive", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SkinStudentTileActive",
+			square.call(tokens.outline_card, tokens.brand_primary))
+
+	theme.add_type("SkinNameLabel")
+	theme.set_type_variation("SkinNameLabel", "Label")
+	theme.set_font_size("font_size", "SkinNameLabel", tokens.font_title)
+	theme.set_color("font_color", "SkinNameLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinNameLabel", tokens.font_display)
+
+	theme.add_type("SkinWornChip")
+	theme.set_type_variation("SkinWornChip", "PanelContainer")
+	var chip := StyleBoxFlat.new()
+	chip.bg_color = tokens.state_success.lightened(0.7)
+	chip.border_color = tokens.state_success
+	chip.set_border_width_all(int(tokens.outline_width / 2.0))
+	chip.set_corner_radius_all(tokens.radius_pill)
+	chip.content_margin_left = tokens.space_md
+	chip.content_margin_right = tokens.space_md
+	chip.content_margin_top = tokens.space_xs
+	chip.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "SkinWornChip", chip)
+
+	# The carousel's page dots, one per skin of the open student. Two
+	# variations rather than a runtime modulate, so the colours stay in the
+	# theme like everything else that is drawn.
+	var dot := func(fill: Color) -> StyleBoxFlat:
+		var box := StyleBoxFlat.new()
+		box.bg_color = fill
+		box.set_corner_radius_all(tokens.radius_pill)
+		return box
+
+	theme.add_type("SkinDotOn")
+	theme.set_type_variation("SkinDotOn", "Panel")
+	theme.set_stylebox("panel", "SkinDotOn", dot.call(tokens.brand_primary))
+
+	theme.add_type("SkinDotOff")
+	theme.set_type_variation("SkinDotOff", "Panel")
+	theme.set_stylebox("panel", "SkinDotOff", dot.call(tokens.surface_sunken))
+
+	theme.add_type("SkinWornChipLabel")
+	theme.set_type_variation("SkinWornChipLabel", "Label")
+	theme.set_font_size("font_size", "SkinWornChipLabel", tokens.font_micro)
+	theme.set_color("font_color", "SkinWornChipLabel", tokens.state_success.darkened(0.45))
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinWornChipLabel", tokens.font_display)
 
 
 ## Measured off mockup_eventdialogue.png: the dialogue card's corner radius
@@ -42,6 +122,20 @@ const DAY_BANNER_OUTLINE := 12
 ## Measured off newshop_mockup.png: the Koperasi chat bubble's ~24 px corner
 ## at the mockup's 5/6 scale. No token matches; a single-screen value.
 const SHOP_CHAT_BUBBLE_RADIUS := 28
+
+## The Lobby students' chat bubble (2026-09-19 student-chatter spec): a
+## smaller corner than Herman's for a bubble about half his width, and a
+## vertical pad between the space_sm and space_md tokens so three lines of
+## text fit its 200 px body.
+const STUDENT_CHAT_BUBBLE_RADIUS := 24
+const STUDENT_CHAT_BUBBLE_PAD_Y := 20
+
+## Measured off skinselect_mockup.png: the student frames' corner radius and
+## brown outline width. No token matches; the colours still come from tokens.
+const SKIN_FRAME_RADIUS := 72
+const SKIN_BORDER_WIDTH := 10
+## The option column's corner radius (skinselectoption_mockup.png).
+const SKIN_COLUMN_RADIUS := 60
 
 
 ## Koperasi's chat bubble (2026-09-17 shop revamp spec): Pak Herman's
@@ -60,6 +154,30 @@ static func _build_shop_chat_bubble(theme: Theme, tokens: DesignTokens) -> void:
 	bubble.content_margin_bottom = tokens.space_lg
 	theme.set_stylebox("panel", "ShopChatBubble", bubble)
 
+
+
+## The Lobby students' chat bubble (2026-09-19 student-chatter spec): the
+## same card-white box as Herman's with tighter margins for its 560 px
+## width, and bold body text at font_title. Body font, so not on
+## DISPLAY_ROSTER.
+static func _build_student_chat(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("StudentChatBubble")
+	theme.set_type_variation("StudentChatBubble", "PanelContainer")
+	var bubble := StyleBoxFlat.new()
+	bubble.bg_color = tokens.surface_card
+	bubble.set_corner_radius_all(STUDENT_CHAT_BUBBLE_RADIUS)
+	bubble.content_margin_left = tokens.space_md
+	bubble.content_margin_right = tokens.space_md
+	bubble.content_margin_top = STUDENT_CHAT_BUBBLE_PAD_Y
+	bubble.content_margin_bottom = STUDENT_CHAT_BUBBLE_PAD_Y
+	theme.set_stylebox("panel", "StudentChatBubble", bubble)
+
+	theme.add_type("StudentChatText")
+	theme.set_type_variation("StudentChatText", "Label")
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+	theme.set_font("font", "StudentChatText", bold)
+	theme.set_font_size("font_size", "StudentChatText", tokens.font_title)
+	theme.set_color("font_color", "StudentChatText", tokens.text_primary)
 
 ## The event dialogue (2026-09-14 event-dialogue spec): a white rounded card
 ## with dark bold text, and the header's day banner and calendar labels, all
@@ -226,6 +344,133 @@ static func _build_achievements(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("AchievementClaimHintLabel", "Label")
 	theme.set_font_size("font_size", "AchievementClaimHintLabel", ACHIEVEMENT_CLAIM_HINT_SIZE)
 	theme.set_color("font_color", "AchievementClaimHintLabel", Color.WHITE)
+
+
+## The 2-column achievement grid tile (2026-09-18 achievements-polish spec):
+## a small prize chip (neutral when the entry carries no effect, amber when
+## it does) and a tiny "BARU" unlock pip. Both chips reuse the Card
+## variation's radius_pill shape so they read as siblings of the trait
+## chips (QuirkBadge/PersonaBadge) despite being Panels, not Buttons -- the
+## tile itself is the tappable surface (AchievementTile.gd's _gui_input),
+## so these inner chips must stay non-interactive Panels.
+static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("AchievementPrizeChip")
+	theme.set_type_variation("AchievementPrizeChip", "Panel")
+	var neutral := StyleBoxFlat.new()
+	neutral.bg_color = tokens.surface_sunken
+	neutral.set_corner_radius_all(tokens.radius_pill)
+	neutral.content_margin_left = tokens.space_md
+	neutral.content_margin_right = tokens.space_md
+	neutral.content_margin_top = tokens.space_xs
+	neutral.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementPrizeChip", neutral)
+
+	theme.add_type("AchievementPrizeChipAmber")
+	theme.set_type_variation("AchievementPrizeChipAmber", "Panel")
+	var amber := StyleBoxFlat.new()
+	amber.bg_color = tokens.state_warning.lightened(0.35)
+	amber.border_color = tokens.state_warning
+	amber.set_border_width_all(int(tokens.outline_width / 2.0))
+	amber.set_corner_radius_all(tokens.radius_pill)
+	amber.content_margin_left = tokens.space_md
+	amber.content_margin_right = tokens.space_md
+	amber.content_margin_top = tokens.space_xs
+	amber.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementPrizeChipAmber", amber)
+
+	theme.add_type("AchievementPrizeChipLabel")
+	theme.set_type_variation("AchievementPrizeChipLabel", "Label")
+	theme.set_font_size("font_size", "AchievementPrizeChipLabel", tokens.font_micro)
+	theme.set_color("font_color", "AchievementPrizeChipLabel", tokens.text_secondary)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementPrizeChipLabel", tokens.font_display)
+
+	theme.add_type("AchievementPrizeChipLabelAmber")
+	theme.set_type_variation("AchievementPrizeChipLabelAmber", "Label")
+	theme.set_font_size("font_size", "AchievementPrizeChipLabelAmber", tokens.font_micro)
+	theme.set_color("font_color", "AchievementPrizeChipLabelAmber", tokens.state_warning.darkened(0.35))
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementPrizeChipLabelAmber", tokens.font_display)
+
+	# The tile's own title. CaptionLabel (22) put the tile's most important
+	# text on the scale's second-smallest step; this is the body step (28)
+	# in the primary ink. Body face, not display -- it wraps to two lines,
+	# and Boohong at 28 over two lines reads as a banner, not a caption.
+	theme.add_type("AchievementTileTitleLabel")
+	theme.set_type_variation("AchievementTileTitleLabel", "Label")
+	theme.set_font_size("font_size", "AchievementTileTitleLabel", tokens.font_body_size)
+	theme.set_color("font_color", "AchievementTileTitleLabel", tokens.text_primary)
+	if tokens.font_body != null:
+		theme.set_font("font", "AchievementTileTitleLabel", tokens.font_body)
+
+	# The detail sheet's description. CaptionLabel (22) was too small for a
+	# full sentence on an 864-wide card; this is the body step in the
+	# secondary ink, so the H2 title above it keeps the hierarchy.
+	theme.add_type("AchievementSheetBodyLabel")
+	theme.set_type_variation("AchievementSheetBodyLabel", "Label")
+	theme.set_font_size("font_size", "AchievementSheetBodyLabel", tokens.font_body_size)
+	theme.set_color("font_color", "AchievementSheetBodyLabel", tokens.text_secondary)
+	if tokens.font_body != null:
+		theme.set_font("font", "AchievementSheetBodyLabel", tokens.font_body)
+
+	# The "BARU" unlock pip that used to sit in the tile's top-right corner
+	# was replaced on 2026-09-22 by a notice_icon.png TextureRect, so its
+	# AchievementBaruBadge / AchievementBaruBadgeLabel variations went with
+	# it (and AchievementBaruBadgeLabel left DISPLAY_ROSTER).
+
+
+## The header's morphing status pill (2026-09-18 achievements-polish spec,
+## Task 4): a cream IDLE background and a green WAITING background, each
+## with a label variation whose font color reads on top of it, plus the
+## IDLE dash bar's two segment fills.
+static func _build_achievement_status_pill(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("AchievementStatusPillIdle")
+	theme.set_type_variation("AchievementStatusPillIdle", "PanelContainer")
+	var idle_box := StyleBoxFlat.new()
+	idle_box.bg_color = tokens.surface_card
+	idle_box.set_corner_radius_all(tokens.radius_pill)
+	idle_box.content_margin_left = tokens.space_md
+	idle_box.content_margin_right = tokens.space_md
+	idle_box.content_margin_top = tokens.space_xs
+	idle_box.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementStatusPillIdle", idle_box)
+
+	theme.add_type("AchievementStatusPillWaiting")
+	theme.set_type_variation("AchievementStatusPillWaiting", "PanelContainer")
+	var waiting_box := StyleBoxFlat.new()
+	waiting_box.bg_color = tokens.state_success
+	waiting_box.set_corner_radius_all(tokens.radius_pill)
+	waiting_box.content_margin_left = tokens.space_md
+	waiting_box.content_margin_right = tokens.space_md
+	waiting_box.content_margin_top = tokens.space_xs
+	waiting_box.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "AchievementStatusPillWaiting", waiting_box)
+
+	theme.add_type("AchievementStatusPillIdleLabel")
+	theme.set_type_variation("AchievementStatusPillIdleLabel", "Label")
+	theme.set_color("font_color", "AchievementStatusPillIdleLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementStatusPillIdleLabel", tokens.font_display)
+
+	theme.add_type("AchievementStatusPillWaitingLabel")
+	theme.set_type_variation("AchievementStatusPillWaitingLabel", "Label")
+	theme.set_color("font_color", "AchievementStatusPillWaitingLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementStatusPillWaitingLabel", tokens.font_display)
+
+	theme.add_type("AchievementDashSegmentFilled")
+	theme.set_type_variation("AchievementDashSegmentFilled", "Panel")
+	var seg_filled := StyleBoxFlat.new()
+	seg_filled.bg_color = tokens.state_success
+	seg_filled.set_corner_radius_all(2)
+	theme.set_stylebox("panel", "AchievementDashSegmentFilled", seg_filled)
+
+	theme.add_type("AchievementDashSegmentEmpty")
+	theme.set_type_variation("AchievementDashSegmentEmpty", "Panel")
+	var seg_empty := StyleBoxFlat.new()
+	seg_empty.bg_color = tokens.surface_sunken
+	seg_empty.set_corner_radius_all(2)
+	theme.set_stylebox("panel", "AchievementDashSegmentEmpty", seg_empty)
 
 
 ## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard
@@ -482,6 +727,23 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 		_add_size_step(theme, tokens, base, "L", tokens.font_h1, tokens.btn_pad_v_l)
 	_add_size_step(theme, tokens, "StudentCardSecondaryButton", "L", tokens.font_h1, tokens.btn_pad_v_l)
 
+	# The back arrow beside "Kembali", on every screen that has one. Capped
+	# rather than expand_icon'd so the glyph is a fixed size next to the word
+	# instead of stretching with whatever the label happens to be -- the same
+	# reason the badge chips cap theirs. 36 is the display font's line at the
+	# S step, so the button keeps its 96px height (2*btn_pad_v_s + font_title),
+	# which is also touch_target_min; a larger cap would make the icon the
+	# tallest content and grow the button. Godot's built-in h_separation is
+	# 4px, far too tight beside a 36px glyph, so space_sm is set with it.
+	for base in ["PrimaryButton", "SecondaryButton"]:
+		theme.set_constant("icon_max_width", base, tokens.space_md + tokens.space_xs)
+		theme.set_constant("h_separation", base, tokens.space_sm)
+	# _add_size_step sets base_type to Button, not to the parent variation, so
+	# the M step inherits none of the above and needs its own entry. It is
+	# 128px tall (2*btn_pad_v_m + font_h2), which carries a 48px arrow.
+	theme.set_constant("icon_max_width", "PrimaryButtonM", tokens.btn_icon_s)
+	theme.set_constant("h_separation", "PrimaryButtonM", tokens.space_sm)
+
 
 ## Koperasi's shelf-category button (e.g. "KEBUTUHAN SEKOLAH"), in the Lobby
 ## look since the 2026-09-14 lobby-style-buttons pass (it was a flat brown
@@ -506,6 +768,13 @@ static func _build_result_button(theme: Theme, tokens: DesignTokens) -> void:
 	_add_lobby_button(theme, tokens, "ResultButton")
 	_set_content_margins(theme, "ResultButton", 24, tokens.btn_pad_v_s)
 	theme.set_font_size("font_size", "ResultButton", tokens.day_stat_size)
+	# 2026-09-19: Logs is the ribbon's red, lightened; Selanjutnya keeps the
+	# brown as the one primary action.
+	_add_button_variation(theme, tokens, "ResultLogsButton",
+		tokens.result_logs_fill, tokens.result_logs_dark,
+		tokens.outline_card, tokens.text_on_brand)
+	_set_content_margins(theme, "ResultLogsButton", 24, tokens.btn_pad_v_s)
+	theme.set_font_size("font_size", "ResultLogsButton", tokens.day_stat_size)
 
 
 ## The main menu's icon buttons, in the Lobby look (2026-09-14
@@ -703,6 +972,34 @@ static func _build_panels(theme: Theme, tokens: DesignTokens) -> void:
 	photo.shadow_size = tokens.shadow_size
 	photo.shadow_offset = tokens.shadow_offset
 	theme.set_stylebox("panel", "PhotoFrame", photo)
+
+	# The skin popup's masked student art (SkinFrame.tscn): an opaque rounded
+	# fill that clip_children uses as the mask, and a fill-less brown outline
+	# drawn over the art.
+	theme.add_type("SkinFrameMask")
+	theme.set_type_variation("SkinFrameMask", "Panel")
+	var skin_mask := StyleBoxFlat.new()
+	skin_mask.bg_color = tokens.surface_card
+	skin_mask.set_corner_radius_all(SKIN_FRAME_RADIUS)
+	theme.set_stylebox("panel", "SkinFrameMask", skin_mask)
+
+	theme.add_type("SkinFrameBorder")
+	theme.set_type_variation("SkinFrameBorder", "Panel")
+	var skin_border := StyleBoxFlat.new()
+	skin_border.draw_center = false
+	skin_border.border_color = tokens.brand_primary
+	skin_border.set_border_width_all(SKIN_BORDER_WIDTH)
+	skin_border.set_corner_radius_all(SKIN_FRAME_RADIUS)
+	theme.set_stylebox("panel", "SkinFrameBorder", skin_border)
+
+	theme.add_type("SkinOptionColumn")
+	theme.set_type_variation("SkinOptionColumn", "Panel")
+	var skin_column := StyleBoxFlat.new()
+	skin_column.bg_color = tokens.surface_card
+	skin_column.border_color = tokens.brand_primary
+	skin_column.set_border_width_all(SKIN_BORDER_WIDTH)
+	skin_column.set_corner_radius_all(SKIN_COLUMN_RADIUS)
+	theme.set_stylebox("panel", "SkinOptionColumn", skin_column)
 
 	# A card header whose accent is chosen at runtime. The background is
 	# white so the caller can tint it with self_modulate -- the accent is the
@@ -1001,6 +1298,78 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 	_add_cutscene_dialogue(theme, tokens)
 
 
+# ----------------------------------------------------- minigame typography
+
+## The minigames' three rungs. 36 -> 64 is 1.78 and 64 -> 96 is 1.50, a
+## geometric mean of 1.63 -- the golden ratio within rounding, already in the
+## tokens as font_title / font_h1 / font_display_size. Re-spacing DesignTokens
+## itself at phi would give 28/45/73/118, change every screen in the game on
+## rebake, and overflow Boohong's tracking on a 1080 px canvas.
+##
+## Before this block the six minigame scenes carried 25 hand-written sizes
+## between them (14, 16, 18, 26, 30, 32, 36, 40, 44, 48, 60, 70, 80, 90), two
+## of them below the 28 px body floor. CLAUDE.md puts minigames outside the
+## design system, which is how they drifted; these variations bring the text
+## back in without touching the games' own logic.
+static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> void:
+	# The question itself is body copy, not a heading, so it keeps the theme's
+	# body face (Open Sans) rather than taking font_display.
+	theme.add_type("MinigameQuestionLabel")
+	theme.set_type_variation("MinigameQuestionLabel", "Label")
+	theme.set_font_size("font_size", "MinigameQuestionLabel", tokens.font_h1)
+	theme.set_color("font_color", "MinigameQuestionLabel", tokens.text_primary)
+
+	# Counters and meta sitting on a card, where the ink can be quiet.
+	theme.add_type("MinigameMetaLabel")
+	theme.set_type_variation("MinigameMetaLabel", "Label")
+	theme.set_font_size("font_size", "MinigameMetaLabel", tokens.font_title)
+	theme.set_color("font_color", "MinigameMetaLabel", tokens.text_secondary)
+
+	# QuestionCard's "Soal N/M" badge: cream on the brand fill. A badge, so
+	# the display face, per the house rule.
+	theme.add_type("MinigameBadgeLabel")
+	theme.set_type_variation("MinigameBadgeLabel", "Label")
+	theme.set_font_size("font_size", "MinigameBadgeLabel", tokens.font_title)
+	theme.set_color("font_color", "MinigameBadgeLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "MinigameBadgeLabel", tokens.font_display)
+
+	# Text drawn straight onto art, where no panel can carry the contrast:
+	# cream with the same 8 px black rim ShopHubTileLabel uses. BuatBatik's
+	# layer labels shipped at 16 px white with a 6 px rim until 2026-09-21.
+	theme.add_type("MinigameOverlayLabel")
+	theme.set_type_variation("MinigameOverlayLabel", "Label")
+	theme.set_font_size("font_size", "MinigameOverlayLabel", tokens.font_title)
+	theme.set_color("font_color", "MinigameOverlayLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "MinigameOverlayLabel", 8)
+	theme.set_color("font_outline_color", "MinigameOverlayLabel", Color(0, 0, 0, 0.75))
+
+	# Menjodohkan's two carousel headers. The colours these replace --
+	# Color(0.85,0.45,0.1) and Color(0.2,0.5,0.85) -- are mid-tone (relative
+	# luminance 0.27 and 0.21) and unoutlined over painted card art: they cap
+	# at 3.3:1 and 4.0:1 against pure white and fall toward 1.5:1 on the card
+	# they actually sit on, so neither could reach the 4.5:1 body floor on any
+	# ground. brand_primary measures 7.2:1 and cat_akademis 5.1:1 on
+	# surface_card, keeping a warm/cool split that now reads.
+	for pair in [["MinigameWheelHeaderWarm", tokens.brand_primary],
+			["MinigameWheelHeaderCool", tokens.cat_akademis]]:
+		var wheel: String = pair[0]
+		theme.add_type(wheel)
+		theme.set_type_variation(wheel, "Label")
+		theme.set_font_size("font_size", wheel, tokens.font_title)
+		theme.set_color("font_color", wheel, pair[1])
+		if tokens.font_display != null:
+			theme.set_font("font", wheel, tokens.font_display)
+
+	# PilihanGanda's answer buttons. The house helper gives them the full
+	# five-state set at radius_button, plus font_title and the display face,
+	# which is the whole rung -- a hand-rolled block here shipped with a 0
+	# radius and tests/test_button_geometry.gd caught it.
+	_add_button_variation(theme, tokens, "MinigameChoiceButton",
+		tokens.surface_card, tokens.surface_sunken,
+		tokens.brand_primary, tokens.text_primary)
+
+
 # --------------------------------------------------------------- progress
 
 ## Shared fill art for every progress bar in the game (StatBar and the
@@ -1169,6 +1538,37 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_stylebox("fill", lname, _progress_fill_stylebox(lcolor, lspec[2]))
 		theme.set_font_size("font_size", lname, tokens.font_caption)
 		theme.set_color("font_color", lname, tokens.text_primary)
+
+
+## AchievementTile's progress bar (Task 8, 2026-09-18 polish pass): StatBar's
+## min height wins over any scene-level custom_minimum_size override on a
+## ProgressBar using "StatBar", rendering it ~36px tall on a tile that wants
+## a thin 4-6px sliver. A dedicated thin variation, built the same way as
+## StatBar above but flat (no textured fill/rim/shadow chrome -- a tile-sized
+## sliver is too small for that detail to read), sidesteps the min-height
+## fight entirely instead of trying to override it per-instance.
+static func _build_achievement_tile_bar(theme: Theme, tokens: DesignTokens) -> void:
+	const BAR_HEIGHT := 5.0
+
+	theme.add_type("AchievementTileBar")
+	theme.set_type_variation("AchievementTileBar", "ProgressBar")
+
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = tokens.stat_bar_track
+	bg.set_corner_radius_all(int(BAR_HEIGHT / 2.0))
+	bg.content_margin_top = 0
+	bg.content_margin_bottom = 0
+	theme.set_stylebox("background", "AchievementTileBar", bg)
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = tokens.cat_akademis_on_dark
+	fill.set_corner_radius_all(int(BAR_HEIGHT / 2.0))
+	fill.content_margin_top = 0
+	fill.content_margin_bottom = 0
+	theme.set_stylebox("fill", "AchievementTileBar", fill)
+
+	theme.set_font_size("font_size", "AchievementTileBar", tokens.font_caption)
+	theme.set_color("font_color", "AchievementTileBar", tokens.text_primary)
 
 
 # ------------------------------------------------- student card redesign
@@ -1574,32 +1974,24 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 # ------------------------------------------------------------ week recap
 
 static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
-	# The banner is a raised card that must not read as another student
-	# card, so it takes the card surface with the brand's own edge.
+	# The 2026-09-19 mockup's butter-yellow panel: a borderless rounded
+	# block the three white tiles sit in.
 	theme.add_type("RecapBannerPanel")
 	theme.set_type_variation("RecapBannerPanel", "Panel")
 	var recap_banner := StyleBoxFlat.new()
-	recap_banner.bg_color = tokens.surface_card
-	recap_banner.set_corner_radius_all(tokens.radius_md)
-	recap_banner.border_color = tokens.brand_primary
-	recap_banner.set_border_width_all(int(tokens.outline_width) / 2)
-	recap_banner.content_margin_left = tokens.space_md
-	recap_banner.content_margin_right = tokens.space_md
-	recap_banner.content_margin_top = tokens.space_sm
-	recap_banner.content_margin_bottom = tokens.space_sm
+	recap_banner.bg_color = tokens.recap_banner_fill
+	recap_banner.set_corner_radius_all(tokens.radius_lg)
+	recap_banner.set_content_margin_all(tokens.space_md)
 	theme.set_stylebox("panel", "RecapBannerPanel", recap_banner)
 
-	# A pill is a sunken capsule -- the counter-form to the banner it sits
-	# inside.
+	# A tile is a near-white rounded square (not a capsule), icon above
+	# number, per the same mockup.
 	theme.add_type("RecapPillPanel")
 	theme.set_type_variation("RecapPillPanel", "Panel")
 	var recap_pill := StyleBoxFlat.new()
-	recap_pill.bg_color = tokens.surface_sunken
-	recap_pill.set_corner_radius_all(tokens.radius_pill)
-	recap_pill.content_margin_left = tokens.space_sm
-	recap_pill.content_margin_right = tokens.space_sm
-	recap_pill.content_margin_top = tokens.space_xs
-	recap_pill.content_margin_bottom = tokens.space_xs
+	recap_pill.bg_color = tokens.recap_tile_fill
+	recap_pill.set_corner_radius_all(tokens.radius_md)
+	recap_pill.set_content_margin_all(tokens.space_sm)
 	theme.set_stylebox("panel", "RecapPillPanel", recap_pill)
 
 	# The pill's number. Tinted per-pill via self_modulate, so the
@@ -1608,8 +2000,47 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("RecapPillValueLabel", "Label")
 	theme.set_font_size("font_size", "RecapPillValueLabel", tokens.font_h2)
 	theme.set_color("font_color", "RecapPillValueLabel", tokens.text_primary)
+	theme.set_constant("outline_size", "RecapPillValueLabel", tokens.text_outline_size)
+	theme.set_color("font_outline_color", "RecapPillValueLabel", tokens.text_outline_color)
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
+
+
+# ----------------------------------------------------------------- id card
+
+## The cream ID-card frame and its brown name band, shared by every
+## DaySummaryStudentRow (from PR #53, 2026-09-16; adopted 2026-09-19).
+static func _build_id_card(theme: Theme, tokens: DesignTokens) -> void:
+	# -- RecapMastheadPanel: the brand-primary band across the card's top,
+	# holding the student's name -- only the top corners round, since it
+	# sits flush against the card's top edge. --
+	theme.add_type("RecapMastheadPanel")
+	theme.set_type_variation("RecapMastheadPanel", "Panel")
+	var masthead := StyleBoxFlat.new()
+	masthead.bg_color = tokens.brand_primary
+	masthead.corner_radius_top_left = tokens.radius_md
+	masthead.corner_radius_top_right = tokens.radius_md
+	masthead.content_margin_left = tokens.space_md
+	masthead.content_margin_right = tokens.space_md
+	masthead.content_margin_top = tokens.space_sm
+	masthead.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "RecapMastheadPanel", masthead)
+
+	# -- IdCardPanel: the cream card frame, with a brand top rule tying it
+	# to the band above. A flat StyleBoxFlat rather than nine-patch art,
+	# since the frame needs a real border edge to carry the rule. --
+	theme.add_type("IdCardPanel")
+	theme.set_type_variation("IdCardPanel", "Panel")
+	var id_card := StyleBoxFlat.new()
+	id_card.bg_color = tokens.surface_card
+	id_card.set_corner_radius_all(tokens.radius_md)
+	id_card.border_color = tokens.brand_primary
+	id_card.border_width_top = int(tokens.outline_width)
+	id_card.content_margin_left = tokens.space_md
+	id_card.content_margin_right = tokens.space_md
+	id_card.content_margin_top = tokens.space_sm
+	id_card.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "IdCardPanel", id_card)
 
 
 # ---------------------------------------------------- minigame result card

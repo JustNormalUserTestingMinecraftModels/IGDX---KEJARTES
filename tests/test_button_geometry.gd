@@ -170,8 +170,10 @@ func test_natural_height_matches_the_size_step() -> void:
 ## shape as test_viewport_editability.gd's dict. An entry needs a reason.
 const HEIGHT_ALLOWED := {
 	# "Scenes/Foo/bar.tscn::SomeButton": "why this one is off-step",
-	"Scenes/Achievements/AchievementRow.tscn::HBox/Content/ClaimRow/ClaimButton":
-		"Klaim is measured off Achievement mockup.psd at 202x64, a pill inside the card, not a screen action",
+	# AchievementRow.tscn's ClaimButton exemption was removed 2026-09-18 when
+	# the row was replaced by AchievementTile + AchievementDetailSheet (Task
+	# 5, achievements-polish); the sheet's ClaimButton is an authored
+	# SuccessButton size step and needs no exemption.
 }
 
 const SCENE_GLOB := "res://Scenes"

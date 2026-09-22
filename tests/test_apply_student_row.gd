@@ -99,3 +99,20 @@ func test_toggle_emits_argumentless_selection_changed() -> void:
 	row.button_pressed = true
 	assert_eq(hits[0], 1)
 	assert_true(row.is_selected())
+
+## 2026-09-19: the hosted DaySummaryStudentRow grew PR #53's cream frame and
+## brown name band (992x486). This row draws its own frame and header, so it
+## must hide both and keep the 410-tall layout its bars and chip are placed on.
+func test_row_hides_the_hosted_cards_own_chrome() -> void:
+	var row := _make()
+	row.setup(_student(), {"mood": 10})
+	var card: DaySummaryStudentRow = row.card
+	for n in ["CardBg", "HeaderBand"]:
+		var node := card.get_node_or_null(n) as CanvasItem
+		assert_true(node != null and not node.visible,
+			"%s is hidden: the row's own stylebox and header replace it" % n)
+	assert_eq(row.card_design_size, Vector2(992, 410),
+		"the apply card keeps its 410-tall design box")
+	var avatar := card.get_node("Avatar") as Control
+	assert_eq(avatar.offset_top, ApplyStudentRow.AVATAR_TOP,
+		"the avatar sits back at the top, beside the restacked bars")

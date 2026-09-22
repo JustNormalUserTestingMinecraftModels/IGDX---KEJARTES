@@ -29,11 +29,7 @@ signal checkup_closed
 @export var background_texture: Texture2D = null
 
 # ── Visual - Header & Typography ──────────────────────────────────────
-@export_group("Visual - Header & Typography")
-## Main header title.
-@export var header_title_text: String = "EVALUASI MINGGUAN SISWA"
-## Main header subtitle, under header_title_text.
-@export var header_subtitle_text: String = "Perkembangan statistik & riwayat kegiatan selama satu minggu"
+@export_group("Visual - Typography")
 ## Optional font override applied across the screen's labels. Null keeps
 ## the theme's default font.
 @export var font: Font = null
@@ -54,8 +50,6 @@ signal checkup_closed
 
 const _CELEBRATION_SCENE := "res://Scenes/SchoolSimulation/PaperConfetti.tscn"
 
-@onready var title_label: Label = $Margin/VBox/HeaderPanel/TitleLabel
-@onready var subtitle_label: Label = $Margin/VBox/HeaderPanel/SubtitleLabel
 @onready var banner: WeekRecapBanner = $Margin/VBox/Banner
 @onready var scroll_container: ScrollContainer = $Margin/VBox/ScrollContainer
 @onready var students_pane: VBoxContainer = $Margin/VBox/ScrollContainer/StudentsPane
@@ -87,7 +81,10 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
-	AudioDirector.play_sfx(&"popup_open")
+	# The weekly report's own arrival cue, in place of the generic popup
+	# whoosh: two cues on the same beat is the double-fire this suite guards
+	# against, and the report is a screen arriving, not a popup opening.
+	AudioDirector.play_sfx(&"result_checkup")
 	modulate.a = 0.0
 	_apply_visual_exports()
 	for b in [logs_button, next_button]:
@@ -163,14 +160,6 @@ func _apply_visual_exports() -> void:
 		bg.queue_free()
 		add_child(tex_rect)
 		move_child(tex_rect, 0)
-
-	if title_label:
-		title_label.text = header_title_text
-		if font: title_label.add_theme_font_override("font", font)
-
-	if subtitle_label:
-		subtitle_label.text = header_subtitle_text
-		if font: subtitle_label.add_theme_font_override("font", font)
 
 	if font:
 		for b in [logs_button, next_button]:

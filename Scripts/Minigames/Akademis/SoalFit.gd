@@ -1,7 +1,7 @@
 extends RefCounted
 
-## Fits question text to the SoalCard (QuestionCard.tscn) on the two
-## calculator quizzes, Variabel and Password.
+## Fits question text to the SoalCard (QuestionCard.tscn) on the Akademis
+## quizzes: Variabel, Password, PilihanGanda and Menjodohkan's tiles.
 ##
 ## Returns the largest font size at which the text fits the card's label once
 ## wrapped, measured with the label's own font rather than guessed from a line
@@ -19,9 +19,18 @@ const STEP := 2
 const SIDE_PADDING := 24.0
 ## Clear space between the badge and the text's first line.
 const BADGE_GAP := 12.0
-## The SoalCard's 715x345 design size less its content margins -- used only
-## when the label has not been laid out yet.
-const FALLBACK_BOX := Vector2(699, 333)
+## The card's TextLabel row at its design size -- used only when the label
+## has not been laid out yet, which is every Menjodohkan tile, since they are
+## instantiated and fitted in the same frame. 850 wide less the card's 24px
+## content margins is 802; 200 is the row's own custom_minimum_size.
+##
+## Deliberately the row's MINIMUM rather than a typical height: the fitter
+## must under-estimate here, never over-estimate. TextLabel sets
+## clip_text, so a size chosen against too generous a box is silently
+## clipped, while too small a box only costs a rung.
+## (Was 699x333, describing a 715x345 card that had already grown to
+## 850x480 before 2026-09-21.)
+const FALLBACK_BOX := Vector2(802, 200)
 
 
 ## Largest size from `max_size` down to `min_size` at which `text` fits

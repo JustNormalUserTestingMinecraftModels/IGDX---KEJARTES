@@ -14,6 +14,10 @@ extends Node
 
 signal unlocked(id: String)
 signal claimed(id: String)
+## Emitted on any state mutation: unlock, claim, reset_all, relock or
+## debug_unlock. The header pill and grid tiles listen to this instead of
+## polling; `unlocked(id)` stays as the toast-only, per-id signal.
+signal state_changed
 
 const SAVE_PATH := "user://achievements.cfg"
 ## DEBUG (2026-09-17): wipe all achievement progress on every launch, so each
@@ -122,6 +126,7 @@ func claim(id: String) -> bool:
 	claimed_ids[id] = true
 	_save()
 	claimed.emit(id)
+	state_changed.emit()
 	return true
 
 
@@ -158,6 +163,108 @@ func reset() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
 
 
+## Forgets all progress AND deletes the save file, then notifies listeners.
+## Unlike reset() (used internally, e.g. by GameState on a fresh run), this
+## is the debug/dev entry point: header pill and grid must re-render empty.
+func reset_all() -> void:
+	reset()
+	state_changed.emit()
+
+
+## Debug/dev only: drops `id` back to locked, whether it was unlocked or
+## claimed. Saves and notifies listeners; unlike reset_all() this touches
+## only one entry.
+func relock(id: String) -> void:
+	if AchievementCatalog.get_entry(id).is_empty():
+		return
+	unlocked_ids.erase(id)
+	claimed_ids.erase(id)
+	_save()
+	state_changed.emit()
+
+
+## Debug/dev only: forces `id` unlocked without checking `_is_met`, for the
+## debug tab's Buka/Buka semua/Buka acak buttons. Emits `unlocked` (so
+## AchievementToast still shows) and `state_changed`. No-op for an unknown
+## id or one already unlocked/claimed.
+func debug_unlock(id: String) -> void:
+	if state_of(id) != STATE_LOCKED:
+		return
+	if AchievementCatalog.get_entry(id).is_empty():
+		return
+	unlocked_ids[id] = true
+	_save()
+	unlocked.emit(id)
+	state_changed.emit()
+
+
+## Progress toward `id` as 0.0..1.0. Numeric-target kinds (streak, total,
+## money, fast) are current/target, clamped; one-shot kinds (three_star,
+## play_all, grade) are 0.0 or 1.0. Unlocked or claimed is always 1.0.
+## Unknown id is 0.0.
+func progress_of(id: String) -> float:
+	if state_of(id) != STATE_LOCKED:
+		return 1.0
+	var frac := progress_fraction_of(id)
+	if frac.y <= 0:
+		return 0.0
+	return clampf(float(frac.x) / float(frac.y), 0.0, 1.0)
+
+
+## (current, target) for the detail sheet's "2 / 3" text. One-shot kinds
+## report (0, 1) when not yet met (unlocked/claimed callers should already
+## have short-circuited via progress_of/state_of) or (1, 1) when met.
+func progress_fraction_of(id: String) -> Vector2i:
+	var e := AchievementCatalog.get_entry(id)
+	if e.is_empty():
+		return Vector2i(0, 1)
+	if state_of(id) != STATE_LOCKED:
+		return Vector2i(1, 1)
+	match e.kind:
+		AchievementCatalog.KIND_STREAK:
+			return Vector2i(best_streak, int(e.target))
+		AchievementCatalog.KIND_TOTAL:
+			return Vector2i(minigames_played, int(e.target))
+		AchievementCatalog.KIND_MONEY:
+			return Vector2i(highest_money, int(e.target) * MONEY_BASE)
+		AchievementCatalog.KIND_FAST:
+			return Vector2i(fast_wins, int(e.target))
+		AchievementCatalog.KIND_THREE_STAR, AchievementCatalog.KIND_PLAY_ALL, AchievementCatalog.KIND_GRADE:
+			return Vector2i(1 if _is_met(e) else 0, 1)
+	return Vector2i(0, 1)
+
+
+## How many catalog entries are claimed.
+func total_claimed_count() -> int:
+	return claimed_ids.size()
+
+
+## Catalog size, for "3 / 26" style summaries.
+func total_count() -> int:
+	return AchievementCatalog.ENTRIES.size()
+
+
+## Count of unlocked-but-not-yet-claimed entries. Named "gold" for the header
+## pill's original design (a G amount); the current catalog's prizes are
+## effect labels, not gold values, so this pass returns a count instead and
+## the pill reads "%d hadiah belum diambil". Revisit if claimed prizes ever
+## grant real G (see the polish plan's Achievements.gd section).
+func total_unclaimed_count() -> int:
+	var n := 0
+	for id in unlocked_ids.keys():
+		if not claimed_ids.has(id):
+			n += 1
+	return n
+
+
+## The first (catalog-order) unlocked-but-unclaimed id, "" if none.
+func first_unclaimed_id() -> String:
+	for e in AchievementCatalog.ENTRIES:
+		if unlocked_ids.has(e.id) and not claimed_ids.has(e.id):
+			return e.id
+	return ""
+
+
 func _is_met(e: Dictionary) -> bool:
 	match e.kind:
 		AchievementCatalog.KIND_THREE_STAR:
@@ -190,6 +297,8 @@ func _changed() -> void:
 	_save()
 	for id in fresh:
 		unlocked.emit(id)
+	if not fresh.is_empty():
+		state_changed.emit()
 
 
 func write_to(cfg: ConfigFile) -> void:

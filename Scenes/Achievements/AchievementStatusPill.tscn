@@ -1,0 +1,198 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Achievements/AchievementStatusPill.gd" id="1_pill"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/uang.png" id="2_coin"]
+
+[node name="AchievementStatusPill" type="Button"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 0
+flat = true
+script = ExtResource("1_pill")
+
+[node name="IdleState" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"AchievementStatusPillIdle"
+
+[node name="IdleContent" type="VBoxContainer" parent="IdleState"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="IdleLabel" type="Label" parent="IdleState/IdleContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"AchievementStatusPillIdleLabel"
+horizontal_alignment = 1
+text = "0 / 26 dibuka"
+
+[node name="DashBar" type="HBoxContainer" parent="IdleState/IdleContent"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="Segment0" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment1" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment2" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment3" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment4" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment5" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment6" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment7" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment8" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment9" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment10" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment11" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment12" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment13" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment14" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment15" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment16" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment17" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment18" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment19" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment20" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment21" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment22" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+[node name="Segment23" type="Panel" parent="IdleState/IdleContent/DashBar"]
+custom_minimum_size = Vector2(10, 6)
+layout_mode = 2
+theme_type_variation = &"AchievementDashSegmentEmpty"
+mouse_filter = 2
+
+[node name="WaitingState" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"AchievementStatusPillWaiting"
+
+[node name="WaitingContent" type="HBoxContainer" parent="WaitingState"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CoinIcon" type="TextureRect" parent="WaitingState/WaitingContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WaitingLabel" type="Label" parent="WaitingState/WaitingContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"AchievementStatusPillWaitingLabel"
+vertical_alignment = 1
+text = "0 hadiah belum diambil"

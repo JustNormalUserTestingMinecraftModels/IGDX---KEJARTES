@@ -76,3 +76,33 @@ func test_scene_uses_project_theme() -> void:
 	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
 	assert_true(raw.contains("kejartes_theme.tres"),
 		"the scene root must carry the project theme")
+
+## Task 3: Pak Herman's talk/idle animation. HermanAP must exist with all
+## three named animations, and must never key `position` -- the Stage
+## re-anchors on tall phones (test_tall_screen_layout.gd), so an absolute
+## position key on Herman would pin him instead of moving with the layout.
+func test_herman_animation_player_has_idle_talk_and_reset() -> void:
+	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
+	assert_true(raw.contains("name=\"HermanAP\""),
+		"Stage/Herman must carry a HermanAP AnimationPlayer")
+	assert_true(raw.contains("\"idle\": SubResource") or raw.contains("&\"idle\": SubResource"),
+		"HermanAP's library must register an idle animation")
+	assert_true(raw.contains("\"talk\": SubResource") or raw.contains("&\"talk\": SubResource"),
+		"HermanAP's library must register a talk animation")
+	assert_true(raw.contains("\"RESET\": SubResource") or raw.contains("&\"RESET\": SubResource"),
+		"HermanAP's library must register a RESET animation, so the editor never saves a mid-animation pose")
+	# Scan only the Animation sub_resources Herman's own library refers to
+	# (Animation_herman_*), not the whole file -- other Stage nodes (like the
+	# back button) legitimately key their own local position.
+	for id in ["Animation_herman_reset", "Animation_herman_idle", "Animation_herman_talk"]:
+		var marker := "id=\"%s\"]" % id
+		var start := raw.find(marker)
+		assert_true(start != -1, "%s sub_resource not found" % id)
+		if start == -1:
+			continue
+		var next_block := raw.find("[sub_resource", start + 1)
+		if next_block == -1:
+			next_block = raw.find("[node ", start + 1)
+		var block := raw.substr(start, next_block - start)
+		assert_false(block.contains(":position\")"),
+			"Herman's animations must not key position -- the stage re-anchors on tall phones (%s)" % id)

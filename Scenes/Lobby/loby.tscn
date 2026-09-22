@@ -22,9 +22,12 @@
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
+[ext_resource type="PackedScene" uid="uid://u2q3sgmvf5w3" path="res://Scenes/Lobby/StudentChatBubble.tscn" id="20_su0mk"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="20_yhuud"]
 [ext_resource type="Texture2D" uid="uid://bed2fo2wc4bd7" path="res://Assets/Images/Achievements/achievement_button.png" id="28_ikpat"]
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
+[ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
+[ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
@@ -146,6 +149,15 @@ texture = ExtResource("default_portrait_tex")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="ChatAnchor" type="Control" parent="Classroom/StudentPortraitsContainer_Back/Slot1" unique_id=324588308]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 330.0
+offset_top = 300.0
+offset_right = 330.0
+offset_bottom = 300.0
+mouse_filter = 2
+
 [node name="Slot2" type="Control" parent="Classroom/StudentPortraitsContainer_Back" unique_id=414336718]
 anchors_preset = 0
 offset_left = 620.0
@@ -166,6 +178,15 @@ grow_vertical = 2
 texture = ExtResource("default_portrait_tex")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="ChatAnchor" type="Control" parent="Classroom/StudentPortraitsContainer_Back/Slot2" unique_id=1266035256]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 70.0
+offset_top = 300.0
+offset_right = 70.0
+offset_bottom = 300.0
+mouse_filter = 2
 
 [node name="StudentHandsContainer_Back" type="Control" parent="Classroom" unique_id=696016454]
 unique_name_in_owner = true
@@ -473,6 +494,15 @@ texture = ExtResource("default_portrait_tex")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="ChatAnchor" type="Control" parent="Classroom/StudentPortraitsContainer_Front/Slot3" unique_id=754957017]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 330.0
+offset_top = 250.0
+offset_right = 330.0
+offset_bottom = 250.0
+mouse_filter = 2
+
 [node name="Slot4" type="Control" parent="Classroom/StudentPortraitsContainer_Front" unique_id=85502973]
 anchors_preset = 0
 offset_left = 620.0
@@ -494,6 +524,15 @@ grow_vertical = 2
 texture = ExtResource("default_portrait_tex")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="ChatAnchor" type="Control" parent="Classroom/StudentPortraitsContainer_Front/Slot4" unique_id=306268741]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 70.0
+offset_top = 250.0
+offset_right = 70.0
+offset_bottom = 250.0
+mouse_filter = 2
 
 [node name="StudentHandsContainer_Front" type="Control" parent="Classroom" unique_id=927537512]
 unique_name_in_owner = true
@@ -895,6 +934,17 @@ texture_normal = ExtResource("28_ikpat")
 ignore_texture_size = true
 stretch_mode = 5
 
+[node name="SkinSwitchButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=1019305615]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
+offset_left = 360.0
+offset_right = 456.0
+offset_bottom = 96.0
+texture_normal = ExtResource("30_62a4m")
+ignore_texture_size = true
+stretch_mode = 5
+
 [node name="JUDUL" type="Label" parent="Safe/UI" unique_id=1317986974]
 unique_name_in_owner = true
 layout_mode = 1
@@ -908,6 +958,9 @@ offset_bottom = 92.0
 grow_horizontal = 2
 theme_type_variation = &"DisplayLabel"
 text = "KELAS"
+
+[node name="ChatBubble" parent="." unique_id=1758543249 instance=ExtResource("20_su0mk")]
+layout_mode = 1
 
 [node name="DailyReward" type="TextureRect" parent="." unique_id=889996430]
 visible = false
@@ -986,3 +1039,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Chatter" type="Node" parent="." unique_id=1817944739]
+script = ExtResource("34_f2e4j")
+bubble_path = NodePath("../ChatBubble")

@@ -23,7 +23,9 @@ the day.
 
 **Generated placeholder art.** Produced with PowerShell + `System.Drawing`, not
 hand-authored. All are transparent PNG/SVG, drop-replaceable at the same path
-with no code change: the five `Assets/Images/UI/Nav/` icons,
+with no code change: the five generated `Assets/Images/UI/Nav/` icons
+(**not** `UI/Nav/return_button.png`, which is authored art delivered
+2026-09-22 — do not regenerate that one over the top of it),
 three `Particles/particle_*.png`, the minigame
 result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
@@ -32,8 +34,7 @@ event-popup set (`icon_event.svg`, `bg_event_dialog.png`),
 (white on purpose: `FilterChipButton` inks its icons `brand_primary`, so a
 replacement must stay a white glyph, or that tint comes out of `ThemeFactory`
 with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
-Inventory's back chevron `icon_back.svg` (2026-09-15; 16x36, one pixel wider
-on the button than the glyph it replaced), `EndCutscene`'s two badges, the
+`EndCutscene`'s two badges, the
 eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
@@ -59,11 +60,19 @@ splash), `hujan_background.png` (the school tinted dusk-blue with seeded rain
 streaks) and `calendar_badge.png`, and the 2026-09-14 Weekly Results ribbon,
 `Assets/Images/DaySummary/title_weekly_results.png` (cut out of the mockup
 and given `title_daily_results.png`'s alpha -- drop-replaceable at the same
-path).
+path), and the 2026-09-18 Koperasi stock-pip set:
+`Assets/Images/Shop/UI/pip_filled.svg` / `pip_hollow.svg` (a plain filled
+dot and a matching ring, coloured from `koperasi_tag_fill`/`koperasi_tray_rule`
+to stay warm and shop-consistent -- drop-replaceable at the same path).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
 `bg_event_dialog.png` by `EventStudentSelectDialog`.)
+
+**Achievements polish (2026-09-18).** `AchievementTile`'s lock overlay is a
+placeholder `Assets/Images/UI/Placeholders/icon_lock.svg` (plain padlock
+glyph, drop-replaceable at the same path); the CLAIMED check badge reuses
+the existing `icon_check.svg` from the same folder, no new asset needed.
 
 **Other art gaps.** `Assets/Images/EndGame/ujian_sekolah.png` (TesNotice's
 Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to
@@ -102,22 +111,92 @@ and the artifact sits at radius ~1041, so any `sky_cover_margin` at or above
 
 ## Audio and copy
 
-**Audio placeholders.** These `AudioDirector` cue ids alias existing streams:
-`specialty_match`, `tally`, `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
-`score_tick`, `combo_up`, and the BGM ids `exam_notice` and `run_result`.
-`specialty_match`'s alias is set only in `audio_director.tscn`; the script
-default is null. `event_announce` plays its own `event_announce.ogg`, but that
-file is a byte-identical copy of `reward.ogg`. `ApplyItemScreen`'s payoff likewise reuses
-existing cues rather than a dedicated `sfx_item_apply`.
+**Audio placeholders.** Mostly resolved by the 2026-09-21 Drive sound pack,
+which gave real streams to `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
+`coin` and `event_announce`. Still aliasing existing streams:
+`specialty_match`, `tally`, `score_tick`, `combo_up`, and the BGM ids
+`exam_notice` and `run_result`. `specialty_match`'s alias is set only in
+`audio_director.tscn`; the script default is null.
+
+**`classroomAmbient3.ogg` is corrupt at source (2026-09-21).** The Drive pack's
+third classroom bed is a 4 KB stub whose Vorbis identification header declares
+**zero channels**; the file on Drive is the same 4022 bytes, so it did not
+break in transit. Godot loads it without failing, but logs
+`Error parsing header packet 0: -133` (`OV_EBADHEADER`), and `project-check`
+fails the build on any `ERROR:` line. The file and its `amb_classroom_3` slot
+are out of the tree until the collaborator re-exports it. `classroom_1` and
+`classroom_2` are fine and cover the need. Worth checking the source export
+settings rather than just re-uploading — a zero-channel header suggests the
+encode itself failed.
+
+**Unused pack cues (2026-09-21).** The pack shipped 49 files; these have
+`AudioDirector` slots but no call site yet, because the screens that would
+fire them were not otherwise being touched: `times_up`, `timer_tick`,
+`back_tap`, `item_applied`, `apply`, `tutorial_popup`, `daily_claim`,
+`achievement_prize`, `achievement_success`, the `sfx_achievement` family,
+the `badge_reveal_*` tier (and its `badge_reveal_stream()` accessor), and the
+ambience beds `classroom_2/3`, `schoolyard_1/2`, `writing` and `thunderstorm`
+— only `classroom_1` is played, by SchoolDay. Wiring each is a one-line
+`play_sfx`/`play_ambience` at the right moment; finding that moment is the
+work.
 
 **Copy placeholders.** Every `desc` string in `ItemDatabase.DEFAULT_ITEMS`
 (shown verbatim in `ItemDetailSheet`) is placeholder copy, marked by one
 blanket `[PLACEHOLDER]` comment above the table rather than one by one. Every `line` in
 `EventDialogueCatalog.ENTRIES` (2026-09-14) is a draft, unmarked because it
-shows in-game. Pak Herman's chat bubble in Koperasi
-(`Stage/ChatBubble/Body/Text` in `Scenes/Koperasi/koprasi.tscn`, 2026-09-17)
-says the placeholder "Selamat datang di Koperasi! Mau beli apa hari ini?"
-until his real lines are written.
+shows in-game.
+
+## Theme override debt (2026-09-21)
+
+The project's hard rule is **never add a `theme_override_*`** — use a
+`ThemeFactory` type variation instead. Audited on 2026-09-21. Two separate
+findings, and the second is the one that matters:
+
+**`.tscn` properties: clean where it counts.** 66 non-layout overrides
+(`font_sizes`, `styles`, `colors`) exist in scene files, and **every one is
+inside `Scenes/Minigames/**`**, which CLAUDE.md declares out of scope for the
+design system. Outside the minigames there are zero. Every remaining
+`theme_override_constants` outside the minigames is `separation`, `margin_*`,
+`v_separation` or `h_separation` — the documented layout-only exception — plus
+two `line_spacing`.
+
+**Runtime calls: 57 real violations, in `.gd` not `.tscn`.** A grep for the
+scene-file property name misses these entirely, which is why they had not been
+counted before. `add_theme_font_override` / `add_theme_font_size_override` /
+`add_theme_color_override` / `add_theme_stylebox_override`, outside the
+minigames, the debug overlay and `ThemeFactory` itself (which is allowed to):
+
+| File | Calls |
+|---|---|
+| `Scripts/Inventory/ItemDetailSheet.gd` | 10 |
+| `Scripts/SchoolSimulation/DailyDecayOverview.gd` | 9 |
+| `Scripts/Pengaturan.gd` | 7 |
+| `Scripts/Inventory/InventorySlot.gd` | 5 |
+| `Scripts/Inventory/ApplyStudentRow.gd` | 5 |
+| `Scripts/AturJadwal/atur_jadwal.gd` | 5 |
+| `Scripts/SchoolSimulation/EventStudentSelectDialog.gd` | 3 |
+| `Scripts/Inventory/ApplyItemScreen.gd` | 3 |
+| `Scripts/AnimUtils.gd` | 3 |
+| `Scripts/SchoolSimulation/StudentStatRow.gd` | 2 |
+| `Scripts/Inventory/inventory.gd` | 2 |
+| `Scripts/SchoolSimulation/StudentSummaryCard.gd` | 1 |
+| `Scripts/SchoolSimulation/SchoolDay.gd` | 1 |
+| `Scripts/SchoolSimulation/ResultCheckup.gd` | 1 |
+
+Inventory is the worst cluster (25 across five files).
+
+**Why none were fixed on 2026-09-21.** The two the tray/audio branch touched
+(`SchoolDay.gd:564`, `ResultCheckup.gd:167`) are both
+`add_theme_font_override("font", font)` applying an `@export`ed font to a
+control. Replacing them with a variation means deleting that `@export` knob —
+a design decision about those screens, not a mechanical cleanup, and one with
+no cheap way to verify beyond a screenshot. `Pengaturan.gd` is worse: it
+builds its whole UI at runtime (also a "no visual is built at runtime"
+violation), so its 7 calls cannot move to a variation until the sheet is
+authored as a `.tscn`.
+
+Work this as one pass per cluster, starting with Inventory, not as a
+by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
 
@@ -163,17 +242,49 @@ the ban in `## Conventions` forbids. The trait popup was fixed the same way on
 2026-09-15).** `Assets/Fonts/Boohong.otf`'s cmap sends `‹`, `›` and `‚` to its
 apostrophe glyph and `«`/`»` to its double quote. The font claims them, so
 system fallback never runs: Inventory's "‹ Kembali" shipped as "' KEMBALI" on
-desktop and Android alike, until the chevron became `icon_back.svg`. It has no
+desktop and Android alike, until the chevron became a texture — now the shared
+`UI/Nav/return_button.png` on all twelve back controls. It has no
 `•`, `…`, `—`, `←` or `→` at all; those fall back to whatever system font the
 device picks. Buttons, titles and headings wear Boohong, so keep such
-characters out of their text, and draw an arrow or chevron as an SVG icon.
-Still in display text: SchoolDay's `BackButton` (authored hidden) reads
-"🔙 Kembali ke Menu", and CutScene's grade picker (`cut_scene.gd`'s
+characters out of their text, and draw an arrow or chevron as a real texture.
+Still in display text: CutScene's grade picker (`cut_scene.gd`'s
 `_create_grade_button`, which the file calls the first-boot picker every
 player sees) titles its Primary/SecondaryButtons with 🏫/🎓 emoji over
 "•"-separated subtitles -- emoji the ban in `## Conventions` forbids.
 `LombaMenari`'s ←/→/↖/↗ are body text, but Open Sans has no `←` either, so
 they ride system fallback too (minigames sit outside the design system).
+
+**SchoolDay still puts emoji in display text (swept 2026-09-22).** CLAUDE.md's
+`## Conventions` bans emoji as UI iconography and says to use real transparent
+textures instead, so these want an art pass, not a deletion. The back-button
+pass fixed two of them -- `SchoolDay.tscn:105`'s back arrow became the shared
+`UI/Nav/return_button.png`, and `SchoolDay.gd`'s "Minggu selesai!" lost its
+party popper -- and left the rest, because six strings is a real pass:
+
+| Where | Glyph |
+|---|---|
+| `SchoolDay.gd:78` `end_tutorial_title` (an `@export` default) | graduation cap |
+| `SchoolDay.gd:80` `end_tutorial_text` (an `@export` default) | dart, and an arrow twice |
+| `SchoolDay.gd:437` -> `status_label` | check mark |
+| `SchoolDay.gd:959` -> `status_label` | herb |
+| `SchoolDay.tscn:95` `ClickToContinueLabel` | sparkles, arrow |
+| `SchoolDay.tscn:113` `SkipButton` | next-track |
+
+Two traps for whoever takes this. The first two are **`@export` defaults**, so
+per CLAUDE.md a changed default needs a **full editor restart** before it takes
+effect -- `load_default()` keeps serving the cached instance. And the
+emoji at `SchoolDay.gd:537-538` and `:628-655` are **not** display text: they
+are icon keys that `_add_pill()` strips at `:660-682` and swaps for a texture.
+Leave those alone.
+
+**The remaining `pngwing.com` stock files want replacing (2026-09-22).**
+`pngwing.com (1).png` went with the back-button pass, which was a licensing
+tidy-up as well as a visual one: the filename is verbatim from a free-PNG
+aggregator, the project records no licence for it, and most of that catalogue
+is non-commercial. Still in the tree: `(2).png` (pinned out of the Peringatan
+dialog by `test_atur_jadwal.gd:641`), `(3).png` (live at
+`student_card.tscn:14`) and `(6).png` (already replaced on Koperasi's basket
+per `CHANGELOG.md:1461`). Replace them with authored art before any release.
 
 **TesNotice's card collapses (2026-09-11).** `NoticeCard` is a
 `NinePatchRect`, not a Container, so the anchored `Content` never sizes it. It
@@ -188,6 +299,14 @@ so the old text title's margin overrun is gone.)
 Either rebuild the card as a `Card` panel (text goes dark on cream, the
 megaphone becomes an icon) or commit to text over the scrim (the two dark
 labels go cream).
+
+**Minigame question art is background-sized (2026-09-21).** `monas.png` is
+1080x1920 and `borobudur.png` 1920x1920 -- portrait and square assets standing
+in as question illustrations. `QuestionCard`'s 620px slot centres them with
+`stretch_mode` KEEP_ASPECT_CENTERED so neither distorts (monas renders
+349x620), but a cropped landscape export at the same paths would fill the slot
+properly rather than leaving air either side. Drop-replaceable at the same
+paths.
 
 **Faint placeholder icons on the minigame result card and HUD (2026-09-11).**
 Left as they are by decision, for the art pass; the labels beside them were
@@ -243,8 +362,64 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Skins (2026-09-18).** No way to earn or buy a skin yet: every shipped
+  skin starts unlocked (`StudentSkins.UNLOCKED_BY_DEFAULT`) and only the debug
+  toggle locks them; the Cosmetic Shop stub is the likely home. Worn skins
+  are session-scoped like the roster (not saved). The artist's
+  `<Name>Skin1(itemonly).png` clothes-only images (kosmetik.zip) are not
+  imported -- probably future shop icons. The flat Skin1 portraits are baked,
+  not drawn: re-run `Scripts/Skins/BakeSkinPortraits.gd` (headless, see its
+  header) when a skin's face base changes; Marcel's glasses bake with a
+  flat grey lens instead of `glasses_lens.gdshader`'s tint. In a windowed
+  desktop run `SafeAreaMargin` clamps the monitor's safe area to a large
+  bottom inset, so the skin card (like the Lobby's bottom bar) sits high;
+  on a phone it is centred.
+
+- **Koperasi polish leftovers (2026-09-18).** `ShopMessageWarning` and
+  `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `koprasi.gd` after
+  the final polish pass -- nothing in the shop currently shows a warning or
+  danger message panel. A
+  purchase flight already airborne when the player collapses the tray still
+  lands at the tray's EXPANDED position (cosmetic only -- the unit still
+  reaches the cart correctly). Herman's `talk` head-bob animation has not
+  been tuned against the final counter art.
+
 - **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
   wipes achievement progress and claimed prizes. Turn it off before release.
+
+- **Achievements polish (2026-09-18).** The debug Prestasi tab's "Buka
+  semua" loops `Achievements.debug_unlock(id)` over all 26 catalog entries,
+  firing 26 separate `state_changed` signals (one per unlock) instead of a
+  single batched emit. Fine today -- every listener's redraw is cheap -- but
+  batch it (e.g. a `_suppress_signal` flag plus one `state_changed.emit()`
+  after the loop) if it ever becomes a perf problem.
+
+- **Achievements notice badge (2026-09-22).** The claimable badge is the
+  user's `notice_icon.png` -- a red circled "!", which is the error idiom
+  everywhere else in this game. It ships as drawn; if it reads as an alarm
+  rather than a reward, recolour it to `state_warning` amber at the same
+  path, no code change needed.
+
+- **Achievements header (2026-09-22).** The status pill truncates
+  ("25 HADIAH BELUM DIAMBIL" is clipped by the filter button at 1080 wide),
+  and `%FilterButton` (96px) and the pill (64px) are both under the ~130px
+  touch floor. Found in the 2026-09-22 design audit and deliberately left
+  out of that pass's scope.
+
+- **SkinSelect is an overlay, not a scene (2026-09-22).** The brief asked
+  for a scene; it stayed a full-screen Lobby overlay because only an overlay
+  can blur the *live* lobby through `shop_hub_blur_material.tres` -- a
+  `Transition.change_scene` would need a baked backdrop like
+  `bg_achievements_blur.jpg` and would stop showing the room the student is
+  standing in. Revisit only if the Lobby stops being the sole entry point.
+
+- **SkinSelect's skin names are derived (2026-09-22).**
+  `SkinSelect.skin_label` turns `default` into "Seragam Sekolah" and `skin1`
+  into "Seragam 1". Real names belong in `StudentSkins.SKINS` once there is
+  more than one extra skin per character. The carousel's neighbour card
+  peeks only 104px past a 1080-wide screen (card 752 + separation 60); the
+  mockup drew a wider peek, which would need a negative track separation or
+  a narrower card.
 
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a
@@ -283,23 +458,18 @@ it again along with 177 other unused files.)
 `_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
 them deliberately, or give them a consumer.
 
-**The WEEKLY RESULTS ribbon is orphaned (2026-09-16).**
-`Assets/Images/DaySummary/title_weekly_results.png` is referenced by nothing
-since ResultCheckup was reverted off the 2026-09-14 rebuild. Kept on disk by
-decision — it is the only artwork that pass produced, and it is cheap to
-hold. (The same revert briefly orphaned `ResultButton` and `WeekLogsPopup`;
-the hybrid that followed gave both their call sites back.)
+**The green day card art is retired (2026-09-19).**
+`Assets/Images/DaySummary/card_bg.png` and `card_bg_uncropped.png` are drawn
+by nothing since every `DaySummaryStudentRow` took PR #53's cream
+`IdCardPanel` frame; only `test_day_summary`'s asset list still loads
+`card_bg.png`. Kept so the green card is a drop-in if it ever returns.
+Delete both (and that asset-list line) once that is off the table.
 
 **Deferred: the AturJadwal shelf.** Ships as two `ColorRect`s rather than a
 `ShelfEdge` variation. Needs an editor restart plus a manual rebake (a new
 `@export` on `DesignTokens` is invisible to a running editor). The exact diff
 is the Task 2 section of `docs/superpowers/plans/2026-09-01-atur-jadwal-mockup.md`,
 which its STATUS block points to.
-
-**Deferred: blinking on the layered faces.** Every face rig's `Eyelid` layer
-and `StudentFace.blink()` are wired and tested, but `idle_blink_enabled`
-defaults **false** — held back deliberately. A real pass wants a half-lid frame
-(the art has none) or an alpha/scale ease rather than the current hard cut.
 
 **Art: a few eye-rim pixels stay see-through on Doni and Marcel.** Their
 bases keep some anti-aliased cut-out rim pixels that no layer placement
@@ -317,27 +487,16 @@ each side never show. Showing it all means a 1920-wide `Backdrop` and
 `pan_pixels = -840` (a faster pan over the same 4 s), plus the 1296 in
 `tests/test_exam_progress.gd`'s width test.
 
-**The Inventory screen is wider than the screen (found 2026-09-14; cause found
-2026-09-15).** `inventory.tscn`'s `MainColumn` grows to its widest child's
-minimum width, and that child is the `Header` row, not the grid. Measured live
-on 2026-09-15 with the seed's 999999G: `BackButton` 277 + `TitleLabel`
-"INVENTORY" 582 + `CoinDisplay` 181, three 20 px gaps and the `Card`'s two
-28 px margins make 1156 px, so the column sits at x -38 and every row clips,
-the grid's outer slot columns included. The 2026-09-14 reading (`GridArea/Scroll`
-1107 px at x -13.5) is the same 1155 px header, from before the back chevron
-added 1 px. Each coin digit adds about 20 px, so any balance of three digits
-or more overflows. Fix it in the header, where the display-size title is the
-bulk of the width, not in the grid.
-
 **Deferred: tall phones, Phases 2 and 3 (2026-09-15).** Phase 1 made the
 Lobby, Koperasi, StudentCard and StudentList fill a 1080×2400 screen (spec
 `docs/superpowers/specs/2026-09-15-tall-phone-layout-design.md`; its
 Appendix A maps every screen). Still laid out for exactly 1080×1920:
-Phase 2's AturJadwal, CutScene, Rapor and Inventory (Rapor waits for the
-separate `KEMBALI` overlap fix, which edits that scene; Inventory's glyph
-fix merged as `fd3bba7`, and its header overflow is the entry above), and
-Phase 3's ExamProgress, StatCheck, EndCutscene, the
-ResultCheckup confetti and MainBola. The Lobby's classroom stays a centred
+Phase 2's AturJadwal, CutScene, Rapor and Inventory (Inventory's glyph
+fix merged as `fd3bba7`), and
+Phase 3's StatCheck, EndCutscene, the
+ResultCheckup confetti and MainBola (ExamProgress left this list on
+2026-09-20: its backdrop is anchored to all four edges and its status strip
+to the real screen bottom). The Lobby's classroom stays a centred
 1080×1920 picture, so a tall phone shows black bands above and below it;
 filling them wants taller classroom art.
 

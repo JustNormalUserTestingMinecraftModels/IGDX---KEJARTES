@@ -286,9 +286,19 @@ func test_shop_scripts_only_use_real_gamestate_members() -> void:
 		var property_names := {}
 		for prop in GameState.get_property_list():
 			property_names[prop.name] = true
+		# get_property_list() does not list `const` declarations (they are
+		# not properties), but GameState.SOME_CONST is a real, referenceable
+		# member -- read them off the script's constant map instead so a
+		# genuine constant (e.g. SHOP_MAX_COPIES) is not mistaken for a typo.
+		var const_names := {}
+		var gs_script: Script = GameState.get_script()
+		if gs_script != null:
+			for const_name in gs_script.get_script_constant_map():
+				const_names[const_name] = true
 		for m in re.search_all(f.get_as_text()):
 			var member := m.get_string(1)
 			var member_exists := property_names.has(member) \
+				or const_names.has(member) \
 				or GameState.has_method(member) \
 				or GameState.has_signal(member)
 			assert_true(member_exists,
@@ -362,7 +372,11 @@ func test_tray_panel_uses_the_basket_tray_variation() -> void:
 		"the shop docks the basket tray scene")
 	assert_true(tray.contains("BasketTray"), "the tray surface carries the BasketTray variation")
 	assert_true(tray.contains("tray_dots.png"), "tray should wear the dot-grid tile")
-	assert_true(tray.contains("icon_keranjang.svg"), "the tray's emblem is the B3 basket")
+	# The B3 basket emblem was removed from the tray's top-right corner on
+	# 2026-09-21; icon_keranjang_kosong.svg (the empty-state icon INSIDE the
+	# tray) is a different asset and stays.
+	assert_false(tray.contains('path="res://Assets/Images/Shop/UI/icon_keranjang.svg"'),
+		"the corner emblem's art must no longer be referenced")
 	assert_false(shop.contains("pngwing.com (6).png") or tray.contains("pngwing.com (6).png"),
 		"the black basket silhouette should no longer be referenced")
 	assert_true(tray.contains("EmptyState"), "the empty-basket state is a scene node")

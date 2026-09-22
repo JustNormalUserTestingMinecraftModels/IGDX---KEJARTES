@@ -513,10 +513,9 @@ func _add_correct_layer(step: int) -> void:
 	lbl.text = LAYER_LABELS[step]
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 16)
-	lbl.add_theme_color_override("font_color", Color.WHITE)
-	lbl.add_theme_constant_override("outline_size", 6)
-	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	# Cream at font_title with an 8px black rim -- this sits straight on the
+	# batik art, where no panel can carry the contrast.
+	lbl.theme_type_variation = &"MinigameOverlayLabel"
 	lbl.anchor_left = 0.0
 	lbl.anchor_top = 0.0
 	lbl.anchor_right = 1.0
@@ -551,13 +550,13 @@ func _add_wrong_layer(step: int) -> void:
 	layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var lbl = Label.new()
-	lbl.text = "⚠ Urutan Salah!"
+	# No leading glyph: DEBT.md records that neither Boohong nor Open Sans
+	# carries these characters, so one rides whatever system font the device
+	# picks -- the same defect that shipped Inventory's "' KEMBALI".
+	lbl.text = "Urutan Salah!"
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 16)
-	lbl.add_theme_color_override("font_color", Color.WHITE)
-	lbl.add_theme_constant_override("outline_size", 6)
-	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	lbl.theme_type_variation = &"MinigameOverlayLabel"
 	lbl.anchor_left = 0.0
 	lbl.anchor_top = 0.0
 	lbl.anchor_right = 1.0

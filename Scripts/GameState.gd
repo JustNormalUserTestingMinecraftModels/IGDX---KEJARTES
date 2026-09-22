@@ -48,7 +48,7 @@ var minigame_gain_this_week: Dictionary = {}
 ## koprasi.tscn's Stage.
 const SHOP_SHELF_SIZE: int = 6
 ## The most copies of one item a week's shelf can hold.
-const SHOP_MAX_COPIES: int = 2
+const SHOP_MAX_COPIES: int = 3
 ## The week the Koperasi shelf was rolled for, as shop_week_key_for(); ""
 ## until the first visit. Session-scoped like everything here.
 var shop_week_key: String = ""
@@ -83,6 +83,64 @@ var run_stats: RunStats = RunStats.new()
 ## True once the stat check has decided the run was lost. Read by
 ## RunResult to force a D grade without re-running the evaluation.
 var run_failed: bool = false
+
+## Emitted when a student's worn skin changes (equip_skin, or a debug lock
+## that strips it).
+signal skin_changed(student_name: String)
+## Student name -> skin id they wear. Absent means StudentSkins.DEFAULT_ID.
+## Keyed by name, not roster id, so a skin follows the character across
+## grades. Session-scoped like the roster -- not saved.
+var equipped_skins: Dictionary = {}
+## "Name:skin_id" -> unlocked. Absent means StudentSkins.UNLOCKED_BY_DEFAULT.
+## Only the debug overlay writes it (set_all_skins_locked).
+var skin_unlock_overrides: Dictionary = {}
+
+
+func equipped_skin(student_name: String) -> String:
+	return equipped_skins.get(student_name, StudentSkins.DEFAULT_ID)
+
+
+func is_skin_unlocked(student_name: String, id: String) -> bool:
+	if not StudentSkins.has_skin(student_name, id):
+		return false
+	if id == StudentSkins.DEFAULT_ID:
+		return true
+	return skin_unlock_overrides.get("%s:%s" % [student_name, id], StudentSkins.UNLOCKED_BY_DEFAULT)
+
+
+## Wears skin `id` on `student_name`. False, and nothing changes, when the
+## skin is unknown or locked. Re-equipping the worn skin succeeds silently.
+func equip_skin(student_name: String, id: String) -> bool:
+	if not is_skin_unlocked(student_name, id):
+		return false
+	if equipped_skin(student_name) == id:
+		return true
+	if id == StudentSkins.DEFAULT_ID:
+		equipped_skins.erase(student_name)
+	else:
+		equipped_skins[student_name] = id
+	skin_changed.emit(student_name)
+	return true
+
+
+## Debug: lock (or unlock) every non-default skin. Locking strips a worn skin
+## back to default, so nothing shows art the player could not pick.
+func set_all_skins_locked(locked: bool) -> void:
+	for n in StudentSkins.NAMES:
+		for id in StudentSkins.skins_for(n):
+			if id == StudentSkins.DEFAULT_ID:
+				continue
+			skin_unlock_overrides["%s:%s" % [n, id]] = not locked
+			if locked and equipped_skin(n) == id:
+				equip_skin(n, StudentSkins.DEFAULT_ID)
+
+
+## True when set_all_skins_locked(true) is in force.
+func all_skins_locked() -> bool:
+	for key in skin_unlock_overrides:
+		if skin_unlock_overrides[key] == false:
+			return true
+	return false
 
 func get_max_weeks() -> int:
 	match current_grade:
@@ -350,6 +408,8 @@ func forget_session() -> void:
 	grade7_student_ids = []
 	grade8_student_ids = []
 	run_failed = false
+	equipped_skins = {}
+	skin_unlock_overrides = {}
 	player_money = 0
 	pending_earnings = {}
 	inventory.clear()
@@ -481,9 +541,9 @@ func student_data_from_dict(dict: Dictionary) -> StudentData:
 	sd.persona = dict.get("persona", "")
 	sd.personality = dict.get("personality", "Santai")
 	sd.profil = dict.get("profil", "")
-	sd.splash_path = dict.get("splash", "")
+	sd.splash_path = StudentSkins.splash_for(dict)
 
-	var port_path = dict.get("portrait", "")
+	var port_path := StudentSkins.portrait_for(dict)
 	if port_path != "" and ResourceLoader.exists(port_path):
 		sd.avatar_texture = load(port_path)
 

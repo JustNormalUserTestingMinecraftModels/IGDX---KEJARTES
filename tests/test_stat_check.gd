@@ -10,7 +10,7 @@ extends McpTestSuite
 
 const _ROW_SCENE := "res://Scenes/EndGame/StatCheckRow.tscn"
 const _ROW_SCRIPT := "res://Scripts/EndGame/StatCheckRow.gd"
-const _STAR_ICON := "res://Assets/Images/UI/Placeholders/icon_star.svg"
+const _STAR_ICON := "res://Assets/Images/UI/star.png"
 
 
 func suite_name() -> String:
@@ -165,7 +165,7 @@ func test_rushing_a_row_before_its_fill_starts_still_rushes_it() -> void:
 
 
 func test_star_placeholder_exists_and_loads_as_a_texture() -> void:
-	assert_true(ResourceLoader.exists(_STAR_ICON), "icon_star.svg exists")
+	assert_true(ResourceLoader.exists(_STAR_ICON), "star.png exists")
 	var tex = load(_STAR_ICON)
 	assert_true(tex is Texture2D, "it imports as a Texture2D")
 
@@ -179,7 +179,7 @@ func test_star_placeholder_exists_and_loads_as_a_texture() -> void:
 func test_the_star_texture_is_imported_large_enough_to_fill_its_cell() -> void:
 	var tex: Texture2D = load(_STAR_ICON)
 	assert_true(tex.get_width() >= 180 and tex.get_height() >= 180,
-		"icon_star.svg imports at %dx%d; the 180x180 star cells need at "
+		"star.png imports at %dx%d; the 180x180 star cells need at "
 		% [tex.get_width(), tex.get_height()]
 		+ "least 180 -- raise svg/scale in the .import and reimport")
 
@@ -376,14 +376,17 @@ func test_star_meter_maps_a_float_onto_three_star_bars() -> void:
 	Engine.get_main_loop().root.remove_child(screen)
 
 
-func test_star_meter_bars_use_the_placeholder_star() -> void:
+func test_star_meter_bars_use_the_new_star() -> void:
+
 	var screen = load(_SCENE).instantiate()
 	track(screen)
 	for n in ["Star1", "Star2", "Star3"]:
 		var bar = screen.get_node("MarginContainer/Column/StarMeter/" + n)
 		assert_true(bar is TextureProgressBar, "%s is a TextureProgressBar" % n)
-		assert_true(String(bar.texture_progress.resource_path).ends_with("icon_star.svg"),
-			"%s fills with icon_star.svg" % n)
+		assert_true(String(bar.texture_progress.resource_path).ends_with("UI/star.png"),
+			"%s fills with star.png" % n)
+		assert_true(bar.nine_patch_stretch,
+			"%s stretches the 360 px star into its 180 px cell" % n)
 		assert_eq(bar.fill_mode, TextureProgressBar.FILL_LEFT_TO_RIGHT,
 			"%s fills left to right" % n)
 

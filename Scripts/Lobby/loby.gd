@@ -48,6 +48,10 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 ## back to Citra's rig, the same shape as hand_fallback above.
 @export var face_rigs: Array[PackedScene] = []
 
+@export_group("Skins")
+## The skin picker opened by SkinSwitchButton.
+@export var skin_select_scene: PackedScene = preload("res://Scenes/Skins/SkinSelect.tscn")
+
 
 @onready var color_rect = $ColorRect
 @onready var click_area = $ColorRect/ClickArea
@@ -60,6 +64,7 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 @onready var inventory_button = %Inventory
 @onready var settings_button = %SettingsButton
 @onready var achievement_button = %AchievementButton
+@onready var skin_switch_button = %SkinSwitchButton
 
 @onready var money_label = get_node("%DisplayUang/Label")
 @onready var daily_login_btn = %DailyLogin
@@ -131,6 +136,12 @@ var reward_popup_open := false
 
 @onready var bg_layer = %BGLayer
 
+## Seated students' chatter (2026-09-19 student-chatter spec); null in an
+## older scene without the Chatter node.
+@onready var chatter: LobbyChatter = get_node_or_null("Chatter") as LobbyChatter
+## True while SkinSelect is open; mutes the chatter.
+var _skin_select_open := false
+
 func _ready():
 	if bg_texture:
 		bg_layer.texture = bg_texture
@@ -147,6 +158,14 @@ func _ready():
 	if GameState.has_method("initialize_grade_targets"):
 		GameState.initialize_grade_targets()
 
+	if chatter:
+		chatter.can_speak = _chatter_allowed
+		# The HUD sits over the front-row faces; its taps are not the
+		# students'.
+		chatter.tap_blockers = [student_button, jadwal_button, koperasi_button,
+			report_student_button, inventory_button, settings_button,
+			achievement_button, skin_switch_button, daily_login_btn,
+			get_node("%DisplayUang")]
 	_setup_students()
 	_start_idle_bob(portraits_back, 0.0)
 	_start_idle_bob(portraits_front, idle_bob_period * 0.25)
@@ -167,7 +186,7 @@ func _ready():
 
 	_build_tutorial_panel()
 
-	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, settings_button, achievement_button, daily_login_btn, claim_button]:
+	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, settings_button, achievement_button, skin_switch_button, daily_login_btn, claim_button]:
 		_setup_button_juice(btn)
 
 	color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -176,6 +195,9 @@ func _ready():
 		settings_button.pressed.connect(_on_settings_pressed)
 	if not achievement_button.pressed.is_connected(_on_achievement_pressed):
 		achievement_button.pressed.connect(_on_achievement_pressed)
+	if not skin_switch_button.pressed.is_connected(_on_skin_switch_pressed):
+		skin_switch_button.pressed.connect(_on_skin_switch_pressed)
+	skin_switch_button.disabled = GameState.approved_students.is_empty()
 
 	AudioDirector.play_bgm_playlist(&"lobby")
 
@@ -274,14 +296,35 @@ func _show_hand_for(h_slot: Node, student_name: String) -> void:
 		chosen.show()
 
 
+## Dresses every Hand_<Name> node in this slot in its student's equipped
+## skin, restoring the authored texture for the default. Only the texture is
+## touched: the per-node transforms are hand-authored (see _show_hand_for).
+## The first call stashes each node's authored texture in its
+## "default_texture" meta so a later default can put it back. Static so the
+## test runner can call it without an instance of this non-@tool script.
+static func _apply_hand_skins(h_slot: Node) -> void:
+	for child in h_slot.get_children():
+		if not child.name.begins_with(HAND_NODE_PREFIX) or not child is TextureRect:
+			continue
+		var hand := child as TextureRect
+		if not hand.has_meta(&"default_texture"):
+			hand.set_meta(&"default_texture", hand.texture)
+		var who := String(hand.name).substr(HAND_NODE_PREFIX.length())
+		var path := StudentSkins.hand_for(who)
+		hand.texture = load(path) if path != "" else hand.get_meta(&"default_texture")
+
+
 func _setup_students():
 	var students = GameState.approved_students.duplicate()
 	if students.size() == 0:
 		for s in portrait_slots: s.hide()
 		for h in hand_slots: h.hide()
+		if chatter:
+			chatter.set_seats([])
 		return
 
 	var ordered = _compute_seat_order(students)
+	var seats: Array = []
 	for i in range(portrait_slots.size()):
 		var p_slot = portrait_slots[i]
 		var h_slot = hand_slots[i]
@@ -290,19 +333,23 @@ func _setup_students():
 			h_slot.show()
 			var s = ordered[i]
 			var portrait_node = p_slot.get_node("Portrait")
-			var port_path = s.get("portrait", "")
+			var port_path = StudentSkins.portrait_for(s)
 			if port_path != "" and ResourceLoader.exists(port_path):
 				portrait_node.texture = load(port_path)
 			else:
 				portrait_node.texture = default_portrait
 				
 			_show_hand_for(h_slot, str(s.get("name", "")))
+			_apply_hand_skins(h_slot)
 			var breathing_delay = float(i) * 0.4
 			# A student with a layered rig gets it instead of the flat
 			# portrait; both breathe identically, so the diorama reads the
 			# same either way.
 			var face := _acquire_face(p_slot, str(s.get("name", "")))
 			if face != null:
+				var skin_base := StudentSkins.face_base_for(str(s.get("name", "")))
+				if skin_base != "":
+					face.set_base_texture(load(skin_base))
 				_match_rect(face, portrait_node)
 				portrait_node.hide()
 				face.show()
@@ -310,9 +357,15 @@ func _setup_students():
 			else:
 				portrait_node.show()
 				_animate_breathing(portrait_node, breathing_delay)
+			var hit: Control = face if face != null else portrait_node
+			var anchor := p_slot.get_node_or_null("ChatAnchor") as Control
+			if anchor:
+				seats.append({"student": s, "hit": hit, "anchor": anchor})
 		else:
 			p_slot.hide()
 			h_slot.hide()
+	if chatter:
+		chatter.set_seats(seats)
 
 func _animate_breathing(node: Control, delay: float):
 	if not node: return
@@ -321,7 +374,10 @@ func _animate_breathing(node: Control, delay: float):
 	if not is_instance_valid(node): return
 	
 	node.pivot_offset = Vector2(node.size.x / 2.0, node.size.y)
-	var tw = create_tween().set_loops()
+	# Bound to the node, not the Lobby: re-seating after the skin picker
+	# frees the old face rigs, and a Lobby-owned looping tween would keep
+	# stepping a dead node ("Infinite loop detected").
+	var tw = node.create_tween().set_loops()
 	
 	# Start with a delay so they don't breathe perfectly in sync
 	if delay > 0:
@@ -822,6 +878,29 @@ func _on_koperasi_pressed() -> void:
 func _on_inventory_pressed() -> void:
 	AudioDirector.play_sfx(&"tap")
 	Transition.change_scene("res://Scenes/Inventory/inventory.tscn", Transition.Style.WIPE)
+
+## Opens the skin picker over the Lobby. Skins apply the moment one is
+## picked; closing re-seats the diorama so its faces and desks wear them.
+func _on_skin_switch_pressed() -> void:
+	if GameState.approved_students.is_empty():
+		return
+	var screen := skin_select_scene.instantiate() as SkinSelect
+	_skin_select_open = true
+	if chatter:
+		chatter.dismiss()
+	add_child(screen)
+	screen.closed.connect(func(): _skin_select_open = false)
+	screen.closed.connect(_setup_students)
+	# No argument: SkinSelect reads StudentSkins.NAMES, not the roster --
+	# equipped_skins is keyed by name, so all six characters are dressable.
+	screen.open()
+
+
+## LobbyChatter's gate: nobody talks over the tutorial, the daily reward
+## or the skin picker.
+func _chatter_allowed() -> bool:
+	return not tutorial_active and not reward_popup_open and not _skin_select_open
+
 
 func _on_achievement_pressed() -> void:
 	AudioDirector.play_sfx(&"tap")

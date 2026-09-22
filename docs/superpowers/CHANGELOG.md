@@ -8,6 +8,592 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-22 — Achievements layout pass, and a full-screen SkinSelect
+
+**The grid's uneven columns were one label, not the container.** The
+Achievements grid measured 420 left and 478 right, and the plan opened by
+blaming `GridContainer` and proposing an `HBoxContainer` of two
+`VBoxContainer`s filled round-robin. Built side by side at the grid's real
+measurements — list width 922, `h_separation` 24, two 420-minimum expanding
+columns — a `GridContainer` splits evenly, exactly as a `BoxContainer` does.
+That swap would have fixed nothing.
+
+Measuring the live screen found the real cause: the column minimums genuinely
+differ, and exactly one tile of 26 is responsible. `streak_6`'s prize label
+had autowrap off, and a `Label` with autowrap off reports its **whole text
+width** as its minimum — 366px for "Poin stat murid dari minigame +5%", which
+with the chip's and the `Card`'s content margins pushes that tile past 420.
+`streak_6` is catalogue index 5, so the damage lands in column 1; five of the
+six prize-carrying entries sit at odd indices. `autowrap_mode = ARBITRARY`
+frees the minimum, and `max_lines_visible = 1` plus `TRIM_ELLIPSIS` stop the
+freed wrap becoming a second line. Three properties, and
+`achievements_screen.gd` was never touched.
+
+That fix then exposed a second one in the screenshot pass: with the label's
+minimum at ~0 the shrink-centred chip collapsed to a pill reading just an
+ellipsis. It EXPAND_FILLs the tile now.
+
+**Locked tiles were at 1.78:1.** `locked_modulate` put `Color(1,1,1,0.55)` on
+the tile *root*, so the card, the title and the icon all blended into the
+painted background. Measured live off the running build: a locked title reads
+1.78:1 against its own card, under the 3.0 floor `test_bar_contrast.gd` pins
+and far under the 4.5 body copy wants; the same title unlocked reads 5.29:1.
+On a fresh save 20 of the 26 tiles are locked, so that was the screen's
+default state. The export became `locked_icon_modulate` and tints only the
+icon; the root stays opaque in every state and the lock overlay carries the
+state.
+
+**The rest of the tile.** Icon 72 → 132 in a 420 × 310 tile (it was 3% of the
+tile's area), title from `CaptionLabel` 22 to a new `AchievementTileTitleLabel`
+at the body step 28 in `text_primary`, the prize chip hidden on the 20 entries
+that have no prize, and the green "BARU" pip replaced by the user's
+`notice_icon.png`.
+
+**The detail popup.** Anchored 0.3–0.78 vertically it stood 922px tall at
+1080×1920 and 1152px at 1080×2400 to hold ~350px of content — emptier the
+taller the phone. Centred anchors with `GROW_DIRECTION_BOTH` make it exactly
+as tall as its content: 969px measured, against the spec's predicted 968. The
+stack moved from a 12px separation to `space_lg` (44). The prize had been
+printing twice, because `AchievementCatalog.description_of()` appended
+"Hadiah: …" to the desc *and* a label repeated it underneath; that helper is
+deleted and the prize lives in a chip. The Klaim button is gone — opening the
+popup on an unclaimed achievement is the claim.
+
+**SkinSelect.** `SkinSelectPopup`'s card of up to four roster students became
+one full-bleed surface: the open character's splash in a horizontal carousel
+of their skins, a rail of all six characters underneath, one TERAPKAN. It
+stays an overlay rather than a scene, because only an overlay can blur the
+live Lobby — a `change_scene` would need a baked backdrop and would stop
+showing the room the student is standing in. The rail is all six characters,
+not the roster, because `equipped_skins` is keyed by name so a skin survives
+the grade change that clears the roster. Choices are pending until TERAPKAN
+commits them all at once.
+
+The design audit on the mockup changed four things in it: the card is
+752×1337 rather than full-screen, so the tray stops cropping the outfit at
+the knees; the open student's square is ringed; APPLY became TERAPKAN in
+`PrimaryButton` brown rather than an off-palette red that read as a pair with
+the red back arrow; and a locked skin now says TERKUNCI.
+
+**Two smaller fixes.** AturJadwal's student splash — the button that opens the
+picker — carried no affordance at all, and now wears a white silhouette
+outline through the existing `icon_outline.gdshader` at `outline_width` 0.009
+(0.03 would be a 21px stroke on its 700px rect). Koperasi's crate handle is
+deleted; the tray's own drag already toggled it in both directions, and the
+back button that used to ride the crate's tween owns `_back_tween` now.
+
+**Two process notes.** A minimum-size test handed a Control to the editor's
+root measures the *editor's* theme, not the game's — every tile read a flat
+420 and the test passed while measuring nothing until it was given the baked
+theme by hand. And an editor shutdown wrote a cached theme back over the
+bake, merging content margins and a shadow into unrelated styleboxes by
+matching id; the fix is to discard and rebake, never to hand-merge.
+
+## 2026-09-22 — Three reported defects: the header collision, the fake fireworks, one back arrow
+
+**The old texts over the calendar header.** PR #66's calendar badge and day
+pill landed, but SchoolDay's own `DayScreen` chrome still drew on top of them.
+Anchored at `0.06 x 1920 = 115.2`, the stack put "Hari 1 dari 5" across the top
+of the pill and ran the progress bar through "Senin", "Minggu" and "2/6".
+`DayScreen` is re-anchored to all four edges at offsets `54 / 320 / -54 / -144`
+— 28 px below the badge, and the bar clears it by 76 px. No reparent and no
+renamed node: every child keeps its path and variation. `DayNumberLabel` and
+`StatusLabel` were moved rather than deleted, because they carry the day's
+place in the week and the day's phase, which the header does not.
+
+The fractional top anchor was independently a tall-phone bug: at 2400 it pushed
+the stack 29 px further from a header that is pixel-anchored and had not moved.
+
+`DayScreen/DayLabel` was deleted outright — the one duplicated text, which
+`ba98d10` had only hidden while saying in as many words that deleting a node
+from a shipped scene was a bigger call than de-duplicating a label needed to
+be. That deletion exposed a live regression: `"Akhir Pekan"` was being written
+into that permanently invisible node, so **the end-of-week banner had never
+reached the player**. It now routes through a new `BookClockWidget.set_banner()`,
+which writes the text without rewinding the sky — `set_day()` would have snapped
+the week's closing screen back to sunrise.
+
+**The three-star "fireworks" were a second helping of confetti.** Not a tuning
+problem: `ConfettiFireworks`' bursts referenced the *same texture uid* as
+`ResultConfetti`'s rain, with the same rounded-chip silhouette, the same
+±320 °/s spin and no colour at all, so both rendered white. Only the ballistics
+differed, and ballistics cannot distinguish two emitters throwing an identical
+white paper chip. `55504cd` introduced it by replacing StarBurst's gold spray
+with confetti and keeping the filename.
+
+Fixed by appearance alone — the authored placement and the editor-only
+crosshair gizmo are untouched, because placement was the point of `55504cd`.
+The bursts now throw `particle_spark.png`, which turned out to be a
+four-pointed flare (alpha on both axes, zero on every diagonal) already used by
+two other burst effects; spin is written as an explicit `0.0` rather than
+deleted, since a removed `.tscn` line does not reset a cached value; and each
+burst wears one shell hue — amber, rose, turquoise — over a shared fade ramp
+that ends at alpha 0, deliberately sharing no hue with PaperConfetti's
+red/yellow/blue, which is the palette the effect was being mistaken for.
+
+Separately, the volley fired on losses: `fire_burst` was called unconditionally
+inside a loop over `star_row`, which always holds three children, so the index
+was never out of range and a one-star finish got a full-house celebration.
+
+`visibility_rect` was set as hygiene, **not** as a bug fix — it gates whether
+the node is processed and never clips, and all three bursts were always on
+screen. Nothing was being culled.
+
+**One canonical back arrow.** Twelve back/return controls across nine scenes
+drew four different pictures plus an emoji: a 160×145 white arrow, the same
+silhouette at 512×512 with a different alpha bbox, a 16×36 chevron, a pure
+`#FF0000` stock clipart arrow, and `"🔙 Kembali ke Menu"`. Nothing asserted
+they should match, which is how the fourth divergent asset arrived.
+
+All twelve now draw `UI/Nav/return_button.png`. The plain buttons keep their
+"Kembali" label beside it; Rapor is the one exception, because its 260 px box
+cannot hold the word beside *any* icon — Inventory's measured 277 px minimum
+for the label plus a 16 px chevron proves it. Rapor goes icon-only, which
+shrinks the button to 96 px and, with a 42 px nudge of the title, takes a
+**190 px overlap to zero**. The title had been rendering as "…OR MURID" with
+"Rap" hidden under the button.
+
+Sizing goes through the theme: `icon_max_width` 36 on the S step, because
+`2 × btn_pad_v_s + font_title = 96` is also `touch_target_min` and a larger cap
+would make the icon the tallest content; 48 on the M step, which needs its own
+entry because `_add_size_step` sets `base_type` to `Button` rather than to the
+parent variation. `icon_alignment` is deliberately *not* written into the
+scenes — LEFT is Godot's default, so the editor omits it on save and the
+property cannot be pinned in a `.tscn` at all; a test asserts it instead.
+
+Four superseded assets were deleted, each verified unreferenced first. One,
+`pngwing.com (1).png`, was a licensing tidy-up as well: a stock-aggregator
+filename with no recorded licence.
+
+**Three DEBT entries closed, two opened.** Deleted: the Inventory header
+overflow (measured live at 668 px of free space, so the standing 1156 px claim
+was wrong by ~600 px — it predated `431cc5d` moving the title out of the row),
+Rapor's parked `KEMBALI` overlap, and the `icon_back.svg` placeholder. Added:
+the grouped ledger of SchoolDay's six remaining display emoji, which want an
+art pass rather than deletion, and a line on the remaining stock `pngwing`
+files.
+
+Also corrected: `DEBT.md`'s claim that opening `BookClockWidget.tscn` hangs the
+editor. It opened cleanly through MCP and the suite then ran green against it.
+
+Full run afterwards: **141 suites, 2061 tests, 0 failures**, with 19 new tests
+across `back_controls` (new), `school_day`, `confetti_fireworks`,
+`book_clock_phases` and `inventory`. Deliberately not done: making every
+illustration and UI element draggable in the 2D viewport, which the user
+deferred mid-run — sized in `DEBT.md` at 123 runtime-constructed nodes across
+20 files plus ~265 container subtrees.
+
+## 2026-09-21 — The SchoolDay calendar header
+
+`BookClockWidget` took the weekday through `set_day()` and **displayed
+nothing** — `day_name()` existed only so tests could read it back. The day the
+player actually saw was two bare labels in SchoolDay's top-left corner, and
+the week they were in appeared nowhere on the screen at all.
+
+It now carries EventDialogue's header: a day banner and a calendar badge
+reading "Minggu 3/6". The same `DayBannerPanel` / `DayBannerLabel` /
+`CalendarLabel` variations, not a lookalike — which also meant no theme
+override was needed. Both screens are fed from `GameState.minggu_ke` and
+`get_max_weeks()`, so they cannot disagree about which week it is, and
+because `get_max_weeks()` is grade-scaled the badge reads 3/6 in Kelas 7 and
+3/16 in Kelas 9 with no code for it. A test covers all three grades rather
+than only the Kelas 7 case a hard-coded 6 would have passed.
+
+**The illustration is the lobby's daily-login calendar**, asked for by name;
+nothing new was drawn and EventDialogue keeps its own flat
+`calendar_badge.png`. That calendar is drawn in perspective, so straight text
+on it reads as sliding off the page. The correction was **measured, not
+eyeballed**: a least-squares fit through the first cream pixel in each of 48
+columns gives the paper's top edge a slope of −0.1579, or −8.97°. The text box
+sits at −9.0°, parallel within 0.03°, pivoting about its own centre.
+
+`DayScreen/DayLabel` is hidden now the banner carries the day — hidden, not
+deleted, since the suite pins the path and `SchoolDay.gd` still writes its
+text. `DayNumberLabel` stays: "Hari 1 dari 5" is the day's place in the week,
+which the header does not carry.
+
+**Two process notes worth keeping.** A `scene_save` flushed a stale editor tab
+over `SchoolDay.gd` and silently deleted the `set_week()` call written minutes
+earlier — the hazard CLAUDE.md documents. It was caught by the working-tree
+diff check the plan mandates after every save, and cured by restarting the
+editor. And the first version of the duplicate-label guard read a fixed
+400-character window after each `[node]` header; `DayNumberLabel` and
+`DayLabel` are seven lines apart, so it read one node's properties as the
+other's. It now bounds each block at the next `[node]` marker.
+
+The second ask of the same request — dragging the koperasi `BasketTray` with
+the mouse — needed no work: it had shipped in PR #65 and merged that morning.
+Verified by running its suites rather than rewritten.
+
+Full suite green: **2039 tests, 140 suites, 0 failures.**
+
+## 2026-09-21 — Tray gestures, confetti fireworks, the sound pack, the back button
+
+Five asks in one run. Two of them turned out to be already built, which
+changed the shape of the work more than anything else did.
+
+**Already shipped, so pinned rather than rebuilt.** The lobby blink was asked
+for as new work; `StudentFace.gd` had done it since `27ae2cc` — 5–10 s apart,
+from the Eyelid layer, seeded per rig so no two seats blink in step. And
+`star.png` had been the result card's art since `ed7bcf9`. What both lacked
+was anything stopping a later edit dropping them, so this pass added the tests
+and swapped in the artist's own 345×357 crop over the 360×360 re-export.
+Reading the code before building saved two rewrites.
+
+**The koperasi tray.** It had three states but one way to move: a press. It
+now follows a finger, with `classify_drag()` as a pure static function because
+the runner cannot await — a flick past 900 px/s decides outright, below that
+the halfway point wins. A tap on a tray item returns it, where it used to
+wobble a "hold me" hint; holding to undo a mis-tap is a slow answer to a fast
+mistake. That forced a gesture-stealing rule: a drag starting on a slot
+cancels that slot's press, or one finger movement would both drag the tray and
+empty the cart a unit at a time.
+
+**Three confetti fireworks** replace the star-shaped spray each result star
+used to mount into its own `BurstSlot`. Three bursts at three authored points
+read as a celebration; three sprays behind three stars read as the stars
+fizzing. Placement is the deliverable, so it is authored: real
+`GPUParticles2D` children, and the `@tool` script draws a crosshair at each in
+the editor viewport. `ResultConfetti` — the separate full-house rain — was
+left alone, and `StarBurst.tscn` stays because `MinigameScoreHUD` still uses
+it.
+
+**49 sounds** from the collaborator's Drive folder, taken as one zip through
+the user's own Chrome session: the folder is not publicly shared, and 13 MB of
+base64 through a connector was not viable. Four cues were *replaced* rather
+than stacked, because two on one beat is the double-fire the audio suite
+already guards against — `card_flip` for `swipe` on StudentCard's page turn,
+`stat_up` for `tally` on the chevron, `result_checkup` for `popup_open`, and
+`transaction` for `coin` on a purchase, `coin` now being `earnMoney`, which is
+the opposite of what a purchase does. A falling stat row had no cue at all
+before this. That guard also caught two real stacks the pass introduced, and
+four pairings it cannot see through (an `await` on the event's own line,
+mutual exclusion through a call) which went to the reviewed allowlist.
+
+`test_audio_coverage`'s known-id list had been a hand-written copy of
+`_resolve_sfx`'s match arms, so every new cue had to be added twice. It now
+asks `AudioDirector.has_sfx()`.
+
+**The device back button was a bug, not a gap.** Android delivers the press as
+`NOTIFICATION_WM_GO_BACK_REQUEST`, never as `ui_cancel`. Six screens answered
+it; seven with a working on-screen back button did not — and because
+`quit_on_go_back` defaults to **true**, a back press on any of those *quit the
+game and took the run with it*, roster, money, week and schedules all being
+session-scoped. Now false, and every screen routes the notification to the
+function its own button already calls. A minigame opens the pause menu
+instead: the pause menu owns the quit confirmation, and a mis-swipe must not
+forfeit a round unasked. Not verified on a real device — this machine has no
+Android export templates.
+
+**The UI audit found the opposite of what was expected.** In scene files the
+"never add a `theme_override_*`" rule already holds completely: all 66
+non-layout overrides sit inside `Scenes/Minigames/`, which is out of scope by
+declaration. The real debt is **57 runtime `add_theme_*_override` calls across
+14 `.gd` files**, which a grep for the scene-file property name misses
+entirely — which is why they had never been counted. Inventoried in
+`DEBT.md`, none fixed: the two this branch touched apply an `@export`ed font,
+so removing them is a design decision about those screens rather than a
+cleanup.
+
+Full suite green: **2025 tests, 140 suites, 0 failures.**
+
+## 2026-09-21 — Minigame type ladder
+
+A `/design-audit-ui` pass over Menjodohkan, the Shop, Variabel, Password,
+PilihanGanda, BuatBatik, Badminton and Achievements. Shop and Achievements came
+back clean and were left alone — both already ran `ThemeFactory` variations.
+The six minigames carried **25 hand-written text sizes** between them (14, 16,
+18, 26, 30, 32, 36, 40, 44, 48, 60, 70, 80, 90), of which only five were token
+rungs.
+
+**φ was already in the tokens.** The ask was to re-space the type scale at
+×1.618. Doing that to `DesignTokens.gd` would give 28/45/73/118, change every
+screen in the game on rebake, and overflow Boohong's tracking on a 1080px
+canvas. It was not needed: `font_title` 36 → `font_h1` 64 →
+`font_display_size` 96 runs 1.78 then 1.50, a geometric mean of **1.63** — φ
+within rounding, already baked, and already used by `MinigameScoreHUD`. So the
+change was subtractive: seven new variations, three rungs, nothing else.
+
+**The shared card was the lever.** `QuestionCard.tscn` (and its sibling
+`AnswerCard.tscn`) were already instanced by Password, Variabel and
+Menjodohkan. PilihanGanda joined them, so fixing the cards' typography once
+fixed four screens. Both gained a 620px image slot, sized off the real art:
+`monas.png` is 1080×1920 and `borobudur.png` 1920×1920, so a short wide slot
+would have letterboxed them to a narrow column.
+
+**The reserved-height version was wrong, and only a screenshot showed it.**
+The first build pinned the card at 960 on every question so the choices could
+not move. Tests were green; on device, the ~10 of 11 fallback questions with
+no picture rendered as a 960px empty field around one line of text. What
+shipped instead: the card sizes to its content and an authored `Spacer` holds
+the choices at the bottom, so they stay put whether or not a question has a
+picture — the same guarantee, without the dead space. Pinned by
+`test_pilihan_ganda_pins_the_choices_without_reserving_dead_space`.
+
+**PilihanGanda's layout had two real bugs**, both cured by the move. The image
+sat *above* the progress counter, which sat above the question — so "Dari
+gambar di atas…" pointed at a picture with the score wedged between. And the
+script toggled the image's `visible` inside a centre-aligned `VBoxContainer`,
+so the whole stack re-centred between questions and the choice buttons moved
+under the player's thumb mid-game. The counter became the card's "Soal N/M"
+badge, which is what `SoalFit` was built around.
+
+**Contrast, measured.** Four inks could not reach the 4.5:1 body floor on any
+ground: Menjodohkan's two wheel headers and both cards' borders, at relative
+luminance 0.27 (orange) and 0.21 (blue) — 3.3:1 and 4.0:1 against *pure white*,
+falling toward 1.5:1 on the cards they sat on. They became `brand_primary`
+(7.2:1) and `cat_akademis` (5.1:1), keeping the warm/cool split. BuatBatik's
+two layer labels shipped at **16px**, 57% of the body floor, one of them the
+only feedback telling the player they stacked the layers wrong.
+
+**Also retired:** three `🔒` emoji locks (CLAUDE.md bans emoji iconography —
+they became `icon_lock.svg`), BuatBatik's `⚠` glyph (neither house font carries
+it), two copies of a four-branch 90/80/70/60 if-chain plus a third literal
+(all three now call `SoalFit`, which measures how text actually wraps),
+PilihanGanda's 100px choice rows (→ 130, the ~48dp touch floor), and
+Badminton's `ScoreHUD` at a raw (390, 40) offset (→ top-centre anchored).
+
+`SoalFit`'s `FALLBACK_BOX` was corrected from 699×333 to 802×268 — it had been
+describing a 715×345 card that grew to 850×480 some time before this pass.
+
+Four existing pins moved with the architecture rather than being deleted:
+`minigame_art`'s `H2Label` assertion, its display-font and wood-table ink
+tests, and `theme_factory`'s `DISPLAY_ROSTER`. New suite:
+`tests/test_minigame_typography.gd` (18 tests).
+## 2026-09-20 — `/design-audit-ui` skill: ranked design critique of a posted mockup
+
+- `.claude/skills/design-audit-ui/SKILL.md`. The user posts a mockup of a
+  scene; the skill answers as a senior product designer with a verdict, at
+  most three critical flaws, at most four minor ones, and the corrected
+  screen drawn. It delegates the drawing to `showwidget` rather than
+  restating that contract — one difference, recorded in the skill: the
+  audit's visual is one corrected screen labelled with what changed, not
+  `showwidget`'s two-option pick.
+- Seven passes, of which four had no representation in the baseline at all:
+  touch and reach (~130px minimum in the 1080-wide space, which the lobby's
+  own 96px gear fails), contrast over art (the project's tested floor is
+  3.0:1, `tests/test_bar_contrast.gd:15`), 1080x2400 behaviour, and the
+  Boohong/Open Sans role split.
+- Baseline, per `superpowers:writing-skills`: three agents reviewed real
+  mockups from `docs/superpowers/mockups/` without the skill. Their findings
+  were sharp and code-grounded — one caught a live counting bug in
+  `WeekRecap.compute()` — but every response was an unranked essay of 1374,
+  1656 and 2128 words with one severity word between them, no touch, contrast
+  or tall-phone pass, and all three ended by asking the user questions
+  instead of showing a corrected screen.
+- With the skill, the same two mockups came back at 525 and 554 words of
+  prose, in verdict / critical / worth-fixing / alternative order, exactly
+  three criticals each, every finding landing on a real value — that
+  "MINGGU 1 DARI 24" matches no grade (`JUMLAH_MINGGU_KELAS_7/8/9` is 6, 12,
+  16), that `EVENT BERHASIL` is counting minigames, that the empty stat
+  tracks are missing `cat_*_on_dark` fills.
+- The cap is the mechanism, not decoration: the baseline's problem was never
+  finding too little, it was weighting a data bug the same as a grey slab.
+
+## 2026-09-20 — `/showwidget` skill: design options as a rendered pick
+
+- `.claude/skills/showwidget/SKILL.md`. The user names a surface that looks
+  wrong; the skill answers with two or three faithful mockups of it rendered
+  inline by `mcp__visualize__show_widget`, varying exactly one named thing,
+  and stops until they pick.
+- Written against a baseline, per `superpowers:writing-skills`. Three agents
+  ran the same asks without the skill: all three produced three or four
+  options that each varied a *different* dimension (stylebox vs node type vs
+  new art), so there was nothing to compare; none labelled the options inside
+  the widget; viewBoxes came out 760, 880 and one response with three separate
+  SVGs on negative coordinates; 8-14 constructs the widget host bans
+  (gradients, `feDropShadow`, `<!-- -->`, `<style>` colour blocks, weight 600)
+  per response; and 200-400 words of prose on each side of the visual.
+- Two agents re-ran the same asks with the skill: two options each, both
+  varying one named dimension ("the card's ground", "gear treatment"), label
+  band inside the widget, zero banned constructs, and 64-77 words of prose per
+  side.
+- The fix is a positive recipe, not a prohibition list — `writing-skills` is
+  explicit that a wrong-shaped-output failure gets worse under "don't do X".
+  The skill states what the response *is*, part by part.
+- The fidelity rule it encodes: a KejarTes `.tscn` carries no colours, so a
+  mockup resolves `theme_type_variation` → `ThemeFactory.gd` → `tokens.<field>`
+  → the literal hex in `DesignTokens.gd`, and takes its strings out of the
+  scene. Approximated colour is what made the baseline mockups read as
+  drawings of a different game.
+
+## 2026-09-20 — ExamProgress shows the exam art undarkened
+
+- The `Scrim` panel is gone, so `cg_ujian` reads at full brightness behind the
+  pacing beat. Legibility over the busy art comes from what those variations
+  already carry: `H1Label`'s chunky light outline and `StatBar`'s opaque
+  track. Measured before removing it — the art's bottom band averages ~145
+  sRGB luminance against `text_primary` #3B2412, about 4.6:1 even before the
+  outline.
+- The status line and fill bar moved out of the screen's centre into a strip
+  anchored to the bottom edge (`MarginContainer` anchored top/bottom 1.0,
+  offsets -380/-100), clearing the picture's subject and leaving 100 px under
+  the bar for the system gesture area.
+- `Backdrop` went from a fixed 1296×1920 rect to all-four-edge anchors with
+  `offset_right = 216` (still |`pan_pixels`|) and a `custom_minimum_size` of
+  1296×1920. It now fills a 1080×2400 phone instead of ending in a black band
+  under the newly bottom-anchored text; the minimum size is what keeps the
+  suite's off-tree width and height measurements reading the authored numbers.
+  ExamProgress accordingly left DEBT's deferred tall-phone list.
+- `tests/test_exam_progress.gd`: the scrim assertion inverted, plus two new
+  tests pinning the bottom anchoring and the backdrop's edge anchors. 14/14.
+
+## 2026-09-19 — Weekly Results mockup pass
+
+Spec `docs/superpowers/specs/2026-09-19-weekly-results-mockup-design.md`, plan
+`docs/superpowers/plans/2026-09-19-weekly-results-mockup.md`.
+
+- ResultCheckup opens under the red WEEKLY RESULTS ribbon
+  (`title_weekly_results.png`, orphaned since the 2026-09-16 revert, now
+  `TitleRibbon`); the EVALUASI MINGGUAN SISWA title and subtitle, and their
+  exports, are gone.
+- `WeekRecapBanner` is a butter-yellow panel (`recap_banner_fill`) of three
+  near-white tiles (`recap_tile_fill`), left to right money, minigames, events;
+  each `WeekRecapPill` now stacks its icon over its number in a `Column`. The
+  Poin tile and the MINGGU/grade line are removed (`WeekRecap.compute` still
+  returns `net_skill_delta`). Minigames wear `ResultCheckup/icon_minigame.png`
+  (the soccer ball), events `icon_event.png` (the checklist notebook); money
+  keeps `icon_uang.svg`. All three numbers are `text_primary` with a white rim.
+- Logs wears the new `ResultLogsButton` (`result_logs_fill` `E0574B`, the
+  ribbon's red lightened); Selanjutnya keeps the brown `ResultButton`.
+- Every `DaySummaryStudentRow` takes PR #53's (`feat/weekly-results-polish`)
+  cream `IdCardPanel` card with the brown striped `RecapMastheadPanel` name
+  band, so the weekly and daily cards match and SchoolDay and the event picker
+  follow; the card is 992×486 (was 410) and `StudentCardButton`'s design size
+  follows. PR #53's masthead, stars row and popup changes were not taken, so
+  that PR is superseded.
+- Every result star is `Assets/Images/UI/star.png` (the artist's star padded
+  to 360×360): StatCheck's meter (`nine_patch_stretch` into its 180 px
+  cells), the event student card, and `ResultStar`'s filled and empty
+  defaults. `popup_star_color` defaults to white so the art keeps its gold.
+  `icon_star.svg`, `icon_bintang.svg` and `icon_bintang_kosong.svg` are
+  deleted.
+## 2026-09-19 — Lobby student chatter and blinking
+
+Spec `docs/superpowers/specs/2026-09-19-student-chatter-design.md`, plan
+`docs/superpowers/plans/2026-09-19-student-chatter.md`.
+
+- Tap a seated student and they say a line in a chat bubble that pops out of
+  their own seat; after 20–50 s without a tap, a random student (never the
+  previous idle speaker) talks on their own. One bubble, one speaker: taps
+  are ignored while it shows and for 0.5 s after, so spam leaves the line
+  untouched. Muted during the tutorial, the daily reward and the skin picker.
+- Lines (`StudentChatterCatalog`): 8 per personality and 8 per quirk, so 16
+  per student, plus 6 each for `LELAH` (energy ≤ 30), `BETE` (mood ≤ 30) and
+  `SENANG` (mood ≥ 75), drawn 40% of the time while a state applies.
+  `StudentChatterPicker` shuffle-bags each pool per student: nothing repeats
+  until the pool is spent.
+- `StudentChatBubble.tscn` (`StudentChatBubble` / `StudentChatText`
+  variations) lands its tail tip on the seat's `ChatAnchor`, mirrors the tail
+  for left-hand seats, clamps inside the visible screen and pops in/out from
+  that tip. It is a root child right after `Safe`: under `Classroom` the
+  KELAS title drew over it.
+- Tunables: `LobbyChatter.idle_min_s`/`idle_max_s`/`tap_cooldown_s`,
+  `StudentChatBubble.linger_s`, `StudentChatterCatalog.STATE_CHANCE` and the
+  mood/energy thresholds; the four `ChatAnchor` positions in `loby.tscn`.
+- The face rigs blink: idle blinking is on, each rig rolls its own 5–10 s
+  wait, and the `Eyelid` layer fades in 0.05 s, holds 0.08 s and fades out.
+  The DEBT entry that held blinking back is gone.
+
+## 2026-09-18 — Skin system
+
+Spec `docs/superpowers/specs/2026-09-18-skin-system-design.md`, plan
+`docs/superpowers/plans/2026-09-18-skin-system.md`.
+
+- Each of the six students has a `default` and a `skin1` look
+  (`Scripts/Skins/StudentSkins.gd`, paths by convention under
+  `Assets/Images/Skins/<Name>/`). `GameState.equipped_skins` /
+  `skin_unlock_overrides` hold the session's choice; `equip_skin` refuses a
+  locked skin. Skins are keyed by name and survive grade changes.
+- Splash, flat portrait, lobby face-rig base and desk hands all resolve
+  through `StudentSkins`; AturJadwal, StudentCard, StudentList, the Lobby and
+  the `StudentData` bridge (DaySummary, EventDialogue, StatCheck) show the
+  worn skin. WinStage / WinLineup / RunResult keep their own art.
+- Lobby `SkinSwitchButton` opens `SkinSelectPopup`: blurred Lobby, up to four
+  roster cards (`SkinSlot`, masked `SkinFrame`), SETUJU; tapping a card opens
+  a scrollable column of `SkinOptionTile`s over it with a second, lighter
+  blur (`BackBufferCopy` + `skin_option_blur_material.tres`). Locked tiles are
+  darkened and disabled. Closing re-seats the Lobby.
+- The flat Skin1 portraits were baked from the face rigs by
+  `Scripts/Skins/BakeSkinPortraits.gd` (default bakes match the shipped
+  portraits to <0.011 mean difference, except Shinta at 0.031: her shipped
+  portrait is a darker grade than her rig art).
+- Debug › General › **🎨 Kunci/Buka Semua Skin** locks every non-default skin.
+- The Lobby's breathing tween is now bound to the node it animates, so
+  re-seating no longer leaves a looping tween on a freed face rig.
+
+## 2026-09-18 — Achievements polish
+
+Plan `docs/superpowers/specs/2026-09-18-achievements-polish-plan.md`.
+
+Whole-branch review fixes on top of the grid/pill/sheet rework:
+
+- `AchievementTile._gui_input` now emits `tile_pressed` on release (within a
+  small move threshold of its press), not on press, and the root's
+  `mouse_filter` moved from STOP to PASS so the parent `ScrollContainer`
+  still receives a drag that starts on a tile -- previously every
+  drag-scroll on the 26-tile grid opened the detail sheet.
+- The status pill's tap-to-jump now switches the filter back to "Semua"
+  before scrolling when the first unclaimed achievement is hidden by the
+  active filter, deferring the actual scroll a frame so the grid has
+  re-laid out.
+- Android back now closes an open `AchievementClaimPopup` before the detail
+  sheet underneath it, then the sheet, then leaves the screen.
+- `AchievementStatusPill` re-centres its pivot on `resized` (and again
+  before its morph/breathe tweens start), instead of only once in `_ready`
+  before layout has run -- fixes a scale-pop from the corner.
+- `Achievements.total_unclaimed_gold()` renamed to `total_unclaimed_count()`
+  throughout, matching what it actually returns.
+- `Achievements.relock(id)` is now a no-op (no save, no signal) for an
+  unrecognised id.
+- New thin `AchievementTileBar` `ThemeFactory` variation for the tile's
+  progress bar -- the shared `StatBar` variation's min height was winning
+  over the tile's 4px override, rendering the bar ~36px tall.
+
+Deliberate decisions carried from the plan: the waiting pill counts
+"hadiah" (unclaimed rewards) rather than a G amount, because the catalog's
+prizes are effect labels, not currency; there is no tier ladder
+(Perunggu/Perak/Emas has no art); `icon_outline.gdshader` also got a fix on
+this branch, to clear a CI project-check shader ERROR unrelated to the
+polish work itself.
+
+## 2026-09-18 — Koperasi polish pass, plus a tap-spam guard
+
+Plan `.superpowers/sdd/2026-09-17-koperasi-polish-plan/`, spec
+`docs/superpowers/specs/2026-09-17-koperasi-polish-design.md`.
+
+Five polish passes on the Koperasi shop, closed out with a three-layer
+tap-spam safeguard and a final whole-branch review:
+
+- ShelfItem items get a soft plank shadow, a per-item idle bob, a lift +
+  gold rim glow on purchase, and an affordability dim that now survives a
+  shelf-debounce lock/unlock cycle correctly (a slot that goes unaffordable
+  mid-flight no longer snaps back to full opacity when it unlocks).
+- Herman's speech bubble (`ChatBubble.gd`) drives a small state machine off
+  `DialogueCatalog` lines, with a per-event cooldown and randomised idle
+  chatter that mutes (not pauses) while the basket tray is collapsed and
+  re-arms on expand.
+- The basket tray's crate handle, back button and idle chatter all follow
+  the tray's expanded/collapsed state through one shared tween per gesture.
+- Stock pips (`PipRow`, `pip_filled.svg` / `pip_hollow.svg`) show
+  remaining/total copies per shelf slot; `GameState.SHOP_MAX_COPIES` went
+  2 → 3 to make pairs-and-triples possible.
+- Tap-spam guard: `ShelfItem._locked` debounces a single slot,
+  `Cart.MAX_ADDS_PER_FRAME` caps same-frame adds across the whole cart, and
+  `ChatBubble`'s per-event `SAY_COOLDOWN` stops repeat dialogue. `Cart.add_item()`
+  now returns whether the unit actually landed, and `rakbarang_1.gd` calls it
+  *before* committing the shelf slot / tray hold / flight tween, undoing them
+  on a dropped add instead of spawning a flight for a unit the cart never
+  received. The taken-slot check in `_on_barang_pressed` also now runs before
+  the shelf-debounce lock, so a dead tap on an already-sold slot always
+  reaches Herman instead of sometimes being swallowed by the lock.
+
+Deliberate deviations from the plan/spec: the back button's expanded-state
+gap is 18px, not the spec's 12px (`tests/test_tall_screen_layout.gd` pins
+the real `BackButton` rect); the crate at `scale = 0.35` renders ~112px
+against the 128px tray emblem (tracked in `docs/superpowers/DEBT.md`,
+not yet reconciled to a matching size).
+
 ## 2026-09-17 — Achievement claim celebration, Lobby Settings
 
 Plan `docs/superpowers/plans/2026-09-17-achievement-claim-celebration.md`, spec

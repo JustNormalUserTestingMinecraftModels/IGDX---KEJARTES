@@ -7,7 +7,7 @@ extends McpTestSuite
 
 const ACHIEVEMENTS := preload("res://Scripts/Achievements/Achievements.gd")
 const SCREEN := "res://Scenes/Achievements/achievements.tscn"
-const ROW := "res://Scenes/Achievements/AchievementRow.tscn"
+const TILE := "res://Scenes/Achievements/AchievementTile.tscn"
 const LOBBY := "res://Scenes/Lobby/loby.tscn"
 
 
@@ -43,7 +43,12 @@ func test_screen_contract() -> void:
 	assert_true(root.get_node_or_null("Background") is TextureRect)
 	assert_true(root.get_node_or_null("Safe") is SafeAreaMargin)
 	assert_true(root.get_node_or_null("Safe/UI/Ribbon") is TextureRect)
-	assert_true(root.get_node_or_null("Safe/UI/Scroll/Margin/List") is VBoxContainer)
+	assert_true(root.get_node_or_null("Safe/UI/Header/StatusPill") is AchievementStatusPill)
+	assert_true(root.get_node_or_null("Safe/UI/Header/FilterButton") is OptionButton)
+	assert_true(root.get_node_or_null("Safe/UI/Scroll/Margin/List") is GridContainer)
+	var grid := root.get_node("Safe/UI/Scroll/Margin/List") as GridContainer
+	assert_eq(grid.columns, 2)
+	assert_true(root.get_node_or_null("DetailSheet") is AchievementDetailSheet)
 	var back := root.get_node_or_null("Safe/UI/BackButton") as TextureButton
 	assert_true(back != null)
 	if back:
@@ -52,28 +57,73 @@ func test_screen_contract() -> void:
 	assert_eq(scroll.horizontal_scroll_mode, ScrollContainer.SCROLL_MODE_DISABLED)
 
 
-func test_row_states() -> void:
-	var row := (load(ROW) as PackedScene).instantiate()
-	track(row)
-	# Out of the tree @onready has not run; resolve the nodes by hand.
-	row.icon = row.get_node("%Icon")
-	row.title_label = row.get_node("%Title")
-	row.desc_label = row.get_node("%Desc")
-	row.content = row.get_node("%Content")
-	row.claim_button = row.get_node("%ClaimButton")
+func test_filter_button_has_four_options_in_order() -> void:
+	var root := (load(SCREEN) as PackedScene).instantiate() as Control
+	track(root)
+	var filter := root.get_node("Safe/UI/Header/FilterButton") as OptionButton
+	assert_eq(filter.item_count, 4)
+	assert_eq(filter.get_item_text(0), "Semua")
+	assert_eq(filter.get_item_text(1), "Belum dibuka")
+	assert_eq(filter.get_item_text(2), "Sudah dibuka")
+	assert_eq(filter.get_item_text(3), "Belum diambil")
+	assert_eq(filter.selected, 0)
+	assert_eq(filter.theme_type_variation, &"SecondaryButton")
+
+
+func test_tile_states() -> void:
+	var tile := (load(TILE) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(tile)
+	track(tile)
 	var entry := AchievementCatalog.get_entry("total_50")
-	row.setup(entry, ACHIEVEMENTS.STATE_LOCKED)
-	assert_eq(row.title_label.text, "Pembimbing Legendaris")
-	assert_true(row.desc_label.text.contains("Hadiah:"), "prize line shows")
-	assert_false(row.claim_button.visible)
-	assert_eq(row.theme_type_variation, &"AchievementCard")
-	assert_ne(row.icon.modulate, Color.WHITE, "locked is dimmed")
-	row.set_state(ACHIEVEMENTS.STATE_UNLOCKED)
-	assert_true(row.claim_button.visible)
-	assert_eq(row.icon.modulate, Color.WHITE)
-	row.set_state(ACHIEVEMENTS.STATE_CLAIMED)
-	assert_false(row.claim_button.visible)
-	assert_eq(row.theme_type_variation, &"AchievementCardClaimed")
+	tile.setup(entry)
+	assert_eq(tile.title_label.text, "Pembimbing Legendaris")
+	assert_eq(tile.achievement_id, "total_50")
+	# Real state comes from the live Achievements autoload; refresh() should
+	# not throw regardless of that id's current state.
+	tile.refresh()
+
+
+func test_screen_wires_tile_and_sheet_signals() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	assert_true(src.contains("tile.tile_pressed.connect(_on_tile_pressed)"))
+	assert_true(src.contains("detail_sheet.open_for(id)"))
+	assert_true(src.contains("detail_sheet.claim_requested.connect(_on_claim_requested)"))
+	assert_true(src.contains("Achievements.claim(id)"))
+	assert_true(src.contains("achievements.state_changed.connect(_on_state_changed)"))
+	assert_true(src.contains("status_pill.jump_requested.connect(_on_jump_requested)"))
+	assert_true(src.contains("ensure_control_visible(tile)"))
+	assert_true(src.contains("Juice.shake(tile"))
+	assert_true(src.contains("if detail_sheet.visible:"), "back-guard: sheet swallows Android back while open")
+
+
+## Task 4: Android back must close an open claim popup before the sheet
+## underneath it, since AchievementClaimPopup has no back handling of its
+## own. Source-scanned because the popup can't be instantiated headlessly
+## with the full claim flow.
+func test_back_guard_closes_claim_popup_before_sheet() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	assert_true(src.contains("_open_claim_popup"), "screen must track the open claim popup")
+	var notif_idx := src.find("func _notification(")
+	assert_true(notif_idx != -1)
+	var popup_idx := src.find("_open_claim_popup", notif_idx)
+	var sheet_idx := src.find("detail_sheet.visible", notif_idx)
+	assert_true(popup_idx != -1 and sheet_idx != -1 and popup_idx < sheet_idx,
+		"_notification must check the claim popup before the detail sheet")
+
+
+## Task 2: a jump from the status pill must reset the filter to "Semua"
+## before scrolling when the target tile is hidden by the active filter,
+## and defer the actual scroll so the grid has re-laid out first.
+func test_jump_requested_resets_filter_before_scrolling() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	var jump_idx := src.find("func _on_jump_requested(")
+	assert_true(jump_idx != -1)
+	var next_func_idx := src.find("\nfunc ", jump_idx + 1)
+	var body := src.substr(jump_idx, next_func_idx - jump_idx)
+	assert_true(body.contains("filter_button.select(0)"), "must reset the filter to Semua (index 0)")
+	assert_true(body.contains("_on_filter_selected(0)"), "must re-apply the reset filter")
+	assert_true(body.contains("call_deferred(\"_scroll_to_tile_deferred\""),
+		"the scroll must be deferred a frame so the grid has re-laid out")
 
 
 func test_lobby_has_the_trophy_button() -> void:
@@ -99,7 +149,7 @@ func test_outline_material_is_white() -> void:
 
 
 func test_card_and_banner_icons_wear_the_outline() -> void:
-	for pair in [[ROW, "HBox/Icon"], ["res://Scenes/Achievements/AchievementToast.tscn", "Banner/Icon"]]:
+	for pair in [[TILE, "Content/IconSlot/Icon"], ["res://Scenes/Achievements/AchievementToast.tscn", "Banner/Icon"]]:
 		var root := (load(pair[0]) as PackedScene).instantiate()
 		track(root)
 		var icon := root.get_node(pair[1]) as TextureRect

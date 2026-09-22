@@ -676,3 +676,129 @@ func _function_body(src: String, fn_name: String) -> String:
 		if at != -1 and at < end:
 			end = at
 	return src.substr(start, end - start)
+
+
+# ───────────────────────────── the day/week header (2026-09-21)
+
+## With BookClockWidget's banner showing "Senin", DayScreen/DayLabel showed
+## it a second time a few hundred pixels away. ba98d10 hid it rather than
+## deleting it, and said so in as many words: removing a node from a shipped
+## scene was a bigger decision than de-duplicating a label needed to be.
+## The user made that call on 2026-09-22, so the node is gone and SchoolDay.gd
+## no longer references it at all. This pins the deletion both ways, because
+## a stray `$DayScreen/DayLabel` would now crash the screen rather than
+## quietly draw twice.
+func test_the_day_name_is_not_shown_twice() -> void:
+	var block := _scene_node_block('[node name="DayLabel" type="Label" parent="DayScreen"')
+	assert_true(block == "", "DayScreen/DayLabel must be deleted, not hidden")
+
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_false(src.contains("day_label"),
+		"SchoolDay.gd must not reference day_label once the node is gone")
+
+
+## The real defect the user reported: DayScreen started at 0.06 x 1920 = 115.2,
+## so "Hari 1 dari 5" crossed the top of the day pill and the progress bar cut
+## straight through "Senin", "Minggu" and "2/6".
+##
+## Reads the header's OWN offset_bottom rather than hardcoding 300. A literal
+## would keep passing while the header grew to 400 and the bar sliced the
+## badge again -- the exact drift this test exists to catch.
+func test_the_day_stack_clears_the_header_band() -> void:
+	var header := _day.get_node_or_null("BookClockWidget/Header") as Control
+	assert_true(header != null,
+		"BookClockWidget/Header must exist -- a rename must fail here loudly")
+	var stack := _day.get_node_or_null("DayScreen") as Control
+	assert_true(stack != null, "DayScreen must exist")
+	if header == null or stack == null:
+		return
+	assert_true(stack.offset_top >= header.offset_bottom,
+		"DayScreen starts at y %d but the header runs to y %d"
+			% [int(stack.offset_top), int(header.offset_bottom)])
+
+
+## The header is pixel-anchored to the top edge, so the stack below it must be
+## too. A fractional top anchor is precisely what let the gap between them
+## change with screen height: at 2400 the old 0.06 pushed the stack 29 px
+## further down than at 1920, away from a header that had not moved.
+func test_the_day_stack_is_pixel_anchored_to_both_edges() -> void:
+	var stack := _day.get_node_or_null("DayScreen") as Control
+	assert_true(stack != null, "DayScreen must exist")
+	if stack == null:
+		return
+	assert_eq(stack.anchor_left, 0.0, "DayScreen must pin to the left edge")
+	assert_eq(stack.anchor_top, 0.0, "DayScreen must pin to the top edge")
+	assert_eq(stack.anchor_right, 1.0, "DayScreen must pin to the right edge")
+	assert_eq(stack.anchor_bottom, 1.0, "DayScreen must pin to the bottom edge")
+
+
+## "Akhir Pekan" was written into DayLabel, which ba98d10 had made permanently
+## invisible -- so the end-of-week banner never reached the player at all. It
+## now goes to the widget's own day slot through set_banner(), which writes the
+## text WITHOUT rewinding the sky (set_day() would snap it back to sunrise on
+## the week's closing screen).
+func test_the_end_of_week_banner_reaches_the_player() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("Akhir Pekan"),
+		"the end-of-week banner text must survive the DayLabel deletion")
+	assert_true(src.contains("set_banner"),
+		"the banner must be routed to the widget through set_banner()")
+
+
+## CLAUDE.md's ## Conventions bans emoji as UI iconography outright, and
+## nothing tracked this one. Scoped to the single codepoint this branch
+## removed: the other display emoji on this screen are the back-button
+## branch's ledger, so a blanket scan would fail on work we deliberately
+## did not do. The glyph is built with String.chr so this file does not
+## itself carry it.
+func test_the_week_end_headline_carries_no_emoji() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_false(src.contains(String.chr(0x1F389)),
+		"the week-end headline must not carry a party-popper emoji")
+	assert_true(src.contains("Minggu selesai!"),
+		"the week-end headline itself must stay")
+
+
+## Hiding it in the scene is not enough. _set_day_chrome_visible(true) runs
+## after every day-summary popup and sets `visible = true` on everything in
+## _DAY_CHROME_PATHS, so leaving DayLabel in that list un-hides the duplicate
+## day name for the rest of the run -- and a test that only reads the .tscn
+## passes while the screen is wrong.
+func test_the_hidden_day_label_is_not_un_hidden_by_the_chrome_toggle() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var at := src.find("const _DAY_CHROME_PATHS")
+	assert_true(at >= 0, "_DAY_CHROME_PATHS must exist")
+	if at < 0:
+		return
+	var block := src.substr(at, src.find("]", at) - at)
+	assert_false(block.contains('"DayScreen/DayLabel"'),
+		"a permanently hidden label must not be in the show/hide list")
+	assert_true(block.contains('"DayScreen/DayNumberLabel"'),
+		"the day counter still hides for the summary popup")
+
+
+## One node's block in SchoolDay.tscn: from its [node] header to the next
+## one. A fixed character window is not good enough here -- DayNumberLabel
+## and DayLabel are seven lines apart, so a 400-char window read one node's
+## properties as the other's.
+func _scene_node_block(header: String) -> String:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/SchoolDay.tscn")
+	var start := src.find(header)
+	if start < 0:
+		return ""
+	var next := src.find("[node ", start + header.length())
+	return src.substr(start, (next - start) if next > 0 else -1)
+
+
+## DayNumberLabel stays: "Hari 1 dari 5" is the day's place in the WEEK,
+## which the header does not carry -- the header is the day's name and the
+## week's place in the grade. Three facts, no repeats.
+func test_the_day_number_is_still_shown() -> void:
+	var block := _scene_node_block(
+		'[node name="DayNumberLabel" type="Label" parent="DayScreen"')
+	assert_true(block != "", "DayScreen/DayNumberLabel must exist")
+	if block == "":
+		return
+	assert_false(block.contains("visible = false"),
+		"the day-of-week counter must stay visible")

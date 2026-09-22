@@ -584,10 +584,15 @@ func test_theme_carries_the_recap_variations() -> void:
 const _PILL_SCENE := "res://Scenes/SchoolSimulation/WeekRecapPill.tscn"
 
 
-func test_pill_scene_has_its_three_authored_nodes() -> void:
+func test_pill_scene_stacks_its_icon_above_its_value() -> void:
 	var pill: Control = load(_PILL_SCENE).instantiate()
-	assert_not_null(pill.get_node_or_null("Icon"), "Icon is authored")
-	assert_not_null(pill.get_node_or_null("Value"), "Value is authored")
+	var column := pill.get_node_or_null("Column") as VBoxContainer
+	assert_not_null(column, "Icon and Value share one column (mockup tile)")
+	assert_not_null(pill.get_node_or_null("Column/Icon"), "Icon is authored")
+	assert_not_null(pill.get_node_or_null("Column/Value"), "Value is authored")
+	if column != null and column.get_node_or_null("Icon") and column.get_node_or_null("Value"):
+		assert_true(column.get_node("Icon").get_index() < column.get_node("Value").get_index(),
+			"the icon sits above its number, not under it")
 	assert_not_null(pill.get_node_or_null("Ring"), "Ring emitter is authored")
 	pill.free()
 
@@ -607,9 +612,9 @@ func test_pill_set_pill_writes_text_and_tint() -> void:
 	var pill: Control = load(_PILL_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(pill)
 	pill.set_pill(null, "4.200", Color.RED)
-	assert_eq((pill.get_node("Value") as Label).text, "4.200",
+	assert_eq((pill.get_node("Column/Value") as Label).text, "4.200",
 		"the value label carries the formatted number")
-	assert_eq((pill.get_node("Value") as Label).self_modulate, Color.RED,
+	assert_eq((pill.get_node("Column/Value") as Label).self_modulate, Color.RED,
 		"and the caller's tint")
 	pill.queue_free()
 
@@ -617,18 +622,19 @@ func test_pill_set_pill_writes_text_and_tint() -> void:
 const _BANNER_SCENE := "res://Scenes/SchoolSimulation/WeekRecapBanner.tscn"
 
 
-func test_banner_authors_all_four_pills() -> void:
+func test_banner_authors_the_mockups_three_tiles_in_order() -> void:
 	var banner: Control = load(_BANNER_SCENE).instantiate()
-	for pill_name in ["PillUang", "PillPoin", "PillMenang", "PillEvent"]:
-		assert_not_null(banner.get_node_or_null("Pills/" + pill_name),
-			"%s is authored, not built at runtime" % pill_name)
+	var names: Array = []
+	for child in banner.get_node("Pills").get_children():
+		names.append(String(child.name))
+	assert_eq(names, ["PillUang", "PillMenang", "PillEvent"],
+		"money, minigames, events, left to right; Poin is gone")
+	assert_true(banner.get_node_or_null("Header") == null,
+		"the mockup has no week/grade line")
 	banner.free()
 
 
-func test_banner_writes_every_total_into_its_pills() -> void:
-	# set_recap writes through the pills' @onready fields (and its own),
-	# which Godot only populates once the node enters the tree -- same
-	# rule as WeekRecapPill's own set_pill test.
+func test_banner_writes_its_three_totals_in_one_ink() -> void:
 	var banner: Control = load(_BANNER_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(banner)
 	banner.set_recap({
@@ -636,23 +642,33 @@ func test_banner_writes_every_total_into_its_pills() -> void:
 		"minigames_won": 3, "minigames_total": 5, "events_count": 2,
 	})
 	assert_eq(_pill_text(banner, "PillUang"), "4.200", "money is grouped")
-	assert_eq(_pill_text(banner, "PillPoin"), "+37", "poin is signed")
 	assert_eq(_pill_text(banner, "PillMenang"), "3/5", "won over total")
 	assert_eq(_pill_text(banner, "PillEvent"), "2", "a bare event count")
+	var ink := Juice.tokens().text_primary
+	for n in ["PillUang", "PillMenang", "PillEvent"]:
+		assert_eq((banner.get_node("Pills/%s/Column/Value" % n) as Label).self_modulate,
+			ink, "%s is text_primary: gold is unreadable on a white tile" % n)
 	banner.queue_free()
 
 
-func test_banner_shows_a_negative_week_as_negative() -> void:
-	var banner: Control = load(_BANNER_SCENE).instantiate()
-	Engine.get_main_loop().root.add_child(banner)
-	banner.set_recap({
-		"money_earned": 0, "net_skill_delta": -4,
-		"minigames_won": 0, "minigames_total": 2, "events_count": 0,
-	})
-	assert_eq(_pill_text(banner, "PillPoin"), "-4",
-		"a losing week is not hidden")
-	banner.queue_free()
+func test_banner_script_drops_poin() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, 'const PILL_ORDER := ["uang", "menang", "event"]',
+		"three tiles, in the mockup's order")
+	for dead in ["pill_poin", "icon_poin", "net_skill_delta", "format_skill_delta", "week_label"]:
+		assert_false(src.contains(dead), "%s left with the Poin tile / week line" % dead)
 
+
+func test_banner_uses_the_new_tile_icons() -> void:
+	var banner = load(_BANNER_SCENE).instantiate()
+	assert_eq(banner.icon_uang.resource_path, "res://Assets/Images/UI/Placeholders/icon_uang.svg",
+		"money keeps its existing icon")
+	assert_eq(banner.icon_menang.resource_path, "res://Assets/Images/ResultCheckup/icon_minigame.png",
+		"minigames wear the soccer ball")
+	assert_eq(banner.icon_event.resource_path, "res://Assets/Images/ResultCheckup/icon_event.png",
+		"events wear the checklist notebook")
+	banner.free()
 
 ## SchoolDay pays the week's Wirausaha total out before it opens this screen,
 ## and paying out empties GameState.pending_earnings -- which is exactly what
@@ -682,7 +698,7 @@ func test_the_banner_shows_the_weeks_paid_earnings() -> void:
 
 
 func _pill_text(banner: Control, pill_name: String) -> String:
-	return (banner.get_node("Pills/" + pill_name).get_node("Value")
+	return (banner.get_node("Pills/" + pill_name).get_node("Column/Value")
 		as Label).text
 
 
@@ -1016,8 +1032,10 @@ func test_the_buttons_wear_the_result_style() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
 	for n in ["LogsButton", "NextButton"]:
 		assert_true(src.contains(n), "%s is authored in the scene" % n)
+	assert_true(src.contains('theme_type_variation = &"ResultLogsButton"'),
+		"Logs wears the light-red variation")
 	assert_true(src.contains('theme_type_variation = &"ResultButton"'),
-		"both buttons use the ResultButton variation, not an override")
+		"Selanjutnya keeps the brown one")
 	assert_false(src.contains("theme_override_styles"),
 		"no stylebox override sneaks in with them")
 
@@ -1065,3 +1083,51 @@ func test_the_script_no_longer_carries_the_tabs() -> void:
 			"tab_riwayat", "history_pane", "pane_swipe"]:
 		assert_false(src.contains(dead),
 			"%s belongs to the retired tabs" % dead)
+
+
+## 2026-09-19 mockup pass: yellow banner, white tiles, outlined numbers.
+func test_recap_theme_matches_the_mockup() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var banner := theme.get_stylebox("panel", "RecapBannerPanel") as StyleBoxFlat
+	assert_eq(banner.bg_color, tokens.recap_banner_fill, "the banner is the mockup's yellow")
+	assert_eq(banner.border_width_left, 0, "and has no brown rim")
+	var tile := theme.get_stylebox("panel", "RecapPillPanel") as StyleBoxFlat
+	assert_eq(tile.bg_color, tokens.recap_tile_fill, "each tile is white")
+	assert_eq(tile.corner_radius_top_left, tokens.radius_md,
+		"a rounded square, not a capsule")
+	assert_eq(theme.get_constant("outline_size", "RecapPillValueLabel"),
+		tokens.text_outline_size, "the number carries the white rim")
+
+
+## Logs is a lighter red than the ribbon; Selanjutnya keeps the brown.
+func test_logs_wears_the_light_red_result_button() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	assert_true(theme.get_type_list().has("ResultLogsButton"),
+		"ResultLogsButton is a variation")
+	var sb := theme.get_stylebox("normal", "ResultLogsButton") as StyleBoxFlat
+	assert_eq(sb.bg_color, tokens.result_logs_fill, "its face is the light red")
+	assert_eq(theme.get_font_size("font_size", "ResultLogsButton"),
+		theme.get_font_size("font_size", "ResultButton"),
+		"same text size as its neighbour, so the row reads as a pair")
+
+const _RIBBON := "res://Assets/Images/DaySummary/title_weekly_results.png"
+
+
+func test_the_screen_opens_with_the_weekly_results_ribbon() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	var ribbon := screen.get_node_or_null("Margin/VBox/TitleRibbon") as TextureRect
+	assert_not_null(ribbon, "the mockup's ribbon is authored")
+	if ribbon != null:
+		assert_eq(ribbon.texture.resource_path, _RIBBON, "wearing the WEEKLY RESULTS art")
+		assert_eq(ribbon.get_index(), 0, "it tops the column, above the banner")
+	assert_true(screen.get_node_or_null("Margin/VBox/HeaderPanel") == null,
+		"the old title and subtitle are replaced by the ribbon")
+	screen.free()
+
+
+func test_script_drops_the_header_text_exports() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	for dead in ["header_title_text", "header_subtitle_text", "HeaderPanel"]:
+		assert_false(src.contains(dead), "%s left with the header" % dead)

@@ -29,7 +29,7 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var sfx_fail: AudioStream
 ## `play_sfx(&"coin")`: a purchase completes (koperasi) or money is
 ## earned (lobby, SchoolDay's Wirausaha payout).
-@export var sfx_coin: AudioStream
+@export var sfx_coin: AudioStream = preload("res://Assets/Audio/SFX/earnMoney.ogg")
 ## `play_sfx(&"whoosh")`: a panel slides/closes (inventory, koperasi's
 ## blur/popup layer) and every Transition.gd scene change.
 @export var sfx_whoosh: AudioStream
@@ -62,25 +62,23 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## tick lands.
 @export var sfx_tally: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
 ## `play_sfx(&"sparkle")`: a reward burst or the weekly celebration
-## confetti fires. Placeholder: aliases SFX/reward.ogg.
-@export var sfx_sparkle: AudioStream = preload("res://Assets/Audio/SFX/reward.ogg")
+## confetti fires.
+@export var sfx_sparkle: AudioStream = preload("res://Assets/Audio/SFX/threeStarredPoints.ogg")
 ## `play_sfx(&"pill_tap")`: tapping a headline pill on ResultCheckup's
 ## week recap banner. A dedicated copy of SFX/tap.ogg (not a second id
 ## on the same file) so it can be retuned independently later.
 @export var sfx_pill_tap: AudioStream = preload("res://Assets/Audio/SFX/pill_tap.ogg")
-## `play_sfx(&"star_earn_1")`: first star of the result card's reveal.
-## Placeholder: aliases pop.ogg. The three star_earn_* cues are meant to
-## rise in pitch; swap in real assets before ship.
-@export var sfx_star_earn_1: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
-## `play_sfx(&"star_earn_2")`: second star of the reveal. Placeholder:
-## aliases pop.ogg.
-@export var sfx_star_earn_2: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
-## `play_sfx(&"star_earn_3")`: third star of the reveal. Placeholder:
-## aliases reward.ogg.
-@export var sfx_star_earn_3: AudioStream = preload("res://Assets/Audio/SFX/reward.ogg")
+## `play_sfx(&"star_earn_1")`: first star of the result card's reveal. The
+## three star_earn_* cues are three separate recordings, not one pitched
+## three ways -- three rising cues read as a climb, three identical ones
+## read as a list.
+@export var sfx_star_earn_1: AudioStream = preload("res://Assets/Audio/SFX/oneStar.ogg")
+## `play_sfx(&"star_earn_2")`: second star of the reveal.
+@export var sfx_star_earn_2: AudioStream = preload("res://Assets/Audio/SFX/twoStar.ogg")
+## `play_sfx(&"star_earn_3")`: third star of the reveal, the top rung.
+@export var sfx_star_earn_3: AudioStream = preload("res://Assets/Audio/SFX/threeStar.ogg")
 ## `play_sfx(&"result_fanfare")`: the result card's arrival sting.
-## Placeholder: aliases reward.ogg.
-@export var sfx_result_fanfare: AudioStream = preload("res://Assets/Audio/SFX/reward.ogg")
+@export var sfx_result_fanfare: AudioStream = preload("res://Assets/Audio/SFX/winSuccessful.ogg")
 ## `play_sfx(&"score_tick")`: one increment of a counting score readout.
 ## Placeholder: aliases pop.ogg.
 @export var sfx_score_tick: AudioStream = preload("res://Assets/Audio/SFX/pop.ogg")
@@ -93,14 +91,116 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"event_announce")`: the sliding event warning starts its pass
 ## (EventWarning, before every minigame and random event). Placeholder:
 ## aliases reward.ogg via a dedicated copy (event_announce.ogg) until a real
-## chime lands.
-@export var sfx_event_announce: AudioStream = preload("res://Assets/Audio/SFX/event_announce.ogg")
+## chime lands (landed 2026-09-21: the Drive pack's eventAlert).
+@export var sfx_event_announce: AudioStream = preload("res://Assets/Audio/SFX/eventAlert.ogg")
 ## `play_sfx(&"pill_popup_open")`: WeekRecapPillInfoPopup opens. A
 ## dedicated copy of SFX/popup_open.ogg.
 @export var sfx_pill_popup_open: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_open.ogg")
 ## `play_sfx(&"pill_popup_close")`: WeekRecapPillInfoPopup closes. A
 ## dedicated copy of SFX/popup_close.ogg.
 @export var sfx_pill_popup_close: AudioStream = preload("res://Assets/Audio/SFX/pill_popup_close.ogg")
+
+# ---------------------------------------- the Drive sound pack, 2026-09-21
+# Attribution for every file below is in Assets/Audio/SFX/LICENSES.md.
+
+## `play_sfx(&"school_bell")`: SchoolDay starts a day. Filed under Ambient/
+## because that is where the collaborator put it, but it is a one-shot bell
+## and its .import must stay loop=false.
+@export var sfx_school_bell: AudioStream = preload("res://Assets/Audio/Ambient/Schoolring.ogg")
+## `play_sfx(&"stat_up")`: a stat rose on a simulated day.
+@export var sfx_stat_up: AudioStream = preload("res://Assets/Audio/SFX/stats-upDing.ogg")
+## `play_sfx(&"stat_down")`: a stat fell on a simulated day.
+@export var sfx_stat_down: AudioStream = preload("res://Assets/Audio/SFX/stats-downDing.ogg")
+## `play_sfx(&"card_flip")`: a StudentCard turns during roster approval.
+@export var sfx_card_flip: AudioStream = preload("res://Assets/Audio/SFX/cardFlip.ogg")
+## `play_sfx(&"schedule_confirm")`: AturJadwal's week is confirmed.
+@export var sfx_schedule_confirm: AudioStream = preload("res://Assets/Audio/SFX/scheduleConfirmChime.ogg")
+## `play_sfx(&"timer_tick")`: a minigame's countdown runs low.
+@export var sfx_timer_tick: AudioStream = preload("res://Assets/Audio/SFX/minigame/timeTicking.ogg")
+## `play_sfx(&"times_up")`: a minigame's timer expires.
+@export var sfx_times_up: AudioStream = preload("res://Assets/Audio/SFX/minigame/timesUp.ogg")
+## `play_sfx(&"back_tap")`: any screen's back button, and the Android
+## hardware back press that now routes to the same handler.
+@export var sfx_back_tap: AudioStream = preload("res://Assets/Audio/SFX/BackButtonTap.ogg")
+## `play_sfx(&"shop_browse")`: browsing the koperasi shelf.
+@export var sfx_shop_browse: AudioStream = preload("res://Assets/Audio/SFX/shopBrowseTap.ogg")
+## `play_sfx(&"transaction")`: Beli completes and the cart is paid for.
+@export var sfx_transaction: AudioStream = preload("res://Assets/Audio/SFX/transactionShop.ogg")
+## `play_sfx(&"item_applied")`: an inventory item lands on a student.
+@export var sfx_item_applied: AudioStream = preload("res://Assets/Audio/SFX/itemAfterAppliedEachCharacter.ogg")
+## `play_sfx(&"apply")`: a choice is committed on the apply screen.
+@export var sfx_apply: AudioStream = preload("res://Assets/Audio/SFX/apply.ogg")
+## `play_sfx(&"tutorial_popup")`: a tutorial overlay opens.
+@export var sfx_tutorial_popup: AudioStream = preload("res://Assets/Audio/SFX/tutorialPopUp.ogg")
+## `play_sfx(&"result_checkup")`: the weekly report opens.
+@export var sfx_result_checkup: AudioStream = preload("res://Assets/Audio/SFX/ResultCheckup.ogg")
+## `play_sfx(&"daily_claim")`: a daily reward is claimed.
+@export var sfx_daily_claim: AudioStream = preload("res://Assets/Audio/SFX/dailyLoginClaim.ogg")
+
+## `play_sfx_variant(&"transition_sweep")`: the scene-change wipe. Three
+## variants picked at random, so back-to-back navigation never sounds like
+## the same click twice.
+@export var sfx_transition_sweep: Array[AudioStream] = [
+	preload("res://Assets/Audio/SFX/transitionSweep1.ogg"),
+	preload("res://Assets/Audio/SFX/transitionSweep2.ogg"),
+	preload("res://Assets/Audio/SFX/transitionSweep3.ogg"),
+]
+## `play_sfx_variant(&"ball_kick")`: Main Bola's kick. Four variants -- a
+## repeated action needs the most spread.
+@export var sfx_ball_kick: Array[AudioStream] = [
+	preload("res://Assets/Audio/SFX/minigame/ballKick1.ogg"),
+	preload("res://Assets/Audio/SFX/minigame/ballKick2.ogg"),
+	preload("res://Assets/Audio/SFX/minigame/ballKick3.ogg"),
+	preload("res://Assets/Audio/SFX/minigame/ballKick4.ogg"),
+]
+## `play_sfx_variant(&"racket_hit")`: Badminton's racket. Three variants.
+@export var sfx_racket_hit: Array[AudioStream] = [
+	preload("res://Assets/Audio/SFX/minigame/racketHit1.ogg"),
+	preload("res://Assets/Audio/SFX/minigame/racketHit2.ogg"),
+	preload("res://Assets/Audio/SFX/minigame/racketHit3.ogg"),
+]
+## `play_sfx_variant(&"achievement")`: an achievement unlocks.
+@export var sfx_achievement: Array[AudioStream] = [
+	preload("res://Assets/Audio/SFX/achievementNotification1.ogg"),
+	preload("res://Assets/Audio/SFX/achievementNotification2.ogg"),
+	preload("res://Assets/Audio/SFX/achievementNotification3.ogg"),
+]
+## `play_sfx(&"achievement_prize")`: an achievement that carries a prize.
+@export var sfx_achievement_prize: AudioStream = preload("res://Assets/Audio/SFX/achievementNotificationPrize.ogg")
+## `play_sfx(&"achievement_success")`: the full-set achievement flourish.
+@export var sfx_achievement_success: AudioStream = preload("res://Assets/Audio/SFX/notificationAchievementSuccess.ogg")
+
+## EndCutscene's badge reveal, one cue per grade band. A tier, not one sound:
+## the badge word is the payoff of a whole grade, and a single sting would
+## flatten "Disaster" and "Amazing" into the same moment. Read through
+## badge_reveal_stream(), never directly.
+@export var sfx_badge_reveal_amazing: AudioStream = preload("res://Assets/Audio/SFX/badgeRevealAmazing.ogg")
+## Band "Good".
+@export var sfx_badge_reveal_good: AudioStream = preload("res://Assets/Audio/SFX/badgeRevealGood.ogg")
+## Band "Normal", and the fallback for an unknown band.
+@export var sfx_badge_reveal_normal: AudioStream = preload("res://Assets/Audio/SFX/badgeRevealNormal.ogg")
+## Band "Bad".
+@export var sfx_badge_reveal_bad: AudioStream = preload("res://Assets/Audio/SFX/badgeRevealBad.ogg")
+## Band "Disaster".
+@export var sfx_badge_reveal_disaster: AudioStream = preload("res://Assets/Audio/SFX/badgeRevealDisaster.ogg")
+
+@export_group("Ambience")
+## `play_ambience(&"classroom_1")`: classroom murmur under a simulated day.
+@export var amb_classroom_1: AudioStream = preload("res://Assets/Audio/Ambient/classroomAmbient1.ogg")
+## Second classroom bed. Two, not the pack's three: classroomAmbient3.ogg
+## arrived corrupt -- a 4 KB stub whose Vorbis identification header declares
+## zero channels. Godot loads it but logs OV_EBADHEADER, which fails CI's
+## error scan, so the file is out until it is re-exported at source. See
+## DEBT.md.
+@export var amb_classroom_2: AudioStream = preload("res://Assets/Audio/Ambient/classroomAmbient2.ogg")
+## `play_ambience(&"thunderstorm")`: the Hujan random event.
+@export var amb_thunderstorm: AudioStream = preload("res://Assets/Audio/Ambient/thunderstorm1.ogg")
+## `play_ambience(&"writing")`: pencils and paper under an academic day.
+@export var amb_writing: AudioStream = preload("res://Assets/Audio/Ambient/writing.ogg")
+## Outdoor schoolyard bed.
+@export var amb_schoolyard_1: AudioStream = preload("res://Assets/Audio/Ambient/schoolsimulation1.ogg")
+## Second schoolyard bed.
+@export var amb_schoolyard_2: AudioStream = preload("res://Assets/Audio/Ambient/schoolsimulation2.ogg")
 
 @export_group("BGM")
 ## `play_bgm(&"titlescreen")`: Splashscreen/MainMenu.
@@ -146,6 +246,8 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var minigame_bgm_fade: float = 0.4
 
 var _sfx_pool: Array[AudioStreamPlayer] = []
+## The single looping ambience voice. On the SFX bus -- see play_ambience().
+var _ambience: AudioStreamPlayer
 var _sfx_next: int = 0
 var _bgm_a: AudioStreamPlayer
 var _bgm_b: AudioStreamPlayer
@@ -188,6 +290,12 @@ func _ready() -> void:
 		p.bus = &"SFX"
 		add_child(p)
 		_sfx_pool.append(p)
+
+	# One looping ambience voice, on the SFX bus. See play_ambience() for why
+	# this is not a third bus.
+	_ambience = AudioStreamPlayer.new()
+	_ambience.bus = &"SFX"
+	add_child(_ambience)
 
 	_bgm_a = _make_bgm_player()
 	_bgm_b = _make_bgm_player()
@@ -254,7 +362,88 @@ func _resolve_sfx(id: StringName) -> AudioStream:
 		&"combo_up": return sfx_combo_up
 		&"specialty_match": return sfx_specialty_match
 		&"event_announce": return sfx_event_announce
+		&"school_bell": return sfx_school_bell
+		&"stat_up": return sfx_stat_up
+		&"stat_down": return sfx_stat_down
+		&"card_flip": return sfx_card_flip
+		&"schedule_confirm": return sfx_schedule_confirm
+		&"timer_tick": return sfx_timer_tick
+		&"times_up": return sfx_times_up
+		&"back_tap": return sfx_back_tap
+		&"shop_browse": return sfx_shop_browse
+		&"transaction": return sfx_transaction
+		&"item_applied": return sfx_item_applied
+		&"apply": return sfx_apply
+		&"tutorial_popup": return sfx_tutorial_popup
+		&"result_checkup": return sfx_result_checkup
+		&"daily_claim": return sfx_daily_claim
+		&"achievement_prize": return sfx_achievement_prize
+		&"achievement_success": return sfx_achievement_success
 		_: return null
+
+
+## Plays one stream at random from a variant family -- sfx_ball_kick and
+## friends. A four-variant family on a repeated action is the difference
+## between a game that sounds alive and one that sounds like a metronome.
+##
+## An unknown or empty family is a no-op, matching play_sfx's null-safety:
+## a missing sound must never be the thing that stops a minigame.
+func play_sfx_variant(family: StringName, pitch: float = 1.0) -> void:
+	var variants: Variant = get("sfx_%s" % family)
+	if not (variants is Array) or (variants as Array).is_empty():
+		return
+	var list: Array = variants
+	var stream: AudioStream = list[randi() % list.size()]
+	if stream == null:
+		return
+	var player := _sfx_pool[_sfx_next]
+	_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
+	player.stream = stream
+	player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
+	player.play()
+
+
+## The badge cue for a grade band. An unknown band falls back to Normal
+## rather than returning null into a player -- a silent badge reveal is a
+## worse bug than a slightly wrong one.
+func badge_reveal_stream(band: String) -> AudioStream:
+	match band:
+		"Amazing": return sfx_badge_reveal_amazing
+		"Good": return sfx_badge_reveal_good
+		"Bad": return sfx_badge_reveal_bad
+		"Disaster": return sfx_badge_reveal_disaster
+		_: return sfx_badge_reveal_normal
+
+
+## Starts the looping ambience bed `id` -- the amb_* slot name without its
+## prefix -- replacing whatever was playing. Re-calling it with the bed
+## already playing is a no-op, so a screen may call it every frame safely.
+##
+## On the SFX bus rather than a bus of its own: default_bus_layout.tres is
+## rewritten on boot, and a third bus would need a third settings slider to
+## be honest about. Ambience following the SFX slider is what a player
+## expects from a control labelled "sound effects".
+func play_ambience(id: StringName) -> void:
+	if _ambience == null:
+		return
+	var stream: Variant = get("amb_%s" % id)
+	if not (stream is AudioStream):
+		return
+	if _ambience.stream == stream and _ambience.playing:
+		return
+	_ambience.stream = stream
+	_ambience.play()
+
+
+## Stops the ambience bed. Safe to call when nothing is playing.
+func stop_ambience() -> void:
+	if _ambience != null:
+		_ambience.stop()
+
+
+## The ambience voice. Exists so tests need not know the node layout.
+func get_ambience_player() -> AudioStreamPlayer:
+	return _ambience
 
 
 ## True only when `id` maps to a slot AND that slot holds a stream.

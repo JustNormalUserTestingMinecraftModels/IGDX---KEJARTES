@@ -1,7 +1,6 @@
 # KejarTes — Project Guide
 
-Godot **4.6** mobile game, portrait 1080×1920, `mobile` renderer, Vulkan
-(older plan docs say `d3d12` — that pin was removed 2026-09-07).
+Godot **4.6** mobile game, portrait 1080×1920, `mobile` renderer, Vulkan.
 Indonesian-language school-management sim. Main scene:
 `Scenes/MainMenu/main_menu.tscn`.
 
@@ -93,7 +92,9 @@ Bridge: `GameState.convert_to_student_data_array()` in, and
 between the two** (`akademis2` = seni_budaya, `kepribadian1` = mood) — this is
 the single most common source of bugs here. Note `hobby_category` "Akademik"
 maps to specialty "Akademis"; schedules also normalize `Akademik`→`Akademis`
-and `DayOff`→`Istirahat`.
+and `DayOff`→`Istirahat`. Student art goes through `StudentSkins`
+(`splash_for`/`portrait_for`/`face_base_for`/`hand_for`), never the dict's
+`splash`/`portrait` keys, so the worn skin (`GameState.equipped_skins`) shows.
 
 Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
 disk (`user://inventory.cfg`, flushed at the top of every
@@ -193,7 +194,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 111 suites, 1603 tests (2026-09-15).
+the Godot AI MCP `test_run` tool. 141 suites, 2061 tests (2026-09-22).
 
 Hard constraints:
 

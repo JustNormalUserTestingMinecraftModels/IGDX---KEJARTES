@@ -358,6 +358,15 @@ static func load_default() -> DesignTokens:
 ## icons and the +N/T numbers alike.
 @export var day_glyph_outline: Color = Color("2E2118")
 
+## Weekly Results banner fill: the mockup's butter yellow (2026-09-19).
+@export var recap_banner_fill: Color = Color("FFE17D")
+## Weekly Results tile fill: near-white, so the icons read on it.
+@export var recap_tile_fill: Color = Color("F6F4F2")
+## Weekly Results' Logs button face: the ribbon's red (C00000), lightened.
+@export var result_logs_fill: Color = Color("E0574B")
+## The Logs button's bevel, under result_logs_fill.
+@export var result_logs_dark: Color = Color("A8342A")
+
 ## Geometry measured off the mockup, in game pixels (mockup is 1:1).
 ## Corner radius of the avatar frame.
 @export var day_avatar_radius: int = 22

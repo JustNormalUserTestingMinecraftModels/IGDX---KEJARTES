@@ -271,8 +271,7 @@ func test_star_calculation_stayed_on_base_minigame() -> void:
 ## banned emoji as UI iconography during the 2026-09-02 pass; these are the
 ## replacements.
 const RESULT_ICONS := [
-	"res://Assets/Images/UI/Placeholders/icon_bintang.svg",
-	"res://Assets/Images/UI/Placeholders/icon_bintang_kosong.svg",
+	"res://Assets/Images/UI/star.png",
 	"res://Assets/Images/UI/Placeholders/icon_skor.svg",
 	"res://Assets/Images/UI/Placeholders/icon_target.svg",
 	"res://Assets/Images/UI/Placeholders/icon_akurasi.svg",
@@ -367,7 +366,11 @@ func test_the_star_scene_carries_a_glow_and_a_burst_slot() -> void:
 	var star: Control = load(STAR_PATH).instantiate()
 	track(star)
 	assert_true(star.has_node("Glow"), "an authored Glow layer, not a runtime one")
-	assert_true(star.has_node("BurstSlot"), "an authored slot the burst mounts into")
+	# BurstSlot is vestigial since 2026-09-21: the per-star spray became the
+	# card's three ConfettiFireworks bursts and nothing mounts into it now.
+	# Still pinned, because removing a node from a shipped scene is a
+	# separate decision from moving the effect off it.
+	assert_true(star.has_node("BurstSlot"), "the authored slot is still there")
 
 
 func test_celebrate_is_not_a_coroutine() -> void:
@@ -375,3 +378,37 @@ func test_celebrate_is_not_a_coroutine() -> void:
 	var body: String = src.split("func celebrate(")[1].split("\nfunc ")[0]
 	assert_false(body.contains("await "),
 		"celebrate() must be callable from a test and from the reveal loop")
+
+func test_result_stars_default_to_the_new_star_art() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/ResultStar.gd")
+	assert_contains(src, 'DEFAULT_FILLED_TEXTURE := "res://Assets/Images/UI/star.png"',
+		"an earned star is star.png")
+	assert_contains(src, 'DEFAULT_EMPTY_TEXTURE := "res://Assets/Images/UI/star.png"',
+		"so is an unearned one; popup_star_empty_color darkens it")
+	var base := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/BaseMinigame.gd")
+	assert_contains(base, "@export var popup_star_color: Color = Color.WHITE",
+		"the art is already gold, so the default tint must not re-tint it")
+
+
+func test_event_student_card_wears_the_new_star() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/SchoolSimulation/EventStudentCard.tscn")
+	assert_contains(src, 'path="res://Assets/Images/UI/star.png"', "the card's star is star.png")
+	assert_false(src.contains("icon_star.svg"), "the old placeholder is gone")
+
+
+## The art itself, not just the path. The 2026-09-19 bake was a 360x360
+## re-export; the artist's own crop is 345x357. Pinned so a stray re-export
+## cannot silently swap the two back and forth -- star.png also feeds
+## StatCheck and EventStudentCard, so a size change moves three screens.
+func test_star_art_is_the_artists_own_crop() -> void:
+	var tex: Texture2D = load(ResultStar.DEFAULT_FILLED_TEXTURE)
+	assert_true(tex != null, "star.png must load")
+	assert_eq(tex.get_width(), 345, "star.png must be the artist's 345x357 crop")
+	assert_eq(tex.get_height(), 357, "star.png must be the artist's 345x357 crop")
+
+
+func test_both_star_slots_use_the_same_art() -> void:
+	# A lost star is the same star darkened by popup_star_empty_color, not a
+	# different drawing -- that is what makes an empty slot read as "not yet".
+	assert_eq(ResultStar.DEFAULT_FILLED_TEXTURE, ResultStar.DEFAULT_EMPTY_TEXTURE,
+		"filled and empty stars must share one texture")

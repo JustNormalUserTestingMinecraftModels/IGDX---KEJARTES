@@ -143,14 +143,14 @@ func test_a_small_catalog_cannot_overfill() -> void:
 		"two items, two copies each: four units is all the bag holds")
 
 
-func test_the_weekly_shelf_is_six_with_pairs_at_most() -> void:
+func test_the_weekly_shelf_is_six_with_up_to_three_copies() -> void:
 	assert_eq(GameState.SHOP_SHELF_SIZE, 6, "one per Barang slot on the Stage")
-	assert_eq(GameState.SHOP_MAX_COPIES, 2, "a pair at most")
+	assert_eq(GameState.SHOP_MAX_COPIES, 3, "three copies at most (2026-09-18 stock pips)")
 	_at(7, 2)
 	var stock: Array[String] = GameState.shop_stock_for_week()
 	for item_name in stock:
 		assert_true(stock.count(item_name) <= GameState.SHOP_MAX_COPIES,
-			item_name + " appears at most twice")
+			item_name + " appears at most three times")
 
 
 # ─── what sold

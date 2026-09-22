@@ -75,9 +75,10 @@ var has_time_limit: bool = false
 @export var popup_star_texture: Texture2D = null
 ## Optional PNG for an empty (unearned) star outline. Leave empty for procedural gray star.
 @export var popup_star_empty_texture: Texture2D = null
-## Tint for the procedural filled star, ignored when popup_star_texture is set.
-@export var popup_star_color: Color = Color(1.0, 0.85, 0.2)
-## Tint for the procedural empty star, ignored when popup_star_empty_texture is set.
+## Tint multiplied onto the filled star. White keeps star.png's own gold.
+@export var popup_star_color: Color = Color.WHITE
+## Tint multiplied onto the empty star; the dark grey turns the shared
+## star.png into an unearned silhouette.
 @export var popup_star_empty_color: Color = Color(0.28, 0.28, 0.32)
 ## Size (px) of each of the three star slots on the result card.
 @export var popup_star_size: Vector2 = Vector2(88, 88)
@@ -281,6 +282,19 @@ func _create_pause_button() -> void:
 	
 	pause_button.pressed.connect(_on_pause_button_pressed)
 	_get_or_create_ui_layer().add_child(pause_button)
+
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel. A minigame answers it by opening the pause menu -- never by
+## leaving outright: the pause menu owns the quit confirmation
+## ("Seluruh progress minigame anda akan dianggap gagal!"), and a mis-swipe
+## must not forfeit a round without being asked.
+##
+## _on_pause_button_pressed already no-ops while the game is over or already
+## paused, so a second back press cannot stack another menu.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_pause_button_pressed()
+
 
 func _on_pause_button_pressed() -> void:
 	if not is_game_active or is_paused:

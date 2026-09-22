@@ -26,7 +26,7 @@ func test_every_declared_variation_exists() -> void:
 		"PrimaryButton", "SecondaryButton", "DangerButton",
 		"Card", "SunkenPanel", "Scrim", "PhotoFrame",
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
-		"CaptionLabel", "MicroLabel", "StatBar", "FilterChipButton",
+		"CaptionLabel", "MicroLabel", "StatBar", "AchievementTileBar", "FilterChipButton",
 		"EventDialoguePanel", "EventDialogueText", "DayBannerPanel", "DayBannerLabel", "CalendarLabel",
 	]
 	var actual := _theme.get_type_list()
@@ -336,6 +336,8 @@ const DISPLAY_ROSTER := [
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
+	# 2026-09-19 weekly results mockup: the light-red Logs button.
+	"ResultLogsButton",
 	# 2026-09-14 lobby-style-buttons: the two kept looks.
 	"StudentCardSecondaryButton", "StudentCardSecondaryButtonL",
 	"RosterStatusBelum", "RosterStatusSudah",
@@ -343,6 +345,13 @@ const DISPLAY_ROSTER := [
 	"EventDialogHeaderLabel",
 	# 2026-09-12: the slide warning's caption, display face at DisplayLabel size.
 	"EventWarningCaptionLabel",
+	# 2026-09-21 minigame type ladder: the badge, the two Menjodohkan wheel
+	# headers and PilihanGanda's choice buttons. The other three variations
+	# from that pass -- MinigameQuestionLabel, MinigameMetaLabel and
+	# MinigameOverlayLabel -- are deliberately absent: a quiz question and
+	# its meta are body copy, so they keep the body face.
+	"MinigameBadgeLabel", "MinigameWheelHeaderWarm", "MinigameWheelHeaderCool",
+	"MinigameChoiceButton",
 	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
 	# this roster in the same pass -- LobbyNavTile and LobbyCtaButton
 	# replaced it.
@@ -352,6 +361,15 @@ const DISPLAY_ROSTER := [
 	# 2026-09-17 achievements: card titles, the Klaim pill, the unlock banner.
 	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
 	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",
+	# 2026-09-18 achievements-polish: the grid tile's prize chip and BARU pip.
+	# AchievementBaruBadgeLabel left on 2026-09-22 with the BARU pip itself,
+	# replaced by the notice_icon TextureRect, which carries no text.
+	"AchievementPrizeChipLabel", "AchievementPrizeChipLabelAmber",
+	# 2026-09-22 SkinSelect: the skin's name and the "sedang dipakai" chip.
+	"SkinNameLabel", "SkinWornChipLabel",
+	# 2026-09-18 achievements-polish Task 4: the header status pill's two
+	# state labels.
+	"AchievementStatusPillIdleLabel", "AchievementStatusPillWaitingLabel",
 	# 2026-09-09 student card arrow buttons: circles with brand fill.
 	"CardArrowButton",
 	# 2026-09-09 trait popup readability: cream display labels for the
@@ -530,3 +548,10 @@ func test_ghost_button_draws_no_resting_chrome() -> void:
 		"and on press")
 	assert_eq(_theme.get_type_variation_base("GhostButton"), &"Button",
 		"it varies Button")
+
+## 2026-09-19: the weekly report takes PR #53's cream ID card; its frame
+## and brown name band are these two variations.
+func test_id_card_variations_exist() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	for v in ["IdCardPanel", "RecapMastheadPanel"]:
+		assert_true(theme.get_type_list().has(v), "%s missing" % v)

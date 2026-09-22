@@ -86,7 +86,7 @@ Above the grid, replacing the current empty space under the ribbon:
   - **Idle** (no unclaimed prize): cream background, text
     `"%d / %d dibuka" % [claimed_count, total_count]`, tiny 24-segment
     dash bar underneath (filled dashes = claimed).
-  - **Waiting** (`Achievements.total_unclaimed_gold() > 0` — new helper,
+  - **Waiting** (`Achievements.total_unclaimed_count() > 0` — new helper,
     sums `entry.prize` where it parses as money; text prizes still count
     as "unclaimed" but don't add to the number): green background, coin
     icon on the left, text `"%d G belum diambil" % gold`, and a slow
@@ -131,7 +131,7 @@ Add to `Scripts/Achievements/Achievements.gd`:
 func progress_of(id: String) -> float          # 0.0..1.0
 func total_claimed_count() -> int
 func total_count() -> int                      # convenience
-func total_unclaimed_gold() -> int             # sum of numeric prizes on unlocked-but-not-claimed
+func total_unclaimed_count() -> int             # sum of numeric prizes on unlocked-but-not-claimed
 func first_unclaimed_id() -> String            # "" if none
 func reset_all() -> void                       # debug/dev use
 func relock(id: String) -> void                # debug/dev use
@@ -141,7 +141,7 @@ signal state_changed                           # emitted on any unlock/claim/res
 `state_changed` lets the header pill and grid tiles update live without
 polling. Existing `unlocked(id)` signal stays for the toast.
 
-Prize-string parsing for `total_unclaimed_gold()`: the current catalog
+Prize-string parsing for `total_unclaimed_count()`: the current catalog
 prizes are effect labels (`"Hasil Wirausaha +5%"`), **not** gold values.
 The header pill's "belum diambil" concept only applies once achievements
 grant actual G on claim. For this pass: the helper returns the **count of

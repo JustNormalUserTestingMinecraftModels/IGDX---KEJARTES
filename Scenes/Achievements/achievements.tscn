@@ -4,7 +4,9 @@
 [ext_resource type="Texture2D" path="res://Assets/Images/Achievements/bg_achievements_blur.jpg" id="2_bg"]
 [ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="3_safe"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Achievements/ribbon_achievements.png" id="4_ribbon"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Achievements/back_arrow.png" id="5_back"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="5_back"]
+[ext_resource type="PackedScene" path="res://Scenes/Achievements/AchievementStatusPill.tscn" id="6_pill"]
+[ext_resource type="PackedScene" path="res://Scenes/Achievements/AchievementDetailSheet.tscn" id="7_sheet"]
 
 [node name="Achievements" type="Control"]
 layout_mode = 3
@@ -56,13 +58,52 @@ texture = ExtResource("4_ribbon")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Header" type="HBoxContainer" parent="Safe/UI"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = 84.0
+offset_top = 350.0
+offset_right = -83.0
+offset_bottom = 424.0
+grow_horizontal = 2
+theme_override_constants/separation = 16
+
+[node name="StatusPill" parent="Safe/UI/Header" instance=ExtResource("6_pill")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="FilterButton" type="OptionButton" parent="Safe/UI/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+size_flags_horizontal = 0
+theme_type_variation = &"SecondaryButton"
+item_count = 4
+selected = 0
+popup/item_0/text = "Semua"
+popup/item_0/id = 0
+popup/item_1/text = "Belum dibuka"
+popup/item_1/id = 1
+popup/item_2/text = "Sudah dibuka"
+popup/item_2/id = 2
+popup/item_3/text = "Belum diambil"
+popup/item_3/id = 3
+
 [node name="Scroll" type="ScrollContainer" parent="Safe/UI"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 84.0
-offset_top = 350.0
+offset_top = 440.0
 offset_right = -83.0
 offset_bottom = -260.0
 grow_horizontal = 2
@@ -77,11 +118,13 @@ theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="List" type="VBoxContainer" parent="Safe/UI/Scroll/Margin"]
+[node name="List" type="GridContainer" parent="Safe/UI/Scroll/Margin"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 60
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 24
+columns = 2
 
 [node name="BackButton" type="TextureButton" parent="Safe/UI"]
 unique_name_in_owner = true
@@ -97,3 +140,12 @@ grow_vertical = 0
 texture_normal = ExtResource("5_back")
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="DetailSheet" parent="." instance=ExtResource("7_sheet")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

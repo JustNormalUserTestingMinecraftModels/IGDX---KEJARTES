@@ -266,7 +266,25 @@ func test_a_line_that_left_the_cart_leaves_the_row() -> void:
 	assert_true(tray.get_slot("Raket") != null, "the other stays")
 
 
-func test_the_emblem_counts_every_unit() -> void:
+## The top-right basket emblem was removed on 2026-09-21. It carried the
+## cart's running total and a toggle button. The CrateHandle that took over
+## its badge was itself removed on 2026-09-22, so the tray's own slots carry
+## the count now and the drag is the only toggle.
+func test_the_tray_has_no_emblem_in_its_corner() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	assert_true(tray.get_node_or_null("Body/Emblem") == null,
+		"the basket emblem must be gone from the tray's corner")
+	assert_false(tray.has_method("get_emblem"),
+		"and its accessor with it, so nothing animates a missing node")
+	var src := FileAccess.get_file_as_string(_SCENE)
+	assert_false(src.contains("icon_keranjang.svg"),
+		"the emblem's own art must no longer be referenced")
+
+
+## Per-slot badges are what count units now, and they are unaffected.
+func test_every_slot_still_counts_its_own_units() -> void:
 	var tray = _tray()
 	if tray == null:
 		return
@@ -274,10 +292,8 @@ func test_the_emblem_counts_every_unit() -> void:
 		"Susu Kotak": _entry(_item("Susu Kotak", 1000), 2),
 		"Pop Ice": _entry(_item("Pop Ice", 400), 1),
 	})
-	assert_eq(tray.get_emblem_count_text(), "3")
-	assert_true(tray.get_node("Body/Emblem/CountBadge").visible, "the count shows")
-	tray.refresh({})
-	assert_false(tray.get_node("Body/Emblem/CountBadge").visible, "no count on an empty basket")
+	assert_eq(tray.get_slot("Susu Kotak").get_badge_text(), "×2")
+	assert_eq(tray.get_slot("Pop Ice").get_badge_text(), "×1")
 
 
 func test_a_unit_in_flight_is_hidden_until_it_lands() -> void:
@@ -289,7 +305,6 @@ func test_a_unit_in_flight_is_hidden_until_it_lands() -> void:
 	tray.refresh(entries)
 	var slot: Control = tray.get_slot("Pop Ice")
 	assert_eq(slot.modulate.a, 0.0, "its place is kept, but it waits for the flight")
-	assert_eq(tray.get_emblem_count_text(), "0", "not in the basket until it lands")
 	tray.land("Pop Ice")
 	assert_eq(slot.modulate.a, 1.0, "it shows the moment the item lands")
 	assert_eq(slot.get_badge_text(), "×1")
@@ -397,3 +412,87 @@ func test_a_slot_crops_its_arts_transparent_padding() -> void:
 	assert_true(shown is AtlasTexture, "the slot shows a crop of the art")
 	if shown is AtlasTexture:
 		assert_eq(shown.region, Rect2(20, 180, 60, 120), "cropped to the opaque rect")
+
+
+## The drag gesture (2026-09-21): the tray follows a finger between its docked
+## and hidden positions, and the release decides where it settles. The rule
+## lives in a pure static function because the runner cannot await -- a test
+## that waited for the settle tween would abort mid-way and report "0
+## assertions".
+func test_classify_drag_commits_past_the_halfway_point() -> void:
+	# span is tray_offset_collapsed: the full travel between docked and hidden.
+	assert_eq(BasketTray.classify_drag(120.0, 0.0, 190.0),
+		BasketTray.ViewState.COLLAPSED,
+		"a slow drag past halfway must settle collapsed")
+	assert_eq(BasketTray.classify_drag(70.0, 0.0, 190.0),
+		BasketTray.ViewState.EXPANDED,
+		"a slow drag short of halfway must spring back expanded")
+
+
+func test_classify_drag_lets_a_flick_win_outright() -> void:
+	# A fast, short downward flick must collapse even though travel is tiny --
+	# otherwise a real flick reads as "barely moved, snap back".
+	assert_eq(BasketTray.classify_drag(18.0, 1400.0, 190.0),
+		BasketTray.ViewState.COLLAPSED,
+		"a downward flick must collapse regardless of travel")
+	# And the same flick upward must expand from a nearly-collapsed tray.
+	assert_eq(BasketTray.classify_drag(172.0, -1400.0, 190.0),
+		BasketTray.ViewState.EXPANDED,
+		"an upward flick must expand regardless of travel")
+
+
+func test_classify_drag_clamps_a_nonsense_span() -> void:
+	# A zero span must not divide by zero; it settles expanded.
+	assert_eq(BasketTray.classify_drag(50.0, 0.0, 0.0),
+		BasketTray.ViewState.EXPANDED,
+		"a zero span must settle expanded rather than divide by zero")
+
+
+## The plumbing, not the rule. classify_drag() being right is worthless if the
+## events never arrive, and that is exactly how the drag first shipped: the
+## handler sat on the scene root, which is a bare anchor (Pattern C) with
+## anchors_preset = 0 and no offsets. A zero-rect Control is never
+## hit-tested, so _gui_input on it could not fire however its mouse_filter
+## was set -- and every test here still passed, because they call
+## begin_drag()/update_drag() directly.
+func test_the_drag_listens_on_a_node_that_can_actually_be_hit() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var body: Control = tray.get_node_or_null("Body")
+	assert_true(body != null, "Body must exist")
+	if body == null:
+		return
+	assert_true(body.size.x > 0.0 and body.size.y > 0.0,
+		"the drag surface must have a real rect, or no press ever reaches it")
+	assert_true(body.gui_input.is_connected(tray._on_body_gui_input),
+		"Body's gui_input must drive the drag")
+	assert_false(tray.has_method("_gui_input"),
+		"the root is a zero-rect anchor; a _gui_input here would never fire")
+
+
+## A thumb reaching for the tray lands on the items standing on it as often as
+## on bare plank, so a slot must let the press through to Body as well as
+## handling its own. Without this the drag works only on the empty strip and
+## reads as broken whenever the cart has anything in it.
+func test_a_slot_passes_its_press_through_to_the_drag_surface() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	assert_eq(slot.mouse_filter, Control.MOUSE_FILTER_PASS,
+		"a tray slot must pass its press through to Body")
+
+
+## A drag must never fling the tray off its dock, however far the finger goes.
+func test_a_drag_is_clamped_to_the_dock() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var base_y: float = tray.position.y
+	tray.begin_drag(0.0)
+	tray.update_drag(10000.0)
+	assert_eq(tray.position.y, base_y + tray.tray_offset_collapsed,
+		"dragging far past the dock stops at the collapsed position")
+	tray.update_drag(-10000.0)
+	assert_eq(tray.position.y, base_y,
+		"dragging far above the dock stops at the docked position")

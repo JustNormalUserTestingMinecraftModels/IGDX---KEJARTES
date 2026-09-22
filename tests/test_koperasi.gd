@@ -93,7 +93,7 @@ func test_herman_animation_player_has_idle_talk_and_reset() -> void:
 		"HermanAP's library must register a RESET animation, so the editor never saves a mid-animation pose")
 	# Scan only the Animation sub_resources Herman's own library refers to
 	# (Animation_herman_*), not the whole file -- other Stage nodes (like the
-	# crate handle) legitimately key their own local position.
+	# back button) legitimately key their own local position.
 	for id in ["Animation_herman_reset", "Animation_herman_idle", "Animation_herman_talk"]:
 		var marker := "id=\"%s\"]" % id
 		var start := raw.find(marker)

@@ -155,27 +155,62 @@ func test_expanded_gap_against_tray_top_is_locked() -> void:
 			[tray_top, expanded.y + back_height, gap])
 
 
-## Flushness against the collapsed crate handle's top edge: crate_pos_collapsed
-## is CrateHandle's authored top-left (pivot (0,0), COLLAPSED scale 1.0 --
-## see _on_tray_state_changed), so its .y IS the crate's on-screen top there.
-func test_collapsed_gap_against_crate_top_is_12px() -> void:
+## The crate handle is gone (koperasi fix.png, 2026-09-22).
+## back_pos_collapsed's old 1363 was derived from the crate's collapsed top
+## edge; it is now derived from the collapsed TRAY's top edge, with the same
+## 12px gap: 1360 (TrayDock 117 + Body 1243) + 190 (tray_offset_collapsed)
+## - 185 (BackButton's height) - 12 = 1353.
+func test_collapsed_gap_against_collapsed_tray_top_is_12px() -> void:
 	var script_src := _read(KOPRASI_GD)
 	var scene_src := _read(KOPRASI_TSCN)
 	if script_src.is_empty() or scene_src.is_empty():
 		return
 	var collapsed := _vector2_after(script_src, "@export var back_pos_collapsed: Vector2 =")
-	var crate_pos_collapsed := _vector2_after(script_src, "@export var crate_pos_collapsed: Vector2 =")
 	var back_block := _node_block(scene_src, "[node name=\"BackButton\" type=\"TextureButton\" parent=\"Stage\"")
 	var back_height := _prop_float(back_block, "offset_bottom") - _prop_float(back_block, "offset_top")
-	var gap := crate_pos_collapsed.y - (collapsed.y + back_height)
+	var tray_dock_block := _node_block(scene_src, "[node name=\"TrayDock\" type=\"Control\" parent=\"Stage\"")
+	var body_block := _node_block(_read("res://Scenes/Koperasi/BasketTray.tscn"),
+		"[node name=\"Body\" type=\"Control\" parent=\".\"")
+	var tray_script := _read("res://Scripts/Koperasi/BasketTray.gd")
+	var needle := "@export var tray_offset_collapsed: float ="
+	var at := tray_script.find(needle)
+	assert_true(at != -1, "tray_offset_collapsed must exist")
+	if at == -1:
+		return
+	var tail := tray_script.substr(at + needle.length(), 24)
+	var offset_collapsed := float(tail.split("\n")[0].strip_edges())
+	var tray_top := _prop_float(tray_dock_block, "offset_top") \
+		+ _prop_float(body_block, "offset_top") + offset_collapsed
+	var gap := tray_top - (collapsed.y + back_height)
 	assert_true(absf(gap - 12.0) < 0.5,
-		"collapsed gap against the crate's top edge should be 12px, got %s" % gap)
+		"collapsed gap against the collapsed tray's top should be 12px (tray_top=%s), got %s"
+			% [tray_top, gap])
 
 
-## Spec section 4 / "Cross-cutting: one tween per user gesture" -- the back
-## button's tween_property must live in the SAME tween the crate uses
-## (_crate_tween), not a second create_tween() of its own.
-func test_back_button_animates_inside_the_shared_crate_tween() -> void:
+func test_crate_handle_is_gone_everywhere() -> void:
+	var scene_src := _read(KOPRASI_TSCN)
+	var script_src := _read(KOPRASI_GD)
+	assert_false(scene_src.contains("CrateHandle"), "CrateHandle must be deleted from koprasi.tscn")
+	assert_false(scene_src.contains("AnimationLibrary_crate"), "its animation library goes with it")
+	assert_false(script_src.contains("crate_pos_expanded"))
+	assert_false(script_src.contains("crate_pos_collapsed"))
+	assert_false(script_src.contains("_refresh_crate_badge"))
+	assert_false(script_src.contains("_on_crate_pressed"))
+
+
+## The crate was one of two ways to toggle the tray. The other -- the drag
+## on Body -- must still be wired, or removing the crate would strand a
+## collapsed tray with no way back up.
+func test_the_drag_still_toggles_the_tray() -> void:
+	var tray_script := _read("res://Scripts/Koperasi/BasketTray.gd")
+	assert_true(tray_script.contains("_body.gui_input.connect(_on_body_gui_input)"),
+		"the drag is the only remaining toggle and must stay wired to Body")
+
+
+## Spec section 4 / "Cross-cutting: one tween per user gesture". The back
+## button used to ride the crate handle's tween; with the crate gone
+## (2026-09-22) it owns _back_tween -- still exactly one tween per gesture.
+func test_back_button_animates_on_its_own_tween() -> void:
 	var src := _read(KOPRASI_GD)
 	if src.is_empty():
 		return
@@ -187,10 +222,10 @@ func test_back_button_animates_inside_the_shared_crate_tween() -> void:
 	if next_func == -1:
 		next_func = src.length()
 	var body := src.substr(start, next_func - start)
-	assert_true(body.contains("_crate_tween.tween_property(back_button,"),
-		"the back button must be animated on _crate_tween, the same shared tween as the crate")
+	assert_true(body.contains("_back_tween.tween_property(back_button,"),
+		"the back button must be animated on its own _back_tween")
 	assert_eq(body.count("create_tween()"), 1,
-		"there must be exactly one create_tween() call in this handler -- no second tween for the back button")
+		"there must be exactly one create_tween() call in this handler -- one tween per gesture")
 	assert_true(body.contains("back_pos_expanded if expanded else back_pos_collapsed"),
 		"the back button's tween target must switch on the same `expanded` flag as the crate's")
 

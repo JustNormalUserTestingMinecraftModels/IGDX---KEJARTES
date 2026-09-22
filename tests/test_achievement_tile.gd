@@ -296,7 +296,10 @@ func test_progress_bar_uses_the_thin_achievement_tile_bar_variation() -> void:
 
 func test_root_expands_to_fill_grid_column() -> void:
 	var src := FileAccess.get_file_as_string(TILE)
-	var root_idx := src.find('[node name="AchievementTile" type="PanelContainer"]')
+	# No closing bracket in the anchor: an editor save stamps every node with
+	# a `unique_id=`, the format the other scenes here already carry, and an
+	# exact-match anchor breaks the first time the scene is re-saved.
+	var root_idx := src.find('[node name="AchievementTile" type="PanelContainer"')
 	assert_true(root_idx != -1, "tile root found")
 	var next_idx := src.find("[node name=", root_idx + 1)
 	var body := src.substr(root_idx, next_idx - root_idx)

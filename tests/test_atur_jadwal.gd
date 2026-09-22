@@ -23,6 +23,39 @@ const _SCRIPT_PATH := "res://Scripts/AturJadwal/atur_jadwal.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 
+const SPLASH_MATERIAL := "res://Assets/Images/SplashArtMurid/splash_outline_material.tres"
+
+
+## The splash IS the student picker's button (_on_select_student_pressed)
+## but carried no affordance -- it read as scenery. A white silhouette
+## outline says "tappable" without adding chrome over the art.
+##
+## outline_width is a FRACTION of the node's rect, and the button's authored
+## rect is 700x1244 -- so the achievement icons' 0.03 would be a 21px stroke
+## and would visibly shrink the character (the shader pulls the art in by
+## 2 * outline_width to make room). 0.009 is a ~6px stroke and a 1.8% shrink.
+func test_splash_wears_the_white_outline_material() -> void:
+	var mat := load(SPLASH_MATERIAL) as ShaderMaterial
+	assert_true(mat != null, "splash_outline_material.tres must exist")
+	if mat == null:
+		return
+	assert_eq(mat.shader.resource_path, "res://Scripts/Shaders/icon_outline.gdshader")
+	assert_eq(mat.get_shader_parameter("outline_color"), Color(1, 1, 1, 1))
+	assert_true(absf(float(mat.get_shader_parameter("outline_width")) - 0.009) < 0.0001,
+		"0.009 of a 700px rect is a ~6px stroke, got %s" % mat.get_shader_parameter("outline_width"))
+
+
+func test_splash_button_uses_that_material() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/AturJadwal/atur_jadwal.tscn")
+	assert_true(src.contains(SPLASH_MATERIAL), "atur_jadwal.tscn must reference the outline material")
+	var at := src.find('[node name="TextureButton" type="TextureButton" parent="."')
+	assert_true(at != -1, "the root TextureButton (the student splash) must exist")
+	var next := src.find("[node", at + 1)
+	var block := src.substr(at, (next - at) if next != -1 else src.length() - at)
+	assert_true(block.contains("material = ExtResource("),
+		"the student splash must carry the outline material")
+
+
 func suite_name() -> String:
 	return "atur_jadwal"
 

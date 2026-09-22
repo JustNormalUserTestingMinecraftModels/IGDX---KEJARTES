@@ -151,6 +151,23 @@ func test_dots_show_one_per_skin_and_mark_the_centred_one() -> void:
 	assert_eq((dots.get_child(1) as Panel).theme_type_variation, &"SkinDotOff")
 
 
+## The lit dot has to FOLLOW the selection, not just start right. Only
+## _rebuild_carousel refreshed the dots at first, so sliding moved the card,
+## the skin name and the chip while the lit dot stayed on whichever card was
+## centred when the character was opened. Caught in the 2026-09-22 local
+## review; the original test asserted the opening state only, which is
+## exactly why it passed.
+func test_the_lit_dot_follows_the_selection() -> void:
+	var s := _new_screen()
+	var dots := s.get_node("%Dots")
+	s.select_skin(1)
+	assert_eq((dots.get_child(0) as Panel).theme_type_variation, &"SkinDotOff")
+	assert_eq((dots.get_child(1) as Panel).theme_type_variation, &"SkinDotOn")
+	s.select_skin(0)
+	assert_eq((dots.get_child(0) as Panel).theme_type_variation, &"SkinDotOn")
+	assert_eq((dots.get_child(1) as Panel).theme_type_variation, &"SkinDotOff")
+
+
 func test_commit_button_is_indonesian_and_not_danger_red() -> void:
 	var src := FileAccess.get_file_as_string(SCREEN)
 	assert_true(src.contains('text = "TERAPKAN"'), "UI text is Indonesian; APPLY is not")

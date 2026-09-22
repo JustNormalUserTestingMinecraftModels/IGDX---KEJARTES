@@ -141,6 +141,10 @@ func select_skin(index: int) -> void:
 	_pending[current_student()] = ids[index]
 	_apply_card_states()
 	_slide_to(index, true)
+	# _refresh_dots too, not just on a rebuild: sliding moves _skin_index,
+	# and without this the lit dot stayed on whichever card was centred when
+	# the character was opened.
+	_refresh_dots(ids.size())
 	_refresh_tray()
 
 

@@ -5,6 +5,7 @@
 [ext_resource type="Material" path="res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres" id="3_qxown"]
 [ext_resource type="Texture2D" uid="uid://buqajwg3j13h2" path="res://Assets/Images/EventDialogue/splash_mom.png" id="4_5xvqv"]
 [ext_resource type="Texture2D" uid="uid://t3h8jmypjfe8" path="res://Assets/Images/EventDialogue/calendar_badge.png" id="5_esryj"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 
 [node name="EventDialogue" type="Control" unique_id=490646120]
 layout_mode = 3
@@ -42,6 +43,16 @@ mouse_filter = 2
 texture = ExtResource("4_5xvqv")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Shadow" parent="Splash" instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("4_5xvqv")
+shadow_offset = Vector2(14, 10)
+shadow_scale = 1.0
+shadow_alpha = 0.24
+follow_parent_rect = true
+shadow_stretch_mode = 5
+blur = 3.5
 
 [node name="Header" type="Control" parent="." unique_id=519676879]
 layout_mode = 1

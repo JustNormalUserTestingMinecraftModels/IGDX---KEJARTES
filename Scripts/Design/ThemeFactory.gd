@@ -318,6 +318,17 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "AchievementPrizeChipLabelAmber", tokens.font_display)
 
+	# The tile's own title. CaptionLabel (22) put the tile's most important
+	# text on the scale's second-smallest step; this is the body step (28)
+	# in the primary ink. Body face, not display -- it wraps to two lines,
+	# and Boohong at 28 over two lines reads as a banner, not a caption.
+	theme.add_type("AchievementTileTitleLabel")
+	theme.set_type_variation("AchievementTileTitleLabel", "Label")
+	theme.set_font_size("font_size", "AchievementTileTitleLabel", tokens.font_body_size)
+	theme.set_color("font_color", "AchievementTileTitleLabel", tokens.text_primary)
+	if tokens.font_body != null:
+		theme.set_font("font", "AchievementTileTitleLabel", tokens.font_body)
+
 	# The "BARU" unlock pip, top-right corner of the tile.
 	theme.add_type("AchievementBaruBadge")
 	theme.set_type_variation("AchievementBaruBadge", "Panel")

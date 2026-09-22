@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://cx2se7may2fvu" path="res://Assets/Images/UI/Placeholders/icon_check.svg" id="5_check"]
 
 [node name="AchievementTile" type="PanelContainer" unique_id=97765837]
-custom_minimum_size = Vector2(420, 260)
+custom_minimum_size = Vector2(420, 310)
 size_flags_horizontal = 3
 mouse_filter = 1
 theme_type_variation = &"Card"
@@ -20,7 +20,7 @@ theme_override_constants/separation = 8
 alignment = 1
 
 [node name="IconSlot" type="Control" parent="Content" unique_id=998464626]
-custom_minimum_size = Vector2(72, 72)
+custom_minimum_size = Vector2(132, 132)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
@@ -59,9 +59,9 @@ stretch_mode = 5
 
 [node name="Title" type="Label" parent="Content" unique_id=1248963718]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 58)
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"AchievementTileTitleLabel"
 text = "Sudah bukan pemula lagi nih!"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -88,7 +88,7 @@ max_lines_visible = 1
 
 [node name="ProgressBar" type="ProgressBar" parent="Content" unique_id=311772404]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 4)
+custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 theme_type_variation = &"AchievementTileBar"
 show_percentage = false

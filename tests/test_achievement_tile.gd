@@ -42,6 +42,29 @@ func _new_tile() -> AchievementTile:
 	return tile
 
 
+## The tile's own label, one step up from CaptionLabel (22) to the body
+## step (28), in text_primary rather than text_secondary. The tile's title
+## is its most important text and was using the scale's second-smallest
+## size, on a tile where the icon took 3% of the area.
+func test_title_uses_the_tile_title_variation_at_body_size() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	assert_eq(theme.get_type_variation_base("AchievementTileTitleLabel"), &"Label")
+	assert_eq(theme.get_font_size("font_size", "AchievementTileTitleLabel"), tokens.font_body_size)
+	assert_eq(theme.get_color("font_color", "AchievementTileTitleLabel"), tokens.text_primary)
+	assert_eq(theme.get_font("font", "AchievementTileTitleLabel"), tokens.font_body)
+
+
+func test_tile_geometry_matches_the_mockup() -> void:
+	var src := FileAccess.get_file_as_string(TILE)
+	assert_true(src.contains("custom_minimum_size = Vector2(420, 310)"), "tile grows to 420x310")
+	assert_true(src.contains("custom_minimum_size = Vector2(132, 132)"), "icon slot doubles to 132")
+	assert_true(src.contains("custom_minimum_size = Vector2(0, 80)"), "title band fits two 28px lines")
+	assert_true(src.contains('theme_type_variation = &"AchievementTileTitleLabel"'))
+	assert_false(src.contains("Vector2(0, 58)"), "the old 58px caption band must be gone")
+	assert_false(src.contains("Vector2(72, 72)"), "the old 72px icon slot must be gone")
+
+
 func test_setup_shows_title_and_icon() -> void:
 	var tile := _new_tile()
 	tile.setup(AchievementCatalog.get_entry(PLAIN_ID))

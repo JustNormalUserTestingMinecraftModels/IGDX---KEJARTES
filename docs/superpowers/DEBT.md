@@ -378,9 +378,7 @@ widget via `project_run` instead, which exercises it fine.
 - **Koperasi polish leftovers (2026-09-18).** `ShopMessageWarning` and
   `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `koprasi.gd` after
   the final polish pass -- nothing in the shop currently shows a warning or
-  danger message panel. The tray crate sits at `scale = Vector2(0.35, 0.35)`
-  while collapsed, which renders roughly 112px against the 128px tray
-  emblem it sits beside -- a visible size mismatch, not yet reconciled. A
+  danger message panel. A
   purchase flight already airborne when the player collapses the tray still
   lands at the tray's EXPANDED position (cosmetic only -- the unit still
   reaches the cart correctly). Herman's `talk` head-bob animation has not
@@ -395,6 +393,33 @@ widget via `project_run` instead, which exercises it fine.
   single batched emit. Fine today -- every listener's redraw is cheap -- but
   batch it (e.g. a `_suppress_signal` flag plus one `state_changed.emit()`
   after the loop) if it ever becomes a perf problem.
+
+- **Achievements notice badge (2026-09-22).** The claimable badge is the
+  user's `notice_icon.png` -- a red circled "!", which is the error idiom
+  everywhere else in this game. It ships as drawn; if it reads as an alarm
+  rather than a reward, recolour it to `state_warning` amber at the same
+  path, no code change needed.
+
+- **Achievements header (2026-09-22).** The status pill truncates
+  ("25 HADIAH BELUM DIAMBIL" is clipped by the filter button at 1080 wide),
+  and `%FilterButton` (96px) and the pill (64px) are both under the ~130px
+  touch floor. Found in the 2026-09-22 design audit and deliberately left
+  out of that pass's scope.
+
+- **SkinSelect is an overlay, not a scene (2026-09-22).** The brief asked
+  for a scene; it stayed a full-screen Lobby overlay because only an overlay
+  can blur the *live* lobby through `shop_hub_blur_material.tres` -- a
+  `Transition.change_scene` would need a baked backdrop like
+  `bg_achievements_blur.jpg` and would stop showing the room the student is
+  standing in. Revisit only if the Lobby stops being the sole entry point.
+
+- **SkinSelect's skin names are derived (2026-09-22).**
+  `SkinSelect.skin_label` turns `default` into "Seragam Sekolah" and `skin1`
+  into "Seragam 1". Real names belong in `StudentSkins.SKINS` once there is
+  more than one extra skin per character. The carousel's neighbour card
+  peeks only 104px past a 1080-wide screen (card 752 + separation 60); the
+  mockup drew a wider peek, which would need a negative track separation or
+  a narrower card.
 
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a

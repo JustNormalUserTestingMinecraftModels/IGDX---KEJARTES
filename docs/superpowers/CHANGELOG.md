@@ -8,6 +8,21 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-23 — Reward feedback pass
+
+Added `RewardFeedback`, a multi-sensory reward orchestrator (layered sound +
+particles + haptics + screenshake) across ~15 reward moments, unified by three
+"weight" tiers (Tick/Pop/Celebration). New `Haptics` helper (phone motor on
+mobile, a labelled debug pip on desktop so the effect is reviewable on PC), an
+`AudioDirector.play_chord` for layered cues, and `GameSettings.haptics_enabled`
+/ `reduce_motion` toggles surfaced in Settings. A debug **Feedback** gallery tab
+auditions every moment on demand (with a clean-record switch that hides the
+haptic pip for trailer capture). Screens that already own bespoke particles
+(the minigame result popup, the claim popup) mark `no_particles` so
+`RewardFeedback` adds only sound/haptic/shake there. Spec and plan:
+`docs/superpowers/specs/2026-09-23-reward-feedback-pass-design.md`,
+`docs/superpowers/plans/2026-09-23-reward-feedback-pass.md`.
+
 ## 2026-09-22 — Achievements layout pass, and a full-screen SkinSelect
 
 **The grid's uneven columns were one label, not the container.** The

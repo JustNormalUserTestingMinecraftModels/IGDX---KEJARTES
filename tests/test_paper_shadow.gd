@@ -173,11 +173,11 @@ func test_a_custom_blur_duplicates_the_material_instead_of_mutating_it() -> void
 ## Where the contact shadows went. Each entry is a scene, the element that
 ## should cast, and whether it is a fixed-size piece or one that resizes with
 ## its container or the viewport.
+##
+## The Lobby's four desks used to be in here. They were taken out on
+## 2026-09-23 at the user's call -- see the test below, which now holds the
+## opposite line.
 const _CONTACT_SHADOWS := {
-	"res://Scenes/Lobby/loby.tscn": [
-		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
-		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
-	],
 	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
 	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
@@ -207,6 +207,29 @@ func test_the_flat_elements_now_cast_a_shadow() -> void:
 			assert_eq(shadow.get("shadow_texture"), host.texture,
 				"%s/%s's shadow must use its element's own texture"
 					% [scene_path, node_path])
+
+
+## The Lobby's desks cast no shadow, by decision (2026-09-23). They sit on a
+## painted classroom floor that already carries its own drawn shading, so a
+## second contact shadow under each desk read as dirt rather than depth. This
+## holds the line against it coming back with the next pass over the scene.
+const _LOBBY_DESKS: Array[String] = [
+	"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
+	"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+]
+
+
+func test_the_lobby_desks_cast_no_shadow() -> void:
+	var root := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
+	track(root)
+	for node_path in _LOBBY_DESKS:
+		var desk := root.get_node_or_null(node_path) as TextureRect
+		assert_true(desk != null, "the Lobby is missing %s" % node_path)
+		if desk == null:
+			continue
+		assert_true(desk.get_node_or_null("Shadow") == null,
+			"%s must not cast a contact shadow; the painted floor already has one"
+				% node_path)
 
 
 ## A Full Rect element is 1080x1920 on a 9:16 phone and 1080x2400 on a 20:9

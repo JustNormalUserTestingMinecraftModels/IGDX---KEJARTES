@@ -174,8 +174,7 @@ func test_commit_button_is_indonesian_and_not_danger_red() -> void:
 	var src := FileAccess.get_file_as_string(SCREEN)
 	assert_true(src.contains('text = "TERAPKAN"'), "UI text is Indonesian; APPLY is not")
 	assert_false(src.contains('text = "APPLY"'))
-	assert_true(src.contains('theme_type_variation = &"PrimaryButton"'),
-		"brand brown, so the commit button and the red back arrow do not read as a pair")
+	assert_true(src.contains('theme_type_variation = &"SkinApplyButton"'), "the mockup's red button")
 
 
 func test_backdrop_still_blurs_the_live_lobby() -> void:
@@ -199,8 +198,8 @@ func test_the_carousel_stretches_to_the_trays_top_edge() -> void:
 	assert_true(at != -1, "Carousel must exist")
 	var next := src.find("[node", at + 1)
 	var block := src.substr(at, (next - at) if next != -1 else src.length() - at)
-	assert_true(block.contains("offset_bottom = -583.0"),
-		"the carousel's bottom must track the tray's height, not a fixed y")
+	assert_true(block.contains("offset_bottom = -592.0"),
+		"the carousel's bottom must track the tray's top edge (y=1328 on a 1920 phone), not a fixed y")
 	assert_true(block.contains("anchor_bottom = 1.0"))
 	# And it runs from the very top, with the title floating over it. At
 	# offset_top = 200 the band was 1137 tall on a 1920 phone and clipped
@@ -316,6 +315,44 @@ func get_class_of_track() -> String:
 	var src := FileAccess.get_file_as_string(SCREEN)
 	var at := src.find('[node name="Track"')
 	return src.substr(at).get_slice('type="', 1).get_slice('"', 0)
+
+
+func _node_block(src: String, name: String) -> String:
+	var at := src.find('[node name="%s"' % name)
+	if at == -1:
+		return ""
+	var next := src.find("[node", at + 1)
+	return src.substr(at, (next - at) if next != -1 else src.length() - at)
+
+
+## Every offset is measured off skinselection_mockup.png; the tray's own
+## origin is y=1328 on a 1920-tall screen.
+func test_tray_is_laid_out_to_the_mockup() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var tray := _node_block(src, "Tray")
+	assert_true(tray.contains("offset_top = -592.0"), "divider at y=1328")
+	assert_true(tray.contains('theme_type_variation = &"SkinTray"'))
+	var rail := _node_block(src, "Rail")
+	assert_true(rail.contains("offset_top = 102.0") and rail.contains("offset_bottom = 258.0"),
+		"tiles at y 1430-1586")
+	var back := _node_block(src, "BackButton")
+	for v in ["offset_left = 40.0", "offset_top = 349.0", "offset_right = 237.0", "offset_bottom = 524.0"]:
+		assert_true(back.contains(v), "BackButton " + v)
+	var btn := _node_block(src, "Terapkan")
+	for v in ["offset_left = 501.0", "offset_top = 381.0", "offset_right = 1007.0", "offset_bottom = 521.0"]:
+		assert_true(btn.contains(v), "Terapkan " + v)
+
+
+func test_title_uses_the_mockup_title_style() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(_node_block(src, "Title").contains('theme_type_variation = &"SkinTitleLabel"'))
+
+
+## The mockup has no room in the tray for the worn chip, so it sits under
+## the title instead.
+func test_worn_chip_sits_under_the_title() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(src.contains('[node name="WornChip" type="PanelContainer" parent="."'))
 
 
 func test_mockup_styles_exist_with_measured_values() -> void:

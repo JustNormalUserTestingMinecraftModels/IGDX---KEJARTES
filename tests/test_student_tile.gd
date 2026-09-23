@@ -56,15 +56,12 @@ func test_set_open_swaps_the_variation_and_keeps_the_size() -> void:
 	assert_eq(tile.custom_minimum_size, size_before, "the tile must not resize on select")
 
 
-## 128 is btn_h_m, the M step of the project's button scale. The mockup
-## drew these at 150, but a Button authored off the S/M/L scale fails
-## tests/test_button_geometry.gd, and 160 (the L step) would leave six
-## squares plus their gaps only 2.5px of margin inside 1080.
-func test_tile_is_on_the_button_size_scale() -> void:
+## 151x156, measured off skinselection_mockup.png. Off the S/M/L scale on
+## purpose: the user asked for a pixel copy (2026-09-23), so the tile has a
+## reasoned HEIGHT_ALLOWED entry in tests/test_button_geometry.gd.
+func test_tile_is_the_mockups_size() -> void:
 	var src := FileAccess.get_file_as_string(TILE)
-	var tokens := DesignTokens.load_default()
-	assert_true(src.contains("custom_minimum_size = Vector2(%d, %d)" % [tokens.btn_h_m, tokens.btn_h_m]),
-		"the tile must be btn_h_m square")
+	assert_true(src.contains("custom_minimum_size = Vector2(151, 156)"))
 
 
 ## SkinFrame draws its own brown border. Inside a StudentTile the box is the

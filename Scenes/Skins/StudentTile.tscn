@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cvs2p0ua1s4u" path="res://Scenes/Skins/SkinFrame.tscn" id="2_f3tp6"]
 
 [node name="StudentTile" type="Button" unique_id=385077380]
-custom_minimum_size = Vector2(128, 128)
+custom_minimum_size = Vector2(151, 156)
 theme_type_variation = &"SkinStudentTile"
 script = ExtResource("1_jbld8")
 

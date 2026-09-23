@@ -1,11 +1,11 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://yoh7p3bbelyd"]
 
-[ext_resource type="Script" path="res://Scripts/UI/Settings.gd" id="1_settings"]
-[ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/BG.jpg" id="3_bg"]
+[ext_resource type="Script" uid="uid://4h5mljbcblli" path="res://Scripts/UI/Settings.gd" id="1_settings"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
+[ext_resource type="Texture2D" uid="uid://cfe2yal5hh4dl" path="res://Assets/Images/UI/BG.jpg" id="3_bg"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="4_ret"]
 
-[node name="Settings" type="Control"]
+[node name="Settings" type="Control" unique_id=1210818412]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_settings")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=1147910256]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -25,68 +25,72 @@ texture = ExtResource("3_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="SafeArea" type="MarginContainer" parent="."]
+[node name="SafeArea" type="MarginContainer" parent="." unique_id=569786430]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
 script = ExtResource("2_safe")
 
-[node name="Layout" type="VBoxContainer" parent="SafeArea"]
+[node name="Layout" type="VBoxContainer" parent="SafeArea" unique_id=1398283281]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="TitleLabel" type="Label" parent="SafeArea/Layout"]
+[node name="TitleLabel" type="Label" parent="SafeArea/Layout" unique_id=24815055]
 layout_mode = 2
 theme_type_variation = &"H1Label"
 text = "PENGATURAN"
 horizontal_alignment = 1
 
-[node name="AudioCard" type="PanelContainer" parent="SafeArea/Layout"]
+[node name="AudioCard" type="PanelContainer" parent="SafeArea/Layout" unique_id=543981297]
 layout_mode = 2
 theme_type_variation = &"Card"
 
-[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/AudioCard"]
+[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/AudioCard" unique_id=822816737]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 20
 
-[node name="VBox" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin"]
+[node name="VBox" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin" unique_id=2005019920]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="MasterRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox"]
+[node name="MasterRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox" unique_id=650319499]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="MasterLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/MasterRow"]
+[node name="MasterLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/MasterRow" unique_id=1246050100]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Suara Utama"
 
-[node name="MasterSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/MasterRow"]
+[node name="MasterSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/MasterRow" unique_id=1224581103]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.01
-value = 1.0
+value = 0.77
 
-[node name="BgmRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox"]
+[node name="BgmRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox" unique_id=412178823]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="BgmLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/BgmRow"]
+[node name="BgmLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/BgmRow" unique_id=1968899087]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Musik"
 
-[node name="BgmSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/BgmRow"]
+[node name="BgmSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/BgmRow" unique_id=1211580634]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -94,76 +98,129 @@ max_value = 1.0
 step = 0.01
 value = 1.0
 
-[node name="SfxRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox"]
+[node name="SfxRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox" unique_id=423958285]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="SfxLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/SfxRow"]
+[node name="SfxLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/SfxRow" unique_id=172779458]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Efek Suara"
 
-[node name="SfxSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/SfxRow"]
+[node name="SfxSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/SfxRow" unique_id=895354493]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.01
-value = 1.0
+value = 0.98
 
-[node name="TutorialCard" type="PanelContainer" parent="SafeArea/Layout"]
+[node name="TutorialCard" type="PanelContainer" parent="SafeArea/Layout" unique_id=1676951564]
 layout_mode = 2
 theme_type_variation = &"Card"
 
-[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/TutorialCard"]
+[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/TutorialCard" unique_id=2130313610]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 20
 
-[node name="HBox" type="HBoxContainer" parent="SafeArea/Layout/TutorialCard/Margin"]
+[node name="HBox" type="HBoxContainer" parent="SafeArea/Layout/TutorialCard/Margin" unique_id=938252517]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="TutorialLabel" type="Label" parent="SafeArea/Layout/TutorialCard/Margin/HBox"]
+[node name="TutorialLabel" type="Label" parent="SafeArea/Layout/TutorialCard/Margin/HBox" unique_id=928957077]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"BodyLabel"
 text = "Tutorial Minigame"
-size_flags_horizontal = 3
 vertical_alignment = 1
 
-[node name="TutorialToggle" type="CheckButton" parent="SafeArea/Layout/TutorialCard/Margin/HBox"]
+[node name="TutorialToggle" type="CheckButton" parent="SafeArea/Layout/TutorialCard/Margin/HBox" unique_id=86159134]
 unique_name_in_owner = true
 layout_mode = 2
+button_pressed = true
 
-[node name="SkipDialogCard" type="PanelContainer" parent="SafeArea/Layout"]
+[node name="SkipDialogCard" type="PanelContainer" parent="SafeArea/Layout" unique_id=87629955]
 layout_mode = 2
 theme_type_variation = &"Card"
 
-[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/SkipDialogCard"]
+[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/SkipDialogCard" unique_id=48607479]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 20
 
-[node name="HBox" type="HBoxContainer" parent="SafeArea/Layout/SkipDialogCard/Margin"]
+[node name="HBox" type="HBoxContainer" parent="SafeArea/Layout/SkipDialogCard/Margin" unique_id=279692845]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="SkipDialogLabel" type="Label" parent="SafeArea/Layout/SkipDialogCard/Margin/HBox"]
+[node name="SkipDialogLabel" type="Label" parent="SafeArea/Layout/SkipDialogCard/Margin/HBox" unique_id=270806381]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"BodyLabel"
 text = "Lewati Dialog Minigame"
-size_flags_horizontal = 3
 vertical_alignment = 1
 
-[node name="SkipDialogToggle" type="CheckButton" parent="SafeArea/Layout/SkipDialogCard/Margin/HBox"]
+[node name="SkipDialogToggle" type="CheckButton" parent="SafeArea/Layout/SkipDialogCard/Margin/HBox" unique_id=85539500]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="BackButton" type="Button" parent="SafeArea/Layout"]
+[node name="HapticsCard" type="PanelContainer" parent="SafeArea/Layout" unique_id=1443293448]
+layout_mode = 2
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/HapticsCard" unique_id=1216026135]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="HBox" type="HBoxContainer" parent="SafeArea/Layout/HapticsCard/Margin" unique_id=1178687436]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HapticsLabel" type="Label" parent="SafeArea/Layout/HapticsCard/Margin/HBox" unique_id=1369197982]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"BodyLabel"
+text = "Getaran (Haptic)"
+vertical_alignment = 1
+
+[node name="HapticsToggle" type="CheckButton" parent="SafeArea/Layout/HapticsCard/Margin/HBox" unique_id=1966170750]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ReduceMotionCard" type="PanelContainer" parent="SafeArea/Layout" unique_id=2015555931]
+layout_mode = 2
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/ReduceMotionCard" unique_id=1352358666]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="HBox" type="HBoxContainer" parent="SafeArea/Layout/ReduceMotionCard/Margin" unique_id=254157962]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ReduceMotionLabel" type="Label" parent="SafeArea/Layout/ReduceMotionCard/Margin/HBox" unique_id=119329192]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"BodyLabel"
+text = "Kurangi Gerakan"
+vertical_alignment = 1
+
+[node name="ReduceMotionToggle" type="CheckButton" parent="SafeArea/Layout/ReduceMotionCard/Margin/HBox" unique_id=241401807]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="SafeArea/Layout" unique_id=1588820499]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SecondaryButton"

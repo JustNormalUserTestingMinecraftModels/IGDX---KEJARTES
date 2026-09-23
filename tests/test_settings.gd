@@ -149,3 +149,11 @@ func test_haptics_and_reduce_motion_persist() -> void:
 	GameSettings.haptics_enabled = true
 	GameSettings.reduce_motion = false
 	GameSettings.save_settings()
+
+
+func test_settings_screen_exposes_haptics_and_motion() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd")
+	assert_true(src.contains("GameSettings.haptics_enabled ="),
+		"Settings must write haptics_enabled from its toggle")
+	assert_true(src.contains("GameSettings.reduce_motion ="),
+		"Settings must write reduce_motion from its toggle")

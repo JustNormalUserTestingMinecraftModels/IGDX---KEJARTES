@@ -784,10 +784,10 @@ expand_mode = 1
 [node name="Shadow" parent="Stage/Herman" instance=ExtResource("paper_shadow")]
 layout_mode = 0
 shadow_texture = ExtResource("3_herman")
-shadow_offset = Vector2(12, 10)
+shadow_offset = Vector2(0, 0)
 shadow_scale = 1.0
-shadow_alpha = 0.26
-blur = 3.0
+shadow_alpha = 0.34
+blur = 1.2
 
 [node name="HermanAP" type="AnimationPlayer" parent="Stage/Herman" unique_id=784512396]
 libraries/ = SubResource("AnimationLibrary_herman")

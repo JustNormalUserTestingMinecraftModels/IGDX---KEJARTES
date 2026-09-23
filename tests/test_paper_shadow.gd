@@ -178,6 +178,10 @@ func test_a_custom_blur_duplicates_the_material_instead_of_mutating_it() -> void
 ## 2026-09-23 at the user's call -- see the test below, which now holds the
 ## opposite line.
 const _CONTACT_SHADOWS := {
+	"res://Scenes/Lobby/loby.tscn": [
+		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
+		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+	],
 	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
 	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
@@ -209,27 +213,63 @@ func test_the_flat_elements_now_cast_a_shadow() -> void:
 					% [scene_path, node_path])
 
 
-## The Lobby's desks cast no shadow, by decision (2026-09-23). They sit on a
-## painted classroom floor that already carries its own drawn shading, so a
-## second contact shadow under each desk read as dirt rather than depth. This
-## holds the line against it coming back with the next pass over the scene.
-const _LOBBY_DESKS: Array[String] = [
-	"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
-	"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
-]
+## Outer AO, not a cast shadow (2026-09-23).
+##
+## These seven were authored as drop shadows -- offset 8-14 px at alpha
+## 0.24-0.30 with a wide blur -- and the Lobby's four were removed that morning
+## for reading as dirt beside the desk rather than contact under it. They come
+## back the same day as something else: zero offset, a third of the blur. It is
+## not a shadow from anywhere; it is the floor going dark where the plate
+## occludes it, which is why it can be denser without reading as grime.
+##
+## A deliberate reversal, not an accident. The design doc's section 6 has the
+## argument in full.
+const _OUTER_AO := {
+	"res://Scenes/Lobby/loby.tscn": [
+		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
+		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+	],
+	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
+	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+}
+const _OUTER_AO_ALPHA := 0.34
+const _OUTER_AO_BLUR := 1.2
 
 
-func test_the_lobby_desks_cast_no_shadow() -> void:
-	var root := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
-	track(root)
-	for node_path in _LOBBY_DESKS:
-		var desk := root.get_node_or_null(node_path) as TextureRect
-		assert_true(desk != null, "the Lobby is missing %s" % node_path)
-		if desk == null:
-			continue
-		assert_true(desk.get_node_or_null("Shadow") == null,
-			"%s must not cast a contact shadow; the painted floor already has one"
-				% node_path)
+func test_the_contact_shadows_are_outer_ao_not_drop_shadows() -> void:
+	for scene_path in _OUTER_AO:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for node_path in _OUTER_AO[scene_path]:
+			var shadow := root.get_node_or_null(NodePath(node_path + "/Shadow")) as Control
+			assert_true(shadow != null, "%s/%s has no Shadow" % [scene_path, node_path])
+			if shadow == null:
+				continue
+			assert_eq(shadow.get("shadow_offset"), Vector2.ZERO,
+				"%s/%s: an offset makes it a cast shadow again" % [scene_path, node_path])
+			assert_true(is_equal_approx(shadow.get("shadow_alpha"), _OUTER_AO_ALPHA),
+				"%s/%s: outer AO alpha must match the rest of the game" % [scene_path, node_path])
+			assert_true(is_equal_approx(shadow.get("blur"), _OUTER_AO_BLUR),
+				"%s/%s: outer AO blur must match the rest of the game" % [scene_path, node_path])
+
+
+## The twelve paper shadows in StudentCard and ReportCard are NOT outer AO and
+## must keep their offset. A paper thrown off-screen by _transition_page()
+## should cast a real shadow; that is a different effect with a different job.
+func test_the_paper_shadows_keep_their_offset() -> void:
+	for scene_path in _SCENES:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for paper_name in _PAPERS:
+			var paper := root.get_node_or_null(NodePath(paper_name)) as Control
+			if paper == null:
+				continue
+			var shadow := paper.get_node_or_null("PaperShadow") as Control
+			if shadow == null:
+				continue
+			assert_true(shadow.get("shadow_offset") != Vector2.ZERO,
+				"%s/%s: a flying paper still casts a real shadow" % [scene_path, paper_name])
 
 
 ## A Full Rect element is 1080x1920 on a 9:16 phone and 1080x2400 on a 20:9

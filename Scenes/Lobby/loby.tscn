@@ -38,6 +38,7 @@
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
@@ -111,6 +112,14 @@ texture = ExtResource("meja_ka_tex")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Shadow" parent="Classroom/Meja_KiriAtas" instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_ka_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
 [node name="Meja_KananAtas" type="TextureRect" parent="Classroom" unique_id=1566337339]
 material = ExtResource("illus_grade_cut")
 layout_mode = 1
@@ -127,6 +136,14 @@ mouse_filter = 2
 texture = ExtResource("meja_kna_tex")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Shadow" parent="Classroom/Meja_KananAtas" instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_kna_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
 
 [node name="StudentPortraitsContainer_Back" type="Control" parent="Classroom" unique_id=2097219157]
 unique_name_in_owner = true
@@ -461,6 +478,14 @@ texture = ExtResource("meja_kb_tex")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Shadow" parent="Classroom/Meja_KiriBawah" instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_kb_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
 [node name="Meja_KananBawah" type="TextureRect" parent="Classroom" unique_id=1660970638]
 material = ExtResource("illus_grade_cut")
 layout_mode = 1
@@ -473,6 +498,14 @@ mouse_filter = 2
 texture = ExtResource("meja_knb_tex")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Shadow" parent="Classroom/Meja_KananBawah" instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_knb_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
 
 [node name="StudentPortraitsContainer_Front" type="Control" parent="Classroom" unique_id=1730743039]
 unique_name_in_owner = true

@@ -30,19 +30,19 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_bottom = -583.0
+offset_bottom = -592.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Track" type="HBoxContainer" parent="Carousel" unique_id=791256449]
+[node name="Track" type="Control" parent="Carousel" unique_id=791256449]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/separation = 60
 
 [node name="Title" type="Label" parent="." unique_id=1532581445]
 unique_name_in_owner = true
@@ -52,10 +52,30 @@ anchor_right = 1.0
 offset_top = 80.0
 offset_bottom = 200.0
 grow_horizontal = 2
-theme_type_variation = &"DisplayLabel"
+theme_type_variation = &"SkinTitleLabel"
 text = "SHINTA"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="WornChip" type="PanelContainer" parent="." unique_id=692940348]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 200.0
+offset_bottom = 248.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"SkinWornChip"
+
+[node name="WornChipLabel" type="Label" parent="WornChip" unique_id=3957450]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SkinWornChipLabel"
+text = "SEDANG DIPAKAI"
+horizontal_alignment = 1
 
 [node name="Dots" type="HBoxContainer" parent="." unique_id=1242078273]
 unique_name_in_owner = true
@@ -64,8 +84,8 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -658.0
-offset_bottom = -618.0
+offset_top = -644.0
+offset_bottom = -620.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
@@ -109,20 +129,20 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -583.0
+offset_top = -592.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_type_variation = &"SunkenPanel"
+theme_type_variation = &"SkinTray"
 
 [node name="Rail" type="HBoxContainer" parent="Tray" unique_id=1893455654]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 94.0
-offset_bottom = 222.0
+offset_top = 102.0
+offset_bottom = 258.0
 grow_horizontal = 2
-theme_override_constants/separation = 23
+theme_override_constants/separation = 22
 alignment = 1
 
 [node name="Tile1" parent="Tray/Rail" unique_id=417783110 instance=ExtResource("3_tile")]
@@ -148,41 +168,21 @@ unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 264.0
-offset_bottom = 316.0
+offset_top = 270.0
+offset_bottom = 322.0
 grow_horizontal = 2
 theme_type_variation = &"SkinNameLabel"
 text = "Seragam Sekolah"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="WornChip" type="PanelContainer" parent="Tray" unique_id=692940348]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_top = 324.0
-offset_bottom = 372.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_type_variation = &"SkinWornChip"
-
-[node name="WornChipLabel" type="Label" parent="Tray/WornChip" unique_id=3957450]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"SkinWornChipLabel"
-text = "SEDANG DIPAKAI"
-horizontal_alignment = 1
-
 [node name="BackButton" type="TextureButton" parent="Tray" unique_id=1977965933]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 40.0
-offset_top = 353.0
-offset_right = 240.0
-offset_bottom = 508.0
+offset_left = 37.0
+offset_top = 344.0
+offset_right = 239.0
+offset_bottom = 546.0
 texture_normal = ExtResource("4_back")
 ignore_texture_size = true
 stretch_mode = 5
@@ -190,9 +190,9 @@ stretch_mode = 5
 [node name="Terapkan" type="Button" parent="Tray" unique_id=1947257829]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 505.0
-offset_top = 373.0
-offset_right = 998.0
-offset_bottom = 501.0
-theme_type_variation = &"PrimaryButton"
+offset_left = 501.0
+offset_top = 381.0
+offset_right = 1007.0
+offset_bottom = 521.0
+theme_type_variation = &"SkinApplyButton"
 text = "TERAPKAN"

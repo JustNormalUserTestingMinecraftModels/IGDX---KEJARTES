@@ -3,7 +3,9 @@ extends McpTestSuite
 
 ## SkinSelect.tscn / .gd: the full-screen skin picker that replaced
 ## SkinSelectPopup's card-of-four (spec:
-## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md).
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md;
+## the carousel's continuous-scroll pose:
+## docs/superpowers/specs/2026-09-23-skin-select-slide-design.md).
 ##
 ## Drives real state through GameState.equip_skin, and restores
 ## equipped_skins / skin_unlock_overrides in teardown.
@@ -36,6 +38,15 @@ func _new_screen() -> SkinSelect:
 	track(s)
 	s.open()
 	return s
+
+
+## Pins the carousel to `width` for a pose test. It is anchored full-rect,
+## so its anchors are collapsed first; setting size on unequal anchors logs
+## a warning and is overridden on the next layout.
+func _pin_carousel_width(s: SkinSelect, width: float) -> void:
+	var carousel := s.get_node("%Carousel") as Control
+	carousel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	carousel.size = Vector2(width, carousel.size.y)
 
 
 ## All six characters, not the roster: equipped_skins is keyed by NAME, so a
@@ -172,8 +183,7 @@ func test_commit_button_is_indonesian_and_not_danger_red() -> void:
 	var src := FileAccess.get_file_as_string(SCREEN)
 	assert_true(src.contains('text = "TERAPKAN"'), "UI text is Indonesian; APPLY is not")
 	assert_false(src.contains('text = "APPLY"'))
-	assert_true(src.contains('theme_type_variation = &"PrimaryButton"'),
-		"brand brown, so the commit button and the red back arrow do not read as a pair")
+	assert_true(src.contains('theme_type_variation = &"SkinApplyButton"'), "the mockup's red button")
 
 
 func test_backdrop_still_blurs_the_live_lobby() -> void:
@@ -197,8 +207,8 @@ func test_the_carousel_stretches_to_the_trays_top_edge() -> void:
 	assert_true(at != -1, "Carousel must exist")
 	var next := src.find("[node", at + 1)
 	var block := src.substr(at, (next - at) if next != -1 else src.length() - at)
-	assert_true(block.contains("offset_bottom = -583.0"),
-		"the carousel's bottom must track the tray's height, not a fixed y")
+	assert_true(block.contains("offset_bottom = -592.0"),
+		"the carousel's bottom must track the tray's top edge (y=1328 on a 1920 phone), not a fixed y")
 	assert_true(block.contains("anchor_bottom = 1.0"))
 	# And it runs from the very top, with the title floating over it. At
 	# offset_top = 200 the band was 1137 tall on a 1920 phone and clipped
@@ -217,3 +227,182 @@ func test_no_theme_overrides_beyond_layout_constants() -> void:
 		var is_layout := line.begins_with("theme_override_constants/separation") \
 			or line.begins_with("theme_override_constants/margin")
 		assert_true(is_layout, "unexpected theme override in SkinSelect.tscn: " + line)
+
+
+## Measured off skinselection_mockup.png (spec 2026-09-23): the centred
+## splash at 0.818 from (85,153), the right neighbour at 0.658 from (676,370).
+## The design x values are for a 1080-wide carousel -- pin the width so this
+## test holds regardless of the editor root's own viewport size.
+func test_card_pose_hits_the_mockups_two_slots() -> void:
+	var s := _new_screen()
+	_pin_carousel_width(s, 1080.0)
+	var c: Dictionary = s.card_pose(0.0)
+	assert_true((c.position as Vector2).distance_to(Vector2(85, 153)) < 0.01, str(c.position))
+	assert_true(absf(float(c.scale) - 0.818) < 0.0001)
+	assert_true(absf(float(c.focus) - 1.0) < 0.0001)
+	var r: Dictionary = s.card_pose(1.0)
+	assert_true((r.position as Vector2).distance_to(Vector2(676, 370)) < 0.01, str(r.position))
+	assert_true(absf(float(r.scale) - 0.658) < 0.0001)
+	assert_true(absf(float(r.focus) - 0.0) < 0.0001)
+
+
+## Position, scale and focus are all linear in |t| up to one card, so the
+## halfway pose is the midpoint of the two slots. Pinned to a 1080-wide
+## carousel, same reason as test_card_pose_hits_the_mockups_two_slots.
+func test_card_pose_is_the_midpoint_halfway() -> void:
+	var s := _new_screen()
+	_pin_carousel_width(s, 1080.0)
+	var h: Dictionary = s.card_pose(0.5)
+	assert_true((h.position as Vector2).distance_to(Vector2(380.5, 261.5)) < 0.01, str(h.position))
+	assert_true(absf(float(h.scale) - 0.738) < 0.0001)
+	assert_true(absf(float(h.focus) - 0.5) < 0.0001)
+
+
+## The left neighbour mirrors the right one around the centred card's middle.
+## Pinned to a 1080-wide carousel, same reason as
+## test_card_pose_hits_the_mockups_two_slots.
+func test_the_left_neighbour_mirrors_the_right() -> void:
+	var s := _new_screen()
+	_pin_carousel_width(s, 1080.0)
+	var mid := 85.0 + 1080.0 * 0.818 * 0.5
+	var r: Dictionary = s.card_pose(1.0)
+	var l: Dictionary = s.card_pose(-1.0)
+	var r_cx: float = (r.position as Vector2).x + 1080.0 * float(r.scale) * 0.5
+	var l_cx: float = (l.position as Vector2).x + 1080.0 * float(l.scale) * 0.5
+	assert_true(absf((mid - l_cx) - (r_cx - mid)) < 0.01)
+	assert_eq((l.position as Vector2).y, (r.position as Vector2).y)
+	assert_true(absf(s.pitch_px() - 504.6) < 0.01)
+
+
+## stretch aspect="expand" widens the canvas on anything wider than 9:16;
+## the carousel must stay centred on its own width, as the old code did.
+func test_card_pose_recentres_on_a_wider_carousel() -> void:
+	var s := _new_screen()
+	_pin_carousel_width(s, 1440.0)
+	var c: Dictionary = s.card_pose(0.0)
+	assert_true(absf((c.position as Vector2).x - (85.0 + 180.0)) < 0.01, str(c.position))
+
+
+## The regression this pass exists for: with the first skin centred, the
+## second must actually be on screen, dim and blurred. Pinned to a
+## 1080-wide carousel, then re-posed, same reason as
+## test_card_pose_hits_the_mockups_two_slots.
+func test_the_neighbour_is_on_screen_when_settled() -> void:
+	var s := _new_screen()
+	_pin_carousel_width(s, 1080.0)
+	s._layout_cards()
+	var centre := s.card_for(0)
+	var side := s.card_for(1)
+	assert_eq(centre.focus, 1.0)
+	assert_eq(side.focus, 0.0)
+	assert_true(side.position.x < 1080.0 - 150.0,
+		"the neighbour must show a real slice of itself, got x=%s" % side.position.x)
+
+
+## Focus follows the finger, not the selection: half a pitch of drag puts
+## both cards at half focus before anything is released.
+func test_dragging_half_a_pitch_half_focuses_both_cards() -> void:
+	var s := _new_screen()
+	s._begin_drag(700.0)
+	s._update_drag(700.0 - s.pitch_px() * 0.5)
+	assert_true(absf(s.scroll() - 0.5) < 0.0001)
+	assert_true(absf(s.card_for(0).focus - 0.5) < 0.0001)
+	assert_true(absf(s.card_for(1).focus - 0.5) < 0.0001)
+
+
+func test_a_drag_past_the_end_stops_at_the_overscroll() -> void:
+	var s := _new_screen()
+	s._begin_drag(700.0)
+	s._update_drag(700.0 + s.pitch_px() * 3.0)
+	assert_true(absf(s.scroll() - (-s.overscroll)) < 0.0001)
+
+
+## Settling snaps (no tween in the editor), and the selected card ends
+## centred and crisp. Pinned to a 1080-wide carousel, same reason as
+## test_card_pose_hits_the_mockups_two_slots.
+func test_select_skin_centres_that_card() -> void:
+	var s := _new_screen()
+	_pin_carousel_width(s, 1080.0)
+	s.select_skin(1)
+	assert_true(absf(s.scroll() - 1.0) < 0.0001)
+	assert_true(s.card_for(1).position.distance_to(Vector2(85, 153)) < 0.01,
+		str(s.card_for(1).position))
+	assert_eq(s.card_for(1).focus, 1.0)
+
+
+## The nearer card draws on top, so a neighbour never covers the centre.
+func test_the_centred_card_draws_last() -> void:
+	var s := _new_screen()
+	var track := s.get_node("%Track")
+	assert_eq(track.get_child(track.get_child_count() - 1), s.card_for(0))
+	s.select_skin(1)
+	assert_eq(track.get_child(track.get_child_count() - 1), s.card_for(1))
+
+
+func test_track_is_a_plain_control_not_a_box() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(_node_block(src, "Track").contains('type="Control"'))
+
+
+func _node_block(src: String, name: String) -> String:
+	var at := src.find('[node name="%s"' % name)
+	if at == -1:
+		return ""
+	var next := src.find("[node", at + 1)
+	return src.substr(at, (next - at) if next != -1 else src.length() - at)
+
+
+## Every offset is measured off skinselection_mockup.png; the tray's own
+## origin is y=1328 on a 1920-tall screen.
+func test_tray_is_laid_out_to_the_mockup() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var tray := _node_block(src, "Tray")
+	assert_true(tray.contains("offset_top = -592.0"), "divider at y=1328")
+	assert_true(tray.contains('theme_type_variation = &"SkinTray"'))
+	var rail := _node_block(src, "Rail")
+	assert_true(rail.contains("offset_top = 102.0") and rail.contains("offset_bottom = 258.0"),
+		"tiles at y 1430-1586")
+	var back := _node_block(src, "BackButton")
+	# texture_normal has transparent padding, so the rect is sized so the
+	# DRAWN arrow, not the rect, lands on the mockup's (40,1677)-(237,1852).
+	for v in ["offset_left = 37.0", "offset_top = 344.0", "offset_right = 239.0", "offset_bottom = 546.0"]:
+		assert_true(back.contains(v), "BackButton " + v)
+	var btn := _node_block(src, "Terapkan")
+	for v in ["offset_left = 501.0", "offset_top = 381.0", "offset_right = 1007.0", "offset_bottom = 521.0"]:
+		assert_true(btn.contains(v), "Terapkan " + v)
+
+
+func test_title_uses_the_mockup_title_style() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(_node_block(src, "Title").contains('theme_type_variation = &"SkinTitleLabel"'))
+
+
+## The mockup has no room in the tray for the worn chip, so it sits under
+## the title instead.
+func test_worn_chip_sits_under_the_title() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(src.contains('[node name="WornChip" type="PanelContainer" parent="."'))
+
+
+func test_mockup_styles_exist_with_measured_values() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var tray := theme.get_stylebox("panel", "SkinTray") as StyleBoxFlat
+	assert_true(tray != null, "SkinTray must be a StyleBoxFlat panel")
+	if tray != null:
+		assert_eq(tray.bg_color, tokens.surface_card)
+		assert_eq(tray.border_width_top, 8)
+		assert_eq(tray.border_width_bottom, 0)
+		assert_eq(tray.border_color, Color.BLACK)
+	var btn := theme.get_stylebox("normal", "SkinApplyButton") as StyleBoxFlat
+	assert_true(btn != null, "SkinApplyButton must be a StyleBoxFlat button")
+	if btn != null:
+		assert_eq(btn.bg_color, Color("D21919"))
+		assert_eq(btn.border_width_left, 8)
+		assert_eq(btn.corner_radius_top_left, tokens.radius_button)
+	assert_eq(theme.get_color("font_color", "SkinApplyButton"), Color("F2F2F2"))
+	assert_eq(theme.get_font_size("font_size", "SkinApplyButton"), 73)
+	assert_eq(theme.get_color("font_color", "SkinTitleLabel"), Color("F2F2F2"))
+	assert_eq(theme.get_color("font_outline_color", "SkinTitleLabel"), Color("201934"))
+	assert_eq(theme.get_font_size("font_size", "SkinTitleLabel"), 79)
+	assert_eq(theme.get_constant("outline_size", "SkinTitleLabel"), 48)

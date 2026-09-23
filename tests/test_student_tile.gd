@@ -56,15 +56,12 @@ func test_set_open_swaps_the_variation_and_keeps_the_size() -> void:
 	assert_eq(tile.custom_minimum_size, size_before, "the tile must not resize on select")
 
 
-## 128 is btn_h_m, the M step of the project's button scale. The mockup
-## drew these at 150, but a Button authored off the S/M/L scale fails
-## tests/test_button_geometry.gd, and 160 (the L step) would leave six
-## squares plus their gaps only 2.5px of margin inside 1080.
-func test_tile_is_on_the_button_size_scale() -> void:
+## 151x156, measured off skinselection_mockup.png. Off the S/M/L scale on
+## purpose: the user asked for a pixel copy (2026-09-23), so the tile has a
+## reasoned HEIGHT_ALLOWED entry in tests/test_button_geometry.gd.
+func test_tile_is_the_mockups_size() -> void:
 	var src := FileAccess.get_file_as_string(TILE)
-	var tokens := DesignTokens.load_default()
-	assert_true(src.contains("custom_minimum_size = Vector2(%d, %d)" % [tokens.btn_h_m, tokens.btn_h_m]),
-		"the tile must be btn_h_m square")
+	assert_true(src.contains("custom_minimum_size = Vector2(151, 156)"))
 
 
 ## SkinFrame draws its own brown border. Inside a StudentTile the box is the
@@ -86,6 +83,15 @@ func test_variations_differ_in_ring_colour() -> void:
 	assert_true(idle != null and open != null, "both variations must carry a normal stylebox")
 	if idle == null or open == null:
 		return
-	assert_eq(idle.border_color, tokens.text_primary)
+	assert_eq(idle.border_color, Color.BLACK)
 	assert_eq(open.border_color, tokens.brand_primary)
 	assert_eq(open.bg_color, tokens.outline_card)
+
+
+## Measured off skinselection_mockup.png: an 8px black rim on the tray's
+## cream, with no fill of its own.
+func test_idle_tile_is_an_8px_black_rim_with_no_fill() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	var idle := theme.get_stylebox("normal", "SkinStudentTile") as StyleBoxFlat
+	assert_eq(idle.border_width_top, 8)
+	assert_eq(idle.bg_color.a, 0.0)

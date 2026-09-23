@@ -433,10 +433,24 @@ widget via `project_run` instead, which exercises it fine.
 - **SkinSelect's skin names are derived (2026-09-22).**
   `SkinSelect.skin_label` turns `default` into "Seragam Sekolah" and `skin1`
   into "Seragam 1". Real names belong in `StudentSkins.SKINS` once there is
-  more than one extra skin per character. The carousel's neighbour card
-  peeks only 104px past a 1080-wide screen (card 752 + separation 60); the
-  mockup drew a wider peek, which would need a negative track separation or
-  a narrower card.
+  more than one extra skin per character.
+
+- **SkinSelect's flick detection doesn't decay stale motion (2026-09-23).**
+  `_release_velocity` keeps whatever the last motion sample was, so a fast
+  drag that stops and is held before release still reads as a flick. Zero it
+  when more than ~80ms have passed since the last motion sample.
+
+- **SkinSelect's Lock icon stays crisp on a blurred neighbour card
+  (2026-09-23).** It's a sibling of Art rather than a child inside the
+  blurred/dimmed material, so a locked, unfocused card's lock reads sharp
+  against its blurred splash. Reads as a label rather than part of the
+  illustration, which is acceptable for now.
+
+- **skin_card_focus.gdshader's blur cost is unmeasured on low-end Android
+  (2026-09-23).** 48 taps per pixel on a full-size card, and mid-slide both
+  the centred and the neighbour card are on the blurred path at once. If it
+  drops frames while dragging, precompute the per-tap offsets/weights (they
+  depend only on `i`, not on `sigma_texels`) or blur a downsampled copy.
 
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a

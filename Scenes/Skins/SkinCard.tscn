@@ -2,15 +2,23 @@
 
 [ext_resource type="Script" uid="uid://cu2gfvctamp47" path="res://Scripts/Skins/SkinCard.gd" id="1_1owxx"]
 [ext_resource type="Texture2D" uid="uid://bsu4hxxxajoaa" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="2_k647m"]
+[ext_resource type="Shader" uid="uid://bly70aj705dys" path="res://Scripts/Shaders/skin_card_focus.gdshader" id="3_focus"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_focus"]
+resource_local_to_scene = true
+shader = ExtResource("3_focus")
+shader_parameter/sigma_texels = 0.0
+shader_parameter/brightness = 1.0
 
 [node name="SkinCard" type="Control" unique_id=1651751090]
-custom_minimum_size = Vector2(752, 1337)
+custom_minimum_size = Vector2(1080, 1920)
 layout_mode = 3
 anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("1_1owxx")
 
 [node name="Art" type="TextureRect" parent="." unique_id=1253486339]
+material = SubResource("ShaderMaterial_focus")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

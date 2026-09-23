@@ -174,6 +174,10 @@ const HEIGHT_ALLOWED := {
 	# the row was replaced by AchievementTile + AchievementDetailSheet (Task
 	# 5, achievements-polish); the sheet's ClaimButton is an authored
 	# SuccessButton size step and needs no exemption.
+	"Scenes/Skins/StudentTile.tscn::StudentTile":
+		"151x156, a pixel copy of skinselection_mockup.png (user request 2026-09-23)",
+	"Scenes/Skins/SkinSelect.tscn::Tray/Terapkan":
+		"140 tall, a pixel copy of skinselection_mockup.png (user request 2026-09-23)",
 }
 
 const SCENE_GLOB := "res://Scenes"

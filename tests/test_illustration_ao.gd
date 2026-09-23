@@ -121,3 +121,106 @@ func test_neither_effect_touches_alpha() -> void:
 	var src := FileAccess.get_file_as_string(SHADER)
 	assert_true(src.contains("src.a"), "the shader must pass the source alpha straight through")
 	assert_false(src.contains("COLOR.a *"), "nothing may scale alpha, or cutout edges get eaten")
+
+
+## The census, measured on 2026-09-23 by sampling each texture's alpha channel.
+## A cutout has an alpha edge to find; a backdrop is full-bleed and would pay
+## five taps per pixel for nothing. Percentages are transparent pixels.
+const CUTOUTS := {
+	"res://Scenes/Lobby/loby.tscn": [
+		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
+		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+	],
+	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman", "Stage/Foreground"],
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/CitraFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/DoniFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/MarcelFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/ShintaFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/TheaFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Minigames/SeniBudaya/DancerRig.tscn": ["Body", "Head"],
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["Goalie/GFX", "Ball/GFX"],
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": [
+		"Puck/Sprite2D", "PlayerPaddle/Sprite2D", "EnemyPaddle/Sprite2D",
+	],
+	# 1.4% transparent -- a real rounded silhouette with soft edges, so it
+	# counts. The one judgement call in this table: if it ends up reading as
+	# furniture rather than UI, give it the plain material back.
+	"res://Scenes/Minigames/Akademis/Kalkulator.tscn": ["Body/BodyTexture"],
+}
+
+## Full-bleed. These keep the material they have always worn.
+const BACKDROPS := {
+	"res://Scenes/Lobby/loby.tscn": ["Classroom/BGLayer"],
+	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Background"],
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Background"],
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background"],
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background"],
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["FieldBG"],
+}
+
+
+func test_every_cutout_wears_the_cutout_material() -> void:
+	var cutout: Material = load(CUTOUT)
+	for scene_path in CUTOUTS:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for node_path in CUTOUTS[scene_path]:
+			var node := root.get_node_or_null(NodePath(node_path)) as CanvasItem
+			assert_true(node != null, "%s is missing %s" % [scene_path, node_path])
+			if node == null:
+				continue
+			assert_eq(node.material, cutout,
+				"%s/%s must wear the cutout grade" % [scene_path, node_path])
+
+
+func test_every_backdrop_keeps_the_plain_material() -> void:
+	var plain: Material = load(PLAIN)
+	for scene_path in BACKDROPS:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for node_path in BACKDROPS[scene_path]:
+			var node := root.get_node_or_null(NodePath(node_path)) as CanvasItem
+			assert_true(node != null, "%s is missing %s" % [scene_path, node_path])
+			if node == null:
+				continue
+			assert_eq(node.material, plain,
+				"%s/%s is full-bleed and must not pay for AO" % [scene_path, node_path])
+
+
+## The two dicts here and look_layer's GRADED describe the same thirty plates
+## from two angles. If someone adds a plate to one and forgets the other, the
+## game quietly has an ungraded illustration or an uncounted one. This is the
+## test that notices.
+func test_the_census_covers_every_graded_plate_exactly_once() -> void:
+	var look_script: GDScript = load("res://tests/test_look_layer.gd")
+	assert_true(look_script != null, "test_look_layer.gd must exist")
+	if look_script == null:
+		return
+	var graded: Dictionary = look_script.get_script_constant_map().get("GRADED", {})
+	assert_false(graded.is_empty(), "look_layer must expose GRADED")
+	if graded.is_empty():
+		return
+
+	var counted := {}
+	for source in [CUTOUTS, BACKDROPS]:
+		for scene_path in source:
+			for node_path in source[scene_path]:
+				var key := "%s::%s" % [scene_path, node_path]
+				assert_false(counted.has(key), "%s is counted twice" % key)
+				counted[key] = true
+
+	var expected := {}
+	for scene_path in graded:
+		for node_path in graded[scene_path]:
+			expected["%s::%s" % [scene_path, node_path]] = true
+
+	for key in expected:
+		assert_true(counted.has(key), "%s wears the grade but is in neither census bucket" % key)
+	for key in counted:
+		assert_true(expected.has(key), "%s is in the census but does not wear the grade" % key)
+	assert_eq(counted.size(), 30, "the census must cover all thirty graded plates")

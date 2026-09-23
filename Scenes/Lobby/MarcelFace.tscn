@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Marcel/marcel_glasses.png" id="8_glasses"]
 [ext_resource type="Material" path="res://Scenes/Lobby/marcel_eye_mask.tres" id="20_mask"]
 [ext_resource type="Material" path="res://Scenes/Lobby/marcel_glasses_lens.tres" id="21_lens"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
 [node name="MarcelFace" type="Control"]
 layout_mode = 3
@@ -28,7 +28,7 @@ offset_bottom = 1280.0
 mouse_filter = 2
 
 [node name="Base" type="TextureRect" parent="Canvas"]
-material = ExtResource("illus_grade")
+material = ExtResource("illus_grade_cut")
 layout_mode = 0
 offset_right = 1280.0
 offset_bottom = 1280.0

@@ -147,10 +147,16 @@ func test_the_autoload_is_declared_after_its_dependencies() -> void:
 
 # ── The illustration grade ───────────────────────────────────────────────────
 
-## One shared resource, so the whole game's look is tuned by editing one file.
-func test_every_graded_node_shares_the_one_material() -> void:
-	var shared: Material = load(GRADE_MATERIAL)
-	assert_true(shared is ShaderMaterial, "the grade material must exist")
+## One shader, two materials since 2026-09-23: the cutouts wear
+## illustration_grade_cutout.tres, which adds AO and a rim, and the full-bleed
+## backdrops wear the plain one. Both are the shared resources -- what this
+## still forbids is a per-node copy, which would strand a plate the next time
+## the grade is tuned. Which plate gets which is tested in illustration_ao.
+func test_every_graded_node_shares_a_shared_material() -> void:
+	var plain: Material = load(GRADE_MATERIAL)
+	var cutout: Material = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
+	assert_true(plain is ShaderMaterial, "the grade material must exist")
+	assert_true(cutout is ShaderMaterial, "the cutout grade material must exist")
 	for scene_path in GRADED:
 		var root := (load(scene_path) as PackedScene).instantiate()
 		track(root)
@@ -159,8 +165,8 @@ func test_every_graded_node_shares_the_one_material() -> void:
 			assert_true(node != null, "%s is missing %s" % [scene_path, node_path])
 			if node == null:
 				continue
-			assert_eq(node.material, shared,
-				"%s/%s must wear the shared grade, not a copy"
+			assert_true(node.material == plain or node.material == cutout,
+				"%s/%s must wear one of the two shared grades, not a copy"
 					% [scene_path, node_path])
 
 
@@ -168,20 +174,21 @@ func test_every_graded_node_shares_the_one_material() -> void:
 ## interface, so design_tokens.tres stays the truth about the UI's colour. A
 ## grade on a Button, Label or themed Panel would break that.
 func test_the_grade_never_lands_on_a_ui_node() -> void:
-	var shared: Material = load(GRADE_MATERIAL)
+	var plain: Material = load(GRADE_MATERIAL)
+	var cutout: Material = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
 	var offenders := PackedStringArray()
 	for scene_path in GRADED:
 		var root := (load(scene_path) as PackedScene).instantiate()
 		track(root)
-		_collect_ui_offenders(root, shared, scene_path, offenders)
+		_collect_ui_offenders(root, [plain, cutout], scene_path, offenders)
 	assert_eq(offenders.size(), 0,
 		"the grade is for painted art only; found it on UI: " + ", ".join(offenders))
 
 
-func _collect_ui_offenders(node: Node, shared: Material, scene_path: String,
+func _collect_ui_offenders(node: Node, shared: Array, scene_path: String,
 		offenders: PackedStringArray) -> void:
 	var item := node as CanvasItem
-	if item != null and item.material == shared:
+	if item != null and item.material in shared:
 		if item is Button or item is Label or item is RichTextLabel \
 				or item is Panel or item is PanelContainer or item is NinePatchRect:
 			offenders.append("%s/%s (%s)" % [scene_path, node.name, node.get_class()])

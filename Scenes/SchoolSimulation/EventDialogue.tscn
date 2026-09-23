@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://buqajwg3j13h2" path="res://Assets/Images/EventDialogue/splash_mom.png" id="4_5xvqv"]
 [ext_resource type="Texture2D" uid="uid://t3h8jmypjfe8" path="res://Assets/Images/EventDialogue/calendar_badge.png" id="5_esryj"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
 [node name="EventDialogue" type="Control" unique_id=490646120]
 layout_mode = 3
@@ -36,7 +36,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 
 [node name="Splash" type="TextureRect" parent="." unique_id=1499473738]
-material = ExtResource("illus_grade")
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

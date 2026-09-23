@@ -37,6 +37,7 @@
 [ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPotrait/Meja/kanan bawah.png" id="meja_knb_tex"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
 [sub_resource type="Environment" id="Environment_jxjat"]
 background_mode = 3
@@ -123,7 +124,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="Meja_KiriAtas" type="TextureRect" parent="Classroom" unique_id=141187056]
-material = ExtResource("illus_grade")
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -138,7 +139,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Meja_KananAtas" type="TextureRect" parent="Classroom" unique_id=1566337339]
-material = ExtResource("illus_grade")
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -475,7 +476,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Meja_KiriBawah" type="TextureRect" parent="Classroom" unique_id=1666960600]
-material = ExtResource("illus_grade")
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -488,7 +489,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Meja_KananBawah" type="TextureRect" parent="Classroom" unique_id=1660970638]
-material = ExtResource("illus_grade")
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

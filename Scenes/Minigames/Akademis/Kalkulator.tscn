@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://che82gx17xxwd" path="res://Scripts/Minigames/Akademis/Kalkulator.gd" id="1_f3fd5"]
 [ext_resource type="Texture2D" uid="uid://dtmog6agbr3bg" path="res://Assets/Images/UI/Kalkulator/kalkulator_base.png" id="2_msie0"]
 [ext_resource type="PackedScene" uid="uid://b6gae3mog63id" path="res://Scenes/Minigames/Akademis/KalkulatorKey.tscn" id="3_84ox4"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
 [node name="Kalkulator" type="AspectRatioContainer" unique_id=984734372]
 anchors_preset = 15
@@ -20,7 +20,7 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="BodyTexture" type="TextureRect" parent="Body" unique_id=610943167]
-material = ExtResource("illus_grade")
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

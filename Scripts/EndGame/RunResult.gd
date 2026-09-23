@@ -212,7 +212,7 @@ func _slam_grade() -> void:
 		AudioDirector.play_sfx(&"stamp")
 		Juice.shake(grade_badge.get_parent(), 8.0)
 		if RunGrade.is_top_grade(_grade_text):
-			AudioDirector.play_sfx(&"reward")
+			RewardFeedback.play(&"run_win", self)
 		elif _grade_text == "D":
 			AudioDirector.play_sfx(&"fail"))
 

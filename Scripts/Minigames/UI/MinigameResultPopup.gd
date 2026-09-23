@@ -259,7 +259,10 @@ func play() -> void:
 	tw_card.tween_property(card, "scale", Vector2(1.0, 1.0), 0.35)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await tw_card.finished
-	AudioDirector.play_sfx(&"result_fanfare")
+	if _is_win:
+		RewardFeedback.play(&"minigame_win", self)
+	else:
+		AudioDirector.play_sfx(&"result_fanfare")
 
 	# 3. Title fades in
 	var tw_title := get_tree().create_tween()

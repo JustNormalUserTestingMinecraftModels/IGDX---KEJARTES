@@ -523,3 +523,16 @@ func test_sim_shop_inventory_moments_call_reward_feedback() -> void:
 		for m in expected[path]:
 			assert_true(src.contains('RewardFeedback.play(&"%s"' % m),
 				'%s must call RewardFeedback.play(&"%s")' % [path, m])
+
+
+func test_minigame_achievement_endgame_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/Minigames/UI/MinigameResultPopup.gd": &"minigame_win",
+		"res://Scripts/Achievements/AchievementClaimPopup.gd": &"achievement_claimed",
+		"res://Scripts/EndGame/EndCutscene.gd": &"badge_reveal",
+		"res://Scripts/EndGame/RunResult.gd": &"run_win",
+	}
+	for path in expected:
+		var src := _source(path)
+		assert_true(src.contains('RewardFeedback.play(&"%s"' % expected[path]),
+			'%s must call RewardFeedback.play(&"%s")' % [path, expected[path]])

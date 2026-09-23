@@ -36,14 +36,14 @@ const RECIPES := {
 	&"stat_loss":        { "tier": TIER_TICK, "sfx": &"stat_down" },
 	&"score_tick":       { "tier": TIER_TICK, "sfx": &"score_tick", "escalates": true },
 	&"coins_earned":     { "tier": TIER_POP, "sfx": &"coin", "arpeggio": true },
-	&"star_earned":      { "tier": TIER_POP, "sfx": &"star_earn_1", "dynamic_sfx": true },
+	&"star_earned":      { "tier": TIER_POP, "sfx": &"star_earn_1", "dynamic_sfx": true, "no_particles": true },
 	&"schedule_confirmed": { "tier": TIER_POP, "sfx": &"schedule_confirm" },
 	&"specialty_match":  { "tier": TIER_POP, "sfx": &"specialty_match", "particle": SPECIALTY_BURST },
 	&"item_applied":     { "tier": TIER_POP, "sfx": &"item_applied" },
 	&"minigame_combo":   { "tier": TIER_POP, "sfx": &"combo_up", "escalates": true },
-	&"minigame_win":     { "tier": TIER_CELEBRATION, "sfx": &"result_fanfare", "chord": [&"result_fanfare", &"reward"] },
+	&"minigame_win":     { "tier": TIER_CELEBRATION, "sfx": &"result_fanfare", "chord": [&"result_fanfare", &"reward"], "no_particles": true },
 	&"achievement_unlocked": { "tier": TIER_POP, "sfx": &"achievement_success" },
-	&"achievement_claimed":  { "tier": TIER_CELEBRATION, "sfx": &"achievement_prize", "chord": [&"achievement_prize", &"reward"] },
+	&"achievement_claimed":  { "tier": TIER_CELEBRATION, "sfx": &"achievement_prize", "chord": [&"achievement_prize", &"reward"], "no_particles": true },
 	&"week_cleared":     { "tier": TIER_CELEBRATION, "sfx": &"reward", "chord": [&"reward", &"sparkle"] },
 	&"run_win":          { "tier": TIER_CELEBRATION, "sfx": &"result_fanfare", "chord": [&"result_fanfare", &"reward"] },
 	# badge_reveal: EndCutscene already plays the band cue via
@@ -99,6 +99,11 @@ func _arpeggio(id: StringName) -> void:
 		await get_tree().create_timer(ARPEGGIO_GAP).timeout
 
 func _play_particles(recipe: Dictionary, tier: int, anchor: Node) -> void:
+	# Screens with their own authored particles (the minigame result popup's
+	# fireworks, the claim popup's confetti) mark no_particles so this channel
+	# stays silent there -- RewardFeedback still adds sound, haptic and shake.
+	if recipe.get("no_particles", false):
+		return
 	var scene_path: String = recipe.get("particle", "")
 	if scene_path == "":
 		if tier == TIER_CELEBRATION:

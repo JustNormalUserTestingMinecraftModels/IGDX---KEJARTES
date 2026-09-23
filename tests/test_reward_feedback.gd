@@ -31,3 +31,13 @@ func test_badge_reveal_tier_follows_the_band() -> void:
 		RewardFeedback.TIER_CELEBRATION, "an Amazing badge is a Celebration")
 	assert_eq(RewardFeedback.moment_tier(&"badge_reveal", {"band": "Disaster"}),
 		RewardFeedback.TIER_POP, "a Disaster badge is a muted Pop")
+
+
+func test_debug_feedback_tab_covers_every_recipe() -> void:
+	var src := FileAccess.open("res://Scripts/Debug/DebugManager.gd", FileAccess.READ).get_as_text()
+	assert_true(src.contains('"Feedback"'), "DebugManager registers a Feedback tab")
+	assert_true(src.contains("_build_feedback_panel"), "DebugManager builds the feedback panel")
+	assert_true(src.contains("RewardFeedback.RECIPES"),
+		"the feedback panel enumerates RewardFeedback.RECIPES (one button per moment)")
+	assert_true(src.contains("Haptics.show_indicator"),
+		"the feedback panel toggles the clean-record haptic indicator")

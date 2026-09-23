@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
 [ext_resource type="PackedScene" uid="uid://u2q3sgmvf5w3" path="res://Scenes/Lobby/StudentChatBubble.tscn" id="20_su0mk"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="20_yhuud"]
+[ext_resource type="Material" path="res://Scripts/Shaders/window_shafts_material.tres" id="25_mbtdr"]
 [ext_resource type="Texture2D" uid="uid://bed2fo2wc4bd7" path="res://Assets/Images/Achievements/achievement_button.png" id="28_ikpat"]
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
@@ -31,14 +32,14 @@
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
 [ext_resource type="Texture2D" uid="uid://bflgqwew54uyi" path="res://Assets/Images/MuridPotrait/Meja/kiri bawah.png" id="meja_kb_tex"]
 [ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPotrait/Meja/kanan atas.png" id="meja_kna_tex"]
 [ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPotrait/Meja/kanan bawah.png" id="meja_knb_tex"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
-[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
@@ -112,7 +113,7 @@ texture = ExtResource("meja_ka_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Shadow" parent="Classroom/Meja_KiriAtas" instance=ExtResource("paper_shadow")]
+[node name="Shadow" parent="Classroom/Meja_KiriAtas" unique_id=1365156758 instance=ExtResource("paper_shadow")]
 layout_mode = 0
 shadow_texture = ExtResource("meja_ka_tex")
 shadow_offset = Vector2(0, 0)
@@ -137,7 +138,7 @@ texture = ExtResource("meja_kna_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Shadow" parent="Classroom/Meja_KananAtas" instance=ExtResource("paper_shadow")]
+[node name="Shadow" parent="Classroom/Meja_KananAtas" unique_id=172536508 instance=ExtResource("paper_shadow")]
 layout_mode = 0
 shadow_texture = ExtResource("meja_kna_tex")
 shadow_offset = Vector2(0, 0)
@@ -478,7 +479,7 @@ texture = ExtResource("meja_kb_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Shadow" parent="Classroom/Meja_KiriBawah" instance=ExtResource("paper_shadow")]
+[node name="Shadow" parent="Classroom/Meja_KiriBawah" unique_id=913334239 instance=ExtResource("paper_shadow")]
 layout_mode = 0
 shadow_texture = ExtResource("meja_kb_tex")
 shadow_offset = Vector2(0, 0)
@@ -499,7 +500,7 @@ texture = ExtResource("meja_knb_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Shadow" parent="Classroom/Meja_KananBawah" instance=ExtResource("paper_shadow")]
+[node name="Shadow" parent="Classroom/Meja_KananBawah" unique_id=2137019180 instance=ExtResource("paper_shadow")]
 layout_mode = 0
 shadow_texture = ExtResource("meja_knb_tex")
 shadow_offset = Vector2(0, 0)
@@ -855,9 +856,18 @@ depth_by_child = {
 "StudentHandsContainer_Back": 0.45,
 "StudentHandsContainer_Front": 0.75,
 "StudentPortraitsContainer_Back": 0.45,
-"StudentPortraitsContainer_Front": 0.75
+"StudentPortraitsContainer_Front": 0.75,
+"WindowShafts": 0.15
 }
 overscan_children = Array[StringName]([&"BGLayer"])
+
+[node name="WindowShafts" type="ColorRect" parent="Classroom" unique_id=491378318]
+material = ExtResource("25_mbtdr")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
 [node name="Safe" type="MarginContainer" parent="." unique_id=1588675940]
 layout_mode = 1

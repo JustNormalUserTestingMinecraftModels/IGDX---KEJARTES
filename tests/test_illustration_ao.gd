@@ -242,3 +242,73 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 	for key in counted:
 		assert_true(expected.has(key), "%s is in the census but does not wear the grade" % key)
 	assert_eq(counted.size(), 30, "the census must cover all thirty graded plates")
+
+
+## The Lobby's light shafts (2026-09-23). The volumetric piece of the pass, and
+## the only one placed per scene rather than applied to every plate -- shafts
+## need a window to come from, and the Lobby is the only room that has one.
+##
+## Extracted from achievement_glow.gdshader, which has drawn rotating shafts
+## since the achievements pass. Additive, because light brightens what is behind
+## it; an alpha-blended overlay would flatten the art it falls on.
+func test_the_lobby_shafts_are_additive_and_placed() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/light_shafts.gdshader")
+	assert_true(src.contains("render_mode blend_add"),
+		"shafts brighten what is behind them; they do not paint over it")
+
+	var lobby := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
+	track(lobby)
+	var shafts := lobby.get_node_or_null("Classroom/WindowShafts") as Control
+	assert_true(shafts != null, "the Lobby should carry the window shafts")
+	if shafts == null:
+		return
+	assert_eq(shafts.mouse_filter, Control.MOUSE_FILTER_IGNORE, "light must never eat a tap")
+	var mat: ShaderMaterial = load("res://Scripts/Shaders/window_shafts_material.tres")
+	assert_true(mat != null, "the shafts material must exist")
+	assert_eq(shafts.material, mat, "the shafts must use the shared material")
+
+
+## Additive light over this near-white palette normally clips fast -- the window
+## light beside these ships at 0.11 against a measured knee of 0.12. The shafts
+## were expected to behave the same way and do not: swept over the frozen Lobby,
+## 0.03 left the frame bit-identical and 0.20 moved whole-frame mean luminance
+## by +0.170% while driving 3 extra pixels to pure white out of ~127,000
+## sampled. They cover little of the screen and fall on the mid-tone wall rather
+## than on paper, so the cream never gets the chance to blow out.
+##
+## So this ceiling is not a clipping limit -- there is no knee in range. It is a
+## look limit, set just above the 0.20 chosen from six real frames. Re-sweep
+## before moving it; do not assume the window light's knee applies.
+const SHAFT_INTENSITY_CEILING := 0.22
+
+
+func test_the_shafts_stay_under_the_clipping_knee() -> void:
+	var mat: ShaderMaterial = load("res://Scripts/Shaders/window_shafts_material.tres")
+	assert_true(mat != null, "the shafts material must exist")
+	if mat == null:
+		return
+	var intensity: float = mat.get_shader_parameter("intensity")
+	assert_true(intensity <= SHAFT_INTENSITY_CEILING,
+		"intensity %s blows the cream palette to flat white; ceiling is %s"
+			% [intensity, SHAFT_INTENSITY_CEILING])
+
+
+## The shafts must move with the wall they come through, or they float over a
+## room that is parallaxing underneath them. BGLayer's own depth is 0.15.
+func test_the_shafts_parallax_with_the_room() -> void:
+	var lobby := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
+	track(lobby)
+	var diorama := lobby.get_node_or_null("Classroom/ParallaxDiorama")
+	if diorama == null:
+		for child in lobby.get_node("Classroom").get_children():
+			if child.get("depth_by_child") != null:
+				diorama = child
+				break
+	assert_true(diorama != null, "the Classroom must have its ParallaxDiorama")
+	if diorama == null:
+		return
+	var depths: Dictionary = diorama.get("depth_by_child")
+	assert_true(depths.has("WindowShafts"), "the shafts must be registered for parallax")
+	if depths.has("WindowShafts"):
+		assert_true(is_equal_approx(depths["WindowShafts"], depths.get("BGLayer", 0.15)),
+			"the shafts come through the back wall, so they share its depth")

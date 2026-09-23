@@ -14,7 +14,7 @@
 
 Every task's requirements implicitly include all of these.
 
-- **Branch is `Textures`.** Check `git branch --show-current` before every commit — another session shares this checkout and has switched the branch mid-task before.
+- **Branch is `feat/illustration-ao-rim`**, off `Textures`. Check `git branch --show-current` before every commit — another session shares this checkout and has switched the branch mid-task before.
 - **Tests run in the editor, never headless.** `test_run(suite="illustration_ao")` via MCP. `--script` registers no autoloads; running a scene makes `Engine.is_editor_hint()` false and every `@tool` guard fires for real.
 - **Every suite is `@tool`** or the runner reports it abstract. **No test may be a coroutine** — the runner does `suite.call(name)` without awaiting, so an `await` silently aborts the test and it reports "0 assertions".
 - **Never add a `theme_override_*`.** Layout-only constant overrides (`separation`, `margin_*`) are the sole exception. The debug overlay (Task 7) is explicitly out of scope for the design system and styles itself directly — follow the file's own local pattern there.

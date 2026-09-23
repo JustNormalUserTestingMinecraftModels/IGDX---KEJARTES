@@ -1326,11 +1326,11 @@ func test_stat_row_bursts_exactly_when_it_shows_a_chevron() -> void:
 	# sound pack: the chevron means the number went UP, and the pack has a
 	# rising ding for exactly that. `tally` is still right in StatCheck and
 	# WeekRecapPill, where a number is being counted rather than climbing.
-	assert_true(src.contains('play_sfx(&"stat_up")'),
-		"the chevron pop must play the rising stat cue")
+	assert_true(src.contains('RewardFeedback.play(&"stat_gain"'),
+		"the chevron pop must fire the rising stat cue through RewardFeedback")
 	# And a falling row, which had no cue at all before the pack.
-	assert_true(src.contains('play_sfx(&"stat_down")'),
-		"a losing row must not fall in silence")
+	assert_true(src.contains('RewardFeedback.play(&"stat_loss"'),
+		"a losing row must fire the falling cue through RewardFeedback")
 	assert_true(not src.contains("GPUParticles2D.new()"),
 		"particles must come from the .tscn, never be built at runtime")
 

@@ -170,9 +170,7 @@ func _scan_for_sfx_ids(path: String, bad: Array[String]) -> void:
 func test_each_screen_reaches_its_new_cue() -> void:
 	var expected := {
 		"res://Scripts/SchoolSimulation/SchoolDay.gd": ["school_bell"],
-		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd": ["stat_up", "stat_down"],
 		"res://Scripts/StudentCard/student_card.gd": ["card_flip"],
-		"res://Scripts/AturJadwal/atur_jadwal.gd": ["schedule_confirm"],
 		"res://Scripts/SchoolSimulation/ResultCheckup.gd": ["result_checkup"],
 		"res://Scripts/Koperasi/koprasi.gd": ["transaction"],
 		"res://Scripts/Koperasi/rakbarang_1.gd": ["shop_browse"],
@@ -512,3 +510,16 @@ func test_flagship_moments_call_reward_feedback() -> void:
 		var src := _source(path)
 		assert_true(src.contains('RewardFeedback.play(&"%s"' % expected[path]),
 			'%s must call RewardFeedback.play(&"%s")' % [path, expected[path]])
+
+
+func test_sim_shop_inventory_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd": [&"stat_gain", &"stat_loss"],
+		"res://Scripts/AturJadwal/atur_jadwal.gd": [&"schedule_confirmed", &"specialty_match"],
+		"res://Scripts/Inventory/ApplyStudentRow.gd": [&"item_applied"],
+	}
+	for path in expected:
+		var src := _source(path)
+		for m in expected[path]:
+			assert_true(src.contains('RewardFeedback.play(&"%s"' % m),
+				'%s must call RewardFeedback.play(&"%s")' % [path, m])

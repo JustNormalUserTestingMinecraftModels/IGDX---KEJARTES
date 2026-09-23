@@ -31,6 +31,24 @@ const GRADED := {
 	"res://Scenes/Lobby/MarcelFace.tscn": ["Canvas/Base"],
 	"res://Scenes/Lobby/ShintaFace.tscn": ["Canvas/Base"],
 	"res://Scenes/Lobby/TheaFace.tscn": ["Canvas/Base"],
+	# The minigames (2026-09-22). Painted plates only: the full-screen
+	# backdrops, the painted characters and props, the calculator body. The
+	# card chrome, tool icons and key caps stay ungraded -- they are interface
+	# drawn from the tokens, the same line the rest of this dict holds.
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/Kalkulator.tscn": ["Body/BodyTexture"],
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background"],
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background"],
+	"res://Scenes/Minigames/SeniBudaya/DancerRig.tscn": ["Body", "Head"],
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": [
+		"FieldBG", "Goalie/GFX", "Ball/GFX",
+	],
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": [
+		"Puck/Sprite2D", "PlayerPaddle/Sprite2D", "EnemyPaddle/Sprite2D",
+	],
 }
 
 
@@ -224,3 +242,31 @@ func test_the_grade_leaves_alpha_alone() -> void:
 		"the shader must pass the source alpha straight through")
 	assert_false(src.contains("COLOR.a *") or src.contains("a * a"),
 		"nothing may scale alpha, or cutout edges get eaten")
+## The ceilings on the grade's strength, halved on 2026-09-22 and again on
+## 2026-09-23.
+##
+## The grade shipped at saturation 1.07 / contrast 1.045 and read too dark once
+## it covered the minigames as well -- contrast about mid-grey pushes the
+## shadowed half of every plate down, and a minigame is mostly one big plate.
+## Both were cut to half their distance from neutral, then halved again on the
+## same call, leaving a quarter of the original grade. These ceilings hold that
+## line: a grade is meant to be felt, not seen, and characters are graded
+## separately from the backgrounds they stand in front of, so a strong grade
+## pulls them out of their own scene. Judge any raise on a full-size capture.
+const GRADE_SATURATION_CEILING := 1.02
+const GRADE_CONTRAST_CEILING := 1.0125
+
+
+func test_the_grade_stays_subtle() -> void:
+	var mat: ShaderMaterial = load(GRADE_MATERIAL)
+	assert_true(mat != null, "the grade material must exist")
+	if mat == null:
+		return
+	var saturation: float = mat.get_shader_parameter("saturation")
+	var contrast: float = mat.get_shader_parameter("contrast")
+	assert_true(saturation <= GRADE_SATURATION_CEILING,
+		"saturation %s is louder than the agreed ceiling %s"
+			% [saturation, GRADE_SATURATION_CEILING])
+	assert_true(contrast <= GRADE_CONTRAST_CEILING,
+		"contrast %s darkens the plates past the agreed ceiling %s"
+			% [contrast, GRADE_CONTRAST_CEILING])

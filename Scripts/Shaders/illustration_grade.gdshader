@@ -18,15 +18,24 @@
 // node's material at runtime: it is the same resource everywhere, and the
 // write would land on every graded plate at once.
 //
+// STRENGTH WAS HALVED TWICE, on 2026-09-22 and again on 2026-09-23, when the
+// grade was extended to the minigames. A minigame screen is mostly one big
+// painted plate, so contrast about mid-grey had far more of the screen to
+// darken than it did in the Lobby, and the scenes read too dark. Saturation
+// and contrast were each cut to half their distance from neutral, twice over:
+// 1.07 -> 1.035 -> 1.0175, and 1.045 -> 1.0225 -> 1.01125. What is left is a
+// quarter of the original grade, so the tint is now doing most of the work;
+// tests/test_look_layer.gd pins the two as ceilings.
+//
 // KEEP IT SUBTLE. Characters are graded separately from the backgrounds they
 // stand in front of -- they are separate nodes -- so a strong grade would pull
 // them apart from their own scene. Judge any change on a full-size capture.
 shader_type canvas_item;
 
 // Pull towards or away from grey. 1.0 is untouched.
-uniform float saturation : hint_range(0.0, 2.0) = 1.07;
+uniform float saturation : hint_range(0.0, 2.0) = 1.0175;
 // Contrast about mid-grey. 1.0 is untouched.
-uniform float contrast : hint_range(0.5, 2.0) = 1.045;
+uniform float contrast : hint_range(0.5, 2.0) = 1.01125;
 // Overall gain, applied last. Slightly under 1 keeps the added contrast from
 // clipping the cream highlights this palette is mostly made of.
 uniform float exposure : hint_range(0.5, 2.0) = 0.995;

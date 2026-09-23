@@ -8,6 +8,83 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-23 — Illustration AO, rim light, outer AO and Lobby shafts
+
+Design in `docs/superpowers/specs/2026-09-23-illustration-ao-rim-design.md`,
+plan in `docs/superpowers/plans/2026-09-23-illustration-ao-rim.md`. Eight
+commits. This records what the measurements found, because almost all of it
+contradicted what the plan assumed.
+
+**SSAO was ruled out on evidence, and the renderer switch that chased it was
+reverted.** In Godot 4 SSAO is an `Environment` post-process that reads the 3D
+depth buffer, and it is Forward+ only; every plate here is a canvas item that
+writes no depth. Mid-session the project was found switched off the `mobile`
+renderer with a `WorldEnvironment` added to `main_menu.tscn` and `loby.tscn`,
+SSAO configured (`ssao_radius 8.08`, `ssao_intensity 16.0`). Enabling it
+changes nothing but cost. Both were reverted — and the `loby.tscn` one had
+already been committed by accident inside an unrelated commit, sat at index 0,
+and had quietly turned `test_lobby_backdrop_is_black_and_full_rect` red. Check
+what else is in a file before committing it wholesale.
+
+**Real `Light2D` + normal maps is not structurally blocked here, only blocked
+on art.** The open question was whether lights could touch the illustrations
+without touching the UI that shares `CanvasLayer 0` with them. They can:
+`light_mask` on the item and `item_cull_mask` on the light. What stops it is
+needing a normal map per illustration, for thirty plates.
+
+**The radius is in screen pixels, and that was measured before anything was
+built on it.** Plates are drawn at wildly different scales — a 1240x1754 racket
+at 0.34, a desk at 1.0 — so a radius in source texels would give every plate a
+different-looking band. `fwidth(UV)` fixes that, and a throwaway probe drawing
+one shader at two scales returned `full=0.254902 half=0.505882 ratio=1.984615`
+against a predicted 2.0. Canvas-shader derivatives work on this renderer.
+
+**Which plate is a cutout was measured, not eyeballed.** Sampling each
+texture's alpha split the thirty graded plates into 21 cutouts (55-94%
+transparent) and 9 full-bleed backdrops (0% transparent, or no alpha channel,
+or JPEGs). That measurement is what stops a backdrop paying five texture taps
+per pixel for an edge it does not have. The one judgement call was
+Kalkulator's body at 1.4% transparent, kept as a cutout for its rounded
+silhouette.
+
+**Neither sweep found the knee it went looking for, and that was the real
+finding.** The window light beside these ships at 0.11 against a measured knee
+of 0.12, so both AO/rim and the shafts were expected to clip early. Neither
+does. The rim drove zero extra pixels to pure white at every value to 0.30; the
+shafts left the frame bit-identical at 0.03 and moved whole-frame luminance by
+only +0.170% at 0.20. The plan's ceilings had been guessed from the window
+light's behaviour and were far more cautious than the art needed: AO/rim
+shipped at 0.70/0.45 against guessed ceilings of 0.45/0.30, and the shafts at
+0.20 against a guessed 0.09. Do not assume one additive effect's knee applies
+to another — shafts fall on the mid-tone wall, not on paper.
+
+**The darkening gate was re-measured at the values that actually shipped.**
+The first sweep stopped short of them, and a gate never evaluated where the
+game runs is not a gate. At 0.70/0.45 the whole frame moves **+0.042%** — in
+the *brightening* direction, because AO alone costs -0.199% and the rim alone
+gives +0.222% and the two nearly cancel. That is why this pass did not undo the
+two halvings the grade had already taken for reading dark.
+
+**Each effect switches off on its own, proven by measurement rather than
+asserted.** Flipping AO, rim, shafts and outer AO off one at a time each moved
+the frame and nothing else; restoring them returned mean luminance to exactly
+the all-on value, 0.509093 both times.
+
+**The desk shadows came back the same day they were removed, deliberately.**
+What was removed was a drop shadow — offset 10/14 px, alpha 0.28, wide blur —
+that read as a smudge beside each desk. What returned is outer AO: zero offset,
+a third of the blur. Different object, different job. The three contact shadows
+already in the game were retuned to match, and their old down-right offsets
+became one of the three independent pieces of evidence for where the light is.
+
+**Two plan defects only execution could find.** Task 3 measured a material that
+Task 4 had not yet assigned to anything, so the tasks were swapped; and the
+plugin build has no `game_eval` op, so every measurement instead ran as a
+script inside the game writing to `user://`. A game script may `await`; only
+test suites may not.
+
+Full suite 2145/2145 across 149 suites.
+
 ## 2026-09-22 — Premium-look PRs 2-6: depth, parallax, a look layer, motion, VRAM
 
 The rest of the programme in `.superpowers/gamecode/premium-look/`. Item 11

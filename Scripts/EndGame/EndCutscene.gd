@@ -138,6 +138,7 @@ func _play() -> void:
 		if not is_inside_tree():
 			return
 
+	RewardFeedback.play(&"badge_reveal", badge if failed else null, {"band": "Bad" if failed else "Good"})
 	btn_next.disabled = false
 	Juice.pop_in(btn_next)
 

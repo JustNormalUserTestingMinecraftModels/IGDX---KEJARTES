@@ -250,6 +250,8 @@ func play_apply_rise() -> void:
 		var ov = entry["overlay"]
 		if is_instance_valid(ov) and is_instance_valid(b):
 			Juice.fill_bar(ov, b.value)
+	if not _overlays.is_empty():
+		RewardFeedback.play(&"item_applied", self)
 
 
 ## Show (or clear) what the item would do to each boosted stat. While picked,

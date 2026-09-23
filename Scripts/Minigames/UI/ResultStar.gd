@@ -78,7 +78,7 @@ func set_filled(filled: bool, filled_tex: Texture2D, empty_tex: Texture2D,
 func celebrate(index: int) -> void:
 	if Engine.is_editor_hint() or not is_filled:
 		return
-	AudioDirector.play_sfx(StringName("star_earn_%d" % clampi(index + 1, 1, 3)))
+	RewardFeedback.play(&"star_earned", self, {"step": index + 1})
 	var tw := create_tween()
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tw.tween_property(glow, "modulate:a", GLOW_PEAK_ALPHA, GLOW_BLOOM_TIME)

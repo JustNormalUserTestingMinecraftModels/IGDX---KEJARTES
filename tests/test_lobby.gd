@@ -100,8 +100,8 @@ func test_daily_login_uses_pop_in() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("Juice.pop_in("),
 		"the panel must pop in on open and on claim")
-	assert_true(src.contains('AudioDirector.play_sfx(&"reward")'),
-		"claiming a day must play a reward sfx")
+	assert_true(src.contains('RewardFeedback.play(&"coins_earned"'),
+		"claiming a day must fire the reward through RewardFeedback")
 
 
 # ------------------------------------------------------- standard four

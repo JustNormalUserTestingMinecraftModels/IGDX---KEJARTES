@@ -1292,7 +1292,7 @@ func _pay_out_wirausaha() -> int:
 # ─────────────────────────────────────────────────────────────────────────────
 func _on_week_complete() -> void:
 	AudioDirector.stop_ambience()
-	AudioDirector.play_sfx(&"reward")
+	RewardFeedback.play(&"week_cleared", self)
 	is_running = false
 	if skip_button:
 		skip_button.hide()

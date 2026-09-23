@@ -125,7 +125,7 @@ func set_score(value: int) -> void:
 func set_combo(value: int) -> void:
 	var show_chip: bool = value >= COMBO_DISPLAY_MIN
 	if show_chip and not combo_chip.visible and not Engine.is_editor_hint():
-		AudioDirector.play_sfx(&"combo_up")
+		RewardFeedback.play(&"minigame_combo", self, {"step": value})
 	combo_chip.visible = show_chip
 	combo_chip_label.text = "x%d" % value
 

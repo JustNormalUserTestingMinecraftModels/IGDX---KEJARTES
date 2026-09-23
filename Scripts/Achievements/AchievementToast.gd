@@ -49,7 +49,7 @@ func _show_next() -> void:
 	var hidden_y := -banner.size.y
 	banner.position.y = hidden_y
 	banner.visible = true
-	AudioDirector.play_sfx(&"tap")
+	RewardFeedback.play(&"achievement_unlocked", self)
 	var tw := create_tween()
 	tw.tween_property(banner, "position:y", 0.0, slide_in_time) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

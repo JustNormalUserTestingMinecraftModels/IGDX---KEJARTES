@@ -85,9 +85,12 @@ func test_student_card_interactions_have_sfx() -> void:
 
 func test_lobby_interactions_have_sfx() -> void:
 	var src := _source("res://Scripts/Lobby/loby.gd")
-	for id in ["reward", "popup_open"]:
-		assert_true(src.contains('play_sfx(&"%s")' % id),
-			"loby must play sfx: " + id)
+	assert_true(src.contains('play_sfx(&"popup_open")'),
+		"loby must play sfx: popup_open")
+	# The daily-login claim's reward now routes through RewardFeedback
+	# (coins_earned) instead of a lone play_sfx(&"reward") -- 2026-09-23 pass.
+	assert_true(src.contains('RewardFeedback.play(&"coins_earned"'),
+		"loby claim must route its reward through RewardFeedback")
 
 
 func test_student_list_interactions_have_sfx() -> void:
@@ -105,8 +108,8 @@ func test_atur_jadwal_interactions_have_sfx() -> void:
 
 func test_school_day_has_sfx_at_all() -> void:
 	var src := _source("res://Scripts/SchoolSimulation/SchoolDay.gd")
-	assert_true(src.contains('play_sfx(&"reward")'),
-		"SchoolDay must play sfx: reward")
+	assert_true(src.contains('RewardFeedback.play(&"week_cleared"'),
+		"SchoolDay must route the week-clear reward through RewardFeedback")
 	# The mid-day interruption cue moved into the sliding EventWarning
 	# (2026-09-12): it plays event_announce once per warning, so SchoolDay
 	# no longer plays its own popup_open before a minigame or event.
@@ -167,9 +170,7 @@ func _scan_for_sfx_ids(path: String, bad: Array[String]) -> void:
 func test_each_screen_reaches_its_new_cue() -> void:
 	var expected := {
 		"res://Scripts/SchoolSimulation/SchoolDay.gd": ["school_bell"],
-		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd": ["stat_up", "stat_down"],
 		"res://Scripts/StudentCard/student_card.gd": ["card_flip"],
-		"res://Scripts/AturJadwal/atur_jadwal.gd": ["schedule_confirm"],
 		"res://Scripts/SchoolSimulation/ResultCheckup.gd": ["result_checkup"],
 		"res://Scripts/Koperasi/koprasi.gd": ["transaction"],
 		"res://Scripts/Koperasi/rakbarang_1.gd": ["shop_browse"],
@@ -498,3 +499,40 @@ func test_every_reward_cue_resolves_to_a_real_stream() -> void:
 func test_specialty_match_cue_resolves_to_a_real_stream() -> void:
 	assert_true(AudioDirector.has_sfx(&"specialty_match"),
 		"specialty_match resolves to a stream")
+
+
+func test_flagship_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/SchoolSimulation/SchoolDay.gd": &"week_cleared",
+		"res://Scripts/Lobby/loby.gd": &"coins_earned",
+	}
+	for path in expected:
+		var src := _source(path)
+		assert_true(src.contains('RewardFeedback.play(&"%s"' % expected[path]),
+			'%s must call RewardFeedback.play(&"%s")' % [path, expected[path]])
+
+
+func test_sim_shop_inventory_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd": [&"stat_gain", &"stat_loss"],
+		"res://Scripts/AturJadwal/atur_jadwal.gd": [&"schedule_confirmed", &"specialty_match"],
+		"res://Scripts/Inventory/ApplyStudentRow.gd": [&"item_applied"],
+	}
+	for path in expected:
+		var src := _source(path)
+		for m in expected[path]:
+			assert_true(src.contains('RewardFeedback.play(&"%s"' % m),
+				'%s must call RewardFeedback.play(&"%s")' % [path, m])
+
+
+func test_minigame_achievement_endgame_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/Minigames/UI/MinigameResultPopup.gd": &"minigame_win",
+		"res://Scripts/Achievements/AchievementClaimPopup.gd": &"achievement_claimed",
+		"res://Scripts/EndGame/EndCutscene.gd": &"badge_reveal",
+		"res://Scripts/EndGame/RunResult.gd": &"run_win",
+	}
+	for path in expected:
+		var src := _source(path)
+		assert_true(src.contains('RewardFeedback.play(&"%s"' % expected[path]),
+			'%s must call RewardFeedback.play(&"%s")' % [path, expected[path]])

@@ -308,13 +308,8 @@ func test_the_centred_card_draws_last() -> void:
 
 
 func test_track_is_a_plain_control_not_a_box() -> void:
-	assert_eq(get_class_of_track(), "Control")
-
-
-func get_class_of_track() -> String:
 	var src := FileAccess.get_file_as_string(SCREEN)
-	var at := src.find('[node name="Track"')
-	return src.substr(at).get_slice('type="', 1).get_slice('"', 0)
+	assert_true(_node_block(src, "Track").contains('type="Control"'))
 
 
 func _node_block(src: String, name: String) -> String:
@@ -378,3 +373,4 @@ func test_mockup_styles_exist_with_measured_values() -> void:
 	assert_eq(theme.get_color("font_color", "SkinTitleLabel"), Color("F2F2F2"))
 	assert_eq(theme.get_color("font_outline_color", "SkinTitleLabel"), Color("201934"))
 	assert_eq(theme.get_font_size("font_size", "SkinTitleLabel"), 79)
+	assert_eq(theme.get_constant("outline_size", "SkinTitleLabel"), 48)

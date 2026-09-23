@@ -57,9 +57,9 @@ const SKIN_TITLE_OUTLINE := Color("201934")
 ## 2026-09-23: 74 rendered only 57px tall).
 const SKIN_TITLE_FONT := 79
 ## Godot outline_size for the title's ~13px stroke, measured in-game
-## 2026-09-23 (26 drew only ~7px). Task 5 checks it against the mockup's
-## outer box (348,95)-(718,182). Boohong is narrower than the mockup's
-## lettering, so height and stroke are matched here, not width.
+## 2026-09-23 (26 drew only ~7px) against the mockup's outer box
+## (348,95)-(718,182). Boohong is narrower than the mockup's lettering, so
+## height and stroke are matched here, not width.
 const SKIN_TITLE_OUTLINE_SIZE := 48
 
 

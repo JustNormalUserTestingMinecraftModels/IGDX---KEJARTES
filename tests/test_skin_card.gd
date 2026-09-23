@@ -56,6 +56,15 @@ func test_focus_shader_blurs_the_cards_own_texture_not_the_screen() -> void:
 	assert_true(src.contains("uniform float brightness"))
 
 
+## COLOR is the node's (and every inherited parent's) modulate in a
+## canvas_item shader. SkinSelect fades cards by tweening modulate.a, so
+## dropping it silently stopped the splash art fading with the screen.
+func test_focus_shader_preserves_modulate_for_the_fade() -> void:
+	var src := FileAccess.get_file_as_string(SHADER)
+	assert_true(src.contains("* COLOR;"),
+		"must multiply by the incoming COLOR or SkinSelect's modulate fade breaks")
+
+
 func test_the_screen_blur_material_is_gone() -> void:
 	assert_false(ResourceLoader.exists("res://Scenes/Skins/skin_option_blur_material.tres"))
 

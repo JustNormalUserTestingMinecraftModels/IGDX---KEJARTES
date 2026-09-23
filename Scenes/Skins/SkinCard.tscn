@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cu2gfvctamp47" path="res://Scripts/Skins/SkinCard.gd" id="1_1owxx"]
 [ext_resource type="Texture2D" uid="uid://bsu4hxxxajoaa" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="2_k647m"]
-[ext_resource type="Shader" path="res://Scripts/Shaders/skin_card_focus.gdshader" id="3_focus"]
+[ext_resource type="Shader" uid="uid://bly70aj705dys" path="res://Scripts/Shaders/skin_card_focus.gdshader" id="3_focus"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_focus"]
 resource_local_to_scene = true

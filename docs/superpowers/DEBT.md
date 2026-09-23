@@ -435,6 +435,17 @@ widget via `project_run` instead, which exercises it fine.
   into "Seragam 1". Real names belong in `StudentSkins.SKINS` once there is
   more than one extra skin per character.
 
+- **SkinSelect's flick detection doesn't decay stale motion (2026-09-23).**
+  `_release_velocity` keeps whatever the last motion sample was, so a fast
+  drag that stops and is held before release still reads as a flick. Zero it
+  when more than ~80ms have passed since the last motion sample.
+
+- **SkinSelect's Lock icon stays crisp on a blurred neighbour card
+  (2026-09-23).** It's a sibling of Art rather than a child inside the
+  blurred/dimmed material, so a locked, unfocused card's lock reads sharp
+  against its blurred splash. Reads as a label rather than part of the
+  illustration, which is acceptable for now.
+
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a
   stub). Masa Depan yang Indah's Level Selection was already unlocked by

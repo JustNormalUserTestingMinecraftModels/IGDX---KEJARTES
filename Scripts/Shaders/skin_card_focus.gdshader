@@ -31,7 +31,9 @@ void fragment() {
 			float r = sqrt((float(i) + 0.5) / float(TAPS)) * sigma_texels * 3.0;
 			float a = float(i) * GOLDEN_ANGLE;
 			vec2 off = vec2(cos(a), sin(a)) * r * TEXTURE_PIXEL_SIZE;
-			float w = exp(-(r * r) / (2.0 * sigma_texels * sigma_texels));
+			// r = sqrt((i+0.5)/TAPS) * 3*sigma, so r^2/(2*sigma^2) reduces to
+			// 4.5*(i+0.5)/TAPS regardless of sigma; skip the redundant division.
+			float w = exp(-4.5 * (float(i) + 0.5) / float(TAPS));
 			vec4 s = texture(TEXTURE, UV + off);
 			acc += vec4(s.rgb * s.a, s.a) * w;
 			wsum += w;
@@ -39,5 +41,8 @@ void fragment() {
 		acc /= wsum;
 		c = vec4(acc.rgb / max(acc.a, 0.0001), acc.a);
 	}
-	COLOR = vec4(c.rgb * brightness, c.a);
+	// * COLOR reapplies the node's (and every inherited parent's) modulate,
+	// which canvas_item shaders otherwise discard; SkinSelect fades cards by
+	// tweening modulate.a, so dropping this stopped the splash art fading.
+	COLOR = vec4(c.rgb * brightness, c.a) * COLOR;
 }

@@ -8,6 +8,20 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-23 — Rim light widened from 3 to 10 px
+
+Picked by the user from `docs/superpowers/mockups/rim_width_options.png`
+(3, 5, 7 and 10 px, real Lobby frames at 1080-phone scale). Set on the cutout
+and face materials together, since the tests hold them equal, so every rim-lit
+cutout gets it: the Lobby faces and desks, Herman and the minigame characters.
+On the Lobby it adds about +0.7% mean luminance over 3 px. The debug Look page's
+width slider now reaches 16, the shader's own ceiling, instead of topping out
+at the new value.
+
+The width is in screen pixels, so the editor's half-size embedded run draws it
+twice as thick against the art as a 1080-wide phone does. Judge it on a phone,
+or halve the value when previewing in the editor.
+
 ## 2026-09-23 — Lobby: a WorldEnvironment that actually works, and previews in 2D
 
 The first WorldEnvironment (`f41540f`) was reverted as inert, and the bloom

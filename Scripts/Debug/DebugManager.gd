@@ -1775,7 +1775,7 @@ func _build_look_panel(parent: Control) -> void:
 	_add_look_slider(vbox, cutout, "ao_strength", "Kekuatan AO", 0.0, 1.0, 0.01)
 	_add_look_slider(vbox, cutout, "ao_radius_px", "Lebar AO (piksel layar)", 0.0, 16.0, 0.5)
 	_add_look_slider(vbox, cutout, "rim_strength", "Kekuatan Rim", 0.0, 0.8, 0.01)
-	_add_look_slider(vbox, cutout, "rim_radius_px", "Lebar Rim (piksel layar)", 0.0, 10.0, 0.5)
+	_add_look_slider(vbox, cutout, "rim_radius_px", "Lebar Rim (piksel layar)", 0.0, 16.0, 0.5)
 
 	var lbl_shafts = Label.new()
 	lbl_shafts.text = "Cahaya Jendela (khusus Lobby):"

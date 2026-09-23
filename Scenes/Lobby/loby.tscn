@@ -39,30 +39,6 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
-[sub_resource type="Environment" id="Environment_jxjat"]
-background_mode = 3
-ssao_radius = 8.08
-ssao_intensity = 16.0
-ssao_power = 0.69977474
-ssao_horizon = 0.73
-ssao_light_affect = 1.0
-ssil_intensity = 16.0
-glow_enabled = true
-glow_normalized = true
-glow_intensity = 3.13
-glow_strength = 0.76
-glow_bloom = 0.39
-glow_blend_mode = 2
-glow_hdr_threshold = 0.53
-glow_hdr_scale = 0.24
-glow_hdr_luminance_cap = 70.43
-glow_map_strength = 0.33
-volumetric_fog_density = 0.0
-adjustment_enabled = true
-adjustment_brightness = 0.9
-adjustment_contrast = 1.065
-adjustment_saturation = 1.13
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
 shader_parameter/overlay_color = Color(0, 0, 0, 0.7)
@@ -81,9 +57,6 @@ grow_vertical = 2
 script = ExtResource("1_ao7fi")
 bg_texture = ExtResource("bg_tex")
 face_rigs = Array[PackedScene]([ExtResource("3_oohd3"), ExtResource("4_yhuud"), ExtResource("5_ikpat"), ExtResource("6_dx44p"), ExtResource("7_62a4m"), ExtResource("8_gbno3")])
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=861422932]
-environment = SubResource("Environment_jxjat")
 
 [node name="Backdrop" type="ColorRect" parent="." unique_id=543524766]
 layout_mode = 1

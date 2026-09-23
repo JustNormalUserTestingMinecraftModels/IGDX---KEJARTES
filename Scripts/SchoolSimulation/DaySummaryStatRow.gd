@@ -254,16 +254,16 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 		_play_burst(delay, plays_sparkle)
 		if not Engine.is_editor_hint():
 			if fill_tw != null and fill_tw.is_valid():
-				fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_gain", self))
+				fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_gain", self, {"queued": true}))
 			else:
-				RewardFeedback.play(&"stat_gain", self)
+				RewardFeedback.play(&"stat_gain", self, {"queued": true})
 	elif _delta < 0.0 and not Engine.is_editor_hint():
 		# A losing row had no cue at all before the 2026-09-21 sound pack: the
 		# chevron only shows on a gain, so the whole fall happened in silence.
 		if fill_tw != null and fill_tw.is_valid():
-			fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_loss", self))
+			fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_loss", self, {"queued": true}))
 		else:
-			RewardFeedback.play(&"stat_loss", self)
+			RewardFeedback.play(&"stat_loss", self, {"queued": true})
 	Juice.count_up_formatted(value, 0.0, _delta,
 		func(v: float) -> String: return format_value(v, _target), delay)
 

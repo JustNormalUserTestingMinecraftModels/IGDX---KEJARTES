@@ -24,6 +24,20 @@ const PITCH_STEP := 0.09
 const ARPEGGIO_COUNT := 3
 const ARPEGGIO_GAP := 0.06
 
+## Queued cues (the result screens' per-row stat pings) play one at a time
+## this far apart, so a report's many staggered rows chime in a patient
+## sequence instead of slapping together. Each successive cue in an unbroken
+## run climbs QUEUE_PITCH_STEP higher (capped at QUEUE_PITCH_MAX), turning the
+## run into a rising ladder; the climb resets whenever the queue drains.
+const QUEUE_GAP := 0.13
+const QUEUE_PITCH_STEP := 0.03
+const QUEUE_PITCH_MAX := 1.6
+
+## Serial cue queue state (runtime only; never touched under editor hint).
+var _cue_queue: Array = []
+var _cue_pump_running := false
+var _cue_rung := 0
+
 ## Particle scenes, by role.
 const POP_BURST := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
 const CELEBRATION_CONFETTI := "res://Scenes/SchoolSimulation/CelebrationConfetti.tscn"
@@ -63,10 +77,39 @@ func moment_tier(moment: StringName, opts: Dictionary = {}) -> int:
 		return TIER_CELEBRATION if band in ["Amazing", "Good"] else TIER_POP
 	return base
 
-## Fire the full multi-sensory combo for `moment`.
+## Fire the full multi-sensory combo for `moment`. Pass opts["queued"] = true
+## (the result screens do, for their per-row stat cues) to route the cue
+## through the serial queue instead of firing it now, so a burst of cues
+## paces itself out rather than slapping together.
 func play(moment: StringName, anchor: Node = null, opts: Dictionary = {}) -> void:
 	if Engine.is_editor_hint():
 		return
+	if not RECIPES.has(moment):
+		return
+	if opts.get("queued", false):
+		_cue_queue.append({"moment": moment, "anchor": anchor, "opts": opts})
+		if not _cue_pump_running:
+			_pump_cue_queue()
+		return
+	_play_now(moment, anchor, opts)
+
+## Plays queued cues one at a time, QUEUE_GAP apart, each a step higher in
+## pitch than the last -- a rising ladder rather than a pile. A coroutine,
+## fire-and-forget; it clears its own running flag when the queue drains.
+func _pump_cue_queue() -> void:
+	_cue_pump_running = true
+	while not _cue_queue.is_empty():
+		var item: Dictionary = _cue_queue.pop_front()
+		var opts: Dictionary = (item["opts"] as Dictionary).duplicate()
+		opts["queue_pitch"] = minf(1.0 + QUEUE_PITCH_STEP * float(_cue_rung), QUEUE_PITCH_MAX)
+		_cue_rung += 1
+		_play_now(item["moment"], item["anchor"], opts)
+		await get_tree().create_timer(QUEUE_GAP).timeout
+	_cue_rung = 0
+	_cue_pump_running = false
+
+## Fire the full multi-sensory combo for `moment` immediately (no queueing).
+func _play_now(moment: StringName, anchor: Node, opts: Dictionary) -> void:
 	var recipe: Dictionary = RECIPES.get(moment, {})
 	if recipe.is_empty():
 		return
@@ -77,7 +120,7 @@ func play(moment: StringName, anchor: Node = null, opts: Dictionary = {}) -> voi
 		_play_particles(recipe, tier, anchor)
 		_play_shake(tier, anchor)
 
-func _play_sound(moment: StringName, recipe: Dictionary, tier: int, opts: Dictionary) -> void:
+func _play_sound(_moment: StringName, recipe: Dictionary, _tier: int, opts: Dictionary) -> void:
 	if recipe.get("arpeggio", false):
 		_arpeggio(recipe.get("sfx", &"coin"))
 		return
@@ -92,6 +135,9 @@ func _play_sound(moment: StringName, recipe: Dictionary, tier: int, opts: Dictio
 		sfx = StringName("star_earn_%d" % clampi(int(opts.get("step", 1)), 1, 3))
 	elif recipe.get("escalates", false):
 		pitch = 1.0 + PITCH_STEP * float(opts.get("step", 0))
+	# A queued run climbs in pitch (see _pump_cue_queue) so the paced pings
+	# read as a rising ladder rather than a flat metronome.
+	pitch *= float(opts.get("queue_pitch", 1.0))
 	AudioDirector.play_sfx(sfx, pitch)
 
 func _arpeggio(id: StringName) -> void:

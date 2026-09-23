@@ -2,10 +2,22 @@
 
 [ext_resource type="Script" path="res://Scripts/Look/LookLayer.gd" id="1_look"]
 [ext_resource type="Material" path="res://Scripts/Shaders/look_layer_material.tres" id="2_lookmat"]
+[ext_resource type="Material" path="res://Scripts/Shaders/bloom_material.tres" id="3_bloom"]
 
 [node name="LookLayer" type="CanvasLayer"]
 layer = 90
 script = ExtResource("1_look")
+
+[node name="Bloom" type="ColorRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+material = ExtResource("3_bloom")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
 
 [node name="Cover" type="ColorRect" parent="."]
 modulate = Color(1, 1, 1, 0)

@@ -1,7 +1,7 @@
 @tool
 extends CanvasLayer
 
-## The global look layer: one vignette and one film grain drawn over every
+## The global look layer: a bloom, a vignette and a film grain drawn over every
 ## screen in the game, from a single autoload.
 ##
 ## WHY LAYER 90. Everything in this game except a handful of overlays lives on
@@ -34,8 +34,17 @@ extends CanvasLayer
 ## real side effect -- following the viewport -- is harmless in the editor,
 ## but it starts hidden there so it never tints the editor's own preview.
 
-## The full-rect ColorRect carrying the shader.
+## The full-rect ColorRect carrying the vignette and grain shader.
 @onready var _cover: ColorRect = $Cover
+
+## The full-rect ColorRect carrying the bloom, drawn under the cover so the
+## vignette darkens the bloom rather than the bloom washing out the vignette.
+##
+## It reads the screen texture once per frame, which is the only genuinely
+## expensive thing in this layer -- and the reason it lives here rather than in
+## its own always-on autoload. _refresh() takes the whole layer out of the draw
+## list when the setting is off, so an unchecked box costs nothing at all.
+@onready var _bloom: ColorRect = $Bloom
 
 ## How long the layer takes to fade in or out when the setting is flipped, in
 ## seconds. A hard cut on a full-screen tint reads as a glitch.
@@ -53,9 +62,10 @@ func _ready() -> void:
 	layer = 90
 	# The cover must never eat a tap: it spans the whole screen, so a
 	# hit-testable one would make the entire game unclickable.
-	if _cover != null:
-		_cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_cover.modulate.a = 0.0
+	for rect in [_cover, _bloom]:
+		if rect != null:
+			rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			rect.modulate.a = 0.0
 	if Engine.is_editor_hint():
 		visible = false
 		return
@@ -97,9 +107,14 @@ func _refresh(instant: bool = false) -> void:
 		visible = true
 	if instant or fade_seconds <= 0.0:
 		_cover.modulate.a = target
+		if _bloom != null:
+			_bloom.modulate.a = target
 		visible = want
 		return
 	var tween := create_tween()
+	tween.set_parallel(true)
 	tween.tween_property(_cover, "modulate:a", target, fade_seconds)
+	if _bloom != null:
+		tween.tween_property(_bloom, "modulate:a", target, fade_seconds)
 	if not want:
-		tween.tween_callback(func() -> void: visible = false)
+		tween.chain().tween_callback(func() -> void: visible = false)

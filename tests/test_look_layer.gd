@@ -147,6 +147,70 @@ func test_the_autoload_is_declared_after_its_dependencies() -> void:
 		"LookLayer reads GameSettings in _ready, so it must be declared after it")
 
 
+## The bloom (2026-09-23). Glow, after the WorldEnvironment route was measured
+## and found inert: Environment is applied by the 3D renderer, this game has no
+## Camera3D, and five glow configurations plus all five tonemappers produced one
+## identical frame. A canvas_item shader reading the screen is the only route
+## that works, so it lives here, in the one layer that already draws over
+## everything.
+func test_the_bloom_is_additive_and_reads_the_screen() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/bloom.gdshader")
+	assert_true(src.contains("render_mode blend_add"),
+		"bloom brightens what is behind it; it does not paint over it")
+	assert_true(src.contains("hint_screen_texture"),
+		"a bloom has to read the finished frame")
+	assert_true(src.contains("textureLod"),
+		"the blur is three mip levels, not a second pass")
+
+
+## It must sit UNDER the vignette. Drawn the other way round the bloom would
+## wash the vignette out at the corners, which is where a vignette does its
+## only job.
+func test_the_bloom_draws_under_the_vignette() -> void:
+	var layer := (load(LAYER_SCENE) as PackedScene).instantiate()
+	track(layer)
+	var bloom := layer.get_node_or_null("Bloom") as CanvasItem
+	var cover := layer.get_node_or_null("Cover") as CanvasItem
+	assert_true(bloom != null, "the look layer must carry the bloom")
+	assert_true(cover != null, "the look layer must carry the cover")
+	if bloom == null or cover == null:
+		return
+	assert_true(bloom.get_index() < cover.get_index(),
+		"the bloom draws first, so the vignette lands on top of it")
+	assert_eq(bloom.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"a full-screen bloom must never eat a tap")
+
+
+## The screen read is the one genuinely expensive thing this layer does, so an
+## unchecked setting has to cost nothing rather than cost a texture fetch. The
+## layer takes itself out of the draw list entirely; this pins the mechanism it
+## uses to do that, since a bloom left visible at intensity 0 would still read
+## the screen every frame.
+func test_the_bloom_costs_nothing_when_the_layer_is_off() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/LookLayer.gd")
+	assert_true(src.contains("visible = false"),
+		"the layer must leave the draw list when off, not just fade to alpha 0")
+	assert_true(src.contains("$Bloom"), "the layer must own the bloom node")
+
+
+## Over a palette this near-white -- surface_page is #FBF1E3 and the game is
+## mostly paper -- a threshold low enough to catch the highlights catches the
+## whole screen, and the picture turns to fog. Measured on the Lobby at
+## 1080x1920 against the same baseline the AO pass used.
+const BLOOM_THRESHOLD_FLOOR := 0.6
+
+
+func test_the_bloom_threshold_stays_above_the_paper() -> void:
+	var mat: ShaderMaterial = load("res://Scripts/Shaders/bloom_material.tres")
+	assert_true(mat != null, "the bloom material must exist")
+	if mat == null:
+		return
+	var threshold: float = mat.get_shader_parameter("threshold")
+	assert_true(threshold >= BLOOM_THRESHOLD_FLOOR,
+		"threshold %s blooms the paper itself, which reads as fog; floor is %s"
+			% [threshold, BLOOM_THRESHOLD_FLOOR])
+
+
 # ── The illustration grade ───────────────────────────────────────────────────
 
 ## One shader, three materials since 2026-09-23: the cutouts wear

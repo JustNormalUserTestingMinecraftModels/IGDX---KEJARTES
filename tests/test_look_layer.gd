@@ -15,6 +15,7 @@ extends McpTestSuite
 const LAYER_SCENE := "res://Scenes/Look/LookLayer.tscn"
 const GRADE_MATERIAL := "res://Scripts/Shaders/illustration_grade_material.tres"
 const GRADE_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_cutout.tres"
+const GRADE_FACE_MATERIAL := "res://Scripts/Shaders/illustration_grade_face.tres"
 
 ## Every node that wears the grade, by scene. These are painted plates only.
 const GRADED := {
@@ -148,7 +149,7 @@ func test_the_autoload_is_declared_after_its_dependencies() -> void:
 
 # ── The illustration grade ───────────────────────────────────────────────────
 
-## One shader, two materials since 2026-09-23: the cutouts wear
+## One shader, three materials since 2026-09-23: the cutouts wear
 ## illustration_grade_cutout.tres, which adds AO and a rim, and the full-bleed
 ## backdrops wear the plain one. Both are the shared resources -- what this
 ## still forbids is a per-node copy, which would strand a plate the next time
@@ -156,8 +157,10 @@ func test_the_autoload_is_declared_after_its_dependencies() -> void:
 func test_every_graded_node_shares_a_shared_material() -> void:
 	var plain: Material = load(GRADE_MATERIAL)
 	var cutout: Material = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
+	var face: Material = load("res://Scripts/Shaders/illustration_grade_face.tres")
 	assert_true(plain is ShaderMaterial, "the grade material must exist")
 	assert_true(cutout is ShaderMaterial, "the cutout grade material must exist")
+	assert_true(face is ShaderMaterial, "the face grade material must exist")
 	for scene_path in GRADED:
 		var root := (load(scene_path) as PackedScene).instantiate()
 		track(root)
@@ -166,8 +169,9 @@ func test_every_graded_node_shares_a_shared_material() -> void:
 			assert_true(node != null, "%s is missing %s" % [scene_path, node_path])
 			if node == null:
 				continue
-			assert_true(node.material == plain or node.material == cutout,
-				"%s/%s must wear one of the two shared grades, not a copy"
+			assert_true(node.material == plain or node.material == cutout
+					or node.material == face,
+				"%s/%s must wear one of the three shared grades, not a copy"
 					% [scene_path, node_path])
 
 
@@ -266,12 +270,12 @@ const GRADE_CONTRAST_CEILING := 1.0125
 
 
 func test_the_grade_stays_subtle() -> void:
-	# Both materials: the plain grade and the cutout grade share the same
+	# All three materials: plain, cutout and face share the same
 	# five colour uniforms (test_illustration_ao.gd's
 	# test_the_two_materials_agree_on_the_shared_grade pins that they must),
 	# so the cutout material could otherwise be pushed past these ceilings
 	# unnoticed while this test kept watching only the plain one.
-	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL]:
+	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_FACE_MATERIAL]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:

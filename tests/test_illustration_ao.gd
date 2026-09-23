@@ -20,6 +20,7 @@ extends McpTestSuite
 const SHADER := "res://Scripts/Shaders/illustration_grade.gdshader"
 const PLAIN := "res://Scripts/Shaders/illustration_grade_material.tres"
 const CUTOUT := "res://Scripts/Shaders/illustration_grade_cutout.tres"
+const FACE := "res://Scripts/Shaders/illustration_grade_face.tres"
 
 
 func suite_name() -> String:
@@ -31,7 +32,7 @@ func suite_name() -> String:
 func test_both_materials_share_the_one_shader() -> void:
 	var shader: Shader = load(SHADER)
 	assert_true(shader != null, "the grade shader must exist")
-	for path in [PLAIN, CUTOUT]:
+	for path in [PLAIN, CUTOUT, FACE]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:
@@ -46,20 +47,24 @@ func test_both_materials_share_the_one_shader() -> void:
 ## that would catch that drift.
 func test_the_two_materials_agree_on_the_shared_grade() -> void:
 	var plain: ShaderMaterial = load(PLAIN)
-	var cutout: ShaderMaterial = load(CUTOUT)
 	assert_true(plain != null, "the plain material must exist")
-	assert_true(cutout != null, "the cutout material must exist")
-	if plain == null or cutout == null:
+	if plain == null:
 		return
-	for uniform in ["saturation", "contrast", "exposure", "amount"]:
-		var a: float = plain.get_shader_parameter(uniform)
-		var b: float = cutout.get_shader_parameter(uniform)
-		assert_true(is_equal_approx(a, b),
-			"%s must match across both materials: plain=%s cutout=%s" % [uniform, a, b])
-	var plain_tint: Color = plain.get_shader_parameter("tint")
-	var cutout_tint: Color = cutout.get_shader_parameter("tint")
-	assert_true(plain_tint.is_equal_approx(cutout_tint),
-		"tint must match across both materials: plain=%s cutout=%s" % [plain_tint, cutout_tint])
+	var reference_tint: Color = plain.get_shader_parameter("tint")
+	for path in [CUTOUT, FACE]:
+		var other: ShaderMaterial = load(path)
+		assert_true(other != null, "%s must exist" % path)
+		if other == null:
+			continue
+		for uniform in ["saturation", "contrast", "exposure", "amount"]:
+			var a: float = plain.get_shader_parameter(uniform)
+			var b: float = other.get_shader_parameter(uniform)
+			assert_true(is_equal_approx(a, b),
+				"%s must match the plain material: plain=%s %s=%s" % [uniform, a, path, b])
+		var other_tint: Color = other.get_shader_parameter("tint")
+		assert_true(reference_tint.is_equal_approx(other_tint),
+			"tint must match the plain material: plain=%s %s=%s"
+				% [reference_tint, path, other_tint])
 
 
 ## The backdrops pay nothing. This is the entire reason there are two materials.
@@ -159,6 +164,26 @@ func test_the_effects_stay_subtle() -> void:
 		"rim_strength %s is past the agreed ceiling %s" % [rim, RIM_STRENGTH_CEILING])
 
 
+## The face material is the cutout material plus hole rejection, and nothing
+## else. If someone tunes AO or the rim from the Look page and writes the value
+## into only one of them, the six faces drift away from every other character
+## in the game -- which is the same failure the shared-grade test above guards
+## for the colour stage.
+func test_the_face_material_matches_the_cutout_on_ao_and_rim() -> void:
+	var cutout: ShaderMaterial = load(CUTOUT)
+	var face: ShaderMaterial = load(FACE)
+	assert_true(cutout != null and face != null, "both materials must exist")
+	if cutout == null or face == null:
+		return
+	for uniform in ["ao_strength", "ao_radius_px", "rim_strength", "rim_radius_px"]:
+		var a: float = cutout.get_shader_parameter(uniform)
+		var b: float = face.get_shader_parameter(uniform)
+		assert_true(is_equal_approx(a, b),
+			"%s must match between cutout and face: cutout=%s face=%s" % [uniform, a, b])
+	var a_dir: Vector2 = cutout.get_shader_parameter("light_dir")
+	var b_dir: Vector2 = face.get_shader_parameter("light_dir")
+	assert_true(a_dir.is_equal_approx(b_dir), "the faces must agree about where the light is")
+
 ## The census, measured on 2026-09-23 by sampling each texture's alpha channel.
 ## A cutout has an alpha edge to find; a backdrop is full-bleed and would pay
 ## five taps per pixel for nothing. Percentages are transparent pixels.
@@ -169,12 +194,6 @@ const CUTOUTS := {
 	],
 	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman", "Stage/Foreground"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
-	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],
-	"res://Scenes/Lobby/CitraFace.tscn": ["Canvas/Base"],
-	"res://Scenes/Lobby/DoniFace.tscn": ["Canvas/Base"],
-	"res://Scenes/Lobby/MarcelFace.tscn": ["Canvas/Base"],
-	"res://Scenes/Lobby/ShintaFace.tscn": ["Canvas/Base"],
-	"res://Scenes/Lobby/TheaFace.tscn": ["Canvas/Base"],
 	"res://Scenes/Minigames/SeniBudaya/DancerRig.tscn": ["Body", "Head"],
 	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["Goalie/GFX", "Ball/GFX"],
 	"res://Scenes/Minigames/Olahraga/Badminton.tscn": [
@@ -198,6 +217,87 @@ const BACKDROPS := {
 	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background"],
 	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["FieldBG"],
 }
+
+
+## The six Lobby faces are cutouts too, but they wear a third material.
+##
+## Each face plate is drawn with the eye sockets and the mouth punched out, so
+## the sclera, pupil, eyelid and brows underneath show through: 0.78% to 1.77%
+## of every base is interior hole. The rim test cannot tell the edge of a hole
+## from the outline of a head, so it drew a cream ring around every eye and
+## mouth in the room -- measured on a real frame, not guessed. The face material
+## turns on rim_hole_reject_px, which the other plates leave at zero.
+const FACES := {
+	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/CitraFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/DoniFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/MarcelFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/ShintaFace.tscn": ["Canvas/Base"],
+	"res://Scenes/Lobby/TheaFace.tscn": ["Canvas/Base"],
+}
+
+
+func test_every_face_wears_the_face_material() -> void:
+	var face: Material = load(FACE)
+	assert_true(face is ShaderMaterial, "the face grade material must exist")
+	for scene_path in FACES:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for node_path in FACES[scene_path]:
+			var node := root.get_node_or_null(NodePath(node_path)) as CanvasItem
+			assert_true(node != null, "%s is missing %s" % [scene_path, node_path])
+			if node == null:
+				continue
+			assert_eq(node.material, face,
+				"%s/%s must wear the face grade, which rejects rim at eye and "
+					% [scene_path, node_path] + "mouth holes")
+
+
+## Only the faces reject. A plate with no interior holes pays nothing, and the
+## two probes are not free.
+func test_only_the_face_material_rejects_interior_holes() -> void:
+	var face: ShaderMaterial = load(FACE)
+	var cutout: ShaderMaterial = load(CUTOUT)
+	var plain: ShaderMaterial = load(PLAIN)
+	assert_true(face != null and cutout != null and plain != null, "all three materials must exist")
+	if face == null or cutout == null or plain == null:
+		return
+	assert_true(_reject_px(face) > 0.0, "the faces are the reason this uniform exists")
+	assert_true(is_zero_approx(_reject_px(cutout)),
+		"plates without interior holes must not pay for two extra probes")
+	assert_true(is_zero_approx(_reject_px(plain)),
+		"backdrops have no rim at all, so they certainly must not probe")
+
+
+## A material that never sets a uniform reports null for it, not the shader's
+## default, so reading one straight out of get_shader_parameter and handing it
+## to a float function aborts the test. Unset means the shader default, which
+## for this uniform is 0.0 -- off.
+func _reject_px(mat: ShaderMaterial) -> float:
+	if mat == null:
+		return 0.0
+	var value: Variant = mat.get_shader_parameter("rim_hole_reject_px")
+	return 0.0 if value == null else float(value)
+
+
+## Measured on the Lobby at 1080x1920, both students in frame, rim at full
+## strength so the footprint is unambiguous: at 24 screen pixels the reject
+## takes 26.8% of the rim energy and what it takes is the eye undersides and
+## both mouths, while the hair, shoulders and collar keep theirs. At 36 it takes
+## 30.8% but starts eating the collar, which is a real silhouette. Re-measure
+## with a before/after heatmap before moving this.
+const FACE_REJECT_CEILING := 28.0
+
+
+func test_the_face_reject_does_not_eat_the_silhouette() -> void:
+	var face: ShaderMaterial = load(FACE)
+	assert_true(face != null, "the face grade material must exist")
+	if face == null:
+		return
+	var reject: float = face.get_shader_parameter("rim_hole_reject_px")
+	assert_true(reject <= FACE_REJECT_CEILING,
+		"reject %s starts removing rim from the collar and shoulders; ceiling is %s"
+			% [reject, FACE_REJECT_CEILING])
 
 
 func test_every_cutout_wears_the_cutout_material() -> void:
@@ -246,7 +346,7 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 		return
 
 	var counted := {}
-	for source in [CUTOUTS, BACKDROPS]:
+	for source in [CUTOUTS, FACES, BACKDROPS]:
 		for scene_path in source:
 			for node_path in source[scene_path]:
 				var key := "%s::%s" % [scene_path, node_path]

@@ -403,6 +403,25 @@ func play_sfx_variant(family: StringName, pitch: float = 1.0) -> void:
 	player.play()
 
 
+## Plays several cues on the same beat -- a deliberate layered "chord" (a
+## celebration ta-da with a cheer under it). `pitches[i]` applies to `ids[i]`,
+## defaulting to 1.0. This is the ONE sanctioned place two sfx fire with no
+## await between them; every other such pair is a bug the coverage suite
+## catches. Unknown or empty ids are skipped, matching play_sfx's null-safety.
+func play_chord(ids: Array, pitches: Array = []) -> void:
+	for i in ids.size():
+		var id: StringName = ids[i]
+		var stream := _resolve_sfx(id)
+		if stream == null:
+			continue
+		var player := _sfx_pool[_sfx_next]
+		_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
+		player.stream = stream
+		var pitch: float = pitches[i] if i < pitches.size() else 1.0
+		player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
+		player.play()
+
+
 ## The badge cue for a grade band. An unknown band falls back to Normal
 ## rather than returning null into a player -- a silent badge reveal is a
 ## worse bug than a slightly wrong one.

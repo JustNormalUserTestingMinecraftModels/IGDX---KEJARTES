@@ -250,7 +250,7 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	elif _delta < 0.0 and not Engine.is_editor_hint():
 		# A losing row had no cue at all before the 2026-09-21 sound pack: the
 		# chevron only shows on a gain, so the whole fall happened in silence.
-		AudioDirector.play_sfx(&"stat_down")
+		RewardFeedback.play(&"stat_loss", self)
 	Juice.count_up_formatted(value, 0.0, _delta,
 		func(v: float) -> String: return format_value(v, _target), delay)
 
@@ -271,7 +271,7 @@ func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	var fx := _get_or_make_burst(chevron.position + chevron.size * 0.5)
 	fx.plays_sfx = plays_sparkle
 	fx.fire(delay)
-	AudioDirector.play_sfx(&"stat_up")
+	RewardFeedback.play(&"stat_gain", self)
 
 
 # ── The weekly reveal (2026-09-14 weekly-report-reveal spec) ─────────

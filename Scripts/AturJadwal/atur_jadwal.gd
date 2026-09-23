@@ -950,7 +950,7 @@ func _on_peringatan_no():
 func _proceed_start_week():
 	# The week is committed here -- the one moment in AturJadwal that is a
 	# decision rather than an adjustment, so it gets its own chime.
-	AudioDirector.play_sfx(&"schedule_confirm")
+	RewardFeedback.play(&"schedule_confirmed")
 	Transition.change_scene("res://Scenes/SchoolSimulation/SchoolDay.tscn")
 
 # ================= PENJADWALAN POPUP =================
@@ -1018,7 +1018,7 @@ func _on_activity_selected(category: String):
 	if _assigned_note:
 		if ActivityPreview.is_specialty(category, student):
 			_assigned_note.play_specialty_match()
-			AudioDirector.play_sfx(&"specialty_match")
+			RewardFeedback.play(&"specialty_match", _assigned_note)
 		else:
 			_assigned_note.play_assign_pop()
 			AudioDirector.play_sfx(&"select")

@@ -117,6 +117,8 @@ func _ready() -> void:
 		_terapkan.pressed.connect(apply)
 	if not _carousel.gui_input.is_connected(_on_carousel_input):
 		_carousel.gui_input.connect(_on_carousel_input)
+	if not _carousel.resized.is_connected(_on_carousel_resized):
+		_carousel.resized.connect(_on_carousel_resized)
 
 
 ## Fills the rail from StudentSkins.NAMES, opens the first character and
@@ -277,12 +279,20 @@ func pitch_px() -> float:
 ## The pose of a card `t` cards from the centre (negative is left): top-left
 ## position, scale and focus. Linear in |t| up to one card, then it keeps
 ## sliding at the same pitch with the neighbour's scale and no focus.
+## center_origin/side_origin's design x is measured on a 1080-wide carousel
+## (skinselection_mockup.png); a wider one -- stretch aspect="expand" widens
+## the canvas on a tablet, foldable or desktop window -- gets the result
+## re-centred by half the extra width, so it stays centred on its own width
+## instead of hugging the left edge.
 func card_pose(t: float) -> Dictionary:
 	var d := minf(absf(t), 1.0)
 	var s := lerpf(center_scale, side_scale, d)
 	var cx := center_origin.x + CARD_W * center_scale * 0.5 + pitch_px() * t
 	var top := lerpf(center_origin.y, side_origin.y, d)
-	return {"position": Vector2(cx - CARD_W * s * 0.5, top), "scale": s, "focus": 1.0 - d}
+	var offset_x := 0.0
+	if _carousel != null and _carousel.size.x > 0.0:
+		offset_x = (_carousel.size.x - CARD_W) * 0.5
+	return {"position": Vector2(cx - CARD_W * s * 0.5 + offset_x, top), "scale": s, "focus": 1.0 - d}
 
 
 ## Which card is centred, fractionally mid-drag.
@@ -391,6 +401,15 @@ func _update_drag(at_x: float) -> void:
 		_release_velocity = (at_x - _last_x) / dt
 	_last_x = at_x
 	_last_ms = now
+
+
+## Re-poses every card when the carousel's own size changes. A window resize
+## (tablet, foldable, desktop) can widen or narrow the canvas under
+## stretch/aspect="expand", and card_pose's re-centring reads _carousel.size.x
+## fresh each call, but nothing else re-triggers _layout_cards on its own.
+func _on_carousel_resized() -> void:
+	if not _cards.is_empty():
+		_layout_cards()
 
 
 func _end_drag() -> void:

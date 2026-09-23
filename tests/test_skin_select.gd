@@ -222,8 +222,12 @@ func test_no_theme_overrides_beyond_layout_constants() -> void:
 
 ## Measured off skinselection_mockup.png (spec 2026-09-23): the centred
 ## splash at 0.818 from (85,153), the right neighbour at 0.658 from (676,370).
+## The design x values are for a 1080-wide carousel -- pin the width so this
+## test holds regardless of the editor root's own viewport size.
 func test_card_pose_hits_the_mockups_two_slots() -> void:
 	var s := _new_screen()
+	var carousel := s.get_node("%Carousel") as Control
+	carousel.size.x = 1080.0
 	var c: Dictionary = s.card_pose(0.0)
 	assert_true((c.position as Vector2).distance_to(Vector2(85, 153)) < 0.01, str(c.position))
 	assert_true(absf(float(c.scale) - 0.818) < 0.0001)
@@ -235,9 +239,12 @@ func test_card_pose_hits_the_mockups_two_slots() -> void:
 
 
 ## Position, scale and focus are all linear in |t| up to one card, so the
-## halfway pose is the midpoint of the two slots.
+## halfway pose is the midpoint of the two slots. Pinned to a 1080-wide
+## carousel, same reason as test_card_pose_hits_the_mockups_two_slots.
 func test_card_pose_is_the_midpoint_halfway() -> void:
 	var s := _new_screen()
+	var carousel := s.get_node("%Carousel") as Control
+	carousel.size.x = 1080.0
 	var h: Dictionary = s.card_pose(0.5)
 	assert_true((h.position as Vector2).distance_to(Vector2(380.5, 261.5)) < 0.01, str(h.position))
 	assert_true(absf(float(h.scale) - 0.738) < 0.0001)
@@ -245,8 +252,12 @@ func test_card_pose_is_the_midpoint_halfway() -> void:
 
 
 ## The left neighbour mirrors the right one around the centred card's middle.
+## Pinned to a 1080-wide carousel, same reason as
+## test_card_pose_hits_the_mockups_two_slots.
 func test_the_left_neighbour_mirrors_the_right() -> void:
 	var s := _new_screen()
+	var carousel := s.get_node("%Carousel") as Control
+	carousel.size.x = 1080.0
 	var mid := 85.0 + 1080.0 * 0.818 * 0.5
 	var r: Dictionary = s.card_pose(1.0)
 	var l: Dictionary = s.card_pose(-1.0)
@@ -257,10 +268,25 @@ func test_the_left_neighbour_mirrors_the_right() -> void:
 	assert_true(absf(s.pitch_px() - 504.6) < 0.01)
 
 
+## stretch aspect="expand" widens the canvas on anything wider than 9:16;
+## the carousel must stay centred on its own width, as the old code did.
+func test_card_pose_recentres_on_a_wider_carousel() -> void:
+	var s := _new_screen()
+	var carousel := s.get_node("%Carousel") as Control
+	carousel.size = Vector2(1440, carousel.size.y)
+	var c: Dictionary = s.card_pose(0.0)
+	assert_true(absf((c.position as Vector2).x - (85.0 + 180.0)) < 0.01, str(c.position))
+
+
 ## The regression this pass exists for: with the first skin centred, the
-## second must actually be on screen, dim and blurred.
+## second must actually be on screen, dim and blurred. Pinned to a
+## 1080-wide carousel, then re-posed, same reason as
+## test_card_pose_hits_the_mockups_two_slots.
 func test_the_neighbour_is_on_screen_when_settled() -> void:
 	var s := _new_screen()
+	var carousel := s.get_node("%Carousel") as Control
+	carousel.size.x = 1080.0
+	s._layout_cards()
 	var centre := s.card_for(0)
 	var side := s.card_for(1)
 	assert_eq(centre.focus, 1.0)
@@ -288,9 +314,12 @@ func test_a_drag_past_the_end_stops_at_the_overscroll() -> void:
 
 
 ## Settling snaps (no tween in the editor), and the selected card ends
-## centred and crisp.
+## centred and crisp. Pinned to a 1080-wide carousel, same reason as
+## test_card_pose_hits_the_mockups_two_slots.
 func test_select_skin_centres_that_card() -> void:
 	var s := _new_screen()
+	var carousel := s.get_node("%Carousel") as Control
+	carousel.size.x = 1080.0
 	s.select_skin(1)
 	assert_true(absf(s.scroll() - 1.0) < 0.0001)
 	assert_true(s.card_for(1).position.distance_to(Vector2(85, 153)) < 0.01,

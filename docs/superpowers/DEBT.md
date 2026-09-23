@@ -446,6 +446,12 @@ widget via `project_run` instead, which exercises it fine.
   against its blurred splash. Reads as a label rather than part of the
   illustration, which is acceptable for now.
 
+- **skin_card_focus.gdshader's blur cost is unmeasured on low-end Android
+  (2026-09-23).** 48 taps per pixel on a full-size card, and mid-slide both
+  the centred and the neighbour card are on the blurred path at once. If it
+  drops frames while dragging, precompute the per-tap offsets/weights (they
+  depend only on `i`, not on `sigma_texels`) or blur a downsampled copy.
+
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a
   stub). Masa Depan yang Indah's Level Selection was already unlocked by

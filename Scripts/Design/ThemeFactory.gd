@@ -61,6 +61,11 @@ const SKIN_TITLE_FONT := 79
 ## (348,95)-(718,182). Boohong is narrower than the mockup's lettering, so
 ## height and stroke are matched here, not width.
 const SKIN_TITLE_OUTLINE_SIZE := 48
+## SkinApplyButton's hover/pressed/disabled tints: how far Color.lightened /
+## darkened / lerp (toward surface_sunken) push the flat fill for each state.
+const SKIN_APPLY_HOVER_LIGHTEN := 0.08
+const SKIN_APPLY_PRESSED_DARKEN := 0.15
+const SKIN_APPLY_DISABLED_FADE := 0.7
 
 
 ## SkinSelect (spec:
@@ -161,11 +166,13 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("SkinApplyButton")
 	theme.set_type_variation("SkinApplyButton", "Button")
 	theme.set_stylebox("normal", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL))
-	theme.set_stylebox("hover", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL.lightened(0.08)))
-	theme.set_stylebox("pressed", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL.darkened(0.15)))
+	theme.set_stylebox("hover", "SkinApplyButton",
+		apply_box.call(SKIN_APPLY_FILL.lightened(SKIN_APPLY_HOVER_LIGHTEN)))
+	theme.set_stylebox("pressed", "SkinApplyButton",
+		apply_box.call(SKIN_APPLY_FILL.darkened(SKIN_APPLY_PRESSED_DARKEN)))
 	theme.set_stylebox("focus", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL))
 	theme.set_stylebox("disabled", "SkinApplyButton",
-		apply_box.call(SKIN_APPLY_FILL.lerp(tokens.surface_sunken, 0.7)))
+		apply_box.call(SKIN_APPLY_FILL.lerp(tokens.surface_sunken, SKIN_APPLY_DISABLED_FADE)))
 	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
 		theme.set_color(key, "SkinApplyButton", SKIN_APPLY_TEXT)
 	theme.set_color("font_disabled_color", "SkinApplyButton", tokens.text_disabled)

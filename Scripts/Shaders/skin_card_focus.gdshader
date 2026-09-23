@@ -17,6 +17,10 @@ uniform float brightness = 1.0;
 // wider disk dense.
 const int TAPS = 48;
 const float GOLDEN_ANGLE = 2.39996323;
+// Spiral reach in sigmas (see the TAPS comment above): how far the taps
+// extend before the Gaussian is truncated. Coupled to the weight formula
+// below -- change one, change the other.
+const float REACH = 3.0;
 
 void fragment() {
 	vec4 c;
@@ -28,12 +32,13 @@ void fragment() {
 		vec4 acc = vec4(0.0);
 		float wsum = 0.0;
 		for (int i = 0; i < TAPS; i++) {
-			float r = sqrt((float(i) + 0.5) / float(TAPS)) * sigma_texels * 3.0;
+			float r = sqrt((float(i) + 0.5) / float(TAPS)) * sigma_texels * REACH;
 			float a = float(i) * GOLDEN_ANGLE;
 			vec2 off = vec2(cos(a), sin(a)) * r * TEXTURE_PIXEL_SIZE;
-			// r = sqrt((i+0.5)/TAPS) * 3*sigma, so r^2/(2*sigma^2) reduces to
-			// 4.5*(i+0.5)/TAPS regardless of sigma; skip the redundant division.
-			float w = exp(-4.5 * (float(i) + 0.5) / float(TAPS));
+			// r = sqrt((i+0.5)/TAPS) * REACH*sigma, so r^2/(2*sigma^2) reduces to
+			// 0.5*REACH*REACH*(i+0.5)/TAPS regardless of sigma; skip the
+			// redundant division.
+			float w = exp(-0.5 * REACH * REACH * (float(i) + 0.5) / float(TAPS));
 			vec4 s = texture(TEXTURE, UV + off);
 			acc += vec4(s.rgb * s.a, s.a) * w;
 			wsum += w;

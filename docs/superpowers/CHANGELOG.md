@@ -8,6 +8,25 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-23 — Lobby: a WorldEnvironment that actually works, and previews in 2D
+
+The first WorldEnvironment (`f41540f`) was reverted as inert, and the bloom
+shader's header recorded why: "Environment is applied by the 3D renderer."
+That was wrong. An Environment applies to a 2D scene when its
+`background_mode` is `BG_CANVAS`, and the reverted one was on the default.
+Measured over the Lobby: glow on the default background moved the frame by
+0.00008, on Canvas by 0.040, and saturation 0 on Canvas turned the frame grey,
+in the game and in the 2D editor's viewport.
+
+The Lobby now has a `WorldEnvironment` wearing
+`Scenes/Lobby/lobby_environment.tres`: Canvas, soft-light glow at intensity
+1.5, strength 1.2, HDR threshold 0.7 (hdr_2d stays off, so a threshold at 1.0
+would bloom nothing). It adds +1.2% mean luminance: a warm bloom on the shirts,
+paper and highlights. Tune it in the Inspector and watch the 2D view.
+It stacks with the look layer's bloom, which still runs on every screen.
+`test_look_layer.gd` pins Canvas mode, the threshold and hdr_2d off.
+Off/on: `docs/superpowers/mockups/lobby_environment_glow_off_on.png`.
+
 ## 2026-09-23 — Faces: the rim's eye-ring fix now holds on a phone
 
 The rim light's hole reject (`d558b24`) was a screen-pixel reach, 24 px, tuned

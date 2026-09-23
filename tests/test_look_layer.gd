@@ -147,12 +147,10 @@ func test_the_autoload_is_declared_after_its_dependencies() -> void:
 		"LookLayer reads GameSettings in _ready, so it must be declared after it")
 
 
-## The bloom (2026-09-23). Glow, after the WorldEnvironment route was measured
-## and found inert: Environment is applied by the 3D renderer, this game has no
-## Camera3D, and five glow configurations plus all five tonemappers produced one
-## identical frame. A canvas_item shader reading the screen is the only route
-## that works, so it lives here, in the one layer that already draws over
-## everything.
+## The bloom (2026-09-23). A canvas_item shader reading the screen, so it runs
+## on every screen and turns off with the look layer. (It was first justified by
+## the WorldEnvironment route being inert; that was a wrong background mode, not
+## a limit of the engine -- see the Lobby environment test below.)
 func test_the_bloom_is_additive_and_reads_the_screen() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/bloom.gdshader")
 	assert_true(src.contains("render_mode blend_add"),
@@ -197,6 +195,39 @@ func test_the_bloom_costs_nothing_when_the_layer_is_off() -> void:
 ## mostly paper -- a threshold low enough to catch the highlights catches the
 ## whole screen, and the picture turns to fog. Measured on the Lobby at
 ## 1080x1920 against the same baseline the AO pass used.
+const LOBBY_SCENE := "res://Scenes/Lobby/loby.tscn"
+const LOBBY_ENVIRONMENT := "res://Scenes/Lobby/lobby_environment.tres"
+
+
+## The Lobby's WorldEnvironment (2026-09-23). An Environment reaches a 2D scene
+## only with background_mode = BG_CANVAS: the 2D canvas becomes the background
+## the environment post-processes. On the default mode it does nothing at all --
+## measured: glow on the default background moved the frame by 0.00008, on
+## Canvas by 0.040, and saturation 0 on Canvas turned it grey, in the game and in
+## the 2D editor's viewport alike. That missing switch is why the first attempt
+## was reverted as "inert".
+func test_the_lobby_environment_applies_to_2d() -> void:
+	var env: Environment = load(LOBBY_ENVIRONMENT)
+	assert_true(env != null, "the Lobby environment resource must exist")
+	if env == null:
+		return
+	assert_eq(env.background_mode, Environment.BG_CANVAS,
+		"without Canvas background mode an Environment never touches a 2D scene")
+	assert_true(env.glow_enabled, "the environment is there for its glow")
+	assert_true(env.glow_hdr_threshold < 1.0,
+		"hdr_2d is off, so nothing exceeds 1.0: a threshold at or above 1 blooms nothing")
+	assert_true(FileAccess.get_file_as_string(LOBBY_SCENE).contains(LOBBY_ENVIRONMENT),
+		"the Lobby's WorldEnvironment must wear this resource")
+
+
+## Turning hdr_2d on to reach the glow cost 41% of the Lobby's luminance
+## (mean 0.509 -> 0.299: skin went orange, the room murky), and Canvas-mode glow
+## does not need it.
+func test_hdr_2d_stays_off() -> void:
+	assert_false(bool(ProjectSettings.get_setting("rendering/viewport/hdr_2d", false)),
+		"hdr_2d darkens the whole game; the Canvas-mode glow works without it")
+
+
 const BLOOM_THRESHOLD_FLOOR := 0.6
 
 

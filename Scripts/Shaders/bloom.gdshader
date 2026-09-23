@@ -4,13 +4,16 @@ render_mode blend_add;
 // Screen-space bloom for the look layer: the bright parts of the finished frame,
 // blurred and added back over it.
 //
-// WHY THIS IS A 2D SHADER AND NOT A WorldEnvironment. Godot's Environment glow
-// is applied by the 3D renderer. This game has no Camera3D anywhere, so an
-// Environment never runs at all -- measured on 2026-09-23 with five glow and
-// adjustment configurations and all five tonemappers, every one of which
-// produced a byte-identical frame. Reaching it by enabling hdr_2d cost 41% of
-// the frame's luminance and still did not bloom. A canvas_item shader reading
-// the screen is the only route that works here.
+// WHY THIS IS A 2D SHADER AND NOT (ONLY) A WorldEnvironment. This header used to
+// say an Environment never runs in this game. That was wrong: a WorldEnvironment
+// does apply to 2D, but only with background_mode = BG_CANVAS, and the
+// 2026-09-23 experiment left it on the default, which is why every glow and
+// tonemapper setting it tried produced the same frame. The Lobby now carries a
+// Canvas-mode WorldEnvironment (Scenes/Lobby/lobby_environment.tres), because
+// it previews in the 2D editor. This shader stays because it runs on every
+// screen and turns off with the Efek Visual setting; the Lobby gets both, so
+// tune them together. hdr_2d stays off either way: turning it on cost 41% of
+// the frame's luminance.
 //
 // WHY ADDITIVE. blend_add only brightens what is behind it, which is what light
 // does; an alpha-blended overlay would replace the art wherever it is opaque.

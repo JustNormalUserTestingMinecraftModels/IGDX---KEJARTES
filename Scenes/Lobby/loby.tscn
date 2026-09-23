@@ -29,6 +29,7 @@
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
@@ -1127,3 +1128,6 @@ grow_vertical = 2
 [node name="Chatter" type="Node" parent="." unique_id=1817944739]
 script = ExtResource("34_f2e4j")
 bubble_path = NodePath("../ChatBubble")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2049146762]
+environment = ExtResource("41_7qlaa")

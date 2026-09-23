@@ -282,7 +282,7 @@ func _build_ui() -> void:
 	tabs_hbox.add_theme_constant_override("separation", 12)
 	outer_vbox.add_child(tabs_hbox)
 	
-	var tab_names = ["General", "Students", "Minigames", "Scenes", "Prestasi", "Logs"]
+	var tab_names = ["General", "Students", "Minigames", "Scenes", "Prestasi", "Logs", "Look"]
 	for tab in tab_names:
 		var btn = Button.new()
 		btn.text = tab
@@ -318,6 +318,7 @@ func _build_ui() -> void:
 	_build_scenes_panel(content_area)
 	_build_achievements_panel(content_area)
 	_build_logs_panel(content_area)
+	_build_look_panel(content_area)
 
 	# Default tab selection
 	_switch_tab("General")
@@ -1691,3 +1692,82 @@ func _build_logs_panel(parent: Control) -> void:
 	log_text_label.add_theme_constant_override("line_spacing", 6)
 	log_text_label.text = ""
 	log_panel.add_child(log_text_label)
+
+# --- Illustration Look Tuner Tab Panel ---
+## Live control over the illustration look: inner AO, the rim light and the
+## Lobby's shafts. Every slider writes to a SHARED material, so one drag moves
+## every plate on screen at once -- which is the point. Nothing here persists;
+## when a value looks right, write it into the .tres.
+func _build_look_panel(parent: Control) -> void:
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	panels["Look"] = scroll
+
+	var margin_container = MarginContainer.new()
+	margin_container.add_theme_constant_override("margin_left", 30)
+	margin_container.add_theme_constant_override("margin_top", 30)
+	margin_container.add_theme_constant_override("margin_right", 30)
+	margin_container.add_theme_constant_override("margin_bottom", 30)
+	margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin_container)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 24)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin_container.add_child(vbox)
+
+	var lbl_title = Label.new()
+	lbl_title.text = "Tampilan Ilustrasi (live, tidak tersimpan):"
+	lbl_title.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_title)
+
+	var cutout: ShaderMaterial = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
+	_add_look_slider(vbox, cutout, "ao_strength", "Kekuatan AO", 0.0, 1.0, 0.01)
+	_add_look_slider(vbox, cutout, "ao_radius_px", "Lebar AO (piksel layar)", 0.0, 16.0, 0.5)
+	_add_look_slider(vbox, cutout, "rim_strength", "Kekuatan Rim", 0.0, 0.8, 0.01)
+	_add_look_slider(vbox, cutout, "rim_radius_px", "Lebar Rim (piksel layar)", 0.0, 10.0, 0.5)
+
+	var lbl_shafts = Label.new()
+	lbl_shafts.text = "Cahaya Jendela (khusus Lobby):"
+	lbl_shafts.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_shafts)
+
+	var shafts: ShaderMaterial = load("res://Scripts/Shaders/window_shafts_material.tres")
+	_add_look_slider(vbox, shafts, "intensity", "Kekuatan Cahaya", 0.0, 0.4, 0.005)
+	_add_look_slider(vbox, shafts, "shaft_count", "Jumlah Berkas", 3.0, 16.0, 1.0)
+
+	var lbl_note = Label.new()
+	lbl_note.text = "Catatan: nilai di sini hilang saat keluar. Salin ke .tres kalau sudah pas."
+	lbl_note.add_theme_font_size_override("font_size", 20)
+	lbl_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(lbl_note)
+
+
+## One labelled slider bound to one shader uniform on a shared material.
+func _add_look_slider(parent: Control, mat: ShaderMaterial, uniform: String,
+		caption: String, min_value: float, max_value: float, step: float) -> void:
+	if mat == null:
+		return
+	var row = VBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	parent.add_child(row)
+
+	var lbl = Label.new()
+	var current: float = float(mat.get_shader_parameter(uniform))
+	lbl.text = "%s: %.3f" % [caption, current]
+	lbl.add_theme_font_size_override("font_size", 22)
+	row.add_child(lbl)
+
+	var slider = HSlider.new()
+	slider.min_value = min_value
+	slider.max_value = max_value
+	slider.step = step
+	slider.value = current
+	slider.custom_minimum_size = Vector2(0, 60)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(func(v: float):
+		mat.set_shader_parameter(uniform, v)
+		lbl.text = "%s: %.3f" % [caption, v])
+	row.add_child(slider)

@@ -312,3 +312,17 @@ func test_the_shafts_parallax_with_the_room() -> void:
 	if depths.has("WindowShafts"):
 		assert_true(is_equal_approx(depths["WindowShafts"], depths.get("BGLayer", 0.15)),
 			"the shafts come through the back wall, so they share its depth")
+
+
+## The Look page exists so the effect is tuned by the person looking at it.
+## Source-scanned rather than instantiated: DebugManager builds its UI
+## programmatically in _ready and is an autoload, so standing one up in a test
+## would build the whole overlay.
+func test_the_debug_overlay_has_a_look_page() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
+	assert_true(src.contains("_build_look_panel"), "the overlay needs a Look panel builder")
+	assert_true(src.contains('"Look"'), "Look must be registered as a tab")
+	for uniform in ["ao_strength", "ao_radius_px", "rim_strength", "rim_radius_px"]:
+		assert_true(src.contains(uniform), "the Look page must drive %s" % uniform)
+	assert_true(src.contains("illustration_grade_cutout.tres"),
+		"the sliders must write to the shared cutout material")

@@ -41,6 +41,13 @@
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
 
+[sub_resource type="Environment" id="Environment_mbtdr"]
+glow_enabled = true
+glow_intensity = 2.04
+glow_strength = 1.55
+glow_bloom = 0.39
+glow_blend_mode = 2
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
 shader_parameter/overlay_color = Color(0, 0, 0, 0.7)
@@ -69,6 +76,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1316543179]
+environment = SubResource("Environment_mbtdr")
 
 [node name="Classroom" type="Control" parent="." unique_id=1683191108]
 layout_mode = 1

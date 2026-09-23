@@ -45,7 +45,9 @@ shows one splash, for three reasons:
 | Student tiles | 6 x **151x156**, 8px black rounded outline, y **1430-1585**, span x **35-1049** |
 | Back arrow | **(40,1677)-(237,1852)** |
 | Button | outline **(501,1709)-(1007,1849)**, fill `#D21919`, text `#F2F2F2`, Boohong |
-| Title | centred on y~138 (already matches) |
+| Title | Boohong, fill `#F2F2F2`, outline `#201934` (~13px stroke), cap height 61px (font ~74), outer box (348,95)-(718,182). The shipped 96px dark-brown `DisplayLabel` is ~30% too big and has no outline |
+| Button text | Boohong cap height 60px (font 73) |
+| Ink | tiles, divider and button rim are pure black `#000000`, 8px; outer corner radius ~21 (= `radius_button` 20) |
 
 ## Design
 
@@ -78,8 +80,10 @@ SkinSelect.card_pose(t) -> {position: Vector2, scale: float, focus: float}
   just been replaced), as today.
 
 All pose numbers are `@export`s on `SkinSelect`, each with a `##` line:
-`center_origin`, `center_scale`, `side_origin`, `side_scale`, `pitch_px`,
-`side_brightness` (0.71), `side_blur_px` (4.0).
+`center_origin`, `center_scale`, `side_origin`, `side_scale`,
+`side_brightness` (0.71), `side_blur_px` (4.0), `overscroll` (0.35).
+`pitch_px()` is derived from the two slots (centre-to-centre distance), not a
+knob of its own, so moving a slot cannot desync the drag.
 
 ### 2. The blur is on the card's own art
 
@@ -117,8 +121,17 @@ All pose numbers are `@export`s on `SkinSelect`, each with a `##` line:
   - **Dots:** above the divider, y ~1276-1300, centred.
   - **Skin name:** between the tiles and the buttons, y ~1598-1650.
   - **Worn chip:** under the title, y ~200-248, centred.
-- New colours are added as `DesignTokens` entries used by the new variations,
-  then rebaked; no `theme_override_*` (layout constants excepted).
+- `Title` gets a new `SkinTitleLabel` variation (the mockup's white,
+  navy-outlined 74px Boohong) in place of `DisplayLabel`.
+- The mockup's ink, red, text colour, 8px rim and font sizes are single-screen
+  values, so they are named consts in `ThemeFactory.gd` beside
+  `_build_skin_select` (the file's existing pattern, e.g.
+  `EVENT_DIALOGUE_RADIUS`), not new `DesignTokens` exports. The tray fill is
+  the existing `surface_card` token (`#FFFDF8`). Rebaked; no
+  `theme_override_*` (layout constants excepted).
+- The tiles (156 tall) and the button (140 tall) are off the S/M/L button
+  scale. The user asked for a pixel copy, so each gets a reasoned entry in
+  `tests/test_button_geometry.gd`'s `HEIGHT_ALLOWED`.
 
 ### 4. Tall phones
 

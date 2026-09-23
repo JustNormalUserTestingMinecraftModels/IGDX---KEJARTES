@@ -11,9 +11,11 @@ uniform float sigma_texels = 0.0;
 // Multiplier on rgb: 1.0 untouched, the neighbour slot uses 0.71.
 uniform float brightness = 1.0;
 
-// Golden-angle spiral taps covering ~2 sigma. Enough for a sigma of
-// 4-6 texels on two cards at a time.
-const int TAPS = 32;
+// Golden-angle spiral taps covering ~3 sigma. A 2D Gaussian truncated at
+// 2 sigma under-blurs (effective sigma ~0.83x what was asked for); 3 sigma
+// keeps it close to the true value (~0.97x). TAPS is raised to keep the
+// wider disk dense.
+const int TAPS = 48;
 const float GOLDEN_ANGLE = 2.39996323;
 
 void fragment() {
@@ -26,7 +28,7 @@ void fragment() {
 		vec4 acc = vec4(0.0);
 		float wsum = 0.0;
 		for (int i = 0; i < TAPS; i++) {
-			float r = sqrt((float(i) + 0.5) / float(TAPS)) * sigma_texels * 2.0;
+			float r = sqrt((float(i) + 0.5) / float(TAPS)) * sigma_texels * 3.0;
 			float a = float(i) * GOLDEN_ANGLE;
 			vec2 off = vec2(cos(a), sin(a)) * r * TEXTURE_PIXEL_SIZE;
 			float w = exp(-(r * r) / (2.0 * sigma_texels * sigma_texels));

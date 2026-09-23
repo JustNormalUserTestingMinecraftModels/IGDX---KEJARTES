@@ -336,7 +336,9 @@ func test_tray_is_laid_out_to_the_mockup() -> void:
 	assert_true(rail.contains("offset_top = 102.0") and rail.contains("offset_bottom = 258.0"),
 		"tiles at y 1430-1586")
 	var back := _node_block(src, "BackButton")
-	for v in ["offset_left = 40.0", "offset_top = 349.0", "offset_right = 237.0", "offset_bottom = 524.0"]:
+	# texture_normal has transparent padding, so the rect is sized so the
+	# DRAWN arrow, not the rect, lands on the mockup's (40,1677)-(237,1852).
+	for v in ["offset_left = 37.0", "offset_top = 344.0", "offset_right = 239.0", "offset_bottom = 546.0"]:
 		assert_true(back.contains(v), "BackButton " + v)
 	var btn := _node_block(src, "Terapkan")
 	for v in ["offset_left = 501.0", "offset_top = 381.0", "offset_right = 1007.0", "offset_bottom = 521.0"]:
@@ -375,4 +377,4 @@ func test_mockup_styles_exist_with_measured_values() -> void:
 	assert_eq(theme.get_font_size("font_size", "SkinApplyButton"), 73)
 	assert_eq(theme.get_color("font_color", "SkinTitleLabel"), Color("F2F2F2"))
 	assert_eq(theme.get_color("font_outline_color", "SkinTitleLabel"), Color("201934"))
-	assert_eq(theme.get_font_size("font_size", "SkinTitleLabel"), 74)
+	assert_eq(theme.get_font_size("font_size", "SkinTitleLabel"), 79)

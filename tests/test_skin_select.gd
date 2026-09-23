@@ -3,7 +3,9 @@ extends McpTestSuite
 
 ## SkinSelect.tscn / .gd: the full-screen skin picker that replaced
 ## SkinSelectPopup's card-of-four (spec:
-## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md).
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md;
+## the carousel's continuous-scroll pose:
+## docs/superpowers/specs/2026-09-23-skin-select-slide-design.md).
 ##
 ## Drives real state through GameState.equip_skin, and restores
 ## equipped_skins / skin_unlock_overrides in teardown.
@@ -217,3 +219,100 @@ func test_no_theme_overrides_beyond_layout_constants() -> void:
 		var is_layout := line.begins_with("theme_override_constants/separation") \
 			or line.begins_with("theme_override_constants/margin")
 		assert_true(is_layout, "unexpected theme override in SkinSelect.tscn: " + line)
+
+
+## Measured off skinselection_mockup.png (spec 2026-09-23): the centred
+## splash at 0.818 from (85,153), the right neighbour at 0.658 from (676,370).
+func test_card_pose_hits_the_mockups_two_slots() -> void:
+	var s := _new_screen()
+	var c: Dictionary = s.card_pose(0.0)
+	assert_true((c.position as Vector2).distance_to(Vector2(85, 153)) < 0.01, str(c.position))
+	assert_true(absf(float(c.scale) - 0.818) < 0.0001)
+	assert_true(absf(float(c.focus) - 1.0) < 0.0001)
+	var r: Dictionary = s.card_pose(1.0)
+	assert_true((r.position as Vector2).distance_to(Vector2(676, 370)) < 0.01, str(r.position))
+	assert_true(absf(float(r.scale) - 0.658) < 0.0001)
+	assert_true(absf(float(r.focus) - 0.0) < 0.0001)
+
+
+## Position, scale and focus are all linear in |t| up to one card, so the
+## halfway pose is the midpoint of the two slots.
+func test_card_pose_is_the_midpoint_halfway() -> void:
+	var s := _new_screen()
+	var h: Dictionary = s.card_pose(0.5)
+	assert_true((h.position as Vector2).distance_to(Vector2(380.5, 261.5)) < 0.01, str(h.position))
+	assert_true(absf(float(h.scale) - 0.738) < 0.0001)
+	assert_true(absf(float(h.focus) - 0.5) < 0.0001)
+
+
+## The left neighbour mirrors the right one around the centred card's middle.
+func test_the_left_neighbour_mirrors_the_right() -> void:
+	var s := _new_screen()
+	var mid := 85.0 + 1080.0 * 0.818 * 0.5
+	var r: Dictionary = s.card_pose(1.0)
+	var l: Dictionary = s.card_pose(-1.0)
+	var r_cx: float = (r.position as Vector2).x + 1080.0 * float(r.scale) * 0.5
+	var l_cx: float = (l.position as Vector2).x + 1080.0 * float(l.scale) * 0.5
+	assert_true(absf((mid - l_cx) - (r_cx - mid)) < 0.01)
+	assert_eq((l.position as Vector2).y, (r.position as Vector2).y)
+	assert_true(absf(s.pitch_px() - 504.6) < 0.01)
+
+
+## The regression this pass exists for: with the first skin centred, the
+## second must actually be on screen, dim and blurred.
+func test_the_neighbour_is_on_screen_when_settled() -> void:
+	var s := _new_screen()
+	var centre := s.card_for(0)
+	var side := s.card_for(1)
+	assert_eq(centre.focus, 1.0)
+	assert_eq(side.focus, 0.0)
+	assert_true(side.position.x < 1080.0 - 150.0,
+		"the neighbour must show a real slice of itself, got x=%s" % side.position.x)
+
+
+## Focus follows the finger, not the selection: half a pitch of drag puts
+## both cards at half focus before anything is released.
+func test_dragging_half_a_pitch_half_focuses_both_cards() -> void:
+	var s := _new_screen()
+	s._begin_drag(700.0)
+	s._update_drag(700.0 - s.pitch_px() * 0.5)
+	assert_true(absf(s.scroll() - 0.5) < 0.0001)
+	assert_true(absf(s.card_for(0).focus - 0.5) < 0.0001)
+	assert_true(absf(s.card_for(1).focus - 0.5) < 0.0001)
+
+
+func test_a_drag_past_the_end_stops_at_the_overscroll() -> void:
+	var s := _new_screen()
+	s._begin_drag(700.0)
+	s._update_drag(700.0 + s.pitch_px() * 3.0)
+	assert_true(absf(s.scroll() - (-s.overscroll)) < 0.0001)
+
+
+## Settling snaps (no tween in the editor), and the selected card ends
+## centred and crisp.
+func test_select_skin_centres_that_card() -> void:
+	var s := _new_screen()
+	s.select_skin(1)
+	assert_true(absf(s.scroll() - 1.0) < 0.0001)
+	assert_true(s.card_for(1).position.distance_to(Vector2(85, 153)) < 0.01,
+		str(s.card_for(1).position))
+	assert_eq(s.card_for(1).focus, 1.0)
+
+
+## The nearer card draws on top, so a neighbour never covers the centre.
+func test_the_centred_card_draws_last() -> void:
+	var s := _new_screen()
+	var track := s.get_node("%Track")
+	assert_eq(track.get_child(track.get_child_count() - 1), s.card_for(0))
+	s.select_skin(1)
+	assert_eq(track.get_child(track.get_child_count() - 1), s.card_for(1))
+
+
+func test_track_is_a_plain_control_not_a_box() -> void:
+	assert_eq(get_class_of_track(), "Control")
+
+
+func get_class_of_track() -> String:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var at := src.find('[node name="Track"')
+	return src.substr(at).get_slice('type="', 1).get_slice('"', 0)

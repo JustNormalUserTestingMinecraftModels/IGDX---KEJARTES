@@ -663,3 +663,19 @@ func test_play_ambience_ignores_an_unknown_bed() -> void:
 	AudioDirector.play_ambience(&"not_a_real_bed")
 	var player: AudioStreamPlayer = AudioDirector.get_ambience_player()
 	assert_false(player.playing, "an unknown bed must leave the player quiet")
+
+
+func test_play_chord_plays_each_known_id() -> void:
+	# Behavioural: after a chord of two known ids, at least two pool players
+	# hold a stream. This proves layering actually reaches the pool.
+	AudioDirector.play_chord([&"reward", &"sparkle"], [1.0, 1.1])
+	var playing := 0
+	for p in AudioDirector._sfx_pool:
+		if p.stream != null:
+			playing += 1
+	assert_true(playing >= 2, "a two-id chord assigns at least two pool players")
+
+
+func test_play_chord_is_null_safe_on_unknown_ids() -> void:
+	AudioDirector.play_chord([&"definitely_not_a_cue"])  # must not throw
+	assert_true(true, "unknown chord id did not throw")

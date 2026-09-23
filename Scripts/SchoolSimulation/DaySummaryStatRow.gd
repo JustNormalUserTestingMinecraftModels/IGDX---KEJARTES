@@ -243,35 +243,43 @@ func _reset_chevron() -> void:
 ## to 0.0 and would otherwise empty the track.
 func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	track.value = _fill_from
-	Juice.fill_bar(track, _fill_to, -1.0, delay)
+	# Capture the fill tween so the stat cue fires when the bar LANDS
+	# (delay + fill duration), not at t=0. A card's rows are staggered by
+	# delay, so firing the cue immediately made every row's cue slap in
+	# together while the bars were still travelling; on `finished` they chime
+	# in sequence, patient, one bar landing after another.
+	var fill_tw := Juice.fill_bar(track, _fill_to, -1.0, delay)
 	if chevron.visible:
 		Juice.pop_in(chevron, delay)
 		_play_burst(delay, plays_sparkle)
+		if not Engine.is_editor_hint():
+			if fill_tw != null and fill_tw.is_valid():
+				fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_gain", self, {"queued": true}))
+			else:
+				RewardFeedback.play(&"stat_gain", self, {"queued": true})
 	elif _delta < 0.0 and not Engine.is_editor_hint():
 		# A losing row had no cue at all before the 2026-09-21 sound pack: the
 		# chevron only shows on a gain, so the whole fall happened in silence.
-		AudioDirector.play_sfx(&"stat_down")
+		if fill_tw != null and fill_tw.is_valid():
+			fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_loss", self, {"queued": true}))
+		else:
+			RewardFeedback.play(&"stat_loss", self, {"queued": true})
 	Juice.count_up_formatted(value, 0.0, _delta,
 		func(v: float) -> String: return format_value(v, _target), delay)
 
 
-## The gain's reward: a star burst centred on the chevron, plus the rising
-## stat cue on the same beat -- that cue always plays on a real gain; only
-## the burst's own sparkle cue is deduplicated across a card's gesture
-## (see DaySummaryStudentRow.play_gain). Editor-gated -- the test runner
-## builds these rows to inspect them, not to watch them.
-##
-## The cue was the generic `tally` tick until the 2026-09-21 sound pack
-## brought a real rising ding. `tally` is still the right cue elsewhere
-## (StatCheck's count-up, WeekRecapPill), where the number is being counted
-## rather than going up.
+## The gain's reward burst, centred on the chevron. The rising stat cue is
+## fired separately by play_gain, on the beat the fill bar LANDS, so a card's
+## staggered rows chime in sequence rather than all at once. Only the burst's
+## own sparkle cue is deduplicated across a card's gesture (see
+## DaySummaryStudentRow.play_gain). Editor-gated -- the test runner builds
+## these rows to inspect them, not to watch them.
 func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	if Engine.is_editor_hint():
 		return
 	var fx := _get_or_make_burst(chevron.position + chevron.size * 0.5)
 	fx.plays_sfx = plays_sparkle
 	fx.fire(delay)
-	AudioDirector.play_sfx(&"stat_up")
 
 
 # ── The weekly reveal (2026-09-14 weekly-report-reveal spec) ─────────

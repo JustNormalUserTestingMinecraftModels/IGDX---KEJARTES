@@ -282,7 +282,7 @@ func _build_ui() -> void:
 	tabs_hbox.add_theme_constant_override("separation", 12)
 	outer_vbox.add_child(tabs_hbox)
 	
-	var tab_names = ["General", "Students", "Minigames", "Scenes", "Prestasi", "Logs", "Look"]
+	var tab_names = ["General", "Students", "Minigames", "Scenes", "Prestasi", "Feedback", "Logs", "Look"]
 	for tab in tab_names:
 		var btn = Button.new()
 		btn.text = tab
@@ -317,6 +317,7 @@ func _build_ui() -> void:
 	_build_minigames_panel(content_area)
 	_build_scenes_panel(content_area)
 	_build_achievements_panel(content_area)
+	_build_feedback_panel(content_area)
 	_build_logs_panel(content_area)
 	_build_look_panel(content_area)
 
@@ -1643,6 +1644,53 @@ func _refresh_achievements_panel() -> void:
 		btn_relock.disabled = state == Achievements.STATE_LOCKED
 
 # --- Logs/Console Panel ---
+## Reward feedback audition gallery (2026-09-23). One button per RewardFeedback
+## moment, firing the real combo against the current scene, plus a switch that
+## hides the desktop haptic pip so trailer footage records clean.
+func _build_feedback_panel(parent: Control) -> void:
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	panels["Feedback"] = scroll
+
+	var margin = MarginContainer.new()
+	for side in ["left", "top", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 30)
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 18)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.add_child(vbox)
+
+	# Clean-record switch: hide the haptic pip while everything else fires.
+	var clean = CheckButton.new()
+	clean.text = " Tampilkan Indikator Haptic "
+	clean.button_pressed = Haptics.show_indicator
+	clean.add_theme_font_size_override("font_size", 22)
+	clean.toggled.connect(func(on: bool): Haptics.show_indicator = on)
+	vbox.add_child(clean)
+
+	for moment in RewardFeedback.RECIPES:
+		var btn = Button.new()
+		btn.text = "  ▶  " + String(moment)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.custom_minimum_size = Vector2(0, 80)
+		btn.add_theme_font_size_override("font_size", 22)
+		var m: StringName = moment
+		btn.pressed.connect(func():
+			var opts := {}
+			if m == &"star_earned":
+				opts = {"step": 3}
+			elif m == &"badge_reveal":
+				opts = {"band": "Amazing"}
+			RewardFeedback.play(m, get_tree().current_scene, opts)
+			log_message("Fired reward feedback: " + String(m)))
+		vbox.add_child(btn)
+
+
 func _build_logs_panel(parent: Control) -> void:
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)

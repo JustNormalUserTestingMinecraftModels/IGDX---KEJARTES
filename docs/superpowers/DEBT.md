@@ -118,6 +118,23 @@ which gave real streams to `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
 `exam_notice` and `run_result`. `specialty_match`'s alias is set only in
 `audio_director.tscn`; the script default is null.
 
+**Reward-feedback shopping list (2026-09-23).** The `RewardFeedback`
+orchestrator reuses existing streams via pitch, layering (`play_chord`) and the
+tier system, but three genuinely new sounds would lift the warmth. Drop each at
+its slot path (swappable, no code change); until then the slot aliases an
+existing stream:
+- a warm kids "yay"/cheer — the Celebration `play_chord` partner
+- a soft chord "ta-da" — the Celebration base
+- a dry chalk/paper tick — the Tick tier's character
+
+**`badge_reveal_stream()` is defined but never called (found 2026-09-23).**
+`AudioDirector.badge_reveal_stream(band)` maps the five grade bands to their
+`sfx_badge_reveal_*` slots, but no screen ever plays it — the EndCutscene badge
+reveal has only its BGM and (since 2026-09-23) `RewardFeedback`'s physical
+channels (haptic/shake/confetti), not the band cue. Wiring it needs an
+AudioDirector path that plays a stream by value (the badge ids are not in
+`_resolve_sfx`), so it was left out of the reward-feedback pass.
+
 **`classroomAmbient3.ogg` is corrupt at source (2026-09-21).** The Drive pack's
 third classroom bed is a 4 KB stub whose Vorbis identification header declares
 **zero channels**; the file on Drive is the same 4022 bytes, so it did not
@@ -481,10 +498,24 @@ widget via `project_run` instead, which exercises it fine.
 - **SkinSelect's skin names are derived (2026-09-22).**
   `SkinSelect.skin_label` turns `default` into "Seragam Sekolah" and `skin1`
   into "Seragam 1". Real names belong in `StudentSkins.SKINS` once there is
-  more than one extra skin per character. The carousel's neighbour card
-  peeks only 104px past a 1080-wide screen (card 752 + separation 60); the
-  mockup drew a wider peek, which would need a negative track separation or
-  a narrower card.
+  more than one extra skin per character.
+
+- **SkinSelect's flick detection doesn't decay stale motion (2026-09-23).**
+  `_release_velocity` keeps whatever the last motion sample was, so a fast
+  drag that stops and is held before release still reads as a flick. Zero it
+  when more than ~80ms have passed since the last motion sample.
+
+- **SkinSelect's Lock icon stays crisp on a blurred neighbour card
+  (2026-09-23).** It's a sibling of Art rather than a child inside the
+  blurred/dimmed material, so a locked, unfocused card's lock reads sharp
+  against its blurred splash. Reads as a label rather than part of the
+  illustration, which is acceptable for now.
+
+- **skin_card_focus.gdshader's blur cost is unmeasured on low-end Android
+  (2026-09-23).** 48 taps per pixel on a full-size card, and mid-slide both
+  the centred and the neighbour card are on the blurred path at once. If it
+  drops frames while dragging, precompute the per-tap offsets/weights (they
+  depend only on `i`, not on `sigma_texels`) or blur a downsampled copy.
 
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a

@@ -8,6 +8,47 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-23 — SkinSelect: two splashes on screen, focus follows the finger
+
+**The second splash never showed, for two separate reasons.** The 752-wide
+cards put the neighbour's figure at x~1185, off screen. And the "blurred"
+neighbour wore `blur.gdshader`, which samples `SCREEN_TEXTURE`: on a card it
+drew a blurred rectangle of the background, never the card's own art. Cards
+are now the splash's full 1080x1920 canvas, posed each frame from one float
+(`SkinSelect._scroll`) by `card_pose(t)`, and blurred and dimmed by
+`skin_card_focus.gdshader` on the card's own texture. Brightness, blur, scale
+and position follow the drag continuously instead of switching on selection.
+
+Every number was fitted to `skinselection_mockup.png` and then re-measured in
+the running game: the centre splash at 0.818 from (85,153), the neighbour at
+0.658 from (676,370) at x0.71 brightness and sigma 4px. The first build blurred
+only ~3.5px, because the spiral stopped at 2 sigma, which shrinks a truncated
+2D Gaussian to ~0.83x. It now reaches 3 sigma. The tray, tiles, back arrow,
+TERAPKAN and title were redrawn to the mockup (new `SkinTray`,
+`SkinApplyButton` and `SkinTitleLabel` variations built from single-screen
+consts in `ThemeFactory`). The back arrow's rect is oversized on purpose,
+because `return_button.png` carries transparent padding. The 151x156 tiles
+and the 140-tall button are pixel copies and so sit off the S/M/L scale, with
+reasoned `HEIGHT_ALLOWED` entries. The mockup's backdrop was Koperasi's room
+blurred; the user kept the live Lobby. The title matches cap height and
+stroke, not width, because Boohong is narrower than the mockup's lettering.
+Spec and plan: `docs/superpowers/specs/2026-09-23-skin-select-slide-design.md`,
+`docs/superpowers/plans/2026-09-23-skin-select-slide.md`.
+
+## 2026-09-23 — Reward feedback pass
+
+Added `RewardFeedback`, a multi-sensory reward orchestrator (layered sound +
+particles + haptics + screenshake) across ~15 reward moments, unified by three
+"weight" tiers (Tick/Pop/Celebration). New `Haptics` helper (phone motor on
+mobile, a labelled debug pip on desktop so the effect is reviewable on PC), an
+`AudioDirector.play_chord` for layered cues, and `GameSettings.haptics_enabled`
+/ `reduce_motion` toggles surfaced in Settings. A debug **Feedback** gallery tab
+auditions every moment on demand (with a clean-record switch that hides the
+haptic pip for trailer capture). Screens that already own bespoke particles
+(the minigame result popup, the claim popup) mark `no_particles` so
+`RewardFeedback` adds only sound/haptic/shake there. Spec and plan:
+`docs/superpowers/specs/2026-09-23-reward-feedback-pass-design.md`,
+`docs/superpowers/plans/2026-09-23-reward-feedback-pass.md`.
 ## 2026-09-23 — Illustration AO, rim light, outer AO and Lobby shafts
 
 Design in `docs/superpowers/specs/2026-09-23-illustration-ao-rim-design.md`,

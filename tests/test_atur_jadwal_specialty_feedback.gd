@@ -56,8 +56,8 @@ func test_activity_selected_plays_specialty_feedback_conditionally() -> void:
 		"_on_activity_selected must check is_specialty() against the assigned student")
 	assert_true(src.contains("_assigned_note.play_specialty_match()"),
 		"a specialty match must play the sticky note's matched-state animation")
-	assert_true(src.contains("AudioDirector.play_sfx(&\"specialty_match\")"),
-		"a specialty match must play the specialty_match cue")
+	assert_true(src.contains('RewardFeedback.play(&"specialty_match"'),
+		"a specialty match must fire the specialty_match cue through RewardFeedback")
 	assert_true(src.contains("_assigned_note.play_assign_pop()"),
 		"a non-specialty assignment must still play the plain assign pop")
 

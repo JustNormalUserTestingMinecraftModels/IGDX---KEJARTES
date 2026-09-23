@@ -265,7 +265,7 @@ func test_it_plays_the_report_bgm_and_the_grade_stings() -> void:
 	assert_true(src.contains("play_bgm(&\"run_result\")"), "report BGM")
 	assert_true(src.contains("play_sfx(&\"stamp\")"), "the letter slams")
 	assert_true(src.contains("play_sfx(&\"coin\")"), "the money row chimes")
-	assert_true(src.contains("play_sfx(&\"reward\")"), "an A-band grade rewards")
+	assert_true(src.contains('RewardFeedback.play(&"run_win"'), "an A-band grade fires the run_win celebration")
 	assert_true(src.contains("play_sfx(&\"fail\")"), "a D grade stings")
 
 

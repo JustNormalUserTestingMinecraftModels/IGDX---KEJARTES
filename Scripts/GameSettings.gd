@@ -31,6 +31,14 @@ var minigame_tutorial_enabled: bool = true
 ## Shorten (Lobby panel, 2026-09-14): true skips the EventDialogue line before
 ## each minigame. Saved beside the tutorial switch.
 var skip_event_dialogue: bool = false
+## Reward haptics (2026-09-23): true lets Haptics.buzz() drive the phone's
+## vibration motor. Off = a silent no-op on every platform. Saved beside the
+## other switches.
+var haptics_enabled: bool = true
+## Reward motion (2026-09-23): true tells RewardFeedback to skip screenshake
+## and screen confetti (sound and haptic still fire), for players who dislike
+## motion. Saved beside the other switches.
+var reduce_motion: bool = false
 
 ## Premium-look pass (2026-09-22): whether the global look layer -- the
 ## vignette and film grain LookLayer draws over every screen -- is on.
@@ -67,6 +75,8 @@ func save_settings() -> void:
 	config.set_value("pengaturan", "minigame_tutorial", minigame_tutorial_enabled)
 	config.set_value("pengaturan", "skip_dialog", skip_event_dialogue)
 	config.set_value("pengaturan", "look_layer", look_layer_enabled)
+	config.set_value("pengaturan", "haptics", haptics_enabled)
+	config.set_value("pengaturan", "reduce_motion", reduce_motion)
 	if not Engine.is_editor_hint():
 		config.set_value("progres", "is_game_beaten", GameState.is_game_beaten)
 		config.set_value("progres", "debug_level_select", GameState.debug_level_select_enabled)
@@ -78,6 +88,8 @@ func load_settings() -> void:
 		minigame_tutorial_enabled = config.get_value("pengaturan", "minigame_tutorial", true)
 		skip_event_dialogue = config.get_value("pengaturan", "skip_dialog", false)
 		look_layer_enabled = config.get_value("pengaturan", "look_layer", false)
+		haptics_enabled = config.get_value("pengaturan", "haptics", true)
+		reduce_motion = config.get_value("pengaturan", "reduce_motion", false)
 		if not Engine.is_editor_hint():
 			GameState.is_game_beaten = config.get_value("progres", "is_game_beaten", false)
 			GameState.debug_level_select_enabled = config.get_value("progres", "debug_level_select", true)

@@ -24,6 +24,8 @@ extends Control
 @onready var _tutorial: CheckButton = %TutorialToggle
 @onready var _skip_dialog: CheckButton = %SkipDialogToggle
 @onready var _look_layer: CheckButton = %LookLayerToggle
+@onready var _haptics: CheckButton = %HapticsToggle
+@onready var _reduce_motion: CheckButton = %ReduceMotionToggle
 @onready var _back: Button = %BackButton
 
 ## The screen Back returns to. MainMenu by default; the Lobby's Settings gear
@@ -38,6 +40,8 @@ func _ready() -> void:
 	_tutorial.button_pressed = GameSettings.minigame_tutorial_enabled
 	_skip_dialog.button_pressed = GameSettings.skip_event_dialogue
 	_look_layer.button_pressed = GameSettings.look_layer_enabled
+	_haptics.button_pressed = GameSettings.haptics_enabled
+	_reduce_motion.button_pressed = GameSettings.reduce_motion
 
 	_master.value_changed.connect(_on_volume_changed.bind(&"Master"))
 	_bgm.value_changed.connect(_on_volume_changed.bind(&"BGM"))
@@ -45,6 +49,8 @@ func _ready() -> void:
 	_tutorial.toggled.connect(_on_tutorial_toggled)
 	_skip_dialog.toggled.connect(_on_skip_dialog_toggled)
 	_look_layer.toggled.connect(_on_look_layer_toggled)
+	_haptics.toggled.connect(_on_haptics_toggled)
+	_reduce_motion.toggled.connect(_on_reduce_motion_toggled)
 	_back.pressed.connect(_on_back_pressed)
 
 	if Engine.is_editor_hint():
@@ -101,6 +107,21 @@ func _on_skip_dialog_toggled(pressed: bool) -> void:
 ## is listening to, so the layer fades in without leaving this screen.
 func _on_look_layer_toggled(pressed: bool) -> void:
 	GameSettings.look_layer_enabled = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Getaran (Haptic)": drives phone vibration on reward moments. Saved.
+func _on_haptics_toggled(pressed: bool) -> void:
+	GameSettings.haptics_enabled = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Kurangi Gerakan": drops screenshake and screen confetti (sound and haptic
+## still fire) for players who dislike motion. Saved.
+func _on_reduce_motion_toggled(pressed: bool) -> void:
+	GameSettings.reduce_motion = pressed
 	if not Engine.is_editor_hint():
 		GameSettings.save_settings()
 

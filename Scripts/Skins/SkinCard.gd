@@ -8,17 +8,13 @@ extends Control
 ## centred card is crisp and full colour; the ones either side are dimmed
 ## and blurred so the middle one reads as the selection.
 ##
-## The card is 752x1337, not 1080x1920: the tray's top edge is at y=1337, so
-## a full-screen splash would lose its bottom 583px -- the shoes and the
-## skirt hem, on the one screen whose job is showing an outfit. Scaled to
-## the band's height the figure is 752 wide and wholly visible, which also
-## leaves 328px for the neighbouring card to peek into.
+## The card is the splash's own 1080x1920 canvas. SkinSelect poses it every
+## frame the carousel moves (set_pose): position, scale, and a focus from 0
+## (the neighbour slot: dimmed, blurred) to 1 (centred: crisp). The blur is
+## skin_card_focus.gdshader on Art's local-to-scene material, so it blurs
+## this card's own splash, not the screen behind it.
 ##
 ## @tool so the test runner can drive it; it has no side effects of its own.
-
-## The blur worn by every card except the centred one. A preloaded resource
-## swapped onto Art, never built at runtime.
-const BLUR_MATERIAL := preload("res://Scenes/Skins/skin_option_blur_material.tres")
 
 ## Drag speed (px/s) past which a flick picks the next card on its own,
 ## whatever distance it covered. Mirrors BasketTray's own flick threshold so
@@ -29,11 +25,11 @@ const FLICK_SPEED := 600.0
 ## springs back.
 const COMMIT_RATIO := 0.5
 
-## Tint on a card that is not the centred one.
-@export var unselected_modulate: Color = Color(0.55, 0.55, 0.62, 1.0)
-
 ## The skin id shown, "" before show_skin().
 var skin_id: String = ""
+
+## The focus set_pose last applied, 0 (neighbour) to 1 (centred).
+var focus: float = 1.0
 
 
 ## Where a released drag settles. `travel` is how far the track has moved
@@ -61,8 +57,19 @@ func show_skin(who: String, id: String, locked: bool) -> void:
 	(get_node(^"Lock") as Control).visible = locked
 
 
-## Crisp and full colour when centred, dimmed and blurred otherwise.
-func set_selected(sel: bool) -> void:
-	var art := get_node(^"Art") as TextureRect
-	art.modulate = Color.WHITE if sel else unselected_modulate
-	art.material = null if sel else BLUR_MATERIAL
+## Places and styles the card for one frame of the carousel. `origin` and
+## `card_scale` are in the carousel's design pixels. `focus` runs from 0 (the
+## neighbour slot) to 1 (centred). `side_brightness` and `side_blur_px` are
+## the neighbour slot's look, and the blur is in SCREEN pixels, converted to
+## texels here because the texture is drawn at `card_scale`.
+func set_pose(origin: Vector2, card_scale: float, focus_amount: float,
+		side_brightness: float, side_blur_px: float) -> void:
+	focus = clampf(focus_amount, 0.0, 1.0)
+	position = origin
+	scale = Vector2(card_scale, card_scale)
+	var mat := (get_node(^"Art") as TextureRect).material as ShaderMaterial
+	if mat == null:
+		return
+	mat.set_shader_parameter(&"brightness", lerpf(side_brightness, 1.0, focus))
+	mat.set_shader_parameter(&"sigma_texels",
+		(1.0 - focus) * side_blur_px / maxf(card_scale, 0.01))

@@ -35,7 +35,7 @@ func open(entry: Dictionary) -> void:
 	content.modulate.a = 0.0
 	create_tween().tween_property(content, "modulate:a", 1.0, fade_in_time)
 	Juice.pop_in(icon)
-	AudioDirector.play_sfx(&"tap")
+	RewardFeedback.play(&"achievement_claimed", self)
 	confetti.fire()
 	get_tree().create_timer(input_lock_time).timeout.connect(func() -> void: _accepting = true)
 

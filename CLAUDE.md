@@ -202,7 +202,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 144 suites, 2095 tests (2026-09-22).
+the Godot AI MCP `test_run` tool. 151 suites, 2190 tests (2026-09-23).
 
 Hard constraints:
 

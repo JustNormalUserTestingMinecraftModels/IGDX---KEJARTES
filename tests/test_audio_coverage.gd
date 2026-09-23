@@ -85,9 +85,12 @@ func test_student_card_interactions_have_sfx() -> void:
 
 func test_lobby_interactions_have_sfx() -> void:
 	var src := _source("res://Scripts/Lobby/loby.gd")
-	for id in ["reward", "popup_open"]:
-		assert_true(src.contains('play_sfx(&"%s")' % id),
-			"loby must play sfx: " + id)
+	assert_true(src.contains('play_sfx(&"popup_open")'),
+		"loby must play sfx: popup_open")
+	# The daily-login claim's reward now routes through RewardFeedback
+	# (coins_earned) instead of a lone play_sfx(&"reward") -- 2026-09-23 pass.
+	assert_true(src.contains('RewardFeedback.play(&"coins_earned"'),
+		"loby claim must route its reward through RewardFeedback")
 
 
 func test_student_list_interactions_have_sfx() -> void:
@@ -105,8 +108,8 @@ func test_atur_jadwal_interactions_have_sfx() -> void:
 
 func test_school_day_has_sfx_at_all() -> void:
 	var src := _source("res://Scripts/SchoolSimulation/SchoolDay.gd")
-	assert_true(src.contains('play_sfx(&"reward")'),
-		"SchoolDay must play sfx: reward")
+	assert_true(src.contains('RewardFeedback.play(&"week_cleared"'),
+		"SchoolDay must route the week-clear reward through RewardFeedback")
 	# The mid-day interruption cue moved into the sliding EventWarning
 	# (2026-09-12): it plays event_announce once per warning, so SchoolDay
 	# no longer plays its own popup_open before a minigame or event.
@@ -498,3 +501,14 @@ func test_every_reward_cue_resolves_to_a_real_stream() -> void:
 func test_specialty_match_cue_resolves_to_a_real_stream() -> void:
 	assert_true(AudioDirector.has_sfx(&"specialty_match"),
 		"specialty_match resolves to a stream")
+
+
+func test_flagship_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/SchoolSimulation/SchoolDay.gd": &"week_cleared",
+		"res://Scripts/Lobby/loby.gd": &"coins_earned",
+	}
+	for path in expected:
+		var src := _source(path)
+		assert_true(src.contains('RewardFeedback.play(&"%s"' % expected[path]),
+			'%s must call RewardFeedback.play(&"%s")' % [path, expected[path]])

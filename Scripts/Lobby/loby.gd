@@ -843,7 +843,7 @@ func _on_claim_pressed():
 	# The tiles are gone -- the panel itself is what pops now.
 	if daily_reward:
 		Juice.pop_in(daily_reward)
-	AudioDirector.play_sfx(&"reward")
+	RewardFeedback.play(&"coins_earned", money_label)
 
 	GameState.daily_login_day += 1
 	if GameState.daily_login_day > 7:

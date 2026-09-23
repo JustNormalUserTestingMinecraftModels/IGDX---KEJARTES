@@ -8,6 +8,28 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-23 — Faces: no more AO "eyeshadow"
+
+**Every Lobby student looked like they wore dark eyeshadow.** The faces are
+drawn with the eye sockets cut out of the base plate, and the illustration
+grade's inner AO darkens toward any transparent neighbour, so it painted a
+brown band (0.70 strength, 6 px) inside every socket. The rim light had the
+same blind spot and was fixed earlier the same day; the AO was not.
+
+`illustration_grade.gdshader` now routes each AO tap through `ao_tap()`: a tap
+that finds transparency probes 0.5x and 1x `ao_hole_reject_texels` out on all
+four sides, and a gap walled in by plate on every side counts as solid. The
+air beside a head is never walled in, so the outline keeps its shading. Only
+`illustration_grade_face.tres` turns it on (200 texels; eye sockets are 125-170
+wide). The reach is in texels, not screen pixels, because a hole belongs to the
+art: a screen-pixel reach tuned at 1080 wide would miss on a 1440-wide phone.
+
+Measured in the running Lobby, AO on with the check off vs on, against AO
+off: the darkening inside the eye ring fell to 0 on all four faces on screen,
+and the outline kept 100% of its darkening. An offline run of the same test
+on all twelve face bases (defaults and skin1s) set the 170-240 texel range
+`tests/test_illustration_ao.gd` pins.
+
 ## 2026-09-23 — SkinSelect: two splashes on screen, focus follows the finger
 
 **The second splash never showed, for two separate reasons.** The 752-wide

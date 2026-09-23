@@ -402,6 +402,14 @@ widget via `project_run` instead, which exercises it fine.
     each face's `Base`; `Pupil` already carries `eye_mask.gdshader` and a
     CanvasItem has one material slot. It is a few hundred pixels of iris and
     reads fine, but a CanvasGroup pass would close it.
+  - **The rim's hole reject is sized in screen pixels; the AO's is in
+    texels.** `rim_hole_reject_px` (24) was tuned on a 1080-wide frame where
+    the faces draw at ~0.3x, so it spans ~80 texels there, ~40 on a
+    1440-wide phone, and ~170 in the editor's half-size embedded run. A hole
+    is a feature of the art, so on a sharper phone the cream eye rings could
+    come back. `ao_hole_reject_texels` measures in texels for this reason;
+    moving the rim to texels means re-running its heatmap against the collar
+    ceiling in `tests/test_illustration_ao.gd`.
   - **Item 12, VRAM compression, is built and reverted, not skipped.** The
     project holds 1182 MB of uncompressed RGBA8 texture data, 1069 MB of it
     Lossless. Compressing the 160 textures at 512x512 or larger cuts 975 MB

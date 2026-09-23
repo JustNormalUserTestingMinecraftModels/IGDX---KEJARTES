@@ -67,6 +67,23 @@ uniform float ao_strength : hint_range(0.0, 1.0) = 0.0;
 uniform float ao_radius_px : hint_range(0.0, 24.0) = 6.0;
 // What the occluded edge is tinted toward. Warm, to stay in the paper palette.
 uniform vec4 ao_color : source_color = vec4(0.17, 0.11, 0.06, 1.0);
+// How far to look, on all four sides of a transparent AO tap, for solid plate
+// before calling the gap an interior hole, in TEXELS of the plate's own
+// texture. 0 disables it.
+//
+// The AO has the same blind spot the rim had (see rim_hole_reject_px): it
+// darkens toward ANY transparent neighbour, so on the six Lobby faces it drew
+// a brown ring inside every eye socket, which read as eyeshadow. The rim's
+// discriminator does not carry over -- it probes along one light direction,
+// and AO has none -- so this one asks a different question: is the gap walled
+// in by plate on all four sides? An eye socket is; the air beside a head is
+// open on at least one side. Must reach across the widest hole, so it is set
+// per material, not globally.
+//
+// Texels, unlike every other width here, because a hole is a feature of the
+// art, not of the screen: the same socket is 38-54 px wide on a 1080-wide
+// phone, twice that on a 1440 one, and half that in the editor's embedded run.
+uniform float ao_hole_reject_texels : hint_range(0.0, 400.0) = 0.0;
 // How bright the lit edge gets. 0 disables the rim.
 uniform float rim_strength : hint_range(0.0, 1.0) = 0.0;
 // Width of the rim, in SCREEN pixels.
@@ -92,6 +109,26 @@ uniform vec2 light_dir = vec2(-0.6, -0.8);
 
 // Rec. 709 luma, for a saturation that does not shift hues.
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
+
+// Alpha of one AO tap, with an interior hole counted as solid plate. `reach`
+// is ao_hole_reject_texels in UV; zero skips the check. The check only runs when
+// the tap found transparency, so the solid middle of a face -- most of its
+// pixels -- pays nothing. Two probes per side, not one, for the reason the rim
+// gives: a single far probe steps clean over a narrow band of plate.
+float ao_tap(sampler2D tex, vec2 uv, vec2 reach) {
+	float a = textureLod(tex, uv, 0.0).a;
+	if (a < 1.0 && reach.x > 0.0) {
+		vec2 x = vec2(reach.x, 0.0);
+		vec2 y = vec2(0.0, reach.y);
+		float walled = min(
+			min(max(textureLod(tex, uv + x * 0.5, 0.0).a, textureLod(tex, uv + x, 0.0).a),
+				max(textureLod(tex, uv - x * 0.5, 0.0).a, textureLod(tex, uv - x, 0.0).a)),
+			min(max(textureLod(tex, uv + y * 0.5, 0.0).a, textureLod(tex, uv + y, 0.0).a),
+				max(textureLod(tex, uv - y * 0.5, 0.0).a, textureLod(tex, uv - y, 0.0).a)));
+		a = max(a, walled);
+	}
+	return a;
+}
 
 void fragment() {
 	vec4 src = texture(TEXTURE, UV) * COLOR;
@@ -127,10 +164,11 @@ void fragment() {
 		// undefined-derivative problem as fwidth above.
 		if (ao_strength > 0.0) {
 			vec2 r = upp * ao_radius_px;
-			float a = textureLod(TEXTURE, UV + vec2(r.x, 0.0), 0.0).a
-				+ textureLod(TEXTURE, UV - vec2(r.x, 0.0), 0.0).a
-				+ textureLod(TEXTURE, UV + vec2(0.0, r.y), 0.0).a
-				+ textureLod(TEXTURE, UV - vec2(0.0, r.y), 0.0).a;
+			vec2 reach = TEXTURE_PIXEL_SIZE * ao_hole_reject_texels;
+			float a = ao_tap(TEXTURE, UV + vec2(r.x, 0.0), reach)
+				+ ao_tap(TEXTURE, UV - vec2(r.x, 0.0), reach)
+				+ ao_tap(TEXTURE, UV + vec2(0.0, r.y), reach)
+				+ ao_tap(TEXTURE, UV - vec2(0.0, r.y), reach);
 			float edge = clamp(1.0 - a * 0.25, 0.0, 1.0);
 			graded = mix(graded, graded * ao_color.rgb, edge * ao_strength * amount);
 		}

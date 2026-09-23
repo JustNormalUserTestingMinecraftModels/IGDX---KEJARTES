@@ -300,6 +300,68 @@ func test_the_face_reject_does_not_eat_the_silhouette() -> void:
 			% [reject, FACE_REJECT_CEILING])
 
 
+## The AO had the rim's blind spot too: it darkened toward the eye sockets and
+## drew a brown ring inside every eye, which read as eyeshadow. The faces turn
+## on ao_hole_reject_texels; nothing else has holes worth the probes, which cost up
+## to eight taps per transparent AO tap.
+func test_only_the_face_material_rejects_ao_holes() -> void:
+	var face: ShaderMaterial = load(FACE)
+	var cutout: ShaderMaterial = load(CUTOUT)
+	var plain: ShaderMaterial = load(PLAIN)
+	assert_true(face != null and cutout != null and plain != null, "all three materials must exist")
+	if face == null or cutout == null or plain == null:
+		return
+	assert_true(_param_or_zero(face, "ao_hole_reject_texels") > 0.0,
+		"the faces are the reason this uniform exists")
+	assert_true(is_zero_approx(_param_or_zero(cutout, "ao_hole_reject_texels")),
+		"plates without interior holes must not pay for the enclosure probes")
+	assert_true(is_zero_approx(_param_or_zero(plain, "ao_hole_reject_texels")),
+		"backdrops have no AO at all, so they certainly must not probe")
+
+
+## Measured on 2026-09-23 by running the shader's four-sided test on the twelve
+## face bases (six defaults, six skin1s), whose eye sockets are 125-170 texels
+## wide and 86-128 tall. The reach has to cross the whole socket from wherever
+## the tap lands in it. At 140 texels part of the ring survives on four faces;
+## from 170 the result stops changing (what is left sits on hair gaps and lash
+## notches, not the eye). The outline kept 100% of its AO at every reach up to
+## 240, because the air beside a head is never walled in on all four sides.
+## Texels, so the answer holds on every screen size. Re-measure for new art.
+const FACE_AO_REJECT_FLOOR := 170.0
+const FACE_AO_REJECT_CEILING := 240.0
+
+
+func test_the_face_ao_reject_spans_an_eye_socket() -> void:
+	var face: ShaderMaterial = load(FACE)
+	assert_true(face != null, "the face grade material must exist")
+	if face == null:
+		return
+	var reach := _param_or_zero(face, "ao_hole_reject_texels")
+	assert_true(reach >= FACE_AO_REJECT_FLOOR,
+		"reach %s is too short to cross an eye socket; the ring comes back below %s"
+			% [reach, FACE_AO_REJECT_FLOOR])
+	assert_true(reach <= FACE_AO_REJECT_CEILING,
+		"reach %s is past the last value measured to spare the outline (%s)"
+			% [reach, FACE_AO_REJECT_CEILING])
+
+
+## Every one of the four AO taps must go through the hole test. One tap left
+## on a bare textureLod keeps a quarter of the ring on that side of every eye.
+func test_every_ao_tap_goes_through_the_hole_test() -> void:
+	var src := FileAccess.get_file_as_string(SHADER)
+	assert_eq(src.count("ao_tap(TEXTURE, UV"), 4,
+		"all four AO taps must call ao_tap so an interior hole reads as plate")
+	assert_true(src.contains("a < 1.0 && reach.x > 0.0"),
+		"the enclosure probes must be skipped for an opaque tap or when reach is 0")
+
+
+## A material that never sets a uniform reports null, not the shader default;
+## every hole-reject uniform defaults to 0.0 (off).
+func _param_or_zero(mat: ShaderMaterial, uniform: String) -> float:
+	var value: Variant = mat.get_shader_parameter(uniform)
+	return 0.0 if value == null else float(value)
+
+
 func test_every_cutout_wears_the_cutout_material() -> void:
 	var cutout: Material = load(CUTOUT)
 	for scene_path in CUTOUTS:

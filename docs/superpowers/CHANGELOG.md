@@ -8,6 +8,22 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-23 — Faces: the rim's eye-ring fix now holds on a phone
+
+The rim light's hole reject (`d558b24`) was a screen-pixel reach, 24 px, tuned
+in the editor's half-size embedded run, where the faces draw at ~0.15x and 24
+px spans ~160 texels. On a 1080-wide phone the faces draw at ~0.3x, so the same
+24 px spanned ~80 texels: shorter than an eye socket. Measured on the Lobby's
+four faces with the reach set to that phone equivalent, 73-93% of the cream
+under-eye glow was still there.
+
+`rim_hole_reject_px` is now `rim_hole_reject_texels` (160 on the face
+material), sized against the art like `ao_hole_reject_texels`. In the editor
+it matches what was approved; the ring is at 0-5% on all four faces at any
+screen size. `tests/test_illustration_ao.gd` pins it between a 150 floor
+(an offline sweep left up to 35% of the ring at 120) and the old 28 px
+ceiling converted to 180. Before/after: `docs/superpowers/mockups/face_rim_phone_before_after.png`.
+
 ## 2026-09-23 — Faces: no more AO "eyeshadow"
 
 **Every Lobby student looked like they wore dark eyeshadow.** The faces are

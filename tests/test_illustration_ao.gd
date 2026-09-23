@@ -226,7 +226,7 @@ const BACKDROPS := {
 ## of every base is interior hole. The rim test cannot tell the edge of a hole
 ## from the outline of a head, so it drew a cream ring around every eye and
 ## mouth in the room -- measured on a real frame, not guessed. The face material
-## turns on rim_hole_reject_px, which the other plates leave at zero.
+## turns on rim_hole_reject_texels, which the other plates leave at zero.
 const FACES := {
 	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],
 	"res://Scenes/Lobby/CitraFace.tscn": ["Canvas/Base"],
@@ -262,31 +262,27 @@ func test_only_the_face_material_rejects_interior_holes() -> void:
 	assert_true(face != null and cutout != null and plain != null, "all three materials must exist")
 	if face == null or cutout == null or plain == null:
 		return
-	assert_true(_reject_px(face) > 0.0, "the faces are the reason this uniform exists")
-	assert_true(is_zero_approx(_reject_px(cutout)),
+	assert_true(_param_or_zero(face, "rim_hole_reject_texels") > 0.0,
+		"the faces are the reason this uniform exists")
+	assert_true(is_zero_approx(_param_or_zero(cutout, "rim_hole_reject_texels")),
 		"plates without interior holes must not pay for two extra probes")
-	assert_true(is_zero_approx(_reject_px(plain)),
+	assert_true(is_zero_approx(_param_or_zero(plain, "rim_hole_reject_texels")),
 		"backdrops have no rim at all, so they certainly must not probe")
 
 
-## A material that never sets a uniform reports null for it, not the shader's
-## default, so reading one straight out of get_shader_parameter and handing it
-## to a float function aborts the test. Unset means the shader default, which
-## for this uniform is 0.0 -- off.
-func _reject_px(mat: ShaderMaterial) -> float:
-	if mat == null:
-		return 0.0
-	var value: Variant = mat.get_shader_parameter("rim_hole_reject_px")
-	return 0.0 if value == null else float(value)
-
-
-## Measured on the Lobby at 1080x1920, both students in frame, rim at full
-## strength so the footprint is unambiguous: at 24 screen pixels the reject
-## takes 26.8% of the rim energy and what it takes is the eye undersides and
-## both mouths, while the hair, shoulders and collar keep theirs. At 36 it takes
-## 30.8% but starts eating the collar, which is a real silhouette. Re-measure
-## with a before/after heatmap before moving this.
-const FACE_REJECT_CEILING := 28.0
+## First tuned as 24 screen pixels in the editor's half-size run, where the
+## faces draw at 0.143-0.158 and 24 px spans 152-168 texels. There, with the rim
+## at full strength, it took the eye undersides and both mouths and left the
+## hair, shoulders and collar alone; 36 px (228-252 texels) started eating the
+## collar, a real silhouette, and 28 px (177-196) was the agreed ceiling. On a
+## 1080-wide phone the same 24 px spanned only ~80 texels and left 73-93% of the
+## eye ring's glow in place (measured 2026-09-23 on the Lobby's four faces), so
+## the reach moved to texels. 160 took the ring to 0-5% on all four and matches
+## the look that was approved. An offline sweep over all twelve face bases left
+## up to 35% of the ring at 120 texels, hence the floor. Re-measure with a
+## before/after heatmap before moving either.
+const FACE_REJECT_FLOOR := 150.0
+const FACE_REJECT_CEILING := 180.0
 
 
 func test_the_face_reject_does_not_eat_the_silhouette() -> void:
@@ -294,10 +290,13 @@ func test_the_face_reject_does_not_eat_the_silhouette() -> void:
 	assert_true(face != null, "the face grade material must exist")
 	if face == null:
 		return
-	var reject: float = face.get_shader_parameter("rim_hole_reject_px")
+	var reject := _param_or_zero(face, "rim_hole_reject_texels")
 	assert_true(reject <= FACE_REJECT_CEILING,
 		"reject %s starts removing rim from the collar and shoulders; ceiling is %s"
 			% [reject, FACE_REJECT_CEILING])
+	assert_true(reject >= FACE_REJECT_FLOOR,
+		"reject %s is too short to cross an eye socket; the cream ring comes back below %s"
+			% [reject, FACE_REJECT_FLOOR])
 
 
 ## The AO had the rim's blind spot too: it darkened toward the eye sockets and
@@ -355,8 +354,10 @@ func test_every_ao_tap_goes_through_the_hole_test() -> void:
 		"the enclosure probes must be skipped for an opaque tap or when reach is 0")
 
 
-## A material that never sets a uniform reports null, not the shader default;
-## every hole-reject uniform defaults to 0.0 (off).
+## A material that never sets a uniform reports null for it, not the shader's
+## default, so reading one straight out of get_shader_parameter and handing it
+## to a float function aborts the test. Every hole-reject uniform defaults to
+## 0.0 -- off.
 func _param_or_zero(mat: ShaderMaterial, uniform: String) -> float:
 	var value: Variant = mat.get_shader_parameter(uniform)
 	return 0.0 if value == null else float(value)

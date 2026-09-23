@@ -71,7 +71,7 @@ uniform vec4 ao_color : source_color = vec4(0.17, 0.11, 0.06, 1.0);
 // before calling the gap an interior hole, in TEXELS of the plate's own
 // texture. 0 disables it.
 //
-// The AO has the same blind spot the rim had (see rim_hole_reject_px): it
+// The AO has the same blind spot the rim had (see rim_hole_reject_texels): it
 // darkens toward ANY transparent neighbour, so on the six Lobby faces it drew
 // a brown ring inside every eye socket, which read as eyeshadow. The rim's
 // discriminator does not carry over -- it probes along one light direction,
@@ -89,7 +89,8 @@ uniform float rim_strength : hint_range(0.0, 1.0) = 0.0;
 // Width of the rim, in SCREEN pixels.
 uniform float rim_radius_px : hint_range(0.0, 16.0) = 3.0;
 // How far along the light direction to look for solid plate before believing an
-// edge is a real silhouette, in SCREEN pixels. 0 disables the check.
+// edge is a real silhouette, in TEXELS of the plate's own texture. 0 disables
+// the check.
 //
 // A cutout can have holes in its middle -- the six Lobby faces are drawn with
 // the eye sockets and the mouth punched out, so the eyes, eyelids and brows
@@ -99,7 +100,12 @@ uniform float rim_radius_px : hint_range(0.0, 16.0) = 3.0;
 // lit edge. Off the outside of a plate you land on nothing; off the edge of an
 // interior hole you land back on the face. Must be larger than the widest hole
 // to reject, so it is set per material, not globally.
-uniform float rim_hole_reject_px : hint_range(0.0, 64.0) = 0.0;
+//
+// Texels for the reason ao_hole_reject_texels gives: a hole belongs to the art.
+// This was first a screen-pixel reach, tuned in the editor's half-size run,
+// where 24 px spanned ~160 texels; on a 1080-wide phone the same 24 px spanned
+// ~80 and left most of each eye ring in place.
+uniform float rim_hole_reject_texels : hint_range(0.0, 400.0) = 0.0;
 // Colour of the lit edge. Cream, matching the window light.
 uniform vec4 rim_color : source_color = vec4(1.0, 0.95, 0.82, 1.0);
 // Where the light is, in UV space. Upper-left, agreeing with the Lobby window,
@@ -181,13 +187,13 @@ void fragment() {
 			vec2 rr = upp * rim_radius_px * normalize(light_dir);
 			float behind = textureLod(TEXTURE, UV + rr, 0.0).a;
 			float lit = clamp(src.a - behind, 0.0, 1.0);
-			if (rim_hole_reject_px > 0.0) {
+			if (rim_hole_reject_texels > 0.0) {
 				// Two probes, not one. A single distance only rejects holes of
 				// roughly that width: an eye socket and an eyelash gap are an
 				// order of magnitude apart, and the far probe steps clean over
 				// the small one into the next hole. Taking the strongest hit of
 				// a near and a far probe catches both.
-				vec2 dir = normalize(light_dir) * upp * rim_hole_reject_px;
+				vec2 dir = normalize(light_dir) * TEXTURE_PIXEL_SIZE * rim_hole_reject_texels;
 				float solid = max(
 					textureLod(TEXTURE, UV + dir * 0.35, 0.0).a,
 					textureLod(TEXTURE, UV + dir, 0.0).a);

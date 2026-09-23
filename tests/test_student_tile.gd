@@ -86,6 +86,15 @@ func test_variations_differ_in_ring_colour() -> void:
 	assert_true(idle != null and open != null, "both variations must carry a normal stylebox")
 	if idle == null or open == null:
 		return
-	assert_eq(idle.border_color, tokens.text_primary)
+	assert_eq(idle.border_color, Color.BLACK)
 	assert_eq(open.border_color, tokens.brand_primary)
 	assert_eq(open.bg_color, tokens.outline_card)
+
+
+## Measured off skinselection_mockup.png: an 8px black rim on the tray's
+## cream, with no fill of its own.
+func test_idle_tile_is_an_8px_black_rim_with_no_fill() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	var idle := theme.get_stylebox("normal", "SkinStudentTile") as StyleBoxFlat
+	assert_eq(idle.border_width_top, 8)
+	assert_eq(idle.bg_color.a, 0.0)

@@ -316,3 +316,26 @@ func get_class_of_track() -> String:
 	var src := FileAccess.get_file_as_string(SCREEN)
 	var at := src.find('[node name="Track"')
 	return src.substr(at).get_slice('type="', 1).get_slice('"', 0)
+
+
+func test_mockup_styles_exist_with_measured_values() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var tray := theme.get_stylebox("panel", "SkinTray") as StyleBoxFlat
+	assert_true(tray != null, "SkinTray must be a StyleBoxFlat panel")
+	if tray != null:
+		assert_eq(tray.bg_color, tokens.surface_card)
+		assert_eq(tray.border_width_top, 8)
+		assert_eq(tray.border_width_bottom, 0)
+		assert_eq(tray.border_color, Color.BLACK)
+	var btn := theme.get_stylebox("normal", "SkinApplyButton") as StyleBoxFlat
+	assert_true(btn != null, "SkinApplyButton must be a StyleBoxFlat button")
+	if btn != null:
+		assert_eq(btn.bg_color, Color("D21919"))
+		assert_eq(btn.border_width_left, 8)
+		assert_eq(btn.corner_radius_top_left, tokens.radius_button)
+	assert_eq(theme.get_color("font_color", "SkinApplyButton"), Color("F2F2F2"))
+	assert_eq(theme.get_font_size("font_size", "SkinApplyButton"), 73)
+	assert_eq(theme.get_color("font_color", "SkinTitleLabel"), Color("F2F2F2"))
+	assert_eq(theme.get_color("font_outline_color", "SkinTitleLabel"), Color("201934"))
+	assert_eq(theme.get_font_size("font_size", "SkinTitleLabel"), 74)

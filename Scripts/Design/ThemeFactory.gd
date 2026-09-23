@@ -40,16 +40,39 @@ static func build(tokens: DesignTokens) -> Theme:
 	return theme
 
 
+## Measured off skinselection_mockup.png (spec
+## docs/superpowers/specs/2026-09-23-skin-select-slide-design.md). The ink
+## the mockup draws its divider, tiles and button rim in, the rim's width,
+## the button's red and text, and the title's colours and sizes. No token
+## matches; these are single-screen values, like EVENT_DIALOGUE_RADIUS.
+const SKIN_INK := Color("000000")
+const SKIN_RIM := 8
+const SKIN_APPLY_FILL := Color("D21919")
+const SKIN_APPLY_TEXT := Color("F2F2F2")
+## Boohong size whose cap height is the mockup's 60px.
+const SKIN_APPLY_FONT := 73
+const SKIN_TITLE_FILL := Color("F2F2F2")
+const SKIN_TITLE_OUTLINE := Color("201934")
+## Boohong size whose cap height is the mockup's 61px.
+const SKIN_TITLE_FONT := 74
+## Godot outline_size for the title's ~13px stroke. Task 5 checks it
+## against the mockup's outer box (348,95)-(718,182).
+const SKIN_TITLE_OUTLINE_SIZE := 26
+
+
 ## SkinSelect (spec:
-## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md): the six
-## student squares in their two states, the skin's name, and the "sedang
-## dipakai" chip that is the only visible proof TERAPKAN did anything.
+## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md; the tray,
+## TERAPKAN button and title:
+## docs/superpowers/specs/2026-09-23-skin-select-slide-design.md): the six
+## student squares in their two states, the skin's name, the "sedang
+## dipakai" chip that is the only visible proof TERAPKAN did anything, the
+## tray under the carousel, the TERAPKAN button and the character title.
 static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	var square := func(bg: Color, border: Color) -> StyleBoxFlat:
 		var box := StyleBoxFlat.new()
 		box.bg_color = bg
 		box.border_color = border
-		box.set_border_width_all(int(tokens.outline_width))
+		box.set_border_width_all(SKIN_RIM)
 		# radius_button, not radius_md: these are Buttons, and
 		# tests/test_button_geometry.gd holds every button variation to the
 		# one fixed radius.
@@ -60,7 +83,7 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("SkinStudentTile", "Button")
 	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
 		theme.set_stylebox(state, "SkinStudentTile",
-			square.call(tokens.surface_card, tokens.text_primary))
+			square.call(Color(0, 0, 0, 0), SKIN_INK))
 
 	theme.add_type("SkinStudentTileActive")
 	theme.set_type_variation("SkinStudentTileActive", "Button")
@@ -111,6 +134,52 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "SkinWornChipLabel", tokens.state_success.darkened(0.45))
 	if tokens.font_display != null:
 		theme.set_font("font", "SkinWornChipLabel", tokens.font_display)
+
+	# The tray under the carousel: cream with the mockup's black divider as
+	# its top border, so the line moves with the tray on tall phones.
+	theme.add_type("SkinTray")
+	theme.set_type_variation("SkinTray", "Panel")
+	var tray := StyleBoxFlat.new()
+	tray.bg_color = tokens.surface_card
+	tray.border_color = SKIN_INK
+	tray.border_width_top = SKIN_RIM
+	theme.set_stylebox("panel", "SkinTray", tray)
+
+	# TERAPKAN in the mockup's flat red with a black rim. Flat, not
+	# _add_button_variation's gradient, because the mockup draws it flat.
+	# radius_button keeps it inside tests/test_button_geometry.gd.
+	var apply_box := func(fill: Color) -> StyleBoxFlat:
+		var box := StyleBoxFlat.new()
+		box.bg_color = fill
+		box.border_color = SKIN_INK
+		box.set_border_width_all(SKIN_RIM)
+		box.set_corner_radius_all(tokens.radius_button)
+		return box
+	theme.add_type("SkinApplyButton")
+	theme.set_type_variation("SkinApplyButton", "Button")
+	theme.set_stylebox("normal", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL))
+	theme.set_stylebox("hover", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL.lightened(0.08)))
+	theme.set_stylebox("pressed", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL.darkened(0.15)))
+	theme.set_stylebox("focus", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL))
+	theme.set_stylebox("disabled", "SkinApplyButton",
+		apply_box.call(SKIN_APPLY_FILL.lerp(tokens.surface_sunken, 0.7)))
+	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		theme.set_color(key, "SkinApplyButton", SKIN_APPLY_TEXT)
+	theme.set_color("font_disabled_color", "SkinApplyButton", tokens.text_disabled)
+	theme.set_font_size("font_size", "SkinApplyButton", SKIN_APPLY_FONT)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinApplyButton", tokens.font_display)
+
+	# The character's name over the carousel: the mockup's white Boohong
+	# with a navy stroke, smaller than DisplayLabel.
+	theme.add_type("SkinTitleLabel")
+	theme.set_type_variation("SkinTitleLabel", "Label")
+	theme.set_font_size("font_size", "SkinTitleLabel", SKIN_TITLE_FONT)
+	theme.set_color("font_color", "SkinTitleLabel", SKIN_TITLE_FILL)
+	theme.set_color("font_outline_color", "SkinTitleLabel", SKIN_TITLE_OUTLINE)
+	theme.set_constant("outline_size", "SkinTitleLabel", SKIN_TITLE_OUTLINE_SIZE)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinTitleLabel", tokens.font_display)
 
 
 ## Measured off mockup_eventdialogue.png: the dialogue card's corner radius

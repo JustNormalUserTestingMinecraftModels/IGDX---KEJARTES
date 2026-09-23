@@ -366,7 +366,9 @@ const DISPLAY_ROSTER := [
 	# replaced by the notice_icon TextureRect, which carries no text.
 	"AchievementPrizeChipLabel", "AchievementPrizeChipLabelAmber",
 	# 2026-09-22 SkinSelect: the skin's name and the "sedang dipakai" chip.
-	"SkinNameLabel", "SkinWornChipLabel",
+	# 2026-09-23 skin-select-slide Task 3: the TERAPKAN button and the
+	# character title over the carousel.
+	"SkinNameLabel", "SkinWornChipLabel", "SkinApplyButton", "SkinTitleLabel",
 	# 2026-09-18 achievements-polish Task 4: the header status pill's two
 	# state labels.
 	"AchievementStatusPillIdleLabel", "AchievementStatusPillWaitingLabel",

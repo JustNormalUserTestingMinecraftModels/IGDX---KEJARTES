@@ -11,6 +11,10 @@ extends McpTestSuite
 ##
 ## Design: docs/superpowers/specs/2026-09-23-illustration-ao-rim-design.md
 ##
+## Alpha pass-through (the shader must forward src.a and never write
+## COLOR.a *) is covered by test_the_grade_leaves_alpha_alone in
+## tests/test_look_layer.gd; it is not re-asserted here.
+##
 ## Must be @tool, and no test here may be a coroutine.
 
 const SHADER := "res://Scripts/Shaders/illustration_grade.gdshader"
@@ -33,6 +37,29 @@ func test_both_materials_share_the_one_shader() -> void:
 		if mat == null:
 			continue
 		assert_eq(mat.shader, shader, "%s must point at the one grade shader" % path)
+
+
+## The two materials carry independent copies of the five colour-grade
+## uniforms. Nothing at the engine level keeps them in sync -- edit one and
+## the other silently keeps the old look, so 21 of the 30 graded plates (the
+## cutouts) would drift from the other 9 (the backdrops). This is the test
+## that would catch that drift.
+func test_the_two_materials_agree_on_the_shared_grade() -> void:
+	var plain: ShaderMaterial = load(PLAIN)
+	var cutout: ShaderMaterial = load(CUTOUT)
+	assert_true(plain != null, "the plain material must exist")
+	assert_true(cutout != null, "the cutout material must exist")
+	if plain == null or cutout == null:
+		return
+	for uniform in ["saturation", "contrast", "exposure", "amount"]:
+		var a: float = plain.get_shader_parameter(uniform)
+		var b: float = cutout.get_shader_parameter(uniform)
+		assert_true(is_equal_approx(a, b),
+			"%s must match across both materials: plain=%s cutout=%s" % [uniform, a, b])
+	var plain_tint: Color = plain.get_shader_parameter("tint")
+	var cutout_tint: Color = cutout.get_shader_parameter("tint")
+	assert_true(plain_tint.is_equal_approx(cutout_tint),
+		"tint must match across both materials: plain=%s cutout=%s" % [plain_tint, cutout_tint])
 
 
 ## The backdrops pay nothing. This is the entire reason there are two materials.
@@ -132,15 +159,6 @@ func test_the_effects_stay_subtle() -> void:
 		"rim_strength %s is past the agreed ceiling %s" % [rim, RIM_STRENGTH_CEILING])
 
 
-## Every plate this lands on is a cutout, and a grade that multiplied alpha
-## would eat the soft edges the art is drawn with. The AO stage must darken
-## colour only.
-func test_neither_effect_touches_alpha() -> void:
-	var src := FileAccess.get_file_as_string(SHADER)
-	assert_true(src.contains("src.a"), "the shader must pass the source alpha straight through")
-	assert_false(src.contains("COLOR.a *"), "nothing may scale alpha, or cutout edges get eaten")
-
-
 ## The census, measured on 2026-09-23 by sampling each texture's alpha channel.
 ## A cutout has an alpha edge to find; a backdrop is full-bleed and would pay
 ## five taps per pixel for nothing. Percentages are transparent pixels.
@@ -211,9 +229,12 @@ func test_every_backdrop_keeps_the_plain_material() -> void:
 
 
 ## The two dicts here and look_layer's GRADED describe the same thirty plates
-## from two angles. If someone adds a plate to one and forgets the other, the
-## game quietly has an ungraded illustration or an uncounted one. This is the
-## test that notices.
+## from two angles. This checks that agreement: a plate added to one dict and
+## forgotten in the other fails here. It does NOT notice a plate that was
+## given a grade material in a .tscn but added to neither list -- that plate
+## is invisible to this test too. The assert_eq(counted.size(), 30, ...) below
+## is a deliberate ratchet, not a discovered fact: bump it by hand when a
+## plate is legitimately added to both dicts.
 func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 	var look_script: GDScript = load("res://tests/test_look_layer.gd")
 	assert_true(look_script != null, "test_look_layer.gd must exist")
@@ -282,7 +303,7 @@ func test_the_lobby_shafts_are_additive_and_placed() -> void:
 const SHAFT_INTENSITY_CEILING := 0.22
 
 
-func test_the_shafts_stay_under_the_clipping_knee() -> void:
+func test_the_shafts_stay_under_the_look_ceiling() -> void:
 	var mat: ShaderMaterial = load("res://Scripts/Shaders/window_shafts_material.tres")
 	assert_true(mat != null, "the shafts material must exist")
 	if mat == null:

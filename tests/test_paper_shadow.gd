@@ -174,9 +174,10 @@ func test_a_custom_blur_duplicates_the_material_instead_of_mutating_it() -> void
 ## should cast, and whether it is a fixed-size piece or one that resizes with
 ## its container or the viewport.
 ##
-## The Lobby's four desks used to be in here. They were taken out on
-## 2026-09-23 at the user's call -- see the test below, which now holds the
-## opposite line.
+## The Lobby's four desks are in here: they cast a contact shadow like
+## everything else in this dict. They were briefly taken out on 2026-09-23 at
+## the user's call, then came back the same day as outer AO instead of a drop
+## shadow -- see _OUTER_AO below, which holds the values that ship.
 const _CONTACT_SHADOWS := {
 	"res://Scenes/Lobby/loby.tscn": [
 		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",

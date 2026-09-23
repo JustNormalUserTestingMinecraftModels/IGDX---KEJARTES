@@ -14,6 +14,7 @@ extends McpTestSuite
 
 const LAYER_SCENE := "res://Scenes/Look/LookLayer.tscn"
 const GRADE_MATERIAL := "res://Scripts/Shaders/illustration_grade_material.tres"
+const GRADE_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_cutout.tres"
 
 ## Every node that wears the grade, by scene. These are painted plates only.
 const GRADED := {
@@ -265,15 +266,21 @@ const GRADE_CONTRAST_CEILING := 1.0125
 
 
 func test_the_grade_stays_subtle() -> void:
-	var mat: ShaderMaterial = load(GRADE_MATERIAL)
-	assert_true(mat != null, "the grade material must exist")
-	if mat == null:
-		return
-	var saturation: float = mat.get_shader_parameter("saturation")
-	var contrast: float = mat.get_shader_parameter("contrast")
-	assert_true(saturation <= GRADE_SATURATION_CEILING,
-		"saturation %s is louder than the agreed ceiling %s"
-			% [saturation, GRADE_SATURATION_CEILING])
-	assert_true(contrast <= GRADE_CONTRAST_CEILING,
-		"contrast %s darkens the plates past the agreed ceiling %s"
-			% [contrast, GRADE_CONTRAST_CEILING])
+	# Both materials: the plain grade and the cutout grade share the same
+	# five colour uniforms (test_illustration_ao.gd's
+	# test_the_two_materials_agree_on_the_shared_grade pins that they must),
+	# so the cutout material could otherwise be pushed past these ceilings
+	# unnoticed while this test kept watching only the plain one.
+	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL]:
+		var mat: ShaderMaterial = load(path)
+		assert_true(mat != null, "%s must exist" % path)
+		if mat == null:
+			continue
+		var saturation: float = mat.get_shader_parameter("saturation")
+		var contrast: float = mat.get_shader_parameter("contrast")
+		assert_true(saturation <= GRADE_SATURATION_CEILING,
+			"%s: saturation %s is louder than the agreed ceiling %s"
+				% [path, saturation, GRADE_SATURATION_CEILING])
+		assert_true(contrast <= GRADE_CONTRAST_CEILING,
+			"%s: contrast %s darkens the plates past the agreed ceiling %s"
+				% [path, contrast, GRADE_CONTRAST_CEILING])

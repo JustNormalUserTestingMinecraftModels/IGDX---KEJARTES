@@ -12,11 +12,19 @@
 // It is also cheaper than a screen pass: no backbuffer copy, no full-screen
 // fill, just a handful of instructions on the pixels the art already covers.
 //
-// ONE SHARED MATERIAL. Every graded node points at
-// Scripts/Shaders/illustration_grade_material.tres, so the whole game's look
-// is tuned by editing that one resource. Do not set a shader parameter on a
-// node's material at runtime: it is the same resource everywhere, and the
-// write would land on every graded plate at once.
+// TWO MATERIALS, ONE SHADER. Full-bleed backdrops wear
+// Scripts/Shaders/illustration_grade_material.tres; plates with an alpha
+// edge -- the desks, the faces, the shopkeeper -- wear
+// Scripts/Shaders/illustration_grade_cutout.tres instead, so they can carry
+// the inner AO and rim taps without every backdrop paying for taps it cannot
+// show. Both materials carry their own copies of saturation, contrast,
+// exposure, tint and amount, and BOTH MUST BE EDITED TOGETHER: they are
+// meant to share one look, and tests/test_illustration_ao.gd asserts the two
+// agree on those five. The AO and rim strengths are the deliberate
+// exception -- they differ by design, since the plain material keeps both at
+// zero. Do not set a shader parameter on either material at runtime: each is
+// the same resource everywhere it is assigned, and the write would land on
+// every plate wearing it at once.
 //
 // STRENGTH WAS HALVED TWICE, on 2026-09-22 and again on 2026-09-23, when the
 // grade was extended to the minigames. A minigame screen is mostly one big
@@ -42,7 +50,9 @@ uniform float exposure : hint_range(0.5, 2.0) = 0.995;
 // Multiplied per channel: warms the art towards the paper-diorama palette
 // without touching the tokens that describe the UI.
 uniform vec4 tint : source_color = vec4(1.022, 1.0, 0.972, 1.0);
-// How much of the grade to apply, 0 = off. A single dial for the whole game.
+// How much of the whole effect to apply -- colour grade, inner AO and rim
+// alike -- 0 = off. A single dial for the whole game: at 0 the art renders
+// untouched, not just ungraded.
 uniform float amount : hint_range(0.0, 1.0) = 1.0;
 
 // -- AO and rim knobs -------------------------------------------------------
@@ -74,6 +84,16 @@ const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 void fragment() {
 	vec4 src = texture(TEXTURE, UV) * COLOR;
 
+	// UV covered by one screen pixel. Computed here, before the branch below,
+	// because fwidth() (and the implicit-LOD texture() taps that use it) is
+	// undefined behaviour inside non-uniform control flow -- and the alpha
+	// silhouette this branches on is exactly where that divergence happens.
+	// It happened to render fine on the desktop GPU this was authored on;
+	// Adreno/Mali/PowerVR are not guaranteed to agree. This is also what
+	// makes the AO/rim band the same visual width on a desk drawn at 1.0 and
+	// a racket drawn at 0.34.
+	vec2 upp = fwidth(UV);
+
 	// Fully transparent pixels have no edge and no colour. Skipping them here
 	// matters: a desk plate is 92% transparent but the fragment shader still
 	// runs on every pixel of its rect, and the transparency is contiguous, so
@@ -87,22 +107,20 @@ void fragment() {
 		rgb *= tint.rgb * exposure;
 		vec3 graded = clamp(mix(src.rgb, rgb, amount), vec3(0.0), vec3(1.0));
 
-		// UV covered by one screen pixel. This is what makes the band the same
-		// visual width on a desk drawn at 1.0 and a racket drawn at 0.34.
-		vec2 upp = fwidth(UV);
-
 		// -- inner AO --------------------------------------------------------
 		// Four taps of our own alpha. Deep inside, all four return 1 and edge
 		// is 0. Near the rim some fall outside the silhouette and the average
-		// drops. Ambient: no direction, all the way around.
+		// drops. Ambient: no direction, all the way around. textureLod (not
+		// texture) because an implicit-LOD tap inside this branch is the same
+		// undefined-derivative problem as fwidth above.
 		if (ao_strength > 0.0) {
 			vec2 r = upp * ao_radius_px;
-			float a = texture(TEXTURE, UV + vec2(r.x, 0.0)).a
-				+ texture(TEXTURE, UV - vec2(r.x, 0.0)).a
-				+ texture(TEXTURE, UV + vec2(0.0, r.y)).a
-				+ texture(TEXTURE, UV - vec2(0.0, r.y)).a;
+			float a = textureLod(TEXTURE, UV + vec2(r.x, 0.0), 0.0).a
+				+ textureLod(TEXTURE, UV - vec2(r.x, 0.0), 0.0).a
+				+ textureLod(TEXTURE, UV + vec2(0.0, r.y), 0.0).a
+				+ textureLod(TEXTURE, UV - vec2(0.0, r.y), 0.0).a;
 			float edge = clamp(1.0 - a * 0.25, 0.0, 1.0);
-			graded = mix(graded, graded * ao_color.rgb, edge * ao_strength);
+			graded = mix(graded, graded * ao_color.rgb, edge * ao_strength * amount);
 		}
 
 		// -- rim -------------------------------------------------------------
@@ -111,9 +129,9 @@ void fragment() {
 		// Additive, because light brightens what is behind it.
 		if (rim_strength > 0.0) {
 			vec2 rr = upp * rim_radius_px * normalize(light_dir);
-			float behind = texture(TEXTURE, UV + rr).a;
+			float behind = textureLod(TEXTURE, UV + rr, 0.0).a;
 			float lit = clamp(src.a - behind, 0.0, 1.0);
-			graded += rim_color.rgb * (lit * rim_strength);
+			graded += rim_color.rgb * (lit * rim_strength * amount);
 		}
 
 		COLOR = vec4(clamp(graded, vec3(0.0), vec3(1.0)), src.a);

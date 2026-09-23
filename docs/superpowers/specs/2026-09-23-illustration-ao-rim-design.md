@@ -285,10 +285,18 @@ tests and owns a different concern.
   historical shadow offsets, so the light story stays consistent if it moves.
 - The seven outer-AO instances carry `offset == (0,0)` with alpha and blur in
   band.
-- **The darkening guard**: render the Lobby before and after and require the
-  whole-frame mean luminance to move by less than ±1%. AO may redistribute light
-  locally; it may not quietly re-darken a scene that has already been lightened
-  twice. If a value cannot pass this, the value is wrong, not the test.
+- **The darkening guard** is a *measured gate*, not an automated test. Render
+  the Lobby before and after and require the whole-frame mean luminance to move
+  by less than ±1%. AO may redistribute light locally; it may not quietly
+  re-darken a scene that has already been lightened twice. If a value cannot
+  pass this, the value is wrong, not the gate.
+
+  It cannot be automated here: the runner does `suite.call(name)` without
+  awaiting, so no test can wait for a rendered frame, and a test that tried
+  would abort mid-way and report zero assertions. So the numbers are taken by
+  the §4 method in a running game and **recorded in the commit message**, the
+  way `6930dfa` recorded the vignette's 5–8.5% corner darkening. What the suite
+  *can* pin is the ceilings the measurement produced.
 - Alpha still passes through untouched (extends the existing assertion).
 
 Suites expected to stay green without edits: `viewport_editability` (the shafts
@@ -312,7 +320,8 @@ and `test_the_lobby_desks_cast_no_shadow` is removed.
 
 - Every one of the 21 cutouts wears the cutout material; every one of the 9
   backdrops wears the plain one; the census test passes.
-- The Lobby's whole-frame mean luminance moves less than ±1% against `HEAD`.
+- The Lobby's whole-frame mean luminance moves less than ±1% against `HEAD`,
+  measured by the §4 method and recorded in the commit message.
 - Each of the four effects can be switched off independently, verified by the
   test suite passing with each strength zeroed in turn.
 - The debug overlay's Look page moves every plate in the scene live.

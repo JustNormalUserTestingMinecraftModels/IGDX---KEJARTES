@@ -104,8 +104,17 @@ func test_the_light_comes_from_the_upper_left() -> void:
 ##
 ## What bounds them is taste, judged on full-size captures: at 1.00/0.70 the
 ## edges start to look drawn on. The shipped 0.70/0.45 sits below that, and
-## these ceilings sit just above the shipped values. Raise them only after
-## re-running the sweep and recording the numbers in the commit.
+## these ceilings sit just above the shipped values.
+##
+## The gate was then re-measured AT the shipped pair, because the first sweep
+## stopped short of it and a gate that was never evaluated where it matters is
+## not a gate. At 0.70/0.45 the whole-frame mean moves +0.042%, and at the
+## ceilings 0.75/0.50 it moves +0.051% -- both inside 1%, and both in the
+## brightening direction. Taken apart: AO alone at 0.70 is -0.199% and the rim
+## alone at 0.45 is +0.222%, so the two nearly cancel. That is why this pass
+## does not re-darken a grade that had already been halved twice for reading
+## dark. Raise these only after re-running the sweep and recording the numbers
+## in the commit.
 const AO_STRENGTH_CEILING := 0.75
 const RIM_STRENGTH_CEILING := 0.50
 

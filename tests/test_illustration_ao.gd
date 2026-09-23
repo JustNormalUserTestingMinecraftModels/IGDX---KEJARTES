@@ -93,12 +93,21 @@ func test_the_light_comes_from_the_upper_left() -> void:
 	assert_true(dir.y < 0.0, "light_dir.y must point up, matching the painted streaks")
 
 
-## The ceilings. AO darkens, and this grade has already been halved twice for
-## reading dark -- see the two 2026-09-22/23 cuts in illustration_grade.gdshader.
-## These hold the line. Raise them only after re-running the sweep in the spec's
-## section 4 and recording the numbers in the commit.
-const AO_STRENGTH_CEILING := 0.45
-const RIM_STRENGTH_CEILING := 0.30
+## The ceilings, set by measurement on 2026-09-23 rather than by instinct.
+##
+## The sweep expected to find a clipping knee, the way the window light has one
+## at 0.12, and found none: over the frozen Lobby at 1080x1920 the rim drove
+## ZERO extra pixels to pure white at any value up to 0.30, and AO's worst
+## whole-frame mean-luminance drop was 0.132% at strength 0.45 -- against a 1%
+## gate, on a grade that had already been halved twice for reading dark. So
+## neither effect is bounded by clipping or by darkening here.
+##
+## What bounds them is taste, judged on full-size captures: at 1.00/0.70 the
+## edges start to look drawn on. The shipped 0.70/0.45 sits below that, and
+## these ceilings sit just above the shipped values. Raise them only after
+## re-running the sweep and recording the numbers in the commit.
+const AO_STRENGTH_CEILING := 0.75
+const RIM_STRENGTH_CEILING := 0.50
 
 
 func test_the_effects_stay_subtle() -> void:

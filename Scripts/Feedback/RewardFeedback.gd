@@ -27,7 +27,6 @@ const ARPEGGIO_GAP := 0.06
 ## Particle scenes, by role.
 const POP_BURST := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
 const CELEBRATION_CONFETTI := "res://Scenes/SchoolSimulation/CelebrationConfetti.tscn"
-const SPECIALTY_BURST := "res://Scenes/AturJadwal/SpecialtyMatchBurst.tscn"
 
 ## moment -> { tier, sfx, particle?, escalates?, dynamic_sfx? }. The single
 ## readable home of the reward vocabulary; the debug gallery enumerates it.
@@ -38,7 +37,9 @@ const RECIPES := {
 	&"coins_earned":     { "tier": TIER_POP, "sfx": &"coin", "arpeggio": true },
 	&"star_earned":      { "tier": TIER_POP, "sfx": &"star_earn_1", "dynamic_sfx": true, "no_particles": true },
 	&"schedule_confirmed": { "tier": TIER_POP, "sfx": &"schedule_confirm" },
-	&"specialty_match":  { "tier": TIER_POP, "sfx": &"specialty_match", "particle": SPECIALTY_BURST },
+	# DayStickyNote.play_specialty_match() already fires the gold burst, so
+	# RewardFeedback adds only sound + haptic + shake here (no_particles).
+	&"specialty_match":  { "tier": TIER_POP, "sfx": &"specialty_match", "no_particles": true },
 	&"item_applied":     { "tier": TIER_POP, "sfx": &"item_applied" },
 	&"minigame_combo":   { "tier": TIER_POP, "sfx": &"combo_up", "escalates": true },
 	&"minigame_win":     { "tier": TIER_CELEBRATION, "sfx": &"result_fanfare", "chord": [&"result_fanfare", &"reward"], "no_particles": true },

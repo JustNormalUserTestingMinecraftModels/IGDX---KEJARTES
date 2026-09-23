@@ -118,6 +118,23 @@ which gave real streams to `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
 `exam_notice` and `run_result`. `specialty_match`'s alias is set only in
 `audio_director.tscn`; the script default is null.
 
+**Reward-feedback shopping list (2026-09-23).** The `RewardFeedback`
+orchestrator reuses existing streams via pitch, layering (`play_chord`) and the
+tier system, but three genuinely new sounds would lift the warmth. Drop each at
+its slot path (swappable, no code change); until then the slot aliases an
+existing stream:
+- a warm kids "yay"/cheer — the Celebration `play_chord` partner
+- a soft chord "ta-da" — the Celebration base
+- a dry chalk/paper tick — the Tick tier's character
+
+**`badge_reveal_stream()` is defined but never called (found 2026-09-23).**
+`AudioDirector.badge_reveal_stream(band)` maps the five grade bands to their
+`sfx_badge_reveal_*` slots, but no screen ever plays it — the EndCutscene badge
+reveal has only its BGM and (since 2026-09-23) `RewardFeedback`'s physical
+channels (haptic/shake/confetti), not the band cue. Wiring it needs an
+AudioDirector path that plays a stream by value (the badge ids are not in
+`_resolve_sfx`), so it was left out of the reward-feedback pass.
+
 **`classroomAmbient3.ogg` is corrupt at source (2026-09-21).** The Drive pack's
 third classroom bed is a 4 KB stub whose Vorbis identification header declares
 **zero channels**; the file on Drive is the same 4022 bytes, so it did not

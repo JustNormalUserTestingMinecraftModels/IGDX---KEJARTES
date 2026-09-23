@@ -422,6 +422,19 @@ The values shipped in Task 2 are guesses. This task replaces them with measureme
 - Consumes: `illustration_grade_cutout.tres` from Task 2.
 - Produces: measured `ao_strength` and `rim_strength`, consumed by nothing in code but recorded in the commit and pinned by the ceilings.
 
+> **Readback note (added during execution, 2026-09-23).** This plugin build
+> (3.2.5) exposes **no `game_eval` op**, so the `game_eval` calls below cannot be
+> made. The substitute, proven in Task 1: put the sampling code in a short
+> throwaway script on a node in the running game, have it `await
+> RenderingServer.frame_post_draw` twice, write its line to
+> `user://<name>.txt`, and read that file from
+> `C:/Users/user/AppData/Roaming/Godot/app_userdata/KejarTes Ver9.00/`.
+> A game script may `await` freely — the prohibition is on test suites, which
+> the runner calls without awaiting. Sample proportionally to
+> `img.get_width()/get_height()`, because the embedded run is not 1080x1920
+> (Task 1 measured 1063x1891). The method below is unchanged; only the readback
+> differs.
+
 - [ ] **Step 1: Seed and reach the Lobby**
 
 Run the game, open the debug overlay **first** (calling teleport from `game_eval` opens the overlay and eats your tap), then General → ⚡ Seed Playtest State, then Scenes → Lobby.

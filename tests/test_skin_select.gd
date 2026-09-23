@@ -40,6 +40,15 @@ func _new_screen() -> SkinSelect:
 	return s
 
 
+## Pins the carousel to `width` for a pose test. It is anchored full-rect,
+## so its anchors are collapsed first; setting size on unequal anchors logs
+## a warning and is overridden on the next layout.
+func _pin_carousel_width(s: SkinSelect, width: float) -> void:
+	var carousel := s.get_node("%Carousel") as Control
+	carousel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	carousel.size = Vector2(width, carousel.size.y)
+
+
 ## All six characters, not the roster: equipped_skins is keyed by NAME, so a
 ## skin follows a character across the grade change that clears the roster.
 func test_rail_holds_all_six_characters_in_catalogue_order() -> void:
@@ -226,8 +235,7 @@ func test_no_theme_overrides_beyond_layout_constants() -> void:
 ## test holds regardless of the editor root's own viewport size.
 func test_card_pose_hits_the_mockups_two_slots() -> void:
 	var s := _new_screen()
-	var carousel := s.get_node("%Carousel") as Control
-	carousel.size.x = 1080.0
+	_pin_carousel_width(s, 1080.0)
 	var c: Dictionary = s.card_pose(0.0)
 	assert_true((c.position as Vector2).distance_to(Vector2(85, 153)) < 0.01, str(c.position))
 	assert_true(absf(float(c.scale) - 0.818) < 0.0001)
@@ -243,8 +251,7 @@ func test_card_pose_hits_the_mockups_two_slots() -> void:
 ## carousel, same reason as test_card_pose_hits_the_mockups_two_slots.
 func test_card_pose_is_the_midpoint_halfway() -> void:
 	var s := _new_screen()
-	var carousel := s.get_node("%Carousel") as Control
-	carousel.size.x = 1080.0
+	_pin_carousel_width(s, 1080.0)
 	var h: Dictionary = s.card_pose(0.5)
 	assert_true((h.position as Vector2).distance_to(Vector2(380.5, 261.5)) < 0.01, str(h.position))
 	assert_true(absf(float(h.scale) - 0.738) < 0.0001)
@@ -256,8 +263,7 @@ func test_card_pose_is_the_midpoint_halfway() -> void:
 ## test_card_pose_hits_the_mockups_two_slots.
 func test_the_left_neighbour_mirrors_the_right() -> void:
 	var s := _new_screen()
-	var carousel := s.get_node("%Carousel") as Control
-	carousel.size.x = 1080.0
+	_pin_carousel_width(s, 1080.0)
 	var mid := 85.0 + 1080.0 * 0.818 * 0.5
 	var r: Dictionary = s.card_pose(1.0)
 	var l: Dictionary = s.card_pose(-1.0)
@@ -272,8 +278,7 @@ func test_the_left_neighbour_mirrors_the_right() -> void:
 ## the carousel must stay centred on its own width, as the old code did.
 func test_card_pose_recentres_on_a_wider_carousel() -> void:
 	var s := _new_screen()
-	var carousel := s.get_node("%Carousel") as Control
-	carousel.size = Vector2(1440, carousel.size.y)
+	_pin_carousel_width(s, 1440.0)
 	var c: Dictionary = s.card_pose(0.0)
 	assert_true(absf((c.position as Vector2).x - (85.0 + 180.0)) < 0.01, str(c.position))
 
@@ -284,8 +289,7 @@ func test_card_pose_recentres_on_a_wider_carousel() -> void:
 ## test_card_pose_hits_the_mockups_two_slots.
 func test_the_neighbour_is_on_screen_when_settled() -> void:
 	var s := _new_screen()
-	var carousel := s.get_node("%Carousel") as Control
-	carousel.size.x = 1080.0
+	_pin_carousel_width(s, 1080.0)
 	s._layout_cards()
 	var centre := s.card_for(0)
 	var side := s.card_for(1)
@@ -318,8 +322,7 @@ func test_a_drag_past_the_end_stops_at_the_overscroll() -> void:
 ## test_card_pose_hits_the_mockups_two_slots.
 func test_select_skin_centres_that_card() -> void:
 	var s := _new_screen()
-	var carousel := s.get_node("%Carousel") as Control
-	carousel.size.x = 1080.0
+	_pin_carousel_width(s, 1080.0)
 	s.select_skin(1)
 	assert_true(absf(s.scroll() - 1.0) < 0.0001)
 	assert_true(s.card_for(1).position.distance_to(Vector2(85, 153)) < 0.01,

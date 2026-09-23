@@ -134,3 +134,18 @@ func test_bgm_slider_gives_audible_feedback() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd")
 	assert_true(src.contains('&"BGM"') and src.contains('play_sfx(&"pop")'),
 		"dragging the Musik slider must preview a sound, like the SFX slider does")
+
+
+func test_haptics_and_reduce_motion_persist() -> void:
+	GameSettings.haptics_enabled = false
+	GameSettings.reduce_motion = true
+	GameSettings.save_settings()
+	GameSettings.haptics_enabled = true
+	GameSettings.reduce_motion = false
+	GameSettings.load_settings()
+	assert_false(GameSettings.haptics_enabled, "haptics_enabled round-trips through save/load")
+	assert_true(GameSettings.reduce_motion, "reduce_motion round-trips through save/load")
+	# restore defaults so other tests are unaffected
+	GameSettings.haptics_enabled = true
+	GameSettings.reduce_motion = false
+	GameSettings.save_settings()

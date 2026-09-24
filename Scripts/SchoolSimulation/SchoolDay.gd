@@ -166,6 +166,9 @@ var max_minigames_this_week: int = 2
 var is_waiting_for_continue: bool = false
 
 var embedded_widgets: Dictionary = {} # student_name -> {student, chip}
+## GameState.pending_earnings' total when today began, so the daily result
+## can show what Wirausaha earned today (it is paid out at week's end).
+var _money_at_day_start := 0
 
 # End Simulation Tutorial internal variables
 var _tutorial_panel: TutorialPanel = null
@@ -300,6 +303,7 @@ func _run_day() -> void:
 # the driver loop above, which re-checks is_skipped and stops.
 func _run_single_day() -> void:
 	var day_name = DAYS[current_day]
+	_money_at_day_start = _pending_total()
 	# One bell per day, not per student: this is the top of the day loop, and
 	# the per-student work happens further down.
 	AudioDirector.play_sfx(&"school_bell")
@@ -562,6 +566,14 @@ const _DAY_CHROME_PATHS := [
 ]
 
 
+## Everything Wirausaha has earned this week and not yet been paid.
+func _pending_total() -> int:
+	var total := 0
+	for amount in GameState.pending_earnings.values():
+		total += int(amount)
+	return total
+
+
 func _set_day_chrome_visible(shown: bool) -> void:
 	for p in _DAY_CHROME_PATHS:
 		var n := get_node_or_null(p)
@@ -591,7 +603,8 @@ func _show_day_summary(day_name: String) -> void:
 	# DaySummaryStudentRow went unrendered for so long -- and why the
 	# mockup's "+12/65" was unbuildable, since only `summary` carries a
 	# delta at all.
-	summary_instance.setup_summary(summary, student_manager.students)
+	summary_instance.setup_summary(summary, student_manager.students,
+		_pending_total() - _money_at_day_start)
 
 	await summary_instance.summary_dismissed
 	_set_day_chrome_visible(true)

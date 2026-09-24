@@ -38,6 +38,13 @@ with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
 eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
+the 2026-09-24 SchoolDay liveliness set (the daily verdict's four teacher
+faces `Assets/Images/DaySummary/Verdict/teacher_1..4.svg`, `crown.svg`,
+`star_on.svg`, `star_off.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
+sun, moon, three clouds, star field and rain streak; the avatar rings in
+`SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
+band's `caution_tape.svg`; and `night_windows.png`, generated from
+`transition_foreground.png` -- regenerate it if that painting changes),
 the 2026-09-24 picker icons (`Assets/Images/UI/Picker/arrow_up.svg`,
 `arrow_down.svg`, `pip_coin.svg`, `badge_check.svg`; hand-drawn vectors in the
 token colours, sized to draw at 1:1),

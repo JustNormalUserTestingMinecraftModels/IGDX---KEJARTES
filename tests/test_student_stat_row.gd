@@ -108,8 +108,9 @@ func test_setup_works_before_the_row_ever_enters_the_tree() -> void:
 
 
 func test_both_screens_use_the_shared_row() -> void:
-	for path in ["res://Scripts/SchoolSimulation/SchoolDay.gd",
-			"res://Scripts/SchoolSimulation/DailyDecayOverview.gd"]:
+	# SchoolDay left this list on 2026-09-24: its status cards became the
+	# AvatarChip strip, which shows rings rather than rows.
+	for path in ["res://Scripts/SchoolSimulation/DailyDecayOverview.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_contains(src, "StudentStatRow", "%s should use the shared row" % path)
 		assert_false(src.contains("StatBar.new("),

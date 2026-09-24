@@ -89,7 +89,9 @@ func test_content_goes_under_margin() -> void:
 
 
 func test_both_screens_use_the_shared_card_chrome() -> void:
-	for path in [SCHOOL_DAY_PATH, DECAY_PATH]:
+	# SchoolDay left this list on 2026-09-24: its status cards became the
+	# AvatarChip strip. It must still not build a card by hand.
+	for path in [DECAY_PATH]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_contains(src, "StudentSummaryCard", "%s should use the shared card chrome" % path)
 		assert_false(src.contains("PanelContainer.new("),

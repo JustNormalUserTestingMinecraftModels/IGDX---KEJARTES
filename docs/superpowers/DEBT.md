@@ -38,6 +38,13 @@ with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
 eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
+the 2026-09-24 SchoolDay liveliness set (the daily verdict's four teacher
+faces `Assets/Images/DaySummary/Verdict/teacher_1..4.svg`, `crown.svg`,
+`star_on.svg`, `star_off.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
+sun, moon, three clouds, star field and rain streak; the avatar rings in
+`SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
+band's `caution_tape.svg`; and `night_windows.png`, generated from
+`transition_foreground.png` -- regenerate it if that painting changes),
 the 2026-09-24 picker icons (`Assets/Images/UI/Picker/arrow_up.svg`,
 `arrow_down.svg`, `pip_coin.svg`, `badge_check.svg`; hand-drawn vectors in the
 token colours, sized to draw at 1:1),
@@ -376,13 +383,14 @@ only the luminance floor; nothing tests the tile-period rule.
 `tests/test_ghost_track.gd` does cover `track_ghost.png`. Add the period test,
 or correct the README.
 
-**SchoolDay's playful textures never load (found 2026-09-14).**
-`SchoolDay.gd`'s `_get_playful_texture()` builds
-`res://Assets/Images/UI/Placeholders/*.png` paths, but the stat icons there
-(`icon_akademis`, `icon_seni`, `icon_olahraga`, `icon_istirahat`, `icon_mood`,
-`icon_energy`) exist only as `.svg`. Its `ResourceLoader.exists` check then
-fails, so it returns nothing unless the `energy_icon_texture` /
-`mood_icon_texture` exports are set.
+**SchoolDay is not in the tall-screen suite, and has no safe area (2026-09-24).**
+The liveliness spec's "Mobile layout" section asks for the header (calendar
+and day banner) to sit inside `SafeAreaMargin -> UI`, and for SchoolDay and
+EventWarning to be pinned at 1080x2400 by `tests/test_tall_screen_layout.gd`.
+Neither is done: the header is still top-anchored at a fixed offset inside
+BookClockWidget. The layout is anchored (the day stack spans the screen with
+spacers, and the notice is full-rect and centred), but no test proves it on
+a 20:9 phone.
 
 **Opening BookClockWidget.tscn hangs the editor (moved from CLAUDE.md, 2026-09-15).**
 `scene_open` on `Scenes/SchoolSimulation/BookClockWidget.tscn` hangs the

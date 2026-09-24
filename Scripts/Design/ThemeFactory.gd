@@ -37,6 +37,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_skin_select(theme, tokens)
 	_build_objective_strip(theme, tokens)
 	_build_picker(theme, tokens)
+	_build_school_day_liveliness(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -271,6 +272,190 @@ static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("PickerLegendLabel", "Label")
 	theme.set_font_size("font_size", "PickerLegendLabel", tokens.font_caption)
 	theme.set_color("font_color", "PickerLegendLabel", tokens.text_secondary)
+
+
+## SchoolDay liveliness pass (2026-09-24, spec
+## docs/superpowers/specs/2026-09-24-schoolday-liveliness-design.md). Single-
+## screen values no token matches.
+## Alpha of the status line's dark strip: enough to hold light text over the
+## brightest midday sky, thin enough that the sky still reads through it.
+const STATUS_SCRIM_ALPHA := 0.62
+## The "selesai" stamp's inked rim, px.
+const DAY_STAMP_BORDER := 6
+## The stamp's paper, nearly opaque so the red ink reads on any sky.
+const DAY_STAMP_FILL_ALPHA := 0.92
+## The Bintang Hari Ini strip's gold rim, px, and how far its fill is
+## lightened from currency_gold toward white.
+const STAR_OF_DAY_RIM := 3
+const STAR_OF_DAY_FILL_LIGHTEN := 0.75
+## How far the tally's "total naik" green is darkened from state_success so it
+## reads on the cream cell.
+const TALLY_GAIN_DARKEN := 0.2
+
+## The day screen's new chrome.
+##
+##   DayBannerFill           the banner's progress fill: a white pill the
+##                           widget tints with the day's category colour via
+##                           self_modulate, clipped to the day's progress.
+##   DayBannerKnockoutLabel  the day name's white twin, revealed only under
+##                           the fill, so the name flips dark to white exactly
+##                           at the fill edge. DayBannerLabel's face and size.
+##   StatusScrim             the slim dark strip the status line rides, faded
+##                           in for its beats (owner's pick, 2026-09-24).
+##   StatusScrimLabel        light text on that strip.
+##   DayStampPanel           the "<hari> selesai" ink stamp: cream paper, a
+##   DayStampLabel           red rim and red display-face lettering.
+##   AvatarDisc              the avatar strip's round face frame.
+##   AvatarNameLabel         the student's name under it, on a StatusScrim.
+static func _build_school_day_liveliness(theme: Theme, tokens: DesignTokens) -> void:
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color.WHITE
+	fill.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("DayBannerFill")
+	theme.set_type_variation("DayBannerFill", "Panel")
+	theme.set_stylebox("panel", "DayBannerFill", fill)
+
+	theme.add_type("DayBannerKnockoutLabel")
+	theme.set_type_variation("DayBannerKnockoutLabel", "Label")
+	theme.set_font_size("font_size", "DayBannerKnockoutLabel", tokens.font_h1)
+	theme.set_color("font_color", "DayBannerKnockoutLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "DayBannerKnockoutLabel", bold)
+
+	var scrim := StyleBoxFlat.new()
+	scrim.bg_color = Color(tokens.surface_overlay, STATUS_SCRIM_ALPHA)
+	scrim.set_corner_radius_all(tokens.radius_pill)
+	scrim.content_margin_left = tokens.space_lg
+	scrim.content_margin_right = tokens.space_lg
+	scrim.content_margin_top = tokens.space_sm
+	scrim.content_margin_bottom = tokens.space_sm
+	theme.add_type("StatusScrim")
+	theme.set_type_variation("StatusScrim", "PanelContainer")
+	theme.set_stylebox("panel", "StatusScrim", scrim)
+
+	theme.add_type("StatusScrimLabel")
+	theme.set_type_variation("StatusScrimLabel", "Label")
+	theme.set_font_size("font_size", "StatusScrimLabel", tokens.font_title)
+	theme.set_color("font_color", "StatusScrimLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "StatusScrimLabel", bold)
+
+	var stamp := StyleBoxFlat.new()
+	stamp.bg_color = Color(tokens.surface_card, DAY_STAMP_FILL_ALPHA)
+	stamp.set_border_width_all(DAY_STAMP_BORDER)
+	stamp.border_color = tokens.state_danger
+	stamp.set_corner_radius_all(tokens.radius_sm)
+	stamp.content_margin_left = tokens.space_md
+	stamp.content_margin_right = tokens.space_md
+	stamp.content_margin_top = tokens.space_xs
+	stamp.content_margin_bottom = tokens.space_xs
+	theme.add_type("DayStampPanel")
+	theme.set_type_variation("DayStampPanel", "PanelContainer")
+	theme.set_stylebox("panel", "DayStampPanel", stamp)
+
+	theme.add_type("DayStampLabel")
+	theme.set_type_variation("DayStampLabel", "Label")
+	theme.set_font_size("font_size", "DayStampLabel", tokens.font_h2)
+	theme.set_color("font_color", "DayStampLabel", tokens.state_danger)
+	if tokens.font_display != null:
+		theme.set_font("font", "DayStampLabel", tokens.font_display)
+
+	# -- The avatar strip's chip: a round cream frame the face is clipped to
+	# (clip_children), and the student's name on a small StatusScrim pill. --
+	var disc := StyleBoxFlat.new()
+	disc.bg_color = tokens.surface_card
+	disc.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("AvatarDisc")
+	theme.set_type_variation("AvatarDisc", "Panel")
+	theme.set_stylebox("panel", "AvatarDisc", disc)
+
+	theme.add_type("AvatarNameLabel")
+	theme.set_type_variation("AvatarNameLabel", "Label")
+	theme.set_font_size("font_size", "AvatarNameLabel", tokens.font_caption)
+	theme.set_color("font_color", "AvatarNameLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "AvatarNameLabel", bold)
+
+	# -- The daily result's reward layer (mockup section 3): a cream card with
+	# the teacher's verdict, a three-cell tally and the Bintang Hari Ini
+	# strip. Deliberately not the Card variation: test_day_summary keeps that
+	# out of the popup, whose rows wear IdCardPanel. --
+	var reward := StyleBoxFlat.new()
+	reward.bg_color = tokens.surface_card
+	reward.set_corner_radius_all(tokens.radius_lg)
+	reward.shadow_color = tokens.shadow_color
+	reward.shadow_size = tokens.shadow_size
+	reward.shadow_offset = tokens.shadow_offset
+	reward.content_margin_left = tokens.space_md
+	reward.content_margin_right = tokens.space_md
+	reward.content_margin_top = tokens.space_md
+	reward.content_margin_bottom = tokens.space_md
+	theme.add_type("RewardPanel")
+	theme.set_type_variation("RewardPanel", "PanelContainer")
+	theme.set_stylebox("panel", "RewardPanel", reward)
+
+	theme.add_type("VerdictHeadlineLabel")
+	theme.set_type_variation("VerdictHeadlineLabel", "Label")
+	theme.set_font_size("font_size", "VerdictHeadlineLabel", tokens.font_h2)
+	theme.set_color("font_color", "VerdictHeadlineLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "VerdictHeadlineLabel", tokens.font_display)
+
+	theme.add_type("VerdictSublineLabel")
+	theme.set_type_variation("VerdictSublineLabel", "Label")
+	theme.set_font_size("font_size", "VerdictSublineLabel", tokens.font_body_size)
+	theme.set_color("font_color", "VerdictSublineLabel", tokens.text_secondary)
+
+	var cell := StyleBoxFlat.new()
+	cell.bg_color = tokens.surface_page
+	cell.set_corner_radius_all(tokens.radius_md)
+	cell.content_margin_top = tokens.space_xs
+	cell.content_margin_bottom = tokens.space_xs
+	theme.add_type("TallyCell")
+	theme.set_type_variation("TallyCell", "PanelContainer")
+	theme.set_stylebox("panel", "TallyCell", cell)
+
+	for spec in [["TallyValueGain", tokens.state_success.darkened(TALLY_GAIN_DARKEN)],
+			["TallyValueTarget", tokens.cat_akademis],
+			["TallyValueCoin", tokens.cat_libur]]:
+		theme.add_type(spec[0])
+		theme.set_type_variation(spec[0], "Label")
+		theme.set_font_size("font_size", spec[0], tokens.font_h2)
+		theme.set_color("font_color", spec[0], spec[1])
+		if tokens.font_display != null:
+			theme.set_font("font", spec[0], tokens.font_display)
+
+	theme.add_type("TallyCaptionLabel")
+	theme.set_type_variation("TallyCaptionLabel", "Label")
+	theme.set_font_size("font_size", "TallyCaptionLabel", tokens.font_caption)
+	theme.set_color("font_color", "TallyCaptionLabel", tokens.text_secondary)
+
+	var sod := StyleBoxFlat.new()
+	sod.bg_color = tokens.currency_gold.lightened(STAR_OF_DAY_FILL_LIGHTEN)
+	sod.set_border_width_all(STAR_OF_DAY_RIM)
+	sod.border_color = tokens.currency_gold
+	sod.set_corner_radius_all(tokens.radius_md)
+	sod.content_margin_left = tokens.space_sm
+	sod.content_margin_right = tokens.space_sm
+	sod.content_margin_top = tokens.space_xs
+	sod.content_margin_bottom = tokens.space_xs
+	theme.add_type("StarOfDayPanel")
+	theme.set_type_variation("StarOfDayPanel", "PanelContainer")
+	theme.set_stylebox("panel", "StarOfDayPanel", sod)
+
+	theme.add_type("StarOfDayTitleLabel")
+	theme.set_type_variation("StarOfDayTitleLabel", "Label")
+	theme.set_font_size("font_size", "StarOfDayTitleLabel", tokens.font_body_size)
+	theme.set_color("font_color", "StarOfDayTitleLabel", tokens.brand_primary_dark)
+	if bold != null:
+		theme.set_font("font", "StarOfDayTitleLabel", bold)
+
+	theme.add_type("StarOfDayLabel")
+	theme.set_type_variation("StarOfDayLabel", "Label")
+	theme.set_font_size("font_size", "StarOfDayLabel", tokens.font_caption)
+	theme.set_color("font_color", "StarOfDayLabel", tokens.text_secondary)
 
 
 ## Measured off skinselection_mockup.png (spec
@@ -805,6 +990,29 @@ static func _build_event_warning(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_outline_color", "EventWarningCaptionLabel", tokens.event_warning_ink)
 	if tokens.font_display != null:
 		theme.set_font("font", "EventWarningCaptionLabel", tokens.font_display)
+
+	# -- The caution band the 2026-09-24 liveliness pass laid across the
+	# notice: a dark strip between two stripe tapes, carrying the marker
+	# (KATEGORI · MODE, in the bold body face, which has the "·") over the
+	# caption. No side margins: the band runs off both screen edges. --
+	var band := StyleBoxFlat.new()
+	band.bg_color = tokens.surface_overlay
+	band.shadow_color = tokens.shadow_color
+	band.shadow_size = tokens.shadow_size
+	band.shadow_offset = tokens.shadow_offset
+	band.content_margin_bottom = 0
+	band.content_margin_top = 0
+	theme.add_type("EventBandPanel")
+	theme.set_type_variation("EventBandPanel", "PanelContainer")
+	theme.set_stylebox("panel", "EventBandPanel", band)
+
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+	theme.add_type("EventBandMarkerLabel")
+	theme.set_type_variation("EventBandMarkerLabel", "Label")
+	theme.set_font_size("font_size", "EventBandMarkerLabel", tokens.font_title)
+	theme.set_color("font_color", "EventBandMarkerLabel", tokens.currency_gold)
+	if bold != null:
+		theme.set_font("font", "EventBandMarkerLabel", bold)
 
 
 ## The shop hub's two destination tiles, panel-less by design.

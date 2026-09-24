@@ -358,6 +358,9 @@ const DISPLAY_ROSTER := [
 	"PrimaryButtonM", "SecondaryButtonM", "DangerButtonM",
 	"PrimaryButtonL", "SecondaryButtonL", "DangerButtonL", "SuccessButtonL",
 	"LobbyNavTile", "LobbyCtaButton",
+	# 2026-09-24 AturJadwal visual polish D7: the "perlu" / "lelah" weak-stat
+	# chips are badges. The value pills are numbers, so they keep the body face.
+	"StatFlagPerlu", "StatFlagLelah",
 	# 2026-09-17 achievements: card titles, the Klaim pill, the unlock banner.
 	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
 	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",

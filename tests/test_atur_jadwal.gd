@@ -770,17 +770,22 @@ func test_each_stat_bar_has_exactly_one_value_label() -> void:
 		assert_true(bar != null, "BGStat/%s is not a StatBar" % bar_name)
 		if bar == null:
 			continue
+		# The weak-stat Flag chip (2026-09-24, D7) is the one other Label a
+		# bar authors; what must never double up is the value label itself.
 		var labels := 0
 		for child in bar.get_children():
-			if child is Label:
+			if child is Label and child.name != "Flag":
 				labels += 1
 		assert_eq(labels, 1,
-			"%s must carry exactly one Label, found %d" % [bar_name, labels])
+			"%s must carry exactly one value Label, found %d" % [bar_name, labels])
 
 
-## BarLabel (white glyph + dark rim) is the only variation that reads over
-## both the pale track and a saturated category fill.
-func test_stat_bar_value_labels_use_the_bar_label_variation() -> void:
+## The value used to be a BarLabel (white glyph + dark rim), the one variation
+## that read over both the pale track and a saturated fill. Since the
+## 2026-09-24 visual polish (D6) it is a cream StatValuePill* riding the end
+## of the fill instead, whose dark text sits on its own cream ground and so
+## reads over anything behind it.
+func test_stat_bar_value_labels_are_cream_pills() -> void:
 	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
 		"Kepribadian1", "Kepribadian2"]
 	for bar_name in bar_names:
@@ -788,8 +793,8 @@ func test_stat_bar_value_labels_use_the_bar_label_variation() -> void:
 			"BGStat/%s/ValueLabel" % bar_name) as Label
 		assert_true(label != null, "%s/ValueLabel is missing" % bar_name)
 		if label != null:
-			assert_eq(String(label.theme_type_variation), "BarLabel",
-				"%s/ValueLabel must use BarLabel" % bar_name)
+			assert_true(String(label.theme_type_variation).begins_with("StatValuePill"),
+				"%s/ValueLabel must be a StatValuePill" % bar_name)
 
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/StatBar.gd")
 	assert_true(src.contains("get_node_or_null(\"ValueLabel\")"),
@@ -875,14 +880,15 @@ func test_the_stagger_does_not_move_the_final_icons() -> void:
 ## solid category-coloured capsule instead of an empty one. Each bar must
 ## now resolve to its category's own theme variation (whose fill stylebox
 ## bakes the colour in, see ThemeFactory._build_progress) and leave the
-## node itself untinted.
+## node itself untinted. Since the 2026-09-24 visual polish (D5) that is the
+## embossed StatBarInset* family, which only this screen wears.
 func test_bg_stat_bars_use_their_category_variation_and_stay_untinted() -> void:
 	var expected := {
-		"BGStat/Akademis1": &"StatBarAkademis",
-		"BGStat/Akademis2": &"StatBarSeniBudaya",
-		"BGStat/Akademis3": &"StatBarOlahraga",
-		"BGStat/Kepribadian1": &"StatBarIstirahat",
-		"BGStat/Kepribadian2": &"StatBarLibur",
+		"BGStat/Akademis1": &"StatBarInsetAkademis",
+		"BGStat/Akademis2": &"StatBarInsetSeniBudaya",
+		"BGStat/Akademis3": &"StatBarInsetOlahraga",
+		"BGStat/Kepribadian1": &"StatBarInsetIstirahat",
+		"BGStat/Kepribadian2": &"StatBarInsetLibur",
 	}
 	for p in expected.keys():
 		var bar := _screen.get_node_or_null(p) as StatBar
@@ -893,3 +899,114 @@ func test_bg_stat_bars_use_their_category_variation_and_stay_untinted() -> void:
 			"%s must wear its category's theme variation" % p)
 		assert_eq(bar.self_modulate, Color.WHITE,
 			"%s must not tint the whole node -- the fill stylebox carries the colour" % p)
+
+
+# ------------------------------------------ 2026-09-24 visual polish, phase 2
+
+## Bar node -> [category key, the student-dictionary stat it shows].
+const _EMBOSSED_BARS := {
+	"BGStat/Akademis1": ["Akademis", "akademis1"],
+	"BGStat/Akademis2": ["SeniBudaya", "akademis2"],
+	"BGStat/Akademis3": ["Olahraga", "akademis3"],
+	"BGStat/Kepribadian1": ["Istirahat", "kepribadian1"],
+	"BGStat/Kepribadian2": ["Libur", "kepribadian2"],
+}
+
+
+## D5: three layers of depth -- a light shadowed Frame drawn behind the bar,
+## the inset-shaded track, and a Gloss line on the fill. D6: the value is a
+## pill outlined in the stat's accent. D7: a hidden Flag chip per bar. All
+## authored in the scene; nothing here is built at runtime.
+func test_each_stat_bar_is_embossed_with_a_pill_and_a_flag() -> void:
+	for p in _EMBOSSED_BARS:
+		var bar := _screen.get_node_or_null(p) as StatBar
+		assert_true(bar != null, "%s must be a StatBar" % p)
+		if bar == null:
+			continue
+		var cat: String = _EMBOSSED_BARS[p][0]
+		assert_eq(bar.variation, &"StatBarInset", "%s wears the embossed family" % p)
+		assert_true(bar.value_rides_fill, "%s's value rides its fill" % p)
+		var frame := bar.get_node_or_null("Frame") as Panel
+		assert_true(frame != null and frame.show_behind_parent
+			and frame.theme_type_variation == &"StatBarFrame",
+			"%s needs a StatBarFrame Panel drawn behind it" % p)
+		if frame != null:
+			assert_true(frame.offset_left < 0.0 and frame.offset_right > 0.0,
+				"%s's frame must stand proud of the bar on every side" % p)
+		var gloss := bar.get_node_or_null("Gloss") as Panel
+		assert_true(gloss != null and gloss.theme_type_variation == &"StatBarGloss",
+			"%s needs a StatBarGloss line" % p)
+		var pill := bar.get_node_or_null("ValueLabel") as Label
+		assert_true(pill != null and pill.theme_type_variation == StringName("StatValuePill" + cat),
+			"%s's value is a StatValuePill%s" % [p, cat])
+		var flag := bar.get_node_or_null("Flag") as Label
+		assert_true(flag != null, "%s needs a Flag chip" % p)
+		if flag != null:
+			assert_false(flag.visible, "%s's flag starts hidden" % p)
+		for n in [frame, gloss, pill, flag]:
+			if n != null:
+				assert_eq((n as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
+					"%s/%s must never take a tap" % [p, n.name])
+
+
+## D6: the pill rides the fill. Driven through the real, themed bar: a fuller
+## bar puts its pill further right, the pill always stays inside the bar, and
+## the gloss line spans the fill minus its insets.
+func test_the_value_pill_and_gloss_follow_the_fill() -> void:
+	var bar := _screen.get_node_or_null("BGStat/Akademis1") as StatBar
+	assert_true(bar != null, "Akademis1 is gone")
+	if bar == null:
+		return
+	var pill := bar.get_node("ValueLabel") as Label
+	var gloss := bar.get_node("Gloss") as Control
+	bar.value = 20.0
+	bar.layout_fill_followers()
+	var low_x := pill.position.x
+	bar.value = 80.0
+	bar.layout_fill_followers()
+	var high_x := pill.position.x
+	assert_true(high_x > low_x, "a fuller bar moves the pill right (%s -> %s)" % [low_x, high_x])
+	assert_true(pill.position.x >= 0.0 and pill.position.x + pill.size.x <= bar.size.x + 0.5,
+		"the pill stays inside the bar")
+	assert_true(is_equal_approx(gloss.size.x, bar.fill_end_x() - bar.gloss_inset * 2.0),
+		"the gloss spans the fill, inset at both ends")
+	bar.value = 100.0
+	bar.layout_fill_followers()
+	assert_true(pill.position.x + pill.size.x <= bar.size.x + 0.5, "a full bar still keeps its pill inside")
+
+
+## The mood row (Kepribadian1, under the mood icon) shows kepribadian1, and
+## the energy row (Kepribadian2, under the bolt) shows kepribadian2 --
+## GameState.gd's own naming. The two feeds were crossed until 2026-09-24.
+func test_the_mood_and_energy_rows_show_their_own_need() -> void:
+	var icons := {
+		"BGStat/IconKepribadian1": "stat_mood.png",
+		"BGStat/IconKepribadian2": "stat_energy.png",
+	}
+	for p in icons:
+		var icon := _screen.get_node_or_null(p) as TextureRect
+		assert_true(icon != null and icon.texture != null
+			and icon.texture.resource_path.ends_with(icons[p]),
+			"%s must show %s" % [p, icons[p]])
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("_feed_stat_bar(kp1_bar, projected[\"kepribadian1\"]"),
+		"the mood row must be fed kepribadian1 (mood)")
+	assert_true(src.contains("_feed_stat_bar(kp2_bar, projected[\"kepribadian2\"]"),
+		"the energy row must be fed kepribadian2 (energy)")
+	assert_true(src.contains("\"kepribadian1\": student.get(\"kepribadian1\", 50.0) - _compute_total_loss(\"mood_cost\")"),
+		"mood is projected with the week's mood cost")
+	assert_true(src.contains("\"kepribadian2\": student.get(\"kepribadian2\", 50.0) - _compute_total_loss(\"energy_cost\")"),
+		"energy is projected with the week's energy cost")
+
+
+## D7 wiring: the flags come from StatFlags over the projected numbers, and
+## their nudge honours the editor and Reduce Motion.
+func test_the_weak_stat_flags_are_wired_to_statflags() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("_update_stat_flags(projected)"), "the flags must read the projected stats")
+	assert_true(src.contains("StatFlags.flags_for(projected)"), "the flags must come from StatFlags")
+	var at := src.find("func _start_flag_nudge")
+	assert_true(at >= 0, "the chips need their nudge")
+	var body := src.substr(at, src.find("\nfunc ", at + 1) - at)
+	assert_true(body.contains("Engine.is_editor_hint()") and body.contains("GameSettings.reduce_motion"),
+		"the nudge is off in the editor and under Reduce Motion")

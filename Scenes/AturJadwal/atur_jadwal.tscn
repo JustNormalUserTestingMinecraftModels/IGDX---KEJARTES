@@ -112,7 +112,7 @@ offset_top = 507.0
 offset_right = 1003.4119
 offset_bottom = 774.0
 rotation = 0.02617994
-pivot_offset = Vector2(135.70593, 133.5)
+pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Kamis" parent="BGHari" unique_id=684348886 instance=ExtResource("5_ulthj")]
 layout_mode = 0
@@ -130,7 +130,7 @@ offset_top = 880.0
 offset_right = 832.4119
 offset_bottom = 1147.0
 rotation = 0.02617994
-pivot_offset = Vector2(135.70593, 133.5)
+pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="ShelfFace" type="ColorRect" parent="." unique_id=540110925]
 layout_mode = 0
@@ -163,19 +163,56 @@ offset_left = 680.0
 offset_top = 112.0
 offset_right = 1004.0
 offset_bottom = 182.0
-theme_type_variation = &"StatBarAkademis"
+theme_type_variation = &"StatBarInsetAkademis"
 show_percentage = false
 script = ExtResource("statbar")
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
+
+[node name="Frame" type="Panel" parent="BGStat/Akademis1" unique_id=1741231224]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Akademis1" unique_id=144363718]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis1" unique_id=684455384]
 layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme_type_variation = &"BarLabel"
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillAkademis"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Akademis1" unique_id=943119441]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagPerlu"
+text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -185,23 +222,57 @@ offset_left = 680.0
 offset_top = 238.0
 offset_right = 1004.0
 offset_bottom = 308.0
-theme_type_variation = &"StatBarSeniBudaya"
+theme_type_variation = &"StatBarInsetSeniBudaya"
 show_percentage = false
 script = ExtResource("statbar")
 category = "SeniBudaya"
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
 
-[node name="ValueLabel" type="Label" parent="BGStat/Akademis2" unique_id=1676429292]
+[node name="Frame" type="Panel" parent="BGStat/Akademis2" unique_id=940661408]
+show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_type_variation = &"BarLabel"
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Akademis2" unique_id=612464952]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
+
+[node name="ValueLabel" type="Label" parent="BGStat/Akademis2" unique_id=1676429292]
+layout_mode = 0
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillSeniBudaya"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Akademis2" unique_id=1941370096]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagPerlu"
+text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -211,20 +282,57 @@ offset_left = 680.0
 offset_top = 364.0
 offset_right = 1004.0
 offset_bottom = 434.0
-theme_type_variation = &"StatBarOlahraga"
+theme_type_variation = &"StatBarInsetOlahraga"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Olahraga"
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
+
+[node name="Frame" type="Panel" parent="BGStat/Akademis3" unique_id=1323238029]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Akademis3" unique_id=1273914549]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis3" unique_id=1385557803]
 layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme_type_variation = &"BarLabel"
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillOlahraga"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Akademis3" unique_id=1098960879]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagPerlu"
+text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -234,20 +342,57 @@ offset_left = 680.0
 offset_top = 616.0
 offset_right = 1004.0
 offset_bottom = 686.0
-theme_type_variation = &"StatBarIstirahat"
+theme_type_variation = &"StatBarInsetIstirahat"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Istirahat"
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
+
+[node name="Frame" type="Panel" parent="BGStat/Kepribadian1" unique_id=1427027390]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Kepribadian1" unique_id=1698404190]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Kepribadian1" unique_id=1157659437]
 layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme_type_variation = &"BarLabel"
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillIstirahat"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Kepribadian1" unique_id=1796763281]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagLelah"
+text = "lelah"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -257,23 +402,57 @@ offset_left = 680.0
 offset_top = 490.0
 offset_right = 1004.0
 offset_bottom = 560.0
-theme_type_variation = &"StatBarLibur"
+theme_type_variation = &"StatBarInsetLibur"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Libur"
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
 
-[node name="ValueLabel" type="Label" parent="BGStat/Kepribadian2" unique_id=2145646865]
+[node name="Frame" type="Panel" parent="BGStat/Kepribadian2" unique_id=147577628]
+show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_type_variation = &"BarLabel"
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Kepribadian2" unique_id=1696362753]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
+
+[node name="ValueLabel" type="Label" parent="BGStat/Kepribadian2" unique_id=2145646865]
+layout_mode = 0
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillLibur"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Kepribadian2" unique_id=1389478435]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagLelah"
+text = "lelah"
 horizontal_alignment = 1
 vertical_alignment = 1
 

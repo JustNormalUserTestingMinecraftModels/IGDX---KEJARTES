@@ -53,6 +53,18 @@ extends ProgressBar
 ## StatCheck and ReportCard show settled numbers, not live edits.
 @export var pop_on_change: bool = false
 
+## When true, the ValueLabel rides the end of the fill as a pill instead of
+## sitting where it was authored, and a child named "Gloss", if the scene
+## authors one, is stretched along the top of the fill. Both follow every
+## value change, so they track Juice.fill_bar's sweep frame by frame.
+## AturJadwal's embossed bars (2026-09-24 visual polish, D5/D6). Never moves
+## anything inside the editor, where a scene save would bake the result.
+@export var value_rides_fill: bool = false
+
+## How far the Gloss line is inset from each end of the fill, in pixels, so
+## it stops short of the fill's rounded caps.
+@export_range(0.0, 40.0, 1.0) var gloss_inset: float = 14.0
+
 var _label: Label
 ## True when _label was found already authored in the scene (adopted)
 ## rather than created by this script. Adopted labels keep their authored
@@ -69,6 +81,52 @@ func _ready() -> void:
 	max_value = 100.0
 	_apply_tint()
 	_sync_label()
+	if not value_changed.is_connected(_on_value_moved):
+		value_changed.connect(_on_value_moved)
+	if not resized.is_connected(_on_resized_for_followers):
+		resized.connect(_on_resized_for_followers)
+	_on_value_moved(value)
+
+
+func _on_value_moved(_v: float) -> void:
+	if Engine.is_editor_hint() or not value_rides_fill:
+		return
+	layout_fill_followers()
+
+
+func _on_resized_for_followers() -> void:
+	_on_value_moved(value)
+
+
+## Where the fill currently ends, in this bar's local x. Mirrors how
+## ProgressBar draws a begin-to-end fill: the fill stylebox's own minimum
+## width, plus the ratio of what is left of the bar, rounded; nothing at all
+## at zero.
+func fill_end_x() -> float:
+	var fg := get_theme_stylebox("fill")
+	var fg_min := fg.get_minimum_size().x if fg != null else 0.0
+	var ratio := clampf(get_as_ratio(), 0.0, 1.0)
+	var p := roundf(ratio * (size.x - fg_min))
+	return p + fg_min if p > 0.0 else 0.0
+
+
+## Puts the value pill on the end of the fill and stretches the Gloss line
+## along it. Public and ungated so a suite can drive it inside the editor;
+## the signal path above is what keeps it out of an editor session.
+func layout_fill_followers() -> void:
+	var end := fill_end_x()
+	if _label != null:
+		var pill := _label.get_combined_minimum_size()
+		_label.size = pill
+		_label.position = Vector2(
+			clampf(end - pill.x / 2.0, 0.0, maxf(0.0, size.x - pill.x)),
+			(size.y - pill.y) / 2.0)
+	var gloss := get_node_or_null("Gloss") as Control
+	if gloss != null:
+		var width := end - gloss_inset * 2.0
+		gloss.visible = width > 0.0
+		gloss.position.x = gloss_inset
+		gloss.size.x = maxf(0.0, width)
 
 
 ## Category -> the per-category "StatBar" theme variation baked in
@@ -126,6 +184,20 @@ const _STAT_BAR_LIGHT_VARIATIONS := {
 	"Olahraga": &"StatBarOlahragaLight",
 }
 
+## The embossed family AturJadwal's five bars wear (2026-09-24 visual
+## polish, D5): an inset-shaded track under a StatBarFrame panel. Only the
+## five categories that screen shows; mood and energy wear Istirahat and
+## Libur there, as they always have.
+const _STAT_BAR_INSET_VARIATIONS := {
+	"Akademis": &"StatBarInsetAkademis",
+	"Akademik": &"StatBarInsetAkademis",
+	"SeniBudaya": &"StatBarInsetSeniBudaya",
+	"Seni Budaya": &"StatBarInsetSeniBudaya",
+	"Olahraga": &"StatBarInsetOlahraga",
+	"Istirahat": &"StatBarInsetIstirahat",
+	"Libur": &"StatBarInsetLibur",
+}
+
 
 func _apply_tint() -> void:
 	if variation == &"StatBar":
@@ -159,6 +231,13 @@ func _apply_tint() -> void:
 		var light: StringName = _STAT_BAR_LIGHT_VARIATIONS.get(category, &"StatBar")
 		if is_inside_tree():
 			theme_type_variation = light
+		return
+
+	if variation == &"StatBarInset":
+		self_modulate = Color.WHITE
+		var inset: StringName = _STAT_BAR_INSET_VARIATIONS.get(category, &"StatBar")
+		if is_inside_tree():
+			theme_type_variation = inset
 		return
 
 	self_modulate = Color.WHITE

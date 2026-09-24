@@ -1618,6 +1618,119 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_font_size("font_size", lname, tokens.font_caption)
 		theme.set_color("font_color", lname, tokens.text_primary)
 
+	_build_embossed_stat_bars(theme, tokens)
+
+
+## AturJadwal's five stat bars, embossed (2026-09-24 visual polish, D5-D7).
+##
+## Three layers of depth instead of one flat capsule, and none of it on the
+## shared StatBar family -- StatCheck, ReportCard and StudentCard keep theirs:
+##
+##   StatBarFrame     a light, shadowed outer frame. A Panel drawn behind the
+##                    bar (show_behind_parent), so it carries the white rim and
+##                    the drop shadow the plain track used to.
+##   StatBarInset*    the dark track, with a soft inner shade along its top
+##                    and sides: a blended border darker than the ground, so
+##                    the fill reads as seated IN the track rather than on it.
+##   StatBarGloss     a thin light line along the top of the fill, which
+##                    StatBar.gd sizes to the fill's width as it animates.
+##
+## StatValuePill* is the value riding the end of the fill (D6): a cream pill
+## outlined in the stat's own accent, so its number reads dark-on-light on
+## either the fill or the empty track behind it. StatFlag* are the weak-stat
+## chips (D7): "perlu" on warning, "lelah" on danger.
+static func _build_embossed_stat_bars(theme: Theme, tokens: DesignTokens) -> void:
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = tokens.outline_card
+	frame.set_corner_radius_all(tokens.radius_pill)
+	frame.shadow_color = tokens.shadow_color
+	frame.shadow_size = int(tokens.shadow_size / 2.0)
+	frame.shadow_offset = tokens.shadow_offset
+	theme.add_type("StatBarFrame")
+	theme.set_type_variation("StatBarFrame", "Panel")
+	theme.set_stylebox("panel", "StatBarFrame", frame)
+
+	# The inner shade: a blended border darker than the ground, thickest
+	# along the top where an inset lit from above would be deepest, and
+	# absent along the bottom.
+	var inset := StyleBoxFlat.new()
+	inset.bg_color = tokens.stat_bar_track
+	inset.set_corner_radius_all(tokens.radius_pill)
+	inset.border_color = tokens.stat_bar_track.darkened(0.55)
+	inset.border_width_top = int(tokens.outline_width * 1.5)
+	inset.border_width_left = int(tokens.outline_width / 2.0)
+	inset.border_width_right = int(tokens.outline_width / 2.0)
+	inset.border_width_bottom = 0
+	inset.border_blend = true
+	inset.set_content_margin_all(tokens.outline_width / 2.0)
+
+	var gloss := StyleBoxFlat.new()
+	gloss.bg_color = Color(tokens.outline_card, 0.45)
+	gloss.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("StatBarGloss")
+	theme.set_type_variation("StatBarGloss", "Panel")
+	theme.set_stylebox("panel", "StatBarGloss", gloss)
+
+	for spec in [
+		["Akademis", tokens.cat_akademis_on_dark],
+		["SeniBudaya", tokens.cat_senibudaya_on_dark],
+		["Olahraga", tokens.cat_olahraga_on_dark],
+		["Istirahat", tokens.cat_istirahat_on_dark],
+		["Libur", tokens.cat_libur_on_dark],
+	]:
+		var cat: String = spec[0]
+		var accent: Color = spec[1]
+		var bar_name := "StatBarInset" + cat
+		theme.add_type(bar_name)
+		theme.set_type_variation(bar_name, "ProgressBar")
+		theme.set_stylebox("background", bar_name, inset)
+		theme.set_stylebox("fill", bar_name, _progress_fill_stylebox(accent, cat))
+		theme.set_font_size("font_size", bar_name, tokens.font_caption)
+		theme.set_color("font_color", bar_name, tokens.text_primary)
+
+		var pill := StyleBoxFlat.new()
+		pill.bg_color = tokens.surface_card
+		pill.set_corner_radius_all(tokens.radius_pill)
+		pill.set_border_width_all(int(tokens.outline_width * 2.0 / 3.0))
+		pill.border_color = accent
+		pill.content_margin_left = tokens.space_sm
+		pill.content_margin_right = tokens.space_sm
+		pill.content_margin_top = 0
+		pill.content_margin_bottom = 0
+		var pill_name := "StatValuePill" + cat
+		theme.add_type(pill_name)
+		theme.set_type_variation(pill_name, "Label")
+		theme.set_stylebox("normal", pill_name, pill)
+		theme.set_font_size("font_size", pill_name, tokens.font_body_size)
+		theme.set_color("font_color", pill_name, tokens.text_primary)
+		if tokens.font_body_bold != null:
+			theme.set_font("font", pill_name, tokens.font_body_bold)
+
+	for fspec in [
+		["StatFlagPerlu", tokens.state_warning, tokens.text_primary],
+		["StatFlagLelah", tokens.state_danger, tokens.text_on_brand],
+	]:
+		var flag_name: String = fspec[0]
+		var chip := StyleBoxFlat.new()
+		chip.bg_color = fspec[1]
+		chip.set_corner_radius_all(tokens.radius_pill)
+		chip.set_border_width_all(int(tokens.outline_width / 2.0))
+		chip.border_color = tokens.outline_card
+		chip.shadow_color = tokens.shadow_color
+		chip.shadow_size = int(tokens.shadow_size / 3.0)
+		chip.shadow_offset = tokens.shadow_offset / 2.0
+		chip.content_margin_left = tokens.space_xs * 1.5
+		chip.content_margin_right = tokens.space_xs * 1.5
+		chip.content_margin_top = 0
+		chip.content_margin_bottom = 0
+		theme.add_type(flag_name)
+		theme.set_type_variation(flag_name, "Label")
+		theme.set_stylebox("normal", flag_name, chip)
+		theme.set_font_size("font_size", flag_name, tokens.font_caption)
+		theme.set_color("font_color", flag_name, fspec[2])
+		if tokens.font_display != null:
+			theme.set_font("font", flag_name, tokens.font_display)
+
 
 ## AchievementTile's progress bar (Task 8, 2026-09-18 polish pass): StatBar's
 ## min height wins over any scene-level custom_minimum_size override on a

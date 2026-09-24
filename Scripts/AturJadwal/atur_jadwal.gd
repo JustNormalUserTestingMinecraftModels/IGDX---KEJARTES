@@ -18,6 +18,12 @@ extends Control
 
 signal _holiday_dismissed
 
+# -- Weak-stat chip nudge (2026-09-24 visual polish, D7) ---------------------
+## How far a "perlu" / "lelah" chip bobs up at the top of its nudge, in px.
+const FLAG_NUDGE_PX := 6.0
+## Seconds for one full nudge, up and back.
+const FLAG_NUDGE_SECONDS := 1.6
+
 ## Id of the student whose stat rows were last staggered in. Guards
 ## _stagger_stat_rows() so it only plays on screen entry or an actual
 ## student switch -- _update_student_display() also runs on every activity
@@ -642,19 +648,31 @@ func _update_student_display():
 	var is_switch: bool = not _has_staggered_once or current_id != _last_staggered_student_id
 	var pop_bars: bool = not is_switch
 
+	# kepribadian1 is MOOD and kepribadian2 is ENERGY (GameState.gd's header).
+	# Kepribadian1 is the row under the mood icon and Kepribadian2 the row
+	# under the energy bolt. Until 2026-09-24 these two feeds were crossed,
+	# so each row showed the other need's value and weekly cost.
+	var projected := {
+		"kepribadian1": student.get("kepribadian1", 50.0) - _compute_total_loss("mood_cost"),
+		"kepribadian2": student.get("kepribadian2", 50.0) - _compute_total_loss("energy_cost"),
+		"akademis1": student.get("akademis1", 50.0) + _compute_pending_gain("Akademis", student),
+		"akademis2": student.get("akademis2", 50.0) + _compute_pending_gain("SeniBudaya", student),
+		"akademis3": student.get("akademis3", 50.0) + _compute_pending_gain("Olahraga", student),
+		"target_akademis1": student.get("target_akademis1", 65.0),
+		"target_akademis2": student.get("target_akademis2", 65.0),
+		"target_akademis3": student.get("target_akademis3", 65.0),
+	}
 	if kp1_bar:
-		_feed_stat_bar(kp1_bar, student.get("kepribadian2", 50.0), -_compute_total_loss("energy_cost"), 100.0, pop_bars)
+		_feed_stat_bar(kp1_bar, projected["kepribadian1"], 0.0, 100.0, pop_bars)
 	if kp2_bar:
-		_feed_stat_bar(kp2_bar, student.get("kepribadian1", 50.0), -_compute_total_loss("mood_cost"), 100.0, pop_bars)
+		_feed_stat_bar(kp2_bar, projected["kepribadian2"], 0.0, 100.0, pop_bars)
 	if ak1_bar:
-		var target1 = student.get("target_akademis1", 65.0)
-		_feed_stat_bar(ak1_bar, student.get("akademis1", 50.0), _compute_pending_gain("Akademis", student), target1, pop_bars)
+		_feed_stat_bar(ak1_bar, projected["akademis1"], 0.0, projected["target_akademis1"], pop_bars)
 	if ak2_bar:
-		var target2 = student.get("target_akademis2", 65.0)
-		_feed_stat_bar(ak2_bar, student.get("akademis2", 50.0), _compute_pending_gain("SeniBudaya", student), target2, pop_bars)
+		_feed_stat_bar(ak2_bar, projected["akademis2"], 0.0, projected["target_akademis2"], pop_bars)
 	if ak3_bar:
-		var target3 = student.get("target_akademis3", 65.0)
-		_feed_stat_bar(ak3_bar, student.get("akademis3", 50.0), _compute_pending_gain("Olahraga", student), target3, pop_bars)
+		_feed_stat_bar(ak3_bar, projected["akademis3"], 0.0, projected["target_akademis3"], pop_bars)
+	_update_stat_flags(projected)
 
 	_update_day_button_colors()
 
@@ -662,6 +680,59 @@ func _update_student_display():
 		_has_staggered_once = true
 		_last_staggered_student_id = current_id
 		_stagger_stat_rows()
+
+## Shows each bar's weak-stat chip (2026-09-24 visual polish, D7) from
+## StatFlags, over the same projected numbers the bars show, so assigning a
+## rest day can clear a "lelah" as the player watches. Each bar authors its
+## own hidden "Flag" Label; this only fills, restyles and shows it.
+func _update_stat_flags(projected: Dictionary) -> void:
+	var flags := StatFlags.flags_for(projected)
+	var bars := {
+		"akademis1": ak1_bar, "akademis2": ak2_bar, "akademis3": ak3_bar,
+		"kepribadian1": kp1_bar, "kepribadian2": kp2_bar,
+	}
+	for key in bars:
+		var bar: Control = bars[key]
+		if bar == null:
+			continue
+		var flag := bar.get_node_or_null("Flag") as Label
+		if flag == null:
+			continue
+		var word: String = flags.get(key, "")
+		var was_visible := flag.visible
+		flag.visible = word != ""
+		if word == "":
+			_stop_flag_nudge(flag)
+			continue
+		flag.text = word
+		flag.theme_type_variation = &"StatFlagPerlu" if word == StatFlags.PERLU else &"StatFlagLelah"
+		if not was_visible:
+			_start_flag_nudge(flag)
+
+
+## The chip's gentle nudge: a slow bob up and back, so a flag reads as a
+## prompt without shouting. Off in the editor and under Reduce Motion.
+var _flag_nudges: Dictionary = {}
+
+func _start_flag_nudge(flag: Label) -> void:
+	if Engine.is_editor_hint() or GameSettings.reduce_motion:
+		return
+	_stop_flag_nudge(flag)
+	var rest_y := flag.position.y
+	flag.set_meta(&"nudge_rest_y", rest_y)
+	var tw := create_tween().set_loops()
+	tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(flag, "position:y", rest_y - FLAG_NUDGE_PX, FLAG_NUDGE_SECONDS / 2.0)
+	tw.tween_property(flag, "position:y", rest_y, FLAG_NUDGE_SECONDS / 2.0)
+	_flag_nudges[flag] = tw
+
+func _stop_flag_nudge(flag: Label) -> void:
+	var tw: Tween = _flag_nudges.get(flag, null)
+	if tw != null and tw.is_valid():
+		tw.kill()
+	_flag_nudges.erase(flag)
+	if flag.has_meta(&"nudge_rest_y"):
+		flag.position.y = flag.get_meta(&"nudge_rest_y")
 
 ## Brings the five stat rows in together with their icons when the
 ## displayed student changes. Opacity and scale only -- the icons sit on

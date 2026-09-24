@@ -25,8 +25,8 @@ func setup() -> void:
 func test_scene_tree_shape() -> void:
 	assert_true(_note is DayStickyNote, "root must be a DayStickyNote")
 	for p in ["Shadow", "BackIcon", "Paper", "Paper/DayLabel",
-			  "Paper/SubjectLabel", "Paper/FlavorLabel", "Paper/Lock",
-			  "Paper/WashiTape", "Paper/AturHint"]:
+			  "Paper/Lines/SubjectLabel", "Paper/Lines/FlavorLabel", "Paper/Lock",
+			  "Paper/WashiTape", "Paper/Lines/AturHint"]:
 		assert_true(_note.get_node_or_null(p) != null, "missing node: " + p)
 	assert_true(_note.get_node("Paper") is TextureButton, "Paper must be a TextureButton")
 	var shadow := _note.get_node("Shadow") as TextureRect
@@ -103,13 +103,13 @@ func test_show_scheduled_fills_text_icon_and_tint() -> void:
 	_note.set_day_name("Senin")
 	_note.show_scheduled("Olahraga")
 	assert_eq((_note.get_node("Paper/DayLabel") as Label).text, "SENIN")
-	assert_eq((_note.get_node("Paper/SubjectLabel") as Label).text, "Atletik")
-	assert_eq((_note.get_node("Paper/FlavorLabel") as Label).text, "Semangat")
-	assert_true((_note.get_node("Paper/SubjectLabel") as Label).visible)
+	assert_eq((_note.get_node("Paper/Lines/SubjectLabel") as Label).text, "Atletik")
+	assert_eq((_note.get_node("Paper/Lines/FlavorLabel") as Label).text, "Semangat")
+	assert_true((_note.get_node("Paper/Lines/SubjectLabel") as Label).visible)
 	assert_true((_note.get_node("BackIcon") as TextureRect).visible)
 	assert_true((_note.get_node("BackIcon") as TextureRect).texture != null)
 	assert_false((_note.get_node("Paper/Lock") as Label).visible, "no lock on a normal scheduled day")
-	assert_false((_note.get_node("Paper/AturHint") as Label).visible, "a scheduled day needs no hint")
+	assert_false((_note.get_node("Paper/Lines/AturHint") as Label).visible, "a scheduled day needs no hint")
 	var tape := _note.get_node("Paper/WashiTape") as TextureRect
 	assert_true(tape.visible, "a scheduled day wears its tape")
 	assert_true(tape.self_modulate.is_equal_approx(DesignTokens.load_default().category_color("Olahraga")),
@@ -119,12 +119,12 @@ func test_show_scheduled_fills_text_icon_and_tint() -> void:
 func test_show_empty_hides_the_extras() -> void:
 	_note.show_scheduled("Akademis")
 	_note.show_empty()
-	assert_false((_note.get_node("Paper/SubjectLabel") as Label).visible)
-	assert_false((_note.get_node("Paper/FlavorLabel") as Label).visible)
+	assert_false((_note.get_node("Paper/Lines/SubjectLabel") as Label).visible)
+	assert_false((_note.get_node("Paper/Lines/FlavorLabel") as Label).visible)
 	assert_false((_note.get_node("BackIcon") as TextureRect).visible)
 	assert_false((_note.get_node("Paper/Lock") as Label).visible)
 	assert_false((_note.get_node("Paper/WashiTape") as TextureRect).visible, "an empty day has no tape")
-	var hint := _note.get_node("Paper/AturHint") as Label
+	var hint := _note.get_node("Paper/Lines/AturHint") as Label
 	assert_true(hint.visible, "an empty day invites the tap")
 	assert_true(hint.text.ends_with("Atur"), "the hint reads '+ Atur', got '%s'" % hint.text)
 	_assert_paper_is_cream("empty")
@@ -149,7 +149,7 @@ func _assert_paper_is_cream(state: String) -> void:
 ## The tape and the hint are decoration on the Paper button; neither may take
 ## the tap from it.
 func test_tape_and_hint_never_eat_the_tap() -> void:
-	for p in ["Paper/WashiTape", "Paper/AturHint"]:
+	for p in ["Paper/WashiTape", "Paper/Lines", "Paper/Lines/AturHint"]:
 		assert_eq((_note.get_node(p) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
 			p + " must let the tap through to Paper")
 
@@ -167,16 +167,29 @@ func test_the_day_name_sits_below_the_tape() -> void:
 	var edge_y := bl.y + (br.y - bl.y) * (day.position.x - bl.x) / (br.x - bl.x)
 	assert_true(day.position.y >= edge_y,
 		"DayLabel top %s must clear the tape's lower edge %s" % [day.position.y, edge_y])
-	for p in ["Paper/SubjectLabel", "Paper/FlavorLabel", "Paper/AturHint"]:
-		assert_true((_note.get_node(p) as Control).position.y >= day.position.y,
-			p + " must sit below the day name")
+	var lines := _note.get_node("Paper/Lines") as Control
+	assert_true(lines.position.y >= day.position.y + day.size.y - 1.0,
+		"the lines under the day name must start below it")
+
+
+## A holiday title can be long enough to wrap -- "Hari Kemerdekaan RI" takes
+## two lines -- and with fixed offsets it printed over "Libur Nasional". The
+## lines stack in a VBox so a wrapped title pushes the rest down.
+func test_the_lines_under_the_day_stack_so_a_wrap_cannot_overlap() -> void:
+	var lines := _note.get_node_or_null("Paper/Lines")
+	assert_true(lines is VBoxContainer, "Paper/Lines must be a VBoxContainer")
+	for p in ["SubjectLabel", "FlavorLabel", "AturHint"]:
+		assert_true(lines != null and lines.get_node_or_null(p) is Label,
+			p + " must stack inside Paper/Lines")
+	assert_eq((lines as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"Paper/Lines must let the tap through to Paper")
 
 func test_show_holiday_is_gold_locked_and_titled() -> void:
 	_note.set_day_name("Rabu")
 	_note.show_holiday("Kemerdekaan RI")
 	assert_eq((_note.get_node("Paper/DayLabel") as Label).text, "RABU")
-	assert_eq((_note.get_node("Paper/SubjectLabel") as Label).text, "Kemerdekaan RI")
-	assert_eq((_note.get_node("Paper/FlavorLabel") as Label).text, "Libur Nasional")
+	assert_eq((_note.get_node("Paper/Lines/SubjectLabel") as Label).text, "Kemerdekaan RI")
+	assert_eq((_note.get_node("Paper/Lines/FlavorLabel") as Label).text, "Libur Nasional")
 	assert_true((_note.get_node("Paper/Lock") as Label).visible, "holiday note must show the lock")
 	assert_true((_note.get_node("BackIcon") as TextureRect).visible)
 	var tape := _note.get_node("Paper/WashiTape") as TextureRect

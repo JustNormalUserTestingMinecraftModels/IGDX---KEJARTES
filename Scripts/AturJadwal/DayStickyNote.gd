@@ -83,14 +83,17 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 
 @onready var _paper: TextureButton = $Paper
 @onready var _day_label: Label = $Paper/DayLabel
-@onready var _subject_label: Label = $Paper/SubjectLabel
-@onready var _flavor_label: Label = $Paper/FlavorLabel
+## The lines under the day name stack in Paper/Lines, a VBox, so a holiday
+## title long enough to wrap pushes the flavour line down instead of
+## printing over it.
+@onready var _subject_label: Label = $Paper/Lines/SubjectLabel
+@onready var _flavor_label: Label = $Paper/Lines/FlavorLabel
 @onready var _lock: Label = $Paper/Lock
 @onready var _back_icon: TextureRect = $BackIcon
 @onready var _match_glow: TextureRect = $Paper/MatchGlow
 @onready var _specialty_star: TextureRect = $Paper/SpecialtyStar
 @onready var _tape: TextureRect = $Paper/WashiTape
-@onready var _atur_hint: Label = $Paper/AturHint
+@onready var _atur_hint: Label = $Paper/Lines/AturHint
 
 var _tokens: DesignTokens
 var _state := ""       # "" | "empty" | "scheduled" | "holiday"

@@ -63,7 +63,12 @@ and given `title_daily_results.png`'s alpha -- drop-replaceable at the same
 path), and the 2026-09-18 Koperasi stock-pip set:
 `Assets/Images/Shop/UI/pip_filled.svg` / `pip_hollow.svg` (a plain filled
 dot and a matching ring, coloured from `koperasi_tag_fill`/`koperasi_tray_rule`
-to stay warm and shop-consistent -- drop-replaceable at the same path).
+to stay warm and shop-consistent -- drop-replaceable at the same path), and the
+2026-09-24 AturJadwal washi tape, `Assets/Images/AturJadwal/washi_tape.svg`
+(hand-written SVG, not generated: a white striped strip with zigzag ends,
+drawn white because `DayStickyNote` tints it by `self_modulate`, so a
+replacement must stay light-on-transparent; keep it 246x40, the size it
+displays at, or `test_texture_mipmaps` will want mipmaps on it).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
@@ -78,6 +83,11 @@ the existing `icon_check.svg` from the same folder, no new asset needed.
 Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to
 alpha, colour un-premultiplied, cropped -- not exported transparent; swap in a
 real transparent export at the same path when one exists.
+`DayStickyNote`'s holiday padlock (`Paper/Lock`) is still the emoji glyph
+"🔒" in a `Label`, against the no-emoji-iconography rule; swap it for a
+`TextureRect` wearing the existing `UI/Placeholders/icon_lock.svg` (a type
+change, so delete and recreate, and move `test_day_sticky_note`'s `Lock`
+assertions off `Label`).
 `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in for final art
 (`WinStage`'s `lose_backdrop` `@export`, so an Inspector swap). `InventorySlot`'s high-count
 `Shine` overlay is a plain white `ColorRect` with no texture.

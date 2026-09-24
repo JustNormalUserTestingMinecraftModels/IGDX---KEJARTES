@@ -94,27 +94,6 @@ offset_bottom = 124.0
 theme_type_variation = &"H2Label"
 text = "SENIN"
 
-[node name="SubjectLabel" type="Label" parent="Paper" unique_id=839462538]
-visible = false
-modulate = Color(0, 0, 0, 1)
-layout_mode = 0
-offset_left = 40.0
-offset_top = 124.0
-offset_right = 260.0
-offset_bottom = 166.0
-theme_type_variation = &"CaptionLabel"
-autowrap_mode = 2
-
-[node name="FlavorLabel" type="Label" parent="Paper" unique_id=1483257253]
-visible = false
-modulate = Color(0, 0, 0, 1)
-layout_mode = 0
-offset_left = 40.0
-offset_top = 166.0
-offset_right = 260.0
-offset_bottom = 204.0
-theme_type_variation = &"MicroLabel"
-
 [node name="Lock" type="Label" parent="Paper" unique_id=1387335178]
 visible = false
 layout_mode = 0
@@ -138,12 +117,30 @@ texture = ExtResource("5_mpgil")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="AturHint" type="Label" parent="Paper" unique_id=629865034]
-modulate = Color(0, 0, 0, 0.55)
+[node name="Lines" type="VBoxContainer" parent="Paper" unique_id=113769439]
 layout_mode = 0
 offset_left = 40.0
 offset_top = 124.0
-offset_right = 240.0
-offset_bottom = 166.0
+offset_right = 250.0
+offset_bottom = 224.0
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="SubjectLabel" type="Label" parent="Paper/Lines" unique_id=839462538]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+autowrap_mode = 2
+
+[node name="FlavorLabel" type="Label" parent="Paper/Lines" unique_id=1483257253]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 2
+theme_type_variation = &"MicroLabel"
+
+[node name="AturHint" type="Label" parent="Paper/Lines" unique_id=629865034]
+modulate = Color(0, 0, 0, 0.55)
+layout_mode = 2
 theme_type_variation = &"CaptionLabel"
 text = "+ Atur"

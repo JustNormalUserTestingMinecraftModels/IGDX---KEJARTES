@@ -147,9 +147,10 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		"BGHari/Senin", "BGHari/Selasa", "BGHari/Rabu", "BGHari/Kamis", "BGHari/Jumat",
 		"StartWeek", "BackButton",
 		"Peringatan/TextureRect/ButtonYes", "Peringatan/TextureRect/ButtonNo",
-		"Penjadwalan/TextureRect/Rows/RowAkademik", "Penjadwalan/TextureRect/Rows/RowSeniBudaya",
-		"Penjadwalan/TextureRect/Rows/RowAtletik", "Penjadwalan/TextureRect/Rows/RowWirausaha",
-		"Penjadwalan/TextureRect/Rows/RowLibur", "Penjadwalan/TextureRect/PopupBack",
+		"Penjadwalan/Sheet/Body/Grid/TileAkademik", "Penjadwalan/Sheet/Body/Grid/TileSeniBudaya",
+		"Penjadwalan/Sheet/Body/Grid/TileAtletik", "Penjadwalan/Sheet/Body/Grid/TileWirausaha",
+		"Penjadwalan/Sheet/Body/TileLibur",
+		"Penjadwalan/Sheet/Body/Buttons/Batal", "Penjadwalan/Sheet/Body/Buttons/Pilih",
 	]
 	for p in paths:
 		var b := _screen.get_node_or_null(p) as Control
@@ -177,39 +178,33 @@ func test_day_notes_are_daystickynote_instances_tinted_via_category_color() -> v
 		"the template must tint via DesignTokens.category_color()")
 
 
-## The popup's five picks are ActivityRows now: icon, preview pill, name.
-func test_popup_has_five_activity_rows() -> void:
-	var root := _screen.get_node_or_null("Penjadwalan/TextureRect/Rows")
-	assert_true(root != null, "the popup must hold its rows in a Rows container")
+## The picker's five choices are ActivityTiles since the 2026-09-24 rebuild
+## (D9): four in a two-column grid, Libur full width beneath it.
+func test_popup_has_five_activity_tiles() -> void:
+	var grid := _screen.get_node_or_null("Penjadwalan/Sheet/Body/Grid") as GridContainer
+	assert_true(grid != null, "the picker must hold its tiles in a Grid")
+	if grid == null:
+		return
+	assert_eq(grid.columns, 2, "the grid is two columns wide")
 	var found := {}
-	for child in root.get_children():
-		if child is ActivityRow:
+	for child in grid.get_children():
+		if child is ActivityTile:
 			found[child.category] = child
+	var libur := _screen.get_node_or_null("Penjadwalan/Sheet/Body/TileLibur")
+	assert_true(libur is ActivityTile, "Libur is a tile of its own under the grid")
+	if libur is ActivityTile:
+		found[libur.category] = libur
 	for category in ["Akademis", "SeniBudaya", "Olahraga", "Wirausaha", "Istirahat"]:
 		assert_true(found.has(category),
-			"the popup must offer an ActivityRow for " + category)
-	assert_eq(found.size(), 5, "exactly five activity rows, no more")
-
-
-## The three skill rows keep their progress-toward-target bar; the other two
-## have no target, so they must not carry one.
-func test_only_skill_rows_carry_a_stat_bar() -> void:
-	var root := _screen.get_node("Penjadwalan/TextureRect/Rows")
-	for child in root.get_children():
-		if not (child is ActivityRow):
-			continue
-		var bar := child.get_node_or_null("Container/Pill/StatBar")
-		var is_skill: bool = child.category in ["Akademis", "SeniBudaya", "Olahraga"]
-		if is_skill:
-			assert_true(bar != null, child.category + " must keep its StatBar")
-		else:
-			assert_true(bar == null, child.category + " has no target, so no StatBar")
+			"the picker must offer an ActivityTile for " + category)
+	assert_eq(found.size(), 5, "exactly five activity tiles, no more")
+	assert_eq((libur as ActivityTile).category if libur is ActivityTile else "", "Istirahat",
+		"the full-width tile is Libur")
 
 
 ## The UI says "Atletik" where the code says "Olahraga". Keeping the two
 ## apart is what lets the label change without breaking every category match.
 func test_display_names_are_indonesian_and_decoupled_from_category_keys() -> void:
-	var root := _screen.get_node("Penjadwalan/TextureRect/Rows")
 	var expected := {
 		"Akademis": "Akademik",
 		"SeniBudaya": "Seni Budaya",
@@ -217,16 +212,41 @@ func test_display_names_are_indonesian_and_decoupled_from_category_keys() -> voi
 		"Wirausaha": "Wirausaha",
 		"Istirahat": "Libur",
 	}
-	for child in root.get_children():
-		if child is ActivityRow:
+	var tiles: Array = _screen.get_node("Penjadwalan/Sheet/Body/Grid").get_children()
+	tiles.append(_screen.get_node("Penjadwalan/Sheet/Body/TileLibur"))
+	for child in tiles:
+		if child is ActivityTile:
 			assert_eq(child.display_name, expected[child.category],
 				child.category + " must display as " + expected[child.category])
 
 
-func test_popup_still_has_a_back_button() -> void:
-	var back := _screen.get_node_or_null("Penjadwalan/TextureRect/PopupBack")
-	assert_true(back != null, "the popup needs its own back control")
-	assert_true(back is BaseButton, "the back control must be tappable")
+## Every tile carries its category's watermark (D10).
+func test_every_tile_has_a_watermark() -> void:
+	var tiles: Array = _screen.get_node("Penjadwalan/Sheet/Body/Grid").get_children()
+	tiles.append(_screen.get_node("Penjadwalan/Sheet/Body/TileLibur"))
+	for child in tiles:
+		if child is ActivityTile:
+			assert_true(child.watermark_texture != null,
+				child.category + " must set a watermark_texture")
+
+
+## D13: Batal and Pilih instead of a back arrow; Pilih starts dimmed.
+func test_popup_has_batal_and_a_dimmed_pilih() -> void:
+	var batal := _screen.get_node_or_null("Penjadwalan/Sheet/Body/Buttons/Batal") as Button
+	var pilih := _screen.get_node_or_null("Penjadwalan/Sheet/Body/Buttons/Pilih") as Button
+	assert_true(batal != null, "the picker needs a Batal button")
+	assert_true(pilih != null, "the picker needs a Pilih button")
+	if pilih:
+		assert_true(pilih.disabled, "Pilih is dimmed until a tile is selected")
+		assert_eq(pilih.theme_type_variation, &"PrimaryButton", "Pilih is the primary action")
+	if batal:
+		# Every role variation wears the Lobby's brown look, so a plain
+		# SecondaryButton would be Pilih's twin. The cream secondary keeps
+		# the two apart.
+		assert_eq(batal.theme_type_variation, &"StudentCardSecondaryButton",
+			"Batal is the cream secondary, visibly not Pilih")
+	assert_true(_screen.get_node_or_null("Penjadwalan/TextureRect/PopupBack") == null,
+		"the old back arrow is gone -- Batal and a tap outside the sheet cancel")
 
 
 func test_bg_stat_bars_are_statbars() -> void:
@@ -519,122 +539,155 @@ func test_pending_gain_is_grade_aware() -> void:
 		"_compute_pending_gain must delegate to ActivityPreview so it follows the grade")
 
 
-## The card art is a 1080x1080 texture whose visible card occupies only
-## x 211-868, y 34-1046. Rendered into a square 1394x1394 TextureRect, that
-## content lands at local x 272-1120, y 44-1350 -- and on screen at x 115-964,
-## y 202-1508, which is the mockup's card position (115-964, 203-1507).
-const _CARD_LEFT := 272.0
-const _CARD_RIGHT := 1120.0
-const _CARD_TOP := 44.0
-const _CARD_BOTTOM := 1350.0
-const _ROW_HEIGHT := 180.0
+## The picker sheet (D9) is centred on the screen and fits the 1080-wide
+## design frame with a margin either side, so it holds on any phone height.
+const _SHEET_MIN_MARGIN := 48.0
 
 
-func test_rows_are_inset_within_the_card_content() -> void:
-	var rows := _screen.get_node_or_null("Penjadwalan/TextureRect/Rows") as Control
-	assert_true(rows != null, "Rows must exist")
-	# Tightened on 2026-09-10 from 375/1024. Those insets were 12.1% and
-	# 11.3% of the card, so the row block used less than half the card's
-	# width and left ~100px dead on each side -- the bars read as short
-	# and the popup as underfilled. They are now ~4.5%, which is what the
-	# mentor reference shows.
-	var card_width := _CARD_RIGHT - _CARD_LEFT
-	var left_inset := (rows.offset_left - _CARD_LEFT) / card_width
-	var right_inset := (_CARD_RIGHT - rows.offset_right) / card_width
-	assert_true(left_inset < 0.06,
-		"rows should hug the card's left edge, got %.1f%%" % (left_inset * 100.0))
-	assert_true(right_inset < 0.06,
-		"rows should hug the card's right edge, got %.1f%%" % (right_inset * 100.0))
-	assert_true(absf(left_inset - right_inset) < 0.015,
-		"the two insets must match or the block sits off-centre")
-	assert_eq(rows.offset_top, 102.0, "the first row starts 4.4% down the card")
-	assert_true(rows.offset_left > _CARD_LEFT and rows.offset_right < _CARD_RIGHT,
-		"the row block must sit inside the card art, not over its transparent padding")
-	assert_true(rows.offset_top > _CARD_TOP,
-		"the row block must start below the card's top edge, not over its transparent padding")
+func test_the_sheet_is_centred_and_fits_the_frame() -> void:
+	var sheet := _screen.get_node_or_null("Penjadwalan/Sheet") as Panel
+	assert_true(sheet != null, "the picker's Sheet must exist")
+	if sheet == null:
+		return
+	assert_eq(sheet.theme_type_variation, &"PickerSheet", "the sheet wears PickerSheet")
+	for anchor in ["anchor_left", "anchor_right", "anchor_top", "anchor_bottom"]:
+		assert_eq(sheet.get(anchor), 0.5, "the sheet is anchored to the centre: " + anchor)
+	assert_eq(sheet.offset_left, -sheet.offset_right, "centred horizontally")
+	assert_eq(sheet.offset_top, -sheet.offset_bottom, "centred vertically")
+	var w := sheet.offset_right - sheet.offset_left
+	var h := sheet.offset_bottom - sheet.offset_top
+	assert_true(w <= 1080.0 - 2.0 * _SHEET_MIN_MARGIN, "the sheet is %d wide, too wide for 1080" % int(w))
+	assert_true(h <= 1920.0 - 2.0 * _SHEET_MIN_MARGIN, "the sheet is %d tall, too tall for 1920" % int(h))
 
 
-## The mockup's row pitch is 220px and must survive the 2026-09-10 cream
-## pass, which put a hairline between every pair of rows. The gap is now
-## paid twice -- once above the separator and once below -- so the
-## constant dropped from 40 to 16: 180 + 16 + 8 + 16 = 220, unchanged.
-##
-## The hairline counts as 8px, its combined minimum size, which is what
-## the VBoxContainer allocates. Note the editor's laid-out size.y reads
-## 4 for the same node; the minimum is the number the pitch depends on.
-##
-## Asserting the composed pitch rather than the bare constant, because
-## the constant alone no longer describes the spacing.
-func test_row_separation_matches_the_mockup_pitch() -> void:
-	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
-	var gap: int = rows.get_theme_constant("separation")
-	var sep := rows.get_node("Sep1") as HSeparator
-	assert_true(sep != null, "a hairline must sit between the rows")
-	# get_combined_minimum_size(), not size: a test-instantiated scene has
-	# had no layout pass, so size.y is still 0 here.
-	var hairline: float = sep.get_combined_minimum_size().y
-	assert_eq(180.0 + gap + hairline + gap, 220.0,
-		"row + gap + hairline + gap must reproduce the mockup's 220px pitch; "
-		+ "got 180 + %d + %d + %d" % [gap, int(hairline), gap])
-
-
-## Five rows, four hairlines, interleaved. Guards against a separator
-## being appended at the end where it would draw under the last row.
-func test_the_hairlines_are_interleaved_between_the_rows() -> void:
-	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
-	assert_eq(rows.get_child_count(), 9, "five rows plus four hairlines")
-	for i in rows.get_child_count():
-		var child := rows.get_child(i)
-		if i % 2 == 1:
-			assert_true(child is HSeparator,
-				"index %d should be a hairline, got %s" % [i, child.get_class()])
+## The body's stack -- grid, Libur, legend, note, buttons -- must fit
+## inside the sheet below the header, or the buttons fall off its bottom.
+func test_the_body_stack_fits_inside_the_sheet() -> void:
+	var sheet := _screen.get_node("Penjadwalan/Sheet") as Panel
+	var body := _screen.get_node("Penjadwalan/Sheet/Body") as VBoxContainer
+	var header := _screen.get_node("Penjadwalan/Sheet/Header") as Control
+	var gap: int = body.get_theme_constant("separation")
+	var needed := 0.0
+	var shown := 0
+	for child in body.get_children():
+		if not (child is Control and (child as Control).visible):
+			continue
+		# The note's label word-wraps, and before a layout pass it has no
+		# width, so its minimum height is one word per line. Its panel
+		# reserves a fixed slot instead; count that.
+		if child.name == "Note":
+			needed += (child as Control).custom_minimum_size.y
 		else:
-			assert_true(child is Button,
-				"index %d should be an activity row, got %s" % [i, child.get_class()])
+			needed += (child as Control).get_combined_minimum_size().y
+		shown += 1
+	needed += gap * maxi(0, shown - 1)
+	var sheet_h := sheet.offset_bottom - sheet.offset_top
+	var room := sheet_h - body.offset_top + body.offset_bottom
+	assert_true(body.offset_top >= header.offset_bottom, "the body starts below the header")
+	assert_true(needed <= room,
+		"the picker body needs %d px but the sheet leaves %d" % [int(needed), int(room)])
 
 
-func test_back_arrow_sits_inside_the_card() -> void:
-	var back := _screen.get_node_or_null("Penjadwalan/TextureRect/PopupBack") as Control
-	assert_true(back != null, "PopupBack must exist")
-	assert_eq(back.offset_left, 329.0, "back arrow x, 6.7% in from the card's left")
-	assert_eq(back.offset_top, 1170.0, "back arrow y, its art centred 92.3% down the card")
-	assert_true(back.offset_left >= _CARD_LEFT,
-		"the back arrow must not hang off the card's left padding")
-	assert_true(back.offset_bottom <= _CARD_BOTTOM,
-		"the back arrow must stay above the card's bottom edge")
+func test_the_header_asks_the_question() -> void:
+	var title := _screen.get_node_or_null("Penjadwalan/Sheet/Header/Title") as Label
+	assert_true(title != null, "the header has a title")
+	if title:
+		assert_eq(title.theme_type_variation, &"PickerTitleLabel", "title variation")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains('"%s mau ngapain?" % GameState.selected_day'),
+		"the title names the selected day")
 
 
-## 102 + 5*180 + 4*40 = 1162, which must clear the card's bottom edge with room
-## for the arrow beneath. If a later change alters row height or separation,
-## this is the test that catches the stack overflowing the card.
-func test_the_row_stack_fits_inside_the_card() -> void:
-	var rows := _screen.get_node("Penjadwalan/TextureRect/Rows") as VBoxContainer
-	var row_count := 0
-	var row_height := 0.0
-	for child in rows.get_children():
-		if child is ActivityRow:
-			row_count += 1
-			row_height = (child as ActivityRow).custom_minimum_size.y
-	assert_eq(row_height, _ROW_HEIGHT, "each row is the mockup's 180px tall")
-	var sep: int = rows.get_theme_constant("separation")
-	var stack_bottom: float = rows.offset_top + row_count * row_height + (row_count - 1) * sep
-	assert_true(stack_bottom <= _CARD_BOTTOM,
-		"the row stack ends at %d, past the card's bottom at %d" % [int(stack_bottom), int(_CARD_BOTTOM)])
+## D13: a tap selects, Pilih commits. The assignment must not run from the
+## tile's own press any more.
+func test_tapping_a_tile_selects_and_pilih_commits() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("tile.pressed.connect(_on_tile_picked.bind(tile.category))"),
+		"every tile, Wirausaha included, selects via its category")
+	assert_true(src.contains("popup_confirm_btn.pressed.connect(_on_pick_confirmed)"),
+		"Pilih confirms")
+	assert_true(src.contains("popup_cancel_btn.pressed.connect(_hide_penjadwalan_popup)"),
+		"Batal cancels")
+	var picked := _body_of(src, "func _on_tile_picked")
+	assert_false(picked.contains("_on_activity_selected"),
+		"a tap only selects; it must not assign the day")
+	var confirmed := _body_of(src, "func _on_pick_confirmed")
+	assert_true(confirmed.contains("_on_activity_selected(_picked_category)"),
+		"Pilih assigns the selected tile")
+	var show := _body_of(src, "func _show_penjadwalan_popup")
+	assert_true(show.contains('_set_pick("")'), "every opening starts with nothing selected")
+	var pick := _body_of(src, "func _set_pick")
+	assert_true(pick.contains("popup_confirm_btn.disabled = picked == null"),
+		"Pilih stays dimmed with no selection")
+	assert_true(pick.contains('"Pilih " + picked.display_name'),
+		"Pilih names the selection")
+	assert_true(pick.contains("ActivityPreview.selection_note("),
+		"the note under the grid explains the selection")
 
 
-## The mockup's card spans 78.7% of the 1080px screen width (x 115-964). Rendering
-## the card texture into too small a rect makes a correct layout look cramped at
-## every level, because every child inherits the shortfall.
-func test_card_is_rendered_at_the_mockup_scale() -> void:
-	var card := _screen.get_node_or_null("Penjadwalan/TextureRect") as TextureRect
-	assert_true(card != null, "the popup's card TextureRect must exist")
-	var w: float = card.offset_right - card.offset_left
-	var h: float = card.offset_bottom - card.offset_top
-	assert_eq(w, h, "the card rect must stay square so the 1080x1080 art is not stretched")
-	assert_eq(w, 1394.0, "the card rect is 1394px so its content renders 850px wide")
-	# Mockup card centre is 105px above screen centre, not centred.
-	var centre_y: float = (card.offset_top + card.offset_bottom) / 2.0
-	assert_eq(centre_y, -105.0, "the card sits 105px above screen centre, as in the mockup")
+## A tap outside the sheet lands on the full-screen popup root and cancels.
+func test_a_tap_outside_the_sheet_cancels() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("penjadwalan_popup.gui_input.connect(_on_blur_overlay_input)"),
+		"the popup root must route stray taps to the cancel handler")
+	var sheet := _screen.get_node("Penjadwalan/Sheet") as Control
+	assert_eq(sheet.mouse_filter, Control.MOUSE_FILTER_STOP,
+		"the sheet must swallow its own taps so they do not cancel")
+
+
+## Phase 5 motion: the notes and strip pop in on entry, the tiles stagger
+## in behind the sheet, and the week's commit bursts from its own button.
+func test_entry_and_commit_motion_is_wired() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var entry := _body_of(src, "func _play_entry_motion")
+	assert_true(entry.contains("Juice.stagger_in([senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn])"),
+		"the five notes stagger in in reading order")
+	assert_true(entry.contains("Juice.pop_in(objective_strip"), "the objective strip pops in")
+	assert_true(entry.contains("GameSettings.reduce_motion"), "entry motion honours reduce_motion")
+	assert_true(_body_of(src, "func _ready").contains("_play_entry_motion()"),
+		"_ready plays the entry motion")
+	assert_true(_body_of(src, "func _show_penjadwalan_popup").contains("Juice.stagger_in(_popup_tiles())"),
+		"the tiles stagger in when the picker opens")
+	assert_true(src.contains('RewardFeedback.play(&"schedule_confirmed", start_week_button)'),
+		"committing the week bursts from the START WEEK button")
+
+
+## The source of one function, from its `func` line to the next.
+func _body_of(src: String, header: String) -> String:
+	var idx := src.find(header)
+	if idx == -1:
+		return ""
+	var next := src.find("\nfunc ", idx + 1)
+	return src.substr(idx, next - idx if next != -1 else src.length() - idx)
+
+
+## Every string the picker draws in the display face must exist in it --
+## Boohong has no arrows, "·" or "—". The body face must carry the "·" the
+## note and legend use.
+func test_picker_text_is_covered_by_its_faces() -> void:
+	var tokens := DesignTokens.load_default()
+	var display: Font = tokens.font_display
+	var body: Font = tokens.font_body
+	assert_true(display != null and body != null, "both faces must be assigned")
+	if display == null or body == null:
+		return
+	var display_texts: Array[String] = ["Batal", "Pilih", "Favorit", "Cuan", "+0123456789"]
+	for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
+		display_texts.append("%s mau ngapain?" % day)
+	for name in ["Akademik", "Seni Budaya", "Atletik", "Wirausaha", "Libur"]:
+		display_texts.append("Pilih " + name)
+	for text in display_texts:
+		for i in text.length():
+			assert_true(display.has_char(text.unicode_at(i)),
+				"'%s' in '%s' is not in the display face" % [text[i], text])
+	var body_texts: Array[String] = ["· makin banyak panah, makin besar efeknya", "energi mood naik turun"]
+	var student := {"hobby_category": "Akademik", "name": "Uji"}
+	for category in ["", "Akademis", "Olahraga", "Wirausaha", "Istirahat"]:
+		body_texts.append(ActivityPreview.selection_note(category, student, 7))
+	for text in body_texts:
+		for i in text.length():
+			assert_true(body.has_char(text.unicode_at(i)),
+				"'%s' in '%s' is not in the body face" % [text[i], text])
 
 
 # ----------------------------------------------------------------- helper

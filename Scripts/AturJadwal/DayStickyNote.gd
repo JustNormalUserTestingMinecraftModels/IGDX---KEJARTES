@@ -33,7 +33,8 @@ extends Control
 signal pressed
 
 ## Code category -> the Indonesian word the player reads. Kept identical to
-## the ActivityRow instances in atur_jadwal.tscn (asserted by both suites).
+## the picker's ActivityTile instances in atur_jadwal.tscn (asserted by both
+## suites).
 const DISPLAY_NAMES := {
 	"Akademis": "Akademik",
 	"SeniBudaya": "Seni Budaya",

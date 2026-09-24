@@ -77,14 +77,14 @@ func test_script_is_documented() -> void:
 	assert_true(src.contains("class_name DayStickyNote"), "needs class_name")
 	assert_true(src.contains("## "), "needs a ## header")
 
-# ---- dictionaries match ActivityRow's wording ------------------------
+# ---- dictionaries match the picker tiles' wording ------------------------
 
 func test_display_names_cover_all_five_categories() -> void:
 	var expected := {
 		"Akademis": "Akademik", "SeniBudaya": "Seni Budaya", "Olahraga": "Atletik",
 		"Wirausaha": "Wirausaha", "Istirahat": "Libur",
 	}
-	assert_eq(DayStickyNote.DISPLAY_NAMES, expected, "DISPLAY_NAMES drifted from the ActivityRow wording")
+	assert_eq(DayStickyNote.DISPLAY_NAMES, expected, "DISPLAY_NAMES drifted from the ActivityTile wording")
 
 func test_flavor_words_cover_all_five_categories() -> void:
 	for c in ["Akademis", "SeniBudaya", "Olahraga", "Wirausaha", "Istirahat"]:

@@ -93,9 +93,22 @@ var _holiday_active: bool = false
 @onready var btn_no = $Peringatan/TextureRect/ButtonNo
 
 # --- Penjadwalan Popup ---
+# A tile-grid selection box since the 2026-09-24 visual polish (D9-D14):
+# tapping a tile selects it, Pilih assigns the day, Batal or a tap outside
+# the sheet cancels.
 @onready var penjadwalan_popup = $Penjadwalan
-@onready var popup_rows = $Penjadwalan/TextureRect/Rows
-@onready var popup_back_btn = $Penjadwalan/TextureRect/PopupBack
+@onready var popup_sheet: Control = $Penjadwalan/Sheet
+@onready var popup_title: Label = $Penjadwalan/Sheet/Header/Title
+@onready var popup_subtitle: Label = $Penjadwalan/Sheet/Header/Subtitle
+@onready var popup_grid: Control = $Penjadwalan/Sheet/Body/Grid
+@onready var popup_libur: ActivityTile = $Penjadwalan/Sheet/Body/TileLibur
+@onready var popup_note: Label = $Penjadwalan/Sheet/Body/Note/NoteLabel
+@onready var popup_cancel_btn: Button = $Penjadwalan/Sheet/Body/Buttons/Batal
+@onready var popup_confirm_btn: Button = $Penjadwalan/Sheet/Body/Buttons/Pilih
+
+## The category the player has tapped in the open picker, "" for none yet.
+## Nothing is assigned until they confirm with Pilih.
+var _picked_category := ""
 
 # --- Tutorial 3 Phase Setup ---
 @export_group("Tutorial")
@@ -158,12 +171,25 @@ func _ready():
 	_create_blur_overlay()
 	_update_student_display()
 	_update_day_button_colors()
+	_play_entry_motion()
 	# No perpetual sway on the day notes any more (2026-09-24, visual polish
 	# D3/D4). It swung every note +/-3-5 degrees from a random start, which
 	# scattered the week out of reading order and overwrote the grid's
 	# authored tilt. Filled days now sit calm; an empty day breathes on its
 	# own, from DayStickyNote.show_empty().
 	AudioDirector.play_bgm_playlist(&"lobby")
+
+## Screen entry (2026-09-24 visual polish, motion pass): the five day notes
+## pop in one after another in reading order, then the objective strip.
+## The stat rows have their own stagger in _update_student_display(). Only
+## scale and alpha move, so the notes' authored tilt and the empty notes'
+## breath (which scales the paper inside, not the note) are untouched.
+func _play_entry_motion() -> void:
+	if GameSettings.reduce_motion:
+		return
+	Juice.stagger_in([senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn])
+	if objective_strip:
+		Juice.pop_in(objective_strip, _get_tokens().stagger_step * 5)
 
 func _notification(what: int) -> void:
 	# Android delivers the hardware/gesture back press as a notification, not
@@ -1017,26 +1043,49 @@ func _on_peringatan_no():
 func _proceed_start_week():
 	# The week is committed here -- the one moment in AturJadwal that is a
 	# decision rather than an adjustment, so it gets its own chime.
-	RewardFeedback.play(&"schedule_confirmed")
+	RewardFeedback.play(&"schedule_confirmed", start_week_button)
 	Transition.change_scene("res://Scenes/SchoolSimulation/SchoolDay.tscn")
 
 # ================= PENJADWALAN POPUP =================
 
+## Every tile in the picker in reading order: the 2x2 grid, then Libur.
+func _popup_tiles() -> Array[ActivityTile]:
+	var tiles: Array[ActivityTile] = []
+	if popup_grid:
+		for child in popup_grid.get_children():
+			if child is ActivityTile:
+				tiles.append(child)
+	if popup_libur:
+		tiles.append(popup_libur)
+	return tiles
+
 func _connect_activity_buttons():
-	for row in popup_rows.get_children():
-		if not (row is ActivityRow):
-			continue
-		if not row.pressed.is_connected(_on_activity_selected.bind(row.category)):
-			row.pressed.connect(_on_activity_selected.bind(row.category))
-	if popup_back_btn and not popup_back_btn.pressed.is_connected(_hide_penjadwalan_popup):
-		popup_back_btn.pressed.connect(_hide_penjadwalan_popup)
+	for tile in _popup_tiles():
+		if not tile.pressed.is_connected(_on_tile_picked.bind(tile.category)):
+			tile.pressed.connect(_on_tile_picked.bind(tile.category))
+	if popup_cancel_btn and not popup_cancel_btn.pressed.is_connected(_hide_penjadwalan_popup):
+		popup_cancel_btn.pressed.connect(_hide_penjadwalan_popup)
+	if popup_confirm_btn and not popup_confirm_btn.pressed.is_connected(_on_pick_confirmed):
+		popup_confirm_btn.pressed.connect(_on_pick_confirmed)
+	# The popup root spans the screen behind the sheet, so a tap that reaches
+	# it missed the sheet: treat it like a tap on the scrim and cancel.
+	if penjadwalan_popup and not penjadwalan_popup.gui_input.is_connected(_on_blur_overlay_input):
+		penjadwalan_popup.gui_input.connect(_on_blur_overlay_input)
 
 func _show_penjadwalan_popup():
 	if not penjadwalan_popup:
 		return
 	AudioDirector.play_sfx(&"popup_open")
 	penjadwalan_popup_open = true
+	var student: Dictionary = GameState.selected_student
+	if popup_title:
+		popup_title.text = "%s mau ngapain?" % GameState.selected_day
+	if popup_subtitle:
+		popup_subtitle.text = "Pilih satu kegiatan untuk %s" % String(student.get("name", "murid ini"))
 	_update_popup_stats()
+	# Every opening starts with nothing chosen: Pilih stays dimmed until the
+	# player taps a tile (D13).
+	_set_pick("")
 
 	blur_overlay.visible = true
 	blur_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -1047,6 +1096,9 @@ func _show_penjadwalan_popup():
 
 	penjadwalan_popup.show()
 	Juice.pop_in(penjadwalan_popup)
+	# The tiles follow the sheet in, one after another (D15 motion pass).
+	if not GameSettings.reduce_motion:
+		Juice.stagger_in(_popup_tiles())
 
 func _hide_penjadwalan_popup():
 	if not penjadwalan_popup:
@@ -1063,6 +1115,40 @@ func _hide_penjadwalan_popup():
 		blur_overlay.visible = false
 		blur_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	)
+
+## A tile was tapped: select it, nothing more. The day is only assigned when
+## the player confirms with Pilih (D13).
+func _on_tile_picked(category: String) -> void:
+	if category == _picked_category:
+		return
+	_set_pick(category)
+	AudioDirector.play_sfx(&"tap")
+
+## Makes `category` the picker's one selection ("" clears it): rings its
+## tile, relabels Pilih after it, and rewrites the note under the grid --
+## for the favourite, the bonus breakdown (D14), which pops so the player
+## sees it change.
+func _set_pick(category: String) -> void:
+	_picked_category = category
+	var student: Dictionary = GameState.selected_student
+	var picked: ActivityTile = null
+	for tile in _popup_tiles():
+		tile.selected = tile.category == category
+		if tile.selected:
+			picked = tile
+	if popup_confirm_btn:
+		popup_confirm_btn.disabled = picked == null
+		popup_confirm_btn.text = "Pilih" if picked == null else "Pilih " + picked.display_name
+	if popup_note:
+		popup_note.text = ActivityPreview.selection_note(category, student, GameState.current_grade)
+		if picked and picked.is_favorit(student) and not GameSettings.reduce_motion:
+			Juice.pop_in(popup_note.get_parent() as Control)
+
+## Pilih: commit the selected tile to the selected day.
+func _on_pick_confirmed() -> void:
+	if _picked_category == "":
+		return
+	_on_activity_selected(_picked_category)
 
 func _on_activity_selected(category: String):
 	var student = GameState.selected_student
@@ -1088,7 +1174,9 @@ func _on_activity_selected(category: String):
 			RewardFeedback.play(&"specialty_match", _assigned_note)
 		else:
 			_assigned_note.play_assign_pop()
-			AudioDirector.play_sfx(&"select")
+			# D15: every ordinary assign bursts in the one celebratory colour,
+			# never the category's; the gold star burst stays the favourite's.
+			RewardFeedback.play(&"activity_assigned", _assigned_note)
 	_update_student_display()
 
 	# Check if Phase 3 tutorial should start
@@ -1105,20 +1193,13 @@ func _on_blur_overlay_input(event: InputEvent):
 	elif event is InputEventScreenTouch and event.pressed:
 		_hide_penjadwalan_popup()
 
-## The three skill rows show progress toward that subject's target; the
-## other two have no target and ignore the percentage they are handed.
+## Fills every tile for the selected student: arrows, gain, favourite ribbon.
 func _update_popup_stats():
 	var student = GameState.selected_student
 	if student.is_empty():
 		return
-	var progress := {
-		"Akademis": _percent(student.get("akademis1", 50.0), student.get("target_akademis1", 65.0)),
-		"SeniBudaya": _percent(student.get("akademis2", 50.0), student.get("target_akademis2", 65.0)),
-		"Olahraga": _percent(student.get("akademis3", 50.0), student.get("target_akademis3", 65.0)),
-	}
-	for row in popup_rows.get_children():
-		if row is ActivityRow:
-			row.refresh(student, GameState.current_grade, progress.get(row.category, 0.0))
+	for tile in _popup_tiles():
+		tile.refresh(student, GameState.current_grade)
 
 func _get_day_button(day_name: String) -> Control:
 	match day_name:

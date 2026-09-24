@@ -36,6 +36,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_achievement_status_pill(theme, tokens)
 	_build_skin_select(theme, tokens)
 	_build_objective_strip(theme, tokens)
+	_build_picker(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -107,6 +108,154 @@ static func _build_objective_strip(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("ObjectiveHintLabel", "Label")
 	theme.set_font_size("font_size", "ObjectiveHintLabel", tokens.font_body_size)
 	theme.set_color("font_color", "ObjectiveHintLabel", tokens.text_primary)
+
+
+## The Penjadwalan activity picker (2026-09-24 visual polish, D9-D14): a
+## cream paper sheet with a soft tan header band, a two-column grid of
+## watermark tiles, and a note line under the grid. It replaced the old
+## five-row list and its Preview* variations.
+##
+##   PickerSheet         the sheet: cream, large radius, a soft drop shadow.
+##   PickerHeader        the tan band across its top; top corners only.
+##   PickerTitleLabel    "Selasa mau ngapain?", display face.
+##   PickerSubtitleLabel the line under it, quiet body text.
+##   PickerTileButton    the tile's tap target: every state empty, so the
+##                       Sheet panel inside draws the tile and the press
+##                       is UIPolish's.
+##   PickerTile          a resting tile: warm paper with a tan rim.
+##   PickerTileSelected  the chosen tile: brighter paper, thick gold ring,
+##                       gold glow (D13).
+##   PickerTileName      the tile's name, display face.
+##   PickerTileValue     the exact gain beside the arrows, deep green.
+##   PickerNeedLabel     "energi" / "mood" before their arrows, body face.
+##   PickerRibbon        the gold Favorit ribbon (D10) and its label,
+##   PickerRibbonLabel   display face on gold.
+##   PickerNotePanel     the note under the grid (the favourite breakdown,
+##   PickerNoteLabel     D14) and its body text, which carries the "·".
+##   PickerLegendLabel   the one-line arrow legend.
+static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
+	var sheet := StyleBoxFlat.new()
+	sheet.bg_color = tokens.surface_card
+	sheet.set_corner_radius_all(tokens.radius_lg)
+	sheet.shadow_color = tokens.shadow_color
+	sheet.shadow_size = tokens.shadow_size * 2
+	sheet.shadow_offset = tokens.shadow_offset * 2
+	theme.add_type("PickerSheet")
+	theme.set_type_variation("PickerSheet", "Panel")
+	theme.set_stylebox("panel", "PickerSheet", sheet)
+
+	var header := StyleBoxFlat.new()
+	header.bg_color = tokens.surface_sunken
+	header.corner_radius_top_left = tokens.radius_lg
+	header.corner_radius_top_right = tokens.radius_lg
+	theme.add_type("PickerHeader")
+	theme.set_type_variation("PickerHeader", "Panel")
+	theme.set_stylebox("panel", "PickerHeader", header)
+
+	theme.add_type("PickerTitleLabel")
+	theme.set_type_variation("PickerTitleLabel", "Label")
+	theme.set_font_size("font_size", "PickerTitleLabel", tokens.font_h2)
+	theme.set_color("font_color", "PickerTitleLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PickerTitleLabel", tokens.font_display)
+
+	theme.add_type("PickerSubtitleLabel")
+	theme.set_type_variation("PickerSubtitleLabel", "Label")
+	theme.set_font_size("font_size", "PickerSubtitleLabel", tokens.font_body_size)
+	theme.set_color("font_color", "PickerSubtitleLabel", tokens.text_secondary)
+
+	theme.add_type("PickerTileButton")
+	theme.set_type_variation("PickerTileButton", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
+		theme.set_stylebox(state, "PickerTileButton", StyleBoxEmpty.new())
+
+	var tile := StyleBoxFlat.new()
+	tile.bg_color = tokens.surface_page
+	tile.set_border_width_all(3)
+	tile.border_color = tokens.surface_sunken.darkened(0.08)
+	tile.set_corner_radius_all(tokens.radius_md)
+	tile.shadow_color = tokens.shadow_color
+	tile.shadow_size = int(tokens.shadow_size / 3.0)
+	tile.shadow_offset = tokens.shadow_offset / 2.0
+	theme.add_type("PickerTile")
+	theme.set_type_variation("PickerTile", "Panel")
+	theme.set_stylebox("panel", "PickerTile", tile)
+
+	var chosen := StyleBoxFlat.new()
+	chosen.bg_color = tokens.surface_card
+	chosen.set_border_width_all(6)
+	chosen.border_color = tokens.currency_gold
+	chosen.set_corner_radius_all(tokens.radius_md)
+	chosen.shadow_color = Color(tokens.currency_gold, 0.55)
+	chosen.shadow_size = tokens.shadow_size
+	theme.add_type("PickerTileSelected")
+	theme.set_type_variation("PickerTileSelected", "Panel")
+	theme.set_stylebox("panel", "PickerTileSelected", chosen)
+
+	theme.add_type("PickerTileName")
+	theme.set_type_variation("PickerTileName", "Label")
+	theme.set_font_size("font_size", "PickerTileName", tokens.font_title)
+	theme.set_color("font_color", "PickerTileName", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PickerTileName", tokens.font_display)
+
+	theme.add_type("PickerTileValue")
+	theme.set_type_variation("PickerTileValue", "Label")
+	theme.set_font_size("font_size", "PickerTileValue", tokens.font_title)
+	theme.set_color("font_color", "PickerTileValue", tokens.state_success.darkened(0.25))
+	if tokens.font_display != null:
+		theme.set_font("font", "PickerTileValue", tokens.font_display)
+
+	theme.add_type("PickerNeedLabel")
+	theme.set_type_variation("PickerNeedLabel", "Label")
+	theme.set_font_size("font_size", "PickerNeedLabel", tokens.font_caption)
+	theme.set_color("font_color", "PickerNeedLabel", tokens.text_secondary)
+
+	var ribbon := StyleBoxFlat.new()
+	ribbon.bg_color = tokens.currency_gold
+	ribbon.set_corner_radius_all(tokens.radius_pill)
+	ribbon.set_border_width_all(3)
+	ribbon.border_color = tokens.outline_card
+	ribbon.shadow_color = tokens.shadow_color
+	ribbon.shadow_size = int(tokens.shadow_size / 3.0)
+	ribbon.shadow_offset = tokens.shadow_offset / 2.0
+	ribbon.content_margin_left = tokens.space_sm
+	ribbon.content_margin_right = tokens.space_sm
+	ribbon.content_margin_top = 2
+	ribbon.content_margin_bottom = 2
+	theme.add_type("PickerRibbon")
+	theme.set_type_variation("PickerRibbon", "PanelContainer")
+	theme.set_stylebox("panel", "PickerRibbon", ribbon)
+
+	theme.add_type("PickerRibbonLabel")
+	theme.set_type_variation("PickerRibbonLabel", "Label")
+	theme.set_font_size("font_size", "PickerRibbonLabel", tokens.font_caption)
+	theme.set_color("font_color", "PickerRibbonLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PickerRibbonLabel", tokens.font_display)
+
+	var note := StyleBoxFlat.new()
+	note.bg_color = tokens.surface_page
+	note.set_corner_radius_all(tokens.radius_md)
+	note.set_border_width_all(2)
+	note.border_color = tokens.surface_sunken
+	note.content_margin_left = tokens.space_md
+	note.content_margin_right = tokens.space_md
+	note.content_margin_top = tokens.space_sm
+	note.content_margin_bottom = tokens.space_sm
+	theme.add_type("PickerNotePanel")
+	theme.set_type_variation("PickerNotePanel", "PanelContainer")
+	theme.set_stylebox("panel", "PickerNotePanel", note)
+
+	theme.add_type("PickerNoteLabel")
+	theme.set_type_variation("PickerNoteLabel", "Label")
+	theme.set_font_size("font_size", "PickerNoteLabel", tokens.font_body_size)
+	theme.set_color("font_color", "PickerNoteLabel", tokens.text_primary)
+
+	theme.add_type("PickerLegendLabel")
+	theme.set_type_variation("PickerLegendLabel", "Label")
+	theme.set_font_size("font_size", "PickerLegendLabel", tokens.font_caption)
+	theme.set_color("font_color", "PickerLegendLabel", tokens.text_secondary)
 
 
 ## Measured off skinselection_mockup.png (spec
@@ -1987,111 +2136,6 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "PlateNameLabel", tokens.text_on_brand)
 	if tokens.font_display != null:
 		theme.set_font("font", "PlateNameLabel", tokens.font_display)
-
-	# -- Penjadwalan row: a plain cream slab on the sheet. Before the
-	# 2026-09-10 pass this was a brown slab with a 3px stroke and a hard
-	# drop shadow; with the card behind it and the pill inside it, that
-	# stacked four surfaces per row and read as clutter. Depth now comes
-	# from the inset track alone. --
-	# Draws nothing at rest. A row that paints its own fill reads as a box
-	# on the card whatever colour that fill is -- recolouring the boxes was
-	# the first attempt and it still looked like five stacked cards. The
-	# rows ARE the sheet now; only the hairlines divide them.
-	# PreviewRowPressed below is what gives a row a surface, and only while
-	# it is held. preview_row_fill survives as that variation's resting
-	# reference rather than as anything drawn.
-	theme.add_type("PreviewRow")
-	theme.set_type_variation("PreviewRow", "Panel")
-	theme.set_stylebox("panel", "PreviewRow", StyleBoxEmpty.new())
-
-	# -- The same slab while held. Panel has no pressed state, so
-	# ActivityRow.gd swaps this in on button_down. The inset top edge is
-	# what sells the sink; a flat colour change alone reads as a hover. --
-	var preview_row_pressed := StyleBoxFlat.new()
-	preview_row_pressed.bg_color = tokens.preview_row_pressed_fill
-	preview_row_pressed.set_border_width_all(0)
-	preview_row_pressed.border_width_top = 2
-	preview_row_pressed.border_color = tokens.preview_row_pressed_fill.darkened(0.12)
-	preview_row_pressed.set_corner_radius_all(tokens.radius_md)
-	theme.add_type("PreviewRowPressed")
-	theme.set_type_variation("PreviewRowPressed", "Panel")
-	theme.set_stylebox("panel", "PreviewRowPressed", preview_row_pressed)
-
-	# -- The hairline between rows, replacing the per-row stroke. --
-	var preview_separator := StyleBoxLine.new()
-	preview_separator.color = tokens.preview_row_separator
-	preview_separator.thickness = 1
-	theme.add_type("PreviewRowSeparator")
-	theme.set_type_variation("PreviewRowSeparator", "HSeparator")
-	theme.set_stylebox("separator", "PreviewRowSeparator", preview_separator)
-
-	# -- The darker pill inset into the row, carrying the numbers. Its edge in
-	# the mockup is a soft dark halo, NOT a stroke -- building it as a border
-	# reads as a hard outline the reference does not have. --
-	var preview_pill := StyleBoxFlat.new()
-	preview_pill.bg_color = tokens.preview_pill_fill
-	preview_pill.set_corner_radius_all(tokens.radius_md)
-	preview_pill.content_margin_left = tokens.space_sm
-	preview_pill.content_margin_right = tokens.space_sm
-	preview_pill.content_margin_top = tokens.space_xs
-	preview_pill.content_margin_bottom = tokens.space_xs
-	preview_pill.shadow_color = tokens.preview_pill_shadow_color
-	preview_pill.shadow_size = tokens.preview_pill_shadow_size
-	preview_pill.shadow_offset = tokens.preview_pill_shadow_offset
-	theme.add_type("PreviewPill")
-	theme.set_type_variation("PreviewPill", "PanelContainer")
-	theme.set_stylebox("panel", "PreviewPill", preview_pill)
-
-	# -- Wirausaha and Libur have no target, so no inset pill: their chips
-	# sit straight on the container's grey. Same node, no panel drawn. --
-	theme.add_type("PreviewPillFlat")
-	theme.set_type_variation("PreviewPillFlat", "PanelContainer")
-	theme.set_stylebox("panel", "PreviewPillFlat", StyleBoxEmpty.new())
-
-	# -- Wirausaha and Libur have no target, so no gauge. Against the old
-	# dark slab an empty row read fine; on the cream sheet they collapsed
-	# into near-empty strips beside the three rows that do carry bars.
-	# They now get the gauge's silhouette used as a container: a texture
-	# whose alpha ramps from 0.18 at the left to solid at the right, so
-	# the row still reads as empty without reading as missing.
-	#
-	# STRETCH, not TILE. The BarFill fills above tile, but a horizontal
-	# alpha ramp sawtooths back to transparent at every repeat if tiled.
-	var ghost := StyleBoxTexture.new()
-	ghost.texture = load("res://Assets/Images/UI/BarFill/track_ghost.png")
-	ghost.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
-	ghost.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
-	ghost.set_texture_margin_all(22)
-	ghost.content_margin_left = tokens.space_sm
-	ghost.content_margin_right = tokens.space_sm
-	ghost.content_margin_top = tokens.space_xs
-	ghost.content_margin_bottom = tokens.space_xs
-	theme.add_type("PreviewTrackGhost")
-	theme.set_type_variation("PreviewTrackGhost", "PanelContainer")
-	theme.set_stylebox("panel", "PreviewTrackGhost", ghost)
-
-	# -- The numbers inside that pill: white on the dark slab. --
-	theme.add_type("PreviewChipLabel")
-	theme.set_type_variation("PreviewChipLabel", "Label")
-	theme.set_font_size("font_size", "PreviewChipLabel", tokens.font_h2)
-	# Dark on the light track since 2026-09-10. These were text_on_brand
-	# cream, which was right on the old dark pill and invisible on the
-	# ghost track that replaced it.
-	theme.set_color("font_color", "PreviewChipLabel", tokens.text_primary)
-
-	# -- The category name for each row. Until 2026-09-10 this was cream
-	# text with a near-black 6px rim, overlapping the bottom of a dark
-	# brown row -- correct then, and an outlined white smear once the row
-	# went cream. It is now quiet dark text sitting above its bar, so the
-	# rim has nothing to do and the size drops a step: the bar is the loud
-	# element in the row, not its name. --
-	theme.add_type("PreviewRowLabel")
-	theme.set_type_variation("PreviewRowLabel", "Label")
-	theme.set_font_size("font_size", "PreviewRowLabel", tokens.font_body_size)
-	theme.set_color("font_color", "PreviewRowLabel", tokens.text_secondary)
-	theme.set_constant("outline_size", "PreviewRowLabel", 0)
-	if tokens.font_display != null:
-		theme.set_font("font", "PreviewRowLabel", tokens.font_display)
 
 
 # ------------------------------------------------- unstyled base controls

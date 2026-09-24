@@ -8,6 +8,38 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-24 — SchoolDay liveliness pass (PR #75's design, sections 1-3)
+
+Built from `docs/superpowers/specs/2026-09-24-schoolday-liveliness-design.md`
+and its interactive prototype. The plan is
+`docs/superpowers/plans/2026-09-24-schoolday-liveliness.md`, with the owner's
+four decisions and where the build departs from the spec.
+
+- **Day banner:** it is the day's progress bar. It fills in the day's
+  category colour with the weekday motif, and the day name inverts from dark
+  to white exactly at the fill's edge. "Hari 1 dari 5" and the separate bar
+  are gone.
+- **Status line:** it rides a scrim that fades in for its beats (the owner's
+  pick), so it reads even at dusk.
+- **Day end:** a "<hari> selesai" ink stamp and a Pop burst, with fireworks on
+  the week's last school day.
+- **Sky:**
+  - a sun and moon driven by the day's progress along a visible arc;
+  - three drifting clouds and faint weekday motes;
+  - a short deep-night beat between days: blue tint, stars, the moon, and the
+    school darkened with its windows lit;
+  - rain for the rest of a day that Hujan hits.
+- **Avatar strip:** it replaces the runtime-built student cards, which were
+  hidden all day anyway. Each chip is a face with energy and mood rings, and
+  a floating "+N" pops on each skill gain.
+- **Event notice:** now a caution-band announcement in the event's category
+  colour, marked MINIGAME, KABAR or PILIHAN.
+- **Daily result:** it gained the teacher's verdict (1-4 stars), a tally and
+  Bintang Hari Ini, computed by a pure `DayVerdict`.
+
+The weekly additions and tile depth (mockup sections 4-5) belong to PR #53;
+the owner picked tile option A for it.
+
 ## 2026-09-24 — Atur Jadwal visual polish (plan `2026-09-24-atur-jadwal-visual-polish.md`)
 
 A legibility and transparency pass on the scheduling screen, in five phases.

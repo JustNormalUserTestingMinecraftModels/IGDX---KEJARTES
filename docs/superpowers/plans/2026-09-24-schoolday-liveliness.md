@@ -101,3 +101,28 @@ editability count. Rings tween with each decay/event update, chips
 `test_viewport_editability` (SchoolDay's count goes down),
 `test_audio_coverage`. New suites: `test_day_verdict`, `test_avatar_chip`,
 `test_cloud_drift`.
+
+## Progress (2026-09-24)
+
+All six phases are built on this branch, one commit each: A `447fcdf`,
+B `c903405`, C `19252dc`, D `3c5de37`, E `615beb4`, F `ac7aab6`.
+
+**Where the build departs from the spec:**
+- **Sun and moon:** they are not children of the rotating sky. The sky turns
+  a full circle a day, so a body fixed to it crossed the screen in a fraction
+  of a second. They are placed from the same progress that turns the sky, so
+  they cannot drift from it, and they follow a visible arc. The moon has a
+  narrower window, so it is not up beside the afternoon sun.
+- **Band tilt:** the event band is not tilted, because Godot's containers
+  reset a child's rotation. It reads cleanly flat.
+- **Weekday texture:** SimulationBackground's 0.07-alpha wash is untouched.
+  The full-screen sky covers it, so the weekday texture is a faint mote
+  layer over the sky instead.
+- **Faces:** the avatar chips show the student's face in the rings, not a
+  separate reaction face, and the daily rows carry no reaction badge. Both
+  need expression art that does not exist yet.
+- **Status beats:** the status line shows the day's beats and fades out;
+  "<hari> selesai" is the stamp alone.
+
+**Deferred (DEBT.md):** a SafeAreaMargin for SchoolDay's header, and
+tall-screen suite coverage for SchoolDay and EventWarning.

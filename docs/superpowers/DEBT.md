@@ -383,6 +383,15 @@ only the luminance floor; nothing tests the tile-period rule.
 `tests/test_ghost_track.gd` does cover `track_ghost.png`. Add the period test,
 or correct the README.
 
+**SchoolDay is not in the tall-screen suite, and has no safe area (2026-09-24).**
+The liveliness spec's "Mobile layout" section asks for the header (calendar
+and day banner) to sit inside `SafeAreaMargin -> UI`, and for SchoolDay and
+EventWarning to be pinned at 1080x2400 by `tests/test_tall_screen_layout.gd`.
+Neither is done: the header is still top-anchored at a fixed offset inside
+BookClockWidget. The layout is anchored (the day stack spans the screen with
+spacers, and the notice is full-rect and centred), but no test proves it on
+a 20:9 phone.
+
 **Opening BookClockWidget.tscn hangs the editor (moved from CLAUDE.md, 2026-09-15).**
 `scene_open` on `Scenes/SchoolSimulation/BookClockWidget.tscn` hangs the
 editor — the call times out, the MCP transport write-pauses, the plugin

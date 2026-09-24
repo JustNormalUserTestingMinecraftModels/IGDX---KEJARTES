@@ -148,7 +148,11 @@ func _ready():
 	_create_blur_overlay()
 	_update_student_display()
 	_update_day_button_colors()
-	_start_day_button_sway()
+	# No perpetual sway on the day notes any more (2026-09-24, visual polish
+	# D3/D4). It swung every note +/-3-5 degrees from a random start, which
+	# scattered the week out of reading order and overwrote the grid's
+	# authored tilt. Filled days now sit calm; an empty day breathes on its
+	# own, from DayStickyNote.show_empty().
 	AudioDirector.play_bgm_playlist(&"lobby")
 
 func _notification(what: int) -> void:
@@ -538,22 +542,6 @@ func _update_day_button_colors():
 			note.show_scheduled(schedules[day_name]["category"])
 		else:
 			note.show_empty()
-
-func _start_day_button_sway():
-	var buttons = [senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn]
-	for i in range(buttons.size()):
-		var btn = buttons[i]
-		if not btn:
-			continue
-		btn.pivot_offset = btn.size / 2.0
-		var duration = 1.8 + i * 0.25  # stagger durations for organic feel
-		var angle = deg_to_rad(3.0 + i * 0.5)  # slightly different sway range
-		# Start with a small random offset so they don't all begin in sync
-		btn.rotation = deg_to_rad(randf_range(-1.5, 1.5))
-		var tween = create_tween().set_loops()
-		tween.tween_property(btn, "rotation", angle, duration / 2.0).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(btn, "rotation", -angle, duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(btn, "rotation", 0.0, duration / 2.0).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
 func _compute_pending_gain(category: String, student: Dictionary) -> float:
 	var schedules = _get_current_schedules()

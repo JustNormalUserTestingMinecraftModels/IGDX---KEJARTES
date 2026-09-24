@@ -25,7 +25,8 @@ func setup() -> void:
 func test_scene_tree_shape() -> void:
 	assert_true(_note is DayStickyNote, "root must be a DayStickyNote")
 	for p in ["Shadow", "BackIcon", "Paper", "Paper/DayLabel",
-			  "Paper/SubjectLabel", "Paper/FlavorLabel", "Paper/Lock"]:
+			  "Paper/SubjectLabel", "Paper/FlavorLabel", "Paper/Lock",
+			  "Paper/WashiTape", "Paper/AturHint"]:
 		assert_true(_note.get_node_or_null(p) != null, "missing node: " + p)
 	assert_true(_note.get_node("Paper") is TextureButton, "Paper must be a TextureButton")
 	var shadow := _note.get_node("Shadow") as TextureRect
@@ -108,9 +109,12 @@ func test_show_scheduled_fills_text_icon_and_tint() -> void:
 	assert_true((_note.get_node("BackIcon") as TextureRect).visible)
 	assert_true((_note.get_node("BackIcon") as TextureRect).texture != null)
 	assert_false((_note.get_node("Paper/Lock") as Label).visible, "no lock on a normal scheduled day")
-	var tint := (_note.get_node("Paper") as TextureButton).self_modulate
-	assert_true(tint.is_equal_approx(DesignTokens.load_default().category_color("Olahraga")),
-		"paper tint must be the Olahraga category colour")
+	assert_false((_note.get_node("Paper/AturHint") as Label).visible, "a scheduled day needs no hint")
+	var tape := _note.get_node("Paper/WashiTape") as TextureRect
+	assert_true(tape.visible, "a scheduled day wears its tape")
+	assert_true(tape.self_modulate.is_equal_approx(DesignTokens.load_default().category_color("Olahraga")),
+		"the tape carries the Olahraga category colour")
+	_assert_paper_is_cream("scheduled")
 
 func test_show_empty_hides_the_extras() -> void:
 	_note.show_scheduled("Akademis")
@@ -119,8 +123,53 @@ func test_show_empty_hides_the_extras() -> void:
 	assert_false((_note.get_node("Paper/FlavorLabel") as Label).visible)
 	assert_false((_note.get_node("BackIcon") as TextureRect).visible)
 	assert_false((_note.get_node("Paper/Lock") as Label).visible)
-	var tint := (_note.get_node("Paper") as TextureButton).self_modulate
-	assert_true(tint.is_equal_approx(DesignTokens.load_default().surface_sunken))
+	assert_false((_note.get_node("Paper/WashiTape") as TextureRect).visible, "an empty day has no tape")
+	var hint := _note.get_node("Paper/AturHint") as Label
+	assert_true(hint.visible, "an empty day invites the tap")
+	assert_true(hint.text.ends_with("Atur"), "the hint reads '+ Atur', got '%s'" % hint.text)
+	_assert_paper_is_cream("empty")
+
+
+## D2: the category colour moved OFF the paper, which stays untinted in every
+## state -- the cream comes from paper_gradient.gdshader, fed from the tokens.
+func _assert_paper_is_cream(state: String) -> void:
+	var paper := _note.get_node("Paper") as TextureButton
+	assert_eq(paper.self_modulate, Color.WHITE, "the %s paper must not be tinted" % state)
+	var mat := paper.material as ShaderMaterial
+	assert_true(mat != null and mat.shader != null
+		and mat.shader.resource_path == "res://Scripts/Shaders/paper_gradient.gdshader",
+		"the paper wears paper_gradient.gdshader")
+	if mat == null:
+		return
+	var t := DesignTokens.load_default()
+	assert_eq(mat.get_shader_parameter("top_color"), t.surface_card, "light cream at the top")
+	assert_eq(mat.get_shader_parameter("bottom_color"), t.surface_page, "warmer cream at the bottom")
+
+
+## The tape and the hint are decoration on the Paper button; neither may take
+## the tap from it.
+func test_tape_and_hint_never_eat_the_tap() -> void:
+	for p in ["Paper/WashiTape", "Paper/AturHint"]:
+		assert_eq((_note.get_node(p) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			p + " must let the tap through to Paper")
+
+
+## The day name sits on the paper, below the tape, never on it: dark text on a
+## saturated strip is exactly the contrast failure this pass removed. The tape
+## is tilted to follow the art's own adhesive band, so its lower edge is
+## measured along that tilt at the label's left end, where it hangs lowest.
+func test_the_day_name_sits_below_the_tape() -> void:
+	var tape := _note.get_node("Paper/WashiTape") as TextureRect
+	var day := _note.get_node("Paper/DayLabel") as Label
+	var xf := tape.get_transform()
+	var bl := xf * Vector2(0.0, tape.size.y)
+	var br := xf * Vector2(tape.size.x, tape.size.y)
+	var edge_y := bl.y + (br.y - bl.y) * (day.position.x - bl.x) / (br.x - bl.x)
+	assert_true(day.position.y >= edge_y,
+		"DayLabel top %s must clear the tape's lower edge %s" % [day.position.y, edge_y])
+	for p in ["Paper/SubjectLabel", "Paper/FlavorLabel", "Paper/AturHint"]:
+		assert_true((_note.get_node(p) as Control).position.y >= day.position.y,
+			p + " must sit below the day name")
 
 func test_show_holiday_is_gold_locked_and_titled() -> void:
 	_note.set_day_name("Rabu")
@@ -130,9 +179,30 @@ func test_show_holiday_is_gold_locked_and_titled() -> void:
 	assert_eq((_note.get_node("Paper/FlavorLabel") as Label).text, "Libur Nasional")
 	assert_true((_note.get_node("Paper/Lock") as Label).visible, "holiday note must show the lock")
 	assert_true((_note.get_node("BackIcon") as TextureRect).visible)
-	var tint := (_note.get_node("Paper") as TextureButton).self_modulate
-	assert_true(tint.is_equal_approx(DesignTokens.load_default().category_color("Libur")),
-		"holiday paper must be the Libur/gold colour")
+	var tape := _note.get_node("Paper/WashiTape") as TextureRect
+	assert_true(tape.visible, "a holiday wears its tape")
+	assert_true(tape.self_modulate.is_equal_approx(DesignTokens.load_default().category_color("Libur")),
+		"holiday tape must be the Libur/gold colour")
+	_assert_paper_is_cream("holiday")
+
+
+## D4: an empty note breathes, and the breath is a tween on the Paper -- never
+## the root, whose scale play_assign_pop() owns. Tweens never run inside the
+## editor, so this pins the wiring and its guards in the source.
+func test_the_empty_breath_is_gated_and_scoped_to_the_paper() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_true(src.contains("func _start_breath"), "empty notes need a breath")
+	assert_true(src.contains("tween_property(_paper, \"scale\""),
+		"the breath scales the Paper, not the note root")
+	assert_true(src.contains("GameSettings.reduce_motion"), "the breath honours Reduce Motion")
+	var start := src.find("func _start_breath")
+	assert_true(src.find("Engine.is_editor_hint()", start) > start,
+		"the breath is gated behind Engine.is_editor_hint()")
+	for state in ["func show_scheduled", "func show_holiday"]:
+		var at := src.find(state)
+		var next := src.find("\nfunc ", at + 1)
+		assert_true(src.substr(at, next - at).contains("_stop_breath()"),
+			state + " must stop the breath")
 
 func test_pressed_is_re_emitted_from_the_inner_button() -> void:
 	var got := [false]

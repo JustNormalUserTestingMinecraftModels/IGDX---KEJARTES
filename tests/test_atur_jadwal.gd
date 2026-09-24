@@ -341,29 +341,59 @@ func test_the_board_is_papantulis_pinned_so_its_shelf_cannot_move() -> void:
 		"the board keeps its 1080x1920 art 1:1, with its shelf row on 766")
 
 
-## The five notes are children of the board, so they ride it as one piece.
-## Their offsets are in the board's local space, which now starts 493px down
-## the screen, so each sits 493 above where it used to -- and lands on the
-## same screen pixel as before. They were polished on 2026-09-01
-## (docs/superpowers/plans/2026-09-01-atur-jadwal-sticky-note-polish.md):
-## each is a DayStickyNote whose Paper still draws stickynotes.png.
-func test_the_sticky_notes_ride_the_board_at_their_old_screen_rows() -> void:
+## The five notes are children of the board, so they ride it as one piece;
+## their offsets are in the board's local space. Each is a DayStickyNote whose
+## Paper still draws stickynotes.png.
+##
+## D3 of the 2026-09-24 visual polish plan replaced the old zigzag scatter
+## (Senin high, Selasa low in the middle, Rabu high again) with an aligned
+## grid that reads Senin -> Jumat: three across on one row, Kamis and Jumat
+## centred beneath, every note the same size and the same gentle tilt. The
+## art itself leans -3.5 degrees; each instance turns +1.5 of it back, so
+## every note settles at -2, inside the plan's +/-2 bound.
+func test_the_sticky_notes_sit_on_an_aligned_week_grid() -> void:
 	var want := {
-		"Senin": Vector2(507, 774), "Selasa": Vector2(713, 980),
-		"Rabu": Vector2(524, 791), "Kamis": Vector2(921, 1188),
-		"Jumat": Vector2(933, 1200),
+		"Senin": Vector2(50, 507), "Selasa": Vector2(391, 507), "Rabu": Vector2(732, 507),
+		"Kamis": Vector2(220, 880), "Jumat": Vector2(561, 880),
 	}
+	var size := Vector2.ZERO
 	for day in want:
 		var note := _screen.get_node_or_null("BGHari/%s" % day) as DayStickyNote
 		assert_true(note != null, "sticky note %s is gone or was reparented" % day)
 		if note == null:
 			continue
-		assert_eq(Vector2(note.offset_top, note.offset_bottom), want[day],
-			"%s must keep its screen row" % day)
+		assert_eq(Vector2(note.offset_left, note.offset_top), want[day],
+			"%s must sit on the week grid" % day)
+		var note_size := Vector2(note.offset_right - note.offset_left,
+			note.offset_bottom - note.offset_top)
+		if size == Vector2.ZERO:
+			size = note_size
+		assert_true(note_size.is_equal_approx(size), "%s must be the same size as Senin" % day)
+		assert_true(is_equal_approx(note.rotation_degrees, 1.5),
+			"%s must share the grid's tilt, got %s" % [day, note.rotation_degrees])
 		var paper := note.get_node_or_null("Paper") as TextureButton
 		assert_true(paper != null and paper.texture_normal != null
 			and paper.texture_normal.resource_path == "res://Assets/Images/UI/stickynotes.png",
 			"%s Paper must still draw stickynotes.png" % day)
+	# The grid's own rhythm: equal gaps across the top row, and the bottom
+	# pair centred under it.
+	var gap_a: float = want["Selasa"].x - want["Senin"].x
+	var gap_b: float = want["Rabu"].x - want["Selasa"].x
+	assert_eq(gap_a, gap_b, "the top row is evenly spaced")
+	var top_mid: float = (want["Senin"].x + want["Rabu"].x) / 2.0
+	var bottom_mid: float = (want["Kamis"].x + want["Jumat"].x) / 2.0
+	assert_true(absf(top_mid - bottom_mid) <= 1.0, "Kamis and Jumat centre under the top row")
+
+
+## The grid's tilt is authored, so nothing at runtime may animate the notes'
+## rotation. A perpetual +/-3-5 degree sway from a random start used to, and
+## it scattered the week out of reading order (visual polish D3). An empty day
+## breathes from DayStickyNote instead, on its Paper's scale.
+func test_the_screen_never_sways_the_day_notes() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
+	assert_false(src.contains("func _start_day_button_sway"), "the day-note sway is gone")
+	assert_false(src.contains("tween_property(btn, \"rotation\""),
+		"no tween may rotate a day note; the grid's tilt is authored")
 
 
 ## Below 2413 the art runs out. BoardFill continues it in the art's own

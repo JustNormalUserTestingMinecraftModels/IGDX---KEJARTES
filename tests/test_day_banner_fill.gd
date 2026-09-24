@@ -19,17 +19,20 @@ func suite_name() -> String:
 var _w: BookClockWidget
 
 
-func setup() -> void:
+## One widget for the whole suite, so a full run does not queue a fresh
+## tree's deferred layout calls per test (see test_school_day). Every test
+## sets the state it reads. Not tracked; suite_teardown frees it.
+func suite_setup(_ctx: Dictionary) -> void:
 	_w = (load(SCENE_PATH) as PackedScene).instantiate() as BookClockWidget
 	_w.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	_w.size = Vector2(1080, 1920)
 	Engine.get_main_loop().root.add_child(_w)
-	track(_w)
 
 
-func teardown() -> void:
+func suite_teardown() -> void:
 	if is_instance_valid(_w):
-		_w.queue_free()
+		_w.get_parent().remove_child(_w)
+		_w.free()
 	_w = null
 
 

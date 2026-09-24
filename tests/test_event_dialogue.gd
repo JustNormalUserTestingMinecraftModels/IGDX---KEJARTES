@@ -343,7 +343,9 @@ func test_the_dialogue_scene_is_lazy_loaded() -> void:
 func test_minigames_hear_their_line_between_warning_and_play() -> void:
 	var body := _body(FileAccess.get_file_as_string(_SCHOOL_DAY), "_roll_event")
 	for pair in [["KEGIATAN AKADEMIS!", "Akademis"], ["KEGIATAN OLAHRAGA!", "Olahraga"], ["KEGIATAN SENI BUDAYA!", "SeniBudaya"]]:
-		var warn := body.find('_show_event_warning("%s")' % pair[0])
+		# The call's opening only: since 2026-09-24 it also passes the event's
+		# category and mode.
+		var warn := body.find('_show_event_warning("%s"' % pair[0])
 		var talk := body.find("_show_event_dialogue(minigame_dialogue_key(scene))", warn)
 		var play := body.find('_play_minigame(scene, "%s")' % pair[1], warn)
 		assert_true(warn != -1 and talk > warn and play > talk,
@@ -371,7 +373,7 @@ func test_global_events_speak_before_they_apply() -> void:
 	var body := _body(FileAccess.get_file_as_string(_SCHOOL_DAY), "_run_event")
 	for trio in [["Kejutan Nasi Kotak Orang Tua!", "nasi_kotak", "EVENT_NASI_KOTAK_ENERGI"],
 			["Hujan Deras & Jalanan Licin!", "hujan", "EVENT_HUJAN_ENERGI"]]:
-		var warn := body.find('_show_event_warning("%s")' % trio[0])
+		var warn := body.find('_show_event_warning("%s"' % trio[0])
 		var talk := body.find('_show_event_dialogue("%s")' % trio[1], warn)
 		var apply := body.find(trio[2], warn)
 		assert_true(warn != -1 and talk > warn and apply > talk, trio[1] + ": warning, dialogue, effect")
@@ -385,7 +387,7 @@ func test_pick_students_events_pass_their_key() -> void:
 
 func test_tolak_returns_before_the_picker() -> void:
 	var body := _body(FileAccess.get_file_as_string(_SCHOOL_DAY), "_handle_interactive_event")
-	var warn := body.find("await _show_event_warning(title)")
+	var warn := body.find("await _show_event_warning(title")
 	var ask := body.find("_show_event_dialogue(dialogue_key)")
 	var bail := body.find("return", ask)
 	var picker := body.find("dialog_scene.instantiate()")

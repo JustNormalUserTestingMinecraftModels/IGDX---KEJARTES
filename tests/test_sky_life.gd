@@ -19,10 +19,12 @@ func suite_name() -> String:
 var _w: BookClockWidget
 
 
-func setup() -> void:
+## One widget for the whole suite (see test_school_day for why); every
+## test sets the progress, night and size it reads. Not tracked;
+## suite_teardown frees it.
+func suite_setup(_ctx: Dictionary) -> void:
 	_w = (load(SCENE_PATH) as PackedScene).instantiate() as BookClockWidget
 	Engine.get_main_loop().root.add_child(_w)
-	track(_w)
 	# The widget is full-rect anchored, so under the editor's root it takes the
 	# editor window's size. Unpin it and give it the phone's.
 	_w.set_anchors_preset(Control.PRESET_TOP_LEFT)
@@ -30,9 +32,10 @@ func setup() -> void:
 	_w._fit_layers()
 
 
-func teardown() -> void:
+func suite_teardown() -> void:
 	if is_instance_valid(_w):
-		_w.queue_free()
+		_w.get_parent().remove_child(_w)
+		_w.free()
 	_w = null
 
 

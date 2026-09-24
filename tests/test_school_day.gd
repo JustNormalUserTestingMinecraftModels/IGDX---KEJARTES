@@ -78,13 +78,22 @@ func suite_name() -> String:
 var _day: Control
 
 
-func setup() -> void:
-	_day = _instantiate(_SCHOOL_DAY_SCENE)
+## One SchoolDay for the whole suite. No test here changes it, and building
+## it per test queued enough deferred layout calls (with the rest of a full
+## run) to overflow the editor's message queue and take the editor down
+## before the run could reply (2026-09-24). Not tracked: track() frees after
+## every test; suite_teardown frees this one.
+func suite_setup(_ctx: Dictionary) -> void:
+	var scene: PackedScene = load(_SCHOOL_DAY_SCENE)
+	_day = scene.instantiate() as Control
+	_day.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(_day)
 
 
-func teardown() -> void:
+func suite_teardown() -> void:
 	if is_instance_valid(_day):
-		_day.queue_free()
+		_day.get_parent().remove_child(_day)
+		_day.free()
 	_day = null
 
 

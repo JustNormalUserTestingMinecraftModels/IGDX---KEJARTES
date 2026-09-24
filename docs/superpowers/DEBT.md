@@ -38,6 +38,9 @@ with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
 eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
+the 2026-09-24 picker icons (`Assets/Images/UI/Picker/arrow_up.svg`,
+`arrow_down.svg`, `pip_coin.svg`, `badge_check.svg`; hand-drawn vectors in the
+token colours, sized to draw at 1:1),
 the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
 `icon_keranjang_kosong.svg`, `tray_dots.png` (this last must
 stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
@@ -560,9 +563,17 @@ delete. (Checked 2026-09-14: one commit deleted it and a later one brought it
 back; the unmerged cleanup on `feat/asset-refresh-ui-pass`, `32b6f9a`, deletes
 it again along with 177 other unused files.)
 
-**Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
-`_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
-them deliberately, or give them a consumer.
+**The old Penjadwalan row's leftovers (2026-09-10, widened 2026-09-24).** The
+2026-09-24 picker rebuild replaced `ActivityRow` and every `Preview*`
+variation with `ActivityTile` and `Picker*`. That left these read by nothing:
+the tokens `preview_row_fill`, `preview_row_border`, `preview_row_separator`,
+`preview_row_pressed_fill`, `preview_row_shadow_*` and `preview_pill_shadow_*`
+(`preview_pill_fill` still feeds the StatBar light track), plus
+`BarFill/track_ghost.png` and `BarFill/icon_ghost_koin.png` (`icon_ghost_sabit.png`
+is now Libur's tile watermark). `test_cream_panel_tokens` and `test_ghost_track`
+still pin the token values and the assets. Removing the tokens needs a full
+editor restart (Resource `@export`s); remove them, the assets and those checks
+together, or give them a consumer.
 
 **The green day card art is retired (2026-09-19).**
 `Assets/Images/DaySummary/card_bg.png` and `card_bg_uncropped.png` are drawn

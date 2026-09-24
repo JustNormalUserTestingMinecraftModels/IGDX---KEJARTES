@@ -1,6 +1,6 @@
 # AturJadwal visual polish — implementation plan
 
-**Status:** ready for implementation
+**Status:** done -- all five phases shipped on `feat/atur-jadwal-sticky-notes` (see CHANGELOG 2026-09-24)
 **Author:** design pass (brainstormed 2026-09-24), for handoff to another Claude
 **Scope:** the AturJadwal screen (`Scenes/AturJadwal/atur_jadwal.tscn`) and its
 Penjadwalan activity picker. Character animation is **deferred to its own
@@ -381,6 +381,21 @@ after Phase 1, so take a full run before shipping.
   test_cream_panel_tokens, test_day_sticky_note (DISPLAY_NAMES synced with
   the row wording), test_ghost_track, test_viewport_editability (ActivityRow
   sits in ALLOWED), test_wirausaha. Read each before deleting ActivityRow.
+
+**Phases 4 and 5 (done, same day).** Decisions that differ from the text:
+- The picker lost its back arrow; Batal wears `StudentCardSecondaryButton`
+  (the cream secondary). Every role variation wears the Lobby's brown look,
+  so a plain `SecondaryButton` rendered as Pilih's twin.
+- The D14 breakdown is not a separate expanding panel: the note line under
+  the grid always holds a line for the current selection, and for the
+  favourite it is the breakdown (and pops). A fixed slot, so the sheet never
+  jumps.
+- Arrow counts: gain is 1 for a plain day and `1 + ceil(bonus / base * 2)`
+  for the favourite. A cost is its middle-of-range size over the biggest
+  one-day swing Balance allows, times 3, rounded and clamped 1-3. Coin pips
+  measure a typical day's earnings against the best day.
+- The plain assign burst reuses RewardBurst (the Pop tier's) instead of a new
+  scene: one colour for every category, as D15 asks.
 
 **Working notes:** the Godot bridge drops after every full run; restart the
 editor. A spurious "(*)" on loby.tscn after a restart held no real changes

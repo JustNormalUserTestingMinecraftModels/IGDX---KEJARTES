@@ -38,7 +38,8 @@
 // 1.07 -> 1.035 -> 1.0175, and 1.045 -> 1.0225 -> 1.01125. What is left is a
 // quarter of the original grade, so the tint is now doing most of the work;
 // tests/test_look_layer.gd pins the two as ceilings. On 2026-09-24 contrast
-// lost another 30% of its distance from neutral, 1.01125 -> 1.007875.
+// lost another 30% of its distance from neutral, 1.01125 -> 1.007875, and
+// the same day took 10% of that back, 1.007875 -> 1.0086625.
 //
 // KEEP IT SUBTLE. Characters are graded separately from the backgrounds they
 // stand in front of -- they are separate nodes -- so a strong grade would pull
@@ -48,7 +49,7 @@ shader_type canvas_item;
 // Pull towards or away from grey. 1.0 is untouched.
 uniform float saturation : hint_range(0.0, 2.0) = 1.0175;
 // Contrast about mid-grey. 1.0 is untouched.
-uniform float contrast : hint_range(0.5, 2.0) = 1.007875;
+uniform float contrast : hint_range(0.5, 2.0) = 1.0086625;
 // Overall gain, applied last. Slightly under 1 keeps the added contrast from
 // clipping the cream highlights this palette is mostly made of.
 uniform float exposure : hint_range(0.5, 2.0) = 0.995;

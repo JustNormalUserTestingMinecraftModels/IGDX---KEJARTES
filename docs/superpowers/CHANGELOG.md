@@ -8,6 +8,12 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-24 — Grade contrast raised 10%
+
+Contrast gained 10% of its distance from neutral, 1.007875 → 1.0086625, on all
+four grade materials and the shader default. Still under
+`test_look_layer`'s 1.0125 ceiling.
+
 ## 2026-09-24 — Lobby lit from the upper right; its bloom made visible
 
 - **Rim light** in the Lobby now comes from the upper right. The desks moved to

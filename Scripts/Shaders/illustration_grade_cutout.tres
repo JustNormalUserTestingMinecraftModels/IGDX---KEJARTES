@@ -5,7 +5,7 @@
 [resource]
 shader = ExtResource("1_grade")
 shader_parameter/saturation = 1.0175
-shader_parameter/contrast = 1.007875
+shader_parameter/contrast = 1.0086625
 shader_parameter/exposure = 0.995
 shader_parameter/tint = Color(1.022, 1, 0.972, 1)
 shader_parameter/amount = 1.0

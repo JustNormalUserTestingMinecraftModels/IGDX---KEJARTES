@@ -135,20 +135,30 @@ func test_the_week_advances_by_loop_not_by_self_recursion() -> void:
 		"_run_day() must be defined once and called once (from start_simulation); any third occurrence is a reintroduced self-call")
 
 
-func test_reparented_pill_label_has_its_owner_cleared() -> void:
-	# _make_chip instantiates DaySummaryPill.tscn, so the "Text" Label carries
-	# that scene's root as its owner. _add_pill re-parents it under a runtime
-	# HBoxContainer (owner == null); without clearing owner first Godot warns
-	# "will make owner 'DaySummaryPill' inconsistent" once per badge, per
-	# student, per day -- enough to flood the log buffer and drop every other
-	# diagnostic on this screen.
+## The per-student status cards were built node by node at runtime, with
+## emoji-keyed pills. They are now AvatarChips instanced from a template into
+## a sideways-scrolling strip (2026-09-24 liveliness pass, layer 5).
+func test_students_ride_the_avatar_strip() -> void:
+	var strip := _day.get_node_or_null("DayScreen/AvatarStrip") as ScrollContainer
+	assert_true(strip != null, "DayScreen/AvatarStrip must exist")
+	if strip:
+		assert_eq(strip.vertical_scroll_mode, ScrollContainer.SCROLL_MODE_DISABLED,
+			"the strip scrolls sideways only")
+	assert_true(_day.get_node_or_null("DayScreen/AvatarStrip/AvatarRow") is HBoxContainer,
+		"the chips sit in one row")
+	assert_true(_day.get_node_or_null("DayScreen/StudentScroll") == null,
+		"the old vertical card list is gone")
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
-	assert_true(src.contains("lbl.owner = null"),
-		"_add_pill must clear the label's owner before re-parenting it")
-	var clear_at := src.find("lbl.owner = null")
-	var reparent_at := src.find("hbox.add_child(lbl)")
-	assert_gt(reparent_at, clear_at,
-		"the owner must be cleared BEFORE hbox.add_child(lbl), not after")
+	assert_true(src.contains("avatar_chip_scene.instantiate() as AvatarChip"),
+		"each student is an AvatarChip from the template")
+	for gone in ["func _add_pill(", "func _build_pill_badges_for_student(",
+			"func _add_embedded_bar_row(", "func _preview_gain(", "func _get_playful_texture("]:
+		assert_false(src.contains(gone), "the old card helper is gone: " + gone)
+	assert_true(src.contains("_pop_todays_gains(day_name, phase1_dur)"),
+		"a skill gain floats a +N from the student's chip")
+	var at := src.find("const _DAY_CHROME_PATHS")
+	var block := src.substr(at, src.find("]", at) - at)
+	assert_true(block.contains('"DayScreen/AvatarStrip"'), "the strip hides under the day summary")
 
 
 func test_debug_tutorial_bypass_skips_the_end_of_simulation_tutorial() -> void:

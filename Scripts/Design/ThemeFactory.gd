@@ -298,6 +298,8 @@ const DAY_STAMP_FILL_ALPHA := 0.92
 ##   StatusScrimLabel        light text on that strip.
 ##   DayStampPanel           the "<hari> selesai" ink stamp: cream paper, a
 ##   DayStampLabel           red rim and red display-face lettering.
+##   AvatarDisc              the avatar strip's round face frame.
+##   AvatarNameLabel         the student's name under it, on a StatusScrim.
 static func _build_school_day_liveliness(theme: Theme, tokens: DesignTokens) -> void:
 	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
 
@@ -352,6 +354,22 @@ static func _build_school_day_liveliness(theme: Theme, tokens: DesignTokens) -> 
 	theme.set_color("font_color", "DayStampLabel", tokens.state_danger)
 	if tokens.font_display != null:
 		theme.set_font("font", "DayStampLabel", tokens.font_display)
+
+	# -- The avatar strip's chip: a round cream frame the face is clipped to
+	# (clip_children), and the student's name on a small StatusScrim pill. --
+	var disc := StyleBoxFlat.new()
+	disc.bg_color = tokens.surface_card
+	disc.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("AvatarDisc")
+	theme.set_type_variation("AvatarDisc", "Panel")
+	theme.set_stylebox("panel", "AvatarDisc", disc)
+
+	theme.add_type("AvatarNameLabel")
+	theme.set_type_variation("AvatarNameLabel", "Label")
+	theme.set_font_size("font_size", "AvatarNameLabel", tokens.font_caption)
+	theme.set_color("font_color", "AvatarNameLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "AvatarNameLabel", bold)
 
 
 ## Measured off skinselection_mockup.png (spec

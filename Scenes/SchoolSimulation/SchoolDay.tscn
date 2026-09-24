@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://ca6bou6m1loq6" path="res://Scripts/SchoolSimulation/SimulationBackground.gd" id="7_bgscript"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="9_ret"]
 [ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/rain_streak.svg" id="k_rain"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Avatar/ring_inner.svg" id="k_ring"]
 
 [node name="SchoolDay" type="Control" unique_id=310225723]
 layout_mode = 3
@@ -77,17 +78,75 @@ layout_mode = 2
 theme_type_variation = &"StatusScrimLabel"
 horizontal_alignment = 1
 
-[node name="StudentScroll" type="ScrollContainer" parent="DayScreen" unique_id=20241029]
+[node name="TopSpacer" type="Control" parent="DayScreen"]
 layout_mode = 2
-size_flags_horizontal = 3
 size_flags_vertical = 3
-horizontal_scroll_mode = 0
+mouse_filter = 2
 
-[node name="StudentStatusContainer" type="VBoxContainer" parent="DayScreen/StudentScroll" unique_id=551234901]
+[node name="AvatarStrip" type="ScrollContainer" parent="DayScreen"]
+visible = false
+custom_minimum_size = Vector2(0, 336)
 layout_mode = 2
 size_flags_horizontal = 3
+vertical_scroll_mode = 0
+
+[node name="AvatarRow" type="HBoxContainer" parent="DayScreen/AvatarStrip"]
+layout_mode = 2
+size_flags_horizontal = 6
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="RingLegend" type="PanelContainer" parent="DayScreen"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"StatusScrim"
+
+[node name="Row" type="HBoxContainer" parent="DayScreen/RingLegend"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="EnergyDot" type="TextureRect" parent="DayScreen/RingLegend/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("k_ring")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnergyWord" type="Label" parent="DayScreen/RingLegend/Row"]
+layout_mode = 2
+theme_type_variation = &"AvatarNameLabel"
+text = "Energi"
+
+[node name="Gap" type="Control" parent="DayScreen/RingLegend/Row"]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MoodDot" type="TextureRect" parent="DayScreen/RingLegend/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("k_ring")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MoodWord" type="Label" parent="DayScreen/RingLegend/Row"]
+layout_mode = 2
+theme_type_variation = &"AvatarNameLabel"
+text = "Mood"
+
+[node name="BottomSpacer" type="Control" parent="DayScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.9
+mouse_filter = 2
 
 [node name="ClickToContinueLabel" type="Label" parent="DayScreen" unique_id=776210943]
 visible = false

@@ -376,14 +376,6 @@ only the luminance floor; nothing tests the tile-period rule.
 `tests/test_ghost_track.gd` does cover `track_ghost.png`. Add the period test,
 or correct the README.
 
-**SchoolDay's playful textures never load (found 2026-09-14).**
-`SchoolDay.gd`'s `_get_playful_texture()` builds
-`res://Assets/Images/UI/Placeholders/*.png` paths, but the stat icons there
-(`icon_akademis`, `icon_seni`, `icon_olahraga`, `icon_istirahat`, `icon_mood`,
-`icon_energy`) exist only as `.svg`. Its `ResourceLoader.exists` check then
-fails, so it returns nothing unless the `energy_icon_texture` /
-`mood_icon_texture` exports are set.
-
 **Opening BookClockWidget.tscn hangs the editor (moved from CLAUDE.md, 2026-09-15).**
 `scene_open` on `Scenes/SchoolSimulation/BookClockWidget.tscn` hangs the
 editor — the call times out, the MCP transport write-pauses, the plugin

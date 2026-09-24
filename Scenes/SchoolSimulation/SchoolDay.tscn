@@ -6,8 +6,15 @@
 [ext_resource type="PackedScene" uid="uid://cx6n3hr2evpn1" path="res://Scenes/SchoolSimulation/BookClockWidget.tscn" id="5_bookclock"]
 [ext_resource type="PackedScene" uid="uid://blgxgwieuhoky" path="res://Scenes/SchoolSimulation/DaySummaryPopup.tscn" id="6_summary"]
 [ext_resource type="Script" uid="uid://ca6bou6m1loq6" path="res://Scripts/SchoolSimulation/SimulationBackground.gd" id="7_bgscript"]
-[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="8_statbar"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="9_ret"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/rain_streak.svg" id="k_rain"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Avatar/ring_inner.svg" id="k_ring"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_plus.png" id="p_plus"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_spark.png" id="p_spark"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_glow.png" id="p_glow"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_ring.png" id="p_ring"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_star.png" id="p_star"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="s_fireworks"]
 
 [node name="SchoolDay" type="Control" unique_id=310225723]
 layout_mode = 3
@@ -20,6 +27,7 @@ script = ExtResource("1_schoolday")
 result_checkup_scene = ExtResource("2_checkup")
 event_student_select_scene = ExtResource("4_student_select")
 day_summary_popup_scene = ExtResource("6_summary")
+weekday_mote_textures = Array[Texture2D]([ExtResource("p_plus"), ExtResource("p_spark"), ExtResource("p_glow"), ExtResource("p_ring"), ExtResource("p_star")])
 
 [node name="Background" type="ColorRect" parent="." unique_id=2137808221]
 layout_mode = 1
@@ -32,6 +40,45 @@ script = ExtResource("7_bgscript")
 
 [node name="BookClockWidget" parent="." unique_id=1100225047 instance=ExtResource("5_bookclock")]
 layout_mode = 1
+
+[node name="Rain" type="CPUParticles2D" parent="."]
+visible = false
+position = Vector2(620, -80)
+emitting = false
+amount = 160
+lifetime = 1.3
+preprocess = 0.6
+texture = ExtResource("k_rain")
+emission_shape = 3
+emission_rect_extents = Vector2(760, 10)
+particle_flag_align_y = true
+direction = Vector2(-0.22, 1)
+spread = 2.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 1500.0
+initial_velocity_max = 1900.0
+scale_amount_min = 0.7
+scale_amount_max = 1.2
+
+[node name="Motes" type="CPUParticles2D" parent="."]
+modulate = Color(1, 1, 1, 0.45)
+position = Vector2(540, 900)
+emitting = false
+amount = 16
+lifetime = 9.0
+preprocess = 9.0
+texture = ExtResource("p_plus")
+emission_shape = 3
+emission_rect_extents = Vector2(540, 620)
+direction = Vector2(0.15, -1)
+spread = 25.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 14.0
+initial_velocity_max = 30.0
+angular_velocity_min = -20.0
+angular_velocity_max = 20.0
+scale_amount_min = 0.22
+scale_amount_max = 0.45
 
 [node name="DayScreen" type="VBoxContainer" parent="." unique_id=689888867]
 layout_mode = 1
@@ -46,40 +93,87 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 18
 
-[node name="DayNumberLabel" type="Label" parent="DayScreen" unique_id=361417759]
+[node name="StatusStrip" type="PanelContainer" parent="DayScreen"]
+modulate = Color(1, 1, 1, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"CaptionLabel"
-text = "Hari 1 dari 5"
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"StatusScrim"
+
+[node name="StatusLabel" type="Label" parent="DayScreen/StatusStrip" unique_id=359072452]
+layout_mode = 2
+theme_type_variation = &"StatusScrimLabel"
 horizontal_alignment = 1
 
-[node name="ProgressBar" type="ProgressBar" parent="DayScreen" unique_id=1144036598]
-custom_minimum_size = Vector2(0, 60)
+[node name="TopSpacer" type="Control" parent="DayScreen"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"StatBarLibur"
-show_percentage = false
-script = ExtResource("8_statbar")
-category = "Libur"
-
-[node name="StatusLabel" type="Label" parent="DayScreen" unique_id=359072452]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"TitleLabel"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="StudentScroll" type="ScrollContainer" parent="DayScreen" unique_id=20241029]
-layout_mode = 2
-size_flags_horizontal = 3
 size_flags_vertical = 3
-horizontal_scroll_mode = 0
+mouse_filter = 2
 
-[node name="StudentStatusContainer" type="VBoxContainer" parent="DayScreen/StudentScroll" unique_id=551234901]
+[node name="AvatarStrip" type="ScrollContainer" parent="DayScreen"]
+visible = false
+custom_minimum_size = Vector2(0, 336)
 layout_mode = 2
 size_flags_horizontal = 3
+vertical_scroll_mode = 0
+
+[node name="AvatarRow" type="HBoxContainer" parent="DayScreen/AvatarStrip"]
+layout_mode = 2
+size_flags_horizontal = 6
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="RingLegend" type="PanelContainer" parent="DayScreen"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"StatusScrim"
+
+[node name="Row" type="HBoxContainer" parent="DayScreen/RingLegend"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="EnergyDot" type="TextureRect" parent="DayScreen/RingLegend/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("k_ring")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnergyWord" type="Label" parent="DayScreen/RingLegend/Row"]
+layout_mode = 2
+theme_type_variation = &"AvatarNameLabel"
+text = "Energi"
+
+[node name="Gap" type="Control" parent="DayScreen/RingLegend/Row"]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MoodDot" type="TextureRect" parent="DayScreen/RingLegend/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("k_ring")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MoodWord" type="Label" parent="DayScreen/RingLegend/Row"]
+layout_mode = 2
+theme_type_variation = &"AvatarNameLabel"
+text = "Mood"
+
+[node name="BottomSpacer" type="Control" parent="DayScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.9
+mouse_filter = 2
 
 [node name="ClickToContinueLabel" type="Label" parent="DayScreen" unique_id=776210943]
 visible = false
@@ -106,6 +200,33 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SecondaryButton"
 text = "⏭ Skip (Tekan O)"
+
+[node name="DayStamp" type="PanelContainer" parent="."]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -220.0
+offset_top = 300.0
+offset_right = 220.0
+offset_bottom = 400.0
+grow_horizontal = 2
+rotation = -0.10471976
+pivot_offset = Vector2(220, 50)
+mouse_filter = 2
+theme_type_variation = &"DayStampPanel"
+
+[node name="StampLabel" type="Label" parent="DayStamp"]
+layout_mode = 2
+theme_type_variation = &"DayStampLabel"
+text = "senin selesai"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WeekFireworks" parent="." instance=ExtResource("s_fireworks")]
+layout_mode = 1
+mouse_filter = 2
 
 [node name="GameContainer" type="Control" parent="." unique_id=439134809]
 layout_mode = 1

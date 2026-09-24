@@ -8,16 +8,42 @@ class_name DaySummaryPopup
 ##
 ## Styling comes entirely from the theme now: this script builds no
 ## StyleBoxFlat and owns no color of its own.
+##
+## Since the 2026-09-24 SchoolDay liveliness pass a reward layer sits between
+## the banner and the rows: the teacher's verdict (a face, a headline and a
+## 1-4 star rating), the day's tally (total naik / target tercapai / uang) and
+## its Bintang Hari Ini. DayVerdict computes all of it from the same summary
+## the rows are built from; this only shows it.
 
 signal summary_dismissed
 
 ## Template instantiated once per student who moved that day, into
 ## rows_container -- normally DaySummaryStudentRow.tscn.
 @export var student_row_scene: PackedScene
+## The teacher's four expressions, rough (1 star) to outstanding (4 stars).
+## Placeholder art, drop-in replaceable (docs/superpowers/DEBT.md).
+@export var teacher_faces: Array[Texture2D] = []
+## A lit rating star.
+@export var star_on_texture: Texture2D
+## An unlit rating star.
+@export var star_off_texture: Texture2D
 
 @onready var dim_overlay: Panel = $DimOverlay
 @onready var content: VBoxContainer = $DimOverlay/Content
 @onready var rows_container: VBoxContainer = $DimOverlay/Content/RowsScroll/RowsContainer
+@onready var reward: Control = $DimOverlay/Content/Reward
+@onready var _face: TextureRect = $DimOverlay/Content/Reward/Rows/Header/Face
+@onready var _headline: Label = $DimOverlay/Content/Reward/Rows/Header/Words/Headline
+@onready var _subline: Label = $DimOverlay/Content/Reward/Rows/Header/Words/Subline
+@onready var _stars: Control = $DimOverlay/Content/Reward/Rows/Header/Words/Stars
+@onready var _gain_value: Label = $DimOverlay/Content/Reward/Rows/Tally/GainCell/Col/Value
+@onready var _target_value: Label = $DimOverlay/Content/Reward/Rows/Tally/TargetCell/Col/Value
+@onready var _money_value: Label = $DimOverlay/Content/Reward/Rows/Tally/MoneyCell/Col/Value
+@onready var _star_of_day: Control = $DimOverlay/Content/Reward/Rows/StarOfDay
+@onready var _star_line: Label = $DimOverlay/Content/Reward/Rows/StarOfDay/Row/Words/Line
+
+## The verdict setup_summary() computed, for tests and callers.
+var verdict: Dictionary = {}
 
 var is_dismissable: bool = false
 
@@ -31,9 +57,12 @@ const _TARGET_FOR := {
 
 func setup_summary(
 	summary_data: Array,
-	students: Array[StudentData]
+	students: Array[StudentData],
+	money_today: int = 0
 ) -> void:
 	AudioDirector.play_sfx(&"popup_open")
+	verdict = DayVerdict.compute(summary_data, students, money_today)
+	_show_verdict(verdict)
 
 	# Clear old rows
 	for child in rows_container.get_children():
@@ -73,6 +102,8 @@ func setup_summary(
 	tw.tween_property(content, "scale", Vector2(1.0, 1.0), t.dur_normal) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await tw.finished
+
+	_reveal_verdict(verdict)
 
 	# The rows land one after another once the card itself has settled.
 	Juice.stagger_in(rows)
@@ -129,6 +160,58 @@ func _play_day_verdict_sfx(summary_data: Array, students: Array[StudentData]) ->
 		AudioDirector.play_sfx(&"success")
 	elif had_loss:
 		AudioDirector.play_sfx(&"fail")
+
+
+## Writes the verdict into the reward layer: face, headline, the rating's
+## lit and unlit stars, the tally and the Bintang Hari Ini line (hidden on a
+## day nobody gained). Numbers start at zero; _reveal_verdict counts them up.
+func _show_verdict(v: Dictionary) -> void:
+	var stars: int = v.get("stars", 1)
+	if _face and teacher_faces.size() >= 4:
+		_face.texture = teacher_faces[clampi(stars, 1, 4) - 1]
+	if _headline:
+		_headline.text = v.get("headline", "")
+	if _subline:
+		_subline.text = v.get("subline", "")
+		_subline.visible = _subline.text != ""
+	if _stars:
+		for i in _stars.get_child_count():
+			var star := _stars.get_child(i) as TextureRect
+			if star:
+				star.texture = star_on_texture if i < stars else star_off_texture
+	var money: int = v.get("money", 0)
+	if _money_value:
+		# "-" rather than "0": no Wirausaha today, not a loss.
+		_money_value.text = "+%d" % money if money > 0 else "-"
+	if _star_of_day:
+		_star_of_day.visible = String(v.get("star_name", "")) != ""
+	if _star_line:
+		_star_line.text = "%s — +%d %s" % [v.get("star_name", ""), v.get("star_gain", 0),
+			v.get("star_skill", "")]
+
+
+## The verdict's entrance: the lit stars land one by one with the star
+## chime, and the tally counts up. Under reduce_motion the numbers simply
+## appear.
+func _reveal_verdict(v: Dictionary) -> void:
+	var gain: int = v.get("total_gain", 0)
+	var crossed: int = v.get("targets_crossed", 0)
+	if GameSettings.reduce_motion:
+		_gain_value.text = "+%d" % gain
+		_target_value.text = "%d" % crossed
+		return
+	Juice.count_up(_gain_value, 0.0, float(gain), "+%d")
+	Juice.count_up(_target_value, 0.0, float(crossed), "%d")
+	var lit: int = mini(v.get("stars", 1), _stars.get_child_count())
+	var gap: float = Juice.tokens().stagger_step * 2.0
+	# A tween the popup owns, so a fast dismiss takes the pending chimes
+	# down with it instead of firing them at freed stars.
+	var chimes := create_tween()
+	for i in lit:
+		var star := _stars.get_child(i) as Control
+		Juice.pop_in(star, float(i) * gap)
+		chimes.tween_callback(RewardFeedback.play.bind(&"star_earned", star, {"step": i + 1}))
+		chimes.tween_interval(gap)
 
 
 func _input(event: InputEvent) -> void:

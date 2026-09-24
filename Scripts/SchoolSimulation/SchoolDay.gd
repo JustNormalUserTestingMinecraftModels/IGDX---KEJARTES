@@ -1,7 +1,7 @@
 extends Control
 
 ## Simulates one week's five school days: the day-by-day loop, random
-## minigame/event rolls, and the embedded per-student status cards.
+## minigame/event rolls, and the avatar strip of per-student energy/mood rings.
 ##
 ## Reached from AturJadwal/StudentList once the week's schedule is
 ## committed. This is the one screen that mutates student stats -- it
@@ -52,20 +52,15 @@ signal _summary_closed
 
 # ── Visual - Student Cards ────────────────────────────────────────────────────
 @export_group("Visual - Student Cards")
-## Optional PNG for the student card panel background.
-@export var student_card_texture: Texture2D = null
-## Optional PNG to replace the ⚡ energy icon.
-@export var energy_icon_texture: Texture2D = null
-## Optional PNG to replace the 😊 mood icon.
-@export var mood_icon_texture: Texture2D = null
 ## Optional font override for the day-summary chip's label (_make_chip).
 ## Null keeps the theme's default font.
 @export var card_font: Font = null
-## Shared icon(-or-glyph) + bar + number row used for the embedded
-## energy/mood readout on each student card.
-@export var student_stat_row_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentStatRow.tscn")
-## Shared Card+Margin chrome for the per-student day-summary card.
-@export var student_summary_card_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentSummaryCard.tscn")
+## The ambient mote sprite for each weekday, Senin to Jumat, in the same
+## order as the banner's motifs, so each day drifts with its own texture.
+@export var weekday_mote_textures: Array[Texture2D] = []
+## One student on the day's avatar strip: face, energy and mood rings, name.
+## Replaced the runtime-built status cards (2026-09-24 liveliness pass).
+@export var avatar_chip_scene: PackedScene = preload("res://Scenes/SchoolSimulation/AvatarChip.tscn")
 ## The end-of-week tutorial's coach-mark. Overridden below to SchoolDay's
 ## shipped 0.85/900 width, 30px content margin, H2Label title, unstyled
 ## body and success-tinted CaptionLabel prompt -- everything TutorialPanel
@@ -83,11 +78,29 @@ signal _summary_closed
 
 # ── Node references ───────────────────────────────────────────────────────────
 @onready var day_screen: VBoxContainer    = $DayScreen
-@onready var day_number_label: Label      = $DayScreen/DayNumberLabel
 @onready var book_clock_widget: Control   = $BookClockWidget
-@onready var progress_bar: StatBar        = $DayScreen/ProgressBar
-@onready var status_label: Label          = $DayScreen/StatusLabel
-@onready var student_status_container: VBoxContainer = $DayScreen/StudentScroll/StudentStatusContainer
+## The day's progress. Since the 2026-09-24 liveliness pass it is the
+## invisible driver inside BookClockWidget's banner: the banner fills as this
+## Range's value rises, so the Juice.fill_bar calls below pace both.
+@onready var progress_bar: Range          = $BookClockWidget/Header/DayProgress
+@onready var status_label: Label          = $DayScreen/StatusStrip/StatusLabel
+## The slim scrim the status line rides; faded in only for its beats.
+@onready var status_strip: Control        = $DayScreen/StatusStrip
+## The "<hari> selesai" ink stamp that slams in when a day ends.
+@onready var day_stamp: Control           = $DayStamp
+@onready var day_stamp_label: Label       = $DayStamp/StampLabel
+## Rain streaks over the day screen, on for the rest of a day Hujan hits.
+@onready var rain: CPUParticles2D         = $Rain
+## Faint motes drifting up the sky, a different sprite each weekday.
+@onready var motes: CPUParticles2D        = $Motes
+## The fireworks volley that crowns the week's last school day.
+@onready var week_fireworks: ConfettiFireworks = $WeekFireworks
+## The avatar strip: a sideways-scrolling row of AvatarChips, one per
+## student, so any roster size fits without crowding the sky.
+@onready var avatar_strip: Control        = $DayScreen/AvatarStrip
+@onready var avatar_row: HBoxContainer    = $DayScreen/AvatarStrip/AvatarRow
+## "Energi / Mood" under the strip, teaching which ring is which.
+@onready var ring_legend: Control         = $DayScreen/RingLegend
 @onready var click_to_continue_label: Label = $DayScreen/ClickToContinueLabel
 @onready var back_button: Button          = $DayScreen/BackButton
 @onready var skip_button: Button          = $DayScreen/SkipButton
@@ -108,6 +121,18 @@ const DAY_FILL_DURATION = 2.0
 ## a named midday pose until 2026-09-10, and to a randomised afternoon
 ## point before that.
 const EVENT_TRIGGER_PCT := 50.0
+
+# -- Status line and day stamp (2026-09-24 liveliness pass) -------------------
+## Seconds a passing status beat stays on its scrim before the scrim fades
+## and leaves the sky open again.
+const STATUS_BEAT_HOLD := 1.4
+## Seconds the "selesai" stamp sits before the day's summary opens.
+const STAMP_HOLD := 0.9
+## The stamp's size as it starts to slam down, relative to its rest size.
+const STAMP_SLAM_FROM := 1.7
+## Seconds the deep night holds between two school days, once it has fallen
+## and before the next dawn. Short, so it never stalls a fast player.
+const NIGHT_HOLD := 0.5
 
 # Day-roll weights. Each school day rolls Normal / Minigame / Event in
 # proportion to these -- shares of the day's total, not percentages -- and
@@ -147,55 +172,16 @@ var max_events_this_week: int = 2
 var max_minigames_this_week: int = 2
 var is_waiting_for_continue: bool = false
 
-var embedded_widgets: Dictionary = {} # student_name -> Dictionary of node refs
+var embedded_widgets: Dictionary = {} # student_name -> {student, chip}
+## GameState.pending_earnings' total when today began, so the daily result
+## can show what Wirausaha earned today (it is paid out at week's end).
+var _money_at_day_start := 0
 
 # End Simulation Tutorial internal variables
 var _tutorial_panel: TutorialPanel = null
 var _blink_tween: Tween = null
 var _is_tutorial_active: bool = false
 var _is_summary_active: bool = false
-
-# Helper to retrieve custom UI textures dynamically without declaring new class variables
-func _get_playful_texture(type: String) -> Texture2D:
-	var path := ""
-	match type:
-		"energy":
-			if energy_icon_texture != null:
-				return energy_icon_texture
-			path = "res://Assets/Images/UI/Placeholders/icon_energy.png"
-		"mood":
-			if mood_icon_texture != null:
-				return mood_icon_texture
-			path = "res://Assets/Images/UI/Placeholders/icon_mood.png"
-		"akademis":
-			path = "res://Assets/Images/UI/Placeholders/icon_akademis.png"
-		"seni":
-			path = "res://Assets/Images/UI/Placeholders/icon_seni.png"
-		"olahraga":
-			path = "res://Assets/Images/UI/Placeholders/icon_olahraga.png"
-		"istirahat":
-			path = "res://Assets/Images/UI/Placeholders/icon_istirahat.png"
-		"libur":
-			path = "res://Assets/Images/UI/Placeholders/icon_libur.png"
-		"warning":
-			path = "res://Assets/Images/UI/Placeholders/icon_warning.png"
-		"dialogue_box":
-			path = "res://Assets/Images/UI/Placeholders/dialogue_box.png"
-		"card_bg":
-			if student_card_texture != null:
-				return student_card_texture
-			path = "res://Assets/Images/UI/Placeholders/student_card_bg.png"
-	
-	if path != "" and ResourceLoader.exists(path):
-		return load(path)
-		
-	# Fallback check for SVGs
-	if path.ends_with(".png"):
-		var svg_path = path.replace(".png", ".svg")
-		if ResourceLoader.exists(svg_path):
-			return load(svg_path)
-			
-	return null
 
 # ─────────────────────────────────────────────────────────────────────────────
 ## Category accent per weekday, used both for the page tint and for the
@@ -216,6 +202,7 @@ func _ready() -> void:
 	if skip_button:
 		skip_button.pressed.connect(skip_to_results)
 	_reset_day_ui()
+	_tint_ring_legend()
 	
 	if menjodohkan_scene == null: menjodohkan_scene = load("res://Scenes/Minigames/Akademis/Menjodohkan.tscn")
 	if variabel_scene == null: variabel_scene = load("res://Scenes/Minigames/Akademis/Variabel.tscn")
@@ -323,6 +310,7 @@ func _run_day() -> void:
 # the driver loop above, which re-checks is_skipped and stops.
 func _run_single_day() -> void:
 	var day_name = DAYS[current_day]
+	_money_at_day_start = _pending_total()
 	# One bell per day, not per student: this is the top of the day loop, and
 	# the per-student work happens further down.
 	AudioDirector.play_sfx(&"school_bell")
@@ -351,11 +339,7 @@ func _run_single_day() -> void:
 	# The day-progress bar wears the same accent as the page. This replaces
 	# the five hand-generated progress_fill_<weekday>.png textures that used
 	# to be pushed in as a per-day stylebox override.
-	if progress_bar:
-		progress_bar.category = day_category
-
-	day_number_label.text = "Hari %d dari %d" % [current_day + 1, DAYS.size()]
-	status_label.text     = "Perjalanan ke sekolah..."
+	_set_status("Perjalanan ke sekolah...")
 
 	# Reset and configure book-clock widget for the new day
 	if book_clock_widget and book_clock_widget.has_method("set_day"):
@@ -365,6 +349,13 @@ func _run_single_day() -> void:
 		# the dialogue's header can never disagree about which week it is.
 		book_clock_widget.call("set_week",
 			GameState.minggu_ke, GameState.get_max_weeks())
+		# The banner fills in the day's own colour, with its weekday motif.
+		book_clock_widget.call("set_day_style", tokens.category_color(day_category), current_day)
+		# The deep night between days lifts into this day's dawn.
+		_lift_night()
+	# Yesterday's rain has passed.
+	_set_rain(false)
+	_set_weekday_motes(current_day)
 
 	# Render embedded student status UI on DayScreen
 	_render_embedded_student_status()
@@ -391,7 +382,7 @@ func _run_single_day() -> void:
 	var trigger_pct := EVENT_TRIGGER_PCT
 	var phase1_dur := _phase_duration()
 
-	status_label.text = "Melewati hari sekolah..."
+	_set_status("Melewati hari sekolah...", STATUS_BEAT_HOLD)
 	
 	# Create parallel tweens for day progress bar AND embedded student energy/mood decay bars!
 	# The bar goes through Juice like every other bar in the game; the
@@ -413,6 +404,7 @@ func _run_single_day() -> void:
 			phase1_dur + _phase_duration())
 
 	_animate_embedded_decay_bars(day_tween, decay_results, phase1_dur)
+	_pop_todays_gains(day_name, phase1_dur)
 	await day_tween.finished
 	if is_skipped:
 		return
@@ -424,7 +416,7 @@ func _run_single_day() -> void:
 
 	# ── Phase 2: Fill remaining bar to 100% ──────────────────────────────────
 	var phase2_dur := _phase_duration()
-	status_label.text = "Melanjutkan hari..."
+	_set_status("Melanjutkan hari...", STATUS_BEAT_HOLD)
 	Juice.fill_bar(progress_bar, 100.0, phase2_dur)
 	var bar_phase2 = create_tween().set_parallel(true)
 	bar_phase2.tween_interval(phase2_dur)
@@ -432,8 +424,12 @@ func _run_single_day() -> void:
 	if is_skipped:
 		return
 
-	status_label.text = day_name + " selesai! ✓"
-	progress_bar.show()
+	# The day ends on an ink stamp rather than a status line (and its old
+	# emoji tick, flagged in DEBT.md).
+	_set_status("")
+	await _play_day_stamp(day_name)
+	if is_skipped:
+		return
 	
 	# ── End-of-Day Summary ────────────────────────────────────────────────────
 	await _show_day_summary(day_name)
@@ -443,10 +439,18 @@ func _run_single_day() -> void:
 	if is_skipped:
 		return
 
-	# Fade out before moving to the next day
+	# Fade out before moving to the next day, as the deep night falls: the
+	# sky dips to a real night -- tint, stars, the school dark with its
+	# windows lit -- and holds briefly before the next day's dawn lifts it.
+	var night_fall := _begin_night()
 	var fade_out = create_tween()
 	fade_out.tween_property(day_screen, "modulate:a", 0.0, 0.5)
 	await fade_out.finished
+	if is_skipped:
+		return
+	if night_fall != null and night_fall.is_running():
+		await night_fall.finished
+	await get_tree().create_timer(NIGHT_HOLD).timeout
 	if is_skipped:
 		return
 
@@ -473,85 +477,80 @@ func _await_click_to_continue() -> void:
 	click_to_continue_label.hide()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Render embedded 4 student status cards directly into DayScreen
+## Fills the avatar strip with one AvatarChip per student, rings at their
+## start-of-day values, and staggers them in. Instanced from a template
+## (2026-09-24 liveliness pass) -- the old full-width cards were built node by
+## node at runtime and crowded the screen.
 func _render_embedded_student_status() -> void:
-	if student_status_container == null or student_manager == null:
+	if avatar_row == null or student_manager == null or avatar_chip_scene == null:
 		return
 
-	for child in student_status_container.get_children():
+	for child in avatar_row.get_children():
 		child.queue_free()
-
 	embedded_widgets.clear()
 
-	var cards: Array = []
+	var chips: Array = []
 	for student in student_manager.students:
-		var panel: StudentSummaryCard = student_summary_card_scene.instantiate()
-		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		panel.margin_left = 24
-		panel.margin_top = 14
-		panel.margin_right = 24
-		panel.margin_bottom = 12
-
-		# An art-supplied card PNG still wins; otherwise the theme's Card
-		# variation supplies fill, outline, radius, shadow and margins.
-		panel.set_background_texture(_get_playful_texture("card_bg"))
-
-		# The panel hasn't entered the tree yet (it's appended below, once
-		# fully built, same as before), so the @onready `margin` isn't live
-		# -- get_node still works because instantiate() built the subtree.
-		var margin: MarginContainer = panel.get_node("Margin")
-
-		var card_vbox = VBoxContainer.new()
-		card_vbox.add_theme_constant_override("separation", 8)
-		margin.add_child(card_vbox)
-
-		var main_hbox = HBoxContainer.new()
-		main_hbox.add_theme_constant_override("separation", 24)
-		card_vbox.add_child(main_hbox)
-
-		# Left column: Name & Personality tag
-		var left_vbox = VBoxContainer.new()
-		left_vbox.custom_minimum_size = Vector2(240, 0)
-		left_vbox.add_theme_constant_override("separation", 8)
-		main_hbox.add_child(left_vbox)
-
-		var name_lbl = Label.new()
-		name_lbl.text = student.student_name
-		name_lbl.theme_type_variation = &"TitleLabel"
-		left_vbox.add_child(name_lbl)
-
-		left_vbox.add_child(_make_chip(
-			" %s " % student.personality, Juice.tokens().brand_primary))
-
-		# Right column: Bars (Energy & Mood)
-		var right_vbox = VBoxContainer.new()
-		right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		right_vbox.add_theme_constant_override("separation", 12)
-		main_hbox.add_child(right_vbox)
-
-		# Energy and Mood are needs, not schedule categories; Libur (warm
-		# gold) and Istirahat (violet) are the accents the rest of the game
-		# already uses for them.
-		var e_data = _add_embedded_bar_row(right_vbox, "⚡", student.energy, "Libur")
-		var m_data = _add_embedded_bar_row(right_vbox, "😊", student.mood, "Istirahat")
-
-		# Pill badges row
-		var pill_flow = _build_pill_badges_for_student(student, DAYS[current_day] if current_day < DAYS.size() else "")
-		if pill_flow:
-			card_vbox.add_child(pill_flow)
-
-		student_status_container.add_child(panel)
-		cards.append(panel)
-
+		var chip := avatar_chip_scene.instantiate() as AvatarChip
+		avatar_row.add_child(chip)
+		chip.setup(student)
+		chips.append(chip)
 		embedded_widgets[student.student_name] = {
-			"student": student,
-			"e_bar": e_data["bar"],
-			"e_lbl": e_data["lbl"],
-			"m_bar": m_data["bar"],
-			"m_lbl": m_data["lbl"]
-		}
+			"student": student, "chip": chip, "skills": _skill_sum(student)}
 
-	Juice.stagger_in(cards)
+	if avatar_strip:
+		avatar_strip.show()
+	if ring_legend:
+		ring_legend.show()
+	if not GameSettings.reduce_motion:
+		Juice.stagger_in(chips)
+
+
+## A student's three skills added up, to tell when any of them rose.
+func _skill_sum(student: StudentData) -> float:
+	return student.akademis + student.seni_budaya + student.olahraga
+
+
+## Colours the legend's two dots like the rings they name.
+func _tint_ring_legend() -> void:
+	var tokens := Juice.tokens()
+	var energy := get_node_or_null("DayScreen/RingLegend/Row/EnergyDot") as CanvasItem
+	if energy:
+		energy.self_modulate = tokens.category_color_on_dark("Energy")
+	var mood := get_node_or_null("DayScreen/RingLegend/Row/MoodDot") as CanvasItem
+	if mood:
+		mood.self_modulate = tokens.category_color_on_dark("Mood")
+
+
+## Floats a "+N" from each student who gained skill points today, spread
+## across the first half of the day so the gains land one by one.
+func _pop_todays_gains(day_name: String, span: float) -> void:
+	if student_manager == null:
+		return
+	var gains := {}
+	for entry in student_manager.daily_stat_log.get(day_name, []):
+		if entry.get("source", "") != "activity":
+			continue
+		if not (entry.get("stat_key", "") in ["akademis", "seni_budaya", "olahraga"]):
+			continue
+		var who: String = entry.get("student_name", "")
+		gains[who] = gains.get(who, 0.0) + float(entry.get("delta", 0.0))
+	# The activity's gains are applied by now; bank them so a later event or
+	# minigame update does not pop them a second time.
+	for w in embedded_widgets.values():
+		w["skills"] = _skill_sum(w["student"])
+	var pops: Array = []
+	for who in gains:
+		var chip := (embedded_widgets.get(who, {}) as Dictionary).get("chip") as AvatarChip
+		if chip != null and gains[who] > 0.0:
+			pops.append([chip, int(round(gains[who]))])
+	if pops.is_empty():
+		return
+	var gap: float = span / float(pops.size() + 1)
+	var timeline := create_tween()
+	for pop in pops:
+		timeline.tween_interval(gap)
+		timeline.tween_callback((pop[0] as AvatarChip).pop_gain.bind(pop[1]))
 
 
 ## The shared summary chip (SunkenPanel + BarLabel), tinted via
@@ -567,155 +566,6 @@ func _make_chip(text: String, tint: Color) -> PanelContainer:
 	return chip
 
 
-## Instantiates the shared StudentStatRow. icon_text is a short glyph
-## ("⚡"/"😊") shown only as a fallback when no playful texture exists for
-## it -- see StudentStatRow.setup(). Returns the same {"bar", "lbl"} shape
-## callers have always used, so nothing downstream had to change.
-func _add_embedded_bar_row(parent_vbox: VBoxContainer, icon_text: String, current_val: float, category: String) -> Dictionary:
-	var row: StudentStatRow = student_stat_row_scene.instantiate()
-	parent_vbox.add_child(row)
-
-	var icon_tex := _get_playful_texture("energy" if icon_text == "⚡" else "mood")
-	row.setup(icon_text, current_val, category, icon_tex)
-
-	return {
-		"bar": row.bar,
-		"lbl": row.info_label
-	}
-
-## The preview badge must quote the same gain the simulation will apply,
-## or a tester changing Balance.gd sees the old number here and thinks
-## nothing happened. Mirrors StudentManager.apply_daily_decay_all.
-func _preview_gain(student: StudentData, category: String) -> float:
-	var base := Balance.BELAJAR_POIN_CADANGAN
-	var bonus := Balance.BELAJAR_BONUS_FAVORIT_CADANGAN
-	match GameState.current_grade:
-		7:
-			base = Balance.BELAJAR_POIN_KELAS_7
-			bonus = Balance.BELAJAR_BONUS_FAVORIT_KELAS_7
-		8:
-			base = Balance.BELAJAR_POIN_KELAS_8
-			bonus = Balance.BELAJAR_BONUS_FAVORIT_KELAS_8
-		9:
-			base = Balance.BELAJAR_POIN_KELAS_9
-			bonus = Balance.BELAJAR_BONUS_FAVORIT_KELAS_9
-	if student.specialty_category == category:
-		return base + bonus
-	return base
-
-func _build_pill_badges_for_student(student: StudentData, day_name: String) -> HBoxContainer:
-	# Returns an HBoxContainer of colored pill Label badges showing what will change today.
-	# Sources: schedule (known before day), warnings (energy low).
-	var tokens := Juice.tokens()
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 6)
-	var student_id = student.id
-	var schedule = {}
-	if student_id != 0 and GameState.day_schedules.has(student_id):
-		schedule = GameState.day_schedules[student_id].get(day_name, {})
-	
-	var category = schedule.get("category", "")
-	if category == "Akademik": category = "Akademis"
-	
-	# Holiday
-	var week = GameState.minggu_ke
-	var week_holidays = {}
-	if week == 3: week_holidays["Rabu"] = true
-	if week == 6: week_holidays["Senin"] = true
-	if week_holidays.has(day_name):
-		_add_pill(hbox, "🌿 Libur", tokens.cat_libur)
-		return hbox
-
-	match category:
-		"Akademis":
-			var gain := _preview_gain(student, "Akademis")
-			_add_pill(hbox, "+%.0f Akademis 📚" % gain, tokens.cat_akademis)
-		"SeniBudaya":
-			var gain := _preview_gain(student, "SeniBudaya")
-			_add_pill(hbox, "+%.0f Seni 🎨" % gain, tokens.cat_senibudaya)
-		"Olahraga":
-			var gain := _preview_gain(student, "Olahraga")
-			_add_pill(hbox, "+%.0f Olahraga ⚽" % gain, tokens.cat_olahraga)
-		"Istirahat":
-			_add_pill(hbox, "+%.0f ⚡ Libur" % Balance.LIBUR_ENERGI_PULIH_MAX, tokens.state_success)
-		"Wirausaha":
-			_add_pill(hbox, "💰 Wirausaha", tokens.category_color("Wirausaha"))
-		_:
-			_add_pill(hbox, "Kosong", tokens.text_secondary)
-
-	# Energy/Mood cost estimate (show if studying)
-	if category != "" and category != "Istirahat":
-		_add_pill(hbox, "~-%.0f ⚡" % Balance.BELAJAR_BIAYA_ENERGI_MIN, tokens.state_danger)
-		_add_pill(hbox, "~-%.0f 😊" % Balance.BELAJAR_BIAYA_MOOD_MIN, tokens.state_warning)
-
-	# Warning if already low energy
-	if student.energy <= Balance.BATAS_KELELAHAN:
-		_add_pill(hbox, "⚠ KELELAHAN", tokens.state_danger)
-
-	return hbox
-
-func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
-	var clean_text := text
-	var icon_key := ""
-	
-	if "Libur" in text:
-		clean_text = text.replace("⚡", "").replace("🌿", "").strip_edges()
-		icon_key = "libur"
-	elif "Akademis" in text:
-		clean_text = text.replace("📚", "").strip_edges()
-		icon_key = "akademis"
-	elif "Seni" in text:
-		clean_text = text.replace("🎨", "").strip_edges()
-		icon_key = "seni"
-	elif "Olahraga" in text:
-		clean_text = text.replace("⚽", "").strip_edges()
-		icon_key = "olahraga"
-	elif "Istirahat" in text:
-		clean_text = text.replace("⚡", "").strip_edges()
-		icon_key = "istirahat"
-	elif "⚡" in text:
-		clean_text = text.replace("⚡", "").replace("~", "").strip_edges()
-		icon_key = "energy"
-	elif "😊" in text:
-		clean_text = text.replace("😊", "").replace("~", "").strip_edges()
-		icon_key = "mood"
-	elif "KELELAHAN" in text:
-		clean_text = "KELELAHAN"
-		icon_key = "warning"
-
-	# Both branches use the same shared DaySummaryPill chip; the only
-	# difference is whether an icon PNG sits beside the text.
-	var icon_tex = _get_playful_texture(icon_key) if icon_key != "" else null
-	if icon_tex == null:
-		parent.add_child(_make_chip(text, tint))
-		return
-
-	var chip := _make_chip(clean_text, tint)
-	var lbl := chip.get_node("Text") as Label
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 6)
-
-	var tex_rect = TextureRect.new()
-	tex_rect.texture = icon_tex
-	tex_rect.custom_minimum_size = Vector2(24, 24)
-	tex_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
-	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	tex_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-
-	chip.remove_child(lbl)
-	# lbl came from DaySummaryPill.tscn and still names that scene's root as
-	# its owner. Re-parenting it under a runtime-built HBoxContainer (owner ==
-	# null) makes the ownership inconsistent, and Godot warns every single
-	# time -- per badge, per student, per day.
-	lbl.owner = null
-	chip.add_child(hbox)
-	hbox.add_child(tex_rect)
-	hbox.add_child(lbl)
-	lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-
-	parent.add_child(chip)
-
-
 ## Nodes on the DayScreen that would otherwise read through the summary
 ## popup's scrim and collide with the card stack. Paths, not @onready refs,
 ## because several are optional depending on how far the day got.
@@ -728,10 +578,18 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 ## permanently, so listing it would set visible = true on the way out and
 ## bring the duplicate back for the rest of the run.
 const _DAY_CHROME_PATHS := [
-	"DayScreen/DayNumberLabel",
-	"DayScreen/ProgressBar",
-	"DayScreen/StatusLabel",
+	"DayScreen/StatusStrip",
+	"DayScreen/AvatarStrip",
+	"DayScreen/RingLegend",
 ]
+
+
+## Everything Wirausaha has earned this week and not yet been paid.
+func _pending_total() -> int:
+	var total := 0
+	for amount in GameState.pending_earnings.values():
+		total += int(amount)
+	return total
 
 
 func _set_day_chrome_visible(shown: bool) -> void:
@@ -763,117 +621,62 @@ func _show_day_summary(day_name: String) -> void:
 	# DaySummaryStudentRow went unrendered for so long -- and why the
 	# mockup's "+12/65" was unbuildable, since only `summary` carries a
 	# delta at all.
-	summary_instance.setup_summary(summary, student_manager.students)
+	summary_instance.setup_summary(summary, student_manager.students,
+		_pending_total() - _money_at_day_start)
 
 	await summary_instance.summary_dismissed
 	_set_day_chrome_visible(true)
 
 
 func _animate_embedded_decay_bars(parallel_tween: Tween, decay_results: Array[Dictionary], duration: float) -> void:
+	# The rings sweep to each student's post-decay needs over the day's first
+	# half. parallel_tween only paces the day; each chip tweens itself.
 	for res in decay_results:
-		var s_name = res.get("student_name", "")
-		var w = embedded_widgets.get(s_name, {})
-		if w.is_empty():
+		var w: Dictionary = embedded_widgets.get(res.get("student_name", ""), {})
+		var chip := w.get("chip") as AvatarChip
+		if chip == null:
 			continue
+		chip.tween_needs(float(res.get("current_energy", 80.0)),
+			float(res.get("current_mood", 80.0)), duration)
 
-		var curr_e = float(res.get("current_energy", 80.0))
-		var e_loss = float(res.get("energy_loss", 5.0))
-		var start_e = clampf(curr_e + e_loss, 0.0, 100.0)
 
-		var curr_m = float(res.get("current_mood", 80.0))
-		var m_loss = float(res.get("mood_loss", 5.0))
-		var start_m = clampf(curr_m + m_loss, 0.0, 100.0)
-
-		var tokens := Juice.tokens()
-		var e_bar = w["e_bar"] as StatBar
-		var e_lbl = w["e_lbl"] as Label
-		var m_bar = w["m_bar"] as StatBar
-		var m_lbl = w["m_lbl"] as Label
-
-		e_bar.value = start_e
-		m_bar.value = start_m
-
-		parallel_tween.tween_property(e_bar, "value", curr_e, duration)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-		parallel_tween.tween_property(m_bar, "value", curr_m, duration)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-
-		# The number rolls with the bar, and the label carries the verdict
-		# as a tint rather than as a font_color override.
-		if e_loss >= 0:
-			Juice.count_up(e_lbl, start_e, curr_e, "%d/100 (-" + str(int(e_loss)) + ")")
-			e_lbl.self_modulate = tokens.state_danger
-		else:
-			Juice.count_up(e_lbl, start_e, curr_e, "%d/100 (+" + str(int(-e_loss)) + ")")
-			e_lbl.self_modulate = tokens.state_success
-
-		if m_loss >= 0:
-			Juice.count_up(m_lbl, start_m, curr_m, "%d/100 (-" + str(int(m_loss)) + ")")
-			m_lbl.self_modulate = tokens.state_danger
-		else:
-			Juice.count_up(m_lbl, start_m, curr_m, "%d/100 (+" + str(int(-m_loss)) + ")")
-			m_lbl.self_modulate = tokens.state_success
-
-# Smoothly animate embedded progress bars for post-event or minigame stat updates
+## Sweeps every chip's rings to the student's needs after an event or
+## minigame changed them, and springs the chips that moved.
 func _animate_embedded_stat_updates(duration: float = 0.6) -> void:
-	if student_status_container == null or student_manager == null:
+	if avatar_row == null or student_manager == null:
 		return
-		
 	if embedded_widgets.is_empty():
 		_render_embedded_student_status()
 		return
-		
-	var tokens := Juice.tokens()
-	var parallel_tween = create_tween().set_parallel(true)
-	var has_updates = false
-
+	var moved := false
 	for student in student_manager.students:
-		var w = embedded_widgets.get(student.student_name, {})
-		if w.is_empty():
+		var w: Dictionary = embedded_widgets.get(student.student_name, {})
+		var chip := w.get("chip") as AvatarChip
+		if chip == null:
 			continue
+		var now := chip.needs()
+		if absf(now.x - student.energy) < 0.1 and absf(now.y - student.mood) < 0.1:
+			continue
+		moved = true
+		chip.tween_needs(student.energy, student.mood, duration)
+		if not GameSettings.reduce_motion:
+			AnimUtils.squash_bounce(chip)
+	# A won minigame or a Terima'd event can raise a skill too; the chip pops
+	# a +N for it just as it does for the day's activity.
+	for student in student_manager.students:
+		var w: Dictionary = embedded_widgets.get(student.student_name, {})
+		var chip := w.get("chip") as AvatarChip
+		if chip == null:
+			continue
+		var now := _skill_sum(student)
+		var gained: float = now - float(w.get("skills", now))
+		w["skills"] = now
+		if gained >= 0.5:
+			moved = true
+			chip.pop_gain(int(round(gained)))
+	if moved:
+		await get_tree().create_timer(duration).timeout
 
-		var e_bar = w["e_bar"] as StatBar
-		var e_lbl = w["e_lbl"] as Label
-		var m_bar = w["m_bar"] as StatBar
-		var m_lbl = w["m_lbl"] as Label
-
-		var start_e = e_bar.value
-		var target_e = student.energy
-		var delta_e = target_e - start_e
-
-		var start_m = m_bar.value
-		var target_m = student.mood
-		var delta_m = target_m - start_m
-
-		if absf(delta_e) > 0.1:
-			has_updates = true
-			parallel_tween.tween_property(e_bar, "value", target_e, duration)\
-				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			var sign_str = "+%d" % int(delta_e) if delta_e > 0 else "%d" % int(delta_e)
-			Juice.count_up(e_lbl, start_e, target_e, "%d/100 (" + sign_str + ")")
-			e_lbl.self_modulate = tokens.state_success if delta_e > 0 else tokens.state_danger
-
-		if absf(delta_m) > 0.1:
-			has_updates = true
-			parallel_tween.tween_property(m_bar, "value", target_m, duration)\
-				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			var sign_str = "+%d" % int(delta_m) if delta_m > 0 else "%d" % int(delta_m)
-			Juice.count_up(m_lbl, start_m, target_m, "%d/100 (" + sign_str + ")")
-			m_lbl.self_modulate = tokens.state_success if delta_m > 0 else tokens.state_danger
-
-	if has_updates:
-		await parallel_tween.finished
-		await get_tree().create_timer(tokens.dur_slow).timeout
-		# Reset label text to clean standard format
-		for student in student_manager.students:
-			var w = embedded_widgets.get(student.student_name, {})
-			if not w.is_empty():
-				var e_lbl = w["e_lbl"] as Label
-				var m_lbl = w["m_lbl"] as Label
-				e_lbl.text = "%d/100" % int(student.energy)
-				e_lbl.self_modulate = Color.WHITE
-				m_lbl.text = "%d/100" % int(student.mood)
-				m_lbl.self_modulate = Color.WHITE
 
 # ─────────────────────────────────────────────────────────────────────────────
 ## How long one half of the school day runs, in seconds.
@@ -954,7 +757,7 @@ func _roll_event(day_name: String) -> void:
 	var week = GameState.minggu_ke
 	if HOLIDAYS.has(week) and HOLIDAYS[week].has(day_name):
 		var holiday_name = HOLIDAYS[week][day_name]
-		status_label.text = "Hari Libur Nasional: %s 🌿" % holiday_name
+		_set_status("Hari Libur Nasional: %s" % holiday_name)
 		await get_tree().create_timer(1.2).timeout
 		return
 
@@ -981,7 +784,7 @@ func _roll_event(day_name: String) -> void:
 			outcome = "Event"
 
 	if outcome == "Normal":
-		status_label.text = "Hari biasa..."
+		_set_status("Hari biasa...", STATUS_BEAT_HOLD)
 		await get_tree().create_timer(0.8).timeout
 
 	elif outcome == "Minigame":
@@ -989,17 +792,17 @@ func _roll_event(day_name: String) -> void:
 
 		if category_selected == "Akademis":
 			var scene = akademis_scenes[randi() % akademis_scenes.size()]
-			await _show_event_warning("KEGIATAN AKADEMIS!")
+			await _show_event_warning("KEGIATAN AKADEMIS!", "Akademis", "MINIGAME")
 			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "Akademis")
 		elif category_selected == "Olahraga":
 			var scene = olahraga_scenes[randi() % olahraga_scenes.size()]
-			await _show_event_warning("KEGIATAN OLAHRAGA!")
+			await _show_event_warning("KEGIATAN OLAHRAGA!", "Olahraga", "MINIGAME")
 			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "Olahraga")
 		else:
 			var scene = seni_scenes[randi() % seni_scenes.size()]
-			await _show_event_warning("KEGIATAN SENI BUDAYA!")
+			await _show_event_warning("KEGIATAN SENI BUDAYA!", "SeniBudaya", "MINIGAME")
 			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "SeniBudaya")
 
@@ -1100,7 +903,7 @@ func _run_event(event_id: int, day_name: String) -> void:
 				"workshop_seni"
 			)
 		3:
-			await _show_event_warning("Kejutan Nasi Kotak Orang Tua!")
+			await _show_event_warning("Kejutan Nasi Kotak Orang Tua!", "Sosial", "KABAR")
 			await _show_event_dialogue("nasi_kotak")
 			# Biang Onar: global positive events are stronger
 			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1114,8 +917,11 @@ func _run_event(event_id: int, day_name: String) -> void:
 			await _animate_embedded_stat_updates(0.6)
 			await get_tree().create_timer(0.8).timeout
 		4:
-			await _show_event_warning("Hujan Deras & Jalanan Licin!")
+			await _show_event_warning("Hujan Deras & Jalanan Licin!", "Cuaca", "KABAR")
 			await _show_event_dialogue("hujan")
+			# The sky reacts too: it rains on the day screen for the rest of
+			# the day, not only on the event screen.
+			_set_rain(true)
 			# Biang Onar: global negative events are worse
 			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1134,7 +940,10 @@ func _handle_interactive_event(
 	stat_boost: float, energy_cost: float, mood_boost: float,
 	dialogue_key: String = ""
 ) -> void:
-	await _show_event_warning(title)
+	# A choice event says so on its notice (PILIHAN), before Tolak / Terima.
+	var entry: Dictionary = EventDialogueCatalog.entry(dialogue_key) 		if EventDialogueCatalog.has_entry(dialogue_key) else {}
+	var mode := "PILIHAN" if entry.get("mode", "") == EventDialogueCatalog.MODE_CHOICE else "KABAR"
+	await _show_event_warning(title, category, mode)
 	# Tolak skips the event: no picker, nothing applied or recorded. It still
 	# counted toward the week's limit when it was rolled.
 	var wants_in: bool = await _show_event_dialogue(dialogue_key)
@@ -1292,6 +1101,8 @@ func _pay_out_wirausaha() -> int:
 # ─────────────────────────────────────────────────────────────────────────────
 func _on_week_complete() -> void:
 	AudioDirector.stop_ambience()
+	_lift_night()
+	_set_rain(false)
 	RewardFeedback.play(&"week_cleared", self)
 	is_running = false
 	if skip_button:
@@ -1322,17 +1133,18 @@ func _on_week_complete() -> void:
 	fade.tween_property(day_screen, "modulate:a", 1.0, 0.6)
 	await fade.finished
 
-	day_number_label.text = "Minggu selesai!"
 	if book_clock_widget and book_clock_widget.has_method("set_banner"):
 		book_clock_widget.call("set_banner", "Akhir Pekan")
-	progress_bar.show()
 	Juice.fill_bar(progress_bar, 100.0)
-	status_label.text     = "Selamat! Minggu sekolah telah selesai."
+	# "Minggu selesai!" used to sit on the day counter, which the banner's
+	# fill replaced; it rides the status strip now, and stays up.
+	_set_status("Minggu selesai! Selamat!")
 	if wirausaha_total > 0:
 		var wirausaha_chip := _make_chip(
 			"Pendapatan Wirausaha: Rp%d" % wirausaha_total,
 			DesignTokens.load_default().category_color("Wirausaha"))
-		status_label.get_parent().add_child(wirausaha_chip)
+		day_screen.add_child(wirausaha_chip)
+		day_screen.move_child(wirausaha_chip, status_strip.get_index() + 1)
 	back_button.show()
 
 	if not GameState.tutorials_bypassed and GameState.current_grade == 7 and GameState.minggu_ke == 1:
@@ -1515,12 +1327,11 @@ func _show_end_simulation_tutorial() -> void:
 # ─────────────────────────────────────────────────────────────────────────────
 func _reset_day_ui() -> void:
 	progress_bar.value    = 0.0
-	progress_bar.hide()
-	var scroll = get_node_or_null("DayScreen/StudentScroll")
-	if scroll:
-		scroll.hide()
-	day_number_label.text = ""
-	status_label.text     = ""
+	if avatar_strip:
+		avatar_strip.hide()
+	if ring_legend:
+		ring_legend.hide()
+	_set_status("")
 	back_button.hide()
 	if skip_button:
 		skip_button.hide()
@@ -1558,10 +1369,109 @@ func _minigame_bgm_id(game_scene: PackedScene, category: String) -> StringName:
 	return &""
 
 # ─────────────────────────────────────────────────────────────────────────────
+## Lets the deep night fall between two school days (2026-09-24 liveliness
+## pass, layer 6). Hands back the widget's Tween, or null without one.
+func _begin_night() -> Tween:
+	if book_clock_widget == null or not book_clock_widget.has_method("night_in"):
+		return null
+	return book_clock_widget.call("night_in")
+
+
+## Lifts the night, if any, into the new day's dawn.
+func _lift_night() -> void:
+	if book_clock_widget == null or not book_clock_widget.has_method("night_out"):
+		return
+	if float(book_clock_widget.call("night")) > 0.0:
+		book_clock_widget.call("night_out")
+
+
+## The day-done burst, escalating (spec layer 6): every day gets a small Pop
+## burst from the stamp; the week's last school day also sets off the
+## ConfettiFireworks volley over the sky.
+func _celebrate_day_end(is_last_day: bool) -> void:
+	RewardFeedback.play(&"day_done", day_stamp)
+	if not is_last_day or week_fireworks == null or GameSettings.reduce_motion:
+		return
+	var volley := create_tween()
+	for i in week_fireworks.burst_count():
+		volley.tween_callback(week_fireworks.fire_burst.bind(i))
+		volley.tween_interval(week_fireworks.burst_delay)
+
+
+## Gives the sky's drifting motes this weekday's sprite. They stop under
+## reduce_motion: they are ambience, not information.
+func _set_weekday_motes(weekday: int) -> void:
+	if motes == null:
+		return
+	if not weekday_mote_textures.is_empty():
+		motes.texture = weekday_mote_textures[posmod(weekday, weekday_mote_textures.size())]
+	motes.emitting = not GameSettings.reduce_motion
+
+
+## Starts or stops the rain over the day screen. It stays on under
+## reduce_motion: it is the day's weather, not decoration.
+func _set_rain(on: bool) -> void:
+	if rain == null:
+		return
+	rain.emitting = on
+	rain.visible = on
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+var _status_tween: Tween
+
+## Writes the status line and fades its scrim in (2026-09-24 liveliness pass,
+## owner's pick: the strip shows only for the beats). With `hold` above zero
+## the beat passes: the scrim fades back out after that many seconds and
+## leaves the sky open. Otherwise it stays until the next call. "" fades it out.
+func _set_status(text: String, hold: float = -1.0) -> void:
+	if status_label:
+		status_label.text = text
+	if status_strip == null:
+		return
+	if _status_tween and _status_tween.is_valid():
+		_status_tween.kill()
+	var t := Juice.tokens()
+	_status_tween = create_tween()
+	_status_tween.tween_property(status_strip, "modulate:a", 0.0 if text == "" else 1.0, t.dur_fast)
+	if text != "" and hold > 0.0:
+		_status_tween.tween_interval(hold)
+		_status_tween.tween_property(status_strip, "modulate:a", 0.0, t.dur_normal)
+
+
+## Slams the "<hari> selesai" ink stamp down, holds it, and lifts it away as
+## the day's summary opens. Under reduce_motion it simply appears.
+func _play_day_stamp(day_name: String) -> void:
+	if day_stamp == null:
+		return
+	if day_stamp_label:
+		day_stamp_label.text = "%s selesai" % day_name.to_lower()
+	day_stamp.pivot_offset = day_stamp.size / 2.0
+	var t := Juice.tokens()
+	if GameSettings.reduce_motion:
+		day_stamp.scale = Vector2.ONE
+		day_stamp.modulate.a = 1.0
+	else:
+		day_stamp.scale = Vector2.ONE * STAMP_SLAM_FROM
+		day_stamp.modulate.a = 0.0
+		var slam := create_tween().set_parallel(true)
+		slam.tween_property(day_stamp, "scale", Vector2.ONE, t.dur_fast) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		slam.tween_property(day_stamp, "modulate:a", 1.0, t.dur_instant)
+		await slam.finished
+	_celebrate_day_end(current_day == DAYS.size() - 1)
+	await get_tree().create_timer(STAMP_HOLD).timeout
+	var lift := create_tween()
+	lift.tween_property(day_stamp, "modulate:a", 0.0, t.dur_fast)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 ## Slide the full-screen event warning through once, captioned with what is
 ## coming -- a minigame's subject or a random event's name -- and wait for it
 ## to leave (2026-09-12 event-cards spec, 2.3). The warning plays its own cue.
-func _show_event_warning(caption: String) -> void:
+## `category` tints the notice (a skill category, "Cuaca" or "Sosial") and
+## `mode` marks it: MINIGAME, KABAR, or PILIHAN for a choice event.
+func _show_event_warning(caption: String, category: String = "", mode: String = "") -> void:
 	var warning_scene = event_warning_scene
 	if warning_scene == null:
 		warning_scene = load("res://Scenes/SchoolSimulation/EventWarning.tscn")
@@ -1573,7 +1483,7 @@ func _show_event_warning(caption: String) -> void:
 	add_child(warning_instance)
 
 	if warning_instance.has_method("play_warning"):
-		await warning_instance.play_warning(caption)
+		await warning_instance.play_warning(caption, category, mode)
 	else:
 		await get_tree().create_timer(1.5).timeout
 		warning_instance.queue_free()

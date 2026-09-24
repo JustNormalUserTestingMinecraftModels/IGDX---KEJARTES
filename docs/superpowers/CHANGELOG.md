@@ -23,6 +23,10 @@ deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maint
   the lashes at 521 and closes the gap with a taller eye instead; the rig's
   sclera and eyelid layers are shorter than that eye. Growing both layers to
   match was tried and declined in favour of the lash drop.
+- **Blinks drop the open lashes**, for every student: `StudentFace` fades the
+  Eyelashes layer out as the Eyelid fades in, so a shut eye shows only the
+  lid's own closed lash line. Before, the open lashes floated over the lid,
+  and on Andi the lid cut into them.
 
 ## 2026-09-24 — Atur Jadwal visual polish (plan `2026-09-24-atur-jadwal-visual-polish.md`)
 

@@ -29,7 +29,9 @@ extends Control
 ##    iris onto the cheek however far it travels.
 ##  * Blink -- the Eyelid layer (the student's closed-eye art) fades in over
 ##    blink_fade_seconds, holds blink_close_seconds and fades out again, on
-##    its own every blink_hold_range seconds (5-10 s by default).
+##    its own every blink_hold_range seconds (5-10 s by default). The open
+##    Eyelashes fade out against it, so a shut eye shows only the lid's own
+##    closed lash line.
 ##
 ## Breathing is NOT here. It stays the lobby's job (loby.gd's
 ## _animate_breathing), which scales this node as a whole exactly as it scaled
@@ -220,9 +222,10 @@ func get_gaze() -> Vector2:
 	return _gaze
 
 
-## Shows or hides the blink pose. That is the Eyelid layer alone -- it carries
-## both the lid and its own lash line, and it is drawn above the open eye, so
-## nothing else has to be toggled with it.
+## Shows or hides the blink pose. The Eyelid layer carries both the lid and its
+## own closed lash line and is drawn above the open eye. The open Eyelashes
+## fade out as it fades in: left up, they floated over the closed lid, and on
+## Andi -- whose lashes sit low to meet his sclera -- the lid cut into them.
 func set_eyes_closed(closed: bool) -> void:
 	_blink_t = -1.0
 	_set_eyelid(closed, 1.0)
@@ -240,6 +243,9 @@ func _set_eyelid(shown: bool, alpha: float) -> void:
 		return
 	eyelid.visible = shown
 	eyelid.modulate.a = alpha
+	var lashes := _layer("Eyelashes")
+	if lashes != null:
+		lashes.modulate.a = 1.0 - alpha if shown else 1.0
 
 
 ## True while the blink pose is showing.

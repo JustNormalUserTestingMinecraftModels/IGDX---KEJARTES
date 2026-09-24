@@ -196,6 +196,31 @@ func test_only_the_eyelid_starts_hidden() -> void:
 				"%s/%s: only the blink pose starts hidden" % [student, entry[0]])
 
 
+## A shut eye shows only the lid's own closed lash line: every rig's open
+## Eyelashes fade out as the lid fades in and come back as it lifts
+## (2026-09-24). Citra is included, since her rig runs the same script.
+func test_the_open_lashes_leave_with_every_blink() -> void:
+	var students: Array = _RIGS.keys()
+	students.append("Citra")
+	for student in students:
+		var scene: PackedScene = load(_CITRA_RIG if student == "Citra" else _RIGS[student]["rig"])
+		var face := scene.instantiate() as StudentFace
+		Engine.get_main_loop().root.add_child(face)
+		track(face)
+		face.idle_blink_enabled = false
+		face.idle_gaze_enabled = false
+		var lashes := _layer(face, "Eyelashes")
+		assert_true(is_equal_approx(lashes.modulate.a, 1.0), student + ": lashes start fully shown")
+		face.blink()
+		face.advance_motion(face.blink_fade_seconds * 0.5)
+		assert_true(is_equal_approx(lashes.modulate.a, 1.0 - face.get_eyelid_alpha()),
+			"%s: the lashes must cross-fade against the lid" % student)
+		face.set_eyes_closed(true)
+		assert_true(is_zero_approx(lashes.modulate.a), student + ": no open lashes over a shut eye")
+		face.set_eyes_closed(false)
+		assert_true(is_equal_approx(lashes.modulate.a, 1.0), student + ": the lashes return when the eye opens")
+
+
 func test_each_pupil_is_clipped_by_its_own_eye_white() -> void:
 	for student in _RIGS:
 		var face := _rig(student)

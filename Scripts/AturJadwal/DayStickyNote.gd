@@ -7,11 +7,20 @@ extends Control
 ## one every time the selected student or their schedule changes, calling
 ## exactly one of show_empty() / show_scheduled() / show_holiday().
 ##
-## The note is three stacked lines on a tinted paper (day / pembelajaran name
-## / one-word flavour), a category icon peeking from behind the top-right
-## corner, and a soft drop shadow. A national-holiday day is locked gold with
-## a padlock glyph. When a day newly becomes scheduled -- or its category
-## changes -- the note plays a squash-pop and the icon slides into view.
+## The note is three stacked lines on cream paper (day / pembelajaran name
+## / one-word flavour), a strip of washi tape across its top, a category icon
+## peeking from behind the top-right corner, and a soft drop shadow. When a
+## day newly becomes scheduled -- or its category changes -- the note plays a
+## squash-pop and the icon slides into view.
+##
+## COLOUR LIVES ON THE TAPE, NOT THE PAPER (2026-09-24, AturJadwal visual
+## polish, D1-D4). The paper used to be flooded with the category colour,
+## which put dark text on saturated red/green/purple at failing contrast. Now
+## the paper is always cream -- a vertical surface_card -> surface_page wash
+## drawn by paper_gradient.gdshader -- and the category colour tints the
+## WashiTape strip laid over the art's own adhesive band. An empty day has no
+## tape and breathes gently with a "+ Atur" hint; a national holiday gets gold
+## tape and the padlock.
 ##
 ## All colour comes from DesignTokens; there is no hardcoded colour literal
 ## here and no theme_override_*. This is a @tool script so the note previews in the
@@ -24,7 +33,8 @@ extends Control
 signal pressed
 
 ## Code category -> the Indonesian word the player reads. Kept identical to
-## the ActivityRow instances in atur_jadwal.tscn (asserted by both suites).
+## the picker's ActivityTile instances in atur_jadwal.tscn (asserted by both
+## suites).
 const DISPLAY_NAMES := {
 	"Akademis": "Akademik",
 	"SeniBudaya": "Seni Budaya",
@@ -65,20 +75,33 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 ## @export agar tim visual bisa mengganti per instance di Inspector.
 @export var specialty_match_burst_scene: PackedScene = preload("res://Scenes/AturJadwal/SpecialtyMatchBurst.tscn")
 
+## How far an empty note's paper swells at the top of its breath. Kept small
+## on purpose: an invitation to tap, not an alarm. 1.0 switches it off.
+@export_range(1.0, 1.1, 0.005) var empty_breath_scale: float = 1.03
+
+## Seconds for one full breath (out and back) of an empty note.
+@export_range(0.5, 6.0, 0.1) var empty_breath_seconds: float = 2.4
+
 @onready var _paper: TextureButton = $Paper
 @onready var _day_label: Label = $Paper/DayLabel
-@onready var _subject_label: Label = $Paper/SubjectLabel
-@onready var _flavor_label: Label = $Paper/FlavorLabel
+## The lines under the day name stack in Paper/Lines, a VBox, so a holiday
+## title long enough to wrap pushes the flavour line down instead of
+## printing over it.
+@onready var _subject_label: Label = $Paper/Lines/SubjectLabel
+@onready var _flavor_label: Label = $Paper/Lines/FlavorLabel
 @onready var _lock: Label = $Paper/Lock
 @onready var _back_icon: TextureRect = $BackIcon
 @onready var _match_glow: TextureRect = $Paper/MatchGlow
 @onready var _specialty_star: TextureRect = $Paper/SpecialtyStar
+@onready var _tape: TextureRect = $Paper/WashiTape
+@onready var _atur_hint: Label = $Paper/Lines/AturHint
 
 var _tokens: DesignTokens
 var _state := ""       # "" | "empty" | "scheduled" | "holiday"
 var _category := ""
 var _icon_rest := Vector2.INF
 var _reveal: Tween
+var _breath: Tween
 
 
 func _ready() -> void:
@@ -88,6 +111,7 @@ func _ready() -> void:
 		_paper.set_meta(Juice.NO_AUTO_JUICE, true)
 		if not _paper.pressed.is_connected(_on_paper_pressed):
 			_paper.pressed.connect(_on_paper_pressed)
+		_apply_paper_gradient()
 	# Default look until atur_jadwal.gd calls a state method.
 	if _state == "":
 		show_empty()
@@ -102,10 +126,15 @@ func set_day_name(day_name: String) -> void:
 		_day_label.text = day_name.to_upper()
 
 
+## Paints the empty look: bare cream paper, no tape, the "+ Atur" hint, and a
+## slow breath inviting the tap.
 func show_empty() -> void:
-	_apply(_get_tokens().surface_sunken, false, false)
+	_apply(null, false, false)
+	if _atur_hint:
+		_atur_hint.visible = true
 	_state = "empty"
 	_category = ""
+	_start_breath()
 
 
 ## Paints the scheduled look. This is a repaint only -- it never plays the
@@ -119,6 +148,7 @@ func show_scheduled(category: String) -> void:
 	if _back_icon:
 		_back_icon.texture = _get_icon(category)
 	_apply(_get_tokens().category_color(category), true, false)
+	_stop_breath()
 	_state = "scheduled"
 	_category = category
 
@@ -133,15 +163,24 @@ func show_holiday(title: String) -> void:
 	if _back_icon:
 		_back_icon.texture = holiday_icon
 	_apply(_get_tokens().category_color("Libur"), true, true)
+	_stop_breath()
 	_state = "holiday"
 	_category = ""
 
 
-## Sets the paper tint and the visibility of the subject line, flavour line,
-## back icon and lock glyph in one place.
-func _apply(tint: Color, show_extras: bool, show_lock: bool) -> void:
+## Sets the tape colour (or hides the tape, for `tape_color == null`) and the
+## visibility of the subject line, flavour line, back icon, lock glyph and
+## "+ Atur" hint in one place. The paper itself is never tinted: it stays
+## untinted cream under paper_gradient.gdshader in every state.
+func _apply(tape_color: Variant, show_extras: bool, show_lock: bool) -> void:
 	if _paper:
-		_paper.self_modulate = tint
+		_paper.self_modulate = Color.WHITE
+	if _tape:
+		_tape.visible = tape_color != null
+		if tape_color != null:
+			_tape.self_modulate = tape_color
+	if _atur_hint:
+		_atur_hint.visible = false
 	if _subject_label:
 		_subject_label.visible = show_extras
 	if _flavor_label:
@@ -166,6 +205,48 @@ func _get_tokens() -> DesignTokens:
 
 func _get_icon(category: String) -> Texture2D:
 	return category_icons.get(category, null)
+
+
+## Feeds the cream wash to paper_gradient.gdshader from the tokens: the
+## lighter surface_card at the top, the warmer surface_page at the bottom.
+## The material is shared by all five notes and every one writes the same two
+## values, so the shared write is harmless.
+func _apply_paper_gradient() -> void:
+	var mat := _paper.material as ShaderMaterial
+	if mat == null:
+		return
+	var t := _get_tokens()
+	mat.set_shader_parameter("top_color", t.surface_card)
+	mat.set_shader_parameter("bottom_color", t.surface_page)
+
+
+## Starts the empty note's slow breath on the paper -- scale only, about the
+## paper's centre, so it never fights play_assign_pop(), which animates the
+## note's root. No-op in the editor, under Reduce Motion, or while already
+## breathing.
+func _start_breath() -> void:
+	if Engine.is_editor_hint() or not is_inside_tree() or _paper == null:
+		return
+	if GameSettings.reduce_motion or empty_breath_scale <= 1.0:
+		return
+	if _breath and _breath.is_valid():
+		return
+	_paper.pivot_offset = _paper.size / 2.0
+	var half := empty_breath_seconds / 2.0
+	_breath = create_tween().set_loops()
+	_breath.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_breath.tween_property(_paper, "scale", Vector2.ONE * empty_breath_scale, half)
+	_breath.tween_property(_paper, "scale", Vector2.ONE, half)
+
+
+## Stops the breath and settles the paper back to rest, for a note that is no
+## longer empty.
+func _stop_breath() -> void:
+	if _breath and _breath.is_valid():
+		_breath.kill()
+	_breath = null
+	if _paper:
+		_paper.scale = Vector2.ONE
 
 
 ## Squash-pop the whole note and float the back icon in. No-op in the editor.

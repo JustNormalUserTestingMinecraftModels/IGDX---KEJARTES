@@ -97,10 +97,6 @@ const ALLOWED: Dictionary = {
 	# create_floating_text(): one-shot damage/reward-style popup text,
 	# spawned at a caller-supplied position with caller-supplied text.
 	"res://Scripts/AnimUtils.gd": 1,
-	# _add_pill()'s chip icon+label: content and count vary per stat
-	# category on every refresh() call (Wirausaha shows a money chip,
-	# Istirahat shows none, etc).
-	"res://Scripts/AturJadwal/ActivityRow.gd": 2,
 	# Answer buttons: text and shuffled order regenerate per question: not
 	# fixed layout.
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,

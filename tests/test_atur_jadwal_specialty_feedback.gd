@@ -52,8 +52,8 @@ func test_sticky_note_scene_has_matched_nodes() -> void:
 func test_activity_selected_plays_specialty_feedback_conditionally() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
 	assert_true(src.contains("func _on_activity_selected"), "_on_activity_selected must exist")
-	assert_true(src.contains("ActivityPreview.is_specialty(category, student)"),
-		"_on_activity_selected must check is_specialty() against the assigned student")
+	assert_true(src.contains("ActivityPreview.is_favorit(category, student)"),
+		"_on_activity_selected must ask is_favorit() -- the same check as the tile's ribbon")
 	assert_true(src.contains("_assigned_note.play_specialty_match()"),
 		"a specialty match must play the sticky note's matched-state animation")
 	assert_true(src.contains('RewardFeedback.play(&"specialty_match"'),
@@ -61,13 +61,34 @@ func test_activity_selected_plays_specialty_feedback_conditionally() -> void:
 	assert_true(src.contains("_assigned_note.play_assign_pop()"),
 		"a non-specialty assignment must still play the plain assign pop")
 
-func test_activity_row_toggles_specialty_badge() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/ActivityRow.gd")
-	assert_true(src.contains("Container/SpecialtyBadge"), "refresh() must look up the SpecialtyBadge node")
-	assert_true(src.contains("badge.visible = ActivityPreview.is_specialty(category, student)"),
-		"the badge's visibility must be driven by is_specialty()")
-	var packed := load("res://Scenes/AturJadwal/ActivityRow.tscn") as PackedScene
-	var inst := packed.instantiate()
-	assert_true(inst.get_node_or_null("Container/SpecialtyBadge") != null,
-		"ActivityRow.tscn must have a Container/SpecialtyBadge TextureRect")
-	inst.free()
+## The picker tile's favourite ribbon replaced ActivityRow's SpecialtyBadge
+## (2026-09-24 picker rebuild, D10): shown only on the student's favourite.
+func test_activity_tile_shows_the_favorit_ribbon_only_on_the_favourite() -> void:
+	var packed := load("res://Scenes/AturJadwal/ActivityTile.tscn") as PackedScene
+	var tile := packed.instantiate() as ActivityTile
+	Engine.get_main_loop().root.add_child(tile)
+	var marcel := {"hobby_category": "Akademik", "name": "Marcel"}
+	tile.category = "Akademis"
+	tile.refresh(marcel, 7)
+	var ribbon := tile.get_node_or_null("FavoritRibbon") as CanvasItem
+	assert_true(ribbon != null, "ActivityTile.tscn must have a FavoritRibbon")
+	assert_true(ribbon != null and ribbon.visible, "the favourite shows its ribbon")
+	tile.category = "Olahraga"
+	tile.refresh(marcel, 7)
+	assert_true(ribbon != null and not ribbon.visible, "any other tile hides it")
+	tile.free()
+
+
+## D15: a plain assignment bursts through RewardFeedback in the one shared
+## colour; only the favourite keeps the gold star burst.
+func test_plain_assignments_fire_the_shared_assign_burst() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
+	assert_true(src.contains('RewardFeedback.play(&"activity_assigned", _assigned_note)'),
+		"a plain assignment must fire activity_assigned from the note")
+	assert_true(RewardFeedback.RECIPES.has(&"activity_assigned"),
+		"RewardFeedback must know the activity_assigned moment")
+	var recipe: Dictionary = RewardFeedback.RECIPES[&"activity_assigned"]
+	assert_false(recipe.get("no_particles", false), "the plain assign must burst")
+	assert_true(recipe.get("centred", false), "and burst from the note's centre")
+	assert_false(recipe.has("particle"),
+		"it uses the shared Pop burst -- one colour for every category")

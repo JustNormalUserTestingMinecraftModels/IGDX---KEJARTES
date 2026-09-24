@@ -38,6 +38,9 @@ with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
 eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 (`penjadwalan_card_bg.png`,
 `Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
+the 2026-09-24 picker icons (`Assets/Images/UI/Picker/arrow_up.svg`,
+`arrow_down.svg`, `pip_coin.svg`, `badge_check.svg`; hand-drawn vectors in the
+token colours, sized to draw at 1:1),
 the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
 `icon_keranjang_kosong.svg`, `tray_dots.png` (this last must
 stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
@@ -63,7 +66,12 @@ and given `title_daily_results.png`'s alpha -- drop-replaceable at the same
 path), and the 2026-09-18 Koperasi stock-pip set:
 `Assets/Images/Shop/UI/pip_filled.svg` / `pip_hollow.svg` (a plain filled
 dot and a matching ring, coloured from `koperasi_tag_fill`/`koperasi_tray_rule`
-to stay warm and shop-consistent -- drop-replaceable at the same path).
+to stay warm and shop-consistent -- drop-replaceable at the same path), and the
+2026-09-24 AturJadwal washi tape, `Assets/Images/AturJadwal/washi_tape.svg`
+(hand-written SVG, not generated: a white striped strip with zigzag ends,
+drawn white because `DayStickyNote` tints it by `self_modulate`, so a
+replacement must stay light-on-transparent; keep it 246x40, the size it
+displays at, or `test_texture_mipmaps` will want mipmaps on it).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
@@ -78,6 +86,11 @@ the existing `icon_check.svg` from the same folder, no new asset needed.
 Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to
 alpha, colour un-premultiplied, cropped -- not exported transparent; swap in a
 real transparent export at the same path when one exists.
+`DayStickyNote`'s holiday padlock (`Paper/Lock`) is still the emoji glyph
+"🔒" in a `Label`, against the no-emoji-iconography rule; swap it for a
+`TextureRect` wearing the existing `UI/Placeholders/icon_lock.svg` (a type
+change, so delete and recreate, and move `test_day_sticky_note`'s `Lock`
+assertions off `Label`).
 `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in for final art
 (`WinStage`'s `lose_backdrop` `@export`, so an Inspector swap). `InventorySlot`'s high-count
 `Shine` overlay is a plain white `ColorRect` with no texture.
@@ -550,9 +563,31 @@ delete. (Checked 2026-09-14: one commit deleted it and a later one brought it
 back; the unmerged cleanup on `feat/asset-refresh-ui-pass`, `32b6f9a`, deletes
 it again along with 177 other unused files.)
 
-**Three orphaned tokens (2026-09-10).** `preview_row_shadow_color`, `_size` and
-`_offset` are read by no variation since `PreviewRow` lost its shadow. Remove
-them deliberately, or give them a consumer.
+**The picker's "+N" ignores quirks (2026-09-24).** `ActivityPreview.skill_gain`
+and the cost arrows follow Balance and the specialty only. The simulation also
+applies Kutu Buku, Penasaran (+1 gain, +10% cost) and Seni Dalam Kesunyian, so
+for those students the number on a tile is off by that bonus. This is the
+preview's documented "stable estimate" contract, which the old chips shared.
+Mirror the quirk terms, or build the numbers from a `StudentData`.
+
+**RewardFeedback bursts start at a Control anchor's top-left (2026-09-24).**
+`_play_particles` places a burst only for a `Node2D` anchor. A Control anchor
+(AchievementToast, ApplyStudentRow, the Lobby money label, ...) gets it at
+(0, 0). AturJadwal's two moments opt in to centring with a `centred` recipe
+key. Centring every Control anchor is the general fix, but it moves bursts on
+screens nobody has looked at, so check each caller first.
+
+**The old Penjadwalan row's leftovers (2026-09-10, widened 2026-09-24).** The
+2026-09-24 picker rebuild replaced `ActivityRow` and every `Preview*`
+variation with `ActivityTile` and `Picker*`. That left these read by nothing:
+the tokens `preview_row_fill`, `preview_row_border`, `preview_row_separator`,
+`preview_row_pressed_fill`, `preview_row_shadow_*` and `preview_pill_shadow_*`
+(`preview_pill_fill` still feeds the StatBar light track), plus
+`BarFill/track_ghost.png` and `BarFill/icon_ghost_koin.png` (`icon_ghost_sabit.png`
+is now Libur's tile watermark). `test_cream_panel_tokens` and `test_ghost_track`
+still pin the token values and the assets. Removing the tokens needs a full
+editor restart (Resource `@export`s); remove them, the assets and those checks
+together, or give them a consumer.
 
 **The green day card art is retired (2026-09-19).**
 `Assets/Images/DaySummary/card_bg.png` and `card_bg_uncropped.png` are drawn

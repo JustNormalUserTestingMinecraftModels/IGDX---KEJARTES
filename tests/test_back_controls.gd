@@ -1,7 +1,7 @@
 @tool
 extends "res://addons/godot_ai/testing/test_suite.gd"
 
-## The one canonical back/return glyph. Twelve controls across nine scenes
+## The one canonical back/return glyph. Eleven controls across nine scenes
 ## draw it; before 2026-09-22 they drew four different pictures between them
 ## (a 160x145 white arrow, the same arrow at 512x512 with a different alpha
 ## bbox, a 16x36 chevron, and a pure-#FF0000 stock clipart arrow) plus one
@@ -41,7 +41,6 @@ const ROSTER := {
 	},
 	"res://Scenes/AturJadwal/atur_jadwal.tscn": {
 		"BackButton": "texture_normal",
-		"Penjadwalan/TextureRect/PopupBack": "texture_normal",
 	},
 	"res://Scenes/Koperasi/koprasi.tscn": {
 		"Stage/BackButton": "texture_normal",
@@ -107,7 +106,9 @@ func test_no_scene_still_references_a_superseded_back_asset() -> void:
 
 ## A 512x512 texture_normal sets a TextureButton's minimum size to 512 unless
 ## ignore_texture_size is on -- which would silently blow each of these
-## layouts apart. All five already carry it; this stops an edit dropping it.
+## layouts apart. All four already carry it; this stops an edit dropping it.
+## (Five until 2026-09-24, when the Penjadwalan picker traded its back arrow
+## for a Batal button beside Pilih.)
 func test_the_texture_buttons_ignore_their_texture_size() -> void:
 	var checked := 0
 	for scene_path in ROSTER:
@@ -127,7 +128,7 @@ func test_the_texture_buttons_ignore_their_texture_size() -> void:
 					"%s : %s must ignore its 512px texture size or its minimum size explodes"
 						% [scene_path, node_path])
 		root.free()
-	assert_eq(checked, 5, "all five TextureButton back controls must be checked")
+	assert_eq(checked, 4, "all four TextureButton back controls must be checked")
 
 
 ## The cap keeps each size step at its authored height. The S step solves

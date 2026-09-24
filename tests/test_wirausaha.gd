@@ -19,26 +19,26 @@ func _swap_roster(roster: Array) -> Array:
 	GameState.approved_students = roster
 	return original
 
-## The scheduling popup's five picks are ActivityRows now (see ActivityRow.gd)
+## The scheduling picker's choices are ActivityTiles (see ActivityTile.gd)
 ## rather than a node literally named "Wirausaha" -- find it by category.
 func test_schedule_popup_offers_wirausaha() -> void:
 	var scene := (load(_JADWAL_SCENE) as PackedScene).instantiate()
-	var rows := scene.get_node_or_null("Penjadwalan/TextureRect/Rows")
+	var grid := scene.get_node_or_null("Penjadwalan/Sheet/Body/Grid")
 	var found := false
-	if rows:
-		for row in rows.get_children():
-			if row is ActivityRow and row.category == "Wirausaha":
+	if grid:
+		for tile in grid.get_children():
+			if tile is ActivityTile and tile.category == "Wirausaha":
 				found = true
-	assert_true(found, "the scheduling popup must offer an ActivityRow for Wirausaha")
+	assert_true(found, "the scheduling picker must offer an ActivityTile for Wirausaha")
 	scene.free()
 
-## _connect_activity_buttons() binds every row dynamically via row.category
-## now, rather than one hardcoded bind("Wirausaha") call -- so Wirausaha's
-## wiring is covered by the same generic loop as every other category.
+## _connect_activity_buttons() binds every tile dynamically via tile.category,
+## rather than one hardcoded bind("Wirausaha") call -- so Wirausaha's wiring
+## is covered by the same generic loop as every other category.
 func test_jadwal_script_binds_wirausaha() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
-	assert_true(src.contains("_on_activity_selected.bind(row.category)"),
-		"every ActivityRow, Wirausaha included, must connect via row.category")
+	assert_true(src.contains("_on_tile_picked.bind(tile.category)"),
+		"every ActivityTile, Wirausaha included, must connect via tile.category")
 
 func test_day_categories_include_wirausaha() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")

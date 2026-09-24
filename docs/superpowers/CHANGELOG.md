@@ -8,6 +8,40 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-24 — Atur Jadwal visual polish (plan `2026-09-24-atur-jadwal-visual-polish.md`)
+
+A legibility and transparency pass on the scheduling screen, in five phases.
+
+- **Day notes:** the category colour moved off the paper onto a washi-tape
+  strip, and the paper is cream. Notes sit on an aligned grid with one uniform
+  tilt. An empty day breathes and shows "+ Atur".
+- **Stat bars:** an embossed rim, a value pill riding the end of the fill, and
+  weak-stat chips. Only the most urgent skill gets "perlu", and a need under
+  `Balance.BATAS_KELELAHAN` gets "lelah". The mood and energy rows had been
+  fed each other's values.
+- **Objective strip:** replaces the month header. It shows the week, the run's
+  stars against the pass line and a progress bar, and taps open to a one-line
+  hint.
+- **Activity picker:** the five-row list (`ActivityRow`, `Preview*`) became a
+  tile-grid selection box (`ActivityTile`, `EffectMeter`, `Picker*`). Every
+  tile shows its effect as arrows: green up for gains, red down for costs,
+  and more arrows for a bigger effect. `ActivityPreview` derives the counts
+  from Balance, measured against the biggest one-day swing Balance allows, so
+  a retune moves them. Skill tiles keep the exact gain beside the arrows.
+  Wirausaha shows coin pips and "Cuan"; no "~" range shows anywhere.
+- **Picker flow:** a tap selects, **Pilih** assigns and **Batal** (or a tap
+  outside the sheet) cancels. Selecting the favourite shows the
+  "Dasar / Bonus favorit / Total" breakdown.
+- **Motion:** the notes and the strip pop in on entry, and the tiles stagger
+  in when the picker opens. A plain assign bursts from the note in the shared
+  Pop colour (new `activity_assigned` moment); the favourite keeps its gold
+  star burst. START WEEK's burst now comes from the button itself: recipes
+  marked `centred` burst from the anchor's middle, not its top-left corner.
+
+The arrows are SVG textures because none of our fonts has arrow glyphs.
+`test_atur_jadwal` pins the picker's text against both faces with `has_char`.
+The leftovers of the old row (tokens, the ghost track) are in `DEBT.md`.
+
 ## 2026-09-23 — Rim light widened from 3 to 10 px
 
 Picked by the user from `docs/superpowers/mockups/rim_width_options.png`

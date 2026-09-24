@@ -1,7 +1,11 @@
 @tool
 extends McpTestSuiteCompat
 
-## The ghost track behind Wirausaha and Libur.
+## The ghost track that sat behind Wirausaha and Libur, and the two faint
+## motifs drawn over it. Since the 2026-09-24 picker rebuild the track has
+## no consumer (logged in docs/superpowers/DEBT.md); its asset checks stay
+## so a revival inherits them. The sabit motif is now Libur's tile
+## watermark.
 ##
 ## Those two rows have no target stat, so they carry no gauge. On the old
 ## dark slab that read acceptably. On the cream sheet they collapsed into
@@ -57,16 +61,6 @@ func test_left_cap_matches_the_ramp_start() -> void:
 		"left cap alpha should be ~%f, got %f" % [LEFT_ALPHA, left])
 
 
-func test_the_variation_stretches_rather_than_tiles() -> void:
-	var tokens := DesignTokens.load_default()
-	assert_not_null(tokens, "design_tokens.tres failed to load")
-	var theme := ThemeFactory.build(tokens)
-	var box := theme.get_stylebox("panel", "PreviewTrackGhost") as StyleBoxTexture
-	assert_not_null(box, "PreviewTrackGhost should be a StyleBoxTexture")
-	assert_eq(box.axis_stretch_horizontal, StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH,
-		"a horizontal alpha ramp sawtooths if tiled")
-
-
 ## Documents that this asset is deliberately outside test_bar_contrast's
 ## 0.90 luminance floor. That floor governs BarFill *fill* textures,
 ## which multiply against an accent colour; a track multiplies nothing.
@@ -78,17 +72,6 @@ func test_the_ghost_track_is_not_a_fill_texture() -> void:
 	assert_false(src.contains("track_ghost"),
 		"track_ghost must not be in the fill-texture roster: it is a track, "
 		+ "not a fill, and is not multiplied by an accent colour")
-
-
-## The two rows without a gauge must wear the ghost track, not the empty
-## PreviewPillFlat that left them looking collapsed.
-func test_the_gaugeless_rows_use_the_ghost_variation() -> void:
-	var f := FileAccess.open("res://Scripts/AturJadwal/ActivityRow.gd", FileAccess.READ)
-	assert_not_null(f, "could not open ActivityRow.gd")
-	var src := f.get_as_text()
-	f.close()
-	assert_contains(src, "PreviewTrackGhost",
-		"the non-skill rows should take the ghost track")
 
 
 const KOIN_PATH := "res://Assets/Images/UI/BarFill/icon_ghost_koin.png"
@@ -124,24 +107,22 @@ func test_the_motifs_are_lighter_than_the_row_icon_brown() -> void:
 
 
 ## Authored in the scene, not built at runtime -- keeps the watermark
-## clear of the test_viewport_editability ratchet. Note this suite does
-## NOT assert ActivityRow.gd is free of TextureRect.new(): refresh()
-## legitimately builds chip icons that way, and that site is already a
-## reviewed entry in that ratchet's ALLOWED dict.
+## clear of the test_viewport_editability ratchet. Since the 2026-09-24
+## picker rebuild the watermark lives on ActivityTile, one per tile.
 func test_the_watermark_is_a_scene_node() -> void:
-	var f := FileAccess.open("res://Scenes/AturJadwal/ActivityRow.tscn", FileAccess.READ)
-	assert_not_null(f, "could not open ActivityRow.tscn")
+	var f := FileAccess.open("res://Scenes/AturJadwal/ActivityTile.tscn", FileAccess.READ)
+	assert_not_null(f, "could not open ActivityTile.tscn")
 	var src := f.get_as_text()
 	f.close()
 	assert_contains(src, "Watermark", "the watermark should be a node in the scene")
 
 
-## Only the two gauge-less rows carry a motif; the skill rows draw a bar
-## in that space instead.
-func test_only_the_gaugeless_rows_are_given_a_motif() -> void:
+## Every picker tile carries its category's motif as a watermark (D10);
+## the old rows gave one only to the two without a gauge.
+func test_every_tile_is_given_a_motif() -> void:
 	var f := FileAccess.open("res://Scenes/AturJadwal/atur_jadwal.tscn", FileAccess.READ)
 	assert_not_null(f, "could not open atur_jadwal.tscn")
 	var src := f.get_as_text()
 	f.close()
-	assert_eq(src.count("watermark_texture"), 2,
-		"exactly two rows -- Wirausaha and Libur -- should set a watermark")
+	assert_eq(src.count("watermark_texture"), 5,
+		"all five tiles should set a watermark")

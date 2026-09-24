@@ -9,16 +9,22 @@
 [ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
 [ext_resource type="Texture2D" uid="uid://cixngx8hgvgmn" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="10_return"]
-[ext_resource type="PackedScene" uid="uid://bs3nadqta0083" path="res://Scenes/AturJadwal/ActivityRow.tscn" id="12_activityrow"]
 [ext_resource type="Texture2D" uid="uid://buen031hxfvy4" path="res://Assets/Images/StudentCard/stat_akademis.png" id="13_icon_akademis"]
+[ext_resource type="Material" path="res://Scripts/Shaders/objective_strip_material.tres" id="14_7emk0"]
 [ext_resource type="Texture2D" uid="uid://dkwph7530y25f" path="res://Assets/Images/StudentCard/stat_senibudaya.png" id="14_icon_seni"]
 [ext_resource type="Texture2D" uid="uid://cqmbju8odke6v" path="res://Assets/Images/StudentCard/stat_olahraga.png" id="15_icon_olahraga"]
+[ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="15_k1j60"]
 [ext_resource type="Texture2D" uid="uid://ohek4lgo3sn6" path="res://Assets/Images/StudentCard/stat_energy.png" id="16_icon_energy"]
-[ext_resource type="Texture2D" uid="uid://b8ew4atf1h0ru" path="res://Assets/Images/UI/BarFill/icon_ghost_koin.png" id="16_ulthj"]
+[ext_resource type="Material" path="res://Scripts/Shaders/objective_chip_material.tres" id="16_wjev8"]
 [ext_resource type="Texture2D" uid="uid://hq418p0ftajb" path="res://Assets/Images/UI/BarFill/icon_ghost_sabit.png" id="17_gscbg"]
 [ext_resource type="Texture2D" uid="uid://dbl6a1ft4dmer" path="res://Assets/Images/StudentCard/stat_mood.png" id="17_icon_mood"]
-[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
+[ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="17_jrwbr"]
+[ext_resource type="PackedScene" path="res://Scenes/AturJadwal/ActivityTile.tscn" id="20_tile"]
+[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="21_uang"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/Picker/arrow_up.svg" id="22_arrow_up"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/Picker/arrow_down.svg" id="23_arrow_down"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yej6c"]
 shader = ExtResource("2_shader")
@@ -79,7 +85,7 @@ mouse_filter = 2
 texture = ExtResource("4_ulthj")
 expand_mode = 1
 
-[node name="Shadow" parent="BGHari" instance=ExtResource("paper_shadow")]
+[node name="Shadow" parent="BGHari" unique_id=202581298 instance=ExtResource("paper_shadow")]
 layout_mode = 0
 shadow_texture = ExtResource("4_ulthj")
 shadow_offset = Vector2(0, 0)
@@ -93,39 +99,44 @@ offset_left = 50.0
 offset_top = 507.0
 offset_right = 321.41193
 offset_bottom = 774.0
+rotation = 0.02617994
 pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Selasa" parent="BGHari" unique_id=1474646409 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 396.0
-offset_top = 713.0
-offset_right = 667.4119
-offset_bottom = 980.0
+offset_left = 391.0
+offset_top = 507.0
+offset_right = 662.4119
+offset_bottom = 774.0
+rotation = 0.02617994
 pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Rabu" parent="BGHari" unique_id=369629270 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 710.0
-offset_top = 524.0
-offset_right = 981.41187
-offset_bottom = 791.0
-pivot_offset = Vector2(135.70593, 133.5)
+offset_left = 732.0
+offset_top = 507.0
+offset_right = 1003.4119
+offset_bottom = 774.0
+rotation = 0.02617994
+pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Kamis" parent="BGHari" unique_id=684348886 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 55.0
-offset_top = 921.0
-offset_right = 326.41193
-offset_bottom = 1188.0
+offset_left = 220.0
+offset_top = 880.0
+offset_right = 491.41193
+offset_bottom = 1147.0
+rotation = 0.02617994
 pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="Jumat" parent="BGHari" unique_id=152305377 instance=ExtResource("5_ulthj")]
 layout_mode = 0
-offset_left = 731.0
-offset_top = 933.0
-offset_right = 1002.41187
-offset_bottom = 1200.0
-pivot_offset = Vector2(135.70593, 133.5)
+offset_left = 561.0
+offset_top = 880.0
+offset_right = 832.4119
+offset_bottom = 1147.0
+rotation = 0.02617994
+pivot_offset = Vector2(135.70596, 133.5)
 
 [node name="ShelfFace" type="ColorRect" parent="." unique_id=540110925]
 layout_mode = 0
@@ -158,19 +169,58 @@ offset_left = 680.0
 offset_top = 112.0
 offset_right = 1004.0
 offset_bottom = 182.0
-theme_type_variation = &"StatBarAkademis"
+theme_type_variation = &"StatBarInsetAkademis"
 show_percentage = false
 script = ExtResource("statbar")
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
+
+[node name="Frame" type="Panel" parent="BGStat/Akademis1" unique_id=1741231224]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Akademis1" unique_id=144363718]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis1" unique_id=684455384]
 layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme_type_variation = &"BarLabel"
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillAkademis"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Akademis1" unique_id=943119441]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagPerlu"
+text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -180,23 +230,59 @@ offset_left = 680.0
 offset_top = 238.0
 offset_right = 1004.0
 offset_bottom = 308.0
-theme_type_variation = &"StatBarSeniBudaya"
+theme_type_variation = &"StatBarInsetSeniBudaya"
 show_percentage = false
 script = ExtResource("statbar")
 category = "SeniBudaya"
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
 
-[node name="ValueLabel" type="Label" parent="BGStat/Akademis2" unique_id=1676429292]
+[node name="Frame" type="Panel" parent="BGStat/Akademis2" unique_id=940661408]
+show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = &"BarLabel"
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Akademis2" unique_id=612464952]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
+
+[node name="ValueLabel" type="Label" parent="BGStat/Akademis2" unique_id=1676429292]
+layout_mode = 0
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillSeniBudaya"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Akademis2" unique_id=1941370096]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagPerlu"
+text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -206,20 +292,59 @@ offset_left = 680.0
 offset_top = 364.0
 offset_right = 1004.0
 offset_bottom = 434.0
-theme_type_variation = &"StatBarOlahraga"
+theme_type_variation = &"StatBarInsetOlahraga"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Olahraga"
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
+
+[node name="Frame" type="Panel" parent="BGStat/Akademis3" unique_id=1323238029]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Akademis3" unique_id=1273914549]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis3" unique_id=1385557803]
 layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme_type_variation = &"BarLabel"
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillOlahraga"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Akademis3" unique_id=1098960879]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagPerlu"
+text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -229,20 +354,59 @@ offset_left = 680.0
 offset_top = 616.0
 offset_right = 1004.0
 offset_bottom = 686.0
-theme_type_variation = &"StatBarIstirahat"
+theme_type_variation = &"StatBarInsetIstirahat"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Istirahat"
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
+
+[node name="Frame" type="Panel" parent="BGStat/Kepribadian1" unique_id=1427027390]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Kepribadian1" unique_id=1698404190]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Kepribadian1" unique_id=1157659437]
 layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme_type_variation = &"BarLabel"
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillIstirahat"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Kepribadian1" unique_id=1796763281]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagLelah"
+text = "lelah"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -252,23 +416,59 @@ offset_left = 680.0
 offset_top = 490.0
 offset_right = 1004.0
 offset_bottom = 560.0
-theme_type_variation = &"StatBarLibur"
+theme_type_variation = &"StatBarInsetLibur"
 show_percentage = false
 script = ExtResource("statbar")
 category = "Libur"
+variation = &"StatBarInset"
 show_value_label = true
 value_format = "%d%%"
 pop_on_change = true
+value_rides_fill = true
 
-[node name="ValueLabel" type="Label" parent="BGStat/Kepribadian2" unique_id=2145646865]
+[node name="Frame" type="Panel" parent="BGStat/Kepribadian2" unique_id=147577628]
+show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = &"BarLabel"
+mouse_filter = 2
+theme_type_variation = &"StatBarFrame"
+
+[node name="Gloss" type="Panel" parent="BGStat/Kepribadian2" unique_id=1696362753]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 114.0
+offset_bottom = 15.0
+mouse_filter = 2
+theme_type_variation = &"StatBarGloss"
+
+[node name="ValueLabel" type="Label" parent="BGStat/Kepribadian2" unique_id=2145646865]
+layout_mode = 0
+offset_top = 8.0
+offset_bottom = 8.0
+theme_type_variation = &"StatValuePillLibur"
 text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flag" type="Label" parent="BGStat/Kepribadian2" unique_id=1389478435]
+visible = false
+layout_mode = 0
+offset_left = 318.0
+offset_top = -24.0
+offset_right = 318.0
+offset_bottom = -24.0
+grow_horizontal = 0
+theme_type_variation = &"StatFlagLelah"
+text = "lelah"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -336,24 +536,109 @@ offset_bottom = 742.0
 theme_type_variation = &"H1Label"
 text = "Nama"
 
-[node name="TanggalContainer" type="HBoxContainer" parent="." unique_id=978398382]
+[node name="ObjectiveStrip" type="Button" parent="." unique_id=2140563738]
 layout_mode = 0
-offset_left = 108.0
-offset_top = 838.0
-offset_right = 956.0
-offset_bottom = 948.0
-alignment = 1
+offset_left = 60.0
+offset_top = 846.0
+offset_right = 1020.0
+offset_bottom = 942.0
+theme_type_variation = &"ObjectiveStripButton"
 
-[node name="CalendarIcon" type="TextureRect" parent="TanggalContainer" unique_id=1732537956]
-custom_minimum_size = Vector2(56, 56)
-layout_mode = 2
+[node name="Body" type="ColorRect" parent="ObjectiveStrip" unique_id=1403281765]
+material = ExtResource("14_7emk0")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Chevron" type="TextureRect" parent="ObjectiveStrip" unique_id=1047418159]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 24.0
+offset_right = 66.0
+offset_bottom = 64.0
+mouse_filter = 2
+texture = ExtResource("15_k1j60")
+expand_mode = 1
+stretch_mode = 5
+flip_v = true
+
+[node name="Title" type="Label" parent="ObjectiveStrip" unique_id=34158067]
+layout_mode = 0
+offset_left = 76.0
+offset_top = 6.0
+offset_right = 760.0
+offset_bottom = 72.0
+theme_type_variation = &"ObjectiveTitleLabel"
+text = "Agustus - Minggu 1/6"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StarChip" type="Control" parent="ObjectiveStrip" unique_id=899302992]
+anchors_preset = 0
+offset_left = 770.0
+offset_top = 16.0
+offset_right = 934.0
+offset_bottom = 64.0
+mouse_filter = 2
+
+[node name="Body" type="ColorRect" parent="ObjectiveStrip/StarChip" unique_id=632199085]
+material = ExtResource("16_wjev8")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="ObjectiveStrip/StarChip" unique_id=360654154]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 6.0
+offset_right = 46.0
+offset_bottom = 42.0
+mouse_filter = 2
+texture = ExtResource("17_jrwbr")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LabelTanggal" type="Label" parent="TanggalContainer" unique_id=1168518853]
+[node name="Stars" type="Label" parent="ObjectiveStrip/StarChip" unique_id=1516718262]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 46.0
+offset_right = -8.0
+theme_type_variation = &"ObjectiveStarLabel"
+text = "0 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Progress" type="ProgressBar" parent="ObjectiveStrip" unique_id=1947523532]
+layout_mode = 0
+offset_left = 76.0
+offset_top = 74.0
+offset_right = 934.0
+offset_bottom = 84.0
+mouse_filter = 2
+theme_type_variation = &"ObjectiveProgress"
+show_percentage = false
+
+[node name="ObjectiveHint" type="PanelContainer" parent="." unique_id=264306599]
+visible = false
+layout_mode = 0
+offset_left = 100.0
+offset_top = 950.0
+offset_right = 980.0
+offset_bottom = 950.0
+theme_type_variation = &"ObjectiveHintPanel"
+
+[node name="HintLabel" type="Label" parent="ObjectiveHint" unique_id=345649486]
 layout_mode = 2
-theme_type_variation = &"TitleLabel"
-text = "Agustus - Minggu Pertama"
+theme_type_variation = &"ObjectiveHintLabel"
+text = "Marcel butuh Akademik"
+horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="StartWeek" type="Button" parent="." unique_id=288288757]
 custom_minimum_size = Vector2(0, 128)
@@ -471,98 +756,183 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TextureRect" type="TextureRect" parent="Penjadwalan" unique_id=900608004]
+[node name="Sheet" type="Panel" parent="Penjadwalan"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -697.0
-offset_top = -802.0
-offset_right = 697.0
-offset_bottom = 592.0
+offset_left = -480.0
+offset_top = -580.0
+offset_right = 480.0
+offset_bottom = 580.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("9_cardbg")
-expand_mode = 1
+theme_type_variation = &"PickerSheet"
 
-[node name="Rows" type="VBoxContainer" parent="Penjadwalan/TextureRect" unique_id=1598823012]
-layout_mode = 0
-offset_left = 310.0
-offset_top = 102.0
-offset_right = 1084.0
-offset_bottom = 1162.0
-theme_override_constants/separation = 16
+[node name="Header" type="Panel" parent="Penjadwalan/Sheet"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 176.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"PickerHeader"
 
-[node name="RowAkademik" parent="Penjadwalan/TextureRect/Rows" unique_id=1478912023 instance=ExtResource("12_activityrow")]
-layout_mode = 2
-icon_texture = ExtResource("13_icon_akademis")
-energy_icon = ExtResource("16_icon_energy")
-mood_icon = ExtResource("17_icon_mood")
+[node name="Title" type="Label" parent="Penjadwalan/Sheet/Header"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 40.0
+offset_top = 28.0
+offset_right = -40.0
+offset_bottom = 96.0
+grow_horizontal = 2
+theme_type_variation = &"PickerTitleLabel"
+text = "Senin mau ngapain?"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Sep1" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=684746858]
+[node name="Subtitle" type="Label" parent="Penjadwalan/Sheet/Header"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 40.0
+offset_top = 100.0
+offset_right = -40.0
+offset_bottom = 148.0
+grow_horizontal = 2
+theme_type_variation = &"PickerSubtitleLabel"
+text = "Pilih satu kegiatan untuk murid ini"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Body" type="VBoxContainer" parent="Penjadwalan/Sheet"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 36.0
+offset_top = 212.0
+offset_right = -36.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="Grid" type="GridContainer" parent="Penjadwalan/Sheet/Body"]
 layout_mode = 2
 mouse_filter = 2
-theme_type_variation = &"PreviewRowSeparator"
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 24
+columns = 2
 
-[node name="RowSeniBudaya" parent="Penjadwalan/TextureRect/Rows" unique_id=1326671027 instance=ExtResource("12_activityrow")]
+[node name="TileAkademik" parent="Penjadwalan/Sheet/Body/Grid" instance=ExtResource("20_tile")]
+layout_mode = 2
+watermark_texture = ExtResource("13_icon_akademis")
+
+[node name="TileSeniBudaya" parent="Penjadwalan/Sheet/Body/Grid" instance=ExtResource("20_tile")]
 layout_mode = 2
 category = "SeniBudaya"
 display_name = "Seni Budaya"
-icon_texture = ExtResource("14_icon_seni")
-energy_icon = ExtResource("16_icon_energy")
-mood_icon = ExtResource("17_icon_mood")
+watermark_texture = ExtResource("14_icon_seni")
 
-[node name="Sep2" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=968623681]
-layout_mode = 2
-mouse_filter = 2
-theme_type_variation = &"PreviewRowSeparator"
-
-[node name="RowAtletik" parent="Penjadwalan/TextureRect/Rows" unique_id=1636671479 instance=ExtResource("12_activityrow")]
+[node name="TileAtletik" parent="Penjadwalan/Sheet/Body/Grid" instance=ExtResource("20_tile")]
 layout_mode = 2
 category = "Olahraga"
 display_name = "Atletik"
-icon_texture = ExtResource("15_icon_olahraga")
-energy_icon = ExtResource("16_icon_energy")
-mood_icon = ExtResource("17_icon_mood")
+watermark_texture = ExtResource("15_icon_olahraga")
 
-[node name="Sep3" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=985182480]
-layout_mode = 2
-mouse_filter = 2
-theme_type_variation = &"PreviewRowSeparator"
-
-[node name="RowWirausaha" parent="Penjadwalan/TextureRect/Rows" unique_id=1108045609 instance=ExtResource("12_activityrow")]
+[node name="TileWirausaha" parent="Penjadwalan/Sheet/Body/Grid" instance=ExtResource("20_tile")]
 layout_mode = 2
 category = "Wirausaha"
 display_name = "Wirausaha"
-icon_texture = ExtResource("16_icon_energy")
-energy_icon = ExtResource("16_icon_energy")
-mood_icon = ExtResource("17_icon_mood")
-watermark_texture = ExtResource("16_ulthj")
-is_skill_row = false
+watermark_texture = ExtResource("21_uang")
 
-[node name="Sep4" type="HSeparator" parent="Penjadwalan/TextureRect/Rows" unique_id=1550113771]
-layout_mode = 2
-mouse_filter = 2
-theme_type_variation = &"PreviewRowSeparator"
-
-[node name="RowLibur" parent="Penjadwalan/TextureRect/Rows" unique_id=428494737 instance=ExtResource("12_activityrow")]
+[node name="TileLibur" parent="Penjadwalan/Sheet/Body" instance=ExtResource("20_tile")]
+custom_minimum_size = Vector2(200, 140)
 layout_mode = 2
 category = "Istirahat"
 display_name = "Libur"
-icon_texture = ExtResource("17_icon_mood")
-energy_icon = ExtResource("16_icon_energy")
-mood_icon = ExtResource("17_icon_mood")
 watermark_texture = ExtResource("17_gscbg")
-is_skill_row = false
+watermark_alpha = 0.45
 
-[node name="PopupBack" type="TextureButton" parent="Penjadwalan/TextureRect" unique_id=385991892]
-layout_mode = 0
-offset_left = 329.0
-offset_top = 1170.0
-offset_right = 507.0
-offset_bottom = 1348.0
-texture_normal = ExtResource("10_return")
-ignore_texture_size = true
-stretch_mode = 0
+[node name="Legend" type="HBoxContainer" parent="Penjadwalan/Sheet/Body"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="UpIcon" type="TextureRect" parent="Penjadwalan/Sheet/Body/Legend"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("22_arrow_up")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="UpWord" type="Label" parent="Penjadwalan/Sheet/Body/Legend"]
+layout_mode = 2
+theme_type_variation = &"PickerLegendLabel"
+text = "naik"
+
+[node name="Gap" type="Control" parent="Penjadwalan/Sheet/Body/Legend"]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="DownIcon" type="TextureRect" parent="Penjadwalan/Sheet/Body/Legend"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("23_arrow_down")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DownWord" type="Label" parent="Penjadwalan/Sheet/Body/Legend"]
+layout_mode = 2
+theme_type_variation = &"PickerLegendLabel"
+text = "turun"
+
+[node name="Scale" type="Label" parent="Penjadwalan/Sheet/Body/Legend"]
+layout_mode = 2
+theme_type_variation = &"PickerLegendLabel"
+text = "· makin banyak panah, makin besar efeknya"
+
+[node name="Note" type="PanelContainer" parent="Penjadwalan/Sheet/Body"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"PickerNotePanel"
+
+[node name="NoteLabel" type="Label" parent="Penjadwalan/Sheet/Body/Note"]
+layout_mode = 2
+theme_type_variation = &"PickerNoteLabel"
+text = "Ketuk satu kegiatan, lalu tekan Pilih."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Penjadwalan/Sheet/Body"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="Batal" type="Button" parent="Penjadwalan/Sheet/Body/Buttons"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Batal"
+
+[node name="Pilih" type="Button" parent="Penjadwalan/Sheet/Body/Buttons"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PrimaryButton"
+disabled = true
+text = "Pilih"

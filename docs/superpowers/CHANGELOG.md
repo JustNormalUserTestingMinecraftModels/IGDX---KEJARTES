@@ -8,6 +8,77 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-23 — Rim light widened from 3 to 10 px
+
+Picked by the user from `docs/superpowers/mockups/rim_width_options.png`
+(3, 5, 7 and 10 px, real Lobby frames at 1080-phone scale). Set on the cutout
+and face materials together, since the tests hold them equal, so every rim-lit
+cutout gets it: the Lobby faces and desks, Herman and the minigame characters.
+On the Lobby it adds about +0.7% mean luminance over 3 px. The debug Look page's
+width slider now reaches 16, the shader's own ceiling, instead of topping out
+at the new value.
+
+The width is in screen pixels, so the editor's half-size embedded run draws it
+twice as thick against the art as a 1080-wide phone does. Judge it on a phone,
+or halve the value when previewing in the editor.
+
+## 2026-09-23 — Lobby: a WorldEnvironment that actually works, and previews in 2D
+
+The first WorldEnvironment (`f41540f`) was reverted as inert, and the bloom
+shader's header recorded why: "Environment is applied by the 3D renderer."
+That was wrong. An Environment applies to a 2D scene when its
+`background_mode` is `BG_CANVAS`, and the reverted one was on the default.
+Measured over the Lobby: glow on the default background moved the frame by
+0.00008, on Canvas by 0.040, and saturation 0 on Canvas turned the frame grey,
+in the game and in the 2D editor's viewport.
+
+The Lobby now has a `WorldEnvironment` wearing
+`Scenes/Lobby/lobby_environment.tres`: Canvas, soft-light glow at intensity
+1.5, strength 1.2, HDR threshold 0.7 (hdr_2d stays off, so a threshold at 1.0
+would bloom nothing). It adds +1.2% mean luminance: a warm bloom on the shirts,
+paper and highlights. Tune it in the Inspector and watch the 2D view.
+It stacks with the look layer's bloom, which still runs on every screen.
+`test_look_layer.gd` pins Canvas mode, the threshold and hdr_2d off.
+Off/on: `docs/superpowers/mockups/lobby_environment_glow_off_on.png`.
+
+## 2026-09-23 — Faces: the rim's eye-ring fix now holds on a phone
+
+The rim light's hole reject (`d558b24`) was a screen-pixel reach, 24 px, tuned
+in the editor's half-size embedded run, where the faces draw at ~0.15x and 24
+px spans ~160 texels. On a 1080-wide phone the faces draw at ~0.3x, so the same
+24 px spanned ~80 texels: shorter than an eye socket. Measured on the Lobby's
+four faces with the reach set to that phone equivalent, 73-93% of the cream
+under-eye glow was still there.
+
+`rim_hole_reject_px` is now `rim_hole_reject_texels` (160 on the face
+material), sized against the art like `ao_hole_reject_texels`. In the editor
+it matches what was approved; the ring is at 0-5% on all four faces at any
+screen size. `tests/test_illustration_ao.gd` pins it between a 150 floor
+(an offline sweep left up to 35% of the ring at 120) and the old 28 px
+ceiling converted to 180. Before/after: `docs/superpowers/mockups/face_rim_phone_before_after.png`.
+
+## 2026-09-23 — Faces: no more AO "eyeshadow"
+
+**Every Lobby student looked like they wore dark eyeshadow.** The faces are
+drawn with the eye sockets cut out of the base plate, and the illustration
+grade's inner AO darkens toward any transparent neighbour, so it painted a
+brown band (0.70 strength, 6 px) inside every socket. The rim light had the
+same blind spot and was fixed earlier the same day; the AO was not.
+
+`illustration_grade.gdshader` now routes each AO tap through `ao_tap()`: a tap
+that finds transparency probes 0.5x and 1x `ao_hole_reject_texels` out on all
+four sides, and a gap walled in by plate on every side counts as solid. The
+air beside a head is never walled in, so the outline keeps its shading. Only
+`illustration_grade_face.tres` turns it on (200 texels; eye sockets are 125-170
+wide). The reach is in texels, not screen pixels, because a hole belongs to the
+art: a screen-pixel reach tuned at 1080 wide would miss on a 1440-wide phone.
+
+Measured in the running Lobby, AO on with the check off vs on, against AO
+off: the darkening inside the eye ring fell to 0 on all four faces on screen,
+and the outline kept 100% of its darkening. An offline run of the same test
+on all twelve face bases (defaults and skin1s) set the 170-240 texel range
+`tests/test_illustration_ao.gd` pins.
+
 ## 2026-09-23 — SkinSelect: two splashes on screen, focus follows the finger
 
 **The second splash never showed, for two separate reasons.** The 752-wide
@@ -49,6 +120,208 @@ haptic pip for trailer capture). Screens that already own bespoke particles
 `RewardFeedback` adds only sound/haptic/shake there. Spec and plan:
 `docs/superpowers/specs/2026-09-23-reward-feedback-pass-design.md`,
 `docs/superpowers/plans/2026-09-23-reward-feedback-pass.md`.
+## 2026-09-23 — Illustration AO, rim light, outer AO and Lobby shafts
+
+Design in `docs/superpowers/specs/2026-09-23-illustration-ao-rim-design.md`,
+plan in `docs/superpowers/plans/2026-09-23-illustration-ao-rim.md`. Eight
+commits. This records what the measurements found, because almost all of it
+contradicted what the plan assumed.
+
+**SSAO was ruled out on evidence, and the renderer switch that chased it was
+reverted.** In Godot 4 SSAO is an `Environment` post-process that reads the 3D
+depth buffer, and it is Forward+ only; every plate here is a canvas item that
+writes no depth. Mid-session the project was found switched off the `mobile`
+renderer with a `WorldEnvironment` added to `main_menu.tscn` and `loby.tscn`,
+SSAO configured (`ssao_radius 8.08`, `ssao_intensity 16.0`). Enabling it
+changes nothing but cost. Both were reverted — and the `loby.tscn` one had
+already been committed by accident inside an unrelated commit, sat at index 0,
+and had quietly turned `test_lobby_backdrop_is_black_and_full_rect` red. Check
+what else is in a file before committing it wholesale.
+
+**Real `Light2D` + normal maps is not structurally blocked here, only blocked
+on art.** The open question was whether lights could touch the illustrations
+without touching the UI that shares `CanvasLayer 0` with them. They can:
+`light_mask` on the item and `item_cull_mask` on the light. What stops it is
+needing a normal map per illustration, for thirty plates.
+
+**The radius is in screen pixels, and that was measured before anything was
+built on it.** Plates are drawn at wildly different scales — a 1240x1754 racket
+at 0.34, a desk at 1.0 — so a radius in source texels would give every plate a
+different-looking band. `fwidth(UV)` fixes that, and a throwaway probe drawing
+one shader at two scales returned `full=0.254902 half=0.505882 ratio=1.984615`
+against a predicted 2.0. Canvas-shader derivatives work on this renderer.
+
+**Which plate is a cutout was measured, not eyeballed.** Sampling each
+texture's alpha split the thirty graded plates into 21 cutouts (55-94%
+transparent) and 9 full-bleed backdrops (0% transparent, or no alpha channel,
+or JPEGs). That measurement is what stops a backdrop paying five texture taps
+per pixel for an edge it does not have. The one judgement call was
+Kalkulator's body at 1.4% transparent, kept as a cutout for its rounded
+silhouette.
+
+**Neither sweep found the knee it went looking for, and that was the real
+finding.** The window light beside these ships at 0.11 against a measured knee
+of 0.12, so both AO/rim and the shafts were expected to clip early. Neither
+does. The rim drove zero extra pixels to pure white at every value to 0.30; the
+shafts left the frame bit-identical at 0.03 and moved whole-frame luminance by
+only +0.170% at 0.20. The plan's ceilings had been guessed from the window
+light's behaviour and were far more cautious than the art needed: AO/rim
+shipped at 0.70/0.45 against guessed ceilings of 0.45/0.30, and the shafts at
+0.20 against a guessed 0.09. Do not assume one additive effect's knee applies
+to another — shafts fall on the mid-tone wall, not on paper.
+
+**The darkening gate was re-measured at the values that actually shipped.**
+The first sweep stopped short of them, and a gate never evaluated where the
+game runs is not a gate. At 0.70/0.45 the whole frame moves **+0.042%** — in
+the *brightening* direction, because AO alone costs -0.199% and the rim alone
+gives +0.222% and the two nearly cancel. That is why this pass did not undo the
+two halvings the grade had already taken for reading dark.
+
+**Each effect switches off on its own, proven by measurement rather than
+asserted.** Flipping AO, rim, shafts and outer AO off one at a time each moved
+the frame and nothing else; restoring them returned mean luminance to exactly
+the all-on value, 0.509093 both times.
+
+**The desk shadows came back the same day they were removed, deliberately.**
+What was removed was a drop shadow — offset 10/14 px, alpha 0.28, wide blur —
+that read as a smudge beside each desk. What returned is outer AO: zero offset,
+a third of the blur. Different object, different job. The three contact shadows
+already in the game were retuned to match, and their old down-right offsets
+became one of the three independent pieces of evidence for where the light is.
+
+**Two plan defects only execution could find.** Task 3 measured a material that
+Task 4 had not yet assigned to anything, so the tasks were swapped; and the
+plugin build has no `game_eval` op, so every measurement instead ran as a
+script inside the game writing to `user://`. A game script may `await`; only
+test suites may not.
+
+Full suite 2145/2145 across 149 suites.
+
+## 2026-09-22 — Premium-look PRs 2-6: depth, parallax, a look layer, motion, VRAM
+
+The rest of the programme in `.superpowers/gamecode/premium-look/`. Item 11
+was cut by the brief; everything else shipped. Five commits, each with its own
+message; this records what the recon got wrong and what the work found.
+
+**The recon's shaping constraint for the grade did not exist.** It expected
+the illustration colour grade to need `CanvasGroup` wrapping, because 28 nodes
+already carry a material and a `CanvasItem` has one slot — and wrapping
+`Classroom` and `Stage` is awkward, since `test_tall_screen_layout` pins their
+anchors literally and `CanvasGroup` is a `Node2D`, so it cannot even hold
+those anchors. Listing the 29 material-carrying nodes showed the premise was
+wrong: each face rig uses its material only on `Pupil` (and Marcel's
+`Glasses`), and every large illustration plate is free. The grade is assigned
+directly to fifteen plates and no `CanvasGroup` exists anywhere. The only
+ungraded illustration pixels are the irises.
+
+**Two properties in this codebase are already spoken for, and both bit.**
+`PaperShadow`'s first draft bought its overscan by setting `scale` about each
+band's centre; Herman is authored with pivot `(540, 1920)` so `HermanAP` can
+scale him from the floor, and that animation writes `scale` every frame.
+`ParallaxDiorama` hit the same wall and now grows a band's *offsets* instead.
+Then `ShelfItem.set_dimmed` turned out to write `_button.modulate.a` — the
+affordability signal — which is exactly what `Juice.pop_in` tweens to 1.0, so
+Koperasi gets no entrance animation and a test says why. A screen can be flat
+because nobody polished it or because its properties are owned; those want
+different answers.
+
+**Hazard 6 was not machine churn to be tolerated — it was a missing setting.**
+The handoff said to revert twelve `.import` files before every commit because
+the editor re-drops an `etc2` variant on boot. The cause was that
+`rendering/textures/vram_compression/import_etc2_astc` and `import_s3tc_bptc`
+were *both false*, so no machine imported a deterministic set and each wrote
+whichever variant it needed — this PC writing `s3tc`, the committed files
+declaring both, the pair fighting on every boot. Turning both on ends it:
+after a cold boot and a full suite run, `git status` shows **zero** dirty
+`.import` files. The standing "revert before every commit" step is gone, and
+an Android build will now get real ETC2 textures.
+
+**Item 12's mass compression was built, measured, and then reverted.** The
+project holds **1182 MB** of uncompressed RGBA8 texture data, 1069 MB of it
+Lossless, so the case for VRAM compression is real: 160 textures at 512×512
+or larger would have cut 975 MB to 244 MB.
+
+It was reverted because it broke the suite. With those 160 compressed, a full
+`test_run` stopped completing at all — the editor climbed to ~2 GB, stopped
+responding, and had to be killed, every time, across five attempts. Every
+suite still passed *individually*, which is what made it worth isolating
+rather than guessing: PR 4's full run had taken 6987 ms with the look layer,
+parallax and shadows already in, and PR 5 added two small script edits, so
+PR 6 was the only candidate. Reverting the 160 `.import` files and keeping
+only the setting brought the full run back at 2123/2123 in 9055 ms. Disabling
+ETC2 alone did not help, which ruled out the second variant as the cause.
+
+Coverage is the quality floor here, and a memory optimisation that costs the
+ability to run the tests is not worth 731 MB. It is also the one item in the
+whole programme that can only *reduce* image quality, which is the opposite
+of the brief. The work is recoverable — the threshold, the exclusions and the
+measured saving are in `DEBT.md` — but it should land with a way to run the
+suite, not instead of one.
+
+**Measuring beat looking, twice.** The editor runs the game embedded at half
+size, so a screenshot cannot be judged at full resolution — the vignette was
+verified numerically instead: corners darken 5–8.5%, the centre moves +0.0%.
+And the window light's intensity was found by sweeping it over a frozen frame
+and counting pixels driven to pure white: 0.16 pushed 20 sample points over,
+0.12 and below pushed one, so it ships at 0.11. A first attempt read the light
+as +0.312 luminance, well over its own theoretical maximum — that was the
+students' breathing animation moving between the two captures. Freezing the
+tree gave +0.1414, which matches the shader. The same trap waits for anyone
+measuring a visual change on an animated screen.
+
+## 2026-09-22 — Premium-look PR 1: mechanical crispness
+
+First slice of the "premium look" programme
+(`.superpowers/gamecode/premium-look/`, items 2, 3 and 4 of eleven). No art,
+no new systems: three mechanical changes that lift every screen.
+
+**The recon's mipmap plan was a no-op, and a live probe is why we know.** The
+survey proposed setting `mipmaps/generate=true` on the worst downscalers and
+explicitly forbade touching the project's texture filter. But
+`default_texture_filter` was `1` (Linear, **no** mipmaps), and in Godot the
+filter mode — not the import flag — decides whether a mip chain is ever
+sampled. Every generated chain would have been dead weight.
+
+The filter had to move too. The recon's objection to flipping it globally was
+that it would blur the bar-fill tiles, `tray_dots.png` and the 9-sliced
+styleboxes. Probing the imported textures showed that fear was unfounded:
+those assets carry a **single mip level**, and a mipmapped sampler on a 1-mip
+texture can only ever read level 0. So `default_texture_filter = 3` (Linear
+Mipmap) is provably a no-op on all 383 textures that have no chain, and only
+the 29 we deliberately gave one change behaviour.
+`tests/test_texture_mipmaps.gd` pins both halves of that argument, so the day
+the premise stops holding the suite says so.
+
+**Static ratios were wrong; the offenders were measured live.** The recon
+derived downscale ratios by parsing `.tscn` offsets. Standing the five
+high-traffic screens up at 1080×1920 through `tests/layout_frame.gd` settled
+its two flagged unknowns and corrected one: `arrow.png` is 7.11×, not the
+12.8× alternative, and the six Lobby faces are 3.2–3.5×, not the 1.19×
+nominal. No static parse could have found the faces at all — `StudentSkins`
+assigns them at runtime, and `loby.gd` gives each rig the rect of its seat's
+Portrait node. 29 assets from 3.20× to 12.49× now generate mipmaps; the
+project default stays off.
+
+**The transition wipe was drawn under eight things.** `Transition` sat at
+layer 100 while `MinigameResultPopup` (999), `MinigameTutorial` (500),
+`Pengaturan` (250), `QuitConfirmDialog` (210), `MinigameCountdown` (150),
+`TouchFeedbackManager` (125) and `AchievementToast` (120) all drew over it, so
+leaving a minigame with the result popup up punched it straight through the
+cover. The wipe is now 1000. The debug overlay's three canvases moved with it
+(124/125/128 → 1124/1125/1128), keeping their internal order and staying above
+the wipe on purpose: a developer tool should not be hidden by a scene change.
+
+The old guard here asserted `layer >= 100` — true of the broken value, and
+therefore never able to fail. It now asserts `> 999`, and a second test scans
+every `.tscn` and `.gd` for a CanvasLayer number and fails if any outranks the
+wipe, so a screen added later cannot quietly reintroduce the defect.
+
+**MSAA 2D on, at 2×.** Worth it despite the game being mostly textured quads:
+`TouchFeedbackEffect._draw()` draws ripple circles on every screen, and
+`StickyNote` and `BookClockWidget` draw rotated quads.
+
+Full suite 2095/2095 across 144 suites. Verified in a live Lobby screenshot —
+text, icons and faces all crisp, nothing softened.
 
 ## 2026-09-22 — Achievements layout pass, and a full-screen SkinSelect
 

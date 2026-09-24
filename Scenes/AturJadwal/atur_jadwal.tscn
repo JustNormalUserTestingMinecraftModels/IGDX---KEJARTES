@@ -18,6 +18,7 @@
 [ext_resource type="Texture2D" uid="uid://hq418p0ftajb" path="res://Assets/Images/UI/BarFill/icon_ghost_sabit.png" id="17_gscbg"]
 [ext_resource type="Texture2D" uid="uid://dbl6a1ft4dmer" path="res://Assets/Images/StudentCard/stat_mood.png" id="17_icon_mood"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yej6c"]
 shader = ExtResource("2_shader")
@@ -77,6 +78,14 @@ offset_bottom = 2413.0
 mouse_filter = 2
 texture = ExtResource("4_ulthj")
 expand_mode = 1
+
+[node name="Shadow" parent="BGHari" instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("4_ulthj")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
 
 [node name="Senin" parent="BGHari" unique_id=2030438336 instance=ExtResource("5_ulthj")]
 layout_mode = 0

@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://bwvbm0e3qoemv" path="res://Assets/Images/Textures/raket_2.png" id="4_8t8ik"]
 [ext_resource type="Script" uid="uid://dgnuip2j7os0p" path="res://Scripts/Minigames/Olahraga/ShuttlecockSprite.gd" id="5_8t8ik"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_77y7n"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_puck"]
 friction = 0.0
@@ -52,6 +53,7 @@ linear_damp_mode = 1
 shape = SubResource("CircleShape2D_puck")
 
 [node name="Sprite2D" type="Sprite2D" parent="Puck" unique_id=221089689]
+material = ExtResource("illus_grade_cut")
 rotation = 1.5707964
 scale = Vector2(0.1393548, 0.0985176)
 texture = ExtResource("2_budfj")
@@ -64,6 +66,7 @@ position = Vector2(540, 1500)
 shape = SubResource("CircleShape2D_paddle")
 
 [node name="Sprite2D" type="Sprite2D" parent="PlayerPaddle" unique_id=230033909]
+material = ExtResource("illus_grade_cut")
 position = Vector2(-14.000015, 41.999992)
 scale = Vector2(0.3418952, 0.28401384)
 texture = ExtResource("3_77y7n")
@@ -75,6 +78,7 @@ position = Vector2(540, 420)
 shape = SubResource("CircleShape2D_paddle")
 
 [node name="Sprite2D" type="Sprite2D" parent="EnemyPaddle" unique_id=1374491768]
+material = ExtResource("illus_grade_cut")
 position = Vector2(-14.000015, 41.999992)
 scale = Vector2(0.3418952, 0.28401384)
 texture = ExtResource("3_77y7n")

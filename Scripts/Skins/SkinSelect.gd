@@ -136,7 +136,29 @@ func open() -> void:
 		return
 	modulate.a = 0.0
 	create_tween().tween_property(self, "modulate:a", 1.0, fade_time)
+	play_rail_entrance()
 	AudioDirector.play_sfx(&"tap")
+
+
+## Cascades the six student tiles in behind the screen's own fade.
+##
+## The screen already faded in as one flat sheet, which told the eye nothing
+## about what was on it. Staggering the rail makes the six characters arrive
+## as six things rather than as one rectangle -- a card rail is exactly what
+## Juice.stagger_in exists for, and it is token-driven, so its timing follows
+## design_tokens.tres like every other motion in the game.
+##
+## Safe on these tiles specifically: StudentTile owns neither `modulate` nor
+## `scale`, so pop_in has nothing to fight. That is NOT true everywhere --
+## Koperasi's shelf buttons carry affordability in modulate.a, and an
+## entrance there would quietly un-dim items the player cannot afford.
+func play_rail_entrance() -> void:
+	var tiles: Array = []
+	for i in StudentSkins.NAMES.size():
+		var tile := _rail.get_child(i) as StudentTile
+		if tile != null:
+			tiles.append(tile)
+	Juice.stagger_in(tiles)
 
 
 ## The character the rail currently has open.

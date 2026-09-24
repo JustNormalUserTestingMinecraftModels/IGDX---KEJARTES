@@ -5,6 +5,8 @@
 [ext_resource type="Texture2D" uid="uid://d0a5rmvgdg1yo" path="res://Assets/Images/Textures/kiper_idle.png" id="3_m0rci"]
 [ext_resource type="Texture2D" uid="uid://8faghs2oje04" path="res://Assets/Images/Textures/bola.png" id="4_rtmmt"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_m0rci"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enlbf"]
 size = Vector2(874.368, 537.6)
@@ -25,6 +27,7 @@ grow_vertical = 2
 script = ExtResource("1_mainbola")
 
 [node name="FieldBG" type="TextureRect" parent="." unique_id=1315448352]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -101,6 +104,7 @@ position = Vector2(9, -230.9)
 shape = SubResource("RectangleShape2D_wxm10")
 
 [node name="GFX" type="TextureRect" parent="Goalie" unique_id=1353785742]
+material = ExtResource("illus_grade_cut")
 offset_left = -226.8
 offset_top = -422.4
 offset_right = 226.8
@@ -117,6 +121,7 @@ motion_mode = 1
 shape = SubResource("CircleShape2D_gt578")
 
 [node name="GFX" type="TextureRect" parent="Ball" unique_id=1147258294]
+material = ExtResource("illus_grade_cut")
 offset_left = -70.2
 offset_top = -70.2
 offset_right = 70.2

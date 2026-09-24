@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://b7q8saw0x1y20" path="res://Scenes/Minigames/Akademis/QuestionCard.tscn" id="4_0wcns"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="4_wmj8b"]
 [ext_resource type="PackedScene" uid="uid://c8523u3cqsu87" path="res://Scenes/Minigames/Akademis/Kalkulator.tscn" id="5_v4tda"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 
 [node name="Variabel" type="Control" unique_id=677104855]
 layout_mode = 3
@@ -17,6 +18,7 @@ script = ExtResource("1_variabel")
 background_texture = ExtResource("2_wyrkd")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1592266905]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

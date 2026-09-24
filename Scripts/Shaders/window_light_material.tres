@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://Scripts/Shaders/light_falloff.gdshader" id="1_light"]
+
+[resource]
+shader = ExtResource("1_light")
+shader_parameter/light_color = Color(1, 0.898, 0.706, 1)
+shader_parameter/intensity = 0.11
+shader_parameter/radius = 0.55
+shader_parameter/falloff = 2.4
+shader_parameter/aspect = 1.35
+shader_parameter/breathe_amount = 0.06
+shader_parameter/breathe_speed = 0.35

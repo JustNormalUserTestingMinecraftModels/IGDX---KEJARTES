@@ -24,16 +24,23 @@
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
 [ext_resource type="PackedScene" uid="uid://u2q3sgmvf5w3" path="res://Scenes/Lobby/StudentChatBubble.tscn" id="20_su0mk"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="20_yhuud"]
+[ext_resource type="Material" path="res://Scripts/Shaders/window_shafts_material.tres" id="25_mbtdr"]
 [ext_resource type="Texture2D" uid="uid://bed2fo2wc4bd7" path="res://Assets/Images/Achievements/achievement_button.png" id="28_ikpat"]
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/loby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPotrait/Thea.png" id="default_portrait_tex"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPotrait/Meja/kiri atas.png" id="meja_ka_tex"]
 [ext_resource type="Texture2D" uid="uid://bflgqwew54uyi" path="res://Assets/Images/MuridPotrait/Meja/kiri bawah.png" id="meja_kb_tex"]
 [ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPotrait/Meja/kanan atas.png" id="meja_kna_tex"]
 [ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPotrait/Meja/kanan bawah.png" id="meja_knb_tex"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
+[ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+[ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
@@ -75,10 +82,13 @@ offset_left = -540.0
 offset_top = -960.0
 offset_right = 540.0
 offset_bottom = 960.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="BGLayer" type="TextureRect" parent="Classroom" unique_id=18068981]
 unique_name_in_owner = true
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -90,6 +100,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="Meja_KiriAtas" type="TextureRect" parent="Classroom" unique_id=141187056]
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -103,7 +114,16 @@ texture = ExtResource("meja_ka_tex")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Shadow" parent="Classroom/Meja_KiriAtas" unique_id=1365156758 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_ka_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
 [node name="Meja_KananAtas" type="TextureRect" parent="Classroom" unique_id=1566337339]
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -118,6 +138,14 @@ mouse_filter = 2
 texture = ExtResource("meja_kna_tex")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Shadow" parent="Classroom/Meja_KananAtas" unique_id=172536508 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_kna_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
 
 [node name="StudentPortraitsContainer_Back" type="Control" parent="Classroom" unique_id=2097219157]
 unique_name_in_owner = true
@@ -440,6 +468,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Meja_KiriBawah" type="TextureRect" parent="Classroom" unique_id=1666960600]
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -451,7 +480,16 @@ texture = ExtResource("meja_kb_tex")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Shadow" parent="Classroom/Meja_KiriBawah" unique_id=913334239 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_kb_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
 [node name="Meja_KananBawah" type="TextureRect" parent="Classroom" unique_id=1660970638]
+material = ExtResource("illus_grade_cut")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -462,6 +500,14 @@ mouse_filter = 2
 texture = ExtResource("meja_knb_tex")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Shadow" parent="Classroom/Meja_KananBawah" unique_id=2137019180 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_knb_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
 
 [node name="StudentPortraitsContainer_Front" type="Control" parent="Classroom" unique_id=1730743039]
 unique_name_in_owner = true
@@ -785,6 +831,47 @@ texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
 
+[node name="WindowLight" type="ColorRect" parent="Classroom" unique_id=138848043]
+material = ExtResource("window_light")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -420.0
+offset_right = -120.0
+offset_bottom = -560.0
+mouse_filter = 2
+
+[node name="Parallax" type="Control" parent="Classroom" unique_id=2134517186]
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("parallax_diorama")
+depth_by_child = {
+"BGLayer": 0.15,
+"Meja_KananAtas": 0.45,
+"Meja_KananBawah": 0.75,
+"Meja_KiriAtas": 0.45,
+"Meja_KiriBawah": 0.75,
+"StudentHandsContainer_Back": 0.45,
+"StudentHandsContainer_Front": 0.75,
+"StudentPortraitsContainer_Back": 0.45,
+"StudentPortraitsContainer_Front": 0.75,
+"WindowShafts": 0.15
+}
+overscan_children = Array[StringName]([&"BGLayer"])
+
+[node name="WindowShafts" type="ColorRect" parent="Classroom" unique_id=491378318]
+material = ExtResource("25_mbtdr")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
 [node name="Safe" type="MarginContainer" parent="." unique_id=1588675940]
 layout_mode = 1
 anchors_preset = 15
@@ -793,6 +880,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
 script = ExtResource("20_yhuud")
 
 [node name="UI" type="Control" parent="Safe" unique_id=626973675]
@@ -1043,3 +1134,6 @@ grow_vertical = 2
 [node name="Chatter" type="Node" parent="." unique_id=1817944739]
 script = ExtResource("34_f2e4j")
 bubble_path = NodePath("../ChatBubble")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2049146762]
+environment = ExtResource("41_7qlaa")

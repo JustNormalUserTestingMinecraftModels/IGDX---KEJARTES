@@ -117,7 +117,7 @@ const DEFAULT_STUDENTS = [
 func _ready() -> void:
 	# Ensure the debug manager runs always, even when game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	layer = 128 # Above everything (Transition is 100)
+	layer = 1128 # Above everything, including the wipe (Transition is 1000)
 
 	_apply_playtest_defaults()
 
@@ -282,7 +282,7 @@ func _build_ui() -> void:
 	tabs_hbox.add_theme_constant_override("separation", 12)
 	outer_vbox.add_child(tabs_hbox)
 	
-	var tab_names = ["General", "Students", "Minigames", "Scenes", "Prestasi", "Feedback", "Logs"]
+	var tab_names = ["General", "Students", "Minigames", "Scenes", "Prestasi", "Feedback", "Logs", "Look"]
 	for tab in tab_names:
 		var btn = Button.new()
 		btn.text = tab
@@ -319,6 +319,7 @@ func _build_ui() -> void:
 	_build_achievements_panel(content_area)
 	_build_feedback_panel(content_area)
 	_build_logs_panel(content_area)
+	_build_look_panel(content_area)
 
 	# Default tab selection
 	_switch_tab("General")
@@ -1205,7 +1206,14 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 	log_message("Loading standalone minigame: " + scene_path)
 	
 	minigame_canvas = CanvasLayer.new()
-	minigame_canvas.layer = 125 # Just below debug menu (128)
+	# 125, NOT up with the rest of the debug block at 1124-1128. This canvas
+	# hosts a REAL minigame, which brings its own CanvasLayers with it: UI at
+	# 100, the countdown at 150, the tutorial at 500 and the result popup at
+	# 999. Host it above those and it covers them -- at 1125 the standalone
+	# launcher's result popup rendered underneath the minigame and was simply
+	# invisible. Game content belongs below the wipe; only the overlay chrome
+	# needs to sit above it.
+	minigame_canvas.layer = 125
 	add_child(minigame_canvas)
 	
 	var m_scene = load(scene_path)
@@ -1416,8 +1424,10 @@ func _restore_before_rehearsal() -> void:
 
 ## The weekly report preview's host layer, or null when none is open.
 var _week_report_canvas: CanvasLayer = null
-## The preview's layer: just under the standalone minigame launcher's (125)
-## and the overlay's own (128).
+## The preview's layer: just under the standalone minigame launcher's (125).
+## Like that one this hosts a real screen (ResultCheckup) rather than overlay
+## chrome, so it stays below the transition wipe with the game content. Only
+## the overlay itself (1128) sits above the wipe.
 const WEEK_REPORT_LAYER := 124
 
 ## Opens the weekly report (ResultCheckup) over the current screen, filled
@@ -1730,3 +1740,82 @@ func _build_logs_panel(parent: Control) -> void:
 	log_text_label.add_theme_constant_override("line_spacing", 6)
 	log_text_label.text = ""
 	log_panel.add_child(log_text_label)
+
+# --- Illustration Look Tuner Tab Panel ---
+## Live control over the illustration look: inner AO, the rim light and the
+## Lobby's shafts. Every slider writes to a SHARED material, so one drag moves
+## every plate on screen at once -- which is the point. Nothing here persists;
+## when a value looks right, write it into the .tres.
+func _build_look_panel(parent: Control) -> void:
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	panels["Look"] = scroll
+
+	var margin_container = MarginContainer.new()
+	margin_container.add_theme_constant_override("margin_left", 30)
+	margin_container.add_theme_constant_override("margin_top", 30)
+	margin_container.add_theme_constant_override("margin_right", 30)
+	margin_container.add_theme_constant_override("margin_bottom", 30)
+	margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin_container)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 24)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin_container.add_child(vbox)
+
+	var lbl_title = Label.new()
+	lbl_title.text = "Tampilan Ilustrasi (live, tidak tersimpan):"
+	lbl_title.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_title)
+
+	var cutout: ShaderMaterial = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
+	_add_look_slider(vbox, cutout, "ao_strength", "Kekuatan AO", 0.0, 1.0, 0.01)
+	_add_look_slider(vbox, cutout, "ao_radius_px", "Lebar AO (piksel layar)", 0.0, 16.0, 0.5)
+	_add_look_slider(vbox, cutout, "rim_strength", "Kekuatan Rim", 0.0, 0.8, 0.01)
+	_add_look_slider(vbox, cutout, "rim_radius_px", "Lebar Rim (piksel layar)", 0.0, 16.0, 0.5)
+
+	var lbl_shafts = Label.new()
+	lbl_shafts.text = "Cahaya Jendela (khusus Lobby):"
+	lbl_shafts.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_shafts)
+
+	var shafts: ShaderMaterial = load("res://Scripts/Shaders/window_shafts_material.tres")
+	_add_look_slider(vbox, shafts, "intensity", "Kekuatan Cahaya", 0.0, 0.4, 0.005)
+	_add_look_slider(vbox, shafts, "shaft_count", "Jumlah Berkas", 3.0, 16.0, 1.0)
+
+	var lbl_note = Label.new()
+	lbl_note.text = "Catatan: nilai di sini hilang saat keluar. Salin ke .tres kalau sudah pas."
+	lbl_note.add_theme_font_size_override("font_size", 20)
+	lbl_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(lbl_note)
+
+
+## One labelled slider bound to one shader uniform on a shared material.
+func _add_look_slider(parent: Control, mat: ShaderMaterial, uniform: String,
+		caption: String, min_value: float, max_value: float, step: float) -> void:
+	if mat == null:
+		return
+	var row = VBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	parent.add_child(row)
+
+	var lbl = Label.new()
+	var current: float = float(mat.get_shader_parameter(uniform))
+	lbl.text = "%s: %.3f" % [caption, current]
+	lbl.add_theme_font_size_override("font_size", 22)
+	row.add_child(lbl)
+
+	var slider = HSlider.new()
+	slider.min_value = min_value
+	slider.max_value = max_value
+	slider.step = step
+	slider.value = current
+	slider.custom_minimum_size = Vector2(0, 60)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(func(v: float):
+		mat.set_shader_parameter(uniform, v)
+		lbl.text = "%s: %.3f" % [caption, v])
+	row.add_child(slider)

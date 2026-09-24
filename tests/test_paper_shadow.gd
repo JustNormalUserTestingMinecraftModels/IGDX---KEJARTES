@@ -111,6 +111,193 @@ func test_every_paper_carries_its_own_shadow() -> void:
 				"%s/%s's Silhouette must be exactly its paper's size" % [scene_path, paper_name])
 
 
+## --- Parameterisation (2026-09-22, premium-look PR 2) ---------------------
+##
+## The template grew @exports on its ROOT so it could be dropped on something
+## other than StudentCard's paper. The knobs have to live on the root because
+## properties set on an instanced scene's CHILDREN are dropped on save
+## (CLAUDE.md 4b) -- which is why nobody re-textured this for thirteen
+## instances. Defaults reproduce the original baked values exactly, which the
+## template test above still pins.
+
+
+## An instance is not in the tree here, so _ready() never runs -- the setters
+## have to apply on their own, or every shadow placed in a .tscn would render
+## with the template's defaults until something touched it.
+func test_the_knobs_write_through_without_entering_the_tree() -> void:
+	var shadow := (load(_TEMPLATE) as PackedScene).instantiate() as Control
+	track(shadow)
+	var sil := _silhouette(shadow)
+	assert_true(sil != null, "no Silhouette")
+	if sil == null:
+		return
+	var tex: Texture2D = load("res://Assets/Images/UI/papantulis.png")
+	shadow.set("shadow_texture", tex)
+	shadow.set("shadow_size", Vector2(400, 300))
+	shadow.set("shadow_offset", Vector2(9, 11))
+	shadow.set("shadow_alpha", 0.5)
+	assert_eq(sil.texture, tex, "shadow_texture must reach the Silhouette")
+	assert_eq(Vector4(sil.offset_left, sil.offset_top, sil.offset_right, sil.offset_bottom),
+		Vector4(9, 11, 409, 311), "offset + size must become the Silhouette's rect")
+	assert_true(is_equal_approx(sil.self_modulate.a, 0.5), "shadow_alpha must reach self_modulate")
+
+
+## The soft-shadow material is ONE resource shared by every instance. Writing
+## a shader parameter straight onto it would re-blur all thirteen papers and
+## every shadow added later, from one instance's inspector.
+func test_a_custom_blur_duplicates_the_material_instead_of_mutating_it() -> void:
+	var shared: ShaderMaterial = load("res://Scripts/Shaders/soft_shadow_material.tres")
+	var before: float = shared.get_shader_parameter("blur")
+
+	var shadow := (load(_TEMPLATE) as PackedScene).instantiate() as Control
+	track(shadow)
+	shadow.set("blur", 6.0)
+	var sil := _silhouette(shadow)
+	assert_true(sil != null, "no Silhouette")
+	if sil == null:
+		return
+	assert_true(sil.material != shared,
+		"a custom blur must get its own material, not write onto the shared one")
+	assert_true(is_equal_approx(sil.material.get_shader_parameter("blur"), 6.0),
+		"the duplicate must carry the custom blur")
+	assert_true(is_equal_approx(shared.get_shader_parameter("blur"), before),
+		"the shared material must be untouched, or every other shadow re-blurs")
+
+	# And the default keeps sharing, so this does not spawn a copy per instance.
+	var plain := (load(_TEMPLATE) as PackedScene).instantiate() as Control
+	track(plain)
+	assert_eq(_silhouette(plain).material, shared,
+		"the default blur must keep using the shared material")
+
+
+## Where the contact shadows went. Each entry is a scene, the element that
+## should cast, and whether it is a fixed-size piece or one that resizes with
+## its container or the viewport.
+##
+## The Lobby's four desks are in here: they cast a contact shadow like
+## everything else in this dict. They were briefly taken out on 2026-09-23 at
+## the user's call, then came back the same day as outer AO instead of a drop
+## shadow -- see _OUTER_AO below, which holds the values that ship.
+const _CONTACT_SHADOWS := {
+	"res://Scenes/Lobby/loby.tscn": [
+		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
+		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+	],
+	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
+	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+}
+
+
+func test_the_flat_elements_now_cast_a_shadow() -> void:
+	for scene_path in _CONTACT_SHADOWS:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for node_path in _CONTACT_SHADOWS[scene_path]:
+			var host := root.get_node_or_null(node_path) as TextureRect
+			assert_true(host != null, "%s is missing %s" % [scene_path, node_path])
+			if host == null:
+				continue
+			var shadow := host.get_node_or_null("Shadow") as Control
+			assert_true(shadow != null,
+				"%s/%s should cast a contact shadow" % [scene_path, node_path])
+			if shadow == null:
+				continue
+			assert_eq(shadow.scene_file_path, _TEMPLATE,
+				"%s/%s's shadow must be the shared template, not a hand-copy"
+					% [scene_path, node_path])
+			assert_true(shadow.show_behind_parent,
+				"%s/%s's shadow must draw behind it" % [scene_path, node_path])
+			# The shadow is its element's own silhouette, not a generic blob.
+			assert_eq(shadow.get("shadow_texture"), host.texture,
+				"%s/%s's shadow must use its element's own texture"
+					% [scene_path, node_path])
+
+
+## Outer AO, not a cast shadow (2026-09-23).
+##
+## These seven were authored as drop shadows -- offset 8-14 px at alpha
+## 0.24-0.30 with a wide blur -- and the Lobby's four were removed that morning
+## for reading as dirt beside the desk rather than contact under it. They come
+## back the same day as something else: zero offset, a third of the blur. It is
+## not a shadow from anywhere; it is the floor going dark where the plate
+## occludes it, which is why it can be denser without reading as grime.
+##
+## A deliberate reversal, not an accident. The design doc's section 6 has the
+## argument in full.
+const _OUTER_AO := {
+	"res://Scenes/Lobby/loby.tscn": [
+		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
+		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+	],
+	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
+	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+}
+const _OUTER_AO_ALPHA := 0.34
+const _OUTER_AO_BLUR := 1.2
+
+
+func test_the_contact_shadows_are_outer_ao_not_drop_shadows() -> void:
+	for scene_path in _OUTER_AO:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for node_path in _OUTER_AO[scene_path]:
+			var shadow := root.get_node_or_null(NodePath(node_path + "/Shadow")) as Control
+			assert_true(shadow != null, "%s/%s has no Shadow" % [scene_path, node_path])
+			if shadow == null:
+				continue
+			assert_eq(shadow.get("shadow_offset"), Vector2.ZERO,
+				"%s/%s: an offset makes it a cast shadow again" % [scene_path, node_path])
+			assert_true(is_equal_approx(shadow.get("shadow_alpha"), _OUTER_AO_ALPHA),
+				"%s/%s: outer AO alpha must match the rest of the game" % [scene_path, node_path])
+			assert_true(is_equal_approx(shadow.get("blur"), _OUTER_AO_BLUR),
+				"%s/%s: outer AO blur must match the rest of the game" % [scene_path, node_path])
+
+
+## The twelve paper shadows in StudentCard and ReportCard are NOT outer AO and
+## must keep their offset. A paper thrown off-screen by _transition_page()
+## should cast a real shadow; that is a different effect with a different job.
+func test_the_paper_shadows_keep_their_offset() -> void:
+	for scene_path in _SCENES:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for paper_name in _PAPERS:
+			var paper := root.get_node_or_null(NodePath(paper_name)) as Control
+			if paper == null:
+				continue
+			var shadow := paper.get_node_or_null("PaperShadow") as Control
+			if shadow == null:
+				continue
+			assert_true(shadow.get("shadow_offset") != Vector2.ZERO,
+				"%s/%s: a flying paper still casts a real shadow" % [scene_path, paper_name])
+
+
+## A Full Rect element is 1080x1920 on a 9:16 phone and 1080x2400 on a 20:9
+## one, so its shadow cannot carry a baked size. Anchors cannot solve it
+## either -- loading an instance resets the shadow ROOT's rect to zero, so the
+## Silhouette's anchors would resolve against nothing. follow_parent_rect
+## reads the parent's size instead.
+func test_a_full_rect_element_gets_a_shadow_that_follows_its_size() -> void:
+	var root := (load("res://Scenes/SchoolSimulation/EventDialogue.tscn") as PackedScene).instantiate()
+	track(root)
+	var splash := root.get_node_or_null("Splash") as TextureRect
+	assert_true(splash != null, "Splash is gone")
+	if splash == null:
+		return
+	assert_eq(Vector4(splash.anchor_left, splash.anchor_top, splash.anchor_right, splash.anchor_bottom),
+		Vector4(0, 0, 1, 1), "Splash is Full Rect, which is what makes this necessary")
+	var shadow := splash.get_node_or_null("Shadow") as Control
+	assert_true(shadow != null, "Splash has no shadow")
+	if shadow == null:
+		return
+	assert_true(shadow.get("follow_parent_rect"),
+		"a Full Rect element's shadow must take its size from the parent")
+	assert_eq(shadow.get("shadow_stretch_mode"), splash.stretch_mode,
+		"the shadow must fill its rect the same way its element does, or the two "
+			+ "diverge the moment the rect stops matching the texture's aspect")
+
+
 func test_the_static_stack_shadow_is_gone() -> void:
 	for scene_path in _SCENES:
 		var root := (load(scene_path) as PackedScene).instantiate()

@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://32vps8suf6fa" path="res://Assets/Images/Textures/budaya_background.jpg" id="2_cwgfm"]
 [ext_resource type="PackedScene" uid="uid://cvcji5ahomyaj" path="res://Scenes/Minigames/SeniBudaya/DancerRig.tscn" id="3_cwgfm"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="9_g7u23"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 
 [node name="LombaMenari" type="Control" unique_id=125767780]
 layout_mode = 3
@@ -16,6 +17,7 @@ script = ExtResource("1_lombamenari")
 background_texture = ExtResource("2_cwgfm")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1772325959]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

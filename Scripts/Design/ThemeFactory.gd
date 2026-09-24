@@ -905,6 +905,29 @@ static func _build_event_warning(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "EventWarningCaptionLabel", tokens.font_display)
 
+	# -- The caution band the 2026-09-24 liveliness pass laid across the
+	# notice: a dark strip between two stripe tapes, carrying the marker
+	# (KATEGORI · MODE, in the bold body face, which has the "·") over the
+	# caption. No side margins: the band runs off both screen edges. --
+	var band := StyleBoxFlat.new()
+	band.bg_color = tokens.surface_overlay
+	band.shadow_color = tokens.shadow_color
+	band.shadow_size = tokens.shadow_size
+	band.shadow_offset = tokens.shadow_offset
+	band.content_margin_bottom = 0
+	band.content_margin_top = 0
+	theme.add_type("EventBandPanel")
+	theme.set_type_variation("EventBandPanel", "PanelContainer")
+	theme.set_stylebox("panel", "EventBandPanel", band)
+
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+	theme.add_type("EventBandMarkerLabel")
+	theme.set_type_variation("EventBandMarkerLabel", "Label")
+	theme.set_font_size("font_size", "EventBandMarkerLabel", tokens.font_title)
+	theme.set_color("font_color", "EventBandMarkerLabel", tokens.currency_gold)
+	if bold != null:
+		theme.set_font("font", "EventBandMarkerLabel", bold)
+
 
 ## The shop hub's two destination tiles, panel-less by design.
 ##

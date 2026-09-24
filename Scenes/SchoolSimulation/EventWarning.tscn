@@ -2,6 +2,18 @@
 
 [ext_resource type="Script" uid="uid://dqfujm6sko67i" path="res://Scripts/SchoolSimulation/EventWarning.gd" id="1_warning"]
 [ext_resource type="Texture2D" uid="uid://ctgt3msw50o3e" path="res://Assets/Images/SchoolDay/eventwarning_icon.png" id="2_47ycc"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/caution_tape.svg" id="3_tape"]
+
+[sub_resource type="Gradient" id="Gradient_event"]
+resource_local_to_scene = true
+offsets = PackedFloat32Array(0, 0.55, 1)
+colors = PackedColorArray(0.05, 0.12, 0.23, 1, 0.12, 0.44, 0.73, 1, 0.23, 0.65, 0.96, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_event"]
+resource_local_to_scene = true
+gradient = SubResource("Gradient_event")
+fill_from = Vector2(0, 0)
+fill_to = Vector2(1, 1)
 
 [node name="EventWarning" type="Control" unique_id=1118244677]
 layout_mode = 3
@@ -20,6 +32,18 @@ anchor_bottom = 1.0
 mouse_filter = 2
 theme_type_variation = &"EventWarningPanel"
 
+[node name="Gradient" type="TextureRect" parent="Panel"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_event")
+expand_mode = 1
+
 [node name="Center" type="CenterContainer" parent="Panel" unique_id=1607092403]
 layout_mode = 1
 anchors_preset = 15
@@ -30,21 +54,78 @@ mouse_filter = 2
 [node name="Content" type="VBoxContainer" parent="Panel/Center" unique_id=112836667]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 32
+theme_override_constants/separation = 40
 alignment = 1
 
 [node name="Icon" type="TextureRect" parent="Panel/Center/Content" unique_id=1104850390]
-custom_minimum_size = Vector2(0, 560)
+custom_minimum_size = Vector2(0, 520)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("2_47ycc")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Caption" type="Label" parent="Panel/Center/Content" unique_id=2059625304]
+[node name="Band" type="PanelContainer" parent="Panel/Center/Content"]
+custom_minimum_size = Vector2(1320, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"EventBandPanel"
+
+[node name="Rows" type="VBoxContainer" parent="Panel/Center/Content/Band"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+
+[node name="TapeTop" type="Control" parent="Panel/Center/Content/Band/Rows"]
+clip_contents = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Stripes" type="TextureRect" parent="Panel/Center/Content/Band/Rows/TapeTop"]
+texture_repeat = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_tape")
+stretch_mode = 1
+
+[node name="Marker" type="Label" parent="Panel/Center/Content/Band/Rows"]
+layout_mode = 2
+theme_type_variation = &"EventBandMarkerLabel"
+text = "AKADEMIS · MINIGAME"
+horizontal_alignment = 1
+
+[node name="Caption" type="Label" parent="Panel/Center/Content/Band/Rows" unique_id=2059625304]
 custom_minimum_size = Vector2(920, 0)
 layout_mode = 2
+size_flags_horizontal = 4
 theme_type_variation = &"EventWarningCaptionLabel"
 text = "KEGIATAN AKADEMIS!"
 horizontal_alignment = 1
 autowrap_mode = 3
+
+[node name="TapeBottom" type="Control" parent="Panel/Center/Content/Band/Rows"]
+clip_contents = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Stripes" type="TextureRect" parent="Panel/Center/Content/Band/Rows/TapeBottom"]
+texture_repeat = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_tape")
+stretch_mode = 1

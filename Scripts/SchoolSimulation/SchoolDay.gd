@@ -748,17 +748,17 @@ func _roll_event(day_name: String) -> void:
 
 		if category_selected == "Akademis":
 			var scene = akademis_scenes[randi() % akademis_scenes.size()]
-			await _show_event_warning("KEGIATAN AKADEMIS!")
+			await _show_event_warning("KEGIATAN AKADEMIS!", "Akademis", "MINIGAME")
 			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "Akademis")
 		elif category_selected == "Olahraga":
 			var scene = olahraga_scenes[randi() % olahraga_scenes.size()]
-			await _show_event_warning("KEGIATAN OLAHRAGA!")
+			await _show_event_warning("KEGIATAN OLAHRAGA!", "Olahraga", "MINIGAME")
 			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "Olahraga")
 		else:
 			var scene = seni_scenes[randi() % seni_scenes.size()]
-			await _show_event_warning("KEGIATAN SENI BUDAYA!")
+			await _show_event_warning("KEGIATAN SENI BUDAYA!", "SeniBudaya", "MINIGAME")
 			await _show_event_dialogue(minigame_dialogue_key(scene))
 			await _play_minigame(scene, "SeniBudaya")
 
@@ -859,7 +859,7 @@ func _run_event(event_id: int, day_name: String) -> void:
 				"workshop_seni"
 			)
 		3:
-			await _show_event_warning("Kejutan Nasi Kotak Orang Tua!")
+			await _show_event_warning("Kejutan Nasi Kotak Orang Tua!", "Sosial", "KABAR")
 			await _show_event_dialogue("nasi_kotak")
 			# Biang Onar: global positive events are stronger
 			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -873,7 +873,7 @@ func _run_event(event_id: int, day_name: String) -> void:
 			await _animate_embedded_stat_updates(0.6)
 			await get_tree().create_timer(0.8).timeout
 		4:
-			await _show_event_warning("Hujan Deras & Jalanan Licin!")
+			await _show_event_warning("Hujan Deras & Jalanan Licin!", "Cuaca", "KABAR")
 			await _show_event_dialogue("hujan")
 			# The sky reacts too: it rains on the day screen for the rest of
 			# the day, not only on the event screen.
@@ -896,7 +896,10 @@ func _handle_interactive_event(
 	stat_boost: float, energy_cost: float, mood_boost: float,
 	dialogue_key: String = ""
 ) -> void:
-	await _show_event_warning(title)
+	# A choice event says so on its notice (PILIHAN), before Tolak / Terima.
+	var entry: Dictionary = EventDialogueCatalog.entry(dialogue_key) 		if EventDialogueCatalog.has_entry(dialogue_key) else {}
+	var mode := "PILIHAN" if entry.get("mode", "") == EventDialogueCatalog.MODE_CHOICE else "KABAR"
+	await _show_event_warning(title, category, mode)
 	# Tolak skips the event: no picker, nothing applied or recorded. It still
 	# counted toward the week's limit when it was rolled.
 	var wants_in: bool = await _show_event_dialogue(dialogue_key)
@@ -1400,7 +1403,9 @@ func _play_day_stamp(day_name: String) -> void:
 ## Slide the full-screen event warning through once, captioned with what is
 ## coming -- a minigame's subject or a random event's name -- and wait for it
 ## to leave (2026-09-12 event-cards spec, 2.3). The warning plays its own cue.
-func _show_event_warning(caption: String) -> void:
+## `category` tints the notice (a skill category, "Cuaca" or "Sosial") and
+## `mode` marks it: MINIGAME, KABAR, or PILIHAN for a choice event.
+func _show_event_warning(caption: String, category: String = "", mode: String = "") -> void:
 	var warning_scene = event_warning_scene
 	if warning_scene == null:
 		warning_scene = load("res://Scenes/SchoolSimulation/EventWarning.tscn")
@@ -1412,7 +1417,7 @@ func _show_event_warning(caption: String) -> void:
 	add_child(warning_instance)
 
 	if warning_instance.has_method("play_warning"):
-		await warning_instance.play_warning(caption)
+		await warning_instance.play_warning(caption, category, mode)
 	else:
 		await get_tree().create_timer(1.5).timeout
 		warning_instance.queue_free()

@@ -15,11 +15,11 @@
 [ext_resource type="Script" uid="uid://c43apcu58ifl5" path="res://Scripts/Koperasi/ChatBubble.gd" id="15_chatbubble"]
 [ext_resource type="Texture2D" uid="uid://5fkevoxgxj3r" path="res://Assets/Images/Shop/UI/pip_hollow.svg" id="16_piphollow"]
 [ext_resource type="Texture2D" uid="uid://cpcnblan2tm6i" path="res://Assets/Images/Shop/UI/pip_filled.svg" id="17_pipfilled"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -781,7 +781,7 @@ mouse_filter = 2
 texture = ExtResource("3_herman")
 expand_mode = 1
 
-[node name="Shadow" parent="Stage/Herman" instance=ExtResource("paper_shadow")]
+[node name="Shadow" parent="Stage/Herman" unique_id=451507075 instance=ExtResource("paper_shadow")]
 layout_mode = 0
 shadow_texture = ExtResource("3_herman")
 shadow_offset = Vector2(0, 0)
@@ -884,12 +884,16 @@ layout_mode = 2
 theme_type_variation = &"ShopCoinLabel"
 vertical_alignment = 1
 
-[node name="Parallax" type="Control" parent="Stage"]
+[node name="Parallax" type="Control" parent="Stage" unique_id=490057061]
 layout_mode = 1
+anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("parallax_diorama")
-travel = Vector2(14, 8)
-depth_by_child = {"Background": 0.15, "Barang1": 0.15, "Barang2": 0.15, "Barang3": 0.15, "Barang4": 0.15, "Barang5": 0.15, "Barang6": 0.15, "Herman": 0.5, "Foreground": 1.0}
+depth_by_child = {
+"Background": 0.15,
+"Foreground": 1.0,
+"Herman": 0.5
+}
 overscan_children = Array[StringName]([&"Background", &"Foreground"])
 
 [node name="Safe" type="MarginContainer" parent="." unique_id=259420622]

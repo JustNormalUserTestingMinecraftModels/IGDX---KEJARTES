@@ -50,6 +50,11 @@ extends CanvasLayer
 ## seconds. A hard cut on a full-screen tint reads as a glitch.
 @export_range(0.0, 1.5, 0.05) var fade_seconds: float = 0.35
 
+## The fade in flight, if any. Killed before a new one starts, or a fade-out's
+## closing `visible = false` would land after a quick re-enable and hide the
+## layer while the setting reads on.
+var _tween: Tween = null
+
 ## Set false to keep the layer off regardless of the saved setting. Exists so
 ## a screen that must be colour-accurate can suppress it.
 var suppressed: bool = false:
@@ -103,6 +108,9 @@ func _refresh(instant: bool = false) -> void:
 	# Keep the node out of the draw list entirely when it is off, so an
 	# unchecked setting costs nothing at all rather than costing a
 	# full-screen transparent quad.
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	_tween = null
 	if want:
 		visible = true
 	if instant or fade_seconds <= 0.0:
@@ -111,10 +119,10 @@ func _refresh(instant: bool = false) -> void:
 			_bloom.modulate.a = target
 		visible = want
 		return
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(_cover, "modulate:a", target, fade_seconds)
+	_tween = create_tween()
+	_tween.set_parallel(true)
+	_tween.tween_property(_cover, "modulate:a", target, fade_seconds)
 	if _bloom != null:
-		tween.tween_property(_bloom, "modulate:a", target, fade_seconds)
+		_tween.tween_property(_bloom, "modulate:a", target, fade_seconds)
 	if not want:
-		tween.chain().tween_callback(func() -> void: visible = false)
+		_tween.chain().tween_callback(func() -> void: visible = false)

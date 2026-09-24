@@ -43,8 +43,8 @@ extends Control
 ## the desk, so `depth_by_child` puts each row -- desk, portraits and hands --
 ## on one plane. The parallax is between rows, not within one.
 ##
-## NOTHING IS WRITTEN OUTSIDE PLAY. Every mutation this script makes --
-## positions, and the offsets of the overscanned bands -- happens in _process,
+## NOTHING IS WRITTEN OUTSIDE PLAY. Every mutation this script makes -- the
+## bands' offsets, grown and then shifted -- happens in _process,
 ## and _process is off under Engine.is_editor_hint(). An editor that moved or
 ## grew these nodes would bake the result into the .tscn on the next save,
 ## which is how StickyNote's pins once shifted 20px. The editor always shows
@@ -89,13 +89,28 @@ const SEAM_PAD := Vector2(3.0, 3.0)
 ## Set false to pin every band at rest.
 @export var enabled: bool = true
 
-## Rest position of each band, captured on the first frame that has real
-## layout, so motion is always written as rest + offset and can never
-## accumulate.
+## How fast the phone path's neutral pose follows the way the player holds the
+## handset, per second. Tilt is read against this, not against gravity, so any
+## comfortable holding angle rests at zero deflection and only a change of
+## angle moves the bands. Low keeps a deliberate tilt from being absorbed.
+@export_range(0.05, 5.0, 0.05) var tilt_recenter: float = 0.6
+
+## Rest offsets of each band (left, top, right, bottom), captured on the first
+## frame that has real layout, so motion is always written as rest + offset
+## and can never accumulate. Offsets rather than positions so the anchors keep
+## doing their job: a band moved this way still follows its parent through a
+## resize or a rotation, where a captured absolute position would go stale.
 var _rest: Dictionary = {}
 
 ## Current smoothed deflection, each component in [-1, 1].
 var _deflection: Vector2 = Vector2.ZERO
+
+## The accelerometer reading the phone path treats as zero tilt, tracked
+## toward the current reading at `tilt_recenter`.
+var _neutral: Vector3 = Vector3.ZERO
+
+## Whether `_neutral` has been seeded from a real reading yet.
+var _has_neutral: bool = false
 
 
 func _ready() -> void:
@@ -108,7 +123,7 @@ func _process(delta: float) -> void:
 		return
 	if _rest.is_empty() and not _capture_rest():
 		return
-	_deflection = _deflection.lerp(_read_tilt(), clampf(smoothing * delta, 0.0, 1.0))
+	_deflection = _deflection.lerp(_read_tilt(delta), clampf(smoothing * delta, 0.0, 1.0))
 	_apply()
 
 
@@ -126,15 +141,23 @@ func _capture_rest() -> bool:
 	var root := bands_parent()
 	if root == null or root.size.x <= 0.0 or root.size.y <= 0.0:
 		return false
-	var reach := required_reach()
-	var captured := {}
+	# Every band is checked before any is grown. Growing as it went, a band
+	# still unsized further down the map would fail the capture after an
+	# earlier one had grown, and the next frame would grow that one again.
+	var bands := {}
 	for name_key in depth_by_child:
 		var band := root.get_node_or_null(NodePath(String(name_key))) as Control
 		if band == null or band.size.x <= 0.0 or band.size.y <= 0.0:
 			return false
+		bands[name_key] = band
+	var reach := required_reach()
+	var captured := {}
+	for name_key in bands:
+		var band: Control = bands[name_key]
 		if overscan_children.has(StringName(String(name_key))):
 			_grow(band, reach)
-		captured[name_key] = band.position
+		captured[name_key] = Vector4(band.offset_left, band.offset_top,
+				band.offset_right, band.offset_bottom)
 	_rest = captured
 	return not _rest.is_empty()
 
@@ -166,14 +189,22 @@ func required_reach() -> Vector2:
 
 ## Tilt as a vector in [-1, 1]: the accelerometer where there is one, the
 ## pointer otherwise.
-func _read_tilt() -> Vector2:
+func _read_tilt(delta: float) -> Vector2:
 	var accel := Input.get_accelerometer()
 	if not accel.is_zero_approx():
-		# x is roll. Gravity dominates z for an upright handset, so pitch is
-		# read as the departure from standing up rather than from lying flat.
+		# Read against the pose the player is holding, not against gravity.
+		# Against gravity, pitch sat at a constant 5-10 m/s^2 at every normal
+		# holding angle, so the clamp pinned it at full deflection and the
+		# bands never answered a tilt. x is roll, z is pitch.
+		if not _has_neutral:
+			_neutral = accel
+			_has_neutral = true
+		else:
+			_neutral = _neutral.lerp(accel, clampf(tilt_recenter * delta, 0.0, 1.0))
+		var tilt := accel - _neutral
 		return Vector2(
-			clampf(accel.x * tilt_gain, -1.0, 1.0),
-			clampf((accel.z + 9.8) * tilt_gain, -1.0, 1.0))
+			clampf(tilt.x * tilt_gain, -1.0, 1.0),
+			clampf(tilt.z * tilt_gain, -1.0, 1.0))
 	var view := get_viewport()
 	if view == null:
 		return Vector2.ZERO
@@ -194,7 +225,12 @@ func _apply() -> void:
 		if band == null:
 			continue
 		var depth := float(depth_by_child.get(name_key, 0.0))
-		band.position = (_rest[name_key] as Vector2) - _deflection * travel * depth
+		var shift := -_deflection * travel * depth
+		var rest: Vector4 = _rest[name_key]
+		band.offset_left = rest.x + shift.x
+		band.offset_top = rest.y + shift.y
+		band.offset_right = rest.z + shift.x
+		band.offset_bottom = rest.w + shift.y
 
 
 ## Test seam: drive the bands to a known deflection with no device, no input

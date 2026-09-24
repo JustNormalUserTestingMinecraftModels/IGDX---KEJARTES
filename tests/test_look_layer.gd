@@ -191,6 +191,18 @@ func test_the_bloom_costs_nothing_when_the_layer_is_off() -> void:
 	assert_true(src.contains("$Bloom"), "the layer must own the bloom node")
 
 
+## A fade-out ends by hiding the layer. Flip Efek Visual off and back on inside
+## the fade and that closing `visible = false` used to land after the re-enable,
+## leaving the setting on and the layer gone. _refresh runs only in a real game,
+## so this pins the guard in the source: every new fade kills the one before.
+func test_a_new_fade_kills_the_one_in_flight() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/LookLayer.gd")
+	assert_true(src.contains("_tween.kill()"),
+		"_refresh must kill the previous fade before starting another")
+	assert_false(src.contains("var tween := create_tween()"),
+		"the fade must be kept in _tween so the next _refresh can kill it")
+
+
 ## Over a palette this near-white -- surface_page is #FBF1E3 and the game is
 ## mostly paper -- a threshold low enough to catch the highlights catches the
 ## whole screen, and the picture turns to fog. Measured on the Lobby at

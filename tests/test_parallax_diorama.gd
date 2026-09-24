@@ -126,6 +126,59 @@ func test_koperasi_ui_is_left_out_of_the_parallax() -> void:
 	for ui_name in ["BackButton", "TrayDock", "CoinHUD", "ChatBubble"]:
 		assert_false(depths.has(ui_name),
 			"%s is UI and must not drift with the diorama" % ui_name)
+	# The shelf goods are tap targets too, and each one's ShelfItem writes its
+	# idle bob into position.y every frame. A driver writing the same node
+	# after it erased the bob outright (review, 2026-09-24).
+	for i in range(1, 7):
+		assert_false(depths.has("Barang%d" % i),
+			"Barang%d is a bobbing shelf button and must not be a band" % i)
+
+
+## A capture that fails because one band has no layout yet must leave every
+## band untouched. It used to grow the overscanned bands as it went, so a
+## later unsized band failed the capture after an earlier one had grown, and
+## the next frame grew that one again: ~20px of creep per frame of waiting.
+func test_a_failed_capture_grows_nothing() -> void:
+	var host := track(Control.new()) as Control
+	host.size = Vector2(1080, 1920)
+	var wall := Control.new()
+	wall.name = "Wall"
+	wall.size = Vector2(1080, 1920)
+	host.add_child(wall)
+	var row := Control.new()
+	row.name = "Row"
+	host.add_child(row)
+	var driver: Control = (load("res://Scripts/UI/ParallaxDiorama.gd") as GDScript).new()
+	driver.set("depth_by_child", {"Wall": 0.15, "Row": 1.0})
+	driver.set("overscan_children", Array([&"Wall"], TYPE_STRING_NAME, &"", null))
+	host.add_child(driver)
+
+	assert_false(driver.call("force_deflection", Vector2.ONE), "Row has no size yet")
+	assert_false(driver.call("force_deflection", Vector2.ONE), "Row still has no size")
+	assert_eq(wall.offset_left, 0.0, "a failed capture must not grow the wall")
+
+	row.size = Vector2(1080, 400)
+	assert_true(driver.call("force_deflection", Vector2.ZERO), "every band has layout now")
+	var reach: Vector2 = driver.call("required_reach")
+	assert_true(is_equal_approx(wall.offset_left, -reach.x),
+		"the wall is grown exactly once: offset_left %s, reach %s" % [wall.offset_left, reach.x])
+
+
+## The bands move through their offsets, never an absolute `position`, so the
+## anchors keep a moved band on its parent through a resize or a rotation. And
+## the phone reads tilt against the pose it is held in: against gravity, pitch
+## sat at 5-10 m/s^2 at every holding angle and the clamp pinned it at full.
+func test_the_driver_moves_offsets_and_reads_tilt_from_the_held_pose() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/ParallaxDiorama.gd")
+	for line in src.split("\n"):
+		var stripped := line.strip_edges()
+		if stripped.begins_with("#"):
+			continue
+		assert_false(stripped.contains("band.position ="),
+			"write offsets, not position: " + stripped)
+		assert_false(stripped.contains("9.8"),
+			"tilt must be read against the held pose, not gravity: " + stripped)
+	assert_true(src.contains("_neutral"), "the phone path needs a tracked neutral pose")
 
 
 ## The saved scene must show the authored diorama, with no overscan baked in

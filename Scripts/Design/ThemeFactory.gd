@@ -35,9 +35,427 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_achievement_tile(theme, tokens)
 	_build_achievement_status_pill(theme, tokens)
 	_build_skin_select(theme, tokens)
+	_build_objective_strip(theme, tokens)
+	_build_picker(theme, tokens)
+	_build_school_day_liveliness(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
+
+
+## AturJadwal's objective strip (2026-09-24 visual polish, D8). The strip's
+## gradient body and gold star chip are drawn by rounded_gradient.gdshader on
+## ColorRects inside it, because a StyleBox cannot round a gradient; these
+## variations are the parts a StyleBox can do.
+##
+##   ObjectiveStripButton   the tap target: every state empty, so the shader
+##                          body shows through and the press is Juice's.
+##   ObjectiveTitleLabel    "Agustus · Minggu 3/6", display face, cream on
+##                          the brown with a dark rim.
+##   ObjectiveStarLabel     the chip's "1.5 / 2", display face, dark on gold.
+##   ObjectiveProgress      the slim always-visible bar toward the pass line.
+##   ObjectiveHintPanel     the one-line hint the strip expands to: a cream
+##   ObjectiveHintLabel     card with a brown rim, and its body text.
+static func _build_objective_strip(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("ObjectiveStripButton")
+	theme.set_type_variation("ObjectiveStripButton", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
+		theme.set_stylebox(state, "ObjectiveStripButton", StyleBoxEmpty.new())
+
+	theme.add_type("ObjectiveTitleLabel")
+	theme.set_type_variation("ObjectiveTitleLabel", "Label")
+	theme.set_font_size("font_size", "ObjectiveTitleLabel", tokens.font_title)
+	theme.set_color("font_color", "ObjectiveTitleLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "ObjectiveTitleLabel", maxi(2, tokens.text_outline_size / 2))
+	theme.set_color("font_outline_color", "ObjectiveTitleLabel", tokens.brand_primary_dark)
+	if tokens.font_display != null:
+		theme.set_font("font", "ObjectiveTitleLabel", tokens.font_display)
+
+	theme.add_type("ObjectiveStarLabel")
+	theme.set_type_variation("ObjectiveStarLabel", "Label")
+	theme.set_font_size("font_size", "ObjectiveStarLabel", tokens.font_caption)
+	theme.set_color("font_color", "ObjectiveStarLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "ObjectiveStarLabel", tokens.font_display)
+
+	var track := StyleBoxFlat.new()
+	track.bg_color = tokens.brand_primary_dark.darkened(0.3)
+	track.set_corner_radius_all(tokens.radius_pill)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = tokens.currency_gold
+	fill.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("ObjectiveProgress")
+	theme.set_type_variation("ObjectiveProgress", "ProgressBar")
+	theme.set_stylebox("background", "ObjectiveProgress", track)
+	theme.set_stylebox("fill", "ObjectiveProgress", fill)
+
+	var hint := StyleBoxFlat.new()
+	hint.bg_color = tokens.surface_card
+	hint.set_corner_radius_all(tokens.radius_md)
+	hint.set_border_width_all(int(tokens.outline_width / 2.0))
+	hint.border_color = tokens.brand_primary
+	hint.shadow_color = tokens.shadow_color
+	hint.shadow_size = int(tokens.shadow_size / 2.0)
+	hint.shadow_offset = tokens.shadow_offset
+	hint.content_margin_left = tokens.space_md
+	hint.content_margin_right = tokens.space_md
+	hint.content_margin_top = tokens.space_sm
+	hint.content_margin_bottom = tokens.space_sm
+	theme.add_type("ObjectiveHintPanel")
+	theme.set_type_variation("ObjectiveHintPanel", "PanelContainer")
+	theme.set_stylebox("panel", "ObjectiveHintPanel", hint)
+
+	theme.add_type("ObjectiveHintLabel")
+	theme.set_type_variation("ObjectiveHintLabel", "Label")
+	theme.set_font_size("font_size", "ObjectiveHintLabel", tokens.font_body_size)
+	theme.set_color("font_color", "ObjectiveHintLabel", tokens.text_primary)
+
+
+## The Penjadwalan activity picker (2026-09-24 visual polish, D9-D14): a
+## cream paper sheet with a soft tan header band, a two-column grid of
+## watermark tiles, and a note line under the grid. It replaced the old
+## five-row list and its Preview* variations.
+##
+##   PickerSheet         the sheet: cream, large radius, a soft drop shadow.
+##   PickerHeader        the tan band across its top; top corners only.
+##   PickerTitleLabel    "Selasa mau ngapain?", display face.
+##   PickerSubtitleLabel the line under it, quiet body text.
+##   PickerTileButton    the tile's tap target: every state empty, so the
+##                       Sheet panel inside draws the tile and the press
+##                       is UIPolish's.
+##   PickerTile          a resting tile: warm paper with a tan rim.
+##   PickerTileSelected  the chosen tile: brighter paper, thick gold ring,
+##                       gold glow (D13).
+##   PickerTileName      the tile's name, display face.
+##   PickerTileValue     the exact gain beside the arrows, deep green.
+##   PickerNeedLabel     "energi" / "mood" before their arrows, body face.
+##   PickerRibbon        the gold Favorit ribbon (D10) and its label,
+##   PickerRibbonLabel   display face on gold.
+##   PickerNotePanel     the note under the grid (the favourite breakdown,
+##   PickerNoteLabel     D14) and its body text, which carries the "·".
+##   PickerLegendLabel   the one-line arrow legend.
+## The picker's own widths and glow, measured by eye against the
+## 2026-09-24 mockup. No token matches; single-screen values.
+## A resting tile's tan rim, px.
+const PICKER_TILE_BORDER := 3
+## The selected tile's gold ring, px -- thick enough to read at a glance.
+const PICKER_SELECTED_BORDER := 6
+## Alpha of the selected tile's gold glow.
+const PICKER_SELECTED_GLOW_ALPHA := 0.55
+## The Favorit ribbon's cream rim, px.
+const PICKER_RIBBON_BORDER := 3
+## The ribbon's vertical padding, px; it is a slim tag, not a button.
+const PICKER_RIBBON_PAD_V := 2
+## The note panel's rim, px.
+const PICKER_NOTE_BORDER := 2
+
+static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
+	var sheet := StyleBoxFlat.new()
+	sheet.bg_color = tokens.surface_card
+	sheet.set_corner_radius_all(tokens.radius_lg)
+	sheet.shadow_color = tokens.shadow_color
+	sheet.shadow_size = tokens.shadow_size * 2
+	sheet.shadow_offset = tokens.shadow_offset * 2
+	theme.add_type("PickerSheet")
+	theme.set_type_variation("PickerSheet", "Panel")
+	theme.set_stylebox("panel", "PickerSheet", sheet)
+
+	var header := StyleBoxFlat.new()
+	header.bg_color = tokens.surface_sunken
+	header.corner_radius_top_left = tokens.radius_lg
+	header.corner_radius_top_right = tokens.radius_lg
+	theme.add_type("PickerHeader")
+	theme.set_type_variation("PickerHeader", "Panel")
+	theme.set_stylebox("panel", "PickerHeader", header)
+
+	theme.add_type("PickerTitleLabel")
+	theme.set_type_variation("PickerTitleLabel", "Label")
+	theme.set_font_size("font_size", "PickerTitleLabel", tokens.font_h2)
+	theme.set_color("font_color", "PickerTitleLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PickerTitleLabel", tokens.font_display)
+
+	theme.add_type("PickerSubtitleLabel")
+	theme.set_type_variation("PickerSubtitleLabel", "Label")
+	theme.set_font_size("font_size", "PickerSubtitleLabel", tokens.font_body_size)
+	theme.set_color("font_color", "PickerSubtitleLabel", tokens.text_secondary)
+
+	theme.add_type("PickerTileButton")
+	theme.set_type_variation("PickerTileButton", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
+		theme.set_stylebox(state, "PickerTileButton", StyleBoxEmpty.new())
+
+	var tile := StyleBoxFlat.new()
+	tile.bg_color = tokens.surface_page
+	tile.set_border_width_all(PICKER_TILE_BORDER)
+	tile.border_color = tokens.surface_sunken.darkened(0.08)
+	tile.set_corner_radius_all(tokens.radius_md)
+	tile.shadow_color = tokens.shadow_color
+	tile.shadow_size = int(tokens.shadow_size / 3.0)
+	tile.shadow_offset = tokens.shadow_offset / 2.0
+	theme.add_type("PickerTile")
+	theme.set_type_variation("PickerTile", "Panel")
+	theme.set_stylebox("panel", "PickerTile", tile)
+
+	var chosen := StyleBoxFlat.new()
+	chosen.bg_color = tokens.surface_card
+	chosen.set_border_width_all(PICKER_SELECTED_BORDER)
+	chosen.border_color = tokens.currency_gold
+	chosen.set_corner_radius_all(tokens.radius_md)
+	chosen.shadow_color = Color(tokens.currency_gold, PICKER_SELECTED_GLOW_ALPHA)
+	chosen.shadow_size = tokens.shadow_size
+	theme.add_type("PickerTileSelected")
+	theme.set_type_variation("PickerTileSelected", "Panel")
+	theme.set_stylebox("panel", "PickerTileSelected", chosen)
+
+	theme.add_type("PickerTileName")
+	theme.set_type_variation("PickerTileName", "Label")
+	theme.set_font_size("font_size", "PickerTileName", tokens.font_title)
+	theme.set_color("font_color", "PickerTileName", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PickerTileName", tokens.font_display)
+
+	theme.add_type("PickerTileValue")
+	theme.set_type_variation("PickerTileValue", "Label")
+	theme.set_font_size("font_size", "PickerTileValue", tokens.font_title)
+	theme.set_color("font_color", "PickerTileValue", tokens.state_success.darkened(0.25))
+	if tokens.font_display != null:
+		theme.set_font("font", "PickerTileValue", tokens.font_display)
+
+	theme.add_type("PickerNeedLabel")
+	theme.set_type_variation("PickerNeedLabel", "Label")
+	theme.set_font_size("font_size", "PickerNeedLabel", tokens.font_caption)
+	theme.set_color("font_color", "PickerNeedLabel", tokens.text_secondary)
+
+	var ribbon := StyleBoxFlat.new()
+	ribbon.bg_color = tokens.currency_gold
+	ribbon.set_corner_radius_all(tokens.radius_pill)
+	ribbon.set_border_width_all(PICKER_RIBBON_BORDER)
+	ribbon.border_color = tokens.outline_card
+	ribbon.shadow_color = tokens.shadow_color
+	ribbon.shadow_size = int(tokens.shadow_size / 3.0)
+	ribbon.shadow_offset = tokens.shadow_offset / 2.0
+	ribbon.content_margin_left = tokens.space_sm
+	ribbon.content_margin_right = tokens.space_sm
+	ribbon.content_margin_top = PICKER_RIBBON_PAD_V
+	ribbon.content_margin_bottom = PICKER_RIBBON_PAD_V
+	theme.add_type("PickerRibbon")
+	theme.set_type_variation("PickerRibbon", "PanelContainer")
+	theme.set_stylebox("panel", "PickerRibbon", ribbon)
+
+	theme.add_type("PickerRibbonLabel")
+	theme.set_type_variation("PickerRibbonLabel", "Label")
+	theme.set_font_size("font_size", "PickerRibbonLabel", tokens.font_caption)
+	theme.set_color("font_color", "PickerRibbonLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PickerRibbonLabel", tokens.font_display)
+
+	var note := StyleBoxFlat.new()
+	note.bg_color = tokens.surface_page
+	note.set_corner_radius_all(tokens.radius_md)
+	note.set_border_width_all(PICKER_NOTE_BORDER)
+	note.border_color = tokens.surface_sunken
+	note.content_margin_left = tokens.space_md
+	note.content_margin_right = tokens.space_md
+	note.content_margin_top = tokens.space_sm
+	note.content_margin_bottom = tokens.space_sm
+	theme.add_type("PickerNotePanel")
+	theme.set_type_variation("PickerNotePanel", "PanelContainer")
+	theme.set_stylebox("panel", "PickerNotePanel", note)
+
+	theme.add_type("PickerNoteLabel")
+	theme.set_type_variation("PickerNoteLabel", "Label")
+	theme.set_font_size("font_size", "PickerNoteLabel", tokens.font_body_size)
+	theme.set_color("font_color", "PickerNoteLabel", tokens.text_primary)
+
+	theme.add_type("PickerLegendLabel")
+	theme.set_type_variation("PickerLegendLabel", "Label")
+	theme.set_font_size("font_size", "PickerLegendLabel", tokens.font_caption)
+	theme.set_color("font_color", "PickerLegendLabel", tokens.text_secondary)
+
+
+## SchoolDay liveliness pass (2026-09-24, spec
+## docs/superpowers/specs/2026-09-24-schoolday-liveliness-design.md). Single-
+## screen values no token matches.
+## Alpha of the status line's dark strip: enough to hold light text over the
+## brightest midday sky, thin enough that the sky still reads through it.
+const STATUS_SCRIM_ALPHA := 0.62
+## The "selesai" stamp's inked rim, px.
+const DAY_STAMP_BORDER := 6
+## The stamp's paper, nearly opaque so the red ink reads on any sky.
+const DAY_STAMP_FILL_ALPHA := 0.92
+## The Bintang Hari Ini strip's gold rim, px, and how far its fill is
+## lightened from currency_gold toward white.
+const STAR_OF_DAY_RIM := 3
+const STAR_OF_DAY_FILL_LIGHTEN := 0.75
+## How far the tally's "total naik" green is darkened from state_success so it
+## reads on the cream cell.
+const TALLY_GAIN_DARKEN := 0.2
+
+## The day screen's new chrome.
+##
+##   DayBannerFill           the banner's progress fill: a white pill the
+##                           widget tints with the day's category colour via
+##                           self_modulate, clipped to the day's progress.
+##   DayBannerKnockoutLabel  the day name's white twin, revealed only under
+##                           the fill, so the name flips dark to white exactly
+##                           at the fill edge. DayBannerLabel's face and size.
+##   StatusScrim             the slim dark strip the status line rides, faded
+##                           in for its beats (owner's pick, 2026-09-24).
+##   StatusScrimLabel        light text on that strip.
+##   DayStampPanel           the "<hari> selesai" ink stamp: cream paper, a
+##   DayStampLabel           red rim and red display-face lettering.
+##   AvatarDisc              the avatar strip's round face frame.
+##   AvatarNameLabel         the student's name under it, on a StatusScrim.
+static func _build_school_day_liveliness(theme: Theme, tokens: DesignTokens) -> void:
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color.WHITE
+	fill.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("DayBannerFill")
+	theme.set_type_variation("DayBannerFill", "Panel")
+	theme.set_stylebox("panel", "DayBannerFill", fill)
+
+	theme.add_type("DayBannerKnockoutLabel")
+	theme.set_type_variation("DayBannerKnockoutLabel", "Label")
+	theme.set_font_size("font_size", "DayBannerKnockoutLabel", tokens.font_h1)
+	theme.set_color("font_color", "DayBannerKnockoutLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "DayBannerKnockoutLabel", bold)
+
+	var scrim := StyleBoxFlat.new()
+	scrim.bg_color = Color(tokens.surface_overlay, STATUS_SCRIM_ALPHA)
+	scrim.set_corner_radius_all(tokens.radius_pill)
+	scrim.content_margin_left = tokens.space_lg
+	scrim.content_margin_right = tokens.space_lg
+	scrim.content_margin_top = tokens.space_sm
+	scrim.content_margin_bottom = tokens.space_sm
+	theme.add_type("StatusScrim")
+	theme.set_type_variation("StatusScrim", "PanelContainer")
+	theme.set_stylebox("panel", "StatusScrim", scrim)
+
+	theme.add_type("StatusScrimLabel")
+	theme.set_type_variation("StatusScrimLabel", "Label")
+	theme.set_font_size("font_size", "StatusScrimLabel", tokens.font_title)
+	theme.set_color("font_color", "StatusScrimLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "StatusScrimLabel", bold)
+
+	var stamp := StyleBoxFlat.new()
+	stamp.bg_color = Color(tokens.surface_card, DAY_STAMP_FILL_ALPHA)
+	stamp.set_border_width_all(DAY_STAMP_BORDER)
+	stamp.border_color = tokens.state_danger
+	stamp.set_corner_radius_all(tokens.radius_sm)
+	stamp.content_margin_left = tokens.space_md
+	stamp.content_margin_right = tokens.space_md
+	stamp.content_margin_top = tokens.space_xs
+	stamp.content_margin_bottom = tokens.space_xs
+	theme.add_type("DayStampPanel")
+	theme.set_type_variation("DayStampPanel", "PanelContainer")
+	theme.set_stylebox("panel", "DayStampPanel", stamp)
+
+	theme.add_type("DayStampLabel")
+	theme.set_type_variation("DayStampLabel", "Label")
+	theme.set_font_size("font_size", "DayStampLabel", tokens.font_h2)
+	theme.set_color("font_color", "DayStampLabel", tokens.state_danger)
+	if tokens.font_display != null:
+		theme.set_font("font", "DayStampLabel", tokens.font_display)
+
+	# -- The avatar strip's chip: a round cream frame the face is clipped to
+	# (clip_children), and the student's name on a small StatusScrim pill. --
+	var disc := StyleBoxFlat.new()
+	disc.bg_color = tokens.surface_card
+	disc.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("AvatarDisc")
+	theme.set_type_variation("AvatarDisc", "Panel")
+	theme.set_stylebox("panel", "AvatarDisc", disc)
+
+	theme.add_type("AvatarNameLabel")
+	theme.set_type_variation("AvatarNameLabel", "Label")
+	theme.set_font_size("font_size", "AvatarNameLabel", tokens.font_caption)
+	theme.set_color("font_color", "AvatarNameLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "AvatarNameLabel", bold)
+
+	# -- The daily result's reward layer (mockup section 3): a cream card with
+	# the teacher's verdict, a three-cell tally and the Bintang Hari Ini
+	# strip. Deliberately not the Card variation: test_day_summary keeps that
+	# out of the popup, whose rows wear IdCardPanel. --
+	var reward := StyleBoxFlat.new()
+	reward.bg_color = tokens.surface_card
+	reward.set_corner_radius_all(tokens.radius_lg)
+	reward.shadow_color = tokens.shadow_color
+	reward.shadow_size = tokens.shadow_size
+	reward.shadow_offset = tokens.shadow_offset
+	reward.content_margin_left = tokens.space_md
+	reward.content_margin_right = tokens.space_md
+	reward.content_margin_top = tokens.space_md
+	reward.content_margin_bottom = tokens.space_md
+	theme.add_type("RewardPanel")
+	theme.set_type_variation("RewardPanel", "PanelContainer")
+	theme.set_stylebox("panel", "RewardPanel", reward)
+
+	theme.add_type("VerdictHeadlineLabel")
+	theme.set_type_variation("VerdictHeadlineLabel", "Label")
+	theme.set_font_size("font_size", "VerdictHeadlineLabel", tokens.font_h2)
+	theme.set_color("font_color", "VerdictHeadlineLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "VerdictHeadlineLabel", tokens.font_display)
+
+	theme.add_type("VerdictSublineLabel")
+	theme.set_type_variation("VerdictSublineLabel", "Label")
+	theme.set_font_size("font_size", "VerdictSublineLabel", tokens.font_body_size)
+	theme.set_color("font_color", "VerdictSublineLabel", tokens.text_secondary)
+
+	var cell := StyleBoxFlat.new()
+	cell.bg_color = tokens.surface_page
+	cell.set_corner_radius_all(tokens.radius_md)
+	cell.content_margin_top = tokens.space_xs
+	cell.content_margin_bottom = tokens.space_xs
+	theme.add_type("TallyCell")
+	theme.set_type_variation("TallyCell", "PanelContainer")
+	theme.set_stylebox("panel", "TallyCell", cell)
+
+	for spec in [["TallyValueGain", tokens.state_success.darkened(TALLY_GAIN_DARKEN)],
+			["TallyValueTarget", tokens.cat_akademis],
+			["TallyValueCoin", tokens.cat_libur]]:
+		theme.add_type(spec[0])
+		theme.set_type_variation(spec[0], "Label")
+		theme.set_font_size("font_size", spec[0], tokens.font_h2)
+		theme.set_color("font_color", spec[0], spec[1])
+		if tokens.font_display != null:
+			theme.set_font("font", spec[0], tokens.font_display)
+
+	theme.add_type("TallyCaptionLabel")
+	theme.set_type_variation("TallyCaptionLabel", "Label")
+	theme.set_font_size("font_size", "TallyCaptionLabel", tokens.font_caption)
+	theme.set_color("font_color", "TallyCaptionLabel", tokens.text_secondary)
+
+	var sod := StyleBoxFlat.new()
+	sod.bg_color = tokens.currency_gold.lightened(STAR_OF_DAY_FILL_LIGHTEN)
+	sod.set_border_width_all(STAR_OF_DAY_RIM)
+	sod.border_color = tokens.currency_gold
+	sod.set_corner_radius_all(tokens.radius_md)
+	sod.content_margin_left = tokens.space_sm
+	sod.content_margin_right = tokens.space_sm
+	sod.content_margin_top = tokens.space_xs
+	sod.content_margin_bottom = tokens.space_xs
+	theme.add_type("StarOfDayPanel")
+	theme.set_type_variation("StarOfDayPanel", "PanelContainer")
+	theme.set_stylebox("panel", "StarOfDayPanel", sod)
+
+	theme.add_type("StarOfDayTitleLabel")
+	theme.set_type_variation("StarOfDayTitleLabel", "Label")
+	theme.set_font_size("font_size", "StarOfDayTitleLabel", tokens.font_body_size)
+	theme.set_color("font_color", "StarOfDayTitleLabel", tokens.brand_primary_dark)
+	if bold != null:
+		theme.set_font("font", "StarOfDayTitleLabel", bold)
+
+	theme.add_type("StarOfDayLabel")
+	theme.set_type_variation("StarOfDayLabel", "Label")
+	theme.set_font_size("font_size", "StarOfDayLabel", tokens.font_caption)
+	theme.set_color("font_color", "StarOfDayLabel", tokens.text_secondary)
 
 
 ## Measured off skinselection_mockup.png (spec
@@ -572,6 +990,29 @@ static func _build_event_warning(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_outline_color", "EventWarningCaptionLabel", tokens.event_warning_ink)
 	if tokens.font_display != null:
 		theme.set_font("font", "EventWarningCaptionLabel", tokens.font_display)
+
+	# -- The caution band the 2026-09-24 liveliness pass laid across the
+	# notice: a dark strip between two stripe tapes, carrying the marker
+	# (KATEGORI · MODE, in the bold body face, which has the "·") over the
+	# caption. No side margins: the band runs off both screen edges. --
+	var band := StyleBoxFlat.new()
+	band.bg_color = tokens.surface_overlay
+	band.shadow_color = tokens.shadow_color
+	band.shadow_size = tokens.shadow_size
+	band.shadow_offset = tokens.shadow_offset
+	band.content_margin_bottom = 0
+	band.content_margin_top = 0
+	theme.add_type("EventBandPanel")
+	theme.set_type_variation("EventBandPanel", "PanelContainer")
+	theme.set_stylebox("panel", "EventBandPanel", band)
+
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+	theme.add_type("EventBandMarkerLabel")
+	theme.set_type_variation("EventBandMarkerLabel", "Label")
+	theme.set_font_size("font_size", "EventBandMarkerLabel", tokens.font_title)
+	theme.set_color("font_color", "EventBandMarkerLabel", tokens.currency_gold)
+	if bold != null:
+		theme.set_font("font", "EventBandMarkerLabel", bold)
 
 
 ## The shop hub's two destination tiles, panel-less by design.
@@ -1618,6 +2059,119 @@ static func _build_progress(theme: Theme, tokens: DesignTokens) -> void:
 		theme.set_font_size("font_size", lname, tokens.font_caption)
 		theme.set_color("font_color", lname, tokens.text_primary)
 
+	_build_embossed_stat_bars(theme, tokens)
+
+
+## AturJadwal's five stat bars, embossed (2026-09-24 visual polish, D5-D7).
+##
+## Three layers of depth instead of one flat capsule, and none of it on the
+## shared StatBar family -- StatCheck, ReportCard and StudentCard keep theirs:
+##
+##   StatBarFrame     a light, shadowed outer frame. A Panel drawn behind the
+##                    bar (show_behind_parent), so it carries the white rim and
+##                    the drop shadow the plain track used to.
+##   StatBarInset*    the dark track, with a soft inner shade along its top
+##                    and sides: a blended border darker than the ground, so
+##                    the fill reads as seated IN the track rather than on it.
+##   StatBarGloss     a thin light line along the top of the fill, which
+##                    StatBar.gd sizes to the fill's width as it animates.
+##
+## StatValuePill* is the value riding the end of the fill (D6): a cream pill
+## outlined in the stat's own accent, so its number reads dark-on-light on
+## either the fill or the empty track behind it. StatFlag* are the weak-stat
+## chips (D7): "perlu" on warning, "lelah" on danger.
+static func _build_embossed_stat_bars(theme: Theme, tokens: DesignTokens) -> void:
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = tokens.outline_card
+	frame.set_corner_radius_all(tokens.radius_pill)
+	frame.shadow_color = tokens.shadow_color
+	frame.shadow_size = int(tokens.shadow_size / 2.0)
+	frame.shadow_offset = tokens.shadow_offset
+	theme.add_type("StatBarFrame")
+	theme.set_type_variation("StatBarFrame", "Panel")
+	theme.set_stylebox("panel", "StatBarFrame", frame)
+
+	# The inner shade: a blended border darker than the ground, thickest
+	# along the top where an inset lit from above would be deepest, and
+	# absent along the bottom.
+	var inset := StyleBoxFlat.new()
+	inset.bg_color = tokens.stat_bar_track
+	inset.set_corner_radius_all(tokens.radius_pill)
+	inset.border_color = tokens.stat_bar_track.darkened(0.55)
+	inset.border_width_top = int(tokens.outline_width * 1.5)
+	inset.border_width_left = int(tokens.outline_width / 2.0)
+	inset.border_width_right = int(tokens.outline_width / 2.0)
+	inset.border_width_bottom = 0
+	inset.border_blend = true
+	inset.set_content_margin_all(tokens.outline_width / 2.0)
+
+	var gloss := StyleBoxFlat.new()
+	gloss.bg_color = Color(tokens.outline_card, 0.45)
+	gloss.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("StatBarGloss")
+	theme.set_type_variation("StatBarGloss", "Panel")
+	theme.set_stylebox("panel", "StatBarGloss", gloss)
+
+	for spec in [
+		["Akademis", tokens.cat_akademis_on_dark],
+		["SeniBudaya", tokens.cat_senibudaya_on_dark],
+		["Olahraga", tokens.cat_olahraga_on_dark],
+		["Istirahat", tokens.cat_istirahat_on_dark],
+		["Libur", tokens.cat_libur_on_dark],
+	]:
+		var cat: String = spec[0]
+		var accent: Color = spec[1]
+		var bar_name := "StatBarInset" + cat
+		theme.add_type(bar_name)
+		theme.set_type_variation(bar_name, "ProgressBar")
+		theme.set_stylebox("background", bar_name, inset)
+		theme.set_stylebox("fill", bar_name, _progress_fill_stylebox(accent, cat))
+		theme.set_font_size("font_size", bar_name, tokens.font_caption)
+		theme.set_color("font_color", bar_name, tokens.text_primary)
+
+		var pill := StyleBoxFlat.new()
+		pill.bg_color = tokens.surface_card
+		pill.set_corner_radius_all(tokens.radius_pill)
+		pill.set_border_width_all(int(tokens.outline_width * 2.0 / 3.0))
+		pill.border_color = accent
+		pill.content_margin_left = tokens.space_sm
+		pill.content_margin_right = tokens.space_sm
+		pill.content_margin_top = 0
+		pill.content_margin_bottom = 0
+		var pill_name := "StatValuePill" + cat
+		theme.add_type(pill_name)
+		theme.set_type_variation(pill_name, "Label")
+		theme.set_stylebox("normal", pill_name, pill)
+		theme.set_font_size("font_size", pill_name, tokens.font_body_size)
+		theme.set_color("font_color", pill_name, tokens.text_primary)
+		if tokens.font_body_bold != null:
+			theme.set_font("font", pill_name, tokens.font_body_bold)
+
+	for fspec in [
+		["StatFlagPerlu", tokens.state_warning, tokens.text_primary],
+		["StatFlagLelah", tokens.state_danger, tokens.text_on_brand],
+	]:
+		var flag_name: String = fspec[0]
+		var chip := StyleBoxFlat.new()
+		chip.bg_color = fspec[1]
+		chip.set_corner_radius_all(tokens.radius_pill)
+		chip.set_border_width_all(int(tokens.outline_width / 2.0))
+		chip.border_color = tokens.outline_card
+		chip.shadow_color = tokens.shadow_color
+		chip.shadow_size = int(tokens.shadow_size / 3.0)
+		chip.shadow_offset = tokens.shadow_offset / 2.0
+		chip.content_margin_left = tokens.space_xs * 1.5
+		chip.content_margin_right = tokens.space_xs * 1.5
+		chip.content_margin_top = 0
+		chip.content_margin_bottom = 0
+		theme.add_type(flag_name)
+		theme.set_type_variation(flag_name, "Label")
+		theme.set_stylebox("normal", flag_name, chip)
+		theme.set_font_size("font_size", flag_name, tokens.font_caption)
+		theme.set_color("font_color", flag_name, fspec[2])
+		if tokens.font_display != null:
+			theme.set_font("font", flag_name, tokens.font_display)
+
 
 ## AchievementTile's progress bar (Task 8, 2026-09-18 polish pass): StatBar's
 ## min height wins over any scene-level custom_minimum_size override on a
@@ -1805,111 +2359,6 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "PlateNameLabel", tokens.text_on_brand)
 	if tokens.font_display != null:
 		theme.set_font("font", "PlateNameLabel", tokens.font_display)
-
-	# -- Penjadwalan row: a plain cream slab on the sheet. Before the
-	# 2026-09-10 pass this was a brown slab with a 3px stroke and a hard
-	# drop shadow; with the card behind it and the pill inside it, that
-	# stacked four surfaces per row and read as clutter. Depth now comes
-	# from the inset track alone. --
-	# Draws nothing at rest. A row that paints its own fill reads as a box
-	# on the card whatever colour that fill is -- recolouring the boxes was
-	# the first attempt and it still looked like five stacked cards. The
-	# rows ARE the sheet now; only the hairlines divide them.
-	# PreviewRowPressed below is what gives a row a surface, and only while
-	# it is held. preview_row_fill survives as that variation's resting
-	# reference rather than as anything drawn.
-	theme.add_type("PreviewRow")
-	theme.set_type_variation("PreviewRow", "Panel")
-	theme.set_stylebox("panel", "PreviewRow", StyleBoxEmpty.new())
-
-	# -- The same slab while held. Panel has no pressed state, so
-	# ActivityRow.gd swaps this in on button_down. The inset top edge is
-	# what sells the sink; a flat colour change alone reads as a hover. --
-	var preview_row_pressed := StyleBoxFlat.new()
-	preview_row_pressed.bg_color = tokens.preview_row_pressed_fill
-	preview_row_pressed.set_border_width_all(0)
-	preview_row_pressed.border_width_top = 2
-	preview_row_pressed.border_color = tokens.preview_row_pressed_fill.darkened(0.12)
-	preview_row_pressed.set_corner_radius_all(tokens.radius_md)
-	theme.add_type("PreviewRowPressed")
-	theme.set_type_variation("PreviewRowPressed", "Panel")
-	theme.set_stylebox("panel", "PreviewRowPressed", preview_row_pressed)
-
-	# -- The hairline between rows, replacing the per-row stroke. --
-	var preview_separator := StyleBoxLine.new()
-	preview_separator.color = tokens.preview_row_separator
-	preview_separator.thickness = 1
-	theme.add_type("PreviewRowSeparator")
-	theme.set_type_variation("PreviewRowSeparator", "HSeparator")
-	theme.set_stylebox("separator", "PreviewRowSeparator", preview_separator)
-
-	# -- The darker pill inset into the row, carrying the numbers. Its edge in
-	# the mockup is a soft dark halo, NOT a stroke -- building it as a border
-	# reads as a hard outline the reference does not have. --
-	var preview_pill := StyleBoxFlat.new()
-	preview_pill.bg_color = tokens.preview_pill_fill
-	preview_pill.set_corner_radius_all(tokens.radius_md)
-	preview_pill.content_margin_left = tokens.space_sm
-	preview_pill.content_margin_right = tokens.space_sm
-	preview_pill.content_margin_top = tokens.space_xs
-	preview_pill.content_margin_bottom = tokens.space_xs
-	preview_pill.shadow_color = tokens.preview_pill_shadow_color
-	preview_pill.shadow_size = tokens.preview_pill_shadow_size
-	preview_pill.shadow_offset = tokens.preview_pill_shadow_offset
-	theme.add_type("PreviewPill")
-	theme.set_type_variation("PreviewPill", "PanelContainer")
-	theme.set_stylebox("panel", "PreviewPill", preview_pill)
-
-	# -- Wirausaha and Libur have no target, so no inset pill: their chips
-	# sit straight on the container's grey. Same node, no panel drawn. --
-	theme.add_type("PreviewPillFlat")
-	theme.set_type_variation("PreviewPillFlat", "PanelContainer")
-	theme.set_stylebox("panel", "PreviewPillFlat", StyleBoxEmpty.new())
-
-	# -- Wirausaha and Libur have no target, so no gauge. Against the old
-	# dark slab an empty row read fine; on the cream sheet they collapsed
-	# into near-empty strips beside the three rows that do carry bars.
-	# They now get the gauge's silhouette used as a container: a texture
-	# whose alpha ramps from 0.18 at the left to solid at the right, so
-	# the row still reads as empty without reading as missing.
-	#
-	# STRETCH, not TILE. The BarFill fills above tile, but a horizontal
-	# alpha ramp sawtooths back to transparent at every repeat if tiled.
-	var ghost := StyleBoxTexture.new()
-	ghost.texture = load("res://Assets/Images/UI/BarFill/track_ghost.png")
-	ghost.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
-	ghost.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
-	ghost.set_texture_margin_all(22)
-	ghost.content_margin_left = tokens.space_sm
-	ghost.content_margin_right = tokens.space_sm
-	ghost.content_margin_top = tokens.space_xs
-	ghost.content_margin_bottom = tokens.space_xs
-	theme.add_type("PreviewTrackGhost")
-	theme.set_type_variation("PreviewTrackGhost", "PanelContainer")
-	theme.set_stylebox("panel", "PreviewTrackGhost", ghost)
-
-	# -- The numbers inside that pill: white on the dark slab. --
-	theme.add_type("PreviewChipLabel")
-	theme.set_type_variation("PreviewChipLabel", "Label")
-	theme.set_font_size("font_size", "PreviewChipLabel", tokens.font_h2)
-	# Dark on the light track since 2026-09-10. These were text_on_brand
-	# cream, which was right on the old dark pill and invisible on the
-	# ghost track that replaced it.
-	theme.set_color("font_color", "PreviewChipLabel", tokens.text_primary)
-
-	# -- The category name for each row. Until 2026-09-10 this was cream
-	# text with a near-black 6px rim, overlapping the bottom of a dark
-	# brown row -- correct then, and an outlined white smear once the row
-	# went cream. It is now quiet dark text sitting above its bar, so the
-	# rim has nothing to do and the size drops a step: the bar is the loud
-	# element in the row, not its name. --
-	theme.add_type("PreviewRowLabel")
-	theme.set_type_variation("PreviewRowLabel", "Label")
-	theme.set_font_size("font_size", "PreviewRowLabel", tokens.font_body_size)
-	theme.set_color("font_color", "PreviewRowLabel", tokens.text_secondary)
-	theme.set_constant("outline_size", "PreviewRowLabel", 0)
-	if tokens.font_display != null:
-		theme.set_font("font", "PreviewRowLabel", tokens.font_display)
 
 
 # ------------------------------------------------- unstyled base controls

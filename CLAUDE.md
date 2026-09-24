@@ -123,6 +123,18 @@ theme's `default_font`. Which variation gets which is pinned in both
 directions by `DISPLAY_ROSTER` in `tests/test_theme_factory.gd` — change
 the roster and `ThemeFactory` together, or the suite fails.
 
+**Illustration plates wear one of two materials.** Cutouts take
+`illustration_grade_cutout.tres` (grade + inner AO + rim); full-bleed backdrops
+take `illustration_grade_material.tres` (grade only), because a backdrop has no
+alpha edge and would pay five texture taps per pixel for nothing. Which is
+which is pinned by `tests/test_illustration_ao.gd`'s census, measured from each
+texture's alpha. The Lobby is lit from the upper right, the rest of the game
+from the upper left: its desks wear `illustration_grade_cutout_lobby.tres` and
+its faces `illustration_grade_face.tres`, both kept equal to the cutout except
+`light_dir`. Tune them, the Lobby's shafts and its WorldEnvironment bloom live
+from the debug overlay's **Look** page, then write the landed value into the
+`.tres`.
+
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
 variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
 `SuccessButton`, `LobbyCtaButton`, `Card`, `SunkenPanel`, `Scrim`,
@@ -194,7 +206,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 145 suites, 2106 tests (2026-09-23).
+the Godot AI MCP `test_run` tool. 151 suites, 2190 tests (2026-09-23).
 
 Hard constraints:
 
@@ -209,10 +221,9 @@ Hard constraints:
    returns a `scene_warning` when it isn't, naming the scene it wants. Open
    `Scenes/MainMenu/main_menu.tscn` before trusting a failure.
 
-5. **The suite cannot be run headless.** Proven on 2026-09-09: `--script`
-   registers no autoloads, and running a *scene* makes `Engine.is_editor_hint()`
-   false so every `@tool` guard fires its real side effects (~143 failures).
-   The bridge is the only real way. Details in commit `39a1b9b`'s message.
+5. **The suite cannot be run headless** — the bridge is the only way.
+   (`--script` registers no autoloads; running a *scene* makes
+   `Engine.is_editor_hint()` false, so every `@tool` guard fires for real.)
 
 **A full `test_run` writes two tracked files.** The `theme_rebake` suite calls
 `ResourceSaver.save()` in-process, so a full run rebakes
@@ -380,8 +391,8 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Nothing recorded. Plan C's RunResult redesign is parked in
-`docs/superpowers/DEBT.md`.
+Nothing in flight. Plan C's RunResult redesign and premium-look item 12 are
+parked in `docs/superpowers/DEBT.md`.
 
 ## Maintaining this file
 
@@ -418,6 +429,4 @@ it costs context on every single run, so it earns its place or it moves.
   changes instead, and on merge take their version. A **new** tunable number
   of ours goes in a named `const` block or an `@export` in the script that
   owns the behaviour, never inline — like `RunGrade.gd`'s `WEIGHT_*` block.
-- **No emoji as UI iconography.** Use real transparent SVG textures instead —
-  explicitly banned during the 2026-09-02 end-of-grade pass after report icons
-  briefly used emoji glyphs.
+- **No emoji as UI iconography.** Use real transparent SVG textures instead.

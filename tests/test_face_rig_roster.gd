@@ -37,7 +37,13 @@ const _LENS_SHADER := "res://Scripts/Shaders/glasses_lens.gdshader"
 const _CITRA_RIG := "res://Scenes/Lobby/CitraFace.tscn"
 
 ## Per student: the rig scene and its solved layers, back to front, as
-## [node name, canvas position, native size]. Art facts, not preferences.
+## [node name, canvas position, native size]. Art facts, not preferences --
+## with one deliberate exception: Andi's lashes sit 17 px below their solved
+## y of 521 (2026-09-24). His sclera layer is shorter than the eye in his
+## portrait, so at 521 a 15-16 px band of skin showed between the lash line
+## and the sclera. Dropping the lashes closes it everywhere but the tapered
+## inner corners, as drawn; the alternative, growing the sclera and eyelid
+## art to the portrait's eye, was declined.
 const _RIGS := {
 	"Andi": {
 		"rig": "res://Scenes/Lobby/AndiFace.tscn",
@@ -45,7 +51,7 @@ const _RIGS := {
 			["Base", Vector2(0, 0), Vector2(1280, 1280)],
 			["Sclera", Vector2(404, 556), Vector2(472, 99)],
 			["Pupil", Vector2(477, 525), Vector2(326, 111)],
-			["Eyelashes", Vector2(369, 521), Vector2(542, 83)],
+			["Eyelashes", Vector2(369, 538), Vector2(542, 83)],
 			["Eyelid", Vector2(404, 556), Vector2(472, 110)],
 			["Eyebrows", Vector2(450, 424), Vector2(380, 52)],
 		],
@@ -188,6 +194,31 @@ func test_only_the_eyelid_starts_hidden() -> void:
 		for entry in _RIGS[student]["layers"]:
 			assert_eq(_layer(face, entry[0]).visible, entry[0] != "Eyelid",
 				"%s/%s: only the blink pose starts hidden" % [student, entry[0]])
+
+
+## A shut eye shows only the lid's own closed lash line: every rig's open
+## Eyelashes fade out as the lid fades in and come back as it lifts
+## (2026-09-24). Citra is included, since her rig runs the same script.
+func test_the_open_lashes_leave_with_every_blink() -> void:
+	var students: Array = _RIGS.keys()
+	students.append("Citra")
+	for student in students:
+		var scene: PackedScene = load(_CITRA_RIG if student == "Citra" else _RIGS[student]["rig"])
+		var face := scene.instantiate() as StudentFace
+		Engine.get_main_loop().root.add_child(face)
+		track(face)
+		face.idle_blink_enabled = false
+		face.idle_gaze_enabled = false
+		var lashes := _layer(face, "Eyelashes")
+		assert_true(is_equal_approx(lashes.modulate.a, 1.0), student + ": lashes start fully shown")
+		face.blink()
+		face.advance_motion(face.blink_fade_seconds * 0.5)
+		assert_true(is_equal_approx(lashes.modulate.a, 1.0 - face.get_eyelid_alpha()),
+			"%s: the lashes must cross-fade against the lid" % student)
+		face.set_eyes_closed(true)
+		assert_true(is_zero_approx(lashes.modulate.a), student + ": no open lashes over a shut eye")
+		face.set_eyes_closed(false)
+		assert_true(is_equal_approx(lashes.modulate.a, 1.0), student + ": the lashes return when the eye opens")
 
 
 func test_each_pupil_is_clipped_by_its_own_eye_white() -> void:

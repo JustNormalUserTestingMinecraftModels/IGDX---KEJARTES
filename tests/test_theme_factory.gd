@@ -92,36 +92,6 @@ func test_changing_a_token_changes_the_built_theme() -> void:
 		"theme must be derived from tokens, not hardcoded")
 
 
-## Task 3 of the mockup-rescale plan added these shadows as literal Color(...)
-## values instead of tokens -- the only hardcoded colors in the whole file.
-## This proves the fix: change the token, get a different shadow.
-func test_preview_shadows_come_from_tokens() -> void:
-	var custom := DesignTokens.new()
-	custom.preview_row_shadow_color = Color(1, 0, 0, 0.5)
-	custom.preview_row_shadow_size = 9
-	custom.preview_row_shadow_offset = Vector2(0, 9)
-	custom.preview_pill_shadow_color = Color(0, 1, 0, 0.5)
-	custom.preview_pill_shadow_size = 11
-	custom.preview_pill_shadow_offset = Vector2(0, 11)
-	var custom_theme := ThemeFactory.build(custom)
-
-	# PreviewRow used to consume preview_row_shadow_* here. The 2026-09-10
-	# cream pass dropped its shadow entirely, so the row is asserted to
-	# ignore those tokens rather than to honour them -- the guard against a
-	# hardcoded literal now lives on the pill alone, below. The three
-	# preview_row_shadow_* tokens are consequently unread by any variation.
-	assert_true(custom_theme.get_stylebox("panel", "PreviewRow") is StyleBoxEmpty,
-		"PreviewRow draws nothing, so no shadow token can reach it")
-
-	var pill_sb := custom_theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
-	assert_eq(pill_sb.shadow_color, custom.preview_pill_shadow_color,
-		"PreviewPill shadow color must come from tokens, not a hardcoded literal")
-	assert_eq(pill_sb.shadow_size, custom.preview_pill_shadow_size,
-		"PreviewPill shadow size must come from tokens, not a hardcoded literal")
-	assert_eq(pill_sb.shadow_offset, custom.preview_pill_shadow_offset,
-		"PreviewPill shadow offset must come from tokens, not a hardcoded literal")
-
-
 func test_build_survives_null_fonts() -> void:
 	# design_tokens.tres has null font slots until Task 4. Baking must
 	# not crash in that window.
@@ -331,7 +301,13 @@ const DISPLAY_ROSTER := [
 	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
 	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
-	"TraitPill", "PreviewRowLabel",
+	"TraitPill",
+	# 2026-09-24 Penjadwalan picker rebuild.
+	"PickerTitleLabel", "PickerTileName", "PickerTileValue", "PickerRibbonLabel",
+	# 2026-09-24 SchoolDay liveliness: the "selesai" stamp and the daily
+	# result's verdict headline and tally numbers.
+	"DayStampLabel", "VerdictHeadlineLabel",
+	"TallyValueGain", "TallyValueTarget", "TallyValueCoin",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
@@ -358,6 +334,11 @@ const DISPLAY_ROSTER := [
 	"PrimaryButtonM", "SecondaryButtonM", "DangerButtonM",
 	"PrimaryButtonL", "SecondaryButtonL", "DangerButtonL", "SuccessButtonL",
 	"LobbyNavTile", "LobbyCtaButton",
+	# 2026-09-24 AturJadwal visual polish D7: the "perlu" / "lelah" weak-stat
+	# chips are badges. The value pills are numbers, so they keep the body face.
+	"StatFlagPerlu", "StatFlagLelah",
+	# D8: the objective strip's title and its star chip. Its hint is body copy.
+	"ObjectiveTitleLabel", "ObjectiveStarLabel",
 	# 2026-09-17 achievements: card titles, the Klaim pill, the unlock banner.
 	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
 	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",

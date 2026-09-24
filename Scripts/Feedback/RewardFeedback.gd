@@ -42,7 +42,7 @@ var _cue_rung := 0
 const POP_BURST := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
 const CELEBRATION_CONFETTI := "res://Scenes/SchoolSimulation/CelebrationConfetti.tscn"
 
-## moment -> { tier, sfx, particle?, escalates?, dynamic_sfx? }. The single
+## moment -> { tier, sfx, particle?, escalates?, dynamic_sfx?, centred? }. The single
 ## readable home of the reward vocabulary; the debug gallery enumerates it.
 const RECIPES := {
 	&"stat_gain":        { "tier": TIER_TICK, "sfx": &"stat_up" },
@@ -50,7 +50,17 @@ const RECIPES := {
 	&"score_tick":       { "tier": TIER_TICK, "sfx": &"score_tick", "escalates": true },
 	&"coins_earned":     { "tier": TIER_POP, "sfx": &"coin", "arpeggio": true },
 	&"star_earned":      { "tier": TIER_POP, "sfx": &"star_earn_1", "dynamic_sfx": true, "no_particles": true },
-	&"schedule_confirmed": { "tier": TIER_POP, "sfx": &"schedule_confirm" },
+	# AturJadwal fires this from the START WEEK button itself, and the burst
+	# centres on it rather than on the button's top-left corner.
+	&"schedule_confirmed": { "tier": TIER_POP, "sfx": &"schedule_confirm", "centred": true },
+	# One day assigned in AturJadwal's picker (2026-09-24 visual polish, D15):
+	# the Pop burst from the day note's centre, in the one celebratory colour
+	# for every category. The favourite takes specialty_match instead.
+	&"activity_assigned": { "tier": TIER_POP, "sfx": &"select", "centred": true },
+	# A school day ends (2026-09-24 SchoolDay liveliness pass, layer 6): a
+	# small Pop burst from the "selesai" stamp. The week's last school day adds
+	# the ConfettiFireworks volley on top, in SchoolDay.
+	&"day_done":         { "tier": TIER_POP, "sfx": &"select", "centred": true },
 	# DayStickyNote.play_specialty_match() already fires the gold burst, so
 	# RewardFeedback adds only sound + haptic + shake here (no_particles).
 	&"specialty_match":  { "tier": TIER_POP, "sfx": &"specialty_match", "no_particles": true },
@@ -168,6 +178,10 @@ func _play_particles(recipe: Dictionary, tier: int, anchor: Node) -> void:
 	burst.plays_sfx = false  # RewardFeedback owns the sound channel
 	if anchor is Node2D:
 		burst.position = (anchor as Node2D).position
+	elif recipe.get("centred", false) and anchor is Control:
+		# A Control child sits at its parent's top-left; recipes marked
+		# "centred" burst from the middle of the anchor instead.
+		burst.position = (anchor as Control).size / 2.0
 	host.add_child(burst)
 	burst.fire()
 

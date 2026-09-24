@@ -1,6 +1,6 @@
 # AturJadwal visual polish — implementation plan
 
-**Status:** ready for implementation
+**Status:** done -- all five phases shipped on `feat/atur-jadwal-sticky-notes` (see CHANGELOG 2026-09-24)
 **Author:** design pass (brainstormed 2026-09-24), for handoff to another Claude
 **Scope:** the AturJadwal screen (`Scenes/AturJadwal/atur_jadwal.tscn`) and its
 Penjadwalan activity picker. Character animation is **deferred to its own
@@ -343,6 +343,68 @@ art direction is ready. It layers on top of this work and shares the
 - [ ] Full-size screenshots of: filled board, empty board, objective expanded,
       picker with a favorit selected, picker with Libur selected.
 - [ ] Ship the branch with the `ship-pr` skill (`CLAUDE.md` `## Pull requests`).
+
+## Progress and handoff (2026-09-24)
+
+Phases 1-3 are done on branch `feat/atur-jadwal-sticky-notes` (pushed, no PR
+yet; the owner wants all five phases shipped as ONE PR to avoid conflicts).
+Continue Phases 4 and 5 on that same branch, then ship with `ship-pr`.
+
+**Done:** Phase 1 (`ea86092`, `73bef50`), Phase 2 (`bf21318`), Phase 3
+(`21934e3`). Targeted suites green after each; the last full run was 2203/2203
+after Phase 1, so take a full run before shipping.
+
+**Decisions taken that differ from the plan text:**
+- Sticky notes: uniform -2 degree tilt (each instance +1.5 on the art's baked
+  -3.5); "+ Atur" uses ASCII "+", not "＋". The screen's perpetual random
+  sway was removed (it caused the scatter). Note lines stack in a
+  `Paper/Lines` VBox so a long holiday title wraps clear.
+- D7: only the single most urgent skill is flagged "perlu" (every skill is
+  below target early in a grade), plus "lelah" for needs under
+  `Balance.BATAS_KELELAHAN`. Logic in `Scripts/AturJadwal/StatFlags.gd`.
+- D8: title separator is a plain hyphen. Logic in `ObjectiveHint.gd`.
+- Found and fixed: the mood and energy rows were fed each other's values.
+
+**Measured facts Phase 4 must respect:**
+- **No arrow glyphs exist in any of our fonts.** Boohong (display) and Open
+  Sans (body, bold) all lack ↑ and ↓; Boohong also lacks "·" and "—". D11's
+  arrows must be SVG textures (TextureRects), not text. Pin any display-face
+  text with a `has_char` test like `test_objective_hint.gd`'s.
+- The picker only has the student *dictionary*; the cost multiplier lives on
+  `StudentData`, so an arrow helper must mirror it from
+  `Balance.BIAYA_KALAU_*` (favourite / "Seimbang" / otherwise; study only).
+- `ActivityPreview`'s literal scan rejects float literals only; an int
+  display constant (e.g. `MAX_ARROWS := 3`) passes.
+- Nine suites pin the current row picker (ActivityRow): test_activity_row,
+  test_atur_jadwal (about 20 references, incl. the touch-target path list),
+  test_atur_jadwal_specialty_feedback, test_back_controls,
+  test_cream_panel_tokens, test_day_sticky_note (DISPLAY_NAMES synced with
+  the row wording), test_ghost_track, test_viewport_editability (ActivityRow
+  sits in ALLOWED), test_wirausaha. Read each before deleting ActivityRow.
+
+**Phases 4 and 5 (done, same day).** Decisions that differ from the text:
+- The picker lost its back arrow for Batal / Pilih, both S-step buttons.
+  Batal is a plain `SecondaryButton`, which the lobby-style-buttons rule
+  draws in the same brown as Pilih (only StudentCard may use the cream
+  secondary); Pilih stays distinct by being dimmed until a tile is chosen
+  and then naming it. The tile has a reviewed `test_button_geometry`
+  height exemption: it is a card, not an action button.
+- The D14 breakdown is not a separate expanding panel: the note line under
+  the grid always holds a line for the current selection, and for the
+  favourite it is the breakdown (and pops). A fixed slot, so the sheet never
+  jumps.
+- Arrow counts: gain is 1 for a plain day and `1 + ceil(bonus / base * 2)`
+  for the favourite. A cost is its middle-of-range size over the biggest
+  one-day swing Balance allows, times 3, rounded and clamped 1-3. Coin pips
+  measure a typical day's earnings against the best day.
+- The plain assign burst reuses RewardBurst (the Pop tier's) instead of a new
+  scene: one colour for every category, as D15 asks.
+
+**Working notes:** the Godot bridge drops after every full run; restart the
+editor. A spurious "(*)" on loby.tscn after a restart held no real changes
+(packed and diffed). Rebake via `test_run(suite="theme_rebake")`, then
+restart before any scene save.
+
 
 ## Suggested branch / commit shape
 

@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://dku34a3bprj4y" path="res://Assets/Images/MuridPotrait/Andi/andi_eyelid.png" id="6_eyelid"]
 [ext_resource type="Texture2D" uid="uid://xelmrgru14md" path="res://Assets/Images/MuridPotrait/Andi/andi_eyebrows.png" id="7_eyebrows"]
 [ext_resource type="Material" path="res://Scenes/Lobby/andi_eye_mask.tres" id="20_mask"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_face.tres" id="illus_grade_face"]
 
 [node name="AndiFace" type="Control" unique_id=758441702]
 layout_mode = 3
@@ -27,6 +28,7 @@ scale = Vector2(0.3125, 0.3125)
 mouse_filter = 2
 
 [node name="Base" type="TextureRect" parent="Canvas" unique_id=391841309]
+material = ExtResource("illus_grade_face")
 layout_mode = 0
 offset_right = 1280.0
 offset_bottom = 1280.0
@@ -57,10 +59,10 @@ expand_mode = 1
 
 [node name="Eyelashes" type="TextureRect" parent="Canvas" unique_id=398149196]
 layout_mode = 0
-offset_left = 371.2
-offset_top = 540.8
-offset_right = 913.2
-offset_bottom = 623.8
+offset_left = 369.0
+offset_top = 538.0
+offset_right = 911.0
+offset_bottom = 621.0
 mouse_filter = 2
 texture = ExtResource("5_eyelashes")
 expand_mode = 1

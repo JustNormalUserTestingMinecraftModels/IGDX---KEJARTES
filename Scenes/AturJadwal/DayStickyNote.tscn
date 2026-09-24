@@ -3,12 +3,19 @@
 [ext_resource type="Script" uid="uid://dtfh14aacv1cg" path="res://Scripts/AturJadwal/DayStickyNote.gd" id="1_hn8nh"]
 [ext_resource type="Shader" uid="uid://bmdrhc1vicis" path="res://Scripts/Shaders/soft_shadow.gdshader" id="2_elcly"]
 [ext_resource type="Texture2D" uid="uid://dbkqgaqqwkp57" path="res://Assets/Images/UI/stickynotes.png" id="3_wbbga"]
+[ext_resource type="Shader" uid="uid://b42j5x0orvagq" path="res://Scripts/Shaders/paper_gradient.gdshader" id="4_g88lt"]
 [ext_resource type="Texture2D" uid="uid://cyfkas4fqxd7c" path="res://Assets/Images/Particles/particle_glow.png" id="4_wbbga"]
 [ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="5_mpgil"]
+[ext_resource type="Texture2D" uid="uid://dv7re4xhg8tbg" path="res://Assets/Images/AturJadwal/washi_tape.svg" id="6_jncpx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mpgil"]
 shader = ExtResource("2_elcly")
 shader_parameter/blur = 2.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_n0dnc"]
+shader = ExtResource("4_g88lt")
+shader_parameter/top_color = Color(1, 0.99215686, 0.972549, 1)
+shader_parameter/bottom_color = Color(0.9843137, 0.94509804, 0.8901961, 1)
 
 [node name="DayStickyNote" type="Control" unique_id=2030438336]
 custom_minimum_size = Vector2(271, 267)
@@ -45,7 +52,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Paper" type="TextureButton" parent="." unique_id=639882731]
-self_modulate = Color(0.8666667, 0.8980392, 0.96862745, 1)
+material = SubResource("ShaderMaterial_n0dnc")
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -64,36 +71,28 @@ texture = ExtResource("4_wbbga")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="WashiTape" type="TextureRect" parent="Paper" unique_id=992761472]
+visible = false
+layout_mode = 0
+offset_left = -4.0
+offset_top = 13.0
+offset_right = 242.0
+offset_bottom = 53.0
+rotation = -0.05811946
+pivot_offset = Vector2(123, 20)
+mouse_filter = 2
+texture = ExtResource("6_jncpx")
+expand_mode = 1
+
 [node name="DayLabel" type="Label" parent="Paper" unique_id=266274374]
 modulate = Color(0, 0, 0, 1)
 layout_mode = 0
 offset_left = 40.0
-offset_top = 24.0
+offset_top = 60.0
 offset_right = 240.0
-offset_bottom = 92.0
+offset_bottom = 124.0
 theme_type_variation = &"H2Label"
 text = "SENIN"
-
-[node name="SubjectLabel" type="Label" parent="Paper" unique_id=839462538]
-visible = false
-modulate = Color(0, 0, 0, 1)
-layout_mode = 0
-offset_left = 40.0
-offset_top = 104.0
-offset_right = 260.0
-offset_bottom = 150.0
-theme_type_variation = &"CaptionLabel"
-autowrap_mode = 2
-
-[node name="FlavorLabel" type="Label" parent="Paper" unique_id=1483257253]
-visible = false
-modulate = Color(0, 0, 0, 1)
-layout_mode = 0
-offset_left = 40.0
-offset_top = 156.0
-offset_right = 260.0
-offset_bottom = 196.0
-theme_type_variation = &"MicroLabel"
 
 [node name="Lock" type="Label" parent="Paper" unique_id=1387335178]
 visible = false
@@ -117,3 +116,31 @@ mouse_filter = 2
 texture = ExtResource("5_mpgil")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Lines" type="VBoxContainer" parent="Paper" unique_id=113769439]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 124.0
+offset_right = 250.0
+offset_bottom = 224.0
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="SubjectLabel" type="Label" parent="Paper/Lines" unique_id=839462538]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+autowrap_mode = 2
+
+[node name="FlavorLabel" type="Label" parent="Paper/Lines" unique_id=1483257253]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 2
+theme_type_variation = &"MicroLabel"
+
+[node name="AturHint" type="Label" parent="Paper/Lines" unique_id=629865034]
+modulate = Color(0, 0, 0, 0.55)
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "+ Atur"

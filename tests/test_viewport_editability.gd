@@ -78,7 +78,7 @@ const BASELINE: Dictionary = {
 	"res://Scripts/SchoolSimulation/BookClockWidget.gd": 0,
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd": 6,
 	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 1,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd": 9,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1,
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
 	"res://Scripts/StudentCard/student_card.gd": 1,
 	"res://Scripts/StudentList/student_list.gd": 7,
@@ -97,10 +97,6 @@ const ALLOWED: Dictionary = {
 	# create_floating_text(): one-shot damage/reward-style popup text,
 	# spawned at a caller-supplied position with caller-supplied text.
 	"res://Scripts/AnimUtils.gd": 1,
-	# _add_pill()'s chip icon+label: content and count vary per stat
-	# category on every refresh() call (Wirausaha shows a money chip,
-	# Istirahat shows none, etc).
-	"res://Scripts/AturJadwal/ActivityRow.gd": 2,
 	# Answer buttons: text and shuffled order regenerate per question: not
 	# fixed layout.
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,

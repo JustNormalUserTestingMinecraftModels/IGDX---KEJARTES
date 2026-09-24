@@ -1,0 +1,160 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/AturJadwal/ActivityTile.gd" id="1_tile"]
+[ext_resource type="PackedScene" path="res://Scenes/AturJadwal/EffectMeter.tscn" id="2_meter"]
+[ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="3_star"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/Picker/badge_check.svg" id="4_check"]
+
+[node name="ActivityTile" type="Button"]
+custom_minimum_size = Vector2(200, 204)
+size_flags_horizontal = 3
+theme_type_variation = &"PickerTileButton"
+flat = true
+script = ExtResource("1_tile")
+
+[node name="Sheet" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"PickerTile"
+
+[node name="Watermark" type="TextureRect" parent="."]
+modulate = Color(1, 1, 1, 0.13)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -176.0
+offset_top = -176.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Content" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="Lines" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="Content/Lines"]
+layout_mode = 2
+theme_type_variation = &"PickerTileName"
+text = "Akademik"
+
+[node name="GainRow" type="HBoxContainer" parent="Content/Lines"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="GainMeter" parent="Content/Lines/GainRow" instance=ExtResource("2_meter")]
+layout_mode = 2
+pip_size = Vector2(38, 38)
+
+[node name="GainValue" type="Label" parent="Content/Lines/GainRow"]
+layout_mode = 2
+theme_type_variation = &"PickerTileValue"
+text = "+3"
+vertical_alignment = 1
+
+[node name="NeedsRow" type="HBoxContainer" parent="Content/Lines"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="EnergyWord" type="Label" parent="Content/Lines/NeedsRow"]
+layout_mode = 2
+theme_type_variation = &"PickerNeedLabel"
+text = "energi"
+vertical_alignment = 1
+
+[node name="EnergyMeter" parent="Content/Lines/NeedsRow" instance=ExtResource("2_meter")]
+layout_mode = 2
+pip_size = Vector2(28, 28)
+
+[node name="Gap" type="Control" parent="Content/Lines/NeedsRow"]
+custom_minimum_size = Vector2(18, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MoodWord" type="Label" parent="Content/Lines/NeedsRow"]
+layout_mode = 2
+theme_type_variation = &"PickerNeedLabel"
+text = "mood"
+vertical_alignment = 1
+
+[node name="MoodMeter" parent="Content/Lines/NeedsRow" instance=ExtResource("2_meter")]
+layout_mode = 2
+pip_size = Vector2(28, 28)
+
+[node name="FavoritRibbon" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = -20.0
+offset_right = -56.0
+offset_bottom = 24.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_type_variation = &"PickerRibbon"
+
+[node name="Row" type="HBoxContainer" parent="FavoritRibbon"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 6
+
+[node name="Star" type="TextureRect" parent="FavoritRibbon/Row"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("3_star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="FavoritRibbon/Row"]
+layout_mode = 2
+theme_type_variation = &"PickerRibbonLabel"
+text = "Favorit"
+vertical_alignment = 1
+
+[node name="CheckBadge" type="TextureRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -44.0
+offset_top = -20.0
+offset_right = 12.0
+offset_bottom = 36.0
+grow_horizontal = 0
+mouse_filter = 2
+texture = ExtResource("4_check")
+expand_mode = 1
+stretch_mode = 5

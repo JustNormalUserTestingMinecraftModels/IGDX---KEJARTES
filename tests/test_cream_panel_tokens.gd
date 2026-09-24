@@ -3,6 +3,11 @@ extends McpTestSuiteCompat
 
 ## The four tokens behind AturJadwal's cream activity row.
 ##
+## The row itself and its Preview* variations were retired on 2026-09-24,
+## when the picker was rebuilt as a tile grid (ActivityTile, Picker*
+## variations). preview_pill_fill still feeds the StatBar light track;
+## the other three have no reader now (docs/superpowers/DEBT.md).
+##
 ## Before this pass a row nested four surfaces: the olive card, a
 ## #6B4B33 slab, a #4A3728 inset pill, and the category bar. The mentor
 ## review called that cluttered. These tokens collapse it to a cream
@@ -48,88 +53,3 @@ func test_pressed_fill_is_darker_than_the_resting_sheet() -> void:
 	var pressed: float = tokens.preview_row_pressed_fill.get_luminance()
 	assert_true(pressed < resting,
 		"pressed fill (%f) must be darker than resting (%f)" % [pressed, resting])
-
-
-## A row draws nothing at rest. Painting a fill -- any fill -- makes the
-## row read as a box on the card, which is what the mentor objected to;
-## recolouring those boxes cream was the first attempt and it still looked
-## like five stacked cards. The rows ARE the sheet, divided by hairlines.
-func test_preview_row_draws_nothing_at_rest() -> void:
-	var tokens := DesignTokens.load_default()
-	assert_not_null(tokens, "design_tokens.tres failed to load")
-	var theme := ThemeFactory.build(tokens)
-	var box := theme.get_stylebox("panel", "PreviewRow")
-	assert_true(box is StyleBoxEmpty,
-		"PreviewRow must draw nothing, or every row reads as its own box")
-
-
-func test_pressed_variation_exists_and_differs_from_resting() -> void:
-	var tokens := DesignTokens.load_default()
-	assert_not_null(tokens, "design_tokens.tres failed to load")
-	var theme := ThemeFactory.build(tokens)
-	# The resting row draws nothing at all, so there is no resting colour to
-	# differ from -- the press IS the appearance of a surface.
-	assert_true(theme.get_stylebox("panel", "PreviewRow") is StyleBoxEmpty,
-		"the resting row draws nothing")
-	var pressed := theme.get_stylebox("panel", "PreviewRowPressed") as StyleBoxFlat
-	assert_not_null(pressed, "PreviewRowPressed variation missing")
-	assert_eq(pressed.bg_color, PRESSED, "pressed should use the recess token")
-
-
-func test_separator_variation_is_the_hairline() -> void:
-	var tokens := DesignTokens.load_default()
-	assert_not_null(tokens, "design_tokens.tres failed to load")
-	var theme := ThemeFactory.build(tokens)
-	var box := theme.get_stylebox("separator", "PreviewRowSeparator") as StyleBoxLine
-	assert_not_null(box, "PreviewRowSeparator should be a StyleBoxLine")
-	assert_eq(box.color, SEPARATOR, "separator should use the hairline token")
-	assert_eq(box.thickness, 1, "separator should be 1px")
-
-
-## Source-text scan, following the established pattern for UI that
-## cannot be instantiated headlessly. Five rows need four separators.
-func test_the_rows_are_divided_by_hairlines() -> void:
-	var path := "res://Scenes/AturJadwal/atur_jadwal.tscn"
-	var f := FileAccess.open(path, FileAccess.READ)
-	assert_not_null(f, "could not open " + path)
-	var src := f.get_as_text()
-	f.close()
-	assert_contains(src, "PreviewRowSeparator",
-		"the activity rows should be divided by the hairline variation")
-	var count := src.count("PreviewRowSeparator")
-	assert_eq(count, 4, "five rows need exactly four separators, found %d" % count)
-
-
-## Panel has no pressed state, so the sink is driven from the Button that
-## wraps it. Signal wiring stays ungated by Engine.is_editor_hint so this
-## can be exercised without instantiating the scene.
-func test_the_row_wires_its_own_press_state() -> void:
-	var f := FileAccess.open("res://Scripts/AturJadwal/ActivityRow.gd", FileAccess.READ)
-	assert_not_null(f, "could not open ActivityRow.gd")
-	var src := f.get_as_text()
-	f.close()
-	assert_contains(src, "button_down.connect",
-		"Panel has no pressed state; the row must drive it from the Button")
-	assert_contains(src, "button_up.connect",
-		"a press with no release leaves the row stuck sunken")
-	assert_contains(src, "PreviewRowPressed",
-		"the press should swap to the baked pressed variation")
-
-
-## The behavioural half: pressing must actually change the container's
-## variation, and releasing must put it back.
-func test_pressing_the_row_swaps_the_container_variation() -> void:
-	var scene: PackedScene = load("res://Scenes/AturJadwal/ActivityRow.tscn")
-	var row := scene.instantiate() as ActivityRow
-	Engine.get_main_loop().root.add_child(row)
-	track(row)
-	var container := row.get_node("Container") as Panel
-	assert_eq(container.theme_type_variation, &"PreviewRow",
-		"a resting row wears the plain cream variation")
-	row.button_down.emit()
-	assert_eq(container.theme_type_variation, &"PreviewRowPressed",
-		"holding the row must sink it")
-	row.button_up.emit()
-	assert_eq(container.theme_type_variation, &"PreviewRow",
-		"releasing must lift it back, or the row stays stuck sunken")
-	row.queue_free()

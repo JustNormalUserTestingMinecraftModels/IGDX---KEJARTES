@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://c72nldobl75au" path="res://Assets/Images/UI/logo.png" id="4_logo"]
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="5_0l8wx"]
 [ext_resource type="Texture2D" uid="uid://dqf66cw5abxy0" path="res://Assets/Images/UI/icon_exit.svg" id="6_n5jej"]
+[ext_resource type="Material" uid="uid://dv5bscxw2v678" path="res://Scripts/Shaders/soft_shadow_material.tres" id="soft_shadow_mat"]
 
 [node name="MainMenu" type="Control" unique_id=1708799478]
 layout_mode = 3
@@ -30,6 +31,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="LogoShadow" type="TextureRect" parent="." unique_id=1338557889]
+material = ExtResource("soft_shadow_mat")
 modulate = Color(0, 0, 0, 0.32)
 layout_mode = 1
 anchors_preset = -1

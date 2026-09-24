@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KejarTes — SchoolDay & Daily Results mockups</title>
+<style>
+  :root{
+    --paper:#f4ecdb; --paper-line:rgba(120,90,50,.3);
+    --ink:#3a2f2a; --muted:#7a6a4a;
+    --sky-day-top:#7cc0ef; --sky-day-bot:#d5ecf8;
+    --sky-dusk-top:#2c3e63; --sky-dusk-mid:#7a5a6e; --sky-dusk-bot:#e6a35c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9e5dc;color:#2b2620;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:32px 20px 60px;line-height:1.5}
+  .wrap{max-width:1100px;margin:0 auto}
+  h1{font-size:24px;font-weight:700;margin:0 0 4px}
+  .lede{color:#5f5850;font-size:14px;margin:0 0 6px;max-width:720px}
+  .meta{color:#8a837a;font-size:12px;margin:0 0 28px}
+  h2{font-size:17px;font-weight:700;margin:36px 0 4px;padding-top:18px;border-top:1px solid #d4cdc2}
+  .note{font-size:13px;color:#5f5850;margin:0 0 16px;max-width:760px}
+  .row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  .frame{width:300px}
+  .cap{font-size:12px;font-weight:600;text-align:center;margin-top:8px;color:#3b3630}
+  .sub{font-size:11px;color:#8a837a;text-align:center;margin-top:2px;line-height:1.4}
+  /* ---- phone screen ---- */
+  .screen{position:relative;height:534px;border-radius:26px;overflow:hidden;
+    border:6px solid #2b2620;background:#000}
+  .sky{position:absolute;inset:0}
+  .sky.day{background:linear-gradient(var(--sky-day-top),var(--sky-day-bot))}
+  .sky.dusk{background:linear-gradient(var(--sky-dusk-top) 0%,var(--sky-dusk-mid) 44%,#c8794b 70%,var(--sky-dusk-bot) 100%)}
+  .sky.night{background:linear-gradient(#0a0f28,#1c2748 70%,#2e3a5e)}
+  .sun{position:absolute;width:44px;height:44px;border-radius:50%;background:#ffdf6e;
+    box-shadow:0 0 26px 8px rgba(255,214,90,.55)}
+  .moon{position:absolute;width:34px;height:34px;border-radius:50%;background:#f2f0d8;
+    box-shadow:0 0 20px 6px rgba(242,240,216,.5)}
+  .cloud{position:absolute;background:rgba(255,255,255,.62);border-radius:50%}
+  .cloud.dim{background:rgba(150,180,220,.5)}
+  .star{position:absolute;background:#fff;border-radius:50%}
+  .bldg{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+    width:170px;height:96px;background:#9aa0a6;border-radius:6px 6px 0 0}
+  .bldg.night{background:#3e4358}
+  .win{position:absolute;width:15px;height:18px;border-radius:2px;background:#7d838c}
+  .win.lit{background:#ffd97a;box-shadow:0 0 8px 2px rgba(255,217,122,.6)}
+  .grass{position:absolute;bottom:0;left:0;right:0;height:36px;background:#6fae4d;border-radius:44% 44% 0 0}
+  .grass.night{background:#2c4a2a}
+  /* header: calendar + day banner (banner = progress) */
+  .hdr{position:absolute;top:16px;left:14px;right:14px;display:flex;gap:8px;align-items:center}
+  .cal{width:42px;height:42px;background:#f0c98a;border-radius:8px;flex:none;
+    font-size:9px;text-align:center;line-height:1.15;padding-top:6px;color:#5a3a12;font-weight:700}
+  .banner{flex:1;position:relative;height:42px;border-radius:22px;overflow:hidden;
+    background:#fff;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+  .banner .fill{position:absolute;left:0;top:0;bottom:0;width:62%;
+    background:#bcd7f5;
+    background-image:radial-gradient(rgba(255,255,255,.5) 1.5px,transparent 1.6px);
+    background-size:12px 12px}
+  .banner .name-base{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:18px;font-weight:800;color:#2f5d92;letter-spacing:1px}
+  .banner .name-clip{position:absolute;left:0;top:0;bottom:0;width:62%;overflow:hidden}
+  .banner .name-clip .name-inv{position:absolute;top:0;bottom:0;width:300px;display:flex;
+    align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;letter-spacing:1px}
+  /* status scrim strip */
+  .status{position:absolute;top:78px;left:24px;right:24px;
+    background:rgba(18,22,38,.42);border-radius:12px;padding:7px 10px;text-align:center}
+  .status .txt{font-size:13px;font-weight:600;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+  /* student rows */
+  .rows{position:absolute;top:120px;left:16px;right:16px;bottom:150px;display:flex;flex-direction:column;gap:10px}
+  .srow{background:rgba(255,255,255,.92);border-radius:12px;padding:8px 10px;display:flex;gap:8px;align-items:center}
+  .av{width:34px;height:34px;border-radius:9px;background:#cddff0;flex:none;position:relative}
+  .av .rf{position:absolute;right:-4px;bottom:-4px;width:16px;height:16px;border-radius:50%;
+    background:#fff;border:1.5px solid #4caf50}
+  .srow .nm{font-size:12px;font-weight:700;color:#3a2f2a}
+  .bars{display:flex;gap:5px;margin-top:4px}
+  .bar{flex:1;height:7px;border-radius:4px;background:#e8e2d4;overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:4px}
+  .bar .e{width:70%;background:#f2a63b}.bar .m{width:52%;background:#e26b8a}
+  .plus{font-size:11px;font-weight:800;color:#3aa655}
+  .plusfloat{position:absolute;font-size:12px;font-weight:800;color:#3aa655}
+  /* callout pins */
+  .pin{position:absolute;font-size:10px;background:#e2653b;color:#fff;border-radius:6px;
+    padding:2px 7px;font-weight:600;z-index:5}
+  /* ---- event notice: caution band + megaphone (category-tinted) ---- */
+  .ev-bg{position:absolute;inset:0;background:linear-gradient(150deg,#2e0f08,#E03A18 55%,#FF5A36)}
+  .ev-bg.blue{background:linear-gradient(150deg,#0d1f3a,#1F6FBA 55%,#3BA7F5)}
+  .mega{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);width:96px;height:70px}
+  .mega .body{position:absolute;left:10px;top:20px;width:46px;height:32px;background:#fff;
+    border:4px solid #2a2060;border-radius:6px 4px 4px 6px}
+  .mega .horn{position:absolute;left:50px;top:8px;width:0;height:0;
+    border-top:27px solid transparent;border-bottom:27px solid transparent;
+    border-left:34px solid #fff;filter:drop-shadow(3px 0 0 #2a2060)}
+  .mega .sl{position:absolute;background:#fff;height:4px;border-radius:2px;box-shadow:0 0 0 1.5px #2a2060}
+  .ev-band{position:absolute;left:-16px;right:-16px;top:60%;transform:translateY(-50%) rotate(-3deg);
+    padding:16px 0;text-align:center;background:#161616;box-shadow:0 5px 0 rgba(0,0,0,.4)}
+  .ev-band:before,.ev-band:after{content:"";position:absolute;left:0;right:0;height:9px;
+    background:repeating-linear-gradient(45deg,#f5c518 0 12px,#1a1a1a 12px 24px)}
+  .ev-band:before{top:0}.ev-band:after{bottom:0}
+  .ev-band .k{font-size:10px;letter-spacing:3px;color:#f5c518;font-weight:800}
+  .ev-band .t{font-size:19px;font-weight:800;color:#fff;margin-top:3px}
+  /* ---- daily results popup ---- */
+  .popbg{position:absolute;inset:0;background:linear-gradient(#8fb7d6,#b9d4e6)}
+  .popdim{position:absolute;inset:0;background:rgba(15,22,40,.42)}
+  .pop{position:absolute;left:14px;right:14px;top:20px;bottom:20px;background:var(--paper);
+    border-radius:20px;padding:12px;box-shadow:0 8px 0 var(--paper-line);overflow:hidden}
+  .vh{background:#ffd873;border-radius:14px;padding:10px;text-align:center;position:relative;overflow:hidden}
+  .vh .rays{position:absolute;inset:0;
+    background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.28) 0 12deg,transparent 12deg 24deg);opacity:.4}
+  .teacher{width:46px;height:46px;border-radius:50%;background:#fff;margin:0 auto 4px;position:relative;
+    border:2px solid #d8a417;z-index:1}
+  .teacher .hair{position:absolute;top:-3px;left:6px;right:6px;height:14px;background:#4a3a2a;border-radius:12px 12px 0 0}
+  .teacher .eye{position:absolute;top:20px;width:5px;height:5px;border-radius:50%;background:#3a2f1a}
+  .teacher .eye.l{left:13px}.teacher .eye.r{right:13px}
+  .teacher .sm{position:absolute;bottom:11px;left:14px;width:16px;height:8px;
+    border:2px solid #3a2f1a;border-top:0;border-radius:0 0 10px 10px}
+  .vtitle{font-size:16px;font-weight:800;color:#5a3a12;position:relative;z-index:1}
+  .stars{position:relative;z-index:1;margin-top:2px;font-size:16px;letter-spacing:2px;color:#e8a020}
+  .tally{display:flex;gap:8px;margin:10px 0}
+  .tcell{flex:1;background:#fff;border-radius:10px;padding:7px 4px;text-align:center}
+  .tnum{font-size:17px;font-weight:800;color:#3aa655}
+  .tnum.coin{color:#d8a417}.tnum.tgt{color:#3a7ad8}
+  .tlbl{font-size:9px;color:#7a6a4a;margin-top:2px}
+  .sod{display:flex;align-items:center;gap:9px;background:#fff4d6;border:1.5px solid #f0c85a;
+    border-radius:12px;padding:7px 9px;margin-bottom:10px}
+  .crown{width:22px;height:16px;flex:none;background:
+    conic-gradient(from 90deg at 50% 100%, #e8a020 0 25%, #f5c542 0 50%, #e8a020 0 75%, #f5c542 0);
+    clip-path:polygon(0 100%,0 30%,25% 60%,50% 0,75% 60%,100% 30%,100% 100%)}
+  .sod b{font-size:12px;font-weight:800;color:#7a5a12;display:block}
+  .sod span{font-size:10px;color:#8a7040}
+  .sccard{background:#fff;border-radius:12px;padding:8px 10px;display:flex;gap:9px;align-items:center;margin-bottom:8px}
+  .legend{background:#fbf7ee;border:1px solid #e6ddc9;border-radius:12px;padding:14px 16px;margin-top:14px;max-width:760px}
+  .legend h3{margin:0 0 8px;font-size:13px}
+  .legend ul{margin:0;padding-left:18px}
+  .legend li{font-size:12px;color:#4f4a42;margin-bottom:4px}
+  .tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;margin-left:4px}
+  .tag.a{background:#dff0dd;color:#2f7a3f}.tag.b{background:#fdeecf;color:#8a5320}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>KejarTes — SchoolDay & Daily Results mockups</h1>
+  <p class="lede">Reference mockups for the SchoolDay liveliness pass and the Daily Results reward layer.
+  Every element here maps to a decision recorded in the design specs. These are indicative visuals for the
+  team to build against, not final art — real assets are drop-in-replaceable SVG textures, and all faces/crowns/stars
+  ship as textures (no emoji), per the project's rules.</p>
+  <p class="meta">Design date 2026-09-24 · pairs with <code>docs/superpowers/specs/2026-09-24-schoolday-liveliness-design.md</code></p>
+  <p class="note" style="background:#fff4d6;border:1px solid #f0c85a;border-radius:10px;padding:10px 14px">
+  <b>Behavioral source of truth:</b> <code>schoolday-interactive-prototype.html</code> (same folder) runs the full loop with
+  final motion. Where a still frame here differs, the prototype wins — notably the day-screen roster is now a scrolling
+  <b>avatar strip</b> (energy/mood rings), not the full-width rows some frames below still show.</p>
+
+  <h2>1 · SchoolDay — the day screen</h2>
+  <p class="note">Progress moved into the "Senin" banner (patterned per-day fill); the day name is an inverting knockout
+  (dark on the empty side, white under the fill). "Hari 1/5" removed. Status text rides a fade-in scrim. Sun and drifting
+  clouds add ambient life; student rows react with a reaction face + floating "+N".</p>
+  <div class="row">
+    <div class="frame">
+      <div class="screen">
+        <div class="sky day"></div>
+        <div class="sun" style="top:120px;left:40px"></div>
+        <div class="cloud" style="width:70px;height:28px;top:150px;right:20px;opacity:.8"></div>
+        <div class="cloud" style="width:50px;height:22px;top:200px;left:30px;opacity:.7"></div>
+        <div class="bldg"></div>
+        <div class="win" style="left:calc(50% - 60px);bottom:96px"></div>
+        <div class="win" style="left:calc(50% - 8px);bottom:96px"></div>
+        <div class="win" style="left:calc(50% + 44px);bottom:70px"></div>
+        <div class="grass"></div>
+        <div class="hdr">
+          <div class="cal">Minggu<br>1/6</div>
+          <div class="banner">
+            <div class="fill"></div>
+            <div class="name-base">Senin</div>
+            <div class="name-clip"><div class="name-inv">Senin</div></div>
+          </div>
+        </div>
+        <div class="status"><div class="txt">Melewati hari sekolah…</div></div>
+        <div class="rows">
+          <div class="srow"><div class="av"><div class="rf"></div></div><div style="flex:1"><div class="nm">Marcel</div><div class="bars"><div class="bar"><i class="e"></i></div><div class="bar"><i class="m"></i></div></div></div><div class="plus">+8</div></div>
+          <div class="srow"><div class="av"><div class="rf"></div></div><div style="flex:1"><div class="nm">Sari</div><div class="bars"><div class="bar"><i class="e"></i></div><div class="bar"><i class="m"></i></div></div></div><div class="plus">+5</div></div>
+        </div>
+        <div class="plusfloat" style="top:118px;right:40px">+8</div>
+        <div class="pin" style="top:16px;right:120px">knockout name</div>
+        <div class="pin" style="top:78px;right:8px">progress = banner fill</div>
+      </div>
+      <div class="cap">Midday · active day</div>
+      <div class="sub">Banner fills as today progresses; name flips white under the fill.</div>
+    </div>
+
+    <div class="frame">
+      <div class="screen">
+        <div class="sky dusk"></div>
+        <div class="sun" style="top:300px;right:44px;background:#ff9d4d;box-shadow:0 0 26px 8px rgba(255,140,60,.5)"></div>
+        <div class="cloud dim" style="width:70px;height:28px;top:130px;left:-10px;opacity:.5"></div>
+        <div class="cloud dim" style="width:50px;height:22px;top:100px;right:24px;opacity:.45"></div>
+        <div class="bldg"></div>
+        <div class="win" style="left:calc(50% - 60px);bottom:96px"></div>
+        <div class="win" style="left:calc(50% - 8px);bottom:96px"></div>
+        <div class="grass"></div>
+        <div class="hdr">
+          <div class="cal">Minggu<br>1/6</div>
+          <div class="banner">
+            <div class="fill" style="width:100%"></div>
+            <div class="name-base">Senin</div>
+            <div class="name-clip" style="width:100%"><div class="name-inv" style="width:100%">Senin</div></div>
+          </div>
+        </div>
+        <div class="status"><div class="txt">Senin selesai</div></div>
+        <div class="pin" style="top:78px;right:8px">readable at dusk ✓</div>
+      </div>
+      <div class="cap">Dusk · day done</div>
+      <div class="sub">The exact state where text used to vanish — now on a scrim, fully legible.</div>
+    </div>
+
+    <div class="frame">
+      <div class="screen">
+        <div class="sky night"></div>
+        <div class="moon" style="top:60px;right:40px"></div>
+        <div class="star" style="width:3px;height:3px;top:70px;left:50px"></div>
+        <div class="star" style="width:2px;height:2px;top:120px;left:150px"></div>
+        <div class="star" style="width:3px;height:3px;top:90px;left:220px"></div>
+        <div class="star" style="width:2px;height:2px;top:160px;left:90px;opacity:.7"></div>
+        <div class="star" style="width:2px;height:2px;top:200px;left:250px;opacity:.8"></div>
+        <div class="bldg night"></div>
+        <div class="win lit" style="left:calc(50% - 60px);bottom:96px"></div>
+        <div class="win" style="left:calc(50% - 8px);bottom:96px"></div>
+        <div class="win lit" style="left:calc(50% + 44px);bottom:70px"></div>
+        <div class="grass night"></div>
+        <div class="pin" style="top:300px;left:90px">deep-night beat</div>
+      </div>
+      <div class="cap">Night beat · between days</div>
+      <div class="sub">Short procedural dip — moon, stars, lit windows — before rising into the next dawn.</div>
+    </div>
+  </div>
+
+  <h2>2 · Event notice — caution band + megaphone</h2>
+  <p class="note">Replaces the flat olive card. A single bold caution band (rolls in) carries the event title + category,
+  with the megaphone popping above it, over a per-category gradient. Colors come from <code>DesignTokens.category_color()</code>:
+  Akademis blue, Olahraga red, Seni Budaya green; Cuaca (weather) and Sosial events stay neutral. The band shows a
+  MINIGAME / KABAR / PILIHAN mode marker.</p>
+  <div class="row">
+    <div class="frame">
+      <div class="screen">
+        <div class="ev-bg" style="background:linear-gradient(150deg,#2e0f08,#E03A18 55%,#FF5A36)"></div>
+        <div class="mega">
+          <div class="body"></div><div class="horn"></div>
+          <div class="sl" style="left:82px;top:6px;width:16px;transform:rotate(-30deg)"></div>
+          <div class="sl" style="left:86px;top:31px;width:16px"></div>
+          <div class="sl" style="left:82px;top:56px;width:16px;transform:rotate(30deg)"></div>
+        </div>
+        <div class="ev-band"><div class="k">OLAHRAGA · MINIGAME</div><div class="t">Adu Penalti!</div></div>
+      </div>
+      <div class="cap">Olahraga event · red</div>
+      <div class="sub">Caution band + megaphone pop over the category gradient.</div>
+    </div>
+    <div class="frame">
+      <div class="screen">
+        <div class="ev-bg" style="background:linear-gradient(150deg,#0d1f3a,#1F6FBA 55%,#3BA7F5)"></div>
+        <div class="mega">
+          <div class="body"></div><div class="horn"></div>
+          <div class="sl" style="left:82px;top:6px;width:16px;transform:rotate(-30deg)"></div>
+          <div class="sl" style="left:86px;top:31px;width:16px"></div>
+          <div class="sl" style="left:82px;top:56px;width:16px;transform:rotate(30deg)"></div>
+        </div>
+        <div class="ev-band"><div class="k">AKADEMIS · PILIHAN</div><div class="t">Les Akademis!</div></div>
+      </div>
+      <div class="cap">Akademis event · blue (PILIHAN)</div>
+      <div class="sub">Category color + mode marker signal a Tolak/Terima choice is coming.</div>
+    </div>
+  </div>
+
+  <h2>3 · Daily Results — the reward layer</h2>
+  <p class="note">Built on data the popup already computes. Verdict header (teacher face + reactive headline + 1–4 stars),
+  reward tally strip, "Bintang Hari Ini" crown, and per-student cards with reaction faces. Star rule: targets-crossed
+  drives the tier, net gain/loss is the tiebreak, floor at 1★. Weekly-goal meter intentionally excluded.</p>
+  <div class="row">
+    <div class="frame">
+      <div class="screen">
+        <div class="popbg"></div><div class="popdim"></div>
+        <div class="pop">
+          <div class="vh"><div class="rays"></div>
+            <div class="teacher"><div class="hair"></div><span class="eye l"></span><span class="eye r"></span><span class="sm"></span></div>
+            <div class="vtitle">Hari yang produktif!</div>
+            <div class="stars">★★★☆</div>
+          </div>
+          <div class="tally">
+            <div class="tcell"><div class="tnum">+41</div><div class="tlbl">total naik</div></div>
+            <div class="tcell"><div class="tnum tgt">2</div><div class="tlbl">target tercapai</div></div>
+            <div class="tcell"><div class="tnum coin">+150</div><div class="tlbl">uang</div></div>
+          </div>
+          <div class="sod"><span class="crown"></span><div><b>Bintang Hari Ini</b><span>Marcel — +18 Akademis</span></div></div>
+          <div class="sccard"><div class="av"><div class="rf"></div></div><div style="flex:1"><div class="nm">Marcel</div><div class="bars"><div class="bar"><i class="e"></i></div><div class="bar"><i class="m"></i></div></div></div><span class="plus">+18</span></div>
+          <div class="sccard"><div class="av"><div class="rf" style="border-color:#e0913f"></div></div><div style="flex:1"><div class="nm">Sari</div><div class="bars"><div class="bar"><i class="e" style="width:48%"></i></div><div class="bar"><i class="m" style="width:60%"></i></div></div></div><span class="plus">+9</span></div>
+        </div>
+      </div>
+      <div class="cap">3★ productive day</div>
+      <div class="sub">Verdict + tally + star of the day sit above the existing per-student cards.</div>
+    </div>
+    <div class="frame">
+      <div class="legend">
+        <h3>Verdict ladder (star rule)</h3>
+        <ul>
+          <li><b>1★ · Hari yang berat</b> — net losses, no target crossed. "Besok lebih baik!"</li>
+          <li><b>2★ · Lumayan</b> — net positive, no target crossed today.</li>
+          <li><b>3★ · Hari produktif!</b> — at least one target crossed.</li>
+          <li><b>4★ · Luar biasa!</b> — multiple targets crossed, nobody went down.</li>
+        </ul>
+        <h3 style="margin-top:12px">Build notes</h3>
+        <ul>
+          <li>Teacher face = 4 expression textures (rough → outstanding).<span class="tag a">art</span></li>
+          <li>Tally + stars computed from existing deltas/targets/earnings.<span class="tag b">logic</span></li>
+          <li>Escalating confetti: small daily, fireworks on the week's final day.</li>
+          <li>All icons/faces/crown ship as SVG textures — no emoji.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2>4 · Weekly Results — proposed additions (audit only)</h2>
+  <p class="note">The weekly report (<code>ResultCheckup</code>) is already being redesigned on
+  <code>feat/weekly-results-polish</code> — ribbon, yellow three-tile tally, coin shower and cream cards are in that plan
+  and stay. These are three <b>proposed additions</b> layered on top, to be handed to whoever owns that branch (they touch
+  the same scenes). Not yet a written spec — mockup only.</p>
+  <div class="row">
+    <div class="frame" style="width:300px">
+      <div class="screen" style="height:auto;background:#cfe6d6;border-radius:22px;padding-bottom:14px">
+        <div style="background:#c00000;text-align:center;padding:13px 0;box-shadow:0 3px 0 rgba(0,0,0,.2)">
+          <b style="color:#fff;font-weight:800;font-size:18px;letter-spacing:3px;text-shadow:0 2px 0 #7a0000">WEEKLY RESULTS</b>
+        </div>
+        <div style="margin:12px 12px 0;background:#fff6da;border:2px solid #f0c85a;border-radius:14px;padding:10px;display:flex;align-items:center;gap:12px;position:relative">
+          <div class="teacher" style="margin:0"><div class="hair"></div><span class="eye l"></span><span class="eye r"></span><span class="sm"></span></div>
+          <div><div style="font-size:14px;font-weight:800;color:#7a5510">Minggu yang solid!</div><div style="font-size:16px;letter-spacing:2px;color:#e8a020">★★★☆</div></div>
+          <div class="pin" style="right:8px;top:8px;background:#2f9e44">NEW · verdict</div>
+        </div>
+        <div style="margin:12px 12px 0;background:#ffe17d;border-radius:16px;padding:14px 10px;display:flex;gap:14px">
+          <div class="tcell" style="flex:1;background:#f6f4f2"><div class="tnum coin">1.500</div><div class="tlbl">uang</div></div>
+          <div class="tcell" style="flex:1;background:#f6f4f2"><div class="tnum tgt">2/3</div><div class="tlbl">minigame</div></div>
+          <div class="tcell" style="flex:1;background:#f6f4f2"><div class="tnum" style="color:#8a5320">4</div><div class="tlbl">event</div></div>
+        </div>
+        <div style="margin:12px 12px 0;background:#eef6ef;border:1.5px solid #b8d8bf;border-radius:14px;padding:10px 12px;position:relative">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#4a6a50;font-weight:700;margin-bottom:8px"><span>Menuju Kenaikan Kelas</span><span>1,7 / 3,0 ★</span></div>
+          <div style="height:16px;border-radius:9px;background:#dbe8dd;position:relative;overflow:hidden">
+            <div style="position:absolute;top:-3px;bottom:-3px;left:66%;width:2px;background:#c00000;z-index:2"></div>
+            <div style="height:100%;width:58%;background:linear-gradient(90deg,#7cc47a,#3aa655);border-radius:9px"></div>
+          </div>
+          <div style="font-size:10px;color:#6a8070;margin-top:5px">Minggu 3 dari 6 · butuh 2,0★ (garis merah) sebelum minggu terakhir</div>
+          <div class="pin" style="right:8px;top:8px;background:#2f9e44">NEW · grade goal</div>
+        </div>
+        <div style="margin:12px 12px 0;display:flex;flex-direction:column;gap:8px"><div style="background:#f4ecdb;border-radius:12px;height:32px"></div><div style="background:#f4ecdb;border-radius:12px;height:32px"></div></div>
+        <div style="margin:14px 12px 0;display:flex;gap:10px">
+          <div style="flex:1;border-radius:12px;text-align:center;padding:10px 0;font-weight:800;font-size:13px;color:#fff;background:#e0574b;box-shadow:0 3px 0 #a8342a">LOGS</div>
+          <div style="flex:1;border-radius:12px;text-align:center;padding:10px 0;font-weight:800;font-size:13px;color:#fff;background:#8a5a2a;box-shadow:0 3px 0 #5a3812">SELANJUTNYA</div>
+        </div>
+      </div>
+      <div class="cap">Weekly result + 3 additions</div>
+    </div>
+    <div class="frame" style="width:340px">
+      <div class="legend">
+        <h3>Audit summary — weekly</h3>
+        <ul>
+          <li><b style="color:#2f7a3f">Keep (already planned):</b> WEEKLY RESULTS ribbon, yellow 3-tile tally, count-up + idle bounce + tap-to-explain, coin shower, cream ID cards, Logs/Selanjutnya buttons.</li>
+          <li><b style="color:#c07000">Add 1 · Week verdict strip</b> — teacher reaction + headline + week star rating. Reuses the daily teacher-face assets so daily &amp; weekly match.<span class="tag a">consistency</span></li>
+          <li><b style="color:#c07000">Add 2 · Grade-goal meter</b> — <code>run_stars()</code> toward the 2,0★ pass line, current week marked. The loop-closer that belongs here.<span class="tag b">highest value</span></li>
+          <li><b style="color:#c07000">Add 3 · Week crescendo</b> — escalate the coin shower into a fuller celebration + big teacher reaction on a strong week.</li>
+          <li><b>Coordination:</b> all three touch <code>ResultCheckup.tscn</code> / <code>WeekRecapBanner</code>, which <code>feat/weekly-results-polish</code> is editing — land them as a follow-up on that branch.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2>5 · Weekly tiles — depth polish (team chooses)</h2>
+  <p class="note">The three tiles read flat — simple 2D PNGs on white. Give them fake depth so they feel alive and raised.
+  <b>The implementing team picks the treatment with the user before building</b> — three options below, with A as the
+  suggested starting point.</p>
+  <div class="row">
+    <div class="frame" style="width:320px">
+      <div style="background:linear-gradient(#ffe790,#ffd85e);border-radius:16px;padding:16px 12px;display:flex;gap:12px">
+        <div style="flex:1;border-radius:14px;padding:13px 4px 11px;text-align:center;background:linear-gradient(#fff,#f0ead9);box-shadow:0 5px 0 rgba(150,115,50,.45),0 8px 10px rgba(90,70,30,.22),inset 0 1px 0 #fff;border:1px solid #efe6cf">
+          <div style="width:44px;height:44px;border-radius:50%;margin:0 auto 6px;background:radial-gradient(circle at 40% 35%,#fef2d0,#f7dc9c);box-shadow:inset 0 2px 3px #fff,0 2px 3px rgba(150,110,30,.3)"></div>
+          <div style="font-size:18px;font-weight:800;color:#3a2f1e">1.500</div><div style="font-size:9px;color:#7a6a4a;font-weight:700;letter-spacing:1px;margin-top:2px">UANG</div></div>
+        <div style="flex:1;border-radius:14px;padding:13px 4px 11px;text-align:center;background:linear-gradient(#fff,#f0ead9);box-shadow:0 5px 0 rgba(150,115,50,.45),0 8px 10px rgba(90,70,30,.22),inset 0 1px 0 #fff;border:1px solid #efe6cf">
+          <div style="width:44px;height:44px;border-radius:50%;margin:0 auto 6px;background:radial-gradient(circle at 40% 35%,#eaf5e5,#cfe6c6);box-shadow:inset 0 2px 3px #fff,0 2px 3px rgba(70,120,40,.25)"></div>
+          <div style="font-size:18px;font-weight:800;color:#3a2f1e">2/3</div><div style="font-size:9px;color:#7a6a4a;font-weight:700;letter-spacing:1px;margin-top:2px">MENANG</div></div>
+        <div style="flex:1;border-radius:14px;padding:13px 4px 11px;text-align:center;background:linear-gradient(#fff,#f0ead9);box-shadow:0 5px 0 rgba(150,115,50,.45),0 8px 10px rgba(90,70,30,.22),inset 0 1px 0 #fff;border:1px solid #efe6cf">
+          <div style="width:44px;height:44px;border-radius:50%;margin:0 auto 6px;background:radial-gradient(circle at 40% 35%,#e8f0fb,#cadcf2);box-shadow:inset 0 2px 3px #fff,0 2px 3px rgba(40,90,160,.25)"></div>
+          <div style="font-size:18px;font-weight:800;color:#3a2f1e">4</div><div style="font-size:9px;color:#7a6a4a;font-weight:700;letter-spacing:1px;margin-top:2px">EVENT</div></div>
+      </div>
+      <div class="cap">A · gradient + drop shadow + highlight</div>
+      <div class="sub">Recommended default. Fake 3D depth; tinted icon discs; labels.</div>
+    </div>
+    <div class="frame" style="width:340px">
+      <div class="legend">
+        <h3>Tile depth — options &amp; build notes</h3>
+        <ul>
+          <li><b style="color:#c07000">A · Depth (recommended)</b> — vertical gradient fill + chunky drop shadow + 1px top highlight + tinted icon discs. Reads raised without new art beyond a gradient.</li>
+          <li><b>B · Trophy strip</b> — a colored cap strip per tile (strongest category coding).</li>
+          <li><b>C · Minimal bevel</b> — keep flat white but add bevel + a tinted number + reveal sparkle. Smallest change.</li>
+          <li style="margin-top:8px"><b>Godot note:</b> drop shadow + bevel are free on <code>StyleBoxFlat</code> (shadow_size/offset + border) via a <code>ThemeFactory</code> variation — no <code>theme_override</code>. The <b>gradient</b> specifically needs a small gradient texture (StyleBoxTexture 9-slice) or a GradientTexture2D behind; the team decides flat-with-shadow vs gradient-texture.</li>
+          <li><b style="color:#2f7a3f">Decision:</b> the implementing Claude confirms A / B / C (or flat+shadow only) with the user before building.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <p class="meta" style="margin-top:32px">Legend for pins: orange pins mark SchoolDay/daily fixes; green pins mark proposed weekly additions.</p>
+</div>
+</body>
+</html>

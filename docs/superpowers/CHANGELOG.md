@@ -8,6 +8,22 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-24 — Rim narrowed to 7 px, grade contrast cut 30%, Andi's lashes dropped
+
+- **Rim** 10 → 7 px on the cutout and face materials together (the tests hold
+  them equal). 7 was one of the four widths in the 2026-09-23 comparison.
+- **Contrast** lost 30% of its distance from neutral, 1.01125 → 1.007875, on
+  all three grade materials and the shader default, the same convention the
+  two earlier halvings used.
+- **Andi's eyelashes** moved down 17 px on the 1280 face canvas (y 521 → 538,
+  about 2-3 screen px). Measured column by column against the sclera's top
+  edge: a 15-16 px band of skin showed between them, and 17 closes it
+  everywhere but the tapered inner corners, which the art leaves open. The
+  artist's reference (`andi.png` on the Drive, identical to `Andi.png`) puts
+  the lashes at 521 and closes the gap with a taller eye instead; the rig's
+  sclera and eyelid layers are shorter than that eye. Growing both layers to
+  match was tried and declined in favour of the lash drop.
+
 ## 2026-09-24 — Atur Jadwal visual polish (plan `2026-09-24-atur-jadwal-visual-polish.md`)
 
 A legibility and transparency pass on the scheduling screen, in five phases.

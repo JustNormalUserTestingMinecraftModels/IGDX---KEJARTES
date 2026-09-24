@@ -37,7 +37,13 @@ const _LENS_SHADER := "res://Scripts/Shaders/glasses_lens.gdshader"
 const _CITRA_RIG := "res://Scenes/Lobby/CitraFace.tscn"
 
 ## Per student: the rig scene and its solved layers, back to front, as
-## [node name, canvas position, native size]. Art facts, not preferences.
+## [node name, canvas position, native size]. Art facts, not preferences --
+## with one deliberate exception: Andi's lashes sit 17 px below their solved
+## y of 521 (2026-09-24). His sclera layer is shorter than the eye in his
+## portrait, so at 521 a 15-16 px band of skin showed between the lash line
+## and the sclera. Dropping the lashes closes it everywhere but the tapered
+## inner corners, as drawn; the alternative, growing the sclera and eyelid
+## art to the portrait's eye, was declined.
 const _RIGS := {
 	"Andi": {
 		"rig": "res://Scenes/Lobby/AndiFace.tscn",
@@ -45,7 +51,7 @@ const _RIGS := {
 			["Base", Vector2(0, 0), Vector2(1280, 1280)],
 			["Sclera", Vector2(404, 556), Vector2(472, 99)],
 			["Pupil", Vector2(477, 525), Vector2(326, 111)],
-			["Eyelashes", Vector2(369, 521), Vector2(542, 83)],
+			["Eyelashes", Vector2(369, 538), Vector2(542, 83)],
 			["Eyelid", Vector2(404, 556), Vector2(472, 110)],
 			["Eyebrows", Vector2(450, 424), Vector2(380, 52)],
 		],

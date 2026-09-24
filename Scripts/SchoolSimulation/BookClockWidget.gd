@@ -87,6 +87,10 @@ const STARS_PATH := ^"Stars"
 const SCHOOL_NIGHT_PATH := ^"SchoolNight"
 const WINDOW_GLOW_PATH := ^"WindowGlow"
 const CLOUD_LAYER_PATH := ^"CloudLayer"
+## Width of one repeat of the motif tiles, px: the drift wraps every this
+## many so it never jumps. The Motif node runs this much past the fill's right
+## edge to cover the shift.
+const MOTIF_PERIOD := 48.0
 
 ## The day's two resting poses, plus MIDDAY as the arc's midpoint -- the
 ## event still rolls there, but the sky no longer stops for it.
@@ -165,6 +169,19 @@ enum Phase { DAWN, MIDDAY, EVENING }
 	set(value):
 		sun_set_progress = value
 		_place_bodies()
+## The moon's own rise and set, as progress through ITS half of the day --
+## the day shifted by half, so 0.5 is dawn and evening. Narrower than the
+## sun's, so the moon shows only in the dark and is not up in the afternoon
+## beside the sun.
+@export var moon_rise_progress: float = 0.3:
+	set(value):
+		moon_rise_progress = value
+		_place_bodies()
+## See moon_rise_progress.
+@export var moon_set_progress: float = 0.7:
+	set(value):
+		moon_set_progress = value
+		_place_bodies()
 ## Where the arc's horizon sits, as a fraction of the widget's height. The
 ## school's roofline is about 0.74; below it the painted school hides a body.
 @export_range(0.0, 1.0, 0.01) var horizon_ratio: float = 0.8:
@@ -188,6 +205,16 @@ enum Phase { DAWN, MIDDAY, EVENING }
 @export_range(0.0, 1.0, 0.01) var night_cloud_dim: float = 0.6
 ## Seconds the night takes to fall, and to lift again into dawn.
 @export_range(0.05, 2.0, 0.05) var night_fade_seconds: float = 0.35
+
+@export_group("Idle motion")
+## How far the day banner bobs, px, so the day's name is never dead still.
+## 0 stops it.
+@export_range(0.0, 20.0, 0.5) var banner_bob_px: float = 4.0
+## Seconds for one bob of the banner, down and back.
+@export_range(0.5, 8.0, 0.1) var banner_bob_seconds: float = 2.6
+## How fast the weekday motif drifts along the banner's fill, px per second
+## -- the fill's "breathing" as the day runs.
+@export_range(0.0, 120.0, 1.0) var motif_drift_speed: float = 16.0
 
 @export_group("Layout")
 ## Where the sky's rotation pivot sits, as a fraction of the widget's own
@@ -215,6 +242,9 @@ var _day_name: String = ""
 var _week_text: String = ""
 ## How deep into night the sky is, 0 (day) to 1 (the night beat's peak).
 var _night: float = 0.0
+## Seconds of idle motion so far, and where the banner rests before it bobs.
+var _idle_time := 0.0
+var _banner_rest_y := NAN
 
 
 func _ready() -> void:
@@ -228,6 +258,23 @@ func _ready() -> void:
 	if banner != null and not banner.resized.is_connected(layout_banner_fill):
 		banner.resized.connect(layout_banner_fill)
 	layout_banner_fill.call_deferred()
+
+
+## The banner's idle bob and the fill motif's drift. Game only: in the editor
+## a scene save would bake wherever they happened to be. Stopped under
+## reduce_motion.
+func _process(delta: float) -> void:
+	if Engine.is_editor_hint() or GameSettings.reduce_motion:
+		return
+	_idle_time += delta
+	var banner := get_node_or_null(DAY_BANNER_PATH) as Control
+	if banner != null and banner_bob_seconds > 0.0:
+		if is_nan(_banner_rest_y):
+			_banner_rest_y = banner.position.y
+		banner.position.y = _banner_rest_y + sin(_idle_time * TAU / banner_bob_seconds) * banner_bob_px
+	var motif := get_node_or_null(MOTIF_PATH) as Control
+	if motif != null:
+		motif.position.x = -fposmod(_idle_time * motif_drift_speed, MOTIF_PERIOD)
 
 
 func _notification(what: int) -> void:
@@ -505,9 +552,10 @@ func sun_arc(p: float) -> float:
 	return inverse_lerp(sun_rise_progress, sun_set_progress, p)
 
 
-## The moon's arc position: the sun's, half a day on.
+## The moon's arc position: half a day out from the sun, over its own
+## narrower window, so it is overhead at dawn and evening.
 func moon_arc(p: float) -> float:
-	return sun_arc(fposmod(p + 0.5, 1.0))
+	return inverse_lerp(moon_rise_progress, moon_set_progress, fposmod(p + 0.5, 1.0))
 
 
 ## Puts the sun and moon on their arcs for the current progress, and hides

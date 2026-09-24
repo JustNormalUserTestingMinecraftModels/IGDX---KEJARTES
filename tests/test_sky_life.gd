@@ -80,6 +80,16 @@ func test_the_sun_is_up_at_midday_and_the_moon_at_the_dark_poses() -> void:
 
 
 ## The sun rises on the right and sets on the left, and stays on screen.
+## The moon keeps to the dark: it is never up while the sun is high.
+func test_the_moon_is_not_up_beside_the_afternoon_sun() -> void:
+	var sun := _w.get_node(BookClockWidget.SUN_PATH) as Control
+	var moon := _w.get_node(BookClockWidget.MOON_PATH) as Control
+	for p in [0.3, 0.4, 0.5, 0.6, 0.7]:
+		_w.set_progress(p)
+		assert_true(sun.visible, "the sun is up at %.1f" % p)
+		assert_false(moon.visible, "and the moon is not, at %.1f" % p)
+
+
 func test_the_sun_crosses_the_screen_right_to_left() -> void:
 	var sun := _w.get_node(BookClockWidget.SUN_PATH) as Control
 	_w.set_progress(0.3)
@@ -192,3 +202,59 @@ func test_school_day_plays_the_night_beat_and_the_rain() -> void:
 		assert_false(rain.emitting, "no rain until Hujan")
 		assert_true(rain.texture != null, "the streak texture is set")
 	scene.free()
+
+
+# ── Escalation and micro-motion (liveliness pass, layers 5, 6 and 8) ─────────
+
+## Every day ends on a small burst from the stamp; the week's last school
+## day adds the fireworks volley.
+func test_the_day_end_escalates_on_the_last_day() -> void:
+	var src := FileAccess.get_file_as_string(SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("_celebrate_day_end(current_day == DAYS.size() - 1)"),
+		"the stamp knows whether this is the week's last school day")
+	assert_true(src.contains('RewardFeedback.play(&"day_done", day_stamp)'), "every day bursts")
+	assert_true(src.contains("week_fireworks.fire_burst.bind(i)"), "the last day fires the volley")
+	assert_true(RewardFeedback.RECIPES.has(&"day_done"), "RewardFeedback knows day_done")
+	assert_true(RewardFeedback.RECIPES[&"day_done"].get("centred", false), "bursting from the stamp's middle")
+	var scene := (load(SCHOOL_DAY_SCENE) as PackedScene).instantiate()
+	var fireworks := scene.get_node_or_null("WeekFireworks") as ConfettiFireworks
+	assert_true(fireworks != null, "the fireworks are authored in the scene")
+	if fireworks:
+		assert_eq(fireworks.mouse_filter, Control.MOUSE_FILTER_IGNORE, "and never eat a tap")
+		assert_true(fireworks.get_index() < scene.get_node("GameContainer").get_index(),
+			"under the minigames and the result screen")
+	scene.free()
+
+
+## The motes are the weekday texture layer the dead 0.07-alpha wash was
+## meant to be: one sprite per school day, drifting up the sky.
+func test_each_weekday_drifts_its_own_motes() -> void:
+	var scene := (load(SCHOOL_DAY_SCENE) as PackedScene).instantiate()
+	var motes := scene.get_node_or_null("Motes") as CPUParticles2D
+	assert_true(motes != null, "the motes are authored")
+	var textures: Array = scene.get("weekday_mote_textures")
+	assert_eq(textures.size(), 5, "one mote sprite per school day")
+	var unique := {}
+	for t in textures:
+		unique[t] = true
+	assert_eq(unique.size(), 5, "each day's sprite is its own")
+	if motes:
+		assert_true(motes.modulate.a < 0.6, "kept faint: backdrop, not content")
+		assert_true(motes.get_index() < scene.get_node("DayScreen").get_index(), "behind the day's UI")
+	scene.free()
+	var src := FileAccess.get_file_as_string(SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("_set_weekday_motes(current_day)"), "each day swaps the sprite")
+
+
+func test_the_banner_bobs_and_its_fill_drifts_in_game_only() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/BookClockWidget.gd")
+	var at := src.find("func _process(")
+	assert_true(at >= 0, "the widget has an idle loop")
+	var body := src.substr(at, src.find("\nfunc ", at + 1) - at)
+	assert_true(body.contains("Engine.is_editor_hint() or GameSettings.reduce_motion"),
+		"never in the editor, never under reduce_motion")
+	assert_true(body.contains("banner_bob_px"), "the banner bobs")
+	assert_true(body.contains("motif_drift_speed"), "the fill's motif drifts")
+	var motif := _w.get_node(BookClockWidget.MOTIF_PATH) as Control
+	assert_eq(motif.offset_right, BookClockWidget.MOTIF_PERIOD,
+		"the motif runs one repeat past the fill so the drift never shows a gap")

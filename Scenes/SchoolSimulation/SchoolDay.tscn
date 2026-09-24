@@ -9,6 +9,12 @@
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="9_ret"]
 [ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/rain_streak.svg" id="k_rain"]
 [ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Avatar/ring_inner.svg" id="k_ring"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_plus.png" id="p_plus"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_spark.png" id="p_spark"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_glow.png" id="p_glow"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_ring.png" id="p_ring"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Particles/particle_star.png" id="p_star"]
+[ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="s_fireworks"]
 
 [node name="SchoolDay" type="Control" unique_id=310225723]
 layout_mode = 3
@@ -21,6 +27,7 @@ script = ExtResource("1_schoolday")
 result_checkup_scene = ExtResource("2_checkup")
 event_student_select_scene = ExtResource("4_student_select")
 day_summary_popup_scene = ExtResource("6_summary")
+weekday_mote_textures = Array[Texture2D]([ExtResource("p_plus"), ExtResource("p_spark"), ExtResource("p_glow"), ExtResource("p_ring"), ExtResource("p_star")])
 
 [node name="Background" type="ColorRect" parent="." unique_id=2137808221]
 layout_mode = 1
@@ -52,6 +59,25 @@ initial_velocity_min = 1500.0
 initial_velocity_max = 1900.0
 scale_amount_min = 0.7
 scale_amount_max = 1.2
+
+[node name="Motes" type="CPUParticles2D" parent="."]
+modulate = Color(1, 1, 1, 0.45)
+position = Vector2(540, 900)
+amount = 16
+lifetime = 9.0
+preprocess = 9.0
+texture = ExtResource("p_plus")
+emission_shape = 3
+emission_rect_extents = Vector2(540, 620)
+direction = Vector2(0.15, -1)
+spread = 25.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 14.0
+initial_velocity_max = 30.0
+angular_velocity_min = -20.0
+angular_velocity_max = 20.0
+scale_amount_min = 0.22
+scale_amount_max = 0.45
 
 [node name="DayScreen" type="VBoxContainer" parent="." unique_id=689888867]
 layout_mode = 1
@@ -196,6 +222,10 @@ theme_type_variation = &"DayStampLabel"
 text = "senin selesai"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="WeekFireworks" parent="." instance=ExtResource("s_fireworks")]
+layout_mode = 1
+mouse_filter = 2
 
 [node name="GameContainer" type="Control" parent="." unique_id=439134809]
 layout_mode = 1

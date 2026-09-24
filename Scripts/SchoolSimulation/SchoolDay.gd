@@ -55,6 +55,9 @@ signal _summary_closed
 ## Optional font override for the day-summary chip's label (_make_chip).
 ## Null keeps the theme's default font.
 @export var card_font: Font = null
+## The ambient mote sprite for each weekday, Senin to Jumat, in the same
+## order as the banner's motifs, so each day drifts with its own texture.
+@export var weekday_mote_textures: Array[Texture2D] = []
 ## One student on the day's avatar strip: face, energy and mood rings, name.
 ## Replaced the runtime-built status cards (2026-09-24 liveliness pass).
 @export var avatar_chip_scene: PackedScene = preload("res://Scenes/SchoolSimulation/AvatarChip.tscn")
@@ -88,6 +91,10 @@ signal _summary_closed
 @onready var day_stamp_label: Label       = $DayStamp/StampLabel
 ## Rain streaks over the day screen, on for the rest of a day Hujan hits.
 @onready var rain: CPUParticles2D         = $Rain
+## Faint motes drifting up the sky, a different sprite each weekday.
+@onready var motes: CPUParticles2D        = $Motes
+## The fireworks volley that crowns the week's last school day.
+@onready var week_fireworks: ConfettiFireworks = $WeekFireworks
 ## The avatar strip: a sideways-scrolling row of AvatarChips, one per
 ## student, so any roster size fits without crowding the sky.
 @onready var avatar_strip: Control        = $DayScreen/AvatarStrip
@@ -348,6 +355,7 @@ func _run_single_day() -> void:
 		_lift_night()
 	# Yesterday's rain has passed.
 	_set_rain(false)
+	_set_weekday_motes(current_day)
 
 	# Render embedded student status UI on DayScreen
 	_render_embedded_student_status()
@@ -1354,6 +1362,29 @@ func _lift_night() -> void:
 		book_clock_widget.call("night_out")
 
 
+## The day-done burst, escalating (spec layer 6): every day gets a small Pop
+## burst from the stamp; the week's last school day also sets off the
+## ConfettiFireworks volley over the sky.
+func _celebrate_day_end(is_last_day: bool) -> void:
+	RewardFeedback.play(&"day_done", day_stamp)
+	if not is_last_day or week_fireworks == null or GameSettings.reduce_motion:
+		return
+	var volley := create_tween()
+	for i in week_fireworks.burst_count():
+		volley.tween_callback(week_fireworks.fire_burst.bind(i))
+		volley.tween_interval(week_fireworks.burst_delay)
+
+
+## Gives the sky's drifting motes this weekday's sprite. They stop under
+## reduce_motion: they are ambience, not information.
+func _set_weekday_motes(weekday: int) -> void:
+	if motes == null:
+		return
+	if not weekday_mote_textures.is_empty():
+		motes.texture = weekday_mote_textures[posmod(weekday, weekday_mote_textures.size())]
+	motes.emitting = not GameSettings.reduce_motion
+
+
 ## Starts or stops the rain over the day screen. It stays on under
 ## reduce_motion: it is the day's weather, not decoration.
 func _set_rain(on: bool) -> void:
@@ -1406,7 +1437,7 @@ func _play_day_stamp(day_name: String) -> void:
 		slam.tween_property(day_stamp, "modulate:a", 1.0, t.dur_instant)
 		await slam.finished
 		Juice.shake(day_stamp, t.space_xs)
-	AudioDirector.play_sfx(&"select")
+	_celebrate_day_end(current_day == DAYS.size() - 1)
 	await get_tree().create_timer(STAMP_HOLD).timeout
 	var lift := create_tween()
 	lift.tween_property(day_stamp, "modulate:a", 0.0, t.dur_fast)

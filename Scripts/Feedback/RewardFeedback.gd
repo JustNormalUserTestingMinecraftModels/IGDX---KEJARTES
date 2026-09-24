@@ -57,6 +57,10 @@ const RECIPES := {
 	# the Pop burst from the day note's centre, in the one celebratory colour
 	# for every category. The favourite takes specialty_match instead.
 	&"activity_assigned": { "tier": TIER_POP, "sfx": &"select", "centred": true },
+	# A school day ends (2026-09-24 SchoolDay liveliness pass, layer 6): a
+	# small Pop burst from the "selesai" stamp. The week's last school day adds
+	# the ConfettiFireworks volley on top, in SchoolDay.
+	&"day_done":         { "tier": TIER_POP, "sfx": &"select", "centred": true },
 	# DayStickyNote.play_specialty_match() already fires the gold burst, so
 	# RewardFeedback adds only sound + haptic + shake here (no_particles).
 	&"specialty_match":  { "tier": TIER_POP, "sfx": &"specialty_match", "no_particles": true },

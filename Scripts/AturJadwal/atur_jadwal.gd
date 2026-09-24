@@ -41,9 +41,6 @@ var _last_staggered_student_id = -1
 ## independent of whatever value "id" holds, so that collision can't happen.
 var _has_staggered_once := false
 
-@export_group("Calendar Display")
-## Icon shown next to the current date in the TanggalContainer header.
-@export var calendar_icon: Texture2D
 
 # National Holidays definition
 const HOLIDAYS = {
@@ -66,8 +63,15 @@ const HOLIDAYS = {
 @onready var select_student_button = $TextureButton
 @onready var name_label = $LabelNama
 @onready var start_week_button = $StartWeek
-@onready var calendar_icon_rect = $TanggalContainer/CalendarIcon
-@onready var label_tanggal = $TanggalContainer/LabelTanggal
+## The objective strip that replaced the "AGUSTUS — MINGGU PERTAMA" header
+## (2026-09-24 visual polish, D8): tap it to open the hint below it.
+@onready var objective_strip: Button = $ObjectiveStrip
+@onready var objective_title: Label = $ObjectiveStrip/Title
+@onready var objective_stars: Label = $ObjectiveStrip/StarChip/Stars
+@onready var objective_progress: ProgressBar = $ObjectiveStrip/Progress
+@onready var objective_chevron: TextureRect = $ObjectiveStrip/Chevron
+@onready var objective_hint: Control = $ObjectiveHint
+@onready var objective_hint_label: Label = $ObjectiveHint/HintLabel
 @onready var back_button = $BackButton
 
 var _holiday_active: bool = false
@@ -149,7 +153,7 @@ func _ready():
 	_setup_portrait_juice(select_student_button)
 	_setup_back_button()
 	_setup_gameplay()
-	_update_tanggal_display()
+	_update_objective_strip()
 	_check_and_lock_holidays()
 	_create_blur_overlay()
 	_update_student_display()
@@ -673,6 +677,10 @@ func _update_student_display():
 	if ak3_bar:
 		_feed_stat_bar(ak3_bar, projected["akademis3"], 0.0, projected["target_akademis3"], pop_bars)
 	_update_stat_flags(projected)
+	if objective_hint_label:
+		var named := projected.duplicate()
+		named["name"] = student.get("name", "Murid")
+		objective_hint_label.text = ObjectiveHint.compose(named)
 
 	_update_day_button_colors()
 
@@ -1364,25 +1372,51 @@ func _input(event: InputEvent) -> void:
 			_holiday_dismissed.emit()
 			get_viewport().set_input_as_handled()
 
-func _update_tanggal_display() -> void:
-	if calendar_icon_rect and calendar_icon:
-		calendar_icon_rect.texture = calendar_icon
+## Fills the objective strip (D8): the month and week of the grade, the run's
+## stars against the pass line, and the bar toward it. Also paints the two
+## rounded_gradient materials from the tokens -- the strip brown to deeper
+## brown with a gold rim, the chip gold -- since a shader has no theme.
+func _update_objective_strip() -> void:
+	if objective_title:
+		objective_title.text = ObjectiveHint.title(GameState.minggu_ke, GameState.max_minggu)
+	var stars := GameState.run_stars()
+	if objective_stars:
+		objective_stars.text = ObjectiveHint.star_text(stars)
+	if objective_progress:
+		objective_progress.value = ObjectiveHint.progress_percent(stars)
+	var t := DesignTokens.load_default()
+	var gold_deep := t.currency_gold.darkened(0.25)
+	var body := get_node_or_null("ObjectiveStrip/Body") as CanvasItem
+	if body and body.material is ShaderMaterial:
+		var mat := body.material as ShaderMaterial
+		mat.set_shader_parameter("color_a", t.brand_primary_light)
+		mat.set_shader_parameter("color_b", t.brand_primary_dark)
+		mat.set_shader_parameter("rim_a", t.currency_gold)
+		mat.set_shader_parameter("rim_b", gold_deep)
+	var chip := get_node_or_null("ObjectiveStrip/StarChip/Body") as CanvasItem
+	if chip and chip.material is ShaderMaterial:
+		var cmat := chip.material as ShaderMaterial
+		cmat.set_shader_parameter("color_a", t.currency_gold)
+		cmat.set_shader_parameter("color_b", gold_deep)
+		cmat.set_shader_parameter("rim_a", t.outline_card)
+		cmat.set_shader_parameter("rim_b", t.outline_card)
+	if objective_strip and not objective_strip.pressed.is_connected(_on_objective_strip_pressed):
+		objective_strip.pressed.connect(_on_objective_strip_pressed)
 
-	if label_tanggal:
-		var week = GameState.minggu_ke
-		var months = ["Agustus", "September", "Oktober", "November", "Desember"]
-		var month_idx = clampi((week - 1) / 4, 0, months.size() - 1)
-		var month_str = months[month_idx]
 
-		var week_in_month = ((week - 1) % 4) + 1
-		var week_word = "Pertama"
-		match week_in_month:
-			1: week_word = "Pertama"
-			2: week_word = "Kedua"
-			3: week_word = "Ketiga"
-			4: week_word = "Keempat"
-
-		label_tanggal.text = "%s — Minggu %s" % [month_str, week_word]
+## Tap-to-expand (D8): opens or closes the one-line hint under the strip,
+## and turns the chevron to match. The hint's text is kept current by
+## _update_student_display() whether it is open or not.
+func _on_objective_strip_pressed() -> void:
+	if objective_hint == null:
+		return
+	var opening := not objective_hint.visible
+	objective_hint.visible = opening
+	if objective_chevron:
+		objective_chevron.flip_v = not opening
+	if opening and not Engine.is_editor_hint() and not GameSettings.reduce_motion:
+		Juice.pop_in(objective_hint)
+	AudioDirector.play_sfx(&"tap")
 
 func _check_and_lock_holidays() -> void:
 	var week = GameState.minggu_ke

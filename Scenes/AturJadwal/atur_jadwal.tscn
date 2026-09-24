@@ -11,12 +11,16 @@
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="10_return"]
 [ext_resource type="PackedScene" uid="uid://bs3nadqta0083" path="res://Scenes/AturJadwal/ActivityRow.tscn" id="12_activityrow"]
 [ext_resource type="Texture2D" uid="uid://buen031hxfvy4" path="res://Assets/Images/StudentCard/stat_akademis.png" id="13_icon_akademis"]
+[ext_resource type="Material" path="res://Scripts/Shaders/objective_strip_material.tres" id="14_7emk0"]
 [ext_resource type="Texture2D" uid="uid://dkwph7530y25f" path="res://Assets/Images/StudentCard/stat_senibudaya.png" id="14_icon_seni"]
 [ext_resource type="Texture2D" uid="uid://cqmbju8odke6v" path="res://Assets/Images/StudentCard/stat_olahraga.png" id="15_icon_olahraga"]
+[ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="15_k1j60"]
 [ext_resource type="Texture2D" uid="uid://ohek4lgo3sn6" path="res://Assets/Images/StudentCard/stat_energy.png" id="16_icon_energy"]
 [ext_resource type="Texture2D" uid="uid://b8ew4atf1h0ru" path="res://Assets/Images/UI/BarFill/icon_ghost_koin.png" id="16_ulthj"]
+[ext_resource type="Material" path="res://Scripts/Shaders/objective_chip_material.tres" id="16_wjev8"]
 [ext_resource type="Texture2D" uid="uid://hq418p0ftajb" path="res://Assets/Images/UI/BarFill/icon_ghost_sabit.png" id="17_gscbg"]
 [ext_resource type="Texture2D" uid="uid://dbl6a1ft4dmer" path="res://Assets/Images/StudentCard/stat_mood.png" id="17_icon_mood"]
+[ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="17_jrwbr"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
@@ -182,6 +186,8 @@ offset_left = -7.0
 offset_top = -7.0
 offset_right = 7.0
 offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
@@ -242,6 +248,8 @@ offset_left = -7.0
 offset_top = -7.0
 offset_right = 7.0
 offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
@@ -302,6 +310,8 @@ offset_left = -7.0
 offset_top = -7.0
 offset_right = 7.0
 offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
@@ -362,6 +372,8 @@ offset_left = -7.0
 offset_top = -7.0
 offset_right = 7.0
 offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
@@ -422,6 +434,8 @@ offset_left = -7.0
 offset_top = -7.0
 offset_right = 7.0
 offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
@@ -520,24 +534,109 @@ offset_bottom = 742.0
 theme_type_variation = &"H1Label"
 text = "Nama"
 
-[node name="TanggalContainer" type="HBoxContainer" parent="." unique_id=978398382]
+[node name="ObjectiveStrip" type="Button" parent="." unique_id=2140563738]
 layout_mode = 0
-offset_left = 108.0
-offset_top = 838.0
-offset_right = 956.0
-offset_bottom = 948.0
-alignment = 1
+offset_left = 60.0
+offset_top = 846.0
+offset_right = 1020.0
+offset_bottom = 942.0
+theme_type_variation = &"ObjectiveStripButton"
 
-[node name="CalendarIcon" type="TextureRect" parent="TanggalContainer" unique_id=1732537956]
-custom_minimum_size = Vector2(56, 56)
-layout_mode = 2
+[node name="Body" type="ColorRect" parent="ObjectiveStrip" unique_id=1403281765]
+material = ExtResource("14_7emk0")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Chevron" type="TextureRect" parent="ObjectiveStrip" unique_id=1047418159]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 24.0
+offset_right = 66.0
+offset_bottom = 64.0
+mouse_filter = 2
+texture = ExtResource("15_k1j60")
+expand_mode = 1
+stretch_mode = 5
+flip_v = true
+
+[node name="Title" type="Label" parent="ObjectiveStrip" unique_id=34158067]
+layout_mode = 0
+offset_left = 76.0
+offset_top = 6.0
+offset_right = 760.0
+offset_bottom = 72.0
+theme_type_variation = &"ObjectiveTitleLabel"
+text = "Agustus - Minggu 1/6"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StarChip" type="Control" parent="ObjectiveStrip" unique_id=899302992]
+anchors_preset = 0
+offset_left = 770.0
+offset_top = 16.0
+offset_right = 934.0
+offset_bottom = 64.0
+mouse_filter = 2
+
+[node name="Body" type="ColorRect" parent="ObjectiveStrip/StarChip" unique_id=632199085]
+material = ExtResource("16_wjev8")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="ObjectiveStrip/StarChip" unique_id=360654154]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 6.0
+offset_right = 46.0
+offset_bottom = 42.0
+mouse_filter = 2
+texture = ExtResource("17_jrwbr")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LabelTanggal" type="Label" parent="TanggalContainer" unique_id=1168518853]
+[node name="Stars" type="Label" parent="ObjectiveStrip/StarChip" unique_id=1516718262]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 46.0
+offset_right = -8.0
+theme_type_variation = &"ObjectiveStarLabel"
+text = "0 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Progress" type="ProgressBar" parent="ObjectiveStrip" unique_id=1947523532]
+layout_mode = 0
+offset_left = 76.0
+offset_top = 74.0
+offset_right = 934.0
+offset_bottom = 84.0
+mouse_filter = 2
+theme_type_variation = &"ObjectiveProgress"
+show_percentage = false
+
+[node name="ObjectiveHint" type="PanelContainer" parent="." unique_id=264306599]
+visible = false
+layout_mode = 0
+offset_left = 100.0
+offset_top = 950.0
+offset_right = 980.0
+offset_bottom = 950.0
+theme_type_variation = &"ObjectiveHintPanel"
+
+[node name="HintLabel" type="Label" parent="ObjectiveHint" unique_id=345649486]
 layout_mode = 2
-theme_type_variation = &"TitleLabel"
-text = "Agustus - Minggu Pertama"
+theme_type_variation = &"ObjectiveHintLabel"
+text = "Marcel butuh Akademik"
+horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="StartWeek" type="Button" parent="." unique_id=288288757]
 custom_minimum_size = Vector2(0, 128)

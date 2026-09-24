@@ -1010,3 +1010,71 @@ func test_the_weak_stat_flags_are_wired_to_statflags() -> void:
 	var body := src.substr(at, src.find("\nfunc ", at + 1) - at)
 	assert_true(body.contains("Engine.is_editor_hint()") and body.contains("GameSettings.reduce_motion"),
 		"the nudge is off in the editor and under Reduce Motion")
+
+
+# ------------------------------------------ 2026-09-24 visual polish, phase 3
+
+## D8: the objective strip replaced the "AGUSTUS — MINGGU PERTAMA" header in
+## the same band of the board. It is one tap target whose parts never take
+## the tap themselves, and the hint it opens starts closed.
+func test_the_objective_strip_replaced_the_month_header() -> void:
+	assert_true(_screen.get_node_or_null("TanggalContainer") == null,
+		"the old month header is gone")
+	var strip := _screen.get_node_or_null("ObjectiveStrip") as Button
+	assert_true(strip != null, "ObjectiveStrip must be a Button")
+	if strip == null:
+		return
+	assert_eq(strip.theme_type_variation, &"ObjectiveStripButton")
+	assert_true(strip.position.y >= 830.0 and strip.position.y + strip.size.y <= 960.0,
+		"the strip sits in the header's old band, got y %s..%s"
+			% [strip.position.y, strip.position.y + strip.size.y])
+	var parts := {
+		"Body": "ColorRect", "Title": "Label", "StarChip/Body": "ColorRect",
+		"StarChip/Icon": "TextureRect", "StarChip/Stars": "Label",
+		"Progress": "ProgressBar", "Chevron": "TextureRect",
+	}
+	for p in parts:
+		var n := strip.get_node_or_null(p) as Control
+		assert_true(n != null and n.is_class(parts[p]), "ObjectiveStrip/%s must be a %s" % [p, parts[p]])
+		if n != null:
+			assert_eq(n.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+				"ObjectiveStrip/%s must leave the tap to the strip" % p)
+	assert_eq((strip.get_node("Title") as Label).theme_type_variation, &"ObjectiveTitleLabel")
+	assert_eq((strip.get_node("StarChip/Stars") as Label).theme_type_variation, &"ObjectiveStarLabel")
+	assert_eq((strip.get_node("Progress") as ProgressBar).theme_type_variation, &"ObjectiveProgress")
+	var body := strip.get_node("Body") as ColorRect
+	assert_true(body.material != null
+		and body.material.resource_path == "res://Scripts/Shaders/objective_strip_material.tres",
+		"the strip's body is the gradient, not a flat brown")
+	var chip := strip.get_node("StarChip/Body") as ColorRect
+	assert_true(chip.material != null
+		and chip.material.resource_path == "res://Scripts/Shaders/objective_chip_material.tres",
+		"the star chip is gold gradient")
+	assert_eq((strip.get_node("StarChip/Icon") as TextureRect).texture.resource_path,
+		"res://Assets/Images/UI/star.png", "the chip wears StatCheck's own star, not an emoji")
+	var hint := _screen.get_node_or_null("ObjectiveHint") as PanelContainer
+	assert_true(hint != null and hint.theme_type_variation == &"ObjectiveHintPanel",
+		"ObjectiveHint must be an ObjectiveHintPanel")
+	if hint != null:
+		assert_false(hint.visible, "the hint starts closed")
+		var label := hint.get_node_or_null("HintLabel") as Label
+		assert_true(label != null and label.autowrap_mode != TextServer.AUTOWRAP_OFF,
+			"the hint wraps rather than running off the card")
+		assert_true(hint.get_index() > _screen.get_node("BGHari").get_index(),
+			"the open hint draws over the board, not under it")
+
+
+## D8 wiring: the numbers come from GameState and ObjectiveHint, the tap
+## toggles the hint, and the hint follows the student and the schedule.
+func test_the_objective_strip_reads_real_data() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for needle in [
+		"ObjectiveHint.title(GameState.minggu_ke, GameState.max_minggu)",
+		"GameState.run_stars()",
+		"ObjectiveHint.star_text(stars)",
+		"ObjectiveHint.progress_percent(stars)",
+		"objective_strip.pressed.connect(_on_objective_strip_pressed)",
+		"ObjectiveHint.compose(named)",
+	]:
+		assert_true(src.contains(needle), "atur_jadwal.gd must call " + needle)
+	assert_false(src.contains("TanggalContainer"), "nothing may still reach for the old header")

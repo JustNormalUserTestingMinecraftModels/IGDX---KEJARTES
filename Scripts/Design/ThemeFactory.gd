@@ -35,9 +35,78 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_achievement_tile(theme, tokens)
 	_build_achievement_status_pill(theme, tokens)
 	_build_skin_select(theme, tokens)
+	_build_objective_strip(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
+
+
+## AturJadwal's objective strip (2026-09-24 visual polish, D8). The strip's
+## gradient body and gold star chip are drawn by rounded_gradient.gdshader on
+## ColorRects inside it, because a StyleBox cannot round a gradient; these
+## variations are the parts a StyleBox can do.
+##
+##   ObjectiveStripButton   the tap target: every state empty, so the shader
+##                          body shows through and the press is Juice's.
+##   ObjectiveTitleLabel    "Agustus · Minggu 3/6", display face, cream on
+##                          the brown with a dark rim.
+##   ObjectiveStarLabel     the chip's "1.5 / 2", display face, dark on gold.
+##   ObjectiveProgress      the slim always-visible bar toward the pass line.
+##   ObjectiveHintPanel     the one-line hint the strip expands to: a cream
+##   ObjectiveHintLabel     card with a brown rim, and its body text.
+static func _build_objective_strip(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("ObjectiveStripButton")
+	theme.set_type_variation("ObjectiveStripButton", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
+		theme.set_stylebox(state, "ObjectiveStripButton", StyleBoxEmpty.new())
+
+	theme.add_type("ObjectiveTitleLabel")
+	theme.set_type_variation("ObjectiveTitleLabel", "Label")
+	theme.set_font_size("font_size", "ObjectiveTitleLabel", tokens.font_title)
+	theme.set_color("font_color", "ObjectiveTitleLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "ObjectiveTitleLabel", maxi(2, tokens.text_outline_size / 2))
+	theme.set_color("font_outline_color", "ObjectiveTitleLabel", tokens.brand_primary_dark)
+	if tokens.font_display != null:
+		theme.set_font("font", "ObjectiveTitleLabel", tokens.font_display)
+
+	theme.add_type("ObjectiveStarLabel")
+	theme.set_type_variation("ObjectiveStarLabel", "Label")
+	theme.set_font_size("font_size", "ObjectiveStarLabel", tokens.font_caption)
+	theme.set_color("font_color", "ObjectiveStarLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "ObjectiveStarLabel", tokens.font_display)
+
+	var track := StyleBoxFlat.new()
+	track.bg_color = tokens.brand_primary_dark.darkened(0.3)
+	track.set_corner_radius_all(tokens.radius_pill)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = tokens.currency_gold
+	fill.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("ObjectiveProgress")
+	theme.set_type_variation("ObjectiveProgress", "ProgressBar")
+	theme.set_stylebox("background", "ObjectiveProgress", track)
+	theme.set_stylebox("fill", "ObjectiveProgress", fill)
+
+	var hint := StyleBoxFlat.new()
+	hint.bg_color = tokens.surface_card
+	hint.set_corner_radius_all(tokens.radius_md)
+	hint.set_border_width_all(int(tokens.outline_width / 2.0))
+	hint.border_color = tokens.brand_primary
+	hint.shadow_color = tokens.shadow_color
+	hint.shadow_size = int(tokens.shadow_size / 2.0)
+	hint.shadow_offset = tokens.shadow_offset
+	hint.content_margin_left = tokens.space_md
+	hint.content_margin_right = tokens.space_md
+	hint.content_margin_top = tokens.space_sm
+	hint.content_margin_bottom = tokens.space_sm
+	theme.add_type("ObjectiveHintPanel")
+	theme.set_type_variation("ObjectiveHintPanel", "PanelContainer")
+	theme.set_stylebox("panel", "ObjectiveHintPanel", hint)
+
+	theme.add_type("ObjectiveHintLabel")
+	theme.set_type_variation("ObjectiveHintLabel", "Label")
+	theme.set_font_size("font_size", "ObjectiveHintLabel", tokens.font_body_size)
+	theme.set_color("font_color", "ObjectiveHintLabel", tokens.text_primary)
 
 
 ## Measured off skinselection_mockup.png (spec

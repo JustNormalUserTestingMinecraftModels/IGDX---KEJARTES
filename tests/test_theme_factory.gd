@@ -361,6 +361,8 @@ const DISPLAY_ROSTER := [
 	# 2026-09-24 AturJadwal visual polish D7: the "perlu" / "lelah" weak-stat
 	# chips are badges. The value pills are numbers, so they keep the body face.
 	"StatFlagPerlu", "StatFlagLelah",
+	# D8: the objective strip's title and its star chip. Its hint is body copy.
+	"ObjectiveTitleLabel", "ObjectiveStarLabel",
 	# 2026-09-17 achievements: card titles, the Klaim pill, the unlock banner.
 	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
 	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",

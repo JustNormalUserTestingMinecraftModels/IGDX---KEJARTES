@@ -26,6 +26,10 @@
 // the same resource everywhere it is assigned, and the write would land on
 // every plate wearing it at once.
 //
+// The Lobby's desks wear a third copy, illustration_grade_cutout_lobby.tres:
+// the cutout material with light_dir mirrored to the upper right, because the
+// Lobby is lit from that side and the rest of the game is not.
+//
 // STRENGTH WAS HALVED TWICE, on 2026-09-22 and again on 2026-09-23, when the
 // grade was extended to the minigames. A minigame screen is mostly one big
 // painted plate, so contrast about mid-grey had far more of the screen to
@@ -109,9 +113,10 @@ uniform float rim_radius_px : hint_range(0.0, 16.0) = 3.0;
 uniform float rim_hole_reject_texels : hint_range(0.0, 400.0) = 0.0;
 // Colour of the lit edge. Cream, matching the window light.
 uniform vec4 rim_color : source_color = vec4(1.0, 0.95, 0.82, 1.0);
-// Where the light is, in UV space. Upper-left, agreeing with the Lobby window,
-// the streaks painted into the classroom floor, and the three contact shadows
-// the artist authored offset down-right.
+// Where the light is, in UV space. Upper-left by default, agreeing with the
+// three contact shadows the artist authored offset down-right. The Lobby is
+// the exception: its desks wear illustration_grade_cutout_lobby.tres and its
+// faces illustration_grade_face.tres, both lit from the upper right.
 uniform vec2 light_dir = vec2(-0.6, -0.8);
 
 // Rec. 709 luma, for a saturation that does not shift hues.

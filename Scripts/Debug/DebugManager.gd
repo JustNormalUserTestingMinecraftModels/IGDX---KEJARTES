@@ -1771,11 +1771,17 @@ func _build_look_panel(parent: Control) -> void:
 	lbl_title.add_theme_font_size_override("font_size", 26)
 	vbox.add_child(lbl_title)
 
-	var cutout: ShaderMaterial = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
-	_add_look_slider(vbox, cutout, "ao_strength", "Kekuatan AO", 0.0, 1.0, 0.01)
-	_add_look_slider(vbox, cutout, "ao_radius_px", "Lebar AO (piksel layar)", 0.0, 16.0, 0.5)
-	_add_look_slider(vbox, cutout, "rim_strength", "Kekuatan Rim", 0.0, 0.8, 0.01)
-	_add_look_slider(vbox, cutout, "rim_radius_px", "Lebar Rim (piksel layar)", 0.0, 16.0, 0.5)
+	# The cutout, the Lobby's desks and the Lobby's faces share their AO and rim
+	# values (test_illustration_ao pins it), so one slider drives all three.
+	var cutouts: Array = [
+		load("res://Scripts/Shaders/illustration_grade_cutout.tres"),
+		load("res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"),
+		load("res://Scripts/Shaders/illustration_grade_face.tres"),
+	]
+	_add_look_slider(vbox, cutouts, "ao_strength", "Kekuatan AO", 0.0, 1.0, 0.01)
+	_add_look_slider(vbox, cutouts, "ao_radius_px", "Lebar AO (piksel layar)", 0.0, 16.0, 0.5)
+	_add_look_slider(vbox, cutouts, "rim_strength", "Kekuatan Rim", 0.0, 0.8, 0.01)
+	_add_look_slider(vbox, cutouts, "rim_radius_px", "Lebar Rim (piksel layar)", 0.0, 16.0, 0.5)
 
 	var lbl_shafts = Label.new()
 	lbl_shafts.text = "Cahaya Jendela (khusus Lobby):"
@@ -1783,8 +1789,38 @@ func _build_look_panel(parent: Control) -> void:
 	vbox.add_child(lbl_shafts)
 
 	var shafts: ShaderMaterial = load("res://Scripts/Shaders/window_shafts_material.tres")
-	_add_look_slider(vbox, shafts, "intensity", "Kekuatan Cahaya", 0.0, 0.4, 0.005)
-	_add_look_slider(vbox, shafts, "shaft_count", "Jumlah Berkas", 3.0, 16.0, 1.0)
+	_add_look_slider(vbox, [shafts], "intensity", "Kekuatan Cahaya", 0.0, 0.4, 0.005)
+	_add_look_slider(vbox, [shafts], "shaft_count", "Jumlah Berkas", 3.0, 16.0, 1.0)
+
+	# The Lobby's WorldEnvironment glow. The resource is the cached instance the
+	# Lobby's WorldEnvironment wears, so a change shows on the next frame.
+	var lbl_glow = Label.new()
+	lbl_glow.text = "Bloom WorldEnvironment (khusus Lobby):"
+	lbl_glow.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_glow)
+
+	var env: Environment = load("res://Scenes/Lobby/lobby_environment.tres")
+	if env != null:
+		var glow_on = CheckButton.new()
+		glow_on.text = " Bloom Aktif "
+		glow_on.button_pressed = env.glow_enabled
+		glow_on.add_theme_font_size_override("font_size", 22)
+		glow_on.toggled.connect(func(on: bool): env.glow_enabled = on)
+		vbox.add_child(glow_on)
+
+		var blend = OptionButton.new()
+		for mode_name in ["Additive", "Screen", "Softlight", "Replace", "Mix"]:
+			blend.add_item(mode_name)
+		blend.selected = env.glow_blend_mode
+		blend.custom_minimum_size = Vector2(0, 60)
+		blend.add_theme_font_size_override("font_size", 22)
+		blend.item_selected.connect(func(i: int): env.glow_blend_mode = i)
+		vbox.add_child(blend)
+
+		_add_env_slider(vbox, env, "glow_intensity", "Intensitas", 0.0, 4.0, 0.05)
+		_add_env_slider(vbox, env, "glow_strength", "Kekuatan", 0.0, 2.0, 0.05)
+		_add_env_slider(vbox, env, "glow_bloom", "Bloom Menyeluruh", 0.0, 1.0, 0.01)
+		_add_env_slider(vbox, env, "glow_hdr_threshold", "Ambang Terang", 0.0, 1.0, 0.01)
 
 	var lbl_note = Label.new()
 	lbl_note.text = "Catatan: nilai di sini hilang saat keluar. Salin ke .tres kalau sudah pas."
@@ -1793,17 +1829,19 @@ func _build_look_panel(parent: Control) -> void:
 	vbox.add_child(lbl_note)
 
 
-## One labelled slider bound to one shader uniform on a shared material.
-func _add_look_slider(parent: Control, mat: ShaderMaterial, uniform: String,
+## One labelled slider bound to one shader uniform, written to every material
+## in `mats` at once. The label reads the first.
+func _add_look_slider(parent: Control, mats: Array, uniform: String,
 		caption: String, min_value: float, max_value: float, step: float) -> void:
-	if mat == null:
+	var live: Array = mats.filter(func(m): return m is ShaderMaterial)
+	if live.is_empty():
 		return
 	var row = VBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	parent.add_child(row)
 
 	var lbl = Label.new()
-	var current: float = float(mat.get_shader_parameter(uniform))
+	var current: float = float(live[0].get_shader_parameter(uniform))
 	lbl.text = "%s: %.3f" % [caption, current]
 	lbl.add_theme_font_size_override("font_size", 22)
 	row.add_child(lbl)
@@ -1816,6 +1854,33 @@ func _add_look_slider(parent: Control, mat: ShaderMaterial, uniform: String,
 	slider.custom_minimum_size = Vector2(0, 60)
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.value_changed.connect(func(v: float):
-		mat.set_shader_parameter(uniform, v)
+		for mat in live:
+			mat.set_shader_parameter(uniform, v)
+		lbl.text = "%s: %.3f" % [caption, v])
+	row.add_child(slider)
+
+
+## One labelled slider bound to one float property of an Environment.
+func _add_env_slider(parent: Control, env: Environment, property: String,
+		caption: String, min_value: float, max_value: float, step: float) -> void:
+	var row = VBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	parent.add_child(row)
+
+	var lbl = Label.new()
+	var current: float = float(env.get(property))
+	lbl.text = "%s: %.3f" % [caption, current]
+	lbl.add_theme_font_size_override("font_size", 22)
+	row.add_child(lbl)
+
+	var slider = HSlider.new()
+	slider.min_value = min_value
+	slider.max_value = max_value
+	slider.step = step
+	slider.value = current
+	slider.custom_minimum_size = Vector2(0, 60)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(func(v: float):
+		env.set(property, v)
 		lbl.text = "%s: %.3f" % [caption, v])
 	row.add_child(slider)

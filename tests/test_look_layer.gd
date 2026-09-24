@@ -16,6 +16,8 @@ const LAYER_SCENE := "res://Scenes/Look/LookLayer.tscn"
 const GRADE_MATERIAL := "res://Scripts/Shaders/illustration_grade_material.tres"
 const GRADE_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_cutout.tres"
 const GRADE_FACE_MATERIAL := "res://Scripts/Shaders/illustration_grade_face.tres"
+## The Lobby desks' cutout grade, lit from the upper right (2026-09-24).
+const GRADE_LOBBY_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"
 
 ## Every node that wears the grade, by scene. These are painted plates only.
 const GRADED := {
@@ -228,6 +230,11 @@ func test_the_lobby_environment_applies_to_2d() -> void:
 	assert_true(env.glow_enabled, "the environment is there for its glow")
 	assert_true(env.glow_hdr_threshold < 1.0,
 		"hdr_2d is off, so nothing exceeds 1.0: a threshold at or above 1 blooms nothing")
+	# Screen, not soft-light (2026-09-24): measured over the frozen Lobby,
+	# soft-light at the same intensity moved 2.1% of the frame and read as no
+	# bloom at all; screen moves 27.4%, which is visible at a glance.
+	assert_eq(env.glow_blend_mode, Environment.GLOW_BLEND_MODE_SCREEN,
+		"the Lobby's bloom must be visible, which soft-light at this intensity is not")
 	assert_true(FileAccess.get_file_as_string(LOBBY_SCENE).contains(LOBBY_ENVIRONMENT),
 		"the Lobby's WorldEnvironment must wear this resource")
 
@@ -256,8 +263,9 @@ func test_the_bloom_threshold_stays_above_the_paper() -> void:
 
 # ── The illustration grade ───────────────────────────────────────────────────
 
-## One shader, three materials since 2026-09-23: the cutouts wear
-## illustration_grade_cutout.tres, which adds AO and a rim, and the full-bleed
+## One shader, four materials: the cutouts wear
+## illustration_grade_cutout.tres, which adds AO and a rim (the Lobby's desks
+## wear its upper-right-lit twin, and its faces a third), and the full-bleed
 ## backdrops wear the plain one. Both are the shared resources -- what this
 ## still forbids is a per-node copy, which would strand a plate the next time
 ## the grade is tuned. Which plate gets which is tested in illustration_ao.
@@ -265,6 +273,8 @@ func test_every_graded_node_shares_a_shared_material() -> void:
 	var plain: Material = load(GRADE_MATERIAL)
 	var cutout: Material = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
 	var face: Material = load("res://Scripts/Shaders/illustration_grade_face.tres")
+	var lobby: Material = load(GRADE_LOBBY_CUTOUT_MATERIAL)
+	assert_true(lobby is ShaderMaterial, "the Lobby cutout grade material must exist")
 	assert_true(plain is ShaderMaterial, "the grade material must exist")
 	assert_true(cutout is ShaderMaterial, "the cutout grade material must exist")
 	assert_true(face is ShaderMaterial, "the face grade material must exist")
@@ -277,8 +287,8 @@ func test_every_graded_node_shares_a_shared_material() -> void:
 			if node == null:
 				continue
 			assert_true(node.material == plain or node.material == cutout
-					or node.material == face,
-				"%s/%s must wear one of the three shared grades, not a copy"
+					or node.material == face or node.material == lobby,
+				"%s/%s must wear one of the four shared grades, not a copy"
 					% [scene_path, node_path])
 
 
@@ -288,11 +298,12 @@ func test_every_graded_node_shares_a_shared_material() -> void:
 func test_the_grade_never_lands_on_a_ui_node() -> void:
 	var plain: Material = load(GRADE_MATERIAL)
 	var cutout: Material = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
+	var lobby: Material = load(GRADE_LOBBY_CUTOUT_MATERIAL)
 	var offenders := PackedStringArray()
 	for scene_path in GRADED:
 		var root := (load(scene_path) as PackedScene).instantiate()
 		track(root)
-		_collect_ui_offenders(root, [plain, cutout], scene_path, offenders)
+		_collect_ui_offenders(root, [plain, cutout, lobby], scene_path, offenders)
 	assert_eq(offenders.size(), 0,
 		"the grade is for painted art only; found it on UI: " + ", ".join(offenders))
 
@@ -382,7 +393,8 @@ func test_the_grade_stays_subtle() -> void:
 	# test_the_two_materials_agree_on_the_shared_grade pins that they must),
 	# so the cutout material could otherwise be pushed past these ceilings
 	# unnoticed while this test kept watching only the plain one.
-	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_FACE_MATERIAL]:
+	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_LOBBY_CUTOUT_MATERIAL,
+			GRADE_FACE_MATERIAL]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:

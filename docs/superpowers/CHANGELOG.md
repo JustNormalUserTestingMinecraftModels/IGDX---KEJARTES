@@ -8,6 +8,26 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-24 — Lobby lit from the upper right; its bloom made visible
+
+- **Rim light** in the Lobby now comes from the upper right. The desks moved to
+  a fourth grade material, `illustration_grade_cutout_lobby.tres` (the cutout
+  material with `light_dir` mirrored to `(0.6, -0.8)`), and the Lobby-only face
+  material took the same light. Herman, the event splash and the minigames keep
+  the upper-left light their contact shadows were drawn for.
+  `test_illustration_ao` pins that the Lobby copy differs from the cutout in
+  `light_dir` only. Verified on a frozen frame by diffing rim-on against rim-off:
+  the lit band moved to the top and right edges of heads, shoulders and desks.
+- **WorldEnvironment bloom** switched from soft-light to screen blend
+  (intensity 1.5, strength 1.2, threshold 0.7 unchanged). Soft-light moved 2.1%
+  of the frame and read as no bloom; screen moves 27.4% (mean luminance
+  0.479 → 0.501). The environment post-processes the whole canvas, UI included,
+  so the button outlines and the gold pill glow too.
+- **Look page**: the AO and rim sliders now write the cutout, Lobby cutout and
+  face materials together, and a new *Bloom WorldEnvironment* section drives
+  the Lobby's glow live (on/off, blend mode, intensity, strength, bloom,
+  threshold).
+
 ## 2026-09-24 — Rim narrowed to 7 px, grade contrast cut 30%, Andi's lashes dropped
 
 - **Rim** 10 → 7 px on the cutout and face materials together (the tests hold

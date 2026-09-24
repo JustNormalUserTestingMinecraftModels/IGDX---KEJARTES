@@ -128,8 +128,12 @@ the roster and `ThemeFactory` together, or the suite fails.
 take `illustration_grade_material.tres` (grade only), because a backdrop has no
 alpha edge and would pay five texture taps per pixel for nothing. Which is
 which is pinned by `tests/test_illustration_ao.gd`'s census, measured from each
-texture's alpha. Tune both, and the Lobby's shafts, live from the debug
-overlay's **Look** page, then write the landed value into the `.tres`.
+texture's alpha. The Lobby is lit from the upper right, the rest of the game
+from the upper left: its desks wear `illustration_grade_cutout_lobby.tres` and
+its faces `illustration_grade_face.tres`, both kept equal to the cutout except
+`light_dir`. Tune them, the Lobby's shafts and its WorldEnvironment bloom live
+from the debug overlay's **Look** page, then write the landed value into the
+`.tres`.
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
 variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,

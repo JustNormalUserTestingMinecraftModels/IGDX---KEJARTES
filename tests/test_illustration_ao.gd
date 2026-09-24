@@ -21,6 +21,8 @@ const SHADER := "res://Scripts/Shaders/illustration_grade.gdshader"
 const PLAIN := "res://Scripts/Shaders/illustration_grade_material.tres"
 const CUTOUT := "res://Scripts/Shaders/illustration_grade_cutout.tres"
 const FACE := "res://Scripts/Shaders/illustration_grade_face.tres"
+## The Lobby's desks: the cutout grade lit from the upper right (2026-09-24).
+const LOBBY_CUTOUT := "res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"
 
 
 func suite_name() -> String:
@@ -32,7 +34,7 @@ func suite_name() -> String:
 func test_both_materials_share_the_one_shader() -> void:
 	var shader: Shader = load(SHADER)
 	assert_true(shader != null, "the grade shader must exist")
-	for path in [PLAIN, CUTOUT, FACE]:
+	for path in [PLAIN, CUTOUT, LOBBY_CUTOUT, FACE]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:
@@ -51,7 +53,7 @@ func test_the_two_materials_agree_on_the_shared_grade() -> void:
 	if plain == null:
 		return
 	var reference_tint: Color = plain.get_shader_parameter("tint")
-	for path in [CUTOUT, FACE]:
+	for path in [CUTOUT, LOBBY_CUTOUT, FACE]:
 		var other: ShaderMaterial = load(path)
 		assert_true(other != null, "%s must exist" % path)
 		if other == null:
@@ -110,11 +112,9 @@ func test_the_rim_is_directional_and_the_ao_is_not() -> void:
 	assert_true(src.contains("light_dir"), "the rim must read light_dir")
 
 
-## Light comes from the upper-left. Three independent things in the shipped game
-## agree: the Lobby's WindowLight pool centres up and left, the sun streaks in
-## loby_no_tables.png run down-right, and all three contact shadows were authored
-## offset down-right -- Herman (12,10), BGHari (8,12), Splash (14,10). A rim that
-## disagrees with the art is worse than no rim.
+## Outside the Lobby, light comes from the upper-left: the contact shadows
+## were authored offset down-right -- Herman (12,10), BGHari (8,12), Splash
+## (14,10). A rim that disagrees with the art is worse than no rim.
 func test_the_light_comes_from_the_upper_left() -> void:
 	var mat: ShaderMaterial = load(CUTOUT)
 	assert_true(mat != null, "the cutout material must exist")
@@ -168,30 +168,63 @@ func test_the_effects_stay_subtle() -> void:
 ## else. If someone tunes AO or the rim from the Look page and writes the value
 ## into only one of them, the six faces drift away from every other character
 ## in the game -- which is the same failure the shared-grade test above guards
-## for the colour stage.
+## for the colour stage. The faces sit in the Lobby, so they take the Lobby's
+## light, not the rest of the game's.
 func test_the_face_material_matches_the_cutout_on_ao_and_rim() -> void:
 	var cutout: ShaderMaterial = load(CUTOUT)
 	var face: ShaderMaterial = load(FACE)
-	assert_true(cutout != null and face != null, "both materials must exist")
-	if cutout == null or face == null:
+	var lobby: ShaderMaterial = load(LOBBY_CUTOUT)
+	assert_true(cutout != null and face != null and lobby != null, "all three materials must exist")
+	if cutout == null or face == null or lobby == null:
 		return
 	for uniform in ["ao_strength", "ao_radius_px", "rim_strength", "rim_radius_px"]:
 		var a: float = cutout.get_shader_parameter(uniform)
 		var b: float = face.get_shader_parameter(uniform)
 		assert_true(is_equal_approx(a, b),
 			"%s must match between cutout and face: cutout=%s face=%s" % [uniform, a, b])
-	var a_dir: Vector2 = cutout.get_shader_parameter("light_dir")
+	var a_dir: Vector2 = lobby.get_shader_parameter("light_dir")
 	var b_dir: Vector2 = face.get_shader_parameter("light_dir")
-	assert_true(a_dir.is_equal_approx(b_dir), "the faces must agree about where the light is")
+	assert_true(a_dir.is_equal_approx(b_dir),
+		"the faces and the desks they sit at must agree about where the light is")
+
+
+## The Lobby is lit from the upper right (2026-09-24, by request). Its desks
+## and faces are the only plates that take that light; Herman, the event
+## splash and the minigames keep the upper-left light their shadows were drawn
+## for, which is why the Lobby desks wear a material of their own.
+func test_the_lobby_is_lit_from_the_upper_right() -> void:
+	for path in [LOBBY_CUTOUT, FACE]:
+		var mat: ShaderMaterial = load(path)
+		assert_true(mat != null, "%s must exist" % path)
+		if mat == null:
+			continue
+		var dir: Vector2 = mat.get_shader_parameter("light_dir")
+		assert_true(dir.x > 0.0, "%s: the Lobby's light must come from the right" % path)
+		assert_true(dir.y < 0.0, "%s: the Lobby's light must come from above" % path)
+
+
+## The Lobby desk material is the cutout material with the light turned
+## around, and nothing else: every other uniform must match, or a value tuned
+## into one leaves the Lobby's desks looking unlike every other cutout.
+func test_the_lobby_cutout_differs_only_in_its_light() -> void:
+	var cutout: ShaderMaterial = load(CUTOUT)
+	var lobby: ShaderMaterial = load(LOBBY_CUTOUT)
+	assert_true(cutout != null and lobby != null, "both materials must exist")
+	if cutout == null or lobby == null:
+		return
+	for uniform in ["saturation", "contrast", "exposure", "tint", "amount", "ao_strength",
+			"ao_radius_px", "ao_color", "rim_strength", "rim_radius_px", "rim_color"]:
+		var a: Variant = cutout.get_shader_parameter(uniform)
+		var b: Variant = lobby.get_shader_parameter(uniform)
+		assert_eq(str(a), str(b), "%s must match the cutout material: cutout=%s lobby=%s" % [uniform, a, b])
+	var mirrored: Vector2 = cutout.get_shader_parameter("light_dir") * Vector2(-1.0, 1.0)
+	assert_true(mirrored.is_equal_approx(lobby.get_shader_parameter("light_dir")),
+		"the Lobby's light is the rest of the game's, mirrored left to right")
 
 ## The census, measured on 2026-09-23 by sampling each texture's alpha channel.
 ## A cutout has an alpha edge to find; a backdrop is full-bleed and would pay
 ## five taps per pixel for nothing. Percentages are transparent pixels.
 const CUTOUTS := {
-	"res://Scenes/Lobby/loby.tscn": [
-		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
-		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
-	],
 	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman", "Stage/Foreground"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 	"res://Scenes/Minigames/SeniBudaya/DancerRig.tscn": ["Body", "Head"],
@@ -373,6 +406,28 @@ func _param_or_zero(mat: ShaderMaterial, uniform: String) -> float:
 	return 0.0 if value == null else float(value)
 
 
+## The Lobby's four desks are cutouts too, lit from the upper right.
+const LOBBY_DESKS := {
+	"res://Scenes/Lobby/loby.tscn": [
+		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
+		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+	],
+}
+
+
+func test_every_lobby_desk_wears_the_lobby_cutout() -> void:
+	var lobby: Material = load(LOBBY_CUTOUT)
+	for scene_path in LOBBY_DESKS:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for node_path in LOBBY_DESKS[scene_path]:
+			var node := root.get_node_or_null(NodePath(node_path)) as CanvasItem
+			assert_true(node != null, "the Lobby is missing %s" % node_path)
+			if node == null:
+				continue
+			assert_eq(node.material, lobby, "%s must wear the Lobby's cutout grade" % node_path)
+
+
 func test_every_cutout_wears_the_cutout_material() -> void:
 	var cutout: Material = load(CUTOUT)
 	for scene_path in CUTOUTS:
@@ -419,7 +474,7 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 		return
 
 	var counted := {}
-	for source in [CUTOUTS, FACES, BACKDROPS]:
+	for source in [CUTOUTS, LOBBY_DESKS, FACES, BACKDROPS]:
 		for scene_path in source:
 			for node_path in source[scene_path]:
 				var key := "%s::%s" % [scene_path, node_path]
@@ -520,3 +575,6 @@ func test_the_debug_overlay_has_a_look_page() -> void:
 		assert_true(src.contains(uniform), "the Look page must drive %s" % uniform)
 	assert_true(src.contains("illustration_grade_cutout.tres"),
 		"the sliders must write to the shared cutout material")
+	for path in ["illustration_grade_cutout_lobby.tres", "illustration_grade_face.tres"]:
+		assert_true(src.contains(path),
+			"the sliders must write to %s too, or the Lobby drifts while being tuned" % path)

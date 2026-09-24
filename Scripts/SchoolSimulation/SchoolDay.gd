@@ -83,10 +83,17 @@ signal _summary_closed
 
 # ── Node references ───────────────────────────────────────────────────────────
 @onready var day_screen: VBoxContainer    = $DayScreen
-@onready var day_number_label: Label      = $DayScreen/DayNumberLabel
 @onready var book_clock_widget: Control   = $BookClockWidget
-@onready var progress_bar: StatBar        = $DayScreen/ProgressBar
-@onready var status_label: Label          = $DayScreen/StatusLabel
+## The day's progress. Since the 2026-09-24 liveliness pass it is the
+## invisible driver inside BookClockWidget's banner: the banner fills as this
+## Range's value rises, so the Juice.fill_bar calls below pace both.
+@onready var progress_bar: Range          = $BookClockWidget/Header/DayProgress
+@onready var status_label: Label          = $DayScreen/StatusStrip/StatusLabel
+## The slim scrim the status line rides; faded in only for its beats.
+@onready var status_strip: Control        = $DayScreen/StatusStrip
+## The "<hari> selesai" ink stamp that slams in when a day ends.
+@onready var day_stamp: Control           = $DayStamp
+@onready var day_stamp_label: Label       = $DayStamp/StampLabel
 @onready var student_status_container: VBoxContainer = $DayScreen/StudentScroll/StudentStatusContainer
 @onready var click_to_continue_label: Label = $DayScreen/ClickToContinueLabel
 @onready var back_button: Button          = $DayScreen/BackButton
@@ -108,6 +115,15 @@ const DAY_FILL_DURATION = 2.0
 ## a named midday pose until 2026-09-10, and to a randomised afternoon
 ## point before that.
 const EVENT_TRIGGER_PCT := 50.0
+
+# -- Status line and day stamp (2026-09-24 liveliness pass) -------------------
+## Seconds a passing status beat stays on its scrim before the scrim fades
+## and leaves the sky open again.
+const STATUS_BEAT_HOLD := 1.4
+## Seconds the "selesai" stamp sits before the day's summary opens.
+const STAMP_HOLD := 0.9
+## The stamp's size as it starts to slam down, relative to its rest size.
+const STAMP_SLAM_FROM := 1.7
 
 # Day-roll weights. Each school day rolls Normal / Minigame / Event in
 # proportion to these -- shares of the day's total, not percentages -- and
@@ -351,11 +367,7 @@ func _run_single_day() -> void:
 	# The day-progress bar wears the same accent as the page. This replaces
 	# the five hand-generated progress_fill_<weekday>.png textures that used
 	# to be pushed in as a per-day stylebox override.
-	if progress_bar:
-		progress_bar.category = day_category
-
-	day_number_label.text = "Hari %d dari %d" % [current_day + 1, DAYS.size()]
-	status_label.text     = "Perjalanan ke sekolah..."
+	_set_status("Perjalanan ke sekolah...")
 
 	# Reset and configure book-clock widget for the new day
 	if book_clock_widget and book_clock_widget.has_method("set_day"):
@@ -365,6 +377,8 @@ func _run_single_day() -> void:
 		# the dialogue's header can never disagree about which week it is.
 		book_clock_widget.call("set_week",
 			GameState.minggu_ke, GameState.get_max_weeks())
+		# The banner fills in the day's own colour, with its weekday motif.
+		book_clock_widget.call("set_day_style", tokens.category_color(day_category), current_day)
 
 	# Render embedded student status UI on DayScreen
 	_render_embedded_student_status()
@@ -391,7 +405,7 @@ func _run_single_day() -> void:
 	var trigger_pct := EVENT_TRIGGER_PCT
 	var phase1_dur := _phase_duration()
 
-	status_label.text = "Melewati hari sekolah..."
+	_set_status("Melewati hari sekolah...", STATUS_BEAT_HOLD)
 	
 	# Create parallel tweens for day progress bar AND embedded student energy/mood decay bars!
 	# The bar goes through Juice like every other bar in the game; the
@@ -424,7 +438,7 @@ func _run_single_day() -> void:
 
 	# ── Phase 2: Fill remaining bar to 100% ──────────────────────────────────
 	var phase2_dur := _phase_duration()
-	status_label.text = "Melanjutkan hari..."
+	_set_status("Melanjutkan hari...", STATUS_BEAT_HOLD)
 	Juice.fill_bar(progress_bar, 100.0, phase2_dur)
 	var bar_phase2 = create_tween().set_parallel(true)
 	bar_phase2.tween_interval(phase2_dur)
@@ -432,8 +446,12 @@ func _run_single_day() -> void:
 	if is_skipped:
 		return
 
-	status_label.text = day_name + " selesai! ✓"
-	progress_bar.show()
+	# The day ends on an ink stamp rather than a status line (and its old
+	# emoji tick, flagged in DEBT.md).
+	_set_status("")
+	await _play_day_stamp(day_name)
+	if is_skipped:
+		return
 	
 	# ── End-of-Day Summary ────────────────────────────────────────────────────
 	await _show_day_summary(day_name)
@@ -728,9 +746,7 @@ func _add_pill(parent: HBoxContainer, text: String, tint: Color) -> void:
 ## permanently, so listing it would set visible = true on the way out and
 ## bring the duplicate back for the rest of the run.
 const _DAY_CHROME_PATHS := [
-	"DayScreen/DayNumberLabel",
-	"DayScreen/ProgressBar",
-	"DayScreen/StatusLabel",
+	"DayScreen/StatusStrip",
 ]
 
 
@@ -954,7 +970,7 @@ func _roll_event(day_name: String) -> void:
 	var week = GameState.minggu_ke
 	if HOLIDAYS.has(week) and HOLIDAYS[week].has(day_name):
 		var holiday_name = HOLIDAYS[week][day_name]
-		status_label.text = "Hari Libur Nasional: %s 🌿" % holiday_name
+		_set_status("Hari Libur Nasional: %s" % holiday_name)
 		await get_tree().create_timer(1.2).timeout
 		return
 
@@ -981,7 +997,7 @@ func _roll_event(day_name: String) -> void:
 			outcome = "Event"
 
 	if outcome == "Normal":
-		status_label.text = "Hari biasa..."
+		_set_status("Hari biasa...", STATUS_BEAT_HOLD)
 		await get_tree().create_timer(0.8).timeout
 
 	elif outcome == "Minigame":
@@ -1322,17 +1338,18 @@ func _on_week_complete() -> void:
 	fade.tween_property(day_screen, "modulate:a", 1.0, 0.6)
 	await fade.finished
 
-	day_number_label.text = "Minggu selesai!"
 	if book_clock_widget and book_clock_widget.has_method("set_banner"):
 		book_clock_widget.call("set_banner", "Akhir Pekan")
-	progress_bar.show()
 	Juice.fill_bar(progress_bar, 100.0)
-	status_label.text     = "Selamat! Minggu sekolah telah selesai."
+	# "Minggu selesai!" used to sit on the day counter, which the banner's
+	# fill replaced; it rides the status strip now, and stays up.
+	_set_status("Minggu selesai! Selamat!")
 	if wirausaha_total > 0:
 		var wirausaha_chip := _make_chip(
 			"Pendapatan Wirausaha: Rp%d" % wirausaha_total,
 			DesignTokens.load_default().category_color("Wirausaha"))
-		status_label.get_parent().add_child(wirausaha_chip)
+		day_screen.add_child(wirausaha_chip)
+		day_screen.move_child(wirausaha_chip, status_strip.get_index() + 1)
 	back_button.show()
 
 	if not GameState.tutorials_bypassed and GameState.current_grade == 7 and GameState.minggu_ke == 1:
@@ -1515,12 +1532,10 @@ func _show_end_simulation_tutorial() -> void:
 # ─────────────────────────────────────────────────────────────────────────────
 func _reset_day_ui() -> void:
 	progress_bar.value    = 0.0
-	progress_bar.hide()
 	var scroll = get_node_or_null("DayScreen/StudentScroll")
 	if scroll:
 		scroll.hide()
-	day_number_label.text = ""
-	status_label.text     = ""
+	_set_status("")
 	back_button.hide()
 	if skip_button:
 		skip_button.hide()
@@ -1556,6 +1571,55 @@ func _minigame_bgm_id(game_scene: PackedScene, category: String) -> StringName:
 				return &"minigame_senibudaya_menari"
 			return &"minigame_senibudaya_batik"
 	return &""
+
+# ─────────────────────────────────────────────────────────────────────────────
+var _status_tween: Tween
+
+## Writes the status line and fades its scrim in (2026-09-24 liveliness pass,
+## owner's pick: the strip shows only for the beats). With `hold` above zero
+## the beat passes: the scrim fades back out after that many seconds and
+## leaves the sky open. Otherwise it stays until the next call. "" fades it out.
+func _set_status(text: String, hold: float = -1.0) -> void:
+	if status_label:
+		status_label.text = text
+	if status_strip == null:
+		return
+	if _status_tween and _status_tween.is_valid():
+		_status_tween.kill()
+	var t := Juice.tokens()
+	_status_tween = create_tween()
+	_status_tween.tween_property(status_strip, "modulate:a", 0.0 if text == "" else 1.0, t.dur_fast)
+	if text != "" and hold > 0.0:
+		_status_tween.tween_interval(hold)
+		_status_tween.tween_property(status_strip, "modulate:a", 0.0, t.dur_normal)
+
+
+## Slams the "<hari> selesai" ink stamp down, holds it, and lifts it away as
+## the day's summary opens. Under reduce_motion it simply appears.
+func _play_day_stamp(day_name: String) -> void:
+	if day_stamp == null:
+		return
+	if day_stamp_label:
+		day_stamp_label.text = "%s selesai" % day_name.to_lower()
+	day_stamp.pivot_offset = day_stamp.size / 2.0
+	var t := Juice.tokens()
+	if GameSettings.reduce_motion:
+		day_stamp.scale = Vector2.ONE
+		day_stamp.modulate.a = 1.0
+	else:
+		day_stamp.scale = Vector2.ONE * STAMP_SLAM_FROM
+		day_stamp.modulate.a = 0.0
+		var slam := create_tween().set_parallel(true)
+		slam.tween_property(day_stamp, "scale", Vector2.ONE, t.dur_fast) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		slam.tween_property(day_stamp, "modulate:a", 1.0, t.dur_instant)
+		await slam.finished
+		Juice.shake(day_stamp, t.space_xs)
+	AudioDirector.play_sfx(&"select")
+	await get_tree().create_timer(STAMP_HOLD).timeout
+	var lift := create_tween()
+	lift.tween_property(day_stamp, "modulate:a", 0.0, t.dur_fast)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 ## Slide the full-screen event warning through once, captioned with what is

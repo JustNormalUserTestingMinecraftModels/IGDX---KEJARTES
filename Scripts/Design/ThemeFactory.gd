@@ -37,6 +37,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_skin_select(theme, tokens)
 	_build_objective_strip(theme, tokens)
 	_build_picker(theme, tokens)
+	_build_school_day_liveliness(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -271,6 +272,86 @@ static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("PickerLegendLabel", "Label")
 	theme.set_font_size("font_size", "PickerLegendLabel", tokens.font_caption)
 	theme.set_color("font_color", "PickerLegendLabel", tokens.text_secondary)
+
+
+## SchoolDay liveliness pass (2026-09-24, spec
+## docs/superpowers/specs/2026-09-24-schoolday-liveliness-design.md). Single-
+## screen values no token matches.
+## Alpha of the status line's dark strip: enough to hold light text over the
+## brightest midday sky, thin enough that the sky still reads through it.
+const STATUS_SCRIM_ALPHA := 0.62
+## The "selesai" stamp's inked rim, px.
+const DAY_STAMP_BORDER := 6
+## The stamp's paper, nearly opaque so the red ink reads on any sky.
+const DAY_STAMP_FILL_ALPHA := 0.92
+
+## The day screen's new chrome.
+##
+##   DayBannerFill           the banner's progress fill: a white pill the
+##                           widget tints with the day's category colour via
+##                           self_modulate, clipped to the day's progress.
+##   DayBannerKnockoutLabel  the day name's white twin, revealed only under
+##                           the fill, so the name flips dark to white exactly
+##                           at the fill edge. DayBannerLabel's face and size.
+##   StatusScrim             the slim dark strip the status line rides, faded
+##                           in for its beats (owner's pick, 2026-09-24).
+##   StatusScrimLabel        light text on that strip.
+##   DayStampPanel           the "<hari> selesai" ink stamp: cream paper, a
+##   DayStampLabel           red rim and red display-face lettering.
+static func _build_school_day_liveliness(theme: Theme, tokens: DesignTokens) -> void:
+	var bold: Font = tokens.font_body_bold if tokens.font_body_bold != null else tokens.font_body
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color.WHITE
+	fill.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("DayBannerFill")
+	theme.set_type_variation("DayBannerFill", "Panel")
+	theme.set_stylebox("panel", "DayBannerFill", fill)
+
+	theme.add_type("DayBannerKnockoutLabel")
+	theme.set_type_variation("DayBannerKnockoutLabel", "Label")
+	theme.set_font_size("font_size", "DayBannerKnockoutLabel", tokens.font_h1)
+	theme.set_color("font_color", "DayBannerKnockoutLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "DayBannerKnockoutLabel", bold)
+
+	var scrim := StyleBoxFlat.new()
+	scrim.bg_color = Color(tokens.surface_overlay, STATUS_SCRIM_ALPHA)
+	scrim.set_corner_radius_all(tokens.radius_pill)
+	scrim.content_margin_left = tokens.space_lg
+	scrim.content_margin_right = tokens.space_lg
+	scrim.content_margin_top = tokens.space_sm
+	scrim.content_margin_bottom = tokens.space_sm
+	theme.add_type("StatusScrim")
+	theme.set_type_variation("StatusScrim", "PanelContainer")
+	theme.set_stylebox("panel", "StatusScrim", scrim)
+
+	theme.add_type("StatusScrimLabel")
+	theme.set_type_variation("StatusScrimLabel", "Label")
+	theme.set_font_size("font_size", "StatusScrimLabel", tokens.font_title)
+	theme.set_color("font_color", "StatusScrimLabel", tokens.text_on_brand)
+	if bold != null:
+		theme.set_font("font", "StatusScrimLabel", bold)
+
+	var stamp := StyleBoxFlat.new()
+	stamp.bg_color = Color(tokens.surface_card, DAY_STAMP_FILL_ALPHA)
+	stamp.set_border_width_all(DAY_STAMP_BORDER)
+	stamp.border_color = tokens.state_danger
+	stamp.set_corner_radius_all(tokens.radius_sm)
+	stamp.content_margin_left = tokens.space_md
+	stamp.content_margin_right = tokens.space_md
+	stamp.content_margin_top = tokens.space_xs
+	stamp.content_margin_bottom = tokens.space_xs
+	theme.add_type("DayStampPanel")
+	theme.set_type_variation("DayStampPanel", "PanelContainer")
+	theme.set_stylebox("panel", "DayStampPanel", stamp)
+
+	theme.add_type("DayStampLabel")
+	theme.set_type_variation("DayStampLabel", "Label")
+	theme.set_font_size("font_size", "DayStampLabel", tokens.font_h2)
+	theme.set_color("font_color", "DayStampLabel", tokens.state_danger)
+	if tokens.font_display != null:
+		theme.set_font("font", "DayStampLabel", tokens.font_display)
 
 
 ## Measured off skinselection_mockup.png (spec

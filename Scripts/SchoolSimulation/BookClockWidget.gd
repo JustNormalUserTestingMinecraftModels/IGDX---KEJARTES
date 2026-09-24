@@ -50,6 +50,22 @@ const FOREGROUND_NODE := "SchoolForeground"
 const DAY_LABEL_PATH := ^"Header/DayBanner/DayLabel"
 const WEEK_LABEL_PATH := ^"Header/Calendar/Text/WeekLabel"
 
+## The day banner, and the progress fill inside it (2026-09-24 liveliness
+## pass). Track sits in the banner's content rect like DayLabel; Clip is
+## pushed back out to the inside of the pill's rim and cut to the day's
+## progress, so Fill (tinted by the day's category) and KnockoutLabel (the
+## name's white twin) show only where the day has got to.
+const DAY_BANNER_PATH := ^"Header/DayBanner"
+const FILL_TRACK_PATH := ^"Header/DayBanner/Track"
+const FILL_CLIP_PATH := ^"Header/DayBanner/Track/Clip"
+const FILL_PATH := ^"Header/DayBanner/Track/Clip/Fill"
+const MOTIF_PATH := ^"Header/DayBanner/Track/Clip/Fill/Motif"
+const KNOCKOUT_PATH := ^"Header/DayBanner/Track/Clip/KnockoutLabel"
+## The invisible bar SchoolDay's Juice.fill_bar() tweens. The day's progress
+## lives here and the banner reads it, so the fill keeps the day's two-phase,
+## event-in-the-middle pacing without SchoolDay knowing about the banner.
+const PROGRESS_PATH := ^"Header/DayProgress"
+
 ## The day's two resting poses, plus MIDDAY as the arc's midpoint -- the
 ## event still rolls there, but the sky no longer stops for it.
 enum Phase { DAWN, MIDDAY, EVENING }
@@ -109,6 +125,12 @@ enum Phase { DAWN, MIDDAY, EVENING }
 		ease_in_out = value
 		_apply_rotation()
 
+@export_group("Banner")
+## One motif per weekday, Senin to Jumat, tiled faintly across the banner's
+## fill so each day looks different as it fills: grid, stripes, dots,
+## zigzag, stars -- SimulationBackground's PatternType order.
+@export var motif_textures: Array[Texture2D] = []
+
 @export_group("Layout")
 ## Where the sky's rotation pivot sits, as a fraction of the widget's own
 ## size (0,0 = top-left, 1,1 = bottom-right). The mechanism mockup's blue
@@ -138,6 +160,14 @@ var _week_text: String = ""
 func _ready() -> void:
 	_fit_layers()
 	_apply_rotation()
+	# Pure signal wiring, ungated so the suite can drive the fill.
+	var bar := get_node_or_null(PROGRESS_PATH) as Range
+	if bar != null and not bar.value_changed.is_connected(_on_day_progress_changed):
+		bar.value_changed.connect(_on_day_progress_changed)
+	var banner := get_node_or_null(DAY_BANNER_PATH) as Control
+	if banner != null and not banner.resized.is_connected(layout_banner_fill):
+		banner.resized.connect(layout_banner_fill)
+	layout_banner_fill.call_deferred()
 
 
 func _notification(what: int) -> void:
@@ -179,6 +209,28 @@ func set_progress(value: float) -> void:
 	_apply_rotation()
 
 
+## Tints the banner's fill with the day's colour and lays that weekday's motif
+## over it. `weekday` is 0 for Senin; it wraps.
+func set_day_style(tint: Color, weekday: int) -> void:
+	var fill := get_node_or_null(FILL_PATH) as CanvasItem
+	if fill != null:
+		fill.self_modulate = tint
+	var motif := get_node_or_null(MOTIF_PATH) as TextureRect
+	if motif != null and not motif_textures.is_empty():
+		motif.texture = motif_textures[posmod(weekday, motif_textures.size())]
+
+
+## The Range whose value (0-100) is the banner's fill. SchoolDay tweens it.
+func day_progress_bar() -> Range:
+	return get_node_or_null(PROGRESS_PATH) as Range
+
+
+## How much of the banner is filled, 0.0 to 1.0.
+func fill_ratio() -> float:
+	var bar := day_progress_bar()
+	return bar.get_as_ratio() if bar != null else 0.0
+
+
 ## Rewinds to morning and clears the header.
 func reset() -> void:
 	_day_name = ""
@@ -212,6 +264,9 @@ func _write_header() -> void:
 	var day_label := get_node_or_null(DAY_LABEL_PATH) as Label
 	if day_label != null:
 		day_label.text = _day_name
+	var knockout := get_node_or_null(KNOCKOUT_PATH) as Label
+	if knockout != null:
+		knockout.text = _day_name
 	var week_label := get_node_or_null(WEEK_LABEL_PATH) as Label
 	if week_label != null:
 		week_label.text = _week_text
@@ -281,6 +336,44 @@ func transition_to(phase: Phase, duration: float = -1.0) -> Tween:
 
 
 # ── Internals ─────────────────────────────────────────────────────────────────
+
+func _on_day_progress_changed(_value: float) -> void:
+	layout_banner_fill()
+
+
+## Places the fill for the current progress. The banner is a PanelContainer,
+## which pins Track and DayLabel to its content rect -- inset far on the left
+## where the calendar badge overlaps. So Clip is positioned back out to the
+## inside of the pill's rim, measured from the banner's own stylebox rather
+## than restated here, and cut to the progress; Fill spans the whole inner
+## pill so its rounded left end stays put while the right edge advances; and
+## the knockout name is laid exactly over DayLabel. Public so the suite can
+## lay it out without waiting a frame.
+func layout_banner_fill() -> void:
+	var banner := get_node_or_null(DAY_BANNER_PATH) as Control
+	var track := get_node_or_null(FILL_TRACK_PATH) as Control
+	var clip := get_node_or_null(FILL_CLIP_PATH) as Control
+	if banner == null or track == null or clip == null:
+		return
+	var rim := Rect2(Vector2.ZERO, banner.size)
+	var box := banner.get_theme_stylebox("panel")
+	if box is StyleBoxFlat:
+		var flat := box as StyleBoxFlat
+		rim = rim.grow_individual(-flat.border_width_left, -flat.border_width_top,
+			-flat.border_width_right, -flat.border_width_bottom)
+	var ratio := fill_ratio()
+	clip.position = rim.position - track.position
+	clip.size = Vector2(rim.size.x * ratio, rim.size.y)
+	var fill := get_node_or_null(FILL_PATH) as Control
+	if fill != null:
+		fill.position = Vector2.ZERO
+		fill.size = rim.size
+	var knockout := get_node_or_null(KNOCKOUT_PATH) as Control
+	var day_label := get_node_or_null(DAY_LABEL_PATH) as Control
+	if knockout != null and day_label != null:
+		knockout.position = day_label.position - rim.position
+		knockout.size = day_label.size
+
 
 func _sky_layer() -> TextureRect:
 	return get_node_or_null(SKY_NODE) as TextureRect

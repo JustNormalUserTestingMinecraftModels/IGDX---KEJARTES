@@ -4,6 +4,11 @@
 [ext_resource type="Texture2D" uid="uid://b8j5e5pqt2hr8" path="res://Assets/Images/SchoolDay/transition_background.png" id="2_v81rb"]
 [ext_resource type="Texture2D" uid="uid://dak848judjoxg" path="res://Assets/Images/SchoolDay/transition_foreground.png" id="3_yfwwc"]
 [ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="4_yfwwc"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Motifs/motif_grid.svg" id="m_grid"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Motifs/motif_stripes.svg" id="m_stripes"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Motifs/motif_dots.svg" id="m_dots"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Motifs/motif_zigzag.svg" id="m_zigzag"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Motifs/motif_stars.svg" id="m_stars"]
 
 [node name="BookClockWidget" type="Control" unique_id=1100225047]
 clip_contents = true
@@ -15,6 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_bkclock")
+motif_textures = Array[Texture2D]([ExtResource("m_grid"), ExtResource("m_stripes"), ExtResource("m_dots"), ExtResource("m_zigzag"), ExtResource("m_stars")])
 
 [node name="SkyBackground" type="TextureRect" parent="." unique_id=373042140]
 layout_mode = 0
@@ -60,6 +66,46 @@ theme_type_variation = &"DayBannerLabel"
 text = "Senin"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Track" type="Control" parent="Header/DayBanner"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Clip" type="Control" parent="Header/DayBanner/Track"]
+clip_contents = true
+layout_mode = 0
+mouse_filter = 2
+
+[node name="Fill" type="Panel" parent="Header/DayBanner/Track/Clip"]
+clip_children = 2
+layout_mode = 0
+mouse_filter = 2
+theme_type_variation = &"DayBannerFill"
+
+[node name="Motif" type="TextureRect" parent="Header/DayBanner/Track/Clip/Fill"]
+texture_repeat = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("m_grid")
+stretch_mode = 1
+
+[node name="KnockoutLabel" type="Label" parent="Header/DayBanner/Track/Clip"]
+layout_mode = 0
+theme_type_variation = &"DayBannerKnockoutLabel"
+text = "Senin"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DayProgress" type="ProgressBar" parent="Header"]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+show_percentage = false
 
 [node name="Calendar" type="TextureRect" parent="Header" unique_id=1100442514]
 layout_mode = 1

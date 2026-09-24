@@ -304,6 +304,8 @@ const DISPLAY_ROSTER := [
 	"TraitPill",
 	# 2026-09-24 Penjadwalan picker rebuild.
 	"PickerTitleLabel", "PickerTileName", "PickerTileValue", "PickerRibbonLabel",
+	# 2026-09-24 SchoolDay liveliness: the "selesai" stamp.
+	"DayStampLabel",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.

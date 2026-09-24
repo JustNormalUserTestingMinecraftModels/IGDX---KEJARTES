@@ -255,12 +255,21 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
-func test_day_progress_bar_is_a_statbar_filled_through_juice() -> void:
-	var bar := _day.get_node_or_null("DayScreen/ProgressBar")
-	assert_true(bar is StatBar, "the day-progress bar must be a StatBar")
+## Since the 2026-09-24 liveliness pass the day's progress is the banner's
+## fill: an invisible Range inside BookClockWidget's header drives it, and the
+## old bar in DayScreen is gone. The two Juice.fill_bar calls are unchanged.
+func test_day_progress_drives_the_banner_through_juice() -> void:
+	var bar := _day.get_node_or_null("BookClockWidget/Header/DayProgress")
+	assert_true(bar is Range, "the day's progress must be the banner's driver Range")
+	assert_true(_day.get_node_or_null("DayScreen/ProgressBar") == null,
+		"the separate day bar is retired -- the banner is the progress")
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
-	assert_true(src.contains("Juice.fill_bar(progress_bar"),
-		"the day-progress bar must be filled through Juice.fill_bar")
+	assert_true(src.contains("$BookClockWidget/Header/DayProgress"),
+		"progress_bar must be the banner's driver")
+	assert_eq(src.count("Juice.fill_bar(progress_bar"), 3,
+		"both day phases and the week's close still fill through Juice.fill_bar")
+	assert_true(src.contains('call("set_day_style"'),
+		"each day tints the banner fill with its category and motif")
 
 
 func test_background_is_token_driven() -> void:
@@ -773,8 +782,8 @@ func test_the_hidden_day_label_is_not_un_hidden_by_the_chrome_toggle() -> void:
 	var block := src.substr(at, src.find("]", at) - at)
 	assert_false(block.contains('"DayScreen/DayLabel"'),
 		"a permanently hidden label must not be in the show/hide list")
-	assert_true(block.contains('"DayScreen/DayNumberLabel"'),
-		"the day counter still hides for the summary popup")
+	assert_true(block.contains('"DayScreen/StatusStrip"'),
+		"the status strip still hides for the summary popup")
 
 
 ## One node's block in SchoolDay.tscn: from its [node] header to the next
@@ -791,14 +800,51 @@ func _scene_node_block(header: String) -> String:
 	return src.substr(start, (next - start) if next > 0 else -1)
 
 
-## DayNumberLabel stays: "Hari 1 dari 5" is the day's place in the WEEK,
-## which the header does not carry -- the header is the day's name and the
-## week's place in the grade. Three facts, no repeats.
-func test_the_day_number_is_still_shown() -> void:
+## "Hari 1 dari 5" is gone (2026-09-24 liveliness spec, owner-confirmed): the
+## banner's name carries the day, its fill carries the day's progress, and the
+## calendar badge carries the week.
+func test_the_day_counter_is_retired() -> void:
 	var block := _scene_node_block(
 		'[node name="DayNumberLabel" type="Label" parent="DayScreen"')
-	assert_true(block != "", "DayScreen/DayNumberLabel must exist")
-	if block == "":
+	assert_true(block == "", "DayScreen/DayNumberLabel must be deleted")
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_false(src.contains("day_number_label"),
+		"SchoolDay.gd must not reference the deleted counter")
+	assert_false(src.contains("Hari %d dari %d"), "the counter's text is gone too")
+
+
+## The status line rides a dark scrim so it survives the dusk sky (the
+## reviewer's fault #2), faded in only for its beats (owner's pick).
+func test_the_status_line_rides_a_fading_scrim() -> void:
+	var strip := _day.get_node_or_null("DayScreen/StatusStrip") as PanelContainer
+	assert_true(strip != null, "DayScreen/StatusStrip must exist")
+	if strip == null:
 		return
-	assert_false(block.contains("visible = false"),
-		"the day-of-week counter must stay visible")
+	assert_eq(strip.theme_type_variation, &"StatusScrim", "the strip is the StatusScrim variation")
+	assert_eq(strip.modulate.a, 0.0, "the strip starts hidden; beats fade it in")
+	var label := _day.get_node_or_null("DayScreen/StatusStrip/StatusLabel") as Label
+	assert_true(label != null, "StatusLabel lives on the strip")
+	if label:
+		assert_eq(label.theme_type_variation, &"StatusScrimLabel", "light text on the scrim")
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("func _set_status(text: String, hold: float = -1.0)"),
+		"status writes go through the fading helper")
+	assert_eq(src.count("status_label.text ="), 1,
+		"only _set_status writes the label; every beat goes through it")
+	assert_true(src.contains('_set_status("Minggu selesai! Selamat!")'),
+		"the week's close reroutes to the status strip")
+
+
+## The day ends on an ink stamp that replaced "<hari> selesai! ✓".
+func test_the_day_ends_on_an_ink_stamp() -> void:
+	var stamp := _day.get_node_or_null("DayStamp") as PanelContainer
+	assert_true(stamp != null, "the DayStamp must be authored in the scene")
+	if stamp:
+		assert_eq(stamp.theme_type_variation, &"DayStampPanel", "the stamp's variation")
+		assert_eq(stamp.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the stamp never eats a tap")
+		assert_eq(stamp.modulate.a, 0.0, "hidden until a day ends")
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("await _play_day_stamp(day_name)"), "each day ends on the stamp")
+	assert_false(src.contains(" selesai! " + String.chr(0x2713)),
+		"the old tick line is gone")
+	assert_true(src.contains("GameSettings.reduce_motion"), "the stamp honours reduce_motion")

@@ -495,7 +495,8 @@ func _render_embedded_student_status() -> void:
 		avatar_row.add_child(chip)
 		chip.setup(student)
 		chips.append(chip)
-		embedded_widgets[student.student_name] = {"student": student, "chip": chip}
+		embedded_widgets[student.student_name] = {
+			"student": student, "chip": chip, "skills": _skill_sum(student)}
 
 	if avatar_strip:
 		avatar_strip.show()
@@ -503,6 +504,11 @@ func _render_embedded_student_status() -> void:
 		ring_legend.show()
 	if not GameSettings.reduce_motion:
 		Juice.stagger_in(chips)
+
+
+## A student's three skills added up, to tell when any of them rose.
+func _skill_sum(student: StudentData) -> float:
+	return student.akademis + student.seni_budaya + student.olahraga
 
 
 ## Colours the legend's two dots like the rings they name.
@@ -529,6 +535,10 @@ func _pop_todays_gains(day_name: String, span: float) -> void:
 			continue
 		var who: String = entry.get("student_name", "")
 		gains[who] = gains.get(who, 0.0) + float(entry.get("delta", 0.0))
+	# The activity's gains are applied by now; bank them so a later event or
+	# minigame update does not pop them a second time.
+	for w in embedded_widgets.values():
+		w["skills"] = _skill_sum(w["student"])
 	var pops: Array = []
 	for who in gains:
 		var chip := (embedded_widgets.get(who, {}) as Dictionary).get("chip") as AvatarChip
@@ -651,6 +661,19 @@ func _animate_embedded_stat_updates(duration: float = 0.6) -> void:
 		chip.tween_needs(student.energy, student.mood, duration)
 		if not GameSettings.reduce_motion:
 			AnimUtils.squash_bounce(chip)
+	# A won minigame or a Terima'd event can raise a skill too; the chip pops
+	# a +N for it just as it does for the day's activity.
+	for student in student_manager.students:
+		var w: Dictionary = embedded_widgets.get(student.student_name, {})
+		var chip := w.get("chip") as AvatarChip
+		if chip == null:
+			continue
+		var now := _skill_sum(student)
+		var gained: float = now - float(w.get("skills", now))
+		w["skills"] = now
+		if gained >= 0.5:
+			moved = true
+			chip.pop_gain(int(round(gained)))
 	if moved:
 		await get_tree().create_timer(duration).timeout
 
@@ -1436,7 +1459,6 @@ func _play_day_stamp(day_name: String) -> void:
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		slam.tween_property(day_stamp, "modulate:a", 1.0, t.dur_instant)
 		await slam.finished
-		Juice.shake(day_stamp, t.space_xs)
 	_celebrate_day_end(current_day == DAYS.size() - 1)
 	await get_tree().create_timer(STAMP_HOLD).timeout
 	var lift := create_tween()

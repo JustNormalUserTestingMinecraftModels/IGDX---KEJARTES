@@ -261,3 +261,26 @@ func test_the_banner_bobs_and_its_fill_drifts_in_game_only() -> void:
 	var motif := _w.get_node(BookClockWidget.MOTIF_PATH) as Control
 	assert_eq(motif.offset_right, BookClockWidget.MOTIF_PERIOD,
 		"the motif runs one repeat past the fill so the drift never shows a gap")
+
+
+## Review 2026-09-24: under reduce_motion the motes must never show, so the
+## scene authors them off and each day turns them on only without it.
+func test_the_motes_start_off() -> void:
+	var scene := (load(SCHOOL_DAY_SCENE) as PackedScene).instantiate()
+	var motes := scene.get_node("Motes") as CPUParticles2D
+	assert_false(motes.emitting, "authored off; _set_weekday_motes turns them on")
+	scene.free()
+	var src := FileAccess.get_file_as_string(SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("motes.emitting = not GameSettings.reduce_motion"), "never under reduce_motion")
+
+
+## Review 2026-09-24: a minigame or event skill gain pops a +N too.
+func test_event_and_minigame_gains_pop_too() -> void:
+	var src := FileAccess.get_file_as_string(SCHOOL_DAY_SCRIPT)
+	var at := src.find("func _animate_embedded_stat_updates(")
+	var body := src.substr(at, src.find("
+func ", at + 1) - at)
+	assert_true(body.contains("chip.pop_gain(int(round(gained)))"),
+		"a skill rise after an event or minigame floats a +N")
+	assert_true(src.contains('w["skills"] = _skill_sum(w["student"])'),
+		"the activity's gains are banked so they never pop twice")

@@ -16,6 +16,9 @@ extends VBoxContainer
 ## top-centre, in px. The chip's Headroom node above the rings gives the
 ## rise room inside the strip, which clips anything above its own top.
 const GAIN_TEXT_OFFSET := Vector2(0, -8)
+## AnimUtils.create_floating_text draws its label this far left of the
+## point it is given, so the chip aims that far right to centre the +N.
+const FLOATING_TEXT_SHIFT := 100.0
 
 @onready var _energy_ring: TextureProgressBar = $Rings/EnergyRing
 @onready var _mood_ring: TextureProgressBar = $Rings/MoodRing
@@ -100,6 +103,6 @@ func pop_gain(amount: int) -> void:
 	var tokens := DesignTokens.load_default()
 	# create_floating_text places its label 100 px left of at_pos, so aim it
 	# that far right of the rings' top-centre.
-	var at := Vector2(_rings.size.x * 0.5 + 100.0, 0.0) + GAIN_TEXT_OFFSET
+	var at := Vector2(_rings.size.x * 0.5 + FLOATING_TEXT_SHIFT, 0.0) + GAIN_TEXT_OFFSET
 	AnimUtils.create_floating_text(_rings, "+%d" % amount, at,
 		tokens.state_success.lightened(0.35), tokens.font_title)

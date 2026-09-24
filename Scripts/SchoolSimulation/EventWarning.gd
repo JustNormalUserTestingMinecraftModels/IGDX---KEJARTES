@@ -148,8 +148,8 @@ func play_warning(caption_text: String, category: String = "", mode: String = ""
 	panel.position.x = panel_x(&"enter", width)
 	icon.modulate.a = 0.0
 	caption.modulate.a = 0.0
-	band.pivot_offset = band.size * 0.5
-	band.scale.x = 0.0
+	# Hidden through the slide; the roll starts once the panel has landed.
+	band.modulate.a = 0.0
 
 	var slide_in := create_tween()
 	slide_in.tween_property(panel, "position:x", panel_x(&"rest", width), slide_in_duration) \
@@ -158,6 +158,12 @@ func play_warning(caption_text: String, category: String = "", mode: String = ""
 
 	Juice.pop_in(icon)
 	Juice.fade_in(caption)
+	# The band is a container child, and a container resets its children's
+	# scale whenever it sorts -- setting the caption queues one. So the roll
+	# starts from zero here, after that sort has run, not before the slide.
+	band.pivot_offset = band.size * 0.5
+	band.scale.x = 0.0
+	band.modulate.a = 1.0
 	var roll := create_tween()
 	roll.tween_property(band, "scale:x", 1.0, band_roll_duration) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

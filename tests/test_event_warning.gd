@@ -274,5 +274,9 @@ func test_the_new_motion_honours_reduce_motion() -> void:
 	assert_contains(body, "GameSettings.reduce_motion", "the typewriter and wiggle skip under reduce_motion")
 	assert_contains(body, 'tween_property(caption, "visible_ratio"', "the title types in")
 	assert_contains(body, 'tween_property(band, "scale:x"', "the band rolls in")
+	# Review 2026-09-24: the band is a container child, and a sort resets its
+	# scale, so the roll must start after the slide, not before it.
+	assert_true(body.find("band.scale.x = 0.0") > body.find("await slide_in.finished"),
+		"the roll starts from zero only once the panel has landed")
 	assert_contains(src, "Engine.is_editor_hint() or GameSettings.reduce_motion",
 		"the stripes never scroll in the editor or under reduce_motion")

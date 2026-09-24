@@ -63,6 +63,7 @@ scale_amount_max = 1.2
 [node name="Motes" type="CPUParticles2D" parent="."]
 modulate = Color(1, 1, 1, 0.45)
 position = Vector2(540, 900)
+emitting = false
 amount = 16
 lifetime = 9.0
 preprocess = 9.0

@@ -764,9 +764,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -480.0
-offset_top = -590.0
+offset_top = -580.0
 offset_right = 480.0
-offset_bottom = 590.0
+offset_bottom = 580.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"PickerSheet"
@@ -923,14 +923,14 @@ mouse_filter = 2
 theme_override_constants/separation = 24
 
 [node name="Batal" type="Button" parent="Penjadwalan/Sheet/Body/Buttons"]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"StudentCardSecondaryButton"
+theme_type_variation = &"SecondaryButton"
 text = "Batal"
 
 [node name="Pilih" type="Button" parent="Penjadwalan/Sheet/Body/Buttons"]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"

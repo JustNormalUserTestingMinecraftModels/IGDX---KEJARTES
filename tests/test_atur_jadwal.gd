@@ -240,11 +240,10 @@ func test_popup_has_batal_and_a_dimmed_pilih() -> void:
 		assert_true(pilih.disabled, "Pilih is dimmed until a tile is selected")
 		assert_eq(pilih.theme_type_variation, &"PrimaryButton", "Pilih is the primary action")
 	if batal:
-		# Every role variation wears the Lobby's brown look, so a plain
-		# SecondaryButton would be Pilih's twin. The cream secondary keeps
-		# the two apart.
-		assert_eq(batal.theme_type_variation, &"StudentCardSecondaryButton",
-			"Batal is the cream secondary, visibly not Pilih")
+		# Every framed action wears the Lobby's brown look whatever its role
+		# (test_lobby_style_buttons); Pilih reads as the live one because it
+		# stays dimmed until a tile is chosen and then names the choice.
+		assert_eq(batal.theme_type_variation, &"SecondaryButton", "Batal is the secondary one")
 	assert_true(_screen.get_node_or_null("Penjadwalan/TextureRect/PopupBack") == null,
 		"the old back arrow is gone -- Batal and a tap outside the sheet cancel")
 

@@ -178,6 +178,9 @@ const HEIGHT_ALLOWED := {
 		"151x156, a pixel copy of skinselection_mockup.png (user request 2026-09-23)",
 	"Scenes/Skins/SkinSelect.tscn::Tray/Terapkan":
 		"140 tall, a pixel copy of skinselection_mockup.png (user request 2026-09-23)",
+	"Scenes/AturJadwal/ActivityTile.tscn::ActivityTile":
+		"a Penjadwalan picker tile, a selectable card rather than an action button: "
+		+ "its height is its content's (2026-09-24 picker rebuild, D9)",
 }
 
 const SCENE_GLOB := "res://Scenes"

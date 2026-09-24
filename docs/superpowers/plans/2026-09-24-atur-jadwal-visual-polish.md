@@ -383,9 +383,12 @@ after Phase 1, so take a full run before shipping.
   sits in ALLOWED), test_wirausaha. Read each before deleting ActivityRow.
 
 **Phases 4 and 5 (done, same day).** Decisions that differ from the text:
-- The picker lost its back arrow; Batal wears `StudentCardSecondaryButton`
-  (the cream secondary). Every role variation wears the Lobby's brown look,
-  so a plain `SecondaryButton` rendered as Pilih's twin.
+- The picker lost its back arrow for Batal / Pilih, both S-step buttons.
+  Batal is a plain `SecondaryButton`, which the lobby-style-buttons rule
+  draws in the same brown as Pilih (only StudentCard may use the cream
+  secondary); Pilih stays distinct by being dimmed until a tile is chosen
+  and then naming it. The tile has a reviewed `test_button_geometry`
+  height exemption: it is a card, not an action button.
 - The D14 breakdown is not a separate expanding panel: the note line under
   the grid always holds a line for the current selection, and for the
   favourite it is the breakdown (and pops). A fixed slot, so the sheet never

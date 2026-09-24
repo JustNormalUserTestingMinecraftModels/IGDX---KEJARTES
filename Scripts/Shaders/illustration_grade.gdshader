@@ -116,26 +116,6 @@ uniform vec2 light_dir = vec2(-0.6, -0.8);
 // Rec. 709 luma, for a saturation that does not shift hues.
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 
-// Alpha of one AO tap, with an interior hole counted as solid plate. `reach`
-// is ao_hole_reject_texels in UV; zero skips the check. The check only runs when
-// the tap found transparency, so the solid middle of a face -- most of its
-// pixels -- pays nothing. Two probes per side, not one, for the reason the rim
-// gives: a single far probe steps clean over a narrow band of plate.
-float ao_tap(sampler2D tex, vec2 uv, vec2 reach) {
-	float a = textureLod(tex, uv, 0.0).a;
-	if (a < 1.0 && reach.x > 0.0) {
-		vec2 x = vec2(reach.x, 0.0);
-		vec2 y = vec2(0.0, reach.y);
-		float walled = min(
-			min(max(textureLod(tex, uv + x * 0.5, 0.0).a, textureLod(tex, uv + x, 0.0).a),
-				max(textureLod(tex, uv - x * 0.5, 0.0).a, textureLod(tex, uv - x, 0.0).a)),
-			min(max(textureLod(tex, uv + y * 0.5, 0.0).a, textureLod(tex, uv + y, 0.0).a),
-				max(textureLod(tex, uv - y * 0.5, 0.0).a, textureLod(tex, uv - y, 0.0).a)));
-		a = max(a, walled);
-	}
-	return a;
-}
-
 void fragment() {
 	vec4 src = texture(TEXTURE, UV) * COLOR;
 
@@ -168,14 +148,40 @@ void fragment() {
 		// drops. Ambient: no direction, all the way around. textureLod (not
 		// texture) because an implicit-LOD tap inside this branch is the same
 		// undefined-derivative problem as fwidth above.
+		//
+		// Each tap counts an interior hole as solid plate. `reach` is
+		// ao_hole_reject_texels in UV; zero skips the check. The check only
+		// runs when the tap found transparency, so the solid middle of a face
+		// -- most of its pixels -- pays nothing. Two probes per side, not one,
+		// for the reason the rim gives: a single far probe steps clean over a
+		// narrow band of plate.
+		//
+		// A loop here rather than a helper function, on purpose: a helper has
+		// to take TEXTURE as a sampler2D argument, and the shader compiler
+		// rejects a builtin texture passed that way ("custom_samplers.has(
+		// tex_builtin)") -- nine ERROR lines on every headless load, which is
+		// what failed project-check on PR #73.
 		if (ao_strength > 0.0) {
 			vec2 r = upp * ao_radius_px;
 			vec2 reach = TEXTURE_PIXEL_SIZE * ao_hole_reject_texels;
-			float a = ao_tap(TEXTURE, UV + vec2(r.x, 0.0), reach)
-				+ ao_tap(TEXTURE, UV - vec2(r.x, 0.0), reach)
-				+ ao_tap(TEXTURE, UV + vec2(0.0, r.y), reach)
-				+ ao_tap(TEXTURE, UV - vec2(0.0, r.y), reach);
-			float edge = clamp(1.0 - a * 0.25, 0.0, 1.0);
+			vec2 rx = vec2(reach.x, 0.0);
+			vec2 ry = vec2(0.0, reach.y);
+			vec2 taps[4] = vec2[](vec2(r.x, 0.0), vec2(-r.x, 0.0), vec2(0.0, r.y), vec2(0.0, -r.y));
+			float sum = 0.0;
+			for (int i = 0; i < 4; i++) {
+				vec2 uv = UV + taps[i];
+				float a = textureLod(TEXTURE, uv, 0.0).a;
+				if (a < 1.0 && reach.x > 0.0) {
+					float walled = min(
+						min(max(textureLod(TEXTURE, uv + rx * 0.5, 0.0).a, textureLod(TEXTURE, uv + rx, 0.0).a),
+							max(textureLod(TEXTURE, uv - rx * 0.5, 0.0).a, textureLod(TEXTURE, uv - rx, 0.0).a)),
+						min(max(textureLod(TEXTURE, uv + ry * 0.5, 0.0).a, textureLod(TEXTURE, uv + ry, 0.0).a),
+							max(textureLod(TEXTURE, uv - ry * 0.5, 0.0).a, textureLod(TEXTURE, uv - ry, 0.0).a)));
+					a = max(a, walled);
+				}
+				sum += a;
+			}
+			float edge = clamp(1.0 - sum * 0.25, 0.0, 1.0);
 			graded = mix(graded, graded * ao_color.rgb, edge * ao_strength * amount);
 		}
 

@@ -346,12 +346,22 @@ func test_the_face_ao_reject_spans_an_eye_socket() -> void:
 
 ## Every one of the four AO taps must go through the hole test. One tap left
 ## on a bare textureLod keeps a quarter of the ring on that side of every eye.
+## The four taps run through one loop, so the hole test cannot be skipped on
+## one side.
+##
+## And no helper function may take a sampler2D: the only thing it could be
+## handed is TEXTURE, and the shader compiler rejects a builtin texture passed
+## as an argument, logging nine ERROR lines on every headless load. The editor
+## and a desktop GPU render it fine, so only CI's project-check saw it (#73).
 func test_every_ao_tap_goes_through_the_hole_test() -> void:
 	var src := FileAccess.get_file_as_string(SHADER)
-	assert_eq(src.count("ao_tap(TEXTURE, UV"), 4,
-		"all four AO taps must call ao_tap so an interior hole reads as plate")
+	assert_true(src.contains("for (int i = 0; i < 4; i++)"),
+		"the four AO taps must share one loop, so every tap gets the hole test")
+	assert_eq(src.count("vec2 uv = UV + taps[i]"), 1, "the loop must walk the four taps")
 	assert_true(src.contains("a < 1.0 && reach.x > 0.0"),
 		"the enclosure probes must be skipped for an opaque tap or when reach is 0")
+	assert_false(src.contains("sampler2D tex"),
+		"never pass TEXTURE into a function: the shader compiler rejects it headless")
 
 
 ## A material that never sets a uniform reports null for it, not the shader's

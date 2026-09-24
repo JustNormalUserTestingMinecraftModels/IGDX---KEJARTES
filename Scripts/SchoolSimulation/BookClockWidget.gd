@@ -66,6 +66,28 @@ const KNOCKOUT_PATH := ^"Header/DayBanner/Track/Clip/KnockoutLabel"
 ## event-in-the-middle pacing without SchoolDay knowing about the banner.
 const PROGRESS_PATH := ^"Header/DayProgress"
 
+## The sun and moon (2026-09-24 liveliness pass, layer 4). They are placed
+## from the same progress that turns the sky, inside set_progress(), so they
+## rise and set with the sweep and have no timer of their own to drift. They
+## are not the sky's children: the sky turns a full circle a day, so a body
+## fixed to it crossed the 1080-wide screen in a fraction of a second. They
+## travel a visible arc instead -- the sun from the right horizon, overhead
+## at midday, down to the left; the moon the same arc half a day out, so it
+## is up in the dark at dawn and evening. They sit under the school, which
+## hides them as they set.
+const SUN_PATH := ^"SkyBodies/Sun"
+const MOON_PATH := ^"SkyBodies/Moon"
+## The night beat's layers, faded together by set_night(): a blue tint over
+## the sky, a star field and the moon above it, the drifting clouds dimmed,
+## the school darkened to a silhouette, and its windows lit warm. SchoolNight and WindowGlow are full-frame images fitted
+## exactly like SchoolForeground, so the windows stay on the painting at any
+## aspect ratio.
+const NIGHT_TINT_PATH := ^"NightTint"
+const STARS_PATH := ^"Stars"
+const SCHOOL_NIGHT_PATH := ^"SchoolNight"
+const WINDOW_GLOW_PATH := ^"WindowGlow"
+const CLOUD_LAYER_PATH := ^"CloudLayer"
+
 ## The day's two resting poses, plus MIDDAY as the arc's midpoint -- the
 ## event still rolls there, but the sky no longer stops for it.
 enum Phase { DAWN, MIDDAY, EVENING }
@@ -131,6 +153,42 @@ enum Phase { DAWN, MIDDAY, EVENING }
 ## zigzag, stars -- SimulationBackground's PatternType order.
 @export var motif_textures: Array[Texture2D] = []
 
+@export_group("Sky bodies")
+## The day progress (0-1) at which the sun clears the right horizon and
+## sinks below the left one. The moon runs the same arc half a day out.
+@export var sun_rise_progress: float = 0.12:
+	set(value):
+		sun_rise_progress = value
+		_place_bodies()
+## See sun_rise_progress.
+@export var sun_set_progress: float = 0.88:
+	set(value):
+		sun_set_progress = value
+		_place_bodies()
+## Where the arc's horizon sits, as a fraction of the widget's height. The
+## school's roofline is about 0.74; below it the painted school hides a body.
+@export_range(0.0, 1.0, 0.01) var horizon_ratio: float = 0.8:
+	set(value):
+		horizon_ratio = value
+		_place_bodies()
+## Half the arc's width and its height, as fractions of the widget's width
+## and height. 0.4 wide keeps a body on the 1080 screen for most of the arc;
+## 0.55 tall puts the midday sun just under the status strip.
+@export var arc_radius_ratio: Vector2 = Vector2(0.4, 0.55):
+	set(value):
+		arc_radius_ratio = value
+		_place_bodies()
+
+@export_group("Night")
+## How dark the school gets at full night, 0-1: the alpha of its navy
+## silhouette over the painted building.
+@export_range(0.0, 1.0, 0.01) var school_night_strength: float = 0.6
+## How much the drifting clouds darken at full night, 0-1. They sit above
+## the tint so the moon can shine through it, so they dim themselves.
+@export_range(0.0, 1.0, 0.01) var night_cloud_dim: float = 0.6
+## Seconds the night takes to fall, and to lift again into dawn.
+@export_range(0.05, 2.0, 0.05) var night_fade_seconds: float = 0.35
+
 @export_group("Layout")
 ## Where the sky's rotation pivot sits, as a fraction of the widget's own
 ## size (0,0 = top-left, 1,1 = bottom-right). The mechanism mockup's blue
@@ -155,6 +213,8 @@ var _progress: float = 0.0
 var _day_name: String = ""
 ## "3/6" as the calendar badge shows it, or "" before a week is set.
 var _week_text: String = ""
+## How deep into night the sky is, 0 (day) to 1 (the night beat's peak).
+var _night: float = 0.0
 
 
 func _ready() -> void:
@@ -207,6 +267,7 @@ func set_week(week: int, max_weeks: int) -> void:
 func set_progress(value: float) -> void:
 	_progress = clampf(value, 0.0, 1.0)
 	_apply_rotation()
+	_place_bodies()
 
 
 ## Tints the banner's fill with the day's colour and lays that weekday's motif
@@ -229,6 +290,46 @@ func day_progress_bar() -> Range:
 func fill_ratio() -> float:
 	var bar := day_progress_bar()
 	return bar.get_as_ratio() if bar != null else 0.0
+
+
+## Sets how deep into night the scene is, 0 to 1, fading the tint, stars,
+## darkened school and lit windows together. Applied at once; night_in() and
+## night_out() are the animated forms.
+func set_night(amount: float) -> void:
+	_night = clampf(amount, 0.0, 1.0)
+	for path in [NIGHT_TINT_PATH, STARS_PATH, WINDOW_GLOW_PATH]:
+		var layer := get_node_or_null(path) as CanvasItem
+		if layer != null:
+			layer.modulate.a = _night
+	var school := get_node_or_null(SCHOOL_NIGHT_PATH) as CanvasItem
+	if school != null:
+		school.modulate.a = _night * school_night_strength
+	var clouds := get_node_or_null(CLOUD_LAYER_PATH) as CanvasItem
+	if clouds != null:
+		clouds.modulate = Color.WHITE.darkened(night_cloud_dim * _night)
+
+
+## How deep into night the scene is now.
+func night() -> float:
+	return _night
+
+
+## Lets night fall over night_fade_seconds (the deep-night beat between
+## school days) and hands the Tween back so the caller can await it.
+func night_in() -> Tween:
+	return _tween_night(1.0)
+
+
+## Lifts the night again, into the next day's dawn.
+func night_out() -> Tween:
+	return _tween_night(0.0)
+
+
+func _tween_night(target: float) -> Tween:
+	var tween := create_tween()
+	tween.tween_method(set_night, _night, target, night_fade_seconds) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	return tween
 
 
 ## Rewinds to morning and clears the header.
@@ -389,6 +490,38 @@ func _apply_rotation() -> void:
 		sky.rotation_degrees = current_rotation_degrees()
 
 
+## Where a body stands on its arc at arc position `t` (0 = rising at the
+## right horizon, 1 = setting at the left), in this widget's coordinates.
+func body_point(t: float) -> Vector2:
+	var theta := lerpf(0.0, PI, t)
+	var centre := Vector2(size.x * 0.5, size.y * horizon_ratio)
+	return centre + Vector2(cos(theta) * size.x * arc_radius_ratio.x,
+		-sin(theta) * size.y * arc_radius_ratio.y)
+
+
+## How far along its arc the sun is for day progress `p`: 0 at sunrise, 1 at
+## sunset, outside that range when it is down.
+func sun_arc(p: float) -> float:
+	return inverse_lerp(sun_rise_progress, sun_set_progress, p)
+
+
+## The moon's arc position: the sun's, half a day on.
+func moon_arc(p: float) -> float:
+	return sun_arc(fposmod(p + 0.5, 1.0))
+
+
+## Puts the sun and moon on their arcs for the current progress, and hides
+## whichever is down.
+func _place_bodies() -> void:
+	for pair in [[SUN_PATH, sun_arc(_progress)], [MOON_PATH, moon_arc(_progress)]]:
+		var body := get_node_or_null(pair[0]) as Control
+		if body == null:
+			continue
+		var t: float = pair[1]
+		body.visible = t > 0.0 and t < 1.0
+		body.position = body_point(clampf(t, 0.0, 1.0)) - body.size * 0.5
+
+
 ## Sizes and centres both layers for the current control rect.
 ##
 ## The sky is a square CENTRED ON THE PIVOT (sky_pivot_ratio), not on the
@@ -423,3 +556,13 @@ func _fit_layers() -> void:
 	if foreground != null:
 		foreground.position = Vector2.ZERO
 		foreground.size = rect
+	# The night's school silhouette and lit windows are the foreground's twins
+	# and must cover exactly the same rect, or the windows slide off the
+	# painting on a tall phone.
+	for path in [SCHOOL_NIGHT_PATH, WINDOW_GLOW_PATH]:
+		var twin := get_node_or_null(path) as Control
+		if twin != null:
+			twin.position = Vector2.ZERO
+			twin.size = rect
+
+	_place_bodies()

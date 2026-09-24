@@ -94,6 +94,8 @@ signal _summary_closed
 ## The "<hari> selesai" ink stamp that slams in when a day ends.
 @onready var day_stamp: Control           = $DayStamp
 @onready var day_stamp_label: Label       = $DayStamp/StampLabel
+## Rain streaks over the day screen, on for the rest of a day Hujan hits.
+@onready var rain: CPUParticles2D         = $Rain
 @onready var student_status_container: VBoxContainer = $DayScreen/StudentScroll/StudentStatusContainer
 @onready var click_to_continue_label: Label = $DayScreen/ClickToContinueLabel
 @onready var back_button: Button          = $DayScreen/BackButton
@@ -124,6 +126,9 @@ const STATUS_BEAT_HOLD := 1.4
 const STAMP_HOLD := 0.9
 ## The stamp's size as it starts to slam down, relative to its rest size.
 const STAMP_SLAM_FROM := 1.7
+## Seconds the deep night holds between two school days, once it has fallen
+## and before the next dawn. Short, so it never stalls a fast player.
+const NIGHT_HOLD := 0.5
 
 # Day-roll weights. Each school day rolls Normal / Minigame / Event in
 # proportion to these -- shares of the day's total, not percentages -- and
@@ -379,6 +384,10 @@ func _run_single_day() -> void:
 			GameState.minggu_ke, GameState.get_max_weeks())
 		# The banner fills in the day's own colour, with its weekday motif.
 		book_clock_widget.call("set_day_style", tokens.category_color(day_category), current_day)
+		# The deep night between days lifts into this day's dawn.
+		_lift_night()
+	# Yesterday's rain has passed.
+	_set_rain(false)
 
 	# Render embedded student status UI on DayScreen
 	_render_embedded_student_status()
@@ -461,10 +470,18 @@ func _run_single_day() -> void:
 	if is_skipped:
 		return
 
-	# Fade out before moving to the next day
+	# Fade out before moving to the next day, as the deep night falls: the
+	# sky dips to a real night -- tint, stars, the school dark with its
+	# windows lit -- and holds briefly before the next day's dawn lifts it.
+	var night_fall := _begin_night()
 	var fade_out = create_tween()
 	fade_out.tween_property(day_screen, "modulate:a", 0.0, 0.5)
 	await fade_out.finished
+	if is_skipped:
+		return
+	if night_fall != null and night_fall.is_running():
+		await night_fall.finished
+	await get_tree().create_timer(NIGHT_HOLD).timeout
 	if is_skipped:
 		return
 
@@ -1132,6 +1149,9 @@ func _run_event(event_id: int, day_name: String) -> void:
 		4:
 			await _show_event_warning("Hujan Deras & Jalanan Licin!")
 			await _show_event_dialogue("hujan")
+			# The sky reacts too: it rains on the day screen for the rest of
+			# the day, not only on the event screen.
+			_set_rain(true)
 			# Biang Onar: global negative events are worse
 			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
@@ -1308,6 +1328,8 @@ func _pay_out_wirausaha() -> int:
 # ─────────────────────────────────────────────────────────────────────────────
 func _on_week_complete() -> void:
 	AudioDirector.stop_ambience()
+	_lift_night()
+	_set_rain(false)
 	RewardFeedback.play(&"week_cleared", self)
 	is_running = false
 	if skip_button:
@@ -1571,6 +1593,32 @@ func _minigame_bgm_id(game_scene: PackedScene, category: String) -> StringName:
 				return &"minigame_senibudaya_menari"
 			return &"minigame_senibudaya_batik"
 	return &""
+
+# ─────────────────────────────────────────────────────────────────────────────
+## Lets the deep night fall between two school days (2026-09-24 liveliness
+## pass, layer 6). Hands back the widget's Tween, or null without one.
+func _begin_night() -> Tween:
+	if book_clock_widget == null or not book_clock_widget.has_method("night_in"):
+		return null
+	return book_clock_widget.call("night_in")
+
+
+## Lifts the night, if any, into the new day's dawn.
+func _lift_night() -> void:
+	if book_clock_widget == null or not book_clock_widget.has_method("night_out"):
+		return
+	if float(book_clock_widget.call("night")) > 0.0:
+		book_clock_widget.call("night_out")
+
+
+## Starts or stops the rain over the day screen. It stays on under
+## reduce_motion: it is the day's weather, not decoration.
+func _set_rain(on: bool) -> void:
+	if rain == null:
+		return
+	rain.emitting = on
+	rain.visible = on
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 var _status_tween: Tween

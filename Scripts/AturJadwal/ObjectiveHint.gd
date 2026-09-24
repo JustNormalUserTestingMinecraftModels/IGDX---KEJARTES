@@ -33,6 +33,7 @@ const _SKILL_CATEGORY := {
 ## device has, or to a box. test_objective_hint pins every character here to
 ## the display face.
 static func title(week: int, total_weeks: int) -> String:
+	@warning_ignore("integer_division")
 	var month: String = MONTHS[clampi((week - 1) / WEEKS_PER_MONTH, 0, MONTHS.size() - 1)]
 	return "%s - Minggu %d/%d" % [month, week, total_weeks]
 

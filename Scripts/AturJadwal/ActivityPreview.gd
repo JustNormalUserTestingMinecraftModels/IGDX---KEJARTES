@@ -45,6 +45,13 @@ static func is_specialty(category: String, student: Dictionary) -> bool:
 	return _specialty_of(student) == category
 
 
+## True when `category` is the student's favourite SUBJECT: a skill that is
+## also their specialty. The picker's Favorit ribbon and the gold
+## specialty-match burst on assign both ask this, so they always agree.
+static func is_favorit(category: String, student: Dictionary) -> bool:
+	return is_skill(category) and is_specialty(category, student)
+
+
 ## True for the three study categories, which gain a skill and whose costs
 ## scale with the student's specialty.
 static func is_skill(category: String) -> bool:

@@ -82,7 +82,7 @@ func _apply_selected() -> void:
 ## True when this tile is the student's favourite subject -- a skill tile
 ## matching their specialty. Wirausaha and Libur are never a favourite.
 func is_favorit(student: Dictionary) -> bool:
-	return ActivityPreview.is_skill(category) and ActivityPreview.is_specialty(category, student)
+	return ActivityPreview.is_favorit(category, student)
 
 
 ## Repopulate this tile for the given student and grade. Every count comes

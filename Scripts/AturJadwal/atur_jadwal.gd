@@ -1119,7 +1119,8 @@ func _hide_penjadwalan_popup():
 ## A tile was tapped: select it, nothing more. The day is only assigned when
 ## the player confirms with Pilih (D13).
 func _on_tile_picked(category: String) -> void:
-	if category == _picked_category:
+	# The sheet stays tappable through its closing fade; ignore it then.
+	if not penjadwalan_popup_open or category == _picked_category:
 		return
 	_set_pick(category)
 	AudioDirector.play_sfx(&"tap")
@@ -1146,7 +1147,8 @@ func _set_pick(category: String) -> void:
 
 ## Pilih: commit the selected tile to the selected day.
 func _on_pick_confirmed() -> void:
-	if _picked_category == "":
+	# A second press during the closing fade must not assign the day twice.
+	if not penjadwalan_popup_open or _picked_category == "":
 		return
 	_on_activity_selected(_picked_category)
 
@@ -1169,7 +1171,7 @@ func _on_activity_selected(category: String):
 	# caller of show_scheduled/show_holiday is a repaint (Design decision #8).
 	var _assigned_note := _get_day_button(GameState.selected_day) as DayStickyNote
 	if _assigned_note:
-		if ActivityPreview.is_specialty(category, student):
+		if ActivityPreview.is_favorit(category, student):
 			_assigned_note.play_specialty_match()
 			RewardFeedback.play(&"specialty_match", _assigned_note)
 		else:

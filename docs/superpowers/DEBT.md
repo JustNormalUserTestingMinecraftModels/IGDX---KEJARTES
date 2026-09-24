@@ -563,6 +563,20 @@ delete. (Checked 2026-09-14: one commit deleted it and a later one brought it
 back; the unmerged cleanup on `feat/asset-refresh-ui-pass`, `32b6f9a`, deletes
 it again along with 177 other unused files.)
 
+**The picker's "+N" ignores quirks (2026-09-24).** `ActivityPreview.skill_gain`
+and the cost arrows follow Balance and the specialty only. The simulation also
+applies Kutu Buku, Penasaran (+1 gain, +10% cost) and Seni Dalam Kesunyian, so
+for those students the number on a tile is off by that bonus. This is the
+preview's documented "stable estimate" contract, which the old chips shared.
+Mirror the quirk terms, or build the numbers from a `StudentData`.
+
+**RewardFeedback bursts start at a Control anchor's top-left (2026-09-24).**
+`_play_particles` places a burst only for a `Node2D` anchor. A Control anchor
+(AchievementToast, ApplyStudentRow, the Lobby money label, ...) gets it at
+(0, 0). AturJadwal's two moments opt in to centring with a `centred` recipe
+key. Centring every Control anchor is the general fix, but it moves bursts on
+screens nobody has looked at, so check each caller first.
+
 **The old Penjadwalan row's leftovers (2026-09-10, widened 2026-09-24).** The
 2026-09-24 picker rebuild replaced `ActivityRow` and every `Preview*`
 variation with `ActivityTile` and `Picker*`. That left these read by nothing:

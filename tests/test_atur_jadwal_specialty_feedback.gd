@@ -52,8 +52,8 @@ func test_sticky_note_scene_has_matched_nodes() -> void:
 func test_activity_selected_plays_specialty_feedback_conditionally() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
 	assert_true(src.contains("func _on_activity_selected"), "_on_activity_selected must exist")
-	assert_true(src.contains("ActivityPreview.is_specialty(category, student)"),
-		"_on_activity_selected must check is_specialty() against the assigned student")
+	assert_true(src.contains("ActivityPreview.is_favorit(category, student)"),
+		"_on_activity_selected must ask is_favorit() -- the same check as the tile's ribbon")
 	assert_true(src.contains("_assigned_note.play_specialty_match()"),
 		"a specialty match must play the sticky note's matched-state animation")
 	assert_true(src.contains('RewardFeedback.play(&"specialty_match"'),

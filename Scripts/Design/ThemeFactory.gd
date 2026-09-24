@@ -133,6 +133,21 @@ static func _build_objective_strip(theme: Theme, tokens: DesignTokens) -> void:
 ##   PickerNotePanel     the note under the grid (the favourite breakdown,
 ##   PickerNoteLabel     D14) and its body text, which carries the "·".
 ##   PickerLegendLabel   the one-line arrow legend.
+## The picker's own widths and glow, measured by eye against the
+## 2026-09-24 mockup. No token matches; single-screen values.
+## A resting tile's tan rim, px.
+const PICKER_TILE_BORDER := 3
+## The selected tile's gold ring, px -- thick enough to read at a glance.
+const PICKER_SELECTED_BORDER := 6
+## Alpha of the selected tile's gold glow.
+const PICKER_SELECTED_GLOW_ALPHA := 0.55
+## The Favorit ribbon's cream rim, px.
+const PICKER_RIBBON_BORDER := 3
+## The ribbon's vertical padding, px; it is a slim tag, not a button.
+const PICKER_RIBBON_PAD_V := 2
+## The note panel's rim, px.
+const PICKER_NOTE_BORDER := 2
+
 static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
 	var sheet := StyleBoxFlat.new()
 	sheet.bg_color = tokens.surface_card
@@ -171,7 +186,7 @@ static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
 
 	var tile := StyleBoxFlat.new()
 	tile.bg_color = tokens.surface_page
-	tile.set_border_width_all(3)
+	tile.set_border_width_all(PICKER_TILE_BORDER)
 	tile.border_color = tokens.surface_sunken.darkened(0.08)
 	tile.set_corner_radius_all(tokens.radius_md)
 	tile.shadow_color = tokens.shadow_color
@@ -183,10 +198,10 @@ static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
 
 	var chosen := StyleBoxFlat.new()
 	chosen.bg_color = tokens.surface_card
-	chosen.set_border_width_all(6)
+	chosen.set_border_width_all(PICKER_SELECTED_BORDER)
 	chosen.border_color = tokens.currency_gold
 	chosen.set_corner_radius_all(tokens.radius_md)
-	chosen.shadow_color = Color(tokens.currency_gold, 0.55)
+	chosen.shadow_color = Color(tokens.currency_gold, PICKER_SELECTED_GLOW_ALPHA)
 	chosen.shadow_size = tokens.shadow_size
 	theme.add_type("PickerTileSelected")
 	theme.set_type_variation("PickerTileSelected", "Panel")
@@ -214,15 +229,15 @@ static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
 	var ribbon := StyleBoxFlat.new()
 	ribbon.bg_color = tokens.currency_gold
 	ribbon.set_corner_radius_all(tokens.radius_pill)
-	ribbon.set_border_width_all(3)
+	ribbon.set_border_width_all(PICKER_RIBBON_BORDER)
 	ribbon.border_color = tokens.outline_card
 	ribbon.shadow_color = tokens.shadow_color
 	ribbon.shadow_size = int(tokens.shadow_size / 3.0)
 	ribbon.shadow_offset = tokens.shadow_offset / 2.0
 	ribbon.content_margin_left = tokens.space_sm
 	ribbon.content_margin_right = tokens.space_sm
-	ribbon.content_margin_top = 2
-	ribbon.content_margin_bottom = 2
+	ribbon.content_margin_top = PICKER_RIBBON_PAD_V
+	ribbon.content_margin_bottom = PICKER_RIBBON_PAD_V
 	theme.add_type("PickerRibbon")
 	theme.set_type_variation("PickerRibbon", "PanelContainer")
 	theme.set_stylebox("panel", "PickerRibbon", ribbon)
@@ -237,7 +252,7 @@ static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
 	var note := StyleBoxFlat.new()
 	note.bg_color = tokens.surface_page
 	note.set_corner_radius_all(tokens.radius_md)
-	note.set_border_width_all(2)
+	note.set_border_width_all(PICKER_NOTE_BORDER)
 	note.border_color = tokens.surface_sunken
 	note.content_margin_left = tokens.space_md
 	note.content_margin_right = tokens.space_md

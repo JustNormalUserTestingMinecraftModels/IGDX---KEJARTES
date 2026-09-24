@@ -613,6 +613,12 @@ func test_tapping_a_tile_selects_and_pilih_commits() -> void:
 	var confirmed := _body_of(src, "func _on_pick_confirmed")
 	assert_true(confirmed.contains("_on_activity_selected(_picked_category)"),
 		"Pilih assigns the selected tile")
+	# The sheet stays clickable through its closing fade: a double-tapped
+	# Pilih must not assign (and burst) twice, nor a late tap reselect.
+	assert_true(confirmed.contains("not penjadwalan_popup_open"),
+		"Pilih is ignored once the picker has started closing")
+	assert_true(picked.contains("not penjadwalan_popup_open"),
+		"tile taps are ignored once the picker has started closing")
 	var show := _body_of(src, "func _show_penjadwalan_popup")
 	assert_true(show.contains('_set_pick("")'), "every opening starts with nothing selected")
 	var pick := _body_of(src, "func _set_pick")

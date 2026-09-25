@@ -501,7 +501,7 @@ func _render_embedded_student_status() -> void:
 		chip.setup(student)
 		chips.append(chip)
 		embedded_widgets[student.student_name] = {
-			"student": student, "chip": chip, "skills": _skill_sum(student)}
+			"student": student, "chip": chip, "skills": _skill_values(student)}
 
 	if avatar_strip:
 		avatar_strip.show()
@@ -511,9 +511,11 @@ func _render_embedded_student_status() -> void:
 		Juice.stagger_in(chips)
 
 
-## A student's three skills added up, to tell when any of them rose.
-func _skill_sum(student: StudentData) -> float:
-	return student.akademis + student.seni_budaya + student.olahraga
+## A student's three skills by stat key, to tell which of them rose and by
+## how much -- each gaining skill pops on its own (AvatarChip.pop_gains).
+func _skill_values(student: StudentData) -> Dictionary:
+	return {"akademis": student.akademis, "seni_budaya": student.seni_budaya,
+		"olahraga": student.olahraga}
 
 
 ## Colours the legend's two dots like the rings they name.
@@ -527,8 +529,8 @@ func _tint_ring_legend() -> void:
 		mood.self_modulate = tokens.category_color_on_dark("Mood")
 
 
-## Floats a "+N" from each student who gained skill points today, spread
-## across the first half of the day so the gains land one by one.
+## Floats each student's skill gains for today, one pop per gaining skill,
+## spread across the first half of the day so the students land one by one.
 func _pop_todays_gains(day_name: String, span: float) -> void:
 	if student_manager == null:
 		return
@@ -539,23 +541,29 @@ func _pop_todays_gains(day_name: String, span: float) -> void:
 		if not (entry.get("stat_key", "") in ["akademis", "seni_budaya", "olahraga"]):
 			continue
 		var who: String = entry.get("student_name", "")
-		gains[who] = gains.get(who, 0.0) + float(entry.get("delta", 0.0))
+		var key: String = entry.get("stat_key", "")
+		var per_stat: Dictionary = gains.get(who, {})
+		per_stat[key] = float(per_stat.get(key, 0.0)) + float(entry.get("delta", 0.0))
+		gains[who] = per_stat
 	# The activity's gains are applied by now; bank them so a later event or
 	# minigame update does not pop them a second time.
 	for w in embedded_widgets.values():
-		w["skills"] = _skill_sum(w["student"])
+		w["skills"] = _skill_values(w["student"])
 	var pops: Array = []
 	for who in gains:
 		var chip := (embedded_widgets.get(who, {}) as Dictionary).get("chip") as AvatarChip
-		if chip != null and gains[who] > 0.0:
-			pops.append([chip, int(round(gains[who]))])
+		var rounded := {}
+		for key in gains[who]:
+			rounded[key] = int(round(float(gains[who][key])))
+		if chip != null and not AvatarChip.gaining_stats(rounded).is_empty():
+			pops.append([chip, rounded])
 	if pops.is_empty():
 		return
 	var gap: float = span / float(pops.size() + 1)
 	var timeline := create_tween()
 	for pop in pops:
 		timeline.tween_interval(gap)
-		timeline.tween_callback((pop[0] as AvatarChip).pop_gain.bind(pop[1]))
+		timeline.tween_callback((pop[0] as AvatarChip).pop_gains.bind(pop[1]))
 
 
 ## The shared summary chip (SunkenPanel + BarLabel), tinted via
@@ -667,18 +675,23 @@ func _animate_embedded_stat_updates(duration: float = 0.6) -> void:
 		if not GameSettings.reduce_motion:
 			AnimUtils.squash_bounce(chip)
 	# A won minigame or a Terima'd event can raise a skill too; the chip pops
-	# a +N for it just as it does for the day's activity.
+	# each risen skill just as it does for the day's activity.
 	for student in student_manager.students:
 		var w: Dictionary = embedded_widgets.get(student.student_name, {})
 		var chip := w.get("chip") as AvatarChip
 		if chip == null:
 			continue
-		var now := _skill_sum(student)
-		var gained: float = now - float(w.get("skills", now))
+		var now := _skill_values(student)
+		var before: Dictionary = w.get("skills", now)
+		var gained := {}
+		for key in now:
+			var rise: float = float(now[key]) - float(before.get(key, now[key]))
+			if rise >= 0.5:
+				gained[key] = int(round(rise))
 		w["skills"] = now
-		if gained >= 0.5:
+		if not gained.is_empty():
 			moved = true
-			chip.pop_gain(int(round(gained)))
+			chip.pop_gains(gained)
 	if moved:
 		await get_tree().create_timer(duration).timeout
 

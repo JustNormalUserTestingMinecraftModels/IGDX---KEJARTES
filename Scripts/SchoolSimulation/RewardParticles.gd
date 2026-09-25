@@ -3,8 +3,8 @@ extends GPUParticles2D
 class_name RewardParticles
 
 ## A one-shot congratulation burst (2026-09-03 spec section 3.3), shared
-## by the per-stat RewardBurst and the screen-wide CelebrationConfetti --
-## the two scenes differ only in their authored emitter settings, never
+## by the per-stat RewardBurst, ResultCheckup's PaperConfetti and the other
+## authored bursts -- the scenes differ only in their emitter settings, never
 ## in code.
 ##
 ## Fire-and-forget: fire() restarts the emitter and frees the node once

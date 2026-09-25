@@ -8,6 +8,27 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-25 — UI polish batch: white confetti out, bloom off the HUD
+
+- **White confetti retired.** `CelebrationConfetti` and `ResultConfetti`
+  threw `particle_confetti.png` with no colour ramp, so they fell as plain
+  white chips: on every Celebration-tier `RewardFeedback` moment (the weekly
+  report's `week_cleared`, `run_win`, a good badge), on ApplyItemScreen, and
+  as the three-star rain on the win screen and the result popup. Both scenes
+  are deleted; the Celebration tier keeps sound, haptic and shake. The
+  coloured `PaperConfetti` and the minigame fireworks stay.
+- **Lobby bloom stops below the UI.** The room (`Backdrop`, `Classroom`)
+  moved into a `World` CanvasLayer at −1 and `lobby_environment.tres` got
+  `background_canvas_max_layer = -1`, so the WorldEnvironment glow no longer
+  reaches the HUD, the popups or anything loby.gd adds at runtime.
+- **In-day gains read like the daily result.** The SchoolDay avatar chip's
+  bare "+N" became one `StatGainPop` per gaining skill: the stat's icon, the
+  gold arrow and the number in the `DaySummaryStat` face.
+- **Koperasi price** wears the new `PriceTagLabel`: Boohong, cream, dark rim.
+- **Up arrows.** `icon_chevron_up.png` replaced in place with the delivered
+  `uparrow_icon.png`; the Atur Jadwal effect meter and legend dropped
+  `arrow_up.svg` for it.
+
 ## 2026-09-25 — Amplop Coklat level select
 
 Spec `docs/superpowers/specs/2026-09-25-amplop-level-select-design.md`, plan

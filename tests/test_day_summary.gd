@@ -1262,7 +1262,6 @@ func test_particle_sprites_exist_and_are_transparent() -> void:
 func test_particle_scenes_are_one_shot_and_start_idle() -> void:
 	for path in [
 		"res://Scenes/SchoolSimulation/RewardBurst.tscn",
-		"res://Scenes/SchoolSimulation/CelebrationConfetti.tscn",
 	]:
 		var fx_scene: PackedScene = load(path)
 		var fx := fx_scene.instantiate() as GPUParticles2D

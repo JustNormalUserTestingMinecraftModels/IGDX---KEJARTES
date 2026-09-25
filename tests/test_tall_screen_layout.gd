@@ -84,8 +84,17 @@ func _assert_rect(got: Rect2, want: Rect2, label: String) -> void:
 ## its own anchors and offsets. A control whose text needs more room still
 ## grows past this when drawn, to a minimum size that depends on font metrics
 ## (the editor measures wider than a device); the layout promises this rect.
+##
+## A control under a CanvasLayer (the Lobby's World) anchors to the viewport,
+## not to a parent rect. On a device that viewport IS the screen, which the
+## screen's root fills; stood up in the editor it would be the editor's own
+## window. So such a control is measured against the nearest Control above
+## the layer -- the screen root, sized to the phone by LayoutFrame.
 func _authored_rect(c: Control) -> Rect2:
-	var pr := (c.get_parent() as Control).get_global_rect()
+	var host := c.get_parent()
+	while host != null and not host is Control:
+		host = host.get_parent()
+	var pr := (host as Control).get_global_rect()
 	var tl := pr.position + pr.size * Vector2(c.anchor_left, c.anchor_top) \
 		+ Vector2(c.offset_left, c.offset_top)
 	var br := pr.position + pr.size * Vector2(c.anchor_right, c.anchor_bottom) \
@@ -108,7 +117,7 @@ func _assert_placed(c: Control, want: Rect2, label: String) -> void:
 func test_lobby_classroom_is_one_centred_piece() -> void:
 	var lobby := _scene(LOBBY)
 	assert_eq(_offsets(lobby), Vector4.ZERO, "the Lobby root is not inset")
-	var room := lobby.get_node_or_null("Classroom") as Control
+	var room := lobby.get_node_or_null("World/Classroom") as Control
 	assert_true(room != null, "the Lobby needs a Classroom node")
 	if room == null:
 		return
@@ -126,7 +135,7 @@ func test_lobby_classroom_is_one_centred_piece() -> void:
 
 ## A black Full Rect behind the classroom fills the bands a tall phone adds.
 func test_lobby_backdrop_is_black_and_full_rect() -> void:
-	var back := _scene(LOBBY).get_node_or_null("Backdrop") as ColorRect
+	var back := _scene(LOBBY).get_node_or_null("World/Backdrop") as ColorRect
 	assert_true(back != null, "the Lobby needs a Backdrop ColorRect")
 	if back == null:
 		return
@@ -170,9 +179,9 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 ## the bottom edge 48 px up; the title stays on top; the popup stays centred.
 func test_lobby_on_a_tall_phone() -> void:
 	var lobby := _stood_up(LOBBY, TALL)
-	_assert_placed((lobby.get_node("Backdrop") as Control),
+	_assert_placed((lobby.get_node("World/Backdrop") as Control),
 		Rect2(0, 0, 1080, 2400), "Backdrop")
-	_assert_placed((lobby.get_node("Classroom") as Control),
+	_assert_placed((lobby.get_node("World/Classroom") as Control),
 		Rect2(0, 240, 1080, 1920), "Classroom")
 	_assert_placed((lobby.get_node("%Jadwal") as Control),
 		Rect2(48, 2000, 984, 160), "Jadwal")
@@ -190,7 +199,7 @@ func test_lobby_on_a_tall_phone() -> void:
 ## (The HUD's design rects are pinned in test_lobby_layout.gd.)
 func test_lobby_at_the_design_size_is_unchanged() -> void:
 	var lobby := _stood_up(LOBBY, DESIGN)
-	_assert_placed((lobby.get_node("Classroom") as Control),
+	_assert_placed((lobby.get_node("World/Classroom") as Control),
 		Rect2(0, 0, 1080, 1920), "Classroom")
 	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 558, 942, 418), "DailyReward")

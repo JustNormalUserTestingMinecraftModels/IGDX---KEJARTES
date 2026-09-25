@@ -5,9 +5,12 @@ extends Node
 ## play(moment, anchor, opts); this fires the four channels -- layered sound,
 ## a particle burst, a haptic beat, and screenshake -- so no screen wires them
 ## by hand. It owns no visuals: sound goes through AudioDirector, particles
-## through the existing RewardBurst/CelebrationConfetti scenes, shake through
-## Juice, haptics through Haptics. Every moment maps to one of three "weight"
-## tiers so the whole game speaks one feedback language.
+## through the existing RewardBurst scene, shake through Juice, haptics
+## through Haptics. Every moment maps to one of three "weight" tiers so the
+## whole game speaks one feedback language. The Celebration tier throws no
+## particles of its own: its white screen-wide CelebrationConfetti was
+## retired on 2026-09-25, and the screens that celebrate (ResultCheckup's
+## PaperConfetti, the minigame fireworks) author their own.
 
 const TIER_TICK := 0
 const TIER_POP := 1
@@ -38,9 +41,8 @@ var _cue_queue: Array = []
 var _cue_pump_running := false
 var _cue_rung := 0
 
-## Particle scenes, by role.
+## The Pop tier's particle scene. Tick and Celebration throw none.
 const POP_BURST := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
-const CELEBRATION_CONFETTI := "res://Scenes/SchoolSimulation/CelebrationConfetti.tscn"
 
 ## moment -> { tier, sfx, particle?, escalates?, dynamic_sfx?, centred? }. The single
 ## readable home of the reward vocabulary; the debug gallery enumerates it.
@@ -163,12 +165,10 @@ func _play_particles(recipe: Dictionary, tier: int, anchor: Node) -> void:
 		return
 	var scene_path: String = recipe.get("particle", "")
 	if scene_path == "":
-		if tier == TIER_CELEBRATION:
-			scene_path = CELEBRATION_CONFETTI
-		elif tier == TIER_POP:
+		if tier == TIER_POP:
 			scene_path = POP_BURST
 		else:
-			return  # Tick has no particles
+			return  # Tick and Celebration have no particles
 	var host := anchor if anchor != null else _screen_root()
 	if host == null:
 		return

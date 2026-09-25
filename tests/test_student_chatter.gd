@@ -352,7 +352,7 @@ func test_every_portrait_slot_has_a_chat_anchor() -> void:
 	var src := FileAccess.get_file_as_string(_LOBY_TSCN)
 	for slot in ["StudentPortraitsContainer_Back/Slot1", "StudentPortraitsContainer_Back/Slot2",
 			"StudentPortraitsContainer_Front/Slot3", "StudentPortraitsContainer_Front/Slot4"]:
-		assert_true(src.contains('[node name="ChatAnchor" type="Control" parent="Classroom/%s"' % slot),
+		assert_true(src.contains('[node name="ChatAnchor" type="Control" parent="World/Classroom/%s"' % slot),
 			"ChatAnchor missing in %s" % slot)
 
 

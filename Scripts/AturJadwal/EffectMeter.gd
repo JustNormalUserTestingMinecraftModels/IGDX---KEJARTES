@@ -3,8 +3,9 @@ class_name EffectMeter
 extends HBoxContainer
 
 ## A row of up to three pips saying how big one effect is, in the picker's
-## arrow language (2026-09-24 visual polish, D11/D12): green up-arrows for a
-## gain, red down-arrows for a cost, gold coins for Wirausaha's earnings.
+## arrow language (2026-09-24 visual polish, D11/D12): gold up-chevrons for a
+## gain (the delivered uparrow_icon since 2026-09-25; green arrows before),
+## red down-arrows for a cost, gold coins for Wirausaha's earnings.
 ## More pips, bigger effect. ActivityPreview decides the count from Balance;
 ## this only draws it.
 ##
@@ -16,7 +17,8 @@ extends HBoxContainer
 ## What a meter is counting, which picks its pip texture.
 enum Kind { GAIN, COST, COIN }
 
-## The green up-arrow a gain draws.
+## The gold up-chevron a gain draws (icon_chevron_up.png, the game's one up
+## arrow).
 @export var up_texture: Texture2D
 ## The red down-arrow a cost draws.
 @export var down_texture: Texture2D

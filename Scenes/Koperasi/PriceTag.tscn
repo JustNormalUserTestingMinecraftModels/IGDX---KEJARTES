@@ -33,4 +33,4 @@ stretch_mode = 5
 
 [node name="Value" type="Label" parent="Row" unique_id=2062641625]
 layout_mode = 2
-theme_type_variation = &"BarLabel"
+theme_type_variation = &"PriceTagLabel"

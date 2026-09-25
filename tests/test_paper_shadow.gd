@@ -273,11 +273,13 @@ func test_the_paper_shadows_keep_their_offset() -> void:
 				"%s/%s: a flying paper still casts a real shadow" % [scene_path, paper_name])
 
 
-## A Full Rect element is 1080x1920 on a 9:16 phone and 1080x2400 on a 20:9
-## one, so its shadow cannot carry a baked size. Anchors cannot solve it
-## either -- loading an instance resets the shadow ROOT's rect to zero, so the
-## Silhouette's anchors would resolve against nothing. follow_parent_rect
-## reads the parent's size instead.
+## An anchor-sized element takes its rect from the screen, so its shadow
+## cannot carry a baked size. Anchors cannot solve it either -- loading an
+## instance resets the shadow ROOT's rect to zero, so the Silhouette's anchors
+## would resolve against nothing. follow_parent_rect reads the parent's size
+## instead. EventDialogue's Splash was Full Rect until 2026-09-25; it is now a
+## 1920-tall box hung off the bottom edge that still stretches across the
+## screen's width, so the reason stands.
 func test_a_full_rect_element_gets_a_shadow_that_follows_its_size() -> void:
 	var root := (load("res://Scenes/SchoolSimulation/EventDialogue.tscn") as PackedScene).instantiate()
 	track(root)
@@ -285,8 +287,8 @@ func test_a_full_rect_element_gets_a_shadow_that_follows_its_size() -> void:
 	assert_true(splash != null, "Splash is gone")
 	if splash == null:
 		return
-	assert_eq(Vector4(splash.anchor_left, splash.anchor_top, splash.anchor_right, splash.anchor_bottom),
-		Vector4(0, 0, 1, 1), "Splash is Full Rect, which is what makes this necessary")
+	assert_eq(Vector2(splash.anchor_left, splash.anchor_right), Vector2(0, 1),
+		"Splash stretches across the screen's width, which is what makes this necessary")
 	var shadow := splash.get_node_or_null("Shadow") as Control
 	assert_true(shadow != null, "Splash has no shadow")
 	if shadow == null:

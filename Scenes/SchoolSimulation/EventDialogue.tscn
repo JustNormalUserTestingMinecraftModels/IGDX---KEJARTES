@@ -5,8 +5,8 @@
 [ext_resource type="Material" path="res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres" id="3_qxown"]
 [ext_resource type="Texture2D" uid="uid://buqajwg3j13h2" path="res://Assets/Images/EventDialogue/splash_mom.png" id="4_5xvqv"]
 [ext_resource type="Texture2D" uid="uid://t3h8jmypjfe8" path="res://Assets/Images/EventDialogue/calendar_badge.png" id="5_esryj"]
-[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 
 [node name="EventDialogue" type="Control" unique_id=490646120]
 layout_mode = 3
@@ -22,6 +22,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_gv18b")
 expand_mode = 1
@@ -33,20 +35,29 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Splash" type="TextureRect" parent="." unique_id=1499473738]
 material = ExtResource("illus_grade_cut")
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -30.0
+offset_top = -1644.0
+offset_right = -30.0
+offset_bottom = 276.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("4_5xvqv")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Shadow" parent="Splash" instance=ExtResource("paper_shadow")]
+[node name="Shadow" parent="Splash" unique_id=802972880 instance=ExtResource("paper_shadow")]
 layout_mode = 0
 shadow_texture = ExtResource("4_5xvqv")
 shadow_offset = Vector2(0, 0)
@@ -61,6 +72,7 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 300.0
+grow_horizontal = 2
 mouse_filter = 2
 
 [node name="DayBanner" type="PanelContainer" parent="Header" unique_id=1774093673]

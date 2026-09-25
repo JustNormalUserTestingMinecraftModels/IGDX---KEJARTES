@@ -400,3 +400,30 @@ func test_the_event_list_exists_once() -> void:
 	assert_eq(src.count('"Les Tambahan Akademis"'), 1, "one copy of the event table")
 	assert_contains(_body(src, "_trigger_random_event"), "_run_event(randi() % 5, day_name)")
 	assert_contains(_body(src, "force_event"), "_run_event(event_id, day_name)")
+
+
+# ── placement (2026-09-25 minigame-win-screen spec, section 2) ──────────────
+
+## Matched against eventdialogue_mockup.jpeg: the splash is drawn 1:1, 276 px
+## lower and 30 px left of centre, as a 1080x1920 box hung off the bottom edge
+## so it stays locked to the bottom-anchored dialogue box on a tall phone.
+func test_the_speaker_hangs_off_the_bottom_edge_where_the_mockup_has_them() -> void:
+	var d = (load(_SCENE) as PackedScene).instantiate()
+	track(d)
+	var s := d.get_node("Splash") as TextureRect
+	assert_eq(Vector4(s.anchor_left, s.anchor_top, s.anchor_right, s.anchor_bottom),
+		Vector4(0, 1, 1, 1), "the splash hangs off the bottom edge")
+	assert_eq(Vector4(s.offset_left, s.offset_top, s.offset_right, s.offset_bottom),
+		Vector4(-30, -1644, -30, 276), "1080x1920, shifted (-30, +276)")
+	assert_eq(s.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_CENTERED)
+
+
+## At 1080x1920 the art's top-left lands on (-30, 276); at 1080x2400 it keeps
+## the same distance from the bottom edge.
+func test_the_speaker_keeps_its_place_above_the_box_on_a_tall_phone() -> void:
+	for screen in [Vector2(1080, 1920), Vector2(1080, 2400)]:
+		var frame := track(preload("res://tests/layout_frame.gd").stand_up(_SCENE, screen)) as Control
+		var s := frame.get_child(0).get_node("Splash") as TextureRect
+		var r := s.get_global_rect()
+		assert_eq(r.size, Vector2(1080, 1920), "the box is the art's own size at %s" % screen)
+		assert_eq(r.position, Vector2(-30, screen.y - 1920 + 276), "placed from the bottom at %s" % screen)

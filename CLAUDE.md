@@ -136,7 +136,8 @@ from the upper left: its desks wear `illustration_grade_cutout_lobby.tres` and
 its faces `illustration_grade_face.tres`, both kept equal to the cutout except
 `light_dir`. Tune them, the Lobby's shafts and its WorldEnvironment bloom live
 from the debug overlay's **Look** page, then write the landed value into the
-`.tres`.
+`.tres`. That bloom reaches only canvas layers ≤ −1: the room lives in the
+Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
 variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
@@ -209,7 +210,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 159 suites, 2308 tests (2026-09-25).
+the Godot AI MCP `test_run` tool. 159 suites, 2312 tests (2026-09-25).
 
 Hard constraints:
 

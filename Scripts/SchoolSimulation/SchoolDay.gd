@@ -622,7 +622,7 @@ func _show_day_summary(day_name: String) -> void:
 	# mockup's "+12/65" was unbuildable, since only `summary` carries a
 	# delta at all.
 	summary_instance.setup_summary(summary, student_manager.students,
-		_pending_total() - _money_at_day_start)
+		_pending_total() - _money_at_day_start, day_name)
 
 	await summary_instance.summary_dismissed
 	_set_day_chrome_visible(true)
@@ -961,7 +961,7 @@ func _handle_interactive_event(
 	add_child(dialog_instance)
 	dialog_instance.setup_event(
 		title, description, benefit, cost, category, student_manager.students,
-		stat_boost, energy_cost, mood_boost
+		stat_boost, energy_cost, mood_boost, day_name
 	)
 
 	dialog_instance.event_decision_made.connect(

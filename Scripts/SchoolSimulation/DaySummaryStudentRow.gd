@@ -95,9 +95,9 @@ static func format_needs_delta(delta: float) -> String:
 	return "%s%d" % [sign_str, d]
 
 
-func setup_row(student_name: String, changes: Array, student: StudentData) -> void:
+func setup_row(student_name: String, changes: Array, student: StudentData, day_name: String = "") -> void:
 	name_label.text = student_name
-	avatar.set_student(student)
+	avatar.set_student(student, day_name)
 
 	# The scene ships the mockup's 36/82 placeholders baked in. Leaving
 	# them when the popup's name lookup misses would paint a confident,
@@ -187,9 +187,9 @@ func gained_ground() -> bool:
 ## rows themselves need no special case -- DaySummaryStatRow already
 ## rewinds to (current - delta) / target, which IS Monday's ratio once
 ## the delta is a week long.
-func setup_week_row(student: StudentData) -> void:
+func setup_week_row(student: StudentData, day_name: String = "") -> void:
 	name_label.text = student.student_name if student != null else ""
-	avatar.set_student(student)
+	avatar.set_student(student, day_name)
 
 	if student == null:
 		energy_bar.set_need("energy", 0.0)
@@ -338,9 +338,9 @@ func _play_needs_travel(bar: ProgressBar, from_value: float, delay: float) -> vo
 ## event picker and the item screen read the card this way (2026-09-12
 ## event-cards spec, 1.1). Both needs bars at their current values with no
 ## chevron; every stat row at current/target via set_standing().
-func setup_current_row(student: StudentData) -> void:
+func setup_current_row(student: StudentData, day_name: String = "") -> void:
 	name_label.text = student.student_name if student != null else ""
-	avatar.set_student(student)
+	avatar.set_student(student, day_name)
 	_standing.clear()
 	_targets.clear()
 	_row_for_key.clear()

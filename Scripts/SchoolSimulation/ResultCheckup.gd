@@ -49,6 +49,9 @@ signal checkup_closed
 @export var logs_popup_scene: PackedScene
 
 const _CELEBRATION_SCENE := "res://Scenes/SchoolSimulation/PaperConfetti.tscn"
+## The day whose outfit the weekly portraits wear (StudentSkins.DAY_OUTFITS):
+## the report opens straight after Jumat.
+const REPORT_DAY := "Jumat"
 
 @onready var banner: WeekRecapBanner = $Margin/VBox/Banner
 @onready var scroll_container: ScrollContainer = $Margin/VBox/ScrollContainer
@@ -121,7 +124,7 @@ func initialize_checkup(student_manager: StudentManager, week_earnings: int = 0)
 		# Set up only once the card is in the tree: its @onready nodes
 		# are null until then. Same order DaySummaryPopup.setup_summary
 		# uses.
-		card.setup_week_row(student)
+		card.setup_week_row(student, REPORT_DAY)
 		_set_mouse_filter_pass(card)
 		cards.append(card)
 

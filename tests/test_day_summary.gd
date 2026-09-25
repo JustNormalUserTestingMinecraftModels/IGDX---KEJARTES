@@ -1659,3 +1659,85 @@ func test_event_card_children_do_not_swallow_the_tap() -> void:
 			assert_eq((n as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
 				"%s should ignore the mouse so the card gets the tap" % n.name)
 		stack.append_array(n.get_children())
+
+
+# ── day outfits on the result portraits (2026-09-25 spec, section 6) ────────
+
+const _THEA_BATIK := "res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png"
+
+
+func _thea() -> StudentData:
+	var s := StudentData.new()
+	s.student_name = "Thea"
+	s.splash_path = "res://Assets/Images/SplashArtMurid/splash_thea.png"
+	return s
+
+
+## The outfit shares Thea's canvas, so her usual head window frames it.
+func test_the_avatar_dresses_for_the_day_with_its_usual_crop() -> void:
+	var avatar := (load(_AVATAR_SCENE) as PackedScene).instantiate() as DaySummaryAvatar
+	Engine.get_main_loop().root.add_child(avatar)
+	track(avatar)
+	avatar.set_student(_thea(), "Kamis")
+	var atlas := avatar.art.texture as AtlasTexture
+	assert_true(atlas != null, "the outfit is cropped like any splash")
+	if atlas != null:
+		assert_eq(atlas.atlas.resource_path, _THEA_BATIK)
+		assert_eq(atlas.region, DaySummaryAvatar.SPLASH_CROP["Thea"])
+	avatar.set_student(_thea(), "Rabu")
+	assert_eq((avatar.art.texture as AtlasTexture).atlas.resource_path,
+		"res://Assets/Images/SplashArtMurid/splash_thea.png", "an ordinary day keeps her own")
+
+
+## True when the body of `header` in `path` makes `call` with `day_name`
+## among its arguments.
+func _passes_day(path: String, header: String, call: String) -> bool:
+	var src := FileAccess.get_file_as_string(path)
+	var at := src.find(header)
+	if at == -1:
+		return false
+	var next := src.find("\nfunc ", at + header.length())
+	var body := src.substr(at, (next if next != -1 else src.length()) - at)
+	var c := body.find(call)
+	if c == -1:
+		return false
+	# The call's own closing paren, past any nested call among its arguments.
+	var depth := 0
+	var end := c + call.length() - 1
+	while end < body.length():
+		if body[end] == "(":
+			depth += 1
+		elif body[end] == ")":
+			depth -= 1
+			if depth == 0:
+				break
+		end += 1
+	return body.substr(c, end - c).contains("day_name")
+
+
+func test_the_daily_results_pass_the_day_through() -> void:
+	assert_true(_passes_day(_POPUP_SCRIPT, "func setup_summary(", "setup_row("),
+		"DaySummaryPopup hands its day to each row")
+	assert_true(_passes_day(_SCHOOL_DAY_SCRIPT, "func _show_day_summary(", "setup_summary("),
+		"SchoolDay tells the popup which day it summarises")
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_row(", "avatar.set_student("))
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_week_row(", "avatar.set_student("))
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_current_row(", "avatar.set_student("))
+
+
+## The weekly report opens straight after Jumat, so it wears Jumat's outfit.
+func test_the_weekly_results_wear_jumat_s_outfit() -> void:
+	var checkup = load("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_eq(checkup.REPORT_DAY, "Jumat")
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_true(src.contains("card.setup_week_row(student, REPORT_DAY)"))
+
+
+## The pick-students cards are the same row, on an event screen of that day.
+func test_the_event_picker_passes_the_day_through() -> void:
+	assert_true(_passes_day("res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd",
+		"func _populate_student_cards(", "card.setup("))
+	assert_true(_passes_day("res://Scripts/SchoolSimulation/EventStudentCard.gd",
+		"func setup(", "card.setup_current_row("))
+	assert_true(_passes_day(_SCHOOL_DAY_SCRIPT, "func _handle_interactive_event(",
+		"dialog_instance.setup_event("), "SchoolDay tells the picker which day it is")

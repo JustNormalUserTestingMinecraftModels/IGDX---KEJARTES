@@ -28,12 +28,13 @@ var _category: String = "Akademis"
 
 ## Writes the student's CURRENT stats onto the card, with no preview. Call
 ## after the card is in the tree: the card's parts are only ready then.
-func setup(student: StudentData, category: String) -> void:
+## `day_name` dresses the portrait for the event's day.
+func setup(student: StudentData, category: String, day_name: String = "") -> void:
 	_student = student
 	_category = category
 	if student == null:
 		return
-	card.setup_current_row(student)
+	card.setup_current_row(student, day_name)
 	var is_tired: bool = student.is_tired()
 	tired_badge.visible = is_tired
 	specialty_badge.visible = student.specialty_category == category and not is_tired

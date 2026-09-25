@@ -267,6 +267,11 @@ func test_envelopes_are_enlarged_and_clear_the_header() -> void:
 	shown.get_parent().notification(Container.NOTIFICATION_SORT_CHILDREN)
 	assert_true(is_equal_approx(shown.get_global_transform().get_scale().x, _screen.card_scale),
 		"the opened envelope matches the fan, after its container sorts")
+	var authored: float = _screen.card_scale
+	_screen.card_scale = 1.35
+	assert_true(is_equal_approx(shown.get_global_transform().get_scale().x, 1.35),
+		"retuning card_scale resizes the opened envelope too")
+	_screen.card_scale = authored
 	var card: Control = _screen._cards[0]
 	var tab_top: float = card.get_global_transform().origin.y \
 		- (card.bob_rest_y * -1.0 + 84.0 + LS.HOP_RISE) * _screen.card_scale

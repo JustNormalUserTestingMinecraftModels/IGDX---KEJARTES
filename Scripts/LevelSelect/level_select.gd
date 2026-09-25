@@ -99,6 +99,8 @@ static func roster_size_for(grade: int) -> int:
 	set(value):
 		card_scale = value
 		_layout_cards(false)
+		if is_node_ready():
+			_confirm.set_envelope_scale(value)
 ## Horizontal distance between neighbouring envelopes in the fan.
 @export var fan_step_x: float = 150.0:
 	set(value):

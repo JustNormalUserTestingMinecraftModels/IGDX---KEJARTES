@@ -29,6 +29,7 @@ const GRADED := {
 		"Stage/Background", "Stage/Herman", "Stage/Foreground",
 	],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],
 	"res://Scenes/Lobby/CitraFace.tscn": ["Canvas/Base"],
 	"res://Scenes/Lobby/DoniFace.tscn": ["Canvas/Base"],

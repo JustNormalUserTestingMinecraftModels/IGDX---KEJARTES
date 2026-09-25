@@ -102,3 +102,131 @@ func test_the_row_is_authored() -> void:
 	assert_eq(c.chevron.texture.resource_path, "res://Assets/Images/DaySummary/icon_chevron_up.png")
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameWinStat.gd")
 	assert_false(src.contains(".new("), "the row is authored, never built")
+
+
+# ── the screen ───────────────────────────────────────────────────────────────
+
+const _SCREEN := "res://Scenes/Minigames/UI/MinigameWinScreen.tscn"
+const _CITRA := "res://Assets/Images/SplashArtMurid/splash_citra.png"
+
+
+func _screen() -> MinigameWinScreen:
+	var s := (load(_SCREEN) as PackedScene).instantiate() as MinigameWinScreen
+	Engine.get_main_loop().root.add_child(s)
+	s.root.theme = load(_THEME)
+	track(s)
+	return s
+
+
+func _filled(s: MinigameWinScreen) -> int:
+	var n := 0
+	for star in s.star_row.get_children():
+		if (star as ResultStar).is_filled:
+			n += 1
+	return n
+
+
+func test_configure_fills_the_screen() -> void:
+	var s := _screen()
+	s.configure(2, _CITRA, "Terima kasih, Guru!", "Akademis", {"stat_delta": 8.0, "energy_delta": -5.0})
+	assert_eq(s.splash.texture.resource_path, _CITRA)
+	assert_true(s.splash.visible)
+	assert_eq(s.line_label.text, "Terima kasih, Guru!")
+	assert_true(s.line_label.uppercase, "the mockup's line is in capitals")
+	assert_eq(_filled(s), 2, "two of the three stars are earned")
+	assert_eq(s.skill_chip.icon.texture, DaySummaryStatRow.ICON_FOR["akademis"])
+	assert_eq(s.skill_chip.value.text, "+8")
+	assert_eq(s.energy_chip.icon.texture, MinigameWinScreen.ENERGY_ICON)
+	assert_eq(s.energy_chip.value.text, "-5")
+
+
+func test_each_category_wears_its_skill_icon() -> void:
+	var s := _screen()
+	for cat in MinigameWinScreen.SKILL_KEY:
+		s.configure(3, "", "x", cat, {"stat_delta": 6.0, "energy_delta": -7.0})
+		assert_eq(s.skill_chip.icon.texture, DaySummaryStatRow.ICON_FOR[MinigameWinScreen.SKILL_KEY[cat]], cat)
+
+
+func test_a_zero_stat_hides_its_chip_and_nothing_hides_the_row() -> void:
+	var s := _screen()
+	s.configure(3, "", "x", "Olahraga", {"stat_delta": 0.0, "energy_delta": -7.0})
+	assert_false(s.skill_chip.visible, "a capped week gains nothing: no '+0' chip")
+	assert_true(s.energy_chip.visible)
+	assert_true(s.stat_row.visible)
+	s.configure(3, "", "x", "Olahraga", {})
+	assert_false(s.stat_row.visible, "standalone play reports nothing, so no stat row")
+
+
+func test_no_speaker_hides_the_splash() -> void:
+	var s := _screen()
+	s.configure(1, "", "x", "Akademis", {})
+	assert_false(s.splash.visible)
+	assert_eq(_filled(s), 1)
+
+
+func test_the_screen_is_authored_and_themed() -> void:
+	var s := _screen()
+	assert_eq(s.layer, 999, "above every minigame layer, like the result popup")
+	assert_eq(s.process_mode, Node.PROCESS_MODE_ALWAYS)
+	var want := {
+		"Root/Card": &"MinigameWinCard", "Root/Bubble/Panel": &"MinigameWinBubble",
+		"Root/Bubble/Panel/Line": &"MinigameWinLine",
+		"Root/Card/Layout/ButtonRow/LobbyButton": &"SecondaryButtonL",
+		"Root/Card/Layout/ButtonRow/LanjutButton": &"PrimaryButtonL",
+	}
+	for path in want:
+		var n := s.get_node_or_null(path) as Control
+		assert_true(n != null, "missing " + path)
+		if n != null:
+			assert_eq(n.theme_type_variation, want[path], path)
+	assert_eq(s.lobby_button.text, "LOBBY")
+	assert_eq(s.lanjut_button.text, "LANJUT")
+	assert_eq(s.root.mouse_filter, Control.MOUSE_FILTER_STOP, "nothing reaches the minigame")
+	for path in ["Root/Blur", "Root/Splash", "Root/Bubble"]:
+		assert_eq((s.get_node(path) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE, path)
+	assert_eq(s.blur.material.resource_path, "res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres")
+	assert_eq(s.splash.material.resource_path, "res://Scripts/Shaders/illustration_grade_cutout.tres")
+	var tail := s.get_node("Root/Bubble/Tail") as TextureRect
+	assert_eq(tail.texture.resource_path, "res://Assets/Images/Shop/UI/chat_bubble_tail.svg")
+	assert_true(tail.flip_h and tail.flip_v, "the tail points up-left at the speaker")
+	assert_eq(s.star_row.get_child_count(), 3)
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameWinScreen.gd")
+	assert_false(src.contains(".new("), "the screen is fully authored")
+	var scene := FileAccess.get_file_as_string(_SCREEN)
+	for kind in ["theme_override_colors", "theme_override_font_sizes", "theme_override_fonts", "theme_override_styles"]:
+		assert_false(scene.contains(kind), "no " + kind + " in MinigameWinScreen.tscn")
+
+
+## Measured off minigamewinscreen_mockup.jpeg (spec section 3): every piece
+## hangs off the bottom edge.
+func test_every_piece_hangs_off_the_bottom_edge() -> void:
+	var s := _screen()
+	var want := {
+		"Root/Splash": Vector4(20, -1933, -72, -176),
+		"Root/Bubble": Vector4(50, -1022, -50, -878),
+		"Root/Card": Vector4(0, -828, 0, 0),
+	}
+	for path in want:
+		var c := s.get_node(path) as Control
+		assert_eq(Vector4(c.anchor_left, c.anchor_top, c.anchor_right, c.anchor_bottom), Vector4(0, 1, 1, 1), path)
+		assert_eq(Vector4(c.offset_left, c.offset_top, c.offset_right, c.offset_bottom), want[path], path)
+
+
+## On a 20:9 phone the whole composition keeps its distance from the bottom
+## edge; only the blurred minigame above it grows. Root is moved into a frame
+## of each size (layout_frame stands up Control-rooted scenes only).
+func test_on_a_tall_phone_the_composition_rides_the_bottom_edge() -> void:
+	for screen in [Vector2(1080, 1920), Vector2(1080, 2400)]:
+		var s := _screen()
+		var frame := Control.new()
+		frame.size = screen
+		frame.theme = load(_THEME)
+		s.remove_child(s.root)
+		frame.add_child(s.root)
+		Engine.get_main_loop().root.add_child(frame)
+		track(frame)
+		preload("res://tests/layout_frame.gd").settle(s.root)
+		assert_eq(s.card.get_global_rect().end.y, screen.y, "card meets the bottom at %s" % screen)
+		assert_eq(s.card.get_global_rect().position.y, screen.y - 828, "card height at %s" % screen)
+		assert_eq(s.bubble.get_global_rect().end.y, screen.y - 878, "bubble at %s" % screen)
+		assert_eq(s.splash.get_global_rect().end.y, screen.y - 176, "splash at %s" % screen)

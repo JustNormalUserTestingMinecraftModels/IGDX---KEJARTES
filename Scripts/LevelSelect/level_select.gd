@@ -93,8 +93,16 @@ static func roster_size_for(grade: int) -> int:
 	return _STUDENT_CARD.max_approve_for(grade)
 
 
+## Size of the centred envelope, as a multiple of the AmplopCard template
+## (400x526); the side envelopes are this times side_scale.
+@export var card_scale: float = 1.2:
+	set(value):
+		card_scale = value
+		_layout_cards(false)
+		if is_node_ready():
+			_confirm.set_envelope_scale(value)
 ## Horizontal distance between neighbouring envelopes in the fan.
-@export var fan_step_x: float = 130.0:
+@export var fan_step_x: float = 150.0:
 	set(value):
 		fan_step_x = value
 		_layout_cards(false)
@@ -108,13 +116,13 @@ static func roster_size_for(grade: int) -> int:
 	set(value):
 		fan_step_degrees = value
 		_layout_cards(false)
-## Scale of the envelopes either side of the centred one.
+## Scale of the envelopes either side of the centred one, relative to it.
 @export var side_scale: float = 0.86:
 	set(value):
 		side_scale = value
 		_layout_cards(false)
 ## Gap between the centred envelope's bottom edge and the Stack's.
-@export var fan_bottom_margin: float = 60.0:
+@export var fan_bottom_margin: float = 20.0:
 	set(value):
 		fan_bottom_margin = value
 		_layout_cards(false)
@@ -166,6 +174,8 @@ func _ready() -> void:
 	_confirm.cancelled.connect(_on_cancel)
 	_stack.resized.connect(func() -> void: _layout_cards(false))
 	_tint_icons()
+	# The opened envelope matches the fan's centred one.
+	_confirm.set_envelope_scale(card_scale)
 
 	if not Engine.is_editor_hint():
 		var start := GRADES.find(GameState.current_grade)
@@ -288,7 +298,7 @@ func _layout_cards(animate: bool) -> void:
 		var d := i - _selected
 		var pos := origin + Vector2(d * fan_step_x, absi(d) * fan_drop_y)
 		var rot := deg_to_rad(d * fan_step_degrees)
-		var scl := Vector2.ONE if d == 0 else Vector2(side_scale, side_scale)
+		var scl := Vector2.ONE * card_scale * (1.0 if d == 0 else side_scale)
 		card.set_focused(d == 0)
 		if animate:
 			_fan_tween.tween_property(card, "position", pos, SHUFFLE_SEC)

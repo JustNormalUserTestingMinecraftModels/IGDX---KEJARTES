@@ -248,10 +248,36 @@ func test_fan_centres_the_selected_card() -> void:
 	assert_true(cards[0].rotation < 0.0 and cards[2].rotation > 0.0, "the sides tilt away")
 	assert_true(cards[1].get_index() > cards[0].get_index()
 		and cards[1].get_index() > cards[2].get_index(), "the centre card is in front")
-	assert_true(cards[0].scale.x < 1.0 and cards[1].scale.x == 1.0, "the sides sit back")
+	assert_true(is_equal_approx(cards[1].scale.x, _screen.card_scale), "the centre is card_scale")
+	assert_true(cards[0].scale.x < cards[1].scale.x, "the sides sit back")
 	assert_false(_screen._prev.disabled or _screen._next.disabled, "both arrows lead somewhere")
 	_center(0)
 	assert_true(_screen._prev.disabled, "nothing before Kelas 7")
+
+
+## The envelopes are drawn larger than the 400x526 template, the opened one
+## at the same size as the centred one, and the centred envelope (tab and a
+## full hop included) still clears the header.
+func test_envelopes_are_enlarged_and_clear_the_header() -> void:
+	_center(0)
+	assert_gt(_screen.card_scale, 1.0, "the fan is scaled up")
+	# Read through the global transform: a scale set on the card itself
+	# passes a direct read here, then the CenterContainer resets it on sort.
+	var shown: Control = _screen._confirm.card
+	shown.get_parent().notification(Container.NOTIFICATION_SORT_CHILDREN)
+	assert_true(is_equal_approx(shown.get_global_transform().get_scale().x, _screen.card_scale),
+		"the opened envelope matches the fan, after its container sorts")
+	var authored: float = _screen.card_scale
+	_screen.card_scale = 1.35
+	assert_true(is_equal_approx(shown.get_global_transform().get_scale().x, 1.35),
+		"retuning card_scale resizes the opened envelope too")
+	_screen.card_scale = authored
+	var card: Control = _screen._cards[0]
+	var tab_top: float = card.get_global_transform().origin.y \
+		- (card.bob_rest_y * -1.0 + 84.0 + LS.HOP_RISE) * _screen.card_scale
+	var header_bottom: float = (_screen.get_node("Safe/UI/Header") as Control).get_global_rect().end.y
+	assert_true(tab_top > header_bottom,
+		"hop peak %.0f clears the header's %.0f" % [tab_top, header_bottom])
 
 
 ## All three input paths are wired, with the shuffle-and-bounce overshoot.

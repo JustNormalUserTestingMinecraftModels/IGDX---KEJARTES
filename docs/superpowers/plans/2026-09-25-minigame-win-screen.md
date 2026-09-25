@@ -159,7 +159,7 @@ func test_the_speaker_keeps_its_place_above_the_box_on_a_tall_phone() -> void:
 - Test: `tests/test_student_skins.gd`
 
 **Interfaces:**
-- Produces: `StudentSkins.DAY_OUTFITS: Dictionary` (`{"Kamis": "batik", "Jumat": "pramuka"}`), `StudentSkins.OUTFIT_DIR: String`, `static func day_outfit_path(student_name: String, outfit: String) -> String`, `static func day_splash_for(student_name: String, day_name: String) -> String` ("" off-day or missing file).
+- Produces: `StudentSkins.DAY_OUTFITS: Dictionary` (`{"Kamis": "batik", "Jumat": "pramuka"}`), `StudentSkins.OUTFIT_DIR: String`, `static func day_outfit_path(student_name: String, outfit: String) -> String`, `static func day_splash_for(student_name: String, day_name: String) -> String` ("" off-day or missing file), `static func splash_for_day(student_name: String, own_splash: String, day_name: String) -> String` (the outfit, else `own_splash`).
 
 - [ ] **Step 1: Download (approved at the plan gate).** Load the Claude in Chrome tools; for each id below navigate a tab to `https://drive.usercontent.google.com/download?id=<id>&export=download`; files land in `C:/Users/user/Downloads/` under their Drive titles. Match each by byte size:
 
@@ -197,6 +197,16 @@ func test_the_other_days_and_strangers_have_no_outfit() -> void:
 	for day in ["Senin", "Selasa", "Rabu", "", "Sabtu"]:
 		assert_eq(StudentSkins.day_splash_for("Thea", day), "", "no outfit on '%s'" % day)
 	assert_eq(StudentSkins.day_splash_for("Bejo", "Kamis"), "", "only the six have outfits")
+
+
+## The one resolver every screen asks: the outfit on its day, else the
+## student's own (possibly skinned) splash.
+func test_splash_for_day_falls_back_to_the_student_s_own() -> void:
+	var own := "res://Assets/Images/Skins/Thea/splash_thea_skin1.png"
+	assert_eq(StudentSkins.splash_for_day("Thea", own, "Kamis"),
+		"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png", "the outfit beats a skin")
+	assert_eq(StudentSkins.splash_for_day("Thea", own, "Senin"), own)
+	assert_eq(StudentSkins.splash_for_day("Thea", own, ""), own)
 
 
 ## Same canvas and import as the default splashes, or the outfit would jump
@@ -246,6 +256,13 @@ static func day_splash_for(student_name: String, day_name: String) -> String:
 		return ""
 	var path := day_outfit_path(student_name, outfit)
 	return path if ResourceLoader.exists(path) else ""
+
+
+## What a screen draws for `student_name` on `day_name`: the day outfit when
+## there is one, else `own_splash` (the student's own, possibly skinned, art).
+static func splash_for_day(student_name: String, own_splash: String, day_name: String) -> String:
+	var outfit := day_splash_for(student_name, day_name)
+	return outfit if outfit != "" else own_splash
 ```
 
 - [ ] **Step 7: Run green.** No-op `script_patch` on `StudentSkins.gd`; `Run: test_run(suite="student_skins", session_id=<WT>)`, `skin_select`, `lobby_skins`. Expected: PASS.
@@ -260,7 +277,7 @@ static func day_splash_for(student_name: String, day_name: String) -> String:
 - Test: `tests/test_event_dialogue.gd`
 
 **Interfaces:**
-- Consumes: `StudentSkins.day_splash_for(student_name, day_name) -> String`.
+- Consumes: `StudentSkins.splash_for_day(student_name, own_splash, day_name) -> String`.
 - Produces: `EventDialogueCatalog.WIN_TEACHER_CHANCE: float` (0.5), `WIN_LINE_STUDENT: String`, `WIN_LINES: Dictionary` (teacher splash path → line), `WIN_TEACHER: Dictionary` (category → teacher splash path), `static func student_splash(featured: StudentData, day_name: String) -> String`, `static func splash_path_for(e: Dictionary, featured: StudentData, day_name: String = "") -> String`, `static func win_speaker_path(category: String, featured: StudentData, day_name: String, roll: float) -> String`, `static func win_line_for(speaker_path: String) -> String`.
 
 - [ ] **Step 1: Write the failing tests** — append to `tests/test_event_dialogue.gd` (and change `_dialogue` to take a day):
@@ -358,8 +375,7 @@ replace `splash_path_for` with:
 static func student_splash(featured: StudentData, day_name: String) -> String:
 	if featured == null:
 		return ""
-	var outfit := StudentSkins.day_splash_for(featured.student_name, day_name)
-	return outfit if outfit != "" else featured.splash_path
+	return StudentSkins.splash_for_day(featured.student_name, featured.splash_path, day_name)
 
 
 ## The speaker's texture path: the featured student's splash (dressed for
@@ -390,6 +406,113 @@ and in `EventDialogue.gd:59`: `var splash_path: String = EventDialogueCatalog.sp
 
 - [ ] **Step 4: Run green.** No-op `script_patch` on both scripts; `Run: test_run(suite="event_dialogue", session_id=<WT>)`. Expected: PASS (the old `test_student_speakers_wear_their_own_splash` still passes: `day_name` defaults to "").
 - [ ] **Step 5: Commit** `feat(event-dialogue): dress speakers for the day, pick the win speaker`.
+
+---
+
+### Task 4b: Result portraits dress for the day (owner's amendment)
+
+**Files:**
+- Modify: `Scripts/SchoolSimulation/DaySummaryAvatar.gd`, `DaySummaryStudentRow.gd`, `DaySummaryPopup.gd`, `ResultCheckup.gd`, `EventStudentSelectDialog.gd`, `EventStudentCard.gd`, `SchoolDay.gd` (`_show_day_summary`, the `setup_event` call)
+- Test: `tests/test_day_summary.gd`
+
+**Interfaces:**
+- Consumes: `StudentSkins.splash_for_day(student_name, own_splash, day_name) -> String`.
+- Produces: `DaySummaryAvatar.set_student(student: StudentData, day_name: String = "")`; trailing `day_name: String = ""` on `DaySummaryStudentRow.setup_row / setup_week_row / setup_current_row`, `DaySummaryPopup.setup_summary`, `EventStudentSelectDialog.setup_event`, `EventStudentCard.setup`; `ResultCheckup.REPORT_DAY := "Jumat"`.
+
+- [ ] **Step 1: Write the failing tests** — append to `tests/test_day_summary.gd`:
+
+```gdscript
+# ── day outfits on the result portraits (2026-09-25 spec, section 6) ────────
+
+const _THEA_BATIK := "res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png"
+
+
+func _thea() -> StudentData:
+	var s := StudentData.new()
+	s.student_name = "Thea"
+	s.splash_path = "res://Assets/Images/SplashArtMurid/splash_thea.png"
+	return s
+
+
+## The outfit shares Thea's canvas, so her usual head window frames it.
+func test_the_avatar_dresses_for_the_day_with_its_usual_crop() -> void:
+	var avatar := (load(_AVATAR_SCENE) as PackedScene).instantiate() as DaySummaryAvatar
+	Engine.get_main_loop().root.add_child(avatar)
+	track(avatar)
+	avatar.set_student(_thea(), "Kamis")
+	var atlas := avatar.art.texture as AtlasTexture
+	assert_true(atlas != null, "the outfit is cropped like any splash")
+	if atlas != null:
+		assert_eq(atlas.atlas.resource_path, _THEA_BATIK)
+		assert_eq(atlas.region, DaySummaryAvatar.SPLASH_CROP["Thea"])
+	avatar.set_student(_thea(), "Rabu")
+	assert_eq((avatar.art.texture as AtlasTexture).atlas.resource_path,
+		"res://Assets/Images/SplashArtMurid/splash_thea.png", "an ordinary day keeps her own")
+
+
+## True when the body of `header` in `path` makes `call` with `day_name`
+## among its arguments.
+func _passes_day(path: String, header: String, call: String) -> bool:
+	var src := FileAccess.get_file_as_string(path)
+	var at := src.find(header)
+	if at == -1:
+		return false
+	var next := src.find("\nfunc ", at + header.length())
+	var body := src.substr(at, (next if next != -1 else src.length()) - at)
+	var c := body.find(call)
+	return c != -1 and body.substr(c, body.find(")", c) - c).contains("day_name")
+
+
+func test_the_daily_results_pass_the_day_through() -> void:
+	assert_true(_passes_day(_POPUP_SCRIPT, "func setup_summary(", "setup_row("),
+		"DaySummaryPopup hands its day to each row")
+	assert_true(_passes_day(_SCHOOL_DAY_SCRIPT, "func _show_day_summary(", "setup_summary("),
+		"SchoolDay tells the popup which day it summarises")
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_row(", "avatar.set_student("))
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_week_row(", "avatar.set_student("))
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_current_row(", "avatar.set_student("))
+
+
+## The weekly report opens straight after Jumat, so it wears Jumat's outfit.
+func test_the_weekly_results_wear_jumat_s_outfit() -> void:
+	var checkup = load("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_eq(checkup.REPORT_DAY, "Jumat")
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_true(src.contains("card.setup_week_row(student, REPORT_DAY)"))
+
+
+## The pick-students cards are the same row, on an event screen of that day.
+func test_the_event_picker_passes_the_day_through() -> void:
+	assert_true(_passes_day("res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd",
+		"func _populate_student_cards(", "card.setup("))
+	assert_true(_passes_day("res://Scripts/SchoolSimulation/EventStudentCard.gd",
+		"func setup(", "card.setup_current_row("))
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var at := src.find("dialog_instance.setup_event(")
+	assert_true(at != -1 and src.substr(at, src.find(")", at) - at).contains("day_name"),
+		"SchoolDay tells the picker which day it is")
+```
+
+- [ ] **Step 2: Run red.** No-op `script_patch` on the test; `Run: test_run(suite="day_summary", session_id=<WT>)`. Expected: the four new tests FAIL.
+- [ ] **Step 3: Implement.**
+  - `DaySummaryAvatar.set_student(student: StudentData, day_name: String = "")`: replace the splash lines with
+    ```gdscript
+    	var splash := StudentSkins.splash_for_day(student.student_name, student.splash_path, day_name)
+    	if splash != "" and ResourceLoader.exists(splash):
+    		tex = load(splash)
+    		is_splash = true
+    	elif student.avatar_texture != null:
+    ```
+    and add to its doc comment: "`day_name` dresses the student for that school day (StudentSkins.DAY_OUTFITS). An outfit shares its student's canvas, so SPLASH_CROP frames it unchanged." (`student.splash_path` still appears before `student.avatar_texture`, which `test_avatar_prefers_the_splash_over_the_portrait` scans for.)
+  - `DaySummaryStudentRow`: add `day_name: String = ""` as the last parameter of `setup_row`, `setup_week_row`, `setup_current_row`; each passes it on: `avatar.set_student(student, day_name)`.
+  - `DaySummaryPopup.setup_summary(summary_data, students, money_today: int = 0, day_name: String = "")` → `row_inst.setup_row(s_name, changes, student, day_name)`.
+  - `SchoolDay._show_day_summary`: `summary_instance.setup_summary(summary, student_manager.students, _pending_total() - _money_at_day_start, day_name)`.
+  - `ResultCheckup`: add `## The day whose outfit the weekly portraits wear: the report opens straight after Jumat.` / `const REPORT_DAY := "Jumat"`, and `card.setup_week_row(student, REPORT_DAY)`.
+  - `EventStudentSelectDialog.setup_event(..., mood_boost: float = 0.0, day_name: String = "")` stores `"day_name": day_name` in `event_data`; `_populate_student_cards` reads `var day_name: String = event_data.get("day_name", "")` and calls `card.setup(student, category, day_name)`.
+  - `EventStudentCard.setup(student: StudentData, category: String, day_name: String = "")` → `card.setup_current_row(student, day_name)`.
+  - SchoolDay's `dialog_instance.setup_event(... stat_boost, energy_cost, mood_boost, day_name)` — confirm the enclosing function's day variable name; pass that variable.
+- [ ] **Step 4: Run green.** No-op `script_patch` on every touched script; `Run: test_run(suite="day_summary", session_id=<WT>)`, `event_student_card_tired`, `card_standing_mode`, `apply_student_row`, `school_day`, `script_documentation`. Expected: PASS.
+- [ ] **Step 5: Commit** `feat(results): result portraits wear the day's outfit`.
 
 ---
 

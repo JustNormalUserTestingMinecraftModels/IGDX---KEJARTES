@@ -285,10 +285,24 @@ all six students. The `_osis` files are the everyday uniform — each within
   it for a student speaker; `EventDialogue.open()` already receives
   `day_name` and passes it on; `win_speaker_path` goes through the same call.
 
-Scope: the two event screens that draw the full-body splash — EventDialogue
-and the win screen. On Kamis and Jumat the outfit **wins over an equipped
-skin** there, as a uniform day would. The bust crops (avatar strip, day
-summary, event picker) keep the equipped look.
+Scope (widened by the owner at the plan gate, 2026-09-25): the two event
+screens that draw the full-body splash — EventDialogue and the win screen —
+and the result portraits: the daily results card, the weekly results card,
+and the pick-students event cards (the same `DaySummaryStudentRow`). The
+weekly report opens straight after Jumat, so it wears Jumat's outfit
+(`ResultCheckup.REPORT_DAY`). On Kamis and Jumat the outfit **wins over an
+equipped skin** on all of these, as a uniform day would. The outfits share
+their student's canvas, so `DaySummaryAvatar.SPLASH_CROP` frames them
+unchanged. Only the SchoolDay avatar strip keeps the equipped look.
+
+One resolver serves every caller: `StudentSkins.splash_for_day(student_name,
+own_splash, day_name)` returns the outfit or `own_splash`.
+`DaySummaryAvatar.set_student(student, day_name = "")`, and `day_name`
+threads through `DaySummaryStudentRow.setup_row / setup_week_row /
+setup_current_row`, `DaySummaryPopup.setup_summary`,
+`EventStudentSelectDialog.setup_event` and `EventStudentCard.setup`, each a
+trailing optional argument so the Inventory's apply screen and every other
+caller are unchanged.
 
 ## State
 
@@ -331,7 +345,8 @@ touched.
 | `Scripts/SchoolSimulation/SchoolDay.gd` | host context, record via reporter, `_last_featured`, LOBBY exit |
 | `Scripts/SchoolSimulation/EventDialogueCatalog.gd` | `win_speaker_path`, `WIN_LINES`, `WIN_TEACHER_CHANCE`, day-aware `splash_path_for` |
 | `Scripts/SchoolSimulation/EventDialogue.gd` | passes `day_name` to `splash_path_for` |
-| `Scripts/Skins/StudentSkins.gd` | `DAY_OUTFITS`, `day_splash_for` |
+| `Scripts/Skins/StudentSkins.gd` | `DAY_OUTFITS`, `day_splash_for`, `splash_for_day` |
+| `Scripts/SchoolSimulation/DaySummaryAvatar.gd`, `DaySummaryStudentRow.gd`, `DaySummaryPopup.gd`, `ResultCheckup.gd`, `EventStudentSelectDialog.gd`, `EventStudentCard.gd` | `day_name` threaded to the result portraits |
 | `Scripts/Design/DesignTokens.gd`, `ThemeFactory.gd`, `Assets/Theme/kejartes_theme.tres` | 3 tokens, 4 variations, rebake |
 | tests | new `test_minigame_win_screen.gd`, `test_ui_icon_refresh.gd`; additions to `event_dialogue`, `student_skins`, `minigame_single_result`, `school_day`, `theme_factory`, `illustration_ao`, `look_layer` (tall-phone checks live in the new suite, since `layout_frame.gd` stands up only a Control-rooted scene) |
 | `CLAUDE.md` loop line, `docs/superpowers/CHANGELOG.md`, `docs/superpowers/DEBT.md` | one line each (DEBT: the Skip key's mid-day double decay) |
@@ -349,6 +364,9 @@ Test-first, by suite:
   own; teachers never change.
 - `student_skins` — `day_splash_for` for all six × two days; every outfit
   path exists and is 1080×1920.
+- `day_summary` — the avatar wears the outfit on Kamis/Jumat with its usual
+  crop; the daily popup, the weekly report (Jumat) and the event picker pass
+  the day through.
 - `minigame_win_screen` (new) — authored, themed, no overrides, no `.new(`;
   `REVEAL_ORDER`; `configure` hides zero chips and fills stars from the
   count; `win_speaker_path` table; `WIN_LINES`; bottom anchoring at
@@ -371,7 +389,7 @@ the SchoolDay badge with the new calendar.
 - Tap-to-skip on the reveal.
 - The mockup card's gradient (flat mid-tone instead) and its navy-outlined
   stars (the project's `star.png`, shared with StatCheck and the old card).
-- Outfits on the bust crops (avatar strip, day summary, event picker).
+- Outfits on the SchoolDay avatar strip.
 - Importing the `_osis` art (it is today's default).
 - A mood chip — the mockup shows two stats.
 - Fixing the dev Skip key's mid-day double decay; LOBBY avoids it, the key

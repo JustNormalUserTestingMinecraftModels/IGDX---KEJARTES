@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://b5kea4h33q5vo" path="res://Scripts/Minigames/UI/MinigameResultPopup.gd" id="1_bw2jk"]
 [ext_resource type="PackedScene" uid="uid://bh43jlmr0mvth" path="res://Scenes/Minigames/UI/ResultStar.tscn" id="2_nclls"]
 [ext_resource type="Texture2D" uid="uid://c2nhb6m52di2u" path="res://Assets/Images/UI/Placeholders/icon_skor.svg" id="3_xm3lp"]
-[ext_resource type="PackedScene" uid="uid://wkhx361nmrwr" path="res://Scenes/Minigames/UI/ResultConfetti.tscn" id="4_moia8"]
 [ext_resource type="PackedScene" uid="uid://b1kjq7vxnf2ca" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="5_moia8"]
 
 [node name="MinigameResultPopup" type="CanvasLayer" unique_id=1587108605]
@@ -173,9 +172,6 @@ layout_mode = 2
 [node name="ContinueButton" type="Button" parent="Dim/Center/Card/Layout/ContinueButtonCenter" unique_id=922764465]
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
-
-[node name="ResultConfetti" parent="Dim" unique_id=530501178 instance=ExtResource("4_moia8")]
-position = Vector2(540, -20)
 
 [node name="ConfettiFireworks" parent="Dim" unique_id=842830919 instance=ExtResource("5_moia8")]
 layout_mode = 1

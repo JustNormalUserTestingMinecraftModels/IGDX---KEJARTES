@@ -57,7 +57,7 @@ func test_both_scenes_exist() -> void:
 
 func test_popup_scene_carries_every_node_the_script_binds() -> void:
 	var node := _make()
-	for path in ["Dim", "Dim/ResultConfetti",
+	for path in ["Dim",
 			"Dim/Center/Card/Layout/TitleLabel",
 			"Dim/Center/Card/Layout/StarRow",
 			"Dim/Center/Card/Layout/NameLabel",
@@ -199,12 +199,14 @@ func test_the_reveal_escalates_across_the_three_stars() -> void:
 		"each earned star gets its landing burst and rising cue")
 
 
-func test_confetti_is_gated_on_a_three_star_finish() -> void:
+## The white full-house confetti rain was retired on 2026-09-25, gate and all.
+func test_the_white_confetti_rain_is_gone() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
-	assert_true(src.contains("const CONFETTI_STAR_THRESHOLD"),
-		"the confetti gate is a named const")
-	assert_true(src.contains("_star_count >= CONFETTI_STAR_THRESHOLD"),
-		"a two-star finish stays quiet")
+	assert_false(src.contains("CONFETTI_STAR_THRESHOLD"), "no confetti gate left")
+	assert_false(src.contains("ResultConfetti"), "no confetti node bound")
+	var node := _make()
+	assert_true(node.get_node_or_null("Dim/ResultConfetti") == null,
+		"the popup no longer carries the rain")
 
 
 func test_the_score_counts_up_rather_than_appearing_finished() -> void:
@@ -288,7 +290,6 @@ func test_every_result_icon_exists_and_loads_as_a_texture() -> void:
 
 const PARTICLE_SCENES := [
 	"res://Scenes/Minigames/UI/StarBurst.tscn",
-	"res://Scenes/Minigames/UI/ResultConfetti.tscn",
 	"res://Scenes/Minigames/UI/ScorePopBurst.tscn",
 ]
 

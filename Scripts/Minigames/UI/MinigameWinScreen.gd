@@ -54,7 +54,6 @@ const FADE_OUT_TIME := 0.25
 @onready var lobby_button: Button = $Root/Card/Layout/ButtonRow/LobbyButton
 @onready var lanjut_button: Button = $Root/Card/Layout/ButtonRow/LanjutButton
 @onready var fireworks: ConfettiFireworks = $Root/ConfettiFireworks
-@onready var confetti: RewardParticles = $Root/ResultConfetti
 
 ## Stars earned, 0-3, from configure().
 var _star_count: int = 0
@@ -165,8 +164,8 @@ func _reveal(step: StringName) -> void:
 
 
 ## MinigameResultPopup's escalating ladder: each star pops a little harder
-## than the last, an earned one blooms and fires its firework, and a full
-## house rains confetti.
+## than the last, and an earned one blooms and fires its firework. (The white
+## full-house confetti rain was retired on 2026-09-25.)
 func _land_stars() -> void:
 	var index := 0
 	for star in star_row.get_children():
@@ -187,8 +186,6 @@ func _land_stars() -> void:
 			.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
 		await settle.finished
 		index += 1
-	if _star_count >= MinigameResultPopup.CONFETTI_STAR_THRESHOLD and not Engine.is_editor_hint():
-		confetti.fire()
 
 
 func _choose(choice: StringName) -> void:

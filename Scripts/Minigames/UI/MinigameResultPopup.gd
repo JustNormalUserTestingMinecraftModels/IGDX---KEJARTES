@@ -61,9 +61,6 @@ const STAR_POP_SCALES: Array[float] = [1.14, 1.22, 1.34]
 ## Seconds each star holds at its pop scale before settling. Ascending for the
 ## same reason.
 const STAR_HOLD_TIMES: Array[float] = [0.06, 0.10, 0.18]
-## Stars at or above which the card fires its screen-wide confetti. Three: a
-## two-star finish staying quiet is what makes three mean something.
-const CONFETTI_STAR_THRESHOLD: int = 3
 ## Intended seconds for the score readout's tally-up, kept for interface
 ## completeness -- currently unused. Juice.count_up() (the tally call this
 ## file actually makes) has no duration parameter; its animation length is
@@ -93,19 +90,18 @@ const SCORE_COUNT_TIME: float = 0.6
 @onready var mood_delta_icon: TextureRect = $Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow/MoodDeltaIcon
 @onready var continue_button_center: CenterContainer = $Dim/Center/Card/Layout/ContinueButtonCenter
 @onready var continue_button: Button = $Dim/Center/Card/Layout/ContinueButtonCenter/ContinueButton
-@onready var confetti: RewardParticles = $Dim/ResultConfetti
-## The three placed fireworks, one fired per star as it lands. Separate from
-## `confetti` above, which is the full-house rain from above the top edge:
-## that one is gated at three stars and still fires. These replace the
-## star-shaped spray ResultStar used to mount into its own BurstSlot.
+## The three placed fireworks, one fired per star as it lands. The white
+## full-house confetti rain that used to fall beside them was retired on
+## 2026-09-25. These replace the star-shaped spray ResultStar used to mount
+## into its own BurstSlot.
 @onready var fireworks: ConfettiFireworks = $Dim/ConfettiFireworks
 
 ## Cached so play()'s reveal sequence can skip hidden rows in the shipped
 ## order without re-deriving visibility.
 var _dim_target_color: Color
 var _is_win: bool = false
-## How many stars play() should land -- read by its star loop and by the
-## confetti gate. Set fresh on every configure() call.
+## How many stars play() should land -- read by its star loop. Set fresh on
+## every configure() call.
 var _star_count: int = 0
 ## What the score readout counts up to. Set fresh on every configure() call.
 var _score_target: int = 0
@@ -298,10 +294,6 @@ func play() -> void:
 			.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
 		await tw_settle.finished
 		star_index += 1
-
-	# 4b. A full house, and only a full house, gets the confetti.
-	if _star_count >= CONFETTI_STAR_THRESHOLD:
-		confetti.fire()
 
 	# 5. Name, score, badge and deltas fade in in shipped order, skipping
 	# whichever boxes configure() left hidden. The three delta rows share

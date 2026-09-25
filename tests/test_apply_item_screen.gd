@@ -28,7 +28,8 @@ func test_routes_through_batch_api() -> void:
 func test_references_payoff_particles() -> void:
 	var src := _src()
 	assert_true(src.contains("RewardBurst.tscn"), "reward burst referenced")
-	assert_true(src.contains("CelebrationConfetti.tscn"), "confetti referenced")
+	assert_false(src.contains("CelebrationConfetti.tscn"),
+		"the white confetti was retired on 2026-09-25")
 
 func test_confirm_label_is_formatted() -> void:
 	assert_true(_src().contains("Pakai ke %d Siswa"), "confirm label shows the count")

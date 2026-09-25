@@ -1013,7 +1013,7 @@ offset_right = 96.0
 offset_bottom = 96.0
 texture_normal = ExtResource("15_d385k")
 ignore_texture_size = true
-stretch_mode = 0
+stretch_mode = 5
 
 [node name="AchievementButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=919427951]
 unique_name_in_owner = true

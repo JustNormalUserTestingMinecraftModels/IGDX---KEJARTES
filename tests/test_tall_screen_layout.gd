@@ -441,6 +441,53 @@ func test_student_list_at_the_design_size_is_unchanged() -> void:
 		Vector2(400, 1794), "PageIndicator")
 
 
+# ── Level Select ─────────────────────────────────────────────────────────────
+
+const LEVEL_SELECT := "res://Scenes/LevelSelect/level_select.tscn"
+
+
+func test_level_select_backdrop_fills() -> void:
+	_assert_background_fills(_scene(LEVEL_SELECT).get_node_or_null("Backdrop") as TextureRect,
+		"LevelSelect Backdrop")
+
+
+## The header rides the top edge, the fan the middle, the briefing card the
+## bottom, all inside the safe area; the confirmation covers the whole screen.
+func test_level_select_ui_is_pinned_inside_the_safe_area() -> void:
+	var ls := _scene(LEVEL_SELECT)
+	for n in ["Safe/UI/Header", "Safe/UI/Stack", "Safe/UI/Brief"]:
+		_assert_under_safe_area(ls.get_node_or_null(n), n)
+	assert_eq(_anchors(ls.get_node("Safe/UI/Header") as Control), Vector4(0, 0, 1, 0),
+		"Header is Top Wide")
+	assert_eq(_anchors(ls.get_node("Safe/UI/Stack") as Control), Vector4(0, 0.5, 1, 0.5),
+		"Stack is Center Wide")
+	assert_eq(_anchors(ls.get_node("Safe/UI/Brief") as Control), Vector4(0, 1, 1, 1),
+		"Brief is Bottom Wide")
+	var confirm := ls.get_node_or_null("Confirm")
+	assert_true(confirm != null and confirm.get_index() == ls.get_child_count() - 1,
+		"the confirmation is the last child, over everything")
+
+
+## On a 1080x2400 phone the brief rides the bottom edge, the fan keeps the
+## middle, and the confirmation still covers the screen.
+func test_level_select_on_a_tall_phone() -> void:
+	var ls := _stood_up(LEVEL_SELECT, TALL)
+	_assert_placed(ls.get_node("Safe/UI/Brief") as Control, Rect2(48, 1732, 984, 620), "Brief")
+	_assert_placed(ls.get_node("Safe/UI/Stack") as Control, Rect2(48, 520, 984, 780), "Stack")
+	_assert_placed(ls.get_node("Safe/UI/Header") as Control, Rect2(48, 72, 984, 160), "Header")
+	_assert_rect((ls.get_node("Confirm") as Control).get_global_rect(),
+		Rect2(Vector2.ZERO, TALL), "Confirm")
+
+
+## At 1080x1920 the level select sits where it was designed.
+func test_level_select_at_the_design_size() -> void:
+	var ls := _stood_up(LEVEL_SELECT, DESIGN)
+	_assert_placed(ls.get_node("Safe/UI/Brief") as Control, Rect2(48, 1252, 984, 620), "Brief")
+	_assert_placed(ls.get_node("Safe/UI/Stack") as Control, Rect2(48, 280, 984, 780), "Stack")
+	_assert_rect((ls.get_node("Confirm") as Control).get_global_rect(),
+		Rect2(Vector2.ZERO, DESIGN), "Confirm")
+
+
 # ── Rapor ────────────────────────────────────────────────────────────────────
 
 const REPORT_CARD := "res://Scenes/ReportCard/report_card.tscn"

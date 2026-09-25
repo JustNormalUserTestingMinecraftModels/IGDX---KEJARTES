@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://bdfwfoth4k3ke"]
+
+[ext_resource type="Script" uid="uid://dtdc1n4xiegsi" path="res://Scripts/LevelSelect/PupilPeek.gd" id="1_peek"]
+[ext_resource type="Texture2D" uid="uid://ckkwq8tubxn64" path="res://Assets/Images/MuridPotrait/Andi.png" id="2_andi"]
+
+[node name="PupilPeek" type="Control" unique_id=1381941102]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 110.0
+offset_bottom = 110.0
+mouse_filter = 2
+script = ExtResource("1_peek")
+portrait_texture = ExtResource("2_andi")
+
+[node name="Head" type="Panel" parent="." unique_id=2008710172]
+clip_children = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"AvatarDisc"
+
+[node name="Portrait" type="TextureRect" parent="Head" unique_id=1966779905]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -30.0
+offset_top = -12.0
+offset_right = 30.0
+offset_bottom = 48.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_andi")
+expand_mode = 1
+stretch_mode = 6

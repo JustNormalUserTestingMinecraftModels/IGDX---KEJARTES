@@ -101,6 +101,18 @@ assertions off `Label`).
 (`WinStage`'s `lose_backdrop` `@export`, so an Inspector swap). `InventorySlot`'s high-count
 `Shine` overlay is a plain white `ColorRect` with no texture.
 
+**Level Select (2026-09-25).** The envelope is the artist's flat
+`Amplop coklat.png`, cut into body, flap, flap back and seal by
+`tools/split_amplop.py`; the envelope's inside (under the flap) and the flap's
+back are painted in by that script, and the seal is lifted off with a 2 px
+paint-out. Separate layers from the artist would replace all four at the same
+paths (and the script's traced polygons would retire). Still placeholder: the
+white `pupil_head.svg`, `week_cell.svg` and `gauge_pill.svg` in
+`Assets/Images/LevelSelect/`, tinted from tokens, and the fan's arrows reuse
+`UI/Placeholders/arrow.png`. The envelopes wear no illustration grade; adding
+one means the census in `tests/test_illustration_ao.gd` and a rim along the
+flap's crease to judge.
+
 ## Asset notes
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
@@ -290,10 +302,6 @@ desktop and Android alike, until the chevron became a texture — now the shared
 `•`, `…`, `—`, `←` or `→` at all; those fall back to whatever system font the
 device picks. Buttons, titles and headings wear Boohong, so keep such
 characters out of their text, and draw an arrow or chevron as a real texture.
-Still in display text: CutScene's grade picker (`cut_scene.gd`'s
-`_create_grade_button`, which the file calls the first-boot picker every
-player sees) titles its Primary/SecondaryButtons with 🏫/🎓 emoji over
-"•"-separated subtitles -- emoji the ban in `## Conventions` forbids.
 `LombaMenari`'s ←/→/↖/↗ are body text, but Open Sans has no `←` either, so
 they ride system fallback too (minigames sit outside the design system).
 

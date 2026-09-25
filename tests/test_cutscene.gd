@@ -15,16 +15,16 @@ extends McpTestSuite
 ##    without awaiting it, so a coroutine test returns control at its
 ##    first `await` before any post-await assertion runs and is scored
 ##    as "0 assertions" (a false pass). CutScene actually has real
-##    Button nodes (top-bar Skip/Debug, and the three grade-select
-##    buttons in the level-select modal), unlike Splashscreen/Loading,
+##    Button nodes (top-bar Skip/Debug; the grade picker moved to the
+##    Level Select scene on 2026-09-25), unlike Splashscreen/Loading,
 ##    so the touch-target test from the shared brief template DOES apply
 ##    here -- but per test_main_menu.gd's finding, it is measured via
 ##    get_combined_minimum_size() synchronously right after add_child(),
 ##    not via `.size` after an awaited frame.
 ##
 ## cut_scene.gd is @tool for the same placeholder-instance reason as
-## main_menu.gd (see that script's header). Its top-bar buttons and
-## level-select modal are built unconditionally in _ready() (mirroring
+## main_menu.gd (see that script's header). Its top-bar buttons are
+## built unconditionally in _ready() (mirroring
 ## MainMenu's always-wire-buttons pattern), so they exist and are
 ## theme-clean even when this suite instantiates the scene inside the
 ## editor process. Everything GameState-dependent sits behind
@@ -92,8 +92,8 @@ func test_scene_instantiates_without_errors() -> void:
 
 
 ## Adapted from the shared brief template: unlike a menu screen, this one
-## builds its interactive controls (top-bar Skip/Debug, grade-select
-## buttons) in code rather than in the .tscn, so the walk starts from
+## builds its interactive controls (top-bar Skip/Debug) in code rather
+## than in the .tscn, so the walk starts from
 ## the scene root and collects every BaseButton it finds, checking each
 ## against get_combined_minimum_size() -- synchronous, per note 2 above,
 ## with no frame wait required (these buttons carry no SIZE_EXPAND flag).
@@ -329,7 +329,8 @@ func test_entrance_hold_and_fade_are_slower_than_the_panel_crossfade() -> void:
 
 ## Plan A (2026-09-04) deleted the exam-intro cutscene beat: ExamProgress
 ## now hands off straight to StatCheck. CutScene is back to a single
-## responsibility -- the game-start intro and its level-select modal.
+## responsibility -- the game-start intro (its grade picker is now the
+## Level Select scene, 2026-09-25).
 func test_the_exam_branch_is_gone() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	for gone in ["is_exam_intro_cutscene", "_setup_exam_cutscene", "btn_lanjut_exam",

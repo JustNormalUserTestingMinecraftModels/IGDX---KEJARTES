@@ -91,15 +91,20 @@ var approved_count := 0
 # --- Geser Approve/Batal ---
 var approve_shifted := false
 
+## How many students a grade's roster approves: 2 in Kelas 7, 3 in Kelas 8,
+## 4 in Kelas 9 (anything else falls back to Kelas 7's count). The one source
+## for that number -- the Level Select's pupil-head icons read it too.
+static func max_approve_for(grade: int) -> int:
+	match grade:
+		8: return 3
+		9: return 4
+		_: return 2
+
+
 func _ready():
 	_tutorial_badge_cleanup = func(): pass
 
-	# Determine MAX_APPROVE based on grade
-	match GameState.current_grade:
-		7: MAX_APPROVE = 2
-		8: MAX_APPROVE = 3
-		9: MAX_APPROVE = 4
-		_: MAX_APPROVE = 2
+	MAX_APPROVE = max_approve_for(GameState.current_grade)
 
 	# Record already approved IDs and carry over latest stats
 	previously_approved_ids.clear()

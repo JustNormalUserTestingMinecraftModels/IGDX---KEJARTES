@@ -22,7 +22,8 @@ passes.
 | 8 | 12 | +34 | 8 | −4 |
 | 9 | 16 | +40 | 6 | −5 |
 
-**Loop:** **MainMenu (boot)** → CutScene → StudentCard (approve roster) →
+**Loop:** **MainMenu (boot)** → LevelSelect (the amplop grade picker, while
+`GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →
 **Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay (simulate
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.

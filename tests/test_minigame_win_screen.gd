@@ -61,3 +61,44 @@ func test_the_stat_numbers_are_white_with_the_day_summary_rim() -> void:
 	assert_eq(theme.get_color("font_color", "MinigameWinStatLabel"), Color.WHITE)
 	assert_eq(theme.get_color("font_outline_color", "MinigameWinStatLabel"), tokens.day_glyph_outline)
 	assert_eq(theme.get_constant("outline_size", "MinigameWinStatLabel"), tokens.text_outline_size)
+
+
+# ── the stat row ─────────────────────────────────────────────────────────────
+
+const _STAT := "res://Scenes/Minigames/UI/MinigameWinStat.tscn"
+const _ENERGY_ICON := "res://Assets/Images/StudentCard/stat_energy.png"
+
+
+func _chip() -> MinigameWinStat:
+	var c := (load(_STAT) as PackedScene).instantiate() as MinigameWinStat
+	c.theme = load(_THEME)
+	Engine.get_main_loop().root.add_child(c)
+	track(c)
+	return c
+
+
+func test_a_delta_carries_its_sign() -> void:
+	assert_eq(MinigameWinStat.format_delta(8.0), "+8")
+	assert_eq(MinigameWinStat.format_delta(7.6), "+8", "rounded, not truncated")
+	assert_eq(MinigameWinStat.format_delta(-5.0), "-5")
+	assert_eq(MinigameWinStat.format_delta(0.0), "+0")
+
+
+## The chevron art points up and has no down variant (DaySummaryStatRow's rule).
+func test_the_chevron_shows_only_on_a_gain() -> void:
+	var c := _chip()
+	c.set_stat(load(_ENERGY_ICON), -5.0)
+	assert_false(c.chevron.visible, "an energy cost gets no up arrow")
+	assert_eq(c.value.text, "-5")
+	c.set_stat(DaySummaryStatRow.ICON_FOR["akademis"], 8.0)
+	assert_true(c.chevron.visible, "a skill gain gets the gold chevron")
+	assert_eq(c.icon.texture, DaySummaryStatRow.ICON_FOR["akademis"])
+	assert_eq(c.value.text, "+8")
+
+
+func test_the_row_is_authored() -> void:
+	var c := _chip()
+	assert_eq(c.value.theme_type_variation, &"MinigameWinStatLabel")
+	assert_eq(c.chevron.texture.resource_path, "res://Assets/Images/DaySummary/icon_chevron_up.png")
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameWinStat.gd")
+	assert_false(src.contains(".new("), "the row is authored, never built")

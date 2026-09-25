@@ -330,6 +330,8 @@ const DISPLAY_ROSTER := [
 	"MinigameChoiceButton",
 	# 2026-09-25 minigame win screen: the bubble line and the stat numbers.
 	"MinigameWinLine", "MinigameWinStatLabel",
+	# 2026-09-25: the Koperasi price, heading face in cream.
+	"PriceTagLabel",
 	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
 	# this roster in the same pass -- LobbyNavTile and LobbyCtaButton
 	# replaced it.

@@ -22,8 +22,8 @@ const GRADE_LOBBY_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_c
 ## Every node that wears the grade, by scene. These are painted plates only.
 const GRADED := {
 	"res://Scenes/Lobby/loby.tscn": [
-		"Classroom/BGLayer", "Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
-		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+		"World/Classroom/BGLayer", "World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
+		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
 	"res://Scenes/Koperasi/koprasi.tscn": [
 		"Stage/Background", "Stage/Herman", "Stage/Foreground",
@@ -240,6 +240,35 @@ func test_the_lobby_environment_applies_to_2d() -> void:
 		"the Lobby's WorldEnvironment must wear this resource")
 
 
+## The bloom is for the room, not the HUD (2026-09-25). A Canvas-mode
+## environment post-processes only the canvas layers at or below its
+## background_canvas_max_layer; every layer above draws after the glow. So
+## the classroom sits in a World CanvasLayer below that line, and the HUD,
+## the daily-reward popup, the chat bubble, the tutorial spotlight and
+## anything loby.gd adds at runtime stay on layer 0, above it, unbloomed.
+func test_the_lobby_bloom_stops_below_the_ui() -> void:
+	var env: Environment = load(LOBBY_ENVIRONMENT)
+	assert_true(env != null, "the Lobby environment resource must exist")
+	if env == null:
+		return
+	assert_true(env.background_canvas_max_layer < 0,
+		"layer 0 carries the HUD, so the glow must stop below it")
+	var lobby := (load(LOBBY_SCENE) as PackedScene).instantiate()
+	track(lobby)
+	var world := lobby.get_node_or_null("World") as CanvasLayer
+	assert_true(world != null, "the Lobby's room must sit in a World CanvasLayer")
+	if world == null:
+		return
+	assert_true(world.layer <= env.background_canvas_max_layer,
+		"the World layer must be inside the glow's reach")
+	for n in ["Backdrop", "Classroom"]:
+		assert_true(world.get_node_or_null(n) != null, n + " is the room: it blooms")
+	for n in ["Safe", "DailyReward", "ChatBubble", "ColorRect"]:
+		var ui := lobby.get_node_or_null(n)
+		assert_true(ui != null and ui.get_parent() == lobby,
+			n + " is UI: it stays on the root's layer 0, out of the glow")
+
+
 ## Turning hdr_2d on to reach the glow cost 41% of the Lobby's luminance
 ## (mean 0.509 -> 0.299: skin went orange, the room murky), and Canvas-mode glow
 ## does not need it.
@@ -355,7 +384,7 @@ func test_the_window_light_stays_under_the_clipping_knee() -> void:
 	# And it must actually be placed, or the primitive is unused code.
 	var lobby := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
 	track(lobby)
-	var light := lobby.get_node_or_null("Classroom/WindowLight") as Control
+	var light := lobby.get_node_or_null("World/Classroom/WindowLight") as Control
 	assert_true(light != null, "the Lobby should carry the window light")
 	if light == null:
 		return

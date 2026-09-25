@@ -7,7 +7,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/ResultStar.tscn" id="5_star"]
 [ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/MinigameWinStat.tscn" id="6_stat"]
 [ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="7_fw"]
-[ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/ResultConfetti.tscn" id="8_conf"]
 
 [node name="MinigameWinScreen" type="CanvasLayer"]
 process_mode = 3
@@ -152,9 +151,6 @@ custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_type_variation = &"PrimaryButtonL"
 text = "LANJUT"
-
-[node name="ResultConfetti" parent="Root" instance=ExtResource("8_conf")]
-position = Vector2(540, -20)
 
 [node name="ConfettiFireworks" parent="Root" instance=ExtResource("7_fw")]
 layout_mode = 1

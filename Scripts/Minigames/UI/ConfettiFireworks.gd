@@ -16,9 +16,8 @@ extends Control
 ## labelled ring at each burst so the three positions are visible without
 ## pressing play; the rings never draw at runtime.
 ##
-## Not to be confused with Scenes/Minigames/UI/ResultConfetti.tscn, which is
-## the separate full-house rain from above the top edge, gated at three stars.
-## That one still fires, and this does not replace it.
+## A separate white full-house rain (ResultConfetti.tscn) used to fall beside
+## these at three stars; it was retired on 2026-09-25.
 ##
 ## Affects: nothing outside itself. fire_burst() is fire-and-forget -- the
 ## emitters are one_shot and stop themselves.

@@ -45,8 +45,7 @@ sun, moon, three clouds, star field and rain streak; the avatar rings in
 `SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
 band's `caution_tape.svg`; and `night_windows.png`, generated from
 `transition_foreground.png` -- regenerate it if that painting changes),
-the 2026-09-24 picker icons (`Assets/Images/UI/Picker/arrow_up.svg`,
-`arrow_down.svg`, `pip_coin.svg`, `badge_check.svg`; hand-drawn vectors in the
+the 2026-09-24 picker icons (`Assets/Images/UI/Picker/arrow_down.svg`, `pip_coin.svg`, `badge_check.svg`; hand-drawn vectors in the
 token colours, sized to draw at 1:1),
 the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
 `icon_keranjang_kosong.svg`, `tray_dots.png` (this last must

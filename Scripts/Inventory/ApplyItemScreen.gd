@@ -3,8 +3,8 @@ class_name ApplyItemScreen
 extends Control
 ## Full-screen "apply this item to which students" step. Multi-select with a
 ## live per-student StatBar preview, then a staged payoff: a RewardBurst and
-## floating gained-stat text per student with a rising cue, then one
-## screen-wide CelebrationConfetti if every pick gained. Emits applied(results)
+## floating gained-stat text per student with a rising cue, then the fanfare.
+## (The white screen-wide confetti retired on 2026-09-25.) Emits applied(results)
 ## (the Array from GameState.use_item_on_students) or cancelled. Student rows
 ## are ApplyStudentRow PackedScene instances -- no runtime chrome here.
 
@@ -15,8 +15,6 @@ signal cancelled
 @export var student_row_scene: PackedScene = preload("res://Scenes/Inventory/ApplyStudentRow.tscn")
 ## Per-student star burst fired on confirm.
 @export var reward_burst_scene: PackedScene = preload("res://Scenes/SchoolSimulation/RewardBurst.tscn")
-## Screen-wide fall, only when every pick gained.
-@export var confetti_scene: PackedScene = preload("res://Scenes/SchoolSimulation/CelebrationConfetti.tscn")
 ## Seconds between one student's payoff and the next.
 @export var payoff_stagger: float = 0.18
 
@@ -225,13 +223,10 @@ func _pop_out() -> void:
 	await tw.finished
 
 func _play_payoff(results: Array) -> void:
-	var all_gained := true
 	var tier := 0
 	for r in results:
 		var row = _row_for(int(r["student_id"]))
 		var lines := _gain_lines(r)
-		if lines == "":
-			all_gained = false
 		if row != null:
 			row.play_apply_rise()
 			var burst = reward_burst_scene.instantiate()
@@ -247,10 +242,6 @@ func _play_payoff(results: Array) -> void:
 		tier += 1
 		# Give the bar's rise time to read before the next student's.
 		await get_tree().create_timer(maxf(payoff_stagger, 0.45)).timeout
-	if all_gained and not results.is_empty():
-		var confetti = confetti_scene.instantiate()
-		add_child(confetti)
-		confetti.fire()
 	AudioDirector.play_sfx(&"result_fanfare")
 
 func _gain_lines(r: Dictionary) -> String:

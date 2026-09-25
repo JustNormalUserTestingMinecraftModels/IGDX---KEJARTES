@@ -41,3 +41,14 @@ func test_debug_feedback_tab_covers_every_recipe() -> void:
 		"the feedback panel enumerates RewardFeedback.RECIPES (one button per moment)")
 	assert_true(src.contains("Haptics.show_indicator"),
 		"the feedback panel toggles the clean-record haptic indicator")
+
+
+## The white screen-wide CelebrationConfetti was retired on 2026-09-25: the
+## Celebration tier keeps its sound, haptic and shake, but throws no particles.
+func test_celebration_throws_no_white_confetti() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Feedback/RewardFeedback.gd")
+	assert_false(src.contains("CelebrationConfetti.tscn"), "no route to the retired confetti")
+	assert_false(ResourceLoader.exists("res://Scenes/SchoolSimulation/CelebrationConfetti.tscn"),
+		"the retired confetti's scene is deleted")
+	assert_true(src.contains("return  # Tick and Celebration have no particles"),
+		"only the Pop tier bursts")

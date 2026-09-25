@@ -21,8 +21,7 @@
 [ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="17_jrwbr"]
 [ext_resource type="PackedScene" path="res://Scenes/AturJadwal/ActivityTile.tscn" id="20_tile"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="21_uang"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/Picker/arrow_up.svg" id="22_arrow_up"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/Picker/arrow_down.svg" id="23_arrow_down"]
+[ext_resource type="Texture2D" uid="uid://cbjish08tay7r" path="res://Assets/Images/UI/Picker/arrow_down.svg" id="23_arrow_down"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
@@ -550,6 +549,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Chevron" type="TextureRect" parent="ObjectiveStrip" unique_id=1047418159]
@@ -589,6 +590,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Icon" type="TextureRect" parent="ObjectiveStrip/StarChip" unique_id=360654154]
@@ -609,6 +612,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 46.0
 offset_right = -8.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_type_variation = &"ObjectiveStarLabel"
 text = "0 / 2"
 horizontal_alignment = 1
@@ -756,7 +761,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Sheet" type="Panel" parent="Penjadwalan"]
+[node name="Sheet" type="Panel" parent="Penjadwalan" unique_id=1417200538]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -771,7 +776,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"PickerSheet"
 
-[node name="Header" type="Panel" parent="Penjadwalan/Sheet"]
+[node name="Header" type="Panel" parent="Penjadwalan/Sheet" unique_id=1086183482]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -780,7 +785,7 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_type_variation = &"PickerHeader"
 
-[node name="Title" type="Label" parent="Penjadwalan/Sheet/Header"]
+[node name="Title" type="Label" parent="Penjadwalan/Sheet/Header" unique_id=1949135746]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -794,7 +799,7 @@ text = "Senin mau ngapain?"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Penjadwalan/Sheet/Header"]
+[node name="Subtitle" type="Label" parent="Penjadwalan/Sheet/Header" unique_id=786532289]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -808,7 +813,7 @@ text = "Pilih satu kegiatan untuk murid ini"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Body" type="VBoxContainer" parent="Penjadwalan/Sheet"]
+[node name="Body" type="VBoxContainer" parent="Penjadwalan/Sheet" unique_id=1176254957]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -822,36 +827,36 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 24
 
-[node name="Grid" type="GridContainer" parent="Penjadwalan/Sheet/Body"]
+[node name="Grid" type="GridContainer" parent="Penjadwalan/Sheet/Body" unique_id=367269554]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/h_separation = 24
 theme_override_constants/v_separation = 24
 columns = 2
 
-[node name="TileAkademik" parent="Penjadwalan/Sheet/Body/Grid" instance=ExtResource("20_tile")]
+[node name="TileAkademik" parent="Penjadwalan/Sheet/Body/Grid" unique_id=184882661 instance=ExtResource("20_tile")]
 layout_mode = 2
 watermark_texture = ExtResource("13_icon_akademis")
 
-[node name="TileSeniBudaya" parent="Penjadwalan/Sheet/Body/Grid" instance=ExtResource("20_tile")]
+[node name="TileSeniBudaya" parent="Penjadwalan/Sheet/Body/Grid" unique_id=352830698 instance=ExtResource("20_tile")]
 layout_mode = 2
 category = "SeniBudaya"
 display_name = "Seni Budaya"
 watermark_texture = ExtResource("14_icon_seni")
 
-[node name="TileAtletik" parent="Penjadwalan/Sheet/Body/Grid" instance=ExtResource("20_tile")]
+[node name="TileAtletik" parent="Penjadwalan/Sheet/Body/Grid" unique_id=1395363656 instance=ExtResource("20_tile")]
 layout_mode = 2
 category = "Olahraga"
 display_name = "Atletik"
 watermark_texture = ExtResource("15_icon_olahraga")
 
-[node name="TileWirausaha" parent="Penjadwalan/Sheet/Body/Grid" instance=ExtResource("20_tile")]
+[node name="TileWirausaha" parent="Penjadwalan/Sheet/Body/Grid" unique_id=224056619 instance=ExtResource("20_tile")]
 layout_mode = 2
 category = "Wirausaha"
 display_name = "Wirausaha"
 watermark_texture = ExtResource("21_uang")
 
-[node name="TileLibur" parent="Penjadwalan/Sheet/Body" instance=ExtResource("20_tile")]
+[node name="TileLibur" parent="Penjadwalan/Sheet/Body" unique_id=1980550066 instance=ExtResource("20_tile")]
 custom_minimum_size = Vector2(200, 140)
 layout_mode = 2
 category = "Istirahat"
@@ -859,32 +864,32 @@ display_name = "Libur"
 watermark_texture = ExtResource("17_gscbg")
 watermark_alpha = 0.45
 
-[node name="Legend" type="HBoxContainer" parent="Penjadwalan/Sheet/Body"]
+[node name="Legend" type="HBoxContainer" parent="Penjadwalan/Sheet/Body" unique_id=869741770]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="UpIcon" type="TextureRect" parent="Penjadwalan/Sheet/Body/Legend"]
+[node name="UpIcon" type="TextureRect" parent="Penjadwalan/Sheet/Body/Legend" unique_id=1458102972]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("22_arrow_up")
+texture = ExtResource("15_k1j60")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="UpWord" type="Label" parent="Penjadwalan/Sheet/Body/Legend"]
+[node name="UpWord" type="Label" parent="Penjadwalan/Sheet/Body/Legend" unique_id=728476057]
 layout_mode = 2
 theme_type_variation = &"PickerLegendLabel"
 text = "naik"
 
-[node name="Gap" type="Control" parent="Penjadwalan/Sheet/Body/Legend"]
+[node name="Gap" type="Control" parent="Penjadwalan/Sheet/Body/Legend" unique_id=1044291288]
 custom_minimum_size = Vector2(12, 0)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="DownIcon" type="TextureRect" parent="Penjadwalan/Sheet/Body/Legend"]
+[node name="DownIcon" type="TextureRect" parent="Penjadwalan/Sheet/Body/Legend" unique_id=496255224]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 size_flags_vertical = 4
@@ -893,23 +898,23 @@ texture = ExtResource("23_arrow_down")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="DownWord" type="Label" parent="Penjadwalan/Sheet/Body/Legend"]
+[node name="DownWord" type="Label" parent="Penjadwalan/Sheet/Body/Legend" unique_id=453495946]
 layout_mode = 2
 theme_type_variation = &"PickerLegendLabel"
 text = "turun"
 
-[node name="Scale" type="Label" parent="Penjadwalan/Sheet/Body/Legend"]
+[node name="Scale" type="Label" parent="Penjadwalan/Sheet/Body/Legend" unique_id=816359646]
 layout_mode = 2
 theme_type_variation = &"PickerLegendLabel"
 text = "· makin banyak panah, makin besar efeknya"
 
-[node name="Note" type="PanelContainer" parent="Penjadwalan/Sheet/Body"]
+[node name="Note" type="PanelContainer" parent="Penjadwalan/Sheet/Body" unique_id=1225340047]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 mouse_filter = 2
 theme_type_variation = &"PickerNotePanel"
 
-[node name="NoteLabel" type="Label" parent="Penjadwalan/Sheet/Body/Note"]
+[node name="NoteLabel" type="Label" parent="Penjadwalan/Sheet/Body/Note" unique_id=1013589700]
 layout_mode = 2
 theme_type_variation = &"PickerNoteLabel"
 text = "Ketuk satu kegiatan, lalu tekan Pilih."
@@ -917,19 +922,19 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="Buttons" type="HBoxContainer" parent="Penjadwalan/Sheet/Body"]
+[node name="Buttons" type="HBoxContainer" parent="Penjadwalan/Sheet/Body" unique_id=402920922]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 24
 
-[node name="Batal" type="Button" parent="Penjadwalan/Sheet/Body/Buttons"]
+[node name="Batal" type="Button" parent="Penjadwalan/Sheet/Body/Buttons" unique_id=631674964]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SecondaryButton"
 text = "Batal"
 
-[node name="Pilih" type="Button" parent="Penjadwalan/Sheet/Body/Buttons"]
+[node name="Pilih" type="Button" parent="Penjadwalan/Sheet/Body/Buttons" unique_id=61327324]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3

@@ -267,9 +267,13 @@ func test_the_popup_fires_the_volley() -> void:
 		"the popup must fire a burst as each star lands")
 
 
-func test_the_full_house_rain_is_untouched() -> void:
-	# ResultConfetti is the separate top-of-screen rain gated at three stars.
-	# The fireworks replace the per-star spray, not this.
-	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
-	assert_true(src.contains("confetti.fire()"),
-		"the three-star confetti rain must still fire")
+## The white full-house rain (ResultConfetti) that fell beside the volley was
+## retired on 2026-09-25; the fireworks are the popup's only particles now.
+func test_the_white_full_house_rain_is_retired() -> void:
+	for path in ["res://Scripts/Minigames/UI/MinigameResultPopup.gd",
+			"res://Scripts/Minigames/UI/MinigameWinScreen.gd"]:
+		var src := FileAccess.get_file_as_string(path)
+		assert_false(src.contains("ResultConfetti"), path + " must not bind the retired rain")
+		assert_false(src.contains("confetti.fire()"), path + " must not fire the retired rain")
+	assert_false(ResourceLoader.exists("res://Scenes/Minigames/UI/ResultConfetti.tscn"),
+		"the retired rain's scene is deleted")

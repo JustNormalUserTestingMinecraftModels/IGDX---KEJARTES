@@ -27,7 +27,7 @@ const KOPERASI := "res://Scenes/Koperasi/koprasi.tscn"
 
 ## scene -> the diorama holding the bands, and its driver's path.
 const DIORAMAS := {
-	LOBBY: "Classroom",
+	LOBBY: "World/Classroom",
 	KOPERASI: "Stage",
 }
 
@@ -84,7 +84,7 @@ func test_the_driver_never_displaces_an_existing_script() -> void:
 func test_each_lobby_row_sits_on_one_depth_plane() -> void:
 	var root := (load(LOBBY) as PackedScene).instantiate()
 	track(root)
-	var driver := _driver(root, "Classroom")
+	var driver := _driver(root, "World/Classroom")
 	assert_true(driver != null, "no driver")
 	if driver == null:
 		return
@@ -260,7 +260,7 @@ func test_only_the_opaque_bands_are_overscanned() -> void:
 ## motion switched off. This is the guard that keeps the test above true.
 func test_the_driver_does_not_process_inside_the_editor() -> void:
 	var frame := track(LayoutFrame.stand_up(LOBBY, Vector2(1080, 1920))) as Control
-	var driver := _driver(frame.get_child(0), "Classroom")
+	var driver := _driver(frame.get_child(0), "World/Classroom")
 	assert_true(driver != null, "no driver")
 	if driver == null:
 		return

@@ -147,6 +147,9 @@ var _swipe_from: Variant = null
 ## Set when a release finished a swipe, so the card tap it lands on is ignored.
 var _swiped := false
 var _committed := false
+## The largest roster's portraits, loaded once in _ready so opening an
+## envelope never decodes four 1280px textures on the tap's frame.
+var _warm_portraits: Array = []
 
 
 func _ready() -> void:
@@ -172,6 +175,7 @@ func _ready() -> void:
 	_layout_cards(false)
 	if Engine.is_editor_hint():
 		return
+	_warm_portraits = _portraits_for(roster_size_for(GRADES[-1]))
 	_start_idle()
 
 
@@ -254,7 +258,7 @@ func _select(index: int) -> void:
 		return
 	_selected = clamped
 	if not Engine.is_editor_hint():
-		AudioDirector.play_sfx(&"card_flip")
+		AudioDirector.play_sfx(&"swipe")
 	_render_brief()
 	_layout_cards(true)
 	if not Engine.is_editor_hint():

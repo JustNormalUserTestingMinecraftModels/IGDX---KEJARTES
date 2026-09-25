@@ -30,7 +30,10 @@ const LETTER_RISE := 40.0
 @onready var _cancel: Button = $Buttons/Cancel
 
 var _grade := 7
-var _letter_home_y := 0.0
+## The letter's authored vertical offsets. The rise moves its position, which
+## rewrites these, so they are put back before each rise; the anchored rest
+## then follows whatever size the screen is now, never a cached one.
+var _letter_rest_offsets := Vector2.ZERO
 var _fade: Tween
 
 
@@ -39,7 +42,7 @@ func _ready() -> void:
 		_set_buttons_enabled(false)
 		accepted.emit(_grade))
 	_cancel.pressed.connect(func() -> void: cancelled.emit())
-	_letter_home_y = _letter.position.y
+	_letter_rest_offsets = Vector2(_letter.offset_top, _letter.offset_bottom)
 
 
 ## Fill and show the confirmation for `grade`: one pupil per texture in
@@ -63,11 +66,13 @@ func present(grade: int, portraits: Array, brief_line: String) -> Tween:
 
 ## The open sequence: the envelope's own open(), then the letter rises in.
 func play_open(portraits: Array) -> Tween:
+	_rest_letter()
+	var home := _letter.position.y
 	_letter.modulate.a = 0.0
-	_letter.position.y = _letter_home_y + LETTER_RISE
+	_letter.position.y = home + LETTER_RISE
 	var tw: Tween = card.open(portraits)
 	tw.tween_property(_letter, "modulate:a", 1.0, LETTER_SEC)
-	tw.parallel().tween_property(_letter, "position:y", _letter_home_y, LETTER_SEC) \
+	tw.parallel().tween_property(_letter, "position:y", home, LETTER_SEC) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	return tw
 
@@ -75,8 +80,13 @@ func play_open(portraits: Array) -> Tween:
 ## Reseal the envelope and hide, ready for the next present().
 func dismiss() -> void:
 	card.reseal()
-	_letter.position.y = _letter_home_y
+	_rest_letter()
 	visible = false
+
+
+func _rest_letter() -> void:
+	_letter.offset_top = _letter_rest_offsets.x
+	_letter.offset_bottom = _letter_rest_offsets.y
 
 
 func _set_buttons_enabled(on: bool) -> void:

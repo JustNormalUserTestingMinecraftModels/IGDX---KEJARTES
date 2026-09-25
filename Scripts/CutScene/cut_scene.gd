@@ -67,6 +67,10 @@ const _LEVEL_SELECT_SCENE := "res://Scenes/LevelSelect/level_select.tscn"
 
 var btn_skip: Button
 var btn_debug_toggle: Button
+## True once a scene change has been asked for. Separate from
+## is_transitioning, which also covers the CG fades, so the Debug toggle
+## still leaves mid-fade but never fires a second change_scene.
+var _exiting := false
 
 func _ready():
 	fade_overlay.color.a = 0.0
@@ -135,7 +139,8 @@ func _on_debug_toggle_pressed() -> void:
 	GameSettings.save_settings()
 	_update_debug_button_text()
 	print("Debug Level Select toggled: ", GameState.debug_level_select_enabled)
-	if GameState.debug_level_select_enabled and not is_transitioning:
+	if GameState.debug_level_select_enabled and not _exiting:
+		_exiting = true
 		is_transitioning = true
 		Transition.change_scene(_LEVEL_SELECT_SCENE, Transition.Style.WIPE)
 
@@ -162,6 +167,7 @@ func _on_skip_pressed() -> void:
 	# is_transitioning is still raised by hand because _fade_to_black()
 	# used to do it, and _input() reads it to ignore taps mid-exit.
 	is_transitioning = true
+	_exiting = true
 	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)
 
 
@@ -263,4 +269,5 @@ func _next_scene_path() -> String:
 func go_to_gameplay():
 	# See _on_skip_pressed() for why the black fade is gone.
 	is_transitioning = true
+	_exiting = true
 	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)

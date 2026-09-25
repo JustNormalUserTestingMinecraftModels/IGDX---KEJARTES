@@ -119,11 +119,11 @@ func test_school_day_has_sfx_at_all() -> void:
 
 
 ## Grade selection moved from CutScene's modal to the Level Select
-## (2026-09-25): a paper riffle as the fan shuffles, a pop as an envelope
+## (2026-09-25): the paging cue as the fan shuffles, a pop as an envelope
 ## opens, confirm on Terima Tugas and cancel on Batal.
 func test_level_select_grade_selection_has_sfx() -> void:
 	var src := _source("res://Scripts/LevelSelect/level_select.gd")
-	for id in ["card_flip", "pop", "confirm", "cancel"]:
+	for id in ["swipe", "pop", "confirm", "cancel"]:
 		assert_true(src.contains('play_sfx(&"%s")' % id),
 			"level_select must play sfx: " + id)
 

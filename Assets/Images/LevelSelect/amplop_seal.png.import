@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bcltjvutttv8d"
-path="res://.godot/imported/amplop_seal.svg-17dff0a60db266ac907bd9681aafc824.ctex"
+uid="uid://cprjhjr0so80i"
+path="res://.godot/imported/amplop_seal.png-315f63d6d11ee039c4a5464a4e998c3b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/LevelSelect/amplop_seal.svg"
-dest_files=["res://.godot/imported/amplop_seal.svg-17dff0a60db266ac907bd9681aafc824.ctex"]
+source_file="res://Assets/Images/LevelSelect/amplop_seal.png"
+dest_files=["res://.godot/imported/amplop_seal.png-315f63d6d11ee039c4a5464a4e998c3b.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

@@ -4,14 +4,15 @@ extends Control
 ## One amplop coklat in the level-select fan, and the opened envelope in its
 ## confirmation. A reusable PackedScene template: the screen instances it
 ## once per grade and feeds it through these root @exports (an instance's
-## children do not keep overrides on save). Envelope, flap and seal are
-## placeholder art at fixed paths (docs/superpowers/DEBT.md).
+## children do not keep overrides on save). Its four art layers are cut from
+## the artist's flat "Amplop coklat.png" by tools/split_amplop.py, all the
+## same size, so each fills Bob and they overlay exactly.
 ##
 ## Layers inside Bob, back to front: Pupils, Body, Flap, Seal, Tab. Bob is
 ## the idle-motion pivot, so the level select's bob and hop never fight the
 ## fan-pose tween that moves this root. open() folds the flap back, and at
-## the fold's edge-on midpoint moves it behind the pupils, who then rise
-## over the envelope's top edge.
+## the fold's edge-on midpoint moves it behind the pupils and swaps in its
+## plain inside face; the pupils then rise over the envelope's top edge.
 
 ## Emitted when the player taps this envelope.
 signal picked(grade: int)
@@ -48,7 +49,9 @@ const PEEK_RISE := 110.0
 		flap_texture = value
 		if is_node_ready():
 			_flap.texture = value
-## The wax button-and-string seal art, popped off by open().
+## The flap's plain inside face, shown once the flap turns past edge-on.
+@export var flap_back_texture: Texture2D
+## The button-and-string seal art, popped off by open().
 @export var seal_texture: Texture2D:
 	set(value):
 		seal_texture = value
@@ -108,7 +111,10 @@ func open(portraits: Array) -> Tween:
 	_open_tween.parallel().tween_property(_tab, "modulate:a", 0.0, SEAL_POP_SEC)
 	_open_tween.tween_property(_flap, "scale:y", 0.0, FLAP_FOLD_SEC * 0.5) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	_open_tween.tween_callback(func() -> void: bob.move_child(_flap, 0))
+	_open_tween.tween_callback(func() -> void:
+		bob.move_child(_flap, 0)
+		if flap_back_texture != null:
+			_flap.texture = flap_back_texture)
 	_open_tween.tween_property(_flap, "scale:y", -1.0, FLAP_FOLD_SEC * 0.5) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	for i in range(mini(portraits.size(), peeks.size())):
@@ -130,6 +136,7 @@ func reseal() -> void:
 	# shifts the seal down one, hence the -1.
 	var before_seal := _seal.get_index() - (1 if _flap.get_index() < _seal.get_index() else 0)
 	bob.move_child(_flap, before_seal)
+	_flap.texture = flap_texture
 	_flap.scale = Vector2.ONE
 	_seal.scale = Vector2.ONE
 	_tab.modulate.a = 1.0

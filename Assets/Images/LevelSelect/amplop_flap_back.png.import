@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0ivmwuxnbmug"
-path="res://.godot/imported/amplop_body.svg-3cc489a804b313729a6c4e5d77217d4f.ctex"
+uid="uid://miibmp1nm7ie"
+path="res://.godot/imported/amplop_flap_back.png-28323bc2a2c17d86dec6ace11b8b16c0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/LevelSelect/amplop_body.svg"
-dest_files=["res://.godot/imported/amplop_body.svg-3cc489a804b313729a6c4e5d77217d4f.ctex"]
+source_file="res://Assets/Images/LevelSelect/amplop_flap_back.png"
+dest_files=["res://.godot/imported/amplop_flap_back.png-28323bc2a2c17d86dec6ace11b8b16c0.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

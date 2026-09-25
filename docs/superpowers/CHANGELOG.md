@@ -1,4 +1,4 @@
-# KejarTes — change log
+﻿# KejarTes — change log
 
 Completed work, newest first. This file is **not** loaded into Claude Code
 sessions; `CLAUDE.md` is. Anything here is history — read it on demand when you

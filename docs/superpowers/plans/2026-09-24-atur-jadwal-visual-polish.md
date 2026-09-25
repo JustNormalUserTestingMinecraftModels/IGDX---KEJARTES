@@ -405,6 +405,7 @@ editor. A spurious "(*)" on loby.tscn after a restart held no real changes
 (packed and diffed). Rebake via `test_run(suite="theme_rebake")`, then
 restart before any scene save.
 
+
 ## Suggested branch / commit shape
 
 One branch, commits per phase, Conventional Commits with scope, e.g.

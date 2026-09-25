@@ -18,7 +18,7 @@ extends McpTestSuite
 ## 2026-08-31's 21-task pass converted the extraction-worthy shared UI
 ## (popups, cards, rows, panels duplicated across 2-3 screens) but did not
 ## attempt every remaining file -- BASELINE still carries real, substantial,
-## unconverted call sites (atur_jadwal.gd's 17, cut_scene.gd's 15,
+## unconverted call sites (atur_jadwal.gd's 17, cut_scene.gd's 4,
 ## Pengaturan.gd's 12, MinigameTutorial.gd's 12, and others). This is
 ## deliberately still a ratchet, not a closed rule: see "Known gaps" in
 ## docs/superpowers/design/authoring-guide.md for the full remaining list
@@ -63,7 +63,7 @@ const EXEMPT: Array[String] = [
 ## docs/superpowers/design/authoring-guide.md for what each one needs.
 const BASELINE: Dictionary = {
 	"res://Scripts/AturJadwal/atur_jadwal.gd": 17,
-	"res://Scripts/CutScene/cut_scene.gd": 15,
+	"res://Scripts/CutScene/cut_scene.gd": 4,
 	"res://Scripts/Koperasi/rakbarang_1.gd": 1,
 	"res://Scripts/Lobby/loby.gd": 8,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 2,

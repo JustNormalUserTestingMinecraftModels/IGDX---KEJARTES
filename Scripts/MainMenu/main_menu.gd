@@ -110,11 +110,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		_start_game()
 
 
+## A new game picks its grade on the Level Select first while
+## GameState.is_level_select_enabled(); otherwise it goes straight to the
+## intro, which starts Kelas 7.
 func _start_game() -> void:
 	_started = true
 	AudioDirector.play_sfx(&"confirm")
-	Transition.change_scene("res://Scenes/CutScene/cut_scene.tscn",
-		Transition.Style.WIPE, _INTRO_WIPE_SEC)
+	var target := "res://Scenes/LevelSelect/level_select.tscn" \
+		if GameState.is_level_select_enabled() \
+		else "res://Scenes/CutScene/cut_scene.tscn"
+	Transition.change_scene(target, Transition.Style.WIPE, _INTRO_WIPE_SEC)
 
 
 func _on_setting_pressed() -> void:

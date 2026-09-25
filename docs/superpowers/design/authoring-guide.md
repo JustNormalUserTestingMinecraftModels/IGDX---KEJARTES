@@ -303,8 +303,9 @@ entries, as candidates for a future pass:
 - `Scripts/AturJadwal/atur_jadwal.gd` (17) and `Scripts/Pengaturan.gd` (12) —
   each builds its own settings/tutorial chrome by hand; likely Pattern A/C
   candidates similar to TutorialPanel.
-- `Scripts/CutScene/cut_scene.gd` (15) — dialogue/choice UI, never surveyed
-  for extraction.
+- `Scripts/CutScene/cut_scene.gd` (4) — the top bar's Skip and Debug
+  buttons; its 11-node grade-picker modal moved to the Level Select scene
+  (2026-09-25).
 - `Scripts/Minigames/UI/MinigameTutorial.gd` (12) — builds a full popup by
   hand; a likely Pattern B candidate.
 - `Scripts/Minigames/UI/BaseMinigame.gd` (4) — `ui_layer`, `pause_button`

@@ -1,0 +1,547 @@
+[gd_scene format=3 uid="uid://diku1jkm6aaxu"]
+
+[ext_resource type="Script" uid="uid://b21xrlj1825oj" path="res://Scripts/LevelSelect/level_select.gd" id="1_ls"]
+[ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="2_meja"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="3_safe"]
+[ext_resource type="PackedScene" uid="uid://bykt6v8q1l6uk" path="res://Scenes/LevelSelect/AmplopCard.tscn" id="4_card"]
+[ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="5_arrow"]
+[ext_resource type="Texture2D" uid="uid://6gfh48qlm2i6" path="res://Assets/Images/LevelSelect/pupil_head.svg" id="6_head"]
+[ext_resource type="Texture2D" uid="uid://bhm0dl8akdkge" path="res://Assets/Images/LevelSelect/week_cell.svg" id="7_cell"]
+[ext_resource type="Texture2D" uid="uid://62a76bldik1a" path="res://Assets/Images/LevelSelect/gauge_pill.svg" id="8_pill"]
+[ext_resource type="PackedScene" uid="uid://dqxim1g5tg32a" path="res://Scenes/LevelSelect/OpenAmplopConfirm.tscn" id="9_confirm"]
+
+[node name="LevelSelect" type="Control" unique_id=434616453]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ls")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=2029502251]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_meja")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Safe" type="MarginContainer" parent="." unique_id=1889630274]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+script = ExtResource("3_safe")
+
+[node name="UI" type="Control" parent="Safe" unique_id=866555966]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Header" type="VBoxContainer" parent="Safe/UI" unique_id=578860623]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 24.0
+offset_bottom = 184.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Title" type="Label" parent="Safe/UI/Header" unique_id=1340083950]
+layout_mode = 2
+theme_type_variation = &"H1Label"
+text = "Pilih Map Kelas"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Safe/UI/Header" unique_id=1743145429]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Geser atau ketuk amplop untuk memilih"
+horizontal_alignment = 1
+
+[node name="Stack" type="Control" parent="Safe/UI" unique_id=1340766192]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -680.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Card9" parent="Safe/UI/Stack" unique_id=1064768246 instance=ExtResource("4_card")]
+modulate = Color(0.85, 0.85, 0.85, 1)
+layout_mode = 0
+offset_left = 752.0
+offset_top = 788.0
+offset_right = 752.0
+offset_bottom = 788.0
+rotation = 0.27925268
+scale = Vector2(0.86, 0.86)
+grade = 9
+tab_text = "Kelas 9"
+
+[node name="Card8" parent="Safe/UI/Stack" unique_id=1511016867 instance=ExtResource("4_card")]
+modulate = Color(0.85, 0.85, 0.85, 1)
+layout_mode = 0
+offset_left = 622.0
+offset_top = 754.0
+offset_right = 622.0
+offset_bottom = 754.0
+rotation = 0.13962634
+scale = Vector2(0.86, 0.86)
+grade = 8
+tab_text = "Kelas 8"
+
+[node name="Card7" parent="Safe/UI/Stack" unique_id=1848308086 instance=ExtResource("4_card")]
+layout_mode = 0
+offset_left = 492.0
+offset_top = 720.0
+offset_right = 492.0
+offset_bottom = 720.0
+
+[node name="PrevArrow" type="Button" parent="Safe/UI/Stack" unique_id=1731280540]
+custom_minimum_size = Vector2(120, 128)
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 16.0
+offset_top = -40.0
+offset_right = 136.0
+offset_bottom = 88.0
+grow_vertical = 2
+focus_mode = 0
+theme_type_variation = &"SecondaryButtonL"
+disabled = true
+
+[node name="Arrow" type="TextureRect" parent="Safe/UI/Stack/PrevArrow" unique_id=890439617]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 28.0
+offset_right = -24.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 1.5708
+pivot_offset = Vector2(36, 36)
+mouse_filter = 2
+texture = ExtResource("5_arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NextArrow" type="Button" parent="Safe/UI/Stack" unique_id=121717348]
+custom_minimum_size = Vector2(120, 128)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -136.0
+offset_top = -40.0
+offset_right = -16.0
+offset_bottom = 88.0
+grow_horizontal = 0
+grow_vertical = 2
+focus_mode = 0
+theme_type_variation = &"SecondaryButtonL"
+
+[node name="Arrow" type="TextureRect" parent="Safe/UI/Stack/NextArrow" unique_id=1446846063]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 28.0
+offset_right = -24.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = -1.5708
+pivot_offset = Vector2(36, 36)
+mouse_filter = 2
+texture = ExtResource("5_arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Brief" type="Panel" parent="Safe/UI" unique_id=1362666520]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -620.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="Safe/UI/Brief" unique_id=295273452]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 44
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_right = 44
+theme_override_constants/margin_bottom = 36
+
+[node name="VBox" type="VBoxContainer" parent="Safe/UI/Brief/Margin" unique_id=1339722614]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 26
+
+[node name="HeaderRow" type="HBoxContainer" parent="Safe/UI/Brief/Margin/VBox" unique_id=1452711564]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BriefTitle" type="Label" parent="Safe/UI/Brief/Margin/VBox/HeaderRow" unique_id=962073070]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"H1Label"
+text = "Kelas 7"
+vertical_alignment = 1
+
+[node name="Tag" type="Button" parent="Safe/UI/Brief/Margin/VBox/HeaderRow" unique_id=1136756033]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+mouse_filter = 2
+theme_type_variation = &"TraitPill"
+text = "Ramah pemula"
+
+[node name="Stats" type="HBoxContainer" parent="Safe/UI/Brief/Margin/VBox" unique_id=1264769277]
+custom_minimum_size = Vector2(0, 268)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 20
+
+[node name="PupilsTile" type="Panel" parent="Safe/UI/Brief/Margin/VBox/Stats" unique_id=1169998775]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_type_variation = &"SunkenPanel"
+
+[node name="Box" type="VBoxContainer" parent="Safe/UI/Brief/Margin/VBox/Stats/PupilsTile" unique_id=27171819]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 16.0
+offset_right = -12.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Pupils" type="HBoxContainer" parent="Safe/UI/Brief/Margin/VBox/Stats/PupilsTile/Box" unique_id=918717783]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 114)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="Head1" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/PupilsTile/Box/Pupils" unique_id=741944919]
+self_modulate = Color(0.23137255, 0.14117648, 0.07058824, 1)
+custom_minimum_size = Vector2(56, 66)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("6_head")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Head2" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/PupilsTile/Box/Pupils" unique_id=73064788]
+self_modulate = Color(0.23137255, 0.14117648, 0.07058824, 1)
+custom_minimum_size = Vector2(56, 66)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("6_head")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Head3" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/PupilsTile/Box/Pupils" unique_id=983092455]
+visible = false
+self_modulate = Color(0.23137255, 0.14117648, 0.07058824, 1)
+custom_minimum_size = Vector2(56, 66)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("6_head")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Head4" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/PupilsTile/Box/Pupils" unique_id=345668283]
+visible = false
+self_modulate = Color(0.23137255, 0.14117648, 0.07058824, 1)
+custom_minimum_size = Vector2(56, 66)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("6_head")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PupilsValue" type="Label" parent="Safe/UI/Brief/Margin/VBox/Stats/PupilsTile/Box" unique_id=538917239]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "2 murid"
+horizontal_alignment = 1
+
+[node name="WeeksTile" type="Panel" parent="Safe/UI/Brief/Margin/VBox/Stats" unique_id=1878094092]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_type_variation = &"SunkenPanel"
+
+[node name="Box" type="VBoxContainer" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile" unique_id=715229995]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 16.0
+offset_right = -12.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="WeekGrid" type="GridContainer" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box" unique_id=1213603999]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 114)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 4
+
+[node name="Cell1" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=408433450]
+self_modulate = Color(0.47843137, 0.2901961, 0.16862746, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell2" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1859071832]
+self_modulate = Color(0.47843137, 0.2901961, 0.16862746, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell3" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=719847402]
+self_modulate = Color(0.47843137, 0.2901961, 0.16862746, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell4" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=352218482]
+self_modulate = Color(0.47843137, 0.2901961, 0.16862746, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell5" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=155467073]
+self_modulate = Color(0.47843137, 0.2901961, 0.16862746, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell6" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=2052642134]
+self_modulate = Color(0.47843137, 0.2901961, 0.16862746, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell7" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1247728039]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell8" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1319774746]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell9" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=963148208]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell10" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1582756888]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell11" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1208419093]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell12" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1408006106]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell13" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1624529416]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell14" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1590606460]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell15" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=248633055]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="Cell16" type="TextureRect" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box/WeekGrid" unique_id=1694295824]
+self_modulate = Color(0.7490196, 0.65882355, 0.54901963, 1)
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_cell")
+expand_mode = 1
+
+[node name="WeeksValue" type="Label" parent="Safe/UI/Brief/Margin/VBox/Stats/WeeksTile/Box" unique_id=811967911]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "6 minggu"
+horizontal_alignment = 1
+
+[node name="DiffTile" type="Panel" parent="Safe/UI/Brief/Margin/VBox/Stats" unique_id=1752382883]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_type_variation = &"SunkenPanel"
+
+[node name="Box" type="VBoxContainer" parent="Safe/UI/Brief/Margin/VBox/Stats/DiffTile" unique_id=860380227]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 16.0
+offset_right = -12.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="DiffCaption" type="Label" parent="Safe/UI/Brief/Margin/VBox/Stats/DiffTile/Box" unique_id=1977149885]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Tingkat"
+horizontal_alignment = 1
+
+[node name="DiffBar" type="TextureProgressBar" parent="Safe/UI/Brief/Margin/VBox/Stats/DiffTile/Box" unique_id=1866745832]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+mouse_filter = 2
+max_value = 1.0
+step = 0.01
+value = 0.5
+nine_patch_stretch = true
+stretch_margin_left = 14
+stretch_margin_top = 14
+stretch_margin_right = 14
+stretch_margin_bottom = 14
+texture_under = ExtResource("8_pill")
+texture_progress = ExtResource("8_pill")
+tint_under = Color(0.7490196, 0.65882355, 0.54901963, 1)
+tint_progress = Color(0.20784314, 0.627451, 0.3529412, 1)
+
+[node name="DiffLabel" type="Label" parent="Safe/UI/Brief/Margin/VBox/Stats/DiffTile/Box" unique_id=1355583360]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "santai"
+horizontal_alignment = 1
+
+[node name="OpenButton" type="Button" parent="Safe/UI/Brief/Margin/VBox" unique_id=1711922988]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+theme_type_variation = &"PrimaryButtonM"
+text = "Buka Map Ini"
+
+[node name="Confirm" parent="." unique_id=780925111 instance=ExtResource("9_confirm")]
+visible = false
+layout_mode = 1

@@ -230,3 +230,38 @@ func test_on_a_tall_phone_the_composition_rides_the_bottom_edge() -> void:
 		assert_eq(s.card.get_global_rect().position.y, screen.y - 828, "card height at %s" % screen)
 		assert_eq(s.bubble.get_global_rect().end.y, screen.y - 878, "bubble at %s" % screen)
 		assert_eq(s.splash.get_global_rect().end.y, screen.y - 176, "splash at %s" % screen)
+
+
+# ── the reveal and the exits ─────────────────────────────────────────────────
+
+func test_the_reveal_runs_in_the_asked_order() -> void:
+	assert_eq(MinigameWinScreen.REVEAL_ORDER,
+		[&"card", &"splash", &"bubble", &"stats", &"stars", &"buttons"] as Array[StringName],
+		"box, then speaker, then line; stats; stars; buttons (owner's order, 2026-09-25)")
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameWinScreen.gd")
+	assert_true(src.contains("for step in REVEAL_ORDER"), "play() walks the order, it does not restate it")
+
+
+## Every piece play() reveals starts hidden, so nothing flashes on before its
+## turn; the buttons are dead until the last step arms them.
+func test_before_the_reveal_everything_waits() -> void:
+	var s := _screen()
+	s.configure(3, _CITRA, "x", "Akademis", {"stat_delta": 8.0, "energy_delta": -5.0})
+	s.hide_for_reveal()
+	for n in [s.blur, s.card, s.splash, s.bubble, s.skill_chip.icon_box, s.energy_chip.icon_box, s.lobby_button, s.lanjut_button]:
+		assert_eq(n.modulate.a, 0.0, "%s waits for its turn" % n.name)
+	for star in s.star_row.get_children():
+		assert_eq(star.modulate.a, 0.0, "%s waits for its turn" % star.name)
+
+
+func test_the_buttons_answer_only_once_armed() -> void:
+	var s := _screen()
+	s.configure(3, "", "x", "Akademis", {})
+	var got: Array = []
+	s.exited.connect(func(c: StringName): got.append(c))
+	s.lanjut_button.pressed.emit()
+	assert_eq(got, [], "a press mid-reveal is ignored")
+	s.arm_buttons()
+	s.lobby_button.pressed.emit()
+	s.lanjut_button.pressed.emit()
+	assert_eq(got, [&"lobby"], "the first armed press answers, once")

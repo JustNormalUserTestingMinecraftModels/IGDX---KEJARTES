@@ -671,12 +671,25 @@ static func _calculate_stars(ratio: float, is_win: bool) -> int:
 
 ## The end-of-game result card. A minigame can override this to show its own.
 @export var result_popup_scene: PackedScene = preload("res://Scenes/Minigames/UI/MinigameResultPopup.tscn")
+## The won-minigame screen (2026-09-25 win-screen spec). A loss keeps
+## result_popup_scene; null shows result_popup_scene for a win too.
+@export var win_screen_scene: PackedScene = preload("res://Scenes/Minigames/UI/MinigameWinScreen.tscn")
+## What the host screen tells the win screen: {"category", "speaker", "line"}.
+## Empty when the minigame runs on its own (debug launcher, F6).
+var host_context: Dictionary = {}
+## Set by the host before start. Called once, when the result is decided, as
+## result_reporter.call(is_win, score, max_score): it applies the result and
+## returns what the win screen shows, {"stat_delta", "energy_delta"}.
+var result_reporter: Callable = Callable()
+## The win screen's answer, &"lanjut" or &"lobby". A loss leaves &"lanjut".
+var result_exit: StringName = &"lanjut"
 
-## Show the win/lose card, wait for the player to continue, then emit the
-## win/lose signal.
+## Show the win screen (a win) or the result card (a loss), wait for the
+## player, then emit the win/lose signal. The host's result_reporter runs
+## first, on both paths, so the stats are applied before either card opens.
 ##
-## Affects: adds a MinigameResultPopup child, frees it when the player
-## continues (the popup frees itself). `custom_subtitle` is accepted for
+## Affects: adds a MinigameWinScreen or MinigameResultPopup child, which frees
+## itself when the player continues. `custom_subtitle` is accepted for
 ## call-site compatibility but is not displayed -- the shipped overlay never
 ## rendered it either.
 ## True once a result overlay has been built, so a second end call cannot
@@ -728,25 +741,37 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 	last_time_left_ratio = clampf(game_time_left / max_game_time, 0.0, 1.0) \
 		if has_time_limit and max_game_time > 0.0 else -1.0
 
-	var popup: MinigameResultPopup = result_popup_scene.instantiate()
-	add_child(popup)
-	popup.configure(is_win, stars, mg_score, mg_max_score,
-		_get_active_tutorial_title(), mg_category, stat_delta, energy_delta, mood_delta,
-		{
-			"popup_card_texture": popup_card_texture, "popup_card_color": popup_card_color,
-			"popup_border_color": popup_border_color, "popup_dim_color": popup_dim_color,
-			"popup_star_texture": popup_star_texture, "popup_star_empty_texture": popup_star_empty_texture,
-			"popup_star_color": popup_star_color, "popup_star_empty_color": popup_star_empty_color,
-			"popup_star_size": popup_star_size,
-			"popup_button_texture": popup_button_texture, "popup_button_color": popup_button_color,
-			"popup_button_text": popup_button_text,
-			"popup_title_font": popup_title_font, "popup_body_font": popup_body_font,
-			"popup_title_font_size": popup_title_font_size, "popup_score_font_size": popup_score_font_size,
-			"popup_stat_font_size": popup_stat_font_size,
-			"popup_title_win_color": popup_title_win_color, "popup_title_lose_color": popup_title_lose_color,
-			"win_title_text": win_title_text, "lose_title_text": lose_title_text,
-		})
-	await popup.play()
+	var shown: Dictionary = {}
+	if result_reporter.is_valid():
+		shown = result_reporter.call(is_win, mg_score, mg_max_score)
+
+	if is_win and win_screen_scene != null:
+		var screen: MinigameWinScreen = win_screen_scene.instantiate()
+		add_child(screen)
+		screen.configure(stars, str(host_context.get("speaker", "")),
+			str(host_context.get("line", EventDialogueCatalog.WIN_LINE_STUDENT)),
+			str(host_context.get("category", mg_category)), shown)
+		result_exit = await screen.play()
+	else:
+		var popup: MinigameResultPopup = result_popup_scene.instantiate()
+		add_child(popup)
+		popup.configure(is_win, stars, mg_score, mg_max_score,
+			_get_active_tutorial_title(), mg_category, stat_delta, energy_delta, mood_delta,
+			{
+				"popup_card_texture": popup_card_texture, "popup_card_color": popup_card_color,
+				"popup_border_color": popup_border_color, "popup_dim_color": popup_dim_color,
+				"popup_star_texture": popup_star_texture, "popup_star_empty_texture": popup_star_empty_texture,
+				"popup_star_color": popup_star_color, "popup_star_empty_color": popup_star_empty_color,
+				"popup_star_size": popup_star_size,
+				"popup_button_texture": popup_button_texture, "popup_button_color": popup_button_color,
+				"popup_button_text": popup_button_text,
+				"popup_title_font": popup_title_font, "popup_body_font": popup_body_font,
+				"popup_title_font_size": popup_title_font_size, "popup_score_font_size": popup_score_font_size,
+				"popup_stat_font_size": popup_stat_font_size,
+				"popup_title_win_color": popup_title_win_color, "popup_title_lose_color": popup_title_lose_color,
+				"win_title_text": win_title_text, "lose_title_text": lose_title_text,
+			})
+		await popup.play()
 
 	if is_win:
 		_do_win()

@@ -158,6 +158,11 @@ const HOLIDAYS = {
 var current_day: int = 0
 var is_running: bool = false
 var current_minigame: Node = null
+## The student the last EventDialogue featured, so the one who asked before
+## a minigame is the one who thanks after it. Null when the line was skipped.
+var _last_featured: StudentData = null
+## True once this minigame's result was applied through its result_reporter.
+var _minigame_recorded: bool = false
 
 var akademis_scenes: Array = []
 var olahraga_scenes: Array = []
@@ -1023,6 +1028,17 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	if current_minigame.has_signal("minigame_lost"):
 		current_minigame.minigame_lost.connect(_minigame_result.emit.bind(false), CONNECT_ONE_SHOT)
 
+	# The win screen (2026-09-25): the minigame learns who thanks the player,
+	# and reports its result the moment it is decided, so the stats are
+	# applied before the screen shows them.
+	_minigame_recorded = false
+	var game_name = _scene_name(game_scene)
+	var day_name = DAYS[current_day]
+	if "result_reporter" in current_minigame:
+		current_minigame.result_reporter = _report_minigame_result.bind(category, game_name, day_name)
+	if "host_context" in current_minigame:
+		current_minigame.host_context = _win_context(category, day_name)
+
 	if current_minigame.has_method("start_minigame"):
 		var base_duration: float = 40.0 if _scene_name(game_scene) == "Menjodohkan" else 30.0
 		var duration: float = base_duration
@@ -1043,8 +1059,6 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	var won: bool = await _minigame_result
 	minigames_played_this_week += 1
 
-	var game_name = _scene_name(game_scene)
-	var day_name = DAYS[current_day]
 	var mg_score: int = -1
 	var mg_max_score: int = -1
 	if current_minigame:
@@ -1053,7 +1067,7 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		if "max_score" in current_minigame:
 			mg_max_score = current_minigame.max_score
 
-	if student_manager:
+	if student_manager and not _minigame_recorded:
 		student_manager.record_minigame_result(day_name, category, game_name, won, mg_score, mg_max_score)
 
 	# Only a minigame really played here counts toward achievements.
@@ -1063,6 +1077,11 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		mg_stars = current_minigame.last_result_stars
 		mg_time_left = current_minigame.last_time_left_ratio
 	Achievements.record_minigame(category, game_name, won, mg_stars, mg_time_left)
+
+	# The win screen's LOBBY / LANJUT; a loss always continues.
+	var exit_choice: StringName = &"lanjut"
+	if current_minigame and "result_exit" in current_minigame:
+		exit_choice = current_minigame.result_exit
 
 	AudioDirector.stop_minigame_bgm()
 	var tween_close = create_tween()
@@ -1079,6 +1098,10 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	var tween_back = create_tween()
 	tween_back.tween_property(day_screen, "modulate:a", 1.0, 0.4)
 	await tween_back.finished
+
+	_last_featured = null
+	if exit_choice == &"lobby":
+		_leave_week_after_today()
 
 	await _animate_embedded_stat_updates(0.6)
 
@@ -1503,6 +1526,7 @@ static func minigame_dialogue_key(scene: PackedScene) -> String:
 ## for Tolak. With no catalog entry, such as a new minigame without a line
 ## yet, there is nothing to show and it returns true.
 func _show_event_dialogue(key: String) -> bool:
+	_last_featured = null
 	if not EventDialogueCatalog.has_entry(key):
 		return true
 	# Shorten (Lobby): the player chose to skip the choice-free minigame lines.
@@ -1518,6 +1542,7 @@ func _show_event_dialogue(key: String) -> bool:
 	if student_manager:
 		roster = student_manager.students
 	var featured: StudentData = EventDialogueCatalog.pick_featured(roster, e.get("category", ""))
+	_last_featured = featured
 	var day_name: String = DAYS[current_day] if current_day < DAYS.size() else ""
 	var dialogue = dialogue_scene.instantiate()
 	add_child(dialogue)
@@ -1525,6 +1550,52 @@ func _show_event_dialogue(key: String) -> bool:
 	var accepted: bool = await dialogue.closed
 	dialogue.queue_free()
 	return accepted
+
+
+## The minigame's result_reporter (2026-09-25 win-screen spec): applies the
+## result to the roster now, before the win screen opens, and returns the
+## roster's average skill and energy change for it to show.
+func _report_minigame_result(won: bool, score: int, max_score: int,
+		category: String, game_name: String, day_name: String) -> Dictionary:
+	if student_manager == null:
+		return {}
+	var results: Array = student_manager.record_minigame_result(day_name, category, game_name, won, score, max_score)
+	_minigame_recorded = true
+	return {
+		"stat_delta": roster_average(results, "stat_delta"),
+		"energy_delta": roster_average(results, "energy_delta"),
+	}
+
+
+## The mean of one delta across record_minigame_result()'s per-student
+## results, rounded: the class's result, which the day summary breaks down.
+static func roster_average(results: Array, key: String) -> float:
+	if results.is_empty():
+		return 0.0
+	var total := 0.0
+	for r in results:
+		total += float((r as Dictionary).get("deltas", {}).get(key, 0.0))
+	return roundf(total / results.size())
+
+
+## Who thanks the player if this minigame is won, and what they say. The
+## dialogue's featured student when there was one; with the line skipped,
+## one picked by the same rule the dialogue uses.
+func _win_context(category: String, day_name: String) -> Dictionary:
+	var featured: StudentData = _last_featured
+	if featured == null and student_manager:
+		featured = EventDialogueCatalog.pick_featured(student_manager.students, category)
+	var speaker: String = EventDialogueCatalog.win_speaker_path(category, featured, day_name, randf())
+	return {"category": category, "speaker": speaker, "line": EventDialogueCatalog.win_line_for(speaker)}
+
+
+## The win screen's LOBBY: leave the week now. Today's decay and roll have
+## already run, and skip_to_results() starts at current_day, so step past
+## today first; the rest of the week then resolves with the grade's skip
+## odds and ends on the weekly report, as the Skip button's does.
+func _leave_week_after_today() -> void:
+	current_day += 1
+	skip_to_results()
 
 
 func force_event(event_id: int) -> void:

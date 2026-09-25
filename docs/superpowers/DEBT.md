@@ -237,6 +237,13 @@ by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
 
+**SchoolDay's dev Skip mid-day decays today twice (found 2026-09-25).**
+`skip_to_results()` (key O, `DayScreen/SkipButton`) starts at `current_day`,
+which `_run_single_day` has already decayed and rolled, so a skip pressed
+during a day's event or minigame runs that day's decay and roll again. The
+minigame win screen's LOBBY steps past today first
+(`SchoolDay._leave_week_after_today`); the key and the button do not.
+
 **`Textures` is red: five Inventory tests look up moved nodes (2026-09-16).**
 `feat(inventory): mobile redesign` (`431cc5d`) restructured
 `Scenes/Inventory/inventory.tscn` without updating two suites, so a full

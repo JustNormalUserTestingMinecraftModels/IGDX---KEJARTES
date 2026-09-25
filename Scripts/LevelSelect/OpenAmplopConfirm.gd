@@ -23,6 +23,9 @@ const LETTER_RISE := 40.0
 
 ## The envelope that opens: an AmplopCard shown for display (not interactive).
 @onready var card: Control = $Envelope/Card
+## The CenterContainer holding it. Size goes here, never on the card: a
+## Container resets its children's scale every time it lays them out.
+@onready var envelope: Control = $Envelope
 @onready var _letter: Control = $Letter
 @onready var _title: Label = $Letter/Margin/VBox/Title
 @onready var _body: Label = $Letter/Margin/VBox/Body
@@ -62,6 +65,14 @@ func present(grade: int, portraits: Array, brief_line: String) -> Tween:
 	_fade = create_tween()
 	_fade.tween_property(self, "modulate:a", 1.0, SCRIM_FADE_SEC)
 	return play_open(portraits)
+
+
+## Draw the envelope `s` times its template size, grown about its
+## bottom-centre (the card's anchor, at the container's centre) so it rises
+## away from the letter below instead of into it.
+func set_envelope_scale(s: float) -> void:
+	envelope.pivot_offset = envelope.size * 0.5
+	envelope.scale = Vector2.ONE * s
 
 
 ## The open sequence: the envelope's own open(), then the letter rises in.

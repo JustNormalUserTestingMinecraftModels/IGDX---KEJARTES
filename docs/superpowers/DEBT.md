@@ -291,10 +291,6 @@ desktop and Android alike, until the chevron became a texture — now the shared
 `•`, `…`, `—`, `←` or `→` at all; those fall back to whatever system font the
 device picks. Buttons, titles and headings wear Boohong, so keep such
 characters out of their text, and draw an arrow or chevron as a real texture.
-Still in display text: CutScene's grade picker (`cut_scene.gd`'s
-`_create_grade_button`, which the file calls the first-boot picker every
-player sees) titles its Primary/SecondaryButtons with 🏫/🎓 emoji over
-"•"-separated subtitles -- emoji the ban in `## Conventions` forbids.
 `LombaMenari`'s ←/→/↖/↗ are body text, but Open Sans has no `←` either, so
 they ride system fallback too (minigames sit outside the design system).
 

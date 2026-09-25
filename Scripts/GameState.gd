@@ -73,6 +73,14 @@ var current_grade: int = 7:
 		max_minggu = get_max_weeks()
 var is_game_beaten: bool = false
 var debug_level_select_enabled: bool = true
+
+## True when a new game picks its grade on the Level Select (the amplop
+## fan) before the intro: once the game is beaten, or while the persisted
+## Debug Level Select toggle is on. MainMenu routes on it, and CutScene
+## defaults to Kelas 7 when it is false.
+func is_level_select_enabled() -> bool:
+	return is_game_beaten or debug_level_select_enabled
+
 var grade7_student_ids: Array = []
 var grade8_student_ids: Array = []
 

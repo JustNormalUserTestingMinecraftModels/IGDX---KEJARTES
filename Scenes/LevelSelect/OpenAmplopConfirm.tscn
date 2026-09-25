@@ -1,0 +1,118 @@
+[gd_scene format=3 uid="uid://dqxim1g5tg32a"]
+
+[ext_resource type="Script" uid="uid://dq76tdmopnfv7" path="res://Scripts/LevelSelect/OpenAmplopConfirm.gd" id="1_confirm"]
+[ext_resource type="PackedScene" uid="uid://bykt6v8q1l6uk" path="res://Scenes/LevelSelect/AmplopCard.tscn" id="2_card"]
+
+[node name="OpenAmplopConfirm" type="Control" unique_id=1516610346]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_confirm")
+
+[node name="Scrim" type="Panel" parent="." unique_id=422190793]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"Scrim"
+
+[node name="Envelope" type="CenterContainer" parent="." unique_id=82370895]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -80.0
+offset_right = 300.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Card" parent="Envelope" unique_id=2043074234 instance=ExtResource("2_card")]
+layout_mode = 2
+interactive = false
+
+[node name="Letter" type="Panel" parent="." unique_id=938402792]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -30.0
+offset_right = 400.0
+offset_bottom = 330.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="Letter" unique_id=1142880358]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 36
+
+[node name="VBox" type="VBoxContainer" parent="Letter/Margin" unique_id=783693095]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Kicker" type="Label" parent="Letter/Margin/VBox" unique_id=1946416796]
+layout_mode = 2
+theme_type_variation = &"MicroLabel"
+text = "SURAT TUGAS"
+
+[node name="Title" type="Label" parent="Letter/Margin/VBox" unique_id=1243450989]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "Mulai Kelas 7?"
+
+[node name="Body" type="Label" parent="Letter/Margin/VBox" unique_id=1554763597]
+layout_mode = 2
+text = "2 murid, 6 minggu, tingkat santai. Target paling ringan, cocok untuk memulai."
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="." unique_id=2098934961]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = 370.0
+offset_right = 400.0
+offset_bottom = 498.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+
+[node name="Cancel" type="Button" parent="Buttons" unique_id=1576822372]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Batal"
+
+[node name="Accept" type="Button" parent="Buttons" unique_id=672630130]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.6
+theme_type_variation = &"PrimaryButton"
+text = "Terima Tugas"

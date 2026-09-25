@@ -73,10 +73,14 @@ const PEEK_RISE := 110.0
 @onready var _tab: Button = $Bob/Tab
 @onready var _button: Button = $HitButton
 
+## Bob's authored resting y; the idle motion returns it here.
+var bob_rest_y := 0.0
+
 var _open_tween: Tween
 
 
 func _ready() -> void:
+	bob_rest_y = bob.offset_top
 	_button.pressed.connect(func() -> void: picked.emit(grade))
 	_tab.text = tab_text
 	if envelope_texture != null:

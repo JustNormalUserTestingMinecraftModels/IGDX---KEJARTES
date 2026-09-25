@@ -8,10 +8,14 @@ extends Control
 ## process, which breaks traversal-based checks like
 ## test_scene_has_no_theme_overrides the moment they reach this node.
 ##
-## Gating: _setup_top_bar_buttons() / _setup_level_select_ui() build and
-## wire the static UI (buttons, modal) and must run in both a human's
-## editor session and the test suite's instantiation, exactly like
-## MainMenu's button wiring. Everything below the
+## Grade picking lives on the Level Select (Scenes/LevelSelect), which
+## MainMenu routes through first while GameState.is_level_select_enabled();
+## this scene only defaults to Kelas 7 when it did not. The "PILIH TINGKAT
+## KELAS" modal this scene used to build at runtime is gone (2026-09-25).
+##
+## Gating: _setup_top_bar_buttons() builds and wires the top-bar buttons
+## and must run in both a human's editor session and the test suite's
+## instantiation, exactly like MainMenu's button wiring. Everything below the
 ## Engine.is_editor_hint() guard -- reading GameState to decide which
 ## branch of the cutscene to show, refreshing GameState-derived button
 ## text, and kicking off the first CG/dialogue reveal -- is a genuine
@@ -58,28 +62,25 @@ var cg_index := 0
 var is_transitioning := false
 var _reveal_tween: Tween
 
-# Level Selection UI elements
-var level_select_overlay: Control
-var is_showing_level_select := false
+## Where the Debug Level Select toggle sends the player once switched on.
+const _LEVEL_SELECT_SCENE := "res://Scenes/LevelSelect/level_select.tscn"
+
 var btn_skip: Button
 var btn_debug_toggle: Button
 
 func _ready():
 	fade_overlay.color.a = 0.0
 	_setup_top_bar_buttons()
-	_setup_level_select_ui()
 
 	if Engine.is_editor_hint():
 		return
 
 	_update_debug_button_text()
 
-	# Show level selection BEFORE playing intro cutscene if unlocked or in debug mode
-	if GameState.is_game_beaten or GameState.debug_level_select_enabled:
-		show_level_select_modal()
-	else:
+	# With the picker on, the grade was chosen on the Level Select already.
+	if not GameState.is_level_select_enabled():
 		GameState.set_grade(7)
-		show_current()
+	show_current()
 
 func _setup_top_bar_buttons() -> void:
 	# Top HBox for Skip & Debug controls
@@ -127,115 +128,16 @@ func _update_debug_button_text() -> void:
 		var mode_str = "ON (Pilih Kelas)" if GameState.debug_level_select_enabled else "OFF (Normal)"
 		btn_debug_toggle.text = "🐛 Debug Level Select: " + mode_str
 
-func _setup_level_select_ui() -> void:
-	# Overlay container
-	level_select_overlay = Control.new()
-	level_select_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	level_select_overlay.visible = false
-	add_child(level_select_overlay)
-
-	# Dark dim backdrop, using the same scrim the rest of the game uses
-	# for modal overlays.
-	var dim = ColorRect.new()
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dim.color = _tokens.scrim_color()
-	level_select_overlay.add_child(dim)
-
-	# Centered Modal Panel
-	var panel = PanelContainer.new()
-	panel.theme_type_variation = &"Card"
-	panel.custom_minimum_size = Vector2(900, 1100)
-	panel.position = Vector2(90, 360)
-	level_select_overlay.add_child(panel)
-
-	var margin = MarginContainer.new()
-	panel.add_child(margin)
-
-	var vbox = VBoxContainer.new()
-	margin.add_child(vbox)
-
-	# Header Title
-	var title = Label.new()
-	title.text = "🎓 PILIH TINGKAT KELAS 🎓"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.theme_type_variation = &"H1Label"
-	# Unwrapped, this single line is wider than the panel's 900px at
-	# H1Label's 64px. This was already true under the old placeholder
-	# font -- the 2026-09-05 typography audit measured actual advance
-	# widths and found Catfiles is narrower than the placeholder here,
-	# it just surfaced this pre-existing overflow rather than causing
-	# it. A Label with no autowrap forces its VBoxContainer (and the
-	# panel around it) to grow to fit, dragging the whole modal off the
-	# 1080px screen. subtitle below already wraps for the same reason;
-	# title just hadn't needed it before.
-	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vbox.add_child(title)
-
-	# Subtitle
-	var subtitle = Label.new()
-	subtitle.text = "Pilih tingkat jenjang kelas yang ingin kamu bimbing:"
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	subtitle.theme_type_variation = &"CaptionLabel"
-	vbox.add_child(subtitle)
-
-	# Debug Badge
-	var debug_badge = Label.new()
-	debug_badge.text = "🔧 [MODE DEBUG: LEVEL SELECT AKTIF]"
-	debug_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	debug_badge.theme_type_variation = &"MicroLabel"
-	# self_modulate tints the already-themed text; it is a Control
-	# property, not a theme override, and reads its color from the
-	# token palette rather than a hardcoded literal.
-	debug_badge.self_modulate = _tokens.cat_akademis
-	vbox.add_child(debug_badge)
-
-	var sep = HSeparator.new()
-	vbox.add_child(sep)
-
-	# Buttons Container
-	var btn_vbox = VBoxContainer.new()
-	vbox.add_child(btn_vbox)
-
-	# Grade 7 Button
-	_create_grade_button(btn_vbox, 7, "🏫 KELAS 7 (Tingkat Pertama)", "Awal Tahun Ajaran • Minggu 1 • Dasar Pembimbingan", &"PrimaryButton")
-
-	# Grade 8 Button
-	_create_grade_button(btn_vbox, 8, "🏫 KELAS 8 (Tingkat Menengah)", "Tahun Ajaran Ke-2 • Minggu 17 • Tantangan Meningkat", &"SecondaryButton")
-
-	# Grade 9 Button
-	_create_grade_button(btn_vbox, 9, "🎓 KELAS 9 (Tingkat Akhir)", "Ujian Kelulusan Utama • Minggu 33 • Evaluasi Final", &"PrimaryButton")
-
-func _create_grade_button(parent: VBoxContainer, grade_num: int, title_text: String, desc_text: String, variation: StringName) -> void:
-	var btn = Button.new()
-	btn.theme_type_variation = variation
-	btn.custom_minimum_size = Vector2(0, 140)
-	btn.text = title_text + "\n" + desc_text
-	# Same failure mode as btn_debug_toggle above: without clip_text, a
-	# Button's minimum size grows to fit its two-line text. This modal
-	# was already overflowing the level_select panel's 900px width under
-	# the old placeholder font -- the 2026-09-05 typography audit
-	# surfaced that pre-existing overflow, it didn't cause a new one --
-	# dragging the whole modal off the right edge of the 1080px screen.
-	# This grade-select modal defaults to enabled (see
-	# GameState.debug_level_select_enabled), so it's the first-boot
-	# grade picker every player sees, not a hidden debug tool: clip
-	# left-aligned with an ellipsis rather than the default centered
-	# clip, which would otherwise clip both edges of the string and
-	# leave a garbled middle fragment behind.
-	btn.clip_text = true
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	btn.pressed.connect(func(): _on_grade_selected(grade_num))
-	parent.add_child(btn)
-
+## Switched on, the toggle goes back to the Level Select to pick a grade
+## before the intro, as the old in-scene modal used to pop up.
 func _on_debug_toggle_pressed() -> void:
 	GameState.debug_level_select_enabled = not GameState.debug_level_select_enabled
 	GameSettings.save_settings()
 	_update_debug_button_text()
 	print("Debug Level Select toggled: ", GameState.debug_level_select_enabled)
-	if GameState.debug_level_select_enabled and not is_showing_level_select:
-		show_level_select_modal()
+	if GameState.debug_level_select_enabled and not is_transitioning:
+		is_transitioning = true
+		Transition.change_scene(_LEVEL_SELECT_SCENE, Transition.Style.WIPE)
 
 ## Skip must route through StudentCard exactly like finishing the cutscene
 ## normally does (go_to_gameplay, below) -- this scene is only ever reached
@@ -262,26 +164,6 @@ func _on_skip_pressed() -> void:
 	is_transitioning = true
 	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)
 
-
-func show_level_select_modal() -> void:
-	is_showing_level_select = true
-	level_select_overlay.visible = true
-	var tween = create_tween()
-	level_select_overlay.modulate.a = 0.0
-	tween.tween_property(level_select_overlay, "modulate:a", 1.0, 0.3)
-
-func _on_grade_selected(grade_num: int) -> void:
-	AudioDirector.play_sfx(&"select")
-	print("Grade selected before cutscene: ", grade_num)
-	GameState.set_grade(grade_num)
-
-	is_showing_level_select = false
-	var tween = create_tween()
-	tween.tween_property(level_select_overlay, "modulate:a", 0.0, 0.25)
-	await tween.finished
-	level_select_overlay.visible = false
-
-	show_current()
 
 ## Deliberately slower than transition_to_next()'s panel-to-panel
 ## crossfade (which uses _tokens.dur_normal) -- this is the very first
@@ -317,7 +199,7 @@ func _reveal(text: String) -> void:
 	_reveal_tween = tw
 
 func _input(event):
-	if is_transitioning or is_showing_level_select:
+	if is_transitioning:
 		return
 	var tapped = false
 	if event is InputEventScreenTouch and event.pressed:

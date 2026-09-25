@@ -242,7 +242,7 @@ const CUTOUTS := {
 
 ## Full-bleed. These keep the material they have always worn.
 const BACKDROPS := {
-	"res://Scenes/Lobby/loby.tscn": ["Classroom/BGLayer"],
+	"res://Scenes/Lobby/loby.tscn": ["World/Classroom/BGLayer"],
 	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Background"],
 	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background"],
 	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background"],
@@ -411,8 +411,8 @@ func _param_or_zero(mat: ShaderMaterial, uniform: String) -> float:
 ## The Lobby's four desks are cutouts too, lit from the upper right.
 const LOBBY_DESKS := {
 	"res://Scenes/Lobby/loby.tscn": [
-		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
-		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
+		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
 }
 
@@ -509,7 +509,7 @@ func test_the_lobby_shafts_are_additive_and_placed() -> void:
 
 	var lobby := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
 	track(lobby)
-	var shafts := lobby.get_node_or_null("Classroom/WindowShafts") as Control
+	var shafts := lobby.get_node_or_null("World/Classroom/WindowShafts") as Control
 	assert_true(shafts != null, "the Lobby should carry the window shafts")
 	if shafts == null:
 		return
@@ -549,9 +549,9 @@ func test_the_shafts_stay_under_the_look_ceiling() -> void:
 func test_the_shafts_parallax_with_the_room() -> void:
 	var lobby := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
 	track(lobby)
-	var diorama := lobby.get_node_or_null("Classroom/ParallaxDiorama")
+	var diorama := lobby.get_node_or_null("World/Classroom/ParallaxDiorama")
 	if diorama == null:
-		for child in lobby.get_node("Classroom").get_children():
+		for child in lobby.get_node("World/Classroom").get_children():
 			if child.get("depth_by_child") != null:
 				diorama = child
 				break

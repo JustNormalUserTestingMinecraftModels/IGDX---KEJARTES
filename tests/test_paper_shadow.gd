@@ -180,8 +180,8 @@ func test_a_custom_blur_duplicates_the_material_instead_of_mutating_it() -> void
 ## shadow -- see _OUTER_AO below, which holds the values that ship.
 const _CONTACT_SHADOWS := {
 	"res://Scenes/Lobby/loby.tscn": [
-		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
-		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
+		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
 	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
 	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],
@@ -227,8 +227,8 @@ func test_the_flat_elements_now_cast_a_shadow() -> void:
 ## argument in full.
 const _OUTER_AO := {
 	"res://Scenes/Lobby/loby.tscn": [
-		"Classroom/Meja_KiriAtas", "Classroom/Meja_KananAtas",
-		"Classroom/Meja_KiriBawah", "Classroom/Meja_KananBawah",
+		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
+		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
 	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
 	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],

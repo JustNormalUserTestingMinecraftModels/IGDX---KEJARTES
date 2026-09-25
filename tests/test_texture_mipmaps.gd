@@ -49,6 +49,22 @@ const TARGETS := {
 	"res://Assets/Images/MuridPotrait/Marcel/marcel_base.png": 3.20,
 	"res://Assets/Images/MuridPotrait/Shinta/shinta_base.png": 3.50,
 	"res://Assets/Images/MuridPotrait/Thea/thea_base.png": 3.51,
+	# The twelve day outfits (2026-09-25). DaySummaryAvatar draws each through
+	# its student's SPLASH_CROP into the 269 px result-card frame: 2.80 is the
+	# widest crop (Andi, 752 px) over FRAME_SIZE.x, exact by construction. The
+	# batik pattern is the finest repeating detail in the game at that ratio.
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_andi_batik.png": 2.80,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_andi_pramuka.png": 2.80,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_citra_batik.png": 2.70,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_citra_pramuka.png": 2.70,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_doni_batik.png": 2.61,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_doni_pramuka.png": 2.61,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_marcel_batik.png": 2.74,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_marcel_pramuka.png": 2.74,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_shinta_batik.png": 2.63,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_shinta_pramuka.png": 2.63,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png": 2.67,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_pramuka.png": 2.67,
 	# Minigame sprites. CLAUDE.md puts Scenes/Minigames/** out of scope for
 	# the design system, but an .import flag is not a design decision, and
 	# these are the project's worst ratios on art that is always moving.
@@ -155,6 +171,7 @@ func test_mipmaps_stay_targeted_not_global() -> void:
 		for sub in d.get_directories():
 			stack.append(dir_path.path_join(sub))
 	assert_true(total > 300, "sanity: expected the full texture set, saw %d" % total)
-	assert_true(mipmapped <= 45,
+	# 45 until 2026-09-25, when the twelve day outfits joined TARGETS above.
+	assert_true(mipmapped <= 57,
 		"mipmaps are per-asset and measured, not a bulk flip: %d of %d imports "
 			% [mipmapped, total] + "generate them")

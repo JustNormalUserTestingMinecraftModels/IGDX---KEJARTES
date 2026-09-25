@@ -31,7 +31,9 @@ then an EventDialogue line (`EventDialogueCatalog`); the three pick-students
 events ask Tolak / Terima there, before their picker. Settings' **Lewati Dialog
 Minigame** toggle (`GameSettings.skip_event_dialogue`, saved; the Lobby's gear
 opens Settings) skips the minigame lines;
-Nasi Kotak, Hujan and the choice events keep theirs.
+Nasi Kotak, Hujan and the choice events keep theirs. A won minigame ends on
+`MinigameWinScreen` (LOBBY skips the rest of the week); a loss keeps
+`MinigameResultPopup`.
 Splashscreen still exists and is tested but nothing routes to it (the game
 boots straight to MainMenu, which loads in one hop). There is no Loading
 screen: the shared `Transition` wipe covers the scene-load gap.
@@ -94,7 +96,8 @@ the single most common source of bugs here. Note `hobby_category` "Akademik"
 maps to specialty "Akademis"; schedules also normalize `Akademik`→`Akademis`
 and `DayOff`→`Istirahat`. Student art goes through `StudentSkins`
 (`splash_for`/`portrait_for`/`face_base_for`/`hand_for`), never the dict's
-`splash`/`portrait` keys, so the worn skin (`GameState.equipped_skins`) shows.
+`splash`/`portrait` keys, so the worn skin (`GameState.equipped_skins`) shows;
+event screens and result portraits dress for the day via `splash_for_day`.
 
 Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
 disk (`user://inventory.cfg`, flushed at the top of every
@@ -391,8 +394,7 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Nothing in flight. Plan C's RunResult redesign and premium-look item 12 are
-parked in `docs/superpowers/DEBT.md`.
+Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
 
 ## Maintaining this file
 

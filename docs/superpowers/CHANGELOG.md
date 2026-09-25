@@ -8,6 +8,26 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-25 — Minigame win screen, day outfits, icon refresh
+
+Spec `docs/superpowers/specs/2026-09-25-minigame-win-screen-design.md`.
+
+- **Win screen.** A won minigame ends on `MinigameWinScreen` over the live,
+  blurred minigame (a loss keeps `MinigameResultPopup`): the speaker's splash,
+  a thank-you bubble, the class's average skill and energy change counting up,
+  three stars, LOBBY / LANJUT. SchoolDay now applies the result when it is
+  decided (`BaseMinigame.result_reporter`), before either card opens. LOBBY
+  steps past today and runs `skip_to_results()`. Speaker: the dialogue's
+  featured student; Seni/Olahraga 50/50 with their teacher.
+- **EventDialogue speakers** hang 276 px lower (and 30 px left), off the
+  bottom edge, per `eventdialogue_mockup.jpeg`.
+- **Day outfits.** Twelve batik (Kamis) and pramuka (Jumat) splashes in
+  `Assets/Images/SplashArtMurid/Seragam/`, on EventDialogue, the win screen,
+  the daily and weekly result portraits and the pick-students cards
+  (`StudentSkins.splash_for_day`; the weekly report wears Jumat's).
+- **Icons.** The Lobby's achievement, settings, skin-select and daily-login
+  icons and the canonical back arrow replaced in place with the delivered art.
+
 ## 2026-09-24 — Grade contrast raised 10%
 
 Contrast gained 10% of its distance from neutral, 1.007875 → 1.0086625, on all

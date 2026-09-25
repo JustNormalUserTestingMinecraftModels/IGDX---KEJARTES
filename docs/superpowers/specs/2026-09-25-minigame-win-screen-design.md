@@ -71,7 +71,7 @@ where the mockup also hides it. `Shadow` follows its parent's rect already.
  │ ╭────────────────────────╮│  Card ("the big box"), top corners rounded
  │ │   ★      ★      ★      ││  Stars: ResultStar ×3 (star.png)
  │ │ 🎓^ +8     ⚡ −5        ││  Stats: skill chip, energy chip
- │ │ [ LOBBY ]  [ LANJUT ]  ││  SecondaryButtonM, PrimaryButtonM
+ │ │ [ LOBBY ]  [ LANJUT ]  ││  SecondaryButtonL, PrimaryButtonL
  │ ╰────────────────────────╯│
  └──────────────────────────┘
 ```
@@ -104,14 +104,17 @@ MinigameWinScreen (CanvasLayer, layer 999, process_mode ALWAYS)
 └─ Root (Control, Full Rect, mouse_filter STOP — nothing reaches the game)
    ├─ Blur (ColorRect, Full Rect, event_dialogue_blur_material.tres)
    ├─ Splash (TextureRect, illustration_grade_cutout.tres, bottom-anchored)
-   ├─ Bubble (PanelContainer, MinigameWinBubble)
-   │  ├─ Tail (TextureRect, chat_bubble_tail.svg — fill already surface_card)
-   │  └─ Line (Label, MinigameWinLine, uppercase = true)
+   ├─ Bubble (Control, bottom-anchored — a plain Control, because a
+   │  │        Container would stretch the tail over the whole box)
+   │  ├─ Panel (PanelContainer, Full Rect, MinigameWinBubble)
+   │  │  └─ Line (Label, MinigameWinLine, uppercase = true)
+   │  └─ Tail (TextureRect, chat_bubble_tail.svg flipped both ways so it
+   │           points up-left at the speaker; its fill is already surface_card)
    ├─ Card (PanelContainer, MinigameWinCard, bottom-anchored)
    │  └─ Layout (VBoxContainer)
-   │     ├─ StarRow (HBoxContainer) ── Star1..3 (ResultStar.tscn)
+   │     ├─ StarRow (HBoxContainer) ── Star1..3 (ResultStar.tscn, 258×258)
    │     ├─ StatRow (HBoxContainer) ── SkillChip, EnergyChip (MinigameWinStat.tscn)
-   │     └─ ButtonRow (HBoxContainer) ── LobbyButton (SecondaryButtonM), LanjutButton (PrimaryButtonM)
+   │     └─ ButtonRow (HBoxContainer) ── LobbyButton (SecondaryButtonL), LanjutButton (PrimaryButtonL)
    ├─ ConfettiFireworks (instance) — one burst per earned star
    └─ ResultConfetti (instance) — the three-star rain
 ```
@@ -246,8 +249,9 @@ SchoolDay._play_minigame                      BaseMinigame
   starts at `current_day` and would decay and roll today a second time — the
   bug the dev Skip key already has mid-day.
 
-Both use the project's button variations (`SecondaryButtonM`,
-`PrimaryButtonM`, the Tolak/Terima pairing); the mockup's dark pills are
+Both use the project's button variations (`SecondaryButtonL`,
+`PrimaryButtonL`, the Tolak/Terima pairing at the L step, whose 160 px
+height is the nearest to the mockup's 152); the mockup's dark pills are
 placeholders by the owner's note.
 
 ## 5. Back buttons — drop-replace the canonical arrow
@@ -329,7 +333,7 @@ touched.
 | `Scripts/SchoolSimulation/EventDialogue.gd` | passes `day_name` to `splash_path_for` |
 | `Scripts/Skins/StudentSkins.gd` | `DAY_OUTFITS`, `day_splash_for` |
 | `Scripts/Design/DesignTokens.gd`, `ThemeFactory.gd`, `Assets/Theme/kejartes_theme.tres` | 3 tokens, 4 variations, rebake |
-| tests | new `test_minigame_win_screen.gd`, `test_ui_icon_refresh.gd`; additions to `event_dialogue`, `student_skins`, `minigame_single_result`, `school_day`, `theme_factory`, `illustration_ao`, `tall_screen_layout`, `lobby` |
+| tests | new `test_minigame_win_screen.gd`, `test_ui_icon_refresh.gd`; additions to `event_dialogue`, `student_skins`, `minigame_single_result`, `school_day`, `theme_factory`, `illustration_ao`, `look_layer` (tall-phone checks live in the new suite, since `layout_frame.gd` stands up only a Control-rooted scene) |
 | `CLAUDE.md` loop line, `docs/superpowers/CHANGELOG.md`, `docs/superpowers/DEBT.md` | one line each (DEBT: the Skip key's mid-day double decay) |
 
 ## Testing
@@ -348,13 +352,13 @@ Test-first, by suite:
 - `minigame_win_screen` (new) — authored, themed, no overrides, no `.new(`;
   `REVEAL_ORDER`; `configure` hides zero chips and fills stars from the
   count; `win_speaker_path` table; `WIN_LINES`; bottom anchoring at
-  1080×2400 through `layout_frame.gd` (rect checks, not screenshots).
+  1080×2400, with `Root` moved into a frame of that size (rect checks).
 - `minigame_single_result` — a win builds the win screen and not the popup,
   a loss the reverse; the reporter is called once, before either card.
 - `school_day` — records once when the reporter ran; `_leave_week_after_today`
   advances `current_day` before skipping (source scan plus the pure helper).
-- `theme_factory`, `illustration_ao`, `tall_screen_layout` — roster, census and
-  layout entries for the new screen.
+- `theme_factory`, `illustration_ao`, `look_layer` — roster, census and
+  grade entries for the new screen.
 
 Then one full `test_run`, and three looks at full size: the win screen
 mid-reveal and settled over a real minigame, EventDialogue on a Kamis, and

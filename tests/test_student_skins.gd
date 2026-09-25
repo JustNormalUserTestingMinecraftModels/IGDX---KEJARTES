@@ -161,3 +161,46 @@ func test_debug_overlay_toggles_skin_locks() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
 	assert_true(src.contains("Kunci/Buka Semua Skin"))
 	assert_true(src.contains("GameState.set_all_skins_locked(not GameState.all_skins_locked())"))
+
+
+# ── day outfits (2026-09-25 minigame-win-screen spec, section 6) ────────────
+
+func test_kamis_is_batik_and_jumat_is_pramuka() -> void:
+	for n in StudentSkins.NAMES:
+		var lower: String = n.to_lower()
+		assert_eq(StudentSkins.day_splash_for(n, "Kamis"),
+			"res://Assets/Images/SplashArtMurid/Seragam/splash_%s_batik.png" % lower, n + " on Kamis")
+		assert_eq(StudentSkins.day_splash_for(n, "Jumat"),
+			"res://Assets/Images/SplashArtMurid/Seragam/splash_%s_pramuka.png" % lower, n + " on Jumat")
+
+
+func test_the_other_days_and_strangers_have_no_outfit() -> void:
+	for day in ["Senin", "Selasa", "Rabu", "", "Sabtu"]:
+		assert_eq(StudentSkins.day_splash_for("Thea", day), "", "no outfit on '%s'" % day)
+	assert_eq(StudentSkins.day_splash_for("Bejo", "Kamis"), "", "only the six have outfits")
+
+
+## The one resolver every screen asks: the outfit on its day, else the
+## student's own (possibly skinned) splash.
+func test_splash_for_day_falls_back_to_the_student_s_own() -> void:
+	var own := "res://Assets/Images/Skins/Thea/splash_thea_skin1.png"
+	assert_eq(StudentSkins.splash_for_day("Thea", own, "Kamis"),
+		"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png", "the outfit beats a skin")
+	assert_eq(StudentSkins.splash_for_day("Thea", own, "Senin"), own)
+	assert_eq(StudentSkins.splash_for_day("Thea", own, ""), own)
+
+
+## Same canvas and import as the default splashes, or the outfit would jump
+## on screen or ship uncompressed.
+func test_every_outfit_is_a_splash_canvas_imported_like_the_default() -> void:
+	for n in StudentSkins.NAMES:
+		for outfit in StudentSkins.DAY_OUTFITS.values():
+			var path := StudentSkins.day_outfit_path(n, outfit)
+			assert_true(ResourceLoader.exists(path), path + " must be imported")
+			var tex := load(path) as Texture2D
+			if tex != null:
+				assert_eq(tex.get_size(), Vector2(1080, 1920), path + " is a 1080x1920 splash canvas")
+			var cfg := ConfigFile.new()
+			assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
+			assert_eq(cfg.get_value("params", "compress/mode"), 2, path + " is VRAM-compressed like splash_thea")
+			assert_eq(cfg.get_value("params", "mipmaps/generate"), true, path + " carries mipmaps like splash_thea")

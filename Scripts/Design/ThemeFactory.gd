@@ -1618,6 +1618,19 @@ static func _add_koperasi_variations(theme: Theme, tokens: DesignTokens) -> void
 	theme.set_type_variation("PriceTagDisabled", "Panel")
 	theme.set_stylebox("panel", "PriceTagDisabled", disabled)
 
+	# -- The price on the tag (2026-09-25): the heading face, cream, on the
+	# same dark rim BarLabel wore before it, so it reads on the bright green
+	# rest pill, the dark green wipe and the grey disabled pill alike. --
+	theme.add_type("PriceTagLabel")
+	theme.set_type_variation("PriceTagLabel", "Label")
+	theme.set_font_size("font_size", "PriceTagLabel", tokens.font_title)
+	theme.set_color("font_color", "PriceTagLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "PriceTagLabel",
+		maxi(2, tokens.text_outline_size / 2))
+	theme.set_color("font_outline_color", "PriceTagLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PriceTagLabel", tokens.font_display)
+
 	var tray := StyleBoxFlat.new()
 	tray.bg_color = tokens.koperasi_tray_fill
 	tray.border_color = tokens.koperasi_tray_rule

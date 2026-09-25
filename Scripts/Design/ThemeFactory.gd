@@ -31,6 +31,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_event_dialogue(theme, tokens)
 	_build_shop_chat_bubble(theme, tokens)
 	_build_student_chat(theme, tokens)
+	_build_minigame_win(theme, tokens)
 	_build_achievements(theme, tokens)
 	_build_achievement_tile(theme, tokens)
 	_build_achievement_status_pill(theme, tokens)
@@ -675,6 +676,52 @@ static func _build_student_chat(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font("font", "StudentChatText", bold)
 	theme.set_font_size("font_size", "StudentChatText", tokens.font_title)
 	theme.set_color("font_color", "StudentChatText", tokens.text_primary)
+
+
+## The minigame win screen (2026-09-25 spec, minigamewinscreen_mockup.jpeg):
+## the card that rises from the bottom edge, the speaker's bubble, its line
+## and the stat numbers. The bubble is surface_card, the colour
+## chat_bubble_tail.svg is filled with, so the tail joins it without a seam.
+## The two labels are on the display face (DISPLAY_ROSTER).
+static func _build_minigame_win(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("MinigameWinCard")
+	theme.set_type_variation("MinigameWinCard", "PanelContainer")
+	var card := StyleBoxFlat.new()
+	card.bg_color = tokens.minigame_win_card
+	card.corner_radius_top_left = tokens.minigame_win_card_radius
+	card.corner_radius_top_right = tokens.minigame_win_card_radius
+	card.content_margin_left = tokens.space_xl
+	card.content_margin_right = tokens.space_xl
+	card.content_margin_top = tokens.space_md
+	card.content_margin_bottom = tokens.space_xl
+	theme.set_stylebox("panel", "MinigameWinCard", card)
+
+	theme.add_type("MinigameWinBubble")
+	theme.set_type_variation("MinigameWinBubble", "PanelContainer")
+	var bubble := StyleBoxFlat.new()
+	bubble.bg_color = tokens.surface_card
+	bubble.set_corner_radius_all(STUDENT_CHAT_BUBBLE_RADIUS)
+	bubble.content_margin_left = tokens.space_xl
+	bubble.content_margin_right = tokens.space_xl
+	bubble.content_margin_top = tokens.space_md
+	bubble.content_margin_bottom = tokens.space_md
+	theme.set_stylebox("panel", "MinigameWinBubble", bubble)
+
+	theme.add_type("MinigameWinLine")
+	theme.set_type_variation("MinigameWinLine", "Label")
+	theme.set_font_size("font_size", "MinigameWinLine", tokens.font_h2)
+	theme.set_color("font_color", "MinigameWinLine", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "MinigameWinLine", tokens.font_display)
+
+	theme.add_type("MinigameWinStatLabel")
+	theme.set_type_variation("MinigameWinStatLabel", "Label")
+	theme.set_font_size("font_size", "MinigameWinStatLabel", tokens.minigame_win_stat_size)
+	theme.set_color("font_color", "MinigameWinStatLabel", Color.WHITE)
+	theme.set_constant("outline_size", "MinigameWinStatLabel", tokens.text_outline_size)
+	theme.set_color("font_outline_color", "MinigameWinStatLabel", tokens.day_glyph_outline)
+	if tokens.font_display != null:
+		theme.set_font("font", "MinigameWinStatLabel", tokens.font_display)
 
 ## The event dialogue (2026-09-14 event-dialogue spec): a white rounded card
 ## with dark bold text, and the header's day banner and calendar labels, all

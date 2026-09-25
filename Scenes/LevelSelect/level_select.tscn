@@ -18,7 +18,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ls")
-fan_step_x = 130.0
 
 [node name="Backdrop" type="TextureRect" parent="." unique_id=2029502251]
 layout_mode = 1
@@ -160,6 +159,7 @@ offset_left = -136.0
 offset_top = -40.0
 offset_right = -16.0
 offset_bottom = 88.0
+grow_horizontal = 0
 grow_vertical = 2
 focus_mode = 0
 theme_type_variation = &"SecondaryButtonL"
@@ -234,7 +234,7 @@ theme_type_variation = &"TraitPill"
 text = "Ramah pemula"
 
 [node name="Stats" type="HBoxContainer" parent="Safe/UI/Brief/Margin/VBox" unique_id=1264769277]
-custom_minimum_size = Vector2(0, 290)
+custom_minimum_size = Vector2(0, 268)
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 20
@@ -537,9 +537,9 @@ horizontal_alignment = 1
 
 [node name="OpenButton" type="Button" parent="Safe/UI/Brief/Margin/VBox" unique_id=1711922988]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 128)
 layout_mode = 2
-theme_type_variation = &"PrimaryButton"
+theme_type_variation = &"PrimaryButtonM"
 text = "Buka Map Ini"
 
 [node name="Confirm" parent="." unique_id=780925111 instance=ExtResource("9_confirm")]

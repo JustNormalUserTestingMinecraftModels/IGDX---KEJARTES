@@ -328,6 +328,8 @@ const DISPLAY_ROSTER := [
 	# its meta are body copy, so they keep the body face.
 	"MinigameBadgeLabel", "MinigameWheelHeaderWarm", "MinigameWheelHeaderCool",
 	"MinigameChoiceButton",
+	# 2026-09-25 minigame win screen: the bubble line and the stat numbers.
+	"MinigameWinLine", "MinigameWinStatLabel",
 	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
 	# this roster in the same pass -- LobbyNavTile and LobbyCtaButton
 	# replaced it.

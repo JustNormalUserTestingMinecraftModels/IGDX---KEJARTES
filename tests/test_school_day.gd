@@ -867,3 +867,60 @@ func test_the_day_ends_on_an_ink_stamp() -> void:
 	assert_false(src.contains(" selesai! " + String.chr(0x2713)),
 		"the old tick line is gone")
 	assert_true(src.contains("GameSettings.reduce_motion"), "the stamp honours reduce_motion")
+
+
+# ───────────────────────────── the win screen's wiring (2026-09-25)
+
+func test_the_win_screen_shows_the_roster_average_rounded() -> void:
+	var school_day = load(_SCHOOL_DAY_SCRIPT)
+	var results := [
+		{"student_name": "A", "deltas": {"stat_delta": 8.0, "energy_delta": -3.0}},
+		{"student_name": "B", "deltas": {"stat_delta": 10.0, "energy_delta": -6.0}},
+		{"student_name": "C", "deltas": {"stat_delta": 0.0, "energy_delta": -6.0}},
+	]
+	assert_eq(school_day.roster_average(results, "stat_delta"), 6.0)
+	assert_eq(school_day.roster_average(results, "energy_delta"), -5.0)
+	assert_eq(school_day.roster_average([], "stat_delta"), 0.0, "an empty roster averages to nothing")
+
+
+func test_the_minigame_is_told_who_thanks_and_how_to_report() -> void:
+	var body := _function_body(FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT), "_play_minigame")
+	var reporter := body.find("result_reporter = ")
+	var context := body.find("host_context = ")
+	var start := body.find("start_minigame(")
+	assert_true(reporter != -1 and context != -1, "SchoolDay hands the minigame both")
+	assert_true(reporter < start and context < start, "before the minigame starts")
+
+
+## The stats are applied exactly once: by the reporter when it ran, else
+## (a minigame without BaseMinigame's hook) after the result as before.
+func test_the_result_is_recorded_once() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var report := _function_body(src, "_report_minigame_result")
+	assert_true(report.contains("record_minigame_result(") and report.contains("_minigame_recorded = true"))
+	var play := _function_body(src, "_play_minigame")
+	assert_true(play.contains("if student_manager and not _minigame_recorded:"),
+		"the old record after the result only runs when the reporter did not")
+
+
+## LOBBY leaves the week. Today's decay and roll already happened, and
+## skip_to_results() starts at current_day, so today must be stepped past
+## first or it is decayed and rolled twice.
+func test_lobby_steps_past_today_before_skipping() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var leave := _function_body(src, "_leave_week_after_today")
+	var step := leave.find("current_day += 1")
+	var skip := leave.find("skip_to_results()")
+	assert_true(step != -1 and skip != -1 and step < skip, "step past today, then skip")
+	var play := _function_body(src, "_play_minigame")
+	assert_true(play.contains("&\"lobby\"") and play.contains("_leave_week_after_today()"),
+		"the minigame's LOBBY answer leads there")
+
+
+## The student who asked before the minigame is the one who thanks after it.
+func test_the_dialogue_remembers_its_featured_student() -> void:
+	var dlg := _function_body(FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT), "_show_event_dialogue")
+	var reset := dlg.find("_last_featured = null")
+	var keep := dlg.find("_last_featured = featured")
+	assert_true(reset != -1 and keep != -1 and reset < keep,
+		"cleared on entry (a skipped line leaves nobody), set once picked")

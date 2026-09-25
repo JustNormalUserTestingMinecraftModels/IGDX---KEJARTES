@@ -56,7 +56,7 @@ func open(e: Dictionary, featured: StudentData, week: int, max_weeks: int, day_n
 	var bg_path: String = e.get("background", EventDialogueCatalog.DEFAULT_BACKGROUND)
 	background.texture = load(bg_path)
 	blur.visible = e.get("blur", true)
-	var splash_path: String = EventDialogueCatalog.splash_path_for(e, featured)
+	var splash_path: String = EventDialogueCatalog.splash_path_for(e, featured, day_name)
 	splash.texture = load(splash_path) if splash_path != "" and ResourceLoader.exists(splash_path) else null
 	splash.visible = splash.texture != null
 	week_label.text = "%d/%d" % [week, max_weeks]

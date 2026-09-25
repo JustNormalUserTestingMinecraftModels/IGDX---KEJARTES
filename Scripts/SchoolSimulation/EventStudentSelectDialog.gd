@@ -86,7 +86,8 @@ func setup_event(
 	students: Array[StudentData],
 	stat_boost: float = 15.0,
 	energy_cost: float = -15.0,
-	mood_boost: float = 0.0
+	mood_boost: float = 0.0,
+	day_name: String = ""
 ) -> void:
 	event_data = {
 		"title": title,
@@ -96,7 +97,9 @@ func setup_event(
 		"category": category,
 		"stat_boost": stat_boost,
 		"energy_cost": energy_cost,
-		"mood_boost": mood_boost
+		"mood_boost": mood_boost,
+		# Dresses each card's portrait for the day (StudentSkins.DAY_OUTFITS).
+		"day_name": day_name,
 	}
 	student_list = students
 
@@ -158,6 +161,7 @@ func _populate_student_cards() -> void:
 	card_widgets.clear()
 
 	var category: String = event_data.get("category", "Akademis")
+	var day_name: String = event_data.get("day_name", "")
 	var cards: Array = []
 	for student in student_list:
 		var card: EventStudentCard = CARD_SCENE.instantiate()
@@ -166,7 +170,7 @@ func _populate_student_cards() -> void:
 		# setup() only after the card is in the tree: its stat rows tween
 		# through Juice, which needs the bar parented before it can make
 		# a tween on it.
-		card.setup(student, category)
+		card.setup(student, category, day_name)
 		card.selection_changed.connect(
 			func(_selected: bool) -> void: _update_card_preview(student.student_name))
 		card_widgets[student.student_name] = card

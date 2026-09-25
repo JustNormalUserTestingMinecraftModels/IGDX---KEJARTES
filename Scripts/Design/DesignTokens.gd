@@ -396,6 +396,15 @@ static func load_default() -> DesignTokens:
 ## Thickness of the warning caption's navy rim, in design pixels.
 @export var event_warning_caption_outline: int = 16
 
+## Minigame win screen (2026-09-25, minigamewinscreen_mockup.jpeg).
+## The card's fill: the mockup card's mid-tone. Its top-to-bottom gradient is
+## dropped for one flat fill.
+@export var minigame_win_card: Color = Color("E8EDCD")
+## Radius of the card's two top corners; its bottom meets the screen edge.
+@export var minigame_win_card_radius: int = 72
+## Font size of the win screen's "+8" / "-5" stat numbers, off the mockup.
+@export var minigame_win_stat_size: int = 96
+
 
 ## Resolve a schedule category name to its accent color.
 ## Returns text_secondary for anything unrecognized so callers never

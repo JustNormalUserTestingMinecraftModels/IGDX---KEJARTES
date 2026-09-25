@@ -144,12 +144,12 @@ func test_student_speakers_wear_their_own_splash() -> void:
 ## cleanup -- the same helper shape as test_school_day.gd's _instantiate().
 ## Untyped on purpose: typed as Control, GDScript rejects d.tap() and the
 ## other script members at compile time.
-func _dialogue(key: String, featured: StudentData = null):
+func _dialogue(key: String, featured: StudentData = null, day: String = "Senin"):
 	var d = (load(_SCENE) as PackedScene).instantiate()
 	d.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(d)
 	track(d)
-	d.open(EventDialogueCatalog.entry(key), featured, 2, 6, "Senin")
+	d.open(EventDialogueCatalog.entry(key), featured, 2, 6, day)
 	return d
 
 
@@ -400,3 +400,86 @@ func test_the_event_list_exists_once() -> void:
 	assert_eq(src.count('"Les Tambahan Akademis"'), 1, "one copy of the event table")
 	assert_contains(_body(src, "_trigger_random_event"), "_run_event(randi() % 5, day_name)")
 	assert_contains(_body(src, "force_event"), "_run_event(event_id, day_name)")
+
+
+# ── placement (2026-09-25 minigame-win-screen spec, section 2) ──────────────
+
+## Matched against eventdialogue_mockup.jpeg: the splash is drawn 1:1, 276 px
+## lower and 30 px left of centre, as a 1080x1920 box hung off the bottom edge
+## so it stays locked to the bottom-anchored dialogue box on a tall phone.
+func test_the_speaker_hangs_off_the_bottom_edge_where_the_mockup_has_them() -> void:
+	var d = (load(_SCENE) as PackedScene).instantiate()
+	track(d)
+	var s := d.get_node("Splash") as TextureRect
+	assert_eq(Vector4(s.anchor_left, s.anchor_top, s.anchor_right, s.anchor_bottom),
+		Vector4(0, 1, 1, 1), "the splash hangs off the bottom edge")
+	assert_eq(Vector4(s.offset_left, s.offset_top, s.offset_right, s.offset_bottom),
+		Vector4(-30, -1644, -30, 276), "1080x1920, shifted (-30, +276)")
+	assert_eq(s.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_CENTERED)
+
+
+## At 1080x1920 the art's top-left lands on (-30, 276); at 1080x2400 it keeps
+## the same distance from the bottom edge.
+func test_the_speaker_keeps_its_place_above_the_box_on_a_tall_phone() -> void:
+	for screen in [Vector2(1080, 1920), Vector2(1080, 2400)]:
+		var frame := track(preload("res://tests/layout_frame.gd").stand_up(_SCENE, screen)) as Control
+		var s := frame.get_child(0).get_node("Splash") as TextureRect
+		var r := s.get_global_rect()
+		assert_eq(r.size, Vector2(1080, 1920), "the box is the art's own size at %s" % screen)
+		assert_eq(r.position, Vector2(-30, screen.y - 1920 + 276), "placed from the bottom at %s" % screen)
+
+
+# ── day outfits and the win speaker (2026-09-25 spec, sections 3 and 6) ────
+
+const _BATIK_THEA := "res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png"
+const _PRAMUKA_THEA := "res://Assets/Images/SplashArtMurid/Seragam/splash_thea_pramuka.png"
+
+
+func test_a_student_speaker_wears_the_day_outfit() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var e := EventDialogueCatalog.entry("BuatBatik")
+	assert_eq(EventDialogueCatalog.splash_path_for(e, thea, "Kamis"), _BATIK_THEA)
+	assert_eq(EventDialogueCatalog.splash_path_for(e, thea, "Jumat"), _PRAMUKA_THEA)
+	assert_eq(EventDialogueCatalog.splash_path_for(e, thea, "Rabu"), _THEA_SPLASH)
+	assert_eq(EventDialogueCatalog.splash_path_for(e, thea), _THEA_SPLASH, "no day, own look")
+
+
+func test_teachers_and_mom_keep_their_clothes_on_outfit_days() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	for key in ["nasi_kotak", "MainBola", "workshop_seni"]:
+		var e := EventDialogueCatalog.entry(key)
+		assert_eq(EventDialogueCatalog.splash_path_for(e, thea, "Kamis"), e["speaker"], key)
+
+
+func test_the_screen_dresses_for_the_day() -> void:
+	var d = _dialogue("BuatBatik", _student("Thea", "SeniBudaya", _THEA_SPLASH), "Kamis")
+	assert_eq(d.splash.texture.resource_path, _BATIK_THEA)
+
+
+func test_akademis_is_thanked_by_the_student() -> void:
+	var thea := _student("Thea", "Akademis", _THEA_SPLASH)
+	for roll in [0.0, 0.49, 0.99]:
+		assert_eq(EventDialogueCatalog.win_speaker_path("Akademis", thea, "Senin", roll), _THEA_SPLASH)
+	assert_eq(EventDialogueCatalog.win_speaker_path("Akademis", thea, "Jumat", 0.0), _PRAMUKA_THEA)
+	assert_eq(EventDialogueCatalog.win_speaker_path("Akademis", null, "Senin", 0.0), "",
+		"an empty roster has nobody to show")
+
+
+func test_seni_and_olahraga_are_the_teacher_or_the_student() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var below := EventDialogueCatalog.WIN_TEACHER_CHANCE - 0.01
+	var above := EventDialogueCatalog.WIN_TEACHER_CHANCE + 0.01
+	assert_eq(EventDialogueCatalog.win_speaker_path("SeniBudaya", thea, "Senin", below), EventDialogueCatalog.SPLASH_GURU_SENI)
+	assert_eq(EventDialogueCatalog.win_speaker_path("SeniBudaya", thea, "Senin", above), _THEA_SPLASH)
+	assert_eq(EventDialogueCatalog.win_speaker_path("Olahraga", thea, "Senin", below), EventDialogueCatalog.SPLASH_GURU_PENJAS)
+	assert_eq(EventDialogueCatalog.win_speaker_path("Olahraga", thea, "Kamis", above), _BATIK_THEA)
+	assert_eq(EventDialogueCatalog.win_speaker_path("Olahraga", null, "Senin", above), EventDialogueCatalog.SPLASH_GURU_PENJAS,
+		"with nobody on the roster the teacher always speaks")
+
+
+func test_each_speaker_has_its_own_thanks() -> void:
+	assert_eq(EventDialogueCatalog.win_line_for(_THEA_SPLASH), "Terima kasih, Guru!")
+	assert_eq(EventDialogueCatalog.win_line_for(""), "Terima kasih, Guru!")
+	assert_eq(EventDialogueCatalog.win_line_for(EventDialogueCatalog.SPLASH_GURU_PENJAS), "Kerja bagus! Latihannya berhasil.")
+	assert_eq(EventDialogueCatalog.win_line_for(EventDialogueCatalog.SPLASH_GURU_SENI),
+		"Indah sekali! Terima kasih sudah membimbing mereka.")

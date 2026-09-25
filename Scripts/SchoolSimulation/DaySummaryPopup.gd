@@ -58,7 +58,8 @@ const _TARGET_FOR := {
 func setup_summary(
 	summary_data: Array,
 	students: Array[StudentData],
-	money_today: int = 0
+	money_today: int = 0,
+	day_name: String = ""
 ) -> void:
 	AudioDirector.play_sfx(&"popup_open")
 	verdict = DayVerdict.compute(summary_data, students, money_today)
@@ -84,7 +85,7 @@ func setup_summary(
 
 		var row_inst = student_row_scene.instantiate()
 		rows_container.add_child(row_inst)
-		row_inst.setup_row(s_name, changes, student)
+		row_inst.setup_row(s_name, changes, student, day_name)
 		rows.append(row_inst)
 
 	# Animate in

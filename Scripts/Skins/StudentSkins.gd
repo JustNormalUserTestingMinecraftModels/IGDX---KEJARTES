@@ -45,6 +45,16 @@ const BUST_CENTERS: Dictionary = {
 }
 ## Bust centre for a name not in BUST_CENTERS: upper middle of the canvas.
 const FALLBACK_BUST_CENTER := Vector2(540, 380)
+## The outfit every student wears on a school day (2026-09-25 spec): on the
+## event screens that draw the full-body splash (EventDialogue, the minigame
+## win screen) and on the result portraits (daily and weekly results, the
+## pick-students cards). A day not listed keeps the student's own look. On
+## these days the outfit wins over an equipped skin, as a uniform day would;
+## only SchoolDay's avatar strip keeps the skin.
+const DAY_OUTFITS: Dictionary = {"Kamis": "batik", "Jumat": "pramuka"}
+## Where the day outfits live, named splash_<name>_<outfit>.png. Each shares
+## its student's 1080x1920 canvas and registration; only a hat may rise above.
+const OUTFIT_DIR := "res://Assets/Images/SplashArtMurid/Seragam/"
 
 
 static func skins_for(student_name: String) -> Array[String]:
@@ -103,6 +113,28 @@ static func hand_for(student_name: String) -> String:
 
 static func bust_center(student_name: String) -> Vector2:
 	return BUST_CENTERS.get(student_name, FALLBACK_BUST_CENTER)
+
+
+## The path one day outfit's splash would live at.
+static func day_outfit_path(student_name: String, outfit: String) -> String:
+	return OUTFIT_DIR + "splash_%s_%s.png" % [student_name.to_lower(), outfit]
+
+
+## The splash `student_name` wears on `day_name`, or "" on a day without an
+## outfit, for a name outside NAMES, or when the file is gone.
+static func day_splash_for(student_name: String, day_name: String) -> String:
+	var outfit: String = DAY_OUTFITS.get(day_name, "")
+	if outfit == "" or not NAMES.has(student_name):
+		return ""
+	var path := day_outfit_path(student_name, outfit)
+	return path if ResourceLoader.exists(path) else ""
+
+
+## What a screen draws for `student_name` on `day_name`: the day outfit when
+## there is one, else `own_splash` (the student's own, possibly skinned, art).
+static func splash_for_day(student_name: String, own_splash: String, day_name: String) -> String:
+	var outfit := day_splash_for(student_name, day_name)
+	return outfit if outfit != "" else own_splash
 
 
 static func _resolve(student: Dictionary, layer: String) -> String:

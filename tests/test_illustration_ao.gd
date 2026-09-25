@@ -227,6 +227,8 @@ func test_the_lobby_cutout_differs_only_in_its_light() -> void:
 const CUTOUTS := {
 	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman", "Stage/Foreground"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+	# 2026-09-25: the minigame win screen's speaker, the same splash art.
+	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 	"res://Scenes/Minigames/SeniBudaya/DancerRig.tscn": ["Body", "Head"],
 	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["Goalie/GFX", "Ball/GFX"],
 	"res://Scenes/Minigames/Olahraga/Badminton.tscn": [
@@ -456,11 +458,11 @@ func test_every_backdrop_keeps_the_plain_material() -> void:
 				"%s/%s is full-bleed and must not pay for AO" % [scene_path, node_path])
 
 
-## The two dicts here and look_layer's GRADED describe the same thirty plates
+## The two dicts here and look_layer's GRADED describe the same thirty-one plates
 ## from two angles. This checks that agreement: a plate added to one dict and
 ## forgotten in the other fails here. It does NOT notice a plate that was
 ## given a grade material in a .tscn but added to neither list -- that plate
-## is invisible to this test too. The assert_eq(counted.size(), 30, ...) below
+## is invisible to this test too. The assert_eq(counted.size(), 31, ...) below
 ## is a deliberate ratchet, not a discovered fact: bump it by hand when a
 ## plate is legitimately added to both dicts.
 func test_the_census_covers_every_graded_plate_exactly_once() -> void:
@@ -490,7 +492,7 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 		assert_true(counted.has(key), "%s wears the grade but is in neither census bucket" % key)
 	for key in counted:
 		assert_true(expected.has(key), "%s is in the census but does not wear the grade" % key)
-	assert_eq(counted.size(), 30, "the census must cover all thirty graded plates")
+	assert_eq(counted.size(), 31, "the census must cover all thirty-one graded plates")
 
 
 ## The Lobby's light shafts (2026-09-23). The volumetric piece of the pass, and

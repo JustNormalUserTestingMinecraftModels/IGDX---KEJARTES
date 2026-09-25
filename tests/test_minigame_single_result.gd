@@ -53,13 +53,82 @@ func _stood_up() -> Node:
 	return mg
 
 
-func _popup_count(mg: Node) -> int:
+## How many result cards of `script_name` the minigame holds.
+func _cards(mg: Node, script_name: String) -> int:
 	var found := 0
 	for child in mg.get_children():
 		var s: Script = child.get_script() as Script
-		if s != null and str(s.resource_path).contains("MinigameResultPopup"):
+		if s != null and str(s.resource_path).contains(script_name):
 			found += 1
 	return found
+
+
+## Either result card: the win screen on a win (2026-09-25), the popup on a loss.
+func _popup_count(mg: Node) -> int:
+	return _cards(mg, "MinigameResultPopup") + _cards(mg, "MinigameWinScreen")
+
+
+func test_a_win_shows_the_win_screen_and_not_the_popup() -> void:
+	var mg := _stood_up()
+	mg.set("is_game_active", true)
+	mg.call("win_game")
+	assert_eq(_cards(mg, "MinigameWinScreen"), 1, "a win ends on the win screen")
+	assert_eq(_cards(mg, "MinigameResultPopup"), 0)
+
+
+func test_a_loss_keeps_the_popup() -> void:
+	var mg := _stood_up()
+	mg.set("is_game_active", true)
+	mg.call("abandon_game")
+	assert_eq(_cards(mg, "MinigameResultPopup"), 1, "a loss keeps the old card")
+	assert_eq(_cards(mg, "MinigameWinScreen"), 0)
+
+
+## The stats are applied when the result is decided, once, and the win screen
+## shows what the host reported.
+func test_the_reporter_runs_once_before_the_card() -> void:
+	var mg := _stood_up()
+	var calls: Array = []
+	mg.set("result_reporter", func(won: bool, _s: int, _m: int) -> Dictionary:
+		calls.append(won)
+		return {"stat_delta": 8.0, "energy_delta": -5.0})
+	mg.set("host_context", {"category": "Akademis",
+		"speaker": "res://Assets/Images/SplashArtMurid/splash_citra.png", "line": "Terima kasih, Guru!"})
+	mg.set("is_game_active", true)
+	mg.call("win_game")
+	mg.call("win_game")
+	assert_eq(calls, [true], "reported once, as a win")
+	var screen: MinigameWinScreen = null
+	for child in mg.get_children():
+		if child is MinigameWinScreen:
+			screen = child
+	assert_true(screen != null)
+	if screen != null:
+		assert_eq(screen.skill_chip.value.text, "+8")
+		assert_eq(screen.splash.texture.resource_path, "res://Assets/Images/SplashArtMurid/splash_citra.png")
+
+
+func test_a_loss_is_reported_too() -> void:
+	var mg := _stood_up()
+	var calls: Array = []
+	mg.set("result_reporter", func(won: bool, _s: int, _m: int) -> Dictionary:
+		calls.append(won)
+		return {})
+	mg.set("is_game_active", true)
+	mg.call("abandon_game")
+	assert_eq(calls, [false])
+
+
+func test_standalone_play_shows_no_stats() -> void:
+	var mg := _stood_up()
+	mg.set("is_game_active", true)
+	mg.call("win_game")
+	var checked := 0
+	for child in mg.get_children():
+		if child is MinigameWinScreen:
+			checked += 1
+			assert_false(child.stat_row.visible, "nothing was applied, so nothing is shown")
+	assert_eq(checked, 1)
 
 
 ## The regression itself.

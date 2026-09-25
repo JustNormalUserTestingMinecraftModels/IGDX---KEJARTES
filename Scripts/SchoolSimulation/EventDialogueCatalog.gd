@@ -29,6 +29,19 @@ const CALENDAR_BADGE := ART_DIR + "calendar_badge.png"
 ## Stands in for {nama} when there is no roster (debug only).
 const NAME_FALLBACK := "murid-murid"
 
+## Chance a won SeniBudaya or Olahraga minigame is thanked by that subject's
+## teacher rather than a student (2026-09-25 win-screen spec).
+const WIN_TEACHER_CHANCE := 0.5
+## What a student says on the win screen. A draft for the owner's writer.
+const WIN_LINE_STUDENT := "Terima kasih, Guru!"
+## Each teacher's own thanks, keyed by their splash. Drafts for the writer.
+const WIN_LINES := {
+	SPLASH_GURU_PENJAS: "Kerja bagus! Latihannya berhasil.",
+	SPLASH_GURU_SENI: "Indah sekali! Terima kasih sudah membimbing mereka.",
+}
+## The teacher who may thank the player for each category's win.
+const WIN_TEACHER := {"SeniBudaya": SPLASH_GURU_SENI, "Olahraga": SPLASH_GURU_PENJAS}
+
 ## mode: MODE_TAP or MODE_CHOICE. speaker: "" for none, SPEAKER_STUDENT, or a
 ## texture path. category: the specialty the featured student is picked from
 ## ("" = anyone). background: a texture path. blur: blur the backdrop.
@@ -150,10 +163,34 @@ static func fill_line(line: String, featured: StudentData) -> String:
 	return line.replace("{nama}", who)
 
 
-## The speaker's texture path: the featured student's splash for
-## SPEAKER_STUDENT, the fixed art otherwise, "" for none.
-static func splash_path_for(e: Dictionary, featured: StudentData) -> String:
+## The featured student's splash on `day_name`: the day outfit on Kamis and
+## Jumat (StudentSkins.DAY_OUTFITS), their own (equipped) look otherwise, ""
+## for nobody.
+static func student_splash(featured: StudentData, day_name: String) -> String:
+	if featured == null:
+		return ""
+	return StudentSkins.splash_for_day(featured.student_name, featured.splash_path, day_name)
+
+
+## The speaker's texture path: the featured student's splash (dressed for
+## `day_name`) for SPEAKER_STUDENT, the fixed art otherwise, "" for none.
+static func splash_path_for(e: Dictionary, featured: StudentData, day_name: String = "") -> String:
 	var speaker: String = e.get("speaker", "")
 	if speaker == SPEAKER_STUDENT:
-		return "" if featured == null else featured.splash_path
+		return student_splash(featured, day_name)
 	return speaker
+
+
+## Who thanks the player on the win screen. Akademis: the featured student.
+## SeniBudaya / Olahraga: the subject's teacher when `roll` (0-1) falls under
+## WIN_TEACHER_CHANCE or nobody is featured, else the featured student.
+static func win_speaker_path(category: String, featured: StudentData, day_name: String, roll: float) -> String:
+	var teacher: String = WIN_TEACHER.get(category, "")
+	if teacher != "" and (featured == null or roll < WIN_TEACHER_CHANCE):
+		return teacher
+	return student_splash(featured, day_name)
+
+
+## The win screen's line for a speaker: the teacher's own, else a student's.
+static func win_line_for(speaker_path: String) -> String:
+	return WIN_LINES.get(speaker_path, WIN_LINE_STUDENT)

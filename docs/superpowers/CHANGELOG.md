@@ -8,6 +8,33 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-25 — Amplop Coklat level select
+
+Spec `docs/superpowers/specs/2026-09-25-amplop-level-select-design.md`, plan
+`docs/superpowers/plans/2026-09-25-amplop-level-select.md`.
+
+- **The screen.** `Scenes/LevelSelect/level_select.tscn` replaces CutScene's
+  runtime-built "PILIH TINGKAT KELAS" modal: three `AmplopCard`s fanned on the
+  desk, a briefing card (pupil heads, a week grid, a difficulty gauge and
+  word -- santai / menantang / susah -- never the raw target), Buka Map Ini.
+  Swipe, tap a side envelope or the arrows; the fan shuffles with a
+  `TRANS_BACK` overshoot, the envelopes bob and the centred one hops.
+- **Opening is the confirmation.** `OpenAmplopConfirm`: the seal pops, the
+  flap folds back (its plain back swapped in past edge-on), the grade's pupils
+  peek out in their worn skins, and the surat tugas asks Terima Tugas / Batal.
+- **Flow.** MainMenu goes to the level select while
+  `GameState.is_level_select_enabled()` (beaten, or the Debug Level Select
+  toggle on), else to CutScene, which then defaults to Kelas 7. Accepting sets
+  the grade and wipes into the intro. CutScene's Debug toggle, switched on,
+  comes back here; its ratchet count fell 15 -> 4.
+- **Deviations from the plan.** The picker lived in CutScene, not a MainMenu
+  slot; the pupil count reads StudentCard's new `max_approve_for()` (2/3/4)
+  rather than a copied table; the swipe steps once per press-and-release
+  rather than per drag event; the card root is a bare anchor, since an
+  instanced root under a plain Control loses its rect on load.
+- **Art.** The artist's flat envelope is split into four layers by
+  `tools/split_amplop.py`; the leftovers are in DEBT.md.
+
 ## 2026-09-25 — Minigame win screen, day outfits, icon refresh
 
 Spec `docs/superpowers/specs/2026-09-25-minigame-win-screen-design.md`.

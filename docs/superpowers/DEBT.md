@@ -102,6 +102,18 @@ assertions off `Label`).
 (`WinStage`'s `lose_backdrop` `@export`, so an Inspector swap). `InventorySlot`'s high-count
 `Shine` overlay is a plain white `ColorRect` with no texture.
 
+**Level Select (2026-09-25).** The envelope is the artist's flat
+`Amplop coklat.png`, cut into body, flap, flap back and seal by
+`tools/split_amplop.py`; the envelope's inside (under the flap) and the flap's
+back are painted in by that script, and the seal is lifted off with a 2 px
+paint-out. Separate layers from the artist would replace all four at the same
+paths (and the script's traced polygons would retire). Still placeholder: the
+white `pupil_head.svg`, `week_cell.svg` and `gauge_pill.svg` in
+`Assets/Images/LevelSelect/`, tinted from tokens, and the fan's arrows reuse
+`UI/Placeholders/arrow.png`. The envelopes wear no illustration grade; adding
+one means the census in `tests/test_illustration_ao.gd` and a rim along the
+flap's crease to judge.
+
 ## Asset notes
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but

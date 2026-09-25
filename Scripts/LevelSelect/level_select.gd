@@ -94,7 +94,7 @@ static func roster_size_for(grade: int) -> int:
 
 
 ## Horizontal distance between neighbouring envelopes in the fan.
-@export var fan_step_x: float = 150.0:
+@export var fan_step_x: float = 130.0:
 	set(value):
 		fan_step_x = value
 		_layout_cards(false)

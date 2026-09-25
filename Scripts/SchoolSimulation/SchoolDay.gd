@@ -518,6 +518,26 @@ func _skill_values(student: StudentData) -> Dictionary:
 		"olahraga": student.olahraga}
 
 
+## Splits the move from `before` to `now` (both _skill_values dictionaries)
+## into what pops and what to bank. A skill that rose half a point or more
+## pops, rounded, and is banked. A smaller rise is NOT banked, so fractions
+## (an event's +0.4 spread over three skills) add up across updates until
+## they are worth a pop instead of vanishing. A fall is banked at once, so a
+## later recovery is not mistaken for a gain.
+## Returns {"gained": {key: int}, "banked": {key: float}}.
+static func split_skill_rises(before: Dictionary, now: Dictionary) -> Dictionary:
+	var gained := {}
+	var banked := now.duplicate()
+	for key in now:
+		var was := float(before.get(key, now[key]))
+		var rise := float(now[key]) - was
+		if rise >= 0.5:
+			gained[key] = int(round(rise))
+		elif rise > 0.0:
+			banked[key] = was
+	return {"gained": gained, "banked": banked}
+
+
 ## Colours the legend's two dots like the rings they name.
 func _tint_ring_legend() -> void:
 	var tokens := Juice.tokens()
@@ -682,13 +702,9 @@ func _animate_embedded_stat_updates(duration: float = 0.6) -> void:
 		if chip == null:
 			continue
 		var now := _skill_values(student)
-		var before: Dictionary = w.get("skills", now)
-		var gained := {}
-		for key in now:
-			var rise: float = float(now[key]) - float(before.get(key, now[key]))
-			if rise >= 0.5:
-				gained[key] = int(round(rise))
-		w["skills"] = now
+		var split := split_skill_rises(w.get("skills", now), now)
+		w["skills"] = split["banked"]
+		var gained: Dictionary = split["gained"]
 		if not gained.is_empty():
 			moved = true
 			chip.pop_gains(gained)

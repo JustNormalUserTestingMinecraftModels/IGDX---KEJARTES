@@ -285,3 +285,18 @@ func ", at + 1) - at)
 		"a skill rise after an event or minigame floats its pops")
 	assert_true(src.contains('w["skills"] = _skill_values(w["student"])'),
 		"the activity's gains are banked so they never pop twice")
+
+
+## Review 2026-09-25: gains are split per skill, and a rise too small to pop
+## is left unbanked so fractions add up instead of vanishing.
+func test_small_rises_accumulate_until_they_pop() -> void:
+	var script: GDScript = load(SCHOOL_DAY_SCRIPT)
+	var before := {"akademis": 10.0, "seni_budaya": 10.0, "olahraga": 10.0}
+	var first: Dictionary = script.split_skill_rises(before,
+		{"akademis": 10.4, "seni_budaya": 12.0, "olahraga": 9.0})
+	assert_eq(first["gained"], {"seni_budaya": 2}, "only the whole-point rise pops")
+	assert_eq(float(first["banked"]["akademis"]), 10.0, "a +0.4 stays unbanked")
+	assert_eq(float(first["banked"]["olahraga"]), 9.0, "a fall is banked at once")
+	var second: Dictionary = script.split_skill_rises(first["banked"],
+		{"akademis": 10.8, "seni_budaya": 12.0, "olahraga": 9.0})
+	assert_eq(second["gained"], {"akademis": 1}, "+0.4 then +0.4 adds up to a pop")

@@ -10,7 +10,7 @@ class_name ActivityPreview
 ## int below, MAX_ARROWS, is a display cap, not tuning.
 ##
 ## Since the 2026-09-24 picker rebuild (visual polish D11/D12) the picker
-## speaks in arrows rather than raw numbers: green up for a gain, red down
+## speaks in arrows rather than raw numbers: gold up for a gain, red down
 ## for a cost, more arrows for a bigger effect. The counts are derived here
 ## from Balance, measured against the biggest swing Balance allows, so a
 ## retune moves the arrows with it. Skill tiles keep their exact number

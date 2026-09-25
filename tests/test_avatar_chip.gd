@@ -106,6 +106,10 @@ func test_the_floating_gain_has_room_to_rise() -> void:
 	Engine.get_main_loop().root.add_child(pop)
 	track(pop)
 	pop.set_gain("akademis", 12)
+	# Guard against a vacuous pass: the number must really have been measured
+	# in the baked DaySummaryStat face, not left at zero height.
+	var label_h := (pop.get_node("Value") as Label).get_combined_minimum_size().y
+	assert_true(label_h >= 40.0, "the +N measured only %.0f px tall" % label_h)
 	var top := pop.get_combined_minimum_size().y - AvatarChip.GAIN_TEXT_OFFSET.y + pop.rise_px
 	assert_true(top <= headroom.custom_minimum_size.y,
 		"the pop peaks %.0f px above the rings; the headroom is %.0f" % [top, headroom.custom_minimum_size.y])
@@ -132,6 +136,21 @@ func test_only_rising_skills_pop_in_card_order() -> void:
 		["akademis", "olahraga"] as Array[String], "card order, zero dropped")
 	assert_eq(AvatarChip.gaining_stats({"mood": 4, "energy": 9}).size(), 0,
 		"needs are the rings' job, not a pop's")
+
+
+## One pop at a time (review 2026-09-25): two skills at once, or a second
+## call while a pop still shows, queue behind it rather than stacking. In the
+## editor a pop never plays out and frees, so the queue holds still to count.
+func test_pops_queue_one_at_a_time() -> void:
+	_chip.pop_gains({"akademis": 1, "olahraga": 2})
+	var showing := func() -> int:
+		return _chip.get_node("Rings").get_children().filter(
+			func(c: Node) -> bool: return c is StatGainPop).size()
+	assert_eq(showing.call(), 1, "only the first pop shows")
+	assert_eq(_chip.pending_pop_count(), 1, "the second waits its turn")
+	_chip.pop_gains({"seni_budaya": 3})
+	assert_eq(showing.call(), 1, "a later call does not land on top")
+	assert_eq(_chip.pending_pop_count(), 2, "it queues behind")
 
 
 ## The pop reads like DaySummaryStatRow: the stat's own icon, the gold up

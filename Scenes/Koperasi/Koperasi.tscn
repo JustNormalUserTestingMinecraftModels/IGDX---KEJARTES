@@ -1,0 +1,927 @@
+[gd_scene format=3 uid="uid://dgdiebg5vu00j"]
+
+[ext_resource type="Script" uid="uid://ioeh8qtnpgo5" path="res://Scripts/Koperasi/Koperasi.gd" id="1_ap2qe"]
+[ext_resource type="Texture2D" uid="uid://c508i2o3te6ur" path="res://Assets/Images/Shop/Koperasi/shop_background.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://bc5b3cryjeq32" path="res://Assets/Images/Shop/Koperasi/shop_herman.png" id="3_herman"]
+[ext_resource type="Texture2D" uid="uid://dhivb8qhdvt0x" path="res://Assets/Images/Shop/Koperasi/shop_foreground.png" id="4_fg"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="5_46s2e"]
+[ext_resource type="Script" uid="uid://bgp5ht1pwg3s1" path="res://Scripts/Koperasi/KoperasiStage.gd" id="5_jfwhh"]
+[ext_resource type="Texture2D" uid="uid://chs5y1k0f18x2" path="res://Assets/Images/Shop/UI/chat_bubble_tail.svg" id="6_tail"]
+[ext_resource type="Texture2D" uid="uid://ku8mk6u7pm31" path="res://Assets/Images/Shop/UI/item_glow.tres" id="8_st3ia"]
+[ext_resource type="PackedScene" uid="uid://dwgcebdsp5rjh" path="res://Scenes/Koperasi/PriceTag.tscn" id="9_tag"]
+[ext_resource type="PackedScene" uid="uid://0ais0usytajp" path="res://Scenes/Koperasi/BasketTray.tscn" id="11_rr7aj"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="13_pstwm"]
+[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_pstwm"]
+[ext_resource type="Script" uid="uid://c43apcu58ifl5" path="res://Scripts/Koperasi/ChatBubble.gd" id="15_chatbubble"]
+[ext_resource type="Texture2D" uid="uid://5fkevoxgxj3r" path="res://Assets/Images/Shop/UI/pip_hollow.svg" id="16_piphollow"]
+[ext_resource type="Texture2D" uid="uid://cpcnblan2tm6i" path="res://Assets/Images/Shop/UI/pip_filled.svg" id="17_pipfilled"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
+[ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
+[ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
+atlas = ExtResource("2_bg")
+region = Rect2(0, 0, 1080, 160)
+
+[sub_resource type="Animation" id="Animation_herman_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_herman_idle"]
+resource_name = "idle"
+length = 3.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.7, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.01, 1.01), Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_herman_talk"]
+resource_name = "talk"
+length = 0.42
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.105, 0.21, 0.315, 0.42),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1, 1.015), Vector2(1, 1), Vector2(1, 0.985), Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.105, 0.21, 0.315, 0.42),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.021, 0.0, -0.021, 0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_herman"]
+_data = {
+&"RESET": SubResource("Animation_herman_reset"),
+&"idle": SubResource("Animation_herman_idle"),
+&"talk": SubResource("Animation_herman_talk")
+}
+
+[node name="Koprasi" type="Control" unique_id=2082264977]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("kejartes_theme")
+script = ExtResource("1_ap2qe")
+
+[node name="WallFill" type="TextureRect" parent="." unique_id=946961831]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("AtlasTexture_wall")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Stage" type="Control" parent="." unique_id=358025086]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -1920.0
+offset_right = 1080.0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("5_jfwhh")
+
+[node name="Background" type="TextureRect" parent="Stage" unique_id=1368498906]
+material = ExtResource("illus_grade")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+
+[node name="Barang1" type="TextureButton" parent="Stage" unique_id=2025160246]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 310.0
+offset_right = 216.0
+offset_bottom = 490.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang1" unique_id=1676951368]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang1" unique_id=392810126 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang1" unique_id=152245713]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=1147589431]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang1/PipRow/Pip1" unique_id=1704950127]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=650704110]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang1/PipRow/Pip2" unique_id=1625275599]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang1/PipRow" unique_id=725558168]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang1/PipRow/Pip3" unique_id=1951248597]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Barang2" type="TextureButton" parent="Stage" unique_id=1035531758]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 310.0
+offset_right = 580.0
+offset_bottom = 490.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang2" unique_id=1390363136]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang2" unique_id=1933280770 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang2" unique_id=1014717160]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=1014947454]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang2/PipRow/Pip1" unique_id=569120470]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=1176432292]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang2/PipRow/Pip2" unique_id=818834988]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang2/PipRow" unique_id=357828217]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang2/PipRow/Pip3" unique_id=1061426864]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Barang3" type="TextureButton" parent="Stage" unique_id=146454907]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 586.0
+offset_right = 216.0
+offset_bottom = 766.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang3" unique_id=1453679314]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang3" unique_id=592658879 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang3" unique_id=871021906]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1251214989]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang3/PipRow/Pip1" unique_id=1792405716]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1320150119]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang3/PipRow/Pip2" unique_id=1456214491]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang3/PipRow" unique_id=1885664185]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang3/PipRow/Pip3" unique_id=593939420]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Barang4" type="TextureButton" parent="Stage" unique_id=1939537762]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 586.0
+offset_right = 580.0
+offset_bottom = 766.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang4" unique_id=1676197223]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang4" unique_id=1403381806 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang4" unique_id=1913242402]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=537563283]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang4/PipRow/Pip1" unique_id=1503456351]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=1048468601]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang4/PipRow/Pip2" unique_id=617701114]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang4/PipRow" unique_id=1597974320]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang4/PipRow/Pip3" unique_id=737409031]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Barang5" type="TextureButton" parent="Stage" unique_id=1855709326]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 854.0
+offset_right = 216.0
+offset_bottom = 1034.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang5" unique_id=1888714187]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang5" unique_id=1225937581 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang5" unique_id=946587675]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1168279158]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang5/PipRow/Pip1" unique_id=589624512]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1402280116]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang5/PipRow/Pip2" unique_id=512546524]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang5/PipRow" unique_id=1026545289]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang5/PipRow/Pip3" unique_id=380031057]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Barang6" type="TextureButton" parent="Stage" unique_id=1304589263]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 854.0
+offset_right = 580.0
+offset_bottom = 1034.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Glow" type="TextureRect" parent="Stage/Barang6" unique_id=1649495211]
+modulate = Color(1, 1, 1, 0)
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_st3ia")
+expand_mode = 1
+
+[node name="PriceTag" parent="Stage/Barang6" unique_id=1612572044 instance=ExtResource("9_tag")]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 176.0
+offset_right = 150.0
+offset_bottom = 226.0
+
+[node name="PipRow" type="HBoxContainer" parent="Stage/Barang6" unique_id=610613472]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=289289198]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang6/PipRow/Pip1" unique_id=1765155189]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=371058406]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang6/PipRow/Pip2" unique_id=1607862616]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Stage/Barang6/PipRow" unique_id=967511406]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_piphollow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="TextureRect" parent="Stage/Barang6/PipRow/Pip3" unique_id=1871016044]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_pipfilled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Herman" type="TextureRect" parent="Stage" unique_id=2135616178]
+material = ExtResource("illus_grade_cut")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(540, 1920)
+mouse_filter = 2
+texture = ExtResource("3_herman")
+expand_mode = 1
+
+[node name="Shadow" parent="Stage/Herman" unique_id=451507075 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("3_herman")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
+[node name="HermanAP" type="AnimationPlayer" parent="Stage/Herman" unique_id=784512396]
+libraries/ = SubResource("AnimationLibrary_herman")
+autoplay = &"idle"
+
+[node name="Foreground" type="TextureRect" parent="Stage" unique_id=1358581353]
+material = ExtResource("illus_grade_cut")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_fg")
+expand_mode = 1
+
+[node name="ChatBubble" type="Control" parent="Stage" unique_id=111727118]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 36.0
+offset_top = 23.0
+offset_right = 1046.0
+offset_bottom = 368.0
+mouse_filter = 2
+script = ExtResource("15_chatbubble")
+
+[node name="Body" type="PanelContainer" parent="Stage/ChatBubble" unique_id=1413313847]
+layout_mode = 1
+offset_right = 1010.0
+offset_bottom = 233.0
+mouse_filter = 2
+theme_type_variation = &"ShopChatBubble"
+
+[node name="Text" type="RichTextLabel" parent="Stage/ChatBubble/Body" unique_id=1055143642]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"EventDialogueText"
+text = "Selamat datang di Koperasi! Mau beli apa hari ini?"
+scroll_active = false
+vertical_alignment = 1
+
+[node name="Tail" type="TextureRect" parent="Stage/ChatBubble" unique_id=1574868225]
+layout_mode = 1
+offset_left = 751.0
+offset_top = 230.0
+offset_right = 816.0
+offset_bottom = 345.0
+mouse_filter = 2
+texture = ExtResource("6_tail")
+expand_mode = 1
+
+[node name="BackButton" type="TextureButton" parent="Stage" unique_id=903998956]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 1157.0
+offset_right = 209.0
+offset_bottom = 1342.0
+texture_normal = ExtResource("5_46s2e")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="TrayDock" type="Control" parent="Stage" unique_id=1980279394]
+layout_mode = 1
+anchors_preset = 0
+offset_top = 117.0
+offset_right = 1080.0
+offset_bottom = 1828.0
+mouse_filter = 2
+
+[node name="BasketTray" parent="Stage/TrayDock" unique_id=560263619 instance=ExtResource("11_rr7aj")]
+layout_mode = 0
+
+[node name="CoinHUD" type="HBoxContainer" parent="Stage" unique_id=152403238]
+unique_name_in_owner = true
+z_index = 10
+layout_mode = 0
+offset_left = 732.0
+offset_top = 1230.0
+offset_right = 1032.0
+offset_bottom = 1290.0
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="CoinIcon" type="TextureRect" parent="Stage/CoinHUD" unique_id=247332116]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+texture = ExtResource("14_pstwm")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CoinLabel" type="Label" parent="Stage/CoinHUD" unique_id=526578915]
+layout_mode = 2
+theme_type_variation = &"ShopCoinLabel"
+vertical_alignment = 1
+
+[node name="Parallax" type="Control" parent="Stage" unique_id=490057061]
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("parallax_diorama")
+depth_by_child = {
+"Background": 0.15,
+"Foreground": 1.0,
+"Herman": 0.5
+}
+overscan_children = Array[StringName]([&"Background", &"Foreground"])
+
+[node name="Safe" type="MarginContainer" parent="." unique_id=259420622]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+script = ExtResource("13_pstwm")
+
+[node name="UI" type="Control" parent="Safe" unique_id=984193724]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MessageLabel" type="Label" parent="." unique_id=1813194977]
+z_index = 20
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.47
+anchor_right = 1.0
+anchor_bottom = 0.47
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_type_variation = &"ShopMessageSuccess"
+horizontal_alignment = 1

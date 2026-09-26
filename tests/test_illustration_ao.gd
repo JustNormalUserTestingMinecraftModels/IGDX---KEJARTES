@@ -225,7 +225,7 @@ func test_the_lobby_cutout_differs_only_in_its_light() -> void:
 ## A cutout has an alpha edge to find; a backdrop is full-bleed and would pay
 ## five taps per pixel for nothing. Percentages are transparent pixels.
 const CUTOUTS := {
-	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman", "Stage/Foreground"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Herman", "Stage/Foreground"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 	# 2026-09-25: the minigame win screen's speaker, the same splash art.
 	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
@@ -242,8 +242,8 @@ const CUTOUTS := {
 
 ## Full-bleed. These keep the material they have always worn.
 const BACKDROPS := {
-	"res://Scenes/Lobby/loby.tscn": ["World/Classroom/BGLayer"],
-	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Background"],
+	"res://Scenes/Lobby/Lobby.tscn": ["World/Classroom/BGLayer"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Background"],
 	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background"],
 	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background"],
 	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background"],
@@ -410,7 +410,7 @@ func _param_or_zero(mat: ShaderMaterial, uniform: String) -> float:
 
 ## The Lobby's four desks are cutouts too, lit from the upper right.
 const LOBBY_DESKS := {
-	"res://Scenes/Lobby/loby.tscn": [
+	"res://Scenes/Lobby/Lobby.tscn": [
 		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
@@ -507,7 +507,7 @@ func test_the_lobby_shafts_are_additive_and_placed() -> void:
 	assert_true(src.contains("render_mode blend_add"),
 		"shafts brighten what is behind them; they do not paint over it")
 
-	var lobby := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
+	var lobby := (load("res://Scenes/Lobby/Lobby.tscn") as PackedScene).instantiate()
 	track(lobby)
 	var shafts := lobby.get_node_or_null("World/Classroom/WindowShafts") as Control
 	assert_true(shafts != null, "the Lobby should carry the window shafts")
@@ -547,7 +547,7 @@ func test_the_shafts_stay_under_the_look_ceiling() -> void:
 ## The shafts must move with the wall they come through, or they float over a
 ## room that is parallaxing underneath them. BGLayer's own depth is 0.15.
 func test_the_shafts_parallax_with_the_room() -> void:
-	var lobby := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
+	var lobby := (load("res://Scenes/Lobby/Lobby.tscn") as PackedScene).instantiate()
 	track(lobby)
 	var diorama := lobby.get_node_or_null("World/Classroom/ParallaxDiorama")
 	if diorama == null:

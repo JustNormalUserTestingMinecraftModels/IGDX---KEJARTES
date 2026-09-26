@@ -18,7 +18,7 @@ extends McpTestSuite
 ## 2026-08-31's 21-task pass converted the extraction-worthy shared UI
 ## (popups, cards, rows, panels duplicated across 2-3 screens) but did not
 ## attempt every remaining file -- BASELINE still carries real, substantial,
-## unconverted call sites (atur_jadwal.gd's 17, cut_scene.gd's 4,
+## unconverted call sites (AturJadwal.gd's 17, CutScene.gd's 4,
 ## Pengaturan.gd's 12, MinigameTutorial.gd's 12, and others). This is
 ## deliberately still a ratchet, not a closed rule: see "Known gaps" in
 ## docs/superpowers/design/authoring-guide.md for the full remaining list
@@ -62,10 +62,10 @@ const EXEMPT: Array[String] = [
 ## conversions land. Never raise one. See "Known gaps" in
 ## docs/superpowers/design/authoring-guide.md for what each one needs.
 const BASELINE: Dictionary = {
-	"res://Scripts/AturJadwal/atur_jadwal.gd": 17,
-	"res://Scripts/CutScene/cut_scene.gd": 4,
-	"res://Scripts/Koperasi/rakbarang_1.gd": 1,
-	"res://Scripts/Lobby/loby.gd": 8,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 17,
+	"res://Scripts/CutScene/CutScene.gd": 4,
+	"res://Scripts/Koperasi/KoperasiStage.gd": 1,
+	"res://Scripts/Lobby/Lobby.gd": 8,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 2,
 	"res://Scripts/Minigames/Akademis/Variabel.gd": 1,
 	"res://Scripts/Minigames/Olahraga/Badminton.gd": 8,
@@ -80,8 +80,8 @@ const BASELINE: Dictionary = {
 	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 1,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1,
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
-	"res://Scripts/StudentCard/student_card.gd": 1,
-	"res://Scripts/StudentList/student_list.gd": 7,
+	"res://Scripts/StudentCard/StudentCard.gd": 1,
+	"res://Scripts/StudentList/StudentList.gd": 7,
 	"res://Scripts/TutorialArrow.gd": 1,
 }
 

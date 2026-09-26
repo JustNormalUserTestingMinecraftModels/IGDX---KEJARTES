@@ -8,7 +8,7 @@ extends Control
 ## Beli button.
 ##
 ## Two ways to move it, both landing in set_state(): the CrateHandle
-## koprasi.gd owns, and a drag -- the tray follows a finger between docked
+## Koperasi.gd owns, and a drag -- the tray follows a finger between docked
 ## and hidden, and classify_drag() decides where the release settles. A
 ## basket emblem in the top-right corner was a third until 2026-09-21; it
 ## carried the cart's total count and a toggle button, and both moved to
@@ -19,7 +19,7 @@ extends Control
 ## synchronous: tests assert real positions, and the shop reads a slot's
 ## landing rect the moment the cart changes -- no frame of waiting.
 
-## Emitted when the player presses Beli. koprasi.gd owns the purchase.
+## Emitted when the player presses Beli. Koperasi.gd owns the purchase.
 signal buy_pressed
 ## Emitted when the player holds a tray item to return one to the shelf.
 signal remove_requested(item_name: String)
@@ -261,7 +261,7 @@ func update_drag(at_y: float) -> void:
 
 ## Ends a drag and settles the tray. The settle goes through set_state(), so
 ## the existing tween, emblem fade, badge rule, HeaderButton hit-test gate and
-## state_changed signal all keep working untouched -- koprasi.gd's CrateHandle
+## state_changed signal all keep working untouched -- Koperasi.gd's CrateHandle
 ## mirror needs no edit.
 func end_drag() -> void:
 	if not _dragging:

@@ -2,7 +2,7 @@
 extends McpTestSuite
 
 ## StatInfo is the one table describing the five bars a student card shows.
-## Before it existed, report_card.gd and student_card.gd each carried their
+## Before it existed, ReportCard.gd and StudentCard.gd each carried their
 ## own copy of the same if/elif chain, and the two had already drifted in
 ## whitespace. These tests pin the contract the popup scene reads.
 ##
@@ -52,7 +52,7 @@ func test_needs_and_skills_are_labelled_apart() -> void:
 func test_token_categories_match_the_shipped_bar_colours() -> void:
 	# Mood and Energy are not schedule categories, so they borrow the two
 	# accents no skill uses: Istirahat (violet) for Mood, Libur (amber) for
-	# Energy. This is the mapping report_card.gd::BAR_CATEGORY shipped with.
+	# Energy. This is the mapping ReportCard.gd::BAR_CATEGORY shipped with.
 	assert_eq(StatInfo.token_category("Kepribadian1"), "Istirahat")
 	assert_eq(StatInfo.token_category("Kepribadian2"), "Libur")
 	assert_eq(StatInfo.token_category("Akademis1"), "Akademis")

@@ -16,8 +16,8 @@ scripts construct a visual node at runtime, and 22 scripts had no file header.
 Two projects made the cost concrete. `MainBola.tscn` declared every node —
 `FieldBG`, `Goalie`, `Ball`, the goalposts — with no position and no size;
 `_setup_layout()` placed all of them from magic fractions at runtime, so
-opening the scene showed an empty viewport. And `report_card.gd` and
-`student_card.gd` each carried the same 168-line stat-popup builder, verbatim
+opening the scene showed an empty viewport. And `ReportCard.gd` and
+`StudentCard.gd` each carried the same 168-line stat-popup builder, verbatim
 except for whitespace — a change to one silently didn't reach the other.
 
 ## Pattern A — static chrome lives in the scene
@@ -252,7 +252,7 @@ no regex can make.
    stating what it does *and what it affects* — the node it mutates, the
    autoload it writes, the signal it emits.
 4. **Section banners** (`# ─── Name ───`) group related members. Already used
-   in `Badminton.gd`, `MainBola.gd`, `report_card.gd`; make it universal.
+   in `Badminton.gd`, `MainBola.gd`, `ReportCard.gd`; make it universal.
 
 Worked example, from `Scripts/GameState.gd`'s header:
 
@@ -316,10 +316,10 @@ converted every shared-across-screens case (popups, cards, rows, panels
 duplicated 2-3 times) but did not attempt every remaining file. Largest
 entries, as candidates for a future pass:
 
-- `Scripts/AturJadwal/atur_jadwal.gd` (17) and `Scripts/Pengaturan.gd` (12) —
+- `Scripts/AturJadwal/AturJadwal.gd` (17) and `Scripts/Pengaturan.gd` (12) —
   each builds its own settings/tutorial chrome by hand; likely Pattern A/C
   candidates similar to TutorialPanel.
-- `Scripts/CutScene/cut_scene.gd` (4) — the top bar's Skip and Debug
+- `Scripts/CutScene/CutScene.gd` (4) — the top bar's Skip and Debug
   buttons; its 11-node grade-picker modal moved to the Level Select scene
   (2026-09-25).
 - `Scripts/Minigames/UI/MinigameTutorial.gd` (12) — builds a full popup by
@@ -330,9 +330,9 @@ entries, as candidates for a future pass:
   the procedural drawing fallback, not just move nodes into a scene.
 - The remaining minigames (`Menjodohkan.gd`, `Password.gd`, `Variabel.gd`,
   `Badminton.gd`, `MainBola.gd`, `BuatBatik.gd`, `LombaMenari.gd`, each
-  2-8) and screens (`loby.gd`, `inventory.gd`, `rakbarang_1.gd`,
-  `student_list.gd`, `StudentCardView.gd`, `DailyDecayOverview.gd`,
-  `SchoolDay.gd`, `student_card.gd`,
+  2-8) and screens (`Lobby.gd`, `Inventory.gd`, `KoperasiStage.gd`,
+  `StudentList.gd`, `StudentCardView.gd`, `DailyDecayOverview.gd`,
+  `SchoolDay.gd`, `StudentCard.gd`,
   `TutorialArrow.gd`) — smaller counts, mostly single-purpose chrome
   (a background swap, a fallback drawer) not yet surveyed for whether a
   scene conversion is worthwhile. The 2026-09-04 reward pass converted the

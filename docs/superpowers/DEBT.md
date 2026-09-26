@@ -147,7 +147,7 @@ which gave real streams to `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
 `coin` and `event_announce`. Still aliasing existing streams:
 `specialty_match`, `tally`, `score_tick`, `combo_up`, and the BGM ids
 `exam_notice` and `run_result`. `specialty_match`'s alias is set only in
-`audio_director.tscn`; the script default is null.
+`AudioDirector.tscn`; the script default is null.
 
 **Reward-feedback shopping list (2026-09-23).** The `RewardFeedback`
 orchestrator reuses existing streams via pitch, layering (`play_chord`) and the
@@ -221,12 +221,12 @@ minigames, the debug overlay and `ThemeFactory` itself (which is allowed to):
 | `Scripts/Pengaturan.gd` | 7 |
 | `Scripts/Inventory/InventorySlot.gd` | 5 |
 | `Scripts/Inventory/ApplyStudentRow.gd` | 5 |
-| `Scripts/AturJadwal/atur_jadwal.gd` | 5 |
+| `Scripts/AturJadwal/AturJadwal.gd` | 5 |
 | `Scripts/SchoolSimulation/EventStudentSelectDialog.gd` | 3 |
 | `Scripts/Inventory/ApplyItemScreen.gd` | 3 |
 | `Scripts/AnimUtils.gd` | 3 |
 | `Scripts/SchoolSimulation/StudentStatRow.gd` | 2 |
-| `Scripts/Inventory/inventory.gd` | 2 |
+| `Scripts/Inventory/Inventory.gd` | 2 |
 | `Scripts/SchoolSimulation/StudentSummaryCard.gd` | 1 |
 | `Scripts/SchoolSimulation/SchoolDay.gd` | 1 |
 | `Scripts/SchoolSimulation/ResultCheckup.gd` | 1 |
@@ -257,7 +257,7 @@ minigame win screen's LOBBY steps past today first
 
 **`Textures` is red: five Inventory tests look up moved nodes (2026-09-16).**
 `feat(inventory): mobile redesign` (`431cc5d`) restructured
-`Scenes/Inventory/inventory.tscn` without updating two suites, so a full
+`Scenes/Inventory/Inventory.tscn` without updating two suites, so a full
 `test_run` on a clean `Textures` fails five tests and blocks every PR's merge
 gate. `tests/test_inventory.gd:94,107` want
 `MainColumn/Header/Row/BackButton`, which is now
@@ -469,7 +469,7 @@ widget via `project_run` instead, which exercises it fine.
     `*_eyelid`, `*_eyebrows`, 30 files) minify at the same 3.2-3.5x as the
     `*_base.png` that did get a chain, and they animate. Left out to keep the
     change reviewable; add them the same way if blinking shimmers.
-  - `UI/loby_no_tables.png` is 768x1376 drawn full-screen — **upscaled 1.41x**,
+  - `UI/lobby_no_tables.png` is 768x1376 drawn full-screen — **upscaled 1.41x**,
     the largest surface on the highest-traffic screen. No code fix exists;
     this one needs a bigger source from the artist. Same for
     `Shop/UI/bg_inventory_blur.png` (1.41x up) and `UI/BG.jpg` (1.47x up,
@@ -497,7 +497,7 @@ widget via `project_run` instead, which exercises it fine.
   on a phone it is centred.
 
 - **Koperasi polish leftovers (2026-09-18).** `ShopMessageWarning` and
-  `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `koprasi.gd` after
+  `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `Koperasi.gd` after
   the final polish pass -- nothing in the shop currently shows a warning or
   danger message panel. A
   purchase flight already airborne when the player collapses the tray still

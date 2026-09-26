@@ -209,7 +209,7 @@ func _scene_files(dir_path: String, out: Array) -> void:
 ## Height priority mirrors what Godot actually renders: for an anchored
 ## Control, offset_top/offset_bottom determine the real on-screen size, so
 ## an explicit offset delta wins over custom_minimum_size, which is only a
-## floor. This matters concretely for loby.tscn's "Student"/"Jadwal" CTAs,
+## floor. This matters concretely for Lobby.tscn's "Student"/"Jadwal" CTAs,
 ## which carry custom_minimum_size = Vector2(0, 96) *and* an offset delta
 ## of 290 -- the button actually renders at 290, not 96, and a parser that
 ## let custom_minimum_size win would hide that real offender.

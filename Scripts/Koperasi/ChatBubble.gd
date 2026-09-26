@@ -3,7 +3,7 @@ class_name ChatBubble
 extends Control
 
 ## Pak Herman's speech bubble in the Koperasi (Stage/ChatBubble in
-## koprasi.tscn: a Body PanelContainer > Text RichTextLabel, plus a Tail
+## Koperasi.tscn: a Body PanelContainer > Text RichTextLabel, plus a Tail
 ## TextureRect pointing down at Herman). A tiny FSM: say()/say_for_item()
 ## pick a line from DialogueCatalog, tween the bubble in from Herman's
 ## direction, hold it, then tween it back into him. say_sticky() pins a
@@ -20,7 +20,7 @@ extends Control
 ## while this node is part of the scene *currently open for editing* --
 ## gated on is_part_of_edited_scene(), not just is_editor_hint(), because
 ## test_run also executes inside the editor and still needs the real
-## behaviour. Saving koprasi.tscn from the editor must never bake the
+## behaviour. Saving Koperasi.tscn from the editor must never bake the
 ## shrunk/hidden pose into the file.
 ##
 ## _play()/_hide() each kill any tween still running from a previous call
@@ -36,7 +36,7 @@ extends Control
 ## and "idle" animations. Reaching IDLE (and not sticky) also arms a
 ## randomised idle-chatter Timer (IDLE_MIN_S..IDLE_MAX_S) that speaks an
 ## IDLE line on timeout if the bubble is still idle, not sticky, and
-## idle_chatter_enabled is true -- koprasi.gd resets it on Cart activity,
+## idle_chatter_enabled is true -- Koperasi.gd resets it on Cart activity,
 ## and Task 5's tray wires idle_chatter_enabled to its collapsed state.
 
 signal state_changed(state: int)
@@ -57,7 +57,7 @@ const IDLE_MIN_S := 8.0
 const IDLE_MAX_S := 14.0
 
 ## Where the bubble rests while SHOWING/LINGERING, in the parent's frame.
-## Defaults to the node's authored position in koprasi.tscn (36, 23). This
+## Defaults to the node's authored position in Koperasi.tscn (36, 23). This
 ## default is NOT read from the node -- it is a duplicated literal, so it
 ## must be kept in sync by hand if the bubble is ever repositioned in the
 ## scene; a mismatch would make it rest somewhere other than where it was
@@ -69,7 +69,7 @@ const IDLE_MAX_S := 14.0
 ## handler, not by reset_idle_timer(): a disabled timer still counts down
 ## and, on timeout, simply declines to speak (_on_idle_timeout returns
 ## without saying a line or rearming) -- chatter is muted, not paused. It
-## resumes only once koprasi.gd flips this back true AND calls
+## resumes only once Koperasi.gd flips this back true AND calls
 ## reset_idle_timer() (on tray expand), which arms a fresh
 ## IDLE_MIN_S..IDLE_MAX_S window; re-enabling alone does not make it speak.
 var idle_chatter_enabled: bool = true
@@ -82,9 +82,9 @@ var _last_say_time: Dictionary = {}
 var _linger_timer: Timer
 ## Fires an ambient IDLE line after IDLE_MIN_S..IDLE_MAX_S of silence.
 ## Armed on reaching IDLE (when not sticky) and by reset_idle_timer(),
-## which koprasi.gd calls on every Cart change.
+## which Koperasi.gd calls on every Cart change.
 var _idle_timer: Timer
-## Stage/Herman/HermanAP, handed in by koprasi.gd via set_herman_ap(). Left
+## Stage/Herman/HermanAP, handed in by Koperasi.gd via set_herman_ap(). Left
 ## null in tests that don't care about the animation side of the FSM --
 ## every use is guarded.
 var _herman_ap: AnimationPlayer
@@ -107,7 +107,7 @@ func _ready() -> void:
 		# the bubble shrinks/grows into Herman rather than from its own
 		# centre or a hardcoded corner. Set after the editor guard above --
 		# assigning it before that return mutated the node whenever
-		# koprasi.tscn was merely opened in the editor, baking pivot_offset
+		# Koperasi.tscn was merely opened in the editor, baking pivot_offset
 		# into the scene on the next save.
 		pivot_offset = _tail.position + Vector2(_tail.size.x * 0.5, _tail.size.y)
 
@@ -138,7 +138,7 @@ func set_herman_ap(ap: AnimationPlayer) -> void:
 
 
 ## Re-arms the idle-chatter timer for another IDLE_MIN_S..IDLE_MAX_S window.
-## koprasi.gd calls this on every Cart change so activity keeps pushing the
+## Koperasi.gd calls this on every Cart change so activity keeps pushing the
 ## next ambient line out; a no-op while sticky (a sticky line, e.g.
 ## SOLD_OUT, must not be undercut by an idle line the moment it clears) or
 ## before _ready() has built the timer (editor-edited-scene bubbles never

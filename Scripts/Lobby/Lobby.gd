@@ -1,0 +1,1073 @@
+extends Control
+
+## The Lobby hub: the screen between weeks, and the launch point for every
+## other screen (StudentCard, AturJadwal, Koperasi, Inventory, ReportCard).
+##
+## Draws the roster diorama from GameState.approved_students -- a portrait
+## and matching desk art per approved student slot, keyed by name -- and
+## the daily-login reward strip. Writes GameState.player_money,
+## daily_login_day and last_claim_date when the reward is claimed, and
+## GameState.lobby_tutorial_completed once its own tutorial finishes;
+## every other button here just transitions to another screen.
+
+@export_group("Background Layers")
+## Lobby backdrop. Null falls back to loading lobby.png directly.
+@export var bg_texture: Texture2D
+## Portrait shown in a roster slot when that student has no
+## StudentData.avatar_texture of their own.
+@export var default_portrait: Texture2D = preload("res://Assets/Images/MuridPortrait/Thea.png")
+
+## Name prefix marking a slot child as one student's desk art. Everything
+## after the prefix is the student name it belongs to, so adding a
+## character means duplicating a Hand_* node in Lobby.tscn and renaming it
+## -- no code change here.
+const HAND_NODE_PREFIX := "Hand_"
+
+## Which Hand_* node stands in for a student with no node of their own.
+## Doni's is the deliberate choice: his art is desk props with no arms, so
+## a wrong match reads as a plain desk rather than as another character's
+## hands.
+const HAND_FALLBACK_NAME := "Doni"
+
+## The Settings screen's script; the gear sets where its back button returns.
+const SettingsScript := preload("res://Scripts/UI/Settings.gd")
+
+@export_group("Idle Motion")
+## Subtle looping vertical bob applied to the diorama's portrait
+## containers, so the hub does not read as a still image.
+@export var idle_bob_pixels: float = 6.0
+## Full up-down-up cycle length (seconds) for idle_bob_pixels.
+@export var idle_bob_period: float = 3.2
+
+@export_group("Layered Faces")
+## Multi-layer face rigs (StudentFace: base, eye white, iris, lashes, brows
+## and a blink lid) that replace the flat Portrait TextureRect for the students
+## that have one. A rig is matched to a roster slot by its own student_name,
+## so adding a character is a matter of dropping their .tscn in here; a
+## student with no rig keeps the flat portrait. Left empty, _ready() falls
+## back to Citra's rig, the same shape as hand_fallback above.
+@export var face_rigs: Array[PackedScene] = []
+
+@export_group("Skins")
+## The skin picker opened by SkinSwitchButton.
+@export var skin_select_scene: PackedScene = preload("res://Scenes/Skins/SkinSelect.tscn")
+
+
+@onready var color_rect = $ColorRect
+@onready var click_area = $ColorRect/ClickArea
+# The HUD sits in Safe/UI/BottomBar and the diorama in Classroom since the
+# 2026-09-15 tall-phone pass; unique names find them wherever they sit.
+@onready var student_button = %Student
+@onready var jadwal_button = %Jadwal
+@onready var koperasi_button = %Koperasi
+@onready var report_student_button = %ReportStudent
+@onready var inventory_button = %Inventory
+@onready var settings_button = %SettingsButton
+@onready var achievement_button = %AchievementButton
+@onready var skin_switch_button = %SkinSwitchButton
+
+@onready var money_label = get_node("%DisplayUang/Label")
+@onready var daily_login_btn = %DailyLogin
+@onready var daily_reward = $DailyReward
+@onready var claim_button = $DailyReward/ButtonClaim
+@onready var reward_coin = $DailyReward/RewardCoin
+@onready var reward_amount = $DailyReward/RewardAmount
+
+@onready var portraits_back: Control = %StudentPortraitsContainer_Back
+@onready var portraits_front: Control = %StudentPortraitsContainer_Front
+
+@onready var portrait_slots = [
+	get_node("%StudentPortraitsContainer_Back/Slot1"),
+	get_node("%StudentPortraitsContainer_Back/Slot2"),
+	get_node("%StudentPortraitsContainer_Front/Slot3"),
+	get_node("%StudentPortraitsContainer_Front/Slot4"),
+]
+@onready var hand_slots = [
+	get_node("%StudentHandsContainer_Back/Slot1"),
+	get_node("%StudentHandsContainer_Back/Slot2"),
+	get_node("%StudentHandsContainer_Front/Slot3"),
+	get_node("%StudentHandsContainer_Front/Slot4"),
+]
+
+const DAILY_REWARD := 10
+
+## Modulate alpha applied to ButtonClaim / RewardCoin / RewardAmount once
+## today's reward is already claimed. The panel art always draws the same
+## bright gold "claim me" pill regardless of state, and GhostButton draws no
+## chrome of its own, so this dim is the only visible cue that the day's
+## claim is done once the button goes disabled.
+const CLAIMED_CUE_DIM_ALPHA := 0.4
+
+## The daily-login panel, one frame per streak day. The art bakes all
+## seven slots with the active one lit, so the whole calendar is a single
+## texture swap -- there are no per-day nodes to tint any more.
+const DAY_PANELS: Array[Texture2D] = [
+	preload("res://Assets/Images/UI/DailyLogin/day1.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day2.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day3.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day4.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day5.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day6.png"),
+	preload("res://Assets/Images/UI/DailyLogin/day7.png"),
+]
+
+@export_group("Tutorial")
+## Steps shown the first time the player reaches the Lobby.
+@export var tutorial_phase1_steps: Array[TutorialStepData] = []
+## Steps shown when returning to the Lobby from StudentCard
+## (GameState.returned_from_student_card), instead of phase1's steps.
+@export var tutorial_phase2_steps: Array[TutorialStepData] = []
+
+const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
+
+var current_step := 0
+var current_phase_steps: Array[TutorialStepData] = []
+var tutorial_active := true
+var _tutorial_panel: PanelContainer
+var _tutorial_title_label: Label
+var _tutorial_body_label: Label
+var _tutorial_prompt_label: Label
+var _tutorial_panel_should_center: bool = false
+var _blink_tween: Tween
+var _tutorial_arrow: Control = null
+
+var blur_overlay: ColorRect
+var reward_popup_open := false
+
+@onready var bg_layer = %BGLayer
+
+## Seated students' chatter (2026-09-19 student-chatter spec); null in an
+## older scene without the Chatter node.
+@onready var chatter: LobbyChatter = get_node_or_null("Chatter") as LobbyChatter
+## True while SkinSelect is open; mutes the chatter.
+var _skin_select_open := false
+
+func _ready():
+	if bg_texture:
+		bg_layer.texture = bg_texture
+	else:
+		bg_layer.texture = load("res://Assets/Images/UI/lobby.png")
+		
+
+
+
+
+	if face_rigs.is_empty():
+		face_rigs = [load("res://Scenes/Lobby/CitraFace.tscn")]
+
+	if GameState.has_method("initialize_grade_targets"):
+		GameState.initialize_grade_targets()
+
+	if chatter:
+		chatter.can_speak = _chatter_allowed
+		# The HUD sits over the front-row faces; its taps are not the
+		# students'.
+		chatter.tap_blockers = [student_button, jadwal_button, koperasi_button,
+			report_student_button, inventory_button, settings_button,
+			achievement_button, skin_switch_button, daily_login_btn,
+			get_node("%DisplayUang")]
+	_setup_students()
+	_start_idle_bob(portraits_back, 0.0)
+	_start_idle_bob(portraits_front, idle_bob_period * 0.25)
+
+	if tutorial_phase1_steps.is_empty() or tutorial_phase2_steps.is_empty():
+		_populate_default_tutorial_steps()
+
+	var viewport_size = get_viewport_rect().size
+	var mat := color_rect.material as ShaderMaterial
+	if mat:
+		mat.set_shader_parameter("rect_size", viewport_size)
+	call_deferred("_fit_color_rect_to_viewport")
+	get_tree().root.size_changed.connect(_fit_color_rect_to_viewport)
+
+	_tutorial_arrow = TutorialArrow.new()
+	_tutorial_arrow.visible = false
+	color_rect.add_child(_tutorial_arrow)
+
+	_build_tutorial_panel()
+
+	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, settings_button, achievement_button, skin_switch_button, daily_login_btn, claim_button]:
+		_setup_button_juice(btn)
+
+	color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	if not settings_button.pressed.is_connected(_on_settings_pressed):
+		settings_button.pressed.connect(_on_settings_pressed)
+	if not achievement_button.pressed.is_connected(_on_achievement_pressed):
+		achievement_button.pressed.connect(_on_achievement_pressed)
+	if not skin_switch_button.pressed.is_connected(_on_skin_switch_pressed):
+		skin_switch_button.pressed.connect(_on_skin_switch_pressed)
+	skin_switch_button.disabled = GameState.approved_students.is_empty()
+
+	AudioDirector.play_bgm_playlist(&"lobby")
+
+	if GameState.lobby_tutorial_completed or GameState.minggu_ke > 1:
+		GameState.lobby_tutorial_completed = true
+		color_rect.hide()
+		tutorial_active = false
+		student_button.visible = false
+		jadwal_button.visible = true
+		if student_button is BaseButton:
+			student_button.disabled = false
+		else:
+			student_button.mouse_filter = Control.MOUSE_FILTER_STOP
+
+		if not student_button.pressed.is_connected(_on_student_pressed):
+			student_button.pressed.connect(_on_student_pressed)
+		if not jadwal_button.pressed.is_connected(_on_jadwal_pressed):
+			jadwal_button.pressed.connect(_on_jadwal_pressed)
+		if not koperasi_button.pressed.is_connected(_on_koperasi_pressed):
+			koperasi_button.pressed.connect(_on_koperasi_pressed)
+		if not inventory_button.pressed.is_connected(_on_inventory_pressed):
+			inventory_button.pressed.connect(_on_inventory_pressed)
+		if not report_student_button.pressed.is_connected(_on_report_student_pressed):
+			report_student_button.pressed.connect(_on_report_student_pressed)
+
+		_create_blur_overlay()
+		_setup_daily_login()
+		return
+
+	if GameState.returned_from_student_card:
+		student_button.visible = false
+		jadwal_button.visible = true
+		current_phase_steps = tutorial_phase2_steps.duplicate()
+	else:
+		student_button.visible = true
+		jadwal_button.visible = false
+
+		if student_button is BaseButton:
+			student_button.disabled = true
+		else:
+			student_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		current_phase_steps = tutorial_phase1_steps.duplicate()
+
+	if not student_button.pressed.is_connected(_on_student_pressed):
+		student_button.pressed.connect(_on_student_pressed)
+	if not jadwal_button.pressed.is_connected(_on_jadwal_pressed):
+		jadwal_button.pressed.connect(_on_jadwal_pressed)
+	if not koperasi_button.pressed.is_connected(_on_koperasi_pressed):
+		koperasi_button.pressed.connect(_on_koperasi_pressed)
+	if not inventory_button.pressed.is_connected(_on_inventory_pressed):
+		inventory_button.pressed.connect(_on_inventory_pressed)
+	if not report_student_button.pressed.is_connected(_on_report_student_pressed):
+		report_student_button.pressed.connect(_on_report_student_pressed)
+
+	if click_area.has_signal("pressed"):
+		if not click_area.pressed.is_connected(_next_step):
+			click_area.pressed.connect(_next_step)
+	else:
+		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
+		if not click_area.gui_input.is_connected(_on_click_area_gui_input):
+			click_area.gui_input.connect(_on_click_area_gui_input)
+
+	_show_step(0)
+	_create_blur_overlay()
+	_setup_daily_login()
+
+## Shows the one Hand_<Name> node in this slot that matches the student
+## sitting here, and hides its five siblings.
+##
+## Every slot carries a hand node per student, each positioned and scaled
+## by hand in the 2D viewport against the real desks. That is deliberate:
+## the six art files were drawn at different scales and cropped without a
+## shared registration point, so no single rule lines all of them up with
+## the shoulders. The transforms are authored data, not something this
+## script computes -- it only picks which one is visible, and must never
+## write position, size or scale, or it would clobber that authoring.
+##
+## A name with no matching node (a stock Murid1-6 portrait, or a roster
+## seeded by a test) falls back to HAND_FALLBACK_NAME's node, so the slot
+## shows a plain desk rather than nothing.
+func _show_hand_for(h_slot: Node, student_name: String) -> void:
+	var matched: Node = null
+	var fallback: Node = null
+	for child in h_slot.get_children():
+		if not child.name.begins_with(HAND_NODE_PREFIX):
+			continue
+		child.hide()
+		var who := String(child.name).substr(HAND_NODE_PREFIX.length())
+		if who == student_name:
+			matched = child
+		elif who == HAND_FALLBACK_NAME:
+			fallback = child
+	var chosen: Node = matched if matched != null else fallback
+	if chosen != null:
+		chosen.show()
+
+
+## Dresses every Hand_<Name> node in this slot in its student's equipped
+## skin, restoring the authored texture for the default. Only the texture is
+## touched: the per-node transforms are hand-authored (see _show_hand_for).
+## The first call stashes each node's authored texture in its
+## "default_texture" meta so a later default can put it back. Static so the
+## test runner can call it without an instance of this non-@tool script.
+static func _apply_hand_skins(h_slot: Node) -> void:
+	for child in h_slot.get_children():
+		if not child.name.begins_with(HAND_NODE_PREFIX) or not child is TextureRect:
+			continue
+		var hand := child as TextureRect
+		if not hand.has_meta(&"default_texture"):
+			hand.set_meta(&"default_texture", hand.texture)
+		var who := String(hand.name).substr(HAND_NODE_PREFIX.length())
+		var path := StudentSkins.hand_for(who)
+		hand.texture = load(path) if path != "" else hand.get_meta(&"default_texture")
+
+
+func _setup_students():
+	var students = GameState.approved_students.duplicate()
+	if students.size() == 0:
+		for s in portrait_slots: s.hide()
+		for h in hand_slots: h.hide()
+		if chatter:
+			chatter.set_seats([])
+		return
+
+	var ordered = _compute_seat_order(students)
+	var seats: Array = []
+	for i in range(portrait_slots.size()):
+		var p_slot = portrait_slots[i]
+		var h_slot = hand_slots[i]
+		if i < ordered.size() and ordered[i] != null:
+			p_slot.show()
+			h_slot.show()
+			var s = ordered[i]
+			var portrait_node = p_slot.get_node("Portrait")
+			var port_path = StudentSkins.portrait_for(s)
+			if port_path != "" and ResourceLoader.exists(port_path):
+				portrait_node.texture = load(port_path)
+			else:
+				portrait_node.texture = default_portrait
+				
+			_show_hand_for(h_slot, str(s.get("name", "")))
+			_apply_hand_skins(h_slot)
+			var breathing_delay = float(i) * 0.4
+			# A student with a layered rig gets it instead of the flat
+			# portrait; both breathe identically, so the diorama reads the
+			# same either way.
+			var face := _acquire_face(p_slot, str(s.get("name", "")))
+			if face != null:
+				var skin_base := StudentSkins.face_base_for(str(s.get("name", "")))
+				if skin_base != "":
+					face.set_base_texture(load(skin_base))
+				_match_rect(face, portrait_node)
+				portrait_node.hide()
+				face.show()
+				_animate_breathing(face, breathing_delay)
+			else:
+				portrait_node.show()
+				_animate_breathing(portrait_node, breathing_delay)
+			var hit: Control = face if face != null else portrait_node
+			var anchor := p_slot.get_node_or_null("ChatAnchor") as Control
+			if anchor:
+				seats.append({"student": s, "hit": hit, "anchor": anchor})
+		else:
+			p_slot.hide()
+			h_slot.hide()
+	if chatter:
+		chatter.set_seats(seats)
+
+func _animate_breathing(node: Control, delay: float):
+	if not node: return
+	# Wait one frame so the node's size is properly calculated before setting pivot
+	await get_tree().process_frame
+	if not is_instance_valid(node): return
+	
+	node.pivot_offset = Vector2(node.size.x / 2.0, node.size.y)
+	# Bound to the node, not the Lobby: re-seating after the skin picker
+	# frees the old face rigs, and a Lobby-owned looping tween would keep
+	# stepping a dead node ("Infinite loop detected").
+	var tw = node.create_tween().set_loops()
+	
+	# Start with a delay so they don't breathe perfectly in sync
+	if delay > 0:
+		tw.tween_interval(delay)
+		
+	# Subtle breathing up and down
+	# Time to inhale (expand slightly)
+	tw.tween_property(node, "scale", Vector2(1.01, 1.02), 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	# Time to exhale (shrink back to normal)
+	tw.tween_property(node, "scale", Vector2(1.0, 1.0), 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+## The face rig registered for `student`, or null when that student has no
+## layered art and should keep the flat portrait. The rig -- not this script --
+## owns which roster name it belongs to, so matching reads student_name off
+## the PackedScene's saved state rather than instantiating it to ask.
+func _face_rig_for(student: String) -> PackedScene:
+	var wanted := student.strip_edges().to_lower()
+	if wanted == "":
+		return null
+	for rig in face_rigs:
+		if rig == null:
+			continue
+		if _rig_student_name(rig).strip_edges().to_lower() == wanted:
+			return rig
+	return null
+
+
+## Reads the student_name @export off a face rig's root node without loading
+## the scene into the tree.
+func _rig_student_name(rig: PackedScene) -> String:
+	var state := rig.get_state()
+	if state.get_node_count() == 0:
+		return ""
+	for i in range(state.get_node_property_count(0)):
+		if state.get_node_property_name(0, i) == &"student_name":
+			return str(state.get_node_property_value(0, i))
+	return ""
+
+
+## Instances `student`'s face rig into `slot` and returns it, or null when
+## that student has none. Replaces any rig already in the slot, so a second
+## pass over the roster never stacks two faces on one seat.
+func _acquire_face(slot: Control, student: String) -> StudentFace:
+	var existing := slot.get_node_or_null(^"Face")
+	if existing != null:
+		slot.remove_child(existing)
+		existing.queue_free()
+	var rig := _face_rig_for(student)
+	if rig == null:
+		return null
+	var face := rig.instantiate() as StudentFace
+	if face == null:
+		return null
+	face.name = "Face"
+	slot.add_child(face)
+	return face
+
+
+## Gives `target` the anchors and offsets of `source`, so a face rig lands
+## exactly where the flat portrait it replaces sat. Keeps the diorama's layout
+## a .tscn concern: nudge a Portrait in the viewport and the rig follows.
+func _match_rect(target: Control, source: Control) -> void:
+	target.anchor_left = source.anchor_left
+	target.anchor_top = source.anchor_top
+	target.anchor_right = source.anchor_right
+	target.anchor_bottom = source.anchor_bottom
+	target.offset_left = source.offset_left
+	target.offset_top = source.offset_top
+	target.offset_right = source.offset_right
+	target.offset_bottom = source.offset_bottom
+	target.grow_horizontal = source.grow_horizontal
+	target.grow_vertical = source.grow_vertical
+
+
+func _compute_seat_order(students: Array) -> Array:
+	if not GameState.has_method("get_grade_from_week"):
+		return students # Fallback if GameState isn't updated
+	var seed_val = GameState.get_grade_from_week()
+	var rng = RandomNumberGenerator.new()
+	rng.seed = seed_val * 1337 + 42
+
+	var front_candidates = []
+	var back_candidates = []
+
+	for s in students:
+		var gender = s.get("gender", "")
+		var profil = s.get("profil", "")
+		var is_female = (gender == "Perempuan") or ("Perempuan" in profil)
+		var quirk = s.get("quirk", "")
+		var is_nerd = (quirk == "Kutu Buku")
+		
+		# Priority for front row seats: Female students or Kutu Buku
+		if is_female or is_nerd:
+			front_candidates.append(s)
+		else:
+			back_candidates.append(s)
+
+	# Keep max 2 candidates in the front row
+	while front_candidates.size() > 2:
+		var overflow_idx = rng.randi() % front_candidates.size()
+		var overflow = front_candidates[overflow_idx]
+		front_candidates.remove_at(overflow_idx)
+		back_candidates.append(overflow)
+		
+	while front_candidates.size() < 2 and back_candidates.size() > 0:
+		var pull_idx = rng.randi() % back_candidates.size()
+		var pull = back_candidates[pull_idx]
+		back_candidates.remove_at(pull_idx)
+		front_candidates.append(pull)
+
+	_seeded_shuffle(front_candidates, rng)
+	_seeded_shuffle(back_candidates, rng)
+
+	# Back row seats are Slot1 & Slot2 (Indices 0 & 1)
+	# Front row seats are Slot3 & Slot4 (Indices 2 & 3)
+	var ordered = []
+	ordered.append(back_candidates[0]  if back_candidates.size()  > 0 else null)
+	ordered.append(back_candidates[1]  if back_candidates.size()  > 1 else null)
+	ordered.append(front_candidates[0] if front_candidates.size() > 0 else null)
+	ordered.append(front_candidates[1] if front_candidates.size() > 1 else null)
+	return ordered
+
+func _seeded_shuffle(arr: Array, rng: RandomNumberGenerator):
+	if arr.size() <= 1:
+		return
+	for i in range(arr.size() - 1, 0, -1):
+		var j = rng.randi() % (i + 1)
+		var temp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = temp
+
+## Slow looping vertical bob for a diorama portrait container, so the hub
+## does not read as a still image. Mirrors _animate_breathing's 2-leg
+## looped-tween shape; `delay` staggers the back/front containers so they
+## never move in perfect lockstep.
+func _start_idle_bob(container: Control, delay: float = 0.0) -> void:
+	if not container:
+		return
+	var base_pos := container.position
+	var tw := create_tween().set_loops()
+	if delay > 0.0:
+		tw.tween_interval(delay)
+	tw.tween_property(container, "position", base_pos + Vector2(0, -idle_bob_pixels), idle_bob_period * 0.5) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(container, "position", base_pos, idle_bob_period * 0.5) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _populate_default_tutorial_steps():
+	if tutorial_phase1_steps.is_empty():
+		var p1 = [
+			["Selamat Datang!", "Halo! Sebelum anda terjun untuk mengajar generasi muda di sekolah ini.\n\nMari kita mengenali fasilitas untuk menunjang perjalananmu!", "", ""],
+			["Pilih Muridmu", "Hmmm, kepikiran kalau kelasmu masih sepi, belum ada murid?\n\nAyo, kita langsung saja pilih muridmu!", "Student", "Tekan tombol 'Student' untuk lanjut!"]
+		]
+		for entry in p1:
+			var step = TutorialStepData.new()
+			step.title = entry[0]
+			step.text = entry[1]
+			step.target_node_path = entry[2]
+			step.prompt_text = entry[3]
+			tutorial_phase1_steps.append(step)
+
+	if tutorial_phase2_steps.is_empty():
+		var p2 = [
+			["Pilihan Bagus!", "Pilihan yang sangat bagus!", "", ""],
+			["Inventory", "Inventory adalah tempat dimana seluruh items kalian berada!", "Inventory", ""],
+			["Raport Murid", "Raport adalah untuk melihat secara keseluruhan stats murid anda!", "ReportStudent", ""],
+			["Koperasi Sekolah", "Koperasi adalah dimana kalian dapat belanja item dan customisasi untuk murid-murid ampu kalian!", "Koperasi", ""],
+			["Jadwal Sekolah", "Ahh, sepertinya bel sekolah sudah berbunyi.", "Jadwal", "Tekan tombol 'Jadwal' untuk lanjut!"]
+		]
+		for entry in p2:
+			var step = TutorialStepData.new()
+			step.title = entry[0]
+			step.text = entry[1]
+			step.target_node_path = entry[2]
+			step.prompt_text = entry[3]
+			tutorial_phase2_steps.append(step)
+
+func _build_tutorial_panel():
+	var viewport_size = get_viewport_rect().size
+
+	_tutorial_panel = PanelContainer.new()
+	_tutorial_panel.name = "TutorialPanel"
+	_tutorial_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Was: a three-way branch between an inspector StyleBox, a PNG
+	# nine-patch, and a hand-rolled dark-teal "blackboard" StyleBoxFlat.
+	# All three are now the project's Card surface, matching Task 12/13's
+	# identical treatment of this same shared tutorial-panel code.
+	_tutorial_panel.theme_type_variation = &"Card"
+
+	var panel_width = min(viewport_size.x * 0.92, 1000)
+	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
+
+	var vbox = VBoxContainer.new()
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_theme_constant_override("separation", 10)
+	_tutorial_panel.add_child(vbox)
+
+	_tutorial_title_label = Label.new()
+	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tutorial_title_label.theme_type_variation = &"H1Label"
+	vbox.add_child(_tutorial_title_label)
+
+	var sep = HSeparator.new()
+	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(sep)
+
+	_tutorial_body_label = Label.new()
+	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tutorial_body_label.theme_type_variation = &"TitleLabel"
+	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
+	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 60, 0)
+	vbox.add_child(_tutorial_body_label)
+
+	var sep2 = HSeparator.new()
+	sep2.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(sep2)
+
+	_tutorial_prompt_label = Label.new()
+	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
+	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tutorial_prompt_label.theme_type_variation = &"TitleLabel"
+	vbox.add_child(_tutorial_prompt_label)
+
+	color_rect.add_child(_tutorial_panel)
+	var click_idx = click_area.get_index()
+	color_rect.move_child(_tutorial_panel, click_idx)
+
+	_start_prompt_blink()
+	call_deferred("_position_tutorial_panel")
+
+func _start_prompt_blink():
+	if _blink_tween and _blink_tween.is_valid():
+		_blink_tween.kill()
+	_tutorial_prompt_label.modulate.a = 1.0
+	_blink_tween = create_tween().set_loops()
+	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 0.25, 0.65) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 1.0, 0.65) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _position_tutorial_panel(force_center: bool = false):
+	if not _tutorial_panel or not is_instance_valid(_tutorial_panel):
+		return
+	var viewport_size = get_viewport_rect().size
+	_tutorial_panel.reset_size()
+	await get_tree().process_frame
+	if not is_instance_valid(_tutorial_panel):
+		return
+	var panel_size = _tutorial_panel.size
+
+	var target_y: float
+	if force_center or _tutorial_panel_should_center:
+		target_y = (viewport_size.y - panel_size.y) / 2.0
+	else:
+		var min_y = viewport_size.y * 0.55
+		var ideal_y = viewport_size.y - panel_size.y - 40
+		target_y = max(min_y, ideal_y)
+
+	_tutorial_panel.position = Vector2(
+		(viewport_size.x - panel_size.x) / 2.0,
+		target_y
+	)
+	_tutorial_panel.pivot_offset = panel_size / 2.0
+
+func _fit_color_rect_to_viewport():
+	var viewport_size = get_viewport_rect().size
+	color_rect.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	color_rect.position = -global_position
+	color_rect.size = viewport_size
+	if click_area:
+		click_area.set_anchors_preset(Control.PRESET_FULL_RECT)
+		click_area.position = Vector2.ZERO
+		click_area.size = viewport_size
+	var mat := color_rect.material as ShaderMaterial
+	if mat:
+		mat.set_shader_parameter("rect_size", viewport_size)
+	if tutorial_active and _tutorial_panel and is_instance_valid(_tutorial_panel):
+		call_deferred("_position_tutorial_panel")
+
+func _create_blur_overlay():
+	blur_overlay = ColorRect.new()
+	blur_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	blur_overlay.color = Color.TRANSPARENT
+	var shader = load("res://Scripts/Shaders/blur.gdshader")
+	var mat = ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("lod", 0.0)
+	mat.set_shader_parameter("darkness", 0.0)
+	blur_overlay.material = mat
+	blur_overlay.visible = false
+	blur_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(blur_overlay)
+	# Place blur_overlay at DailyReward's index, just before it: it then
+	# renders over the Classroom and the whole HUD (Safe and everything in
+	# it, DailyLogin and SettingsButton included) but behind the popup. Since
+	# the 2026-09-15 tall-phone pass the HUD sits in Safe/UI/BottomBar, so a
+	# HUD node's own index says nothing about the root's draw order.
+	move_child(blur_overlay, daily_reward.get_index())
+	# Connect click on blur overlay to close popup
+	blur_overlay.gui_input.connect(_on_blur_overlay_input)
+
+func _setup_daily_login():
+	# Hide the reward panel initially
+	if daily_reward:
+		daily_reward.visible = false
+	_update_money_display()
+	_check_daily_login_reset()
+	_update_daily_login_visual()
+	if claim_button and not claim_button.pressed.is_connected(_on_claim_pressed):
+		claim_button.pressed.connect(_on_claim_pressed)
+	if daily_login_btn and not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
+		daily_login_btn.pressed.connect(_on_daily_login_pressed)
+
+## Animates the money display via Juice.count_up instead of setting the
+## label's text directly. Pass the pre-change amount as `from_amount` to
+## get a rolling count and, when the value went up, a coin sfx; omitted
+## (or equal to the current amount) this just lands on the correct text
+## with no visible motion, which is what the initial _setup_daily_login()
+## call wants.
+func _update_money_display(from_amount: int = -1) -> void:
+	if not money_label:
+		return
+	var to_amount := GameState.player_money
+	var from := float(from_amount) if from_amount >= 0 else float(to_amount)
+	Juice.count_up(money_label, from, float(to_amount), "%dG")
+	if to_amount > int(from):
+		AudioDirector.play_sfx(&"coin")
+
+func _check_daily_login_reset():
+	var today = Time.get_date_string_from_system()
+	if GameState.last_claim_date == "" or GameState.last_claim_date == today:
+		return
+	var today_unix = Time.get_unix_time_from_datetime_string(today + " 00:00:00")
+	var last_claim_unix = Time.get_unix_time_from_datetime_string(GameState.last_claim_date + " 00:00:00")
+	if today_unix - last_claim_unix > 86400:
+		# lewat lebih dari 1 hari tanpa klaim, streak reset ke Day1
+		GameState.daily_login_day = 1
+
+func _update_daily_login_visual() -> void:
+	var today := Time.get_date_string_from_system()
+	var already_claimed_today: bool = GameState.last_claim_date == today
+
+	if daily_reward:
+		var day := clampi(GameState.daily_login_day, 1, DAY_PANELS.size())
+		daily_reward.texture = DAY_PANELS[day - 1]
+
+	if claim_button and claim_button is BaseButton:
+		claim_button.disabled = already_claimed_today
+
+	# The art has no separate "claimed" frame, so dim the affordance nodes
+	# directly -- restore full modulate once a new day makes the claim
+	# available again.
+	var claim_dim_alpha := CLAIMED_CUE_DIM_ALPHA if already_claimed_today else 1.0
+	for node in [claim_button, reward_coin, reward_amount]:
+		if node:
+			node.modulate.a = claim_dim_alpha
+
+func _on_daily_login_pressed():
+	if reward_popup_open:
+		return
+	_show_daily_reward()
+
+func _show_daily_reward():
+	if not daily_reward:
+		return
+	AudioDirector.play_sfx(&"popup_open")
+	reward_popup_open = true
+
+	# Show and animate blur overlay
+	blur_overlay.visible = true
+	var blur_mat = blur_overlay.material as ShaderMaterial
+	blur_mat.set_shader_parameter("lod", 0.0)
+	blur_mat.set_shader_parameter("darkness", 0.0)
+
+	# Pop the whole panel in -- the art bakes all seven slots, so there are
+	# no separate tiles left to stagger in behind it.
+	daily_reward.visible = true
+	Juice.pop_in(daily_reward)
+
+	var tween = create_tween().set_parallel(true)
+	tween.tween_method(_set_blur_lod, 0.0, 3.0, 0.25).set_ease(Tween.EASE_OUT)
+	tween.tween_method(_set_blur_darkness, 0.0, 0.3, 0.25).set_ease(Tween.EASE_OUT)
+
+func _hide_daily_reward():
+	if not daily_reward:
+		return
+	reward_popup_open = false
+	var tween = create_tween().set_parallel(true)
+	tween.tween_property(daily_reward, "modulate:a", 0.0, 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_property(daily_reward, "scale", Vector2(0.8, 0.8), 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_method(_set_blur_lod, 3.0, 0.0, 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_method(_set_blur_darkness, 0.3, 0.0, 0.15).set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(func(): daily_reward.visible = false; blur_overlay.visible = false)
+
+func _on_blur_overlay_input(event: InputEvent):
+	if not reward_popup_open:
+		return
+	var is_click = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	var is_touch = event is InputEventScreenTouch and event.pressed
+	if is_click or is_touch:
+		AudioDirector.play_sfx(&"popup_close")
+		_hide_daily_reward()
+
+func _set_blur_lod(value: float):
+	var mat = blur_overlay.material as ShaderMaterial
+	if mat:
+		mat.set_shader_parameter("lod", value)
+
+func _set_blur_darkness(value: float):
+	var mat = blur_overlay.material as ShaderMaterial
+	if mat:
+		mat.set_shader_parameter("darkness", value)
+
+func _setup_button_juice(btn: Control):
+	if not btn:
+		return
+	btn.pivot_offset = btn.size / 2.0
+	if not btn.mouse_entered.is_connected(_on_btn_mouse_entered.bind(btn)):
+		btn.mouse_entered.connect(_on_btn_mouse_entered.bind(btn))
+	if not btn.mouse_exited.is_connected(_on_btn_mouse_exited.bind(btn)):
+		btn.mouse_exited.connect(_on_btn_mouse_exited.bind(btn))
+
+func _on_btn_mouse_entered(btn: Control):
+	if not is_instance_valid(btn) or (btn is BaseButton and btn.disabled):
+		return
+	btn.pivot_offset = btn.size / 2.0
+	var tw = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(btn, "scale", Vector2(1.12, 1.12), 0.15)
+
+func _on_btn_mouse_exited(btn: Control):
+	if not is_instance_valid(btn):
+		return
+	var tw = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.15)
+
+func _animate_button_click_bounce(btn: Control):
+	if not is_instance_valid(btn):
+		return
+	btn.pivot_offset = btn.size / 2.0
+	var tw = create_tween()
+	tw.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(btn, "scale", Vector2(0.8, 1.25), 0.08)
+	tw.tween_property(btn, "scale", Vector2(1.18, 0.85), 0.1)
+	tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
+
+func _on_claim_pressed():
+	_animate_button_click_bounce(claim_button)
+	var today = Time.get_date_string_from_system()
+	if GameState.last_claim_date == today:
+		AudioDirector.play_sfx(&"error")
+		return
+
+	var old_money := GameState.player_money
+
+	GameState.player_money += DAILY_REWARD
+	GameState.last_claim_date = today
+
+	_update_money_display(old_money)
+	_update_daily_login_visual()
+
+	# The tiles are gone -- the panel itself is what pops now.
+	if daily_reward:
+		Juice.pop_in(daily_reward)
+	RewardFeedback.play(&"coins_earned", money_label)
+
+	GameState.daily_login_day += 1
+	if GameState.daily_login_day > 7:
+		GameState.daily_login_day = 1
+
+## Opens Settings (volumes, the minigame tutorial and "Lewati Dialog
+## Minigame", which used to be the Shorten button), returning here.
+func _on_settings_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	SettingsScript.return_scene = "res://Scenes/Lobby/Lobby.tscn"
+	Transition.change_scene("res://Scenes/UI/Settings.tscn", Transition.Style.WIPE)
+
+
+func _on_student_pressed():
+	_animate_button_click_bounce(student_button)
+	print("Tombol Student ditekan, pindah ke student_card")
+	Transition.change_scene("res://Scenes/StudentCard/StudentCard.tscn")
+
+func _on_jadwal_pressed():
+	_animate_button_click_bounce(jadwal_button)
+	print("Tombol Jadwal ditekan, pindah ke atur_jadwal")
+	Transition.change_scene("res://Scenes/AturJadwal/AturJadwal.tscn")
+
+
+func _on_koperasi_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	# The shop button lands on the hub, which forks to the item shop or
+	# the cosmetic shop, rather than dropping straight into the Koperasi.
+	Transition.change_scene("res://Scenes/Koperasi/ShopHub.tscn", Transition.Style.WIPE)
+
+
+func _on_inventory_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	Transition.change_scene("res://Scenes/Inventory/Inventory.tscn", Transition.Style.WIPE)
+
+## Opens the skin picker over the Lobby. Skins apply the moment one is
+## picked; closing re-seats the diorama so its faces and desks wear them.
+func _on_skin_switch_pressed() -> void:
+	if GameState.approved_students.is_empty():
+		return
+	var screen := skin_select_scene.instantiate() as SkinSelect
+	_skin_select_open = true
+	if chatter:
+		chatter.dismiss()
+	add_child(screen)
+	screen.closed.connect(func(): _skin_select_open = false)
+	screen.closed.connect(_setup_students)
+	# No argument: SkinSelect reads StudentSkins.NAMES, not the roster --
+	# equipped_skins is keyed by name, so all six characters are dressable.
+	screen.open()
+
+
+## LobbyChatter's gate: nobody talks over the tutorial, the daily reward
+## or the skin picker.
+func _chatter_allowed() -> bool:
+	return not tutorial_active and not reward_popup_open and not _skin_select_open
+
+
+func _on_achievement_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	Transition.change_scene("res://Scenes/Achievements/AchievementsScreen.tscn", Transition.Style.WIPE)
+
+func _on_report_student_pressed() -> void:
+	AudioDirector.play_sfx(&"tap")
+	Transition.change_scene("res://Scenes/ReportCard/ReportCard.tscn", Transition.Style.WIPE)
+
+func _on_click_area_gui_input(event: InputEvent):
+	if not tutorial_active:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_next_step()
+	elif event is InputEventScreenTouch and event.pressed:
+		_next_step()
+
+func _next_step():
+	current_step += 1
+	if current_step >= current_phase_steps.size():
+		_end_tutorial()
+		return
+	_show_step(current_step)
+
+func _show_step(index: int):
+	if index < 0 or index >= current_phase_steps.size():
+		return
+	var step = current_phase_steps[index]
+
+	click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if _tutorial_panel and _tutorial_panel.modulate.a > 0.1:
+		var tween_out = create_tween().set_parallel(true)
+		tween_out.tween_property(_tutorial_panel, "scale", Vector2(0.8, 0.8), 0.15)\
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween_out.tween_property(_tutorial_panel, "modulate:a", 0.0, 0.15)
+		await tween_out.finished
+
+	_tutorial_title_label.text = "(%d/%d) %s" % [index + 1, current_phase_steps.size(), step.title]
+	_tutorial_body_label.text = step.text
+
+	# Move to center specifically for Inventory, ReportStudent, Koperasi, and Jadwal tutorial steps in Lobby
+	_tutorial_panel_should_center = (step.target_node_path in ["Inventory", "ReportStudent", "Koperasi", "Jadwal", "Jadwalkan", "Student"]) or (step.prompt_text != "" and ("jadwal" in step.prompt_text.to_lower() or "student" in step.prompt_text.to_lower()))
+	var center_for_lobby_buttons := _tutorial_panel_should_center
+
+	var targets: Array[Control] = []
+	if step.target_node_path != "":
+		var paths = step.target_node_path.split(",")
+		for p in paths:
+			var trimmed = p.strip_edges()
+			if trimmed != "":
+				# A bare name ("Jadwal") is a HUD button, found by unique name
+				# wherever it sits; anything else is a path from the root.
+				var target = get_node_or_null("%" + trimmed)
+				if target == null:
+					target = get_node_or_null(trimmed)
+				if target and target is Control:
+					targets.append(target)
+		if not targets.is_empty():
+			_highlight_multiple(targets)
+		else:
+			_clear_highlight()
+	else:
+		_clear_highlight()
+
+	# Dynamic Prompt Text
+	var requires_button_press = (!GameState.returned_from_student_card and index == current_phase_steps.size() - 1) or (GameState.returned_from_student_card and index == current_phase_steps.size() - 1)
+	if step.prompt_text != "":
+		_tutorial_prompt_label.text = step.prompt_text
+	elif requires_button_press and not targets.is_empty():
+		var btn_name = _get_button_display_name(targets[0])
+		_tutorial_prompt_label.text = "TEKAN TOMBOL '%s' UNTUK LANJUT!" % btn_name.to_upper()
+	else:
+		_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
+
+	_position_tutorial_panel(center_for_lobby_buttons)
+	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
+
+	var tween_in = create_tween().set_parallel(true)
+	tween_in.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.3)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween_in.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.2)
+
+	await tween_in.finished
+
+	if not GameState.returned_from_student_card and index == current_phase_steps.size() - 1:
+		color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if student_button is BaseButton:
+			student_button.disabled = false
+		else:
+			student_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	else:
+		color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
+
+func _get_button_display_name(node: Node) -> String:
+	if not node:
+		return ""
+	if node is Button and node.text.strip_edges() != "":
+		return node.text.strip_edges()
+	for child in node.get_children():
+		if child is Label and child.text.strip_edges() != "":
+			return child.text.strip_edges().split("\n")[0]
+	return node.name
+
+func _highlight_multiple(controls: Array, padding: float = 12.0):
+	await get_tree().process_frame
+	var valid_controls: Array[Control] = []
+	for c in controls:
+		if c and is_instance_valid(c) and c is Control:
+			valid_controls.append(c)
+	if valid_controls.is_empty():
+		_clear_highlight()
+		return
+	var mat := color_rect.material as ShaderMaterial
+	if not mat:
+		return
+	var min_pos = Vector2(INF, INF)
+	var max_pos = Vector2(-INF, -INF)
+	for c in valid_controls:
+		var trans = c.get_global_transform()
+		var local_corners = [
+			Vector2.ZERO,
+			Vector2(c.size.x, 0),
+			Vector2(0, c.size.y),
+			Vector2(c.size.x, c.size.y)
+		]
+		for corner in local_corners:
+			var global_corner = trans * corner
+			var local_corner = global_corner - color_rect.global_position
+			min_pos.x = min(min_pos.x, local_corner.x)
+			min_pos.y = min(min_pos.y, local_corner.y)
+			max_pos.x = max(max_pos.x, local_corner.x)
+			max_pos.y = max(max_pos.y, local_corner.y)
+
+	var local_pos = min_pos - Vector2(padding, padding)
+	var size_with_padding = (max_pos - min_pos) + Vector2(padding, padding) * 2
+
+	mat.set_shader_parameter("hole_pos", local_pos)
+	mat.set_shader_parameter("hole_size", size_with_padding)
+	if _tutorial_arrow:
+		var arrow_pos = Vector2(local_pos.x + size_with_padding.x / 2.0, local_pos.y - 35.0)
+		var viewport_size = get_viewport_rect().size
+		var W = 320.0
+		var H = 320.0
+		var margin = 20.0
+		arrow_pos.x = clamp(arrow_pos.x, W/2.0 + margin, viewport_size.x - W/2.0 - margin)
+		arrow_pos.y = clamp(arrow_pos.y, H + margin, viewport_size.y - margin)
+		_tutorial_arrow.position = arrow_pos
+		_tutorial_arrow.show()
+
+func _clear_highlight():
+	var mat := color_rect.material as ShaderMaterial
+	if not mat:
+		return
+	mat.set_shader_parameter("hole_pos", Vector2(-9999.0, -9999.0))
+	mat.set_shader_parameter("hole_size", Vector2.ZERO)
+	if _tutorial_arrow:
+		_tutorial_arrow.hide()
+
+func _end_tutorial():
+	GameState.lobby_tutorial_completed = true
+	tutorial_active = false
+	if _blink_tween and _blink_tween.is_valid():
+		_blink_tween.kill()
+	if _tutorial_panel and is_instance_valid(_tutorial_panel):
+		_tutorial_panel.hide()
+	if color_rect:
+		color_rect.hide()

@@ -2,12 +2,12 @@
 extends McpTestSuiteCompat
 
 ## Task 4 of the 2026-09-17 Koperasi polish plan: per-slot stock pips.
-## SHOP_MAX_COPIES bumped 2 -> 3, rakbarang_1.gd's remaining_of()
+## SHOP_MAX_COPIES bumped 2 -> 3, KoperasiStage.gd's remaining_of()
 ## (stock - sold - carted, floored at 0) and shelf_dead_tap signal, and
 ## ShelfItem.gd's set_stock_pips(remaining, total) toggling PipRow's
 ## Pip1..Pip3 (and each one's Fill child) by `visible`.
 ##
-## remaining_of() is exercised on a bare rakbarang_1.gd instance that is
+## remaining_of() is exercised on a bare KoperasiStage.gd instance that is
 ## never added to any tree: the script is not @tool, so its _ready()
 ## (which expects real Barang* children and a TrayDock/BasketTray) must
 ## never run here -- setting _stock_names directly on an untree'd instance
@@ -18,12 +18,12 @@ extends McpTestSuiteCompat
 func suite_name() -> String:
 	return "koperasi_stock_pips"
 
-const RAK_PATH := "res://Scripts/Koperasi/rakbarang_1.gd"
-## rakbarang_1.gd declares no class_name; reached through a preloaded const,
+const RAK_PATH := "res://Scripts/Koperasi/KoperasiStage.gd"
+## KoperasiStage.gd declares no class_name; reached through a preloaded const,
 ## same as tests/test_shop_weekly_stock.gd.
-const RakScript := preload("res://Scripts/Koperasi/rakbarang_1.gd")
+const RakScript := preload("res://Scripts/Koperasi/KoperasiStage.gd")
 const SHELF_ITEM_SRC := "res://Scripts/Koperasi/ShelfItem.gd"
-const KOPRASI_SCENE := "res://Scenes/Koperasi/koprasi.tscn"
+const KOPRASI_SCENE := "res://Scenes/Koperasi/Koperasi.tscn"
 
 var _snap: Dictionary = {}
 
@@ -120,7 +120,7 @@ func test_remaining_of_falls_back_to_gamestate_shop_stock_when_unset() -> void:
 
 # ─── set_stock_pips()
 
-## A PipRow shaped like koprasi.tscn's authored one: three Pip nodes, each
+## A PipRow shaped like Koperasi.tscn's authored one: three Pip nodes, each
 ## with a Fill child, under a fake shelf button. Not added to any tree --
 ## ShelfItem.set_stock_pips() only touches node properties, no _process.
 func _make_button_with_pip_row() -> TextureButton:
@@ -211,14 +211,14 @@ func test_shelf_dead_tap_signal_is_declared() -> void:
 
 
 func test_koprasi_wires_shelf_dead_tap_to_out_of_stock() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/koprasi.gd")
-	# rakbarang_1.gd has no class_name, so `stage` is typed as plain Control;
-	# koprasi.gd must go through Signal(stage, "shelf_dead_tap") rather than
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/Koperasi.gd")
+	# KoperasiStage.gd has no class_name, so `stage` is typed as plain Control;
+	# Koperasi.gd must go through Signal(stage, "shelf_dead_tap") rather than
 	# a static `stage.shelf_dead_tap` member the parser would reject.
 	assert_true(src.contains("Signal(stage, \"shelf_dead_tap\")"),
-		"koprasi.gd reaches shelf_dead_tap dynamically, since Control has no such member")
+		"Koperasi.gd reaches shelf_dead_tap dynamically, since Control has no such member")
 	assert_true(src.contains("dead_tap.connect(_on_shelf_dead_tap)"),
-		"koprasi.gd connects the Stage's shelf_dead_tap")
+		"Koperasi.gd connects the Stage's shelf_dead_tap")
 	assert_true(src.contains("dead_tap.disconnect(_on_shelf_dead_tap)"),
 		"and disconnects it in _exit_tree, like every other Cart/Stage listener here")
 	var handler := _body(src, "func _on_shelf_dead_tap(")
@@ -258,7 +258,7 @@ func _body(src: String, signature: String) -> String:
 
 func test_every_barang_slot_has_a_pip_row_with_three_pips() -> void:
 	var src := FileAccess.get_file_as_string(KOPRASI_SCENE)
-	assert_true(not src.is_empty(), "koprasi.tscn missing or unreadable")
+	assert_true(not src.is_empty(), "Koperasi.tscn missing or unreadable")
 	for i in range(1, 7):
 		var parent := "Stage/Barang%d" % i
 		assert_true(
@@ -281,7 +281,7 @@ func test_every_barang_slot_has_a_pip_row_with_three_pips() -> void:
 ## any single slot is caught, not just an average.
 func test_every_pip_is_at_least_32px() -> void:
 	var src := FileAccess.get_file_as_string(KOPRASI_SCENE)
-	assert_true(not src.is_empty(), "koprasi.tscn missing or unreadable")
+	assert_true(not src.is_empty(), "Koperasi.tscn missing or unreadable")
 	var size_re := RegEx.new()
 	size_re.compile("custom_minimum_size = Vector2\\(([\\d.]+), ([\\d.]+)\\)")
 	for i in range(1, 7):

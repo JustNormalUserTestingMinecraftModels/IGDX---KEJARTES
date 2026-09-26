@@ -26,8 +26,8 @@ func suite_name() -> String:
 
 const _TEMPLATE := "res://Scenes/UI/PaperShadow.tscn"
 const _SCENES: Array[String] = [
-	"res://Scenes/StudentCard/student_card.tscn",
-	"res://Scenes/ReportCard/report_card.tscn",
+	"res://Scenes/StudentCard/StudentCard.tscn",
+	"res://Scenes/ReportCard/ReportCard.tscn",
 ]
 const _PAPERS: Array[String] = [
 	"KertasMurid1", "KertasMurid2", "KertasMurid3",
@@ -179,12 +179,12 @@ func test_a_custom_blur_duplicates_the_material_instead_of_mutating_it() -> void
 ## the user's call, then came back the same day as outer AO instead of a drop
 ## shadow -- see _OUTER_AO below, which holds the values that ship.
 const _CONTACT_SHADOWS := {
-	"res://Scenes/Lobby/loby.tscn": [
+	"res://Scenes/Lobby/Lobby.tscn": [
 		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
-	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
-	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Herman"],
+	"res://Scenes/AturJadwal/AturJadwal.tscn": ["BGHari"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 }
 
@@ -226,12 +226,12 @@ func test_the_flat_elements_now_cast_a_shadow() -> void:
 ## A deliberate reversal, not an accident. The design doc's section 6 has the
 ## argument in full.
 const _OUTER_AO := {
-	"res://Scenes/Lobby/loby.tscn": [
+	"res://Scenes/Lobby/Lobby.tscn": [
 		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
-	"res://Scenes/Koperasi/koprasi.tscn": ["Stage/Herman"],
-	"res://Scenes/AturJadwal/atur_jadwal.tscn": ["BGHari"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Herman"],
+	"res://Scenes/AturJadwal/AturJadwal.tscn": ["BGHari"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 }
 const _OUTER_AO_ALPHA := 0.34

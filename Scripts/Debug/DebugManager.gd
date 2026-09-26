@@ -26,12 +26,12 @@ var minigame_canvas: CanvasLayer = null
 var panels: Dictionary = {}
 var tab_buttons: Dictionary = {}
 
-# --- Default Students Data (copied from student_card.gd for quick approval cheat) ---
+# --- Default Students Data (copied from StudentCard.gd for quick approval cheat) ---
 const DEFAULT_STUDENTS = [
 	{
 		"id": 1,
 		"name": "Marcel",
-		"portrait": "res://Assets/Images/MuridPotrait/Marcel.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Marcel.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
 		"kepribadian1": 60.0,   # Mood
 		"kepribadian2": 55.0,   # Energy
@@ -52,7 +52,7 @@ const DEFAULT_STUDENTS = [
 	{
 		"id": 2,
 		"name": "Doni",
-		"portrait": "res://Assets/Images/MuridPotrait/Doni.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Doni.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_doni.png",
 		"kepribadian1": 55.0,   # Mood
 		"kepribadian2": 55.0,   # Energy
@@ -73,7 +73,7 @@ const DEFAULT_STUDENTS = [
 	{
 		"id": 3,
 		"name": "Andi",
-		"portrait": "res://Assets/Images/MuridPotrait/Andi.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Andi.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_andi.png",
 		"kepribadian1": 60.0,   # Mood
 		"kepribadian2": 60.0,   # Energy
@@ -94,7 +94,7 @@ const DEFAULT_STUDENTS = [
 	{
 		"id": 4,
 		"name": "Citra",
-		"portrait": "res://Assets/Images/MuridPotrait/Citra.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Citra.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_citra.png",
 		"kepribadian1": 35.0,   # Mood
 		"kepribadian2": 60.0,   # Energy
@@ -721,7 +721,7 @@ func _forget_session() -> void:
 	if debug_ui_root:
 		debug_ui_root.visible = false
 	log_message("Session forgotten: GameState reset, save deleted.")
-	Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn", Transition.Style.FADE)
+	Transition.change_scene("res://Scenes/MainMenu/MainMenu.tscn", Transition.Style.FADE)
 
 func _set_time_scale(scale: float) -> void:
 	Engine.time_scale = scale
@@ -1291,10 +1291,10 @@ func _build_scenes_panel(parent: Control) -> void:
 	vbox.add_child(lbl_title)
 	
 	var scenes_list = [
-		{"name": "Menu Utama (MainMenu)", "path": "res://Scenes/MainMenu/main_menu.tscn"},
-		{"name": "Lobi Kelas (Lobby)", "path": "res://Scenes/Lobby/loby.tscn"},
-		{"name": "Pilih Murid (StudentCard)", "path": "res://Scenes/StudentCard/student_card.tscn"},
-		{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/atur_jadwal.tscn"},
+		{"name": "Menu Utama (MainMenu)", "path": "res://Scenes/MainMenu/MainMenu.tscn"},
+		{"name": "Lobi Kelas (Lobby)", "path": "res://Scenes/Lobby/Lobby.tscn"},
+		{"name": "Pilih Murid (StudentCard)", "path": "res://Scenes/StudentCard/StudentCard.tscn"},
+		{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/AturJadwal.tscn"},
 		{"name": "Simulasi Hari (SchoolDay)", "path": "res://Scenes/SchoolSimulation/SchoolDay.tscn"},
 		{"name": "Pilih Toko (ShopHub)", "path": "res://Scenes/Koperasi/ShopHub.tscn"},
 		{"name": "Notice Tes Besar (TesNotice)", "path": "res://Scenes/EndGame/TesNotice.tscn"},

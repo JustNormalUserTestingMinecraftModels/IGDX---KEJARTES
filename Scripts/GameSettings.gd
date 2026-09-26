@@ -6,7 +6,7 @@ extends Node
 ## scene), so it is instantiated by the editor process itself at startup —
 ## including when an MCP test suite runs inside that same editor process.
 ## Without @tool, that instance is a placeholder (same failure mode
-## documented in Scripts/MainMenu/main_menu.gd and Scripts/Audio/
+## documented in Scripts/MainMenu/MainMenu.gd and Scripts/Audio/
 ## AudioDirector.gd for scene-attached scripts): every property access,
 ## including plain `minigame_tutorial_enabled` reads/writes, throws
 ## "Invalid access to property or key ... on a base object of type

@@ -6,9 +6,9 @@ extends McpTestSuite
 ## docs/superpowers/specs/2026-09-17-achievements-design.md).
 
 const ACHIEVEMENTS := preload("res://Scripts/Achievements/Achievements.gd")
-const SCREEN := "res://Scenes/Achievements/achievements.tscn"
+const SCREEN := "res://Scenes/Achievements/AchievementsScreen.tscn"
 const TILE := "res://Scenes/Achievements/AchievementTile.tscn"
-const LOBBY := "res://Scenes/Lobby/loby.tscn"
+const LOBBY := "res://Scenes/Lobby/Lobby.tscn"
 
 
 func suite_name() -> String:
@@ -84,7 +84,7 @@ func test_tile_states() -> void:
 
 
 func test_screen_wires_tile_and_sheet_signals() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/AchievementsScreen.gd")
 	assert_true(src.contains("tile.tile_pressed.connect(_on_tile_pressed)"))
 	assert_true(src.contains("detail_sheet.open_for(id)"))
 	assert_true(src.contains("detail_sheet.claim_requested.connect(_on_claim_requested)"))
@@ -101,7 +101,7 @@ func test_screen_wires_tile_and_sheet_signals() -> void:
 ## own. Source-scanned because the popup can't be instantiated headlessly
 ## with the full claim flow.
 func test_back_guard_closes_claim_popup_before_sheet() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/AchievementsScreen.gd")
 	assert_true(src.contains("_open_claim_popup"), "screen must track the open claim popup")
 	var notif_idx := src.find("func _notification(")
 	assert_true(notif_idx != -1)
@@ -115,7 +115,7 @@ func test_back_guard_closes_claim_popup_before_sheet() -> void:
 ## before scrolling when the target tile is hidden by the active filter,
 ## and defer the actual scroll so the grid has re-laid out first.
 func test_jump_requested_resets_filter_before_scrolling() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/AchievementsScreen.gd")
 	var jump_idx := src.find("func _on_jump_requested(")
 	assert_true(jump_idx != -1)
 	var next_func_idx := src.find("\nfunc ", jump_idx + 1)
@@ -133,8 +133,8 @@ func test_lobby_has_the_trophy_button() -> void:
 	assert_true(btn != null, "AchievementButton under BottomBar")
 	if btn:
 		assert_eq(btn.texture_normal.resource_path, "res://Assets/Images/Achievements/achievement_button.png")
-	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
-	assert_true(src.contains("res://Scenes/Achievements/achievements.tscn"))
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
+	assert_true(src.contains("res://Scenes/Achievements/AchievementsScreen.tscn"))
 
 
 const OUTLINE_MATERIAL := "res://Assets/Images/Achievements/icon_outline_material.tres"

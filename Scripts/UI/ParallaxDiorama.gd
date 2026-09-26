@@ -13,7 +13,7 @@ extends Control
 ## A DRIVER, NOT A BAND. This node hangs off the diorama as an extra child and
 ## drives its SIBLINGS, named relative to `bands_root`. It works that way
 ## because the obvious host is often taken -- Koperasi's Stage already runs
-## rakbarang_1.gd, and a node has only one script -- and because a driver that
+## KoperasiStage.gd, and a node has only one script -- and because a driver that
 ## owns no pixels cannot be mistaken for part of the picture.
 ##
 ## WHAT DRIVES IT. On a phone, the accelerometer: tilt the handset and the
@@ -26,7 +26,7 @@ extends Control
 ## WHICH BANDS NEED OVERSCAN, AND WHY IT GROWS THE RECT. Most bands are
 ## cutouts on transparency -- desks, students, hands, the shopkeeper -- and
 ## moving those reveals nothing. Two are opaque to their own edges, measured:
-## loby_no_tables.png on all four sides and shop_foreground.png on three. Move
+## lobby_no_tables.png on all four sides and shop_foreground.png on three. Move
 ## one of those and its edge drags into view, which on the Lobby's BGLayer
 ## means the black Backdrop behind it. `overscan_children` names just those,
 ## and they are grown by pushing their OFFSETS outward.

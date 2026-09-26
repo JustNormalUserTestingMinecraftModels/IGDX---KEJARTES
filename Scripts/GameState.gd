@@ -9,10 +9,10 @@ extends Node
 ## no save system -- a run is session-scoped, and adding persistence here
 ## is a design change, not a refactor.
 ##
-## Written by: student_card.gd (approves the roster into
-## `approved_students`), atur_jadwal.gd (fills `day_schedules`),
+## Written by: StudentCard.gd (approves the roster into
+## `approved_students`), AturJadwal.gd (fills `day_schedules`),
 ## StudentManager.write_back_to_gamestate() (pushes simulated stats back
-## after each day), koprasi.gd and Cart (`player_money`, `inventory`), and
+## after each day), Koperasi.gd and Cart (`player_money`, `inventory`), and
 ## DebugManager (every field, on purpose -- that is what the debug overlay
 ## is for).
 ##
@@ -27,7 +27,7 @@ extends Node
 ## of bugs here.
 
 # Scene navigation
-var next_scene: String = "res://Scenes/MainMenu/main_menu.tscn"
+var next_scene: String = "res://Scenes/MainMenu/MainMenu.tscn"
 
 # Student selection state (from student_card)
 var returned_from_student_card: bool = false
@@ -45,7 +45,7 @@ var day_schedules: Dictionary = {}
 var minigame_gain_this_week: Dictionary = {}
 
 ## How many items the Koperasi shelf shows -- one per Barang* slot on
-## koprasi.tscn's Stage.
+## Koperasi.tscn's Stage.
 const SHOP_SHELF_SIZE: int = 6
 ## The most copies of one item a week's shelf can hold.
 const SHOP_MAX_COPIES: int = 3
@@ -398,7 +398,7 @@ func is_shop_sold_out() -> bool:
 ## debug_level_select_enabled alone -- those are persisted progress flags
 ## (GameSettings writes them to settings.cfg), not run state.
 func forget_session() -> void:
-	next_scene = "res://Scenes/MainMenu/main_menu.tscn"
+	next_scene = "res://Scenes/MainMenu/MainMenu.tscn"
 	returned_from_student_card = false
 	approved_students = []
 	selected_student = {}

@@ -9,7 +9,7 @@ extends Control
 ## later. All it does is name the grade, set the stakes, and hand off to
 ## the exam branch of the cutscene.
 ##
-## @tool for the same reason main_menu.gd and cut_scene.gd are: without
+## @tool for the same reason MainMenu.gd and CutScene.gd are: without
 ## it, this becomes a placeholder instance when the MCP test suite
 ## instantiates the scene inside the editor process, which breaks every
 ## traversal-based check. Everything with a real runtime side effect --

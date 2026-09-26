@@ -13,7 +13,7 @@ extends McpTestSuite
 
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 const _SCENES := [
-	"res://Scenes/Inventory/inventory.tscn",
+	"res://Scenes/Inventory/Inventory.tscn",
 	"res://Scenes/Inventory/InventorySlot.tscn",
 	"res://Scenes/Inventory/ItemDetailSheet.tscn",
 	"res://Scenes/Inventory/ApplyItemScreen.tscn",

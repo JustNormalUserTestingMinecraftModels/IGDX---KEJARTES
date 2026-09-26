@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://dgvesub2rdjot" path="res://Assets/Images/CG/cg0.jpg" id="2_owdk3"]
 [ext_resource type="Texture2D" uid="uid://u0inspdoga14" path="res://Assets/Images/UI/cutscene_dialogue.png" id="3_aoqub"]
-[ext_resource type="Script" uid="uid://bqpiy0bobcloa" path="res://Scripts/CutScene/hint_label.gd" id="4_kohfl"]
+[ext_resource type="Script" uid="uid://bqpiy0bobcloa" path="res://Scripts/CutScene/HintLabel.gd" id="4_kohfl"]
 
 [node name="WinScreen" type="Control" unique_id=1779820727]
 layout_mode = 3

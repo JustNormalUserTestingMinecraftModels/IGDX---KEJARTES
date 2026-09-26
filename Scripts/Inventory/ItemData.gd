@@ -22,7 +22,7 @@ extends Resource
 @export var category: String
 ## Fixed on-screen size for the shop's falling/basket art and the
 ## inventory slot icon. Zero means "use the source button's own size" --
-## see rakbarang_1.gd's get_item_effective_size().
+## see KoperasiStage.gd's get_item_effective_size().
 @export var display_size: Vector2 = Vector2.ZERO
 ## Extra multiplier on top of display_size (or the button-size fallback)
 ## when an item's art needs to read larger or smaller than its peers.

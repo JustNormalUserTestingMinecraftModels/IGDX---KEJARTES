@@ -60,7 +60,7 @@ extends Control
 ## transition to RunResult -- there is no wipe over the top of it.
 @export var blur_seconds: float = 0.5
 ## Final blur strength, as a screen-texture mip level. Matches the shop's
-## BlurLayer (koprasi.tscn) so the two blurs read as the same effect.
+## BlurLayer (Koperasi.tscn) so the two blurs read as the same effect.
 @export var blur_lod: float = 3.0
 ## Final dim applied with the blur, 0-1. RunResult opens on exactly this
 ## value so the swap between the two screens is invisible -- change one and

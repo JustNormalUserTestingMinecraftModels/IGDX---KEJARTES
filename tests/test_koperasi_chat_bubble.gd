@@ -4,7 +4,7 @@ extends McpTestSuiteCompat
 ## Task 2 of the 2026-09-17 Koperasi polish plan: DialogueCatalog's static
 ## line pools and pick logic, and ChatBubble's tiny FSM (say/say_for_item/
 ## say_sticky/clear_sticky) exercised on a bare instance built with a
-## minimal Body/Text/Tail tree matching koprasi.tscn's authored nodes.
+## minimal Body/Text/Tail tree matching Koperasi.tscn's authored nodes.
 ## Also covers review fix round 1: tween re-entrancy when one event
 ## interrupts another mid-animation (a superseded tween must be killed and
 ## its finish callback must not touch state), and say_sticky()'s
@@ -67,7 +67,7 @@ func test_pick_for_item_anti_repetition_holds_over_ten_picks() -> void:
 
 # ----- ChatBubble -----
 
-## A ChatBubble with the same Body/Text/Tail shape as koprasi.tscn's
+## A ChatBubble with the same Body/Text/Tail shape as Koperasi.tscn's
 ## authored node, so say() has a real RichTextLabel to write into and
 ## _ready() can compute a pivot from the Tail's rect.
 func _make_bubble() -> ChatBubble:
@@ -290,7 +290,7 @@ func test_idle_chatter_disabled_makes_timeout_a_noop() -> void:
 
 
 # ----- pivot_offset (review fix: must not mutate the node before the
-#       editor-hint guard, so opening koprasi.tscn cannot bake a change) -----
+#       editor-hint guard, so opening Koperasi.tscn cannot bake a change) -----
 
 ## _live_bubble() adds a bare, un-owned instance straight to the tree, so
 ## is_part_of_edited_scene() is false and _ready() runs past the guard --
@@ -306,7 +306,7 @@ func test_live_bubble_still_gets_a_tail_based_pivot() -> void:
 ## Source scan, since a scene actually opened for editing (is_part_of_edited_
 ## scene() == true) can't be exercised from a McpTestSuiteCompat. The pivot
 ## assignment must sit textually after the editor-hint early return, not
-## before it -- otherwise merely opening koprasi.tscn mutates the live node
+## before it -- otherwise merely opening Koperasi.tscn mutates the live node
 ## and a save bakes the value into the scene.
 func test_pivot_offset_assignment_comes_after_the_editor_guard() -> void:
 	var f := FileAccess.open("res://Scripts/Koperasi/ChatBubble.gd", FileAccess.READ)

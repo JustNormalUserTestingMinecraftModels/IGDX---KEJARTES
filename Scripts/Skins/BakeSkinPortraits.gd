@@ -10,7 +10,7 @@ extends SceneTree
 ## Run headless from the project root:
 ##   Godot --headless --path . --script res://Scripts/Skins/BakeSkinPortraits.gd
 ## It first bakes each DEFAULT portrait and prints its mean difference from
-## the shipped MuridPotrait/<Name>.png -- the check that the recipe is right --
+## the shipped MuridPortrait/<Name>.png -- the check that the recipe is right --
 ## then writes Assets/Images/Skins/<Name>/<name>_portrait_skin1.png.
 ## Not used at runtime.
 
@@ -24,7 +24,7 @@ func _init() -> void:
 		var lower: String = n.to_lower()
 		var rig := (load("res://Scenes/Lobby/%sFace.tscn" % n) as PackedScene).instantiate()
 		var default_img := _compose(rig, "")
-		var shipped := _raw("res://Assets/Images/MuridPotrait/%s.png" % n)
+		var shipped := _raw("res://Assets/Images/MuridPortrait/%s.png" % n)
 		print("%s default bake diff: %.4f" % [n, _mean_diff(default_img, shipped)])
 		var skin_base := "res://Assets/Images/Skins/%s/%s_base_skin1.png" % [n, lower]
 		var out := _compose(rig, skin_base)

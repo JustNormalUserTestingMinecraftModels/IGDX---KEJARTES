@@ -62,9 +62,9 @@ func test_no_canvaslayer_outranks_the_wipe() -> void:
 	for path in _all_source_files():
 		if path == "res://Scripts/Debug/DebugManager.gd":
 			continue
-		if path == "res://Scenes/Transition/transition.tscn":
+		if path == "res://Scenes/Transition/Transition.tscn":
 			continue
-		if path == "res://Scripts/Transition/transition.gd":
+		if path == "res://Scripts/Transition/Transition.gd":
 			continue
 		var src := FileAccess.get_file_as_string(path)
 		for line in src.split("\n"):
@@ -185,7 +185,7 @@ func test_colorrect_is_transparent_so_the_gradient_shows() -> void:
 ## Every motif the randomiser can draw must actually exist, or a
 ## transition silently falls back to a plain gradient.
 func test_every_pattern_tile_resolves() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Transition/transition.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Transition/Transition.gd")
 	assert_true(src.contains("PATTERN_TILES"),
 		"the tile roster must be a named const, not inline paths")
 	var t: Node = Engine.get_main_loop().root.get_node("Transition")
@@ -248,7 +248,7 @@ func test_size_cover_widens_the_rect_and_reports_the_overhang() -> void:
 ## on an anchored Control overrides the offsets, so the resting position
 ## has to be -overhang, and zero is specifically wrong.
 func test_wipe_rests_at_the_overhang_not_at_zero() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Transition/transition.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Transition/Transition.gd")
 	var from := src.find("func _cover_in")
 	var to := src.find("func _cover_out")
 	assert_true(from >= 0 and to > from, "could not isolate _cover_in")

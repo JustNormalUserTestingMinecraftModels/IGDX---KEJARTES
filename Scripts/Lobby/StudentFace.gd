@@ -33,7 +33,7 @@ extends Control
 ##    Eyelashes fade out against it, so a shut eye shows only the lid's own
 ##    closed lash line.
 ##
-## Breathing is NOT here. It stays the lobby's job (loby.gd's
+## Breathing is NOT here. It stays the lobby's job (Lobby.gd's
 ## _animate_breathing), which scales this node as a whole exactly as it scaled
 ## the flat portrait it replaces.
 ##
@@ -49,7 +49,7 @@ const CANVAS_PATH := ^"Canvas"
 const LAYER_NAMES := ["Base", "Sclera", "Pupil", "Eyelashes", "Eyelid", "Eyebrows"]
 
 @export_group("Identity")
-## Roster name this rig belongs to, e.g. "Citra". loby.gd matches a rig to a
+## Roster name this rig belongs to, e.g. "Citra". Lobby.gd matches a rig to a
 ## student slot on this, case-insensitively; leave empty and the rig is never
 ## picked automatically.
 @export var student_name: String = ""

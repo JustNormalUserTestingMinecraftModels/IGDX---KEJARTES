@@ -75,7 +75,7 @@ func test_every_scene_ext_resource_uid_resolves_to_its_own_asset() -> void:
 func test_no_debug_prints_survive_in_production_scripts() -> void:
 	# Scripts/Debug/ is the in-game debug overlay -- printing is its job.
 	# Everywhere else a DEBUG print is a leftover, and they are not harmless:
-	# atur_jadwal.gd dumped the entire selected_student dictionary six times
+	# AturJadwal.gd dumped the entire selected_student dictionary six times
 	# per selection, crowding real diagnostics out of a finite log buffer.
 	var offenders: Array[String] = []
 	for script_path in _all_files_under("res://Scripts", ".gd"):
@@ -97,7 +97,7 @@ func test_no_debug_prints_survive_in_production_scripts() -> void:
 ## else in the suite asserts run/main_scene, so a stray edit would go unseen.
 func test_the_boot_scene_is_the_main_menu() -> void:
 	var main_scene: String = ProjectSettings.get_setting("application/run/main_scene", "")
-	assert_eq(main_scene, "res://Scenes/MainMenu/main_menu.tscn",
+	assert_eq(main_scene, "res://Scenes/MainMenu/MainMenu.tscn",
 		"run/main_scene")
 	assert_true(ResourceLoader.exists(main_scene),
 		"the boot scene must actually exist")

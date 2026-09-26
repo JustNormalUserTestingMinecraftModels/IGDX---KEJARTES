@@ -46,31 +46,31 @@ const _BIO := {
 
 
 func test_roster_carries_gender_and_birth_date() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")
 	for student_name in _BIO.keys():
 		var gender: String = _BIO[student_name][0]
 		var born: String = _BIO[student_name][1]
 		assert_true(src.contains('"jenis_kelamin": "%s"' % gender),
-			"student_card.gd must declare jenis_kelamin %s for %s" % [gender, student_name])
+			"StudentCard.gd must declare jenis_kelamin %s for %s" % [gender, student_name])
 		assert_true(src.contains('"tanggal_lahir": "%s"' % born),
-			"student_card.gd must declare tanggal_lahir %s for %s" % [born, student_name])
+			"StudentCard.gd must declare tanggal_lahir %s for %s" % [born, student_name])
 
 
 ## ReportCard never hardcodes student data -- it reads
-## GameState.approved_students live (report_card.gd:52), which
-## student_card.gd populates directly from its own student_data_list
-## entries (student_card.gd:1421). So the new bio fields reach ReportCard
-## automatically once they exist on student_card.gd's dictionaries; this
+## GameState.approved_students live (ReportCard.gd:52), which
+## StudentCard.gd populates directly from its own student_data_list
+## entries (StudentCard.gd:1421). So the new bio fields reach ReportCard
+## automatically once they exist on StudentCard.gd's dictionaries; this
 ## pins that the propagation path itself stays intact.
 func test_report_card_still_reads_approved_students_live() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/report_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/ReportCard.gd")
 	assert_true(src.contains("student_data_list = GameState.approved_students"),
-		"report_card.gd must keep reading the live roster, not a hardcoded copy")
+		"ReportCard.gd must keep reading the live roster, not a hardcoded copy")
 
 
 const _SCENES := [
-	"res://Scenes/StudentCard/student_card.tscn",
-	"res://Scenes/ReportCard/report_card.tscn",
+	"res://Scenes/StudentCard/StudentCard.tscn",
+	"res://Scenes/ReportCard/ReportCard.tscn",
 ]
 
 
@@ -186,8 +186,8 @@ func test_an_unknown_category_falls_back_to_a_real_variation() -> void:
 ## has to clear the touch minimum on its own.
 ##
 ## A source scan, not a live instantiation: build_icon_clusters only runs
-## from populate(), which student_card.gd's _ready() calls -- and
-## student_card.gd is deliberately not @tool, so _ready() never fires just
+## from populate(), which StudentCard.gd's _ready() calls -- and
+## StudentCard.gd is deliberately not @tool, so _ready() never fires just
 ## from instantiating the scene in a test (see student_card's suite header
 ## for the precedent). Every other test in this suite that needs to check
 ## StudentCardView's behaviour uses the same technique.
@@ -232,7 +232,7 @@ func test_the_pill_no_longer_takes_input() -> void:
 
 
 ## Source scan, not live instantiation: build_bio_panel only runs from
-## populate(), which student_card.gd's _ready() calls -- and student_card.gd
+## populate(), which StudentCard.gd's _ready() calls -- and StudentCard.gd
 ## is deliberately not @tool, so _ready() never fires just from
 ## instantiating the scene in a test (same reasoning as
 ## test_icon_clusters_exist_and_meet_the_touch_target above).
@@ -306,7 +306,7 @@ func test_every_card_shows_the_students_specialty() -> void:
 						% [node_name, i]),
 					"%s missing KertasMurid%d/%s" % [scene_path, i, node_name])
 
-	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var scene := load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene
 	var inst := scene.instantiate()
 	track(inst)
 	var card := inst.get_node("KertasMurid1") as Control
@@ -359,7 +359,7 @@ func test_trait_buttons_use_the_trait_pill_variation() -> void:
 ## on the exact string -- so the redesign changes only how they are shown.
 func test_trait_values_are_unchanged() -> void:
 	var src := FileAccess.get_file_as_string(
-		"res://Scripts/StudentCard/student_card.gd")
+		"res://Scripts/StudentCard/StudentCard.gd")
 	for quirk in ["Kutu Buku", "Semangat Juang", "Penasaran",
 			"Penyendiri", "Biang Onar", "Pekerja Keras"]:
 		assert_true(src.contains('"quirk": "%s"' % quirk),
@@ -372,8 +372,8 @@ func test_trait_values_are_unchanged() -> void:
 ## Checked across all six cards so it cannot recur, per scene.
 ##
 ## The two scenes used to carry DIFFERENT pinned geometry, because the
-## pills were moved on student_card.tscn alone to clear its Approve button
-## while report_card.tscn kept the original. Shortening the painted paper
+## pills were moved on StudentCard.tscn alone to clear its Approve button
+## while ReportCard.tscn kept the original. Shortening the painted paper
 ## (its bottom edge is now y=1559, down from 1716) ended that: on BOTH
 ## scenes the lower pill spilled past the paper's edge -- report_card's
 ## worst, at 1530-1629, seventy pixels of pill on bare desk. The pills are
@@ -466,7 +466,7 @@ func test_the_lower_card_stack_stays_on_the_paper() -> void:
 ## card and checks the pills' ACTUAL resolved Rect2 against their
 ## neighbors -- the check the source-text scan structurally cannot do.
 func test_trait_pills_do_not_overlap_neighbors() -> void:
-	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var scene := load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene
 	var inst := scene.instantiate()
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
@@ -507,7 +507,7 @@ func _resolved_rect(card: Node, child_name: String) -> Rect2:
 	return (card.get_node("%s" % child_name) as Control).get_rect()
 
 
-## PageLabel is NOT empty -- student_card.gd:717 sets its text every page turn
+## PageLabel is NOT empty -- StudentCard.gd:717 sets its text every page turn
 ## ("page_label.text = str(index + 1) + "/" + str(kertas_murid.size())"), so
 ## it renders "1/6" etc. at runtime. It genuinely overlapped the Persona
 ## trait pill on screen. That overlap was previously missed because
@@ -521,11 +521,11 @@ func _resolved_rect(card: Node, child_name: String) -> Rect2:
 ## PageLabel now sits centred between the two page arrows (root offsets
 ## x 20-140 and x 800-920, y 1516-1636). This instantiates the scene and
 ## checks the label's resolved global rect against the trait pill it used
-## to clip, in both student_card.tscn and report_card.tscn.
+## to clip, in both StudentCard.tscn and ReportCard.tscn.
 func test_page_label_sits_between_the_arrows() -> void:
 	for scene_path in [
-		"res://Scenes/StudentCard/student_card.tscn",
-		"res://Scenes/ReportCard/report_card.tscn",
+		"res://Scenes/StudentCard/StudentCard.tscn",
+		"res://Scenes/ReportCard/ReportCard.tscn",
 	]:
 		var scene := load(scene_path) as PackedScene
 		var inst := scene.instantiate()
@@ -627,7 +627,7 @@ const _MIN_ARROW_GAP := 15.0
 
 
 func test_the_action_row_is_not_crowded_against_the_paper() -> void:
-	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var scene := load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene
 	var inst := scene.instantiate()
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)

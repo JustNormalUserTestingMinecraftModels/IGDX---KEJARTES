@@ -1043,10 +1043,10 @@ func test_school_day_hides_its_chrome_behind_the_summary() -> void:
 ## dictionary, so all four are pinned together here.
 func test_every_roster_points_at_the_new_splash_batch() -> void:
 	var sources := [
-		"res://Scripts/StudentCard/student_card.gd",
-		"res://Scripts/StudentList/student_list.gd",
+		"res://Scripts/StudentCard/StudentCard.gd",
+		"res://Scripts/StudentList/StudentList.gd",
 		"res://Scripts/Debug/DebugManager.gd",
-		"res://Scripts/AturJadwal/atur_jadwal.gd",
+		"res://Scripts/AturJadwal/AturJadwal.gd",
 	]
 	for path in sources:
 		var src := FileAccess.get_file_as_string(path)

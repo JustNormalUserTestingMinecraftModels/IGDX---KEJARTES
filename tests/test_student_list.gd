@@ -22,7 +22,7 @@ extends McpTestSuite
 ##    (Task 9/10's established fix) rather than `.size` after an
 ##    `await process_frame`, which the runner's non-awaited test call
 ##    convention cannot support.
-##  * student_list.gd is NOT @tool. Empirically verified here: this
+##  * StudentList.gd is NOT @tool. Empirically verified here: this
 ##    scene's runtime setup (_setup_students/_setup_tutorial, both
 ##    called from _ready()) reads the GameState autoload and builds the
 ##    tutorial panel dynamically. Godot only runs a plain (non-@tool)
@@ -43,8 +43,8 @@ extends McpTestSuite
 ##    would add gating overhead for zero additional test coverage, so
 ##    it is deliberately omitted — matching StudentCard's precedent.
 
-const _SCENE_PATH := "res://Scenes/StudentList/student_list.tscn"
-const _SCRIPT_PATH := "res://Scripts/StudentList/student_list.gd"
+const _SCENE_PATH := "res://Scenes/StudentList/StudentList.tscn"
+const _SCRIPT_PATH := "res://Scripts/StudentList/StudentList.gd"
 const _STICKYNOTE_SCRIPT_PATH := "res://Scripts/StudentList/StickyNote.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 ## Stands the list up and settles its Containers in the same frame.
@@ -76,7 +76,7 @@ func teardown() -> void:
 
 func test_still_routes_to_atur_jadwal() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("res://Scenes/AturJadwal/atur_jadwal.tscn"),
+	assert_true(src.contains("res://Scenes/AturJadwal/AturJadwal.tscn"),
 		"student_list must still route to AturJadwal")
 
 
@@ -249,7 +249,7 @@ func test_part_three_art_exists_and_loads() -> void:
 		assert_true(load(p) is Texture2D, "not a Texture2D: " + p)
 
 
-## RosterAvatar is @tool, so unlike student_list.gd its _ready DOES fire
+## RosterAvatar is @tool, so unlike StudentList.gd its _ready DOES fire
 ## when the suite adds it to the editor root -- the ring tint below is
 ## applied state, not an authored default.
 func test_roster_avatar_tints_its_ring_from_state_tokens() -> void:
@@ -428,7 +428,7 @@ func test_the_header_has_no_plaque_behind_it() -> void:
 	assert_eq(header.text, "MURIDMU", "the screen is titled MURIDMU")
 
 
-## Source scans, not behaviour: student_list.gd is deliberately NOT
+## Source scans, not behaviour: StudentList.gd is deliberately NOT
 ## @tool, so its _ready never fires in the editor and nothing it would
 ## populate can be asserted live. See this suite's header note.
 func test_roster_strip_is_wired_to_the_carousel() -> void:
@@ -452,7 +452,7 @@ func test_page_dots_come_from_a_template_not_from_code() -> void:
 func test_the_script_carries_a_file_header() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.begins_with("##"),
-		"student_list.gd must open with a ## file header")
+		"StudentList.gd must open with a ## file header")
 
 ## Three steps become four. The new one teaches the only genuinely new
 ## mechanic; the other three keep their targets, which still resolve
@@ -661,7 +661,7 @@ func test_the_card_shadow_is_not_a_separate_node() -> void:
 	assert_false(src.contains("card_shadow"),
 		"nothing should reference a standalone shadow node any more")
 	var scene := FileAccess.get_file_as_string(
-		"res://Scenes/StudentList/student_list.tscn")
+		"res://Scenes/StudentList/StudentList.tscn")
 	assert_false(scene.contains('name="Shadow"'),
 		"CardContainer must not carry a separate Shadow node")
 

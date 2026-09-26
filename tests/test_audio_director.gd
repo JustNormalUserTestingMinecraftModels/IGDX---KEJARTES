@@ -27,7 +27,7 @@ func setup() -> void:
 				"mute": AudioServer.is_bus_mute(idx),
 			})
 
-	var scene: PackedScene = load("res://Scenes/Audio/audio_director.tscn")
+	var scene: PackedScene = load("res://Scenes/Audio/AudioDirector.tscn")
 	_director = scene.instantiate()
 	Engine.get_main_loop().root.add_child(_director)
 	track(_director)
@@ -135,7 +135,7 @@ func test_volumes_persist_across_a_fresh_director() -> void:
 	_director.set_bus_volume(&"BGM", 0.42)
 	_director.flush_volume_save()
 
-	var scene: PackedScene = load("res://Scenes/Audio/audio_director.tscn")
+	var scene: PackedScene = load("res://Scenes/Audio/AudioDirector.tscn")
 	var second: Node = scene.instantiate()
 	Engine.get_main_loop().root.add_child(second)
 	track(second)
@@ -183,7 +183,7 @@ func test_rapid_volume_changes_do_not_write_once_per_change() -> void:
 
 
 func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
-	# _director is instantiated from audio_director.tscn, so this asserts
+	# _director is instantiated from AudioDirector.tscn, so this asserts
 	# the real shipped assignments — not a fixture. A slot regressing to
 	# empty (file deleted, scene reverted) fails here rather than going
 	# quietly silent in game.
@@ -197,7 +197,7 @@ func test_every_sfx_slot_is_filled_in_the_shipped_scene() -> void:
 
 
 func test_every_bgm_slot_is_filled_in_the_shipped_scene() -> void:
-	# _director is instantiated from the real audio_director.tscn (see
+	# _director is instantiated from the real AudioDirector.tscn (see
 	# setup()), so this asserts the SHIPPED scene's actual state -- a slot
 	# that's real code but an empty assignment (like bgm_simulation once
 	# was) is exactly what this catches and the loop-setting tests do not.
@@ -287,10 +287,10 @@ func test_bgm_chain_tracks_do_not_loop() -> void:
 	# Playlist and sequence tracks must NOT auto-loop, or their `finished`
 	# signal never fires and AudioDirector can never advance them.
 	var should_not_loop := [
-		"res://Assets/Audio/BGM/loby_song1.mp3",
-		"res://Assets/Audio/BGM/loby_song2.mp3",
-		"res://Assets/Audio/BGM/loby_song3.mp3",
-		"res://Assets/Audio/BGM/loby_song4.mp3",
+		"res://Assets/Audio/BGM/lobby_song1.mp3",
+		"res://Assets/Audio/BGM/lobby_song2.mp3",
+		"res://Assets/Audio/BGM/lobby_song3.mp3",
+		"res://Assets/Audio/BGM/lobby_song4.mp3",
 		"res://Assets/Audio/BGM/minigame_akademis_1.wav",
 		"res://Assets/Audio/BGM/minigame_akademis_2.wav",
 		"res://Assets/Audio/BGM/minigame_akademis_3.wav",

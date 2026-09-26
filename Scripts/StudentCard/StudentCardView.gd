@@ -4,12 +4,12 @@ extends RefCounted
 const _CARD_ART := "res://Assets/Images/StudentCard/"
 
 ## Shared, stateless rendering for one `KertasMurid` card. Extracted from
-## `student_card.gd`, which still owns everything interactive (approval,
+## `StudentCard.gd`, which still owns everything interactive (approval,
 ## stamping, the tutorial, popups) -- this class only fills a card's nodes
 ## from a student data Dictionary and builds/styles its stat bars and
 ## trait badges.
 ##
-## `student` dictionaries use the exact schema `student_card.gd` builds
+## `student` dictionaries use the exact schema `StudentCard.gd` builds
 ## (see its `student_data_list`): "name", "kepribadian1", "kepribadian2",
 ## "akademis1", "akademis2", "akademis3", "quirk", "persona", "portrait",
 ## "profil", etc. `GameState.approved_students` entries are literal
@@ -50,7 +50,7 @@ static func persona_description(persona: String) -> String:
 ## the stat bars and the two trait badges. Reaches for nothing on the
 ## calling scene -- everything it needs to wire interactivity back to the
 ## caller (bar taps, badge hover/press) comes in as unbound Callables that
-## it binds itself, exactly as `student_card.gd` used to bind them inline.
+## it binds itself, exactly as `StudentCard.gd` used to bind them inline.
 static func populate(card: Control, student: Dictionary,
 		on_bar_input: Callable, on_badge_hover_enter: Callable,
 		on_badge_hover_exit: Callable, on_badge_pressed: Callable) -> void:

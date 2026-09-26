@@ -8,7 +8,7 @@ extends McpTestSuite
 ##
 ## Must be @tool; no test here may be a coroutine.
 
-const SCENE := "res://Scenes/Koperasi/koprasi.tscn"
+const SCENE := "res://Scenes/Koperasi/Koperasi.tscn"
 const TAIL := "res://Assets/Images/Shop/UI/chat_bubble_tail.svg"
 
 
@@ -127,6 +127,6 @@ func test_the_bubble_points_at_herman() -> void:
 func test_the_old_landing_is_gone() -> void:
 	var raw := FileAccess.get_file_as_string(SCENE)
 	for gone in ["KEBUTUHAN SEKOLAH", "ShopShelfButton", "Illustration4.jpg"]:
-		assert_false(raw.contains(gone), "koprasi.tscn still carries " + gone)
-	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/koprasi.gd")
+		assert_false(raw.contains(gone), "Koperasi.tscn still carries " + gone)
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/Koperasi.gd")
 	assert_false(src.contains("_on_rak1_pressed"), "no shelf toggle: the counter is the screen")

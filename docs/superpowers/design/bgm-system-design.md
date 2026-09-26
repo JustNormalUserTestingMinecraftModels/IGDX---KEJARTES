@@ -58,7 +58,7 @@ rather than restarting it.
 
 Renamed:
 - `bgm_menu` → `bgm_titlescreen` (id `&"menu"` → `&"titlescreen"`; 2 existing
-  call sites — `Scripts/UI/Settings.gd`, `Scripts/MainMenu/main_menu.gd` —
+  call sites — `Scripts/UI/Settings.gd`, `Scripts/MainMenu/MainMenu.gd` —
   updated to match)
 
 New, single-track (existing `play_bgm` mechanism, no change to that method):

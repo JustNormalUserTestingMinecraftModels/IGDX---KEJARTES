@@ -2,7 +2,7 @@
 extends McpTestSuiteCompat
 
 ## The stat-detail modal, now a scene rather than 168 lines of construction
-## duplicated between report_card.gd and student_card.gd.
+## duplicated between ReportCard.gd and StudentCard.gd.
 ##
 ## These tests instantiate the scene (cheap -- it is a dozen nodes) and check
 ## the node contract the two callers rely on, plus the source-level guarantee
@@ -109,19 +109,19 @@ func test_report_card_no_longer_builds_the_popup_itself() -> void:
 	# Not checked here: "TraitPopupPanel" -- both this popup and the
 	# still-unconverted trait popup (Task 7) used that same node name, so the
 	# string legitimately survives in the file until Task 7 also lands.
-	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/report_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/ReportCard.gd")
 	assert_false(src.contains("StatBar.new("),
-		"report_card.gd still builds the stat popup's bar by hand")
+		"ReportCard.gd still builds the stat popup's bar by hand")
 	assert_contains(src, "StatDetailPopup",
-		"report_card.gd should instantiate the extracted scene")
+		"ReportCard.gd should instantiate the extracted scene")
 	assert_false(src.contains("const BAR_CATEGORY"),
 		"BAR_CATEGORY moved to StatInfo.token_category()")
 
 
 func test_student_card_no_longer_builds_the_popup_itself() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")
 	assert_contains(src, "StatDetailPopup",
-		"student_card.gd should instantiate the extracted scene")
+		"StudentCard.gd should instantiate the extracted scene")
 	assert_false(src.contains("const BAR_CATEGORY"),
 		"BAR_CATEGORY moved to StatInfo.token_category()")
 
@@ -130,8 +130,8 @@ func test_the_two_screens_share_one_popup_implementation() -> void:
 	# The regression this whole task exists to prevent: the two screens each
 	# carried a verbatim copy of the same 168-line builder, and they had
 	# already drifted. Neither may build a StatBar for a popup again.
-	for path in ["res://Scripts/ReportCard/report_card.gd",
-			"res://Scripts/StudentCard/student_card.gd"]:
+	for path in ["res://Scripts/ReportCard/ReportCard.gd",
+			"res://Scripts/StudentCard/StudentCard.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_false(src.contains("StatBar.new("),
 			"%s builds a StatBar in code -- use StatDetailPopup" % path)

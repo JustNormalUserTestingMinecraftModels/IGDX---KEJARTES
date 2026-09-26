@@ -4,7 +4,7 @@ extends TextureRect
 
 ## One student's paper card in the StudentList carousel. Extracted from
 ## four near-identical ~130-line inline subtrees (Murid1..4, about 600
-## lines of student_list.tscn) so the card is authored once -- the same
+## lines of StudentList.tscn) so the card is authored once -- the same
 ## move already made for StickyNote.
 ##
 ## Instanced four times under the names Murid1..4. Those names are
@@ -16,7 +16,7 @@ extends TextureRect
 ## Every tunable is an @export on THIS root, never a property set on an
 ## instance's child: overrides serialise only on an instanced scene's
 ## root, so a value poked into a child reports success and is dropped on
-## save. student_list.gd still pokes some children by name (Nama, Belum,
+## save. StudentList.gd still pokes some children by name (Nama, Belum,
 ## Sudah, StickyNotesContainer, CardButton) -- those stay direct children.
 
 ## Shown on the Nama label.
@@ -71,7 +71,7 @@ extends TextureRect
 ## "Akademis", and both must resolve.
 ##
 ## The team's authored art, matching the same categories on the day
-## notes -- see CATEGORY_ICONS in student_list.gd. Both maps point at
+## notes -- see CATEGORY_ICONS in StudentList.gd. Both maps point at
 ## the StudentCard stat_* set so a student's specialty chip, their day
 ## notes and their stat rows all carry the one symbol per subject.
 const SPECIALTY_ICONS := {

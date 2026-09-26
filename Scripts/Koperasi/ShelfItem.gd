@@ -115,7 +115,7 @@ func _on_lift_finished() -> void:
 	if is_instance_valid(_button):
 		_button.position.y = _base_y
 
-## Called by rakbarang_1.gd's press handler before it acts on a shelf tap.
+## Called by KoperasiStage.gd's press handler before it acts on a shelf tap.
 ## Returns false (and does nothing) while already locked, so a second tap
 ## landing before the first's flight lands is silently ignored. On success,
 ## ghosts the button to locked_alpha and arms the FLIGHT_TIMEOUT failsafe --
@@ -163,7 +163,7 @@ func set_dimmed(dim: bool) -> void:
 ## Sets the stock-pip badge under the shelf button: `total` copies of this
 ## slot's item are on this week's shelf, `remaining` of them still unsold
 ## and uncarted. Looks up PipRow -- a static HBoxContainer of Pip1..Pip3
-## authored as a sibling of this helper, under the button, in koprasi.tscn
+## authored as a sibling of this helper, under the button, in Koperasi.tscn
 ## -- rather than building anything at runtime. Each PipN shows while
 ## `i < total` and carries a "Fill" child shown while `i < remaining`, so a
 ## hollow dot (Fill hidden) reads as sold/carted and a hidden PipN reads as

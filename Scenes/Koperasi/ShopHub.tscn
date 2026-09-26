@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://do847bvfwb055"]
 
-[ext_resource type="Script" uid="uid://bfi5sn3yx3jur" path="res://Scripts/Koperasi/shop_hub.gd" id="1_dpf3a"]
+[ext_resource type="Script" uid="uid://bfi5sn3yx3jur" path="res://Scripts/Koperasi/ShopHub.gd" id="1_dpf3a"]
 [ext_resource type="Texture2D" uid="uid://bsa3lvahggq2b" path="res://Assets/Images/Shop/Illustration4.jpg" id="2_u0dhl"]
 [ext_resource type="Material" uid="uid://cw2ydcnw0g4b" path="res://Scenes/Koperasi/shop_hub_blur_material.tres" id="3_h812q"]
 [ext_resource type="PackedScene" uid="uid://bagftbms2pxy1" path="res://Scenes/Koperasi/ShopHubTile.tscn" id="4_s0qym"]

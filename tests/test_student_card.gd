@@ -20,8 +20,8 @@ extends McpTestSuite
 ##    instantiated under the editor's own root, so the baked theme is
 ##    assigned explicitly before the scene enters the tree.
 
-const _SCENE_PATH := "res://Scenes/StudentCard/student_card.tscn"
-const _SCRIPT_PATH := "res://Scripts/StudentCard/student_card.gd"
+const _SCENE_PATH := "res://Scenes/StudentCard/StudentCard.tscn"
+const _SCRIPT_PATH := "res://Scripts/StudentCard/StudentCard.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 
@@ -58,7 +58,7 @@ func test_approved_students_contract_is_intact() -> void:
 
 func test_still_routes_to_the_lobby() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_true(src.contains("res://Scenes/Lobby/Lobby.tscn"),
 		"student_card must still route to the lobby")
 
 
@@ -177,7 +177,7 @@ func test_motion_and_audio_feedback_are_wired() -> void:
 		"student pages must stagger in on entry")
 	# The stat and trait detail popups' pop-in reveal now lives in the shared
 	# scenes they were extracted into (StatDetailPopup.gd / TraitDetailPopup.gd),
-	# not in student_card.gd itself -- that's the point of the extraction.
+	# not in StudentCard.gd itself -- that's the point of the extraction.
 	var stat_popup_src := FileAccess.get_file_as_string("res://Scripts/UI/StatDetailPopup.gd")
 	var trait_popup_src := FileAccess.get_file_as_string("res://Scripts/UI/TraitDetailPopup.gd")
 	assert_true(stat_popup_src.contains("Juice.pop_in"),
@@ -261,14 +261,14 @@ func test_persona_descriptions_are_available_from_the_view() -> void:
 		"Persona Tekun must have a description")
 
 func test_student_card_delegates_to_the_view() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")
 	assert_true(src.contains("StudentCardView."),
 		"student_card must consume the shared view, not duplicate it")
 
 func test_tutorial_target_node_paths_are_unchanged() -> void:
 	## The tutorial steps target node paths by string. The extraction must
 	## not move any of them.
-	var scene := (load("res://Scenes/StudentCard/student_card.tscn") as PackedScene).instantiate()
+	var scene := (load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene).instantiate()
 	for path in ["KertasMurid1/Kepribadian1", "KertasMurid1/KutuBuku"]:
 		assert_true(scene.get_node_or_null(path) != null,
 			"tutorial target must still resolve: " + path)

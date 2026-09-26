@@ -92,10 +92,10 @@ func test_koperasi_scripts_carry_no_emoji() -> void:
 	# Project convention bans emoji as UI iconography (2026-09-02). This
 	# scans by codepoint range rather than by a list of known glyphs --
 	# an earlier two-glyph version of this test passed while three other
-	# emoji were still present in koprasi.gd.
+	# emoji were still present in Koperasi.gd.
 	var paths := [
-		"res://Scripts/Koperasi/koprasi.gd",
-		"res://Scripts/Koperasi/rakbarang_1.gd",
+		"res://Scripts/Koperasi/Koperasi.gd",
+		"res://Scripts/Koperasi/KoperasiStage.gd",
 		"res://Scripts/Koperasi/PriceTag.gd",
 	]
 	for path in paths:
@@ -198,11 +198,11 @@ func test_price_tag_wipe_node_resolves() -> void:
 			"WipeHost must be a plain Control, not a Container")
 	tag.free()
 
-const RAK_SRC := "res://Scripts/Koperasi/rakbarang_1.gd"
+const RAK_SRC := "res://Scripts/Koperasi/KoperasiStage.gd"
 
 func _rak_source() -> String:
 	var f := FileAccess.open(RAK_SRC, FileAccess.READ)
-	assert_not_null(f, "rakbarang_1.gd missing")
+	assert_not_null(f, "KoperasiStage.gd missing")
 	if f == null:
 		return ""
 	return f.get_as_text()
@@ -273,8 +273,8 @@ func test_shop_scripts_only_use_real_gamestate_members() -> void:
 	# Source scans cannot catch a wrong property name: GameState.money
 	# looked fine to every string assertion and crashed the scene on boot.
 	var paths := [
-		"res://Scripts/Koperasi/rakbarang_1.gd",
-		"res://Scripts/Koperasi/koprasi.gd",
+		"res://Scripts/Koperasi/KoperasiStage.gd",
+		"res://Scripts/Koperasi/Koperasi.gd",
 	]
 	var re := RegEx.new()
 	re.compile(r"GameState\.([A-Za-z_][A-Za-z0-9_]*)")
@@ -366,7 +366,7 @@ const TRAY_SCENE := "res://Scenes/Koperasi/BasketTray.tscn"
 
 
 func test_tray_panel_uses_the_basket_tray_variation() -> void:
-	var shop := FileAccess.get_file_as_string("res://Scenes/Koperasi/koprasi.tscn")
+	var shop := FileAccess.get_file_as_string("res://Scenes/Koperasi/Koperasi.tscn")
 	var tray := FileAccess.get_file_as_string(TRAY_SCENE)
 	assert_true(shop.contains("res://Scenes/Koperasi/BasketTray.tscn"),
 		"the shop docks the basket tray scene")
@@ -392,10 +392,10 @@ func test_shop_shows_a_scene_empty_state_not_a_built_label() -> void:
 
 
 func test_the_docked_tray_replaced_the_modal() -> void:
-	var shop := FileAccess.get_file_as_string("res://Scenes/Koperasi/koprasi.tscn")
+	var shop := FileAccess.get_file_as_string("res://Scenes/Koperasi/Koperasi.tscn")
 	for gone in ["name=\"ReturPanel\"", "name=\"PopupLayer\"", "name=\"BlurLayer\"",
 			"name=\"Keranjang\"", "text = \"Harga++\"", "text = \"BELI\""]:
-		assert_false(shop.contains(gone), "koprasi.tscn still carries %s" % gone)
+		assert_false(shop.contains(gone), "Koperasi.tscn still carries %s" % gone)
 
 
 func test_the_flight_lands_on_the_items_tray_slot() -> void:
@@ -453,8 +453,8 @@ func test_lift_swells_and_fades_the_rim_glow() -> void:
 
 
 func test_each_shelf_item_has_a_glow_behind_it() -> void:
-	var packed = load("res://Scenes/Koperasi/koprasi.tscn")
-	assert_not_null(packed, "koprasi.tscn missing")
+	var packed = load("res://Scenes/Koperasi/Koperasi.tscn")
+	assert_not_null(packed, "Koperasi.tscn missing")
 	if packed == null:
 		return
 	var shop = packed.instantiate()

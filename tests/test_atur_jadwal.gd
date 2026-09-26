@@ -12,14 +12,14 @@ extends McpTestSuite
 ##  * This suite must itself be @tool.
 ##  * The runner calls suite.call(name) WITHOUT awaiting -- no coroutine tests.
 ##  * _collect_overrides is copied verbatim from test_main_menu.gd.
-##  * Per Task 12's finding (student_card.gd, not @tool): _ready() does NOT
+##  * Per Task 12's finding (StudentCard.gd, not @tool): _ready() does NOT
 ##    run when this suite instantiates a non-@tool Control under the editor's
 ##    own root. Structural/contract checks below therefore use
 ##    get_node_or_null() against the scene-declared tree and source-text
 ##    scanning, never runtime state that only _ready() would populate.
 
-const _SCENE_PATH := "res://Scenes/AturJadwal/atur_jadwal.tscn"
-const _SCRIPT_PATH := "res://Scripts/AturJadwal/atur_jadwal.gd"
+const _SCENE_PATH := "res://Scenes/AturJadwal/AturJadwal.tscn"
+const _SCRIPT_PATH := "res://Scripts/AturJadwal/AturJadwal.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 
@@ -46,8 +46,8 @@ func test_splash_wears_the_white_outline_material() -> void:
 
 
 func test_splash_button_uses_that_material() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/AturJadwal/atur_jadwal.tscn")
-	assert_true(src.contains(SPLASH_MATERIAL), "atur_jadwal.tscn must reference the outline material")
+	var src := FileAccess.get_file_as_string("res://Scenes/AturJadwal/AturJadwal.tscn")
+	assert_true(src.contains(SPLASH_MATERIAL), "AturJadwal.tscn must reference the outline material")
 	var at := src.find('[node name="TextureButton" type="TextureButton" parent="."')
 	assert_true(at != -1, "the root TextureButton (the student splash) must exist")
 	var next := src.find("[node", at + 1)
@@ -81,9 +81,9 @@ func teardown() -> void:
 
 func test_still_routes_to_lobby_studentlist_and_schoolday() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_true(src.contains("res://Scenes/Lobby/Lobby.tscn"),
 		"back button must still route to the Lobby")
-	assert_true(src.contains("res://Scenes/StudentList/student_list.tscn"),
+	assert_true(src.contains("res://Scenes/StudentList/StudentList.tscn"),
 		"selecting a student must still route to StudentList")
 	assert_true(src.contains("res://Scenes/SchoolSimulation/SchoolDay.tscn"),
 		"starting the week must still route to SchoolDay")
@@ -409,7 +409,7 @@ func test_the_sticky_notes_sit_on_an_aligned_week_grid() -> void:
 ## it scattered the week out of reading order (visual polish D3). An empty day
 ## breathes from DayStickyNote instead, on its Paper's scale.
 func test_the_screen_never_sways_the_day_notes() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd")
 	assert_false(src.contains("func _start_day_button_sway"), "the day-note sway is gone")
 	assert_false(src.contains("tween_property(btn, \"rotation\""),
 		"no tween may rotate a day note; the grid's tilt is authored")
@@ -512,7 +512,7 @@ func test_peringatan_pops_in_over_a_scrim_with_shake_and_fail_sfx() -> void:
 		"an incomplete-schedule attempt must play the fail sfx")
 
 
-## CLAUDE.md flags atur_jadwal.gd as holding its own copies of numbers that
+## CLAUDE.md flags AturJadwal.gd as holding its own copies of numbers that
 ## also live in Balance.gd. A shadow constant means the tester edits Balance,
 ## reruns, and the screen does not move -- the exact failure Balance.gd exists
 ## to prevent.
@@ -527,7 +527,7 @@ func test_no_shadow_balance_constants_remain() -> void:
 		"WIRAUSAHA_ENERGY_MIN", "WIRAUSAHA_ENERGY_MAX",
 	]:
 		assert_true(not src.contains("const " + shadowed),
-			"atur_jadwal.gd must not redeclare " + shadowed + "; read Balance.gd via ActivityPreview")
+			"AturJadwal.gd must not redeclare " + shadowed + "; read Balance.gd via ActivityPreview")
 
 
 ## The projected-gain readout was grade-blind: it hardcoded grade 7's numbers,
@@ -715,7 +715,7 @@ func test_update_day_colors_uses_the_template_api() -> void:
 func test_assign_pop_is_driven_from_on_activity_selected() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("play_assign_pop()"),
-		"atur_jadwal.gd must drive the day-note pop itself")
+		"AturJadwal.gd must drive the day-note pop itself")
 	var idx := src.find("func _on_activity_selected")
 	assert_true(idx != -1, "_on_activity_selected must exist")
 	var next := src.find("\nfunc ", idx + 1)
@@ -750,7 +750,7 @@ func test_peringatan_frame_is_a_ninepatch_of_the_card_art() -> void:
 			assert_true(frame.get("patch_margin_" + side) > 0,
 				"patch_margin_%s must be set or the corners still stretch" % side)
 
-	# The dialog's three children must survive the retype -- atur_jadwal.gd
+	# The dialog's three children must survive the retype -- AturJadwal.gd
 	# reaches them by path in six places.
 	for child_name in ["Label", "ButtonYes", "ButtonNo"]:
 		assert_true(_screen.get_node_or_null(
@@ -761,7 +761,7 @@ func test_peringatan_frame_is_a_ninepatch_of_the_card_art() -> void:
 ## Nothing in the warning dialog may still reference the stock placeholder.
 func test_no_pngwing_placeholder_remains_in_the_warning_dialog() -> void:
 	var src := FileAccess.get_file_as_string(
-		"res://Scenes/AturJadwal/atur_jadwal.tscn")
+		"res://Scenes/AturJadwal/AturJadwal.tscn")
 	var peringatan_start := src.find("[node name=\"Peringatan\"")
 	assert_true(peringatan_start != -1, "Peringatan node block not found")
 	var peringatan_end := src.find("[node name=\"Penjadwalan\"", peringatan_start)
@@ -1134,5 +1134,5 @@ func test_the_objective_strip_reads_real_data() -> void:
 		"objective_strip.pressed.connect(_on_objective_strip_pressed)",
 		"ObjectiveHint.compose(named)",
 	]:
-		assert_true(src.contains(needle), "atur_jadwal.gd must call " + needle)
+		assert_true(src.contains(needle), "AturJadwal.gd must call " + needle)
 	assert_false(src.contains("TanggalContainer"), "nothing may still reach for the old header")

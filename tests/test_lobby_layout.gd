@@ -24,7 +24,7 @@ const SCREEN_W := 1080.0
 const SCREEN_H := 1920.0
 const RIM_CLEARANCE := 24.0
 
-const SCENE := "res://Scenes/Lobby/loby.tscn"
+const SCENE := "res://Scenes/Lobby/Lobby.tscn"
 
 const NAV_TILES := ["Koperasi", "Inventory", "ReportStudent"]
 

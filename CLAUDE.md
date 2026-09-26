@@ -2,7 +2,7 @@
 
 Godot **4.6** mobile game, portrait 1080×1920, `mobile` renderer, Vulkan.
 Indonesian-language school-management sim. Main scene:
-`Scenes/MainMenu/main_menu.tscn`.
+`Scenes/MainMenu/MainMenu.tscn`.
 
 ## The game
 
@@ -174,7 +174,7 @@ alpha before laying out on any soft-edged texture.
   `Assets/Images/UI/BarFill/README.md`. `tests/test_bar_contrast.gd` checks
   the luminance floor, `tests/test_ghost_track.gd` the ghost track; nothing
   tests the tile period.
-- `penjadwalan_card_bg.png` stays exactly 1080x1080: `atur_jadwal.tscn`'s
+- `penjadwalan_card_bg.png` stays exactly 1080x1080: `AturJadwal.tscn`'s
   Peringatan dialog crops it with a hardcoded `region_rect` that
   `tests/test_atur_jadwal.gd` pins.
 - `EndCutscene`'s badge words are stroked **paths**, not SVG `<text>`, which
@@ -215,7 +215,7 @@ Hard constraints:
    Pure signal wiring stays ungated so tests can exercise it.
 4. Some suites assume the **main scene is open** in the editor; `test_run`
    returns a `scene_warning` when it isn't, naming the scene it wants. Open
-   `Scenes/MainMenu/main_menu.tscn` before trusting a failure.
+   `Scenes/MainMenu/MainMenu.tscn` before trusting a failure.
 
 5. **The suite cannot be run headless** — the bridge is the only way.
    (`--script` registers no autoloads; running a *scene* makes

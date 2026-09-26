@@ -5,7 +5,7 @@ extends Control
 ## (AchievementClaimPopup.tscn; reference: achievementclaim_mockup.png). A
 ## blurred screen, "SELAMAT, ANDA MENDAPATKAN", the icon large over animated
 ## light rays, the achievement's title, and paper confetti. Opened by
-## achievements_screen.gd with open(); any tap after a short lock closes it,
+## AchievementsScreen.gd with open(); any tap after a short lock closes it,
 ## and it frees itself. @tool so the test runner can call open().
 
 signal closed

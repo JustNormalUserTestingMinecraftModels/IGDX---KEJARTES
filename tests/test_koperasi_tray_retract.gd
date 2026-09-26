@@ -11,7 +11,7 @@ func suite_name() -> String:
 	return "koperasi_tray_retract"
 
 const TRAY_SCENE := preload("res://Scenes/Koperasi/BasketTray.tscn")
-const KOPRASI_TSCN := "res://Scenes/Koperasi/koprasi.tscn"
+const KOPRASI_TSCN := "res://Scenes/Koperasi/Koperasi.tscn"
 
 
 ## McpTestSuiteCompat is not itself a Node, so an instantiated BasketTray
@@ -108,7 +108,7 @@ func test_the_tray_has_no_corner_emblem_or_header_button() -> void:
 	t.queue_free()
 
 
-# ── koprasi.tscn / koprasi.gd -- text scans, per project convention: the
+# ── Koperasi.tscn / Koperasi.gd -- text scans, per project convention: the
 #    Stage cannot be instantiated headlessly against live autoload state, so
 #    these confirm what was authored rather than runtime behaviour. ────────
 

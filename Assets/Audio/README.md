@@ -16,7 +16,7 @@ them is slated to be replaced with a distinct OST later.
 
 1. Drop your `.ogg`/`.mp3`/`.wav` into `SFX/` or `BGM/`. Keep any
    filename you like; the slot name is what matters, not the filename.
-2. Open `Scenes/Audio/audio_director.tscn` in the Godot editor.
+2. Open `Scenes/Audio/AudioDirector.tscn` in the Godot editor.
 3. Drag your file from the FileSystem dock onto the matching slot in the
    Inspector (see "Adding or swapping BGM" below for array slots).
 4. Save the scene. Done — no code changes, ever.
@@ -36,7 +36,7 @@ A slot you leave empty simply plays nothing. Nothing crashes.
 | `sfx_success` | a target is met | day summary pass, semester result pass |
 | `sfx_fail` | a target is missed | day summary fail, atur jadwal validation failures, semester result fail |
 | `sfx_coin` | money increases | Lobby `_update_money_display` (daily login payout, any money gain) |
-| `sfx_whoosh` | scene transitions | `Scripts/Transition/transition.gd`, cutscene grade selection |
+| `sfx_whoosh` | scene transitions | `Scripts/Transition/Transition.gd`, cutscene grade selection |
 | `sfx_pop` | Musik slider preview | Settings (dragging the BGM slider) |
 | `sfx_swipe` | student card swiped | StudentCard |
 | `sfx_stamp` | APPROVE stamp lands | StudentCard |
@@ -112,7 +112,7 @@ through it.
 
 ## Adding or swapping BGM
 
-Single-track slots: drag a file onto the slot in `audio_director.tscn`'s
+Single-track slots: drag a file onto the slot in `AudioDirector.tscn`'s
 Inspector, same as any SFX slot. Array slots (`bgm_lobby_playlist`,
 `bgm_minigame_akademis`): expand the array in the Inspector and drag a file
 onto each element.

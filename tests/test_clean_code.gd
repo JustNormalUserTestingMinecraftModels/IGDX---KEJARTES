@@ -127,3 +127,86 @@ func test_untyped_counts_vars_signatures_and_parameters() -> void:
 	]))
 	assert_eq(Scan.untyped_count(src, Scan.parse_functions(src)), 5,
 		"a, d and g; f's missing -> ; f's untyped x")
+
+
+func test_pascal_case_rule() -> void:
+	assert_true(Scan.is_pascal_case("Lobby"))
+	assert_true(Scan.is_pascal_case("ShopHubTile"))
+	assert_true(Scan.is_pascal_case("A1"))
+	assert_false(Scan.is_pascal_case("shop_hub_tile"))
+	assert_false(Scan.is_pascal_case("Andi_Table"))
+
+
+func test_asset_name_rule() -> void:
+	assert_true(Scan.is_safe_asset_name("kanan_atas.png"))
+	assert_true(Scan.is_safe_asset_name("OpenSans-Bold.ttf"))
+	assert_false(Scan.is_safe_asset_name("kanan" + " atas.png"), "a space")
+	assert_false(Scan.is_safe_asset_name("pngwing.com (9)" + ".png"), "brackets")
+	assert_false(Scan.is_safe_asset_name("a—b.png"), "an em dash")
+
+
+func test_misspelled_stem_rule() -> void:
+	assert_true(Scan.has_misspelled_stem("lo" + "by.gd"))
+	assert_true(Scan.has_misspelled_stem("KOP" + "RASI.tscn"), "any case")
+	assert_true(Scan.has_misspelled_stem("MuridPo" + "trait"))
+	assert_false(Scan.has_misspelled_stem("Lobby.gd"))
+	assert_false(Scan.has_misspelled_stem("Koperasi.tscn"))
+	assert_false(Scan.has_misspelled_stem("MuridPortrait"))
+
+
+func test_legacy_key_count_is_case_insensitive_and_sees_inside_identifiers() -> void:
+	var sample := "x[\"akad" + "emis2\"] + Kepri" + "badian1 + target_akad" + "emis3"
+	assert_eq(Scan.legacy_key_count(sample), 3)
+	assert_eq(Scan.legacy_key_count("akademis + seni_budaya + mood"), 0,
+		"the real names are not legacy")
+
+
+func test_path_literals_and_their_targets() -> void:
+	assert_eq(",".join(PackedStringArray(Scan.path_literals(
+		"A=\"*res://Scenes/A.tscn\"\nb = load('res://b.png')"))),
+		"res://Scenes/A.tscn,res://b.png", "the autoload star is stripped")
+	assert_eq(Scan.literal_target("res://Scenes/A.tscn"), "res://Scenes/A.tscn")
+	assert_eq(Scan.literal_target("res://Assets/Images/Achievements/Icons/"),
+		"res://Assets/Images/Achievements/Icons", "a folder literal")
+	assert_eq(Scan.literal_target("res://Assets/Images/MuridPortrait/%s.png"),
+		"res://Assets/Images/MuridPortrait", "a formatted literal is judged by its folder")
+	assert_eq(Scan.literal_target("res://{0}.tscn"), "res://")
+
+
+func test_compare_counts_both_directions() -> void:
+	var result := Scan.compare_counts({"a": 3, "b": 2}, {"a": 4, "c": 1})
+	assert_eq(",".join(result["grown"]), "a: baseline 3, now 4,c: baseline 0, now 1")
+	assert_eq(",".join(result["shrunk"]), "b: baseline 2, now 0")
+
+
+func test_compare_large_only_tightens_below_the_bar() -> void:
+	assert_true(Scan.compare_large({"x": 1200}, {"x": 1150})["shrunk"].is_empty(),
+		"a smaller large script needs no baseline change")
+	assert_false(Scan.compare_large({"x": 1200}, {"x": 1201})["grown"].is_empty())
+	assert_false(Scan.compare_large({"x": 1200}, {})["shrunk"].is_empty(),
+		"dropping to the bar or below removes it from the list")
+	assert_false(Scan.compare_large({}, {"y": 1001})["grown"].is_empty())
+
+
+func test_compare_groups_accepts_a_shrinking_group() -> void:
+	var base: Array[String] = ["a::f | b::f | c::f"]
+	var smaller: Array[String] = ["a::f | b::f"]
+	var result := Scan.compare_groups(base, smaller)
+	assert_true(result["grown"].is_empty(), "a subset of a baselined group is not new")
+	assert_eq(result["shrunk"].size(), 1, "the old three-way group must be lowered")
+	var fresh: Array[String] = ["a::f | d::f"]
+	assert_eq(Scan.compare_groups(base, fresh)["grown"].size(), 1)
+
+
+func test_compare_lists_both_directions() -> void:
+	var result := Scan.compare_lists(["x", "y"] as Array[String], ["y", "z"] as Array[String])
+	assert_eq(",".join(result["grown"]), "z")
+	assert_eq(",".join(result["shrunk"]), "x")
+
+
+func test_the_full_report_has_every_measurement() -> void:
+	for key in ["long_functions", "untyped", "bare_numbers", "duplicate_groups",
+			"large_scripts", "bad_script_names", "class_name_mismatches",
+			"bad_asset_names", "misspelled_names", "unresolved_paths", "legacy_stat_keys"]:
+		assert_true(_report.has(key), "full_report() lacks %s" % key)
+	assert_true(_report["untyped"].size() > 0, "the scan found the project's scripts")

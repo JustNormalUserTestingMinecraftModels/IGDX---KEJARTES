@@ -188,6 +188,22 @@ pixels, and `editor_screenshot` reports the real size as `original_width`, so
 `window_x = global_x * original_width / 1080`. Read the target's `global_rect`
 rather than eyeballing a screenshot — and re-read it after any window resize.
 
+**MCP node gotchas.** `anchors_preset` is inert (set the four anchors),
+numbers must be unquoted (`1`, not `"1.0"`), `node_create` appends last so
+z-order needs `move_node`, and a node's *type* can only be changed by
+delete-and-recreate. A `Control` created under a plain `Control` starts in
+position mode, where anchors are **not saved** — set `layout_mode = 1` first;
+and an instanced scene's root loses its rect on load under a plain `Control`,
+so draw from a child (authoring guide, Pattern C).
+
+**End-of-grade rehearsals.** The debug overlay's Scenes tab carries
+**🎭 Gladi Resik Akhir Kelas**: one-click rehearsals of
+the end-of-grade sequence with a fixed roster (*Semua Lulus*, *Semua Gagal*,
+and *Campur*, which ladders 3/2/1/0 cleared targets for 1.5 stars, a loss).
+Arming one snapshots the run; **↩ Pulihkan Run Sebelum Gladi Resik**
+restores it, which matters because RunResult otherwise advances the grade and
+clears the roster on its way out.
+
 **Rebaking without File > Run.** `Scripts/Design/BakeTheme.gd` is an
 `EditorScript` with no MCP entry point. Write a transient `@tool`
 `McpTestSuite` into `res://tests/` whose one test does `ThemeFactory.build()`

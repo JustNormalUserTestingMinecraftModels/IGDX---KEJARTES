@@ -414,6 +414,13 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Clean-code ratchet debt** (`ci/clean_code_baseline.gd`, 2026-09-26): 1588
+  untyped declarations, 2120 bare numbers, 46 functions over 50 code lines,
+  5 large scripts, 22 duplicate groups. Phase 2 (PR4 one `TutorialGuide`,
+  PR5 the other duplicates) and Phase 3 (splitting long functions) of
+  `docs/superpowers/specs/2026-09-26-clean-code-design.md` are planned; the
+  rest shrinks as code is touched (`clean-code.md` rule 10). Decomposing
+  `SchoolDay.gd` into components is its own project.
 - **Premium-look leftovers (2026-09-22, PRs 2-6).** The programme in
   `.superpowers/gamecode/premium-look/` shipped items 1-10 and 12; item 11
   (the Lobby's black bands at 20:9) was cut by the brief. What was

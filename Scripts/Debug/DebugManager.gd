@@ -1022,22 +1022,16 @@ func _set_student_stat(student_name: String, key: String, target_val: float) -> 
 			
 	_refresh_ui_fields()
 
+## The StudentData stat fields the stat editor reads and writes; each is also
+## the roster Dictionary key of the same name.
+const STAT_FIELDS: PackedStringArray = ["akademis", "seni_budaya", "olahraga", "mood", "energy"]
+
 func _get_student_resource_value(s: StudentData, key: String) -> float:
-	match key:
-		"akademis1": return s.akademis
-		"akademis2": return s.seni_budaya
-		"akademis3": return s.olahraga
-		"kepribadian2": return s.energy
-		"kepribadian1": return s.mood
-	return 50.0
+	return float(s.get(key)) if STAT_FIELDS.has(key) else 50.0
 
 func _set_student_resource_value(s: StudentData, key: String, val: float) -> void:
-	match key:
-		"akademis1": s.akademis = val
-		"akademis2": s.seni_budaya = val
-		"akademis3": s.olahraga = val
-		"kepribadian2": s.energy = val
-		"kepribadian1": s.mood = val
+	if STAT_FIELDS.has(key):
+		s.set(key, val)
 
 # --- Minigames & Standalone Testing Panel ---
 var _btn_autowin: Button

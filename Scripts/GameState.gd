@@ -18,13 +18,10 @@ extends Node
 ##
 ## Read by: every screen.
 ##
-## The trap: `approved_students` holds Array[Dictionary] whose keys are the
-## UI's names -- `akademis1/2/3` are academic/seni/olahraga, and
-## `kepribadian1/2` are mood/energy. StudentData, used inside the
-## simulation, has real field names instead. convert_to_student_data_array()
-## bridges in and StudentManager.write_back_to_gamestate() bridges out. The
-## two namings do not line up, and that mismatch is the most common source
-## of bugs here.
+## The roster: `approved_students` holds Array[Dictionary] whose stat keys
+## (`akademis`, `seni_budaya`, `olahraga`, `mood`, `energy`) are the same
+## names as StudentData's fields. convert_to_student_data_array() bridges in
+## and StudentManager.write_back_to_gamestate() bridges out.
 
 # Scene navigation
 var next_scene: String = "res://Scenes/MainMenu/MainMenu.tscn"
@@ -437,9 +434,8 @@ const STAT_MAX := 100.0
 ## The teammate's build had a single global player_mood/player_energy;
 ## this project tracks both per student, so the caller must say who. The
 ## approved_students dictionaries are the cross-screen source of truth,
-## so that is what gets written. Writes the CANONICAL roster keys the
-## simulation reads: kepribadian1 (mood), kepribadian2 (energy),
-## akademis1/2/3 (the three skills) — never the dead "mood"/"energy" keys.
+## so that is what gets written: the roster keys `mood`, `energy`,
+## `akademis`, `seni_budaya` and `olahraga`, the names StudentData uses.
 ##
 ## Returns {"applied": bool, "mood_delta","energy_delta","akademis_delta",
 ## "seni_delta","olahraga_delta": float} — five deltas, each the amount that

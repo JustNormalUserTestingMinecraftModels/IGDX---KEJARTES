@@ -37,10 +37,9 @@ func _item(mood := 10, energy := 5, ak := 6) -> ItemData:
 func test_use_item_writes_canonical_keys() -> void:
 	var r := GameState.use_item(_item(), 1, 1)
 	assert_true(r["applied"])
-	assert_eq(GameState.approved_students[0]["kepribadian1"], 60.0, "mood -> kepribadian1")
-	assert_eq(GameState.approved_students[0]["kepribadian2"], 55.0, "energy -> kepribadian2")
-	assert_eq(GameState.approved_students[0]["akademis1"], 46.0, "akademis -> akademis1")
-	assert_false(GameState.approved_students[0].has("mood"), "no dead mood key written")
+	assert_eq(GameState.approved_students[0]["mood"], 60.0, "mood lands on the mood key")
+	assert_eq(GameState.approved_students[0]["energy"], 55.0, "energy lands on the energy key")
+	assert_eq(GameState.approved_students[0]["akademis"], 46.0, "akademis lands on the akademis key")
 	assert_eq(r["mood_delta"], 10.0)
 	assert_eq(r["akademis_delta"], 6.0)
 

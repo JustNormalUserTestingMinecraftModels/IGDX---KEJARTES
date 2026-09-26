@@ -11,9 +11,9 @@ extends RefCounted
 ##
 ## Affects: presentation only. Nothing here writes GameState.
 ##
-## Naming trap, and the reason `data_key` exists: the bar node is called
-## "Akademis2" but the GameState dictionary key is "akademis2" and it holds
-## seni_budaya. Never index a student dictionary with a bar name.
+## Why `data_key` exists: a bar node is named in PascalCase (`SeniBudaya`),
+## its GameState dictionary key in snake_case (`seni_budaya`). Never index a
+## student dictionary with a bar name.
 
 ## bar name -> everything the UI needs to render that bar.
 ##

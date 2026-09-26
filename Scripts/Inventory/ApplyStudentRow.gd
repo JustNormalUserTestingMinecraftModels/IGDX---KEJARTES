@@ -11,15 +11,7 @@ extends StudentCardButton
 ## Fired whenever the player picks or un-picks this student.
 signal selection_changed
 
-## Logical boost name -> the roster Dictionary key it writes. Fixed mapping:
-## akademis1=akademis, akademis2=seni_budaya, akademis3=olahraga,
-## kepribadian1=mood, kepribadian2=energy (the project's canonical keys).
-const KEY := {
-	"akademis": "akademis1", "seni_budaya": "akademis2", "olahraga": "akademis3",
-	"mood": "kepribadian1", "energy": "kepribadian2",
-}
-
-## kepribadian2 (energy) at or below this forces "Izin" -- such a student
+## Energy at or below this forces "Izin" -- such a student
 ## cannot take the item, so the card cannot be picked.
 @export var tired_energy_threshold: float = 5.0
 
@@ -262,7 +254,7 @@ func play_apply_rise() -> void:
 func set_preview(active: bool) -> void:
 	_clear_overlays()
 	for key in _boosts:
-		var cur := float(student.get(KEY[key], 0.0))
+		var cur := float(student.get(key, 0.0))
 		var after := clampf(cur + float(_boosts[key]), 0.0, 100.0)
 		var delta := (after - cur) if active else 0.0
 		if key == "mood" or key == "energy":

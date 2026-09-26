@@ -85,7 +85,9 @@ func test_stagger_table_matches_the_student_card() -> void:
 			"IconAkademis3", "IconKepribadian1", "IconKepribadian2"]:
 		assert_true(report.contains('"%s"' % row_name),
 			"CARD_ROW_ORDER is missing %s" % row_name)
-	for dead in ["\"Nama\"", "\"Profil\"", "\"Kepribadian\",", "\"Akademis\","]:
+	# "Akademis" is not a dead name any more: since the stat-key rename it is
+	# the academic stat bar's node.
+	for dead in ["\"Nama\"", "\"Profil\"", "\"Kepribadian\","]:
 		assert_false(report.contains(dead),
 			"CARD_ROW_ORDER still names the removed node %s" % dead)
 

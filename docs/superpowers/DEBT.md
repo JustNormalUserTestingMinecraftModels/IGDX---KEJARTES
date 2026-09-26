@@ -270,7 +270,8 @@ repointing — it measures the icon's contrast and must now read the child node.
 `:244` and `:373-390` follow the item sheet's own moved nodes. Belongs to
 whoever owns the redesign.
 
-**Koperasi leftovers after the 2026-09-17 counter revamp.** The
+**Koperasi leftovers after the 2026-09-17 counter revamp.** `Illustration4.jpg`
+stays: ShopHub and CosmeticShop blur it. The
 `ShopShelfButton` ThemeFactory variation is unused since the "KEBUTUHAN
 SEKOLAH" sign went, but
 `tests/test_lobby_style_buttons.gd:test_the_shelf_button_keeps_its_body_font_label`

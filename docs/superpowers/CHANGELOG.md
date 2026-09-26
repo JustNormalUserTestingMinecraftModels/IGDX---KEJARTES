@@ -32,6 +32,12 @@ deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maint
   files deleted (recoverable from git).
 - Every uid kept; the scan's name, spelling and exact-case path rules are
   now empty and stay that way.
+- **Existing checkouts, once:** Godot's `.godot/uid_cache.bin` still maps the
+  renamed scenes to their old paths, so the first editor launch after pulling
+  logs `Failed to create an autoload ... audio_director.tscn` and runs
+  without AudioDirector. Close Godot, pull, delete `.godot/uid_cache.bin` (or
+  launch once and restart) before trusting a test run. Fresh clones and CI
+  are unaffected.
 
 ## 2026-09-26 — Clean-code rules and ratchet (PR1 of the clean-code pass)
 

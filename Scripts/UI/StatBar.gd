@@ -146,7 +146,7 @@ const _STAT_BAR_VARIATIONS := {
 	"Libur": &"StatBarLibur",
 	"Wirausaha": &"StatBarWirausaha",
 	# Needs, not schedule categories. Added 2026-09-09 -- the student card's
-	# two Kepribadian bars used to be authored as "Istirahat" and "Libur"
+	# Mood and Energy bars used to be authored as "Istirahat" and "Libur"
 	# and so wore the rest and holiday accents outright.
 	"Mood": &"StatBarMood",
 	"Energy": &"StatBarEnergy",

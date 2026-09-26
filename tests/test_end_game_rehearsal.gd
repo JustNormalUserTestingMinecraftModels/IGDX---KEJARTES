@@ -430,7 +430,7 @@ func test_restore_survives_run_results_progression_mutations() -> void:
 	assert_eq(GameState.approved_students.size(), 1, "the real roster is back")
 	assert_eq(GameState.approved_students[0]["name"], "Asli", "the real student is back")
 	assert_eq(GameState.approved_students[0]["base_akademis"], 30.0,
-		"the erased base_akademis* is back")
+		"the erased base_akademis is back")
 	assert_eq(GameState.approved_students[0]["mood"], 41.0,
 		"the overwritten mood is back")
 	assert_true(GameState.day_schedules.has("7"), "schedules are back")

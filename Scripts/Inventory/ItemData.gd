@@ -37,9 +37,9 @@ extends Resource
 @export var energy_boost: int = 0
 
 @export_group("Skill Boost")
-## Added to the target student's akademis when the
-## item is used, times quantity, clamped [0, 100]. Set by study items (Buku);
-## some other categories set the sibling skill fields.
+## Added to the target student's akademis when the item is used, times
+## quantity, clamped [0, 100]. Set by study items (Buku); some other
+## categories set the sibling skill fields.
 @export var akademis_boost: int = 0
 ## Same, for seni_budaya.
 @export var seni_budaya_boost: int = 0

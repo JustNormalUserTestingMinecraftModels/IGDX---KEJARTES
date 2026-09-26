@@ -1212,8 +1212,8 @@ func _on_belajar_pressed():
 
 	# Freeze each student's starting skills as the permanent roster baseline.
 	# GameState.reset_roster_for_new_grade() rebases toward these every grade;
-	# they are never erased. base_akademis* (set later by
-	# initialize_grade_targets) is the per-grade cache and IS erased on reset.
+	# they are never erased. The base_* keys (set later by
+	# initialize_grade_targets) are the per-grade cache and ARE erased on reset.
 	# Only the FIRST approval may set roster_base_* — a player re-opening
 	# StudentCard mid-grade and pressing Belajar again must not move it, or
 	# reset_roster_for_new_grade()'s 20%-head-start formula collapses toward

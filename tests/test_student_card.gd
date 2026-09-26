@@ -120,17 +120,17 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
-## The Mood and Energy bars were authored
-## as "Istirahat" and "Libur" and so wore the rest and holiday accents,
-## which held only while a category was nothing but a colour. Once each
-## category gained its own motif they needed their own identity, or mood
-## would have been stamped with the rest motif and energy the holiday one.
+## The Mood and Energy bars were authored as "Istirahat" and "Libur" and so
+## wore the rest and holiday accents, which held only while a category was
+## nothing but a colour. Once each category gained its own motif they needed
+## their own identity, or mood would have been stamped with the rest motif
+## and energy the holiday one.
 ##
-## Which is which is settled by StudentCardView._STAT_ICONS, where
-## Mood pairs with stat_mood.png and Energy with
-## stat_energy.png -- and by build_stat_bars(), which maps them straight
-## through. populate() used to set the two crossed over; that contradiction
-## was deleted rather than pinned here.
+## Which is which is settled by StudentCardView._STAT_ICONS, where Mood
+## pairs with stat_mood.png and Energy with stat_energy.png -- and by
+## build_stat_bars(), which maps them straight through. populate() used to
+## set the two crossed over; that contradiction was deleted rather than
+## pinned here.
 func test_stat_bars_are_statbars_with_a_category() -> void:
 	var expected := {
 		"Mood": "Mood",

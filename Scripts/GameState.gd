@@ -172,7 +172,7 @@ func set_grade(grade_num: int) -> void:
 
 ## Rebases every roster student's three skill stats for a new grade: keep
 ## Balance.KENAIKAN_KELAS_HEAD_START_FRAKSI of the gains made above roster
-## base, snap mood/energy to 80, and drop the cached base_akademis* so
+## base, snap mood/energy to 80, and drop the cached base_* skill keys so
 ## initialize_grade_targets() recomputes targets from the new baseline.
 ##
 ## Called by RunResult._apply_progression() on a real grade advance and by

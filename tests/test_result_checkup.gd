@@ -209,7 +209,7 @@ func test_the_week_card_empties_itself_for_a_missing_student() -> void:
 
 
 ## Both entry points must draw their three rows through the same code --
-## two hand-rolled loops would drift on the next change to the trap.
+## two hand-rolled loops would drift.
 func test_both_entry_points_share_one_stat_row_writer() -> void:
 	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
 	assert_true(src.contains("func _write_stat_rows("),

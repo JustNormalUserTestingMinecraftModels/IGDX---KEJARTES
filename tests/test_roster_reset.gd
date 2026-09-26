@@ -113,8 +113,8 @@ func test_set_grade_debug_jump_wires_into_reset_roster() -> void:
 
 func test_student_card_only_stamps_roster_base_on_first_approval() -> void:
 	# A re-approval mid-grade (player re-opens StudentCard, presses Belajar
-	# again) must not move roster_base_akademis* off its first-set value, or
-	# reset_roster_for_new_grade()'s head-start formula collapses toward
+	# again) must not move the roster_base_* keys off their first-set values,
+	# or reset_roster_for_new_grade()'s head-start formula collapses toward
 	# ~100% retention. Source-scan for the guard, matching this file's
 	# established convention for asserting student_card's approval behavior.
 	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")

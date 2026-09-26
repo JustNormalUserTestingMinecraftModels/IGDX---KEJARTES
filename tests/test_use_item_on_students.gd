@@ -34,7 +34,7 @@ func _item(mood := 10, energy := 5, ak := 6) -> ItemData:
 	d.akademis_boost = ak
 	return d
 
-func test_use_item_writes_canonical_keys() -> void:
+func test_use_item_writes_the_roster_stat_keys() -> void:
 	var r := GameState.use_item(_item(), 1, 1)
 	assert_true(r["applied"])
 	assert_eq(GameState.approved_students[0]["mood"], 60.0, "mood lands on the mood key")

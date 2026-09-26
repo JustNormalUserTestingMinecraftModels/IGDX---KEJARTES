@@ -276,15 +276,18 @@ func test_bio_panel_sits_inside_the_painted_panel() -> void:
 
 
 ## The redesign's bio panel and icon clusters replace what these four
-## labels used to show; the nodes themselves are removed from every card
-## in both scenes, not just hidden at runtime.
+## labels used to show; the Label nodes themselves are removed from every
+## card in both scenes, not just hidden at runtime.
 func test_superseded_labels_are_removed_from_the_scenes() -> void:
 	for scene_path in _SCENES:
 		var src := FileAccess.get_file_as_string(scene_path)
 		for i in range(1, 7):
+			# Since the stat-key rename "Akademis" is also the academic stat
+			# bar, a ProgressBar that stays. Only a Label of that name (the old
+			# "SKILL" heading) is superseded, hence the type-qualified match.
 			for label_name in ["Nama", "Profil", "Kepribadian", "Akademis"]:
 				assert_false(src.contains('[node name="%s" type="Label" parent="KertasMurid%d"' % [label_name, i]),
-					"%s must not declare KertasMurid%d/%s" % [scene_path, i, label_name])
+					"%s must not declare a Label KertasMurid%d/%s" % [scene_path, i, label_name])
 
 
 ## The ~240px band between the stat bars and the trait pills was dead
@@ -381,10 +384,11 @@ func test_trait_values_are_unchanged() -> void:
 ## now one shared rect on both scenes, so there is a single geometry to
 ## reason about and the divergence cannot silently return.
 ##
-## The band they live in was made by moving the three Akademis bars up 50px
-## (they sit on blank paper -- nothing is painted under them), which frees
-## room for SifatPasifLabel at 1318-1370 and the two 70px pills at
-## 1378-1448 and 1456-1526, closing 33px clear of the paper's edge.
+## The band they live in was made by moving the three skill bars (Akademis,
+## SeniBudaya, Olahraga) up 50px (they sit on blank paper -- nothing is
+## painted under them), which frees room for SifatPasifLabel at 1318-1370
+## and the two 70px pills at 1378-1448 and 1456-1526, closing 33px clear of
+## the paper's edge.
 ## Anchors are now 0 with absolute offsets: the old fractional anchors
 ## (0.7474, 0.786, 0.848) made every move a division and hid what row the
 ## pill actually landed on.

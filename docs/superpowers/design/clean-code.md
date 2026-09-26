@@ -163,8 +163,9 @@ Pick the tool by what repeats:
 | Behaviour **without** visuals | a `class_name` base class, or a static helper | `BaseMinigame`, `Juice`, `AnimUtils` |
 | A cross-cutting service | an autoload — and never re-implement one | `UIPolish` already juices every Button |
 
-The ratchet lists every function body (5+ code lines) that is identical in
-two or more files; a new one fails.
+The ratchet lists every function body (5+ code lines, each line trimmed,
+comments-only lines dropped) that is identical in two or more files; a new
+one fails.
 
 ## 6. Engine logic: signals up, calls down
 
@@ -252,6 +253,8 @@ improvement permanent.
   `ci/` — from everything.
 - `tests/` — only the legacy-stat-key and misspelled-name rules apply; long
   fixture data is fine, and test files keep their `test_*.gd` names.
+- Methods of inner classes (`class X:`) are not measured; there are none with
+  functions today.
 - Permanent, reviewed exceptions: `ci/clean_code_allowed.gd`.
 
 Formatting is not ratcheted: match the file (tabs; the GDScript style

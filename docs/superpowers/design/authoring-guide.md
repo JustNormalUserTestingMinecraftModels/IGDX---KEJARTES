@@ -194,7 +194,7 @@ z-order needs `move_node`, and a node's *type* can only be changed by
 delete-and-recreate. A `Control` created under a plain `Control` starts in
 position mode, where anchors are **not saved** — set `layout_mode = 1` first;
 and an instanced scene's root loses its rect on load under a plain `Control`,
-so draw from a child (authoring guide, Pattern C).
+so draw from a child (Pattern C, above).
 
 **End-of-grade rehearsals.** The debug overlay's Scenes tab carries
 **🎭 Gladi Resik Akhir Kelas**: one-click rehearsals of

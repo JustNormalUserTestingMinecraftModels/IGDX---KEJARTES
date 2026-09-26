@@ -81,6 +81,18 @@ func test_an_unclosed_paren_ends_the_signature_at_end_of_file() -> void:
 	assert_eq(Scan.code_lines(fns[0]["body"]).size(), 0)
 
 
+func test_a_crlf_file_parses_like_an_lf_file() -> void:
+	var fns := Scan.parse_functions("func a() -> void:\r\n\tx()\r\n\r\n\ty()\r\n")
+	assert_eq(Scan.code_lines(fns[0]["body"]).size(), 2,
+		"a CRLF blank line does not end the body")
+
+
+func test_an_annotated_function_is_still_a_function() -> void:
+	assert_eq(Scan.function_name("@warning_ignore(\"unused\") func f(a):"), "f")
+	assert_eq(Scan.function_name("@rpc func g() -> void:"), "g")
+	assert_eq(Scan.function_name("\tfunc lambda_like():"), "", "indented is not column-0")
+
+
 func test_a_class_level_const_table_is_not_a_function_body() -> void:
 	var src := "\n".join(PackedStringArray([
 		"func a() -> void:",

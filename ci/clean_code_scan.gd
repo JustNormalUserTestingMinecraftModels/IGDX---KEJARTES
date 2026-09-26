@@ -85,15 +85,41 @@ static func strip_strings_and_comments(line: String) -> String:
 
 ## The name of the function a column-0 `func` or `static func` line starts,
 ## or "" for any other line (lambdas and inner-class methods are indented).
+## A column-0 line may lead with one or more annotations (`@rpc`,
+## `@warning_ignore("x")`, ...) before the `func`; those are stripped first.
 static func function_name(line: String) -> String:
-	var rest := line.trim_prefix("static ")
+	var rest := _strip_leading_annotations(line)
+	rest = rest.trim_prefix("static ")
 	if not rest.begins_with("func "):
 		return ""
-	rest = rest.substr(5).strip_edges(true, false)
+	rest = rest.substr("func ".length()).strip_edges(true, false)
 	var paren := rest.find("(")
 	if paren <= 0:
 		return ""
 	return rest.substr(0, paren).strip_edges()
+
+
+## `line` with any leading column-0 annotations removed, each an `@name`
+## token optionally followed immediately by a balanced `(...)` argument list
+## and the whitespace after it -- so `function_name` can see the `func`
+## keyword they precede. A line with no leading `@` is returned unchanged.
+static func _strip_leading_annotations(line: String) -> String:
+	var rest := line
+	while rest.begins_with("@"):
+		var i := 1
+		while i < rest.length() and rest[i] != " " and rest[i] != "\t" and rest[i] != "(":
+			i += 1
+		if i < rest.length() and rest[i] == "(":
+			var depth := 1
+			i += 1
+			while i < rest.length() and depth > 0:
+				if rest[i] == "(":
+					depth += 1
+				elif rest[i] == ")":
+					depth -= 1
+				i += 1
+		rest = rest.substr(i).strip_edges(true, false)
+	return rest
 
 
 ## The column-0 functions in `src`, in order. The signature runs from `func`
@@ -103,7 +129,7 @@ static func function_name(line: String) -> String:
 ## (strings blanked, comments cut) and `body` (raw lines, starting with any
 ## code a one-line function puts after its colon).
 static func parse_functions(src: String) -> Array[Dictionary]:
-	var lines := src.split("\n")
+	var lines := src.replace("\r\n", "\n").split("\n")
 	var out: Array[Dictionary] = []
 	var i := 0
 	while i < lines.size():
@@ -312,7 +338,7 @@ static func measure_scripts() -> Dictionary:
 	var large_scripts := {}
 	var bodies := {}
 	for path in production_scripts():
-		var src := FileAccess.get_file_as_string(path)
+		var src := FileAccess.get_file_as_string(path).replace("\r\n", "\n")
 		var functions := parse_functions(src)
 		var line_total := src.trim_suffix("\n").split("\n").size()
 		if line_total > LARGE_SCRIPT_LINES and not ALLOWED.LARGE_SCRIPTS.has(path):

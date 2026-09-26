@@ -85,15 +85,15 @@ static func populate(card: Control, student: Dictionary,
 	# second, disagreeing answer to which bar is mood and which is energy.
 	# The straight mapping is the correct one: _STAT_ICONS pairs
 	# Mood with stat_mood.png and Energy with stat_energy.png.
-	var ak1 = card.get_node_or_null("Akademis")
-	if ak1 and ak1 is ProgressBar:
-		ak1.value = student.get("akademis", 0)
-	var ak2 = card.get_node_or_null("SeniBudaya")
-	if ak2 and ak2 is ProgressBar:
-		ak2.value = student.get("seni_budaya", 0)
-	var ak3 = card.get_node_or_null("Olahraga")
-	if ak3 and ak3 is ProgressBar:
-		ak3.value = student.get("olahraga", 0)
+	var akademis_bar = card.get_node_or_null("Akademis")
+	if akademis_bar and akademis_bar is ProgressBar:
+		akademis_bar.value = student.get("akademis", 0)
+	var seni_budaya_bar = card.get_node_or_null("SeniBudaya")
+	if seni_budaya_bar and seni_budaya_bar is ProgressBar:
+		seni_budaya_bar.value = student.get("seni_budaya", 0)
+	var olahraga_bar = card.get_node_or_null("Olahraga")
+	if olahraga_bar and olahraga_bar is ProgressBar:
+		olahraga_bar.value = student.get("olahraga", 0)
 
 	build_minat_row(card, student)
 

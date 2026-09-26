@@ -9,11 +9,11 @@ extends McpTestSuite
 func suite_name() -> String:
 	return "roster_reset"
 
-func _make_student(id: int, ak1: float, base1: float) -> Dictionary:
+func _make_student(id: int, akademis: float, roster_base_akademis: float) -> Dictionary:
 	return {
 		"id": id, "name": "T%d" % id,
-		"akademis": ak1, "seni_budaya": 60.0, "olahraga": 70.0,
-		"roster_base_akademis": base1, "roster_base_seni_budaya": 40.0, "roster_base_olahraga": 55.0,
+		"akademis": akademis, "seni_budaya": 60.0, "olahraga": 70.0,
+		"roster_base_akademis": roster_base_akademis, "roster_base_seni_budaya": 40.0, "roster_base_olahraga": 55.0,
 		"mood": 22.0, "energy": 15.0,
 		"base_akademis": 30.0, "base_seni_budaya": 40.0, "base_olahraga": 55.0,
 	}

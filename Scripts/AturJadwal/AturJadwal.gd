@@ -76,11 +76,11 @@ const HOLIDAYS = {
 
 var _holiday_active: bool = false
 
-@onready var ak1_bar = $BGStat/Akademis
-@onready var ak2_bar = $BGStat/SeniBudaya
-@onready var ak3_bar = $BGStat/Olahraga
-@onready var kp1_bar = $BGStat/Mood
-@onready var kp2_bar = $BGStat/Energy
+@onready var akademis_bar = $BGStat/Akademis
+@onready var seni_budaya_bar = $BGStat/SeniBudaya
+@onready var olahraga_bar = $BGStat/Olahraga
+@onready var mood_bar = $BGStat/Mood
+@onready var energy_bar = $BGStat/Energy
 
 @onready var senin_btn = $BGHari/Senin
 @onready var selasa_btn = $BGHari/Selasa
@@ -691,16 +691,16 @@ func _update_student_display():
 		"target_seni_budaya": student.get("target_seni_budaya", 65.0),
 		"target_olahraga": student.get("target_olahraga", 65.0),
 	}
-	if kp1_bar:
-		_feed_stat_bar(kp1_bar, projected["mood"], 0.0, 100.0, pop_bars)
-	if kp2_bar:
-		_feed_stat_bar(kp2_bar, projected["energy"], 0.0, 100.0, pop_bars)
-	if ak1_bar:
-		_feed_stat_bar(ak1_bar, projected["akademis"], 0.0, projected["target_akademis"], pop_bars)
-	if ak2_bar:
-		_feed_stat_bar(ak2_bar, projected["seni_budaya"], 0.0, projected["target_seni_budaya"], pop_bars)
-	if ak3_bar:
-		_feed_stat_bar(ak3_bar, projected["olahraga"], 0.0, projected["target_olahraga"], pop_bars)
+	if mood_bar:
+		_feed_stat_bar(mood_bar, projected["mood"], 0.0, 100.0, pop_bars)
+	if energy_bar:
+		_feed_stat_bar(energy_bar, projected["energy"], 0.0, 100.0, pop_bars)
+	if akademis_bar:
+		_feed_stat_bar(akademis_bar, projected["akademis"], 0.0, projected["target_akademis"], pop_bars)
+	if seni_budaya_bar:
+		_feed_stat_bar(seni_budaya_bar, projected["seni_budaya"], 0.0, projected["target_seni_budaya"], pop_bars)
+	if olahraga_bar:
+		_feed_stat_bar(olahraga_bar, projected["olahraga"], 0.0, projected["target_olahraga"], pop_bars)
 	_update_stat_flags(projected)
 	if objective_hint_label:
 		var named := projected.duplicate()
@@ -721,8 +721,8 @@ func _update_student_display():
 func _update_stat_flags(projected: Dictionary) -> void:
 	var flags := StatFlags.flags_for(projected)
 	var bars := {
-		"akademis": ak1_bar, "seni_budaya": ak2_bar, "olahraga": ak3_bar,
-		"mood": kp1_bar, "energy": kp2_bar,
+		"akademis": akademis_bar, "seni_budaya": seni_budaya_bar, "olahraga": olahraga_bar,
+		"mood": mood_bar, "energy": energy_bar,
 	}
 	for key in bars:
 		var bar: Control = bars[key]

@@ -923,11 +923,11 @@ func test_the_stagger_does_not_move_the_final_icons() -> void:
 	# The mockup's visual top-to-bottom order puts Energy (lightning)
 	# above Mood (smiley). Pin the order so a future edit can't
 	# silently swap them and make the stagger run out of order down the screen.
-	var kp2_index := body.find("Energy")
-	var kp1_index := body.find("Mood")
-	assert_true(kp2_index != -1 and kp1_index != -1,
+	var energy_index := body.find("Energy")
+	var mood_index := body.find("Mood")
+	assert_true(energy_index != -1 and mood_index != -1,
 		"_stagger_stat_rows must reference both Mood and Energy")
-	assert_true(kp2_index < kp1_index,
+	assert_true(energy_index < mood_index,
 		"Energy must be staggered in before Mood to match the mockup's visual order")
 
 
@@ -1045,9 +1045,13 @@ func test_the_mood_and_energy_rows_show_their_own_need() -> void:
 			and icon.texture.resource_path.ends_with(icons[p]),
 			"%s must show %s" % [p, icons[p]])
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("_feed_stat_bar(kp1_bar, projected[\"mood\"]"),
+	assert_true(src.contains("@onready var mood_bar = $BGStat/Mood"),
+		"mood_bar must be the Mood row's bar")
+	assert_true(src.contains("@onready var energy_bar = $BGStat/Energy"),
+		"energy_bar must be the Energy row's bar")
+	assert_true(src.contains("_feed_stat_bar(mood_bar, projected[\"mood\"]"),
 		"the mood row must be fed the projected mood")
-	assert_true(src.contains("_feed_stat_bar(kp2_bar, projected[\"energy\"]"),
+	assert_true(src.contains("_feed_stat_bar(energy_bar, projected[\"energy\"]"),
 		"the energy row must be fed the projected energy")
 	assert_true(src.contains("\"mood\": student.get(\"mood\", 50.0) - _compute_total_loss(\"mood_cost\")"),
 		"mood is projected with the week's mood cost")

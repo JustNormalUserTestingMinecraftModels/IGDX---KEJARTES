@@ -458,10 +458,10 @@ func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
 		return refused
 
 	var fields := [
-		["mood", item.mood_boost,        "mood_delta"],
-		["energy", item.energy_boost,      "energy_delta"],
+		["mood",        item.mood_boost,        "mood_delta"],
+		["energy",      item.energy_boost,      "energy_delta"],
 		["akademis",    item.akademis_boost,    "akademis_delta"],
-		["seni_budaya",    item.seni_budaya_boost, "seni_delta"],
+		["seni_budaya", item.seni_budaya_boost, "seni_delta"],
 		["olahraga",    item.olahraga_boost,    "olahraga_delta"],
 	]
 	var out := {"applied": true}

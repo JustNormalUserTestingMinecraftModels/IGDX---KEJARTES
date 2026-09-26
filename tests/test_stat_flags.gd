@@ -34,9 +34,9 @@ func test_a_healthy_student_wears_no_flags() -> void:
 ## urgent skill -- the biggest gap to its own target -- is flagged.
 func test_only_the_most_urgent_skill_is_flagged() -> void:
 	var s := _healthy()
-	s["akademis"] = 50.0   # 10 short
-	s["seni_budaya"] = 35.0   # 25 short: most urgent
-	s["olahraga"] = 55.0   # 5 short
+	s["akademis"] = 50.0     # 10 short
+	s["seni_budaya"] = 35.0  # 25 short: most urgent
+	s["olahraga"] = 55.0     # 5 short
 	assert_eq(StatFlags.flags_for(s), {"seni_budaya": StatFlags.PERLU},
 		"the biggest gap to target gets the one 'perlu' chip")
 

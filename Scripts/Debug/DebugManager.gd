@@ -33,11 +33,11 @@ const DEFAULT_STUDENTS = [
 		"name": "Marcel",
 		"portrait": "res://Assets/Images/MuridPortrait/Marcel.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
-		"mood": 60.0,   # Mood
-		"energy": 55.0,   # Energy
-		"akademis": 28.0,      # Akademis (Specialty)
-		"seni_budaya": 48.0,      # Seni Budaya
-		"olahraga": 38.0,      # Olahraga
+		"mood": 60.0,
+		"energy": 55.0,
+		"akademis": 28.0,  # Specialty
+		"seni_budaya": 48.0,
+		"olahraga": 38.0,
 		"target_akademis": 52.0,
 		"target_seni_budaya": 60.0,
 		"target_olahraga": 53.0,
@@ -54,11 +54,11 @@ const DEFAULT_STUDENTS = [
 		"name": "Doni",
 		"portrait": "res://Assets/Images/MuridPortrait/Doni.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_doni.png",
-		"mood": 55.0,   # Mood
-		"energy": 55.0,   # Energy
-		"akademis": 38.0,      # Akademis
-		"seni_budaya": 22.0,      # Seni Budaya
-		"olahraga": 33.0,      # Olahraga (Specialty)
+		"mood": 55.0,
+		"energy": 55.0,
+		"akademis": 38.0,
+		"seni_budaya": 22.0,
+		"olahraga": 33.0,  # Specialty
 		"target_akademis": 50.0,
 		"target_seni_budaya": 40.0,
 		"target_olahraga": 51.0,
@@ -75,11 +75,11 @@ const DEFAULT_STUDENTS = [
 		"name": "Andi",
 		"portrait": "res://Assets/Images/MuridPortrait/Andi.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_andi.png",
-		"mood": 60.0,   # Mood
-		"energy": 60.0,   # Energy
-		"akademis": 48.0,      # Akademis
-		"seni_budaya": 55.0,      # Seni Budaya (Specialty)
-		"olahraga": 32.0,      # Olahraga
+		"mood": 60.0,
+		"energy": 60.0,
+		"akademis": 48.0,
+		"seni_budaya": 55.0,  # Specialty
+		"olahraga": 32.0,
 		"target_akademis": 60.0,
 		"target_seni_budaya": 64.0,
 		"target_olahraga": 53.0,
@@ -96,11 +96,11 @@ const DEFAULT_STUDENTS = [
 		"name": "Citra",
 		"portrait": "res://Assets/Images/MuridPortrait/Citra.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_citra.png",
-		"mood": 35.0,   # Mood
-		"energy": 60.0,   # Energy
-		"akademis": 28.0,      # Akademis
-		"seni_budaya": 25.0,      # Seni Budaya
-		"olahraga": 15.0,      # Olahraga (Specialty)
+		"mood": 35.0,
+		"energy": 60.0,
+		"akademis": 28.0,
+		"seni_budaya": 25.0,
+		"olahraga": 15.0,  # Specialty
 		"target_akademis": 40.0,
 		"target_seni_budaya": 43.0,
 		"target_olahraga": 39.0,

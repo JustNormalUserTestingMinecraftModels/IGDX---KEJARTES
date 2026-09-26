@@ -19,7 +19,8 @@ extends McpTestSuite
 ## The scanner under test.
 const Scan := preload("res://ci/clean_code_scan.gd")
 ## Fewer production scripts than this means the walk missed the project (it
-## holds 166); a count of debt would not do, since debt is meant to reach zero.
+## finds 165 today: every Scripts/ .gd but Balance.gd); a count of debt would
+## not do, since debt is meant to reach zero.
 const MIN_PRODUCTION_SCRIPTS := 100
 
 ## The whole-project report, computed once per run in suite_setup().
@@ -134,14 +135,15 @@ func test_an_abstract_method_has_no_body() -> void:
 	assert_eq(Scan.declared_class_name("extends Node"), "")
 
 
-## A column-0 line inside brackets still belongs to the function.
+## A column-0 line inside brackets -- an element, or the bracket that closes
+## them -- still belongs to the function.
 func test_a_column0_line_inside_brackets_does_not_end_the_body() -> void:
 	var src := "\n".join(PackedStringArray([
 		"func points() -> void:",
 		"\tvar pts := [",
 		"Vector2(10, 20),",
 		"Vector2(300, 400),",
-		"\t]",
+		"]",
 		"\tprint(pts)",
 	]))
 	var fns := Scan.parse_functions(src)
@@ -341,8 +343,13 @@ func test_compare_lists_both_directions() -> void:
 func _empty_measurements(field: String) -> Dictionary:
 	var out := {}
 	for measurement in Scan.MEASUREMENTS:
-		var is_map: bool = measurement["kind"] == "counts" or measurement["kind"] == "large"
-		out[measurement[field]] = {} if is_map else []
+		var kind: String = measurement["kind"]
+		# Two branches, not a ternary: {} and [] are not one type, and the
+		# analyzer warns on a ternary whose values differ.
+		if kind == "counts" or kind == "large":
+			out[measurement[field]] = {}
+		else:
+			out[measurement[field]] = []
 	return out
 
 

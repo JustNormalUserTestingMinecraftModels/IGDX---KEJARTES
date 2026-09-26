@@ -58,9 +58,9 @@ func _card() -> DaySummaryStudentRow:
 func _student_with_week(start: Dictionary, finish: Dictionary) -> StudentData:
 	var s := StudentData.new()
 	s.student_name = "Marcel"
-	s.target_akademis1 = 65.0
-	s.target_akademis2 = 65.0
-	s.target_akademis3 = 65.0
+	s.target_akademis = 65.0
+	s.target_seni_budaya = 65.0
+	s.target_olahraga = 65.0
 	for key in start:
 		s.set(key, start[key])
 	s.record_initial_stats()
@@ -132,23 +132,23 @@ func test_the_week_card_reads_the_whole_weeks_movement() -> void:
 		"the chevron is an up arrow; a losing week must not show one")
 
 
-## The project's documented naming trap: target_akademis2 is the SENI
-## target and target_akademis3 the OLAHRAGA one. Three distinct targets
+## Each skill has its own target field: target_seni_budaya is the SENI
+## target and target_olahraga the OLAHRAGA one. Three distinct targets
 ## catch a card that read the wrong field for a stat.
 func test_the_week_card_pairs_each_stat_with_its_own_target() -> void:
 	var inst := _card()
 	var s := _student_with_week(
 		{"akademis": 40.0, "seni_budaya": 40.0, "olahraga": 40.0},
 		{"akademis": 41.0, "seni_budaya": 42.0, "olahraga": 43.0})
-	s.target_akademis1 = 65.0
-	s.target_akademis2 = 70.0
-	s.target_akademis3 = 75.0
+	s.target_akademis = 65.0
+	s.target_seni_budaya = 70.0
+	s.target_olahraga = 75.0
 
 	inst.setup_week_row(s)
 
-	assert_eq(inst.stat_rows[0].value.text, "+1/65", "akademis reads target_akademis1")
-	assert_eq(inst.stat_rows[1].value.text, "+2/70", "seni budaya reads target_akademis2")
-	assert_eq(inst.stat_rows[2].value.text, "+3/75", "olahraga reads target_akademis3")
+	assert_eq(inst.stat_rows[0].value.text, "+1/65", "akademis reads target_akademis")
+	assert_eq(inst.stat_rows[1].value.text, "+2/70", "seni budaya reads target_seni_budaya")
+	assert_eq(inst.stat_rows[2].value.text, "+3/75", "olahraga reads target_olahraga")
 
 
 ## The bars still read tonight's value -- what is new is the number
@@ -415,7 +415,7 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 	assert_eq(first.name_label.text, manager.students[0].student_name,
 		"each card is labelled with the student it was built for")
 	assert_eq(first.stat_rows[0].value.text,
-		"+12/%d" % int(round(manager.students[0].target_akademis1)),
+		"+12/%d" % int(round(manager.students[0].target_akademis)),
 		"the card must read the WEEK's gain against that student's target")
 	# The number label is never rendered any more (2026-09-03
 	# interactivity spec, section 4); the DeltaChevron is what shows

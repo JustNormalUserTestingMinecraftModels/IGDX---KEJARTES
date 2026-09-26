@@ -30,7 +30,7 @@ const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd"
 
 # Stats (0 to 100)
 ## Academic skill. Moved by Akademis schedule days, minigames and events;
-## compared against target_akademis1/2/3 to check pass/fail.
+## compared against target_akademis to check pass/fail.
 @export var akademis: float = 50.0
 ## Arts & culture skill. Same movement rules as akademis, via SeniBudaya.
 @export var seni_budaya: float = 50.0
@@ -67,16 +67,16 @@ const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd"
 ## Academic pass threshold: the semester is cleared once akademis is at
 ## or above this. Set from GameState.initialize_grade_targets()'s
 ## per-grade uplift over the roster's base stats.
-@export var target_akademis1: float = 50.0
-## Same as target_akademis1, but for seni_budaya (the UI's "akademis2").
-@export var target_akademis2: float = 50.0
-## Same as target_akademis1, but for olahraga (the UI's "akademis3").
-@export var target_akademis3: float = 50.0
+@export var target_akademis: float = 50.0
+## Same as target_akademis, but for seni_budaya.
+@export var target_seni_budaya: float = 50.0
+## Same as target_akademis, but for olahraga.
+@export var target_olahraga: float = 50.0
 ## Currently unused by any pass/fail check -- energy and mood have no
-## semester target, only akademis1/2/3 do.
-@export var target_kepribadian1: float = 50.0
-## Currently unused; see target_kepribadian1.
-@export var target_kepribadian2: float = 50.0
+## semester target, only the three skills do.
+@export var target_mood: float = 50.0
+## Currently unused; see target_mood.
+@export var target_energy: float = 50.0
 ## One of Kutu Buku/Penyendiri/Semangat Juang/Penasaran/Biang Onar/Pekerja
 ## Keras, or empty. Selects which `Balance.SIFAT_*` bonuses this file's
 ## apply_* methods add -- see the header note above about where those

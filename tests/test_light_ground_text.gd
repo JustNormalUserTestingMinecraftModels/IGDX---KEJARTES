@@ -334,8 +334,8 @@ func _apply_row() -> Control:
 	row.theme = _baked()
 	Engine.get_main_loop().root.add_child(row)
 	track(row)
-	row.setup({"id": 1, "name": "A", "akademis1": 50.0, "akademis2": 50.0,
-		"akademis3": 50.0, "kepribadian1": 100.0, "kepribadian2": 50.0},
+	row.setup({"id": 1, "name": "A", "akademis": 50.0, "seni_budaya": 50.0,
+		"olahraga": 50.0, "mood": 100.0, "energy": 50.0},
 		{"akademis": 5, "mood": 5})
 	return row
 

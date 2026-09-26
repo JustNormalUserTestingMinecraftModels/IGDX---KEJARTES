@@ -8,6 +8,18 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-26 — One vocabulary for student stats (PR3 of the clean-code pass)
+
+- The roster dictionaries' `akademis1/2/3` and `kepribadian1/2` became
+  `akademis`, `seni_budaya`, `olahraga`, `mood` and `energy` — the same names
+  as `StudentData`'s fields — with their `target_`, `base_` and
+  `roster_base_` forms, and the stat-bar nodes (`Akademis`, `SeniBudaya`,
+  `Olahraga`, `Mood`, `Energy`, `Icon…`) in StudentCard, ReportCard and
+  AturJadwal. About 1,180 occurrences in 48 files.
+- The translation tables in `ApplyStudentRow.gd` and `DebugManager.gd` are
+  gone; CLAUDE.md's "the naming does not line up" warning with them.
+- No save migration: the roster is never written to disk.
+
 ## 2026-09-26 — File names tidied (PR2 of the clean-code pass)
 
 - 19 snake_case scripts and 13 scenes renamed to PascalCase, among them the

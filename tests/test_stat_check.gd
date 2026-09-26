@@ -296,11 +296,11 @@ func test_card_bind_fills_name_and_photo_and_arms_three_rows() -> void:
 	s.student_name = "Citra"
 	s.avatar_texture = photo
 	s.akademis = 70.0
-	s.target_akademis1 = 60.0
+	s.target_akademis = 60.0
 	s.seni_budaya = 30.0
-	s.target_akademis2 = 60.0
+	s.target_seni_budaya = 60.0
 	s.olahraga = 60.0
-	s.target_akademis3 = 60.0
+	s.target_olahraga = 60.0
 	card.bind(s)
 	assert_eq(card.get_node("Paper/Name").text, "Citra", "the name lands on the plate")
 	assert_true(card.get_node("Paper/Photo").texture == photo, "the photo lands in the frame")

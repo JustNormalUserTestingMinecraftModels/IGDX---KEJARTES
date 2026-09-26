@@ -18,8 +18,8 @@ const SCENE_PATH := "res://Scenes/UI/StatDetailPopup.tscn"
 
 ## A student dictionary shaped like GameState.approved_students entries.
 const SAMPLE := {
-	"kepribadian1": 61.0, "kepribadian2": 42.0,
-	"akademis1": 10.0, "akademis2": 20.0, "akademis3": 30.0,
+	"mood": 61.0, "energy": 42.0,
+	"akademis": 10.0, "seni_budaya": 20.0, "olahraga": 30.0,
 }
 
 
@@ -58,7 +58,7 @@ func test_scene_supplies_every_node_the_script_binds() -> void:
 
 func test_configure_fills_the_header_and_body_from_stat_info() -> void:
 	var popup := _make()
-	popup.configure("Akademis2", SAMPLE, null)
+	popup.configure("SeniBudaya", SAMPLE, null)
 	assert_eq(popup.get_node("Scrim/Card/Layout/Header/Row/Titles/CategoryLabel").text, "STATS")
 	assert_eq(popup.get_node("Scrim/Card/Layout/Header/Row/Titles/NameLabel").text, "Seni Budaya")
 	assert_contains(
@@ -68,10 +68,11 @@ func test_configure_fills_the_header_and_body_from_stat_info() -> void:
 
 
 func test_configure_tints_the_bar_with_the_right_category() -> void:
-	# Akademis2 is seni_budaya, not academics. Getting this wrong paints the
-	# bar the wrong colour and is invisible in a source diff.
+	# The SeniBudaya bar wears the SeniBudaya accent, not the academic one.
+	# Getting this wrong paints the bar the wrong colour and is invisible in a
+	# source diff.
 	var popup := _make()
-	popup.configure("Akademis2", SAMPLE, null)
+	popup.configure("SeniBudaya", SAMPLE, null)
 	var bar: StatBar = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/Bar")
 	assert_eq(bar.category, "SeniBudaya")
 	assert_eq(bar.value, 20.0)
@@ -79,7 +80,7 @@ func test_configure_tints_the_bar_with_the_right_category() -> void:
 
 func test_configure_falls_back_to_the_glyph_when_no_icon_texture() -> void:
 	var popup := _make()
-	popup.configure("Kepribadian1", SAMPLE, null)
+	popup.configure("Mood", SAMPLE, null)
 	var icon_rect: TextureRect = popup.get_node("Scrim/Card/Layout/Header/Row/IconRect")
 	var glyph: Label = popup.get_node("Scrim/Card/Layout/Header/Row/GlyphLabel")
 	assert_false(icon_rect.visible, "icon rect should hide when there is no texture")

@@ -1,9 +1,9 @@
 @tool
 extends McpTestSuite
 
-## GameState.use_item writes the canonical roster keys (kepribadian1/2,
-## akademis1/2/3), not the dead "mood"/"energy" keys; use_item_on_students
-## is all-or-nothing across a list of students.
+## GameState.use_item writes the roster's stat keys (`mood`, `energy`,
+## `akademis`, `seni_budaya`, `olahraga`); use_item_on_students is
+## all-or-nothing across a list of students.
 
 func suite_name() -> String:
 	return "use_item_on_students"
@@ -16,10 +16,10 @@ func setup() -> void:
 	_roster_backup = GameState.approved_students.duplicate(true)
 	GameState.inventory = {"TestItem": 3}
 	GameState.approved_students = [
-		{"id": 1, "name": "A", "kepribadian1": 50.0, "kepribadian2": 50.0,
-		 "akademis1": 40.0, "akademis2": 40.0, "akademis3": 40.0},
-		{"id": 2, "name": "B", "kepribadian1": 95.0, "kepribadian2": 50.0,
-		 "akademis1": 40.0, "akademis2": 40.0, "akademis3": 40.0},
+		{"id": 1, "name": "A", "mood": 50.0, "energy": 50.0,
+		 "akademis": 40.0, "seni_budaya": 40.0, "olahraga": 40.0},
+		{"id": 2, "name": "B", "mood": 95.0, "energy": 50.0,
+		 "akademis": 40.0, "seni_budaya": 40.0, "olahraga": 40.0},
 	]
 
 func teardown() -> void:
@@ -45,7 +45,7 @@ func test_use_item_writes_canonical_keys() -> void:
 
 func test_use_item_clamps_at_100() -> void:
 	var r := GameState.use_item(_item(10, 5, 6), 2, 1)  # student B mood 95 -> 100
-	assert_eq(GameState.approved_students[1]["kepribadian1"], 100.0)
+	assert_eq(GameState.approved_students[1]["mood"], 100.0)
 	assert_eq(r["mood_delta"], 5.0, "delta reflects the clamp")
 
 func test_batch_all_or_nothing_refuses_when_short() -> void:

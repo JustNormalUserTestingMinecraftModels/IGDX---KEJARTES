@@ -2,10 +2,10 @@
 extends McpTestSuite
 
 ## ApplyStudentRow on the real DaySummary card (2026-09-12 event-cards spec,
-## 1.5). The content is unchanged from the old checkbox row: KEY maps to the
-## canonical roster keys, only the boosted stats show, the preview raises
-## then restores them, a stat at 100 reads MAKS, and a tired student cannot
-## be picked and shows LELAH.
+## 1.5). The content is unchanged from the old checkbox row: only the
+## boosted stats show, the preview raises then restores them, a stat at 100
+## reads MAKS, and a tired student cannot be picked and shows LELAH. A boost
+## name is the roster key it reads, so there is no key table to pin.
 
 func suite_name() -> String:
 	return "apply_student_row"
@@ -22,17 +22,9 @@ func _make() -> ApplyStudentRow:
 
 
 func _student(energy := 50.0) -> Dictionary:
-	return {"id": 1, "name": "A", "kepribadian1": 50.0, "kepribadian2": energy,
-		"akademis1": 40.0, "akademis2": 40.0, "akademis3": 40.0,
-		"target_akademis1": 80.0, "target_akademis2": 80.0, "target_akademis3": 80.0}
-
-
-func test_key_map_targets_canonical_roster_keys() -> void:
-	assert_eq(ApplyStudentRow.KEY["akademis"], "akademis1")
-	assert_eq(ApplyStudentRow.KEY["seni_budaya"], "akademis2")
-	assert_eq(ApplyStudentRow.KEY["olahraga"], "akademis3")
-	assert_eq(ApplyStudentRow.KEY["mood"], "kepribadian1")
-	assert_eq(ApplyStudentRow.KEY["energy"], "kepribadian2")
+	return {"id": 1, "name": "A", "mood": 50.0, "energy": energy,
+		"akademis": 40.0, "seni_budaya": 40.0, "olahraga": 40.0,
+		"target_akademis": 80.0, "target_seni_budaya": 80.0, "target_olahraga": 80.0}
 
 
 func test_row_is_a_card_button_on_the_day_summary_card() -> void:
@@ -73,7 +65,7 @@ func test_preview_raises_then_restores() -> void:
 
 func test_stat_at_100_reads_maks() -> void:
 	var s := _student()
-	s["akademis1"] = 100.0
+	s["akademis"] = 100.0
 	var row := _make()
 	row.setup(s, {"akademis": 5})
 	row.set_preview(true)

@@ -49,9 +49,9 @@ var is_dismissable: bool = false
 
 ## Which core stats have a matching per-student target on StudentData.
 const _TARGET_FOR := {
-	"akademis": "target_akademis1",
-	"seni_budaya": "target_akademis2",
-	"olahraga": "target_akademis3",
+	"akademis": "target_akademis",
+	"seni_budaya": "target_seni_budaya",
+	"olahraga": "target_olahraga",
 }
 
 

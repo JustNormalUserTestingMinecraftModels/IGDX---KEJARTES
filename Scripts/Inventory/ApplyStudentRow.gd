@@ -75,7 +75,7 @@ func setup(p_student: Dictionary, boosts: Dictionary) -> void:
 	card.show_only(_boosts.keys())
 	_relayout_bars()
 	_capture_bar_current()
-	_tired = float(student.get("kepribadian2", 100.0)) <= tired_energy_threshold
+	_tired = float(student.get("energy", 100.0)) <= tired_energy_threshold
 	lelah_chip.visible = _tired
 	if _tired:
 		lelah_chip.self_modulate = DesignTokens.load_default().state_danger

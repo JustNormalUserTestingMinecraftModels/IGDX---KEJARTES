@@ -183,9 +183,9 @@ func reset_roster_for_new_grade() -> void:
 		return
 	var frac: float = Balance.KENAIKAN_KELAS_HEAD_START_FRAKSI
 	var skill_keys := [
-		["akademis1", "roster_base_akademis1"],
-		["akademis2", "roster_base_akademis2"],
-		["akademis3", "roster_base_akademis3"],
+		["akademis", "roster_base_akademis"],
+		["seni_budaya", "roster_base_seni_budaya"],
+		["olahraga", "roster_base_olahraga"],
 	]
 	for student in approved_students:
 		for pair in skill_keys:
@@ -194,34 +194,34 @@ func reset_roster_for_new_grade() -> void:
 				student[pair[1]] = cur
 			var rbase: float = float(student[pair[1]])
 			student[pair[0]] = rbase + frac * maxf(0.0, cur - rbase)
-		student["kepribadian1"] = 80.0
-		student["kepribadian2"] = 80.0
-		student.erase("base_akademis1")
-		student.erase("base_akademis2")
-		student.erase("base_akademis3")
+		student["mood"] = 80.0
+		student["energy"] = 80.0
+		student.erase("base_akademis")
+		student.erase("base_seni_budaya")
+		student.erase("base_olahraga")
 	minigame_gain_this_week.clear()
 
 func initialize_grade_targets() -> void:
 	for student in approved_students:
-		if not student.has("base_akademis1"):
-			student["base_akademis1"] = student.get("akademis1", 50.0)
-		if not student.has("base_akademis2"):
-			student["base_akademis2"] = student.get("akademis2", 50.0)
-		if not student.has("base_akademis3"):
-			student["base_akademis3"] = student.get("akademis3", 50.0)
+		if not student.has("base_akademis"):
+			student["base_akademis"] = student.get("akademis", 50.0)
+		if not student.has("base_seni_budaya"):
+			student["base_seni_budaya"] = student.get("seni_budaya", 50.0)
+		if not student.has("base_olahraga"):
+			student["base_olahraga"] = student.get("olahraga", 50.0)
 			
-		var b1 = student["base_akademis1"]
-		var b2 = student["base_akademis2"]
-		var b3 = student["base_akademis3"]
+		var b1 = student["base_akademis"]
+		var b2 = student["base_seni_budaya"]
+		var b3 = student["base_olahraga"]
 		
 		var uplift := Balance.TARGET_KENAIKAN_KELAS_7
 		match current_grade:
 			8: uplift = Balance.TARGET_KENAIKAN_KELAS_8
 			9: uplift = Balance.TARGET_KENAIKAN_KELAS_9
-		student["target_akademis1"] = clampf(b1 + uplift, 0.0, 100.0)
-		student["target_akademis2"] = clampf(b2 + uplift, 0.0, 100.0)
-		student["target_akademis3"] = clampf(b3 + uplift, 0.0, 100.0)
-		print("Initialized targets for student: ", student.get("name", ""), " to [", student["target_akademis1"], ", ", student["target_akademis2"], ", ", student["target_akademis3"], "]")
+		student["target_akademis"] = clampf(b1 + uplift, 0.0, 100.0)
+		student["target_seni_budaya"] = clampf(b2 + uplift, 0.0, 100.0)
+		student["target_olahraga"] = clampf(b3 + uplift, 0.0, 100.0)
+		print("Initialized targets for student: ", student.get("name", ""), " to [", student["target_akademis"], ", ", student["target_seni_budaya"], ", ", student["target_olahraga"], "]")
 
 
 
@@ -458,11 +458,11 @@ func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
 		return refused
 
 	var fields := [
-		["kepribadian1", item.mood_boost,        "mood_delta"],
-		["kepribadian2", item.energy_boost,      "energy_delta"],
-		["akademis1",    item.akademis_boost,    "akademis_delta"],
-		["akademis2",    item.seni_budaya_boost, "seni_delta"],
-		["akademis3",    item.olahraga_boost,    "olahraga_delta"],
+		["mood", item.mood_boost,        "mood_delta"],
+		["energy", item.energy_boost,      "energy_delta"],
+		["akademis",    item.akademis_boost,    "akademis_delta"],
+		["seni_budaya",    item.seni_budaya_boost, "seni_delta"],
+		["olahraga",    item.olahraga_boost,    "olahraga_delta"],
 	]
 	var out := {"applied": true}
 	for f in fields:
@@ -527,20 +527,20 @@ func student_data_from_dict(dict: Dictionary) -> StudentData:
 	var sd = StudentData.new()
 	sd.id = dict.get("id", 0)
 	sd.student_name = dict.get("name", "")
-	sd.akademis = dict.get("akademis1", 50.0)
-	sd.seni_budaya = dict.get("akademis2", 50.0)
-	sd.olahraga = dict.get("akademis3", 50.0)
-	sd.mood = dict.get("kepribadian1", 80.0)
-	sd.energy = dict.get("kepribadian2", 80.0)
+	sd.akademis = dict.get("akademis", 50.0)
+	sd.seni_budaya = dict.get("seni_budaya", 50.0)
+	sd.olahraga = dict.get("olahraga", 50.0)
+	sd.mood = dict.get("mood", 80.0)
+	sd.energy = dict.get("energy", 80.0)
 
 	# 0.0, not 50.0: count_targets_cleared() reads the same three keys
 	# with a 0.0 default, and the two sides of the bridge must agree on
 	# what an uninitialized target looks like. See target_cleared().
-	sd.target_akademis1 = dict.get("target_akademis1", 0.0)
-	sd.target_akademis2 = dict.get("target_akademis2", 0.0)
-	sd.target_akademis3 = dict.get("target_akademis3", 0.0)
-	sd.target_kepribadian1 = dict.get("target_kepribadian1", 50.0)
-	sd.target_kepribadian2 = dict.get("target_kepribadian2", 50.0)
+	sd.target_akademis = dict.get("target_akademis", 0.0)
+	sd.target_seni_budaya = dict.get("target_seni_budaya", 0.0)
+	sd.target_olahraga = dict.get("target_olahraga", 0.0)
+	sd.target_mood = dict.get("target_mood", 50.0)
+	sd.target_energy = dict.get("target_energy", 50.0)
 	sd.quirk = dict.get("quirk", "")
 	sd.persona = dict.get("persona", "")
 	sd.personality = dict.get("personality", "Santai")
@@ -605,16 +605,15 @@ func check_semester_passed() -> bool:
 ## Counts how many of the roster's three-per-student academic targets have
 ## been cleared, as [cleared, total]. RunGrade's dominant scoring
 ## component -- kept here rather than in RunResult because it reads the
-## approved_students dictionaries, whose key naming (akademis1/2/3 =
-## academic/seni/olahraga) is this file's own concern.
+## approved_students dictionaries, which are this file's own concern.
 func count_targets_cleared() -> Array:
 	var cleared := 0
 	var total := 0
 	for student in approved_students:
 		var pairs := [
-			["akademis1", "target_akademis1"],
-			["akademis2", "target_akademis2"],
-			["akademis3", "target_akademis3"],
+			["akademis", "target_akademis"],
+			["seni_budaya", "target_seni_budaya"],
+			["olahraga", "target_olahraga"],
 		]
 		for pair in pairs:
 			total += 1

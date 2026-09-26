@@ -33,16 +33,16 @@ const DEFAULT_STUDENTS = [
 		"name": "Marcel",
 		"portrait": "res://Assets/Images/MuridPortrait/Marcel.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
-		"kepribadian1": 60.0,   # Mood
-		"kepribadian2": 55.0,   # Energy
-		"akademis1": 28.0,      # Akademis (Specialty)
-		"akademis2": 48.0,      # Seni Budaya
-		"akademis3": 38.0,      # Olahraga
-		"target_akademis1": 52.0,
-		"target_akademis2": 60.0,
-		"target_akademis3": 53.0,
-		"target_kepribadian1": 50.0,
-		"target_kepribadian2": 40.0,
+		"mood": 60.0,   # Mood
+		"energy": 55.0,   # Energy
+		"akademis": 28.0,      # Akademis (Specialty)
+		"seni_budaya": 48.0,      # Seni Budaya
+		"olahraga": 38.0,      # Olahraga
+		"target_akademis": 52.0,
+		"target_seni_budaya": 60.0,
+		"target_olahraga": 53.0,
+		"target_mood": 50.0,
+		"target_energy": 40.0,
 		"hobby_category": "Akademis",
 		"personality": "Tekun",
 		"quirk": "Kutu Buku",
@@ -54,16 +54,16 @@ const DEFAULT_STUDENTS = [
 		"name": "Doni",
 		"portrait": "res://Assets/Images/MuridPortrait/Doni.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_doni.png",
-		"kepribadian1": 55.0,   # Mood
-		"kepribadian2": 55.0,   # Energy
-		"akademis1": 38.0,      # Akademis
-		"akademis2": 22.0,      # Seni Budaya
-		"akademis3": 33.0,      # Olahraga (Specialty)
-		"target_akademis1": 50.0,
-		"target_akademis2": 40.0,
-		"target_akademis3": 51.0,
-		"target_kepribadian1": 40.0,
-		"target_kepribadian2": 35.0,
+		"mood": 55.0,   # Mood
+		"energy": 55.0,   # Energy
+		"akademis": 38.0,      # Akademis
+		"seni_budaya": 22.0,      # Seni Budaya
+		"olahraga": 33.0,      # Olahraga (Specialty)
+		"target_akademis": 50.0,
+		"target_seni_budaya": 40.0,
+		"target_olahraga": 51.0,
+		"target_mood": 40.0,
+		"target_energy": 35.0,
 		"hobby_category": "Olahraga",
 		"personality": "Aktif",
 		"quirk": "Semangat Juang",
@@ -75,16 +75,16 @@ const DEFAULT_STUDENTS = [
 		"name": "Andi",
 		"portrait": "res://Assets/Images/MuridPortrait/Andi.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_andi.png",
-		"kepribadian1": 60.0,   # Mood
-		"kepribadian2": 60.0,   # Energy
-		"akademis1": 48.0,      # Akademis
-		"akademis2": 55.0,      # Seni Budaya (Specialty)
-		"akademis3": 32.0,      # Olahraga
-		"target_akademis1": 60.0,
-		"target_akademis2": 64.0,
-		"target_akademis3": 53.0,
-		"target_kepribadian1": 60.0,
-		"target_kepribadian2": 55.0,
+		"mood": 60.0,   # Mood
+		"energy": 60.0,   # Energy
+		"akademis": 48.0,      # Akademis
+		"seni_budaya": 55.0,      # Seni Budaya (Specialty)
+		"olahraga": 32.0,      # Olahraga
+		"target_akademis": 60.0,
+		"target_seni_budaya": 64.0,
+		"target_olahraga": 53.0,
+		"target_mood": 60.0,
+		"target_energy": 55.0,
 		"hobby_category": "SeniBudaya",
 		"personality": "Kreatif",
 		"quirk": "Penasaran",
@@ -96,16 +96,16 @@ const DEFAULT_STUDENTS = [
 		"name": "Citra",
 		"portrait": "res://Assets/Images/MuridPortrait/Citra.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_citra.png",
-		"kepribadian1": 35.0,   # Mood
-		"kepribadian2": 60.0,   # Energy
-		"akademis1": 28.0,      # Akademis
-		"akademis2": 25.0,      # Seni Budaya
-		"akademis3": 15.0,      # Olahraga (Specialty)
-		"target_akademis1": 40.0,
-		"target_akademis2": 43.0,
-		"target_akademis3": 39.0,
-		"target_kepribadian1": 35.0,
-		"target_kepribadian2": 45.0,
+		"mood": 35.0,   # Mood
+		"energy": 60.0,   # Energy
+		"akademis": 28.0,      # Akademis
+		"seni_budaya": 25.0,      # Seni Budaya
+		"olahraga": 15.0,      # Olahraga (Specialty)
+		"target_akademis": 40.0,
+		"target_seni_budaya": 43.0,
+		"target_olahraga": 39.0,
+		"target_mood": 35.0,
+		"target_energy": 45.0,
 		"hobby_category": "Olahraga",
 		"personality": "Seni Dalam Kesunyian",
 		"quirk": "Penyendiri",
@@ -893,11 +893,11 @@ func _rebuild_student_stat_editor() -> void:
 		
 		# Stats layout: Stacked vertically (Label above buttons row) to prevent clipping
 		var stats_keys = [
-			{"key": "akademis1", "label": "Akademis", "color": Color(0.4, 0.65, 1.0)},
-			{"key": "akademis2", "label": "Seni Budaya", "color": Color(0.3, 0.9, 0.5)},
-			{"key": "akademis3", "label": "Olahraga", "color": Color(1.0, 0.4, 0.4)},
-			{"key": "kepribadian2", "label": "Energy ⚡", "color": Color(1.0, 0.85, 0.3)},
-			{"key": "kepribadian1", "label": "Mood 😊", "color": Color(1.0, 0.5, 0.85)}
+			{"key": "akademis", "label": "Akademis", "color": Color(0.4, 0.65, 1.0)},
+			{"key": "seni_budaya", "label": "Seni Budaya", "color": Color(0.3, 0.9, 0.5)},
+			{"key": "olahraga", "label": "Olahraga", "color": Color(1.0, 0.4, 0.4)},
+			{"key": "energy", "label": "Energy ⚡", "color": Color(1.0, 0.85, 0.3)},
+			{"key": "mood", "label": "Mood 😊", "color": Color(1.0, 0.5, 0.85)}
 		]
 		
 		for stat_info in stats_keys:
@@ -940,14 +940,14 @@ func _rebuild_student_stat_editor() -> void:
 			row_btns.add_child(btn_plus)
 			
 			var btn_zero = Button.new()
-			if key == "kepribadian2" or key == "kepribadian1":
+			if key == "energy" or key == "mood":
 				btn_zero.text = "Set 5" # Sickness boundary
 			else:
 				btn_zero.text = "Set 0"
 			btn_zero.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			btn_zero.custom_minimum_size = Vector2(0, 75)
 			btn_zero.add_theme_font_size_override("font_size", 20)
-			btn_zero.pressed.connect(func(): _set_student_stat(s_name, key, 5.0 if (key == "kepribadian2" or key == "kepribadian1") else 0.0))
+			btn_zero.pressed.connect(func(): _set_student_stat(s_name, key, 5.0 if (key == "energy" or key == "mood") else 0.0))
 			row_btns.add_child(btn_zero)
 			
 			var btn_max = Button.new()

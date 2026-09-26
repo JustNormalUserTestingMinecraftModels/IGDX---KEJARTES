@@ -61,8 +61,8 @@ No message goes out for this. In one unbroken run:
    `superpowers:using-git-worktrees`, then gets its own editor per `ship-pr` §3.
 2. **Spec.** Write the design to
    `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` — the full Logic,
-   State (name both sides across the `approved_students` ↔ `StudentData`
-   bridge, e.g. `kepribadian1` (mood)), Files, and how Kelas 7/8/9 differ.
+   State (name the `approved_students` / `StudentData` fields it touches;
+   they share one set of names), Files, and how Kelas 7/8/9 differ.
    Self-review it; commit.
 
 ## 3. Plan

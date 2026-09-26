@@ -33,9 +33,9 @@ extends Control
 func bind(student: StudentData) -> void:
 	name_label.text = student.student_name
 	photo.texture = student.avatar_texture
-	row_akademis.set_result(student.akademis, student.target_akademis1)
-	row_seni.set_result(student.seni_budaya, student.target_akademis2)
-	row_olahraga.set_result(student.olahraga, student.target_akademis3)
+	row_akademis.set_result(student.akademis, student.target_akademis)
+	row_seni.set_result(student.seni_budaya, student.target_seni_budaya)
+	row_olahraga.set_result(student.olahraga, student.target_olahraga)
 
 
 ## The three rows in the order the check plays them: akademis, seni

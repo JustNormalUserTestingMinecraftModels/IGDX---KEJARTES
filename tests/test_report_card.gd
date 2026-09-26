@@ -81,8 +81,8 @@ func test_back_button_node_exists_and_is_wired() -> void:
 func test_stagger_table_matches_the_student_card() -> void:
 	var report := FileAccess.get_file_as_string(
 		"res://Scripts/ReportCard/ReportCard.gd")
-	for row_name in ["BioPanel", "IconAkademis1", "IconAkademis2",
-			"IconAkademis3", "IconKepribadian1", "IconKepribadian2"]:
+	for row_name in ["BioPanel", "IconAkademis", "IconSeniBudaya",
+			"IconOlahraga", "IconMood", "IconEnergy"]:
 		assert_true(report.contains('"%s"' % row_name),
 			"CARD_ROW_ORDER is missing %s" % row_name)
 	# "Akademis" is not a dead name any more: since the stat-key rename it is

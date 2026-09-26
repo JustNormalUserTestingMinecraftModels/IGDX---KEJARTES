@@ -12,14 +12,12 @@ class_name DaySummaryStudentRow
 ## from a ThemeFactory variation; nothing here builds a StyleBox.
 
 ## The three skills, in the mockup's top-to-bottom order, paired with
-## the StudentData field holding each one's target. The pairing is the
-## project's documented naming trap: target_akademis2 is the SENI
-## target, target_akademis3 the OLAHRAGA one.
+## the StudentData field holding each one's target.
 const STAT_ORDER := ["akademis", "seni_budaya", "olahraga"]
 const TARGET_FOR := {
-	"akademis": "target_akademis1",
-	"seni_budaya": "target_akademis2",
-	"olahraga": "target_akademis3",
+	"akademis": "target_akademis",
+	"seni_budaya": "target_seni_budaya",
+	"olahraga": "target_olahraga",
 }
 
 ## How far apart the card's three tracks start filling, in seconds. Short
@@ -148,9 +146,7 @@ func _sum_needs_deltas(changes: Array) -> Dictionary:
 
 ## The three stat rows, given one delta per stat. Shared by the daily and
 ## weekly entry points, which differ ONLY in where their deltas come
-## from -- a card that drew its rows two different ways would drift, and
-## the akademis2/3 naming trap below is the last thing that should be
-## written down twice.
+## from -- a card that drew its rows two different ways would drift.
 func _write_stat_rows(deltas: Dictionary, student: StudentData) -> void:
 	_gained_ground = false
 	for i in STAT_ORDER.size():
@@ -160,8 +156,7 @@ func _write_stat_rows(deltas: Dictionary, student: StudentData) -> void:
 		if student != null:
 			target = float(student.get(TARGET_FOR[key]))
 			# STAT_ORDER's keys are StudentData's own field names, so the
-			# standing value reads straight off the resource -- it is only
-			# the TARGET field names that carry the akademis2/3 naming trap.
+			# standing value reads straight off the resource.
 			current = float(student.get(key))
 		stat_rows[i].set_stat(key, deltas.get(key, 0.0), target, current)
 		if float(deltas.get(key, 0.0)) > 0.0:

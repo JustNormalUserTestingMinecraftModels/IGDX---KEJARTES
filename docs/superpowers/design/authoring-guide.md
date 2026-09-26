@@ -264,11 +264,9 @@ Worked example, from `Scripts/GameState.gd`'s header:
 ## current week and grade, money, and the inventory. There is deliberately no
 ## save system -- a run is session-scoped.
 ##
-## The trap: `approved_students` holds Array[Dictionary] whose keys are the
-## UI's names -- `akademis1/2/3` are academic/seni/olahraga, and
-## `kepribadian1/2` are mood/energy. StudentData, used inside the simulation,
-## has real field names instead. That mismatch is the most common source of
-## bugs here.
+## The roster: `approved_students` holds Array[Dictionary] whose stat keys
+## (`akademis`, `seni_budaya`, `olahraga`, `mood`, `energy`) are the same
+## names as StudentData's fields.
 ```
 
 Rules 1 and 2 are enforced by `tests/test_script_documentation.gd`. Rules 3

@@ -83,17 +83,14 @@ read-only for us.
 ### The two student representations — know which you're holding
 
 - `GameState.approved_students` — **`Array[Dictionary]`**, the cross-screen
-  source of truth. Keys are the UI's names: `akademis1/2/3` (academic, seni,
-  olahraga), `kepribadian1/2` (**mood, energy**), `name`, `id`, `quirk`,
+  source of truth. Stat keys match `StudentData`'s fields (`akademis`,
+  `seni_budaya`, `olahraga`, `mood`, `energy`), plus `name`, `id`, `quirk`,
   `persona`, `hobby_category`, `portrait`, `splash`.
-- `StudentData` — a `Resource` with real fields (`akademis`, `seni_budaya`,
-  `olahraga`, `mood`, `energy`) and all the gameplay math. Used only inside
-  the simulation.
+- `StudentData` — a `Resource` with those same stat fields and all the
+  gameplay math. Used only inside the simulation.
 
 Bridge: `GameState.convert_to_student_data_array()` in, and
-`StudentManager.write_back_to_gamestate()` out. **The naming does not line up
-between the two** (`akademis2` = seni_budaya, `kepribadian1` = mood) — this is
-the single most common source of bugs here. Note `hobby_category` "Akademik"
+`StudentManager.write_back_to_gamestate()` out. Note `hobby_category` "Akademik"
 maps to specialty "Akademis"; schedules also normalize `Akademik`→`Akademis`
 and `DayOff`→`Istirahat`. Student art goes through `StudentSkins`
 (`splash_for`/`portrait_for`/`face_base_for`/`hand_for`), never the dict's
@@ -378,8 +375,7 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Clean-code pass (`docs/superpowers/specs/2026-09-26-clean-code-design.md`):
-PR2 file renames, then PR3 stat keys.
+Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
 
 ## Maintaining this file
 

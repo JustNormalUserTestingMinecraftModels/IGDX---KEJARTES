@@ -64,13 +64,12 @@ const CLEARED_COUNTS := {
 	PRESET_GRADE_D: [2, 1, 1, 0],
 }
 
-## Skill keys in the order CLEARED_COUNTS counts them, paired with the
-## target key each is checked against. Mirrors GameState's own naming
-## quirk: akademis2 is Seni Budaya, akademis3 is Olahraga.
+## Skill keys in the order CLEARED_COUNTS counts them, each with its base
+## key and the target key it is checked against.
 const SKILL_KEYS := [
-	["akademis1", "base_akademis1", "target_akademis1"],
-	["akademis2", "base_akademis2", "target_akademis2"],
-	["akademis3", "base_akademis3", "target_akademis3"],
+	["akademis", "base_akademis", "target_akademis"],
+	["seni_budaya", "base_seni_budaya", "target_seni_budaya"],
+	["olahraga", "base_olahraga", "target_olahraga"],
 ]
 
 
@@ -111,8 +110,8 @@ static func build_roster(preset: String, grade: int,
 			student[SKILL_KEYS[s][1]] = BASE_SKILL
 			student[SKILL_KEYS[s][2]] = target
 
-		student["kepribadian1"] = REHEARSAL_MOOD
-		student["kepribadian2"] = REHEARSAL_ENERGY
+		student["mood"] = REHEARSAL_MOOD
+		student["energy"] = REHEARSAL_ENERGY
 		roster.append(student)
 
 	return roster

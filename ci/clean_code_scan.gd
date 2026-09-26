@@ -32,10 +32,18 @@ const OPENERS: PackedStringArray = ["(", "[", "{"]
 ## Their closing partners.
 const CLOSERS: PackedStringArray = [")", "]", "}"]
 
+## The delimiters that open a string running over several lines.
+const MULTILINE_QUOTES: PackedStringArray = ["\"\"\"", "'''"]
+
 ## A numeric literal not glued to an identifier: decimal, float, hex, binary.
 const NUMBER_PATTERN := "(?<![A-Za-z0-9_.])(0x[0-9A-Fa-f_]+|0b[01_]+|[0-9][0-9_]*(?:\\.[0-9_]*)?(?:[eE][+-]?[0-9]+)?|\\.[0-9][0-9_]*(?:[eE][+-]?[0-9]+)?)(?![A-Za-z0-9_])"
-## A var declaration (after annotations); group 1 is everything after its name.
-const VAR_PATTERN := "^\\s*(?:@\\w+(?:\\([^)]*\\))?\\s+)*(?:static\\s+)?var\\s+\\w+(.*)$"
+## A var declaration, matched on a trimmed line whose leading annotations are
+## already stripped; group 1 is everything after its name.
+const VAR_PATTERN := "^(?:static\\s+)?var\\s+\\w+(.*)$"
+## A `func` or `static func` line, matched once its leading annotations are
+## stripped; group 1 is the function's name. Any whitespace separates the
+## keywords (`func<TAB>name(`, `static  func`).
+const FUNC_PATTERN := "^(?:static\\s+)?func\\s+([A-Za-z_]\\w*)\\s*\\("
 
 ## Compiled RegEx objects, built once per process.
 static var _regex_cache: Dictionary = {}
@@ -55,32 +63,97 @@ static func _regex(pattern: String) -> RegEx:
 ## comment cut off. Handles both quote kinds and backslash escapes; a string
 ## that does not close on this line is blanked to the end of the line.
 static func strip_strings_and_comments(line: String) -> String:
-	if not (line.contains("\"") or line.contains("'") or line.contains("#")):
-		return line
+	return scan_code(line, "")["code"]
+
+
+## One line lexed from inside `quote`: the delimiter of a multi-line string
+## still open from the line before, or "". Returns "code" -- the line with
+## every string's contents blanked to spaces (quotes kept, so lengths and
+## positions are preserved) and any trailing `#` comment cut off -- and
+## "quote", the delimiter of a multi-line string (`"""` or `'''`) still open
+## at the end of the line, or "". A one-quote string that does not close on
+## its line is blanked to the end of the line and closes there.
+static func scan_code(line: String, quote: String) -> Dictionary:
+	if quote.is_empty() and not (line.contains("\"") or line.contains("'") or line.contains("#")):
+		return {"code": line, "quote": ""}
 	var out := ""
+	var open := quote
 	var i := 0
 	var n := line.length()
 	while i < n:
+		if not open.is_empty():
+			var close := _closing_quote(line, i, open)
+			if close == -1:
+				out += " ".repeat(n - i)
+				break
+			out += " ".repeat(close - i) + open
+			i = close + open.length()
+			open = ""
+			continue
 		var c := line[i]
 		if c == "#":
 			break
 		if c == "\"" or c == "'":
-			out += c
-			i += 1
-			while i < n and line[i] != c:
-				if line[i] == "\\" and i + 1 < n:
-					out += "  "
-					i += 2
-				else:
-					out += " "
-					i += 1
-			if i < n:
-				out += c
-				i += 1
+			open = _opening_quote(line, i)
+			out += open
+			i += open.length()
 			continue
 		out += c
 		i += 1
-	return out
+	return {"code": out, "quote": open if MULTILINE_QUOTES.has(open) else ""}
+
+
+## The delimiter of the string that opens at `line[at]`: a multi-line quote
+## when three quotes stand there, else the single quote character.
+static func _opening_quote(line: String, at: int) -> String:
+	for delimiter in MULTILINE_QUOTES:
+		if line.substr(at, delimiter.length()) == delimiter:
+			return delimiter
+	return line[at]
+
+
+## Where `delimiter` next closes a string in `line`, searching from `from`
+## and skipping backslash escapes, or -1 when it does not close on this line.
+static func _closing_quote(line: String, from: int, delimiter: String) -> int:
+	var i := from
+	while i < line.length():
+		if line[i] == "\\":
+			i += 2
+			continue
+		if line.substr(i, delimiter.length()) == delimiter:
+			return i
+		i += 1
+	return -1
+
+
+## `depth` after the brackets in `code` (a scan_code result), never below 0.
+static func _depth_after(code: String, depth: int) -> int:
+	var d := depth
+	for c in code:
+		if OPENERS.has(c):
+			d += 1
+		elif CLOSERS.has(c):
+			d = maxi(d - 1, 0)
+	return d
+
+
+## For each of `lines`, true when it continues the statement before it: it
+## starts inside a multi-line string, inside an open bracket, or after a line
+## that ended in a `\` continuation. GDScript ignores the indentation of such a
+## line, so a column-0 continuation neither starts a function nor ends one.
+static func continuation_flags(lines: PackedStringArray) -> Array[bool]:
+	var flags: Array[bool] = []
+	var quote := ""
+	var depth := 0
+	var joined := false
+	for line in lines:
+		flags.append(not quote.is_empty() or depth > 0 or joined)
+		var scanned := scan_code(line, quote)
+		var code: String = scanned["code"]
+		quote = scanned["quote"]
+		depth = _depth_after(code, depth)
+		joined = quote.is_empty() and code.strip_edges(false, true).ends_with("\\")
+	return flags
 
 
 ## The name of the function a column-0 `func` or `static func` line starts,
@@ -88,21 +161,17 @@ static func strip_strings_and_comments(line: String) -> String:
 ## A column-0 line may lead with one or more annotations (`@rpc`,
 ## `@warning_ignore("x")`, ...) before the `func`; those are stripped first.
 static func function_name(line: String) -> String:
-	var rest := _strip_leading_annotations(line)
-	rest = rest.trim_prefix("static ")
-	if not rest.begins_with("func "):
-		return ""
-	rest = rest.substr("func ".length()).strip_edges(true, false)
-	var paren := rest.find("(")
-	if paren <= 0:
-		return ""
-	return rest.substr(0, paren).strip_edges()
+	var code := _strip_leading_annotations(strip_strings_and_comments(line))
+	var m := _regex(FUNC_PATTERN).search(code)
+	return "" if m == null else m.get_string(1)
 
 
-## `line` with any leading column-0 annotations removed, each an `@name`
-## token optionally followed immediately by a balanced `(...)` argument list
-## and the whitespace after it -- so `function_name` can see the `func`
-## keyword they precede. A line with no leading `@` is returned unchanged.
+## `line` with any leading annotations removed, each an `@name` token
+## optionally followed immediately by a balanced `(...)` argument list and
+## the whitespace after it -- so a `func`, `var` or `class_name` keyword they
+## precede on the same line is seen. A line with no leading `@` is returned
+## unchanged. Pass it code whose strings are blanked, so a bracket inside an
+## annotation's string argument cannot unbalance it.
 static func _strip_leading_annotations(line: String) -> String:
 	var rest := line
 	while rest.begins_with("@"):
@@ -122,56 +191,93 @@ static func _strip_leading_annotations(line: String) -> String:
 	return rest
 
 
-## The column-0 functions in `src`, in order. The signature runs from `func`
-## to the `:` that closes it at bracket depth 0 (an unclosed bracket ends it
-## at end of file); the body runs from there to the next column-0 line that is
-## not blank and not a comment. Entries: `name`, `line` (1-based), `signature`
-## (strings blanked, comments cut) and `body` (raw lines, starting with any
-## code a one-line function puts after its colon).
+## The column-0 functions in `src`, in order, skipping any column-0 line that
+## continues a statement (continuation_flags) -- such as the text of a
+## multi-line string. The signature is read by _read_signature; the body runs
+## from its end to the next column-0 line that is not blank, not a comment and
+## not a continuation. Entries: `name`, `line` (1-based), `signature` (strings
+## blanked, comments cut, leading annotations dropped) and `body` (raw lines,
+## starting with any code a one-line function puts after its colon; empty for
+## a body-less declaration such as an `@abstract` method).
 static func parse_functions(src: String) -> Array[Dictionary]:
 	var lines := src.replace("\r\n", "\n").split("\n")
+	var continued := continuation_flags(lines)
 	var out: Array[Dictionary] = []
 	var i := 0
 	while i < lines.size():
-		var name := function_name(lines[i])
+		var name := "" if continued[i] else function_name(lines[i])
 		if name.is_empty():
 			i += 1
 			continue
-		var start := i
-		var signature := ""
-		var body: Array = []
-		var depth := 0
-		var seen_paren := false
-		var closed := false
-		while i < lines.size() and not closed:
-			var raw: String = lines[i]
-			var code := strip_strings_and_comments(raw)
-			for k in code.length():
-				var c := code[k]
-				if OPENERS.has(c):
-					depth += 1
-					seen_paren = seen_paren or c == "("
-				elif CLOSERS.has(c):
-					depth -= 1
-				elif c == ":" and depth == 0 and seen_paren:
-					signature += code.substr(0, k + 1)
-					var tail := raw.substr(k + 1).strip_edges()
-					if not tail.is_empty() and not tail.begins_with("#"):
-						body.append(tail)
-					closed = true
-					break
-			if not closed:
-				signature += code + " "
-			i += 1
-		while i < lines.size():
-			var line: String = lines[i]
-			if not line.is_empty() and not line.begins_with("\t") \
-					and not line.begins_with(" ") and not line.begins_with("#"):
-				break
-			body.append(line)
-			i += 1
-		out.append({"name": name, "line": start + 1, "signature": signature, "body": body})
+		var head := _read_signature(lines, i)
+		var body: Array = head["body"]
+		var end: int = head["end"]
+		if not head["bodyless"]:
+			end = _read_body(lines, continued, end, body)
+		out.append({"name": name, "line": i + 1, "signature": head["signature"], "body": body})
+		i = end
 	return out
+
+
+## The signature that starts at `lines[start]`. It runs to the `:` that closes
+## it at bracket depth 0; an unclosed bracket runs it to end of file. A line
+## whose brackets closed with no `:` and no `\` continuation ends it with no
+## body at all -- a body-less declaration such as an `@abstract` method.
+## Keys: "signature" (strings blanked, comments cut, leading annotations
+## dropped), "body" (any code a one-line function puts after its colon),
+## "end" (the index of the line after the signature) and "bodyless".
+static func _read_signature(lines: PackedStringArray, start: int) -> Dictionary:
+	var signature := ""
+	var body: Array = []
+	var depth := 0
+	var seen_paren := false
+	var i := start
+	while i < lines.size():
+		var raw: String = lines[i]
+		var code := strip_strings_and_comments(raw)
+		i += 1
+		for k in code.length():
+			var c := code[k]
+			if OPENERS.has(c):
+				depth += 1
+				seen_paren = seen_paren or c == "("
+			elif CLOSERS.has(c):
+				depth -= 1
+			elif c == ":" and depth == 0 and seen_paren:
+				var tail := raw.substr(k + 1).strip_edges()
+				if not tail.is_empty() and not tail.begins_with("#"):
+					body.append(tail)
+				return _signature_entry(signature + code.substr(0, k + 1), body, i, false)
+		signature += code + " "
+		if depth == 0 and seen_paren and not code.strip_edges(false, true).ends_with("\\"):
+			return _signature_entry(signature, body, i, true)
+	return _signature_entry(signature, body, i, false)
+
+
+## _read_signature's result, with the signature's leading annotations dropped
+## so a same-line `@rpc("x") func f(a)` is measured by f's own parameters.
+static func _signature_entry(signature: String, body: Array, end: int, bodyless: bool) -> Dictionary:
+	return {
+		"signature": _strip_leading_annotations(signature.strip_edges()),
+		"body": body,
+		"end": end,
+		"bodyless": bodyless,
+	}
+
+
+## Appends `lines` to `body` from `start` up to the next column-0 line that is
+## not blank, not a comment and not a continuation (`continued`, from
+## continuation_flags), and returns that line's index.
+static func _read_body(lines: PackedStringArray, continued: Array[bool], start: int, body: Array) -> int:
+	var i := start
+	while i < lines.size():
+		var line: String = lines[i]
+		if not continued[i] and not line.is_empty() and not line.begins_with("\t") \
+				and not line.begins_with(" ") and not line.begins_with("#"):
+			break
+		body.append(line)
+		i += 1
+	return i
 
 
 ## `body`'s lines, stripped, without the blank and comment-only ones.
@@ -191,15 +297,21 @@ static func is_trivial_number(text: String) -> bool:
 	return plain.is_valid_float() and TRIVIAL_NUMBERS.has(float(plain))
 
 
-## Bare numeric literals in `body`: strings and comments do not count, nor do
-## digits inside identifiers (`Vector2`, `node2`), trivial values, or a local
-## `const` line, which names its number.
+## Bare numeric literals in `body`: strings (multi-line ones too) and comments
+## do not count, nor do digits inside identifiers (`Vector2`, `node2`),
+## trivial values, or a local `const` -- one line, or a table whose brackets
+## run over several -- which names its numbers.
 static func bare_number_count(body: Array) -> int:
 	var re := _regex(NUMBER_PATTERN)
 	var n := 0
+	var quote := ""
+	var const_depth := 0
 	for raw in body:
-		var code := strip_strings_and_comments(String(raw)).strip_edges()
-		if code.is_empty() or code.begins_with("const "):
+		var scanned := scan_code(String(raw), quote)
+		quote = scanned["quote"]
+		var code := String(scanned["code"]).strip_edges()
+		if const_depth > 0 or code.begins_with("const "):
+			const_depth = _depth_after(code, const_depth)
 			continue
 		for m in re.search_all(code):
 			if not is_trivial_number(m.get_string(1)):
@@ -242,13 +354,18 @@ static func _untyped_param(param: String) -> int:
 	return 0 if text.split("=")[0].contains(":") else 1
 
 
-## Untyped declarations in one script: `var`s with neither `: Type` nor `:=`,
-## function signatures without `->`, and parameters without `: Type`.
+## Untyped declarations in one script: `var`s with neither `: Type` nor `:=`
+## (behind any annotations, and not inside a multi-line string), function
+## signatures without `->`, and parameters without `: Type`.
 static func untyped_count(src: String, functions: Array[Dictionary]) -> int:
 	var re := _regex(VAR_PATTERN)
 	var n := 0
+	var quote := ""
 	for raw in src.split("\n"):
-		var m := re.search(strip_strings_and_comments(raw))
+		var scanned := scan_code(raw, quote)
+		quote = scanned["quote"]
+		var code := _strip_leading_annotations(String(scanned["code"]).strip_edges())
+		var m := re.search(code)
 		if m != null and not m.get_string(1).strip_edges().begins_with(":"):
 			n += 1
 	for fn in functions:
@@ -281,10 +398,13 @@ const LEGACY_PATTERN := "(?i)(akad" + "emis[123]|kepri" + "badian[12])"
 const PASCAL_PATTERN := "^[A-Z][A-Za-z0-9]*$"
 ## An asset name made only of safe characters.
 const SAFE_ASSET_PATTERN := "^[A-Za-z0-9_.\\-]+$"
-## A quoted res:// literal; group 1 drops an autoload's leading `*`.
-const PATH_LITERAL_PATTERN := "[\"']\\*?(res://[^\"'\\n]*)[\"']"
-## A class_name declaration; group 1 is the name.
-const CLASS_NAME_PATTERN := "(?m)^class_name\\s+(\\w+)"
+## A quoted res:// literal; group 1 drops an autoload's leading `*`. A
+## backslash ends the path, so a literal inside an escaped quote
+## (`"load(\"res://a.gd\")"`) is read without it.
+const PATH_LITERAL_PATTERN := "[\"']\\*?(res://[^\"'\\\\\\n]*)\\\\?[\"']"
+## A class_name declaration, behind any annotations (`@abstract class_name X`);
+## group 1 is the name.
+const CLASS_NAME_PATTERN := "(?m)^(?:@\\w+(?:\\([^)\\n]*\\))?\\s+)*class_name\\s+(\\w+)"
 
 
 ## True when the walk must not enter `dir`: a dot-folder, a folder holding a
@@ -447,13 +567,19 @@ static func bad_script_names() -> Array[String]:
 	return out
 
 
+## The class_name `src` declares, or "" when it declares none.
+static func declared_class_name(src: String) -> String:
+	var m := _regex(CLASS_NAME_PATTERN).search(src)
+	return "" if m == null else m.get_string(1)
+
+
 ## Production scripts whose file is not named after their class_name.
 static func class_name_mismatches() -> Array[String]:
 	var out: Array[String] = []
 	for path in production_scripts():
-		var m := _regex(CLASS_NAME_PATTERN).search(FileAccess.get_file_as_string(path))
-		if m != null and m.get_string(1) != path.get_file().get_basename():
-			out.append("%s (class_name %s)" % [path, m.get_string(1)])
+		var declared := declared_class_name(FileAccess.get_file_as_string(path))
+		if not declared.is_empty() and declared != path.get_file().get_basename():
+			out.append("%s (class_name %s)" % [path, declared])
 	return out
 
 
@@ -569,7 +695,7 @@ static func compare_large(baseline: Dictionary, current: Dictionary) -> Dictiona
 			grown.append("%s: baseline %d, now %d" % [key, int(baseline.get(key, 0)), int(current[key])])
 	for key in baseline:
 		if not current.has(key):
-			shrunk.append("%s: now %d lines or fewer -- remove it" % [key, LARGE_SCRIPT_LINES])
+			shrunk.append("%s: now %d lines or fewer, or moved or renamed" % [key, LARGE_SCRIPT_LINES])
 	grown.sort()
 	shrunk.sort()
 	return {"grown": grown, "shrunk": shrunk}
@@ -672,15 +798,19 @@ static func compare(measurement: Dictionary, baseline: Variant, current: Variant
 	return compare_lists(baseline, current)
 
 
-## Every measurement against its baseline. Growth is a failure; a shrink is
-## only a warning here, because CI cannot lower a baseline and a red check
-## for an improvement would block every later PR. The editor suite fails on
-## a shrink instead (tests/test_clean_code.gd).
-static func compare_all(report: Dictionary) -> Dictionary:
+## Every measurement against its baseline: `constants` ({const name: value},
+## as baseline_constants() returns), or ci/clean_code_baseline.gd's when it is
+## empty. Growth is a failure; a shrink is only a warning here, because CI
+## cannot lower a baseline and a red check for an improvement would block
+## every later PR. The editor suite fails on a shrink instead
+## (tests/test_clean_code.gd), and ci/clean_code_dump.gd refuses to write a
+## growth unless told to re-key.
+static func compare_all(report: Dictionary, constants: Dictionary = {}) -> Dictionary:
+	var baselines := constants if not constants.is_empty() else baseline_constants()
 	var failures := PackedStringArray()
 	var warnings := PackedStringArray()
 	for measurement in MEASUREMENTS:
-		var result := compare(measurement, baseline_for(measurement), report[measurement["key"]])
+		var result := compare(measurement, baselines[measurement["const"]], report[measurement["key"]])
 		for line in result["grown"]:
 			failures.append("clean-code %s grew: %s -- see docs/superpowers/design/clean-code.md"
 				% [measurement["key"], line])

@@ -68,14 +68,19 @@ func test_configure_fills_the_header_and_body_from_stat_info() -> void:
 
 
 func test_configure_tints_the_bar_with_the_right_category() -> void:
-	# The SeniBudaya bar wears the SeniBudaya accent, not the academic one.
-	# Getting this wrong paints the bar the wrong colour and is invisible in a
-	# source diff.
+	# configure() must tint through StatInfo.token_category, never the bar
+	# name: the Mood bar wears the Istirahat accent. Getting this wrong paints
+	# the bar the wrong colour and is invisible in a source diff.
 	var popup := _make()
-	popup.configure("SeniBudaya", SAMPLE, null)
+	popup.configure("Mood", SAMPLE, null)
 	var bar: StatBar = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/Bar")
-	assert_eq(bar.category, "SeniBudaya")
-	assert_eq(bar.value, 20.0)
+	assert_eq(bar.category, "Istirahat")
+	assert_eq(bar.value, 61.0)
+	var seni := _make()
+	seni.configure("SeniBudaya", SAMPLE, null)
+	var seni_bar: StatBar = seni.get_node("Scrim/Card/Layout/Body/BodyLayout/Bar")
+	assert_eq(seni_bar.category, "SeniBudaya", "not the academic accent")
+	assert_eq(seni_bar.value, 20.0)
 
 
 func test_configure_falls_back_to_the_glyph_when_no_icon_texture() -> void:

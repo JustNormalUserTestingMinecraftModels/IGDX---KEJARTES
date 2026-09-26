@@ -3,7 +3,8 @@
 # Copies the working tree (tracked and new files, not ignored ones) to a temp
 # folder, imports it, requires the check to PASS on the clean copy, then plants
 # one breakage at a time -- a script that does not parse, a scene pointing at a
-# missing texture, an autoload that errors on boot -- and requires each to FAIL.
+# missing texture, an autoload that errors on boot, a script that adds
+# clean-code debt -- and requires each to FAIL for its own reason.
 # Local only: CI runs the check itself, not this.
 #
 #     bash ci/selftest_project_check.sh <path-to-godot-console-binary>
@@ -28,28 +29,35 @@ sed -i 's/^config\/name="\(.*\)"/config\/name="\1-selftest"/' "$PROJECT/project.
 cp "$PROJECT/project.godot" "$WORK/project.godot.clean"
 "$GODOT" --headless --path "$GODOT_PROJECT" --import > "$WORK/import.log" 2>&1
 
-# run_check <pass|fail> <description>: runs the check the way the workflow does.
+# run_check <pass|fail> <description> [pattern]: runs the check the way the
+# workflow does. A fail case must also print `pattern`, so it fails for the
+# reason it tests rather than for an unrelated one.
 run_check() {
   "$GODOT" --headless --path "$GODOT_PROJECT" res://ci/project_check.tscn > "$WORK/check.log" 2>&1
   local status=$? errors verdict=pass
   errors=$(grep -cE '^(ERROR|SCRIPT ERROR):' "$WORK/check.log")
   if (( status != 0 || errors > 0 )); then verdict=fail; fi
+  if [[ "$verdict" == "fail" && -n "${3:-}" ]] && ! grep -qF -- "$3" "$WORK/check.log"; then
+    verdict="fail without \"$3\""
+  fi
   if [[ "$verdict" == "$1" ]]; then
     echo "ok   - $2 ($verdict: exit $status, $errors error lines)"
   else
     echo "FAIL - $2: expected $1, got $verdict (exit $status, $errors error lines)"
-    grep -E '^(PROJECT CHECK|ERROR|SCRIPT ERROR)' "$WORK/check.log" | head -20
+    grep -E '^(PROJECT CHECK|ERROR|SCRIPT ERROR|WARNING)' "$WORK/check.log" | head -20
     failures=$((failures + 1))
   fi
 }
 
 run_check pass "the clean tree passes"
 
-printf 'extends Node\nfunc broken(:\n\tpass\n' > "$PROJECT/Scripts/zz_selftest_broken.gd"
-run_check fail "a script that does not parse fails"
-rm "$PROJECT/Scripts/zz_selftest_broken.gd"
+# The broken fixtures live at the project root: outside every folder the
+# clean-code scan reads, while collect_files("res://") still loads them.
+printf 'extends Node\nfunc broken(:\n\tpass\n' > "$PROJECT/zz_selftest_broken.gd"
+run_check fail "a script that does not parse fails" "res://zz_selftest_broken.gd:"
+rm "$PROJECT/zz_selftest_broken.gd"
 
-cat > "$PROJECT/Scenes/zz_selftest_missing.tscn" <<'EOF'
+cat > "$PROJECT/zz_selftest_missing.tscn" <<'EOF'
 [gd_scene load_steps=2 format=3]
 
 [ext_resource type="Texture2D" path="res://Assets/zz_does_not_exist.png" id="1_missing"]
@@ -57,15 +65,19 @@ cat > "$PROJECT/Scenes/zz_selftest_missing.tscn" <<'EOF'
 [node name="Missing" type="Sprite2D"]
 texture = ExtResource("1_missing")
 EOF
-run_check fail "a scene pointing at a missing texture fails"
-rm "$PROJECT/Scenes/zz_selftest_missing.tscn"
+run_check fail "a scene pointing at a missing texture fails" "missing dependency"
+rm "$PROJECT/zz_selftest_missing.tscn"
 
 printf 'extends Node\nfunc _ready() -> void:\n\tpush_error("selftest: autoload failed on boot")\n' \
   > "$PROJECT/zz_selftest_autoload.gd"
 sed -i 's/^\[autoload\]$/[autoload]\n\nZzSelftest="*res:\/\/zz_selftest_autoload.gd"/' "$PROJECT/project.godot"
-run_check fail "an autoload that errors on boot fails"
+run_check fail "an autoload that errors on boot fails" "selftest: autoload failed on boot"
 cp "$WORK/project.godot.clean" "$PROJECT/project.godot"
 rm "$PROJECT/zz_selftest_autoload.gd"
+
+printf 'extends Node\n## Selftest.\nfunc untyped(value):\n\tpass\n' > "$PROJECT/Scripts/ZzSelftestUntyped.gd"
+run_check fail "untyped code fails the clean-code scan" "clean-code untyped grew"
+rm "$PROJECT/Scripts/ZzSelftestUntyped.gd"
 
 echo "$failures failure(s)"
 exit $(( failures > 0 ))

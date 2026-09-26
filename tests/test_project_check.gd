@@ -86,3 +86,13 @@ func test_the_check_scene_runs_the_check_script() -> void:
 	var scene := FileAccess.get_file_as_string("res://ci/project_check.tscn")
 	assert_true(scene.contains("path=\"res://ci/project_check.gd\""),
 		"project_check.tscn must attach ci/project_check.gd")
+
+
+func test_the_check_runs_the_clean_code_scan_and_only_warns_on_a_shrink() -> void:
+	var src := FileAccess.get_file_as_string("res://ci/project_check.gd")
+	assert_true(src.contains("CleanCodeScan.compare_all(CleanCodeScan.full_report())"),
+		"project_check runs the clean-code scan")
+	assert_true(src.contains("failures.append_array(clean_code[\"failures\"])"),
+		"growth and must-be-zero violations fail CI")
+	assert_true(src.contains("print(\"WARNING: \", warning)"),
+		"a shrink is only a warning in CI")

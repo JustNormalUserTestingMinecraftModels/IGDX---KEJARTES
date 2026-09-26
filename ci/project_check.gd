@@ -16,6 +16,16 @@ extends Node
 ## editor, where _ready() does nothing. It lives in res://ci/, outside the
 ## Scripts/Scenes/tests roots the hygiene suites scan, because printing is its
 ## whole job. Design: docs/superpowers/specs/2026-09-11-pr-automation-design.md.
+##
+## It also runs the clean-code scan (ci/clean_code_scan.gd,
+## docs/superpowers/design/clean-code.md): a measurement that grew, or a
+## must-be-zero rule with a new offender, is a failure; a measurement that
+## shrank is printed as a `WARNING:` line, which the workflow copies to the
+## step summary without failing -- CI cannot lower a baseline, and a red
+## check for an improvement would block every later PR.
+
+## The clean-code ratchet's scanner.
+const CleanCodeScan := preload("res://ci/clean_code_scan.gd")
 
 ## File extensions the check loads. Textures, audio and fonts are covered
 ## through the scenes and resources that depend on them.
@@ -30,9 +40,13 @@ func _ready() -> void:
 	var failures := PackedStringArray()
 	for path in files:
 		failures.append_array(check_file(path))
+	var clean_code := CleanCodeScan.compare_all(CleanCodeScan.full_report())
+	failures.append_array(clean_code["failures"])
 	print("PROJECT CHECK: checked %d files, %d failures" % [files.size(), failures.size()])
 	for failure in failures:
 		print("PROJECT CHECK FAIL: ", failure)
+	for warning in clean_code["warnings"]:
+		print("WARNING: ", warning)
 	get_tree().quit(1 if not failures.is_empty() else 0)
 
 

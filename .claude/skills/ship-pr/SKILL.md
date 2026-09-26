@@ -43,10 +43,14 @@ Run `test_run` with no `suite`, in the editor that has **this checkout** open:
 - **A worktree** under `.claude/worktrees/<name>`: it needs its own editor.
   Copy `imported/`, `shader_cache/`, `uid_cache.bin`,
   `global_script_class_cache.cfg` and `scene_groups_cache.cfg` from the main
-  checkout's `.godot/` into the worktree's, launch
-  `<Godot editor exe> --path <worktree> -e` in the background, find its session
-  with `session_manage(op="list")`, and pass that `session_id` to every call.
-  Never call `session_activate`, and never kill every Godot process.
+  checkout's `.godot/` into the worktree's. Then run `<Godot console exe>
+  --headless --path <worktree> --import` once (with a timeout), so a cache
+  copied from before a rename or move is refreshed; otherwise the first
+  launch can fail to create an autoload through the stale `uid_cache.bin`.
+  Launch `<Godot editor exe> --path <worktree> -e` in the background, find its
+  session with `session_manage(op="list")`, and pass that `session_id` to
+  every call. Never call `session_activate`, and never kill every Godot
+  process.
 
 A full run can drop the bridge (CLAUDE.md → Working efficiently here); its
 results still count once they have arrived. Afterwards run `git status` and

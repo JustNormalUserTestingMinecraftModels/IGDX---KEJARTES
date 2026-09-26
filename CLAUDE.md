@@ -202,7 +202,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 161 suites, 2386 tests (2026-09-26).
+the Godot AI MCP `test_run` tool. 161 suites, 2385 tests (2026-09-26).
 
 Hard constraints:
 
@@ -379,7 +379,7 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 ## Current work
 
 Clean-code pass (`docs/superpowers/specs/2026-09-26-clean-code-design.md`):
-PR2 file renames, then PR3 stat keys.
+PR3 stat keys next; the file renames have landed.
 
 ## Maintaining this file
 

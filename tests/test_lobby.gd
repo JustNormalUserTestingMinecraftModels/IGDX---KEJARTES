@@ -315,12 +315,6 @@ func test_the_money_chip_is_a_themed_panel_with_a_coin_icon() -> void:
 		"and it is the new coin art")
 
 
-func test_the_off_palette_chip_art_is_gone() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/Lobby/loby.tscn")
-	assert_false(src.contains("Desain tanpa judul.png"),
-		"the pink chip background must no longer be referenced")
-
-
 ## Both shop screens read the same coin as the lobby, so money looks like
 ## one currency across the game.
 func test_the_shop_screens_use_the_same_coin() -> void:

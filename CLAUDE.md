@@ -407,8 +407,8 @@ it costs context on every single run, so it earns its place or it moves.
 
 - Game-facing identifiers and all UI text are **Indonesian**; engine and systems code
   is English. Match whatever the surrounding file does.
-- File naming is inconsistent (`loby.gd`, `koprasi.gd` are misspelled but
-  load-bearing — do not "fix" them).
+- **File names:** PascalCase `.gd`/`.tscn`; assets `A–Z a–z 0–9 _ - .`
+  only (`clean-code.md` rule 1).
 - Commits: Conventional Commits with a scope, e.g.
   `fix(lobby): wire the dead ReportStudent button`.
 - **`Balance.gd` values are owned by a collaborator, not by us.** It holds

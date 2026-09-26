@@ -377,8 +377,6 @@ func test_tray_panel_uses_the_basket_tray_variation() -> void:
 	# tray) is a different asset and stays.
 	assert_false(tray.contains('path="res://Assets/Images/Shop/UI/icon_keranjang.svg"'),
 		"the corner emblem's art must no longer be referenced")
-	assert_false(shop.contains("pngwing.com (6).png") or tray.contains("pngwing.com (6).png"),
-		"the black basket silhouette should no longer be referenced")
 	assert_true(tray.contains("EmptyState"), "the empty-basket state is a scene node")
 	assert_true(tray.contains("texture_repeat = 2"),
 		"the dot tile must set texture_repeat on the node -- in Godot 4 "

@@ -724,7 +724,7 @@ func test_assign_pop_is_driven_from_on_activity_selected() -> void:
 		"the pop must be called from inside _on_activity_selected")
 
 
-## The warning dialog shipped on a stock placeholder ("pngwing.com (2).png").
+## The warning dialog shipped on a stock placeholder image.
 ## It now wears the same finished card art as the Penjadwalan panel. The art
 ## is square (1080x1080) and the frame is 740x428, so it must be a
 ## NinePatchRect -- a TextureRect would smear the painted corners.

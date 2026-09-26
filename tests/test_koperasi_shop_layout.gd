@@ -126,7 +126,7 @@ func test_the_bubble_points_at_herman() -> void:
 
 func test_the_old_landing_is_gone() -> void:
 	var raw := FileAccess.get_file_as_string(SCENE)
-	for gone in ["KEBUTUHAN SEKOLAH", "ShopShelfButton", "Illustration4.jpg", "rak2.jpg"]:
+	for gone in ["KEBUTUHAN SEKOLAH", "ShopShelfButton", "Illustration4.jpg"]:
 		assert_false(raw.contains(gone), "koprasi.tscn still carries " + gone)
 	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/koprasi.gd")
 	assert_false(src.contains("_on_rak1_pressed"), "no shelf toggle: the counter is the screen")

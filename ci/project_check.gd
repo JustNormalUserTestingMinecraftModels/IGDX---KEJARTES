@@ -23,9 +23,18 @@ extends Node
 ## shrank is printed as a `WARNING:` line, which the workflow copies to the
 ## step summary without failing -- CI cannot lower a baseline, and a red
 ## check for an improvement would block every later PR.
+##
+## The scanner is loaded at run time, never preloaded: it preloads the
+## generated ci/clean_code_baseline.gd, and a baseline that does not parse (a
+## hand-merged conflict) would otherwise stop this script compiling, leaving
+## Godot running the scene with no script until the job times out, log unseen.
 
 ## The clean-code ratchet's scanner.
-const CleanCodeScan := preload("res://ci/clean_code_scan.gd")
+const CLEAN_CODE_SCAN_PATH := "res://ci/clean_code_scan.gd"
+## The generated baselines the scanner preloads.
+const CLEAN_CODE_BASELINE_PATH := "res://ci/clean_code_baseline.gd"
+## The failure reported when either of those does not compile.
+const SCAN_LOAD_FAILURE := "clean-code scan did not load: ci/clean_code_baseline.gd or ci/clean_code_scan.gd has a parse error -- never hand-merge the baseline; take one side and run ci/clean_code_dump.gd"
 
 ## File extensions the check loads. Textures, audio and fonts are covered
 ## through the scenes and resources that depend on them.
@@ -36,11 +45,15 @@ const CHECKED_EXTENSIONS: PackedStringArray = ["gd", "tscn", "tres"]
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
+	# quit() takes effect at the end of the frame and the last call sets the
+	# exit code, so if a script error stops this function part-way, Godot
+	# still exits -- with 1 -- instead of running until the job times out.
+	get_tree().quit(1)
 	var files := collect_files("res://")
 	var failures := PackedStringArray()
 	for path in files:
 		failures.append_array(check_file(path))
-	var clean_code := CleanCodeScan.compare_all(CleanCodeScan.full_report())
+	var clean_code := run_clean_code_scan()
 	failures.append_array(clean_code["failures"])
 	print("PROJECT CHECK: checked %d files, %d failures" % [files.size(), failures.size()])
 	for failure in failures:
@@ -48,6 +61,26 @@ func _ready() -> void:
 	for warning in clean_code["warnings"]:
 		print("WARNING: ", warning)
 	get_tree().quit(1 if not failures.is_empty() else 0)
+
+
+## The clean-code scan's {"failures", "warnings"}. A scanner or baseline that
+## does not compile is one failure, SCAN_LOAD_FAILURE.
+static func run_clean_code_scan() -> Dictionary:
+	var scan := load_clean_code_scan()
+	if scan == null:
+		return {"failures": PackedStringArray([SCAN_LOAD_FAILURE]), "warnings": PackedStringArray()}
+	return scan.call("compare_all", scan.call("full_report"))
+
+
+## The clean-code scanner, loaded now, or null when it or the baseline it
+## preloads does not compile. load() hands back a script that failed to parse
+## rather than null, so each is also asked whether it can be used.
+static func load_clean_code_scan() -> Script:
+	for path in [CLEAN_CODE_BASELINE_PATH, CLEAN_CODE_SCAN_PATH]:
+		var loaded := load(path) as Script
+		if loaded == null or not loaded.can_instantiate():
+			return null
+	return load(CLEAN_CODE_SCAN_PATH) as Script
 
 
 ## True when the walk must not enter `dir_path`: a dot-folder (.godot, .github,

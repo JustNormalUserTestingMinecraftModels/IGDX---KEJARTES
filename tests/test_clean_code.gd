@@ -210,3 +210,104 @@ func test_the_full_report_has_every_measurement() -> void:
 			"bad_asset_names", "misspelled_names", "unresolved_paths", "legacy_stat_keys"]:
 		assert_true(_report.has(key), "full_report() lacks %s" % key)
 	assert_true(_report["untyped"].size() > 0, "the scan found the project's scripts")
+
+
+func test_every_measurement_has_a_baseline_constant() -> void:
+	var constants: Dictionary = Scan.BASELINE.get_script_constant_map()
+	for measurement in Scan.MEASUREMENTS:
+		assert_true(constants.has(measurement["const"]),
+			"ci/clean_code_baseline.gd lacks %s" % measurement["const"])
+
+
+## The MEASUREMENTS entry for report key `key`.
+func _measurement(key: String) -> Dictionary:
+	for measurement in Scan.MEASUREMENTS:
+		if measurement["key"] == key:
+			return measurement
+	return {}
+
+
+## Fails when `key`'s measurement grew past its baseline.
+func _assert_not_grown(key: String) -> void:
+	var measurement := _measurement(key)
+	var result := Scan.compare(measurement, Scan.baseline_for(measurement), _report[key])
+	assert_true(result["grown"].is_empty(),
+		"clean-code %s grew -- fix the code; see docs/superpowers/design/clean-code.md:\n%s"
+			% [key, "\n".join(result["grown"])])
+
+
+## Fails when `key`'s measurement shrank and its baseline was not lowered.
+func _assert_baseline_tight(key: String) -> void:
+	var measurement := _measurement(key)
+	var result := Scan.compare(measurement, Scan.baseline_for(measurement), _report[key])
+	assert_true(result["shrunk"].is_empty(),
+		("clean-code %s shrank -- lock it in this commit: run ci/clean_code_dump.gd "
+			+ "and check the baseline diff only lowers numbers:\n%s")
+			% [key, "\n".join(result["shrunk"])])
+
+
+func test_long_functions_did_not_grow() -> void:
+	_assert_not_grown("long_functions")
+
+func test_long_functions_baseline_is_tight() -> void:
+	_assert_baseline_tight("long_functions")
+
+func test_untyped_did_not_grow() -> void:
+	_assert_not_grown("untyped")
+
+func test_untyped_baseline_is_tight() -> void:
+	_assert_baseline_tight("untyped")
+
+func test_bare_numbers_did_not_grow() -> void:
+	_assert_not_grown("bare_numbers")
+
+func test_bare_numbers_baseline_is_tight() -> void:
+	_assert_baseline_tight("bare_numbers")
+
+func test_duplicate_groups_did_not_grow() -> void:
+	_assert_not_grown("duplicate_groups")
+
+func test_duplicate_groups_baseline_is_tight() -> void:
+	_assert_baseline_tight("duplicate_groups")
+
+func test_large_scripts_did_not_grow() -> void:
+	_assert_not_grown("large_scripts")
+
+func test_large_scripts_baseline_is_tight() -> void:
+	_assert_baseline_tight("large_scripts")
+
+func test_no_new_bad_script_names() -> void:
+	_assert_not_grown("bad_script_names")
+
+func test_bad_script_names_baseline_is_tight() -> void:
+	_assert_baseline_tight("bad_script_names")
+
+func test_no_new_class_name_mismatches() -> void:
+	_assert_not_grown("class_name_mismatches")
+
+func test_class_name_mismatches_baseline_is_tight() -> void:
+	_assert_baseline_tight("class_name_mismatches")
+
+func test_no_new_bad_asset_names() -> void:
+	_assert_not_grown("bad_asset_names")
+
+func test_bad_asset_names_baseline_is_tight() -> void:
+	_assert_baseline_tight("bad_asset_names")
+
+func test_no_new_misspelled_names() -> void:
+	_assert_not_grown("misspelled_names")
+
+func test_misspelled_names_baseline_is_tight() -> void:
+	_assert_baseline_tight("misspelled_names")
+
+func test_no_new_unresolved_paths() -> void:
+	_assert_not_grown("unresolved_paths")
+
+func test_unresolved_paths_baseline_is_tight() -> void:
+	_assert_baseline_tight("unresolved_paths")
+
+func test_no_new_legacy_stat_keys() -> void:
+	_assert_not_grown("legacy_stat_keys")
+
+func test_legacy_stat_keys_baseline_is_tight() -> void:
+	_assert_baseline_tight("legacy_stat_keys")

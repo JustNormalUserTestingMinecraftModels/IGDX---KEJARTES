@@ -622,9 +622,16 @@ const MEASUREMENTS: Array[Dictionary] = [
 ]
 
 
+## Every constant in ci/clean_code_baseline.gd, by name. BASELINE is a class
+## reference to the analyzer, so it is read through a Script-typed variable.
+static func baseline_constants() -> Dictionary:
+	var script: Script = BASELINE
+	return script.get_script_constant_map()
+
+
 ## `measurement`'s value in ci/clean_code_baseline.gd.
 static func baseline_for(measurement: Dictionary) -> Variant:
-	return BASELINE.get_script_constant_map()[measurement["const"]]
+	return baseline_constants()[measurement["const"]]
 
 
 ## {"grown", "shrunk"} for one measurement, dispatched on its kind.

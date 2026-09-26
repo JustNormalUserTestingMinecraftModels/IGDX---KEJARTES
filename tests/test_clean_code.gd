@@ -213,7 +213,7 @@ func test_the_full_report_has_every_measurement() -> void:
 
 
 func test_every_measurement_has_a_baseline_constant() -> void:
-	var constants: Dictionary = Scan.BASELINE.get_script_constant_map()
+	var constants: Dictionary = Scan.baseline_constants()
 	for measurement in Scan.MEASUREMENTS:
 		assert_true(constants.has(measurement["const"]),
 			"ci/clean_code_baseline.gd lacks %s" % measurement["const"])

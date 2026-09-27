@@ -14,9 +14,11 @@ extends McpTestSuite
 ## Must be @tool, and no test here may be a coroutine.
 
 const MOOD_TINT := "res://Scenes/Look/MoodTint.tscn"
+const LIGHT_POOL := "res://Scenes/Look/LightPool.tscn"
 
 var _sandbox: SubViewport
 var _tint: MoodTint
+var _pool: LightPool
 
 
 func suite_name() -> String:
@@ -30,6 +32,7 @@ func suite_setup(_ctx: Dictionary) -> void:
 	_sandbox.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	Engine.get_main_loop().root.add_child(_sandbox)
 	_tint = _stand(MOOD_TINT) as MoodTint
+	_pool = _stand(LIGHT_POOL) as LightPool
 
 
 func suite_teardown() -> void:
@@ -94,7 +97,7 @@ func test_a_freed_piece_leaves_no_connection_behind() -> void:
 
 
 func test_every_kit_root_refills_its_parent() -> void:
-	for path in ["res://Scripts/Look/MoodTint.gd"]:
+	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_true(src.contains("AmbientKit.fill_parent(self)"),
 			path + " must re-fill its parent in _ready")
@@ -155,3 +158,81 @@ func test_the_switch_hides_the_tint() -> void:
 	assert_true(_tint.visible, "and on brings it back")
 	GameSettings.reduce_motion = true
 	assert_true(_tint.visible, "a tint does not move, so Kurangi Gerakan keeps it")
+
+
+# ── LightPool ────────────────────────────────────────────────────────────────
+
+func _pool_mat() -> ShaderMaterial:
+	return (_pool.get_node("Pool") as ColorRect).material as ShaderMaterial
+
+
+func _rays_mat() -> ShaderMaterial:
+	return (_pool.get_node("Pool/Rays") as ColorRect).material as ShaderMaterial
+
+
+## Over this near-white palette additive light clips fast; neither intensity
+## may pass the knee measured on the Lobby.
+func test_the_pool_clamps_to_the_cream_knee() -> void:
+	_pool.intensity = 0.5
+	assert_eq(_pool.intensity, LightPool.MAX_INTENSITY, "intensity clamps to MAX_INTENSITY")
+	assert_eq(float(_pool_mat().get_shader_parameter("intensity")), LightPool.MAX_INTENSITY,
+		"and the shader gets the clamped value")
+	assert_eq(LightPool.MAX_INTENSITY, 0.12, "the Lobby-measured knee (changelog 2026-09-22)")
+	_pool.rays_intensity = 0.9
+	assert_eq(_pool.rays_intensity, LightPool.MAX_RAYS_INTENSITY, "rays clamp too")
+	_pool.intensity = 0.08
+	_pool.rays_intensity = 0.1
+
+
+## The root fills its parent; the Pool child is placed by `center` (a share of
+## the root, so it keeps its spot on a tall phone) and sized by `pool_size`.
+func test_the_pool_sits_where_center_says() -> void:
+	assert_eq(_anchors(_pool), Vector4(0, 0, 1, 1), "the LightPool root is Full Rect")
+	_pool.center = Vector2(0.25, 0.1)
+	_pool.pool_size = Vector2(400, 200)
+	var pool := _pool.get_node("Pool") as Control
+	assert_eq(_anchors(pool), Vector4(0.25, 0.1, 0.25, 0.1), "Pool anchors on the centre point")
+	assert_eq(_offsets(pool), Vector4(-200, -100, 200, 100), "Pool spans pool_size about it")
+	_pool.center = Vector2(0.5, 0.5)
+	_pool.pool_size = Vector2(1000, 1000)
+
+
+func test_the_light_is_additive_local_and_untappable() -> void:
+	assert_eq(_pool_mat().shader.resource_path, "res://Scripts/Shaders/light_falloff.gdshader",
+		"the pool is light_falloff, unchanged")
+	assert_true(_pool_mat().resource_local_to_scene, "each placed pool tunes its own copy")
+	assert_eq(_rays_mat().shader.resource_path, "res://Scripts/Shaders/light_shafts.gdshader",
+		"the rays are light_shafts, unchanged")
+	assert_true(_rays_mat().resource_local_to_scene, "each placed pool's rays are its own")
+	for path in [".", "Pool", "Pool/Rays"]:
+		assert_eq((_pool.get_node(path) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"%s must never eat a tap" % path)
+
+
+func test_rays_show_only_when_asked() -> void:
+	_pool.rays_enabled = false
+	assert_false((_pool.get_node("Pool/Rays") as CanvasItem).visible, "no rays by default")
+	_pool.rays_enabled = true
+	assert_true((_pool.get_node("Pool/Rays") as CanvasItem).visible, "rays_enabled shows them")
+	_pool.rays_enabled = false
+
+
+func test_reduce_motion_holds_the_light_still() -> void:
+	_pool.rays_enabled = true
+	GameSettings.reduce_motion = true
+	assert_eq(float(_pool_mat().get_shader_parameter("breathe_amount")), 0.0, "no breathing when still")
+	assert_eq(float(_rays_mat().get_shader_parameter("drift_speed")), 0.0, "no drift when still")
+	assert_true(_pool.visible, "still is not off: the light stays")
+	GameSettings.reduce_motion = false
+	assert_eq(float(_pool_mat().get_shader_parameter("breathe_amount")), _pool.breath_depth,
+		"breathing resumes")
+	assert_eq(float(_rays_mat().get_shader_parameter("drift_speed")), _pool.rays_drift_speed,
+		"drift resumes")
+	_pool.rays_enabled = false
+
+
+func test_the_switch_hides_the_pool() -> void:
+	GameSettings.ambient_effects_enabled = false
+	assert_false(_pool.visible, "Efek Suasana off hides the light")
+	GameSettings.ambient_effects_enabled = true
+	assert_true(_pool.visible, "and on brings it back")

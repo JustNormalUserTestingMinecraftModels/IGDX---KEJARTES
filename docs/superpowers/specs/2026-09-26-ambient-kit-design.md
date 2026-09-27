@@ -1,15 +1,15 @@
 # Ambient kit — design
 
 **Date:** 2026-09-26
-**Status:** approved in brainstorming, section by section.
+**Status:** approved in brainstorming, section by section; amended while
+planning (2026-09-27, see "Amendments from planning" at the end).
 **Source:** a list of beginner 2D-polish tips (CanvasModulate colour overlays,
 CPU particles, lights, parallax weather, small random details, shaders),
 audited against what the game already has.
-**Blocked on:** the clean-code pass (`2026-09-26-clean-code-design.md`,
-branch `chore/clean-code-rules`). Its PR2 renames the scenes this kit is
-placed in, and its rulebook binds every new script. The implementation plan
-is written after its Phase 1 (PR1–PR3) lands, against the renamed paths. This
-spec therefore names screens, not scene files.
+**Was blocked on** the clean-code pass (`2026-09-26-clean-code-design.md`),
+whose PR2 renamed the scenes this kit is placed in and whose rulebook binds
+every new script. Its Phase 1 (PR1–PR3) landed on 2026-09-27; the plan,
+`docs/superpowers/plans/2026-09-27-ambient-kit.md`, uses the renamed paths.
 
 ## Problem
 
@@ -38,7 +38,7 @@ Tips that do **not** apply, and why:
 | Leaf/petal art | Wait for the artist. The format is specified below; the DAUN preset is built when the art lands. |
 | Sway shader | Deferred: no flat screen has separated plant/paper/curtain art to move. Lands with the leaf art. |
 | On/off | A separate Settings switch, on by default. |
-| Light bleed | Bloom + spill: the Lobby's WorldEnvironment glow recipe on every kit screen, threshold tuned per screen, and LightPools free to sit above illustrations. Rejected for now: `hdr_2d` (a project-wide rendering change) and light wrap on the shared cutout materials. Both go to DEBT.md. |
+| Light bleed | Bloom + spill: the Lobby's WorldEnvironment glow recipe on MainMenu and the four desk screens (amendment 1), threshold tuned per screen, and LightPools free to sit above illustrations. Rejected for now: `hdr_2d` (a project-wide rendering change) and light wrap on the shared cutout materials. Both go to DEBT.md. |
 
 ## 1. The kit
 
@@ -50,10 +50,10 @@ bare magic numbers (named `const` or `@export`), no nodes created at runtime.
 |---|---|---|---|
 | **MoodTint** | `Scenes/Look/MoodTint.tscn` + script | Full-rect `ColorRect` with a multiply shader (`Scripts/Shaders/mood_tint.gdshader`). Placed directly above the backdrop, so it never touches the UI drawn after it. | `mood` enum: `NETRAL`, `PAGI` (warm morning), `SORE` (orange dusk), `MALAM` (blue night), `TEGANG` (cool, darker exam mood); `strength` 0–1; `vertical_falloff` 0–1 (tint heavier at the top) |
 | **LightPool** | `Scenes/Look/LightPool.tscn` + script | Additive glow using `light_falloff.gdshader` unchanged, with an optional child using `light_shafts.gdshader` for slow rays. Brightness breathes slowly. | `light_color`, `intensity` (capped, see "Cream" below), `radius`, `rays_enabled`, `breath_period`, `breath_depth` |
-| **AmbientParticles** | `Scenes/Look/AmbientParticles.tscn` + script | One `CPUParticles2D` that fills its own rect, additive `CanvasItemMaterial`, set up like SchoolDay's `Motes`. | `preset` enum: `DEBU` (dust, `particle_glow.png`), `KILAU` (sparkle, `particle_spark.png`); `density`; `rect_size`; `drift` |
+| **AmbientParticles** | `Scenes/Look/AmbientParticles.tscn` + script | One `CPUParticles2D` that fills its own rect, additive `CanvasItemMaterial`, set up like SchoolDay's `Motes`. | `preset` enum: `DEBU` (dust, `particle_glow.png`), `KILAU` (sparkle, `particle_spark.png`); `density`; `drift`; `tint`. The area is the node's own rect (amendment 4). |
 | **Glint** | `Scripts/Shaders/glint.gdshader` + `glint_material.tres` | A diagonal highlight band sweeping across a texture's alpha every N seconds. | `interval`, `band_width`, `angle`, `strength`, `glint_color`, `motion` |
 | **AmbientGlow** | `Scenes/Look/AmbientGlow.tscn` + script | A `WorldEnvironment` carrying the Lobby's recipe (`lobby_environment.tres`): `background_mode` Canvas, glow in screen blend, `background_canvas_max_layer = -1` so the glow stops below the UI. Its `Environment` is `resource_local_to_scene`, so each screen's instance tunes its own copy. | `glow_threshold`, `glow_intensity`, `glow_strength` (written into the local environment) |
-| **DeskAmbience** | `Scenes/Look/DeskAmbience.tscn` | The desk recipe (PAGI tint + lamp LightPool + DEBU particles + AmbientGlow), authored once and instanced by the four desk screens. | inherits its children's knobs |
+| **DeskAmbience** | `Scenes/Look/DeskAmbience.tscn` | The desk recipe (PAGI tint + lamp LightPool + DEBU particles + AmbientGlow), authored once and instanced by the four desk screens. | `particle_density`, `glow_threshold`, forwarded to its children (amendment 6) |
 
 **Why CPU particles.** Counts stay at 12–40 per emitter, which is cheap on the
 CPU and identical on every mobile GPU. SchoolDay's motes already use them.
@@ -83,9 +83,10 @@ Two kinds, both from existing parts:
   illustration (e.g. the MainMenu logo) so its soft edge washes across the art.
   That is only a tree-order choice, so it needs no new code.
 
-The Debug overlay's **Look** page already drives the Lobby's glow live. Its
-Bloom section is generalised to drive the current scene's `WorldEnvironment`,
-whichever screen that is, so every placement is tuned the same way.
+Tuning happens in the editor: a Canvas-mode `WorldEnvironment` previews live
+in the 2D viewport (changelog 2026-09-23), so `AmbientGlow`'s knobs are
+tuned in the Inspector. The Debug overlay's Look page stays Lobby-only
+(amendment 3).
 
 ### Switches
 
@@ -112,8 +113,9 @@ the same way `look_layer_changed` works.)
 | StudentCard | Desk | DeskAmbience | DeskAmbience | DeskAmbience | — |
 | StudentList | Desk | DeskAmbience | DeskAmbience | DeskAmbience (sparser) | — |
 | ReportCard | Desk | DeskAmbience | DeskAmbience | DeskAmbience | — |
-| CutScene | Crayon sky and hills | NETRAL | Soft sun pool | KILAU drifting across | — |
-| TesNotice, ExamProgress, StatCheck | Blurred school | TEGANG | — | — | — |
+| CutScene | Crayon sky and hills | none (NETRAL) | Soft sun pool | KILAU drifting across | — |
+| TesNotice, StatCheck | Blurred school | TEGANG | — | — | — |
+| ExamProgress | Exam art | none (amendment 2) | — | — | — |
 | RunResult (pass) | WinStage | PAGI | Warm pool behind the grade card | KILAU | Grade badge |
 | RunResult (fail) | WinStage | MALAM | — | DEBU, slow | — |
 
@@ -124,7 +126,9 @@ Lobby is lit from the upper right).
 in its `.tscn`; its script sets one visible from the result it already
 computes. No kit piece knows about pass or fail.
 
-**Tree order on every screen** (the Lobby's 2026-09-25 layering):
+**Tree order on the glow screens** (MainMenu and the four desk screens; the
+Lobby's 2026-09-25 layering). The other kit screens keep their backdrop on
+layer 0 and put the kit pieces directly after it, in the same order.
 
 ```
 World  (CanvasLayer, layer = -1)     <- AmbientGlow blooms only this layer
@@ -237,3 +241,34 @@ queue on a full run).
 - No runtime-built visuals; every new script passes the clean-code ratchet
   with zero debt.
 - Full suite green.
+
+## Amendments from planning (2026-09-27)
+
+Found while reading the post-clean-code code for the plan. Each one
+supersedes the text above where they disagree.
+
+1. **Glow on MainMenu and the four desk screens only.** RunResult draws
+   `WinStage` under a live blur (`BlurLayer`), so bloom there is invisible,
+   and moving `WinStage` into a layer would reorder the blur it depends on
+   (pinned by `test_run_result` and `test_end_cutscene`). CutScene's picture
+   changes slide to slide, so no one threshold fits it. The exam screens have
+   no light to bloom. Those screens take their kit pieces on layer 0, with
+   no `World` layer and no `AmbientGlow`.
+2. **ExamProgress takes no tint.** Its exam art was made undarkened on
+   2026-09-20 so that `text_primary` reads at ~4.6:1 over it; a TEGANG
+   multiply would darken the art and cut that contrast. TesNotice and
+   StatCheck keep TEGANG: their text sits on a `Scrim`, not on the art.
+3. **The Debug Look page is not generalised.** `DebugManager.gd` is listed at
+   its size in the clean-code ratchet's `LARGE_SCRIPTS` (1,880 lines) and may
+   not grow, and the editor's 2D view already previews Canvas-mode glow.
+4. **`AmbientParticles` is a `Control` holding a `CPUParticles2D`.** A bare
+   `Node2D` emitter sits at fixed coordinates and would not cover a 20:9
+   phone. The control's own rect is the emission area, re-fitted on
+   `resized`, so `rect_size` is gone.
+5. **The glint's switch lives in `LookLayer`.** Every glinting node shares one
+   `glint_material.tres`, so its `motion` uniform is set once, on that shared
+   resource, by the autoload that already owns global look state.
+6. **`DeskAmbience` forwards `particle_density` and `glow_threshold`.**
+   Overrides set on an instanced scene's children do not survive a save
+   (CLAUDE.md, "Three save hazards"), so the per-screen knobs live on
+   `DeskAmbience`'s root.

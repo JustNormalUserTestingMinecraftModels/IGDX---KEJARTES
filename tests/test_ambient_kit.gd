@@ -264,12 +264,11 @@ func test_the_emitter_fills_the_rect() -> void:
 	assert_eq(_anchors(_particles), Vector4(0, 0, 1, 1), "the root is Full Rect")
 	var src := FileAccess.get_file_as_string("res://Scripts/Look/AmbientParticles.gd")
 	assert_true(src.contains("resized.connect(_fit)"), "the emitter re-fits on resize")
-	var was := _particles.size
-	_particles.size = Vector2(1080, 2400)
+	_particles.offset_bottom = 480.0
 	_particles.call("_fit")
 	assert_eq(_emitter().position, Vector2(540, 1200), "the emitter sits at the centre")
 	assert_eq(_emitter().emission_rect_extents, Vector2(540, 1200), "and spans the whole rect")
-	_particles.size = was
+	_particles.offset_bottom = 0.0
 	_particles.call("_fit")
 
 

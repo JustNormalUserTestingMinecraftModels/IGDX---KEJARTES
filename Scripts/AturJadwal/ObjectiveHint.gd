@@ -20,9 +20,9 @@ const WEEKS_PER_MONTH := 4
 
 ## Skill key -> the schedule category it grows, for its display word.
 const _SKILL_CATEGORY := {
-	"akademis1": "Akademis",
-	"akademis2": "SeniBudaya",
-	"akademis3": "Olahraga",
+	"akademis": "Akademis",
+	"seni_budaya": "SeniBudaya",
+	"olahraga": "Olahraga",
 }
 
 
@@ -72,8 +72,8 @@ static func compose(student: Dictionary) -> String:
 			line = "%s butuh %s" % [who, word]
 	if line == "":
 		line = "%s sudah mencapai semua target" % who
-	if flags.get("kepribadian2", "") == StatFlags.LELAH:
+	if flags.get("energy", "") == StatFlags.LELAH:
 		line += " — jaga energi biar tidak Izin"
-	elif flags.get("kepribadian1", "") == StatFlags.LELAH:
+	elif flags.get("mood", "") == StatFlags.LELAH:
 		line += " — jaga mood-nya, jadwalkan Libur"
 	return line

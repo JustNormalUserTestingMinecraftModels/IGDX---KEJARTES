@@ -15,15 +15,15 @@ extends Control
 @export_group("UI Textures (Optional Replace)")
 ## Currently unreferenced by this script -- appears unused.
 @export var icon_magnify: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_magnify.svg")
-## Icon for the "Kepribadian1" (mood) stat bar -- see _get_stat_icon().
+## Icon for the "Mood" stat bar -- see _get_stat_icon().
 @export var icon_mood: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_mood.svg")
-## Icon for the "Kepribadian2" (energy) stat bar.
+## Icon for the "Energy" stat bar.
 @export var icon_energy: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_energy.svg")
-## Icon for the "Akademis1" (academic) stat bar.
+## Icon for the "Akademis" stat bar.
 @export var icon_akademis: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_akademis.svg")
-## Icon for the "Akademis2" (seni budaya) stat bar.
+## Icon for the "SeniBudaya" stat bar.
 @export var icon_seni: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_seni.svg")
-## Icon for the "Akademis3" (olahraga) stat bar.
+## Icon for the "Olahraga" stat bar.
 @export var icon_olahraga: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg")
 
 # ================= TRAIT DESCRIPTIONS =================
@@ -258,12 +258,12 @@ func _populate_default_tutorial_steps():
 	if GameState.current_grade == 7:
 		var defaults = [
 			["Selamat Datang!", "Kita disini mempunyai beberapa laporan berbagai macam murid yang dapat anda pilih untuk anda ajari!\n\nMereka mempunyai performance dan sifat berbeda-beda, jadi pilihlah dengan bijak!", "", ""],
-			["Mood Murid", "Ini adalah bar Mood murid. Mood menunjukkan tingkat kebahagiaan murid.\n\nJika mood rendah, murid akan sulit untuk belajar dengan baik.", "KertasMurid1/Kepribadian1", ""],
-			["Energy Murid", "Ini adalah bar Energy murid. Energy menunjukkan kapasitas seberapa banyak murid untuk dapat diajar berbagai mata pelajaran.", "KertasMurid1/Kepribadian2", ""],
-			["Skill Murid", "Sekarang kita lihat bagian Skill. Skill menunjukkan kemampuan murid di berbagai bidang pelajaran.", "KertasMurid1/Akademis1,KertasMurid1/Akademis2,KertasMurid1/Akademis3", ""],
-			["Akademis", "Bar Akademis menunjukkan kemampuan murid dalam pelajaran akademis.\n\nSemakin tinggi nilainya, semakin mudah murid memahami pelajaran.", "KertasMurid1/Akademis1", ""],
-			["Seni Budaya", "Bar Seni Budaya menunjukkan kemampuan murid dalam bidang seni dan kebudayaan.", "KertasMurid1/Akademis2", ""],
-			["Olahraga", "Bar Olahraga menunjukkan kemampuan fisik dan ketangkasan murid dalam bidang olahraga.", "KertasMurid1/Akademis3", ""],
+			["Mood Murid", "Ini adalah bar Mood murid. Mood menunjukkan tingkat kebahagiaan murid.\n\nJika mood rendah, murid akan sulit untuk belajar dengan baik.", "KertasMurid1/Mood", ""],
+			["Energy Murid", "Ini adalah bar Energy murid. Energy menunjukkan kapasitas seberapa banyak murid untuk dapat diajar berbagai mata pelajaran.", "KertasMurid1/Energy", ""],
+			["Skill Murid", "Sekarang kita lihat bagian Skill. Skill menunjukkan kemampuan murid di berbagai bidang pelajaran.", "KertasMurid1/Akademis,KertasMurid1/SeniBudaya,KertasMurid1/Olahraga", ""],
+			["Akademis", "Bar Akademis menunjukkan kemampuan murid dalam pelajaran akademis.\n\nSemakin tinggi nilainya, semakin mudah murid memahami pelajaran.", "KertasMurid1/Akademis", ""],
+			["Seni Budaya", "Bar Seni Budaya menunjukkan kemampuan murid dalam bidang seni dan kebudayaan.", "KertasMurid1/SeniBudaya", ""],
+			["Olahraga", "Bar Olahraga menunjukkan kemampuan fisik dan ketangkasan murid dalam bidang olahraga.", "KertasMurid1/Olahraga", ""],
 			["Quirk Murid", "Setiap murid punya Quirk — sifat unik yang mempengaruhi cara mereka berkembang!\n\nQuirk bisa jadi keunggulan atau tantangan tersendiri saat menyusun jadwal belajar.", "KertasMurid1/KutuBuku", ""],
 			["Coba Quirk!", "Sekarang coba sentuh badge Quirk milik murid ini untuk melihat langsung efeknya pada gameplay!", "KertasMurid1/KutuBuku", "TEKAN BADGE QUIRK UNTUK LIHAT EFEKNYA!"],
 			["Efek Quirk", "Pop-up ini menjelaskan efek dari Quirk yang akan mempengaruhi gameplay ke depannya.\n\nSilahkan baca efeknya lalu tutup pop-up ini untuk melanjutkan.", "KertasMurid1/PopupCanvas/TraitOverlay/TraitPopupPanel", "TUTUP POP-UP UNTUK LANJUT!"],
@@ -752,9 +752,9 @@ func _show_stamp_if_approved(index: int):
 ## The rows of one student page, top to bottom, for staggered entry.
 ## Order matters: Juice.stagger_in delays each node by one stagger_step,
 ## so this list is what the player's eye follows down the card.
-const CARD_ROW_ORDER := ["BioPanel", "IconAkademis1", "Akademis1",
-	"IconAkademis2", "Akademis2", "IconAkademis3", "Akademis3",
-	"IconKepribadian1", "Kepribadian1", "IconKepribadian2", "Kepribadian2",
+const CARD_ROW_ORDER := ["BioPanel", "IconAkademis", "Akademis",
+	"IconSeniBudaya", "SeniBudaya", "IconOlahraga", "Olahraga",
+	"IconMood", "Mood", "IconEnergy", "Energy",
 	"KutuBuku", "KutuBuku2"]
 
 
@@ -922,16 +922,16 @@ var student_data_list = [
 		"name": "Marcel",
 		"portrait": "res://Assets/Images/MuridPortrait/Marcel.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
-		"kepribadian1": 60.0,   # Mood
-		"kepribadian2": 55.0,   # Energy
-		"akademis1": 28.0,      # Akademis (Specialty ★)
-		"akademis2": 48.0,      # Seni Budaya
-		"akademis3": 38.0,      # Olahraga
-		"target_akademis1": 52.0,
-		"target_akademis2": 60.0,
-		"target_akademis3": 53.0,
-		"target_kepribadian1": 50.0,
-		"target_kepribadian2": 40.0,
+		"mood": 60.0,
+		"energy": 55.0,
+		"akademis": 28.0,  # Specialty ★
+		"seni_budaya": 48.0,
+		"olahraga": 38.0,
+		"target_akademis": 52.0,
+		"target_seni_budaya": 60.0,
+		"target_olahraga": 53.0,
+		"target_mood": 50.0,
+		"target_energy": 40.0,
 		"hobby_category": "Akademis",
 		"personality": "Tekun",
 		"quirk": "Kutu Buku",
@@ -945,16 +945,16 @@ var student_data_list = [
 		"name": "Doni",
 		"portrait": "res://Assets/Images/MuridPortrait/Doni.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_doni.png",
-		"kepribadian1": 55.0,   # Mood
-		"kepribadian2": 55.0,   # Energy
-		"akademis1": 38.0,      # Akademis
-		"akademis2": 22.0,      # Seni Budaya
-		"akademis3": 33.0,      # Olahraga (Specialty ★)
-		"target_akademis1": 50.0,
-		"target_akademis2": 40.0,
-		"target_akademis3": 51.0,
-		"target_kepribadian1": 40.0,
-		"target_kepribadian2": 35.0,
+		"mood": 55.0,
+		"energy": 55.0,
+		"akademis": 38.0,
+		"seni_budaya": 22.0,
+		"olahraga": 33.0,  # Specialty ★
+		"target_akademis": 50.0,
+		"target_seni_budaya": 40.0,
+		"target_olahraga": 51.0,
+		"target_mood": 40.0,
+		"target_energy": 35.0,
 		"hobby_category": "Olahraga",
 		"personality": "Aktif",
 		"quirk": "Semangat Juang",
@@ -968,16 +968,16 @@ var student_data_list = [
 		"name": "Andi",
 		"portrait": "res://Assets/Images/MuridPortrait/Andi.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_andi.png",
-		"kepribadian1": 60.0,   # Mood
-		"kepribadian2": 60.0,   # Energy
-		"akademis1": 48.0,      # Akademis
-		"akademis2": 55.0,      # Seni Budaya (Specialty ★)
-		"akademis3": 32.0,      # Olahraga
-		"target_akademis1": 60.0,
-		"target_akademis2": 64.0,
-		"target_akademis3": 53.0,
-		"target_kepribadian1": 60.0,
-		"target_kepribadian2": 55.0,
+		"mood": 60.0,
+		"energy": 60.0,
+		"akademis": 48.0,
+		"seni_budaya": 55.0,  # Specialty ★
+		"olahraga": 32.0,
+		"target_akademis": 60.0,
+		"target_seni_budaya": 64.0,
+		"target_olahraga": 53.0,
+		"target_mood": 60.0,
+		"target_energy": 55.0,
 		"hobby_category": "SeniBudaya",
 		"personality": "Kreatif",
 		"quirk": "Penasaran",
@@ -991,16 +991,16 @@ var student_data_list = [
 		"name": "Citra",
 		"portrait": "res://Assets/Images/MuridPortrait/Citra.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_citra.png",
-		"kepribadian1": 35.0,   # Mood (LOW — recovery week 1 needed!)
-		"kepribadian2": 60.0,   # Energy
-		"akademis1": 28.0,      # Akademis
-		"akademis2": 25.0,      # Seni Budaya
-		"akademis3": 15.0,      # Olahraga (Specialty ★)
-		"target_akademis1": 40.0,
-		"target_akademis2": 43.0,
-		"target_akademis3": 39.0,
-		"target_kepribadian1": 35.0,
-		"target_kepribadian2": 45.0,
+		"mood": 35.0,      # LOW — recovery week 1 needed!
+		"energy": 60.0,
+		"akademis": 28.0,
+		"seni_budaya": 25.0,
+		"olahraga": 15.0,  # Specialty ★
+		"target_akademis": 40.0,
+		"target_seni_budaya": 43.0,
+		"target_olahraga": 39.0,
+		"target_mood": 35.0,
+		"target_energy": 45.0,
 		"hobby_category": "Olahraga",
 		"personality": "Seni Dalam Kesunyian",
 		"quirk": "Penyendiri",
@@ -1014,16 +1014,16 @@ var student_data_list = [
 		"name": "Shinta",
 		"portrait": "res://Assets/Images/MuridPortrait/Shinta.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_shinta.png",
-		"kepribadian1": 30.0,   # Mood (LOW — patience test)
-		"kepribadian2": 40.0,   # Energy (LOW — needs early rest)
-		"akademis1": 35.0,      # Akademis (Specialty ★)
-		"akademis2": 22.0,      # Seni Budaya
-		"akademis3": 22.0,      # Olahraga
-		"target_akademis1": 53.0,
-		"target_akademis2": 37.0,
-		"target_akademis3": 37.0,
-		"target_kepribadian1": 30.0,
-		"target_kepribadian2": 35.0,
+		"mood": 30.0,      # LOW — patience test
+		"energy": 40.0,    # LOW — needs early rest
+		"akademis": 35.0,  # Specialty ★
+		"seni_budaya": 22.0,
+		"olahraga": 22.0,
+		"target_akademis": 53.0,
+		"target_seni_budaya": 37.0,
+		"target_olahraga": 37.0,
+		"target_mood": 30.0,
+		"target_energy": 35.0,
 		"hobby_category": "Akademis",
 		"personality": "Santai",
 		"quirk": "Biang Onar",
@@ -1037,16 +1037,16 @@ var student_data_list = [
 		"name": "Thea",
 		"portrait": "res://Assets/Images/MuridPortrait/Thea.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_thea.png",
-		"kepribadian1": 55.0,   # Mood
-		"kepribadian2": 50.0,   # Energy
-		"akademis1": 33.0,      # Akademis
-		"akademis2": 22.0,      # Seni Budaya (Specialty ★)
-		"akademis3": 38.0,      # Olahraga
-		"target_akademis1": 45.0,
-		"target_akademis2": 46.0,
-		"target_akademis3": 53.0,
-		"target_kepribadian1": 50.0,
-		"target_kepribadian2": 45.0,
+		"mood": 55.0,
+		"energy": 50.0,
+		"akademis": 33.0,
+		"seni_budaya": 22.0,  # Specialty ★
+		"olahraga": 38.0,
+		"target_akademis": 45.0,
+		"target_seni_budaya": 46.0,
+		"target_olahraga": 53.0,
+		"target_mood": 50.0,
+		"target_energy": 45.0,
 		"hobby_category": "SeniBudaya",
 		"personality": "Kreatif",
 		"quirk": "Pekerja Keras",
@@ -1062,11 +1062,11 @@ var student_data_list = [
 
 func _get_stat_icon(bname: String) -> Texture2D:
 	match bname:
-		"Kepribadian1": return icon_mood
-		"Kepribadian2": return icon_energy
-		"Akademis1": return icon_akademis
-		"Akademis2": return icon_seni
-		"Akademis3": return icon_olahraga
+		"Mood": return icon_mood
+		"Energy": return icon_energy
+		"Akademis": return icon_akademis
+		"SeniBudaya": return icon_seni
+		"Olahraga": return icon_olahraga
 	return null
 
 ## The accent colour a given bar wears, from DesignTokens via StatInfo.
@@ -1212,19 +1212,19 @@ func _on_belajar_pressed():
 
 	# Freeze each student's starting skills as the permanent roster baseline.
 	# GameState.reset_roster_for_new_grade() rebases toward these every grade;
-	# they are never erased. base_akademis* (set later by
-	# initialize_grade_targets) is the per-grade cache and IS erased on reset.
+	# they are never erased. The base_* keys (set later by
+	# initialize_grade_targets) are the per-grade cache and ARE erased on reset.
 	# Only the FIRST approval may set roster_base_* — a player re-opening
 	# StudentCard mid-grade and pressing Belajar again must not move it, or
 	# reset_roster_for_new_grade()'s 20%-head-start formula collapses toward
 	# ~100% retention and roster_base drifts upward every grade.
 	for _s in GameState.approved_students:
-		if not _s.has("roster_base_akademis1"):
-			_s["roster_base_akademis1"] = float(_s.get("akademis1", 50.0))
-		if not _s.has("roster_base_akademis2"):
-			_s["roster_base_akademis2"] = float(_s.get("akademis2", 50.0))
-		if not _s.has("roster_base_akademis3"):
-			_s["roster_base_akademis3"] = float(_s.get("akademis3", 50.0))
+		if not _s.has("roster_base_akademis"):
+			_s["roster_base_akademis"] = float(_s.get("akademis", 50.0))
+		if not _s.has("roster_base_seni_budaya"):
+			_s["roster_base_seni_budaya"] = float(_s.get("seni_budaya", 50.0))
+		if not _s.has("roster_base_olahraga"):
+			_s["roster_base_olahraga"] = float(_s.get("olahraga", 50.0))
 
 	GameState.selected_student = GameState.approved_students[0]
 	

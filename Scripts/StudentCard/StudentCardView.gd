@@ -10,8 +10,8 @@ const _CARD_ART := "res://Assets/Images/StudentCard/"
 ## trait badges.
 ##
 ## `student` dictionaries use the exact schema `StudentCard.gd` builds
-## (see its `student_data_list`): "name", "kepribadian1", "kepribadian2",
-## "akademis1", "akademis2", "akademis3", "quirk", "persona", "portrait",
+## (see its `student_data_list`): "name", "mood", "energy",
+## "akademis", "seni_budaya", "olahraga", "quirk", "persona", "portrait",
 ## "profil", etc. `GameState.approved_students` entries are literal
 ## duplicates of that same schema, so this view works unchanged on either.
 
@@ -77,23 +77,23 @@ static func populate(card: Control, student: Dictionary,
 
 	# Update ProgressBars
 	#
-	# Kepribadian1 and Kepribadian2 are NOT set here. They were, and they
-	# were set crossed over -- Kepribadian1 took kepribadian2 and vice
+	# The Mood and Energy bars are NOT set here. They were, and they
+	# were set crossed over -- the Mood bar took energy and vice
 	# versa -- which contradicted build_stat_bars() below, whose mapping is
 	# straight through. build_stat_bars runs after this and wins, so the
 	# crossed assignment never reached the screen; it only stood as a
 	# second, disagreeing answer to which bar is mood and which is energy.
 	# The straight mapping is the correct one: _STAT_ICONS pairs
-	# Kepribadian1 with stat_mood.png and Kepribadian2 with stat_energy.png.
-	var ak1 = card.get_node_or_null("Akademis1")
-	if ak1 and ak1 is ProgressBar:
-		ak1.value = student.get("akademis1", 0)
-	var ak2 = card.get_node_or_null("Akademis2")
-	if ak2 and ak2 is ProgressBar:
-		ak2.value = student.get("akademis2", 0)
-	var ak3 = card.get_node_or_null("Akademis3")
-	if ak3 and ak3 is ProgressBar:
-		ak3.value = student.get("akademis3", 0)
+	# Mood with stat_mood.png and Energy with stat_energy.png.
+	var akademis_bar = card.get_node_or_null("Akademis")
+	if akademis_bar and akademis_bar is ProgressBar:
+		akademis_bar.value = student.get("akademis", 0)
+	var seni_budaya_bar = card.get_node_or_null("SeniBudaya")
+	if seni_budaya_bar and seni_budaya_bar is ProgressBar:
+		seni_budaya_bar.value = student.get("seni_budaya", 0)
+	var olahraga_bar = card.get_node_or_null("Olahraga")
+	if olahraga_bar and olahraga_bar is ProgressBar:
+		olahraga_bar.value = student.get("olahraga", 0)
 
 	build_minat_row(card, student)
 
@@ -115,11 +115,11 @@ static func populate(card: Control, student: Dictionary,
 ## positions of the tracks painted into card_bg.png, measured from the art;
 ## the card is sized to the texture's own 1080x1920 so they map 1:1.
 const PILL_RECTS := {
-	"Akademis1": Rect2(284, 763, 211, 67),
-	"Akademis2": Rect2(284, 888, 211, 67),
-	"Akademis3": Rect2(284, 1014, 211, 67),
-	"Kepribadian1": Rect2(716, 762, 211, 67),
-	"Kepribadian2": Rect2(717, 888, 211, 67),
+	"Akademis": Rect2(284, 763, 211, 67),
+	"SeniBudaya": Rect2(284, 888, 211, 67),
+	"Olahraga": Rect2(284, 1014, 211, 67),
+	"Mood": Rect2(716, 762, 211, 67),
+	"Energy": Rect2(717, 888, 211, 67),
 }
 
 
@@ -130,11 +130,11 @@ const PILL_RECTS := {
 static func build_stat_bars(kertas: Control, s_data: Dictionary,
 		_on_bar_input: Callable) -> void:
 	var values := {
-		"Kepribadian1": s_data.get("kepribadian1", 0),
-		"Kepribadian2": s_data.get("kepribadian2", 0),
-		"Akademis1": s_data.get("akademis1", 0),
-		"Akademis2": s_data.get("akademis2", 0),
-		"Akademis3": s_data.get("akademis3", 0),
+		"Mood": s_data.get("mood", 0),
+		"Energy": s_data.get("energy", 0),
+		"Akademis": s_data.get("akademis", 0),
+		"SeniBudaya": s_data.get("seni_budaya", 0),
+		"Olahraga": s_data.get("olahraga", 0),
 	}
 
 	for bar_name in PILL_RECTS.keys():
@@ -240,11 +240,11 @@ static func _start_badge_pulse(badge: Control) -> void:
 	tween.tween_property(badge, "scale", Vector2.ONE, _BADGE_PULSE_SECONDS)
 
 const _STAT_ICONS: Dictionary = {
-	"Akademis1": "stat_akademis.png",
-	"Akademis2": "stat_senibudaya.png",
-	"Akademis3": "stat_olahraga.png",
-	"Kepribadian1": "stat_mood.png",
-	"Kepribadian2": "stat_energy.png",
+	"Akademis": "stat_akademis.png",
+	"SeniBudaya": "stat_senibudaya.png",
+	"Olahraga": "stat_olahraga.png",
+	"Mood": "stat_mood.png",
+	"Energy": "stat_energy.png",
 }
 
 
@@ -253,7 +253,7 @@ const _STAT_ICONS: Dictionary = {
 ## something you can press.
 ##
 ## These are siblings of the bars rather than children on purpose: the
-## tutorial addresses bars by string path (`KertasMurid1/Kepribadian1`),
+## tutorial addresses bars by string path (`KertasMurid1/Mood`),
 ## so nothing may be re-parented under them.
 static func build_icon_clusters(kertas: Control, s_data: Dictionary,
 		on_bar_input: Callable) -> void:

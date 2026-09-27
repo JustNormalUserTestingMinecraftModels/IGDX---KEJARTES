@@ -334,7 +334,7 @@ func test_track_ratio_is_progress_toward_the_target() -> void:
 
 
 ## Every degenerate input a real roster can produce. StudentData's
-## target_akademis1/2/3 all default to 50.0, but a row built with no
+## three skill targets all default to 50.0, but a row built with no
 ## student at all passes target 0.0 -- that must not divide by zero, and
 ## overshooting a target must not paint outside the rail.
 func test_track_ratio_clamps_and_survives_a_missing_target() -> void:
@@ -556,9 +556,9 @@ func test_the_card_replays_every_stat_track() -> void:
 	s.akademis = 39.0
 	s.seni_budaya = 20.0
 	s.olahraga = 10.0
-	s.target_akademis1 = 50.0
-	s.target_akademis2 = 50.0
-	s.target_akademis3 = 50.0
+	s.target_akademis = 50.0
+	s.target_seni_budaya = 50.0
+	s.target_olahraga = 50.0
 	inst.setup_row("Marcel", [
 		{"stat_key": "akademis", "delta": 6.0},
 		{"stat_key": "seni_budaya", "delta": 4.0},
@@ -591,9 +591,9 @@ func test_the_cards_three_rows_do_not_all_fill_at_once() -> void:
 	s.akademis = 39.0
 	s.seni_budaya = 20.0
 	s.olahraga = 10.0
-	s.target_akademis1 = 50.0
-	s.target_akademis2 = 50.0
-	s.target_akademis3 = 50.0
+	s.target_akademis = 50.0
+	s.target_seni_budaya = 50.0
+	s.target_olahraga = 50.0
 	inst.setup_row("Marcel", [
 		{"stat_key": "akademis", "delta": 6.0},
 		{"stat_key": "seni_budaya", "delta": 4.0},
@@ -801,17 +801,17 @@ func test_setup_row_leaves_the_needs_deltas_hidden() -> void:
 		"the daily card must not show a mood delta")
 
 
-## The naming trap this project documents in CLAUDE.md: target_akademis2
-## is the SENI target and target_akademis3 the OLAHRAGA one. Getting it
-## wrong shows the right number against the wrong icon.
+## Each skill pairs with its own target field: target_seni_budaya is the
+## SENI target and target_olahraga the OLAHRAGA one. Getting it wrong shows
+## the right number against the wrong icon.
 func test_row_pairs_each_stat_with_its_correct_target_field() -> void:
 	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
-	assert_true(src.contains("\"akademis\": \"target_akademis1\""),
-		"akademis must read target_akademis1")
-	assert_true(src.contains("\"seni_budaya\": \"target_akademis2\""),
-		"seni_budaya must read target_akademis2, not target_akademis3")
-	assert_true(src.contains("\"olahraga\": \"target_akademis3\""),
-		"olahraga must read target_akademis3")
+	assert_true(src.contains("\"akademis\": \"target_akademis\""),
+		"akademis must read target_akademis")
+	assert_true(src.contains("\"seni_budaya\": \"target_seni_budaya\""),
+		"seni_budaya must read target_seni_budaya, not target_olahraga")
+	assert_true(src.contains("\"olahraga\": \"target_olahraga\""),
+		"olahraga must read target_olahraga")
 
 
 ## The mockup shows a fixed three-row block; a card whose height varied
@@ -831,18 +831,18 @@ func test_row_always_shows_three_stat_rows() -> void:
 
 ## _sum_deltas is the only genuinely stateful logic this row adds, and it
 ## had zero behavioral coverage -- only a source-text scan confirming the
-## naming-trap dictionary literal exists, not that it's actually the value
+## TARGET_FOR dictionary literal exists, not that it's actually the value
 ## the row uses. Both checks below work on a bare instantiate()d instance
 ## with no tree attachment: _sum_deltas touches no @onready var, and
 ## TARGET_FOR is a const readable without an instance at all (same
 ## pattern this file already uses for STAT_ORDER).
 func test_row_sums_same_stat_deltas_and_reads_the_correct_target_field() -> void:
-	assert_eq(DaySummaryStudentRow.TARGET_FOR["akademis"], "target_akademis1",
-		"akademis must read target_akademis1")
-	assert_eq(DaySummaryStudentRow.TARGET_FOR["seni_budaya"], "target_akademis2",
-		"seni_budaya must read target_akademis2, not target_akademis3")
-	assert_eq(DaySummaryStudentRow.TARGET_FOR["olahraga"], "target_akademis3",
-		"olahraga must read target_akademis3, not target_akademis2")
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["akademis"], "target_akademis",
+		"akademis must read target_akademis")
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["seni_budaya"], "target_seni_budaya",
+		"seni_budaya must read target_seni_budaya, not target_olahraga")
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["olahraga"], "target_olahraga",
+		"olahraga must read target_olahraga, not target_seni_budaya")
 
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
@@ -1295,9 +1295,9 @@ func test_only_a_gaining_card_reports_ground_gained() -> void:
 
 	var student := StudentData.new()
 	student.student_name = "Shinta"
-	student.target_akademis1 = 65.0
-	student.target_akademis2 = 65.0
-	student.target_akademis3 = 65.0
+	student.target_akademis = 65.0
+	student.target_seni_budaya = 65.0
+	student.target_olahraga = 65.0
 	student.akademis = 30.0
 
 	card.setup_row("Shinta", [], student)
@@ -1502,7 +1502,7 @@ func test_event_card_shows_current_stats_and_previews() -> void:
 	var s := StudentData.new()
 	s.student_name = "Budi"
 	s.akademis = 30.0
-	s.target_akademis1 = 60.0
+	s.target_akademis = 60.0
 	s.energy = 60.0
 	s.mood = 50.0
 	card.setup(s, "Akademis")

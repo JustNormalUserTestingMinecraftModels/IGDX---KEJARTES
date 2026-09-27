@@ -465,8 +465,8 @@ func test_initialize_from_gamestate_flags_the_fallback_roster_when_empty() -> vo
 func test_initialize_from_gamestate_does_not_flag_a_real_roster() -> void:
 	var saved_roster: Array = GameState.approved_students.duplicate()
 	GameState.approved_students = [{
-		"id": 1, "name": "Uji", "akademis1": 50, "akademis2": 50, "akademis3": 50,
-		"kepribadian1": 80, "kepribadian2": 80, "quirk": "", "persona": "Aktif",
+		"id": 1, "name": "Uji", "akademis": 50, "seni_budaya": 50, "olahraga": 50,
+		"mood": 80, "energy": 80, "quirk": "", "persona": "Aktif",
 		"hobby_category": "Akademis", "portrait": "", "splash": "",
 	}]
 

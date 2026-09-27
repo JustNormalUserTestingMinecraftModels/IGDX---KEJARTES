@@ -4,7 +4,8 @@ extends RefCounted
 
 ## Which of AturJadwal's five stat bars wears a weak-stat chip (2026-09-24
 ## visual polish, D7). Pure static logic over a student dictionary, keyed by
-## the dictionary's own stat names (`akademis1/2/3`, `kepribadian1/2`).
+## the dictionary's own stat names (`akademis`, `seni_budaya`, `olahraga`,
+## `mood`, `energy`).
 ##
 ## A SKILL is weak below the student's own target for it. Early in a grade
 ## all three sit below target, so flagging every weak skill would put a chip
@@ -27,13 +28,13 @@ const LELAH := "lelah"
 
 ## The three skills, each paired with its target key.
 const _SKILLS := [
-	["akademis1", "target_akademis1"],
-	["akademis2", "target_akademis2"],
-	["akademis3", "target_akademis3"],
+	["akademis", "target_akademis"],
+	["seni_budaya", "target_seni_budaya"],
+	["olahraga", "target_olahraga"],
 ]
 
-## The two needs: kepribadian1 is mood, kepribadian2 is energy.
-const _NEEDS := ["kepribadian1", "kepribadian2"]
+## The two needs.
+const _NEEDS := ["mood", "energy"]
 
 
 ## Stat key -> chip word, for every stat that should wear a chip. A stat

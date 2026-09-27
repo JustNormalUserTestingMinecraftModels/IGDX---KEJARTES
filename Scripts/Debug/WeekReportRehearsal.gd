@@ -16,9 +16,8 @@ extends RefCounted
 ## The report scene the preview opens.
 const REPORT_SCENE := "res://Scenes/SchoolSimulation/ResultCheckup.tscn"
 
-## The three skills in the card's top-to-bottom order. These are
-## StudentData's own field names, so the akademis2/3 naming trap does not
-## apply here.
+## The three skills in the card's top-to-bottom order, by StudentData's
+## field names.
 const SKILLS := ["akademis", "seni_budaya", "olahraga"]
 
 ## Each roster slot's week, one delta per SKILLS entry. It is a ladder, so

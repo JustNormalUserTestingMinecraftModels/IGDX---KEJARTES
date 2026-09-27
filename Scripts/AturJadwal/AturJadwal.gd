@@ -76,11 +76,11 @@ const HOLIDAYS = {
 
 var _holiday_active: bool = false
 
-@onready var ak1_bar = $BGStat/Akademis1
-@onready var ak2_bar = $BGStat/Akademis2
-@onready var ak3_bar = $BGStat/Akademis3
-@onready var kp1_bar = $BGStat/Kepribadian1
-@onready var kp2_bar = $BGStat/Kepribadian2
+@onready var akademis_bar = $BGStat/Akademis
+@onready var seni_budaya_bar = $BGStat/SeniBudaya
+@onready var olahraga_bar = $BGStat/Olahraga
+@onready var mood_bar = $BGStat/Mood
+@onready var energy_bar = $BGStat/Energy
 
 @onready var senin_btn = $BGHari/Senin
 @onready var selasa_btn = $BGHari/Selasa
@@ -292,8 +292,8 @@ func _populate_default_tutorial_steps():
 
 	if tutorial_phase2_steps.is_empty():
 		var p2_data = [
-			["Evaluasi Murid", "Murid ini membutuhkan bantuan agar mereka terfokuskan untuk meningkatkan apa yang ketertinggalan.", "BGStat/Akademis1,BGStat/Akademis2,BGStat/Akademis3", ""],
-			["Perhatian Akademis", "Wah, sepertinya \"Nama Murid\" mempunyai nilai akademis yang bagus!", "BGStat/Akademis1", ""],
+			["Evaluasi Murid", "Murid ini membutuhkan bantuan agar mereka terfokuskan untuk meningkatkan apa yang ketertinggalan.", "BGStat/Akademis,BGStat/SeniBudaya,BGStat/Olahraga", ""],
+			["Perhatian Akademis", "Wah, sepertinya \"Nama Murid\" mempunyai nilai akademis yang bagus!", "BGStat/Akademis", ""],
 			["Hari Kosong", "Hari berwarnakan Ungu Muda mempunyai arti hari tersebut kosong bagi murid tersebut!", "BGHari/Senin,BGHari/Selasa,BGHari/Rabu,BGHari/Kamis,BGHari/Jumat", ""],
 			["Jadwal Hari Senin", "Mari kita jadwalkan hari senin untuk diisikan mata pelajaran yang mereka sedang butuhkan!", "BGHari/Senin", "Tekan tombol 'Senin' untuk lanjut!"]
 		]
@@ -309,7 +309,7 @@ func _populate_default_tutorial_steps():
 		var alt = TutorialStepData.new()
 		alt.title = "Perhatian Akademis"
 		alt.text = "Wah, sepertinya \"Nama Murid\" perlu nilai akademisnya untuk dinaikan lebih lagi."
-		alt.target_node_path = "BGStat/Akademis1"
+		alt.target_node_path = "BGStat/Akademis"
 		alt.prompt_text = ""
 		tutorial_phase2_alt_step = alt
 
@@ -317,7 +317,7 @@ func _populate_default_tutorial_steps():
 		var p3_data = [
 			["Penjadwalan Berhasil", "Kerja bagus!\n\nSekarang, kita perhatikan 2 unsur yang akan berubah jikalau anda meng-input sebuah hari dengan mata pelajaran.", "", ""],
 			["Warna Hari", "Pertama, hari akan berganti warna sesuai dengan warna mata pelajaran.\nBiru: Akademis, Hijau: Seni Budaya, dan Merah: Olahraga", "BGHari/Senin", ""],
-			["Perubahan Stats & Energy", "Kedua, stats akan mempunyai nilai plus berdasarkan berapa pelajaran per hari yang mereka ambil!\n\nTapi Mood dan energi mereka akan berkurang!", "BGStat/Akademis1/ValueLabel,BGStat/Akademis2/ValueLabel,BGStat/Akademis3/ValueLabel,BGStat/Kepribadian1/ValueLabel,BGStat/Kepribadian2/ValueLabel", ""],
+			["Perubahan Stats & Energy", "Kedua, stats akan mempunyai nilai plus berdasarkan berapa pelajaran per hari yang mereka ambil!\n\nTapi Mood dan energi mereka akan berkurang!", "BGStat/Akademis/ValueLabel,BGStat/SeniBudaya/ValueLabel,BGStat/Olahraga/ValueLabel,BGStat/Mood/ValueLabel,BGStat/Energy/ValueLabel", ""],
 			["Siap Mengajar!", "Wow, dirimu sangat cepat untuk beradaptasi di lingkungan sekolah ini.\nKamu punya potensi besar untuk sukses mendidik lebih jauh disini!", "", ""]
 		]
 		for entry in p3_data:
@@ -496,9 +496,9 @@ func _setup_phase1_tutorial():
 
 func _has_akademis_below_target(student: Dictionary) -> bool:
 	var pairs = [
-		["akademis1", "target_akademis1"],
-		["akademis2", "target_akademis2"],
-		["akademis3", "target_akademis3"]
+		["akademis", "target_akademis"],
+		["seni_budaya", "target_seni_budaya"],
+		["olahraga", "target_olahraga"]
 	]
 	for p in pairs:
 		var current = student.get(p[0], 0.0)
@@ -600,7 +600,7 @@ func _get_overtired_students() -> Array[String]:
 		var student_id = student.get("id", null)
 		if student_id == null:
 			continue
-		var initial_energy = student.get("kepribadian2", 50.0)
+		var initial_energy = student.get("energy", 50.0)
 		var schedules = GameState.day_schedules.get(student_id, {})
 		var total_cost := 0.0
 		for day in schedules.keys():
@@ -641,16 +641,16 @@ func _update_student_display():
 					"name": "Marcel",
 					"splash": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
 					"portrait": "res://Assets/Images/MuridPortrait/Marcel.png",
-					"kepribadian1": 60.0,
-					"kepribadian2": 55.0,
-					"akademis1": 28.0,
-					"akademis2": 48.0,
-					"akademis3": 38.0,
-					"target_akademis1": 52.0,
-					"target_akademis2": 60.0,
-					"target_akademis3": 53.0,
-					"target_kepribadian1": 50.0,
-					"target_kepribadian2": 40.0,
+					"mood": 60.0,
+					"energy": 55.0,
+					"akademis": 28.0,
+					"seni_budaya": 48.0,
+					"olahraga": 38.0,
+					"target_akademis": 52.0,
+					"target_seni_budaya": 60.0,
+					"target_olahraga": 53.0,
+					"target_mood": 50.0,
+					"target_energy": 40.0,
 					"hobby_category": "Akademis"
 				}
 
@@ -678,30 +678,29 @@ func _update_student_display():
 	var is_switch: bool = not _has_staggered_once or current_id != _last_staggered_student_id
 	var pop_bars: bool = not is_switch
 
-	# kepribadian1 is MOOD and kepribadian2 is ENERGY (GameState.gd's header).
-	# Kepribadian1 is the row under the mood icon and Kepribadian2 the row
+	# The Mood bar is the row under the mood icon and the Energy bar the row
 	# under the energy bolt. Until 2026-09-24 these two feeds were crossed,
 	# so each row showed the other need's value and weekly cost.
 	var projected := {
-		"kepribadian1": student.get("kepribadian1", 50.0) - _compute_total_loss("mood_cost"),
-		"kepribadian2": student.get("kepribadian2", 50.0) - _compute_total_loss("energy_cost"),
-		"akademis1": student.get("akademis1", 50.0) + _compute_pending_gain("Akademis", student),
-		"akademis2": student.get("akademis2", 50.0) + _compute_pending_gain("SeniBudaya", student),
-		"akademis3": student.get("akademis3", 50.0) + _compute_pending_gain("Olahraga", student),
-		"target_akademis1": student.get("target_akademis1", 65.0),
-		"target_akademis2": student.get("target_akademis2", 65.0),
-		"target_akademis3": student.get("target_akademis3", 65.0),
+		"mood": student.get("mood", 50.0) - _compute_total_loss("mood_cost"),
+		"energy": student.get("energy", 50.0) - _compute_total_loss("energy_cost"),
+		"akademis": student.get("akademis", 50.0) + _compute_pending_gain("Akademis", student),
+		"seni_budaya": student.get("seni_budaya", 50.0) + _compute_pending_gain("SeniBudaya", student),
+		"olahraga": student.get("olahraga", 50.0) + _compute_pending_gain("Olahraga", student),
+		"target_akademis": student.get("target_akademis", 65.0),
+		"target_seni_budaya": student.get("target_seni_budaya", 65.0),
+		"target_olahraga": student.get("target_olahraga", 65.0),
 	}
-	if kp1_bar:
-		_feed_stat_bar(kp1_bar, projected["kepribadian1"], 0.0, 100.0, pop_bars)
-	if kp2_bar:
-		_feed_stat_bar(kp2_bar, projected["kepribadian2"], 0.0, 100.0, pop_bars)
-	if ak1_bar:
-		_feed_stat_bar(ak1_bar, projected["akademis1"], 0.0, projected["target_akademis1"], pop_bars)
-	if ak2_bar:
-		_feed_stat_bar(ak2_bar, projected["akademis2"], 0.0, projected["target_akademis2"], pop_bars)
-	if ak3_bar:
-		_feed_stat_bar(ak3_bar, projected["akademis3"], 0.0, projected["target_akademis3"], pop_bars)
+	if mood_bar:
+		_feed_stat_bar(mood_bar, projected["mood"], 0.0, 100.0, pop_bars)
+	if energy_bar:
+		_feed_stat_bar(energy_bar, projected["energy"], 0.0, 100.0, pop_bars)
+	if akademis_bar:
+		_feed_stat_bar(akademis_bar, projected["akademis"], 0.0, projected["target_akademis"], pop_bars)
+	if seni_budaya_bar:
+		_feed_stat_bar(seni_budaya_bar, projected["seni_budaya"], 0.0, projected["target_seni_budaya"], pop_bars)
+	if olahraga_bar:
+		_feed_stat_bar(olahraga_bar, projected["olahraga"], 0.0, projected["target_olahraga"], pop_bars)
 	_update_stat_flags(projected)
 	if objective_hint_label:
 		var named := projected.duplicate()
@@ -722,8 +721,8 @@ func _update_student_display():
 func _update_stat_flags(projected: Dictionary) -> void:
 	var flags := StatFlags.flags_for(projected)
 	var bars := {
-		"akademis1": ak1_bar, "akademis2": ak2_bar, "akademis3": ak3_bar,
-		"kepribadian1": kp1_bar, "kepribadian2": kp2_bar,
+		"akademis": akademis_bar, "seni_budaya": seni_budaya_bar, "olahraga": olahraga_bar,
+		"mood": mood_bar, "energy": energy_bar,
 	}
 	for key in bars:
 		var bar: Control = bars[key]
@@ -773,9 +772,9 @@ func _stop_flag_nudge(flag: Label) -> void:
 ## the mockup's measured 126px grid and must not be moved.
 func _stagger_stat_rows() -> void:
 	var rows := []
-	for pair in [["Akademis1", "IconAkademis1"], ["Akademis2", "IconAkademis2"],
-			["Akademis3", "IconAkademis3"], ["Kepribadian2", "IconKepribadian2"],
-			["Kepribadian1", "IconKepribadian1"]]:
+	for pair in [["Akademis", "IconAkademis"], ["SeniBudaya", "IconSeniBudaya"],
+			["Olahraga", "IconOlahraga"], ["Energy", "IconEnergy"],
+			["Mood", "IconMood"]]:
 		for node_name in pair:
 			var node := get_node_or_null("BGStat/%s" % node_name)
 			if node != null:
@@ -897,7 +896,7 @@ func _get_mentally_tired_students() -> Array[String]:
 		var student_id = student.get("id", null)
 		if student_id == null:
 			continue
-		var initial_mood = student.get("kepribadian1", 50.0)
+		var initial_mood = student.get("mood", 50.0)
 		var schedules = GameState.day_schedules.get(student_id, {})
 		var total_cost := 0.0
 		for day in schedules.keys():

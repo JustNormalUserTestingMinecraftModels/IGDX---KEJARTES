@@ -15,11 +15,11 @@ func suite_name() -> String:
 func _student() -> Dictionary:
 	return {
 		"name": "Marcel",
-		"akademis1": 60.0, "target_akademis1": 60.0,
-		"akademis2": 60.0, "target_akademis2": 60.0,
-		"akademis3": 60.0, "target_akademis3": 60.0,
-		"kepribadian1": Balance.BATAS_KELELAHAN + 30.0,
-		"kepribadian2": Balance.BATAS_KELELAHAN + 30.0,
+		"akademis": 60.0, "target_akademis": 60.0,
+		"seni_budaya": 60.0, "target_seni_budaya": 60.0,
+		"olahraga": 60.0, "target_olahraga": 60.0,
+		"mood": Balance.BATAS_KELELAHAN + 30.0,
+		"energy": Balance.BATAS_KELELAHAN + 30.0,
 	}
 
 
@@ -27,8 +27,8 @@ func _student() -> Dictionary:
 ## day notes and picker already use.
 func test_the_hint_names_the_most_urgent_skill() -> void:
 	var s := _student()
-	s["akademis3"] = 20.0
-	s["akademis1"] = 50.0
+	s["olahraga"] = 20.0
+	s["akademis"] = 50.0
 	var hint := ObjectiveHint.compose(s)
 	assert_true(hint.begins_with("Marcel butuh Atletik"),
 		"Olahraga is the biggest gap, and reads 'Atletik', got: " + hint)
@@ -36,8 +36,8 @@ func test_the_hint_names_the_most_urgent_skill() -> void:
 
 func test_low_energy_adds_the_izin_warning() -> void:
 	var s := _student()
-	s["akademis1"] = 30.0
-	s["kepribadian2"] = Balance.BATAS_KELELAHAN - 1.0
+	s["akademis"] = 30.0
+	s["energy"] = Balance.BATAS_KELELAHAN - 1.0
 	var hint := ObjectiveHint.compose(s)
 	assert_true(hint.contains("Akademik"), hint)
 	assert_true(hint.contains("jaga energi biar tidak Izin"), "tired students get the Izin warning: " + hint)
@@ -45,7 +45,7 @@ func test_low_energy_adds_the_izin_warning() -> void:
 
 func test_low_mood_adds_the_mood_warning() -> void:
 	var s := _student()
-	s["kepribadian1"] = Balance.BATAS_KELELAHAN - 1.0
+	s["mood"] = Balance.BATAS_KELELAHAN - 1.0
 	var hint := ObjectiveHint.compose(s)
 	assert_true(hint.contains("mood"), "a low mood gets its own warning: " + hint)
 

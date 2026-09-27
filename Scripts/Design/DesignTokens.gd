@@ -131,8 +131,8 @@ static func load_default() -> DesignTokens:
 @export var cat_wirausaha_on_dark: Color = Color("16C79A")
 
 ## Mood and energy are NEEDS, not schedule categories, but they had no
-## colours of their own until 2026-09-09 -- the student card's two
-## Kepribadian bars were authored with category "Istirahat" and "Libur" and
+## colours of their own until 2026-09-09 -- the student card's Mood and
+## Energy bars were authored with category "Istirahat" and "Libur" and
 ## simply wore the rest and holiday accents. That was survivable while a
 ## category was only a colour. It stopped being survivable when each
 ## category got its own batik motif: mood would have been stamped with the

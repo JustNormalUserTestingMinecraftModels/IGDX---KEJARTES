@@ -9,15 +9,15 @@ extends Control
 @export_group("UI Textures (Optional Replace)")
 ## Currently unreferenced by this script -- appears unused.
 @export var icon_magnify: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_magnify.svg")
-## Icon for the "Kepribadian1" (mood) stat bar -- see _get_stat_icon().
+## Icon for the "Mood" stat bar -- see _get_stat_icon().
 @export var icon_mood: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_mood.svg")
-## Icon for the "Kepribadian2" (energy) stat bar.
+## Icon for the "Energy" stat bar.
 @export var icon_energy: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_energy.svg")
-## Icon for the "Akademis1" (academic) stat bar.
+## Icon for the "Akademis" stat bar.
 @export var icon_akademis: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_akademis.svg")
-## Icon for the "Akademis2" (seni budaya) stat bar.
+## Icon for the "SeniBudaya" stat bar.
 @export var icon_seni: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_seni.svg")
-## Icon for the "Akademis3" (olahraga) stat bar.
+## Icon for the "Olahraga" stat bar.
 @export var icon_olahraga: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg")
 
 # ================= TRAIT DESCRIPTIONS =================
@@ -238,9 +238,9 @@ func _update_page_label(index: int):
 ## The rows of one student page, top to bottom, for staggered entry.
 ## Order matters: Juice.stagger_in delays each node by one stagger_step,
 ## so this list is what the player's eye follows down the card.
-const CARD_ROW_ORDER := ["BioPanel", "IconAkademis1", "Akademis1",
-	"IconAkademis2", "Akademis2", "IconAkademis3", "Akademis3",
-	"IconKepribadian1", "Kepribadian1", "IconKepribadian2", "Kepribadian2",
+const CARD_ROW_ORDER := ["BioPanel", "IconAkademis", "Akademis",
+	"IconSeniBudaya", "SeniBudaya", "IconOlahraga", "Olahraga",
+	"IconMood", "Mood", "IconEnergy", "Energy",
 	"KutuBuku", "KutuBuku2"]
 
 
@@ -286,11 +286,11 @@ func _show_page(index: int):
 
 func _get_stat_icon(bname: String) -> Texture2D:
 	match bname:
-		"Kepribadian1": return icon_mood
-		"Kepribadian2": return icon_energy
-		"Akademis1": return icon_akademis
-		"Akademis2": return icon_seni
-		"Akademis3": return icon_olahraga
+		"Mood": return icon_mood
+		"Energy": return icon_energy
+		"Akademis": return icon_akademis
+		"SeniBudaya": return icon_seni
+		"Olahraga": return icon_olahraga
 	return null
 
 ## The accent colour a given bar wears, from DesignTokens via StatInfo.

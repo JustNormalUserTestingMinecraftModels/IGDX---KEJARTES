@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_2mn6t"]
 [ext_resource type="Script" uid="uid://btn73mrqwvf1o" path="res://Scripts/EndGame/StarMeter.gd" id="3_mu1f4"]
 [ext_resource type="Texture2D" path="res://Assets/Images/UI/star.png" id="4_qgn2j"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="amb_tint"]
 
 [node name="StatCheck" type="Control" unique_id=1602759799]
 layout_mode = 3
@@ -19,6 +20,10 @@ offset_bottom = 1920.0
 texture = ExtResource("2_2mn6t")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Tint" parent="." instance=ExtResource("amb_tint")]
+mood = 4
+strength = 0.3
 
 [node name="Scrim" type="Panel" parent="." unique_id=1681707398]
 layout_mode = 0

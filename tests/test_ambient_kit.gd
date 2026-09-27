@@ -567,3 +567,33 @@ func test_the_envelope_seal_glints() -> void:
 	var mat: Variant = _prop(_entry(c, "Bob/Seal"), "material")
 	assert_true(mat is Material and (mat as Material).resource_path == GLINT_MATERIAL,
 		"the wax seal glints")
+
+
+# ── CutScene and the exam screens (layer 0, no bloom: amendment 1) ──────────
+
+func test_cutscene_gets_a_soft_sun_and_sparkles() -> void:
+	var c := _census("res://Scenes/CutScene/CutScene.tscn")
+	var kids := _children_of(c, ".")
+	assert_eq(kids.slice(0, 3), ["BgCutScene", "Sun", "Sparkles"] as Array[String],
+		"the pieces sit right over the picture, under the dialogue and the fade")
+	assert_eq(_entry(c, "Sun").get("instance"), LIGHT_POOL, "Sun is a LightPool")
+	assert_eq(_prop(_entry(c, "Sparkles"), "preset"), AmbientParticles.Preset.KILAU, "sparkles, not dust")
+	assert_true(_entry(c, "World").is_empty(), "no World layer: the picture changes slide to slide")
+
+
+func test_the_exam_notices_wear_the_tense_mood() -> void:
+	for path in ["res://Scenes/EndGame/TesNotice.tscn", "res://Scenes/EndGame/StatCheck.tscn"]:
+		var c := _census(path)
+		var kids := _children_of(c, ".")
+		assert_eq(kids.find("Tint"), kids.find("Backdrop") + 1,
+			path + ": the tint sits directly after the backdrop, so it tints nothing else")
+		assert_eq(_entry(c, "Tint").get("instance"), MOOD_TINT, path + ": Tint is a MoodTint")
+		assert_eq(_prop(_entry(c, "Tint"), "mood"), MoodTint.Mood.TEGANG, path + ": the exam mood")
+
+
+## ExamProgress's art was left undarkened on 2026-09-20 so text_primary reads
+## at ~4.6:1 over it; a multiply would cut that (amendment 2).
+func test_exam_progress_stays_undarkened() -> void:
+	var c := _census("res://Scenes/EndGame/ExamProgress.tscn")
+	for e in c:
+		assert_ne(e["instance"], MOOD_TINT, "ExamProgress takes no tint")

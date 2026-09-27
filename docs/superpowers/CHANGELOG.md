@@ -8,6 +8,25 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-26 — Clean-code rules and ratchet (PR1 of the clean-code pass)
+
+- **Rulebook:** `docs/superpowers/design/clean-code.md` translates Codacy's
+  clean-code principles to GDScript and Godot. Spec:
+  `docs/superpowers/specs/2026-09-26-clean-code-design.md`.
+- **Ratchet:** `ci/clean_code_scan.gd` measures long functions, untyped
+  declarations, bare numbers, duplicate bodies and large scripts, plus six
+  must-be-zero rules (file names, class_name/file match, asset names,
+  misspellings, exact-case `res://` literals, legacy stat keys). Frozen in
+  the generated `ci/clean_code_baseline.gd`; exceptions in
+  `ci/clean_code_allowed.gd`. `tests/test_clean_code.gd` fails on growth and
+  on an un-locked shrink; `ci/project_check.gd` fails CI on growth and only
+  warns on a shrink.
+- **Selftest:** `ci/selftest_project_check.sh`'s broken fixtures moved to the
+  project root and each fail case must print its own reason.
+- **CLAUDE.md** back under budget: the illustration-materials paragraph moved
+  to `style-guide.md`; the MCP node gotchas and the end-of-grade rehearsal
+  note to the authoring guide.
+
 ## 2026-09-25 — UI polish batch: white confetti out, bloom off the HUD
 
 - **White confetti retired.** `CelebrationConfetti` and `ResultConfetti`

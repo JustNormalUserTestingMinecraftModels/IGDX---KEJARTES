@@ -103,6 +103,21 @@ function in `ThemeFactory.gd` (following the existing `_add_button_variation`
 / label-spec patterns), rebake, and use it by name. Do not reach for a
 per-node `theme_override_*` (see The Rule, below).
 
+## Illustration materials
+
+**Illustration plates wear one of two materials.** Cutouts take
+`illustration_grade_cutout.tres` (grade + inner AO + rim); full-bleed backdrops
+take `illustration_grade_material.tres` (grade only), because a backdrop has no
+alpha edge and would pay five texture taps per pixel for nothing. Which is
+which is pinned by `tests/test_illustration_ao.gd`'s census, measured from each
+texture's alpha. The Lobby is lit from the upper right, the rest of the game
+from the upper left: its desks wear `illustration_grade_cutout_lobby.tres` and
+its faces `illustration_grade_face.tres`, both kept equal to the cutout except
+`light_dir`. Tune them, the Lobby's shafts and its WorldEnvironment bloom live
+from the debug overlay's **Look** page, then write the landed value into the
+`.tres`. That bloom reaches only canvas layers ≤ −1: the room lives in the
+Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
+
 ## Swapping fonts
 
 See `Assets/Fonts/README.md` for the exact procedure (font files live there;

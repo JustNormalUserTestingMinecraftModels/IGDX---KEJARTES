@@ -18,10 +18,10 @@ func suite_name() -> String:
 const HUB_SCENE := "res://Scenes/Koperasi/ShopHub.tscn"
 const TILE_SCENE := "res://Scenes/Koperasi/ShopHubTile.tscn"
 const COSMETIC_SCENE := "res://Scenes/Koperasi/CosmeticShop.tscn"
-const HUB_SCRIPT := "res://Scripts/Koperasi/shop_hub.gd"
-const COSMETIC_SCRIPT := "res://Scripts/Koperasi/cosmetic_shop.gd"
-const LOBBY_SCRIPT := "res://Scripts/Lobby/loby.gd"
-const KOPRASI_SCRIPT := "res://Scripts/Koperasi/koprasi.gd"
+const HUB_SCRIPT := "res://Scripts/Koperasi/ShopHub.gd"
+const COSMETIC_SCRIPT := "res://Scripts/Koperasi/CosmeticShop.gd"
+const LOBBY_SCRIPT := "res://Scripts/Lobby/Lobby.gd"
+const KOPRASI_SCRIPT := "res://Scripts/Koperasi/Koperasi.gd"
 const DEBUG_SCRIPT := "res://Scripts/Debug/DebugManager.gd"
 
 
@@ -119,7 +119,7 @@ func test_blur_is_actually_turned_on() -> void:
 
 func test_hub_routes_to_the_two_shops() -> void:
 	var src := FileAccess.get_file_as_string(HUB_SCRIPT)
-	assert_contains(src, "res://Scenes/Koperasi/koprasi.tscn",
+	assert_contains(src, "res://Scenes/Koperasi/Koperasi.tscn",
 		"the items tile should reach the existing shop")
 	assert_contains(src, "res://Scenes/Koperasi/CosmeticShop.tscn",
 		"the cosmetics tile should reach the cosmetic stub")
@@ -129,7 +129,7 @@ func test_lobby_now_opens_the_hub_not_the_shop_directly() -> void:
 	var src := FileAccess.get_file_as_string(LOBBY_SCRIPT)
 	assert_contains(src, "res://Scenes/Koperasi/ShopHub.tscn",
 		"the Lobby's shop button should land on the hub")
-	assert_false(src.contains("res://Scenes/Koperasi/koprasi.tscn"),
+	assert_false(src.contains("res://Scenes/Koperasi/Koperasi.tscn"),
 		"the Lobby should no longer reach the item shop directly")
 
 

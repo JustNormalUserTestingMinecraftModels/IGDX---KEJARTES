@@ -16,8 +16,8 @@ scripts construct a visual node at runtime, and 22 scripts had no file header.
 Two projects made the cost concrete. `MainBola.tscn` declared every node —
 `FieldBG`, `Goalie`, `Ball`, the goalposts — with no position and no size;
 `_setup_layout()` placed all of them from magic fractions at runtime, so
-opening the scene showed an empty viewport. And `report_card.gd` and
-`student_card.gd` each carried the same 168-line stat-popup builder, verbatim
+opening the scene showed an empty viewport. And `ReportCard.gd` and
+`StudentCard.gd` each carried the same 168-line stat-popup builder, verbatim
 except for whitespace — a change to one silently didn't reach the other.
 
 ## Pattern A — static chrome lives in the scene
@@ -109,6 +109,109 @@ it onto the real screen at runtime.
 Both pass a texture-path test and fail on screen, so test the loaded rect —
 `tests/test_paper_shadow.gd` and `test_each_batik_picture_fills_its_slot`.
 
+## Tall phones: fill the screen
+
+The game runs `window/stretch/aspect="expand"`, so a 20:9 phone gets a
+1080×2400 viewport, and a 21:9 one gets 1080×2520. The editor never shows
+this: its embedded run is locked to the 360×640 window override (Godot
+logs `Embedded window can't be resized`). Author every screen at 1080×1920,
+and apply four rules (spec
+`docs/superpowers/specs/2026-09-15-tall-phone-layout-design.md`):
+
+1. **Backgrounds fill.** Use a `TextureRect` with anchors `0,0,1,1`,
+   offsets 0, `expand_mode = 1` and `stretch_mode = 6` (Keep Aspect
+   Covered). Stretch (0) distorts the art; fit (5) leaves bars.
+2. **UI sits on its edge.** Pick the preset by role: header Top Wide, back
+   button Top Left, action row Bottom Wide, card or popup Center.
+   **Re-anchor, don't move:** set the anchors, then each offset to
+   `old_global − (parent_origin + anchor × parent_size)` measured at
+   1080×1920. The node keeps its rect there and follows its edge on taller
+   screens.
+3. **UI inside the margin.** Use a Full Rect `SafeAreaMargin` named `Safe`
+   (`mouse_filter` IGNORE), holding one plain `Control` named `UI`, then
+   the edge groups. A container places its children itself, so presets on
+   `Safe`'s direct children do nothing. Inside `UI` at 1080×1920, the rect
+   is (48,48)–(1032,1872).
+4. **Pictures carry their items.** A picture and anything placed on it
+   (seats on desks, items on shelves) form one fixed-size Control, anchored
+   as a whole. The Lobby's `Classroom` is Center-anchored at 1080×1920,
+   with black behind it.
+
+**Doing it through the bridge.**
+- `reparent_node` keeps local offsets and appends the node as the last
+  child. Set its offsets explicitly afterwards, and fix its order with
+  `move_node`.
+- `reparent_node` also makes the scene root the owner of every descendant.
+  Under an **instanced** sub-scene that means the next save writes the
+  instance's internals out again as new typed nodes: StudentList's four
+  `RosterAvatar`s each gained a second `Portrait` and `Ring` (2026-09-15).
+  After reparenting an instance, diff the `.tscn`. Any
+  `[node … parent=".../<Instance>"]` block without `instance=` is spurious:
+  close the editor without saving, delete those blocks (and any
+  `ext_resource` only they used) by text, then relaunch.
+- Set `layout_mode = 1` before anchors on any Control under a plain
+  Control.
+- Mark anything a script or tutorial looks up as a unique name, and find it
+  with `%Name` or `get_node("%Name/Child")`. In a format string the prefix
+  is written `%%`, as in `"%%RosterStrip/Avatar%d" % i`. A bare `"%Roster…"`
+  reads `%R` as a format character and fails only at run time
+  (`test_unique_name_paths_are_not_format_strings`).
+
+**Testing.**
+- `tests/layout_frame.gd` stands a screen up at any size in the editor's
+  tree. It sends every Container `NOTIFICATION_SORT_CHILDREN` by hand, so
+  rects are final in the same frame. Containers otherwise sort a frame
+  late, while anchored children follow at once.
+- `tests/test_tall_screen_layout.gd` checks each screen's contract and its
+  rects at 1080×2400 and 1080×1920. Placement asserts compare the node's
+  **authored** rect (its parent's settled rect, placed by its own anchors
+  and offsets), not `get_global_rect()`. A control grows to its text's
+  minimum size, and the editor's font metrics measure wider than a
+  device's: the Lobby's `ShortenButton` draws 265 px wide in the editor
+  against its 240.
+- For a picture of the result, render the scene into 1080×1920 and
+  1080×2400 `SubViewport`s inside the running game (spec, Appendix B).
+  `bare` counts Godot's gray clear colour, and must be 0 at 2400.
+
+**Desktop preview.** To see a tall phone on the desktop, set
+`display/window/size/window_height_override` to 800 (width 360) and run:
+the embedded run then gets a 1080×2400 viewport in a 317×705 window. Set it
+back to 640 afterwards, and never commit the override.
+
+## Editor and game recipes
+
+**Clicking, when you must.** Send a `motion` event to the target before the
+`button` press — Godot will not route a click without the hover state first,
+and a bare press/release pair silently does nothing. Rescale coordinates:
+`global_rect` is in the 1080-wide design space while input events take window
+pixels, and `editor_screenshot` reports the real size as `original_width`, so
+`window_x = global_x * original_width / 1080`. Read the target's `global_rect`
+rather than eyeballing a screenshot — and re-read it after any window resize.
+
+**MCP node gotchas.** `anchors_preset` is inert (set the four anchors),
+numbers must be unquoted (`1`, not `"1.0"`), `node_create` appends last so
+z-order needs `move_node`, and a node's *type* can only be changed by
+delete-and-recreate. A `Control` created under a plain `Control` starts in
+position mode, where anchors are **not saved** — set `layout_mode = 1` first;
+and an instanced scene's root loses its rect on load under a plain `Control`,
+so draw from a child (Pattern C, above).
+
+**End-of-grade rehearsals.** The debug overlay's Scenes tab carries
+**🎭 Gladi Resik Akhir Kelas**: one-click rehearsals of
+the end-of-grade sequence with a fixed roster (*Semua Lulus*, *Semua Gagal*,
+and *Campur*, which ladders 3/2/1/0 cleared targets for 1.5 stars, a loss).
+Arming one snapshots the run; **↩ Pulihkan Run Sebelum Gladi Resik**
+restores it, which matters because RunResult otherwise advances the grade and
+clears the roster on its way out.
+
+**Rebaking without File > Run.** `Scripts/Design/BakeTheme.gd` is an
+`EditorScript` with no MCP entry point. Write a transient `@tool`
+`McpTestSuite` into `res://tests/` whose one test does `ThemeFactory.build()`
+plus `ResourceSaver.save()`, run it with `test_run`, then delete it.
+
+**Tuning how something animates** goes through the `motion-lab` skill
+(`.claude/skills/motion-lab/SKILL.md`), not edit-run-watch.
+
 ## Asset references
 
 Art a person might swap is an `@export var … : Texture2D`, so it accepts a
@@ -149,7 +252,7 @@ no regex can make.
    stating what it does *and what it affects* — the node it mutates, the
    autoload it writes, the signal it emits.
 4. **Section banners** (`# ─── Name ───`) group related members. Already used
-   in `Badminton.gd`, `MainBola.gd`, `report_card.gd`; make it universal.
+   in `Badminton.gd`, `MainBola.gd`, `ReportCard.gd`; make it universal.
 
 Worked example, from `Scripts/GameState.gd`'s header:
 
@@ -161,11 +264,9 @@ Worked example, from `Scripts/GameState.gd`'s header:
 ## current week and grade, money, and the inventory. There is deliberately no
 ## save system -- a run is session-scoped.
 ##
-## The trap: `approved_students` holds Array[Dictionary] whose keys are the
-## UI's names -- `akademis1/2/3` are academic/seni/olahraga, and
-## `kepribadian1/2` are mood/energy. StudentData, used inside the simulation,
-## has real field names instead. That mismatch is the most common source of
-## bugs here.
+## The roster: `approved_students` holds Array[Dictionary] whose stat keys
+## (`akademis`, `seni_budaya`, `olahraga`, `mood`, `energy`) are the same
+## names as StudentData's fields.
 ```
 
 Rules 1 and 2 are enforced by `tests/test_script_documentation.gd`. Rules 3
@@ -213,23 +314,23 @@ converted every shared-across-screens case (popups, cards, rows, panels
 duplicated 2-3 times) but did not attempt every remaining file. Largest
 entries, as candidates for a future pass:
 
-- `Scripts/AturJadwal/atur_jadwal.gd` (17) and `Scripts/Pengaturan.gd` (12) —
+- `Scripts/AturJadwal/AturJadwal.gd` (17) and `Scripts/Pengaturan.gd` (12) —
   each builds its own settings/tutorial chrome by hand; likely Pattern A/C
   candidates similar to TutorialPanel.
-- `Scripts/CutScene/cut_scene.gd` (15) — dialogue/choice UI, never surveyed
-  for extraction.
-- `Scripts/Minigames/UI/MinigameTutorial.gd` (12) and
-  `Scripts/SchoolSimulation/EventStudentSelectDialog.gd` (11) — both build a
-  full popup by hand; likely Pattern B candidates.
+- `Scripts/CutScene/CutScene.gd` (4) — the top bar's Skip and Debug
+  buttons; its 11-node grade-picker modal moved to the Level Select scene
+  (2026-09-25).
+- `Scripts/Minigames/UI/MinigameTutorial.gd` (12) — builds a full popup by
+  hand; a likely Pattern B candidate.
 - `Scripts/Minigames/UI/BaseMinigame.gd` (4) — `ui_layer`, `pause_button`
   (with its procedural fallback-draw `Control`), and `visual_timer` are
   built once per game session; a real extraction here needs to account for
   the procedural drawing fallback, not just move nodes into a scene.
 - The remaining minigames (`Menjodohkan.gd`, `Password.gd`, `Variabel.gd`,
   `Badminton.gd`, `MainBola.gd`, `BuatBatik.gd`, `LombaMenari.gd`, each
-  2-8) and screens (`loby.gd`, `inventory.gd`, `rakbarang_1.gd`,
-  `student_list.gd`, `StudentCardView.gd`, `DailyDecayOverview.gd`,
-  `ResultCheckup.gd`, `SchoolDay.gd`, `student_card.gd`,
+  2-8) and screens (`Lobby.gd`, `Inventory.gd`, `KoperasiStage.gd`,
+  `StudentList.gd`, `StudentCardView.gd`, `DailyDecayOverview.gd`,
+  `SchoolDay.gd`, `StudentCard.gd`,
   `TutorialArrow.gd`) — smaller counts, mostly single-purpose chrome
   (a background swap, a fallback drawer) not yet surveyed for whether a
   scene conversion is worthwhile. The 2026-09-04 reward pass converted the

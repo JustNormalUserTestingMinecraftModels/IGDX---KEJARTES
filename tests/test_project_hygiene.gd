@@ -75,7 +75,7 @@ func test_every_scene_ext_resource_uid_resolves_to_its_own_asset() -> void:
 func test_no_debug_prints_survive_in_production_scripts() -> void:
 	# Scripts/Debug/ is the in-game debug overlay -- printing is its job.
 	# Everywhere else a DEBUG print is a leftover, and they are not harmless:
-	# atur_jadwal.gd dumped the entire selected_student dictionary six times
+	# AturJadwal.gd dumped the entire selected_student dictionary six times
 	# per selection, crowding real diagnostics out of a finite log buffer.
 	var offenders: Array[String] = []
 	for script_path in _all_files_under("res://Scripts", ".gd"):
@@ -97,10 +97,55 @@ func test_no_debug_prints_survive_in_production_scripts() -> void:
 ## else in the suite asserts run/main_scene, so a stray edit would go unseen.
 func test_the_boot_scene_is_the_main_menu() -> void:
 	var main_scene: String = ProjectSettings.get_setting("application/run/main_scene", "")
-	assert_eq(main_scene, "res://Scenes/MainMenu/main_menu.tscn",
+	assert_eq(main_scene, "res://Scenes/MainMenu/MainMenu.tscn",
 		"run/main_scene")
 	assert_true(ResourceLoader.exists(main_scene),
 		"the boot scene must actually exist")
+
+
+## Two rendering settings the 2026-09-22 crispness pass turned on. Both are
+## one-line project settings with no other trace in the repo, so nothing else
+## would notice if a merge or an editor session dropped them.
+##
+## `default_texture_filter = 3` is Linear Mipmap. It is safe to set globally
+## only because 383 of the project's 412 textures are imported with
+## `mipmaps/generate=false` and therefore carry a single mip level: a
+## mipmapped sampler on a 1-mip texture can only ever read level 0, so the
+## bar-fill tiles, `tray_dots.png` and every 9-sliced StyleBox are provably
+## unaffected. Pinned by tests/test_texture_mipmaps.gd, which fails if that
+## premise stops holding. NOTE the enum here is NOT CanvasItem's: in
+## ProjectSettings 0=Nearest, 1=Linear, 2=Nearest Mipmap, 3=Linear Mipmap,
+## while CanvasItem.TEXTURE_FILTER_LINEAR is 2 and its
+## LINEAR_WITH_MIPMAPS is 4.
+func test_the_rendering_crispness_settings_are_on() -> void:
+	assert_eq(
+		ProjectSettings.get_setting("rendering/textures/canvas_textures/default_texture_filter", -1),
+		3, "canvas textures must sample mipmaps, or every generated mip chain is dead weight")
+	assert_eq(
+		ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_2d", -1),
+		1, "MSAA 2D at 2x: antialiases TouchFeedbackEffect's ripple circles on "
+			+ "every screen, plus the rotated StickyNote and BookClockWidget quads")
+
+
+## Why both VRAM variants are imported even though this is a desktop editor.
+##
+## Sixteen textures are VRAM-compressed. With both of these settings false --
+## which is how the project stood until 2026-09-22 -- no machine imports a
+## deterministic set, so each one rewrites those .import files to whatever it
+## needs and they flip-flop in git forever. That is the churn the premium-look
+## handoff described as machine noise to be reverted before every commit; it
+## was a missing setting. With both true, a cold boot plus a full suite run
+## leaves `git status` clean.
+##
+## Turning either off reintroduces the churn, and turning etc2 off would also
+## ship an Android build with no ETC2 textures.
+func test_both_vram_variants_are_imported_so_the_import_files_stay_stable() -> void:
+	assert_true(
+		ProjectSettings.get_setting("rendering/textures/vram_compression/import_s3tc_bptc", false),
+		"without this, every desktop machine rewrites the VRAM .import files")
+	assert_true(
+		ProjectSettings.get_setting("rendering/textures/vram_compression/import_etc2_astc", false),
+		"without this, the committed .import files and an Android build disagree")
 
 
 func test_the_run_result_icons_all_exist_and_load_as_textures() -> void:

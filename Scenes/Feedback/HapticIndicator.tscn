@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://ygnsvmfx1ww8"]
+
+[ext_resource type="Script" path="res://Scripts/Feedback/HapticIndicator.gd" id="1_3pqi0"]
+
+[node name="HapticIndicator" type="CanvasLayer" unique_id=1953619473]
+script = ExtResource("1_3pqi0")
+
+[node name="Pip" type="Panel" parent="." unique_id=1446980414]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -244.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 80.0
+
+[node name="Text" type="Label" parent="Pip" unique_id=1562628510]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+horizontal_alignment = 1
+vertical_alignment = 1

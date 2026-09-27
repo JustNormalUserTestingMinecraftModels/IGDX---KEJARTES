@@ -12,6 +12,13 @@ class_name WeekRecap
 ## Nothing here is persisted. The week's totals are recomputed on demand
 ## from the live StudentManager, matching GameState's session-scoped
 ## design.
+##
+## One caveat on money_earned: SchoolDay pays the Wirausaha earnings out --
+## emptying GameState.pending_earnings, which is what _sum_pending_earnings
+## reads -- before it opens ResultCheckup, so by then this read is 0.
+## ResultCheckup.initialize_checkup() takes the paid total as an argument
+## and overwrites the key. The read still stands for a caller that has not
+## paid out yet, which is why it is computed here at all.
 
 ## The three skill keys that count toward net_skill_delta. energy and
 ## mood are deliberately absent: summing a mood drop into the same
@@ -37,6 +44,7 @@ static func compute(manager: StudentManager) -> Dictionary:
 		"money_earned": _sum_pending_earnings(),
 		"net_skill_delta": 0,
 		"minigames_won": 0,
+		"minigames_lost": 0,
 		"minigames_total": 0,
 		"events_count": 0,
 	}
@@ -57,13 +65,17 @@ static func compute(manager: StudentManager) -> Dictionary:
 			result["minigames_total"] += 1
 			if entry.get("won", false):
 				result["minigames_won"] += 1
+			else:
+				result["minigames_lost"] += 1
 
 	return result
 
 
 ## This week's un-paid Wirausaha earnings. GameState empties
-## pending_earnings at week end, so this must be read before SchoolDay's
-## payout, which is exactly when ResultCheckup runs.
+## pending_earnings at week end, so this only reports anything to a caller
+## that runs BEFORE SchoolDay's payout. ResultCheckup no longer does --
+## 6043538 moved the payout ahead of the screen -- so it hands the paid
+## total to initialize_checkup(), which overwrites money_earned with it.
 static func _sum_pending_earnings() -> int:
 	var total := 0
 	for amount in GameState.pending_earnings.values():

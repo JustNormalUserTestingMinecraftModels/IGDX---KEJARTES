@@ -4,9 +4,9 @@ extends Node
 ## The shop's item catalog.
 ##
 ## An autoload. Builds one ItemData resource per entry in DEFAULT_ITEMS on
-## `_ready()` and hands them out by name (get_item) or at random
-## (get_random_items, used to stock rakbarang_1.gd's shelf buttons each
-## time the shop panel opens). To add a new shop item, add an entry to
+## `_ready()` and hands them out by name (get_item), all at once
+## (get_all_items, which GameState.shop_stock_for_week() reads once a
+## week to stock the Koperasi shelf) or at random (get_random_items). To add a new shop item, add an entry to
 ## DEFAULT_ITEMS -- there is no other registration path.
 
 # item_name -> ItemData
@@ -19,7 +19,7 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"price": 500,
 		"category": "Buku",
 		"desc": "Bundel soal-soal ujian tahun lalu; latihan paling ampuh sebelum tes.",
-		"icon_path": "res://Assets/Images/Shop/ItemRak/bank soal.png",
+		"icon_path": "res://Assets/Images/Shop/ItemRak/bank_soal.png",
 		"display_size": Vector2(220, 280),
 		"mood": 10,
 		"energy": 5,
@@ -52,7 +52,7 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"price": 1200,
 		"category": "Olahraga",
 		"desc": "Tali lompat warna-warni; pemanasan seru yang bikin badan segar.",
-		"icon_path": "res://Assets/Images/Shop/ItemRak/lompat tali.png",
+		"icon_path": "res://Assets/Images/Shop/ItemRak/lompat_tali.png",
 		"display_size": Vector2(240, 220),
 		"mood": 20,
 		"energy": 15,
@@ -94,7 +94,7 @@ const DEFAULT_ITEMS: Array[Dictionary] = [
 		"price": 800,
 		"category": "Makanan",
 		"desc": "Es blender manis warna cerah yang langsung menaikkan mood.",
-		"icon_path": "res://Assets/Images/Shop/ItemRak/pop es.png",
+		"icon_path": "res://Assets/Images/Shop/ItemRak/pop_es.png",
 		"display_size": Vector2(160, 240),
 		"mood": 25,
 		"energy": 15

@@ -1,0 +1,113 @@
+[gd_scene format=3 uid="uid://bykt6v8q1l6uk"]
+
+[ext_resource type="Script" uid="uid://c5ug46uv27y75" path="res://Scripts/LevelSelect/AmplopCard.gd" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://nxvgsh84yxa1" path="res://Assets/Images/LevelSelect/amplop_body.png" id="2_clx53"]
+[ext_resource type="Texture2D" uid="uid://bsdbnippnb6mv" path="res://Assets/Images/LevelSelect/amplop_flap.png" id="3_xsbwf"]
+[ext_resource type="Texture2D" uid="uid://miibmp1nm7ie" path="res://Assets/Images/LevelSelect/amplop_flap_back.png" id="4_owlmd"]
+[ext_resource type="Texture2D" uid="uid://cprjhjr0so80i" path="res://Assets/Images/LevelSelect/amplop_seal.png" id="5_8wf17"]
+[ext_resource type="PackedScene" uid="uid://bdfwfoth4k3ke" path="res://Scenes/LevelSelect/PupilPeek.tscn" id="5_peek"]
+
+[node name="AmplopCard" type="Control" unique_id=981813998]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("1_card")
+envelope_texture = ExtResource("2_clx53")
+flap_texture = ExtResource("3_xsbwf")
+flap_back_texture = ExtResource("4_owlmd")
+seal_texture = ExtResource("5_8wf17")
+
+[node name="Bob" type="Control" parent="." unique_id=1894068810]
+layout_mode = 1
+anchors_preset = 0
+offset_left = -200.0
+offset_top = -526.0
+offset_right = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(200, 526)
+mouse_filter = 2
+
+[node name="Pupils" type="HBoxContainer" parent="Bob" unique_id=2112051273]
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 10.0
+offset_top = 40.0
+offset_right = -10.0
+offset_bottom = 150.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = -14
+alignment = 1
+
+[node name="Pupil1" parent="Bob/Pupils" unique_id=1237575317 instance=ExtResource("5_peek")]
+layout_mode = 2
+
+[node name="Pupil2" parent="Bob/Pupils" unique_id=968959786 instance=ExtResource("5_peek")]
+layout_mode = 2
+
+[node name="Pupil3" parent="Bob/Pupils" unique_id=1480802902 instance=ExtResource("5_peek")]
+layout_mode = 2
+
+[node name="Pupil4" parent="Bob/Pupils" unique_id=1881908709 instance=ExtResource("5_peek")]
+layout_mode = 2
+
+[node name="Body" type="TextureRect" parent="Bob" unique_id=1144283692]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_clx53")
+expand_mode = 1
+
+[node name="Flap" type="TextureRect" parent="Bob" unique_id=155083400]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+pivot_offset = Vector2(200, 5)
+mouse_filter = 2
+texture = ExtResource("3_xsbwf")
+expand_mode = 1
+
+[node name="Seal" type="TextureRect" parent="Bob" unique_id=473202652]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+pivot_offset = Vector2(207, 72)
+mouse_filter = 2
+texture = ExtResource("5_8wf17")
+expand_mode = 1
+
+[node name="Tab" type="Button" parent="Bob" unique_id=1532278677]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -130.0
+offset_top = -84.0
+offset_right = 130.0
+offset_bottom = 8.0
+grow_horizontal = 2
+focus_mode = 0
+mouse_filter = 2
+theme_type_variation = &"TraitPill"
+text = "Kelas 7"
+
+[node name="HitButton" type="Button" parent="." unique_id=1513491593]
+layout_mode = 1
+offset_left = -200.0
+offset_top = -610.0
+offset_right = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 0
+theme_type_variation = &"GhostButton"

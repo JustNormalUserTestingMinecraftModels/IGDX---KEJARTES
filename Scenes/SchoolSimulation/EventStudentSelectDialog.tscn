@@ -15,6 +15,15 @@ grow_vertical = 2
 script = ExtResource("1_dialog")
 background_texture = ExtResource("2_l76hw")
 
+[node name="Background" type="TextureRect" parent="." unique_id=1897042375]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
 [node name="BackgroundDim" type="Panel" parent="." unique_id=1350618391]
 layout_mode = 1
 anchors_preset = 15

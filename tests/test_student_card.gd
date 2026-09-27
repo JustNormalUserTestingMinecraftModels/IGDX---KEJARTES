@@ -20,8 +20,8 @@ extends McpTestSuite
 ##    instantiated under the editor's own root, so the baked theme is
 ##    assigned explicitly before the scene enters the tree.
 
-const _SCENE_PATH := "res://Scenes/StudentCard/student_card.tscn"
-const _SCRIPT_PATH := "res://Scripts/StudentCard/student_card.gd"
+const _SCENE_PATH := "res://Scenes/StudentCard/StudentCard.tscn"
+const _SCRIPT_PATH := "res://Scripts/StudentCard/StudentCard.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 
@@ -58,7 +58,7 @@ func test_approved_students_contract_is_intact() -> void:
 
 func test_still_routes_to_the_lobby() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_true(src.contains("res://Scenes/Lobby/Lobby.tscn"),
 		"student_card must still route to the lobby")
 
 
@@ -104,7 +104,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 	var paths := [
 		"KertasMurid1/Aprove", "KertasMurid1/Batal",
 		"KertasMurid1/KutuBuku", "KertasMurid1/KutuBuku2",
-		"BelajarButton", "NextButtonKanan", "NextButtonKiri",
+		"BelajarButton", "%NextButtonKanan", "%NextButtonKiri",
 	]
 	for p in paths:
 		var b := _card.get_node_or_null(p) as Control
@@ -120,24 +120,24 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
-## Kepribadian1 and Kepribadian2 are mood and energy. They were authored
-## as "Istirahat" and "Libur" and so wore the rest and holiday accents,
-## which held only while a category was nothing but a colour. Once each
-## category gained its own motif they needed their own identity, or mood
-## would have been stamped with the rest motif and energy the holiday one.
+## The Mood and Energy bars were authored as "Istirahat" and "Libur" and so
+## wore the rest and holiday accents, which held only while a category was
+## nothing but a colour. Once each category gained its own motif they needed
+## their own identity, or mood would have been stamped with the rest motif
+## and energy the holiday one.
 ##
-## Which is which is settled by StudentCardView._STAT_ICONS, where
-## Kepribadian1 pairs with stat_mood.png and Kepribadian2 with
-## stat_energy.png -- and by build_stat_bars(), which maps them straight
-## through. populate() used to set the two crossed over; that contradiction
-## was deleted rather than pinned here.
+## Which is which is settled by StudentCardView._STAT_ICONS, where Mood
+## pairs with stat_mood.png and Energy with stat_energy.png -- and by
+## build_stat_bars(), which maps them straight through. populate() used to
+## set the two crossed over; that contradiction was deleted rather than
+## pinned here.
 func test_stat_bars_are_statbars_with_a_category() -> void:
 	var expected := {
-		"Kepribadian1": "Mood",
-		"Kepribadian2": "Energy",
-		"Akademis1": "Akademis",
-		"Akademis2": "SeniBudaya",
-		"Akademis3": "Olahraga",
+		"Mood": "Mood",
+		"Energy": "Energy",
+		"Akademis": "Akademis",
+		"SeniBudaya": "SeniBudaya",
+		"Olahraga": "Olahraga",
 	}
 	for i in range(1, 7):
 		for bar_name in expected.keys():
@@ -158,7 +158,9 @@ func test_action_buttons_use_theme_variations() -> void:
 		# (the lobby's CLAIM) and DangerButton for something discarded
 		# (quitting a minigame mid-run).
 		"KertasMurid1/Aprove": &"PrimaryButtonL",
-		"KertasMurid1/Batal": &"SecondaryButtonL",
+		# StudentCard keeps the cream secondary it had before the 2026-09-14
+		# lobby-style-buttons pass turned every other SecondaryButton brown.
+		"KertasMurid1/Batal": &"StudentCardSecondaryButtonL",
 		"KertasMurid1/KutuBuku": &"TraitPill",
 		"KertasMurid1/KutuBuku2": &"TraitPill",
 		"BelajarButton": &"PrimaryButtonL",
@@ -175,7 +177,7 @@ func test_motion_and_audio_feedback_are_wired() -> void:
 		"student pages must stagger in on entry")
 	# The stat and trait detail popups' pop-in reveal now lives in the shared
 	# scenes they were extracted into (StatDetailPopup.gd / TraitDetailPopup.gd),
-	# not in student_card.gd itself -- that's the point of the extraction.
+	# not in StudentCard.gd itself -- that's the point of the extraction.
 	var stat_popup_src := FileAccess.get_file_as_string("res://Scripts/UI/StatDetailPopup.gd")
 	var trait_popup_src := FileAccess.get_file_as_string("res://Scripts/UI/TraitDetailPopup.gd")
 	assert_true(stat_popup_src.contains("Juice.pop_in"),
@@ -189,6 +191,60 @@ func test_motion_and_audio_feedback_are_wired() -> void:
 
 
 # ------------------------------------------------------ StudentCardView
+
+## _transition_page captures belajar_orig_pos before the page changes, which
+## for a still-hidden button is its authored rect. It then calls
+## _update_nav_buttons -> _shift_approve_for_belajar, which tweens the button
+## to the correct spot beside Aprove/Batal -- and used to follow that with a
+## second tween back to the stale belajar_orig_pos, undoing it. The swipe that
+## first revealed BELAJAR therefore flew it off the bottom of the screen.
+## The reveal belongs to _shift_approve_for_belajar alone, which parks the
+## button off-screen right and slides it in on every page change
+## (_reset_all_approve_positions clears approve_shifted first).
+func test_page_transition_leaves_the_belajar_slide_to_the_shift() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var start := src.find("func _transition_page")
+	assert_true(start != -1, "_transition_page is gone")
+	if start == -1:
+		return
+	var body := src.substr(start)
+	var stop := body.find("func _update_nav_buttons")
+	assert_true(stop != -1, "_update_nav_buttons must follow _transition_page")
+	if stop == -1:
+		return
+	body = body.substr(0, stop)
+	assert_false(body.contains("tween_in.tween_property(belajar_button"),
+		"_transition_page must not tween belajar_button back to the position " +
+		"it captured before the page changed -- that undoes the shift")
+	assert_true(body.contains("tween_out.tween_property(belajar_button"),
+		"the button must still be thrown off with the old card")
+
+
+## _transition_page parks the incoming card a full screen-width off to the
+## side and only then tweens it home -- and it calls _update_nav_buttons, and
+## so _shift_approve_for_belajar, while the card is still parked there. A
+## target computed from the card's live position therefore lands BELAJAR a
+## screen-width out (measured at 1640 on a 1080x2400 phone, against Batal's
+## 30). The settled position is the original_position meta, which
+## _transition_page itself already trusts as the tween's destination.
+func test_the_belajar_shift_reads_the_cards_settled_position() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var start := src.find("func _shift_approve_for_belajar")
+	assert_true(start != -1, "_shift_approve_for_belajar is gone")
+	if start == -1:
+		return
+	var body := src.substr(start)
+	var stop := body.find("func _reset_approve_position")
+	assert_true(stop != -1, "_reset_approve_position must follow the shift")
+	if stop == -1:
+		return
+	body = body.substr(0, stop)
+	assert_true(body.contains("original_position"),
+		"the shift must place BELAJAR from the card's settled " +
+		"original_position meta, not from its mid-animation position")
+	assert_false(body.contains("var kertas_pos = active_kertas.position"),
+		"active_kertas.position is the parked position during a page change")
+
 
 func test_student_card_view_class_exists() -> void:
 	assert_true(ResourceLoader.exists("res://Scripts/StudentCard/StudentCardView.gd"),
@@ -205,15 +261,15 @@ func test_persona_descriptions_are_available_from_the_view() -> void:
 		"Persona Tekun must have a description")
 
 func test_student_card_delegates_to_the_view() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")
 	assert_true(src.contains("StudentCardView."),
 		"student_card must consume the shared view, not duplicate it")
 
 func test_tutorial_target_node_paths_are_unchanged() -> void:
 	## The tutorial steps target node paths by string. The extraction must
 	## not move any of them.
-	var scene := (load("res://Scenes/StudentCard/student_card.tscn") as PackedScene).instantiate()
-	for path in ["KertasMurid1/Kepribadian1", "KertasMurid1/KutuBuku"]:
+	var scene := (load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene).instantiate()
+	for path in ["KertasMurid1/Mood", "KertasMurid1/KutuBuku"]:
 		assert_true(scene.get_node_or_null(path) != null,
 			"tutorial target must still resolve: " + path)
 	scene.free()

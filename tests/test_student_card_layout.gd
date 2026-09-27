@@ -8,6 +8,10 @@ extends McpTestSuite
 
 const _ART := "res://Assets/Images/StudentCard/"
 
+## Settles Containers in the same frame: since the 2026-09-15 tall-phone
+## pass the page arrows and PageLabel sit in Safe/UI/BottomBar.
+const LayoutFrame := preload("res://tests/layout_frame.gd")
+
 const _EXPECTED_ART: Array[String] = [
 	"card_bg.png", "pill_fill.png", "trait_button.png", "icon_info.png",
 	"stat_akademis.png", "stat_senibudaya.png", "stat_olahraga.png",
@@ -42,31 +46,31 @@ const _BIO := {
 
 
 func test_roster_carries_gender_and_birth_date() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")
 	for student_name in _BIO.keys():
 		var gender: String = _BIO[student_name][0]
 		var born: String = _BIO[student_name][1]
 		assert_true(src.contains('"jenis_kelamin": "%s"' % gender),
-			"student_card.gd must declare jenis_kelamin %s for %s" % [gender, student_name])
+			"StudentCard.gd must declare jenis_kelamin %s for %s" % [gender, student_name])
 		assert_true(src.contains('"tanggal_lahir": "%s"' % born),
-			"student_card.gd must declare tanggal_lahir %s for %s" % [born, student_name])
+			"StudentCard.gd must declare tanggal_lahir %s for %s" % [born, student_name])
 
 
 ## ReportCard never hardcodes student data -- it reads
-## GameState.approved_students live (report_card.gd:52), which
-## student_card.gd populates directly from its own student_data_list
-## entries (student_card.gd:1421). So the new bio fields reach ReportCard
-## automatically once they exist on student_card.gd's dictionaries; this
+## GameState.approved_students live (ReportCard.gd:52), which
+## StudentCard.gd populates directly from its own student_data_list
+## entries (StudentCard.gd:1421). So the new bio fields reach ReportCard
+## automatically once they exist on StudentCard.gd's dictionaries; this
 ## pins that the propagation path itself stays intact.
 func test_report_card_still_reads_approved_students_live() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/report_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/ReportCard.gd")
 	assert_true(src.contains("student_data_list = GameState.approved_students"),
-		"report_card.gd must keep reading the live roster, not a hardcoded copy")
+		"ReportCard.gd must keep reading the live roster, not a hardcoded copy")
 
 
 const _SCENES := [
-	"res://Scenes/StudentCard/student_card.tscn",
-	"res://Scenes/ReportCard/report_card.tscn",
+	"res://Scenes/StudentCard/StudentCard.tscn",
+	"res://Scenes/ReportCard/ReportCard.tscn",
 ]
 
 
@@ -98,11 +102,11 @@ func test_cards_use_the_new_background() -> void:
 ## The painted tracks are at fixed pixel positions in the card art, so the
 ## fills must land exactly on them.
 const _EXPECTED_PILLS := {
-	"Akademis1": Rect2(284, 763, 211, 67),
-	"Akademis2": Rect2(284, 888, 211, 67),
-	"Akademis3": Rect2(284, 1014, 211, 67),
-	"Kepribadian1": Rect2(716, 762, 211, 67),
-	"Kepribadian2": Rect2(717, 888, 211, 67),
+	"Akademis": Rect2(284, 763, 211, 67),
+	"SeniBudaya": Rect2(284, 888, 211, 67),
+	"Olahraga": Rect2(284, 1014, 211, 67),
+	"Mood": Rect2(716, 762, 211, 67),
+	"Energy": Rect2(717, 888, 211, 67),
 }
 
 
@@ -182,8 +186,8 @@ func test_an_unknown_category_falls_back_to_a_real_variation() -> void:
 ## has to clear the touch minimum on its own.
 ##
 ## A source scan, not a live instantiation: build_icon_clusters only runs
-## from populate(), which student_card.gd's _ready() calls -- and
-## student_card.gd is deliberately not @tool, so _ready() never fires just
+## from populate(), which StudentCard.gd's _ready() calls -- and
+## StudentCard.gd is deliberately not @tool, so _ready() never fires just
 ## from instantiating the scene in a test (see student_card's suite header
 ## for the precedent). Every other test in this suite that needs to check
 ## StudentCardView's behaviour uses the same technique.
@@ -206,14 +210,15 @@ func test_icon_clusters_exist_and_meet_the_touch_target() -> void:
 		"icon cluster is %d px, below the %d px minimum"
 			% [int(icon_size), tokens.touch_target_min])
 
-	# Scoped to the _STAT_ICONS block specifically -- "Akademis1": also
-	# appears in PILL_RECTS and build_stat_bars' values dict, so a bare
-	# src.contains() would still pass even if _STAT_ICONS lost an entry.
+	# Scoped to the _STAT_ICONS block specifically -- "Akademis": also
+	# appears in PILL_RECTS, build_stat_bars' values dict and _MINAT_NAMES,
+	# so a bare src.contains() would still pass even if _STAT_ICONS lost an
+	# entry.
 	var stat_icons_start := src.find("const _STAT_ICONS")
 	assert_true(stat_icons_start != -1, "_STAT_ICONS constant must exist")
 	var stat_icons_end := src.find("}", stat_icons_start)
 	var stat_icons_block := src.substr(stat_icons_start, stat_icons_end - stat_icons_start)
-	for bar_name in ["Akademis1", "Akademis2", "Akademis3", "Kepribadian1", "Kepribadian2"]:
+	for bar_name in ["Akademis", "SeniBudaya", "Olahraga", "Mood", "Energy"]:
 		assert_true(stat_icons_block.contains('"%s": "stat_' % bar_name),
 			"_STAT_ICONS must map an icon for " + bar_name)
 
@@ -228,7 +233,7 @@ func test_the_pill_no_longer_takes_input() -> void:
 
 
 ## Source scan, not live instantiation: build_bio_panel only runs from
-## populate(), which student_card.gd's _ready() calls -- and student_card.gd
+## populate(), which StudentCard.gd's _ready() calls -- and StudentCard.gd
 ## is deliberately not @tool, so _ready() never fires just from
 ## instantiating the scene in a test (same reasoning as
 ## test_icon_clusters_exist_and_meet_the_touch_target above).
@@ -271,15 +276,18 @@ func test_bio_panel_sits_inside_the_painted_panel() -> void:
 
 
 ## The redesign's bio panel and icon clusters replace what these four
-## labels used to show; the nodes themselves are removed from every card
-## in both scenes, not just hidden at runtime.
+## labels used to show; the Label nodes themselves are removed from every
+## card in both scenes, not just hidden at runtime.
 func test_superseded_labels_are_removed_from_the_scenes() -> void:
 	for scene_path in _SCENES:
 		var src := FileAccess.get_file_as_string(scene_path)
 		for i in range(1, 7):
+			# Since the stat-key rename, "Akademis" is also the academic stat
+			# bar, a ProgressBar that stays. Only a Label of that name (the old
+			# "SKILL" heading) is superseded, hence the type-qualified match.
 			for label_name in ["Nama", "Profil", "Kepribadian", "Akademis"]:
 				assert_false(src.contains('[node name="%s" type="Label" parent="KertasMurid%d"' % [label_name, i]),
-					"%s must not declare KertasMurid%d/%s" % [scene_path, i, label_name])
+					"%s must not declare a Label KertasMurid%d/%s" % [scene_path, i, label_name])
 
 
 ## The ~240px band between the stat bars and the trait pills was dead
@@ -302,7 +310,7 @@ func test_every_card_shows_the_students_specialty() -> void:
 						% [node_name, i]),
 					"%s missing KertasMurid%d/%s" % [scene_path, i, node_name])
 
-	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var scene := load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene
 	var inst := scene.instantiate()
 	track(inst)
 	var card := inst.get_node("KertasMurid1") as Control
@@ -355,7 +363,7 @@ func test_trait_buttons_use_the_trait_pill_variation() -> void:
 ## on the exact string -- so the redesign changes only how they are shown.
 func test_trait_values_are_unchanged() -> void:
 	var src := FileAccess.get_file_as_string(
-		"res://Scripts/StudentCard/student_card.gd")
+		"res://Scripts/StudentCard/StudentCard.gd")
 	for quirk in ["Kutu Buku", "Semangat Juang", "Penasaran",
 			"Penyendiri", "Biang Onar", "Pekerja Keras"]:
 		assert_true(src.contains('"quirk": "%s"' % quirk),
@@ -368,18 +376,19 @@ func test_trait_values_are_unchanged() -> void:
 ## Checked across all six cards so it cannot recur, per scene.
 ##
 ## The two scenes used to carry DIFFERENT pinned geometry, because the
-## pills were moved on student_card.tscn alone to clear its Approve button
-## while report_card.tscn kept the original. Shortening the painted paper
+## pills were moved on StudentCard.tscn alone to clear its Approve button
+## while ReportCard.tscn kept the original. Shortening the painted paper
 ## (its bottom edge is now y=1559, down from 1716) ended that: on BOTH
 ## scenes the lower pill spilled past the paper's edge -- report_card's
 ## worst, at 1530-1629, seventy pixels of pill on bare desk. The pills are
 ## now one shared rect on both scenes, so there is a single geometry to
 ## reason about and the divergence cannot silently return.
 ##
-## The band they live in was made by moving the three Akademis bars up 50px
-## (they sit on blank paper -- nothing is painted under them), which frees
-## room for SifatPasifLabel at 1318-1370 and the two 70px pills at
-## 1378-1448 and 1456-1526, closing 33px clear of the paper's edge.
+## The band they live in was made by moving the three skill bars (Akademis,
+## SeniBudaya, Olahraga) up 50px (they sit on blank paper -- nothing is
+## painted under them), which frees room for SifatPasifLabel at 1318-1370
+## and the two 70px pills at 1378-1448 and 1456-1526, closing 33px clear of
+## the paper's edge.
 ## Anchors are now 0 with absolute offsets: the old fractional anchors
 ## (0.7474, 0.786, 0.848) made every move a division and hid what row the
 ## pill actually landed on.
@@ -446,7 +455,7 @@ func test_the_lower_card_stack_stays_on_the_paper() -> void:
 		inst.size = Vector2(1080, 1920)
 		for i in range(1, 7):
 			var card := inst.get_node("KertasMurid%d" % i) as Control
-			for child_name in ["Akademis3", "SifatPasifLabel", "KutuBuku", "KutuBuku2"]:
+			for child_name in ["Olahraga", "SifatPasifLabel", "KutuBuku", "KutuBuku2"]:
 				var node := card.get_node_or_null(child_name) as Control
 				assert_true(node != null,
 					"%s KertasMurid%d/%s missing" % [scene_path, i, child_name])
@@ -462,14 +471,14 @@ func test_the_lower_card_stack_stays_on_the_paper() -> void:
 ## card and checks the pills' ACTUAL resolved Rect2 against their
 ## neighbors -- the check the source-text scan structurally cannot do.
 func test_trait_pills_do_not_overlap_neighbors() -> void:
-	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var scene := load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene
 	var inst := scene.instantiate()
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 	inst.size = Vector2(1080, 1920)
 	# In reading order down the card. Checked pairwise rather than only
 	# against the pills, because the pass that moved the pills left
-	# SifatPasifLabel (1330-1395) sitting 25px inside Akademis3's bar
+	# SifatPasifLabel (1330-1395) sitting 25px inside Olahraga's bar
 	# (1287-1355) -- an overlap between two nodes neither of which was a
 	# pill, which is exactly why the old three-way check missed it.
 	#
@@ -480,8 +489,8 @@ func test_trait_pills_do_not_overlap_neighbors() -> void:
 	# a pass that "made room" by moving the bars in the scene changed
 	# nothing on screen. Reading PILL_RECTS here keeps the test measuring
 	# the layout the player sees.
-	var stack := ["Kepribadian1", "Kepribadian2", "Akademis1", "Akademis2",
-		"Akademis3", "MinatLabel", "MinatValue", "SifatPasifLabel",
+	var stack := ["Mood", "Energy", "Akademis", "SeniBudaya",
+		"Olahraga", "MinatLabel", "MinatValue", "SifatPasifLabel",
 		"KutuBuku", "KutuBuku2", "Aprove"]
 	for i in range(1, 7):
 		var card := inst.get_node("KertasMurid%d" % i)
@@ -503,7 +512,7 @@ func _resolved_rect(card: Node, child_name: String) -> Rect2:
 	return (card.get_node("%s" % child_name) as Control).get_rect()
 
 
-## PageLabel is NOT empty -- student_card.gd:717 sets its text every page turn
+## PageLabel is NOT empty -- StudentCard.gd:717 sets its text every page turn
 ## ("page_label.text = str(index + 1) + "/" + str(kertas_murid.size())"), so
 ## it renders "1/6" etc. at runtime. It genuinely overlapped the Persona
 ## trait pill on screen. That overlap was previously missed because
@@ -517,18 +526,21 @@ func _resolved_rect(card: Node, child_name: String) -> Rect2:
 ## PageLabel now sits centred between the two page arrows (root offsets
 ## x 20-140 and x 800-920, y 1516-1636). This instantiates the scene and
 ## checks the label's resolved global rect against the trait pill it used
-## to clip, in both student_card.tscn and report_card.tscn.
+## to clip, in both StudentCard.tscn and ReportCard.tscn.
 func test_page_label_sits_between_the_arrows() -> void:
 	for scene_path in [
-		"res://Scenes/StudentCard/student_card.tscn",
-		"res://Scenes/ReportCard/report_card.tscn",
+		"res://Scenes/StudentCard/StudentCard.tscn",
+		"res://Scenes/ReportCard/ReportCard.tscn",
 	]:
 		var scene := load(scene_path) as PackedScene
 		var inst := scene.instantiate()
 		Engine.get_main_loop().root.add_child(inst)
 		track(inst)
 		inst.size = Vector2(1080, 1920)
-		var page_label := inst.get_node("PageLabel") as Control
+		LayoutFrame.settle(inst)
+		var page_label := inst.get_node_or_null("%PageLabel") as Control
+		if page_label == null:
+			page_label = inst.get_node("PageLabel") as Control
 		var card := inst.get_node("KertasMurid1") as Control
 		var kutu2 := card.get_node("KutuBuku2") as Control
 		assert_false(page_label.get_global_rect().intersects(kutu2.get_global_rect()),
@@ -620,14 +632,15 @@ const _MIN_ARROW_GAP := 15.0
 
 
 func test_the_action_row_is_not_crowded_against_the_paper() -> void:
-	var scene := load("res://Scenes/StudentCard/student_card.tscn") as PackedScene
+	var scene := load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene
 	var inst := scene.instantiate()
 	Engine.get_main_loop().root.add_child(inst)
 	track(inst)
 	inst.size = Vector2(1080, 1920)
+	LayoutFrame.settle(inst)
 
-	var left_arrow := inst.get_node("NextButtonKiri") as Control
-	var right_arrow := inst.get_node("NextButtonKanan") as Control
+	var left_arrow := inst.get_node("%NextButtonKiri") as Control
+	var right_arrow := inst.get_node("%NextButtonKanan") as Control
 
 	for i in range(1, 7):
 		var card := inst.get_node("KertasMurid%d" % i) as Control

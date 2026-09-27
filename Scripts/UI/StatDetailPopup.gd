@@ -5,8 +5,8 @@ extends CanvasLayer
 
 ## The stat-detail modal a player gets by tapping a bar on a student card.
 ##
-## Instantiated by Scripts/ReportCard/report_card.gd and
-## Scripts/StudentCard/student_card.gd, which previously each carried their
+## Instantiated by Scripts/ReportCard/ReportCard.gd and
+## Scripts/StudentCard/StudentCard.gd, which previously each carried their
 ## own verbatim copy of this as 168 lines of runtime construction. Every node
 ## it draws now lives in Scenes/UI/StatDetailPopup.tscn, so the layout is
 ## editable in the 2D viewport.

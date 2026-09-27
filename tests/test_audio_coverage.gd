@@ -64,13 +64,16 @@ func _scan_for_audio_loads(path: String, offenders: Array[String]) -> void:
 
 
 func test_student_card_interactions_have_sfx() -> void:
-	var src := _source("res://Scripts/StudentCard/student_card.gd")
-	for id in ["swipe", "stamp", "unstamp"]:
+	var src := _source("res://Scripts/StudentCard/StudentCard.gd")
+	# card_flip replaced the generic `swipe` on the page turn with the
+	# 2026-09-21 pack: these are paper cards turning. ReportCard and
+	# StatCheck still use `swipe`, where nothing is a card.
+	for id in ["card_flip", "stamp", "unstamp"]:
 		assert_true(src.contains('play_sfx(&"%s")' % id),
 			"student_card must play sfx: " + id)
 	# popup_open/popup_close now live in the shared popup scenes student_card
 	# instantiates (StatDetailPopup.gd, TraitDetailPopup.gd), not in
-	# student_card.gd itself.
+	# StudentCard.gd itself.
 	var stat_popup_src := _source("res://Scripts/UI/StatDetailPopup.gd")
 	var trait_popup_src := _source("res://Scripts/UI/TraitDetailPopup.gd")
 	for id in ["popup_open", "popup_close"]:
@@ -81,20 +84,23 @@ func test_student_card_interactions_have_sfx() -> void:
 
 
 func test_lobby_interactions_have_sfx() -> void:
-	var src := _source("res://Scripts/Lobby/loby.gd")
-	for id in ["reward", "popup_open"]:
-		assert_true(src.contains('play_sfx(&"%s")' % id),
-			"loby must play sfx: " + id)
+	var src := _source("res://Scripts/Lobby/Lobby.gd")
+	assert_true(src.contains('play_sfx(&"popup_open")'),
+		"loby must play sfx: popup_open")
+	# The daily-login claim's reward now routes through RewardFeedback
+	# (coins_earned) instead of a lone play_sfx(&"reward") -- 2026-09-23 pass.
+	assert_true(src.contains('RewardFeedback.play(&"coins_earned"'),
+		"loby claim must route its reward through RewardFeedback")
 
 
 func test_student_list_interactions_have_sfx() -> void:
-	var src := _source("res://Scripts/StudentList/student_list.gd")
+	var src := _source("res://Scripts/StudentList/StudentList.gd")
 	assert_true(src.contains('play_sfx(&"select")'),
 		"student_list must play sfx: select")
 
 
 func test_atur_jadwal_interactions_have_sfx() -> void:
-	var src := _source("res://Scripts/AturJadwal/atur_jadwal.gd")
+	var src := _source("res://Scripts/AturJadwal/AturJadwal.gd")
 	for id in ["select", "popup_open", "popup_close", "error"]:
 		assert_true(src.contains('play_sfx(&"%s")' % id),
 			"atur_jadwal must play sfx: " + id)
@@ -102,35 +108,43 @@ func test_atur_jadwal_interactions_have_sfx() -> void:
 
 func test_school_day_has_sfx_at_all() -> void:
 	var src := _source("res://Scripts/SchoolSimulation/SchoolDay.gd")
-	for id in ["popup_open", "reward"]:
+	assert_true(src.contains('RewardFeedback.play(&"week_cleared"'),
+		"SchoolDay must route the week-clear reward through RewardFeedback")
+	# The mid-day interruption cue moved into the sliding EventWarning
+	# (2026-09-12): it plays event_announce once per warning, so SchoolDay
+	# no longer plays its own popup_open before a minigame or event.
+	var warning_src := _source("res://Scripts/SchoolSimulation/EventWarning.gd")
+	assert_true(warning_src.contains('play_sfx(&"event_announce")'),
+		"EventWarning must play sfx: event_announce")
+
+
+## Grade selection moved from CutScene's modal to the Level Select
+## (2026-09-25): the paging cue as the fan shuffles, a pop as an envelope
+## opens, confirm on Terima Tugas and cancel on Batal.
+func test_level_select_grade_selection_has_sfx() -> void:
+	var src := _source("res://Scripts/LevelSelect/LevelSelect.gd")
+	for id in ["swipe", "pop", "confirm", "cancel"]:
 		assert_true(src.contains('play_sfx(&"%s")' % id),
-			"SchoolDay must play sfx: " + id)
-
-
-func test_cutscene_grade_selection_has_sfx() -> void:
-	var src := _source("res://Scripts/CutScene/cut_scene.gd")
-	assert_true(src.contains('play_sfx(&"select")'),
-		"cut_scene must play sfx on grade selection")
+			"level_select must play sfx: " + id)
 
 
 func test_every_play_sfx_id_in_the_project_is_known() -> void:
 	# Guards against typos: a misspelled id is silently dropped by
 	# _resolve_sfx's fallback, so it would never surface at runtime.
-	var known := ["tap", "confirm", "cancel", "success", "fail", "coin",
-		"whoosh", "pop", "swipe", "stamp", "unstamp", "popup_open",
-		"popup_close", "select", "error", "reward", "tally", "sparkle",
-		"specialty_match",
-		"pill_tap", "pill_popup_open", "pill_popup_close", "pane_swipe",
-		"star_earn_1", "star_earn_2", "star_earn_3", "result_fanfare",
-		"score_tick", "combo_up", "event_announce",
-		]
+	#
+	# The known set is asked of AudioDirector rather than listed here. It used
+	# to be a hand-written copy of _resolve_sfx's match arms, which meant every
+	# new cue had to be added in two places and the suite failed on the second
+	# one -- a maintenance tax that taught nothing. has_sfx() is the real
+	# authority, and asking it also catches an id that has a match arm but an
+	# empty slot, which a literal list never could.
 	var bad: Array[String] = []
-	_scan_for_sfx_ids("res://Scripts", known, bad)
+	_scan_for_sfx_ids("res://Scripts", bad)
 	assert_true(bad.is_empty(),
 		"unknown sfx ids used: " + ", ".join(bad))
 
 
-func _scan_for_sfx_ids(path: String, known: Array, bad: Array[String]) -> void:
+func _scan_for_sfx_ids(path: String, bad: Array[String]) -> void:
 	var dir := DirAccess.open(path)
 	if dir == null:
 		return
@@ -139,16 +153,69 @@ func _scan_for_sfx_ids(path: String, known: Array, bad: Array[String]) -> void:
 	while name != "":
 		var full := path + "/" + name
 		if dir.current_is_dir():
-			_scan_for_sfx_ids(full, known, bad)
+			_scan_for_sfx_ids(full, bad)
 		elif name.ends_with(".gd"):
 			var regex := RegEx.new()
 			regex.compile('play_sfx\\(&"([a-z_]+)"')
 			for m in regex.search_all(_source(full)):
 				var id := m.get_string(1)
-				if not known.has(id) and not bad.has(id):
+				if not AudioDirector.has_sfx(StringName(id)) and not bad.has(id):
 					bad.append("%s in %s" % [id, full])
 		name = dir.get_next()
 	dir.list_dir_end()
+
+
+# ----------------------------------------- the Drive pack's call sites, 2026-09-21
+
+## Source scans, like the rest of this suite. What this buys: the call site
+## exists and uses an id AudioDirector knows. What it does NOT buy: that the
+## cue fires at the right moment, or once rather than twice -- only listening
+## to a real week does that, which is why the plan pairs this with a playtest.
+func test_each_screen_reaches_its_new_cue() -> void:
+	var expected := {
+		"res://Scripts/SchoolSimulation/SchoolDay.gd": ["school_bell"],
+		"res://Scripts/StudentCard/StudentCard.gd": ["card_flip"],
+		"res://Scripts/SchoolSimulation/ResultCheckup.gd": ["result_checkup"],
+		"res://Scripts/Koperasi/Koperasi.gd": ["transaction"],
+		"res://Scripts/Koperasi/KoperasiStage.gd": ["shop_browse"],
+	}
+	for path in expected:
+		var src := _source(path)
+		for id in expected[path]:
+			assert_true(src.contains('play_sfx(&"%s"' % id),
+				'%s must call play_sfx(&"%s")' % [path, id])
+
+
+## The randomised families reach their minigames through play_sfx_variant,
+## not play_sfx -- a family is an Array, and play_sfx takes one stream.
+func test_the_variant_families_reach_their_minigames() -> void:
+	var expected := {
+		"res://Scripts/Transition/Transition.gd": "transition_sweep",
+		"res://Scripts/Minigames/Olahraga/MainBola.gd": "ball_kick",
+		"res://Scripts/Minigames/Olahraga/Badminton.gd": "racket_hit",
+	}
+	for path in expected:
+		assert_true(_source(path).contains('play_sfx_variant(&"%s"' % expected[path]),
+			'%s must call play_sfx_variant(&"%s")' % [path, expected[path]])
+
+
+## Ambience is a bed with a stop, not a one-shot. A screen that starts one
+## and never stops it leaves a classroom murmuring under the shop.
+func test_school_day_starts_and_stops_its_ambience() -> void:
+	var src := _source("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("play_ambience("),
+		"SchoolDay must start an ambience bed")
+	assert_true(src.contains("stop_ambience()"),
+		"SchoolDay must stop its ambience bed when the week ends")
+
+
+## The pack added 49 files, so the temptation to preload one directly in a
+## screen is highest right now. Re-assert the rule this suite already owns.
+func test_no_screen_loads_an_audio_file_directly_still_holds() -> void:
+	var offenders: Array[String] = []
+	_scan_for_audio_loads("res://Scripts", offenders)
+	assert_true(offenders.is_empty(),
+		"scripts must not load audio directly: " + ", ".join(offenders))
 
 
 func test_day_summary_popup_has_sfx() -> void:
@@ -167,8 +234,11 @@ func test_daily_decay_overview_has_sfx() -> void:
 
 func test_result_checkup_has_sfx() -> void:
 	var src := _source("res://Scripts/SchoolSimulation/ResultCheckup.gd")
-	assert_true(src.contains('play_sfx(&"popup_open")'),
-		"ResultCheckup must play sfx: popup_open")
+	# result_checkup replaced popup_open on arrival with the 2026-09-21 pack:
+	# the report is a screen arriving, not a popup opening, and two cues on
+	# one beat is the double-fire this suite guards against below.
+	assert_true(src.contains('play_sfx(&"result_checkup")'),
+		"ResultCheckup must play sfx: result_checkup")
 	assert_true(src.contains('play_sfx(&"confirm")'),
 		"ResultCheckup must play sfx: confirm")
 
@@ -184,26 +254,47 @@ func test_result_checkup_has_sfx() -> void:
 
 ## Reviewed exceptions: a function that plays two sfx cues with no
 ## await between them, where that is a deliberate "two is fine" combo
-## (see student_card.gd's _on_belajar_pressed note) rather than a bug.
+## (see StudentCard.gd's _on_belajar_pressed note) rather than a bug.
 ## Keyed "res://path.gd:func_name". Every entry must be justified here.
 const _DOUBLE_FIRE_ALLOWLIST := {
 	# select (choosing an activity) + popup_close (the sheet closing as a
 	# direct result of that choice) -- two cues, not three, and the close
 	# is a consequence of the same tap, matching the project's existing
 	# "two is fine" convention.
-	"res://Scripts/AturJadwal/atur_jadwal.gd:_on_activity_selected": "select + popup_close from the same tap, reviewed",
+	"res://Scripts/AturJadwal/AturJadwal.gd:_on_activity_selected": "select + popup_close from the same tap, reviewed",
 	# error (this day is locked) + popup_open (the warning explaining why)
 	# -- explicitly required together by this fix wave's popup-open pass.
-	"res://Scripts/AturJadwal/atur_jadwal.gd:_on_day_pressed": "error + popup_open, both required by spec R2",
+	"res://Scripts/AturJadwal/AturJadwal.gd:_on_day_pressed": "error + popup_open, both required by spec R2",
 	# _show_peringatan()'s popup_open + this function's own "fail" --
 	# opening the warning dialog and rejecting the action it warns about
 	# are one player action, pre-existing before this pass.
-	"res://Scripts/AturJadwal/atur_jadwal.gd:_show_combined_warning": "popup_open (via _show_peringatan) + fail, reviewed",
-	"res://Scripts/AturJadwal/atur_jadwal.gd:_show_incomplete_schedule_warning": "popup_open (via _show_peringatan) + fail, reviewed",
+	"res://Scripts/AturJadwal/AturJadwal.gd:_show_combined_warning": "popup_open (via _show_peringatan) + fail, reviewed",
+	"res://Scripts/AturJadwal/AturJadwal.gd:_show_incomplete_schedule_warning": "popup_open (via _show_peringatan) + fail, reviewed",
 	# _update_money_display()'s conditional "coin" (only when the balance
 	# actually rose) + this function's own "reward" chime -- the coin bump
 	# and the claim confirmation are one player action, pre-existing.
-	"res://Scripts/Lobby/loby.gd:_on_claim_pressed": "coin (via _update_money_display) + reward, reviewed",
+	"res://Scripts/Lobby/Lobby.gd:_on_claim_pressed": "coin (via _update_money_display) + reward, reviewed",
+	# ---- 2026-09-21 sound pack. Four entries, all limitations of this
+	# scanner rather than real stacking. Each was checked by reading the
+	# function, not by assuming.
+	#
+	# The warning paths (_show_*_warning, each ending in `return`) and
+	# _proceed_start_week's schedule_confirm are mutually exclusive: exactly
+	# one of them runs per press. The scanner cannot see that exclusion
+	# through a call into another function, only through an inline
+	# elif/else, so it pairs a warning's cue with the chime.
+	"res://Scripts/AturJadwal/AturJadwal.gd:_on_start_week_pressed": "warning cue and schedule_confirm are mutually exclusive branches, reviewed",
+	# _run_day's two events are `await _run_single_day()` (school_bell) and
+	# _on_week_complete() (reward). There IS an await between them -- it is
+	# on the first event's own line, and the scanner only counts an await
+	# found on a line strictly between the two.
+	"res://Scripts/SchoolSimulation/SchoolDay.gd:_run_day": "await is on the event's own line; five days separate the bell from the week's end",
+	# start_simulation's only event is its tail call to _run_day, which the
+	# entry above covers. It inherits the pairing transitively.
+	"res://Scripts/SchoolSimulation/SchoolDay.gd:start_simulation": "inherits _run_day's pairing; a whole week separates the two cues",
+	# cancel (leaving the screen) + the week-advance path's own cue, with
+	# a tween and a scene change between them.
+	"res://Scripts/SchoolSimulation/SchoolDay.gd:_on_back_pressed": "cancel then the week-advance cue, separated by a tween and a scene change, reviewed",
 }
 
 
@@ -338,16 +429,16 @@ func _check_file_for_double_sfx(path: String, offenders: Array[String]) -> void:
 
 func test_title_intro_result_screens_start_their_bgm() -> void:
 	var expected := {
-		"res://Scripts/Splashscreen/splashscreen.gd": 'play_bgm(&"titlescreen")',
-		"res://Scripts/MainMenu/main_menu.gd": 'play_bgm(&"titlescreen")',
+		"res://Scripts/Splashscreen/Splashscreen.gd": 'play_bgm(&"titlescreen")',
+		"res://Scripts/MainMenu/MainMenu.gd": 'play_bgm(&"titlescreen")',
 		"res://Scripts/UI/Settings.gd": 'play_bgm(&"titlescreen")',
 	}
 	for path in expected:
 		assert_true(_source(path).contains(expected[path]),
 			"%s must call AudioDirector.%s" % [path, expected[path]])
-	var cutscene_src := _source("res://Scripts/CutScene/cut_scene.gd")
+	var cutscene_src := _source("res://Scripts/CutScene/CutScene.gd")
 	assert_true(cutscene_src.contains('play_bgm(&"introcutscene")'),
-		"cut_scene.gd must play the intro track")
+		"CutScene.gd must play the intro track")
 	# result_win / result_lose moved off SemesterEnd when StatCheck replaced
 	# it, and now start on the end cutscene -- one scene, one of two exported
 	# ids chosen by the verdict, so the ids are asserted on the scene rather
@@ -381,10 +472,10 @@ func test_school_day_pauses_and_resumes_around_minigames() -> void:
 
 func test_lobby_family_screens_use_the_playlist_not_plain_play_bgm() -> void:
 	for path in [
-		"res://Scripts/Lobby/loby.gd",
-		"res://Scripts/StudentCard/student_card.gd",
-		"res://Scripts/StudentList/student_list.gd",
-		"res://Scripts/AturJadwal/atur_jadwal.gd",
+		"res://Scripts/Lobby/Lobby.gd",
+		"res://Scripts/StudentCard/StudentCard.gd",
+		"res://Scripts/StudentList/StudentList.gd",
+		"res://Scripts/AturJadwal/AturJadwal.gd",
 	]:
 		var src := _source(path)
 		assert_true(src.contains('play_bgm_playlist(&"lobby")'),
@@ -407,8 +498,45 @@ func test_every_reward_cue_resolves_to_a_real_stream() -> void:
 
 
 ## specialty_match (the 2026-09-04 AturJadwal specialty-match gold burst cue)
-## is assigned only in audio_director.tscn via the editor, never via a
+## is assigned only in AudioDirector.tscn via the editor, never via a
 ## script preload, so nothing else in this suite proves it resolves.
 func test_specialty_match_cue_resolves_to_a_real_stream() -> void:
 	assert_true(AudioDirector.has_sfx(&"specialty_match"),
 		"specialty_match resolves to a stream")
+
+
+func test_flagship_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/SchoolSimulation/SchoolDay.gd": &"week_cleared",
+		"res://Scripts/Lobby/Lobby.gd": &"coins_earned",
+	}
+	for path in expected:
+		var src := _source(path)
+		assert_true(src.contains('RewardFeedback.play(&"%s"' % expected[path]),
+			'%s must call RewardFeedback.play(&"%s")' % [path, expected[path]])
+
+
+func test_sim_shop_inventory_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd": [&"stat_gain", &"stat_loss"],
+		"res://Scripts/AturJadwal/AturJadwal.gd": [&"schedule_confirmed", &"specialty_match"],
+		"res://Scripts/Inventory/ApplyStudentRow.gd": [&"item_applied"],
+	}
+	for path in expected:
+		var src := _source(path)
+		for m in expected[path]:
+			assert_true(src.contains('RewardFeedback.play(&"%s"' % m),
+				'%s must call RewardFeedback.play(&"%s")' % [path, m])
+
+
+func test_minigame_achievement_endgame_moments_call_reward_feedback() -> void:
+	var expected := {
+		"res://Scripts/Minigames/UI/MinigameResultPopup.gd": &"minigame_win",
+		"res://Scripts/Achievements/AchievementClaimPopup.gd": &"achievement_claimed",
+		"res://Scripts/EndGame/EndCutscene.gd": &"badge_reveal",
+		"res://Scripts/EndGame/RunResult.gd": &"run_win",
+	}
+	for path in expected:
+		var src := _source(path)
+		assert_true(src.contains('RewardFeedback.play(&"%s"' % expected[path]),
+			'%s must call RewardFeedback.play(&"%s")' % [path, expected[path]])

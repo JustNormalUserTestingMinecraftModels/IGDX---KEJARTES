@@ -131,8 +131,8 @@ static func load_default() -> DesignTokens:
 @export var cat_wirausaha_on_dark: Color = Color("16C79A")
 
 ## Mood and energy are NEEDS, not schedule categories, but they had no
-## colours of their own until 2026-09-09 -- the student card's two
-## Kepribadian bars were authored with category "Istirahat" and "Libur" and
+## colours of their own until 2026-09-09 -- the student card's Mood and
+## Energy bars were authored with category "Istirahat" and "Libur" and
 ## simply wore the rest and holiday accents. That was survivable while a
 ## category was only a colour. It stopped being survivable when each
 ## category got its own batik motif: mood would have been stamped with the
@@ -160,6 +160,25 @@ static func load_default() -> DesignTokens:
 @export var state_danger: Color = Color("C0392B")
 ## Coin/money label colour -- CoinLabel, ShopCoinLabel, ResultHeroLabel.
 @export var currency_gold: Color = Color("ffc93c")
+
+@export_group("Koperasi")
+## The price tag's resting pill (PriceTag). Bright green so a price reads as
+## "you can buy this" against the shelf's warm wood.
+@export var koperasi_tag_fill: Color = Color("639922")
+## The resting pill's border (PriceTag).
+@export var koperasi_tag_border: Color = Color("3B6D11")
+## The dark green the buy wipe paints across the pill, and PriceTagPressed's fill.
+@export var koperasi_tag_pressed_fill: Color = Color("2F5A0D")
+## PriceTagPressed's border.
+@export var koperasi_tag_pressed_border: Color = Color("173404")
+## PriceTagDisabled's fill: the neutral grey of an item the player cannot afford.
+@export var koperasi_tag_disabled_fill: Color = Color("B4B2A9")
+## PriceTagDisabled's border.
+@export var koperasi_tag_disabled_border: Color = Color("5F5E5A")
+## The basket tray's cream surface (BasketTray).
+@export var koperasi_tray_fill: Color = Color("FBEBC8")
+## The tray's amber: its top rule, the plank items stand on, the ×N badge rim.
+@export var koperasi_tray_rule: Color = Color("A86A1C")
 
 @export_group("Radii")
 ## Unused since the mockup-rescale that moved the schedule pill's corner
@@ -227,6 +246,10 @@ static func load_default() -> DesignTokens:
 ## The theme's default_font, applied project-wide unless a variation
 ## overrides it with font_display.
 @export var font_body: FontFile
+## Bold body face (Open Sans Bold) for EventDialogueText, DayBannerLabel and
+## CalendarLabel: mockup_eventdialogue.png sets its line, day and week in it.
+## Null falls back to font_body.
+@export var font_body_bold: FontFile = preload("res://Assets/Fonts/OpenSans-Bold.ttf")
 ## Font size for MicroLabel.
 @export var font_micro: int = 18
 ## Font size for CaptionLabel, StatBar's value label, ResultBodyLabel.
@@ -262,7 +285,7 @@ static func load_default() -> DesignTokens:
 
 @export_group("Layout")
 ## Minimum touch-friendly control size (px) -- checked directly by
-## cut_scene.gd for its tap targets, not consumed by ThemeFactory.
+## CutScene.gd for its tap targets, not consumed by ThemeFactory.
 @export var touch_target_min: int = 96
 ## Screen-edge margin (px) -- SafeAreaMargin's default inset, and
 ## ThemeFactory's schedule-preview layout margin.
@@ -335,6 +358,15 @@ static func load_default() -> DesignTokens:
 ## icons and the +N/T numbers alike.
 @export var day_glyph_outline: Color = Color("2E2118")
 
+## Weekly Results banner fill: the mockup's butter yellow (2026-09-19).
+@export var recap_banner_fill: Color = Color("FFE17D")
+## Weekly Results tile fill: near-white, so the icons read on it.
+@export var recap_tile_fill: Color = Color("F6F4F2")
+## Weekly Results' Logs button face: the ribbon's red (C00000), lightened.
+@export var result_logs_fill: Color = Color("E0574B")
+## The Logs button's bevel, under result_logs_fill.
+@export var result_logs_dark: Color = Color("A8342A")
+
 ## Geometry measured off the mockup, in game pixels (mockup is 1:1).
 ## Corner radius of the avatar frame.
 @export var day_avatar_radius: int = 22
@@ -354,6 +386,24 @@ static func load_default() -> DesignTokens:
 ## under ~32 unless EnergyBar/MoodBar's own width also grows -- see
 ## test_needs_bar_word_fits_its_pill.
 @export var day_needs_label_size: int = 30
+
+## Event warning (2026-09-12 slide warning, mockup_eventwarning.png).
+## The full-screen panel the warning slides through the screen on.
+@export var event_warning_bg: Color = Color("9E8830")
+## The navy of eventwarning_icon.png's outline. The caption's rim wears it,
+## so the words and the megaphone read as one mark.
+@export var event_warning_ink: Color = Color("1D196E")
+## Thickness of the warning caption's navy rim, in design pixels.
+@export var event_warning_caption_outline: int = 16
+
+## Minigame win screen (2026-09-25, minigamewinscreen_mockup.jpeg).
+## The card's fill: the mockup card's mid-tone. Its top-to-bottom gradient is
+## dropped for one flat fill.
+@export var minigame_win_card: Color = Color("E8EDCD")
+## Radius of the card's two top corners; its bottom meets the screen edge.
+@export var minigame_win_card_radius: int = 72
+## Font size of the win screen's "+8" / "-5" stat numbers, off the mockup.
+@export var minigame_win_stat_size: int = 96
 
 
 ## Resolve a schedule category name to its accent color.

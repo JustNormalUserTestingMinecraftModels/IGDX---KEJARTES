@@ -8,10 +8,10 @@ records where each one came from, for reference.
 |---|---|
 | `titlescreen.mp3` | fiikuri — "Epic Nusantara" (free gamelan music from Indonesian), track 328513 |
 | `introcutscene.mp3` | intro cutscene theme |
-| `loby_song1.mp3` | lofi_nemuko, track 212393 |
-| `loby_song2.mp3` | viyn — "Cotton Candy" (loop version), track 13253 |
-| `loby_song3.mp3` | loby song 3 |
-| `loby_song4.mp3` | loby song 4 |
+| `lobby_song1.mp3` | lofi_nemuko, track 212393 |
+| `lobby_song2.mp3` | viyn — "Cotton Candy" (loop version), track 13253 |
+| `lobby_song3.mp3` | loby song 3 |
+| `lobby_song4.mp3` | loby song 4 |
 | `schoolsimulation.mp3` | school day loop |
 | `result_win.mp3` | sounovamusic — "Nusantara Calling", track 576659 |
 | `result_lose.wav` | extenz — game over stinger |

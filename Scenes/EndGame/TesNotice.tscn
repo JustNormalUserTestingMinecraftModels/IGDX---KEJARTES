@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://c3m6bwb8d6l28" path="res://Scripts/EndGame/TesNotice.gd" id="1_2b1jg"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_jutky"]
 [ext_resource type="Texture2D" uid="uid://b0xshiyjwr8x6" path="res://Assets/Images/UI/notice.png" id="3_y2lp5"]
+[ext_resource type="Texture2D" uid="uid://bvm7lkgmoqcn" path="res://Assets/Images/EndGame/ujian_nasional.png" id="4_jutky"]
 
 [node name="TesNotice" type="Control" unique_id=1139053777]
 layout_mode = 3
@@ -68,11 +69,13 @@ theme_type_variation = &"CaptionLabel"
 text = "PENGUMUMAN"
 horizontal_alignment = 1
 
-[node name="TitleLabel" type="Label" parent="MarginContainer/NoticeCard/Content" unique_id=1581973245]
+[node name="TitleArt" type="TextureRect" parent="MarginContainer/NoticeCard/Content" unique_id=1802483726]
+custom_minimum_size = Vector2(0, 540)
 layout_mode = 2
-theme_type_variation = &"DisplayLabel"
-text = "TES BESAR SEKOLAH"
-horizontal_alignment = 1
+mouse_filter = 2
+texture = ExtResource("4_jutky")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="GradeLabel" type="Label" parent="MarginContainer/NoticeCard/Content" unique_id=1335832646]
 layout_mode = 2

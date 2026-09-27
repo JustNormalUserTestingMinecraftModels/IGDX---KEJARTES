@@ -11,6 +11,9 @@ extends RefCounted
 ## Set this meta on a Button to exclude it from UIPolish auto-juicing.
 const NO_AUTO_JUICE := &"no_auto_juice"
 
+## How far punch() overshoots before settling back to unit scale.
+const PUNCH_SCALE := 1.3
+
 static var _tokens: DesignTokens
 
 
@@ -53,9 +56,12 @@ static func release(node: Control) -> void:
 	tw.tween_property(node, "scale", Vector2.ONE, t.dur_fast)
 
 
-static func pop_in(node: Control, delay: float = 0.0) -> void:
+## Grow a node in from 0.82 scale and zero alpha. Returns the tween so a
+## caller can stop it mid-flight -- a skipped reveal must not let a
+## half-faded node keep fading over the state it landed on.
+static func pop_in(node: Control, delay: float = 0.0) -> Tween:
 	if not _alive(node):
-		return
+		return null
 	var t := tokens()
 	set_pivot_center(node)
 	node.scale = Vector2(0.82, 0.82)
@@ -65,6 +71,44 @@ static func pop_in(node: Control, delay: float = 0.0) -> void:
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK).set_delay(delay)
 	tw.tween_property(node, "modulate:a", 1.0, t.dur_fast) \
 		.set_ease(Tween.EASE_OUT).set_delay(delay)
+	return tw
+
+
+## A number "landing": a scale-only overshoot to PUNCH_SCALE and back,
+## about `pivot` (node-local). Pass text_center(label) for a label whose
+## text does not fill its rect, so the pop grows from the number itself
+## rather than from the middle of an empty box. A negative pivot means the
+## node's centre. Scale only -- pop_in's fade would blink the number out.
+static func punch(node: Control, pivot: Vector2 = Vector2(-1.0, -1.0)) -> Tween:
+	if not _alive(node):
+		return null
+	var t := tokens()
+	node.pivot_offset = node.size * 0.5 if pivot.x < 0.0 else pivot
+	node.scale = Vector2.ONE
+	var tw := node.create_tween()
+	tw.tween_property(node, "scale", Vector2(PUNCH_SCALE, PUNCH_SCALE), t.dur_instant) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(node, "scale", Vector2.ONE, t.dur_normal) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	return tw
+
+
+## The centre of a label's rendered text, in the label's own space: where
+## the words actually are, which for a left- or right-aligned label on a
+## wide rect is nowhere near size / 2. Honours horizontal_alignment; the
+## vertical centre is the rect's, where every single-line label here sits.
+static func text_center(label: Label) -> Vector2:
+	if not _alive(label):
+		return Vector2.ZERO
+	var font := label.get_theme_font(&"font")
+	var font_size := label.get_theme_font_size(&"font_size")
+	var width := font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var x := label.size.x * 0.5
+	if label.horizontal_alignment == HORIZONTAL_ALIGNMENT_LEFT:
+		x = width * 0.5
+	elif label.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT:
+		x = label.size.x - width * 0.5
+	return Vector2(x, label.size.y * 0.5)
 
 
 static func fade_in(node: CanvasItem, delay: float = 0.0) -> void:
@@ -113,11 +157,13 @@ static func count_up(label: Label, from: float, to: float, fmt: String = "%d") -
 ## more than one number (a signed delta beside a fixed target, e.g.
 ## "+12/65"). `formatter` takes the interpolated value and returns the
 ## full label text; `delay` matches pop_in/fill_bar's, so this can be
-## staggered alongside a bar it travels with.
+## staggered alongside a bar it travels with. `duration` defaults to
+## tokens.dur_slow; the weekly reveal passes its own count_seconds. Returns
+## the tween so a caller can stop it.
 static func count_up_formatted(label: Label, from: float, to: float,
-		formatter: Callable, delay: float = 0.0) -> void:
+		formatter: Callable, delay: float = 0.0, duration: float = -1.0) -> Tween:
 	if not _alive(label):
-		return
+		return null
 	var t := tokens()
 	label.text = formatter.call(from)
 	var tw := label.create_tween()
@@ -126,10 +172,11 @@ static func count_up_formatted(label: Label, from: float, to: float,
 		func(v: float) -> void:
 			if _alive(label):
 				label.text = formatter.call(v),
-		from, to, t.dur_slow).set_delay(delay)
+		from, to, t.dur_slow if duration < 0.0 else duration).set_delay(delay)
 	tw.tween_callback(func() -> void:
 		if _alive(label):
 			label.text = formatter.call(to))
+	return tw
 
 
 ## Animate a bar to `to`. `duration` defaults to tokens.dur_slow; pass an

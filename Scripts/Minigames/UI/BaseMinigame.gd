@@ -75,9 +75,10 @@ var has_time_limit: bool = false
 @export var popup_star_texture: Texture2D = null
 ## Optional PNG for an empty (unearned) star outline. Leave empty for procedural gray star.
 @export var popup_star_empty_texture: Texture2D = null
-## Tint for the procedural filled star, ignored when popup_star_texture is set.
-@export var popup_star_color: Color = Color(1.0, 0.85, 0.2)
-## Tint for the procedural empty star, ignored when popup_star_empty_texture is set.
+## Tint multiplied onto the filled star. White keeps star.png's own gold.
+@export var popup_star_color: Color = Color.WHITE
+## Tint multiplied onto the empty star; the dark grey turns the shared
+## star.png into an unearned silhouette.
 @export var popup_star_empty_color: Color = Color(0.28, 0.28, 0.32)
 ## Size (px) of each of the three star slots on the result card.
 @export var popup_star_size: Vector2 = Vector2(88, 88)
@@ -157,6 +158,13 @@ var has_time_limit: bool = false
 ## Drag a PNG here to replace the in-game Pause (⏸) button icon.
 @export var pause_button_texture: Texture2D = null
 
+# ─── Achievements ────────────────────────────────────────────────────────────
+const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
+## Stars the last result card showed (0 on a loss). SchoolDay reads it.
+var last_result_stars: int = 0
+## Share of the time limit left when the result card showed; -1 without a limit.
+var last_time_left_ratio: float = -1.0
+
 # ─── Custom Time Management ──────────────────────────────────────────────────
 var max_game_time: float   = 30.0
 var game_time_left: float  = 30.0
@@ -197,6 +205,8 @@ func _get_or_create_ui_layer() -> CanvasLayer:
 func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 	difficulty = game_difficulty
 	if time_limit > 0:
+		# The Bejo "The Flash" achievement's claimed prize stretches the clock.
+		time_limit *= AchievementsScript.multiplier("minigame_time")
 		max_game_time = time_limit
 		game_time_left = time_limit
 		has_time_limit = true
@@ -272,6 +282,19 @@ func _create_pause_button() -> void:
 	
 	pause_button.pressed.connect(_on_pause_button_pressed)
 	_get_or_create_ui_layer().add_child(pause_button)
+
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel. A minigame answers it by opening the pause menu -- never by
+## leaving outright: the pause menu owns the quit confirmation
+## ("Seluruh progress minigame anda akan dianggap gagal!"), and a mis-swipe
+## must not forfeit a round without being asked.
+##
+## _on_pause_button_pressed already no-ops while the game is over or already
+## paused, so a second back press cannot stack another menu.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_pause_button_pressed()
+
 
 func _on_pause_button_pressed() -> void:
 	if not is_game_active or is_paused:
@@ -648,15 +671,50 @@ static func _calculate_stars(ratio: float, is_win: bool) -> int:
 
 ## The end-of-game result card. A minigame can override this to show its own.
 @export var result_popup_scene: PackedScene = preload("res://Scenes/Minigames/UI/MinigameResultPopup.tscn")
+## The won-minigame screen (2026-09-25 win-screen spec). A loss keeps
+## result_popup_scene; null shows result_popup_scene for a win too.
+@export var win_screen_scene: PackedScene = preload("res://Scenes/Minigames/UI/MinigameWinScreen.tscn")
+## What the host screen tells the win screen: {"category", "speaker", "line"}.
+## Empty when the minigame runs on its own (debug launcher, F6).
+var host_context: Dictionary = {}
+## Set by the host before start. Called once, when the result is decided, as
+## result_reporter.call(is_win, score, max_score): it applies the result and
+## returns what the win screen shows, {"stat_delta", "energy_delta"}.
+var result_reporter: Callable = Callable()
+## The win screen's answer, &"lanjut" or &"lobby". A loss leaves &"lanjut".
+var result_exit: StringName = &"lanjut"
 
-## Show the win/lose card, wait for the player to continue, then emit the
-## win/lose signal.
+## Show the win screen (a win) or the result card (a loss), wait for the
+## player, then emit the win/lose signal. The host's result_reporter runs
+## first, on both paths, so the stats are applied before either card opens.
 ##
-## Affects: adds a MinigameResultPopup child, frees it when the player
-## continues (the popup frees itself). `custom_subtitle` is accepted for
+## Affects: adds a MinigameWinScreen or MinigameResultPopup child, which frees
+## itself when the player continues. `custom_subtitle` is accepted for
 ## call-site compatibility but is not displayed -- the shipped overlay never
 ## rendered it either.
+## True once a result overlay has been built, so a second end call cannot
+## stack another one. See the guard at the top of _show_result_overlay().
+var _result_shown: bool = false
+
+
 func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
+	# A minigame ends once. Without this, LombaMenari -- which scores per
+	# swipe and calls win_game() inline the moment score >= target_score --
+	# built a fresh popup on EVERY later note hit: thirty CanvasLayers at 999,
+	# thirty sets of tweens, a hundred and twenty GPUParticles2D and thirty
+	# overlapping fanfares. Thirty translucent dim overlays composite to
+	# opaque black and each LANJUTKAN press dismissed only one of them, so the
+	# game looked frozen.
+	#
+	# The guard belongs here rather than in win_game(). Copying lose_game()'s
+	# `if not is_game_active: return` into win_game() looks like the obvious
+	# fix and is wrong: lose_game() clears that flag at its top and THEN
+	# routes to win_game() when the score cleared the threshold, so the guard
+	# would suppress the win-on-timeout result entirely and hang the game for
+	# real. "The result is shown once" is the invariant that actually holds.
+	if _result_shown:
+		return
+	_result_shown = true
 	process_mode = Node.PROCESS_MODE_INHERIT
 
 	# Gather score data from the child minigame
@@ -679,26 +737,41 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 	if "minigame_category" in self: mg_category = self.minigame_category
 
 	var stars := _calculate_stars(get_star_ratio(), is_win)
+	last_result_stars = stars
+	last_time_left_ratio = clampf(game_time_left / max_game_time, 0.0, 1.0) \
+		if has_time_limit and max_game_time > 0.0 else -1.0
 
-	var popup: MinigameResultPopup = result_popup_scene.instantiate()
-	add_child(popup)
-	popup.configure(is_win, stars, mg_score, mg_max_score,
-		_get_active_tutorial_title(), mg_category, stat_delta, energy_delta, mood_delta,
-		{
-			"popup_card_texture": popup_card_texture, "popup_card_color": popup_card_color,
-			"popup_border_color": popup_border_color, "popup_dim_color": popup_dim_color,
-			"popup_star_texture": popup_star_texture, "popup_star_empty_texture": popup_star_empty_texture,
-			"popup_star_color": popup_star_color, "popup_star_empty_color": popup_star_empty_color,
-			"popup_star_size": popup_star_size,
-			"popup_button_texture": popup_button_texture, "popup_button_color": popup_button_color,
-			"popup_button_text": popup_button_text,
-			"popup_title_font": popup_title_font, "popup_body_font": popup_body_font,
-			"popup_title_font_size": popup_title_font_size, "popup_score_font_size": popup_score_font_size,
-			"popup_stat_font_size": popup_stat_font_size,
-			"popup_title_win_color": popup_title_win_color, "popup_title_lose_color": popup_title_lose_color,
-			"win_title_text": win_title_text, "lose_title_text": lose_title_text,
-		})
-	await popup.play()
+	var shown: Dictionary = {}
+	if result_reporter.is_valid():
+		shown = result_reporter.call(is_win, mg_score, mg_max_score)
+
+	if is_win and win_screen_scene != null:
+		var screen: MinigameWinScreen = win_screen_scene.instantiate()
+		add_child(screen)
+		screen.configure(stars, str(host_context.get("speaker", "")),
+			str(host_context.get("line", EventDialogueCatalog.WIN_LINE_STUDENT)),
+			str(host_context.get("category", mg_category)), shown)
+		result_exit = await screen.play()
+	else:
+		var popup: MinigameResultPopup = result_popup_scene.instantiate()
+		add_child(popup)
+		popup.configure(is_win, stars, mg_score, mg_max_score,
+			_get_active_tutorial_title(), mg_category, stat_delta, energy_delta, mood_delta,
+			{
+				"popup_card_texture": popup_card_texture, "popup_card_color": popup_card_color,
+				"popup_border_color": popup_border_color, "popup_dim_color": popup_dim_color,
+				"popup_star_texture": popup_star_texture, "popup_star_empty_texture": popup_star_empty_texture,
+				"popup_star_color": popup_star_color, "popup_star_empty_color": popup_star_empty_color,
+				"popup_star_size": popup_star_size,
+				"popup_button_texture": popup_button_texture, "popup_button_color": popup_button_color,
+				"popup_button_text": popup_button_text,
+				"popup_title_font": popup_title_font, "popup_body_font": popup_body_font,
+				"popup_title_font_size": popup_title_font_size, "popup_score_font_size": popup_score_font_size,
+				"popup_stat_font_size": popup_stat_font_size,
+				"popup_title_win_color": popup_title_win_color, "popup_title_lose_color": popup_title_lose_color,
+				"win_title_text": win_title_text, "lose_title_text": lose_title_text,
+			})
+		await popup.play()
 
 	if is_win:
 		_do_win()

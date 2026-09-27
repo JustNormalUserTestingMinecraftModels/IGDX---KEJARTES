@@ -1,0 +1,86 @@
+# A cloud Claude review of every non-draft pull request, whoever opened it
+# (docs/superpowers/specs/2026-09-11-pr-automation-design.md). Dormant until
+# the repo owner adds CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY as a
+# repository secret: without one, claude-review is skipped, not failed. Its
+# name is the check-run name ci/auto_merge.sh requires once a key exists.
+
+name: Claude review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.key.outputs.configured }}
+    steps:
+      - id: key
+        env:
+          HAS_KEY: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' || secrets.ANTHROPIC_API_KEY != '' }}
+        run: echo "configured=$HAS_KEY" >> "$GITHUB_OUTPUT"
+
+  claude-review:
+    name: claude-review
+    needs: detect
+    if: needs.detect.outputs.configured == 'true' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+
+      - name: Review
+        id: review
+        uses: anthropics/claude-code-action@0a8d3c9443bbff909ab973b6a17a340b913f229f # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ github.token }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request. The PR branch is checked out in the working
+            directory, and `gh pr diff ${{ github.event.pull_request.number }}` shows the change.
+
+            Read CLAUDE.md first and judge the change against its rules and against
+            correctness: bugs, broken references between scenes, scripts and
+            resources, and anything that contradicts a constraint CLAUDE.md states.
+            The project's editor test suite cannot run here; do not ask for it.
+
+            Post an inline comment (mcp__github_inline_comment__create_inline_comment)
+            only for a real problem, on the line it concerns, saying what is wrong
+            and why. No praise, and no style points the project does not enforce.
+
+            Then return your verdict. Use "block" only for a defect that must be
+            fixed before this merges, and list each one in "blocking". Otherwise
+            return "pass" with an empty list.
+          claude_args: |
+            --model claude-opus-5
+            --max-turns 40
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"
+            --json-schema '{"type":"object","properties":{"verdict":{"type":"string","enum":["pass","block"]},"blocking":{"type":"array","items":{"type":"string"}}},"required":["verdict","blocking"],"additionalProperties":false}'
+
+      - name: Enforce the verdict
+        env:
+          OUTPUT: ${{ steps.review.outputs.structured_output }}
+        run: |
+          verdict=$(printf '%s' "$OUTPUT" | jq -r '.verdict // empty' 2>/dev/null || true)
+          echo "Claude review verdict: ${verdict:-none}"
+          if [ "$verdict" != "pass" ]; then
+            printf '%s' "$OUTPUT" | jq -r '.blocking[]? | "::error::" + .' 2>/dev/null || true
+            exit 1
+          fi

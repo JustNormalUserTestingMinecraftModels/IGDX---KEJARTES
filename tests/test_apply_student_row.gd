@@ -1,53 +1,110 @@
 @tool
 extends McpTestSuite
 
-## ApplyStudentRow: KEY maps to canonical roster keys, bars show only for
-## boosted stats, preview raises then restores a bar, a tired student's
-## checkbox is disabled.
+## ApplyStudentRow on the real DaySummary card (2026-09-12 event-cards spec,
+## 1.5). The content is unchanged from the old checkbox row: only the
+## boosted stats show, the preview raises then restores them, a stat at 100
+## reads MAKS, and a tired student cannot be picked and shows LELAH. A boost
+## name is the roster key it reads, so there is no key table to pin.
 
 func suite_name() -> String:
 	return "apply_student_row"
 
+
 const _ROW := "res://Scenes/Inventory/ApplyStudentRow.tscn"
 
-func _make() -> Node:
-	return (load(_ROW) as PackedScene).instantiate()
+
+func _make() -> ApplyStudentRow:
+	var row: ApplyStudentRow = (load(_ROW) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(row)
+	track(row)
+	return row
+
 
 func _student(energy := 50.0) -> Dictionary:
-	return {"id": 1, "name": "A", "kepribadian1": 50.0, "kepribadian2": energy,
-		"akademis1": 40.0, "akademis2": 40.0, "akademis3": 40.0}
+	return {"id": 1, "name": "A", "mood": 50.0, "energy": energy,
+		"akademis": 40.0, "seni_budaya": 40.0, "olahraga": 40.0,
+		"target_akademis": 80.0, "target_seni_budaya": 80.0, "target_olahraga": 80.0}
 
-func test_key_map_targets_canonical_roster_keys() -> void:
-	assert_eq(ApplyStudentRow.KEY["akademis"], "akademis1")
-	assert_eq(ApplyStudentRow.KEY["seni_budaya"], "akademis2")
-	assert_eq(ApplyStudentRow.KEY["olahraga"], "akademis3")
-	assert_eq(ApplyStudentRow.KEY["mood"], "kepribadian1")
-	assert_eq(ApplyStudentRow.KEY["energy"], "kepribadian2")
 
-func test_setup_shows_only_boosted_bars() -> void:
+func test_row_is_a_card_button_on_the_day_summary_card() -> void:
 	var row := _make()
-	Engine.get_main_loop().root.add_child(row)
-	row.setup(_student(), {"mood": 10})
-	assert_true(row.find_child("BarRowMood", true, false).visible, "mood bar shown")
-	assert_false(row.find_child("BarRowAkademis", true, false).visible, "akademis bar hidden")
-	row.free()
+	assert_true(row is StudentCardButton, "the whole card is the tap target")
+	assert_true(row.toggle_mode)
+	var card := row.get_node_or_null("Card")
+	assert_true(card is DaySummaryStudentRow, "the row hosts the real card")
+	if card != null:
+		assert_eq(card.scene_file_path, "res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	assert_true(row.find_child("Check", true, false) == null, "the checkbox is gone")
 
-func test_preview_raises_then_restores_bar_value() -> void:
+
+func test_setup_shows_only_boosted_stats() -> void:
 	var row := _make()
-	Engine.get_main_loop().root.add_child(row)
-	row.setup(_student(), {"mood": 20})
-	var bar: Range = row.find_child("BarRowMood", true, false).get_node("Bar")
-	assert_eq(int(bar.value), 50, "bar starts at current")
+	row.setup(_student(), {"mood": 10, "olahraga": 5})
+	var card: DaySummaryStudentRow = row.card
+	assert_true(card.mood_bar.visible, "mood is boosted")
+	assert_false(card.energy_bar.visible, "energy is not")
+	assert_true(card.stat_rows[0].visible)
+	assert_eq(card.stat_rows[0].value.text, "40/80", "olahraga fills the top slot")
+	assert_false(card.stat_rows[1].visible)
+	assert_false(card.stat_rows[2].visible)
+
+
+func test_preview_raises_then_restores() -> void:
+	var row := _make()
+	row.setup(_student(), {"mood": 20, "akademis": 8})
+	var card: DaySummaryStudentRow = row.card
+	assert_eq(int(card.mood_bar.value), 50, "the bar starts at current")
 	row.set_preview(true)
-	assert_eq(int(bar.value), 70, "preview adds the boost")
+	assert_eq(int(card.mood_bar.value), 70, "mood previews the boost")
+	assert_eq(card.stat_rows[0].value.text, "+8/80", "akademis previews its gain")
 	row.set_preview(false)
-	assert_eq(int(bar.value), 50, "preview off restores current")
-	row.free()
+	assert_eq(int(card.mood_bar.value), 50, "preview off restores current")
+	assert_eq(card.stat_rows[0].value.text, "40/80")
+
+
+func test_stat_at_100_reads_maks() -> void:
+	var s := _student()
+	s["akademis"] = 100.0
+	var row := _make()
+	row.setup(s, {"akademis": 5})
+	row.set_preview(true)
+	assert_eq(row.card.stat_rows[0].value.text, "MAKS")
+
 
 func test_tired_student_cannot_be_selected() -> void:
 	var row := _make()
-	Engine.get_main_loop().root.add_child(row)
 	row.setup(_student(4.0), {"mood": 10})
-	assert_true(row.find_child("Check", true, false).disabled, "tired -> checkbox disabled")
+	assert_true(row.disabled, "tired -> the card refuses the tap")
 	assert_false(row.is_selected(), "tired student not selected")
-	row.free()
+	assert_true(row.lelah_chip.visible, "LELAH shows")
+	assert_true(absf(row.card.modulate.a - row.unavailable_alpha) <= 0.01, "the hosted card dims")
+	assert_eq(row.modulate.a, 1.0, "the wrapper's own alpha belongs to the list's entrance animation")
+
+
+func test_toggle_emits_argumentless_selection_changed() -> void:
+	# ApplyItemScreen connects _refresh_confirm, which takes no arguments.
+	var row := _make()
+	row.setup(_student(), {"mood": 10})
+	var hits := [0]
+	row.selection_changed.connect(func() -> void: hits[0] += 1)
+	row.button_pressed = true
+	assert_eq(hits[0], 1)
+	assert_true(row.is_selected())
+
+## 2026-09-19: the hosted DaySummaryStudentRow grew PR #53's cream frame and
+## brown name band (992x486). This row draws its own frame and header, so it
+## must hide both and keep the 410-tall layout its bars and chip are placed on.
+func test_row_hides_the_hosted_cards_own_chrome() -> void:
+	var row := _make()
+	row.setup(_student(), {"mood": 10})
+	var card: DaySummaryStudentRow = row.card
+	for n in ["CardBg", "HeaderBand"]:
+		var node := card.get_node_or_null(n) as CanvasItem
+		assert_true(node != null and not node.visible,
+			"%s is hidden: the row's own stylebox and header replace it" % n)
+	assert_eq(row.card_design_size, Vector2(992, 410),
+		"the apply card keeps its 410-tall design box")
+	var avatar := card.get_node("Avatar") as Control
+	assert_eq(avatar.offset_top, ApplyStudentRow.AVATAR_TOP,
+		"the avatar sits back at the top, beside the restacked bars")

@@ -296,11 +296,11 @@ const _STAT_ROW_SCENE := "res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn"
 
 
 func test_stat_row_maps_each_key_to_its_mockup_icon() -> void:
-	assert_eq(DaySummaryStatRow.ICON_FOR["akademis"],
+	assert_eq(DaySummaryStatRow.ICON_FOR["akademis"].resource_path,
 		"res://Assets/Images/DaySummary/icon_akademis.png")
-	assert_eq(DaySummaryStatRow.ICON_FOR["seni_budaya"],
+	assert_eq(DaySummaryStatRow.ICON_FOR["seni_budaya"].resource_path,
 		"res://Assets/Images/DaySummary/icon_seni.png")
-	assert_eq(DaySummaryStatRow.ICON_FOR["olahraga"],
+	assert_eq(DaySummaryStatRow.ICON_FOR["olahraga"].resource_path,
 		"res://Assets/Images/DaySummary/icon_olahraga.png")
 
 
@@ -334,7 +334,7 @@ func test_track_ratio_is_progress_toward_the_target() -> void:
 
 
 ## Every degenerate input a real roster can produce. StudentData's
-## target_akademis1/2/3 all default to 50.0, but a row built with no
+## three skill targets all default to 50.0, but a row built with no
 ## student at all passes target 0.0 -- that must not divide by zero, and
 ## overshooting a target must not paint outside the rail.
 func test_track_ratio_clamps_and_survives_a_missing_target() -> void:
@@ -556,9 +556,9 @@ func test_the_card_replays_every_stat_track() -> void:
 	s.akademis = 39.0
 	s.seni_budaya = 20.0
 	s.olahraga = 10.0
-	s.target_akademis1 = 50.0
-	s.target_akademis2 = 50.0
-	s.target_akademis3 = 50.0
+	s.target_akademis = 50.0
+	s.target_seni_budaya = 50.0
+	s.target_olahraga = 50.0
 	inst.setup_row("Marcel", [
 		{"stat_key": "akademis", "delta": 6.0},
 		{"stat_key": "seni_budaya", "delta": 4.0},
@@ -591,9 +591,9 @@ func test_the_cards_three_rows_do_not_all_fill_at_once() -> void:
 	s.akademis = 39.0
 	s.seni_budaya = 20.0
 	s.olahraga = 10.0
-	s.target_akademis1 = 50.0
-	s.target_akademis2 = 50.0
-	s.target_akademis3 = 50.0
+	s.target_akademis = 50.0
+	s.target_seni_budaya = 50.0
+	s.target_olahraga = 50.0
 	inst.setup_row("Marcel", [
 		{"stat_key": "akademis", "delta": 6.0},
 		{"stat_key": "seni_budaya", "delta": 4.0},
@@ -681,7 +681,7 @@ func test_row_reserves_the_mockup_card_box() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
 	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
-	assert_eq(inst.custom_minimum_size, Vector2(992, 410),
+	assert_eq(inst.custom_minimum_size, Vector2(992, 486),
 		"card box drifted from the card art's cropped content box")
 	inst.free()
 
@@ -691,9 +691,10 @@ func test_row_carries_the_card_art_and_the_three_stat_rows() -> void:
 	var inst := scene.instantiate()
 	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
 
-	var bg := inst.get_node_or_null("CardArt") as TextureRect
-	assert_not_null(bg, "row is missing its CardArt")
-	assert_not_null(bg.texture, "CardArt has no texture assigned")
+	var bg := inst.get_node_or_null("CardBg") as Panel
+	assert_not_null(bg, "row is missing its CardBg")
+	assert_eq(bg.theme_type_variation, &"IdCardPanel",
+		"CardBg must use the IdCardPanel variation, not the retired card_bg art")
 
 	assert_not_null(inst.get_node_or_null("Avatar"), "row is missing Avatar")
 	for i in range(1, 4):
@@ -800,17 +801,17 @@ func test_setup_row_leaves_the_needs_deltas_hidden() -> void:
 		"the daily card must not show a mood delta")
 
 
-## The naming trap this project documents in CLAUDE.md: target_akademis2
-## is the SENI target and target_akademis3 the OLAHRAGA one. Getting it
-## wrong shows the right number against the wrong icon.
+## Each skill pairs with its own target field: target_seni_budaya is the
+## SENI target and target_olahraga the OLAHRAGA one. Getting it wrong shows
+## the right number against the wrong icon.
 func test_row_pairs_each_stat_with_its_correct_target_field() -> void:
 	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
-	assert_true(src.contains("\"akademis\": \"target_akademis1\""),
-		"akademis must read target_akademis1")
-	assert_true(src.contains("\"seni_budaya\": \"target_akademis2\""),
-		"seni_budaya must read target_akademis2, not target_akademis3")
-	assert_true(src.contains("\"olahraga\": \"target_akademis3\""),
-		"olahraga must read target_akademis3")
+	assert_true(src.contains("\"akademis\": \"target_akademis\""),
+		"akademis must read target_akademis")
+	assert_true(src.contains("\"seni_budaya\": \"target_seni_budaya\""),
+		"seni_budaya must read target_seni_budaya, not target_olahraga")
+	assert_true(src.contains("\"olahraga\": \"target_olahraga\""),
+		"olahraga must read target_olahraga")
 
 
 ## The mockup shows a fixed three-row block; a card whose height varied
@@ -830,18 +831,18 @@ func test_row_always_shows_three_stat_rows() -> void:
 
 ## _sum_deltas is the only genuinely stateful logic this row adds, and it
 ## had zero behavioral coverage -- only a source-text scan confirming the
-## naming-trap dictionary literal exists, not that it's actually the value
+## TARGET_FOR dictionary literal exists, not that it's actually the value
 ## the row uses. Both checks below work on a bare instantiate()d instance
 ## with no tree attachment: _sum_deltas touches no @onready var, and
 ## TARGET_FOR is a const readable without an instance at all (same
 ## pattern this file already uses for STAT_ORDER).
 func test_row_sums_same_stat_deltas_and_reads_the_correct_target_field() -> void:
-	assert_eq(DaySummaryStudentRow.TARGET_FOR["akademis"], "target_akademis1",
-		"akademis must read target_akademis1")
-	assert_eq(DaySummaryStudentRow.TARGET_FOR["seni_budaya"], "target_akademis2",
-		"seni_budaya must read target_akademis2, not target_akademis3")
-	assert_eq(DaySummaryStudentRow.TARGET_FOR["olahraga"], "target_akademis3",
-		"olahraga must read target_akademis3, not target_akademis2")
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["akademis"], "target_akademis",
+		"akademis must read target_akademis")
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["seni_budaya"], "target_seni_budaya",
+		"seni_budaya must read target_seni_budaya, not target_olahraga")
+	assert_eq(DaySummaryStudentRow.TARGET_FOR["olahraga"], "target_olahraga",
+		"olahraga must read target_olahraga, not target_seni_budaya")
 
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
@@ -960,19 +961,21 @@ func test_school_day_still_renders_its_embedded_day_cards() -> void:
 func test_card_art_fills_the_card_box_without_letterboxing() -> void:
 	var scene := load(_ROW_SCENE) as PackedScene
 	var inst := scene.instantiate()
-	assert_eq(inst.custom_minimum_size, Vector2(992, 410),
-		"card box must equal the card art's content box")
-	var art := inst.get_node_or_null("CardArt") as TextureRect
-	assert_not_null(art, "row is missing CardArt")
-	assert_eq(art.stretch_mode, TextureRect.STRETCH_SCALE,
-		"CardArt must STRETCH_SCALE -- KEEP_ASPECT_CENTERED squares the art")
-	var tex: Texture2D = art.texture
-	assert_not_null(tex, "CardArt has no texture")
-	var box_aspect := 992.0 / 410.0
-	var tex_aspect := float(tex.get_width()) / float(tex.get_height())
-	assert_true(absf(box_aspect - tex_aspect) < 0.01,
-		"card box aspect %f does not match the texture's %f" % [box_aspect, tex_aspect])
+	assert_eq(inst.custom_minimum_size, Vector2(992, 486),
+		"card box grew to fit the kartu-pelajar header band")
+	var bg := inst.get_node_or_null("CardBg") as Panel
+	assert_not_null(bg, "row is missing CardBg")
+	assert_eq(bg.theme_type_variation, &"IdCardPanel",
+		"the card frame is the IdCardPanel variation now, not textured art")
 	inst.free()
+
+
+func test_card_retires_the_green_card_art() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCENE)
+	assert_false(src.contains("DaySummary/card_bg.png"),
+		"the green card_bg art must be retired")
+	assert_true(src.contains("IdCardPanel"),
+		"the card frame uses the IdCardPanel variation")
 
 
 func test_banner_box_matches_the_banner_art_aspect() -> void:
@@ -1040,10 +1043,10 @@ func test_school_day_hides_its_chrome_behind_the_summary() -> void:
 ## dictionary, so all four are pinned together here.
 func test_every_roster_points_at_the_new_splash_batch() -> void:
 	var sources := [
-		"res://Scripts/StudentCard/student_card.gd",
-		"res://Scripts/StudentList/student_list.gd",
+		"res://Scripts/StudentCard/StudentCard.gd",
+		"res://Scripts/StudentList/StudentList.gd",
 		"res://Scripts/Debug/DebugManager.gd",
-		"res://Scripts/AturJadwal/atur_jadwal.gd",
+		"res://Scripts/AturJadwal/AturJadwal.gd",
 	]
 	for path in sources:
 		var src := FileAccess.get_file_as_string(path)
@@ -1259,7 +1262,6 @@ func test_particle_sprites_exist_and_are_transparent() -> void:
 func test_particle_scenes_are_one_shot_and_start_idle() -> void:
 	for path in [
 		"res://Scenes/SchoolSimulation/RewardBurst.tscn",
-		"res://Scenes/SchoolSimulation/CelebrationConfetti.tscn",
 	]:
 		var fx_scene: PackedScene = load(path)
 		var fx := fx_scene.instantiate() as GPUParticles2D
@@ -1293,9 +1295,9 @@ func test_only_a_gaining_card_reports_ground_gained() -> void:
 
 	var student := StudentData.new()
 	student.student_name = "Shinta"
-	student.target_akademis1 = 65.0
-	student.target_akademis2 = 65.0
-	student.target_akademis3 = 65.0
+	student.target_akademis = 65.0
+	student.target_seni_budaya = 65.0
+	student.target_olahraga = 65.0
 	student.akademis = 30.0
 
 	card.setup_row("Shinta", [], student)
@@ -1319,8 +1321,15 @@ func test_stat_row_bursts_exactly_when_it_shows_a_chevron() -> void:
 		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd")
 	assert_true(src.contains("BURST_SCENE"),
 		"the stat row must instance the authored burst scene")
-	assert_true(src.contains('play_sfx(&"tally")'),
-		"the chevron pop must play the tally cue")
+	# stat_up replaced the generic `tally` tick here with the 2026-09-21
+	# sound pack: the chevron means the number went UP, and the pack has a
+	# rising ding for exactly that. `tally` is still right in StatCheck and
+	# WeekRecapPill, where a number is being counted rather than climbing.
+	assert_true(src.contains('RewardFeedback.play(&"stat_gain"'),
+		"the chevron pop must fire the rising stat cue through RewardFeedback")
+	# And a falling row, which had no cue at all before the pack.
+	assert_true(src.contains('RewardFeedback.play(&"stat_loss"'),
+		"a losing row must fire the falling cue through RewardFeedback")
 	assert_true(not src.contains("GPUParticles2D.new()"),
 		"particles must come from the .tscn, never be built at runtime")
 
@@ -1462,36 +1471,87 @@ const EVENT_CARD_SCENE := "res://Scenes/SchoolSimulation/EventStudentCard.tscn"
 
 
 func test_event_card_reuses_the_day_summary_parts() -> void:
+	# Since 2026-09-12 the event card hosts the REAL DaySummary card rather
+	# than a hand-made copy of its layout, so the two can never drift again.
 	var packed := load(EVENT_CARD_SCENE) as PackedScene
 	assert_not_null(packed, "EventStudentCard.tscn should load")
 	var card := packed.instantiate()
-	assert_not_null(card.get_node_or_null("Avatar"),
-		"the event card should reuse DaySummaryAvatar")
-	assert_not_null(card.get_node_or_null("EnergyBar"),
-		"the event card should reuse the DaySummary needs bars")
-	assert_not_null(card.get_node_or_null("MoodBar"), "ditto mood")
-	for i in range(1, 4):
-		assert_not_null(card.get_node_or_null("StatRow%d" % i),
-			"the event card should carry all three DaySummaryStatRows")
+	var inner := card.get_node_or_null("Card")
+	assert_true(inner is DaySummaryStudentRow, "the event card hosts DaySummaryStudentRow")
+	if inner != null:
+		assert_eq(inner.scene_file_path,
+			"res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn")
+	for part in ["Avatar", "EnergyBar", "MoodBar", "StatRow1", "StatRow2", "StatRow3"]:
+		assert_not_null(card.get_node_or_null("Card/" + part), part + " comes from the real card")
 	card.free()
 
 
 func test_event_card_needs_bars_carry_their_icon_and_word() -> void:
-	# DaySummaryNeedsBar.set_need writes into $Icon and $Word; without
-	# those children every call would crash on a null.
 	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
 	for bar_name in ["EnergyBar", "MoodBar"]:
-		var bar := card.get_node("%s" % bar_name)
-		assert_not_null(bar.get_node_or_null("Icon"),
-			"%s needs an Icon child" % bar_name)
-		assert_not_null(bar.get_node_or_null("Word"),
-			"%s needs a Word child" % bar_name)
+		var bar := card.get_node("Card/%s" % bar_name)
+		assert_not_null(bar.get_node_or_null("Icon"), "%s needs an Icon child" % bar_name)
+		assert_not_null(bar.get_node_or_null("Word"), "%s needs a Word child" % bar_name)
+	card.free()
+
+
+func test_event_card_shows_current_stats_and_previews() -> void:
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as EventStudentCard
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	var s := StudentData.new()
+	s.student_name = "Budi"
+	s.akademis = 30.0
+	s.target_akademis = 60.0
+	s.energy = 60.0
+	s.mood = 50.0
+	card.setup(s, "Akademis")
+	var row := card.get_node("Card/StatRow1") as DaySummaryStatRow
+	assert_eq(row.value.text, "30/60", "the card shows where the student stands")
+	assert_true((card.get_node("Card/EnergyBar/Icon") as TextureRect).texture != null,
+		"the energy bar carries its icon now")
+	card.set_preview(15.0, -15.0, 0.0)
+	assert_eq(row.value.text, "+15/60", "selecting layers the event's gain")
+	assert_eq((card.get_node("Card/EnergyBar") as DaySummaryNeedsBar).value, 45.0)
+	card.set_preview(0.0, 0.0, 0.0)
+	assert_eq(row.value.text, "30/60", "zeroes rewind to the standing view")
+
+
+## Pattern C: an instanced card under a plain Control loses its rect on load
+## unless something owns it. StudentCardButton does; this checks the loaded,
+## in-tree result, not the scene text.
+func test_event_card_keeps_its_card_rect_after_loading() -> void:
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate() as Control
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	card.size = Vector2(992, 486)
+	# Run the fit directly rather than waiting on NOTIFICATION_RESIZED.
+	card.call("_fit_card")
+	var inner := card.get_node("Card") as Control
+	assert_eq(inner.position, Vector2.ZERO)
+	assert_eq(inner.size, Vector2(992, 486))
+	assert_eq(inner.scale, Vector2.ONE, "992 wide is native size")
+
+
+func test_event_card_badges_sit_on_the_card() -> void:
+	# The select badge used to hang 18 px below the card's bottom edge.
+	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
+	var bounds := Rect2(Vector2.ZERO, Vector2(992, 486))
+	for badge in ["SelectBadge", "TiredBadge", "SpecialtyBadge"]:
+		var node := card.get_node_or_null("Card/" + badge) as Control
+		assert_true(node != null, badge + " lives under Card so it scales with it")
+		if node == null:
+			continue
+		var r := Rect2(Vector2(node.offset_left, node.offset_top),
+			Vector2(node.offset_right - node.offset_left, node.offset_bottom - node.offset_top))
+		assert_true(bounds.encloses(r), "%s must sit inside the card" % badge)
 	card.free()
 
 
 func test_event_card_is_a_toggle_not_a_scaled_checkbox() -> void:
 	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
 	assert_true(card is Button, "the whole card should be the tap target")
+	assert_true(card is StudentCardButton, "the card uses the shared tappable wrapper")
 	assert_true(card.toggle_mode, "the card should latch when selected")
 	assert_eq(card.theme_type_variation, &"EventSelectCard",
 		"selection state should come from the theme, not a bespoke stylebox")
@@ -1585,10 +1645,98 @@ func test_event_dialog_action_buttons_keep_the_shared_variations() -> void:
 
 
 func test_event_card_children_do_not_swallow_the_tap() -> void:
-	# The whole 992x410 card is the tap target; a child left on the
-	# default mouse filter would eat the click over its own rect.
+	# The whole card is the tap target. Any part left on the default mouse
+	# filter would eat the click over its own rect. StudentCardButton sets
+	# every Card descendant to IGNORE when it enters the tree.
 	var card := (load(EVENT_CARD_SCENE) as PackedScene).instantiate()
-	for child in card.get_children():
-		assert_eq(child.mouse_filter, Control.MOUSE_FILTER_IGNORE,
-			"%s should ignore the mouse so the card gets the tap" % child.name)
-	card.free()
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	var stack: Array[Node] = [card.get_node("Card")]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is Control:
+			assert_eq((n as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
+				"%s should ignore the mouse so the card gets the tap" % n.name)
+		stack.append_array(n.get_children())
+
+
+# ── day outfits on the result portraits (2026-09-25 spec, section 6) ────────
+
+const _THEA_BATIK := "res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png"
+
+
+func _thea() -> StudentData:
+	var s := StudentData.new()
+	s.student_name = "Thea"
+	s.splash_path = "res://Assets/Images/SplashArtMurid/splash_thea.png"
+	return s
+
+
+## The outfit shares Thea's canvas, so her usual head window frames it.
+func test_the_avatar_dresses_for_the_day_with_its_usual_crop() -> void:
+	var avatar := (load(_AVATAR_SCENE) as PackedScene).instantiate() as DaySummaryAvatar
+	Engine.get_main_loop().root.add_child(avatar)
+	track(avatar)
+	avatar.set_student(_thea(), "Kamis")
+	var atlas := avatar.art.texture as AtlasTexture
+	assert_true(atlas != null, "the outfit is cropped like any splash")
+	if atlas != null:
+		assert_eq(atlas.atlas.resource_path, _THEA_BATIK)
+		assert_eq(atlas.region, DaySummaryAvatar.SPLASH_CROP["Thea"])
+	avatar.set_student(_thea(), "Rabu")
+	assert_eq((avatar.art.texture as AtlasTexture).atlas.resource_path,
+		"res://Assets/Images/SplashArtMurid/splash_thea.png", "an ordinary day keeps her own")
+
+
+## True when the body of `header` in `path` makes `call` with `day_name`
+## among its arguments.
+func _passes_day(path: String, header: String, call: String) -> bool:
+	var src := FileAccess.get_file_as_string(path)
+	var at := src.find(header)
+	if at == -1:
+		return false
+	var next := src.find("\nfunc ", at + header.length())
+	var body := src.substr(at, (next if next != -1 else src.length()) - at)
+	var c := body.find(call)
+	if c == -1:
+		return false
+	# The call's own closing paren, past any nested call among its arguments.
+	var depth := 0
+	var end := c + call.length() - 1
+	while end < body.length():
+		if body[end] == "(":
+			depth += 1
+		elif body[end] == ")":
+			depth -= 1
+			if depth == 0:
+				break
+		end += 1
+	return body.substr(c, end - c).contains("day_name")
+
+
+func test_the_daily_results_pass_the_day_through() -> void:
+	assert_true(_passes_day(_POPUP_SCRIPT, "func setup_summary(", "setup_row("),
+		"DaySummaryPopup hands its day to each row")
+	assert_true(_passes_day(_SCHOOL_DAY_SCRIPT, "func _show_day_summary(", "setup_summary("),
+		"SchoolDay tells the popup which day it summarises")
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_row(", "avatar.set_student("))
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_week_row(", "avatar.set_student("))
+	assert_true(_passes_day(_ROW_SCRIPT, "func setup_current_row(", "avatar.set_student("))
+
+
+## The weekly report opens straight after Jumat, so it wears Jumat's outfit.
+func test_the_weekly_results_wear_jumat_s_outfit() -> void:
+	var checkup = load("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_eq(checkup.REPORT_DAY, "Jumat")
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_true(src.contains("card.setup_week_row(student, REPORT_DAY)"))
+
+
+## The pick-students cards are the same row, on an event screen of that day.
+func test_the_event_picker_passes_the_day_through() -> void:
+	assert_true(_passes_day("res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd",
+		"func _populate_student_cards(", "card.setup("))
+	assert_true(_passes_day("res://Scripts/SchoolSimulation/EventStudentCard.gd",
+		"func setup(", "card.setup_current_row("))
+	assert_true(_passes_day(_SCHOOL_DAY_SCRIPT, "func _handle_interactive_event(",
+		"dialog_instance.setup_event("), "SchoolDay tells the picker which day it is")

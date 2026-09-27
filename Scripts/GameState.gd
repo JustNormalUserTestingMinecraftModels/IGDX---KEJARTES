@@ -9,25 +9,22 @@ extends Node
 ## no save system -- a run is session-scoped, and adding persistence here
 ## is a design change, not a refactor.
 ##
-## Written by: student_card.gd (approves the roster into
-## `approved_students`), atur_jadwal.gd (fills `day_schedules`),
+## Written by: StudentCard.gd (approves the roster into
+## `approved_students`), AturJadwal.gd (fills `day_schedules`),
 ## StudentManager.write_back_to_gamestate() (pushes simulated stats back
-## after each day), koprasi.gd and Cart (`player_money`, `inventory`), and
+## after each day), Koperasi.gd and Cart (`player_money`, `inventory`), and
 ## DebugManager (every field, on purpose -- that is what the debug overlay
 ## is for).
 ##
 ## Read by: every screen.
 ##
-## The trap: `approved_students` holds Array[Dictionary] whose keys are the
-## UI's names -- `akademis1/2/3` are academic/seni/olahraga, and
-## `kepribadian1/2` are mood/energy. StudentData, used inside the
-## simulation, has real field names instead. convert_to_student_data_array()
-## bridges in and StudentManager.write_back_to_gamestate() bridges out. The
-## two namings do not line up, and that mismatch is the most common source
-## of bugs here.
+## The roster: `approved_students` holds Array[Dictionary] whose stat keys
+## (`akademis`, `seni_budaya`, `olahraga`, `mood`, `energy`) are the same
+## names as StudentData's fields. convert_to_student_data_array() bridges in
+## and StudentManager.write_back_to_gamestate() bridges out.
 
 # Scene navigation
-var next_scene: String = "res://Scenes/MainMenu/main_menu.tscn"
+var next_scene: String = "res://Scenes/MainMenu/MainMenu.tscn"
 
 # Student selection state (from student_card)
 var returned_from_student_card: bool = false
@@ -44,6 +41,21 @@ var day_schedules: Dictionary = {}
 ## (reset_roster_for_new_grade). Session-scoped like everything here.
 var minigame_gain_this_week: Dictionary = {}
 
+## How many items the Koperasi shelf shows -- one per Barang* slot on
+## Koperasi.tscn's Stage.
+const SHOP_SHELF_SIZE: int = 6
+## The most copies of one item a week's shelf can hold.
+const SHOP_MAX_COPIES: int = 3
+## The week the Koperasi shelf was rolled for, as shop_week_key_for(); ""
+## until the first visit. Session-scoped like everything here.
+var shop_week_key: String = ""
+## Item names on the Koperasi shelf this week, in slot order. An item can
+## fill up to SHOP_MAX_COPIES slots.
+var shop_stock: Array[String] = []
+## Item names bought this week, one entry per unit. An item sells once per
+## copy on the shelf.
+var shop_sold: Array[String] = []
+
 # Week tracking  
 var minggu_ke: int = 1
 var max_minggu: int = 6
@@ -58,7 +70,16 @@ var current_grade: int = 7:
 		max_minggu = get_max_weeks()
 var is_game_beaten: bool = false
 var debug_level_select_enabled: bool = true
+
+## True when a new game picks its grade on the Level Select (the amplop
+## fan) before the intro: once the game is beaten, or while the persisted
+## Debug Level Select toggle is on. MainMenu routes on it, and CutScene
+## defaults to Kelas 7 when it is false.
+func is_level_select_enabled() -> bool:
+	return is_game_beaten or debug_level_select_enabled
+
 var grade7_student_ids: Array = []
+var grade8_student_ids: Array = []
 
 ## Per-grade tally consumed by the run-result screen. Never null; reset by
 ## set_grade() and by the grade-advance path in RunResult.
@@ -67,6 +88,64 @@ var run_stats: RunStats = RunStats.new()
 ## True once the stat check has decided the run was lost. Read by
 ## RunResult to force a D grade without re-running the evaluation.
 var run_failed: bool = false
+
+## Emitted when a student's worn skin changes (equip_skin, or a debug lock
+## that strips it).
+signal skin_changed(student_name: String)
+## Student name -> skin id they wear. Absent means StudentSkins.DEFAULT_ID.
+## Keyed by name, not roster id, so a skin follows the character across
+## grades. Session-scoped like the roster -- not saved.
+var equipped_skins: Dictionary = {}
+## "Name:skin_id" -> unlocked. Absent means StudentSkins.UNLOCKED_BY_DEFAULT.
+## Only the debug overlay writes it (set_all_skins_locked).
+var skin_unlock_overrides: Dictionary = {}
+
+
+func equipped_skin(student_name: String) -> String:
+	return equipped_skins.get(student_name, StudentSkins.DEFAULT_ID)
+
+
+func is_skin_unlocked(student_name: String, id: String) -> bool:
+	if not StudentSkins.has_skin(student_name, id):
+		return false
+	if id == StudentSkins.DEFAULT_ID:
+		return true
+	return skin_unlock_overrides.get("%s:%s" % [student_name, id], StudentSkins.UNLOCKED_BY_DEFAULT)
+
+
+## Wears skin `id` on `student_name`. False, and nothing changes, when the
+## skin is unknown or locked. Re-equipping the worn skin succeeds silently.
+func equip_skin(student_name: String, id: String) -> bool:
+	if not is_skin_unlocked(student_name, id):
+		return false
+	if equipped_skin(student_name) == id:
+		return true
+	if id == StudentSkins.DEFAULT_ID:
+		equipped_skins.erase(student_name)
+	else:
+		equipped_skins[student_name] = id
+	skin_changed.emit(student_name)
+	return true
+
+
+## Debug: lock (or unlock) every non-default skin. Locking strips a worn skin
+## back to default, so nothing shows art the player could not pick.
+func set_all_skins_locked(locked: bool) -> void:
+	for n in StudentSkins.NAMES:
+		for id in StudentSkins.skins_for(n):
+			if id == StudentSkins.DEFAULT_ID:
+				continue
+			skin_unlock_overrides["%s:%s" % [n, id]] = not locked
+			if locked and equipped_skin(n) == id:
+				equip_skin(n, StudentSkins.DEFAULT_ID)
+
+
+## True when set_all_skins_locked(true) is in force.
+func all_skins_locked() -> bool:
+	for key in skin_unlock_overrides:
+		if skin_unlock_overrides[key] == false:
+			return true
+	return false
 
 func get_max_weeks() -> int:
 	match current_grade:
@@ -86,13 +165,14 @@ func set_grade(grade_num: int) -> void:
 	minggu_ke = 1
 	run_stats.reset()
 	run_failed = false
+	reset_shop_week()
 	if current_grade != previous_grade:
 		reset_roster_for_new_grade()  # no-op when the roster is empty
 	print("GameState grade set to: Kelas ", current_grade, " (Minggu ", minggu_ke, ", Max Minggu ", max_minggu, ")")
 
 ## Rebases every roster student's three skill stats for a new grade: keep
 ## Balance.KENAIKAN_KELAS_HEAD_START_FRAKSI of the gains made above roster
-## base, snap mood/energy to 80, and drop the cached base_akademis* so
+## base, snap mood/energy to 80, and drop the cached base_* skill keys so
 ## initialize_grade_targets() recomputes targets from the new baseline.
 ##
 ## Called by RunResult._apply_progression() on a real grade advance and by
@@ -103,9 +183,9 @@ func reset_roster_for_new_grade() -> void:
 		return
 	var frac: float = Balance.KENAIKAN_KELAS_HEAD_START_FRAKSI
 	var skill_keys := [
-		["akademis1", "roster_base_akademis1"],
-		["akademis2", "roster_base_akademis2"],
-		["akademis3", "roster_base_akademis3"],
+		["akademis", "roster_base_akademis"],
+		["seni_budaya", "roster_base_seni_budaya"],
+		["olahraga", "roster_base_olahraga"],
 	]
 	for student in approved_students:
 		for pair in skill_keys:
@@ -114,34 +194,34 @@ func reset_roster_for_new_grade() -> void:
 				student[pair[1]] = cur
 			var rbase: float = float(student[pair[1]])
 			student[pair[0]] = rbase + frac * maxf(0.0, cur - rbase)
-		student["kepribadian1"] = 80.0
-		student["kepribadian2"] = 80.0
-		student.erase("base_akademis1")
-		student.erase("base_akademis2")
-		student.erase("base_akademis3")
+		student["mood"] = 80.0
+		student["energy"] = 80.0
+		student.erase("base_akademis")
+		student.erase("base_seni_budaya")
+		student.erase("base_olahraga")
 	minigame_gain_this_week.clear()
 
 func initialize_grade_targets() -> void:
 	for student in approved_students:
-		if not student.has("base_akademis1"):
-			student["base_akademis1"] = student.get("akademis1", 50.0)
-		if not student.has("base_akademis2"):
-			student["base_akademis2"] = student.get("akademis2", 50.0)
-		if not student.has("base_akademis3"):
-			student["base_akademis3"] = student.get("akademis3", 50.0)
+		if not student.has("base_akademis"):
+			student["base_akademis"] = student.get("akademis", 50.0)
+		if not student.has("base_seni_budaya"):
+			student["base_seni_budaya"] = student.get("seni_budaya", 50.0)
+		if not student.has("base_olahraga"):
+			student["base_olahraga"] = student.get("olahraga", 50.0)
 			
-		var b1 = student["base_akademis1"]
-		var b2 = student["base_akademis2"]
-		var b3 = student["base_akademis3"]
+		var base_akademis = student["base_akademis"]
+		var base_seni_budaya = student["base_seni_budaya"]
+		var base_olahraga = student["base_olahraga"]
 		
 		var uplift := Balance.TARGET_KENAIKAN_KELAS_7
 		match current_grade:
 			8: uplift = Balance.TARGET_KENAIKAN_KELAS_8
 			9: uplift = Balance.TARGET_KENAIKAN_KELAS_9
-		student["target_akademis1"] = clampf(b1 + uplift, 0.0, 100.0)
-		student["target_akademis2"] = clampf(b2 + uplift, 0.0, 100.0)
-		student["target_akademis3"] = clampf(b3 + uplift, 0.0, 100.0)
-		print("Initialized targets for student: ", student.get("name", ""), " to [", student["target_akademis1"], ", ", student["target_akademis2"], ", ", student["target_akademis3"], "]")
+		student["target_akademis"] = clampf(base_akademis + uplift, 0.0, 100.0)
+		student["target_seni_budaya"] = clampf(base_seni_budaya + uplift, 0.0, 100.0)
+		student["target_olahraga"] = clampf(base_olahraga + uplift, 0.0, 100.0)
+		print("Initialized targets for student: ", student.get("name", ""), " to [", student["target_akademis"], ", ", student["target_seni_budaya"], ", ", student["target_olahraga"], "]")
 
 
 
@@ -240,25 +320,101 @@ func clear_inventory_save() -> void:
 	if FileAccess.file_exists(INVENTORY_SAVE_PATH):
 		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
 
+## Forget the stocked week, so the next shop_stock_for_week() rolls a fresh
+## shelf with nothing sold. Every run restart calls this: it resets
+## minggu_ke to 1, and without it a retried grade -- or Kelas 7 after a loss
+## or after beating the game -- would land on the last run's key.
+func reset_shop_week() -> void:
+	shop_week_key = ""
+	shop_stock = []
+	shop_sold = []
+
+
+## The key a week's Koperasi shelf is stored under. The grade is part of it
+## because a new grade restarts minggu_ke at 1.
+static func shop_week_key_for(grade: int, week: int) -> String:
+	return "%d-%d" % [grade, week]
+
+
+## A shelf of `size` names drawn from a bag holding every name
+## `max_copies` times, in slot order. Pure, apart from the global RNG
+## that shuffle() uses.
+static func roll_shop_stock(names: Array[String], size: int, max_copies: int) -> Array[String]:
+	var bag: Array[String] = []
+	for item_name in names:
+		for _copy in range(max_copies):
+			bag.append(item_name)
+	bag.shuffle()
+	var stock: Array[String] = []
+	for i in range(mini(size, bag.size())):
+		stock.append(bag[i])
+	return stock
+
+
+## This week's Koperasi shelf. The first call in a (grade, week) rolls
+## SHOP_SHELF_SIZE items from ItemDatabase (roll_shop_stock, so a pair can
+## turn up) and clears shop_sold; every later call that week returns the
+## same items in the same order.
+func shop_stock_for_week() -> Array[String]:
+	var key := shop_week_key_for(current_grade, minggu_ke)
+	if key != shop_week_key:
+		shop_week_key = key
+		shop_sold = []
+		var names: Array[String] = []
+		for item in ItemDatabase.get_all_items():
+			names.append(item.item_name)
+		shop_stock = roll_shop_stock(names, SHOP_SHELF_SIZE, SHOP_MAX_COPIES)
+	return shop_stock.duplicate()
+
+
+## Record one unit of `item_name` bought this week. Capped at the copies on
+## the shelf (at least one, so an unstocked name still sells once).
+func mark_shop_sold(item_name: String) -> void:
+	if shop_sold.count(item_name) < maxi(1, shop_stock.count(item_name)):
+		shop_sold.append(item_name)
+
+
+## True when `item_name` was bought this week.
+func is_shop_sold(item_name: String) -> bool:
+	return shop_sold.has(item_name)
+
+
+## True once every copy on this week's shelf has been bought. False before
+## the shelf is first rolled.
+func is_shop_sold_out() -> bool:
+	if shop_stock.is_empty():
+		return false
+	for item_name in shop_stock:
+		if shop_sold.count(item_name) < shop_stock.count(item_name):
+			return false
+	return true
+
+
 ## Debug: return every session run-state field to its declared default and
 ## drop the on-disk inventory save. Deliberately leaves is_game_beaten and
 ## debug_level_select_enabled alone -- those are persisted progress flags
 ## (GameSettings writes them to settings.cfg), not run state.
 func forget_session() -> void:
-	next_scene = "res://Scenes/MainMenu/main_menu.tscn"
+	next_scene = "res://Scenes/MainMenu/MainMenu.tscn"
 	returned_from_student_card = false
 	approved_students = []
 	selected_student = {}
 	selected_day = ""
 	day_schedules = {}
 	minigame_gain_this_week = {}
+	shop_week_key = ""
+	shop_stock = []
+	shop_sold = []
 	minggu_ke = 1
 	lobby_tutorial_completed = false
 	tutorials_bypassed = false
 	current_grade = 7
 	max_minggu = get_max_weeks()
 	grade7_student_ids = []
+	grade8_student_ids = []
 	run_failed = false
+	equipped_skins = {}
+	skin_unlock_overrides = {}
 	player_money = 0
 	pending_earnings = {}
 	inventory.clear()
@@ -266,6 +422,7 @@ func forget_session() -> void:
 	last_claim_date = ""
 	run_stats.reset()
 	clear_inventory_save()
+	Achievements.reset()
 	inventory_changed.emit()
 
 
@@ -277,9 +434,8 @@ const STAT_MAX := 100.0
 ## The teammate's build had a single global player_mood/player_energy;
 ## this project tracks both per student, so the caller must say who. The
 ## approved_students dictionaries are the cross-screen source of truth,
-## so that is what gets written. Writes the CANONICAL roster keys the
-## simulation reads: kepribadian1 (mood), kepribadian2 (energy),
-## akademis1/2/3 (the three skills) — never the dead "mood"/"energy" keys.
+## so that is what gets written: the roster keys `mood`, `energy`,
+## `akademis`, `seni_budaya` and `olahraga`, the names StudentData uses.
 ##
 ## Returns {"applied": bool, "mood_delta","energy_delta","akademis_delta",
 ## "seni_delta","olahraga_delta": float} — five deltas, each the amount that
@@ -302,11 +458,11 @@ func use_item(item: ItemData, student_id: int, quantity: int = 1) -> Dictionary:
 		return refused
 
 	var fields := [
-		["kepribadian1", item.mood_boost,        "mood_delta"],
-		["kepribadian2", item.energy_boost,      "energy_delta"],
-		["akademis1",    item.akademis_boost,    "akademis_delta"],
-		["akademis2",    item.seni_budaya_boost, "seni_delta"],
-		["akademis3",    item.olahraga_boost,    "olahraga_delta"],
+		["mood",        item.mood_boost,        "mood_delta"],
+		["energy",      item.energy_boost,      "energy_delta"],
+		["akademis",    item.akademis_boost,    "akademis_delta"],
+		["seni_budaya", item.seni_budaya_boost, "seni_delta"],
+		["olahraga",    item.olahraga_boost,    "olahraga_delta"],
 	]
 	var out := {"applied": true}
 	for f in fields:
@@ -364,41 +520,48 @@ func _ready():
 	load_inventory()
 
 # --- Converter: Dictionary → StudentData (for simulation) ---
+## One roster entry as a simulation StudentData. The single conversion rule:
+## convert_to_student_data_array() and the item screen's student cards both
+## go through here, so a student can never be converted two different ways.
+func student_data_from_dict(dict: Dictionary) -> StudentData:
+	var sd = StudentData.new()
+	sd.id = dict.get("id", 0)
+	sd.student_name = dict.get("name", "")
+	sd.akademis = dict.get("akademis", 50.0)
+	sd.seni_budaya = dict.get("seni_budaya", 50.0)
+	sd.olahraga = dict.get("olahraga", 50.0)
+	sd.mood = dict.get("mood", 80.0)
+	sd.energy = dict.get("energy", 80.0)
+
+	# 0.0, not 50.0: count_targets_cleared() reads the same three keys
+	# with a 0.0 default, and the two sides of the bridge must agree on
+	# what an uninitialized target looks like. See target_cleared().
+	sd.target_akademis = dict.get("target_akademis", 0.0)
+	sd.target_seni_budaya = dict.get("target_seni_budaya", 0.0)
+	sd.target_olahraga = dict.get("target_olahraga", 0.0)
+	sd.target_mood = dict.get("target_mood", 50.0)
+	sd.target_energy = dict.get("target_energy", 50.0)
+	sd.quirk = dict.get("quirk", "")
+	sd.persona = dict.get("persona", "")
+	sd.personality = dict.get("personality", "Santai")
+	sd.profil = dict.get("profil", "")
+	sd.splash_path = StudentSkins.splash_for(dict)
+
+	var port_path := StudentSkins.portrait_for(dict)
+	if port_path != "" and ResourceLoader.exists(port_path):
+		sd.avatar_texture = load(port_path)
+
+	# Map hobby_category: "Akademik" → "Akademis"
+	var hobby = dict.get("hobby_category", "")
+	sd.specialty_category = "Akademis" if hobby == "Akademik" else hobby
+	sd.record_initial_stats()
+	return sd
+
+
 func convert_to_student_data_array() -> Array[StudentData]:
 	var result: Array[StudentData] = []
 	for dict in approved_students:
-		var sd = StudentData.new()
-		sd.id = dict.get("id", 0)
-		sd.student_name = dict.get("name", "")
-		sd.akademis = dict.get("akademis1", 50.0)
-		sd.seni_budaya = dict.get("akademis2", 50.0)
-		sd.olahraga = dict.get("akademis3", 50.0)
-		sd.mood = dict.get("kepribadian1", 80.0)
-		sd.energy = dict.get("kepribadian2", 80.0)
-		
-		# 0.0, not 50.0: count_targets_cleared() reads the same three keys
-		# with a 0.0 default, and the two sides of the bridge must agree on
-		# what an uninitialized target looks like. See target_cleared().
-		sd.target_akademis1 = dict.get("target_akademis1", 0.0)
-		sd.target_akademis2 = dict.get("target_akademis2", 0.0)
-		sd.target_akademis3 = dict.get("target_akademis3", 0.0)
-		sd.target_kepribadian1 = dict.get("target_kepribadian1", 50.0)
-		sd.target_kepribadian2 = dict.get("target_kepribadian2", 50.0)
-		sd.quirk = dict.get("quirk", "")
-		sd.persona = dict.get("persona", "")
-		sd.personality = dict.get("personality", "Santai")
-		sd.profil = dict.get("profil", "")
-		sd.splash_path = dict.get("splash", "")
-		
-		var port_path = dict.get("portrait", "")
-		if port_path != "" and ResourceLoader.exists(port_path):
-			sd.avatar_texture = load(port_path)
-		
-		# Map hobby_category: "Akademik" → "Akademis"
-		var hobby = dict.get("hobby_category", "")
-		sd.specialty_category = "Akademis" if hobby == "Akademik" else hobby
-		sd.record_initial_stats()
-		result.append(sd)
+		result.append(student_data_from_dict(dict))
 	return result
 
 # Get jadwal for a day across all approved students
@@ -442,16 +605,15 @@ func check_semester_passed() -> bool:
 ## Counts how many of the roster's three-per-student academic targets have
 ## been cleared, as [cleared, total]. RunGrade's dominant scoring
 ## component -- kept here rather than in RunResult because it reads the
-## approved_students dictionaries, whose key naming (akademis1/2/3 =
-## academic/seni/olahraga) is this file's own concern.
+## approved_students dictionaries, which are this file's own concern.
 func count_targets_cleared() -> Array:
 	var cleared := 0
 	var total := 0
 	for student in approved_students:
 		var pairs := [
-			["akademis1", "target_akademis1"],
-			["akademis2", "target_akademis2"],
-			["akademis3", "target_akademis3"],
+			["akademis", "target_akademis"],
+			["seni_budaya", "target_seni_budaya"],
+			["olahraga", "target_olahraga"],
 		]
 		for pair in pairs:
 			total += 1

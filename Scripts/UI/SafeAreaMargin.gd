@@ -69,8 +69,10 @@ func _apply() -> void:
 			clampf(inset.w, 0.0, size.y * 0.4))
 		# Silent clamping would hide a real, larger inset on some future
 		# device (foldables, unusual notches) with no diagnostic trail --
-		# warn whenever the raw value actually needed correcting.
-		if clamped != inset:
+		# warn whenever the raw value actually needed correcting. Devices
+		# only: in an editor or desktop run the monitor's safe area always
+		# exceeds the window, so the warning fired for every SafeAreaMargin.
+		if clamped != inset and OS.has_feature("mobile"):
 			push_warning(
 				"SafeAreaMargin: safe-area inset %s clamped to %s (window %s smaller than reported safe area -- expected in a windowed editor run, worth a second look on a real device)"
 				% [inset, clamped, win])

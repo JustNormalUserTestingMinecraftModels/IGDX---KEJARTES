@@ -1,11 +1,13 @@
 [gd_scene format=3 uid="uid://dbpxkqo7wrn8e"]
 
 [ext_resource type="Material" uid="uid://dv5bscxw2v678" path="res://Scripts/Shaders/soft_shadow_material.tres" id="1_cldr3"]
+[ext_resource type="Script" uid="uid://xt3rlfwgkj05" path="res://Scripts/UI/PaperShadow.gd" id="1_i5kdb"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="2_i5kdb"]
 
 [node name="PaperShadow" type="TextureRect" unique_id=1373524025]
 show_behind_parent = true
 mouse_filter = 2
+script = ExtResource("1_i5kdb")
 
 [node name="Silhouette" type="TextureRect" parent="." unique_id=2073103325]
 self_modulate = Color(0, 0, 0, 0.33)

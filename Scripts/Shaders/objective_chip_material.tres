@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://Scripts/Shaders/rounded_gradient.gdshader" id="1_rg"]
+
+[resource]
+shader = ExtResource("1_rg")
+shader_parameter/color_a = Color(1, 0.7882353, 0.23529412, 1)
+shader_parameter/color_b = Color(0.75, 0.5911765, 0.1764706, 1)
+shader_parameter/rim_a = Color(1, 0.9647059, 0.9098039, 1)
+shader_parameter/rim_b = Color(1, 0.9647059, 0.9098039, 1)
+shader_parameter/rim_px = 3.0
+shader_parameter/radius_px = 999.0

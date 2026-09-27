@@ -90,7 +90,7 @@ func test_the_narrow_contact_poses_are_widened() -> void:
 
 
 func test_slot_counts_track_the_roster_size() -> void:
-	# Grades 7/8/9 approve 2/3/4 students -- student_card.gd:99-102.
+	# Grades 7/8/9 approve 2/3/4 students -- StudentCard.gd:99-102.
 	assert_eq(WinLineup.slots_for(2).size(), 2, "grade 7 roster")
 	assert_eq(WinLineup.slots_for(3).size(), 3, "grade 8 roster")
 	assert_eq(WinLineup.slots_for(4).size(), 4, "grade 9 roster")
@@ -131,7 +131,7 @@ func test_everyone_else_fills_in_roster_order() -> void:
 	assert_eq(by_name["Citra"], WinLineup.SLOT_FRONT_MID, "third non-Doni")
 
 
-## The array is returned in DRAW order, back to front, so EndCutscene can
+## The array is returned in DRAW order, back to front, so WinStage can
 ## map element i onto sibling Student{i+1} and get z-order for free. The
 ## front-low figure is closest to camera and must therefore be last.
 func test_placements_come_back_in_draw_order_back_to_front() -> void:

@@ -24,13 +24,25 @@ func test_every_declared_variation_exists() -> void:
 	# because Godot silently falls back to the base type.
 	var expected := [
 		"PrimaryButton", "SecondaryButton", "DangerButton",
-		"Card", "SunkenPanel", "Scrim",
+		"Card", "SunkenPanel", "Scrim", "PhotoFrame",
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
-		"CaptionLabel", "MicroLabel", "StatBar", "FilterChipButton",
+		"CaptionLabel", "MicroLabel", "StatBar", "AchievementTileBar", "FilterChipButton",
+		"EventDialoguePanel", "EventDialogueText", "DayBannerPanel", "DayBannerLabel", "CalendarLabel",
 	]
 	var actual := _theme.get_type_list()
 	for variation in expected:
 		assert_true(actual.has(variation), "theme must declare type: " + variation)
+
+
+## WinStage's PhotoFrame: the win painting's white print.
+func test_photo_frame_is_an_opaque_white_print() -> void:
+	var sb := _theme.get_stylebox("panel", "PhotoFrame") as StyleBoxFlat
+	assert_true(sb != null, "PhotoFrame has a flat panel stylebox")
+	if sb == null:
+		return
+	assert_eq(sb.bg_color.a, 1.0, "opaque, so the bars never show through the border")
+	assert_gt(sb.bg_color.get_luminance(), 0.9, "and white, like photo paper")
+	assert_gt(sb.shadow_size, 0, "lifted off the ground by a shadow")
 
 
 func test_button_variations_have_all_four_states() -> void:
@@ -78,36 +90,6 @@ func test_changing_a_token_changes_the_built_theme() -> void:
 	var sb := custom_theme.get_stylebox("normal", "PrimaryButton") as StyleBoxFlat
 	assert_eq(sb.bg_color, Color("ff0000"),
 		"theme must be derived from tokens, not hardcoded")
-
-
-## Task 3 of the mockup-rescale plan added these shadows as literal Color(...)
-## values instead of tokens -- the only hardcoded colors in the whole file.
-## This proves the fix: change the token, get a different shadow.
-func test_preview_shadows_come_from_tokens() -> void:
-	var custom := DesignTokens.new()
-	custom.preview_row_shadow_color = Color(1, 0, 0, 0.5)
-	custom.preview_row_shadow_size = 9
-	custom.preview_row_shadow_offset = Vector2(0, 9)
-	custom.preview_pill_shadow_color = Color(0, 1, 0, 0.5)
-	custom.preview_pill_shadow_size = 11
-	custom.preview_pill_shadow_offset = Vector2(0, 11)
-	var custom_theme := ThemeFactory.build(custom)
-
-	# PreviewRow used to consume preview_row_shadow_* here. The 2026-09-10
-	# cream pass dropped its shadow entirely, so the row is asserted to
-	# ignore those tokens rather than to honour them -- the guard against a
-	# hardcoded literal now lives on the pill alone, below. The three
-	# preview_row_shadow_* tokens are consequently unread by any variation.
-	assert_true(custom_theme.get_stylebox("panel", "PreviewRow") is StyleBoxEmpty,
-		"PreviewRow draws nothing, so no shadow token can reach it")
-
-	var pill_sb := custom_theme.get_stylebox("panel", "PreviewPill") as StyleBoxFlat
-	assert_eq(pill_sb.shadow_color, custom.preview_pill_shadow_color,
-		"PreviewPill shadow color must come from tokens, not a hardcoded literal")
-	assert_eq(pill_sb.shadow_size, custom.preview_pill_shadow_size,
-		"PreviewPill shadow size must come from tokens, not a hardcoded literal")
-	assert_eq(pill_sb.shadow_offset, custom.preview_pill_shadow_offset,
-		"PreviewPill shadow offset must come from tokens, not a hardcoded literal")
 
 
 func test_build_survives_null_fonts() -> void:
@@ -199,10 +181,10 @@ func test_main_menu_button_variation_exists_and_is_sized_for_the_mockup() -> voi
 	assert_eq(theme.get_type_variation_base("MainMenuButton"), &"Button",
 		"MainMenuButton must vary the Button type")
 
-	# The mockup's buttons are trait_button.png recoloured: same 9-slice art.
-	var normal := theme.get_stylebox("normal", "MainMenuButton")
-	assert_true(normal is StyleBoxTexture,
-		"MainMenuButton must draw the trait_button.png 9-slice, not a flat box")
+	# Since the 2026-09-14 lobby-style-buttons pass it is the Lobby's flat box.
+	var normal := theme.get_stylebox("normal", "MainMenuButton") as StyleBoxFlat
+	assert_true(normal != null and normal.bg_color == tokens.brand_primary_light,
+		"MainMenuButton wears the Lobby's fill")
 
 	# Font size 80, not the mockup-implied 100: see the spec's typography
 	# section -- PENGATURAN at 100 overflows the 624 px inner box by 131 px.
@@ -319,17 +301,62 @@ const DISPLAY_ROSTER := [
 	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
 	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
-	"TraitPill", "PreviewRowLabel",
+	"TraitPill",
+	# 2026-09-24 Penjadwalan picker rebuild.
+	"PickerTitleLabel", "PickerTileName", "PickerTileValue", "PickerRibbonLabel",
+	# 2026-09-24 SchoolDay liveliness: the "selesai" stamp and the daily
+	# result's verdict headline and tally numbers.
+	"DayStampLabel", "VerdictHeadlineLabel",
+	"TallyValueGain", "TallyValueTarget", "TallyValueCoin",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
 	"RecapPillValueLabel", "ScoreHudValueLabel",
+	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
+	"ResultButton",
+	# 2026-09-19 weekly results mockup: the light-red Logs button.
+	"ResultLogsButton",
+	# 2026-09-14 lobby-style-buttons: the two kept looks.
+	"StudentCardSecondaryButton", "StudentCardSecondaryButtonL",
+	"RosterStatusBelum", "RosterStatusSudah",
 	# 2026-09-08: event popup title, display face at H1+6.
 	"EventDialogHeaderLabel",
+	# 2026-09-12: the slide warning's caption, display face at DisplayLabel size.
+	"EventWarningCaptionLabel",
+	# 2026-09-21 minigame type ladder: the badge, the two Menjodohkan wheel
+	# headers and PilihanGanda's choice buttons. The other three variations
+	# from that pass -- MinigameQuestionLabel, MinigameMetaLabel and
+	# MinigameOverlayLabel -- are deliberately absent: a quiz question and
+	# its meta are body copy, so they keep the body face.
+	"MinigameBadgeLabel", "MinigameWheelHeaderWarm", "MinigameWheelHeaderCool",
+	"MinigameChoiceButton",
+	# 2026-09-25 minigame win screen: the bubble line and the stat numbers.
+	"MinigameWinLine", "MinigameWinStatLabel",
+	# 2026-09-25: the Koperasi price, heading face in cream.
+	"PriceTagLabel",
 	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
 	# this roster in the same pass -- LobbyNavTile and LobbyCtaButton
 	# replaced it.
 	"PrimaryButtonM", "SecondaryButtonM", "DangerButtonM",
 	"PrimaryButtonL", "SecondaryButtonL", "DangerButtonL", "SuccessButtonL",
 	"LobbyNavTile", "LobbyCtaButton",
+	# 2026-09-24 AturJadwal visual polish D7: the "perlu" / "lelah" weak-stat
+	# chips are badges. The value pills are numbers, so they keep the body face.
+	"StatFlagPerlu", "StatFlagLelah",
+	# D8: the objective strip's title and its star chip. Its hint is body copy.
+	"ObjectiveTitleLabel", "ObjectiveStarLabel",
+	# 2026-09-17 achievements: card titles, the Klaim pill, the unlock banner.
+	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
+	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",
+	# 2026-09-18 achievements-polish: the grid tile's prize chip and BARU pip.
+	# AchievementBaruBadgeLabel left on 2026-09-22 with the BARU pip itself,
+	# replaced by the notice_icon TextureRect, which carries no text.
+	"AchievementPrizeChipLabel", "AchievementPrizeChipLabelAmber",
+	# 2026-09-22 SkinSelect: the skin's name and the "sedang dipakai" chip.
+	# 2026-09-23 skin-select-slide Task 3: the TERAPKAN button and the
+	# character title over the carousel.
+	"SkinNameLabel", "SkinWornChipLabel", "SkinApplyButton", "SkinTitleLabel",
+	# 2026-09-18 achievements-polish Task 4: the header status pill's two
+	# state labels.
+	"AchievementStatusPillIdleLabel", "AchievementStatusPillWaitingLabel",
 	# 2026-09-09 student card arrow buttons: circles with brand fill.
 	"CardArrowButton",
 	# 2026-09-09 trait popup readability: cream display labels for the
@@ -344,7 +371,27 @@ const DISPLAY_ROSTER := [
 	"SpecialtyBadge",
 	"SpecialtyBadgeS", "PersonaBadgeS", "QuirkBadgeS",
 	"SpecialtyBadgeM", "PersonaBadgeM", "QuirkBadgeM",
+	# 2026-09-11: the student's name alone on StatCheck's painted plate.
+	"PlateNameLabel",
+	# 2026-09-11 Koperasi Part 2: the tray's ×N and count badges.
+	"TrayBadgeLabel",
 ]
+
+
+## StatCheck's page shows the student's name alone on StudentCard's
+## painted brown plate (2026-09-11). Cream, because the plate is dark; the
+## display step, because it is the only text on the page.
+func test_plate_name_label_is_cream_display_text() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	assert_true(theme.get_type_list().has("PlateNameLabel"),
+		"ThemeFactory must build a PlateNameLabel variation")
+	assert_eq(theme.get_type_variation_base("PlateNameLabel"), &"Label",
+		"PlateNameLabel varies Label")
+	assert_eq(theme.get_font_size("font_size", "PlateNameLabel"),
+		tokens.font_display_size, "the display step")
+	assert_eq(theme.get_color("font_color", "PlateNameLabel"),
+		tokens.text_on_brand, "cream, to read on the brown plate")
 
 
 ## Every type ThemeFactory builds must also be in the BAKED theme.
@@ -488,3 +535,10 @@ func test_ghost_button_draws_no_resting_chrome() -> void:
 		"and on press")
 	assert_eq(_theme.get_type_variation_base("GhostButton"), &"Button",
 		"it varies Button")
+
+## 2026-09-19: the weekly report takes PR #53's cream ID card; its frame
+## and brown name band are these two variations.
+func test_id_card_variations_exist() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
+	for v in ["IdCardPanel", "RecapMastheadPanel"]:
+		assert_true(theme.get_type_list().has(v), "%s missing" % v)

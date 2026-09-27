@@ -7,20 +7,26 @@ extends McpTestSuiteCompat
 ##
 ## The art ships as six separately-cropped PNGs with no canvas offsets of their
 ## own, so every layer position in the rig was solved rather than eyeballed:
-## each crop was matched back onto the flattened Assets/Images/MuridPotrait/
+## each crop was matched back onto the flattened Assets/Images/MuridPortrait/
 ## Citra.png, and Sclera/Eyelid were pinned exactly by the transparent eye
 ## cut-outs in citra_base.png, which they plug to the pixel. _GEOMETRY below
 ## freezes that solve -- if someone nudges a layer in the viewport, this suite
 ## says so.
 ##
-## The one correction worth remembering: citra_eyebrows.png was originally
-## delivered as "citra_eyelashes_closed" and first wired as the lower half of a
-## blink. It is the eyebrows, it is always visible, and it is the topmost layer
-## because the base has hair (not brows) beneath it.
+## Two corrections worth remembering:
+##  * citra_eyebrows.png was originally delivered as "citra_eyelashes_closed"
+##    and first wired as the lower half of a blink. It is the eyebrows, it is
+##    always visible, and it is the topmost layer because the base has hair
+##    (not brows) beneath it.
+##  * Sclera and Eyelid first shipped 1 px high, at y=578. That left 114 eye
+##    cut-out pixels covered by no layer, and the lobby showed through as a
+##    faint line along the top rim of each eye. The plug is at y=579, the one
+##    placement where the sclera best fills the holes; the see-through test
+##    below counts what is left open.
 ##
-## Blink is deliberately inert. The Eyelid layer is in the rig and blink()
-## works, but idle_blink_enabled defaults false, so nothing closes the eyes on
-## its own yet; two tests below pin both halves of that.
+## Blink is on (2026-09-19 student-chatter spec, addendum): each rig closes
+## its eyes on its own every 5-10 s, and the Eyelid layer -- the student's
+## closed-eye art -- fades in, holds and fades out rather than cutting.
 ##
 ## Technique notes, per this project's runner:
 ##  * This suite must be @tool or the runner reports the class abstract.
@@ -35,8 +41,8 @@ extends McpTestSuiteCompat
 
 const _RIG_PATH := "res://Scenes/Lobby/CitraFace.tscn"
 const _SHADER_PATH := "res://Scripts/Shaders/eye_mask.gdshader"
-const _LOBBY_SCRIPT := "res://Scripts/Lobby/loby.gd"
-const _ART_DIR := "res://Assets/Images/MuridPotrait/Citra"
+const _LOBBY_SCRIPT := "res://Scripts/Lobby/Lobby.gd"
+const _ART_DIR := "res://Assets/Images/MuridPortrait/Citra"
 
 ## Layer nodes under Canvas, back to front. Order here is draw order: the
 ## eyebrows are last because they sit over the fringe.
@@ -48,12 +54,23 @@ const _LAYERS: Array[String] = [
 ## for how these were derived; they are art facts, not preferences.
 const _GEOMETRY: Array = [
 	["Base", Vector2(0, 0), Vector2(1280, 1280)],
-	["Sclera", Vector2(427, 578), Vector2(426, 95)],
+	["Sclera", Vector2(427, 579), Vector2(426, 95)],
 	["Pupil", Vector2(476, 571), Vector2(328, 99)],
 	["Eyelashes", Vector2(391, 534), Vector2(498, 93)],
-	["Eyelid", Vector2(419, 578), Vector2(442, 106)],
+	["Eyelid", Vector2(419, 579), Vector2(442, 106)],
 	["Eyebrows", Vector2(447, 499), Vector2(384, 26)],
 ]
+
+## The layers that hide what is behind them in the resting face. Pupil is
+## left out because the eye-mask shader clips it to the sclera, so it can
+## never cover more than the sclera does. Eyelid is left out because it is
+## hidden until a blink.
+const _COVER_LAYERS: Array[String] = ["Sclera", "Eyelashes", "Eyebrows"]
+
+## Where citra_base.png's eye cut-outs are, in canvas pixels: the Sclera's
+## solved rect plus a 4 px rim. It is fixed rather than read off the Sclera
+## node, so a moved Sclera cannot drag the scan away from the holes.
+const _EYE_WINDOW := Rect2i(423, 575, 434, 103)
 
 ## One PNG per layer, named after the layer it feeds.
 const _ART_FILES: Array[String] = [
@@ -64,6 +81,53 @@ const _ART_FILES: Array[String] = [
 
 func suite_name() -> String:
 	return "student_face"
+
+
+# ---------------------------------------------------------------- idle blink
+# The blink shipped in 27ae2cc. These pin it rather than build it: the
+# behaviour was already exactly what was asked for (5-10 s, from the Eyelid
+# layer), and what it lacked was anything stopping a later edit from
+# quietly dropping it.
+
+func test_idle_blink_waits_between_five_and_ten_seconds() -> void:
+	var face := StudentFace.new()
+	assert_eq(face.blink_hold_range, Vector2(5.0, 10.0),
+		"idle blinks must be 5-10 s apart")
+	assert_true(face.idle_blink_enabled, "rigs must blink by default")
+	face.free()
+
+
+func test_a_blink_uses_the_eyelid_layer() -> void:
+	# The Eyelid layer is the closed-eye art, drawn above the open eye and
+	# carrying its own lash line. Fading anything else would show an open eye
+	# through a closed lid.
+	assert_true(StudentFace.LAYER_NAMES.has("Eyelid"),
+		"the rig must carry an Eyelid layer")
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/StudentFace.gd")
+	assert_true(src != "", "StudentFace.gd must exist")
+	assert_true(src.contains('_layer("Eyelid")'),
+		"the blink must drive the Eyelid layer")
+
+
+func test_each_rig_blinks_on_its_own_clock() -> void:
+	# motion_seed 0 randomises. A fixed default would have every seat blink
+	# in step, which reads as a glitch rather than as life.
+	var face := StudentFace.new()
+	assert_eq(face.motion_seed, 0,
+		"the default seed must randomise so seats blink independently")
+	face.free()
+
+
+## The blink is a fade, not a cut: the lid fades in, holds shut, fades out.
+## Stepped synchronously through advance_motion() because the runner cannot
+## await -- an await here would abort the test and report 0 assertions.
+func test_a_blink_fades_rather_than_cutting() -> void:
+	var face := StudentFace.new()
+	assert_true(face.blink_fade_seconds > 0.0,
+		"a zero fade would make the blink a hard cut")
+	assert_true(face.blink_close_seconds > 0.0,
+		"the eyes must actually hold shut")
+	face.free()
 
 
 var _face: StudentFace
@@ -110,6 +174,73 @@ func test_each_layer_sits_at_its_solved_canvas_offset() -> void:
 		assert_true(node.size.is_equal_approx(entry[2]),
 			"%s is no longer drawn at its native size: %s, expected %s"
 				% [layer_name, node.size, entry[2]])
+
+
+func test_no_eye_cut_out_is_left_see_through() -> void:
+	# A cut-out pixel is see-through when the base is transparent there and no
+	# resting layer covers it at alpha >= 0.5; the lobby shows through it.
+	# The Sclera alone leaves two anti-aliased rim pixels, at (438-439, 581),
+	# and the lashes cover both. With the Sclera at y=578 this counts 114.
+	var holes := _cut_out_pixels(_layer("Base").texture.get_image(), _EYE_WINDOW)
+	assert_gt(holes.size(), 0,
+		"citra_base.png must still have eye cut-outs, or this test proves nothing")
+	var covers: Array = []
+	for layer_name in _COVER_LAYERS:
+		var node := _layer(layer_name)
+		covers.append([node.texture.get_image(), Vector2i(node.position)])
+	var open: Array[Vector2i] = []
+	for p in holes:
+		var covered := false
+		for c in covers:
+			var img: Image = c[0]
+			var local: Vector2i = p - c[1]
+			if local.x >= 0 and local.y >= 0 and local.x < img.get_width() \
+				and local.y < img.get_height() and img.get_pixelv(local).a >= 0.5:
+				covered = true
+				break
+		if not covered:
+			open.append(p)
+	assert_eq(open.size(), 0,
+		"%d eye cut-out pixels show the lobby through Citra's face, first %s"
+			% [open.size(), open.slice(0, 6)])
+
+
+## The base's eye cut-outs inside `window`: its transparent pixels (alpha
+## below 0.5) that are not connected 4-way to the window's edge. Transparency
+## that reaches the edge is the canvas around the face, not a hole in it.
+func _cut_out_pixels(img: Image, window: Rect2i) -> Array[Vector2i]:
+	var w := window.size.x
+	var h := window.size.y
+	var outside := PackedByteArray()
+	outside.resize(w * h)
+	var queue: Array[Vector2i] = []
+	for x in range(w):
+		queue.append(Vector2i(x, 0))
+		queue.append(Vector2i(x, h - 1))
+	for y in range(h):
+		queue.append(Vector2i(0, y))
+		queue.append(Vector2i(w - 1, y))
+	var head := 0
+	while head < queue.size():
+		var p: Vector2i = queue[head]
+		head += 1
+		if p.x < 0 or p.y < 0 or p.x >= w or p.y >= h:
+			continue
+		var i := p.y * w + p.x
+		if outside[i] == 1 or img.get_pixelv(window.position + p).a >= 0.5:
+			continue
+		outside[i] = 1
+		queue.append(p + Vector2i.RIGHT)
+		queue.append(p + Vector2i.LEFT)
+		queue.append(p + Vector2i.DOWN)
+		queue.append(p + Vector2i.UP)
+	var holes: Array[Vector2i] = []
+	for y in range(h):
+		for x in range(w):
+			var p := window.position + Vector2i(x, y)
+			if outside[y * w + x] == 0 and img.get_pixelv(p).a < 0.5:
+				holes.append(p)
+	return holes
 
 
 func test_the_eyelid_is_the_only_layer_that_starts_hidden() -> void:
@@ -223,26 +354,42 @@ func test_the_gaze_can_be_frozen() -> void:
 		"with idle_gaze_enabled off the pupil must stay at rest")
 
 
-func test_a_blink_closes_the_eye_and_lifts_again() -> void:
+func test_a_blink_fades_the_lid_in_holds_and_fades_out() -> void:
 	var eyelid := _layer("Eyelid")
 	assert_false(eyelid.visible, "eyes start open")
 	_face.blink()
-	assert_true(eyelid.visible, "blink() lowers the lid")
-	_face.advance_motion(_face.blink_close_seconds + 0.01)
-	assert_false(eyelid.visible, "the lid lifts once blink_close_seconds elapses")
+	assert_true(eyelid.visible, "blink() starts lowering the lid")
+	assert_true(_face.get_eyelid_alpha() < 0.01, "the lid fades in, it does not cut")
+	_face.advance_motion(_face.blink_fade_seconds * 0.5)
+	var half := _face.get_eyelid_alpha()
+	assert_true(half > 0.2 and half < 0.8, "half-way through the fade (got %f)" % half)
+	_face.advance_motion(_face.blink_fade_seconds * 0.5 + 0.001)
+	assert_true(_face.get_eyelid_alpha() > 0.99, "fully shut after the fade")
+	_face.advance_motion(_face.blink_close_seconds)
+	assert_true(eyelid.visible, "still shut or lifting after the hold")
+	_face.advance_motion(_face.blink_fade_seconds + 0.01)
+	assert_false(eyelid.visible, "the lid is gone once the fade-out ends")
+	assert_true(_face.get_eyelid_alpha() > 0.99, "alpha reset for the next blink")
 
 
-func test_idle_blinking_is_wired_in_but_switched_off() -> void:
-	# The eyelid layer is present and blink() works; nothing drives it yet.
-	assert_false(_face.idle_blink_enabled,
-		"idle blinking stays off until the blink pass is actually done")
+func test_idle_blinking_is_on_every_five_to_ten_seconds() -> void:
+	assert_true(_face.idle_blink_enabled, "students blink by default")
+	assert_eq(_face.blink_hold_range, Vector2(5.0, 10.0))
 	var eyelid := _layer("Eyelid")
-	for _i in range(2000):
-		_face.advance_motion(0.05)
-		if eyelid.visible:
-			break
-	assert_false(eyelid.visible,
-		"nothing may close the eyes across 100s while idle blinking is off")
+	var closes: Array = []
+	var was_closed := false
+	var t := 0.0
+	for _i in range(4000):  # 64 s
+		_face.advance_motion(0.016)
+		t += 0.016
+		if eyelid.visible and not was_closed:
+			closes.append(t)
+		was_closed = eyelid.visible
+	assert_true(closes.size() >= 5, "about one blink every 5-10 s (got %d)" % closes.size())
+	assert_true(closes[0] <= 10.1, "the first blink comes within 10 s")
+	for i in range(1, closes.size()):
+		var gap: float = closes[i] - closes[i - 1]
+		assert_true(gap >= 5.0 and gap <= 10.5, "gap %f outside 5-10 s" % gap)
 
 
 func test_switching_idle_blinking_on_makes_the_eye_blink() -> void:
@@ -265,7 +412,7 @@ func test_the_rig_announces_which_student_it_belongs_to() -> void:
 
 
 func test_the_rigs_student_name_is_readable_without_instantiating_it() -> void:
-	# This is exactly how loby.gd._rig_student_name() matches a rig to a seat,
+	# This is exactly how Lobby.gd._rig_student_name() matches a rig to a seat,
 	# so the mechanism is worth pinning independently of the export default.
 	var state := (load(_RIG_PATH) as PackedScene).get_state()
 	assert_gt(state.get_node_count(), 0, "the rig scene must have a root node")

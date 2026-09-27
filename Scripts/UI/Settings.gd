@@ -1,7 +1,7 @@
 @tool
 extends Control
 
-## @tool note: same pattern established by MainMenu (Scripts/MainMenu/main_menu.gd)
+## @tool note: same pattern established by MainMenu (Scripts/MainMenu/MainMenu.gd)
 ## and required here for the same empirical reason -- a plain (non-@tool)
 ## script attached to a node instantiated while the Godot *editor* process
 ## is not playing the game (e.g. an MCP test_run, which runs inside the
@@ -22,7 +22,15 @@ extends Control
 @onready var _bgm: HSlider = %BgmSlider
 @onready var _sfx: HSlider = %SfxSlider
 @onready var _tutorial: CheckButton = %TutorialToggle
+@onready var _skip_dialog: CheckButton = %SkipDialogToggle
+@onready var _look_layer: CheckButton = %LookLayerToggle
+@onready var _haptics: CheckButton = %HapticsToggle
+@onready var _reduce_motion: CheckButton = %ReduceMotionToggle
 @onready var _back: Button = %BackButton
+
+## The screen Back returns to. MainMenu by default; the Lobby's Settings gear
+## sets it to the Lobby before opening this screen, and Back resets it.
+static var return_scene: String = "res://Scenes/MainMenu/MainMenu.tscn"
 
 
 func _ready() -> void:
@@ -30,11 +38,19 @@ func _ready() -> void:
 	_bgm.value = AudioDirector.get_bus_volume(&"BGM")
 	_sfx.value = AudioDirector.get_bus_volume(&"SFX")
 	_tutorial.button_pressed = GameSettings.minigame_tutorial_enabled
+	_skip_dialog.button_pressed = GameSettings.skip_event_dialogue
+	_look_layer.button_pressed = GameSettings.look_layer_enabled
+	_haptics.button_pressed = GameSettings.haptics_enabled
+	_reduce_motion.button_pressed = GameSettings.reduce_motion
 
 	_master.value_changed.connect(_on_volume_changed.bind(&"Master"))
 	_bgm.value_changed.connect(_on_volume_changed.bind(&"BGM"))
 	_sfx.value_changed.connect(_on_volume_changed.bind(&"SFX"))
 	_tutorial.toggled.connect(_on_tutorial_toggled)
+	_skip_dialog.toggled.connect(_on_skip_dialog_toggled)
+	_look_layer.toggled.connect(_on_look_layer_toggled)
+	_haptics.toggled.connect(_on_haptics_toggled)
+	_reduce_motion.toggled.connect(_on_reduce_motion_toggled)
 	_back.pressed.connect(_on_back_pressed)
 
 	if Engine.is_editor_hint():
@@ -44,7 +60,9 @@ func _ready() -> void:
 		return
 
 	Juice.stagger_in(_collect_rows())
-	AudioDirector.play_bgm(&"titlescreen")
+	# Opened from the Lobby, its music keeps playing.
+	if return_scene == "res://Scenes/MainMenu/MainMenu.tscn":
+		AudioDirector.play_bgm(&"titlescreen")
 
 
 func _collect_rows() -> Array:
@@ -74,8 +92,52 @@ func _on_tutorial_toggled(pressed: bool) -> void:
 	GameSettings.save_settings()
 
 
+## "Lewati Dialog Minigame" (formerly the Lobby's Shorten button): skips the
+## EventDialogue line before each minigame. Saved like the tutorial switch.
+func _on_skip_dialog_toggled(pressed: bool) -> void:
+	GameSettings.skip_event_dialogue = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Efek Visual": the global vignette and film grain the LookLayer autoload
+## draws over every screen. Off by default -- the grain is a per-pixel term
+## over the whole screen every frame and the hardware floor is unknown, so it
+## is opt-in. Setting the property emits look_layer_changed, which LookLayer
+## is listening to, so the layer fades in without leaving this screen.
+func _on_look_layer_toggled(pressed: bool) -> void:
+	GameSettings.look_layer_enabled = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Getaran (Haptic)": drives phone vibration on reward moments. Saved.
+func _on_haptics_toggled(pressed: bool) -> void:
+	GameSettings.haptics_enabled = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Kurangi Gerakan": drops screenshake and screen confetti (sound and haptic
+## still fire) for players who dislike motion. Saved.
+func _on_reduce_motion_toggled(pressed: bool) -> void:
+	GameSettings.reduce_motion = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## Android delivers the hardware/gesture back press as a notification, not as
+## ui_cancel, so an _input handler never sees it. Routed to the same function
+## the on-screen back button calls, so both do exactly the same thing.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_pressed()
+
+
 func _on_back_pressed() -> void:
 	if not Engine.is_editor_hint():
 		AudioDirector.play_sfx(&"cancel")
-	Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn",
+	var destination := return_scene
+	return_scene = "res://Scenes/MainMenu/MainMenu.tscn"
+	Transition.change_scene(destination,
 		Transition.Style.FADE)

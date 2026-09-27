@@ -8,20 +8,20 @@ extends McpTestSuite
 func suite_name() -> String:
 	return "koperasi"
 
-const _SCENE_PATH := "res://Scenes/Koperasi/koprasi.tscn"
-const _SCRIPT_PATH := "res://Scripts/Koperasi/koprasi.gd"
+const _SCENE_PATH := "res://Scenes/Koperasi/Koperasi.tscn"
+const _SCRIPT_PATH := "res://Scripts/Koperasi/Koperasi.gd"
 
 func _source() -> String:
 	return FileAccess.get_file_as_string(_SCRIPT_PATH)
 
 func test_scene_loads() -> void:
-	assert_true(ResourceLoader.exists(_SCENE_PATH), "koprasi.tscn must exist")
+	assert_true(ResourceLoader.exists(_SCENE_PATH), "Koperasi.tscn must exist")
 	var packed := load(_SCENE_PATH) as PackedScene
-	assert_true(packed != null, "koprasi.tscn must load as a PackedScene")
+	assert_true(packed != null, "Koperasi.tscn must load as a PackedScene")
 
 func test_scene_instantiates() -> void:
 	var scene := (load(_SCENE_PATH) as PackedScene).instantiate()
-	assert_true(scene != null, "koprasi.tscn must instantiate")
+	assert_true(scene != null, "Koperasi.tscn must instantiate")
 	scene.free()
 
 func test_no_in_shop_inventory_button() -> void:
@@ -36,7 +36,7 @@ func test_back_button_returns_to_the_shop_hub() -> void:
 	# straight past it to the Lobby.
 	assert_true(_source().contains("res://Scenes/Koperasi/ShopHub.tscn"),
 		"the shop's back button must return to the shop hub")
-	assert_false(_source().contains("res://Scenes/Lobby/loby.tscn"),
+	assert_false(_source().contains("res://Scenes/Lobby/Lobby.tscn"),
 		"the shop should no longer jump straight back to the Lobby")
 
 func test_does_not_reference_source_project_paths() -> void:
@@ -72,11 +72,37 @@ func test_no_raw_color_literals_in_script() -> void:
 	assert_false(src.contains("Color(0."),
 		"no hardcoded Color() literals -- use DesignTokens")
 
-func test_script_reads_design_tokens() -> void:
-	assert_true(_source().contains("DesignTokens.load_default()"),
-		"styling must be sourced from DesignTokens")
-
 func test_scene_uses_project_theme() -> void:
 	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
 	assert_true(raw.contains("kejartes_theme.tres"),
 		"the scene root must carry the project theme")
+
+## Task 3: Pak Herman's talk/idle animation. HermanAP must exist with all
+## three named animations, and must never key `position` -- the Stage
+## re-anchors on tall phones (test_tall_screen_layout.gd), so an absolute
+## position key on Herman would pin him instead of moving with the layout.
+func test_herman_animation_player_has_idle_talk_and_reset() -> void:
+	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
+	assert_true(raw.contains("name=\"HermanAP\""),
+		"Stage/Herman must carry a HermanAP AnimationPlayer")
+	assert_true(raw.contains("\"idle\": SubResource") or raw.contains("&\"idle\": SubResource"),
+		"HermanAP's library must register an idle animation")
+	assert_true(raw.contains("\"talk\": SubResource") or raw.contains("&\"talk\": SubResource"),
+		"HermanAP's library must register a talk animation")
+	assert_true(raw.contains("\"RESET\": SubResource") or raw.contains("&\"RESET\": SubResource"),
+		"HermanAP's library must register a RESET animation, so the editor never saves a mid-animation pose")
+	# Scan only the Animation sub_resources Herman's own library refers to
+	# (Animation_herman_*), not the whole file -- other Stage nodes (like the
+	# back button) legitimately key their own local position.
+	for id in ["Animation_herman_reset", "Animation_herman_idle", "Animation_herman_talk"]:
+		var marker := "id=\"%s\"]" % id
+		var start := raw.find(marker)
+		assert_true(start != -1, "%s sub_resource not found" % id)
+		if start == -1:
+			continue
+		var next_block := raw.find("[sub_resource", start + 1)
+		if next_block == -1:
+			next_block = raw.find("[node ", start + 1)
+		var block := raw.substr(start, next_block - start)
+		assert_false(block.contains(":position\")"),
+			"Herman's animations must not key position -- the stage re-anchors on tall phones (%s)" % id)

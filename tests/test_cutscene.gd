@@ -15,26 +15,26 @@ extends McpTestSuite
 ##    without awaiting it, so a coroutine test returns control at its
 ##    first `await` before any post-await assertion runs and is scored
 ##    as "0 assertions" (a false pass). CutScene actually has real
-##    Button nodes (top-bar Skip/Debug, and the three grade-select
-##    buttons in the level-select modal), unlike Splashscreen/Loading,
+##    Button nodes (top-bar Skip/Debug; the grade picker moved to the
+##    Level Select scene on 2026-09-25), unlike Splashscreen/Loading,
 ##    so the touch-target test from the shared brief template DOES apply
 ##    here -- but per test_main_menu.gd's finding, it is measured via
 ##    get_combined_minimum_size() synchronously right after add_child(),
 ##    not via `.size` after an awaited frame.
 ##
-## cut_scene.gd is @tool for the same placeholder-instance reason as
-## main_menu.gd (see that script's header). Its top-bar buttons and
-## level-select modal are built unconditionally in _ready() (mirroring
+## CutScene.gd is @tool for the same placeholder-instance reason as
+## MainMenu.gd (see that script's header). Its top-bar buttons are
+## built unconditionally in _ready() (mirroring
 ## MainMenu's always-wire-buttons pattern), so they exist and are
 ## theme-clean even when this suite instantiates the scene inside the
 ## editor process. Everything GameState-dependent sits behind
-## Engine.is_editor_hint() inside cut_scene.gd itself and never runs here.
+## Engine.is_editor_hint() inside CutScene.gd itself and never runs here.
 
 func suite_name() -> String:
 	return "cutscene"
 
-const _SCENE_PATH := "res://Scenes/CutScene/cut_scene.tscn"
-const _SCRIPT_PATH := "res://Scripts/CutScene/cut_scene.gd"
+const _SCENE_PATH := "res://Scenes/CutScene/CutScene.tscn"
+const _SCRIPT_PATH := "res://Scripts/CutScene/CutScene.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 var _scene: Control
@@ -92,8 +92,8 @@ func test_scene_instantiates_without_errors() -> void:
 
 
 ## Adapted from the shared brief template: unlike a menu screen, this one
-## builds its interactive controls (top-bar Skip/Debug, grade-select
-## buttons) in code rather than in the .tscn, so the walk starts from
+## builds its interactive controls (top-bar Skip/Debug) in code rather
+## than in the .tscn, so the walk starts from
 ## the scene root and collects every BaseButton it finds, checking each
 ## against get_combined_minimum_size() -- synchronous, per note 2 above,
 ## with no frame wait required (these buttons carry no SIZE_EXPAND flag).
@@ -140,7 +140,7 @@ func test_dialogue_box_is_a_themed_rounded_panel() -> void:
 
 ## Retired with the art: nothing should still reference the panel PNG.
 func test_the_mockup_panel_art_is_no_longer_referenced() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/CutScene/cut_scene.tscn")
+	var src := FileAccess.get_file_as_string("res://Scenes/CutScene/CutScene.tscn")
 	assert_false(src.contains("cutscene_dialogue.png"),
 		"the panel is a theme variation now, not a texture")
 
@@ -253,7 +253,7 @@ func test_go_to_gameplay_always_routes_through_student_card() -> void:
 	var body := _function_body(src, "go_to_gameplay")
 	assert_true(body.contains("Transition.change_scene(_next_scene_path()"),
 		"must delegate routing to _next_scene_path()")
-	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_false(body.contains("res://Scenes/Lobby/Lobby.tscn"),
 		"go_to_gameplay must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")
 	assert_false(body.contains("change_scene_to_file"),
@@ -268,7 +268,7 @@ func test_go_to_gameplay_always_routes_through_student_card() -> void:
 func test_next_scene_path_defaults_to_student_card() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "_next_scene_path")
-	assert_true(body.contains("res://Scenes/StudentCard/student_card.tscn"),
+	assert_true(body.contains("res://Scenes/StudentCard/StudentCard.tscn"),
 		"_next_scene_path must default/fallback to StudentCard")
 
 
@@ -284,7 +284,7 @@ func test_on_skip_pressed_also_routes_through_student_card() -> void:
 	var body := _function_body(src, "_on_skip_pressed")
 	assert_true(body.contains("Transition.change_scene(_next_scene_path()"),
 		"Skip Intro must delegate routing to _next_scene_path(), same as go_to_gameplay()")
-	assert_false(body.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_false(body.contains("res://Scenes/Lobby/Lobby.tscn"),
 		"Skip Intro must never hand the player to Lobby directly -- " +
 		"StudentCard is the only gate that populates approved_students")
 	assert_false(body.contains("change_scene_to_file"),
@@ -296,7 +296,7 @@ func test_show_current_starts_with_a_hold_before_revealing() -> void:
 	# Calling show_current() live here would exercise Godot autoload
 	# resolution, which errors in this suite's standalone-instantiation
 	# context (GameState resolves fine in other suites' setups, but not
-	# when cut_scene.tscn is instantiated bare like test_cutscene.gd
+	# when CutScene.tscn is instantiated bare like test_cutscene.gd
 	# does) -- a pre-existing runner quirk, not something this change
 	# introduced. Source-text check instead, matching this file's own
 	# established pattern (see test_cg_changes_crossfade_instead_of_hard_cutting
@@ -329,19 +329,20 @@ func test_entrance_hold_and_fade_are_slower_than_the_panel_crossfade() -> void:
 
 ## Plan A (2026-09-04) deleted the exam-intro cutscene beat: ExamProgress
 ## now hands off straight to StatCheck. CutScene is back to a single
-## responsibility -- the game-start intro and its level-select modal.
+## responsibility -- the game-start intro (its grade picker is now the
+## Level Select scene, 2026-09-25).
 func test_the_exam_branch_is_gone() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	for gone in ["is_exam_intro_cutscene", "_setup_exam_cutscene", "btn_lanjut_exam",
 			"BtnLanjutExam", "exam_cutscene", "SemesterEnd.tscn", "StatCheck.tscn"]:
-		assert_false(src.contains(gone), "cut_scene.gd must not mention " + gone)
+		assert_false(src.contains(gone), "CutScene.gd must not mention " + gone)
 	assert_true(_scene.get_node_or_null("BtnLanjutExam") == null,
-		"the BtnLanjutExam node is deleted from cut_scene.tscn")
+		"the BtnLanjutExam node is deleted from CutScene.tscn")
 
 
 func test_next_scene_path_has_a_single_destination_again() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_body(src, "_next_scene_path")
-	assert_true(body.contains("res://Scenes/StudentCard/student_card.tscn"),
+	assert_true(body.contains("res://Scenes/StudentCard/StudentCard.tscn"),
 		"the intro still lands on roster approval")
 	assert_false(body.contains("if "), "no branch left: one destination")

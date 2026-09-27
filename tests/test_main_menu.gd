@@ -22,21 +22,21 @@ extends McpTestSuite
 ## 2026-09-01: the three stacked MULAI / PENGATURAN / KELUAR buttons were
 ## replaced by a minimal layout -- MULAI is now a blinking "ketuk di mana
 ## saja" prompt and a tap anywhere starts the game; PENGATURAN and KELUAR
-## are icon-only buttons (still the yellow MainMenuButton art) in a
-## bottom IconBar. See Scripts/MainMenu/main_menu.gd.
+## are icon-only MainMenuButtons (Lobby brown since 2026-09-14) in a
+## bottom IconBar. See Scripts/MainMenu/MainMenu.gd.
 
 func suite_name() -> String:
 	return "main_menu"
 
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
-const _SCRIPT_PATH := "res://Scripts/MainMenu/main_menu.gd"
+const _SCRIPT_PATH := "res://Scripts/MainMenu/MainMenu.gd"
 const _LOGO_TOP_OFFSET := 68.0
 
 var _menu: Control
 
 
 func setup() -> void:
-	var scene: PackedScene = load("res://Scenes/MainMenu/main_menu.tscn")
+	var scene: PackedScene = load("res://Scenes/MainMenu/MainMenu.tscn")
 	_menu = scene.instantiate()
 	_menu.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(_menu)
@@ -120,7 +120,7 @@ func test_tap_prompt_exists_and_is_indonesian() -> void:
 func test_tap_prompt_blinks() -> void:
 	var src := _script_source()
 	assert_true(src.contains("_blink_forever"),
-		"main_menu.gd must pulse the tap prompt")
+		"MainMenu.gd must pulse the tap prompt")
 	assert_true(src.contains('"modulate:a"'),
 		"the blink must tween the prompt's alpha")
 
@@ -142,10 +142,10 @@ func test_a_tap_anywhere_starts_the_game() -> void:
 	# _unhandled_input (not _input) so the icon buttons' own presses,
 	# which they accept_event(), never double-fire the start.
 	assert_true(src.contains("func _unhandled_input("),
-		"main_menu.gd must listen for a tap anywhere via _unhandled_input")
+		"MainMenu.gd must listen for a tap anywhere via _unhandled_input")
 	assert_true(src.contains("func _start_game("),
-		"main_menu.gd must have a _start_game entry point")
-	assert_true(src.contains('"res://Scenes/CutScene/cut_scene.tscn"'),
+		"MainMenu.gd must have a _start_game entry point")
+	assert_true(src.contains('"res://Scenes/CutScene/CutScene.tscn"'),
 		"a tap must transition into the cutscene")
 	assert_true(src.contains("Transition.Style.WIPE"),
 		"the intro transition must be the slow wipe")
@@ -177,7 +177,7 @@ func test_icon_buttons_keep_the_yellow_menu_art() -> void:
 		if b == null:
 			continue
 		assert_eq(b.theme_type_variation, &"MainMenuButton",
-			name + " must keep the MainMenuButton (yellow box) variation")
+			name + " must keep the MainMenuButton variation")
 
 
 func test_icon_buttons_show_an_icon_and_no_text() -> void:
@@ -241,7 +241,7 @@ func test_logo_sits_at_the_measured_offset() -> void:
 func test_logo_floats_slowly() -> void:
 	var src := _script_source()
 	assert_true(src.contains("_float_forever"),
-		"main_menu.gd must drift the logo")
+		"MainMenu.gd must drift the logo")
 	assert_true(src.contains('"position:y"'),
 		"the float must animate the logo's Y position")
 

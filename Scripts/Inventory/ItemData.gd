@@ -22,7 +22,7 @@ extends Resource
 @export var category: String
 ## Fixed on-screen size for the shop's falling/basket art and the
 ## inventory slot icon. Zero means "use the source button's own size" --
-## see rakbarang_1.gd's get_item_effective_size().
+## see KoperasiStage.gd's get_item_effective_size().
 @export var display_size: Vector2 = Vector2.ZERO
 ## Extra multiplier on top of display_size (or the button-size fallback)
 ## when an item's art needs to read larger or smaller than its peers.
@@ -37,11 +37,11 @@ extends Resource
 @export var energy_boost: int = 0
 
 @export_group("Skill Boost")
-## Added to the target student's akademis (roster key akademis1) when the
-## item is used, times quantity, clamped [0, 100]. Set by study items (Buku);
-## some other categories set the sibling skill fields.
+## Added to the target student's akademis when the item is used, times
+## quantity, clamped [0, 100]. Set by study items (Buku); some other
+## categories set the sibling skill fields.
 @export var akademis_boost: int = 0
-## Same, for seni_budaya (roster key akademis2).
+## Same, for seni_budaya.
 @export var seni_budaya_boost: int = 0
-## Same, for olahraga (roster key akademis3).
+## Same, for olahraga.
 @export var olahraga_boost: int = 0

@@ -42,11 +42,12 @@ const VALUE_RIGHT_MARGIN := 20
 ## The authored one-shot burst thrown at a row that gained. Instanced,
 ## never built -- see the project's "no visual is built at runtime" rule.
 const BURST_SCENE := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
+const _BURST_PACKED: PackedScene = preload("res://Scenes/SchoolSimulation/RewardBurst.tscn")
 
 const ICON_FOR := {
-	"akademis": "res://Assets/Images/DaySummary/icon_akademis.png",
-	"seni_budaya": "res://Assets/Images/DaySummary/icon_seni.png",
-	"olahraga": "res://Assets/Images/DaySummary/icon_olahraga.png",
+	"akademis": preload("res://Assets/Images/DaySummary/icon_akademis.png"),
+	"seni_budaya": preload("res://Assets/Images/DaySummary/icon_seni.png"),
+	"olahraga": preload("res://Assets/Images/DaySummary/icon_olahraga.png"),
 }
 
 ## Which baked variation each stat's track wears. The fills are the
@@ -56,6 +57,10 @@ const TRACK_VARIATION_FOR := {
 	"seni_budaya": &"DaySummaryStatTrackSeniBudaya",
 	"olahraga": &"DaySummaryStatTrackOlahraga",
 }
+
+## What a capped preview reads: the stat is already at its ceiling, so an
+## item or event would add nothing.
+const MAX_TEXT := "MAKS"
 
 @onready var icon: TextureRect = $Icon
 @onready var chevron: TextureRect = $Chevron
@@ -74,6 +79,19 @@ var _fill_to: float = 0.0
 ## rewinds the track -- see play_gain.
 var _delta: float = 0.0
 var _target: float = 0.0
+
+## The standing value set_standing() last wrote, so show_preview() can layer
+## a change on top and restore it again.
+var _standing_current: float = 0.0
+
+## The in-flight fill and count of this row's weekly reveal, held so land()
+## can stop them: a skip must not leave a number still counting.
+var _reveal_tweens: Array[Tween] = []
+
+## Reused burst node: created on first fire, reused while still alive,
+## recreated after it self-frees. Cuts peak GPUParticles2D count in half
+## during the ResultCheckup reveal (one per row instead of two).
+var _burst_node: RewardParticles = null
 
 
 ## "+12/65" -- the sign rides with the number so a loss reads "-3/65"
@@ -129,10 +147,7 @@ static func shows_chevron(delta: float) -> bool:
 
 
 func set_stat(stat_key: String, delta: float, target: float, current: float) -> void:
-	if ICON_FOR.has(stat_key):
-		icon.texture = load(ICON_FOR[stat_key])
-	if TRACK_VARIATION_FOR.has(stat_key):
-		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
+	_apply_stat_chrome(stat_key)
 	_delta = delta
 	_target = target
 	value.text = format_value(delta, target)
@@ -141,11 +156,72 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 	# student must undo that, or a row that is set up but never animated
 	# shows an invisible arrow.
 	chevron.visible = shows_chevron(delta)
-	chevron.modulate.a = 1.0
-	chevron.scale = Vector2.ONE
+	_reset_chevron()
 	_fill_from = track_ratio_before(current, delta, target)
 	_fill_to = track_ratio(current, target)
 	track.value = _fill_to
+
+
+## "42/60": where the student stands now against the run's target, with no
+## sign because nothing moved. The event picker and the item screen read
+## the card this way; the day summary never does.
+static func format_standing(current: float, target: float) -> String:
+	return "%d/%d" % [int(round(current)), int(round(target))]
+
+
+## Show where the student stands, with no movement behind it: the track at
+## current/target, the number as format_standing, no chevron. Caches both
+## ends so show_preview() can layer a change over them.
+func set_standing(stat_key: String, target: float, current: float) -> void:
+	_apply_stat_chrome(stat_key)
+	_standing_current = current
+	_target = target
+	_delta = 0.0
+	value.text = format_standing(current, target)
+	chevron.visible = false
+	_reset_chevron()
+	track.value = track_ratio(current, target)
+
+
+## Layer a proposed change over the standing view: the number reads
+## format_value's "+15/60", the chevron shows on a gain, and the track
+## travels to where the change would leave it. `capped` means the stat is
+## already at 100: the number reads MAKS and nothing moves. A zero delta,
+## uncapped, restores the standing view. Deliberately quiet -- no star
+## burst and no tally cue, which belong to the day summary's reward.
+func show_preview(delta: float, capped: bool = false) -> void:
+	var to_ratio := track_ratio(_standing_current + delta, _target)
+	if capped:
+		value.text = MAX_TEXT
+		chevron.visible = false
+		to_ratio = track_ratio(_standing_current, _target)
+	elif is_zero_approx(delta):
+		value.text = format_standing(_standing_current, _target)
+		chevron.visible = false
+	else:
+		value.text = format_value(delta, _target)
+		chevron.visible = shows_chevron(delta)
+	if Engine.is_editor_hint() or not is_inside_tree():
+		track.value = to_ratio
+	else:
+		Juice.fill_bar(track, to_ratio)
+
+
+## The icon and track colour a stat wears. Shared by set_stat and
+## set_standing so the two readouts can never dress a row differently.
+func _apply_stat_chrome(stat_key: String) -> void:
+	if ICON_FOR.has(stat_key):
+		icon.texture = ICON_FOR[stat_key]
+	if TRACK_VARIATION_FOR.has(stat_key):
+		track.theme_type_variation = TRACK_VARIATION_FOR[stat_key]
+
+
+## Undo what Juice.pop_in leaves on the chevron -- zeroed alpha and a
+## shrunk scale -- so a row re-armed for another student never shows an
+## invisible arrow.
+func _reset_chevron() -> void:
+	chevron.modulate.a = 1.0
+	chevron.scale = Vector2.ONE
 
 
 ## Replay today's movement: rewind the track to where it stood this
@@ -167,26 +243,123 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 ## to 0.0 and would otherwise empty the track.
 func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	track.value = _fill_from
-	Juice.fill_bar(track, _fill_to, -1.0, delay)
+	# Capture the fill tween so the stat cue fires when the bar LANDS
+	# (delay + fill duration), not at t=0. A card's rows are staggered by
+	# delay, so firing the cue immediately made every row's cue slap in
+	# together while the bars were still travelling; on `finished` they chime
+	# in sequence, patient, one bar landing after another.
+	var fill_tw := Juice.fill_bar(track, _fill_to, -1.0, delay)
 	if chevron.visible:
 		Juice.pop_in(chevron, delay)
 		_play_burst(delay, plays_sparkle)
+		if not Engine.is_editor_hint():
+			if fill_tw != null and fill_tw.is_valid():
+				fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_gain", self, {"queued": true}))
+			else:
+				RewardFeedback.play(&"stat_gain", self, {"queued": true})
+	elif _delta < 0.0 and not Engine.is_editor_hint():
+		# A losing row had no cue at all before the 2026-09-21 sound pack: the
+		# chevron only shows on a gain, so the whole fall happened in silence.
+		if fill_tw != null and fill_tw.is_valid():
+			fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_loss", self, {"queued": true}))
+		else:
+			RewardFeedback.play(&"stat_loss", self, {"queued": true})
 	Juice.count_up_formatted(value, 0.0, _delta,
 		func(v: float) -> String: return format_value(v, _target), delay)
 
 
-## The gain's reward: a star burst centred on the chevron, plus the tally
-## tick on the same beat -- the tally always plays on a real gain; only
-## the burst's own sparkle cue is deduplicated across a card's gesture
-## (see DaySummaryStudentRow.play_gain). Editor-gated -- the test runner
-## builds these rows to inspect them, not to watch them.
+## The gain's reward burst, centred on the chevron. The rising stat cue is
+## fired separately by play_gain, on the beat the fill bar LANDS, so a card's
+## staggered rows chime in sequence rather than all at once. Only the burst's
+## own sparkle cue is deduplicated across a card's gesture (see
+## DaySummaryStudentRow.play_gain). Editor-gated -- the test runner builds
+## these rows to inspect them, not to watch them.
 func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	if Engine.is_editor_hint():
 		return
-	var burst_scene: PackedScene = load(BURST_SCENE)
-	var fx := burst_scene.instantiate() as RewardParticles
+	var fx := _get_or_make_burst(chevron.position + chevron.size * 0.5)
 	fx.plays_sfx = plays_sparkle
-	fx.position = chevron.position + chevron.size * 0.5
-	add_child(fx)
 	fx.fire(delay)
-	AudioDirector.play_sfx(&"tally")
+
+
+# ── The weekly reveal (2026-09-14 weekly-report-reveal spec) ─────────
+# ResultCheckup plays a card's rows one at a time rather than all at once,
+# so the row splits play_gain's single gesture into its beats. play_gain
+# and _play_burst above stay exactly as the nightly popup uses them.
+
+## The delta set_stat last cached: what ResultCheckup's reveal timeline
+## reads to decide whether this row pops.
+func shown_delta() -> float:
+	return _delta
+
+
+## The reveal's opening state: the track back on Monday, the number at +0,
+## the chevron armed but transparent until play_count pops it in. Call
+## set_stat first.
+func rewind() -> void:
+	_stop_reveal()
+	track.value = _fill_from
+	value.text = format_value(0.0, _target)
+	value.scale = Vector2.ONE
+	if chevron.visible:
+		chevron.modulate.a = 0.0
+
+
+## This row's turn: the track fills and the number counts up over
+## `seconds`, and a gaining row's chevron pops in as it starts. Never
+## awaited; the caller schedules land_pop() for when the count lands.
+func play_count(seconds: float) -> void:
+	_stop_reveal()
+	var fill := Juice.fill_bar(track, _fill_to, seconds)
+	var count := Juice.count_up_formatted(value, 0.0, _delta,
+		func(v: float) -> String: return format_value(v, _target), 0.0, seconds)
+	for tw in [fill, count]:
+		if tw != null:
+			_reveal_tweens.append(tw)
+	if chevron.visible:
+		var pop := Juice.pop_in(chevron)
+		if pop != null:
+			_reveal_tweens.append(pop)
+
+
+## A gaining row's reward, on the beat its count lands: the number punches
+## about its own text, the authored burst fires from it, and the tally
+## plays at `pitch`, the report's climbing step. The burst stays silent so
+## the climbing tally is the one sound. Editor-gated like _play_burst.
+func land_pop(pitch: float) -> void:
+	var center := Juice.text_center(value)
+	Juice.punch(value, center)
+	if Engine.is_editor_hint():
+		return
+	var fx := _get_or_make_burst(value.position + center)
+	fx.plays_sfx = false
+	fx.fire()
+	AudioDirector.play_sfx(&"tally", pitch)
+
+
+## Returns the row's reusable burst node, creating it if it has already
+## self-freed. Positions it at `pos` (in this node's local coordinates)
+## before returning so the caller can fire() immediately.
+func _get_or_make_burst(pos: Vector2) -> RewardParticles:
+	if not is_instance_valid(_burst_node):
+		_burst_node = _BURST_PACKED.instantiate() as RewardParticles
+		add_child(_burst_node)
+	_burst_node.position = pos
+	return _burst_node
+
+
+## The row on its final values at once: the skip's landing. Stops the
+## reveal's fill and count first, so neither writes over it afterwards.
+func land() -> void:
+	_stop_reveal()
+	track.value = _fill_to
+	value.text = format_value(_delta, _target)
+	value.scale = Vector2.ONE
+	_reset_chevron()
+
+
+func _stop_reveal() -> void:
+	for tw in _reveal_tweens:
+		if tw != null and tw.is_valid():
+			tw.kill()
+	_reveal_tweens.clear()

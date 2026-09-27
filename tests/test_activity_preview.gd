@@ -53,44 +53,138 @@ func test_akademik_hobby_spelling_still_earns_the_specialty_bonus() -> void:
 		"hobby_category 'Akademik' must match the 'Akademis' category")
 
 
-func test_skill_row_has_one_chip_showing_the_gain() -> void:
-	var chips := ActivityPreview.chips_for("SeniBudaya", _student_seniman(), 7)
-	assert_eq(chips.size(), 1, "a skill row shows a single gain chip")
-	assert_eq(chips[0]["icon"], "", "the skill chip carries no inline icon")
-	var expected := Balance.BELAJAR_POIN_KELAS_7 + Balance.BELAJAR_BONUS_FAVORIT_KELAS_7
-	assert_eq(chips[0]["text"], "+%d" % int(expected),
-		"the skill chip shows the signed gain")
+## A student with no favourite at all -- the "Seimbang" personality.
+func _student_seimbang() -> Dictionary:
+	return {"hobby_category": "Seimbang", "name": "Uji"}
 
 
-func test_wirausaha_shows_energy_cost_then_money_range() -> void:
-	var chips := ActivityPreview.chips_for("Wirausaha", _student_akademis(), 7)
-	assert_eq(chips.size(), 2, "Wirausaha shows an energy chip and a money chip")
-	assert_eq(chips[0]["icon"], "energy", "first chip is energy")
-	assert_eq(chips[0]["text"], "-%d" % int(Balance.WIRAUSAHA_BIAYA_ENERGI),
-		"energy cost is a fixed Balance value, shown as one number")
-	assert_eq(chips[1]["icon"], "money", "second chip is money")
-	assert_eq(chips[1]["text"], "+%d~%d" % [Balance.WIRAUSAHA_UANG_MIN, Balance.WIRAUSAHA_UANG_MAX],
-		"money is a range, shown as min~max")
+# ---- arrow language (2026-09-24 picker rebuild, D11/D12) -------------------
+
+func test_favourite_subject_earns_more_up_arrows_than_a_plain_one() -> void:
+	var fav := ActivityPreview.gain_arrows("Akademis", _student_akademis(), 7)
+	var plain := ActivityPreview.gain_arrows("Olahraga", _student_akademis(), 7)
+	assert_eq(plain, 1, "an ordinary study day is one up-arrow")
+	assert_true(fav > plain, "the favourite must out-arrow a plain subject")
+	assert_true(fav <= ActivityPreview.MAX_ARROWS, "never more than MAX_ARROWS")
 
 
-func test_libur_shows_energy_and_mood_recovery_ranges() -> void:
-	var chips := ActivityPreview.chips_for("Istirahat", _student_akademis(), 7)
-	assert_eq(chips.size(), 2, "Libur shows an energy chip and a mood chip")
-	assert_eq(chips[0]["icon"], "energy", "first chip is energy")
-	assert_eq(chips[0]["text"],
-		"+%d~%d" % [int(Balance.LIBUR_ENERGI_PULIH_MIN), int(Balance.LIBUR_ENERGI_PULIH_MAX)],
-		"energy recovery is a range")
-	assert_eq(chips[1]["icon"], "mood", "second chip is mood")
-	assert_eq(chips[1]["text"],
-		"+%d~%d" % [int(Balance.LIBUR_MOOD_PULIH_MIN), int(Balance.LIBUR_MOOD_PULIH_MAX)],
-		"mood recovery is a range")
+## The favourite's arrows follow the bonus's size next to the base, so a
+## Balance retune that shrinks the bonus shrinks the arrows with it.
+func test_favourite_arrows_follow_the_bonus_to_base_ratio() -> void:
+	for grade in [7, 8, 9]:
+		var base := ActivityPreview.base_gain(grade)
+		var bonus := ActivityPreview.favorit_bonus(grade)
+		var expected := clampi(1 + ceili(bonus / base * (ActivityPreview.MAX_ARROWS - 1)),
+			1, ActivityPreview.MAX_ARROWS)
+		assert_eq(ActivityPreview.gain_arrows("Akademis", _student_akademis(), grade), expected,
+			"grade %d favourite arrows must come from its Balance bonus and base" % grade)
 
 
-func test_format_range_collapses_equal_bounds_to_one_number() -> void:
-	assert_eq(ActivityPreview.format_range(10.0, 10.0, true), "+10",
-		"a range whose bounds match renders as a single number")
-	assert_eq(ActivityPreview.format_range(10.0, 20.0, true), "+10~20",
-		"a genuine range renders as min~max")
+func test_non_skill_tiles_carry_no_gain_arrows() -> void:
+	assert_eq(ActivityPreview.gain_arrows("Wirausaha", _student_akademis(), 7), 0,
+		"Wirausaha gains no skill, so no up-arrows on its skill slot")
+	assert_eq(ActivityPreview.gain_arrows("Istirahat", _student_akademis(), 7), 0,
+		"Libur gains no skill")
+
+
+func test_base_and_bonus_read_balance_per_grade() -> void:
+	assert_eq(ActivityPreview.base_gain(8), Balance.BELAJAR_POIN_KELAS_8, "grade 8 base")
+	assert_eq(ActivityPreview.favorit_bonus(9), Balance.BELAJAR_BONUS_FAVORIT_KELAS_9,
+		"grade 9 bonus")
+
+
+## The multiplier the picker shows must be the one the simulation charges.
+func test_cost_multiplier_mirrors_student_data() -> void:
+	assert_eq(ActivityPreview.cost_multiplier("Akademis", _student_akademis()),
+		Balance.BIAYA_KALAU_MAPEL_FAVORIT, "favourite subject")
+	assert_eq(ActivityPreview.cost_multiplier("Olahraga", _student_akademis()),
+		Balance.BIAYA_KALAU_BUKAN_FAVORIT, "someone else's subject")
+	assert_eq(ActivityPreview.cost_multiplier("Olahraga", _student_seimbang()),
+		Balance.BIAYA_KALAU_MURID_SEIMBANG, "a Seimbang student")
+	assert_eq(ActivityPreview.cost_multiplier("Istirahat", _student_akademis()), 1.0,
+		"Libur is never scaled")
+	var data := StudentData.new()
+	data.specialty_category = "Akademis"
+	assert_eq(ActivityPreview.cost_multiplier("Olahraga", _student_akademis()),
+		data.get_category_efficiency_multiplier("Olahraga"),
+		"the mirror must agree with StudentData itself")
+
+
+func test_study_days_drain_and_libur_recovers() -> void:
+	assert_true(ActivityPreview.energy_delta("Akademis", _student_akademis()) < 0.0,
+		"a study day drains energy")
+	assert_true(ActivityPreview.mood_delta("Wirausaha", _student_akademis()) < 0.0,
+		"Wirausaha drains mood")
+	assert_true(ActivityPreview.energy_delta("Istirahat", _student_akademis()) > 0.0,
+		"Libur recovers energy")
+	assert_true(ActivityPreview.mood_delta("Istirahat", _student_akademis()) > 0.0,
+		"Libur recovers mood")
+
+
+## Cost arrows must map the Balance numbers onto one shared scale.
+func test_cost_arrows_map_balance_onto_the_shared_scale() -> void:
+	for category in ["Akademis", "Olahraga", "Wirausaha", "Istirahat"]:
+		var s := _student_akademis()
+		var e := ActivityPreview.energy_delta(category, s)
+		var expected := clampi(roundi(absf(e) / ActivityPreview.energy_scale()
+			* ActivityPreview.MAX_ARROWS), 1, ActivityPreview.MAX_ARROWS)
+		assert_eq(ActivityPreview.energy_arrows(category, s), expected,
+			category + " energy arrows must follow Balance")
+		var m := ActivityPreview.mood_delta(category, s)
+		var expected_m := clampi(roundi(absf(m) / ActivityPreview.mood_scale()
+			* ActivityPreview.MAX_ARROWS), 1, ActivityPreview.MAX_ARROWS)
+		assert_eq(ActivityPreview.mood_arrows(category, s), expected_m,
+			category + " mood arrows must follow Balance")
+
+
+## The favourite is cheaper, so it can never show more cost arrows than
+## the same subject for a student who does not favour it.
+func test_the_favourite_never_costs_more_arrows() -> void:
+	var fav := ActivityPreview.energy_arrows("Akademis", _student_akademis())
+	var other := ActivityPreview.energy_arrows("Akademis", _student_seniman())
+	assert_true(fav <= other, "favourite energy arrows %d must not exceed %d" % [fav, other])
+
+
+func test_arrows_for_bounds() -> void:
+	assert_eq(ActivityPreview.arrows_for(0.0, 10.0), 0, "no effect, no arrow")
+	assert_eq(ActivityPreview.arrows_for(0.1, 10.0), 1, "a tiny effect still shows one arrow")
+	assert_eq(ActivityPreview.arrows_for(10.0, 10.0), ActivityPreview.MAX_ARROWS,
+		"the biggest swing is the full count")
+	assert_eq(ActivityPreview.arrows_for(-10.0, 10.0), ActivityPreview.MAX_ARROWS,
+		"direction is the caller's job; the count uses the size")
+
+
+func test_earning_pips_are_a_magnitude_from_balance() -> void:
+	var typical := float(Balance.WIRAUSAHA_UANG_MIN + Balance.WIRAUSAHA_UANG_MAX) / 2
+	assert_eq(ActivityPreview.earning_pips(),
+		ActivityPreview.arrows_for(typical, float(Balance.WIRAUSAHA_UANG_MAX)),
+		"coin pips measure a typical day against the best one")
+	assert_true(ActivityPreview.earning_pips() >= 1, "Wirausaha always earns something")
+
+
+## D12: no raw ranges anywhere the picker speaks.
+func test_no_note_shows_a_range() -> void:
+	for category in ["", "Akademis", "Olahraga", "Wirausaha", "Istirahat"]:
+		for s in [_student_akademis(), _student_seimbang()]:
+			var note := ActivityPreview.selection_note(category, s, 7)
+			assert_false(note.contains("~"), "a picker note must not show a ~ range: " + note)
+			assert_true(note.length() > 0, "every state has a note")
+
+
+## D14: the favourite teaches its own bonus.
+func test_the_favourite_note_is_the_bonus_breakdown() -> void:
+	var note := ActivityPreview.selection_note("Akademis", _student_akademis(), 7)
+	var base := int(Balance.BELAJAR_POIN_KELAS_7)
+	var bonus := int(Balance.BELAJAR_BONUS_FAVORIT_KELAS_7)
+	assert_true(note.contains("Dasar +%d" % base), "shows the base: " + note)
+	assert_true(note.contains("Bonus favorit +%d" % bonus), "shows the bonus: " + note)
+	assert_true(note.contains("Total +%d" % (base + bonus)), "shows the total: " + note)
+	assert_true(note.contains("hemat"), "says the favourite is cheaper: " + note)
+
+
+func test_an_empty_selection_explains_what_to_do() -> void:
+	var note := ActivityPreview.selection_note("", _student_akademis(), 7)
+	assert_true(note.contains("Pilih"), "with nothing selected, point at the Pilih button")
 
 
 func test_costs_for_a_study_day_come_from_balance() -> void:

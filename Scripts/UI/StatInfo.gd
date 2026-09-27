@@ -5,15 +5,15 @@ extends RefCounted
 ## The one table describing the five bars a student card shows.
 ##
 ## Read by Scenes/UI/StatDetailPopup.tscn to fill its header, its bar tint and
-## its description, and by report_card.gd / student_card.gd to colour the bars
+## its description, and by ReportCard.gd / StudentCard.gd to colour the bars
 ## on the card itself. Before this existed both screens carried their own copy
 ## of the same if/elif chain.
 ##
 ## Affects: presentation only. Nothing here writes GameState.
 ##
-## Naming trap, and the reason `data_key` exists: the bar node is called
-## "Akademis2" but the GameState dictionary key is "akademis2" and it holds
-## seni_budaya. Never index a student dictionary with a bar name.
+## Why `data_key` exists: a bar node is named in PascalCase (`SeniBudaya`),
+## its GameState dictionary key in snake_case (`seni_budaya`). Never index a
+## student dictionary with a bar name.
 
 ## bar name -> everything the UI needs to render that bar.
 ##
@@ -23,44 +23,44 @@ extends RefCounted
 ## Energy -- which keeps all five bars mutually distinguishable while every
 ## colour still comes from one token set.
 const BARS: Dictionary = {
-	"Kepribadian1": {
+	"Mood": {
 		"display_name": "Mood",
 		"category_label": "NEEDS",
 		"glyph": "😊",
 		"token_category": "Istirahat",
-		"data_key": "kepribadian1",
+		"data_key": "mood",
 		"description": "Mood mempengaruhi tingkat kemauan murid belajar. Jika mood rendah, murid akan stress dan performanya menurun!",
 	},
-	"Kepribadian2": {
+	"Energy": {
 		"display_name": "Energy",
 		"category_label": "NEEDS",
 		"glyph": "⚡",
 		"token_category": "Libur",
-		"data_key": "kepribadian2",
+		"data_key": "energy",
 		"description": "Energy digunakan untuk melakukan aktivitas. Pastikan energy cukup sebelum memberikan tugas berat!",
 	},
-	"Akademis1": {
+	"Akademis": {
 		"display_name": "Akademis",
 		"category_label": "STATS",
 		"glyph": "📚",
 		"token_category": "Akademis",
-		"data_key": "akademis1",
+		"data_key": "akademis",
 		"description": "Menunjukkan tingkat kemampuan murid dalam memahami pelajaran akademis dan teoritis.",
 	},
-	"Akademis2": {
+	"SeniBudaya": {
 		"display_name": "Seni Budaya",
 		"category_label": "STATS",
 		"glyph": "🎨",
 		"token_category": "SeniBudaya",
-		"data_key": "akademis2",
+		"data_key": "seni_budaya",
 		"description": "Menunjukkan tingkat kemampuan murid dalam menciptakan dan memahami karya kesenian.",
 	},
-	"Akademis3": {
+	"Olahraga": {
 		"display_name": "Olahraga",
 		"category_label": "STATS",
 		"glyph": "⚽",
 		"token_category": "Olahraga",
-		"data_key": "akademis3",
+		"data_key": "olahraga",
 		"description": "Menunjukkan tingkat kemampuan fisik dan kebugaran tubuh murid dalam bidang olahraga.",
 	},
 }

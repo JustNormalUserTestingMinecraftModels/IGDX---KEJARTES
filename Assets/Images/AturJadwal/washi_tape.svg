@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="246" height="40" viewBox="0 0 246 40">
+  <!-- Washi tape across the top of a DayStickyNote. Drawn white so the
+       node self_modulate tints it to the day category colour; the stripes
+       are a lighter grey so they read as a darker shade of that colour.
+       Stripes are explicit polygons, not a <pattern>, which ThorVG drops. -->
+  <defs>
+    <clipPath id="tape"><path d="M4 0 L242 0 L246 5 L242 10 L246 15 L242 20 L246 25 L242 30 L246 35 L242 40 L4 40 L0 35 L4 30 L0 25 L4 20 L0 15 L4 10 L0 5 Z"/></clipPath>
+  </defs>
+  <g clip-path="url(#tape)" opacity="0.92">
+    <rect width="246" height="40" fill="#FFFFFF"/>
+    <path d="M-30 40 L-23 40 L-3 0 L-10 0 Z" fill="#E2E2E2"/>
+    <path d="M-14 40 L-7 40 L13 0 L6 0 Z" fill="#E2E2E2"/>
+    <path d="M2 40 L9 40 L29 0 L22 0 Z" fill="#E2E2E2"/>
+    <path d="M18 40 L25 40 L45 0 L38 0 Z" fill="#E2E2E2"/>
+    <path d="M34 40 L41 40 L61 0 L54 0 Z" fill="#E2E2E2"/>
+    <path d="M50 40 L57 40 L77 0 L70 0 Z" fill="#E2E2E2"/>
+    <path d="M66 40 L73 40 L93 0 L86 0 Z" fill="#E2E2E2"/>
+    <path d="M82 40 L89 40 L109 0 L102 0 Z" fill="#E2E2E2"/>
+    <path d="M98 40 L105 40 L125 0 L118 0 Z" fill="#E2E2E2"/>
+    <path d="M114 40 L121 40 L141 0 L134 0 Z" fill="#E2E2E2"/>
+    <path d="M130 40 L137 40 L157 0 L150 0 Z" fill="#E2E2E2"/>
+    <path d="M146 40 L153 40 L173 0 L166 0 Z" fill="#E2E2E2"/>
+    <path d="M162 40 L169 40 L189 0 L182 0 Z" fill="#E2E2E2"/>
+    <path d="M178 40 L185 40 L205 0 L198 0 Z" fill="#E2E2E2"/>
+    <path d="M194 40 L201 40 L221 0 L214 0 Z" fill="#E2E2E2"/>
+    <path d="M210 40 L217 40 L237 0 L230 0 Z" fill="#E2E2E2"/>
+    <path d="M226 40 L233 40 L253 0 L246 0 Z" fill="#E2E2E2"/>
+    <path d="M242 40 L249 40 L269 0 L262 0 Z" fill="#E2E2E2"/>
+  </g>
+</svg>

@@ -1,7 +1,7 @@
 @tool
 extends McpTestSuiteCompat
 
-## The onboarding coach-mark. student_card.gd and SchoolDay.gd each built it
+## The onboarding coach-mark. StudentCard.gd and SchoolDay.gd each built it
 ## by hand, and reading both before extracting turned up far more drift than
 ## the width/margin the plan anticipated: title variation (H1Label vs
 ## H2Label), body variation (TitleLabel vs none), body width offset
@@ -25,7 +25,7 @@ func suite_name() -> String:
 
 const SCENE_PATH := "res://Scenes/UI/TutorialPanel.tscn"
 const SCHOOL_DAY_PATH := "res://Scripts/SchoolSimulation/SchoolDay.gd"
-const STUDENT_CARD_PATH := "res://Scripts/StudentCard/student_card.gd"
+const STUDENT_CARD_PATH := "res://Scripts/StudentCard/StudentCard.gd"
 
 
 func _make() -> TutorialPanel:

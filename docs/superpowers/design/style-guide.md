@@ -39,16 +39,25 @@ effect everywhere. That's the point of the system.
 the existing variation that matches intent rather than styling a node by
 hand. As of this pass:
 
-**Buttons** (`theme_type_variation` on a `Button`):
-- `PrimaryButton` — the screen's main call-to-action / forward navigation.
-- `SecondaryButton` — a lower-emphasis action alongside a primary one.
-- `DangerButton` — destructive or cancel actions (red).
-- `SuccessButton` — affirmative actions that aren't the screen's main nav
-  (e.g. StudentCard's APPROVE) — green, distinct from brand blue.
-- `QuirkBadge` / `PersonaBadge` — StudentCard's trait chips; same pill
-  geometry, different accent so the two trait kinds stay distinguishable.
-- `LobbyNavButton` — Lobby's hub nav buttons (replaced three loose
-  hand-authored StyleBoxFlat `.tres` files).
+**Buttons** (`theme_type_variation` on a `Button`). Since the 2026-09-14
+lobby-style-buttons pass, every framed action button wears the Lobby's look
+through `ThemeFactory._add_lobby_button()`: `brand_primary_light` over the
+darker bevel, a cream rim and cream display text. The role names below say
+what a button is for, not how it looks:
+- `LobbyCtaButton` / `LobbyNavTile`: the Lobby's own buttons, the look every
+  other role copies.
+- `PrimaryButton`: the screen's main call-to-action or forward navigation.
+- `SecondaryButton`: a lower-emphasis action alongside a primary one.
+- `DangerButton`: destructive or cancel actions.
+- `SuccessButton`: affirmative actions that aren't the screen's main nav.
+- `StudentCardSecondaryButtonL`: StudentCard's cream secondary (Batal and the
+  page arrows). StudentCard is the one screen that keeps the pre-2026-09-14
+  look.
+- `RosterStatusBelum` / `RosterStatusSudah`: StudentList's red and green
+  status badges, where the colour is the information.
+- `QuirkBadge` / `PersonaBadge`: StudentCard's trait chips. They share one
+  pill geometry and differ in accent, so the two trait kinds stay
+  distinguishable.
 
 **Panels**:
 - `Card` — the standard raised surface (white bg, border, shadow).
@@ -63,9 +72,23 @@ hand. As of this pass:
 - `CaptionLabel` / `MicroLabel` — secondary, smaller text.
 - `BarLabel` — text drawn directly on a `StatBar` fill (light text, thinner
   dark outline than `DisplayLabel` so it doesn't swallow small text).
-- `ResultHeroLabel` / `ResultBodyLabel` — SemesterEnd-only, light-on-dark
-  variants for its certificate-style dark backdrop (the one screen that
-  intentionally doesn't use the light-surface defaults).
+- `ResultHeroLabel` / `ResultBodyLabel` — light-on-dark variants, made for
+  SemesterEnd's dark backdrop and outliving it. They need a **dark ground**:
+  `ResultBodyLabel` is cream and all but vanishes on a `Card`.
+- `RunResultNameLabel` — dark body text on a light `Card` at the phone step
+  (`font_body_size + 8`): the name beside each figure in RunResult's report.
+- `ResultCardBodyLabel` — dark caption-size text on the minigame result card
+  and its sunken stat panel: the minigame's name, and "Skor:".
+- `ScoreHudComboLabel` — dark caption-size text on the score HUD's light
+  combo chip. The HUD's `TargetLabel` beside it stays on `ResultBodyLabel`:
+  it sits on the dark translucent pill itself.
+- `ResultDeltaLabel` — white caption text with a 4px dark (`text_primary`)
+  outline, made to be tinted: callers colour-code it through `self_modulate`
+  (the result card's green gain and red loss, the apply-item preview's
+  `state_success`). The tint multiplies the outline too but cannot lighten
+  it, so on a light ground the rim carries the text; untinted, it reads as
+  white letters with a dark edge. Keep the base white: a dark base would
+  crush the tint to near-black.
 
 **Progress**:
 - `StatBar` — the mood/energy/skill bars. Fill renders white so callers tint
@@ -79,6 +102,21 @@ into a scene never renders as flat Godot gray.
 function in `ThemeFactory.gd` (following the existing `_add_button_variation`
 / label-spec patterns), rebake, and use it by name. Do not reach for a
 per-node `theme_override_*` (see The Rule, below).
+
+## Illustration materials
+
+**Illustration plates wear one of two materials.** Cutouts take
+`illustration_grade_cutout.tres` (grade + inner AO + rim); full-bleed backdrops
+take `illustration_grade_material.tres` (grade only), because a backdrop has no
+alpha edge and would pay five texture taps per pixel for nothing. Which is
+which is pinned by `tests/test_illustration_ao.gd`'s census, measured from each
+texture's alpha. The Lobby is lit from the upper right, the rest of the game
+from the upper left: its desks wear `illustration_grade_cutout_lobby.tres` and
+its faces `illustration_grade_face.tres`, both kept equal to the cutout except
+`light_dir`. Tune them, the Lobby's shafts and its WorldEnvironment bloom live
+from the debug overlay's **Look** page, then write the landed value into the
+`.tres`. That bloom reaches only canvas layers ≤ −1: the room lives in the
+Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 
 ## Swapping fonts
 
@@ -174,7 +212,7 @@ just from opening the scene. Pure UI wiring (connecting signals, reading
 initial display values) should stay *above* that guard, ungated, since the
 test suite needs to exercise exactly that wiring.
 
-- See `Scripts/MainMenu/main_menu.gd` for the worked "gated" example: it's
+- See `Scripts/MainMenu/MainMenu.gd` for the worked "gated" example: it's
   `@tool`, button-signal wiring runs unconditionally, and BGM/entry
   animation are gated behind `Engine.is_editor_hint()`.
 - See `Scripts/UI/UIPolish.gd` for the worked "correctly needs no `@tool`"

@@ -3,10 +3,10 @@ extends Control
 ## "Who takes part in this event?" — one selectable card per student with
 ## a live preview of what accepting would do to their stats.
 ##
-## Every card, bar and chip is now theme-driven: cards are &"Card"
-## PanelContainers tinted by state, the three preview bars are StatBars
-## (category-tinted, animated through Juice), and the state chips reuse
-## the shared DaySummaryBadge scene. Nothing here builds a StyleBoxFlat.
+## Each student is an EventStudentCard: the real DaySummary card inside a
+## toggle Button (StudentCardButton), showing where the student stands now.
+## Selecting a card layers the event's effect on top. The dialog's own
+## chrome is theme-driven; nothing here builds a StyleBoxFlat.
 
 signal event_decision_made(accepted: bool, selected_students: Array[StudentData])
 
@@ -42,13 +42,14 @@ signal event_decision_made(accepted: bool, selected_students: Array[StudentData]
 ## screen. Null keeps the theme's default font.
 @export var font: Font = null
 
-# Each selectable student is now EventStudentCard.tscn, which wears the
-# DaySummary chrome. The StudentSummaryCard scene, the badge scene and
-# the card-tint constant that used to be assembled here all went with
-# the runtime card construction on 2026-09-07.
+# Each selectable student is EventStudentCard.tscn: the real DaySummary card
+# inside a toggle Button. The cards used to be assembled here at runtime;
+# that went on 2026-09-07.
 const CARD_SCENE := preload("res://Scenes/SchoolSimulation/EventStudentCard.tscn")
 
 
+@onready var background: TextureRect = $Background
+@onready var background_dim: Panel = $BackgroundDim
 @onready var dialog_panel: PanelContainer = $Margin/DialogPanel
 @onready var title_label: Label = $Margin/DialogPanel/Margin/MainVBox/TitleLabel
 @onready var desc_label: Label = $Margin/DialogPanel/Margin/MainVBox/DescLabel
@@ -85,7 +86,8 @@ func setup_event(
 	students: Array[StudentData],
 	stat_boost: float = 15.0,
 	energy_cost: float = -15.0,
-	mood_boost: float = 0.0
+	mood_boost: float = 0.0,
+	day_name: String = ""
 ) -> void:
 	event_data = {
 		"title": title,
@@ -95,7 +97,9 @@ func setup_event(
 		"category": category,
 		"stat_boost": stat_boost,
 		"energy_cost": energy_cost,
-		"mood_boost": mood_boost
+		"mood_boost": mood_boost,
+		# Dresses each card's portrait for the day (StudentSkins.DAY_OUTFITS).
+		"day_name": day_name,
 	}
 	student_list = students
 
@@ -117,19 +121,11 @@ func setup_event(
 
 func _apply_visual_exports() -> void:
 	# The Scrim panel is the default backdrop; an art-supplied photo
-	# replaces it outright. Guarded on `is Panel` so a second call cannot
-	# stack another TextureRect.
-	var bg = get_node_or_null("Background")
-	if bg is Panel and background_texture:
-		var tex_rect = TextureRect.new()
-		tex_rect.name = "Background"
-		tex_rect.texture = background_texture
-		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tex_rect.stretch_mode = TextureRect.STRETCH_SCALE
-		tex_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		bg.queue_free()
-		add_child(tex_rect)
-		move_child(tex_rect, 0)
+	# replaces it outright. Both are authored in the scene -- this only
+	# picks which one shows.
+	background.texture = background_texture
+	background.visible = background_texture != null
+	background_dim.visible = background_texture == null
 
 	# A texture card still wins over the theme, for the art-swap workflow.
 	if dialog_panel and dialog_card_texture:
@@ -165,15 +161,16 @@ func _populate_student_cards() -> void:
 	card_widgets.clear()
 
 	var category: String = event_data.get("category", "Akademis")
+	var day_name: String = event_data.get("day_name", "")
 	var cards: Array = []
 	for student in student_list:
 		var card: EventStudentCard = CARD_SCENE.instantiate()
-		card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		card.size_flags_horizontal = Control.SIZE_FILL
 		students_container.add_child(card)
 		# setup() only after the card is in the tree: its stat rows tween
 		# through Juice, which needs the bar parented before it can make
 		# a tween on it.
-		card.setup(student, category)
+		card.setup(student, category, day_name)
 		card.selection_changed.connect(
 			func(_selected: bool) -> void: _update_card_preview(student.student_name))
 		card_widgets[student.student_name] = card

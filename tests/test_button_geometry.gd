@@ -25,8 +25,6 @@ func setup() -> void:
 ## radius_button. Every entry needs a reason -- an unreasoned entry is
 ## how the old inconsistency justified itself.
 const RADIUS_EXEMPT := {
-	"MainMenuButton":
-		"StyleBoxTexture -- the gold gloss is painted, so the corner lives in menu_button.png",
 	"TraitPill":
 		"chip, StyleBoxTexture, stays fully round so it reads as a label not a control",
 	"QuirkBadge":
@@ -51,6 +49,8 @@ const RADIUS_EXEMPT := {
 		"reads as a card, not a button -- radius_lg",
 	"CardArrowButton":
 		"fixed 120x120 square, so radius_pill yields an exact circle -- no height-dependent-radius risk",
+	"AchievementClaimButton":
+		"the Achievements mockup's Klaim is a full capsule with a 6px olive rim -- radius_pill, like the chips",
 	"GhostButton":
 		"wash sits over the daily-login panel's baked capsule art (day1.png) -- radius_pill so the corner tracks the button's own height and always matches the art's rounded ends, deliberately height-dependent",
 }
@@ -105,6 +105,7 @@ const SIZE_STEPS := {
 	"PrimaryButtonM": "m", "SecondaryButtonM": "m", "DangerButtonM": "m",
 	"PrimaryButtonL": "l", "SecondaryButtonL": "l",
 	"DangerButtonL": "l", "SuccessButtonL": "l",
+	"StudentCardSecondaryButtonL": "l",
 }
 
 
@@ -146,6 +147,7 @@ func test_natural_height_matches_the_size_step() -> void:
 		"SecondaryButtonL": _tokens.btn_h_l,
 		"DangerButtonL": _tokens.btn_h_l,
 		"SuccessButtonL": _tokens.btn_h_l,
+		"StudentCardSecondaryButtonL": _tokens.btn_h_l,
 	}
 	for name in targets:
 		var sb := _theme.get_stylebox("normal", name) as StyleBoxFlat
@@ -168,6 +170,17 @@ func test_natural_height_matches_the_size_step() -> void:
 ## shape as test_viewport_editability.gd's dict. An entry needs a reason.
 const HEIGHT_ALLOWED := {
 	# "Scenes/Foo/bar.tscn::SomeButton": "why this one is off-step",
+	# AchievementRow.tscn's ClaimButton exemption was removed 2026-09-18 when
+	# the row was replaced by AchievementTile + AchievementDetailSheet (Task
+	# 5, achievements-polish); the sheet's ClaimButton is an authored
+	# SuccessButton size step and needs no exemption.
+	"Scenes/Skins/StudentTile.tscn::StudentTile":
+		"151x156, a pixel copy of skinselection_mockup.png (user request 2026-09-23)",
+	"Scenes/Skins/SkinSelect.tscn::Tray/Terapkan":
+		"140 tall, a pixel copy of skinselection_mockup.png (user request 2026-09-23)",
+	"Scenes/AturJadwal/ActivityTile.tscn::ActivityTile":
+		"a Penjadwalan picker tile, a selectable card rather than an action button: "
+		+ "its height is its content's (2026-09-24 picker rebuild, D9)",
 }
 
 const SCENE_GLOB := "res://Scenes"
@@ -196,7 +209,7 @@ func _scene_files(dir_path: String, out: Array) -> void:
 ## Height priority mirrors what Godot actually renders: for an anchored
 ## Control, offset_top/offset_bottom determine the real on-screen size, so
 ## an explicit offset delta wins over custom_minimum_size, which is only a
-## floor. This matters concretely for loby.tscn's "Student"/"Jadwal" CTAs,
+## floor. This matters concretely for Lobby.tscn's "Student"/"Jadwal" CTAs,
 ## which carry custom_minimum_size = Vector2(0, 96) *and* an offset delta
 ## of 290 -- the button actually renders at 290, not 96, and a parser that
 ## let custom_minimum_size win would hide that real offender.
@@ -281,7 +294,7 @@ func _offenders_in_scene(path: String, src: String, steps: Array,
 ## stylebox opts out of the radius check by falling through rather than by
 ## being named there) has already declared itself off the fixed-corner
 ## button shape -- TraitPill/QuirkBadge/PersonaBadge are chips, EventSelectCard
-## is a card, MainMenuButton's corner is painted into menu_button.png, and
+## is a card, and
 ## ShopHubTile is a 520px panel-less destination tile with an empty `normal`
 ## stylebox, so it is neither radius- nor height-scaled. Being Button-based
 ## in the theme graph does not make any of these a button on the S/M/L scale,
@@ -315,20 +328,6 @@ func test_no_button_is_authored_off_step() -> void:
 
 	assert_eq(offenders.size(), 0,
 		"buttons authored off the S/M/L scale:\n  " + "\n  ".join(offenders))
-
-
-## MainMenuButton is exempt from the radius rule because its corner is
-## painted, not generated -- but "exempt" must not mean "unchecked". This
-## asserts it points at the asset that carries the right corner, so the
-## exemption cannot quietly become a way of keeping the old shape.
-func test_main_menu_button_uses_the_split_asset() -> void:
-	var sb := _theme.get_stylebox("normal", "MainMenuButton") as StyleBoxTexture
-	assert_not_null(sb, "MainMenuButton/normal must be a StyleBoxTexture")
-	assert_true(sb.texture != null, "MainMenuButton has no texture")
-	assert_true(str(sb.texture.resource_path).ends_with("menu_button.png"),
-		"MainMenuButton must use menu_button.png, not %s -- trait_button.png "
-		% str(sb.texture.resource_path)
-		+ "is the round chip art and must stay round")
 
 
 ## The student card's page arrows. A reviewed exception to the fixed-radius

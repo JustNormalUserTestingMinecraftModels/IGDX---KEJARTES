@@ -2,7 +2,7 @@
 extends McpTestSuiteCompat
 
 ## The quirk/persona detail modal, extracted from the verbatim copies in
-## report_card.gd and student_card.gd.
+## ReportCard.gd and StudentCard.gd.
 ##
 ## The one thing that genuinely varies per instance is the header accent --
 ## brand_primary for a quirk, cat_istirahat for a persona -- so these tests
@@ -117,8 +117,8 @@ func test_the_gameplay_effect_heading_is_its_own_display_label() -> void:
 
 
 func test_neither_screen_builds_a_trait_popup_by_hand() -> void:
-	for path in ["res://Scripts/ReportCard/report_card.gd",
-			"res://Scripts/StudentCard/student_card.gd"]:
+	for path in ["res://Scripts/ReportCard/ReportCard.gd",
+			"res://Scripts/StudentCard/StudentCard.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_contains(src, "TraitDetailPopup", "%s should use the scene" % path)
 		assert_false(src.contains("_close_trait_popup"),

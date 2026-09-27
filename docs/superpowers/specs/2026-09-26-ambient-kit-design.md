@@ -52,8 +52,8 @@ bare magic numbers (named `const` or `@export`), no nodes created at runtime.
 | **LightPool** | `Scenes/Look/LightPool.tscn` + script | Additive glow using `light_falloff.gdshader` unchanged, with an optional child using `light_shafts.gdshader` for slow rays. Brightness breathes slowly. | `light_color`, `intensity` (capped, see "Cream" below), `radius`, `rays_enabled`, `breath_period`, `breath_depth` |
 | **AmbientParticles** | `Scenes/Look/AmbientParticles.tscn` + script | One `CPUParticles2D` that fills its own rect, additive `CanvasItemMaterial`, set up like SchoolDay's `Motes`. | `preset` enum: `DEBU` (dust, `particle_glow.png`), `KILAU` (sparkle, `particle_spark.png`); `density`; `drift`; `tint`. The area is the node's own rect (amendment 4). |
 | **Glint** | `Scripts/Shaders/glint.gdshader` + `glint_material.tres` | A diagonal highlight band sweeping across a texture's alpha every N seconds. | `interval`, `band_width`, `angle`, `strength`, `glint_color`, `motion` |
-| **AmbientGlow** | `Scenes/Look/AmbientGlow.tscn` + script | A `WorldEnvironment` carrying the Lobby's recipe (`lobby_environment.tres`): `background_mode` Canvas, glow in screen blend, `background_canvas_max_layer = -1` so the glow stops below the UI. Its `Environment` is `resource_local_to_scene`, so each screen's instance tunes its own copy. | `glow_threshold`, `glow_intensity`, `glow_strength` (written into the local environment) |
-| **DeskAmbience** | `Scenes/Look/DeskAmbience.tscn` | The desk recipe (PAGI tint + lamp LightPool + DEBU particles + AmbientGlow), authored once and instanced by the four desk screens. | `particle_density`, `glow_threshold`, forwarded to its children (amendment 6) |
+| **AmbientGlow** | `Scenes/Look/AmbientGlow.tscn` + script | A `WorldEnvironment` carrying the Lobby's recipe (`lobby_environment.tres`): `background_mode` Canvas, glow in screen blend, `background_canvas_max_layer = -1` so the glow stops below the UI. Its `Environment` is `resource_local_to_scene`, so each screen's instance tunes its own copy. | `glow_threshold`, `glow_intensity`, `glow_strength` (written into the local environment) (superseded by amendment 7: no glow ships) |
+| **DeskAmbience** | `Scenes/Look/DeskAmbience.tscn` | The desk recipe (PAGI tint + lamp LightPool + DEBU particles + AmbientGlow), authored once and instanced by the four desk screens. | `particle_density`, `glow_threshold`, forwarded to its children (amendment 6) (superseded by amendment 7: no glow ships) |
 
 **Why CPU particles.** Counts stay at 12–40 per emitter, which is cheap on the
 CPU and identical on every mobile GPU. SchoolDay's motes already use them.
@@ -271,7 +271,8 @@ supersedes the text above where they disagree.
 6. **`DeskAmbience` forwards `particle_density` and `glow_threshold`.**
    Overrides set on an instanced scene's children do not survive a save
    (CLAUDE.md, "Three save hazards"), so the per-screen knobs live on
-   `DeskAmbience`'s root.
+   `DeskAmbience`'s root. (Superseded by amendment 7 for `glow_threshold`:
+   no glow ships, so that forwarded knob is unused for now.)
 7. **No glow ships (measured 2026-09-28).** On MainMenu the sky sits at ~0.89
    luminance and the sun core at ~0.88; on the desk screens the wood is
    ~0.84 everywhere. Swept over threshold 0.6-0.9, intensity 1-4 and strength

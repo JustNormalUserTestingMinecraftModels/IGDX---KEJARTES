@@ -113,6 +113,17 @@ white `pupil_head.svg`, `week_cell.svg` and `gauge_pill.svg` in
 one means the census in `tests/test_illustration_ao.gd` and a rim along the
 flap's crease to judge.
 
+**Ambient kit art (2026-09-26).** `AmbientParticles`' `DAUN` preset and
+`paper_flutter.gdshader`'s `h_frames` uniform wait on the artist's leaf and
+petal sheets: `Assets/Images/Particles/particle_leaf_sheet.png` and
+`particle_petal_sheet.png`, 512x128, four 128x128 frames in one row, real
+colour, an 8 px empty border inside every frame, tip up, straight (not
+premultiplied) alpha, no drop shadow. Optional white-on-transparent redraws
+`particle_dust.png` / `particle_sparkle.png` (128x128) would replace
+`particle_glow` / `particle_spark` in the DEBU and KILAU presets only. The
+Sway shader stays deferred until separated plant/paper/curtain art exists
+for it to move.
+
 ## Asset notes
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
@@ -247,6 +258,24 @@ Work this as one pass per cluster, starting with Inventory, not as a
 by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
+
+**Ambient kit gaps (2026-09-27).** `hdr_2d` is the clean way to bloom only
+the lights without also blooming the near-white paper and sky; it is a
+project-wide rendering change `test_look_layer` pins off today. Measured
+2026-09-28: MainMenu's sky sits at ~0.89 luminance and its sun core at
+~0.88, the desk screens' wood at ~0.84 everywhere; sweeping threshold
+0.6-0.9, intensity 2-4 and strength 1.2-1.5 either bloomed nothing visible
+or bloomed the background as much as the light (+0.04 to +0.11 at the
+strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList and
+ReportCard all ship without bloom -- `Scenes/Look/AmbientGlow.tscn` is
+built and ready to place once `hdr_2d` lands. Measured at the same time,
+the desk lamp `LightPool` is capped at 0.12 (its measured knee) and still
+only adds +0.011 mean brightness; `hdr_2d` would also let it go brighter.
+Also outstanding: light wrap on the shared cutout illustration materials;
+the kit not yet extended to Inventory, Achievements or Koperasi/ShopHub
+(blurred or busy backdrops, the kit can extend there later); and the Debug
+overlay's Look page stays Lobby-only because `DebugManager.gd` is at its
+clean-code size ceiling (1,880 lines, `LARGE_SCRIPTS`).
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories

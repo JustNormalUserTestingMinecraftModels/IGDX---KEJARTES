@@ -18,12 +18,14 @@ const LIGHT_POOL := "res://Scenes/Look/LightPool.tscn"
 const AMBIENT_PARTICLES := "res://Scenes/Look/AmbientParticles.tscn"
 const AMBIENT_GLOW := "res://Scenes/Look/AmbientGlow.tscn"
 const GLINT_MATERIAL := "res://Scripts/Shaders/glint_material.tres"
+const DESK_AMBIENCE := "res://Scenes/Look/DeskAmbience.tscn"
 
 var _sandbox: SubViewport
 var _tint: MoodTint
 var _pool: LightPool
 var _particles: AmbientParticles
 var _glow: AmbientGlow
+var _desk: DeskAmbience
 
 
 func suite_name() -> String:
@@ -40,6 +42,7 @@ func suite_setup(_ctx: Dictionary) -> void:
 	_pool = _stand(LIGHT_POOL) as LightPool
 	_particles = _stand(AMBIENT_PARTICLES) as AmbientParticles
 	_glow = _stand(AMBIENT_GLOW) as AmbientGlow
+	_desk = _stand(DESK_AMBIENCE) as DeskAmbience
 
 
 func suite_teardown() -> void:
@@ -104,12 +107,13 @@ func test_a_freed_piece_leaves_no_connection_behind() -> void:
 
 
 func test_every_kit_root_refills_its_parent() -> void:
-	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd", "res://Scripts/Look/AmbientParticles.gd"]:
+	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd", "res://Scripts/Look/AmbientParticles.gd", "res://Scripts/Look/DeskAmbience.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_true(src.contains("AmbientKit.fill_parent(self)"),
 			path + " must re-fill its parent in _ready")
-		assert_true(src.contains("AmbientKit.follow_settings("),
-			path + " must follow both switches")
+		if not path.ends_with("DeskAmbience.gd"):
+			assert_true(src.contains("AmbientKit.follow_settings("),
+				path + " must follow both switches")
 
 
 # ── MoodTint ─────────────────────────────────────────────────────────────────
@@ -390,3 +394,35 @@ func test_the_switch_turns_the_glow_off() -> void:
 func test_the_glow_follows_the_switch_in_ready() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Look/AmbientGlow.gd")
 	assert_true(src.contains("AmbientKit.follow_settings(_refresh)"), "AmbientGlow follows Efek Suasana")
+
+
+# ── DeskAmbience ─────────────────────────────────────────────────────────────
+
+## The desk recipe, authored once: a warm morning tint, a lamp upper left
+## (the game's light direction), dust in it, and the bloom.
+func test_the_desk_recipe() -> void:
+	var tint := _desk.get_node("Tint") as MoodTint
+	var lamp := _desk.get_node("Lamp") as LightPool
+	var dust := _desk.get_node("Dust") as AmbientParticles
+	var glow := _desk.get_node("Glow") as AmbientGlow
+	assert_true(tint != null and lamp != null and dust != null and glow != null,
+		"DeskAmbience holds Tint, Lamp, Dust and Glow")
+	if tint == null or lamp == null or dust == null or glow == null:
+		return
+	assert_eq(tint.mood, MoodTint.Mood.PAGI, "the desk wears the morning")
+	assert_true(lamp.center.x < 0.5 and lamp.center.y < 0.5, "the lamp sits upper left")
+	assert_eq(dust.preset, AmbientParticles.Preset.DEBU, "dust drifts in the lamp light")
+	assert_true(tint.get_index() < lamp.get_index() and lamp.get_index() < dust.get_index(),
+		"tint, then light, then particles")
+
+
+## Overrides on an instance's children do not survive a save, so the two
+## per-screen knobs live on the root and are written through.
+func test_the_root_knobs_reach_the_children() -> void:
+	_desk.particle_density = 0.5
+	_desk.glow_threshold = 0.95
+	assert_eq((_desk.get_node("Dust") as AmbientParticles).density, 0.5, "density reaches Dust")
+	assert_eq((_desk.get_node("Glow") as AmbientGlow).glow_threshold, 0.95, "threshold reaches Glow")
+	_desk.particle_density = 1.0
+	_desk.glow_threshold = 0.9
+	assert_eq(_anchors(_desk), Vector4(0, 0, 1, 1), "DeskAmbience is Full Rect")

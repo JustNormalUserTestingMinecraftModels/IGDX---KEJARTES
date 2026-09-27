@@ -68,9 +68,9 @@ guidance.
   their `target_…`, `base_…` and `…Icon` forms too). They are counted per
   file in `Scripts/`, `Scenes/` and `tests/`, and no file may gain one:
   adding one fails even in a file that already has them, and this rule has
-  no ALLOWED list. Until the stat-key rename lands, reach the stats through
-  `StudentData`'s fields (`akademis`, `seni_budaya`, `olahraga`, `mood`,
-  `energy`) instead.
+  no ALLOWED list. The roster now uses `StudentData`'s field names
+  (`akademis`, `seni_budaya`, `olahraga`, `mood`, `energy`); this rule keeps
+  the old keys from coming back.
 - **Misspelled names ⚙.** No file or folder name under `Scripts/`,
   `Scenes/`, `Assets/` or `tests/` may carry a stem from `MISSPELLED_STEMS`
   in `ci/clean_code_scan.gd` — the misspellings of *lobby*, *koperasi* and

@@ -122,3 +122,15 @@ func test_a_broken_baseline_cannot_hang_the_check() -> void:
 		"the load failure says how to recover")
 	assert_true(CHECK.load_clean_code_scan() != null,
 		"today's scanner and baseline load")
+
+
+## The dump builds the baseline's text before it opens the file for writing:
+## opening truncates it, so a script error while formatting must not come
+## after the open, or it would leave an empty baseline behind.
+func test_the_dump_formats_before_it_truncates_the_baseline() -> void:
+	var src := FileAccess.get_file_as_string("res://ci/clean_code_dump.gd")
+	var formats := src.find("scan.call(\"format_baseline\", report)")
+	var opens := src.find("FileAccess.open(OUT_PATH, FileAccess.WRITE)")
+	assert_true(formats != -1 and opens != -1 and formats < opens,
+		"format_baseline runs before the baseline is opened for writing")
+	assert_true(src.contains("file.store_string(text)"), "it writes the text it checked")

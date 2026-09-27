@@ -71,12 +71,18 @@ func _init() -> void:
 	if not raised.is_empty() and not rekey:
 		printerr(REFUSED % raised.size())
 		return
+	# Build the text before opening the file: opening truncates it, and a
+	# script error inside format_baseline hands back null instead of stopping.
+	var text: Variant = scan.call("format_baseline", report)
+	if text is not String or (text as String).is_empty():
+		printerr(INCOMPLETE % "format_baseline returned no text")
+		return
 	var file := FileAccess.open(OUT_PATH, FileAccess.WRITE)
 	if file == null:
 		printerr("clean_code_dump: cannot write %s: %s"
 			% [OUT_PATH, error_string(FileAccess.get_open_error())])
 		return
-	file.store_string(scan.call("format_baseline", report))
+	file.store_string(text)
 	file.close()
 	print(scan.call("summary", report))
 	if not raised.is_empty():

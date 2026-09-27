@@ -102,7 +102,9 @@ func test_the_check_runs_the_clean_code_scan_and_only_warns_on_a_shrink() -> voi
 
 ## A baseline that does not parse must be a reported failure, never a check
 ## script that fails to compile and leaves Godot running until the job times
-## out: the scanner is loaded at run time, and _ready quits with 1 first.
+## out: the scanner is loaded at run time, and _ready quits with 1 first --
+## but only after the editor guard, since the script is @tool and a quit
+## above the guard would close the editor.
 func test_a_broken_baseline_cannot_hang_the_check() -> void:
 	var src := FileAccess.get_file_as_string("res://ci/project_check.gd")
 	assert_false(src.contains("preload(\"res://ci/clean_code_scan.gd\")"),
@@ -110,6 +112,12 @@ func test_a_broken_baseline_cannot_hang_the_check() -> void:
 	var early_quit := src.find("get_tree().quit(1)\n")
 	assert_true(early_quit != -1 and early_quit < src.find("collect_files(\"res://\")\n"),
 		"_ready quits with 1 before any work, so a script error still exits")
+	var guard := src.find("if Engine.is_editor_hint():")
+	assert_true(guard != -1 and guard < early_quit,
+		"the early quit runs only outside the editor")
+	for path: String in ["ci/clean_code_allowed.gd", "ci/clean_code_baseline.gd", "ci/clean_code_scan.gd"]:
+		assert_true(CHECK.SCAN_LOAD_FAILURE.contains(path),
+			"the load failure names %s and its fix" % path)
 	assert_true(CHECK.SCAN_LOAD_FAILURE.contains("ci/clean_code_dump.gd"),
 		"the load failure says how to recover")
 	assert_true(CHECK.load_clean_code_scan() != null,

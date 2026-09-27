@@ -465,12 +465,20 @@ func test_every_tutorial_flag_to_reset_exists_on_its_script() -> void:
 		var owner := load(path) as GDScript
 		for flag: String in flags[path]:
 			assert_true(owner != null and flag in owner, "%s has a static %s" % [path, flag])
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	var beaten := src.find("GameState.is_game_beaten = true")
+	var reset := src.find("_reset_static_flag(path, flag)")
+	assert_true(beaten != -1 and reset > beaten,
+		"the beaten-game branch runs the reset over TUTORIAL_FLAGS")
 
 
 ## The reset really clears the flag, through the same helper the game uses.
 func test_the_flag_reset_clears_the_student_list_walkthrough() -> void:
 	var list := load("res://Scripts/StudentList/StudentList.gd") as GDScript
 	var run_result := load("res://Scripts/EndGame/RunResult.gd") as GDScript
+	assert_true(list != null and run_result != null, "both scripts load")
+	if list == null or run_result == null:
+		return
 	var was: Variant = list.get("tutorial_shown")
 	list.set("tutorial_shown", true)
 	run_result.call("_reset_static_flag", "res://Scripts/StudentList/StudentList.gd", "tutorial_shown")

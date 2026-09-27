@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="2_tint"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="3_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/AmbientParticles.tscn" id="4_particles"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="5_glow"]
 
 [node name="DeskAmbience" type="Control"]
 anchors_preset = 15
@@ -24,10 +23,8 @@ strength = 0.3
 layout_mode = 1
 center = Vector2(0.17, 0.09)
 pool_size = Vector2(1200, 1200)
-intensity = 0.06
+intensity = 0.12
 
 [node name="Dust" parent="." instance=ExtResource("4_particles")]
 layout_mode = 1
 drift = Vector2(0.3, -1)
-
-[node name="Glow" parent="." instance=ExtResource("5_glow")]

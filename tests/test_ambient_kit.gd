@@ -405,27 +405,24 @@ func test_the_desk_recipe() -> void:
 	var tint := _desk.get_node("Tint") as MoodTint
 	var lamp := _desk.get_node("Lamp") as LightPool
 	var dust := _desk.get_node("Dust") as AmbientParticles
-	var glow := _desk.get_node("Glow") as AmbientGlow
-	assert_true(tint != null and lamp != null and dust != null and glow != null,
-		"DeskAmbience holds Tint, Lamp, Dust and Glow")
-	if tint == null or lamp == null or dust == null or glow == null:
+	assert_true(tint != null and lamp != null and dust != null,
+		"DeskAmbience holds Tint, Lamp and Dust")
+	if tint == null or lamp == null or dust == null:
 		return
 	assert_eq(tint.mood, MoodTint.Mood.PAGI, "the desk wears the morning")
 	assert_true(lamp.center.x < 0.5 and lamp.center.y < 0.5, "the lamp sits upper left")
 	assert_eq(dust.preset, AmbientParticles.Preset.DEBU, "dust drifts in the lamp light")
 	assert_true(tint.get_index() < lamp.get_index() and lamp.get_index() < dust.get_index(),
 		"tint, then light, then particles")
+	assert_true(_desk.get_node_or_null("Glow") == null, "no bloom on the desk: spec amendment 7")
 
 
 ## Overrides on an instance's children do not survive a save, so the two
 ## per-screen knobs live on the root and are written through.
 func test_the_root_knobs_reach_the_children() -> void:
 	_desk.particle_density = 0.5
-	_desk.glow_threshold = 0.95
 	assert_eq((_desk.get_node("Dust") as AmbientParticles).density, 0.5, "density reaches Dust")
-	assert_eq((_desk.get_node("Glow") as AmbientGlow).glow_threshold, 0.95, "threshold reaches Glow")
 	_desk.particle_density = 1.0
-	_desk.glow_threshold = 0.9
 	assert_eq(_anchors(_desk), Vector4(0, 0, 1, 1), "DeskAmbience is Full Rect")
 
 
@@ -479,9 +476,10 @@ func _children_of(census: Array[Dictionary], parent: String) -> Array[String]:
 	return out
 
 
-## A glow screen: `World` is a CanvasLayer at -1 holding the backdrop and only
-## kit instances; nothing tappable sits in it; exactly one bloom exists.
-func _assert_glow_screen(scene_path: String, backdrop: String) -> void:
+## A world screen: `World` is a CanvasLayer at -1 holding the backdrop and
+## only kit instances; nothing tappable sits in it; no bloom is placed --
+## spec amendment 7.
+func _assert_world_screen(scene_path: String, backdrop: String) -> void:
 	var census := _census(scene_path)
 	var world := _entry(census, "World")
 	assert_eq(world.get("type"), "CanvasLayer", scene_path + ": World must be a CanvasLayer")
@@ -491,7 +489,7 @@ func _assert_glow_screen(scene_path: String, backdrop: String) -> void:
 	var blooms := 0
 	for e in census:
 		var p: String = e["path"]
-		if e["instance"] == AMBIENT_GLOW or e["instance"] == DESK_AMBIENCE:
+		if e["instance"] == AMBIENT_GLOW:
 			blooms += 1
 		if not p.begins_with("World/"):
 			continue
@@ -499,13 +497,13 @@ func _assert_glow_screen(scene_path: String, backdrop: String) -> void:
 		if e["instance"] != "":
 			assert_true(KIT_SCENES.has(e["instance"]),
 				"%s: only kit pieces are instanced inside World (%s)" % [scene_path, p])
-	assert_eq(blooms, 1, scene_path + ": exactly one AmbientGlow (a DeskAmbience carries one)")
+	assert_eq(blooms, 0, scene_path + ": no AmbientGlow is placed (spec amendment 7)")
 
 
 # ── MainMenu ─────────────────────────────────────────────────────────────────
 
-func test_main_menu_is_a_glow_screen() -> void:
-	_assert_glow_screen(MAIN_MENU, "Background")
+func test_main_menu_is_a_world_screen() -> void:
+	_assert_world_screen(MAIN_MENU, "Background")
 
 
 func test_main_menu_wears_the_morning_kit() -> void:
@@ -523,7 +521,7 @@ func test_main_menu_wears_the_morning_kit() -> void:
 	var logo_mat: Variant = _prop(_entry(c, "World/Logo"), "material")
 	assert_true(logo_mat is Material and (logo_mat as Material).resource_path == GLINT_MATERIAL,
 		"the logo glints")
-	assert_eq(_entry(c, "Glow").get("instance"), AMBIENT_GLOW, "the bloom sits at the root")
+	assert_true(_entry(c, "Glow").is_empty(), "no bloom on the menu: spec amendment 7")
 
 
 func test_main_menu_finds_its_logo_by_unique_name() -> void:
@@ -542,9 +540,9 @@ const DESK_SCREENS := [
 ]
 
 
-func test_every_desk_screen_is_a_glow_screen() -> void:
+func test_every_desk_screen_is_a_world_screen() -> void:
 	for path in DESK_SCREENS:
-		_assert_glow_screen(path, "Backdrop")
+		_assert_world_screen(path, "Backdrop")
 
 
 func test_every_desk_screen_wears_the_desk_recipe() -> void:

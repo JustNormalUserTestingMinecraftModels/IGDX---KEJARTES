@@ -272,3 +272,14 @@ supersedes the text above where they disagree.
    Overrides set on an instanced scene's children do not survive a save
    (CLAUDE.md, "Three save hazards"), so the per-screen knobs live on
    `DeskAmbience`'s root.
+7. **No glow ships (measured 2026-09-28).** On MainMenu the sky sits at ~0.89
+   luminance and the sun core at ~0.88; on the desk screens the wood is
+   ~0.84 everywhere. Swept over threshold 0.6-0.9, intensity 1-4 and strength
+   1-1.5, no setting bloomed a light pool by +0.01 without blooming the far
+   background as much (+0.04 to +0.11 at the strong end: fog). With hdr_2d
+   off, no threshold can separate a light from a background this bright. The
+   user chose to drop the glow: MainMenu and DeskAmbience place no
+   AmbientGlow; the piece and its tests stay for a later hdr_2d pass
+   (DEBT.md). Measured at the same time: the desk lamp lands at 0.12, its cap
+   (0.06 added only +0.006 mean, 0.12 clips nothing), and the menu sun stays
+   at 0.08 (0.12 drove 122 sampled pixels to white).

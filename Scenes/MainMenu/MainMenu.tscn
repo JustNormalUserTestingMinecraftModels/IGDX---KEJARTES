@@ -10,7 +10,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="amb_tint"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/AmbientParticles.tscn" id="amb_particles"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="amb_glow"]
 [ext_resource type="Material" path="res://Scripts/Shaders/glint_material.tres" id="amb_glint"]
 
 [node name="MainMenu" type="Control" unique_id=1708799478]
@@ -87,9 +86,6 @@ center = Vector2(0.75, 0.22)
 pool_size = Vector2(700, 700)
 intensity = 0.06
 breath_depth = 0.1
-
-[node name="Glow" parent="." instance=ExtResource("amb_glow")]
-glow_threshold = 0.9
 
 [node name="SafeArea" type="MarginContainer" parent="." unique_id=1913735591]
 layout_mode = 1

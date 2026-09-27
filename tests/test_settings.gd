@@ -17,6 +17,7 @@ var _screen: Control
 var _saved_bus_state: Array[Dictionary] = []
 
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+const LayoutFrame := preload("res://tests/layout_frame.gd")
 
 
 func setup() -> void:
@@ -157,3 +158,79 @@ func test_settings_screen_exposes_haptics_and_motion() -> void:
 		"Settings must write haptics_enabled from its toggle")
 	assert_true(src.contains("GameSettings.reduce_motion ="),
 		"Settings must write reduce_motion from its toggle")
+
+## Efek Suasana (ambient kit, 2026-09-26) is on until the player says
+## otherwise: a fresh GameSettings, before any load, holds true.
+func test_ambient_effects_default_on() -> void:
+	var fresh: Node = (load("res://Scripts/GameSettings.gd") as GDScript).new()
+	assert_true(fresh.get("ambient_effects_enabled"), "Efek Suasana defaults to on")
+	fresh.free()
+
+
+func test_ambient_effects_persist() -> void:
+	GameSettings.ambient_effects_enabled = false
+	GameSettings.save_settings()
+	GameSettings.ambient_effects_enabled = true
+	GameSettings.load_settings()
+	assert_false(GameSettings.ambient_effects_enabled,
+		"ambient_effects_enabled round-trips through save/load")
+	GameSettings.ambient_effects_enabled = true
+	GameSettings.save_settings()
+
+
+## The kit follows both switches by signal. Each flip emits once, and setting
+## the value it already holds emits nothing.
+func test_the_kit_switches_announce_their_flips() -> void:
+	var heard: Array = []
+	var on_ambient := func(_enabled: bool) -> void: heard.append("ambient")
+	var on_motion := func(_still: bool) -> void: heard.append("motion")
+	GameSettings.ambient_effects_changed.connect(on_ambient)
+	GameSettings.reduce_motion_changed.connect(on_motion)
+	GameSettings.ambient_effects_enabled = false
+	GameSettings.ambient_effects_enabled = false
+	GameSettings.reduce_motion = true
+	GameSettings.ambient_effects_changed.disconnect(on_ambient)
+	GameSettings.reduce_motion_changed.disconnect(on_motion)
+	GameSettings.ambient_effects_enabled = true
+	GameSettings.reduce_motion = false
+	assert_eq(heard, ["ambient", "motion"], "one emit per real flip, none for a repeat")
+
+
+func test_ambient_toggle_reflects_and_writes_game_settings() -> void:
+	var toggle := _screen.find_child("AmbientToggle", true, false) as CheckButton
+	assert_true(toggle != null, "Efek Suasana needs its toggle")
+	if toggle == null:
+		return
+	assert_eq(toggle.button_pressed, GameSettings.ambient_effects_enabled,
+		"the toggle opens on the current value")
+	var original := GameSettings.ambient_effects_enabled
+	toggle.button_pressed = not original
+	assert_eq(GameSettings.ambient_effects_enabled, not original,
+		"the toggle must write through to GameSettings")
+	GameSettings.ambient_effects_enabled = original
+
+
+## Efek Suasana sits right after Efek Visual, labelled in Indonesian.
+func test_ambient_card_sits_after_the_look_layer_card() -> void:
+	var layout := _screen.find_child("Layout", true, false)
+	var look := layout.get_node_or_null("LookLayerCard")
+	var ambient := layout.get_node_or_null("AmbientCard")
+	assert_true(ambient != null, "Settings needs an AmbientCard")
+	if look == null or ambient == null:
+		return
+	assert_eq(ambient.get_index(), look.get_index() + 1,
+		"Efek Suasana sits right after Efek Visual")
+	var label := ambient.find_child("AmbientLabel", true, false) as Label
+	assert_eq(label.text, "Efek Suasana", "the card is labelled in Indonesian")
+
+
+## Every card and the back button still fit a 1080x1920 screen.
+func test_every_row_fits_the_design_screen() -> void:
+	var frame := track(LayoutFrame.stand_up("res://Scenes/UI/Settings.tscn",
+		Vector2(1080, 1920))) as Control
+	var back := frame.find_child("BackButton", true, false) as Control
+	assert_true(back != null, "Settings needs its BackButton")
+	if back == null:
+		return
+	assert_true(back.get_global_rect().end.y <= frame.get_global_rect().end.y,
+		"the back button must end inside the screen, not below it")

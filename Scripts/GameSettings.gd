@@ -37,8 +37,33 @@ var skip_event_dialogue: bool = false
 var haptics_enabled: bool = true
 ## Reward motion (2026-09-23): true tells RewardFeedback to skip screenshake
 ## and screen confetti (sound and haptic still fire), for players who dislike
-## motion. Saved beside the other switches.
-var reduce_motion: bool = false
+## motion. Saved beside the other switches. Since the ambient kit (2026-09-26)
+## it also freezes every kit piece, which follows the flip through
+## reduce_motion_changed instead of polling.
+var reduce_motion: bool = false:
+	set(value):
+		if reduce_motion == value:
+			return
+		reduce_motion = value
+		reduce_motion_changed.emit(value)
+
+## Emitted when reduce_motion flips.
+signal reduce_motion_changed(still: bool)
+
+## Ambient kit (docs/superpowers/specs/2026-09-26-ambient-kit-design.md):
+## whether the colour moods, light pools, drifting particles, glints and the
+## menu/desk bloom show at all. DEFAULT ON, unlike look_layer_enabled: each
+## piece is cheap (at most 40 CPU particles, a few quads, one glow pass on
+## five screens), and "Efek Suasana" in Settings turns it off for a slow phone.
+var ambient_effects_enabled: bool = true:
+	set(value):
+		if ambient_effects_enabled == value:
+			return
+		ambient_effects_enabled = value
+		ambient_effects_changed.emit(value)
+
+## Emitted when ambient_effects_enabled flips.
+signal ambient_effects_changed(enabled: bool)
 
 ## Premium-look pass (2026-09-22): whether the global look layer -- the
 ## vignette and film grain LookLayer draws over every screen -- is on.
@@ -75,6 +100,7 @@ func save_settings() -> void:
 	config.set_value("pengaturan", "minigame_tutorial", minigame_tutorial_enabled)
 	config.set_value("pengaturan", "skip_dialog", skip_event_dialogue)
 	config.set_value("pengaturan", "look_layer", look_layer_enabled)
+	config.set_value("pengaturan", "ambient_effects", ambient_effects_enabled)
 	config.set_value("pengaturan", "haptics", haptics_enabled)
 	config.set_value("pengaturan", "reduce_motion", reduce_motion)
 	if not Engine.is_editor_hint():
@@ -88,6 +114,7 @@ func load_settings() -> void:
 		minigame_tutorial_enabled = config.get_value("pengaturan", "minigame_tutorial", true)
 		skip_event_dialogue = config.get_value("pengaturan", "skip_dialog", false)
 		look_layer_enabled = config.get_value("pengaturan", "look_layer", false)
+		ambient_effects_enabled = config.get_value("pengaturan", "ambient_effects", true)
 		haptics_enabled = config.get_value("pengaturan", "haptics", true)
 		reduce_motion = config.get_value("pengaturan", "reduce_motion", false)
 		if not Engine.is_editor_hint():

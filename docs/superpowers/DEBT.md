@@ -264,7 +264,7 @@ the lights without also blooming the near-white paper and sky; it is a
 project-wide rendering change `test_look_layer` pins off today. Measured
 2026-09-28: MainMenu's sky sits at ~0.89 luminance and its sun core at
 ~0.88, the desk screens' wood at ~0.84 everywhere; sweeping threshold
-0.6-0.9, intensity 2-4 and strength 1.2-1.5 either bloomed nothing visible
+0.6-0.9, intensity 1-4 and strength 1-1.5 either bloomed nothing visible
 or bloomed the background as much as the light (+0.04 to +0.11 at the
 strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList and
 ReportCard all ship without bloom -- `Scenes/Look/AmbientGlow.tscn` is

@@ -16,12 +16,14 @@ extends McpTestSuite
 const MOOD_TINT := "res://Scenes/Look/MoodTint.tscn"
 const LIGHT_POOL := "res://Scenes/Look/LightPool.tscn"
 const AMBIENT_PARTICLES := "res://Scenes/Look/AmbientParticles.tscn"
+const AMBIENT_GLOW := "res://Scenes/Look/AmbientGlow.tscn"
 const GLINT_MATERIAL := "res://Scripts/Shaders/glint_material.tres"
 
 var _sandbox: SubViewport
 var _tint: MoodTint
 var _pool: LightPool
 var _particles: AmbientParticles
+var _glow: AmbientGlow
 
 
 func suite_name() -> String:
@@ -37,6 +39,7 @@ func suite_setup(_ctx: Dictionary) -> void:
 	_tint = _stand(MOOD_TINT) as MoodTint
 	_pool = _stand(LIGHT_POOL) as LightPool
 	_particles = _stand(AMBIENT_PARTICLES) as AmbientParticles
+	_glow = _stand(AMBIENT_GLOW) as AmbientGlow
 
 
 func suite_teardown() -> void:
@@ -345,3 +348,45 @@ func test_look_layer_follows_both_switches_for_the_glint() -> void:
 		"LookLayer follows Kurangi Gerakan")
 	assert_true(src.contains("GLINT_MATERIAL.set_shader_parameter(\"motion\", glint_motion())"),
 		"and writes the shared material's motion")
+
+
+# ── AmbientGlow ──────────────────────────────────────────────────────────────
+
+## The Lobby's recipe: Canvas mode (the only mode that reaches 2D), screen
+## blend, and max layer -1 so the UI on layer 0 is never bloomed.
+func test_the_glow_is_the_lobby_recipe_below_the_ui() -> void:
+	var env := _glow.environment
+	assert_true(env != null, "AmbientGlow carries an Environment")
+	if env == null:
+		return
+	assert_eq(env.background_mode, Environment.BG_CANVAS, "only Canvas mode reaches a 2D scene")
+	assert_eq(env.background_canvas_max_layer, -1, "layers at -1 and below bloom; the UI on 0 never does")
+	assert_eq(env.glow_blend_mode, Environment.GLOW_BLEND_MODE_SCREEN, "screen blend, as the Lobby")
+	assert_true(env.resource_local_to_scene, "each screen tunes its own copy")
+
+
+func test_the_knobs_reach_the_environment() -> void:
+	_glow.glow_threshold = 0.93
+	_glow.glow_intensity = 1.4
+	_glow.glow_strength = 0.8
+	var env := _glow.environment
+	assert_true(is_equal_approx(env.glow_hdr_threshold, 0.93), "threshold reaches the environment")
+	assert_true(is_equal_approx(env.glow_intensity, 1.4), "intensity reaches it")
+	assert_true(is_equal_approx(env.glow_strength, 0.8), "strength reaches it")
+	_glow.glow_threshold = 0.9
+	_glow.glow_intensity = 1.0
+	_glow.glow_strength = 1.0
+
+
+func test_the_switch_turns_the_glow_off() -> void:
+	GameSettings.ambient_effects_enabled = false
+	assert_false(_glow.environment.glow_enabled, "Efek Suasana off turns the bloom off")
+	GameSettings.ambient_effects_enabled = true
+	assert_true(_glow.environment.glow_enabled, "and on turns it back on")
+	GameSettings.reduce_motion = true
+	assert_true(_glow.environment.glow_enabled, "bloom does not move, so Kurangi Gerakan keeps it")
+
+
+func test_the_glow_follows_the_switch_in_ready() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/AmbientGlow.gd")
+	assert_true(src.contains("AmbientKit.follow_settings(_refresh)"), "AmbientGlow follows Efek Suasana")

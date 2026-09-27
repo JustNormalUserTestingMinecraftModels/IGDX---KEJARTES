@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Look/AmbientGlow.gd" id="1_script"]
+
+[sub_resource type="Environment" id="Environment_glow"]
+resource_local_to_scene = true
+background_mode = 3
+background_canvas_max_layer = -1
+glow_enabled = true
+glow_intensity = 1.0
+glow_strength = 1.0
+glow_blend_mode = 1
+glow_hdr_threshold = 0.9
+
+[node name="AmbientGlow" type="WorldEnvironment"]
+environment = SubResource("Environment_glow")
+script = ExtResource("1_script")

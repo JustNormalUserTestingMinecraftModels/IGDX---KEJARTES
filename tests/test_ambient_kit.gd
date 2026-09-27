@@ -16,6 +16,7 @@ extends McpTestSuite
 const MOOD_TINT := "res://Scenes/Look/MoodTint.tscn"
 const LIGHT_POOL := "res://Scenes/Look/LightPool.tscn"
 const AMBIENT_PARTICLES := "res://Scenes/Look/AmbientParticles.tscn"
+const GLINT_MATERIAL := "res://Scripts/Shaders/glint_material.tres"
 
 var _sandbox: SubViewport
 var _tint: MoodTint
@@ -302,3 +303,45 @@ func test_off_or_still_stops_and_hides() -> void:
 	GameSettings.ambient_effects_enabled = false
 	assert_false(_emitter().emitting, "Efek Suasana off stops it too")
 	assert_false(_particles.visible, "and hides it")
+
+
+# ── Glint ────────────────────────────────────────────────────────────────────
+
+## The glint recolours the art's own pixels as a moving band; it never paints
+## outside the texture's alpha, and every knob is a uniform.
+func test_the_glint_is_a_band_inside_the_art() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/glint.gdshader")
+	for knob in ["glint_color", "strength", "interval", "sweep_seconds", "band_width", "angle", "motion"]:
+		assert_true(src.contains("uniform") and src.contains(" " + knob + " "),
+			"glint.gdshader needs the `%s` uniform" % knob)
+	assert_false(src.contains("blend_add"), "the glint recolours; it does not add light around the art")
+
+
+## One material for every glinting node, so LookLayer switches them all at once.
+func test_one_shared_glint_material() -> void:
+	var mat := load(GLINT_MATERIAL) as ShaderMaterial
+	assert_true(mat != null, "glint_material.tres must exist")
+	if mat == null:
+		return
+	assert_false(mat.resource_local_to_scene, "shared, not local: LookLayer sets `motion` once for all")
+	assert_eq(mat.shader.resource_path, "res://Scripts/Shaders/glint.gdshader", "wears the glint shader")
+
+
+func test_the_glint_moves_only_when_the_kit_may() -> void:
+	var look_layer: GDScript = load("res://Scripts/Look/LookLayer.gd")
+	assert_eq(look_layer.call("glint_motion"), 1.0, "on and free to move: the band sweeps")
+	GameSettings.reduce_motion = true
+	assert_eq(look_layer.call("glint_motion"), 0.0, "Kurangi Gerakan stops the band")
+	GameSettings.reduce_motion = false
+	GameSettings.ambient_effects_enabled = false
+	assert_eq(look_layer.call("glint_motion"), 0.0, "Efek Suasana off stops it too")
+
+
+func test_look_layer_follows_both_switches_for_the_glint() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/LookLayer.gd")
+	assert_true(src.contains("GameSettings.ambient_effects_changed.connect(_push_glint.unbind(1))"),
+		"LookLayer follows Efek Suasana")
+	assert_true(src.contains("GameSettings.reduce_motion_changed.connect(_push_glint.unbind(1))"),
+		"LookLayer follows Kurangi Gerakan")
+	assert_true(src.contains("GLINT_MATERIAL.set_shader_parameter(\"motion\", glint_motion())"),
+		"and writes the shared material's motion")

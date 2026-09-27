@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://Scripts/Shaders/glint.gdshader" id="1_glint"]
+
+[resource]
+shader = ExtResource("1_glint")
+shader_parameter/glint_color = Color(1, 0.98, 0.9, 1)
+shader_parameter/strength = 0.55
+shader_parameter/interval = 5.0
+shader_parameter/sweep_seconds = 0.8
+shader_parameter/band_width = 0.12
+shader_parameter/angle = 0.6
+shader_parameter/motion = 1.0

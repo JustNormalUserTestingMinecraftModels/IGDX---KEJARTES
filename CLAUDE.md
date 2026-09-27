@@ -127,18 +127,9 @@ theme's `default_font`. Which variation gets which is pinned in both
 directions by `DISPLAY_ROSTER` in `tests/test_theme_factory.gd` — change
 the roster and `ThemeFactory` together, or the suite fails.
 
-**Illustration plates wear one of two materials.** Cutouts take
-`illustration_grade_cutout.tres` (grade + inner AO + rim); full-bleed backdrops
-take `illustration_grade_material.tres` (grade only), because a backdrop has no
-alpha edge and would pay five texture taps per pixel for nothing. Which is
-which is pinned by `tests/test_illustration_ao.gd`'s census, measured from each
-texture's alpha. The Lobby is lit from the upper right, the rest of the game
-from the upper left: its desks wear `illustration_grade_cutout_lobby.tres` and
-its faces `illustration_grade_face.tres`, both kept equal to the cutout except
-`light_dir`. Tune them, the Lobby's shafts and its WorldEnvironment bloom live
-from the debug overlay's **Look** page, then write the landed value into the
-`.tres`. That bloom reaches only canvas layers ≤ −1: the room lives in the
-Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
+**Illustration plates wear one of two materials** (cutout or backdrop,
+pinned by `tests/test_illustration_ao.gd`); which, the Lobby's lighting and
+live tuning: `style-guide.md`, "Illustration materials".
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
 variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
@@ -211,7 +202,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 160 suites, 2340 tests (2026-09-26).
+the Godot AI MCP `test_run` tool. 161 suites, 2405 tests (2026-09-27).
 
 Hard constraints:
 
@@ -287,12 +278,8 @@ a pass through Atur Jadwal first. The weekly report needs neither: the Scenes
 tab's **📊 Laporan Mingguan** opens ResultCheckup over the current screen with
 a fixed sample week, leaving the run untouched.
 
-That tab also carries **🎭 Gladi Resik Akhir Kelas**: one-click rehearsals of
-the end-of-grade sequence with a fixed roster (*Semua Lulus*, *Semua Gagal*,
-and *Campur*, which ladders 3/2/1/0 cleared targets for 1.5 stars, a loss).
-Arming one snapshots the run; **↩ Pulihkan Run Sebelum Gladi Resik**
-restores it, which matters because RunResult otherwise advances the grade and
-clears the roster on its way out.
+That tab also carries **🎭 Gladi Resik Akhir Kelas**, end-of-grade
+rehearsals: authoring guide, "Editor and game recipes".
 
 **2. Scope every `get_ui_elements` call.** Bare, it serialises the whole tree
 (the debug overlay alone is 58 verbose nodes). Always pass `root_path` and a
@@ -315,13 +302,8 @@ copy wins and the next `scene_save` silently overwrites your text edit — `scan
 through the editor: `scene_open` → `node_create` / `node_set_property` /
 `node_manage` → `scene_save`. `batch_execute` takes the plugin command names
 (`create_node`, `set_property`, `move_node`, `delete_node`) and does a whole
-node in one call. Gotchas: `anchors_preset` is inert (set the four anchors),
-numbers must be unquoted (`1`, not `"1.0"`), `node_create` appends last so
-z-order needs `move_node`, and a node's *type* can only be changed by
-delete-and-recreate. A `Control` created under a plain `Control` starts in
-position mode, where anchors are **not saved** — set `layout_mode = 1` first;
-and an instanced scene's root loses its rect on load under a plain `Control`,
-so draw from a child (authoring guide, Pattern C).
+node in one call. Node gotchas (anchors, z-order, `layout_mode`): authoring
+guide, "Editor and game recipes".
 
 **4b. Three save hazards that silently eat work.**
 
@@ -396,7 +378,8 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
+Clean-code pass (`docs/superpowers/specs/2026-09-26-clean-code-design.md`):
+PR2 file renames, then PR3 stat keys.
 
 ## Maintaining this file
 
@@ -433,4 +416,7 @@ it costs context on every single run, so it earns its place or it moves.
   changes instead, and on merge take their version. A **new** tunable number
   of ours goes in a named `const` block or an `@export` in the script that
   owns the behaviour, never inline — like `RunGrade.gd`'s `WEIGHT_*` block.
+- **Clean code:** `docs/superpowers/design/clean-code.md`. `tests/test_clean_code.gd`
+  and CI's `project_check` ratchet it: counts only go down; lock in a gain
+  with `ci/clean_code_dump.gd`.
 - **No emoji as UI iconography.** Use real transparent SVG textures instead.

@@ -86,3 +86,51 @@ func test_the_check_scene_runs_the_check_script() -> void:
 	var scene := FileAccess.get_file_as_string("res://ci/project_check.tscn")
 	assert_true(scene.contains("path=\"res://ci/project_check.gd\""),
 		"project_check.tscn must attach ci/project_check.gd")
+
+
+func test_the_check_runs_the_clean_code_scan_and_only_warns_on_a_shrink() -> void:
+	var src := FileAccess.get_file_as_string("res://ci/project_check.gd")
+	assert_true(src.contains("var clean_code := run_clean_code_scan()"),
+		"_ready runs the clean-code scan")
+	assert_true(src.contains("scan.call(\"compare_all\", scan.call(\"full_report\"))"),
+		"the scan compares the whole report with the baseline")
+	assert_true(src.contains("failures.append_array(clean_code[\"failures\"])"),
+		"growth and must-be-zero violations fail CI")
+	assert_true(src.contains("print(\"WARNING: \", warning)"),
+		"a shrink is only a warning in CI")
+
+
+## A baseline that does not parse must be a reported failure, never a check
+## script that fails to compile and leaves Godot running until the job times
+## out: the scanner is loaded at run time, and _ready quits with 1 first --
+## but only after the editor guard, since the script is @tool and a quit
+## above the guard would close the editor.
+func test_a_broken_baseline_cannot_hang_the_check() -> void:
+	var src := FileAccess.get_file_as_string("res://ci/project_check.gd")
+	assert_false(src.contains("preload(\"res://ci/clean_code_scan.gd\")"),
+		"the scanner is not preloaded")
+	var early_quit := src.find("get_tree().quit(1)\n")
+	assert_true(early_quit != -1 and early_quit < src.find("collect_files(\"res://\")\n"),
+		"_ready quits with 1 before any work, so a script error still exits")
+	var guard := src.find("if Engine.is_editor_hint():")
+	assert_true(guard != -1 and guard < early_quit,
+		"the early quit runs only outside the editor")
+	for path: String in ["ci/clean_code_allowed.gd", "ci/clean_code_baseline.gd", "ci/clean_code_scan.gd"]:
+		assert_true(CHECK.SCAN_LOAD_FAILURE.contains(path),
+			"the load failure names %s and its fix" % path)
+	assert_true(CHECK.SCAN_LOAD_FAILURE.contains("ci/clean_code_dump.gd"),
+		"the load failure says how to recover")
+	assert_true(CHECK.load_clean_code_scan() != null,
+		"today's scanner and baseline load")
+
+
+## The dump builds the baseline's text before it opens the file for writing:
+## opening truncates it, so a script error while formatting must not come
+## after the open, or it would leave an empty baseline behind.
+func test_the_dump_formats_before_it_truncates_the_baseline() -> void:
+	var src := FileAccess.get_file_as_string("res://ci/clean_code_dump.gd")
+	var formats := src.find("scan.call(\"format_baseline\", report)")
+	var opens := src.find("FileAccess.open(OUT_PATH, FileAccess.WRITE)")
+	assert_true(formats != -1 and opens != -1 and formats < opens,
+		"format_baseline runs before the baseline is opened for writing")
+	assert_true(src.contains("file.store_string(text)"), "it writes the text it checked")

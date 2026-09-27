@@ -19,6 +19,7 @@ const AMBIENT_PARTICLES := "res://Scenes/Look/AmbientParticles.tscn"
 const AMBIENT_GLOW := "res://Scenes/Look/AmbientGlow.tscn"
 const GLINT_MATERIAL := "res://Scripts/Shaders/glint_material.tres"
 const DESK_AMBIENCE := "res://Scenes/Look/DeskAmbience.tscn"
+const MAIN_MENU := "res://Scenes/MainMenu/MainMenu.tscn"
 
 var _sandbox: SubViewport
 var _tint: MoodTint
@@ -426,3 +427,106 @@ func test_the_root_knobs_reach_the_children() -> void:
 	_desk.particle_density = 1.0
 	_desk.glow_threshold = 0.9
 	assert_eq(_anchors(_desk), Vector4(0, 0, 1, 1), "DeskAmbience is Full Rect")
+
+
+# ── Placement census (reads PackedScene state: no script runs) ──────────────
+
+const KIT_SCENES := [MOOD_TINT, LIGHT_POOL, AMBIENT_PARTICLES, DESK_AMBIENCE]
+const BUTTON_TYPES := ["Button", "TextureButton", "CheckButton", "CheckBox",
+	"OptionButton", "MenuButton", "LinkButton"]
+
+
+## Every node of `scene_path` in file (= tree) order: {path, type, instance,
+## props}. `instance` is the instanced scene's path or "".
+func _census(scene_path: String) -> Array[Dictionary]:
+	var state := (load(scene_path) as PackedScene).get_state()
+	var out: Array[Dictionary] = []
+	for i in state.get_node_count():
+		var inst := state.get_node_instance(i)
+		var props := {}
+		for j in state.get_node_property_count(i):
+			props[str(state.get_node_property_name(i, j))] = state.get_node_property_value(i, j)
+		out.append({
+			"path": str(state.get_node_path(i)).trim_prefix("./"),
+			"type": str(state.get_node_type(i)),
+			"instance": inst.resource_path if inst != null else "",
+			"props": props,
+		})
+	return out
+
+
+func _entry(census: Array[Dictionary], path: String) -> Dictionary:
+	for e in census:
+		if e["path"] == path:
+			return e
+	return {}
+
+
+func _prop(entry: Dictionary, name: String, fallback: Variant = null) -> Variant:
+	return (entry.get("props", {}) as Dictionary).get(name, fallback)
+
+
+## Direct children of `parent` ("." for the root), in draw order.
+func _children_of(census: Array[Dictionary], parent: String) -> Array[String]:
+	var out: Array[String] = []
+	for e in census:
+		var p: String = e["path"]
+		if p == ".":
+			continue
+		var dad := "." if not p.contains("/") else p.get_base_dir()
+		if dad == parent:
+			out.append(p.get_file())
+	return out
+
+
+## A glow screen: `World` is a CanvasLayer at -1 holding the backdrop and only
+## kit instances; nothing tappable sits in it; exactly one bloom exists.
+func _assert_glow_screen(scene_path: String, backdrop: String) -> void:
+	var census := _census(scene_path)
+	var world := _entry(census, "World")
+	assert_eq(world.get("type"), "CanvasLayer", scene_path + ": World must be a CanvasLayer")
+	assert_eq(_prop(world, "layer"), -1, scene_path + ": World draws at -1, below the UI")
+	assert_eq(_children_of(census, "World").find(backdrop), 0,
+		scene_path + ": the backdrop is the first thing World draws")
+	var blooms := 0
+	for e in census:
+		var p: String = e["path"]
+		if e["instance"] == AMBIENT_GLOW or e["instance"] == DESK_AMBIENCE:
+			blooms += 1
+		if not p.begins_with("World/"):
+			continue
+		assert_false(BUTTON_TYPES.has(e["type"]), "%s: %s is tappable and must stay on layer 0" % [scene_path, p])
+		if e["instance"] != "":
+			assert_true(KIT_SCENES.has(e["instance"]),
+				"%s: only kit pieces are instanced inside World (%s)" % [scene_path, p])
+	assert_eq(blooms, 1, scene_path + ": exactly one AmbientGlow (a DeskAmbience carries one)")
+
+
+# ── MainMenu ─────────────────────────────────────────────────────────────────
+
+func test_main_menu_is_a_glow_screen() -> void:
+	_assert_glow_screen(MAIN_MENU, "Background")
+
+
+func test_main_menu_wears_the_morning_kit() -> void:
+	var c := _census(MAIN_MENU)
+	assert_eq(_children_of(c, "World"),
+		["Background", "Tint", "Sun", "Specks", "LogoShadow", "Logo"] as Array[String],
+		"backdrop, tint, sun, specks, then the logo and its shadow")
+	assert_eq(_entry(c, "World/Tint").get("instance"), MOOD_TINT, "Tint is a MoodTint")
+	assert_eq(_prop(_entry(c, "World/Tint"), "mood"), MoodTint.Mood.PAGI, "a warm morning")
+	assert_eq(_entry(c, "World/Sun").get("instance"), LIGHT_POOL, "Sun is a LightPool")
+	assert_eq(_prop(_entry(c, "World/Sun"), "rays_enabled"), true, "the sun throws rays")
+	assert_eq(_entry(c, "World/Specks").get("instance"), AMBIENT_PARTICLES, "Specks are AmbientParticles")
+	assert_eq(_entry(c, "World/Logo/Spill").get("instance"), LIGHT_POOL,
+		"a spill pool rides the logo, drawn over it")
+	var logo_mat: Variant = _prop(_entry(c, "World/Logo"), "material")
+	assert_true(logo_mat is Material and (logo_mat as Material).resource_path == GLINT_MATERIAL,
+		"the logo glints")
+	assert_eq(_entry(c, "Glow").get("instance"), AMBIENT_GLOW, "the bloom sits at the root")
+
+
+func test_main_menu_finds_its_logo_by_unique_name() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/MainMenu/MainMenu.gd")
+	assert_true(src.contains("= %Logo") and src.contains("= %LogoShadow"),
+		"the logo moved into World; MainMenu.gd must find it by unique name")

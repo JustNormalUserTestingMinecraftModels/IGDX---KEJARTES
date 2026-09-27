@@ -24,8 +24,8 @@ extends Control
 ## guard. In an actual played game Engine.is_editor_hint() is false and
 ## the full entry sequence runs.
 
-@onready var _logo: TextureRect = $Logo
-@onready var _logo_shadow: TextureRect = $LogoShadow
+@onready var _logo: TextureRect = %Logo
+@onready var _logo_shadow: TextureRect = %LogoShadow
 @onready var _tap_prompt: Label = $SafeArea/Content/TapPrompt
 @onready var _icon_bar: HBoxContainer = $SafeArea/Content/IconBar
 @onready var _setting_button: Button = $SafeArea/Content/IconBar/SettingButton

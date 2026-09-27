@@ -248,6 +248,15 @@ by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
 
+**Mood and Energy wear two different tints (found 2026-09-27).** The
+student card's own Mood/Energy bars use the `Mood`/`Energy` categories
+`DesignTokens.gd` gave them on 2026-09-09, but `StatInfo.token_category` still
+maps them to `Istirahat`/`Libur`, and the stat-detail popup
+(`StatDetailPopup.configure`) and the cards' `_get_bar_color`
+(`StudentCard.gd`, `ReportCard.gd`) tint through it — the rest/holiday mapping
+DesignTokens' own note calls wrong. `tests/test_stat_info.gd` and
+`tests/test_stat_detail_popup.gd` pin today's mapping; change both with it.
+
 **SchoolDay's dev Skip mid-day decays today twice (found 2026-09-25).**
 `skip_to_results()` (key O, `DayScreen/SkipButton`) starts at `current_day`,
 which `_run_single_day` has already decayed and rolled, so a skip pressed

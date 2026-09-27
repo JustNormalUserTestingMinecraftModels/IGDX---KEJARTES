@@ -282,7 +282,7 @@ func test_superseded_labels_are_removed_from_the_scenes() -> void:
 	for scene_path in _SCENES:
 		var src := FileAccess.get_file_as_string(scene_path)
 		for i in range(1, 7):
-			# Since the stat-key rename "Akademis" is also the academic stat
+			# Since the stat-key rename, "Akademis" is also the academic stat
 			# bar, a ProgressBar that stays. Only a Label of that name (the old
 			# "SKILL" heading) is superseded, hence the type-qualified match.
 			for label_name in ["Nama", "Profil", "Kepribadian", "Akademis"]:

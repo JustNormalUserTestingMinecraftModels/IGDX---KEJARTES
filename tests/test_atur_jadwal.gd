@@ -1045,9 +1045,9 @@ func test_the_mood_and_energy_rows_show_their_own_need() -> void:
 			and icon.texture.resource_path.ends_with(icons[p]),
 			"%s must show %s" % [p, icons[p]])
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("@onready var mood_bar = $BGStat/Mood"),
+	assert_true(src.contains("@onready var mood_bar = $BGStat/Mood\n"),
 		"mood_bar must be the Mood row's bar")
-	assert_true(src.contains("@onready var energy_bar = $BGStat/Energy"),
+	assert_true(src.contains("@onready var energy_bar = $BGStat/Energy\n"),
 		"energy_bar must be the Energy row's bar")
 	assert_true(src.contains("_feed_stat_bar(mood_bar, projected[\"mood\"]"),
 		"the mood row must be fed the projected mood")

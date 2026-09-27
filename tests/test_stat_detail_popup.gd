@@ -69,8 +69,9 @@ func test_configure_fills_the_header_and_body_from_stat_info() -> void:
 
 func test_configure_tints_the_bar_with_the_right_category() -> void:
 	# configure() must tint through StatInfo.token_category, never the bar
-	# name: the Mood bar wears the Istirahat accent. Getting this wrong paints
-	# the bar the wrong colour and is invisible in a source diff.
+	# name: Mood's token is Istirahat, so a bar-name tint shows up here.
+	# Getting this wrong paints the bar the wrong colour and is invisible in a
+	# source diff.
 	var popup := _make()
 	popup.configure("Mood", SAMPLE, null)
 	var bar: StatBar = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/Bar")

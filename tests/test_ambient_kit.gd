@@ -15,10 +15,12 @@ extends McpTestSuite
 
 const MOOD_TINT := "res://Scenes/Look/MoodTint.tscn"
 const LIGHT_POOL := "res://Scenes/Look/LightPool.tscn"
+const AMBIENT_PARTICLES := "res://Scenes/Look/AmbientParticles.tscn"
 
 var _sandbox: SubViewport
 var _tint: MoodTint
 var _pool: LightPool
+var _particles: AmbientParticles
 
 
 func suite_name() -> String:
@@ -33,6 +35,7 @@ func suite_setup(_ctx: Dictionary) -> void:
 	Engine.get_main_loop().root.add_child(_sandbox)
 	_tint = _stand(MOOD_TINT) as MoodTint
 	_pool = _stand(LIGHT_POOL) as LightPool
+	_particles = _stand(AMBIENT_PARTICLES) as AmbientParticles
 
 
 func suite_teardown() -> void:
@@ -97,7 +100,7 @@ func test_a_freed_piece_leaves_no_connection_behind() -> void:
 
 
 func test_every_kit_root_refills_its_parent() -> void:
-	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd"]:
+	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd", "res://Scripts/Look/AmbientParticles.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_true(src.contains("AmbientKit.fill_parent(self)"),
 			path + " must re-fill its parent in _ready")
@@ -236,3 +239,67 @@ func test_the_switch_hides_the_pool() -> void:
 	assert_false(_pool.visible, "Efek Suasana off hides the light")
 	GameSettings.ambient_effects_enabled = true
 	assert_true(_pool.visible, "and on brings it back")
+
+
+# ── AmbientParticles ─────────────────────────────────────────────────────────
+
+func _emitter() -> CPUParticles2D:
+	return _particles.get_node("Emitter") as CPUParticles2D
+
+
+func test_the_count_never_passes_the_ceiling() -> void:
+	assert_eq(AmbientParticles.MAX_AMOUNT, 40, "the ceiling is 40 (spec, section 1)")
+	for which in AmbientParticles.Preset.values():
+		assert_true(AmbientParticles.amount_for(which, 1.0) <= AmbientParticles.MAX_AMOUNT,
+			"preset %d at full density stays under the ceiling" % which)
+	assert_eq(AmbientParticles.amount_for(AmbientParticles.Preset.DEBU, 0.0), 1,
+		"density 0 still leaves one particle; hide the node to have none")
+
+
+## The emitter sits at the rect's centre and fills it, and re-fits on every
+## resize: a Full Rect instance covers a 20:9 phone too. _fit is called
+## directly so the test does not depend on when `resized` is delivered; the
+## wiring is pinned by the source check.
+func test_the_emitter_fills_the_rect() -> void:
+	assert_eq(_anchors(_particles), Vector4(0, 0, 1, 1), "the root is Full Rect")
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/AmbientParticles.gd")
+	assert_true(src.contains("resized.connect(_fit)"), "the emitter re-fits on resize")
+	var was := _particles.size
+	_particles.size = Vector2(1080, 2400)
+	_particles.call("_fit")
+	assert_eq(_emitter().position, Vector2(540, 1200), "the emitter sits at the centre")
+	assert_eq(_emitter().emission_rect_extents, Vector2(540, 1200), "and spans the whole rect")
+	_particles.size = was
+	_particles.call("_fit")
+
+
+func test_the_preset_sets_the_look() -> void:
+	_particles.preset = AmbientParticles.Preset.KILAU
+	assert_eq(_emitter().texture.resource_path, "res://Assets/Images/Particles/particle_spark.png",
+		"KILAU is the spark")
+	assert_eq(_emitter().amount,
+		AmbientParticles.amount_for(AmbientParticles.Preset.KILAU, _particles.density),
+		"at the preset's count")
+	_particles.preset = AmbientParticles.Preset.DEBU
+	assert_eq(_emitter().texture.resource_path, "res://Assets/Images/Particles/particle_glow.png",
+		"DEBU is the soft glow")
+
+
+func test_particles_are_additive_and_untappable() -> void:
+	var mat := _emitter().material as CanvasItemMaterial
+	assert_true(mat != null and mat.blend_mode == CanvasItemMaterial.BLEND_MODE_ADD,
+		"the specks read as light, so they add")
+	assert_eq(_particles.mouse_filter, Control.MOUSE_FILTER_IGNORE, "never eats a tap")
+
+
+## A particle that may not move is not ambience: still or off, it stops and hides.
+func test_off_or_still_stops_and_hides() -> void:
+	GameSettings.reduce_motion = true
+	assert_false(_emitter().emitting, "Kurangi Gerakan stops the emitter")
+	assert_false(_particles.visible, "and hides it")
+	GameSettings.reduce_motion = false
+	assert_true(_emitter().emitting, "motion allowed again: it emits")
+	assert_true(_particles.visible, "and shows")
+	GameSettings.ambient_effects_enabled = false
+	assert_false(_emitter().emitting, "Efek Suasana off stops it too")
+	assert_false(_particles.visible, "and hides it")

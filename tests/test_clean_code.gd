@@ -104,6 +104,13 @@ func test_a_tab_or_a_double_space_still_reads_as_a_function() -> void:
 	assert_eq(Scan.function_name("static\tfunc h() -> void:"), "h")
 
 
+## A non-ASCII name is still a name; a column-0 lambda has none.
+func test_a_non_ascii_name_is_a_function_and_a_lambda_is_not() -> void:
+	assert_eq(Scan.function_name("func café(a):"), "café")
+	assert_eq(Scan.function_name("func(a):"), "", "a lambda")
+	assert_eq(Scan.function_name("func (a):"), "", "a lambda with a space")
+
+
 ## A same-line annotation's arguments are not the function's parameters.
 func test_a_same_line_annotation_is_not_counted_as_parameters() -> void:
 	var typed := "@warning_ignore(\"x\") func f(a: int) -> void:\n\tpass"
@@ -196,6 +203,71 @@ func test_a_func_inside_a_multiline_string_is_not_a_function() -> void:
 	assert_eq(fns.size(), 1)
 	assert_eq(fns[0]["name"], "real")
 	assert_eq(Scan.untyped_count(src, fns), 0, "the template's untyped code is text")
+
+
+## The names, code-line counts and bare-number counts of `src`'s functions,
+## as "name:code:bare" joined by commas.
+func _function_shapes(src: String) -> String:
+	var shapes := PackedStringArray()
+	for fn in Scan.parse_functions(src):
+		shapes.append("%s:%d:%d" % [fn["name"], Scan.code_lines(fn["body"]).size(),
+			Scan.bare_number_count(fn["body"])])
+	return ",".join(shapes)
+
+
+## A one-quote string may hold a raw newline in GDScript 4. Its column-0 text
+## is string, and its `)` does not leave a bracket open to the end of file.
+func test_a_one_quote_string_over_a_raw_newline_keeps_later_functions() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func a(text: String) -> void:",
+		"\tvar parts := text.split(\"",
+		"\")",
+		"\tprint(parts)",
+		"func b() -> void:",
+		"\tprint(42)",
+		"func c(x) -> void:",
+		"\tpass",
+	]))
+	assert_eq(_function_shapes(src), "a:3:0,b:1:1,c:1:0")
+	assert_eq(Scan.untyped_count(src, Scan.parse_functions(src)), 1, "c's untyped x")
+
+
+## A `\`-newline escape inside a one-quote string continues the string.
+func test_a_one_quote_string_over_an_escaped_newline_stays_in_the_body() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func a() -> void:",
+		"\tvar msg := \"Halo \\",
+		"dunia\"",
+		"\tprint(msg, 42)",
+	]))
+	assert_eq(_function_shapes(src), "a:3:1", "three code lines; only the 42 is bare")
+
+
+## A raw newline inside a signature's string default ends neither the
+## signature nor the file's functions.
+func test_a_raw_newline_in_a_signature_default_keeps_later_functions() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func join_lines(parts: Array, sep := \"",
+		"\") -> String:",
+		"\treturn sep.join(parts)",
+		"func b() -> void:",
+		"\tprint(42)",
+	]))
+	assert_eq(_function_shapes(src), "join_lines:1:0,b:1:1")
+
+
+## tests/test_sky_life.gd splits `src.find("` and `func "` over two lines,
+## twice; every one of its 20 functions must still be found.
+func test_a_real_file_with_multiline_strings_parses_whole() -> void:
+	var src := FileAccess.get_file_as_string("res://tests/test_sky_life.gd")
+	assert_eq(Scan.parse_functions(src).size(), 20,
+		"tests/test_sky_life.gd has 20 functions (update this if it gains one)")
+
+
+## A `->` inside a lambda default is the lambda's, not the function's.
+func test_a_lambda_default_arrow_is_not_the_return_type() -> void:
+	var src := "func f(cb := func() -> int: return 1):\n\tprint(cb)"
+	assert_eq(Scan.untyped_count(src, Scan.parse_functions(src)), 1, "f has no -> of its own")
 
 
 func test_a_class_level_const_table_is_not_a_function_body() -> void:
@@ -332,6 +404,15 @@ func test_compare_groups_accepts_a_shrinking_group() -> void:
 	assert_eq(Scan.compare_groups(base, fresh)["grown"].size(), 1)
 
 
+## A baselined group that splits in two means one new duplicated body.
+func test_compare_groups_reports_a_split_group_as_grown() -> void:
+	var base: Array[String] = ["a::f | b::f | c::f | d::f"]
+	var split: Array[String] = ["a::f | b::f", "c::f | d::f"]
+	var result := Scan.compare_groups(base, split)
+	assert_eq(",".join(result["grown"]), "c::f | d::f", "the second half is new")
+	assert_eq(result["shrunk"].size(), 1, "the four-way group must be lowered")
+
+
 func test_compare_lists_both_directions() -> void:
 	var result := Scan.compare_lists(["x", "y"] as Array[String], ["y", "z"] as Array[String])
 	assert_eq(",".join(result["grown"]), "z")
@@ -367,6 +448,20 @@ func test_compare_all_fails_on_growth_and_only_warns_on_a_shrink() -> void:
 	result = Scan.compare_all(grown, constants)
 	assert_eq(result["failures"].size(), 1, "a growth fails CI")
 	assert_eq(result["warnings"].size(), 0, "a growth is not a warning")
+
+
+## A baseline missing a const -- a map or a list -- reports every entry of
+## that measurement as grown, rather than stopping on a script error.
+func test_compare_all_reports_a_missing_const_as_growth() -> void:
+	var constants := _empty_measurements("const")
+	constants.erase("UNTYPED")
+	constants.erase("DUPLICATE_GROUPS")
+	var report := _empty_measurements("key")
+	report["untyped"] = {"res://Scripts/A.gd": 2, "res://Scripts/B.gd": 1}
+	report["duplicate_groups"] = ["res://Scripts/A.gd::f | res://Scripts/B.gd::f"]
+	var result := Scan.compare_all(report, constants)
+	assert_eq(result["failures"].size(), 3, "both untyped entries and the group grew")
+	assert_eq(result["warnings"].size(), 0)
 
 
 func test_the_full_report_has_every_measurement() -> void:

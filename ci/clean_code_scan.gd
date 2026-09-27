@@ -32,7 +32,7 @@ const OPENERS: PackedStringArray = ["(", "[", "{"]
 ## Their closing partners.
 const CLOSERS: PackedStringArray = [")", "]", "}"]
 
-## The delimiters that open a string running over several lines.
+## The triple-quote delimiters, tried before a single quote character.
 const MULTILINE_QUOTES: PackedStringArray = ["\"\"\"", "'''"]
 
 ## A numeric literal not glued to an identifier: decimal, float, hex, binary.
@@ -42,8 +42,10 @@ const NUMBER_PATTERN := "(?<![A-Za-z0-9_.])(0x[0-9A-Fa-f_]+|0b[01_]+|[0-9][0-9_]
 const VAR_PATTERN := "^(?:static\\s+)?var\\s+\\w+(.*)$"
 ## A `func` or `static func` line, matched once its leading annotations are
 ## stripped; group 1 is the function's name. Any whitespace separates the
-## keywords (`func<TAB>name(`, `static  func`).
-const FUNC_PATTERN := "^(?:static\\s+)?func\\s+([A-Za-z_]\\w*)\\s*\\("
+## keywords (`func<TAB>name(`, `static  func`). The name is anything up to
+## whitespace or `(` -- RegEx's `\w` is ASCII-only, and GDScript allows a
+## non-ASCII name -- while a `func(` or `func (` lambda has no name to match.
+const FUNC_PATTERN := "^(?:static\\s+)?func\\s+([^\\s(]+)\\s*\\("
 
 ## Compiled RegEx objects, built once per process.
 static var _regex_cache: Dictionary = {}
@@ -58,21 +60,22 @@ static func _regex(pattern: String) -> RegEx:
 	return _regex_cache[pattern]
 
 
-## `line` with every string literal's contents blanked to spaces -- the quotes
-## stay, so lengths and positions are preserved -- and any trailing `#`
-## comment cut off. Handles both quote kinds and backslash escapes; a string
-## that does not close on this line is blanked to the end of the line.
+## `line`, read on its own, with every string literal's contents blanked to
+## spaces -- the quotes stay, so lengths and positions are preserved -- and
+## any trailing `#` comment cut off. Handles both quote kinds and backslash
+## escapes; a string that does not close on this line is blanked to the end
+## of the line. A caller reading consecutive lines uses scan_code instead.
 static func strip_strings_and_comments(line: String) -> String:
 	return scan_code(line, "")["code"]
 
 
-## One line lexed from inside `quote`: the delimiter of a multi-line string
-## still open from the line before, or "". Returns "code" -- the line with
-## every string's contents blanked to spaces (quotes kept, so lengths and
-## positions are preserved) and any trailing `#` comment cut off -- and
-## "quote", the delimiter of a multi-line string (`"""` or `'''`) still open
-## at the end of the line, or "". A one-quote string that does not close on
-## its line is blanked to the end of the line and closes there.
+## One line lexed from inside `quote`: the delimiter of a string still open
+## from the line before, or "". Returns "code" -- the line with every
+## string's contents blanked to spaces (quotes kept, so lengths and positions
+## are preserved) and any trailing `#` comment cut off -- and "quote", the
+## delimiter of a string still open at the end of the line, or "". Any string
+## can run onto the next line in GDScript 4: a `"""` or `'''` one, and a
+## one-quote one through a raw newline or a `\`-newline escape.
 static func scan_code(line: String, quote: String) -> Dictionary:
 	if quote.is_empty() and not (line.contains("\"") or line.contains("'") or line.contains("#")):
 		return {"code": line, "quote": ""}
@@ -100,7 +103,7 @@ static func scan_code(line: String, quote: String) -> Dictionary:
 			continue
 		out += c
 		i += 1
-	return {"code": out, "quote": open if MULTILINE_QUOTES.has(open) else ""}
+	return {"code": out, "quote": open}
 
 
 ## The delimiter of the string that opens at `line[at]`: a multi-line quote
@@ -138,7 +141,7 @@ static func _depth_after(code: String, depth: int) -> int:
 
 
 ## For each of `lines`, true when it continues the statement before it: it
-## starts inside a multi-line string, inside an open bracket, or after a line
+## starts inside a string still open, inside an open bracket, or after a line
 ## that ended in a `\` continuation. GDScript ignores the indentation of such a
 ## line, so a column-0 continuation neither starts a function nor ends one.
 static func continuation_flags(lines: PackedStringArray) -> Array[bool]:
@@ -220,21 +223,25 @@ static func parse_functions(src: String) -> Array[Dictionary]:
 
 
 ## The signature that starts at `lines[start]`. It runs to the `:` that closes
-## it at bracket depth 0; an unclosed bracket runs it to end of file. A line
-## whose brackets closed with no `:` and no `\` continuation ends it with no
-## body at all -- a body-less declaration such as an `@abstract` method.
-## Keys: "signature" (strings blanked, comments cut, leading annotations
-## dropped), "body" (any code a one-line function puts after its colon),
-## "end" (the index of the line after the signature) and "bodyless".
+## it at bracket depth 0; an unclosed bracket or string runs it to end of
+## file. A line that ends outside any string, with its brackets closed, no
+## `:` and no `\` continuation, ends it with no body at all -- a body-less
+## declaration such as an `@abstract` method. Keys: "signature" (strings
+## blanked, comments cut, leading annotations dropped), "body" (any code a
+## one-line function puts after its colon), "end" (the index of the line
+## after the signature) and "bodyless".
 static func _read_signature(lines: PackedStringArray, start: int) -> Dictionary:
 	var signature := ""
 	var body: Array = []
 	var depth := 0
 	var seen_paren := false
+	var quote := ""
 	var i := start
 	while i < lines.size():
 		var raw: String = lines[i]
-		var code := strip_strings_and_comments(raw)
+		var scanned := scan_code(raw, quote)
+		var code: String = scanned["code"]
+		quote = scanned["quote"]
 		i += 1
 		for k in code.length():
 			var c := code[k]
@@ -249,7 +256,8 @@ static func _read_signature(lines: PackedStringArray, start: int) -> Dictionary:
 					body.append(tail)
 				return _signature_entry(signature + code.substr(0, k + 1), body, i, false)
 		signature += code + " "
-		if depth == 0 and seen_paren and not code.strip_edges(false, true).ends_with("\\"):
+		if quote.is_empty() and depth == 0 and seen_paren \
+				and not code.strip_edges(false, true).ends_with("\\"):
 			return _signature_entry(signature, body, i, true)
 	return _signature_entry(signature, body, i, false)
 
@@ -354,9 +362,28 @@ static func _untyped_param(param: String) -> int:
 	return 0 if text.split("=")[0].contains(":") else 1
 
 
+## What follows the parameter list in `signature`: the text after the `)`
+## that closes its first `(` at depth 0, or "" when it never closes. A `->`
+## inside a lambda default (`cb := func() -> int: ...`) is not in it.
+static func _return_part(signature: String) -> String:
+	var open := signature.find("(")
+	if open == -1:
+		return ""
+	var depth := 0
+	for i in range(open, signature.length()):
+		var c := signature[i]
+		if OPENERS.has(c):
+			depth += 1
+		elif CLOSERS.has(c):
+			depth -= 1
+			if depth == 0:
+				return signature.substr(i + 1)
+	return ""
+
+
 ## Untyped declarations in one script: `var`s with neither `: Type` nor `:=`
-## (behind any annotations, and not inside a multi-line string), function
-## signatures without `->`, and parameters without `: Type`.
+## (behind any annotations, and not inside a string), function signatures
+## without `->` after their parameter list, and parameters without `: Type`.
 static func untyped_count(src: String, functions: Array[Dictionary]) -> int:
 	var re := _regex(VAR_PATTERN)
 	var n := 0
@@ -370,7 +397,7 @@ static func untyped_count(src: String, functions: Array[Dictionary]) -> int:
 			n += 1
 	for fn in functions:
 		var signature: String = fn["signature"]
-		if not signature.contains("->"):
+		if not _return_part(signature).contains("->"):
 			n += 1
 		n += untyped_parameter_count(signature)
 	return n
@@ -702,32 +729,41 @@ static func compare_large(baseline: Dictionary, current: Dictionary) -> Dictiona
 
 
 ## Duplicate-group comparison: a current group is new unless its members are
-## a subset of one baselined group; a baselined group not present exactly
-## has shrunk and must be lowered.
+## a subset of one baselined group that no other current group already
+## covers -- a baselined group split in two means one new duplicated body. A
+## baselined group not present exactly has shrunk and must be lowered.
 static func compare_groups(baseline: Array, current: Array) -> Dictionary:
 	var grown := PackedStringArray()
 	var shrunk := PackedStringArray()
+	var claimed := {}
 	for group in current:
-		var members := String(group).split(" | ")
-		var covered := false
-		for old in baseline:
-			var old_members := String(old).split(" | ")
-			var all_in := true
-			for member in members:
-				if not old_members.has(member):
-					all_in = false
-					break
-			if all_in:
-				covered = true
-				break
-		if not covered:
+		var covering := _covering_group(String(group), baseline)
+		if covering.is_empty() or claimed.has(covering):
 			grown.append(String(group))
+		else:
+			claimed[covering] = true
 	for old in baseline:
 		if not current.has(old):
 			shrunk.append(String(old))
 	grown.sort()
 	shrunk.sort()
 	return {"grown": grown, "shrunk": shrunk}
+
+
+## The baselined group whose members include every member of `group`, or ""
+## when none does. A function has one body, so at most one group can.
+static func _covering_group(group: String, baseline: Array) -> String:
+	var members := group.split(" | ")
+	for old in baseline:
+		var old_members := String(old).split(" | ")
+		var all_in := true
+		for member in members:
+			if not old_members.has(member):
+				all_in = false
+				break
+		if all_in:
+			return String(old)
+	return ""
 
 
 ## Must-be-zero comparison: offenders not in the baseline list are new;
@@ -804,13 +840,15 @@ static func compare(measurement: Dictionary, baseline: Variant, current: Variant
 ## cannot lower a baseline and a red check for an improvement would block
 ## every later PR. The editor suite fails on a shrink instead
 ## (tests/test_clean_code.gd), and ci/clean_code_dump.gd refuses to write a
-## growth unless told to re-key.
+## growth unless told to re-key. A measurement whose const the baseline lacks
+## is compared with an empty baseline: every entry it has grew.
 static func compare_all(report: Dictionary, constants: Dictionary = {}) -> Dictionary:
 	var baselines := constants if not constants.is_empty() else baseline_constants()
 	var failures := PackedStringArray()
 	var warnings := PackedStringArray()
 	for measurement in MEASUREMENTS:
-		var result := compare(measurement, baselines[measurement["const"]], report[measurement["key"]])
+		var baseline: Variant = _baseline_or_empty(baselines, measurement)
+		var result := compare(measurement, baseline, report[measurement["key"]])
 		for line in result["grown"]:
 			failures.append("clean-code %s grew: %s -- see docs/superpowers/design/clean-code.md"
 				% [measurement["key"], line])
@@ -818,6 +856,18 @@ static func compare_all(report: Dictionary, constants: Dictionary = {}) -> Dicti
 			warnings.append("clean-code %s shrank: %s -- lower it with ci/clean_code_dump.gd"
 				% [measurement["key"], line])
 	return {"failures": failures, "warnings": warnings}
+
+
+## `measurement`'s value in `baselines`, or an empty value of its kind when
+## the baseline lacks its const (a new measurement, or a merge that dropped
+## a block), so every current entry reports as grown instead of erroring.
+static func _baseline_or_empty(baselines: Dictionary, measurement: Dictionary) -> Variant:
+	if baselines.has(measurement["const"]):
+		return baselines[measurement["const"]]
+	var kind: String = measurement["kind"]
+	if kind == "counts" or kind == "large":
+		return {}
+	return []
 
 
 ## The full text of ci/clean_code_baseline.gd for `report`.
@@ -831,8 +881,9 @@ static func format_baseline(report: Dictionary) -> String:
 		"## DOWN. Never edit this file by hand, and never hand-merge a conflict in",
 		"## it: take one side whole, then run the dump. A growth is fixed in the",
 		"## code (reviewed exceptions: ci/clean_code_allowed.gd's four lists only).",
-		"## After an improvement, regenerate; this mode refuses to write any entry",
-		"## that would be added or raised, and prints each as RAISED (review):",
+		"## After an improvement, regenerate with the command below. If any entry",
+		"## would be added or raised, it writes nothing at all: it prints each one",
+		"## as a `RAISED (review):` line and exits 1.",
 		"##     <Godot console exe> --headless --path . --script res://ci/clean_code_dump.gd",
 		"## After a move, rename or split, re-key: it writes every entry and prints",
 		"## the RAISED lines as warnings -- the same numbers under new keys:",

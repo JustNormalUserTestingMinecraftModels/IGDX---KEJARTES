@@ -56,6 +56,8 @@ extends Control
 @onready var grade_caption: Label = $MarginContainer/Column/GradeCard/GradeStack/GradeCaption
 @onready var title_label: Label = $MarginContainer/Column/TitleLabel
 @onready var btn_selesai: Button = $MarginContainer/Column/BtnSelesai
+@onready var ambient_pass: Control = $AmbientPass
+@onready var ambient_fail: Control = $AmbientFail
 
 const ROW_SCENE := preload("res://Scenes/EndGame/RunResultRow.tscn")
 
@@ -82,6 +84,8 @@ const GRADE_CAPTIONS := {
 var _grade_text: String = "D"
 var _money_row: Control = null
 var _exiting: bool = false
+## The verdict _compute_grade reached; _dress_ambience reads it.
+var _passed: bool = false
 
 
 func _ready() -> void:
@@ -96,6 +100,7 @@ func _ready() -> void:
 
 	_build_rows()
 	_compute_grade()
+	_dress_ambience()
 	_play_reveal()
 
 
@@ -150,10 +155,21 @@ func _build_rows() -> void:
 
 func _compute_grade() -> void:
 	var counted: Array = GameState.count_targets_cleared()
-	var passed := not GameState.run_failed and GameState.check_semester_passed()
+	_passed = not GameState.run_failed and GameState.check_semester_passed()
 	var run_score := RunGrade.score(GameState.run_stats,
 		int(counted[0]), int(counted[1]), GameState.approved_students.size())
-	_grade_text = RunGrade.letter(run_score, passed)
+	_grade_text = RunGrade.letter(run_score, _passed)
+
+
+## The ambient kit's two moods (spec 2026-09-26, section 2): warm light and
+## sparkles for a pass, a blue night and slow dust for a fail. Both groups
+## are authored in the scene; this only picks one, from the verdict the
+## grade letter used, and takes the glint off a failing badge.
+func _dress_ambience() -> void:
+	ambient_pass.visible = _passed
+	ambient_fail.visible = not _passed
+	if not _passed:
+		grade_badge.material = null
 
 
 ## Title first, then the rows one at a time counting up, then the letter.

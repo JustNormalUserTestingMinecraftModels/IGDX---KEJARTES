@@ -597,3 +597,34 @@ func test_exam_progress_stays_undarkened() -> void:
 	var c := _census("res://Scenes/EndGame/ExamProgress.tscn")
 	for e in c:
 		assert_ne(e["instance"], MOOD_TINT, "ExamProgress takes no tint")
+
+
+# ── RunResult ────────────────────────────────────────────────────────────────
+
+const RUN_RESULT := "res://Scenes/EndGame/RunResult.tscn"
+
+
+func test_run_result_carries_both_moods_over_the_blur() -> void:
+	var c := _census(RUN_RESULT)
+	assert_eq(_children_of(c, ".").slice(0, 4),
+		["WinStage", "BlurLayer", "AmbientPass", "AmbientFail"] as Array[String],
+		"both moods draw over the blurred stage, under the report")
+	assert_eq(_prop(_entry(c, "AmbientPass/Tint"), "mood"), MoodTint.Mood.PAGI, "a pass is warm")
+	assert_eq(_entry(c, "AmbientPass/Warm").get("instance"), LIGHT_POOL, "with light behind the grade")
+	assert_eq(_prop(_entry(c, "AmbientPass/Sparkles"), "preset"), AmbientParticles.Preset.KILAU,
+		"and sparkles")
+	assert_eq(_prop(_entry(c, "AmbientFail/Tint"), "mood"), MoodTint.Mood.MALAM, "a fail is night")
+	assert_eq(_entry(c, "AmbientFail/Dust").get("instance"), AMBIENT_PARTICLES, "with slow dust")
+	var badge_mat: Variant = _prop(_entry(c, "MarginContainer/Column/GradeCard/GradeStack/GradeBadge"), "material")
+	assert_true(badge_mat is Material and (badge_mat as Material).resource_path == GLINT_MATERIAL,
+		"the grade badge glints")
+
+
+## RunResult is not @tool, so its choice is pinned in the source: one group
+## from the same verdict the letter used, and no glint on a failing badge.
+func test_run_result_picks_one_mood_from_the_verdict() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	assert_true(src.contains("ambient_pass.visible = _passed"), "a pass shows AmbientPass")
+	assert_true(src.contains("ambient_fail.visible = not _passed"), "a fail shows AmbientFail")
+	assert_true(src.contains("grade_badge.material = null"), "a failing badge does not shine")
+	assert_true(src.contains("_dress_ambience()"), "_ready dresses the ambience")

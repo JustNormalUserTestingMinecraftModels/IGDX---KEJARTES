@@ -50,7 +50,7 @@ func test_sticky_note_scene_has_matched_nodes() -> void:
 	inst.free()
 
 func test_activity_selected_plays_specialty_feedback_conditionally() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd")
 	assert_true(src.contains("func _on_activity_selected"), "_on_activity_selected must exist")
 	assert_true(src.contains("ActivityPreview.is_favorit(category, student)"),
 		"_on_activity_selected must ask is_favorit() -- the same check as the tile's ribbon")
@@ -82,7 +82,7 @@ func test_activity_tile_shows_the_favorit_ribbon_only_on_the_favourite() -> void
 ## D15: a plain assignment bursts through RewardFeedback in the one shared
 ## colour; only the favourite keeps the gold star burst.
 func test_plain_assignments_fire_the_shared_assign_burst() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd")
 	assert_true(src.contains('RewardFeedback.play(&"activity_assigned", _assigned_note)'),
 		"a plain assignment must fire activity_assigned from the note")
 	assert_true(RewardFeedback.RECIPES.has(&"activity_assigned"),

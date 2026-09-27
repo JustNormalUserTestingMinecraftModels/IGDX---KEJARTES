@@ -29,18 +29,18 @@ func suite_name() -> String:
 ## differ between screens (atur_jadwal's is _on_back_button_pressed, not
 ## _on_back_pressed) -- this map was read off the source, not assumed.
 const SCREENS := {
-	"res://Scripts/AturJadwal/atur_jadwal.gd": "_on_back_button_pressed",
-	"res://Scripts/Koperasi/shop_hub.gd": "_on_back_pressed",
-	"res://Scripts/Koperasi/cosmetic_shop.gd": "_on_back_pressed",
-	"res://Scripts/ReportCard/report_card.gd": "_on_back_pressed",
+	"res://Scripts/AturJadwal/AturJadwal.gd": "_on_back_button_pressed",
+	"res://Scripts/Koperasi/ShopHub.gd": "_on_back_pressed",
+	"res://Scripts/Koperasi/CosmeticShop.gd": "_on_back_pressed",
+	"res://Scripts/ReportCard/ReportCard.gd": "_on_back_pressed",
 	"res://Scripts/UI/Settings.gd": "_on_back_pressed",
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": "_on_back_pressed",
 	"res://Scripts/Pengaturan.gd": "_on_back_pressed",
 	# Already handled before this pass; included so a future edit cannot
 	# quietly drop one of them either.
-	"res://Scripts/Koperasi/koprasi.gd": "_on_back_pressed",
-	"res://Scripts/Inventory/inventory.gd": "_on_back_pressed",
-	"res://Scripts/Achievements/achievements_screen.gd": "_on_back_pressed",
+	"res://Scripts/Koperasi/Koperasi.gd": "_on_back_pressed",
+	"res://Scripts/Inventory/Inventory.gd": "_on_back_pressed",
+	"res://Scripts/Achievements/AchievementsScreen.gd": "_on_back_pressed",
 }
 
 

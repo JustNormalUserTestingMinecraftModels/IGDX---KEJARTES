@@ -212,7 +212,7 @@ just from opening the scene. Pure UI wiring (connecting signals, reading
 initial display values) should stay *above* that guard, ungated, since the
 test suite needs to exercise exactly that wiring.
 
-- See `Scripts/MainMenu/main_menu.gd` for the worked "gated" example: it's
+- See `Scripts/MainMenu/MainMenu.gd` for the worked "gated" example: it's
   `@tool`, button-signal wiring runs unconditionally, and BGM/entry
   animation are gated behind `Engine.is_editor_hint()`.
 - See `Scripts/UI/UIPolish.gd` for the worked "correctly needs no `@tool`"

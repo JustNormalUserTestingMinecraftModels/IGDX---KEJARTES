@@ -1,7 +1,7 @@
 @tool
 extends Control
 
-## @tool note: same pattern established by MainMenu (Scripts/MainMenu/main_menu.gd)
+## @tool note: same pattern established by MainMenu (Scripts/MainMenu/MainMenu.gd)
 ## and required here for the same empirical reason -- a plain (non-@tool)
 ## script attached to a node instantiated while the Godot *editor* process
 ## is not playing the game (e.g. an MCP test_run, which runs inside the
@@ -30,7 +30,7 @@ extends Control
 
 ## The screen Back returns to. MainMenu by default; the Lobby's Settings gear
 ## sets it to the Lobby before opening this screen, and Back resets it.
-static var return_scene: String = "res://Scenes/MainMenu/main_menu.tscn"
+static var return_scene: String = "res://Scenes/MainMenu/MainMenu.tscn"
 
 
 func _ready() -> void:
@@ -61,7 +61,7 @@ func _ready() -> void:
 
 	Juice.stagger_in(_collect_rows())
 	# Opened from the Lobby, its music keeps playing.
-	if return_scene == "res://Scenes/MainMenu/main_menu.tscn":
+	if return_scene == "res://Scenes/MainMenu/MainMenu.tscn":
 		AudioDirector.play_bgm(&"titlescreen")
 
 
@@ -138,6 +138,6 @@ func _on_back_pressed() -> void:
 	if not Engine.is_editor_hint():
 		AudioDirector.play_sfx(&"cancel")
 	var destination := return_scene
-	return_scene = "res://Scenes/MainMenu/main_menu.tscn"
+	return_scene = "res://Scenes/MainMenu/MainMenu.tscn"
 	Transition.change_scene(destination,
 		Transition.Style.FADE)

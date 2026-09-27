@@ -8,6 +8,25 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-26 — File names tidied (PR2 of the clean-code pass)
+
+- 19 snake_case scripts and 13 scenes renamed to PascalCase, among them the
+  misspelled `loby` → `Lobby` and `koprasi` → `Koperasi`; `rakbarang_1.gd` →
+  `KoperasiStage.gd`, `tutorial_step.gd` → `TutorialStepData.gd` (its
+  `class_name`). The main scene is now `Scenes/MainMenu/MainMenu.tscn`.
+- Assets: `MuridPotrait/` → `MuridPortrait/`; `loby_song1–4.mp3`,
+  `loby.png`, `loby_no_tables.png` → `lobby…`; spaces → underscores;
+  `pngwing.com (3).png` → `stamp_original.png`. Twelve unreferenced junk
+  files deleted (recoverable from git).
+- Every uid kept; the scan's name, spelling and exact-case path rules are
+  now empty and stay that way.
+- **Existing checkouts, once:** Godot's `.godot/uid_cache.bin` still maps the
+  renamed scenes to their old paths, so the first editor launch after pulling
+  logs `Failed to create an autoload ... audio_director.tscn` and runs
+  without AudioDirector. Close Godot, pull, delete `.godot/uid_cache.bin` (or
+  launch once and restart) before trusting a test run. Fresh clones and CI
+  are unaffected.
+
 ## 2026-09-26 — Clean-code rules and ratchet (PR1 of the clean-code pass)
 
 - **Rulebook:** `docs/superpowers/design/clean-code.md` translates Codacy's

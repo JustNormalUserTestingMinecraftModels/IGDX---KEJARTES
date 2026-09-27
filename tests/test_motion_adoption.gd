@@ -25,7 +25,7 @@ func suite_name() -> String:
 
 ## Screens that gained an entrance, and the function that plays it.
 const ENTRANCES := {
-	"res://Scripts/Koperasi/shop_hub.gd": "play_entrance",
+	"res://Scripts/Koperasi/ShopHub.gd": "play_entrance",
 	"res://Scripts/Skins/SkinSelect.gd": "play_rail_entrance",
 }
 
@@ -43,7 +43,7 @@ func test_each_entrance_is_a_named_function_not_an_inline_ready_block() -> void:
 ## The editor gate. Without it, every layout suite that stands one of these
 ## screens up measures mid-entrance rects.
 func test_the_shop_hub_entrance_does_not_fire_in_the_editor() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/shop_hub.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/ShopHub.gd")
 	# The indented CALL, not the first mention of the name -- the comment
 	# above the gate names it too, and matching that would pass vacuously.
 	var at := src.find("\n\t\tplay_entrance()")
@@ -75,8 +75,8 @@ func test_the_shelf_keeps_affordability_in_the_alpha_no_entrance_writes() -> voi
 	assert_true(shelf.contains("_button.modulate.a = dim_alpha if dim else 1.0"),
 		"this test exists because dimming rides on modulate.a; re-check it if that moved")
 
-	for script_path in ["res://Scripts/Koperasi/koprasi.gd",
-			"res://Scripts/Koperasi/rakbarang_1.gd"]:
+	for script_path in ["res://Scripts/Koperasi/Koperasi.gd",
+			"res://Scripts/Koperasi/KoperasiStage.gd"]:
 		var src := FileAccess.get_file_as_string(script_path)
 		assert_false(src.contains("Juice.pop_in") or src.contains("Juice.stagger_in"),
 			"%s must not pop_in the shelf: pop_in tweens modulate.a to 1.0, which "

@@ -120,8 +120,8 @@ func test_the_watermark_is_a_scene_node() -> void:
 ## Every picker tile carries its category's motif as a watermark (D10);
 ## the old rows gave one only to the two without a gauge.
 func test_every_tile_is_given_a_motif() -> void:
-	var f := FileAccess.open("res://Scenes/AturJadwal/atur_jadwal.tscn", FileAccess.READ)
-	assert_not_null(f, "could not open atur_jadwal.tscn")
+	var f := FileAccess.open("res://Scenes/AturJadwal/AturJadwal.tscn", FileAccess.READ)
+	assert_not_null(f, "could not open AturJadwal.tscn")
 	var src := f.get_as_text()
 	f.close()
 	assert_eq(src.count("watermark_texture"), 5,

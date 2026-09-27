@@ -2,7 +2,7 @@
 
 Godot **4.6** mobile game, portrait 1080×1920, `mobile` renderer, Vulkan.
 Indonesian-language school-management sim. Main scene:
-`Scenes/MainMenu/main_menu.tscn`.
+`Scenes/MainMenu/MainMenu.tscn`.
 
 ## The game
 
@@ -174,7 +174,7 @@ alpha before laying out on any soft-edged texture.
   `Assets/Images/UI/BarFill/README.md`. `tests/test_bar_contrast.gd` checks
   the luminance floor, `tests/test_ghost_track.gd` the ghost track; nothing
   tests the tile period.
-- `penjadwalan_card_bg.png` stays exactly 1080x1080: `atur_jadwal.tscn`'s
+- `penjadwalan_card_bg.png` stays exactly 1080x1080: `AturJadwal.tscn`'s
   Peringatan dialog crops it with a hardcoded `region_rect` that
   `tests/test_atur_jadwal.gd` pins.
 - `EndCutscene`'s badge words are stroked **paths**, not SVG `<text>`, which
@@ -202,7 +202,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 161 suites, 2405 tests (2026-09-27).
+the Godot AI MCP `test_run` tool. 161 suites, 2404 tests (2026-09-27).
 
 Hard constraints:
 
@@ -215,7 +215,7 @@ Hard constraints:
    Pure signal wiring stays ungated so tests can exercise it.
 4. Some suites assume the **main scene is open** in the editor; `test_run`
    returns a `scene_warning` when it isn't, naming the scene it wants. Open
-   `Scenes/MainMenu/main_menu.tscn` before trusting a failure.
+   `Scenes/MainMenu/MainMenu.tscn` before trusting a failure.
 
 5. **The suite cannot be run headless** — the bridge is the only way.
    (`--script` registers no autoloads; running a *scene* makes
@@ -379,7 +379,7 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 ## Current work
 
 Clean-code pass (`docs/superpowers/specs/2026-09-26-clean-code-design.md`):
-PR2 file renames, then PR3 stat keys.
+PR3 stat keys next; the file renames have landed.
 
 ## Maintaining this file
 
@@ -407,8 +407,8 @@ it costs context on every single run, so it earns its place or it moves.
 
 - Game-facing identifiers and all UI text are **Indonesian**; engine and systems code
   is English. Match whatever the surrounding file does.
-- File naming is inconsistent (`loby.gd`, `koprasi.gd` are misspelled but
-  load-bearing — do not "fix" them).
+- **File names:** PascalCase `.gd`/`.tscn`; assets `A–Z a–z 0–9 _ - .`
+  only (`clean-code.md` rule 1).
 - Commits: Conventional Commits with a scope, e.g.
   `fix(lobby): wire the dead ReportStudent button`.
 - **`Balance.gd` values are owned by a collaborator, not by us.** It holds

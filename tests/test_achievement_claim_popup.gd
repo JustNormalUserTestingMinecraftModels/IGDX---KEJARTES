@@ -80,6 +80,6 @@ func test_close_twice_is_idempotent() -> void:
 
 
 func test_screen_opens_the_popup_on_claim() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/achievements_screen.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/AchievementsScreen.gd")
 	assert_true(src.contains("claim_popup_scene.instantiate()"))
 	assert_true(src.contains(".open(AchievementCatalog.get_entry(id))"))

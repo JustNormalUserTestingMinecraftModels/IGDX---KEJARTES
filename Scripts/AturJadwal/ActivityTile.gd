@@ -9,7 +9,7 @@ extends Button
 ## the exact gain on a skill tile, coin pips and "Cuan" on Wirausaha, and
 ## red/green arrows for energy and mood on every tile.
 ##
-## Tapping a tile only SELECTS it; atur_jadwal.gd assigns the day when the
+## Tapping a tile only SELECTS it; AturJadwal.gd assigns the day when the
 ## player confirms with Pilih. `selected` swaps the tile's panel to the
 ## gold-ringed variation and shows the check badge. The favourite gets a
 ## gold Favorit ribbon.

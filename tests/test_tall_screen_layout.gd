@@ -19,7 +19,7 @@ const LayoutFrame := preload("res://tests/layout_frame.gd")
 const TALL := Vector2(1080, 2400)
 const DESIGN := Vector2(1080, 1920)
 
-const LOBBY := "res://Scenes/Lobby/loby.tscn"
+const LOBBY := "res://Scenes/Lobby/Lobby.tscn"
 
 
 func suite_name() -> String:
@@ -146,7 +146,7 @@ func test_lobby_backdrop_is_black_and_full_rect() -> void:
 
 
 ## The HUD sits in Safe/UI: the title on the top edge, the button block in a
-## Bottom Wide bar. Every HUD node is a unique name, so loby.gd and the
+## Bottom Wide bar. Every HUD node is a unique name, so Lobby.gd and the
 ## tutorial find it wherever it sits.
 func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 	var lobby := _scene(LOBBY)
@@ -207,7 +207,7 @@ func test_lobby_at_the_design_size_is_unchanged() -> void:
 
 # ── Koperasi ─────────────────────────────────────────────────────────────────
 
-const KOPERASI := "res://Scenes/Koperasi/koprasi.tscn"
+const KOPERASI := "res://Scenes/Koperasi/Koperasi.tscn"
 
 
 ## A flat wall strip fills the screen and covers; it only shows above the
@@ -273,7 +273,7 @@ func test_koperasi_at_the_design_size() -> void:
 
 # ── StudentCard ──────────────────────────────────────────────────────────────
 
-const STUDENT_CARD := "res://Scenes/StudentCard/student_card.tscn"
+const STUDENT_CARD := "res://Scenes/StudentCard/StudentCard.tscn"
 
 
 ## The root carries no inset, and the wood fills and covers.
@@ -377,7 +377,7 @@ func test_student_card_belajar_button_rides_the_paper() -> void:
 
 # ── StudentList ──────────────────────────────────────────────────────────────
 
-const STUDENT_LIST := "res://Scenes/StudentList/student_list.tscn"
+const STUDENT_LIST := "res://Scenes/StudentList/StudentList.tscn"
 
 
 func test_student_list_backdrop_fills() -> void:
@@ -443,7 +443,7 @@ func test_student_list_at_the_design_size_is_unchanged() -> void:
 
 # ── Level Select ─────────────────────────────────────────────────────────────
 
-const LEVEL_SELECT := "res://Scenes/LevelSelect/level_select.tscn"
+const LEVEL_SELECT := "res://Scenes/LevelSelect/LevelSelect.tscn"
 
 
 func test_level_select_backdrop_fills() -> void:
@@ -490,7 +490,7 @@ func test_level_select_at_the_design_size() -> void:
 
 # ── Rapor ────────────────────────────────────────────────────────────────────
 
-const REPORT_CARD := "res://Scenes/ReportCard/report_card.tscn"
+const REPORT_CARD := "res://Scenes/ReportCard/ReportCard.tscn"
 
 
 ## Rapor was StudentCard before the tall-phone pass: a root inset by
@@ -582,9 +582,9 @@ func test_report_card_at_the_design_size_is_unchanged() -> void:
 ## here). Such a string writes its leading "%" as "%%".
 func test_unique_name_paths_are_not_format_strings() -> void:
 	var re := RegEx.create_from_string("\"%[A-WYZabeghijklmnpqrtuwyz_][^\"]*\"\\s*%[^=]")
-	for path in ["res://Scripts/Lobby/loby.gd", "res://Scripts/Koperasi/koprasi.gd",
-			"res://Scripts/StudentCard/student_card.gd",
-			"res://Scripts/StudentList/student_list.gd"]:
+	for path in ["res://Scripts/Lobby/Lobby.gd", "res://Scripts/Koperasi/Koperasi.gd",
+			"res://Scripts/StudentCard/StudentCard.gd",
+			"res://Scripts/StudentList/StudentList.gd"]:
 		var m := re.search(FileAccess.get_file_as_string(path))
 		assert_true(m == null, "%s formats a unique-name path: %s"
 			% [path, m.get_string() if m else ""])

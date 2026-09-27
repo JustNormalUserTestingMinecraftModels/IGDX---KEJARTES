@@ -93,7 +93,7 @@ func test_a_clean_tap_emits_slot_pressed() -> void:
 func test_inventory_populate_grid_instantiates_the_slot_scene() -> void:
 	# The grid is filled by instancing InventorySlot.tscn, never by
 	# hand-building PanelContainers / StyleBoxFlats.
-	var src := FileAccess.get_file_as_string("res://Scripts/Inventory/inventory.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Inventory/Inventory.gd")
 	assert_contains(src, "slot_scene.instantiate()", "grid slots come from the PackedScene")
 	var start := src.find("func _populate_grid")
 	assert_gt(start, 0, "_populate_grid should exist")
@@ -104,9 +104,9 @@ func test_inventory_populate_grid_instantiates_the_slot_scene() -> void:
 
 
 func test_empty_state_is_a_scene_node_not_a_runtime_label() -> void:
-	var text := FileAccess.get_file_as_string("res://Scenes/Inventory/inventory.tscn")
+	var text := FileAccess.get_file_as_string("res://Scenes/Inventory/Inventory.tscn")
 	assert_contains(text, "EmptyStateLabel",
-		"inventory.tscn should carry the authored empty-state label")
+		"Inventory.tscn should carry the authored empty-state label")
 
 
 func test_slot_has_bounce_badge_and_shine_gate() -> void:

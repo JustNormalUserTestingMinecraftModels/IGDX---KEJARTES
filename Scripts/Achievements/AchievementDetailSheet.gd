@@ -4,7 +4,7 @@ extends Control
 
 ## The modal detail sheet opened when an AchievementTile is tapped (spec:
 ## docs/superpowers/specs/2026-09-18-achievements-polish-plan.md, Task 3,
-## "Tap-to-expand"). Meant to be instanced ONCE into achievements.tscn and
+## "Tap-to-expand"). Meant to be instanced ONCE into AchievementsScreen.tscn and
 ## hidden until open_for() is called (Task 5's job).
 ##
 ## Shows the full-size icon, title, desc, an amber prize chip when the entry
@@ -28,13 +28,13 @@ extends Control
 ## _emit_claim_if_unlocked. The sheet still does NOT call Achievements.claim
 ## itself: it emits claim_requested(id) and leaves the claim() call and the
 ## celebration popup to the host screen, which is what
-## achievements_screen.gd's _on_claim_requested already did for the button.
+## AchievementsScreen.gd's _on_claim_requested already did for the button.
 ##
 ## Closes on scrim tap, the back arrow, or Android back (only while open, and
 ## it does not let the request fall through to the screen's own back
-## handling -- see achievements_screen.gd Task 5, which must skip its
+## handling -- see AchievementsScreen.gd Task 5, which must skip its
 ## back-to-lobby handling while this sheet is open, the same way
-## Scripts/Inventory/inventory.gd skips its back handling while its
+## Scripts/Inventory/Inventory.gd skips its back handling while its
 ## ItemDetailSheet is up).
 
 signal closed
@@ -158,7 +158,7 @@ func _on_back_pressed() -> void:
 ## Deferred from open_for() so the sheet is visible and laid out before the
 ## host screen's celebration popup lands on top of it. The sheet still does
 ## not call Achievements.claim itself -- it emits and lets
-## achievements_screen.gd's _on_claim_requested do the claim, the sfx and
+## AchievementsScreen.gd's _on_claim_requested do the claim, the sfx and
 ## the popup, exactly as the old button did. Achievements.claim() returns
 ## false for any state that cannot be claimed, so re-opening a sheet that is
 ## mid-claim cannot double-claim.
@@ -175,8 +175,8 @@ func _emit_claim_if_unlocked() -> void:
 
 ## Notifications reach every node in the tree, so this alone does not stop
 ## the host screen's own WM_GO_BACK_REQUEST handler from also firing --
-## Task 5's achievements_screen.gd must check whether this sheet is open
-## (mirroring Scripts/Inventory/inventory.gd's `_sheet != null` guard)
+## Task 5's AchievementsScreen.gd must check whether this sheet is open
+## (mirroring Scripts/Inventory/Inventory.gd's `_sheet != null` guard)
 ## before acting on its own back request.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST and _open:

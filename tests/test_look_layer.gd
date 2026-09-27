@@ -21,11 +21,11 @@ const GRADE_LOBBY_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_c
 
 ## Every node that wears the grade, by scene. These are painted plates only.
 const GRADED := {
-	"res://Scenes/Lobby/loby.tscn": [
+	"res://Scenes/Lobby/Lobby.tscn": [
 		"World/Classroom/BGLayer", "World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
-	"res://Scenes/Koperasi/koprasi.tscn": [
+	"res://Scenes/Koperasi/Koperasi.tscn": [
 		"Stage/Background", "Stage/Herman", "Stage/Foreground",
 	],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
@@ -210,7 +210,7 @@ func test_a_new_fade_kills_the_one_in_flight() -> void:
 ## mostly paper -- a threshold low enough to catch the highlights catches the
 ## whole screen, and the picture turns to fog. Measured on the Lobby at
 ## 1080x1920 against the same baseline the AO pass used.
-const LOBBY_SCENE := "res://Scenes/Lobby/loby.tscn"
+const LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
 const LOBBY_ENVIRONMENT := "res://Scenes/Lobby/lobby_environment.tres"
 
 
@@ -245,7 +245,7 @@ func test_the_lobby_environment_applies_to_2d() -> void:
 ## background_canvas_max_layer; every layer above draws after the glow. So
 ## the classroom sits in a World CanvasLayer below that line, and the HUD,
 ## the daily-reward popup, the chat bubble, the tutorial spotlight and
-## anything loby.gd adds at runtime stay on layer 0, above it, unbloomed.
+## anything Lobby.gd adds at runtime stay on layer 0, above it, unbloomed.
 func test_the_lobby_bloom_stops_below_the_ui() -> void:
 	var env: Environment = load(LOBBY_ENVIRONMENT)
 	assert_true(env != null, "the Lobby environment resource must exist")
@@ -382,7 +382,7 @@ func test_the_window_light_stays_under_the_clipping_knee() -> void:
 			% [intensity, LIGHT_INTENSITY_CEILING])
 
 	# And it must actually be placed, or the primitive is unused code.
-	var lobby := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
+	var lobby := (load("res://Scenes/Lobby/Lobby.tscn") as PackedScene).instantiate()
 	track(lobby)
 	var light := lobby.get_node_or_null("World/Classroom/WindowLight") as Control
 	assert_true(light != null, "the Lobby should carry the window light")

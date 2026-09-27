@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://s8801s00ec2q"]
 
-[ext_resource type="Script" uid="uid://t5yd15hixj7" path="res://Scripts/Splashscreen/splashscreen.gd" id="1_qc0ra"]
+[ext_resource type="Script" uid="uid://t5yd15hixj7" path="res://Scripts/Splashscreen/Splashscreen.gd" id="1_qc0ra"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
 
 [node name="Splashscreen" type="Control" unique_id=1227495593]

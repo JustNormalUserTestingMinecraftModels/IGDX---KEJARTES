@@ -157,7 +157,7 @@ func test_statbar_value_label_tracks_the_value() -> void:
 ## not just in-game. ReportCard and StudentCard bars leave show_value_label
 ## at its default false while authoring their own ValueLabel children with
 ## meaningful text/alignment that those screens drive themselves. Opening
-## and saving Scenes/ReportCard/report_card.tscn once adopted those
+## and saving Scenes/ReportCard/ReportCard.tscn once adopted those
 ## authored labels and silently persisted stomped values into the .tscn:
 ## visible flipped to false, text overwritten from the authored "65/65" to
 ## a freshly computed "60", and horizontal_alignment forced from right (2)

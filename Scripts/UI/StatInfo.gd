@@ -5,7 +5,7 @@ extends RefCounted
 ## The one table describing the five bars a student card shows.
 ##
 ## Read by Scenes/UI/StatDetailPopup.tscn to fill its header, its bar tint and
-## its description, and by report_card.gd / student_card.gd to colour the bars
+## its description, and by ReportCard.gd / StudentCard.gd to colour the bars
 ## on the card itself. Before this existed both screens carried their own copy
 ## of the same if/elif chain.
 ##

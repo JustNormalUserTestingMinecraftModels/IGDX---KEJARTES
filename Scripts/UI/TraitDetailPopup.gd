@@ -5,8 +5,8 @@ extends CanvasLayer
 ## The quirk/persona detail modal a player gets by tapping a trait badge on a
 ## student card.
 ##
-## Instantiated by Scripts/ReportCard/report_card.gd and
-## Scripts/StudentCard/student_card.gd, which previously each carried their
+## Instantiated by Scripts/ReportCard/ReportCard.gd and
+## Scripts/StudentCard/StudentCard.gd, which previously each carried their
 ## own verbatim copy of this as a runtime-built CanvasLayer/scrim/card/header
 ## hierarchy. Every node it draws now lives in
 ## Scenes/UI/TraitDetailPopup.tscn, so the layout is editable in the 2D

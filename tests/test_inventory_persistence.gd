@@ -70,7 +70,7 @@ func test_forget_session_resets_run_state_but_keeps_progress_flags() -> void:
 	assert_contains(body, "clear_inventory_save()", "forget_session drops the on-disk save")
 
 func test_transition_flushes_inventory_on_scene_change() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Transition/transition.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Transition/Transition.gd")
 	assert_true(src.contains("GameState.save_inventory()"),
 		"change_scene must flush the inventory save")
 	assert_true(src.contains("is_editor_hint"),
@@ -80,4 +80,4 @@ func test_debug_manager_has_forget_session() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
 	assert_true(src.contains("_forget_session"), "debug button handler present")
 	assert_true(src.contains("GameState.forget_session()"), "handler calls forget_session")
-	assert_true(src.contains("main_menu.tscn"), "handler returns to MainMenu")
+	assert_true(src.contains("MainMenu.tscn"), "handler returns to MainMenu")

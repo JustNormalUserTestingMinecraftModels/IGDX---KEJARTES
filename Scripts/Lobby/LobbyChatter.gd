@@ -3,7 +3,7 @@ class_name LobbyChatter
 extends Node
 
 ## Who talks in the Lobby, and when (2026-09-19 student-chatter spec).
-## loby.gd hands in the seated students (set_seats) and a can_speak gate
+## Lobby.gd hands in the seated students (set_seats) and a can_speak gate
 ## (false during the tutorial, the daily-reward popup and the skin picker).
 ## A tap on a student's face asks them to talk; so does an idle timer of
 ## idle_min_s..idle_max_s, re-rolled on every tap and after every line,
@@ -12,7 +12,7 @@ extends Node
 ## and for tap_cooldown_s after it finishes, so spamming taps leaves the
 ## line on screen exactly as it was.
 
-## Path to the one bubble every student speaks through (loby.tscn's
+## Path to the one bubble every student speaks through (Lobby.tscn's
 ## root-level ChatBubble, above the HUD); resolved into `bubble` in _ready().
 @export var bubble_path: NodePath
 ## Shortest wait, in seconds, before an idle student pipes up.
@@ -26,9 +26,9 @@ extends Node
 var bubble: StudentChatBubble
 ## Controls drawn over the faces (the Lobby HUD's buttons and money pill):
 ## _input sees a tap before the GUI does, so a tap inside a visible one is
-## that control's, not the student's under it. loby.gd hands them in.
+## that control's, not the student's under it. Lobby.gd hands them in.
 var tap_blockers: Array = []
-## Returns whether anyone may talk right now; loby.gd replaces it.
+## Returns whether anyone may talk right now; Lobby.gd replaces it.
 var can_speak: Callable = func() -> bool: return true
 
 var _seats: Array = []

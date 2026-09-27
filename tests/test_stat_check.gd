@@ -204,7 +204,7 @@ const _SHEET := Rect2(52, 238, 994, 1321)
 ## The frame printed on card_bg.png -- StudentCard's own PortraitFrame rect.
 const _PHOTO_RECT := Rect2(136, 294, 283, 376)
 ## The six students the game ships. Kept here rather than read from
-## student_card.gd, whose roster is a script variable, not a constant.
+## StudentCard.gd, whose roster is a script variable, not a constant.
 const _ROSTER := ["Marcel", "Doni", "Andi", "Citra", "Shinta", "Thea"]
 ## The art StudentCard, StudentList and AturJadwal already use for the
 ## three skills -- not the placeholder SVGs the page shipped with.
@@ -291,7 +291,7 @@ func test_card_bind_fills_name_and_photo_and_arms_three_rows() -> void:
 	var card = load(_CARD_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(card)
 	track(card)
-	var photo: Texture2D = load("res://Assets/Images/MuridPotrait/Murid3.jpg")
+	var photo: Texture2D = load("res://Assets/Images/MuridPortrait/Murid3.jpg")
 	var s := StudentData.new()
 	s.student_name = "Citra"
 	s.avatar_texture = photo

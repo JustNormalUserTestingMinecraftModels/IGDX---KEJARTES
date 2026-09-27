@@ -8,16 +8,16 @@ extends McpTestSuite
 func suite_name() -> String:
 	return "report_card"
 
-const _SCENE_PATH := "res://Scenes/ReportCard/report_card.tscn"
-const _SCRIPT_PATH := "res://Scripts/ReportCard/report_card.gd"
+const _SCENE_PATH := "res://Scenes/ReportCard/ReportCard.tscn"
+const _SCRIPT_PATH := "res://Scripts/ReportCard/ReportCard.gd"
 
 func _source() -> String:
 	return FileAccess.get_file_as_string(_SCRIPT_PATH)
 
 func test_scene_loads_and_instantiates() -> void:
-	assert_true(ResourceLoader.exists(_SCENE_PATH), "report_card.tscn must exist")
+	assert_true(ResourceLoader.exists(_SCENE_PATH), "ReportCard.tscn must exist")
 	var scene := (load(_SCENE_PATH) as PackedScene).instantiate()
-	assert_true(scene != null, "report_card.tscn must instantiate")
+	assert_true(scene != null, "ReportCard.tscn must instantiate")
 	scene.free()
 
 func test_has_no_approve_buttons() -> void:
@@ -63,7 +63,7 @@ func test_delegates_rendering_to_the_shared_view() -> void:
 		"rendering is shared with student_card, not forked")
 
 func test_back_button_returns_to_lobby() -> void:
-	assert_true(_source().contains("res://Scenes/Lobby/loby.tscn"),
+	assert_true(_source().contains("res://Scenes/Lobby/Lobby.tscn"),
 		"back must return to the lobby")
 
 func test_back_button_node_exists_and_is_wired() -> void:
@@ -80,7 +80,7 @@ func test_back_button_node_exists_and_is_wired() -> void:
 ## The two screens render the same card, so the table must be the same.
 func test_stagger_table_matches_the_student_card() -> void:
 	var report := FileAccess.get_file_as_string(
-		"res://Scripts/ReportCard/report_card.gd")
+		"res://Scripts/ReportCard/ReportCard.gd")
 	for row_name in ["BioPanel", "IconAkademis1", "IconAkademis2",
 			"IconAkademis3", "IconKepribadian1", "IconKepribadian2"]:
 		assert_true(report.contains('"%s"' % row_name),
@@ -93,12 +93,12 @@ func test_stagger_table_matches_the_student_card() -> void:
 ## Without the pre-hide, the incoming page's rows ride the card's own
 ## modulate up to fully visible, then get yanked back to invisible when
 ## _stagger_in_card's pop_in() takes over. StudentCard calls this before
-## the fade-in tween, not after (student_card.gd:667).
+## the fade-in tween, not after (StudentCard.gd:667).
 func test_rows_are_hidden_before_they_stagger_in() -> void:
 	var report := FileAccess.get_file_as_string(
-		"res://Scripts/ReportCard/report_card.gd")
+		"res://Scripts/ReportCard/ReportCard.gd")
 	assert_true(report.contains("func _hide_card_rows("),
-		"report_card.gd has no _hide_card_rows")
+		"ReportCard.gd has no _hide_card_rows")
 	var hide_at := report.find("_hide_card_rows(new_index)")
 	var tween_at := report.find("var tween_in = create_tween()")
 	assert_true(hide_at != -1, "_hide_card_rows is never called on transition")

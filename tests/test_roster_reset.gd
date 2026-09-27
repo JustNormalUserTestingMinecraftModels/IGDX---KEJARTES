@@ -82,7 +82,7 @@ func test_gain_tracker_cleared() -> void:
 	GameState.approved_students = saved
 
 func test_student_card_captures_roster_base_on_approval() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")
 	assert_true(src.contains("roster_base_akademis1"),
 		"student_card must stamp roster_base_akademis1 when it approves the roster")
 	assert_true(src.contains("roster_base_akademis3"),
@@ -117,7 +117,7 @@ func test_student_card_only_stamps_roster_base_on_first_approval() -> void:
 	# reset_roster_for_new_grade()'s head-start formula collapses toward
 	# ~100% retention. Source-scan for the guard, matching this file's
 	# established convention for asserting student_card's approval behavior.
-	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")
 	assert_true(src.contains('not _s.has("roster_base_akademis1")'),
 		"student_card must guard roster_base_akademis1 with a has() check so only the first approval sets it")
 	assert_true(src.contains('not _s.has("roster_base_akademis2")'),

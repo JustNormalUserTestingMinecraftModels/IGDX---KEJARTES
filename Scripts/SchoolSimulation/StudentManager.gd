@@ -75,7 +75,7 @@ func initialize_students() -> void:
 		student.energy = base_stats[i]["energy"]
 		student.mood = base_stats[i]["mood"]
 		
-		var port_path = "res://Assets/Images/MuridPotrait/Murid%d.jpg" % (i + 1)
+		var port_path = "res://Assets/Images/MuridPortrait/Murid%d.jpg" % (i + 1)
 		if ResourceLoader.exists(port_path):
 			student.avatar_texture = load(port_path)
 			

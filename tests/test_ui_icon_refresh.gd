@@ -19,7 +19,7 @@ const DELIVERED := {
 	"res://Assets/Images/UI/Nav/return_button.png": "7891144f317b79d2d93bf52343e4bd5a",
 }
 ## The Lobby, whose bottom bar wears four of the five.
-const _LOBBY := "res://Scenes/Lobby/loby.tscn"
+const _LOBBY := "res://Scenes/Lobby/Lobby.tscn"
 
 
 func suite_name() -> String:

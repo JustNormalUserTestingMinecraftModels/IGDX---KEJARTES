@@ -2,7 +2,7 @@
 extends McpTestSuite
 
 ## The DayStickyNote template: one reusable sticky note for the AturJadwal
-## day row. Five instances live under atur_jadwal.tscn's BGHari. This suite
+## day row. Five instances live under AturJadwal.tscn's BGHari. This suite
 ## instantiates the template directly and drives its three state methods.
 ##
 ## Must be @tool; no coroutine tests (the runner does not await).
@@ -237,7 +237,7 @@ func test_back_icon_returns_to_its_authored_offset_after_repeated_pops() -> void
 		"BackIcon drifted to %s from its authored %s after repeated pops" % [now, authored])
 
 ## Design decision #8: the state methods are repaints and must never pop.
-## The assign-pop is driven from atur_jadwal.gd::_on_activity_selected on the
+## The assign-pop is driven from AturJadwal.gd::_on_activity_selected on the
 ## single note the player just assigned, never from show_*(). So calling the
 ## state methods with no explicit play_assign_pop() must leave BackIcon at its
 ## authored offset and raise no error.

@@ -64,7 +64,7 @@ func test_it_routes_to_the_stat_check_and_never_arms_a_cutscene() -> void:
 		"it routes to the stat check")
 	assert_false(src.contains("is_exam_intro_cutscene"),
 		"the exam-intro cutscene beat is gone; nothing arms it any more")
-	assert_false(src.contains("cut_scene.tscn"),
+	assert_false(src.contains("CutScene.tscn"),
 		"it no longer routes to the cutscene")
 
 

@@ -13,7 +13,7 @@ extends McpTestSuiteCompat
 ##
 ## No test here is a coroutine.
 
-const RAK_PATH := "res://Scripts/Koperasi/rakbarang_1.gd"
+const RAK_PATH := "res://Scripts/Koperasi/KoperasiStage.gd"
 const ITEM_NAME := "Cilok"
 
 
@@ -131,7 +131,7 @@ func test_cart_adds_capped_per_frame() -> void:
 
 
 ## Fix round 2: add_item() must report the drop so a caller that already
-## spent state (rakbarang_1.gd's taken slot / tray hold / flight) can undo
+## spent state (KoperasiStage.gd's taken slot / tray hold / flight) can undo
 ## it, instead of the drop being silently invisible to the caller.
 func test_add_item_returns_false_once_the_frame_cap_is_hit() -> void:
 	var data: ItemData = ItemDatabase.get_item(ITEM_NAME)

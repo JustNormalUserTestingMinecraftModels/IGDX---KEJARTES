@@ -4,8 +4,8 @@ extends Node
 ## The shop's in-progress basket, staged between picking items in Koperasi
 ## and paying for them.
 ##
-## An autoload, populated only by rakbarang_1.gd (adding items as the
-## player taps shelf art) and drained by koprasi.gd's "BELI" button, which
+## An autoload, populated only by KoperasiStage.gd (adding items as the
+## player taps shelf art) and drained by Koperasi.gd's "BELI" button, which
 ## deducts `GameState.player_money` and calls `GameState.add_to_inventory()`
 ## per line before clearing this cart. Never persisted -- leaving the shop
 ## without buying loses the basket, matching every other session-scoped

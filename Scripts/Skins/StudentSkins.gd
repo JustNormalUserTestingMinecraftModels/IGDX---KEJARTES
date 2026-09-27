@@ -77,9 +77,9 @@ static func layer_path(student_name: String, id: String, layer: String) -> Strin
 	if id == DEFAULT_ID:
 		match layer:
 			"splash": return "res://Assets/Images/SplashArtMurid/splash_%s.png" % lower
-			"portrait": return "res://Assets/Images/MuridPotrait/%s.png" % student_name
-			"face_base": return "res://Assets/Images/MuridPotrait/%s/%s_base.png" % [student_name, lower]
-			"hand": return "res://Assets/Images/MuridPotrait/TanganItems/%s_Table.png" % student_name
+			"portrait": return "res://Assets/Images/MuridPortrait/%s.png" % student_name
+			"face_base": return "res://Assets/Images/MuridPortrait/%s/%s_base.png" % [student_name, lower]
+			"hand": return "res://Assets/Images/MuridPortrait/TanganItems/%s_Table.png" % student_name
 	var folder := "res://Assets/Images/Skins/%s/" % student_name
 	match layer:
 		"splash": return folder + "splash_%s_%s.png" % [lower, id]

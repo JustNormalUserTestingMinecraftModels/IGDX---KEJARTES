@@ -22,8 +22,8 @@ extends McpTestSuite
 
 const LayoutFrame := preload("res://tests/layout_frame.gd")
 
-const LOBBY := "res://Scenes/Lobby/loby.tscn"
-const KOPERASI := "res://Scenes/Koperasi/koprasi.tscn"
+const LOBBY := "res://Scenes/Lobby/Lobby.tscn"
+const KOPERASI := "res://Scenes/Koperasi/Koperasi.tscn"
 
 ## scene -> the diorama holding the bands, and its driver's path.
 const DIORAMAS := {
@@ -64,7 +64,7 @@ func test_both_dioramas_have_a_driver_over_real_bands() -> void:
 
 ## The driver is a child of the diorama rather than its script, because the
 ## obvious host is sometimes taken: Koperasi's Stage already runs
-## rakbarang_1.gd and a node has only one script.
+## KoperasiStage.gd and a node has only one script.
 func test_the_driver_never_displaces_an_existing_script() -> void:
 	var root := (load(KOPERASI) as PackedScene).instantiate()
 	track(root)

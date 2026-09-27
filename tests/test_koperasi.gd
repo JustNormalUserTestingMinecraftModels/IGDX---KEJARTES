@@ -8,20 +8,20 @@ extends McpTestSuite
 func suite_name() -> String:
 	return "koperasi"
 
-const _SCENE_PATH := "res://Scenes/Koperasi/koprasi.tscn"
-const _SCRIPT_PATH := "res://Scripts/Koperasi/koprasi.gd"
+const _SCENE_PATH := "res://Scenes/Koperasi/Koperasi.tscn"
+const _SCRIPT_PATH := "res://Scripts/Koperasi/Koperasi.gd"
 
 func _source() -> String:
 	return FileAccess.get_file_as_string(_SCRIPT_PATH)
 
 func test_scene_loads() -> void:
-	assert_true(ResourceLoader.exists(_SCENE_PATH), "koprasi.tscn must exist")
+	assert_true(ResourceLoader.exists(_SCENE_PATH), "Koperasi.tscn must exist")
 	var packed := load(_SCENE_PATH) as PackedScene
-	assert_true(packed != null, "koprasi.tscn must load as a PackedScene")
+	assert_true(packed != null, "Koperasi.tscn must load as a PackedScene")
 
 func test_scene_instantiates() -> void:
 	var scene := (load(_SCENE_PATH) as PackedScene).instantiate()
-	assert_true(scene != null, "koprasi.tscn must instantiate")
+	assert_true(scene != null, "Koperasi.tscn must instantiate")
 	scene.free()
 
 func test_no_in_shop_inventory_button() -> void:
@@ -36,7 +36,7 @@ func test_back_button_returns_to_the_shop_hub() -> void:
 	# straight past it to the Lobby.
 	assert_true(_source().contains("res://Scenes/Koperasi/ShopHub.tscn"),
 		"the shop's back button must return to the shop hub")
-	assert_false(_source().contains("res://Scenes/Lobby/loby.tscn"),
+	assert_false(_source().contains("res://Scenes/Lobby/Lobby.tscn"),
 		"the shop should no longer jump straight back to the Lobby")
 
 func test_does_not_reference_source_project_paths() -> void:

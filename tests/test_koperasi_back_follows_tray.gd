@@ -4,17 +4,17 @@ extends McpTestSuiteCompat
 ## Suite for Task 6 of the 2026-09-17 Koperasi polish: the back button's two
 ## export positions and its ride inside the crate's shared tween.
 ##
-## koprasi.gd is not @tool and its Stage children have real side effects in
+## Koperasi.gd is not @tool and its Stage children have real side effects in
 ## _ready(), so (matching test_koperasi_tray_retract.gd's established
 ## pattern for this same script) none of these tests instantiate
-## koprasi.tscn -- they scan its source text and koprasi.gd's, the same way
+## Koperasi.tscn -- they scan its source text and Koperasi.gd's, the same way
 ## the crate-handle tests in that suite already do.
 
 func suite_name() -> String:
 	return "koperasi_back_follows_tray"
 
-const KOPRASI_TSCN := "res://Scenes/Koperasi/koprasi.tscn"
-const KOPRASI_GD := "res://Scripts/Koperasi/koprasi.gd"
+const KOPRASI_TSCN := "res://Scenes/Koperasi/Koperasi.tscn"
+const KOPRASI_GD := "res://Scripts/Koperasi/Koperasi.gd"
 
 
 func _read(path: String) -> String:
@@ -68,9 +68,9 @@ func test_back_pos_exports_declared_with_doc_lines() -> void:
 	if src.is_empty():
 		return
 	assert_true(src.contains("@export var back_pos_expanded: Vector2"),
-		"koprasi.gd must declare back_pos_expanded")
+		"Koperasi.gd must declare back_pos_expanded")
 	assert_true(src.contains("@export var back_pos_collapsed: Vector2"),
-		"koprasi.gd must declare back_pos_collapsed")
+		"Koperasi.gd must declare back_pos_collapsed")
 	var exp_at := src.find("@export var back_pos_expanded")
 	var col_at := src.find("@export var back_pos_collapsed")
 	assert_true(exp_at != -1 and col_at != -1, "both exports must be found")
@@ -104,14 +104,14 @@ func test_back_pos_x_matches_authored_back_button_x() -> void:
 	var expanded := _vector2_after(script_src, "@export var back_pos_expanded: Vector2 =")
 	var collapsed := _vector2_after(script_src, "@export var back_pos_collapsed: Vector2 =")
 	var back_block := _node_block(scene_src, "[node name=\"BackButton\" type=\"TextureButton\" parent=\"Stage\"")
-	assert_true(back_block != "", "Stage/BackButton not found in koprasi.tscn")
+	assert_true(back_block != "", "Stage/BackButton not found in Koperasi.tscn")
 	var authored_x := _prop_float(back_block, "offset_left")
 	assert_true(expanded.x == authored_x, "back_pos_expanded.x must match BackButton's authored x")
 	assert_true(collapsed.x == authored_x, "back_pos_collapsed.x must match BackButton's authored x -- it never moves sideways")
 
 
 ## The BackButton's authored rect in the .tscn must equal back_pos_expanded
-## exactly, so nothing jumps on scene load before koprasi.gd's _ready() runs.
+## exactly, so nothing jumps on scene load before Koperasi.gd's _ready() runs.
 func test_authored_back_button_position_equals_back_pos_expanded() -> void:
 	var script_src := _read(KOPRASI_GD)
 	var scene_src := _read(KOPRASI_TSCN)
@@ -119,7 +119,7 @@ func test_authored_back_button_position_equals_back_pos_expanded() -> void:
 		return
 	var expanded := _vector2_after(script_src, "@export var back_pos_expanded: Vector2 =")
 	var back_block := _node_block(scene_src, "[node name=\"BackButton\" type=\"TextureButton\" parent=\"Stage\"")
-	assert_true(back_block != "", "Stage/BackButton not found in koprasi.tscn")
+	assert_true(back_block != "", "Stage/BackButton not found in Koperasi.tscn")
 	var authored := Vector2(_prop_float(back_block, "offset_left"), _prop_float(back_block, "offset_top"))
 	assert_true(authored.distance_to(expanded) < 0.5,
 		"BackButton's authored offset_left/offset_top must equal back_pos_expanded (%s vs %s)" % [authored, expanded])
@@ -127,7 +127,7 @@ func test_authored_back_button_position_equals_back_pos_expanded() -> void:
 
 ## Flushness against the tray's own visible top (Body, whose Stage-local top
 ## is 117 (TrayDock) + 1243 (Body offset_top) = 1360 -- see
-## crate_pos_expanded's doc comment in koprasi.gd) and BackButton's authored
+## crate_pos_expanded's doc comment in Koperasi.gd) and BackButton's authored
 ## height (185px, offset_bottom(1342) - offset_top(1157)). The gap comes out
 ## to 18px here rather than a flat 12, because back_pos_expanded was pinned
 ## to BackButton's PRE-EXISTING authored position (test_tall_screen_layout.gd
@@ -190,7 +190,7 @@ func test_collapsed_gap_against_collapsed_tray_top_is_12px() -> void:
 func test_crate_handle_is_gone_everywhere() -> void:
 	var scene_src := _read(KOPRASI_TSCN)
 	var script_src := _read(KOPRASI_GD)
-	assert_false(scene_src.contains("CrateHandle"), "CrateHandle must be deleted from koprasi.tscn")
+	assert_false(scene_src.contains("CrateHandle"), "CrateHandle must be deleted from Koperasi.tscn")
 	assert_false(scene_src.contains("AnimationLibrary_crate"), "its animation library goes with it")
 	assert_false(script_src.contains("crate_pos_expanded"))
 	assert_false(script_src.contains("crate_pos_collapsed"))

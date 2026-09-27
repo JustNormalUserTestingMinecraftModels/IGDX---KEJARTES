@@ -180,7 +180,7 @@ const _BLUR_SHADER := "res://Scripts/Shaders/blur.gdshader"
 
 ## The exit blurs the backdrop in place instead of wiping the screen. The
 ## layer is authored in the .tscn, never built at runtime -- same ColorRect +
-## blur.gdshader pattern the shop's BlurLayer uses (koprasi.tscn:Rak1/BlurLayer).
+## blur.gdshader pattern the shop's BlurLayer uses (Koperasi.tscn:Rak1/BlurLayer).
 func test_the_scene_carries_an_authored_blur_layer() -> void:
 	var s := _scene()
 	var layer = s.get_node_or_null("BlurLayer")

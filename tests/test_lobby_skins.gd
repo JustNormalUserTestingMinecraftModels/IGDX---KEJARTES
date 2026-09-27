@@ -29,12 +29,12 @@ func test_face_base_swaps() -> void:
 
 
 func test_hand_skins_swap_and_restore() -> void:
-	var loby_script: GDScript = load("res://Scripts/Lobby/loby.gd")
+	var loby_script: GDScript = load("res://Scripts/Lobby/Lobby.gd")
 	var slot := Control.new()
 	track(slot)
 	var hand := TextureRect.new()
 	hand.name = "Hand_Andi"
-	var base_tex := load("res://Assets/Images/MuridPotrait/TanganItems/Andi_Table.png") as Texture2D
+	var base_tex := load("res://Assets/Images/MuridPortrait/TanganItems/Andi_Table.png") as Texture2D
 	hand.texture = base_tex
 	slot.add_child(hand)
 	GameState.equip_skin("Andi", "skin1")
@@ -46,14 +46,14 @@ func test_hand_skins_swap_and_restore() -> void:
 
 
 func test_setup_students_wires_both() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
 	assert_true(src.contains("_apply_hand_skins(h_slot)"))
 	assert_true(src.contains("StudentSkins.face_base_for("))
 	assert_true(src.contains("face.set_base_texture("))
 
 
 func test_lobby_has_the_skin_switch_button() -> void:
-	var scene := (load("res://Scenes/Lobby/loby.tscn") as PackedScene).instantiate()
+	var scene := (load("res://Scenes/Lobby/Lobby.tscn") as PackedScene).instantiate()
 	track(scene)
 	var btn := scene.get_node("Safe/UI/BottomBar/SkinSwitchButton") as TextureButton
 	assert_true(btn != null)
@@ -68,7 +68,7 @@ func test_lobby_has_the_skin_switch_button() -> void:
 ## equipped_skins is keyed by NAME and all six characters are dressable
 ## whether or not they are in this run's roster.
 func test_lobby_opens_skin_select_and_reseats_on_close() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
 	assert_true(src.contains("skin_select_scene.instantiate() as SkinSelect"))
 	assert_true(src.contains("screen.open()"))
 	assert_false(src.contains(".open(GameState.approved_students)"),

@@ -3,14 +3,14 @@ extends McpTestSuite
 
 ## Source/scene-text scans for the Achievements screen's Task 5 rewire (spec:
 ## docs/superpowers/specs/2026-09-18-achievements-polish-plan.md, "Rewire
-## achievements.tscn"). Complements tests/test_achievement_screen.gd's
-## behavioural checks with scans of achievements.tscn and
-## achievements_screen.gd text, since a full rewire this size is easiest to
+## AchievementsScreen.tscn"). Complements tests/test_achievement_screen.gd's
+## behavioural checks with scans of AchievementsScreen.tscn and
+## AchievementsScreen.gd text, since a full rewire this size is easiest to
 ## regress silently (wrong node path, wrong signal name) without a text
 ## anchor pinning it.
 
-const SCREEN_SCENE := "res://Scenes/Achievements/achievements.tscn"
-const SCREEN_SCRIPT := "res://Scripts/Achievements/achievements_screen.gd"
+const SCREEN_SCENE := "res://Scenes/Achievements/AchievementsScreen.tscn"
+const SCREEN_SCRIPT := "res://Scripts/Achievements/AchievementsScreen.gd"
 
 
 func suite_name() -> String:

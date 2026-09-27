@@ -37,7 +37,7 @@ const _POPUP_PATH := "res://Scenes/Minigames/UI/MinigameResultPopup.tscn"
 const _HUD_PATH := "res://Scenes/Minigames/UI/MinigameScoreHUD.tscn"
 const _ITEM_SHEET_PATH := "res://Scenes/Inventory/ItemDetailSheet.tscn"
 const _APPLY_ROW_PATH := "res://Scenes/Inventory/ApplyStudentRow.tscn"
-const _INVENTORY_PATH := "res://Scenes/Inventory/inventory.tscn"
+const _INVENTORY_PATH := "res://Scenes/Inventory/Inventory.tscn"
 
 ## The result card's layout, and the two boxes on it whose labels are
 ## measured below.
@@ -203,7 +203,7 @@ func test_the_apply_rows_preview_reads_on_its_card() -> void:
 func test_the_inventory_filter_tab_icons_read_on_their_ground() -> void:
 	var inv := _inventory()
 	var tokens := DesignTokens.load_default()
-	var consts := (load("res://Scripts/Inventory/inventory.gd") as GDScript).get_script_constant_map()
+	var consts := (load("res://Scripts/Inventory/Inventory.gd") as GDScript).get_script_constant_map()
 	var rest_ground := _flat_fill(inv.get_node("MainColumn/FilterRow"))
 	var tabs := inv.get_node("MainColumn/FilterRow/SegBar/Tabs")
 	var index := 0

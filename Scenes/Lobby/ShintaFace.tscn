@@ -1,12 +1,12 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://Scripts/Lobby/StudentFace.gd" id="1_face"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Shinta/shinta_base.png" id="2_base"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Shinta/shinta_sclera.png" id="3_sclera"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Shinta/shinta_pupil.png" id="4_pupil"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Shinta/shinta_eyelashes.png" id="5_eyelashes"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Shinta/shinta_eyelid.png" id="6_eyelid"]
-[ext_resource type="Texture2D" path="res://Assets/Images/MuridPotrait/Shinta/shinta_eyebrows.png" id="7_eyebrows"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/Shinta/shinta_base.png" id="2_base"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/Shinta/shinta_sclera.png" id="3_sclera"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/Shinta/shinta_pupil.png" id="4_pupil"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/Shinta/shinta_eyelashes.png" id="5_eyelashes"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/Shinta/shinta_eyelid.png" id="6_eyelid"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/Shinta/shinta_eyebrows.png" id="7_eyebrows"]
 [ext_resource type="Material" path="res://Scenes/Lobby/shinta_eye_mask.tres" id="20_mask"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_face.tres" id="illus_grade_face"]
 

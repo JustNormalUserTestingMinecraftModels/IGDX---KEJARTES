@@ -7,7 +7,7 @@ extends Control
 ## corner. BasketTray sizes and places it; the slot only knows its own shape.
 ##
 ## Tap it or hold it to return one to the shelf. The hold is the gesture the
-## basket always had, moved here from rakbarang_1.gd's _on_item_icon_input
+## basket always had, moved here from KoperasiStage.gd's _on_item_icon_input
 ## when the tray replaced the basket popup; the tap was added 2026-09-21,
 ## because holding to undo a mis-tap is a slow answer to a fast mistake.
 ## A right-click returns one at once. A press that drifts past hold_slop is a
@@ -152,7 +152,7 @@ func _end_press(at: Vector2) -> void:
 		_press_tween.kill()
 	scale = Vector2.ONE
 	# Both gestures return one. `tapped` still fires so a listener that only
-	# wants to know the player touched a slot is unaffected -- koprasi.gd
+	# wants to know the player touched a slot is unaffected -- Koperasi.gd
 	# connects to it, and dropping the signal would be a silent API break.
 	match classify_release(held, _press_pos.distance_to(at), hold_seconds, hold_slop):
 		&"hold", &"tap":

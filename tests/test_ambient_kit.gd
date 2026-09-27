@@ -530,3 +530,40 @@ func test_main_menu_finds_its_logo_by_unique_name() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/MainMenu/MainMenu.gd")
 	assert_true(src.contains("= %Logo") and src.contains("= %LogoShadow"),
 		"the logo moved into World; MainMenu.gd must find it by unique name")
+
+
+# ── The desk screens ─────────────────────────────────────────────────────────
+
+const DESK_SCREENS := [
+	"res://Scenes/LevelSelect/LevelSelect.tscn",
+	"res://Scenes/StudentCard/StudentCard.tscn",
+	"res://Scenes/StudentList/StudentList.tscn",
+	"res://Scenes/ReportCard/ReportCard.tscn",
+]
+
+
+func test_every_desk_screen_is_a_glow_screen() -> void:
+	for path in DESK_SCREENS:
+		_assert_glow_screen(path, "Backdrop")
+
+
+func test_every_desk_screen_wears_the_desk_recipe() -> void:
+	for path in DESK_SCREENS:
+		var c := _census(path)
+		assert_eq(_children_of(c, "World"), ["Backdrop", "Desk"] as Array[String],
+			path + ": World holds the desk and its ambience, nothing else")
+		assert_eq(_entry(c, "World/Desk").get("instance"), DESK_AMBIENCE,
+			path + ": Desk is a DeskAmbience")
+
+
+func test_the_roster_list_keeps_its_dust_sparse() -> void:
+	var c := _census("res://Scenes/StudentList/StudentList.tscn")
+	assert_eq(_prop(_entry(c, "World/Desk"), "particle_density"), 0.5,
+		"StudentList's cards are busy; half the dust")
+
+
+func test_the_envelope_seal_glints() -> void:
+	var c := _census("res://Scenes/LevelSelect/AmplopCard.tscn")
+	var mat: Variant = _prop(_entry(c, "Bob/Seal"), "material")
+	assert_true(mat is Material and (mat as Material).resource_path == GLINT_MATERIAL,
+		"the wax seal glints")

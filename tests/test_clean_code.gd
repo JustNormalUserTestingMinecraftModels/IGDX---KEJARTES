@@ -18,6 +18,10 @@ extends McpTestSuite
 
 ## The scanner under test.
 const Scan := preload("res://ci/clean_code_scan.gd")
+## Fewer production scripts than this means the walk missed the project (it
+## finds 165 today: every Scripts/ .gd but Balance.gd); a count of debt would
+## not do, since debt is meant to reach zero.
+const MIN_PRODUCTION_SCRIPTS := 100
 
 ## The whole-project report, computed once per run in suite_setup().
 var _report: Dictionary = {}
@@ -93,6 +97,179 @@ func test_an_annotated_function_is_still_a_function() -> void:
 	assert_eq(Scan.function_name("\tfunc lambda_like():"), "", "indented is not column-0")
 
 
+## Any whitespace separates `static`, `func` and the name, as GDScript allows.
+func test_a_tab_or_a_double_space_still_reads_as_a_function() -> void:
+	assert_eq(Scan.function_name("func\tf(a):"), "f")
+	assert_eq(Scan.function_name("static  func g():"), "g")
+	assert_eq(Scan.function_name("static\tfunc h() -> void:"), "h")
+
+
+## A non-ASCII name is still a name; a column-0 lambda has none.
+func test_a_non_ascii_name_is_a_function_and_a_lambda_is_not() -> void:
+	assert_eq(Scan.function_name("func café(a):"), "café")
+	assert_eq(Scan.function_name("func(a):"), "", "a lambda")
+	assert_eq(Scan.function_name("func (a):"), "", "a lambda with a space")
+
+
+## A same-line annotation's arguments are not the function's parameters.
+func test_a_same_line_annotation_is_not_counted_as_parameters() -> void:
+	var typed := "@warning_ignore(\"x\") func f(a: int) -> void:\n\tpass"
+	assert_eq(Scan.untyped_count(typed, Scan.parse_functions(typed)), 0,
+		"a fully typed function")
+	var fns := Scan.parse_functions("@rpc(\"any_peer\") func g(a, b, c) -> void:\n\tpass")
+	assert_eq(Scan.untyped_parameter_count(fns[0]["signature"]), 3, "g's own a, b and c")
+
+
+## A body-less `@abstract` method ends at its own line instead of swallowing
+## the next function, and an annotated class_name is still read.
+func test_an_abstract_method_has_no_body() -> void:
+	var src := "\n".join(PackedStringArray([
+		"@abstract class_name QuizBase extends Node",
+		"@abstract func _score() -> int",
+		"func finish(result):",
+		"\tprint(result)",
+	]))
+	var fns := Scan.parse_functions(src)
+	var names := PackedStringArray()
+	for fn in fns:
+		names.append(fn["name"])
+	assert_eq(",".join(names), "_score,finish")
+	assert_eq(fns[0]["body"].size(), 0, "the abstract method has no body")
+	assert_eq(Scan.code_lines(fns[1]["body"]).size(), 1)
+	assert_eq(Scan.untyped_count(src, fns), 2, "finish's missing -> and its untyped result")
+	assert_eq(Scan.declared_class_name(src), "QuizBase")
+	assert_eq(Scan.declared_class_name("@tool\nextends Node\nclass_name Plain"), "Plain")
+	assert_eq(Scan.declared_class_name("extends Node"), "")
+
+
+## A column-0 line inside brackets -- an element, or the bracket that closes
+## them -- still belongs to the function.
+func test_a_column0_line_inside_brackets_does_not_end_the_body() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func points() -> void:",
+		"\tvar pts := [",
+		"Vector2(10, 20),",
+		"Vector2(300, 400),",
+		"]",
+		"\tprint(pts)",
+	]))
+	var fns := Scan.parse_functions(src)
+	assert_eq(fns.size(), 1)
+	assert_eq(Scan.code_lines(fns[0]["body"]).size(), 5, "every line is points()'s")
+	assert_eq(Scan.bare_number_count(fns[0]["body"]), 4, "10, 20, 300 and 400")
+
+
+## A column-0 line after a `\` continuation still belongs to the function.
+func test_a_column0_continuation_line_does_not_end_the_body() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func total() -> int:",
+		"\tvar sum := 10 + \\",
+		"20",
+		"\treturn sum",
+	]))
+	var fns := Scan.parse_functions(src)
+	assert_eq(fns.size(), 1)
+	assert_eq(Scan.code_lines(fns[0]["body"]).size(), 3)
+	assert_eq(Scan.bare_number_count(fns[0]["body"]), 2, "10 and 20")
+
+
+## The column-0 text of a multi-line string still belongs to the function, and
+## its numbers are string text, not bare numbers.
+func test_a_column0_multiline_string_line_does_not_end_the_body() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func banner() -> void:",
+		"\tvar text := \"\"\"",
+		"WELCOME 42",
+		"\"\"\"",
+		"\tprint(text, 7)",
+	]))
+	var fns := Scan.parse_functions(src)
+	assert_eq(fns.size(), 1)
+	assert_eq(Scan.code_lines(fns[0]["body"]).size(), 4)
+	assert_eq(Scan.bare_number_count(fns[0]["body"]), 1, "only the 7")
+
+
+## A `func` line inside a class-level multi-line string is text, not a function.
+func test_a_func_inside_a_multiline_string_is_not_a_function() -> void:
+	var src := "\n".join(PackedStringArray([
+		"const TEMPLATE := '''",
+		"func fake(a):",
+		"\tvar b = a",
+		"'''",
+		"func real() -> void:",
+		"\tpass",
+	]))
+	var fns := Scan.parse_functions(src)
+	assert_eq(fns.size(), 1)
+	assert_eq(fns[0]["name"], "real")
+	assert_eq(Scan.untyped_count(src, fns), 0, "the template's untyped code is text")
+
+
+## The names, code-line counts and bare-number counts of `src`'s functions,
+## as "name:code:bare" joined by commas.
+func _function_shapes(src: String) -> String:
+	var shapes := PackedStringArray()
+	for fn in Scan.parse_functions(src):
+		shapes.append("%s:%d:%d" % [fn["name"], Scan.code_lines(fn["body"]).size(),
+			Scan.bare_number_count(fn["body"])])
+	return ",".join(shapes)
+
+
+## A one-quote string may hold a raw newline in GDScript 4. Its column-0 text
+## is string, and its `)` does not leave a bracket open to the end of file.
+func test_a_one_quote_string_over_a_raw_newline_keeps_later_functions() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func a(text: String) -> void:",
+		"\tvar parts := text.split(\"",
+		"\")",
+		"\tprint(parts)",
+		"func b() -> void:",
+		"\tprint(42)",
+		"func c(x) -> void:",
+		"\tpass",
+	]))
+	assert_eq(_function_shapes(src), "a:3:0,b:1:1,c:1:0")
+	assert_eq(Scan.untyped_count(src, Scan.parse_functions(src)), 1, "c's untyped x")
+
+
+## A `\`-newline escape inside a one-quote string continues the string.
+func test_a_one_quote_string_over_an_escaped_newline_stays_in_the_body() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func a() -> void:",
+		"\tvar msg := \"Halo \\",
+		"dunia\"",
+		"\tprint(msg, 42)",
+	]))
+	assert_eq(_function_shapes(src), "a:3:1", "three code lines; only the 42 is bare")
+
+
+## A raw newline inside a signature's string default ends neither the
+## signature nor the file's functions.
+func test_a_raw_newline_in_a_signature_default_keeps_later_functions() -> void:
+	var src := "\n".join(PackedStringArray([
+		"func join_lines(parts: Array, sep := \"",
+		"\") -> String:",
+		"\treturn sep.join(parts)",
+		"func b() -> void:",
+		"\tprint(42)",
+	]))
+	assert_eq(_function_shapes(src), "join_lines:1:0,b:1:1")
+
+
+## tests/test_sky_life.gd splits `src.find("` and `func "` over two lines,
+## twice; every one of its 20 functions must still be found.
+func test_a_real_file_with_multiline_strings_parses_whole() -> void:
+	var src := FileAccess.get_file_as_string("res://tests/test_sky_life.gd")
+	assert_eq(Scan.parse_functions(src).size(), 20,
+		"tests/test_sky_life.gd has 20 functions (update this if it gains one)")
+
+
+## A `->` inside a lambda default is the lambda's, not the function's.
+func test_a_lambda_default_arrow_is_not_the_return_type() -> void:
+	var src := "func f(cb := func() -> int: return 1):\n\tprint(cb)"
+	assert_eq(Scan.untyped_count(src, Scan.parse_functions(src)), 1, "f has no -> of its own")
+
+
 func test_a_class_level_const_table_is_not_a_function_body() -> void:
 	var src := "\n".join(PackedStringArray([
 		"func a() -> void:",
@@ -124,6 +301,19 @@ func test_bare_numbers_skip_trivial_values_strings_identifiers_consts_and_commen
 	assert_false(Scan.is_trivial_number("0x10"))
 
 
+## A local const table over several lines names its numbers too; counting
+## resumes once its brackets close.
+func test_a_multiline_local_const_table_names_its_numbers() -> void:
+	var body := [
+		"\tconst GAINS := {",
+		"\t\t\"a\": 42,",
+		"\t\t\"b\": 17,",
+		"\t}",
+		"\tfoo(GAINS, 9)",
+	]
+	assert_eq(Scan.bare_number_count(body), 1, "only the 9 after the table")
+
+
 func test_untyped_counts_vars_signatures_and_parameters() -> void:
 	var src := "\n".join(PackedStringArray([
 		"var a = 1",
@@ -131,14 +321,15 @@ func test_untyped_counts_vars_signatures_and_parameters() -> void:
 		"var c := 1",
 		"@onready var d = $X",
 		"@export_range(0, 10) var e := 5",
+		"@export_range(0.0, float(10)) var speed = 5.0",
 		"func f(x, y: int):",
 		"\tvar g = 2",
 		"\tvar h := 2",
 		"\tfor i in 3:",
 		"\t\tpass",
 	]))
-	assert_eq(Scan.untyped_count(src, Scan.parse_functions(src)), 5,
-		"a, d and g; f's missing -> ; f's untyped x")
+	assert_eq(Scan.untyped_count(src, Scan.parse_functions(src)), 6,
+		"a, d, speed (behind nested brackets) and g; f's missing -> ; f's untyped x")
 
 
 func test_pascal_case_rule() -> void:
@@ -177,6 +368,9 @@ func test_path_literals_and_their_targets() -> void:
 	assert_eq(",".join(PackedStringArray(Scan.path_literals(
 		"A=\"*res://Scenes/A.tscn\"\nb = load('res://b.png')"))),
 		"res://Scenes/A.tscn,res://b.png", "the autoload star is stripped")
+	assert_eq(",".join(PackedStringArray(Scan.path_literals(
+		"\tvar snippet := \"load(\\\"res://icon.svg\\\")\""))),
+		"res://icon.svg", "an escaped quote ends the literal, without its backslash")
 	assert_eq(Scan.literal_target("res://Scenes/A.tscn"), "res://Scenes/A.tscn")
 	assert_eq(Scan.literal_target("res://Assets/Images/Achievements/Icons/"),
 		"res://Assets/Images/Achievements/Icons", "a folder literal")
@@ -210,10 +404,64 @@ func test_compare_groups_accepts_a_shrinking_group() -> void:
 	assert_eq(Scan.compare_groups(base, fresh)["grown"].size(), 1)
 
 
+## A baselined group that splits in two means one new duplicated body.
+func test_compare_groups_reports_a_split_group_as_grown() -> void:
+	var base: Array[String] = ["a::f | b::f | c::f | d::f"]
+	var split: Array[String] = ["a::f | b::f", "c::f | d::f"]
+	var result := Scan.compare_groups(base, split)
+	assert_eq(",".join(result["grown"]), "c::f | d::f", "the second half is new")
+	assert_eq(result["shrunk"].size(), 1, "the four-way group must be lowered")
+
+
 func test_compare_lists_both_directions() -> void:
 	var result := Scan.compare_lists(["x", "y"] as Array[String], ["y", "z"] as Array[String])
 	assert_eq(",".join(result["grown"]), "z")
 	assert_eq(",".join(result["shrunk"]), "x")
+
+
+## An empty value for every measurement, keyed by `field` of MEASUREMENTS:
+## "const" for a baseline, "key" for a report.
+func _empty_measurements(field: String) -> Dictionary:
+	var out := {}
+	for measurement in Scan.MEASUREMENTS:
+		var kind: String = measurement["kind"]
+		# Two branches, not a ternary: {} and [] are not one type, and the
+		# analyzer warns on a ternary whose values differ.
+		if kind == "counts" or kind == "large":
+			out[measurement[field]] = {}
+		else:
+			out[measurement[field]] = []
+	return out
+
+
+## compare_all -- what CI runs -- fails on a growth and only warns on a shrink.
+func test_compare_all_fails_on_growth_and_only_warns_on_a_shrink() -> void:
+	var constants := _empty_measurements("const")
+	constants["UNTYPED"] = {"res://Scripts/A.gd": 2}
+	var shrunk := _empty_measurements("key")
+	shrunk["untyped"] = {"res://Scripts/A.gd": 1}
+	var result := Scan.compare_all(shrunk, constants)
+	assert_eq(result["failures"].size(), 0, "a shrink does not fail CI")
+	assert_eq(result["warnings"].size(), 1, "a shrink is a warning")
+	var grown := _empty_measurements("key")
+	grown["untyped"] = {"res://Scripts/A.gd": 3}
+	result = Scan.compare_all(grown, constants)
+	assert_eq(result["failures"].size(), 1, "a growth fails CI")
+	assert_eq(result["warnings"].size(), 0, "a growth is not a warning")
+
+
+## A baseline missing a const -- a map or a list -- reports every entry of
+## that measurement as grown, rather than stopping on a script error.
+func test_compare_all_reports_a_missing_const_as_growth() -> void:
+	var constants := _empty_measurements("const")
+	constants.erase("UNTYPED")
+	constants.erase("DUPLICATE_GROUPS")
+	var report := _empty_measurements("key")
+	report["untyped"] = {"res://Scripts/A.gd": 2, "res://Scripts/B.gd": 1}
+	report["duplicate_groups"] = ["res://Scripts/A.gd::f | res://Scripts/B.gd::f"]
+	var result := Scan.compare_all(report, constants)
+	assert_eq(result["failures"].size(), 3, "both untyped entries and the group grew")
+	assert_eq(result["warnings"].size(), 0)
 
 
 func test_the_full_report_has_every_measurement() -> void:
@@ -221,7 +469,8 @@ func test_the_full_report_has_every_measurement() -> void:
 			"large_scripts", "bad_script_names", "class_name_mismatches",
 			"bad_asset_names", "misspelled_names", "unresolved_paths", "legacy_stat_keys"]:
 		assert_true(_report.has(key), "full_report() lacks %s" % key)
-	assert_true(_report["untyped"].size() > 0, "the scan found the project's scripts")
+	assert_true(Scan.production_scripts().size() > MIN_PRODUCTION_SCRIPTS,
+		"the scan found the project's scripts")
 
 
 func test_every_measurement_has_a_baseline_constant() -> void:

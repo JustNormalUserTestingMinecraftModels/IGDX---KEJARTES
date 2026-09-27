@@ -7,6 +7,10 @@
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="5_0l8wx"]
 [ext_resource type="Texture2D" uid="uid://dqf66cw5abxy0" path="res://Assets/Images/UI/icon_exit.svg" id="6_n5jej"]
 [ext_resource type="Material" uid="uid://dv5bscxw2v678" path="res://Scripts/Shaders/soft_shadow_material.tres" id="soft_shadow_mat"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="amb_tint"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientParticles.tscn" id="amb_particles"]
+[ext_resource type="Material" path="res://Scripts/Shaders/glint_material.tres" id="amb_glint"]
 
 [node name="MainMenu" type="Control" unique_id=1708799478]
 layout_mode = 3
@@ -18,7 +22,10 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_ftydy")
 
-[node name="Background" type="TextureRect" parent="." unique_id=2012323774]
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Background" type="TextureRect" parent="World" unique_id=2012323774]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,7 +37,20 @@ texture = ExtResource("3_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="LogoShadow" type="TextureRect" parent="." unique_id=1338557889]
+[node name="Tint" parent="World" instance=ExtResource("amb_tint")]
+mood = 1
+strength = 0.2
+
+[node name="Sun" parent="World" instance=ExtResource("amb_pool")]
+center = Vector2(0.83, 0.12)
+pool_size = Vector2(1200, 1200)
+intensity = 0.08
+rays_enabled = true
+
+[node name="Specks" parent="World" instance=ExtResource("amb_particles")]
+density = 0.5
+
+[node name="LogoShadow" type="TextureRect" parent="World" unique_id=1338557889]
 material = ExtResource("soft_shadow_mat")
 modulate = Color(0, 0, 0, 0.32)
 layout_mode = 1
@@ -45,8 +65,9 @@ mouse_filter = 2
 texture = ExtResource("4_logo")
 expand_mode = 1
 stretch_mode = 5
+unique_name_in_owner = true
 
-[node name="Logo" type="TextureRect" parent="." unique_id=133579693]
+[node name="Logo" type="TextureRect" parent="World" unique_id=133579693]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
@@ -57,6 +78,14 @@ mouse_filter = 2
 texture = ExtResource("4_logo")
 expand_mode = 1
 stretch_mode = 5
+unique_name_in_owner = true
+material = ExtResource("amb_glint")
+
+[node name="Spill" parent="World/Logo" instance=ExtResource("amb_pool")]
+center = Vector2(0.75, 0.22)
+pool_size = Vector2(700, 700)
+intensity = 0.06
+breath_depth = 0.1
 
 [node name="SafeArea" type="MarginContainer" parent="." unique_id=1913735591]
 layout_mode = 1

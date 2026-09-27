@@ -8,6 +8,53 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Ambient kit: moods, light, particles and glints
+
+- Five pieces in `Scenes/Look/`: `MoodTint` (multiply colour mood over a
+  backdrop), `LightPool` (additive glow with optional rays, breathing
+  intensity), `AmbientParticles` (one `CPUParticles2D` per screen, DEBU/
+  KILAU presets), the shared glint (`Scripts/Shaders/glint.gdshader` +
+  `glint_material.tres`, switched by `LookLayer`), and `DeskAmbience` (the
+  desk recipe, instanced once per desk screen). `AmbientGlow` (a
+  Canvas-mode `WorldEnvironment`) is built and tested but placed nowhere —
+  see amendment 7 below.
+- Placed on MainMenu (World CanvasLayer -1: Background, a PAGI tint at
+  0.2, a Sun `LightPool` with rays, DEBU specks, LogoShadow, a glinting
+  Logo with a spill `LightPool` child), the four desk screens (World:
+  Backdrop + `DeskAmbience`; StudentList's particle density cut to 0.5),
+  the envelope seal (a glint on AmplopCard), CutScene (a Sun pool and
+  KILAU sparkles on layer 0), TesNotice and StatCheck (a TEGANG tint
+  after Backdrop; ExamProgress stays untouched), and RunResult
+  (`AmbientPass` / `AmbientFail` groups chosen from the verdict; a
+  GradeBadge glint on a pass only).
+- Settings gained **Efek Suasana** (`GameSettings.ambient_effects_enabled`,
+  default on, saved) beside the Look Layer card; `GameSettings.reduce_motion`
+  gained a `reduce_motion_changed` signal so the kit can react without
+  polling.
+- Seven amendments found while planning: (1) glow is scoped to MainMenu
+  and the four desk screens, since RunResult's blurred `WinStage` hides
+  bloom, CutScene's picture changes too often for one threshold, and the
+  exam screens have no light to bloom; (2) ExamProgress takes no tint,
+  since a TEGANG multiply would cut its art's measured text contrast; (3)
+  the Debug overlay's Look page stays Lobby-only, `DebugManager.gd` being
+  at its clean-code size ceiling; (4) `AmbientParticles` is a `Control`
+  holding the `CPUParticles2D`, so its own rect is the emission area on a
+  20:9 phone; (5) the glint's motion switch lives on the shared
+  `glint_material.tres` via `LookLayer`, not per-instance; (6)
+  `DeskAmbience` forwards `particle_density`/`glow_threshold` to its
+  children, since overrides on an instanced scene's children never
+  survive a save; (7) no glow ships at all — measured 2026-09-28, no
+  threshold separated a light pool from the near-white paper and sky
+  without `hdr_2d`, so the user dropped it and `AmbientGlow` stays for a
+  later `hdr_2d` pass.
+- Measured numbers: MainMenu's Sun at intensity 0.08 (+0.039 mean
+  brightness; 0.12 drove 122 sampled pixels to white); the desk Lamp at
+  0.12 (0.06 added +0.006 mean, 0.12 added +0.011, neither clips); the
+  kit on vs off leaves UI-region pixels at max diff 0.0; Reduce Motion
+  with the tree paused reads 0.0 diff between two frames a second apart
+  (0.37 with motion allowed); and TesNotice's luminance behind "KELAS 7"
+  moves from 0.173 to 0.167 under the TEGANG tint.
+
 ## 2026-09-26 — One vocabulary for student stats (PR3 of the clean-code pass)
 
 - The roster dictionaries' `akademis1/2/3` and `kepribadian1/2` became

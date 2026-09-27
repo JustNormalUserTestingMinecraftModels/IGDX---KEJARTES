@@ -280,7 +280,7 @@ const STUDENT_CARD := "res://Scenes/StudentCard/StudentCard.tscn"
 func test_student_card_backdrop_fills() -> void:
 	var card := _scene(STUDENT_CARD)
 	assert_eq(_offsets(card), Vector4.ZERO, "the StudentCard root is not inset")
-	_assert_background_fills(card.get_node_or_null("Backdrop") as TextureRect,
+	_assert_background_fills(card.get_node_or_null("World/Backdrop") as TextureRect,
 		"StudentCard Backdrop")
 
 
@@ -325,7 +325,7 @@ func test_student_card_ui_is_pinned_inside_the_safe_area() -> void:
 ## row rides the bottom edge.
 func test_student_card_on_a_tall_phone() -> void:
 	var card := _stood_up(STUDENT_CARD, TALL)
-	_assert_placed((card.get_node("Backdrop") as Control),
+	_assert_placed((card.get_node("World/Backdrop") as Control),
 		Rect2(0, 0, 1080, 2400), "Backdrop")
 	_assert_placed((card.get_node("KertasMurid1") as Control),
 		Rect2(0, 240, 1080, 1920), "KertasMurid1")
@@ -381,7 +381,7 @@ const STUDENT_LIST := "res://Scenes/StudentList/StudentList.tscn"
 
 
 func test_student_list_backdrop_fills() -> void:
-	_assert_background_fills(_scene(STUDENT_LIST).get_node_or_null("Backdrop") as TextureRect,
+	_assert_background_fills(_scene(STUDENT_LIST).get_node_or_null("World/Backdrop") as TextureRect,
 		"StudentList Backdrop")
 
 
@@ -447,7 +447,7 @@ const LEVEL_SELECT := "res://Scenes/LevelSelect/LevelSelect.tscn"
 
 
 func test_level_select_backdrop_fills() -> void:
-	_assert_background_fills(_scene(LEVEL_SELECT).get_node_or_null("Backdrop") as TextureRect,
+	_assert_background_fills(_scene(LEVEL_SELECT).get_node_or_null("World/Backdrop") as TextureRect,
 		"LevelSelect Backdrop")
 
 
@@ -500,7 +500,7 @@ const REPORT_CARD := "res://Scenes/ReportCard/ReportCard.tscn"
 func test_report_card_backdrop_fills() -> void:
 	var rapor := _scene(REPORT_CARD)
 	assert_eq(_offsets(rapor), Vector4.ZERO, "the Rapor root is not inset")
-	_assert_background_fills(rapor.get_node_or_null("Backdrop") as TextureRect,
+	_assert_background_fills(rapor.get_node_or_null("World/Backdrop") as TextureRect,
 		"Rapor Backdrop")
 
 
@@ -540,7 +540,7 @@ func test_report_card_ui_is_pinned_inside_the_safe_area() -> void:
 ## rides the bottom edge instead of stopping at 1920.
 func test_report_card_on_a_tall_phone() -> void:
 	var rapor := _stood_up(REPORT_CARD, TALL)
-	_assert_placed((rapor.get_node("Backdrop") as Control),
+	_assert_placed((rapor.get_node("World/Backdrop") as Control),
 		Rect2(0, 0, 1080, 2400), "Backdrop")
 	_assert_placed((rapor.get_node("KertasMurid1") as Control),
 		Rect2(0, 240, 1080, 1920), "KertasMurid1")

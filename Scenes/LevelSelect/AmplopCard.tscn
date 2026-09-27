@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://miibmp1nm7ie" path="res://Assets/Images/LevelSelect/amplop_flap_back.png" id="4_owlmd"]
 [ext_resource type="Texture2D" uid="uid://cprjhjr0so80i" path="res://Assets/Images/LevelSelect/amplop_seal.png" id="5_8wf17"]
 [ext_resource type="PackedScene" uid="uid://bdfwfoth4k3ke" path="res://Scenes/LevelSelect/PupilPeek.tscn" id="5_peek"]
+[ext_resource type="Material" path="res://Scripts/Shaders/glint_material.tres" id="amb_glint"]
 
 [node name="AmplopCard" type="Control" unique_id=981813998]
 layout_mode = 3
@@ -77,6 +78,7 @@ texture = ExtResource("3_xsbwf")
 expand_mode = 1
 
 [node name="Seal" type="TextureRect" parent="Bob" unique_id=473202652]
+material = ExtResource("amb_glint")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

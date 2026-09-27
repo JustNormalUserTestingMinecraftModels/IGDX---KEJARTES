@@ -34,6 +34,11 @@ extends CanvasLayer
 ## real side effect -- following the viewport -- is harmless in the editor,
 ## but it starts hidden there so it never tints the editor's own preview.
 
+## The ambient kit's glint (spec 2026-09-26, amendment 5): every glinting node
+## wears this one shared material, so switching its `motion` here switches
+## every glint in the game at once.
+const GLINT_MATERIAL := preload("res://Scripts/Shaders/glint_material.tres")
+
 ## The full-rect ColorRect carrying the vignette and grain shader.
 @onready var _cover: ColorRect = $Cover
 
@@ -76,6 +81,9 @@ func _ready() -> void:
 		return
 	get_viewport().size_changed.connect(_push_viewport_size)
 	GameSettings.look_layer_changed.connect(_on_setting_changed)
+	GameSettings.ambient_effects_changed.connect(_push_glint.unbind(1))
+	GameSettings.reduce_motion_changed.connect(_push_glint.unbind(1))
+	_push_glint()
 	_push_viewport_size()
 	_refresh(true)
 
@@ -95,6 +103,18 @@ func _push_viewport_size() -> void:
 
 func _on_setting_changed(_enabled: bool) -> void:
 	_refresh()
+
+
+## 1.0 while the glint may sweep -- Efek Suasana on and Kurangi Gerakan off --
+## else 0.0, which parks the band off the art.
+static func glint_motion() -> float:
+	if AmbientKit.is_enabled() and not AmbientKit.is_still():
+		return 1.0
+	return 0.0
+
+
+func _push_glint() -> void:
+	GLINT_MATERIAL.set_shader_parameter("motion", glint_motion())
 
 
 ## Brings the layer to whatever the setting and `suppressed` currently say.

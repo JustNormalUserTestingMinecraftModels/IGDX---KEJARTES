@@ -55,7 +55,7 @@ guidance.
   its first commit — for a shrink, run the dump tool; for a growth, fix the
   code and tell the user.
 
-## 1. Names say what a thing is ⚙
+## 1. Names say what a thing is
 
 - Casing: `snake_case` functions and variables, `PascalCase` classes and
   node names, `CONSTANT_CASE` constants and enum values.
@@ -63,12 +63,14 @@ guidance.
   read as questions: `is_locked`, `has_item`, `can_afford`.
 - No numbered stand-ins (`value2`) and no `data`, `tmp`, `obj`, `x2`.
 - **Legacy stat keys ⚙.** The numbered roster keys — `akademis[123]` and
-  `kepribadian[12]`, in any case, anywhere inside an identifier or a string
-  (so their `target_…`, `base_…` and `…Icon` forms too) — are counted per
-  file in `Scripts/`, `Scenes/` and `tests/`, and no file may gain one. Until
-  the stat-key rename lands, use them only where the file already does, or
-  work through `StudentData`'s fields (`akademis`, `seni_budaya`,
-  `olahraga`, `mood`, `energy`).
+  `kepribadian[12]`, in any case — count anywhere in a file's text:
+  identifiers, strings and comments, in `.gd`, `.tscn` and `.tres` files (so
+  their `target_…`, `base_…` and `…Icon` forms too). They are counted per
+  file in `Scripts/`, `Scenes/` and `tests/`, and no file may gain one:
+  adding one fails even in a file that already has them, and this rule has
+  no ALLOWED list. Until the stat-key rename lands, reach the stats through
+  `StudentData`'s fields (`akademis`, `seni_budaya`, `olahraga`, `mood`,
+  `energy`) instead.
 - **Misspelled names ⚙.** No file or folder name under `Scripts/`,
   `Scenes/`, `Assets/` or `tests/` may carry a stem from `MISSPELLED_STEMS`
   in `ci/clean_code_scan.gd` — the misspellings of *lobby*, *koperasi* and
@@ -149,8 +151,8 @@ tracks every function over 50 by name. Split with "extract function": move a
 step into its own function named for what it does, change no logic.
 
 **Large scripts ⚙.** A script over **1,000** lines is listed in the
-baseline's `LARGE_SCRIPTS` and may not grow by a single line — blank and
-comment lines count too — and no other script may cross 1,000. Put new
+baseline's `LARGE_SCRIPTS` and may not grow past its listed count — blank
+and comment lines count too — and no other script may cross 1,000. Put new
 behaviour in a new script or component, which starts at zero debt.
 
 ## 4. Flat, not nested
@@ -293,8 +295,11 @@ improvement permanent.
 - Methods of inner classes (`class X:`) are not measured; there are none with
   functions today.
 - Property accessors — the `get:` / `set(value):` blocks under a `var` — and
-  class-level lambdas are not measured: no long-function, bare-number or
-  duplicate count reads them.
+  class-level lambdas are not functions to the ratchet: no long-function,
+  bare-number or duplicate count reads them, and their parameters are not
+  counted as untyped. They are still part of the script: an untyped `var`
+  declared inside one counts toward the script's untyped total, and their
+  lines count toward its length (large scripts).
 - Lambda signatures (`func(...)`) are not counted by the untyped
   measurement; a lambda's body counts toward the enclosing function's lines
   and bare numbers.

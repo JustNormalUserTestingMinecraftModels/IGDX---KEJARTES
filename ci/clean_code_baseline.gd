@@ -72,7 +72,6 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/CutScene/HintLabel.gd": 3,
 	"res://Scripts/Debug/DebugManager.gd": 185,
 	"res://Scripts/Debug/EndGameRehearsal.gd": 2,
-	"res://Scripts/EndGame/RunResult.gd": 2,
 	"res://Scripts/GameSettings.gd": 2,
 	"res://Scripts/GameState.gd": 9,
 	"res://Scripts/Inventory/ApplyItemScreen.gd": 4,

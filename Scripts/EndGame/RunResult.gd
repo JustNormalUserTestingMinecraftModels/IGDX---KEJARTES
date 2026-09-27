@@ -79,6 +79,14 @@ const GRADE_CAPTIONS := {
 	"D": "Belum berhasil. Mereka masih menunggumu.",
 }
 
+## The first-run tutorial flags a beaten game resets, by the script that owns
+## them as static vars. StudentList's walkthrough flag once pointed at Lobby.gd,
+## which has none, and the old silent guard hid it.
+const TUTORIAL_FLAGS: Dictionary[String, PackedStringArray] = {
+	"res://Scripts/AturJadwal/AturJadwal.gd": ["tutorial_phase1_done", "tutorial_phase3_done"],
+	"res://Scripts/StudentList/StudentList.gd": ["tutorial_shown"],
+}
+
 var _grade_text: String = "D"
 var _money_row: Control = null
 var _exiting: bool = false
@@ -286,14 +294,19 @@ func _apply_progression() -> String:
 		GameState.grade8_student_ids.clear()
 		GameState.lobby_tutorial_completed = false
 
-		# Tutorial flags, carried over from the now-deleted SemesterEnd's old grade-7
-		# full-restart branch (see Scripts/CutScene/CutScene.gd for the
-		# same pattern still in use there).
-		var AturJadwalScript = load("res://Scripts/AturJadwal/AturJadwal.gd")
-		if AturJadwalScript and "tutorial_phase1_done" in AturJadwalScript:
-			AturJadwalScript.tutorial_phase1_done = false
-			AturJadwalScript.tutorial_phase3_done = false
-		var LobbyScript = load("res://Scripts/Lobby/Lobby.gd")
-		if LobbyScript and "tutorial_shown" in LobbyScript:
-			LobbyScript.tutorial_shown = false
+		# A beaten game replays the first-run tutorials.
+		for path: String in TUTORIAL_FLAGS:
+			for flag: String in TUTORIAL_FLAGS[path]:
+				_reset_static_flag(path, flag)
 		return "res://Scenes/MainMenu/MainMenu.tscn"
+
+
+## Sets the static bool `flag` on the script at `path` back to false. The
+## screens that own the tutorial flags have no class_name, so they are reached
+## by path; a script or flag that is not there is an error, never a silent skip.
+static func _reset_static_flag(path: String, flag: String) -> void:
+	var script := load(path) as GDScript
+	if script == null or not flag in script:
+		push_error("RunResult: no static %s on %s to reset" % [flag, path])
+		return
+	script.set(flag, false)

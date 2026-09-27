@@ -290,7 +290,7 @@ func test_progression_delegates_roster_reset_to_gamestate() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("reset_roster_for_new_grade"),
 		"the grade-advance branch must call GameState.reset_roster_for_new_grade()")
-	assert_false(src.contains("student[\"kepribadian1\"] = 80.0"),
+	assert_false(src.contains("student[\"mood\"] = 80.0"),
 		"the inline mood/energy reset must move into GameState")
 
 

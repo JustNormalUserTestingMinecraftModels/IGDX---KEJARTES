@@ -257,6 +257,19 @@ func test_the_preview_hangs_off_the_current_scene_and_closes_itself() -> void:
 	assert_true(close.contains("_week_report_canvas = null"), "and forgets it")
 
 
+## The stat editor reads and writes StudentData through Object.get()/set() on
+## STAT_FIELDS' names, where a misspelt name silently does nothing; pin each
+## one to a real StudentData property. Loading the script does not run it.
+func test_stat_editor_fields_are_student_data_properties() -> void:
+	var consts: Dictionary = (load(_SCRIPT_PATH) as GDScript).get_script_constant_map()
+	assert_true(consts.has("STAT_FIELDS"), "STAT_FIELDS is gone")
+	var props := {}
+	for p: Dictionary in StudentData.new().get_property_list():
+		props[p["name"]] = true
+	for field: String in consts.get("STAT_FIELDS", PackedStringArray()):
+		assert_true(props.has(field), "not a StudentData property: " + field)
+
+
 func test_a_second_press_while_open_does_not_stack_another() -> void:
 	var body := _function_body(_source(), "_open_week_report_preview")
 	var guard_at := body.find("if is_instance_valid(_week_report_canvas):")

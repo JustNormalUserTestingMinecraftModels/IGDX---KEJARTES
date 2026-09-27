@@ -12,9 +12,9 @@ func suite_name() -> String:
 
 const _ENTRY := {
 	"id": 7, "name": "Citra",
-	"akademis1": 41.0, "akademis2": 52.0, "akademis3": 63.0,
-	"kepribadian1": 70.0, "kepribadian2": 30.0,
-	"target_akademis1": 55.0, "target_akademis2": 60.0, "target_akademis3": 65.0,
+	"akademis": 41.0, "seni_budaya": 52.0, "olahraga": 63.0,
+	"mood": 70.0, "energy": 30.0,
+	"target_akademis": 55.0, "target_seni_budaya": 60.0, "target_olahraga": 65.0,
 	"quirk": "Penyendiri", "hobby_category": "Akademik",
 }
 
@@ -24,11 +24,11 @@ func test_single_conversion_copies_stats_and_targets() -> void:
 	assert_eq(sd.id, 7)
 	assert_eq(sd.student_name, "Citra")
 	assert_eq(sd.akademis, 41.0)
-	assert_eq(sd.seni_budaya, 52.0, "akademis2 is seni_budaya")
-	assert_eq(sd.olahraga, 63.0, "akademis3 is olahraga")
-	assert_eq(sd.mood, 70.0, "kepribadian1 is mood")
-	assert_eq(sd.energy, 30.0, "kepribadian2 is energy")
-	assert_eq(sd.target_akademis2, 60.0, "target_akademis2 is the SENI target")
+	assert_eq(sd.seni_budaya, 52.0, "seni_budaya copies across")
+	assert_eq(sd.olahraga, 63.0, "olahraga copies across")
+	assert_eq(sd.mood, 70.0, "mood copies across")
+	assert_eq(sd.energy, 30.0, "energy copies across")
+	assert_eq(sd.target_seni_budaya, 60.0, "target_seni_budaya is the SENI target")
 	assert_eq(sd.quirk, "Penyendiri")
 	assert_eq(sd.specialty_category, "Akademis", "Akademik normalises to Akademis")
 
@@ -42,8 +42,8 @@ func test_array_conversion_matches_the_single_one() -> void:
 	var single: StudentData = GameState.student_data_from_dict(_ENTRY)
 	assert_eq(from_array.size(), 1)
 	for field in ["id", "student_name", "akademis", "seni_budaya", "olahraga",
-			"mood", "energy", "target_akademis1", "target_akademis2",
-			"target_akademis3", "quirk", "specialty_category"]:
+			"mood", "energy", "target_akademis", "target_seni_budaya",
+			"target_olahraga", "quirk", "specialty_category"]:
 		assert_eq(from_array[0].get(field), single.get(field), "field " + field)
 
 

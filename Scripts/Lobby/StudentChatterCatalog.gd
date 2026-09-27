@@ -6,8 +6,8 @@ extends RefCounted
 ## student-chatter spec). A student's trait pool is their personality's
 ## lines plus their quirk's; when their mood or energy is extreme,
 ## StudentChatterPicker sometimes draws from a STATE_LINES pool instead.
-## Reads approved_students dictionaries only: kepribadian1 is MOOD and
-## kepribadian2 is ENERGY (StudentData.mood / .energy across the bridge).
+## Reads approved_students dictionaries only: their `mood` and `energy`
+## keys, StudentData.mood / .energy across the bridge.
 ## Every line is <= MAX_LINE_CHARS and fits three lines of the bubble
 ## (tests/test_student_chatter.gd measures it with the real font).
 
@@ -189,10 +189,10 @@ static func personality_of(student: Dictionary) -> String:
 
 
 ## LELAH / BETE / SENANG, or &"" for a student feeling ordinary. Energy
-## (kepribadian2) is checked first: exhaustion is the more urgent read.
+## is checked first: exhaustion is the more urgent read.
 static func state_for(student: Dictionary) -> StringName:
-	var mood := float(student.get("kepribadian1", 50))
-	var energy := float(student.get("kepribadian2", 50))
+	var mood := float(student.get("mood", 50))
+	var energy := float(student.get("energy", 50))
 	if energy <= LELAH_ENERGY_MAX:
 		return &"LELAH"
 	if mood <= BETE_MOOD_MAX:

@@ -17,11 +17,11 @@ extends RefCounted
 ##   1  no target crossed and the skills fell overall -- "Besok lebih baik!"
 
 ## The three skills, keyed as the stat log keys them, with the StudentData
-## field holding each one's target. The naming trap: akademis2 is Seni.
+## field holding each one's target.
 const TARGET_FIELD := {
-	"akademis": "target_akademis1",
-	"seni_budaya": "target_akademis2",
-	"olahraga": "target_akademis3",
+	"akademis": "target_akademis",
+	"seni_budaya": "target_seni_budaya",
+	"olahraga": "target_olahraga",
 }
 ## The word the popup prints for each skill.
 const SKILL_WORD := {

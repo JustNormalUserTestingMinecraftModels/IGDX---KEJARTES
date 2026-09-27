@@ -162,7 +162,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Akademis1" type="ProgressBar" parent="BGStat" unique_id=1583002621]
+[node name="Akademis" type="ProgressBar" parent="BGStat" unique_id=1583002621]
 layout_mode = 0
 offset_left = 680.0
 offset_top = 112.0
@@ -177,7 +177,7 @@ value_format = "%d%%"
 pop_on_change = true
 value_rides_fill = true
 
-[node name="Frame" type="Panel" parent="BGStat/Akademis1" unique_id=1741231224]
+[node name="Frame" type="Panel" parent="BGStat/Akademis" unique_id=1741231224]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -192,7 +192,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
-[node name="Gloss" type="Panel" parent="BGStat/Akademis1" unique_id=144363718]
+[node name="Gloss" type="Panel" parent="BGStat/Akademis" unique_id=144363718]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 10.0
@@ -201,7 +201,7 @@ offset_bottom = 15.0
 mouse_filter = 2
 theme_type_variation = &"StatBarGloss"
 
-[node name="ValueLabel" type="Label" parent="BGStat/Akademis1" unique_id=684455384]
+[node name="ValueLabel" type="Label" parent="BGStat/Akademis" unique_id=684455384]
 layout_mode = 0
 offset_top = 8.0
 offset_bottom = 8.0
@@ -210,7 +210,7 @@ text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Flag" type="Label" parent="BGStat/Akademis1" unique_id=943119441]
+[node name="Flag" type="Label" parent="BGStat/Akademis" unique_id=943119441]
 visible = false
 layout_mode = 0
 offset_left = 318.0
@@ -223,7 +223,7 @@ text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Akademis2" type="ProgressBar" parent="BGStat" unique_id=1719266399]
+[node name="SeniBudaya" type="ProgressBar" parent="BGStat" unique_id=1719266399]
 layout_mode = 0
 offset_left = 680.0
 offset_top = 238.0
@@ -239,7 +239,7 @@ value_format = "%d%%"
 pop_on_change = true
 value_rides_fill = true
 
-[node name="Frame" type="Panel" parent="BGStat/Akademis2" unique_id=940661408]
+[node name="Frame" type="Panel" parent="BGStat/SeniBudaya" unique_id=940661408]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -254,7 +254,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
-[node name="Gloss" type="Panel" parent="BGStat/Akademis2" unique_id=612464952]
+[node name="Gloss" type="Panel" parent="BGStat/SeniBudaya" unique_id=612464952]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 10.0
@@ -263,7 +263,7 @@ offset_bottom = 15.0
 mouse_filter = 2
 theme_type_variation = &"StatBarGloss"
 
-[node name="ValueLabel" type="Label" parent="BGStat/Akademis2" unique_id=1676429292]
+[node name="ValueLabel" type="Label" parent="BGStat/SeniBudaya" unique_id=1676429292]
 layout_mode = 0
 offset_top = 8.0
 offset_bottom = 8.0
@@ -272,7 +272,7 @@ text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Flag" type="Label" parent="BGStat/Akademis2" unique_id=1941370096]
+[node name="Flag" type="Label" parent="BGStat/SeniBudaya" unique_id=1941370096]
 visible = false
 layout_mode = 0
 offset_left = 318.0
@@ -285,7 +285,7 @@ text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Akademis3" type="ProgressBar" parent="BGStat" unique_id=648612192]
+[node name="Olahraga" type="ProgressBar" parent="BGStat" unique_id=648612192]
 layout_mode = 0
 offset_left = 680.0
 offset_top = 364.0
@@ -301,7 +301,7 @@ value_format = "%d%%"
 pop_on_change = true
 value_rides_fill = true
 
-[node name="Frame" type="Panel" parent="BGStat/Akademis3" unique_id=1323238029]
+[node name="Frame" type="Panel" parent="BGStat/Olahraga" unique_id=1323238029]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -316,7 +316,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
-[node name="Gloss" type="Panel" parent="BGStat/Akademis3" unique_id=1273914549]
+[node name="Gloss" type="Panel" parent="BGStat/Olahraga" unique_id=1273914549]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 10.0
@@ -325,7 +325,7 @@ offset_bottom = 15.0
 mouse_filter = 2
 theme_type_variation = &"StatBarGloss"
 
-[node name="ValueLabel" type="Label" parent="BGStat/Akademis3" unique_id=1385557803]
+[node name="ValueLabel" type="Label" parent="BGStat/Olahraga" unique_id=1385557803]
 layout_mode = 0
 offset_top = 8.0
 offset_bottom = 8.0
@@ -334,7 +334,7 @@ text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Flag" type="Label" parent="BGStat/Akademis3" unique_id=1098960879]
+[node name="Flag" type="Label" parent="BGStat/Olahraga" unique_id=1098960879]
 visible = false
 layout_mode = 0
 offset_left = 318.0
@@ -347,7 +347,7 @@ text = "perlu"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Kepribadian1" type="ProgressBar" parent="BGStat" unique_id=1214081682]
+[node name="Mood" type="ProgressBar" parent="BGStat" unique_id=1214081682]
 layout_mode = 0
 offset_left = 680.0
 offset_top = 616.0
@@ -363,7 +363,7 @@ value_format = "%d%%"
 pop_on_change = true
 value_rides_fill = true
 
-[node name="Frame" type="Panel" parent="BGStat/Kepribadian1" unique_id=1427027390]
+[node name="Frame" type="Panel" parent="BGStat/Mood" unique_id=1427027390]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -378,7 +378,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
-[node name="Gloss" type="Panel" parent="BGStat/Kepribadian1" unique_id=1698404190]
+[node name="Gloss" type="Panel" parent="BGStat/Mood" unique_id=1698404190]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 10.0
@@ -387,7 +387,7 @@ offset_bottom = 15.0
 mouse_filter = 2
 theme_type_variation = &"StatBarGloss"
 
-[node name="ValueLabel" type="Label" parent="BGStat/Kepribadian1" unique_id=1157659437]
+[node name="ValueLabel" type="Label" parent="BGStat/Mood" unique_id=1157659437]
 layout_mode = 0
 offset_top = 8.0
 offset_bottom = 8.0
@@ -396,7 +396,7 @@ text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Flag" type="Label" parent="BGStat/Kepribadian1" unique_id=1796763281]
+[node name="Flag" type="Label" parent="BGStat/Mood" unique_id=1796763281]
 visible = false
 layout_mode = 0
 offset_left = 318.0
@@ -409,7 +409,7 @@ text = "lelah"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Kepribadian2" type="ProgressBar" parent="BGStat" unique_id=1170685406]
+[node name="Energy" type="ProgressBar" parent="BGStat" unique_id=1170685406]
 layout_mode = 0
 offset_left = 680.0
 offset_top = 490.0
@@ -425,7 +425,7 @@ value_format = "%d%%"
 pop_on_change = true
 value_rides_fill = true
 
-[node name="Frame" type="Panel" parent="BGStat/Kepribadian2" unique_id=147577628]
+[node name="Frame" type="Panel" parent="BGStat/Energy" unique_id=147577628]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -440,7 +440,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"StatBarFrame"
 
-[node name="Gloss" type="Panel" parent="BGStat/Kepribadian2" unique_id=1696362753]
+[node name="Gloss" type="Panel" parent="BGStat/Energy" unique_id=1696362753]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 10.0
@@ -449,7 +449,7 @@ offset_bottom = 15.0
 mouse_filter = 2
 theme_type_variation = &"StatBarGloss"
 
-[node name="ValueLabel" type="Label" parent="BGStat/Kepribadian2" unique_id=2145646865]
+[node name="ValueLabel" type="Label" parent="BGStat/Energy" unique_id=2145646865]
 layout_mode = 0
 offset_top = 8.0
 offset_bottom = 8.0
@@ -458,7 +458,7 @@ text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Flag" type="Label" parent="BGStat/Kepribadian2" unique_id=1389478435]
+[node name="Flag" type="Label" parent="BGStat/Energy" unique_id=1389478435]
 visible = false
 layout_mode = 0
 offset_left = 318.0
@@ -471,7 +471,7 @@ text = "lelah"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="IconAkademis1" type="TextureRect" parent="BGStat" unique_id=151779984]
+[node name="IconAkademis" type="TextureRect" parent="BGStat" unique_id=151779984]
 layout_mode = 0
 offset_left = 554.0
 offset_top = 103.0
@@ -482,7 +482,7 @@ texture = ExtResource("13_icon_akademis")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="IconAkademis2" type="TextureRect" parent="BGStat" unique_id=1792061513]
+[node name="IconSeniBudaya" type="TextureRect" parent="BGStat" unique_id=1792061513]
 layout_mode = 0
 offset_left = 554.0
 offset_top = 229.0
@@ -493,7 +493,7 @@ texture = ExtResource("14_icon_seni")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="IconAkademis3" type="TextureRect" parent="BGStat" unique_id=679578632]
+[node name="IconOlahraga" type="TextureRect" parent="BGStat" unique_id=679578632]
 layout_mode = 0
 offset_left = 554.0
 offset_top = 355.0
@@ -504,7 +504,7 @@ texture = ExtResource("15_icon_olahraga")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="IconKepribadian2" type="TextureRect" parent="BGStat" unique_id=1377394430]
+[node name="IconEnergy" type="TextureRect" parent="BGStat" unique_id=1377394430]
 layout_mode = 0
 offset_left = 554.0
 offset_top = 481.0
@@ -515,7 +515,7 @@ texture = ExtResource("16_icon_energy")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="IconKepribadian1" type="TextureRect" parent="BGStat" unique_id=1498132207]
+[node name="IconMood" type="TextureRect" parent="BGStat" unique_id=1498132207]
 layout_mode = 0
 offset_left = 554.0
 offset_top = 607.0

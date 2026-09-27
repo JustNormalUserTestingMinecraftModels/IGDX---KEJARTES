@@ -15,7 +15,7 @@ func suite_name() -> String:
 
 ## The five bars a student card shows, in card order.
 const EXPECTED_BARS: Array[String] = [
-	"Kepribadian1", "Kepribadian2", "Akademis1", "Akademis2", "Akademis3",
+	"Mood", "Energy", "Akademis", "SeniBudaya", "Olahraga",
 ]
 
 
@@ -42,22 +42,22 @@ func test_every_bar_carries_every_field() -> void:
 func test_needs_and_skills_are_labelled_apart() -> void:
 	# Mood and Energy are needs; the three skills are stats. The popup header
 	# prints this word, so a mix-up is visible to the player.
-	assert_eq(StatInfo.BARS["Kepribadian1"]["category_label"], "NEEDS")
-	assert_eq(StatInfo.BARS["Kepribadian2"]["category_label"], "NEEDS")
-	assert_eq(StatInfo.BARS["Akademis1"]["category_label"], "STATS")
-	assert_eq(StatInfo.BARS["Akademis2"]["category_label"], "STATS")
-	assert_eq(StatInfo.BARS["Akademis3"]["category_label"], "STATS")
+	assert_eq(StatInfo.BARS["Mood"]["category_label"], "NEEDS")
+	assert_eq(StatInfo.BARS["Energy"]["category_label"], "NEEDS")
+	assert_eq(StatInfo.BARS["Akademis"]["category_label"], "STATS")
+	assert_eq(StatInfo.BARS["SeniBudaya"]["category_label"], "STATS")
+	assert_eq(StatInfo.BARS["Olahraga"]["category_label"], "STATS")
 
 
 func test_token_categories_match_the_shipped_bar_colours() -> void:
 	# Mood and Energy are not schedule categories, so they borrow the two
 	# accents no skill uses: Istirahat (violet) for Mood, Libur (amber) for
 	# Energy. This is the mapping ReportCard.gd::BAR_CATEGORY shipped with.
-	assert_eq(StatInfo.token_category("Kepribadian1"), "Istirahat")
-	assert_eq(StatInfo.token_category("Kepribadian2"), "Libur")
-	assert_eq(StatInfo.token_category("Akademis1"), "Akademis")
-	assert_eq(StatInfo.token_category("Akademis2"), "SeniBudaya")
-	assert_eq(StatInfo.token_category("Akademis3"), "Olahraga")
+	assert_eq(StatInfo.token_category("Mood"), "Istirahat")
+	assert_eq(StatInfo.token_category("Energy"), "Libur")
+	assert_eq(StatInfo.token_category("Akademis"), "Akademis")
+	assert_eq(StatInfo.token_category("SeniBudaya"), "SeniBudaya")
+	assert_eq(StatInfo.token_category("Olahraga"), "Olahraga")
 
 
 func test_unknown_bar_degrades_instead_of_crashing() -> void:
@@ -69,16 +69,15 @@ func test_unknown_bar_degrades_instead_of_crashing() -> void:
 
 
 func test_value_of_reads_the_gamestate_key_not_the_bar_name() -> void:
-	# The bar is named "Akademis2" but the GameState dictionary key is
-	# "akademis2" and it means seni_budaya. This mismatch is the single most
-	# common source of bugs in this project -- pin it.
+	# The bar is named "SeniBudaya" but the GameState dictionary key is
+	# "seni_budaya": value_of() must read the key, never the bar name.
 	var s_data := {
-		"kepribadian1": 61.0, "kepribadian2": 42.0,
-		"akademis1": 10.0, "akademis2": 20.0, "akademis3": 30.0,
+		"mood": 61.0, "energy": 42.0,
+		"akademis": 10.0, "seni_budaya": 20.0, "olahraga": 30.0,
 	}
-	assert_eq(StatInfo.value_of("Kepribadian1", s_data), 61.0)
-	assert_eq(StatInfo.value_of("Kepribadian2", s_data), 42.0)
-	assert_eq(StatInfo.value_of("Akademis2", s_data), 20.0)
+	assert_eq(StatInfo.value_of("Mood", s_data), 61.0)
+	assert_eq(StatInfo.value_of("Energy", s_data), 42.0)
+	assert_eq(StatInfo.value_of("SeniBudaya", s_data), 20.0)
 
 
 func test_descriptions_are_indonesian_player_facing_copy() -> void:

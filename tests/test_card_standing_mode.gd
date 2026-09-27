@@ -83,9 +83,9 @@ func _student() -> StudentData:
 	s.akademis = 30.0
 	s.seni_budaya = 45.0
 	s.olahraga = 60.0
-	s.target_akademis1 = 60.0
-	s.target_akademis2 = 90.0
-	s.target_akademis3 = 60.0
+	s.target_akademis = 60.0
+	s.target_seni_budaya = 90.0
+	s.target_olahraga = 60.0
 	s.energy = 40.0
 	s.mood = 70.0
 	return s
@@ -104,7 +104,7 @@ func test_current_row_shows_standing_values() -> void:
 	assert_eq(card.name_label.text, "Budi")
 	assert_eq(card.stat_rows[0].value.text, "30/60")
 	assert_eq(card.stat_rows[1].value.text, "45/90",
-		"row 2 is seni, measured against target_akademis2")
+		"row 2 is seni, measured against target_seni_budaya")
 	assert_eq(card.energy_bar.value, 40.0)
 	assert_eq(card.mood_bar.value, 70.0)
 	assert_false(card.energy_delta_chevron.visible, "nothing moved yet")

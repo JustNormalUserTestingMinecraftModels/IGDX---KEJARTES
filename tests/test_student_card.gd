@@ -120,24 +120,24 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
-## Kepribadian1 and Kepribadian2 are mood and energy. They were authored
-## as "Istirahat" and "Libur" and so wore the rest and holiday accents,
-## which held only while a category was nothing but a colour. Once each
-## category gained its own motif they needed their own identity, or mood
-## would have been stamped with the rest motif and energy the holiday one.
+## The Mood and Energy bars were authored as "Istirahat" and "Libur" and so
+## wore the rest and holiday accents, which held only while a category was
+## nothing but a colour. Once each category gained its own motif they needed
+## their own identity, or mood would have been stamped with the rest motif
+## and energy the holiday one.
 ##
-## Which is which is settled by StudentCardView._STAT_ICONS, where
-## Kepribadian1 pairs with stat_mood.png and Kepribadian2 with
-## stat_energy.png -- and by build_stat_bars(), which maps them straight
-## through. populate() used to set the two crossed over; that contradiction
-## was deleted rather than pinned here.
+## Which is which is settled by StudentCardView._STAT_ICONS, where Mood
+## pairs with stat_mood.png and Energy with stat_energy.png -- and by
+## build_stat_bars(), which maps them straight through. populate() used to
+## set the two crossed over; that contradiction was deleted rather than
+## pinned here.
 func test_stat_bars_are_statbars_with_a_category() -> void:
 	var expected := {
-		"Kepribadian1": "Mood",
-		"Kepribadian2": "Energy",
-		"Akademis1": "Akademis",
-		"Akademis2": "SeniBudaya",
-		"Akademis3": "Olahraga",
+		"Mood": "Mood",
+		"Energy": "Energy",
+		"Akademis": "Akademis",
+		"SeniBudaya": "SeniBudaya",
+		"Olahraga": "Olahraga",
 	}
 	for i in range(1, 7):
 		for bar_name in expected.keys():
@@ -269,7 +269,7 @@ func test_tutorial_target_node_paths_are_unchanged() -> void:
 	## The tutorial steps target node paths by string. The extraction must
 	## not move any of them.
 	var scene := (load("res://Scenes/StudentCard/StudentCard.tscn") as PackedScene).instantiate()
-	for path in ["KertasMurid1/Kepribadian1", "KertasMurid1/KutuBuku"]:
+	for path in ["KertasMurid1/Mood", "KertasMurid1/KutuBuku"]:
 		assert_true(scene.get_node_or_null(path) != null,
 			"tutorial target must still resolve: " + path)
 	scene.free()

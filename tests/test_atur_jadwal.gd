@@ -250,11 +250,11 @@ func test_popup_has_batal_and_a_dimmed_pilih() -> void:
 
 func test_bg_stat_bars_are_statbars() -> void:
 	var expected := {
-		"BGStat/Akademis1": "Akademis",
-		"BGStat/Akademis2": "SeniBudaya",
-		"BGStat/Akademis3": "Olahraga",
-		"BGStat/Kepribadian1": "Istirahat",
-		"BGStat/Kepribadian2": "Libur",
+		"BGStat/Akademis": "Akademis",
+		"BGStat/SeniBudaya": "SeniBudaya",
+		"BGStat/Olahraga": "Olahraga",
+		"BGStat/Mood": "Istirahat",
+		"BGStat/Energy": "Libur",
 	}
 	for p in expected.keys():
 		var bar := _screen.get_node_or_null(p)
@@ -447,11 +447,11 @@ func test_board_fill_continues_the_board_past_the_art() -> void:
 ## within 5px of it everywhere and is what a container can express.
 func test_stat_rows_sit_on_the_mockup_grid() -> void:
 	var expected := {
-		"Akademis1": 112.0,
-		"Akademis2": 238.0,
-		"Akademis3": 364.0,
-		"Kepribadian2": 490.0,
-		"Kepribadian1": 616.0,
+		"Akademis": 112.0,
+		"SeniBudaya": 238.0,
+		"Olahraga": 364.0,
+		"Energy": 490.0,
+		"Mood": 616.0,
 	}
 	for bar_name in expected:
 		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as Control
@@ -463,17 +463,16 @@ func test_stat_rows_sit_on_the_mockup_grid() -> void:
 		assert_eq(bar.offset_right, 1004.0, "%s pill right" % bar_name)
 
 
-## kepribadian1 is MOOD and kepribadian2 is ENERGY, but the mockup's
-## fourth row is the lightning glyph and its fifth is the smiley. The
-## visual order is therefore swapped from the node numbering -- getting it
-## backwards puts the lightning bolt on the mood bar.
+## The mockup's fourth row is the lightning glyph (Energy) and its fifth
+## the smiley (Mood) -- getting it backwards puts the lightning bolt on the
+## mood bar.
 func test_each_row_carries_its_mockup_icon() -> void:
 	var expected := {
-		"IconAkademis1": "res://Assets/Images/StudentCard/stat_akademis.png",
-		"IconAkademis2": "res://Assets/Images/StudentCard/stat_senibudaya.png",
-		"IconAkademis3": "res://Assets/Images/StudentCard/stat_olahraga.png",
-		"IconKepribadian2": "res://Assets/Images/StudentCard/stat_energy.png",
-		"IconKepribadian1": "res://Assets/Images/StudentCard/stat_mood.png",
+		"IconAkademis": "res://Assets/Images/StudentCard/stat_akademis.png",
+		"IconSeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
+		"IconOlahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
+		"IconEnergy": "res://Assets/Images/StudentCard/stat_energy.png",
+		"IconMood": "res://Assets/Images/StudentCard/stat_mood.png",
 	}
 	for icon_name in expected:
 		var icon := _screen.get_node_or_null(
@@ -484,11 +483,11 @@ func test_each_row_carries_its_mockup_icon() -> void:
 			"%s is drawing the wrong glyph" % icon_name)
 
 	var pairs := {
-		"IconAkademis1": "Akademis1",
-		"IconAkademis2": "Akademis2",
-		"IconAkademis3": "Akademis3",
-		"IconKepribadian2": "Kepribadian2",
-		"IconKepribadian1": "Kepribadian1",
+		"IconAkademis": "Akademis",
+		"IconSeniBudaya": "SeniBudaya",
+		"IconOlahraga": "Olahraga",
+		"IconEnergy": "Energy",
+		"IconMood": "Mood",
 	}
 	for icon_name in pairs:
 		var icon := _screen.get_node_or_null("BGStat/%s" % icon_name) as Control
@@ -821,8 +820,8 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 ## with the one authored in the scene: two overlapping labels, and the
 ## authored one frozen at "0%" forever. It must adopt instead.
 func test_each_stat_bar_has_exactly_one_value_label() -> void:
-	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
-		"Kepribadian1", "Kepribadian2"]
+	var bar_names := ["Akademis", "SeniBudaya", "Olahraga",
+		"Mood", "Energy"]
 	for bar_name in bar_names:
 		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as StatBar
 		assert_true(bar != null, "BGStat/%s is not a StatBar" % bar_name)
@@ -844,8 +843,8 @@ func test_each_stat_bar_has_exactly_one_value_label() -> void:
 ## of the fill instead, whose dark text sits on its own cream ground and so
 ## reads over anything behind it.
 func test_stat_bar_value_labels_are_cream_pills() -> void:
-	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
-		"Kepribadian1", "Kepribadian2"]
+	var bar_names := ["Akademis", "SeniBudaya", "Olahraga",
+		"Mood", "Energy"]
 	for bar_name in bar_names:
 		var label := _screen.get_node_or_null(
 			"BGStat/%s/ValueLabel" % bar_name) as Label
@@ -862,8 +861,8 @@ func test_stat_bar_value_labels_are_cream_pills() -> void:
 ## A schedule edit must be visible on the bar it moved, and switching
 ## students must bring the five rows in as a stagger rather than a snap.
 func test_stat_bars_are_animated_on_change_and_on_student_switch() -> void:
-	var bar_names := ["Akademis1", "Akademis2", "Akademis3",
-		"Kepribadian1", "Kepribadian2"]
+	var bar_names := ["Akademis", "SeniBudaya", "Olahraga",
+		"Mood", "Energy"]
 	for bar_name in bar_names:
 		var bar := _screen.get_node_or_null("BGStat/%s" % bar_name) as StatBar
 		assert_true(bar != null, "BGStat/%s is not a StatBar" % bar_name)
@@ -921,16 +920,15 @@ func test_the_stagger_does_not_move_the_final_icons() -> void:
 			"_stagger_stat_rows must not write %s -- the icon grid is final"
 			% forbidden)
 
-	# The mockup's visual top-to-bottom order is the reverse of the node
-	# numbering here: Kepribadian2 (energy, lightning) sits above
-	# Kepribadian1 (mood, smiley). Pin the order so a future edit can't
+	# The mockup's visual top-to-bottom order puts Energy (lightning)
+	# above Mood (smiley). Pin the order so a future edit can't
 	# silently swap them and make the stagger run out of order down the screen.
-	var kp2_index := body.find("Kepribadian2")
-	var kp1_index := body.find("Kepribadian1")
-	assert_true(kp2_index != -1 and kp1_index != -1,
-		"_stagger_stat_rows must reference both Kepribadian1 and Kepribadian2")
-	assert_true(kp2_index < kp1_index,
-		"Kepribadian2 (energy) must be staggered in before Kepribadian1 (mood) to match the mockup's visual order")
+	var energy_index := body.find("Energy")
+	var mood_index := body.find("Mood")
+	assert_true(energy_index != -1 and mood_index != -1,
+		"_stagger_stat_rows must reference both Mood and Energy")
+	assert_true(energy_index < mood_index,
+		"Energy must be staggered in before Mood to match the mockup's visual order")
 
 
 ## The five bars used to tint via self_modulate, which multiplies the WHOLE
@@ -942,11 +940,11 @@ func test_the_stagger_does_not_move_the_final_icons() -> void:
 ## embossed StatBarInset* family, which only this screen wears.
 func test_bg_stat_bars_use_their_category_variation_and_stay_untinted() -> void:
 	var expected := {
-		"BGStat/Akademis1": &"StatBarInsetAkademis",
-		"BGStat/Akademis2": &"StatBarInsetSeniBudaya",
-		"BGStat/Akademis3": &"StatBarInsetOlahraga",
-		"BGStat/Kepribadian1": &"StatBarInsetIstirahat",
-		"BGStat/Kepribadian2": &"StatBarInsetLibur",
+		"BGStat/Akademis": &"StatBarInsetAkademis",
+		"BGStat/SeniBudaya": &"StatBarInsetSeniBudaya",
+		"BGStat/Olahraga": &"StatBarInsetOlahraga",
+		"BGStat/Mood": &"StatBarInsetIstirahat",
+		"BGStat/Energy": &"StatBarInsetLibur",
 	}
 	for p in expected.keys():
 		var bar := _screen.get_node_or_null(p) as StatBar
@@ -963,11 +961,11 @@ func test_bg_stat_bars_use_their_category_variation_and_stay_untinted() -> void:
 
 ## Bar node -> [category key, the student-dictionary stat it shows].
 const _EMBOSSED_BARS := {
-	"BGStat/Akademis1": ["Akademis", "akademis1"],
-	"BGStat/Akademis2": ["SeniBudaya", "akademis2"],
-	"BGStat/Akademis3": ["Olahraga", "akademis3"],
-	"BGStat/Kepribadian1": ["Istirahat", "kepribadian1"],
-	"BGStat/Kepribadian2": ["Libur", "kepribadian2"],
+	"BGStat/Akademis": ["Akademis", "akademis"],
+	"BGStat/SeniBudaya": ["SeniBudaya", "seni_budaya"],
+	"BGStat/Olahraga": ["Olahraga", "olahraga"],
+	"BGStat/Mood": ["Istirahat", "mood"],
+	"BGStat/Energy": ["Libur", "energy"],
 }
 
 
@@ -1011,8 +1009,8 @@ func test_each_stat_bar_is_embossed_with_a_pill_and_a_flag() -> void:
 ## bar puts its pill further right, the pill always stays inside the bar, and
 ## the gloss line spans the fill minus its insets.
 func test_the_value_pill_and_gloss_follow_the_fill() -> void:
-	var bar := _screen.get_node_or_null("BGStat/Akademis1") as StatBar
-	assert_true(bar != null, "Akademis1 is gone")
+	var bar := _screen.get_node_or_null("BGStat/Akademis") as StatBar
+	assert_true(bar != null, "Akademis is gone")
 	if bar == null:
 		return
 	var pill := bar.get_node("ValueLabel") as Label
@@ -1033,13 +1031,13 @@ func test_the_value_pill_and_gloss_follow_the_fill() -> void:
 	assert_true(pill.position.x + pill.size.x <= bar.size.x + 0.5, "a full bar still keeps its pill inside")
 
 
-## The mood row (Kepribadian1, under the mood icon) shows kepribadian1, and
-## the energy row (Kepribadian2, under the bolt) shows kepribadian2 --
-## GameState.gd's own naming. The two feeds were crossed until 2026-09-24.
+## The mood row (the Mood bar, under the mood icon) is fed the student's
+## mood, and the energy row (the Energy bar, under the bolt) their energy.
+## The two feeds were crossed until 2026-09-24.
 func test_the_mood_and_energy_rows_show_their_own_need() -> void:
 	var icons := {
-		"BGStat/IconKepribadian1": "stat_mood.png",
-		"BGStat/IconKepribadian2": "stat_energy.png",
+		"BGStat/IconMood": "stat_mood.png",
+		"BGStat/IconEnergy": "stat_energy.png",
 	}
 	for p in icons:
 		var icon := _screen.get_node_or_null(p) as TextureRect
@@ -1047,13 +1045,17 @@ func test_the_mood_and_energy_rows_show_their_own_need() -> void:
 			and icon.texture.resource_path.ends_with(icons[p]),
 			"%s must show %s" % [p, icons[p]])
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("_feed_stat_bar(kp1_bar, projected[\"kepribadian1\"]"),
-		"the mood row must be fed kepribadian1 (mood)")
-	assert_true(src.contains("_feed_stat_bar(kp2_bar, projected[\"kepribadian2\"]"),
-		"the energy row must be fed kepribadian2 (energy)")
-	assert_true(src.contains("\"kepribadian1\": student.get(\"kepribadian1\", 50.0) - _compute_total_loss(\"mood_cost\")"),
+	assert_true(src.contains("@onready var mood_bar = $BGStat/Mood\n"),
+		"mood_bar must be the Mood row's bar")
+	assert_true(src.contains("@onready var energy_bar = $BGStat/Energy\n"),
+		"energy_bar must be the Energy row's bar")
+	assert_true(src.contains("_feed_stat_bar(mood_bar, projected[\"mood\"]"),
+		"the mood row must be fed the projected mood")
+	assert_true(src.contains("_feed_stat_bar(energy_bar, projected[\"energy\"]"),
+		"the energy row must be fed the projected energy")
+	assert_true(src.contains("\"mood\": student.get(\"mood\", 50.0) - _compute_total_loss(\"mood_cost\")"),
 		"mood is projected with the week's mood cost")
-	assert_true(src.contains("\"kepribadian2\": student.get(\"kepribadian2\", 50.0) - _compute_total_loss(\"energy_cost\")"),
+	assert_true(src.contains("\"energy\": student.get(\"energy\", 50.0) - _compute_total_loss(\"energy_cost\")"),
 		"energy is projected with the week's energy cost")
 
 

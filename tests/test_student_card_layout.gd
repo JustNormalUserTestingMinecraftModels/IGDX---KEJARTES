@@ -102,11 +102,11 @@ func test_cards_use_the_new_background() -> void:
 ## The painted tracks are at fixed pixel positions in the card art, so the
 ## fills must land exactly on them.
 const _EXPECTED_PILLS := {
-	"Akademis1": Rect2(284, 763, 211, 67),
-	"Akademis2": Rect2(284, 888, 211, 67),
-	"Akademis3": Rect2(284, 1014, 211, 67),
-	"Kepribadian1": Rect2(716, 762, 211, 67),
-	"Kepribadian2": Rect2(717, 888, 211, 67),
+	"Akademis": Rect2(284, 763, 211, 67),
+	"SeniBudaya": Rect2(284, 888, 211, 67),
+	"Olahraga": Rect2(284, 1014, 211, 67),
+	"Mood": Rect2(716, 762, 211, 67),
+	"Energy": Rect2(717, 888, 211, 67),
 }
 
 
@@ -210,14 +210,15 @@ func test_icon_clusters_exist_and_meet_the_touch_target() -> void:
 		"icon cluster is %d px, below the %d px minimum"
 			% [int(icon_size), tokens.touch_target_min])
 
-	# Scoped to the _STAT_ICONS block specifically -- "Akademis1": also
-	# appears in PILL_RECTS and build_stat_bars' values dict, so a bare
-	# src.contains() would still pass even if _STAT_ICONS lost an entry.
+	# Scoped to the _STAT_ICONS block specifically -- "Akademis": also
+	# appears in PILL_RECTS, build_stat_bars' values dict and _MINAT_NAMES,
+	# so a bare src.contains() would still pass even if _STAT_ICONS lost an
+	# entry.
 	var stat_icons_start := src.find("const _STAT_ICONS")
 	assert_true(stat_icons_start != -1, "_STAT_ICONS constant must exist")
 	var stat_icons_end := src.find("}", stat_icons_start)
 	var stat_icons_block := src.substr(stat_icons_start, stat_icons_end - stat_icons_start)
-	for bar_name in ["Akademis1", "Akademis2", "Akademis3", "Kepribadian1", "Kepribadian2"]:
+	for bar_name in ["Akademis", "SeniBudaya", "Olahraga", "Mood", "Energy"]:
 		assert_true(stat_icons_block.contains('"%s": "stat_' % bar_name),
 			"_STAT_ICONS must map an icon for " + bar_name)
 
@@ -275,15 +276,18 @@ func test_bio_panel_sits_inside_the_painted_panel() -> void:
 
 
 ## The redesign's bio panel and icon clusters replace what these four
-## labels used to show; the nodes themselves are removed from every card
-## in both scenes, not just hidden at runtime.
+## labels used to show; the Label nodes themselves are removed from every
+## card in both scenes, not just hidden at runtime.
 func test_superseded_labels_are_removed_from_the_scenes() -> void:
 	for scene_path in _SCENES:
 		var src := FileAccess.get_file_as_string(scene_path)
 		for i in range(1, 7):
+			# Since the stat-key rename, "Akademis" is also the academic stat
+			# bar, a ProgressBar that stays. Only a Label of that name (the old
+			# "SKILL" heading) is superseded, hence the type-qualified match.
 			for label_name in ["Nama", "Profil", "Kepribadian", "Akademis"]:
 				assert_false(src.contains('[node name="%s" type="Label" parent="KertasMurid%d"' % [label_name, i]),
-					"%s must not declare KertasMurid%d/%s" % [scene_path, i, label_name])
+					"%s must not declare a Label KertasMurid%d/%s" % [scene_path, i, label_name])
 
 
 ## The ~240px band between the stat bars and the trait pills was dead
@@ -380,10 +384,11 @@ func test_trait_values_are_unchanged() -> void:
 ## now one shared rect on both scenes, so there is a single geometry to
 ## reason about and the divergence cannot silently return.
 ##
-## The band they live in was made by moving the three Akademis bars up 50px
-## (they sit on blank paper -- nothing is painted under them), which frees
-## room for SifatPasifLabel at 1318-1370 and the two 70px pills at
-## 1378-1448 and 1456-1526, closing 33px clear of the paper's edge.
+## The band they live in was made by moving the three skill bars (Akademis,
+## SeniBudaya, Olahraga) up 50px (they sit on blank paper -- nothing is
+## painted under them), which frees room for SifatPasifLabel at 1318-1370
+## and the two 70px pills at 1378-1448 and 1456-1526, closing 33px clear of
+## the paper's edge.
 ## Anchors are now 0 with absolute offsets: the old fractional anchors
 ## (0.7474, 0.786, 0.848) made every move a division and hid what row the
 ## pill actually landed on.
@@ -450,7 +455,7 @@ func test_the_lower_card_stack_stays_on_the_paper() -> void:
 		inst.size = Vector2(1080, 1920)
 		for i in range(1, 7):
 			var card := inst.get_node("KertasMurid%d" % i) as Control
-			for child_name in ["Akademis3", "SifatPasifLabel", "KutuBuku", "KutuBuku2"]:
+			for child_name in ["Olahraga", "SifatPasifLabel", "KutuBuku", "KutuBuku2"]:
 				var node := card.get_node_or_null(child_name) as Control
 				assert_true(node != null,
 					"%s KertasMurid%d/%s missing" % [scene_path, i, child_name])
@@ -473,7 +478,7 @@ func test_trait_pills_do_not_overlap_neighbors() -> void:
 	inst.size = Vector2(1080, 1920)
 	# In reading order down the card. Checked pairwise rather than only
 	# against the pills, because the pass that moved the pills left
-	# SifatPasifLabel (1330-1395) sitting 25px inside Akademis3's bar
+	# SifatPasifLabel (1330-1395) sitting 25px inside Olahraga's bar
 	# (1287-1355) -- an overlap between two nodes neither of which was a
 	# pill, which is exactly why the old three-way check missed it.
 	#
@@ -484,8 +489,8 @@ func test_trait_pills_do_not_overlap_neighbors() -> void:
 	# a pass that "made room" by moving the bars in the scene changed
 	# nothing on screen. Reading PILL_RECTS here keeps the test measuring
 	# the layout the player sees.
-	var stack := ["Kepribadian1", "Kepribadian2", "Akademis1", "Akademis2",
-		"Akademis3", "MinatLabel", "MinatValue", "SifatPasifLabel",
+	var stack := ["Mood", "Energy", "Akademis", "SeniBudaya",
+		"Olahraga", "MinatLabel", "MinatValue", "SifatPasifLabel",
 		"KutuBuku", "KutuBuku2", "Aprove"]
 	for i in range(1, 7):
 		var card := inst.get_node("KertasMurid%d" % i)

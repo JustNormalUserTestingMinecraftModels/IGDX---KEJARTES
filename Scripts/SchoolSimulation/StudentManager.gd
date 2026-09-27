@@ -8,10 +8,8 @@ class_name StudentManager
 ## builds it from `GameState.convert_to_student_data_array()`), logs
 ## every stat change to `daily_stat_log` for the end-of-day/end-of-week
 ## summaries, and at the end of the day `write_back_to_gamestate()`
-## pushes the simulated stats back onto `GameState.approved_students` --
-## remapping StudentData's real field names to the UI's
-## akademis1/2/3 + kepribadian1/2 keys, the same mismatch documented on
-## GameState.gd.
+## pushes the simulated stats back onto `GameState.approved_students`,
+## whose stat keys are StudentData's own field names.
 ##
 ## Wirausaha balance numbers now live in Scripts/Balance.gd.
 
@@ -335,9 +333,9 @@ func write_back_to_gamestate() -> void:
 		for i in range(GameState.approved_students.size()):
 			var dict = GameState.approved_students[i]
 			if dict.get("id", 0) == student.id or dict.get("name", "") == student.student_name:
-				dict["akademis1"] = student.akademis
-				dict["akademis2"] = student.seni_budaya
-				dict["akademis3"] = student.olahraga
-				dict["kepribadian1"] = student.mood
-				dict["kepribadian2"] = student.energy
+				dict["akademis"] = student.akademis
+				dict["seni_budaya"] = student.seni_budaya
+				dict["olahraga"] = student.olahraga
+				dict["mood"] = student.mood
+				dict["energy"] = student.energy
 				break

@@ -18,11 +18,11 @@ func _student(name: String, akademis: float, target: float) -> StudentData:
 	var s := StudentData.new()
 	s.student_name = name
 	s.akademis = akademis
-	s.target_akademis1 = target
+	s.target_akademis = target
 	s.seni_budaya = 10.0
-	s.target_akademis2 = 90.0
+	s.target_seni_budaya = 90.0
 	s.olahraga = 10.0
-	s.target_akademis3 = 90.0
+	s.target_olahraga = 90.0
 	return s
 
 

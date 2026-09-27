@@ -6,8 +6,9 @@ extends RefCounted
 ## DOWN. Never edit this file by hand, and never hand-merge a conflict in
 ## it: take one side whole, then run the dump. A growth is fixed in the
 ## code (reviewed exceptions: ci/clean_code_allowed.gd's four lists only).
-## After an improvement, regenerate; this mode refuses to write any entry
-## that would be added or raised, and prints each as RAISED (review):
+## After an improvement, regenerate with the command below. If any entry
+## would be added or raised, it writes nothing at all: it prints each one
+## as a `RAISED (review):` line and exits 1.
 ##     <Godot console exe> --headless --path . --script res://ci/clean_code_dump.gd
 ## After a move, rename or split, re-key: it writes every entry and prints
 ## the RAISED lines as warnings -- the same numbers under new keys:

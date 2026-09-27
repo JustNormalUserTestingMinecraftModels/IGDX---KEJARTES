@@ -22,12 +22,12 @@ anchor_bottom = 1.0
 texture = ExtResource("2_w1y33")
 stretch_mode = 6
 
-[node name="Sun" parent="." instance=ExtResource("amb_pool")]
+[node name="Sun" parent="BgCutScene" instance=ExtResource("amb_pool")]
 center = Vector2(0.8, 0.08)
 pool_size = Vector2(1100, 1100)
 intensity = 0.06
 
-[node name="Sparkles" parent="." instance=ExtResource("amb_particles")]
+[node name="Sparkles" parent="BgCutScene" instance=ExtResource("amb_particles")]
 preset = 1
 density = 0.6
 drift = Vector2(1, -0.2)

@@ -165,11 +165,19 @@ func _compute_grade() -> void:
 ## sparkles for a pass, a blue night and slow dust for a fail. Both groups
 ## are authored in the scene; this only picks one, from the verdict the
 ## grade letter used, and takes the glint off a failing badge.
+##
+## EndCutscene hands over to RunResult with an invisible scene swap (the same
+## blurred WinStage, redrawn) -- so the chosen mood must not appear on frame
+## one. It starts transparent and fades in over Juice.tokens().dur_slow, the
+## same token source MainMenu.gd uses for its own fade-ins.
 func _dress_ambience() -> void:
 	ambient_pass.visible = _passed
 	ambient_fail.visible = not _passed
 	if not _passed:
 		grade_badge.material = null
+	var shown: Control = ambient_pass if _passed else ambient_fail
+	shown.modulate.a = 0.0
+	create_tween().tween_property(shown, "modulate:a", 1.0, Juice.tokens().dur_slow)
 
 
 ## Title first, then the rows one at a time counting up, then the letter.

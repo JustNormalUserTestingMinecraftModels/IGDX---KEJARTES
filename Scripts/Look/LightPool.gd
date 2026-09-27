@@ -24,6 +24,10 @@ const MAX_INTENSITY := 0.12
 ## The brightest the rays may be: the Lobby's shafts ship at 0.20, the top of
 ## the range swept without clipping (light_shafts.gdshader's header).
 const MAX_RAYS_INTENSITY := 0.2
+## The farthest the shafts may reach, in the Pool's UV from rays_origin: the
+## Pool's own half-width. Past it a shaft would still be bright at the rect's
+## edge and stop there in a straight line instead of fading inside it.
+const MAX_RAYS_REACH := 0.5
 
 ## Where the pool's centre sits, as a share of this node's rect: (0, 0) the
 ## top-left corner, (1, 1) the bottom-right.
@@ -98,6 +102,13 @@ const MAX_RAYS_INTENSITY := 0.2
 		rays_drift_speed = value
 		_refresh()
 
+## How far the shafts reach before fading out, in the Pool's UV from
+## rays_origin; at most MAX_RAYS_REACH so they fade inside the Pool's rect.
+@export_range(0.1, 0.5, 0.01) var rays_reach: float = 0.5:
+	set(value):
+		rays_reach = minf(value, MAX_RAYS_REACH)
+		_refresh()
+
 @onready var _pool: ColorRect = $Pool
 @onready var _rays: ColorRect = $Pool/Rays
 
@@ -149,3 +160,4 @@ func _push_rays(still: bool) -> void:
 	mat.set_shader_parameter("intensity", rays_intensity)
 	mat.set_shader_parameter("origin", rays_origin)
 	mat.set_shader_parameter("drift_speed", 0.0 if still else rays_drift_speed)
+	mat.set_shader_parameter("reach", rays_reach)

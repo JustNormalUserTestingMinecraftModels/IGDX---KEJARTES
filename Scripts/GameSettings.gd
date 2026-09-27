@@ -51,10 +51,10 @@ var reduce_motion: bool = false:
 signal reduce_motion_changed(still: bool)
 
 ## Ambient kit (docs/superpowers/specs/2026-09-26-ambient-kit-design.md):
-## whether the colour moods, light pools, drifting particles, glints and the
-## menu/desk bloom show at all. DEFAULT ON, unlike look_layer_enabled: each
-## piece is cheap (at most 40 CPU particles, a few quads, one glow pass on
-## five screens), and "Efek Suasana" in Settings turns it off for a slow phone.
+## whether the colour moods, light pools, drifting particles and glints show
+## at all. DEFAULT ON, unlike look_layer_enabled: each piece is cheap (at most
+## 40 CPU particles, a few quads), and "Efek Suasana" in Settings turns it off
+## for a slow phone.
 var ambient_effects_enabled: bool = true:
 	set(value):
 		if ambient_effects_enabled == value:

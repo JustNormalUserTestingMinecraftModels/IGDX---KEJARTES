@@ -27,6 +27,11 @@ var _pool: LightPool
 var _particles: AmbientParticles
 var _glow: AmbientGlow
 var _desk: DeskAmbience
+## The developer's own switches, read before this suite touches either one,
+## so teardown() can put them back instead of guessing true/false.
+var _snapshot_ambient_enabled: bool = true
+## As above, for Kurangi Gerakan.
+var _snapshot_reduce_motion: bool = false
 
 
 func suite_name() -> String:
@@ -34,6 +39,8 @@ func suite_name() -> String:
 
 
 func suite_setup(_ctx: Dictionary) -> void:
+	_snapshot_ambient_enabled = GameSettings.ambient_effects_enabled
+	_snapshot_reduce_motion = GameSettings.reduce_motion
 	_sandbox = SubViewport.new()
 	_sandbox.own_world_3d = true
 	_sandbox.size = Vector2i(1080, 1920)
@@ -52,10 +59,11 @@ func suite_teardown() -> void:
 	_sandbox = null
 
 
-## The suite flips the real autoload's switches; put them back after each test.
+## The suite flips the real autoload's switches; put them back after each test
+## to whatever the developer had them set to, not a guessed true/false.
 func teardown() -> void:
-	GameSettings.ambient_effects_enabled = true
-	GameSettings.reduce_motion = false
+	GameSettings.ambient_effects_enabled = _snapshot_ambient_enabled
+	GameSettings.reduce_motion = _snapshot_reduce_motion
 
 
 func _stand(path: String) -> Node:
@@ -196,6 +204,16 @@ func test_the_pool_clamps_to_the_cream_knee() -> void:
 	_pool.rays_intensity = 0.1
 
 
+## Past MAX_RAYS_REACH a shaft would still be bright at the Pool rect's edge
+## and stop there in a straight line instead of fading inside it.
+func test_the_rays_reach_clamps_inside_the_pool() -> void:
+	_pool.rays_reach = 1.4
+	assert_eq(_pool.rays_reach, LightPool.MAX_RAYS_REACH, "reach clamps to MAX_RAYS_REACH")
+	assert_eq(float(_rays_mat().get_shader_parameter("reach")), LightPool.MAX_RAYS_REACH,
+		"and the rays material gets the clamped value")
+	_pool.rays_reach = 0.5
+
+
 ## The root fills its parent; the Pool child is placed by `center` (a share of
 ## the root, so it keeps its spot on a tall phone) and sized by `pool_size`.
 func test_the_pool_sits_where_center_says() -> void:
@@ -230,6 +248,7 @@ func test_rays_show_only_when_asked() -> void:
 
 
 func test_reduce_motion_holds_the_light_still() -> void:
+	GameSettings.ambient_effects_enabled = true
 	_pool.rays_enabled = true
 	GameSettings.reduce_motion = true
 	assert_eq(float(_pool_mat().get_shader_parameter("breathe_amount")), 0.0, "no breathing when still")
@@ -302,6 +321,7 @@ func test_particles_are_additive_and_untappable() -> void:
 
 ## A particle that may not move is not ambience: still or off, it stops and hides.
 func test_off_or_still_stops_and_hides() -> void:
+	GameSettings.ambient_effects_enabled = true
 	GameSettings.reduce_motion = true
 	assert_false(_emitter().emitting, "Kurangi Gerakan stops the emitter")
 	assert_false(_particles.visible, "and hides it")
@@ -320,8 +340,9 @@ func test_off_or_still_stops_and_hides() -> void:
 func test_the_glint_is_a_band_inside_the_art() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/glint.gdshader")
 	for knob in ["glint_color", "strength", "interval", "sweep_seconds", "band_width", "angle", "motion"]:
-		assert_true(src.contains("uniform") and src.contains(" " + knob + " "),
-			"glint.gdshader needs the `%s` uniform" % knob)
+		var re := RegEx.new()
+		re.compile("uniform\\s+\\w+\\s+" + knob + "\\b")
+		assert_true(re.search(src) != null, "glint.gdshader needs the `%s` uniform" % knob)
 	assert_false(src.contains("blend_add"), "the glint recolours; it does not add light around the art")
 
 
@@ -336,6 +357,8 @@ func test_one_shared_glint_material() -> void:
 
 
 func test_the_glint_moves_only_when_the_kit_may() -> void:
+	GameSettings.ambient_effects_enabled = true
+	GameSettings.reduce_motion = false
 	var look_layer: GDScript = load("res://Scripts/Look/LookLayer.gd")
 	assert_eq(look_layer.call("glint_motion"), 1.0, "on and free to move: the band sweeps")
 	GameSettings.reduce_motion = true
@@ -400,7 +423,7 @@ func test_the_glow_follows_the_switch_in_ready() -> void:
 # ── DeskAmbience ─────────────────────────────────────────────────────────────
 
 ## The desk recipe, authored once: a warm morning tint, a lamp upper left
-## (the game's light direction), dust in it, and the bloom.
+## (the game's light direction), and dust in it.
 func test_the_desk_recipe() -> void:
 	var tint := _desk.get_node("Tint") as MoodTint
 	var lamp := _desk.get_node("Lamp") as LightPool
@@ -417,8 +440,8 @@ func test_the_desk_recipe() -> void:
 	assert_true(_desk.get_node_or_null("Glow") == null, "no bloom on the desk: spec amendment 7")
 
 
-## Overrides on an instance's children do not survive a save, so the two
-## per-screen knobs live on the root and are written through.
+## Overrides on an instance's children do not survive a save, so the one
+## per-screen knob lives on the root and is written through.
 func test_the_root_knobs_reach_the_children() -> void:
 	_desk.particle_density = 0.5
 	assert_eq((_desk.get_node("Dust") as AmbientParticles).density, 0.5, "density reaches Dust")
@@ -572,10 +595,12 @@ func test_the_envelope_seal_glints() -> void:
 func test_cutscene_gets_a_soft_sun_and_sparkles() -> void:
 	var c := _census("res://Scenes/CutScene/CutScene.tscn")
 	var kids := _children_of(c, ".")
-	assert_eq(kids.slice(0, 3), ["BgCutScene", "Sun", "Sparkles"] as Array[String],
-		"the pieces sit right over the picture, under the dialogue and the fade")
-	assert_eq(_entry(c, "Sun").get("instance"), LIGHT_POOL, "Sun is a LightPool")
-	assert_eq(_prop(_entry(c, "Sparkles"), "preset"), AmbientParticles.Preset.KILAU, "sparkles, not dust")
+	assert_eq(kids[0], "BgCutScene", "the picture is still the first thing drawn")
+	assert_eq(kids[1], "DialogueBox", "DialogueBox still follows it")
+	assert_eq(_children_of(c, "BgCutScene"), ["Sun", "Sparkles"] as Array[String],
+		"they ride the picture, so its fades take them too")
+	assert_eq(_entry(c, "BgCutScene/Sun").get("instance"), LIGHT_POOL, "Sun is a LightPool")
+	assert_eq(_prop(_entry(c, "BgCutScene/Sparkles"), "preset"), AmbientParticles.Preset.KILAU, "sparkles, not dust")
 	assert_true(_entry(c, "World").is_empty(), "no World layer: the picture changes slide to slide")
 
 
@@ -626,3 +651,6 @@ func test_run_result_picks_one_mood_from_the_verdict() -> void:
 	assert_true(src.contains("ambient_fail.visible = not _passed"), "a fail shows AmbientFail")
 	assert_true(src.contains("grade_badge.material = null"), "a failing badge does not shine")
 	assert_true(src.contains("_dress_ambience()"), "_ready dresses the ambience")
+	assert_true(src.contains("shown.modulate.a = 0.0"), "the shown mood starts transparent")
+	assert_true(src.contains("tween_property(shown, \"modulate:a\", 1.0, Juice.tokens().dur_slow)"),
+		"and fades in, so it never pops on EndCutscene's invisible scene swap")

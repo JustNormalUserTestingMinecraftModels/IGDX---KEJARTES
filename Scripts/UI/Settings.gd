@@ -115,9 +115,8 @@ func _on_look_layer_toggled(pressed: bool) -> void:
 
 
 ## "Efek Suasana": the ambient kit -- colour moods, soft light, drifting
-## particles, glints, and the bloom on the menu and desk screens. On by
-## default. Setting the property emits ambient_effects_changed, which every
-## kit piece follows at once. Saved.
+## particles and glints. On by default. Setting the property emits
+## ambient_effects_changed, which every kit piece follows at once. Saved.
 func _on_ambient_toggled(pressed: bool) -> void:
 	GameSettings.ambient_effects_enabled = pressed
 	if not Engine.is_editor_hint():

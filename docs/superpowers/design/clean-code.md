@@ -15,33 +15,66 @@ guidance.
 
 ## The ratchet in one minute
 
-- Today's debt is frozen in `ci/clean_code_baseline.gd` (generated). A count
-  may only go **down**.
+- Today's debt is frozen in `ci/clean_code_baseline.gd` (generated; never
+  edit it by hand). A count may only go **down**.
 - **"grew"** means your change added debt. Fix the code: split the function,
-  name the number, add the type. A reviewed, permanent exception goes in
-  `ci/clean_code_allowed.gd`, with a comment saying why.
+  name the number, add the type. Reviewed, permanent exceptions exist only
+  where `ci/clean_code_allowed.gd` has a list: a whole file's long functions,
+  size (large scripts) or bare numbers, and single `source: literal` pairs
+  for unresolved paths — each with a comment saying why. Nothing else can be
+  excepted. Listing a file turns its baseline entries into "shrank", so run
+  the dump afterwards.
 - **"shrank"** means you improved something. Lock it in, in the same commit:
 
       <Godot console exe> --headless --path . --script res://ci/clean_code_dump.gd
 
-  then check that `git diff ci/clean_code_baseline.gd` only lowers numbers or
-  removes entries. (The editor suite fails on an un-locked shrink; CI only
-  prints a `WARNING:`.)
+  This default mode only ever lowers: if any entry would be added or raised
+  it writes nothing, prints each as `RAISED (review):` and exits 1. Check that
+  `git diff ci/clean_code_baseline.gd` only lowers numbers or removes
+  entries. (The editor suite fails on an un-locked shrink; CI only prints a
+  `WARNING:`.) An open editor keeps serving the old baseline until a no-op
+  `script_patch` of it (CLAUDE.md, "Working efficiently here", item 5).
+- **Moved, renamed or split** a script or function that carries debt? Its
+  entries are keyed by path and name, so CI reports the new key as "grew" and
+  the old one as "shrank". Re-key the baseline:
+
+      <Godot console exe> --headless --path . --script res://ci/clean_code_dump.gd -- --rekey
+
+  It writes every entry and prints the RAISED lines as warnings; put them in
+  the PR description. The diff must show the same numbers under the new
+  keys, and a split's pieces must each be smaller than the original.
 - A **new** script has no baseline, so it is clean from its first commit.
-- Never raise a baseline number by hand.
+- Never raise a baseline number by hand, and never re-key to hide new debt.
+- **A merge conflict in `ci/clean_code_baseline.gd`:** never hand-merge it —
+  a baseline that does not parse fails every check. Take one side whole
+  (`git checkout --ours ci/clean_code_baseline.gd`, or `--theirs`), run the
+  dump — with `-- --rekey` if the other side moved or renamed anything — and
+  review the diff.
 - **`Textures` went red on the ratchet** (a hand-merged change): whoever landed
   it fixes it; failing that, the next session to run `ship-pr` fixes it as
   its first commit — for a shrink, run the dump tool; for a growth, fix the
-  code (or add a commented `ci/clean_code_allowed.gd` entry) and tell the
-  user.
+  code and tell the user.
 
-## 1. Names say what a thing is ⚙
+## 1. Names say what a thing is
 
 - Casing: `snake_case` functions and variables, `PascalCase` classes and
   node names, `CONSTANT_CASE` constants and enum values.
 - Signals are past-tense events: `week_finished`, `item_bought`. Booleans
   read as questions: `is_locked`, `has_item`, `can_afford`.
 - No numbered stand-ins (`value2`) and no `data`, `tmp`, `obj`, `x2`.
+- **Legacy stat keys ⚙.** The numbered roster keys — `akademis[123]` and
+  `kepribadian[12]`, in any case — count anywhere in a file's text:
+  identifiers, strings and comments, in `.gd`, `.tscn` and `.tres` files (so
+  their `target_…`, `base_…` and `…Icon` forms too). They are counted per
+  file in `Scripts/`, `Scenes/` and `tests/`, and no file may gain one:
+  adding one fails even in a file that already has them, and this rule has
+  no ALLOWED list. Until the stat-key rename lands, reach the stats through
+  `StudentData`'s fields (`akademis`, `seni_budaya`, `olahraga`, `mood`,
+  `energy`) instead.
+- **Misspelled names ⚙.** No file or folder name under `Scripts/`,
+  `Scenes/`, `Assets/` or `tests/` may carry a stem from `MISSPELLED_STEMS`
+  in `ci/clean_code_scan.gd` — the misspellings of *lobby*, *koperasi* and
+  *portrait* — in any case. File contents are not checked.
 - Game words in Indonesian, engine and system code in English; match the
   file you are in.
 
@@ -57,21 +90,21 @@ signal week_finished
 var is_locked := true
 ```
 
-**File names ⚙:**
+**File names** (⚙ = checked by the ratchet; "review" = review guidance):
 
-| What | Rule | Example |
-|---|---|---|
-| `.gd`, `.tscn` | PascalCase | `Lobby.gd`, `Lobby.tscn` |
-| Script with `class_name X` | named `X.gd` | `TutorialStepData.gd` |
-| A scene and its own root script | share one name | `StudentCard.tscn` + `StudentCard.gd` |
-| A script shared by several scenes | named for its class | `StudentFace.gd` drives `AndiFace.tscn`, … |
-| Assets | only `A–Z a–z 0–9 _ - .`; new art in `snake_case` | `kanan_atas.png` |
-| Tests | `tests/test_<topic>.gd` (the runner needs it) | `tests/test_lobby.gd` |
+| What | Rule | Example | Checked |
+|---|---|---|---|
+| `.gd`, `.tscn` in `Scripts/`, `Scenes/` | PascalCase | `Lobby.gd`, `Lobby.tscn` | ⚙ |
+| Script with `class_name X` | named `X.gd` | `TutorialStepData.gd` | ⚙ |
+| A scene and its own root script | share one name | `StudentCard.tscn` + `StudentCard.gd` | review |
+| A script shared by several scenes | named for its class | `StudentFace.gd` drives `AndiFace.tscn`, … | review |
+| Assets | only `A–Z a–z 0–9 _ - .`; new art in `snake_case` | `kanan_atas.png` | ⚙ characters; `snake_case` review |
+| Tests | `tests/test_<topic>.gd` | `tests/test_lobby.gd` | the test runner needs it |
 
-**Every `res://` literal must match the file's exact case ⚙.** Windows
-ignores case, so a wrong-case path works in the editor and breaks on Android
-and in Linux CI. A formatted path (`"res://Assets/Images/X/%s.png"`) is
-checked by its folder.
+**Every `res://` literal in `Scripts/`, `Scenes/` and `project.godot` must
+match the file's exact case ⚙.** Windows ignores case, so a wrong-case path
+works in the editor and breaks on Android and in Linux CI. A formatted path
+(`"res://Assets/Images/X/%s.png"`) is checked by its folder.
 
 ## 2. No magic numbers ⚙
 
@@ -116,6 +149,11 @@ func _ready() -> void:
 Over **50** code lines is a warning sign; over **100** is debt. The ratchet
 tracks every function over 50 by name. Split with "extract function": move a
 step into its own function named for what it does, change no logic.
+
+**Large scripts ⚙.** A script over **1,000** lines is listed in the
+baseline's `LARGE_SCRIPTS` and may not grow past its listed count — blank
+and comment lines count too — and no other script may cross 1,000. Put new
+behaviour in a new script or component, which starts at zero debt.
 
 ## 4. Flat, not nested
 
@@ -212,7 +250,8 @@ func gain_for(student: StudentData, category: String) -> float:
 Typed GDScript is checked when the script loads (a typo fails at once, not
 mid-game), runs faster, and completes better in the editor. Use `:=` only
 when the right-hand side's type is obvious. The ratchet counts untyped
-`var`s, functions without `->` and untyped parameters. When the count reaches
+`var`s, and column-0 functions without `->` or with untyped parameters
+(lambdas are not counted; see "What is exempt"). When the count reaches
 zero, Godot's own `untyped_declaration` warning gets turned on.
 
 ## 8. Comments explain why
@@ -255,7 +294,17 @@ improvement permanent.
   fixture data is fine, and test files keep their `test_*.gd` names.
 - Methods of inner classes (`class X:`) are not measured; there are none with
   functions today.
-- Permanent, reviewed exceptions: `ci/clean_code_allowed.gd`.
+- Property accessors — the `get:` / `set(value):` blocks under a `var` — and
+  class-level lambdas are not functions to the ratchet: no long-function,
+  bare-number or duplicate count reads them, and their parameters are not
+  counted as untyped. They are still part of the script: an untyped `var`
+  declared inside one counts toward the script's untyped total, and their
+  lines count toward its length (large scripts).
+- Lambda signatures (`func(...)`) are not counted by the untyped
+  measurement; a lambda's body counts toward the enclosing function's lines
+  and bare numbers.
+- Permanent, reviewed exceptions: `ci/clean_code_allowed.gd` (its four lists
+  only).
 
 Formatting is not ratcheted: match the file (tabs; the GDScript style
 guide's spacing).

@@ -428,6 +428,14 @@ widget via `project_run` instead, which exercises it fine.
   `docs/superpowers/specs/2026-09-26-clean-code-design.md` are planned; the
   rest shrinks as code is touched (`clean-code.md` rule 10). Decomposing
   `SchoolDay.gd` into components is its own project.
+- **The project check runs Godot with no timeout** (2026-09-27).
+  `.github/workflows/project-check.yml` starts the check with a bare
+  `"$GODOT" --headless --path . res://ci/project_check.tscn > check.log 2>&1`
+  and prints `check.log` only after Godot exits. If `ci/project_check.gd`
+  itself stops compiling, the scene runs with no script until the job's
+  15-minute timeout, and the log is never shown. Fix it in a separate PR,
+  since a workflow change cannot auto-merge (`CLAUDE.md`, "Pull requests"):
+  `timeout 600 "$GODOT" --headless --path . res://ci/project_check.tscn > check.log 2>&1`.
 - **Premium-look leftovers (2026-09-22, PRs 2-6).** The programme in
   `.superpowers/gamecode/premium-look/` shipped items 1-10 and 12; item 11
   (the Lobby's black bands at 20:9) was cut by the brief. What was

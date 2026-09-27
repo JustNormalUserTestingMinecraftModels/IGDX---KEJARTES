@@ -16,7 +16,7 @@ extends RefCounted
 ## Every ITEM_LINES key is checked against ItemDatabase.get_all_items() by
 ## the same suite, so a renamed item loses its quips loudly, not silently.
 
-## event (StringName) -> pool of lines for that event. See koprasi.gd and
+## event (StringName) -> pool of lines for that event. See Koperasi.gd and
 ## ChatBubble.gd for who fires which event.
 const LINES := {
 	# Scene entry

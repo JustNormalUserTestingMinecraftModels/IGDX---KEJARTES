@@ -10,8 +10,8 @@ extends RefCounted
 ## Container.NOTIFICATION_SORT_CHILDREN was sent by hand, a Button two levels
 ## under a 48 px MarginContainer sat at its final rect in the same frame.
 ##
-## Screen scripts that are not @tool (loby.gd, koprasi.gd, student_card.gd,
-## student_list.gd) do not run their _ready here, so no screen side effects
+## Screen scripts that are not @tool (Lobby.gd, Koperasi.gd, StudentCard.gd,
+## StudentList.gd) do not run their _ready here, so no screen side effects
 ## fire. Used by test_tall_screen_layout.gd, test_lobby_layout.gd and
 ## test_student_card_layout.gd.
 

@@ -285,7 +285,7 @@ static func load_default() -> DesignTokens:
 
 @export_group("Layout")
 ## Minimum touch-friendly control size (px) -- checked directly by
-## cut_scene.gd for its tap targets, not consumed by ThemeFactory.
+## CutScene.gd for its tap targets, not consumed by ThemeFactory.
 @export var touch_target_min: int = 96
 ## Screen-edge margin (px) -- SafeAreaMargin's default inset, and
 ## ThemeFactory's schedule-preview layout margin.

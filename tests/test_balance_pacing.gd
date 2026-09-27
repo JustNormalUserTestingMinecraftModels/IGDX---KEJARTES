@@ -33,7 +33,7 @@ func teardown() -> void:
 	GameState.day_schedules = _snap_day_schedules
 	GameState.minigame_gain_this_week = _snap_minigame_gain_this_week
 
-# The real roster values, hard-copied from student_card.gd (student_data_list,
+# The real roster values, hard-copied from StudentCard.gd (student_data_list,
 # lines ~896-1035) so a roster edit does not silently move the goalposts.
 # Keys use the UI spelling. Only the first four roster students are used here
 # (Marcel, Doni, Andi, Citra) -- the approved roster this harness seeds.

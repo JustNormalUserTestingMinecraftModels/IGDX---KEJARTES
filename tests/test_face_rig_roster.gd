@@ -7,7 +7,7 @@ extends McpTestSuiteCompat
 ##
 ## Where the numbers come from. The art arrives as separately-cropped PNGs
 ## with no canvas offsets, numbered 1-7 on the Drive. Every placement below
-## was solved against that student's flat MuridPotrait/<Name>.png, not
+## was solved against that student's flat MuridPortrait/<Name>.png, not
 ## eyeballed (docs/superpowers/specs/2026-09-14-student-face-rigs-design.md):
 ##  * Sclera and Eyelid are pinned where they plug the base's transparent eye
 ##    cut-outs. They are never nudged to "fit the portrait better": a 1 px
@@ -30,8 +30,8 @@ extends McpTestSuiteCompat
 ## Technique notes, per this project's runner: the suite is @tool, no test is
 ## a coroutine, and every rig instantiated here is freed through track().
 
-const _LOBBY_SCENE := "res://Scenes/Lobby/loby.tscn"
-const _ROSTER_SCRIPT := "res://Scripts/StudentList/student_list.gd"
+const _LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
+const _ROSTER_SCRIPT := "res://Scripts/StudentList/StudentList.gd"
 const _EYE_MASK_SHADER := "res://Scripts/Shaders/eye_mask.gdshader"
 const _LENS_SHADER := "res://Scripts/Shaders/glasses_lens.gdshader"
 const _CITRA_RIG := "res://Scenes/Lobby/CitraFace.tscn"
@@ -122,7 +122,7 @@ func suite_name() -> String:
 ## placement tests above cannot see.
 func test_every_rig_has_eyelid_art() -> void:
 	for student_name in StudentSkins.NAMES:
-		var path := "res://Assets/Images/MuridPotrait/%s/%s_eyelid.png" % [
+		var path := "res://Assets/Images/MuridPortrait/%s/%s_eyelid.png" % [
 			student_name, student_name.to_lower()]
 		assert_true(ResourceLoader.exists(path),
 			"%s must have eyelid art at %s" % [student_name, path])
@@ -182,7 +182,7 @@ func test_every_layer_draws_its_students_own_art() -> void:
 		var low := String(student).to_lower()
 		for entry in _RIGS[student]["layers"]:
 			var node := _layer(face, entry[0])
-			var want := "res://Assets/Images/MuridPotrait/%s/%s_%s.png" \
+			var want := "res://Assets/Images/MuridPortrait/%s/%s_%s.png" \
 				% [student, low, String(entry[0]).to_lower()]
 			assert_eq(node.texture.resource_path, want,
 				"%s/%s must draw %s" % [student, entry[0], want])
@@ -230,7 +230,7 @@ func test_each_pupil_is_clipped_by_its_own_eye_white() -> void:
 			student + "'s pupil must use the eye-mask shader")
 		var mask: Texture2D = mat.get_shader_parameter("mask_texture")
 		assert_eq(mask.resource_path,
-			"res://Assets/Images/MuridPotrait/%s/%s_sclera.png" % [student, String(student).to_lower()],
+			"res://Assets/Images/MuridPortrait/%s/%s_sclera.png" % [student, String(student).to_lower()],
 			student + "'s pupil must be clipped to their own sclera")
 		assert_true(mat.resource_local_to_scene,
 			student + "'s mask must be local to the scene, one per seat")
@@ -331,7 +331,7 @@ func test_the_lobby_lists_every_rig() -> void:
 	assert_true(paths.has(_CITRA_RIG), "Citra's rig must stay in the lobby's list")
 	for student in _RIGS:
 		assert_true(paths.has(_RIGS[student]["rig"]),
-			"loby.tscn's face_rigs must list " + _RIGS[student]["rig"])
+			"Lobby.tscn's face_rigs must list " + _RIGS[student]["rig"])
 
 
 func test_every_roster_student_has_a_face_rig() -> void:

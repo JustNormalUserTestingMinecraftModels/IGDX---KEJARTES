@@ -41,14 +41,14 @@ const TARGETS := {
 	"res://Assets/Images/EndGame/ujian_sekolah.png": 4.59,
 	"res://Assets/Images/EndGame/ujian_nasional.png": 3.43,
 	"res://Assets/Images/Particles/particle_star.png": 3.20,
-	# The six Lobby faces. loby.gd gives each runtime rig the rect of its
+	# The six Lobby faces. Lobby.gd gives each runtime rig the rect of its
 	# seat's Portrait node, measured at 365-400 px from a 1280 px source.
-	"res://Assets/Images/MuridPotrait/Andi/andi_base.png": 3.20,
-	"res://Assets/Images/MuridPotrait/Citra/citra_base.png": 3.20,
-	"res://Assets/Images/MuridPotrait/Doni/doni_base.png": 3.50,
-	"res://Assets/Images/MuridPotrait/Marcel/marcel_base.png": 3.20,
-	"res://Assets/Images/MuridPotrait/Shinta/shinta_base.png": 3.50,
-	"res://Assets/Images/MuridPotrait/Thea/thea_base.png": 3.51,
+	"res://Assets/Images/MuridPortrait/Andi/andi_base.png": 3.20,
+	"res://Assets/Images/MuridPortrait/Citra/citra_base.png": 3.20,
+	"res://Assets/Images/MuridPortrait/Doni/doni_base.png": 3.50,
+	"res://Assets/Images/MuridPortrait/Marcel/marcel_base.png": 3.20,
+	"res://Assets/Images/MuridPortrait/Shinta/shinta_base.png": 3.50,
+	"res://Assets/Images/MuridPortrait/Thea/thea_base.png": 3.51,
 	# The twelve day outfits (2026-09-25). DaySummaryAvatar draws each through
 	# its student's SPLASH_CROP into the 269 px result-card frame: 2.80 is the
 	# widest crop (Andi, 752 px) over FRAME_SIZE.x, exact by construction. The

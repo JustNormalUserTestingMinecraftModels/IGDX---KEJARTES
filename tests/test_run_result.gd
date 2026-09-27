@@ -248,7 +248,7 @@ func test_grade7_loss_goes_to_main_menu_grade8_9_restarts_same_grade() -> void:
 	# same grade at StudentCard so the punishment is not losing all progress.
 	assert_true(src.contains("GameState.current_grade == 7"),
 		"loss branch checks grade to pick destination")
-	assert_true(src.contains("res://Scenes/StudentCard/student_card.tscn"),
+	assert_true(src.contains("res://Scenes/StudentCard/StudentCard.tscn"),
 		"grade 8/9 loss routes back to StudentCard")
 
 
@@ -256,7 +256,7 @@ func test_it_applies_grade_progression_and_exits_to_the_menu() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("GameState.current_grade += 1"),
 		"a win advances the grade")
-	assert_true(src.contains("res://Scenes/MainMenu/main_menu.tscn"),
+	assert_true(src.contains("res://Scenes/MainMenu/MainMenu.tscn"),
 		"the run ends at the main menu")
 
 

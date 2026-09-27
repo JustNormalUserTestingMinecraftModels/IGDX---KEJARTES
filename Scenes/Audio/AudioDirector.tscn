@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://d0bgiry48yjow"]
+
+[ext_resource type="Script" uid="uid://w8hk3d5adcmu" path="res://Scripts/Audio/AudioDirector.gd" id="1_audio"]
+[ext_resource type="AudioStream" uid="uid://bhonqlcik2jly" path="res://Assets/Audio/SFX/tap.ogg" id="2_8cr4q"]
+[ext_resource type="AudioStream" uid="uid://cipjakd23ghcb" path="res://Assets/Audio/SFX/confirm.ogg" id="3_tr563"]
+[ext_resource type="AudioStream" uid="uid://cyxuwgj11alxf" path="res://Assets/Audio/SFX/cancel.ogg" id="4_ikp5m"]
+[ext_resource type="AudioStream" uid="uid://csri8fxh0qq60" path="res://Assets/Audio/SFX/success.ogg" id="5_rxfkv"]
+[ext_resource type="AudioStream" uid="uid://bsc361pdf1jv8" path="res://Assets/Audio/SFX/fail.ogg" id="6_psmar"]
+[ext_resource type="AudioStream" uid="uid://cfrupfphlvi8x" path="res://Assets/Audio/SFX/coin.ogg" id="7_hhe06"]
+[ext_resource type="AudioStream" uid="uid://ukjf7fho680s" path="res://Assets/Audio/SFX/whoosh.ogg" id="8_5se8n"]
+[ext_resource type="AudioStream" uid="uid://dsqymqh5huu84" path="res://Assets/Audio/SFX/pop.ogg" id="9_o62ei"]
+[ext_resource type="AudioStream" uid="uid://ccpyy412s2jta" path="res://Assets/Audio/SFX/swipe.ogg" id="10_uow0o"]
+[ext_resource type="AudioStream" uid="uid://skcxjuv0qf8s" path="res://Assets/Audio/SFX/stamp.ogg" id="11_ejr32"]
+[ext_resource type="AudioStream" uid="uid://d4mxlgkmsx8g8" path="res://Assets/Audio/SFX/unstamp.ogg" id="12_fjkga"]
+[ext_resource type="AudioStream" uid="uid://byt3msofg4b08" path="res://Assets/Audio/SFX/popup_open.ogg" id="13_p6daa"]
+[ext_resource type="AudioStream" uid="uid://c26tnv6sb6c5n" path="res://Assets/Audio/SFX/popup_close.ogg" id="14_57anm"]
+[ext_resource type="AudioStream" uid="uid://c0c6nrm6k78xj" path="res://Assets/Audio/SFX/select.ogg" id="15_4vcgh"]
+[ext_resource type="AudioStream" uid="uid://crghtdln167sm" path="res://Assets/Audio/SFX/error.ogg" id="16_300lm"]
+[ext_resource type="AudioStream" uid="uid://s75qbeop5gv4" path="res://Assets/Audio/SFX/reward.ogg" id="17_smhh5"]
+[ext_resource type="AudioStream" uid="uid://0uqfj0p24gfx" path="res://Assets/Audio/BGM/titlescreen.mp3" id="18_57anm"]
+[ext_resource type="AudioStream" uid="uid://dw8pqrqc75v1y" path="res://Assets/Audio/BGM/introcutscene.mp3" id="19_4vcgh"]
+[ext_resource type="AudioStream" uid="uid://blxefuko484wt" path="res://Assets/Audio/BGM/result_win.mp3" id="20_300lm"]
+[ext_resource type="AudioStream" uid="uid://ckqx0gxhox830" path="res://Assets/Audio/BGM/result_lose.wav" id="21_smhh5"]
+[ext_resource type="AudioStream" uid="uid://cqf2fviq0bh0i" path="res://Assets/Audio/BGM/minigame_olahraga.mp3" id="22_smhh5"]
+[ext_resource type="AudioStream" uid="uid://81vshiwgrv1w" path="res://Assets/Audio/BGM/minigame_senibudaya_batik.mp3" id="23_12b1k"]
+[ext_resource type="AudioStream" uid="uid://ctmk2wdmobsdw" path="res://Assets/Audio/BGM/schoolsimulation.mp3" id="24_g68t3"]
+[ext_resource type="AudioStream" uid="uid://bxwgs81fu7bot" path="res://Assets/Audio/BGM/minigame_senibudaya_menari.mp3" id="24_rckhh"]
+[ext_resource type="AudioStream" uid="uid://dxfrh64bbe1d2" path="res://Assets/Audio/BGM/minigame_akademis_1.wav" id="25_pkop0"]
+[ext_resource type="AudioStream" uid="uid://dvjl5mnl87pwg" path="res://Assets/Audio/BGM/minigame_akademis_2.wav" id="26_7i31u"]
+[ext_resource type="AudioStream" uid="uid://ba05r44voyqln" path="res://Assets/Audio/BGM/minigame_akademis_3.wav" id="27_ih8jt"]
+[ext_resource type="AudioStream" uid="uid://bcq5n5q2mdcph" path="res://Assets/Audio/BGM/lobby_song1.mp3" id="28_lby1"]
+[ext_resource type="AudioStream" uid="uid://bx335va1f702b" path="res://Assets/Audio/BGM/lobby_song2.mp3" id="29_lby2"]
+[ext_resource type="AudioStream" uid="uid://dmyl16nyyswqa" path="res://Assets/Audio/BGM/lobby_song3.mp3" id="30_lby3"]
+[ext_resource type="AudioStream" uid="uid://bpxbe3etimbxw" path="res://Assets/Audio/BGM/lobby_song4.mp3" id="31_lby4"]
+
+[node name="AudioDirector" type="Node" unique_id=1021481202]
+script = ExtResource("1_audio")
+sfx_tap = ExtResource("2_8cr4q")
+sfx_confirm = ExtResource("3_tr563")
+sfx_cancel = ExtResource("4_ikp5m")
+sfx_success = ExtResource("5_rxfkv")
+sfx_fail = ExtResource("6_psmar")
+sfx_coin = ExtResource("7_hhe06")
+sfx_whoosh = ExtResource("8_5se8n")
+sfx_pop = ExtResource("9_o62ei")
+sfx_swipe = ExtResource("10_uow0o")
+sfx_stamp = ExtResource("11_ejr32")
+sfx_unstamp = ExtResource("12_fjkga")
+sfx_popup_open = ExtResource("13_p6daa")
+sfx_popup_close = ExtResource("14_57anm")
+sfx_select = ExtResource("15_4vcgh")
+sfx_error = ExtResource("16_300lm")
+sfx_reward = ExtResource("17_smhh5")
+sfx_specialty_match = ExtResource("17_smhh5")
+bgm_titlescreen = ExtResource("18_57anm")
+bgm_introcutscene = ExtResource("19_4vcgh")
+bgm_lobby_playlist = Array[AudioStream]([ExtResource("28_lby1"), ExtResource("29_lby2"), ExtResource("30_lby3"), ExtResource("31_lby4")])
+bgm_simulation = ExtResource("24_g68t3")
+bgm_result_win = ExtResource("20_300lm")
+bgm_result_lose = ExtResource("21_smhh5")
+bgm_minigame_olahraga = ExtResource("22_smhh5")
+bgm_minigame_senibudaya_batik = ExtResource("23_12b1k")
+bgm_minigame_senibudaya_menari = ExtResource("24_rckhh")
+bgm_minigame_akademis = Array[AudioStream]([ExtResource("25_pkop0"), ExtResource("26_7i31u"), ExtResource("27_ih8jt")])

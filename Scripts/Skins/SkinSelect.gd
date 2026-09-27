@@ -31,7 +31,7 @@ extends Control
 ## size, and what fades its dimming and blur with the finger instead of
 ## snapping them on selection.
 ##
-## Opened by loby.gd with open(). @tool so the test runner can drive it; the
+## Opened by Lobby.gd with open(). @tool so the test runner can drive it; the
 ## fades are skipped in the editor.
 
 signal closed
@@ -262,7 +262,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 ## Android's back button arrives as a notification, not ui_cancel -- the
-## same route inventory.gd and the achievement sheets use.
+## same route Inventory.gd and the achievement sheets use.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
 		go_back()

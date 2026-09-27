@@ -1,7 +1,7 @@
 // Glasses on a lobby face rig (StudentFace): the frame draws as a plain
 // opaque stroke, while the lens ADDS light to whatever is behind it.
 //
-// That split is how Marcel's flat portrait (MuridPotrait/Marcel.png) was
+// That split is how Marcel's flat portrait (MuridPortrait/Marcel.png) was
 // flattened. Fitted 2026-09-14 over bare cheek seen through the lens: the
 // portrait is base + glasses.rgb * alpha * gain, not an alpha mix -- a mix
 // greys his eyes where the portrait keeps them bright white. The frame, in

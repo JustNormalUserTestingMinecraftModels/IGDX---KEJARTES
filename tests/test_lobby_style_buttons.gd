@@ -18,7 +18,7 @@ const LOBBY_LOOK := [
 	"LobbyCtaButton", "LobbyNavTile",
 ]
 
-const _STUDENT_CARD := "res://Scenes/StudentCard/student_card.tscn"
+const _STUDENT_CARD := "res://Scenes/StudentCard/StudentCard.tscn"
 const _ROSTER_CARD := "res://Scenes/StudentList/RosterCard.tscn"
 
 var _tokens: DesignTokens

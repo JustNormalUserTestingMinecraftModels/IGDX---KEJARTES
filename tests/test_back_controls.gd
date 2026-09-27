@@ -33,19 +33,19 @@ const SUPERSEDED: Array[String] = [
 ## "Kembali" label beside the arrow, while Rapor's 260px box takes the arrow
 ## alone (its label would not fit beside any icon at all).
 const ROSTER := {
-	"res://Scenes/Achievements/achievements.tscn": {
+	"res://Scenes/Achievements/AchievementsScreen.tscn": {
 		"Safe/UI/BackButton": "texture_normal",
 	},
 	"res://Scenes/Achievements/AchievementDetailSheet.tscn": {
 		"Sheet/Margin/VBox/BackButton": "texture_normal",
 	},
-	"res://Scenes/AturJadwal/atur_jadwal.tscn": {
+	"res://Scenes/AturJadwal/AturJadwal.tscn": {
 		"BackButton": "texture_normal",
 	},
-	"res://Scenes/Koperasi/koprasi.tscn": {
+	"res://Scenes/Koperasi/Koperasi.tscn": {
 		"Stage/BackButton": "texture_normal",
 	},
-	"res://Scenes/Inventory/inventory.tscn": {
+	"res://Scenes/Inventory/Inventory.tscn": {
 		"MainColumn/Header/HeaderCol/Row/BackButton": "icon",
 	},
 	"res://Scenes/Koperasi/ShopHub.tscn": {
@@ -54,7 +54,7 @@ const ROSTER := {
 	"res://Scenes/Koperasi/CosmeticShop.tscn": {
 		"BackButton": "icon",
 	},
-	"res://Scenes/ReportCard/report_card.tscn": {
+	"res://Scenes/ReportCard/ReportCard.tscn": {
 		"Safe/UI/BackButton": "icon",
 	},
 	"res://Scenes/UI/Settings.tscn": {

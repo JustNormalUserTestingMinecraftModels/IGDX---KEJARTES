@@ -30,7 +30,7 @@ func _andi() -> Dictionary:
 	return {
 		"name": "Andi", "id": 3,
 		"splash": "res://Assets/Images/SplashArtMurid/splash_andi.png",
-		"portrait": "res://Assets/Images/MuridPotrait/Andi.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Andi.png",
 	}
 
 
@@ -50,9 +50,9 @@ func test_every_catalog_path_exists() -> void:
 
 func test_default_entry_is_todays_art() -> void:
 	assert_eq(StudentSkins.layer_path("Thea", "default", "splash"), "res://Assets/Images/SplashArtMurid/splash_thea.png")
-	assert_eq(StudentSkins.layer_path("Thea", "default", "portrait"), "res://Assets/Images/MuridPotrait/Thea.png")
-	assert_eq(StudentSkins.layer_path("Thea", "default", "face_base"), "res://Assets/Images/MuridPotrait/Thea/thea_base.png")
-	assert_eq(StudentSkins.layer_path("Thea", "default", "hand"), "res://Assets/Images/MuridPotrait/TanganItems/Thea_Table.png")
+	assert_eq(StudentSkins.layer_path("Thea", "default", "portrait"), "res://Assets/Images/MuridPortrait/Thea.png")
+	assert_eq(StudentSkins.layer_path("Thea", "default", "face_base"), "res://Assets/Images/MuridPortrait/Thea/thea_base.png")
+	assert_eq(StudentSkins.layer_path("Thea", "default", "hand"), "res://Assets/Images/MuridPortrait/TanganItems/Thea_Table.png")
 
 
 func test_skin1_paths_follow_the_skins_folder() -> void:
@@ -140,10 +140,10 @@ func test_grade_reset_keeps_skins() -> void:
 ## resolver (a scan: most of these screens cannot be built headlessly).
 func test_consumers_use_the_resolver() -> void:
 	var sites := {
-		"res://Scripts/AturJadwal/atur_jadwal.gd": ["StudentSkins.splash_for(", "StudentSkins.portrait_for("],
+		"res://Scripts/AturJadwal/AturJadwal.gd": ["StudentSkins.splash_for(", "StudentSkins.portrait_for("],
 		"res://Scripts/StudentCard/StudentCardView.gd": ["StudentSkins.portrait_for("],
-		"res://Scripts/StudentList/student_list.gd": ["StudentSkins.portrait_for("],
-		"res://Scripts/Lobby/loby.gd": ["StudentSkins.portrait_for("],
+		"res://Scripts/StudentList/StudentList.gd": ["StudentSkins.portrait_for("],
+		"res://Scripts/Lobby/Lobby.gd": ["StudentSkins.portrait_for("],
 	}
 	for path in sites:
 		var src := FileAccess.get_file_as_string(path)

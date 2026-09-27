@@ -7,7 +7,7 @@ extends McpTestSuiteCompat
 ##
 ## The art ships as six separately-cropped PNGs with no canvas offsets of their
 ## own, so every layer position in the rig was solved rather than eyeballed:
-## each crop was matched back onto the flattened Assets/Images/MuridPotrait/
+## each crop was matched back onto the flattened Assets/Images/MuridPortrait/
 ## Citra.png, and Sclera/Eyelid were pinned exactly by the transparent eye
 ## cut-outs in citra_base.png, which they plug to the pixel. _GEOMETRY below
 ## freezes that solve -- if someone nudges a layer in the viewport, this suite
@@ -41,8 +41,8 @@ extends McpTestSuiteCompat
 
 const _RIG_PATH := "res://Scenes/Lobby/CitraFace.tscn"
 const _SHADER_PATH := "res://Scripts/Shaders/eye_mask.gdshader"
-const _LOBBY_SCRIPT := "res://Scripts/Lobby/loby.gd"
-const _ART_DIR := "res://Assets/Images/MuridPotrait/Citra"
+const _LOBBY_SCRIPT := "res://Scripts/Lobby/Lobby.gd"
+const _ART_DIR := "res://Assets/Images/MuridPortrait/Citra"
 
 ## Layer nodes under Canvas, back to front. Order here is draw order: the
 ## eyebrows are last because they sit over the fringe.
@@ -412,7 +412,7 @@ func test_the_rig_announces_which_student_it_belongs_to() -> void:
 
 
 func test_the_rigs_student_name_is_readable_without_instantiating_it() -> void:
-	# This is exactly how loby.gd._rig_student_name() matches a rig to a seat,
+	# This is exactly how Lobby.gd._rig_student_name() matches a rig to a seat,
 	# so the mechanism is worth pinning independently of the export default.
 	var state := (load(_RIG_PATH) as PackedScene).get_state()
 	assert_gt(state.get_node_count(), 0, "the rig scene must have a root node")

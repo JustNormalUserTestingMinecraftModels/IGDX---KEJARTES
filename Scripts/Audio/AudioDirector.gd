@@ -2,7 +2,7 @@
 extends Node
 
 ## Global audio. Autoloaded as `AudioDirector` from
-## Scenes/Audio/audio_director.tscn so every stream slot is assignable
+## Scenes/Audio/AudioDirector.tscn so every stream slot is assignable
 ## in the inspector — drop an .ogg on a slot, no code changes.
 ##
 ## Every slot may be null. Nothing here crashes on a null stream; it
@@ -265,12 +265,12 @@ var _setup_ran: bool = false
 
 func _ready() -> void:
 	# @tool makes this script a "real" instance (not a placeholder) when the
-	# in-editor test runner instantiates audio_director.tscn programmatically
+	# in-editor test runner instantiates AudioDirector.tscn programmatically
 	# and parents it under Engine.get_main_loop().root — that path must keep
 	# running full setup so tests can exercise it.
 	#
 	# But @tool ALSO means _ready() fires for real when a human just opens
-	# Scenes/Audio/audio_director.tscn in the editor (e.g. to drag an .ogg
+	# Scenes/Audio/AudioDirector.tscn in the editor (e.g. to drag an .ogg
 	# onto a slot, per Assets/Audio/README.md). In that case this node IS
 	# (or is inside) the editor's edited-scene tree, and running setup would
 	# spawn live AudioStreamPlayers in the editor and let _load_volumes()/

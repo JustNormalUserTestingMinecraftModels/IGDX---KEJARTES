@@ -13,7 +13,7 @@ extends McpTestSuite
 ## The script under test.
 const CHECK := preload("res://ci/project_check.gd")
 ## A scene that exists, has a uid and loads cleanly.
-const MAIN_SCENE := "res://Scenes/MainMenu/main_menu.tscn"
+const MAIN_SCENE := "res://Scenes/MainMenu/MainMenu.tscn"
 ## A path that exists nowhere.
 const MISSING := "res://Assets/does_not_exist.png"
 

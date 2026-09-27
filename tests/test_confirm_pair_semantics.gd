@@ -28,10 +28,10 @@ extends McpTestSuite
 
 ## Ordinary confirms. None of these should carry DangerButton.
 const NON_DESTRUCTIVE_SCENES := [
-	"res://Scenes/AturJadwal/atur_jadwal.tscn",
+	"res://Scenes/AturJadwal/AturJadwal.tscn",
 	"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn",
 	"res://Scenes/Inventory/ApplyItemScreen.tscn",
-	"res://Scenes/StudentCard/student_card.tscn",
+	"res://Scenes/StudentCard/StudentCard.tscn",
 ]
 
 ## Quitting a minigame discards the run in progress.
@@ -60,8 +60,8 @@ func test_ordinary_confirms_do_not_use_danger() -> void:
 
 
 func test_the_peringatan_dialog_pairs_primary_with_secondary() -> void:
-	var src := _read("res://Scenes/AturJadwal/atur_jadwal.tscn")
-	assert_ne(src, "", "could not open atur_jadwal.tscn")
+	var src := _read("res://Scenes/AturJadwal/AturJadwal.tscn")
+	assert_ne(src, "", "could not open AturJadwal.tscn")
 	assert_contains(src, "PrimaryButton",
 		"the PERINGATAN confirm needs one filled affirmative")
 	assert_contains(src, "SecondaryButton",
@@ -77,8 +77,8 @@ func test_the_destructive_confirm_keeps_danger() -> void:
 
 
 func test_the_cutscene_skip_and_grade_choice_are_not_destructive() -> void:
-	var src := _read("res://Scripts/CutScene/cut_scene.gd")
-	assert_ne(src, "", "could not open cut_scene.gd")
+	var src := _read("res://Scripts/CutScene/CutScene.gd")
+	assert_ne(src, "", "could not open CutScene.gd")
 	assert_false(src.contains("&\"DangerButton\""),
 		"skipping a cutscene and picking a grade discard nothing")
 
@@ -109,16 +109,16 @@ func test_the_schedule_status_badges_keep_their_colours() -> void:
 ## gold one. The rule the colour split protects is unchanged: the claim is
 ## never restyled as an ordinary confirm or as a destructive action.
 ##
-## Scoped to the ButtonClaim NODE rather than the whole of loby.tscn. The
+## Scoped to the ButtonClaim NODE rather than the whole of Lobby.tscn. The
 ## file-wide scan failed on 2026-09-14 as soon as the Lobby gained an
 ## ordinary SecondaryButton (Shorten), which it was never meant to police.
 ## test_popup_dismiss.gd documents the same trap. The invariant was always
 ## about the claim alone.
 func test_the_lobby_claim_is_never_a_confirm_or_a_danger() -> void:
-	var src := _read("res://Scenes/Lobby/loby.tscn")
-	assert_ne(src, "", "could not open loby.tscn")
+	var src := _read("res://Scenes/Lobby/Lobby.tscn")
+	assert_ne(src, "", "could not open Lobby.tscn")
 	var start := src.find('[node name="ButtonClaim" ')
-	assert_true(start != -1, "loby.tscn has no ButtonClaim node")
+	assert_true(start != -1, "Lobby.tscn has no ButtonClaim node")
 	var end := src.find("\n[", start + 1)
 	var claim := src.substr(start, (end if end != -1 else src.length()) - start)
 	assert_contains(claim, "GhostButton",

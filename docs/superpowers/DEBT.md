@@ -147,7 +147,7 @@ which gave real streams to `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
 `coin` and `event_announce`. Still aliasing existing streams:
 `specialty_match`, `tally`, `score_tick`, `combo_up`, and the BGM ids
 `exam_notice` and `run_result`. `specialty_match`'s alias is set only in
-`audio_director.tscn`; the script default is null.
+`AudioDirector.tscn`; the script default is null.
 
 **Reward-feedback shopping list (2026-09-23).** The `RewardFeedback`
 orchestrator reuses existing streams via pitch, layering (`play_chord`) and the
@@ -221,12 +221,12 @@ minigames, the debug overlay and `ThemeFactory` itself (which is allowed to):
 | `Scripts/Pengaturan.gd` | 7 |
 | `Scripts/Inventory/InventorySlot.gd` | 5 |
 | `Scripts/Inventory/ApplyStudentRow.gd` | 5 |
-| `Scripts/AturJadwal/atur_jadwal.gd` | 5 |
+| `Scripts/AturJadwal/AturJadwal.gd` | 5 |
 | `Scripts/SchoolSimulation/EventStudentSelectDialog.gd` | 3 |
 | `Scripts/Inventory/ApplyItemScreen.gd` | 3 |
 | `Scripts/AnimUtils.gd` | 3 |
 | `Scripts/SchoolSimulation/StudentStatRow.gd` | 2 |
-| `Scripts/Inventory/inventory.gd` | 2 |
+| `Scripts/Inventory/Inventory.gd` | 2 |
 | `Scripts/SchoolSimulation/StudentSummaryCard.gd` | 1 |
 | `Scripts/SchoolSimulation/SchoolDay.gd` | 1 |
 | `Scripts/SchoolSimulation/ResultCheckup.gd` | 1 |
@@ -257,7 +257,7 @@ minigame win screen's LOBBY steps past today first
 
 **`Textures` is red: five Inventory tests look up moved nodes (2026-09-16).**
 `feat(inventory): mobile redesign` (`431cc5d`) restructured
-`Scenes/Inventory/inventory.tscn` without updating two suites, so a full
+`Scenes/Inventory/Inventory.tscn` without updating two suites, so a full
 `test_run` on a clean `Textures` fails five tests and blocks every PR's merge
 gate. `tests/test_inventory.gd:94,107` want
 `MainColumn/Header/Row/BackButton`, which is now
@@ -270,14 +270,12 @@ repointing — it measures the icon's contrast and must now read the child node.
 `:244` and `:373-390` follow the item sheet's own moved nodes. Belongs to
 whoever owns the redesign.
 
-**Koperasi leftovers after the 2026-09-17 counter revamp.** Nothing references
-`Assets/Images/Shop/rak 1.jpg` or `Assets/Images/Shop/rak2.jpg` any more
-(`Illustration4.jpg` stays: ShopHub and CosmeticShop blur it). The
+**Koperasi leftovers after the 2026-09-17 counter revamp.** `Illustration4.jpg`
+stays: ShopHub and CosmeticShop blur it. The
 `ShopShelfButton` ThemeFactory variation is unused since the "KEBUTUHAN
 SEKOLAH" sign went, but
 `tests/test_lobby_style_buttons.gd:test_the_shelf_button_keeps_its_body_font_label`
-still pins it. Delete the two JPGs, the variation and that test together, then
-rebake.
+still pins it. Delete the variation and that test together, then rebake.
 
 **Saving RosterCard.tscn in the editor moves its sticky notes (2026-09-14).**
 `Scripts/StudentList/StickyNote.gd` is `@tool`, and its `_ready()` calls
@@ -328,14 +326,14 @@ emoji at `SchoolDay.gd:537-538` and `:628-655` are **not** display text: they
 are icon keys that `_add_pill()` strips at `:660-682` and swaps for a texture.
 Leave those alone.
 
-**The remaining `pngwing.com` stock files want replacing (2026-09-22).**
-`pngwing.com (1).png` went with the back-button pass, which was a licensing
-tidy-up as well as a visual one: the filename is verbatim from a free-PNG
-aggregator, the project records no licence for it, and most of that catalogue
-is non-commercial. Still in the tree: `(2).png` (pinned out of the Peringatan
-dialog by `test_atur_jadwal.gd:641`), `(3).png` (live at
-`student_card.tscn:14`) and `(6).png` (already replaced on Koperasi's basket
-per `CHANGELOG.md:1461`). Replace them with authored art before any release.
+**Stock art still to replace (2026-09-22).** `pngwing.com (1).png` went
+with the back-button pass, which was a licensing tidy-up as well as a
+visual one: the filename was verbatim from a free-PNG aggregator, the
+project records no licence for it, and most of that catalogue is
+non-commercial. The clean-code renames deleted the unused copies and
+renamed the last live one to `Assets/Images/UI/stamp_original.png` (the
+approval stamp at `StudentCard.tscn:14`); it is still that unlicensed
+stock image. Replace it with authored art before any release.
 
 **TesNotice's card collapses (2026-09-11).** `NoticeCard` is a
 `NinePatchRect`, not a Container, so the anchored `Content` never sizes it. It
@@ -480,7 +478,7 @@ widget via `project_run` instead, which exercises it fine.
     `*_eyelid`, `*_eyebrows`, 30 files) minify at the same 3.2-3.5x as the
     `*_base.png` that did get a chain, and they animate. Left out to keep the
     change reviewable; add them the same way if blinking shimmers.
-  - `UI/loby_no_tables.png` is 768x1376 drawn full-screen — **upscaled 1.41x**,
+  - `UI/lobby_no_tables.png` is 768x1376 drawn full-screen — **upscaled 1.41x**,
     the largest surface on the highest-traffic screen. No code fix exists;
     this one needs a bigger source from the artist. Same for
     `Shop/UI/bg_inventory_blur.png` (1.41x up) and `UI/BG.jpg` (1.47x up,
@@ -508,7 +506,7 @@ widget via `project_run` instead, which exercises it fine.
   on a phone it is centred.
 
 - **Koperasi polish leftovers (2026-09-18).** `ShopMessageWarning` and
-  `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `koprasi.gd` after
+  `ShopMessageDanger` (`ThemeFactory.gd`) are unused by `Koperasi.gd` after
   the final polish pass -- nothing in the shop currently shows a warning or
   danger message panel. A
   purchase flight already airborne when the player collapses the tray still

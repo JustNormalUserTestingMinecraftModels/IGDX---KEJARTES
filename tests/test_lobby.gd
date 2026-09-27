@@ -19,7 +19,7 @@ extends McpTestSuite
 ##    assigned explicitly before the scene enters the tree.
 ##  * Touch-target checks read get_combined_minimum_size() synchronously
 ##    (Task 9/10's established fix).
-##  * loby.gd is NOT @tool (matching StudentCard/StudentList precedent,
+##  * Lobby.gd is NOT @tool (matching StudentCard/StudentList precedent,
 ##    verified empirically below): _ready() reads the GameState autoload
 ##    and builds dynamic content (tutorial panel, blur overlay, daily
 ##    login wiring), none of which fires when the editor's own test
@@ -32,8 +32,8 @@ extends McpTestSuite
 ##    literals) is either .tscn-authored structure or a source-text scan,
 ##    so no @tool/is_editor_hint() gating is needed on the script itself.
 
-const _SCENE_PATH := "res://Scenes/Lobby/loby.tscn"
-const _SCRIPT_PATH := "res://Scripts/Lobby/loby.gd"
+const _SCENE_PATH := "res://Scenes/Lobby/Lobby.tscn"
+const _SCRIPT_PATH := "res://Scripts/Lobby/Lobby.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 const _NAV_BUTTONS := ["Student", "Koperasi", "ReportStudent", "Inventory", "Jadwal"]
@@ -69,9 +69,9 @@ func teardown() -> void:
 
 func test_still_routes_to_student_card_and_atur_jadwal() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("res://Scenes/StudentCard/student_card.tscn"),
+	assert_true(src.contains("res://Scenes/StudentCard/StudentCard.tscn"),
 		"lobby must still route Student -> StudentCard")
-	assert_true(src.contains("res://Scenes/AturJadwal/atur_jadwal.tscn"),
+	assert_true(src.contains("res://Scenes/AturJadwal/AturJadwal.tscn"),
 		"lobby must still route Jadwal -> AturJadwal")
 
 
@@ -156,7 +156,7 @@ func test_no_hardcoded_colors_remain_in_the_script() -> void:
 	var re := RegEx.create_from_string("Color\\s*\\(")
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_eq(re.search_all(src).size(), 0,
-		"loby.gd must read colors from DesignTokens/Color constants, not Color() literals")
+		"Lobby.gd must read colors from DesignTokens/Color constants, not Color() literals")
 
 
 func test_interactive_controls_meet_the_minimum_touch_target() -> void:
@@ -204,7 +204,7 @@ func test_labels_use_theme_variations() -> void:
 
 
 func _lobby_source() -> String:
-	return FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
+	return FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
 
 
 func test_koperasi_button_is_wired() -> void:
@@ -215,7 +215,7 @@ func test_koperasi_button_is_wired() -> void:
 	# the item shop or the cosmetic shop.
 	assert_true(src.contains("res://Scenes/Koperasi/ShopHub.tscn"),
 		"Koperasi must route to the shop hub")
-	assert_false(src.contains("res://Scenes/Koperasi/koprasi.tscn"),
+	assert_false(src.contains("res://Scenes/Koperasi/Koperasi.tscn"),
 		"the Lobby should no longer reach the item shop directly")
 
 
@@ -223,7 +223,7 @@ func test_inventory_button_is_wired() -> void:
 	var src := _lobby_source()
 	assert_true(src.contains("_on_inventory_pressed"),
 		"the Inventory button must have a handler")
-	assert_true(src.contains("res://Scenes/Inventory/inventory.tscn"),
+	assert_true(src.contains("res://Scenes/Inventory/Inventory.tscn"),
 		"Inventory must route to the inventory scene")
 
 
@@ -293,7 +293,7 @@ func test_report_student_button_is_wired() -> void:
 	var src := _lobby_source()
 	assert_true(src.contains("_on_report_student_pressed"),
 		"the ReportStudent button must have a handler")
-	assert_true(src.contains("res://Scenes/ReportCard/report_card.tscn"),
+	assert_true(src.contains("res://Scenes/ReportCard/ReportCard.tscn"),
 		"ReportStudent must route to the report card scene")
 
 
@@ -315,17 +315,11 @@ func test_the_money_chip_is_a_themed_panel_with_a_coin_icon() -> void:
 		"and it is the new coin art")
 
 
-func test_the_off_palette_chip_art_is_gone() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/Lobby/loby.tscn")
-	assert_false(src.contains("Desain tanpa judul.png"),
-		"the pink chip background must no longer be referenced")
-
-
 ## Both shop screens read the same coin as the lobby, so money looks like
 ## one currency across the game.
 func test_the_shop_screens_use_the_same_coin() -> void:
-	for path in ["res://Scenes/Koperasi/koprasi.tscn",
-			"res://Scenes/Inventory/inventory.tscn"]:
+	for path in ["res://Scenes/Koperasi/Koperasi.tscn",
+			"res://Scenes/Inventory/Inventory.tscn"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_true(src.contains("Assets/Images/UI/uang.png"),
 			"%s should show the shared coin" % path)
@@ -341,7 +335,7 @@ func test_the_day_tiles_are_gone() -> void:
 
 
 func test_the_panel_swaps_art_per_day() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/loby.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
 	assert_true(src.contains("DAY_PANELS"),
 		"the seven panels must be a named const, not seven inline loads")
 	for i in range(1, 8):

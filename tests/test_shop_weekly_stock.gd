@@ -4,8 +4,8 @@ extends McpTestSuite
 ## The Koperasi shelf restocks once a week (2026-09-15). GameState holds the
 ## week's four items and the ones bought: shop_stock_for_week() rolls on the
 ## first call of a (grade, week) and returns the same list after, and a new
-## roll clears the sold list. rakbarang_1.gd hides an item that is sold or
-## already in the basket, and koprasi.gd's Beli marks the basket sold.
+## roll clears the sold list. KoperasiStage.gd hides an item that is sold or
+## already in the basket, and Koperasi.gd's Beli marks the basket sold.
 ##
 ## GameState is the live autoload: setup() snapshots every field these tests
 ## write and teardown() puts it back, so the editor's session is untouched.
@@ -211,10 +211,10 @@ func test_forget_session_clears_the_shop() -> void:
 
 # ─── the shelf
 
-const RAK_PATH := "res://Scripts/Koperasi/rakbarang_1.gd"
-const KOPERASI_PATH := "res://Scripts/Koperasi/koprasi.gd"
-## rakbarang_1.gd declares no class_name; reached through a preloaded const.
-const RakScript := preload("res://Scripts/Koperasi/rakbarang_1.gd")
+const RAK_PATH := "res://Scripts/Koperasi/KoperasiStage.gd"
+const KOPERASI_PATH := "res://Scripts/Koperasi/Koperasi.gd"
+## KoperasiStage.gd declares no class_name; reached through a preloaded const.
+const RakScript := preload("res://Scripts/Koperasi/KoperasiStage.gd")
 
 
 ## Slot 0 and 2 hold the pair.

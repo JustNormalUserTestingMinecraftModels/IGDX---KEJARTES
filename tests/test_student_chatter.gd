@@ -3,7 +3,7 @@ extends McpTestSuite
 
 ## Student chatter in the Lobby (2026-09-19 spec): the line catalog and its
 ## shuffle-bag picker, the StudentChatBubble's placement/flip/FSM, the
-## LobbyChatter's spam guard, idle timer and gate, and loby.tscn's wiring.
+## LobbyChatter's spam guard, idle timer and gate, and Lobby.tscn's wiring.
 ## @tool, and no test here is a coroutine: tweens are started but never
 ## awaited, so only synchronous state (text, position, pivot, busy) is read.
 
@@ -344,8 +344,8 @@ func test_no_seats_no_chatter() -> void:
 
 # ----- Lobby wiring -----
 
-const _LOBY_TSCN := "res://Scenes/Lobby/loby.tscn"
-const _LOBY_GD := "res://Scripts/Lobby/loby.gd"
+const _LOBY_TSCN := "res://Scenes/Lobby/Lobby.tscn"
+const _LOBY_GD := "res://Scripts/Lobby/Lobby.gd"
 
 
 func test_every_portrait_slot_has_a_chat_anchor() -> void:

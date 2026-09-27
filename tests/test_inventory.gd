@@ -8,8 +8,8 @@ extends McpTestSuiteCompat
 func suite_name() -> String:
 	return "inventory"
 
-const _SCENE := "res://Scenes/Inventory/inventory.tscn"
-const _SCRIPT := "res://Scripts/Inventory/inventory.gd"
+const _SCENE := "res://Scenes/Inventory/Inventory.tscn"
+const _SCRIPT := "res://Scripts/Inventory/Inventory.gd"
 const _THEME := "res://Assets/Theme/kejartes_theme.tres"
 
 func _src() -> String:
@@ -19,7 +19,7 @@ func _raw() -> String:
 	return FileAccess.get_file_as_string(_SCENE)
 
 func test_scene_loads_and_instantiates() -> void:
-	assert_true(ResourceLoader.exists(_SCENE), "inventory.tscn must exist")
+	assert_true(ResourceLoader.exists(_SCENE), "Inventory.tscn must exist")
 	var s := (load(_SCENE) as PackedScene).instantiate()
 	assert_true(s != null, "must instantiate")
 	s.free()
@@ -68,9 +68,9 @@ func test_script_routes_to_sheet_and_apply_screen() -> void:
 
 func test_back_returns_to_lobby_with_a_transition_style() -> void:
 	var src := _src()
-	assert_contains(src, "res://Scenes/Lobby/loby.tscn", "back goes to the lobby")
+	assert_contains(src, "res://Scenes/Lobby/Lobby.tscn", "back goes to the lobby")
 	assert_contains(src, "Transition.Style.", "navigation names a transition style")
-	assert_false(src.contains("koprasi.tscn"), "must not link back into the shop")
+	assert_false(src.contains("Koperasi.tscn"), "must not link back into the shop")
 
 func test_uses_audio_director() -> void:
 	assert_contains(_src(), "AudioDirector.play_sfx", "uses AudioDirector")

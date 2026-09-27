@@ -13,7 +13,7 @@
 // radius and rim width are therefore in real pixels at whatever size the
 // node is laid out to, with nothing for a script to keep in sync.
 //
-// The colours are written from DesignTokens by atur_jadwal.gd; the defaults
+// The colours are written from DesignTokens by AturJadwal.gd; the defaults
 // here are only what the editor shows before that runs.
 shader_type canvas_item;
 

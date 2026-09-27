@@ -3,7 +3,7 @@ class_name DayStickyNote
 extends Control
 
 ## One sticky note in AturJadwal's day row. Five instances sit under
-## atur_jadwal.tscn's BGHari (named Senin..Jumat); atur_jadwal.gd drives each
+## AturJadwal.tscn's BGHari (named Senin..Jumat); AturJadwal.gd drives each
 ## one every time the selected student or their schedule changes, calling
 ## exactly one of show_empty() / show_scheduled() / show_holiday().
 ##
@@ -28,12 +28,12 @@ extends Control
 ## Engine.is_editor_hint(); the pressed re-emit is pure wiring and stays
 ## ungated so tests can exercise it.
 
-## Emitted when the inner Paper button is pressed. atur_jadwal.gd connects
+## Emitted when the inner Paper button is pressed. AturJadwal.gd connects
 ## this exactly where it used to connect the old TextureButton's `pressed`.
 signal pressed
 
 ## Code category -> the Indonesian word the player reads. Kept identical to
-## the picker's ActivityTile instances in atur_jadwal.tscn (asserted by both
+## the picker's ActivityTile instances in AturJadwal.tscn (asserted by both
 ## suites).
 const DISPLAY_NAMES := {
 	"Akademis": "Akademik",
@@ -112,7 +112,7 @@ func _ready() -> void:
 		if not _paper.pressed.is_connected(_on_paper_pressed):
 			_paper.pressed.connect(_on_paper_pressed)
 		_apply_paper_gradient()
-	# Default look until atur_jadwal.gd calls a state method.
+	# Default look until AturJadwal.gd calls a state method.
 	if _state == "":
 		show_empty()
 
@@ -138,7 +138,7 @@ func show_empty() -> void:
 
 
 ## Paints the scheduled look. This is a repaint only -- it never plays the
-## assign-pop. atur_jadwal.gd::_on_activity_selected calls play_assign_pop()
+## assign-pop. AturJadwal.gd::_on_activity_selected calls play_assign_pop()
 ## itself on the one note the player just assigned (Design decision #8).
 func show_scheduled(category: String) -> void:
 	if _subject_label:
@@ -277,7 +277,7 @@ func play_assign_pop() -> void:
 
 ## Plays the specialty-match reaction on top of the normal assign-pop: a gold
 ## particle burst from the note centre, a glow pulse, and a persistent star.
-## No-op in the editor. atur_jadwal.gd calls this INSTEAD OF play_assign_pop()
+## No-op in the editor. AturJadwal.gd calls this INSTEAD OF play_assign_pop()
 ## when the assigned activity is the selected student's specialty.
 func play_specialty_match() -> void:
 	play_assign_pop()

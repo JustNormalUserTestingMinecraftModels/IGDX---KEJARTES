@@ -8,8 +8,8 @@ extends McpTestSuite
 
 const _GAME_SETTINGS := "res://Scripts/GameSettings.gd"
 const _SCHOOL_DAY := "res://Scripts/SchoolSimulation/SchoolDay.gd"
-const _LOBBY_SCENE := "res://Scenes/Lobby/loby.tscn"
-const _LOBBY_SCRIPT := "res://Scripts/Lobby/loby.gd"
+const _LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
+const _LOBBY_SCRIPT := "res://Scripts/Lobby/Lobby.gd"
 const _SETTINGS_SCENE := "res://Scenes/UI/Settings.tscn"
 const _SETTINGS_SCRIPT := "res://Scripts/UI/Settings.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"

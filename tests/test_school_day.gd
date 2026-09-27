@@ -116,7 +116,7 @@ func test_week_end_routing_is_unchanged() -> void:
 		"the final week now exits into the Tes Besar notice, not straight to the stat check")
 	assert_false(src.contains("res://Scenes/EndGame/SemesterEnd.tscn"),
 		"SchoolDay no longer reaches the stat check directly")
-	assert_true(src.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_true(src.contains("res://Scenes/Lobby/Lobby.tscn"),
 		"a non-final week must still route back to the Lobby")
 	assert_true(src.contains("completed_week >= max_weeks"),
 		"the routing fork condition must be untouched")

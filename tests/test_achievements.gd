@@ -209,7 +209,7 @@ func test_base_minigame_exposes_result_and_scales_time() -> void:
 func test_prize_hooks_are_wired() -> void:
 	assert_true(_src("res://Scripts/SchoolSimulation/StudentData.gd").contains("multiplier(\"minigame_stat\")"))
 	assert_true(_src("res://Scripts/Inventory/Cart.gd").contains("multiplier(\"shop_price\")"))
-	assert_true(_src("res://Scripts/Koperasi/rakbarang_1.gd").contains("Cart.price_of("))
+	assert_true(_src("res://Scripts/Koperasi/KoperasiStage.gd").contains("Cart.price_of("))
 	assert_true(_src("res://Scripts/EndGame/RunResult.gd").contains("Achievements.record_grade_passed(GameState.current_grade)"))
 	assert_true(_src("res://Scripts/GameState.gd").contains("Achievements.reset()"))
 

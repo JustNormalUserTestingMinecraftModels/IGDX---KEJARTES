@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bdfwfoth4k3ke"]
 
 [ext_resource type="Script" uid="uid://dtdc1n4xiegsi" path="res://Scripts/LevelSelect/PupilPeek.gd" id="1_peek"]
-[ext_resource type="Texture2D" uid="uid://ckkwq8tubxn64" path="res://Assets/Images/MuridPotrait/Andi.png" id="2_andi"]
+[ext_resource type="Texture2D" uid="uid://ckkwq8tubxn64" path="res://Assets/Images/MuridPortrait/Andi.png" id="2_andi"]
 
 [node name="PupilPeek" type="Control" unique_id=1381941102]
 custom_minimum_size = Vector2(110, 110)

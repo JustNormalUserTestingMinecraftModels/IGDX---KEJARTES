@@ -47,7 +47,7 @@ const PIN_STEP := 20.0
 ## down. The five days on a card are dealt different slots so the strip
 ## reads as hand-pinned rather than machine-aligned. The dealing is
 ## deterministic per student and day (see _setup_students in
-## student_list.gd) -- a note must not jump to a new height every time
+## StudentList.gd) -- a note must not jump to a new height every time
 ## the player swipes back to that card.
 @export_range(0, 2) var pin_slot: int = 1:
 	set(value):
@@ -56,7 +56,7 @@ const PIN_STEP := 20.0
 			_apply_pin()
 
 ## The schedule category's glyph, shown beside the activity name. Set
-## from student_list.gd per the day's scheduled category so every day in
+## from StudentList.gd per the day's scheduled category so every day in
 ## the week strip reads at a glance.
 @export var icon_texture: Texture2D:
 	set(value):

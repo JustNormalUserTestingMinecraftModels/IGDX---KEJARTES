@@ -146,7 +146,7 @@ func _run_check() -> void:
 ## a look -- so it would never fire here. _input() runs before GUI input
 ## handling, so the covering Scrim cannot swallow it first; this follows
 ## the precedent in
-## cut_scene.gd's _input(), the other full-screen tap-anywhere beat in this
+## CutScene.gd's _input(), the other full-screen tap-anywhere beat in this
 ## codebase. Do not "tidy" this back to the post-GUI callback -- the tap
 ## would silently stop firing.
 ##

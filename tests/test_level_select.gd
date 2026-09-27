@@ -9,13 +9,13 @@ extends McpTestSuite
 ##
 ## Must be @tool, and no test here may be a coroutine.
 
-const LS := preload("res://Scripts/LevelSelect/level_select.gd")
-const STUDENT_CARD := preload("res://Scripts/StudentCard/student_card.gd")
+const LS := preload("res://Scripts/LevelSelect/LevelSelect.gd")
+const STUDENT_CARD := preload("res://Scripts/StudentCard/StudentCard.gd")
 
 const LayoutFrame := preload("res://tests/layout_frame.gd")
 
-const _SCRIPT_PATH := "res://Scripts/LevelSelect/level_select.gd"
-const _SCENE_PATH := "res://Scenes/LevelSelect/level_select.tscn"
+const _SCRIPT_PATH := "res://Scripts/LevelSelect/LevelSelect.gd"
+const _SCENE_PATH := "res://Scenes/LevelSelect/LevelSelect.tscn"
 const _CONFIRM_SCRIPT := "res://Scripts/LevelSelect/OpenAmplopConfirm.gd"
 
 ## The screen, stood up once at the design size for the whole suite: per-test
@@ -88,7 +88,7 @@ func test_roster_size_is_student_cards_own_count() -> void:
 	assert_eq([LS.roster_size_for(7), LS.roster_size_for(8), LS.roster_size_for(9)],
 		[2, 3, 4], "2/3/4 pupils by grade")
 	var src := FileAccess.get_file_as_string(
-		"res://Scripts/StudentCard/student_card.gd")
+		"res://Scripts/StudentCard/StudentCard.gd")
 	assert_true(src.contains("MAX_APPROVE = max_approve_for("),
 		"StudentCard reads its own count from the shared function")
 
@@ -144,7 +144,7 @@ func test_amplop_card_applies_its_exports() -> void:
 ## open() shows exactly `portraits.size()` pupils and reseal() hides them again.
 func test_amplop_card_open_shows_the_roster_and_reseals() -> void:
 	var card := _card()
-	var tex := load("res://Assets/Images/MuridPotrait/Andi.png") as Texture2D
+	var tex := load("res://Assets/Images/MuridPortrait/Andi.png") as Texture2D
 	var tw: Tween = card.open([tex, tex, tex])
 	tw.kill()
 	var pupils := card.get_node("Bob/Pupils") as Control
@@ -312,7 +312,7 @@ func test_confirm_exposes_present_and_signals() -> void:
 func test_confirm_presents_and_dismisses() -> void:
 	var confirm: Control = _screen._confirm
 	assert_false(confirm.visible, "hidden until a grade is opened")
-	var tex := load("res://Assets/Images/MuridPotrait/Citra.png") as Texture2D
+	var tex := load("res://Assets/Images/MuridPortrait/Citra.png") as Texture2D
 	var tw: Tween = confirm.present(9, [tex, tex, tex, tex], _screen._brief_line(9))
 	tw.kill()
 	assert_true(confirm.visible, "present() shows it")
@@ -337,15 +337,15 @@ func test_accept_sets_grade_and_transitions() -> void:
 	assert_eq(src.count("Transition.change_scene("), 1, "a single hand-off")
 	assert_true(src.contains("Transition.change_scene(NEXT_SCENE, Transition.Style.WIPE)"),
 		"wipes like MainMenu's start did")
-	assert_eq(LS.NEXT_SCENE, "res://Scenes/CutScene/cut_scene.tscn", "into the intro")
+	assert_eq(LS.NEXT_SCENE, "res://Scenes/CutScene/CutScene.tscn", "into the intro")
 
 
 # ── Flow ─────────────────────────────────────────────────────────────────────
 
 ## MainMenu routes through the level select exactly when the picker is on.
 func test_main_menu_routes_through_the_level_select() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/MainMenu/main_menu.gd")
-	assert_true(src.contains('"res://Scenes/LevelSelect/level_select.tscn"'),
+	var src := FileAccess.get_file_as_string("res://Scripts/MainMenu/MainMenu.gd")
+	assert_true(src.contains('"res://Scenes/LevelSelect/LevelSelect.tscn"'),
 		"MainMenu knows the level select")
 	assert_true(src.contains("GameState.is_level_select_enabled()"),
 		"and asks GameState whether to go there")
@@ -354,11 +354,11 @@ func test_main_menu_routes_through_the_level_select() -> void:
 ## CutScene's runtime-built picker is gone; it defaults to Kelas 7 only when
 ## no grade was picked upstream, and its Debug toggle comes back here.
 func test_cutscene_hands_grade_picking_to_the_level_select() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/cut_scene.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/CutScene.gd")
 	for gone in ["PILIH TINGKAT KELAS", "_setup_level_select_ui", "level_select_overlay",
 			"_create_grade_button", "show_level_select_modal"]:
-		assert_false(src.contains(gone), "cut_scene.gd must not mention " + gone)
+		assert_false(src.contains(gone), "CutScene.gd must not mention " + gone)
 	assert_true(src.contains("if not GameState.is_level_select_enabled():"),
 		"CutScene defaults the grade only when the picker is off")
-	assert_true(src.contains('"res://Scenes/LevelSelect/level_select.tscn"'),
+	assert_true(src.contains('"res://Scenes/LevelSelect/LevelSelect.tscn"'),
 		"the Debug toggle routes to the level select")

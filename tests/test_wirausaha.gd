@@ -9,7 +9,7 @@ extends McpTestSuite
 func suite_name() -> String:
 	return "wirausaha"
 
-const _JADWAL_SCENE := "res://Scenes/AturJadwal/atur_jadwal.tscn"
+const _JADWAL_SCENE := "res://Scenes/AturJadwal/AturJadwal.tscn"
 const _SCHOOL_DAY_SCRIPT := "res://Scripts/SchoolSimulation/SchoolDay.gd"
 
 ## Builds a throwaway approved_students roster and returns the caller's
@@ -36,7 +36,7 @@ func test_schedule_popup_offers_wirausaha() -> void:
 ## rather than one hardcoded bind("Wirausaha") call -- so Wirausaha's wiring
 ## is covered by the same generic loop as every other category.
 func test_jadwal_script_binds_wirausaha() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd")
 	assert_true(src.contains("_on_tile_picked.bind(tile.category)"),
 		"every ActivityTile, Wirausaha included, must connect via tile.category")
 

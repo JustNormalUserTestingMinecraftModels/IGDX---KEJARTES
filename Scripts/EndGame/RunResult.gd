@@ -250,13 +250,13 @@ func _apply_progression() -> String:
 			GameState.grade7_student_ids.clear()
 			GameState.grade8_student_ids.clear()
 			GameState.returned_from_student_card = false
-			return "res://Scenes/MainMenu/main_menu.tscn"
+			return "res://Scenes/MainMenu/MainMenu.tscn"
 		else:
 			# Grade 8/9 loss: retry the same grade at StudentCard. Keep the
 			# roster and grade7_student_ids so locked students stay locked and
 			# the player only needs to re-pick the new-grade slot(s).
 			GameState.returned_from_student_card = false
-			return "res://Scenes/StudentCard/student_card.tscn"
+			return "res://Scenes/StudentCard/StudentCard.tscn"
 
 	Achievements.record_grade_passed(GameState.current_grade)
 	if GameState.current_grade < 9:
@@ -267,7 +267,7 @@ func _apply_progression() -> String:
 		GameState.returned_from_student_card = false
 		GameState.lobby_tutorial_completed = true
 		GameState.run_stats.reset()
-		return "res://Scenes/StudentCard/student_card.tscn"
+		return "res://Scenes/StudentCard/StudentCard.tscn"
 	else:
 		# The game is beaten: unlock level select and reset to Kelas 7.
 		# set_grade() resets current_grade/minggu_ke/run_stats/
@@ -287,13 +287,13 @@ func _apply_progression() -> String:
 		GameState.lobby_tutorial_completed = false
 
 		# Tutorial flags, carried over from the now-deleted SemesterEnd's old grade-7
-		# full-restart branch (see Scripts/CutScene/cut_scene.gd for the
+		# full-restart branch (see Scripts/CutScene/CutScene.gd for the
 		# same pattern still in use there).
-		var AturJadwalScript = load("res://Scripts/AturJadwal/atur_jadwal.gd")
+		var AturJadwalScript = load("res://Scripts/AturJadwal/AturJadwal.gd")
 		if AturJadwalScript and "tutorial_phase1_done" in AturJadwalScript:
 			AturJadwalScript.tutorial_phase1_done = false
 			AturJadwalScript.tutorial_phase3_done = false
-		var LobbyScript = load("res://Scripts/Lobby/loby.gd")
+		var LobbyScript = load("res://Scripts/Lobby/Lobby.gd")
 		if LobbyScript and "tutorial_shown" in LobbyScript:
 			LobbyScript.tutorial_shown = false
-		return "res://Scenes/MainMenu/main_menu.tscn"
+		return "res://Scenes/MainMenu/MainMenu.tscn"

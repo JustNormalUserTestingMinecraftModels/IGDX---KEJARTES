@@ -4,8 +4,8 @@ extends PanelContainer
 
 ## One item tile in the inventory grid.
 ##
-## Instantiated by Scripts/Inventory/inventory.gd once per owned item. Before
-## this scene existed, inventory.gd rebuilt eight nodes and two StyleBoxFlats
+## Instantiated by Scripts/Inventory/Inventory.gd once per owned item. Before
+## this scene existed, Inventory.gd rebuilt eight nodes and two StyleBoxFlats
 ## per item on every category-filter change.
 ##
 ## The card is a bright paper surface topped by a full-strength category band
@@ -49,7 +49,7 @@ const _GLOW_CENTER_ALPHA := 0.5
 @onready var quantity_label: Label = $Layout/Body/BodyCol/QuantityRow/QuantityLabel
 @onready var _shine: ColorRect = $Shine
 
-## The item this tile shows. Read by inventory.gd when the tile is tapped.
+## The item this tile shows. Read by Inventory.gd when the tile is tapped.
 var item: ItemData = null
 
 var _normal_style: StyleBoxFlat

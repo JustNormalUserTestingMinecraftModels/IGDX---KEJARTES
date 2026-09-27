@@ -1303,7 +1303,7 @@ func _on_back_pressed() -> void:
 	if completed_week >= max_weeks:
 		Transition.change_scene("res://Scenes/EndGame/TesNotice.tscn")
 	else:
-		Transition.change_scene("res://Scenes/Lobby/loby.tscn")
+		Transition.change_scene("res://Scenes/Lobby/Lobby.tscn")
 
 # ── End Simulation Tutorial Implementation ──────────────────────────────────────
 func _show_end_simulation_tutorial() -> void:

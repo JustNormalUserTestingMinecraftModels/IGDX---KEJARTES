@@ -451,3 +451,29 @@ func test_the_title_reads_over_the_letterbox_bar() -> void:
 		screen.get_node("MarginContainer/Column/TitleLabel").theme_type_variation)
 	screen.free()
 	assert_eq(variation, "ResultHeroLabel", "gold with a dark outline, not dark brown")
+
+
+## A beaten game resets each first-run tutorial flag on the script that owns
+## it. Every entry must be a real static var there: the StudentList flag was
+## once pointed at Lobby.gd, which has none, and a silent guard hid it.
+func test_every_tutorial_flag_to_reset_exists_on_its_script() -> void:
+	var consts: Dictionary = (load("res://Scripts/EndGame/RunResult.gd") as GDScript).get_script_constant_map()
+	var flags: Dictionary = consts.get("TUTORIAL_FLAGS", {})
+	assert_true(flags.has("res://Scripts/StudentList/StudentList.gd"),
+		"StudentList's walkthrough flag is reset")
+	for path: String in flags:
+		var owner := load(path) as GDScript
+		for flag: String in flags[path]:
+			assert_true(owner != null and flag in owner, "%s has a static %s" % [path, flag])
+
+
+## The reset really clears the flag, through the same helper the game uses.
+func test_the_flag_reset_clears_the_student_list_walkthrough() -> void:
+	var list := load("res://Scripts/StudentList/StudentList.gd") as GDScript
+	var run_result := load("res://Scripts/EndGame/RunResult.gd") as GDScript
+	var was: Variant = list.get("tutorial_shown")
+	list.set("tutorial_shown", true)
+	run_result.call("_reset_static_flag", "res://Scripts/StudentList/StudentList.gd", "tutorial_shown")
+	var after: Variant = list.get("tutorial_shown")
+	list.set("tutorial_shown", was)
+	assert_eq(after, false, "tutorial_shown is back to false")

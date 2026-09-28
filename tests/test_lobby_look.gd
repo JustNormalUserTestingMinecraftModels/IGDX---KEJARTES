@@ -249,3 +249,42 @@ func test_no_world_screen_fades_its_root_alone() -> void:
 		if src.contains("tween_property(self, \"modulate"):
 			assert_true(src.contains("tween_property(room, \"modulate"),
 				scene_path + ": its root fade must also fade %Room")
+
+
+## Minigame -> [its backdrop node, whether it throws shafts]. They stay on
+## layer 0: SchoolDay hosts a minigame inside its own tree, over its own
+## layer-0 background, so a World at -1 would draw under that and never show,
+## and SchoolDay's fade-in on the minigame's root would not reach it. So the
+## light sits directly after the backdrop and nothing blooms (spec, pass 3).
+## BuatBatik takes no shafts, so no ray crosses the drawing canvas.
+const MINIGAMES := {
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background", true],
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background", true],
+	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background", true],
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Background", true],
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["FieldBG", true],
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": ["Background", true],
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background", true],
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background", false],
+}
+
+
+func test_every_minigame_lights_its_backdrop_on_layer_0() -> void:
+	for scene_path in MINIGAMES:
+		var c := Census.of(scene_path)
+		var backdrop: String = MINIGAMES[scene_path][0]
+		var throws_shafts: bool = MINIGAMES[scene_path][1]
+		var kids := Census.children_of(c, ".")
+		assert_eq(kids.find(backdrop), 0, scene_path + ": the backdrop is still drawn first")
+		assert_eq(kids.find("Light"), 1, scene_path + ": the light sits right after it")
+		assert_eq(Census.entry(c, "Light").get("instance"), LIGHT_POOL, scene_path + ": a LightPool")
+		if throws_shafts:
+			assert_eq(kids.find("Shafts"), 2, scene_path + ": then the shafts")
+			assert_eq(Census.entry(c, "Shafts").get("instance"), SUN_SHAFTS, scene_path + ": SunShafts")
+		else:
+			assert_eq(kids.find("Shafts"), -1, scene_path + ": no shafts")
+		for e in c:
+			assert_ne(e["instance"], AMBIENT_GLOW, scene_path + ": no Glow on layer 0")
+			if e["type"] == "CanvasLayer":
+				assert_true(int(Census.prop(e, "layer", 1)) >= 0,
+					"%s: %s must not draw under SchoolDay's background" % [scene_path, e["path"]])

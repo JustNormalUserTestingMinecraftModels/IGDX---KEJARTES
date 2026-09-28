@@ -1,11 +1,12 @@
 @tool
 extends McpTestSuite
 
-## DailyLoginPanel (2026-09-28 daily-login polish, Task 1): the Lobby's
+## DailyLoginPanel (2026-09-28 daily-login polish): the Lobby's
 ## daily-login popup as its own component. Pins the streak rules (the day
-## after 7 is 1; a missed day breaks the streak) and the claim's GameState
-## writes (money, date, advanced day; a second claim the same day is a
-## no-op), plus a source scan that the Lobby no longer owns any of it.
+## after 7 is 1; a missed day breaks the streak), the escalating reward
+## curve and the claim's GameState writes (money, date, advanced day; a
+## second claim the same day is a no-op), plus a source scan that the
+## Lobby no longer owns any of it.
 ##
 ## Suite is @tool and no test is a coroutine, per the runner constraints.
 ## The panel under test is a bare DailyLoginPanel.new() that never enters
@@ -17,6 +18,8 @@ const _PANEL_SCRIPT := "res://Scripts/Lobby/DailyLoginPanel.gd"
 const _TODAY := "2026-09-28"
 const _YESTERDAY := "2026-09-27"
 const _TWO_DAYS_AGO := "2026-09-26"
+## What a full seven-day streak pays: the priciest Koperasi item.
+const WEEKLY_TOTAL := 1500
 
 
 func suite_name() -> String:
@@ -71,16 +74,44 @@ func test_streak_breaks_only_after_a_missed_day() -> void:
 		"a claim today is not a broken streak")
 
 
-func test_claim_pays_and_advances() -> void:
-	GameState.daily_login_day = 3
-	GameState.last_claim_date = _YESTERDAY
-	var before: int = GameState.player_money
-	var paid: int = _panel.claim(_TODAY)
-	assert_eq(paid, DailyLoginPanel.DAILY_REWARD, "a claim pays the daily reward")
-	assert_eq(paid, 10, "the flat reward is 10G until the reward curve lands")
-	assert_eq(GameState.player_money, before + paid, "the reward lands in the wallet")
-	assert_eq(GameState.daily_login_day, 4, "the streak advances a day")
-	assert_eq(GameState.last_claim_date, _TODAY, "the claim date is today")
+## Task 2: the reward escalates day by day to a day-7 peak, and a full
+## week pays WEEKLY_TOTAL.
+func test_reward_curve_shape() -> void:
+	var curve: Array[int] = DailyLoginPanel.REWARD_CURVE
+	assert_eq(curve.size(), DailyLoginPanel.STREAK_DAYS, "one reward per streak day")
+	var total: int = 0
+	for index: int in curve.size():
+		total += curve[index]
+		if index > 0:
+			assert_true(curve[index] > curve[index - 1],
+				"day %d pays more than day %d" % [index + 1, index])
+	assert_eq(curve.max(), curve[DailyLoginPanel.STREAK_DAYS - 1],
+		"the last streak day pays the most")
+	assert_eq(total, WEEKLY_TOTAL, "a full week pays %dG" % WEEKLY_TOTAL)
+
+
+func test_claim_pays_the_days_reward() -> void:
+	for day: int in range(1, DailyLoginPanel.STREAK_DAYS + 1):
+		GameState.daily_login_day = day
+		GameState.last_claim_date = _YESTERDAY
+		var before: int = GameState.player_money
+		var paid: int = _panel.claim(_TODAY)
+		assert_eq(paid, DailyLoginPanel.REWARD_CURVE[day - 1],
+			"day %d pays its curve entry" % day)
+		assert_eq(GameState.player_money, before + paid,
+			"day %d's reward lands in the wallet" % day)
+		assert_eq(GameState.daily_login_day, DailyLoginPanel.day_after(day),
+			"day %d advances the streak" % day)
+		assert_eq(GameState.last_claim_date, _TODAY, "the claim date is today")
+	assert_eq(GameState.daily_login_day, 1, "claiming day 7 wraps the streak to day 1")
+
+
+func test_reward_for_day_clamps() -> void:
+	assert_eq(DailyLoginPanel.reward_for_day(0), DailyLoginPanel.REWARD_CURVE[0],
+		"a day below 1 pays day 1's reward")
+	assert_eq(DailyLoginPanel.reward_for_day(DailyLoginPanel.STREAK_DAYS + 1),
+		DailyLoginPanel.REWARD_CURVE[DailyLoginPanel.STREAK_DAYS - 1],
+		"a day past the last pays the last day's reward")
 
 
 func test_second_claim_same_day_is_a_no_op() -> void:

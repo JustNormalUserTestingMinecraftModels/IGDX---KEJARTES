@@ -19,10 +19,14 @@ extends TextureRect
 ## Lobby can roll its money display up from there.
 signal claimed(amount: int, previous_money: int)
 
-## Coins paid per claim. Task 2 replaces this with REWARD_CURVE.
-const DAILY_REWARD := 10
 ## Days in one streak cycle; the day after the last wraps to day 1.
 const STREAK_DAYS := 7
+## Daily-login reward per streak day (index 0 = day 1). A full 7-day
+## streak totals 1500G, the priciest Koperasi item; day 7 is the "peti
+## besar" payoff. Our own tunable (daily-login is not a Balance.gd value).
+const REWARD_CURVE: Array[int] = [80, 120, 160, 200, 240, 300, 400]
+## How the reward amount reads on the panel.
+const AMOUNT_FORMAT := "%dG"
 ## A gap longer than this since the last claim breaks the streak.
 const SECONDS_PER_DAY := 86400
 ## Turns a "YYYY-MM-DD" date into a datetime string Time can parse.
@@ -58,6 +62,7 @@ const CLOSE_SCALE := Vector2(0.8, 0.8)
 
 
 func _ready() -> void:
+	assert(REWARD_CURVE.size() == STREAK_DAYS, "REWARD_CURVE needs one reward per streak day")
 	if Engine.is_editor_hint():
 		return
 	claim_button.pressed.connect(_on_claim_pressed)
@@ -91,11 +96,16 @@ func close() -> void:
 func claim(today: String) -> int:
 	if GameState.last_claim_date == today:
 		return 0
-	var amount: int = DAILY_REWARD
+	var amount: int = reward_for_day(GameState.daily_login_day)
 	GameState.player_money += amount
 	GameState.last_claim_date = today
 	GameState.daily_login_day = day_after(GameState.daily_login_day)
 	return amount
+
+
+## The reward for streak `day`, clamped into 1..STREAK_DAYS.
+static func reward_for_day(day: int) -> int:
+	return REWARD_CURVE[clampi(day, 1, STREAK_DAYS) - 1]
 
 
 ## The streak day after `day`; the last day wraps to day 1.
@@ -132,6 +142,7 @@ func _on_claim_pressed() -> void:
 func _show_day(day: int, is_claimed: bool) -> void:
 	texture = DAY_PANELS[clampi(day, 1, STREAK_DAYS) - 1]
 	claim_button.disabled = is_claimed
+	reward_amount.text = AMOUNT_FORMAT % reward_for_day(day)
 	# The art has no separate "claimed" frame, so dim the affordance nodes
 	# directly -- restore full modulate once a new day makes the claim
 	# available again.

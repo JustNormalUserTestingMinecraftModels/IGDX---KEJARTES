@@ -127,7 +127,7 @@ All four are generated placeholders at first and listed in `DEBT.md`.
 - **Other buttons** keep `Juice.press`/`release`.
 - **The tick:** on `button_down`, `Haptics.buzz(PRESS_TICK_MS)` fires for roles in `MAIN_ACTION_ROLES`. Both are named consts in `UIPolish.gd`:
   - `PRESS_TICK_MS = 8` (Haptics' existing "Tick" tier)
-  - `MAIN_ACTION_ROLES` = `BookHeroButton`, `LobbyCtaButton`, `PrimaryButton`, `PrimaryButtonL`, `PrimaryButtonM`, `SuccessButton`, `DangerButton`, `NotebookClose`
+  - `MAIN_ACTION_ROLES` = `BookHeroButton`, `LobbyCtaButton`, `ResultButton`, `PrimaryButton`, `PrimaryButtonM`, `PrimaryButtonL`, `SuccessButton`, `SuccessButtonL`, `DangerButton`, `DangerButtonM`, `DangerButtonL`, `NotebookClose` (navigation tiles and the coin `+` stay silent)
 - `Haptics.buzz` already no-ops when Getar is off, and shows its pip on desktop.
 
 ### 4. Icons

@@ -7,8 +7,9 @@ extends Control
 ## rail. It swipes away as a whole: the book slides down to its chevron
 ## peek and the rail slides off the right edge in the same tween (Q5); the
 ## chevron, a vertical drag on the book, or a double tap anywhere brings
-## it back. While hidden the book's buttons ignore input, so the peeking
-## top of JADWAL cannot be pressed by a reopening tap. It also plays the
+## it back. Hidden, only the grip peeks above the screen's bottom edge,
+## and the book's buttons ignore input all the same, so a tap during the
+## slide or a reopening tap cannot press one. It also plays the
 ## entrance, JADWAL's breathe and the roster-count chip. It stays
 ## inactive until the Lobby calls activate(), so the tutorial's spotlight
 ## never measures a moving target. Calls come
@@ -28,8 +29,10 @@ const PEEK_BOB_STEP_SECONDS := 0.18
 @export_group("Swipe")
 ## Seconds the book and rail take to slide (TRANS_BACK overshoot, "Feel A").
 @export var slide_seconds: float = 0.45
-## Book height, px, left showing when hidden: the chevron grip's peek.
-@export var peek_pixels: float = 96.0
+## Book height, px, left above the screen's bottom edge when hidden. The
+## grip rides 40 px above the book and JADWAL starts 52 px into it, so 48
+## shows the grip and its glyph and none of JADWAL (spec §4, review I1).
+@export var peek_pixels: float = 48.0
 ## How far, px, the rail slides right to leave the screen.
 @export var rail_slide_pixels: float = 180.0
 ## Vertical drag, px, on the book that counts as a swipe.
@@ -57,8 +60,11 @@ var is_active: bool = false
 ## Asked before a double tap reopens the HUD; the Lobby answers false while
 ## a popup owns the screen. Unset, a double tap always may.
 var can_reopen: Callable
-var _book_open_y: float = 0.0
-var _rail_open_x: float = 0.0
+## BookHud's open (offset_top, offset_bottom) and IconRail's open
+## (offset_left, offset_right). Offsets, not position: they are relative to
+## the anchors, so a resize while hidden still reopens to the authored rest.
+var _book_open_offsets: Vector2 = Vector2.ZERO
+var _rail_open_offsets: Vector2 = Vector2.ZERO
 var _glyph_rest_y: float = 0.0
 ## Where a press on the book began, in its own frame; NAN when no drag.
 var _drag_start_y: float = NAN
@@ -94,6 +100,7 @@ func _ready() -> void:
 	chevron_grip.pressed.connect(_on_chevron_pressed)
 	raised_block.gui_input.connect(_on_book_gui_input)
 	shelf.gui_input.connect(_on_book_gui_input)
+	resized.connect(_on_resized)
 	if Engine.is_editor_hint():
 		return
 	Achievements.state_changed.connect(_refresh_counts)
@@ -117,8 +124,8 @@ func set_open(open: bool) -> void:
 	if open == is_open:
 		return
 	if not open and not _is_sliding():
-		_book_open_y = book_hud.position.y
-		_rail_open_x = icon_rail.position.x
+		_book_open_offsets = Vector2(book_hud.offset_top, book_hud.offset_bottom)
+		_rail_open_offsets = Vector2(icon_rail.offset_left, icon_rail.offset_right)
 	is_open = open
 	_kill(_slide)
 	_stop_peek_bob()
@@ -126,17 +133,52 @@ func set_open(open: bool) -> void:
 	_update_breathe()
 	if open:
 		_hide_hint()
-	var book_y: float = _book_open_y if open else _book_open_y + book_hud.size.y - peek_pixels
-	var rail_x: float = _rail_open_x if open else _rail_open_x + rail_slide_pixels
+	var book: Vector2 = _book_open_offsets
+	var rail: Vector2 = _rail_open_offsets
+	if not open:
+		book += Vector2.ONE * _book_hide_drop()
+		rail += Vector2.ONE * rail_slide_pixels
 	var chevron_degrees: float = 0.0 if open else CHEVRON_HIDDEN_DEGREES
 	if not GameSettings.reduce_motion:
-		_slide_to(book_y, rail_x, chevron_degrees)
+		_slide_to(book, rail, chevron_degrees)
 		return
-	book_hud.position.y = book_y
-	icon_rail.position.x = rail_x
+	_set_offsets(book, rail)
 	chevron_glyph.rotation_degrees = chevron_degrees
 	if not open:
 		_show_hint()
+
+
+## How far the book drops, px, so only peek_pixels of it stays above the
+## viewport's bottom edge. Measured from the viewport, not from Safe/UI's
+## bottom: Safe's margin (screen_margin plus a phone's gesture-bar inset)
+## sits below UI, and a drop measured from UI's bottom left that band of
+## book, most of JADWAL, showing (review I1).
+func _book_hide_drop() -> float:
+	var to_local: Transform2D = get_global_transform().affine_inverse()
+	var screen_bottom: float = (to_local * get_viewport_rect().end).y
+	var open_top: float = size.y * book_hud.anchor_top + _book_open_offsets.x
+	return screen_bottom - peek_pixels - open_top
+
+
+## Places the book (offset_top, offset_bottom) and the rail (offset_left,
+## offset_right) at once. Both offsets of each move together, so neither
+## resizes.
+func _set_offsets(book: Vector2, rail: Vector2) -> void:
+	book_hud.offset_top = book.x
+	book_hud.offset_bottom = book.y
+	icon_rail.offset_left = rail.x
+	icon_rail.offset_right = rail.y
+
+
+## A resize while hidden (a new screen size, or Safe's margin changing)
+## moves the screen's bottom edge, so the resting hidden book drops again
+## to keep only the grip showing. Mid-slide, the tween owns the book.
+func _on_resized() -> void:
+	if is_open or _is_sliding():
+		return
+	var drop: float = _book_hide_drop()
+	book_hud.offset_top = _book_open_offsets.x + drop
+	book_hud.offset_bottom = _book_open_offsets.y + drop
 
 
 ## The roster chip (hidden with an empty roster) and the three badges.
@@ -210,8 +252,9 @@ func _on_chevron_pressed() -> void:
 	set_open(not is_open)
 
 
-## Hidden, the book's buttons ignore input (the peek shows JADWAL's top);
-## the chevron, a sibling of the book, stays live to bring it back.
+## Hidden, the book's buttons ignore input, so nothing under a reopening
+## tap or a mid-slide press opens a screen; the chevron, a sibling of the
+## book's pages, stays live to bring it back.
 func _set_book_live(live: bool) -> void:
 	var behavior: Control.MouseBehaviorRecursive = Control.MOUSE_BEHAVIOR_INHERITED
 	if not live:
@@ -250,11 +293,14 @@ func _on_book_gui_input(event: InputEvent) -> void:
 
 ## One parallel TRANS_BACK tween for book and rail; the chevron's turn
 ## trails by chevron_delay_seconds, and the landing fires once all settle.
-func _slide_to(book_y: float, rail_x: float, chevron_degrees: float) -> void:
+## book and rail are offset pairs, as for _set_offsets.
+func _slide_to(book: Vector2, rail: Vector2, chevron_degrees: float) -> void:
 	_slide = create_tween().set_parallel(true) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_slide.tween_property(book_hud, "position:y", book_y, slide_seconds)
-	_slide.tween_property(icon_rail, "position:x", rail_x, slide_seconds)
+	_slide.tween_property(book_hud, "offset_top", book.x, slide_seconds)
+	_slide.tween_property(book_hud, "offset_bottom", book.y, slide_seconds)
+	_slide.tween_property(icon_rail, "offset_left", rail.x, slide_seconds)
+	_slide.tween_property(icon_rail, "offset_right", rail.y, slide_seconds)
 	_slide.tween_property(chevron_glyph, "rotation_degrees", chevron_degrees,
 		slide_seconds).set_delay(chevron_delay_seconds)
 	_slide.chain().tween_callback(_on_slide_landed)

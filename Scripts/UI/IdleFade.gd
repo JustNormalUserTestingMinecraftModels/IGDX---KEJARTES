@@ -50,7 +50,11 @@ func _restart_idle_timer() -> void:
 
 ## Any press wakes the targets back up and restarts the idle countdown.
 ## Never consumes the event: every tap must still reach whatever it landed on.
+## Inert in the edited scene, or a stray editor event could start a fade and
+## the next scene_save would bake the faded alpha into the targets (review M3).
 func _input(event: InputEvent) -> void:
+	if Engine.is_editor_hint() and is_part_of_edited_scene():
+		return
 	if not _is_wake(event):
 		return
 	restore()

@@ -103,8 +103,7 @@ R18 T18 B18; `coin_plate.png` 120x64, margins L20 R20 T18 B26;
 96x48, margins L26 R26 T8 B8 (a full pill, so the top/bottom margins are only
 a small buffer, not the cap radius). Still pending, waiting on real art: the
 dashed washi rim and tape, and JADWAL!'s washi flutter (deferred by the plan's
-Q4 -- `StyleBoxFlat` cannot draw dashes). Phase 2 of the same plan (the
-Dapatkan Uang earn-money panel and dev-mode ad stub) is next.
+Q4 -- `StyleBoxFlat` cannot draw dashes).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and

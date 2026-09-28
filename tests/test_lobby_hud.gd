@@ -20,6 +20,10 @@ extends McpTestSuite
 const _LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 const _BADGE_SCENE := "res://Scenes/Lobby/NotifBadge.tscn"
+## Settles the shared Lobby's Containers in the same frame (no await).
+const LayoutFrame := preload("res://tests/layout_frame.gd")
+## A tall gesture-bar inset, px in the 1080-wide space, for the I1 case.
+const _GESTURE_BAR_PIXELS := 120.0
 
 
 func suite_name() -> String:
@@ -173,16 +177,16 @@ func test_the_hud_hides_to_its_peek_and_comes_back() -> void:
 		return
 	GameSettings.reduce_motion = true
 	hud.activate(false)
+	LayoutFrame.settle(_lobby)
 	var book := hud.get_node("%BookHud") as Control
 	var rail := hud.get_node("%IconRail") as Control
 	var glyph := hud.get_node("%ChevronGlyph") as Control
-	var open_y: float = book.position.y
-	var open_x: float = rail.position.x
+	var open_book := Vector2(book.offset_top, book.offset_bottom)
+	var open_rail := Vector2(rail.offset_left, rail.offset_right)
 	hud.set_open(false)
 	assert_false(hud.is_open)
-	assert_eq(book.position.y, open_y + book.size.y - hud.peek_pixels,
-		"hidden leaves only the chevron's peek")
-	assert_eq(rail.position.x, open_x + hud.rail_slide_pixels,
+	_assert_only_the_grip_peeks(hud, "the design screen")
+	assert_eq(rail.offset_left, open_rail.x + hud.rail_slide_pixels,
 		"the rail leaves by the right edge with the book (Q5)")
 	assert_eq(glyph.rotation_degrees, LobbyHud.CHEVRON_HIDDEN_DEGREES,
 		"the chevron turns to show the state")
@@ -190,11 +194,59 @@ func test_the_hud_hides_to_its_peek_and_comes_back() -> void:
 		"a hide says how to come back")
 	hud.set_open(true)
 	assert_true(hud.is_open)
-	assert_eq(book.position.y, open_y, "open returns to the authored rest")
-	assert_eq(rail.position.x, open_x, "the rail returns with it")
+	assert_eq(Vector2(book.offset_top, book.offset_bottom), open_book,
+		"open returns to the authored rest")
+	assert_eq(Vector2(rail.offset_left, rail.offset_right), open_rail,
+		"the rail returns with it")
 	assert_eq(glyph.rotation_degrees, 0.0)
 	assert_false((hud.get_node("%HudHint") as Control).visible,
 		"the hint leaves when the HUD is back")
+
+
+## Review I1 and M1: a phone's gesture bar grows Safe's bottom margin. The
+## device inset reads zero outside a fullscreen mobile build, so Safe's
+## extra_margin stands in for it: it lands in the same margin_bottom. The
+## hidden book must still peek only the grip, and it must follow a margin
+## that changes while it is hidden, then reopen to its authored rest.
+func test_a_gesture_bar_inset_still_peeks_only_the_grip() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	var safe := _lobby.get_node("Safe") as SafeAreaMargin
+	var book := hud.get_node("%BookHud") as Control
+	GameSettings.reduce_motion = true
+	hud.activate(false)
+	safe.extra_margin = Vector4(0.0, 0.0, 0.0, _GESTURE_BAR_PIXELS)
+	LayoutFrame.settle(_lobby)
+	var open_book := Vector2(book.offset_top, book.offset_bottom)
+	hud.set_open(false)
+	_assert_only_the_grip_peeks(hud, "a gesture-bar inset")
+	safe.extra_margin = Vector4.ZERO
+	LayoutFrame.settle(_lobby)
+	_assert_only_the_grip_peeks(hud, "the inset gone while hidden")
+	hud.set_open(true)
+	assert_eq(Vector2(book.offset_top, book.offset_bottom), open_book,
+		"a resize while hidden still reopens to the authored rest")
+	assert_true(is_equal_approx(book.get_global_rect().end.y, hud.get_global_rect().end.y),
+		"the reopened book sits on the HUD's bottom edge")
+
+
+## Hidden, JADWAL lies wholly below the viewport's bottom edge while the
+## chevron grip still crosses it and its glyph shows whole (spec §4). Read
+## from the real global rects, so it cannot just restate the arithmetic.
+func _assert_only_the_grip_peeks(hud: LobbyHud, where: String) -> void:
+	var screen_bottom: float = hud.get_viewport_rect().end.y
+	var jadwal: Rect2 = (hud.get_node("%Jadwal") as Control).get_global_rect()
+	var grip: Rect2 = (hud.get_node("%ChevronGrip") as Control).get_global_rect()
+	var glyph: Rect2 = (hud.get_node("%ChevronGlyph") as Control).get_global_rect()
+	assert_true(jadwal.position.y >= screen_bottom,
+		"%s: JADWAL (top %.1f) hides below the screen's bottom %.1f"
+		% [where, jadwal.position.y, screen_bottom])
+	assert_true(grip.position.y < screen_bottom and grip.end.y > screen_bottom,
+		"%s: the chevron grip (%.1f..%.1f) peeks across the bottom %.1f"
+		% [where, grip.position.y, grip.end.y, screen_bottom])
+	assert_true(glyph.end.y <= screen_bottom,
+		"%s: the chevron glyph (bottom %.1f) shows whole" % [where, glyph.end.y])
 
 
 func test_the_hud_waits_for_the_tutorial() -> void:
@@ -483,6 +535,15 @@ func test_idle_fade_targets_the_header_and_coin_plate() -> void:
 	assert_true(fade.targets.has(coin), "the coin plate is a target")
 	var hud := _lobby.get_node("%Hud") as CanvasItem
 	assert_false(fade.targets.has(hud), "the HUD itself does not fade, only the plates")
+
+
+## Review M3: an editor event reaching the edited Lobby must not start a
+## fade, or the next scene_save bakes the faded alpha into both plates.
+## A source scan: the editor's own input routing cannot be driven here.
+func test_idle_fade_is_inert_in_the_edited_scene() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/IdleFade.gd")
+	assert_true(src.contains("if Engine.is_editor_hint() and is_part_of_edited_scene():"),
+		"IdleFade._input carries the house edited-scene guard")
 
 
 func test_idle_fade_timing_matches_the_spec() -> void:

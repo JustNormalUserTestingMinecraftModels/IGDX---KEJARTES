@@ -375,7 +375,8 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
+Loby Final Polish Phase 2 (Dapatkan Uang + dev-mode ad stub) is next, on
+branch `LobyFinalpolish` (parked passes are in `docs/superpowers/DEBT.md`).
 
 ## Maintaining this file
 

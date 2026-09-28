@@ -460,6 +460,16 @@ func test_the_greeting_and_streak_sit_above_the_panel() -> void:
 	assert_eq(greeting.theme_type_variation, &"H2Label", "the greeting is on H2Label")
 	assert_eq(greeting.text, "Selamat datang kembali!", "the greeting welcomes the player back")
 	assert_true(_lobby.get_node_or_null("%StreakLabel") is Label, "missing StreakLabel")
+	for header_path: String in ["%DailyGreeting", "%DailyStreak"]:
+		var header := _lobby.get_node_or_null(header_path) as Control
+		assert_true(header != null, "missing " + header_path)
+		if header == null:
+			continue
+		assert_eq(header.get_parent(), _lobby.get_node("DailyReward"),
+			header_path + " sits on DailyReward")
+		var bottom: float = header.position.y + maxf(header.size.y, header.get_combined_minimum_size().y)
+		assert_true(bottom <= 0.0,
+			"%s ends at y=%f, over the panel's strip art (top edge 0)" % [header_path, bottom])
 	var flame := _lobby.get_node_or_null("%StreakFlame") as TextureRect
 	assert_true(flame != null, "missing StreakFlame")
 	if flame == null:

@@ -232,7 +232,9 @@ table). The Lobby's five nav tiles wear `nav_*`; every paging arrow
 card's chip, the day notes, Dapatkan Uang's tip). A paging arrow draws its
 chevron as a child `Arrow` `TextureRect` (full rect, 24 px inset,
 unrotated, taps ignored), not as the Button's `icon`: the lipped buttons'
-content margins squeeze an icon to about 15 px. **Back is not a chevron:**
+content margins squeeze an icon to about 15 px. `Scripts/UI/ButtonGlyph.gd`
+on the child makes it act like an icon, sinking while held and dimming
+while disabled; give any future picture-on-a-button child the same script. **Back is not a chevron:**
 every Back keeps `UI/Nav/return_button.png`, the arrow unified on
 2026-09-22 (`tests/test_back_controls.gd`). The four Lobby rail icons
 (settings, achievements, daily login, skins) are finished art and stay

@@ -17,6 +17,7 @@
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="16_ret"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
+[ext_resource type="Script" path="res://Scripts/UI/ButtonGlyph.gd" id="glyph_follow"]
 
 [node name="StudentCard" type="Control" unique_id=510264751]
 layout_mode = 3
@@ -1537,6 +1538,7 @@ mouse_filter = 2
 texture = ExtResource("12_otsk7")
 expand_mode = 1
 stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="NextButtonKanan" type="Button" parent="Safe/UI/BottomBar" unique_id=1157739970]
 unique_name_in_owner = true
@@ -1562,6 +1564,7 @@ mouse_filter = 2
 texture = ExtResource("11_nhavo")
 expand_mode = 1
 stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="PageLabel" type="Label" parent="Safe/UI/BottomBar" unique_id=977170758]
 unique_name_in_owner = true

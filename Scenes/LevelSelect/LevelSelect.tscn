@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
 [ext_resource type="Texture2D" uid="uid://b7uie5ch7i7os" path="res://Assets/Images/UI/Icons/chevron_left.svg" id="10_chevl"]
 [ext_resource type="Texture2D" uid="uid://bge3qhtji6lh4" path="res://Assets/Images/UI/Icons/chevron_right.svg" id="11_chevr"]
+[ext_resource type="Script" path="res://Scripts/UI/ButtonGlyph.gd" id="glyph_follow"]
 
 [node name="LevelSelect" type="Control" unique_id=434616453]
 layout_mode = 3
@@ -136,7 +137,7 @@ focus_mode = 0
 theme_type_variation = &"SecondaryButtonL"
 disabled = true
 
-[node name="Arrow" type="TextureRect" parent="Safe/UI/Stack/PrevArrow"]
+[node name="Arrow" type="TextureRect" parent="Safe/UI/Stack/PrevArrow" unique_id=890439617]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -151,6 +152,7 @@ mouse_filter = 2
 texture = ExtResource("10_chevl")
 expand_mode = 1
 stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="NextArrow" type="Button" parent="Safe/UI/Stack" unique_id=121717348]
 custom_minimum_size = Vector2(120, 128)
@@ -169,7 +171,7 @@ grow_vertical = 2
 focus_mode = 0
 theme_type_variation = &"SecondaryButtonL"
 
-[node name="Arrow" type="TextureRect" parent="Safe/UI/Stack/NextArrow"]
+[node name="Arrow" type="TextureRect" parent="Safe/UI/Stack/NextArrow" unique_id=1446846063]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -184,6 +186,7 @@ mouse_filter = 2
 texture = ExtResource("11_chevr")
 expand_mode = 1
 stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="Brief" type="Panel" parent="Safe/UI" unique_id=1362666520]
 layout_mode = 1

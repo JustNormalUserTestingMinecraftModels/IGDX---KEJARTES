@@ -54,7 +54,9 @@ rationale):
   each arrow instead draws its chevron as a child `Arrow` `TextureRect`: full
   rect minus a 24 px inset, unrotated, `expand_mode` 1, `stretch_mode` 5, taps
   ignored, and the Button's `icon` cleared. The chevrons now read at about
-  70 px.
+  70 px. The local review caught that a child does not sink or dim like an
+  icon, so `Scripts/UI/ButtonGlyph.gd` on each `Arrow` drops it by the
+  button's own label drop while held and dims it while disabled.
 - **P6** — The glyph rule bans pictographs and dingbats (U+2300–23FF,
   U+2600–27BF, U+2B00–2BFF, U+1F000–1FAFF, U+FE0F), not typography: the
   Arrows block (`12 → 9`), `×` and code comments stay allowed. Two

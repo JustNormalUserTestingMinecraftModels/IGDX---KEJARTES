@@ -502,9 +502,15 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     target (a geometry test would catch a future regression). (Phase 2)
   - The Peringatan label/buttons test is now a sibling-order check only,
     weaker than the old overlap check it replaced. (Phase 2)
-  - `tests/test_paging_arrows.gd` pins each arrow's `Arrow` child's texture,
-    rotation and mouse filter, but not its `expand_mode`, `stretch_mode` or
-    24 px inset, so a chevron shrunk back to its source size would pass.
+  - The "becomes" arrow `→` (DailyDecayOverview's `80 → 75`,
+    ApplyItemScreen's `×3 → ×2`) is not in any bundled Open Sans file, so
+    it draws from the system fallback font. A body font that carries it, or
+    a small arrow texture, would keep it in one typeface. (Phase 3)
+  - `RosterCard.SPECIALTY_ICONS` and `StudentList.CATEGORY_ICONS` are one
+    table written twice; `test_student_list` keeps them equal. Sharing one
+    const would retire that test's job. (Phase 3)
+  - `test_ui_text_glyphs`' comment stripper ignores escaped and single
+    quotes, so a glyph after a `#` inside such a string would be missed.
     (Phase 3)
 - **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
   Phase 2). Every option pays at once and the toast wears DEV MODE; no ad

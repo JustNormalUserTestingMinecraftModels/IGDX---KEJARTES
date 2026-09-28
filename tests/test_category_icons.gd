@@ -16,11 +16,19 @@ func suite_name() -> String:
 	return "category_icons"
 
 
+## Each map ties the icon to its own key, so swapping the two still fails.
+## RosterCard and StudentList hold path strings; DayStickyNote preloads.
 func test_the_sources_name_the_category_icons() -> void:
-	for path in ["res://Scripts/StudentList/RosterCard.gd", "res://Scripts/AturJadwal/DayStickyNote.gd"]:
+	var path_maps := ["res://Scripts/StudentList/RosterCard.gd",
+		"res://Scripts/StudentList/StudentList.gd"]
+	for path in path_maps:
 		var src := FileAccess.get_file_as_string(path)
-		assert_contains(src, REST, path + " shows Istirahat's own icon")
-		assert_contains(src, EARN, path + " shows Wirausaha's own icon")
+		assert_contains(src, '"Istirahat": "%s"' % REST, path + " shows Istirahat's own icon")
+		assert_contains(src, '"Wirausaha": "%s"' % EARN, path + " shows Wirausaha's own icon")
+	var notes := "res://Scripts/AturJadwal/DayStickyNote.gd"
+	var src := FileAccess.get_file_as_string(notes)
+	assert_contains(src, '"Istirahat": preload("%s")' % REST, notes + " shows Istirahat's own icon")
+	assert_contains(src, '"Wirausaha": preload("%s")' % EARN, notes + " shows Wirausaha's own icon")
 
 
 func test_the_earn_money_tip_shows_the_wirausaha_icon() -> void:

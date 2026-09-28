@@ -170,18 +170,18 @@ func test_header_and_status_badges_use_theme_variations() -> void:
 	assert_eq(header.theme_type_variation, &"H1Label", "HeaderLabel variation")
 
 	for i in range(1, 5):
-		var belum := _list.get_node_or_null("CardContainer/Murid%d/Belum" % i) as Button
+		var belum := _list.get_node_or_null("CardContainer/Murid%d/Paper/Belum" % i) as Button
 		assert_true(belum != null, "missing Murid%d/Belum" % i)
 		# Their own styles since the 2026-09-14 lobby-style-buttons pass, which
 		# turned DangerButton/SuccessButton Lobby brown: the red and green are
 		# the information these badges carry.
 		assert_eq(belum.theme_type_variation, &"RosterStatusBelum", "Murid%d/Belum variation" % i)
 
-		var sudah := _list.get_node_or_null("CardContainer/Murid%d/Sudah" % i) as Button
+		var sudah := _list.get_node_or_null("CardContainer/Murid%d/Paper/Sudah" % i) as Button
 		assert_true(sudah != null, "missing Murid%d/Sudah" % i)
 		assert_eq(sudah.theme_type_variation, &"RosterStatusSudah", "Murid%d/Sudah variation" % i)
 
-		var nama := _list.get_node_or_null("CardContainer/Murid%d/Nama" % i) as Label
+		var nama := _list.get_node_or_null("CardContainer/Murid%d/Paper/Nama" % i) as Label
 		assert_true(nama != null, "missing Murid%d/Nama" % i)
 		assert_eq(nama.theme_type_variation, &"H2Label", "Murid%d/Nama variation" % i)
 
@@ -199,7 +199,7 @@ func test_sticky_notes_are_stickynote_instances_wired_per_day() -> void:
 	var required_days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 	for i in range(1, 5):
 		var container := _list.get_node_or_null(
-			"CardContainer/Murid%d/StickyNotesContainer" % i)
+			"CardContainer/Murid%d/Paper/StickyNotesContainer" % i)
 		assert_true(container != null, "missing StickyNotesContainer on Murid%d" % i)
 		for day in required_days:
 			var note := container.get_node_or_null(day)
@@ -324,7 +324,7 @@ func test_the_week_strip_is_one_row_of_five() -> void:
 	var days := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 	for i in range(1, 5):
 		var container := _list.get_node_or_null(
-			"CardContainer/Murid%d/StickyNotesContainer" % i)
+			"CardContainer/Murid%d/Paper/StickyNotesContainer" % i)
 		assert_true(container != null, "missing StickyNotesContainer on Murid%d" % i)
 		var last_x := -1.0
 		var first_y := -1.0
@@ -358,13 +358,13 @@ func test_trait_row_holds_three_compact_chips_that_do_not_eat_taps() -> void:
 	}
 	for i in range(1, 5):
 		var row := _list.get_node_or_null(
-			"CardContainer/Murid%d/TraitRow" % i) as Control
+			"CardContainer/Murid%d/Paper/TraitRow" % i) as Control
 		assert_true(row != null, "missing TraitRow on Murid%d" % i)
 		assert_eq(row.mouse_filter, Control.MOUSE_FILTER_IGNORE,
 			"TraitRow on Murid%d must not swallow card taps" % i)
 		for chip_name in expected:
 			var chip := _list.get_node_or_null(
-				"CardContainer/Murid%d/TraitRow/%s" % [i, chip_name]) as Button
+				"CardContainer/Murid%d/Paper/TraitRow/%s" % [i, chip_name]) as Button
 			assert_true(chip != null, "missing %s on Murid%d" % [chip_name, i])
 			assert_eq(chip.theme_type_variation, expected[chip_name],
 				"%s must use the M size step on Murid%d" % [chip_name, i])
@@ -376,7 +376,7 @@ func test_trait_row_holds_three_compact_chips_that_do_not_eat_taps() -> void:
 func test_catatan_strip_is_populated_per_student() -> void:
 	for i in range(1, 5):
 		var label := _list.get_node_or_null(
-			"CardContainer/Murid%d/CatatanGuru/CatatanLabel" % i) as Label
+			"CardContainer/Murid%d/Paper/CatatanGuru/CatatanLabel" % i) as Label
 		assert_true(label != null, "missing CatatanLabel on Murid%d" % i)
 		assert_true(label.text.length() > 0,
 			"catatan must never be blank on Murid%d" % i)
@@ -384,7 +384,7 @@ func test_catatan_strip_is_populated_per_student() -> void:
 
 func test_sticky_notes_carry_a_category_icon() -> void:
 	var note := _list.get_node_or_null(
-		"CardContainer/Murid1/StickyNotesContainer/Senin") as StickyNote
+		"CardContainer/Murid1/Paper/StickyNotesContainer/Senin") as StickyNote
 	assert_true(note != null, "missing Senin note")
 	assert_true("icon_texture" in note,
 		"StickyNote must expose an icon_texture export")
@@ -524,7 +524,7 @@ func test_the_card_bands_do_not_overlap() -> void:
 	var bands := ["PortraitFrame", "TraitRow", "WeekHeader", "StickyNotesContainer", "CatatanGuru"]
 	var prev_bottom := 0.0
 	for name in bands:
-		var band := card.get_node_or_null(name) as Control
+		var band := card.get_node_or_null("Paper/" + name) as Control
 		assert_true(band != null, "missing band " + name)
 		assert_true(band.offset_top >= prev_bottom,
 			"%s starts at %f, above the previous band's bottom %f"
@@ -577,7 +577,7 @@ func test_sticky_notes_hang_at_three_contained_pin_heights() -> void:
 	var deepest: float = 2.0 * note.PIN_STEP + note_h
 	note.free()
 	var card := _list.get_node_or_null("CardContainer/Murid1")
-	var strip := card.get_node_or_null("StickyNotesContainer") as Control
+	var strip := card.get_node_or_null("Paper/StickyNotesContainer") as Control
 	assert_true(strip != null, "missing StickyNotesContainer")
 	var band: float = strip.offset_bottom - strip.offset_top
 	assert_true(deepest <= band,
@@ -639,6 +639,20 @@ func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
 		"the tutorial must have exactly four steps")
 
 
+## RosterCard's bands live under its inner Paper (MURIDMU Task 3), so
+## StudentList must reach them by %unique name, never by a card-relative
+## path that a restructure would silently break (get_node_or_null just
+## returns null and the card shows its authored defaults).
+func test_student_list_reads_the_card_by_unique_names() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for unique in ["%Portrait", "%Nama", "%Belum", "%Sudah", "%StickyNotesContainer"]:
+		assert_true(src.contains('get_node_or_null("%s")' % unique),
+			"StudentList must read the card's %s by unique name" % unique)
+	for old in ['"PortraitFrame/Portrait"', 'get_node_or_null("Nama")',
+			'get_node_or_null("Belum")', 'get_node_or_null("StickyNotesContainer")']:
+		assert_false(src.contains(old), "stale card path: " + old)
+
+
 ## The card's surface is an opaque themed Panel filling its whole rect,
 ## not a paper TEXTURE on the root.
 ##
@@ -649,10 +663,10 @@ func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
 ## Card variation's stylebox carries its own shadow, which means the
 ## shadow is part of the card and cannot be left behind by anything.
 ##
-## Since MURIDMU Task 3 the Sheet sits inside the card's inner Paper node
-## (with the breath's LiftShadow under it), so the idle breath can scale
-## the surface without touching the card root the carousel moves. Paper is
-## the card's first child, so the Sheet still draws behind every band.
+## Since MURIDMU Task 3 the whole visible card sits inside its inner Paper
+## node, so the idle breath can scale the paper and every band printed on
+## it without touching the card root the carousel moves. The Sheet sits
+## just above the breath's LiftShadow, behind every band.
 func test_each_card_surface_is_an_opaque_themed_panel() -> void:
 	for i in range(1, 5):
 		var paper := _list.get_node_or_null(
@@ -666,8 +680,11 @@ func test_each_card_surface_is_an_opaque_themed_panel() -> void:
 		assert_true(sheet != null, "missing Paper/Sheet panel on Murid%d" % i)
 		assert_eq(sheet.theme_type_variation, &"Card",
 			"Murid%d's Sheet must use the Card variation" % i)
-		assert_eq(sheet.get_index(), sheet.get_parent().get_child_count() - 1,
-			"Murid%d's Sheet must draw over its lift shadow, as Paper's last child" % i)
+		assert_eq(sheet.get_index(), 1,
+			"Murid%d's Sheet must draw over its lift shadow and behind every band" % i)
+		var lift := paper.get_node_or_null("LiftShadow") if paper != null else null
+		assert_true(lift != null and lift.get_index() == 0,
+			"Murid%d's LiftShadow must be Paper's first child, under the Sheet" % i)
 		assert_eq(sheet.anchor_right, 1.0,
 			"Murid%d's Sheet must span the full card width" % i)
 		assert_eq(sheet.anchor_bottom, 1.0,
@@ -706,12 +723,12 @@ func test_page_dot_uses_a_filled_texture() -> void:
 func test_each_portrait_has_a_rounded_backdrop_behind_it() -> void:
 	for i in range(1, 5):
 		var backdrop := _list.get_node_or_null(
-			"CardContainer/Murid%d/PortraitFrame/Backdrop" % i) as Panel
+			"CardContainer/Murid%d/Paper/PortraitFrame/Backdrop" % i) as Panel
 		assert_true(backdrop != null, "missing portrait Backdrop on Murid%d" % i)
 		assert_eq(backdrop.theme_type_variation, &"SunkenPanel",
 			"portrait Backdrop on Murid%d must use SunkenPanel" % i)
 		var portrait := _list.get_node_or_null(
-			"CardContainer/Murid%d/PortraitFrame/Portrait" % i) as Control
+			"CardContainer/Murid%d/Paper/PortraitFrame/Portrait" % i) as Control
 		assert_true(portrait != null, "missing Portrait on Murid%d" % i)
 		assert_true(backdrop.get_index() < portrait.get_index(),
 			"Backdrop must draw behind the portrait on Murid%d" % i)

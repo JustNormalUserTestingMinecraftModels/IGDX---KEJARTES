@@ -74,7 +74,7 @@ func test_three_days_fill_exactly_the_first_three_dots() -> void:
 	assert_eq(dots.size(), 5, "the tally has five dots")
 	for i: int in range(dots.size()):
 		assert_eq(dots[i].filled, i < 3, "dot %d filled state for 3/5" % (i + 1))
-	var label := _card.get_node_or_null("WeekHeader/TallyLabel") as Label
+	var label := _card.get_node_or_null("Paper/WeekHeader/TallyLabel") as Label
 	assert_true(label != null, "missing WeekHeader/TallyLabel")
 	if label != null:
 		assert_eq(label.text, "3/5 hari", "the count reads n/5 hari")
@@ -85,12 +85,12 @@ func test_an_unscheduled_card_reads_zero_of_five() -> void:
 	assert_eq(_card.days_scheduled, 0, "a fresh card has no days scheduled")
 	for dot: TallyDot in _dots():
 		assert_false(dot.filled, "no dot is filled at 0/5")
-	var label := _card.get_node_or_null("WeekHeader/TallyLabel") as Label
+	var label := _card.get_node_or_null("Paper/WeekHeader/TallyLabel") as Label
 	assert_true(label != null and label.text == "0/5 hari", "the count reads 0/5 hari")
 
 
 func test_day_tally_is_five_authored_tally_dot_instances() -> void:
-	var row := _card.get_node_or_null("WeekHeader/DayTally") as HBoxContainer
+	var row := _card.get_node_or_null("Paper/WeekHeader/DayTally") as HBoxContainer
 	assert_true(row != null, "missing WeekHeader/DayTally (an HBoxContainer)")
 	if row == null:
 		return
@@ -106,9 +106,9 @@ func test_day_tally_is_five_authored_tally_dot_instances() -> void:
 # ------------------------------------------------------------ week header
 
 func test_week_header_carries_band_title_and_calendar() -> void:
-	var header := _card.get_node_or_null("WeekHeader") as Control
+	var header := _card.get_node_or_null("Paper/WeekHeader") as Control
 	assert_true(header != null, "missing WeekHeader")
-	var band := _card.get_node_or_null("WeekHeader/Band") as TextureRect
+	var band := _card.get_node_or_null("Paper/WeekHeader/Band") as TextureRect
 	assert_true(band != null, "missing WeekHeader/Band")
 	if band != null:
 		assert_eq(band.texture, load(_ART + "torn_band.svg"), "Band wears torn_band.svg")
@@ -116,12 +116,12 @@ func test_week_header_carries_band_title_and_calendar() -> void:
 			"the band hangs at -1 degree, got %f" % band.rotation_degrees)
 		assert_eq(band.self_modulate, DesignTokens.load_default().surface_sunken,
 			"the white band is tinted kraft surface_sunken")
-	var title := _card.get_node_or_null("WeekHeader/Title") as Label
+	var title := _card.get_node_or_null("Paper/WeekHeader/Title") as Label
 	assert_true(title != null, "missing WeekHeader/Title")
 	if title != null:
 		assert_eq(title.text, "JADWAL MINGGU INI", "the band's title")
 		assert_eq(title.theme_type_variation, &"CardSectionLabel", "Title variation")
-	var icon := _card.get_node_or_null("WeekHeader/Icon") as TextureRect
+	var icon := _card.get_node_or_null("Paper/WeekHeader/Icon") as TextureRect
 	assert_true(icon != null, "missing WeekHeader/Icon")
 	if icon != null:
 		assert_eq(icon.texture, load(_ART + "icon_calendar.svg"), "the calendar glyph")
@@ -133,12 +133,12 @@ func test_week_header_carries_band_title_and_calendar() -> void:
 ## it must sit between the trait chips and the notes, and clear the tape
 ## that pokes above a top-slot note.
 func test_week_header_sits_between_the_traits_and_the_taped_notes() -> void:
-	var header := _card.get_node("WeekHeader") as Control
-	var traits := _card.get_node("TraitRow") as Control
-	var strip := _card.get_node("StickyNotesContainer") as Control
+	var header := _card.get_node("Paper/WeekHeader") as Control
+	var traits := _card.get_node("Paper/TraitRow") as Control
+	var strip := _card.get_node("Paper/StickyNotesContainer") as Control
 	assert_true(header.offset_top >= traits.offset_bottom,
 		"WeekHeader must start below TraitRow")
-	var tape := _card.get_node("StickyNotesContainer/Senin/Tape") as Control
+	var tape := _card.get_node("Paper/StickyNotesContainer/Senin/Tape") as Control
 	var tape_top: float = strip.offset_top + tape.offset_top
 	assert_true(header.offset_bottom <= tape_top,
 		"WeekHeader (bottom %f) must clear a top-slot note's tape (top %f)"
@@ -149,7 +149,7 @@ func test_week_header_sits_between_the_traits_and_the_taped_notes() -> void:
 
 func test_the_five_notes_carry_their_authored_tilts() -> void:
 	for day: String in _TILTS:
-		var note := _card.get_node_or_null("StickyNotesContainer/" + day) as StickyNote
+		var note := _card.get_node_or_null("Paper/StickyNotesContainer/" + day) as StickyNote
 		assert_true(note != null, "missing note " + day)
 		if note == null:
 			continue
@@ -175,7 +175,7 @@ func test_set_inviting_asks_only_the_empty_notes() -> void:
 # ------------------------------------------------------------ the portrait
 
 func test_the_portrait_frame_is_taped_down_at_minus_one_and_a_half() -> void:
-	var frame := _card.get_node_or_null("PortraitFrame") as Control
+	var frame := _card.get_node_or_null("Paper/PortraitFrame") as Control
 	assert_true(frame != null, "missing PortraitFrame")
 	if frame == null:
 		return
@@ -185,12 +185,12 @@ func test_the_portrait_frame_is_taped_down_at_minus_one_and_a_half() -> void:
 
 
 func test_a_paperclip_sits_over_the_portrait() -> void:
-	var clip := _card.get_node_or_null("PortraitFrame/Clip") as TextureRect
+	var clip := _card.get_node_or_null("Paper/PortraitFrame/Clip") as TextureRect
 	assert_true(clip != null, "missing PortraitFrame/Clip")
 	if clip == null:
 		return
 	assert_eq(clip.texture, load(_ART + "paperclip.svg"), "Clip wears paperclip.svg")
-	var portrait := _card.get_node("PortraitFrame/Portrait") as Control
+	var portrait := _card.get_node("Paper/PortraitFrame/Portrait") as Control
 	assert_true(clip.get_index() > portrait.get_index(), "the clip draws over the portrait")
 	assert_true(clip.offset_top < 0.0 and clip.offset_bottom > 0.0,
 		"the clip straddles the frame's top edge")
@@ -202,18 +202,18 @@ func test_a_paperclip_sits_over_the_portrait() -> void:
 # ------------------------------------------------------------- the catatan
 
 func test_the_catatan_has_a_pencil_and_a_tomato_margin_rule() -> void:
-	var pencil := _card.get_node_or_null("CatatanGuru/Pencil") as TextureRect
+	var pencil := _card.get_node_or_null("Paper/CatatanGuru/Pencil") as TextureRect
 	assert_true(pencil != null, "missing CatatanGuru/Pencil")
 	if pencil != null:
 		assert_eq(pencil.texture, load(_ART + "pencil.svg"), "Pencil wears pencil.svg")
-	var rule := _card.get_node_or_null("CatatanGuru/MarginRule") as ColorRect
+	var rule := _card.get_node_or_null("Paper/CatatanGuru/MarginRule") as ColorRect
 	assert_true(rule != null, "missing CatatanGuru/MarginRule (a ColorRect)")
 	if rule == null:
 		return
 	assert_eq(rule.color, DesignTokens.load_default().accent_tomato,
 		"the margin rule is accent_tomato, read from the tokens")
 	assert_eq(rule.anchor_bottom, 1.0, "the rule runs the note's full height")
-	var label := _card.get_node("CatatanGuru/CatatanLabel") as Control
+	var label := _card.get_node("Paper/CatatanGuru/CatatanLabel") as Control
 	assert_true(rule.offset_right <= label.offset_left,
 		"the note's text starts right of the margin rule")
 	if pencil != null:
@@ -222,6 +222,20 @@ func test_the_catatan_has_a_pencil_and_a_tomato_margin_rule() -> void:
 
 
 # -------------------------------------------------------- paper & breathing
+
+## The whole visible card is on Paper, so the breath swells the paper and
+## everything printed on it as one piece. Only CardButton -- an invisible
+## hit area -- stays on the root, drawn last so it takes every tap.
+func test_paper_holds_every_band_and_only_the_tap_target_stays_outside() -> void:
+	assert_eq(_card.get_child_count(), 2, "the card root holds Paper and CardButton only")
+	var button := _card.get_node_or_null("CardButton") as Button
+	assert_true(button != null and button.get_index() == 1,
+		"CardButton is a direct child drawn over Paper")
+	for band: String in ["Sheet", "Belum", "Sudah", "Nama", "PortraitFrame", "TraitRow",
+			"WeekHeader", "StickyNotesContainer", "CatatanGuru"]:
+		assert_true(_card.get_node_or_null("Paper/" + band) != null,
+			band + " must ride on Paper so it breathes with the sheet")
+
 
 func test_paper_holds_the_surface_and_draws_first() -> void:
 	var paper := _card.get_node_or_null("Paper") as Control
@@ -254,9 +268,27 @@ func test_breathing_is_recorded_but_idle_in_the_editor_and_never_moves_the_root(
 	assert_false(src.contains("tween_property(self"), "no tween animates the card root")
 
 
+## _exit_tree pauses the breath; a card put back in the tree (the deck may
+## reparent it) must still be asked to breathe.
+func test_breathing_request_survives_leaving_and_rejoining_the_tree() -> void:
+	_card.set_breathing(true)
+	var parent := _card.get_parent()
+	parent.remove_child(_card)
+	parent.add_child(_card)
+	assert_true(_card.is_breathing(), "the request outlives a trip out of the tree")
+	assert_eq((_card.get_node("Paper") as Control).scale, Vector2.ONE,
+		"leaving the tree settles the paper")
+	_card.set_breathing(false)
+	var src := FileAccess.get_file_as_string(_CARD_SCRIPT)
+	var entering := src.get_slice("func _enter_tree() -> void:", 1).get_slice("
+func ", 0)
+	assert_true(entering.contains("if _breathing:") and entering.contains("_start_breathing"),
+		"_enter_tree must resume a standing breath request")
+
+
 func test_play_entry_is_a_no_op_in_the_editor() -> void:
 	_card.play_entry()
-	var nama := _card.get_node("Nama") as Control
+	var nama := _card.get_node("Paper/Nama") as Control
 	assert_eq(nama.modulate.a, 1.0, "Nama is untouched in the editor")
 	for note: StickyNote in _card.get_notes():
 		assert_true(absf(note.rotation_degrees - note.tilt_degrees) < _DEG_EPSILON,
@@ -264,14 +296,14 @@ func test_play_entry_is_a_no_op_in_the_editor() -> void:
 
 
 func test_stop_entry_settles_every_band_at_rest() -> void:
-	var nama := _card.get_node("Nama") as Control
+	var nama := _card.get_node("Paper/Nama") as Control
 	var rest := nama.position
 	nama.modulate.a = 0.0
 	nama.position = rest + Vector2(0.0, 30.0)
 	var notes: Array[StickyNote] = _card.get_notes()
 	for note: StickyNote in notes:
 		note.rotation_degrees = 0.0
-	var belum := _card.get_node("Belum") as Control
+	var belum := _card.get_node("Paper/Belum") as Control
 	belum.scale = Vector2(0.5, 0.5)
 	_card.stop_entry()
 	assert_eq(nama.modulate.a, 1.0, "Nama is visible at rest")
@@ -280,6 +312,63 @@ func test_stop_entry_settles_every_band_at_rest() -> void:
 	for note: StickyNote in notes:
 		assert_true(absf(note.rotation_degrees - note.tilt_degrees) < _DEG_EPSILON,
 			"%s settles on its authored tilt" % note.name)
+
+
+## The pose every beat starts from: Nama lowered by NAME_RISE_PX and
+## hidden, the showing stamp hidden, every note upright. stop_entry() must
+## put all of it back.
+func test_staging_sets_the_entry_pose_and_stop_entry_restores_rest() -> void:
+	var nama := _card.get_node("Paper/Nama") as Control
+	var rest := nama.position
+	var belum := _card.get_node("Paper/Belum") as Control
+	_card._stage_for_entry()
+	assert_eq(nama.modulate.a, 0.0, "Nama starts hidden")
+	assert_eq(nama.position, rest + Vector2(0.0, RosterCard.NAME_RISE_PX),
+		"Nama starts NAME_RISE_PX below its rest")
+	assert_eq(belum.modulate.a, 0.0, "the showing (Belum) stamp starts hidden")
+	for note: StickyNote in _card.get_notes():
+		assert_eq(note.rotation_degrees, 0.0, "%s starts upright" % note.name)
+	_card.stop_entry()
+	assert_eq(nama.modulate.a, 1.0, "Nama is back")
+	assert_eq(nama.position, rest, "Nama is back at rest")
+	assert_eq(belum.modulate.a, 1.0, "the stamp is back")
+	for note: StickyNote in _card.get_notes():
+		assert_true(absf(note.rotation_degrees - note.tilt_degrees) < _DEG_EPSILON,
+			"%s is back on its tilt" % note.name)
+
+
+## Before _ready there is no recorded rest, so stop_entry() must not snap
+## Nama to the origin.
+func test_stop_entry_before_ready_leaves_the_card_alone() -> void:
+	var early := (load(_CARD_SCENE) as PackedScene).instantiate() as RosterCard
+	track(early)
+	var nama := early.get_node("Paper/Nama") as Control
+	var authored := nama.position
+	early.stop_entry()
+	assert_eq(nama.position, authored, "Nama keeps its authored position")
+	assert_ne(nama.position, Vector2.ZERO, "and is not snapped to the origin")
+
+
+## The catatan box shrank for the week header. Every persona x quirk note
+## the card can compose must still fit it, measured with the baked theme's
+## real font rather than a guessed character count.
+func test_every_catatan_fits_its_box() -> void:
+	var label := _card.get_node("Paper/CatatanGuru/CatatanLabel") as Label
+	var spacing := float(label.get_theme_constant("line_spacing"))
+	var line_step := float(label.get_line_height()) + spacing
+	var fit := int(floor((label.size.y + spacing) / line_step))
+	assert_gt(fit, 1, "the box must hold at least two lines (%s tall)" % label.size.y)
+	var personas: Array = RosterCard.CATATAN_PERSONA.keys()
+	personas.append("")
+	var quirks: Array = RosterCard.CATATAN_QUIRK.keys()
+	quirks.append("")
+	for persona: String in personas:
+		for quirk: String in quirks:
+			label.text = RosterCard.compose_catatan(persona, quirk)
+			assert_true(label.get_line_count() <= fit,
+				"'%s' + '%s' wraps to %d lines; the %dx%d box fits %d"
+					% [persona, quirk, label.get_line_count(),
+						int(label.size.x), int(label.size.y), fit])
 
 
 ## Timings, angles and scales are named, the overshoot honours
@@ -310,9 +399,9 @@ func test_the_motion_is_named_guarded_and_cleaned_up() -> void:
 ## through to CardButton, which routes to AturJadwal.
 func test_the_new_props_never_swallow_a_card_tap() -> void:
 	var paths := [
-		"Paper", "Paper/LiftShadow", "WeekHeader", "WeekHeader/Band",
-		"WeekHeader/Icon", "WeekHeader/DayTally", "PortraitFrame/Clip",
-		"CatatanGuru/Pencil", "CatatanGuru/MarginRule",
+		"Paper", "Paper/LiftShadow", "Paper/WeekHeader", "Paper/WeekHeader/Band",
+		"Paper/WeekHeader/Icon", "Paper/WeekHeader/DayTally", "Paper/PortraitFrame/Clip",
+		"Paper/CatatanGuru/Pencil", "Paper/CatatanGuru/MarginRule",
 	]
 	for p: String in paths:
 		var c := _card.get_node_or_null(p) as Control

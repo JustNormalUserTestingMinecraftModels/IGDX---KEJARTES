@@ -47,13 +47,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 theme_type_variation = &"Card"
 
-[node name="CardButton" type="Button" parent="." unique_id=1821756309]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="Belum" type="Button" parent="." unique_id=727038106]
+[node name="Belum" type="Button" parent="Paper" unique_id=727038106]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 610.0
@@ -65,7 +59,7 @@ theme_type_variation = &"RosterStatusBelum"
 text = "BELUM"
 clip_text = true
 
-[node name="Stamp" type="TextureRect" parent="Belum" unique_id=1727905095]
+[node name="Stamp" type="TextureRect" parent="Paper/Belum" unique_id=1727905095]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -74,7 +68,7 @@ texture = ExtResource("3_t5dal")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Sudah" type="Button" parent="." unique_id=547041322]
+[node name="Sudah" type="Button" parent="Paper" unique_id=547041322]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
@@ -87,7 +81,7 @@ theme_type_variation = &"RosterStatusSudah"
 text = "SUDAH"
 clip_text = true
 
-[node name="Stamp" type="TextureRect" parent="Sudah" unique_id=1217424049]
+[node name="Stamp" type="TextureRect" parent="Paper/Sudah" unique_id=1217424049]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -96,7 +90,7 @@ texture = ExtResource("4_6wrao")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Nama" type="Label" parent="." unique_id=1733212225]
+[node name="Nama" type="Label" parent="Paper" unique_id=1733212225]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 45.0
@@ -106,7 +100,7 @@ offset_bottom = 155.0
 theme_type_variation = &"H2Label"
 vertical_alignment = 1
 
-[node name="PortraitFrame" type="Control" parent="." unique_id=428478704]
+[node name="PortraitFrame" type="Control" parent="Paper" unique_id=428478704]
 unique_name_in_owner = true
 anchors_preset = 0
 offset_left = 190.0
@@ -117,14 +111,14 @@ rotation = -0.02617994
 pivot_offset = Vector2(300, 310)
 mouse_filter = 2
 
-[node name="Backdrop" type="Panel" parent="PortraitFrame" unique_id=1201417250]
+[node name="Backdrop" type="Panel" parent="Paper/PortraitFrame" unique_id=1201417250]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 theme_type_variation = &"SunkenPanel"
 
-[node name="Portrait" type="TextureRect" parent="PortraitFrame" unique_id=11649935]
+[node name="Portrait" type="TextureRect" parent="Paper/PortraitFrame" unique_id=11649935]
 unique_name_in_owner = true
 layout_mode = 0
 anchor_right = 1.0
@@ -137,14 +131,14 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="CornerTL" type="TextureRect" parent="PortraitFrame" unique_id=579347845]
+[node name="CornerTL" type="TextureRect" parent="Paper/PortraitFrame" unique_id=579347845]
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 64.0
 mouse_filter = 2
 texture = ExtResource("5_nfd4g")
 
-[node name="CornerBR" type="TextureRect" parent="PortraitFrame" unique_id=1756228071]
+[node name="CornerBR" type="TextureRect" parent="Paper/PortraitFrame" unique_id=1756228071]
 layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
@@ -157,7 +151,7 @@ texture = ExtResource("5_nfd4g")
 flip_h = true
 flip_v = true
 
-[node name="Clip" type="TextureRect" parent="PortraitFrame" unique_id=264314929]
+[node name="Clip" type="TextureRect" parent="Paper/PortraitFrame" unique_id=264314929]
 layout_mode = 0
 anchor_left = 0.5
 anchor_right = 0.5
@@ -172,7 +166,7 @@ texture = ExtResource("11_clip")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="WeekHeader" type="Control" parent="." unique_id=1464239191]
+[node name="WeekHeader" type="Control" parent="Paper" unique_id=1464239191]
 anchors_preset = 0
 offset_left = 40.0
 offset_top = 916.0
@@ -180,7 +174,7 @@ offset_right = 940.0
 offset_bottom = 988.0
 mouse_filter = 2
 
-[node name="Band" type="TextureRect" parent="WeekHeader" unique_id=1085817190]
+[node name="Band" type="TextureRect" parent="Paper/WeekHeader" unique_id=1085817190]
 unique_name_in_owner = true
 layout_mode = 0
 anchor_right = 1.0
@@ -193,7 +187,7 @@ mouse_filter = 2
 texture = ExtResource("8_tband")
 expand_mode = 1
 
-[node name="Icon" type="TextureRect" parent="WeekHeader" unique_id=1882822251]
+[node name="Icon" type="TextureRect" parent="Paper/WeekHeader" unique_id=1882822251]
 layout_mode = 0
 offset_left = 28.0
 offset_top = 12.0
@@ -204,7 +198,7 @@ texture = ExtResource("9_calen")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Title" type="Label" parent="WeekHeader" unique_id=1447584607]
+[node name="Title" type="Label" parent="Paper/WeekHeader" unique_id=1447584607]
 layout_mode = 0
 offset_left = 88.0
 offset_right = 540.0
@@ -213,7 +207,7 @@ theme_type_variation = &"CardSectionLabel"
 text = "JADWAL MINGGU INI"
 vertical_alignment = 1
 
-[node name="TallyLabel" type="Label" parent="WeekHeader" unique_id=696126989]
+[node name="TallyLabel" type="Label" parent="Paper/WeekHeader" unique_id=696126989]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 548.0
@@ -224,7 +218,7 @@ text = "0/5 hari"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="DayTally" type="HBoxContainer" parent="WeekHeader" unique_id=2042748555]
+[node name="DayTally" type="HBoxContainer" parent="Paper/WeekHeader" unique_id=2042748555]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 728.0
@@ -235,22 +229,22 @@ mouse_filter = 2
 theme_override_constants/separation = 8
 alignment = 2
 
-[node name="Dot1" parent="WeekHeader/DayTally" unique_id=449648890 instance=ExtResource("10_tdot")]
+[node name="Dot1" parent="Paper/WeekHeader/DayTally" unique_id=449648890 instance=ExtResource("10_tdot")]
 layout_mode = 2
 
-[node name="Dot2" parent="WeekHeader/DayTally" unique_id=343825952 instance=ExtResource("10_tdot")]
+[node name="Dot2" parent="Paper/WeekHeader/DayTally" unique_id=343825952 instance=ExtResource("10_tdot")]
 layout_mode = 2
 
-[node name="Dot3" parent="WeekHeader/DayTally" unique_id=1035561066 instance=ExtResource("10_tdot")]
+[node name="Dot3" parent="Paper/WeekHeader/DayTally" unique_id=1035561066 instance=ExtResource("10_tdot")]
 layout_mode = 2
 
-[node name="Dot4" parent="WeekHeader/DayTally" unique_id=2035202743 instance=ExtResource("10_tdot")]
+[node name="Dot4" parent="Paper/WeekHeader/DayTally" unique_id=2035202743 instance=ExtResource("10_tdot")]
 layout_mode = 2
 
-[node name="Dot5" parent="WeekHeader/DayTally" unique_id=337458739 instance=ExtResource("10_tdot")]
+[node name="Dot5" parent="Paper/WeekHeader/DayTally" unique_id=337458739 instance=ExtResource("10_tdot")]
 layout_mode = 2
 
-[node name="StickyNotesContainer" type="Control" parent="." unique_id=283858632]
+[node name="StickyNotesContainer" type="Control" parent="Paper" unique_id=283858632]
 unique_name_in_owner = true
 anchors_preset = 0
 offset_left = 40.0
@@ -259,7 +253,7 @@ offset_right = 940.0
 offset_bottom = 1238.0
 mouse_filter = 2
 
-[node name="Senin" parent="StickyNotesContainer" unique_id=159726911 instance=ExtResource("3_2cr6j")]
+[node name="Senin" parent="Paper/StickyNotesContainer" unique_id=159726911 instance=ExtResource("3_2cr6j")]
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_top = 20.0
@@ -269,7 +263,7 @@ mouse_filter = 2
 day_name = "SEN"
 tilt_degrees = -2.5
 
-[node name="Selasa" parent="StickyNotesContainer" unique_id=1799566043 instance=ExtResource("3_2cr6j")]
+[node name="Selasa" parent="Paper/StickyNotesContainer" unique_id=1799566043 instance=ExtResource("3_2cr6j")]
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_left = 182.0
@@ -280,7 +274,7 @@ mouse_filter = 2
 day_name = "SEL"
 tilt_degrees = 1.5
 
-[node name="Rabu" parent="StickyNotesContainer" unique_id=1024822765 instance=ExtResource("3_2cr6j")]
+[node name="Rabu" parent="Paper/StickyNotesContainer" unique_id=1024822765 instance=ExtResource("3_2cr6j")]
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_left = 364.0
@@ -291,7 +285,7 @@ mouse_filter = 2
 day_name = "RAB"
 tilt_degrees = -1.5
 
-[node name="Kamis" parent="StickyNotesContainer" unique_id=820140775 instance=ExtResource("3_2cr6j")]
+[node name="Kamis" parent="Paper/StickyNotesContainer" unique_id=820140775 instance=ExtResource("3_2cr6j")]
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_left = 546.0
@@ -302,7 +296,7 @@ mouse_filter = 2
 day_name = "KAM"
 tilt_degrees = 2.0
 
-[node name="Jumat" parent="StickyNotesContainer" unique_id=1309994276 instance=ExtResource("3_2cr6j")]
+[node name="Jumat" parent="Paper/StickyNotesContainer" unique_id=1309994276 instance=ExtResource("3_2cr6j")]
 self_modulate = Color(0.6974902, 0.62925494, 0.5655686, 1)
 layout_mode = 0
 offset_left = 728.0
@@ -313,7 +307,7 @@ mouse_filter = 2
 day_name = "JUM"
 tilt_degrees = -1.0
 
-[node name="TraitRow" type="HBoxContainer" parent="." unique_id=517615274]
+[node name="TraitRow" type="HBoxContainer" parent="Paper" unique_id=517615274]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 40.0
@@ -324,7 +318,7 @@ mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="SpecialtyChip" type="Button" parent="TraitRow" unique_id=1755543310]
+[node name="SpecialtyChip" type="Button" parent="Paper/TraitRow" unique_id=1755543310]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
@@ -333,7 +327,7 @@ focus_mode = 0
 mouse_filter = 2
 theme_type_variation = &"SpecialtyBadgeM"
 
-[node name="PersonaChip" type="Button" parent="TraitRow" unique_id=934576774]
+[node name="PersonaChip" type="Button" parent="Paper/TraitRow" unique_id=934576774]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
@@ -342,7 +336,7 @@ focus_mode = 0
 mouse_filter = 2
 theme_type_variation = &"PersonaBadgeM"
 
-[node name="QuirkChip" type="Button" parent="TraitRow" unique_id=909514293]
+[node name="QuirkChip" type="Button" parent="Paper/TraitRow" unique_id=909514293]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
@@ -351,7 +345,7 @@ focus_mode = 0
 mouse_filter = 2
 theme_type_variation = &"QuirkBadgeM"
 
-[node name="CatatanGuru" type="Control" parent="." unique_id=1031197187]
+[node name="CatatanGuru" type="Control" parent="Paper" unique_id=1031197187]
 anchors_preset = 0
 offset_left = 45.0
 offset_top = 1250.0
@@ -359,7 +353,7 @@ offset_right = 935.0
 offset_bottom = 1386.0
 mouse_filter = 2
 
-[node name="Rule" type="TextureRect" parent="CatatanGuru" unique_id=445468317]
+[node name="Rule" type="TextureRect" parent="Paper/CatatanGuru" unique_id=445468317]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -367,7 +361,7 @@ mouse_filter = 2
 texture = ExtResource("7_gvl25")
 stretch_mode = 1
 
-[node name="MarginRule" type="ColorRect" parent="CatatanGuru" unique_id=2014521684]
+[node name="MarginRule" type="ColorRect" parent="Paper/CatatanGuru" unique_id=2014521684]
 unique_name_in_owner = true
 layout_mode = 0
 anchor_bottom = 1.0
@@ -375,7 +369,7 @@ offset_left = 76.0
 offset_right = 79.0
 mouse_filter = 2
 
-[node name="CatatanLabel" type="Label" parent="CatatanGuru" unique_id=534992870]
+[node name="CatatanLabel" type="Label" parent="Paper/CatatanGuru" unique_id=534992870]
 unique_name_in_owner = true
 layout_mode = 0
 anchor_right = 1.0
@@ -388,7 +382,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="Pencil" type="TextureRect" parent="CatatanGuru" unique_id=1229278479]
+[node name="Pencil" type="TextureRect" parent="Paper/CatatanGuru" unique_id=1229278479]
 layout_mode = 0
 offset_left = 14.0
 offset_top = 8.0
@@ -398,3 +392,9 @@ mouse_filter = 2
 texture = ExtResource("12_penc")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="CardButton" type="Button" parent="." unique_id=1821756309]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0

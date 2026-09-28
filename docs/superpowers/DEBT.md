@@ -162,8 +162,8 @@ for it to move.
 
 **MURIDMU RosterCard week planner (2026-09-29, Task 1 groundwork).** Four
 hand-written SVGs in `Assets/Images/UI/StudentList/`, drop-replaceable at the
-same paths, wired into `RosterCard.tscn` as of Task 3 (`WeekHeader/Band`,
-`WeekHeader/Icon`, `PortraitFrame/Clip`, `CatatanGuru/Pencil`; the band is
+same paths, wired into `RosterCard.tscn` as of Task 3 (`Paper/WeekHeader/Band`,
+`Paper/WeekHeader/Icon`, `Paper/PortraitFrame/Clip`, `Paper/CatatanGuru/Pencil`; the band is
 squashed to 900x64 there, so a replacement should keep its torn edges
 legible at about half height): `torn_band.svg` (900x120, the WeekHeader band, drawn
 white for `self_modulate` `surface_sunken` tinting, same recipe as
@@ -180,16 +180,6 @@ wired as of Task 2: `StickyNote.gd`'s `scheduled` export shows them on
 StickyNote's actual 172x200 instance rect (`RosterCard.tscn`'s offsets), so
 `EmptyFrame` is a plain `TextureRect` (`STRETCH_KEEP_ASPECT_CENTERED`) that
 renders it near enough 1:1; a 9-slice would stretch or tile the dashes.
-
-**RosterCard's breath swells the surface, not the bands (2026-09-29, Task
-3).** `set_breathing()` scales the card's inner `Paper`, which holds only
-`Sheet` and the `LiftShadow` under it. The bands (Nama, stamps, portrait,
-notes, catatan) stay direct children of the card because `StudentList.gd`
-still reaches them by path (`Nama`, `Belum`, `Sudah`,
-`PortraitFrame/Portrait`, `StickyNotesContainer`). At a 1.2% peak the sheet's
-edge moves ~6-8px under still bands. To breathe the whole card, move the bands
-into `Paper` once StudentList reads the card through its API (`get_notes()`,
-the `student_name`/`portrait_texture` exports) instead of by path.
 
 ## Asset notes
 

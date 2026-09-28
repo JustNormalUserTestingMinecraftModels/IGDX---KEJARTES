@@ -728,6 +728,9 @@ func test_student_list_week_tally_dots_are_mint_filled_and_ringed_empty() -> voi
 	assert_true(empty != null, "TallyDotEmpty must be a flat panel")
 	if empty != null:
 		assert_eq(empty.bg_color, _tokens.surface_sunken, "an unscheduled dot's fill is kraft")
-		assert_eq(empty.border_color, _tokens.outline_card, "an unscheduled dot is ringed")
+		# Brown ink, not outline_card: the dot sits on the kraft WeekHeader
+		# band, where a near-white ring on a kraft dot all but vanished.
+		assert_eq(empty.border_color, _tokens.text_secondary,
+			"an unscheduled dot is ringed in ink that reads on the kraft band")
 		assert_gt(empty.border_width_top, 0, "the ring must actually be visible")
 		assert_eq(empty.corner_radius_top_left, _tokens.radius_pill, "the dot is fully round")

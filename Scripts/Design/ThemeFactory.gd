@@ -2631,9 +2631,11 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 ##                          depth pass's affirm color (constraints.md's
 ##                          revision overrides the original spec draft's
 ##                          state_success/category-tone dot).
-##   TallyDotEmpty          an unscheduled day's dot: a thin ring on
-##                          surface_sunken, the same half-outline recipe as
-##                          StatPill's track (_build_student_card above).
+##   TallyDotEmpty          an unscheduled day's dot: a thin text_secondary
+##                          ring on surface_sunken, half the outline width.
+##                          The ring is the brown ink, not outline_card: the
+##                          dot sits on the kraft WeekHeader band, where a
+##                          kraft dot with a near-white ring all but vanished.
 ##
 ## The week header band's own label reuses CardSectionLabel as-is rather
 ## than adding a WeekBandLabel (see task-1-report.md): torn_band.svg is
@@ -2662,7 +2664,7 @@ static func _build_student_list_week(theme: Theme, tokens: DesignTokens) -> void
 	theme.set_type_variation("TallyDotEmpty", "Panel")
 	var dot_empty := StyleBoxFlat.new()
 	dot_empty.bg_color = tokens.surface_sunken
-	dot_empty.border_color = tokens.outline_card
+	dot_empty.border_color = tokens.text_secondary
 	dot_empty.set_border_width_all(int(tokens.outline_width / 2.0))
 	dot_empty.set_corner_radius_all(tokens.radius_pill)
 	theme.set_stylebox("panel", "TallyDotEmpty", dot_empty)

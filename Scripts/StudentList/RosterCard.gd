@@ -16,10 +16,11 @@ extends TextureRect
 ## Every tunable is an @export on THIS root, never a property set on an
 ## instance's child: overrides serialise only on an instanced scene's
 ## root, so a value poked into a child reports success and is dropped on
-## save. StudentList.gd still pokes some children by path (Nama, Belum,
-## Sudah, PortraitFrame/Portrait, StickyNotesContainer, CardButton) --
-## those stay direct children at the paths it reads. This script reaches
-## every node it touches by its %unique name instead.
+## save. StudentList.gd still pokes some nodes directly (Nama, Belum,
+## Sudah, Portrait, StickyNotesContainer, CardButton) -- by their %unique
+## names, so they can live anywhere under the card; only CardButton is
+## still addressed as a direct child. This script, too, reaches every node
+## it touches by its %unique name.
 ##
 ## MURIDMU RosterCard Task 3 (2026-09-29) dresses the card as a weekly
 ## planner (spec 3.2-3.4): a torn "JADWAL MINGGU INI" WeekHeader with a
@@ -32,10 +33,10 @@ extends TextureRect
 ##
 ## Why the breath animates `Paper` and not the card: the swipe deck moves
 ## the card ROOT, and two animations on one transform fight. Paper holds
-## only the card's surface (the Sheet and the LiftShadow under it), not the
-## bands above it, because StudentList.gd reaches those bands by their
-## direct-child paths. The bands sit still while the sheet swells under
-## them by at most ~1%, which reads as the paper lifting off the desk.
+## the whole visible card -- the LiftShadow, the Sheet and every band drawn
+## on it -- so the paper and everything printed on it breathe as one piece.
+## Only CardButton, the invisible full-card tap target, stays a direct
+## child of the root: a hit area has no business swelling.
 
 ## The number of weekdays in a school week: the tally's dot count and the
 ## ceiling days_scheduled clamps to.
@@ -198,6 +199,8 @@ var _breath_tween: Tween
 var _breathing := false
 ## Nama's authored position, the rest its fade-up rises to.
 var _nama_rest := Vector2.ZERO
+## The stamp this entry hid and will thunk: the week's stamp when it began.
+var _entry_stamp: Control
 
 
 ## Five openers x six observations gives thirty notes from eleven
@@ -222,6 +225,14 @@ func _ready() -> void:
 	_apply_scheduled()
 	_apply_days_scheduled()
 	_apply_token_tints()
+
+
+## A card taken out of the tree and put back (the deck may reparent it)
+## resumes the breath it was asked for; _exit_tree only paused it. Paper
+## keeps its size across the trip, so the pivot it reads is still right.
+func _enter_tree() -> void:
+	if _breathing:
+		_start_breathing()
 
 
 func _exit_tree() -> void:
@@ -337,11 +348,17 @@ func set_inviting(on: bool) -> void:
 ## stays StudentList's pinned Juice.stagger_in; this only adds their
 ## rotate-overshoot on top.
 ##
+## Set the week first: `is_scheduled` and `days_scheduled` must hold this
+## student's week BEFORE the call. The entry snapshots them when it starts
+## -- which stamp thunks, how many dots pop -- so a later change shows at
+## rest but does not re-time a beat already queued.
+##
 ## Safe to call again mid-entry: it kills the running beats and restages.
-## No-op in the editor; under GameSettings.reduce_motion it skips every
-## beat (the overshoots included) and just places the card at rest.
+## No-op in the editor and before the card is ready; under
+## GameSettings.reduce_motion it skips every beat (the overshoots included)
+## and just places the card at rest.
 func play_entry() -> void:
-	if Engine.is_editor_hint() or not is_inside_tree():
+	if Engine.is_editor_hint() or not is_inside_tree() or not is_node_ready():
 		return
 	_kill_entry()
 	if GameSettings.reduce_motion:
@@ -361,10 +378,13 @@ func play_entry() -> void:
 
 
 ## Kills a running entry and places every band at rest -- for a card that
-## leaves mid-entry (a swipe, a popup) and must not stay half-staged.
+## leaves mid-entry (a swipe, a popup) and must not stay half-staged. Before
+## _ready there is nothing staged and no recorded rest to return to (Nama's
+## would read as the origin), so it only kills.
 func stop_entry() -> void:
 	_kill_entry()
-	_settle_at_rest()
+	if is_node_ready():
+		_settle_at_rest()
 
 
 func _kill_entry() -> void:
@@ -414,15 +434,11 @@ func _stage_for_entry() -> void:
 	if nama != null:
 		nama.modulate.a = 0.0
 		nama.position = _nama_rest + Vector2(0.0, NAME_RISE_PX)
-	var stamp := _showing_stamp()
-	if stamp != null:
-		stamp.modulate.a = 0.0
+	_entry_stamp = _required("Sudah" if is_scheduled else "Belum") as Control
+	if _entry_stamp != null:
+		_entry_stamp.modulate.a = 0.0
 	for note: StickyNote in get_notes():
 		note.rotation_degrees = 0.0
-
-
-func _showing_stamp() -> Control:
-	return _required("Sudah" if is_scheduled else "Belum") as Control
 
 
 func _trait_chips() -> Array[Control]:
@@ -455,12 +471,13 @@ func _beat_portrait() -> void:
 		_track(AnimUtils.squash_bounce(frame))
 
 
+## Thunks the stamp _stage_for_entry() hid, not whichever shows now, so a
+## week that flips mid-entry never leaves one stamp invisible.
 func _beat_stamp() -> void:
-	var stamp := _showing_stamp()
-	if stamp == null:
+	if _entry_stamp == null or not is_instance_valid(_entry_stamp):
 		return
-	stamp.modulate.a = 1.0
-	_track(AnimUtils.popup_spring_in(stamp))
+	_entry_stamp.modulate.a = 1.0
+	_track(AnimUtils.popup_spring_in(_entry_stamp))
 
 
 func _pop_dot(dot: TallyDot) -> void:
@@ -500,15 +517,14 @@ func _queue_note_swings() -> void:
 ## 1 <-> BREATH_SCALE_PEAK while LiftShadow deepens under it, one breath
 ## every BREATH_PERIOD_SECONDS. For the FRONT card only; the caller pauses
 ## it during a swipe and while a popup or the tutorial is up. The looped
-## Tween is stored here and killed on stop and in _exit_tree. No-op in the
+## Tween is stored here and killed on stop and in _exit_tree (and resumed
+## on re-entering the tree while the request stands). No-op in the
 ## editor and under GameSettings.reduce_motion (the request is still
 ## recorded -- see is_breathing()).
 func set_breathing(on: bool) -> void:
 	_breathing = on
 	if not on:
 		_stop_breathing()
-		return
-	if _breath_tween != null and _breath_tween.is_valid():
 		return
 	_start_breathing()
 
@@ -520,7 +536,9 @@ func is_breathing() -> bool:
 
 
 func _start_breathing() -> void:
-	if Engine.is_editor_hint() or not is_inside_tree():
+	if Engine.is_editor_hint() or not is_inside_tree() or not _breathing:
+		return
+	if _breath_tween != null and _breath_tween.is_valid():
 		return
 	if GameSettings.reduce_motion:
 		return

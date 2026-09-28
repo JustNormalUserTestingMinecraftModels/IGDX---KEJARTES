@@ -257,15 +257,15 @@ func _setup_students():
 				murid_node.texture = paper_texture
 
 			# Set Portrait
-			# RosterCard wraps the portrait in a PortraitFrame node (Task 4
-			# extraction), so it is no longer a direct child of the card.
-			var portrait_node = murid_node.get_node_or_null("PortraitFrame/Portrait")
+			# RosterCard's bands live under its inner Paper; every node read
+			# here is a %unique name in RosterCard.tscn, so no path is spelt.
+			var portrait_node = murid_node.get_node_or_null("%Portrait")
 			var portrait_path = StudentSkins.portrait_for(student_data)
 			if portrait_node and portrait_path != "" and ResourceLoader.exists(portrait_path):
 				portrait_node.texture = load(portrait_path)
 
 			# Set Name
-			var nama_label = murid_node.get_node_or_null("Nama")
+			var nama_label = murid_node.get_node_or_null("%Nama")
 			if nama_label:
 				nama_label.text = student_data.get("name", "MURID " + str(i + 1))
 
@@ -287,8 +287,8 @@ func _setup_students():
 			murid_node.is_scheduled = fully_scheduled
 
 			# Status Badges
-			var belum_btn = murid_node.get_node_or_null("Belum")
-			var sudah_btn = murid_node.get_node_or_null("Sudah")
+			var belum_btn = murid_node.get_node_or_null("%Belum")
+			var sudah_btn = murid_node.get_node_or_null("%Sudah")
 			if belum_btn:
 				belum_btn.visible = not fully_scheduled
 			if sudah_btn:
@@ -297,7 +297,7 @@ func _setup_students():
 			# Setup sticky notes: each is a StickyNote instance whose own
 			# script tints self_modulate from DesignTokens.category_color()
 			# and refreshes its label — this loop only decides the text.
-			var sticky_container = murid_node.get_node_or_null("StickyNotesContainer")
+			var sticky_container = murid_node.get_node_or_null("%StickyNotesContainer")
 			if sticky_container:
 				for day_name in required_days:
 					var sticky_node = sticky_container.get_node_or_null(day_name) as StickyNote
@@ -430,7 +430,7 @@ func _init_carousel_state():
 ## Reveal one card's five day-notes with a shorter step than the
 ## card-level stagger, as if they're being pinned up as the card opens.
 func _stagger_card_notes(card: Control) -> void:
-	var sticky_container = card.get_node_or_null("StickyNotesContainer")
+	var sticky_container = card.get_node_or_null("%StickyNotesContainer")
 	if not sticky_container:
 		return
 	Juice.stagger_in(sticky_container.get_children(), DesignTokens.load_default().stagger_step * 0.5)

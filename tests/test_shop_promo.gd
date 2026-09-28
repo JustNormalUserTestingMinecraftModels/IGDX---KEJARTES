@@ -12,6 +12,8 @@ extends McpTestSuite
 ## via assert_true instead.
 const FLOAT_TOLERANCE: float = 0.0001
 
+const CartScript := preload("res://Scripts/Inventory/Cart.gd")
+
 var _snap: Dictionary = {}
 
 func suite_name() -> String:
@@ -104,3 +106,26 @@ func test_forget_session_goes_through_reset_shop_week() -> void:
 	assert_true(body.contains("reset_shop_week()"),
 		"one place clears the shop week, promo included")
 	assert_false(body.contains("shop_stock = []"), "not a second copy of it")
+
+func _item(item_name: String, price: int) -> ItemData:
+	var data := ItemData.new()
+	data.item_name = item_name
+	data.price = price
+	return data
+
+func test_price_of_discounts_only_the_promo_item() -> void:
+	GameState.shop_promo_item = "Susu Murni"
+	GameState.shop_promo_percent = 20
+	var promo: ItemData = _item("Susu Murni", 1000)
+	assert_eq(CartScript.price_of(promo), roundi(CartScript.list_price_of(promo) * 0.8),
+		"20% off the promo item's list price")
+	var plain: ItemData = _item("Komik", 1000)
+	assert_eq(CartScript.price_of(plain), CartScript.list_price_of(plain), "full price otherwise")
+
+func test_total_of_sums_the_promo_price() -> void:
+	GameState.shop_promo_item = "Susu Murni"
+	GameState.shop_promo_percent = 20
+	var promo: ItemData = _item("Susu Murni", 1000)
+	var entries: Dictionary = {"Susu Murni": {"data": promo, "quantity": 2}}
+	assert_eq(CartScript.total_of(entries), CartScript.price_of(promo) * 2,
+		"the basket total uses the same discounted price")

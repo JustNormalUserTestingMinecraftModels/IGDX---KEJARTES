@@ -244,6 +244,9 @@ var inventory: Dictionary = {}  ## Tracks item quantities by name
 ## Wirausaha earnings accrued this week, student_id -> rupiah. Emptied by
 ## SchoolDay at week end, when the total is paid into player_money.
 var pending_earnings: Dictionary = {}
+## Ads owed from Dapatkan Uang's "ambil dulu" cash-ins; one watched owed
+## ad pays one back. Session-scoped like money -- never saved.
+var ad_debt: int = 0
 
 
 func add_to_inventory(item_name: String, quantity: int) -> void:
@@ -417,6 +420,7 @@ func forget_session() -> void:
 	skin_unlock_overrides = {}
 	player_money = 0
 	pending_earnings = {}
+	ad_debt = 0
 	inventory.clear()
 	daily_login_day = 1
 	last_claim_date = ""

@@ -25,6 +25,9 @@ const POPUPS := {
 	"res://Scenes/UI/StatDetailPopup.tscn": ["Scrim/Safe/Center/Frame", "dialog", "safe"],
 	"res://Scenes/UI/TraitDetailPopup.tscn": ["Scrim/Safe/Center/Frame", "dialog", "safe"],
 	"res://Scenes/UI/WeekRecapPillInfoPopup.tscn": ["Scrim/Safe/Center/Frame", "dialog", "safe"],
+	"res://Scenes/SchoolSimulation/WeekLogsPopup.tscn": ["Safe/Center/Frame", "sheet", "safe"],
+	"res://Scenes/SchoolSimulation/DailyDecayOverview.tscn": ["Safe/Frame", "sheet", "safe"],
+	"res://Scenes/SchoolSimulation/DaySummaryPopup.tscn": ["DimOverlay/Safe/Content/Frame", "sheet", "safe"],
 }
 
 ## scene -> the script that wires its frame's close, when that is the

@@ -915,6 +915,22 @@ func test_popup_scrolls_its_rows() -> void:
 	inst.free()
 
 
+## 2026-09-28 UI depth pass, Phase 2 Task 3: the reward layer and rows move
+## into a NotebookFrame sheet under the banner. The banner art stays the
+## title, so title_text is empty and the sticker hides.
+func test_the_recap_sits_in_a_notebook_sheet_under_its_banner() -> void:
+	var popup := (load(_POPUP_SCENE) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("DimOverlay/Safe/Content/Frame") as NotebookFrame
+	assert_true(frame != null, "the reward and rows sit in a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "", "the banner art stays the title, so the sticker hides")
+		assert_true(frame.get_node_or_null("Body/Reward") != null, "the reward layer is inside")
+		assert_true(frame.get_node_or_null("Body/RowsScroll") != null, "and the rows")
+	assert_true(popup.get_node_or_null("DimOverlay/Safe/Content/TitleBanner") != null,
+		"the banner stays above the frame")
+
+
 ## SchoolDay hands the popup a real summary and expects the rows built
 ## from it (Task 8 removes the reparenting that used to bypass this).
 func test_popup_still_exposes_its_contract() -> void:

@@ -31,10 +31,9 @@ func _entry(day: String, category: String, won: bool) -> Dictionary:
 
 func test_the_scene_authors_every_node_the_script_binds() -> void:
 	var p = _popup()
-	for path in ["Scrim", "Center/Card", "Center/Card/Content/TitleLabel",
-			"Center/Card/Content/Scroll/Rows",
-			"Center/Card/Content/Scroll/Rows/EmptyLabel",
-			"Center/Card/Content/CloseButton"]:
+	for path in ["Scrim", "Safe/Center/Frame",
+			"Safe/Center/Frame/Content/Scroll/Rows",
+			"Safe/Center/Frame/Content/Scroll/Rows/EmptyLabel"]:
 		assert_not_null(p.get_node_or_null(path), path + " is authored")
 
 
@@ -47,8 +46,7 @@ func test_the_scene_supplies_the_history_row_template() -> void:
 
 func test_the_labels_come_from_the_exports() -> void:
 	var p = _popup()
-	assert_eq(p.title_label.text, "LOGS")
-	assert_eq(p.close_button.text, "Tutup")
+	assert_eq(p.card.title_text, "LOGS")
 	assert_eq(p.empty_label.text, "Tidak ada minigame yang dimainkan minggu ini.")
 
 
@@ -101,14 +99,14 @@ func test_the_close_button_closes_the_sheet_once() -> void:
 	var p = _popup()
 	var count := [0]
 	p.closed.connect(func(): count[0] += 1)
-	p.close_button.pressed.emit()
+	p.card.close_pressed.emit()
 	p.close()
 	assert_eq(count[0], 1, "closed fires exactly once")
 
 
 func test_the_center_never_swallows_a_tap_meant_for_the_dim() -> void:
 	var p = _popup()
-	assert_eq((p.get_node("Center") as Control).mouse_filter,
+	assert_eq((p.get_node("Safe/Center") as Control).mouse_filter,
 		Control.MOUSE_FILTER_IGNORE, "taps outside the card must reach the Scrim")
 
 
@@ -144,3 +142,18 @@ func test_the_rows_entrance_rides_a_tween_not_an_await() -> void:
 	assert_false(code.contains("await"), "open() never suspends on something that outlives the sheet")
 	assert_contains(code, "arm.tween_callback(_play_rows_entrance)",
 		"the entrance is a callback on the sheet's own tween")
+
+
+## 2026-09-28 UI depth pass, Phase 2 Task 3: the Card panel becomes a
+## NotebookFrame sheet, with the round close replacing the typed Tutup.
+func test_the_logs_sit_in_a_notebook_sheet() -> void:
+	var popup := (load("res://Scenes/SchoolSimulation/WeekLogsPopup.tscn") as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Safe/Center/Frame") as NotebookFrame
+	assert_true(frame != null, "the logs card is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "LOGS")
+	assert_true(popup.get_node_or_null("Safe/Center/Frame/Content/CloseButton") == null,
+		"Tutup is the frame's round close now")
+	assert_contains(FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/WeekLogsPopup.gd"),
+		"card.close_pressed.connect(close)")

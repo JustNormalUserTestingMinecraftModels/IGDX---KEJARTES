@@ -11,6 +11,8 @@
 [ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/star_on.svg" id="v_star_on"]
 [ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/star_off.svg" id="v_star_off"]
 [ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/crown.svg" id="v_crown"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
 
 [node name="DaySummaryPopup" type="Control" unique_id=652940852]
 layout_mode = 3
@@ -43,40 +45,55 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"Scrim"
 
-[node name="Content" type="VBoxContainer" parent="DimOverlay" unique_id=2136405530]
+[node name="Safe" type="MarginContainer" parent="DimOverlay"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("nb_safe")
+
+[node name="Content" type="VBoxContainer" parent="DimOverlay/Safe" unique_id=2136405530]
+layout_mode = 2
 theme_override_constants/separation = 28
 
-[node name="TitleBanner" type="TextureRect" parent="DimOverlay/Content" unique_id=1547726228]
+[node name="TitleBanner" type="TextureRect" parent="DimOverlay/Safe/Content" unique_id=1547726228]
 custom_minimum_size = Vector2(932, 286)
 layout_mode = 2
 size_flags_horizontal = 4
 texture = ExtResource("3_title")
 expand_mode = 1
 
-[node name="Reward" type="PanelContainer" parent="DimOverlay/Content"]
-custom_minimum_size = Vector2(932, 0)
+[node name="Frame" parent="DimOverlay/Safe/Content" instance=ExtResource("nb_frame")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+title_text = ""
+
+[node name="Body" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame"]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="Reward" type="PanelContainer" parent="DimOverlay/Safe/Content/Frame/Body"]
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 theme_type_variation = &"RewardPanel"
 
-[node name="Rows" type="VBoxContainer" parent="DimOverlay/Content/Reward"]
+[node name="Rows" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 18
 
-[node name="Header" type="HBoxContainer" parent="DimOverlay/Content/Reward/Rows"]
+[node name="Header" type="HBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 24
 
-[node name="Face" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header"]
+[node name="Face" type="TextureRect" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header"]
 custom_minimum_size = Vector2(150, 150)
 layout_mode = 2
 mouse_filter = 2
@@ -84,24 +101,24 @@ texture = ExtResource("v_teacher_3")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Words" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/Header"]
+[node name="Words" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_constants/separation = 6
 alignment = 1
 
-[node name="Headline" type="Label" parent="DimOverlay/Content/Reward/Rows/Header/Words"]
+[node name="Headline" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words"]
 layout_mode = 2
 theme_type_variation = &"VerdictHeadlineLabel"
 text = "Hari produktif!"
 
-[node name="Stars" type="HBoxContainer" parent="DimOverlay/Content/Reward/Rows/Header/Words"]
+[node name="Stars" type="HBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Star1" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header/Words/Stars"]
+[node name="Star1" type="TextureRect" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words/Stars"]
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 mouse_filter = 2
@@ -109,7 +126,7 @@ texture = ExtResource("v_star_off")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Star2" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header/Words/Stars"]
+[node name="Star2" type="TextureRect" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words/Stars"]
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 mouse_filter = 2
@@ -117,7 +134,7 @@ texture = ExtResource("v_star_off")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Star3" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header/Words/Stars"]
+[node name="Star3" type="TextureRect" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words/Stars"]
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 mouse_filter = 2
@@ -125,7 +142,7 @@ texture = ExtResource("v_star_off")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Star4" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header/Words/Stars"]
+[node name="Star4" type="TextureRect" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words/Stars"]
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 mouse_filter = 2
@@ -133,97 +150,97 @@ texture = ExtResource("v_star_off")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Subline" type="Label" parent="DimOverlay/Content/Reward/Rows/Header/Words"]
+[node name="Subline" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words"]
 visible = false
 layout_mode = 2
 theme_type_variation = &"VerdictSublineLabel"
 text = "Besok lebih baik!"
 
-[node name="Tally" type="HBoxContainer" parent="DimOverlay/Content/Reward/Rows"]
+[node name="Tally" type="HBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 
-[node name="GainCell" type="PanelContainer" parent="DimOverlay/Content/Reward/Rows/Tally"]
+[node name="GainCell" type="PanelContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_type_variation = &"TallyCell"
 
-[node name="Col" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/Tally/GainCell"]
+[node name="Col" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/GainCell"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Value" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/GainCell/Col"]
+[node name="Value" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/GainCell/Col"]
 layout_mode = 2
 theme_type_variation = &"TallyValueGain"
 text = "0"
 horizontal_alignment = 1
 
-[node name="Caption" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/GainCell/Col"]
+[node name="Caption" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/GainCell/Col"]
 layout_mode = 2
 theme_type_variation = &"TallyCaptionLabel"
 text = "total naik"
 horizontal_alignment = 1
 
-[node name="TargetCell" type="PanelContainer" parent="DimOverlay/Content/Reward/Rows/Tally"]
+[node name="TargetCell" type="PanelContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_type_variation = &"TallyCell"
 
-[node name="Col" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/Tally/TargetCell"]
+[node name="Col" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/TargetCell"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Value" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/TargetCell/Col"]
+[node name="Value" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/TargetCell/Col"]
 layout_mode = 2
 theme_type_variation = &"TallyValueTarget"
 text = "0"
 horizontal_alignment = 1
 
-[node name="Caption" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/TargetCell/Col"]
+[node name="Caption" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/TargetCell/Col"]
 layout_mode = 2
 theme_type_variation = &"TallyCaptionLabel"
 text = "target tercapai"
 horizontal_alignment = 1
 
-[node name="MoneyCell" type="PanelContainer" parent="DimOverlay/Content/Reward/Rows/Tally"]
+[node name="MoneyCell" type="PanelContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_type_variation = &"TallyCell"
 
-[node name="Col" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/Tally/MoneyCell"]
+[node name="Col" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/MoneyCell"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Value" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/MoneyCell/Col"]
+[node name="Value" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/MoneyCell/Col"]
 layout_mode = 2
 theme_type_variation = &"TallyValueCoin"
 text = "0"
 horizontal_alignment = 1
 
-[node name="Caption" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/MoneyCell/Col"]
+[node name="Caption" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/MoneyCell/Col"]
 layout_mode = 2
 theme_type_variation = &"TallyCaptionLabel"
 text = "uang"
 horizontal_alignment = 1
 
-[node name="StarOfDay" type="PanelContainer" parent="DimOverlay/Content/Reward/Rows"]
+[node name="StarOfDay" type="PanelContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows"]
 layout_mode = 2
 mouse_filter = 2
 theme_type_variation = &"StarOfDayPanel"
 
-[node name="Row" type="HBoxContainer" parent="DimOverlay/Content/Reward/Rows/StarOfDay"]
+[node name="Row" type="HBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 
-[node name="Crown" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/StarOfDay/Row"]
+[node name="Crown" type="TextureRect" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay/Row"]
 custom_minimum_size = Vector2(64, 50)
 layout_mode = 2
 size_flags_vertical = 4
@@ -232,28 +249,28 @@ texture = ExtResource("v_crown")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Words" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/StarOfDay/Row"]
+[node name="Words" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay/Row"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Title" type="Label" parent="DimOverlay/Content/Reward/Rows/StarOfDay/Row/Words"]
+[node name="Title" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay/Row/Words"]
 layout_mode = 2
 theme_type_variation = &"StarOfDayTitleLabel"
 text = "Bintang Hari Ini"
 
-[node name="Line" type="Label" parent="DimOverlay/Content/Reward/Rows/StarOfDay/Row/Words"]
+[node name="Line" type="Label" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay/Row/Words"]
 layout_mode = 2
 theme_type_variation = &"StarOfDayLabel"
 text = "Marcel — +18 Akademis"
 
-[node name="RowsScroll" type="ScrollContainer" parent="DimOverlay/Content" unique_id=1145774374]
+[node name="RowsScroll" type="ScrollContainer" parent="DimOverlay/Safe/Content/Frame/Body" unique_id=1145774374]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="RowsContainer" type="VBoxContainer" parent="DimOverlay/Content/RowsScroll" unique_id=974298710]
+[node name="RowsContainer" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame/Body/RowsScroll" unique_id=974298710]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

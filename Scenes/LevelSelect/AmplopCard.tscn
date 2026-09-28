@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://miibmp1nm7ie" path="res://Assets/Images/LevelSelect/amplop_flap_back.png" id="4_owlmd"]
 [ext_resource type="Texture2D" uid="uid://cprjhjr0so80i" path="res://Assets/Images/LevelSelect/amplop_seal.png" id="5_8wf17"]
 [ext_resource type="PackedScene" uid="uid://bdfwfoth4k3ke" path="res://Scenes/LevelSelect/PupilPeek.tscn" id="5_peek"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="7_owlmd"]
 [ext_resource type="Material" path="res://Scripts/Shaders/glint_material.tres" id="amb_glint"]
 
 [node name="AmplopCard" type="Control" unique_id=981813998]
@@ -66,12 +67,20 @@ mouse_filter = 2
 texture = ExtResource("2_clx53")
 expand_mode = 1
 
+[node name="Shadow" parent="Bob/Body" unique_id=1373524025 instance=ExtResource("7_owlmd")]
+layout_mode = 0
+shadow_texture = ExtResource("2_clx53")
+shadow_offset = Vector2(6, 8)
+follow_parent_rect = true
+blur = 3.0
+
 [node name="Flap" type="TextureRect" parent="Bob" unique_id=155083400]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
 pivot_offset = Vector2(200, 5)
 mouse_filter = 2
 texture = ExtResource("3_xsbwf")
@@ -84,6 +93,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
 pivot_offset = Vector2(207, 72)
 mouse_filter = 2
 texture = ExtResource("5_8wf17")

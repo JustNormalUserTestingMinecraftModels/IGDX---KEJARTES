@@ -134,7 +134,7 @@ func _visible_tile_names(s: SkinSelect) -> Array[String]:
 	return names
 
 
-func test_open_takes_no_argument_and_first_student_is_open() -> void:
+func test_default_open_shows_the_first_students_tile_as_open() -> void:
 	var s := _new_screen()
 	assert_eq(s.current_student(), StudentSkins.NAMES[0])
 	var rail := s.get_node("%Rail")

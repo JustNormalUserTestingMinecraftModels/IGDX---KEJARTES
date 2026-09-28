@@ -15,6 +15,12 @@ render_mode blend_add;
 // tune them together. hdr_2d stays off either way: turning it on cost 41% of
 // the frame's luminance.
 //
+// IT ALSO RUNS PER SCREEN. Scenes/Look/ScreenGlow.tscn places this shader right
+// after a screen's backdrop and light, where the Environment glow cannot reach:
+// the minigames and Koperasi on layer 0, and the shops and end-game screens
+// whose art the Environment glow measured as unbloomed (DEBT.md, 2026-09-28).
+// There it reads only what is drawn so far, so the UI above never blooms.
+//
 // WHY ADDITIVE. blend_add only brightens what is behind it, which is what light
 // does; an alpha-blended overlay would replace the art wherever it is opaque.
 // Same reasoning as light_falloff.gdshader and light_shafts.gdshader.
@@ -67,5 +73,9 @@ void fragment() {
 	// where bloom starts without also scaling how strong it gets.
 	vec3 bright = max(blurred - vec3(threshold), vec3(0.0)) / max(1.0 - threshold, 0.001);
 
-	COLOR = vec4(bright * bloom_tint.rgb * intensity, 1.0);
+	// Times the input COLOR: it carries the node's inherited modulate, so the
+	// bloom fades with its screen (SchoolDay's minigame fade-in, RunResult's
+	// exit) instead of popping in at full strength -- the light_shafts bug of
+	// 2026-09-28.
+	COLOR = vec4(bright * bloom_tint.rgb * intensity * COLOR.rgb, COLOR.a);
 }

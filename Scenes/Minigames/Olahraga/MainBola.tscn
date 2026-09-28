@@ -9,6 +9,7 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enlbf"]
 size = Vector2(874.368, 537.6)
@@ -47,6 +48,9 @@ intensity = 0.1
 
 [node name="Shafts" parent="." instance=ExtResource("look_shafts")]
 origin = Vector2(0.1, -0.1)
+
+[node name="Bloom" parent="." instance=ExtResource("look_bloom")]
+threshold = 0.75
 
 [node name="FieldMarkings" type="Node2D" parent="." unique_id=146537765]
 

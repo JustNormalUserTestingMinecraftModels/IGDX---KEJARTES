@@ -293,28 +293,27 @@ by-the-way fix inside an unrelated branch.
 the lights without also blooming the near-white paper and sky; it is a
 project-wide rendering change `test_look_layer` pins off today. Measured
 2026-09-28: MainMenu's sky sits at ~0.89 luminance and its sun core at
-~0.88, the desk screens' wood at ~0.84 everywhere; sweeping threshold
-0.6-0.9, intensity 1-4 and strength 1-1.5 either bloomed nothing visible
-or bloomed the background as much as the light (+0.04 to +0.11 at the
-strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList,
-ReportCard, ShopHub and CosmeticShop (under their blur the core reaches
-only +0.0045/+0.0043 even at threshold 0.5), and TesNotice, StatCheck,
-ExamProgress, EndCutscene and RunResult (+0.0000 core bloom at every
-threshold tried; dark or scrimmed art), all ship without bloom --
-`Scenes/Look/AmbientGlow.tscn` is built and ready to place once `hdr_2d`
-lands. Measured at the same time, the desk lamp `LightPool` is capped at
-0.12 (its measured knee) and still only adds +0.011 mean brightness;
-`hdr_2d` would also let it go brighter. Also outstanding: light wrap on the
-shared cutout illustration materials; the kit not yet extended to
-Inventory or Achievements; and the Debug overlay's Look page stays
-Lobby-only because `DebugManager.gd` is at its clean-code size ceiling
-(1,880 lines, `LARGE_SCRIPTS`). Koperasi cannot bloom at all: its backdrop
-shares Stage with the tappable goods on layer 0 (lobby-look spec,
-section 2). The minigames cannot bloom either: SchoolDay hosts each one
-inside its own tree over a layer-0 Background, so a World layer at -1
-would draw under it, and SchoolDay's fade on the minigame root would not
-reach a CanvasLayer. Blooming them means hosting minigames on their own
-CanvasLayer in SchoolDay (lobby-look spec, pass 3).
+~0.88, the desk screens' wood at ~0.84 everywhere; sweeping the
+Environment glow's threshold 0.6-0.9, intensity 1-4 and strength 1-1.5
+either bloomed nothing visible or bloomed the background as much as the
+light (+0.04 to +0.11 at the strong end, fog). So MainMenu, LevelSelect,
+StudentCard, StudentList and ReportCard ship without bloom. The shops,
+Koperasi, the end-game screens and the minigames bloom since 2026-09-29
+through the screen-read `ScreenGlow` instead (style guide, "The Lobby look
+on other screens"); the same piece could now be tried on those five, each
+tuned on a full-size capture. `Scenes/Look/AmbientGlow.tscn` stays built
+and ready for when `hdr_2d` lands. Measured at the same time, the desk lamp
+`LightPool` is capped at 0.12 (its measured knee) and still only adds
++0.011 mean brightness; `hdr_2d` would also let it go brighter. Also
+outstanding: light wrap on the shared cutout illustration materials; the
+kit not yet extended to Inventory or Achievements; and the Debug overlay's
+Look page stays Lobby-only because `DebugManager.gd` is at its clean-code
+size ceiling (1,880 lines, `LARGE_SCRIPTS`). Kalkulator has no backdrop of
+its own (it draws over SchoolDay's), so it takes no light and no bloom.
+Each `ScreenGlow` costs a full-screen copy and its mip chain every frame,
+on by default with Efek Suasana (the Efek Visual layer keeps the same
+shader opt-in for an unknown performance floor); nobody has measured frame
+time on a low-end phone yet, the timed minigames first.
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories
@@ -675,6 +674,38 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
   blurred/dimmed material, so a locked, unfocused card's lock reads sharp
   against its blurred splash. Reads as a label rather than part of the
   illustration, which is acceptable for now.
+
+- **SkinSelect's stretch features are deferred (2026-09-29,
+  skin-select-polish).** The collaborator's handoff spec's "Baru!" badge,
+  peek-on-select, turntable idle and locked-skin treatment all stayed out
+  of the pass pending the owner's sign-off (plan
+  `docs/superpowers/plans/2026-09-29-skin-select-polish.md`, Revision:
+  "Stretch features stay out").
+
+- **SkinSelect's back button departs from the handoff (2026-09-29,
+  skin-select-polish).** The screen keeps the shared red `TextureButton`
+  back arrow every screen uses instead of the handoff's one-off round cream
+  button -- a back control that looks different on one screen reads as a
+  different action. Recorded as a departure in the pass's plan and PR, not
+  a bug to fix.
+
+- **SkinSelect's name dividers and tape sit at a fixed x (2026-09-29,
+  skin-select-polish).** `NameDividerLeft`/`NameDividerRight` and the
+  tray's washi tape are placed to fit "Seragam Sekolah"-length names. Real
+  skin names (`SkinSelect's skin names are derived`, above) do not exist
+  yet, but a name much longer than that would overlap the dividers once
+  they land. Put `SkinName` and its two dividers in a centred
+  `HBoxContainer` when `StudentSkins.SKINS` grows real names.
+
+- **`test_audio_coverage`'s double-fire scanner is a substring match, not a
+  word boundary (2026-09-29).** It reads `tile.set_open(i == index)` inside
+  `SkinSelect.select_student` as a call to that same file's own `open()`,
+  because its check is `body.contains(other_func_name + "(")` and
+  `"open("` is a substring of `"set_open("`. `select_student` was added to
+  `_DOUBLE_FIRE_ALLOWLIST` rather than fixing the scanner. The real fix is
+  a word-boundary check (e.g. the match must not be preceded by an
+  identifier character) in `tests/test_audio_coverage.gd`; it is its own
+  PR, not part of skin-select-polish.
 
 - **skin_card_focus.gdshader's blur cost is unmeasured on low-end Android
   (2026-09-23).** 48 taps per pixel on a full-size card, and mid-slide both

@@ -20,7 +20,7 @@ const MAIN_ACTION_ROLES: Array[StringName] = [
 	&"PrimaryButton", &"PrimaryButtonM", &"PrimaryButtonL",
 	&"SuccessButton", &"SuccessButtonL",
 	&"DangerButton", &"DangerButtonM", &"DangerButtonL",
-	&"NotebookClose",
+	&"NotebookClose", &"SkinApplyButton",
 ]
 
 

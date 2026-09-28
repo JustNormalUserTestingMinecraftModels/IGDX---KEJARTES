@@ -73,7 +73,10 @@ func test_tile_turns_the_frames_own_border_off() -> void:
 	assert_true(src.contains("show_border = false"))
 
 
-func test_variations_differ_in_ring_colour() -> void:
+## The transparent black-rimmed square (2026-09-23) was retired for a
+## lipped photo card (2026-09-29 skin-select-polish Task 2): cream at rest,
+## sunflower when open -- the palette's highlight colour, never an action.
+func test_variations_differ_in_face_colour() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
 	assert_eq(theme.get_type_variation_base("SkinStudentTile"), &"Button")
@@ -83,15 +86,50 @@ func test_variations_differ_in_ring_colour() -> void:
 	assert_true(idle != null and open != null, "both variations must carry a normal stylebox")
 	if idle == null or open == null:
 		return
-	assert_eq(idle.border_color, Color.BLACK)
-	assert_eq(open.border_color, tokens.brand_primary)
-	assert_eq(open.bg_color, tokens.outline_card)
+	assert_eq(idle.bg_color, tokens.button_cream)
+	assert_eq(open.bg_color, tokens.accent_sunflower)
 
 
-## Measured off skinselection_mockup.png: an 8px black rim on the tray's
-## cream, with no fill of its own.
-func test_idle_tile_is_an_8px_black_rim_with_no_fill() -> void:
-	var theme := ThemeFactory.build(DesignTokens.load_default())
+## The idle tile is a lipped, opaque photo card -- not the mockup's
+## transparent square with an 8px black rim.
+func test_idle_tile_is_a_lipped_opaque_face() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
 	var idle := theme.get_stylebox("normal", "SkinStudentTile") as StyleBoxFlat
-	assert_eq(idle.border_width_top, 8)
-	assert_eq(idle.bg_color.a, 0.0)
+	assert_true(LippedBox.is_lipped(idle), "idle tile must be a lipped face")
+	assert_eq(LippedBox.lip_height_of(idle), tokens.lip_height)
+	assert_eq(idle.bg_color.a, 1.0, "the photo card is opaque, not a see-through rim")
+
+
+## A taped photo card needs a tape tab and a name caption (Task 3 of
+## docs/superpowers/plans/2026-09-29-skin-select-polish.md). Behavioral, not
+## a source scan: the editor's own save (2026-09-29 fix round 1) drops
+## mouse_filter=2 from Caption because Label already defaults to it, and a
+## node's text block never contains its own resource's real path anyway --
+## that lives on the file's [ext_resource] line -- so a live instance is
+## the only thing that actually proves the wiring.
+func test_tile_has_a_tape_tab_and_a_caption() -> void:
+	var tile := _new_tile()
+	var caption := tile.get_node_or_null("%Caption") as Label
+	assert_true(caption != null, "Caption must exist")
+	if caption != null:
+		assert_true(caption.unique_name_in_owner)
+		assert_eq(caption.theme_type_variation, &"SkinTileCaptionLabel")
+	var tape := tile.get_node_or_null("Tape") as TextureRect
+	assert_true(tape != null, "Tape must exist")
+	if tape != null:
+		assert_true(tape.texture != null)
+		if tape.texture != null:
+			assert_eq(tape.texture.resource_path, "res://Assets/Images/AturJadwal/washi_tape.svg")
+		assert_eq(tape.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+
+
+## show_student sets the caption to the student's name, the way it already
+## sets the crop.
+func test_show_student_sets_the_caption_text() -> void:
+	var tile := _new_tile()
+	tile.show_student("Andi", StudentSkins.DEFAULT_ID)
+	var caption := tile.get_node("%Caption") as Label
+	assert_true(caption != null)
+	if caption != null:
+		assert_eq(caption.text, "Andi")

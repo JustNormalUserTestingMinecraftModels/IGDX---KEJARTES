@@ -101,18 +101,20 @@ static func roster_size_for(grade: int) -> int:
 		_layout_cards(false)
 		if is_node_ready():
 			_confirm.set_envelope_scale(value)
-## Horizontal distance between neighbouring envelopes in the fan.
-@export var fan_step_x: float = 150.0:
+## Horizontal distance between neighbouring envelopes in the fan. Wide enough
+## that each side envelope reads as a whole tilted card instead of a sliced
+## edge.
+@export var fan_step_x: float = 220.0:
 	set(value):
 		fan_step_x = value
 		_layout_cards(false)
 ## How far each step out from the centre drops an envelope.
-@export var fan_drop_y: float = 34.0:
+@export var fan_drop_y: float = 48.0:
 	set(value):
 		fan_drop_y = value
 		_layout_cards(false)
 ## Rotation per step out from the centre, in degrees.
-@export var fan_step_degrees: float = 8.0:
+@export var fan_step_degrees: float = 11.0:
 	set(value):
 		fan_step_degrees = value
 		_layout_cards(false)

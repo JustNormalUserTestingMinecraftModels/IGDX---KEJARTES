@@ -20,6 +20,8 @@
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -149,6 +151,14 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_bg")
 expand_mode = 1
+
+[node name="Light" parent="Stage" instance=ExtResource("look_pool")]
+center = Vector2(0.15, 0.1)
+pool_size = Vector2(1600, 1600)
+intensity = 0.1
+
+[node name="Shafts" parent="Stage" instance=ExtResource("look_shafts")]
+intensity = 0.15
 
 [node name="Barang1" type="TextureButton" parent="Stage" unique_id=2025160246]
 layout_mode = 0
@@ -892,7 +902,9 @@ script = ExtResource("parallax_diorama")
 depth_by_child = {
 "Background": 0.15,
 "Foreground": 1.0,
-"Herman": 0.5
+"Herman": 0.5,
+"Light": 0.15,
+"Shafts": 0.15
 }
 overscan_children = Array[StringName]([&"Background", &"Foreground"])
 

@@ -123,22 +123,22 @@ func test_the_shorten_button_and_panel_are_gone() -> void:
 	assert_false(FileAccess.file_exists("res://Scenes/Lobby/ShortenPanel.tscn"), "ShortenPanel is deleted")
 
 
-func test_the_settings_gear_sits_on_the_money_row() -> void:
+## The gear left the money row for the scrapbook HUD's icon rail
+## (2026-09-27 spec §3): second, under the daily-login icon.
+func test_the_settings_gear_rides_in_the_icon_rail() -> void:
 	var lobby := (load(_LOBBY_SCENE) as PackedScene).instantiate() as Control
 	track(lobby)
 	var btn := lobby.get_node_or_null("%SettingsButton") as TextureButton
 	var login := lobby.get_node_or_null("%DailyLogin") as Control
-	var chip := lobby.get_node_or_null("%DisplayUang") as Control
-	assert_true(btn != null and login != null and chip != null,
-		"SettingsButton, DailyLogin and DisplayUang must be unique names")
-	if btn == null or login == null or chip == null:
+	var rail := lobby.get_node_or_null("%IconRail") as Control
+	assert_true(btn != null and login != null and rail != null,
+		"SettingsButton, DailyLogin and IconRail must be unique names")
+	if btn == null or login == null or rail == null:
 		return
 	assert_eq(btn.texture_normal.resource_path, "res://Assets/Images/UI/setting.png")
-	assert_eq(btn.get_parent(), chip.get_parent(), "it rides in the same bar as the money chip")
-	assert_eq(btn.offset_top, chip.offset_top, "on the money row")
-	assert_eq(btn.offset_bottom, chip.offset_bottom, "on the money row")
-	assert_true(btn.offset_left > login.offset_right and btn.offset_right < chip.offset_left,
-		"between the daily-login icon and the money chip")
+	assert_eq(btn.get_parent(), rail, "it rides in the icon rail")
+	assert_eq(login.get_parent(), rail, "beside the daily-login icon")
+	assert_eq(btn.get_index(), login.get_index() + 1, "right under the daily-login icon")
 
 
 ## The reward popup's blur is inserted at DailyReward's index, so the gear

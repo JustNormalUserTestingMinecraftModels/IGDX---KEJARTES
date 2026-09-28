@@ -4,6 +4,9 @@ extends McpTestSuite
 ## Economy state: ItemData, ItemDatabase, GameState money/inventory/use_item.
 ## Suite must be @tool and no test may be a coroutine (the runner calls
 ## suite.call(name) without awaiting) -- same constraints as test_lobby.gd.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 func suite_name() -> String:
 	return "economy_state"
@@ -33,7 +36,7 @@ func test_unknown_item_returns_null() -> void:
 		"unknown item must return null, not a blank ItemData")
 
 func test_money_setter_emits_money_changed() -> void:
-	var original := GameState.player_money
+	var original: int = GameState.player_money
 	var seen := []
 	var cb := func(amount: int): seen.append(amount)
 	GameState.money_changed.connect(cb)
@@ -106,7 +109,7 @@ func test_use_item_boosts_only_the_chosen_student() -> void:
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Komik", 1)
 	var komik: ItemData = ItemDatabase.get_item("Komik")
-	var result := GameState.use_item(komik, 1, 1)
+	var result: Dictionary = GameState.use_item(komik, 1, 1)
 	assert_true(result["applied"], "use must succeed when the item is owned")
 	assert_eq(GameState.approved_students[0]["mood"], 50.0 + komik.mood_boost, "chosen student gains mood")
 	assert_eq(GameState.approved_students[1]["mood"], 50.0, "other student is untouched")
@@ -141,7 +144,7 @@ func test_use_item_refuses_when_not_enough_owned() -> void:
 	])
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Mie Instan", 1)
-	var result := GameState.use_item(ItemDatabase.get_item("Mie Instan"), 1, 5)
+	var result: Dictionary = GameState.use_item(ItemDatabase.get_item("Mie Instan"), 1, 5)
 	assert_false(result["applied"], "cannot use more than owned")
 	assert_eq(GameState.approved_students[0]["mood"], 10.0, "no stat change on refusal")
 	assert_eq(GameState.get_inventory_quantity("Mie Instan"), 1, "nothing consumed on refusal")
@@ -154,7 +157,7 @@ func test_use_item_refuses_for_unknown_student_id() -> void:
 	])
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Mie Instan", 1)
-	var result := GameState.use_item(ItemDatabase.get_item("Mie Instan"), 99, 1)
+	var result: Dictionary = GameState.use_item(ItemDatabase.get_item("Mie Instan"), 99, 1)
 	assert_false(result["applied"], "unknown student id must refuse")
 	assert_eq(GameState.get_inventory_quantity("Mie Instan"), 1, "nothing consumed on refusal")
 	GameState.inventory.clear()

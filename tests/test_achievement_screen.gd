@@ -129,8 +129,8 @@ func test_jump_requested_resets_filter_before_scrolling() -> void:
 func test_lobby_has_the_trophy_button() -> void:
 	var lobby := (load(LOBBY) as PackedScene).instantiate()
 	track(lobby)
-	var btn := lobby.get_node_or_null("Safe/UI/BottomBar/AchievementButton") as TextureButton
-	assert_true(btn != null, "AchievementButton under BottomBar")
+	var btn := lobby.get_node_or_null("Safe/UI/Hud/IconRail/AchievementButton") as TextureButton
+	assert_true(btn != null, "AchievementButton under IconRail")
 	if btn:
 		assert_eq(btn.texture_normal.resource_path, "res://Assets/Images/Achievements/achievement_button.png")
 	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
@@ -157,9 +157,15 @@ func test_card_and_banner_icons_wear_the_outline() -> void:
 			"%s's icon must use the shared outline material" % pair[0])
 
 
+## The 2026-09-27 scrapbook pass stacks the icons vertically in IconRail
+## instead of a horizontal BottomBar row, so "after" means lower in the
+## stack, not righter; sibling index stands in for offsets, since IconRail
+## is a Container and its children's offsets are only computed once sorted.
 func test_trophy_sits_after_the_settings_gear() -> void:
 	var lobby := (load(LOBBY) as PackedScene).instantiate()
 	track(lobby)
-	var btn := lobby.get_node("Safe/UI/BottomBar/AchievementButton") as Control
-	assert_eq(btn.offset_left, 240.0)
-	assert_eq(btn.offset_right, 336.0)
+	var achievement := lobby.get_node("Safe/UI/Hud/IconRail/AchievementButton") as Control
+	var settings := lobby.get_node("%SettingsButton") as Control
+	assert_eq(achievement.get_parent(), settings.get_parent(), "both ride in IconRail")
+	assert_gt(achievement.get_index(), settings.get_index(),
+		"AchievementButton sits after SettingsButton in the rail")

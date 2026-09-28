@@ -180,6 +180,12 @@ const HEIGHT_ALLOWED := {
 		"151x156, a pixel copy of skinselection_mockup.png (user request 2026-09-23)",
 	"Scenes/Skins/SkinSelect.tscn::Tray/Terapkan":
 		"140 tall, a pixel copy of skinselection_mockup.png (user request 2026-09-23)",
+	"Scenes/Lobby/Lobby.tscn::Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Jadwal":
+		"the scrapbook book's hero, 144 tall to match stepped_lobby.png: the Lobby-only "
+		+ "BookHeroButton look (2026-09-27 spec §4, Q7), the biggest element on screen",
+	"Scenes/Lobby/Lobby.tscn::Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Student":
+		"shares JADWAL's slot on the raised page (shown before the roster is approved), "
+		+ "so it wears the same 144-tall BookHeroButton (2026-09-27 spec §4, Q7)",
 	"Scenes/AturJadwal/ActivityTile.tscn::ActivityTile":
 		"a Penjadwalan picker tile, a selectable card rather than an action button: "
 		+ "its height is its content's (2026-09-24 picker rebuild, D9)",

@@ -8,6 +8,9 @@ extends McpTestSuite
 ##
 ## Suite is @tool and no test is a coroutine, per the runner constraints
 ## documented in test_lobby.gd.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 func suite_name() -> String:
 	return "end_game_rehearsal"
@@ -241,10 +244,10 @@ func test_arm_seeds_a_run_stats_tally_matched_to_the_preset() -> void:
 
 	GameState.current_grade = 7
 	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
-	var winning := GameState.run_stats.minigame_win_rate()
+	var winning: float = GameState.run_stats.minigame_win_rate()
 
 	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GAGAL, _fake_source())
-	var losing := GameState.run_stats.minigame_win_rate()
+	var losing: float = GameState.run_stats.minigame_win_rate()
 
 	assert_true(winning > losing,
 		"the lulus preset must out-score the gagal one on minigames, or " +

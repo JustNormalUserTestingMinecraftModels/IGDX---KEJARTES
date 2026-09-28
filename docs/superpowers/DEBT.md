@@ -80,7 +80,30 @@ to stay warm and shop-consistent -- drop-replaceable at the same path), and the
 (hand-written SVG, not generated: a white striped strip with zigzag ends,
 drawn white because `DayStickyNote` tints it by `self_modulate`, so a
 replacement must stay light-on-transparent; keep it 246x40, the size it
-displays at, or `test_texture_mipmaps` will want mipmaps on it).
+displays at, or `test_texture_mipmaps` will want mipmaps on it), and the
+2026-09-28 daily-login streak flame, `Assets/Images/UI/DailyLogin/streak_flame.svg`
+(hand-written two-tone paths, 64x64, no `<text>`; the panel scales it
+0.8-1.3x by streak day and tints it `currency_gold` on day 7, so a
+replacement should stay warm and light enough for that tint to read), and
+the 2026-09-28 daily-login reveal's chest, which has no art at all yet:
+`DailyRewardReveal`'s `chest_base_texture` / `chest_lid_texture` are empty and
+`use_chest_sprite` stays off until both exist, so the claim moment ships on the
+gift fallback (Box crops the day-1 slot's gift out of `day1.png`, Lid hidden).
+Drawing them means setting the three exports on the reveal's root in
+`DailyRewardReveal.tscn`; the Lid's hinge pivot is already authored, and the
+2026-09-27 Lobby scrapbook HUD set in `Assets/Images/UI/LobbyHud/`
+(`book_cover.png`, `book_page.png`, `coin_plate.png`, `progress_plate.png`,
+`chevron_grip.png`, `icon_plus.svg`) standing in for the book/page/plate/grip
+art in `docs/superpowers/specs/2026-09-27-lobby-scrapbook-hud-design.md` § 6,
+drop-replaceable at the same paths with no code change. Every PNG's 9-slice
+margins are whole pixels: `book_cover.png` 96x96, margins L24 R24 T24 B40
+(the bottom margin carries its lip band); `book_page.png` 96x96, margins L18
+R18 T18 B18; `coin_plate.png` 120x64, margins L20 R20 T18 B26;
+`progress_plate.png` 160x64, margins L20 R20 T18 B26; `chevron_grip.png`
+96x48, margins L26 R26 T8 B8 (a full pill, so the top/bottom margins are only
+a small buffer, not the cap radius). Still pending, waiting on real art: the
+dashed washi rim and tape, and JADWAL!'s washi flutter (deferred by the plan's
+Q4 -- `StyleBoxFlat` cannot draw dashes).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
@@ -198,7 +221,7 @@ encode itself failed.
 **Unused pack cues (2026-09-21).** The pack shipped 49 files; these have
 `AudioDirector` slots but no call site yet, because the screens that would
 fire them were not otherwise being touched: `times_up`, `timer_tick`,
-`back_tap`, `item_applied`, `apply`, `tutorial_popup`, `daily_claim`,
+`back_tap`, `item_applied`, `apply`, `tutorial_popup`,
 `achievement_prize`, `achievement_success`, the `sfx_achievement` family,
 the `badge_reveal_*` tier (and its `badge_reveal_stream()` accessor), and the
 ambience beds `classroom_2/3`, `schoolyard_1/2`, `writing` and `thunderstorm`
@@ -273,16 +296,19 @@ project-wide rendering change `test_look_layer` pins off today. Measured
 ~0.88, the desk screens' wood at ~0.84 everywhere; sweeping threshold
 0.6-0.9, intensity 1-4 and strength 1-1.5 either bloomed nothing visible
 or bloomed the background as much as the light (+0.04 to +0.11 at the
-strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList and
-ReportCard all ship without bloom -- `Scenes/Look/AmbientGlow.tscn` is
-built and ready to place once `hdr_2d` lands. Measured at the same time,
-the desk lamp `LightPool` is capped at 0.12 (its measured knee) and still
-only adds +0.011 mean brightness; `hdr_2d` would also let it go brighter.
-Also outstanding: light wrap on the shared cutout illustration materials;
-the kit not yet extended to Inventory, Achievements or Koperasi/ShopHub
-(blurred or busy backdrops, the kit can extend there later); and the Debug
-overlay's Look page stays Lobby-only because `DebugManager.gd` is at its
-clean-code size ceiling (1,880 lines, `LARGE_SCRIPTS`).
+strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList,
+ReportCard, ShopHub and CosmeticShop (under their blur the core reaches
+only +0.0045/+0.0043 even at threshold 0.5) all ship without bloom --
+`Scenes/Look/AmbientGlow.tscn` is built and ready to place once `hdr_2d`
+lands. Measured at the same time, the desk lamp `LightPool` is capped at
+0.12 (its measured knee) and still only adds +0.011 mean brightness;
+`hdr_2d` would also let it go brighter. Also outstanding: light wrap on the
+shared cutout illustration materials; the kit not yet extended to
+Inventory or Achievements; and the Debug overlay's Look page stays
+Lobby-only because `DebugManager.gd` is at its clean-code size ceiling
+(1,880 lines, `LARGE_SCRIPTS`). Koperasi cannot bloom at all: its backdrop
+shares Stage with the tappable goods on layer 0 (lobby-look spec,
+section 2).
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories
@@ -475,6 +501,33 @@ widget via `project_run` instead, which exercises it fine.
     baseline debt.
 
   The later Part 1 plans resolve all four.
+
+- **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
+  Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
+  SDK is wired. Debug builds only: a release build keeps the Lobby's `+`
+  disabled (`DapatkanUang.is_available()`). Before one is: the child-directed ad-policy gate (COPPA,
+  GDPR-K, ad-content ratings; the audience likely includes minors). The
+  SDK's reward callback then calls `DapatkanUang._pay()`, and
+  `is_dev_mode` goes false. The six amounts (+150 / +450 / +900 for 4 ads /
+  +2000 for 8) await the Balance owner's sign-off:
+  `docs/superpowers/specs/2026-09-27-earn-money-balance-proposal.md`.
+- **Scrapbook HUD review leftovers** (2026-09-28, Phase 1 reviews in
+  `.superpowers/sdd/2026-09-27-loby-final-polish/`). On a phone that
+  reports a bottom inset, the hidden HUD's 48 px chevron peek sits inside
+  the system gesture strip: a design call, since lifting it would show
+  JADWAL again. `lobby_hud` measures the peek against the editor window,
+  not a 1080x1920 `SubViewport`. The landing squash (`AnimUtils.squash_bounce`,
+  1.18/0.85) is far stronger than the spec's ~1.04/0.97; tune it with
+  `motion-lab`. The entrance and the star sparkle mostly play under the
+  `Transition` wipe.
+
+- **`AnimUtils._active_tweens` never forgets freed nodes** (2026-09-28).
+  Each helper call registers its tween keyed by the node and never erases
+  the key, so the daily-login reveal leaves 20-30 dead keys per claim (one
+  per fanned coin and star, which are freed when the reveal ends). Small,
+  but it grows for the whole session; erase the key when the tween
+  finishes, in `Scripts/AnimUtils.gd`, which every screen shares.
+
 - **Clean-code ratchet debt** (`ci/clean_code_baseline.gd`, 2026-09-26): 1588
   untyped declarations, 2120 bare numbers, 46 functions over 50 code lines,
   5 large scripts, 22 duplicate groups. Phase 2 (PR4 one `TutorialGuide`,
@@ -644,11 +697,11 @@ from ten +/- bands on 2026-09-10, never played against a real run.
 `MainBola`'s per-grade tables (8/10/10 shots, 4–6/6–8/6–8 goal targets,
 2026-09-14) assume a player lands about 70% of shots; never playtested.
 
-**Deferred: Plan C's RunResult redesign** (parked; no RunResult commit since
-2026-09-11). Plan C's RunResult redesign,
-`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass
-already replaced RunResult's grade letter with five rank badges and fixed its
-win backdrop, so re-read the plan against the current screen before acting.
+**Pending: the badge rank scene (RunResult) polish.** Designed and planned in
+`docs/superpowers/specs/2026-09-26-badge-rank-scene-polish-design.md`
+(PR #86, re-checked against Textures on 2026-09-28); nothing built yet. It
+supersedes Plan C (`plans/2026-09-04-endgame-c-run-result.md`), which is
+marked SUPERSEDED and must not be executed.
 
 **Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` is a blurred
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile

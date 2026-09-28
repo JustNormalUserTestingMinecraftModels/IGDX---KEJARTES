@@ -34,6 +34,7 @@ extends McpTestSuite
 
 const _SCENE_PATH := "res://Scenes/Lobby/Lobby.tscn"
 const _SCRIPT_PATH := "res://Scripts/Lobby/Lobby.gd"
+const _PANEL_SCRIPT_PATH := "res://Scripts/Lobby/DailyLoginPanel.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 const _NAV_BUTTONS := ["Student", "Koperasi", "ReportStudent", "Inventory", "Jadwal"]
@@ -51,17 +52,21 @@ func suite_name() -> String:
 var _lobby: Control
 
 
-func setup() -> void:
+## One Lobby for the whole suite, not one per test: the runner gives no
+## frame between tests, so 33 fresh Lobbies flooded the editor's message
+## queue with deferred layout calls and crashed a full run. Every test
+## here only reads it, bar one that puts its label back. Not tracked;
+## suite_teardown frees it.
+func suite_setup(_ctx: Dictionary) -> void:
 	var scene: PackedScene = load(_SCENE_PATH)
 	_lobby = scene.instantiate()
 	_lobby.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(_lobby)
-	track(_lobby)
 
 
-func teardown() -> void:
+func suite_teardown() -> void:
 	if is_instance_valid(_lobby):
-		_lobby.queue_free()
+		_lobby.free()
 	_lobby = null
 
 
@@ -96,12 +101,30 @@ func test_money_label_uses_count_up_not_a_direct_set() -> void:
 func test_daily_login_uses_pop_in() -> void:
 	# The seven day tiles (and their stagger_in) are gone with them -- the
 	# panel art bakes the whole calendar, so opening and claiming both just
-	# pop the one panel node.
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("Juice.pop_in("),
+	# pop the one panel node. The pop lives in the DailyLoginPanel
+	# component; the reward feedback stays on the Lobby, which owns the
+	# money label it bursts from.
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT_PATH)
+	assert_true(panel_src.contains("Juice.pop_in("),
 		"the panel must pop in on open and on claim")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains('RewardFeedback.play(&"coins_earned"'),
 		"claiming a day must fire the reward through RewardFeedback")
+
+
+## The daily-login popup is a DailyLoginPanel component (2026-09-28). It
+## owns the claim and the streak's GameState writes; the Lobby only
+## listens for `claimed` and rolls its wallet.
+func test_daily_reward_is_a_daily_login_panel() -> void:
+	assert_true(_lobby.get_node("DailyReward") is DailyLoginPanel,
+		"DailyReward must carry the DailyLoginPanel script")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_false(src.contains("daily_login_day"),
+		"the streak day is the panel's to write, not the Lobby's")
+	assert_false(src.contains("last_claim_date"),
+		"the claim date is the panel's to write, not the Lobby's")
+	assert_true(src.contains("claimed.connect(_on_wallet_paid)"),
+		"the Lobby must listen for the panel's claimed signal")
 
 
 # ------------------------------------------------------- standard four
@@ -111,7 +134,7 @@ func test_scene_instantiates() -> void:
 	assert_true(_lobby.is_inside_tree(), "scene must enter the tree cleanly")
 	for name in _NAV_BUTTONS:
 		assert_true(_lobby.get_node_or_null("%" + name) != null, "missing nav button: " + name)
-	assert_true(_lobby.get_node_or_null("%JUDUL") != null, "missing JUDUL")
+	assert_true(_lobby.get_node_or_null("%ProgressHeader") != null, "missing ProgressHeader")
 	assert_true(_lobby.get_node_or_null("%DisplayUang/Label") != null, "missing money label")
 	assert_true(_lobby.get_node_or_null("DailyReward/ButtonClaim") != null,
 		"missing claim button")
@@ -166,6 +189,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		paths.append("%" + n)
 	paths.append("DailyReward/ButtonClaim")
 	paths.append("%SettingsButton")
+	paths.append("%PlusUang")
 	for p in paths:
 		var b := _lobby.get_node_or_null(p) as Control
 		assert_true(b != null, "missing control: " + p)
@@ -176,24 +200,24 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
+## Scrapbook HUD (Task 4): the three shelf tiles wear their own colour-coded
+## NavTile* variation and the two book buttons share BookHeroButton, not the
+## old shared LobbyNavTile / LobbyCtaButton pair.
 func test_nav_buttons_use_lobby_nav_tile_or_cta_button_variation() -> void:
-	var tile_buttons := ["Koperasi", "Inventory", "ReportStudent"]
+	var tile_variations: Dictionary = {"Koperasi": &"NavTileKoperasi",
+		"Inventory": &"NavTileInventory", "ReportStudent": &"NavTileRapor"}
 	var cta_buttons := ["Student", "Jadwal"]
-	for name in tile_buttons:
+	for name: String in tile_variations:
 		var b := _lobby.get_node_or_null("%" + name) as Button
 		assert_true(b != null, "missing nav button: " + name)
-		assert_eq(b.theme_type_variation, &"LobbyNavTile", name + " variation")
+		assert_eq(b.theme_type_variation, tile_variations[name], name + " variation")
 	for name in cta_buttons:
 		var b := _lobby.get_node_or_null("%" + name) as Button
 		assert_true(b != null, "missing nav button: " + name)
-		assert_eq(b.theme_type_variation, &"LobbyCtaButton", name + " variation")
+		assert_eq(b.theme_type_variation, &"BookHeroButton", name + " variation")
 
 
 func test_labels_use_theme_variations() -> void:
-	var judul := _lobby.get_node_or_null("%JUDUL") as Label
-	assert_true(judul != null, "missing JUDUL")
-	assert_eq(judul.theme_type_variation, &"DisplayLabel", "JUDUL variation")
-
 	var money := _lobby.get_node_or_null("%DisplayUang/Label") as Label
 	assert_true(money != null, "missing money label")
 	assert_eq(money.theme_type_variation, &"CoinLabel", "money label variation")
@@ -304,10 +328,10 @@ func test_report_student_button_is_wired() -> void:
 func test_the_money_chip_is_a_themed_panel_with_a_coin_icon() -> void:
 	var chip := _lobby.get_node_or_null("%DisplayUang") as Panel
 	assert_true(chip != null, "DisplayUang must be a Panel now, not a TextureRect")
-	assert_eq(chip.theme_type_variation, &"Card",
+	assert_eq(chip.theme_type_variation, &"CoinPlate",
 		"the chip takes its chrome from the theme")
-	assert_eq(chip.size.y, 96.0,
-		"the chip is 96 tall, matching DailyLogin, got %f" % chip.size.y)
+	assert_eq(chip.size.y, 112.0,
+		"the chip is 112 tall on the coin plate, got %f" % chip.size.y)
 
 	var icon := _lobby.get_node_or_null("%DisplayUang/CoinIcon") as TextureRect
 	assert_true(icon != null, "the chip needs a coin icon")
@@ -335,14 +359,16 @@ func test_the_day_tiles_are_gone() -> void:
 
 
 func test_the_panel_swaps_art_per_day() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
-	assert_true(src.contains("DAY_PANELS"),
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT_PATH)
+	assert_true(panel_src.contains("DAY_PANELS"),
 		"the seven panels must be a named const, not seven inline loads")
 	for i in range(1, 8):
-		assert_true(src.contains("DailyLogin/day%d.png" % i),
+		assert_true(panel_src.contains("DailyLogin/day%d.png" % i),
 			"day %d's panel must be referenced" % i)
-	assert_false(src.contains("day_nodes"),
-		"the per-tile tint bookkeeping goes with the tiles")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for script_src: String in [src, panel_src]:
+		assert_false(script_src.contains("day_nodes"),
+			"the per-tile tint bookkeeping goes with the tiles")
 
 
 func test_the_lobby_button_wears_the_calendar_icon() -> void:
@@ -405,3 +431,106 @@ func test_the_panel_grew_to_the_arts_aspect() -> void:
 	var aspect: float = panel.size.x / panel.size.y
 	assert_true(absf(aspect - 2.253) < 0.05,
 		"the panel must match the art's 2.253:1, got %f" % aspect)
+
+
+## Daily-login polish, Task 4. The coin and the amount share one
+## HBoxContainer, so a longer amount pushes the row wider instead of
+## clipping inside a fixed 120px label box -- and the widest reward, day
+## 7's "400G", still ends inside the panel.
+func test_the_peak_reward_fits_its_row() -> void:
+	var panel := _lobby.get_node_or_null("DailyReward") as Control
+	var row := _lobby.get_node_or_null("%RewardRow") as HBoxContainer
+	var amount := _lobby.get_node_or_null("%RewardAmount") as Label
+	var coin := _lobby.get_node_or_null("%RewardCoin") as TextureRect
+	assert_true(row != null, "RewardRow must be an HBoxContainer under DailyReward")
+	assert_true(amount != null and coin != null, "missing RewardAmount or RewardCoin")
+	if row == null or amount == null or coin == null:
+		return
+	assert_eq(row.get_parent(), panel, "RewardRow sits directly on the panel")
+	assert_eq(coin.get_parent(), row, "the coin lives in the reward row")
+	assert_eq(amount.get_parent(), row, "the amount lives in the reward row")
+	var shown: String = amount.text
+	amount.text = "400G"
+	var row_right: float = row.offset_left + row.get_combined_minimum_size().x
+	amount.text = shown
+	assert_true(row_right <= panel.size.x,
+		"with 400G the row ends at %f, past the panel's %f width" % [row_right, panel.size.x])
+
+
+## Daily-login polish, Task 5: a welcome-back greeting and the streak line
+## sit above the panel, so the baked strip art stays untouched.
+func test_the_greeting_and_streak_sit_above_the_panel() -> void:
+	var greeting := _lobby.get_node_or_null("%DailyGreeting") as Label
+	assert_true(greeting != null, "missing DailyGreeting")
+	if greeting == null:
+		return
+	# ResultHeroLabel: gold display face with a dark outline, the light-on-dark
+	# variation -- H2Label's dark text disappeared over the blurred lobby.
+	assert_eq(greeting.theme_type_variation, &"ResultHeroLabel",
+		"the greeting reads light-on-dark over the blur")
+	assert_eq(greeting.text, "Selamat datang kembali!", "the greeting welcomes the player back")
+	assert_true(_lobby.get_node_or_null("%StreakLabel") is Label, "missing StreakLabel")
+	for header_path: String in ["%DailyGreeting", "%DailyStreak"]:
+		var header := _lobby.get_node_or_null(header_path) as Control
+		assert_true(header != null, "missing " + header_path)
+		if header == null:
+			continue
+		assert_eq(header.get_parent(), _lobby.get_node("DailyReward"),
+			header_path + " sits on DailyReward")
+		var bottom: float = header.position.y + maxf(header.size.y, header.get_combined_minimum_size().y)
+		assert_true(bottom <= 0.0,
+			"%s ends at y=%f, over the panel's strip art (top edge 0)" % [header_path, bottom])
+	var flame := _lobby.get_node_or_null("%StreakFlame") as TextureRect
+	assert_true(flame != null, "missing StreakFlame")
+	if flame == null:
+		return
+	assert_true(flame.texture != null
+		and flame.texture.resource_path.ends_with("streak_flame.svg"),
+		"the streak flame wears streak_flame.svg")
+	# The panel scales the flame by streak day. A Container resets its
+	# direct children's scale to 1 on every sort, so the flame must sit in
+	# a plain Control slot, not straight in the DailyStreak row.
+	assert_false(flame.get_parent() is Container,
+		"StreakFlame's parent is a Container, which would undo its scale")
+
+
+func test_the_panel_springs_the_greeting_in() -> void:
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT_PATH)
+	assert_true(panel_src.contains("AnimUtils.popup_spring_in("),
+		"opening the panel springs the greeting and streak in")
+
+
+## Daily-login polish, Task 6: the prize-box reveal lives on the panel,
+## and the panel knows where the reward coin flies.
+func test_the_reveal_sits_on_the_panel_and_aims_at_the_wallet() -> void:
+	var panel := _lobby.get_node_or_null("DailyReward") as DailyLoginPanel
+	var reveal := _lobby.get_node_or_null("%DailyRewardReveal") as Control
+	assert_true(reveal != null, "missing DailyRewardReveal")
+	if reveal == null or panel == null:
+		return
+	assert_eq(reveal.get_parent(), panel, "the reveal is a child of DailyReward")
+	assert_eq(panel.wallet_anchor, _lobby.get_node("%DisplayUang"),
+		"DailyReward's wallet_anchor is wired to %DisplayUang")
+
+
+## Daily-login polish, Task 7: the "besok" teaser under the strip. It reads
+## ResultDeltaLabel (white with a dark outline), not CaptionLabel -- a dark
+## caption was unreadable over the Lobby's blurred backdrop.
+func test_the_besok_teaser_is_a_caption() -> void:
+	var teaser := _lobby.get_node_or_null("%BesokTeaser") as Label
+	assert_true(teaser != null, "missing BesokTeaser")
+	if teaser == null:
+		return
+	assert_eq(teaser.theme_type_variation, &"ResultDeltaLabel", "the teaser is readable over the blur")
+
+
+## The popup redraws for the current date each time it opens, so a Lobby
+## left open past midnight never shows yesterday's claim as today's.
+func test_opening_the_daily_reward_refreshes_for_today() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body_start: int = src.find("func _show_daily_reward")
+	assert_true(body_start >= 0, "Lobby has _show_daily_reward")
+	var body: String = src.substr(body_start, src.find("\nfunc ", body_start + 1) - body_start)
+	var refresh_at: int = body.find("daily_reward.refresh(Time.get_date_string_from_system())")
+	assert_true(refresh_at >= 0, "opening refreshes the panel with today's date")
+	assert_true(refresh_at < body.find("daily_reward.open()"), "and does so before open()")

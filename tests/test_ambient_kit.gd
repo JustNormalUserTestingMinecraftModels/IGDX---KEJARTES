@@ -19,7 +19,9 @@ const AMBIENT_PARTICLES := "res://Scenes/Look/AmbientParticles.tscn"
 const AMBIENT_GLOW := "res://Scenes/Look/AmbientGlow.tscn"
 const GLINT_MATERIAL := "res://Scripts/Shaders/glint_material.tres"
 const DESK_AMBIENCE := "res://Scenes/Look/DeskAmbience.tscn"
+const SUN_SHAFTS := "res://Scenes/Look/SunShafts.tscn"
 const MAIN_MENU := "res://Scenes/MainMenu/MainMenu.tscn"
+const Census := preload("res://tests/scene_census.gd")
 
 var _sandbox: SubViewport
 var _tint: MoodTint
@@ -27,6 +29,7 @@ var _pool: LightPool
 var _particles: AmbientParticles
 var _glow: AmbientGlow
 var _desk: DeskAmbience
+var _shafts: SunShafts
 ## The developer's own switches, read before this suite touches either one,
 ## so teardown() can put them back instead of guessing true/false.
 var _snapshot_ambient_enabled: bool = true
@@ -51,6 +54,7 @@ func suite_setup(_ctx: Dictionary) -> void:
 	_particles = _stand(AMBIENT_PARTICLES) as AmbientParticles
 	_glow = _stand(AMBIENT_GLOW) as AmbientGlow
 	_desk = _stand(DESK_AMBIENCE) as DeskAmbience
+	_shafts = _stand(SUN_SHAFTS) as SunShafts
 
 
 func suite_teardown() -> void:
@@ -105,7 +109,7 @@ func test_fill_parent_restores_full_rect() -> void:
 ## follow_settings connects a bound method, so freeing the node drops its
 ## connections: a freed kit piece never hears a later flip.
 func test_a_freed_piece_leaves_no_connection_behind() -> void:
-	var before := GameSettings.ambient_effects_changed.get_connections().size()
+	var before: int = GameSettings.ambient_effects_changed.get_connections().size()
 	var probe := (load(MOOD_TINT) as PackedScene).instantiate() as MoodTint
 	AmbientKit.follow_settings(probe._refresh)
 	assert_eq(GameSettings.ambient_effects_changed.get_connections().size(), before + 1,
@@ -116,7 +120,7 @@ func test_a_freed_piece_leaves_no_connection_behind() -> void:
 
 
 func test_every_kit_root_refills_its_parent() -> void:
-	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd", "res://Scripts/Look/AmbientParticles.gd", "res://Scripts/Look/DeskAmbience.gd"]:
+	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd", "res://Scripts/Look/AmbientParticles.gd", "res://Scripts/Look/DeskAmbience.gd", "res://Scripts/Look/SunShafts.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_true(src.contains("AmbientKit.fill_parent(self)"),
 			path + " must re-fill its parent in _ready")
@@ -267,6 +271,69 @@ func test_the_switch_hides_the_pool() -> void:
 	assert_false(_pool.visible, "Efek Suasana off hides the light")
 	GameSettings.ambient_effects_enabled = true
 	assert_true(_pool.visible, "and on brings it back")
+
+
+# ── SunShafts ────────────────────────────────────────────────────────────────
+
+func _shafts_mat() -> ShaderMaterial:
+	return _shafts.material as ShaderMaterial
+
+
+## The Lobby's WindowShafts ship at 0.20, the top of the range swept over
+## cream without clipping (light_shafts.gdshader's header).
+func test_the_shafts_clamp_to_the_lobby_ceiling() -> void:
+	_shafts.intensity = 0.5
+	assert_eq(_shafts.intensity, SunShafts.MAX_INTENSITY, "intensity clamps to MAX_INTENSITY")
+	assert_eq(float(_shafts_mat().get_shader_parameter("intensity")), SunShafts.MAX_INTENSITY,
+		"and the shader gets the clamped value")
+	assert_eq(SunShafts.MAX_INTENSITY, 0.2, "the Lobby's shipped shafts (light_shafts.gdshader)")
+	_shafts.intensity = 0.2
+
+
+## Unlike LightPool's rays, these cross the whole screen: Full Rect, not a pool.
+func test_the_shafts_are_additive_local_full_rect_and_untappable() -> void:
+	assert_eq(_shafts_mat().shader.resource_path, "res://Scripts/Shaders/light_shafts.gdshader",
+		"the shafts are light_shafts, unchanged")
+	assert_true(_shafts_mat().resource_local_to_scene, "each placed SunShafts tunes its own copy")
+	assert_eq(_anchors(_shafts), Vector4(0, 0, 1, 1), "Full Rect, so the rays cross the room")
+	assert_eq(_offsets(_shafts), Vector4.ZERO, "and carry no inset")
+	assert_eq(_shafts.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the shafts never eat a tap")
+
+
+func test_the_shaft_knobs_reach_the_shader() -> void:
+	_shafts.origin = Vector2(0.8, -0.1)
+	_shafts.shaft_color = Color(0.7, 0.8, 1.0)
+	_shafts.shaft_count = 5.0
+	_shafts.softness = 3.0
+	_shafts.reach = 2.0
+	var mat := _shafts_mat()
+	assert_eq(mat.get_shader_parameter("origin"), Vector2(0.8, -0.1), "origin reaches the shader")
+	assert_eq(mat.get_shader_parameter("shaft_color"), Color(0.7, 0.8, 1.0), "colour reaches it")
+	assert_eq(float(mat.get_shader_parameter("shaft_count")), 5.0, "count reaches it")
+	assert_eq(float(mat.get_shader_parameter("softness")), 3.0, "softness reaches it")
+	assert_eq(float(mat.get_shader_parameter("reach")), 2.0, "reach reaches it")
+	_shafts.origin = Vector2(0.12, -0.08)
+	_shafts.shaft_color = Color(1.0, 0.898, 0.706)
+	_shafts.shaft_count = 7.0
+	_shafts.softness = 5.0
+	_shafts.reach = 1.4
+
+
+func test_reduce_motion_holds_the_shafts_still() -> void:
+	GameSettings.ambient_effects_enabled = true
+	GameSettings.reduce_motion = true
+	assert_eq(float(_shafts_mat().get_shader_parameter("drift_speed")), 0.0, "no drift when still")
+	assert_true(_shafts.visible, "still is not off: the shafts stay")
+	GameSettings.reduce_motion = false
+	assert_eq(float(_shafts_mat().get_shader_parameter("drift_speed")), _shafts.drift_speed,
+		"drift resumes")
+
+
+func test_the_switch_hides_the_shafts() -> void:
+	GameSettings.ambient_effects_enabled = false
+	assert_false(_shafts.visible, "Efek Suasana off hides the shafts")
+	GameSettings.ambient_effects_enabled = true
+	assert_true(_shafts.visible, "and on brings them back")
 
 
 # ── AmbientParticles ─────────────────────────────────────────────────────────
@@ -451,7 +518,7 @@ func test_the_root_knobs_reach_the_children() -> void:
 
 # ── Placement census (reads PackedScene state: no script runs) ──────────────
 
-const KIT_SCENES := [MOOD_TINT, LIGHT_POOL, AMBIENT_PARTICLES, DESK_AMBIENCE]
+const KIT_SCENES := [MOOD_TINT, LIGHT_POOL, AMBIENT_PARTICLES, DESK_AMBIENCE, SUN_SHAFTS]
 const BUTTON_TYPES := ["Button", "TextureButton", "CheckButton", "CheckBox",
 	"OptionButton", "MenuButton", "LinkButton"]
 
@@ -459,44 +526,20 @@ const BUTTON_TYPES := ["Button", "TextureButton", "CheckButton", "CheckBox",
 ## Every node of `scene_path` in file (= tree) order: {path, type, instance,
 ## props}. `instance` is the instanced scene's path or "".
 func _census(scene_path: String) -> Array[Dictionary]:
-	var state := (load(scene_path) as PackedScene).get_state()
-	var out: Array[Dictionary] = []
-	for i in state.get_node_count():
-		var inst := state.get_node_instance(i)
-		var props := {}
-		for j in state.get_node_property_count(i):
-			props[str(state.get_node_property_name(i, j))] = state.get_node_property_value(i, j)
-		out.append({
-			"path": str(state.get_node_path(i)).trim_prefix("./"),
-			"type": str(state.get_node_type(i)),
-			"instance": inst.resource_path if inst != null else "",
-			"props": props,
-		})
-	return out
+	return Census.of(scene_path)
 
 
 func _entry(census: Array[Dictionary], path: String) -> Dictionary:
-	for e in census:
-		if e["path"] == path:
-			return e
-	return {}
+	return Census.entry(census, path)
 
 
 func _prop(entry: Dictionary, name: String, fallback: Variant = null) -> Variant:
-	return (entry.get("props", {}) as Dictionary).get(name, fallback)
+	return Census.prop(entry, name, fallback)
 
 
 ## Direct children of `parent` ("." for the root), in draw order.
 func _children_of(census: Array[Dictionary], parent: String) -> Array[String]:
-	var out: Array[String] = []
-	for e in census:
-		var p: String = e["path"]
-		if p == ".":
-			continue
-		var dad := "." if not p.contains("/") else p.get_base_dir()
-		if dad == parent:
-			out.append(p.get_file())
-	return out
+	return Census.children_of(census, parent)
 
 
 ## A world screen: `World` is a CanvasLayer at -1 holding the backdrop and

@@ -137,7 +137,7 @@ func _selected_ids() -> Array:
 
 func _refresh_confirm() -> void:
 	var n := _selected_ids().size()
-	var owned := GameState.get_inventory_quantity(_item.item_name) if _item != null else 0
+	var owned: int = GameState.get_inventory_quantity(_item.item_name) if _item != null else 0
 	_confirm_button.text = _CONFIRM_FMT % n
 	_confirm_button.disabled = n == 0 or n > owned
 	# Each pick will spend one item, so show the stock dropping live.

@@ -381,7 +381,7 @@ func _refresh_tray() -> void:
 	var who := current_student()
 	var id := pending_id(who)
 	_title.text = who.to_upper()
-	var unlocked := GameState.is_skin_unlocked(who, id)
+	var unlocked: bool = GameState.is_skin_unlocked(who, id)
 	_skin_name.text = skin_label(id) if unlocked else "TERKUNCI"
 	_worn_chip.visible = unlocked and id == GameState.equipped_skin(who)
 

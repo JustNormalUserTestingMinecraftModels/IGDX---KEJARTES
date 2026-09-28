@@ -37,10 +37,12 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_achievement_status_pill(theme, tokens)
 	_build_skin_select(theme, tokens)
 	_build_objective_strip(theme, tokens)
+	_build_need_signal(theme, tokens)
 	_build_picker(theme, tokens)
 	_build_school_day_liveliness(theme, tokens)
 	_build_minigame_kit(theme, tokens)
 	_build_settings(theme, tokens)
+	_build_lobby_hud(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -112,6 +114,66 @@ static func _build_objective_strip(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("ObjectiveHintLabel", "Label")
 	theme.set_font_size("font_size", "ObjectiveHintLabel", tokens.font_body_size)
 	theme.set_color("font_color", "ObjectiveHintLabel", tokens.text_primary)
+
+
+## AturJadwal's need gauge (2026-09-28): the parts a StyleBox draws. The dot
+## and callout are category-neutral (the screen tints the dot per skill with
+## self_modulate); the ghost is one per skill, because it IS that bar's fill.
+##
+##   StatTargetDot      the round marker on a skill bar's target end: white
+##                      so self_modulate tints it, with a cream rim.
+##   StatGapGhost*      the stretch still to go: the bar's own fill, faded.
+##   NeedCalloutPanel   the speech bubble by the portrait: a cream card with
+##   NeedCalloutLabel   a brown rim, and its display-face line.
+static func _build_need_signal(theme: Theme, tokens: DesignTokens) -> void:
+	var dot := StyleBoxFlat.new()
+	dot.bg_color = Color.WHITE
+	dot.set_corner_radius_all(tokens.radius_pill)
+	dot.set_border_width_all(int(tokens.outline_width / 2.0))
+	dot.border_color = tokens.outline_card
+	dot.shadow_color = tokens.shadow_color
+	dot.shadow_size = int(tokens.shadow_size / 3.0)
+	dot.shadow_offset = tokens.shadow_offset / 2.0
+	theme.add_type("StatTargetDot")
+	theme.set_type_variation("StatTargetDot", "Panel")
+	theme.set_stylebox("panel", "StatTargetDot", dot)
+
+	# The gap's ghost: the bar's own patterned fill, same texture and accent
+	# as StatBarInset*'s "fill", so the stretch still to go reads as a faded
+	# preview of the bar rather than a stain. The screen fades it with
+	# self_modulate; its own rounded caps keep to the track's ends.
+	for spec in [
+		["Akademis", tokens.cat_akademis_on_dark],
+		["SeniBudaya", tokens.cat_senibudaya_on_dark],
+		["Olahraga", tokens.cat_olahraga_on_dark],
+	]:
+		var ghost_name: String = "StatGapGhost" + spec[0]
+		theme.add_type(ghost_name)
+		theme.set_type_variation(ghost_name, "Panel")
+		theme.set_stylebox("panel", ghost_name, _progress_fill_stylebox(spec[1], spec[0]))
+
+	var bubble := StyleBoxFlat.new()
+	bubble.bg_color = tokens.surface_card
+	bubble.set_corner_radius_all(tokens.radius_lg)
+	bubble.set_border_width_all(int(tokens.outline_width / 2.0))
+	bubble.border_color = tokens.brand_primary
+	bubble.shadow_color = tokens.shadow_color
+	bubble.shadow_size = int(tokens.shadow_size / 2.0)
+	bubble.shadow_offset = tokens.shadow_offset / 2.0
+	bubble.content_margin_left = tokens.space_xs * 1.5
+	bubble.content_margin_right = tokens.space_xs * 1.5
+	bubble.content_margin_top = tokens.space_xs
+	bubble.content_margin_bottom = tokens.space_xs
+	theme.add_type("NeedCalloutPanel")
+	theme.set_type_variation("NeedCalloutPanel", "PanelContainer")
+	theme.set_stylebox("panel", "NeedCalloutPanel", bubble)
+
+	theme.add_type("NeedCalloutLabel")
+	theme.set_type_variation("NeedCalloutLabel", "Label")
+	theme.set_font_size("font_size", "NeedCalloutLabel", tokens.font_caption)
+	theme.set_color("font_color", "NeedCalloutLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "NeedCalloutLabel", tokens.font_display)
 
 
 ## The Penjadwalan activity picker (2026-09-24 visual polish, D9-D14): a
@@ -2693,6 +2755,220 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "PlateNameLabel", tokens.text_on_brand)
 	if tokens.font_display != null:
 		theme.set_font("font", "PlateNameLabel", tokens.font_display)
+
+
+# ---------------------------------------------------- lobby scrapbook hud
+
+## Placeholder art for the 2026-09-27 scrapbook HUD restyle (spec, Task 2).
+## Final art lands at the same paths (docs/superpowers/DEBT.md).
+const _LOBBY_HUD_ART := "res://Assets/Images/UI/LobbyHud/"
+
+## The scrapbook tiles' chunky 3D lip: bottom border width, px (Q4's
+## default -- a solid rim with a thick bottom lip stands in for the dashed
+## washi rim and tape until real art lands).
+const LOBBY_HUD_LIP := 10
+## How much darker than state_success the scrapbook's green ink runs: the
+## hero and plus buttons' pressed shade, and the star count's text.
+const LOBBY_HUD_INK_DARKEN := 0.25
+
+## Each placeholder's 9-slice margin as (left, right, top, bottom) px,
+## measured directly off the art (task-0-1-report.md). A single flat
+## LOBBY_HUD_ART_MARGIN := 40 does not hold across these assets --
+## book_cover's bottom lip alone needs 40px while its other edges need 24,
+## book_page is a uniform 18, the two plates are 20/20/18/26, and the
+## chevron pill is 26/26/8/8 -- so each art gets its own named margin.
+const _BOOK_COVER_MARGIN := Vector4i(24, 24, 24, 40)
+const _BOOK_PAGE_MARGIN := Vector4i(18, 18, 18, 18)
+const _COIN_PLATE_MARGIN := Vector4i(20, 20, 18, 26)
+const _PROGRESS_PLATE_MARGIN := Vector4i(20, 20, 18, 26)
+const _CHEVRON_GRIP_MARGIN := Vector4i(26, 26, 8, 8)
+
+
+## One nine-patch StyleBoxTexture over a LobbyHud placeholder. `margin` is
+## (left, right, top, bottom) px, one of the consts above.
+static func _lobby_hud_nine_patch(file_name: String, margin: Vector4i) -> StyleBoxTexture:
+	var box := StyleBoxTexture.new()
+	box.texture = load(_LOBBY_HUD_ART + file_name)
+	box.texture_margin_left = margin.x
+	box.texture_margin_right = margin.y
+	box.texture_margin_top = margin.z
+	box.texture_margin_bottom = margin.w
+	return box
+
+
+## Sets `border_width_bottom` on every state of a flat button variation --
+## the scrapbook tiles' chunky 3D lip along the bottom edge (Q4 default).
+static func _thicken_lip(theme: Theme, name: String, lip: int) -> void:
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var sb := theme.get_stylebox(state, name) as StyleBoxFlat
+		if sb != null:
+			sb.border_width_bottom = lip
+
+
+## The Lobby's 2026-09-27 scrapbook HUD restyle (spec, Q3's colour table).
+## A Lobby-only exception to the shared brand look: these variations are
+## deliberately absent from tests/test_lobby_style_buttons.gd's LOBBY_LOOK
+## roster (Q7) -- every other screen keeps the brown Lobby look.
+static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
+	# -- BookHeroButton: "JADWAL!", the greenest element on the screen. --
+	_add_button_variation(theme, tokens, "BookHeroButton",
+		tokens.state_success, tokens.state_success.darkened(LOBBY_HUD_INK_DARKEN),
+		tokens.outline_card, tokens.text_on_brand)
+	theme.set_font_size("font_size", "BookHeroButton", tokens.font_h1)
+	theme.set_constant("icon_max_width", "BookHeroButton", tokens.btn_icon_l)
+	_thicken_lip(theme, "BookHeroButton", LOBBY_HUD_LIP)
+
+	# -- NavTileKoperasi: the shop's own green tag colours. --
+	_add_button_variation(theme, tokens, "NavTileKoperasi",
+		tokens.koperasi_tag_fill, tokens.koperasi_tag_border,
+		tokens.outline_card, tokens.text_on_brand)
+	theme.set_constant("icon_max_width", "NavTileKoperasi", tokens.btn_icon_m)
+	_thicken_lip(theme, "NavTileKoperasi", LOBBY_HUD_LIP)
+
+	# -- NavTileInventory: the Akademis blue -- may read as "Akademis"
+	# rather than a neutral inventory colour (Q3's own caveat). --
+	_add_button_variation(theme, tokens, "NavTileInventory",
+		tokens.cat_akademis_on_dark, tokens.cat_akademis,
+		tokens.outline_card, tokens.text_on_brand)
+	theme.set_constant("icon_max_width", "NavTileInventory", tokens.btn_icon_m)
+	_thicken_lip(theme, "NavTileInventory", LOBBY_HUD_LIP)
+
+	# -- NavTileRapor: warm amber. Cream text on F5A623 only measures about
+	# 2:1 (Q3), so this tile keeps text_primary instead of text_on_brand. --
+	_add_button_variation(theme, tokens, "NavTileRapor",
+		tokens.state_warning, tokens.cat_libur,
+		tokens.outline_card, tokens.text_primary)
+	theme.set_constant("icon_max_width", "NavTileRapor", tokens.btn_icon_m)
+	_thicken_lip(theme, "NavTileRapor", LOBBY_HUD_LIP)
+
+	# -- PlusButton: green, never gold -- a gold + would read as an IAP
+	# button (spec 3.2; test_scrapbook_plus_and_hero_are_green). Square in
+	# its authored 96x96 node, with the house radius_button corners
+	# (test_button_geometry's one-fixed-radius rule). --
+	_add_button_variation(theme, tokens, "PlusButton",
+		tokens.state_success, tokens.state_success.darkened(LOBBY_HUD_INK_DARKEN),
+		tokens.outline_card, tokens.text_on_brand)
+
+	# -- ChevronGripButton: the swipe handle. Texture only, every state --
+	# no text and no font (it carries no label). --
+	theme.add_type("ChevronGripButton")
+	theme.set_type_variation("ChevronGripButton", "Button")
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "ChevronGripButton",
+			_lobby_hud_nine_patch("chevron_grip.png", _CHEVRON_GRIP_MARGIN))
+
+	# -- BookCoverPanel / BookPagePanel: the stepped book's board and page. --
+	theme.add_type("BookCoverPanel")
+	theme.set_type_variation("BookCoverPanel", "Panel")
+	theme.set_stylebox("panel", "BookCoverPanel",
+		_lobby_hud_nine_patch("book_cover.png", _BOOK_COVER_MARGIN))
+
+	theme.add_type("BookPagePanel")
+	theme.set_type_variation("BookPagePanel", "Panel")
+	theme.set_stylebox("panel", "BookPagePanel",
+		_lobby_hud_nine_patch("book_page.png", _BOOK_PAGE_MARGIN))
+
+	# -- CoinPlate / ProgressPlate: the header's cream plates. --
+	theme.add_type("CoinPlate")
+	theme.set_type_variation("CoinPlate", "Panel")
+	theme.set_stylebox("panel", "CoinPlate",
+		_lobby_hud_nine_patch("coin_plate.png", _COIN_PLATE_MARGIN))
+
+	theme.add_type("ProgressPlate")
+	theme.set_type_variation("ProgressPlate", "Panel")
+	theme.set_stylebox("panel", "ProgressPlate",
+		_lobby_hud_nine_patch("progress_plate.png", _PROGRESS_PLATE_MARGIN))
+
+	# -- GradeBadge: flat, the Olahraga accent (Q3). --
+	theme.add_type("GradeBadge")
+	theme.set_type_variation("GradeBadge", "PanelContainer")
+	var grade_badge := StyleBoxFlat.new()
+	grade_badge.bg_color = tokens.cat_olahraga_on_dark
+	grade_badge.set_corner_radius_all(tokens.radius_md)
+	grade_badge.content_margin_left = tokens.space_sm
+	grade_badge.content_margin_right = tokens.space_sm
+	grade_badge.content_margin_top = tokens.space_sm
+	grade_badge.content_margin_bottom = tokens.space_sm
+	theme.set_stylebox("panel", "GradeBadge", grade_badge)
+
+	# -- GradeBadgeLabel / GradeBadgeNumber: "KELAS" over "7", cream on the
+	# badge's dark fill. --
+	theme.add_type("GradeBadgeLabel")
+	theme.set_type_variation("GradeBadgeLabel", "Label")
+	theme.set_font_size("font_size", "GradeBadgeLabel", tokens.font_caption)
+	theme.set_color("font_color", "GradeBadgeLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "GradeBadgeLabel", tokens.font_display)
+
+	theme.add_type("GradeBadgeNumber")
+	theme.set_type_variation("GradeBadgeNumber", "Label")
+	theme.set_font_size("font_size", "GradeBadgeNumber", tokens.font_h1)
+	theme.set_color("font_color", "GradeBadgeNumber", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "GradeBadgeNumber", tokens.font_display)
+
+	# -- WeekLabel: the header's "Minggu N", dark ink on the cream plate. --
+	theme.add_type("WeekLabel")
+	theme.set_type_variation("WeekLabel", "Label")
+	theme.set_font_size("font_size", "WeekLabel", tokens.font_title)
+	theme.set_color("font_color", "WeekLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "WeekLabel", tokens.font_display)
+
+	# -- StarProgressBar: sunken pill track, success pill fill. --
+	theme.add_type("StarProgressBar")
+	theme.set_type_variation("StarProgressBar", "ProgressBar")
+	var star_bg := StyleBoxFlat.new()
+	star_bg.bg_color = tokens.surface_sunken
+	star_bg.set_corner_radius_all(tokens.radius_pill)
+	theme.set_stylebox("background", "StarProgressBar", star_bg)
+	var star_fill := StyleBoxFlat.new()
+	star_fill.bg_color = tokens.state_success
+	star_fill.set_corner_radius_all(tokens.radius_pill)
+	theme.set_stylebox("fill", "StarProgressBar", star_fill)
+
+	# -- StarNumLabel: "2.0 / 3.0" (Q2), the darker success ink. --
+	theme.add_type("StarNumLabel")
+	theme.set_type_variation("StarNumLabel", "Label")
+	theme.set_font_size("font_size", "StarNumLabel", tokens.font_caption)
+	theme.set_color("font_color", "StarNumLabel", tokens.state_success.darkened(LOBBY_HUD_INK_DARKEN))
+	if tokens.font_display != null:
+		theme.set_font("font", "StarNumLabel", tokens.font_display)
+
+	# -- NotifBadge / NotifBadgeLabel: the icon rail's red count pill. --
+	theme.add_type("NotifBadge")
+	theme.set_type_variation("NotifBadge", "Panel")
+	var notif_badge := StyleBoxFlat.new()
+	notif_badge.bg_color = tokens.state_danger
+	notif_badge.border_color = tokens.outline_card
+	notif_badge.set_border_width_all(int(tokens.outline_width / 2.0))
+	notif_badge.set_corner_radius_all(tokens.radius_pill)
+	notif_badge.content_margin_left = tokens.space_sm
+	notif_badge.content_margin_right = tokens.space_sm
+	theme.set_stylebox("panel", "NotifBadge", notif_badge)
+
+	theme.add_type("NotifBadgeLabel")
+	theme.set_type_variation("NotifBadgeLabel", "Label")
+	theme.set_font_size("font_size", "NotifBadgeLabel", tokens.font_caption)
+	theme.set_color("font_color", "NotifBadgeLabel", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "NotifBadgeLabel", tokens.font_display)
+
+	# -- RosterChip: "6 murid", a cream pill on the book with a brand rim.
+	# Its label reuses the existing CaptionLabel variation (RosterChipLabel
+	# is not a new type -- see the plan's node tree). --
+	theme.add_type("RosterChip")
+	theme.set_type_variation("RosterChip", "PanelContainer")
+	var roster_chip := StyleBoxFlat.new()
+	roster_chip.bg_color = tokens.surface_card
+	roster_chip.border_color = tokens.brand_primary
+	roster_chip.set_border_width_all(int(tokens.outline_width / 2.0))
+	roster_chip.set_corner_radius_all(tokens.radius_pill)
+	roster_chip.content_margin_left = tokens.space_sm
+	roster_chip.content_margin_right = tokens.space_sm
+	roster_chip.content_margin_top = 2
+	roster_chip.content_margin_bottom = 2
+	theme.set_stylebox("panel", "RosterChip", roster_chip)
 
 
 # ------------------------------------------------- unstyled base controls

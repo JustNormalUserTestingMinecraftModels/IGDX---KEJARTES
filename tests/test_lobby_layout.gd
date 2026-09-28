@@ -9,10 +9,11 @@ extends McpTestSuite
 ## 40px off-screen entirely; and DisplayUang and DailyLogin sat centred
 ## on the two front-row students' heads (x~845 y~389 and x~225 y~389).
 ##
-## Since the 2026-09-15 tall-phone pass the HUD lives in Safe/UI/BottomBar
-## and the art in a centred Classroom, so a node's offsets are no longer
-## screen coordinates. The Lobby is stood up on the 1080x1920 design screen
-## (tests/layout_frame.gd) and every check reads real global rects.
+## Since the 2026-09-15 tall-phone pass the HUD lives in Safe/UI/Hud/BookHud
+## (the 2026-09-27 scrapbook pass split it into the stepped book and the
+## IconRail) and the art in a centred Classroom, so a node's offsets are no
+## longer screen coordinates. The Lobby is stood up on the 1080x1920 design
+## screen (tests/layout_frame.gd) and every check reads real global rects.
 ##
 ## The Meja_* desk layers' 8-10 px nudges inside the Classroom are deliberate
 ## (2026-09-10): at zero offset the desks stopped short of the students'
@@ -29,18 +30,24 @@ const SCENE := "res://Scenes/Lobby/Lobby.tscn"
 const NAV_TILES := ["Koperasi", "Inventory", "ReportStudent"]
 
 ## Where every HUD control sits on the 1080x1920 design screen. The
-## tall-phone pass re-anchored them without moving them: these are the rects
-## they had before it, less the root's stray 3 px left offset it removed.
+## 2026-09-27 scrapbook pass (Task 4) replaced the flat BottomBar row with a
+## stepped book (RaisedPage over Student/Jadwal, ShelfPage over the three
+## tiles) plus ChevronGrip and a right-edge IconRail; these rects are
+## measured from Scenes/Lobby/Lobby.tscn's authored offsets.
 const DESIGN_RECTS := {
-	"Student": Rect2(48, 1520, 984, 160),
-	"Jadwal": Rect2(48, 1520, 984, 160),
-	"Koperasi": Rect2(48, 1712, 306, 160),
-	"Inventory": Rect2(386, 1712, 306, 160),
-	"ReportStudent": Rect2(724, 1712, 306, 160),
-	"DisplayUang": Rect2(700, 1392, 332, 96),
-	"SettingsButton": Rect2(168, 1392, 96, 96),
-	"DailyLogin": Rect2(48, 1392, 96, 96),
-	"JUDUL": Rect2(381, 40, 323, 100),
+	"Student": Rect2(88, 1444, 532, 144),
+	"Jadwal": Rect2(88, 1444, 532, 144),
+	"Koperasi": Rect2(88, 1656, 285, 160),
+	"Inventory": Rect2(397, 1656, 285, 160),
+	"ReportStudent": Rect2(706, 1656, 285, 160),
+	"ChevronGrip": Rect2(214, 1352, 280, 96),
+	"DisplayUang": Rect2(672, 48, 360, 112),
+	"IconRail": Rect2(936, 1040, 96, 456),
+	"DailyLogin": Rect2(936, 1040, 96, 96),
+	"SettingsButton": Rect2(936, 1160, 96, 96),
+	"AchievementButton": Rect2(936, 1280, 96, 96),
+	"SkinSwitchButton": Rect2(936, 1400, 96, 96),
+	"ProgressHeader": Rect2(48, 48, 516, 168),
 }
 
 var _lobby: Control
@@ -96,10 +103,12 @@ func test_nav_tiles_share_one_height_and_one_baseline() -> void:
 		var tile := _hud(NAV_TILES[i])
 		if tile == null:
 			continue
-		assert_eq(tile.get_global_rect().size.y, first.get_global_rect().size.y,
+		# The authored rects, not get_global_rect(): the scrapbook tiles carry a
+		# slight tilt each, which moves their global position but not their row.
+		assert_eq(_authored_rect(tile).size.y, _authored_rect(first).size.y,
 			"%s height differs from %s -- the three tiles are one row"
 				% [NAV_TILES[i], NAV_TILES[0]])
-		assert_eq(tile.get_global_rect().position.y, first.get_global_rect().position.y,
+		assert_eq(_authored_rect(tile).position.y, _authored_rect(first).position.y,
 			"%s top differs from %s -- they must share a baseline"
 				% [NAV_TILES[i], NAV_TILES[0]])
 
@@ -124,7 +133,7 @@ func test_hud_does_not_sit_on_the_front_row_faces() -> void:
 	# mapped through Slot3 and Slot4's rects.
 	var heads := [Vector2(225, 389), Vector2(845, 389)]
 	var radius := 110.0
-	for n in ["DisplayUang", "DailyLogin", "SettingsButton"]:
+	for n in ["DisplayUang", "DailyLogin", "SettingsButton", "ProgressHeader", "IconRail"]:
 		var c := _hud(n)
 		if c == null:
 			continue

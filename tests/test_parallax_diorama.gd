@@ -32,6 +32,41 @@ const DIORAMAS := {
 }
 
 
+## Kurangi Gerakan holds every diorama at rest (spec 2026-09-28, planning
+## amendment 2): the bands chase zero tilt, so they settle back and stay,
+## whatever the phone or the pointer does. The Lobby and Koperasi ignored the
+## switch until then.
+func test_reduce_motion_holds_the_diorama_at_rest() -> void:
+	var before: bool = GameSettings.reduce_motion
+	var driver := (load("res://Scripts/UI/ParallaxDiorama.gd") as GDScript).new() as Control
+	track(driver)
+	var tilt := Vector2(0.5, -0.25)
+	GameSettings.reduce_motion = true
+	var still: Vector2 = driver.call("_target_tilt", tilt)
+	GameSettings.reduce_motion = false
+	var moving: Vector2 = driver.call("_target_tilt", tilt)
+	GameSettings.reduce_motion = before
+	assert_eq(still, Vector2.ZERO, "no tilt reaches the bands while Kurangi Gerakan is on")
+	assert_eq(moving, tilt, "with it off, the reading passes through untouched")
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/ParallaxDiorama.gd")
+	assert_true(src.contains("_deflection.lerp(_target_tilt(_read_tilt(delta))"),
+		"the bands chase the gated reading, not the raw one")
+
+
+## The Lobby look's flat screens (spec 2026-09-28): one picture plane under
+## World/Room, drifting against the UI. They carry a single depth, so they
+## skip the three-band test but must pass the baked-offset and overscan tests.
+const FLAT_DIORAMAS := {
+	"res://Scenes/Koperasi/ShopHub.tscn": "World/Room",
+	"res://Scenes/Koperasi/CosmeticShop.tscn": "World/Room",
+}
+
+
+## Every diorama the driver runs on, layered or flat.
+func _all_dioramas() -> Dictionary:
+	return DIORAMAS.merged(FLAT_DIORAMAS)
+
+
 func suite_name() -> String:
 	return "parallax_diorama"
 
@@ -186,8 +221,8 @@ func test_the_driver_moves_offsets_and_reads_tilt_from_the_held_pose() -> void:
 ## so a Full Rect band that was saved mid-growth has negative left/top
 ## offsets. If this fails, someone ran the motion outside play and saved.
 func test_nothing_the_driver_touches_is_baked_into_the_scene() -> void:
-	for scene_path in DIORAMAS:
-		var host_name: String = DIORAMAS[scene_path]
+	for scene_path in _all_dioramas():
+		var host_name: String = _all_dioramas()[scene_path]
 		var root := (load(scene_path) as PackedScene).instantiate()
 		track(root)
 		var host := root.get_node_or_null(host_name) as Control
@@ -272,8 +307,8 @@ func test_the_driver_does_not_process_inside_the_editor() -> void:
 ## has to stay at least as wide as its parent plus the distance it travels on
 ## each side. If this is ever false, the band's edge shows.
 func test_the_overscan_covers_the_travel_on_both_dioramas() -> void:
-	for scene_path in DIORAMAS:
-		var host_name: String = DIORAMAS[scene_path]
+	for scene_path in _all_dioramas():
+		var host_name: String = _all_dioramas()[scene_path]
 		var frame := track(LayoutFrame.stand_up(scene_path, Vector2(1080, 1920))) as Control
 		var screen := frame.get_child(0)
 		var host := screen.get_node_or_null(host_name) as Control

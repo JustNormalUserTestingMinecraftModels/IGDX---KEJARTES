@@ -27,7 +27,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/Debug/DebugManager.gd::_build_scenes_panel": 88,
 	"res://Scripts/Debug/DebugManager.gd::_build_ui": 96,
 	"res://Scripts/Debug/DebugManager.gd::_rebuild_student_stat_editor": 125,
-	"res://Scripts/Lobby/Lobby.gd::_ready": 95,
+	"res://Scripts/Lobby/Lobby.gd::_ready": 64,
 	"res://Scripts/Lobby/Lobby.gd::_show_step": 56,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::_instantiate_cards": 64,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::reveal_answers": 63,
@@ -80,7 +80,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/Koperasi/Koperasi.gd": 11,
 	"res://Scripts/Koperasi/KoperasiStage.gd": 31,
 	"res://Scripts/LevelSelect/AmplopCard.gd": 1,
-	"res://Scripts/Lobby/Lobby.gd": 128,
+	"res://Scripts/Lobby/Lobby.gd": 102,
 	"res://Scripts/Lobby/StudentChatterPicker.gd": 2,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 78,
 	"res://Scripts/Minigames/Akademis/Password.gd": 10,
@@ -153,7 +153,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Koperasi/ShelfItem.gd": 5,
 	"res://Scripts/Koperasi/TraySlot.gd": 2,
 	"res://Scripts/LevelSelect/LevelSelect.gd": 6,
-	"res://Scripts/Lobby/Lobby.gd": 58,
+	"res://Scripts/Lobby/Lobby.gd": 43,
 	"res://Scripts/Lobby/LobbyChatter.gd": 2,
 	"res://Scripts/Lobby/StudentChatBubble.gd": 2,
 	"res://Scripts/Lobby/StudentChatterCatalog.gd": 2,
@@ -206,7 +206,6 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 2,
 	"res://Scripts/Transition/Transition.gd": 7,
 	"res://Scripts/TutorialArrow.gd": 7,
-	"res://Scripts/UI/SafeAreaMargin.gd": 4,
 	"res://Scripts/UI/StatBar.gd": 1,
 }
 
@@ -214,7 +213,6 @@ const BARE_NUMBERS: Dictionary = {
 const DUPLICATE_GROUPS: Array[String] = [
 	"res://Scripts/AturJadwal/AturJadwal.gd::_clear_highlight | res://Scripts/Lobby/Lobby.gd::_clear_highlight | res://Scripts/StudentList/StudentList.gd::_clear_highlight",
 	"res://Scripts/AturJadwal/AturJadwal.gd::_get_button_display_name | res://Scripts/Lobby/Lobby.gd::_get_button_display_name | res://Scripts/StudentCard/StudentCard.gd::_get_button_display_name",
-	"res://Scripts/AturJadwal/AturJadwal.gd::_on_click_area_gui_input | res://Scripts/Lobby/Lobby.gd::_on_click_area_gui_input",
 	"res://Scripts/Lobby/Lobby.gd::_on_btn_mouse_entered | res://Scripts/StudentList/StudentList.gd::_on_btn_mouse_entered",
 	"res://Scripts/Lobby/Lobby.gd::_setup_button_juice | res://Scripts/ReportCard/ReportCard.gd::_setup_button_juice | res://Scripts/StudentCard/StudentCard.gd::_setup_button_juice | res://Scripts/StudentList/StudentList.gd::_setup_button_juice",
 	"res://Scripts/Lobby/Lobby.gd::_start_prompt_blink | res://Scripts/StudentList/StudentList.gd::_start_prompt_blink",
@@ -240,7 +238,6 @@ const DUPLICATE_GROUPS: Array[String] = [
 const LARGE_SCRIPTS: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 1626,
 	"res://Scripts/Debug/DebugManager.gd": 1880,
-	"res://Scripts/Lobby/Lobby.gd": 1073,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1638,
 	"res://Scripts/StudentCard/StudentCard.gd": 1451,
 }

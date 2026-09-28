@@ -4,6 +4,10 @@ extends McpTestSuite
 ## GameState.use_item writes the roster's stat keys (`mood`, `energy`,
 ## `akademis`, `seni_budaya`, `olahraga`); use_item_on_students is
 ## all-or-nothing across a list of students.
+##
+## Results are declared `: Dictionary`, not inferred with `:=`. After an editor
+## restart the analyzer once left these GameState calls untyped; `:=` on that is
+## a parse error, and a suite that cannot load is skipped with `failed` still 0.
 
 func suite_name() -> String:
 	return "use_item_on_students"
@@ -35,7 +39,7 @@ func _item(mood := 10, energy := 5, ak := 6) -> ItemData:
 	return d
 
 func test_use_item_writes_the_roster_stat_keys() -> void:
-	var r := GameState.use_item(_item(), 1, 1)
+	var r: Dictionary = GameState.use_item(_item(), 1, 1)
 	assert_true(r["applied"])
 	assert_eq(GameState.approved_students[0]["mood"], 60.0, "mood lands on the mood key")
 	assert_eq(GameState.approved_students[0]["energy"], 55.0, "energy lands on the energy key")
@@ -44,18 +48,18 @@ func test_use_item_writes_the_roster_stat_keys() -> void:
 	assert_eq(r["akademis_delta"], 6.0)
 
 func test_use_item_clamps_at_100() -> void:
-	var r := GameState.use_item(_item(10, 5, 6), 2, 1)  # student B mood 95 -> 100
+	var r: Dictionary = GameState.use_item(_item(10, 5, 6), 2, 1)  # student B mood 95 -> 100
 	assert_eq(GameState.approved_students[1]["mood"], 100.0)
 	assert_eq(r["mood_delta"], 5.0, "delta reflects the clamp")
 
 func test_batch_all_or_nothing_refuses_when_short() -> void:
 	GameState.inventory = {"TestItem": 2}
-	var r := GameState.use_item_on_students(_item(), [1, 2, 1])
+	var r: Dictionary = GameState.use_item_on_students(_item(), [1, 2, 1])
 	assert_false(r["applied"])
 	assert_eq(GameState.inventory["TestItem"], 2, "stock untouched on refusal")
 
 func test_batch_happy_path_consumes_and_reports() -> void:
-	var r := GameState.use_item_on_students(_item(), [1, 2])
+	var r: Dictionary = GameState.use_item_on_students(_item(), [1, 2])
 	assert_true(r["applied"])
 	assert_eq(r["results"].size(), 2)
 	assert_true(r["results"][0].has("student_id") and r["results"][0].has("name"))

@@ -8,6 +8,209 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Atur Jadwal: "perlu" fix and the need gauge
+
+Plan: `docs/superpowers/plans/2026-09-28-atur-jadwal-perlu-gauge.md`.
+Every target starts as base + one shared uplift, so at the start of a grade
+all three skill gaps tie, and `StatFlags` always flagged Akademis. A tie
+within `GAP_EPSILON` (0.5) now goes to the weakest raw skill; a clearly
+bigger gap still wins, and the tie window is anchored on the biggest gap so
+the answer never depends on list order. The flagged skill is now shown
+rather than named: its bar gets a `GapTail` over the stretch still to go and
+a pulsing `StatTargetDot` on the target end, and a `NeedCallout` bubble
+above the name says "Aku butuh <mapel>!". Needs keep their "lelah" chip;
+the skill "perlu" chip stays authored but hidden. The logic moved from
+`AturJadwal.gd` into `NeedGauge`. `StatBar` seats the tail and dot from the
+bar's live width (verified at 324 and 601 px, through the resize signal).
+
+The tail is a ghost of the bar's own patterned fill (`StatGapGhost*`, the
+same `_progress_fill_stylebox` as the fill) at half alpha, tucked one cap
+under the fill's end. The plan's tinted `track_ghost.png` was built first
+and measured on the running screen: at 0.5 it was nearly invisible on the
+dark track, at full strength a muddy smudge, and its square end needed a
+clip mask. Four treatments were then compared side by side (the ramp, the
+ghost at 0.35 and 0.55, a flat soft tint); the ghost read as part of the
+bar rather than a stain. The callout's text keeps `text_primary`, with the
+category colour carried by its icon. The callout sits in tree order after
+`LabelNama` rather than on a raised `z_index`, which would draw it over the
+Peringatan and Penjadwalan dialogs.
+
+## 2026-09-28 — Dapatkan Uang pays only in debug builds
+
+The owner decided the dev-mode payouts must not reach players. The panel is
+available only when `is_dev_mode` is set and `OS.is_debug_build()` is true
+(`DapatkanUang.is_available()`). An exported release keeps the Lobby's `+`
+disabled and `open()` refuses, so no free coins are handed out before a
+real ad SDK exists. The debug check is a var the `dapatkan_uang` suite can
+flip to stand in for a release.
+
+## 2026-09-28 — The Lobby look, part 1: the shops
+
+`SunShafts` (`Scenes/Look/SunShafts.tscn`) is the Lobby's full-screen light
+shafts as an ambient-kit piece: capped at the Lobby's 0.20, hidden by Efek
+Suasana, frozen by Kurangi Gerakan. ShopHub and CosmeticShop moved their
+backdrop into `World/Room` with the plain grade, a warm `LightPool`,
+`SunShafts` and a flat parallax, all under the existing blur; Koperasi lights
+its `Stage` under the goods. `ParallaxDiorama` now holds still under Kurangi
+Gerakan, which stills the Lobby and Koperasi too. Bloom, measured with the
+ambient kit's method: none on either shop — under the blur the light's core
+gains at most +0.0045 even at threshold 0.5, below the 0.01 visible-bleed bar,
+so both ship without a Glow. The census now counts 33 graded plates, the
+shops' backdrops having joined `test_look_layer`'s GRADED.
+`tests/scene_census.gd` is the shared census helper; `test_lobby_look` pins
+every placement. Spec: `2026-09-28-lobby-look-everywhere-design.md`.
+
+## 2026-09-28 — Dapatkan Uang (Loby Final Polish, Phase 2)
+
+The Lobby coin plate's green `+` now opens **Dapatkan Uang**
+(`Scenes/Lobby/DapatkanUang.tscn` + `Scripts/Lobby/DapatkanUang.gd`), a
+scrapbook book over a scrim, per spec §7:
+- "Tonton iklan, dapat sekarang": Iklan Singkat +150, Video Penuh +450.
+- "Ambil dulu, tonton nanti": +900 for 4 owed ads, +2000 for 8. They raise
+  the new session-only `GameState.ad_debt` (cleared by Forget Session,
+  never saved), and a "Tonton N iklan tertunda" button shows while ads are
+  owed (Q6).
+- "Cara gratis": a tip card pointing at Wirausaha.
+
+**Dev mode:** every option pays at once through the one writer, `_pay()`,
+which emits `paid(amount, previous_money)`. The Lobby rolls its wallet
+through the daily claim's handler, renamed `_on_wallet_paid`. A toast
+tagged DEV MODE confirms each payout. A real ad SDK only has to call
+`_pay()` from its reward callback.
+
+**Chatter gate:** `_chatter_allowed` also gates on the open panel. The
+chatter reads taps in `_input`, before the scrim, and the same gate keeps
+the HUD from reopening behind the panel.
+
+**Amounts:** named consts, proposed to the Balance owner in
+`docs/superpowers/specs/2026-09-27-earn-money-balance-proposal.md`.
+
+**Size:** `Lobby.gd` is 974 lines.
+
+**Two Boohong gotchas:**
+- "(4)" draws as "C4D", so the owed label has no brackets.
+- Copy with "—" or "…" (the toasts, the tip) stays in body-font labels.
+
+## 2026-09-28 — Lobby scrapbook HUD (Phase 1)
+
+Restyled the Lobby's bottom UI into the "scrapbook" HUD: a stepped book
+(`JADWAL!` hero button on the raised block, three colour-coded nav tiles —
+Koperasi green, Inventory blue, Rapor amber — sitting directly on the
+shelf's `Panel`, not an `HBoxContainer`, since a container would reset
+their authored rotation), a grade/week/star progress header top-left, a
+360px-wide coin plate top-right (so `999999G` fits) with a green
+`PlusButton` (a `PlusIcon` child, not the button's own icon — the button's
+padding shrank a native icon), a right-edge icon rail with three
+`NotifBadge`s (daily login, achievements, inventory), a bouncy swipe-away
+HUD (the book slides down to its chevron peek and the rail slides off the
+right edge in one tween), and an idle fade on the header and coin plate.
+The roster-count chip sits at the book's right end, not centred.
+
+New `@tool` components, each called down from `Lobby.gd` and covered by
+the `lobby_hud` suite: `LobbyProgressHeader`, `LobbyHud`, `NotifBadge`,
+`IdleFade`. `Lobby.gd` 993 → 969 lines (Task 0 dropped dead branches and
+extracted the HUD button wiring); its `_ready` 95 → 64 lines; `UNTYPED`
+112 → 102; `BARE_NUMBERS` 44 → 43.
+
+New `ThemeFactory` variations, all in `_build_lobby_hud()`:
+`BookHeroButton`, `NavTileKoperasi`/`NavTileInventory`/`NavTileRapor`,
+`PlusButton` (green, never gold — a gold `+` would read as an IAP button;
+keeps the house `radius_button` corners), `ChevronGripButton`,
+`BookCoverPanel`/`BookPagePanel`, `CoinPlate`/`ProgressPlate`,
+`GradeBadge`/`GradeBadgeLabel`/`GradeBadgeNumber`, `WeekLabel`,
+`StarProgressBar`/`StarNumLabel`, `NotifBadge`/`NotifBadgeLabel`,
+`RosterChip`. Light-on-dark captions reuse `ResultDeltaLabel`.
+
+The plan's Q1–Q8 (`docs/superpowers/plans/2026-09-27-loby-final-polish.md`),
+defaults approved by the human:
+- **Q1** — `%JUDUL` retired; the header's `GradeBadge` carries "KELAS 7"
+  in its place.
+- **Q2** — the star bar reads `%.1f / %.1f` over `Balance.STARS_TOTAL`
+  (the spec's phrasing, not AturJadwal's pass-line one).
+- **Q3** — JADWAL uses `state_success`; Koperasi its own shop green;
+  Inventory the Akademis blue (may read as "Akademis"); Rapor
+  `state_warning` with `text_primary` ink (cream on `F5A623` only
+  measures ~2:1); the grade badge `cat_olahraga_on_dark`.
+- **Q4** — solid rims with a thick bottom lip ship now; the dashed washi
+  rim, the tape and JADWAL's washi flutter wait for art (logged in
+  `DEBT.md`).
+- **Q5** — the book and rail swipe away together in one tween: book to
+  its chevron peek, rail off the right edge.
+- **Q6** — the owed-ad `%TontonUtang` button belongs to the Phase 2
+  Dapatkan Uang panel, not built in this pass.
+- **Q7** — the scrapbook variations are a documented Lobby-only
+  exception (`style-guide.md`, "Buttons"); every other screen keeps the
+  brown framed look.
+- **Q8** — `LobbyProgressHeader` remembers the last star count it drew
+  this session in a `static var`; the bar slides from there on Lobby
+  entry and sparkles only on a rise. Nothing persisted.
+
+Design and plan:
+`docs/superpowers/specs/2026-09-27-lobby-scrapbook-hud-design.md`,
+`docs/superpowers/plans/2026-09-27-loby-final-polish.md`.
+
+## 2026-09-28 — Older particle bursts finally spin
+
+A 2D `ParticleProcessMaterial` ignores `angle` and `angular_velocity`
+without `particle_flag_disable_z` (found building PaperConfetti on
+2026-09-12). Three older emitters asked for spin and never got it; each now
+sets the flag: `RewardBurst` (its root burst), `CoinShower` (the week-recap
+banner's coins) and `StarBurst`'s star burst. Rescued from a worktree
+stranded since 2026-09-12, minus `CelebrationConfetti` and `ResultConfetti`,
+retired since. `test_every_spinning_particle_material_sets_disable_z`
+(day_summary) scans every scene, so any material asking for spin must
+carry the flag, listed or not.
+
+## 2026-09-28 — Daily login polish
+
+- Task 1 pulled the daily-login popup out of `Lobby.gd` into a
+  `DailyLoginPanel` component attached to the existing `DailyReward` node,
+  taking `Lobby.gd` off the `LARGE_SCRIPTS` list (1073 → 990 lines;
+  `UNTYPED` 128 → 112, `BARE_NUMBERS` 58 → 44).
+- The reward curve is now 80/120/160/200/240/300/400G across the seven
+  days (1500G a week, the price of the priciest Koperasi item), replacing
+  the old flat 10G.
+- The dead `daily_claim` audio cue now plays on claim, and the reward
+  amount counts up instead of snapping in.
+- A new `RewardRow` gives the amount its own line so "400G" fits beside
+  KLAIM without clipping.
+- A "Selamat datang kembali!" greeting and a streak flame that grows over
+  the 7 days sit above the panel, over the blur; both the greeting/streak
+  and the besok teaser use `ResultHeroLabel`/`ResultDeltaLabel` because
+  plain dark text vanished against the blurred lobby art.
+- New `DailyRewardReveal` component: a gift box (an `AtlasTexture` cropped
+  from day1.png's slot 1; chest art is pending, so `use_chest_sprite`
+  stays off), a coin/star fan from `PackedScene` templates (coins use
+  `uang.png`), a confetti burst (the full three-firework volley and ×1.5
+  pieces on day 7), and one coin arcing to the wallet chip. The wallet is
+  paid exactly once, either when that coin lands or, if the panel is
+  closed mid-reveal or Reduce Motion is on, all at once; `GameState` is
+  written at claim time either way.
+- An idle "tap me" bounce plays on the reward row while unclaimed; once
+  claimed it shows a "Besok: +XG" teaser instead.
+- Fixed: reloading on the same day used to show tomorrow's slot as
+  claimed; it now shows the day that was actually claimed.
+- The human answered the plan's Q1–Q4 on 2026-09-28 and every proposal
+  stood as written. Design and plan:
+  `docs/superpowers/specs/2026-09-28-daily-login-polish-design.md`,
+  `docs/superpowers/plans/2026-09-28-daily-login-polish.md`.
+
+
+## 2026-09-28 — Rapor's title clears the back button
+
+The Rapor screen's title still lost the stem of its "R" under the back
+button. The 2026-09-22 nudge placed it for a 96 px icon button, but the
+PrimaryButton theme's minimum width makes the button 124 px, ending at x 166
+in the `Safe/UI` node (214 on screen, past the 48 px safe-area margin), while
+the title's text began at 154. `PilihMurid` now starts at 190: its 12 px
+outline plus a 12 px gap. `BackButton`'s offsets now say the 124 px it
+renders at, so the scene no longer hides the width.
+`test_title_ink_clears_the_back_button` (report_card) measures the drawn
+ink, outline included, against the button's real rect, so a wider button,
+font or title fails there rather than on a phone. The test is rescued from
+a worktree stranded since 2026-09-15; `tall_screen_layout` pins the new
+position at both screen sizes.
+
 ## 2026-09-28 — Minigame Polish Part 1: foundation kit
 
 - Nine new `ThemeFactory` variations for the minigame kit (`_build_minigame_kit`,

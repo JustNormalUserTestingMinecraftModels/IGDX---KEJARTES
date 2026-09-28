@@ -21,7 +21,7 @@ func test_catalog_skill_values_are_registered() -> void:
 	assert_eq(ItemDatabase.get_item("Mie Instan").akademis_boost, 0)
 
 func test_every_item_has_a_unique_nonempty_description() -> void:
-	var items := ItemDatabase.get_all_items()
+	var items: Array[ItemData] = ItemDatabase.get_all_items()
 	assert_true(items.size() >= 9, "catalog has all base items")
 	var seen := {}
 	for it in items:

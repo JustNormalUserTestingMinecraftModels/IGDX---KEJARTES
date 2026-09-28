@@ -339,6 +339,27 @@ func test_confirm_presents_and_dismisses() -> void:
 	assert_false((confirm.card.get_node("Bob/Pupils") as Control).visible, "and reseals")
 
 
+## Task B: the envelope zooms toward the player on its own tween, running
+## beside card.open()'s seal/flap/pupil tween rather than after it (a
+## tw.parallel() after card.open() would only join its last, pupil, step),
+## and rests back at the fan's scale once dismissed.
+func test_confirm_zooms_the_envelope_open_and_rests_on_dismiss() -> void:
+	var src := FileAccess.get_file_as_string(_CONFIRM_SCRIPT)
+	assert_true(src.contains("open_scale_target"), "exports open_scale_target")
+	assert_true(src.contains("open_zoom_sec"), "exports open_zoom_sec")
+	assert_true(src.contains('tween_property(envelope, "scale"'),
+		"tweens the envelope's own scale")
+	var confirm: Control = _screen._confirm
+	var tex := load("res://Assets/Images/MuridPortrait/Andi.png") as Texture2D
+	var tw: Tween = confirm.present(7, [tex, tex], _screen._brief_line(7))
+	tw.kill()
+	assert_true(confirm._zoom != null and confirm._zoom.is_valid(),
+		"the zoom runs on its own tween, started alongside the open")
+	confirm.dismiss()
+	assert_true(is_equal_approx(confirm.envelope.scale.x, _screen.card_scale),
+		"dismiss() rests the envelope back at the fan's card_scale")
+
+
 ## Accepting sets the grade via GameState and hands off once, to the intro.
 func test_accept_sets_grade_and_transitions() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)

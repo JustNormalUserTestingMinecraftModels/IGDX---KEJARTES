@@ -54,6 +54,24 @@
 >   - `open_scale_target = 1.9` overflows the top of the screen at the
 >     `Envelope`'s current anchor. Task B, Step 7 checks it.
 
+> **Decisions (2026-09-28, execution):**
+> - **Task A fan defaults:** tuned live to `fan_step_x = 220.0`,
+>   `fan_drop_y = 48.0`, `fan_step_degrees = 11.0`. The centre "KELAS N" tab
+>   still clears the wax seal at these values, so Step 2 (moving the `Tab`
+>   node) was not needed and the `84.0` in
+>   `test_envelopes_are_enlarged_and_clear_the_header` stays as-is.
+> - **Task B `open_scale_target`:** shipped at **1.35**, not the 1.9 this plan
+>   originally called out. 1.9 pushes the envelope's top, and its rising
+>   pupils, off the top of a 1920-tall screen at `Envelope`'s current anchor;
+>   the human chose to zoom less rather than re-anchor `Envelope` lower.
+>   `open_zoom_sec` stays 0.35.
+> - **Task D, Step 2 ("D2"):** the human reviewed the Task B screenshot and
+>   decided the confirm's `Letter` (a `Card` Panel) already gets enough lift
+>   from its own StyleBoxFlat drop shadow. No `LetterCard` variation was
+>   added, no rebake, no change to `Letter`. `test_amplop_card_casts_a_shadow_
+>   and_the_confirm_letter_keeps_its_card_shadow` in `tests/test_level_select.gd`
+>   pins `Letter`'s variation at `Card`.
+
 **Goal:** Polish the shipped amplop coklat level select — de-crowd the fan, make
 "Buka Map Ini" zoom the chosen envelope up onto a large thumb-friendly confirm,
 add soft drop shadows — and write a week-length rebalance **proposal** for the

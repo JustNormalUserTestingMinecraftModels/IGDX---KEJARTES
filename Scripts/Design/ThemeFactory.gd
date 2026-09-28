@@ -2931,7 +2931,7 @@ static func _build_koperasi_chrome(theme: Theme, tokens: DesignTokens) -> void:
 
 	# -- KasPill / TotalPillAwake: the footer's resting cream pills, no
 	# gloss -- a plate, not a button. --
-	for pill_name in ["KasPill", "TotalPillAwake"]:
+	for pill_name: String in ["KasPill", "TotalPillAwake"]:
 		theme.add_type(pill_name)
 		theme.set_type_variation(pill_name, "PanelContainer")
 		var pill := LippedBox.make(
@@ -2979,7 +2979,7 @@ static func _build_koperasi_chrome(theme: Theme, tokens: DesignTokens) -> void:
 
 	# -- TotalNumberAwake / Asleep / Over: the pill's own balance number,
 	# one ink per state -- dark, disabled-grey and tomato-lip red. --
-	for spec in [
+	for spec: Array in [
 		["TotalNumberAwake", tokens.text_primary],
 		["TotalNumberAsleep", tokens.text_disabled],
 		["TotalNumberOver", tokens.accent_tomato_lip],

@@ -330,3 +330,22 @@ func test_the_three_badges_wiggle_out_of_sync() -> void:
 		"DailyBadge and InventoryBadge must not share a wiggle offset")
 	assert_ne(achievement.wiggle_delay_seconds, inventory.wiggle_delay_seconds,
 		"AchievementBadge and InventoryBadge must not share a wiggle offset")
+
+
+## A claim clears the daily badge: the Lobby re-asks the panel after the
+## claim, and refresh(false) must hide what refresh(true) showed.
+func test_daily_badge_clears_once_claimed() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	var badge := hud.get_node_or_null("%DailyBadge") as NotifBadge
+	assert_true(badge != null, "Lobby.tscn needs %DailyBadge under %DailyLogin")
+	if badge == null:
+		return
+	GameSettings.reduce_motion = true
+	hud.refresh(true)
+	hud.refresh(false)
+	assert_false(badge.visible, "a claimed gift leaves no badge")
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
+	assert_eq(src.count("hud.refresh(daily_reward.is_claimable())"), 2,
+		"the Lobby refreshes the badges on entry and again on the claim")

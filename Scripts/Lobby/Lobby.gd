@@ -649,12 +649,14 @@ func _setup_daily_login() -> void:
 		daily_reward.claimed.connect(_on_daily_reward_claimed)
 	if not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
 		daily_login_btn.pressed.connect(_on_daily_login_pressed)
-	hud.refresh(false)
+	hud.refresh(daily_reward.is_claimable())
 
-## The panel paid out: roll the wallet up from the old balance.
+## The panel paid out: roll the wallet up from the old balance, and
+## the gift badge clears.
 func _on_daily_reward_claimed(_amount: int, previous_money: int) -> void:
 	_update_money_display(previous_money)
 	RewardFeedback.play(&"coins_earned", money_label)
+	hud.refresh(daily_reward.is_claimable())
 
 ## Animates the money display via Juice.count_up instead of setting the
 ## label's text directly. Pass the pre-change amount as `from_amount` to

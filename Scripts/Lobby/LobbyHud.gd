@@ -11,8 +11,10 @@ extends Control
 ## roster-count chip. It stays inactive until the Lobby calls activate(),
 ## so the tutorial's spotlight never measures a moving target. Calls come
 ## down from Lobby.gd; nothing here reaches up. @tool so the lobby_hud
-## suite can drive it: _ready only wires signals ungated, and every
-## writer runs from the non-@tool Lobby or a suite's own instance.
+## suite can drive it: _ready wires its own signals ungated and the
+## autoload ones only in game, and every writer runs from the non-@tool
+## Lobby or a suite's own instance. It also keeps the three notification
+## badges (spec §5) in step with the gift, achievements and inventory.
 
 ## The chip's line: the approved roster's size.
 const ROSTER_CHIP_FORMAT := "%d murid"
@@ -73,13 +75,21 @@ var _hint_timer: Tween
 @onready var roster_chip: Control = %RosterChip
 @onready var roster_chip_label: Label = %RosterChipLabel
 @onready var hint: Label = %HudHint
+@onready var daily_badge: NotifBadge = %DailyBadge
+@onready var achievement_badge: NotifBadge = %AchievementBadge
+@onready var inventory_badge: NotifBadge = %InventoryBadge
 
 
-## Pure signal wiring, ungated so the suite can exercise it.
+## Its own signals ungated so the suite can exercise them; the autoload
+## ones are side effects, so only a running game connects them.
 func _ready() -> void:
 	chevron_grip.pressed.connect(_on_chevron_pressed)
 	raised_block.gui_input.connect(_on_book_gui_input)
 	shelf.gui_input.connect(_on_book_gui_input)
+	if Engine.is_editor_hint():
+		return
+	Achievements.state_changed.connect(_refresh_counts)
+	GameState.inventory_changed.connect(_refresh_counts)
 
 
 ## Turns the swipe on; the entrance (tiles drop in, staggered) plays only
@@ -118,16 +128,35 @@ func set_open(open: bool) -> void:
 		_show_hint()
 
 
-## The roster chip, hidden with an empty roster. Task 6 adds the badges.
-func refresh(_is_daily_claimable: bool) -> void:
+## The roster chip (hidden with an empty roster) and the three badges.
+## The Lobby passes whether today's gift is still unclaimed, because its
+## DailyLoginPanel is the one that knows.
+func refresh(is_daily_claimable: bool) -> void:
 	var count: int = GameState.approved_students.size()
 	roster_chip.visible = count > 0
 	roster_chip_label.text = ROSTER_CHIP_FORMAT % count
+	daily_badge.set_count(1 if is_daily_claimable else 0)
+	_refresh_counts()
 
 
 ## What the chatter must not treat as a tap on a face.
 func tap_blockers() -> Array[Control]:
 	return [raised_block, shelf, chevron_grip, icon_rail]
+
+
+## The badges that follow autoload state. The daily badge is left alone:
+## only the Lobby's refresh() knows whether the gift is claimable.
+func _refresh_counts() -> void:
+	achievement_badge.set_count(Achievements.total_unclaimed_count())
+	inventory_badge.set_count(_inventory_count())
+
+
+## Every item in the bag, counted by quantity rather than by kind.
+func _inventory_count() -> int:
+	var total: int = 0
+	for quantity: int in GameState.inventory.values():
+		total += quantity
+	return total
 
 
 ## A double tap anywhere reopens a hidden HUD. _input, like LobbyChatter,

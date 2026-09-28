@@ -8,6 +8,15 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Dapatkan Uang pays only in debug builds
+
+The owner decided the dev-mode payouts must not reach players. The panel is
+available only when `is_dev_mode` is set and `OS.is_debug_build()` is true
+(`DapatkanUang.is_available()`). An exported release keeps the Lobby's `+`
+disabled and `open()` refuses, so no free coins are handed out before a
+real ad SDK exists. The debug check is a var the `dapatkan_uang` suite can
+flip to stand in for a release.
+
 ## 2026-09-28 — The Lobby look, part 1: the shops
 
 `SunShafts` (`Scenes/Look/SunShafts.tscn`) is the Lobby's full-screen light

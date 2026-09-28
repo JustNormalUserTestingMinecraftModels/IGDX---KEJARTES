@@ -56,15 +56,15 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 
 ## Category key -> the icon that peeks from behind the note, shared by all
 ## five instances via this preloaded default. Akademis / SeniBudaya /
-## Olahraga use the real stat_*.png; Wirausaha / Istirahat use generated
-## placeholders. Still an @export so the visual team can override per
-## instance in the Inspector once real art lands.
+## Olahraga use the real stat_*.png; Wirausaha / Istirahat use their own
+## cat_*.svg category icons. Still an @export so the visual team can
+## override per instance in the Inspector.
 @export var category_icons: Dictionary = {
 	"Akademis": preload("res://Assets/Images/StudentCard/stat_akademis.png"),
 	"SeniBudaya": preload("res://Assets/Images/StudentCard/stat_senibudaya.png"),
 	"Olahraga": preload("res://Assets/Images/StudentCard/stat_olahraga.png"),
-	"Wirausaha": preload("res://Assets/Images/AturJadwal/icon_wirausaha_placeholder.png"),
-	"Istirahat": preload("res://Assets/Images/AturJadwal/icon_istirahat_placeholder.png"),
+	"Wirausaha": preload("res://Assets/Images/UI/Icons/cat_wirausaha.svg"),
+	"Istirahat": preload("res://Assets/Images/UI/Icons/cat_istirahat.svg"),
 }
 
 ## The peeking icon for a national-holiday note (a flag/calendar placeholder).

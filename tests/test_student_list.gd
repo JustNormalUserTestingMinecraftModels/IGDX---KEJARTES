@@ -583,33 +583,45 @@ func test_sticky_notes_hang_at_three_contained_pin_heights() -> void:
 
 ## Both small-icon maps -- the day notes' CATEGORY_ICONS and the trait
 ## chip's SPECIALTY_ICONS -- must use the team's authored art, not the
-## generated placeholder set, and must agree with each other so one
-## subject reads as one symbol across the card.
+## generated placeholder set, and must agree with each other on every
+## category that still shares one stat bar's symbol. Istirahat and
+## Wirausaha have no stat of their own: SPECIALTY_ICONS (Task 3, UI depth
+## pass Phase 3) wears their dedicated cat_*.svg category icons, while
+## CATEGORY_ICONS is untouched here and keeps its old art.
 func test_the_small_icons_are_the_teams_authored_art() -> void:
-	var maps := {
-		_SCRIPT_PATH: "CATEGORY_ICONS",
-		"res://Scripts/StudentList/RosterCard.gd": "SPECIALTY_ICONS",
-	}
-	var expected := {
+	var shared := {
 		"Akademis": "res://Assets/Images/StudentCard/stat_akademis.png",
 		"SeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
 		"Olahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
-		"Istirahat": "res://Assets/Images/StudentCard/stat_energy.png",
-		"Wirausaha": "res://Assets/Images/UI/uang.png",
 		"Libur": "res://Assets/Images/StudentCard/stat_mood.png",
 	}
+	var category_icons_expected := shared.duplicate()
+	category_icons_expected["Istirahat"] = "res://Assets/Images/StudentCard/stat_energy.png"
+	category_icons_expected["Wirausaha"] = "res://Assets/Images/UI/uang.png"
+
+	var specialty_icons_expected := shared.duplicate()
+	specialty_icons_expected["Istirahat"] = "res://Assets/Images/UI/Icons/cat_istirahat.svg"
+	specialty_icons_expected["Wirausaha"] = "res://Assets/Images/UI/Icons/cat_wirausaha.svg"
+
+	var maps := {
+		_SCRIPT_PATH: ["CATEGORY_ICONS", category_icons_expected],
+		"res://Scripts/StudentList/RosterCard.gd": ["SPECIALTY_ICONS", specialty_icons_expected],
+	}
 	for path in maps:
+		var const_name: String = maps[path][0]
+		var expected: Dictionary = maps[path][1]
 		var src := FileAccess.get_file_as_string(path)
 		assert_false(src.contains("UI/Placeholders/icon_akademis"),
-			"%s must not fall back to the placeholder glyphs" % maps[path])
+			"%s must not fall back to the placeholder glyphs" % const_name)
 		for cat in expected:
 			assert_true(src.contains('"%s": "%s"' % [cat, expected[cat]]),
-				"%s must map %s to the team's %s" % [maps[path], cat, expected[cat]])
+				"%s must map %s to the team's %s" % [const_name, cat, expected[cat]])
 	# And the art has to actually be there and load.
-	for cat in expected:
-		var p: String = expected[cat]
-		assert_true(ResourceLoader.exists(p), "missing team icon: " + p)
-		assert_true(load(p) is Texture2D, "not a Texture2D: " + p)
+	for expected in [category_icons_expected, specialty_icons_expected]:
+		for cat in expected:
+			var p: String = expected[cat]
+			assert_true(ResourceLoader.exists(p), "missing team icon: " + p)
+			assert_true(load(p) is Texture2D, "not a Texture2D: " + p)
 
 
 ## The tutorial's index-keyed logic (auto-advance, end-tutorial, per-step

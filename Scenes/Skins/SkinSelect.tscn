@@ -137,7 +137,7 @@ grow_vertical = 0
 theme_type_variation = &"SkinTray"
 
 [node name="Rules" type="TextureRect" parent="Tray" unique_id=305817264]
-texture_repeat = 1
+texture_repeat = 2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

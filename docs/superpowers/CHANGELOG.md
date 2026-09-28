@@ -44,6 +44,36 @@ disabled and `open()` refuses, so no free coins are handed out before a
 real ad SDK exists. The debug check is a var the `dapatkan_uang` suite can
 flip to stand in for a release.
 
+## 2026-09-28 — The Lobby look, part 2: the end of the grade
+
+TesNotice and StatCheck moved their backdrop into `World/Room` with the
+plain grade, the existing TEGANG tint, a cool dim `LightPool` and
+`SunShafts`, under a flat parallax (`Backdrop`, `Light`, `Tint`, `Shafts`,
+all overscanned); StatCheck's backdrop is now Full Rect (it had shipped as
+a fixed 1080x1920 rect). ExamProgress got the same `World/Room` treatment
+with a warm `LightPool` and `SunShafts` but no parallax, because it already
+pans its own backdrop; `ExamProgress.gd` finds it as `%Backdrop`. WinStage
+carries two light groups in its `Stage`, `LightPass` (warm pool + shafts)
+and `LightFail` (dim cool pool), chosen by `dress()`; both clip to the
+photo print, found while measuring — the pool spilled past the white frame
+onto the letterbox bars before the fix. The painting's backdrop takes the
+plain grade, the four students the cutout grade. EndCutscene and RunResult
+moved `WinStage` into `World/Room` too, both finding it as `%WinStage`;
+RunResult's exit fade now also fades its `Room` (a `CanvasLayer` ignores
+the root's modulate), through a named `EXIT_FADE_SECONDS` const (its
+bare-number count dropped 8→7). Neither verdict screen parallaxes:
+WinStage is a letterboxed, framed print, not a diorama.
+
+Bloom, measured the same way as the shops: none of the five screens
+crosses the bar — every one measured +0.0000 core bloom at every threshold
+tried (ExamProgress and TesNotice down to 0.5, StatCheck 0.5, EndCutscene
+0.7), so none places a `Glow`. The EndCutscene → RunResult hand-over stays
+invisible, measured live on the running screen: max diff 0.0143 outside
+the report UI (limit 0.02). The census now counts 41 graded plates, the
+exam backdrops, ExamProgress, and WinStage's painting and lineup having
+joined `test_look_layer`'s GRADED. Full suite on the merged branch: 166
+suites, 2584 tests.
+
 ## 2026-09-28 — The Lobby look, part 1: the shops
 
 `SunShafts` (`Scenes/Look/SunShafts.tscn`) is the Lobby's full-screen light

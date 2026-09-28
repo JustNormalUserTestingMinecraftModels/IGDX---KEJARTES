@@ -39,14 +39,17 @@ func test_has_the_backdrop_scrim_and_card() -> void:
 	assert_true(_screen.get_node_or_null("World/Room/Backdrop") != null, "Backdrop node")
 	assert_true(_screen.get_node_or_null("Scrim") != null, "Scrim node")
 	assert_true(_screen.get_node_or_null(
-		"MarginContainer/NoticeCard") != null, "NoticeCard node")
+		"Safe/Center/NoticeCard") != null, "NoticeCard node")
 
 
-func test_the_card_is_a_nine_patch_of_the_notice_art() -> void:
-	var card = _screen.get_node_or_null("MarginContainer/NoticeCard")
-	assert_true(card is NinePatchRect, "the card is a NinePatchRect")
-	assert_true(String(card.texture.resource_path).ends_with("notice.png"),
-		"the card uses notice.png")
+func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
+	var root := (load(_SCENE_PATH) as PackedScene).instantiate()
+	track(root)
+	var frame := root.get_node_or_null("Safe/Center/NoticeCard") as NotebookFrame
+	assert_true(frame != null, "the card is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "PENGUMUMAN")
+		assert_false(frame.show_close, "a forced step shows no close")
 
 
 ## Since 2026-09-12 the title is the team's "Ujian Nasional" logo art, not a
@@ -54,7 +57,7 @@ func test_the_card_is_a_nine_patch_of_the_notice_art() -> void:
 ## TextureRect left on EXPAND_KEEP_SIZE would make the art's 2652px native
 ## width the column's minimum and push the card off screen.
 func test_the_title_is_the_ujian_nasional_art() -> void:
-	var content = _screen.get_node("MarginContainer/NoticeCard/Content")
+	var content = _screen.get_node("Safe/Center/NoticeCard/Content")
 	assert_true(content.get_node_or_null("TitleLabel") == null,
 		"the text title was replaced by the logo art")
 	var art = content.get_node_or_null("TitleArt")
@@ -73,8 +76,8 @@ func test_the_title_is_the_ujian_nasional_art() -> void:
 		"the logo keeps its aspect rather than stretching to the column")
 	assert_true(art.custom_minimum_size.y > 0.0,
 		"the art reserves a height, or the VBox collapses it to nothing")
-	assert_eq(String(content.get_child(1).name), "TitleArt",
-		"the logo sits directly under the PENGUMUMAN kicker")
+	assert_eq(String(content.get_child(0).name), "TitleArt",
+		"the logo is the content's first line now that PENGUMUMAN lives on the frame's sticker")
 
 
 ## Kelas 7 and 8 sit the Ujian Sekolah; Kelas 9 sits the Ujian Nasional. The
@@ -126,7 +129,7 @@ func test_ready_applies_the_grade_title_art() -> void:
 
 func test_the_continue_button_exists_and_is_touch_sized() -> void:
 	var btn = _screen.get_node_or_null(
-		"MarginContainer/NoticeCard/Content/BtnLanjut")
+		"Safe/Center/NoticeCard/Content/BtnLanjut")
 	assert_true(btn is Button, "BtnLanjut is a Button")
 	assert_true(btn.custom_minimum_size.y >= 96.0,
 		"the button clears the touch-target minimum")

@@ -37,6 +37,10 @@ const POPUPS := {
 	# which a container would reset; it is anchored to the screen's centre.
 	"res://Scenes/LevelSelect/OpenAmplopConfirm.tscn": ["Letter", "dialog", "free"],
 	"res://Scenes/AturJadwal/AturJadwal.tscn": ["Peringatan/Safe/Center/Frame", "dialog", "safe"],
+	"res://Scenes/EndGame/TesNotice.tscn": ["Safe/Center/NoticeCard", "dialog", "safe"],
+	"res://Scenes/EndGame/StatCheck.tscn": ["Safe/Center/Frame", "dialog", "safe"],
+	# free: StudentCard and SchoolDay each place the panel themselves.
+	"res://Scenes/UI/TutorialPanel.tscn": ["Frame", "dialog", "free"],
 }
 
 ## scene -> the script that wires its frame's close, when that is the

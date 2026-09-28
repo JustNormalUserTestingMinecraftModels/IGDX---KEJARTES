@@ -38,18 +38,28 @@ func _make() -> TutorialPanel:
 func test_scene_exists_and_carries_its_nodes() -> void:
 	assert_true(ResourceLoader.exists(SCENE_PATH), "%s is missing" % SCENE_PATH)
 	var panel := _make()
-	for node_path in ["Margin/Layout/TitleLabel", "Margin/Layout/Separator1",
-			"Margin/Layout/BodyLabel", "Margin/Layout/Separator2",
-			"Margin/Layout/PromptLabel"]:
+	for node_path in ["Frame/Margin/Layout/TitleLabel", "Frame/Margin/Layout/Separator1",
+			"Frame/Margin/Layout/BodyLabel", "Frame/Margin/Layout/Separator2",
+			"Frame/Margin/Layout/PromptLabel"]:
 		assert_not_null(panel.get_node_or_null(node_path), "missing node: %s" % node_path)
+
+
+func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
+	var root := (load(SCENE_PATH) as PackedScene).instantiate()
+	track(root)
+	var frame := root.get_node_or_null("Frame") as NotebookFrame
+	assert_true(frame != null, "the card is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "TUTORIAL")
+		assert_false(frame.show_close, "a forced step shows no close")
 
 
 func test_show_step_fills_all_three_labels() -> void:
 	var panel := _make()
 	panel.show_step("Judul", "Isi penjelasan.", "Ketuk untuk lanjut")
-	assert_eq(panel.get_node("Margin/Layout/TitleLabel").text, "Judul")
-	assert_eq(panel.get_node("Margin/Layout/BodyLabel").text, "Isi penjelasan.")
-	assert_eq(panel.get_node("Margin/Layout/PromptLabel").text, "Ketuk untuk lanjut")
+	assert_eq(panel.get_node("Frame/Margin/Layout/TitleLabel").text, "Judul")
+	assert_eq(panel.get_node("Frame/Margin/Layout/BodyLabel").text, "Isi penjelasan.")
+	assert_eq(panel.get_node("Frame/Margin/Layout/PromptLabel").text, "Ketuk untuk lanjut")
 
 
 func test_layout_knobs_default_to_student_cards_shipped_numbers() -> void:
@@ -74,15 +84,15 @@ func test_overriding_layout_knobs_reaches_the_nodes() -> void:
 	panel.prompt_variation = &"CaptionLabel"
 	panel.prompt_success_tint = true
 
-	var margin := panel.get_node("Margin") as MarginContainer
+	var margin := panel.get_node("Frame/Margin") as MarginContainer
 	assert_eq(margin.get_theme_constant("margin_left"), 30)
 	assert_eq(margin.get_theme_constant("margin_top"), 30)
 	assert_eq(margin.get_theme_constant("margin_right"), 30)
 	assert_eq(margin.get_theme_constant("margin_bottom"), 30)
-	assert_eq((panel.get_node("Margin/Layout") as VBoxContainer).get_theme_constant("separation"), 20)
-	assert_eq((panel.get_node("Margin/Layout/TitleLabel") as Label).theme_type_variation, &"H2Label")
-	assert_eq((panel.get_node("Margin/Layout/BodyLabel") as Label).theme_type_variation, &"")
-	assert_eq((panel.get_node("Margin/Layout/PromptLabel") as Label).theme_type_variation, &"CaptionLabel")
+	assert_eq((panel.get_node("Frame/Margin/Layout") as VBoxContainer).get_theme_constant("separation"), 20)
+	assert_eq((panel.get_node("Frame/Margin/Layout/TitleLabel") as Label).theme_type_variation, &"H2Label")
+	assert_eq((panel.get_node("Frame/Margin/Layout/BodyLabel") as Label).theme_type_variation, &"")
+	assert_eq((panel.get_node("Frame/Margin/Layout/PromptLabel") as Label).theme_type_variation, &"CaptionLabel")
 
 
 func test_each_screen_still_sets_its_own_shipped_numbers() -> void:

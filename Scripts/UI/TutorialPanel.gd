@@ -1,15 +1,20 @@
 @tool
 class_name TutorialPanel
-extends PanelContainer
+extends MarginContainer
 
 ## The onboarding coach-mark: title, a separator, body text, another
-## separator, and a blinking prompt on the shared "Card" surface.
-## StudentCard's per-step tutorial and SchoolDay's end-of-week tutorial
-## both build this shape via show_step() -- their shipped numbers differ
-## in several places (see the exports below), so those numbers are knobs
-## instead of a single hardcoded look. SchoolDay's dimming Scrim overlay
-## is NOT part of this scene: it is the panel's parent in the real
-## hierarchy, not a sibling inside it, so it stays owned by the caller.
+## separator, and a blinking prompt on a NotebookFrame dialog (no tabs,
+## four rings, no well, no close -- the flow is forced, so there is no way
+## out but the prompt's own tap). StudentCard's per-step tutorial and
+## SchoolDay's end-of-week tutorial both build this shape via show_step()
+## -- their shipped numbers differ in several places (see the exports
+## below), so those numbers are knobs instead of a single hardcoded look.
+## Each caller places this MarginContainer itself (fit `free`); it wraps
+## a Frame child rather than a Frame of its own so its root stays a plain
+## Control the callers can position and scale directly. SchoolDay's
+## dimming Scrim overlay is NOT part of this scene: it is the panel's
+## parent in the real hierarchy, not a sibling inside it, so it stays
+## owned by the caller.
 
 ## Panel width as a fraction of the viewport width, before max_width clamps
 ## it. StudentCard ships 0.92; SchoolDay ships 0.85.
@@ -84,11 +89,11 @@ extends PanelContainer
 		if is_inside_tree():
 			_apply_prompt_tint()
 
-@onready var margin: MarginContainer = $Margin
-@onready var layout: VBoxContainer = $Margin/Layout
-@onready var title_label: Label = $Margin/Layout/TitleLabel
-@onready var body_label: Label = $Margin/Layout/BodyLabel
-@onready var prompt_label: Label = $Margin/Layout/PromptLabel
+@onready var margin: MarginContainer = $Frame/Margin
+@onready var layout: VBoxContainer = $Frame/Margin/Layout
+@onready var title_label: Label = $Frame/Margin/Layout/TitleLabel
+@onready var body_label: Label = $Frame/Margin/Layout/BodyLabel
+@onready var prompt_label: Label = $Frame/Margin/Layout/PromptLabel
 
 
 func _ready() -> void:

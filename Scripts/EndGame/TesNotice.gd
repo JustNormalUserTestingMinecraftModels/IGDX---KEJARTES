@@ -16,11 +16,11 @@ extends Control
 ## reading GameState, starting BGM, arming the auto-advance timer -- sits
 ## behind the Engine.is_editor_hint() guard in _ready().
 
-@onready var grade_label: Label = $MarginContainer/NoticeCard/Content/GradeLabel
-@onready var btn_lanjut: Button = $MarginContainer/NoticeCard/Content/BtnLanjut
-@onready var notice_card: NinePatchRect = $MarginContainer/NoticeCard
-@onready var title_art: TextureRect = $MarginContainer/NoticeCard/Content/TitleArt
-@onready var body_label: Label = $MarginContainer/NoticeCard/Content/BodyLabel
+@onready var grade_label: Label = $Safe/Center/NoticeCard/Content/GradeLabel
+@onready var btn_lanjut: Button = $Safe/Center/NoticeCard/Content/BtnLanjut
+@onready var notice_card: NotebookFrame = $Safe/Center/NoticeCard
+@onready var title_art: TextureRect = $Safe/Center/NoticeCard/Content/TitleArt
+@onready var body_label: Label = $Safe/Center/NoticeCard/Content/BodyLabel
 
 ## Seconds before the notice advances on its own. Zero disables the
 ## auto-advance and waits for the button.

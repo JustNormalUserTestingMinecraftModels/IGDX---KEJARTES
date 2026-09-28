@@ -1,40 +1,48 @@
 [gd_scene format=3 uid="uid://exobac6lqnug"]
 
 [ext_resource type="Script" uid="uid://cx4jdatm5v8i" path="res://Scripts/UI/TutorialPanel.gd" id="1_v0ojc"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 
-[node name="TutorialPanel" type="PanelContainer" unique_id=221373627]
+[node name="TutorialPanel" type="MarginContainer" unique_id=221373627]
 mouse_filter = 2
-theme_type_variation = &"Card"
 script = ExtResource("1_v0ojc")
 
-[node name="Margin" type="MarginContainer" parent="." unique_id=1626375456]
+[node name="Frame" parent="." instance=ExtResource("nb_frame")]
+unique_name_in_owner = true
+layout_mode = 2
+title_text = "TUTORIAL"
+ring_count = 4
+show_well = false
+show_close = false
+
+[node name="Margin" type="MarginContainer" parent="Frame" unique_id=1626375456]
 layout_mode = 2
 
-[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=1522478353]
+[node name="Layout" type="VBoxContainer" parent="Frame/Margin" unique_id=1522478353]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="TitleLabel" type="Label" parent="Margin/Layout" unique_id=1551616205]
+[node name="TitleLabel" type="Label" parent="Frame/Margin/Layout" unique_id=1551616205]
 layout_mode = 2
 theme_type_variation = &"H1Label"
 horizontal_alignment = 1
 
-[node name="Separator1" type="HSeparator" parent="Margin/Layout" unique_id=1730028936]
+[node name="Separator1" type="HSeparator" parent="Frame/Margin/Layout" unique_id=1730028936]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="BodyLabel" type="Label" parent="Margin/Layout" unique_id=189272566]
+[node name="BodyLabel" type="Label" parent="Frame/Margin/Layout" unique_id=189272566]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 theme_override_constants/line_spacing = 8
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Separator2" type="HSeparator" parent="Margin/Layout" unique_id=1274754858]
+[node name="Separator2" type="HSeparator" parent="Frame/Margin/Layout" unique_id=1274754858]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="PromptLabel" type="Label" parent="Margin/Layout" unique_id=1899479792]
+[node name="PromptLabel" type="Label" parent="Frame/Margin/Layout" unique_id=1899479792]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 horizontal_alignment = 1

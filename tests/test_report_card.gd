@@ -146,8 +146,9 @@ const _DESIGN_WIDTH := 1080.0
 ## first two letters ("POR MURID"): a copied rect put the title's ink under
 ## the button. This measures the drawn text, outline included, in the UI
 ## node's own space, so a wider font, a longer title or a bigger button fails
-## here rather than on a phone. Rescued from the amazing-kalam worktree; the
-## 2026-09-16 tall-phone pass fixed the bug itself.
+## here rather than on a phone. Rescued from the amazing-kalam worktree, it
+## caught the "R" still under the button on 2026-09-28: the button renders at
+## its 124 px theme minimum, not the 96 px its offsets then said.
 func test_title_ink_clears_the_back_button() -> void:
 	var host := Control.new()
 	Engine.get_main_loop().root.add_child(host)

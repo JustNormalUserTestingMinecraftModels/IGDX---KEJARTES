@@ -569,7 +569,8 @@ func test_report_card_at_the_design_size_is_unchanged() -> void:
 	# shrank to 96 px: the two used to overlap by 190 px, so "Rapor Murid"
 	# rendered with "Rap" hidden under the button. The button still covered
 	# the "R": its theme minimum width makes it 124 px, not 96, so it ends at
-	# x=166. Moved to 190 on 2026-09-28 (test_report_card measures the ink):
+	# x=166 (now authored so). Moved to 190 on 2026-09-28 (test_report_card
+	# measures the ink):
 	# 190 + 48 safe-area margin.
 	assert_eq(_authored_rect(rapor.get_node("%PilihMurid") as Control).position,
 		Vector2(238, 82), "PilihMurid")

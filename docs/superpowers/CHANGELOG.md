@@ -12,9 +12,11 @@ deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maint
 
 The Rapor screen's title still lost the stem of its "R" under the back
 button. The 2026-09-22 nudge placed it for a 96 px icon button, but the
-PrimaryButton theme's minimum width makes the button 124 px, ending at root
-x 166 (UI x 214 with the safe-area margin), while the title's text began at
-154. `PilihMurid` now starts at 190: its 12 px outline plus a 12 px gap.
+PrimaryButton theme's minimum width makes the button 124 px, ending at x 166
+in the `Safe/UI` node (214 on screen, past the 48 px safe-area margin), while
+the title's text began at 154. `PilihMurid` now starts at 190: its 12 px
+outline plus a 12 px gap. `BackButton`'s offsets now say the 124 px it
+renders at, so the scene no longer hides the width.
 `test_title_ink_clears_the_back_button` (report_card) measures the drawn
 ink, outline included, against the button's real rect, so a wider button,
 font or title fails there rather than on a phone. The test is rescued from

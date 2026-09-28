@@ -145,3 +145,76 @@ func test_the_fixed_icons_moved_with_their_art() -> void:
 		assert_eq(icon.get_parent(), rail, icon_name + " rides in the rail")
 		assert_eq(icon.texture_normal.resource_path, art[icon_name],
 			icon_name + "'s art is fixed (spec §1)")
+
+
+## Task 5: LobbyHud, the swipe-away component on %Hud. Under reduce_motion
+## set_open() lands at once, so none of these needs an await. Fails loudly
+## until the [editor] step attaches Scripts/Lobby/LobbyHud.gd to %Hud.
+func _hud() -> LobbyHud:
+	var hud := _lobby.get_node_or_null("%Hud") as LobbyHud
+	assert_true(hud != null, "Lobby.tscn's %Hud needs Scripts/Lobby/LobbyHud.gd")
+	return hud
+
+
+func test_the_hud_hides_to_its_peek_and_comes_back() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	GameSettings.reduce_motion = true
+	hud.activate(false)
+	var book := hud.get_node("%BookHud") as Control
+	var rail := hud.get_node("%IconRail") as Control
+	var glyph := hud.get_node("%ChevronGlyph") as Control
+	var open_y: float = book.position.y
+	var open_x: float = rail.position.x
+	hud.set_open(false)
+	assert_false(hud.is_open)
+	assert_eq(book.position.y, open_y + book.size.y - hud.peek_pixels,
+		"hidden leaves only the chevron's peek")
+	assert_eq(rail.position.x, open_x + hud.rail_slide_pixels,
+		"the rail leaves by the right edge with the book (Q5)")
+	assert_eq(glyph.rotation_degrees, LobbyHud.CHEVRON_HIDDEN_DEGREES,
+		"the chevron turns to show the state")
+	assert_true((hud.get_node("%HudHint") as Control).visible,
+		"a hide says how to come back")
+	hud.set_open(true)
+	assert_true(hud.is_open)
+	assert_eq(book.position.y, open_y, "open returns to the authored rest")
+	assert_eq(rail.position.x, open_x, "the rail returns with it")
+	assert_eq(glyph.rotation_degrees, 0.0)
+	assert_false((hud.get_node("%HudHint") as Control).visible,
+		"the hint leaves when the HUD is back")
+
+
+func test_the_hud_waits_for_the_tutorial() -> void:
+	var fresh := track(LobbyHud.new()) as LobbyHud
+	assert_false(fresh.is_active, "a HUD starts inactive")
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
+	assert_true(src.contains("hud.activate(true)"), "returning players get the entrance")
+	assert_true(src.contains("hud.activate(false)"), "the tutorial's end turns the swipe on")
+
+
+func test_the_roster_chip_counts_the_class() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	GameState.approved_students = [{"name": "Andi"}, {"name": "Citra"}]
+	hud.refresh(false)
+	assert_true((hud.get_node("%RosterChip") as Control).visible)
+	assert_eq((hud.get_node("%RosterChipLabel") as Label).text,
+		LobbyHud.ROSTER_CHIP_FORMAT % 2)
+	GameState.approved_students = []
+	hud.refresh(false)
+	assert_false((hud.get_node("%RosterChip") as Control).visible,
+		"no chip before a roster exists")
+
+
+## The chatter ignores taps on the whole book and rail, not a list of
+## buttons Lobby.gd has to keep in step with the scene.
+func test_the_hud_hands_the_chatter_its_blockers() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	var blockers: Array[Control] = hud.tap_blockers()
+	for part: String in ["RaisedBlock", "Shelf", "ChevronGrip", "IconRail"]:
+		assert_true(blockers.has(hud.get_node("%" + part)), part + " blocks face taps")

@@ -70,6 +70,7 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 @onready var daily_login_btn = %DailyLogin
 @onready var daily_reward: DailyLoginPanel = %DailyReward
 @onready var progress_header: LobbyProgressHeader = %ProgressHeader
+@onready var hud: LobbyHud = %Hud
 
 @onready var portraits_back: Control = %StudentPortraitsContainer_Back
 @onready var portraits_front: Control = %StudentPortraitsContainer_Front
@@ -143,12 +144,8 @@ func _ready() -> void:
 
 	if chatter:
 		chatter.can_speak = _chatter_allowed
-		# The HUD sits over the front-row faces; its taps are not the
-		# students'.
-		chatter.tap_blockers = [student_button, jadwal_button, koperasi_button,
-			report_student_button, inventory_button, settings_button,
-			achievement_button, skin_switch_button, daily_login_btn,
-			get_node("%DisplayUang")]
+		# The HUD sits over the front-row faces; its taps are not theirs.
+		chatter.tap_blockers = [progress_header, get_node("%DisplayUang")] 			+ hud.tap_blockers()
 	_setup_students()
 	_start_idle_bob(portraits_back, 0.0)
 	_start_idle_bob(portraits_front, idle_bob_period * FRONT_ROW_BOB_PHASE)
@@ -196,6 +193,7 @@ func _ready() -> void:
 
 		_create_blur_overlay()
 		_setup_daily_login()
+		hud.activate(true)
 		return
 
 	if GameState.returned_from_student_card:
@@ -651,6 +649,7 @@ func _setup_daily_login() -> void:
 		daily_reward.claimed.connect(_on_daily_reward_claimed)
 	if not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
 		daily_login_btn.pressed.connect(_on_daily_login_pressed)
+	hud.refresh(false)
 
 ## The panel paid out: roll the wallet up from the old balance.
 func _on_daily_reward_claimed(_amount: int, previous_money: int) -> void:
@@ -955,8 +954,9 @@ func _clear_highlight():
 	if _tutorial_arrow:
 		_tutorial_arrow.hide()
 
-func _end_tutorial():
+func _end_tutorial() -> void:
 	GameState.lobby_tutorial_completed = true
+	hud.activate(false)
 	tutorial_active = false
 	if _blink_tween and _blink_tween.is_valid():
 		_blink_tween.kill()

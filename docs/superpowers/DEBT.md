@@ -316,6 +316,10 @@ kit not yet extended to Inventory or Achievements; and the Debug overlay's
 Look page stays Lobby-only because `DebugManager.gd` is at its clean-code
 size ceiling (1,880 lines, `LARGE_SCRIPTS`). Kalkulator has no backdrop of
 its own (it draws over SchoolDay's), so it takes no light and no bloom.
+Each `ScreenGlow` costs a full-screen copy and its mip chain every frame,
+on by default with Efek Suasana (the Efek Visual layer keeps the same
+shader opt-in for an unknown performance floor); nobody has measured frame
+time on a low-end phone yet, the timed minigames first.
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories

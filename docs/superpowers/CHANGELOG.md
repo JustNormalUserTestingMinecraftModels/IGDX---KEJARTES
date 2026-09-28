@@ -25,7 +25,9 @@ Thresholds come from a full-size sweep (0.3-0.9) with each screen rendered
 bloom-off and -on: the highest that visibly blooms the light while the
 backdrop's median pixel moves by under +0.01. Pale wood (the four
 Akademis boards, BuatBatik) fogs below 0.8; MainBola, Badminton and
-LombaMenari take 0.75; the shops, Koperasi and WinStage 0.7; ExamProgress
+LombaMenari take 0.75; the shops and WinStage 0.7; Koperasi 0.8, since its
+cream wall shows above its fixed 1920px Stage on a tall phone and a lower
+threshold leaves a step at the Stage's edge; ExamProgress
 0.5 at intensity 0.6; TesNotice and StatCheck, under their scrim, 0.4 at
 0.8 with a cool tint. `bloom.gdshader` now multiplies by its input `COLOR`,
 so the look layer's bloom fades with its modulate too.

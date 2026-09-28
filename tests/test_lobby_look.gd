@@ -70,7 +70,7 @@ const BLOOM := {
 const SCREEN_BLOOM := {
 	SHOP_HUB: ["World/Room/Bloom", 0.7],
 	COSMETIC_SHOP: ["World/Room/Bloom", 0.7],
-	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Bloom", 0.7],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Bloom", 0.8],
 	TES_NOTICE: ["World/Room/Bloom", 0.4],
 	STAT_CHECK: ["World/Room/Bloom", 0.4],
 	EXAM_PROGRESS: ["World/Room/Bloom", 0.5],

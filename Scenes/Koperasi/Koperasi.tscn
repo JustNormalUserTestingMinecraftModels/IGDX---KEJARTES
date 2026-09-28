@@ -162,6 +162,7 @@ intensity = 0.1
 intensity = 0.15
 
 [node name="Bloom" parent="Stage" instance=ExtResource("look_bloom")]
+threshold = 0.8
 
 [node name="Barang1" type="TextureButton" parent="Stage" unique_id=2025160246]
 layout_mode = 0

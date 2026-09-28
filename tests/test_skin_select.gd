@@ -49,14 +49,69 @@ func _pin_carousel_width(s: SkinSelect, width: float) -> void:
 	carousel.size = Vector2(width, carousel.size.y)
 
 
-## All six characters, not the roster: equipped_skins is keyed by NAME, so a
-## skin follows a character across the grade change that clears the roster.
-func test_rail_holds_all_six_characters_in_catalogue_order() -> void:
+## open() with no names -- the fallback, which is what _new_screen() drives
+## every other test in this suite through -- shows all six characters, not
+## just the roster: equipped_skins is keyed by NAME, so a skin follows a
+## character across the grade change that clears the roster. This is the
+## empty-roster safety net, not the everyday path (Task 1, spec §1).
+func test_rail_falls_back_to_all_six_characters_when_open_is_given_no_names() -> void:
 	var s := _new_screen()
+	assert_eq(s.visible_names(), StudentSkins.NAMES)
 	var rail := s.get_node("%Rail")
 	assert_eq(rail.get_child_count(), StudentSkins.NAMES.size())
 	for i in StudentSkins.NAMES.size():
-		assert_eq((rail.get_child(i) as StudentTile).student_name, StudentSkins.NAMES[i])
+		var tile := rail.get_child(i) as StudentTile
+		assert_eq(tile.student_name, StudentSkins.NAMES[i])
+		assert_true(tile.visible)
+
+
+## The everyday path: the rail shows only the names Lobby hands down, in
+## roster order, and hides the rest of the six authored tiles rather than
+## freeing them.
+func test_open_with_names_shows_only_those_tiles_in_order() -> void:
+	var s := _new_screen()
+	var two: Array[String] = [StudentSkins.NAMES[0], StudentSkins.NAMES[1]]
+	s.open(two)
+	assert_eq(s.visible_names(), two)
+	assert_eq(_visible_tile_names(s), two)
+	assert_eq(s.current_student(), two[0])
+
+
+func test_open_with_three_or_four_names_shows_that_many_tiles() -> void:
+	var s := _new_screen()
+	var three: Array[String] = StudentSkins.NAMES.slice(0, 3)
+	s.open(three)
+	assert_eq(_visible_tile_names(s).size(), 3)
+	var four: Array[String] = StudentSkins.NAMES.slice(0, 4)
+	s.open(four)
+	assert_eq(_visible_tile_names(s).size(), 4)
+
+
+func test_select_student_is_scoped_to_the_open_names() -> void:
+	var s := _new_screen()
+	var two: Array[String] = [StudentSkins.NAMES[0], StudentSkins.NAMES[1]]
+	s.open(two)
+	s.select_student(1)
+	assert_eq(s.current_student(), two[1])
+	s.select_student(2)
+	assert_eq(s.current_student(), two[1], "index 2 is out of range for a 2-name rail")
+
+
+func test_roster_names_reads_name_skips_non_dicts_and_blanks() -> void:
+	var students: Array = [{"name": "A"}, {"name": ""}, 5, {"name": "B"}]
+	var names: Array[String] = SkinSelect.roster_names(students)
+	assert_eq(names, ["A", "B"] as Array[String])
+
+
+## The visible rail tiles' student names, in rail order.
+func _visible_tile_names(s: SkinSelect) -> Array[String]:
+	var rail := s.get_node("%Rail")
+	var names: Array[String] = []
+	for i in rail.get_child_count():
+		var tile := rail.get_child(i) as StudentTile
+		if tile != null and tile.visible:
+			names.append(tile.student_name)
+	return names
 
 
 func test_open_takes_no_argument_and_first_student_is_open() -> void:

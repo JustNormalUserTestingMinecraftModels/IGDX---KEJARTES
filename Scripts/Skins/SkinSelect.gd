@@ -5,8 +5,8 @@ extends Control
 ## The Lobby's skin picker (SkinSelect.tscn; mockup skinselection_mockup.png,
 ## spec docs/superpowers/specs/2026-09-22-skin-select-screen-design.md).
 ## A full-screen surface over a blurred Lobby: the open character's splash in
-## a horizontal carousel of their skins, a rail of all six characters
-## underneath, and one TERAPKAN button.
+## a horizontal carousel of their skins, a rail of the current roster's
+## characters underneath, and one TERAPKAN button.
 ##
 ## It stays an OVERLAY the Lobby instantiates, not a scene of its own, even
 ## though the brief asked for a scene. A Transition.change_scene cannot blur
@@ -73,7 +73,11 @@ const CARD_W := 1080.0
 @onready var _back_button: TextureButton = %BackButton
 @onready var _terapkan: Button = %Terapkan
 
-## Index into StudentSkins.NAMES -- which character the rail has open.
+## The characters on the rail, in rail order: whoever open() was given, or
+## StudentSkins.NAMES if it fell back. Tiles beyond _names.size() stay
+## authored in the scene but hidden -- the rail is never built at runtime.
+var _names: Array[String] = []
+## Index into _names -- which character the rail has open.
 var _student_index: int = 0
 ## Index into the open character's skins_for() list -- the centred card.
 var _skin_index: int = 0
@@ -121,16 +125,24 @@ func _ready() -> void:
 		_carousel.resized.connect(_on_carousel_resized)
 
 
-## Fills the rail from StudentSkins.NAMES, opens the first character and
-## fades in. Takes no argument: this screen never reads the roster, because
-## equipped_skins is keyed by NAME and a skin follows a character across the
-## grade change that clears the roster.
-func open() -> void:
+## Fills the rail from `names` -- the current roster, in Lobby's call --
+## opens the first character and fades in. `names` empty (the default, or an
+## empty roster reachable via debug / before any approval) falls back to
+## every StudentSkins.NAMES so the screen is never blank; that is a safety
+## net, not a way to dress a character outside the class. Tiles beyond
+## _names.size() are hidden, same idea as _refresh_dots hiding extra dots.
+## Persistence is unchanged: equipped_skins stays keyed by NAME, so a
+## character not on this rail keeps whatever they last wore.
+func open(names: Array[String] = []) -> void:
+	_names = names.duplicate() if not names.is_empty() else StudentSkins.NAMES.duplicate()
 	_pending.clear()
-	for i in StudentSkins.NAMES.size():
+	for i in _rail.get_child_count():
 		var tile := _rail.get_child(i) as StudentTile
-		if tile != null:
-			tile.show_student(StudentSkins.NAMES[i], pending_id(StudentSkins.NAMES[i]))
+		if tile == null:
+			continue
+		tile.visible = i < _names.size()
+		if i < _names.size():
+			tile.show_student(_names[i], pending_id(_names[i]))
 	select_student(0)
 	if Engine.is_editor_hint() or not is_inside_tree():
 		return
@@ -140,11 +152,11 @@ func open() -> void:
 	AudioDirector.play_sfx(&"tap")
 
 
-## Cascades the six student tiles in behind the screen's own fade.
+## Cascades the rail's visible tiles in behind the screen's own fade.
 ##
 ## The screen already faded in as one flat sheet, which told the eye nothing
-## about what was on it. Staggering the rail makes the six characters arrive
-## as six things rather than as one rectangle -- a card rail is exactly what
+## about what was on it. Staggering the rail makes the roster arrive as
+## several things rather than as one rectangle -- a card rail is exactly what
 ## Juice.stagger_in exists for, and it is token-driven, so its timing follows
 ## design_tokens.tres like every other motion in the game.
 ##
@@ -154,7 +166,7 @@ func open() -> void:
 ## entrance there would quietly un-dim items the player cannot afford.
 func play_rail_entrance() -> void:
 	var tiles: Array = []
-	for i in StudentSkins.NAMES.size():
+	for i in _names.size():
 		var tile := _rail.get_child(i) as StudentTile
 		if tile != null:
 			tiles.append(tile)
@@ -163,7 +175,13 @@ func play_rail_entrance() -> void:
 
 ## The character the rail currently has open.
 func current_student() -> String:
-	return StudentSkins.NAMES[_student_index]
+	return _names[_student_index]
+
+
+## The names currently on the rail -- the roster open() was given, or all of
+## StudentSkins.NAMES if it fell back.
+func visible_names() -> Array[String]:
+	return _names.duplicate()
 
 
 ## The skin `who` will be wearing after TERAPKAN -- their pending choice if
@@ -176,10 +194,10 @@ func pending_id(who: String) -> String:
 ## choice. Jumps the carousel rather than animating -- every card under it
 ## has just been replaced, so a slide would animate the wrong art.
 func select_student(index: int) -> void:
-	if index < 0 or index >= StudentSkins.NAMES.size():
+	if index < 0 or index >= _names.size():
 		return
 	_student_index = index
-	for i in StudentSkins.NAMES.size():
+	for i in _names.size():
 		var tile := _rail.get_child(i) as StudentTile
 		if tile != null:
 			tile.set_open(i == index)
@@ -218,10 +236,10 @@ func apply_without_closing() -> void:
 	for who in _pending:
 		GameState.equip_skin(str(who), str(_pending[who]))
 	_pending.clear()
-	for i in StudentSkins.NAMES.size():
+	for i in _names.size():
 		var tile := _rail.get_child(i) as StudentTile
 		if tile != null:
-			tile.show_student(StudentSkins.NAMES[i], pending_id(StudentSkins.NAMES[i]))
+			tile.show_student(_names[i], pending_id(_names[i]))
 	_refresh_tray()
 
 
@@ -244,6 +262,22 @@ func close() -> void:
 ## popup's skin column is gone -- so this is just close().
 func go_back() -> void:
 	close()
+
+
+## Each entry's "name", in roster order, skipping anything that is not a
+## Dictionary and any blank name. A pure function -- SkinSelect never reads
+## GameState.approved_students itself -- so Lobby.gd calls down with the
+## roster and tests can drive this with plain arrays.
+static func roster_names(students: Array) -> Array[String]:
+	var names: Array[String] = []
+	for entry in students:
+		if not entry is Dictionary:
+			continue
+		var student_name: String = str((entry as Dictionary).get("name", ""))
+		if student_name == "":
+			continue
+		names.append(student_name)
+	return names
 
 
 ## The player-facing name of a skin id. One place to hang real names when

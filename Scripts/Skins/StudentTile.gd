@@ -8,9 +8,10 @@ extends Button
 ## a character's face, cropped out of the splash of whichever skin they are
 ## pending, and marks whether the rail has that character open.
 ##
-## All six characters get a tile, not just the approved roster:
-## GameState.equipped_skins is keyed by NAME, not roster id, so a skin
-## follows a character across the grade change that clears the roster.
+## Six tiles are authored in the rail, but SkinSelect shows only the current
+## roster: it hides the rest rather than freeing them, since the rail is
+## never built at runtime. GameState.equipped_skins is still keyed by NAME,
+## not roster id, so a character's skin survives while their tile is hidden.
 ##
 ## The crop is the existing SkinFrame with its own border switched off --
 ## the box here is this Button's stylebox, and two borders on the same 150px

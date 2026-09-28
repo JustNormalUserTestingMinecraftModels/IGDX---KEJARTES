@@ -70,15 +70,16 @@ func test_lobby_has_the_skin_switch_button() -> void:
 	assert_eq(btn.custom_minimum_size, Vector2(96, 96))
 
 
-## SkinSelect.open() takes no argument since 2026-09-22: it reads
-## StudentSkins.NAMES, not GameState.approved_students, because
-## equipped_skins is keyed by NAME and all six characters are dressable
-## whether or not they are in this run's roster.
+## SkinSelect.open() takes the roster's names since 2026-09-29: the rail
+## shows only the current class, not all six characters. Lobby calls down
+## with the pure SkinSelect.roster_names(), rather than handing
+## GameState.approved_students straight through, so SkinSelect stays
+## testable with plain arrays and never reads GameState itself.
+## equipped_skins is still keyed by NAME, so persistence is unchanged.
 func test_lobby_opens_skin_select_and_reseats_on_close() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
 	assert_true(src.contains("skin_select_scene.instantiate() as SkinSelect"))
-	assert_true(src.contains("screen.open()"))
-	assert_false(src.contains(".open(GameState.approved_students)"),
-		"the roster is no longer passed in")
+	assert_true(src.contains("SkinSelect.roster_names(GameState.approved_students)"))
+	assert_true(src.contains("screen.open(names)"))
 	assert_true(src.contains(".closed.connect(_setup_students)"))
 	assert_true(src.contains("skin_switch_button.pressed.connect(_on_skin_switch_pressed)"))

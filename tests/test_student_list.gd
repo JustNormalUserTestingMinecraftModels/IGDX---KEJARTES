@@ -295,6 +295,111 @@ func test_roster_avatar_uses_ghost_button_and_clears_touch_minimum() -> void:
 		"avatar must clear the touch minimum, got %s" % m)
 
 
+## Grow/lift/ring read for the current avatar (2026-09-29 avatar bounce
+## pass). Both this and the inactive test below run entirely in the
+## editor, where RosterAvatar's own is_editor_hint() guard makes every
+## is_current change land instantly on its target values -- exactly what
+## a real bounce settles on, just without waiting out the Tween.
+func test_roster_avatar_current_state_grows_lifts_and_rings() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	var a: RosterAvatar = packed.instantiate()
+	Engine.get_main_loop().root.add_child(a)
+	track(a)
+	a.is_current = true
+	var tokens := DesignTokens.load_default()
+	assert_eq(a.scale, Vector2(RosterAvatar.ACTIVE_SCALE, RosterAvatar.ACTIVE_SCALE),
+		"the current avatar grows to ACTIVE_SCALE")
+	assert_eq(a.position.y, -RosterAvatar.ACTIVE_LIFT_PX, "and lifts ACTIVE_LIFT_PX up")
+	assert_eq(a.modulate.a, 1.0, "and reads at full opacity")
+	assert_eq(a.get_node("Highlight").modulate.a, 1.0, "the sunflower glow ring shows")
+	assert_eq(a.get_node("Highlight").self_modulate, tokens.accent_sunflower, "tinted accent_sunflower")
+	assert_eq(a.get_node("Border").modulate.a, 1.0, "the brand border shows")
+	assert_eq(a.get_node("Border").self_modulate, tokens.brand_primary, "tinted brand_primary")
+
+
+func test_roster_avatar_inactive_state_shrinks_and_dims() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	var a: RosterAvatar = packed.instantiate()
+	Engine.get_main_loop().root.add_child(a)
+	track(a)
+	a.is_current = true
+	a.is_current = false
+	assert_eq(a.scale, Vector2(RosterAvatar.INACTIVE_SCALE, RosterAvatar.INACTIVE_SCALE),
+		"an inactive avatar shrinks to INACTIVE_SCALE")
+	assert_eq(a.position.y, 0.0, "and drops back to rest")
+	assert_eq(a.modulate.a, a.inactive_alpha, "and dims to inactive_alpha")
+	assert_eq(a.get_node("Highlight").modulate.a, 0.0, "the glow ring hides")
+	assert_eq(a.get_node("Border").modulate.a, 0.0, "the brand border hides")
+
+
+## The small state is still a legal tap target: scale is a render/input
+## transform that never touches get_combined_minimum_size(), which is
+## what the touch-target suite actually measures.
+func test_roster_avatar_clears_touch_minimum_at_the_small_scale() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	var a: RosterAvatar = packed.instantiate()
+	Engine.get_main_loop().root.add_child(a)
+	track(a)
+	a.is_current = false
+	var tokens := DesignTokens.load_default()
+	var m := a.get_combined_minimum_size()
+	assert_true(minf(m.x, m.y) >= float(tokens.touch_target_min),
+		"shrinking to INACTIVE_SCALE must not shrink the touch target, got %s" % m)
+
+
+## Source scan: the bounce cannot be watched running live in the editor
+## (RosterCard's established finding for its own overshoots), so this
+## pins the two guards and the cleanup by name instead.
+func test_roster_avatar_bounce_is_guarded_and_cleaned_up() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentList/RosterAvatar.gd")
+	var applying := src.get_slice("func _apply_current_state(animate: bool) -> void:", 1)
+	assert_true(applying.contains("Engine.is_editor_hint()") and applying.contains("GameSettings.reduce_motion"),
+		"the bounce must skip both the editor and reduce_motion")
+	var exiting := src.get_slice("func _exit_tree() -> void:", 1).get_slice("func _apply_schedule_tint() -> void:", 0)
+	assert_true(exiting.contains("_bounce_tween.kill()"), "_exit_tree must kill the bounce tween")
+
+
+## Nav arrow idle hint (2026-09-29 avatar bounce pass): a ±4px nudge while
+## there is more than one card to swipe between. StudentList drives
+## `enabled`; the node holds no opinion of its own about why.
+func _nudge_loop(path: String) -> NudgeLoop:
+	var nudge := _list.get_node_or_null(path) as NudgeLoop
+	assert_true(nudge != null, "missing NudgeLoop at %s" % path)
+	return nudge
+
+
+func test_both_nav_arrows_carry_a_nudge_loop() -> void:
+	var left := _nudge_loop("%LeftArrow/NudgeLoop")
+	var right := _nudge_loop("%RightArrow/NudgeLoop")
+	if left == null or right == null:
+		return
+	assert_false(left.enabled, "authored default is off; StudentList turns it on for >1 card")
+	assert_false(right.enabled, "authored default is off; StudentList turns it on for >1 card")
+
+
+func test_nudge_loop_never_runs_in_the_editor_even_when_enabled() -> void:
+	var parent := Control.new()
+	Engine.get_main_loop().root.add_child(parent)
+	track(parent)
+	var nudge := NudgeLoop.new()
+	parent.add_child(nudge)
+	track(nudge)
+	nudge.enabled = true
+	assert_false(nudge.is_running(), "the editor must never see a spinning nudge Tween")
+	assert_eq(parent.position.x, 0.0, "and the arrow must not have moved")
+
+
+## Source scan mirrors the RosterAvatar bounce test above: the loop
+## cannot be watched running live in the editor either.
+func test_nudge_loop_is_guarded_and_cleaned_up() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/NudgeLoop.gd")
+	var applying := src.get_slice("func _apply_enabled() -> void:", 1).get_slice("func _start() -> void:", 0)
+	assert_true(applying.contains("Engine.is_editor_hint()") and applying.contains("GameSettings.reduce_motion"),
+		"starting the loop must skip both the editor and reduce_motion")
+	var exiting := src.get_slice("func _exit_tree() -> void:", 1).get_slice("func is_running() -> bool:", 0)
+	assert_true(exiting.contains("_stop()"), "_exit_tree must stop the loop")
+
+
 ## The four cards are one template instanced four times now. The instance
 ## NAMES stay Murid1..4 because test_scene_instantiates resolves
 ## CardContainer/Murid%d and the tutorial's first step targets

@@ -29,6 +29,7 @@
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="Script" uid="uid://c47bgh5lvg6qi" path="res://Scripts/Lobby/DailyLoginPanel.gd" id="39_2isbc"]
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/lobby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
@@ -1056,6 +1057,7 @@ text = "KELAS"
 layout_mode = 1
 
 [node name="DailyReward" type="TextureRect" parent="." unique_id=889996430]
+unique_name_in_owner = true
 visible = false
 layout_mode = 1
 anchors_preset = -1
@@ -1070,6 +1072,7 @@ offset_bottom = 16.0
 grow_vertical = 0
 texture = ExtResource("16_dyk4g")
 expand_mode = 1
+script = ExtResource("39_2isbc")
 
 [node name="Label" type="Label" parent="DailyReward" unique_id=1823371215]
 layout_mode = 0
@@ -1082,6 +1085,7 @@ text = "Daily Login"
 horizontal_alignment = 1
 
 [node name="ButtonClaim" type="Button" parent="DailyReward" unique_id=1114280413]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 0
 offset_left = 330.0
@@ -1092,6 +1096,7 @@ theme_type_variation = &"GhostButton"
 text = "KLAIM"
 
 [node name="RewardCoin" type="TextureRect" parent="DailyReward" unique_id=956875139]
+unique_name_in_owner = true
 layout_mode = 0
 offset_left = 640.0
 offset_top = 352.0
@@ -1103,6 +1108,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="RewardAmount" type="Label" parent="DailyReward" unique_id=955040772]
+unique_name_in_owner = true
 layout_mode = 0
 offset_left = 708.0
 offset_top = 350.0

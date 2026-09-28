@@ -80,7 +80,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/Koperasi/Koperasi.gd": 11,
 	"res://Scripts/Koperasi/KoperasiStage.gd": 31,
 	"res://Scripts/LevelSelect/AmplopCard.gd": 1,
-	"res://Scripts/Lobby/Lobby.gd": 128,
+	"res://Scripts/Lobby/Lobby.gd": 112,
 	"res://Scripts/Lobby/StudentChatterPicker.gd": 2,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 78,
 	"res://Scripts/Minigames/Akademis/Password.gd": 10,
@@ -153,7 +153,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Koperasi/ShelfItem.gd": 5,
 	"res://Scripts/Koperasi/TraySlot.gd": 2,
 	"res://Scripts/LevelSelect/LevelSelect.gd": 6,
-	"res://Scripts/Lobby/Lobby.gd": 58,
+	"res://Scripts/Lobby/Lobby.gd": 44,
 	"res://Scripts/Lobby/LobbyChatter.gd": 2,
 	"res://Scripts/Lobby/StudentChatBubble.gd": 2,
 	"res://Scripts/Lobby/StudentChatterCatalog.gd": 2,
@@ -240,7 +240,6 @@ const DUPLICATE_GROUPS: Array[String] = [
 const LARGE_SCRIPTS: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 1626,
 	"res://Scripts/Debug/DebugManager.gd": 1880,
-	"res://Scripts/Lobby/Lobby.gd": 1073,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1638,
 	"res://Scripts/StudentCard/StudentCard.gd": 1451,
 }

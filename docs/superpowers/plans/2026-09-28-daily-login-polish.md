@@ -908,6 +908,12 @@ Commit: `feat(lobby): idle claim invite and a "besok" reward teaser`.
 
 ## Questions for the human (answer before the task that needs it)
 
+**Answered 2026-09-28 — every proposal below stands:** Q1 the clipping is the
+larger amounts overflowing the 120px box (fit them in a text-sized row;
+KLAIM stays put); Q2 above the panel, one flame that grows with the streak;
+Q3 panel centre, shown only during the reveal (the idle invite bounces the
+reward row); Q4 ×1.5 coins and stars plus the full three-firework volley.
+
 - **Q1 (Task 4):** Confirm what clips. The authored rects do not overlap;
   the plan assumes it is "400G" overflowing the 120px amount box.
 - **Q2 (Task 5):** Placement of the greeting and streak. The plan puts them

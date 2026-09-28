@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://bfy1n2cpht386"]
+
+[ext_resource type="Script" uid="uid://cuoe5ctkfarjp" path="res://Scripts/Minigames/UI/MinigameHeader.gd" id="1_ord25"]
+[ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="2_nm1gy"]
+
+[node name="MinigameHeader" type="Control" unique_id=615373285]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 96.0
+mouse_filter = 2
+script = ExtResource("1_ord25")
+
+[node name="Row" type="HBoxContainer" parent="." unique_id=576564000]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="PauseButton" type="Button" parent="Row" unique_id=388898880]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+theme_type_variation = &"MinigameHudIconButton"
+icon_alignment = 1
+expand_icon = true
+
+[node name="Center" type="CenterContainer" parent="Row" unique_id=2133430264]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="ScoreHud" parent="Row/Center" unique_id=584836618 instance=ExtResource("2_nm1gy")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TimerButton" type="Button" parent="Row" unique_id=1827989972]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+theme_type_variation = &"MinigameHudIconButton"
+icon_alignment = 1
+expand_icon = true

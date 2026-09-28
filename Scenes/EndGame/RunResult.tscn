@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/AmbientParticles.tscn" id="amb_particles"]
 [ext_resource type="Material" path="res://Scripts/Shaders/glint_material.tres" id="amb_glint"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rclo1"]
 shader = ExtResource("4_hifyx")
@@ -33,10 +34,26 @@ rank_badge_b = ExtResource("6_imurd")
 rank_badge_c = ExtResource("7_sjw3o")
 rank_badge_d = ExtResource("8_1u8qo")
 
-[node name="WinStage" parent="." unique_id=702781057 instance=ExtResource("7_54rll")]
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Room" type="Control" parent="World"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="WinStage" parent="World/Room" unique_id=702781057 instance=ExtResource("7_54rll")]
+unique_name_in_owner = true
 layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Glow" parent="." instance=ExtResource("look_glow")]
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=1247280518]
 material = SubResource("ShaderMaterial_rclo1")

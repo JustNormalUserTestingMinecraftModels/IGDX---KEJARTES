@@ -72,7 +72,8 @@ const RUN_RESULT_SCENE := "res://Scenes/EndGame/RunResult.tscn"
 
 ## The painting, the letterbox bars and the posed roster -- the scene
 ## RunResult instances too. Drawn first, so BlurLayer samples all of it.
-@onready var win_stage: WinStage = $WinStage
+## It lives in World/Room, on layer -1, so AmbientGlow blooms it and not the badge.
+@onready var win_stage: WinStage = %WinStage
 @onready var badge: TextureRect = $Badge
 @onready var btn_next: Button = $BtnNext
 @onready var white_fade: ColorRect = $WhiteFade

@@ -268,3 +268,7 @@ these win.
     through a window above the view and was accepted by eye on all three shop
     screens. Later passes place the origin above the frame over the pool, not
     on it.
+12. **The win-stage lights clip to the print.** WinStage's Stage is scaled and
+    letterboxed in code and does not clip, so a light pool placed in it
+    spilled past the white photo frame onto the letterbox bars. LightPass and
+    LightFail set clip_contents, which keeps each light inside the painting.

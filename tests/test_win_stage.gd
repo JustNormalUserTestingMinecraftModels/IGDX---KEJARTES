@@ -293,3 +293,14 @@ func test_dressing_picks_one_light() -> void:
 	Engine.get_main_loop().root.remove_child(s)
 	assert_true(pass_on and not fail_on, "a pass shows LightPass only")
 	assert_true(fail_after and not pass_after, "a fail shows LightFail only")
+
+
+## The lights sit in the scaled, letterboxed Stage, which does not clip; their
+## pool runs past the painting's edge. Clipping each light group keeps the
+## glow inside the photo print instead of spilling onto the letterbox bars
+## (seen on EndCutscene's pass frame, 2026-09-28).
+func test_the_lights_stay_inside_the_print() -> void:
+	var s := _stage()
+	for group in ["Stage/LightPass", "Stage/LightFail"]:
+		assert_true((s.get_node(group) as Control).clip_contents,
+			group + " clips its light to the painting")

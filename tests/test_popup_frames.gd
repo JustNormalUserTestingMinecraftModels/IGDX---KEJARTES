@@ -19,7 +19,8 @@ const DIALOG_RINGS := 4
 ## The typed close glyph every popup used before the frame's round close.
 const CLOSE_GLYPH := "✕"
 
-## scene -> [frame node path, kind, fit].
+## scene -> [frame node path, kind, fit]. The roster must never be empty;
+## Task 2 adds the first rows.
 const POPUPS := {
 }
 
@@ -52,6 +53,7 @@ func test_the_frame_scene_exists() -> void:
 
 
 func test_every_popup_wears_the_frame() -> void:
+	assert_false(POPUPS.is_empty(), "the roster lists every popup")
 	for path in POPUPS:
 		var frame := _frame_of(_instance(path), path)
 		if frame != null:
@@ -59,6 +61,7 @@ func test_every_popup_wears_the_frame() -> void:
 
 
 func test_each_frame_is_its_kind() -> void:
+	assert_false(POPUPS.is_empty(), "the roster lists every popup")
 	for path in POPUPS:
 		var frame := _frame_of(_instance(path), path)
 		if frame == null:
@@ -77,6 +80,7 @@ func test_each_frame_is_its_kind() -> void:
 
 
 func test_safe_frames_sit_in_the_safe_area() -> void:
+	assert_false(POPUPS.is_empty(), "the roster lists every popup")
 	for path in POPUPS:
 		if POPUPS[path][2] != "safe":
 			continue
@@ -90,6 +94,7 @@ func test_safe_frames_sit_in_the_safe_area() -> void:
 
 
 func test_no_popup_types_its_close_glyph() -> void:
+	assert_false(POPUPS.is_empty(), "the roster lists every popup")
 	for path in POPUPS:
 		assert_false(FileAccess.get_file_as_string(path).contains(CLOSE_GLYPH),
 			path + " still types a close glyph")
@@ -100,6 +105,7 @@ func test_no_popup_types_its_close_glyph() -> void:
 
 
 func test_every_shown_close_is_heard() -> void:
+	assert_false(POPUPS.is_empty(), "the roster lists every popup")
 	for path in POPUPS:
 		var root := _instance(path)
 		var frame := _frame_of(root, path)

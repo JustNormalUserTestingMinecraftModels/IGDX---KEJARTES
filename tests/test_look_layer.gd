@@ -28,6 +28,9 @@ const GRADED := {
 	"res://Scenes/Koperasi/Koperasi.tscn": [
 		"Stage/Background", "Stage/Herman", "Stage/Foreground",
 	],
+	# The Lobby look on the shops (2026-09-28): their blurred backdrops.
+	"res://Scenes/Koperasi/ShopHub.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/Koperasi/CosmeticShop.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],

@@ -257,7 +257,8 @@ func _stop_glow() -> void:
 		icon_node.scale = Vector2.ONE
 	var frame_node := get_node_or_null("EmptyFrame") as TextureRect
 	if frame_node != null:
-		frame_node.self_modulate = DesignTokens.load_default().surface_sunken
+		var tokens: DesignTokens = DesignTokens.load_default()
+		frame_node.self_modulate = tokens.surface_sunken
 
 
 ## Starts (on == true) or stops (on == false) the empty note's looped "tap

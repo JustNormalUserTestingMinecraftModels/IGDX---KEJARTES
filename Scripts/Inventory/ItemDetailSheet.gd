@@ -150,9 +150,20 @@ func setup(item: ItemData, _owned_qty: int) -> void:
 		# _sheet sits inside a CenterContainer; its layout pass resets scale
 		# and rotation after this frame, wiping the spring's start pose --
 		# defer so the spring starts once that pass has already run.
-		Callable(AnimUtils, "popup_spring_in").call_deferred(_sheet)
+		# Deferring an instance method (not a bare static call) means a
+		# popup freed in its opening frame just drops the call instead of
+		# erroring on a stale argument.
+		_spring_in.call_deferred()
 		AnimUtils.wobble(_icon)
 		_stagger_efek_rows(visible_rows)
+
+
+## Springs the box in once the CenterContainer's first layout pass has run
+## (that pass resets scale and rotation). Deferred from setup().
+func _spring_in() -> void:
+	if is_instance_valid(_sheet):
+		AnimUtils.popup_spring_in(_sheet)
+
 
 ## Paint the header band in the item's category colour, lay the per-type
 ## pattern tile over it, and switch the item name to light ink so it reads on

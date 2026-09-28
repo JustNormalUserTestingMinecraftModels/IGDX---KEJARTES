@@ -96,7 +96,17 @@ func open() -> void:
 		# book sits inside a CenterContainer; its layout pass resets scale
 		# and rotation after this frame, wiping the spring's start pose --
 		# defer so the spring starts once that pass has already run.
-		Callable(AnimUtils, "popup_spring_in").call_deferred(book)
+		# Deferring an instance method (not a bare static call) means a
+		# panel closed in its opening frame just drops the call instead of
+		# erroring on a stale argument.
+		_spring_in.call_deferred()
+
+
+## Springs the box in once the CenterContainer's first layout pass has run
+## (that pass resets scale and rotation). Deferred from open().
+func _spring_in() -> void:
+	if is_instance_valid(book):
+		AnimUtils.popup_spring_in(book)
 
 
 ## Springs the book out and hides the panel; under reduce_motion it hides

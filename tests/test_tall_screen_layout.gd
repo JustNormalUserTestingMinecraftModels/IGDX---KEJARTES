@@ -650,6 +650,8 @@ func test_unique_name_paths_are_not_format_strings() -> void:
 const LIT_BACKDROPS := {
 	"res://Scenes/Koperasi/ShopHub.tscn": "World/Room/Backdrop",
 	"res://Scenes/Koperasi/CosmeticShop.tscn": "World/Room/Backdrop",
+	"res://Scenes/EndGame/TesNotice.tscn": "World/Room/Backdrop",
+	"res://Scenes/EndGame/StatCheck.tscn": "World/Room/Backdrop",
 }
 
 

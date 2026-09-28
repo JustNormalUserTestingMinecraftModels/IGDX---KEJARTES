@@ -650,11 +650,11 @@ func test_cutscene_gets_a_soft_sun_and_sparkles() -> void:
 func test_the_exam_notices_wear_the_tense_mood() -> void:
 	for path in ["res://Scenes/EndGame/TesNotice.tscn", "res://Scenes/EndGame/StatCheck.tscn"]:
 		var c := _census(path)
-		var kids := _children_of(c, ".")
+		var kids := _children_of(c, "World/Room")
 		assert_eq(kids.find("Tint"), kids.find("Backdrop") + 1,
 			path + ": the tint sits directly after the backdrop, so it tints nothing else")
-		assert_eq(_entry(c, "Tint").get("instance"), MOOD_TINT, path + ": Tint is a MoodTint")
-		assert_eq(_prop(_entry(c, "Tint"), "mood"), MoodTint.Mood.TEGANG, path + ": the exam mood")
+		assert_eq(_entry(c, "World/Room/Tint").get("instance"), MOOD_TINT, path + ": Tint is a MoodTint")
+		assert_eq(_prop(_entry(c, "World/Room/Tint"), "mood"), MoodTint.Mood.TEGANG, path + ": the exam mood")
 
 
 ## ExamProgress's art was left undarkened on 2026-09-20 so text_primary reads

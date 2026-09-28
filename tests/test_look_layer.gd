@@ -31,6 +31,9 @@ const GRADED := {
 	# The Lobby look on the shops (2026-09-28): their blurred backdrops.
 	"res://Scenes/Koperasi/ShopHub.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/Koperasi/CosmeticShop.tscn": ["World/Room/Backdrop"],
+	# The Lobby look on the exam notices (2026-09-28): their blurred backdrops.
+	"res://Scenes/EndGame/TesNotice.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/EndGame/StatCheck.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],

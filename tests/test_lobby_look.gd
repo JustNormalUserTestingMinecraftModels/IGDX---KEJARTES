@@ -28,11 +28,15 @@ const GLOW_DEFAULT := 0.9
 
 const SHOP_HUB := "res://Scenes/Koperasi/ShopHub.tscn"
 const COSMETIC_SHOP := "res://Scenes/Koperasi/CosmeticShop.tscn"
+const TES_NOTICE := "res://Scenes/EndGame/TesNotice.tscn"
+const STAT_CHECK := "res://Scenes/EndGame/StatCheck.tscn"
 
 ## Screen -> its Room's children, in draw order.
 const ROOMS := {
 	SHOP_HUB: ["Backdrop", "Light", "Shafts", "Parallax"],
 	COSMETIC_SHOP: ["Backdrop", "Light", "Shafts", "Parallax"],
+	TES_NOTICE: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
+	STAT_CHECK: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
 }
 
 ## Screen -> its measured glow_threshold, or null where no threshold bloomed
@@ -41,6 +45,8 @@ const ROOMS := {
 const BLOOM := {
 	SHOP_HUB: null,
 	COSMETIC_SHOP: null,
+	TES_NOTICE: 0.9,
+	STAT_CHECK: 0.9,
 }
 
 
@@ -174,3 +180,15 @@ func test_koperasi_lights_its_stage_under_the_goods() -> void:
 	assert_true(Census.entry(c, "World").is_empty(), "no World layer")
 	for e in c:
 		assert_ne(e["instance"], AMBIENT_GLOW, "nothing on layer 0 can bloom, so no Glow")
+
+
+## The exam notices' light is cool and dim, to sit under their TEGANG tint.
+func test_the_exam_notices_light_is_cool() -> void:
+	for scene_path in [TES_NOTICE, STAT_CHECK]:
+		var c := Census.of(scene_path)
+		var colour: Color = Census.prop(Census.entry(c, "World/Room/Light"), "light_color", Color.WHITE)
+		assert_true(colour.b > colour.r, scene_path + ": the pool is cool, blue over red")
+		var shafts: Color = Census.prop(Census.entry(c, "World/Room/Shafts"), "shaft_color", Color.WHITE)
+		assert_true(shafts.b > shafts.r, scene_path + ": and so are the shafts")
+		assert_eq(_drawn(scene_path).slice(0, 2), ["World", "Scrim"] as Array[String],
+			scene_path + ": the scrim draws over the room, under the card")

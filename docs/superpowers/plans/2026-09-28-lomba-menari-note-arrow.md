@@ -125,33 +125,35 @@ Expected: all three tests FAIL, because `load(ARROW_PATH)` returns null (the fil
 
 - [ ] **Step 3: Generate the art**
 
-The source is the game's existing chunky arrow, `Assets/Images/UI/Placeholders/arrow.png` (512×512, yellow fill, dark outline, pointing **down**). Rotate it to point right and move the fill to white, keeping the anti-aliased edge. Run from the project root:
+The source is the game's existing chunky arrow, `Assets/Images/UI/Placeholders/arrow.png` (512×512, pointing **down**). It is **translucent by design**: its yellow fill sits at alpha 180 and its black outline at 220–245. A note must be solid, so rescale alpha until the fill is opaque (the outline clips to 255, and the anti-aliased edge keeps its ramp). Then rotate it to point right and move the fill to white, keeping the edge blend. Run from the project root:
 
 ```bash
 mkdir -p Assets/Images/Minigames/SeniBudaya
-python - <<'EOF'
+python - <<'EOF2'
 from PIL import Image
+FILL_ALPHA = 180  # the source fill's alpha; scaled up to 255 so the note is solid
 src = Image.open("Assets/Images/UI/Placeholders/arrow.png").convert("RGBA")
 img = src.rotate(90)  # PIL turns counter-clockwise: down -> right
 px = img.load()
 w, h = img.size
 lum = lambda p: 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]
-opaque = [px[x, y] for x in range(w) for y in range(h) if px[x, y][3] > 250]
-dark = min(opaque, key=lum)
-lo, hi = lum(dark), max(lum(p) for p in opaque)
+body = [px[x, y] for x in range(w) for y in range(h) if px[x, y][3] >= FILL_ALPHA - 10]
+dark = min(body, key=lum)
+lo, hi = lum(dark), max(lum(p) for p in body)
 for y in range(h):
     for x in range(w):
         r, g, b, a = px[x, y]
         if a == 0:
             continue
         t = max(0.0, min(1.0, (lum((r, g, b)) - lo) / (hi - lo)))
-        px[x, y] = tuple(round(dark[i] + t * (255 - dark[i])) for i in range(3)) + (a,)
+        rgb = tuple(round(dark[i] + t * (255 - dark[i])) for i in range(3))
+        px[x, y] = rgb + (min(255, round(a * 255 / FILL_ALPHA)),)
 img.save("Assets/Images/Minigames/SeniBudaya/note_arrow.png")
-print("dark outline", dark, "size", img.size)
-EOF
+print("dark outline", dark, "size", img.size, "centre", img.getpixel((256, 256)))
+EOF2
 ```
 
-Expected output: `dark outline (…) size (512, 512)`, with the outline tuple near `(35, 31, 26, 255)`.
+Expected output: `dark outline (0, 0, 0, …) size (512, 512) centre (255, 255, 255, 255)`.
 
 - [ ] **Step 4: Import it**
 

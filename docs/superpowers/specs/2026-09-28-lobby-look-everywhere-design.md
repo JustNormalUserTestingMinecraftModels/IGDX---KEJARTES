@@ -262,3 +262,9 @@ these win.
     StatCheck's, ExamProgress's and Badminton's backdrops, and WinStage's
     backdrop, take the plain grade; WinStage's four students take the cutout
     grade. `test_illustration_ao`'s census gains each.
+11. **Shafts start just above the frame.** Converging the rays exactly on the
+    pool's centre puts their bright core inside the picture; the default
+    origin (0.12, -0.08), just above the top-left corner, reads as light
+    through a window above the view and was accepted by eye on all three shop
+    screens. Later passes place the origin above the frame over the pool, not
+    on it.

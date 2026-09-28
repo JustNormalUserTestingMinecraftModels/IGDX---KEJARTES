@@ -141,9 +141,9 @@ Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 backdrop and its light move into a `World` CanvasLayer at −1 holding one
 `Room` Control; the light is a `LightPool` plus a full-screen `SunShafts`
 (`Scenes/Look/SunShafts.tscn`); an `AmbientGlow` right after `World` blooms
-only where its threshold was measured clean; menus and shops add a flat
-`ParallaxDiorama`. Minigames and Koperasi keep their backdrop on layer 0 and
-take the light without bloom.
+only where its threshold was measured clean; the blurred shops (and, in later
+passes, the exam notices) add a flat `ParallaxDiorama`. Minigames and Koperasi
+keep their backdrop on layer 0 and take the light without bloom.
 
 ## Swapping fonts
 

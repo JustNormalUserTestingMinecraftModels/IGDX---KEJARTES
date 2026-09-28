@@ -218,3 +218,47 @@ Worktrees are removed once their PR merges.
 - Every screen fills a 20:9 phone (`test_tall_screen_layout` green).
 - Each bloom decision is backed by a measured number in the PR or DEBT.md.
 - The full suite is green on each PR's tested commit.
+
+## Amendments from planning (2026-09-28)
+
+Found while reading the code for the plan. Where these differ from the body,
+these win.
+
+1. **`World` holds one `Room` Control**, the Lobby's own `World/Classroom`
+   shape. `ParallaxDiorama` needs a Control as its `bands_root`, and
+   RunResult's exit fade needs one node to fade alongside its root. `Room` is
+   Full Rect, ignores taps and is `unique_name_in_owner`.
+2. **`ParallaxDiorama` now honours Kurangi Gerakan.** It ignored the switch
+   before. With it on, the bands chase zero tilt and settle at rest. This also
+   stills the Lobby and Koperasi, which had the same gap.
+3. **No parallax on ExamProgress, EndCutscene or RunResult.** ExamProgress
+   already pans its backdrop with a tween on `position.x`, and a second writer
+   would fight it. EndCutscene and RunResult show `WinStage`, a framed photo
+   print letterboxed in code: overscan would push the painting across its
+   white frame, and a print has no depth to part. Parallax is on the shops,
+   TesNotice and StatCheck.
+4. **The pass/fail light lives in `WinStage`**, as `Stage/LightPass` and
+   `Stage/LightFail`, chosen by `WinStage.dress()`, which already dresses per
+   verdict. EndCutscene hands over to RunResult with an invisible swap of the
+   same frame, so both hosts must light it identically; one shared scene
+   guarantees that. Both hosts' `Glow` thresholds are pinned equal.
+   RunResult's existing `AmbientPass`/`AmbientFail` stay as they are, over the
+   blur.
+5. **Flat screens drift at depth 1.0**, not the Lobby's 0.15: they have no
+   nearer band, so the parallax is between the picture and the UI. Every band
+   in the `Room` moves together; `Backdrop`, `Tint` and `Shafts` are
+   overscanned so no edge shows.
+6. **StatCheck's `Backdrop` becomes Full Rect** as it moves. It was a fixed
+   1080x1920 rect, a tall-phone gap.
+7. **Bloom is measured with the ambient kit's method** (plan
+   `2026-09-27-ambient-kit.md`, Task 12): **far** field bloom under 0.01 and
+   **core** bloom at least 0.01, or the screen ships without a `Glow`.
+8. **`Glow` is the root's second child**, right after `World`, so screens
+   whose tests pin their last child (EndCutscene's `WhiteFade`) keep it.
+9. **Koperasi's new light is not overscanned.** At its depth of 0.15 it moves
+   about 2 px, and `test_parallax_diorama` pins its overscan list to the two
+   opaque plates.
+10. **The graded plates grow**: ShopHub's, CosmeticShop's, TesNotice's,
+    StatCheck's, ExamProgress's and Badminton's backdrops, and WinStage's
+    backdrop, take the plain grade; WinStage's four students take the cutout
+    grade. `test_illustration_ao`'s census gains each.

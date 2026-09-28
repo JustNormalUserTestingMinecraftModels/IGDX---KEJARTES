@@ -158,7 +158,7 @@ static func load_default() -> DesignTokens:
 ## Negative-outcome tint: DangerButton, loss badges, the tired-student
 ## card wash, ShopMessageDanger.
 @export var state_danger: Color = Color("C0392B")
-## Coin/money label colour -- CoinLabel, ShopCoinLabel, ResultHeroLabel.
+## Coin/money label colour -- CoinLabel, ResultHeroLabel.
 @export var currency_gold: Color = Color("ffc93c")
 
 @export_group("Depth Palette")

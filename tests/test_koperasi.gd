@@ -10,6 +10,7 @@ func suite_name() -> String:
 
 const _SCENE_PATH := "res://Scenes/Koperasi/Koperasi.tscn"
 const _SCRIPT_PATH := "res://Scripts/Koperasi/Koperasi.gd"
+const PriceTagScene := preload("res://Scenes/Koperasi/PriceTag.tscn")
 
 func _source() -> String:
 	return FileAccess.get_file_as_string(_SCRIPT_PATH)
@@ -77,6 +78,57 @@ func test_scene_uses_project_theme() -> void:
 	assert_true(raw.contains("kejartes_theme.tres"),
 		"the scene root must carry the project theme")
 
+func test_the_top_band_has_a_sign_and_a_promo_board() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scenes/Koperasi/Koperasi.tscn")
+	assert_true(src.contains("[node name=\"Signboard\" type=\"Panel\" parent=\"Stage\""),
+		"the shop names itself, on the Stage")
+	assert_true(src.contains("[node name=\"PromoBoard\" type=\"Panel\" parent=\"Stage\""),
+		"and advertises the week's promo")
+	assert_false(src.contains("name=\"CoinHUD\""), "the ledge coin HUD is gone")
+	assert_true(src.contains("theme_type_variation = &\"KoperasiSignPanel\""), "the sign is lipped brown")
+	assert_true(src.contains("theme_type_variation = &\"KoperasiPromoPanel\""), "the board is lipped cream")
+
+func test_promo_board_reads_gamestate() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scripts/Koperasi/PromoBoard.gd")
+	assert_true(src.contains("GameState.shop_promo_item"), "the board names the promo item")
+	assert_true(src.contains("GameState.shop_promo_percent"), "and its discount")
+	assert_true(src.contains("Engine.is_editor_hint()"), "its live fill is editor-gated")
+
+## PromoBoard is a Stage child, so its own _ready() runs BEFORE Stage's --
+## children ready before their parent -- and Stage's _ready() is what rolls
+## the shelf (and with it shop_promo_item/percent). PromoBoard's own arrival
+## is correct only because Koperasi.gd's _ready() nudges it again with
+## promo_board.refresh() after Stage has finished, or a fresh shelf's promo
+## would never reach the board. Pinned as a source scan: the runner cannot
+## await a frame to prove Stage really has rolled by then.
+func test_koperasi_ready_refreshes_the_promo_board_after_the_shelf_rolls() -> void:
+	var src: String = _source()
+	var at: int = src.find("func _ready():")
+	assert_true(at != -1, "Koperasi.gd must have a _ready()")
+	if at == -1:
+		return
+	var next_func: int = src.find("\nfunc ", at + 1)
+	var body: String = src.substr(at, next_func - at)
+	assert_true(body.contains("promo_board.refresh()"),
+		"_ready() must refresh PromoBoard after Stage rolls the shelf")
+
+## Control siblings under the same parent draw in scene-declaration order --
+## later wins. Pak Herman's ChatBubble must draw OVER the top band, not
+## under it, or a shown line gets clipped by Signboard/PromoBoard (fix
+## round 1, 2026-09-28: the band was declared after ChatBubble, so it drew
+## on top of his speech). Pinned by each node's position in the saved
+## Koperasi.tscn text, which is exactly the order the scene loader builds
+## the tree in.
+func test_chat_bubble_draws_over_the_top_band() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scenes/Koperasi/Koperasi.tscn")
+	var signboard_at := src.find("[node name=\"Signboard\" type=\"Panel\" parent=\"Stage\"")
+	var promo_board_at := src.find("[node name=\"PromoBoard\" type=\"Panel\" parent=\"Stage\"")
+	var chat_bubble_at := src.find("[node name=\"ChatBubble\" type=\"Control\" parent=\"Stage\"")
+	assert_true(signboard_at >= 0 and promo_board_at >= 0 and chat_bubble_at >= 0,
+		"the band and the chat bubble must all be declared as Stage children")
+	assert_true(chat_bubble_at > signboard_at, "ChatBubble must be declared after Signboard, so it draws over it")
+	assert_true(chat_bubble_at > promo_board_at, "ChatBubble must be declared after PromoBoard, so it draws over it")
+
 ## Task 3: Pak Herman's talk/idle animation. HermanAP must exist with all
 ## three named animations, and must never key `position` -- the Stage
 ## re-anchors on tall phones (test_tall_screen_layout.gd), so an absolute
@@ -106,3 +158,40 @@ func test_herman_animation_player_has_idle_talk_and_reset() -> void:
 		var block := raw.substr(start, next_block - start)
 		assert_false(block.contains(":position\")"),
 			"Herman's animations must not key position -- the stage re-anchors on tall phones (%s)" % id)
+
+## Task 4: the promo item's price tag strikes its list price and wears a
+## "-N%" badge; a normal tag carries neither.
+func test_a_promo_tag_shows_the_list_price_and_badge() -> void:
+	var tag: PanelContainer = PriceTagScene.instantiate()
+	tag.set_price(800)
+	tag.set_promo(1000, 20)
+	assert_true(tag.is_promo(), "the tag knows it is on promo")
+	assert_eq(tag.get_old_price_text(), "1000", "the list price is shown, struck")
+	assert_eq(tag.get_badge_text(), "-20%", "the badge names the percent")
+	tag.clear_promo()
+	assert_false(tag.is_promo(), "a normal tag drops the promo dress")
+	assert_false(tag.get_node("Row/OldPrice").visible, "clear_promo() hides the struck price")
+	assert_false(tag.get_node("Row/PromoBadge").visible, "and the badge")
+	tag.free()
+
+## play_buy() must not leave a promo tag reading "~~1000~~ Beli -20%" mid-tap --
+## the dress hides while "Beli" stands alone, then comes back with the price
+## once the tag returns to rest.
+func test_play_buy_hides_the_promo_dress_and_set_price_restores_it() -> void:
+	var tag: PanelContainer = PriceTagScene.instantiate()
+	tag.set_price(800)
+	tag.set_promo(1000, 20)
+	tag.play_buy()
+	assert_true(tag.is_promo(), "play_buy() does not touch _is_promo")
+	assert_false(tag.get_node("Row/OldPrice").visible, "play_buy() hides the struck price")
+	assert_false(tag.get_node("Row/PromoBadge").visible, "and the badge")
+	tag.set_price(800)
+	assert_true(tag.is_promo(), "set_price() does not touch _is_promo either")
+	assert_true(tag.get_node("Row/OldPrice").visible, "set_price() brings the struck price back")
+	assert_true(tag.get_node("Row/PromoBadge").visible, "and the badge")
+	tag.free()
+
+func test_the_shelf_dresses_only_the_promo_item() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scripts/Koperasi/KoperasiStage.gd")
+	assert_true(src.contains("GameState.shop_promo_item"), "the stage asks which item is on promo")
+	assert_true(src.contains("Cart.list_price_of("), "and strikes the list price, not the raw one")

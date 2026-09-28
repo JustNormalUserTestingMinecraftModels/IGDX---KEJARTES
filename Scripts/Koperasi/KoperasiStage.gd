@@ -109,9 +109,13 @@ func setup_shelf():
 		btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 
 		# Find price tag inside btn
-		var tag = _ensure_price_tag(btn)
+		var tag: Node = _ensure_price_tag(btn)
 		if tag:
 			tag.set_price(Cart.price_of(item))
+			if item.item_name == GameState.shop_promo_item:
+				tag.set_promo(Cart.list_price_of(item), GameState.shop_promo_percent)
+			else:
+				tag.clear_promo()
 
 		var life = _ensure_shelf_item(btn)
 		_shelf_items.append(life)

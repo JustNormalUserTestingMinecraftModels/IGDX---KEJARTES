@@ -244,31 +244,51 @@ func test_koperasi_stage_is_one_piece_pinned_bottom() -> void:
 		assert_true(stage.get_node_or_null(n) != null, n + " moves with the stage")
 
 
-## The coin readout stands on the counter ledge, so it is part of the Stage
-## picture like the back button -- not bottom-anchored in Safe, whose bottom
-## inset (768 px in a windowed editor run, a gesture bar on a phone) would
-## lift it off the ledge. Nothing over the shelf eats a tap.
-func test_koperasi_coin_hud_rides_the_stage() -> void:
+## The signboard and promo board (the top band) stand on the counter ledge,
+## so they are part of the Stage picture like the back button -- not
+## bottom-anchored in Safe, whose bottom inset (768 px in a windowed editor
+## run, a gesture bar on a phone) would lift them off the ledge. Nothing over
+## the shelf eats a tap. Renamed from test_koperasi_coin_hud_rides_the_stage
+## (2026-09-28 review): the ledge coin HUD it once pinned moved into the tray
+## footer (test_koperasi_kas_pill_rides_the_tray, below) -- this one now
+## checks the sign and board only.
+func test_koperasi_top_band_rides_the_stage() -> void:
 	var shop := _scene(KOPERASI)
-	var hud := shop.get_node_or_null("%CoinHUD") as Control
-	assert_true(hud != null and hud.get_parent() == shop.get_node_or_null("Stage"),
-		"CoinHUD is a child of the Stage")
+	var stage := shop.get_node_or_null("Stage")
+	for n in ["Signboard", "PromoBoard"]:
+		var c := shop.get_node_or_null("Stage/%s" % n) as Control
+		assert_true(c != null and c.get_parent() == stage,
+			"%s is a child of the Stage" % n)
 	for p in ["Safe", "Safe/UI", "WallFill", "Stage", "Stage/TrayDock"]:
 		var c := shop.get_node_or_null(p) as Control
 		assert_true(c != null and c.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 			p + " must let taps through to the shelf")
 
 
-## On a 1080x2400 phone the counter rides the bottom edge and the coins ride
-## with it.
+## The ledge coin HUD (2026-09-28 koperasi-top-band-promo Task 6) moved into
+## the tray footer's Kas Kelas pill, which rides the tray, which rides the
+## Stage -- no separate rect to pin, the tray's own rects (pinned above and
+## below in test_koperasi_on_a_tall_phone / test_koperasi_at_the_design_size)
+## already cover it.
+func test_koperasi_kas_pill_rides_the_tray() -> void:
+	var shop := _scene(KOPERASI)
+	var pill := shop.get_node_or_null(
+		"Stage/TrayDock/BasketTray/Body/Footer/KasCluster/KasPill")
+	assert_true(pill != null, "the Kas pill rides the tray, which rides the Stage")
+
+
+## On a 1080x2400 phone the counter rides the bottom edge and the top band
+## rides with it.
 func test_koperasi_on_a_tall_phone() -> void:
 	var shop := _stood_up(KOPERASI, TALL)
 	_assert_placed((shop.get_node("WallFill") as Control), Rect2(0, 0, 1080, 2400), "wall strip")
 	_assert_placed((shop.get_node("Stage") as Control), Rect2(0, 480, 1080, 1920), "stage")
 	_assert_placed((shop.get_node("Stage/TrayDock/BasketTray/Body") as Control),
 		Rect2(24, 1840, 1032, 560), "basket tray")
-	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
-		Vector2(732, 1710), "the coins stay on the counter ledge")
+	assert_eq(_authored_rect(shop.get_node("Stage/Signboard") as Control).position,
+		Vector2(36, 504), "the sign stays on the counter ledge")
+	assert_eq(_authored_rect(shop.get_node("Stage/PromoBoard") as Control).position,
+		Vector2(580, 504), "the promo board stays on the counter ledge")
 
 
 ## At 1080x1920 the tray and back button are where they were.
@@ -279,8 +299,10 @@ func test_koperasi_at_the_design_size() -> void:
 		Rect2(24, 1360, 1032, 560), "basket tray, unchanged")
 	_assert_placed((shop.get_node("Stage/BackButton") as Control),
 		Rect2(24, 1157, 185, 185), "back button, unchanged")
-	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
-		Vector2(732, 1230), "coins on the ledge")
+	assert_eq(_authored_rect(shop.get_node("Stage/Signboard") as Control).position,
+		Vector2(36, 24), "sign on the ledge")
+	assert_eq(_authored_rect(shop.get_node("Stage/PromoBoard") as Control).position,
+		Vector2(580, 24), "promo board on the ledge")
 
 
 # ── StudentCard ──────────────────────────────────────────────────────────────

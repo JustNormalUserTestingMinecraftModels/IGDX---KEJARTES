@@ -43,6 +43,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_school_day_liveliness(theme, tokens)
 	_build_settings(theme, tokens)
 	_build_lobby_hud(theme, tokens)
+	_build_koperasi_chrome(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -2019,17 +2020,6 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_constant("shadow_offset_x", "CoinLabel", 1)
 	theme.set_constant("shadow_offset_y", "CoinLabel", 1)
 
-	# Koperasi's coin counter predates CoinLabel and carries its own shipped
-	# numbers (bigger font, a flat black shadow, a wider offset) -- kept
-	# distinct rather than folding it into CoinLabel and shrinking it.
-	theme.add_type("ShopCoinLabel")
-	theme.set_type_variation("ShopCoinLabel", "Label")
-	theme.set_font_size("font_size", "ShopCoinLabel", 40)
-	theme.set_color("font_color", "ShopCoinLabel", tokens.currency_gold)
-	theme.set_color("font_shadow_color", "ShopCoinLabel", Color.BLACK)
-	theme.set_constant("shadow_offset_x", "ShopCoinLabel", 2)
-	theme.set_constant("shadow_offset_y", "ShopCoinLabel", 2)
-
 	# Koperasi's purchase-feedback message, one variation per semantic
 	# outcome so the screen swaps theme_type_variation instead of calling
 	# add_theme_color_override with a token colour picked at runtime.
@@ -2829,6 +2819,179 @@ static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	roster_chip.content_margin_top = 2
 	roster_chip.content_margin_bottom = 2
 	theme.set_stylebox("panel", "RosterChip", roster_chip)
+
+
+# ---------------------------------------------------------------- koperasi
+
+## The promo sticker's lip, px: shallower than a button's so a small
+## tilted badge does not out-pop the board it sits on.
+const KOPERASI_BADGE_LIP := 3
+
+
+## Koperasi's top-band signboard and promo board, plus the footer's Kas
+## Kelas / Total pills (2026-09-28 koperasi-top-band-promo plan, riding
+## the 2026-09-28 UI depth pass's LippedBox and DISABLED_FADE). Every
+## panel here is a LippedBox face except PromoStrikeLine, the struck
+## price's flat rule.
+static func _build_koperasi_chrome(theme: Theme, tokens: DesignTokens) -> void:
+	# -- KoperasiSignPanel / *Label / *CaptionLabel: the carved wooden
+	# signboard, brand brown, "KOPERASI" over "SEKOLAH". --
+	theme.add_type("KoperasiSignPanel")
+	theme.set_type_variation("KoperasiSignPanel", "Panel")
+	theme.set_stylebox("panel", "KoperasiSignPanel", LippedBox.make(
+		tokens.brand_primary, tokens.brand_primary_dark,
+		tokens.lip_height, tokens.radius_button, tokens.gloss_strength))
+
+	theme.add_type("KoperasiSignLabel")
+	theme.set_type_variation("KoperasiSignLabel", "Label")
+	theme.set_font_size("font_size", "KoperasiSignLabel", tokens.font_h1)
+	theme.set_color("font_color", "KoperasiSignLabel", tokens.text_on_brand)
+	theme.set_color("font_outline_color", "KoperasiSignLabel", tokens.brand_primary_dark)
+	theme.set_constant("outline_size", "KoperasiSignLabel", tokens.lipped_label_outline)
+	if tokens.font_display != null:
+		theme.set_font("font", "KoperasiSignLabel", tokens.font_display)
+
+	theme.add_type("KoperasiSignCaptionLabel")
+	theme.set_type_variation("KoperasiSignCaptionLabel", "Label")
+	theme.set_font_size("font_size", "KoperasiSignCaptionLabel", tokens.font_caption)
+	theme.set_color("font_color", "KoperasiSignCaptionLabel", tokens.button_cream)
+	if tokens.font_display != null:
+		theme.set_font("font", "KoperasiSignCaptionLabel", tokens.font_display)
+
+	# -- KoperasiPromoPanel / *HeaderLabel / *ItemLabel: the promo board,
+	# cream, no gloss -- a plaque, not a button. --
+	theme.add_type("KoperasiPromoPanel")
+	theme.set_type_variation("KoperasiPromoPanel", "Panel")
+	theme.set_stylebox("panel", "KoperasiPromoPanel", LippedBox.make(
+		tokens.button_cream, tokens.button_cream_lip,
+		tokens.lip_height, tokens.radius_button, 0.0))
+
+	theme.add_type("KoperasiPromoHeaderLabel")
+	theme.set_type_variation("KoperasiPromoHeaderLabel", "Label")
+	theme.set_font_size("font_size", "KoperasiPromoHeaderLabel", tokens.font_title)
+	theme.set_color("font_color", "KoperasiPromoHeaderLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "KoperasiPromoHeaderLabel", tokens.font_display)
+
+	theme.add_type("KoperasiPromoItemLabel")
+	theme.set_type_variation("KoperasiPromoItemLabel", "Label")
+	theme.set_font_size("font_size", "KoperasiPromoItemLabel", tokens.font_h2)
+	theme.set_color("font_color", "KoperasiPromoItemLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "KoperasiPromoItemLabel", tokens.font_display)
+
+	# -- PromoBadge: the tilted "-N%" sticker, tangerine, its own shallow
+	# lip. A Label, not a Button -- it carries no tap target -- so it
+	# cannot reuse _apply_lipped_text (that sets Button colour keys) and
+	# sets font_color/font_outline_color/outline_size by hand instead.
+	theme.add_type("PromoBadge")
+	theme.set_type_variation("PromoBadge", "Label")
+	var badge_box := LippedBox.make(
+		tokens.accent_tangerine, tokens.accent_tangerine_lip,
+		KOPERASI_BADGE_LIP, tokens.radius_pill, 0.0)
+	badge_box.content_margin_left = tokens.space_sm
+	badge_box.content_margin_right = tokens.space_sm
+	LippedBox.set_vertical_padding(badge_box, tokens.space_xs)
+	theme.set_stylebox("normal", "PromoBadge", badge_box)
+	theme.set_font_size("font_size", "PromoBadge", tokens.font_caption)
+	theme.set_color("font_color", "PromoBadge", tokens.text_on_brand)
+	theme.set_color("font_outline_color", "PromoBadge", tokens.accent_tangerine_lip)
+	theme.set_constant("outline_size", "PromoBadge", tokens.lipped_label_outline)
+	if tokens.font_display != null:
+		theme.set_font("font", "PromoBadge", tokens.font_display)
+
+	# -- PromoOldPriceLabel: the struck list price beside PriceTagLabel's own
+	# (already-discounted) number. Fix round 1, 2026-09-28: CaptionLabel's
+	# text_secondary ink has no outline or opaque backing of its own -- tuned
+	# for paper, not the green pill (and grey PriceTagDisabled fill) it sits
+	# on. Same ink, outline colour and outline approach as PriceTagLabel "so
+	# it reads on the bright green rest pill, the dark green wipe and the
+	# grey disabled pill alike" -- just a caption size, since it plays second
+	# to the live price. --
+	theme.add_type("PromoOldPriceLabel")
+	theme.set_type_variation("PromoOldPriceLabel", "Label")
+	theme.set_font_size("font_size", "PromoOldPriceLabel", tokens.font_caption)
+	theme.set_color("font_color", "PromoOldPriceLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "PromoOldPriceLabel",
+		maxi(2, tokens.text_outline_size / 2))
+	theme.set_color("font_outline_color", "PromoOldPriceLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PromoOldPriceLabel", tokens.font_display)
+
+	# -- PromoStrikeLine: the struck list-price's line. Flat -- a lip under
+	# a rule a few px tall would be invisible -- the one panel in this
+	# builder LippedBox does not touch. Same ink as PromoOldPriceLabel's
+	# font_color (fix round 1) so the strike reads through the outlined
+	# glyphs instead of vanishing against them. --
+	theme.add_type("PromoStrikeLine")
+	theme.set_type_variation("PromoStrikeLine", "Panel")
+	var strike := StyleBoxFlat.new()
+	strike.bg_color = tokens.text_on_brand
+	theme.set_stylebox("panel", "PromoStrikeLine", strike)
+
+	# -- KasPill / TotalPillAwake: the footer's resting cream pills, no
+	# gloss -- a plate, not a button. --
+	for pill_name: String in ["KasPill", "TotalPillAwake"]:
+		theme.add_type(pill_name)
+		theme.set_type_variation(pill_name, "PanelContainer")
+		var pill := LippedBox.make(
+			tokens.button_cream, tokens.button_cream_lip,
+			tokens.lip_height, tokens.radius_button, 0.0)
+		pill.content_margin_left = tokens.space_md
+		pill.content_margin_right = tokens.space_md
+		LippedBox.set_vertical_padding(pill, tokens.space_sm)
+		theme.set_stylebox("panel", pill_name, pill)
+
+	# -- TotalPillAsleep: an empty cart, the depth pass's own disabled
+	# look -- face and lip faded DISABLED_FADE toward surface_sunken, on
+	# half a lip -- so "nothing owed" reads the same grammar as a
+	# disabled button. --
+	theme.add_type("TotalPillAsleep")
+	theme.set_type_variation("TotalPillAsleep", "PanelContainer")
+	var asleep := LippedBox.make(
+		tokens.button_cream.lerp(tokens.surface_sunken, DISABLED_FADE),
+		tokens.button_cream_lip.lerp(tokens.surface_sunken, DISABLED_FADE),
+		floori(tokens.lip_height / 2.0), tokens.radius_button, 0.0)
+	asleep.content_margin_left = tokens.space_md
+	asleep.content_margin_right = tokens.space_md
+	LippedBox.set_vertical_padding(asleep, tokens.space_sm)
+	theme.set_stylebox("panel", "TotalPillAsleep", asleep)
+
+	# -- TotalPillOver: over budget -- the cream face stands on a tomato
+	# lip at full height, so the danger reads before the number and coin
+	# go red too. --
+	theme.add_type("TotalPillOver")
+	theme.set_type_variation("TotalPillOver", "PanelContainer")
+	var over := LippedBox.make(
+		tokens.button_cream, tokens.accent_tomato,
+		tokens.lip_height, tokens.radius_button, 0.0)
+	over.content_margin_left = tokens.space_md
+	over.content_margin_right = tokens.space_md
+	LippedBox.set_vertical_padding(over, tokens.space_sm)
+	theme.set_stylebox("panel", "TotalPillOver", over)
+
+	# -- KasCaptionLabel: "KAS KELAS" / "TOTAL", the small caption above
+	# each pill. Body face -- a caption, not a heading or a badge. --
+	theme.add_type("KasCaptionLabel")
+	theme.set_type_variation("KasCaptionLabel", "Label")
+	theme.set_font_size("font_size", "KasCaptionLabel", tokens.font_micro)
+	theme.set_color("font_color", "KasCaptionLabel", tokens.text_secondary)
+
+	# -- TotalNumberAwake / Asleep / Over: the pill's own balance number,
+	# one ink per state -- dark, disabled-grey and tomato-lip red. --
+	for spec: Array in [
+		["TotalNumberAwake", tokens.text_primary],
+		["TotalNumberAsleep", tokens.text_disabled],
+		["TotalNumberOver", tokens.accent_tomato_lip],
+	]:
+		var number_name: String = spec[0]
+		var number_ink: Color = spec[1]
+		theme.add_type(number_name)
+		theme.set_type_variation(number_name, "Label")
+		theme.set_font_size("font_size", number_name, tokens.font_title)
+		theme.set_color("font_color", number_name, number_ink)
+		if tokens.font_display != null:
+			theme.set_font("font", number_name, tokens.font_display)
 
 
 # ---------------------------------------------------------------- notebook

@@ -56,7 +56,19 @@ var shop_stock: Array[String] = []
 ## copy on the shelf.
 var shop_sold: Array[String] = []
 
-# Week tracking  
+## The discount steps a weekly promo can roll, in percent. Ours to tune
+## (Balance.gd is a collaborator's); one is picked per (grade, week).
+const PROMO_DISCOUNTS: Array[int] = [15, 20, 25, 30]
+## Percent to fraction.
+const PERCENT_SCALE: float = 100.0
+
+## This week's promo item -- one name from shop_stock -- and its discount in
+## percent. Both derived from the (grade, week) key in shop_stock_for_week();
+## "" and 0 before a shelf is rolled or when the shelf is empty.
+var shop_promo_item: String = ""
+var shop_promo_percent: int = 0
+
+# Week tracking
 var minggu_ke: int = 1
 var max_minggu: int = 6
 var lobby_tutorial_completed: bool = false
@@ -324,13 +336,15 @@ func clear_inventory_save() -> void:
 		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
 
 ## Forget the stocked week, so the next shop_stock_for_week() rolls a fresh
-## shelf with nothing sold. Every run restart calls this: it resets
-## minggu_ke to 1, and without it a retried grade -- or Kelas 7 after a loss
-## or after beating the game -- would land on the last run's key.
+## shelf with nothing sold and no promo. Every run restart calls this: it
+## resets minggu_ke to 1, and without it a retried grade -- or Kelas 7 after
+## a loss or after beating the game -- would land on the last run's key.
 func reset_shop_week() -> void:
 	shop_week_key = ""
 	shop_stock = []
 	shop_sold = []
+	shop_promo_item = ""
+	shop_promo_percent = 0
 
 
 ## The key a week's Koperasi shelf is stored under. The grade is part of it
@@ -354,6 +368,45 @@ static func roll_shop_stock(names: Array[String], size: int, max_copies: int) ->
 	return stock
 
 
+## This week's promo item: one of the DISTINCT names on `stock`, picked by a
+## hash of the (grade, week) key -- not the global RNG, which roll_shop_stock's
+## shuffle() advances. Distinct, so a pair on the shelf still advertises one
+## item. Sorted before indexing so the pick depends only on which names are on
+## the shelf, never on roll_shop_stock's unseeded shuffle() order -- the same
+## stock shuffled two different ways must name the same promo item. "" for an
+## empty shelf. Pure.
+static func promo_item_for(stock: Array[String], grade: int, week: int) -> String:
+	var names: Array[String] = []
+	for item_name: String in stock:
+		if not names.has(item_name):
+			names.append(item_name)
+	if names.is_empty():
+		return ""
+	names.sort()
+	return names[posmod(hash("promo:" + shop_week_key_for(grade, week)), names.size())]
+
+
+## This week's discount, one of PROMO_DISCOUNTS, from a differently salted
+## hash so the item and the percentage roll independently. Pure.
+static func promo_percent_for(grade: int, week: int) -> int:
+	var at: int = posmod(hash("pct:" + shop_week_key_for(grade, week)), PROMO_DISCOUNTS.size())
+	return PROMO_DISCOUNTS[at]
+
+
+## Price multiplier for `item_name` under a promo on `promo_item` at `percent`:
+## below 1.0 only for the promo item. Pure.
+static func promo_multiplier(item_name: String, promo_item: String, percent: int) -> float:
+	if item_name == "" or item_name != promo_item:
+		return 1.0
+	return 1.0 - percent / PERCENT_SCALE
+
+
+## This week's promo multiplier for `item_name`. Cart.price_of reads it, so the
+## shelf tag, the running total and the Beli check all agree.
+func shop_promo_multiplier(item_name: String) -> float:
+	return promo_multiplier(item_name, shop_promo_item, shop_promo_percent)
+
+
 ## This week's Koperasi shelf. The first call in a (grade, week) rolls
 ## SHOP_SHELF_SIZE items from ItemDatabase (roll_shop_stock, so a pair can
 ## turn up) and clears shop_sold; every later call that week returns the
@@ -367,6 +420,11 @@ func shop_stock_for_week() -> Array[String]:
 		for item in ItemDatabase.get_all_items():
 			names.append(item.item_name)
 		shop_stock = roll_shop_stock(names, SHOP_SHELF_SIZE, SHOP_MAX_COPIES)
+		shop_promo_item = promo_item_for(shop_stock, current_grade, minggu_ke)
+		# No item, no percent -- shop_promo_item's own doc promises "" and 0
+		# together on an empty shelf; only roll a discount when there is a
+		# promo item to hang it on.
+		shop_promo_percent = promo_percent_for(current_grade, minggu_ke) if shop_promo_item != "" else 0
 	return shop_stock.duplicate()
 
 
@@ -405,9 +463,7 @@ func forget_session() -> void:
 	selected_day = ""
 	day_schedules = {}
 	minigame_gain_this_week = {}
-	shop_week_key = ""
-	shop_stock = []
-	shop_sold = []
+	reset_shop_week()
 	minggu_ke = 1
 	lobby_tutorial_completed = false
 	tutorials_bypassed = false

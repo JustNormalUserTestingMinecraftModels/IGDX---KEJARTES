@@ -478,3 +478,16 @@ func test_the_panel_springs_the_greeting_in() -> void:
 	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT_PATH)
 	assert_true(panel_src.contains("AnimUtils.popup_spring_in("),
 		"opening the panel springs the greeting and streak in")
+
+
+## Daily-login polish, Task 6: the prize-box reveal lives on the panel,
+## and the panel knows where the reward coin flies.
+func test_the_reveal_sits_on_the_panel_and_aims_at_the_wallet() -> void:
+	var panel := _lobby.get_node_or_null("DailyReward") as DailyLoginPanel
+	var reveal := _lobby.get_node_or_null("%DailyRewardReveal") as Control
+	assert_true(reveal != null, "missing DailyRewardReveal")
+	if reveal == null or panel == null:
+		return
+	assert_eq(reveal.get_parent(), panel, "the reveal is a child of DailyReward")
+	assert_eq(panel.wallet_anchor, _lobby.get_node("%DisplayUang"),
+		"DailyReward's wallet_anchor is wired to %DisplayUang")

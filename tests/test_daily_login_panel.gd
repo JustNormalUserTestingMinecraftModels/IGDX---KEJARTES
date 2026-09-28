@@ -15,6 +15,8 @@ extends McpTestSuite
 
 const _LOBBY_SCRIPT := "res://Scripts/Lobby/Lobby.gd"
 const _PANEL_SCRIPT := "res://Scripts/Lobby/DailyLoginPanel.gd"
+const _REVEAL_SCENE := "res://Scenes/Lobby/DailyRewardReveal.tscn"
+const _REVEAL_SCRIPT := "res://Scripts/Lobby/DailyRewardReveal.gd"
 const _TODAY := "2026-09-28"
 const _YESTERDAY := "2026-09-27"
 const _TWO_DAYS_AGO := "2026-09-26"
@@ -27,20 +29,29 @@ func suite_name() -> String:
 
 
 var _panel: DailyLoginPanel
+var _reveal: DailyRewardReveal
 var _saved_money: int
 var _saved_day: int
 var _saved_date: String
 
 
-## One bare panel for the whole suite. Not tracked; suite_teardown frees it.
+## One bare panel and one reveal (instanced, never added to the tree, so
+## its @onready lookups and gated _ready never run) for the whole suite.
+## Not tracked; suite_teardown frees both.
 func suite_setup(_ctx: Dictionary) -> void:
 	_panel = DailyLoginPanel.new()
+	var reveal_scene: PackedScene = load(_REVEAL_SCENE) as PackedScene
+	if reveal_scene != null:
+		_reveal = reveal_scene.instantiate() as DailyRewardReveal
 
 
 func suite_teardown() -> void:
 	if is_instance_valid(_panel):
 		_panel.free()
 	_panel = null
+	if is_instance_valid(_reveal):
+		_reveal.free()
+	_reveal = null
 
 
 func setup() -> void:
@@ -156,6 +167,52 @@ func test_claim_counts_the_amount_up() -> void:
 	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT)
 	assert_true(panel_src.contains("Juice.count_up(reward_amount"),
 		"the reward amount must count up on a claim, not snap")
+
+
+## Task 6: the claim moment is its own component scene, with the firework
+## volley instanced from the shared ConfettiFireworks scene.
+func test_reveal_scene_holds_its_parts() -> void:
+	var src := FileAccess.get_file_as_string(_REVEAL_SCENE)
+	assert_true(src.contains("ConfettiFireworks.tscn"),
+		"the reveal instances the shared ConfettiFireworks volley")
+	for part: String in ["Box", "Lid", "Shine", "WalletCoin"]:
+		assert_true(src.contains('[node name="%s"' % part),
+			"DailyRewardReveal.tscn is missing its %s node" % part)
+
+
+func test_reveal_defaults() -> void:
+	assert_true(_reveal != null, "DailyRewardReveal.tscn must instance as a DailyRewardReveal")
+	if _reveal == null:
+		return
+	assert_false(_reveal.use_chest_sprite, "the reveal ships on the gift fallback")
+	assert_eq(_reveal.coin_count, 14, "an ordinary day fans 14 coins")
+	assert_eq(_reveal.star_count, 6, "an ordinary day fans 6 stars")
+
+
+## The reveal sits over the claim button; any Control in it that stops
+## the mouse would eat the claim tap.
+func test_reveal_never_eats_a_tap() -> void:
+	assert_true(_reveal != null, "DailyRewardReveal.tscn must instance")
+	if _reveal == null:
+		return
+	var offenders: Array[String] = []
+	_collect_mouse_catchers(_reveal, offenders)
+	assert_eq(offenders.size(), 0,
+		"these reveal Controls do not ignore the mouse: " + ", ".join(offenders))
+
+
+func _collect_mouse_catchers(node: Node, out: Array[String]) -> void:
+	var control := node as Control
+	if control != null and control.mouse_filter != Control.MOUSE_FILTER_IGNORE:
+		out.append(String(node.name))
+	for child: Node in node.get_children():
+		_collect_mouse_catchers(child, out)
+
+
+func test_reveal_builds_no_visual_at_runtime() -> void:
+	var src := FileAccess.get_file_as_string(_REVEAL_SCRIPT)
+	assert_false(src.contains(".new("),
+		"the reveal instances its templates; it never constructs a node")
 
 
 func test_lobby_no_longer_owns_the_claim() -> void:

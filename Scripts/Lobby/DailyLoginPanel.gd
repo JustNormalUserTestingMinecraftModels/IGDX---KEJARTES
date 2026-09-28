@@ -3,17 +3,23 @@ class_name DailyLoginPanel
 extends TextureRect
 
 ## The Lobby's daily-login popup: the seven-day calendar strip, its claim
-## button and the reward it pays. Owns the streak rules (a missed day
-## resets to day 1; a claim advances the day, wrapping 7 to 1) and writes
-## GameState.player_money, daily_login_day and last_claim_date. It never
-## reaches up: it announces a payout with `claimed`, and the Lobby rolls
-## its wallet and fires RewardFeedback. The Lobby owns the backdrop blur
-## and calls open() / close() / refresh() down.
+## button, the streak line above it and the reward it pays. Owns the
+## streak rules (a missed day resets to day 1; a claim advances the day,
+## wrapping 7 to 1) and writes GameState.player_money, daily_login_day and
+## last_claim_date at claim time, so quitting mid-reveal loses nothing.
+## It never reaches up: it plays the DailyRewardReveal and, when the
+## reveal's coin lands (or close() cuts it short), announces the payout
+## with `claimed`; the Lobby then rolls its wallet and fires
+## RewardFeedback. The Lobby owns the backdrop blur and calls open() /
+## close() / refresh() down.
 ##
 ## @tool so the editor's test runner can call claim() and the static
-## rules. Every runtime side effect is gated behind
-## Engine.is_editor_hint(): a @tool node that swaps its own texture or
-## modulate in the editor gets that baked into Lobby.tscn on save.
+## rules. Only _ready is gated behind Engine.is_editor_hint(). The writers
+## (refresh, open, close and the claim handler) swap texture, modulate,
+## scale and visibility ungated; that is safe only because their one
+## caller, Lobby.gd, is not @tool, and the suites' bare panel never enters
+## the tree. A @tool node that restyles itself in the editor gets that
+## baked into Lobby.tscn on save, so never call them from editor code.
 
 ## A claim paid out. `previous_money` is the balance before it, so the
 ## Lobby can roll its money display up from there.
@@ -55,9 +61,13 @@ const DAY_PANELS: Array[Texture2D] = [
 	preload("res://Assets/Images/UI/DailyLogin/day7.png"),
 ]
 
-## The popup's close: how long it fades and shrinks, and to what scale.
+## The popup's close: how long it fades and shrinks.
 const CLOSE_SECONDS := 0.15
+## The scale the popup shrinks to as it closes.
 const CLOSE_SCALE := Vector2(0.8, 0.8)
+
+## Where the reward coin flies; wired in Lobby.tscn to %DisplayUang.
+@export var wallet_anchor: Control
 
 @export_group("Streak")
 ## Flame scale on day 1 of the streak.
@@ -77,8 +87,14 @@ const CLOSE_SCALE := Vector2(0.8, 0.8)
 @onready var streak_row: HBoxContainer = %DailyStreak
 @onready var streak_label: Label = %StreakLabel
 @onready var streak_flame: TextureRect = %StreakFlame
+@onready var reward_row: HBoxContainer = %RewardRow
+@onready var reveal: DailyRewardReveal = %DailyRewardReveal
 
 var _flicker: Tween
+## The claim whose payout waits on the reveal's coin landing.
+var _pending_amount: int = 0
+var _pending_previous_money: int = 0
+var _is_payout_pending: bool = false
 
 
 func _ready() -> void:
@@ -86,6 +102,8 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	claim_button.pressed.connect(_on_claim_pressed)
+	reveal.burst_started.connect(_on_reveal_burst_started)
+	reveal.coin_landed.connect(_pay_out)
 
 
 ## Resets a broken streak and redraws the strip for `today` (YYYY-MM-DD).
@@ -103,11 +121,14 @@ func open() -> void:
 	Juice.pop_in(self)
 	AnimUtils.popup_spring_in(greeting)
 	AnimUtils.popup_spring_in(streak_row)
+	reveal.show_ready()
 	_start_flicker()
 
 
-## Fades and shrinks the panel out, then hides it.
+## Fades and shrinks the panel out, then hides it. A reveal still playing
+## is cut short first, so its payout still reaches the wallet.
 func close() -> void:
+	reveal.skip()
 	_stop_flicker()
 	var tween := create_tween().set_parallel(true)
 	tween.tween_property(self, "modulate:a", 0.0, CLOSE_SECONDS).set_ease(Tween.EASE_IN)
@@ -165,10 +186,36 @@ func _on_claim_pressed() -> void:
 	var previous_money: int = GameState.player_money
 	var amount: int = claim(today)
 	_show_day(claimed_day, true)
-	Juice.count_up(reward_amount, 0.0, float(amount), AMOUNT_FORMAT)
 	# The tiles are gone -- the panel itself is what pops now.
 	Juice.pop_in(self)
-	claimed.emit(amount, previous_money)
+	_play_claim_moment(amount, claimed_day, previous_money)
+
+
+## Holds the payout and plays the reveal; the reward row counts up at its
+## burst and `claimed` goes out when its coin lands.
+func _play_claim_moment(amount: int, claimed_day: int, previous_money: int) -> void:
+	_pending_amount = amount
+	_pending_previous_money = previous_money
+	_is_payout_pending = true
+	if wallet_anchor == null:
+		push_error("DailyLoginPanel: wallet_anchor is not wired to %DisplayUang in Lobby.tscn")
+		_on_reveal_burst_started()
+		_pay_out()
+		return
+	reveal.play(claimed_day == STREAK_DAYS, wallet_anchor.get_global_rect().get_center())
+
+
+func _on_reveal_burst_started() -> void:
+	AnimUtils.spring_pop_in(reward_row)
+	Juice.count_up(reward_amount, 0.0, float(_pending_amount), AMOUNT_FORMAT)
+
+
+## Announces the held claim, exactly once however the reveal ends.
+func _pay_out() -> void:
+	if not _is_payout_pending:
+		return
+	_is_payout_pending = false
+	claimed.emit(_pending_amount, _pending_previous_money)
 
 
 ## Draws the strip for streak `day`, dimmed when today's claim is done.
@@ -176,6 +223,7 @@ func _show_day(day: int, is_claimed: bool) -> void:
 	texture = DAY_PANELS[clampi(day, 1, STREAK_DAYS) - 1]
 	claim_button.disabled = is_claimed
 	reward_amount.text = AMOUNT_FORMAT % reward_for_day(day)
+	reward_amount.modulate = _peak_tint(day)
 	# The art has no separate "claimed" frame, so dim the affordance nodes
 	# directly -- restore full modulate once a new day makes the claim
 	# available again.

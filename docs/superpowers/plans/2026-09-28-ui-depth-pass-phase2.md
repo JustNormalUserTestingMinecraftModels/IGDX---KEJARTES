@@ -666,7 +666,7 @@ DaySummaryPopup (Control)
           ├ Reward                     moved; set its custom_minimum_size to Vector2(0, 0)
           │                             (932 no longer fits inside the page)
           └ RowsScroll                 moved
-  ```
+```
 
 - Script: `$DimOverlay/Content/Reward/` becomes `$DimOverlay/Safe/Content/Frame/Body/Reward/`, and the `RowsScroll/RowsContainer` path changes the same way. `content` becomes `$DimOverlay/Safe/Content`.
 - Factor the body of the `_input` dismiss path into `func _dismiss() -> void`, keeping the `is_dismissable` guard.

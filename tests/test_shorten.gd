@@ -88,16 +88,24 @@ func _settings() -> Control:
 
 func test_settings_has_the_skip_dialog_toggle() -> void:
 	var s := _settings()
-	var toggle := s.find_child("SkipDialogToggle", true, false) as CheckButton
+	var row := s.find_child("SkipDialogRow", true, false)
+	assert_true(row != null, "Settings carries the skip-dialog row")
+	if row == null:
+		return
+	var toggle := row.get_node_or_null("Toggle") as CheckButton
 	assert_true(toggle != null, "Settings carries the skip-dialog toggle")
-	var label := s.find_child("SkipDialogLabel", true, false) as Label
+	var label := row.get_node_or_null("Label") as Label
 	assert_true(label != null and label.text == "Lewati Dialog Minigame")
 
 
 func test_the_toggle_reflects_and_writes_the_setting() -> void:
 	GameSettings.skip_event_dialogue = true
 	var s := _settings()
-	var toggle := s.find_child("SkipDialogToggle", true, false) as CheckButton
+	var row := s.find_child("SkipDialogRow", true, false)
+	var toggle := (row.get_node_or_null("Toggle") as CheckButton) if row != null else null
+	assert_true(toggle != null, "Settings carries the skip-dialog toggle")
+	if toggle == null:
+		return
 	assert_true(toggle.button_pressed, "it opens showing the current setting")
 	toggle.button_pressed = false
 	assert_false(GameSettings.skip_event_dialogue, "turning it off shows the minigame lines again")

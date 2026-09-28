@@ -5,6 +5,22 @@ Branch: `daily-login-polish` (off `Textures`)
 Status: **Handoff spec — not built.** Design approved; ready for a teammate to
 execute via the implementation plan alongside this file.
 
+> **Revision (2026-09-28, clean-code pass).** `Lobby.gd` is at its
+> 1073-line `LARGE_SCRIPTS` cap. So the daily-login code moves into a new
+> `DailyLoginPanel` component (`Scripts/Lobby/DailyLoginPanel.gd`, attached
+> to the existing `DailyReward` node), and the reveal is its own
+> `DailyRewardReveal` scene. Wherever this spec says "in `Lobby.gd`" for
+> new constants and behaviour, read `DailyLoginPanel.gd`.
+>
+> Helper corrections:
+>
+> - `AnimUtils.create_floating_text` is not used. It builds a Label at
+>   runtime with theme overrides.
+> - `AnimUtils.wobble` is not looped. It snaps to scale 0.7 on each call.
+> - The currency suffix is `G`, not `g`.
+>
+> See the plan's revision note for the full list.
+
 ## Problem
 
 The Lobby's daily-login reward is economically invisible and emotionally flat:
@@ -38,7 +54,8 @@ The Lobby's daily-login reward is economically invisible and emotionally flat:
   `@tool` overlay driven by documented `@export`s, or a small `PackedScene`.
   Every script/`@export` needs `##` docs (`test_script_documentation`).
 - **Escalation values are our own new tunables** (daily-login is not in
-  `Balance.gd`). They go in a named `const`/`@export` block in `Lobby.gd`, never
+  `Balance.gd`). They go in a named `const`/`@export` block in
+  `DailyLoginPanel.gd` (not `Lobby.gd`, which is at its size cap), never
   inline literals.
 - **Persistence unchanged.** Only `daily_login_day` / `last_claim_date` already
   live on `GameState` (session-scoped). Do not add disk persistence.
@@ -70,8 +87,8 @@ A full 7-day streak buys the priciest shop item. Day 7 is a real payoff
 | 7 | **400G** (peti besar) |
 | **Total** | **1500G** |
 
-Implemented as a named, documented constant array in `Lobby.gd`, replacing the
-flat `DAILY_REWARD`:
+Implemented as a named, documented constant array in `DailyLoginPanel.gd`,
+replacing the flat `DAILY_REWARD`:
 
 ```gdscript
 ## Daily-login reward per streak day (index 0 = day 1). A full 7-day streak
@@ -80,7 +97,7 @@ flat `DAILY_REWARD`:
 const REWARD_CURVE: Array[int] = [80, 120, 160, 200, 240, 300, 400]
 ```
 
-`_on_claim_pressed` reads `REWARD_CURVE[clampi(daily_login_day, 1, 7) - 1]`;
+The claim reads `REWARD_CURVE[clampi(daily_login_day, 1, STREAK_DAYS) - 1]`;
 the amount label shows that value; day 7 uses the bigger reveal (below).
 
 ### 2. Welcome-back header + streak
@@ -165,7 +182,8 @@ source-text-scan pattern where nodes can't be instantiated headlessly):
 - **No `theme_override_*`** introduced on the new nodes (the repo already pins
   this globally; keep the new work clean).
 
-Run targeted `test_run(suite="test_lobby")` during dev; one full run at the end
+Run targeted `test_run(suite="lobby")` (plus the new `daily_login_panel`
+suite and `clean_code`) during dev; one full run at the end
 (budget an editor restart — a full run rebakes the theme and drops the bridge,
 per CLAUDE.md).
 

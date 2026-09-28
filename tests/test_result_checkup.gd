@@ -1106,7 +1106,7 @@ func test_logs_wears_the_light_red_result_button() -> void:
 	var theme := ThemeFactory.build(tokens)
 	assert_true(theme.get_type_list().has("ResultLogsButton"),
 		"ResultLogsButton is a variation")
-	var sb := theme.get_stylebox("normal", "ResultLogsButton") as LippedStyleBox
+	var sb := theme.get_stylebox("normal", "ResultLogsButton") as StyleBoxFlat
 	assert_eq(sb.bg_color, tokens.result_logs_fill, "its face is the light red")
 	assert_eq(theme.get_font_size("font_size", "ResultLogsButton"),
 		theme.get_font_size("font_size", "ResultButton"),

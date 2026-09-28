@@ -79,7 +79,7 @@ func test_every_lip_is_darker_than_its_face() -> void:
 func test_depth_and_release_tokens() -> void:
 	var tokens := DesignTokens.load_default()
 	assert_eq(tokens.lip_height, 7, "lip_height")
-	assert_true(absf(tokens.gloss_strength - 0.5) < 0.001, "gloss_strength")
+	assert_true(absf(tokens.gloss_strength - 0.35) < 0.001, "gloss_strength")
 	assert_true(absf(tokens.lipped_light_face_luminance - 0.7) < 0.001, "label-ink threshold")
 	assert_eq(tokens.lipped_label_outline, 8, "label outline")
 	assert_true(absf(tokens.release_pop_scale - 1.03) < 0.001, "release pop")

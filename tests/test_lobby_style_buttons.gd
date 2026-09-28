@@ -3,11 +3,11 @@ extends McpTestSuite
 
 ## Button roles (2026-09-28 UI depth pass, replacing the 2026-09-14
 ## lobby-style-buttons rule that every action button wore the brown Lobby
-## look). Every framed button is now a LippedStyleBox: a face on a darker
-## lip, sinking onto the lip when held. Its colours say its role -- mint is
-## the main action and affirm on every screen, tomato is danger, brown is
-## neutral, cream is quiet, sky and sunflower are the Lobby tiles' and the
-## notebook tabs' own. Information badges keep their meaning colours.
+## look). Every framed button is now a lipped box (LippedBox): a face on a
+## darker lip, sinking onto the lip when held. Its colours say its role --
+## mint is the main action and affirm on every screen, tomato is danger,
+## brown is neutral, cream is quiet, sky and sunflower are the Lobby tiles'
+## and the notebook tabs' own. Information badges keep their meaning colours.
 ## Spec: docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md.
 
 const _STUDENT_CARD := "res://Scenes/StudentCard/StudentCard.tscn"
@@ -49,8 +49,8 @@ func _roles() -> Dictionary:
 	}
 
 
-func _box(state: String, name: String) -> LippedStyleBox:
-	return _theme.get_stylebox(state, name) as LippedStyleBox
+func _box(state: String, name: String) -> StyleBoxFlat:
+	return _theme.get_stylebox(state, name) as StyleBoxFlat
 
 
 ## A variation's resting face, or transparent when it is not lipped.
@@ -63,20 +63,21 @@ func test_every_role_wears_its_palette_colour() -> void:
 	var roles := _roles()
 	for name in roles:
 		var sb := _box("normal", name)
-		assert_true(sb != null, name + "/normal is a LippedStyleBox")
+		assert_true(sb != null, name + "/normal is a lipped box")
 		if sb == null:
 			continue
 		assert_eq(sb.bg_color, roles[name][0], name + " face")
-		assert_eq(sb.lip_color, roles[name][1], name + " lip")
+		assert_eq(sb.shadow_color, roles[name][1], name + " lip")
+		assert_true(LippedBox.is_lipped(sb), name + " is lipped")
 
 
 func test_every_role_sinks_onto_its_lip_when_held() -> void:
 	for name in _roles():
 		var rest := _box("normal", name)
 		var held := _box("pressed", name)
-		assert_true(rest != null and not rest.pressed and rest.lip_height > 0,
+		assert_true(rest != null and not LippedBox.is_pressed(rest) and LippedBox.lip_height_of(rest) > 0,
 			name + " rests on a lip")
-		assert_true(held != null and held.pressed, name + " sinks when held")
+		assert_true(held != null and LippedBox.is_pressed(held), name + " sinks when held")
 
 
 func test_gold_is_never_a_main_action() -> void:
@@ -113,7 +114,7 @@ func test_status_badges_keep_their_red_and_green() -> void:
 ## The event dialog's student card stays flat: its pressed state means
 ## SELECTED, which a sink would not say.
 func test_the_event_select_card_stays_flat() -> void:
-	assert_true(_theme.get_stylebox("normal", "EventSelectCard") is StyleBoxFlat,
+	assert_false(LippedBox.is_lipped(_theme.get_stylebox("normal", "EventSelectCard")),
 		"EventSelectCard keeps its flat selectable card")
 
 

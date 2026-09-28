@@ -1561,12 +1561,13 @@ static func _add_button_variation(
 	theme.set_stylebox("focus", name, StyleBoxEmpty.new())
 	theme.set_stylebox("pressed", name, _button_box(tokens, face, lip, r, true))
 
-	var disabled := _button_box(tokens,
+	var disabled := LippedBox.make(
 		face.lerp(tokens.surface_sunken, DISABLED_FADE),
-		lip.lerp(tokens.surface_sunken, DISABLED_FADE), r)
-	disabled.lip_height = floori(tokens.lip_height / 2.0)
-	disabled.set_vertical_padding(tokens.btn_pad_v_s)
-	disabled.shadow_size = 0
+		lip.lerp(tokens.surface_sunken, DISABLED_FADE),
+		floori(tokens.lip_height / 2.0), r, 0.0)
+	disabled.content_margin_left = tokens.space_lg
+	disabled.content_margin_right = tokens.space_lg
+	LippedBox.set_vertical_padding(disabled, tokens.btn_pad_v_s)
 	theme.set_stylebox("disabled", name, disabled)
 
 	_apply_lipped_text(theme, tokens, name, face, lip)
@@ -1590,31 +1591,24 @@ static func _apply_lipped_text(theme: Theme, tokens: DesignTokens, name: String,
 	theme.set_constant("outline_size", name, 0 if light_face else tokens.lipped_label_outline)
 
 
-## One lipped surface: `face` on `lip`, with the house gloss, soft shadow
-## and padding. `pressed` builds the held state.
+## One lipped surface: `face` on `lip`, with the house gloss and padding,
+## built as a native StyleBoxFlat (LippedBox) -- no soft drop shadow of its
+## own, because the shadow slot draws the lip. `pressed` builds the held
+## state.
 static func _button_box(tokens: DesignTokens, face: Color, lip: Color, radius: int,
-		pressed: bool = false) -> LippedStyleBox:
-	var sb := LippedStyleBox.new()
-	sb.bg_color = face
-	sb.lip_color = lip
-	sb.lip_height = tokens.lip_height
-	sb.corner_radius = radius
-	sb.gloss_strength = tokens.gloss_strength
-	sb.shadow_color = tokens.shadow_color
-	sb.shadow_size = tokens.shadow_size
-	sb.shadow_offset = tokens.shadow_offset
-	sb.pressed = pressed
+		pressed: bool = false) -> StyleBoxFlat:
+	var sb := LippedBox.make(face, lip, tokens.lip_height, radius, tokens.gloss_strength, pressed)
 	sb.content_margin_left = tokens.space_lg
 	sb.content_margin_right = tokens.space_lg
-	sb.set_vertical_padding(tokens.btn_pad_v_s)
+	LippedBox.set_vertical_padding(sb, tokens.btn_pad_v_s)
 	return sb
 
 
 ## Set a box's vertical padding: a lipped box splits it around its lip, a
 ## flat one takes it top and bottom.
 static func _pad_vertical(sb: StyleBox, pad_v: int) -> void:
-	if sb is LippedStyleBox:
-		(sb as LippedStyleBox).set_vertical_padding(pad_v)
+	if LippedBox.is_lipped(sb):
+		LippedBox.set_vertical_padding(sb as StyleBoxFlat, pad_v)
 		return
 	sb.content_margin_top = pad_v
 	sb.content_margin_bottom = pad_v
@@ -2667,11 +2661,10 @@ static func _lobby_hud_nine_patch(file_name: String, margin: Vector4i) -> StyleB
 ## tiles' thicker slab -- keeping its padding. disabled keeps half.
 static func _thicken_lip(theme: Theme, name: String, lip: int) -> void:
 	for state in ["normal", "hover", "pressed", "disabled"]:
-		var sb := theme.get_stylebox(state, name) as LippedStyleBox
-		if sb == null:
+		var sb := theme.get_stylebox(state, name) as StyleBoxFlat
+		if not LippedBox.is_lipped(sb):
 			continue
-		sb.lip_height = floori(lip / 2.0) if state == "disabled" else lip
-		sb.repad()
+		LippedBox.relip(sb, floori(lip / 2.0) if state == "disabled" else lip)
 
 
 ## The Lobby's scrapbook HUD. Since the 2026-09-28 UI depth pass these wear

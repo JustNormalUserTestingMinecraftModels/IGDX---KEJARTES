@@ -67,8 +67,6 @@ func _button_variations() -> Array:
 
 ## A button box's corner radius, whichever surface type it is.
 func _radius(sb: StyleBox) -> int:
-	if sb is LippedStyleBox:
-		return (sb as LippedStyleBox).corner_radius
 	if sb is StyleBoxFlat:
 		return (sb as StyleBoxFlat).corner_radius_top_left
 	return -1
@@ -349,9 +347,9 @@ func test_no_button_is_authored_off_step() -> void:
 ## rule: at a fixed 120x120 square, radius_pill yields an exact circle, and
 ## because the size is fixed there is no height-dependent-radius risk.
 func test_card_arrow_button_is_a_circle() -> void:
-	var sb := _theme.get_stylebox("normal", "CardArrowButton") as LippedStyleBox
-	assert_not_null(sb, "CardArrowButton/normal must be a LippedStyleBox")
-	assert_eq(sb.corner_radius, _tokens.radius_pill,
+	var sb := _theme.get_stylebox("normal", "CardArrowButton") as StyleBoxFlat
+	assert_not_null(sb, "CardArrowButton/normal must be a lipped box")
+	assert_eq(sb.corner_radius_top_left, _tokens.radius_pill,
 		"CardArrowButton is a fixed square, so radius_pill makes it a circle")
 	assert_eq(sb.bg_color, _tokens.brand_primary, "arrow face")
-	assert_eq(sb.lip_color, _tokens.brand_primary_dark, "arrow lip")
+	assert_eq(sb.shadow_color, _tokens.brand_primary_dark, "arrow lip")

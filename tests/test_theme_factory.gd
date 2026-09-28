@@ -59,12 +59,12 @@ func test_button_variations_have_all_four_states() -> void:
 
 
 func test_primary_button_is_the_mint_main_action() -> void:
-	var sb := _theme.get_stylebox("normal", "PrimaryButton") as LippedStyleBox
-	assert_true(sb != null, "PrimaryButton/normal must be a LippedStyleBox")
+	var sb := _theme.get_stylebox("normal", "PrimaryButton") as StyleBoxFlat
+	assert_true(sb != null, "PrimaryButton/normal must be a lipped box")
 	if sb == null:
 		return
 	assert_eq(sb.bg_color, _tokens.accent_mint, "the main action is mint")
-	assert_eq(sb.lip_color, _tokens.accent_mint_lip, "on its darker lip")
+	assert_eq(sb.shadow_color, _tokens.accent_mint_lip, "on its darker lip")
 
 
 func test_buttons_meet_minimum_touch_target() -> void:
@@ -95,7 +95,7 @@ func test_changing_a_token_changes_the_built_theme() -> void:
 	var custom := DesignTokens.new()
 	custom.accent_mint = Color("ff0000")
 	var custom_theme := ThemeFactory.build(custom)
-	var sb := custom_theme.get_stylebox("normal", "PrimaryButton") as LippedStyleBox
+	var sb := custom_theme.get_stylebox("normal", "PrimaryButton") as StyleBoxFlat
 	assert_eq(sb.bg_color, Color("ff0000"),
 		"theme must be derived from tokens, not hardcoded")
 
@@ -190,7 +190,7 @@ func test_main_menu_button_variation_exists_and_is_sized_for_the_mockup() -> voi
 		"MainMenuButton must vary the Button type")
 
 	# Since the 2026-09-28 UI depth pass it is a brown lipped box.
-	var normal := theme.get_stylebox("normal", "MainMenuButton") as LippedStyleBox
+	var normal := theme.get_stylebox("normal", "MainMenuButton") as StyleBoxFlat
 	assert_true(normal != null and normal.bg_color == tokens.brand_primary_light,
 		"MainMenuButton wears the Lobby's fill")
 
@@ -532,9 +532,9 @@ func test_specialty_badge_is_a_pill_button_variation() -> void:
 	assert_true(theme.has_stylebox("normal", "SpecialtyBadge"),
 		"SpecialtyBadge must define a normal stylebox")
 	var sb := theme.get_stylebox("normal", "SpecialtyBadge")
-	assert_true(sb is LippedStyleBox, "SpecialtyBadge normal must be a LippedStyleBox")
+	assert_true(sb is StyleBoxFlat, "SpecialtyBadge normal must be a lipped box")
 	var tokens := DesignTokens.load_default()
-	assert_eq((sb as LippedStyleBox).corner_radius, tokens.radius_pill,
+	assert_eq((sb as StyleBoxFlat).corner_radius_top_left, tokens.radius_pill,
 		"SpecialtyBadge must be a pill, like QuirkBadge and PersonaBadge")
 
 
@@ -619,13 +619,13 @@ func test_settings_divider_is_a_thin_sunken_rule() -> void:
 ## 2026-09-27 scrapbook HUD: the + is green, never gold (spec §3.2), and
 ## JADWAL is the greenest element (spec §4).
 func test_scrapbook_plus_and_hero_are_green() -> void:
-	var plus := _theme.get_stylebox("normal", "PlusButton") as LippedStyleBox
+	var plus := _theme.get_stylebox("normal", "PlusButton") as StyleBoxFlat
 	assert_true(plus != null, "PlusButton/normal is a lipped box")
 	if plus == null:
 		return
 	assert_eq(plus.bg_color, _tokens.accent_mint, "the + wears the main-action green")
 	assert_ne(plus.bg_color, _tokens.currency_gold, "a gold + would read as an IAP button")
-	var hero := _theme.get_stylebox("normal", "BookHeroButton") as LippedStyleBox
+	var hero := _theme.get_stylebox("normal", "BookHeroButton") as StyleBoxFlat
 	assert_true(hero != null and hero.bg_color == _tokens.accent_mint,
 		"JADWAL wears the main-action green")
-	assert_eq(hero.lip_height, ThemeFactory.LOBBY_HUD_LIP, "the scrapbook's thicker lip")
+	assert_eq(LippedBox.lip_height_of(hero), ThemeFactory.LOBBY_HUD_LIP, "the scrapbook's thicker lip")

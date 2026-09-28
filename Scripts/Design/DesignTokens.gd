@@ -190,10 +190,11 @@ static func load_default() -> DesignTokens:
 @export var button_cream: Color = Color("FFF1DC")
 ## Lip under button_cream faces.
 @export var button_cream_lip: Color = Color("C9A57E")
-## How far a lipped surface's lip shows below its face, px (LippedStyleBox).
+## How far a lipped surface's lip shows below its face, px (LippedBox).
 @export_range(0, 24) var lip_height: int = 7
-## Alpha of the white gloss band on a lipped button's face.
-@export_range(0.0, 1.0) var gloss_strength: float = 0.5
+## How much lighter than its face a lipped button's top gloss band starts
+## (Color.lightened amount). 0 draws no gloss.
+@export_range(0.0, 1.0) var gloss_strength: float = 0.35
 ## A lipped button whose face is brighter than this gets dark text_primary
 ## ink with no outline; a darker face gets outlined text_on_brand.
 @export_range(0.0, 1.0) var lipped_light_face_luminance: float = 0.7

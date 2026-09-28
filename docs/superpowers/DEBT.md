@@ -113,6 +113,10 @@ Q4 -- `StyleBoxFlat` cannot draw dashes).
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
 `bg_event_dialog.png` by `EventStudentSelectDialog`.)
+the 16 UI icons in `Assets/Images/UI/Icons/` (placeholders for the owner's
+chunky set; rules in that folder's README, pinned by `test_ui_icons`), the
+notebook frame's `spiral_ring.png`, `paper_rule.png` and
+`sticker_stitch.png` (`Assets/Images/UI/Notebook/README.md`),
 
 **Achievements polish (2026-09-18).** `AchievementTile`'s lock overlay is a
 placeholder `Assets/Images/UI/Placeholders/icon_lock.svg` (plain padlock
@@ -487,6 +491,12 @@ disconnects, and the editor needs a restart. Cause unconfirmed; verify that
 widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
+
+**UI depth pass, Phases 2–3 (2026-09-28).** Phase 1 made every button
+lipped and shipped `NotebookFrame` and the placeholder icons. Phase 2 moves
+every popup into the frame; Phase 3 is the screen-by-screen icon and role
+pass, the Lobby tiles' icons included. Spec:
+`docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
 
 - **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
   Phase 2). Every option pays at once and the toast wears DEV MODE; no ad

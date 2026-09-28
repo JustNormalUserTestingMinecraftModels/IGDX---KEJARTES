@@ -39,25 +39,21 @@ effect everywhere. That's the point of the system.
 the existing variation that matches intent rather than styling a node by
 hand. As of this pass:
 
-**Buttons** (`theme_type_variation` on a `Button`). Since the 2026-09-14
-lobby-style-buttons pass, every framed action button wears the Lobby's look
-through `ThemeFactory._add_lobby_button()`: `brand_primary_light` over the
-darker bevel, a cream rim and cream display text. The role names below say
-what a button is for, not how it looks:
-- `LobbyCtaButton` / `LobbyNavTile`: the Lobby's own buttons, the look every
-  other role copies.
-- `PrimaryButton`: the screen's main call-to-action or forward navigation.
-- `SecondaryButton`: a lower-emphasis action alongside a primary one.
-- `DangerButton`: destructive or cancel actions.
-- `SuccessButton`: affirmative actions that aren't the screen's main nav.
-- `StudentCardSecondaryButtonL`: StudentCard's cream secondary (Batal and the
-  page arrows). StudentCard is the one screen that keeps the pre-2026-09-14
-  look.
-- `RosterStatusBelum` / `RosterStatusSudah`: StudentList's red and green
-  status badges, where the colour is the information.
-- `QuirkBadge` / `PersonaBadge`: StudentCard's trait chips. They share one
-  pill geometry and differ in accent, so the two trait kinds stay
-  distinguishable.
+**Buttons** (`theme_type_variation` on a `Button`). Since the 2026-09-28 UI depth pass every framed button is a lipped face
+built by `Scripts/Design/LippedBox.gd` from a plain `StyleBoxFlat`: a face
+on a solid darker lip (the box's drop shadow, in a strip freed by a
+negative `expand_margin_bottom`) with a soft gloss along its top (a blended
+top border), sinking onto the lip when held (`expand_margin_top`), with no
+rim. It is native on purpose: the theme loads before the SceneTree exists,
+and a script-backed StyleBox there makes every debug run log a SceneTree
+error. Its colours say its role — mint is the main
+action and affirm on every screen, tomato is danger, brown is neutral,
+cream is quiet; sky and sunflower belong to the Lobby tiles and the
+notebook tabs, and sunflower is never an action (gold reads as "buy").
+Information badges keep their meaning colours. The palette pairs are the
+`accent_*` / `button_cream*` tokens. Labels on a dark face are outlined
+white; on a light face they are plain dark ink. `EventSelectCard` stays a
+flat box, because its pressed state means *selected*.
 
 **Lobby-only exception (2026-09-27 scrapbook HUD, Q7):** the Lobby's own
 `BookHeroButton`, `NavTileKoperasi` / `NavTileInventory` / `NavTileRapor` and
@@ -156,6 +152,16 @@ them at a new file and rebake).
 See `Assets/Audio/README.md`. Bus/SFX/BGM slots are defined on
 `AudioDirector` and are currently silent placeholders (BGM tracks are
 explicitly deferred — "a stronger authorship choice than SFX").
+
+## The notebook frame
+
+Popups sit in `Scenes/UI/NotebookFrame.tscn`: drop your content in as
+children of the frame and it lays them into the page. Set `title_text`,
+`tabs` (up to three), `ring_count`, `show_well`, `show_tape` and
+`show_close` on the instance's root, and listen to `tab_selected` /
+`close_pressed`. A dialog is the same frame with no tabs, four rings and no
+well. The ring, rule and sticker textures are placeholders
+(`Assets/Images/UI/Notebook/README.md`).
 
 ## The Juice API (`Scripts/Design/Juice.gd`)
 

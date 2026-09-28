@@ -139,6 +139,10 @@ overrides (`separation`, `margin_*`).
 
 Full detail: `docs/superpowers/design/style-guide.md`.
 
+**Buttons are lipped** (`LippedBox`, native `StyleBoxFlat` — never a script-backed StyleBox, which errors at startup): the role decides the colour, and
+mint is the main action on every screen, never gold. **Popups sit in
+`NotebookFrame`.** Both: style guide.
+
 **The second rule: no visual is built at runtime.** Static chrome is a node in
 the `.tscn`; repeated rows are a `PackedScene` template; responsive geometry
 is a `@tool` script driven by documented `@export` knobs. Every script's
@@ -376,7 +380,9 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
+UI depth pass, Phases 2–3 (popups into `NotebookFrame`; the screen pass):
+spec docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md. Phase 1
+(lipped buttons) is on `feat/ui-depth-pass`.
 
 ## Maintaining this file
 

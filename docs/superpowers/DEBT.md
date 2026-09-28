@@ -47,6 +47,9 @@ band's `caution_tape.svg`; and `night_windows.png`, generated from
 `transition_foreground.png` -- regenerate it if that painting changes),
 the 2026-09-24 picker icons (`Assets/Images/UI/Picker/arrow_down.svg`, `pip_coin.svg`, `badge_check.svg`; hand-drawn vectors in the
 token colours, sized to draw at 1:1),
+the 2026-09-28 Settings controls (`Assets/Images/UI/Settings/switch_on.svg`,
+`switch_off.svg`, 112x64, and `slider_grabber.svg`, 56x56; hand-drawn
+vectors in the token colours, reaching the theme through `DesignTokens`),
 the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
 `icon_keranjang_kosong.svg`, `tray_dots.png` (this last must
 stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
@@ -520,7 +523,7 @@ widget via `project_run` instead, which exercises it fine.
     the largest surface on the highest-traffic screen. No code fix exists;
     this one needs a bigger source from the artist. Same for
     `Shop/UI/bg_inventory_blur.png` (1.41x up) and `UI/BG.jpg` (1.47x up,
-    CutScene and Settings).
+    CutScene).
   - **Source resizes** would beat mipmaps for the static UI offenders and cut
     VRAM, but five textures are shared across 2-12 scenes at different drawn
     sizes (`return_button.png` in 12, `uang.png` in 4, `star.png` in 6), so

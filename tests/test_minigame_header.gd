@@ -69,6 +69,29 @@ func test_show_timer_false_hides_the_timer_button() -> void:
 	assert_false(timer_button.visible, "show_timer drives the timer button")
 
 
+## A saved show_timer = false must preview on scene open, i.e. an export set
+## BEFORE the node enters the tree still takes effect once _ready runs.
+func test_show_timer_set_before_entering_tree_hides_the_timer_button() -> void:
+	var scene: PackedScene = load(HEADER_PATH)
+	var header: MinigameHeader = scene.instantiate()
+	header.show_timer = false
+	Engine.get_main_loop().root.add_child(header)
+	track(header)
+	var timer_button: Button = header.get_node("%TimerButton")
+	assert_false(timer_button.visible,
+		"an export set before add_child still applies once the node is ready")
+
+
+## Display-only decision: the timer button takes no focus and no taps.
+func test_timer_button_is_display_only() -> void:
+	var header: MinigameHeader = _make()
+	var timer_button: Button = header.get_node("%TimerButton")
+	assert_eq(timer_button.focus_mode, Control.FOCUS_NONE,
+		"the timer button never takes keyboard/gamepad focus")
+	assert_eq(timer_button.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"the timer button never intercepts taps")
+
+
 func test_the_pause_button_announces_pause_pressed() -> void:
 	var header: MinigameHeader = _make()
 	var presses: Array[int] = [0]

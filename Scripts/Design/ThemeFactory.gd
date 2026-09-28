@@ -1965,6 +1965,8 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 ##   MinigameHudValue       and its gold display-face number.
 ##   MinigameHudIconButton  the round pause/timer chrome. A fixed square in
 ##                          MinigameHeader.tscn, so radius_pill is a circle.
+##                          Its focus state is a gold rim, like the answer
+##                          button's, not the house focus box.
 ##   MinigamePlankPanel     the carved plank tab (SOAL / JAWABAN / titles)
 ##   MinigamePlankLabel     and its gold display-face text.
 
@@ -2017,6 +2019,7 @@ static func _build_minigame_card_family(theme: Theme, tokens: DesignTokens) -> v
 	plate.shadow_color = tokens.preview_pill_shadow_color
 	plate.shadow_size = tokens.preview_pill_shadow_size
 	plate.shadow_offset = tokens.preview_pill_shadow_offset
+	plate.set_content_margin_all(tokens.space_xs)
 	_add_minigame_panel(theme, "MinigameImagePlate", plate)
 
 
@@ -2120,6 +2123,7 @@ static func _build_minigame_hud(theme: Theme, tokens: DesignTokens) -> void:
 	for state: String in MINIGAME_BUTTON_STATES:
 		var fill: Color = tokens.brand_primary if state == "pressed" else tokens.brand_primary_dark
 		theme.set_stylebox(state, icon_button, _minigame_rim_box(tokens, fill, tokens.radius_pill))
+	theme.set_stylebox("focus", icon_button, _minigame_hud_icon_focus_box(tokens))
 
 
 ## A gold display-face Label variation at `font_size`.
@@ -2147,6 +2151,17 @@ static func _minigame_rim_box(tokens: DesignTokens, fill: Color, radius: int) ->
 	box.set_corner_radius_all(radius)
 	box.set_border_width_all(int(tokens.outline_width / 2.0))
 	box.border_color = tokens.outline_card
+	return box
+
+
+## Focus rim for a HUD icon button, in the same spirit as
+## _minigame_answer_focus_box: Godot draws focus OVER the current state, so
+## this is the button's own pill rim with no fill, in gold so it reads
+## against the dark brand chrome underneath.
+static func _minigame_hud_icon_focus_box(tokens: DesignTokens) -> StyleBoxFlat:
+	var box := _minigame_rim_box(tokens, tokens.brand_primary_dark, tokens.radius_pill)
+	box.border_color = tokens.currency_gold
+	box.draw_center = false
 	return box
 
 

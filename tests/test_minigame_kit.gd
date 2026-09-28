@@ -146,6 +146,25 @@ func test_hud_icon_button_has_all_states_and_is_round() -> void:
 		"icon button is round")
 
 
+## Godot draws focus OVER the current state, so it must be a rim, not a fill
+## (same reasoning as the answer button's focus rim).
+func test_hud_icon_button_focus_is_a_gold_rim_overlay() -> void:
+	var focus: StyleBoxFlat = _flat("focus", "MinigameHudIconButton")
+	if focus == null:
+		return
+	assert_false(focus.draw_center, "focus draws no fill over the state beneath it")
+	assert_true(focus.border_color.is_equal_approx(_tokens.currency_gold),
+		"a gold rim reads on the dark HUD chrome")
+
+
+func test_minigame_image_plate_has_a_content_margin() -> void:
+	var plate: StyleBoxFlat = _flat("panel", "MinigameImagePlate")
+	if plate == null:
+		return
+	assert_eq(plate.content_margin_left, float(_tokens.space_xs),
+		"the plate insets its picture so it doesn't touch the rounded corners")
+
+
 func test_plank_panel_and_label() -> void:
 	var plank: StyleBoxFlat = _flat("panel", "MinigamePlankPanel")
 	assert_true(plank != null and plank.bg_color.is_equal_approx(_tokens.brand_primary_dark),

@@ -44,8 +44,6 @@ func _ready() -> void:
 	if not _has_required_nodes():
 		return
 	_connect_pause_button()
-	if Engine.is_editor_hint():
-		return
 	_apply_exports()
 
 

@@ -131,6 +131,20 @@ func test_day_panels_cover_the_streak() -> void:
 		"one panel frame per streak day")
 
 
+## Task 3 regression guard: the daily_claim cue was registered but never
+## played by anything.
+func test_claim_plays_the_daily_claim_cue() -> void:
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT)
+	assert_true(panel_src.contains('AudioDirector.play_sfx(&"daily_claim")'),
+		"a claim must play the daily_claim cue")
+
+
+func test_claim_counts_the_amount_up() -> void:
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT)
+	assert_true(panel_src.contains("Juice.count_up(reward_amount"),
+		"the reward amount must count up on a claim, not snap")
+
+
 func test_lobby_no_longer_owns_the_claim() -> void:
 	var lobby_src := FileAccess.get_file_as_string(_LOBBY_SCRIPT)
 	for moved: String in ["_on_claim_pressed", "DAILY_REWARD", "DAY_PANELS",

@@ -129,10 +129,12 @@ func _on_claim_pressed() -> void:
 	if GameState.last_claim_date == today:
 		AudioDirector.play_sfx(&"error")
 		return
+	AudioDirector.play_sfx(&"daily_claim")
 	var claimed_day: int = GameState.daily_login_day
 	var previous_money: int = GameState.player_money
 	var amount: int = claim(today)
 	_show_day(claimed_day, true)
+	Juice.count_up(reward_amount, 0.0, float(amount), AMOUNT_FORMAT)
 	# The tiles are gone -- the panel itself is what pops now.
 	Juice.pop_in(self)
 	claimed.emit(amount, previous_money)

@@ -125,7 +125,7 @@ func _process(delta: float) -> void:
 		return
 	if _rest.is_empty() and not _capture_rest():
 		return
-	_deflection = _deflection.lerp(_target_tilt(delta), clampf(smoothing * delta, 0.0, 1.0))
+	_deflection = _deflection.lerp(_target_tilt(_read_tilt(delta)), clampf(smoothing * delta, 0.0, 1.0))
 	_apply()
 
 
@@ -191,10 +191,10 @@ func required_reach() -> Vector2:
 
 ## The tilt the bands chase: none while Kurangi Gerakan is on, so they settle
 ## back to rest and hold still (spec 2026-09-28, planning amendment 2).
-func _target_tilt(delta: float) -> Vector2:
+func _target_tilt(raw: Vector2) -> Vector2:
 	if AmbientKit.is_still():
 		return Vector2.ZERO
-	return _read_tilt(delta)
+	return raw
 
 
 ## Tilt as a vector in [-1, 1]: the accelerometer where there is one, the

@@ -40,13 +40,17 @@ func test_reduce_motion_holds_the_diorama_at_rest() -> void:
 	var before := GameSettings.reduce_motion
 	var driver := (load("res://Scripts/UI/ParallaxDiorama.gd") as GDScript).new() as Control
 	track(driver)
+	var tilt := Vector2(0.5, -0.25)
 	GameSettings.reduce_motion = true
-	var still: Vector2 = driver.call("_target_tilt", 0.016)
+	var still: Vector2 = driver.call("_target_tilt", tilt)
+	GameSettings.reduce_motion = false
+	var moving: Vector2 = driver.call("_target_tilt", tilt)
 	GameSettings.reduce_motion = before
 	assert_eq(still, Vector2.ZERO, "no tilt reaches the bands while Kurangi Gerakan is on")
+	assert_eq(moving, tilt, "with it off, the reading passes through untouched")
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/ParallaxDiorama.gd")
-	assert_true(src.contains("_deflection.lerp(_target_tilt(delta)"),
-		"the bands chase _target_tilt, not the raw reading")
+	assert_true(src.contains("_deflection.lerp(_target_tilt(_read_tilt(delta))"),
+		"the bands chase the gated reading, not the raw one")
 
 
 ## The Lobby look's flat screens (spec 2026-09-28): one picture plane under

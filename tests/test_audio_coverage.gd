@@ -270,10 +270,6 @@ const _DOUBLE_FIRE_ALLOWLIST := {
 	# are one player action, pre-existing before this pass.
 	"res://Scripts/AturJadwal/AturJadwal.gd:_show_combined_warning": "popup_open (via _show_peringatan) + fail, reviewed",
 	"res://Scripts/AturJadwal/AturJadwal.gd:_show_incomplete_schedule_warning": "popup_open (via _show_peringatan) + fail, reviewed",
-	# _update_money_display()'s conditional "coin" (only when the balance
-	# actually rose) + this function's own "reward" chime -- the coin bump
-	# and the claim confirmation are one player action, pre-existing.
-	"res://Scripts/Lobby/Lobby.gd:_on_claim_pressed": "coin (via _update_money_display) + reward, reviewed",
 	# ---- 2026-09-21 sound pack. Four entries, all limitations of this
 	# scanner rather than real stacking. Each was checked by reading the
 	# function, not by assuming.

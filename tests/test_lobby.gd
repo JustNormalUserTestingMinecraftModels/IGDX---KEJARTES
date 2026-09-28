@@ -34,6 +34,7 @@ extends McpTestSuite
 
 const _SCENE_PATH := "res://Scenes/Lobby/Lobby.tscn"
 const _SCRIPT_PATH := "res://Scripts/Lobby/Lobby.gd"
+const _PANEL_SCRIPT_PATH := "res://Scripts/Lobby/DailyLoginPanel.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 
 const _NAV_BUTTONS := ["Student", "Koperasi", "ReportStudent", "Inventory", "Jadwal"]
@@ -96,12 +97,30 @@ func test_money_label_uses_count_up_not_a_direct_set() -> void:
 func test_daily_login_uses_pop_in() -> void:
 	# The seven day tiles (and their stagger_in) are gone with them -- the
 	# panel art bakes the whole calendar, so opening and claiming both just
-	# pop the one panel node.
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("Juice.pop_in("),
+	# pop the one panel node. The pop lives in the DailyLoginPanel
+	# component; the reward feedback stays on the Lobby, which owns the
+	# money label it bursts from.
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT_PATH)
+	assert_true(panel_src.contains("Juice.pop_in("),
 		"the panel must pop in on open and on claim")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains('RewardFeedback.play(&"coins_earned"'),
 		"claiming a day must fire the reward through RewardFeedback")
+
+
+## The daily-login popup is a DailyLoginPanel component (2026-09-28). It
+## owns the claim and the streak's GameState writes; the Lobby only
+## listens for `claimed` and rolls its wallet.
+func test_daily_reward_is_a_daily_login_panel() -> void:
+	assert_true(_lobby.get_node("DailyReward") is DailyLoginPanel,
+		"DailyReward must carry the DailyLoginPanel script")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_false(src.contains("daily_login_day"),
+		"the streak day is the panel's to write, not the Lobby's")
+	assert_false(src.contains("last_claim_date"),
+		"the claim date is the panel's to write, not the Lobby's")
+	assert_true(src.contains("claimed.connect(_on_daily_reward_claimed)"),
+		"the Lobby must listen for the panel's claimed signal")
 
 
 # ------------------------------------------------------- standard four
@@ -335,14 +354,16 @@ func test_the_day_tiles_are_gone() -> void:
 
 
 func test_the_panel_swaps_art_per_day() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
-	assert_true(src.contains("DAY_PANELS"),
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT_PATH)
+	assert_true(panel_src.contains("DAY_PANELS"),
 		"the seven panels must be a named const, not seven inline loads")
 	for i in range(1, 8):
-		assert_true(src.contains("DailyLogin/day%d.png" % i),
+		assert_true(panel_src.contains("DailyLogin/day%d.png" % i),
 			"day %d's panel must be referenced" % i)
-	assert_false(src.contains("day_nodes"),
-		"the per-tile tint bookkeeping goes with the tiles")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for script_src: String in [src, panel_src]:
+		assert_false(script_src.contains("day_nodes"),
+			"the per-tile tint bookkeeping goes with the tiles")
 
 
 func test_the_lobby_button_wears_the_calendar_icon() -> void:

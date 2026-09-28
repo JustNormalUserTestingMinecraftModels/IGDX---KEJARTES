@@ -233,12 +233,12 @@ func test_a_gesture_bar_inset_still_peeks_only_the_grip() -> void:
 
 ## Hidden, JADWAL lies wholly below the viewport's bottom edge while the
 ## chevron grip still crosses it and its glyph shows whole (spec §4). Read
-## from the real global rects, so it cannot just restate the arithmetic.
+## from the real drawn rects, so it cannot just restate the arithmetic.
 func _assert_only_the_grip_peeks(hud: LobbyHud, where: String) -> void:
 	var screen_bottom: float = hud.get_viewport_rect().end.y
-	var jadwal: Rect2 = (hud.get_node("%Jadwal") as Control).get_global_rect()
-	var grip: Rect2 = (hud.get_node("%ChevronGrip") as Control).get_global_rect()
-	var glyph: Rect2 = (hud.get_node("%ChevronGlyph") as Control).get_global_rect()
+	var jadwal: Rect2 = _drawn_rect(hud.get_node("%Jadwal") as Control)
+	var grip: Rect2 = _drawn_rect(hud.get_node("%ChevronGrip") as Control)
+	var glyph: Rect2 = _drawn_rect(hud.get_node("%ChevronGlyph") as Control)
 	assert_true(jadwal.position.y >= screen_bottom,
 		"%s: JADWAL (top %.1f) hides below the screen's bottom %.1f"
 		% [where, jadwal.position.y, screen_bottom])
@@ -247,6 +247,13 @@ func _assert_only_the_grip_peeks(hud: LobbyHud, where: String) -> void:
 		% [where, grip.position.y, grip.end.y, screen_bottom])
 	assert_true(glyph.end.y <= screen_bottom,
 		"%s: the chevron glyph (bottom %.1f) shows whole" % [where, glyph.end.y])
+
+
+## A Control's on-screen bounds. get_global_rect() ignores rotation, and the
+## hidden chevron glyph turns 180 degrees about its centre, which would put
+## its reported rect a whole glyph lower than where it draws.
+func _drawn_rect(control: Control) -> Rect2:
+	return control.get_global_transform() * Rect2(Vector2.ZERO, control.size)
 
 
 func test_the_hud_waits_for_the_tutorial() -> void:

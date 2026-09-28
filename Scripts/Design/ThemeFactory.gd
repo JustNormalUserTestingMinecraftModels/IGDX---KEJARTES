@@ -39,6 +39,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_objective_strip(theme, tokens)
 	_build_picker(theme, tokens)
 	_build_school_day_liveliness(theme, tokens)
+	_build_minigame_kit(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -1948,6 +1949,63 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	_add_button_variation(theme, tokens, "MinigameChoiceButton",
 		tokens.surface_card, tokens.surface_sunken,
 		tokens.brand_primary, tokens.text_primary)
+
+
+# ------------------------------------------------------------ minigame kit
+
+## The shared minigame UI kit, "Bingkai Kayu" (2026-09-28, spec
+## docs/superpowers/specs/2026-09-28-minigame-polish-part-1-design.md, 4.1).
+## All from existing tokens -- no new tokens, so no Resource-restart hazard.
+##   MinigameCard           the wooden frame: brand fill, cream rim, lifted.
+##   MinigameCardInner      the cream face inside the frame.
+##   MinigameImagePlate     the recessed slot a picture question sits in.
+## Tasks 2 and 3 of the plan extend this list.
+
+## How far the card's shadow alpha is raised over shadow_color's, so the
+## frame still pops on the bright light-orange wood backdrop.
+const MINIGAME_CARD_SHADOW_ALPHA_BOOST := 0.2
+
+
+static func _build_minigame_kit(theme: Theme, tokens: DesignTokens) -> void:
+	_build_minigame_card_family(theme, tokens)
+
+
+## MinigameCard, MinigameCardInner and MinigameImagePlate.
+static func _build_minigame_card_family(theme: Theme, tokens: DesignTokens) -> void:
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = tokens.brand_primary
+	frame.set_border_width_all(int(tokens.outline_width))
+	frame.border_color = tokens.outline_card
+	frame.set_corner_radius_all(tokens.radius_lg)
+	frame.set_content_margin_all(tokens.space_xs)
+	var lifted: Color = tokens.shadow_color
+	lifted.a = minf(1.0, tokens.shadow_color.a + MINIGAME_CARD_SHADOW_ALPHA_BOOST)
+	frame.shadow_color = lifted
+	frame.shadow_size = tokens.shadow_size
+	frame.shadow_offset = tokens.shadow_offset
+	_add_minigame_panel(theme, "MinigameCard", frame)
+
+	var inner := StyleBoxFlat.new()
+	inner.bg_color = tokens.surface_card
+	inner.set_corner_radius_all(tokens.radius_md)
+	inner.set_content_margin_all(tokens.space_md)
+	_add_minigame_panel(theme, "MinigameCardInner", inner)
+
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = tokens.preview_pill_fill
+	plate.set_corner_radius_all(tokens.radius_md)
+	plate.shadow_color = tokens.preview_pill_shadow_color
+	plate.shadow_size = tokens.preview_pill_shadow_size
+	plate.shadow_offset = tokens.preview_pill_shadow_offset
+	_add_minigame_panel(theme, "MinigameImagePlate", plate)
+
+
+## Register `name` as a Panel variation drawn by `box`. Base "Panel", like
+## every panel variation here, even where the node is a PanelContainer.
+static func _add_minigame_panel(theme: Theme, name: String, box: StyleBox) -> void:
+	theme.add_type(name)
+	theme.set_type_variation(name, "Panel")
+	theme.set_stylebox("panel", name, box)
 
 
 # --------------------------------------------------------------- progress

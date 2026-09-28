@@ -39,8 +39,8 @@ const ROOMS := {
 ## the light without fogging the backdrop, so the screen places no Glow.
 ## Recipe M writes the measured values.
 const BLOOM := {
-	SHOP_HUB: 0.9,
-	COSMETIC_SHOP: 0.9,
+	SHOP_HUB: null,
+	COSMETIC_SHOP: null,
 }
 
 

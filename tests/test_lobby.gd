@@ -448,3 +448,33 @@ func test_the_peak_reward_fits_its_row() -> void:
 	var row_right: float = row.offset_left + row.get_combined_minimum_size().x
 	assert_true(row_right <= panel.size.x,
 		"with 400G the row ends at %f, past the panel's %f width" % [row_right, panel.size.x])
+
+
+## Daily-login polish, Task 5: a welcome-back greeting and the streak line
+## sit above the panel, so the baked strip art stays untouched.
+func test_the_greeting_and_streak_sit_above_the_panel() -> void:
+	var greeting := _lobby.get_node_or_null("%DailyGreeting") as Label
+	assert_true(greeting != null, "missing DailyGreeting")
+	if greeting == null:
+		return
+	assert_eq(greeting.theme_type_variation, &"H2Label", "the greeting is on H2Label")
+	assert_eq(greeting.text, "Selamat datang kembali!", "the greeting welcomes the player back")
+	assert_true(_lobby.get_node_or_null("%StreakLabel") is Label, "missing StreakLabel")
+	var flame := _lobby.get_node_or_null("%StreakFlame") as TextureRect
+	assert_true(flame != null, "missing StreakFlame")
+	if flame == null:
+		return
+	assert_true(flame.texture != null
+		and flame.texture.resource_path.ends_with("streak_flame.svg"),
+		"the streak flame wears streak_flame.svg")
+	# The panel scales the flame by streak day. A Container resets its
+	# direct children's scale to 1 on every sort, so the flame must sit in
+	# a plain Control slot, not straight in the DailyStreak row.
+	assert_false(flame.get_parent() is Container,
+		"StreakFlame's parent is a Container, which would undo its scale")
+
+
+func test_the_panel_springs_the_greeting_in() -> void:
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT_PATH)
+	assert_true(panel_src.contains("AnimUtils.popup_spring_in("),
+		"opening the panel springs the greeting and streak in")

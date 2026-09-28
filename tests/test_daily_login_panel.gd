@@ -131,6 +131,19 @@ func test_day_panels_cover_the_streak() -> void:
 		"one panel frame per streak day")
 
 
+## Task 5: the streak flame grows from day 1 to the last streak day and
+## never shrinks on the way. Export initialisers run at construction, so
+## the bare panel carries the real defaults.
+func test_flame_scale_grows_with_the_streak() -> void:
+	assert_eq(_panel.flame_scale_for(1), _panel.flame_scale_min,
+		"day 1 shows the smallest flame")
+	assert_eq(_panel.flame_scale_for(DailyLoginPanel.STREAK_DAYS), _panel.flame_scale_max,
+		"the last streak day shows the biggest flame")
+	for day: int in range(2, DailyLoginPanel.STREAK_DAYS + 1):
+		assert_true(_panel.flame_scale_for(day) >= _panel.flame_scale_for(day - 1),
+			"the flame on day %d is no smaller than on day %d" % [day, day - 1])
+
+
 ## Task 3 regression guard: the daily_claim cue was registered but never
 ## played by anything.
 func test_claim_plays_the_daily_claim_cue() -> void:

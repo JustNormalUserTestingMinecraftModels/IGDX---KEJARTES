@@ -77,7 +77,11 @@ to stay warm and shop-consistent -- drop-replaceable at the same path), and the
 (hand-written SVG, not generated: a white striped strip with zigzag ends,
 drawn white because `DayStickyNote` tints it by `self_modulate`, so a
 replacement must stay light-on-transparent; keep it 246x40, the size it
-displays at, or `test_texture_mipmaps` will want mipmaps on it).
+displays at, or `test_texture_mipmaps` will want mipmaps on it), and the
+2026-09-28 daily-login streak flame, `Assets/Images/UI/DailyLogin/streak_flame.svg`
+(hand-written two-tone paths, 64x64, no `<text>`; the panel scales it
+0.8-1.3x by streak day and tints it `currency_gold` on day 7, so a
+replacement should stay warm and light enough for that tint to read).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
@@ -191,7 +195,7 @@ encode itself failed.
 **Unused pack cues (2026-09-21).** The pack shipped 49 files; these have
 `AudioDirector` slots but no call site yet, because the screens that would
 fire them were not otherwise being touched: `times_up`, `timer_tick`,
-`back_tap`, `item_applied`, `apply`, `tutorial_popup`, `daily_claim`,
+`back_tap`, `item_applied`, `apply`, `tutorial_popup`,
 `achievement_prize`, `achievement_success`, the `sfx_achievement` family,
 the `badge_reveal_*` tier (and its `badge_reveal_stream()` accessor), and the
 ambience beds `classroom_2/3`, `schoolyard_1/2`, `writing` and `thunderstorm`

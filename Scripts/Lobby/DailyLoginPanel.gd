@@ -32,6 +32,9 @@ const SECONDS_PER_DAY := 86400
 ## Turns a "YYYY-MM-DD" date into a datetime string Time can parse.
 const MIDNIGHT_SUFFIX := " 00:00:00"
 
+## The streak line's text; %d is the day in the 7-day cycle.
+const STREAK_FORMAT := "Streak %d hari"
+
 ## Modulate alpha applied to ButtonClaim / RewardCoin / RewardAmount once
 ## today's reward is already claimed. The panel art always draws the same
 ## bright gold "claim me" pill regardless of state, and GhostButton draws no
@@ -56,9 +59,26 @@ const DAY_PANELS: Array[Texture2D] = [
 const CLOSE_SECONDS := 0.15
 const CLOSE_SCALE := Vector2(0.8, 0.8)
 
+@export_group("Streak")
+## Flame scale on day 1 of the streak.
+@export var flame_scale_min: float = 0.8
+## Flame scale on the last streak day.
+@export var flame_scale_max: float = 1.3
+## Seconds for one idle flicker (dim and back).
+@export var flame_flicker_seconds: float = 0.6
+## Flame alpha at the bottom of a flicker.
+@export var flame_flicker_alpha: float = 0.75
+@export_group("")
+
 @onready var claim_button: Button = %ButtonClaim
 @onready var reward_coin: TextureRect = %RewardCoin
 @onready var reward_amount: Label = %RewardAmount
+@onready var greeting: Label = %DailyGreeting
+@onready var streak_row: HBoxContainer = %DailyStreak
+@onready var streak_label: Label = %StreakLabel
+@onready var streak_flame: TextureRect = %StreakFlame
+
+var _flicker: Tween
 
 
 func _ready() -> void:
@@ -81,10 +101,14 @@ func refresh(today: String) -> void:
 func open() -> void:
 	visible = true
 	Juice.pop_in(self)
+	AnimUtils.popup_spring_in(greeting)
+	AnimUtils.popup_spring_in(streak_row)
+	_start_flicker()
 
 
 ## Fades and shrinks the panel out, then hides it.
 func close() -> void:
+	_stop_flicker()
 	var tween := create_tween().set_parallel(true)
 	tween.tween_property(self, "modulate:a", 0.0, CLOSE_SECONDS).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "scale", CLOSE_SCALE, CLOSE_SECONDS).set_ease(Tween.EASE_IN)
@@ -106,6 +130,13 @@ func claim(today: String) -> int:
 ## The reward for streak `day`, clamped into 1..STREAK_DAYS.
 static func reward_for_day(day: int) -> int:
 	return REWARD_CURVE[clampi(day, 1, STREAK_DAYS) - 1]
+
+
+## The streak flame's scale on `day`: it grows from flame_scale_min on
+## day 1 to flame_scale_max on the last streak day.
+func flame_scale_for(day: int) -> float:
+	var progress: float = float(clampi(day, 1, STREAK_DAYS) - 1) / float(STREAK_DAYS - 1)
+	return lerpf(flame_scale_min, flame_scale_max, progress)
 
 
 ## The streak day after `day`; the last day wraps to day 1.
@@ -151,3 +182,38 @@ func _show_day(day: int, is_claimed: bool) -> void:
 	var cue_alpha: float = CLAIMED_CUE_DIM_ALPHA if is_claimed else 1.0
 	for node: CanvasItem in [claim_button, reward_coin, reward_amount]:
 		node.modulate.a = cue_alpha
+	_show_streak(day)
+
+
+## The streak line: the day in the 7-day cycle (per the spec, not a
+## lifetime count) and a flame that grows with it, gold on the last day.
+func _show_streak(day: int) -> void:
+	streak_label.text = STREAK_FORMAT % day
+	Juice.set_pivot_center(streak_flame)
+	var flame_scale: float = flame_scale_for(day)
+	streak_flame.scale = Vector2(flame_scale, flame_scale)
+	streak_flame.modulate = _peak_tint(day)
+
+
+## Gold on the last streak day, untinted otherwise.
+func _peak_tint(day: int) -> Color:
+	return Juice.tokens().currency_gold if day == STREAK_DAYS else Color.WHITE
+
+
+## The flame's idle flicker: a looped dip of its alpha while the panel is
+## open. Off under reduce_motion.
+func _start_flicker() -> void:
+	_stop_flicker()
+	if GameSettings.reduce_motion:
+		return
+	var half: float = flame_flicker_seconds * 0.5
+	_flicker = create_tween().set_loops()
+	_flicker.tween_property(streak_flame, "modulate:a", flame_flicker_alpha, half)
+	_flicker.tween_property(streak_flame, "modulate:a", 1.0, half)
+
+
+func _stop_flicker() -> void:
+	if _flicker != null:
+		_flicker.kill()
+	_flicker = null
+	streak_flame.modulate.a = 1.0

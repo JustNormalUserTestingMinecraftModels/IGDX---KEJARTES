@@ -22,6 +22,7 @@ grow_vertical = 2
 theme_type_variation = &"Scrim"
 
 [node name="Envelope" type="CenterContainer" parent="." unique_id=82370895]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -37,20 +38,22 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Card" parent="Envelope" unique_id=2043074234 instance=ExtResource("2_card")]
+unique_name_in_owner = true
 layout_mode = 2
 interactive = false
 
 [node name="Letter" type="Panel" parent="." unique_id=938402792]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -400.0
+offset_left = -460.0
 offset_top = -30.0
-offset_right = 400.0
-offset_bottom = 210.0
+offset_right = 460.0
+offset_bottom = 290.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -64,15 +67,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 36
-theme_override_constants/margin_right = 48
-theme_override_constants/margin_bottom = 36
+theme_override_constants/margin_left = 56
+theme_override_constants/margin_top = 44
+theme_override_constants/margin_right = 56
+theme_override_constants/margin_bottom = 44
 
 [node name="VBox" type="VBoxContainer" parent="Letter/Margin" unique_id=783693095]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 14
 
 [node name="Kicker" type="Label" parent="Letter/Margin/VBox" unique_id=1946416796]
 layout_mode = 2
@@ -80,12 +83,15 @@ theme_type_variation = &"MicroLabel"
 text = "SURAT TUGAS"
 
 [node name="Title" type="Label" parent="Letter/Margin/VBox" unique_id=1243450989]
+unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"H2Label"
+theme_type_variation = &"H1Label"
 text = "Mulai Kelas 7?"
 
 [node name="Body" type="Label" parent="Letter/Margin/VBox" unique_id=1554763597]
+unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"EventBodyLabel"
 text = "2 murid, 6 minggu, tingkat santai. Target paling ringan, cocok untuk memulai."
 autowrap_mode = 3
 
@@ -96,21 +102,23 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = 250.0
-offset_right = 400.0
-offset_bottom = 378.0
+offset_left = -460.0
+offset_top = 330.0
+offset_right = 460.0
+offset_bottom = 458.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 24
 
 [node name="Cancel" type="Button" parent="Buttons" unique_id=1576822372]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SecondaryButton"
 text = "Batal"
 
 [node name="Accept" type="Button" parent="Buttons" unique_id=672630130]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.6

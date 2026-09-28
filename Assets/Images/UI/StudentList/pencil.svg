@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="240" viewBox="0 0 80 240">
+  <!-- Catatan gutter pencil (MURIDMU RosterCard Task 1 groundwork), a
+       decorative prop at CatatanGuru's left edge. Same light-fill/dark-
+       outline recipe as Assets/Images/UI/Icons/README.md (fill #FFF6E8,
+       stroke #3B2412), point down. Not scanned by tests/test_ui_icons.gd
+       (fixed to UI/Icons/); tests/test_student_list.gd pins its existence. -->
+  <g stroke="#3B2412" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="18" y="8" width="44" height="30" rx="8" fill="#FFF6E8"/>
+    <rect x="14" y="34" width="52" height="16" fill="#FFF6E8"/>
+    <rect x="16" y="46" width="48" height="138" fill="#FFF6E8"/>
+    <path d="M16 184 L64 184 L40 226 Z" fill="#FFF6E8"/>
+  </g>
+  <path d="M31 206 L49 206 L40 226 Z" fill="#3B2412" stroke="none"/>
+</svg>

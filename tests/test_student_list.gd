@@ -243,6 +243,16 @@ func test_part_three_art_exists_and_loads() -> void:
 		"res://Assets/Images/UI/StudentList/photo_corner.png",
 		"res://Assets/Images/UI/StudentList/roster_avatar_frame.png",
 		"res://Assets/Images/UI/StudentList/catatan_rule.png",
+		# 2026-09-29 MURIDMU RosterCard Task 1 groundwork: six hand-written
+		# placeholders for the week header band, the photo paperclip, the
+		# catatan pencil, the empty-note "+" and calendar glyphs, and the
+		# empty note's dashed frame. Nothing wires to them yet.
+		"res://Assets/Images/UI/StudentList/torn_band.svg",
+		"res://Assets/Images/UI/StudentList/paperclip.svg",
+		"res://Assets/Images/UI/StudentList/pencil.svg",
+		"res://Assets/Images/UI/StudentList/icon_add.svg",
+		"res://Assets/Images/UI/StudentList/icon_calendar.svg",
+		"res://Assets/Images/UI/StudentList/sticky_empty_frame.svg",
 	]
 	for p in paths:
 		assert_true(ResourceLoader.exists(p), "missing asset: " + p)

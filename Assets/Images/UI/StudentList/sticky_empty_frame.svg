@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="172" height="200" viewBox="0 0 172 200">
+  <!-- Empty StickyNote's dashed frame (MURIDMU RosterCard Task 1
+       groundwork; spec's sticky_empty_frame.svg, StyleBoxFlat cannot dash
+       - constraints.md). Sized to StickyNote's 172x200 slot (RosterCard.
+       tscn); a later task 9-slices it. Drawn white so self_modulate can
+       tint it kraft at rest and brighten it toward currency_gold on the
+       idle "tap me" glow (spec §4.2). Dashes are explicit short strokes,
+       not stroke-dasharray, for the same reason washi_tape.svg avoids
+       <pattern> - ThorVG's SVG import is conservative about anything
+       beyond plain shapes. Corners are four short solid arcs, radius 16,
+       except the bottom-left, left as the frame's one worn/torn gap so it
+       reads as hand-torn kraft rather than a machined ring. -->
+  <g stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none">
+    <!-- top edge, x 24..148 -->
+    <path d="M24,8 L34,8 M42,8 L52,8 M60,8 L70,8 M78,8 L88,8 M96,8 L106,8 M114,8 L124,8 M132,8 L142,8"/>
+    <!-- bottom edge, x 24..148 -->
+    <path d="M24,192 L34,192 M42,192 L52,192 M60,192 L70,192 M78,192 L88,192 M96,192 L106,192 M114,192 L124,192 M132,192 L142,192"/>
+    <!-- left edge, y 24..176 -->
+    <path d="M8,24 L8,34 M8,42 L8,52 M8,60 L8,70 M8,78 L8,88 M8,96 L8,106 M8,114 L8,124 M8,132 L8,142 M8,150 L8,160"/>
+    <!-- right edge, y 24..176 -->
+    <path d="M164,24 L164,34 M164,42 L164,52 M164,60 L164,70 M164,78 L164,88 M164,96 L164,106 M164,114 L164,124 M164,132 L164,142 M164,150 L164,160"/>
+    <!-- three rounded corners, solid; bottom-left omitted (the worn gap) -->
+    <path d="M8,24 A16,16 0 0 1 24,8"/>
+    <path d="M148,8 A16,16 0 0 1 164,24"/>
+    <path d="M164,176 A16,16 0 0 1 148,192"/>
+  </g>
+</svg>

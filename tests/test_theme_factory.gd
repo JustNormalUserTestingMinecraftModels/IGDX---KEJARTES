@@ -34,6 +34,9 @@ func test_every_declared_variation_exists() -> void:
 		"CoinPlate", "ProgressPlate", "GradeBadge", "GradeBadgeLabel",
 		"GradeBadgeNumber", "WeekLabel", "StarProgressBar", "StarNumLabel",
 		"NotifBadge", "NotifBadgeLabel", "RosterChip",
+		# 2026-09-29 MURIDMU RosterCard Task 1 groundwork: week header band
+		# (reuses CardSectionLabel) and the five-dot "n/5 hari" tally.
+		"StickyNoteEmptyLabel", "WeekTallyLabel", "TallyDotFilled", "TallyDotEmpty",
 	]
 	var actual := _theme.get_type_list()
 	for variation in expected:
@@ -693,3 +696,38 @@ func test_scrapbook_plus_and_hero_are_green() -> void:
 	assert_true(hero != null and hero.bg_color == _tokens.accent_mint,
 		"JADWAL wears the main-action green")
 	assert_eq(LippedBox.lip_height_of(hero), ThemeFactory.LOBBY_HUD_LIP, "the scrapbook's thicker lip")
+
+
+## 2026-09-29 MURIDMU RosterCard Task 1 groundwork: the week planner's
+## muted labels and the five-dot tally's two Panel looks. Nothing in the
+## scene wires to these yet -- later tasks build the header band and
+## StickyNote empty skin on top of them.
+func test_student_list_week_empty_note_label_is_muted() -> void:
+	assert_true(_theme.has_color("font_color", "StickyNoteEmptyLabel"),
+		"StickyNoteEmptyLabel must set a font color")
+	assert_eq(_theme.get_color("font_color", "StickyNoteEmptyLabel"), _tokens.text_secondary,
+		"an empty day's Atur label reads muted, not urgent")
+
+
+func test_student_list_week_tally_label_matches_caption_recipe() -> void:
+	assert_eq(_theme.get_font_size("font_size", "WeekTallyLabel"), _tokens.font_caption,
+		"the n/5 hari count is caption-sized")
+	assert_eq(_theme.get_color("font_color", "WeekTallyLabel"), _tokens.text_secondary,
+		"the n/5 hari count is muted, like every other tally caption")
+
+
+func test_student_list_week_tally_dots_are_mint_filled_and_ringed_empty() -> void:
+	var filled := _theme.get_stylebox("panel", "TallyDotFilled") as StyleBoxFlat
+	assert_true(filled != null, "TallyDotFilled must be a flat panel")
+	if filled != null:
+		assert_eq(filled.bg_color, _tokens.accent_mint,
+			"a scheduled day's dot is the depth pass's affirm mint, not state_success/category")
+		assert_eq(filled.corner_radius_top_left, _tokens.radius_pill, "the dot is fully round")
+
+	var empty := _theme.get_stylebox("panel", "TallyDotEmpty") as StyleBoxFlat
+	assert_true(empty != null, "TallyDotEmpty must be a flat panel")
+	if empty != null:
+		assert_eq(empty.bg_color, _tokens.surface_sunken, "an unscheduled dot's fill is kraft")
+		assert_eq(empty.border_color, _tokens.outline_card, "an unscheduled dot is ringed")
+		assert_gt(empty.border_width_top, 0, "the ring must actually be visible")
+		assert_eq(empty.corner_radius_top_left, _tokens.radius_pill, "the dot is fully round")

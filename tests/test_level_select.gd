@@ -370,6 +370,37 @@ func test_accept_sets_grade_and_transitions() -> void:
 	assert_eq(LS.NEXT_SCENE, "res://Scenes/CutScene/CutScene.tscn", "into the intro")
 
 
+# ── Shadows ──────────────────────────────────────────────────────────────────
+
+## Task D: every amplop card casts a soft drop shadow behind its Body art via
+## the shared PaperShadow template (mirrors test_paper_shadow.gd's
+## test_the_flat_elements_now_cast_a_shadow). The confirm's Letter keeps the
+## Card variation's own StyleBoxFlat shadow instead -- it has no texture to
+## cast, and the human found that lift enough (plan Task D, Step 2 / "D2").
+func test_amplop_card_casts_a_shadow_and_the_confirm_letter_keeps_its_card_shadow() -> void:
+	var card := _card()
+	var body := card.get_node("Bob/Body") as TextureRect
+	var shadow := body.get_node_or_null("Shadow") as Control
+	assert_true(shadow != null, "Bob/Body has no Shadow")
+	if shadow == null:
+		return
+	assert_eq(shadow.scene_file_path, "res://Scenes/UI/PaperShadow.tscn",
+		"the shadow must be the shared PaperShadow template, not a hand-copy")
+	assert_eq(shadow.get_index(), 0, "the shadow should be Body's first child")
+	assert_true(shadow.show_behind_parent, "the shadow must draw behind Body")
+	assert_eq(shadow.get("shadow_texture"), body.texture,
+		"the shadow must use Body's own envelope texture")
+	var confirm := (load("res://Scenes/LevelSelect/OpenAmplopConfirm.tscn") as PackedScene) \
+		.instantiate()
+	track(confirm)
+	var letter := confirm.get_node_or_null("Letter") as Control
+	assert_true(letter != null, "OpenAmplopConfirm has no Letter")
+	if letter == null:
+		return
+	assert_eq(letter.theme_type_variation, &"Card",
+		"Letter keeps the Card variation's own drop shadow")
+
+
 # ── Flow ─────────────────────────────────────────────────────────────────────
 
 ## MainMenu routes through the level select exactly when the picker is on.

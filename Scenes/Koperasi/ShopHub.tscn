@@ -7,6 +7,11 @@
 [ext_resource type="Texture2D" uid="uid://del1h0jhpisrq" path="res://Assets/Images/Shop/UI/icon_shop_items.svg" id="5_h812q"]
 [ext_resource type="Texture2D" uid="uid://pmw4xwwq5ico" path="res://Assets/Images/Shop/UI/icon_shop_cosmetics.svg" id="6_s0qym"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="7_ret"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
+[ext_resource type="Script" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 
 [node name="ShopHub" type="Control" unique_id=1253771003]
 layout_mode = 3
@@ -17,14 +22,52 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_dpf3a")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=106300855]
-layout_mode = 0
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Room" type="Control" parent="World"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Backdrop" type="TextureRect" parent="World/Room" unique_id=106300855]
+material = ExtResource("illus_grade")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_u0dhl")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Light" parent="World/Room" instance=ExtResource("look_pool")]
+center = Vector2(0.15, 0.08)
+pool_size = Vector2(1600, 1600)
+intensity = 0.1
+
+[node name="Shafts" parent="World/Room" instance=ExtResource("look_shafts")]
+
+[node name="Parallax" type="Control" parent="World/Room"]
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("parallax_diorama")
+depth_by_child = {
+"Backdrop": 1.0,
+"Light": 1.0,
+"Shafts": 1.0
+}
+overscan_children = Array[StringName]([&"Backdrop", &"Shafts"])
+
+[node name="Glow" parent="." instance=ExtResource("look_glow")]
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=1266182172]
 material = ExtResource("3_h812q")

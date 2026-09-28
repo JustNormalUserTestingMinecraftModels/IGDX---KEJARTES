@@ -33,9 +33,9 @@ const SUPERSEDED: Array[String] = [
 ## "Kembali" label beside the arrow, while Rapor's 260px box takes the arrow
 ## alone (its label would not fit beside any icon at all).
 ##
-## AchievementDetailSheet's back arrow became the notebook frame's round
-## close (2026-09-28, UI depth pass Phase 2); tests/test_popup_frames.gd
-## pins it.
+## AchievementDetailSheet's back arrow and Settings' Kembali both became the
+## notebook frame's round close (2026-09-28, UI depth pass Phase 2);
+## tests/test_popup_frames.gd pins them.
 const ROSTER := {
 	"res://Scenes/Achievements/AchievementsScreen.tscn": {
 		"Safe/UI/BackButton": "texture_normal",
@@ -57,9 +57,6 @@ const ROSTER := {
 	},
 	"res://Scenes/ReportCard/ReportCard.tscn": {
 		"Safe/UI/BackButton": "icon",
-	},
-	"res://Scenes/UI/Settings.tscn": {
-		"SafeArea/MainColumn/BackButton": "icon",
 	},
 	"res://Scenes/EndGame/RunResult.tscn": {
 		"MarginContainer/Column/BtnSelesai": "icon",

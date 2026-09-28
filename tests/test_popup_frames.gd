@@ -31,6 +31,7 @@ const POPUPS := {
 	"res://Scenes/Inventory/ItemDetailSheet.tscn": ["Safe/Center/Sheet", "sheet", "safe"],
 	"res://Scenes/Achievements/AchievementDetailSheet.tscn": ["Safe/Center/Sheet", "sheet", "safe"],
 	"res://Scenes/Lobby/DapatkanUang.tscn": ["Safe/Center/Book", "sheet", "safe"],
+	"res://Scenes/UI/Settings.tscn": ["SafeArea/Frame", "tabs", "safe"],
 }
 
 ## scene -> the script that wires its frame's close, when that is the

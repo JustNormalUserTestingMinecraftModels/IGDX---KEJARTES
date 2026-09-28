@@ -101,11 +101,28 @@ func test_moving_a_slider_changes_the_bus_volume() -> void:
 	assert_true(absf((AudioDirector.get_bus_volume(&"SFX")) - (0.3)) <= 0.02, "the slider must drive the bus")
 
 
-func test_back_button_exists_and_is_wired() -> void:
-	var back := _screen.find_child("BackButton", true, false) as BaseButton
-	assert_true(back != null, "settings must be escapable")
-	assert_true(back.pressed.get_connections().size() > 0,
-		"back button must be wired")
+func test_the_frame_close_is_the_way_back() -> void:
+	var frame := _screen.get_node("SafeArea/Frame") as NotebookFrame
+	assert_true(frame.show_close, "the round close is the way back")
+	assert_contains(FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd"),
+		"_frame.close_pressed.connect(_on_back_pressed)")
+
+
+func test_the_tabs_are_suara_and_main() -> void:
+	var frame := _screen.get_node("SafeArea/Frame") as NotebookFrame
+	assert_eq(Array(frame.tabs), ["SUARA", "MAIN"])
+	assert_eq(frame.title_text, "PENGATURAN")
+
+
+func test_each_tab_shows_its_sections() -> void:
+	_screen.show_tab(0)
+	assert_true(_screen.get_node("%AudioCard").visible, "SUARA shows the sliders")
+	assert_false(_screen.get_node("%GameplayCard").visible)
+	assert_false(_screen.get_node("%DisplayCard").visible)
+	_screen.show_tab(1)
+	assert_false(_screen.get_node("%AudioCard").visible)
+	assert_true(_screen.get_node("%GameplayCard").visible, "MAIN shows the switches")
+	assert_true(_screen.get_node("%DisplayCard").visible)
 
 
 func test_scene_has_no_theme_overrides() -> void:
@@ -140,8 +157,8 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 
 
 func test_labels_are_indonesian() -> void:
-	var title := _screen.find_child("TitleLabel", true, false) as Label
-	assert_eq(title.text, "PENGATURAN", "title must be Indonesian")
+	var frame := _screen.get_node("SafeArea/Frame") as NotebookFrame
+	assert_eq(frame.title_text, "PENGATURAN", "title must be Indonesian")
 
 
 func test_bgm_slider_gives_audible_feedback() -> void:
@@ -218,36 +235,34 @@ func test_backdrop_is_the_blurred_lobby() -> void:
 		"Settings sits on the blurred Lobby, like its siblings")
 
 
-## Inventory's header card, holding only the DisplayLabel title.
+## The title now lives on the frame's stitched sticker, not a separate card.
 func test_header_is_a_title_card() -> void:
-	var header := _screen.get_node_or_null("SafeArea/MainColumn/Header") as PanelContainer
-	assert_true(header != null, "Settings needs SafeArea/MainColumn/Header")
-	if header == null:
+	var frame := _screen.get_node_or_null("SafeArea/Frame") as NotebookFrame
+	assert_true(frame != null, "Settings needs SafeArea/Frame")
+	if frame == null:
 		return
-	assert_eq(header.theme_type_variation, &"Card", "the header is a Card")
-	var title := header.get_node_or_null("TitleLabel") as Label
-	assert_true(title != null and title.theme_type_variation == &"DisplayLabel",
-		"the header holds the DisplayLabel title")
-	assert_eq(header.get_child_count(), 1, "the header holds the title and nothing else")
+	assert_eq(frame.title_text, "PENGATURAN", "the sticker carries the title")
+	assert_true(frame.get_node_or_null("Header") == null,
+		"there is no separate header card any more")
 
 
-## Kembali sits at the bottom of the screen, centred under the cards, like
-## ShopHub's: the last child of MainColumn, after the scroll.
+## Kembali is gone: the frame's round close sits on its own top-right corner,
+## authored once in NotebookFrame.tscn rather than per screen.
 func test_back_button_sits_at_the_bottom() -> void:
-	var column := _screen.get_node_or_null("SafeArea/MainColumn")
-	var back := _screen.get_node_or_null("SafeArea/MainColumn/BackButton") as Button
-	assert_true(column != null and back != null, "Kembali is a child of MainColumn")
-	if column == null or back == null:
+	var frame := _screen.get_node_or_null("SafeArea/Frame") as NotebookFrame
+	assert_true(frame != null, "Settings needs SafeArea/Frame")
+	if frame == null:
 		return
-	assert_eq(back.get_index(), column.get_child_count() - 1, "Kembali is the column's last child")
-	assert_eq(back.size_flags_horizontal, Control.SIZE_SHRINK_CENTER, "Kembali is centred")
-	assert_eq(back.theme_type_variation, &"SecondaryButton", "Kembali is a SecondaryButton")
-	assert_eq(back.text, "Kembali", "Kembali, as on ShopHub and Inventory")
+	assert_true(frame.show_close, "the close corner is shown")
+	assert_true(_screen.find_child("BackButton", true, false) == null,
+		"Kembali is gone; the frame's close is the only way back")
 
 
+## The scroll is the frame's own host content -- its sole child, laid into
+## the frame's content_rect() below the sticker and tabs.
 func test_sections_scroll_under_the_header() -> void:
-	var scroll := _screen.get_node_or_null("SafeArea/MainColumn/Scroll") as ScrollContainer
-	assert_true(scroll != null, "Settings needs SafeArea/MainColumn/Scroll")
+	var scroll := _screen.get_node_or_null("SafeArea/Frame/Scroll") as ScrollContainer
+	assert_true(scroll != null, "Settings needs SafeArea/Frame/Scroll")
 	if scroll == null:
 		return
 	assert_eq(scroll.size_flags_vertical, Control.SIZE_EXPAND_FILL, "the scroll takes the rest")
@@ -258,8 +273,9 @@ func test_sections_scroll_under_the_header() -> void:
 	assert_true(scroll.get_node_or_null("Pad/Sections") != null, "the cards sit in Pad/Sections")
 
 
-## Three titled cards, in order, each holding its rows in order with one
-## SettingsDivider between neighbours.
+## Three titled sections, in order, each a plain VBoxContainer -- the page
+## and its well are the surface now, so the old Card chrome is gone -- each
+## holding its rows in order with one SettingsDivider between neighbours.
 func test_settings_are_grouped_into_three_titled_cards() -> void:
 	var sections := _screen.find_child("Sections", true, false)
 	assert_true(sections != null, "Settings needs its Sections column")
@@ -268,14 +284,16 @@ func test_settings_are_grouped_into_three_titled_cards() -> void:
 	var names: Array = []
 	for card in sections.get_children():
 		names.append(String(card.name))
-	assert_eq(names, _SECTIONS.keys(), "the three cards, in order")
+	assert_eq(names, _SECTIONS.keys(), "the three sections, in order")
 	for card_name in _SECTIONS:
 		var vbox := sections.get_node_or_null("%s/Margin/VBox" % card_name)
 		assert_true(vbox != null, card_name + " needs Margin/VBox")
 		if vbox == null:
 			continue
-		assert_eq((sections.get_node(card_name) as Control).theme_type_variation, &"Card",
-			card_name + " is a Card")
+		var card := sections.get_node(card_name)
+		assert_true(card is VBoxContainer, card_name + " is a plain VBoxContainer")
+		assert_eq((card as Control).theme_type_variation, &"",
+			card_name + " carries no Card chrome")
 		var heading := vbox.get_child(0) as Label
 		assert_true(heading != null and heading.theme_type_variation == &"CardSectionLabel",
 			card_name + " opens with a CardSectionLabel")
@@ -320,7 +338,8 @@ func test_every_slider_wears_the_brand_slider() -> void:
 			slider_name + " is a SettingsSlider")
 
 
-## The entry stagger brings in the title, the three cards, then Kembali.
+## The entry stagger pops the frame in whole now: the title, tabs and
+## sections are its own chrome and content, not staggered piece by piece.
 func test_entry_stagger_runs_top_to_bottom() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd")
 	assert_true(src.contains("Juice.stagger_in(_collect_entry_nodes())"),
@@ -329,8 +348,7 @@ func test_entry_stagger_runs_top_to_bottom() -> void:
 	var names: Array = []
 	for n in nodes:
 		names.append(String((n as Node).name))
-	assert_eq(names, ["Header", "AudioCard", "GameplayCard", "DisplayCard", "BackButton"],
-		"title, cards, then Kembali")
+	assert_eq(names, ["Frame"], "the frame pops in whole")
 
 
 ## Every switch opens on its setting and writes it back. It is restored
@@ -349,16 +367,34 @@ func test_every_switch_opens_on_and_writes_its_setting() -> void:
 		toggle.button_pressed = original
 
 
-## At 1080x1920 all three cards fit above the scroll's bottom edge: 9:16
-## never scrolls.
+## At 1080x1920 each tab's sections fit above the scroll's bottom edge: 9:16
+## never scrolls, on SUARA or on MAIN. Settings.gd is @tool, so its _ready()
+## already ran show_tab(0) when the screen entered the tree; switching tabs
+## here re-settles the Containers, since a hidden-then-shown card sorts a
+## frame late.
 func test_every_card_fits_the_design_screen_without_scrolling() -> void:
-	var frame := track(LayoutFrame.stand_up("res://Scenes/UI/Settings.tscn",
+	var stand := track(LayoutFrame.stand_up("res://Scenes/UI/Settings.tscn",
 		Vector2(1080, 1920))) as Control
-	var scroll := frame.find_child("Scroll", true, false) as Control
-	var last := frame.find_child("DisplayCard", true, false) as Control
-	assert_true(scroll != null and last != null, "Settings needs Scroll and DisplayCard")
-	if scroll == null or last == null:
+	var root := stand.get_child(0)
+	var scroll := stand.find_child("Scroll", true, false) as Control
+	assert_true(scroll != null, "Settings needs Scroll")
+	if scroll == null:
 		return
-	assert_true(last.get_global_rect().end.y <= scroll.get_global_rect().end.y,
-		"TAMPILAN ends at %d, below the scroll's %d" % [
-			last.get_global_rect().end.y, scroll.get_global_rect().end.y])
+
+	root.call("show_tab", 0)
+	LayoutFrame.settle(root)
+	var audio := stand.find_child("AudioCard", true, false) as Control
+	assert_true(audio != null, "Settings needs AudioCard")
+	if audio != null:
+		assert_true(audio.get_global_rect().end.y <= scroll.get_global_rect().end.y,
+			"SUARA ends at %d, below the scroll's %d" % [
+				audio.get_global_rect().end.y, scroll.get_global_rect().end.y])
+
+	root.call("show_tab", 1)
+	LayoutFrame.settle(root)
+	var display := stand.find_child("DisplayCard", true, false) as Control
+	assert_true(display != null, "Settings needs DisplayCard")
+	if display != null:
+		assert_true(display.get_global_rect().end.y <= scroll.get_global_rect().end.y,
+			"TAMPILAN ends at %d, below the scroll's %d" % [
+				display.get_global_rect().end.y, scroll.get_global_rect().end.y])

@@ -91,25 +91,41 @@ func test_no_debug_prints_survive_in_production_scripts() -> void:
 			+ ", ".join(offenders))
 
 
+## Fewer scripts than this means the scan walked the wrong folders, not that
+## the project is clean. There were 341 when the scan was written.
+const MIN_SCANNED_SCRIPTS := 100
+
+
 ## After a cold editor restart the analyzer once left GameState's call results
 ## untyped, and `:=` on an untyped value is a parse error: the script fails to
 ## load, and a suite that cannot load is skipped with `failed` still 0. So
-## every local taken from GameState declares its type, e.g.
-## `var r: Dictionary = GameState.use_item(...)`.
-func test_no_local_infers_its_type_from_game_state() -> void:
+## every variable taken from an autoload (GameState, ItemDatabase,
+## GameSettings, ...) declares its type, e.g.
+## `var r: Dictionary = GameState.use_item(...)`. The autoload names come from
+## the project settings, so a new autoload is covered without editing this.
+func test_no_variable_infers_its_type_from_an_autoload() -> void:
+	var autoloads: Array[String] = []
+	for prop in ProjectSettings.get_property_list():
+		var key: String = prop["name"]
+		if key.begins_with("autoload/"):
+			autoloads.append(key.trim_prefix("autoload/"))
+	assert_true(autoloads.has("GameState"), "the autoload list was read")
 	var re := RegEx.new()
-	re.compile("^\\s*var\\s+\\w+\\s*:=\\s*GameState\\.")
+	re.compile("^\\s*(@\\w+\\s+)*(static\\s+)?var\\s+\\w+\\s*:=\\s*(%s)\\."
+		% "|".join(autoloads))
 	var offenders: Array[String] = []
 	var paths := _all_files_under("res://Scripts", ".gd")
+	paths.append_array(_all_files_under("res://Scenes", ".gd"))
 	paths.append_array(_all_files_under("res://tests", ".gd"))
 	for script_path in paths:
 		var lines := FileAccess.get_file_as_string(script_path).split("\n")
 		for i in range(lines.size()):
 			if re.search(lines[i]) != null:
 				offenders.append("%s:%d" % [script_path, i + 1])
-	assert_true(paths.size() > 100, "the scan found the scripts it guards")
+	assert_true(paths.size() >= MIN_SCANNED_SCRIPTS,
+		"the scan found the scripts it guards")
 	assert_eq(offenders.size(), 0,
-		"declare the type of every local taken from GameState instead of "
+		"declare the type of every variable taken from an autoload instead of "
 			+ "inferring it with :=; offenders: " + ", ".join(offenders))
 
 

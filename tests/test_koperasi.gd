@@ -10,6 +10,7 @@ func suite_name() -> String:
 
 const _SCENE_PATH := "res://Scenes/Koperasi/Koperasi.tscn"
 const _SCRIPT_PATH := "res://Scripts/Koperasi/Koperasi.gd"
+const PriceTagScene := preload("res://Scenes/Koperasi/PriceTag.tscn")
 
 func _source() -> String:
 	return FileAccess.get_file_as_string(_SCRIPT_PATH)
@@ -106,3 +107,21 @@ func test_herman_animation_player_has_idle_talk_and_reset() -> void:
 		var block := raw.substr(start, next_block - start)
 		assert_false(block.contains(":position\")"),
 			"Herman's animations must not key position -- the stage re-anchors on tall phones (%s)" % id)
+
+## Task 4: the promo item's price tag strikes its list price and wears a
+## "-N%" badge; a normal tag carries neither.
+func test_a_promo_tag_shows_the_list_price_and_badge() -> void:
+	var tag: PanelContainer = PriceTagScene.instantiate()
+	tag.set_price(800)
+	tag.set_promo(1000, 20)
+	assert_true(tag.is_promo(), "the tag knows it is on promo")
+	assert_eq(tag.get_old_price_text(), "1000", "the list price is shown, struck")
+	assert_eq(tag.get_badge_text(), "-20%", "the badge names the percent")
+	tag.clear_promo()
+	assert_false(tag.is_promo(), "a normal tag drops the promo dress")
+	tag.free()
+
+func test_the_shelf_dresses_only_the_promo_item() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scripts/Koperasi/KoperasiStage.gd")
+	assert_true(src.contains("GameState.shop_promo_item"), "the stage asks which item is on promo")
+	assert_true(src.contains("Cart.list_price_of("), "and strikes the list price, not the raw one")

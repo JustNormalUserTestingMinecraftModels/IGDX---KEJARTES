@@ -7,6 +7,10 @@ extends PanelContainer
 ##
 ## The tag is the press target for buying, which gives the item's flight
 ## into the basket an explicit trigger.
+##
+## The week's promo item wears extra dress inside the same Row: set_promo()
+## shows the struck list price ahead of the (already-discounted) value from
+## set_price(), plus a "-N%" badge after it. clear_promo() drops both.
 
 ## Word shown in place of the price once the player commits to buying.
 const BELI_TEXT := "Beli"
@@ -29,8 +33,14 @@ const BELI_TEXT := "Beli"
 
 @onready var _wipe: ColorRect = $WipeHost/Wipe
 @onready var _value: Label = $Row/Value
+@onready var _old_price: Label = $Row/OldPrice
+@onready var _badge: Label = $Row/PromoBadge
 
 var _price: int = 0
+
+## True once set_promo() has dressed the tag with a struck list price and a
+## badge; false again after clear_promo() or a fresh set_price().
+var _is_promo: bool = false
 
 func _ready() -> void:
 	clip_contents = true
@@ -52,6 +62,45 @@ func set_price(value: int) -> void:
 func get_label_text() -> String:
 	_ensure_nodes()
 	return _value.text
+
+## True once the tag is dressed for the week's promo item.
+func is_promo() -> bool:
+	return _is_promo
+
+## Reads the struck list-price label. Exists so tests can assert without
+## knowing node paths.
+func get_old_price_text() -> String:
+	_ensure_nodes()
+	return _old_price.text
+
+## Reads the promo badge's "-N%" label. Exists so tests can assert without
+## knowing node paths.
+func get_badge_text() -> String:
+	_ensure_nodes()
+	return _badge.text
+
+## Dresses the tag for the week's promo item: `list_price` (before the
+## promo) appears struck alongside the already-discounted price set by
+## set_price(), and a "-N%" badge names the cut. Does not touch set_price's
+## own display -- callers set that first.
+func set_promo(list_price: int, percent: int) -> void:
+	_ensure_nodes()
+	_is_promo = true
+	if is_instance_valid(_old_price):
+		_old_price.text = str(list_price)
+		_old_price.visible = true
+	if is_instance_valid(_badge):
+		_badge.text = "-%d%%" % percent
+		_badge.visible = true
+
+## Drops the promo dress, returning the tag to a plain price.
+func clear_promo() -> void:
+	_ensure_nodes()
+	_is_promo = false
+	if is_instance_valid(_old_price):
+		_old_price.visible = false
+	if is_instance_valid(_badge):
+		_badge.visible = false
 
 ## Greys the tag out when the player cannot afford the item. The price
 ## stays visible -- the player should always know what something costs.
@@ -91,3 +140,11 @@ func _ensure_nodes() -> void:
 		_value = get_node_or_null("Row/Value")
 	if not is_instance_valid(_wipe):
 		_wipe = get_node_or_null("WipeHost/Wipe")
+	if not is_instance_valid(_old_price):
+		_old_price = get_node_or_null("Row/OldPrice")
+		if not is_instance_valid(_old_price):
+			push_error("PriceTag: Row/OldPrice node missing")
+	if not is_instance_valid(_badge):
+		_badge = get_node_or_null("Row/PromoBadge")
+		if not is_instance_valid(_badge):
+			push_error("PriceTag: Row/PromoBadge node missing")

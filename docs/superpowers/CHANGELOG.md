@@ -8,6 +8,28 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Bloom on the shops, end game and minigames
+
+The Lobby's bloom is a Canvas-mode `WorldEnvironment`, which reaches only
+layers at -1 or below; on the shops and end-game screens it measured as no
+bloom at all, and the minigames and Koperasi draw on layer 0 where it cannot
+reach. A new kit piece, `ScreenGlow` (`Scenes/Look/ScreenGlow.tscn`), runs
+the Efek Visual layer's `bloom.gdshader` per screen instead: a node named
+`Bloom`, placed right after each screen's last light piece, reads what is
+drawn so far and adds its bright parts back, so the UI drawn after it never
+blooms. It follows Efek Suasana and its screen's fades. Placed on ShopHub,
+CosmeticShop, Koperasi, TesNotice, StatCheck, ExamProgress, WinStage (so
+EndCutscene and RunResult bloom alike) and all eight lit minigames.
+
+Thresholds come from a full-size sweep (0.3-0.9) with each screen rendered
+bloom-off and -on: the highest that visibly blooms the light while the
+backdrop's median pixel moves by under +0.01. Pale wood (the four
+Akademis boards, BuatBatik) fogs below 0.8; MainBola, Badminton and
+LombaMenari take 0.75; the shops, Koperasi and WinStage 0.7; ExamProgress
+0.5 at intensity 0.6; TesNotice and StatCheck, under their scrim, 0.4 at
+0.8 with a cool tint. `bloom.gdshader` now multiplies by its input `COLOR`,
+so the look layer's bloom fades with its modulate too.
+
 ## 2026-09-29 — Skin select polish: class-only rail, scrapbook look
 
 Plan: `docs/superpowers/plans/2026-09-29-skin-select-polish.md`. The

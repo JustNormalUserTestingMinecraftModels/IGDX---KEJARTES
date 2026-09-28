@@ -130,10 +130,14 @@ Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 `docs/superpowers/specs/2026-09-28-lobby-look-everywhere-design.md`): the
 backdrop and its light move into a `World` CanvasLayer at −1 holding one
 `Room` Control; the light is a `LightPool` plus a full-screen `SunShafts`
-(`Scenes/Look/SunShafts.tscn`); an `AmbientGlow` right after `World` blooms
-only where its threshold was measured clean; the blurred shops (and, in later
-passes, the exam notices) add a flat `ParallaxDiorama`. Minigames and Koperasi
-keep their backdrop on layer 0 and take the light without bloom.
+(`Scenes/Look/SunShafts.tscn`); the blurred shops (and, in later passes, the
+exam notices) add a flat `ParallaxDiorama`. Minigames and Koperasi keep their
+backdrop on layer 0. **Bloom off the Lobby is a `ScreenGlow`**
+(`Scenes/Look/ScreenGlow.tscn`), named `Bloom`, placed right after the
+screen's last light piece and before anything the player reads: it reads the
+screen drawn so far, so it works on any layer and never blooms the UI. Tune
+its `threshold` per screen on a full-size capture; the values and the method
+are pinned in `tests/test_lobby_look.gd`'s `SCREEN_BLOOM`.
 
 ## Swapping fonts
 

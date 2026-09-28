@@ -426,3 +426,25 @@ func test_the_panel_grew_to_the_arts_aspect() -> void:
 	var aspect: float = panel.size.x / panel.size.y
 	assert_true(absf(aspect - 2.253) < 0.05,
 		"the panel must match the art's 2.253:1, got %f" % aspect)
+
+
+## Daily-login polish, Task 4. The coin and the amount share one
+## HBoxContainer, so a longer amount pushes the row wider instead of
+## clipping inside a fixed 120px label box -- and the widest reward, day
+## 7's "400G", still ends inside the panel.
+func test_the_peak_reward_fits_its_row() -> void:
+	var panel := _lobby.get_node_or_null("DailyReward") as Control
+	var row := _lobby.get_node_or_null("%RewardRow") as HBoxContainer
+	var amount := _lobby.get_node_or_null("%RewardAmount") as Label
+	var coin := _lobby.get_node_or_null("%RewardCoin") as TextureRect
+	assert_true(row != null, "RewardRow must be an HBoxContainer under DailyReward")
+	assert_true(amount != null and coin != null, "missing RewardAmount or RewardCoin")
+	if row == null or amount == null or coin == null:
+		return
+	assert_eq(row.get_parent(), panel, "RewardRow sits directly on the panel")
+	assert_eq(coin.get_parent(), row, "the coin lives in the reward row")
+	assert_eq(amount.get_parent(), row, "the amount lives in the reward row")
+	amount.text = "400G"
+	var row_right: float = row.offset_left + row.get_combined_minimum_size().x
+	assert_true(row_right <= panel.size.x,
+		"with 400G the row ends at %f, past the panel's %f width" % [row_right, panel.size.x])

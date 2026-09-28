@@ -2,7 +2,24 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **STATUS — executed 2026-09-01. Tasks 1, 2 and 4 complete; Task 3 DROPPED as
+> - Applies throughout: no type inference from an autoload (`tests/test_project_hygiene.gd`, PRs #97/#98) — declare the type, e.g. `var money: int = GameState.player_money`, never `:=` on an autoload call.
+> **Revision (2026-09-28): clean-code pass; status audit.** Tasks 1, 2 and 4
+> are DONE (2026-09-01) — left below as history, unchanged. Task 3 was
+> re-checked against today's `Scripts/UI/StatBar.gd` and both card scenes: the
+> premise it was dropped for no longer holds. A later, unrelated pass
+> (2026-09-09, per `tests/test_student_card_layout.gd`'s
+> `test_switching_variation_at_runtime_rederives_the_tint`) rebuilt
+> `StatBar._apply_tint()` so it never writes a category colour into
+> `self_modulate` at all — every branch now sets `self_modulate = Color.WHITE`
+> and the tint lives in a per-category sibling variation's baked fill
+> stylebox instead (`ThemeFactory._build_progress`). `_apply_tint()` is still
+> ungated in `_ready()`, exactly as the 2026-09-01 note describes, but writing
+> the scene's own default colour back to itself doesn't serialize as a scene
+> diff — confirmed by `grep -c "self_modulate = Color(" Scenes/StudentCard/StudentCard.tscn Scenes/ReportCard/ReportCard.tscn`,
+> both `0`. So there is nothing left to strip. Task 3 is rewritten below as a
+> verification-and-regression-test task: land the test this plan originally
+> proposed (never added, since the strip it was meant to pin never happened)
+> so this can't silently regress.
 > unachievable. Suite green (560/560, 45 suites).**
 >
 > **Task 3 is withdrawn.** Stripping the 30 baked `self_modulate` lines does
@@ -297,76 +314,73 @@ git add Scenes/ReportCard/report_card.tscn tests/test_student_card_layout.gd && 
 
 ---
 
-## Task 3: Strip the baked stat-bar tints
+## Task 3: Pin that no scene bakes a stat-bar tint
+
+> **RE-SCOPED 2026-09-28 — the strip is no longer needed, only the pin.**
+> The 30 `self_modulate = Color(...)` lines this task was written to delete
+> are already gone from both `Scenes/StudentCard/StudentCard.tscn` and
+> `Scenes/ReportCard/ReportCard.tscn` (note the PascalCase paths — both files
+> were renamed at some point after this plan was written; the lowercase
+> `report_card.tscn`/`student_card.tscn` paths below are stale). A 2026-09-09
+> pass rebuilt `StatBar._apply_tint()` (`Scripts/UI/StatBar.gd`) so every
+> branch sets `self_modulate = Color.WHITE` and bakes the category colour into
+> a per-category sibling variation's fill stylebox instead
+> (`ThemeFactory._build_progress`) — the same mechanism `StatPill` already
+> used, now shared by the whole family. `_apply_tint()` is still an ungated
+> `@tool` write in `_ready()`, but writing back the property's own default no
+> longer produces a scene diff. Nothing to strip; what's missing is the
+> regression test that would have caught a re-introduction.
 
 **Files:**
-- Modify: `Scenes/ReportCard/report_card.tscn` — 30 `self_modulate = Color(…)` lines
 - Test: `tests/test_student_card_layout.gd`
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: no API. The scene stops carrying serialised tint state; `StatBar._apply_tint()` becomes the only writer, as it already is on StudentCard.
+- Produces: no API. Pins that `Scenes/StudentCard/StudentCard.tscn` and `Scenes/ReportCard/ReportCard.tscn` never carry a baked `self_modulate` tint, so a future edit to `StatBar._apply_tint()` (or a future accidental editor re-bake) can't reintroduce the exact staleness bug this task was written against — the editor viewport lying about a colour after a `design_tokens.tres` change and rebake.
 
-`report_card.tscn` carries 30 `self_modulate = Color(...)` lines on its `ProgressBar` nodes; `student_card.tscn` carries **zero**. These are `StatBar._apply_tint()` results that the `@tool` script serialised back into the scene when it was last opened in the editor. They are stale-by-construction: change a category colour in `design_tokens.tres` and rebake, and the scene still holds the old value until someone reopens it. The runtime tint wins in play, but the editor viewport shows the stale colour, which is exactly the "what you see is what you get" property the authoring guide exists to protect.
+- [ ] **Step 1: Write the test**
 
-- [x] **Step 1: Write the failing test**
-
-Append to `tests/test_student_card_layout.gd`:
+Append to `tests/test_student_card_layout.gd`, using the suite's existing `_SCENES` constant (`StudentCard.tscn` and `ReportCard.tscn`):
 
 ```gdscript
-## StatBar._apply_tint() is the single writer of a bar's tint. When the
-## @tool script serialises its result back into the scene, that copy goes
-## stale the moment a category colour changes in design_tokens.tres, and
-## the editor viewport then lies about the colour. student_card.tscn
-## carries none of these; report_card.tscn must not either.
+## StatBar._apply_tint() is the single writer of self_modulate, and since
+## 2026-09-09 it only ever writes Color.WHITE -- every category tint lives
+## in a baked fill stylebox instead (ThemeFactory._build_progress), so the
+## node itself stays untinted and the @tool write can't go stale the way a
+## baked category colour used to (see test_switching_variation_at_runtime_
+## rederives_the_tint for the runtime half of this contract). If a scene
+## ever bakes a self_modulate Color again, something regressed.
 func test_no_scene_bakes_a_stat_bar_tint() -> void:
 	for scene_path in _SCENES:
-		var src := FileAccess.get_file_as_string(scene_path)
+		var src: String = FileAccess.get_file_as_string(scene_path)
 		assert_false(src.contains("self_modulate = Color("),
 			"%s bakes a self_modulate tint; StatBar owns that at runtime"
 				% scene_path)
 ```
 
-- [x] **Step 2: Run it to verify it fails**
-
-```
-test_run(suite="student_card_layout")
-```
-
-Expected: FAIL with `res://Scenes/ReportCard/report_card.tscn bakes a self_modulate tint`.
-
-- [x] **Step 3: Delete the 30 lines**
-
-```bash
-cd "C:/Users/user/Downloads/KejarTestAlphaVer2.15/KejarTestAlphaVer2.15/new-game-project" && sed -i '/^self_modulate = Color(/d' Scenes/ReportCard/report_card.tscn && grep -c "self_modulate = Color" Scenes/ReportCard/report_card.tscn
-```
-
-Expected output: `0`.
-
-The pattern is anchored to the start of the line, and every one of the 30 sits on its own line inside a `ProgressBar` node block, so nothing else matches.
-
-- [x] **Step 4: Confirm the scene still parses and the cards still measure right**
+- [ ] **Step 2: Run it to verify it passes immediately**
 
 ```
 filesystem_manage(op="scan")
 test_run(suite="student_card_layout")
 ```
 
-Expected: PASS — in particular `test_every_card_is_exactly_the_texture_size`, which instantiates both scenes and would error on a malformed file.
+Expected: PASS on the first run — this step is verification, not TDD-red/green, since the fix already shipped under a different pass. If it fails, something re-baked a tint since this audit; `grep -n "self_modulate = Color(" Scenes/StudentCard/StudentCard.tscn Scenes/ReportCard/ReportCard.tscn` to find it before touching anything else.
 
-- [x] **Step 5: Run the neighbouring suites**
+- [ ] **Step 3: Run the neighbouring suites and clean_code**
 
 ```
 test_run(suite="report_card")
 test_run(suite="student_card")
+test_run(suite="clean_code")
 ```
 
-Expected: both green.
+Expected: all green. This task adds one test and no production code, so `clean_code`'s counts should not move; if one shrinks anyway, run `ci/clean_code_dump.gd` to lock it in.
 
-- [x] **Step 6: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add Scenes/ReportCard/report_card.tscn tests/test_student_card_layout.gd && git commit -m "fix(report-card): drop the baked stat-bar tints and let StatBar own them"
+git add tests/test_student_card_layout.gd && git commit -m "test(report-card): pin that no scene bakes a StatBar self_modulate tint"
 ```
 
 ---

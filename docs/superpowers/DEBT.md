@@ -639,11 +639,11 @@ from ten +/- bands on 2026-09-10, never played against a real run.
 `MainBola`'s per-grade tables (8/10/10 shots, 4–6/6–8/6–8 goal targets,
 2026-09-14) assume a player lands about 70% of shots; never playtested.
 
-**Deferred: Plan C's RunResult redesign** (parked; no RunResult commit since
-2026-09-11). Plan C's RunResult redesign,
-`docs/superpowers/plans/2026-09-04-endgame-c-run-result.md` — but that pass
-already replaced RunResult's grade letter with five rank badges and fixed its
-win backdrop, so re-read the plan against the current screen before acting.
+**Pending: the badge rank scene (RunResult) polish.** Designed and planned in
+`docs/superpowers/specs/2026-09-26-badge-rank-scene-polish-design.md`
+(PR #86, re-checked against Textures on 2026-09-28); nothing built yet. It
+supersedes Plan C (`plans/2026-09-04-endgame-c-run-result.md`), which is
+marked SUPERSEDED and must not be executed.
 
 **Cosmetic shop is a stub.** `Scenes/Koperasi/CosmeticShop.tscn` is a blurred
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile

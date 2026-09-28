@@ -104,6 +104,7 @@ var _passed: bool = false
 
 func _ready() -> void:
 	btn_selesai.pressed.connect(_on_selesai_pressed)
+	btn_selesai.text = exit_label(GameState.run_failed, GameState.current_grade)
 	AudioDirector.play_bgm(&"run_result")
 
 	_dress_backdrop()
@@ -273,7 +274,39 @@ func _on_selesai_pressed() -> void:
 	Transition.change_scene(destination)
 
 
+## The first grade: losing it restarts the whole run from the menu.
+const FIRST_GRADE: int = 7
+## The last grade: passing it beats the game.
+const FINAL_GRADE: int = 9
+## Where a full restart, or a beaten game, ends up.
+const MENU_SCENE := "res://Scenes/MainMenu/MainMenu.tscn"
+## Where the next grade, or a retry of this one, picks its roster.
+const ROSTER_SCENE := "res://Scenes/StudentCard/StudentCard.tscn"
+
+
+## Where a run that `run_failed` at `grade` goes next: the menu for a Kelas 7
+## loss or a beaten Kelas 9, otherwise the roster (a retry of this grade, or
+## the next one). The one place that decides; _apply_progression() and
+## exit_label() both read it.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func destination_for(run_failed: bool, grade: int) -> String:
+	if run_failed:
+		return MENU_SCENE if grade == FIRST_GRADE else ROSTER_SCENE
+	return ROSTER_SCENE if grade < FINAL_GRADE else MENU_SCENE
+
+
+## The exit button's label, naming where destination_for() sends the player.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func exit_label(run_failed: bool, grade: int) -> String:
+	if destination_for(run_failed, grade) == MENU_SCENE:
+		return "Kembali ke Menu"
+	return "Ulangi Kelas %d" % grade if run_failed else "Lanjut ke Kelas %d" % (grade + 1)
+
+
 func _apply_progression() -> String:
+	var destination := destination_for(GameState.run_failed, GameState.current_grade)
 	if GameState.run_failed:
 		GameState.day_schedules.clear()
 		GameState.minggu_ke = 1
@@ -282,23 +315,23 @@ func _apply_progression() -> String:
 		GameState.reset_shop_week()
 		GameState.run_stats.reset()
 		GameState.run_failed = false
-		if GameState.current_grade == 7:
+		if destination == MENU_SCENE:
 			# Grade-7 loss: full restart. Clear everything and go to MainMenu;
 			# the MainMenu -> CutScene bootstrap picks up from there.
 			GameState.approved_students.clear()
 			GameState.grade7_student_ids.clear()
 			GameState.grade8_student_ids.clear()
 			GameState.returned_from_student_card = false
-			return "res://Scenes/MainMenu/MainMenu.tscn"
+			return destination
 		else:
 			# Grade 8/9 loss: retry the same grade at StudentCard. Keep the
 			# roster and grade7_student_ids so locked students stay locked and
 			# the player only needs to re-pick the new-grade slot(s).
 			GameState.returned_from_student_card = false
-			return "res://Scenes/StudentCard/StudentCard.tscn"
+			return destination
 
 	Achievements.record_grade_passed(GameState.current_grade)
-	if GameState.current_grade < 9:
+	if destination == ROSTER_SCENE:
 		GameState.current_grade += 1
 		GameState.reset_roster_for_new_grade()
 		GameState.day_schedules.clear()
@@ -306,7 +339,7 @@ func _apply_progression() -> String:
 		GameState.returned_from_student_card = false
 		GameState.lobby_tutorial_completed = true
 		GameState.run_stats.reset()
-		return "res://Scenes/StudentCard/StudentCard.tscn"
+		return destination
 	else:
 		# The game is beaten: unlock level select and reset to Kelas 7.
 		# set_grade() resets current_grade/minggu_ke/run_stats/
@@ -318,7 +351,7 @@ func _apply_progression() -> String:
 		# cleared two lines below anyway.
 		GameState.is_game_beaten = true
 		GameSettings.save_settings()
-		GameState.set_grade(7)
+		GameState.set_grade(FIRST_GRADE)
 		GameState.day_schedules.clear()
 		GameState.approved_students.clear()
 		GameState.grade7_student_ids.clear()
@@ -329,7 +362,7 @@ func _apply_progression() -> String:
 		for path: String in TUTORIAL_FLAGS:
 			for flag: String in TUTORIAL_FLAGS[path]:
 				_reset_static_flag(path, flag)
-		return "res://Scenes/MainMenu/MainMenu.tscn"
+		return destination
 
 
 ## Sets the static bool `flag` on the script at `path` back to false. The

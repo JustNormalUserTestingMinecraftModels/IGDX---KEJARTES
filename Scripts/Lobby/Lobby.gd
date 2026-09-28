@@ -5,8 +5,8 @@ extends Control
 ##
 ## Draws the roster diorama from GameState.approved_students -- a portrait
 ## and matching desk art per approved student slot, keyed by name -- and
-## the daily-login reward strip. Writes GameState.player_money,
-## daily_login_day and last_claim_date when the reward is claimed, and
+## the daily-login popup, a DailyLoginPanel that owns the claim and its
+## GameState writes; this screen owns its backdrop blur. Writes
 ## GameState.lobby_tutorial_completed once its own tutorial finishes;
 ## every other button here just transitions to another screen.
 
@@ -68,10 +68,7 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 
 @onready var money_label = get_node("%DisplayUang/Label")
 @onready var daily_login_btn = %DailyLogin
-@onready var daily_reward = $DailyReward
-@onready var claim_button = $DailyReward/ButtonClaim
-@onready var reward_coin = $DailyReward/RewardCoin
-@onready var reward_amount = $DailyReward/RewardAmount
+@onready var daily_reward: DailyLoginPanel = %DailyReward
 
 @onready var portraits_back: Control = %StudentPortraitsContainer_Back
 @onready var portraits_front: Control = %StudentPortraitsContainer_Front
@@ -89,27 +86,12 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 	get_node("%StudentHandsContainer_Front/Slot4"),
 ]
 
-const DAILY_REWARD := 10
-
-## Modulate alpha applied to ButtonClaim / RewardCoin / RewardAmount once
-## today's reward is already claimed. The panel art always draws the same
-## bright gold "claim me" pill regardless of state, and GhostButton draws no
-## chrome of its own, so this dim is the only visible cue that the day's
-## claim is done once the button goes disabled.
-const CLAIMED_CUE_DIM_ALPHA := 0.4
-
-## The daily-login panel, one frame per streak day. The art bakes all
-## seven slots with the active one lit, so the whole calendar is a single
-## texture swap -- there are no per-day nodes to tint any more.
-const DAY_PANELS: Array[Texture2D] = [
-	preload("res://Assets/Images/UI/DailyLogin/day1.png"),
-	preload("res://Assets/Images/UI/DailyLogin/day2.png"),
-	preload("res://Assets/Images/UI/DailyLogin/day3.png"),
-	preload("res://Assets/Images/UI/DailyLogin/day4.png"),
-	preload("res://Assets/Images/UI/DailyLogin/day5.png"),
-	preload("res://Assets/Images/UI/DailyLogin/day6.png"),
-	preload("res://Assets/Images/UI/DailyLogin/day7.png"),
-]
+## The daily-reward popup's backdrop blur: shader lod and darkness at
+## full strength, and how long it takes to come in and to go out.
+const BLUR_LOD := 3.0
+const BLUR_DARKNESS := 0.3
+const BLUR_IN_SECONDS := 0.25
+const BLUR_OUT_SECONDS := 0.15
 
 @export_group("Tutorial")
 ## Steps shown the first time the player reaches the Lobby.
@@ -186,7 +168,7 @@ func _ready():
 
 	_build_tutorial_panel()
 
-	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, settings_button, achievement_button, skin_switch_button, daily_login_btn, claim_button]:
+	for btn in [student_button, jadwal_button, koperasi_button, report_student_button, inventory_button, settings_button, achievement_button, skin_switch_button, daily_login_btn, daily_reward.claim_button]:
 		_setup_button_juice(btn)
 
 	color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -681,17 +663,18 @@ func _create_blur_overlay():
 	# Connect click on blur overlay to close popup
 	blur_overlay.gui_input.connect(_on_blur_overlay_input)
 
-func _setup_daily_login():
-	# Hide the reward panel initially
-	if daily_reward:
-		daily_reward.visible = false
+func _setup_daily_login() -> void:
 	_update_money_display()
-	_check_daily_login_reset()
-	_update_daily_login_visual()
-	if claim_button and not claim_button.pressed.is_connected(_on_claim_pressed):
-		claim_button.pressed.connect(_on_claim_pressed)
-	if daily_login_btn and not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
+	daily_reward.refresh(Time.get_date_string_from_system())
+	if not daily_reward.claimed.is_connected(_on_daily_reward_claimed):
+		daily_reward.claimed.connect(_on_daily_reward_claimed)
+	if not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
 		daily_login_btn.pressed.connect(_on_daily_login_pressed)
+
+## The panel paid out: roll the wallet up from the old balance.
+func _on_daily_reward_claimed(_amount: int, previous_money: int) -> void:
+	_update_money_display(previous_money)
+	RewardFeedback.play(&"coins_earned", money_label)
 
 ## Animates the money display via Juice.count_up instead of setting the
 ## label's text directly. Pass the pre-change amount as `from_amount` to
@@ -708,71 +691,32 @@ func _update_money_display(from_amount: int = -1) -> void:
 	if to_amount > int(from):
 		AudioDirector.play_sfx(&"coin")
 
-func _check_daily_login_reset():
-	var today = Time.get_date_string_from_system()
-	if GameState.last_claim_date == "" or GameState.last_claim_date == today:
-		return
-	var today_unix = Time.get_unix_time_from_datetime_string(today + " 00:00:00")
-	var last_claim_unix = Time.get_unix_time_from_datetime_string(GameState.last_claim_date + " 00:00:00")
-	if today_unix - last_claim_unix > 86400:
-		# lewat lebih dari 1 hari tanpa klaim, streak reset ke Day1
-		GameState.daily_login_day = 1
-
-func _update_daily_login_visual() -> void:
-	var today := Time.get_date_string_from_system()
-	var already_claimed_today: bool = GameState.last_claim_date == today
-
-	if daily_reward:
-		var day := clampi(GameState.daily_login_day, 1, DAY_PANELS.size())
-		daily_reward.texture = DAY_PANELS[day - 1]
-
-	if claim_button and claim_button is BaseButton:
-		claim_button.disabled = already_claimed_today
-
-	# The art has no separate "claimed" frame, so dim the affordance nodes
-	# directly -- restore full modulate once a new day makes the claim
-	# available again.
-	var claim_dim_alpha := CLAIMED_CUE_DIM_ALPHA if already_claimed_today else 1.0
-	for node in [claim_button, reward_coin, reward_amount]:
-		if node:
-			node.modulate.a = claim_dim_alpha
-
 func _on_daily_login_pressed():
 	if reward_popup_open:
 		return
 	_show_daily_reward()
 
-func _show_daily_reward():
-	if not daily_reward:
-		return
+func _show_daily_reward() -> void:
 	AudioDirector.play_sfx(&"popup_open")
 	reward_popup_open = true
-
-	# Show and animate blur overlay
 	blur_overlay.visible = true
-	var blur_mat = blur_overlay.material as ShaderMaterial
-	blur_mat.set_shader_parameter("lod", 0.0)
-	blur_mat.set_shader_parameter("darkness", 0.0)
+	_set_blur_lod(0.0)
+	_set_blur_darkness(0.0)
+	# Redraw for the current date: a Lobby left open past midnight would
+	# otherwise show yesterday's claim as today's.
+	daily_reward.refresh(Time.get_date_string_from_system())
+	daily_reward.open()
+	var tween := create_tween().set_parallel(true)
+	tween.tween_method(_set_blur_lod, 0.0, BLUR_LOD, BLUR_IN_SECONDS).set_ease(Tween.EASE_OUT)
+	tween.tween_method(_set_blur_darkness, 0.0, BLUR_DARKNESS, BLUR_IN_SECONDS).set_ease(Tween.EASE_OUT)
 
-	# Pop the whole panel in -- the art bakes all seven slots, so there are
-	# no separate tiles left to stagger in behind it.
-	daily_reward.visible = true
-	Juice.pop_in(daily_reward)
-
-	var tween = create_tween().set_parallel(true)
-	tween.tween_method(_set_blur_lod, 0.0, 3.0, 0.25).set_ease(Tween.EASE_OUT)
-	tween.tween_method(_set_blur_darkness, 0.0, 0.3, 0.25).set_ease(Tween.EASE_OUT)
-
-func _hide_daily_reward():
-	if not daily_reward:
-		return
+func _hide_daily_reward() -> void:
 	reward_popup_open = false
-	var tween = create_tween().set_parallel(true)
-	tween.tween_property(daily_reward, "modulate:a", 0.0, 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_property(daily_reward, "scale", Vector2(0.8, 0.8), 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_method(_set_blur_lod, 3.0, 0.0, 0.15).set_ease(Tween.EASE_IN)
-	tween.tween_method(_set_blur_darkness, 0.3, 0.0, 0.15).set_ease(Tween.EASE_IN)
-	tween.chain().tween_callback(func(): daily_reward.visible = false; blur_overlay.visible = false)
+	daily_reward.close()
+	var tween := create_tween().set_parallel(true)
+	tween.tween_method(_set_blur_lod, BLUR_LOD, 0.0, BLUR_OUT_SECONDS).set_ease(Tween.EASE_IN)
+	tween.tween_method(_set_blur_darkness, BLUR_DARKNESS, 0.0, BLUR_OUT_SECONDS).set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(func() -> void: blur_overlay.visible = false)
 
 func _on_blur_overlay_input(event: InputEvent):
 	if not reward_popup_open:
@@ -824,30 +768,6 @@ func _animate_button_click_bounce(btn: Control):
 	tw.tween_property(btn, "scale", Vector2(0.8, 1.25), 0.08)
 	tw.tween_property(btn, "scale", Vector2(1.18, 0.85), 0.1)
 	tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
-
-func _on_claim_pressed():
-	_animate_button_click_bounce(claim_button)
-	var today = Time.get_date_string_from_system()
-	if GameState.last_claim_date == today:
-		AudioDirector.play_sfx(&"error")
-		return
-
-	var old_money := GameState.player_money
-
-	GameState.player_money += DAILY_REWARD
-	GameState.last_claim_date = today
-
-	_update_money_display(old_money)
-	_update_daily_login_visual()
-
-	# The tiles are gone -- the panel itself is what pops now.
-	if daily_reward:
-		Juice.pop_in(daily_reward)
-	RewardFeedback.play(&"coins_earned", money_label)
-
-	GameState.daily_login_day += 1
-	if GameState.daily_login_day > 7:
-		GameState.daily_login_day = 1
 
 ## Opens Settings (volumes, the minigame tutorial and "Lewati Dialog
 ## Minigame", which used to be the Shorten button), returning here.

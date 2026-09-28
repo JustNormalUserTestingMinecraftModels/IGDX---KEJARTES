@@ -340,9 +340,10 @@ func test_the_money_chip_is_a_themed_panel_with_a_coin_icon() -> void:
 
 
 ## Both shop screens read the same coin as the lobby, so money looks like
-## one currency across the game.
+## one currency across the game. Koperasi's coin lives in BasketTray.tscn
+## (the basket tray's KAS KELAS pill); Inventory's coin is in its own scene.
 func test_the_shop_screens_use_the_same_coin() -> void:
-	for path in ["res://Scenes/Koperasi/Koperasi.tscn",
+	for path in ["res://Scenes/Koperasi/BasketTray.tscn",
 			"res://Scenes/Inventory/Inventory.tscn"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_true(src.contains("Assets/Images/UI/uang.png"),

@@ -138,7 +138,7 @@ const SNAPSHOT_KEYS := [
 	# end-of-grade sequence writes them, but a visit to the shop between
 	# arming and restoring does, and restoring hands the run back exactly
 	# as it was -- an item bought during a rehearsal must not stay sold.
-	"shop_week_key", "shop_stock", "shop_sold",
+	"shop_week_key", "shop_stock", "shop_sold", "shop_promo_item", "shop_promo_percent",
 	# Worn skins and the debug lock overrides. Nothing in the sequence
 	# writes them, but a skin picked between arming and restoring must not
 	# outlive the rehearsal, same as a shop purchase.

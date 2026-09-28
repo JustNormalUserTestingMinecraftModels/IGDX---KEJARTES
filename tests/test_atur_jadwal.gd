@@ -1115,6 +1115,10 @@ func test_each_skill_bar_authors_a_gap_tail_and_target_dot() -> void:
 		if tail != null:
 			assert_eq(tail.expand_mode, TextureRect.EXPAND_IGNORE_SIZE,
 				"%s's GapTail must not take the texture's width as a minimum" % p)
+			# BarFill/README.md: the ghost ramp must stretch, never tile, or it
+			# sawtooths back to transparent at every repeat.
+			assert_eq(tail.stretch_mode, TextureRect.STRETCH_SCALE,
+				"%s's GapTail must stretch track_ghost.png, not tile it" % p)
 		var dot := bar.get_node_or_null("TargetDot") as Panel
 		assert_true(dot != null and dot.theme_type_variation == &"StatTargetDot",
 			"%s needs a StatTargetDot Panel" % p)

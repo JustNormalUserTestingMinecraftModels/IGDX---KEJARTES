@@ -40,12 +40,9 @@ const TAIL_ALPHA := 1.0
 ## The callout's line; %s is the subject's display word.
 const CALLOUT_FORMAT := "Aku butuh %s!"
 
-## Skill key -> the schedule category it grows.
-const SKILL_CATEGORY := {
-	"akademis": "Akademis",
-	"seni_budaya": "SeniBudaya",
-	"olahraga": "Olahraga",
-}
+## Skill key -> the schedule category it grows: ObjectiveHint's own table,
+## so the strip and the callout always name the same subject.
+const SKILL_CATEGORY := ObjectiveHint.SKILL_CATEGORY
 
 ## Chip Label -> its running nudge tween.
 var _nudges: Dictionary = {}
@@ -113,9 +110,8 @@ func _update_gap_markers(screen: Control, skill: String, bars: Dictionary, token
 		if dot != null:
 			dot.self_modulate = tint
 		if tail != null:
-			var faint := tint
-			faint.a = TAIL_ALPHA
-			tail.self_modulate = faint
+			tint.a = TAIL_ALPHA  # tint is a local copy; the dot already has its own
+			tail.self_modulate = tint
 		bar.layout_fill_followers()
 		if key != _gauged:
 			_start_pulse(screen, dot)

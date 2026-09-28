@@ -214,7 +214,6 @@ theme_type_variation = &"StatGapMask"
 
 [node name="GapTail" type="TextureRect" parent="BGStat/Akademis/GapMask" unique_id=609389830]
 self_modulate = Color(0.1216, 0.4353, 0.7294, 1)
-texture_repeat = 2
 layout_mode = 0
 offset_left = 160.0
 offset_right = 324.0
@@ -222,7 +221,6 @@ offset_bottom = 70.0
 mouse_filter = 2
 texture = ExtResource("9_li4qs")
 expand_mode = 1
-stretch_mode = 1
 
 [node name="TargetDot" type="Panel" parent="BGStat/Akademis" unique_id=314303072]
 visible = false
@@ -310,7 +308,6 @@ theme_type_variation = &"StatGapMask"
 
 [node name="GapTail" type="TextureRect" parent="BGStat/SeniBudaya/GapMask" unique_id=290568628]
 self_modulate = Color(0.2392, 0.498, 0.0706, 1)
-texture_repeat = 2
 layout_mode = 0
 offset_left = 160.0
 offset_right = 324.0
@@ -318,7 +315,6 @@ offset_bottom = 70.0
 mouse_filter = 2
 texture = ExtResource("9_li4qs")
 expand_mode = 1
-stretch_mode = 1
 
 [node name="TargetDot" type="Panel" parent="BGStat/SeniBudaya" unique_id=1044368808]
 visible = false
@@ -406,7 +402,6 @@ theme_type_variation = &"StatGapMask"
 
 [node name="GapTail" type="TextureRect" parent="BGStat/Olahraga/GapMask" unique_id=1881588136]
 self_modulate = Color(0.8784, 0.2275, 0.0941, 1)
-texture_repeat = 2
 layout_mode = 0
 offset_left = 160.0
 offset_right = 324.0
@@ -414,7 +409,6 @@ offset_bottom = 70.0
 mouse_filter = 2
 texture = ExtResource("9_li4qs")
 expand_mode = 1
-stretch_mode = 1
 
 [node name="TargetDot" type="Panel" parent="BGStat/Olahraga" unique_id=1792829561]
 visible = false

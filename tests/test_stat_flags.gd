@@ -68,6 +68,21 @@ func test_a_clear_biggest_gap_wins_over_a_lower_raw_skill() -> void:
 		"urgency beats a low raw value")
 
 
+## A tie is measured against the biggest gap, not chained skill to skill: a
+## skill 0.6 below the biggest gap is outside GAP_EPSILON however weak it is,
+## even when it is within epsilon of another tied skill.
+func test_the_tie_window_is_anchored_on_the_biggest_gap() -> void:
+	var s := _healthy()
+	s["akademis"] = 50.0
+	s["target_akademis"] = 60.6  # 10.6 short: the biggest gap
+	s["seni_budaya"] = 20.0
+	s["target_seni_budaya"] = 30.2  # 10.2 short: tied, and weaker
+	s["olahraga"] = 10.0
+	s["target_olahraga"] = 20.0  # 10.0 short: 0.6 off the biggest, not tied
+	assert_eq(StatFlags.flags_for(s), {"seni_budaya": StatFlags.PERLU},
+		"the weakest skill inside the window wins; olahraga is outside it")
+
+
 func test_a_skill_exactly_at_target_is_not_weak() -> void:
 	var s := _healthy()
 	s["olahraga"] = s["target_olahraga"]

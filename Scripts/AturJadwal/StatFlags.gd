@@ -49,22 +49,24 @@ const _NEEDS := ["mood", "energy"]
 ## missing from the dictionary is never flagged.
 static func flags_for(student: Dictionary) -> Dictionary:
 	var flags := {}
-	var worst_key := ""
-	var worst_gap := 0.0
-	var worst_current := INF
+	# Two passes, so the answer never depends on _SKILLS' order: the biggest
+	# gap first, then the weakest raw skill within GAP_EPSILON of it.
+	var gaps := {}
+	var biggest := 0.0
 	for pair in _SKILLS:
 		if not (student.has(pair[0]) and student.has(pair[1])):
 			continue
-		var current := float(student[pair[0]])
-		var gap := float(student[pair[1]]) - current
-		if gap <= 0.0:
-			continue
-		var clearly_bigger := gap > worst_gap + GAP_EPSILON
-		var tied_but_weaker := absf(gap - worst_gap) <= GAP_EPSILON and current < worst_current
-		if worst_key == "" or clearly_bigger or tied_but_weaker:
-			worst_gap = gap
+		var gap := float(student[pair[1]]) - float(student[pair[0]])
+		if gap > 0.0:
+			gaps[pair[0]] = gap
+			biggest = maxf(biggest, gap)
+	var worst_key := ""
+	var worst_current := INF
+	for key: String in gaps:
+		var current := float(student[key])
+		if float(gaps[key]) >= biggest - GAP_EPSILON and current < worst_current:
 			worst_current = current
-			worst_key = pair[0]
+			worst_key = key
 	if worst_key != "":
 		flags[worst_key] = PERLU
 	for key in _NEEDS:

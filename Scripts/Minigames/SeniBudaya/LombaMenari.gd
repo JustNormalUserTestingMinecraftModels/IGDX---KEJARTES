@@ -162,6 +162,17 @@ const GRADE_TEXT: Dictionary = {
 	Grade.BAGUS: "BAGUS!",
 	Grade.SEMPURNA: "SEMPURNA!",
 }
+## Notes that may slip past the hit zone before the run is lost, by
+## difficulty (1-3, i.e. Kelas 7-9). Only a note that flies past counts; a
+## wrong swipe does not. Named tunables of ours (CLAUDE.md rule).
+const MISS_LIMIT_BY_DIFFICULTY: Dictionary = { 1: 10, 2: 8, 3: 6 }
+## The difficulty range MISS_LIMIT_BY_DIFFICULTY covers.
+const EASIEST_DIFFICULTY: int = 1
+## See EASIEST_DIFFICULTY.
+const HARDEST_DIFFICULTY: int = 3
+## From this many misses left, the miss text adds how many remain.
+const MISS_WARN_REMAINING: int = 3
+
 ## The colour of that word: red, green, gold.
 const GRADE_COLOR: Dictionary = {
 	Grade.UPS: Color(1.0, 0.25, 0.25),
@@ -178,6 +189,8 @@ var perfect_hits: int = 0
 var good_hits: int = 0
 ## Notes that reached the hit zone unanswered this run.
 var missed_notes: int = 0
+## This run's miss limit, set by start_minigame() from the difficulty.
+var miss_limit: int = 10
 ## Consecutive hits without a miss, for the HUD's combo chip. Reset by a miss.
 var current_combo: int = 0
 ## Longest combo this run. Not yet read by the star rubric -- reserved for a
@@ -288,6 +301,7 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	perfect_hits = 0
 	good_hits = 0
 	missed_notes = 0
+	miss_limit = miss_limit_for(difficulty)
 	if difficulty == 2:
 		target_score = 2000
 		note_speed = 270.0
@@ -402,8 +416,11 @@ func _process(delta: float) -> void:
 	for note in notes_to_remove:
 		active_notes.erase(note)
 		note.queue_free()
-		_show_hit_feedback(GRADE_TEXT[Grade.UPS], GRADE_COLOR[Grade.UPS])
+		_show_hit_feedback(miss_text(miss_limit - missed_notes), GRADE_COLOR[Grade.UPS])
 		_play_dancer_fail_motion()
+
+	if missed_notes >= miss_limit:
+		lose_game()
 
 func _spawn_rhythm_beat() -> void:
 	if rhythm_patterns.is_empty():
@@ -597,6 +614,44 @@ static func grade_for_distance(distance: float, sempurna_px: float, bagus_px: fl
 	if distance < bagus_px:
 		return Grade.BAGUS
 	return Grade.UPS
+
+
+## How many notes may slip past before a run at `game_difficulty` is lost.
+## A difficulty outside 1-3 reads as the nearest grade.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func miss_limit_for(game_difficulty: int) -> int:
+	return MISS_LIMIT_BY_DIFFICULTY[clampi(game_difficulty, EASIEST_DIFFICULTY, HARDEST_DIFFICULTY)]
+
+
+## The word shown for a note that slipped past, with `misses_left` still to
+## spare: plain UPS!, or UPS! and the count once MISS_WARN_REMAINING or fewer
+## remain. The losing miss (none left) stays plain; the result card follows.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func miss_text(misses_left: int) -> String:
+	var word: String = GRADE_TEXT[Grade.UPS]
+	if misses_left <= 0 or misses_left > MISS_WARN_REMAINING:
+		return word
+	return "%s\nSisa %d" % [word, misses_left]
+
+
+## Ends the run as a loss. Replaces BaseMinigame.lose_game(), whose
+## score-versus-get_target_win_score() shortcut (a target of 1 to 3) suits a
+## quiz scored in answers but would promote every Menari loss, scored in
+## hundreds, to a win. Mirrors MainBola's override.
+func lose_game() -> void:
+	if not is_game_active:
+		return
+	is_game_active = false
+	process_mode = Node.PROCESS_MODE_INHERIT
+	if pause_button:
+		pause_button.disabled = true
+		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if timer:
+		timer.stop()
+	set_process_input(false)
+	_show_result_overlay(false, "Skor akhir: %d / %d" % [score, target_score])
 
 
 ## Note accuracy: points earned as a fraction of the points that were actually

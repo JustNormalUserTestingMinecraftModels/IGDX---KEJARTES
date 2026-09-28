@@ -35,7 +35,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd::_show_current_question": 74,
 	"res://Scripts/Minigames/Akademis/Variabel.gd::_generate_question": 127,
 	"res://Scripts/Minigames/Olahraga/Badminton.gd::_physics_process": 53,
-	"res://Scripts/Minigames/Olahraga/Badminton.gd::_ready": 64,
+	"res://Scripts/Minigames/Olahraga/Badminton.gd::_ready": 63,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd::_setup_layout": 95,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd::_shoot_ball": 57,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd::_apply_visual_exports": 66,

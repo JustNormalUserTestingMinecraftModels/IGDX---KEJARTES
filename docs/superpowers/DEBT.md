@@ -311,7 +311,11 @@ Inventory or Achievements; and the Debug overlay's Look page stays
 Lobby-only because `DebugManager.gd` is at its clean-code size ceiling
 (1,880 lines, `LARGE_SCRIPTS`). Koperasi cannot bloom at all: its backdrop
 shares Stage with the tappable goods on layer 0 (lobby-look spec,
-section 2).
+section 2). The minigames cannot bloom either: SchoolDay hosts each one
+inside its own tree over a layer-0 Background, so a World layer at -1
+would draw under it, and SchoolDay's fade on the minigame root would not
+reach a CanvasLayer. Blooming them means hosting minigames on their own
+CanvasLayer in SchoolDay (lobby-look spec, pass 3).
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories
@@ -663,6 +667,12 @@ widget via `project_run` instead, which exercises it fine.
   drops frames while dragging, precompute the per-tap offsets/weights (they
   depend only on `i`, not on `sigma_texels`) or blur a downsampled copy.
 
+- **The Lobby look's full-screen additive passes are unmeasured on low-end
+  Android (2026-09-28).** The Lobby look adds full-screen additive passes
+  (SunShafts' atan/pow shader, the grade) to the shops, the exam notices and
+  seven minigames, including timed ones (Badminton, LombaMenari); unmeasured
+  on a low-end phone.
+
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a
   stub). Masa Depan yang Indah's Level Selection was already unlocked by
@@ -762,7 +772,9 @@ ResultCheckup confetti and MainBola (ExamProgress left this list on
 2026-09-20: its backdrop is anchored to all four edges and its status strip
 to the real screen bottom). The Lobby's classroom stays a centred
 1080×1920 picture, so a tall phone shows black bands above and below it;
-filling them wants taller classroom art.
+filling them wants taller classroom art. Badminton's authored court keeps
+`STRETCH_SCALE` (the walls sit on the court's edges), so a 1080x2400 phone
+stretches it about 25% vertically; tall-phone rule 1 does not hold there yet.
 
 **Ghost-preview bars land only on the item apply screen (2026-09-16).** The
 `ApplyItemScreen` student cards (`ApplyStudentRow`) show, while a student is

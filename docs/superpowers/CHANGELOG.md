@@ -8,6 +8,32 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — The Lobby look, part 3: the minigames
+
+Plan: `docs/superpowers/plans/2026-09-28-lobby-look-everywhere.md`, Tasks
+12–14. All eight minigames (PilihanGanda, Menjodohkan, Password, Variabel,
+MainBola, Badminton, LombaMenari, BuatBatik) now carry a warm `LightPool`
+right after their backdrop, on layer 0, plus `SunShafts` on every game but
+BuatBatik, which keeps rays off its drawing canvas. The desk games get a
+lamp pool upper left; MainBola and Badminton get a sun pool upper left,
+drawn under MainBola's pitch lines; LombaMenari gets a spotlight from the
+top with five downward shafts. None of them get bloom or a World layer:
+SchoolDay hosts each game inside its own tree over a layer-0 Background, so
+a World layer at -1 would draw under it, and SchoolDay's fade on the
+minigame root would not reach a CanvasLayer. Measured light, kit on vs off,
+on six of the eight games (Menjodohkan and Password share PilihanGanda's/
+Variabel's desk backdrop and values), lifted the upper-left corner about
++0.02 to +0.04 (LombaMenari's top-centre spot +0.0065 mean); nothing lands
+over the goal, net, hit zone or batik canvas. The illustration census now
+counts 42 graded plates, Badminton's court joining it.
+
+Badminton's court is now an authored `Background` node in `Badminton.tscn`
+(plain grade, ignores taps) instead of being built by `_add_background()`
+at runtime, dropping the runtime-construction ratchet for `Badminton.gd`
+8 → 7 and its `_ready` long-function count 64 → 63.
+
+With this part, the Lobby-look plan is done.
+
 ## 2026-09-28 — Lomba Menari's notes are real arrows
 
 Plan: `docs/superpowers/plans/2026-09-28-lomba-menari-note-arrow.md`.

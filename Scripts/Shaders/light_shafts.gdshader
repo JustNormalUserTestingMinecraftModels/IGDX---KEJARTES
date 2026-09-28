@@ -45,5 +45,7 @@ void fragment() {
 	float across = abs(fract(sector) - 0.5) * 2.0;
 	float shaft = pow(1.0 - across, softness);
 	float fade = smoothstep(1.0, 0.15, dist);
-	COLOR = vec4(shaft_color.rgb, 1.0) * (shaft * fade * intensity);
+	// COLOR carries the node's modulate, so a scene can fade the rays in and out
+	// with the art (SchoolDay's minigame fade, RunResult's Room fade).
+	COLOR = vec4(shaft_color.rgb, 1.0) * (shaft * fade * intensity * COLOR.a);
 }

@@ -336,6 +336,14 @@ func test_the_switch_hides_the_shafts() -> void:
 	assert_true(_shafts.visible, "and on brings them back")
 
 
+## The shafts must follow the node's inherited modulate, like light_falloff,
+## or they pop in at full strength while SchoolDay fades a minigame in (Part 3
+## review, 2026-09-28): the input COLOR carries that modulate.
+func test_the_shafts_fade_with_their_node() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/light_shafts.gdshader")
+	assert_true(src.contains("* COLOR.a"), "light_shafts multiplies by the inherited COLOR.a")
+
+
 # ── AmbientParticles ─────────────────────────────────────────────────────────
 
 func _emitter() -> CPUParticles2D:

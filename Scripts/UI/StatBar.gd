@@ -140,8 +140,10 @@ func layout_fill_followers() -> void:
 func _layout_need_gauge(end: float) -> void:
 	var tail := get_node_or_null("GapTail") as Control
 	if tail != null and tail.visible:
-		var box := tail.get_theme_stylebox("panel")
-		var cap := box.get_margin(SIDE_LEFT) if box != null and end > 0.0 else 0.0
+		# The cap is the nine-patch's texture margin, not get_margin(), which
+		# would prefer a content margin if the fill ever gains one.
+		var box := tail.get_theme_stylebox("panel") as StyleBoxTexture
+		var cap := box.texture_margin_left if box != null and end > 0.0 else 0.0
 		var x := maxf(0.0, end - cap)
 		tail.position = Vector2(x, 0.0)
 		tail.size = Vector2(maxf(0.0, size.x - x), size.y)

@@ -34,7 +34,8 @@ const DOT_PULSE_SECONDS := 1.2
 ## How strongly the GapTail's ghost of the fill shows. Half: clearly visible
 ## on the dark track and plainly the same bar, yet a step quieter than the
 ## real fill, so the two never read as one (compared live at 0.35, 0.55 and
-## against a flat tint, 2026-09-28).
+## against a flat tint, 2026-09-28). This is the value the game uses; the
+## scene's authored alpha on each GapTail is only the editor preview.
 const TAIL_ALPHA := 0.5
 
 ## The callout's line; %s is the subject's display word.

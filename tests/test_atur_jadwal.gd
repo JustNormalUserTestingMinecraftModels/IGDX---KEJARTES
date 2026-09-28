@@ -1156,7 +1156,7 @@ func test_the_gap_markers_are_seated_from_the_live_width() -> void:
 		return
 	var tail := bar.get_node("GapTail") as Control
 	var dot := bar.get_node("TargetDot") as Control
-	var cap := tail.get_theme_stylebox("panel").get_margin(SIDE_LEFT)
+	var cap := (tail.get_theme_stylebox("panel") as StyleBoxTexture).texture_margin_left
 	assert_true(cap > 0.0, "the ghost has a rounded cap to tuck")
 	tail.visible = true
 	dot.visible = true

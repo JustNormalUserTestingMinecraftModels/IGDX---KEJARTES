@@ -702,6 +702,9 @@ func _show_daily_reward() -> void:
 	blur_overlay.visible = true
 	_set_blur_lod(0.0)
 	_set_blur_darkness(0.0)
+	# Redraw for the current date: a Lobby left open past midnight would
+	# otherwise show yesterday's claim as today's.
+	daily_reward.refresh(Time.get_date_string_from_system())
 	daily_reward.open()
 	var tween := create_tween().set_parallel(true)
 	tween.tween_method(_set_blur_lod, 0.0, BLUR_LOD, BLUR_IN_SECONDS).set_ease(Tween.EASE_OUT)

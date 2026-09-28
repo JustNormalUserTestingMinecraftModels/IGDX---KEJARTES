@@ -463,6 +463,13 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **`AnimUtils._active_tweens` never forgets freed nodes** (2026-09-28).
+  Each helper call registers its tween keyed by the node and never erases
+  the key, so the daily-login reveal leaves 20-30 dead keys per claim (one
+  per fanned coin and star, which are freed when the reveal ends). Small,
+  but it grows for the whole session; erase the key when the tween
+  finishes, in `Scripts/AnimUtils.gd`, which every screen shares.
+
 - **Clean-code ratchet debt** (`ci/clean_code_baseline.gd`, 2026-09-26): 1588
   untyped declarations, 2120 bare numbers, 46 functions over 50 code lines,
   5 large scripts, 22 duplicate groups. Phase 2 (PR4 one `TutorialGuide`,

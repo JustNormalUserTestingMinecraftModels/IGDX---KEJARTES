@@ -515,3 +515,15 @@ func test_the_besok_teaser_is_a_caption() -> void:
 	if teaser == null:
 		return
 	assert_eq(teaser.theme_type_variation, &"ResultDeltaLabel", "the teaser is readable over the blur")
+
+
+## The popup redraws for the current date each time it opens, so a Lobby
+## left open past midnight never shows yesterday's claim as today's.
+func test_opening_the_daily_reward_refreshes_for_today() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body_start: int = src.find("func _show_daily_reward")
+	assert_true(body_start >= 0, "Lobby has _show_daily_reward")
+	var body: String = src.substr(body_start, src.find("\nfunc ", body_start + 1) - body_start)
+	var refresh_at: int = body.find("daily_reward.refresh(Time.get_date_string_from_system())")
+	assert_true(refresh_at >= 0, "opening refreshes the panel with today's date")
+	assert_true(refresh_at < body.find("daily_reward.open()"), "and does so before open()")

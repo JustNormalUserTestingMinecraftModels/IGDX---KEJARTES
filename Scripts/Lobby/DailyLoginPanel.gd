@@ -107,6 +107,9 @@ var _today: String = ""
 var _pending_amount: int = 0
 var _pending_previous_money: int = 0
 var _is_payout_pending: bool = false
+## Set while close() runs, so a reveal it cuts short does not start the
+## reward row's pop and count-up on a panel that is fading out.
+var _is_closing: bool = false
 
 
 func _ready() -> void:
@@ -135,6 +138,7 @@ func refresh(today: String) -> void:
 ## Pops the whole panel in -- the art bakes all seven slots, so there are
 ## no separate tiles left to stagger in behind it.
 func open() -> void:
+	_is_closing = false
 	visible = true
 	Juice.pop_in(self)
 	_spring_in_headers()
@@ -146,6 +150,7 @@ func open() -> void:
 ## Fades and shrinks the panel out, then hides it. A reveal still playing
 ## is cut short first, so its payout still reaches the wallet.
 func close() -> void:
+	_is_closing = true
 	reveal.skip()
 	_stop_flicker()
 	_stop_idle_invite()
@@ -254,14 +259,14 @@ func _flush_pending_payout() -> void:
 	_pay_out()
 
 
-## The reward row pops and counts up at the burst; under reduce_motion it
-## simply shows the final amount.
+## The reward row pops and counts up at the burst; under reduce_motion, or
+## when close() cut the reveal short, it simply shows the final amount.
 func _on_reveal_burst_started() -> void:
 	# _show_day dimmed these for the "already claimed" cue before the reveal
 	# played; restore full brightness so the count-up pays off bright.
 	reward_coin.modulate.a = 1.0
 	reward_amount.modulate.a = 1.0
-	if GameSettings.reduce_motion:
+	if GameSettings.reduce_motion or _is_closing:
 		reward_row.scale = Vector2.ONE
 		reward_row.modulate.a = 1.0
 		reward_amount.text = AMOUNT_FORMAT % _pending_amount

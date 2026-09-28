@@ -62,6 +62,11 @@ func _allowed(path: String, line: String) -> bool:
 	return false
 
 
+## Files read by the last test run; the test checks it so an empty or moved
+## tree cannot pass by scanning nothing.
+var _scanned := 0
+
+
 func _scan(dir_path: String, hits: Array[String]) -> void:
 	if dir_path in SKIP_DIRS:
 		return
@@ -73,6 +78,7 @@ func _scan(dir_path: String, hits: Array[String]) -> void:
 	for file in dir.get_files():
 		if not (file.ends_with(".tscn") or file.ends_with(".gd")):
 			continue
+		_scanned += 1
 		var path := dir_path.path_join(file)
 		var n := 0
 		for line in FileAccess.get_file_as_string(path).split("\n"):
@@ -85,6 +91,8 @@ func _scan(dir_path: String, hits: Array[String]) -> void:
 
 func test_no_ui_text_carries_an_emoji_or_dingbat() -> void:
 	var hits: Array[String] = []
+	_scanned = 0
 	_scan("res://Scenes", hits)
 	_scan("res://Scripts", hits)
+	assert_true(_scanned > 100, "the scan read the tree (%d files)" % _scanned)
 	assert_eq(hits.size(), 0, "glyphs in UI text:\n" + "\n".join(hits))

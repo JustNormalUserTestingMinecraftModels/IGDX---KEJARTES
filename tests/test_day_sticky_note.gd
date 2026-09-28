@@ -35,6 +35,9 @@ func test_scene_tree_shape() -> void:
 	assert_true(lock != null, "Paper/Lock must be a TextureRect")
 	if lock == null:
 		return
+	assert_true(lock.texture != null, "the lock wears a picture")
+	if lock.texture == null:
+		return
 	assert_eq(lock.texture.resource_path, "res://Assets/Images/UI/Placeholders/icon_lock.svg",
 		"the lock wears icon_lock.svg")
 	assert_eq(lock.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the lock lets the tap through to Paper")

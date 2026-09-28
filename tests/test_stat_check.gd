@@ -420,7 +420,7 @@ func test_rushing_an_idle_meter_leaves_the_stars_where_they_are() -> void:
 func test_scene_loads_with_its_chrome() -> void:
 	var screen = load(_SCENE).instantiate()
 	track(screen)
-	assert_true(screen.get_node_or_null("Backdrop") is TextureRect, "Backdrop")
+	assert_true(screen.get_node_or_null("World/Room/Backdrop") is TextureRect, "Backdrop")
 	assert_true(screen.get_node_or_null("Scrim") is Panel, "Scrim")
 	assert_true(screen.get_node_or_null("MarginContainer/Column/CardSlot") is Control,
 		"CardSlot, where each student's card is instanced")

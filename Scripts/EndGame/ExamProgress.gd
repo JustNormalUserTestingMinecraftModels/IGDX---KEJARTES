@@ -21,7 +21,7 @@ extends Control
 
 @onready var progress_bar: ProgressBar = $MarginContainer/Content/Inner/ProgressBar
 @onready var status_label: Label = $MarginContainer/Content/Inner/StatusLabel
-@onready var backdrop: TextureRect = $Backdrop
+@onready var backdrop: TextureRect = %Backdrop
 
 ## Where the fill hands off. Plan A's StatCheck replaced the exam-intro
 ## cutscene beat that used to sit here.

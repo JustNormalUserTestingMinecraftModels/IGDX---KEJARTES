@@ -66,7 +66,7 @@ func _scene() -> Node:
 func test_scene_has_the_chrome() -> void:
 	var s := _scene()
 	assert_true(s is EndCutscene, "the scene wears EndCutscene.gd")
-	assert_true(s.get_node_or_null("WinStage") is WinStage, "the shared win stage")
+	assert_true(s.get_node_or_null("World/Room/WinStage") is WinStage, "the shared win stage")
 	assert_true(s.get_node_or_null("Badge") is TextureRect, "Badge")
 	assert_true(s.get_node_or_null("BtnNext") is Button, "BtnNext")
 	assert_true(s.get_node_or_null("WhiteFade") is ColorRect, "WhiteFade")
@@ -116,7 +116,7 @@ func test_next_button_starts_hidden_and_disabled() -> void:
 ## lose badge (which the lose path does stamp) is a real texture.
 func test_both_verdicts_are_dressed_from_exports() -> void:
 	var s := _scene()
-	var stage: WinStage = s.get_node("WinStage")
+	var stage: WinStage = s.get_node("World/Room/WinStage")
 	assert_true(stage.win_backdrop is Texture2D, "the stage carries a win painting")
 	assert_true(stage.lose_backdrop is Texture2D, "and a lose CG")
 	assert_true(s.lose_badge is Texture2D, "a lose badge is assigned")
@@ -225,13 +225,13 @@ func test_the_blur_layer_blurs_the_backdrop_but_not_the_badge_or_button() -> voi
 	var order: Array[String] = []
 	for c in s.get_children():
 		order.append(String(c.name))
-	var stage_at := order.find("WinStage")
+	var stage_at := order.find("World")
 	var blur_at := order.find("BlurLayer")
 	var badge_at := order.find("Badge")
 	var btn_at := order.find("BtnNext")
-	assert_gt(stage_at, -1, "WinStage is a direct child of the root")
+	assert_gt(stage_at, -1, "World, which holds the stage, is a direct child of the root")
 	assert_true(stage_at < blur_at,
-		"WinStage draws first, so the shader samples the painting and its figures")
+		"World draws first, so the shader samples the painting and its figures")
 	assert_true(blur_at < badge_at and blur_at < btn_at,
 		"Badge and BtnNext draw after the blur, so they stay sharp")
 	assert_eq(String(s.get_children()[s.get_child_count() - 1].name), "WhiteFade",
@@ -267,8 +267,10 @@ func test_the_exit_blurs_before_it_hands_off() -> void:
 ## while the students stay sharp.
 func test_the_blur_layer_draws_above_the_stage() -> void:
 	var s := _scene()
-	assert_true(s.get_node("WinStage").get_index() < s.get_node("BlurLayer").get_index(),
-		"BlurLayer is above WinStage, so the students blur out with the backdrop")
+	var world := s.get_node("World") as CanvasLayer
+	assert_eq(world.layer, -1, "the stage's World draws below layer 0, where BlurLayer is")
+	assert_true(s.get_node_or_null("World/Room/WinStage") is WinStage,
+		"and holds the stage, so the students blur out with the backdrop")
 
 
 func test_the_next_button_sits_in_the_bottom_letterbox_bar() -> void:
@@ -299,8 +301,8 @@ const _DRESS_CALL := "win_stage.dress(GameState.run_failed, WinStage.names_of(Ga
 
 func test_the_painting_and_lineup_come_from_the_shared_win_stage() -> void:
 	var s := _scene()
-	var first := s.get_child(0)
-	assert_eq(first.name, &"WinStage", "the stage is the first thing drawn")
+	assert_eq(s.get_child(0).name, &"World", "the stage's World is the first thing drawn")
+	var first := s.get_node("World/Room/WinStage")
 	assert_eq(first.scene_file_path, _WIN_STAGE_SCENE,
 		"an instance of the shared scene, not a local copy")
 	assert_true(s.get_node_or_null("Stage") == null and s.get_node_or_null("BarFill") == null,

@@ -2,6 +2,9 @@
 
 [ext_resource type="Script" uid="uid://bl4mmiltrkt4l" path="res://Scripts/EndGame/ExamProgress.gd" id="1_6eyov"]
 [ext_resource type="Texture2D" uid="uid://dl4stmlxl1dav" path="res://Assets/Images/CG/cg_ujian.png" id="2_6eyov"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 
 [node name="ExamProgress" type="Control" unique_id=1018216631]
 layout_mode = 3
@@ -12,8 +15,23 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_6eyov")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=384324851]
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Room" type="Control" parent="World"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Backdrop" type="TextureRect" parent="World/Room" unique_id=384324851]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(1296, 1920)
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,9 +39,18 @@ anchor_bottom = 1.0
 offset_right = 216.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("2_6eyov")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Light" parent="World/Room" instance=ExtResource("look_pool")]
+center = Vector2(0.15, 0.08)
+pool_size = Vector2(1600, 1600)
+intensity = 0.08
+
+[node name="Shafts" parent="World/Room" instance=ExtResource("look_shafts")]
+intensity = 0.15
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=591100110]
 layout_mode = 1

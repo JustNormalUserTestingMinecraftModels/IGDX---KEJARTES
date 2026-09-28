@@ -294,7 +294,9 @@ project-wide rendering change `test_look_layer` pins off today. Measured
 or bloomed the background as much as the light (+0.04 to +0.11 at the
 strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList,
 ReportCard, ShopHub and CosmeticShop (under their blur the core reaches
-only +0.0045/+0.0043 even at threshold 0.5) all ship without bloom --
+only +0.0045/+0.0043 even at threshold 0.5), and TesNotice, StatCheck,
+ExamProgress, EndCutscene and RunResult (+0.0000 core bloom at every
+threshold tried; dark or scrimmed art), all ship without bloom --
 `Scenes/Look/AmbientGlow.tscn` is built and ready to place once `hdr_2d`
 lands. Measured at the same time, the desk lamp `LightPool` is capped at
 0.12 (its measured knee) and still only adds +0.011 mean brightness;

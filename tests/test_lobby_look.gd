@@ -28,11 +28,21 @@ const GLOW_DEFAULT := 0.9
 
 const SHOP_HUB := "res://Scenes/Koperasi/ShopHub.tscn"
 const COSMETIC_SHOP := "res://Scenes/Koperasi/CosmeticShop.tscn"
+const TES_NOTICE := "res://Scenes/EndGame/TesNotice.tscn"
+const STAT_CHECK := "res://Scenes/EndGame/StatCheck.tscn"
+const EXAM_PROGRESS := "res://Scenes/EndGame/ExamProgress.tscn"
+const END_CUTSCENE := "res://Scenes/EndGame/EndCutscene.tscn"
+const RUN_RESULT := "res://Scenes/EndGame/RunResult.tscn"
 
 ## Screen -> its Room's children, in draw order.
 const ROOMS := {
 	SHOP_HUB: ["Backdrop", "Light", "Shafts", "Parallax"],
 	COSMETIC_SHOP: ["Backdrop", "Light", "Shafts", "Parallax"],
+	TES_NOTICE: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
+	STAT_CHECK: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
+	EXAM_PROGRESS: ["Backdrop", "Light", "Shafts"],
+	END_CUTSCENE: ["WinStage"],
+	RUN_RESULT: ["WinStage"],
 }
 
 ## Screen -> its measured glow_threshold, or null where no threshold bloomed
@@ -41,6 +51,11 @@ const ROOMS := {
 const BLOOM := {
 	SHOP_HUB: null,
 	COSMETIC_SHOP: null,
+	TES_NOTICE: null,
+	STAT_CHECK: null,
+	EXAM_PROGRESS: null,
+	END_CUTSCENE: null,
+	RUN_RESULT: null,
 }
 
 
@@ -174,3 +189,63 @@ func test_koperasi_lights_its_stage_under_the_goods() -> void:
 	assert_true(Census.entry(c, "World").is_empty(), "no World layer")
 	for e in c:
 		assert_ne(e["instance"], AMBIENT_GLOW, "nothing on layer 0 can bloom, so no Glow")
+
+
+## The exam notices' light is cool and dim, to sit under their TEGANG tint.
+func test_the_exam_notices_light_is_cool() -> void:
+	for scene_path in [TES_NOTICE, STAT_CHECK]:
+		var c := Census.of(scene_path)
+		var colour: Color = Census.prop(Census.entry(c, "World/Room/Light"), "light_color", Color.WHITE)
+		assert_true(colour.b > colour.r, scene_path + ": the pool is cool, blue over red")
+		var shafts: Color = Census.prop(Census.entry(c, "World/Room/Shafts"), "shaft_color", Color.WHITE)
+		assert_true(shafts.b > shafts.r, scene_path + ": and so are the shafts")
+		assert_eq(_drawn(scene_path).slice(0, 2), ["World", "Scrim"] as Array[String],
+			scene_path + ": the scrim draws over the room, under the card")
+
+
+## ExamProgress already pans its backdrop with a tween on position.x, so it
+## takes no Parallax (planning amendment 3), and the script finds the moved
+## backdrop by unique name.
+func test_exam_progress_pans_its_own_backdrop() -> void:
+	var c := Census.of(EXAM_PROGRESS)
+	assert_eq(Census.prop(Census.entry(c, "World/Room/Backdrop"), "unique_name_in_owner"), true,
+		"the backdrop is %Backdrop")
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/ExamProgress.gd")
+	assert_true(src.contains("backdrop: TextureRect = %Backdrop"), "ExamProgress.gd finds it by name")
+
+
+## EndCutscene hands over to RunResult with an invisible swap of the same
+## frame, so both must bloom it alike (planning amendment 4).
+func test_the_two_verdict_screens_bloom_alike() -> void:
+	assert_eq(BLOOM[END_CUTSCENE], BLOOM[RUN_RESULT],
+		"EndCutscene and RunResult share one glow decision")
+
+
+## A CanvasLayer ignores its parent's modulate, so RunResult's exit fade must
+## fade the Room as well as its root, or the painting stays lit to the end.
+func test_run_result_fades_its_room_on_the_way_out() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	assert_true(src.contains("@onready var room: Control = %Room"), "RunResult finds its Room")
+	assert_true(src.contains("tween.parallel().tween_property(room, \"modulate:a\", 0.0,"),
+		"and fades it alongside the root")
+
+
+func test_both_hosts_find_the_moved_stage_by_name() -> void:
+	for path in ["res://Scripts/EndGame/EndCutscene.gd", "res://Scripts/EndGame/RunResult.gd"]:
+		assert_true(FileAccess.get_file_as_string(path).contains("win_stage: WinStage = %WinStage"),
+			path + " finds the stage by unique name")
+
+
+## A CanvasLayer ignores its parent's modulate, so a World screen that fades
+## its own root must fade its Room too, or the lit room stays up to the scene
+## swap. RunResult does both; this keeps every other World screen honest if it
+## ever adds a root fade (Part 2 code review, 2026-09-28).
+func test_no_world_screen_fades_its_root_alone() -> void:
+	for scene_path in ROOMS:
+		var root_script: Variant = Census.prop(Census.entry(Census.of(scene_path), "."), "script")
+		if not root_script is Script:
+			continue
+		var src := FileAccess.get_file_as_string((root_script as Script).resource_path)
+		if src.contains("tween_property(self, \"modulate"):
+			assert_true(src.contains("tween_property(room, \"modulate"),
+				scene_path + ": its root fade must also fade %Room")

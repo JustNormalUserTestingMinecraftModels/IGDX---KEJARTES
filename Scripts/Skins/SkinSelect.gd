@@ -142,10 +142,18 @@ func _ready() -> void:
 ## every StudentSkins.NAMES so the screen is never blank; that is a safety
 ## net, not a way to dress a character outside the class. Tiles beyond
 ## _names.size() are hidden, same idea as _refresh_dots hiding extra dots.
-## Persistence is unchanged: equipped_skins stays keyed by NAME, so a
-## character not on this rail keeps whatever they last wore.
+## `names` past the rail's own tile count is trimmed with a push_warning --
+## the rail is authored, never built at runtime, so a 7th name would index
+## past %Rail's last child. Persistence is unchanged: equipped_skins stays
+## keyed by NAME, so a character not on this rail keeps whatever they last
+## wore.
 func open(names: Array[String] = []) -> void:
 	_names = names.duplicate() if not names.is_empty() else StudentSkins.NAMES.duplicate()
+	var tile_count := _rail.get_child_count()
+	if _names.size() > tile_count:
+		push_warning("SkinSelect: dropping %d name(s) past the rail's %d tiles" \
+			% [_names.size() - tile_count, tile_count])
+		_names = _names.slice(0, tile_count)
 	_pending.clear()
 	_roster_header.text = ROSTER_HEADER_FORMAT % _names.size()
 	for i in _rail.get_child_count():

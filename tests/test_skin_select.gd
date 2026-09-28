@@ -730,3 +730,16 @@ func test_the_tray_text_only_uses_glyphs_the_display_face_has() -> void:
 func test_terapkan_gets_the_main_action_haptic_tick() -> void:
 	assert_true(PressFeel.ticks(&"SkinApplyButton"),
 		"TERAPKAN must be a main-action role")
+
+
+## The rail's six tiles are authored, never built at runtime (Task 1), so a
+## 7th name would index past %Rail's last child. open() trims _names to the
+## rail's own tile count instead. Behavioral: the point is that a 7-name
+## roster settles on exactly 6 visible tiles rather than crashing.
+func test_open_clamps_names_past_the_rails_tile_count() -> void:
+	var s := _new_screen()
+	var seven: Array[String] = StudentSkins.NAMES.duplicate()
+	seven.append("Extra")
+	s.open(seven)
+	assert_eq(s.visible_names().size(), 6, "the rail has only 6 authored tiles")
+	assert_eq(_visible_tile_names(s).size(), 6)

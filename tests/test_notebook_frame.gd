@@ -42,6 +42,15 @@ func test_host_content_lands_inside_the_page() -> void:
 	assert_true(Rect2(Vector2.ZERO, FRAME_SIZE).encloses(r), "inside the frame")
 
 
+func test_sort_now_is_a_no_op_off_tree() -> void:
+	var frame := load(SCENE).instantiate() as NotebookFrame
+	track(frame)
+	var host := Control.new()
+	frame.add_child(host)
+	frame.sort_now()
+	assert_eq(host.size, Vector2.ZERO, "off-tree, sort_now waits for the tree")
+
+
 func test_the_decoration_is_full_size_and_behind() -> void:
 	var frame := _frame()
 	frame.sort_now()
@@ -112,6 +121,17 @@ func test_tab_and_close_presses_become_signals() -> void:
 	(frame.get_node("Chrome/Close") as Button).pressed.emit()
 	assert_eq(got, [1, "close"], "tab 1 then close")
 	assert_eq(frame.active_tab, 1, "the pressed tab becomes active")
+
+
+func test_the_authored_ring_spacing_is_not_baked() -> void:
+	var src := FileAccess.get_file_as_string(SCENE)
+	assert_contains(src, "theme_override_constants/separation = 40",
+		"the authored Rings gap survives -- _spread_rings() never bakes into the .tscn")
+	var start := src.find("[node name=\"Well\"")
+	var next_node := src.find("[node ", start + 1)
+	var well_block := src.substr(start, next_node - start)
+	assert_false(well_block.contains("offset_"),
+		"the Well's runtime-computed offsets never get saved into the frame's own scene")
 
 
 func test_nothing_is_built_at_runtime() -> void:

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dt4t2ee6fok7w" path="res://Scripts/Koperasi/BasketTray.gd" id="1_tray"]
 [ext_resource type="Texture2D" uid="uid://bnttf7a0tc07v" path="res://Assets/Images/Shop/UI/tray_dots.png" id="2_dots"]
 [ext_resource type="Texture2D" uid="uid://dk836e3bixfdh" path="res://Assets/Images/Shop/UI/icon_keranjang_kosong.svg" id="3_empty"]
+[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="4_coin"]
 
 [node name="BasketTray" type="Control" unique_id=1330054252]
 layout_mode = 3
@@ -96,16 +97,93 @@ offset_right = 1004.0
 offset_bottom = 508.0
 theme_override_constants/separation = 24
 
-[node name="TotalLabel" type="Label" parent="Body/Footer" unique_id=1182994695]
+[node name="KasCluster" type="VBoxContainer" parent="Body/Footer" unique_id=990119680]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"TitleLabel"
-text = "Total: 0 koin"
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="KasCaption" type="Label" parent="Body/Footer/KasCluster" unique_id=901828800]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"KasCaptionLabel"
+text = "KAS KELAS"
+horizontal_alignment = 1
+
+[node name="KasPill" type="PanelContainer" parent="Body/Footer/KasCluster" unique_id=1866175651]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"KasPill"
+
+[node name="Row" type="HBoxContainer" parent="Body/Footer/KasCluster/KasPill" unique_id=378618405]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Coin" type="TextureRect" parent="Body/Footer/KasCluster/KasPill/Row" unique_id=816965866]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KasLabel" type="Label" parent="Body/Footer/KasCluster/KasPill/Row" unique_id=1586898250]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"TotalNumberAwake"
+text = "0"
+vertical_alignment = 1
+
+[node name="TotalCluster" type="VBoxContainer" parent="Body/Footer" unique_id=1590303116]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="TotalCaption" type="Label" parent="Body/Footer/TotalCluster" unique_id=1039794414]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"KasCaptionLabel"
+text = "TOTAL"
+horizontal_alignment = 1
+
+[node name="TotalPill" type="PanelContainer" parent="Body/Footer/TotalCluster" unique_id=434105139]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"TotalPillAsleep"
+
+[node name="Row" type="HBoxContainer" parent="Body/Footer/TotalCluster/TotalPill" unique_id=1279169658]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="TotalCoin" type="TextureRect" parent="Body/Footer/TotalCluster/TotalPill/Row" unique_id=1953572316]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TotalNumber" type="Label" parent="Body/Footer/TotalCluster/TotalPill/Row" unique_id=497602557]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"TotalNumberAsleep"
+text = "0"
 vertical_alignment = 1
 
 [node name="BeliButton" type="Button" parent="Body/Footer" unique_id=1079383275]
 custom_minimum_size = Vector2(280, 128)
 layout_mode = 2
+size_flags_vertical = 1
 theme_type_variation = &"PrimaryButtonM"
 text = "Beli"
 

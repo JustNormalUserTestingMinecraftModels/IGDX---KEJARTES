@@ -25,6 +25,13 @@ func _entry(item: ItemData, quantity: int) -> Dictionary:
 	return {"data": item, "quantity": quantity}
 
 
+## A single-line cart whose total is exactly `amount` -- one unit of one
+## item priced at it. Enough for the Total pill's state tests, which only
+## care about the total against the Kas, not the row on the plank.
+func _entries_costing(amount: int) -> Dictionary:
+	return {"Barang": _entry(_item("Barang", amount), 1)}
+
+
 ## A live tray in the editor's root, so @onready resolves. Null (after a
 ## recorded failure) when the scene does not exist yet.
 func _tray() -> Node:
@@ -60,7 +67,45 @@ func test_the_footer_shows_the_total_in_koin() -> void:
 		"Susu Kotak": _entry(_item("Susu Kotak", 1000), 2),
 		"Pop Ice": _entry(_item("Pop Ice", 400), 1),
 	})
-	assert_eq(tray.get_total_text(), "Total: 2.400 koin")
+	assert_eq(tray.get_total_text(), "2.400")
+
+
+## The Kas Kelas and Total pills (2026-09-28 koperasi-top-band-promo Task 6):
+## the footer's twin pills. show_kas() drives the Kas balance; refresh()
+## re-derives the Total pill's state against it every time either changes.
+func test_an_empty_basket_sleeps() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	tray.refresh({})
+	assert_eq(tray.get_total_state(), &"TotalPillAsleep", "nothing picked, nothing owed")
+
+
+func test_items_wake_the_total() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	tray.refresh(_entries_costing(1000))
+	assert_eq(tray.get_total_state(), &"TotalPillAwake", "items wake it")
+
+
+func test_a_total_past_the_kas_turns_over() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	tray.refresh(_entries_costing(5000))
+	assert_eq(tray.get_total_state(), &"TotalPillOver", "more than the class fund holds")
+
+
+func test_the_kas_shows_the_balance() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	assert_eq(tray.get_kas_text(), "3.880", "the Kas reads the balance, thousands dotted")
 
 
 func test_koin_amounts_group_thousands_with_dots() -> void:
@@ -80,7 +125,7 @@ func test_an_empty_tray_shows_its_empty_state() -> void:
 	tray.refresh({})
 	assert_true(tray.get_node("Body/EmptyState").visible, "the empty state shows")
 	assert_false(tray.get_node("Body/Hint").visible, "no hold-to-return hint over nothing")
-	assert_eq(tray.get_total_text(), "Total: 0 koin")
+	assert_eq(tray.get_total_text(), "0")
 
 
 func test_a_filled_tray_hides_its_empty_state() -> void:

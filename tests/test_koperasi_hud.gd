@@ -19,12 +19,29 @@ func suite_name() -> String:
 
 const SCENE_PATH := "res://Scenes/Koperasi/Koperasi.tscn"
 const SCRIPT_PATH := "res://Scripts/Koperasi/Koperasi.gd"
+const BASKET_TRAY_SCENE_PATH := "res://Scenes/Koperasi/BasketTray.tscn"
 
 
 func test_coin_hud_and_message_live_in_the_scene() -> void:
 	var text := FileAccess.get_file_as_string(SCENE_PATH)
 	for node_name in ["MessageLabel"]:
 		assert_contains(text, node_name, "Koperasi.tscn is missing %s" % node_name)
+
+
+## The 2026-09-28 koperasi-top-band-promo Task 6 pass: the ledge coin HUD
+## moved into the tray footer's Kas Kelas pill, driven from Koperasi.gd
+## through the tray rather than a local coin_label.
+func test_koperasi_shows_the_kas_through_the_tray() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_contains(src, "tray.show_kas(", "Koperasi.gd should drive the tray's Kas pill")
+	assert_false(src.contains("%CoinHUD"), "the coin HUD moved into the tray footer")
+
+
+func test_basket_tray_scene_carries_the_kas_and_total_pills() -> void:
+	var text := FileAccess.get_file_as_string(BASKET_TRAY_SCENE_PATH)
+	for node_name in ["KasPill", "TotalPill", "KasLabel", "TotalNumber"]:
+		assert_contains(text, node_name, "BasketTray.tscn is missing %s" % node_name)
+	assert_contains(text, "&\"KasCaptionLabel\"", "BasketTray.tscn is missing KasCaptionLabel")
 
 
 func test_koperasi_builds_no_chrome_at_runtime() -> void:

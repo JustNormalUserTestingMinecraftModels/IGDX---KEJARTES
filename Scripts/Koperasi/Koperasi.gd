@@ -21,10 +21,6 @@ extends Control
 
 @onready var stage: Control = $Stage
 @onready var back_button: TextureButton = $Stage/BackButton
-# CoinHUD stands on the counter ledge, part of the Stage, since the
-# 2026-09-17 revamp.
-@onready var coin_hud: HBoxContainer = %CoinHUD
-@onready var coin_label: Label = get_node("%CoinHUD/CoinLabel")
 @onready var message_label: Label = $MessageLabel
 @onready var bubble: ChatBubble = $Stage/ChatBubble
 @onready var herman_ap: AnimationPlayer = get_node_or_null("Stage/Herman/HermanAP") as AnimationPlayer
@@ -74,7 +70,10 @@ func _ready():
 		back_button.position = back_pos_expanded if tray_expanded else back_pos_collapsed
 
 	_setup_beli_button()
-	_update_coin_display()
+	# The tray's own tween needs a frame it does not have yet on arrival, and
+	# a count-up from 0 on first paint would be a lie about where the Kas
+	# balance came from -- snap straight to it instead.
+	_update_coin_display(false)
 
 	# Signal-driven coin updates
 	if not GameState.money_changed.is_connected(_on_money_changed):
@@ -175,10 +174,14 @@ func _on_back_pressed():
 func _on_money_changed(new_amount: int):
 	_update_coin_display()
 
-func _update_coin_display():
-	if coin_label:
-		coin_label.text = "%d" % GameState.player_money
-		AnimUtils.coin_pulse(coin_hud)
+## Shows the class fund's balance on the tray footer's Kas Kelas pill.
+## animate=false snaps straight to the new balance (arrival, or any caller
+## that skips the count-up); a signal-driven update counts up by default.
+func _update_coin_display(animate: bool = true) -> void:
+	if not is_instance_valid(tray):
+		push_error("Koperasi: BasketTray is missing, cannot show the Kas Kelas balance")
+		return
+	tray.show_kas(GameState.player_money, animate)
 
 func _on_beli_pressed():
 	AnimUtils.squash_bounce(beli_button)

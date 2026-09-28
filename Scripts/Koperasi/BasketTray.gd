@@ -4,7 +4,9 @@ extends Control
 
 ## The koperasi basket tray, docked at the bottom of the shelf screen: the
 ## items the player has picked stand on its plank at their own heights, each
-## with a ×N badge, and its footer carries the running total and the one
+## with a ×N badge, and its footer carries twin pills -- Kas Kelas (the
+## class fund's balance, driven by show_kas()) and Total (the cart's
+## running cost, woken and turned over by refresh()) -- beside the one
 ## Beli button.
 ##
 ## Two ways to move it, both landing in set_state(): the CrateHandle
@@ -68,12 +70,28 @@ const SLOT_SCENE := preload("res://Scenes/Koperasi/TraySlot.tscn")
 ## through the autoload instance (which GDScript warns about).
 const CART_SCRIPT := preload("res://Scripts/Inventory/Cart.gd")
 
+## The Total pill's coin fades to this alpha while asleep (nothing in the
+## cart) -- the Kas pill's own coin never dims, only the Total one.
+const ASLEEP_COIN_ALPHA := 0.45
+## Beli's alpha while the cart costs more than the Kas Kelas balance. It
+## stays pressable at this alpha rather than going `disabled`, so a press
+## still reaches Koperasi.gd and Pak Herman's "not enough" line answers.
+const BELI_OVER_ALPHA := 0.6
+
 @onready var _body: Control = $Body
 @onready var _items: Control = $Body/Items
 @onready var _empty_state: Control = $Body/EmptyState
 @onready var _hint: Label = $Body/Hint
-@onready var _total_label: Label = $Body/Footer/TotalLabel
+@onready var _kas_pill: PanelContainer = %KasPill
+@onready var _kas_label: Label = %KasLabel
+@onready var _total_pill: PanelContainer = %TotalPill
+@onready var _total_number: Label = %TotalNumber
+@onready var _total_coin: TextureRect = %TotalCoin
 @onready var _beli_button: Button = $Body/Footer/BeliButton
+
+## The balance last handed to show_kas(), so refresh() can re-derive the
+## Total pill's state (awake vs. over) without a caller passing it again.
+var _kas: int = 0
 
 ## item_name -> TraySlot, in the order the lines entered the cart.
 var _slots: Dictionary = {}
@@ -150,7 +168,7 @@ func refresh(entries: Dictionary) -> void:
 	var empty := entries.is_empty()
 	_empty_state.visible = empty
 	_hint.visible = not empty
-	_total_label.text = "Total: %s koin" % format_koin(CART_SCRIPT.total_of(entries))
+	_apply_total_state(CART_SCRIPT.total_of(entries), empty)
 
 
 ## Call BEFORE Cart.add_item(): the refresh that follows keeps the new unit
@@ -339,16 +357,71 @@ static func format_koin(amount: int) -> String:
 	return ("-" if amount < 0 else "") + digits + grouped
 
 
-## Reads the footer. Exists so tests need not know node paths.
+## Shows the class fund's balance on the Kas Kelas pill and re-derives the
+## Total pill's state against it (a cart that was affordable can turn over,
+## or the reverse, purely from the Kas changing under it). animate=false
+## snaps straight to the new text -- used by the first call on arrival and
+## by tests, which never advance a frame for a tween to run.
+func show_kas(amount: int, animate: bool = true) -> void:
+	_ensure_nodes()
+	var old := _kas
+	_kas = amount
+	if is_instance_valid(_kas_label):
+		if animate and is_inside_tree():
+			Juice.count_up_formatted(_kas_label, float(old), float(amount),
+				func(v: float) -> String: return format_koin(int(round(v))))
+		else:
+			_kas_label.text = format_koin(amount)
+	_apply_total_state(CART_SCRIPT.total_of(_entries), _entries.is_empty())
+
+
+## Reads the Kas Kelas pill. Exists so tests need not know node paths.
+func get_kas_text() -> String:
+	_ensure_nodes()
+	return _kas_label.text
+
+
+## The Total pill's current theme_type_variation -- TotalPillAsleep (empty
+## cart), TotalPillAwake (affordable) or TotalPillOver (past the Kas).
+func get_total_state() -> StringName:
+	_ensure_nodes()
+	return _total_pill.theme_type_variation
+
+
+## The Total pill's own number, for the last refresh -- "2.400", never
+## "Total:"/"koin" (the caption above carries "TOTAL" and the coin icon
+## beside it carries the unit) and never a mid-count tween frame.
 func get_total_text() -> String:
 	_ensure_nodes()
-	return _total_label.text
+	return format_koin(CART_SCRIPT.total_of(_entries))
 
 
 ## The footer's Beli button, for the shop's press feedback.
 func get_beli_button() -> Button:
 	_ensure_nodes()
 	return _beli_button
+
+
+## Swaps the Total pill's and number's variation, the Total coin's alpha and
+## Beli's alpha together -- the one place all four react to a new total or a
+## new Kas balance. `empty` short-circuits to asleep before `total` is even
+## compared against _kas, so a cart that costs 0 (nothing picked) never
+## misreads as "affordable" in the awake grammar.
+func _apply_total_state(total: int, empty: bool) -> void:
+	var over := not empty and total > _kas
+	var pill_state: StringName = &"TotalPillAsleep" if empty \
+		else (&"TotalPillOver" if over else &"TotalPillAwake")
+	var number_state: StringName = &"TotalNumberAsleep" if empty \
+		else (&"TotalNumberOver" if over else &"TotalNumberAwake")
+	if is_instance_valid(_total_pill):
+		_total_pill.theme_type_variation = pill_state
+	if is_instance_valid(_total_number):
+		_total_number.theme_type_variation = number_state
+		_total_number.text = format_koin(total)
+	if is_instance_valid(_total_coin):
+		_total_coin.modulate.a = ASLEEP_COIN_ALPHA if empty else 1.0
+	if is_instance_valid(_beli_button):
+		_beli_button.modulate.a = BELI_OVER_ALPHA if over else 1.0
 
 
 ## Places every slot on the plank: each at its own size (times item_scale),
@@ -405,7 +478,15 @@ func _ensure_nodes() -> void:
 		_empty_state = get_node_or_null("Body/EmptyState")
 	if not is_instance_valid(_hint):
 		_hint = get_node_or_null("Body/Hint")
-	if not is_instance_valid(_total_label):
-		_total_label = get_node_or_null("Body/Footer/TotalLabel")
+	if not is_instance_valid(_kas_pill):
+		_kas_pill = get_node_or_null("%KasPill")
+	if not is_instance_valid(_kas_label):
+		_kas_label = get_node_or_null("%KasLabel")
+	if not is_instance_valid(_total_pill):
+		_total_pill = get_node_or_null("%TotalPill")
+	if not is_instance_valid(_total_number):
+		_total_number = get_node_or_null("%TotalNumber")
+	if not is_instance_valid(_total_coin):
+		_total_coin = get_node_or_null("%TotalCoin")
 	if not is_instance_valid(_beli_button):
 		_beli_button = get_node_or_null("Body/Footer/BeliButton")

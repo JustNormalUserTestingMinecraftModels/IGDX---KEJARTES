@@ -261,6 +261,18 @@ func test_koperasi_coin_hud_rides_the_stage() -> void:
 			p + " must let taps through to the shelf")
 
 
+## The ledge coin HUD (2026-09-28 koperasi-top-band-promo Task 6) moved into
+## the tray footer's Kas Kelas pill, which rides the tray, which rides the
+## Stage -- no separate rect to pin, the tray's own rects (pinned above and
+## below in test_koperasi_on_a_tall_phone / test_koperasi_at_the_design_size)
+## already cover it.
+func test_koperasi_kas_pill_rides_the_tray() -> void:
+	var shop := _scene(KOPERASI)
+	var pill := shop.get_node_or_null(
+		"Stage/TrayDock/BasketTray/Body/Footer/KasCluster/KasPill")
+	assert_true(pill != null, "the Kas pill rides the tray, which rides the Stage")
+
+
 ## On a 1080x2400 phone the counter rides the bottom edge and the top band
 ## rides with it.
 func test_koperasi_on_a_tall_phone() -> void:

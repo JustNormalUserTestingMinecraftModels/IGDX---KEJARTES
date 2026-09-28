@@ -30,6 +30,7 @@ const SHOP_HUB := "res://Scenes/Koperasi/ShopHub.tscn"
 const COSMETIC_SHOP := "res://Scenes/Koperasi/CosmeticShop.tscn"
 const TES_NOTICE := "res://Scenes/EndGame/TesNotice.tscn"
 const STAT_CHECK := "res://Scenes/EndGame/StatCheck.tscn"
+const EXAM_PROGRESS := "res://Scenes/EndGame/ExamProgress.tscn"
 
 ## Screen -> its Room's children, in draw order.
 const ROOMS := {
@@ -37,6 +38,7 @@ const ROOMS := {
 	COSMETIC_SHOP: ["Backdrop", "Light", "Shafts", "Parallax"],
 	TES_NOTICE: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
 	STAT_CHECK: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
+	EXAM_PROGRESS: ["Backdrop", "Light", "Shafts"],
 }
 
 ## Screen -> its measured glow_threshold, or null where no threshold bloomed
@@ -47,6 +49,7 @@ const BLOOM := {
 	COSMETIC_SHOP: null,
 	TES_NOTICE: 0.9,
 	STAT_CHECK: 0.9,
+	EXAM_PROGRESS: 0.9,
 }
 
 
@@ -192,3 +195,14 @@ func test_the_exam_notices_light_is_cool() -> void:
 		assert_true(shafts.b > shafts.r, scene_path + ": and so are the shafts")
 		assert_eq(_drawn(scene_path).slice(0, 2), ["World", "Scrim"] as Array[String],
 			scene_path + ": the scrim draws over the room, under the card")
+
+
+## ExamProgress already pans its backdrop with a tween on position.x, so it
+## takes no Parallax (planning amendment 3), and the script finds the moved
+## backdrop by unique name.
+func test_exam_progress_pans_its_own_backdrop() -> void:
+	var c := Census.of(EXAM_PROGRESS)
+	assert_eq(Census.prop(Census.entry(c, "World/Room/Backdrop"), "unique_name_in_owner"), true,
+		"the backdrop is %Backdrop")
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/ExamProgress.gd")
+	assert_true(src.contains("backdrop: TextureRect = %Backdrop"), "ExamProgress.gd finds it by name")

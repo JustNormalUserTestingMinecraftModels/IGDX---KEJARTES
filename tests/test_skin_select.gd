@@ -11,6 +11,11 @@ extends McpTestSuite
 ## equipped_skins / skin_unlock_overrides in teardown.
 
 const SCREEN := "res://Scenes/Skins/SkinSelect.tscn"
+## SkinSelect.gd's own source, for the SFX call-site scans below -- play_sfx
+## is gated behind Engine.is_editor_hint(), which is always true in this
+## suite, so a behavioural "did it play" check could only prove the guard
+## works, never which cue was chosen or where it is called from.
+const SCRIPT := "res://Scripts/Skins/SkinSelect.gd"
 
 var _saved_equipped: Dictionary
 var _saved_overrides: Dictionary
@@ -101,6 +106,21 @@ func test_roster_names_reads_name_skips_non_dicts_and_blanks() -> void:
 	var students: Array = [{"name": "A"}, {"name": ""}, 5, {"name": "B"}]
 	var names: Array[String] = SkinSelect.roster_names(students)
 	assert_eq(names, ["A", "B"] as Array[String])
+
+
+## Slices one top-level function's body out of SCRIPT's source, from
+## `func <name>(` to the next top-level `func `. Mirrors
+## tests/test_audio_coverage.gd's own function slicing for the double-fire
+## guard, kept local and simple since this suite only ever needs one
+## function's body at a time.
+func _function_body(func_name: String) -> String:
+	var src := FileAccess.get_file_as_string(SCRIPT)
+	var start := src.find("func " + func_name + "(")
+	assert_true(start != -1, "function must exist: " + func_name)
+	if start == -1:
+		return ""
+	var next := src.find("\nfunc ", start)
+	return src.substr(start, (next - start) if next != -1 else src.length() - start)
 
 
 ## The visible rail tiles' student names, in rail order.
@@ -601,3 +621,75 @@ func test_tile_caption_has_a_cream_backing() -> void:
 	assert_eq(box.bg_color, tokens.button_cream)
 	assert_eq(box.corner_radius_top_left, tokens.radius_pill)
 	assert_eq(theme.get_color("font_color", "SkinTileCaptionLabel"), tokens.text_primary)
+
+
+# ============================================================
+# SFX (2026-09-29 skin-select-polish Task 4; spec §5 "Sound").
+# open() already plays "tap" on arrival; these cover the rest of the
+# picker's cues. Every id used here must resolve in AudioDirector's
+# registry -- test_audio_coverage.gd's test_every_play_sfx_id_in_the_
+# project_is_known re-checks that project-wide.
+# ============================================================
+
+func test_the_skin_select_cues_resolve_to_real_streams() -> void:
+	for id in [&"select", &"swipe", &"apply"]:
+		assert_true(AudioDirector.has_sfx(id), "%s must resolve to a stream" % id)
+
+
+## Card select: a rail tile choice plays AudioDirector's "select" cue (the
+## same id atur_jadwal/student_list/inventory use for a list/grid pick).
+func test_select_student_plays_the_rail_select_cue() -> void:
+	var body := _function_body("select_student")
+	assert_true(body.contains('play_sfx(&"select")'),
+		"select_student must play the select cue")
+
+
+## Gated on a genuine change so re-tapping the already-open tile, and
+## open()'s own initial select_student(0) call, stay silent -- open() has
+## its own "tap" for the screen's entrance.
+func test_select_student_gates_its_cue_on_an_index_change() -> void:
+	var body := _function_body("select_student")
+	var cue_at := body.find('play_sfx(&"select")')
+	assert_true(cue_at != -1)
+	assert_true(body.substr(0, cue_at).contains("changed"),
+		"select_student must compare old vs new _student_index before its cue")
+
+
+## Skin snap: the carousel settling on a new skin plays "swipe" -- paging
+## through report_card/student_card is the closest documented meaning to a
+## carousel settling on a new card, closer than "pop" ("a small UI element
+## appears"), since nothing appears here; the carousel already exists and
+## just comes to rest at a new position.
+func test_select_skin_plays_the_settle_cue() -> void:
+	var body := _function_body("select_skin")
+	assert_true(body.contains('play_sfx(&"swipe")'),
+		"select_skin must play the carousel-settle cue")
+
+
+## Gated the same way as select_student's: only a real _skin_index change
+## snaps, so a drag release that lands back on the already-centred card
+## (a short flick that overshoots and settles home) is silent.
+func test_select_skin_gates_its_cue_on_an_index_change() -> void:
+	var body := _function_body("select_skin")
+	var cue_at := body.find('play_sfx(&"swipe")')
+	assert_true(cue_at != -1)
+	assert_true(body.substr(0, cue_at).contains("changed"),
+		"select_skin must compare old vs new _skin_index before its cue")
+
+
+## The regression this guards against: a cue wired into the per-frame drag
+## callback instead of the once-per-settle select_skin would buzz on every
+## pixel of finger travel rather than snapping once on release.
+func test_no_sfx_call_lives_in_the_per_frame_drag_path() -> void:
+	var body := _function_body("_update_drag")
+	assert_false(body.contains("play_sfx"),
+		"_update_drag runs every drag frame and must never play a cue directly")
+
+
+## Apply: committing the picker's choices on TERAPKAN plays "apply" -- the
+## registry's own doc for the id ("a choice is committed on the apply
+## screen") was already unused anywhere in Scripts/ before this pass.
+func test_apply_without_closing_plays_the_apply_cue() -> void:
+	var body := _function_body("apply_without_closing")
+	assert_true(body.contains('play_sfx(&"apply")'),
+		"apply_without_closing must play the apply cue")

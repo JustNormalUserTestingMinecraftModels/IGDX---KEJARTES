@@ -198,25 +198,36 @@ func pending_id(who: String) -> String:
 
 ## Opens character `index`'s skins, keeping every other character's pending
 ## choice. Jumps the carousel rather than animating -- every card under it
-## has just been replaced, so a slide would animate the wrong art.
+## has just been replaced, so a slide would animate the wrong art. Plays the
+## rail's select cue only when the open character actually changes, so
+## re-tapping the already-open tile stays silent, and open()'s own initial
+## select_student(0) call -- already covered by open()'s "tap" -- never
+## doubles up on it.
 func select_student(index: int) -> void:
 	if index < 0 or index >= _names.size():
 		return
+	var changed := index != _student_index
 	_student_index = index
 	for i in _names.size():
 		var tile := _rail.get_child(i) as StudentTile
 		if tile != null:
 			tile.set_open(i == index)
 	_rebuild_carousel()
+	if changed and not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"select")
 
 
 ## Centres card `index` of the open character and records it as pending.
 ## Nothing is equipped here: TERAPKAN commits, which is what lets one button
-## serve all six characters in one visit.
+## serve all six characters in one visit. Plays the carousel's settle cue
+## only when _skin_index actually changes -- _end_drag calls this once per
+## drag release, never per drag frame -- so a release that snaps back to the
+## already-centred card stays silent.
 func select_skin(index: int) -> void:
 	var ids := StudentSkins.skins_for(current_student())
 	if index < 0 or index >= ids.size():
 		return
+	var changed := index != _skin_index
 	_skin_index = index
 	_pending[current_student()] = ids[index]
 	_slide_to(index, true)
@@ -225,6 +236,8 @@ func select_skin(index: int) -> void:
 	# the character was opened.
 	_refresh_dots(ids.size())
 	_refresh_tray()
+	if changed and not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"swipe")
 
 
 ## Commits every pending choice and closes.
@@ -238,6 +251,8 @@ func apply() -> void:
 ##
 ## equip_skin already returns false for a locked or unknown skin and no-ops
 ## when re-equipping the worn one, so this loop needs no guard of its own.
+## Always plays the apply cue once, even with an empty _pending (TERAPKAN
+## with nothing slid still confirms the visit).
 func apply_without_closing() -> void:
 	for who in _pending:
 		GameState.equip_skin(str(who), str(_pending[who]))
@@ -247,6 +262,8 @@ func apply_without_closing() -> void:
 		if tile != null:
 			tile.show_student(_names[i], pending_id(_names[i]))
 	_refresh_tray()
+	if not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"apply")
 
 
 ## Fades out, emits `closed` and frees the screen. Idempotent. Pending

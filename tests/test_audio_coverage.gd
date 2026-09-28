@@ -291,6 +291,15 @@ const _DOUBLE_FIRE_ALLOWLIST := {
 	# cancel (leaving the screen) + the week-advance path's own cue, with
 	# a tween and a scene change between them.
 	"res://Scripts/SchoolSimulation/SchoolDay.gd:_on_back_pressed": "cancel then the week-advance cue, separated by a tween and a scene change, reviewed",
+	# ---- 2026-09-29 skin-select-polish Task 4 (SFX)
+	#
+	# open() calls select_student(0) -- now a direct player of its own
+	# "select" cue -- then plays its own "tap". select_student's cue is
+	# gated on an actual index change (index != _student_index), and
+	# _student_index already defaults to 0, so that call never actually
+	# fires at runtime; only "tap" plays. This scanner is purely textual
+	# and cannot see that runtime guard across the call boundary.
+	"res://Scripts/Skins/SkinSelect.gd:open": "select_student(0)'s select cue is gated on an index change and never fires for this initial call; tap is the real entrance cue, reviewed",
 }
 
 

@@ -28,6 +28,9 @@ func test_every_declared_variation_exists() -> void:
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
 		"CaptionLabel", "MicroLabel", "StatBar", "AchievementTileBar", "FilterChipButton",
 		"EventDialoguePanel", "EventDialogueText", "DayBannerPanel", "DayBannerLabel", "CalendarLabel",
+		"MinigameCard", "MinigameCardInner", "MinigameImagePlate",
+		"MinigameAnswerButton", "MinigameHudPill", "MinigameHudValue",
+		"MinigameHudIconButton", "MinigamePlankPanel", "MinigamePlankLabel",
 	]
 	var actual := _theme.get_type_list()
 	for variation in expected:

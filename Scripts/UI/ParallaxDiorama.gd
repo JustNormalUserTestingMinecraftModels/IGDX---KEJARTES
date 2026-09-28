@@ -23,6 +23,8 @@ extends Control
 ## the screen. force_deflection() drives either without a device, an input
 ## event or a frame of smoothing, which is how the suite checks it.
 ##
+## Kurangi Gerakan (GameSettings.reduce_motion) holds every band at rest.
+##
 ## WHICH BANDS NEED OVERSCAN, AND WHY IT GROWS THE RECT. Most bands are
 ## cutouts on transparency -- desks, students, hands, the shopkeeper -- and
 ## moving those reveals nothing. Two are opaque to their own edges, measured:
@@ -123,7 +125,7 @@ func _process(delta: float) -> void:
 		return
 	if _rest.is_empty() and not _capture_rest():
 		return
-	_deflection = _deflection.lerp(_read_tilt(delta), clampf(smoothing * delta, 0.0, 1.0))
+	_deflection = _deflection.lerp(_target_tilt(delta), clampf(smoothing * delta, 0.0, 1.0))
 	_apply()
 
 
@@ -185,6 +187,14 @@ func required_reach() -> Vector2:
 	for name_key in depth_by_child:
 		deepest = maxf(deepest, absf(float(depth_by_child[name_key])))
 	return travel * deepest * (1.0 + overscan_margin) + SEAM_PAD
+
+
+## The tilt the bands chase: none while Kurangi Gerakan is on, so they settle
+## back to rest and hold still (spec 2026-09-28, planning amendment 2).
+func _target_tilt(delta: float) -> Vector2:
+	if AmbientKit.is_still():
+		return Vector2.ZERO
+	return _read_tilt(delta)
 
 
 ## Tilt as a vector in [-1, 1]: the accelerometer where there is one, the

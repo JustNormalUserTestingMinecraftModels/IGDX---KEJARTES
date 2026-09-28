@@ -30,7 +30,9 @@
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
 [ext_resource type="Script" uid="uid://c47bgh5lvg6qi" path="res://Scripts/Lobby/DailyLoginPanel.gd" id="39_2isbc"]
+[ext_resource type="Texture2D" uid="uid://bedjpscelrj33" path="res://Assets/Images/UI/DailyLogin/streak_flame.svg" id="40_hp3mh"]
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
+[ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/lobby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
@@ -1056,7 +1058,7 @@ text = "KELAS"
 [node name="ChatBubble" parent="." unique_id=1758543249 instance=ExtResource("20_su0mk")]
 layout_mode = 1
 
-[node name="DailyReward" type="TextureRect" parent="." unique_id=889996430]
+[node name="DailyReward" type="TextureRect" parent="." unique_id=889996430 node_paths=PackedStringArray("wallet_anchor")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -1073,6 +1075,7 @@ grow_vertical = 0
 texture = ExtResource("16_dyk4g")
 expand_mode = 1
 script = ExtResource("39_2isbc")
+wallet_anchor = NodePath("../Safe/UI/BottomBar/DisplayUang")
 
 [node name="Label" type="Label" parent="DailyReward" unique_id=1823371215]
 layout_mode = 0
@@ -1095,28 +1098,92 @@ offset_bottom = 418.0
 theme_type_variation = &"GhostButton"
 text = "KLAIM"
 
-[node name="RewardCoin" type="TextureRect" parent="DailyReward" unique_id=956875139]
+[node name="RewardRow" type="HBoxContainer" parent="DailyReward" unique_id=1810808059]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 640.0
-offset_top = 352.0
-offset_right = 700.0
-offset_bottom = 400.0
+offset_top = 350.0
+offset_right = 828.0
+offset_bottom = 402.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="RewardCoin" type="TextureRect" parent="DailyReward/RewardRow" unique_id=956875139]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 48)
+layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("14_dyk4g")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RewardAmount" type="Label" parent="DailyReward" unique_id=955040772]
+[node name="RewardAmount" type="Label" parent="DailyReward/RewardRow" unique_id=955040772]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"CoinLabel"
+text = "80G"
+vertical_alignment = 1
+
+[node name="DailyGreeting" type="Label" parent="DailyReward" unique_id=1401564622]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 708.0
-offset_top = 350.0
-offset_right = 828.0
-offset_bottom = 402.0
-theme_type_variation = &"CoinLabel"
-text = "10G"
+offset_top = -170.0
+offset_right = 942.0
+offset_bottom = -110.0
+theme_type_variation = &"H2Label"
+text = "Selamat datang kembali!"
+horizontal_alignment = 1
+
+[node name="DailyStreak" type="HBoxContainer" parent="DailyReward" unique_id=2008026007]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = -100.0
+offset_right = 942.0
+offset_bottom = -16.0
+mouse_filter = 2
+alignment = 1
+
+[node name="FlameSlot" type="Control" parent="DailyReward/DailyStreak" unique_id=647566857]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="StreakFlame" type="TextureRect" parent="DailyReward/DailyStreak/FlameSlot" unique_id=1617781959]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("40_hp3mh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StreakLabel" type="Label" parent="DailyReward/DailyStreak" unique_id=2104698978]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "Streak 1 hari"
 vertical_alignment = 1
+
+[node name="DailyRewardReveal" parent="DailyReward" unique_id=221773144 instance=ExtResource("41_slwnx")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BesokTeaser" type="Label" parent="DailyReward" unique_id=1174925413]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_top = 426.0
+offset_right = 942.0
+offset_bottom = 474.0
+theme_type_variation = &"CaptionLabel"
+text = "Besok: +120G"
+horizontal_alignment = 1
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=707453591]
 visible = false

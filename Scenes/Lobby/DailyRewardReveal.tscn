@@ -1,0 +1,112 @@
+[gd_scene format=3 uid="uid://0cdrfw471jnq"]
+
+[ext_resource type="Script" uid="uid://bqfeqtigolxvv" path="res://Scripts/Lobby/DailyRewardReveal.gd" id="1_c4skl"]
+[ext_resource type="PackedScene" uid="uid://c4tsb84nujnau" path="res://Scenes/Lobby/RevealCoin.tscn" id="2_llkdr"]
+[ext_resource type="PackedScene" uid="uid://d1i44qpg1ms2b" path="res://Scenes/Lobby/RevealStar.tscn" id="3_yjr43"]
+[ext_resource type="Texture2D" uid="uid://cyfkas4fqxd7c" path="res://Assets/Images/Particles/particle_glow.png" id="4_bn1m5"]
+[ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="5_esl1k"]
+[ext_resource type="PackedScene" uid="uid://b1kjq7vxnf2ca" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="6_3kfbu"]
+[ext_resource type="Texture2D" uid="uid://diguw0yukcqd3" path="res://Assets/Images/Particles/particle_coin.png" id="7_cdwaw"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x1u8j"]
+atlas = ExtResource("5_esl1k")
+region = Rect2(52, 262, 320, 300)
+
+[node name="DailyRewardReveal" type="Control" unique_id=221773144]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_c4skl")
+coin_template = ExtResource("2_llkdr")
+star_template = ExtResource("3_yjr43")
+
+[node name="Shine" type="TextureRect" parent="." unique_id=247034653]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -180.0
+offset_right = 180.0
+offset_bottom = 180.0
+mouse_filter = 2
+texture = ExtResource("4_bn1m5")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Box" type="TextureRect" parent="." unique_id=121572553]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -80.0
+offset_right = 80.0
+offset_bottom = 80.0
+mouse_filter = 2
+texture = SubResource("AtlasTexture_x1u8j")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Lid" type="TextureRect" parent="." unique_id=1957991596]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -84.0
+offset_top = -96.0
+offset_right = 84.0
+offset_bottom = -36.0
+pivot_offset = Vector2(0, 60)
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fireworks" parent="." unique_id=1679109668 instance=ExtResource("6_3kfbu")]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 346.0
+offset_top = -171.0
+offset_right = 346.0
+offset_bottom = -171.0
+scale = Vector2(0.5, 0.5)
+
+[node name="Coins" type="Control" parent="." unique_id=602122091]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Stars" type="Control" parent="." unique_id=1216127195]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="WalletCoin" type="TextureRect" parent="." unique_id=447683462]
+unique_name_in_owner = true
+visible = false
+top_level = true
+layout_mode = 0
+offset_right = 56.0
+offset_bottom = 56.0
+mouse_filter = 2
+texture = ExtResource("7_cdwaw")
+expand_mode = 1
+stretch_mode = 5

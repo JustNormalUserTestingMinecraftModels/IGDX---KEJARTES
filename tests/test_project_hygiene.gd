@@ -3,9 +3,9 @@ extends McpTestSuite
 
 ## Repo-wide invariants that no single screen's suite owns.
 ##
-## Both tests here derive truth from the engine or the filesystem rather than
+## Its tests derive truth from the engine or the filesystem rather than
 ## from a hand-maintained list, so they keep working as scenes and scripts are
-## added. Neither instantiates anything, so both are cheap and neither needs
+## added. None instantiates anything, so all are cheap and none needs
 ## the main scene open.
 ##
 ## This suite must be @tool or the runner reports the class abstract/broken,
@@ -89,6 +89,28 @@ func test_no_debug_prints_survive_in_production_scripts() -> void:
 	assert_eq(offenders.size(), 0,
 		"DEBUG prints must not ship outside Scripts/Debug/; offenders: "
 			+ ", ".join(offenders))
+
+
+## After a cold editor restart the analyzer once left GameState's call results
+## untyped, and `:=` on an untyped value is a parse error: the script fails to
+## load, and a suite that cannot load is skipped with `failed` still 0. So
+## every local taken from GameState declares its type, e.g.
+## `var r: Dictionary = GameState.use_item(...)`.
+func test_no_local_infers_its_type_from_game_state() -> void:
+	var re := RegEx.new()
+	re.compile("^\\s*var\\s+\\w+\\s*:=\\s*GameState\\.")
+	var offenders: Array[String] = []
+	var paths := _all_files_under("res://Scripts", ".gd")
+	paths.append_array(_all_files_under("res://tests", ".gd"))
+	for script_path in paths:
+		var lines := FileAccess.get_file_as_string(script_path).split("\n")
+		for i in range(lines.size()):
+			if re.search(lines[i]) != null:
+				offenders.append("%s:%d" % [script_path, i + 1])
+	assert_true(paths.size() > 100, "the scan found the scripts it guards")
+	assert_eq(offenders.size(), 0,
+		"declare the type of every local taken from GameState instead of "
+			+ "inferring it with :=; offenders: " + ", ".join(offenders))
 
 
 ## The boot scene moved off Splashscreen on 2026-08-31. Splashscreen.tscn and

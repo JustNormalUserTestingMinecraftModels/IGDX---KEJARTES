@@ -242,7 +242,7 @@ func _open_apply_screen(item: ItemData) -> void:
 func _on_items_applied(_results: Array, item: ItemData) -> void:
 	_apply_screen = null
 	AudioDirector.play_sfx(&"whoosh")
-	var remaining := GameState.get_inventory_quantity(item.item_name)
+	var remaining: int = GameState.get_inventory_quantity(item.item_name)
 	_populate_grid()
 	if remaining > 0:
 		for slot in _grid.get_children():

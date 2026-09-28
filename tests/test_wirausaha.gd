@@ -5,6 +5,9 @@ extends McpTestSuite
 ## money at a mood/energy cost, paid out at the end of the week.
 ## Suite is @tool and no test is a coroutine, per the runner constraints
 ## documented in test_lobby.gd.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 func suite_name() -> String:
 	return "wirausaha"
@@ -52,7 +55,7 @@ func test_jadwal_counts_include_wirausaha() -> void:
 	GameState.day_schedules = {
 		1: {"Senin": {"category": "Wirausaha", "mood_cost": 8, "energy_cost": 10}},
 	}
-	var counts := GameState.get_jadwal_for_day("Senin")
+	var counts: Dictionary = GameState.get_jadwal_for_day("Senin")
 	assert_true(counts.has("Wirausaha"), "counts must track Wirausaha")
 	assert_eq(counts["Wirausaha"], 1, "one student assigned to Wirausaha")
 	GameState.day_schedules = {}
@@ -165,7 +168,7 @@ func test_tired_students_earn_less() -> void:
 ## instantiated scene and instead reads source text or scene-declared state.
 
 func test_payout_adds_the_total_to_player_money() -> void:
-	var original_money := GameState.player_money
+	var original_money: int = GameState.player_money
 	GameState.pending_earnings = {1: 300, 2: 250}
 	var paid: int = load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha()
 	assert_eq(paid, 550, "payout returns the summed total")
@@ -174,7 +177,7 @@ func test_payout_adds_the_total_to_player_money() -> void:
 	GameState.player_money = original_money
 
 func test_payout_clears_pending_earnings() -> void:
-	var original_money := GameState.player_money
+	var original_money: int = GameState.player_money
 	GameState.pending_earnings = {1: 100}
 	load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha()
 	assert_true(GameState.pending_earnings.is_empty(),
@@ -182,7 +185,7 @@ func test_payout_clears_pending_earnings() -> void:
 	GameState.player_money = original_money
 
 func test_payout_of_nothing_is_zero_and_harmless() -> void:
-	var original_money := GameState.player_money
+	var original_money: int = GameState.player_money
 	GameState.pending_earnings.clear()
 	assert_eq(load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha(), 0, "no Wirausaha days pays nothing")
 	assert_eq(GameState.player_money, original_money, "money is untouched")

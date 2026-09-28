@@ -5,6 +5,9 @@ extends McpTestSuite
 ## docs/superpowers/specs/2026-09-18-skin-system-design.md): every path the
 ## catalog names exists, the default entry is today's art, the resolvers fall
 ## back to the roster dict, and equipping obeys the lock.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 var _saved_equipped: Dictionary
 var _saved_overrides: Dictionary
@@ -118,7 +121,7 @@ func test_equip_emits_skin_changed() -> void:
 
 func test_bridge_uses_the_skin() -> void:
 	GameState.equip_skin("Andi", "skin1")
-	var sd := GameState.student_data_from_dict(_andi())
+	var sd: StudentData = GameState.student_data_from_dict(_andi())
 	assert_eq(sd.splash_path, "res://Assets/Images/Skins/Andi/splash_andi_skin1.png")
 	assert_eq(sd.avatar_texture.resource_path, "res://Assets/Images/Skins/Andi/andi_portrait_skin1.png")
 

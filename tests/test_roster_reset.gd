@@ -5,6 +5,9 @@ extends McpTestSuite
 ## skill stats when a grade changes -- real progression and debug jumps both
 ## call it. These tests pin the head-start formula, the mood/energy snap, the
 ## target-cache wipe, and the empty-roster no-op.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 func suite_name() -> String:
 	return "roster_reset"
@@ -19,7 +22,7 @@ func _make_student(id: int, akademis: float, roster_base_akademis: float) -> Dic
 	}
 
 func test_head_start_keeps_twenty_percent_of_gains() -> void:
-	var saved := GameState.approved_students
+	var saved: Array = GameState.approved_students
 	GameState.approved_students = [_make_student(1, 50.0, 30.0)]
 	GameState.reset_roster_for_new_grade()
 	var s: Dictionary = GameState.approved_students[0]
@@ -29,7 +32,7 @@ func test_head_start_keeps_twenty_percent_of_gains() -> void:
 	GameState.approved_students = saved
 
 func test_skill_below_roster_base_floors_at_roster_base() -> void:
-	var saved := GameState.approved_students
+	var saved: Array = GameState.approved_students
 	GameState.approved_students = [_make_student(1, 25.0, 30.0)]
 	GameState.reset_roster_for_new_grade()
 	assert_true(is_equal_approx(float(GameState.approved_students[0]["akademis"]), 30.0),
@@ -37,7 +40,7 @@ func test_skill_below_roster_base_floors_at_roster_base() -> void:
 	GameState.approved_students = saved
 
 func test_mood_energy_snap_and_target_cache_wiped() -> void:
-	var saved := GameState.approved_students
+	var saved: Array = GameState.approved_students
 	GameState.approved_students = [_make_student(1, 50.0, 30.0)]
 	GameState.reset_roster_for_new_grade()
 	var s: Dictionary = GameState.approved_students[0]
@@ -50,7 +53,7 @@ func test_mood_energy_snap_and_target_cache_wiped() -> void:
 	GameState.approved_students = saved
 
 func test_missing_roster_base_is_captured_from_current() -> void:
-	var saved := GameState.approved_students
+	var saved: Array = GameState.approved_students
 	var s := _make_student(1, 50.0, 30.0)
 	s.erase("roster_base_seni_budaya")  # simulate the debug-seed roster path
 	GameState.approved_students = [s]
@@ -66,14 +69,14 @@ func test_missing_roster_base_is_captured_from_current() -> void:
 	GameState.approved_students = saved
 
 func test_empty_roster_is_a_noop() -> void:
-	var saved := GameState.approved_students
+	var saved: Array = GameState.approved_students
 	GameState.approved_students = []
 	GameState.reset_roster_for_new_grade()  # must not error
 	assert_eq(GameState.approved_students.size(), 0)
 	GameState.approved_students = saved
 
 func test_gain_tracker_cleared() -> void:
-	var saved := GameState.approved_students
+	var saved: Array = GameState.approved_students
 	GameState.minigame_gain_this_week = {5: 9.0}
 	GameState.approved_students = [_make_student(1, 50.0, 30.0)]
 	GameState.reset_roster_for_new_grade()
@@ -89,8 +92,8 @@ func test_student_card_captures_roster_base_on_approval() -> void:
 		"student_card must stamp roster_base_olahraga when it approves the roster")
 
 func test_set_grade_resets_roster_only_on_real_change() -> void:
-	var saved := GameState.approved_students
-	var saved_grade := GameState.current_grade
+	var saved: Array = GameState.approved_students
+	var saved_grade: int = GameState.current_grade
 	GameState.approved_students = [_make_student(1, 50.0, 30.0)]
 	GameState.current_grade = 7
 

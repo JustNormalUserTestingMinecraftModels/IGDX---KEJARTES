@@ -21,12 +21,12 @@ extends Control
 @onready var _master: HSlider = %MasterSlider
 @onready var _bgm: HSlider = %BgmSlider
 @onready var _sfx: HSlider = %SfxSlider
-@onready var _tutorial: CheckButton = %TutorialToggle
-@onready var _skip_dialog: CheckButton = %SkipDialogToggle
-@onready var _look_layer: CheckButton = %LookLayerToggle
-@onready var _ambient: CheckButton = %AmbientToggle
-@onready var _haptics: CheckButton = %HapticsToggle
-@onready var _reduce_motion: CheckButton = %ReduceMotionToggle
+@onready var _tutorial: CheckButton = %TutorialRow.toggle
+@onready var _skip_dialog: CheckButton = %SkipDialogRow.toggle
+@onready var _look_layer: CheckButton = %LookLayerRow.toggle
+@onready var _ambient: CheckButton = %AmbientRow.toggle
+@onready var _haptics: CheckButton = %HapticsRow.toggle
+@onready var _reduce_motion: CheckButton = %ReduceMotionRow.toggle
 @onready var _back: Button = %BackButton
 
 ## The screen Back returns to. MainMenu by default; the Lobby's Settings gear
@@ -62,17 +62,19 @@ func _ready() -> void:
 		# entry animation from here.
 		return
 
-	Juice.stagger_in(_collect_rows())
+	Juice.stagger_in(_collect_entry_nodes())
 	# Opened from the Lobby, its music keeps playing.
 	if return_scene == "res://Scenes/MainMenu/MainMenu.tscn":
 		AudioDirector.play_bgm(&"titlescreen")
 
 
-func _collect_rows() -> Array:
-	var rows: Array = []
-	for child in %Layout.get_children():
-		rows.append(child)
-	return rows
+## What pops in on entry, top to bottom: the title card, the three section
+## cards, then Kembali.
+func _collect_entry_nodes() -> Array:
+	var nodes: Array = [$SafeArea/MainColumn/Header]
+	nodes.append_array(%Sections.get_children())
+	nodes.append(_back)
+	return nodes
 
 
 func _on_volume_changed(value: float, bus: StringName) -> void:
@@ -92,7 +94,8 @@ func _on_volume_changed(value: float, bus: StringName) -> void:
 
 func _on_tutorial_toggled(pressed: bool) -> void:
 	GameSettings.minigame_tutorial_enabled = pressed
-	GameSettings.save_settings()
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
 
 
 ## "Lewati Dialog Minigame" (formerly the Lobby's Shorten button): skips the

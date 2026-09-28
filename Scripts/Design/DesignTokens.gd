@@ -405,6 +405,18 @@ static func load_default() -> DesignTokens:
 ## Font size of the win screen's "+8" / "-5" stat numbers, off the mockup.
 @export var minigame_win_stat_size: int = 96
 
+@export_group("Settings")
+## SettingsSwitch's "on" picture (Assets/Images/UI/Settings/switch_on.svg,
+## 112x64): a green pill with its knob on the right. Null leaves the base
+## CheckButton's icon in place.
+@export var settings_switch_on: Texture2D
+## SettingsSwitch's "off" picture (switch_off.svg, 112x64): a sunken cream
+## pill with its knob on the left.
+@export var settings_switch_off: Texture2D
+## SettingsSlider's grabber (slider_grabber.svg, 56x56): a cream disc ringed
+## in brand brown.
+@export var settings_slider_grabber: Texture2D
+
 
 ## Resolve a schedule category name to its accent color.
 ## Returns text_secondary for anything unrecognized so callers never

@@ -127,6 +127,30 @@ func layout_fill_followers() -> void:
 		gloss.visible = width > 0.0
 		gloss.position.x = gloss_inset
 		gloss.size.x = maxf(0.0, width)
+	_layout_need_gauge(end)
+
+
+## AturJadwal's need gauge (2026-09-28), seated from the bar's LIVE width:
+## a tall phone stretches the bar well past its authored size, so an
+## authored x would leave the dot mid-bar. GapTail -- a faded copy of the
+## fill -- covers the empty stretch to the target end, starting one cap-width
+## back so its rounded cap tucks under the fill's instead of leaving a dark
+## notch between the two; TargetDot straddles the target end. Only a bar
+## that authors them, with them showing, pays for this.
+func _layout_need_gauge(end: float) -> void:
+	var tail := get_node_or_null("GapTail") as Control
+	if tail != null and tail.visible:
+		# The cap is the nine-patch's texture margin, not get_margin(), which
+		# would prefer a content margin if the fill ever gains one.
+		var box := tail.get_theme_stylebox("panel") as StyleBoxTexture
+		var cap := box.texture_margin_left if box != null and end > 0.0 else 0.0
+		var x := maxf(0.0, end - cap)
+		tail.position = Vector2(x, 0.0)
+		tail.size = Vector2(maxf(0.0, size.x - x), size.y)
+	var dot := get_node_or_null("TargetDot") as Control
+	if dot != null and dot.visible:
+		dot.position = Vector2(size.x - dot.size.x / 2.0, (size.y - dot.size.y) / 2.0)
+		dot.pivot_offset = dot.size / 2.0
 
 
 ## Category -> the per-category "StatBar" theme variation baked in

@@ -18,8 +18,9 @@ const MONTHS := ["Agustus", "September", "Oktober", "November", "Desember"]
 ## Weeks shown under each month.
 const WEEKS_PER_MONTH := 4
 
-## Skill key -> the schedule category it grows, for its display word.
-const _SKILL_CATEGORY := {
+## Skill key -> the schedule category it grows, for its display word. Also
+## NeedGauge's, so the strip and the portrait callout name the same subject.
+const SKILL_CATEGORY := {
 	"akademis": "Akademis",
 	"seni_budaya": "SeniBudaya",
 	"olahraga": "Olahraga",
@@ -66,9 +67,9 @@ static func compose(student: Dictionary) -> String:
 	var who: String = student.get("name", "Murid")
 	var flags := StatFlags.flags_for(student)
 	var line := ""
-	for key in _SKILL_CATEGORY:
+	for key in SKILL_CATEGORY:
 		if flags.get(key, "") == StatFlags.PERLU:
-			var word: String = DayStickyNote.DISPLAY_NAMES.get(_SKILL_CATEGORY[key], key)
+			var word: String = DayStickyNote.DISPLAY_NAMES.get(SKILL_CATEGORY[key], key)
 			line = "%s butuh %s" % [who, word]
 	if line == "":
 		line = "%s sudah mencapai semua target" % who

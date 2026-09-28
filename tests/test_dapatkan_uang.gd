@@ -53,6 +53,7 @@ func teardown() -> void:
 	GameSettings.reduce_motion = _saved_reduce_motion
 	if is_instance_valid(_panel):
 		_panel.is_dev_mode = true
+		_panel._is_debug_build = true
 		_panel.hide()
 
 
@@ -97,6 +98,21 @@ func test_the_lobby_wires_the_plus_and_the_payout() -> void:
 		"the coin plate's + opens the panel")
 	assert_true(src.contains("earn_panel.paid.connect(_on_wallet_paid)"),
 		"a payout rolls the wallet through the daily claim's handler")
+	assert_true(src.contains("plus_button.disabled = not earn_panel.is_available()"),
+		"the + stays disabled where the panel has nothing to pay")
+
+
+## Owner decision (2026-09-28): dev-mode payouts are debug-only. A release
+## build has no ad SDK yet, so the panel is unavailable and will not open.
+func test_a_release_build_offers_no_free_coins() -> void:
+	var panel := _fixture()
+	if panel == null:
+		return
+	assert_true(panel.is_available(), "the suite runs as a debug build: dev mode pays")
+	panel._is_debug_build = false
+	assert_false(panel.is_available(), "a release build has nothing to pay")
+	panel.open()
+	assert_false(panel.visible, "so the panel never opens there")
 
 
 ## Opening with ads already owed shows the owed-ad button at once, with
@@ -220,9 +236,8 @@ func test_the_dev_mode_tag_follows_is_dev_mode() -> void:
 	assert_true(tag.visible, "dev mode wears the tag")
 	panel.close()
 	panel.is_dev_mode = false
-	panel.open()
-	assert_false(tag.visible, "real mode hides it")
-	panel.close()
+	panel._show_toast(DapatkanUang.OWED_AD_TOAST)
+	assert_false(tag.visible, "real mode's toast goes untagged")
 
 
 ## Copy with "—" or "…" must sit in body-font labels: Boohong has neither.

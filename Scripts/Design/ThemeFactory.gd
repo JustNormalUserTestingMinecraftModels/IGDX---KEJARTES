@@ -37,6 +37,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_achievement_status_pill(theme, tokens)
 	_build_skin_select(theme, tokens)
 	_build_objective_strip(theme, tokens)
+	_build_need_signal(theme, tokens)
 	_build_picker(theme, tokens)
 	_build_school_day_liveliness(theme, tokens)
 	_build_settings(theme, tokens)
@@ -112,6 +113,66 @@ static func _build_objective_strip(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("ObjectiveHintLabel", "Label")
 	theme.set_font_size("font_size", "ObjectiveHintLabel", tokens.font_body_size)
 	theme.set_color("font_color", "ObjectiveHintLabel", tokens.text_primary)
+
+
+## AturJadwal's need gauge (2026-09-28): the parts a StyleBox draws. The dot
+## and callout are category-neutral (the screen tints the dot per skill with
+## self_modulate); the ghost is one per skill, because it IS that bar's fill.
+##
+##   StatTargetDot      the round marker on a skill bar's target end: white
+##                      so self_modulate tints it, with a cream rim.
+##   StatGapGhost*      the stretch still to go: the bar's own fill, faded.
+##   NeedCalloutPanel   the speech bubble by the portrait: a cream card with
+##   NeedCalloutLabel   a brown rim, and its display-face line.
+static func _build_need_signal(theme: Theme, tokens: DesignTokens) -> void:
+	var dot := StyleBoxFlat.new()
+	dot.bg_color = Color.WHITE
+	dot.set_corner_radius_all(tokens.radius_pill)
+	dot.set_border_width_all(int(tokens.outline_width / 2.0))
+	dot.border_color = tokens.outline_card
+	dot.shadow_color = tokens.shadow_color
+	dot.shadow_size = int(tokens.shadow_size / 3.0)
+	dot.shadow_offset = tokens.shadow_offset / 2.0
+	theme.add_type("StatTargetDot")
+	theme.set_type_variation("StatTargetDot", "Panel")
+	theme.set_stylebox("panel", "StatTargetDot", dot)
+
+	# The gap's ghost: the bar's own patterned fill, same texture and accent
+	# as StatBarInset*'s "fill", so the stretch still to go reads as a faded
+	# preview of the bar rather than a stain. The screen fades it with
+	# self_modulate; its own rounded caps keep to the track's ends.
+	for spec in [
+		["Akademis", tokens.cat_akademis_on_dark],
+		["SeniBudaya", tokens.cat_senibudaya_on_dark],
+		["Olahraga", tokens.cat_olahraga_on_dark],
+	]:
+		var ghost_name: String = "StatGapGhost" + spec[0]
+		theme.add_type(ghost_name)
+		theme.set_type_variation(ghost_name, "Panel")
+		theme.set_stylebox("panel", ghost_name, _progress_fill_stylebox(spec[1], spec[0]))
+
+	var bubble := StyleBoxFlat.new()
+	bubble.bg_color = tokens.surface_card
+	bubble.set_corner_radius_all(tokens.radius_lg)
+	bubble.set_border_width_all(int(tokens.outline_width / 2.0))
+	bubble.border_color = tokens.brand_primary
+	bubble.shadow_color = tokens.shadow_color
+	bubble.shadow_size = int(tokens.shadow_size / 2.0)
+	bubble.shadow_offset = tokens.shadow_offset / 2.0
+	bubble.content_margin_left = tokens.space_xs * 1.5
+	bubble.content_margin_right = tokens.space_xs * 1.5
+	bubble.content_margin_top = tokens.space_xs
+	bubble.content_margin_bottom = tokens.space_xs
+	theme.add_type("NeedCalloutPanel")
+	theme.set_type_variation("NeedCalloutPanel", "PanelContainer")
+	theme.set_stylebox("panel", "NeedCalloutPanel", bubble)
+
+	theme.add_type("NeedCalloutLabel")
+	theme.set_type_variation("NeedCalloutLabel", "Label")
+	theme.set_font_size("font_size", "NeedCalloutLabel", tokens.font_caption)
+	theme.set_color("font_color", "NeedCalloutLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "NeedCalloutLabel", tokens.font_display)
 
 
 ## The Penjadwalan activity picker (2026-09-24 visual polish, D9-D14): a

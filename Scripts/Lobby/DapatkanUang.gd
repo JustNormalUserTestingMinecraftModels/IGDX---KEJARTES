@@ -6,7 +6,9 @@ extends Control
 ## (2026-09-27 scrapbook HUD spec §7, Phase 2). Three sections: rewarded
 ## ads that pay now, "ambil dulu" cash-ins that pay now and run up
 ## GameState.ad_debt, and a tip card pointing at the free path, Wirausaha.
-## Dev mode (no ad SDK yet) pays at once and shows a toast tagged DEV MODE.
+## Dev mode (no ad SDK yet) pays at once and shows a toast tagged DEV MODE,
+## and only in a debug build: an exported release has nothing to offer
+## until an SDK lands, so the Lobby keeps its "+" disabled there.
 ## Calls come down (open, close); `paid` goes up so the Lobby can roll its
 ## wallet. Like DailyLoginPanel, it owns its own GameState writes. @tool so
 ## the dapatkan_uang suite can drive it; _ready only wires signals.
@@ -42,6 +44,10 @@ const OWED_AD_BUTTON_FORMAT := "Tonton %d iklan tertunda"
 ## True while the book springs out: a second tap on the close button or the
 ## scrim must not replay the sound or restart the tween.
 var _closing: bool = false
+## Dev-mode payouts need a debug build: a release build must never hand out
+## free coins (owner decision, 2026-09-28). A var, not a call site, so the
+## suite (always a debug build) can stand in for a release.
+var _is_debug_build: bool = OS.is_debug_build()
 
 @onready var scrim: Control = %Scrim
 @onready var book: Control = %Book
@@ -69,9 +75,16 @@ func _ready() -> void:
 	scrim.gui_input.connect(_on_scrim_gui_input)
 
 
+## True when the panel has something to pay: dev mode in a debug build.
+## A real ad SDK adds its own readiness here.
+func is_available() -> bool:
+	return is_dev_mode and _is_debug_build
+
+
 ## Shows the book over a dimmed Lobby, springing in unless reduce_motion.
+## Does nothing when no option could pay (a release build, for now).
 func open() -> void:
-	if visible:
+	if visible or not is_available():
 		return
 	_closing = false
 	dev_mode_tag.visible = is_dev_mode

@@ -228,6 +228,7 @@ func _connect_hud_buttons() -> void:
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	report_student_button.pressed.connect(_on_report_student_pressed)
 	plus_button.pressed.connect(earn_panel.open)
+	plus_button.disabled = not earn_panel.is_available()  # free coins: debug only
 	earn_panel.paid.connect(_on_wallet_paid)
 	hud.can_reopen = _chatter_allowed  # popups keep the HUD down too
 

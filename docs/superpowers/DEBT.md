@@ -481,7 +481,8 @@ widget via `project_run` instead, which exercises it fine.
 
 - **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
   Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
-  SDK is wired. Before one is: the child-directed ad-policy gate (COPPA,
+  SDK is wired. Debug builds only: a release build keeps the Lobby's `+`
+  disabled (`DapatkanUang.is_available()`). Before one is: the child-directed ad-policy gate (COPPA,
   GDPR-K, ad-content ratings; the audience likely includes minors). The
   SDK's reward callback then calls `DapatkanUang._pay()`, and
   `is_dev_mode` goes false. The six amounts (+150 / +450 / +900 for 4 ads /

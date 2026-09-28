@@ -8,6 +8,42 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Atur Jadwal: "perlu" fix and the need gauge
+
+Plan: `docs/superpowers/plans/2026-09-28-atur-jadwal-perlu-gauge.md`.
+Every target starts as base + one shared uplift, so at the start of a grade
+all three skill gaps tie, and `StatFlags` always flagged Akademis. A tie
+within `GAP_EPSILON` (0.5) now goes to the weakest raw skill; a clearly
+bigger gap still wins, and the tie window is anchored on the biggest gap so
+the answer never depends on list order. The flagged skill is now shown
+rather than named: its bar gets a `GapTail` over the stretch still to go and
+a pulsing `StatTargetDot` on the target end, and a `NeedCallout` bubble
+above the name says "Aku butuh <mapel>!". Needs keep their "lelah" chip;
+the skill "perlu" chip stays authored but hidden. The logic moved from
+`AturJadwal.gd` into `NeedGauge`. `StatBar` seats the tail and dot from the
+bar's live width (verified at 324 and 601 px, through the resize signal).
+
+The tail is a ghost of the bar's own patterned fill (`StatGapGhost*`, the
+same `_progress_fill_stylebox` as the fill) at half alpha, tucked one cap
+under the fill's end. The plan's tinted `track_ghost.png` was built first
+and measured on the running screen: at 0.5 it was nearly invisible on the
+dark track, at full strength a muddy smudge, and its square end needed a
+clip mask. Four treatments were then compared side by side (the ramp, the
+ghost at 0.35 and 0.55, a flat soft tint); the ghost read as part of the
+bar rather than a stain. The callout's text keeps `text_primary`, with the
+category colour carried by its icon. The callout sits in tree order after
+`LabelNama` rather than on a raised `z_index`, which would draw it over the
+Peringatan and Penjadwalan dialogs.
+
+## 2026-09-28 — Dapatkan Uang pays only in debug builds
+
+The owner decided the dev-mode payouts must not reach players. The panel is
+available only when `is_dev_mode` is set and `OS.is_debug_build()` is true
+(`DapatkanUang.is_available()`). An exported release keeps the Lobby's `+`
+disabled and `open()` refuses, so no free coins are handed out before a
+real ad SDK exists. The debug check is a var the `dapatkan_uang` suite can
+flip to stand in for a release.
+
 ## 2026-09-28 — The Lobby look, part 1: the shops
 
 `SunShafts` (`Scenes/Look/SunShafts.tscn`) is the Lobby's full-screen light

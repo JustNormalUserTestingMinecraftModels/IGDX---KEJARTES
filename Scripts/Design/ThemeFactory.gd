@@ -1959,15 +1959,27 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 ##   MinigameCard           the wooden frame: brand fill, cream rim, lifted.
 ##   MinigameCardInner      the cream face inside the frame.
 ##   MinigameImagePlate     the recessed slot a picture question sits in.
+##   MinigameAnswerButton   solid brand answer button: light rim at rest, a
+##                          hard brand-dark drop shadow, gold focus rim.
 ## Tasks 2 and 3 of the plan extend this list.
 
 ## How far the card's shadow alpha is raised over shadow_color's, so the
 ## frame still pops on the bright light-orange wood backdrop.
 const MINIGAME_CARD_SHADOW_ALPHA_BOOST := 0.2
+## The answer button's hard drop shadow (spec 4.1, "brandD hard shadow"):
+## StyleBoxFlat draws no shadow at a blur of 0, so this is the least blur
+## that still draws -- a crisp edge under the full shadow_offset drop.
+const MINIGAME_HARD_SHADOW_BLUR := 1
+## How far a disabled answer button fades toward surface_sunken: its fill,
+## then its rim. The amounts _add_button_variation uses for every house
+## button, so a disabled answer reads like any other disabled button.
+const MINIGAME_DISABLED_FILL_FADE := 0.7
+const MINIGAME_DISABLED_RIM_FADE := 0.5
 
 
 static func _build_minigame_kit(theme: Theme, tokens: DesignTokens) -> void:
 	_build_minigame_card_family(theme, tokens)
+	_build_minigame_answer_button(theme, tokens)
 
 
 ## MinigameCard, MinigameCardInner and MinigameImagePlate.
@@ -2006,6 +2018,82 @@ static func _add_minigame_panel(theme: Theme, name: String, box: StyleBox) -> vo
 	theme.add_type(name)
 	theme.set_type_variation(name, "Panel")
 	theme.set_stylebox("panel", name, box)
+
+
+## MinigameAnswerButton. The spec defines rest, hover and pressed; focus and
+## disabled are derived from tokens the way _add_button_variation derives its
+## own. Only the resting state rims in the light brand tone, the "gold-lit"
+## edge; hover and pressed rim dark.
+static func _build_minigame_answer_button(theme: Theme, tokens: DesignTokens) -> void:
+	var name := "MinigameAnswerButton"
+	theme.add_type(name)
+	theme.set_type_variation(name, "Button")
+	var drop: Vector2 = tokens.shadow_offset
+	theme.set_stylebox("normal", name,
+		_minigame_answer_box(tokens, tokens.brand_primary, tokens.brand_primary_light, drop))
+	theme.set_stylebox("hover", name,
+		_minigame_answer_box(tokens, tokens.brand_primary_light, tokens.brand_primary_dark, drop))
+	# Pressed sinks: the shadow halves, as in _add_button_variation.
+	theme.set_stylebox("pressed", name,
+		_minigame_answer_box(tokens, tokens.brand_primary_dark, tokens.brand_primary_dark, drop * 0.5))
+	theme.set_stylebox("disabled", name, _minigame_answer_disabled_box(tokens))
+	theme.set_stylebox("focus", name, _minigame_answer_focus_box(tokens))
+	_set_minigame_display_text(theme, tokens, name, tokens.text_on_brand, tokens.font_title)
+	for key: String in ["font_hover_color", "font_pressed_color", "font_focus_color"]:
+		theme.set_color(key, name, tokens.text_on_brand)
+	theme.set_color("font_disabled_color", name, tokens.text_disabled)
+
+
+## One answer-button state: `fill`, the house button radius, a half-width
+## rim in `rim` with a full-width top edge, the small step's padding, and
+## the hard brand-dark shadow dropped by `drop`.
+static func _minigame_answer_box(tokens: DesignTokens, fill: Color, rim: Color,
+		drop: Vector2) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = fill
+	box.set_corner_radius_all(tokens.radius_button)
+	box.set_border_width_all(int(tokens.outline_width / 2.0))
+	box.border_width_top = int(tokens.outline_width)
+	box.border_color = rim
+	box.content_margin_top = tokens.btn_pad_v_s
+	box.content_margin_bottom = tokens.btn_pad_v_s
+	box.content_margin_left = tokens.space_lg
+	box.content_margin_right = tokens.space_lg
+	box.shadow_color = tokens.brand_primary_dark
+	box.shadow_size = MINIGAME_HARD_SHADOW_BLUR
+	box.shadow_offset = drop
+	return box
+
+
+## Disabled: the resting box faded toward surface_sunken, lying flat.
+static func _minigame_answer_disabled_box(tokens: DesignTokens) -> StyleBoxFlat:
+	var box := _minigame_answer_box(tokens,
+		tokens.brand_primary.lerp(tokens.surface_sunken, MINIGAME_DISABLED_FILL_FADE),
+		tokens.brand_primary_dark.lerp(tokens.surface_sunken, MINIGAME_DISABLED_RIM_FADE),
+		tokens.shadow_offset)
+	box.shadow_size = 0
+	return box
+
+
+## Focus: Godot draws it OVER the current state, so it is a rim with no fill
+## and no shadow. Gold, because the house focus rim (brand_primary) is this
+## button's own fill and would vanish.
+static func _minigame_answer_focus_box(tokens: DesignTokens) -> StyleBoxFlat:
+	var box := _minigame_answer_box(tokens, tokens.brand_primary, tokens.currency_gold,
+		tokens.shadow_offset)
+	box.draw_center = false
+	box.shadow_size = 0
+	return box
+
+
+## Colour, size and -- when the slot is filled -- the display face for a
+## text-bearing kit variation. Every caller must be on DISPLAY_ROSTER.
+static func _set_minigame_display_text(theme: Theme, tokens: DesignTokens, name: String,
+		color: Color, font_size: int) -> void:
+	theme.set_color("font_color", name, color)
+	theme.set_font_size("font_size", name, font_size)
+	if tokens.font_display != null:
+		theme.set_font("font", name, tokens.font_display)
 
 
 # --------------------------------------------------------------- progress

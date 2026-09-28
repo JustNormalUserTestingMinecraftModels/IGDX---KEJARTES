@@ -29,6 +29,12 @@ extends Control
 @onready var bubble: ChatBubble = $Stage/ChatBubble
 @onready var herman_ap: AnimationPlayer = get_node_or_null("Stage/Herman/HermanAP") as AnimationPlayer
 @onready var tray: BasketTray = get_node_or_null("Stage/TrayDock/BasketTray") as BasketTray
+# PromoBoard is a Stage child too, so its own _ready() (which reads
+# GameState.shop_promo_item/percent) runs BEFORE Stage's -- children ready
+# before their parent -- and Stage's _ready() is what rolls the shelf.
+# Nudged again at the bottom of this _ready(), once Stage has finished.
+# PromoBoard.gd has no class_name, so this is typed to its engine base.
+@onready var promo_board: Panel = %PromoBoard
 ## BackButton's authored position (Stage-local) while the tray is EXPANDED --
 ## kept equal to BackButton's own authored offset_left/offset_top (24, 1157)
 ## in Koperasi.tscn so nothing jumps on load; test_tall_screen_layout.gd pins
@@ -95,13 +101,12 @@ func _ready():
 	if is_instance_valid(tray) and not tray.state_changed.is_connected(_on_tray_state_changed):
 		tray.state_changed.connect(_on_tray_state_changed)
 
-	# The Stage, a child, has already stocked the shelf in its own _ready, so
-	# GameState.shop_promo_item/percent are this week's roll by now -- but
-	# PromoBoard is a Stage child too, and a child's _ready() runs before its
-	# parent Stage's, so its own refresh() ran too early. Nudge it again now
-	# that the shelf has rolled.
-	var promo_board := get_node_or_null("%PromoBoard")
-	if promo_board and promo_board.has_method("refresh"):
+	# Stage has finished by now (children ready before their parent), so the
+	# shelf has rolled -- nudge PromoBoard again, since its own _ready() ran
+	# too early to see this week's promo (see the promo_board @onready doc).
+	if promo_board == null:
+		push_error("Koperasi: PromoBoard is missing from Koperasi.tscn")
+	else:
 		promo_board.refresh()
 
 	if bubble:

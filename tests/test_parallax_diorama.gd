@@ -59,6 +59,8 @@ func test_reduce_motion_holds_the_diorama_at_rest() -> void:
 const FLAT_DIORAMAS := {
 	"res://Scenes/Koperasi/ShopHub.tscn": "World/Room",
 	"res://Scenes/Koperasi/CosmeticShop.tscn": "World/Room",
+	"res://Scenes/EndGame/TesNotice.tscn": "World/Room",
+	"res://Scenes/EndGame/StatCheck.tscn": "World/Room",
 }
 
 

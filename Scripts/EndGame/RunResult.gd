@@ -45,9 +45,15 @@ extends Control
 ## Shown for a D rank, which is also every failed run.
 @export var rank_badge_d: Texture2D
 
+## Seconds the report and its Room take to fade out on Selesai.
+const EXIT_FADE_SECONDS := 0.4
+
 ## The painting, the letterbox bars and the posed roster: the same scene
 ## EndCutscene shows, dressed the same way (_dress_backdrop()).
-@onready var win_stage: WinStage = $WinStage
+@onready var win_stage: WinStage = %WinStage
+## The World layer's one Control. A CanvasLayer ignores this screen's own
+## modulate, so the exit fade fades the Room too (lobby-look amendment 1).
+@onready var room: Control = %Room
 ## Between WinStage and the report UI: the shader samples what is already
 ## drawn, so the image blurs and the report stays sharp.
 @onready var blur_layer: ColorRect = $BlurLayer
@@ -261,7 +267,8 @@ func _on_selesai_pressed() -> void:
 	var destination := _apply_progression()
 
 	var tween := create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.4)
+	tween.tween_property(self, "modulate:a", 0.0, EXIT_FADE_SECONDS)
+	tween.parallel().tween_property(room, "modulate:a", 0.0, EXIT_FADE_SECONDS)
 	await tween.finished
 	Transition.change_scene(destination)
 

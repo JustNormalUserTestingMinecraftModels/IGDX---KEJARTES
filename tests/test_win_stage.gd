@@ -258,3 +258,49 @@ func test_a_loss_hides_the_frame() -> void:
 	var shown: bool = s.get_node("PhotoFrame").visible
 	Engine.get_main_loop().root.remove_child(s)
 	assert_false(shown, "the lose CG covers the screen with no print under it")
+
+
+# ───────────────────────────────────────────────────── the Lobby look (2026-09-28)
+
+## The verdict picks the light (lobby-look spec, planning amendment 4): a pass
+## gets a warm pool and shafts, a fail a dim cool pool. Both are authored in
+## the Stage, over the figures, so they ride the letterboxed painting; the
+## one shared scene is what keeps EndCutscene and RunResult's swap invisible.
+func test_the_stage_carries_both_lights_over_the_figures() -> void:
+	var s := _stage()
+	var names: Array[String] = []
+	for c in s.get_node("Stage").get_children():
+		names.append(String(c.name))
+	assert_eq(names, ["Backdrop", "Shadows", "Students", "LightPass", "LightFail"] as Array[String],
+		"the painting, its shadows and figures, then the two lights")
+	assert_eq(s.get_node("Stage/LightPass/Light").scene_file_path, "res://Scenes/Look/LightPool.tscn",
+		"a pass has a pool")
+	assert_eq(s.get_node("Stage/LightPass/Shafts").scene_file_path, "res://Scenes/Look/SunShafts.tscn",
+		"and shafts")
+	assert_eq(s.get_node("Stage/LightFail/Light").scene_file_path, "res://Scenes/Look/LightPool.tscn",
+		"a fail has only a pool")
+	assert_eq(s.get_node("Stage/LightFail").get_child_count(), 1, "and no shafts")
+
+
+func test_dressing_picks_one_light() -> void:
+	var s := _live_stage()
+	s.dress(false, _FOUR)
+	var pass_on := (s.get_node("Stage/LightPass") as CanvasItem).visible
+	var fail_on := (s.get_node("Stage/LightFail") as CanvasItem).visible
+	s.dress(true, _FOUR)
+	var pass_after := (s.get_node("Stage/LightPass") as CanvasItem).visible
+	var fail_after := (s.get_node("Stage/LightFail") as CanvasItem).visible
+	Engine.get_main_loop().root.remove_child(s)
+	assert_true(pass_on and not fail_on, "a pass shows LightPass only")
+	assert_true(fail_after and not pass_after, "a fail shows LightFail only")
+
+
+## The lights sit in the scaled, letterboxed Stage, which does not clip; their
+## pool runs past the painting's edge. Clipping each light group keeps the
+## glow inside the photo print instead of spilling onto the letterbox bars
+## (seen on EndCutscene's pass frame, 2026-09-28).
+func test_the_lights_stay_inside_the_print() -> void:
+	var s := _stage()
+	for group in ["Stage/LightPass", "Stage/LightFail"]:
+		assert_true((s.get_node(group) as Control).clip_contents,
+			group + " clips its light to the painting")

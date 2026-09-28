@@ -36,7 +36,7 @@ func test_scene_loads() -> void:
 
 
 func test_has_the_backdrop_scrim_and_card() -> void:
-	assert_true(_screen.get_node_or_null("Backdrop") != null, "Backdrop node")
+	assert_true(_screen.get_node_or_null("World/Room/Backdrop") != null, "Backdrop node")
 	assert_true(_screen.get_node_or_null("Scrim") != null, "Scrim node")
 	assert_true(_screen.get_node_or_null(
 		"MarginContainer/NoticeCard") != null, "NoticeCard node")

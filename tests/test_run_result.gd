@@ -198,7 +198,7 @@ func test_the_script_actually_compiles() -> void:
 
 func test_the_screen_has_a_backdrop_grade_card_and_rows_box() -> void:
 	var screen = load(_SCENE_PATH).instantiate()
-	var has_all := screen.get_node_or_null("WinStage") != null \
+	var has_all := screen.get_node_or_null("World/Room/WinStage") != null \
 		and screen.get_node_or_null("BlurLayer") != null \
 		and screen.get_node_or_null(
 			"MarginContainer/Column/GradeCard/GradeStack/GradeBadge") != null \
@@ -346,8 +346,8 @@ func test_the_backdrop_is_the_same_blurred_cg_the_cutscene_ended_on() -> void:
 	assert_true(is_rect, "BlurLayer is an authored ColorRect")
 	assert_eq(shader_path, _BLUR_SHADER,
 		"it reuses the same blur shader EndCutscene exits through")
-	assert_true(order.find("WinStage") < order.find("BlurLayer"),
-		"the win stage draws first, so the shader samples it")
+	assert_true(order.find("World") < order.find("BlurLayer"),
+		"the stage's World draws first, so the shader samples it")
 	assert_true(order.find("BlurLayer") < order.find("MarginContainer"),
 		"and the report UI draws after it, so the UI stays sharp")
 
@@ -437,7 +437,7 @@ func test_the_old_backdrop_node_is_gone() -> void:
 	var first_name := String(screen.get_child(0).name)
 	screen.free()
 	assert_false(has_backdrop, "the cropped painting is replaced by the win stage")
-	assert_eq(first_name, "WinStage", "which draws first")
+	assert_eq(first_name, "World", "the stage's World draws first")
 
 
 ## Letterboxed, the win stage puts the navy bar behind the title, where

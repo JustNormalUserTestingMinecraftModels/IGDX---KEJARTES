@@ -5,6 +5,10 @@
 [ext_resource type="Texture2D" uid="uid://b0xshiyjwr8x6" path="res://Assets/Images/UI/notice.png" id="3_y2lp5"]
 [ext_resource type="Texture2D" uid="uid://bvm7lkgmoqcn" path="res://Assets/Images/EndGame/ujian_nasional.png" id="4_jutky"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="amb_tint"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="Script" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 
 [node name="TesNotice" type="Control" unique_id=1139053777]
 layout_mode = 3
@@ -15,18 +19,58 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_2b1jg")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=531112344]
-layout_mode = 0
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Room" type="Control" parent="World"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Backdrop" type="TextureRect" parent="World/Room" unique_id=531112344]
+material = ExtResource("illus_grade")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_jutky")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Tint" parent="." instance=ExtResource("amb_tint")]
+[node name="Tint" parent="World/Room" instance=ExtResource("amb_tint")]
 mood = 4
 strength = 0.3
+
+[node name="Light" parent="World/Room" instance=ExtResource("look_pool")]
+center = Vector2(0.15, 0.08)
+pool_size = Vector2(1600, 1600)
+light_color = Color(0.78, 0.86, 1, 1)
+intensity = 0.06
+
+[node name="Shafts" parent="World/Room" instance=ExtResource("look_shafts")]
+shaft_color = Color(0.78, 0.86, 1, 1)
+intensity = 0.1
+
+[node name="Parallax" type="Control" parent="World/Room"]
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("parallax_diorama")
+depth_by_child = {
+"Backdrop": 1.0,
+"Light": 1.0,
+"Shafts": 1.0,
+"Tint": 1.0
+}
+overscan_children = Array[StringName]([&"Backdrop", &"Light", &"Tint", &"Shafts"])
 
 [node name="Scrim" type="Panel" parent="." unique_id=2026307649]
 layout_mode = 0

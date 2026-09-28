@@ -115,13 +115,13 @@ static func _build_objective_strip(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "ObjectiveHintLabel", tokens.text_primary)
 
 
-## AturJadwal's need gauge (2026-09-28): the parts a StyleBox draws. All three
-## are category-neutral; the screen tints each per skill with self_modulate,
-## so one of each serves every bar.
+## AturJadwal's need gauge (2026-09-28): the parts a StyleBox draws. The dot
+## and callout are category-neutral (the screen tints the dot per skill with
+## self_modulate); the ghost is one per skill, because it IS that bar's fill.
 ##
 ##   StatTargetDot      the round marker on a skill bar's target end: white
 ##                      so self_modulate tints it, with a cream rim.
-##   StatGapMask        the pill that clips the GapTail to the track's shape.
+##   StatGapGhost*      the stretch still to go: the bar's own fill, faded.
 ##   NeedCalloutPanel   the speech bubble by the portrait: a cream card with
 ##   NeedCalloutLabel   a brown rim, and its display-face line.
 static func _build_need_signal(theme: Theme, tokens: DesignTokens) -> void:
@@ -137,15 +137,19 @@ static func _build_need_signal(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("StatTargetDot", "Panel")
 	theme.set_stylebox("panel", "StatTargetDot", dot)
 
-	# A mask only: the GapMask Panel sets clip_children = CLIP_CHILDREN_ONLY,
-	# so this pill is never drawn; it trims the square GapTail to the track's
-	# rounded ends.
-	var mask := StyleBoxFlat.new()
-	mask.bg_color = Color.WHITE
-	mask.set_corner_radius_all(tokens.radius_pill)
-	theme.add_type("StatGapMask")
-	theme.set_type_variation("StatGapMask", "Panel")
-	theme.set_stylebox("panel", "StatGapMask", mask)
+	# The gap's ghost: the bar's own patterned fill, same texture and accent
+	# as StatBarInset*'s "fill", so the stretch still to go reads as a faded
+	# preview of the bar rather than a stain. The screen fades it with
+	# self_modulate; its own rounded caps keep to the track's ends.
+	for spec in [
+		["Akademis", tokens.cat_akademis_on_dark],
+		["SeniBudaya", tokens.cat_senibudaya_on_dark],
+		["Olahraga", tokens.cat_olahraga_on_dark],
+	]:
+		var ghost_name: String = "StatGapGhost" + spec[0]
+		theme.add_type(ghost_name)
+		theme.set_type_variation(ghost_name, "Panel")
+		theme.set_stylebox("panel", ghost_name, _progress_fill_stylebox(spec[1], spec[0]))
 
 	var bubble := StyleBoxFlat.new()
 	bubble.bg_color = tokens.surface_card

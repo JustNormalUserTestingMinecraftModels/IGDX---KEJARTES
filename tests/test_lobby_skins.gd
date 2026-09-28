@@ -52,15 +52,22 @@ func test_setup_students_wires_both() -> void:
 	assert_true(src.contains("face.set_base_texture("))
 
 
+## The 2026-09-27 scrapbook pass moved the button into IconRail (a
+## Container), whose children's offsets are only computed once settled, so
+## sibling order stands in for "beside AchievementButton" and
+## custom_minimum_size for its fixed 96x96 slot.
 func test_lobby_has_the_skin_switch_button() -> void:
 	var scene := (load("res://Scenes/Lobby/Lobby.tscn") as PackedScene).instantiate()
 	track(scene)
-	var btn := scene.get_node("Safe/UI/BottomBar/SkinSwitchButton") as TextureButton
+	var btn := scene.get_node("Safe/UI/Hud/IconRail/SkinSwitchButton") as TextureButton
 	assert_true(btn != null)
 	assert_true(btn.unique_name_in_owner)
 	assert_eq(btn.texture_normal.resource_path, "res://Assets/Images/UI/skin_switch.png")
-	assert_eq(Vector2(btn.offset_left, btn.offset_right), Vector2(360, 456), "beside AchievementButton")
-	assert_eq(btn.offset_bottom, 96.0)
+	var achievement := scene.get_node("%AchievementButton") as Control
+	assert_eq(btn.get_parent(), achievement.get_parent(), "both ride in IconRail")
+	assert_eq(btn.get_index(), achievement.get_index() + 1,
+		"SkinSwitchButton follows AchievementButton in the rail")
+	assert_eq(btn.custom_minimum_size, Vector2(96, 96))
 
 
 ## SkinSelect.open() takes no argument since 2026-09-22: it reads

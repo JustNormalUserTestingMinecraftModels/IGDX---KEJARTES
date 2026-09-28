@@ -28,6 +28,12 @@ func test_every_declared_variation_exists() -> void:
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
 		"CaptionLabel", "MicroLabel", "StatBar", "AchievementTileBar", "FilterChipButton",
 		"EventDialoguePanel", "EventDialogueText", "DayBannerPanel", "DayBannerLabel", "CalendarLabel",
+		# 2026-09-27 scrapbook HUD (Task 2).
+		"BookHeroButton", "NavTileKoperasi", "NavTileInventory", "NavTileRapor",
+		"PlusButton", "ChevronGripButton", "BookCoverPanel", "BookPagePanel",
+		"CoinPlate", "ProgressPlate", "GradeBadge", "GradeBadgeLabel",
+		"GradeBadgeNumber", "WeekLabel", "StarProgressBar", "StarNumLabel",
+		"NotifBadge", "NotifBadgeLabel", "RosterChip",
 	]
 	var actual := _theme.get_type_list()
 	for variation in expected:
@@ -375,6 +381,12 @@ const DISPLAY_ROSTER := [
 	"PlateNameLabel",
 	# 2026-09-11 Koperasi Part 2: the tray's ×N and count badges.
 	"TrayBadgeLabel",
+	# 2026-09-27 scrapbook HUD (Task 2): the book's hero button and nav
+	# tiles, the coin plate's +, the header's grade badge and week label,
+	# the star bar's number, and the icon rail's notification badge.
+	"BookHeroButton", "NavTileKoperasi", "NavTileInventory", "NavTileRapor",
+	"PlusButton", "GradeBadgeLabel", "GradeBadgeNumber", "WeekLabel",
+	"StarNumLabel", "NotifBadgeLabel",
 ]
 
 
@@ -598,3 +610,17 @@ func test_settings_divider_is_a_thin_sunken_rule() -> void:
 		return
 	assert_eq(rule.color, _tokens.surface_sunken, "the rule is sunken cream")
 	assert_eq(rule.thickness, 2, "the rule is 2px")
+
+
+## 2026-09-27 scrapbook HUD: the + is green, never gold (spec §3.2), and
+## JADWAL is the greenest element (spec §4).
+func test_scrapbook_plus_and_hero_are_green() -> void:
+	var plus := _theme.get_stylebox("normal", "PlusButton") as StyleBoxFlat
+	assert_true(plus != null, "PlusButton/normal is a flat box")
+	if plus == null:
+		return
+	assert_eq(plus.bg_color, _tokens.state_success, "the + wears the success green")
+	assert_ne(plus.bg_color, _tokens.currency_gold, "a gold + would read as an IAP button")
+	var hero := _theme.get_stylebox("normal", "BookHeroButton") as StyleBoxFlat
+	assert_true(hero != null and hero.bg_color == _tokens.state_success,
+		"JADWAL wears the hero green")

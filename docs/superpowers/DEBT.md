@@ -90,7 +90,20 @@ the 2026-09-28 daily-login reveal's chest, which has no art at all yet:
 `use_chest_sprite` stays off until both exist, so the claim moment ships on the
 gift fallback (Box crops the day-1 slot's gift out of `day1.png`, Lid hidden).
 Drawing them means setting the three exports on the reveal's root in
-`DailyRewardReveal.tscn`; the Lid's hinge pivot is already authored.
+`DailyRewardReveal.tscn`; the Lid's hinge pivot is already authored, and the
+2026-09-27 Lobby scrapbook HUD set in `Assets/Images/UI/LobbyHud/`
+(`book_cover.png`, `book_page.png`, `coin_plate.png`, `progress_plate.png`,
+`chevron_grip.png`, `icon_plus.svg`) standing in for the book/page/plate/grip
+art in `docs/superpowers/specs/2026-09-27-lobby-scrapbook-hud-design.md` § 6,
+drop-replaceable at the same paths with no code change. Every PNG's 9-slice
+margins are whole pixels: `book_cover.png` 96x96, margins L24 R24 T24 B40
+(the bottom margin carries its lip band); `book_page.png` 96x96, margins L18
+R18 T18 B18; `coin_plate.png` 120x64, margins L20 R20 T18 B26;
+`progress_plate.png` 160x64, margins L20 R20 T18 B26; `chevron_grip.png`
+96x48, margins L26 R26 T8 B8 (a full pill, so the top/bottom margins are only
+a small buffer, not the cap radius). Still pending, waiting on real art: the
+dashed washi rim and tape, and JADWAL!'s washi flutter (deferred by the plan's
+Q4 -- `StyleBoxFlat` cannot draw dashes).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
@@ -279,16 +292,19 @@ project-wide rendering change `test_look_layer` pins off today. Measured
 ~0.88, the desk screens' wood at ~0.84 everywhere; sweeping threshold
 0.6-0.9, intensity 1-4 and strength 1-1.5 either bloomed nothing visible
 or bloomed the background as much as the light (+0.04 to +0.11 at the
-strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList and
-ReportCard all ship without bloom -- `Scenes/Look/AmbientGlow.tscn` is
-built and ready to place once `hdr_2d` lands. Measured at the same time,
-the desk lamp `LightPool` is capped at 0.12 (its measured knee) and still
-only adds +0.011 mean brightness; `hdr_2d` would also let it go brighter.
-Also outstanding: light wrap on the shared cutout illustration materials;
-the kit not yet extended to Inventory, Achievements or Koperasi/ShopHub
-(blurred or busy backdrops, the kit can extend there later); and the Debug
-overlay's Look page stays Lobby-only because `DebugManager.gd` is at its
-clean-code size ceiling (1,880 lines, `LARGE_SCRIPTS`).
+strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList,
+ReportCard, ShopHub and CosmeticShop (under their blur the core reaches
+only +0.0045/+0.0043 even at threshold 0.5) all ship without bloom --
+`Scenes/Look/AmbientGlow.tscn` is built and ready to place once `hdr_2d`
+lands. Measured at the same time, the desk lamp `LightPool` is capped at
+0.12 (its measured knee) and still only adds +0.011 mean brightness;
+`hdr_2d` would also let it go brighter. Also outstanding: light wrap on the
+shared cutout illustration materials; the kit not yet extended to
+Inventory or Achievements; and the Debug overlay's Look page stays
+Lobby-only because `DebugManager.gd` is at its clean-code size ceiling
+(1,880 lines, `LARGE_SCRIPTS`). Koperasi cannot bloom at all: its backdrop
+shares Stage with the tappable goods on layer 0 (lobby-look spec,
+section 2).
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories
@@ -462,6 +478,25 @@ disconnects, and the editor needs a restart. Cause unconfirmed; verify that
 widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
+
+- **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
+  Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
+  SDK is wired. Debug builds only: a release build keeps the Lobby's `+`
+  disabled (`DapatkanUang.is_available()`). Before one is: the child-directed ad-policy gate (COPPA,
+  GDPR-K, ad-content ratings; the audience likely includes minors). The
+  SDK's reward callback then calls `DapatkanUang._pay()`, and
+  `is_dev_mode` goes false. The six amounts (+150 / +450 / +900 for 4 ads /
+  +2000 for 8) await the Balance owner's sign-off:
+  `docs/superpowers/specs/2026-09-27-earn-money-balance-proposal.md`.
+- **Scrapbook HUD review leftovers** (2026-09-28, Phase 1 reviews in
+  `.superpowers/sdd/2026-09-27-loby-final-polish/`). On a phone that
+  reports a bottom inset, the hidden HUD's 48 px chevron peek sits inside
+  the system gesture strip: a design call, since lifting it would show
+  JADWAL again. `lobby_hud` measures the peek against the editor window,
+  not a 1080x1920 `SubViewport`. The landing squash (`AnimUtils.squash_bounce`,
+  1.18/0.85) is far stronger than the spec's ~1.04/0.97; tune it with
+  `motion-lab`. The entrance and the star sparkle mostly play under the
+  `Transition` wipe.
 
 - **`AnimUtils._active_tweens` never forgets freed nodes** (2026-09-28).
   Each helper call registers its tween keyed by the node and never erases

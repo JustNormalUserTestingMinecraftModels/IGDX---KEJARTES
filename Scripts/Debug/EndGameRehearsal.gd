@@ -144,6 +144,9 @@ const SNAPSHOT_KEYS := [
 	# outlive the rehearsal, same as a shop purchase.
 	"equipped_skins", "skin_unlock_overrides",
 	"minggu_ke", "current_grade", "player_money",
+	# Dapatkan Uang's owed ads move with player_money: restoring the money a
+	# rehearsal-time cash-in paid must also take back the ads it owes.
+	"ad_debt",
 	"run_failed", "is_game_beaten",
 	"lobby_tutorial_completed", "tutorials_bypassed",
 	"returned_from_student_card",

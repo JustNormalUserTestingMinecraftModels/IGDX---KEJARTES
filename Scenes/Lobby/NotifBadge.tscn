@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://jdjll060xj8e"]
+
+[ext_resource type="Script" uid="uid://sfrlpiy1nllt" path="res://Scripts/Lobby/NotifBadge.gd" id="1_i66jx"]
+
+[node name="NotifBadge" type="Panel" unique_id=1704846192]
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -30.0
+offset_top = -14.0
+offset_right = 14.0
+offset_bottom = 30.0
+pivot_offset = Vector2(22, 22)
+mouse_filter = 2
+theme_type_variation = &"NotifBadge"
+script = ExtResource("1_i66jx")
+
+[node name="Count" type="Label" parent="." unique_id=610487250]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_type_variation = &"NotifBadgeLabel"
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1

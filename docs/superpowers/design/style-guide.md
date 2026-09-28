@@ -59,10 +59,28 @@ what a button is for, not how it looks:
   pill geometry and differ in accent, so the two trait kinds stay
   distinguishable.
 
+**Lobby-only exception (2026-09-27 scrapbook HUD, Q7):** the Lobby's own
+`BookHeroButton`, `NavTileKoperasi` / `NavTileInventory` / `NavTileRapor` and
+`PlusButton` (all in `ThemeFactory._build_lobby_hud()`) deliberately do
+**not** wear the shared brown Lobby look above — each carries its own
+colour (JADWAL green, the shop's own green, the Akademis blue, a warm
+amber, and green-never-gold for the `+`). They're absent on purpose from
+`tests/test_lobby_style_buttons.gd`'s `LOBBY_LOOK` roster. Every other
+screen still copies the brown look; this exception is scoped to the
+Lobby's bottom HUD only.
+
 **Panels**:
 - `Card` — the standard raised surface (white bg, border, shadow).
 - `SunkenPanel` — an inset/recessed surface (e.g. a text well).
 - `Scrim` — a translucent full-screen dim behind a modal/dialog.
+- `CoinPlate` / `ProgressPlate` — the Lobby header's cream 9-slice plates
+  (the wallet display and the grade/week/star strip).
+- `GradeBadge` — the header's flat "KELAS 7" chip.
+- `BookCoverPanel` / `BookPagePanel` — the stepped book's board and page,
+  9-sliced.
+- `NotifBadge` — the icon rail and nav tiles' small red count pill
+  (`NotifBadgeLabel` for its digit/mark text).
+- `RosterChip` — the book's "N murid" pill.
 
 **Labels**:
 - `DisplayLabel` — largest heading, outlined, uses the display font.
@@ -117,6 +135,15 @@ its faces `illustration_grade_face.tres`, both kept equal to the cutout except
 from the debug overlay's **Look** page, then write the landed value into the
 `.tres`. That bloom reaches only canvas layers ≤ −1: the room lives in the
 Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
+
+**The Lobby look on other screens** (spec
+`docs/superpowers/specs/2026-09-28-lobby-look-everywhere-design.md`): the
+backdrop and its light move into a `World` CanvasLayer at −1 holding one
+`Room` Control; the light is a `LightPool` plus a full-screen `SunShafts`
+(`Scenes/Look/SunShafts.tscn`); an `AmbientGlow` right after `World` blooms
+only where its threshold was measured clean; the blurred shops (and, in later
+passes, the exam notices) add a flat `ParallaxDiorama`. Minigames and Koperasi
+keep their backdrop on layer 0 and take the light without bloom.
 
 ## Swapping fonts
 

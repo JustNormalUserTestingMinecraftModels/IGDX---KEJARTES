@@ -74,7 +74,7 @@ extends TextureRect
 ## notes -- see CATEGORY_ICONS in StudentList.gd. Akademis / SeniBudaya /
 ## Olahraga / Libur point at the same StudentCard stat_* set as CATEGORY_ICONS
 ## so those subjects carry one symbol everywhere; Istirahat / Wirausaha have
-## no stat of their own, so this chip wears their dedicated cat_*.svg icons.
+## no stat of their own, so both maps wear their dedicated cat_*.svg icons.
 const SPECIALTY_ICONS := {
 	"Akademis": "res://Assets/Images/StudentCard/stat_akademis.png",
 	"Akademik": "res://Assets/Images/StudentCard/stat_akademis.png",

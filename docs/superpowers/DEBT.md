@@ -689,6 +689,38 @@ pass, the Lobby tiles' icons included. Spec:
   against its blurred splash. Reads as a label rather than part of the
   illustration, which is acceptable for now.
 
+- **SkinSelect's stretch features are deferred (2026-09-29,
+  skin-select-polish).** The collaborator's handoff spec's "Baru!" badge,
+  peek-on-select, turntable idle and locked-skin treatment all stayed out
+  of the pass pending the owner's sign-off (plan
+  `docs/superpowers/plans/2026-09-29-skin-select-polish.md`, Revision:
+  "Stretch features stay out").
+
+- **SkinSelect's back button departs from the handoff (2026-09-29,
+  skin-select-polish).** The screen keeps the shared red `TextureButton`
+  back arrow every screen uses instead of the handoff's one-off round cream
+  button -- a back control that looks different on one screen reads as a
+  different action. Recorded as a departure in the pass's plan and PR, not
+  a bug to fix.
+
+- **SkinSelect's name dividers and tape sit at a fixed x (2026-09-29,
+  skin-select-polish).** `NameDividerLeft`/`NameDividerRight` and the
+  tray's washi tape are placed to fit "Seragam Sekolah"-length names. Real
+  skin names (`SkinSelect's skin names are derived`, above) do not exist
+  yet, but a name much longer than that would overlap the dividers once
+  they land. Put `SkinName` and its two dividers in a centred
+  `HBoxContainer` when `StudentSkins.SKINS` grows real names.
+
+- **`test_audio_coverage`'s double-fire scanner is a substring match, not a
+  word boundary (2026-09-29).** It reads `tile.set_open(i == index)` inside
+  `SkinSelect.select_student` as a call to that same file's own `open()`,
+  because its check is `body.contains(other_func_name + "(")` and
+  `"open("` is a substring of `"set_open("`. `select_student` was added to
+  `_DOUBLE_FIRE_ALLOWLIST` rather than fixing the scanner. The real fix is
+  a word-boundary check (e.g. the match must not be preceded by an
+  identifier character) in `tests/test_audio_coverage.gd`; it is its own
+  PR, not part of skin-select-polish.
+
 - **skin_card_focus.gdshader's blur cost is unmeasured on low-end Android
   (2026-09-23).** 48 taps per pixel on a full-size card, and mid-slide both
   the centred and the neighbour card are on the blurred path at once. If it

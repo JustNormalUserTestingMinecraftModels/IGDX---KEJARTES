@@ -32,8 +32,14 @@ locked scope decision and changes only *how*:
   itself, so tests drive it with plain arrays. An empty array falls back to
   `StudentSkins.NAMES`.
 - **SFX use existing cues** from `AudioDirector`'s registry: `&"select"` on a
-  tile, `&"pop"` when the carousel settles on a new skin, `&"apply"` on
-  TERAPKAN. No registry additions.
+  tile, `&"swipe"` when the carousel settles on a new skin, `&"apply"` on
+  TERAPKAN. No registry additions. (Fix round 2, 2026-09-29: the code ships
+  `&"swipe"`, not this section's original `&"pop"` — `AudioDirector`'s own
+  doc for `&"swipe"` is "paging through report_card/student_card", which
+  fits a carousel settling on a new card; `&"pop"` is "a small UI element
+  appears", and nothing appears when the carousel settles, it just comes to
+  rest. `AudioDirector.gd`'s `sfx_swipe` doc line already names skin select
+  by name.)
 - **Stretch features stay out** (the spec's "Baru!" badge, peek-on-select,
   turntable idle, locked-skin treatment): the owner has not signed them off.
 

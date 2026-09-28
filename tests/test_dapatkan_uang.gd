@@ -99,6 +99,55 @@ func test_the_lobby_wires_the_plus_and_the_payout() -> void:
 		"a payout rolls the wallet through the daily claim's handler")
 
 
+## Opening with ads already owed shows the owed-ad button at once, with
+## the count; opening with none keeps it hidden.
+func test_open_shows_the_owed_ad_button_only_when_ads_are_owed() -> void:
+	var panel := _fixture()
+	if panel == null:
+		return
+	var owed := panel.get_node("%TontonUtang") as Button
+	GameState.ad_debt = 0
+	panel.open()
+	assert_false(owed.visible, "nothing owed, no button")
+	panel.close()
+	GameState.ad_debt = 3
+	panel.open()
+	assert_true(owed.visible, "owed ads show the button on open")
+	assert_eq(owed.text, DapatkanUang.OWED_AD_BUTTON_FORMAT % 3)
+	panel.close()
+
+
+## A tap on the dimmed Lobby around the book closes it, like the daily gift.
+func test_a_tap_on_the_scrim_closes_the_panel() -> void:
+	var panel := _fixture()
+	if panel == null:
+		return
+	panel.open()
+	var tap := InputEventMouseButton.new()
+	tap.button_index = MOUSE_BUTTON_LEFT
+	tap.pressed = true
+	(panel.get_node("%Scrim") as Control).gui_input.emit(tap)
+	assert_false(panel.visible, "the scrim tap closed it")
+
+
+## A second close while the book springs out must not replay the sound or
+## restart the tween (review): the guard holds until the panel reopens.
+func test_a_second_close_during_the_spring_out_is_ignored() -> void:
+	var panel := _fixture()
+	if panel == null:
+		return
+	GameSettings.reduce_motion = false
+	panel.open()
+	panel.close()
+	assert_true(panel._closing, "the spring-out is in flight")
+	assert_true(panel.visible, "the panel stays up until the spring-out lands")
+	GameSettings.reduce_motion = true
+	panel.hide()
+	panel.open()
+	assert_false(panel._closing, "reopening clears the guard")
+	panel.close()
+
+
 func test_a_short_ad_pays_now() -> void:
 	var panel := _fixture()
 	if panel == null:

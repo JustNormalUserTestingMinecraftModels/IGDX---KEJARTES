@@ -39,6 +39,10 @@ const OWED_AD_BUTTON_FORMAT := "Tonton %d iklan tertunda"
 ## Seconds the success toast stays up before it fades.
 @export var toast_seconds: float = 2.0
 
+## True while the book springs out: a second tap on the close button or the
+## scrim must not replay the sound or restart the tween.
+var _closing: bool = false
+
 @onready var scrim: Control = %Scrim
 @onready var book: Control = %Book
 @onready var short_ad_button: Button = %IklanSingkat
@@ -69,6 +73,7 @@ func _ready() -> void:
 func open() -> void:
 	if visible:
 		return
+	_closing = false
 	dev_mode_tag.visible = is_dev_mode
 	_refresh_owed_ad()
 	scrim.modulate.a = 1.0
@@ -82,12 +87,13 @@ func open() -> void:
 ## Springs the book out and hides the panel; under reduce_motion it hides
 ## at once.
 func close() -> void:
-	if not visible:
+	if not visible or _closing:
 		return
 	AudioDirector.play_sfx(&"popup_close")
 	if GameSettings.reduce_motion:
 		hide()
 		return
+	_closing = true
 	AnimUtils.popup_spring_out(book, scrim, hide)
 
 

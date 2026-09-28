@@ -445,7 +445,7 @@ func test_every_shown_close_is_heard() -> void:
 			"%s shows the frame's close, so %s must wire it" % [path, script_path])
 ```
 
-- [ ] **Step 4: Run the tests to see the new ones fail.** Controller: `test_run(suite="notebook_frame")`. Expected: the minimum-size, sticker and tap tests fail; the override tests may already pass. Then `test_run(suite="popup_frames")`: it passes vacuously on an empty roster.
+- [ ] **Step 4: Run the tests to see the new ones fail.** Controller: `test_run(suite="notebook_frame")`. Expected: the minimum-size, sticker and tap tests fail; the override tests may already pass. Then `test_run(suite="popup_frames")`: until Task 2 adds the first rows, each roster test fails its opening `assert_false(POPUPS.is_empty(), …)` (a test with no assertion is itself reported as a failure, so an empty roster cannot pass vacuously).
 
 - [ ] **Step 5: Implement in `Scripts/UI/NotebookFrame.gd`.**
 

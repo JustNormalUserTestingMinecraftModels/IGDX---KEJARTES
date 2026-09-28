@@ -103,8 +103,13 @@ func open() -> void:
 
 
 ## Springs the box in once the CenterContainer's first layout pass has run
-## (that pass resets scale and rotation). Deferred from open().
+## (that pass resets scale and rotation). Deferred from open(). Also yields
+## to a close already in flight: AnimUtils._safe_tween kills a node's running
+## tween, so a spring starting after close() would kill the spring-out and
+## its hide() callback would never run, leaving the panel stuck visible.
 func _spring_in() -> void:
+	if _closing:
+		return
 	if is_instance_valid(book):
 		AnimUtils.popup_spring_in(book)
 

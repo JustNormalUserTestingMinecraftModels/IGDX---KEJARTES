@@ -79,12 +79,17 @@ func test_the_sheet_is_a_notebook_frame() -> void:
 ## the container's pass wipes its 0.5-scale/-3deg start before the tween reads
 ## it. Deferred through an instance method (_spring_in), not a bare static
 ## Callable, so a popup freed before the deferred call runs just drops it
-## instead of erroring on a stale argument.
+## instead of erroring on a stale argument. _spring_in also yields to a
+## dismiss already in flight (R1): AnimUtils._safe_tween kills a running
+## tween, so a late spring would kill the spring-out and its queue_free()
+## callback would never fire, sticking the sheet visible.
 func test_the_spring_in_is_deferred() -> void:
 	var src := _sheet_src()
 	assert_contains(src, "_spring_in.call_deferred()",
 		"the spring must start after the CenterContainer's layout pass")
 	var body: String = src.get_slice("func _spring_in()", 1).get_slice("\nfunc ", 0)
+	assert_contains(body, "if _dismissing:\n\t\treturn",
+		"a dismiss already in flight must stop the spring from killing its tween")
 	assert_contains(body, "AnimUtils.popup_spring_in(",
 		"_spring_in must actually run the spring once deferred")
 	assert_contains(body, "is_instance_valid(_sheet)",

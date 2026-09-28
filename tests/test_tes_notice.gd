@@ -177,6 +177,22 @@ func test_it_plays_the_notice_bgm() -> void:
 	assert_true(src.contains("play_sfx(&\"popup_open\")"), "arrival SFX")
 
 
+## notice_card lives inside a CenterContainer, whose layout pass resets scale
+## after _ready() -- the pop-in must start deferred, or the container's pass
+## wipes its 0.82 start before the tween reads it. Deferred through an
+## instance method (_pop_in), so a card freed before the call runs just
+## drops it instead of erroring on a stale argument.
+func test_the_pop_in_is_deferred() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_contains(src, "_pop_in.call_deferred()",
+		"the pop-in must start after the CenterContainer's layout pass")
+	var body: String = src.get_slice("func _pop_in()", 1).get_slice("\nfunc ", 0)
+	assert_contains(body, "is_instance_valid(notice_card)",
+		"a freed notice must not pop in a stale node")
+	assert_contains(body, "Juice.pop_in(notice_card, 0.0)",
+		"_pop_in must actually run the pop once deferred, with the same arguments")
+
+
 func _collect_overrides(node: Node, out: Array[String]) -> void:
 	if node is Control:
 		var c := node as Control

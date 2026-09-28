@@ -904,7 +904,7 @@ func _show_mental_fatigue_warning(names: Array[String]):
 func _show_incomplete_schedule_warning():
 	current_warning_mode = "incomplete"
 	is_overtired_warning = false
-	peringatan_label.text = "Jadwal\n\nTerdapat murid yang masih \nbelum memiliki jadwal belajar \noptimal!! Teruskan?"
+	peringatan_label.text = "Jadwal\n\nTerdapat murid yang masih belum memiliki jadwal belajar optimal!! Teruskan?"
 	btn_yes.text = "YES"
 	btn_no.text = "NO"
 	btn_no.show()
@@ -935,8 +935,8 @@ func _show_peringatan():
 	peringatan_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	peringatan_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	peringatan_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	# Dynamic sizing so long warning text still fits the fixed art
-	# frame; no single theme variation encodes "shrink to fit".
+	# Dynamic sizing so a very long warning shrinks instead of growing the
+	# notebook dialog too tall; no single theme variation encodes "shrink to fit".
 	var text_len = peringatan_label.text.length()
 	if text_len > 110:
 		peringatan_label.add_theme_font_size_override("font_size", t.font_caption)

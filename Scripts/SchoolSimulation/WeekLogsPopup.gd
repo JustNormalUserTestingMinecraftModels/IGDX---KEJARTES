@@ -70,7 +70,10 @@ func open(animate_rows: bool = true) -> void:
 		scrim.mouse_filter = Control.MOUSE_FILTER_STOP
 		return
 	AudioDirector.play_sfx(&"popup_open")
-	Juice.pop_in(card)
+	# card sits inside a CenterContainer; its layout pass resets scale after
+	# this frame, wiping pop_in's 0.82 start -- defer so it starts once that
+	# pass has already run.
+	_pop_in.call_deferred()
 	var t := Juice.tokens()
 	var arm := create_tween()
 	arm.tween_interval(t.dur_normal)
@@ -82,6 +85,16 @@ func open(animate_rows: bool = true) -> void:
 		# SceneTree timer would resume on a freed sheet if Tutup is tapped
 		# during the pop-in.
 		arm.tween_callback(_play_rows_entrance)
+
+
+## Pops the card in once the CenterContainer's first layout pass has run
+## (that pass resets scale). Deferred from open(); guards against a sheet
+## closed in its own opening frame, since Tutup or the scrim can free it
+## before this deferred call fires.
+func _pop_in() -> void:
+	if _is_closed or not is_instance_valid(card):
+		return
+	Juice.pop_in(card)
 
 
 ## Close the sheet and hand control back. Safe to call twice.

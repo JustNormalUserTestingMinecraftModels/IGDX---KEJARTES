@@ -825,9 +825,7 @@ theme_override_constants/separation = 24
 layout_mode = 2
 custom_minimum_size = Vector2(620, 0)
 theme_type_variation = &"TitleLabel"
-text = "Terdapat murid yang masih
-belum memiliki jadwal belajar
-optimal!! Teruskan?"
+text = "Terdapat murid yang masih belum memiliki jadwal belajar optimal!! Teruskan?"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2

@@ -157,3 +157,22 @@ func test_the_logs_sit_in_a_notebook_sheet() -> void:
 		"Tutup is the frame's round close now")
 	assert_contains(FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/WeekLogsPopup.gd"),
 		"card.close_pressed.connect(close)")
+
+
+## card lives inside a CenterContainer, whose layout pass resets scale after
+## the popup's own frame -- the pop-in must start deferred, or the
+## container's pass wipes its 0.82 start before the tween reads it.
+## Deferred through an instance method (_pop_in), which also yields to a
+## sheet already closed (Tutup or the scrim can free it in the same frame
+## open() runs).
+func test_the_pop_in_is_deferred() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	assert_contains(src, "_pop_in.call_deferred()",
+		"the pop-in must start after the CenterContainer's layout pass")
+	var body: String = src.get_slice("func _pop_in()", 1).get_slice("\nfunc ", 0)
+	assert_contains(body, "_is_closed",
+		"a closed sheet must not pop in a stale card")
+	assert_contains(body, "is_instance_valid(card)",
+		"a freed sheet must not pop in a stale node")
+	assert_contains(body, "Juice.pop_in(card)",
+		"_pop_in must actually run the pop once deferred")

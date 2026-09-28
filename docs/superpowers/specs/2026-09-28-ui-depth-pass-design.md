@@ -36,7 +36,7 @@ This pass gives KejarTes those traits while keeping its identity.
 | Sound | The existing tap SFX on every button, unchanged. |
 | Icons | The owner supplies a chunky set later. Placeholders are drawn now at fixed paths and swapped in with no code change. |
 | Scope | The theme changes everywhere. The notebook frame and icons are hand-fitted on **all core screens and popups**. Minigames get only the automatic theme change. |
-| Build approach | **Hybrid.** A code-drawn `LippedStyleBox` for everything that recolours and resizes; small drop-replaceable textures only for the notebook's illustration pieces. |
+| Build approach | **Hybrid.** Lipped faces built in code (`LippedBox`, native `StyleBoxFlat`) for everything that recolours and resizes; small drop-replaceable textures only for the notebook's illustration pieces. |
 
 ### Palette
 
@@ -54,30 +54,27 @@ The stat categories already own blue (Akademis), red (Olahraga), green (Seni) an
 
 ## Architecture
 
-### 1. `LippedStyleBox`
+### 1. Lipped faces (`LippedBox`, native `StyleBoxFlat`)
 
-`Scripts/Design/LippedStyleBox.gd` is a `@tool class_name LippedStyleBox extends StyleBox`. `_draw(canvas_item, rect)` draws three internal `StyleBoxFlat`s, which keeps Godot's anti-aliased corners:
+`Scripts/Design/LippedBox.gd` is a static helper that builds the look from a plain `StyleBoxFlat`. It is **not** a script-backed StyleBox, because the project theme loads at startup before the SceneTree exists, and any script in it makes every debug run log a SceneTree error. That was found and fixed during Phase 1.
 
-1. **Lip:** `lip_color`, the full rect, drawn with its top edge `lip_height` below the face's top.
-2. **Face:** `bg_color`, the rect minus `lip_height` at the bottom. The soft shadow is drawn under the lip, the bottom-most shape.
-3. **Gloss:** white at `gloss_strength` alpha fading to near zero, inset 8 px left/right and 4 px from the top, covering the top third of the face.
+The three parts:
+- **Lip:** the box's drop shadow in the lip colour, 1 px soft, offset down by `lip_height` into the strip a negative `expand_margin_bottom` frees under the face.
+- **Face:** `bg_color` with the corner radius. There is no soft drop shadow any more; the shadow is the lip.
+- **Gloss:** a blended top border (`border_width_top` = `LippedBox.GLOSS_WIDTH`), lighter than the face by `gloss_strength`.
 
-Exported properties:
-- `bg_color` (the face; named like `StyleBoxFlat`'s), `lip_color`, `lip_height`, `corner_radius`, `gloss_strength`, and the soft shadow (`shadow_color`/`shadow_size`/`shadow_offset`)
-- `pressed: bool`. When true, no lip is drawn and the face moves down by `lip_height`.
-
-The content margins are the base `StyleBox` margins. For the pressed state, the factory adds `lip_height` to `content_margin_top` and subtracts it from `content_margin_bottom`, so the label sinks with the face.
+**Held (pressed)** drops the face with `expand_margin_top` = −`lip_height` and hides the lip. `LippedBox.set_vertical_padding()` keeps the height and moves the label with the face. The readers `is_lipped()`, `lip_height_of()` and `is_pressed()` recover the lip from those same fields.
 
 **New tokens** in `DesignTokens.gd` / `design_tokens.tres`, each with a `##` line:
 - the accent trios above
 - `lip_height` = 7
-- `gloss_strength` = 0.5
+- `gloss_strength` = 0.35 (how much lighter the top band starts)
 - `release_pop_scale` = 1.03
 - `release_pop_duration` = 0.12
 - `outline_width` stays, used by text only
 
 **ThemeFactory:**
-- `_button_box()` returns a `LippedStyleBox`, so roughly 25 button roles follow in one rebake.
+- `_button_box()` returns a lipped `StyleBoxFlat` from `LippedBox`, so roughly 25 button roles follow in one rebake.
 - `_add_button_variation()` builds all five states:
   - `normal` and `hover`/`focus` share one look (touch game)
   - `pressed` sets `pressed = true` and shifts the margins
@@ -85,7 +82,7 @@ The content margins are the base `StyleBox` margins. For the pressed state, the 
 - **Role colours** follow the palette table. Information badges (`RosterStatusBelum`/`Sudah`, `QuirkBadge`/`PersonaBadge`, `SpecialtyBadge`) keep their meaning colours and gain a lip.
 - **New variations:** `NotebookTab`, `NotebookTabActive`, `NotebookClose`, `NotebookSticker` (label).
 - **The Lobby scrapbook variations** (`BookHeroButton`, `NavTileKoperasi`/`Inventory`/`Rapor`, `PlusButton`) already go through `_add_button_variation`, so they become lipped with everything else. `_thicken_lip()` sets `lip_height` to its `LOBBY_HUD_LIP` instead of `border_width_bottom`. Their fills move to the palette trios above. The textured plates (`BookCoverPanel`, `BookPagePanel`, `CoinPlate`, `ChevronGripButton`) keep their art.
-- **Code that casts a button stylebox to `StyleBoxFlat` switches to `StyleBox`.** That covers `_set_content_margins`, `_add_size_step` and any test or runtime reader.
+- **Readers of a button box** use `LippedBox`'s readers for the lip and its state; everything else on it is an ordinary `StyleBoxFlat`.
 - **Text:** chosen by the face's brightness. A face at or below `lipped_light_face_luminance` (0.7) gets `text_on_brand` with `font_outline_color` = the lip colour and `outline_size` = `lipped_label_outline` (8). A brighter face (cream, sunflower, sunken) gets `text_primary` with no outline. Godot Buttons have no font shadow, so there is no drop under the letters.
 
 ### 2. `NotebookFrame`
@@ -94,7 +91,7 @@ The content margins are the base `StyleBox` margins. For the pressed state, the 
 
 - **Host content:** a screen adds its own nodes as children of the instance root. In `NOTIFICATION_SORT_CHILDREN` the frame fits every non-internal child into the page's content rect, inside the sunken well.
 - **Decoration:** internal children marked with the meta `notebook_chrome`, drawn behind or around the content:
-  - `Cover` and `Page` (`LippedStyleBox`, with brown-lip and cream-edge lips)
+  - `Cover` and `Page` (lipped faces with no gloss: a brown lip, and cream paper edges)
   - `Rules` (`TextureRect` with `paper_rule.png` tiled, including the red margin line)
   - `Rings` (a row of `spiral_ring.png`)
   - `Tabs` (`HBoxContainer` of `NotebookTab` Buttons)
@@ -124,7 +121,7 @@ All four are generated placeholders at first and listed in `DEBT.md`.
 
 ### 3. Press feel and haptics (`Scripts/UI/UIPolish.gd`)
 
-- **Lipped buttons:** when a button's `normal` stylebox is a `LippedStyleBox`:
+- **Lipped buttons:** when a button's `normal` stylebox is lipped (`LippedBox.is_lipped`):
   - no scale on press (the pressed stylebox does the sink, on the touch frame)
   - on release, a scale bump 1.0 → `release_pop_scale` → 1.0 over `release_pop_duration`, through a new `Juice.pop_release()`
 - **Other buttons** keep `Juice.press`/`release`.
@@ -159,7 +156,7 @@ All four are generated placeholders at first and listed in `DEBT.md`.
 Three phases, each its own plan-driven branch and `ship-pr` PR. Each phase gets its own implementation plan, written when the previous phase has merged. The first plan covers Phase 1 only.
 
 1. **Foundation.**
-   - Tokens and `LippedStyleBox`, proving first that a script-backed stylebox survives `BakeTheme`'s `.tres` save and a cold editor load.
+   - Tokens and `LippedBox` (native, so the bake carries no script).
    - ThemeFactory switched over (the Lobby scrapbook variations included), then a rebake.
    - `Juice.pop_release`, and UIPolish's sink and tick.
    - `NotebookFrame` with its textures.

@@ -13,6 +13,13 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md` (Phase 1 of 3).
 
+> **Revision (2026-09-28, during execution):** Tasks 1 and 3 first built a script-backed `LippedStyleBox`. Running the game showed the debugger logging `SceneTree::get_singleton() is null` on every debug run, because the project theme loads before the SceneTree exists and any script in it runs then. The owner chose the native fix, done as **Task 3b** (commit `50a8df56`). `Scripts/Design/LippedBox.gd` builds the look from a plain `StyleBoxFlat`:
+> - the lip is the drop shadow, in a strip freed by a negative `expand_margin_bottom`;
+> - held drops the face with `expand_margin_top`;
+> - the gloss is a blended top border.
+>
+> Its readers are `LippedBox.is_lipped(box)`, `lip_height_of(sb)`, `is_pressed(sb)` and `sb.shadow_color` (the lip colour). **Everything below that still says `LippedStyleBox` means `LippedBox` and a native `StyleBoxFlat`.** Tasks 4, 6 and 7 are updated accordingly.
+
 ## Global Constraints
 
 - **Worktree.** Work in `C:/Users/user/Downloads/KejarTestAlphaVer2.15/KejarTestAlphaVer2.15/new-game-project/.claude/worktrees/ui-depth-pass/` on branch `feat/ui-depth-pass`. **Every file path you edit must start with that directory.** The parent folder is a different, shared checkout; never touch it.
@@ -983,7 +990,7 @@ Include any other suite files changed in Step 6.
 - Test: `tests/test_press_feel.gd`
 
 **Interfaces:**
-- Consumes: `LippedStyleBox`, `Haptics.buzz(duration_ms: int)`, and the `release_pop_*` tokens.
+- Consumes: `LippedBox.is_lipped(box: StyleBox) -> bool`, `Haptics.buzz(duration_ms: int)`, and the `release_pop_*` tokens.
 - Produces:
   - `class_name PressFeel`, with `const PRESS_TICK_MS := 8`, `const MAIN_ACTION_ROLES: Array[StringName]`, `static func sinks(normal: StyleBox) -> bool` and `static func ticks(variation: StringName) -> bool`
   - `Juice.pop_release(node: Control) -> Tween`
@@ -996,7 +1003,7 @@ Create `tests/test_press_feel.gd`:
 @tool
 extends McpTestSuite
 
-## Press feel (2026-09-28 UI depth pass): a button on a LippedStyleBox sinks
+## Press feel (2026-09-28 UI depth pass): a button on a lipped face (LippedBox) sinks
 ## through its own pressed stylebox, so UIPolish must not also shrink it --
 ## it pops on release instead. Every other button keeps the shrink. Only the
 ## main-action roles tick the phone's motor. PressFeel holds both answers,
@@ -1073,7 +1080,7 @@ class_name PressFeel
 extends RefCounted
 
 ## Which press a button gets (2026-09-28 UI depth pass). A button resting on a
-## LippedStyleBox sinks through its own pressed stylebox on the touch frame,
+## lipped face (LippedBox) sinks through its own pressed stylebox on the touch frame,
 ## so it must not also shrink -- it gets Juice.pop_release on letting go.
 ## Every other button keeps Juice.press/release. The main-action roles also
 ## tick the phone's motor (Haptics.buzz, which honours the Getar setting).
@@ -1094,8 +1101,7 @@ const MAIN_ACTION_ROLES: Array[StringName] = [
 
 ## True when `normal` -- a button's resting stylebox -- has a lip to sink onto.
 static func sinks(normal: StyleBox) -> bool:
-	var lipped := normal as LippedStyleBox
-	return lipped != null and lipped.lip_height > 0
+	return LippedBox.is_lipped(normal)
 
 
 ## True when a button of theme variation `variation` ticks on press.
@@ -1148,7 +1154,7 @@ func _on_button_up(button: BaseButton) -> void:
 		Juice.release(button)
 
 
-## True when `button` rests on a LippedStyleBox (see PressFeel).
+## True when `button` rests on a lipped face (see PressFeel).
 func _sinks(button: BaseButton) -> bool:
 	return PressFeel.sinks(button.get_theme_stylebox(&"normal"))
 ```
@@ -1352,7 +1358,7 @@ git commit -m "feat(icons): 16 placeholder UI icons at fixed paths" -m "Co-Autho
 - Test: `tests/test_notebook_frame.gd`
 
 **Interfaces:**
-- Consumes: `_add_button_variation`, `_set_content_margins`, `LippedStyleBox`, and `close.svg` (Task 5).
+- Consumes: `_add_button_variation`, `_set_content_margins`, `LippedBox.make(face, lip, lip_height, radius, gloss, pressed := false) -> StyleBoxFlat`, and `close.svg` (Task 5).
 - Produces:
   - theme types: `NotebookCover`, `NotebookPage` (Panel); `NotebookTab`, `NotebookTabActive`, `NotebookClose` (Button); `NotebookSticker` (Label)
   - `class_name NotebookFrame extends Container`, with:
@@ -1568,14 +1574,14 @@ const NOTEBOOK_PAGE_LIP := 8
 static func _build_notebook(theme: Theme, tokens: DesignTokens) -> void:
 	for spec in [
 		["NotebookCover", tokens.brand_primary_light, tokens.brand_primary_dark,
-			NOTEBOOK_COVER_LIP, tokens.radius_lg, true],
+			NOTEBOOK_COVER_LIP, tokens.radius_lg],
 		["NotebookPage", tokens.outline_card, tokens.surface_sunken,
-			NOTEBOOK_PAGE_LIP, tokens.radius_md, false],
+			NOTEBOOK_PAGE_LIP, tokens.radius_md],
 	]:
 		theme.add_type(spec[0])
 		theme.set_type_variation(spec[0], "Panel")
 		theme.set_stylebox("panel", spec[0],
-			_notebook_panel(tokens, spec[1], spec[2], spec[3], spec[4], spec[5]))
+			LippedBox.make(spec[1], spec[2], spec[3], spec[4], 0.0))
 
 	_add_button_variation(theme, tokens, "NotebookTab", tokens.accent_sky, tokens.accent_sky_lip)
 	_add_button_variation(theme, tokens, "NotebookTabActive",
@@ -1592,20 +1598,6 @@ static func _build_notebook(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "NotebookSticker", tokens.font_display)
 
-
-## A gloss-less lipped panel for the notebook's cover or page.
-static func _notebook_panel(tokens: DesignTokens, face: Color, lip: Color,
-		lip_height: int, radius: int, shadow: bool) -> LippedStyleBox:
-	var sb := LippedStyleBox.new()
-	sb.bg_color = face
-	sb.lip_color = lip
-	sb.lip_height = lip_height
-	sb.corner_radius = radius
-	if shadow:
-		sb.shadow_color = tokens.shadow_color
-		sb.shadow_size = tokens.shadow_size
-		sb.shadow_offset = tokens.shadow_offset
-	return sb
 ```
 
 - [ ] **Step 5: Write `NotebookFrame.gd` (implementer)**
@@ -2023,10 +2015,14 @@ git commit -m "feat(ui): NotebookFrame, the popup frame Phase 2 builds on" -m "C
 In `docs/superpowers/design/style-guide.md`, replace the paragraph under **Buttons** that begins "Since the 2026-09-14 lobby-style-buttons pass, every framed action button wears the Lobby's look…" with:
 
 ```markdown
-Since the 2026-09-28 UI depth pass every framed button is a
-`LippedStyleBox` (`Scripts/Design/LippedStyleBox.gd`): a face on a solid
-darker lip with a white gloss band, sinking onto the lip when held (its
-`pressed` state), with no rim. Its colours say its role — mint is the main
+Since the 2026-09-28 UI depth pass every framed button is a lipped face
+built by `Scripts/Design/LippedBox.gd` from a plain `StyleBoxFlat`: a face
+on a solid darker lip (the box's drop shadow, in a strip freed by a
+negative `expand_margin_bottom`) with a soft gloss along its top (a blended
+top border), sinking onto the lip when held (`expand_margin_top`), with no
+rim. It is native on purpose: the theme loads before the SceneTree exists,
+and a script-backed StyleBox there makes every debug run log a SceneTree
+error. Its colours say its role — mint is the main
 action and affirm on every screen, tomato is danger, brown is neutral,
 cream is quiet; sky and sunflower belong to the Lobby tiles and the
 notebook tabs, and sunflower is never an action (gold reads as "buy").
@@ -2078,8 +2074,8 @@ At the top of `docs/superpowers/CHANGELOG.md` (newest first), add:
 
 Plan: `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase1.md`.
 
-Every framed button is now a `LippedStyleBox` — a face on a darker lip with
-a gloss band and no rim — coloured by its role: mint for the main action on
+Every framed button is now a lipped face — a native `StyleBoxFlat` built by
+`LippedBox`, on a darker lip with a soft gloss and no rim — coloured by its role: mint for the main action on
 every screen (matching the Lobby's green JADWAL!), tomato for danger, brown
 neutral, cream quiet. Held, a button sinks onto its lip through its pressed
 stylebox and pops on release (`Juice.pop_release`); main actions also tick
@@ -2093,7 +2089,7 @@ its layout and gets the same surface. New for Phase 2: `NotebookFrame`, and
 In `CLAUDE.md` `## Visual system`, after the paragraph that ends "Only accepted exception: layout-only constant overrides (`separation`, `margin_*`).", add:
 
 ```markdown
-**Buttons are lipped** (`LippedStyleBox`): the role decides the colour, and
+**Buttons are lipped** (`LippedBox`, native `StyleBoxFlat` — never a script-backed StyleBox, which errors at startup): the role decides the colour, and
 mint is the main action on every screen, never gold. **Popups sit in
 `NotebookFrame`.** Both: style guide.
 ```

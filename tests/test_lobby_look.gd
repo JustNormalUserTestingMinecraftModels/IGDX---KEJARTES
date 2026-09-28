@@ -234,3 +234,18 @@ func test_both_hosts_find_the_moved_stage_by_name() -> void:
 	for path in ["res://Scripts/EndGame/EndCutscene.gd", "res://Scripts/EndGame/RunResult.gd"]:
 		assert_true(FileAccess.get_file_as_string(path).contains("win_stage: WinStage = %WinStage"),
 			path + " finds the stage by unique name")
+
+
+## A CanvasLayer ignores its parent's modulate, so a World screen that fades
+## its own root must fade its Room too, or the lit room stays up to the scene
+## swap. RunResult does both; this keeps every other World screen honest if it
+## ever adds a root fade (Part 2 code review, 2026-09-28).
+func test_no_world_screen_fades_its_root_alone() -> void:
+	for scene_path in ROOMS:
+		var root_script: Variant = Census.prop(Census.entry(Census.of(scene_path), "."), "script")
+		if not root_script is Script:
+			continue
+		var src := FileAccess.get_file_as_string((root_script as Script).resource_path)
+		if src.contains("tween_property(self, \"modulate"):
+			assert_true(src.contains("tween_property(room, \"modulate"),
+				scene_path + ": its root fade must also fade %Room")

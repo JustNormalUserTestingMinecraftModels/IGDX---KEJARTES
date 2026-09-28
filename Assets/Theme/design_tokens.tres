@@ -3,8 +3,14 @@
 [ext_resource type="FontFile" uid="uid://dfhsot8fqaqow" path="res://Assets/Fonts/OpenSans-Medium.ttf" id="1_7wyfw"]
 [ext_resource type="Script" uid="uid://bqhmvq1ap6336" path="res://Scripts/Design/DesignTokens.gd" id="1_tokens"]
 [ext_resource type="FontFile" uid="uid://bbmfoy35ubh2t" path="res://Assets/Fonts/Boohong.otf" id="2_2870q"]
+[ext_resource type="Texture2D" uid="uid://bei11kqdm551i" path="res://Assets/Images/UI/Settings/switch_on.svg" id="3_sw_on"]
+[ext_resource type="Texture2D" uid="uid://2haclvxsn5hq" path="res://Assets/Images/UI/Settings/switch_off.svg" id="4_sw_off"]
+[ext_resource type="Texture2D" uid="uid://c1vxfnpauq6fw" path="res://Assets/Images/UI/Settings/slider_grabber.svg" id="5_grab"]
 
 [resource]
 script = ExtResource("1_tokens")
 font_display = ExtResource("2_2870q")
 font_body = ExtResource("1_7wyfw")
+settings_switch_on = ExtResource("3_sw_on")
+settings_switch_off = ExtResource("4_sw_off")
+settings_slider_grabber = ExtResource("5_grab")

@@ -23,7 +23,7 @@ const SCRIPT_PATH := "res://Scripts/Koperasi/Koperasi.gd"
 
 func test_coin_hud_and_message_live_in_the_scene() -> void:
 	var text := FileAccess.get_file_as_string(SCENE_PATH)
-	for node_name in ["CoinHUD", "CoinIcon", "CoinLabel", "MessageLabel"]:
+	for node_name in ["MessageLabel"]:
 		assert_contains(text, node_name, "Koperasi.tscn is missing %s" % node_name)
 
 
@@ -34,11 +34,6 @@ func test_koperasi_builds_no_chrome_at_runtime() -> void:
 	assert_false(src.contains("func _setup_message_label"), "message label setup should be gone")
 	assert_false(src.contains('load("res://Assets/Images/Shop/Koin.png")'),
 		"the coin art should be assigned in the scene")
-
-
-func test_coin_label_uses_the_shop_coin_variation() -> void:
-	var text := FileAccess.get_file_as_string(SCENE_PATH)
-	assert_contains(text, 'theme_type_variation = &"ShopCoinLabel"')
 
 
 ## The 2026-09-17 chat-bubble pass (Task 2) moved the EMPTY/POOR failure

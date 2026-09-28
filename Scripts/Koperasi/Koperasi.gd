@@ -95,7 +95,15 @@ func _ready():
 	if is_instance_valid(tray) and not tray.state_changed.is_connected(_on_tray_state_changed):
 		tray.state_changed.connect(_on_tray_state_changed)
 
-	# The Stage, a child, has already stocked the shelf in its own _ready.
+	# The Stage, a child, has already stocked the shelf in its own _ready, so
+	# GameState.shop_promo_item/percent are this week's roll by now -- but
+	# PromoBoard is a Stage child too, and a child's _ready() runs before its
+	# parent Stage's, so its own refresh() ran too early. Nudge it again now
+	# that the shelf has rolled.
+	var promo_board := get_node_or_null("%PromoBoard")
+	if promo_board and promo_board.has_method("refresh"):
+		promo_board.refresh()
+
 	if bubble:
 		if GameState.is_shop_sold_out():
 			bubble.say_sticky(DialogueCatalog.LINES[&"SOLD_OUT"][0])

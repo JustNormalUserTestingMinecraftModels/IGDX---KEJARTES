@@ -78,6 +78,22 @@ func test_scene_uses_project_theme() -> void:
 	assert_true(raw.contains("kejartes_theme.tres"),
 		"the scene root must carry the project theme")
 
+func test_the_top_band_has_a_sign_and_a_promo_board() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scenes/Koperasi/Koperasi.tscn")
+	assert_true(src.contains("[node name=\"Signboard\" type=\"Panel\" parent=\"Stage\""),
+		"the shop names itself, on the Stage")
+	assert_true(src.contains("[node name=\"PromoBoard\" type=\"Panel\" parent=\"Stage\""),
+		"and advertises the week's promo")
+	assert_false(src.contains("name=\"CoinHUD\""), "the ledge coin HUD is gone")
+	assert_true(src.contains("theme_type_variation = &\"KoperasiSignPanel\""), "the sign is lipped brown")
+	assert_true(src.contains("theme_type_variation = &\"KoperasiPromoPanel\""), "the board is lipped cream")
+
+func test_promo_board_reads_gamestate() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scripts/Koperasi/PromoBoard.gd")
+	assert_true(src.contains("GameState.shop_promo_item"), "the board names the promo item")
+	assert_true(src.contains("GameState.shop_promo_percent"), "and its discount")
+	assert_true(src.contains("Engine.is_editor_hint()"), "its live fill is editor-gated")
+
 ## Task 3: Pak Herman's talk/idle animation. HermanAP must exist with all
 ## three named animations, and must never key `position` -- the Stage
 ## re-anchors on tall phones (test_tall_screen_layout.gd), so an absolute

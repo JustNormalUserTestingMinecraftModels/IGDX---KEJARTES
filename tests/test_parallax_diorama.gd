@@ -160,7 +160,7 @@ func test_koperasi_ui_is_left_out_of_the_parallax() -> void:
 	if driver == null:
 		return
 	var depths: Dictionary = driver.get("depth_by_child")
-	for ui_name in ["BackButton", "TrayDock", "CoinHUD", "ChatBubble"]:
+	for ui_name in ["BackButton", "TrayDock", "Signboard", "PromoBoard", "ChatBubble"]:
 		assert_false(depths.has(ui_name),
 			"%s is UI and must not drift with the diorama" % ui_name)
 	# The shelf goods are tap targets too, and each one's ShelfItem writes its

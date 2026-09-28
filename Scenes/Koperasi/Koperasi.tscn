@@ -11,7 +11,6 @@
 [ext_resource type="PackedScene" uid="uid://dwgcebdsp5rjh" path="res://Scenes/Koperasi/PriceTag.tscn" id="9_tag"]
 [ext_resource type="PackedScene" uid="uid://0ais0usytajp" path="res://Scenes/Koperasi/BasketTray.tscn" id="11_rr7aj"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="13_pstwm"]
-[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_pstwm"]
 [ext_resource type="Script" uid="uid://c43apcu58ifl5" path="res://Scripts/Koperasi/ChatBubble.gd" id="15_chatbubble"]
 [ext_resource type="Texture2D" uid="uid://5fkevoxgxj3r" path="res://Assets/Images/Shop/UI/pip_hollow.svg" id="16_piphollow"]
 [ext_resource type="Texture2D" uid="uid://cpcnblan2tm6i" path="res://Assets/Images/Shop/UI/pip_filled.svg" id="17_pipfilled"]
@@ -22,6 +21,7 @@
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="Script" path="res://Scripts/Koperasi/PromoBoard.gd" id="18_promoboard"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -871,27 +871,102 @@ mouse_filter = 2
 [node name="BasketTray" parent="Stage/TrayDock" unique_id=560263619 instance=ExtResource("11_rr7aj")]
 layout_mode = 0
 
-[node name="CoinHUD" type="HBoxContainer" parent="Stage" unique_id=152403238]
-unique_name_in_owner = true
-z_index = 10
+[node name="Signboard" type="Panel" parent="Stage" unique_id=3143579212]
 layout_mode = 0
-offset_left = 732.0
-offset_top = 1230.0
-offset_right = 1032.0
-offset_bottom = 1290.0
-theme_override_constants/separation = 10
-alignment = 2
+offset_left = 36.0
+offset_top = 24.0
+offset_right = 540.0
+offset_bottom = 170.0
+rotation = -0.034906585
+pivot_offset = Vector2(252, 73)
+mouse_filter = 2
+theme_type_variation = &"KoperasiSignPanel"
 
-[node name="CoinIcon" type="TextureRect" parent="Stage/CoinHUD" unique_id=247332116]
-custom_minimum_size = Vector2(60, 60)
-layout_mode = 2
-texture = ExtResource("14_pstwm")
-expand_mode = 1
-stretch_mode = 5
+[node name="Title" type="Label" parent="Stage/Signboard" unique_id=3349697259]
+layout_mode = 1
+anchors_preset = 14
+anchor_left = 0.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -40.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"KoperasiSignLabel"
+text = "KOPERASI"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="CoinLabel" type="Label" parent="Stage/CoinHUD" unique_id=526578915]
-layout_mode = 2
-theme_type_variation = &"ShopCoinLabel"
+[node name="Caption" type="Label" parent="Stage/Signboard" unique_id=3000488304]
+layout_mode = 1
+anchors_preset = 14
+anchor_left = 0.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = 8.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"KoperasiSignCaptionLabel"
+text = "SEKOLAH"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PromoBoard" type="Panel" parent="Stage" unique_id=3162873370]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 580.0
+offset_top = 24.0
+offset_right = 1044.0
+offset_bottom = 200.0
+mouse_filter = 2
+theme_type_variation = &"KoperasiPromoPanel"
+script = ExtResource("18_promoboard")
+
+[node name="Header" type="Label" parent="Stage/PromoBoard" unique_id=3568072400]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 14.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"KoperasiPromoHeaderLabel"
+text = "PROMO MINGGU INI"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ItemLabel" type="Label" parent="Stage/PromoBoard" unique_id=3151983346]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 56.0
+offset_bottom = 104.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"KoperasiPromoItemLabel"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PercentBadge" type="Label" parent="Stage/PromoBoard" unique_id=3428671730]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 372.0
+offset_top = -20.0
+offset_right = 472.0
+offset_bottom = 40.0
+rotation = 0.19198622
+pivot_offset = Vector2(50, 30)
+mouse_filter = 2
+theme_type_variation = &"PromoBadge"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Parallax" type="Control" parent="Stage" unique_id=490057061]

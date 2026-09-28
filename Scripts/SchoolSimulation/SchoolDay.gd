@@ -70,9 +70,9 @@ signal _summary_closed
 @export_group("End Simulation Tutorial (Week 1)")
 ## Title on the one-time tutorial shown after week 1's simulation ends
 ## (_show_end_simulation_tutorial) -- see TutorialPanel.show_step().
-@export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama! 🎓"
+@export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama!"
 ## Body text for the same end-of-week-1 tutorial.
-@export_multiline var end_tutorial_text: String = "Kerja bagus, Guru! Kamu telah berhasil membimbing murid-muridmu melewati simulasi minggu pertama.\n\nMulai sekarang, alur permainan akan terus berlanjut dalam siklus:\nAtur Jadwal ➔ Simulasi Hari Sekolah ➔ Evaluasi Mingguan\n\n🎯 Misi Utamamu:\nTingkatkan seluruh kemampuan murid (Akademis, Olahraga, dan Seni Budaya) hingga melampaui Target Ambang Batas masing-masing sebelum Minggu ke-8 selesai!\n\nPada akhir Minggu ke-8, akan diadakan Ujian Kenaikan Kelas untuk menentukan kelulusan murid-muridmu ke jenjang berikutnya. Rencanakan jadwal belajar dan istirahat dengan taktis!"
+@export_multiline var end_tutorial_text: String = "Kerja bagus, Guru! Kamu telah berhasil membimbing murid-muridmu melewati simulasi minggu pertama.\n\nMulai sekarang, alur permainan akan terus berlanjut dalam siklus:\nAtur Jadwal, Simulasi Hari Sekolah, lalu Evaluasi Mingguan\n\nMisi Utamamu:\nTingkatkan seluruh kemampuan murid (Akademis, Olahraga, dan Seni Budaya) hingga melampaui Target Ambang Batas masing-masing sebelum Minggu ke-8 selesai!\n\nPada akhir Minggu ke-8, akan diadakan Ujian Kenaikan Kelas untuk menentukan kelulusan murid-muridmu ke jenjang berikutnya. Rencanakan jadwal belajar dan istirahat dengan taktis!"
 ## Prompt text for the same tutorial.
 @export var end_tutorial_prompt: String = "KLIK DIMANA SAJA UNTUK MELANJUTKAN"
 

@@ -89,7 +89,7 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 ## printing over it.
 @onready var _subject_label: Label = $Paper/Lines/SubjectLabel
 @onready var _flavor_label: Label = $Paper/Lines/FlavorLabel
-@onready var _lock: Label = $Paper/Lock
+@onready var _lock: TextureRect = $Paper/Lock
 @onready var _back_icon: TextureRect = $BackIcon
 @onready var _match_glow: TextureRect = $Paper/MatchGlow
 @onready var _specialty_star: TextureRect = $Paper/SpecialtyStar
@@ -169,7 +169,7 @@ func show_holiday(title: String) -> void:
 
 
 ## Sets the tape colour (or hides the tape, for `tape_color == null`) and the
-## visibility of the subject line, flavour line, back icon, lock glyph and
+## visibility of the subject line, flavour line, back icon, lock icon and
 ## "+ Atur" hint in one place. The paper itself is never tinted: it stays
 ## untinted cream under paper_gradient.gdshader in every state.
 func _apply(tape_color: Variant, show_extras: bool, show_lock: bool) -> void:

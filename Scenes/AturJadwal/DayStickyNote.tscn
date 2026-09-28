@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://cyfkas4fqxd7c" path="res://Assets/Images/Particles/particle_glow.png" id="4_wbbga"]
 [ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="5_mpgil"]
 [ext_resource type="Texture2D" uid="uid://dv7re4xhg8tbg" path="res://Assets/Images/AturJadwal/washi_tape.svg" id="6_jncpx"]
+[ext_resource type="Texture2D" uid="uid://bsu4hxxxajoaa" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="ic_lock"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mpgil"]
 shader = ExtResource("2_elcly")
@@ -94,15 +95,17 @@ offset_bottom = 124.0
 theme_type_variation = &"H2Label"
 text = "SENIN"
 
-[node name="Lock" type="Label" parent="Paper" unique_id=1387335178]
+[node name="Lock" type="TextureRect" parent="Paper" unique_id=1387335178]
 visible = false
 layout_mode = 0
 offset_left = 20.0
 offset_top = 16.0
 offset_right = 60.0
 offset_bottom = 56.0
-theme_type_variation = &"MicroLabel"
-text = "🔒"
+mouse_filter = 2
+texture = ExtResource("ic_lock")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="SpecialtyStar" type="TextureRect" parent="Paper" unique_id=1009588491]
 visible = false

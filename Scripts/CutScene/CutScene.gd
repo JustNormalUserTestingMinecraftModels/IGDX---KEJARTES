@@ -121,7 +121,7 @@ func _setup_top_bar_buttons() -> void:
 	# Skipping a cutscene discards nothing, so it is a quiet opt-out rather
 	# than a warning. It wore DangerButton until the 2026-09-10 pass.
 	btn_skip.theme_type_variation = &"SecondaryButton"
-	btn_skip.text = "⏩ Skip Intro"
+	btn_skip.text = "Skip Intro"
 	btn_skip.custom_minimum_size = Vector2(260, _tokens.touch_target_min)
 	btn_skip.clip_text = true
 	btn_skip.pressed.connect(_on_skip_pressed)

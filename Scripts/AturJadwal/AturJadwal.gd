@@ -1514,7 +1514,7 @@ func _show_holiday_warning(holiday_title: String) -> void:
 
 	# Title Label
 	var title_lbl = Label.new()
-	title_lbl.text = "Hari Libur Nasional 📅"
+	title_lbl.text = "Hari Libur Nasional"
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_lbl.theme_type_variation = &"BarLabel"
 	vbox.add_child(title_lbl)

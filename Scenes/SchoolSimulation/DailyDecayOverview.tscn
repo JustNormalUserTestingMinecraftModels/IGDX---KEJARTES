@@ -50,7 +50,7 @@ theme_override_constants/separation = 4
 [node name="TitleLabel" type="Label" parent="Safe/Frame/VBox/HeaderVBox" unique_id=1550494223]
 layout_mode = 2
 theme_type_variation = &"H2Label"
-text = "🌅 Aktivitas & Evaluasi Harian"
+text = "Aktivitas & Evaluasi Harian"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -84,4 +84,4 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 96)
 size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
-text = "Lanjutkan Hari ➔"
+text = "Lanjutkan Hari"

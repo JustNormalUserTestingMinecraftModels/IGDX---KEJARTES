@@ -153,9 +153,56 @@ Popups sit in `Scenes/UI/NotebookFrame.tscn`: drop your content in as
 children of the frame and it lays them into the page. Set `title_text`,
 `tabs` (up to three), `ring_count`, `show_well`, `show_tape` and
 `show_close` on the instance's root, and listen to `tab_selected` /
-`close_pressed`. A dialog is the same frame with no tabs, four rings and no
-well. The ring, rule and sticker textures are placeholders
-(`Assets/Images/UI/Notebook/README.md`).
+`close_pressed`. The ring, rule and sticker textures are placeholders
+(`Assets/Images/UI/Notebook/README.md`). All 17 popups now use it;
+`tests/test_popup_frames.gd` is the roster — a new popup adds its row there.
+
+**The three kinds:**
+
+- **dialog** — `tabs` empty, `ring_count = 4`, `show_well = false`.
+- **sheet** — `tabs` empty, rings and well at their defaults unless a row
+  says otherwise.
+- **tabs** — `tabs` set (Settings is the only one).
+
+**Host recipe.** A centred popup is
+`SafeAreaMargin → CenterContainer → Frame`; a full-height one drops the
+`CenterContainer` and puts the frame straight under `SafeAreaMargin`. `Safe`
+and `Center` ignore taps (`mouse_filter = 2`) so a tap on empty space still
+reaches the popup's scrim; the frame's own root stops taps, so a tap on the
+page never dismisses it.
+
+Two placement popups sit outside this recipe and stay positioned by their
+screen: `OpenAmplopConfirm`, whose letter tweens `position` (a container
+would undo that), and the Lobby's `DailyLogin`, whose frame sits behind the
+calendar art. `TutorialPanel` is placed by each caller.
+
+**Closing.** Delete the popup's own ✕ or Tutup control (its node, its
+`@onready`, its `connect`) and wire the frame's `close_pressed` to the
+function that button called. The frame's own ✕ (`show_close`) shows only
+where it adds nothing new — where it would mean the same as an existing
+Batal/Tidak, or the popup already closed on a tap elsewhere — and stays
+hidden where the player must decide (`EventStudentSelectDialog`) or the flow
+is forced (`DailyDecayOverview`, `TesNotice`, `StatCheck`, `TutorialPanel`).
+
+**Titles.** The sticker carries a short fixed word (`PENGATURAN`,
+`STATISTIK`, `PERINGATAN`, …) and widens to fit it; it hides entirely when
+`title_text` is empty. A popup's dynamic heading — a stat name, an event
+name, a step title — stays in the host content, not the sticker.
+
+**Three traps found while migrating popups into the frame:**
+
+- The baked theme gives every `MarginContainer` 48px margins
+  (`screen_margin`). A `MarginContainer` used only as a plain wrapper around
+  a frame's host content must zero its `margin_*` overrides, or the content
+  measures wider than the frame and layout tests fail against a
+  hard-coded screen width (`TutorialPanel`'s root does this).
+- A label moved onto the frame's cream page needs dark ink, not the pale
+  ink it wore on a dark scrim (`TesNotice`'s body moved from
+  `ResultBodyLabel` to `EventBodyLabel`).
+- A dialog's own buttons belong inside the frame's host content, not
+  positioned against the old (smaller) box — `OpenAmplopConfirm`'s
+  Batal/Terima moved into `Letter/VBox` once the taller frame started
+  overlapping them.
 
 ## The Juice API (`Scripts/Design/Juice.gd`)
 

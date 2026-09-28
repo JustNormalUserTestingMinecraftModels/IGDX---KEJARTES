@@ -415,20 +415,6 @@ renamed the last live one to `Assets/Images/UI/stamp_original.png` (the
 approval stamp at `StudentCard.tscn:14`); it is still that unlicensed
 stock image. Replace it with authored art before any release.
 
-**TesNotice's card collapses (2026-09-11).** `NoticeCard` is a
-`NinePatchRect`, not a Container, so the anchored `Content` never sizes it. It
-shrinks to its 96px patch minimum and every line floats on the dark scrim; it
-has shipped like this since the screen was built (2026-09-02). Measured live,
-glyphs hidden: `BodyLabel`'s cream `ResultBodyLabel` reads there (6.9:1 at
-worst; dark ink would fall to 1.1:1), but `Kicker` "PENGUMUMAN" is 1.8:1 and
-`GradeLabel` "Kelas 7" 1.4:1. (Since 2026-09-12 the title is per-grade logo
-art -- `ujian_sekolah.png` for Kelas 7-8, `ujian_nasional.png` for Kelas 9 --
-so the old text title's margin overrun is gone.)
-`notice.png` is a megaphone icon, not a card surface.
-Either rebuild the card as a `Card` panel (text goes dark on cream, the
-megaphone becomes an icon) or commit to text over the scrim (the two dark
-labels go cream).
-
 **Minigame question art is background-sized (2026-09-21).** `monas.png` is
 1080x1920 and `borobudur.png` 1920x1920 -- portrait and square assets standing
 in as question illustrations. `QuestionCard`'s 620px slot centres them with
@@ -493,15 +479,34 @@ widget via `project_run` instead, which exercises it fine.
 ## Deferred and pending
 
 **UI depth pass, Phases 2–3 (2026-09-28).** Phase 1 made every button
-lipped and shipped `NotebookFrame` and the placeholder icons. Phase 2 moves
-every popup into the frame; Phase 3 is the screen-by-screen icon and role
-pass, the Lobby tiles' icons included. Spec:
-`docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
+lipped and shipped `NotebookFrame` and the placeholder icons. Phase 2 moved
+every popup into the frame (2026-09-28, `docs/superpowers/CHANGELOG.md`);
+Phase 3 is the screen-by-screen icon and role pass, the Lobby tiles' icons
+included. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
 
-- **`NotebookFrame` has no `_get_minimum_size()`**, so host content larger
-  than `content_rect()` overflows the page (solve in Phase 2).
 - **Password/Variabel's `Hapus` wears `LobbyCtaButton`** (now mint, and it
   ticks) though it is a delete action (Phase 3 role pass).
+- **Two assets are now unreferenced** (Phase 2 moved their callers onto
+  `NotebookFrame`): `Assets/Images/UI/notice.png` and
+  `Assets/Images/UI/penjadwalan_card_bg.png`. Grepped clean against
+  `Scenes/` and `Scripts/` on 2026-09-28; not yet deleted.
+- **Three screens still build their tutorial panel at runtime**, not from
+  `Scenes/UI/TutorialPanel.tscn`, so Phase 2 did not move them into the
+  frame: `Scripts/AturJadwal/AturJadwal.gd`, `Scripts/Lobby/Lobby.gd` and
+  `Scripts/StudentList/StudentList.gd` each build their own
+  `_tutorial_panel: PanelContainer` in code (Phase 3 or a follow-up).
+- **Phase 2 review minors, deferred:**
+  - Nothing pins `NotebookFrame`'s Chrome/Close control to a 96px touch
+    target (a geometry test would catch a future regression).
+  - `Settings.show_tab()` does not sync the frame's `active_tab`; only a
+    tab press does. Harmless today (Settings opens on tab 0), but a future
+    caller that opens Settings on a specific tab would see the strip and
+    the content disagree.
+  - The Peringatan label/buttons test is now a sibling-order check only,
+    weaker than the old overlap check it replaced.
+  - `ThemeFactory.gd`'s comment near line 2056 still says TesNotice's body
+    label uses `ResultBodyLabel` on the scrim; it moved to `EventBodyLabel`
+    on the notebook page (Task 7 fix round 1).
 - **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
   Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
   SDK is wired. Debug builds only: a release build keeps the Lobby's `+`
@@ -547,10 +552,6 @@ pass, the Lobby tiles' icons included. Spec:
   `.superpowers/gamecode/premium-look/` shipped items 1-10 and 12; item 11
   (the Lobby's black bands at 20:9) was cut by the brief. What was
   deliberately left:
-  - **TesNotice's NoticeCard gets no contact shadow.** It is a 512px
-    NinePatchRect, and PaperShadow's Silhouette is a plain TextureRect, which
-    would scale that texture instead of 9-slicing it. Needs a NinePatch
-    silhouette variant.
   - **SchoolDay has no parallax.** Its two bands (SkyBackground,
     SchoolForeground) live inside BookClockWidget, whose root already runs
     BookClockWidget.gd, so the driver cannot be added beside them the way it

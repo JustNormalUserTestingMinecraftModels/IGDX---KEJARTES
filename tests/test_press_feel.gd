@@ -62,3 +62,9 @@ func test_pop_release_reads_its_tokens() -> void:
 	assert_contains(src, "static func pop_release(", "Juice.pop_release exists")
 	assert_contains(src, "release_pop_scale", "bumps to the token's scale")
 	assert_contains(src, "release_pop_duration", "over the token's length")
+
+
+func test_every_main_action_role_is_a_theme_variation() -> void:
+	var types := _theme.get_type_list()
+	for name in PressFeel.MAIN_ACTION_ROLES:
+		assert_true(types.has(String(name)), String(name) + " is built by ThemeFactory")

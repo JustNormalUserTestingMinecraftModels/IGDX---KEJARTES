@@ -391,6 +391,9 @@ const DISPLAY_ROSTER := [
 	"BookHeroButton", "NavTileKoperasi", "NavTileInventory", "NavTileRapor",
 	"PlusButton", "GradeBadgeLabel", "GradeBadgeNumber", "WeekLabel",
 	"StarNumLabel", "NotifBadgeLabel",
+	# 2026-09-28 UI depth pass Task 6: the notebook frame's tabs, close and
+	# sticker title.
+	"NotebookTab", "NotebookTabActive", "NotebookClose", "NotebookSticker",
 ]
 
 

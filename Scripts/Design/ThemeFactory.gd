@@ -17,6 +17,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	theme.default_font_size = tokens.font_body_size
 
 	_build_buttons(theme, tokens)
+	_build_notebook(theme, tokens)
 	_build_panels(theme, tokens)
 	_build_labels(theme, tokens)
 	_build_progress(theme, tokens)
@@ -2828,6 +2829,45 @@ static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	roster_chip.content_margin_top = 2
 	roster_chip.content_margin_bottom = 2
 	theme.set_stylebox("panel", "RosterChip", roster_chip)
+
+
+# ---------------------------------------------------------------- notebook
+
+## The notebook cover's lip, px: a board, thicker than a button's.
+const NOTEBOOK_COVER_LIP := 12
+## The page's lip, px: its two paper edges.
+const NOTEBOOK_PAGE_LIP := 8
+
+
+## The notebook popup frame's surfaces (2026-09-28 UI depth pass): a brown
+## hardcover on a lip, a cream page on paper edges, sky and gold tabs, a
+## tomato round close and the stitched sticker's title.
+static func _build_notebook(theme: Theme, tokens: DesignTokens) -> void:
+	for spec in [
+		["NotebookCover", tokens.brand_primary_light, tokens.brand_primary_dark,
+			NOTEBOOK_COVER_LIP, tokens.radius_lg],
+		["NotebookPage", tokens.outline_card, tokens.surface_sunken,
+			NOTEBOOK_PAGE_LIP, tokens.radius_md],
+	]:
+		theme.add_type(spec[0])
+		theme.set_type_variation(spec[0], "Panel")
+		theme.set_stylebox("panel", spec[0],
+			LippedBox.make(spec[1], spec[2], spec[3], spec[4], 0.0))
+
+	_add_button_variation(theme, tokens, "NotebookTab", tokens.accent_sky, tokens.accent_sky_lip)
+	_add_button_variation(theme, tokens, "NotebookTabActive",
+		tokens.accent_sunflower, tokens.accent_sunflower_lip)
+	_add_button_variation(theme, tokens, "NotebookClose",
+		tokens.accent_tomato, tokens.accent_tomato_lip, tokens.radius_pill)
+	_set_content_margins(theme, "NotebookClose", tokens.space_sm, tokens.btn_pad_v_s)
+	theme.set_constant("icon_max_width", "NotebookClose", tokens.btn_icon_s)
+
+	theme.add_type("NotebookSticker")
+	theme.set_type_variation("NotebookSticker", "Label")
+	theme.set_font_size("font_size", "NotebookSticker", tokens.font_h2)
+	theme.set_color("font_color", "NotebookSticker", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "NotebookSticker", tokens.font_display)
 
 
 # ------------------------------------------------- unstyled base controls

@@ -53,6 +53,8 @@ const RADIUS_EXEMPT := {
 		"the Achievements mockup's Klaim is a full capsule with a 6px olive rim -- radius_pill, like the chips",
 	"GhostButton":
 		"wash sits over the daily-login panel's baked capsule art (day1.png) -- radius_pill so the corner tracks the button's own height and always matches the art's rounded ends, deliberately height-dependent",
+	"NotebookClose":
+		"the notebook frame's fixed 96px corner button; radius_pill makes it a circle",
 }
 
 

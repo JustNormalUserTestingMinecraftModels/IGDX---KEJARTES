@@ -147,7 +147,10 @@ func setup(item: ItemData, _owned_qty: int) -> void:
 
 	if not Engine.is_editor_hint():
 		AudioDirector.play_sfx(&"popup_open")
-		AnimUtils.popup_spring_in(_sheet)
+		# _sheet sits inside a CenterContainer; its layout pass resets scale
+		# and rotation after this frame, wiping the spring's start pose --
+		# defer so the spring starts once that pass has already run.
+		Callable(AnimUtils, "popup_spring_in").call_deferred(_sheet)
 		AnimUtils.wobble(_icon)
 		_stagger_efek_rows(visible_rows)
 

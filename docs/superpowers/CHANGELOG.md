@@ -19,8 +19,9 @@ TraitDetailPopup, WeekRecapPillInfoPopup, EventStudentSelectDialog,
 OpenAmplopConfirm, Peringatan, TesNotice, StatCheck, TutorialPanel.
 
 Six decisions taken while planning, each the conservative reading (style
-guide, "The notebook frame"; `.superpowers/sdd/2026-09-28-ui-depth-pass-phase2/global-constraints.md`
-for the full rationale):
+guide, "The notebook frame"; the plan's "Decisions taken while planning"
+section, `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase2.md`, for the
+full rationale):
 
 - **D1** — Settings' tabs are SUARA (the three sliders) and MAIN
   (PERMAINAN/TAMPILAN switches).

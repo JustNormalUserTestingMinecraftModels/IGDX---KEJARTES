@@ -125,6 +125,29 @@ func test_each_tab_shows_its_sections() -> void:
 	assert_true(_screen.get_node("%DisplayCard").visible)
 
 
+## show_tab keeps the frame's own active_tab export in step, so the tab strip's
+## gold highlight follows a programmatic switch, not only a press. The frame's
+## active_tab setter only refreshes the strip's look and never emits
+## tab_selected, so this cannot loop back through the connection in _ready.
+func test_show_tab_keeps_the_frame_active_tab_in_step() -> void:
+	var frame := _screen.get_node("SafeArea/Frame") as NotebookFrame
+	_screen.show_tab(1)
+	assert_eq(frame.active_tab, 1, "show_tab(1) moves the frame's active_tab too")
+	_screen.show_tab(0)
+	assert_eq(frame.active_tab, 0)
+
+
+## _ready() must not bake a hidden card into the scene when the editor is
+## saving the edited Settings.tscn itself: is_part_of_edited_scene() is false
+## for a plain runtime/test instance, so it still runs show_tab here.
+func test_ready_skips_show_tab_only_for_the_edited_scene() -> void:
+	assert_contains(FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd"),
+		"Engine.is_editor_hint() and is_part_of_edited_scene()",
+		"_ready guards show_tab so saving the edited scene never bakes a hidden card")
+	assert_true(_screen.get_node("%GameplayCard").visible or _screen.get_node("%AudioCard").visible,
+		"a plain instance (not the edited scene) still runs show_tab on ready")
+
+
 func test_scene_has_no_theme_overrides() -> void:
 	var offenders: Array[String] = []
 	_collect_overrides(_screen, offenders)

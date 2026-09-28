@@ -262,3 +262,12 @@ func test_the_sheet_is_a_notebook_frame() -> void:
 		assert_true(frame.tabs.is_empty(), "no tabs")
 	assert_contains(FileAccess.get_file_as_string(_SHEET_SRC), "close_pressed.connect",
 		"the frame's close is wired")
+
+
+## book lives inside a CenterContainer, whose layout pass resets scale and
+## rotation after the popup's own frame -- the spring must start deferred, or
+## the container's pass wipes its 0.5-scale/-3deg start before the tween reads it.
+func test_the_spring_in_is_deferred() -> void:
+	assert_contains(FileAccess.get_file_as_string(_SHEET_SRC),
+		"popup_spring_in\").call_deferred(book)",
+		"the spring must start after the CenterContainer's layout pass")

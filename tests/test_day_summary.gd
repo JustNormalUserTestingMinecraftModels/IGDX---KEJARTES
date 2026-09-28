@@ -931,6 +931,19 @@ func test_the_recap_sits_in_a_notebook_sheet_under_its_banner() -> void:
 		"the banner stays above the frame")
 
 
+## Final review (F4): with no sticker (empty title_text) the frame's default
+## 120px top padding, reserved for the sticker, leaves a blank band. Tighter
+## top padding closes it.
+func test_the_frame_drops_the_sticker_gap_when_titleless() -> void:
+	var popup := (load(_POPUP_SCENE) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("DimOverlay/Safe/Content/Frame") as NotebookFrame
+	assert_true(frame != null, "the reward and rows sit in a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.content_padding, Vector4i(72, 48, 40, 48),
+			"no sticker here, so the top padding shrinks off its reserved 120px")
+
+
 ## SchoolDay hands the popup a real summary and expects the rows built
 ## from it (Task 8 removes the reparenting that used to bypass this).
 func test_popup_still_exposes_its_contract() -> void:

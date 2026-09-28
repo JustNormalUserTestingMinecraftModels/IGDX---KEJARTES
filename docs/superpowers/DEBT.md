@@ -41,8 +41,9 @@ replacement must stay a white glyph, or that tint comes out of `ThemeFactory`
 with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
 `EndCutscene`'s two badges, the
 eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
-(`penjadwalan_card_bg.png`,
-`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
+(`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`;
+`penjadwalan_card_bg.png` was part of this pass too, but Phase 2 left it
+unreferenced -- see the UI depth pass entry below),
 the 2026-09-24 SchoolDay liveliness set (the daily verdict's four teacher
 faces `Assets/Images/DaySummary/Verdict/teacher_1..4.svg`, `crown.svg`,
 `star_on.svg`, `star_off.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
@@ -512,15 +513,8 @@ included. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
 - **Phase 2 review minors, deferred:**
   - Nothing pins `NotebookFrame`'s Chrome/Close control to a 96px touch
     target (a geometry test would catch a future regression).
-  - `Settings.show_tab()` does not sync the frame's `active_tab`; only a
-    tab press does. Harmless today (Settings opens on tab 0), but a future
-    caller that opens Settings on a specific tab would see the strip and
-    the content disagree.
   - The Peringatan label/buttons test is now a sibling-order check only,
     weaker than the old overlap check it replaced.
-  - `ThemeFactory.gd`'s comment near line 2056 still says TesNotice's body
-    label uses `ResultBodyLabel` on the scrim; it moved to `EventBodyLabel`
-    on the notebook page (Task 7 fix round 1).
 - **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
   Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
   SDK is wired. Debug builds only: a release build keeps the Lobby's `+`

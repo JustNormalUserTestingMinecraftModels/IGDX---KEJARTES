@@ -169,7 +169,12 @@ children of the frame and it lays them into the page. Set `title_text`,
 `CenterContainer` and puts the frame straight under `SafeAreaMargin`. `Safe`
 and `Center` ignore taps (`mouse_filter = 2`) so a tap on empty space still
 reaches the popup's scrim; the frame's own root stops taps, so a tap on the
-page never dismisses it.
+page never dismisses it. `Chrome/Cover` sticks out past that rect (12px left,
+20px right, 24px down) and passes taps (`mouse_filter = 1`) rather than
+ignoring them, so a tap on its overhang also reaches the frame root instead
+of falling through to the scrim. `DaySummaryPopup` is the deliberate
+exception to "a tap on the page never dismisses": it dismisses on a tap
+anywhere, including the page.
 
 Two placement popups sit outside this recipe and stay positioned by their
 screen: `OpenAmplopConfirm`, whose letter tweens `position` (a container

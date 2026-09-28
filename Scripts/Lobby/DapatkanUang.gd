@@ -70,7 +70,7 @@ func _ready() -> void:
 	cash_in_large_button.pressed.connect(
 		_on_cash_in_pressed.bind(CASH_IN_LARGE, CASH_IN_LARGE_ADS))
 	owed_ad_button.pressed.connect(_on_owed_ad_pressed)
-	(book as NotebookFrame).close_pressed.connect(close)
+	book.close_pressed.connect(close)
 	scrim.gui_input.connect(_on_scrim_gui_input)
 
 
@@ -93,7 +93,10 @@ func open() -> void:
 	show()
 	AudioDirector.play_sfx(&"popup_open")
 	if not GameSettings.reduce_motion:
-		AnimUtils.popup_spring_in(book)
+		# book sits inside a CenterContainer; its layout pass resets scale
+		# and rotation after this frame, wiping the spring's start pose --
+		# defer so the spring starts once that pass has already run.
+		Callable(AnimUtils, "popup_spring_in").call_deferred(book)
 
 
 ## Springs the book out and hides the panel; under reduce_motion it hides

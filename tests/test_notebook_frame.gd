@@ -292,3 +292,13 @@ func test_the_sticker_widens_to_a_long_title() -> void:
 func test_the_page_stops_taps() -> void:
 	assert_eq(_frame().mouse_filter, Control.MOUSE_FILTER_STOP,
 		"a tap on the page must never fall through to a scrim that dismisses")
+
+
+## Cover sticks out past the frame's own rect (12px left, 20px right, 24px
+## down). If it ignores the mouse, a tap on that visible brown edge falls
+## through past the frame to a scrim underneath and dismisses the popup;
+## PASS lets the tap reach the frame root, which stops it (see above).
+func test_the_cover_passes_taps_to_the_frame() -> void:
+	var cover := _frame().get_node("Chrome/Cover") as Control
+	assert_eq(cover.mouse_filter, Control.MOUSE_FILTER_PASS,
+		"the cover's overhang must not eat taps meant for the frame")

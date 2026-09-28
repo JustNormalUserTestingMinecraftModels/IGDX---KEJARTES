@@ -61,7 +61,12 @@ func _ready() -> void:
 	_reduce_motion.toggled.connect(_on_reduce_motion_toggled)
 	_frame.close_pressed.connect(_on_back_pressed)
 	_frame.tab_selected.connect(show_tab)
-	show_tab(_frame.active_tab)
+	# Skip while the editor is baking this into the edited scene: show_tab
+	# would hide GameplayCard/DisplayCard and that `visible = false` would be
+	# saved into Settings.tscn. Tests stand this up as a plain instance, not
+	# the edited scene, so they still see it run.
+	if not (Engine.is_editor_hint() and is_part_of_edited_scene()):
+		show_tab(_frame.active_tab)
 
 	if Engine.is_editor_hint():
 		# Being edited in the editor, or instantiated by a test running
@@ -76,11 +81,15 @@ func _ready() -> void:
 
 
 ## Show tab `index`'s sections: SUARA holds AudioCard, MAIN the gameplay and
-## display cards. Public so the tests can switch tabs without a press.
+## display cards. Also keeps _frame.active_tab in step, which only refreshes
+## the tab strip's look (its setter never emits tab_selected, so this never
+## loops back through the connection above). Public so the tests can switch
+## tabs without a press.
 func show_tab(index: int) -> void:
 	%AudioCard.visible = index == TAB_SUARA
 	%GameplayCard.visible = index == TAB_MAIN
 	%DisplayCard.visible = index == TAB_MAIN
+	_frame.active_tab = index
 
 
 ## What pops in on entry: the frame, whole.

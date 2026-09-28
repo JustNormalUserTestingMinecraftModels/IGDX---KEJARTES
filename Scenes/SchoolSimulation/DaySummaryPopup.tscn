@@ -71,6 +71,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 title_text = ""
+content_padding = Vector4i(72, 48, 40, 48)
 
 [node name="Body" type="VBoxContainer" parent="DimOverlay/Safe/Content/Frame"]
 layout_mode = 2

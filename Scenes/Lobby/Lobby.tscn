@@ -29,6 +29,7 @@
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="37_ayldy"]
 [ext_resource type="Texture2D" uid="uid://4t4pb40qap88" path="res://Assets/Images/UI/LobbyHud/icon_plus.svg" id="37_ty8k5"]
 [ext_resource type="Script" uid="uid://c7na1rk10q6kb" path="res://Scripts/Lobby/LobbyProgressHeader.gd" id="38_ayldy"]
 [ext_resource type="Script" uid="uid://c47bgh5lvg6qi" path="res://Scripts/Lobby/DailyLoginPanel.gd" id="39_2isbc"]
@@ -899,121 +900,6 @@ script = ExtResource("20_yhuud")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="BottomBar" type="Control" parent="Safe/UI" unique_id=162709174]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -480.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-
-[node name="Student" type="Button" parent="Safe/UI/BottomBar" unique_id=1238526272]
-unique_name_in_owner = true
-layout_mode = 0
-offset_top = 128.0
-offset_right = 984.0
-offset_bottom = 288.0
-theme_type_variation = &"LobbyCtaButton"
-text = "STUDENT"
-icon = ExtResource("9_dyk4g")
-expand_icon = true
-
-[node name="Koperasi" type="Button" parent="Safe/UI/BottomBar" unique_id=247017516]
-unique_name_in_owner = true
-layout_mode = 0
-offset_top = 320.0
-offset_right = 306.0
-offset_bottom = 480.0
-theme_type_variation = &"LobbyNavTile"
-text = "Koperasi"
-icon = ExtResource("10_bfy74")
-icon_alignment = 1
-vertical_icon_alignment = 0
-expand_icon = true
-
-[node name="ReportStudent" type="Button" parent="Safe/UI/BottomBar" unique_id=803503757]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 676.0
-offset_top = 320.0
-offset_right = 982.0
-offset_bottom = 480.0
-theme_type_variation = &"LobbyNavTile"
-text = "Rapor"
-icon = ExtResource("11_4w5lf")
-icon_alignment = 1
-vertical_icon_alignment = 0
-expand_icon = true
-
-[node name="Inventory" type="Button" parent="Safe/UI/BottomBar" unique_id=1524317152]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 338.0
-offset_top = 320.0
-offset_right = 644.0
-offset_bottom = 480.0
-theme_type_variation = &"LobbyNavTile"
-text = "INVENTORY"
-icon = ExtResource("12_fb4vu")
-icon_alignment = 1
-vertical_icon_alignment = 0
-expand_icon = true
-
-[node name="Jadwal" type="Button" parent="Safe/UI/BottomBar" unique_id=2126015085]
-unique_name_in_owner = true
-layout_mode = 0
-offset_top = 128.0
-offset_right = 984.0
-offset_bottom = 288.0
-theme_type_variation = &"LobbyCtaButton"
-text = "JADWAL!"
-icon = ExtResource("13_85cl3")
-expand_icon = true
-
-[node name="SettingsButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=575693895]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 96)
-layout_mode = 0
-offset_left = 120.0
-offset_right = 216.0
-offset_bottom = 96.0
-texture_normal = ExtResource("29_gear")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="DailyLogin" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=1799090163]
-unique_name_in_owner = true
-layout_mode = 0
-offset_right = 96.0
-offset_bottom = 96.0
-texture_normal = ExtResource("15_d385k")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="AchievementButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=919427951]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 240.0
-offset_right = 336.0
-offset_bottom = 96.0
-texture_normal = ExtResource("28_ikpat")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="SkinSwitchButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=1019305615]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 96)
-layout_mode = 0
-offset_left = 360.0
-offset_right = 456.0
-offset_bottom = 96.0
-texture_normal = ExtResource("30_62a4m")
-ignore_texture_size = true
-stretch_mode = 5
-
 [node name="DisplayUang" type="Panel" parent="Safe/UI" unique_id=259983175]
 unique_name_in_owner = true
 layout_mode = 1
@@ -1022,6 +908,7 @@ anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -260.0
 offset_bottom = 112.0
+grow_horizontal = 0
 mouse_filter = 2
 theme_type_variation = &"CoinPlate"
 
@@ -1158,6 +1045,244 @@ offset_bottom = 154.0
 theme_type_variation = &"StarNumLabel"
 text = "0.0 / 3.0"
 vertical_alignment = 1
+
+[node name="Hud" type="Control" parent="Safe/UI" unique_id=830478322]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="BookHud" type="Control" parent="Safe/UI/Hud" unique_id=162709174]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -480.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="RaisedBlock" type="Panel" parent="Safe/UI/Hud/BookHud" unique_id=33270593]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 8.0
+offset_right = 612.0
+offset_bottom = 224.0
+mouse_filter = 1
+theme_type_variation = &"BookCoverPanel"
+
+[node name="RaisedPage" type="Panel" parent="Safe/UI/Hud/BookHud/RaisedBlock" unique_id=138086809]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 24.0
+offset_top = 32.0
+offset_right = 588.0
+offset_bottom = 200.0
+mouse_filter = 2
+theme_type_variation = &"BookPagePanel"
+
+[node name="Student" type="Button" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage" unique_id=1238526272]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 548.0
+offset_bottom = 156.0
+theme_type_variation = &"BookHeroButton"
+text = "STUDENT"
+icon = ExtResource("9_dyk4g")
+expand_icon = true
+
+[node name="Jadwal" type="Button" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage" unique_id=2126015085]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 548.0
+offset_bottom = 156.0
+theme_type_variation = &"BookHeroButton"
+text = "JADWAL!"
+icon = ExtResource("13_85cl3")
+expand_icon = true
+
+[node name="Subtitle" type="Label" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Jadwal" unique_id=2064006818]
+layout_mode = 0
+offset_top = 100.0
+offset_right = 532.0
+offset_bottom = 136.0
+theme_type_variation = &"CaptionLabel"
+text = "Atur kegiatan minggu ini"
+horizontal_alignment = 1
+
+[node name="RosterChip" type="PanelContainer" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage" unique_id=1560066548]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 32.0
+offset_top = -18.0
+offset_right = 212.0
+offset_bottom = 26.0
+mouse_filter = 2
+theme_type_variation = &"RosterChip"
+
+[node name="RosterChipLabel" type="Label" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/RosterChip" unique_id=1325449853]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "4 murid"
+horizontal_alignment = 1
+
+[node name="Shelf" type="Panel" parent="Safe/UI/Hud/BookHud" unique_id=924067449]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 208.0
+offset_right = 984.0
+offset_bottom = 480.0
+mouse_filter = 1
+theme_type_variation = &"BookCoverPanel"
+
+[node name="ShelfPage" type="Panel" parent="Safe/UI/Hud/BookHud/Shelf" unique_id=1638570606]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 960.0
+offset_bottom = 248.0
+mouse_filter = 2
+theme_type_variation = &"BookPagePanel"
+
+[node name="Koperasi" type="Button" parent="Safe/UI/Hud/BookHud/Shelf/ShelfPage" unique_id=247017516]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 32.0
+offset_right = 301.0
+offset_bottom = 192.0
+rotation = -0.02618
+pivot_offset = Vector2(142.5, 80)
+theme_type_variation = &"NavTileKoperasi"
+text = "Koperasi"
+icon = ExtResource("10_bfy74")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="Inventory" type="Button" parent="Safe/UI/Hud/BookHud/Shelf/ShelfPage" unique_id=1524317152]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 325.0
+offset_top = 32.0
+offset_right = 610.0
+offset_bottom = 192.0
+rotation = 0.017453
+pivot_offset = Vector2(142.5, 80)
+theme_type_variation = &"NavTileInventory"
+text = "INVENTORY"
+icon = ExtResource("12_fb4vu")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="ReportStudent" type="Button" parent="Safe/UI/Hud/BookHud/Shelf/ShelfPage" unique_id=803503757]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 634.0
+offset_top = 32.0
+offset_right = 919.0
+offset_bottom = 192.0
+rotation = -0.017453
+pivot_offset = Vector2(142.5, 80)
+theme_type_variation = &"NavTileRapor"
+text = "RAPOR"
+icon = ExtResource("11_4w5lf")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="ChevronGrip" type="Button" parent="Safe/UI/Hud/BookHud" unique_id=1340096911]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 96)
+layout_mode = 0
+offset_left = 166.0
+offset_top = -40.0
+offset_right = 446.0
+offset_bottom = 56.0
+theme_type_variation = &"ChevronGripButton"
+
+[node name="ChevronGlyph" type="TextureRect" parent="Safe/UI/Hud/BookHud/ChevronGrip" unique_id=198550015]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 116.0
+offset_top = 36.0
+offset_right = 164.0
+offset_bottom = 84.0
+pivot_offset = Vector2(24, 24)
+mouse_filter = 2
+texture = ExtResource("37_ayldy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IconRail" type="VBoxContainer" parent="Safe/UI/Hud" unique_id=1064107887]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -96.0
+offset_top = -832.0
+offset_bottom = -376.0
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="DailyLogin" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=1799090163]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+texture_normal = ExtResource("15_d385k")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="SettingsButton" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=575693895]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+texture_normal = ExtResource("29_gear")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="AchievementButton" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=919427951]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+texture_normal = ExtResource("28_ikpat")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="SkinSwitchButton" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=1019305615]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+texture_normal = ExtResource("30_62a4m")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="HudHint" type="Label" parent="Safe/UI/Hud" unique_id=57765894]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -200.0
+offset_bottom = -152.0
+theme_type_variation = &"CaptionLabel"
+text = "Ketuk dua kali untuk buka HUD."
+horizontal_alignment = 1
 
 [node name="ChatBubble" parent="." unique_id=1758543249 instance=ExtResource("20_su0mk")]
 layout_mode = 1

@@ -9,6 +9,8 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 [ext_resource type="Texture2D" path="res://Assets/Images/Textures/lapanganBadminton.jpg" id="court_tex"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_puck"]
 friction = 0.0
@@ -53,6 +55,14 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("court_tex")
 expand_mode = 1
+
+[node name="Light" parent="." instance=ExtResource("look_pool")]
+center = Vector2(0.1, 0.02)
+pool_size = Vector2(1800, 1800)
+intensity = 0.1
+
+[node name="Shafts" parent="." instance=ExtResource("look_shafts")]
+origin = Vector2(0.1, -0.1)
 
 [node name="Puck" type="RigidBody2D" parent="." unique_id=1694826156]
 position = Vector2(540, 960)

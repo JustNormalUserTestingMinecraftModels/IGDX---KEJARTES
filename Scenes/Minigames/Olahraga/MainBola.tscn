@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_m0rci"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enlbf"]
 size = Vector2(874.368, 537.6)
@@ -37,6 +39,14 @@ grow_vertical = 2
 texture = ExtResource("2_ticf0")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Light" parent="." instance=ExtResource("look_pool")]
+center = Vector2(0.1, 0.02)
+pool_size = Vector2(1800, 1800)
+intensity = 0.1
+
+[node name="Shafts" parent="." instance=ExtResource("look_shafts")]
+origin = Vector2(0.1, -0.1)
 
 [node name="FieldMarkings" type="Node2D" parent="." unique_id=146537765]
 

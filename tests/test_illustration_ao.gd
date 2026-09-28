@@ -238,6 +238,11 @@ const CUTOUTS := {
 	# counts. The one judgement call in this table: if it ends up reading as
 	# furniture rather than UI, give it the plain material back.
 	"res://Scenes/Minigames/Akademis/Kalkulator.tscn": ["Body/BodyTexture"],
+	# 2026-09-28: the graduation lineup, splash art on transparency.
+	"res://Scenes/EndGame/WinStage.tscn": [
+		"Stage/Students/Student1", "Stage/Students/Student2",
+		"Stage/Students/Student3", "Stage/Students/Student4",
+	],
 }
 
 ## Full-bleed. These keep the material they have always worn.
@@ -256,6 +261,7 @@ const BACKDROPS := {
 	"res://Scenes/EndGame/TesNotice.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/EndGame/StatCheck.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/EndGame/ExamProgress.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/EndGame/WinStage.tscn": ["Stage/Backdrop"],
 }
 
 
@@ -463,11 +469,11 @@ func test_every_backdrop_keeps_the_plain_material() -> void:
 				"%s/%s is full-bleed and must not pay for AO" % [scene_path, node_path])
 
 
-## The two dicts here and look_layer's GRADED describe the same thirty-six plates
+## The two dicts here and look_layer's GRADED describe the same forty-one plates
 ## from two angles. This checks that agreement: a plate added to one dict and
 ## forgotten in the other fails here. It does NOT notice a plate that was
 ## given a grade material in a .tscn but added to neither list -- that plate
-## is invisible to this test too. The assert_eq(counted.size(), 36, ...) below
+## is invisible to this test too. The assert_eq(counted.size(), 41, ...) below
 ## is a deliberate ratchet, not a discovered fact: bump it by hand when a
 ## plate is legitimately added to both dicts.
 func test_the_census_covers_every_graded_plate_exactly_once() -> void:
@@ -497,7 +503,7 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 		assert_true(counted.has(key), "%s wears the grade but is in neither census bucket" % key)
 	for key in counted:
 		assert_true(expected.has(key), "%s is in the census but does not wear the grade" % key)
-	assert_eq(counted.size(), 36, "the census must cover all thirty-six graded plates")
+	assert_eq(counted.size(), 41, "the census must cover all forty-one graded plates")
 
 
 ## The Lobby's light shafts (2026-09-23). The volumetric piece of the pass, and

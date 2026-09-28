@@ -200,7 +200,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 165 suites, 2556 tests (2026-09-28).
+the Godot AI MCP `test_run` tool. 166 suites, 2567 tests (2026-09-28).
 
 Hard constraints:
 
@@ -376,7 +376,9 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
+The Lobby look, parts 2–3 (end game, minigames): plan
+docs/superpowers/plans/2026-09-28-lobby-look-everywhere.md, Tasks 7–14. Part 1
+(shops) has landed.
 
 ## Maintaining this file
 

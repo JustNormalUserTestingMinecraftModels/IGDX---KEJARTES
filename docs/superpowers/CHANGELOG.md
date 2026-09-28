@@ -8,6 +8,22 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — The Lobby look, part 1: the shops
+
+`SunShafts` (`Scenes/Look/SunShafts.tscn`) is the Lobby's full-screen light
+shafts as an ambient-kit piece: capped at the Lobby's 0.20, hidden by Efek
+Suasana, frozen by Kurangi Gerakan. ShopHub and CosmeticShop moved their
+backdrop into `World/Room` with the plain grade, a warm `LightPool`,
+`SunShafts` and a flat parallax, all under the existing blur; Koperasi lights
+its `Stage` under the goods. `ParallaxDiorama` now holds still under Kurangi
+Gerakan, which stills the Lobby and Koperasi too. Bloom, measured with the
+ambient kit's method: none on either shop — under the blur the light's core
+gains at most +0.0045 even at threshold 0.5, below the 0.01 visible-bleed bar,
+so both ship without a Glow. The census now counts 33 graded plates, the
+shops' backdrops having joined `test_look_layer`'s GRADED.
+`tests/scene_census.gd` is the shared census helper; `test_lobby_look` pins
+every placement. Spec: `2026-09-28-lobby-look-everywhere-design.md`.
+
 ## 2026-09-28 — Dapatkan Uang (Loby Final Polish, Phase 2)
 
 The Lobby coin plate's green `+` now opens **Dapatkan Uang**

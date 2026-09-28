@@ -153,7 +153,9 @@ with it, as they did for the Lobby.
 
 **Out of this pass:** Lobby and SchoolDay (already rich), Inventory,
 Achievements, Koperasi/ShopHub (blurred or busy backdrops; the kit can extend
-there later), minigames (out of scope for the design system).
+there later), minigames (out of scope for the design system). Koperasi/ShopHub,
+the end game's remaining screens and the minigames are taken up by
+2026-09-28-lobby-look-everywhere-design.md.
 
 ## 3. Particle art for the artist
 

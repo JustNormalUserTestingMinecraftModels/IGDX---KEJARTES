@@ -642,3 +642,22 @@ func test_unique_name_paths_are_not_format_strings() -> void:
 		var m := re.search(FileAccess.get_file_as_string(path))
 		assert_true(m == null, "%s formats a unique-name path: %s"
 			% [path, m.get_string() if m else ""])
+
+
+# ── The Lobby look's World screens (2026-09-28) ─────────────────────────────
+
+## Screen -> its backdrop, now under World/Room.
+const LIT_BACKDROPS := {
+	"res://Scenes/Koperasi/ShopHub.tscn": "World/Room/Backdrop",
+	"res://Scenes/Koperasi/CosmeticShop.tscn": "World/Room/Backdrop",
+}
+
+
+func test_the_lit_screens_backdrops_fill() -> void:
+	for path in LIT_BACKDROPS:
+		var screen := _scene(path)
+		_assert_background_fills(screen.get_node_or_null(LIT_BACKDROPS[path]) as TextureRect, path)
+		var room := screen.get_node_or_null("World/Room") as Control
+		assert_true(room != null, path + " needs World/Room")
+		if room != null:
+			assert_eq(_anchors(room), Vector4(0, 0, 1, 1), path + ": Room is Full Rect")

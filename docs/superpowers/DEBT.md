@@ -292,16 +292,19 @@ project-wide rendering change `test_look_layer` pins off today. Measured
 ~0.88, the desk screens' wood at ~0.84 everywhere; sweeping threshold
 0.6-0.9, intensity 1-4 and strength 1-1.5 either bloomed nothing visible
 or bloomed the background as much as the light (+0.04 to +0.11 at the
-strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList and
-ReportCard all ship without bloom -- `Scenes/Look/AmbientGlow.tscn` is
-built and ready to place once `hdr_2d` lands. Measured at the same time,
-the desk lamp `LightPool` is capped at 0.12 (its measured knee) and still
-only adds +0.011 mean brightness; `hdr_2d` would also let it go brighter.
-Also outstanding: light wrap on the shared cutout illustration materials;
-the kit not yet extended to Inventory, Achievements or Koperasi/ShopHub
-(blurred or busy backdrops, the kit can extend there later); and the Debug
-overlay's Look page stays Lobby-only because `DebugManager.gd` is at its
-clean-code size ceiling (1,880 lines, `LARGE_SCRIPTS`).
+strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList,
+ReportCard, ShopHub and CosmeticShop (under their blur the core reaches
+only +0.0045/+0.0043 even at threshold 0.5) all ship without bloom --
+`Scenes/Look/AmbientGlow.tscn` is built and ready to place once `hdr_2d`
+lands. Measured at the same time, the desk lamp `LightPool` is capped at
+0.12 (its measured knee) and still only adds +0.011 mean brightness;
+`hdr_2d` would also let it go brighter. Also outstanding: light wrap on the
+shared cutout illustration materials; the kit not yet extended to
+Inventory or Achievements; and the Debug overlay's Look page stays
+Lobby-only because `DebugManager.gd` is at its clean-code size ceiling
+(1,880 lines, `LARGE_SCRIPTS`). Koperasi cannot bloom at all: its backdrop
+shares Stage with the tappable goods on layer 0 (lobby-look spec,
+section 2).
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories

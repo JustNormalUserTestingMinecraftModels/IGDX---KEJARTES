@@ -136,6 +136,15 @@ from the debug overlay's **Look** page, then write the landed value into the
 `.tres`. That bloom reaches only canvas layers ≤ −1: the room lives in the
 Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 
+**The Lobby look on other screens** (spec
+`docs/superpowers/specs/2026-09-28-lobby-look-everywhere-design.md`): the
+backdrop and its light move into a `World` CanvasLayer at −1 holding one
+`Room` Control; the light is a `LightPool` plus a full-screen `SunShafts`
+(`Scenes/Look/SunShafts.tscn`); an `AmbientGlow` right after `World` blooms
+only where its threshold was measured clean; the blurred shops (and, in later
+passes, the exam notices) add a flat `ParallaxDiorama`. Minigames and Koperasi
+keep their backdrop on layer 0 and take the light without bloom.
+
 ## Swapping fonts
 
 See `Assets/Fonts/README.md` for the exact procedure (font files live there;

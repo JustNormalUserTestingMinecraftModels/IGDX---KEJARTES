@@ -222,9 +222,12 @@ func test_labels_use_theme_variations() -> void:
 	assert_true(money != null, "missing money label")
 	assert_eq(money.theme_type_variation, &"CoinLabel", "money label variation")
 
-	var header := _lobby.get_node_or_null("DailyReward/Label") as Label
-	assert_true(header != null, "missing Daily Reward header label")
-	assert_eq(header.theme_type_variation, &"H1Label", "Daily Reward header variation")
+	# The old header label is gone (2026-09-28, UI depth pass Phase 2, Task
+	# 8): the daily-login panel now wears a NotebookFrame, and its title
+	# became the frame's stitched sticker.
+	var frame := _lobby.get_node_or_null("DailyReward/DailyLoginFrame") as NotebookFrame
+	assert_true(frame != null, "missing Daily Reward notebook frame")
+	assert_eq(frame.title_text, "DAILY LOGIN", "the header became the sticker")
 
 
 func _lobby_source() -> String:
@@ -380,16 +383,13 @@ func test_the_lobby_button_wears_the_calendar_icon() -> void:
 		"it wears the calendar icon")
 
 
-## Header top-centre, claim button bottom-centre, both on the display
-## face -- the panel art bakes a cream title plate and a gold pill for
-## exactly these two, so they sit on top of the art rather than beside it.
-func test_the_header_and_claim_button_sit_on_the_baked_art() -> void:
-	var header := _lobby.get_node_or_null("DailyReward/Label") as Label
-	assert_true(header != null, "missing the panel header")
-	assert_eq(header.text, "Daily Login", "the header names the feature")
-	assert_eq(header.theme_type_variation, &"H1Label",
-		"the header is on the display face")
-
+## Claim button bottom-centre, on the display face -- the panel art bakes
+## a gold pill for it, so it sits on top of the art rather than beside it.
+## The header ("Daily Login") is no longer part of the baked art: since
+## 2026-09-28 (UI depth pass Phase 2, Task 8) it is the notebook frame's
+## stitched sticker, drawn behind the art instead -- see
+## test_labels_use_theme_variations for that assertion.
+func test_the_claim_button_sits_on_the_baked_art() -> void:
 	var panel := _lobby.get_node_or_null("DailyReward") as Control
 	var claim := _lobby.get_node_or_null("DailyReward/ButtonClaim") as Button
 	assert_true(claim != null, "missing the claim button")

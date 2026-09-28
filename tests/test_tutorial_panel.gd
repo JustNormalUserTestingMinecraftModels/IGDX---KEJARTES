@@ -23,6 +23,8 @@ func suite_name() -> String:
 	return "tutorial_panel"
 
 
+const LayoutFrame := preload("res://tests/layout_frame.gd")
+
 const SCENE_PATH := "res://Scenes/UI/TutorialPanel.tscn"
 const SCHOOL_DAY_PATH := "res://Scripts/SchoolSimulation/SchoolDay.gd"
 const STUDENT_CARD_PATH := "res://Scripts/StudentCard/StudentCard.gd"
@@ -38,18 +40,55 @@ func _make() -> TutorialPanel:
 func test_scene_exists_and_carries_its_nodes() -> void:
 	assert_true(ResourceLoader.exists(SCENE_PATH), "%s is missing" % SCENE_PATH)
 	var panel := _make()
-	for node_path in ["Margin/Layout/TitleLabel", "Margin/Layout/Separator1",
-			"Margin/Layout/BodyLabel", "Margin/Layout/Separator2",
-			"Margin/Layout/PromptLabel"]:
+	for node_path in ["Frame/Margin/Layout/TitleLabel", "Frame/Margin/Layout/Separator1",
+			"Frame/Margin/Layout/BodyLabel", "Frame/Margin/Layout/Separator2",
+			"Frame/Margin/Layout/PromptLabel"]:
 		assert_not_null(panel.get_node_or_null(node_path), "missing node: %s" % node_path)
+
+
+func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
+	var root := (load(SCENE_PATH) as PackedScene).instantiate()
+	track(root)
+	var frame := root.get_node_or_null("Frame") as NotebookFrame
+	assert_true(frame != null, "the card is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "TUTORIAL")
+		assert_false(frame.show_close, "a forced step shows no close")
+
+
+## The F2 regression: BodyLabel's forced minimum used to ignore the frame's
+## own horizontal content_padding, so the panel's real minimum width grew
+## past its own width_fraction/max_width floor. TutorialPanel.gd's
+## _ready() is not gated behind is_editor_hint(), so standing the scene up
+## runs it (and _apply_geometry()) for real. reset_size() is the same call
+## StudentCard.gd and SchoolDay.gd make before reading panel.size to
+## position it.
+##
+## The expected width is computed from panel.get_viewport_rect().size.x,
+## the exact value _apply_geometry() itself reads -- NOT a hardcoded 1080.
+## Control.get_viewport_rect() returns the enclosing Viewport's real size
+## (here, the editor's own viewport the MCP test runner renders into), not
+## the size of the plain Control LayoutFrame.stand_up() wraps the scene in,
+## so a hardcoded screen width silently disagreed with what the panel
+## itself measured and failed on any editor window that wasn't exactly
+## 1080px wide (fix round 2, F4).
+func test_the_panel_never_grows_past_its_own_width() -> void:
+	var frame := track(LayoutFrame.stand_up(SCENE_PATH, Vector2(1080, 1920))) as Control
+	var panel := frame.get_child(0) as TutorialPanel
+	panel.reset_size()
+	var panel_width: float = minf(
+		panel.get_viewport_rect().size.x * panel.width_fraction, panel.max_width)
+	assert_true(panel.size.x <= panel_width + 0.5,
+		"panel is %.1fpx wide; expected at most %.1fpx (min(viewport width * width_fraction, max_width))"
+		% [panel.size.x, panel_width])
 
 
 func test_show_step_fills_all_three_labels() -> void:
 	var panel := _make()
 	panel.show_step("Judul", "Isi penjelasan.", "Ketuk untuk lanjut")
-	assert_eq(panel.get_node("Margin/Layout/TitleLabel").text, "Judul")
-	assert_eq(panel.get_node("Margin/Layout/BodyLabel").text, "Isi penjelasan.")
-	assert_eq(panel.get_node("Margin/Layout/PromptLabel").text, "Ketuk untuk lanjut")
+	assert_eq(panel.get_node("Frame/Margin/Layout/TitleLabel").text, "Judul")
+	assert_eq(panel.get_node("Frame/Margin/Layout/BodyLabel").text, "Isi penjelasan.")
+	assert_eq(panel.get_node("Frame/Margin/Layout/PromptLabel").text, "Ketuk untuk lanjut")
 
 
 func test_layout_knobs_default_to_student_cards_shipped_numbers() -> void:
@@ -74,15 +113,15 @@ func test_overriding_layout_knobs_reaches_the_nodes() -> void:
 	panel.prompt_variation = &"CaptionLabel"
 	panel.prompt_success_tint = true
 
-	var margin := panel.get_node("Margin") as MarginContainer
+	var margin := panel.get_node("Frame/Margin") as MarginContainer
 	assert_eq(margin.get_theme_constant("margin_left"), 30)
 	assert_eq(margin.get_theme_constant("margin_top"), 30)
 	assert_eq(margin.get_theme_constant("margin_right"), 30)
 	assert_eq(margin.get_theme_constant("margin_bottom"), 30)
-	assert_eq((panel.get_node("Margin/Layout") as VBoxContainer).get_theme_constant("separation"), 20)
-	assert_eq((panel.get_node("Margin/Layout/TitleLabel") as Label).theme_type_variation, &"H2Label")
-	assert_eq((panel.get_node("Margin/Layout/BodyLabel") as Label).theme_type_variation, &"")
-	assert_eq((panel.get_node("Margin/Layout/PromptLabel") as Label).theme_type_variation, &"CaptionLabel")
+	assert_eq((panel.get_node("Frame/Margin/Layout") as VBoxContainer).get_theme_constant("separation"), 20)
+	assert_eq((panel.get_node("Frame/Margin/Layout/TitleLabel") as Label).theme_type_variation, &"H2Label")
+	assert_eq((panel.get_node("Frame/Margin/Layout/BodyLabel") as Label).theme_type_variation, &"")
+	assert_eq((panel.get_node("Frame/Margin/Layout/PromptLabel") as Label).theme_type_variation, &"CaptionLabel")
 
 
 func test_each_screen_still_sets_its_own_shipped_numbers() -> void:

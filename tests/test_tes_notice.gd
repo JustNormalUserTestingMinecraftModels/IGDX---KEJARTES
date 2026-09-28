@@ -11,6 +11,8 @@ extends McpTestSuite
 ## checked by source-text scan, per this project's established pattern for
 ## GameState-dependent branching.
 
+const LayoutFrame := preload("res://tests/layout_frame.gd")
+
 const _SCENE_PATH := "res://Scenes/EndGame/TesNotice.tscn"
 const _SCRIPT_PATH := "res://Scripts/EndGame/TesNotice.gd"
 
@@ -39,14 +41,30 @@ func test_has_the_backdrop_scrim_and_card() -> void:
 	assert_true(_screen.get_node_or_null("World/Room/Backdrop") != null, "Backdrop node")
 	assert_true(_screen.get_node_or_null("Scrim") != null, "Scrim node")
 	assert_true(_screen.get_node_or_null(
-		"MarginContainer/NoticeCard") != null, "NoticeCard node")
+		"Safe/Center/NoticeCard") != null, "NoticeCard node")
 
 
-func test_the_card_is_a_nine_patch_of_the_notice_art() -> void:
-	var card = _screen.get_node_or_null("MarginContainer/NoticeCard")
-	assert_true(card is NinePatchRect, "the card is a NinePatchRect")
-	assert_true(String(card.texture.resource_path).ends_with("notice.png"),
-		"the card uses notice.png")
+func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
+	var root := (load(_SCENE_PATH) as PackedScene).instantiate()
+	track(root)
+	var frame := root.get_node_or_null("Safe/Center/NoticeCard") as NotebookFrame
+	assert_true(frame != null, "the card is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "PENGUMUMAN")
+		assert_false(frame.show_close, "a forced step shows no close")
+
+
+## The notebook page is cream, not the old dark notice.png card: BodyLabel
+## must wear dark ink (EventBodyLabel, the same body-text variation
+## StatDetailPopup and ItemDetailSheet use on their own cream pages), not
+## the cream text_on_brand ResultBodyLabel was authored with for a dark
+## ground -- that read invisibly here (fix round 1, F1).
+func test_the_body_reads_on_the_notebook_page() -> void:
+	var frame := track(LayoutFrame.stand_up(_SCENE_PATH, Vector2(1080, 1920))) as Control
+	var screen := frame.get_child(0) as Control
+	var label := screen.get_node("Safe/Center/NoticeCard/Content/BodyLabel") as Label
+	var ink: Color = label.get_theme_color(&"font_color")
+	assert_true(ink.get_luminance() < 0.5, "dark ink on the cream page")
 
 
 ## Since 2026-09-12 the title is the team's "Ujian Nasional" logo art, not a
@@ -54,7 +72,7 @@ func test_the_card_is_a_nine_patch_of_the_notice_art() -> void:
 ## TextureRect left on EXPAND_KEEP_SIZE would make the art's 2652px native
 ## width the column's minimum and push the card off screen.
 func test_the_title_is_the_ujian_nasional_art() -> void:
-	var content = _screen.get_node("MarginContainer/NoticeCard/Content")
+	var content = _screen.get_node("Safe/Center/NoticeCard/Content")
 	assert_true(content.get_node_or_null("TitleLabel") == null,
 		"the text title was replaced by the logo art")
 	var art = content.get_node_or_null("TitleArt")
@@ -73,8 +91,8 @@ func test_the_title_is_the_ujian_nasional_art() -> void:
 		"the logo keeps its aspect rather than stretching to the column")
 	assert_true(art.custom_minimum_size.y > 0.0,
 		"the art reserves a height, or the VBox collapses it to nothing")
-	assert_eq(String(content.get_child(1).name), "TitleArt",
-		"the logo sits directly under the PENGUMUMAN kicker")
+	assert_eq(String(content.get_child(0).name), "TitleArt",
+		"the logo is the content's first line now that PENGUMUMAN lives on the frame's sticker")
 
 
 ## Kelas 7 and 8 sit the Ujian Sekolah; Kelas 9 sits the Ujian Nasional. The
@@ -126,7 +144,7 @@ func test_ready_applies_the_grade_title_art() -> void:
 
 func test_the_continue_button_exists_and_is_touch_sized() -> void:
 	var btn = _screen.get_node_or_null(
-		"MarginContainer/NoticeCard/Content/BtnLanjut")
+		"Safe/Center/NoticeCard/Content/BtnLanjut")
 	assert_true(btn is Button, "BtnLanjut is a Button")
 	assert_true(btn.custom_minimum_size.y >= 96.0,
 		"the button clears the touch-target minimum")
@@ -157,6 +175,22 @@ func test_it_plays_the_notice_bgm() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("play_bgm(&\"exam_notice\")"), "notice BGM")
 	assert_true(src.contains("play_sfx(&\"popup_open\")"), "arrival SFX")
+
+
+## notice_card lives inside a CenterContainer, whose layout pass resets scale
+## after _ready() -- the pop-in must start deferred, or the container's pass
+## wipes its 0.82 start before the tween reads it. Deferred through an
+## instance method (_pop_in), so a card freed before the call runs just
+## drops it instead of erroring on a stale argument.
+func test_the_pop_in_is_deferred() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_contains(src, "_pop_in.call_deferred()",
+		"the pop-in must start after the CenterContainer's layout pass")
+	var body: String = src.get_slice("func _pop_in()", 1).get_slice("\nfunc ", 0)
+	assert_contains(body, "is_instance_valid(notice_card)",
+		"a freed notice must not pop in a stale node")
+	assert_contains(body, "Juice.pop_in(notice_card, 0.0)",
+		"_pop_in must actually run the pop once deferred, with the same arguments")
 
 
 func _collect_overrides(node: Node, out: Array[String]) -> void:

@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://djkv8fsw8x2uu" path="res://Scripts/Lobby/DapatkanUang.gd" id="1_earn"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="2_coin"]
 [ext_resource type="Texture2D" uid="uid://kg50k0mbem87" path="res://Assets/Images/UI/Placeholders/icon_wirausaha.svg" id="3_wirausaha"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
 
 [node name="DapatkanUang" type="Control" unique_id=1546114058]
 visible = false
@@ -25,77 +27,47 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"Scrim"
 
-[node name="Book" type="Panel" parent="." unique_id=1631393959]
+[node name="Safe" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("nb_safe")
+
+[node name="Center" type="CenterContainer" parent="Safe"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Book" parent="Safe/Center" instance=ExtResource("nb_frame")]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -460.0
-offset_top = -540.0
-offset_right = 460.0
-offset_bottom = 600.0
-grow_horizontal = 2
-grow_vertical = 2
-pivot_offset = Vector2(460, 570)
-theme_type_variation = &"BookCoverPanel"
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+title_text = "DAPATKAN UANG"
 
-[node name="Page" type="Panel" parent="Book" unique_id=1894799087]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = -24.0
-offset_bottom = -32.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_type_variation = &"BookPagePanel"
-
-[node name="Margin" type="MarginContainer" parent="Book/Page" unique_id=1398723905]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 36
-theme_override_constants/margin_top = 32
-theme_override_constants/margin_right = 36
-theme_override_constants/margin_bottom = 32
-
-[node name="Column" type="VBoxContainer" parent="Book/Page/Margin" unique_id=1175726005]
+[node name="Column" type="VBoxContainer" parent="Safe/Center/Book" unique_id=1175726005]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 18
 
-[node name="Title" type="Label" parent="Book/Page/Margin/Column" unique_id=545199375]
-layout_mode = 2
-theme_type_variation = &"H1Label"
-text = "Dapatkan Uang"
-horizontal_alignment = 1
-
-[node name="Subtitle" type="Label" parent="Book/Page/Margin/Column" unique_id=828247644]
+[node name="Subtitle" type="Label" parent="Safe/Center/Book/Column" unique_id=828247644]
 layout_mode = 2
 theme_type_variation = &"CaptionLabel"
 text = "Tambah koin untuk belanja di Koperasi"
 horizontal_alignment = 1
 
-[node name="IklanHeader" type="Label" parent="Book/Page/Margin/Column" unique_id=142166286]
+[node name="IklanHeader" type="Label" parent="Safe/Center/Book/Column" unique_id=142166286]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 text = "Tonton iklan, dapat sekarang"
 
-[node name="IklanRow" type="HBoxContainer" parent="Book/Page/Margin/Column" unique_id=608259655]
+[node name="IklanRow" type="HBoxContainer" parent="Safe/Center/Book/Column" unique_id=608259655]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="IklanSingkat" type="Button" parent="Book/Page/Margin/Column/IklanRow" unique_id=2135898578]
+[node name="IklanSingkat" type="Button" parent="Safe/Center/Book/Column/IklanRow" unique_id=2135898578]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
@@ -103,7 +75,7 @@ size_flags_horizontal = 3
 theme_type_variation = &"NavTileKoperasi"
 text = "Iklan Singkat"
 
-[node name="Amount" type="Label" parent="Book/Page/Margin/Column/IklanRow/IklanSingkat" unique_id=1904580798]
+[node name="Amount" type="Label" parent="Safe/Center/Book/Column/IklanRow/IklanSingkat" unique_id=1904580798]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -117,7 +89,7 @@ theme_type_variation = &"ResultDeltaLabel"
 text = "+150 koin"
 horizontal_alignment = 1
 
-[node name="VideoPenuh" type="Button" parent="Book/Page/Margin/Column/IklanRow" unique_id=1741967094]
+[node name="VideoPenuh" type="Button" parent="Safe/Center/Book/Column/IklanRow" unique_id=1741967094]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
@@ -125,7 +97,7 @@ size_flags_horizontal = 3
 theme_type_variation = &"NavTileKoperasi"
 text = "Video Penuh"
 
-[node name="Amount" type="Label" parent="Book/Page/Margin/Column/IklanRow/VideoPenuh" unique_id=566242433]
+[node name="Amount" type="Label" parent="Safe/Center/Book/Column/IklanRow/VideoPenuh" unique_id=566242433]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -139,16 +111,16 @@ theme_type_variation = &"ResultDeltaLabel"
 text = "+450 koin"
 horizontal_alignment = 1
 
-[node name="AmbilHeader" type="Label" parent="Book/Page/Margin/Column" unique_id=1709520286]
+[node name="AmbilHeader" type="Label" parent="Safe/Center/Book/Column" unique_id=1709520286]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 text = "Ambil dulu, tonton nanti"
 
-[node name="AmbilRow" type="HBoxContainer" parent="Book/Page/Margin/Column" unique_id=574919420]
+[node name="AmbilRow" type="HBoxContainer" parent="Safe/Center/Book/Column" unique_id=574919420]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="AmbilDulu4" type="Button" parent="Book/Page/Margin/Column/AmbilRow" unique_id=174271158]
+[node name="AmbilDulu4" type="Button" parent="Safe/Center/Book/Column/AmbilRow" unique_id=174271158]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
@@ -158,7 +130,7 @@ text = "+900"
 icon = ExtResource("2_coin")
 expand_icon = true
 
-[node name="Later" type="Label" parent="Book/Page/Margin/Column/AmbilRow/AmbilDulu4" unique_id=870551506]
+[node name="Later" type="Label" parent="Safe/Center/Book/Column/AmbilRow/AmbilDulu4" unique_id=870551506]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -172,7 +144,7 @@ theme_type_variation = &"CaptionLabel"
 text = "tonton 4 iklan nanti"
 horizontal_alignment = 1
 
-[node name="AmbilDulu8" type="Button" parent="Book/Page/Margin/Column/AmbilRow" unique_id=1581015832]
+[node name="AmbilDulu8" type="Button" parent="Safe/Center/Book/Column/AmbilRow" unique_id=1581015832]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
@@ -182,7 +154,7 @@ text = "+2000"
 icon = ExtResource("2_coin")
 expand_icon = true
 
-[node name="Later" type="Label" parent="Book/Page/Margin/Column/AmbilRow/AmbilDulu8" unique_id=1294323479]
+[node name="Later" type="Label" parent="Safe/Center/Book/Column/AmbilRow/AmbilDulu8" unique_id=1294323479]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -196,7 +168,7 @@ theme_type_variation = &"CaptionLabel"
 text = "tonton 8 iklan nanti"
 horizontal_alignment = 1
 
-[node name="TontonUtang" type="Button" parent="Book/Page/Margin/Column" unique_id=385532454]
+[node name="TontonUtang" type="Button" parent="Safe/Center/Book/Column" unique_id=385532454]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(0, 96)
@@ -204,17 +176,17 @@ layout_mode = 2
 theme_type_variation = &"SecondaryButton"
 text = "Tonton 0 iklan tertunda"
 
-[node name="GratisHeader" type="Label" parent="Book/Page/Margin/Column" unique_id=966743582]
+[node name="GratisHeader" type="Label" parent="Safe/Center/Book/Column" unique_id=966743582]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 text = "Cara gratis"
 
-[node name="Tip" type="PanelContainer" parent="Book/Page/Margin/Column" unique_id=478118112]
+[node name="Tip" type="PanelContainer" parent="Safe/Center/Book/Column" unique_id=478118112]
 layout_mode = 2
 mouse_filter = 2
 theme_type_variation = &"Card"
 
-[node name="TipMargin" type="MarginContainer" parent="Book/Page/Margin/Column/Tip" unique_id=98629903]
+[node name="TipMargin" type="MarginContainer" parent="Safe/Center/Book/Column/Tip" unique_id=98629903]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 24
@@ -222,12 +194,12 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 20
 
-[node name="TipRow" type="HBoxContainer" parent="Book/Page/Margin/Column/Tip/TipMargin" unique_id=916344352]
+[node name="TipRow" type="HBoxContainer" parent="Safe/Center/Book/Column/Tip/TipMargin" unique_id=916344352]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 20
 
-[node name="TipIcon" type="TextureRect" parent="Book/Page/Margin/Column/Tip/TipMargin/TipRow" unique_id=62073634]
+[node name="TipIcon" type="TextureRect" parent="Safe/Center/Book/Column/Tip/TipMargin/TipRow" unique_id=62073634]
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_vertical = 4
@@ -236,22 +208,11 @@ texture = ExtResource("3_wirausaha")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TipLabel" type="Label" parent="Book/Page/Margin/Column/Tip/TipMargin/TipRow" unique_id=843893940]
+[node name="TipLabel" type="Label" parent="Safe/Center/Book/Column/Tip/TipMargin/TipRow" unique_id=843893940]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Tugaskan murid ke Wirausaha di Atur Jadwal — mereka menghasilkan uang tiap akhir minggu, tanpa iklan."
 autowrap_mode = 3
-
-[node name="Tutup" type="Button" parent="Book" unique_id=132016404]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 96)
-layout_mode = 0
-offset_left = 840.0
-offset_top = -36.0
-offset_right = 936.0
-offset_bottom = 60.0
-theme_type_variation = &"DangerButton"
-text = "✕"
 
 [node name="Toast" type="PanelContainer" parent="." unique_id=1403925925]
 unique_name_in_owner = true

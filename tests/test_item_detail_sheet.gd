@@ -62,3 +62,35 @@ func test_setup_hides_rows_with_no_boost() -> void:
 	assert_false(s.find_child("RowAkademis", true, false).visible, "akademis row hidden")
 	assert_true(s.find_child("RowMood", true, false).visible, "mood row shown")
 	s.free()
+
+func test_the_sheet_is_a_notebook_frame() -> void:
+	var popup := (load(_SHEET) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Safe/Center/Sheet") as NotebookFrame
+	assert_true(frame != null, "the sheet is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "DETAIL ITEM")
+		assert_true(frame.tabs.is_empty(), "no tabs")
+	assert_contains(FileAccess.get_file_as_string(_SHEET_SRC), "close_pressed.connect",
+		"the frame's close is wired")
+
+## _sheet lives inside a CenterContainer, whose layout pass resets scale and
+## rotation after the popup's own frame -- the spring must start deferred, or
+## the container's pass wipes its 0.5-scale/-3deg start before the tween reads
+## it. Deferred through an instance method (_spring_in), not a bare static
+## Callable, so a popup freed before the deferred call runs just drops it
+## instead of erroring on a stale argument. _spring_in also yields to a
+## dismiss already in flight (R1): AnimUtils._safe_tween kills a running
+## tween, so a late spring would kill the spring-out and its queue_free()
+## callback would never fire, sticking the sheet visible.
+func test_the_spring_in_is_deferred() -> void:
+	var src := _sheet_src()
+	assert_contains(src, "_spring_in.call_deferred()",
+		"the spring must start after the CenterContainer's layout pass")
+	var body: String = src.get_slice("func _spring_in()", 1).get_slice("\nfunc ", 0)
+	assert_contains(body, "if _dismissing:\n\t\treturn",
+		"a dismiss already in flight must stop the spring from killing its tween")
+	assert_contains(body, "AnimUtils.popup_spring_in(",
+		"_spring_in must actually run the spring once deferred")
+	assert_contains(body, "is_instance_valid(_sheet)",
+		"a freed sheet must not spring a stale node")

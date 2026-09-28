@@ -16,11 +16,11 @@ extends Control
 ## reading GameState, starting BGM, arming the auto-advance timer -- sits
 ## behind the Engine.is_editor_hint() guard in _ready().
 
-@onready var grade_label: Label = $MarginContainer/NoticeCard/Content/GradeLabel
-@onready var btn_lanjut: Button = $MarginContainer/NoticeCard/Content/BtnLanjut
-@onready var notice_card: NinePatchRect = $MarginContainer/NoticeCard
-@onready var title_art: TextureRect = $MarginContainer/NoticeCard/Content/TitleArt
-@onready var body_label: Label = $MarginContainer/NoticeCard/Content/BodyLabel
+@onready var grade_label: Label = $Safe/Center/NoticeCard/Content/GradeLabel
+@onready var btn_lanjut: Button = $Safe/Center/NoticeCard/Content/BtnLanjut
+@onready var notice_card: NotebookFrame = $Safe/Center/NoticeCard
+@onready var title_art: TextureRect = $Safe/Center/NoticeCard/Content/TitleArt
+@onready var body_label: Label = $Safe/Center/NoticeCard/Content/BodyLabel
 
 ## Seconds before the notice advances on its own. Zero disables the
 ## auto-advance and waits for the button.
@@ -66,12 +66,22 @@ func _ready() -> void:
 	AudioDirector.play_bgm(&"exam_notice")
 	AudioDirector.play_sfx(&"popup_open")
 
-	Juice.pop_in(notice_card, 0.0)
+	# notice_card sits inside a CenterContainer; its layout pass resets scale
+	# after this frame, wiping pop_in's 0.82 start -- defer so it starts once
+	# that pass has already run.
+	_pop_in.call_deferred()
 
 	if auto_advance_seconds > 0.0:
 		await get_tree().create_timer(auto_advance_seconds).timeout
 		if is_instance_valid(self):
 			_advance()
+
+
+## Pops the notice card in once the CenterContainer's first layout pass has
+## run (that pass resets scale). Deferred from _ready().
+func _pop_in() -> void:
+	if is_instance_valid(notice_card):
+		Juice.pop_in(notice_card, 0.0)
 
 
 func _on_lanjut_pressed() -> void:

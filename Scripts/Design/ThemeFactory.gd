@@ -2062,8 +2062,9 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 	# cream and vanishes on a light surface, which is why RunResult's rows,
 	# the minigame result card and the HUD's combo chip each moved to a dark
 	# variation above. What still wears it sits on dark: the HUD's
-	# TargetLabel on the translucent ScoreHudPanel, and TesNotice's body,
-	# which today floats on that screen's scrim.
+	# TargetLabel on the translucent ScoreHudPanel. TesNotice's body moved
+	# off this (UI depth pass Phase 2): it is now EventBodyLabel on the
+	# notebook page, not floating on the screen's scrim.
 	# SemesterEnd was the one screen that deliberately kept a dark,
 	# certificate-like backdrop instead of the app's usual light surface
 	# (the payoff/results reveal), so its outer labels needed their own

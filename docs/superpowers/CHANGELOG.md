@@ -50,6 +50,52 @@ rail's own six authored tiles with a `push_warning`, so a 7+ name roster
 describes what it checks now that `open()` takes a roster) was renamed to
 `test_default_open_shows_the_first_students_tile_as_open`.
 
+## 2026-09-28 — UI depth pass, Phase 2: popups into the notebook
+
+Plan: `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase2.md`.
+
+All 17 popups now sit in `NotebookFrame` (Phase 1): tabs — Settings; sheets
+— AchievementDetailSheet, ItemDetailSheet, DapatkanUang, DailyLogin,
+WeekLogsPopup, DaySummaryPopup, DailyDecayOverview; dialogs — StatDetailPopup,
+TraitDetailPopup, WeekRecapPillInfoPopup, EventStudentSelectDialog,
+OpenAmplopConfirm, Peringatan, TesNotice, StatCheck, TutorialPanel.
+
+Six decisions taken while planning, each the conservative reading (style
+guide, "The notebook frame"; the plan's "Decisions taken while planning"
+section, `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase2.md`, for the
+full rationale):
+
+- **D1** — Settings' tabs are SUARA (the three sliders) and MAIN
+  (PERMAINAN/TAMPILAN switches).
+- **D2** — AchievementDetailSheet has no tabs; it shows one achievement,
+  nothing to switch between.
+- **D3** — Sticker titles are short fixed words; a popup's dynamic heading
+  (a stat name, an event name, a step title) stays in the host content.
+- **D4** — The frame's ✕ shows only where it adds nothing new, and stays
+  hidden where the player must decide or the flow is forced.
+- **D5** — Centred means centred: the stat/trait/pill dialogs and
+  ItemDetailSheet now centre inside `SafeAreaMargin` instead of a computed
+  `position` that ignored it.
+- **D6** — OpenAmplopConfirm and the Lobby's DailyLogin stay placed by their
+  screen (a tween and layered art respectively); TutorialPanel is placed by
+  each caller.
+
+New suite `tests/test_popup_frames.gd` is the 17-row roster (plus
+`SCREEN_SCRIPTS` for the two popups owned by `AturJadwal.tscn` and
+`Lobby.tscn`); `tests/fixtures/notebook_host.tscn` backs the nested-instance
+tests in `tests/test_notebook_frame.gd`.
+
+Fixes found while migrating: the tab strip sat low enough to clip its own
+labels behind the page edge (`NotebookFrame.tscn`'s `Tabs` moved to
+`offset_top -84`); an empty popup roster made every roster test a false
+green until rows were added, so each opens with an `assert_false` on the
+roster itself; a `MarginContainer` used as a plain host-content wrapper
+inherits the baked theme's 48px margins unless it zeroes them
+(`TutorialPanel`); TesNotice's body label read invisible light-on-cream
+until it moved from `ResultBodyLabel` to `EventBodyLabel`; and
+OpenAmplopConfirm's Batal/Terima buttons overlapped the taller frame until
+they moved inside `Letter/VBox`.
+
 ## 2026-09-28 — Koperasi top-band promo: signboard, promo board, Kas Kelas footer
 
 Plan: `docs/superpowers/plans/2026-09-28-koperasi-top-band-promo.md`. The

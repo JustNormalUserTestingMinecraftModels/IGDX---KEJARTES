@@ -656,6 +656,9 @@ func _setup_daily_login() -> void:
 	if not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
 		daily_login_btn.pressed.connect(_on_daily_login_pressed)
 	hud.refresh(daily_reward.is_claimable())
+	var frame := %DailyLoginFrame as NotebookFrame
+	if not frame.close_pressed.is_connected(_hide_daily_reward):
+		frame.close_pressed.connect(_hide_daily_reward)
 
 ## A payout landed (the daily claim or Dapatkan Uang): roll the wallet up
 ## from the old balance, and the gift badge follows the claim.

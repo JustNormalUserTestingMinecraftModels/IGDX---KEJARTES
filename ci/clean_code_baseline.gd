@@ -95,7 +95,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/ReportCard/ReportCard.gd": 35,
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd": 26,
 	"res://Scripts/SchoolSimulation/DaySummaryPopup.gd": 9,
-	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 3,
+	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 2,
 	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 5,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 78,
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 36,
@@ -234,7 +234,7 @@ const DUPLICATE_GROUPS: Array[String] = [
 
 ## Scripts over 1,000 lines -> their line count.
 const LARGE_SCRIPTS: Dictionary = {
-	"res://Scripts/AturJadwal/AturJadwal.gd": 1579,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 1578,
 	"res://Scripts/Debug/DebugManager.gd": 1880,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1638,
 	"res://Scripts/StudentCard/StudentCard.gd": 1451,

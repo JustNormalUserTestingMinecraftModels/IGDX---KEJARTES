@@ -30,8 +30,8 @@ extends Control
 ## celebration popup to the host screen, which is what
 ## AchievementsScreen.gd's _on_claim_requested already did for the button.
 ##
-## Closes on scrim tap, the back arrow, or Android back (only while open, and
-## it does not let the request fall through to the screen's own back
+## Closes on scrim tap, the frame's close, or Android back (only while open,
+## and it does not let the request fall through to the screen's own back
 ## handling -- see AchievementsScreen.gd Task 5, which must skip its
 ## back-to-lobby handling while this sheet is open, the same way
 ## Scripts/Inventory/Inventory.gd skips its back handling while its
@@ -51,7 +51,7 @@ const _ONE_SHOT_KINDS := [
 ]
 
 @onready var _scrim: Panel = %Scrim
-@onready var _sheet: PanelContainer = %Sheet
+@onready var _sheet: NotebookFrame = %Sheet
 @onready var _icon: TextureRect = %Icon
 @onready var _title_label: Label = %Title
 @onready var _desc_label: Label = %Desc
@@ -59,7 +59,6 @@ const _ONE_SHOT_KINDS := [
 @onready var _prize_chip_label: Label = %PrizeChipLabel
 @onready var _progress_label: Label = %ProgressLabel
 @onready var _state_icon: TextureRect = %StateIcon
-@onready var _back_button: TextureButton = %BackButton
 
 ## The three state glyphs StateRow shows, one per Achievements state. The
 ## notice icon is the same asset the tile's corner badge wears, so a player
@@ -78,8 +77,8 @@ func _ready() -> void:
 	visible = false
 	if not _scrim.gui_input.is_connected(_on_scrim_input):
 		_scrim.gui_input.connect(_on_scrim_input)
-	if not _back_button.pressed.is_connected(_on_back_pressed):
-		_back_button.pressed.connect(_on_back_pressed)
+	if not _sheet.close_pressed.is_connected(_on_back_pressed):
+		_sheet.close_pressed.connect(_on_back_pressed)
 
 
 

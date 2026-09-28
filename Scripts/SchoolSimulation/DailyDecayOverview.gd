@@ -3,9 +3,11 @@ extends Control
 ## "What the night cost them": a per-student breakdown of the daily energy
 ## and mood decay, with the bars animating down from yesterday's value.
 ##
-## Fully theme-driven now -- Scrim behind a Card, one &"Card" per student,
-## StatBars for the two needs, and the shared DaySummaryBadge chip for the
-## personality tag. No StyleBoxFlat and no Color literal remains.
+## Fully theme-driven now -- a BackgroundDim scrim behind a NotebookFrame
+## sheet (2026-09-28 UI depth pass; no close, since Lanjutkan Hari is the
+## only way on), one &"Card" per student inside it, StatBars for the two
+## needs, and the shared DaySummaryBadge chip for the personality tag. No
+## StyleBoxFlat and no Color literal remains.
 
 signal overview_closed
 
@@ -44,11 +46,11 @@ const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
 ## component's own 20/16/20/16 margin defaults unchanged.
 @export var student_summary_card_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentSummaryCard.tscn")
 
-@onready var title_label: Label = $Margin/Panel/Margin/VBox/HeaderVBox/TitleLabel
-@onready var subtitle_label: Label = $Margin/Panel/Margin/VBox/HeaderVBox/SubtitleLabel
-@onready var students_container: VBoxContainer = $Margin/Panel/Margin/VBox/ScrollContainer/StudentsContainer
-@onready var continue_button: Button = $Margin/Panel/Margin/VBox/ContinueButton
-@onready var scroll_container: ScrollContainer = $Margin/Panel/Margin/VBox/ScrollContainer
+@onready var title_label: Label = $Safe/Frame/VBox/HeaderVBox/TitleLabel
+@onready var subtitle_label: Label = $Safe/Frame/VBox/HeaderVBox/SubtitleLabel
+@onready var students_container: VBoxContainer = $Safe/Frame/VBox/ScrollContainer/StudentsContainer
+@onready var continue_button: Button = $Safe/Frame/VBox/ContinueButton
+@onready var scroll_container: ScrollContainer = $Safe/Frame/VBox/ScrollContainer
 
 var is_dragging_scroll: bool = false
 var drag_start_y: float = 0.0

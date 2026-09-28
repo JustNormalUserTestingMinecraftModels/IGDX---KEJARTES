@@ -146,7 +146,8 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 	var paths := [
 		"BGHari/Senin", "BGHari/Selasa", "BGHari/Rabu", "BGHari/Kamis", "BGHari/Jumat",
 		"StartWeek", "BackButton",
-		"Peringatan/TextureRect/ButtonYes", "Peringatan/TextureRect/ButtonNo",
+		"Peringatan/Safe/Center/Frame/Body/Buttons/ButtonYes",
+		"Peringatan/Safe/Center/Frame/Body/Buttons/ButtonNo",
 		"Penjadwalan/Sheet/Body/Grid/TileAkademik", "Penjadwalan/Sheet/Body/Grid/TileSeniBudaya",
 		"Penjadwalan/Sheet/Body/Grid/TileAtletik", "Penjadwalan/Sheet/Body/Grid/TileWirausaha",
 		"Penjadwalan/Sheet/Body/TileLibur",
@@ -723,38 +724,16 @@ func test_assign_pop_is_driven_from_on_activity_selected() -> void:
 		"the pop must be called from inside _on_activity_selected")
 
 
-## The warning dialog shipped on a stock placeholder image.
-## It now wears the same finished card art as the Penjadwalan panel. The art
-## is square (1080x1080) and the frame is 740x428, so it must be a
-## NinePatchRect -- a TextureRect would smear the painted corners.
-func test_peringatan_frame_is_a_ninepatch_of_the_card_art() -> void:
-	var frame := _screen.get_node_or_null("Peringatan/TextureRect")
-	assert_true(frame != null, "Peringatan/TextureRect is missing")
+## The warning dialog is the notebook dialog (2026-09-28, UI depth pass
+## Phase 2). It used to crop penjadwalan_card_bg.png as a nine-patch.
+func test_peringatan_is_the_notebook_dialog() -> void:
+	var frame := _screen.get_node_or_null("Peringatan/Safe/Center/Frame") as NotebookFrame
+	assert_true(frame != null, "Peringatan's box is a NotebookFrame")
 	if frame == null:
 		return
-	assert_true(frame is NinePatchRect,
-		"the warning frame must be a NinePatchRect, got %s" % frame.get_class())
-	if frame is NinePatchRect:
-		assert_true(frame.texture != null, "the warning frame has no texture")
-		assert_eq(frame.texture.resource_path,
-			"res://Assets/Images/UI/penjadwalan_card_bg.png",
-			"the warning frame must draw the finished card art")
-		# The 1080x1080 source has transparent padding around the painted
-		# card -- the actual card is the 658x1013 rect at (211,34). Without
-		# this crop the card would float small inside a mostly-transparent
-		# frame instead of filling it.
-		assert_eq(frame.region_rect, Rect2(211, 34, 658, 1013),
-			"the warning frame must crop to the card art, not the full padded canvas")
-		for side in ["left", "top", "right", "bottom"]:
-			assert_true(frame.get("patch_margin_" + side) > 0,
-				"patch_margin_%s must be set or the corners still stretch" % side)
-
-	# The dialog's three children must survive the retype -- AturJadwal.gd
-	# reaches them by path in six places.
-	for child_name in ["Label", "ButtonYes", "ButtonNo"]:
-		assert_true(_screen.get_node_or_null(
-			"Peringatan/TextureRect/%s" % child_name) != null,
-			"%s was lost when the frame was retyped" % child_name)
+	assert_eq(frame.title_text, "PERINGATAN")
+	for child in ["Body/Label", "Body/Buttons/ButtonYes", "Body/Buttons/ButtonNo"]:
+		assert_true(frame.get_node_or_null(child) != null, "%s survived the move" % child)
 
 
 ## Nothing in the warning dialog may still reference the stock placeholder.
@@ -767,28 +746,30 @@ func test_no_pngwing_placeholder_remains_in_the_warning_dialog() -> void:
 	var block := src.substr(peringatan_start, peringatan_end - peringatan_start)
 	assert_true(not block.contains("3_a6kja"),
 		"the Peringatan block still draws the pngwing placeholder")
+	assert_false(block.contains("9_cardbg"), "and no longer crops the card art")
 
 
 ## The warning label used to be BarLabel (white glyph + dark rim), designed
-## for text sitting on a saturated progress-bar fill. The card art is now a
-## light cream gradient, so white-on-cream was near-unreadable -- it must be
-## TitleLabel (dark text_primary, no outline) instead. Separately, the label
-## used to stretch down to offset_bottom 400, which put its last line under
-## the YA / TIDAK buttons at offset_top 284; it must end at or above wherever
-## the buttons currently start, not at a hardcoded 268, so a deliberate
-## reposition of either node doesn't false-fail this test while an actual
-## regression (label growing back down over the buttons) still does.
+## for text sitting on a saturated progress-bar fill. The card art is now the
+## notebook page (2026-09-28, UI depth pass Phase 2), so it must stay
+## TitleLabel (dark text_primary, no outline) to read against it. Label and
+## Buttons now stack inside a VBoxContainer (Body), which cannot overlap its
+## children -- the old offset-comparison this test made is meaningless once
+## the two live in different nested coordinate spaces, so what is left to
+## pin is the stacking order itself: Label above Buttons.
 func test_peringatan_label_reads_against_the_light_card() -> void:
-	var label := _screen.get_node_or_null("Peringatan/TextureRect/Label") as Label
-	assert_true(label != null, "Peringatan/TextureRect/Label is missing")
-	var button_yes := _screen.get_node_or_null("Peringatan/TextureRect/ButtonYes") as Control
-	assert_true(button_yes != null, "Peringatan/TextureRect/ButtonYes is missing")
-	if label == null or button_yes == null:
+	var label := _screen.get_node_or_null(
+		"Peringatan/Safe/Center/Frame/Body/Label") as Label
+	assert_true(label != null, "Peringatan/Safe/Center/Frame/Body/Label is missing")
+	var buttons := _screen.get_node_or_null(
+		"Peringatan/Safe/Center/Frame/Body/Buttons") as Control
+	assert_true(buttons != null, "Peringatan/Safe/Center/Frame/Body/Buttons is missing")
+	if label == null or buttons == null:
 		return
 	assert_eq(label.get_theme_type_variation(), &"TitleLabel",
-		"the warning label must be TitleLabel (dark text) to read against the light card art")
-	assert_true(label.offset_bottom <= button_yes.offset_top,
-		"the warning label must not extend down past where the buttons start, or its last line renders under them")
+		"the warning label must be TitleLabel (dark text) to read against the notebook page")
+	assert_true(label.get_index() < buttons.get_index(),
+		"the label must come before Buttons in Body, so the VBox stacks them label-then-buttons")
 
 
 ## Copied verbatim from tests/test_main_menu.gd.

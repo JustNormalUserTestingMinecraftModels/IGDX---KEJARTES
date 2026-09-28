@@ -915,6 +915,35 @@ func test_popup_scrolls_its_rows() -> void:
 	inst.free()
 
 
+## 2026-09-28 UI depth pass, Phase 2 Task 3: the reward layer and rows move
+## into a NotebookFrame sheet under the banner. The banner art stays the
+## title, so title_text is empty and the sticker hides.
+func test_the_recap_sits_in_a_notebook_sheet_under_its_banner() -> void:
+	var popup := (load(_POPUP_SCENE) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("DimOverlay/Safe/Content/Frame") as NotebookFrame
+	assert_true(frame != null, "the reward and rows sit in a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "", "the banner art stays the title, so the sticker hides")
+		assert_true(frame.get_node_or_null("Body/Reward") != null, "the reward layer is inside")
+		assert_true(frame.get_node_or_null("Body/RowsScroll") != null, "and the rows")
+	assert_true(popup.get_node_or_null("DimOverlay/Safe/Content/TitleBanner") != null,
+		"the banner stays above the frame")
+
+
+## Final review (F4): with no sticker (empty title_text) the frame's default
+## 120px top padding, reserved for the sticker, leaves a blank band. Tighter
+## top padding closes it.
+func test_the_frame_drops_the_sticker_gap_when_titleless() -> void:
+	var popup := (load(_POPUP_SCENE) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("DimOverlay/Safe/Content/Frame") as NotebookFrame
+	assert_true(frame != null, "the reward and rows sit in a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.content_padding, Vector4i(72, 48, 40, 48),
+			"no sticker here, so the top padding shrinks off its reserved 120px")
+
+
 ## SchoolDay hands the popup a real summary and expects the rows built
 ## from it (Task 8 removes the reparenting that used to bypass this).
 func test_popup_still_exposes_its_contract() -> void:
@@ -1646,19 +1675,15 @@ func test_event_dialog_dropped_the_button_texture_override_path() -> void:
 	# StyleBoxTexture overrides are what let these three buttons drift
 	# out of the theme every other screen uses.
 	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
-	# dialog_card_texture keeps its own StyleBoxTexture: that is a
-	# separate, pre-existing art-swap hook for the PANEL and is out of
-	# scope here. What had to go is the per-button override path, so the
-	# check is that every remaining override targets the panel.
-	var overrides := 0
-	for line in src.split("
-"):
-		if line.contains("add_theme_stylebox_override"):
-			overrides += 1
-			assert_contains(line, "dialog_panel",
-				"only the dialog panel may override a stylebox, not: %s" % line.strip_edges())
-	assert_eq(overrides, 1,
-		"expected exactly one stylebox override (the panel's), found %d" % overrides)
+	# The dialog panel's own StyleBoxTexture override went too (2026-09-28,
+	# UI depth pass Phase 2): the surface is now a NotebookFrame, whose own
+	# chrome draws the page -- there is nothing left to override a panel
+	# stylebox on, and dialog_card_texture (and the dialog_panel var that
+	# only ever read it) went with it.
+	assert_false(src.contains("add_theme_stylebox_override"),
+		"no stylebox override should remain; the NotebookFrame is the surface")
+	assert_false(src.contains("dialog_card_texture"),
+		"dialog_card_texture should have been removed with the panel override")
 	for retired in ["button_select_all_texture", "button_cancel_texture",
 			"button_confirm_texture"]:
 		assert_false(src.contains(retired),

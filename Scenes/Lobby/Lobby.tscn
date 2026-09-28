@@ -1131,7 +1131,7 @@ layout_mode = 0
 offset_top = -170.0
 offset_right = 942.0
 offset_bottom = -110.0
-theme_type_variation = &"H2Label"
+theme_type_variation = &"ResultHeroLabel"
 text = "Selamat datang kembali!"
 horizontal_alignment = 1
 
@@ -1163,7 +1163,7 @@ stretch_mode = 5
 [node name="StreakLabel" type="Label" parent="DailyReward/DailyStreak" unique_id=2104698978]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"H2Label"
+theme_type_variation = &"ResultHeroLabel"
 text = "Streak 1 hari"
 vertical_alignment = 1
 

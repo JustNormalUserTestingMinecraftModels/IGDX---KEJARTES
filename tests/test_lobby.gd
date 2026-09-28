@@ -457,7 +457,10 @@ func test_the_greeting_and_streak_sit_above_the_panel() -> void:
 	assert_true(greeting != null, "missing DailyGreeting")
 	if greeting == null:
 		return
-	assert_eq(greeting.theme_type_variation, &"H2Label", "the greeting is on H2Label")
+	# ResultHeroLabel: gold display face with a dark outline, the light-on-dark
+	# variation -- H2Label's dark text disappeared over the blurred lobby.
+	assert_eq(greeting.theme_type_variation, &"ResultHeroLabel",
+		"the greeting reads light-on-dark over the blur")
 	assert_eq(greeting.text, "Selamat datang kembali!", "the greeting welcomes the player back")
 	assert_true(_lobby.get_node_or_null("%StreakLabel") is Label, "missing StreakLabel")
 	for header_path: String in ["%DailyGreeting", "%DailyStreak"]:

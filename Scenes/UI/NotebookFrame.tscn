@@ -11,6 +11,7 @@
 custom_minimum_size = Vector2(640, 520)
 offset_right = 800.0
 offset_bottom = 900.0
+mouse_filter = 0
 script = ExtResource("1_frame")
 tabs = PackedStringArray()
 

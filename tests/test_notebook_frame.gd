@@ -179,3 +179,104 @@ func test_the_authored_ring_spacing_is_not_baked() -> void:
 func test_nothing_is_built_at_runtime() -> void:
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
 	assert_false(src.contains(".new()"), "every node is authored in the .tscn")
+
+
+## The throwaway host scene: the frame instanced inside another scene, with
+## root overrides and a host child -- the shape every Phase 2 popup takes.
+const HOST := "res://tests/fixtures/notebook_host.tscn"
+
+
+## `HOST` instanced (out of the tree unless `mount`), freed after the test.
+func _host(mount: bool) -> Control:
+	var host := load(HOST).instantiate() as Control
+	track(host)
+	if mount:
+		Engine.get_main_loop().root.add_child(host)
+	return host
+
+
+func test_a_nested_frame_applies_its_root_overrides() -> void:
+	# NOTIFICATION_SCENE_INSTANTIATED reaches a nested frame BEFORE the
+	# host's overrides are set; each setter must refresh the chrome again.
+	var frame := _host(false).get_node("Frame") as NotebookFrame
+	assert_eq((frame.get_node("Chrome/Sticker/Title") as Label).text, "UJI")
+	assert_true((frame.get_node("Chrome/Tabs") as Control).visible, "two tabs show the strip")
+	assert_eq((frame.get_node("Chrome/Tabs/Tab1") as Button).text, "DUA")
+	assert_eq((frame.get_node("Chrome/Tabs/Tab1") as Button).theme_type_variation,
+		&"NotebookTabActive", "active_tab = 1 is the gold one")
+	assert_false((frame.get_node("Chrome/Tabs/Tab2") as Control).visible, "no third tab")
+	assert_true((frame.get_node("Chrome/Rings/Ring3") as Control).visible, "four rings")
+	assert_false((frame.get_node("Chrome/Rings/Ring4") as Control).visible, "not five")
+	assert_false((frame.get_node("Chrome/Well") as Control).visible, "no well")
+	assert_eq(frame.get_child(1).name, &"Body", "host content follows the chrome")
+
+
+func test_a_nested_frame_wires_its_buttons_once() -> void:
+	var frame := _host(false).get_node("Frame") as NotebookFrame
+	var tab := frame.get_node("Chrome/Tabs/Tab0") as Button
+	var close := frame.get_node("Chrome/Close") as Button
+	assert_eq(tab.pressed.get_connections().size(), 1, "one tab wiring, not one per refresh")
+	assert_eq(close.pressed.get_connections().size(), 1, "one close wiring")
+	var got := []
+	frame.tab_selected.connect(func(i: int) -> void: got.append(i))
+	tab.pressed.emit()
+	assert_eq(got, [0], "tab 0 reports itself")
+
+
+## Mounted: out of the tree Control.update_minimum_size() returns early and
+## get_combined_minimum_size() keeps serving its first cached answer.
+func test_the_minimum_size_wraps_the_host_content() -> void:
+	var frame := _host(true).get_node("Frame") as NotebookFrame
+	var pad := frame.content_padding
+	var want := Vector2(900 + pad.x + pad.z, 1000 + pad.y + pad.w)
+	assert_eq(frame.get_combined_minimum_size(), want, "host minimum plus the padding")
+
+
+func test_the_page_grows_to_hold_big_content() -> void:
+	var host := _host(true)
+	var frame := host.get_node("Frame") as NotebookFrame
+	frame.sort_now()
+	var body := frame.get_node("Body") as Control
+	assert_true(frame.size.x >= frame.get_combined_minimum_size().x, "the frame grew wide enough")
+	assert_true(Rect2(Vector2.ZERO, frame.size).encloses(body.get_rect()), "the content stays on the page")
+
+
+func test_the_minimum_never_drops_below_the_authored_size() -> void:
+	var frame := _frame()
+	assert_eq(frame.get_combined_minimum_size(), frame.custom_minimum_size,
+		"no host content: the scene's own 640x520 floor")
+
+
+func test_a_padding_change_updates_the_minimum() -> void:
+	var frame := _host(true).get_node("Frame") as NotebookFrame
+	var before := frame.get_combined_minimum_size()
+	frame.content_padding = Vector4i(0, 0, 0, 0)
+	assert_eq(frame.get_combined_minimum_size(), Vector2(900, 1000), "padding gone")
+	assert_ne(before, frame.get_combined_minimum_size())
+
+
+func test_an_empty_title_hides_the_sticker() -> void:
+	var frame := _frame()
+	frame.title_text = ""
+	assert_false((frame.get_node("Chrome/Sticker") as Control).visible, "no title, no sticker")
+	frame.title_text = "LOGS"
+	assert_true((frame.get_node("Chrome/Sticker") as Control).visible)
+
+
+func test_the_sticker_widens_to_a_long_title() -> void:
+	var frame := _frame()
+	var sticker := frame.get_node("Chrome/Sticker") as Control
+	frame.title_text = "LOGS"
+	frame.sort_now()
+	assert_eq(sticker.size.x, NotebookFrame.STICKER_MIN_WIDTH, "a short title keeps the authored width")
+	frame.title_text = "DAPATKAN UANG SEKARANG JUGA"
+	frame.sort_now()
+	var title := sticker.get_node("Title") as Control
+	assert_true(sticker.size.x >= title.get_combined_minimum_size().x + 2 * NotebookFrame.STICKER_SIDE_PAD,
+		"a long title gets its width plus the stitching margin")
+	assert_eq(sticker.offset_left, -sticker.offset_right, "still centred")
+
+
+func test_the_page_stops_taps() -> void:
+	assert_eq(_frame().mouse_filter, Control.MOUSE_FILTER_STOP,
+		"a tap on the page must never fall through to a scrim that dismisses")

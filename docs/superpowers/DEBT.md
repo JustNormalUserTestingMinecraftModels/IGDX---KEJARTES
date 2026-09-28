@@ -311,7 +311,11 @@ Inventory or Achievements; and the Debug overlay's Look page stays
 Lobby-only because `DebugManager.gd` is at its clean-code size ceiling
 (1,880 lines, `LARGE_SCRIPTS`). Koperasi cannot bloom at all: its backdrop
 shares Stage with the tappable goods on layer 0 (lobby-look spec,
-section 2).
+section 2). The minigames cannot bloom either: SchoolDay hosts each one
+inside its own tree over a layer-0 Background, so a World layer at -1
+would draw under it, and SchoolDay's fade on the minigame root would not
+reach a CanvasLayer. Blooming them means hosting minigames on their own
+CanvasLayer in SchoolDay (lobby-look spec, pass 3).
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories

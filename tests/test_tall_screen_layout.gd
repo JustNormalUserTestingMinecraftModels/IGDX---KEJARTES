@@ -663,3 +663,16 @@ func test_the_lit_screens_backdrops_fill() -> void:
 		assert_true(room != null, path + " needs World/Room")
 		if room != null:
 			assert_eq(_anchors(room), Vector4(0, 0, 1, 1), path + ": Room is Full Rect")
+
+
+## The exam notices' scrim darkens the whole screen over their full-rect
+## backdrop; a fixed 1080x1920 scrim left the bottom of a tall phone
+## unscrimmed (found in the Part 2 review, 2026-09-28).
+func test_the_exam_notices_scrim_fills_the_screen() -> void:
+	for path in ["res://Scenes/EndGame/TesNotice.tscn", "res://Scenes/EndGame/StatCheck.tscn"]:
+		var scrim := _scene(path).get_node_or_null("Scrim") as Control
+		assert_true(scrim != null, path + " has a Scrim")
+		if scrim == null:
+			continue
+		assert_eq(_anchors(scrim), Vector4(0, 0, 1, 1), path + ": the Scrim is Full Rect")
+		assert_eq(_offsets(scrim), Vector4.ZERO, path + ": and not inset")

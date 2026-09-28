@@ -248,7 +248,7 @@ these win.
    nearer band, so the parallax is between the picture and the UI. Every band
    in the `Room` moves together; `Backdrop`, `Tint`, `Light` and `Shafts` are
    overscanned so no edge shows.
-6. **StatCheck's `Backdrop` becomes Full Rect** as it moves. It was a fixed
+6. **StatCheck's `Backdrop` and `Scrim` become Full Rect** as it moves. It was a fixed
    1080x1920 rect, a tall-phone gap.
 7. **Bloom is measured with the ambient kit's method** (plan
    `2026-09-27-ambient-kit.md`, Task 12): **far** field bloom under 0.01 and

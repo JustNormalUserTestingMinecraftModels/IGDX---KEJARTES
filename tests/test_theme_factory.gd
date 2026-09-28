@@ -349,6 +349,8 @@ const DISPLAY_ROSTER := [
 	"StatFlagPerlu", "StatFlagLelah",
 	# D8: the objective strip's title and its star chip. Its hint is body copy.
 	"ObjectiveTitleLabel", "ObjectiveStarLabel",
+	# 2026-09-28 need gauge: the portrait callout's "Aku butuh ...!" line.
+	"NeedCalloutLabel",
 	# 2026-09-17 achievements: card titles, the Klaim pill, the unlock banner.
 	"AchievementTitleLabel", "AchievementClaimButton", "AchievementToastTitleLabel",
 	"AchievementClaimHeadlineLabel", "AchievementClaimTitleLabel",

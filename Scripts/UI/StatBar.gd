@@ -127,6 +127,25 @@ func layout_fill_followers() -> void:
 		gloss.visible = width > 0.0
 		gloss.position.x = gloss_inset
 		gloss.size.x = maxf(0.0, width)
+	_layout_need_gauge(end)
+
+
+## AturJadwal's need gauge (2026-09-28), seated from the bar's LIVE width:
+## a tall phone stretches the bar well past its authored size, so an
+## authored x would leave the dot mid-bar. GapTail covers the empty stretch
+## from the fill's end to the target end, inside a full-rect GapMask that
+## clips it to the track's rounded ends; TargetDot straddles the target end.
+## Only a bar that authors them, with them showing, pays for this.
+func _layout_need_gauge(end: float) -> void:
+	var mask := get_node_or_null("GapMask") as Control
+	var tail := get_node_or_null("GapMask/GapTail") as Control
+	if mask != null and mask.visible and tail != null:
+		tail.position = Vector2(end, 0.0)
+		tail.size = Vector2(maxf(0.0, size.x - end), size.y)
+	var dot := get_node_or_null("TargetDot") as Control
+	if dot != null and dot.visible:
+		dot.position = Vector2(size.x - dot.size.x / 2.0, (size.y - dot.size.y) / 2.0)
+		dot.pivot_offset = dot.size / 2.0
 
 
 ## Category -> the per-category "StatBar" theme variation baked in

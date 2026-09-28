@@ -11,7 +11,10 @@ extends RefCounted
 ## all three sit below target, so flagging every weak skill would put a chip
 ## on every bar all the time and say nothing; only the single most urgent
 ## one -- the biggest gap to its target -- is flagged "perlu". This is the
-## plan's own fallback for a crowded top section.
+## plan's own fallback for a crowded top section. Every target starts as
+## base + one shared uplift, so at the start of a grade the three gaps tie
+## exactly; a tie (within GAP_EPSILON) goes to the weakest raw skill, never
+## to whichever skill happens to be listed first.
 ##
 ## A NEED (mood, energy) is weak strictly below Balance.BATAS_KELELAHAN, the
 ## collaborator's own "lelah" line, and every weak need is flagged: they are
@@ -33,6 +36,11 @@ const _SKILLS := [
 	["olahraga", "target_olahraga"],
 ]
 
+## Two skill gaps closer than this, in stat points, count as a tie and fall to
+## the tie-break. Half a point: bars show whole numbers, so gaps that differ by
+## less look identical to the player.
+const GAP_EPSILON := 0.5
+
 ## The two needs.
 const _NEEDS := ["mood", "energy"]
 
@@ -41,15 +49,24 @@ const _NEEDS := ["mood", "energy"]
 ## missing from the dictionary is never flagged.
 static func flags_for(student: Dictionary) -> Dictionary:
 	var flags := {}
-	var worst_key := ""
-	var worst_gap := 0.0
+	# Two passes, so the answer never depends on _SKILLS' order: the biggest
+	# gap first, then the weakest raw skill within GAP_EPSILON of it.
+	var gaps := {}
+	var biggest := 0.0
 	for pair in _SKILLS:
 		if not (student.has(pair[0]) and student.has(pair[1])):
 			continue
 		var gap := float(student[pair[1]]) - float(student[pair[0]])
-		if gap > worst_gap:
-			worst_gap = gap
-			worst_key = pair[0]
+		if gap > 0.0:
+			gaps[pair[0]] = gap
+			biggest = maxf(biggest, gap)
+	var worst_key := ""
+	var worst_current := INF
+	for key: String in gaps:
+		var current := float(student[key])
+		if float(gaps[key]) >= biggest - GAP_EPSILON and current < worst_current:
+			worst_current = current
+			worst_key = key
 	if worst_key != "":
 		flags[worst_key] = PERLU
 	for key in _NEEDS:

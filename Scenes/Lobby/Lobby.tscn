@@ -30,6 +30,7 @@
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://p40qndw5jabq" path="res://Scripts/Lobby/LobbyHud.gd" id="32_nese6"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="PackedScene" uid="uid://jdjll060xj8e" path="res://Scenes/Lobby/NotifBadge.tscn" id="37_2xndu"]
 [ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="37_ayldy"]
 [ext_resource type="Texture2D" uid="uid://4t4pb40qap88" path="res://Assets/Images/UI/LobbyHud/icon_plus.svg" id="37_ty8k5"]
 [ext_resource type="Script" uid="uid://c7na1rk10q6kb" path="res://Scripts/Lobby/LobbyProgressHeader.gd" id="38_ayldy"]
@@ -1199,6 +1200,11 @@ icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
 
+[node name="InventoryBadge" parent="Safe/UI/Hud/BookHud/Shelf/ShelfPage/Inventory" unique_id=1704846192 instance=ExtResource("37_2xndu")]
+unique_name_in_owner = true
+layout_mode = 1
+wiggle_delay_seconds = 1.6
+
 [node name="ReportStudent" type="Button" parent="Safe/UI/Hud/BookHud/Shelf/ShelfPage" unique_id=803503757]
 unique_name_in_owner = true
 layout_mode = 0
@@ -1262,6 +1268,10 @@ texture_normal = ExtResource("15_d385k")
 ignore_texture_size = true
 stretch_mode = 5
 
+[node name="DailyBadge" parent="Safe/UI/Hud/IconRail/DailyLogin" unique_id=516191260 instance=ExtResource("37_2xndu")]
+unique_name_in_owner = true
+layout_mode = 1
+
 [node name="SettingsButton" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=575693895]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 96)
@@ -1277,6 +1287,12 @@ layout_mode = 2
 texture_normal = ExtResource("28_ikpat")
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="AchievementBadge" parent="Safe/UI/Hud/IconRail/AchievementButton" unique_id=1108873948 instance=ExtResource("37_2xndu")]
+unique_name_in_owner = true
+layout_mode = 1
+shows_count = false
+wiggle_delay_seconds = 0.8
 
 [node name="SkinSwitchButton" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=1019305615]
 unique_name_in_owner = true
@@ -1298,7 +1314,7 @@ offset_top = -200.0
 offset_bottom = -152.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"ResultDeltaLabel"
 text = "Ketuk dua kali untuk buka HUD."
 horizontal_alignment = 1
 

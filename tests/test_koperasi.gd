@@ -94,6 +94,23 @@ func test_promo_board_reads_gamestate() -> void:
 	assert_true(src.contains("GameState.shop_promo_percent"), "and its discount")
 	assert_true(src.contains("Engine.is_editor_hint()"), "its live fill is editor-gated")
 
+## Control siblings under the same parent draw in scene-declaration order --
+## later wins. Pak Herman's ChatBubble must draw OVER the top band, not
+## under it, or a shown line gets clipped by Signboard/PromoBoard (fix
+## round 1, 2026-09-28: the band was declared after ChatBubble, so it drew
+## on top of his speech). Pinned by each node's position in the saved
+## Koperasi.tscn text, which is exactly the order the scene loader builds
+## the tree in.
+func test_chat_bubble_draws_over_the_top_band() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scenes/Koperasi/Koperasi.tscn")
+	var signboard_at := src.find("[node name=\"Signboard\" type=\"Panel\" parent=\"Stage\"")
+	var promo_board_at := src.find("[node name=\"PromoBoard\" type=\"Panel\" parent=\"Stage\"")
+	var chat_bubble_at := src.find("[node name=\"ChatBubble\" type=\"Control\" parent=\"Stage\"")
+	assert_true(signboard_at >= 0 and promo_board_at >= 0 and chat_bubble_at >= 0,
+		"the band and the chat bubble must all be declared as Stage children")
+	assert_true(chat_bubble_at > signboard_at, "ChatBubble must be declared after Signboard, so it draws over it")
+	assert_true(chat_bubble_at > promo_board_at, "ChatBubble must be declared after PromoBoard, so it draws over it")
+
 ## Task 3: Pak Herman's talk/idle animation. HermanAP must exist with all
 ## three named animations, and must never key `position` -- the Stage
 ## re-anchors on tall phones (test_tall_screen_layout.gd), so an absolute

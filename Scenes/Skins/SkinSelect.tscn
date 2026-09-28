@@ -182,7 +182,7 @@ offset_top = 10.0
 offset_bottom = 54.0
 grow_horizontal = 2
 theme_type_variation = &"SkinRosterHeaderLabel"
-text = "Kelasmu · 6 murid"
+text = "Kelasmu - 6 murid"
 horizontal_alignment = 1
 vertical_alignment = 1
 

@@ -493,7 +493,7 @@ func test_rail_is_center_aligned() -> void:
 	assert_true(_node_block(src, "Rail").contains("alignment = 1"))
 
 
-## The "Kelasmu · N murid" header and its "ketuk untuk pilih" hint sit above
+## The "Kelasmu - N murid" header and its "ketuk untuk pilih" hint sit above
 ## the rail, inside the tray (Task 3, spec §2).
 func test_tray_has_roster_header_and_hint_labels() -> void:
 	var src := FileAccess.get_file_as_string(SCREEN)
@@ -513,10 +513,10 @@ func test_open_sets_the_roster_header_text() -> void:
 	var s := _new_screen()
 	var two: Array[String] = [StudentSkins.NAMES[0], StudentSkins.NAMES[1]]
 	s.open(two)
-	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu · 2 murid")
+	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu - 2 murid")
 	var four: Array[String] = StudentSkins.NAMES.slice(0, 4)
 	s.open(four)
-	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu · 4 murid")
+	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu - 4 murid")
 
 
 ## The tray reads as ruled paper: a tiling Rules TextureRect over
@@ -693,3 +693,32 @@ func test_apply_without_closing_plays_the_apply_cue() -> void:
 	var body := _function_body("apply_without_closing")
 	assert_true(body.contains('play_sfx(&"apply")'),
 		"apply_without_closing must play the apply cue")
+
+
+# ============================================================
+# Whole-branch review, fix round 2 (2026-09-29).
+# ============================================================
+
+## The roster header used a "·" middle dot Boohong, the display face it
+## renders in, does not carry (verified with fontTools) -- exactly the
+## defect ObjectiveHint.title hit first and fixed with a plain hyphen
+## (tests/test_objective_hint.gd). Every character the header, the rail
+## hint, a tile caption or the PAKAI! sticker can produce must be one
+## Boohong actually has, or a device falls back to another font or a box.
+func test_the_tray_text_only_uses_glyphs_the_display_face_has() -> void:
+	var face: Font = DesignTokens.load_default().font_display
+	assert_true(face != null, "no display face")
+	if face == null:
+		return
+	var texts: Array[String] = []
+	for count in [2, 3, 4]:
+		texts.append(SkinSelect.ROSTER_HEADER_FORMAT % count)
+	texts.append("ketuk untuk pilih")
+	texts.append("PAKAI!")
+	for who in StudentSkins.NAMES:
+		texts.append(who)
+	for text in texts:
+		for i in text.length():
+			var code := text.unicode_at(i)
+			assert_true(face.has_char(code),
+				"'%s' in '%s' is not in the display face" % [String.chr(code), text])

@@ -697,7 +697,7 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "SkinTitleLabel", tokens.font_display)
 
-	# The roster header ("Kelasmu · N murid") and its hint line, sitting
+	# The roster header ("Kelasmu - N murid") and its hint line, sitting
 	# above the rail inside the tray (Task 3). The header is a heading, so
 	# it takes the display face; the hint is body copy, like every other
 	# caption in the game.

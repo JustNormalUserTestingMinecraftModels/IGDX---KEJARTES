@@ -7,7 +7,7 @@ extends Control
 ## A full-screen surface over a blurred Lobby: the open character's splash in
 ## a horizontal carousel of their skins, a rail of the current roster's
 ## characters underneath in a scrapbook paper tray, and one TERAPKAN button.
-## The tray's "Kelasmu · N murid" header (RosterHeader) is set from _names in
+## The tray's "Kelasmu - N murid" header (RosterHeader) is set from _names in
 ## open(); its "ketuk untuk pilih" hint is authored, static text.
 ##
 ## It stays an OVERLAY the Lobby instantiates, not a scene of its own, even
@@ -64,8 +64,14 @@ signal closed
 
 ## Width of the splash canvas every card is drawn at before scaling.
 const CARD_W := 1080.0
-## open()'s "Kelasmu · N murid" header text, %d is _names.size().
-const ROSTER_HEADER_FORMAT := "Kelasmu · %d murid"
+## open()'s "Kelasmu - N murid" header text, %d is _names.size(). A plain
+## hyphen, not a middle dot: Boohong, the display face RosterHeader is set
+## in, carries no "·" (measured with fontTools 2026-09-29, the same defect
+## ObjectiveHint.title's own header hit first), and a missing glyph falls
+## back to whatever font the device has, or to a box.
+## tests/test_skin_select.gd pins every character this can produce, plus
+## the tray's other display-face strings, to the face.
+const ROSTER_HEADER_FORMAT := "Kelasmu - %d murid"
 
 @onready var _carousel: Control = %Carousel
 @onready var _track: Control = %Track

@@ -122,7 +122,11 @@ func activate(with_entrance: bool) -> void:
 
 ## Slides the book and rail away (false) or back (true). Under
 ## reduce_motion it lands at once, which is also what the suite tests.
+## Inert in the edited scene, or the next scene_save would bake the hidden
+## offsets, the chevron's turn and the chip's fade into Lobby.tscn.
 func set_open(open: bool) -> void:
+	if Engine.is_editor_hint() and is_part_of_edited_scene():
+		return
 	if open == is_open:
 		return
 	if not open and not _is_sliding():
@@ -179,6 +183,13 @@ func _set_offsets(book: Vector2, rail: Vector2) -> void:
 func _on_resized() -> void:
 	if is_open or _is_sliding():
 		return
+	_redrop()
+
+
+## Rests the hidden book at the drop for the screen as it is now. Unguarded:
+## the slide's own landing calls it while the tween still reports running,
+## in case the screen changed under the slide.
+func _redrop() -> void:
 	var drop: float = _book_hide_drop()
 	book_hud.offset_top = _book_open_offsets.x + drop
 	book_hud.offset_bottom = _book_open_offsets.y + drop
@@ -322,6 +333,7 @@ func _on_slide_landed() -> void:
 	if is_open:
 		AnimUtils.squash_bounce(book_hud)
 		return
+	_redrop()
 	_show_hint()
 	_start_peek_bob()
 

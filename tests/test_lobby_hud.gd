@@ -87,6 +87,20 @@ func teardown() -> void:
 	GameState.player_money = _saved_money
 	GameState.inventory = _saved_inventory
 	GameSettings.reduce_motion = _saved_reduce_motion
+	_restore_shared_hud()
+
+
+## A test that dies part-way must not leave the shared Lobby short or
+## hidden for the tests after it.
+func _restore_shared_hud() -> void:
+	if not is_instance_valid(_lobby):
+		return
+	(_lobby.get_node("Safe") as SafeAreaMargin).extra_margin = Vector4.ZERO
+	var hud := _lobby.get_node_or_null("%Hud") as LobbyHud
+	if hud != null:
+		GameSettings.reduce_motion = true
+		hud.set_open(true)
+		GameSettings.reduce_motion = _saved_reduce_motion
 
 
 func test_header_draws_grade_week_and_stars() -> void:

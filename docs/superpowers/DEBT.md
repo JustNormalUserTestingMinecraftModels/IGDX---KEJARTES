@@ -160,19 +160,24 @@ premultiplied) alpha, no drop shadow. Optional white-on-transparent redraws
 Sway shader stays deferred until separated plant/paper/curtain art exists
 for it to move.
 
-**MURIDMU RosterCard week planner (2026-09-29, Task 1 groundwork).** Six
+**MURIDMU RosterCard week planner (2026-09-29, Task 1 groundwork).** Four
 hand-written SVGs in `Assets/Images/UI/StudentList/`, drop-replaceable at the
-same paths, none wired into a scene yet (that's a later task in the plan):
-`torn_band.svg` (900x120, the WeekHeader band, drawn white for
-`self_modulate` `surface_sunken` tinting, same recipe as `washi_tape.svg`),
-`paperclip.svg` and `pencil.svg` (decorative props at the photo and catatan
-gutter, light-fill/dark-outline like the `UI/Icons/` set but not scanned by
-`tests/test_ui_icons.gd`, whose `NAMES` list is fixed to that folder),
-`icon_add.svg` and `icon_calendar.svg` (256x256, the empty-note "+" and the
-week header's calendar glyph, drawn to `UI/Icons/README.md`'s rules), and
-`sticky_empty_frame.svg` (172x200, a dashed rounded frame for the empty
-sticky note's 9-slice, `StyleBoxFlat` cannot dash). All six are pinned by
+same paths, still not wired into a scene (the WeekHeader band is a later
+task in the plan): `torn_band.svg` (900x120, the WeekHeader band, drawn
+white for `self_modulate` `surface_sunken` tinting, same recipe as
+`washi_tape.svg`), `paperclip.svg` and `pencil.svg` (decorative props at the
+photo and catatan gutter, light-fill/dark-outline like the `UI/Icons/` set
+but not scanned by `tests/test_ui_icons.gd`, whose `NAMES` list is fixed to
+that folder), and `icon_calendar.svg` (256x256, the week header's calendar
+glyph, drawn to `UI/Icons/README.md`'s rules). All four are still pinned by
 `tests/test_student_list.gd::test_part_three_art_exists_and_loads`.
+`icon_add.svg` and `sticky_empty_frame.svg` (from the same groundwork) are
+wired as of Task 2: `StickyNote.gd`'s `scheduled` export shows them on
+`Icon`/`EmptyFrame` for an unplanned day. `sticky_empty_frame.svg` is
+**not** 9-sliced -- its dashed border is fixed path geometry sized to
+StickyNote's actual 172x200 instance rect (`RosterCard.tscn`'s offsets), so
+`EmptyFrame` is a plain `TextureRect` (`STRETCH_KEEP_ASPECT_CENTERED`) that
+renders it near enough 1:1; a 9-slice would stretch or tile the dashes.
 
 ## Asset notes
 

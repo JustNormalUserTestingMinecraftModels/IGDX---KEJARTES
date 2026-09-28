@@ -11,7 +11,10 @@ extends RefCounted
 ## all three sit below target, so flagging every weak skill would put a chip
 ## on every bar all the time and say nothing; only the single most urgent
 ## one -- the biggest gap to its target -- is flagged "perlu". This is the
-## plan's own fallback for a crowded top section.
+## plan's own fallback for a crowded top section. Every target starts as
+## base + one shared uplift, so at the start of a grade the three gaps tie
+## exactly; a tie (within GAP_EPSILON) goes to the weakest raw skill, never
+## to whichever skill happens to be listed first.
 ##
 ## A NEED (mood, energy) is weak strictly below Balance.BATAS_KELELAHAN, the
 ## collaborator's own "lelah" line, and every weak need is flagged: they are
@@ -33,6 +36,11 @@ const _SKILLS := [
 	["olahraga", "target_olahraga"],
 ]
 
+## Two skill gaps closer than this, in stat points, count as a tie and fall to
+## the tie-break. Half a point: bars show whole numbers, so gaps that differ by
+## less look identical to the player.
+const GAP_EPSILON := 0.5
+
 ## The two needs.
 const _NEEDS := ["mood", "energy"]
 
@@ -43,12 +51,19 @@ static func flags_for(student: Dictionary) -> Dictionary:
 	var flags := {}
 	var worst_key := ""
 	var worst_gap := 0.0
+	var worst_current := INF
 	for pair in _SKILLS:
 		if not (student.has(pair[0]) and student.has(pair[1])):
 			continue
-		var gap := float(student[pair[1]]) - float(student[pair[0]])
-		if gap > worst_gap:
+		var current := float(student[pair[0]])
+		var gap := float(student[pair[1]]) - current
+		if gap <= 0.0:
+			continue
+		var clearly_bigger := gap > worst_gap + GAP_EPSILON
+		var tied_but_weaker := absf(gap - worst_gap) <= GAP_EPSILON and current < worst_current
+		if worst_key == "" or clearly_bigger or tied_but_weaker:
 			worst_gap = gap
+			worst_current = current
 			worst_key = pair[0]
 	if worst_key != "":
 		flags[worst_key] = PERLU

@@ -1059,17 +1059,137 @@ func test_the_mood_and_energy_rows_show_their_own_need() -> void:
 		"energy is projected with the week's energy cost")
 
 
-## D7 wiring: the flags come from StatFlags over the projected numbers, and
-## their nudge honours the editor and Reduce Motion.
+## D7 wiring: the flags come from StatFlags over the projected numbers and go
+## to NeedGauge (2026-09-28), whose loops -- the chip nudge and the dot pulse
+## -- honour the editor and Reduce Motion.
 func test_the_weak_stat_flags_are_wired_to_statflags() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_true(src.contains("_update_stat_flags(projected)"), "the flags must read the projected stats")
 	assert_true(src.contains("StatFlags.flags_for(projected)"), "the flags must come from StatFlags")
-	var at := src.find("func _start_flag_nudge")
-	assert_true(at >= 0, "the chips need their nudge")
-	var body := src.substr(at, src.find("\nfunc ", at + 1) - at)
-	assert_true(body.contains("Engine.is_editor_hint()") and body.contains("GameSettings.reduce_motion"),
-		"the nudge is off in the editor and under Reduce Motion")
+	assert_true(src.contains("_need_gauge.update("), "the flags must go to NeedGauge")
+	var gauge_src := FileAccess.get_file_as_string(_NEED_GAUGE_PATH)
+	for fn in ["func _start_nudge", "func _start_pulse"]:
+		var at := gauge_src.find(fn)
+		assert_true(at >= 0, "NeedGauge needs %s" % fn)
+		var body := gauge_src.substr(at, gauge_src.find("\nfunc ", at + 1) - at)
+		assert_true(body.contains("Engine.is_editor_hint()") and body.contains("GameSettings.reduce_motion"),
+			"%s is off in the editor and under Reduce Motion" % fn)
+	for fn in ["func _update_gap_markers", "func _update_callout", "func _update_need_chips"]:
+		assert_true(gauge_src.contains(fn), "NeedGauge needs %s" % fn)
+
+
+# ------------------------------------------ 2026-09-28 need gauge
+
+const _NEED_GAUGE_PATH := "res://Scripts/AturJadwal/NeedGauge.gd"
+
+## The three skill bars, each with the category its gauge is tinted to.
+const _SKILL_BARS := {
+	"BGStat/Akademis": "Akademis",
+	"BGStat/SeniBudaya": "SeniBudaya",
+	"BGStat/Olahraga": "Olahraga",
+}
+
+
+## Each skill bar authors a hidden GapTail (the ghost track over the stretch
+## still to go) and a hidden TargetDot; neither ever takes a tap.
+func test_each_skill_bar_authors_a_gap_tail_and_target_dot() -> void:
+	for p in _SKILL_BARS:
+		var bar := _screen.get_node_or_null(p) as StatBar
+		assert_true(bar != null, "%s must be a StatBar" % p)
+		if bar == null:
+			continue
+		var tail := bar.get_node_or_null("GapTail") as TextureRect
+		assert_true(tail != null and tail.texture != null
+			and tail.texture.resource_path.ends_with("track_ghost.png"),
+			"%s needs a GapTail TextureRect showing track_ghost.png" % p)
+		if tail != null:
+			assert_eq(tail.expand_mode, TextureRect.EXPAND_IGNORE_SIZE,
+				"%s's GapTail must not take the texture's width as a minimum" % p)
+		var dot := bar.get_node_or_null("TargetDot") as Panel
+		assert_true(dot != null and dot.theme_type_variation == &"StatTargetDot",
+			"%s needs a StatTargetDot Panel" % p)
+		for n in [tail, dot]:
+			if n != null:
+				assert_false((n as Control).visible, "%s/%s starts hidden" % [p, n.name])
+				assert_eq((n as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
+					"%s/%s must never take a tap" % [p, n.name])
+
+
+## The portrait's speech bubble: authored, hidden, tap-transparent.
+func test_the_need_callout_is_authored_hidden() -> void:
+	var callout := _screen.get_node_or_null("NeedCallout") as PanelContainer
+	assert_true(callout != null and callout.theme_type_variation == &"NeedCalloutPanel",
+		"NeedCallout must be a NeedCalloutPanel PanelContainer")
+	if callout == null:
+		return
+	assert_false(callout.visible, "the callout starts hidden")
+	assert_eq(callout.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the callout never takes a tap")
+	assert_true(callout.get_node_or_null("Row/Icon") is TextureRect, "the callout needs Row/Icon")
+	var text := callout.get_node_or_null("Row/Text") as Label
+	assert_true(text != null and text.theme_type_variation == &"NeedCalloutLabel",
+		"the callout's Row/Text is a NeedCalloutLabel")
+
+
+## The tail and dot are seated from the bar's LIVE width: a tall phone
+## stretches the bar far past its authored size, and an authored x left the
+## dot floating mid-bar. The dot straddles the target end; the tail runs from
+## the fill's end to it.
+func test_the_gap_markers_are_seated_from_the_live_width() -> void:
+	var bar := _screen.get_node_or_null("BGStat/Akademis") as StatBar
+	assert_true(bar != null, "Akademis is gone")
+	if bar == null:
+		return
+	var tail := bar.get_node("GapTail") as Control
+	var dot := bar.get_node("TargetDot") as Control
+	tail.visible = true
+	dot.visible = true
+	for width in [324.0, 601.0]:
+		bar.size.x = width
+		bar.value = 40.0
+		bar.layout_fill_followers()
+		assert_true(is_equal_approx(dot.position.x + dot.size.x / 2.0, bar.size.x),
+			"at %dpx the dot straddles the target end (centre %s)" % [width, dot.position.x + dot.size.x / 2.0])
+		assert_true(is_equal_approx(tail.position.x, bar.fill_end_x()), "at %dpx the tail starts at the fill's end" % width)
+		assert_true(is_equal_approx(tail.position.x + tail.size.x, bar.size.x),
+			"at %dpx the tail reaches the target end" % width)
+
+
+## Behaviour, through the real scene: a "perlu" skill is gauged on its own bar
+## and voiced by the callout; a "lelah" need wears its chip; the skill's own
+## word chip stays hidden; and an empty flag set clears everything.
+func test_need_gauge_shows_one_skill_and_the_tired_need() -> void:
+	var gauge := NeedGauge.new()
+	var bars := {
+		"akademis": _screen.get_node("BGStat/Akademis"),
+		"seni_budaya": _screen.get_node("BGStat/SeniBudaya"),
+		"olahraga": _screen.get_node("BGStat/Olahraga"),
+		"mood": _screen.get_node("BGStat/Mood"),
+		"energy": _screen.get_node("BGStat/Energy"),
+	}
+	var tokens := DesignTokens.load_default()
+	gauge.update(_screen, {"seni_budaya": StatFlags.PERLU, "energy": StatFlags.LELAH}, bars, tokens)
+	var seni := _screen.get_node("BGStat/SeniBudaya")
+	assert_true(seni.get_node("GapTail").visible and seni.get_node("TargetDot").visible,
+		"the perlu skill's bar is gauged")
+	assert_eq((seni.get_node("TargetDot") as Control).self_modulate, tokens.category_color("SeniBudaya"),
+		"the dot is tinted to the skill's category")
+	assert_false(seni.get_node("Flag").visible, "the gauge replaces the skill's word chip")
+	var aka := _screen.get_node("BGStat/Akademis")
+	assert_false(aka.get_node("GapTail").visible or aka.get_node("TargetDot").visible,
+		"only one skill is ever gauged")
+	var chip := _screen.get_node("BGStat/Energy/Flag") as Label
+	assert_true(chip.visible and chip.text == StatFlags.LELAH, "the tired need wears its lelah chip")
+	var callout := _screen.get_node("NeedCallout") as Control
+	assert_true(callout.visible, "the callout speaks for the gauged skill")
+	assert_eq((callout.get_node("Row/Text") as Label).text, "Aku butuh Seni Budaya!")
+	assert_eq((callout.get_node("Row/Icon") as TextureRect).texture,
+		(_screen.get_node("BGStat/IconSeniBudaya") as TextureRect).texture,
+		"the callout wears the skill's own icon")
+	gauge.update(_screen, {}, bars, tokens)
+	assert_false(seni.get_node("GapTail").visible or seni.get_node("TargetDot").visible,
+		"a cleared skill drops its gauge")
+	assert_false(chip.visible, "a rested need drops its chip")
+	assert_false(callout.visible, "no skill behind, no callout")
 
 
 # ------------------------------------------ 2026-09-24 visual polish, phase 3

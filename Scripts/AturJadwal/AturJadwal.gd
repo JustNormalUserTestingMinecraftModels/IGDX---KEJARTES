@@ -18,12 +18,6 @@ extends Control
 
 signal _holiday_dismissed
 
-# -- Weak-stat chip nudge (2026-09-24 visual polish, D7) ---------------------
-## How far a "perlu" / "lelah" chip bobs up at the top of its nudge, in px.
-const FLAG_NUDGE_PX := 6.0
-## Seconds for one full nudge, up and back.
-const FLAG_NUDGE_SECONDS := 1.6
-
 ## Id of the student whose stat rows were last staggered in. Guards
 ## _stagger_stat_rows() so it only plays on screen entry or an actual
 ## student switch -- _update_student_display() also runs on every activity
@@ -714,58 +708,17 @@ func _update_student_display():
 		_last_staggered_student_id = current_id
 		_stagger_stat_rows()
 
-## Shows each bar's weak-stat chip (2026-09-24 visual polish, D7) from
-## StatFlags, over the same projected numbers the bars show, so assigning a
-## rest day can clear a "lelah" as the player watches. Each bar authors its
-## own hidden "Flag" Label; this only fills, restyles and shows it.
+## Shows the weak-stat signals (a need's "lelah" chip, the most-needed
+## skill's gap marker and portrait callout) from StatFlags, over the same
+## projected numbers the bars show. NeedGauge owns the nodes' logic.
+var _need_gauge := NeedGauge.new()
+
 func _update_stat_flags(projected: Dictionary) -> void:
-	var flags := StatFlags.flags_for(projected)
 	var bars := {
 		"akademis": akademis_bar, "seni_budaya": seni_budaya_bar, "olahraga": olahraga_bar,
 		"mood": mood_bar, "energy": energy_bar,
 	}
-	for key in bars:
-		var bar: Control = bars[key]
-		if bar == null:
-			continue
-		var flag := bar.get_node_or_null("Flag") as Label
-		if flag == null:
-			continue
-		var word: String = flags.get(key, "")
-		var was_visible := flag.visible
-		flag.visible = word != ""
-		if word == "":
-			_stop_flag_nudge(flag)
-			continue
-		flag.text = word
-		flag.theme_type_variation = &"StatFlagPerlu" if word == StatFlags.PERLU else &"StatFlagLelah"
-		if not was_visible:
-			_start_flag_nudge(flag)
-
-
-## The chip's gentle nudge: a slow bob up and back, so a flag reads as a
-## prompt without shouting. Off in the editor and under Reduce Motion.
-var _flag_nudges: Dictionary = {}
-
-func _start_flag_nudge(flag: Label) -> void:
-	if Engine.is_editor_hint() or GameSettings.reduce_motion:
-		return
-	_stop_flag_nudge(flag)
-	var rest_y := flag.position.y
-	flag.set_meta(&"nudge_rest_y", rest_y)
-	var tw := create_tween().set_loops()
-	tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(flag, "position:y", rest_y - FLAG_NUDGE_PX, FLAG_NUDGE_SECONDS / 2.0)
-	tw.tween_property(flag, "position:y", rest_y, FLAG_NUDGE_SECONDS / 2.0)
-	_flag_nudges[flag] = tw
-
-func _stop_flag_nudge(flag: Label) -> void:
-	var tw: Tween = _flag_nudges.get(flag, null)
-	if tw != null and tw.is_valid():
-		tw.kill()
-	_flag_nudges.erase(flag)
-	if flag.has_meta(&"nudge_rest_y"):
-		flag.position.y = flag.get_meta(&"nudge_rest_y")
+	_need_gauge.update(self, StatFlags.flags_for(projected), bars, _get_tokens())
 
 ## Brings the five stat rows in together with their icons when the
 ## displayed student changes. Opacity and scale only -- the icons sit on

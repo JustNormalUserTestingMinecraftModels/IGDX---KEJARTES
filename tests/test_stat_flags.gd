@@ -41,6 +41,33 @@ func test_only_the_most_urgent_skill_is_flagged() -> void:
 		"the biggest gap to target gets the one 'perlu' chip")
 
 
+## At the start of a grade every target is base + one shared uplift, so all
+## three gaps are equal. The tie used to go to akademis, the first skill in
+## the list, for every student; it now goes to the weakest raw skill.
+func test_an_exact_gap_tie_flags_the_weakest_raw_skill() -> void:
+	var s := _healthy()
+	s["akademis"] = 50.0
+	s["target_akademis"] = 65.0
+	s["seni_budaya"] = 30.0  # weakest raw skill
+	s["target_seni_budaya"] = 45.0
+	s["olahraga"] = 40.0
+	s["target_olahraga"] = 55.0
+	assert_eq(StatFlags.flags_for(s), {"seni_budaya": StatFlags.PERLU},
+		"a three-way gap tie flags the lowest raw skill, not akademis")
+
+
+## The tie-break only settles ties: a genuinely larger gap still wins over a
+## skill that is lower in raw value but closer to its own target.
+func test_a_clear_biggest_gap_wins_over_a_lower_raw_skill() -> void:
+	var s := _healthy()
+	s["akademis"] = 50.0
+	s["target_akademis"] = 80.0  # 30 short: most urgent
+	s["seni_budaya"] = 20.0
+	s["target_seni_budaya"] = 30.0  # 10 short, but the lowest raw value
+	assert_eq(StatFlags.flags_for(s), {"akademis": StatFlags.PERLU},
+		"urgency beats a low raw value")
+
+
 func test_a_skill_exactly_at_target_is_not_weak() -> void:
 	var s := _healthy()
 	s["olahraga"] = s["target_olahraga"]

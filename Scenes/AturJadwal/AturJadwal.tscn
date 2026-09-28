@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://bvc6vlo87qpl0" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
 [ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
 [ext_resource type="Texture2D" uid="uid://cixngx8hgvgmn" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
+[ext_resource type="Texture2D" uid="uid://217hll1tlyur" path="res://Assets/Images/UI/BarFill/track_ghost.png" id="9_li4qs"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="10_return"]
 [ext_resource type="Texture2D" uid="uid://buen031hxfvy4" path="res://Assets/Images/StudentCard/stat_akademis.png" id="13_icon_akademis"]
 [ext_resource type="Material" path="res://Scripts/Shaders/objective_strip_material.tres" id="14_7emk0"]
@@ -201,6 +202,31 @@ offset_bottom = 15.0
 mouse_filter = 2
 theme_type_variation = &"StatBarGloss"
 
+[node name="GapTail" type="TextureRect" parent="BGStat/Akademis" unique_id=166104217]
+visible = false
+self_modulate = Color(0.1216, 0.4353, 0.7294, 0.5)
+texture_repeat = 2
+layout_mode = 0
+offset_left = 160.0
+offset_right = 324.0
+offset_bottom = 70.0
+mouse_filter = 2
+texture = ExtResource("9_li4qs")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="TargetDot" type="Panel" parent="BGStat/Akademis" unique_id=314303072]
+visible = false
+self_modulate = Color(0.1216, 0.4353, 0.7294, 1)
+layout_mode = 0
+offset_left = 313.0
+offset_top = 24.0
+offset_right = 335.0
+offset_bottom = 46.0
+pivot_offset = Vector2(11, 11)
+mouse_filter = 2
+theme_type_variation = &"StatTargetDot"
+
 [node name="ValueLabel" type="Label" parent="BGStat/Akademis" unique_id=684455384]
 layout_mode = 0
 offset_top = 8.0
@@ -263,6 +289,31 @@ offset_bottom = 15.0
 mouse_filter = 2
 theme_type_variation = &"StatBarGloss"
 
+[node name="GapTail" type="TextureRect" parent="BGStat/SeniBudaya" unique_id=149059834]
+visible = false
+self_modulate = Color(0.2392, 0.498, 0.0706, 0.5)
+texture_repeat = 2
+layout_mode = 0
+offset_left = 160.0
+offset_right = 324.0
+offset_bottom = 70.0
+mouse_filter = 2
+texture = ExtResource("9_li4qs")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="TargetDot" type="Panel" parent="BGStat/SeniBudaya" unique_id=1044368808]
+visible = false
+self_modulate = Color(0.2392, 0.498, 0.0706, 1)
+layout_mode = 0
+offset_left = 313.0
+offset_top = 24.0
+offset_right = 335.0
+offset_bottom = 46.0
+pivot_offset = Vector2(11, 11)
+mouse_filter = 2
+theme_type_variation = &"StatTargetDot"
+
 [node name="ValueLabel" type="Label" parent="BGStat/SeniBudaya" unique_id=1676429292]
 layout_mode = 0
 offset_top = 8.0
@@ -324,6 +375,31 @@ offset_right = 114.0
 offset_bottom = 15.0
 mouse_filter = 2
 theme_type_variation = &"StatBarGloss"
+
+[node name="GapTail" type="TextureRect" parent="BGStat/Olahraga" unique_id=727136322]
+visible = false
+self_modulate = Color(0.8784, 0.2275, 0.0941, 0.5)
+texture_repeat = 2
+layout_mode = 0
+offset_left = 160.0
+offset_right = 324.0
+offset_bottom = 70.0
+mouse_filter = 2
+texture = ExtResource("9_li4qs")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="TargetDot" type="Panel" parent="BGStat/Olahraga" unique_id=1792829561]
+visible = false
+self_modulate = Color(0.8784, 0.2275, 0.0941, 1)
+layout_mode = 0
+offset_left = 313.0
+offset_top = 24.0
+offset_right = 335.0
+offset_bottom = 46.0
+pivot_offset = Vector2(11, 11)
+mouse_filter = 2
+theme_type_variation = &"StatTargetDot"
 
 [node name="ValueLabel" type="Label" parent="BGStat/Olahraga" unique_id=1385557803]
 layout_mode = 0
@@ -534,6 +610,35 @@ offset_right = 437.0
 offset_bottom = 742.0
 theme_type_variation = &"H1Label"
 text = "Nama"
+
+[node name="NeedCallout" type="PanelContainer" parent="." unique_id=1693550434]
+visible = false
+layout_mode = 0
+offset_left = 40.0
+offset_top = 560.0
+offset_right = 40.0
+offset_bottom = 560.0
+mouse_filter = 2
+theme_type_variation = &"NeedCalloutPanel"
+
+[node name="Row" type="HBoxContainer" parent="NeedCallout" unique_id=769575379]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="NeedCallout/Row" unique_id=494578786]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("13_icon_akademis")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="NeedCallout/Row" unique_id=466003701]
+layout_mode = 2
+theme_type_variation = &"NeedCalloutLabel"
+text = "Aku butuh Akademik!"
+vertical_alignment = 1
 
 [node name="ObjectiveStrip" type="Button" parent="." unique_id=2140563738]
 layout_mode = 0

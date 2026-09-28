@@ -1274,6 +1274,32 @@ func test_particle_scenes_are_one_shot_and_start_idle() -> void:
 		fx.free()
 
 
+## Without particle_flag_disable_z a 2D ParticleProcessMaterial ignores
+## angle and angular_velocity, so every piece stays upright (proven live on
+## 2026-09-12 building PaperConfetti). Any emitter here that asks for spin
+## must carry the flag, children included.
+func test_spinning_particle_scenes_set_disable_z() -> void:
+	for path in [
+		"res://Scenes/SchoolSimulation/RewardBurst.tscn",
+		"res://Scenes/SchoolSimulation/CoinShower.tscn",
+	]:
+		var fx := (load(path) as PackedScene).instantiate() as GPUParticles2D
+		var spinners := 0
+		var emitters: Array[Node] = [fx]
+		emitters.append_array(fx.find_children("*", "GPUParticles2D"))
+		for e in emitters:
+			var mat := (e as GPUParticles2D).process_material as ParticleProcessMaterial
+			if mat == null:
+				continue
+			if mat.angular_velocity_min != 0.0 or mat.angular_velocity_max != 0.0 \
+					or mat.angle_min != 0.0 or mat.angle_max != 0.0:
+				spinners += 1
+				assert_true(mat.particle_flag_disable_z,
+					"%s/%s spins, so it needs particle_flag_disable_z" % [path, e.name])
+		assert_gt(spinners, 0, "%s must still ask for spin" % path)
+		fx.free()
+
+
 ## Read a .gd as text. Many tests here are source scans rather than
 ## behavioural, because a lot of this UI cannot be driven headlessly.
 func _script_source(path: String) -> String:

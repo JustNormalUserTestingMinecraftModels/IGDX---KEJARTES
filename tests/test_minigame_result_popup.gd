@@ -308,6 +308,26 @@ func test_every_particle_scene_is_a_one_shot_reward_particles_emitter() -> void:
 		assert_true(node.process_material != null, "%s has an authored material" % path)
 
 
+## Without particle_flag_disable_z a 2D ParticleProcessMaterial ignores
+## angle and angular_velocity, so every piece stays upright (proven live on
+## 2026-09-12 building PaperConfetti). Any emitter that asks for spin must
+## carry the flag, children included.
+func test_spinning_particle_scenes_set_disable_z() -> void:
+	for path in PARTICLE_SCENES:
+		var root: Node = load(path).instantiate()
+		track(root)
+		var emitters: Array[Node] = [root]
+		emitters.append_array(root.find_children("*", "GPUParticles2D"))
+		for e in emitters:
+			var mat := (e as GPUParticles2D).process_material as ParticleProcessMaterial
+			if mat == null:
+				continue
+			if mat.angular_velocity_min != 0.0 or mat.angular_velocity_max != 0.0 \
+					or mat.angle_min != 0.0 or mat.angle_max != 0.0:
+				assert_true(mat.particle_flag_disable_z,
+					"%s/%s spins, so it needs particle_flag_disable_z" % [path, e.name])
+
+
 ## The variations the result card and score HUD are styled by. Their existence
 ## in the baked theme is what lets Tasks 12 and 14 delete every runtime
 ## StyleBox and theme_override_* from MinigameResultPopup.configure().

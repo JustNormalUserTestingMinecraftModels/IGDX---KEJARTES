@@ -8,6 +8,18 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Older particle bursts finally spin
+
+A 2D `ParticleProcessMaterial` ignores `angle` and `angular_velocity`
+without `particle_flag_disable_z` (found building PaperConfetti on
+2026-09-12). Three older emitters asked for spin and never got it; each now
+sets the flag: `RewardBurst` (its root burst), `CoinShower` (the week-recap
+banner's coins) and `StarBurst`'s star burst. Rescued from a worktree
+stranded since 2026-09-12, minus `CelebrationConfetti` and `ResultConfetti`,
+retired since. `test_spinning_particle_scenes_set_disable_z` in
+`day_summary` and `minigame_result_popup` pins that any emitter asking for
+spin carries the flag, children included.
+
 ## 2026-09-28 — Settings layout
 
 - Settings takes Inventory's look: the blurred Lobby (`blur_background.png`)

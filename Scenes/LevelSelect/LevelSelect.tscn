@@ -135,9 +135,22 @@ grow_vertical = 2
 focus_mode = 0
 theme_type_variation = &"SecondaryButtonL"
 disabled = true
-icon = ExtResource("10_chevl")
-icon_alignment = 1
-expand_icon = true
+
+[node name="Arrow" type="TextureRect" parent="Safe/UI/Stack/PrevArrow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_chevl")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NextArrow" type="Button" parent="Safe/UI/Stack" unique_id=121717348]
 custom_minimum_size = Vector2(120, 128)
@@ -155,9 +168,22 @@ grow_horizontal = 0
 grow_vertical = 2
 focus_mode = 0
 theme_type_variation = &"SecondaryButtonL"
-icon = ExtResource("11_chevr")
-icon_alignment = 1
-expand_icon = true
+
+[node name="Arrow" type="TextureRect" parent="Safe/UI/Stack/NextArrow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_chevr")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Brief" type="Panel" parent="Safe/UI" unique_id=1362666520]
 layout_mode = 1

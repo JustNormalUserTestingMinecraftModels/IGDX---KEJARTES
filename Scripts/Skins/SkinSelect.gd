@@ -308,7 +308,7 @@ func go_back() -> void:
 ## roster and tests can drive this with plain arrays.
 static func roster_names(students: Array) -> Array[String]:
 	var names: Array[String] = []
-	for entry in students:
+	for entry: Variant in students:
 		if not entry is Dictionary:
 			continue
 		var student_name: String = str((entry as Dictionary).get("name", ""))

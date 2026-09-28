@@ -59,7 +59,7 @@ depth_by_child = {
 "Light": 1.0,
 "Shafts": 1.0
 }
-overscan_children = Array[StringName]([&"Backdrop", &"Shafts"])
+overscan_children = Array[StringName]([&"Backdrop", &"Light", &"Shafts"])
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=520798661]
 material = ExtResource("3_we22b")

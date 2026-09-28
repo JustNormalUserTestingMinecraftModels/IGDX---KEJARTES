@@ -103,7 +103,7 @@ func _assert_flat_parallax(c: Array[Dictionary], scene_path: String, want: Array
 			continue
 		assert_eq(float(depths.get(band, 0.0)), FLAT_DEPTH,
 			"%s: %s drifts with the picture" % [scene_path, band])
-		if band in ["Backdrop", "Tint", "Shafts"]:
+		if band in ["Backdrop", "Tint", "Light", "Shafts"]:
 			assert_true(overscan.has(StringName(band)),
 				"%s: %s fills the screen, so it is overscanned" % [scene_path, band])
 

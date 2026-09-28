@@ -592,7 +592,7 @@ func _assert_flat_parallax(c: Array[Dictionary], scene_path: String, want: Array
 			continue
 		assert_eq(float(depths.get(band, 0.0)), FLAT_DEPTH,
 			"%s: %s drifts with the picture" % [scene_path, band])
-		if band in ["Backdrop", "Tint", "Shafts"]:
+		if band in ["Backdrop", "Tint", "Light", "Shafts"]:
 			assert_true(overscan.has(StringName(band)),
 				"%s: %s fills the screen, so it is overscanned" % [scene_path, band])
 
@@ -745,7 +745,7 @@ depth_by_child = {
 "Light": 1.0,
 "Shafts": 1.0
 }
-overscan_children = Array[StringName]([&"Backdrop", &"Shafts"])
+overscan_children = Array[StringName]([&"Backdrop", &"Light", &"Shafts"])
 
 [node name="Glow" parent="." instance=ExtResource("look_glow")]
 ```
@@ -1015,7 +1015,7 @@ depth_by_child = {
 "Shafts": 1.0,
 "Tint": 1.0
 }
-overscan_children = Array[StringName]([&"Backdrop", &"Tint", &"Shafts"])
+overscan_children = Array[StringName]([&"Backdrop", &"Light", &"Tint", &"Shafts"])
 
 [node name="Glow" parent="." instance=ExtResource("look_glow")]
 ```

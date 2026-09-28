@@ -246,7 +246,7 @@ these win.
    blur.
 5. **Flat screens drift at depth 1.0**, not the Lobby's 0.15: they have no
    nearer band, so the parallax is between the picture and the UI. Every band
-   in the `Room` moves together; `Backdrop`, `Tint` and `Shafts` are
+   in the `Room` moves together; `Backdrop`, `Tint`, `Light` and `Shafts` are
    overscanned so no edge shows.
 6. **StatCheck's `Backdrop` becomes Full Rect** as it moves. It was a fixed
    1080x1920 rect, a tall-phone gap.

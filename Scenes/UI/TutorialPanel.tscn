@@ -5,6 +5,10 @@
 
 [node name="TutorialPanel" type="MarginContainer" unique_id=221373627]
 mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 script = ExtResource("1_v0ojc")
 
 [node name="Frame" parent="." instance=ExtResource("nb_frame")]

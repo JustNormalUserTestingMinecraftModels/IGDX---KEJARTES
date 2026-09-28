@@ -15,6 +15,16 @@ extends MarginContainer
 ## dimming Scrim overlay is NOT part of this scene: it is the panel's
 ## parent in the real hierarchy, not a sibling inside it, so it stays
 ## owned by the caller.
+##
+## The root MarginContainer's own margin_* constants are zeroed in the
+## .tscn (layout-only overrides): the baked theme gives every
+## MarginContainer the screen margin (48px a side, ThemeFactory.gd) by
+## default, and with no override the root silently added 96px to the
+## panel's width and height on top of Frame's own size -- 1036px on a
+## 1080px screen for StudentCard's shipped numbers (fix round 2, F3). The
+## inner `Frame/Margin` needs no such override: _apply_geometry() already
+## sets its margin_* explicitly every time, which masks the theme default
+## even at content_margin == 0.
 
 ## Panel width as a fraction of the viewport width, before max_width clamps
 ## it. StudentCard ships 0.92; SchoolDay ships 0.85.

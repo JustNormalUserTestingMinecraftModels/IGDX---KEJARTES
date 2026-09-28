@@ -1,9 +1,9 @@
 # UI Depth Pass — Design
 
 **Date:** 2026-09-28
-**Status:** approved in brainstorm, awaiting spec review
+**Status:** approved in brainstorm and spec review (revised the same day: the scrapbook Lobby is kept and harmonised, and green is the main-action colour)
 **Mockups:** `docs/superpowers/specs/mockups/ui-depth-pass/`. Each is a standalone HTML file; open it in any browser.
-- `1-palette-and-lobby.html`: the palette, the button family, and the three Lobby options (B chosen).
+- `1-palette-and-lobby.html`: the palette, the button family, and three Lobby options. These are **superseded for the Lobby** by the mentor-approved scrapbook HUD; see Decisions.
 - `2-button-rim.html`: rim or no rim (column 2 chosen: no rim, outlined text).
 - `3-notebook-frame.html`: the chosen popup frame, as a sheet with tabs and as a dialog.
 - `4-press-feel.html`: the press demo (B, sink onto the lip, chosen).
@@ -29,7 +29,7 @@ This pass gives KejarTes those traits while keeping its identity.
 | Anchors | Brown (`brand_primary` family) and cream (`surface_*`) stay the anchor colours. |
 | Accents | Sampled from the references. Each accent is a gloss / base / lip trio (table below). |
 | Buttons | **No cream rim.** Depth comes from the lip plus a gloss band. White display text, outlined and hard-dropped in the button's lip colour. On cream buttons the text is brown with no outline. |
-| Lobby | Option B: a sunflower **JADWAL!**, and cream nav tiles, each with a round, colour-coded icon badge. |
+| Lobby | **Keep the mentor-approved scrapbook HUD** (`2026-09-27-lobby-scrapbook-hud-design.md`, live on `Textures`): its book, layout, washi-taped tiles, header plates and the four rail icons stay. This pass only **harmonises** it. Its buttons get the lipped stylebox and outlined lettering; its tile hues keep their meaning but take the palette's tones (JADWAL! and Koperasi mint, Inventory sky, Rapor sunflower); and its tiles' thin nav icons move to the new icon paths. The rail icons (`setting.png`, `achievement_button.png`, `icon_daily_login.png`, `skin_switch.png`) are finished assets and are not touched. |
 | Popup frame | **Notebook:** brown hardcover with a lip, a cream ruled page with two paper edges and a red margin line, chunky spiral rings through punched holes, lipped tabs, a stitched sticker title, controls in a sunken well, torn-end washi tape, and a round tomato ✕. There are two variants, `SHEET` and `DIALOG`. |
 | Press | **Sink onto the lip:** the face drops by the lip height on touch, then gets a small pop on release. Buttons without a lip keep today's shrink. |
 | Haptics | A ~10 ms tick on press, for **main-action roles only**. It respects the existing Getar setting. |
@@ -42,15 +42,15 @@ This pass gives KejarTes those traits while keeping its identity.
 
 | Name | Gloss | Base | Lip | Role |
 |---|---|---|---|---|
-| Sunflower | `FFE07A` | `FFC93C` | `C9801A` | The one main action per screen (`LobbyCtaButton`, `PrimaryButton`), the active tab, coins |
-| Mint | `6BE3BB` | `2EC99A` | `178A68` | Affirm (`SuccessButton`: Terima, Lanjut), toggles on |
+| Mint | `6BE3BB` | `2EC99A` | `178A68` | **The main action and affirm, everywhere** (`PrimaryButton`, `LobbyCtaButton`, `BookHeroButton`, `SuccessButton`: Terima, Lanjut; the coin `+`), toggles on, the Koperasi tile |
+| Sunflower | `FFE07A` | `FFC93C` | `C9801A` | **Highlight only, never an action:** the active tab, stars, coins, rewards, the Rapor tile. Gold on a button reads as "buy currency" (scrapbook spec §3). |
 | Sky | `8CC2F5` | `5EA1E6` | `3469B3` | Info, inactive tabs, slider knobs |
 | Tomato | `F58A72` | `E5553E` | `A3301E` | Danger and close (`DangerButton`, the ✕) |
 | Tangerine | `FFB36A` | `F58A3C` | `BD561A` | Koperasi badge, secondary warm accent |
 | Brown | `B87A52` | `9C6440` | `56321B` | Back and neutral (`SecondaryButton`), notebook cover |
 | Cream | `FFFFFF` | `FFF1DC` | `C9A57E` | Nav tiles, Batal (`StudentCardSecondaryButton`) |
 
-The stat categories already own blue (Akademis), red (Olahraga), green (Seni) and teal (Wirausaha). So colour is spent only on the action roles above, never as full-candy button rows.
+The stat categories already own blue (Akademis), red (Olahraga), green (Seni) and teal (Wirausaha). So colour is spent only on the action roles above, never as full-candy button rows. The Lobby's colour-coded tiles are the one approved exception.
 
 ## Architecture
 
@@ -83,7 +83,8 @@ The content margins are the base `StyleBox` margins. For the pressed state, the 
   - `pressed` sets `pressed = true` and shifts the margins
   - `disabled` blends the face 70% toward `surface_sunken` and halves the lip
 - **Role colours** follow the palette table. Information badges (`RosterStatusBelum`/`Sudah`, `QuirkBadge`/`PersonaBadge`, `SpecialtyBadge`) keep their meaning colours and gain a lip.
-- **New variations:** `NotebookTab`, `NotebookTabActive`, `NotebookClose`, `IconBadge` (with a size step), `NotebookSticker` (label).
+- **New variations:** `NotebookTab`, `NotebookTabActive`, `NotebookClose`, `NotebookSticker` (label).
+- **The Lobby scrapbook variations** (`BookHeroButton`, `NavTileKoperasi`/`Inventory`/`Rapor`, `PlusButton`) already go through `_add_button_variation`, so they become lipped with everything else. `_thicken_lip()` sets `lip_height` to its `LOBBY_HUD_LIP` instead of `border_width_bottom`. Their fills move to the palette trios above. The textured plates (`BookCoverPanel`, `BookPagePanel`, `CoinPlate`, `ChevronGripButton`) keep their art.
 - **Code that casts a button stylebox to `StyleBoxFlat` switches to `StyleBox`.** That covers `_set_content_margins`, `_add_size_step` and any test or runtime reader.
 - **Text:** button font colour is white, `font_outline_color` is the lip colour, `outline_size` is 8, and there is a font shadow in the lip colour at offset (0, 3). Cream roles use brown text with no outline.
 
@@ -128,7 +129,7 @@ All four are generated placeholders at first and listed in `DEBT.md`.
 - **Other buttons** keep `Juice.press`/`release`.
 - **The tick:** on `button_down`, `Haptics.buzz(PRESS_TICK_MS)` fires for roles in `MAIN_ACTION_ROLES`. Both are named consts in `UIPolish.gd`:
   - `PRESS_TICK_MS = 10`
-  - `MAIN_ACTION_ROLES` = `LobbyCtaButton`, `PrimaryButton`, `PrimaryButtonL`, `PrimaryButtonM`, `SuccessButton`, `DangerButton`, `NotebookClose`
+  - `MAIN_ACTION_ROLES` = `BookHeroButton`, `LobbyCtaButton`, `PrimaryButton`, `PrimaryButtonL`, `PrimaryButtonM`, `SuccessButton`, `DangerButton`, `NotebookClose`
 - `Haptics.buzz` already no-ops when Getar is off, and shows its pip on desktop.
 
 ### 4. Icons
@@ -150,29 +151,26 @@ All four are generated placeholders at first and listed in `DEBT.md`.
   - at least 256 px, or an SVG
   - the outline or edge reaches enough contrast on both `FFF6E8` cream and `9C6440` brown, measured like `test_bar_contrast`
   - one centred subject per file
-- **Lobby badges:** `IconBadge` is a circular `LippedStyleBox`. Koperasi is tangerine, Inventory sky, Rapor mint, Students sunflower. The icon sits on top.
+- **The Lobby tiles** keep the scrapbook's icon square; only the icon file changes to the new path.
 
 ## Rollout
 
-Four phases, each its own plan-driven branch and `ship-pr` PR. Each phase gets its own implementation plan, written when the previous phase has merged. The first plan covers Phase 1 only.
+Three phases, each its own plan-driven branch and `ship-pr` PR. Each phase gets its own implementation plan, written when the previous phase has merged. The first plan covers Phase 1 only.
 
 1. **Foundation.**
    - Tokens and `LippedStyleBox`, proving first that a script-backed stylebox survives `BakeTheme`'s `.tres` save and a cold editor load.
-   - ThemeFactory switched over, then a rebake.
+   - ThemeFactory switched over (the Lobby scrapbook variations included), then a rebake.
    - `Juice.pop_release`, and UIPolish's sink and tick.
-   - `NotebookFrame` with its textures, and `IconBadge`.
+   - `NotebookFrame` with its textures.
    - The 16 placeholder icons.
-   - After this phase the whole game is lipped.
-2. **Lobby.**
-   - The sunflower JADWAL!, and cream nav tiles with badges.
-   - HUD icons (gear, trophy, notes, skin) in badges.
-   - The coin pill with a lip.
-3. **Popups into `NotebookFrame`.**
+   - After this phase every button in the game, the Lobby's included, is lipped.
+2. **Popups into `NotebookFrame`.**
    - `SHEET` with tabs: Settings (SUARA / MAIN), AchievementDetailSheet.
    - `SHEET`: ItemDetailSheet, DapatkanUang, DailyLoginPanel, WeekLogsPopup, DaySummaryPopup, DailyDecayOverview.
    - `DIALOG`: StatDetailPopup, TraitDetailPopup, WeekRecapPillInfoPopup, EventStudentSelectDialog, OpenAmplopConfirm, AturJadwal's Peringatan dialog, TesNotice's scrim card, the scrim card inside StatCheck, TutorialPanel.
    - Each popup keeps its behaviour and signals. Only its box and close control move into the frame.
-4. **Full screens.** A button-role, icon and screenshot pass over:
+3. **Full screens.** A button-role, icon and screenshot pass over:
+   - the Lobby (tile icons only)
    - MainMenu, LevelSelect, StudentCard, StudentList, AturJadwal
    - SchoolDay's HUD, ResultCheckup
    - ShopHub, Koperasi, Inventory, ReportCard, Achievements
@@ -210,7 +208,7 @@ Four phases, each its own plan-driven branch and `ship-pr` PR. Each phase gets i
 
 - **A script-backed StyleBox inside the baked theme.** A cold editor restart must keep drawing it; a `@tool` script and `class_name` registration are needed. Phase 1's first task proves the round trip before anything builds on it.
 - **Editor save hazards** (CLAUDE.md 4b): scene work first, then scripts, with a restart in between. Diff every `.tscn` after saves.
-- **Pressed-state margins shift content by `lip_height`.** A button inside a tight container may clip. Phase 4's screenshot pass is the check.
+- **Pressed-state margins shift content by `lip_height`.** A button inside a tight container may clip. Phase 3's screenshot pass is the check.
 - **Theme conflicts with parallel branches.** Never hand-merge `kejartes_theme.tres`; rebake.
 
 ## Out of scope

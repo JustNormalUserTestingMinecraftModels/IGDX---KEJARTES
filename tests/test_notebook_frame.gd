@@ -17,6 +17,9 @@ const SCENE := "res://Scenes/UI/NotebookFrame.tscn"
 const SCRIPT_PATH := "res://Scripts/UI/NotebookFrame.gd"
 ## Test frame size, px.
 const FRAME_SIZE := Vector2(800, 900)
+## Least distance a tab label's centre sits above the page edge, px: half a
+## tab label.
+const TAB_LABEL_CLEARANCE := 24
 
 
 func suite_name() -> String:
@@ -73,6 +76,15 @@ func test_tabs_follow_the_export() -> void:
 	assert_false(tab2.visible, "an unused tab hides")
 	frame.tabs = PackedStringArray()
 	assert_false((frame.get_node("Chrome/Tabs") as Control).visible, "no tabs, no strip")
+
+
+## The tab strip is drawn behind the page, so a tab's label must sit in the
+## part that shows above the page's top edge (y = 0), not on the edge.
+func test_the_tab_labels_clear_the_page_edge() -> void:
+	var tabs := _frame().get_node("Chrome/Tabs") as Control
+	var centre := (tabs.offset_top + tabs.offset_bottom) * 0.5
+	assert_true(centre <= -TAB_LABEL_CLEARANCE,
+		"the tab labels centre at %d, on or under the page edge" % centre)
 
 
 func test_rings_well_tape_and_close_follow_the_exports() -> void:

@@ -39,7 +39,7 @@ theme_override_constants/margin_top = 48
 theme_override_constants/margin_right = 48
 theme_override_constants/margin_bottom = 48
 script = ExtResource("2_safe")
-extra_margin = Vector4(0, 72, 0, 0)
+extra_margin = Vector4(0, 84, 0, 0)
 
 [node name="Frame" parent="SafeArea" instance=ExtResource("nb_frame")]
 unique_name_in_owner = true

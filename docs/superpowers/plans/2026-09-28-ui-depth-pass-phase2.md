@@ -42,7 +42,7 @@ The spec leaves these open; each is the conservative reading. The owner can over
   - Root exports: `title_text: String`, `tabs: PackedStringArray`, `active_tab: int`, `ring_count: int` (0–8, default 7), `show_well: bool` (default true), `show_tape: bool`, `tape_color: Color`, `show_close: bool` (default true), `content_padding: Vector4i` (default `(72, 120, 40, 48)`: left, top, right, bottom).
   - Signals: `tab_selected(index: int)`, `close_pressed`.
   - Every child except `Chrome` is host content, laid into `content_rect()` (all such children get the same rect, so put one VBox in).
-  - The decoration sticks out of the frame's rect: the cover 12 px left, 20 px right and 24 px down; the tabs 60 px up; the ✕ 36 px up and 36 px right.
+  - The decoration sticks out of the frame's rect: the cover 12 px left, 20 px right and 24 px down; the tabs 84 px up; the ✕ 36 px up and 36 px right.
 - **The three kinds:**
   - **dialog:** `tabs` empty, `ring_count = 4`, `show_well = false`.
   - **sheet:** `tabs` empty (rings and well at their defaults unless a row says otherwise).
@@ -844,8 +844,8 @@ func test_the_sheet_is_a_notebook_frame() -> void:
 ```
 Settings (Control)
 ├ Background                           unchanged
-└ SafeArea (SafeAreaMargin)            unchanged, plus root override extra_margin = Vector4(0, 72, 0, 0)
-  │                                     (the tabs stand 60 px above the frame)
+└ SafeArea (SafeAreaMargin)            unchanged, plus root override extra_margin = Vector4(0, 84, 0, 0)
+  │                                     (the tabs stand 84 px above the frame)
   └ Frame (NotebookFrame, %Frame)      replaces MainColumn: layout_mode 2, title_text "PENGATURAN",
     │                                   tabs ["SUARA", "MAIN"], active_tab 0
     └ Scroll (ScrollContainer)         was SafeArea/MainColumn/Scroll, children unchanged
@@ -942,13 +942,13 @@ In `tests/test_settings.gd`:
 In `tests/test_tall_screen_layout.gd`, replace `_assert_settings_fills` and keep its two callers:
 
 ```gdscript
-## At `screen` size: the notebook fills the safe area below the tabs' 72 px
+## At `screen` size: the notebook fills the safe area below the tabs' 84 px
 ## headroom, so the page grows with a tall phone and its tabs stay on screen.
 func _assert_settings_fills(screen: Vector2) -> void:
 	var s := _stood_up(SETTINGS, screen)
 	var frame := s.get_node("SafeArea/Frame") as Control
 	_assert_rect(frame.get_global_rect(),
-		Rect2(Vector2(48, 48 + 72), Vector2(screen.x - 96, screen.y - 96 - 72)), "the Settings notebook")
+		Rect2(Vector2(48, 48 + 84), Vector2(screen.x - 96, screen.y - 96 - 84)), "the Settings notebook")
 ```
 
 `test_settings_column_is_inside_the_safe_area` changes its path to `SafeArea/Frame` (and "MainColumn" to "Frame" in its label).

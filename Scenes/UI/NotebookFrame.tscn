@@ -38,9 +38,9 @@ theme_type_variation = &"NotebookCover"
 visible = false
 layout_mode = 0
 offset_left = 72.0
-offset_top = -60.0
+offset_top = -84.0
 offset_right = 640.0
-offset_bottom = 36.0
+offset_bottom = 12.0
 theme_override_constants/separation = 12
 
 [node name="Tab0" type="Button" parent="Chrome/Tabs" unique_id=138391585]

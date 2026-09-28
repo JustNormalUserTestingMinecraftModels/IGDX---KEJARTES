@@ -605,13 +605,13 @@ func test_settings_column_is_inside_the_safe_area() -> void:
 		"Settings Frame")
 
 
-## At `screen` size: the notebook fills the safe area below the tabs' 72 px
+## At `screen` size: the notebook fills the safe area below the tabs' 84 px
 ## headroom, so the page grows with a tall phone and its tabs stay on screen.
 func _assert_settings_fills(screen: Vector2) -> void:
 	var s := _stood_up(SETTINGS, screen)
 	var frame := s.get_node("SafeArea/Frame") as Control
 	_assert_rect(frame.get_global_rect(),
-		Rect2(Vector2(48, 48 + 72), Vector2(screen.x - 96, screen.y - 96 - 72)), "the Settings notebook")
+		Rect2(Vector2(48, 48 + 84), Vector2(screen.x - 96, screen.y - 96 - 84)), "the Settings notebook")
 
 
 func test_settings_on_a_tall_phone() -> void:

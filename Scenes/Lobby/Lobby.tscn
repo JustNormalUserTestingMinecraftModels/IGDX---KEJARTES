@@ -29,7 +29,11 @@
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="Texture2D" uid="uid://4t4pb40qap88" path="res://Assets/Images/UI/LobbyHud/icon_plus.svg" id="37_ty8k5"]
+[ext_resource type="Script" uid="uid://c7na1rk10q6kb" path="res://Scripts/Lobby/LobbyProgressHeader.gd" id="38_ayldy"]
 [ext_resource type="Script" uid="uid://c47bgh5lvg6qi" path="res://Scripts/Lobby/DailyLoginPanel.gd" id="39_2isbc"]
+[ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="39_nese6"]
+[ext_resource type="Texture2D" uid="uid://cv0nm0atmx7dv" path="res://Assets/Images/DaySummary/Verdict/star_on.svg" id="40_2xndu"]
 [ext_resource type="Texture2D" uid="uid://bedjpscelrj33" path="res://Assets/Images/UI/DailyLogin/streak_flame.svg" id="40_hp3mh"]
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]
@@ -969,37 +973,6 @@ text = "JADWAL!"
 icon = ExtResource("13_85cl3")
 expand_icon = true
 
-[node name="DisplayUang" type="Panel" parent="Safe/UI/BottomBar" unique_id=259983175]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 652.0
-offset_right = 984.0
-offset_bottom = 96.0
-mouse_filter = 2
-theme_type_variation = &"Card"
-
-[node name="CoinIcon" type="TextureRect" parent="Safe/UI/BottomBar/DisplayUang" unique_id=1731951124]
-layout_mode = 0
-offset_left = 18.0
-offset_top = 20.0
-offset_right = 88.0
-offset_bottom = 76.0
-mouse_filter = 2
-texture = ExtResource("14_dyk4g")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Label" type="Label" parent="Safe/UI/BottomBar/DisplayUang" unique_id=664496077]
-layout_mode = 0
-offset_left = 100.0
-offset_top = 18.0
-offset_right = 314.0
-offset_bottom = 78.0
-theme_type_variation = &"CoinLabel"
-text = "50"
-horizontal_alignment = 2
-vertical_alignment = 1
-
 [node name="SettingsButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=575693895]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 96)
@@ -1041,19 +1014,150 @@ texture_normal = ExtResource("30_62a4m")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="JUDUL" type="Label" parent="Safe/UI" unique_id=1317986974]
+[node name="DisplayUang" type="Panel" parent="Safe/UI" unique_id=259983175]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -159.0
-offset_top = -8.0
-offset_right = 164.0
-offset_bottom = 92.0
-grow_horizontal = 2
-theme_type_variation = &"DisplayLabel"
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_type_variation = &"CoinPlate"
+
+[node name="CoinIcon" type="TextureRect" parent="Safe/UI/DisplayUang" unique_id=1731951124]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 24.0
+offset_right = 76.0
+offset_bottom = 84.0
+mouse_filter = 2
+texture = ExtResource("14_dyk4g")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Safe/UI/DisplayUang" unique_id=664496077]
+layout_mode = 0
+offset_left = 76.0
+offset_top = 24.0
+offset_right = 152.0
+offset_bottom = 84.0
+theme_type_variation = &"CoinLabel"
+text = "50"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PlusUang" type="Button" parent="Safe/UI/DisplayUang" unique_id=1462804132]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
+offset_left = 156.0
+offset_top = 8.0
+offset_right = 252.0
+offset_bottom = 104.0
+theme_type_variation = &"PlusButton"
+disabled = true
+icon = ExtResource("37_ty8k5")
+icon_alignment = 1
+expand_icon = true
+
+[node name="ProgressHeader" type="Panel" parent="Safe/UI" unique_id=923979542]
+unique_name_in_owner = true
+layout_mode = 1
+offset_right = 516.0
+offset_bottom = 168.0
+mouse_filter = 2
+theme_type_variation = &"ProgressPlate"
+script = ExtResource("38_ayldy")
+
+[node name="GradeBadge" type="PanelContainer" parent="Safe/UI/ProgressHeader" unique_id=1892516588]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 112.0
+offset_bottom = 104.0
+mouse_filter = 2
+theme_type_variation = &"GradeBadge"
+
+[node name="Stack" type="VBoxContainer" parent="Safe/UI/ProgressHeader/GradeBadge" unique_id=1808440301]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="GradeCaption" type="Label" parent="Safe/UI/ProgressHeader/GradeBadge/Stack" unique_id=196617970]
+layout_mode = 2
+theme_type_variation = &"GradeBadgeLabel"
 text = "KELAS"
+horizontal_alignment = 1
+
+[node name="GradeNumber" type="Label" parent="Safe/UI/ProgressHeader/GradeBadge/Stack" unique_id=341293909]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"GradeBadgeNumber"
+text = "7"
+horizontal_alignment = 1
+
+[node name="WeekLabel" type="Label" parent="Safe/UI/ProgressHeader" unique_id=1839783328]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 128.0
+offset_top = 24.0
+offset_right = 496.0
+offset_bottom = 100.0
+theme_type_variation = &"WeekLabel"
+text = "Minggu 1 / 6"
+vertical_alignment = 1
+
+[node name="StarBar" type="ProgressBar" parent="Safe/UI/ProgressHeader" unique_id=555781510]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 24.0
+offset_top = 118.0
+offset_right = 322.0
+offset_bottom = 142.0
+mouse_filter = 2
+theme_type_variation = &"StarProgressBar"
+max_value = 3.0
+show_percentage = false
+
+[node name="TipSparkle" type="CPUParticles2D" parent="Safe/UI/ProgressHeader/StarBar" unique_id=1791549137]
+unique_name_in_owner = true
+position = Vector2(0, 12)
+emitting = false
+amount = 12
+texture = ExtResource("39_nese6")
+lifetime = 0.6
+one_shot = true
+explosiveness = 0.9
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 40.0
+initial_velocity_max = 90.0
+scale_amount_min = 0.3
+scale_amount_max = 0.6
+
+[node name="StarIcon" type="TextureRect" parent="Safe/UI/ProgressHeader" unique_id=1236434420]
+layout_mode = 0
+offset_left = 334.0
+offset_top = 110.0
+offset_right = 374.0
+offset_bottom = 150.0
+mouse_filter = 2
+texture = ExtResource("40_2xndu")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StarNum" type="Label" parent="Safe/UI/ProgressHeader" unique_id=865703870]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 380.0
+offset_top = 106.0
+offset_right = 500.0
+offset_bottom = 154.0
+theme_type_variation = &"StarNumLabel"
+text = "0.0 / 3.0"
+vertical_alignment = 1
 
 [node name="ChatBubble" parent="." unique_id=1758543249 instance=ExtResource("20_su0mk")]
 layout_mode = 1
@@ -1075,7 +1179,7 @@ grow_vertical = 0
 texture = ExtResource("16_dyk4g")
 expand_mode = 1
 script = ExtResource("39_2isbc")
-wallet_anchor = NodePath("../Safe/UI/BottomBar/DisplayUang")
+wallet_anchor = NodePath("../Safe/UI/DisplayUang")
 
 [node name="Label" type="Label" parent="DailyReward" unique_id=1823371215]
 layout_mode = 0

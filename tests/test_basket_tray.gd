@@ -108,6 +108,36 @@ func test_the_kas_shows_the_balance() -> void:
 	assert_eq(tray.get_kas_text(), "3.880", "the Kas reads the balance, thousands dotted")
 
 
+## Fix round 1 (2026-09-28 koperasi-top-band-promo Task 6): show_kas() must
+## kill its own prior count-up tween before starting a new one, matching
+## _tray_tween's kill-before-restart -- two money_changed signals back to
+## back must never leave two tweens racing on the same label. get_kas_text()
+## recomputes from _kas rather than reading the label's own text, so this
+## also holds even mid-tween.
+func test_two_quick_kas_updates_leave_the_last_amount() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(1000)
+	tray.show_kas(2000)
+	assert_eq(tray.get_kas_text(), "2.000", "the second call wins, not a race with the first")
+
+
+## Fix round 1: a missing footer node must fail loudly (push_error, once)
+## and the caller must bail rather than silently skip its write -- but the
+## Kas balance itself, which does not live on that node, must still be
+## tracked so a later working label immediately reads the right amount.
+func test_a_missing_kas_label_bails_without_crashing() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var kas_label: Label = tray.get_node("%KasLabel")
+	kas_label.free()
+	tray.show_kas(5000)
+	assert_eq(tray.get_kas_text(), "5.000",
+		"the balance is still tracked even though the label is gone")
+
+
 func test_koin_amounts_group_thousands_with_dots() -> void:
 	var tray = _tray()
 	if tray == null:

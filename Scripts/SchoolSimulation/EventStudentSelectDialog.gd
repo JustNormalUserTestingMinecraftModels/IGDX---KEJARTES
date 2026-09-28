@@ -9,7 +9,7 @@ extends Control
 ## chrome is theme-driven; nothing here builds a StyleBoxFlat.
 ##
 ## Full height, no round close (2026-09-28, UI depth pass Phase 2): the
-## surface is a NotebookFrame (dialog_panel), whose own chrome -- not a
+## surface (under Safe) is a NotebookFrame, whose own chrome -- not a
 ## panel stylebox -- draws the page. Tolak / Terima is the only way out.
 
 signal event_decision_made(accepted: bool, selected_students: Array[StudentData])
@@ -48,7 +48,6 @@ const CARD_SCENE := preload("res://Scenes/SchoolSimulation/EventStudentCard.tscn
 
 @onready var background: TextureRect = $Background
 @onready var background_dim: Panel = $BackgroundDim
-@onready var dialog_panel: NotebookFrame = $Safe/Frame
 @onready var title_label: Label = $Safe/Frame/MainVBox/TitleLabel
 @onready var desc_label: Label = $Safe/Frame/MainVBox/DescLabel
 @onready var benefit_label: Label = $Safe/Frame/MainVBox/CostBenefitBox/BenefitRow/Text

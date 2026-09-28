@@ -1662,10 +1662,11 @@ func test_event_dialog_dropped_the_button_texture_override_path() -> void:
 	# StyleBoxTexture overrides are what let these three buttons drift
 	# out of the theme every other screen uses.
 	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
-	# dialog_panel's own StyleBoxTexture override went too (2026-09-28, UI
-	# depth pass Phase 2): dialog_panel is now a NotebookFrame, whose own
+	# The dialog panel's own StyleBoxTexture override went too (2026-09-28,
+	# UI depth pass Phase 2): the surface is now a NotebookFrame, whose own
 	# chrome draws the page -- there is nothing left to override a panel
-	# stylebox on, and dialog_card_texture went with it.
+	# stylebox on, and dialog_card_texture (and the dialog_panel var that
+	# only ever read it) went with it.
 	assert_false(src.contains("add_theme_stylebox_override"),
 		"no stylebox override should remain; the NotebookFrame is the surface")
 	assert_false(src.contains("dialog_card_texture"),

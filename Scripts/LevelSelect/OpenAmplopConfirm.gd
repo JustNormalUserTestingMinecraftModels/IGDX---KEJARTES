@@ -9,6 +9,12 @@ extends Control
 ## its own tween (see _zoom_envelope()); the confirm's own nodes are all
 ## %UniqueName refs so layout changes elsewhere cannot break it.
 ##
+## The letter (%Letter) is a NotebookFrame dialog (2026-09-28, UI depth pass
+## Phase 2); Terima Tugas / Batal live inside its page now, as the frame's
+## VBox's last row, so they ride the same rise-and-fade tween as the rest of
+## the letter instead of animating on their own. The frame's round close
+## fires Batal too (see _on_close_pressed()).
+##
 ## @tool so the MCP suite can stand it up. It starts nothing on its own, so
 ## nothing here needs an Engine.is_editor_hint() gate.
 

@@ -399,8 +399,11 @@ func test_accept_sets_grade_and_transitions() -> void:
 ## shared PaperShadow template (mirrors test_paper_shadow.gd's
 ## test_the_flat_elements_now_cast_a_shadow). The confirm's Letter became the
 ## notebook dialog frame (2026-09-28, UI depth pass Phase 2, Task 6): its own
-## Chrome art (the cover, the rings) gives it the lift the old Card variation's
-## StyleBoxFlat shadow used to.
+## Chrome art gives it the lift the old Card variation's StyleBoxFlat shadow
+## used to -- specifically Chrome/Cover, the lipped hardcover panel that sits
+## proud of the page on every side. test_the_letter_is_the_notebook_dialog
+## already covers the frame's identity (title_text, the close wiring); this
+## half instead proves the lift claim this comment makes.
 func test_amplop_card_casts_a_shadow_and_the_confirm_letter_is_the_notebook_dialog() -> void:
 	var card := _card()
 	var body := card.get_node("Bob/Body") as TextureRect
@@ -419,6 +422,12 @@ func test_amplop_card_casts_a_shadow_and_the_confirm_letter_is_the_notebook_dial
 	track(confirm)
 	var letter := confirm.get_node_or_null("Letter") as NotebookFrame
 	assert_true(letter != null, "OpenAmplopConfirm's Letter is now a NotebookFrame")
+	if letter == null:
+		return
+	assert_eq(letter.ring_count, 4, "a dialog's four rings, same as any other")
+	var cover := letter.get_node_or_null("Chrome/Cover")
+	assert_true(cover != null,
+		"Chrome/Cover is the lipped hardcover that gives the letter its lift")
 
 
 ## Re-texturing the card (envelope_texture) must re-texture its shadow too,

@@ -24,6 +24,37 @@ shops' backdrops having joined `test_look_layer`'s GRADED.
 `tests/scene_census.gd` is the shared census helper; `test_lobby_look` pins
 every placement. Spec: `2026-09-28-lobby-look-everywhere-design.md`.
 
+## 2026-09-28 — Dapatkan Uang (Loby Final Polish, Phase 2)
+
+The Lobby coin plate's green `+` now opens **Dapatkan Uang**
+(`Scenes/Lobby/DapatkanUang.tscn` + `Scripts/Lobby/DapatkanUang.gd`), a
+scrapbook book over a scrim, per spec §7:
+- "Tonton iklan, dapat sekarang": Iklan Singkat +150, Video Penuh +450.
+- "Ambil dulu, tonton nanti": +900 for 4 owed ads, +2000 for 8. They raise
+  the new session-only `GameState.ad_debt` (cleared by Forget Session,
+  never saved), and a "Tonton N iklan tertunda" button shows while ads are
+  owed (Q6).
+- "Cara gratis": a tip card pointing at Wirausaha.
+
+**Dev mode:** every option pays at once through the one writer, `_pay()`,
+which emits `paid(amount, previous_money)`. The Lobby rolls its wallet
+through the daily claim's handler, renamed `_on_wallet_paid`. A toast
+tagged DEV MODE confirms each payout. A real ad SDK only has to call
+`_pay()` from its reward callback.
+
+**Chatter gate:** `_chatter_allowed` also gates on the open panel. The
+chatter reads taps in `_input`, before the scrim, and the same gate keeps
+the HUD from reopening behind the panel.
+
+**Amounts:** named consts, proposed to the Balance owner in
+`docs/superpowers/specs/2026-09-27-earn-money-balance-proposal.md`.
+
+**Size:** `Lobby.gd` is 974 lines.
+
+**Two Boohong gotchas:**
+- "(4)" draws as "C4D", so the owed label has no brackets.
+- Copy with "—" or "…" (the toasts, the tip) stays in body-font labels.
+
 ## 2026-09-28 — Lobby scrapbook HUD (Phase 1)
 
 Restyled the Lobby's bottom UI into the "scrapbook" HUD: a stepped book

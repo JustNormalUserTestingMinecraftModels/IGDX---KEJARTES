@@ -39,7 +39,8 @@ Splashscreen still exists and is tested but nothing routes to it (the game
 boots straight to MainMenu, which loads in one hop). There is no Loading
 screen: the shared `Transition` wipe covers the scene-load gap.
 All navigation is a single `Transition.change_scene(target, …)`. **Lobby
-hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard (its coin
+`+` opens the Dapatkan Uang popup);
 **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
 to the hub rather than the Lobby.
 

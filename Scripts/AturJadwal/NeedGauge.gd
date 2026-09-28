@@ -8,12 +8,11 @@ extends RefCounted
 ##
 ## A NEED (mood, energy) under the tiredness line wears its bar's "lelah"
 ## chip, which bobs gently. The single most-needed SKILL -- the one StatFlags
-## flags "perlu" -- is shown instead of named: its bar gets a category-tinted
-## GapTail over the stretch still to go and a pulsing TargetDot on the target
-## end, and the NeedCallout bubble by the portrait says "Aku butuh <mapel>!".
-## The tail sits inside a full-rect GapMask that clips it to the track's
-## rounded ends; showing or hiding the mask shows or hides the tail.
-## At most one skill is gauged at a time.
+## flags "perlu" -- is shown instead of named: its bar gets a GapTail (a faded
+## copy of that bar's own patterned fill, StatGapGhost*) over the stretch
+## still to go and a pulsing TargetDot on the target end, and the NeedCallout
+## bubble by the portrait says "Aku butuh <mapel>!". At most one skill is
+## gauged at a time.
 ##
 ## Every node here is authored in AturJadwal.tscn; this only shows, hides,
 ## tints and animates them. The tail and dot are seated by
@@ -32,10 +31,12 @@ const DOT_PULSE_SCALE := 1.25
 ## Seconds for one full pulse, out and back.
 const DOT_PULSE_SECONDS := 1.2
 
-## Alpha of the GapTail's category tint. Full: track_ghost.png is itself only
-## 18-59% opaque, so it already reads as "still to go" rather than as fill; a
-## 0.5 tint measured nearly invisible on the dark track (2026-09-28).
-const TAIL_ALPHA := 1.0
+## How strongly the GapTail's ghost of the fill shows. Half: clearly visible
+## on the dark track and plainly the same bar, yet a step quieter than the
+## real fill, so the two never read as one (compared live at 0.35, 0.55 and
+## against a flat tint, 2026-09-28). This is the value the game uses; the
+## scene's authored alpha on each GapTail is only the editor preview.
+const TAIL_ALPHA := 0.5
 
 ## The callout's line; %s is the subject's display word.
 const CALLOUT_FORMAT := "Aku butuh %s!"
@@ -89,29 +90,25 @@ func _update_need_chips(screen: Control, flags: Dictionary, bars: Dictionary) ->
 			_start_nudge(screen, flag)
 
 
-## Shows the GapTail and TargetDot on `skill`'s bar alone, tinted to its
-## category, and hides them on the other skill bars.
+## Shows the GapTail and TargetDot on `skill`'s bar alone, and hides them on
+## the other skill bars. The tail's colour is its StatGapGhost* variation's;
+## this only fades it. The dot is tinted to the skill's category.
 func _update_gap_markers(screen: Control, skill: String, bars: Dictionary, tokens: DesignTokens) -> void:
 	for key: String in SKILL_CATEGORY:
 		var bar := bars.get(key, null) as StatBar
 		if bar == null:
 			continue
-		var mask := bar.get_node_or_null("GapMask") as Control
-		var tail := bar.get_node_or_null("GapMask/GapTail") as Control
+		var tail := bar.get_node_or_null("GapTail") as Control
 		var dot := bar.get_node_or_null("TargetDot") as Control
 		var on := key == skill
-		if mask != null:
-			mask.visible = on
+		if tail != null:
+			tail.visible = on
+			tail.self_modulate.a = TAIL_ALPHA
 		if dot != null:
 			dot.visible = on
+			dot.self_modulate = tokens.category_color(SKILL_CATEGORY[key])
 		if not on:
 			continue
-		var tint := tokens.category_color(SKILL_CATEGORY[key])
-		if dot != null:
-			dot.self_modulate = tint
-		if tail != null:
-			tint.a = TAIL_ALPHA  # tint is a local copy; the dot already has its own
-			tail.self_modulate = tint
 		bar.layout_fill_followers()
 		if key != _gauged:
 			_start_pulse(screen, dot)

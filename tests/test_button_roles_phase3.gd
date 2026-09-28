@@ -5,7 +5,9 @@ extends McpTestSuite
 ## brown, like Inventory's, ShopHub's and Settings'; mint is the one
 ## thing to press. Hapus only clears the unsent answer -- routine and
 ## reversible, beside Kirim -- so it is brown too: tomato would say
-## "destructive", and DangerButton ticks the motor on every clear.
+## "destructive", and DangerButton ticks the motor on every clear. Hapus
+## takes the M step: the base step's 36 px label looked lost beside
+## Kirim's 64 px one, and the L step (166 px) overflows AksiRow's 156 px.
 ##
 ## Must be @tool; no test here may be a coroutine.
 
@@ -13,9 +15,9 @@ extends McpTestSuite
 const ROLES := {
 	"res://Scenes/ReportCard/ReportCard.tscn": {"Safe/UI/BackButton": &"SecondaryButton"},
 	"res://Scenes/Minigames/Akademis/Password.tscn": {
-		"AksiRow/BtnHapus": &"SecondaryButton", "AksiRow/BtnKirim": &"LobbyCtaButton"},
+		"AksiRow/BtnHapus": &"SecondaryButtonM", "AksiRow/BtnKirim": &"LobbyCtaButton"},
 	"res://Scenes/Minigames/Akademis/Variabel.tscn": {
-		"AksiRow/BtnHapus": &"SecondaryButton", "AksiRow/BtnKirim": &"LobbyCtaButton"},
+		"AksiRow/BtnHapus": &"SecondaryButtonM", "AksiRow/BtnKirim": &"LobbyCtaButton"},
 }
 
 

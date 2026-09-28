@@ -8,6 +8,26 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Level select polish
+
+- The amplop fan de-crowds: `fan_step_x` 150→220, `fan_drop_y` 34→48,
+  `fan_step_degrees` 8→11 (script defaults), so the side "KELAS N" tabs read
+  whole instead of sliced by the centre body.
+- Buka Map Ini zooms the opened envelope from `card_scale` to
+  `open_scale_target` (1.35, an `@export` beside `open_zoom_sec`) on its own
+  `_zoom` tween, and `dismiss()` returns it to the rest scale the screen
+  pushed down. The plan's 1.9 ran ~280px off the top of the screen; the
+  human chose to zoom less rather than re-anchor. The surat tugas is wider
+  and taller (H1 title, `EventBodyLabel` body), the buttons full width; the
+  script takes every node through `%UniqueName`.
+- A `PaperShadow` sits under every amplop body (`Bob/Body/Shadow`); the
+  letter keeps its `Card` shadow (the human's call).
+- `docs/superpowers/specs/2026-09-28-week-length-rebalance-proposal.md`
+  proposes 0.75× weeks and target for Grades 8 and 9, for `Balance.gd`'s
+  owner to decide. No balance edit.
+- The plan was revised for the clean-code standard before implementation;
+  no ratchet count moved.
+
 ## 2026-09-28 — Ambient kit: moods, light, particles and glints
 
 - Five pieces in `Scenes/Look/`: `MoodTint` (multiply colour mood over a

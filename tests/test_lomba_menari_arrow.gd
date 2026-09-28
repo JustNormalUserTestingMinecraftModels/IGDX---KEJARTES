@@ -37,15 +37,34 @@ func _opaque_span(img: Image, x: int) -> int:
 	return n
 
 
+## How many columns of row `y` are opaque.
+func _opaque_run_row(img: Image, y: int) -> int:
+	var n := 0
+	for x in img.get_width():
+		if img.get_pixel(x, y).a > 0.5:
+			n += 1
+	return n
+
+
 ## Pointing right puts the narrow shaft on the left and the wide head on the
 ## right, so a column through the head is taller than one through the shaft.
+## That alone also passes an up- or down-pointing arrow (measured: the source
+## down arrow runs 93 opaque rows at 30% vs 396 at 60%, and the up rotation
+## 95 vs 395), so an axis check guards the orientation too: a horizontal
+## arrow's middle row runs longer than its middle column (about 445 vs 135 for
+## note_arrow.png), which an up/down arrow fails.
 func test_the_arrow_art_points_right() -> void:
 	var img := _arrow_image()
 	var w := img.get_width()
+	var h := img.get_height()
 	var shaft := _opaque_span(img, int(w * 0.3))
 	var head := _opaque_span(img, int(w * 0.6))
 	assert_gt(shaft, 0, "the shaft is opaque at 30% width")
 	assert_gt(head, shaft, "the head (60%%) is taller than the shaft (30%%): %d vs %d" % [head, shaft])
+	var middle_row := _opaque_run_row(img, h / 2)
+	var middle_col := _opaque_span(img, w / 2)
+	assert_gt(middle_row, middle_col,
+		"a horizontal arrow's middle row runs longer than its middle column (rejects up/down): %d vs %d" % [middle_row, middle_col])
 
 
 ## A white fill takes the lane tint through self_modulate without muddying it.
@@ -70,12 +89,19 @@ func test_the_arrow_keeps_a_dark_outline() -> void:
 
 # ─── the template
 
+## The template instantiates and wears the arrow art at the geometry
+## _spawn_single_note() relies on. Bails early on a broken template instead
+## of crashing on a null dereference.
 func test_the_note_template_carries_the_arrow() -> void:
 	var note := load(NOTE_SCENE_PATH).instantiate() as Control
-	track(note)
 	assert_true(note != null, "MenariNote.tscn's root is a Control")
+	if note == null:
+		return
+	track(note)
 	var arrow := note.get_node_or_null("Arrow") as TextureRect
 	assert_true(arrow != null, "it has an Arrow TextureRect child")
+	if arrow == null:
+		return
 	assert_eq(arrow.texture.resource_path, ARROW_PATH, "wearing note_arrow.png")
 	assert_eq(arrow.anchor_right, 1.0, "Arrow fills the note horizontally")
 	assert_eq(arrow.anchor_bottom, 1.0, "and vertically")
@@ -121,6 +147,24 @@ func test_the_per_direction_texture_slots_are_gone() -> void:
 			"top_right_note_texture", "left_swiped_texture", "right_swiped_texture",
 			"top_left_swiped_texture", "top_right_swiped_texture"]:
 		assert_false(src.contains(slot), "%s is gone: one arrow is turned per lane" % slot)
+
+
+## Tinting: a spawned note's arrow takes the lane colour through
+## self_modulate, a swiped note's flash lightens that colour toward white,
+## and the swipe effect reads the lane colour by name -- never the old
+## hardcoded red flash the glyph Label used.
+func test_the_arrow_tinting_uses_self_modulate() -> void:
+	var src := _src()
+	assert_contains(src, "arrow.self_modulate = tint", "a spawned note tints via self_modulate")
+	assert_contains(src, ".lightened(swiped_arrow_lighten)", "a swiped note's flash lightens toward white")
+	assert_contains(src, "color = left_note_color", "the swipe effect reads the lane colour, not a literal")
+	var start := src.find("func _show_swipe_effect")
+	assert_true(start >= 0, "_show_swipe_effect exists")
+	if start < 0:
+		return
+	var next_func := src.find("\nfunc ", start + 1)
+	var body := src.substr(start, next_func - start) if next_func >= 0 else src.substr(start)
+	assert_false(body.contains("Color(1.0, 0.2, 0.2)"), "no hardcoded red flash inside _show_swipe_effect")
 
 
 ## The art points right (angle 0), so each lane's turn is its direction's angle.

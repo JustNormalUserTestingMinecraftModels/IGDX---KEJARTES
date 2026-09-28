@@ -89,3 +89,50 @@ func test_the_note_ignores_the_mouse() -> void:
 	track(note)
 	assert_eq(note.mouse_filter, Control.MOUSE_FILTER_IGNORE, "root ignores the mouse")
 	assert_eq((note.get_node("Arrow") as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE, "Arrow too")
+
+
+# ─── the script
+
+## LombaMenari.gd declares no class_name; reached through a preloaded const,
+## as tests/test_lomba_menari_timing.gd does.
+const MenariScript := preload("res://Scripts/Minigames/SeniBudaya/LombaMenari.gd")
+
+
+func _src() -> String:
+	return FileAccess.get_file_as_string(SCRIPT_PATH)
+
+
+func test_notes_are_instanced_from_the_template() -> void:
+	var src := _src()
+	assert_contains(src, "NOTE_SCENE.instantiate()", "a note comes from MenariNote.tscn")
+	assert_false(src.contains("TextureRect.new()"), "not a TextureRect built in code")
+
+
+func test_no_arrow_glyphs_remain() -> void:
+	var src := _src()
+	for glyph in ["←", "→", "↖", "↗"]:
+		assert_false(src.contains(glyph), "no %s glyph: the fonts cannot draw it" % glyph)
+	assert_false(src.contains("ArrowLabel"), "the glyph Label is gone")
+
+
+func test_the_per_direction_texture_slots_are_gone() -> void:
+	var src := _src()
+	for slot in ["left_note_texture", "right_note_texture", "top_left_note_texture",
+			"top_right_note_texture", "left_swiped_texture", "right_swiped_texture",
+			"top_left_swiped_texture", "top_right_swiped_texture"]:
+		assert_false(src.contains(slot), "%s is gone: one arrow is turned per lane" % slot)
+
+
+## The art points right (angle 0), so each lane's turn is its direction's angle.
+func test_arrow_rotation_turns_the_art_toward_each_lane() -> void:
+	var cases := {
+		MenariScript.NoteType.RIGHT: 0.0,
+		MenariScript.NoteType.LEFT: PI,
+		MenariScript.NoteType.TOP_LEFT: -0.75 * PI,
+		MenariScript.NoteType.TOP_RIGHT: -0.25 * PI,
+	}
+	for type in cases:
+		var got: float = MenariScript.arrow_rotation(type)
+		var want: float = cases[type]
+		assert_true(absf(angle_difference(got, want)) < 0.001,
+			"lane %d turns %.3f rad, wants %.3f" % [type, got, want])

@@ -299,28 +299,27 @@ by-the-way fix inside an unrelated branch.
 the lights without also blooming the near-white paper and sky; it is a
 project-wide rendering change `test_look_layer` pins off today. Measured
 2026-09-28: MainMenu's sky sits at ~0.89 luminance and its sun core at
-~0.88, the desk screens' wood at ~0.84 everywhere; sweeping threshold
-0.6-0.9, intensity 1-4 and strength 1-1.5 either bloomed nothing visible
-or bloomed the background as much as the light (+0.04 to +0.11 at the
-strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList,
-ReportCard, ShopHub and CosmeticShop (under their blur the core reaches
-only +0.0045/+0.0043 even at threshold 0.5), and TesNotice, StatCheck,
-ExamProgress, EndCutscene and RunResult (+0.0000 core bloom at every
-threshold tried; dark or scrimmed art), all ship without bloom --
-`Scenes/Look/AmbientGlow.tscn` is built and ready to place once `hdr_2d`
-lands. Measured at the same time, the desk lamp `LightPool` is capped at
-0.12 (its measured knee) and still only adds +0.011 mean brightness;
-`hdr_2d` would also let it go brighter. Also outstanding: light wrap on the
-shared cutout illustration materials; the kit not yet extended to
-Inventory or Achievements; and the Debug overlay's Look page stays
-Lobby-only because `DebugManager.gd` is at its clean-code size ceiling
-(1,880 lines, `LARGE_SCRIPTS`). Koperasi cannot bloom at all: its backdrop
-shares Stage with the tappable goods on layer 0 (lobby-look spec,
-section 2). The minigames cannot bloom either: SchoolDay hosts each one
-inside its own tree over a layer-0 Background, so a World layer at -1
-would draw under it, and SchoolDay's fade on the minigame root would not
-reach a CanvasLayer. Blooming them means hosting minigames on their own
-CanvasLayer in SchoolDay (lobby-look spec, pass 3).
+~0.88, the desk screens' wood at ~0.84 everywhere; sweeping the
+Environment glow's threshold 0.6-0.9, intensity 1-4 and strength 1-1.5
+either bloomed nothing visible or bloomed the background as much as the
+light (+0.04 to +0.11 at the strong end, fog). So MainMenu, LevelSelect,
+StudentCard, StudentList and ReportCard ship without bloom. The shops,
+Koperasi, the end-game screens and the minigames bloom since 2026-09-29
+through the screen-read `ScreenGlow` instead (style guide, "The Lobby look
+on other screens"); the same piece could now be tried on those five, each
+tuned on a full-size capture. `Scenes/Look/AmbientGlow.tscn` stays built
+and ready for when `hdr_2d` lands. Measured at the same time, the desk lamp
+`LightPool` is capped at 0.12 (its measured knee) and still only adds
++0.011 mean brightness; `hdr_2d` would also let it go brighter. Also
+outstanding: light wrap on the shared cutout illustration materials; the
+kit not yet extended to Inventory or Achievements; and the Debug overlay's
+Look page stays Lobby-only because `DebugManager.gd` is at its clean-code
+size ceiling (1,880 lines, `LARGE_SCRIPTS`). Kalkulator has no backdrop of
+its own (it draws over SchoolDay's), so it takes no light and no bloom.
+Each `ScreenGlow` costs a full-screen copy and its mip chain every frame,
+on by default with Efek Suasana (the Efek Visual layer keeps the same
+shader opt-in for an unknown performance floor); nobody has measured frame
+time on a low-end phone yet, the timed minigames first.
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories

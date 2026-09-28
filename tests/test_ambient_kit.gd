@@ -20,6 +20,7 @@ const AMBIENT_GLOW := "res://Scenes/Look/AmbientGlow.tscn"
 const GLINT_MATERIAL := "res://Scripts/Shaders/glint_material.tres"
 const DESK_AMBIENCE := "res://Scenes/Look/DeskAmbience.tscn"
 const SUN_SHAFTS := "res://Scenes/Look/SunShafts.tscn"
+const SCREEN_GLOW := "res://Scenes/Look/ScreenGlow.tscn"
 const MAIN_MENU := "res://Scenes/MainMenu/MainMenu.tscn"
 const Census := preload("res://tests/scene_census.gd")
 
@@ -30,6 +31,7 @@ var _particles: AmbientParticles
 var _glow: AmbientGlow
 var _desk: DeskAmbience
 var _shafts: SunShafts
+var _screen_glow: ScreenGlow
 ## The developer's own switches, read before this suite touches either one,
 ## so teardown() can put them back instead of guessing true/false.
 var _snapshot_ambient_enabled: bool = true
@@ -55,6 +57,7 @@ func suite_setup(_ctx: Dictionary) -> void:
 	_glow = _stand(AMBIENT_GLOW) as AmbientGlow
 	_desk = _stand(DESK_AMBIENCE) as DeskAmbience
 	_shafts = _stand(SUN_SHAFTS) as SunShafts
+	_screen_glow = _stand(SCREEN_GLOW) as ScreenGlow
 
 
 func suite_teardown() -> void:
@@ -120,7 +123,7 @@ func test_a_freed_piece_leaves_no_connection_behind() -> void:
 
 
 func test_every_kit_root_refills_its_parent() -> void:
-	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd", "res://Scripts/Look/AmbientParticles.gd", "res://Scripts/Look/DeskAmbience.gd", "res://Scripts/Look/SunShafts.gd"]:
+	for path in ["res://Scripts/Look/MoodTint.gd", "res://Scripts/Look/LightPool.gd", "res://Scripts/Look/AmbientParticles.gd", "res://Scripts/Look/DeskAmbience.gd", "res://Scripts/Look/SunShafts.gd", "res://Scripts/Look/ScreenGlow.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_true(src.contains("AmbientKit.fill_parent(self)"),
 			path + " must re-fill its parent in _ready")
@@ -344,6 +347,62 @@ func test_the_shafts_fade_with_their_node() -> void:
 	assert_true(src.contains("* COLOR.a"), "light_shafts multiplies by the inherited COLOR.a")
 
 
+# ── ScreenGlow ───────────────────────────────────────────────────────────────
+
+func _screen_glow_mat() -> ShaderMaterial:
+	return _screen_glow.material as ShaderMaterial
+
+
+## The Efek Visual layer's bloom, unchanged, placed per screen: it reads the
+## screen and only ever adds light.
+func test_the_screen_glow_is_additive_local_full_rect_and_untappable() -> void:
+	assert_eq(_screen_glow_mat().shader.resource_path, "res://Scripts/Shaders/bloom.gdshader",
+		"the screen glow is bloom.gdshader")
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/bloom.gdshader")
+	assert_true(src.contains("render_mode blend_add"), "additive: it only brightens")
+	assert_true(src.contains("hint_screen_texture"), "it reads what is drawn so far")
+	assert_true(_screen_glow_mat().resource_local_to_scene, "each placed ScreenGlow tunes its own copy")
+	assert_eq(_anchors(_screen_glow), Vector4(0, 0, 1, 1), "Full Rect, so it covers a tall phone")
+	assert_eq(_offsets(_screen_glow), Vector4.ZERO, "and carries no inset")
+	assert_eq(_screen_glow.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the glow never eats a tap")
+
+
+func test_the_screen_glow_knobs_reach_the_shader() -> void:
+	_screen_glow.threshold = 0.55
+	_screen_glow.intensity = 0.8
+	_screen_glow.spread = 3.0
+	_screen_glow.bloom_tint = Color(0.8, 0.9, 1.0)
+	var mat := _screen_glow_mat()
+	assert_true(is_equal_approx(float(mat.get_shader_parameter("threshold")), 0.55), "threshold reaches it")
+	assert_true(is_equal_approx(float(mat.get_shader_parameter("intensity")), 0.8), "intensity reaches it")
+	assert_true(is_equal_approx(float(mat.get_shader_parameter("spread")), 3.0), "spread reaches it")
+	assert_eq(mat.get_shader_parameter("bloom_tint"), Color(0.8, 0.9, 1.0), "the tint reaches it")
+	_screen_glow.threshold = 0.7
+	_screen_glow.intensity = 0.3
+	_screen_glow.spread = 2.0
+	_screen_glow.bloom_tint = Color(1.0, 0.96, 0.88)
+
+
+func test_the_switch_hides_the_screen_glow() -> void:
+	GameSettings.ambient_effects_enabled = false
+	assert_false(_screen_glow.visible, "Efek Suasana off hides the glow, and drops its screen read")
+	GameSettings.ambient_effects_enabled = true
+	assert_true(_screen_glow.visible, "and on brings it back")
+
+
+func test_reduce_motion_leaves_the_screen_glow() -> void:
+	GameSettings.ambient_effects_enabled = true
+	GameSettings.reduce_motion = true
+	assert_true(_screen_glow.visible, "the glow does not move, so Kurangi Gerakan leaves it")
+
+
+## Like the shafts, the bloom must follow its node's inherited modulate, or it
+## pops in at full strength while SchoolDay fades a minigame in: the input
+## COLOR carries that modulate.
+func test_the_screen_glow_fades_with_its_node() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/bloom.gdshader")
+	assert_true(src.contains("* COLOR.rgb, COLOR.a)"), "bloom multiplies by the inherited COLOR")
+
 # ── AmbientParticles ─────────────────────────────────────────────────────────
 
 func _emitter() -> CPUParticles2D:
@@ -526,7 +585,7 @@ func test_the_root_knobs_reach_the_children() -> void:
 
 # ── Placement census (reads PackedScene state: no script runs) ──────────────
 
-const KIT_SCENES := [MOOD_TINT, LIGHT_POOL, AMBIENT_PARTICLES, DESK_AMBIENCE, SUN_SHAFTS]
+const KIT_SCENES := [MOOD_TINT, LIGHT_POOL, AMBIENT_PARTICLES, DESK_AMBIENCE, SUN_SHAFTS, SCREEN_GLOW]
 const BUTTON_TYPES := ["Button", "TextureButton", "CheckButton", "CheckBox",
 	"OptionButton", "MenuButton", "LinkButton"]
 

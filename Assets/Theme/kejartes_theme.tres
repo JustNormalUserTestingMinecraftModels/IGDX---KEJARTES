@@ -4421,6 +4421,25 @@ corner_radius_bottom_right = 24
 corner_radius_bottom_left = 24
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l1h6x"]
+bg_color = Color(0.9372549, 0.8784314, 0.79607844, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.9647059, 0.9098039, 1)
+corner_radius_top_left = 999
+corner_radius_top_right = 999
+corner_radius_bottom_right = 999
+corner_radius_bottom_left = 999
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrcui"]
+bg_color = Color(0.18039216, 0.7882353, 0.6039216, 1)
+corner_radius_top_left = 999
+corner_radius_top_right = 999
+corner_radius_bottom_right = 999
+corner_radius_bottom_left = 999
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8hl7l"]
 content_margin_left = 28.0
 content_margin_top = 15.0
 content_margin_right = 28.0
@@ -4435,7 +4454,7 @@ shadow_color = Color(0.89254904, 0.8090196, 0.70549023, 1)
 shadow_size = 1
 shadow_offset = Vector2(0, 3)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrcui"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3crlc"]
 content_margin_left = 28.0
 content_margin_top = 13.0
 content_margin_right = 28.0
@@ -4450,7 +4469,7 @@ shadow_color = Color(0.7882353, 0.64705884, 0.49411765, 1)
 shadow_size = 1
 shadow_offset = Vector2(0, 7)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8hl7l"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_apsc2"]
 content_margin_left = 28.0
 content_margin_top = 13.0
 content_margin_right = 28.0
@@ -4465,9 +4484,9 @@ shadow_color = Color(0.8980392, 0.33333334, 0.24313726, 1)
 shadow_size = 1
 shadow_offset = Vector2(0, 7)
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3crlc"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xghv5"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_apsc2"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g6v1v"]
 content_margin_left = 32.0
 content_margin_top = 4.0
 content_margin_right = 32.0
@@ -4479,7 +4498,7 @@ texture_margin_right = 45.0
 texture_margin_bottom = 30.0
 region_rect = Rect2(20, 277, 601, 91)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xghv5"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p8w70"]
 content_margin_left = 28.0
 content_margin_top = 16.0
 content_margin_right = 28.0
@@ -4488,7 +4507,7 @@ bg_color = Color(1, 1, 1, 1)
 corner_radius_top_left = 36
 corner_radius_top_right = 36
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g6v1v"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n8w1v"]
 content_margin_left = 12.0
 content_margin_top = 2.0
 content_margin_right = 12.0
@@ -4504,7 +4523,7 @@ corner_radius_top_right = 999
 corner_radius_bottom_right = 999
 corner_radius_bottom_left = 999
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p8w70"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7ckgs"]
 bg_color = Color(0.65882355, 0.41568628, 0.10980392, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
@@ -5963,6 +5982,8 @@ StatusScrimLabel/base_type = &"Label"
 StatusScrimLabel/colors/font_color = Color(1, 0.9647059, 0.9098039, 1)
 StatusScrimLabel/font_sizes/font_size = 36
 StatusScrimLabel/fonts/font = ExtResource("1_ss02d")
+StickyNoteEmptyLabel/base_type = &"Label"
+StickyNoteEmptyLabel/colors/font_color = Color(0.47843137, 0.36078432, 0.2509804, 1)
 StudentCardSecondaryButton/base_type = &"Button"
 StudentCardSecondaryButton/colors/font_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
 StudentCardSecondaryButton/colors/font_disabled_color = Color(0.7490196, 0.65882355, 0.54901963, 1)
@@ -6040,6 +6061,10 @@ TallyCaptionLabel/colors/font_color = Color(0.47843137, 0.36078432, 0.2509804, 1
 TallyCaptionLabel/font_sizes/font_size = 22
 TallyCell/base_type = &"PanelContainer"
 TallyCell/styles/panel = SubResource("StyleBoxFlat_btnyc")
+TallyDotEmpty/base_type = &"Panel"
+TallyDotEmpty/styles/panel = SubResource("StyleBoxFlat_l1h6x")
+TallyDotFilled/base_type = &"Panel"
+TallyDotFilled/styles/panel = SubResource("StyleBoxFlat_xrcui")
 TallyValueCoin/base_type = &"Label"
 TallyValueCoin/colors/font_color = Color(0.6509804, 0.41568628, 0.02745098, 1)
 TallyValueCoin/font_sizes/font_size = 48
@@ -6069,23 +6094,23 @@ TotalNumberOver/colors/font_color = Color(0.6392157, 0.1882353, 0.11764706, 1)
 TotalNumberOver/font_sizes/font_size = 36
 TotalNumberOver/fonts/font = ExtResource("1_c56gm")
 TotalPillAsleep/base_type = &"PanelContainer"
-TotalPillAsleep/styles/panel = SubResource("StyleBoxFlat_l1h6x")
+TotalPillAsleep/styles/panel = SubResource("StyleBoxFlat_8hl7l")
 TotalPillAwake/base_type = &"PanelContainer"
-TotalPillAwake/styles/panel = SubResource("StyleBoxFlat_xrcui")
+TotalPillAwake/styles/panel = SubResource("StyleBoxFlat_3crlc")
 TotalPillOver/base_type = &"PanelContainer"
-TotalPillOver/styles/panel = SubResource("StyleBoxFlat_8hl7l")
+TotalPillOver/styles/panel = SubResource("StyleBoxFlat_apsc2")
 TraitPill/base_type = &"Button"
 TraitPill/colors/font_color = Color(1, 0.9647059, 0.9098039, 1)
 TraitPill/colors/font_outline_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
 TraitPill/constants/outline_size = 6
 TraitPill/font_sizes/font_size = 48
 TraitPill/fonts/font = ExtResource("1_c56gm")
-TraitPill/styles/focus = SubResource("StyleBoxEmpty_3crlc")
-TraitPill/styles/hover = SubResource("StyleBoxTexture_apsc2")
-TraitPill/styles/normal = SubResource("StyleBoxTexture_apsc2")
-TraitPill/styles/pressed = SubResource("StyleBoxTexture_apsc2")
+TraitPill/styles/focus = SubResource("StyleBoxEmpty_xghv5")
+TraitPill/styles/hover = SubResource("StyleBoxTexture_g6v1v")
+TraitPill/styles/normal = SubResource("StyleBoxTexture_g6v1v")
+TraitPill/styles/pressed = SubResource("StyleBoxTexture_g6v1v")
 TraitPopupHeader/base_type = &"Panel"
-TraitPopupHeader/styles/panel = SubResource("StyleBoxFlat_xghv5")
+TraitPopupHeader/styles/panel = SubResource("StyleBoxFlat_p8w70")
 TraitPopupKindLabel/base_type = &"Label"
 TraitPopupKindLabel/colors/font_color = Color(1, 0.9647059, 0.9098039, 1)
 TraitPopupKindLabel/font_sizes/font_size = 36
@@ -6095,13 +6120,13 @@ TraitPopupNameLabel/colors/font_color = Color(1, 0.9647059, 0.9098039, 1)
 TraitPopupNameLabel/font_sizes/font_size = 48
 TraitPopupNameLabel/fonts/font = ExtResource("1_c56gm")
 TrayBadge/base_type = &"PanelContainer"
-TrayBadge/styles/panel = SubResource("StyleBoxFlat_g6v1v")
+TrayBadge/styles/panel = SubResource("StyleBoxFlat_n8w1v")
 TrayBadgeLabel/base_type = &"Label"
 TrayBadgeLabel/colors/font_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
 TrayBadgeLabel/font_sizes/font_size = 28
 TrayBadgeLabel/fonts/font = ExtResource("1_c56gm")
 TrayPlank/base_type = &"Panel"
-TrayPlank/styles/panel = SubResource("StyleBoxFlat_p8w70")
+TrayPlank/styles/panel = SubResource("StyleBoxFlat_7ckgs")
 VBoxContainer/constants/separation = 28
 VerdictHeadlineLabel/base_type = &"Label"
 VerdictHeadlineLabel/colors/font_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
@@ -6114,3 +6139,6 @@ WeekLabel/base_type = &"Label"
 WeekLabel/colors/font_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
 WeekLabel/font_sizes/font_size = 36
 WeekLabel/fonts/font = ExtResource("1_c56gm")
+WeekTallyLabel/base_type = &"Label"
+WeekTallyLabel/colors/font_color = Color(0.47843137, 0.36078432, 0.2509804, 1)
+WeekTallyLabel/font_sizes/font_size = 22

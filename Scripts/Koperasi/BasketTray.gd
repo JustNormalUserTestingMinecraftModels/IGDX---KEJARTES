@@ -374,6 +374,14 @@ static func format_koin(amount: int) -> String:
 	return ("-" if amount < 0 else "") + digits + grouped
 
 
+## format_koin(), rounded to the nearest int -- the shape Juice.count_up_formatted
+## wants for its per-frame Callable, since a tween drives the value as a float.
+## Shared by show_kas() and _write_total_number() so the two count-ups format
+## identically without repeating the lambda.
+static func _format_koin_float(value: float) -> String:
+	return format_koin(int(round(value)))
+
+
 ## Shows the class fund's balance on the Kas Kelas pill and re-derives the
 ## Total pill's state against it (a cart that was affordable can turn over,
 ## or the reverse, purely from the Kas changing under it). animate=false
@@ -393,8 +401,7 @@ func show_kas(amount: int, animate: bool = true) -> void:
 	if is_instance_valid(_kas_tween) and _kas_tween.is_valid():
 		_kas_tween.kill()
 	if animate and is_inside_tree():
-		_kas_tween = Juice.count_up_formatted(_kas_label, float(old), float(amount),
-			func(v: float) -> String: return format_koin(int(round(v))))
+		_kas_tween = Juice.count_up_formatted(_kas_label, float(old), float(amount), _format_koin_float)
 	else:
 		_kas_label.text = format_koin(amount)
 
@@ -493,8 +500,7 @@ func _write_total_number(total: int, empty: bool) -> void:
 	if empty or not is_inside_tree() or old == total:
 		_total_number.text = format_koin(total)
 		return
-	_total_tween = Juice.count_up_formatted(_total_number, float(old), float(total),
-		func(v: float) -> String: return format_koin(int(round(v))))
+	_total_tween = Juice.count_up_formatted(_total_number, float(old), float(total), _format_koin_float)
 	AnimUtils.squash_bounce(_total_pill)
 
 

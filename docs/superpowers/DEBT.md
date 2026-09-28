@@ -368,7 +368,10 @@ PromoBoard keeps advertising it -- there is no "HABIS" (sold out) state for
 the board to fall back to. On a 20:9 phone the top band (Signboard,
 PromoBoard) rides the Stage down with it, per `test_koperasi_on_a_tall_phone`,
 leaving plain wall above the band rather than the band reaching for the top
-edge.
+edge. The KAS KELAS balance now lives only in BasketTray's footer pill,
+which slides off-screen with the rest of the tray when the player collapses
+it -- the old ledge coin it replaced was always visible, collapsed or not.
+The handoff spec accepted this; revisit if playtesting disagrees.
 
 **Saving RosterCard.tscn in the editor moves its sticky notes (2026-09-14).**
 `Scripts/StudentList/StickyNote.gd` is `@tool`, and its `_ready()` calls

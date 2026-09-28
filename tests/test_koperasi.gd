@@ -174,6 +174,23 @@ func test_a_promo_tag_shows_the_list_price_and_badge() -> void:
 	assert_false(tag.get_node("Row/PromoBadge").visible, "and the badge")
 	tag.free()
 
+## play_buy() must not leave a promo tag reading "~~1000~~ Beli -20%" mid-tap --
+## the dress hides while "Beli" stands alone, then comes back with the price
+## once the tag returns to rest.
+func test_play_buy_hides_the_promo_dress_and_set_price_restores_it() -> void:
+	var tag: PanelContainer = PriceTagScene.instantiate()
+	tag.set_price(800)
+	tag.set_promo(1000, 20)
+	tag.play_buy()
+	assert_true(tag.is_promo(), "play_buy() does not touch _is_promo")
+	assert_false(tag.get_node("Row/OldPrice").visible, "play_buy() hides the struck price")
+	assert_false(tag.get_node("Row/PromoBadge").visible, "and the badge")
+	tag.set_price(800)
+	assert_true(tag.is_promo(), "set_price() does not touch _is_promo either")
+	assert_true(tag.get_node("Row/OldPrice").visible, "set_price() brings the struck price back")
+	assert_true(tag.get_node("Row/PromoBadge").visible, "and the badge")
+	tag.free()
+
 func test_the_shelf_dresses_only_the_promo_item() -> void:
 	var src: String = FileAccess.get_file_as_string("res://Scripts/Koperasi/KoperasiStage.gd")
 	assert_true(src.contains("GameState.shop_promo_item"), "the stage asks which item is on promo")

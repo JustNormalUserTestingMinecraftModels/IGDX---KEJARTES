@@ -45,13 +45,21 @@ var _price: int = 0
 ## fresh price on the same promo item must not silently drop its dress.
 var _is_promo: bool = false
 
+## Node names already push_error'd missing by _ensure_nodes(), so a torn-up
+## tag logs one error per node instead of one on every call -- mirrors
+## BasketTray.gd's _reported_missing_footer_nodes.
+var _reported_missing_nodes: Dictionary = {}
+
 func _ready() -> void:
 	clip_contents = true
 	if is_instance_valid(_wipe):
 		_wipe.color = DesignTokens.load_default().koperasi_tag_pressed_fill
 		_wipe.size.x = 0.0
 
-## Sets the displayed price and returns the tag to its rest state.
+## Sets the displayed price and returns the tag to its rest state. Also the
+## tag's return to rest after play_buy(): if _is_promo is still set, the
+## struck list price and badge that play_buy() hid come back with the price,
+## so a re-dressed promo tag never gets stuck showing "Beli" alone.
 func set_price(value: int) -> void:
 	_price = value
 	_ensure_nodes()
@@ -60,6 +68,11 @@ func set_price(value: int) -> void:
 	theme_type_variation = &"PriceTag"
 	if is_instance_valid(_wipe):
 		_wipe.size.x = 0.0
+	if _is_promo:
+		if is_instance_valid(_old_price):
+			_old_price.visible = true
+		if is_instance_valid(_badge):
+			_badge.visible = true
 
 ## Reads the label. Exists so tests can assert without knowing node paths.
 func get_label_text() -> String:
@@ -113,11 +126,19 @@ func set_affordable(can_afford: bool) -> void:
 
 ## Runs the buy transition: dark green wipes left to right, then the price
 ## swaps to "Beli" with a scale pop. The label text changes synchronously
-## so callers and tests can rely on it immediately.
+## so callers and tests can rely on it immediately. Also hides the promo
+## dress (struck list price, badge) if any is showing, so a promo tag never
+## reads "~~1000~~ Beli -20%" mid-tap -- the word stands alone, like on any
+## tag. Does not touch _is_promo: set_price() brings the dress back with the
+## price once the tag returns to rest.
 func play_buy() -> void:
 	_ensure_nodes()
 	_value.text = BELI_TEXT
 	theme_type_variation = &"PriceTagPressed"
+	if is_instance_valid(_old_price):
+		_old_price.visible = false
+	if is_instance_valid(_badge):
+		_badge.visible = false
 	if not is_inside_tree():
 		return
 
@@ -137,7 +158,9 @@ func play_buy() -> void:
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 ## Resolves @onready nodes when the tag is used before _ready -- tests
-## instantiate the scene without adding it to the tree.
+## instantiate the scene without adding it to the tree. A still-missing
+## OldPrice or PromoBadge gets a push_error, once per node name, so a
+## torn-up tag fails loudly instead of on every call.
 func _ensure_nodes() -> void:
 	if not is_instance_valid(_value):
 		_value = get_node_or_null("Row/Value")
@@ -146,8 +169,16 @@ func _ensure_nodes() -> void:
 	if not is_instance_valid(_old_price):
 		_old_price = get_node_or_null("Row/OldPrice")
 		if not is_instance_valid(_old_price):
-			push_error("PriceTag: Row/OldPrice node missing")
+			_report_missing_node("Row/OldPrice")
 	if not is_instance_valid(_badge):
 		_badge = get_node_or_null("Row/PromoBadge")
 		if not is_instance_valid(_badge):
-			push_error("PriceTag: Row/PromoBadge node missing")
+			_report_missing_node("Row/PromoBadge")
+
+
+## push_error, once per node path -- see _ensure_nodes()'s doc.
+func _report_missing_node(node_path: String) -> void:
+	if _reported_missing_nodes.has(node_path):
+		return
+	_reported_missing_nodes[node_path] = true
+	push_error("PriceTag: %s node missing" % node_path)

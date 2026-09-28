@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://d1i44qpg1ms2b"]
+
+[ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="1_vcqc1"]
+
+[node name="RevealStar" type="TextureRect" unique_id=747299151]
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+texture = ExtResource("1_vcqc1")
+expand_mode = 1
+stretch_mode = 5

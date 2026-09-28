@@ -20,6 +20,41 @@ retired since. `test_every_spinning_particle_material_sets_disable_z`
 (day_summary) scans every scene, so any material asking for spin must
 carry the flag, listed or not.
 
+## 2026-09-28 — Daily login polish
+
+- Task 1 pulled the daily-login popup out of `Lobby.gd` into a
+  `DailyLoginPanel` component attached to the existing `DailyReward` node,
+  taking `Lobby.gd` off the `LARGE_SCRIPTS` list (1073 → 990 lines;
+  `UNTYPED` 128 → 112, `BARE_NUMBERS` 58 → 44).
+- The reward curve is now 80/120/160/200/240/300/400G across the seven
+  days (1500G a week, the price of the priciest Koperasi item), replacing
+  the old flat 10G.
+- The dead `daily_claim` audio cue now plays on claim, and the reward
+  amount counts up instead of snapping in.
+- A new `RewardRow` gives the amount its own line so "400G" fits beside
+  KLAIM without clipping.
+- A "Selamat datang kembali!" greeting and a streak flame that grows over
+  the 7 days sit above the panel, over the blur; both the greeting/streak
+  and the besok teaser use `ResultHeroLabel`/`ResultDeltaLabel` because
+  plain dark text vanished against the blurred lobby art.
+- New `DailyRewardReveal` component: a gift box (an `AtlasTexture` cropped
+  from day1.png's slot 1; chest art is pending, so `use_chest_sprite`
+  stays off), a coin/star fan from `PackedScene` templates (coins use
+  `uang.png`), a confetti burst (the full three-firework volley and ×1.5
+  pieces on day 7), and one coin arcing to the wallet chip. The wallet is
+  paid exactly once, either when that coin lands or, if the panel is
+  closed mid-reveal or Reduce Motion is on, all at once; `GameState` is
+  written at claim time either way.
+- An idle "tap me" bounce plays on the reward row while unclaimed; once
+  claimed it shows a "Besok: +XG" teaser instead.
+- Fixed: reloading on the same day used to show tomorrow's slot as
+  claimed; it now shows the day that was actually claimed.
+- The human answered the plan's Q1–Q4 on 2026-09-28 and every proposal
+  stood as written. Design and plan:
+  `docs/superpowers/specs/2026-09-28-daily-login-polish-design.md`,
+  `docs/superpowers/plans/2026-09-28-daily-login-polish.md`.
+
+
 ## 2026-09-28 — Rapor's title clears the back button
 
 The Rapor screen's title still lost the stem of its "R" under the back

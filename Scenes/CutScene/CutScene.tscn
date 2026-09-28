@@ -1,0 +1,69 @@
+[gd_scene format=3 uid="uid://13fp8j1c53fd"]
+
+[ext_resource type="Script" uid="uid://24smcyuyiq8j" path="res://Scripts/CutScene/CutScene.gd" id="1_88s7j"]
+[ext_resource type="Texture2D" uid="uid://cfe2yal5hh4dl" path="res://Assets/Images/UI/BG.jpg" id="2_w1y33"]
+[ext_resource type="Script" uid="uid://bqpiy0bobcloa" path="res://Scripts/CutScene/HintLabel.gd" id="3_hint_lbl"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientParticles.tscn" id="amb_particles"]
+
+[node name="CutScene" type="Control" unique_id=1283265698]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_88s7j")
+
+[node name="BgCutScene" type="TextureRect" parent="." unique_id=599505676]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("2_w1y33")
+stretch_mode = 6
+
+[node name="Sun" parent="BgCutScene" instance=ExtResource("amb_pool")]
+center = Vector2(0.8, 0.08)
+pool_size = Vector2(1100, 1100)
+intensity = 0.06
+
+[node name="Sparkles" parent="BgCutScene" instance=ExtResource("amb_particles")]
+preset = 1
+density = 0.6
+drift = Vector2(1, -0.2)
+
+[node name="DialogueBox" type="Panel" parent="." unique_id=1079685626]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 1340.0
+offset_right = 1036.0
+offset_bottom = 1660.0
+mouse_filter = 2
+theme_type_variation = &"Card"
+
+[node name="DialogueLabel" type="RichTextLabel" parent="DialogueBox" unique_id=1999021895]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 44.0
+offset_right = 948.0
+offset_bottom = 276.0
+theme_type_variation = &"CutsceneDialogue"
+bbcode_enabled = true
+
+[node name="FadeOverlay" type="ColorRect" parent="." unique_id=469784982]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="HintLabel" type="Label" parent="." unique_id=910481723]
+layout_mode = 0
+offset_left = 110.0
+offset_top = 1700.0
+offset_right = 967.0
+offset_bottom = 1760.0
+theme_type_variation = &"CaptionLabel"
+text = "Ketuk untuk melanjutkan"
+horizontal_alignment = 1
+script = ExtResource("3_hint_lbl")

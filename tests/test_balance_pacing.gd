@@ -33,23 +33,23 @@ func teardown() -> void:
 	GameState.day_schedules = _snap_day_schedules
 	GameState.minigame_gain_this_week = _snap_minigame_gain_this_week
 
-# The real roster values, hard-copied from student_card.gd (student_data_list,
+# The real roster values, hard-copied from StudentCard.gd (student_data_list,
 # lines ~896-1035) so a roster edit does not silently move the goalposts.
 # Keys use the UI spelling. Only the first four roster students are used here
 # (Marcel, Doni, Andi, Citra) -- the approved roster this harness seeds.
 const ROSTER := [
 	{"id": 1, "name": "Marcel", "hobby_category": "Akademis", "personality": "Tekun",
-	 "quirk": "Kutu Buku", "akademis1": 28.0, "akademis2": 48.0, "akademis3": 38.0,
-	 "kepribadian1": 60.0, "kepribadian2": 55.0},
+	 "quirk": "Kutu Buku", "akademis": 28.0, "seni_budaya": 48.0, "olahraga": 38.0,
+	 "mood": 60.0, "energy": 55.0},
 	{"id": 2, "name": "Doni", "hobby_category": "Olahraga", "personality": "Aktif",
-	 "quirk": "Semangat Juang", "akademis1": 38.0, "akademis2": 22.0, "akademis3": 33.0,
-	 "kepribadian1": 55.0, "kepribadian2": 55.0},
+	 "quirk": "Semangat Juang", "akademis": 38.0, "seni_budaya": 22.0, "olahraga": 33.0,
+	 "mood": 55.0, "energy": 55.0},
 	{"id": 3, "name": "Andi", "hobby_category": "SeniBudaya", "personality": "Kreatif",
-	 "quirk": "Penasaran", "akademis1": 48.0, "akademis2": 55.0, "akademis3": 32.0,
-	 "kepribadian1": 60.0, "kepribadian2": 60.0},
+	 "quirk": "Penasaran", "akademis": 48.0, "seni_budaya": 55.0, "olahraga": 32.0,
+	 "mood": 60.0, "energy": 60.0},
 	{"id": 4, "name": "Citra", "hobby_category": "Olahraga", "personality": "Seni Dalam Kesunyian",
-	 "quirk": "Penyendiri", "akademis1": 28.0, "akademis2": 25.0, "akademis3": 15.0,
-	 "kepribadian1": 35.0, "kepribadian2": 60.0},
+	 "quirk": "Penyendiri", "akademis": 28.0, "seni_budaya": 25.0, "olahraga": 15.0,
+	 "mood": 35.0, "energy": 60.0},
 ]
 
 const SUBJECTS := ["Akademis", "SeniBudaya", "Olahraga"]
@@ -67,13 +67,13 @@ func _seed_gamestate(grade: int) -> void:
 	GameState.approved_students = []
 	for r in ROSTER:
 		var s: Dictionary = r.duplicate(true)
-		s["roster_base_akademis1"] = s["akademis1"]
-		s["roster_base_akademis2"] = s["akademis2"]
-		s["roster_base_akademis3"] = s["akademis3"]
+		s["roster_base_akademis"] = s["akademis"]
+		s["roster_base_seni_budaya"] = s["seni_budaya"]
+		s["roster_base_olahraga"] = s["olahraga"]
 		var up := _grade_uplift(grade)
-		s["target_akademis1"] = clampf(s["akademis1"] + up, 0.0, 100.0)
-		s["target_akademis2"] = clampf(s["akademis2"] + up, 0.0, 100.0)
-		s["target_akademis3"] = clampf(s["akademis3"] + up, 0.0, 100.0)
+		s["target_akademis"] = clampf(s["akademis"] + up, 0.0, 100.0)
+		s["target_seni_budaya"] = clampf(s["seni_budaya"] + up, 0.0, 100.0)
+		s["target_olahraga"] = clampf(s["olahraga"] + up, 0.0, 100.0)
 		GameState.approved_students.append(s)
 	GameState.day_schedules = {}
 	GameState.minigame_gain_this_week = {}

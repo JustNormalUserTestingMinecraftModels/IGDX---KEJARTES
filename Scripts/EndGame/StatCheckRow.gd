@@ -37,6 +37,7 @@ signal filled(cleared: bool)
 ## The authored one-shot burst thrown at a full bar. Instanced, never
 ## built -- see the project's "no visual is built at runtime" rule.
 const BURST_SCENE := "res://Scenes/SchoolSimulation/RewardBurst.tscn"
+const _BURST_PACKED: PackedScene = preload("res://Scenes/SchoolSimulation/RewardBurst.tscn")
 
 ## Speed multiplier a rush applies to the live fill. Large enough to land
 ## within a frame; the tween still emits `finished`, which is the whole
@@ -136,7 +137,7 @@ func rush() -> void:
 ## bar transparent), a burst off the bar's right cap, and the pop cue.
 func pop() -> void:
 	AnimUtils.squash_bounce(bar)
-	var burst: RewardParticles = load(BURST_SCENE).instantiate()
+	var burst: RewardParticles = _BURST_PACKED.instantiate()
 	add_child(burst)
 	burst.position = bar.position + Vector2(bar.size.x, bar.size.y * 0.5)
 	burst.plays_sfx = false

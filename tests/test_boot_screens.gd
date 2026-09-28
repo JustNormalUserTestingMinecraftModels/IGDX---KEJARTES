@@ -17,7 +17,7 @@ extends McpTestSuite
 ##    combined minimum size to measure against touch_target_min. It is
 ##    intentionally omitted rather than faked into a vacuous pass.
 ##
-## splashscreen.gd is @tool (see its own header note for why): the MCP
+## Splashscreen.gd is @tool (see its own header note for why): the MCP
 ## test runner instantiates scenes from inside the editor process, and a
 ## plain (non-@tool) script attached to a scene root becomes a placeholder
 ## instance there, which breaks traversal-based checks like
@@ -31,7 +31,7 @@ func suite_name() -> String:
 	return "boot_screens"  # Splashscreen only since the Loading screen was deleted
 
 const _SPLASH_SCENE := "res://Scenes/Splashscreen/Splashscreen.tscn"
-const _SPLASH_SCRIPT := "res://Scripts/Splashscreen/splashscreen.gd"
+const _SPLASH_SCRIPT := "res://Scripts/Splashscreen/Splashscreen.gd"
 
 var _splash: Control
 
@@ -119,7 +119,7 @@ func test_splashscreen_routes_straight_to_main_menu_via_transition() -> void:
 	# MainMenu -- two scene changes for a destination that loads in one.
 	# It now transitions straight there, like every other navigation.
 	var src := FileAccess.get_file_as_string(_SPLASH_SCRIPT)
-	assert_true(src.contains("Transition.change_scene(\"res://Scenes/MainMenu/main_menu.tscn\")"),
+	assert_true(src.contains("Transition.change_scene(\"res://Scenes/MainMenu/MainMenu.tscn\")"),
 		"splashscreen must transition straight to MainMenu")
 	assert_false(src.contains("res://Scenes/Loading/loading.tscn"),
 		"splashscreen must no longer detour through the deleted Loading scene")

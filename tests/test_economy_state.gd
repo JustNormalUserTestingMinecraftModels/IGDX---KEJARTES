@@ -4,6 +4,9 @@ extends McpTestSuite
 ## Economy state: ItemData, ItemDatabase, GameState money/inventory/use_item.
 ## Suite must be @tool and no test may be a coroutine (the runner calls
 ## suite.call(name) without awaiting) -- same constraints as test_lobby.gd.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 func suite_name() -> String:
 	return "economy_state"
@@ -33,7 +36,7 @@ func test_unknown_item_returns_null() -> void:
 		"unknown item must return null, not a blank ItemData")
 
 func test_money_setter_emits_money_changed() -> void:
-	var original := GameState.player_money
+	var original: int = GameState.player_money
 	var seen := []
 	var cb := func(amount: int): seen.append(amount)
 	GameState.money_changed.connect(cb)
@@ -100,27 +103,27 @@ func _swap_roster(roster: Array) -> Array:
 
 func test_use_item_boosts_only_the_chosen_student() -> void:
 	var original := _swap_roster([
-		{"id": 1, "student_name": "A", "kepribadian1": 50.0, "kepribadian2": 50.0},
-		{"id": 2, "student_name": "B", "kepribadian1": 50.0, "kepribadian2": 50.0},
+		{"id": 1, "student_name": "A", "mood": 50.0, "energy": 50.0},
+		{"id": 2, "student_name": "B", "mood": 50.0, "energy": 50.0},
 	])
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Komik", 1)
 	var komik: ItemData = ItemDatabase.get_item("Komik")
-	var result := GameState.use_item(komik, 1, 1)
+	var result: Dictionary = GameState.use_item(komik, 1, 1)
 	assert_true(result["applied"], "use must succeed when the item is owned")
-	assert_eq(GameState.approved_students[0]["kepribadian1"], 50.0 + komik.mood_boost, "chosen student gains mood")
-	assert_eq(GameState.approved_students[1]["kepribadian1"], 50.0, "other student is untouched")
+	assert_eq(GameState.approved_students[0]["mood"], 50.0 + komik.mood_boost, "chosen student gains mood")
+	assert_eq(GameState.approved_students[1]["mood"], 50.0, "other student is untouched")
 	GameState.inventory.clear()
 	GameState.approved_students = original
 
 func test_use_item_clamps_at_one_hundred() -> void:
 	var original := _swap_roster([
-		{"id": 1, "student_name": "A", "kepribadian1": 98.0, "kepribadian2": 98.0},
+		{"id": 1, "student_name": "A", "mood": 98.0, "energy": 98.0},
 	])
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Komik", 1)
 	GameState.use_item(ItemDatabase.get_item("Komik"), 1, 1)
-	assert_eq(GameState.approved_students[0]["kepribadian1"], 100.0, "mood clamps at 100")
+	assert_eq(GameState.approved_students[0]["mood"], 100.0, "mood clamps at 100")
 	GameState.inventory.clear()
 	GameState.approved_students = original
 
@@ -141,7 +144,7 @@ func test_use_item_refuses_when_not_enough_owned() -> void:
 	])
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Mie Instan", 1)
-	var result := GameState.use_item(ItemDatabase.get_item("Mie Instan"), 1, 5)
+	var result: Dictionary = GameState.use_item(ItemDatabase.get_item("Mie Instan"), 1, 5)
 	assert_false(result["applied"], "cannot use more than owned")
 	assert_eq(GameState.approved_students[0]["mood"], 10.0, "no stat change on refusal")
 	assert_eq(GameState.get_inventory_quantity("Mie Instan"), 1, "nothing consumed on refusal")
@@ -154,7 +157,7 @@ func test_use_item_refuses_for_unknown_student_id() -> void:
 	])
 	GameState.inventory.clear()
 	GameState.add_to_inventory("Mie Instan", 1)
-	var result := GameState.use_item(ItemDatabase.get_item("Mie Instan"), 99, 1)
+	var result: Dictionary = GameState.use_item(ItemDatabase.get_item("Mie Instan"), 99, 1)
 	assert_false(result["applied"], "unknown student id must refuse")
 	assert_eq(GameState.get_inventory_quantity("Mie Instan"), 1, "nothing consumed on refusal")
 	GameState.inventory.clear()
@@ -242,9 +245,9 @@ func test_count_targets_cleared_reports_cleared_and_total() -> void:
 	var saved_roster: Array = GameState.approved_students.duplicate(true)
 	GameState.approved_students = [{
 		"id": 1, "name": "A",
-		"akademis1": 90.0, "akademis2": 90.0, "akademis3": 10.0,
-		"target_akademis1": 50.0, "target_akademis2": 50.0,
-		"target_akademis3": 50.0,
+		"akademis": 90.0, "seni_budaya": 90.0, "olahraga": 10.0,
+		"target_akademis": 50.0, "target_seni_budaya": 50.0,
+		"target_olahraga": 50.0,
 	}]
 	var counted: Array = GameState.count_targets_cleared()
 	GameState.approved_students = saved_roster
@@ -260,9 +263,9 @@ func _roster_with_cleared(cleared: int) -> Array:
 	var k := 0
 	for i in range(4):
 		var s := {"id": i + 1, "name": "M%d" % (i + 1)}
-		for pair in [["akademis1", "target_akademis1"],
-				["akademis2", "target_akademis2"],
-				["akademis3", "target_akademis3"]]:
+		for pair in [["akademis", "target_akademis"],
+				["seni_budaya", "target_seni_budaya"],
+				["olahraga", "target_olahraga"]]:
 			s[pair[1]] = 60.0
 			s[pair[0]] = 70.0 if k < cleared else 40.0
 			k += 1
@@ -292,7 +295,7 @@ func test_run_stars_is_three_times_the_cleared_fraction() -> void:
 func test_a_target_that_was_never_initialized_does_not_count_as_cleared() -> void:
 	var saved: Array = GameState.approved_students
 	GameState.approved_students = [
-		{"id": 1, "akademis1": 80.0, "akademis2": 80.0, "akademis3": 80.0},
+		{"id": 1, "akademis": 80.0, "seni_budaya": 80.0, "olahraga": 80.0},
 	]
 	var counted: Array = GameState.count_targets_cleared()
 	GameState.approved_students = saved

@@ -1,15 +1,19 @@
 [gd_scene format=3 uid="uid://co2d26egr4c2e"]
 
 [ext_resource type="Script" uid="uid://dqfujm6sko67i" path="res://Scripts/SchoolSimulation/EventWarning.gd" id="1_warning"]
-[ext_resource type="Texture2D" uid="uid://sukgikwpppsd" path="res://Assets/Images/Textures/KiperIdle.jpg" id="2_i1ddl"]
-[ext_resource type="Shader" uid="uid://b2xh6q6jw0oep" path="res://Scripts/SchoolSimulation/HazardStripeShader.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" uid="uid://8nqwtq5fanll" path="res://Assets/Images/UI/Placeholders/icon_event_warning.png" id="3_i1ddl"]
+[ext_resource type="Texture2D" uid="uid://ctgt3msw50o3e" path="res://Assets/Images/SchoolDay/eventwarning_icon.png" id="2_47ycc"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/caution_tape.svg" id="3_tape"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_stripes"]
-shader = ExtResource("2_shader")
-shader_parameter/speed = 2.0
-shader_parameter/stripe_width = 16.0
-shader_parameter/angle = 45.0
+[sub_resource type="Gradient" id="Gradient_event"]
+resource_local_to_scene = true
+offsets = PackedFloat32Array(0, 0.55, 1)
+colors = PackedColorArray(0.05, 0.12, 0.23, 1, 0.12, 0.44, 0.73, 1, 0.23, 0.65, 0.96, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_event"]
+resource_local_to_scene = true
+gradient = SubResource("Gradient_event")
+fill_from = Vector2(0, 0)
+fill_to = Vector2(1, 1)
 
 [node name="EventWarning" type="Control" unique_id=1118244677]
 layout_mode = 3
@@ -19,59 +23,109 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_warning")
-background_texture = ExtResource("2_i1ddl")
-caution_icon_texture = ExtResource("3_i1ddl")
-icon_font_size = 320
 
-[node name="Background" type="Panel" parent="." unique_id=1563674738]
+[node name="Panel" type="Panel" parent="." unique_id=2116463392]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_type_variation = &"EventWarningPanel"
+
+[node name="Gradient" type="TextureRect" parent="Panel"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = &"Scrim"
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_event")
+expand_mode = 1
 
-[node name="TopBar" type="ColorRect" parent="." unique_id=241330505]
-material = SubResource("ShaderMaterial_stripes")
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 60.0
-grow_horizontal = 2
-
-[node name="BottomBar" type="ColorRect" parent="." unique_id=1822022293]
-material = SubResource("ShaderMaterial_stripes")
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -60.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="Center" type="CenterContainer" parent="." unique_id=779048480]
+[node name="Center" type="CenterContainer" parent="Panel" unique_id=1607092403]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="Center" unique_id=200154272]
+[node name="Content" type="VBoxContainer" parent="Panel/Center" unique_id=112836667]
 layout_mode = 2
-theme_override_constants/separation = 24
+mouse_filter = 2
+theme_override_constants/separation = 40
 alignment = 1
 
-[node name="CautionLabel" type="Label" parent="Center/VBox" unique_id=2038317300]
+[node name="Icon" type="TextureRect" parent="Panel/Center/Content" unique_id=1104850390]
+custom_minimum_size = Vector2(0, 520)
 layout_mode = 2
-theme_type_variation = &"DisplayLabel"
+mouse_filter = 2
+texture = ExtResource("2_47ycc")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Band" type="PanelContainer" parent="Panel/Center/Content"]
+custom_minimum_size = Vector2(1320, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"EventBandPanel"
+
+[node name="Rows" type="VBoxContainer" parent="Panel/Center/Content/Band"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+
+[node name="TapeTop" type="Control" parent="Panel/Center/Content/Band/Rows"]
+clip_contents = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Stripes" type="TextureRect" parent="Panel/Center/Content/Band/Rows/TapeTop"]
+texture_repeat = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_tape")
+stretch_mode = 1
+
+[node name="Marker" type="Label" parent="Panel/Center/Content/Band/Rows"]
+layout_mode = 2
+theme_type_variation = &"EventBandMarkerLabel"
+text = "AKADEMIS · MINIGAME"
 horizontal_alignment = 1
 
-[node name="EventLabel" type="Label" parent="Center/VBox" unique_id=837575490]
+[node name="Caption" type="Label" parent="Panel/Center/Content/Band/Rows" unique_id=2059625304]
+custom_minimum_size = Vector2(920, 0)
 layout_mode = 2
-theme_type_variation = &"EventDialogHeaderLabel"
-text = "EVENT WARNING"
+size_flags_horizontal = 4
+theme_type_variation = &"EventWarningCaptionLabel"
+text = "KEGIATAN AKADEMIS!"
 horizontal_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3
+
+[node name="TapeBottom" type="Control" parent="Panel/Center/Content/Band/Rows"]
+clip_contents = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Stripes" type="TextureRect" parent="Panel/Center/Content/Band/Rows/TapeBottom"]
+texture_repeat = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_tape")
+stretch_mode = 1

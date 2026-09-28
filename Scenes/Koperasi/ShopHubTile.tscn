@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bagftbms2pxy1"]
 
-[ext_resource type="Script" uid="uid://dxxusvhsf2pl8" path="res://Scripts/Koperasi/shop_hub_tile.gd" id="1_38wfh"]
+[ext_resource type="Script" uid="uid://dxxusvhsf2pl8" path="res://Scripts/Koperasi/ShopHubTile.gd" id="1_38wfh"]
 [ext_resource type="Texture2D" uid="uid://del1h0jhpisrq" path="res://Assets/Images/Shop/UI/icon_shop_items.svg" id="1_g4ob7"]
 
 [node name="ShopHubTile" type="Button" unique_id=599551777]

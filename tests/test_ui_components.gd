@@ -64,8 +64,8 @@ func test_safe_area_applies_at_least_the_screen_margin() -> void:
 	var m := SafeAreaMargin.new()
 	_root.add_child(m)
 	var tokens := DesignTokens.load_default()
-	# On desktop the safe area equals the window, so insets are zero and
-	# only screen_margin applies. That is the floor we assert.
+	# Off a fullscreen phone the device inset is zero, so only screen_margin
+	# applies. That is the floor we assert.
 	assert_true(m.get_theme_constant("margin_left") >= tokens.screen_margin,
 		"left margin must be at least screen_margin")
 	assert_true(m.get_theme_constant("margin_top") >= tokens.screen_margin,
@@ -79,6 +79,72 @@ func test_safe_area_can_be_disabled() -> void:
 	var tokens := DesignTokens.load_default()
 	assert_eq(m.get_theme_constant("margin_left"), tokens.screen_margin,
 		"with safe area off, margin is exactly screen_margin")
+
+
+## The device inset only applies to a mobile build in a fullscreen window.
+## get_display_safe_area() reports the MONITOR's safe area, so the editor's
+## embedded 1063x1891 run read an 873px bottom "inset", clamped to 768
+## (2026-09-28: Settings' column came out 1056px tall instead of 1824). These feed the pure
+## device_inset() fixed readings, so no result depends on the host monitor.
+const _PHONE := Vector2(1080, 1920)
+
+
+func test_safe_area_ignores_the_monitor_on_desktop() -> void:
+	var monitor := Rect2i(0, 0, 2560, 1400)
+	var embedded := Vector2i(1063, 1891)
+	assert_eq(SafeAreaMargin.device_inset(monitor, embedded, _PHONE, false, false),
+		Vector4.ZERO, "a windowed desktop run reads no inset")
+	assert_eq(SafeAreaMargin.device_inset(monitor, embedded, _PHONE, false, true),
+		Vector4.ZERO, "a fullscreen desktop run reads no inset either")
+
+
+func test_safe_area_ignores_the_monitor_in_a_windowed_mobile_run() -> void:
+	var notch := Rect2i(0, 100, 1080, 1720)
+	assert_eq(SafeAreaMargin.device_inset(notch, Vector2i(1080, 1920), _PHONE, true, false),
+		Vector4.ZERO, "a mobile window that is not fullscreen reads no inset")
+
+
+func test_safe_area_reads_the_notch_on_a_fullscreen_phone() -> void:
+	var notch := Rect2i(0, 100, 1080, 1720)
+	assert_eq(SafeAreaMargin.device_inset(notch, Vector2i(1080, 1920), _PHONE, true, true),
+		Vector4(0, 100, 0, 100), "a fullscreen phone keeps its notch and gesture bar")
+
+
+func test_safe_area_scales_physical_pixels_into_the_reference_space() -> void:
+	var notch := Rect2i(0, 200, 2160, 3440)
+	assert_eq(SafeAreaMargin.device_inset(notch, Vector2i(2160, 3840), _PHONE, true, true),
+		Vector4(0, 100, 0, 100), "a 2x-density phone's insets halve into 1080-wide space")
+
+
+func test_safe_area_clamps_a_bogus_device_reading() -> void:
+	var bogus := Rect2i(-50, 0, 1180, 100)
+	var got := SafeAreaMargin.device_inset(bogus, Vector2i(1080, 1920), _PHONE, true, true)
+	assert_eq(got.x, 0.0, "a negative inset clamps to zero")
+	assert_eq(got.w, _PHONE.y * SafeAreaMargin.MAX_INSET_FRACTION,
+		"an inset past the cap clamps to it")
+
+
+## The gate reads the live build and window, not a fixed flag.
+func test_safe_area_gates_on_the_live_build_and_window() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/SafeAreaMargin.gd")
+	assert_true(src.contains('OS.has_feature("mobile")'),
+		"_apply must read the mobile feature tag")
+	assert_true(src.contains("WINDOW_MODE_FULLSCREEN") and src.contains("WINDOW_MODE_EXCLUSIVE_FULLSCREEN"),
+		"fullscreen must cover both fullscreen modes")
+
+
+## End to end: a live SafeAreaMargin in this (desktop) editor applies exactly
+## screen_margin on every side, whatever the host monitor reports.
+func test_safe_area_adds_no_device_inset_off_a_phone() -> void:
+	if OS.has_feature("mobile"):
+		return
+	var m := SafeAreaMargin.new()
+	m.size = _PHONE
+	_root.add_child(m)
+	var margin := DesignTokens.load_default().screen_margin
+	for side in ["margin_left", "margin_top", "margin_right", "margin_bottom"]:
+		assert_eq(m.get_theme_constant(side), margin,
+			"%s must be exactly screen_margin off a phone" % side)
 
 
 ## Renamed from test_statbar_tints_itself_from_its_category: a StatBar-family
@@ -147,7 +213,7 @@ func test_statbar_value_label_tracks_the_value() -> void:
 ## not just in-game. ReportCard and StudentCard bars leave show_value_label
 ## at its default false while authoring their own ValueLabel children with
 ## meaningful text/alignment that those screens drive themselves. Opening
-## and saving Scenes/ReportCard/report_card.tscn once adopted those
+## and saving Scenes/ReportCard/ReportCard.tscn once adopted those
 ## authored labels and silently persisted stomped values into the .tscn:
 ## visible flipped to false, text overwritten from the authored "65/65" to
 ## a freshly computed "60", and horizontal_alignment forced from right (2)

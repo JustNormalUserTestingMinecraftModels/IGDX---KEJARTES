@@ -8,6 +8,9 @@ extends McpTestSuite
 ##
 ## Suite is @tool and no test is a coroutine, per the runner constraints
 ## documented in test_lobby.gd.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 func suite_name() -> String:
 	return "end_game_rehearsal"
@@ -18,11 +21,11 @@ func suite_name() -> String:
 ## staying four entries long or keeping its current stat values.
 func _fake_source() -> Array:
 	return [
-		{"id": 1, "name": "Satu", "akademis1": 1.0, "akademis2": 2.0,
-			"akademis3": 3.0, "kepribadian1": 4.0, "kepribadian2": 5.0,
+		{"id": 1, "name": "Satu", "akademis": 1.0, "seni_budaya": 2.0,
+			"olahraga": 3.0, "mood": 4.0, "energy": 5.0,
 			"hobby_category": "Akademis"},
-		{"id": 2, "name": "Dua", "akademis1": 6.0, "akademis2": 7.0,
-			"akademis3": 8.0, "kepribadian1": 9.0, "kepribadian2": 10.0,
+		{"id": 2, "name": "Dua", "akademis": 6.0, "seni_budaya": 7.0,
+			"olahraga": 8.0, "mood": 9.0, "energy": 10.0,
 			"hobby_category": "Olahraga"},
 	]
 
@@ -44,9 +47,9 @@ func test_lulus_clears_every_target_for_every_student() -> void:
 		EndGameRehearsal.PRESET_LULUS, 7, _fake_source())
 	assert_eq(roster.size(), 2, "one entry per source student")
 	for s in roster:
-		for pair in [["akademis1", "target_akademis1"],
-				["akademis2", "target_akademis2"],
-				["akademis3", "target_akademis3"]]:
+		for pair in [["akademis", "target_akademis"],
+				["seni_budaya", "target_seni_budaya"],
+				["olahraga", "target_olahraga"]]:
 			assert_true(float(s[pair[0]]) >= float(s[pair[1]]),
 				"%s must clear %s" % [s["name"], pair[1]])
 
@@ -55,9 +58,9 @@ func test_gagal_misses_every_target_for_every_student() -> void:
 	var roster := EndGameRehearsal.build_roster(
 		EndGameRehearsal.PRESET_GAGAL, 7, _fake_source())
 	for s in roster:
-		for pair in [["akademis1", "target_akademis1"],
-				["akademis2", "target_akademis2"],
-				["akademis3", "target_akademis3"]]:
+		for pair in [["akademis", "target_akademis"],
+				["seni_budaya", "target_seni_budaya"],
+				["olahraga", "target_olahraga"]]:
 			assert_true(float(s[pair[0]]) < float(s[pair[1]]),
 				"%s must miss %s" % [s["name"], pair[1]])
 
@@ -72,9 +75,9 @@ func test_campur_gives_each_slot_a_different_cleared_count() -> void:
 	var counts: Array = []
 	for s in roster:
 		var cleared := 0
-		if float(s["akademis1"]) >= float(s["target_akademis1"]): cleared += 1
-		if float(s["akademis2"]) >= float(s["target_akademis2"]): cleared += 1
-		if float(s["akademis3"]) >= float(s["target_akademis3"]): cleared += 1
+		if float(s["akademis"]) >= float(s["target_akademis"]): cleared += 1
+		if float(s["seni_budaya"]) >= float(s["target_seni_budaya"]): cleared += 1
+		if float(s["olahraga"]) >= float(s["target_olahraga"]): cleared += 1
 		counts.append(cleared)
 	# Asserted slot by slot rather than as one array compare: a typed-array
 	# equality failure reports "expected [3,2,1,0] got [3,2,1,1]" with no
@@ -89,7 +92,7 @@ func test_campur_gives_each_slot_a_different_cleared_count() -> void:
 func test_build_roster_does_not_mutate_its_source() -> void:
 	var source := _fake_source()
 	EndGameRehearsal.build_roster(EndGameRehearsal.PRESET_LULUS, 7, source)
-	assert_eq(source[0]["akademis1"], 1.0,
+	assert_eq(source[0]["akademis"], 1.0,
 		"the source roster must be copied, never written through")
 
 
@@ -98,11 +101,11 @@ func test_roster_keeps_identity_fields_and_sets_base_stats() -> void:
 		EndGameRehearsal.PRESET_LULUS, 7, _fake_source())
 	assert_eq(roster[0]["name"], "Satu", "names carry over")
 	assert_eq(roster[0]["id"], 1, "ids carry over")
-	assert_eq(roster[0]["kepribadian1"], EndGameRehearsal.REHEARSAL_MOOD,
+	assert_eq(roster[0]["mood"], EndGameRehearsal.REHEARSAL_MOOD,
 		"mood is set to the rehearsal value, not the source's")
-	assert_eq(roster[0]["kepribadian2"], EndGameRehearsal.REHEARSAL_ENERGY,
+	assert_eq(roster[0]["energy"], EndGameRehearsal.REHEARSAL_ENERGY,
 		"energy is set to the rehearsal value, not the source's")
-	assert_eq(roster[0]["base_akademis1"], EndGameRehearsal.BASE_SKILL,
+	assert_eq(roster[0]["base_akademis"], EndGameRehearsal.BASE_SKILL,
 		"base_* must be set so a later initialize_grade_targets() " +
 		"recomputes the same targets instead of moving them")
 
@@ -118,7 +121,7 @@ func test_snapshot_then_restore_round_trips_the_roster() -> void:
 	var original_week: int = GameState.minggu_ke
 	var original_grade: int = GameState.current_grade
 
-	GameState.approved_students = [{"id": 99, "name": "Asli", "akademis1": 11.0}]
+	GameState.approved_students = [{"id": 99, "name": "Asli", "akademis": 11.0}]
 	GameState.minggu_ke = 3
 	GameState.current_grade = 8
 
@@ -142,14 +145,14 @@ func test_snapshot_then_restore_round_trips_the_roster() -> void:
 func test_snapshot_deep_copies_so_later_edits_do_not_leak_in() -> void:
 	var original_roster: Array = GameState.approved_students.duplicate(true)
 
-	GameState.approved_students = [{"id": 1, "name": "Asli", "akademis1": 11.0}]
+	GameState.approved_students = [{"id": 1, "name": "Asli", "akademis": 11.0}]
 	var snap := EndGameRehearsal.snapshot()
 	# Mutate the live dictionary in place. A shallow snapshot would be
 	# holding this same Dictionary and would "restore" the mutation.
-	GameState.approved_students[0]["akademis1"] = 99.0
+	GameState.approved_students[0]["akademis"] = 99.0
 
 	EndGameRehearsal.restore(snap)
-	assert_eq(GameState.approved_students[0]["akademis1"], 11.0,
+	assert_eq(GameState.approved_students[0]["akademis"], 11.0,
 		"the snapshot must hold its own copy of each student dictionary")
 
 	GameState.approved_students = original_roster
@@ -241,10 +244,10 @@ func test_arm_seeds_a_run_stats_tally_matched_to_the_preset() -> void:
 
 	GameState.current_grade = 7
 	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
-	var winning := GameState.run_stats.minigame_win_rate()
+	var winning: float = GameState.run_stats.minigame_win_rate()
 
 	EndGameRehearsal.arm(EndGameRehearsal.PRESET_GAGAL, _fake_source())
-	var losing := GameState.run_stats.minigame_win_rate()
+	var losing: float = GameState.run_stats.minigame_win_rate()
 
 	assert_true(winning > losing,
 		"the lulus preset must out-score the gagal one on minigames, or " +
@@ -398,8 +401,8 @@ func test_restore_survives_run_results_progression_mutations() -> void:
 	GameState.current_grade = 7
 	GameState.minggu_ke = 4
 	GameState.approved_students = [
-		{"id": 7, "name": "Asli", "akademis1": 33.0, "base_akademis1": 30.0,
-			"kepribadian1": 41.0, "kepribadian2": 42.0},
+		{"id": 7, "name": "Asli", "akademis": 33.0, "base_akademis": 30.0,
+			"mood": 41.0, "energy": 42.0},
 	]
 	GameState.day_schedules = {"7": {"Senin": {"category": "Akademis"}}}
 	GameState.run_stats = RunStats.new()
@@ -413,11 +416,11 @@ func test_restore_survives_run_results_progression_mutations() -> void:
 	EndGameRehearsal.arm(EndGameRehearsal.PRESET_LULUS, _fake_source())
 	GameState.current_grade += 1
 	for student in GameState.approved_students:
-		student["kepribadian1"] = 80.0
-		student["kepribadian2"] = 80.0
-		student.erase("base_akademis1")
-		student.erase("base_akademis2")
-		student.erase("base_akademis3")
+		student["mood"] = 80.0
+		student["energy"] = 80.0
+		student.erase("base_akademis")
+		student.erase("base_seni_budaya")
+		student.erase("base_olahraga")
 	GameState.day_schedules.clear()
 	GameState.minggu_ke = 1
 	GameState.returned_from_student_card = false
@@ -429,9 +432,9 @@ func test_restore_survives_run_results_progression_mutations() -> void:
 	assert_eq(GameState.minggu_ke, 4, "week is back")
 	assert_eq(GameState.approved_students.size(), 1, "the real roster is back")
 	assert_eq(GameState.approved_students[0]["name"], "Asli", "the real student is back")
-	assert_eq(GameState.approved_students[0]["base_akademis1"], 30.0,
-		"the erased base_akademis* is back")
-	assert_eq(GameState.approved_students[0]["kepribadian1"], 41.0,
+	assert_eq(GameState.approved_students[0]["base_akademis"], 30.0,
+		"the erased base_akademis is back")
+	assert_eq(GameState.approved_students[0]["mood"], 41.0,
 		"the overwritten mood is back")
 	assert_true(GameState.day_schedules.has("7"), "schedules are back")
 	assert_eq(GameState.run_stats.minigames_won, 3, "the tally is back")

@@ -1,8 +1,10 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://yoh7p3bbelyd"]
 
-[ext_resource type="Script" path="res://Scripts/UI/Settings.gd" id="1_settings"]
-[ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/BG.jpg" id="3_bg"]
+[ext_resource type="Script" uid="uid://4h5mljbcblli" path="res://Scripts/UI/Settings.gd" id="1_settings"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
+[ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="3_bg"]
+[ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="4_ret"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SettingsToggleRow.tscn" id="5_row"]
 
 [node name="Settings" type="Control"]
 layout_mode = 3
@@ -20,6 +22,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("3_bg")
 expand_mode = 1
 stretch_mode = 6
@@ -31,113 +34,221 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
 script = ExtResource("2_safe")
 
-[node name="Layout" type="VBoxContainer" parent="SafeArea"]
-unique_name_in_owner = true
+[node name="MainColumn" type="VBoxContainer" parent="SafeArea"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 32
 
-[node name="TitleLabel" type="Label" parent="SafeArea/Layout"]
-layout_mode = 2
-theme_type_variation = &"H1Label"
-text = "PENGATURAN"
-horizontal_alignment = 1
-
-[node name="AudioCard" type="PanelContainer" parent="SafeArea/Layout"]
+[node name="Header" type="PanelContainer" parent="SafeArea/MainColumn"]
 layout_mode = 2
 theme_type_variation = &"Card"
 
-[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/AudioCard"]
+[node name="TitleLabel" type="Label" parent="SafeArea/MainColumn/Header"]
+layout_mode = 2
+theme_type_variation = &"DisplayLabel"
+text = "PENGATURAN"
+vertical_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="SafeArea/MainColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+
+[node name="Pad" type="MarginContainer" parent="SafeArea/MainColumn/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 24
+
+[node name="Sections" type="VBoxContainer" parent="SafeArea/MainColumn/Scroll/Pad"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="AudioCard" type="PanelContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections"]
+layout_mode = 2
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 20
 
-[node name="VBox" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin"]
+[node name="VBox" type="VBoxContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
-[node name="MasterRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox"]
+[node name="SectionLabel" type="Label" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_type_variation = &"CardSectionLabel"
+text = "SUARA"
 
-[node name="MasterLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/MasterRow"]
+[node name="MasterRow" type="VBoxContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MasterLabel" type="Label" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox/MasterRow"]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Suara Utama"
 
-[node name="MasterSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/MasterRow"]
+[node name="MasterSlider" type="HSlider" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox/MasterRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"SettingsSlider"
 max_value = 1.0
 step = 0.01
-value = 1.0
+value = 0.77
 
-[node name="BgmRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox"]
+[node name="Rule1" type="HSeparator" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_type_variation = &"SettingsDivider"
 
-[node name="BgmLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/BgmRow"]
+[node name="BgmRow" type="VBoxContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BgmLabel" type="Label" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox/BgmRow"]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Musik"
 
-[node name="BgmSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/BgmRow"]
+[node name="BgmSlider" type="HSlider" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox/BgmRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"SettingsSlider"
 max_value = 1.0
 step = 0.01
-value = 1.0
+value = 0.77
 
-[node name="SfxRow" type="VBoxContainer" parent="SafeArea/Layout/AudioCard/Margin/VBox"]
+[node name="Rule2" type="HSeparator" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_type_variation = &"SettingsDivider"
 
-[node name="SfxLabel" type="Label" parent="SafeArea/Layout/AudioCard/Margin/VBox/SfxRow"]
+[node name="SfxRow" type="VBoxContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SfxLabel" type="Label" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox/SfxRow"]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Efek Suara"
 
-[node name="SfxSlider" type="HSlider" parent="SafeArea/Layout/AudioCard/Margin/VBox/SfxRow"]
+[node name="SfxSlider" type="HSlider" parent="SafeArea/MainColumn/Scroll/Pad/Sections/AudioCard/Margin/VBox/SfxRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"SettingsSlider"
 max_value = 1.0
 step = 0.01
-value = 1.0
+value = 0.77
 
-[node name="TutorialCard" type="PanelContainer" parent="SafeArea/Layout"]
+[node name="GameplayCard" type="PanelContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections"]
 layout_mode = 2
 theme_type_variation = &"Card"
 
-[node name="Margin" type="MarginContainer" parent="SafeArea/Layout/TutorialCard"]
+[node name="Margin" type="MarginContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/GameplayCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 20
 
-[node name="HBox" type="HBoxContainer" parent="SafeArea/Layout/TutorialCard/Margin"]
+[node name="VBox" type="VBoxContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/GameplayCard/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
-[node name="TutorialLabel" type="Label" parent="SafeArea/Layout/TutorialCard/Margin/HBox"]
+[node name="SectionLabel" type="Label" parent="SafeArea/MainColumn/Scroll/Pad/Sections/GameplayCard/Margin/VBox"]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
-text = "Tutorial Minigame"
-size_flags_horizontal = 3
-vertical_alignment = 1
+theme_type_variation = &"CardSectionLabel"
+text = "PERMAINAN"
 
-[node name="TutorialToggle" type="CheckButton" parent="SafeArea/Layout/TutorialCard/Margin/HBox"]
+[node name="TutorialRow" parent="SafeArea/MainColumn/Scroll/Pad/Sections/GameplayCard/Margin/VBox" instance=ExtResource("5_row")]
 unique_name_in_owner = true
 layout_mode = 2
+label_text = "Tutorial Minigame"
 
-[node name="BackButton" type="Button" parent="SafeArea/Layout"]
+[node name="Rule1" type="HSeparator" parent="SafeArea/MainColumn/Scroll/Pad/Sections/GameplayCard/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"SettingsDivider"
+
+[node name="SkipDialogRow" parent="SafeArea/MainColumn/Scroll/Pad/Sections/GameplayCard/Margin/VBox" instance=ExtResource("5_row")]
 unique_name_in_owner = true
 layout_mode = 2
+label_text = "Lewati Dialog Minigame"
+
+[node name="DisplayCard" type="PanelContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections"]
+layout_mode = 2
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SectionLabel" type="Label" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"CardSectionLabel"
+text = "TAMPILAN"
+
+[node name="LookLayerRow" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin/VBox" instance=ExtResource("5_row")]
+unique_name_in_owner = true
+layout_mode = 2
+label_text = "Efek Visual"
+
+[node name="Rule1" type="HSeparator" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"SettingsDivider"
+
+[node name="AmbientRow" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin/VBox" instance=ExtResource("5_row")]
+unique_name_in_owner = true
+layout_mode = 2
+label_text = "Efek Suasana"
+
+[node name="Rule2" type="HSeparator" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"SettingsDivider"
+
+[node name="ReduceMotionRow" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin/VBox" instance=ExtResource("5_row")]
+unique_name_in_owner = true
+layout_mode = 2
+label_text = "Kurangi Gerakan"
+
+[node name="Rule3" type="HSeparator" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"SettingsDivider"
+
+[node name="HapticsRow" parent="SafeArea/MainColumn/Scroll/Pad/Sections/DisplayCard/Margin/VBox" instance=ExtResource("5_row")]
+unique_name_in_owner = true
+layout_mode = 2
+label_text = "Getaran (Haptic)"
+
+[node name="BackButton" type="Button" parent="SafeArea/MainColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 4
 theme_type_variation = &"SecondaryButton"
-text = "KEMBALI"
+text = "Kembali"
+icon = ExtResource("4_ret")

@@ -23,12 +23,7 @@ extends Control
 ## Pause after the last row before the letter grade slams in.
 @export var grade_delay: float = 0.5
 
-@export_group("Backdrop")
-## Backdrop when the run passed. The SAME image EndCutscene shows, so this
-## screen opens on the frame that one blurred out on.
-@export var win_backdrop: Texture2D
-## Backdrop when the run failed. Likewise paired with EndCutscene's.
-@export var lose_backdrop: Texture2D
+@export_group("Backdrop blur")
 ## Blur strength, as a screen-texture mip level. Must equal EndCutscene's
 ## blur_lod -- the hand-off is only invisible if both match.
 @export var blur_lod: float = 3.0
@@ -50,8 +45,10 @@ extends Control
 ## Shown for a D rank, which is also every failed run.
 @export var rank_badge_d: Texture2D
 
-@onready var backdrop: TextureRect = $Backdrop
-## Between Backdrop and the report UI: the shader samples what is already
+## The painting, the letterbox bars and the posed roster: the same scene
+## EndCutscene shows, dressed the same way (_dress_backdrop()).
+@onready var win_stage: WinStage = $WinStage
+## Between WinStage and the report UI: the shader samples what is already
 ## drawn, so the image blurs and the report stays sharp.
 @onready var blur_layer: ColorRect = $BlurLayer
 @onready var rows_box: VBoxContainer = $MarginContainer/Column/RowsBox
@@ -59,6 +56,8 @@ extends Control
 @onready var grade_caption: Label = $MarginContainer/Column/GradeCard/GradeStack/GradeCaption
 @onready var title_label: Label = $MarginContainer/Column/TitleLabel
 @onready var btn_selesai: Button = $MarginContainer/Column/BtnSelesai
+@onready var ambient_pass: Control = $AmbientPass
+@onready var ambient_fail: Control = $AmbientFail
 
 const ROW_SCENE := preload("res://Scenes/EndGame/RunResultRow.tscn")
 
@@ -82,9 +81,19 @@ const GRADE_CAPTIONS := {
 	"D": "Belum berhasil. Mereka masih menunggumu.",
 }
 
+## The first-run tutorial flags a beaten game resets, by the script that owns
+## them as static vars. StudentList's walkthrough flag once pointed at Lobby.gd,
+## which has none, and the old silent guard hid it.
+const TUTORIAL_FLAGS: Dictionary[String, PackedStringArray] = {
+	"res://Scripts/AturJadwal/AturJadwal.gd": ["tutorial_phase1_done", "tutorial_phase3_done"],
+	"res://Scripts/StudentList/StudentList.gd": ["tutorial_shown"],
+}
+
 var _grade_text: String = "D"
 var _money_row: Control = null
 var _exiting: bool = false
+## The verdict _compute_grade reached; _dress_ambience reads it.
+var _passed: bool = false
 
 
 func _ready() -> void:
@@ -99,19 +108,21 @@ func _ready() -> void:
 
 	_build_rows()
 	_compute_grade()
+	_dress_ambience()
 	_play_reveal()
 
 
-## Opens on the frame EndCutscene blurred out on: the same CG for the same
-## verdict, at the same blur and the same dim. StatCheck decided the verdict
-## and EndCutscene already showed it -- this only re-dresses, it never
-## recomputes.
+## Opens on the frame EndCutscene blurred out on -- literally the same
+## scene, WinStage, dressed by the same call from the same two inputs, then
+## blurred by the same shader at the same strength and dim. StatCheck
+## decided the verdict and EndCutscene already showed it -- this only
+## re-dresses, it never recomputes.
 ##
 ## The blur is live rather than a pre-blurred image so the two screens cannot
 ## drift apart: one shader, one pair of numbers, both read from exports that
 ## a test pins to EndCutscene's.
 func _dress_backdrop() -> void:
-	backdrop.texture = lose_backdrop if GameState.run_failed else win_backdrop
+	win_stage.dress(GameState.run_failed, WinStage.names_of(GameState.approved_students))
 	var mat: ShaderMaterial = blur_layer.material
 	mat.set_shader_parameter("lod", blur_lod)
 	mat.set_shader_parameter("darkness", blur_darkness)
@@ -152,10 +163,29 @@ func _build_rows() -> void:
 
 func _compute_grade() -> void:
 	var counted: Array = GameState.count_targets_cleared()
-	var passed := not GameState.run_failed and GameState.check_semester_passed()
+	_passed = not GameState.run_failed and GameState.check_semester_passed()
 	var run_score := RunGrade.score(GameState.run_stats,
 		int(counted[0]), int(counted[1]), GameState.approved_students.size())
-	_grade_text = RunGrade.letter(run_score, passed)
+	_grade_text = RunGrade.letter(run_score, _passed)
+
+
+## The ambient kit's two moods (spec 2026-09-26, section 2): warm light and
+## sparkles for a pass, a blue night and slow dust for a fail. Both groups
+## are authored in the scene; this only picks one, from the verdict the
+## grade letter used, and takes the glint off a failing badge.
+##
+## EndCutscene hands over to RunResult with an invisible scene swap (the same
+## blurred WinStage, redrawn) -- so the chosen mood must not appear on frame
+## one. It starts transparent and fades in over Juice.tokens().dur_slow, the
+## same token source MainMenu.gd uses for its own fade-ins.
+func _dress_ambience() -> void:
+	ambient_pass.visible = _passed
+	ambient_fail.visible = not _passed
+	if not _passed:
+		grade_badge.material = null
+	var shown: Control = ambient_pass if _passed else ambient_fail
+	shown.modulate.a = 0.0
+	create_tween().tween_property(shown, "modulate:a", 1.0, Juice.tokens().dur_slow)
 
 
 ## Title first, then the rows one at a time counting up, then the letter.
@@ -214,7 +244,7 @@ func _slam_grade() -> void:
 		AudioDirector.play_sfx(&"stamp")
 		Juice.shake(grade_badge.get_parent(), 8.0)
 		if RunGrade.is_top_grade(_grade_text):
-			AudioDirector.play_sfx(&"reward")
+			RewardFeedback.play(&"run_win", self)
 		elif _grade_text == "D":
 			AudioDirector.play_sfx(&"fail"))
 
@@ -238,15 +268,29 @@ func _on_selesai_pressed() -> void:
 
 func _apply_progression() -> String:
 	if GameState.run_failed:
-		# A loss returns to the main menu; the normal MainMenu -> CutScene
-		# bootstrap handles the restart from there (a fresh grade-7 run, or
-		# the level-select modal if already unlocked).
 		GameState.day_schedules.clear()
 		GameState.minggu_ke = 1
+		# The retry's week 1 is a new week: without this it would reuse the
+		# lost attempt's Koperasi shelf and sold list (same grade, week 1).
+		GameState.reset_shop_week()
 		GameState.run_stats.reset()
 		GameState.run_failed = false
-		return "res://Scenes/MainMenu/main_menu.tscn"
+		if GameState.current_grade == 7:
+			# Grade-7 loss: full restart. Clear everything and go to MainMenu;
+			# the MainMenu -> CutScene bootstrap picks up from there.
+			GameState.approved_students.clear()
+			GameState.grade7_student_ids.clear()
+			GameState.grade8_student_ids.clear()
+			GameState.returned_from_student_card = false
+			return "res://Scenes/MainMenu/MainMenu.tscn"
+		else:
+			# Grade 8/9 loss: retry the same grade at StudentCard. Keep the
+			# roster and grade7_student_ids so locked students stay locked and
+			# the player only needs to re-pick the new-grade slot(s).
+			GameState.returned_from_student_card = false
+			return "res://Scenes/StudentCard/StudentCard.tscn"
 
+	Achievements.record_grade_passed(GameState.current_grade)
 	if GameState.current_grade < 9:
 		GameState.current_grade += 1
 		GameState.reset_roster_for_new_grade()
@@ -255,7 +299,7 @@ func _apply_progression() -> String:
 		GameState.returned_from_student_card = false
 		GameState.lobby_tutorial_completed = true
 		GameState.run_stats.reset()
-		return "res://Scenes/StudentCard/student_card.tscn"
+		return "res://Scenes/StudentCard/StudentCard.tscn"
 	else:
 		# The game is beaten: unlock level select and reset to Kelas 7.
 		# set_grade() resets current_grade/minggu_ke/run_stats/
@@ -271,16 +315,22 @@ func _apply_progression() -> String:
 		GameState.day_schedules.clear()
 		GameState.approved_students.clear()
 		GameState.grade7_student_ids.clear()
+		GameState.grade8_student_ids.clear()
 		GameState.lobby_tutorial_completed = false
 
-		# Tutorial flags, carried over from the now-deleted SemesterEnd's old grade-7
-		# full-restart branch (see Scripts/CutScene/cut_scene.gd for the
-		# same pattern still in use there).
-		var AturJadwalScript = load("res://Scripts/AturJadwal/atur_jadwal.gd")
-		if AturJadwalScript and "tutorial_phase1_done" in AturJadwalScript:
-			AturJadwalScript.tutorial_phase1_done = false
-			AturJadwalScript.tutorial_phase3_done = false
-		var LobbyScript = load("res://Scripts/Lobby/loby.gd")
-		if LobbyScript and "tutorial_shown" in LobbyScript:
-			LobbyScript.tutorial_shown = false
-		return "res://Scenes/MainMenu/main_menu.tscn"
+		# A beaten game replays the first-run tutorials.
+		for path: String in TUTORIAL_FLAGS:
+			for flag: String in TUTORIAL_FLAGS[path]:
+				_reset_static_flag(path, flag)
+		return "res://Scenes/MainMenu/MainMenu.tscn"
+
+
+## Sets the static bool `flag` on the script at `path` back to false. The
+## screens that own the tutorial flags have no class_name, so they are reached
+## by path; a script or flag that is not there is an error, never a silent skip.
+static func _reset_static_flag(path: String, flag: String) -> void:
+	var script := load(path) as GDScript
+	if script == null or not flag in script:
+		push_error("RunResult: no static %s on %s to reset" % [flag, path])
+		return
+	script.set(flag, false)

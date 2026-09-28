@@ -1,9 +1,13 @@
 @tool
 extends McpTestSuite
 
-## GameState.use_item writes the canonical roster keys (kepribadian1/2,
-## akademis1/2/3), not the dead "mood"/"energy" keys; use_item_on_students
-## is all-or-nothing across a list of students.
+## GameState.use_item writes the roster's stat keys (`mood`, `energy`,
+## `akademis`, `seni_budaya`, `olahraga`); use_item_on_students is
+## all-or-nothing across a list of students.
+##
+## Results are declared `: Dictionary`, not inferred with `:=`. After an editor
+## restart the analyzer once left these GameState calls untyped; `:=` on that is
+## a parse error, and a suite that cannot load is skipped with `failed` still 0.
 
 func suite_name() -> String:
 	return "use_item_on_students"
@@ -16,10 +20,10 @@ func setup() -> void:
 	_roster_backup = GameState.approved_students.duplicate(true)
 	GameState.inventory = {"TestItem": 3}
 	GameState.approved_students = [
-		{"id": 1, "name": "A", "kepribadian1": 50.0, "kepribadian2": 50.0,
-		 "akademis1": 40.0, "akademis2": 40.0, "akademis3": 40.0},
-		{"id": 2, "name": "B", "kepribadian1": 95.0, "kepribadian2": 50.0,
-		 "akademis1": 40.0, "akademis2": 40.0, "akademis3": 40.0},
+		{"id": 1, "name": "A", "mood": 50.0, "energy": 50.0,
+		 "akademis": 40.0, "seni_budaya": 40.0, "olahraga": 40.0},
+		{"id": 2, "name": "B", "mood": 95.0, "energy": 50.0,
+		 "akademis": 40.0, "seni_budaya": 40.0, "olahraga": 40.0},
 	]
 
 func teardown() -> void:
@@ -34,29 +38,28 @@ func _item(mood := 10, energy := 5, ak := 6) -> ItemData:
 	d.akademis_boost = ak
 	return d
 
-func test_use_item_writes_canonical_keys() -> void:
-	var r := GameState.use_item(_item(), 1, 1)
+func test_use_item_writes_the_roster_stat_keys() -> void:
+	var r: Dictionary = GameState.use_item(_item(), 1, 1)
 	assert_true(r["applied"])
-	assert_eq(GameState.approved_students[0]["kepribadian1"], 60.0, "mood -> kepribadian1")
-	assert_eq(GameState.approved_students[0]["kepribadian2"], 55.0, "energy -> kepribadian2")
-	assert_eq(GameState.approved_students[0]["akademis1"], 46.0, "akademis -> akademis1")
-	assert_false(GameState.approved_students[0].has("mood"), "no dead mood key written")
+	assert_eq(GameState.approved_students[0]["mood"], 60.0, "mood lands on the mood key")
+	assert_eq(GameState.approved_students[0]["energy"], 55.0, "energy lands on the energy key")
+	assert_eq(GameState.approved_students[0]["akademis"], 46.0, "akademis lands on the akademis key")
 	assert_eq(r["mood_delta"], 10.0)
 	assert_eq(r["akademis_delta"], 6.0)
 
 func test_use_item_clamps_at_100() -> void:
-	var r := GameState.use_item(_item(10, 5, 6), 2, 1)  # student B mood 95 -> 100
-	assert_eq(GameState.approved_students[1]["kepribadian1"], 100.0)
+	var r: Dictionary = GameState.use_item(_item(10, 5, 6), 2, 1)  # student B mood 95 -> 100
+	assert_eq(GameState.approved_students[1]["mood"], 100.0)
 	assert_eq(r["mood_delta"], 5.0, "delta reflects the clamp")
 
 func test_batch_all_or_nothing_refuses_when_short() -> void:
 	GameState.inventory = {"TestItem": 2}
-	var r := GameState.use_item_on_students(_item(), [1, 2, 1])
+	var r: Dictionary = GameState.use_item_on_students(_item(), [1, 2, 1])
 	assert_false(r["applied"])
 	assert_eq(GameState.inventory["TestItem"], 2, "stock untouched on refusal")
 
 func test_batch_happy_path_consumes_and_reports() -> void:
-	var r := GameState.use_item_on_students(_item(), [1, 2])
+	var r: Dictionary = GameState.use_item_on_students(_item(), [1, 2])
 	assert_true(r["applied"])
 	assert_eq(r["results"].size(), 2)
 	assert_true(r["results"][0].has("student_id") and r["results"][0].has("name"))

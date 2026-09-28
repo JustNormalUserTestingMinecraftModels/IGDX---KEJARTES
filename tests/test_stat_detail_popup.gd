@@ -2,7 +2,7 @@
 extends McpTestSuiteCompat
 
 ## The stat-detail modal, now a scene rather than 168 lines of construction
-## duplicated between report_card.gd and student_card.gd.
+## duplicated between ReportCard.gd and StudentCard.gd.
 ##
 ## These tests instantiate the scene (cheap -- it is a dozen nodes) and check
 ## the node contract the two callers rely on, plus the source-level guarantee
@@ -18,8 +18,8 @@ const SCENE_PATH := "res://Scenes/UI/StatDetailPopup.tscn"
 
 ## A student dictionary shaped like GameState.approved_students entries.
 const SAMPLE := {
-	"kepribadian1": 61.0, "kepribadian2": 42.0,
-	"akademis1": 10.0, "akademis2": 20.0, "akademis3": 30.0,
+	"mood": 61.0, "energy": 42.0,
+	"akademis": 10.0, "seni_budaya": 20.0, "olahraga": 30.0,
 }
 
 
@@ -58,7 +58,7 @@ func test_scene_supplies_every_node_the_script_binds() -> void:
 
 func test_configure_fills_the_header_and_body_from_stat_info() -> void:
 	var popup := _make()
-	popup.configure("Akademis2", SAMPLE, null)
+	popup.configure("SeniBudaya", SAMPLE, null)
 	assert_eq(popup.get_node("Scrim/Card/Layout/Header/Row/Titles/CategoryLabel").text, "STATS")
 	assert_eq(popup.get_node("Scrim/Card/Layout/Header/Row/Titles/NameLabel").text, "Seni Budaya")
 	assert_contains(
@@ -68,18 +68,25 @@ func test_configure_fills_the_header_and_body_from_stat_info() -> void:
 
 
 func test_configure_tints_the_bar_with_the_right_category() -> void:
-	# Akademis2 is seni_budaya, not academics. Getting this wrong paints the
-	# bar the wrong colour and is invisible in a source diff.
+	# configure() must tint through StatInfo.token_category, never the bar
+	# name: Mood's token is Istirahat, so a bar-name tint shows up here.
+	# Getting this wrong paints the bar the wrong colour and is invisible in a
+	# source diff.
 	var popup := _make()
-	popup.configure("Akademis2", SAMPLE, null)
+	popup.configure("Mood", SAMPLE, null)
 	var bar: StatBar = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/Bar")
-	assert_eq(bar.category, "SeniBudaya")
-	assert_eq(bar.value, 20.0)
+	assert_eq(bar.category, "Istirahat")
+	assert_eq(bar.value, 61.0)
+	var seni := _make()
+	seni.configure("SeniBudaya", SAMPLE, null)
+	var seni_bar: StatBar = seni.get_node("Scrim/Card/Layout/Body/BodyLayout/Bar")
+	assert_eq(seni_bar.category, "SeniBudaya", "not the academic accent")
+	assert_eq(seni_bar.value, 20.0)
 
 
 func test_configure_falls_back_to_the_glyph_when_no_icon_texture() -> void:
 	var popup := _make()
-	popup.configure("Kepribadian1", SAMPLE, null)
+	popup.configure("Mood", SAMPLE, null)
 	var icon_rect: TextureRect = popup.get_node("Scrim/Card/Layout/Header/Row/IconRect")
 	var glyph: Label = popup.get_node("Scrim/Card/Layout/Header/Row/GlyphLabel")
 	assert_false(icon_rect.visible, "icon rect should hide when there is no texture")
@@ -109,19 +116,19 @@ func test_report_card_no_longer_builds_the_popup_itself() -> void:
 	# Not checked here: "TraitPopupPanel" -- both this popup and the
 	# still-unconverted trait popup (Task 7) used that same node name, so the
 	# string legitimately survives in the file until Task 7 also lands.
-	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/report_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/ReportCard/ReportCard.gd")
 	assert_false(src.contains("StatBar.new("),
-		"report_card.gd still builds the stat popup's bar by hand")
+		"ReportCard.gd still builds the stat popup's bar by hand")
 	assert_contains(src, "StatDetailPopup",
-		"report_card.gd should instantiate the extracted scene")
+		"ReportCard.gd should instantiate the extracted scene")
 	assert_false(src.contains("const BAR_CATEGORY"),
 		"BAR_CATEGORY moved to StatInfo.token_category()")
 
 
 func test_student_card_no_longer_builds_the_popup_itself() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/student_card.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/StudentCard.gd")
 	assert_contains(src, "StatDetailPopup",
-		"student_card.gd should instantiate the extracted scene")
+		"StudentCard.gd should instantiate the extracted scene")
 	assert_false(src.contains("const BAR_CATEGORY"),
 		"BAR_CATEGORY moved to StatInfo.token_category()")
 
@@ -130,8 +137,8 @@ func test_the_two_screens_share_one_popup_implementation() -> void:
 	# The regression this whole task exists to prevent: the two screens each
 	# carried a verbatim copy of the same 168-line builder, and they had
 	# already drifted. Neither may build a StatBar for a popup again.
-	for path in ["res://Scripts/ReportCard/report_card.gd",
-			"res://Scripts/StudentCard/student_card.gd"]:
+	for path in ["res://Scripts/ReportCard/ReportCard.gd",
+			"res://Scripts/StudentCard/StudentCard.gd"]:
 		var src := FileAccess.get_file_as_string(path)
 		assert_false(src.contains("StatBar.new("),
 			"%s builds a StatBar in code -- use StatDetailPopup" % path)

@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://Scripts/Shaders/light_shafts.gdshader" id="1_shafts"]
+
+[resource]
+shader = ExtResource("1_shafts")
+shader_parameter/shaft_color = Color(1, 0.898, 0.706, 1)
+shader_parameter/intensity = 0.2
+shader_parameter/origin = Vector2(0.12, -0.08)
+shader_parameter/shaft_count = 7.0
+shader_parameter/softness = 5.0
+shader_parameter/reach = 1.4
+shader_parameter/drift_speed = 0.035

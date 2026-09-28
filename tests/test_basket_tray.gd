@@ -1,0 +1,498 @@
+@tool
+extends McpTestSuiteCompat
+
+## BasketTray (Koperasi Part 2): the tray docked at the bottom of the shelf
+## screen. refresh() and the slot layout are plain synchronous code, so the
+## tray is exercised live here with hand-made ItemData; the shop wiring is in
+## test_koperasi_tray.gd. Suite is @tool and no test is a coroutine.
+
+const _SCENE := "res://Scenes/Koperasi/BasketTray.tscn"
+
+
+func suite_name() -> String:
+	return "basket_tray"
+
+
+func _item(item_name: String, price: int, size := Vector2(200, 250)) -> ItemData:
+	var item := ItemData.new()
+	item.item_name = item_name
+	item.price = price
+	item.display_size = size
+	return item
+
+
+func _entry(item: ItemData, quantity: int) -> Dictionary:
+	return {"data": item, "quantity": quantity}
+
+
+## A live tray in the editor's root, so @onready resolves. Null (after a
+## recorded failure) when the scene does not exist yet.
+func _tray() -> Node:
+	var packed = load(_SCENE)
+	assert_not_null(packed, "BasketTray.tscn missing")
+	if packed == null:
+		return null
+	var tray = packed.instantiate()
+	Engine.get_main_loop().root.add_child(tray)
+	track(tray)
+	return tray
+
+
+func test_the_total_is_price_times_quantity_summed() -> void:
+	assert_true(Cart.has_method("total_of"), "Cart.total_of exists")
+	if not Cart.has_method("total_of"):
+		return
+	var entries := {
+		"Susu Kotak": _entry(_item("Susu Kotak", 1000), 2),
+		"Pop Ice": _entry(_item("Pop Ice", 400), 1),
+	}
+	# call(), not a direct call: Cart is a typed autoload, so a missing
+	# total_of fails this test instead of risking the whole suite's compile.
+	assert_eq(Cart.call("total_of", entries), 2400, "2 x 1000 + 1 x 400")
+	assert_eq(Cart.call("total_of", {}), 0, "an empty cart costs nothing")
+
+
+func test_the_footer_shows_the_total_in_koin() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({
+		"Susu Kotak": _entry(_item("Susu Kotak", 1000), 2),
+		"Pop Ice": _entry(_item("Pop Ice", 400), 1),
+	})
+	assert_eq(tray.get_total_text(), "Total: 2.400 koin")
+
+
+func test_koin_amounts_group_thousands_with_dots() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	assert_eq(tray.format_koin(0), "0")
+	assert_eq(tray.format_koin(400), "400")
+	assert_eq(tray.format_koin(2400), "2.400")
+	assert_eq(tray.format_koin(1250000), "1.250.000")
+
+
+func test_an_empty_tray_shows_its_empty_state() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({})
+	assert_true(tray.get_node("Body/EmptyState").visible, "the empty state shows")
+	assert_false(tray.get_node("Body/Hint").visible, "no hold-to-return hint over nothing")
+	assert_eq(tray.get_total_text(), "Total: 0 koin")
+
+
+func test_a_filled_tray_hides_its_empty_state() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({"Pop Ice": _entry(_item("Pop Ice", 400), 1)})
+	assert_false(tray.get_node("Body/EmptyState").visible, "the empty state hides")
+	assert_true(tray.get_node("Body/Hint").visible, "the hint explains hold-to-return")
+
+
+func test_beli_emits_buy_pressed() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var heard := [false]
+	tray.buy_pressed.connect(func() -> void: heard[0] = true)
+	tray.get_beli_button().pressed.emit()
+	assert_true(heard[0], "pressing Beli asks the shop to buy")
+
+
+func test_the_tray_is_themed_not_overridden() -> void:
+	var src := FileAccess.get_file_as_string(_SCENE)
+	assert_true(src.contains("&\"BasketTray\""), "the surface wears BasketTray")
+	assert_true(src.contains("tray_dots.png"), "the dot-grid tile")
+	assert_true(src.contains("texture_repeat = 2"), "the tile repeats on the node")
+	assert_true(src.contains("&\"PrimaryButtonM\""), "Beli is theme chrome at the M step")
+	for banned in ["theme_override_colors", "theme_override_font_sizes", "theme_override_styles"]:
+		assert_false(src.contains(banned), "no %s in the tray" % banned)
+
+
+# ────────────────────────────────────────────── one item on the plank
+
+const _SLOT := "res://Scenes/Koperasi/TraySlot.tscn"
+const _THEME := "res://Assets/Theme/kejartes_theme.tres"
+
+
+func _slot() -> Node:
+	var packed = load(_SLOT)
+	assert_not_null(packed, "TraySlot.tscn missing")
+	if packed == null:
+		return null
+	var slot = packed.instantiate()
+	Engine.get_main_loop().root.add_child(slot)
+	track(slot)
+	return slot
+
+
+func test_a_slot_wears_its_quantity_as_a_badge() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	slot.bind(_item("Raket", 1500, Vector2(180, 280)), 3)
+	assert_eq(slot.get_badge_text(), "×3")
+	slot.set_quantity(1)
+	assert_eq(slot.get_badge_text(), "×1")
+
+
+func test_a_slot_without_art_is_its_display_size() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	slot.bind(_item("Raket", 1500, Vector2(180, 280)), 1)
+	assert_eq(slot.natural_size, Vector2(180, 280))
+
+
+func test_a_slots_width_follows_its_arts_aspect() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	var item := _item("Pop Ice", 400, Vector2(160, 240))
+	item.icon = ImageTexture.create_from_image(
+		Image.create_empty(100, 300, false, Image.FORMAT_RGBA8))
+	slot.bind(item, 1)
+	assert_eq(slot.natural_size, Vector2(80, 240),
+		"the display height, at the art's own 1:3 aspect")
+
+
+func test_hold_and_tap_are_told_apart() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	assert_eq(slot.classify_release(0.5, 5.0, 0.35, 30.0), &"hold")
+	assert_eq(slot.classify_release(0.1, 5.0, 0.35, 30.0), &"tap")
+	assert_eq(slot.classify_release(0.5, 50.0, 0.35, 30.0), &"none", "a drag is neither")
+
+
+func test_a_right_click_returns_one_at_once() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	slot.bind(_item("Raket", 1500), 2)
+	var heard := [""]
+	slot.remove_requested.connect(func(n: String) -> void: heard[0] = n)
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_RIGHT
+	click.pressed = true
+	slot._gui_input(click)
+	assert_eq(heard[0], "Raket")
+
+
+func test_the_tray_badge_and_plank_are_baked() -> void:
+	var theme := ResourceLoader.load(_THEME, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	for variation in ["TrayBadge", "TrayPlank"]:
+		assert_true(theme.has_stylebox("panel", variation), "%s is baked" % variation)
+	assert_true(theme.get_type_list().has("TrayBadgeLabel"), "TrayBadgeLabel is baked")
+	if theme.has_stylebox("panel", "TrayBadge"):
+		var box := theme.get_stylebox("panel", "TrayBadge") as StyleBoxFlat
+		assert_eq(box.border_color, DesignTokens.load_default().koperasi_tray_rule,
+			"the badge rim is the tray's amber")
+
+
+func test_the_badge_face_can_draw_the_times_sign() -> void:
+	var theme := ResourceLoader.load(_THEME, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	var font := theme.get_font("font", "TrayBadgeLabel")
+	assert_true(font != null and font.has_char(0x00D7),
+		"the badge's face has a × glyph -- if not, give TrayBadgeLabel the "
+		+ "body face and take it off DISPLAY_ROSTER")
+
+
+# ───────────────────────────────────────────── the row on the plank
+
+func _floor_of(tray) -> float:
+	return tray.get_node("Body/Items").size.y
+
+
+func test_items_stand_at_their_own_heights_on_the_plank() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({
+		"Raket": _entry(_item("Raket", 1500, Vector2(180, 280)), 1),
+		"Mie Instan": _entry(_item("Mie Instan", 700, Vector2(200, 200)), 1),
+	})
+	var raket: Control = tray.get_slot("Raket")
+	var mie: Control = tray.get_slot("Mie Instan")
+	assert_eq(raket.size.y, 280.0, "the racket at its own height")
+	assert_eq(mie.size.y, 200.0, "the noodles at theirs")
+	assert_eq(raket.position.y + raket.size.y, _floor_of(tray), "the racket stands on the plank")
+	assert_eq(mie.position.y + mie.size.y, _floor_of(tray), "and so do the noodles")
+
+
+func test_the_row_is_centred_on_the_plank() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({
+		"Raket": _entry(_item("Raket", 1500, Vector2(180, 280)), 1),
+		"Mie Instan": _entry(_item("Mie Instan", 700, Vector2(200, 200)), 1),
+	})
+	var room: float = tray.get_node("Body/Items").size.x
+	var first: Control = tray.get_slot("Raket")
+	var last: Control = tray.get_slot("Mie Instan")
+	var left := first.position.x
+	var right := room - (last.position.x + last.size.x)
+	assert_true(absf(left - right) < 0.5, "equal margins: %s vs %s" % [left, right])
+
+
+func test_a_crowded_row_shrinks_evenly_to_fit() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var entries := {}
+	for i in 6:
+		entries["Barang %d" % i] = _entry(_item("Barang %d" % i, 100, Vector2(240, 220)), 1)
+	tray.refresh(entries)
+	var room: float = tray.get_node("Body/Items").size.x
+	var first: Control = tray.get_slot("Barang 0")
+	var last: Control = tray.get_slot("Barang 5")
+	assert_true(first.position.x >= -0.5, "the row starts on the plank")
+	assert_true(last.position.x + last.size.x <= room + 0.5, "and ends on it")
+	assert_true(absf(first.size.x / first.size.y - 240.0 / 220.0) < 0.01, "aspect kept")
+
+
+func test_a_line_that_left_the_cart_leaves_the_row() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var raket := _entry(_item("Raket", 1500), 1)
+	tray.refresh({"Raket": raket, "Pop Ice": _entry(_item("Pop Ice", 400), 1)})
+	tray.refresh({"Raket": raket})
+	assert_true(tray.get_slot("Pop Ice") == null, "the returned item's slot is gone")
+	assert_true(tray.get_slot("Raket") != null, "the other stays")
+
+
+## The top-right basket emblem was removed on 2026-09-21. It carried the
+## cart's running total and a toggle button. The CrateHandle that took over
+## its badge was itself removed on 2026-09-22, so the tray's own slots carry
+## the count now and the drag is the only toggle.
+func test_the_tray_has_no_emblem_in_its_corner() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	assert_true(tray.get_node_or_null("Body/Emblem") == null,
+		"the basket emblem must be gone from the tray's corner")
+	assert_false(tray.has_method("get_emblem"),
+		"and its accessor with it, so nothing animates a missing node")
+	var src := FileAccess.get_file_as_string(_SCENE)
+	assert_false(src.contains("icon_keranjang.svg"),
+		"the emblem's own art must no longer be referenced")
+
+
+## Per-slot badges are what count units now, and they are unaffected.
+func test_every_slot_still_counts_its_own_units() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({
+		"Susu Kotak": _entry(_item("Susu Kotak", 1000), 2),
+		"Pop Ice": _entry(_item("Pop Ice", 400), 1),
+	})
+	assert_eq(tray.get_slot("Susu Kotak").get_badge_text(), "×2")
+	assert_eq(tray.get_slot("Pop Ice").get_badge_text(), "×1")
+
+
+func test_a_unit_in_flight_is_hidden_until_it_lands() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var entries := {"Pop Ice": _entry(_item("Pop Ice", 400), 1)}
+	tray.hold_for_landing("Pop Ice")
+	tray.refresh(entries)
+	var slot: Control = tray.get_slot("Pop Ice")
+	assert_eq(slot.modulate.a, 0.0, "its place is kept, but it waits for the flight")
+	tray.land("Pop Ice")
+	assert_eq(slot.modulate.a, 1.0, "it shows the moment the item lands")
+	assert_eq(slot.get_badge_text(), "×1")
+
+
+func test_a_second_unit_in_flight_keeps_the_first_on_show() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var entries := {"Pop Ice": _entry(_item("Pop Ice", 400), 2)}
+	tray.hold_for_landing("Pop Ice")
+	tray.refresh(entries)
+	var slot: Control = tray.get_slot("Pop Ice")
+	assert_eq(slot.modulate.a, 1.0, "the first unit is already there")
+	assert_eq(slot.get_badge_text(), "×1", "counting only what has landed")
+	tray.land("Pop Ice")
+	assert_eq(slot.get_badge_text(), "×2")
+
+
+func test_clearing_held_units_shows_everything() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.hold_for_landing("Pop Ice")
+	tray.clear_held()
+	tray.refresh({"Pop Ice": _entry(_item("Pop Ice", 400), 1)})
+	assert_eq(tray.get_slot("Pop Ice").modulate.a, 1.0)
+
+
+func test_the_landing_rect_is_the_items_own_slot() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({"Raket": _entry(_item("Raket", 1500, Vector2(180, 280)), 1)})
+	assert_eq(tray.landing_rect_for("Raket"), tray.get_slot("Raket").get_global_rect())
+
+
+func test_a_slot_hold_reaches_the_tray() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({"Raket": _entry(_item("Raket", 1500), 1)})
+	var heard := [""]
+	tray.remove_requested.connect(func(n: String) -> void: heard[0] = n)
+	tray.get_slot("Raket").remove_requested.emit("Raket")
+	assert_eq(heard[0], "Raket", "the tray forwards a slot's hold")
+
+
+func test_items_and_their_shadows_draw_over_the_plank() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var body: Node = tray.get_node("Body")
+	var plank: Node = body.get_node_or_null("Plank")
+	assert_true(plank is Panel, "a Plank panel")
+	if plank == null:
+		return
+	assert_eq(String(plank.theme_type_variation), "TrayPlank")
+	assert_true(plank.get_index() < body.get_node("Items").get_index(),
+		"the plank draws first, so each item's shadow lands on it")
+
+
+func test_a_line_that_keeps_units_comes_back_full_size() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var item := _item("Pop Ice", 400)
+	tray.refresh({"Pop Ice": _entry(item, 2)})
+	var slot: Control = tray.get_slot("Pop Ice")
+	slot.scale = Vector2(0.1, 0.1)  # what a hold-to-return's shrink leaves behind
+	tray.refresh({"Pop Ice": _entry(item, 1)})
+	assert_eq(slot.scale, Vector2.ONE, "one left, and it stands at full size again")
+	assert_eq(slot.get_badge_text(), "×1")
+
+
+## spawn_pop and shrink_and_fade scale about the pivot without setting it, so
+## the tray pins each slot's pivot to its foot: a landing grows up from the
+## plank and a return shrinks back down onto it.
+func test_items_pop_and_shrink_from_their_foot() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.refresh({"Raket": _entry(_item("Raket", 1500, Vector2(180, 280)), 1)})
+	var slot: Control = tray.get_slot("Raket")
+	assert_eq(slot.pivot_offset, Vector2(slot.size.x * 0.5, slot.size.y),
+		"the pivot sits at the item's foot, mid-width")
+
+
+## Item PNGs carry transparent padding; a padded icon floats above the plank
+## with its badge adrift (seen live, 2026-09-11). The slot crops the art to
+## its opaque bounds, so the art's own foot stands on the plank. The opaque
+## block's 1:2 aspect differs from the padded texture's 1:3 on purpose.
+func test_a_slot_crops_its_arts_transparent_padding() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	var img := Image.create_empty(100, 300, false, Image.FORMAT_RGBA8)
+	img.fill_rect(Rect2i(20, 180, 60, 120), Color.WHITE)
+	var item := _item("Pop Ice", 400, Vector2(160, 240))
+	item.icon = ImageTexture.create_from_image(img)
+	slot.bind(item, 1)
+	assert_eq(slot.natural_size, Vector2(120, 240),
+		"the opaque block's own 1:2 aspect, not the padded texture's 1:3")
+	var shown = slot.get_node("Icon").texture
+	assert_true(shown is AtlasTexture, "the slot shows a crop of the art")
+	if shown is AtlasTexture:
+		assert_eq(shown.region, Rect2(20, 180, 60, 120), "cropped to the opaque rect")
+
+
+## The drag gesture (2026-09-21): the tray follows a finger between its docked
+## and hidden positions, and the release decides where it settles. The rule
+## lives in a pure static function because the runner cannot await -- a test
+## that waited for the settle tween would abort mid-way and report "0
+## assertions".
+func test_classify_drag_commits_past_the_halfway_point() -> void:
+	# span is tray_offset_collapsed: the full travel between docked and hidden.
+	assert_eq(BasketTray.classify_drag(120.0, 0.0, 190.0),
+		BasketTray.ViewState.COLLAPSED,
+		"a slow drag past halfway must settle collapsed")
+	assert_eq(BasketTray.classify_drag(70.0, 0.0, 190.0),
+		BasketTray.ViewState.EXPANDED,
+		"a slow drag short of halfway must spring back expanded")
+
+
+func test_classify_drag_lets_a_flick_win_outright() -> void:
+	# A fast, short downward flick must collapse even though travel is tiny --
+	# otherwise a real flick reads as "barely moved, snap back".
+	assert_eq(BasketTray.classify_drag(18.0, 1400.0, 190.0),
+		BasketTray.ViewState.COLLAPSED,
+		"a downward flick must collapse regardless of travel")
+	# And the same flick upward must expand from a nearly-collapsed tray.
+	assert_eq(BasketTray.classify_drag(172.0, -1400.0, 190.0),
+		BasketTray.ViewState.EXPANDED,
+		"an upward flick must expand regardless of travel")
+
+
+func test_classify_drag_clamps_a_nonsense_span() -> void:
+	# A zero span must not divide by zero; it settles expanded.
+	assert_eq(BasketTray.classify_drag(50.0, 0.0, 0.0),
+		BasketTray.ViewState.EXPANDED,
+		"a zero span must settle expanded rather than divide by zero")
+
+
+## The plumbing, not the rule. classify_drag() being right is worthless if the
+## events never arrive, and that is exactly how the drag first shipped: the
+## handler sat on the scene root, which is a bare anchor (Pattern C) with
+## anchors_preset = 0 and no offsets. A zero-rect Control is never
+## hit-tested, so _gui_input on it could not fire however its mouse_filter
+## was set -- and every test here still passed, because they call
+## begin_drag()/update_drag() directly.
+func test_the_drag_listens_on_a_node_that_can_actually_be_hit() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var body: Control = tray.get_node_or_null("Body")
+	assert_true(body != null, "Body must exist")
+	if body == null:
+		return
+	assert_true(body.size.x > 0.0 and body.size.y > 0.0,
+		"the drag surface must have a real rect, or no press ever reaches it")
+	assert_true(body.gui_input.is_connected(tray._on_body_gui_input),
+		"Body's gui_input must drive the drag")
+	assert_false(tray.has_method("_gui_input"),
+		"the root is a zero-rect anchor; a _gui_input here would never fire")
+
+
+## A thumb reaching for the tray lands on the items standing on it as often as
+## on bare plank, so a slot must let the press through to Body as well as
+## handling its own. Without this the drag works only on the empty strip and
+## reads as broken whenever the cart has anything in it.
+func test_a_slot_passes_its_press_through_to_the_drag_surface() -> void:
+	var slot = _slot()
+	if slot == null:
+		return
+	assert_eq(slot.mouse_filter, Control.MOUSE_FILTER_PASS,
+		"a tray slot must pass its press through to Body")
+
+
+## A drag must never fling the tray off its dock, however far the finger goes.
+func test_a_drag_is_clamped_to_the_dock() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	var base_y: float = tray.position.y
+	tray.begin_drag(0.0)
+	tray.update_drag(10000.0)
+	assert_eq(tray.position.y, base_y + tray.tray_offset_collapsed,
+		"dragging far past the dock stops at the collapsed position")
+	tray.update_drag(-10000.0)
+	assert_eq(tray.position.y, base_y,
+		"dragging far above the dock stops at the docked position")

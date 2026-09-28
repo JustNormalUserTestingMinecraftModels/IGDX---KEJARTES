@@ -1,131 +1,183 @@
+@tool
 extends Control
 
-## The hazard-striped "something is about to happen" card that fronts a
-## minigame. All color now comes from DesignTokens: the dim layer is a
-## &"Scrim" Panel, the two labels are theme variations, and the animated
-## hazard stripes take their colors from a shader uniform set here rather
-## than from constants baked into the scene's ShaderMaterial.
+## The full-screen "something is about to happen" warning (2026-09-12
+## event-cards spec, section 2; redesigned as a school news announcement in
+## the 2026-09-24 SchoolDay liveliness pass, layer 7). The panel slides in
+## from the right edge, holds, and leaves through the left.
+##
+## On it: the megaphone pops in and wiggles, and a single caution-tape band
+## rolls in carrying a marker -- the event's KATEGORI and its MODE (MINIGAME,
+## KABAR, or PILIHAN for the choice events, which warns that Tolak / Terima is
+## coming) -- over the title, which types in. The ground behind is a diagonal
+## gradient in the event's category colour (Akademis blue, Olahraga red, Seni
+## Budaya green; Cuaca storm grey, Sosial warm amber), so the colour says what
+## kind of event it is at a glance. With no category it keeps the flat panel.
+##
+## It fronts both kinds of mid-day interruption: the minigames and the random
+## events. Everything is authored in the scene; the script only moves it,
+## sets its words and recolours the gradient.
 
-# ── Visual - Background Overlay ───────────────────────────────────────────────
-@export_group("Visual - Background Overlay")
-## Optional photo behind the warning. When set it replaces the Scrim panel.
-@export var background_texture: Texture2D = null
+## The megaphone art on the panel. Swappable from the Inspector.
+@export var icon_texture: Texture2D = preload("res://Assets/Images/SchoolDay/eventwarning_icon.png"):
+	set(v):
+		icon_texture = v
+		if is_node_ready():
+			icon.texture = v
+## Seconds the panel takes to cover the screen from the right edge.
+@export_range(0.05, 2.0, 0.01) var slide_in_duration: float = 0.35
+## Seconds the panel rests on screen with the icon and caption showing.
+@export_range(0.1, 5.0, 0.05) var hold_duration: float = 1.1
+## Seconds the panel takes to leave through the left edge.
+@export_range(0.05, 2.0, 0.01) var slide_out_duration: float = 0.35
+## Seconds the caution band takes to roll out to full width.
+@export_range(0.05, 1.0, 0.01) var band_roll_duration: float = 0.28
+## Seconds the title takes to type in, inside the hold.
+@export_range(0.05, 1.0, 0.01) var type_duration: float = 0.45
+## How fast the tape's stripes scroll, px per second.
+@export_range(0.0, 400.0, 1.0) var stripe_speed: float = 90.0
 
-# ── Visual - Caution Icon & Text ─────────────────────────────────────────────
-@export_group("Visual - Caution Icon & Text")
-## Art-supplied caution icon. Null falls back to caution_symbol_text as
-## an emoji glyph instead.
-@export var caution_icon_texture: Texture2D = null
-## Emoji shown when caution_icon_texture is null.
-@export var caution_symbol_text: String = "⚠️"
-## Optional font override for the caution glyph and event label. Null
-## keeps the theme's default font.
-@export var font: Font = null
-## Size (px, both axes) of caution_icon_texture/caution_symbol_text.
-@export var icon_font_size: int = 72
+## Width of one repeat of the tape texture: the stripes wrap every this many
+## px, so the scroll never jumps.
+const STRIPE_PERIOD := 64.0
+## How far the megaphone wiggles as the notice lands, px.
+const WIGGLE_PX := 10.0
+## The marker's word for each category the notice can carry.
+const CATEGORY_WORDS := {
+	"Akademis": "AKADEMIS",
+	"SeniBudaya": "SENI BUDAYA",
+	"Olahraga": "OLAHRAGA",
+	"Cuaca": "CUACA",
+	"Sosial": "SOSIAL",
+}
 
-@onready var caution_lbl: Label = $Center/VBox/CautionLabel
-@onready var event_lbl: Label = $Center/VBox/EventLabel
+@onready var panel: Panel = $Panel
+@onready var gradient_rect: TextureRect = $Panel/Gradient
+@onready var icon: TextureRect = $Panel/Center/Content/Icon
+@onready var band: Control = $Panel/Center/Content/Band
+@onready var marker: Label = $Panel/Center/Content/Band/Rows/Marker
+@onready var caption: Label = $Panel/Center/Content/Band/Rows/Caption
+@onready var tape_top: Control = $Panel/Center/Content/Band/Rows/TapeTop/Stripes
+@onready var tape_bottom: Control = $Panel/Center/Content/Band/Rows/TapeBottom/Stripes
+
+var _stripe_x := 0.0
+
 
 func _ready() -> void:
-	modulate.a = 0.0
+	icon.texture = icon_texture
+	if Engine.is_editor_hint():
+		return
+	panel.position.x = panel_x(&"enter", size.x)
 
-func play_warning(event_text: String, accent_color: Color) -> void:
-	_apply_visual_exports()
-	if event_lbl:
-		event_lbl.text = event_text
-		# The caller's accent says which subject is coming up. Applied as a
-		# tint rather than a font_color override so the theme still owns the
-		# label's size, font and outline.
-		event_lbl.self_modulate = accent_color
 
-	var t := Juice.tokens()
+func _process(delta: float) -> void:
+	if Engine.is_editor_hint() or GameSettings.reduce_motion or tape_top == null:
+		return
+	_stripe_x = fposmod(_stripe_x + stripe_speed * delta, STRIPE_PERIOD)
+	# The two tapes run opposite ways, like the police-line tape they mimic.
+	tape_top.position.x = -_stripe_x
+	tape_bottom.position.x = -STRIPE_PERIOD + _stripe_x
 
-	# Fade in warning
-	modulate.a = 0.0
-	show()
-	var fade_in = create_tween()
-	fade_in.tween_property(self, "modulate:a", 1.0, t.dur_normal)
-	await fade_in.finished
 
-	# Flash caution icon 4 times
-	var anim_node: CanvasItem = caution_lbl
-	var tex_rect = caution_lbl.get_node_or_null("CautionTextureRect") as TextureRect
-	if tex_rect and tex_rect.visible:
-		anim_node = tex_rect
-	if anim_node:
-		for i in range(4):
-			var flash = create_tween()
-			flash.tween_property(anim_node, "modulate:a", 0.1, t.dur_normal).set_ease(Tween.EASE_IN_OUT)
-			flash.tween_property(anim_node, "modulate:a", 1.0, t.dur_normal).set_ease(Tween.EASE_IN_OUT)
-			await flash.finished
+## Where the panel's left edge sits at each stage of the pass, for a screen
+## `width` wide: off the right edge, resting, off the left edge.
+static func panel_x(stage: StringName, width: float) -> float:
+	match stage:
+		&"enter":
+			return width
+		&"exit":
+			return -width
+		_:
+			return 0.0
 
-	await get_tree().create_timer(t.dur_normal).timeout
 
-	# Fade out
-	var fade_out = create_tween()
-	fade_out.tween_property(self, "modulate:a", 0.0, t.dur_slow)
-	await fade_out.finished
+## "AKADEMIS · PILIHAN": the band's marker for a category and a mode. Either
+## half may be missing. Set in the body face, which carries the "·".
+static func marker_text(category: String, mode: String) -> String:
+	var parts: Array[String] = []
+	var word: String = CATEGORY_WORDS.get(category, "")
+	if word != "":
+		parts.append(word)
+	if mode != "":
+		parts.append(mode)
+	return " · ".join(parts)
+
+
+## The gradient's three stops for a category, deep to light: the skill
+## categories take their own colour and its on-dark variant; Cuaca and Sosial
+## are not skill categories, so they take neutral storm grey and warm amber
+## rather than borrowing a skill's colour. Empty for anything else.
+static func gradient_colors(category: String, tokens: DesignTokens) -> Array[Color]:
+	var mid: Color
+	var light: Color
+	match category:
+		"Akademis", "SeniBudaya", "Olahraga":
+			mid = tokens.category_color(category)
+			light = tokens.category_color_on_dark(category)
+		"Cuaca":
+			mid = Color.SLATE_GRAY
+			light = Color.SLATE_GRAY.lightened(0.3)
+		"Sosial":
+			mid = tokens.state_warning.darkened(0.35)
+			light = tokens.state_warning
+		_:
+			return []
+	return [mid.darkened(0.7), mid, light]
+
+
+func _apply_gradient(category: String) -> void:
+	var colors := gradient_colors(category, DesignTokens.load_default())
+	gradient_rect.visible = not colors.is_empty()
+	var tex := gradient_rect.texture as GradientTexture2D
+	if colors.is_empty() or tex == null or tex.gradient == null:
+		return
+	for i in colors.size():
+		tex.gradient.set_color(i, colors[i])
+
+
+## Slide through the screen once showing `caption_text`, marked with the
+## event's `category` and `mode`, then free. Awaitable: SchoolDay waits on it
+## before the minigame or event begins.
+func play_warning(caption_text: String, category: String = "", mode: String = "") -> void:
+	caption.text = caption_text
+	marker.text = marker_text(category, mode)
+	marker.visible = marker.text != ""
+	_apply_gradient(category)
+	AudioDirector.play_sfx(&"event_announce")
+	var width := size.x
+	panel.position.x = panel_x(&"enter", width)
+	icon.modulate.a = 0.0
+	caption.modulate.a = 0.0
+	# Hidden through the slide; the roll starts once the panel has landed.
+	band.modulate.a = 0.0
+
+	var slide_in := create_tween()
+	slide_in.tween_property(panel, "position:x", panel_x(&"rest", width), slide_in_duration) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	await slide_in.finished
+
+	Juice.pop_in(icon)
+	Juice.fade_in(caption)
+	# The band is a container child, and a container resets its children's
+	# scale whenever it sorts -- setting the caption queues one. So the roll
+	# starts from zero here, after that sort has run, not before the slide.
+	band.pivot_offset = band.size * 0.5
+	band.scale.x = 0.0
+	band.modulate.a = 1.0
+	var roll := create_tween()
+	roll.tween_property(band, "scale:x", 1.0, band_roll_duration) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	if GameSettings.reduce_motion:
+		caption.visible_ratio = 1.0
+	else:
+		caption.visible_ratio = 0.0
+		roll.tween_property(caption, "visible_ratio", 1.0, type_duration)
+		# The megaphone wiggles as the notice lands.
+		roll.parallel().tween_callback(Juice.shake.bind(icon, WIGGLE_PX))
+	await get_tree().create_timer(hold_duration).timeout
+
+	var slide_out := create_tween()
+	slide_out.tween_property(panel, "position:x", panel_x(&"exit", width), slide_out_duration) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	await slide_out.finished
 	queue_free()
-
-func _apply_visual_exports() -> void:
-	_apply_hazard_stripe_tokens()
-
-	# The Scrim panel is the default backdrop; an art-supplied photo
-	# replaces it outright. Guarded on `is Panel` so a second call (the
-	# swap already happened) does not stack another TextureRect.
-	var bg = get_node_or_null("Background")
-	if bg is Panel and background_texture:
-		var tex_rect = TextureRect.new()
-		tex_rect.name = "Background"
-		tex_rect.texture = background_texture
-		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tex_rect.stretch_mode = TextureRect.STRETCH_SCALE
-		tex_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		bg.queue_free()
-		add_child(tex_rect)
-		move_child(tex_rect, 0)
-
-	if caution_lbl:
-		if caution_icon_texture:
-			caution_lbl.text = ""
-			var icon_size = Vector2(icon_font_size, icon_font_size)
-			caution_lbl.custom_minimum_size = icon_size
-			var tex_rect = caution_lbl.get_node_or_null("CautionTextureRect") as TextureRect
-			if not tex_rect:
-				tex_rect = TextureRect.new()
-				tex_rect.name = "CautionTextureRect"
-				tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				tex_rect.custom_minimum_size = icon_size
-				tex_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-				caution_lbl.add_child(tex_rect)
-			tex_rect.texture = caution_icon_texture
-			tex_rect.custom_minimum_size = icon_size
-			tex_rect.show()
-		else:
-			caution_lbl.text = caution_symbol_text
-			caution_lbl.custom_minimum_size = Vector2.ZERO
-			if font: caution_lbl.add_theme_font_override("font", font)
-			var tex_rect = caution_lbl.get_node_or_null("CautionTextureRect")
-			if tex_rect:
-				tex_rect.hide()
-
-	if event_lbl and font:
-		event_lbl.add_theme_font_override("font", font)
-
-
-## HazardStripeShader.gdshader stays exactly as it is; only its inputs
-## move into the token system. Both bars share one ShaderMaterial
-## sub-resource, so writing the uniform once repaints both.
-func _apply_hazard_stripe_tokens() -> void:
-	var t := Juice.tokens()
-	for bar_name in ["TopBar", "BottomBar"]:
-		var bar := get_node_or_null(bar_name) as CanvasItem
-		if bar == null:
-			continue
-		var mat := bar.material as ShaderMaterial
-		if mat == null:
-			continue
-		mat.set_shader_parameter("color1", t.state_warning)
-		mat.set_shader_parameter("color2", t.text_primary)

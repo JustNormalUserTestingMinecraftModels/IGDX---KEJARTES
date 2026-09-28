@@ -2,6 +2,26 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> - Applies throughout: no type inference from an autoload (`tests/test_project_hygiene.gd`, PRs #97/#98) — declare the type, e.g. `var money: int = GameState.player_money`, never `:=` on an autoload call.
+> **Revision (2026-09-28): clean-code pass; status audit.** Tasks 1, 3 and 4,
+> plus the separate sticky-note-polish pass, are DONE (2026-09-01) — left
+> below as history, unchanged. Task 2 (`ShelfEdge`) was re-audited against
+> today's code: the scene has moved well past this plan's original geometry
+> (see `test_atur_jadwal.gd`'s current z-order and `papantulis.png`-pinning
+> tests, and the hand-tuned splash rect), and the shelf still ships as two
+> `ColorRect`s per `docs/superpowers/DEBT.md` ("Deferred: the AturJadwal
+> shelf"). Task 2 below is rewritten as a runnable task against that current
+> state: the original blocker — a new `Resource` `@export` invisible to the
+> running editor — is now a documented, known procedure (CLAUDE.md, "Editing a
+> `class_name` script…": a changed/new `@export` on a Resource needs a full
+> editor restart), not an open question. Checked `DesignTokens.gd` for an
+> existing colour token close to the measured `#B37D4D`/`#77573A` shelf hexes;
+> none of the ~50 `Color` tokens match, so the task still adds two new ones
+> rather than reusing one. Steps are tagged **[editor]** (must run through the
+> live `godot-ai` editor connection) or **[code]** (plain file edits), ordered
+> per CLAUDE.md's save-hazard rule: script/token work first, scene work
+> second, editor restarts between.
+
 > **STATUS — executed 2026-09-01. Tasks 1, 3 and 4 complete; Task 2 (the
 > `ShelfEdge` theme variation) DEFERRED. Suite green (566/566, 45 suites).**
 >
@@ -251,24 +271,35 @@ git add Scenes/AturJadwal/atur_jadwal.tscn Scripts/AturJadwal/atur_jadwal.gd tes
 
 ## Task 2: Add the shelf theme variation
 
-> **NOT DONE — reverted 2026-09-01, blocked on an editor restart.** Steps
-> below are unchecked because they don't reflect the shipped state. See the
-> file's top STATUS block for what actually shipped in its place (two
-> `ColorRect`s in the scene) and the exact restart-then-reapply procedure.
+> **RE-SCOPED 2026-09-28.** The scene has moved since 2026-09-01: the shelf
+> is still two `ColorRect`s (`ShelfFace` 766-817, `ShelfEdge` 817-843,
+> `AturJadwal.tscn` around line 140), but the surrounding chrome — z-order,
+> the splash rect, the board being pinned 1:1 at y 493 — was hand-tuned
+> afterward and is now pinned by `test_atur_jadwal.gd`'s
+> `test_top_band_matches_the_mockup` and
+> `test_the_board_is_papantulis_pinned_so_its_shelf_cannot_move`. Both are
+> updated in Step 8 below rather than left to bit-rot. The two `ColorRect`s
+> collapse into **one** `Panel` node (kept named `Shelf`, matching this
+> plan's original "Produces" line) sitting in the exact file position the
+> `ColorRect`s occupy today — after `BGHari` (the whiteboard), before
+> `BGStat` — so the `whiteboard.index < shelf.index` ordering the current
+> test already asserts keeps holding.
 
 **Files:**
-- Modify: `Scripts/Design/DesignTokens.gd` (Category Accents block, around line 95)
-- Modify: `Scripts/Design/ThemeFactory.gd` (`_build_panels`, after `Scrim` at line 265)
+- Modify: `Scripts/Design/DesignTokens.gd` (`Surfaces` group, after `stat_bar_track` at line 52 — a better fit than `Category Accents`, since the shelf is set dressing, not a schedule-category colour)
+- Modify: `Scripts/Design/ThemeFactory.gd` (`_build_panels`, immediately after the `Scrim` block, which ends at line 1587)
+- Modify: `Scenes/AturJadwal/AturJadwal.tscn` — replace `ShelfFace`/`ShelfEdge` with one `Shelf` Panel
 - Modify: `Assets/Theme/kejartes_theme.tres` (regenerated, not hand-edited)
-- Test: `tests/test_theme_factory.gd`
+- Test: `tests/test_theme_factory.gd`, `tests/test_atur_jadwal.gd`
+- Delete: the "Deferred: the AturJadwal shelf" entry in `docs/superpowers/DEBT.md`
 
 **Interfaces:**
-- Consumes: nothing.
-- Produces: `DesignTokens.shelf_face: Color` and `DesignTokens.shelf_edge: Color`; a theme type variation named `ShelfEdge` varying `Panel`, whose `panel` stylebox is a `StyleBoxFlat` with `bg_color = shelf_face` and `border_width_bottom = 26` in `shelf_edge`.
+- Consumes: nothing new.
+- Produces: `DesignTokens.shelf_face: Color` and `DesignTokens.shelf_edge: Color`; a theme type variation named `ShelfEdge` varying `Panel`, whose `panel` stylebox is a `StyleBoxFlat` with `bg_color = shelf_face`, `border_width_bottom = 26`, `border_color = shelf_edge`; a scene node `Shelf` (`Panel`, offsets 766→843, `theme_type_variation = &"ShelfEdge"`) replacing `ShelfFace`+`ShelfEdge`.
 
-The mockup's divider is two flat bands — `#B37D4D` for 51 px then `#77573A` for 26 px. One `Panel` with a bottom border reproduces both exactly, so the scene needs one node rather than two `ColorRect`s carrying hardcoded colours.
+The mockup's divider is two flat bands — `#B37D4D` for 51 px then `#77573A` for 26 px. One `Panel` spanning both bands with a bottom border reproduces both exactly, so the scene needs one node rather than two `ColorRect`s carrying hardcoded colours — the design system's actual rule (`## Visual system`, "never add a `theme_override_*`... use a `ThemeFactory` type variation").
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1 [code]: Write the failing token/variation test**
 
 Append to `tests/test_theme_factory.gd`:
 
@@ -278,15 +309,15 @@ Append to `tests/test_theme_factory.gd`:
 ## border draws both bands, so the scene needs one node, not two
 ## ColorRects carrying hardcoded colours.
 func test_shelf_edge_variation_draws_both_mockup_bands() -> void:
-	var tokens := DesignTokens.load_default()
-	var theme := ThemeFactory.build(tokens)
+	var tokens: DesignTokens = DesignTokens.load_default()
+	var theme: Theme = ThemeFactory.build(tokens)
 
 	assert_true(theme.get_type_list().has("ShelfEdge"),
 		"ShelfEdge variation must exist")
 	assert_eq(theme.get_type_variation_base("ShelfEdge"), &"Panel",
 		"ShelfEdge must vary the Panel type")
 
-	var sb := theme.get_stylebox("panel", "ShelfEdge")
+	var sb: StyleBox = theme.get_stylebox("panel", "ShelfEdge")
 	assert_true(sb is StyleBoxFlat,
 		"ShelfEdge must be a flat box, not textured")
 	assert_eq(sb.bg_color, tokens.shelf_face,
@@ -298,7 +329,9 @@ func test_shelf_edge_variation_draws_both_mockup_bands() -> void:
 	assert_eq(sb.border_width_top, 0, "the shelf has no top border")
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+Also add `"ShelfEdge"` to the `expected` array in `test_every_declared_variation_exists` (line 25). Leave `DISPLAY_ROSTER` (line 298) alone — it only pins the font family on label/button variations, and `ShelfEdge` varies `Panel` and carries no font.
+
+- [ ] **Step 2 [editor]: Run it to verify it fails**
 
 ```
 test_run(suite="theme_factory")
@@ -306,9 +339,9 @@ test_run(suite="theme_factory")
 
 Expected: FAIL with `ShelfEdge variation must exist`.
 
-- [ ] **Step 3: Add the tokens**
+- [ ] **Step 3 [code]: Add the tokens**
 
-In `Scripts/Design/DesignTokens.gd`, at the end of the Category Accents block (after `cat_wirausaha`, around line 95), add:
+In `Scripts/Design/DesignTokens.gd`, in the `Surfaces` group, immediately after `stat_bar_track` (line 52), add:
 
 ```gdscript
 
@@ -320,11 +353,11 @@ In `Scripts/Design/DesignTokens.gd`, at the end of the Category Accents block (a
 @export var shelf_edge: Color = Color("#77573a")
 ```
 
-The `##` line immediately above each `@export`, with no blank line between, is required by `tests/test_script_documentation.gd`.
+The `##` line immediately above each `@export`, with no blank line between, is required by `tests/test_script_documentation.gd`. Use `script_patch`, not an outside write, so the editor doesn't need a no-op patch later to pick it up (CLAUDE.md, "Rescan after editing a `.gd`").
 
-- [ ] **Step 4: Add the variation**
+- [ ] **Step 4 [code]: Add the variation**
 
-In `Scripts/Design/ThemeFactory.gd`, inside `_build_panels`, immediately after the `Scrim` block (which ends at line 265), add:
+In `Scripts/Design/ThemeFactory.gd`, inside `_build_panels`, immediately after the `Scrim` block (ends at line 1587), add:
 
 ```gdscript
 
@@ -333,42 +366,78 @@ In `Scripts/Design/ThemeFactory.gd`, inside `_build_panels`, immediately after t
 	# -- node instead of two ColorRects holding raw colours. --
 	theme.add_type("ShelfEdge")
 	theme.set_type_variation("ShelfEdge", "Panel")
-	var shelf := StyleBoxFlat.new()
+	var shelf: StyleBoxFlat = StyleBoxFlat.new()
 	shelf.bg_color = tokens.shelf_face
 	shelf.border_width_bottom = 26
 	shelf.border_color = tokens.shelf_edge
 	theme.set_stylebox("panel", "ShelfEdge", shelf)
 ```
 
-- [ ] **Step 5: Rebake the theme**
+- [ ] **Step 5 [editor]: Restart the editor**
 
-This step is manual and has no headless equivalent. In the Godot editor: open `Scripts/Design/BakeTheme.gd`, then **File > Run** (Ctrl+Shift+X). The output panel prints the new type count.
+Both files just changed are `class_name`-bearing scripts (`DesignTokens.gd` is a `Resource` subclass, `ThemeFactory.gd` a `static` utility). CLAUDE.md: a **new `@export` on a Resource needs a full editor restart** — `load_default()` keeps serving the cached `design_tokens.tres` instance otherwise, and `tokens.shelf_face` silently reads `Nil`, which is exactly what broke this task on 2026-09-01. Force-kill Godot (safe once scenes are saved — none are dirty yet), relaunch, reopen `Scenes/MainMenu/MainMenu.tscn` (several suites need the main scene open).
 
-- [ ] **Step 6: Verify the bake landed on disk**
+- [ ] **Step 6 [editor]: Rebake the theme, alone**
+
+No headless path exists. Use the test runner rather than File > Run, so the bake and its confirmation are one call:
+
+```
+test_run(suite="theme_rebake")
+```
+
+This calls `ResourceSaver.save()` in-process and writes `Assets/Theme/kejartes_theme.tres`. Per CLAUDE.md, do this as its own step — not interleaved with the scene edit in Step 8 — and diff the bake before trusting it:
 
 ```bash
 cd "C:/Users/user/Downloads/KejarTestAlphaVer2.15/KejarTestAlphaVer2.15/new-game-project" && grep -c "ShelfEdge" Assets/Theme/kejartes_theme.tres
 ```
 
-Expected: a non-zero count. If it prints `0`, the rebake did not run — repeat Step 5 before continuing, or every scene-level test in Task 3 will fail for the wrong reason.
+Expected: non-zero. If `0`, the restart in Step 5 didn't take — repeat it before continuing.
 
-- [ ] **Step 7: Run the test to verify it passes**
+- [ ] **Step 7 [editor]: Restart the editor again**
+
+CLAUDE.md 4b: the rebake just ran main-thread work inside the editor process; the next step does scene node surgery, and the save hazards ("script work first, scene work second... restart before the next `scene_save`") call for a restart between a script/rebake pass and the scene pass that follows. Force-kill, relaunch, reopen `Scenes/MainMenu/MainMenu.tscn`.
+
+- [ ] **Step 8 [editor]: Swap the ColorRects for the Shelf panel**
+
+Through the editor only — `scene_open("res://Scenes/AturJadwal/AturJadwal.tscn")`, then `node_manage`/`node_create`/`node_set_property`, then `scene_save`. Never hand-edit the `.tscn` text (Global Constraints).
+
+1. Delete `ShelfFace` and `ShelfEdge` (the two `ColorRect`s at the scene's root, currently offsets 766→817 and 817→843).
+2. Create one `Panel` named `Shelf` at the root, in the same position in the child order (immediately after `BGHari`, immediately before `BGStat` — `node_manage(op="move")` if `node_create` appends it elsewhere).
+3. Set on `Shelf`: `offset_top = 766`, `offset_right = 1080`, `offset_bottom = 843`, `mouse_filter = 2` (`MOUSE_FILTER_IGNORE`, matching the `ColorRect`s it replaces), `theme_type_variation = &"ShelfEdge"`. No `theme_override_*` of any kind.
+
+Then update `tests/test_atur_jadwal.gd`'s `test_top_band_matches_the_mockup` (around line 300): replace the `ShelfFace`/`ShelfEdge` `ColorRect` block with:
+
+```gdscript
+	var shelf := _screen.get_node_or_null("Shelf") as Panel
+	assert_true(shelf != null, "Shelf is missing")
+	assert_eq(shelf.theme_type_variation, &"ShelfEdge",
+		"Shelf must wear the ShelfEdge variation, not a theme_override_*")
+	assert_eq(shelf.offset_top, 766.0, "shelf starts where the backdrop/board meet")
+	assert_eq(shelf.offset_bottom, 843.0, "shelf spans both the face and edge bands")
+```
+
+and change the ordering asserts below it from `face.get_index()` to `shelf.get_index()` — the requirement (shelf draws over the whiteboard) is unchanged, only the node is renamed and merged.
+
+- [ ] **Step 9 [editor]: Run the targeted suites**
 
 ```
 filesystem_manage(op="scan")
 test_run(suite="theme_factory")
+test_run(suite="atur_jadwal")
+test_run(suite="clean_code")
+test_run(suite="viewport_editability")
 ```
 
-Expected: PASS. Then run the whole suite — several suites load the baked theme from disk and a bad bake surfaces there:
+Expected: all green. `viewport_editability` should be unaffected — this step is pure scene data, zero new `.new()` calls, so `AturJadwal.gd`'s frozen count of 17 does not move. `clean_code` catches anything the new `ThemeFactory.gd`/`DesignTokens.gd` code introduced (bare numbers, untyped vars — `ThemeFactory.gd` is on the size/long-function ALLOWED list but **not** the untyped-var one, so keep every new local typed as in Steps 3-4 above). If any clean-code count shrinks as a side effect, run `ci/clean_code_dump.gd` to lock the gain in.
 
-```
-test_run()
-```
+- [ ] **Step 10 [code]: Remove the DEBT.md entry**
 
-- [ ] **Step 8: Commit**
+Delete the "**Deferred: the AturJadwal shelf.**" paragraph from `docs/superpowers/DEBT.md` (the debt is resolved, not deferred further).
+
+- [ ] **Step 11: Commit**
 
 ```bash
-git add Scripts/Design/DesignTokens.gd Scripts/Design/ThemeFactory.gd Assets/Theme/kejartes_theme.tres tests/test_theme_factory.gd && git commit -m "feat(theme): add the ShelfEdge variation for Atur Jadwal's divider"
+git add Scripts/Design/DesignTokens.gd Scripts/Design/ThemeFactory.gd Scenes/AturJadwal/AturJadwal.tscn Assets/Theme/kejartes_theme.tres tests/test_theme_factory.gd tests/test_atur_jadwal.gd docs/superpowers/DEBT.md && git commit -m "feat(theme): add the ShelfEdge variation for Atur Jadwal's divider"
 ```
 
 ---

@@ -52,15 +52,20 @@ static func crop_for(student_name: String, tex: Texture2D, is_splash: bool = fal
 ## then nothing. The splash leads now that the 2026-09-01 batch has landed
 ## -- it is full-body art cropped to a head window by SPLASH_CROP, which
 ## frames better than the square portrait.
-func set_student(student: StudentData) -> void:
+##
+## `day_name` dresses the student for that school day (2026-09-25 spec,
+## StudentSkins.DAY_OUTFITS): batik on Kamis, pramuka on Jumat. An outfit
+## shares its student's canvas, so SPLASH_CROP frames it unchanged.
+func set_student(student: StudentData, day_name: String = "") -> void:
 	if student == null:
 		art.texture = null
 		return
 
 	var tex: Texture2D = null
 	var is_splash := false
-	if student.splash_path != "" and ResourceLoader.exists(student.splash_path):
-		tex = load(student.splash_path)
+	var splash := StudentSkins.splash_for_day(student.student_name, student.splash_path, day_name)
+	if splash != "" and ResourceLoader.exists(splash):
+		tex = load(splash)
 		is_splash = true
 	elif student.avatar_texture != null:
 		tex = student.avatar_texture

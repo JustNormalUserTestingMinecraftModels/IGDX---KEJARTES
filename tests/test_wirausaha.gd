@@ -5,11 +5,14 @@ extends McpTestSuite
 ## money at a mood/energy cost, paid out at the end of the week.
 ## Suite is @tool and no test is a coroutine, per the runner constraints
 ## documented in test_lobby.gd.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 func suite_name() -> String:
 	return "wirausaha"
 
-const _JADWAL_SCENE := "res://Scenes/AturJadwal/atur_jadwal.tscn"
+const _JADWAL_SCENE := "res://Scenes/AturJadwal/AturJadwal.tscn"
 const _SCHOOL_DAY_SCRIPT := "res://Scripts/SchoolSimulation/SchoolDay.gd"
 
 ## Builds a throwaway approved_students roster and returns the caller's
@@ -19,26 +22,26 @@ func _swap_roster(roster: Array) -> Array:
 	GameState.approved_students = roster
 	return original
 
-## The scheduling popup's five picks are ActivityRows now (see ActivityRow.gd)
+## The scheduling picker's choices are ActivityTiles (see ActivityTile.gd)
 ## rather than a node literally named "Wirausaha" -- find it by category.
 func test_schedule_popup_offers_wirausaha() -> void:
 	var scene := (load(_JADWAL_SCENE) as PackedScene).instantiate()
-	var rows := scene.get_node_or_null("Penjadwalan/TextureRect/Rows")
+	var grid := scene.get_node_or_null("Penjadwalan/Sheet/Body/Grid")
 	var found := false
-	if rows:
-		for row in rows.get_children():
-			if row is ActivityRow and row.category == "Wirausaha":
+	if grid:
+		for tile in grid.get_children():
+			if tile is ActivityTile and tile.category == "Wirausaha":
 				found = true
-	assert_true(found, "the scheduling popup must offer an ActivityRow for Wirausaha")
+	assert_true(found, "the scheduling picker must offer an ActivityTile for Wirausaha")
 	scene.free()
 
-## _connect_activity_buttons() binds every row dynamically via row.category
-## now, rather than one hardcoded bind("Wirausaha") call -- so Wirausaha's
-## wiring is covered by the same generic loop as every other category.
+## _connect_activity_buttons() binds every tile dynamically via tile.category,
+## rather than one hardcoded bind("Wirausaha") call -- so Wirausaha's wiring
+## is covered by the same generic loop as every other category.
 func test_jadwal_script_binds_wirausaha() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/atur_jadwal.gd")
-	assert_true(src.contains("_on_activity_selected.bind(row.category)"),
-		"every ActivityRow, Wirausaha included, must connect via row.category")
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd")
+	assert_true(src.contains("_on_tile_picked.bind(tile.category)"),
+		"every ActivityTile, Wirausaha included, must connect via tile.category")
 
 func test_day_categories_include_wirausaha() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
@@ -52,7 +55,7 @@ func test_jadwal_counts_include_wirausaha() -> void:
 	GameState.day_schedules = {
 		1: {"Senin": {"category": "Wirausaha", "mood_cost": 8, "energy_cost": 10}},
 	}
-	var counts := GameState.get_jadwal_for_day("Senin")
+	var counts: Dictionary = GameState.get_jadwal_for_day("Senin")
 	assert_true(counts.has("Wirausaha"), "counts must track Wirausaha")
 	assert_eq(counts["Wirausaha"], 1, "one student assigned to Wirausaha")
 	GameState.day_schedules = {}
@@ -165,7 +168,7 @@ func test_tired_students_earn_less() -> void:
 ## instantiated scene and instead reads source text or scene-declared state.
 
 func test_payout_adds_the_total_to_player_money() -> void:
-	var original_money := GameState.player_money
+	var original_money: int = GameState.player_money
 	GameState.pending_earnings = {1: 300, 2: 250}
 	var paid: int = load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha()
 	assert_eq(paid, 550, "payout returns the summed total")
@@ -174,7 +177,7 @@ func test_payout_adds_the_total_to_player_money() -> void:
 	GameState.player_money = original_money
 
 func test_payout_clears_pending_earnings() -> void:
-	var original_money := GameState.player_money
+	var original_money: int = GameState.player_money
 	GameState.pending_earnings = {1: 100}
 	load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha()
 	assert_true(GameState.pending_earnings.is_empty(),
@@ -182,7 +185,7 @@ func test_payout_clears_pending_earnings() -> void:
 	GameState.player_money = original_money
 
 func test_payout_of_nothing_is_zero_and_harmless() -> void:
-	var original_money := GameState.player_money
+	var original_money: int = GameState.player_money
 	GameState.pending_earnings.clear()
 	assert_eq(load(_SCHOOL_DAY_SCRIPT).new()._pay_out_wirausaha(), 0, "no Wirausaha days pays nothing")
 	assert_eq(GameState.player_money, original_money, "money is untouched")

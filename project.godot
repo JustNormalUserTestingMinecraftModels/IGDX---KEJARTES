@@ -11,7 +11,8 @@ config_version=5
 [application]
 
 config/name="KejarTes Ver9.00"
-run/main_scene="res://Scenes/MainMenu/main_menu.tscn"
+run/main_scene="res://Scenes/MainMenu/MainMenu.tscn"
+config/quit_on_go_back=false
 config/features=PackedStringArray("4.6", "Mobile")
 config/icon="res://icon.svg"
 
@@ -22,15 +23,19 @@ buses/default_bus_layout="uid://r0ci5k7ia626"
 [autoload]
 
 GameState="*res://Scripts/GameState.gd"
-Transition="*res://Scenes/Transition/transition.tscn"
+Transition="*res://Scenes/Transition/Transition.tscn"
 GameSettings="*res://Scripts/GameSettings.gd"
-AudioDirector="*res://Scenes/Audio/audio_director.tscn"
+AudioDirector="*res://Scenes/Audio/AudioDirector.tscn"
 UIPolish="*res://Scripts/UI/UIPolish.gd"
 TouchFeedbackManager="*res://Scripts/TouchFeedback/TouchFeedbackManager.gd"
 DebugManager="*res://Scripts/Debug/DebugManager.gd"
 ItemDatabase="*res://Scripts/Inventory/ItemDatabase.gd"
 Cart="*res://Scripts/Inventory/Cart.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
+Achievements="*res://Scripts/Achievements/Achievements.gd"
+AchievementToast="*res://Scenes/Achievements/AchievementToast.tscn"
+LookLayer="*res://Scenes/Look/LookLayer.tscn"
+RewardFeedback="*res://Scripts/Feedback/RewardFeedback.gd"
 
 [display]
 
@@ -59,4 +64,8 @@ common/physics_interpolation=true
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=3
 renderer/rendering_method="mobile"
+textures/vram_compression/import_s3tc_bptc=true
+textures/vram_compression/import_etc2_astc=true
+anti_aliasing/quality/msaa_2d=1

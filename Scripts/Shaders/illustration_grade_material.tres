@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://Scripts/Shaders/illustration_grade.gdshader" id="1_grade"]
+
+[resource]
+shader = ExtResource("1_grade")
+shader_parameter/saturation = 1.0175
+shader_parameter/contrast = 1.0086625
+shader_parameter/exposure = 0.995
+shader_parameter/tint = Color(1.022, 1, 0.972, 1)
+shader_parameter/amount = 1.0
+shader_parameter/ao_strength = 0.0
+shader_parameter/rim_strength = 0.0

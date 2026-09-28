@@ -20,6 +20,7 @@ const _ROW_SCENE := "res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn"
 const _ROW_SCRIPT := "res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd"
 const _CHECKUP_SCENE := "res://Scenes/SchoolSimulation/ResultCheckup.tscn"
 const _CHECKUP_SCRIPT := "res://Scripts/SchoolSimulation/ResultCheckup.gd"
+const _LOGS_SCENE := "res://Scenes/SchoolSimulation/WeekLogsPopup.tscn"
 
 
 func suite_name() -> String:
@@ -57,9 +58,9 @@ func _card() -> DaySummaryStudentRow:
 func _student_with_week(start: Dictionary, finish: Dictionary) -> StudentData:
 	var s := StudentData.new()
 	s.student_name = "Marcel"
-	s.target_akademis1 = 65.0
-	s.target_akademis2 = 65.0
-	s.target_akademis3 = 65.0
+	s.target_akademis = 65.0
+	s.target_seni_budaya = 65.0
+	s.target_olahraga = 65.0
 	for key in start:
 		s.set(key, start[key])
 	s.record_initial_stats()
@@ -131,23 +132,23 @@ func test_the_week_card_reads_the_whole_weeks_movement() -> void:
 		"the chevron is an up arrow; a losing week must not show one")
 
 
-## The project's documented naming trap: target_akademis2 is the SENI
-## target and target_akademis3 the OLAHRAGA one. Three distinct targets
+## Each skill has its own target field: target_seni_budaya is the SENI
+## target and target_olahraga the OLAHRAGA one. Three distinct targets
 ## catch a card that read the wrong field for a stat.
 func test_the_week_card_pairs_each_stat_with_its_own_target() -> void:
 	var inst := _card()
 	var s := _student_with_week(
 		{"akademis": 40.0, "seni_budaya": 40.0, "olahraga": 40.0},
 		{"akademis": 41.0, "seni_budaya": 42.0, "olahraga": 43.0})
-	s.target_akademis1 = 65.0
-	s.target_akademis2 = 70.0
-	s.target_akademis3 = 75.0
+	s.target_akademis = 65.0
+	s.target_seni_budaya = 70.0
+	s.target_olahraga = 75.0
 
 	inst.setup_week_row(s)
 
-	assert_eq(inst.stat_rows[0].value.text, "+1/65", "akademis reads target_akademis1")
-	assert_eq(inst.stat_rows[1].value.text, "+2/70", "seni budaya reads target_akademis2")
-	assert_eq(inst.stat_rows[2].value.text, "+3/75", "olahraga reads target_akademis3")
+	assert_eq(inst.stat_rows[0].value.text, "+1/65", "akademis reads target_akademis")
+	assert_eq(inst.stat_rows[1].value.text, "+2/70", "seni budaya reads target_seni_budaya")
+	assert_eq(inst.stat_rows[2].value.text, "+3/75", "olahraga reads target_olahraga")
 
 
 ## The bars still read tonight's value -- what is new is the number
@@ -208,7 +209,7 @@ func test_the_week_card_empties_itself_for_a_missing_student() -> void:
 
 
 ## Both entry points must draw their three rows through the same code --
-## two hand-rolled loops would drift on the next change to the trap.
+## two hand-rolled loops would drift.
 func test_both_entry_points_share_one_stat_row_writer() -> void:
 	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
 	assert_true(src.contains("func _write_stat_rows("),
@@ -405,7 +406,7 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 	inst.initialize_checkup(manager)
 
 	var container := inst.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
+		"Margin/VBox/ScrollContainer/StudentsPane")
 	assert_eq(container.get_child_count(), manager.students.size(),
 		"one card per student in the roster")
 	var first = container.get_child(0)
@@ -414,7 +415,7 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 	assert_eq(first.name_label.text, manager.students[0].student_name,
 		"each card is labelled with the student it was built for")
 	assert_eq(first.stat_rows[0].value.text,
-		"+12/%d" % int(round(manager.students[0].target_akademis1)),
+		"+12/%d" % int(round(manager.students[0].target_akademis)),
 		"the card must read the WEEK's gain against that student's target")
 	# The number label is never rendered any more (2026-09-03
 	# interactivity spec, section 4); the DeltaChevron is what shows
@@ -468,7 +469,7 @@ func test_the_checkup_sets_each_card_up_only_once_it_is_in_the_tree() -> void:
 
 ## The history log and the close button are the week's own chrome and
 ## must survive the card swap.
-func test_the_checkup_keeps_its_history_and_its_close_button() -> void:
+func test_the_checkup_keeps_the_weeks_history_for_the_sheet() -> void:
 	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
 	inst.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(inst)
@@ -483,15 +484,13 @@ func test_the_checkup_keeps_its_history_and_its_close_button() -> void:
 
 	inst.initialize_checkup(manager)
 
-	var history := inst.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane")
-	# HistoryPane always keeps its EmptyLabel child (visibility toggles,
-	# it is never freed), so the row count is the pane's children minus
-	# that one authored label.
-	assert_eq(history.get_child_count() - 1, 1,
-		"the week's minigame log must still be built")
-	assert_not_null(inst.get_node_or_null("Margin/VBox/BtnClose"),
-		"the close button must survive the card swap")
+	# The RIWAYAT pane that used to hold these rows was retired on
+	# 2026-09-16; the week's log is now kept as data and handed to the
+	# Logs sheet on demand.
+	assert_eq(inst._history.size(), 1,
+		"the week's minigame log is kept for the Logs sheet")
+	assert_not_null(inst.get_node_or_null("Margin/VBox/Buttons/NextButton"),
+		"Selanjutnya must survive the tab removal")
 
 
 ## The screen ships with a themed SunkenPanel backdrop and an @export that
@@ -541,27 +540,59 @@ func test_checkup_scene_carries_an_idle_confetti_node() -> void:
 	inst.free()
 
 
-## The four variations the recap banner and tab bar need. Without these
+## The weekly celebration is the two-cannon paper burst, not the shared
+## top-down CelebrationConfetti (2026-09-12 paper confetti spec). The
+## ApplyItemScreen keeps CelebrationConfetti; only the checkup moved.
+func test_checkup_fires_the_paper_confetti() -> void:
+	var src := _source(_CHECKUP_SCRIPT)
+	assert_true(src.contains("PaperConfetti.tscn"),
+		"the checkup must fire PaperConfetti.tscn")
+	assert_true(not src.contains("CelebrationConfetti.tscn"),
+		"the checkup must no longer fire CelebrationConfetti.tscn")
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	var fx := inst.get_node_or_null("Celebration")
+	assert_true(fx != null and fx.scene_file_path.ends_with("PaperConfetti.tscn"),
+		"the Celebration marker must be a PaperConfetti instance")
+	if fx != null:
+		assert_true(fx.position.x < 0.0 and fx.position.y > 1500.0,
+			"the marker must sit at the bottom-left corner")
+	inst.free()
+
+
+## The three variations the recap banner and its pills need. Without these
 ## the screen would have to reach for theme_override_*, which the project
 ## forbids (2026-09-03 spec section 8).
+##
+## Read off get_type_list(), NOT has_stylebox()/has_font_size(). Those fall
+## through to the default theme and return true for ANY type name, so the
+## version of this test that used them passed while asserting a variation
+## called "ThisVariationDefinitelyDoesNotExist" -- it could never fail, and
+## it was the only guard these three had (2026-09-16). test_button_geometry
+## reads the type list for the same reason.
 func test_theme_carries_the_recap_variations() -> void:
 	var theme: Theme = load(_THEME_PATH)
 	assert_not_null(theme, "the baked theme loads")
+	var types: PackedStringArray = theme.get_type_list()
 	for variation in ["RecapBannerPanel", "RecapPillPanel",
-			"RecapPillValueLabel", "WeekTabButton"]:
-		assert_true(theme.has_stylebox("panel", variation)
-				or theme.has_stylebox("normal", variation)
-				or theme.has_font_size("font_size", variation),
+			"RecapPillValueLabel"]:
+		assert_true(types.has(variation),
 			"%s is baked into the theme" % variation)
+	assert_false(types.has("WeekTabButton"),
+		"the tab variation was retired with the SISWA/RIWAYAT tabs")
 
 
 const _PILL_SCENE := "res://Scenes/SchoolSimulation/WeekRecapPill.tscn"
 
 
-func test_pill_scene_has_its_three_authored_nodes() -> void:
+func test_pill_scene_stacks_its_icon_above_its_value() -> void:
 	var pill: Control = load(_PILL_SCENE).instantiate()
-	assert_not_null(pill.get_node_or_null("Icon"), "Icon is authored")
-	assert_not_null(pill.get_node_or_null("Value"), "Value is authored")
+	var column := pill.get_node_or_null("Column") as VBoxContainer
+	assert_not_null(column, "Icon and Value share one column (mockup tile)")
+	assert_not_null(pill.get_node_or_null("Column/Icon"), "Icon is authored")
+	assert_not_null(pill.get_node_or_null("Column/Value"), "Value is authored")
+	if column != null and column.get_node_or_null("Icon") and column.get_node_or_null("Value"):
+		assert_true(column.get_node("Icon").get_index() < column.get_node("Value").get_index(),
+			"the icon sits above its number, not under it")
 	assert_not_null(pill.get_node_or_null("Ring"), "Ring emitter is authored")
 	pill.free()
 
@@ -581,9 +612,9 @@ func test_pill_set_pill_writes_text_and_tint() -> void:
 	var pill: Control = load(_PILL_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(pill)
 	pill.set_pill(null, "4.200", Color.RED)
-	assert_eq((pill.get_node("Value") as Label).text, "4.200",
+	assert_eq((pill.get_node("Column/Value") as Label).text, "4.200",
 		"the value label carries the formatted number")
-	assert_eq((pill.get_node("Value") as Label).self_modulate, Color.RED,
+	assert_eq((pill.get_node("Column/Value") as Label).self_modulate, Color.RED,
 		"and the caller's tint")
 	pill.queue_free()
 
@@ -591,18 +622,19 @@ func test_pill_set_pill_writes_text_and_tint() -> void:
 const _BANNER_SCENE := "res://Scenes/SchoolSimulation/WeekRecapBanner.tscn"
 
 
-func test_banner_authors_all_four_pills() -> void:
+func test_banner_authors_the_mockups_three_tiles_in_order() -> void:
 	var banner: Control = load(_BANNER_SCENE).instantiate()
-	for pill_name in ["PillUang", "PillPoin", "PillMenang", "PillEvent"]:
-		assert_not_null(banner.get_node_or_null("Pills/" + pill_name),
-			"%s is authored, not built at runtime" % pill_name)
+	var names: Array = []
+	for child in banner.get_node("Pills").get_children():
+		names.append(String(child.name))
+	assert_eq(names, ["PillUang", "PillMenang", "PillEvent"],
+		"money, minigames, events, left to right; Poin is gone")
+	assert_true(banner.get_node_or_null("Header") == null,
+		"the mockup has no week/grade line")
 	banner.free()
 
 
-func test_banner_writes_every_total_into_its_pills() -> void:
-	# set_recap writes through the pills' @onready fields (and its own),
-	# which Godot only populates once the node enters the tree -- same
-	# rule as WeekRecapPill's own set_pill test.
+func test_banner_writes_its_three_totals_in_one_ink() -> void:
 	var banner: Control = load(_BANNER_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(banner)
 	banner.set_recap({
@@ -610,26 +642,63 @@ func test_banner_writes_every_total_into_its_pills() -> void:
 		"minigames_won": 3, "minigames_total": 5, "events_count": 2,
 	})
 	assert_eq(_pill_text(banner, "PillUang"), "4.200", "money is grouped")
-	assert_eq(_pill_text(banner, "PillPoin"), "+37", "poin is signed")
 	assert_eq(_pill_text(banner, "PillMenang"), "3/5", "won over total")
 	assert_eq(_pill_text(banner, "PillEvent"), "2", "a bare event count")
+	var ink := Juice.tokens().text_primary
+	for n in ["PillUang", "PillMenang", "PillEvent"]:
+		assert_eq((banner.get_node("Pills/%s/Column/Value" % n) as Label).self_modulate,
+			ink, "%s is text_primary: gold is unreadable on a white tile" % n)
 	banner.queue_free()
 
 
-func test_banner_shows_a_negative_week_as_negative() -> void:
-	var banner: Control = load(_BANNER_SCENE).instantiate()
-	Engine.get_main_loop().root.add_child(banner)
-	banner.set_recap({
-		"money_earned": 0, "net_skill_delta": -4,
-		"minigames_won": 0, "minigames_total": 2, "events_count": 0,
-	})
-	assert_eq(_pill_text(banner, "PillPoin"), "-4",
-		"a losing week is not hidden")
-	banner.queue_free()
+func test_banner_script_drops_poin() -> void:
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/WeekRecapBanner.gd")
+	assert_contains(src, 'const PILL_ORDER := ["uang", "menang", "event"]',
+		"three tiles, in the mockup's order")
+	for dead in ["pill_poin", "icon_poin", "net_skill_delta", "format_skill_delta", "week_label"]:
+		assert_false(src.contains(dead), "%s left with the Poin tile / week line" % dead)
+
+
+func test_banner_uses_the_new_tile_icons() -> void:
+	var banner = load(_BANNER_SCENE).instantiate()
+	assert_eq(banner.icon_uang.resource_path, "res://Assets/Images/UI/Placeholders/icon_uang.svg",
+		"money keeps its existing icon")
+	assert_eq(banner.icon_menang.resource_path, "res://Assets/Images/ResultCheckup/icon_minigame.png",
+		"minigames wear the soccer ball")
+	assert_eq(banner.icon_event.resource_path, "res://Assets/Images/ResultCheckup/icon_event.png",
+		"events wear the checklist notebook")
+	banner.free()
+
+## SchoolDay pays the week's Wirausaha total out before it opens this screen,
+## and paying out empties GameState.pending_earnings -- which is exactly what
+## WeekRecap._sum_pending_earnings reads. So by the time the banner is filled
+## that read is 0, and the money pill has to come from the argument instead.
+## Regression test for the bug 6043538 found; the argument is deliberately
+## kept across the 2026-09-16 revert of this screen.
+func test_the_banner_shows_the_weeks_paid_earnings() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+
+	var manager := StudentManager.new()
+	track(manager)
+
+	# The post-payout state SchoolDay actually leaves behind.
+	var saved: Dictionary = GameState.pending_earnings.duplicate()
+	GameState.pending_earnings = {}
+	inst.initialize_checkup(manager, 1000)
+	GameState.pending_earnings = saved
+
+	assert_eq(_pill_text(inst.get_node("Margin/VBox/Banner"), "PillUang"),
+		WeekRecap.format_money(1000),
+		"the money pill shows the payout the caller handed over, not the "
+		+ "emptied pending_earnings")
 
 
 func _pill_text(banner: Control, pill_name: String) -> String:
-	return (banner.get_node("Pills/" + pill_name).get_node("Value")
+	return (banner.get_node("Pills/" + pill_name).get_node("Column/Value")
 		as Label).text
 
 
@@ -699,33 +768,31 @@ func _row_text(row: Control, path: String) -> String:
 	return (row.get_node("Body/Lines/" + path) as Label).text
 
 
-func test_screen_authors_the_banner_tabs_and_both_panes() -> void:
+func test_screen_authors_the_banner_the_list_and_the_buttons() -> void:
 	var screen: Control = load(_CHECKUP_SCENE).instantiate()
 	for path in ["Margin/VBox/Banner",
-			"Margin/VBox/TabBar/TabSiswa",
-			"Margin/VBox/TabBar/TabRiwayat",
-			"Margin/VBox/ScrollContainer/PaneStack/StudentsPane",
-			"Margin/VBox/ScrollContainer/PaneStack/HistoryPane",
-			"Margin/VBox/ScrollContainer/PaneStack/HistoryPane/EmptyLabel"]:
+			"Margin/VBox/ScrollContainer/StudentsPane",
+			"Margin/VBox/Buttons/LogsButton",
+			"Margin/VBox/Buttons/NextButton"]:
 		assert_not_null(screen.get_node_or_null(path),
 			"%s is authored in the scene" % path)
 	screen.free()
 
 
-func test_banner_and_tabs_sit_outside_the_scroll() -> void:
+func test_the_banner_and_buttons_sit_outside_the_scroll() -> void:
 	var screen: Control = load(_CHECKUP_SCENE).instantiate()
 	var scroll: Node = screen.get_node("Margin/VBox/ScrollContainer")
 	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/Banner")),
-		"the banner must stay pinned while the panes scroll")
-	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/TabBar")),
-		"and so must the tab bar")
+		"the banner must stay pinned while the cards scroll")
+	assert_false(scroll.is_ancestor_of(screen.get_node("Margin/VBox/Buttons")),
+		"and so must the button row")
 	screen.free()
 
 
 func test_students_pane_uses_the_spec_separation() -> void:
 	var screen: Control = load(_CHECKUP_SCENE).instantiate()
 	var pane: VBoxContainer = screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
+		"Margin/VBox/ScrollContainer/StudentsPane")
 	assert_eq(pane.get_theme_constant("separation"), 28,
 		"card separation drops 56 -> 28 (spec section 3)")
 	screen.free()
@@ -768,78 +835,6 @@ func test_script_carries_no_emoji() -> void:
 	for glyph in ["📊", "📝", "📢"]:
 		assert_false(src.contains(glyph), "emoji are banned")
 
-
-func test_default_tab_is_siswa() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	_add_themed(screen)
-	assert_true(screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane").visible,
-		"the screen opens on the students pane")
-	assert_false(screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane").visible,
-		"the history pane starts hidden")
-	screen.queue_free()
-
-
-func test_switching_tabs_swaps_pane_visibility_without_freeing() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	_add_themed(screen)
-	var students: Node = screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/StudentsPane")
-	var history: Node = screen.get_node(
-		"Margin/VBox/ScrollContainer/PaneStack/HistoryPane")
-	screen.show_pane(1)
-	assert_false(students.visible, "students pane hides")
-	assert_true(history.visible, "history pane shows")
-	assert_true(is_instance_valid(students),
-		"panes are hidden, never freed")
-	screen.show_pane(0)
-	assert_true(students.visible, "and it comes back")
-	screen.queue_free()
-
-
-func test_each_pane_keeps_its_own_scroll_offset() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	_add_themed(screen)
-	var scroll: ScrollContainer = screen.get_node(
-		"Margin/VBox/ScrollContainer")
-	# ScrollContainer.scroll_vertical clamps synchronously against its
-	# scrollbar's max_value, computed from child content size. Nothing
-	# was added via initialize_checkup, so the panes are empty and the
-	# scrollable range is 0 -- without this, "400" would clamp straight
-	# back to 0 before show_pane ever runs, and the test would pass
-	# trivially without exercising the offset-memory logic at all.
-	scroll.get_v_scroll_bar().max_value = 1000
-	scroll.scroll_vertical = 400
-	screen.show_pane(1)
-	assert_eq(scroll.scroll_vertical, 0,
-		"the history pane opens at its own top")
-	screen.show_pane(0)
-	assert_eq(scroll.scroll_vertical, 400,
-		"returning to SISWA restores where you were reading")
-	screen.queue_free()
-
-
-func test_history_pane_animation_latch_fires_only_once() -> void:
-	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	_add_themed(screen)
-	screen.show_pane(1)
-	assert_true(screen._history_animated,
-		"the first open latches the animation")
-	screen.show_pane(0)
-	screen.show_pane(1)
-	assert_true(screen._history_animated,
-		"and it stays latched, so audio never re-fires")
-	screen.queue_free()
-
-
-## Adds a screen to the tree with the baked theme assigned. ThemeDB's
-## project-theme fallback does not populate under the editor's own root,
-## so the theme is set explicitly -- the same pattern the suite's other
-## in-tree tests use.
-func _add_themed(screen: Control) -> void:
-	screen.theme = load(_THEME_PATH)
-	Engine.get_main_loop().root.add_child(screen)
 
 
 ## Finding 1 fix (2026-09-03 Task 9 review): win/loss must be read from
@@ -991,30 +986,8 @@ func test_pill_cascade_step_is_a_named_constant() -> void:
 		"the stagger between one pill starting and the next is named, not a literal")
 
 
-## show_pane's transition is a coroutine under real play, but every test
-## that already calls it directly (test_default_tab_is_siswa,
-## test_switching_tabs_swaps_pane_visibility_without_freeing, the
-## scroll-offset and latch tests) runs inside the editor process, where
-## Engine.is_editor_hint() is true -- this test confirms the transition
-## code stays behind that SAME existing guard, so none of those tests'
-## synchronous assumptions (pane.visible flips immediately) can break.
-func test_pane_transition_is_gated_on_editor_hint() -> void:
-	var src := FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/ResultCheckup.gd")
-	assert_contains(src, "PANE_SLIDE_DISTANCE",
-		"a named constant drives the pane transition, not a literal")
-
-
-func test_pane_transition_direction_is_derived_not_hardcoded() -> void:
-	var src := FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/ResultCheckup.gd")
-	assert_contains(src, "signi(",
-		"the transition direction comes from signi(pane - _active_pane), " +
-			"not two hardcoded literal directions")
-
-
 ## ScrollFade was a flat SunkenPanel -- an unexplained white box between
-## the scrollable pane and BtnClose. It's a gradient now: an actual
+## the scrollable list and the buttons. It's a gradient now: an actual
 ## fade-to-transparent cue, not a themed surface (2026-09-03
 ## interactivity spec, section 7).
 func test_scroll_fade_is_a_gradient_not_a_flat_panel() -> void:
@@ -1029,3 +1002,132 @@ func test_scroll_fade_is_a_gradient_not_a_flat_panel() -> void:
 	var block := src.substr(node_start, next_node - node_start)
 	assert_false(block.contains("theme_type_variation"),
 		"ScrollFade is textured, not themed -- no SunkenPanel variation left on it")
+
+
+# ------------------------------------------------- Logs and Selanjutnya
+#
+# The 2026-09-16 hybrid: the SISWA / RIWAYAT tabs are gone and the week's
+# history moved into WeekLogsPopup, reached by the Logs button.
+
+
+## The Logs sheet is a scene of its own, instanced on each Logs tap.
+func test_the_checkup_scene_supplies_the_logs_sheet() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	var packed: PackedScene = inst.logs_popup_scene
+	assert_not_null(packed, "ResultCheckup.tscn must assign logs_popup_scene")
+	assert_eq(packed.resource_path, _LOGS_SCENE, "Logs opens WeekLogsPopup")
+	inst.free()
+
+
+func test_the_buttons_read_as_the_mockup() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	assert_eq(inst.logs_button.text, "Logs", "the left button is Logs")
+	assert_eq(inst.next_button.text, "Selanjutnya", "the right one moves on")
+
+
+func test_the_buttons_wear_the_result_style() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCENE)
+	for n in ["LogsButton", "NextButton"]:
+		assert_true(src.contains(n), "%s is authored in the scene" % n)
+	assert_true(src.contains('theme_type_variation = &"ResultLogsButton"'),
+		"Logs wears the light-red variation")
+	assert_true(src.contains('theme_type_variation = &"ResultButton"'),
+		"Selanjutnya keeps the brown one")
+	assert_false(src.contains("theme_override_styles"),
+		"no stylebox override sneaks in with them")
+
+
+func test_logs_opens_one_sheet_with_the_weeks_history() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	var manager := StudentManager.new()
+	track(manager)
+	manager.minigame_history.assign([
+		{"day": "Senin", "category": "Akademis", "game_name": "Uji", "won": true},
+		{"day": "Rabu", "category": "Event", "game_name": "Hujan Deras", "won": true},
+	])
+	inst.initialize_checkup(manager)
+	inst.logs_button.pressed.emit()
+	inst.logs_button.pressed.emit()
+	var sheets: Array = []
+	for child in inst.get_children():
+		if child is WeekLogsPopup:
+			sheets.append(child)
+	assert_eq(sheets.size(), 1,
+		"Logs opens the sheet, and a second tap never stacks another")
+	if sheets.size() == 1:
+		assert_eq(sheets[0].row_count(), 2,
+			"every minigame and event of the week reaches the sheet")
+
+
+func test_the_rows_entrance_plays_on_the_first_open_only() -> void:
+	var inst := (load(_CHECKUP_SCENE) as PackedScene).instantiate()
+	inst.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(inst)
+	track(inst)
+	inst.initialize_checkup(null)
+	assert_false(inst._logs_seen, "nothing opened yet")
+	inst.open_logs()
+	assert_true(inst._logs_seen, "the first open latches")
+
+
+func test_the_script_no_longer_carries_the_tabs() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	for dead in ["enum Pane", "PANE_SLIDE_DISTANCE", "show_pane",
+			"_sync_tab_buttons", "_update_tab_counts", "tab_siswa",
+			"tab_riwayat", "history_pane", "pane_swipe"]:
+		assert_false(src.contains(dead),
+			"%s belongs to the retired tabs" % dead)
+
+
+## 2026-09-19 mockup pass: yellow banner, white tiles, outlined numbers.
+func test_recap_theme_matches_the_mockup() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var banner := theme.get_stylebox("panel", "RecapBannerPanel") as StyleBoxFlat
+	assert_eq(banner.bg_color, tokens.recap_banner_fill, "the banner is the mockup's yellow")
+	assert_eq(banner.border_width_left, 0, "and has no brown rim")
+	var tile := theme.get_stylebox("panel", "RecapPillPanel") as StyleBoxFlat
+	assert_eq(tile.bg_color, tokens.recap_tile_fill, "each tile is white")
+	assert_eq(tile.corner_radius_top_left, tokens.radius_md,
+		"a rounded square, not a capsule")
+	assert_eq(theme.get_constant("outline_size", "RecapPillValueLabel"),
+		tokens.text_outline_size, "the number carries the white rim")
+
+
+## Logs is a lighter red than the ribbon; Selanjutnya keeps the brown.
+func test_logs_wears_the_light_red_result_button() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	assert_true(theme.get_type_list().has("ResultLogsButton"),
+		"ResultLogsButton is a variation")
+	var sb := theme.get_stylebox("normal", "ResultLogsButton") as StyleBoxFlat
+	assert_eq(sb.bg_color, tokens.result_logs_fill, "its face is the light red")
+	assert_eq(theme.get_font_size("font_size", "ResultLogsButton"),
+		theme.get_font_size("font_size", "ResultButton"),
+		"same text size as its neighbour, so the row reads as a pair")
+
+const _RIBBON := "res://Assets/Images/DaySummary/title_weekly_results.png"
+
+
+func test_the_screen_opens_with_the_weekly_results_ribbon() -> void:
+	var screen: Control = load(_CHECKUP_SCENE).instantiate()
+	var ribbon := screen.get_node_or_null("Margin/VBox/TitleRibbon") as TextureRect
+	assert_not_null(ribbon, "the mockup's ribbon is authored")
+	if ribbon != null:
+		assert_eq(ribbon.texture.resource_path, _RIBBON, "wearing the WEEKLY RESULTS art")
+		assert_eq(ribbon.get_index(), 0, "it tops the column, above the banner")
+	assert_true(screen.get_node_or_null("Margin/VBox/HeaderPanel") == null,
+		"the old title and subtitle are replaced by the ribbon")
+	screen.free()
+
+
+func test_script_drops_the_header_text_exports() -> void:
+	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
+	for dead in ["header_title_text", "header_subtitle_text", "HeaderPanel"]:
+		assert_false(src.contains(dead), "%s left with the header" % dead)

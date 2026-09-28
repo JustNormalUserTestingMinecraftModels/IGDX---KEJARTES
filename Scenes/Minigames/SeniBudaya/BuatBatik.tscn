@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://cu0eett4rkbmx" path="res://Assets/Images/Textures/batik_fase3.png" id="9_5s4va"]
 [ext_resource type="Texture2D" uid="uid://d025rina4pbxc" path="res://Assets/Images/Textures/batik_fase4.png" id="10_p0yls"]
 [ext_resource type="Texture2D" uid="uid://crkkqt6hdug0q" path="res://Assets/Images/Textures/batik_fase5.png" id="11_bm7ql"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6wcp2"]
 bg_color = Color(1, 1, 1, 1)
@@ -92,6 +93,7 @@ layer2_pattern_texture = ExtResource("10_p0yls")
 layer3_pattern_texture = ExtResource("11_bm7ql")
 
 [node name="Background" type="TextureRect" parent="." unique_id=466903234]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

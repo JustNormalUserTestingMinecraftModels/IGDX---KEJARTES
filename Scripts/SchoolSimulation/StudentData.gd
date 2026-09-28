@@ -18,6 +18,8 @@ class_name StudentData
 ## file has no quirk-coefficient exports at all. Flagged for the user
 ## rather than silently changed.
 
+const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
+
 ## Shown on every card/list/summary that identifies this student. Also
 ## the Dictionary key StudentManager.write_back_to_gamestate() and
 ## SchoolDay's `embedded_widgets` use to find this student's widgets again.
@@ -28,7 +30,7 @@ class_name StudentData
 
 # Stats (0 to 100)
 ## Academic skill. Moved by Akademis schedule days, minigames and events;
-## compared against target_akademis1/2/3 to check pass/fail.
+## compared against target_akademis to check pass/fail.
 @export var akademis: float = 50.0
 ## Arts & culture skill. Same movement rules as akademis, via SeniBudaya.
 @export var seni_budaya: float = 50.0
@@ -65,16 +67,16 @@ class_name StudentData
 ## Academic pass threshold: the semester is cleared once akademis is at
 ## or above this. Set from GameState.initialize_grade_targets()'s
 ## per-grade uplift over the roster's base stats.
-@export var target_akademis1: float = 50.0
-## Same as target_akademis1, but for seni_budaya (the UI's "akademis2").
-@export var target_akademis2: float = 50.0
-## Same as target_akademis1, but for olahraga (the UI's "akademis3").
-@export var target_akademis3: float = 50.0
+@export var target_akademis: float = 50.0
+## Same as target_akademis, but for seni_budaya.
+@export var target_seni_budaya: float = 50.0
+## Same as target_akademis, but for olahraga.
+@export var target_olahraga: float = 50.0
 ## Currently unused by any pass/fail check -- energy and mood have no
-## semester target, only akademis1/2/3 do.
-@export var target_kepribadian1: float = 50.0
-## Currently unused; see target_kepribadian1.
-@export var target_kepribadian2: float = 50.0
+## semester target, only the three skills do.
+@export var target_mood: float = 50.0
+## Currently unused; see target_mood.
+@export var target_energy: float = 50.0
 ## One of Kutu Buku/Penyendiri/Semangat Juang/Penasaran/Biang Onar/Pekerja
 ## Keras, or empty. Selects which `Balance.SIFAT_*` bonuses this file's
 ## apply_* methods add -- see the header note above about where those
@@ -160,6 +162,10 @@ func apply_minigame_result(category: String, won: bool, score: int = -1, max_sco
 		stat_change = lose_stat
 		energy_change = lose_energy
 		mood_change = lose_mood
+
+	# Calon Asisten Einstein's claimed prize: a win's stat gain goes further.
+	if won and stat_change > 0:
+		stat_change = roundf(stat_change * AchievementsScript.multiplier("minigame_stat"))
 		
 	# Apply specialty multiplier to costs
 	var mult = get_category_efficiency_multiplier(category)

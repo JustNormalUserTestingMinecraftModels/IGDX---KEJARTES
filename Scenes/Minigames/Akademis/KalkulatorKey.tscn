@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://b6gae3mog63id"]
+
+[ext_resource type="Script" path="res://Scripts/Minigames/Akademis/KalkulatorKey.gd" id="1_3opwc"]
+[ext_resource type="Texture2D" uid="uid://c7xs2bxyk826r" path="res://Assets/Images/UI/Kalkulator/kalkulator_button.png" id="2_ft0iw"]
+
+[node name="KalkulatorKey" type="Button" unique_id=78758206]
+custom_minimum_size = Vector2(180, 180)
+focus_mode = 0
+mouse_default_cursor_shape = 2
+flat = true
+script = ExtResource("1_3opwc")
+
+[node name="Visual" type="Control" parent="." unique_id=1611413362]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Cap" type="TextureRect" parent="Visual" unique_id=1301303226]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_ft0iw")
+expand_mode = 1
+
+[node name="Digit" type="Label" parent="Visual" unique_id=571563837]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_type_variation = &"DisplayLabel"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1

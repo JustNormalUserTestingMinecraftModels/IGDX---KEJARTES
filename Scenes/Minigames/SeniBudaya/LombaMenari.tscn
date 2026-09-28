@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://32vps8suf6fa" path="res://Assets/Images/Textures/budaya_background.jpg" id="2_cwgfm"]
 [ext_resource type="PackedScene" uid="uid://cvcji5ahomyaj" path="res://Scenes/Minigames/SeniBudaya/DancerRig.tscn" id="3_cwgfm"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="9_g7u23"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 
 [node name="LombaMenari" type="Control" unique_id=125767780]
 layout_mode = 3
@@ -16,26 +17,20 @@ script = ExtResource("1_lombamenari")
 background_texture = ExtResource("2_cwgfm")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1772325959]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -276.0
+offset_top = -843.0
+offset_right = 320.0
+offset_bottom = 216.55566
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_cwgfm")
 expand_mode = 1
 stretch_mode = 6
-
-[node name="HitZone" type="TextureRect" parent="." unique_id=2036345891]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.3
-anchor_top = 0.72
-anchor_right = 0.7
-anchor_bottom = 0.88
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
 
 [node name="CharacterDisplay" parent="." unique_id=878431887 instance=ExtResource("3_cwgfm")]
 layout_mode = 1
@@ -47,8 +42,20 @@ anchor_bottom = 0.65
 offset_left = 7.639984
 offset_top = 11.0
 offset_right = 10.919983
+offset_bottom = 677.05005
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="HitZone" type="TextureRect" parent="." unique_id=2036345891]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.3
+anchor_top = 0.72
+anchor_right = 0.7
+anchor_bottom = 0.88
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
 
 [node name="NotesParent" type="Control" parent="." unique_id=1296841459]
 layout_mode = 1

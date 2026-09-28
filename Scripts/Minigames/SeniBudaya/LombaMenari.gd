@@ -38,6 +38,17 @@ enum NoteType {
 ## Same as left_swiped_texture, for TOP_RIGHT.
 @export var top_right_swiped_texture: Texture2D
 
+# ─── Timing ──────────────────────────────────────────────────────────────────
+@export_group("Timing")
+## How close to the hit zone's centre, in pixels, a matching swipe must land
+## to count at all -- a BAGUS hit. A note also stays swipeable until it is
+## this far past centre, so a late hit gets the same room as an early one.
+## Widened from 120 on 2026-09-15.
+@export_range(40.0, 400.0, 1.0) var bagus_window_px: float = 170.0
+## How close to centre, in pixels, a hit must land to be SEMPURNA. Keep it
+## below bagus_window_px. Widened from 45 on 2026-09-15.
+@export_range(10.0, 200.0, 1.0) var sempurna_window_px: float = 70.0
+
 # ─── Visual - Hit Zone ──────────────────────────────────────────────────────
 @export_group("Visual - Hit Zone")
 ## Sprite marking where notes must be swiped. Null draws hit_zone_color instead.
@@ -109,6 +120,36 @@ const BREATH_WIDTH_RATIO: float = -0.5
 ## applied at the call site: positive is screen-right.
 @export_range(0.0, 200.0, 1.0) var dancer_strike_offset: float = 36.0
 
+@export_group("Motion - Camera Follow")
+## How far the camera leans toward a successful arrow, in design pixels --
+## Friday Night Funkin's note camera. The stage (backdrop and dancer) slides
+## the opposite way on screen; the notes, hit zone and HUD hold still.
+## Negative flips it, so the stage slides with the arrow instead. The
+## Background must reach this far past the screen's edges, which
+## tests/test_dance_camera.gd checks against the scene.
+@export_range(-120.0, 120.0, 1.0) var camera_look_distance: float = 30.0
+## How quickly the camera catches up with its lean, per second: each second
+## closes 1 - e^-speed of the gap, at any frame rate. Lower floats like FNF's
+## camera; higher snaps.
+@export_range(0.5, 20.0, 0.1) var camera_follow_speed: float = 4.0
+## How long the camera holds a lean after a hit before drifting home. Each hit
+## restarts it, so a run of arrows keeps the camera out; a miss sends it home
+## at once.
+@export_range(0.0, 2.0, 0.01) var camera_hold_duration: float = 0.6
+
+## Which way each arrow points on screen, as a unit vector (up is -y). Reads
+## the player's swipe in _handle_swipe() and aims the camera's lean.
+const ARROW_DIRECTIONS: Dictionary = {
+	NoteType.LEFT: Vector2(-1, 0),
+	NoteType.RIGHT: Vector2(1, 0),
+	NoteType.TOP_LEFT: Vector2(-0.7071, -0.7071),
+	NoteType.TOP_RIGHT: Vector2(0.7071, -0.7071),
+}
+
+## The note camera's lean -- see DanceCamera.gd. Preloaded rather than given a
+## class_name, so a fresh checkout needs no global-class rescan to run.
+const DanceCamera := preload("res://Scripts/Minigames/SeniBudaya/DanceCamera.gd")
+
 
 # The dancer's art moved to DancerRig.tscn on 2026-09-07: three body
 # poses plus a head layer, mirrored for the left-hand arrows. The six
@@ -119,6 +160,23 @@ const BREATH_WIDTH_RATIO: float = -0.5
 const POINTS_PERFECT: int = 100
 ## Points a merely-good (matched but outside the tight window) hit is worth.
 const POINTS_GOOD: int = 50
+
+## How well a swipe landed. UPS is every failure: a note that slipped past,
+## or a swipe with no matching note inside bagus_window_px.
+enum Grade { UPS, BAGUS, SEMPURNA }
+
+## The word shown over the hit zone for each Grade.
+const GRADE_TEXT: Dictionary = {
+	Grade.UPS: "UPS!",
+	Grade.BAGUS: "BAGUS!",
+	Grade.SEMPURNA: "SEMPURNA!",
+}
+## The colour of that word: red, green, gold.
+const GRADE_COLOR: Dictionary = {
+	Grade.UPS: Color(1.0, 0.25, 0.25),
+	Grade.BAGUS: Color(0.2, 0.9, 0.4),
+	Grade.SEMPURNA: Color(1.0, 0.84, 0.0),
+}
 
 var score: int = 0
 var target_score: int = 1500
@@ -195,6 +253,12 @@ var dancer_base_scale: Vector2 = Vector2.ONE
 var dancer_rest_position: Vector2 = Vector2.ZERO
 ## Added to dancer_rest_position every frame -- the strike's sideways step.
 var dancer_base_position: Vector2 = Vector2.ZERO
+## The note camera. Its offset slides the stage -- backdrop and dancer --
+## every frame; see _process().
+var dance_camera: DanceCamera = DanceCamera.new()
+## The backdrop's rest position, captured once in _ready like the dancer's,
+## so the camera's slide offsets from it without fighting the anchor layout.
+var background_rest_position: Vector2 = Vector2.ZERO
 
 var hit_zone_base_scale: Vector2 = Vector2.ONE
 var hit_zone_base_rotation: float = 0.0
@@ -210,6 +274,7 @@ func _ready() -> void:
 	if character_display:
 		dancer_rest_position = character_display.position
 	if background_rect:
+		background_rest_position = background_rect.position
 		if background_texture:
 			background_rect.texture = background_texture
 		else:
@@ -293,12 +358,22 @@ func _process(delta: float) -> void:
 	if time_elapsed >= next_spawn_time:
 		_spawn_rhythm_beat()
 		
+	# The FNF note camera. It leans toward each successful arrow, and the
+	# stage -- backdrop and dancer -- slides the other way, as the world does
+	# under a panning camera. The notes, hit zone and HUD stay put, like FNF's
+	# separate HUD camera, so the target never shifts under a swiping thumb.
+	var stage_slide: Vector2 = -dance_camera.step(delta, camera_follow_speed)
+	if background_rect:
+		background_rect.position = background_rest_position + stage_slide
+
 	# The dancer breathes in every non-failed pose (Idle, Left, Right,
-	# Top-Left, Top-Right). The fail pose holds still by design.
-	if character_display and not is_dancer_failed:
-		character_display.scale = dancer_base_scale * _breath_scale(
-			time_elapsed, dancer_breath_rate, dancer_breath_amount)
-		character_display.position = dancer_rest_position + dancer_base_position
+	# Top-Left, Top-Right). The fail pose holds still by design, but she rides
+	# the camera in every pose, or she would drift against the backdrop.
+	if character_display:
+		if not is_dancer_failed:
+			character_display.scale = dancer_base_scale * _breath_scale(
+				time_elapsed, dancer_breath_rate, dancer_breath_amount)
+		character_display.position = dancer_rest_position + dancer_base_position + stage_slide
 
 	# The hit zone breathes on the same shape, a touch quicker, so it reads
 	# as alive without competing with the notes arriving into it.
@@ -326,7 +401,7 @@ func _process(delta: float) -> void:
 		# Miss if note moves past the hit zone center
 		var note_center = note.global_position + note.size / 2.0
 		var vec_from_target = note_center - hz_center
-		if vec_from_target.dot(move_dir) > 80.0:
+		if vec_from_target.dot(move_dir) > bagus_window_px:
 			missed_notes += 1
 			current_combo = 0
 			if score_hud:
@@ -336,7 +411,7 @@ func _process(delta: float) -> void:
 	for note in notes_to_remove:
 		active_notes.erase(note)
 		note.queue_free()
-		_show_hit_feedback("MISS!", Color.RED)
+		_show_hit_feedback(GRADE_TEXT[Grade.UPS], GRADE_COLOR[Grade.UPS])
 		_play_dancer_fail_motion()
 
 func _spawn_rhythm_beat() -> void:
@@ -474,13 +549,9 @@ func _handle_swipe(end_pos: Vector2) -> void:
 		
 	var swipe_dir = swipe_vec.normalized()
 	
-	# Direction vectors corresponding to LEFT, RIGHT, TOP_LEFT, TOP_RIGHT
-	var dirs = {
-		NoteType.LEFT: Vector2(-1, 0),
-		NoteType.RIGHT: Vector2(1, 0),
-		NoteType.TOP_LEFT: Vector2(-0.7071, -0.7071),
-		NoteType.TOP_RIGHT: Vector2(0.7071, -0.7071)
-	}
+	# The swipe is whichever arrow it lies closest to -- the same table that
+	# aims the camera's lean, so the two can never disagree on "up-right".
+	var dirs: Dictionary = ARROW_DIRECTIONS
 	
 	var best_type = NoteType.LEFT
 	var max_dot = -2.0
@@ -498,9 +569,7 @@ func _handle_swipe(end_pos: Vector2) -> void:
 func _evaluate_swipe(swipe_type: int) -> void:
 	_show_swipe_effect(swipe_type)
 	
-	if active_notes.is_empty():
-		_play_dancer_fail_motion()
-		return
+	# No matching note in range -- none on screen included -- grades UPS below.
 		
 	var hz_center = hit_zone.get_global_rect().get_center()
 	
@@ -516,34 +585,32 @@ func _evaluate_swipe(swipe_type: int) -> void:
 				min_dist = dist
 				best_note = note
 				
-	if best_note != null and min_dist < 120.0:
-		var required_type = best_note.get_meta("note_type")
-		if swipe_type == required_type:
-			if min_dist < 45.0:
-				score += POINTS_PERFECT
-				perfect_hits += 1
-				current_combo += 1
-				best_combo = maxi(best_combo, current_combo)
-				_show_hit_feedback("PERFECT!", Color(1.0, 0.84, 0.0))
-				_pulse_hit_zone(Color(1.0, 0.9, 0.2)) # Glowing gold/yellow pulse
-			else:
-				score += POINTS_GOOD
-				good_hits += 1
-				current_combo += 1
-				best_combo = maxi(best_combo, current_combo)
-				_show_hit_feedback("GOOD!", Color(0.2, 0.9, 0.4))
-				_pulse_hit_zone(Color(0.3, 1.0, 0.5)) # Glowing green pulse
-			_play_dancer_motion(swipe_type)
-			active_notes.erase(best_note)
-			_animate_swiped_note(best_note, swipe_type)
-		else:
-			_show_hit_feedback("WRONG SWIPE!", Color(0.9, 0.3, 0.3))
+	var grade: Grade = Grade.UPS
+	if best_note != null:
+		grade = grade_for_distance(min_dist, sempurna_window_px, bagus_window_px)
+
+	match grade:
+		Grade.SEMPURNA:
+			score += POINTS_PERFECT
+			perfect_hits += 1
+			_pulse_hit_zone(Color(1.0, 0.9, 0.2)) # Glowing gold/yellow pulse
+		Grade.BAGUS:
+			score += POINTS_GOOD
+			good_hits += 1
+			_pulse_hit_zone(Color(0.3, 1.0, 0.5)) # Glowing green pulse
+		Grade.UPS:
 			_pulse_hit_zone(Color(0.9, 0.2, 0.2)) # Failed red pulse
 			_play_dancer_fail_motion()
-	else:
-		_show_hit_feedback("TOO EARLY!", Color(1.0, 0.6, 0.2))
-		_pulse_hit_zone(Color(1.0, 0.55, 0.15)) # Orange alert pulse
-		_play_dancer_fail_motion()
+	_show_hit_feedback(GRADE_TEXT[grade], GRADE_COLOR[grade])
+
+	# A UPS swipe keeps the combo, as TOO EARLY always did; only a note that
+	# slips past the window resets it (_process()).
+	if grade != Grade.UPS:
+		current_combo += 1
+		best_combo = maxi(best_combo, current_combo)
+		_play_dancer_motion(swipe_type)
+		active_notes.erase(best_note)
+		_animate_swiped_note(best_note, swipe_type)
 			
 	if score_hud:
 		score_hud.set_score(score)
@@ -551,6 +618,18 @@ func _evaluate_swipe(swipe_type: int) -> void:
 
 	if score >= target_score:
 		win_game()
+
+## The grade a matching swipe earns `distance` pixels from the hit zone's
+## centre: SEMPURNA inside `sempurna_px`, BAGUS inside `bagus_px`, UPS beyond.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func grade_for_distance(distance: float, sempurna_px: float, bagus_px: float) -> Grade:
+	if distance < sempurna_px:
+		return Grade.SEMPURNA
+	if distance < bagus_px:
+		return Grade.BAGUS
+	return Grade.UPS
+
 
 ## Note accuracy: points earned as a fraction of the points that were actually
 ## on the table. An all-PERFECT routine rates 1.0; a routine that only ever
@@ -732,8 +811,19 @@ func _set_dancer_idle() -> void:
 	character_display.set_pose(DancerRig.Pose.IDLE, false)
 	character_display.set_failed(false)
 
+## Where the camera leans for a successful `swipe_type`: `distance` pixels the
+## way the arrow points, a diagonal as far as a side arrow.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func _camera_lean_for(swipe_type: int, distance: float) -> Vector2:
+	var direction: Vector2 = ARROW_DIRECTIONS[swipe_type]
+	return direction * distance
+
+
 func _play_dancer_motion(swipe_type: int) -> void:
 	is_dancer_failed = false
+	# The camera follows her into the move, as FNF's follows the singer.
+	dance_camera.lean(_camera_lean_for(swipe_type, camera_look_distance), camera_hold_duration)
 	
 	if not character_display:
 		return
@@ -789,6 +879,8 @@ func _play_dancer_motion(swipe_type: int) -> void:
 
 func _play_dancer_fail_motion() -> void:
 	is_dancer_failed = true
+	# A miss drops the pose, so the camera stops leaning into it.
+	dance_camera.recenter()
 	
 	if not character_display:
 		return
@@ -797,7 +889,7 @@ func _play_dancer_fail_motion() -> void:
 		dancer_tween.kill()
 
 	dancer_base_position = Vector2.ZERO
-	character_display.position = dancer_rest_position
+	character_display.position = dancer_rest_position - dance_camera.offset
 
 	# No fail pose was drawn for this character. A miss is the idle pose
 	# tinted red, plus the shake-and-droop below.

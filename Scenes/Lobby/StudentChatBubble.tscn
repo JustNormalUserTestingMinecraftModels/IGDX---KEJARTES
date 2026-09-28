@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://u2q3sgmvf5w3"]
+
+[ext_resource type="Script" uid="uid://c1qstkcw3ukbv" path="res://Scripts/Lobby/StudentChatBubble.gd" id="1_wa0fr"]
+[ext_resource type="Texture2D" uid="uid://chs5y1k0f18x2" path="res://Assets/Images/Shop/UI/chat_bubble_tail.svg" id="2_ot30v"]
+
+[node name="StudentChatBubble" type="Control" unique_id=1758543249]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 560.0
+offset_bottom = 274.0
+mouse_filter = 2
+script = ExtResource("1_wa0fr")
+
+[node name="Body" type="PanelContainer" parent="." unique_id=478774687]
+layout_mode = 1
+offset_right = 560.0
+offset_bottom = 200.0
+mouse_filter = 2
+theme_type_variation = &"StudentChatBubble"
+
+[node name="Text" type="Label" parent="Body" unique_id=787804766]
+layout_mode = 2
+theme_type_variation = &"StudentChatText"
+text = "Pak, aku punya ide gambar baru!"
+vertical_alignment = 1
+autowrap_mode = 3
+max_lines_visible = 3
+
+[node name="Tail" type="TextureRect" parent="." unique_id=518051477]
+layout_mode = 1
+offset_left = 488.0
+offset_top = 196.0
+offset_right = 532.0
+offset_bottom = 274.0
+mouse_filter = 2
+texture = ExtResource("2_ot30v")
+expand_mode = 1

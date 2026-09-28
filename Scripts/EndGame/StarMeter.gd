@@ -2,7 +2,7 @@
 class_name StarMeter
 extends HBoxContainer
 
-## The run's 3-star meter: three TextureProgressBars wearing icon_star.svg,
+## The run's 3-star meter: three TextureProgressBars wearing star.png,
 ## filled left to right so a value of 1.75 reads as one full star, one
 ## three-quarter star, one empty. Continuous by design -- every cleared
 ## stat adds one equal share, and StatCheck animates the meter to the

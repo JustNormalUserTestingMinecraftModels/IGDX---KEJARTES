@@ -42,16 +42,17 @@ const _CATEGORY_COLORS := {
 }
 ## Category -> icon texture. Replaces the emoji glyph map the shipped card
 ## used; the project banned emoji as UI iconography during the 2026-09-02 pass.
+const _SCORE_ICON: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_skor.svg")
 const _CATEGORY_ICON_PATHS := {
-	"Akademis": "res://Assets/Images/UI/Placeholders/icon_akademis.svg",
-	"SeniBudaya": "res://Assets/Images/UI/Placeholders/icon_seni.svg",
-	"Olahraga": "res://Assets/Images/UI/Placeholders/icon_olahraga.svg",
+	"Akademis": preload("res://Assets/Images/UI/Placeholders/icon_akademis.svg"),
+	"SeniBudaya": preload("res://Assets/Images/UI/Placeholders/icon_seni.svg"),
+	"Olahraga": preload("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"),
 }
 ## Icon for a category the map above does not know.
-const _CATEGORY_ICON_FALLBACK := "res://Assets/Images/UI/Placeholders/icon_poin.svg"
+const _CATEGORY_ICON_FALLBACK: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_poin.svg")
 ## The two need-delta rows' icons.
-const _ENERGY_ICON := "res://Assets/Images/UI/Placeholders/icon_energy.svg"
-const _MOOD_ICON := "res://Assets/Images/UI/Placeholders/icon_mood.svg"
+const _ENERGY_ICON: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_energy.svg")
+const _MOOD_ICON: Texture2D = preload("res://Assets/Images/UI/Placeholders/icon_mood.svg")
 
 ## Per-star pop scale, ascending. The shipped reveal popped all three to the
 ## same 1.18, so the third star landed no harder than the first and the whole
@@ -60,9 +61,6 @@ const STAR_POP_SCALES: Array[float] = [1.14, 1.22, 1.34]
 ## Seconds each star holds at its pop scale before settling. Ascending for the
 ## same reason.
 const STAR_HOLD_TIMES: Array[float] = [0.06, 0.10, 0.18]
-## Stars at or above which the card fires its screen-wide confetti. Three: a
-## two-star finish staying quiet is what makes three mean something.
-const CONFETTI_STAR_THRESHOLD: int = 3
 ## Intended seconds for the score readout's tally-up, kept for interface
 ## completeness -- currently unused. Juice.count_up() (the tally call this
 ## file actually makes) has no duration parameter; its animation length is
@@ -92,14 +90,18 @@ const SCORE_COUNT_TIME: float = 0.6
 @onready var mood_delta_icon: TextureRect = $Dim/Center/Card/Layout/DeltaPanel/DeltaList/MoodDeltaRow/MoodDeltaIcon
 @onready var continue_button_center: CenterContainer = $Dim/Center/Card/Layout/ContinueButtonCenter
 @onready var continue_button: Button = $Dim/Center/Card/Layout/ContinueButtonCenter/ContinueButton
-@onready var confetti: RewardParticles = $Dim/ResultConfetti
+## The three placed fireworks, one fired per star as it lands. The white
+## full-house confetti rain that used to fall beside them was retired on
+## 2026-09-25. These replace the star-shaped spray ResultStar used to mount
+## into its own BurstSlot.
+@onready var fireworks: ConfettiFireworks = $Dim/ConfettiFireworks
 
 ## Cached so play()'s reveal sequence can skip hidden rows in the shipped
 ## order without re-deriving visibility.
 var _dim_target_color: Color
 var _is_win: bool = false
-## How many stars play() should land -- read by its star loop and by the
-## confetti gate. Set fresh on every configure() call.
+## How many stars play() should land -- read by its star loop. Set fresh on
+## every configure() call.
 var _star_count: int = 0
 ## What the score readout counts up to. Set fresh on every configure() call.
 var _score_target: int = 0
@@ -171,7 +173,7 @@ func configure(is_win: bool, stars: int, score: int, max_score: int,
 
 	# ── Score row ──
 	score_panel.visible = score >= 0 and max_score > 0
-	score_icon.texture = load("res://Assets/Images/UI/Placeholders/icon_skor.svg")
+	score_icon.texture = _SCORE_ICON
 	# Seeded at zero so play() has something to count up from -- the "0" is
 	# never actually seen, since the whole panel fades in already ticking.
 	score_value_label.text = "0 / %d" % max_score
@@ -182,15 +184,15 @@ func configure(is_win: bool, stars: int, score: int, max_score: int,
 	# ── Category badge ──
 	category_badge.visible = category != ""
 	if category != "":
-		badge_icon.texture = load(_CATEGORY_ICON_PATHS.get(category, _CATEGORY_ICON_FALLBACK))
+		badge_icon.texture = _CATEGORY_ICON_PATHS.get(category, _CATEGORY_ICON_FALLBACK)
 		badge_icon.self_modulate = _CATEGORY_COLORS.get(category, Color(0.3, 0.3, 0.4))
 		category_badge_label.text = category
 	category_badge.modulate.a = 0.0
 
 	# ── Stat deltas ──
-	stat_delta_icon.texture = load(_CATEGORY_ICON_PATHS.get(category, _CATEGORY_ICON_FALLBACK))
-	energy_delta_icon.texture = load(_ENERGY_ICON)
-	mood_delta_icon.texture = load(_MOOD_ICON)
+	stat_delta_icon.texture = _CATEGORY_ICON_PATHS.get(category, _CATEGORY_ICON_FALLBACK)
+	energy_delta_icon.texture = _ENERGY_ICON
+	mood_delta_icon.texture = _MOOD_ICON
 	_configure_delta_label(stat_delta_label, stat_delta, _stat_delta_suffix(category))
 	_configure_delta_label(energy_delta_label, energy_delta, "Energy")
 	_configure_delta_label(mood_delta_label, mood_delta, "Mood")
@@ -221,6 +223,10 @@ func _stat_delta_suffix(category: String) -> String:
 ## just the label) when delta is exactly 0.0, so a hidden row takes its icon
 ## with it -- the shipped rule is that a student who gained nothing in that
 ## stat gets no row for it, not a "+0" row.
+##
+## A shown row is not faded here: play() fades all three in together through
+## delta_panel, their one fade slot. A row zeroed on its own never came back,
+## and until 2026-09-11 the panel faded in empty.
 func _configure_delta_label(label: Label, delta: float, suffix: String) -> void:
 	var row: Control = label.get_parent()
 	row.visible = delta != 0.0
@@ -228,7 +234,6 @@ func _configure_delta_label(label: Label, delta: float, suffix: String) -> void:
 		return
 	label.text = "%s%d %s" % ["+" if delta > 0 else "", int(delta), suffix]
 	label.self_modulate = Color(0.3, 0.95, 0.5) if delta > 0 else Color(0.95, 0.35, 0.35)
-	row.modulate.a = 0.0
 
 
 ## Run the full reveal -> wait for the player -> fade out -> free sequence.
@@ -250,7 +255,10 @@ func play() -> void:
 	tw_card.tween_property(card, "scale", Vector2(1.0, 1.0), 0.35)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await tw_card.finished
-	AudioDirector.play_sfx(&"result_fanfare")
+	if _is_win:
+		RewardFeedback.play(&"minigame_win", self)
+	else:
+		AudioDirector.play_sfx(&"result_fanfare")
 
 	# 3. Title fades in
 	var tw_title := get_tree().create_tween()
@@ -271,6 +279,13 @@ func play() -> void:
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		await tw_star.finished
 		star.celebrate(star_index)
+		# One firework per EARNED star, at the burst's own authored place on
+		# the screen rather than behind the star. star_row always holds three
+		# children, so the index is never out of range and the gate has to be
+		# the star count: a one- or two-star finish fires a short volley and
+		# the remaining bursts stay quiet.
+		if star_index < _star_count:
+			fireworks.fire_burst(star_index)
 		await get_tree().create_timer(
 			STAR_HOLD_TIMES[mini(star_index, STAR_HOLD_TIMES.size() - 1)]).timeout
 		var tw_settle := get_tree().create_tween()
@@ -279,10 +294,6 @@ func play() -> void:
 			.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
 		await tw_settle.finished
 		star_index += 1
-
-	# 4b. A full house, and only a full house, gets the confetti.
-	if _star_count >= CONFETTI_STAR_THRESHOLD:
-		confetti.fire()
 
 	# 5. Name, score, badge and deltas fade in in shipped order, skipping
 	# whichever boxes configure() left hidden. The three delta rows share

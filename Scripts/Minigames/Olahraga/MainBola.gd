@@ -119,6 +119,18 @@ extends BaseMinigame
 		if is_inside_tree():
 			_setup_layout()
 
+# ─── Target & keeper ─────────────────────────────────────────────────────────
+@export_group("Target & Keeper")
+## Highest a respawned target box's centre may sit, as a fraction of the goal
+## mouth's height measured down from the crossbar.
+@export_range(0.0, 1.0, 0.01) var target_band_top_frac: float = 0.2
+## Lowest a respawned target box's centre may sit, same measure. Keep the box
+## inside the mouth: its half-height must fit below this line.
+@export_range(0.0, 1.0, 0.01) var target_band_bottom_frac: float = 0.6
+## Where an off-target shot meets the keeper, as a fraction of his sprite
+## height up from his feet -- his chest, so the ball lands in his hands.
+@export_range(0.0, 1.0, 0.01) var keeper_catch_height_frac: float = 0.55
+
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
 ## Assign a custom Font resource. Leave null to use default theme font.
@@ -133,14 +145,38 @@ extends BaseMinigame
 @export var hint_color: Color       = Color(1, 1, 1, 0.65)
 
 # ─── Constants ───────────────────────────────────────────────────────────────
-const MAX_ATTEMPTS: int = 8
+## Shots a game gives, by difficulty. SchoolDay passes
+## clampi(current_grade - 6, 1, 3), so 1 is Kelas 7, 2 Kelas 8, 3 Kelas 9.
+## No shot is ever refunded.
+const ATTEMPTS_BY_DIFFICULTY: Dictionary = {1: 8, 2: 10, 3: 10}
+## Goals needed to win, by difficulty, as Vector2i(min, max) -- both
+## inclusive; each game rolls one. The max must leave at least two shots to
+## miss, which tests/test_main_bola_targets.gd enforces. Kelas 9 asks what
+## Kelas 8 does: its target box starts faster (goalie_speed_mult 1.5) and its
+## clock is shorter (30 s x Balance.MINIGAME_WAKTU_SKALA_KELAS_9 = 18 s), and
+## that clock, not the shot count, caps how many shots it has time for.
+const TARGET_RANGE_BY_DIFFICULTY: Dictionary = {
+	1: Vector2i(4, 6),
+	2: Vector2i(6, 8),
+	3: Vector2i(6, 8),
+}
 const TIMER_DURATION: float = 60.0
 const GOALIE_SPEED_INCREASE: float = 0.15  # +15% per goal
+## Seconds the ball takes to reach the goal. The keeper's dive is capped at
+## this, so he always gets there with the ball.
+const BALL_FLIGHT_SECONDS: float = 0.40
+## Draws pick_respawn() makes for a spot far enough from the last one.
+const RESPAWN_TRIES: int = 24
+## Seconds the respawned target box takes to pop back in.
+const TARGET_POP_SECONDS: float = 0.25
 
 # ─── Game State ──────────────────────────────────────────────────────────────
 var score: int = 0
 var target_score: int = 5
-var attempts_left: int = MAX_ATTEMPTS
+## Shots this game started with: attempts_for() at its difficulty. Shots
+## taken count down from this, not from a fixed number.
+var max_attempts: int = attempts_for(1)
+var attempts_left: int = attempts_for(1)
 var is_game_over: bool = false
 var is_resolving: bool = false   # true while ball/goalie animation plays
 var goalie_speed_mult: float = 1.0
@@ -166,6 +202,13 @@ var target_speed: float = 130.0
 var target_w: float     = 70.0
 var target_h: float     = 70.0
 var pulse_time: float   = 0.0
+## The target box's centre height. 35% down the mouth until the first goal;
+## each goal respawns it inside the target band.
+var target_y_pos: float = 0.0
+## Pop-in multiplier on the target box's scale, tweened 0 -> 1 on respawn.
+var target_pop: float = 1.0
+## Draws respawn spots. Its own generator, so pick_respawn() can be seeded.
+var _rng := RandomNumberGenerator.new()
 
 # ─── GFX children ────────────────────────────────────────────────────────────
 var goalie_gfx: TextureRect = null
@@ -182,6 +225,8 @@ var goal_right_x: float
 var goal_top_y:   float
 var goal_bot_y:   float
 var goalie_half_w: float
+## The keeper's sprite height, for keeper_catch_point().
+var goalie_h: float
 ## The Goalie's authored position in design space -- the project's
 ## 1080x1920 base size -- wherever he was dragged in the 2D editor. Captured
 ## at the first in-game layout, before anything moves him.
@@ -192,9 +237,11 @@ var _goalie_design_captured: bool = false
 # ─── Lifecycle ───────────────────────────────────────────────────────────────
 func _ready() -> void:
 	super._ready()
+	_rng.randomize()
 
-	target_score = randi() % 3 + 4   # 4 – 6 goals to win
-	attempts_left = MAX_ATTEMPTS
+	target_score = roll_target(1)
+	max_attempts = attempts_for(1)
+	attempts_left = max_attempts
 
 	_setup_layout()
 	_setup_field_markings()
@@ -208,23 +255,53 @@ func _ready() -> void:
 ## Re-lay out whenever the root is resized, in the editor as well as in
 ## game. NOTIFICATION_RESIZED can arrive before _ready(), while the @onready
 ## node references are still null; is_node_ready() skips that one.
+## Chained explicitly: BaseMinigame's _notification answers the Android back
+## press by opening the pause menu, and this override must not be the reason a
+## player cannot leave Main Bola. GDScript does walk the script chain for
+## _notification, so this is belt and braces rather than a fix -- but the back
+## button is the kind of thing nobody notices is broken until a player
+## complains, and one call costs nothing.
 func _notification(what: int) -> void:
+	super._notification(what)
 	if what == NOTIFICATION_RESIZED and is_node_ready():
 		_setup_layout()
+
+## Shots a game at this difficulty gives. A difficulty outside 1-3 plays as
+## the nearest end, as start_minigame() has always treated one.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func attempts_for(game_difficulty: int) -> int:
+	return ATTEMPTS_BY_DIFFICULTY[clampi(game_difficulty, 1, 3)]
+
+
+## The goal target's range at this difficulty: Vector2i(min, max), inclusive.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func target_range_for(game_difficulty: int) -> Vector2i:
+	return TARGET_RANGE_BY_DIFFICULTY[clampi(game_difficulty, 1, 3)]
+
+
+## One goal target for a game at this difficulty, drawn uniformly from
+## target_range_for().
+##
+## Affects: the global random state only.
+static func roll_target(game_difficulty: int) -> int:
+	var targets := target_range_for(game_difficulty)
+	return randi_range(targets.x, targets.y)
+
 
 func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 	super.start_minigame(game_difficulty, time_limit)
 	if difficulty == 2:
-		target_score = randi() % 3 + 6
 		goalie_speed_mult = 1.25
 	elif difficulty >= 3:
-		target_score = randi() % 3 + 8
 		goalie_speed_mult = 1.50
 	else:
-		target_score = randi() % 3 + 4
 		goalie_speed_mult = 1.0
+	target_score = roll_target(difficulty)
 	score = 0
-	attempts_left = MAX_ATTEMPTS
+	max_attempts = attempts_for(difficulty)
+	attempts_left = max_attempts
 	if score_hud:
 		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), target_score)
 	_update_hud()
@@ -276,9 +353,9 @@ func _process(delta: float) -> void:
 	if target_box_node:
 		# Scale pulse for cute urgency
 		var scale_pulse: float = 1.0 + sin(pulse_time * 1.5) * 0.08
-		target_box_node.scale = Vector2(scale_pulse, scale_pulse)
+		target_box_node.scale = Vector2(scale_pulse, scale_pulse) * target_pop
 		target_box_node.pivot_offset = target_box_node.size * 0.5
-		target_box_node.position = Vector2(target_x_pos - target_w * 0.5, goal_top_y + (goal_bot_y - goal_top_y) * 0.35 - target_h * 0.5)
+		target_box_node.position = Vector2(target_x_pos - target_w * 0.5, target_y_pos - target_h * 0.5)
 		target_box_node.queue_redraw()
 
 
@@ -319,6 +396,7 @@ func _setup_layout() -> void:
 	goal_top_y   = goal_top
 	goal_bot_y   = goal_top + goal_height
 	target_x_pos = sw * 0.5
+	target_y_pos = goal_top + goal_height * 0.35
 	target_w     = sw * target_size_frac
 	target_h     = target_w
 
@@ -373,6 +451,7 @@ func _setup_layout() -> void:
 	var g_width: float  = sw * goalie_width_frac
 	var g_height: float = sh * goalie_height_frac
 	goalie_half_w = g_width * 0.5
+	goalie_h = g_height
 
 	if goalie:
 		_place_goalie()
@@ -568,6 +647,9 @@ func _end_swipe(end_pos: Vector2) -> void:
 # ─── Shoot ───────────────────────────────────────────────────────────────────
 func _shoot_ball(swipe_vec: Vector2) -> void:
 	is_resolving = true
+	# Four kick samples picked at random. is_resolving guards re-entry, so
+	# one swipe is one kick.
+	AudioDirector.play_sfx_variant(&"ball_kick")
 
 	# Deduct attempt & update HUD
 	attempts_left -= 1
@@ -597,38 +679,34 @@ func _shoot_ball(swipe_vec: Vector2) -> void:
 	else:
 		target_x = calculated_target_x
 
-	var target_y: float      = goal_top_y + (goal_bot_y - goal_top_y) * 0.45
+	var target_y: float = target_y_pos if aimed_at_target else goal_top_y + (goal_bot_y - goal_top_y) * 0.45
 	var ball_target: Vector2 = Vector2(target_x, target_y)
 
 	# ── Goalie dive logic ────────────────────────────────────
 	var dive_dir: int
+	var goalie_tx: float
 	if aimed_at_target:
 		# Goalkeeper dives AWAY from the target box so player gets rewarded!
 		if target_x >= goalie_base_pos.x:
 			dive_dir = -1  # target is on right -> keeper dives left
 		else:
 			dive_dir = 1   # target is on left -> keeper dives right
-	else:
-		# Player did NOT hit/aim at target:
-		# Keeper predicts shot location and moves to block it!
-		if absf(target_x - goalie_base_pos.x) < goalie_half_w * 0.8:
-			# Swiped straight down center: keeper stays/dives slightly to block center shot!
-			dive_dir = 0
-		elif target_x > goalie_base_pos.x:
-			dive_dir = 1   # keeper dives right to block
-		else:
-			dive_dir = -1  # keeper dives left to block
-
-	# How far the goalie dives
-	var dive_dist: float = clampf(sw * 0.28 * goalie_speed_mult, sw * 0.18, sw * 0.45)
-	var goalie_tx: float
-	if dive_dir == 0:
-		# Stay in center to block middle shot!
-		goalie_tx = goalie_base_pos.x
-	else:
+		var dive_dist: float = clampf(sw * 0.28 * goalie_speed_mult, sw * 0.18, sw * 0.45)
 		goalie_tx = clampf(goalie_base_pos.x + float(dive_dir) * dive_dist, goal_left_x + 5.0, goal_right_x - 5.0)
+	else:
+		# Off target: the keeper goes exactly where the ball is going and the
+		# ball ends in his hands -- every off-target shot is a save.
+		goalie_tx = clampf(target_x, goal_left_x + 5.0, goal_right_x - 5.0)
+		ball_target = keeper_catch_point(goalie_tx)
+		if absf(goalie_tx - goalie_base_pos.x) < goalie_half_w * 0.8:
+			dive_dir = 0   # straight at him: he stands and takes it
+		elif goalie_tx > goalie_base_pos.x:
+			dive_dir = 1
+		else:
+			dive_dir = -1
 
-	var dive_time: float = clampf(0.35 / goalie_speed_mult, 0.18, 0.40)
+
+	var dive_time: float = clampf(0.35 / goalie_speed_mult, 0.18, BALL_FLIGHT_SECONDS)
 
 	# ── Set goalie pose ──────────────────────────────────────
 	# One dive sprite serves both sides: flip_h mirrors it. The XOR
@@ -644,11 +722,11 @@ func _shoot_ball(swipe_vec: Vector2) -> void:
 
 	# ── Animate ball → goal ──────────────────────────────────
 	var ball_tween: Tween = create_tween()
-	ball_tween.tween_property(ball, "global_position", ball_target, 0.40)\
+	ball_tween.tween_property(ball, "global_position", ball_target, BALL_FLIGHT_SECONDS)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 	# Ball scales down as it "flies away" (perspective feel)
-	ball_tween.parallel().tween_property(ball, "scale", Vector2(0.45, 0.45), 0.40)\
+	ball_tween.parallel().tween_property(ball, "scale", Vector2(0.45, 0.45), BALL_FLIGHT_SECONDS)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 	# ── Animate goalie dive simultaneously ───────────────────
@@ -659,6 +737,12 @@ func _shoot_ball(swipe_vec: Vector2) -> void:
 	# Wait for ball to arrive, then resolve
 	await ball_tween.finished
 	_resolve_shot(ball_target, goalie_tx)
+
+
+## Where an off-target shot meets the keeper standing at `keeper_x`: his
+## chest, keeper_catch_height_frac of his height up from his feet.
+func keeper_catch_point(keeper_x: float) -> Vector2:
+	return Vector2(keeper_x, goalie_base_pos.y - goalie_h * keeper_catch_height_frac)
 
 
 # ─── Target Box Setup & Custom Drawing (Pou Style Cute Glowing Target) ─────────
@@ -736,12 +820,52 @@ func _on_goal_scored() -> void:
 	# The HUD's own pop+burst on set_score() already gives this moment its
 	# feedback; this pause is just pacing before the shot resets.
 	await get_tree().create_timer(0.35).timeout
+	_respawn_target()
 
 	_reset_shot()
 
 	if score >= target_score and not is_game_over:
 		is_game_over = true
 		win_game()
+
+
+## Move the target box to a new spot in the target band, at least one box
+## width from where it was, sliding a random way, and pop it back in.
+##
+## Affects: target_x_pos, target_y_pos, target_dir, target_pop.
+func _respawn_target() -> void:
+	var mouth_h: float = goal_bot_y - goal_top_y
+	var margin: float = target_w * 0.5 + 10.0
+	var min_pos := Vector2(goal_left_x + margin, goal_top_y + mouth_h * target_band_top_frac)
+	var max_pos := Vector2(goal_right_x - margin, goal_top_y + mouth_h * target_band_bottom_frac)
+	var next := pick_respawn(Vector2(target_x_pos, target_y_pos), min_pos, max_pos, target_w, _rng)
+	target_x_pos = next.x
+	target_y_pos = next.y
+	target_dir = 1.0 if _rng.randf() < 0.5 else -1.0
+	target_pop = 0.0
+	create_tween().tween_property(self, "target_pop", 1.0, TARGET_POP_SECONDS) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+## A new spot for the target box: uniform inside min_pos..max_pos and at
+## least `min_gap` from `prev`. Tries RESPAWN_TRIES draws; when none is far
+## enough (a band too small for the gap) it keeps the farthest draw, so the
+## box always moves as far as the room allows.
+##
+## Affects: `rng`'s state only. Static so a test can call it with no instance.
+static func pick_respawn(prev: Vector2, min_pos: Vector2, max_pos: Vector2,
+		min_gap: float, rng: RandomNumberGenerator) -> Vector2:
+	var best := prev
+	var best_dist := -1.0
+	for i in range(RESPAWN_TRIES):
+		var p := Vector2(rng.randf_range(min_pos.x, max_pos.x), rng.randf_range(min_pos.y, max_pos.y))
+		var d := p.distance_to(prev)
+		if d >= min_gap:
+			return p
+		if d > best_dist:
+			best_dist = d
+			best = p
+	return best
 
 
 # ─── Shot missed / blocked ───────────────────────────────────────────────────
@@ -781,9 +905,9 @@ func _reset_shot() -> void:
 
 
 ## Shot accuracy: goals scored per shot taken. Reaching the goal target with
-## every shot on target is a three-star run; grinding it out over all eight
-## attempts is not. Returns STAR_RATIO_UNKNOWN before the first shot, so a win
-## that somehow took no shots is not rated a zero.
+## every shot on target is a three-star run; grinding it out over every shot
+## the game gave is not. Returns STAR_RATIO_UNKNOWN before the first shot, so
+## a win that somehow took no shots is not rated a zero.
 ##
 ## Affects: nothing. Pure. Static so a test can call it with no instance.
 static func _shot_accuracy_ratio(score: int, shots_taken: int) -> float:
@@ -796,7 +920,7 @@ static func _shot_accuracy_ratio(score: int, shots_taken: int) -> float:
 ##
 ## Affects: nothing. Pure. Read by BaseMinigame._show_result_overlay().
 func get_star_ratio() -> float:
-	return _shot_accuracy_ratio(score, MAX_ATTEMPTS - attempts_left)
+	return _shot_accuracy_ratio(score, max_attempts - attempts_left)
 
 
 # ─── Override lose_game to bypass BaseMinigame's score-check shortcut ────────

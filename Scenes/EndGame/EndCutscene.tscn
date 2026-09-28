@@ -2,17 +2,9 @@
 
 [ext_resource type="Script" uid="uid://bbrtmexihtc1" path="res://Scripts/EndGame/EndCutscene.gd" id="1_iwdes"]
 [ext_resource type="Texture2D" uid="uid://cxwh4x533f1rc" path="res://Assets/Images/UI/Placeholders/stamp_lulus.svg" id="3_krlxx"]
-[ext_resource type="Texture2D" uid="uid://bnhbfedvxb2kd" path="res://Assets/Images/CG/cg_lose.jpg" id="4_cpj81"]
+[ext_resource type="PackedScene" uid="uid://dfh48usjg5eib" path="res://Scenes/EndGame/WinStage.tscn" id="4_iwdes"]
 [ext_resource type="Texture2D" uid="uid://bbxhfytf5wqc5" path="res://Assets/Images/UI/Placeholders/stamp_gagal.svg" id="5_qxnts"]
-[ext_resource type="Texture2D" uid="uid://cuyc81is5j5cw" path="res://Assets/Images/CG/Win/win_doni.png" id="6_7b4g4"]
-[ext_resource type="Texture2D" uid="uid://56hidkmdh1e" path="res://Assets/Images/CG/Win/win_background.png" id="6_cpj81"]
 [ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="6_el241"]
-[ext_resource type="Texture2D" uid="uid://vy7mt58k6soa" path="res://Assets/Images/CG/Win/win_andi.png" id="7_d6bki"]
-[ext_resource type="Texture2D" uid="uid://v5uiy2v54wcr" path="res://Assets/Images/UI/Placeholders/shadow_ellipse.png" id="7_qxnts"]
-[ext_resource type="Texture2D" uid="uid://b2l4voypyvro" path="res://Assets/Images/CG/Win/win_citra.png" id="8_aldim"]
-[ext_resource type="Texture2D" uid="uid://brw8ol65pyxih" path="res://Assets/Images/CG/Win/win_shinta.png" id="9_le266"]
-[ext_resource type="Texture2D" uid="uid://dvgv63qybi5yj" path="res://Assets/Images/CG/Win/win_marcel.png" id="10_c4p38"]
-[ext_resource type="Texture2D" uid="uid://bhu1aabi2ko2f" path="res://Assets/Images/CG/Win/win_thea.png" id="11_d01gn"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_krlxx"]
 shader = ExtResource("6_el241")
@@ -27,99 +19,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_iwdes")
-win_backdrop = ExtResource("6_cpj81")
 win_badge = ExtResource("3_krlxx")
-lose_backdrop = ExtResource("4_cpj81")
 lose_badge = ExtResource("5_qxnts")
-win_splash_doni = ExtResource("6_7b4g4")
-win_splash_andi = ExtResource("7_d6bki")
-win_splash_citra = ExtResource("8_aldim")
-win_splash_shinta = ExtResource("9_le266")
-win_splash_marcel = ExtResource("10_c4p38")
-win_splash_thea = ExtResource("11_d01gn")
-shadow_texture = ExtResource("7_qxnts")
 
-[node name="BarFill" type="ColorRect" parent="." unique_id=1627736187]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-color = Color(0.078431375, 0.101960786, 0.18039216, 1)
-
-[node name="Stage" type="Control" parent="." unique_id=1490079219]
-anchors_preset = 0
-offset_right = 1536.0
-offset_bottom = 2048.0
-mouse_filter = 2
-
-[node name="Backdrop" type="TextureRect" parent="Stage" unique_id=672798659]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = ExtResource("6_cpj81")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="Shadows" type="Control" parent="Stage" unique_id=2059022315]
-anchors_preset = 0
-mouse_filter = 2
-
-[node name="Shadow1" type="TextureRect" parent="Stage/Shadows" unique_id=1394076969]
-visible = false
-layout_mode = 0
-mouse_filter = 2
-texture = ExtResource("7_qxnts")
-expand_mode = 1
-
-[node name="Shadow2" type="TextureRect" parent="Stage/Shadows" unique_id=2137798515]
-visible = false
-layout_mode = 0
-mouse_filter = 2
-texture = ExtResource("7_qxnts")
-expand_mode = 1
-
-[node name="Shadow3" type="TextureRect" parent="Stage/Shadows" unique_id=2140631244]
-visible = false
-layout_mode = 0
-mouse_filter = 2
-texture = ExtResource("7_qxnts")
-expand_mode = 1
-
-[node name="Shadow4" type="TextureRect" parent="Stage/Shadows" unique_id=1653984068]
-visible = false
-layout_mode = 0
-mouse_filter = 2
-texture = ExtResource("7_qxnts")
-expand_mode = 1
-
-[node name="Students" type="Control" parent="Stage" unique_id=1606521341]
-anchors_preset = 0
-mouse_filter = 2
-
-[node name="Student1" type="TextureRect" parent="Stage/Students" unique_id=1611799564]
-visible = false
-layout_mode = 0
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Student2" type="TextureRect" parent="Stage/Students" unique_id=781806283]
-visible = false
-layout_mode = 0
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Student3" type="TextureRect" parent="Stage/Students" unique_id=341486232]
-visible = false
-layout_mode = 0
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Student4" type="TextureRect" parent="Stage/Students" unique_id=2102591806]
-visible = false
-layout_mode = 0
-mouse_filter = 2
-expand_mode = 1
+[node name="WinStage" parent="." unique_id=702781057 instance=ExtResource("4_iwdes")]
+layout_mode = 1
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=1774545846]
 visible = false

@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://cqfjyfn2r4ljw"]
+
+[ext_resource type="Script" uid="uid://cd477m8a8ihf7" path="res://Scripts/SchoolSimulation/WeekLogsPopup.gd" id="1_avpok"]
+[ext_resource type="PackedScene" uid="uid://nb2qunnb3b44" path="res://Scenes/SchoolSimulation/WeekHistoryRow.tscn" id="2_mixvf"]
+
+[node name="WeekLogsPopup" type="Control" unique_id=958401614]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_avpok")
+history_row_scene = ExtResource("2_mixvf")
+
+[node name="Scrim" type="Panel" parent="." unique_id=1305745065]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_type_variation = &"Scrim"
+
+[node name="Center" type="CenterContainer" parent="." unique_id=955789267]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="Center" unique_id=15774787]
+custom_minimum_size = Vector2(960, 0)
+layout_mode = 2
+theme_type_variation = &"Card"
+
+[node name="Content" type="VBoxContainer" parent="Center/Card" unique_id=2083569943]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TitleLabel" type="Label" parent="Center/Card/Content" unique_id=541191075]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "LOGS"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Center/Card/Content" unique_id=1716657454]
+custom_minimum_size = Vector2(0, 1200)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Rows" type="VBoxContainer" parent="Center/Card/Content/Scroll" unique_id=113640969]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="EmptyLabel" type="Label" parent="Center/Card/Content/Scroll/Rows" unique_id=1336914112]
+visible = false
+layout_mode = 2
+theme_type_variation = &"EmptyStateLabel"
+text = "Tidak ada minigame yang dimainkan minggu ini."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="CloseButton" type="Button" parent="Center/Card/Content" unique_id=2082085870]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Tutup"

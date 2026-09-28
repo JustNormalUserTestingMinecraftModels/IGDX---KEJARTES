@@ -34,9 +34,11 @@ func test_scene_loads() -> void:
 	assert_true(_screen != null, "ExamProgress.tscn instantiates")
 
 
-func test_has_the_backdrop_and_scrim() -> void:
+func test_has_the_backdrop_and_no_scrim() -> void:
 	assert_true(_screen.get_node_or_null("Backdrop") != null, "Backdrop node")
-	assert_true(_screen.get_node_or_null("Scrim") != null, "Scrim node")
+	assert_true(_screen.get_node_or_null("Scrim") == null,
+		"the exam art shows undarkened: the scrim was removed, and H1Label's "
+		+ "outline plus StatBar's opaque track carry legibility over it")
 
 
 func test_has_a_status_label_and_progress_bar() -> void:
@@ -62,7 +64,7 @@ func test_it_routes_to_the_stat_check_and_never_arms_a_cutscene() -> void:
 		"it routes to the stat check")
 	assert_false(src.contains("is_exam_intro_cutscene"),
 		"the exam-intro cutscene beat is gone; nothing arms it any more")
-	assert_false(src.contains("cut_scene.tscn"),
+	assert_false(src.contains("CutScene.tscn"),
 		"it no longer routes to the cutscene")
 
 
@@ -105,11 +107,44 @@ func test_the_backdrop_is_wider_than_the_viewport_so_the_pan_shows_no_edge() -> 
 	assert_eq(int(backdrop.size.y), 1920, "Backdrop keeps the full viewport height")
 
 
+func test_the_backdrop_is_anchored_so_it_fills_a_taller_phone() -> void:
+	var backdrop: TextureRect = _screen.get_node("Backdrop")
+	assert_true(is_equal_approx(backdrop.anchor_right, 1.0),
+		"anchored to the right edge, so the width follows the viewport")
+	assert_true(is_equal_approx(backdrop.anchor_bottom, 1.0),
+		"anchored to the bottom edge: a 1080x2400 phone gets art all the way "
+		+ "down, not a 1920-tall picture over a black band")
+	assert_true(is_equal_approx(backdrop.offset_right, 216.0),
+		"the extra width is |pan_pixels|, so the drift never exposes an edge")
+
+
+func test_the_status_and_bar_sit_at_the_bottom_of_the_screen() -> void:
+	var strip: MarginContainer = _screen.get_node("MarginContainer")
+	assert_true(is_equal_approx(strip.anchor_top, 1.0),
+		"the content strip hangs off the bottom edge, not the centre")
+	assert_true(is_equal_approx(strip.anchor_bottom, 1.0),
+		"both vertical anchors sit at the bottom, so the strip tracks the "
+		+ "real screen bottom on any phone height")
+	assert_true(strip.offset_bottom < 0.0,
+		"a gap is left below the bar, clear of the system gesture bar")
+	assert_true(strip.offset_top < strip.offset_bottom,
+		"the strip has real height above its bottom edge")
+
+
 func test_the_scene_hands_the_script_a_real_pan_distance() -> void:
 	assert_true(is_equal_approx(_screen.pan_pixels, -216.0),
 		"the scene must deliver pan_pixels = -216.0, not null or 0")
 	assert_true(_screen.pan_pixels < 0.0,
 		"negative: the image translates left, which reads as the camera panning right")
+
+
+func test_the_backdrop_shows_the_exam_art() -> void:
+	var backdrop: TextureRect = _screen.get_node("Backdrop")
+	assert_true(backdrop.texture != null, "Backdrop has a texture")
+	assert_eq(backdrop.texture.resource_path, "res://Assets/Images/CG/cg_ujian.png",
+		"ExamProgress shows the user's cg_ujian art (2026-09-14), not the cg_test placeholder")
+	assert_false(FileAccess.file_exists("res://Assets/Images/CG/cg_test.jpg"),
+		"cg_test.jpg is deleted: ExamProgress was its only user")
 
 
 func _collect_overrides(node: Node, out: Array[String]) -> void:

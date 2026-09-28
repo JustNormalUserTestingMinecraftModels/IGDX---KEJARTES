@@ -64,13 +64,12 @@ const CLEARED_COUNTS := {
 	PRESET_GRADE_D: [2, 1, 1, 0],
 }
 
-## Skill keys in the order CLEARED_COUNTS counts them, paired with the
-## target key each is checked against. Mirrors GameState's own naming
-## quirk: akademis2 is Seni Budaya, akademis3 is Olahraga.
+## Skill keys in the order CLEARED_COUNTS counts them, each with its base
+## key and the target key it is checked against.
 const SKILL_KEYS := [
-	["akademis1", "base_akademis1", "target_akademis1"],
-	["akademis2", "base_akademis2", "target_akademis2"],
-	["akademis3", "base_akademis3", "target_akademis3"],
+	["akademis", "base_akademis", "target_akademis"],
+	["seni_budaya", "base_seni_budaya", "target_seni_budaya"],
+	["olahraga", "base_olahraga", "target_olahraga"],
 ]
 
 
@@ -111,8 +110,8 @@ static func build_roster(preset: String, grade: int,
 			student[SKILL_KEYS[s][1]] = BASE_SKILL
 			student[SKILL_KEYS[s][2]] = target
 
-		student["kepribadian1"] = REHEARSAL_MOOD
-		student["kepribadian2"] = REHEARSAL_ENERGY
+		student["mood"] = REHEARSAL_MOOD
+		student["energy"] = REHEARSAL_ENERGY
 		roster.append(student)
 
 	return roster
@@ -127,7 +126,7 @@ static func build_roster(preset: String, grade: int,
 ## roster, so all of that has to be captured up front.
 const SNAPSHOT_KEYS := [
 	"approved_students", "selected_student", "day_schedules",
-	"pending_earnings", "grade7_student_ids", "inventory",
+	"pending_earnings", "grade7_student_ids", "grade8_student_ids", "inventory",
 	# The weekly minigame-gain budget. A rehearsal reaches
 	# RunResult's progression, which calls
 	# GameState.reset_roster_for_new_grade() -- and that clears this
@@ -135,6 +134,15 @@ const SNAPSHOT_KEYS := [
 	# a fresh minigame budget and reopen the farming exploit the cap
 	# exists to close.
 	"minigame_gain_this_week",
+	# The Koperasi's weekly shelf and what sold from it. Nothing in the
+	# end-of-grade sequence writes them, but a visit to the shop between
+	# arming and restoring does, and restoring hands the run back exactly
+	# as it was -- an item bought during a rehearsal must not stay sold.
+	"shop_week_key", "shop_stock", "shop_sold",
+	# Worn skins and the debug lock overrides. Nothing in the sequence
+	# writes them, but a skin picked between arming and restoring must not
+	# outlive the rehearsal, same as a shop purchase.
+	"equipped_skins", "skin_unlock_overrides",
 	"minggu_ke", "current_grade", "player_money",
 	"run_failed", "is_game_beaten",
 	"lobby_tutorial_completed", "tutorials_bypassed",

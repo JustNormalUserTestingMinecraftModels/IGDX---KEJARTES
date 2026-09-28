@@ -3,7 +3,7 @@
 ## A bouncing arrow pointing at whatever the current tutorial step is
 ## highlighting.
 ##
-## Not an autoload -- student_card.gd instantiates it by script (`const
+## Not an autoload -- StudentCard.gd instantiates it by script (`const
 ## TutorialArrow = preload(...)`) as part of its per-step onboarding
 ## highlight, positions it itself, and calls `set_direction()` to flip
 ## which way it points and restart the bounce.

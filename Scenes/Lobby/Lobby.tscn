@@ -1,0 +1,1214 @@
+[gd_scene format=3 uid="uid://60ndk5l2120t"]
+
+[ext_resource type="Script" uid="uid://bkfpjbok5vgg5" path="res://Scripts/Lobby/Lobby.gd" id="1_ao7fi"]
+[ext_resource type="Shader" uid="uid://dn51jd7ml5bl7" path="res://Scripts/Shaders/spotlight.gdshader" id="2_e1w2y"]
+[ext_resource type="PackedScene" uid="uid://bi8meefllkb7d" path="res://Scenes/Lobby/CitraFace.tscn" id="3_oohd3"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/AndiFace.tscn" id="4_yhuud"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/DoniFace.tscn" id="5_ikpat"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/MarcelFace.tscn" id="6_dx44p"]
+[ext_resource type="Texture2D" uid="uid://dvotkc0awnd16" path="res://Assets/Images/MuridPortrait/TanganItems/Doni_Table.png" id="6_dyk4g"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/ShintaFace.tscn" id="7_62a4m"]
+[ext_resource type="Texture2D" uid="uid://w2eebv4y4ue0" path="res://Assets/Images/MuridPortrait/TanganItems/Citra_Table.png" id="7_ek62u"]
+[ext_resource type="PackedScene" path="res://Scenes/Lobby/TheaFace.tscn" id="8_gbno3"]
+[ext_resource type="Texture2D" uid="uid://ckls11l3yiniv" path="res://Assets/Images/MuridPortrait/TanganItems/Andi_Table.png" id="9_bfy74"]
+[ext_resource type="Texture2D" uid="uid://c5uf1bkw1f3ui" path="res://Assets/Images/UI/Nav/icon_cta_student.png" id="9_dyk4g"]
+[ext_resource type="Texture2D" uid="uid://vwe02tlwbjjg" path="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Table.png" id="9_q4xuc"]
+[ext_resource type="Texture2D" uid="uid://cowgvm1mr8ibi" path="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Table.png" id="10_3lohg"]
+[ext_resource type="Texture2D" uid="uid://b0caiiviquf" path="res://Assets/Images/UI/Nav/icon_nav_koperasi.png" id="10_bfy74"]
+[ext_resource type="Texture2D" uid="uid://ce1kfh8jybbhh" path="res://Assets/Images/MuridPortrait/TanganItems/Thea_Table.png" id="11_4d6wl"]
+[ext_resource type="Texture2D" uid="uid://ddjx1gmpupjvv" path="res://Assets/Images/UI/Nav/icon_nav_rapor.png" id="11_4w5lf"]
+[ext_resource type="Texture2D" uid="uid://b83solgop708f" path="res://Assets/Images/UI/Nav/icon_nav_inventory.png" id="12_fb4vu"]
+[ext_resource type="Texture2D" uid="uid://ccu4bm5rdto8r" path="res://Assets/Images/UI/Nav/icon_cta_jadwal.png" id="13_85cl3"]
+[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
+[ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
+[ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
+[ext_resource type="PackedScene" uid="uid://u2q3sgmvf5w3" path="res://Scenes/Lobby/StudentChatBubble.tscn" id="20_su0mk"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="20_yhuud"]
+[ext_resource type="Material" path="res://Scripts/Shaders/window_shafts_material.tres" id="25_mbtdr"]
+[ext_resource type="Texture2D" uid="uid://bed2fo2wc4bd7" path="res://Assets/Images/Achievements/achievement_button.png" id="28_ikpat"]
+[ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
+[ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
+[ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="Script" uid="uid://c47bgh5lvg6qi" path="res://Scripts/Lobby/DailyLoginPanel.gd" id="39_2isbc"]
+[ext_resource type="Texture2D" uid="uid://bedjpscelrj33" path="res://Assets/Images/UI/DailyLogin/streak_flame.svg" id="40_hp3mh"]
+[ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
+[ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]
+[ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/lobby_no_tables.png" id="bg_tex"]
+[ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout_lobby.tres" id="illus_grade_cut"]
+[ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPortrait/Meja/kiri_atas.png" id="meja_ka_tex"]
+[ext_resource type="Texture2D" uid="uid://bflgqwew54uyi" path="res://Assets/Images/MuridPortrait/Meja/kiri_bawah.png" id="meja_kb_tex"]
+[ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPortrait/Meja/kanan_atas.png" id="meja_kna_tex"]
+[ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPortrait/Meja/kanan_bawah.png" id="meja_knb_tex"]
+[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
+[ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+[ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
+shader = ExtResource("2_e1w2y")
+shader_parameter/overlay_color = Color(0, 0, 0, 0.7)
+shader_parameter/rect_size = Vector2(1220.14, 614.325)
+shader_parameter/hole_pos = Vector2(200, 347.68)
+shader_parameter/hole_size = Vector2(853.225, 88.87)
+shader_parameter/feather = 13.6850006500375
+
+[node name="TutorialOverlay" type="Control" unique_id=406579160]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ao7fi")
+bg_texture = ExtResource("bg_tex")
+face_rigs = Array[PackedScene]([ExtResource("3_oohd3"), ExtResource("4_yhuud"), ExtResource("5_ikpat"), ExtResource("6_dx44p"), ExtResource("7_62a4m"), ExtResource("8_gbno3")])
+
+[node name="World" type="CanvasLayer" parent="." unique_id=747541386]
+layer = -1
+
+[node name="Backdrop" type="ColorRect" parent="World" unique_id=543524766]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Classroom" type="Control" parent="World" unique_id=1683191108]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -960.0
+offset_right = 540.0
+offset_bottom = 960.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BGLayer" type="TextureRect" parent="World/Classroom" unique_id=18068981]
+unique_name_in_owner = true
+material = ExtResource("illus_grade")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("bg_tex")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Meja_KiriAtas" type="TextureRect" parent="World/Classroom" unique_id=141187056]
+material = ExtResource("illus_grade_cut")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -9.955
+offset_bottom = -9.954956
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("meja_ka_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Shadow" parent="World/Classroom/Meja_KiriAtas" unique_id=1365156758 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_ka_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
+[node name="Meja_KananAtas" type="TextureRect" parent="World/Classroom" unique_id=1566337339]
+material = ExtResource("illus_grade_cut")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -8.0
+offset_top = -10.0
+offset_right = -8.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("meja_kna_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Shadow" parent="World/Classroom/Meja_KananAtas" unique_id=172536508 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_kna_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
+[node name="StudentPortraitsContainer_Back" type="Control" parent="World/Classroom" unique_id=2097219157]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Slot1" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back" unique_id=1634846153]
+anchors_preset = 0
+offset_left = 50.0
+offset_right = 450.0
+offset_bottom = 450.0
+
+[node name="Portrait" type="TextureRect" parent="World/Classroom/StudentPortraitsContainer_Back/Slot1" unique_id=1112210571]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 57.0
+offset_top = 26.0
+offset_right = 22.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("default_portrait_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ChatAnchor" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back/Slot1" unique_id=324588308]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 330.0
+offset_top = 300.0
+offset_right = 330.0
+offset_bottom = 300.0
+mouse_filter = 2
+
+[node name="Slot2" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back" unique_id=414336718]
+anchors_preset = 0
+offset_left = 620.0
+offset_right = 1020.0
+offset_bottom = 450.0
+
+[node name="Portrait" type="TextureRect" parent="World/Classroom/StudentPortraitsContainer_Back/Slot2" unique_id=1454500660]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 22.0
+offset_right = -20.0
+offset_bottom = -13.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("default_portrait_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ChatAnchor" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back/Slot2" unique_id=1266035256]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 70.0
+offset_top = 300.0
+offset_right = 70.0
+offset_bottom = 300.0
+mouse_filter = 2
+
+[node name="StudentHandsContainer_Back" type="Control" parent="World/Classroom" unique_id=696016454]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Slot1" type="Control" parent="World/Classroom/StudentHandsContainer_Back" unique_id=1309285055]
+anchors_preset = 0
+offset_left = 84.0
+offset_top = -88.0
+offset_right = 484.0
+offset_bottom = 362.0
+
+[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1069990093]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -141.00002
+offset_top = 10.0
+offset_right = 139.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.785, 0.84)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("9_bfy74")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1441938456]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -127.0
+offset_top = -27.00003
+offset_right = 153.0
+offset_bottom = 173.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.795, 0.905)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("7_ek62u")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=24226062]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -145.0
+offset_top = 2.0
+offset_right = 135.0
+offset_bottom = 202.0
+grow_horizontal = 2
+grow_vertical = 0
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("6_dyk4g")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1806363820]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -135.0
+offset_top = -29.0
+offset_right = 145.0
+offset_bottom = 171.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.75, 1)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("9_q4xuc")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=337767282]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -141.0
+offset_top = -25.0
+offset_right = 139.0
+offset_bottom = 175.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.81, 1)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("10_3lohg")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1533997835]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -178.0
+offset_top = -23.00003
+offset_right = 102.0
+offset_bottom = 177.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.815, 0.87)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("11_4d6wl")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Slot2" type="Control" parent="World/Classroom/StudentHandsContainer_Back" unique_id=616363659]
+anchors_preset = 0
+offset_left = 625.0
+offset_top = -85.0
+offset_right = 1025.0
+offset_bottom = 365.0
+
+[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=397972223]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -156.0
+offset_top = 14.9999695
+offset_right = 124.0
+offset_bottom = 215.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-0.805, 0.86)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("9_bfy74")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=2050109560]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -139.0
+offset_top = -24.0
+offset_right = 141.0
+offset_bottom = 176.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.86, 1)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("7_ek62u")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=43024304]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -158.0
+offset_top = 4.9999695
+offset_right = 122.0
+offset_bottom = 205.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1, 1.17)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("6_dyk4g")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=344255062]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -133.0
+offset_top = -28.00003
+offset_right = 147.0
+offset_bottom = 172.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.9, 0.97)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("9_q4xuc")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=1332688156]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -162.0
+offset_top = -24.0
+offset_right = 118.0
+offset_bottom = 176.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-0.76, 1)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("10_3lohg")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=1752655893]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -119.0
+offset_top = -9.0
+offset_right = 161.0
+offset_bottom = 191.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-0.96, 0.96)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("11_4d6wl")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Meja_KiriBawah" type="TextureRect" parent="World/Classroom" unique_id=1666960600]
+material = ExtResource("illus_grade_cut")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("meja_kb_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Shadow" parent="World/Classroom/Meja_KiriBawah" unique_id=913334239 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_kb_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
+[node name="Meja_KananBawah" type="TextureRect" parent="World/Classroom" unique_id=1660970638]
+material = ExtResource("illus_grade_cut")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("meja_knb_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Shadow" parent="World/Classroom/Meja_KananBawah" unique_id=2137019180 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("meja_knb_tex")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
+[node name="StudentPortraitsContainer_Front" type="Control" parent="World/Classroom" unique_id=1730743039]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Slot3" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front" unique_id=858493737]
+anchors_preset = 0
+offset_left = 50.0
+offset_top = 370.0
+offset_right = 450.0
+offset_bottom = 820.0
+
+[node name="Portrait" type="TextureRect" parent="World/Classroom/StudentPortraitsContainer_Front/Slot3" unique_id=1600612014]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -24.795
+offset_top = -29.48
+offset_right = -24.795013
+offset_bottom = -29.480011
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("default_portrait_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ChatAnchor" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front/Slot3" unique_id=754957017]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 330.0
+offset_top = 250.0
+offset_right = 330.0
+offset_bottom = 250.0
+mouse_filter = 2
+
+[node name="Slot4" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front" unique_id=85502973]
+anchors_preset = 0
+offset_left = 620.0
+offset_top = 370.0
+offset_right = 1020.0
+offset_bottom = 820.0
+
+[node name="Portrait" type="TextureRect" parent="World/Classroom/StudentPortraitsContainer_Front/Slot4" unique_id=1101838453]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.795
+offset_top = -29.48
+offset_right = 24.795013
+offset_bottom = -29.480011
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("default_portrait_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ChatAnchor" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front/Slot4" unique_id=306268741]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 70.0
+offset_top = 250.0
+offset_right = 70.0
+offset_bottom = 250.0
+mouse_filter = 2
+
+[node name="StudentHandsContainer_Front" type="Control" parent="World/Classroom" unique_id=927537512]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Slot3" type="Control" parent="World/Classroom/StudentHandsContainer_Front" unique_id=1517080695]
+anchors_preset = 0
+offset_left = 45.0
+offset_top = 370.0
+offset_right = 445.0
+offset_bottom = 820.0
+
+[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1515879549]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -135.0
+offset_top = -49.50003
+offset_right = 119.0
+offset_bottom = 196.49997
+grow_horizontal = 2
+grow_vertical = 0
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("9_bfy74")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=2035720]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -117.0
+offset_top = -100.50003
+offset_right = 137.0
+offset_bottom = 145.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.92, 1)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("7_ek62u")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=379927227]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -129.0
+offset_top = -66.50003
+offset_right = 125.0
+offset_bottom = 179.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.085, 1.42)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("6_dyk4g")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=103314952]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -123.0
+offset_top = -102.50003
+offset_right = 131.0
+offset_bottom = 143.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.935, 1)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("9_q4xuc")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=693423398]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -129.0
+offset_top = -100.50003
+offset_right = 125.0
+offset_bottom = 145.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1, 1.345)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("10_3lohg")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1270190136]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -168.0
+offset_top = -82.50003
+offset_right = 86.0
+offset_bottom = 163.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.26, 1.12)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("11_4d6wl")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Slot4" type="Control" parent="World/Classroom/StudentHandsContainer_Front" unique_id=1684173298]
+anchors_preset = 0
+offset_left = 620.0
+offset_top = 370.0
+offset_right = 1020.0
+offset_bottom = 820.0
+
+[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1794435452]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -134.80002
+offset_top = -29.50003
+offset_right = 145.19998
+offset_bottom = 170.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-1, 1)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("9_bfy74")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1187726315]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -157.80002
+offset_top = -67.50003
+offset_right = 122.19998
+offset_bottom = 132.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-0.81, 1.105)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("7_ek62u")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1238697973]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -146.80008
+offset_top = -31.50003
+offset_right = 133.19992
+offset_bottom = 168.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-0.99, 1.42)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("6_dyk4g")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=147415357]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -146.80002
+offset_top = -83.50003
+offset_right = 133.19998
+offset_bottom = 116.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-0.84, 1)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("9_q4xuc")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1382477295]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -146.80002
+offset_top = -67.50003
+offset_right = 133.19998
+offset_bottom = 132.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-0.88, 1.34)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("10_3lohg")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=549175006]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -80.80002
+offset_top = -52.50003
+offset_right = 199.19998
+offset_bottom = 147.49997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-1.26, 1.055)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("11_4d6wl")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="WindowLight" type="ColorRect" parent="World/Classroom" unique_id=138848043]
+material = ExtResource("window_light")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -420.0
+offset_right = -120.0
+offset_bottom = -560.0
+mouse_filter = 2
+
+[node name="Parallax" type="Control" parent="World/Classroom" unique_id=2134517186]
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("parallax_diorama")
+depth_by_child = {
+"BGLayer": 0.15,
+"Meja_KananAtas": 0.45,
+"Meja_KananBawah": 0.75,
+"Meja_KiriAtas": 0.45,
+"Meja_KiriBawah": 0.75,
+"StudentHandsContainer_Back": 0.45,
+"StudentHandsContainer_Front": 0.75,
+"StudentPortraitsContainer_Back": 0.45,
+"StudentPortraitsContainer_Front": 0.75,
+"WindowShafts": 0.15
+}
+overscan_children = Array[StringName]([&"BGLayer"])
+
+[node name="WindowShafts" type="ColorRect" parent="World/Classroom" unique_id=491378318]
+material = ExtResource("25_mbtdr")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Safe" type="MarginContainer" parent="." unique_id=1588675940]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+script = ExtResource("20_yhuud")
+
+[node name="UI" type="Control" parent="Safe" unique_id=626973675]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BottomBar" type="Control" parent="Safe/UI" unique_id=162709174]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -480.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Student" type="Button" parent="Safe/UI/BottomBar" unique_id=1238526272]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 128.0
+offset_right = 984.0
+offset_bottom = 288.0
+theme_type_variation = &"LobbyCtaButton"
+text = "STUDENT"
+icon = ExtResource("9_dyk4g")
+expand_icon = true
+
+[node name="Koperasi" type="Button" parent="Safe/UI/BottomBar" unique_id=247017516]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 320.0
+offset_right = 306.0
+offset_bottom = 480.0
+theme_type_variation = &"LobbyNavTile"
+text = "Koperasi"
+icon = ExtResource("10_bfy74")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="ReportStudent" type="Button" parent="Safe/UI/BottomBar" unique_id=803503757]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 676.0
+offset_top = 320.0
+offset_right = 982.0
+offset_bottom = 480.0
+theme_type_variation = &"LobbyNavTile"
+text = "Rapor"
+icon = ExtResource("11_4w5lf")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="Inventory" type="Button" parent="Safe/UI/BottomBar" unique_id=1524317152]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 338.0
+offset_top = 320.0
+offset_right = 644.0
+offset_bottom = 480.0
+theme_type_variation = &"LobbyNavTile"
+text = "INVENTORY"
+icon = ExtResource("12_fb4vu")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="Jadwal" type="Button" parent="Safe/UI/BottomBar" unique_id=2126015085]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 128.0
+offset_right = 984.0
+offset_bottom = 288.0
+theme_type_variation = &"LobbyCtaButton"
+text = "JADWAL!"
+icon = ExtResource("13_85cl3")
+expand_icon = true
+
+[node name="DisplayUang" type="Panel" parent="Safe/UI/BottomBar" unique_id=259983175]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 652.0
+offset_right = 984.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_type_variation = &"Card"
+
+[node name="CoinIcon" type="TextureRect" parent="Safe/UI/BottomBar/DisplayUang" unique_id=1731951124]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 20.0
+offset_right = 88.0
+offset_bottom = 76.0
+mouse_filter = 2
+texture = ExtResource("14_dyk4g")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Safe/UI/BottomBar/DisplayUang" unique_id=664496077]
+layout_mode = 0
+offset_left = 100.0
+offset_top = 18.0
+offset_right = 314.0
+offset_bottom = 78.0
+theme_type_variation = &"CoinLabel"
+text = "50"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SettingsButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=575693895]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
+offset_left = 120.0
+offset_right = 216.0
+offset_bottom = 96.0
+texture_normal = ExtResource("29_gear")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="DailyLogin" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=1799090163]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 96.0
+offset_bottom = 96.0
+texture_normal = ExtResource("15_d385k")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="AchievementButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=919427951]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 240.0
+offset_right = 336.0
+offset_bottom = 96.0
+texture_normal = ExtResource("28_ikpat")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="SkinSwitchButton" type="TextureButton" parent="Safe/UI/BottomBar" unique_id=1019305615]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
+offset_left = 360.0
+offset_right = 456.0
+offset_bottom = 96.0
+texture_normal = ExtResource("30_62a4m")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="JUDUL" type="Label" parent="Safe/UI" unique_id=1317986974]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -159.0
+offset_top = -8.0
+offset_right = 164.0
+offset_bottom = 92.0
+grow_horizontal = 2
+theme_type_variation = &"DisplayLabel"
+text = "KELAS"
+
+[node name="ChatBubble" parent="." unique_id=1758543249 instance=ExtResource("20_su0mk")]
+layout_mode = 1
+
+[node name="DailyReward" type="TextureRect" parent="." unique_id=889996430 node_paths=PackedStringArray("wallet_anchor")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -460.0
+offset_top = -402.0
+offset_right = 482.0
+offset_bottom = 16.0
+grow_vertical = 0
+texture = ExtResource("16_dyk4g")
+expand_mode = 1
+script = ExtResource("39_2isbc")
+wallet_anchor = NodePath("../Safe/UI/BottomBar/DisplayUang")
+
+[node name="Label" type="Label" parent="DailyReward" unique_id=1823371215]
+layout_mode = 0
+offset_left = 300.0
+offset_top = 10.0
+offset_right = 700.0
+offset_bottom = 78.0
+theme_type_variation = &"H1Label"
+text = "Daily Login"
+horizontal_alignment = 1
+
+[node name="ButtonClaim" type="Button" parent="DailyReward" unique_id=1114280413]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 0
+offset_left = 330.0
+offset_top = 322.0
+offset_right = 612.0
+offset_bottom = 418.0
+theme_type_variation = &"GhostButton"
+text = "KLAIM"
+
+[node name="RewardRow" type="HBoxContainer" parent="DailyReward" unique_id=1810808059]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 640.0
+offset_top = 350.0
+offset_right = 828.0
+offset_bottom = 402.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="RewardCoin" type="TextureRect" parent="DailyReward/RewardRow" unique_id=956875139]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 48)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("14_dyk4g")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RewardAmount" type="Label" parent="DailyReward/RewardRow" unique_id=955040772]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"CoinLabel"
+text = "80G"
+vertical_alignment = 1
+
+[node name="DailyGreeting" type="Label" parent="DailyReward" unique_id=1401564622]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = -170.0
+offset_right = 942.0
+offset_bottom = -110.0
+theme_type_variation = &"ResultHeroLabel"
+text = "Selamat datang kembali!"
+horizontal_alignment = 1
+
+[node name="DailyStreak" type="HBoxContainer" parent="DailyReward" unique_id=2008026007]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = -100.0
+offset_right = 942.0
+offset_bottom = -16.0
+mouse_filter = 2
+alignment = 1
+
+[node name="FlameSlot" type="Control" parent="DailyReward/DailyStreak" unique_id=647566857]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="StreakFlame" type="TextureRect" parent="DailyReward/DailyStreak/FlameSlot" unique_id=1617781959]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("40_hp3mh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StreakLabel" type="Label" parent="DailyReward/DailyStreak" unique_id=2104698978]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ResultHeroLabel"
+text = "Streak 1 hari"
+vertical_alignment = 1
+
+[node name="DailyRewardReveal" parent="DailyReward" unique_id=221773144 instance=ExtResource("41_slwnx")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="BesokTeaser" type="Label" parent="DailyReward" unique_id=1174925413]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_top = 426.0
+offset_right = 942.0
+offset_bottom = 474.0
+theme_type_variation = &"ResultDeltaLabel"
+text = "Besok: +120G"
+horizontal_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=707453591]
+visible = false
+material = SubResource("ShaderMaterial_2gra1")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="ClickArea" type="Button" parent="ColorRect" unique_id=465848992]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Chatter" type="Node" parent="." unique_id=1817944739]
+script = ExtResource("34_f2e4j")
+bubble_path = NodePath("../ChatBubble")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2049146762]
+environment = ExtResource("41_7qlaa")

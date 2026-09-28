@@ -1,7 +1,7 @@
 class_name WinLineup
 extends RefCounted
 
-## The win screen's roster arrangement (2026-09-09). EndCutscene shows the
+## The win screen's roster arrangement (2026-09-09). WinStage shows the
 ## run's own approved students posed on win_background; this file decides
 ## who stands where, and where each one's ground shadow goes.
 ##
@@ -16,7 +16,7 @@ extends RefCounted
 ##
 ## Coordinates are in the backdrop's own 1536x2048 art space, except
 ## FOOT_ANCHORS, which is in each splash's own 1080x1080 canvas space.
-## EndCutscene.gd converts. Full derivation:
+## WinStage.gd converts. Full derivation:
 ## docs/superpowers/specs/2026-09-09-win-screen-lineup-design.md
 
 ## The one fixed rule: Doni is always the front figure.
@@ -104,10 +104,10 @@ static func slots_for(count: int) -> Array[String]:
 ## surprise.
 ##
 ## Returns one Dictionary per placed student, in DRAW ORDER, back to front --
-## the same convention as slots_for(). EndCutscene._dress_lineup() maps
+## the same convention as slots_for(). WinStage._dress_lineup() maps
 ## element i onto sibling Student{i+1}, and sibling Controls draw in child
 ## order, so this ordering is what makes the front-low figure (closest to
-## camera) render on top without EndCutscene having to know anything about
+## camera) render on top without WinStage having to know anything about
 ## slots. The pinned student is therefore resolved first but appended last.
 ##
 ## Each Dictionary:
@@ -155,7 +155,7 @@ static func _place(name: String, slot: String) -> Dictionary:
 ## Where a placed student's ground shadow goes, in art space.
 ##
 ## `spread` multiplies the measured foot span and `flatness` sets the
-## ellipse's height as a fraction of its width -- both are EndCutscene
+## ellipse's height as a fraction of its width -- both are WinStage
 ## exports, so the shadows can be art-directed without touching the
 ## measured numbers in FOOT_ANCHORS.
 ##

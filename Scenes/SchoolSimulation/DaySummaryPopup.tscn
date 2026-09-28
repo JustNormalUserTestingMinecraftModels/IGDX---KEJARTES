@@ -4,6 +4,13 @@
 [ext_resource type="PackedScene" uid="uid://c1dstgm0d4nvr" path="res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn" id="2_row_scene"]
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="3_pdawt"]
 [ext_resource type="Texture2D" uid="uid://ce7ojcp3wl20" path="res://Assets/Images/DaySummary/title_daily_results.png" id="3_title"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/teacher_1.svg" id="v_teacher_1"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/teacher_2.svg" id="v_teacher_2"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/teacher_3.svg" id="v_teacher_3"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/teacher_4.svg" id="v_teacher_4"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/star_on.svg" id="v_star_on"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/star_off.svg" id="v_star_off"]
+[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/crown.svg" id="v_crown"]
 
 [node name="DaySummaryPopup" type="Control" unique_id=652940852]
 layout_mode = 3
@@ -14,6 +21,9 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_popup")
 student_row_scene = ExtResource("2_row_scene")
+teacher_faces = Array[Texture2D]([ExtResource("v_teacher_1"), ExtResource("v_teacher_2"), ExtResource("v_teacher_3"), ExtResource("v_teacher_4")])
+star_on_texture = ExtResource("v_star_on")
+star_off_texture = ExtResource("v_star_off")
 
 [node name="Backdrop" type="TextureRect" parent="." unique_id=1837002046]
 layout_mode = 0
@@ -48,6 +58,194 @@ layout_mode = 2
 size_flags_horizontal = 4
 texture = ExtResource("3_title")
 expand_mode = 1
+
+[node name="Reward" type="PanelContainer" parent="DimOverlay/Content"]
+custom_minimum_size = Vector2(932, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"RewardPanel"
+
+[node name="Rows" type="VBoxContainer" parent="DimOverlay/Content/Reward"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 18
+
+[node name="Header" type="HBoxContainer" parent="DimOverlay/Content/Reward/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="Face" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("v_teacher_3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Words" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Headline" type="Label" parent="DimOverlay/Content/Reward/Rows/Header/Words"]
+layout_mode = 2
+theme_type_variation = &"VerdictHeadlineLabel"
+text = "Hari produktif!"
+
+[node name="Stars" type="HBoxContainer" parent="DimOverlay/Content/Reward/Rows/Header/Words"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Star1" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header/Words/Stars"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("v_star_off")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Star2" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header/Words/Stars"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("v_star_off")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Star3" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header/Words/Stars"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("v_star_off")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Star4" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/Header/Words/Stars"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("v_star_off")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Subline" type="Label" parent="DimOverlay/Content/Reward/Rows/Header/Words"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"VerdictSublineLabel"
+text = "Besok lebih baik!"
+
+[node name="Tally" type="HBoxContainer" parent="DimOverlay/Content/Reward/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="GainCell" type="PanelContainer" parent="DimOverlay/Content/Reward/Rows/Tally"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_type_variation = &"TallyCell"
+
+[node name="Col" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/Tally/GainCell"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Value" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/GainCell/Col"]
+layout_mode = 2
+theme_type_variation = &"TallyValueGain"
+text = "0"
+horizontal_alignment = 1
+
+[node name="Caption" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/GainCell/Col"]
+layout_mode = 2
+theme_type_variation = &"TallyCaptionLabel"
+text = "total naik"
+horizontal_alignment = 1
+
+[node name="TargetCell" type="PanelContainer" parent="DimOverlay/Content/Reward/Rows/Tally"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_type_variation = &"TallyCell"
+
+[node name="Col" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/Tally/TargetCell"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Value" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/TargetCell/Col"]
+layout_mode = 2
+theme_type_variation = &"TallyValueTarget"
+text = "0"
+horizontal_alignment = 1
+
+[node name="Caption" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/TargetCell/Col"]
+layout_mode = 2
+theme_type_variation = &"TallyCaptionLabel"
+text = "target tercapai"
+horizontal_alignment = 1
+
+[node name="MoneyCell" type="PanelContainer" parent="DimOverlay/Content/Reward/Rows/Tally"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_type_variation = &"TallyCell"
+
+[node name="Col" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/Tally/MoneyCell"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Value" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/MoneyCell/Col"]
+layout_mode = 2
+theme_type_variation = &"TallyValueCoin"
+text = "0"
+horizontal_alignment = 1
+
+[node name="Caption" type="Label" parent="DimOverlay/Content/Reward/Rows/Tally/MoneyCell/Col"]
+layout_mode = 2
+theme_type_variation = &"TallyCaptionLabel"
+text = "uang"
+horizontal_alignment = 1
+
+[node name="StarOfDay" type="PanelContainer" parent="DimOverlay/Content/Reward/Rows"]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"StarOfDayPanel"
+
+[node name="Row" type="HBoxContainer" parent="DimOverlay/Content/Reward/Rows/StarOfDay"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="Crown" type="TextureRect" parent="DimOverlay/Content/Reward/Rows/StarOfDay/Row"]
+custom_minimum_size = Vector2(64, 50)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("v_crown")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Words" type="VBoxContainer" parent="DimOverlay/Content/Reward/Rows/StarOfDay/Row"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Title" type="Label" parent="DimOverlay/Content/Reward/Rows/StarOfDay/Row/Words"]
+layout_mode = 2
+theme_type_variation = &"StarOfDayTitleLabel"
+text = "Bintang Hari Ini"
+
+[node name="Line" type="Label" parent="DimOverlay/Content/Reward/Rows/StarOfDay/Row/Words"]
+layout_mode = 2
+theme_type_variation = &"StarOfDayLabel"
+text = "Marcel — +18 Akademis"
 
 [node name="RowsScroll" type="ScrollContainer" parent="DimOverlay/Content" unique_id=1145774374]
 layout_mode = 2

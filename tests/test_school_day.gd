@@ -49,7 +49,6 @@ const _SCENES := {
 	"DaySummaryStudentRow": "res://Scenes/SchoolSimulation/DaySummaryStudentRow.tscn",
 	"DaySummaryBadge": "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn",
 	"DaySummaryPill": "res://Scenes/SchoolSimulation/DaySummaryPill.tscn",
-	"EventAnnouncement": "res://Scenes/SchoolSimulation/EventAnnouncement.tscn",
 	"EventWarning": "res://Scenes/SchoolSimulation/EventWarning.tscn",
 	"EventStudentSelectDialog": "res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn",
 	"DailyDecayOverview": "res://Scenes/SchoolSimulation/DailyDecayOverview.tscn",
@@ -64,7 +63,6 @@ const _SCRIPTS := [
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd",
 	"res://Scripts/SchoolSimulation/DaySummaryPopup.gd",
 	"res://Scripts/SchoolSimulation/DaySummaryStudentRow.gd",
-	"res://Scripts/SchoolSimulation/EventAnnouncement.gd",
 	"res://Scripts/SchoolSimulation/EventWarning.gd",
 	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd",
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd",
@@ -80,13 +78,22 @@ func suite_name() -> String:
 var _day: Control
 
 
-func setup() -> void:
-	_day = _instantiate(_SCHOOL_DAY_SCENE)
+## One SchoolDay for the whole suite. No test here changes it, and building
+## it per test queued enough deferred layout calls (with the rest of a full
+## run) to overflow the editor's message queue and take the editor down
+## before the run could reply (2026-09-24). Not tracked: track() frees after
+## every test; suite_teardown frees this one.
+func suite_setup(_ctx: Dictionary) -> void:
+	var scene: PackedScene = load(_SCHOOL_DAY_SCENE)
+	_day = scene.instantiate() as Control
+	_day.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(_day)
 
 
-func teardown() -> void:
+func suite_teardown() -> void:
 	if is_instance_valid(_day):
-		_day.queue_free()
+		_day.get_parent().remove_child(_day)
+		_day.free()
 	_day = null
 
 
@@ -109,7 +116,7 @@ func test_week_end_routing_is_unchanged() -> void:
 		"the final week now exits into the Tes Besar notice, not straight to the stat check")
 	assert_false(src.contains("res://Scenes/EndGame/SemesterEnd.tscn"),
 		"SchoolDay no longer reaches the stat check directly")
-	assert_true(src.contains("res://Scenes/Lobby/loby.tscn"),
+	assert_true(src.contains("res://Scenes/Lobby/Lobby.tscn"),
 		"a non-final week must still route back to the Lobby")
 	assert_true(src.contains("completed_week >= max_weeks"),
 		"the routing fork condition must be untouched")
@@ -137,20 +144,30 @@ func test_the_week_advances_by_loop_not_by_self_recursion() -> void:
 		"_run_day() must be defined once and called once (from start_simulation); any third occurrence is a reintroduced self-call")
 
 
-func test_reparented_pill_label_has_its_owner_cleared() -> void:
-	# _make_chip instantiates DaySummaryPill.tscn, so the "Text" Label carries
-	# that scene's root as its owner. _add_pill re-parents it under a runtime
-	# HBoxContainer (owner == null); without clearing owner first Godot warns
-	# "will make owner 'DaySummaryPill' inconsistent" once per badge, per
-	# student, per day -- enough to flood the log buffer and drop every other
-	# diagnostic on this screen.
+## The per-student status cards were built node by node at runtime, with
+## emoji-keyed pills. They are now AvatarChips instanced from a template into
+## a sideways-scrolling strip (2026-09-24 liveliness pass, layer 5).
+func test_students_ride_the_avatar_strip() -> void:
+	var strip := _day.get_node_or_null("DayScreen/AvatarStrip") as ScrollContainer
+	assert_true(strip != null, "DayScreen/AvatarStrip must exist")
+	if strip:
+		assert_eq(strip.vertical_scroll_mode, ScrollContainer.SCROLL_MODE_DISABLED,
+			"the strip scrolls sideways only")
+	assert_true(_day.get_node_or_null("DayScreen/AvatarStrip/AvatarRow") is HBoxContainer,
+		"the chips sit in one row")
+	assert_true(_day.get_node_or_null("DayScreen/StudentScroll") == null,
+		"the old vertical card list is gone")
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
-	assert_true(src.contains("lbl.owner = null"),
-		"_add_pill must clear the label's owner before re-parenting it")
-	var clear_at := src.find("lbl.owner = null")
-	var reparent_at := src.find("hbox.add_child(lbl)")
-	assert_gt(reparent_at, clear_at,
-		"the owner must be cleared BEFORE hbox.add_child(lbl), not after")
+	assert_true(src.contains("avatar_chip_scene.instantiate() as AvatarChip"),
+		"each student is an AvatarChip from the template")
+	for gone in ["func _add_pill(", "func _build_pill_badges_for_student(",
+			"func _add_embedded_bar_row(", "func _preview_gain(", "func _get_playful_texture("]:
+		assert_false(src.contains(gone), "the old card helper is gone: " + gone)
+	assert_true(src.contains("_pop_todays_gains(day_name, phase1_dur)"),
+		"a skill gain floats a +N from the student's chip")
+	var at := src.find("const _DAY_CHROME_PATHS")
+	var block := src.substr(at, src.find("]", at) - at)
+	assert_true(block.contains('"DayScreen/AvatarStrip"'), "the strip hides under the day summary")
 
 
 func test_debug_tutorial_bypass_skips_the_end_of_simulation_tutorial() -> void:
@@ -240,7 +257,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		"res://Scenes/SchoolSimulation/DailyDecayOverview.tscn": [
 			"Margin/Panel/Margin/VBox/ContinueButton"],
 		"res://Scenes/SchoolSimulation/ResultCheckup.tscn": [
-			"Margin/VBox/BtnClose"],
+			"Margin/VBox/Buttons/LogsButton", "Margin/VBox/Buttons/NextButton"],
 	}
 	for scene_path in targets.keys():
 		var inst := _instantiate(scene_path)
@@ -257,12 +274,21 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
-func test_day_progress_bar_is_a_statbar_filled_through_juice() -> void:
-	var bar := _day.get_node_or_null("DayScreen/ProgressBar")
-	assert_true(bar is StatBar, "the day-progress bar must be a StatBar")
+## Since the 2026-09-24 liveliness pass the day's progress is the banner's
+## fill: an invisible Range inside BookClockWidget's header drives it, and the
+## old bar in DayScreen is gone. The two Juice.fill_bar calls are unchanged.
+func test_day_progress_drives_the_banner_through_juice() -> void:
+	var bar := _day.get_node_or_null("BookClockWidget/Header/DayProgress")
+	assert_true(bar is Range, "the day's progress must be the banner's driver Range")
+	assert_true(_day.get_node_or_null("DayScreen/ProgressBar") == null,
+		"the separate day bar is retired -- the banner is the progress")
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
-	assert_true(src.contains("Juice.fill_bar(progress_bar"),
-		"the day-progress bar must be filled through Juice.fill_bar")
+	assert_true(src.contains("$BookClockWidget/Header/DayProgress"),
+		"progress_bar must be the banner's driver")
+	assert_eq(src.count("Juice.fill_bar(progress_bar"), 3,
+		"both day phases and the week's close still fill through Juice.fill_bar")
+	assert_true(src.contains('call("set_day_style"'),
+		"each day tints the banner fill with its category and motif")
 
 
 func test_background_is_token_driven() -> void:
@@ -295,22 +321,6 @@ func test_day_summary_deltas_count_up_with_audio_feedback() -> void:
 		"a net gain above target must play the success sfx")
 	assert_true(popup.contains("AudioDirector.play_sfx(&\"fail\")"),
 		"a net loss must play the fail sfx")
-
-
-func test_hazard_stripe_color_comes_from_tokens_at_runtime() -> void:
-	var warning := FileAccess.get_file_as_string(
-		"res://Scripts/SchoolSimulation/EventWarning.gd")
-	assert_true(warning.contains("set_shader_parameter"),
-		"EventWarning must drive the hazard shader from script")
-	assert_true(warning.contains("state_warning"),
-		"the hazard stripe color must come from tokens.state_warning")
-	var scene_src := FileAccess.get_file_as_string(
-		"res://Scenes/SchoolSimulation/EventWarning.tscn")
-	assert_false(scene_src.contains("shader_parameter/color1 = Color("),
-		"the stripe color must not stay baked into the scene's ShaderMaterial")
-	# The shader itself stays.
-	assert_true(scene_src.contains("HazardStripeShader.gdshader"),
-		"the hazard shader must be kept")
 
 
 func test_simulation_bgm_is_requested() -> void:
@@ -455,8 +465,8 @@ func test_initialize_from_gamestate_flags_the_fallback_roster_when_empty() -> vo
 func test_initialize_from_gamestate_does_not_flag_a_real_roster() -> void:
 	var saved_roster: Array = GameState.approved_students.duplicate()
 	GameState.approved_students = [{
-		"id": 1, "name": "Uji", "akademis1": 50, "akademis2": 50, "akademis3": 50,
-		"kepribadian1": 80, "kepribadian2": 80, "quirk": "", "persona": "Aktif",
+		"id": 1, "name": "Uji", "akademis": 50, "seni_budaya": 50, "olahraga": 50,
+		"mood": 80, "energy": 80, "quirk": "", "persona": "Aktif",
 		"hobby_category": "Akademis", "portrait": "", "splash": "",
 	}]
 
@@ -514,3 +524,403 @@ func test_minigame_category_has_uniform_noise() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
 	assert_true(src.contains("Balance.MINIGAME_KATEGORI_ACAK_PELUANG"),
 		"the minigame category pick must branch on the uniform-noise chance")
+
+
+# ------------------------------------------------ day-roll weights
+
+## Each school day rolls Normal / Minigame / Event from three weights. The
+## day loop (_roll_event) and the skip button (skip_to_results) used to
+## compute them separately, and the skip copy had lost Biang Onar's event
+## bonus -- a skipped week rolled events at different odds than a watched
+## one. SchoolDay.day_roll_weights() is now the one place they are
+## computed; it is static and pure, so these tests call it straight off the
+## script with hand-built counts and roster: no scene, no GameState.
+##
+## Expectations are written in terms of the script's ROLL_WEIGHT_* tuning
+## and Balance's bonus, so retuning a number never fails a test -- only a
+## wrong formula does.
+
+## The week's minigame cap these tests run under. It differs from the event
+## cap on purpose, so a helper that checked a counter against the other cap
+## fails.
+const _ROLL_MINIGAME_CAP := 3
+## The week's event cap these tests run under.
+const _ROLL_EVENT_CAP := 2
+
+
+## day_roll_weights() for a Senin, called straight off SchoolDay.gd.
+func _roll_weights(counts: Dictionary, roster: Array = [], schedules: Dictionary = {},
+		minigames_played: int = 0, events_triggered: int = 0) -> Dictionary:
+	var school_day = load(_SCHOOL_DAY_SCRIPT)
+	var weights: Dictionary = school_day.day_roll_weights(counts, roster, schedules, "Senin",
+		minigames_played, _ROLL_MINIGAME_CAP, events_triggered, _ROLL_EVENT_CAP)
+	return weights
+
+
+## One of SchoolDay.gd's ROLL_WEIGHT_* tuning constants.
+func _roll_tuning(const_name: String) -> int:
+	var school_day = load(_SCHOOL_DAY_SCRIPT)
+	return int(school_day.get(const_name))
+
+
+## A roster student carrying `quirk`, for the day-roll tests.
+func _roll_student(id: int, quirk: String) -> StudentData:
+	var s := StudentData.new()
+	s.id = id
+	s.quirk = quirk
+	return s
+
+
+## Studying students raise the minigame weight, resting students the normal
+## weight, and a Wirausaha student neither. Breaks if the helper mixes the
+## two counts up, or starts counting Wirausaha as either.
+func test_day_roll_weights_scale_with_who_studies_and_who_rests() -> void:
+	var counts := {"Akademis": 2, "Olahraga": 1, "SeniBudaya": 1, "Istirahat": 3, "Wirausaha": 2}
+	var weights: Dictionary = _roll_weights(counts)
+
+	assert_eq(weights.get("normal"), _roll_tuning("ROLL_WEIGHT_NORMAL_BASE")
+		+ 3 * _roll_tuning("ROLL_WEIGHT_NORMAL_PER_RESTING"),
+		"normal weight is the base plus one share per resting student")
+	assert_eq(weights.get("minigame"), 4 * _roll_tuning("ROLL_WEIGHT_MINIGAME_PER_STUDYING"),
+		"minigame weight is one share per student in Akademis, Olahraga or SeniBudaya")
+	assert_eq(weights.get("event"), _roll_tuning("ROLL_WEIGHT_EVENT_BASE"),
+		"with no Biang Onar on the roster the event weight is the flat base")
+
+
+## The bug this section exists for: a Biang Onar student in class that day
+## adds Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT to the event weight. The skip
+## path's old inline copy dropped exactly this term.
+func test_a_biang_onar_student_in_class_adds_the_event_bonus() -> void:
+	assert_gt(Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT, 0,
+		"precondition: a zero bonus cannot tell applied from dropped")
+	var roster := [_roll_student(1, "Biang Onar")]
+	var schedules := {1: {"Senin": {"category": "Akademis"}}}
+	var weights: Dictionary = _roll_weights({"Akademis": 1}, roster, schedules)
+
+	assert_eq(weights.get("event"),
+		_roll_tuning("ROLL_WEIGHT_EVENT_BASE") + Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT,
+		"a Biang Onar student studying that day adds the quirk's event bonus")
+
+
+## The bonus is per student, and anything but rest counts as in class --
+## Wirausaha included, as the day loop has always had it.
+func test_each_active_biang_onar_student_adds_their_own_bonus() -> void:
+	var roster := [_roll_student(1, "Biang Onar"), _roll_student(2, "Biang Onar")]
+	var schedules := {
+		1: {"Senin": {"category": "Olahraga"}},
+		2: {"Senin": {"category": "Wirausaha"}},
+	}
+	var weights: Dictionary = _roll_weights({"Olahraga": 1, "Wirausaha": 1}, roster, schedules)
+
+	assert_eq(weights.get("event"),
+		_roll_tuning("ROLL_WEIGHT_EVENT_BASE") + 2 * Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT,
+		"two Biang Onar students out of rest add the bonus twice")
+
+
+## No bonus from a Biang Onar student who is resting, off, scheduled only on
+## another day or not scheduled at all; from a student without the quirk;
+## or from id 0, the "no real student" id a placeholder schedule carries.
+func test_a_biang_onar_student_out_of_class_adds_nothing() -> void:
+	var roster := [
+		_roll_student(1, "Biang Onar"),  # resting
+		_roll_student(2, "Biang Onar"),  # day off
+		_roll_student(3, "Biang Onar"),  # scheduled on another day only
+		_roll_student(4, "Biang Onar"),  # no schedule at all
+		_roll_student(5, "Kutu Buku"),   # in class, but not the quirk
+		_roll_student(0, "Biang Onar"),  # in class, but id 0
+	]
+	var schedules := {
+		1: {"Senin": {"category": "Istirahat"}},
+		2: {"Senin": {"category": "DayOff"}},
+		3: {"Selasa": {"category": "Akademis"}},
+		5: {"Senin": {"category": "Akademis"}},
+		0: {"Senin": {"category": "Akademis"}},
+	}
+	var weights: Dictionary = _roll_weights({"Akademis": 2, "Istirahat": 1}, roster, schedules)
+
+	assert_eq(weights.get("event"), _roll_tuning("ROLL_WEIGHT_EVENT_BASE"),
+		"only a Biang Onar student with a real id and a non-rest activity that day earns the bonus")
+
+
+## The week's minigame cap zeroes the minigame weight once it is reached,
+## not a day before, and leaves the event weight alone.
+func test_the_minigame_cap_zeroes_the_minigame_weight() -> void:
+	var counts := {"Akademis": 3}
+	var open: Dictionary = _roll_weights(counts, [], {}, _ROLL_MINIGAME_CAP - 1)
+	var reached: Dictionary = _roll_weights(counts, [], {}, _ROLL_MINIGAME_CAP)
+
+	assert_eq(open.get("minigame"), 3 * _roll_tuning("ROLL_WEIGHT_MINIGAME_PER_STUDYING"),
+		"one minigame short of the cap, the day can still roll a minigame")
+	assert_eq(reached.get("minigame"), 0,
+		"at the cap the minigame weight is 0")
+	assert_eq(reached.get("event"), _roll_tuning("ROLL_WEIGHT_EVENT_BASE"),
+		"the minigame cap does not touch the event weight")
+
+
+## The week's event cap zeroes the event weight -- Biang Onar's bonus with
+## it -- once it is reached, not a day before, and leaves the minigame
+## weight alone.
+func test_the_event_cap_zeroes_the_event_weight_bonus_included() -> void:
+	var roster := [_roll_student(1, "Biang Onar")]
+	var schedules := {1: {"Senin": {"category": "Akademis"}}}
+	var counts := {"Akademis": 1}
+	var open: Dictionary = _roll_weights(counts, roster, schedules, 0, _ROLL_EVENT_CAP - 1)
+	var reached: Dictionary = _roll_weights(counts, roster, schedules, 0, _ROLL_EVENT_CAP)
+
+	assert_eq(open.get("event"),
+		_roll_tuning("ROLL_WEIGHT_EVENT_BASE") + Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT,
+		"one event short of the cap, the day keeps its event weight and the bonus")
+	assert_eq(reached.get("event"), 0,
+		"at the cap the event weight is 0, Biang Onar's bonus included")
+	assert_eq(reached.get("minigame"), _roll_tuning("ROLL_WEIGHT_MINIGAME_PER_STUDYING"),
+		"the event cap does not touch the minigame weight")
+
+
+## Both simulation paths must take their weights from the one helper, so a
+## watched week and a skipped week roll at the same odds. A source scan,
+## because neither path runs without the live scene (see the file header);
+## the tests above prove what the helper returns, this proves both ask it.
+func test_both_day_rolls_take_their_weights_from_the_shared_helper() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	for fn_name in ["_roll_event", "skip_to_results"]:
+		var body := _function_body(src, fn_name)
+		assert_true(body.contains("_todays_roll_weights("),
+			"%s() must take its day-roll weights from the shared helper" % fn_name)
+		assert_false(body.contains("SIFAT_BIANG_ONAR_PELUANG_EVENT"),
+			"%s() must not add Biang Onar's bonus itself -- the helper does" % fn_name)
+		assert_false(body.contains("active_studying"),
+			"%s() must not compute its own weights -- the helper does" % fn_name)
+
+
+## The source of `func <fn_name>(` up to the next top-level function, or ""
+## when there is no such function.
+func _function_body(src: String, fn_name: String) -> String:
+	var start := src.find("\nfunc %s(" % fn_name)
+	if start == -1:
+		return ""
+	var end := src.length()
+	for marker in ["\nfunc ", "\nstatic func "]:
+		var at := src.find(marker, start + 1)
+		if at != -1 and at < end:
+			end = at
+	return src.substr(start, end - start)
+
+
+# ───────────────────────────── the day/week header (2026-09-21)
+
+## With BookClockWidget's banner showing "Senin", DayScreen/DayLabel showed
+## it a second time a few hundred pixels away. ba98d10 hid it rather than
+## deleting it, and said so in as many words: removing a node from a shipped
+## scene was a bigger decision than de-duplicating a label needed to be.
+## The user made that call on 2026-09-22, so the node is gone and SchoolDay.gd
+## no longer references it at all. This pins the deletion both ways, because
+## a stray `$DayScreen/DayLabel` would now crash the screen rather than
+## quietly draw twice.
+func test_the_day_name_is_not_shown_twice() -> void:
+	var block := _scene_node_block('[node name="DayLabel" type="Label" parent="DayScreen"')
+	assert_true(block == "", "DayScreen/DayLabel must be deleted, not hidden")
+
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_false(src.contains("day_label"),
+		"SchoolDay.gd must not reference day_label once the node is gone")
+
+
+## The real defect the user reported: DayScreen started at 0.06 x 1920 = 115.2,
+## so "Hari 1 dari 5" crossed the top of the day pill and the progress bar cut
+## straight through "Senin", "Minggu" and "2/6".
+##
+## Reads the header's OWN offset_bottom rather than hardcoding 300. A literal
+## would keep passing while the header grew to 400 and the bar sliced the
+## badge again -- the exact drift this test exists to catch.
+func test_the_day_stack_clears_the_header_band() -> void:
+	var header := _day.get_node_or_null("BookClockWidget/Header") as Control
+	assert_true(header != null,
+		"BookClockWidget/Header must exist -- a rename must fail here loudly")
+	var stack := _day.get_node_or_null("DayScreen") as Control
+	assert_true(stack != null, "DayScreen must exist")
+	if header == null or stack == null:
+		return
+	assert_true(stack.offset_top >= header.offset_bottom,
+		"DayScreen starts at y %d but the header runs to y %d"
+			% [int(stack.offset_top), int(header.offset_bottom)])
+
+
+## The header is pixel-anchored to the top edge, so the stack below it must be
+## too. A fractional top anchor is precisely what let the gap between them
+## change with screen height: at 2400 the old 0.06 pushed the stack 29 px
+## further down than at 1920, away from a header that had not moved.
+func test_the_day_stack_is_pixel_anchored_to_both_edges() -> void:
+	var stack := _day.get_node_or_null("DayScreen") as Control
+	assert_true(stack != null, "DayScreen must exist")
+	if stack == null:
+		return
+	assert_eq(stack.anchor_left, 0.0, "DayScreen must pin to the left edge")
+	assert_eq(stack.anchor_top, 0.0, "DayScreen must pin to the top edge")
+	assert_eq(stack.anchor_right, 1.0, "DayScreen must pin to the right edge")
+	assert_eq(stack.anchor_bottom, 1.0, "DayScreen must pin to the bottom edge")
+
+
+## "Akhir Pekan" was written into DayLabel, which ba98d10 had made permanently
+## invisible -- so the end-of-week banner never reached the player at all. It
+## now goes to the widget's own day slot through set_banner(), which writes the
+## text WITHOUT rewinding the sky (set_day() would snap it back to sunrise on
+## the week's closing screen).
+func test_the_end_of_week_banner_reaches_the_player() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("Akhir Pekan"),
+		"the end-of-week banner text must survive the DayLabel deletion")
+	assert_true(src.contains("set_banner"),
+		"the banner must be routed to the widget through set_banner()")
+
+
+## CLAUDE.md's ## Conventions bans emoji as UI iconography outright, and
+## nothing tracked this one. Scoped to the single codepoint this branch
+## removed: the other display emoji on this screen are the back-button
+## branch's ledger, so a blanket scan would fail on work we deliberately
+## did not do. The glyph is built with String.chr so this file does not
+## itself carry it.
+func test_the_week_end_headline_carries_no_emoji() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_false(src.contains(String.chr(0x1F389)),
+		"the week-end headline must not carry a party-popper emoji")
+	assert_true(src.contains("Minggu selesai!"),
+		"the week-end headline itself must stay")
+
+
+## Hiding it in the scene is not enough. _set_day_chrome_visible(true) runs
+## after every day-summary popup and sets `visible = true` on everything in
+## _DAY_CHROME_PATHS, so leaving DayLabel in that list un-hides the duplicate
+## day name for the rest of the run -- and a test that only reads the .tscn
+## passes while the screen is wrong.
+func test_the_hidden_day_label_is_not_un_hidden_by_the_chrome_toggle() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var at := src.find("const _DAY_CHROME_PATHS")
+	assert_true(at >= 0, "_DAY_CHROME_PATHS must exist")
+	if at < 0:
+		return
+	var block := src.substr(at, src.find("]", at) - at)
+	assert_false(block.contains('"DayScreen/DayLabel"'),
+		"a permanently hidden label must not be in the show/hide list")
+	assert_true(block.contains('"DayScreen/StatusStrip"'),
+		"the status strip still hides for the summary popup")
+
+
+## One node's block in SchoolDay.tscn: from its [node] header to the next
+## one. A fixed character window is not good enough here -- DayNumberLabel
+## and DayLabel are seven lines apart, so a 400-char window read one node's
+## properties as the other's.
+func _scene_node_block(header: String) -> String:
+	var src := FileAccess.get_file_as_string(
+		"res://Scenes/SchoolSimulation/SchoolDay.tscn")
+	var start := src.find(header)
+	if start < 0:
+		return ""
+	var next := src.find("[node ", start + header.length())
+	return src.substr(start, (next - start) if next > 0 else -1)
+
+
+## "Hari 1 dari 5" is gone (2026-09-24 liveliness spec, owner-confirmed): the
+## banner's name carries the day, its fill carries the day's progress, and the
+## calendar badge carries the week.
+func test_the_day_counter_is_retired() -> void:
+	var block := _scene_node_block(
+		'[node name="DayNumberLabel" type="Label" parent="DayScreen"')
+	assert_true(block == "", "DayScreen/DayNumberLabel must be deleted")
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_false(src.contains("day_number_label"),
+		"SchoolDay.gd must not reference the deleted counter")
+	assert_false(src.contains("Hari %d dari %d"), "the counter's text is gone too")
+
+
+## The status line rides a dark scrim so it survives the dusk sky (the
+## reviewer's fault #2), faded in only for its beats (owner's pick).
+func test_the_status_line_rides_a_fading_scrim() -> void:
+	var strip := _day.get_node_or_null("DayScreen/StatusStrip") as PanelContainer
+	assert_true(strip != null, "DayScreen/StatusStrip must exist")
+	if strip == null:
+		return
+	assert_eq(strip.theme_type_variation, &"StatusScrim", "the strip is the StatusScrim variation")
+	assert_eq(strip.modulate.a, 0.0, "the strip starts hidden; beats fade it in")
+	var label := _day.get_node_or_null("DayScreen/StatusStrip/StatusLabel") as Label
+	assert_true(label != null, "StatusLabel lives on the strip")
+	if label:
+		assert_eq(label.theme_type_variation, &"StatusScrimLabel", "light text on the scrim")
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("func _set_status(text: String, hold: float = -1.0)"),
+		"status writes go through the fading helper")
+	assert_eq(src.count("status_label.text ="), 1,
+		"only _set_status writes the label; every beat goes through it")
+	assert_true(src.contains('_set_status("Minggu selesai! Selamat!")'),
+		"the week's close reroutes to the status strip")
+
+
+## The day ends on an ink stamp that replaced "<hari> selesai! ✓".
+func test_the_day_ends_on_an_ink_stamp() -> void:
+	var stamp := _day.get_node_or_null("DayStamp") as PanelContainer
+	assert_true(stamp != null, "the DayStamp must be authored in the scene")
+	if stamp:
+		assert_eq(stamp.theme_type_variation, &"DayStampPanel", "the stamp's variation")
+		assert_eq(stamp.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the stamp never eats a tap")
+		assert_eq(stamp.modulate.a, 0.0, "hidden until a day ends")
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_true(src.contains("await _play_day_stamp(day_name)"), "each day ends on the stamp")
+	assert_false(src.contains(" selesai! " + String.chr(0x2713)),
+		"the old tick line is gone")
+	assert_true(src.contains("GameSettings.reduce_motion"), "the stamp honours reduce_motion")
+
+
+# ───────────────────────────── the win screen's wiring (2026-09-25)
+
+func test_the_win_screen_shows_the_roster_average_rounded() -> void:
+	var school_day = load(_SCHOOL_DAY_SCRIPT)
+	var results := [
+		{"student_name": "A", "deltas": {"stat_delta": 8.0, "energy_delta": -3.0}},
+		{"student_name": "B", "deltas": {"stat_delta": 10.0, "energy_delta": -6.0}},
+		{"student_name": "C", "deltas": {"stat_delta": 0.0, "energy_delta": -6.0}},
+	]
+	assert_eq(school_day.roster_average(results, "stat_delta"), 6.0)
+	assert_eq(school_day.roster_average(results, "energy_delta"), -5.0)
+	assert_eq(school_day.roster_average([], "stat_delta"), 0.0, "an empty roster averages to nothing")
+
+
+func test_the_minigame_is_told_who_thanks_and_how_to_report() -> void:
+	var body := _function_body(FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT), "_play_minigame")
+	var reporter := body.find("result_reporter = ")
+	var context := body.find("host_context = ")
+	var start := body.find("start_minigame(")
+	assert_true(reporter != -1 and context != -1, "SchoolDay hands the minigame both")
+	assert_true(reporter < start and context < start, "before the minigame starts")
+
+
+## The stats are applied exactly once: by the reporter when it ran, else
+## (a minigame without BaseMinigame's hook) after the result as before.
+func test_the_result_is_recorded_once() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var report := _function_body(src, "_report_minigame_result")
+	assert_true(report.contains("record_minigame_result(") and report.contains("_minigame_recorded = true"))
+	var play := _function_body(src, "_play_minigame")
+	assert_true(play.contains("if student_manager and not _minigame_recorded:"),
+		"the old record after the result only runs when the reporter did not")
+
+
+## LOBBY leaves the week. Today's decay and roll already happened, and
+## skip_to_results() starts at current_day, so today must be stepped past
+## first or it is decayed and rolled twice.
+func test_lobby_steps_past_today_before_skipping() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	var leave := _function_body(src, "_leave_week_after_today")
+	var step := leave.find("current_day += 1")
+	var skip := leave.find("skip_to_results()")
+	assert_true(step != -1 and skip != -1 and step < skip, "step past today, then skip")
+	var play := _function_body(src, "_play_minigame")
+	assert_true(play.contains("&\"lobby\"") and play.contains("_leave_week_after_today()"),
+		"the minigame's LOBBY answer leads there")
+
+
+## The student who asked before the minigame is the one who thanks after it.
+func test_the_dialogue_remembers_its_featured_student() -> void:
+	var dlg := _function_body(FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT), "_show_event_dialogue")
+	var reset := dlg.find("_last_featured = null")
+	var keep := dlg.find("_last_featured = featured")
+	assert_true(reset != -1 and keep != -1 and reset < keep,
+		"cleared on entry (a skipped line leaves nobody), set once picked")

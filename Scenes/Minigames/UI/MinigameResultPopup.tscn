@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b5kea4h33q5vo" path="res://Scripts/Minigames/UI/MinigameResultPopup.gd" id="1_bw2jk"]
 [ext_resource type="PackedScene" uid="uid://bh43jlmr0mvth" path="res://Scenes/Minigames/UI/ResultStar.tscn" id="2_nclls"]
 [ext_resource type="Texture2D" uid="uid://c2nhb6m52di2u" path="res://Assets/Images/UI/Placeholders/icon_skor.svg" id="3_xm3lp"]
-[ext_resource type="PackedScene" uid="uid://wkhx361nmrwr" path="res://Scenes/Minigames/UI/ResultConfetti.tscn" id="4_moia8"]
+[ext_resource type="PackedScene" uid="uid://b1kjq7vxnf2ca" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="5_moia8"]
 
 [node name="MinigameResultPopup" type="CanvasLayer" unique_id=1587108605]
 process_mode = 3
@@ -60,7 +60,7 @@ layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="Dim/Center/Card/Layout" unique_id=255216878]
 layout_mode = 2
-theme_type_variation = &"ResultBodyLabel"
+theme_type_variation = &"ResultCardBodyLabel"
 horizontal_alignment = 1
 
 [node name="ScorePanel" type="PanelContainer" parent="Dim/Center/Card/Layout" unique_id=1083119830]
@@ -81,7 +81,7 @@ stretch_mode = 5
 
 [node name="ScorePrefixLabel" type="Label" parent="Dim/Center/Card/Layout/ScorePanel/ScoreRow" unique_id=346597186]
 layout_mode = 2
-theme_type_variation = &"ResultBodyLabel"
+theme_type_variation = &"ResultCardBodyLabel"
 text = "Skor:"
 
 [node name="ScoreValueLabel" type="Label" parent="Dim/Center/Card/Layout/ScorePanel/ScoreRow" unique_id=434410521]
@@ -173,5 +173,5 @@ layout_mode = 2
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
 
-[node name="ResultConfetti" parent="Dim" unique_id=530501178 instance=ExtResource("4_moia8")]
-position = Vector2(540, -20)
+[node name="ConfettiFireworks" parent="Dim" unique_id=842830919 instance=ExtResource("5_moia8")]
+layout_mode = 1

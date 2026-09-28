@@ -18,7 +18,7 @@ extends McpTestSuite
 ## 2026-08-31's 21-task pass converted the extraction-worthy shared UI
 ## (popups, cards, rows, panels duplicated across 2-3 screens) but did not
 ## attempt every remaining file -- BASELINE still carries real, substantial,
-## unconverted call sites (atur_jadwal.gd's 17, cut_scene.gd's 15,
+## unconverted call sites (AturJadwal.gd's 17, CutScene.gd's 4,
 ## Pengaturan.gd's 12, MinigameTutorial.gd's 12, and others). This is
 ## deliberately still a ratchet, not a closed rule: see "Known gaps" in
 ## docs/superpowers/design/authoring-guide.md for the full remaining list
@@ -62,13 +62,12 @@ const EXEMPT: Array[String] = [
 ## conversions land. Never raise one. See "Known gaps" in
 ## docs/superpowers/design/authoring-guide.md for what each one needs.
 const BASELINE: Dictionary = {
-	"res://Scripts/AturJadwal/atur_jadwal.gd": 17,
-	"res://Scripts/CutScene/cut_scene.gd": 15,
-	"res://Scripts/Koperasi/rakbarang_1.gd": 7,
-	"res://Scripts/Lobby/loby.gd": 8,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 17,
+	"res://Scripts/CutScene/CutScene.gd": 4,
+	"res://Scripts/Koperasi/KoperasiStage.gd": 1,
+	"res://Scripts/Lobby/Lobby.gd": 8,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 2,
-	"res://Scripts/Minigames/Akademis/Password.gd": 4,
-	"res://Scripts/Minigames/Akademis/Variabel.gd": 4,
+	"res://Scripts/Minigames/Akademis/Variabel.gd": 1,
 	"res://Scripts/Minigames/Olahraga/Badminton.gd": 8,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd": 2,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 7,
@@ -78,12 +77,11 @@ const BASELINE: Dictionary = {
 	"res://Scripts/Pengaturan.gd": 12,
 	"res://Scripts/SchoolSimulation/BookClockWidget.gd": 0,
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd": 6,
-	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 1,
 	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 1,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd": 9,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1,
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
-	"res://Scripts/StudentCard/student_card.gd": 1,
-	"res://Scripts/StudentList/student_list.gd": 7,
+	"res://Scripts/StudentCard/StudentCard.gd": 1,
+	"res://Scripts/StudentList/StudentList.gd": 7,
 	"res://Scripts/TutorialArrow.gd": 1,
 }
 
@@ -99,20 +97,11 @@ const ALLOWED: Dictionary = {
 	# create_floating_text(): one-shot damage/reward-style popup text,
 	# spawned at a caller-supplied position with caller-supplied text.
 	"res://Scripts/AnimUtils.gd": 1,
-	# _add_pill()'s chip icon+label: content and count vary per stat
-	# category on every refresh() call (Wirausaha shows a money chip,
-	# Istirahat shows none, etc).
-	"res://Scripts/AturJadwal/ActivityRow.gd": 2,
-	# _apply_visual_exports()'s icon TextureRect: only created when an
-	# @export icon texture is actually supplied, in place of the emoji
-	# fallback label -- the conditional texture-or-procedural swap.
-	"res://Scripts/SchoolSimulation/EventAnnouncement.gd": 2,
-	"res://Scripts/SchoolSimulation/EventWarning.gd": 2,
 	# Answer buttons: text and shuffled order regenerate per question: not
 	# fixed layout.
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,
-	# _apply_visual_exports()'s overlay TextureRect: same conditional
-	# texture-or-procedural swap as EventAnnouncement/EventWarning above.
+	# _apply_visual_exports()'s overlay TextureRect: only created when an
+	# @export texture is supplied -- a conditional texture-or-procedural swap.
 	"res://Scripts/Minigames/UI/PauseMenu.gd": 1,
 	# _sync_label()'s optional value-label overlay: created only when the
 	# show_value_label export is toggled on for that particular bar
@@ -131,6 +120,9 @@ const ALLOWED: Dictionary = {
 	# shape as RunResult's rows. Every visual lives in a .tscn; scans as 0.
 	"res://Scripts/EndGame/StatCheck.gd": 0,
 	"res://Scripts/EndGame/StatCheckRow.gd": 0,
+	# attach_to()'s shadow TextureRect: per-call-dynamic content attached to
+	# a runtime-randomised shelf item (Koperasi rework Task 5).
+	"res://Scripts/Koperasi/ShelfItem.gd": 1,
 }
 
 

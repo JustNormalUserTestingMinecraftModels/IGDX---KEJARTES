@@ -26,23 +26,23 @@ var minigame_canvas: CanvasLayer = null
 var panels: Dictionary = {}
 var tab_buttons: Dictionary = {}
 
-# --- Default Students Data (copied from student_card.gd for quick approval cheat) ---
+# --- Default Students Data (copied from StudentCard.gd for quick approval cheat) ---
 const DEFAULT_STUDENTS = [
 	{
 		"id": 1,
 		"name": "Marcel",
-		"portrait": "res://Assets/Images/MuridPotrait/Marcel.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Marcel.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_marcel.png",
-		"kepribadian1": 60.0,   # Mood
-		"kepribadian2": 55.0,   # Energy
-		"akademis1": 28.0,      # Akademis (Specialty)
-		"akademis2": 48.0,      # Seni Budaya
-		"akademis3": 38.0,      # Olahraga
-		"target_akademis1": 52.0,
-		"target_akademis2": 60.0,
-		"target_akademis3": 53.0,
-		"target_kepribadian1": 50.0,
-		"target_kepribadian2": 40.0,
+		"mood": 60.0,
+		"energy": 55.0,
+		"akademis": 28.0,  # Specialty
+		"seni_budaya": 48.0,
+		"olahraga": 38.0,
+		"target_akademis": 52.0,
+		"target_seni_budaya": 60.0,
+		"target_olahraga": 53.0,
+		"target_mood": 50.0,
+		"target_energy": 40.0,
 		"hobby_category": "Akademis",
 		"personality": "Tekun",
 		"quirk": "Kutu Buku",
@@ -52,18 +52,18 @@ const DEFAULT_STUDENTS = [
 	{
 		"id": 2,
 		"name": "Doni",
-		"portrait": "res://Assets/Images/MuridPotrait/Doni.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Doni.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_doni.png",
-		"kepribadian1": 55.0,   # Mood
-		"kepribadian2": 55.0,   # Energy
-		"akademis1": 38.0,      # Akademis
-		"akademis2": 22.0,      # Seni Budaya
-		"akademis3": 33.0,      # Olahraga (Specialty)
-		"target_akademis1": 50.0,
-		"target_akademis2": 40.0,
-		"target_akademis3": 51.0,
-		"target_kepribadian1": 40.0,
-		"target_kepribadian2": 35.0,
+		"mood": 55.0,
+		"energy": 55.0,
+		"akademis": 38.0,
+		"seni_budaya": 22.0,
+		"olahraga": 33.0,  # Specialty
+		"target_akademis": 50.0,
+		"target_seni_budaya": 40.0,
+		"target_olahraga": 51.0,
+		"target_mood": 40.0,
+		"target_energy": 35.0,
 		"hobby_category": "Olahraga",
 		"personality": "Aktif",
 		"quirk": "Semangat Juang",
@@ -73,18 +73,18 @@ const DEFAULT_STUDENTS = [
 	{
 		"id": 3,
 		"name": "Andi",
-		"portrait": "res://Assets/Images/MuridPotrait/Andi.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Andi.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_andi.png",
-		"kepribadian1": 60.0,   # Mood
-		"kepribadian2": 60.0,   # Energy
-		"akademis1": 48.0,      # Akademis
-		"akademis2": 55.0,      # Seni Budaya (Specialty)
-		"akademis3": 32.0,      # Olahraga
-		"target_akademis1": 60.0,
-		"target_akademis2": 64.0,
-		"target_akademis3": 53.0,
-		"target_kepribadian1": 60.0,
-		"target_kepribadian2": 55.0,
+		"mood": 60.0,
+		"energy": 60.0,
+		"akademis": 48.0,
+		"seni_budaya": 55.0,  # Specialty
+		"olahraga": 32.0,
+		"target_akademis": 60.0,
+		"target_seni_budaya": 64.0,
+		"target_olahraga": 53.0,
+		"target_mood": 60.0,
+		"target_energy": 55.0,
 		"hobby_category": "SeniBudaya",
 		"personality": "Kreatif",
 		"quirk": "Penasaran",
@@ -94,18 +94,18 @@ const DEFAULT_STUDENTS = [
 	{
 		"id": 4,
 		"name": "Citra",
-		"portrait": "res://Assets/Images/MuridPotrait/Citra.png",
+		"portrait": "res://Assets/Images/MuridPortrait/Citra.png",
 		"splash": "res://Assets/Images/SplashArtMurid/splash_citra.png",
-		"kepribadian1": 35.0,   # Mood
-		"kepribadian2": 60.0,   # Energy
-		"akademis1": 28.0,      # Akademis
-		"akademis2": 25.0,      # Seni Budaya
-		"akademis3": 15.0,      # Olahraga (Specialty)
-		"target_akademis1": 40.0,
-		"target_akademis2": 43.0,
-		"target_akademis3": 39.0,
-		"target_kepribadian1": 35.0,
-		"target_kepribadian2": 45.0,
+		"mood": 35.0,
+		"energy": 60.0,
+		"akademis": 28.0,
+		"seni_budaya": 25.0,
+		"olahraga": 15.0,  # Specialty
+		"target_akademis": 40.0,
+		"target_seni_budaya": 43.0,
+		"target_olahraga": 39.0,
+		"target_mood": 35.0,
+		"target_energy": 45.0,
 		"hobby_category": "Olahraga",
 		"personality": "Seni Dalam Kesunyian",
 		"quirk": "Penyendiri",
@@ -117,7 +117,7 @@ const DEFAULT_STUDENTS = [
 func _ready() -> void:
 	# Ensure the debug manager runs always, even when game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	layer = 128 # Above everything (Transition is 100)
+	layer = 1128 # Above everything, including the wipe (Transition is 1000)
 
 	_apply_playtest_defaults()
 
@@ -216,12 +216,14 @@ func _build_ui() -> void:
 	backdrop.color = Color(0.04, 0.06, 0.1, 0.92)
 	debug_ui_root.add_child(backdrop)
 	
-	# Mini Toggle Button (Floating visual helper, always visible unless closed)
+	# Mini Toggle Button — hidden so it stays off-screen during trailers.
+	# Use F1 / ~ or the 5-tap top-right gesture to open the overlay.
 	toggle_btn = Button.new()
 	toggle_btn.text = "🔧 DBG"
 	toggle_btn.custom_minimum_size = Vector2(160, 80)
 	toggle_btn.position = Vector2(30, 30)
 	toggle_btn.add_theme_font_size_override("font_size", 21)
+	toggle_btn.visible = false
 	toggle_btn.pressed.connect(toggle_overlay)
 	
 	var style_toggle = StyleBoxFlat.new()
@@ -280,7 +282,7 @@ func _build_ui() -> void:
 	tabs_hbox.add_theme_constant_override("separation", 12)
 	outer_vbox.add_child(tabs_hbox)
 	
-	var tab_names = ["General", "Students", "Minigames", "Scenes", "Logs"]
+	var tab_names = ["General", "Students", "Minigames", "Scenes", "Prestasi", "Feedback", "Logs", "Look"]
 	for tab in tab_names:
 		var btn = Button.new()
 		btn.text = tab
@@ -314,10 +316,20 @@ func _build_ui() -> void:
 	_build_students_panel(content_area)
 	_build_minigames_panel(content_area)
 	_build_scenes_panel(content_area)
+	_build_achievements_panel(content_area)
+	_build_feedback_panel(content_area)
 	_build_logs_panel(content_area)
-	
+	_build_look_panel(content_area)
+
 	# Default tab selection
 	_switch_tab("General")
+
+	if Achievements and not Achievements.state_changed.is_connected(_refresh_achievements_panel):
+		Achievements.state_changed.connect(_refresh_achievements_panel)
+
+func _exit_tree() -> void:
+	if Achievements and Achievements.state_changed.is_connected(_refresh_achievements_panel):
+		Achievements.state_changed.disconnect(_refresh_achievements_panel)
 
 func _switch_tab(tab_name: String) -> void:
 	for tab in panels:
@@ -389,6 +401,14 @@ func _build_general_panel(parent: Control) -> void:
 	btn_forget.add_theme_font_size_override("font_size", 23)
 	btn_forget.pressed.connect(_forget_session)
 	vbox.add_child(btn_forget)
+
+	var btn_skins = Button.new()
+	btn_skins.text = " 🎨 Kunci/Buka Semua Skin "
+	btn_skins.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_skins.custom_minimum_size = Vector2(0, 95)
+	btn_skins.add_theme_font_size_override("font_size", 23)
+	btn_skins.pressed.connect(_toggle_skin_locks)
+	vbox.add_child(btn_skins)
 	vbox.add_child(HSeparator.new())
 
 	# Row 1: Week tracking & Grade
@@ -689,12 +709,19 @@ func _seed_playtest_state() -> void:
 	_refresh_ui_fields()
 
 ## Debug: wipe in-memory GameState + the inventory save, then boot fresh.
+## Locks every non-default skin, or unlocks them again, so the skin popup's
+## darkened locked tiles can be seen while every shipped skin starts unlocked.
+func _toggle_skin_locks() -> void:
+	GameState.set_all_skins_locked(not GameState.all_skins_locked())
+	log_message("Skin: %s" % ("semua terkunci" if GameState.all_skins_locked() else "semua terbuka"))
+
+
 func _forget_session() -> void:
 	GameState.forget_session()
 	if debug_ui_root:
 		debug_ui_root.visible = false
 	log_message("Session forgotten: GameState reset, save deleted.")
-	Transition.change_scene("res://Scenes/MainMenu/main_menu.tscn", Transition.Style.FADE)
+	Transition.change_scene("res://Scenes/MainMenu/MainMenu.tscn", Transition.Style.FADE)
 
 func _set_time_scale(scale: float) -> void:
 	Engine.time_scale = scale
@@ -729,6 +756,7 @@ func _toggle_minigames_tutorial() -> void:
 	_refresh_ui_fields()
 
 func _refresh_ui_fields() -> void:
+	_refresh_achievements_panel()
 	if _lbl_week:
 		_lbl_week.text = "Minggu %d (Grade %d)" % [GameState.minggu_ke, GameState.current_grade]
 	if _lbl_money:
@@ -865,11 +893,11 @@ func _rebuild_student_stat_editor() -> void:
 		
 		# Stats layout: Stacked vertically (Label above buttons row) to prevent clipping
 		var stats_keys = [
-			{"key": "akademis1", "label": "Akademis", "color": Color(0.4, 0.65, 1.0)},
-			{"key": "akademis2", "label": "Seni Budaya", "color": Color(0.3, 0.9, 0.5)},
-			{"key": "akademis3", "label": "Olahraga", "color": Color(1.0, 0.4, 0.4)},
-			{"key": "kepribadian2", "label": "Energy ⚡", "color": Color(1.0, 0.85, 0.3)},
-			{"key": "kepribadian1", "label": "Mood 😊", "color": Color(1.0, 0.5, 0.85)}
+			{"key": "akademis", "label": "Akademis", "color": Color(0.4, 0.65, 1.0)},
+			{"key": "seni_budaya", "label": "Seni Budaya", "color": Color(0.3, 0.9, 0.5)},
+			{"key": "olahraga", "label": "Olahraga", "color": Color(1.0, 0.4, 0.4)},
+			{"key": "energy", "label": "Energy ⚡", "color": Color(1.0, 0.85, 0.3)},
+			{"key": "mood", "label": "Mood 😊", "color": Color(1.0, 0.5, 0.85)}
 		]
 		
 		for stat_info in stats_keys:
@@ -912,14 +940,14 @@ func _rebuild_student_stat_editor() -> void:
 			row_btns.add_child(btn_plus)
 			
 			var btn_zero = Button.new()
-			if key == "kepribadian2" or key == "kepribadian1":
+			if key == "energy" or key == "mood":
 				btn_zero.text = "Set 5" # Sickness boundary
 			else:
 				btn_zero.text = "Set 0"
 			btn_zero.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			btn_zero.custom_minimum_size = Vector2(0, 75)
 			btn_zero.add_theme_font_size_override("font_size", 20)
-			btn_zero.pressed.connect(func(): _set_student_stat(s_name, key, 5.0 if (key == "kepribadian2" or key == "kepribadian1") else 0.0))
+			btn_zero.pressed.connect(func(): _set_student_stat(s_name, key, 5.0 if (key == "energy" or key == "mood") else 0.0))
 			row_btns.add_child(btn_zero)
 			
 			var btn_max = Button.new()
@@ -994,22 +1022,16 @@ func _set_student_stat(student_name: String, key: String, target_val: float) -> 
 			
 	_refresh_ui_fields()
 
+## The StudentData stat fields the stat editor reads and writes; each is also
+## the roster Dictionary key of the same name.
+const STAT_FIELDS: PackedStringArray = ["akademis", "seni_budaya", "olahraga", "mood", "energy"]
+
 func _get_student_resource_value(s: StudentData, key: String) -> float:
-	match key:
-		"akademis1": return s.akademis
-		"akademis2": return s.seni_budaya
-		"akademis3": return s.olahraga
-		"kepribadian2": return s.energy
-		"kepribadian1": return s.mood
-	return 50.0
+	return float(s.get(key)) if STAT_FIELDS.has(key) else 50.0
 
 func _set_student_resource_value(s: StudentData, key: String, val: float) -> void:
-	match key:
-		"akademis1": s.akademis = val
-		"akademis2": s.seni_budaya = val
-		"akademis3": s.olahraga = val
-		"kepribadian2": s.energy = val
-		"kepribadian1": s.mood = val
+	if STAT_FIELDS.has(key):
+		s.set(key, val)
 
 # --- Minigames & Standalone Testing Panel ---
 var _btn_autowin: Button
@@ -1178,7 +1200,14 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 	log_message("Loading standalone minigame: " + scene_path)
 	
 	minigame_canvas = CanvasLayer.new()
-	minigame_canvas.layer = 125 # Just below debug menu (128)
+	# 125, NOT up with the rest of the debug block at 1124-1128. This canvas
+	# hosts a REAL minigame, which brings its own CanvasLayers with it: UI at
+	# 100, the countdown at 150, the tutorial at 500 and the result popup at
+	# 999. Host it above those and it covers them -- at 1125 the standalone
+	# launcher's result popup rendered underneath the minigame and was simply
+	# invisible. Game content belongs below the wipe; only the overlay chrome
+	# needs to sit above it.
+	minigame_canvas.layer = 125
 	add_child(minigame_canvas)
 	
 	var m_scene = load(scene_path)
@@ -1256,10 +1285,10 @@ func _build_scenes_panel(parent: Control) -> void:
 	vbox.add_child(lbl_title)
 	
 	var scenes_list = [
-		{"name": "Menu Utama (MainMenu)", "path": "res://Scenes/MainMenu/main_menu.tscn"},
-		{"name": "Lobi Kelas (Lobby)", "path": "res://Scenes/Lobby/loby.tscn"},
-		{"name": "Pilih Murid (StudentCard)", "path": "res://Scenes/StudentCard/student_card.tscn"},
-		{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/atur_jadwal.tscn"},
+		{"name": "Menu Utama (MainMenu)", "path": "res://Scenes/MainMenu/MainMenu.tscn"},
+		{"name": "Lobi Kelas (Lobby)", "path": "res://Scenes/Lobby/Lobby.tscn"},
+		{"name": "Pilih Murid (StudentCard)", "path": "res://Scenes/StudentCard/StudentCard.tscn"},
+		{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/AturJadwal.tscn"},
 		{"name": "Simulasi Hari (SchoolDay)", "path": "res://Scenes/SchoolSimulation/SchoolDay.tscn"},
 		{"name": "Pilih Toko (ShopHub)", "path": "res://Scenes/Koperasi/ShopHub.tscn"},
 		{"name": "Notice Tes Besar (TesNotice)", "path": "res://Scenes/EndGame/TesNotice.tscn"},
@@ -1275,6 +1304,13 @@ func _build_scenes_panel(parent: Control) -> void:
 		btn.add_theme_font_size_override("font_size", 21)
 		btn.pressed.connect(func(): _teleport_to_scene(sc["path"]))
 		vbox.add_child(btn)
+
+	var btn_week_report = Button.new()
+	btn_week_report.text = " 📊 Laporan Mingguan (ResultCheckup) "
+	btn_week_report.custom_minimum_size = Vector2(0, 95)
+	btn_week_report.add_theme_font_size_override("font_size", 21)
+	btn_week_report.pressed.connect(_open_week_report_preview)
+	vbox.add_child(btn_week_report)
 
 	var sep_rehearsal = HSeparator.new()
 	vbox.add_child(sep_rehearsal)
@@ -1380,7 +1416,275 @@ func _restore_before_rehearsal() -> void:
 		GameState.get_grade_name(), GameState.minggu_ke])
 	_refresh_ui_fields()
 
+## The weekly report preview's host layer, or null when none is open.
+var _week_report_canvas: CanvasLayer = null
+## The preview's layer: just under the standalone minigame launcher's (125).
+## Like that one this hosts a real screen (ResultCheckup) rather than overlay
+## chrome, so it stays below the transition wipe with the game content. Only
+## the overlay itself (1128) sits above the wipe.
+const WEEK_REPORT_LAYER := 124
+
+## Opens the weekly report (ResultCheckup) over the current screen, filled
+## with WeekReportRehearsal's sample week, so its reveal can be watched in
+## one click. Nothing in the run changes: the sample lands on a throwaway
+## StudentManager, and the report writes nothing. The host layer hangs off
+## the current scene, so a teleport takes it down too.
+func _open_week_report_preview() -> void:
+	if is_instance_valid(_week_report_canvas):
+		log_message("Laporan mingguan sudah terbuka.")
+		return
+	if GameState.approved_students.is_empty():
+		_auto_approve_students()
+	var manager: StudentManager = StudentManager.new()
+	manager.initialize_from_gamestate()
+	var coins: int = WeekReportRehearsal.apply_sample_week(manager)
+	_set_time_scale(1.0)
+	var host: Node = get_tree().current_scene if get_tree().current_scene != null else self
+	_week_report_canvas = CanvasLayer.new()
+	_week_report_canvas.layer = WEEK_REPORT_LAYER
+	host.add_child(_week_report_canvas)
+	var report = load(WeekReportRehearsal.REPORT_SCENE).instantiate()
+	_week_report_canvas.add_child(report)
+	report.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	report.initialize_checkup(manager, coins)
+	# The report has copied everything it reads; the manager is a Node.
+	manager.free()
+	report.checkup_closed.connect(_close_week_report_preview)
+	if debug_ui_root and debug_ui_root.visible:
+		toggle_overlay()
+	log_message("Laporan mingguan dibuka dengan minggu contoh (%d murid)." % GameState.approved_students.size())
+
+
+## Frees the preview once its Selanjutnya has faded it out.
+func _close_week_report_preview() -> void:
+	if is_instance_valid(_week_report_canvas):
+		_week_report_canvas.queue_free()
+	_week_report_canvas = null
+
+# --- Achievements (Prestasi) Tab Panel ---
+## Row widgets keyed by achievement id, so the state_changed refresh can
+## update labels/buttons live without rebuilding the whole list.
+var _achievement_rows: Dictionary = {}
+var _lbl_achievements_readout: Label
+
+func _build_achievements_panel(parent: Control) -> void:
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	panels["Prestasi"] = scroll
+
+	var margin_container = MarginContainer.new()
+	margin_container.add_theme_constant_override("margin_left", 30)
+	margin_container.add_theme_constant_override("margin_top", 30)
+	margin_container.add_theme_constant_override("margin_right", 30)
+	margin_container.add_theme_constant_override("margin_bottom", 30)
+	margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin_container)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 20)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin_container.add_child(vbox)
+
+	var lbl_title = Label.new()
+	lbl_title.text = "Debug Prestasi (Achievements):"
+	lbl_title.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_title)
+
+	# Global controls
+	var grid_global_btns = GridContainer.new()
+	grid_global_btns.columns = 3
+	grid_global_btns.add_theme_constant_override("h_separation", 15)
+	grid_global_btns.add_theme_constant_override("v_separation", 15)
+	grid_global_btns.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(grid_global_btns)
+
+	var btn_unlock_all = Button.new()
+	btn_unlock_all.text = " 🔓 Buka semua "
+	btn_unlock_all.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_unlock_all.custom_minimum_size = Vector2(0, 90)
+	btn_unlock_all.add_theme_font_size_override("font_size", 21)
+	btn_unlock_all.pressed.connect(_debug_unlock_all_achievements)
+	grid_global_btns.add_child(btn_unlock_all)
+
+	var btn_reset_all = Button.new()
+	btn_reset_all.text = " 🧹 Reset semua "
+	btn_reset_all.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_reset_all.custom_minimum_size = Vector2(0, 90)
+	btn_reset_all.add_theme_font_size_override("font_size", 21)
+	btn_reset_all.pressed.connect(_debug_reset_all_achievements)
+	grid_global_btns.add_child(btn_reset_all)
+
+	var btn_random = Button.new()
+	btn_random.text = " 🎲 Buka acak "
+	btn_random.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_random.custom_minimum_size = Vector2(0, 90)
+	btn_random.add_theme_font_size_override("font_size", 21)
+	btn_random.pressed.connect(_debug_unlock_random_achievement)
+	grid_global_btns.add_child(btn_random)
+
+	_lbl_achievements_readout = Label.new()
+	_lbl_achievements_readout.add_theme_font_size_override("font_size", 24)
+	_lbl_achievements_readout.add_theme_color_override("font_color", Color(0.3, 0.8, 1.0))
+	vbox.add_child(_lbl_achievements_readout)
+
+	vbox.add_child(HSeparator.new())
+
+	# One row per catalog entry
+	_achievement_rows.clear()
+	for entry in AchievementCatalog.ENTRIES:
+		var row = HBoxContainer.new()
+		row.add_theme_constant_override("separation", 15)
+		vbox.add_child(row)
+
+		var icon_tex = load(AchievementCatalog.icon_path(entry.id)) if ResourceLoader.exists(AchievementCatalog.icon_path(entry.id)) else null
+		if icon_tex:
+			var icon_rect = TextureRect.new()
+			icon_rect.texture = icon_tex
+			icon_rect.custom_minimum_size = Vector2(16, 16)
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			row.add_child(icon_rect)
+
+		var lbl_row_title = Label.new()
+		lbl_row_title.text = String(entry.title)
+		lbl_row_title.add_theme_font_size_override("font_size", 18)
+		lbl_row_title.custom_minimum_size = Vector2(360, 0)
+		lbl_row_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(lbl_row_title)
+
+		var lbl_state = Label.new()
+		lbl_state.add_theme_font_size_override("font_size", 18)
+		lbl_state.custom_minimum_size = Vector2(110, 0)
+		row.add_child(lbl_state)
+
+		var btn_unlock = Button.new()
+		btn_unlock.text = "Buka"
+		btn_unlock.custom_minimum_size = Vector2(0, 70)
+		btn_unlock.pressed.connect(func(): Achievements.debug_unlock(entry.id))
+		row.add_child(btn_unlock)
+
+		var btn_claim = Button.new()
+		btn_claim.text = "Klaim"
+		btn_claim.custom_minimum_size = Vector2(0, 70)
+		btn_claim.pressed.connect(func(): Achievements.claim(entry.id))
+		row.add_child(btn_claim)
+
+		var btn_relock = Button.new()
+		btn_relock.text = "Kunci lagi"
+		btn_relock.custom_minimum_size = Vector2(0, 70)
+		btn_relock.pressed.connect(func(): Achievements.relock(entry.id))
+		row.add_child(btn_relock)
+
+		_achievement_rows[entry.id] = {
+			"state_label": lbl_state,
+			"claim_btn": btn_claim,
+			"relock_btn": btn_relock,
+		}
+
+	_refresh_achievements_panel()
+
+## Fires debug_unlock for every catalog entry -- queues up to 26 toasts
+## through AchievementToast; a stress test for the toast queue.
+func _debug_unlock_all_achievements() -> void:
+	for entry in AchievementCatalog.ENTRIES:
+		Achievements.debug_unlock(entry.id)
+	log_message("Prestasi: semua entri dibuka (debug_unlock).")
+
+func _debug_reset_all_achievements() -> void:
+	Achievements.reset_all()
+	log_message("Prestasi: semua progres direset.")
+
+## Unlocks one random locked entry; no-op (with a log line) when none remain.
+func _debug_unlock_random_achievement() -> void:
+	var locked_ids: Array = []
+	for entry in AchievementCatalog.ENTRIES:
+		if Achievements.state_of(entry.id) == Achievements.STATE_LOCKED:
+			locked_ids.append(entry.id)
+	if locked_ids.is_empty():
+		log_message("Prestasi: tidak ada entri terkunci untuk dibuka.")
+		return
+	var id: String = locked_ids[randi() % locked_ids.size()]
+	Achievements.debug_unlock(id)
+
+## Keeps the readout and every row's state label/button enabled-ness in sync
+## with Achievements. Connected to Achievements.state_changed and also
+## called whenever the tab is (re)built or shown.
+func _refresh_achievements_panel() -> void:
+	if not is_instance_valid(_lbl_achievements_readout):
+		return
+	var total: int = Achievements.total_count()
+	var unclaimed: int = Achievements.total_unclaimed_count()
+	var opened_or_claimed: int = 0
+	for entry in AchievementCatalog.ENTRIES:
+		if Achievements.state_of(entry.id) != Achievements.STATE_LOCKED:
+			opened_or_claimed += 1
+	_lbl_achievements_readout.text = "%d / %d dibuka · %d belum diambil" % [opened_or_claimed, total, unclaimed]
+
+	for id in _achievement_rows:
+		var widgets: Dictionary = _achievement_rows[id]
+		var state: int = Achievements.state_of(id)
+		var lbl_state: Label = widgets["state_label"]
+		var btn_claim: Button = widgets["claim_btn"]
+		var btn_relock: Button = widgets["relock_btn"]
+		match state:
+			Achievements.STATE_LOCKED:
+				lbl_state.text = "Terkunci"
+			Achievements.STATE_UNLOCKED:
+				lbl_state.text = "Terbuka"
+			Achievements.STATE_CLAIMED:
+				lbl_state.text = "Diambil"
+		btn_claim.disabled = state != Achievements.STATE_UNLOCKED
+		btn_relock.disabled = state == Achievements.STATE_LOCKED
+
 # --- Logs/Console Panel ---
+## Reward feedback audition gallery (2026-09-23). One button per RewardFeedback
+## moment, firing the real combo against the current scene, plus a switch that
+## hides the desktop haptic pip so trailer footage records clean.
+func _build_feedback_panel(parent: Control) -> void:
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	panels["Feedback"] = scroll
+
+	var margin = MarginContainer.new()
+	for side in ["left", "top", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 30)
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 18)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.add_child(vbox)
+
+	# Clean-record switch: hide the haptic pip while everything else fires.
+	var clean = CheckButton.new()
+	clean.text = " Tampilkan Indikator Haptic "
+	clean.button_pressed = Haptics.show_indicator
+	clean.add_theme_font_size_override("font_size", 22)
+	clean.toggled.connect(func(on: bool): Haptics.show_indicator = on)
+	vbox.add_child(clean)
+
+	for moment in RewardFeedback.RECIPES:
+		var btn = Button.new()
+		btn.text = "  ▶  " + String(moment)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.custom_minimum_size = Vector2(0, 80)
+		btn.add_theme_font_size_override("font_size", 22)
+		var m: StringName = moment
+		btn.pressed.connect(func():
+			var opts := {}
+			if m == &"star_earned":
+				opts = {"step": 3}
+			elif m == &"badge_reveal":
+				opts = {"band": "Amazing"}
+			RewardFeedback.play(m, get_tree().current_scene, opts)
+			log_message("Fired reward feedback: " + String(m)))
+		vbox.add_child(btn)
+
+
 func _build_logs_panel(parent: Control) -> void:
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1430,3 +1734,147 @@ func _build_logs_panel(parent: Control) -> void:
 	log_text_label.add_theme_constant_override("line_spacing", 6)
 	log_text_label.text = ""
 	log_panel.add_child(log_text_label)
+
+# --- Illustration Look Tuner Tab Panel ---
+## Live control over the illustration look: inner AO, the rim light and the
+## Lobby's shafts. Every slider writes to a SHARED material, so one drag moves
+## every plate on screen at once -- which is the point. Nothing here persists;
+## when a value looks right, write it into the .tres.
+func _build_look_panel(parent: Control) -> void:
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	panels["Look"] = scroll
+
+	var margin_container = MarginContainer.new()
+	margin_container.add_theme_constant_override("margin_left", 30)
+	margin_container.add_theme_constant_override("margin_top", 30)
+	margin_container.add_theme_constant_override("margin_right", 30)
+	margin_container.add_theme_constant_override("margin_bottom", 30)
+	margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin_container)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 24)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin_container.add_child(vbox)
+
+	var lbl_title = Label.new()
+	lbl_title.text = "Tampilan Ilustrasi (live, tidak tersimpan):"
+	lbl_title.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_title)
+
+	# The cutout, the Lobby's desks and the Lobby's faces share their AO and rim
+	# values (test_illustration_ao pins it), so one slider drives all three.
+	var cutouts: Array = [
+		load("res://Scripts/Shaders/illustration_grade_cutout.tres"),
+		load("res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"),
+		load("res://Scripts/Shaders/illustration_grade_face.tres"),
+	]
+	_add_look_slider(vbox, cutouts, "ao_strength", "Kekuatan AO", 0.0, 1.0, 0.01)
+	_add_look_slider(vbox, cutouts, "ao_radius_px", "Lebar AO (piksel layar)", 0.0, 16.0, 0.5)
+	_add_look_slider(vbox, cutouts, "rim_strength", "Kekuatan Rim", 0.0, 0.8, 0.01)
+	_add_look_slider(vbox, cutouts, "rim_radius_px", "Lebar Rim (piksel layar)", 0.0, 16.0, 0.5)
+
+	var lbl_shafts = Label.new()
+	lbl_shafts.text = "Cahaya Jendela (khusus Lobby):"
+	lbl_shafts.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_shafts)
+
+	var shafts: ShaderMaterial = load("res://Scripts/Shaders/window_shafts_material.tres")
+	_add_look_slider(vbox, [shafts], "intensity", "Kekuatan Cahaya", 0.0, 0.4, 0.005)
+	_add_look_slider(vbox, [shafts], "shaft_count", "Jumlah Berkas", 3.0, 16.0, 1.0)
+
+	# The Lobby's WorldEnvironment glow. The resource is the cached instance the
+	# Lobby's WorldEnvironment wears, so a change shows on the next frame.
+	var lbl_glow = Label.new()
+	lbl_glow.text = "Bloom WorldEnvironment (khusus Lobby):"
+	lbl_glow.add_theme_font_size_override("font_size", 26)
+	vbox.add_child(lbl_glow)
+
+	var env: Environment = load("res://Scenes/Lobby/lobby_environment.tres")
+	if env != null:
+		var glow_on = CheckButton.new()
+		glow_on.text = " Bloom Aktif "
+		glow_on.button_pressed = env.glow_enabled
+		glow_on.add_theme_font_size_override("font_size", 22)
+		glow_on.toggled.connect(func(on: bool): env.glow_enabled = on)
+		vbox.add_child(glow_on)
+
+		var blend = OptionButton.new()
+		for mode_name in ["Additive", "Screen", "Softlight", "Replace", "Mix"]:
+			blend.add_item(mode_name)
+		blend.selected = env.glow_blend_mode
+		blend.custom_minimum_size = Vector2(0, 60)
+		blend.add_theme_font_size_override("font_size", 22)
+		blend.item_selected.connect(func(i: int): env.glow_blend_mode = i)
+		vbox.add_child(blend)
+
+		_add_env_slider(vbox, env, "glow_intensity", "Intensitas", 0.0, 4.0, 0.05)
+		_add_env_slider(vbox, env, "glow_strength", "Kekuatan", 0.0, 2.0, 0.05)
+		_add_env_slider(vbox, env, "glow_bloom", "Bloom Menyeluruh", 0.0, 1.0, 0.01)
+		_add_env_slider(vbox, env, "glow_hdr_threshold", "Ambang Terang", 0.0, 1.0, 0.01)
+
+	var lbl_note = Label.new()
+	lbl_note.text = "Catatan: nilai di sini hilang saat keluar. Salin ke .tres kalau sudah pas."
+	lbl_note.add_theme_font_size_override("font_size", 20)
+	lbl_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(lbl_note)
+
+
+## One labelled slider bound to one shader uniform, written to every material
+## in `mats` at once. The label reads the first.
+func _add_look_slider(parent: Control, mats: Array, uniform: String,
+		caption: String, min_value: float, max_value: float, step: float) -> void:
+	var live: Array = mats.filter(func(m): return m is ShaderMaterial)
+	if live.is_empty():
+		return
+	var row = VBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	parent.add_child(row)
+
+	var lbl = Label.new()
+	var current: float = float(live[0].get_shader_parameter(uniform))
+	lbl.text = "%s: %.3f" % [caption, current]
+	lbl.add_theme_font_size_override("font_size", 22)
+	row.add_child(lbl)
+
+	var slider = HSlider.new()
+	slider.min_value = min_value
+	slider.max_value = max_value
+	slider.step = step
+	slider.value = current
+	slider.custom_minimum_size = Vector2(0, 60)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(func(v: float):
+		for mat in live:
+			mat.set_shader_parameter(uniform, v)
+		lbl.text = "%s: %.3f" % [caption, v])
+	row.add_child(slider)
+
+
+## One labelled slider bound to one float property of an Environment.
+func _add_env_slider(parent: Control, env: Environment, property: String,
+		caption: String, min_value: float, max_value: float, step: float) -> void:
+	var row = VBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	parent.add_child(row)
+
+	var lbl = Label.new()
+	var current: float = float(env.get(property))
+	lbl.text = "%s: %.3f" % [caption, current]
+	lbl.add_theme_font_size_override("font_size", 22)
+	row.add_child(lbl)
+
+	var slider = HSlider.new()
+	slider.min_value = min_value
+	slider.max_value = max_value
+	slider.step = step
+	slider.value = current
+	slider.custom_minimum_size = Vector2(0, 60)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(func(v: float):
+		env.set(property, v)
+		lbl.text = "%s: %.3f" % [caption, v])
+	row.add_child(slider)

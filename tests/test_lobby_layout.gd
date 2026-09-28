@@ -41,7 +41,7 @@ const DESIGN_RECTS := {
 	"Inventory": Rect2(397, 1656, 285, 160),
 	"ReportStudent": Rect2(706, 1656, 285, 160),
 	"ChevronGrip": Rect2(214, 1352, 280, 96),
-	"DisplayUang": Rect2(772, 48, 260, 112),
+	"DisplayUang": Rect2(672, 48, 360, 112),
 	"IconRail": Rect2(936, 1040, 96, 456),
 	"DailyLogin": Rect2(936, 1040, 96, 96),
 	"SettingsButton": Rect2(936, 1160, 96, 96),
@@ -103,10 +103,12 @@ func test_nav_tiles_share_one_height_and_one_baseline() -> void:
 		var tile := _hud(NAV_TILES[i])
 		if tile == null:
 			continue
-		assert_eq(tile.get_global_rect().size.y, first.get_global_rect().size.y,
+		# The authored rects, not get_global_rect(): the scrapbook tiles carry a
+		# slight tilt each, which moves their global position but not their row.
+		assert_eq(_authored_rect(tile).size.y, _authored_rect(first).size.y,
 			"%s height differs from %s -- the three tiles are one row"
 				% [NAV_TILES[i], NAV_TILES[0]])
-		assert_eq(tile.get_global_rect().position.y, first.get_global_rect().position.y,
+		assert_eq(_authored_rect(tile).position.y, _authored_rect(first).position.y,
 			"%s top differs from %s -- they must share a baseline"
 				% [NAV_TILES[i], NAV_TILES[0]])
 

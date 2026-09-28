@@ -906,7 +906,7 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -260.0
+offset_left = -360.0
 offset_bottom = 112.0
 grow_horizontal = 0
 mouse_filter = 2
@@ -914,7 +914,7 @@ theme_type_variation = &"CoinPlate"
 
 [node name="CoinIcon" type="TextureRect" parent="Safe/UI/DisplayUang" unique_id=1731951124]
 layout_mode = 0
-offset_left = 16.0
+offset_left = 20.0
 offset_top = 24.0
 offset_right = 76.0
 offset_bottom = 84.0
@@ -925,9 +925,9 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="Safe/UI/DisplayUang" unique_id=664496077]
 layout_mode = 0
-offset_left = 76.0
+offset_left = 80.0
 offset_top = 24.0
-offset_right = 152.0
+offset_right = 248.0
 offset_bottom = 84.0
 theme_type_variation = &"CoinLabel"
 text = "50"
@@ -938,9 +938,9 @@ vertical_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 0
-offset_left = 156.0
+offset_left = 252.0
 offset_top = 8.0
-offset_right = 252.0
+offset_right = 348.0
 offset_bottom = 104.0
 theme_type_variation = &"PlusButton"
 disabled = true
@@ -1052,6 +1052,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="BookHud" type="Control" parent="Safe/UI/Hud" unique_id=162709174]
@@ -1114,16 +1116,16 @@ layout_mode = 0
 offset_top = 100.0
 offset_right = 532.0
 offset_bottom = 136.0
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"ResultDeltaLabel"
 text = "Atur kegiatan minggu ini"
 horizontal_alignment = 1
 
 [node name="RosterChip" type="PanelContainer" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage" unique_id=1560066548]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 32.0
+offset_left = 424.0
 offset_top = -18.0
-offset_right = 212.0
+offset_right = 548.0
 offset_bottom = 26.0
 mouse_filter = 2
 theme_type_variation = &"RosterChip"
@@ -1235,6 +1237,8 @@ anchor_bottom = 1.0
 offset_left = -96.0
 offset_top = -832.0
 offset_bottom = -376.0
+grow_horizontal = 0
+grow_vertical = 0
 mouse_filter = 2
 theme_override_constants/separation = 24
 
@@ -1280,6 +1284,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = -200.0
 offset_bottom = -152.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_type_variation = &"CaptionLabel"
 text = "Ketuk dua kali untuk buka HUD."
 horizontal_alignment = 1

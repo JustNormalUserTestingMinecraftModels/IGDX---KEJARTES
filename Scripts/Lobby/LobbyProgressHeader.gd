@@ -54,5 +54,6 @@ func _slide_bar(from_stars: float, to_stars: float) -> void:
 ## Moves the one-shot sparkle to where the bar will end, and fires it.
 func _sparkle_at(stars: float) -> void:
 	var tip_x: float = star_bar.size.x * stars / Balance.STARS_TOTAL
-	tip_sparkle.position = Vector2(star_bar.position.x + tip_x, tip_sparkle.position.y)
+	# TipSparkle is StarBar's child, so tip_x is already in the bar's frame.
+	tip_sparkle.position = Vector2(tip_x, tip_sparkle.position.y)
 	tip_sparkle.restart()

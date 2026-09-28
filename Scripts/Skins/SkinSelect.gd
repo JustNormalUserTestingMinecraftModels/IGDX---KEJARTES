@@ -5,8 +5,10 @@ extends Control
 ## The Lobby's skin picker (SkinSelect.tscn; mockup skinselection_mockup.png,
 ## spec docs/superpowers/specs/2026-09-22-skin-select-screen-design.md).
 ## A full-screen surface over a blurred Lobby: the open character's splash in
-## a horizontal carousel of their skins, a rail of all six characters
-## underneath, and one TERAPKAN button.
+## a horizontal carousel of their skins, a rail of the current roster's
+## characters underneath in a scrapbook paper tray, and one TERAPKAN button.
+## The tray's "Kelasmu - N murid" header (RosterHeader) is set from _names in
+## open(); its "ketuk untuk pilih" hint is authored, static text.
 ##
 ## It stays an OVERLAY the Lobby instantiates, not a scene of its own, even
 ## though the brief asked for a scene. A Transition.change_scene cannot blur
@@ -62,6 +64,14 @@ signal closed
 
 ## Width of the splash canvas every card is drawn at before scaling.
 const CARD_W := 1080.0
+## open()'s "Kelasmu - N murid" header text, %d is _names.size(). A plain
+## hyphen, not a middle dot: Boohong, the display face RosterHeader is set
+## in, carries no "·" (measured with fontTools 2026-09-29, the same defect
+## ObjectiveHint.title's own header hit first), and a missing glyph falls
+## back to whatever font the device has, or to a box.
+## tests/test_skin_select.gd pins every character this can produce, plus
+## the tray's other display-face strings, to the face.
+const ROSTER_HEADER_FORMAT := "Kelasmu - %d murid"
 
 @onready var _carousel: Control = %Carousel
 @onready var _track: Control = %Track
@@ -72,8 +82,13 @@ const CARD_W := 1080.0
 @onready var _worn_chip: PanelContainer = %WornChip
 @onready var _back_button: TextureButton = %BackButton
 @onready var _terapkan: Button = %Terapkan
+@onready var _roster_header: Label = %RosterHeader
 
-## Index into StudentSkins.NAMES -- which character the rail has open.
+## The characters on the rail, in rail order: whoever open() was given, or
+## StudentSkins.NAMES if it fell back. Tiles beyond _names.size() stay
+## authored in the scene but hidden -- the rail is never built at runtime.
+var _names: Array[String] = []
+## Index into _names -- which character the rail has open.
 var _student_index: int = 0
 ## Index into the open character's skins_for() list -- the centred card.
 var _skin_index: int = 0
@@ -121,16 +136,33 @@ func _ready() -> void:
 		_carousel.resized.connect(_on_carousel_resized)
 
 
-## Fills the rail from StudentSkins.NAMES, opens the first character and
-## fades in. Takes no argument: this screen never reads the roster, because
-## equipped_skins is keyed by NAME and a skin follows a character across the
-## grade change that clears the roster.
-func open() -> void:
+## Fills the rail from `names` -- the current roster, in Lobby's call --
+## opens the first character and fades in. `names` empty (the default, or an
+## empty roster reachable via debug / before any approval) falls back to
+## every StudentSkins.NAMES so the screen is never blank; that is a safety
+## net, not a way to dress a character outside the class. Tiles beyond
+## _names.size() are hidden, same idea as _refresh_dots hiding extra dots.
+## `names` past the rail's own tile count is trimmed with a push_warning --
+## the rail is authored, never built at runtime, so a 7th name would index
+## past %Rail's last child. Persistence is unchanged: equipped_skins stays
+## keyed by NAME, so a character not on this rail keeps whatever they last
+## wore.
+func open(names: Array[String] = []) -> void:
+	_names = names.duplicate() if not names.is_empty() else StudentSkins.NAMES.duplicate()
+	var tile_count := _rail.get_child_count()
+	if _names.size() > tile_count:
+		push_warning("SkinSelect: dropping %d name(s) past the rail's %d tiles" \
+			% [_names.size() - tile_count, tile_count])
+		_names = _names.slice(0, tile_count)
 	_pending.clear()
-	for i in StudentSkins.NAMES.size():
+	_roster_header.text = ROSTER_HEADER_FORMAT % _names.size()
+	for i in _rail.get_child_count():
 		var tile := _rail.get_child(i) as StudentTile
-		if tile != null:
-			tile.show_student(StudentSkins.NAMES[i], pending_id(StudentSkins.NAMES[i]))
+		if tile == null:
+			continue
+		tile.visible = i < _names.size()
+		if i < _names.size():
+			tile.show_student(_names[i], pending_id(_names[i]))
 	select_student(0)
 	if Engine.is_editor_hint() or not is_inside_tree():
 		return
@@ -140,11 +172,11 @@ func open() -> void:
 	AudioDirector.play_sfx(&"tap")
 
 
-## Cascades the six student tiles in behind the screen's own fade.
+## Cascades the rail's visible tiles in behind the screen's own fade.
 ##
 ## The screen already faded in as one flat sheet, which told the eye nothing
-## about what was on it. Staggering the rail makes the six characters arrive
-## as six things rather than as one rectangle -- a card rail is exactly what
+## about what was on it. Staggering the rail makes the roster arrive as
+## several things rather than as one rectangle -- a card rail is exactly what
 ## Juice.stagger_in exists for, and it is token-driven, so its timing follows
 ## design_tokens.tres like every other motion in the game.
 ##
@@ -154,7 +186,7 @@ func open() -> void:
 ## entrance there would quietly un-dim items the player cannot afford.
 func play_rail_entrance() -> void:
 	var tiles: Array = []
-	for i in StudentSkins.NAMES.size():
+	for i in _names.size():
 		var tile := _rail.get_child(i) as StudentTile
 		if tile != null:
 			tiles.append(tile)
@@ -163,7 +195,13 @@ func play_rail_entrance() -> void:
 
 ## The character the rail currently has open.
 func current_student() -> String:
-	return StudentSkins.NAMES[_student_index]
+	return _names[_student_index]
+
+
+## The names currently on the rail -- the roster open() was given, or all of
+## StudentSkins.NAMES if it fell back.
+func visible_names() -> Array[String]:
+	return _names.duplicate()
 
 
 ## The skin `who` will be wearing after TERAPKAN -- their pending choice if
@@ -174,25 +212,36 @@ func pending_id(who: String) -> String:
 
 ## Opens character `index`'s skins, keeping every other character's pending
 ## choice. Jumps the carousel rather than animating -- every card under it
-## has just been replaced, so a slide would animate the wrong art.
+## has just been replaced, so a slide would animate the wrong art. Plays the
+## rail's select cue only when the open character actually changes, so
+## re-tapping the already-open tile stays silent, and so does the screen's
+## initial character on arrival -- the entrance already has its own chime,
+## played by the function that fades this screen in.
 func select_student(index: int) -> void:
-	if index < 0 or index >= StudentSkins.NAMES.size():
+	if index < 0 or index >= _names.size():
 		return
+	var changed := index != _student_index
 	_student_index = index
-	for i in StudentSkins.NAMES.size():
+	for i in _names.size():
 		var tile := _rail.get_child(i) as StudentTile
 		if tile != null:
 			tile.set_open(i == index)
 	_rebuild_carousel()
+	if changed and not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"select")
 
 
 ## Centres card `index` of the open character and records it as pending.
 ## Nothing is equipped here: TERAPKAN commits, which is what lets one button
-## serve all six characters in one visit.
+## serve all six characters in one visit. Plays the carousel's settle cue
+## only when _skin_index actually changes -- _end_drag calls this once per
+## drag release, never per drag frame -- so a release that snaps back to the
+## already-centred card stays silent.
 func select_skin(index: int) -> void:
 	var ids := StudentSkins.skins_for(current_student())
 	if index < 0 or index >= ids.size():
 		return
+	var changed := index != _skin_index
 	_skin_index = index
 	_pending[current_student()] = ids[index]
 	_slide_to(index, true)
@@ -201,6 +250,8 @@ func select_skin(index: int) -> void:
 	# the character was opened.
 	_refresh_dots(ids.size())
 	_refresh_tray()
+	if changed and not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"swipe")
 
 
 ## Commits every pending choice and closes.
@@ -214,15 +265,20 @@ func apply() -> void:
 ##
 ## equip_skin already returns false for a locked or unknown skin and no-ops
 ## when re-equipping the worn one, so this loop needs no guard of its own.
+## Plays the apply cue unconditionally, even with an empty _pending: TERAPKAN
+## was pressed and the screen is about to close either way, so the chime
+## confirms the press, not that some skin actually changed.
 func apply_without_closing() -> void:
 	for who in _pending:
 		GameState.equip_skin(str(who), str(_pending[who]))
 	_pending.clear()
-	for i in StudentSkins.NAMES.size():
+	for i in _names.size():
 		var tile := _rail.get_child(i) as StudentTile
 		if tile != null:
-			tile.show_student(StudentSkins.NAMES[i], pending_id(StudentSkins.NAMES[i]))
+			tile.show_student(_names[i], pending_id(_names[i]))
 	_refresh_tray()
+	if not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"apply")
 
 
 ## Fades out, emits `closed` and frees the screen. Idempotent. Pending
@@ -244,6 +300,22 @@ func close() -> void:
 ## popup's skin column is gone -- so this is just close().
 func go_back() -> void:
 	close()
+
+
+## Each entry's "name", in roster order, skipping anything that is not a
+## Dictionary and any blank name. A pure function -- SkinSelect never reads
+## GameState.approved_students itself -- so Lobby.gd calls down with the
+## roster and tests can drive this with plain arrays.
+static func roster_names(students: Array) -> Array[String]:
+	var names: Array[String] = []
+	for entry: Variant in students:
+		if not entry is Dictionary:
+			continue
+		var student_name: String = str((entry as Dictionary).get("name", ""))
+		if student_name == "":
+			continue
+		names.append(student_name)
+	return names
 
 
 ## The player-facing name of a skin id. One place to hang real names when

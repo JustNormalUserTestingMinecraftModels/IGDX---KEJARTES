@@ -8,6 +8,48 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Skin select polish: class-only rail, scrapbook look
+
+Plan: `docs/superpowers/plans/2026-09-29-skin-select-polish.md`. The
+collaborator's own handoff spec
+(`docs/superpowers/specs/2026-09-28-skin-select-polish-design.md`) was
+revised before building, for the clean-code standard and the UI depth pass
+(both landed after it was written) -- see the plan's "Revision" section.
+
+The skin picker's rail now shows only the approved roster's names, 2-4 by
+grade, instead of always all six characters -- `Lobby.gd` calls down with
+`SkinSelect.roster_names(GameState.approved_students)`, and `SkinSelect`
+never reads `GameState` itself, so tests drive `open()` with plain arrays.
+An empty roster still falls back to every `StudentSkins.NAMES`, the
+pre-existing safety net. The screen also moved onto the UI depth pass's
+lipped look: TERAPKAN is a mint lipped `SkinApplyButton` with a "PAKAI!"
+sticker on its corner and the main-action haptic tick, in place of the
+2026-09-23 mockup's flat red/black rim; the rail's tiles are lipped photo
+cards, cream at rest and sunflower (the palette's highlight) when open,
+each with a washi-tape tab and a name caption; and the tray itself is ruled
+notebook paper (`paper_rule.png`, tiled) with two corner tape pieces, a
+centred "Kelasmu - N murid" header and "ketuk untuk pilih" hint above the
+rail, and paper-divider dots either side of the skin name. Three new SFX
+cues: `&"select"` on a rail tap, `&"swipe"` when the carousel settles on a
+new skin, `&"apply"` on TERAPKAN, each gated on an actual index change so a
+re-tap or a flick that snaps back home stays silent.
+
+Review pass, same day (whole-branch review, fix round 2): the header's
+"Kelasmu · N murid" used a "·" middle dot Boohong, the display face it
+renders in, does not carry (verified with fontTools) -- the same defect
+`ObjectiveHint.title` had already hit and fixed with a plain hyphen: the
+header is now "Kelasmu - N murid", pinned alongside the rest of the tray's
+display-face text by a glyph-coverage test mirroring
+`test_objective_hint.gd`'s. TERAPKAN now ticks the phone's motor on press
+-- `PressFeel.MAIN_ACTION_ROLES` had gained every other main action but
+missed `SkinApplyButton`. `SkinSelect.open()` now trims `_names` to the
+rail's own six authored tiles with a `push_warning`, so a 7+ name roster
+(reachable if the class-size cap ever moves) can no longer index past
+`%Rail`'s last child. A misnamed test
+(`test_open_takes_no_argument_and_first_student_is_open`, which no longer
+describes what it checks now that `open()` takes a roster) was renamed to
+`test_default_open_shows_the_first_students_tile_as_open`.
+
 ## 2026-09-28 — UI depth pass, Phase 2: popups into the notebook
 
 Plan: `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase2.md`.

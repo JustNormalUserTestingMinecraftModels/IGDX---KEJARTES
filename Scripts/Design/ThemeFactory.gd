@@ -583,14 +583,11 @@ static func _build_school_day_liveliness(theme: Theme, tokens: DesignTokens) -> 
 
 
 ## Measured off skinselection_mockup.png (spec
-## docs/superpowers/specs/2026-09-23-skin-select-slide-design.md). The ink
-## the mockup draws its divider, tiles and button rim in, the rim's width,
-## the button's red and text, and the title's colours and sizes. No token
-## matches; these are single-screen values, like EVENT_DIALOGUE_RADIUS.
-const SKIN_INK := Color("000000")
-const SKIN_RIM := 8
-const SKIN_APPLY_FILL := Color("D21919")
-const SKIN_APPLY_TEXT := Color("F2F2F2")
+## docs/superpowers/specs/2026-09-23-skin-select-slide-design.md). The
+## title's colours and sizes are the mockup's own and stay; TERAPKAN's flat
+## red fill and black rim were retired for a lipped mint face (Task 2 of
+## docs/superpowers/plans/2026-09-29-skin-select-polish.md). No token
+## matches these; single-screen values, like EVENT_DIALOGUE_RADIUS.
 ## Boohong size whose cap height is the mockup's 60px.
 const SKIN_APPLY_FONT := 73
 const SKIN_TITLE_FILL := Color("F2F2F2")
@@ -603,43 +600,31 @@ const SKIN_TITLE_FONT := 79
 ## (348,95)-(718,182). Boohong is narrower than the mockup's lettering, so
 ## height and stroke are matched here, not width.
 const SKIN_TITLE_OUTLINE_SIZE := 48
-## SkinApplyButton's hover/pressed/disabled tints: how far Color.lightened /
-## darkened / lerp (toward surface_sunken) push the flat fill for each state.
-const SKIN_APPLY_HOVER_LIGHTEN := 0.08
-const SKIN_APPLY_PRESSED_DARKEN := 0.15
-const SKIN_APPLY_DISABLED_FADE := 0.7
+## Lip under SkinApplyTag's small accent_sunflower sticker face -- shallower
+## than the standard tokens.lip_height, like Koperasi's KOPERASI_BADGE_LIP.
+const SKIN_APPLY_TAG_LIP := 3
 
 
 ## SkinSelect (spec:
 ## docs/superpowers/specs/2026-09-22-skin-select-screen-design.md; the tray,
 ## TERAPKAN button and title:
-## docs/superpowers/specs/2026-09-23-skin-select-slide-design.md): the six
-## student squares in their two states, the skin's name, the "sedang
+## docs/superpowers/specs/2026-09-23-skin-select-slide-design.md; TERAPKAN,
+## the tiles and the tray moved to the depth pass's lipped look --
+## docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md, Task 2 of
+## docs/superpowers/plans/2026-09-29-skin-select-polish.md): the roster's
+## taped photo tiles in their two states, the skin's name, the "sedang
 ## dipakai" chip that is the only visible proof TERAPKAN did anything, the
-## tray under the carousel, the TERAPKAN button and the character title.
+## paper tray under the carousel, the lipped TERAPKAN button and its
+## "PAKAI!" sticker, the character title, and the roster header/hint and
+## tile caption labels.
 static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
-	var square := func(bg: Color, border: Color) -> StyleBoxFlat:
-		var box := StyleBoxFlat.new()
-		box.bg_color = bg
-		box.border_color = border
-		box.set_border_width_all(SKIN_RIM)
-		# radius_button, not radius_md: these are Buttons, and
-		# tests/test_button_geometry.gd holds every button variation to the
-		# one fixed radius.
-		box.set_corner_radius_all(tokens.radius_button)
-		return box
-
-	theme.add_type("SkinStudentTile")
-	theme.set_type_variation("SkinStudentTile", "Button")
-	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-		theme.set_stylebox(state, "SkinStudentTile",
-			square.call(Color(0, 0, 0, 0), SKIN_INK))
-
-	theme.add_type("SkinStudentTileActive")
-	theme.set_type_variation("SkinStudentTileActive", "Button")
-	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-		theme.set_stylebox(state, "SkinStudentTileActive",
-			square.call(tokens.outline_card, tokens.brand_primary))
+	# Taped photo cards: cream at rest, sunflower (the palette's highlight,
+	# never an action colour) when open. The lipped trio shape every other
+	# button role uses, so radius_button and the five states come free.
+	_add_button_variation(theme, tokens, "SkinStudentTile",
+		tokens.button_cream, tokens.button_cream_lip)
+	_add_button_variation(theme, tokens, "SkinStudentTileActive",
+		tokens.accent_sunflower, tokens.accent_sunflower_lip)
 
 	theme.add_type("SkinNameLabel")
 	theme.set_type_variation("SkinNameLabel", "Label")
@@ -685,42 +670,21 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "SkinWornChipLabel", tokens.font_display)
 
-	# The tray under the carousel: cream with the mockup's black divider as
-	# its top border, so the line moves with the tray on tall phones.
+	# The tray under the carousel: a paper sheet, the lighter of the two
+	# card tokens so paper_rule.png's rules read against it, with no border
+	# -- the depth pass drops the mockup's black divider rim.
 	theme.add_type("SkinTray")
 	theme.set_type_variation("SkinTray", "Panel")
 	var tray := StyleBoxFlat.new()
 	tray.bg_color = tokens.surface_card
-	tray.border_color = SKIN_INK
-	tray.border_width_top = SKIN_RIM
 	theme.set_stylebox("panel", "SkinTray", tray)
 
-	# TERAPKAN in the mockup's flat red with a black rim. Flat, not
-	# _add_button_variation's gradient, because the mockup draws it flat.
-	# radius_button keeps it inside tests/test_button_geometry.gd.
-	var apply_box := func(fill: Color) -> StyleBoxFlat:
-		var box := StyleBoxFlat.new()
-		box.bg_color = fill
-		box.border_color = SKIN_INK
-		box.set_border_width_all(SKIN_RIM)
-		box.set_corner_radius_all(tokens.radius_button)
-		return box
-	theme.add_type("SkinApplyButton")
-	theme.set_type_variation("SkinApplyButton", "Button")
-	theme.set_stylebox("normal", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL))
-	theme.set_stylebox("hover", "SkinApplyButton",
-		apply_box.call(SKIN_APPLY_FILL.lightened(SKIN_APPLY_HOVER_LIGHTEN)))
-	theme.set_stylebox("pressed", "SkinApplyButton",
-		apply_box.call(SKIN_APPLY_FILL.darkened(SKIN_APPLY_PRESSED_DARKEN)))
-	theme.set_stylebox("focus", "SkinApplyButton", apply_box.call(SKIN_APPLY_FILL))
-	theme.set_stylebox("disabled", "SkinApplyButton",
-		apply_box.call(SKIN_APPLY_FILL.lerp(tokens.surface_sunken, SKIN_APPLY_DISABLED_FADE)))
-	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
-		theme.set_color(key, "SkinApplyButton", SKIN_APPLY_TEXT)
-	theme.set_color("font_disabled_color", "SkinApplyButton", tokens.text_disabled)
+	# TERAPKAN, lipped mint like every other main-action button (Palette
+	# table, docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md):
+	# retires the 2026-09-23 mockup's flat red fill and black rim.
+	_add_button_variation(theme, tokens, "SkinApplyButton",
+		tokens.accent_mint, tokens.accent_mint_lip)
 	theme.set_font_size("font_size", "SkinApplyButton", SKIN_APPLY_FONT)
-	if tokens.font_display != null:
-		theme.set_font("font", "SkinApplyButton", tokens.font_display)
 
 	# The character's name over the carousel: the mockup's white Boohong
 	# with a navy stroke, smaller than DisplayLabel.
@@ -732,6 +696,61 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_constant("outline_size", "SkinTitleLabel", SKIN_TITLE_OUTLINE_SIZE)
 	if tokens.font_display != null:
 		theme.set_font("font", "SkinTitleLabel", tokens.font_display)
+
+	# The roster header ("Kelasmu - N murid") and its hint line, sitting
+	# above the rail inside the tray (Task 3). The header is a heading, so
+	# it takes the display face; the hint is body copy, like every other
+	# caption in the game.
+	theme.add_type("SkinRosterHeaderLabel")
+	theme.set_type_variation("SkinRosterHeaderLabel", "Label")
+	theme.set_font_size("font_size", "SkinRosterHeaderLabel", tokens.font_title)
+	theme.set_color("font_color", "SkinRosterHeaderLabel", tokens.brand_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinRosterHeaderLabel", tokens.font_display)
+
+	theme.add_type("SkinRosterHintLabel")
+	theme.set_type_variation("SkinRosterHintLabel", "Label")
+	theme.set_font_size("font_size", "SkinRosterHintLabel", tokens.font_caption)
+	theme.set_color("font_color", "SkinRosterHintLabel", tokens.text_secondary)
+
+	# Each tile's name caption underneath its photo (Task 3). A flat
+	# button_cream pill behind the name, not a lipped face -- this is a
+	# written caption tag on a photo, not a tappable sticker -- so the name
+	# reads against the portrait instead of sitting bare on skin tones.
+	# Only horizontal padding: the Caption node's authored rect is 26px
+	# tall (fix round 1, 2026-09-29), too tight for font_micro plus a
+	# vertical inset without clipping the text.
+	theme.add_type("SkinTileCaptionLabel")
+	theme.set_type_variation("SkinTileCaptionLabel", "Label")
+	var caption_box := StyleBoxFlat.new()
+	caption_box.bg_color = tokens.button_cream
+	caption_box.set_corner_radius_all(tokens.radius_pill)
+	caption_box.content_margin_left = tokens.space_xs
+	caption_box.content_margin_right = tokens.space_xs
+	theme.set_stylebox("normal", "SkinTileCaptionLabel", caption_box)
+	theme.set_font_size("font_size", "SkinTileCaptionLabel", tokens.font_micro)
+	theme.set_color("font_color", "SkinTileCaptionLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinTileCaptionLabel", tokens.font_display)
+
+	# TERAPKAN's "PAKAI!" corner sticker: a Label, not a Button, so it
+	# cannot reuse _apply_lipped_text (that sets Button colour keys) and
+	# sets its ink by hand instead. Sunflower is a light face, so -- the
+	# same rule _apply_lipped_text follows past lipped_light_face_luminance
+	# -- it takes plain text_primary with no outline.
+	theme.add_type("SkinApplyTag")
+	theme.set_type_variation("SkinApplyTag", "Label")
+	var tag_box := LippedBox.make(
+		tokens.accent_sunflower, tokens.accent_sunflower_lip,
+		SKIN_APPLY_TAG_LIP, tokens.radius_pill, 0.0)
+	tag_box.content_margin_left = tokens.space_sm
+	tag_box.content_margin_right = tokens.space_sm
+	LippedBox.set_vertical_padding(tag_box, tokens.space_xs)
+	theme.set_stylebox("normal", "SkinApplyTag", tag_box)
+	theme.set_font_size("font_size", "SkinApplyTag", tokens.font_caption)
+	theme.set_color("font_color", "SkinApplyTag", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "SkinApplyTag", tokens.font_display)
 
 
 ## Measured off mockup_eventdialogue.png: the dialogue card's corner radius

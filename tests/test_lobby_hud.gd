@@ -105,3 +105,43 @@ func test_the_reward_coin_still_flies_to_the_wallet() -> void:
 	var panel := _lobby.get_node("DailyReward") as DailyLoginPanel
 	assert_eq(panel.wallet_anchor, _lobby.get_node("%DisplayUang"),
 		"wallet_anchor must follow DisplayUang out of BottomBar")
+
+
+## Task 4: the stepped book housing (RaisedBlock/RaisedPage over JADWAL! and
+## the roster chip, and Shelf/ShelfPage over the three colour-coded tiles)
+## plus the ChevronGrip peek handle, replacing the flat BottomBar row.
+const _BOOK_PARTS: Array[String] = ["Hud", "BookHud", "RaisedBlock", "RaisedPage",
+	"Shelf", "ChevronGrip", "ChevronGlyph", "IconRail", "HudHint", "RosterChip"]
+
+
+func test_the_stepped_book_is_built() -> void:
+	for part: String in _BOOK_PARTS:
+		assert_true(_lobby.get_node_or_null("%" + part) != null, "missing %" + part)
+	var jadwal := _lobby.get_node("%Jadwal") as Button
+	assert_eq(jadwal.theme_type_variation, &"BookHeroButton")
+	assert_true((_lobby.get_node("%RaisedPage") as Node).is_ancestor_of(jadwal),
+		"JADWAL sits on the raised page")
+	var tiles: Dictionary = {"Koperasi": &"NavTileKoperasi",
+		"Inventory": &"NavTileInventory", "ReportStudent": &"NavTileRapor"}
+	for tile_name: String in tiles:
+		var tile := _lobby.get_node("%" + tile_name) as Button
+		assert_eq(tile.theme_type_variation, tiles[tile_name], tile_name)
+		assert_true((_lobby.get_node("%Shelf") as Node).is_ancestor_of(tile),
+			tile_name + " sits on the shelf")
+
+
+## Task 4: the four fixed-art icon buttons ride in IconRail now, still with
+## their delivered art untouched (spec §1 and §8).
+func test_the_fixed_icons_moved_with_their_art() -> void:
+	var rail := _lobby.get_node("%IconRail") as Node
+	var art: Dictionary = {
+		"DailyLogin": "res://Assets/Images/UI/icon_daily_login.png",
+		"SettingsButton": "res://Assets/Images/UI/setting.png",
+		"AchievementButton": "res://Assets/Images/Achievements/achievement_button.png",
+		"SkinSwitchButton": "res://Assets/Images/UI/skin_switch.png",
+	}
+	for icon_name: String in art:
+		var icon := _lobby.get_node("%" + icon_name) as TextureButton
+		assert_eq(icon.get_parent(), rail, icon_name + " rides in the rail")
+		assert_eq(icon.texture_normal.resource_path, art[icon_name],
+			icon_name + "'s art is fixed (spec §1)")

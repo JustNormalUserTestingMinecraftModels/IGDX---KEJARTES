@@ -55,7 +55,7 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 
 @onready var color_rect = $ColorRect
 @onready var click_area: Button = $ColorRect/ClickArea
-# The HUD sits in Safe/UI/BottomBar and the diorama in Classroom since the
+# The HUD sits in Safe/UI/Hud/BookHud and the diorama in Classroom since the
 # 2026-09-15 tall-phone pass; unique names find them wherever they sit.
 @onready var student_button: Button = %Student
 @onready var jadwal_button: Button = %Jadwal
@@ -638,7 +638,7 @@ func _create_blur_overlay():
 	# Place blur_overlay at DailyReward's index, just before it: it then
 	# renders over the Classroom and the whole HUD (Safe and everything in
 	# it, DailyLogin and SettingsButton included) but behind the popup. Since
-	# the 2026-09-15 tall-phone pass the HUD sits in Safe/UI/BottomBar, so a
+	# the 2026-09-15 tall-phone pass the HUD sits in Safe/UI/Hud/BookHud, so a
 	# HUD node's own index says nothing about the root's draw order.
 	move_child(blur_overlay, daily_reward.get_index())
 	# Connect click on blur overlay to close popup

@@ -196,17 +196,21 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
+## Scrapbook HUD (Task 4): the three shelf tiles wear their own colour-coded
+## NavTile* variation and the two book buttons share BookHeroButton, not the
+## old shared LobbyNavTile / LobbyCtaButton pair.
 func test_nav_buttons_use_lobby_nav_tile_or_cta_button_variation() -> void:
-	var tile_buttons := ["Koperasi", "Inventory", "ReportStudent"]
+	var tile_variations: Dictionary = {"Koperasi": &"NavTileKoperasi",
+		"Inventory": &"NavTileInventory", "ReportStudent": &"NavTileRapor"}
 	var cta_buttons := ["Student", "Jadwal"]
-	for name in tile_buttons:
+	for name: String in tile_variations:
 		var b := _lobby.get_node_or_null("%" + name) as Button
 		assert_true(b != null, "missing nav button: " + name)
-		assert_eq(b.theme_type_variation, &"LobbyNavTile", name + " variation")
+		assert_eq(b.theme_type_variation, tile_variations[name], name + " variation")
 	for name in cta_buttons:
 		var b := _lobby.get_node_or_null("%" + name) as Button
 		assert_true(b != null, "missing nav button: " + name)
-		assert_eq(b.theme_type_variation, &"LobbyCtaButton", name + " variation")
+		assert_eq(b.theme_type_variation, &"BookHeroButton", name + " variation")
 
 
 func test_labels_use_theme_variations() -> void:

@@ -145,7 +145,7 @@ func _ready() -> void:
 	if chatter:
 		chatter.can_speak = _chatter_allowed
 		# The HUD sits over the front-row faces; its taps are not theirs.
-		chatter.tap_blockers = [progress_header, get_node("%DisplayUang")] 			+ hud.tap_blockers()
+		chatter.tap_blockers = [progress_header, get_node("%DisplayUang")] + hud.tap_blockers()
 	_setup_students()
 	_start_idle_bob(portraits_back, 0.0)
 	_start_idle_bob(portraits_front, idle_bob_period * FRONT_ROW_BOB_PHASE)
@@ -217,7 +217,7 @@ func _ready() -> void:
 	_create_blur_overlay()
 	_setup_daily_login()
 
-## Wires every HUD destination button. Called once from _ready's branch,
+## Wires every HUD button and the reopen gate. Called once from _ready's branch,
 ## so no is_connected guard is needed (the scene holds no connections).
 func _connect_hud_buttons() -> void:
 	student_button.pressed.connect(_on_student_pressed)
@@ -225,6 +225,7 @@ func _connect_hud_buttons() -> void:
 	koperasi_button.pressed.connect(_on_koperasi_pressed)
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	report_student_button.pressed.connect(_on_report_student_pressed)
+	hud.can_reopen = _chatter_allowed  # popups keep the HUD down too
 
 ## Shows the one Hand_<Name> node in this slot that matches the student
 ## sitting here, and hides its five siblings.

@@ -7,9 +7,11 @@ extends Control
 ## rail. It swipes away as a whole: the book slides down to its chevron
 ## peek and the rail slides off the right edge in the same tween (Q5); the
 ## chevron, a vertical drag on the book, or a double tap anywhere brings
-## it back. It also plays the entrance, JADWAL's breathe and the
-## roster-count chip. It stays inactive until the Lobby calls activate(),
-## so the tutorial's spotlight never measures a moving target. Calls come
+## it back. While hidden the book's buttons ignore input, so the peeking
+## top of JADWAL cannot be pressed by a reopening tap. It also plays the
+## entrance, JADWAL's breathe and the roster-count chip. It stays
+## inactive until the Lobby calls activate(), so the tutorial's spotlight
+## never measures a moving target. Calls come
 ## down from Lobby.gd; nothing here reaches up. @tool so the lobby_hud
 ## suite can drive it: _ready wires its own signals ungated and the
 ## autoload ones only in game, and every writer runs from the non-@tool
@@ -52,11 +54,17 @@ const PEEK_BOB_STEP_SECONDS := 0.18
 var is_open: bool = true
 ## False until the Lobby calls activate(): no swipe, entrance or breathe.
 var is_active: bool = false
+## Asked before a double tap reopens the HUD; the Lobby answers false while
+## a popup owns the screen. Unset, a double tap always may.
+var can_reopen: Callable
 var _book_open_y: float = 0.0
 var _rail_open_x: float = 0.0
 var _glyph_rest_y: float = 0.0
 ## Where a press on the book began, in its own frame; NAN when no drag.
 var _drag_start_y: float = NAN
+## True while the press in progress is a double tap's second half: the
+## chevron's release then skips, because the first half already toggled.
+var _press_is_second_tap: bool = false
 var _slide: Tween
 var _peek_bob: Tween
 var _breathe: Tween
@@ -90,16 +98,17 @@ func _ready() -> void:
 		return
 	Achievements.state_changed.connect(_refresh_counts)
 	GameState.inventory_changed.connect(_refresh_counts)
+	GameSettings.reduce_motion_changed.connect(_on_reduce_motion_changed)
 
 
 ## Turns the swipe on; the entrance (tiles drop in, staggered) plays only
-## when asked, then JADWAL breathes. The open rest positions are read on
-## the first hide, once layout has settled.
+## when asked, then JADWAL breathes. The open rest positions are read at
+## each hide that does not interrupt a slide, once layout has settled.
 func activate(with_entrance: bool) -> void:
 	is_active = true
 	if with_entrance and not GameSettings.reduce_motion:
 		Juice.stagger_in([koperasi, inventory, report_student])
-	_start_breathe()
+	_update_breathe()
 
 
 ## Slides the book and rail away (false) or back (true). Under
@@ -113,6 +122,8 @@ func set_open(open: bool) -> void:
 	is_open = open
 	_kill(_slide)
 	_stop_peek_bob()
+	_set_book_live(open)
+	_update_breathe()
 	if open:
 		_hide_hint()
 	var book_y: float = _book_open_y if open else _book_open_y + book_hud.size.y - peek_pixels
@@ -160,12 +171,28 @@ func _inventory_count() -> int:
 
 
 ## A double tap anywhere reopens a hidden HUD. _input, like LobbyChatter,
-## sees the tap before any GUI node can stop it, and never marks it handled.
+## sees each press before any GUI node, and notes whether it is a double
+## tap's second half for the chevron. Only a reopening tap is marked
+## handled, so it cannot also press whatever it landed on.
 func _input(event: InputEvent) -> void:
-	if is_open or not is_active:
+	if not is_active or not _is_press(event):
 		return
-	if _is_double_tap(event):
-		set_open(true)
+	_press_is_second_tap = _is_double_tap(event)
+	if is_open or not _press_is_second_tap or not _reopen_allowed():
+		return
+	set_open(true)
+	get_viewport().set_input_as_handled()
+
+
+func _reopen_allowed() -> bool:
+	return not can_reopen.is_valid() or can_reopen.call()
+
+
+static func _is_press(event: InputEvent) -> bool:
+	if event is InputEventScreenTouch:
+		return event.is_pressed()
+	var click := event as InputEventMouseButton
+	return click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT
 
 
 static func _is_double_tap(event: InputEvent) -> bool:
@@ -175,9 +202,29 @@ static func _is_double_tap(event: InputEvent) -> bool:
 	return click != null and click.double_click and click.button_index == MOUSE_BUTTON_LEFT
 
 
+## One tap toggles. The second half of a double tap is skipped: its first
+## half already toggled, and a second toggle would bounce the book.
 func _on_chevron_pressed() -> void:
-	if is_active:
-		set_open(not is_open)
+	if not is_active or _press_is_second_tap:
+		return
+	set_open(not is_open)
+
+
+## Hidden, the book's buttons ignore input (the peek shows JADWAL's top);
+## the chevron, a sibling of the book, stays live to bring it back.
+func _set_book_live(live: bool) -> void:
+	var behavior: Control.MouseBehaviorRecursive = Control.MOUSE_BEHAVIOR_INHERITED
+	if not live:
+		behavior = Control.MOUSE_BEHAVIOR_DISABLED
+	for part: Control in [raised_page, koperasi, inventory, report_student]:
+		part.mouse_behavior_recursive = behavior
+
+
+## Settings or the debug overlay flipped reduce_motion: the loops follow.
+func _on_reduce_motion_changed(_still: bool) -> void:
+	_update_breathe()
+	if is_active and not is_open:
+		_start_peek_bob()
 
 
 ## A vertical drag on the book past swipe_threshold_pixels: down hides, up
@@ -271,10 +318,14 @@ func _stop_peek_bob() -> void:
 	chevron_glyph.position.y = _glyph_rest_y
 
 
-## JADWAL's slow breathe on RaisedPage, looped. Off under reduce_motion,
-## and off for a zero period, which would make the looped tween spin.
-func _start_breathe() -> void:
+## JADWAL's slow breathe on RaisedPage, looped, only while the HUD is
+## active and open. Off under reduce_motion, and off for a zero period,
+## which would make the looped tween spin. A stop leaves the page at rest.
+func _update_breathe() -> void:
 	_kill(_breathe)
+	raised_page.scale = Vector2.ONE
+	if not is_active or not is_open:
+		return
 	if GameSettings.reduce_motion or breathe_period_seconds <= 0.0:
 		return
 	Juice.set_pivot_center(raised_page)

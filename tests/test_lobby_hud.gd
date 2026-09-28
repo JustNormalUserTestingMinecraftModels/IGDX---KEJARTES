@@ -349,3 +349,114 @@ func test_daily_badge_clears_once_claimed() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
 	assert_eq(src.count("hud.refresh(daily_reward.is_claimable())"), 2,
 		"the Lobby refreshes the badges on entry and again on the claim")
+
+
+## Review 4-5 Important #1: the hidden HUD's gestures. Every test drives
+## _input and the chevron's pressed signal synchronously under
+## reduce_motion, and leaves the HUD open and ungated as it found it.
+## _hidden_hud ends on a plain press, so no earlier double tap lingers.
+func _press(is_double: bool) -> InputEventScreenTouch:
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	touch.double_tap = is_double
+	return touch
+
+
+func _hidden_hud() -> LobbyHud:
+	var hud := _hud()
+	if hud == null:
+		return null
+	GameSettings.reduce_motion = true
+	hud.can_reopen = Callable()
+	hud.activate(false)
+	hud.set_open(false)
+	hud._input(_press(false))
+	return hud
+
+
+## Double-tapping the peeking chevron: the first release reopens, and the
+## second must not close it again (it used to bounce straight back down).
+func test_a_double_tap_on_the_chevron_stays_open() -> void:
+	var hud := _hidden_hud()
+	if hud == null:
+		return
+	var grip := hud.get_node("%ChevronGrip") as Button
+	hud._input(_press(false))
+	grip.pressed.emit()
+	assert_true(hud.is_open, "the first tap on the chevron reopens")
+	hud._input(_press(true))
+	grip.pressed.emit()
+	assert_true(hud.is_open, "the double tap's second release does not toggle again")
+	hud._input(_press(false))
+	grip.pressed.emit()
+	assert_false(hud.is_open, "a later single tap still toggles")
+	hud.set_open(true)
+
+
+## Hidden, the book's buttons ignore input, so the double tap that reopens
+## over the peeking JADWAL cannot also open AturJadwal; the reopening tap
+## is marked handled, and the buttons come back with the book.
+func test_the_peeking_book_is_not_live_while_hidden() -> void:
+	var hud := _hidden_hud()
+	if hud == null:
+		return
+	var parts: Array[Control] = [hud.raised_page, hud.koperasi, hud.inventory,
+		hud.report_student]
+	for part: Control in parts:
+		assert_eq(part.mouse_behavior_recursive, Control.MOUSE_BEHAVIOR_DISABLED,
+			String(part.name) + " ignores taps while hidden")
+	hud._input(_press(true))
+	assert_true(hud.is_open, "a double tap anywhere reopens")
+	assert_true(hud.get_viewport().is_input_handled(),
+		"the reopening tap presses nothing under it")
+	for part: Control in parts:
+		assert_eq(part.mouse_behavior_recursive, Control.MOUSE_BEHAVIOR_INHERITED,
+			String(part.name) + " is live again once open")
+
+
+## A single tap never reopens, and a popup (the Lobby's can_reopen) keeps
+## the HUD down under a double tap.
+func test_only_an_allowed_double_tap_reopens() -> void:
+	var hud := _hidden_hud()
+	if hud == null:
+		return
+	hud._input(_press(false))
+	assert_false(hud.is_open, "a single tap is not the gesture")
+	hud.can_reopen = func() -> bool: return false
+	hud._input(_press(true))
+	assert_false(hud.is_open, "a popup owns the screen")
+	hud.can_reopen = Callable()
+	hud.set_open(true)
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
+	assert_true(src.contains("hud.can_reopen = _chatter_allowed"),
+		"the Lobby gates the reopen on its popups")
+
+
+## Before activate() (the tutorial), neither gesture moves the HUD.
+func test_an_inactive_hud_ignores_its_gestures() -> void:
+	var fresh := track(LobbyHud.new()) as LobbyHud
+	fresh.is_open = false
+	fresh._input(_press(true))
+	fresh._on_chevron_pressed()
+	assert_false(fresh.is_open, "nothing reopens while the tutorial runs")
+
+
+## JADWAL's breathe runs only while the book is up, and a mid-session
+## reduce_motion stops it.
+func test_the_breathe_stops_while_hidden() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	GameSettings.reduce_motion = false
+	hud.activate(false)
+	assert_true(hud._breathe != null and hud._breathe.is_valid(), "an open HUD breathes")
+	GameSettings.reduce_motion = true
+	hud._on_reduce_motion_changed(true)
+	assert_false(hud._breathe.is_valid(), "reduce_motion stops the breathe")
+	GameSettings.reduce_motion = false
+	hud._on_reduce_motion_changed(false)
+	hud.set_open(false)
+	assert_false(hud._breathe.is_valid(), "a hidden book does not breathe")
+	assert_eq(hud.raised_page.scale, Vector2.ONE, "and rests at full size")
+	GameSettings.reduce_motion = true
+	hud.set_open(true)

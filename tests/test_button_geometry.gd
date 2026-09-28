@@ -65,6 +65,15 @@ func _button_variations() -> Array:
 	return out
 
 
+## A button box's corner radius, whichever surface type it is.
+func _radius(sb: StyleBox) -> int:
+	if sb is LippedStyleBox:
+		return (sb as LippedStyleBox).corner_radius
+	if sb is StyleBoxFlat:
+		return (sb as StyleBoxFlat).corner_radius_top_left
+	return -1
+
+
 func test_every_button_variation_uses_one_fixed_radius() -> void:
 	var checked := 0
 	for name in _button_variations():
@@ -72,15 +81,15 @@ func test_every_button_variation_uses_one_fixed_radius() -> void:
 			continue
 		# ShopHubTile's normal is StyleBoxEmpty by design; its washes
 		# carry the shape, so fall through to hover.
-		var sb := _theme.get_stylebox("normal", name) as StyleBoxFlat
-		if sb == null:
-			sb = _theme.get_stylebox("hover", name) as StyleBoxFlat
-		if sb == null:
+		var sb := _theme.get_stylebox("normal", name)
+		if _radius(sb) < 0:
+			sb = _theme.get_stylebox("hover", name)
+		if _radius(sb) < 0:
 			continue
 		checked += 1
-		assert_eq(sb.corner_radius_top_left, _tokens.radius_button,
+		assert_eq(_radius(sb), _tokens.radius_button,
 			"%s must use radius_button (%d), got %d"
-				% [name, _tokens.radius_button, sb.corner_radius_top_left])
+				% [name, _tokens.radius_button, _radius(sb)])
 	assert_true(checked >= 8,
 		"expected to check at least 8 button variations, checked %d -- "
 		% checked + "the collector is probably not finding them")
@@ -150,7 +159,7 @@ func test_natural_height_matches_the_size_step() -> void:
 		"StudentCardSecondaryButtonL": _tokens.btn_h_l,
 	}
 	for name in targets:
-		var sb := _theme.get_stylebox("normal", name) as StyleBoxFlat
+		var sb := _theme.get_stylebox("normal", name) as StyleBox
 		var font := _theme.get_font("font", name)
 		var fsize := _theme.get_font_size("font_size", name)
 		var natural: float = sb.get_minimum_size().y + font.get_height(fsize)
@@ -340,9 +349,9 @@ func test_no_button_is_authored_off_step() -> void:
 ## rule: at a fixed 120x120 square, radius_pill yields an exact circle, and
 ## because the size is fixed there is no height-dependent-radius risk.
 func test_card_arrow_button_is_a_circle() -> void:
-	var sb := _theme.get_stylebox("normal", "CardArrowButton") as StyleBoxFlat
-	assert_not_null(sb, "CardArrowButton/normal must be a StyleBoxFlat")
-	assert_eq(sb.corner_radius_top_left, _tokens.radius_pill,
+	var sb := _theme.get_stylebox("normal", "CardArrowButton") as LippedStyleBox
+	assert_not_null(sb, "CardArrowButton/normal must be a LippedStyleBox")
+	assert_eq(sb.corner_radius, _tokens.radius_pill,
 		"CardArrowButton is a fixed square, so radius_pill makes it a circle")
-	assert_eq(sb.bg_color, _tokens.brand_primary, "arrow fill")
-	assert_eq(sb.border_color, _tokens.outline_card, "arrow rim")
+	assert_eq(sb.bg_color, _tokens.brand_primary, "arrow face")
+	assert_eq(sb.lip_color, _tokens.brand_primary_dark, "arrow lip")

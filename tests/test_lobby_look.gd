@@ -150,3 +150,27 @@ func _drawn(scene_path: String) -> Array[String]:
 	var kids := Census.children_of(Census.of(scene_path), ".")
 	kids.erase("Glow")
 	return kids
+
+
+const KOPERASI := "res://Scenes/Koperasi/Koperasi.tscn"
+## Koperasi's backdrop band depth (its Parallax, 2026-09-22): the light rides it.
+const KOPERASI_BACK_DEPTH := 0.15
+
+
+## Koperasi stays on layer 0: its backdrop shares Stage with the tappable goods
+## and the parallax driving Stage's children. So the light sits in Stage,
+## straight after the backdrop and under the goods, and nothing blooms.
+func test_koperasi_lights_its_stage_under_the_goods() -> void:
+	var c := Census.of(KOPERASI)
+	var kids := Census.children_of(c, "Stage")
+	assert_eq(kids.slice(0, 4), ["Background", "Light", "Shafts", "Barang1"] as Array[String],
+		"the backdrop, its light, then the goods")
+	assert_eq(Census.entry(c, "Stage/Light").get("instance"), LIGHT_POOL, "Light is a LightPool")
+	assert_eq(Census.entry(c, "Stage/Shafts").get("instance"), SUN_SHAFTS, "Shafts are SunShafts")
+	var depths: Dictionary = Census.prop(Census.entry(c, "Stage/Parallax"), "depth_by_child", {})
+	for band in ["Light", "Shafts"]:
+		assert_eq(float(depths.get(band, 0.0)), KOPERASI_BACK_DEPTH,
+			band + " rides the backdrop's depth, so it stays on its window")
+	assert_true(Census.entry(c, "World").is_empty(), "no World layer")
+	for e in c:
+		assert_ne(e["instance"], AMBIENT_GLOW, "nothing on layer 0 can bloom, so no Glow")

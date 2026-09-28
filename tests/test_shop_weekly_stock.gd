@@ -30,6 +30,8 @@ func setup() -> void:
 		"key": GameState.shop_week_key,
 		"stock": GameState.shop_stock.duplicate(),
 		"sold": GameState.shop_sold.duplicate(),
+		"promo_item": GameState.shop_promo_item,
+		"promo_pct": GameState.shop_promo_percent,
 	}
 	GameState.shop_week_key = ""
 	GameState.shop_stock = []
@@ -42,6 +44,8 @@ func teardown() -> void:
 	GameState.shop_week_key = _snap["key"]
 	GameState.shop_stock = _snap["stock"]
 	GameState.shop_sold = _snap["sold"]
+	GameState.shop_promo_item = _snap["promo_item"]
+	GameState.shop_promo_percent = _snap["promo_pct"]
 
 
 func _at(grade: int, week: int) -> void:
@@ -204,9 +208,13 @@ func test_the_shelf_is_sold_out_only_once_every_item_sold() -> void:
 
 
 func test_forget_session_clears_the_shop() -> void:
-	var body := _body(FileAccess.get_file_as_string(GAME_STATE_PATH), "func forget_session()")
+	var src := FileAccess.get_file_as_string(GAME_STATE_PATH)
+	var forget_body := _body(src, "func forget_session()")
+	assert_true(forget_body.contains("reset_shop_week()"),
+		"forget_session() forgets the shop through reset_shop_week()")
+	var reset_body := _body(src, "func reset_shop_week()")
 	for reset in ["shop_week_key = \"\"", "shop_stock = []", "shop_sold = []"]:
-		assert_true(body.contains(reset), "forget_session() does " + reset)
+		assert_true(reset_body.contains(reset), "reset_shop_week() does " + reset)
 
 
 # ─── the shelf

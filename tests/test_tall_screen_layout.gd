@@ -546,12 +546,12 @@ func test_report_card_on_a_tall_phone() -> void:
 		Rect2(0, 240, 1080, 1920), "KertasMurid1")
 	_assert_placed((rapor.get_node("%NextButtonKanan") as Control),
 		Rect2(870, 2260, 120, 120), "NextButtonKanan")
-	# 202 not 160 since 2026-09-22: the title was nudged 42 px right when
-	# BackButton went icon-only. Pinned at both sizes because the point of
-	# this test is that the title's distance from the TOP edge does not
-	# change with screen height, and that still holds.
+	# 238 since 2026-09-28 (202 from 2026-09-22): the title moves right to
+	# clear BackButton; see the design-size test below. Pinned at both sizes
+	# because the point of this test is that the title's distance from the
+	# TOP edge does not change with screen height, and that still holds.
 	assert_eq(_authored_rect(rapor.get_node("%PilihMurid") as Control).position,
-		Vector2(202, 82), "the title stays at the top")
+		Vector2(238, 82), "the title stays at the top")
 
 
 ## At 1080x1920 every piece of Rapor is exactly where it was.
@@ -567,9 +567,13 @@ func test_report_card_at_the_design_size_is_unchanged() -> void:
 		Vector2(440, 1805), "PageLabel")
 	# Nudged 42 px right on 2026-09-22 when BackButton went icon-only and
 	# shrank to 96 px: the two used to overlap by 190 px, so "Rapor Murid"
-	# rendered with "Rap" hidden under the button. 154 + 48 safe-area margin.
+	# rendered with "Rap" hidden under the button. The button still covered
+	# the "R": its theme minimum width makes it 124 px, not 96, so it ends at
+	# x=166 (now authored so). Moved to 190 on 2026-09-28 (test_report_card
+	# measures the ink):
+	# 190 + 48 safe-area margin.
 	assert_eq(_authored_rect(rapor.get_node("%PilihMurid") as Control).position,
-		Vector2(202, 82), "PilihMurid")
+		Vector2(238, 82), "PilihMurid")
 	assert_eq(_authored_rect(rapor.get_node("%BackButton") as Control).position,
 		Vector2(90, 82), "BackButton")
 

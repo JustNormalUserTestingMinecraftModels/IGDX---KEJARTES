@@ -1549,7 +1549,7 @@ vertical_alignment = 1
 [node name="PilihMurid" type="Label" parent="Safe/UI" unique_id=983198317]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 154.0
+offset_left = 190.0
 offset_top = 34.0
 offset_right = 1012.0
 offset_bottom = 162.0
@@ -1561,7 +1561,7 @@ unique_name_in_owner = true
 layout_mode = 1
 offset_left = 42.0
 offset_top = 34.0
-offset_right = 138.0
+offset_right = 166.0
 offset_bottom = 130.0
 theme_type_variation = &"PrimaryButton"
 icon = ExtResource("16_ret")

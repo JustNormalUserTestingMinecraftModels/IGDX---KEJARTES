@@ -136,3 +136,54 @@ func test_tutorial_scrim_is_gone() -> void:
 ## The papers' soft shadow is no longer one static node behind the stack: each
 ## paper carries its own PaperShadow.tscn so it flies with the paper. That
 ## contract lives in tests/test_paper_shadow.gd (2026-09-10).
+
+
+const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+const _DESIGN_WIDTH := 1080.0
+
+
+## The back button shares the title's row. On 2026-09-15 it hid the title's
+## first two letters ("POR MURID"): a copied rect put the title's ink under
+## the button. This measures the drawn text, outline included, in the UI
+## node's own space, so a wider font, a longer title or a bigger button fails
+## here rather than on a phone. Rescued from the amazing-kalam worktree, it
+## caught the "R" still under the button on 2026-09-28: the button renders at
+## its 124 px theme minimum, not the 96 px its offsets then said.
+func test_title_ink_clears_the_back_button() -> void:
+	var host := Control.new()
+	Engine.get_main_loop().root.add_child(host)
+	track(host)
+	host.size = Vector2(_DESIGN_WIDTH, 1920)
+	var inst := (load(_SCENE_PATH) as PackedScene).instantiate() as Control
+	# A Control under the editor root inherits the editor theme otherwise.
+	inst.theme = ResourceLoader.load(_THEME_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Theme
+	host.add_child(inst)
+	var title := inst.get_node("%PilihMurid") as Label
+	var back := inst.get_node("%BackButton") as Control
+	var safe := inst.get_node("Safe") as MarginContainer
+	var ui_width := _DESIGN_WIDTH - safe.get_theme_constant("margin_left") \
+		- safe.get_theme_constant("margin_right")
+
+	var font := title.get_theme_font("font")
+	var font_size := title.get_theme_font_size("font_size")
+	var outline := title.get_theme_constant("outline_size")
+	var text_w := font.get_string_size(title.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var sb := title.get_theme_stylebox("normal")
+	var t := title.get_rect()
+	var box_left := t.position.x + sb.get_margin(SIDE_LEFT)
+	var box_w := t.size.x - sb.get_margin(SIDE_LEFT) - sb.get_margin(SIDE_RIGHT)
+	var text_x := box_left
+	if title.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER:
+		text_x += (box_w - text_w) / 2.0
+	elif title.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT:
+		text_x += box_w - text_w
+	var ink_left := text_x - outline
+	var ink_right := text_x + text_w + outline
+	var back_end := back.get_rect().end.x
+
+	assert_true(ink_left >= back_end,
+		"the title's ink starts at x=%.1f, under the back button (ends at x=%.1f)"
+			% [ink_left, back_end])
+	assert_true(text_w <= box_w and ink_right <= ui_width,
+		"the title does not fit: %.0fpx of text in a %.0fpx box, ink ends at x=%.1f of %.0f"
+			% [text_w, box_w, ink_right, ui_width])

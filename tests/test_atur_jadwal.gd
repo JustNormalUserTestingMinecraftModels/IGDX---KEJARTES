@@ -1090,45 +1090,43 @@ const _SKILL_BARS := {
 }
 
 
-## Each skill bar authors a hidden GapMask -- a full-rect pill that only clips,
-## so the square GapTail inside it (the ghost track over the stretch still to
-## go) keeps to the track's rounded ends -- and a hidden TargetDot. None of
-## them ever takes a tap.
+## Each skill bar authors a hidden GapTail -- a faded ghost of that bar's own
+## patterned fill (StatGapGhost<category>) over the stretch still to go --
+## and a hidden TargetDot. Neither ever takes a tap.
 func test_each_skill_bar_authors_a_gap_tail_and_target_dot() -> void:
 	for p in _SKILL_BARS:
 		var bar := _screen.get_node_or_null(p) as StatBar
 		assert_true(bar != null, "%s must be a StatBar" % p)
 		if bar == null:
 			continue
-		var mask := bar.get_node_or_null("GapMask") as Panel
-		assert_true(mask != null and mask.theme_type_variation == &"StatGapMask",
-			"%s needs a StatGapMask Panel" % p)
-		if mask != null:
-			assert_eq(mask.clip_children, CanvasItem.CLIP_CHILDREN_ONLY,
-				"%s's GapMask must clip without drawing" % p)
-			assert_true(is_equal_approx(mask.anchor_right, 1.0) and is_equal_approx(mask.anchor_bottom, 1.0),
-				"%s's GapMask must span the bar, so it follows the live width" % p)
-		var tail := bar.get_node_or_null("GapMask/GapTail") as TextureRect
-		assert_true(tail != null and tail.texture != null
-			and tail.texture.resource_path.ends_with("track_ghost.png"),
-			"%s needs a GapTail TextureRect showing track_ghost.png" % p)
-		if tail != null:
-			assert_eq(tail.expand_mode, TextureRect.EXPAND_IGNORE_SIZE,
-				"%s's GapTail must not take the texture's width as a minimum" % p)
-			# BarFill/README.md: the ghost ramp must stretch, never tile, or it
-			# sawtooths back to transparent at every repeat.
-			assert_eq(tail.stretch_mode, TextureRect.STRETCH_SCALE,
-				"%s's GapTail must stretch track_ghost.png, not tile it" % p)
+		var tail := bar.get_node_or_null("GapTail") as Panel
+		assert_true(tail != null and tail.theme_type_variation == StringName("StatGapGhost" + _SKILL_BARS[p]),
+			"%s needs a StatGapGhost%s Panel" % [p, _SKILL_BARS[p]])
 		var dot := bar.get_node_or_null("TargetDot") as Panel
 		assert_true(dot != null and dot.theme_type_variation == &"StatTargetDot",
 			"%s needs a StatTargetDot Panel" % p)
-		for n in [mask, dot]:
+		for n in [tail, dot]:
 			if n != null:
 				assert_false((n as Control).visible, "%s/%s starts hidden" % [p, n.name])
-		for n in [mask, tail, dot]:
-			if n != null:
 				assert_eq((n as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
 					"%s/%s must never take a tap" % [p, n.name])
+
+
+## The ghost IS the bar's fill, faded: same texture, same accent. If the fill
+## art or its colour changes, the ghost follows instead of drifting apart.
+func test_the_gap_ghost_is_the_bars_own_fill() -> void:
+	for p in _SKILL_BARS:
+		var bar := _screen.get_node_or_null(p) as StatBar
+		var tail := bar.get_node_or_null("GapTail") as Panel if bar != null else null
+		if tail == null:
+			assert_true(false, "%s has no GapTail" % p)
+			continue
+		var ghost := tail.get_theme_stylebox("panel") as StyleBoxTexture
+		var fill := bar.get_theme_stylebox("fill") as StyleBoxTexture
+		assert_true(ghost != null and fill != null, "%s's ghost and fill are both textured" % p)
+		if ghost != null and fill != null:
+			assert_eq(ghost.texture, fill.texture, "%s's ghost wears the fill's own art" % p)
+			assert_eq(ghost.modulate_color, fill.modulate_color, "%s's ghost wears the fill's own accent" % p)
 
 
 ## The portrait's speech bubble: authored, hidden, tap-transparent.
@@ -1148,16 +1146,19 @@ func test_the_need_callout_is_authored_hidden() -> void:
 
 ## The tail and dot are seated from the bar's LIVE width: a tall phone
 ## stretches the bar far past its authored size, and an authored x left the
-## dot floating mid-bar. The dot straddles the target end; the tail runs from
-## the fill's end to it.
+## dot floating mid-bar. The dot straddles the target end; the tail runs to
+## it from one cap-width behind the fill's end, so the ghost's rounded cap
+## tucks under the fill's instead of leaving a dark notch between them.
 func test_the_gap_markers_are_seated_from_the_live_width() -> void:
 	var bar := _screen.get_node_or_null("BGStat/Akademis") as StatBar
 	assert_true(bar != null, "Akademis is gone")
 	if bar == null:
 		return
-	var tail := bar.get_node("GapMask/GapTail") as Control
+	var tail := bar.get_node("GapTail") as Control
 	var dot := bar.get_node("TargetDot") as Control
-	bar.get_node("GapMask").visible = true
+	var cap := tail.get_theme_stylebox("panel").get_margin(SIDE_LEFT)
+	assert_true(cap > 0.0, "the ghost has a rounded cap to tuck")
+	tail.visible = true
 	dot.visible = true
 	for width in [324.0, 601.0]:
 		bar.size.x = width
@@ -1165,7 +1166,8 @@ func test_the_gap_markers_are_seated_from_the_live_width() -> void:
 		bar.layout_fill_followers()
 		assert_true(is_equal_approx(dot.position.x + dot.size.x / 2.0, bar.size.x),
 			"at %dpx the dot straddles the target end (centre %s)" % [width, dot.position.x + dot.size.x / 2.0])
-		assert_true(is_equal_approx(tail.position.x, bar.fill_end_x()), "at %dpx the tail starts at the fill's end" % width)
+		assert_true(is_equal_approx(tail.position.x, bar.fill_end_x() - cap),
+			"at %dpx the tail starts one cap behind the fill's end" % width)
 		assert_true(is_equal_approx(tail.position.x + tail.size.x, bar.size.x),
 			"at %dpx the tail reaches the target end" % width)
 
@@ -1185,15 +1187,15 @@ func test_need_gauge_shows_one_skill_and_the_tired_need() -> void:
 	var tokens := DesignTokens.load_default()
 	gauge.update(_screen, {"seni_budaya": StatFlags.PERLU, "energy": StatFlags.LELAH}, bars, tokens)
 	var seni := _screen.get_node("BGStat/SeniBudaya")
-	assert_true(seni.get_node("GapMask").visible and seni.get_node("TargetDot").visible,
+	assert_true(seni.get_node("GapTail").visible and seni.get_node("TargetDot").visible,
 		"the perlu skill's bar is gauged")
-	assert_eq((seni.get_node("GapMask/GapTail") as Control).self_modulate.a, NeedGauge.TAIL_ALPHA,
-		"the tail wears the tint at TAIL_ALPHA")
+	assert_eq((seni.get_node("GapTail") as Control).self_modulate.a, NeedGauge.TAIL_ALPHA,
+		"the ghost is faded to TAIL_ALPHA")
 	assert_eq((seni.get_node("TargetDot") as Control).self_modulate, tokens.category_color("SeniBudaya"),
 		"the dot is tinted to the skill's category")
 	assert_false(seni.get_node("Flag").visible, "the gauge replaces the skill's word chip")
 	var aka := _screen.get_node("BGStat/Akademis")
-	assert_false(aka.get_node("GapMask").visible or aka.get_node("TargetDot").visible,
+	assert_false(aka.get_node("GapTail").visible or aka.get_node("TargetDot").visible,
 		"only one skill is ever gauged")
 	var chip := _screen.get_node("BGStat/Energy/Flag") as Label
 	assert_true(chip.visible and chip.text == StatFlags.LELAH, "the tired need wears its lelah chip")
@@ -1204,7 +1206,7 @@ func test_need_gauge_shows_one_skill_and_the_tired_need() -> void:
 		(_screen.get_node("BGStat/IconSeniBudaya") as TextureRect).texture,
 		"the callout wears the skill's own icon")
 	gauge.update(_screen, {}, bars, tokens)
-	assert_false(seni.get_node("GapMask").visible or seni.get_node("TargetDot").visible,
+	assert_false(seni.get_node("GapTail").visible or seni.get_node("TargetDot").visible,
 		"a cleared skill drops its gauge")
 	assert_false(chip.visible, "a rested need drops its chip")
 	assert_false(callout.visible, "no skill behind, no callout")

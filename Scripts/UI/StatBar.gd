@@ -132,16 +132,19 @@ func layout_fill_followers() -> void:
 
 ## AturJadwal's need gauge (2026-09-28), seated from the bar's LIVE width:
 ## a tall phone stretches the bar well past its authored size, so an
-## authored x would leave the dot mid-bar. GapTail covers the empty stretch
-## from the fill's end to the target end, inside a full-rect GapMask that
-## clips it to the track's rounded ends; TargetDot straddles the target end.
-## Only a bar that authors them, with them showing, pays for this.
+## authored x would leave the dot mid-bar. GapTail -- a faded copy of the
+## fill -- covers the empty stretch to the target end, starting one cap-width
+## back so its rounded cap tucks under the fill's instead of leaving a dark
+## notch between the two; TargetDot straddles the target end. Only a bar
+## that authors them, with them showing, pays for this.
 func _layout_need_gauge(end: float) -> void:
-	var mask := get_node_or_null("GapMask") as Control
-	var tail := get_node_or_null("GapMask/GapTail") as Control
-	if mask != null and mask.visible and tail != null:
-		tail.position = Vector2(end, 0.0)
-		tail.size = Vector2(maxf(0.0, size.x - end), size.y)
+	var tail := get_node_or_null("GapTail") as Control
+	if tail != null and tail.visible:
+		var box := tail.get_theme_stylebox("panel")
+		var cap := box.get_margin(SIDE_LEFT) if box != null and end > 0.0 else 0.0
+		var x := maxf(0.0, end - cap)
+		tail.position = Vector2(x, 0.0)
+		tail.size = Vector2(maxf(0.0, size.x - x), size.y)
 	var dot := get_node_or_null("TargetDot") as Control
 	if dot != null and dot.visible:
 		dot.position = Vector2(size.x - dot.size.x / 2.0, (size.y - dot.size.y) / 2.0)

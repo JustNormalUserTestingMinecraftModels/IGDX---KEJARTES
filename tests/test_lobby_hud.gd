@@ -460,3 +460,47 @@ func test_the_breathe_stops_while_hidden() -> void:
 	assert_eq(hud.raised_page.scale, Vector2.ONE, "and rests at full size")
 	GameSettings.reduce_motion = true
 	hud.set_open(true)
+
+
+## Task 7: IdleFade on the header and coin plate. Fails loudly until the
+## [editor] scene step adds an IdleFade node (with an IdleTimer child) at
+## the Lobby root and wires its targets, matching this suite's Task 3-6
+## fixture pattern.
+func _idle_fade() -> IdleFade:
+	var fade := _lobby.get_node_or_null("IdleFade") as IdleFade
+	assert_true(fade != null, "Lobby.tscn needs an IdleFade node at its root")
+	return fade
+
+
+func test_idle_fade_targets_the_header_and_coin_plate() -> void:
+	var fade := _idle_fade()
+	if fade == null:
+		return
+	var header := _lobby.get_node("%ProgressHeader") as CanvasItem
+	var coin := _lobby.get_node("%DisplayUang") as CanvasItem
+	assert_eq(fade.targets.size(), 2, "only the header and coin plate fade")
+	assert_true(fade.targets.has(header), "the header is a target")
+	assert_true(fade.targets.has(coin), "the coin plate is a target")
+	var hud := _lobby.get_node("%Hud") as CanvasItem
+	assert_false(fade.targets.has(hud), "the HUD itself does not fade, only the plates")
+
+
+func test_idle_fade_timing_matches_the_spec() -> void:
+	var fade := _idle_fade()
+	if fade == null:
+		return
+	assert_eq(fade.idle_seconds, 8.0, "idle after ~8 s per the spec")
+	assert_eq(fade.faded_alpha, 0.55, "rests at ~55% alpha while idle")
+
+
+func test_idle_fade_under_reduce_motion_snaps_instead_of_tweening() -> void:
+	var fade := _idle_fade()
+	if fade == null:
+		return
+	GameSettings.reduce_motion = true
+	fade.fade_out()
+	for target: CanvasItem in fade.targets:
+		assert_eq(target.modulate.a, fade.faded_alpha, "fade_out snaps straight to faded_alpha")
+	fade.restore()
+	for target: CanvasItem in fade.targets:
+		assert_eq(target.modulate.a, 1.0, "restore snaps straight back to full opacity")

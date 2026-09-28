@@ -40,9 +40,10 @@ var _saved_date: String
 ## Not tracked; suite_teardown frees both.
 func suite_setup(_ctx: Dictionary) -> void:
 	_panel = DailyLoginPanel.new()
+	if not ResourceLoader.exists(_REVEAL_SCENE):
+		return
 	var reveal_scene: PackedScene = load(_REVEAL_SCENE) as PackedScene
-	if reveal_scene != null:
-		_reveal = reveal_scene.instantiate() as DailyRewardReveal
+	_reveal = reveal_scene.instantiate() as DailyRewardReveal
 
 
 func suite_teardown() -> void:
@@ -213,6 +214,23 @@ func test_reveal_builds_no_visual_at_runtime() -> void:
 	var src := FileAccess.get_file_as_string(_REVEAL_SCRIPT)
 	assert_false(src.contains(".new("),
 		"the reveal instances its templates; it never constructs a node")
+
+
+## Task 7: once today is claimed, the teaser names tomorrow's reward,
+## wrapping from the last streak day back to day 1's.
+func test_teaser_names_tomorrows_reward() -> void:
+	assert_eq(DailyLoginPanel.teaser_text(2), "Besok: +120G",
+		"tomorrow being day 2 teases day 2's reward")
+	assert_eq(DailyLoginPanel.teaser_text(DailyLoginPanel.day_after(DailyLoginPanel.STREAK_DAYS)),
+		"Besok: +80G", "after the last streak day the teaser wraps to day 1's reward")
+
+
+func test_idle_invite_is_a_looped_squash_bounce() -> void:
+	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT)
+	assert_true(panel_src.contains("AnimUtils.squash_bounce.bind("),
+		"the idle invite bounces through AnimUtils.squash_bounce")
+	assert_true(panel_src.contains("set_loops()"),
+		"the idle invite repeats on a looped tween")
 
 
 func test_lobby_no_longer_owns_the_claim() -> void:

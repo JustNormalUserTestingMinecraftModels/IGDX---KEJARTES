@@ -40,6 +40,8 @@ const MIDNIGHT_SUFFIX := " 00:00:00"
 
 ## The streak line's text; %d is the day in the 7-day cycle.
 const STREAK_FORMAT := "Streak %d hari"
+## The teaser under the strip; %d is tomorrow's reward.
+const TEASER_FORMAT := "Besok: +%dG"
 
 ## Modulate alpha applied to ButtonClaim / RewardCoin / RewardAmount once
 ## today's reward is already claimed. The panel art always draws the same
@@ -68,6 +70,8 @@ const CLOSE_SCALE := Vector2(0.8, 0.8)
 
 ## Where the reward coin flies; wired in Lobby.tscn to %DisplayUang.
 @export var wallet_anchor: Control
+## Seconds between two idle "tap me" bounces while today is unclaimed.
+@export var idle_invite_seconds: float = 3.0
 
 @export_group("Streak")
 ## Flame scale on day 1 of the streak.
@@ -89,8 +93,10 @@ const CLOSE_SCALE := Vector2(0.8, 0.8)
 @onready var streak_flame: TextureRect = %StreakFlame
 @onready var reward_row: HBoxContainer = %RewardRow
 @onready var reveal: DailyRewardReveal = %DailyRewardReveal
+@onready var besok_teaser: Label = %BesokTeaser
 
 var _flicker: Tween
+var _invite: Tween
 ## The claim whose payout waits on the reveal's coin landing.
 var _pending_amount: int = 0
 var _pending_previous_money: int = 0
@@ -123,6 +129,7 @@ func open() -> void:
 	AnimUtils.popup_spring_in(streak_row)
 	reveal.show_ready()
 	_start_flicker()
+	_start_idle_invite()
 
 
 ## Fades and shrinks the panel out, then hides it. A reveal still playing
@@ -130,6 +137,7 @@ func open() -> void:
 func close() -> void:
 	reveal.skip()
 	_stop_flicker()
+	_stop_idle_invite()
 	var tween := create_tween().set_parallel(true)
 	tween.tween_property(self, "modulate:a", 0.0, CLOSE_SECONDS).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "scale", CLOSE_SCALE, CLOSE_SECONDS).set_ease(Tween.EASE_IN)
@@ -160,6 +168,11 @@ func flame_scale_for(day: int) -> float:
 	return lerpf(flame_scale_min, flame_scale_max, progress)
 
 
+## The teaser line for `next_day`, the streak day tomorrow's claim is.
+static func teaser_text(next_day: int) -> String:
+	return TEASER_FORMAT % reward_for_day(next_day)
+
+
 ## The streak day after `day`; the last day wraps to day 1.
 static func day_after(day: int) -> int:
 	return day % STREAK_DAYS + 1
@@ -182,6 +195,7 @@ func _on_claim_pressed() -> void:
 		AudioDirector.play_sfx(&"error")
 		return
 	AudioDirector.play_sfx(&"daily_claim")
+	_stop_idle_invite()
 	var claimed_day: int = GameState.daily_login_day
 	var previous_money: int = GameState.player_money
 	var amount: int = claim(today)
@@ -231,6 +245,15 @@ func _show_day(day: int, is_claimed: bool) -> void:
 	for node: CanvasItem in [claim_button, reward_coin, reward_amount]:
 		node.modulate.a = cue_alpha
 	_show_streak(day)
+	_show_teaser(is_claimed)
+
+
+## Tomorrow's reward, shown only once today is claimed. By then the
+## streak day has already advanced, so GameState.daily_login_day is
+## tomorrow's day.
+func _show_teaser(is_claimed: bool) -> void:
+	besok_teaser.visible = is_claimed
+	besok_teaser.text = teaser_text(GameState.daily_login_day)
 
 
 ## The streak line: the day in the 7-day cycle (per the spec, not a
@@ -265,3 +288,24 @@ func _stop_flicker() -> void:
 		_flicker.kill()
 	_flicker = null
 	streak_flame.modulate.a = 1.0
+
+
+## While today is unclaimed, the reward row gives a squash bounce every
+## idle_invite_seconds. The row, not ButtonClaim: the button draws nothing
+## over the baked pill, so bouncing it would move only its "KLAIM" text.
+## AnimUtils.wobble is no loop step -- it snaps to scale 0.7 each call.
+func _start_idle_invite() -> void:
+	_stop_idle_invite()
+	if GameState.last_claim_date == Time.get_date_string_from_system():
+		return
+	if GameSettings.reduce_motion:
+		return
+	_invite = create_tween().set_loops()
+	_invite.tween_interval(idle_invite_seconds)
+	_invite.tween_callback(AnimUtils.squash_bounce.bind(reward_row))
+
+
+func _stop_idle_invite() -> void:
+	if _invite != null:
+		_invite.kill()
+	_invite = null

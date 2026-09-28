@@ -491,3 +491,12 @@ func test_the_reveal_sits_on_the_panel_and_aims_at_the_wallet() -> void:
 	assert_eq(reveal.get_parent(), panel, "the reveal is a child of DailyReward")
 	assert_eq(panel.wallet_anchor, _lobby.get_node("%DisplayUang"),
 		"DailyReward's wallet_anchor is wired to %DisplayUang")
+
+
+## Daily-login polish, Task 7: the "besok" teaser under the strip.
+func test_the_besok_teaser_is_a_caption() -> void:
+	var teaser := _lobby.get_node_or_null("%BesokTeaser") as Label
+	assert_true(teaser != null, "missing BesokTeaser")
+	if teaser == null:
+		return
+	assert_eq(teaser.theme_type_variation, &"CaptionLabel", "the teaser is a caption")

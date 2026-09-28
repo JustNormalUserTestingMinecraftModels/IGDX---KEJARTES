@@ -21,14 +21,16 @@ extends Control
 
 @onready var stage: Control = $Stage
 @onready var back_button: TextureButton = $Stage/BackButton
-# CoinHUD stands on the counter ledge, part of the Stage, since the
-# 2026-09-17 revamp.
-@onready var coin_hud: HBoxContainer = %CoinHUD
-@onready var coin_label: Label = get_node("%CoinHUD/CoinLabel")
 @onready var message_label: Label = $MessageLabel
 @onready var bubble: ChatBubble = $Stage/ChatBubble
 @onready var herman_ap: AnimationPlayer = get_node_or_null("Stage/Herman/HermanAP") as AnimationPlayer
 @onready var tray: BasketTray = get_node_or_null("Stage/TrayDock/BasketTray") as BasketTray
+# PromoBoard is a Stage child too, so its own _ready() (which reads
+# GameState.shop_promo_item/percent) runs BEFORE Stage's -- children ready
+# before their parent -- and Stage's _ready() is what rolls the shelf.
+# Nudged again at the bottom of this _ready(), once Stage has finished.
+# PromoBoard.gd has no class_name, so this is typed to its engine base.
+@onready var promo_board: Panel = %PromoBoard
 ## BackButton's authored position (Stage-local) while the tray is EXPANDED --
 ## kept equal to BackButton's own authored offset_left/offset_top (24, 1157)
 ## in Koperasi.tscn so nothing jumps on load; test_tall_screen_layout.gd pins
@@ -68,7 +70,10 @@ func _ready():
 		back_button.position = back_pos_expanded if tray_expanded else back_pos_collapsed
 
 	_setup_beli_button()
-	_update_coin_display()
+	# The tray's own tween needs a frame it does not have yet on arrival, and
+	# a count-up from 0 on first paint would be a lie about where the Kas
+	# balance came from -- snap straight to it instead.
+	_update_coin_display(false)
 
 	# Signal-driven coin updates
 	if not GameState.money_changed.is_connected(_on_money_changed):
@@ -95,7 +100,14 @@ func _ready():
 	if is_instance_valid(tray) and not tray.state_changed.is_connected(_on_tray_state_changed):
 		tray.state_changed.connect(_on_tray_state_changed)
 
-	# The Stage, a child, has already stocked the shelf in its own _ready.
+	# Stage has finished by now (children ready before their parent), so the
+	# shelf has rolled -- nudge PromoBoard again, since its own _ready() ran
+	# too early to see this week's promo (see the promo_board @onready doc).
+	if promo_board == null:
+		push_error("Koperasi: PromoBoard is missing from Koperasi.tscn")
+	else:
+		promo_board.refresh()
+
 	if bubble:
 		if GameState.is_shop_sold_out():
 			bubble.say_sticky(DialogueCatalog.LINES[&"SOLD_OUT"][0])
@@ -162,10 +174,14 @@ func _on_back_pressed():
 func _on_money_changed(new_amount: int):
 	_update_coin_display()
 
-func _update_coin_display():
-	if coin_label:
-		coin_label.text = "%d" % GameState.player_money
-		AnimUtils.coin_pulse(coin_hud)
+## Shows the class fund's balance on the tray footer's Kas Kelas pill.
+## animate=false snaps straight to the new balance (arrival, or any caller
+## that skips the count-up); a signal-driven update counts up by default.
+func _update_coin_display(animate: bool = true) -> void:
+	if not is_instance_valid(tray):
+		push_error("Koperasi: BasketTray is missing, cannot show the Kas Kelas balance")
+		return
+	tray.show_kas(GameState.player_money, animate)
 
 func _on_beli_pressed():
 	AnimUtils.squash_bounce(beli_button)
@@ -176,7 +192,7 @@ func _on_beli_pressed():
 			bubble.say(&"EMPTY")
 		return
 
-	var total = Cart.get_total()
+	var total: int = Cart.get_total()
 	if GameState.player_money < total:
 		AudioDirector.play_sfx(&"error")
 		if bubble:
@@ -189,6 +205,8 @@ func _on_beli_pressed():
 
 	# Deduct money
 	GameState.player_money -= total
+	if is_instance_valid(tray):
+		tray.play_withdrawal(total)
 
 	# Transfer items to inventory. Each unit is sold for the rest of the week --
 	# marked here, before the cart empties below, so the shelf keeps its slot empty.

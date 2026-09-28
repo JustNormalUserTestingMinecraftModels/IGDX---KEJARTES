@@ -4,7 +4,9 @@ extends Control
 
 ## The koperasi basket tray, docked at the bottom of the shelf screen: the
 ## items the player has picked stand on its plank at their own heights, each
-## with a ×N badge, and its footer carries the running total and the one
+## with a ×N badge, and its footer carries twin pills -- Kas Kelas (the
+## class fund's balance, driven by show_kas()) and Total (the cart's
+## running cost, woken and turned over by refresh()) -- beside the one
 ## Beli button.
 ##
 ## Two ways to move it, both landing in set_state(): the CrateHandle
@@ -68,12 +70,45 @@ const SLOT_SCENE := preload("res://Scenes/Koperasi/TraySlot.tscn")
 ## through the autoload instance (which GDScript warns about).
 const CART_SCRIPT := preload("res://Scripts/Inventory/Cart.gd")
 
+## The Total pill's coin fades to this alpha while asleep (nothing in the
+## cart) -- the Kas pill's own coin never dims, only the Total one.
+const ASLEEP_COIN_ALPHA := 0.45
+## Beli's alpha while the cart costs more than the Kas Kelas balance. It
+## stays pressable at this alpha rather than going `disabled`, so a press
+## still reaches Koperasi.gd and Pak Herman's "not enough" line answers.
+const BELI_OVER_ALPHA := 0.6
+
 @onready var _body: Control = $Body
 @onready var _items: Control = $Body/Items
 @onready var _empty_state: Control = $Body/EmptyState
 @onready var _hint: Label = $Body/Hint
-@onready var _total_label: Label = $Body/Footer/TotalLabel
+@onready var _kas_pill: PanelContainer = %KasPill
+@onready var _kas_label: Label = %KasLabel
+@onready var _total_pill: PanelContainer = %TotalPill
+@onready var _total_number: Label = %TotalNumber
+@onready var _total_coin: TextureRect = %TotalCoin
 @onready var _beli_button: Button = $Body/Footer/BeliButton
+
+## The balance last handed to show_kas(), so refresh() can re-derive the
+## Total pill's state (awake vs. over) without a caller passing it again.
+var _kas: int = 0
+## The tween driving the Kas Kelas number's count-up, if any -- killed
+## before a new one starts so two show_kas() calls in quick succession (two
+## money_changed signals back to back) never race on the same label, same
+## as _tray_tween's own kill-before-restart.
+var _kas_tween: Tween
+## The Total pill's number last written, so _apply_total_state() can count up
+## from it rather than jump -- mirrors _kas's own before/after tracking, but
+## purely for the tween's start point: get_total_text() always recomputes
+## from _entries, never from this.
+var _total: int = 0
+## The tween driving the Total pill's count-up, if any -- killed before a new
+## one starts, same as _kas_tween's own kill-before-restart (two refresh()
+## calls in quick succession must never race on the same label).
+var _total_tween: Tween
+## Footer node names already push_error'd missing by _ensure_nodes(), so a
+## torn-up scene logs one error per node instead of one on every call.
+var _reported_missing_footer_nodes: Dictionary = {}
 
 ## item_name -> TraySlot, in the order the lines entered the cart.
 var _slots: Dictionary = {}
@@ -150,7 +185,7 @@ func refresh(entries: Dictionary) -> void:
 	var empty := entries.is_empty()
 	_empty_state.visible = empty
 	_hint.visible = not empty
-	_total_label.text = "Total: %s koin" % format_koin(CART_SCRIPT.total_of(entries))
+	_apply_total_state(CART_SCRIPT.total_of(entries), empty)
 
 
 ## Call BEFORE Cart.add_item(): the refresh that follows keeps the new unit
@@ -339,16 +374,134 @@ static func format_koin(amount: int) -> String:
 	return ("-" if amount < 0 else "") + digits + grouped
 
 
-## Reads the footer. Exists so tests need not know node paths.
+## format_koin(), rounded to the nearest int -- the shape Juice.count_up_formatted
+## wants for its per-frame Callable, since a tween drives the value as a float.
+## Shared by show_kas() and _write_total_number() so the two count-ups format
+## identically without repeating the lambda.
+static func _format_koin_float(value: float) -> String:
+	return format_koin(int(round(value)))
+
+
+## Shows the class fund's balance on the Kas Kelas pill and re-derives the
+## Total pill's state against it (a cart that was affordable can turn over,
+## or the reverse, purely from the Kas changing under it). animate=false
+## snaps straight to the new text -- used by the first call on arrival and
+## by tests, which never advance a frame for a tween to run.
+func show_kas(amount: int, animate: bool = true) -> void:
+	_ensure_nodes()
+	var old := _kas
+	_kas = amount
+	# Re-derive the Total pill's state against the new Kas before touching
+	# the Kas label -- _apply_total_state() has its own bail for its own
+	# nodes, so a missing KasLabel must not also skip the Total pill, which
+	# does not depend on it.
+	_apply_total_state(CART_SCRIPT.total_of(_entries), _entries.is_empty())
+	if not is_instance_valid(_kas_label):
+		return
+	if is_instance_valid(_kas_tween) and _kas_tween.is_valid():
+		_kas_tween.kill()
+	if animate and is_inside_tree():
+		_kas_tween = Juice.count_up_formatted(_kas_label, float(old), float(amount), _format_koin_float)
+	else:
+		_kas_label.text = format_koin(amount)
+
+
+## Reads the Kas Kelas pill's balance -- format_koin(_kas), never the label's
+## own text, which can be a mid-count tween frame while show_kas() animates.
+func get_kas_text() -> String:
+	_ensure_nodes()
+	return format_koin(_kas)
+
+
+## Plays the Beli purchase leaving the Kas Kelas pill: a "-amount" rises out
+## of it (AnimUtils.create_floating_text, parented to the tray itself so it
+## sits in local space rather than reaching up to the scene root) and the
+## pill bounces (AnimUtils.squash_bounce -- not Juice.shake, which moves
+## position and would fight the footer VBoxContainer re-sorting the pill as
+## the Kas label's text changes size mid-count). The balance itself counts
+## down separately, through money_changed -> show_kas(). Bails like every
+## other public method here if the footer failed to resolve.
+func play_withdrawal(amount: int) -> void:
+	_ensure_nodes()
+	if not is_instance_valid(_kas_pill):
+		return
+	var center: Vector2 = get_global_transform().affine_inverse() \
+			* _kas_pill.get_global_rect().get_center()
+	var color := get_theme_color("font_color", &"TotalNumberOver")
+	var font_size := get_theme_font_size("font_size", &"TotalNumberOver")
+	AnimUtils.create_floating_text(self, "-" + format_koin(amount), center, color, font_size)
+	AnimUtils.squash_bounce(_kas_pill)
+
+
+## The Total pill's current theme_type_variation -- TotalPillAsleep (empty
+## cart), TotalPillAwake (affordable) or TotalPillOver (past the Kas). Empty
+## StringName if TotalPill is missing; _ensure_nodes() has already logged it.
+func get_total_state() -> StringName:
+	_ensure_nodes()
+	if not is_instance_valid(_total_pill):
+		return &""
+	return _total_pill.theme_type_variation
+
+
+## The Total pill's own number, for the last refresh -- "2.400", never
+## "Total:"/"koin" (the caption above carries "TOTAL" and the coin icon
+## beside it carries the unit) and never a mid-count tween frame.
 func get_total_text() -> String:
 	_ensure_nodes()
-	return _total_label.text
+	return format_koin(CART_SCRIPT.total_of(_entries))
 
 
 ## The footer's Beli button, for the shop's press feedback.
 func get_beli_button() -> Button:
 	_ensure_nodes()
 	return _beli_button
+
+
+## Swaps the Total pill's and number's variation, the Total coin's alpha and
+## Beli's alpha together -- the one place all four react to a new total or a
+## new Kas balance. `empty` short-circuits to asleep before `total` is even
+## compared against _kas, so a cart that costs 0 (nothing picked) never
+## misreads as "affordable" in the awake grammar.
+##
+## Bails on the first missing node rather than writing whichever of the four
+## happen to still resolve -- _ensure_nodes() has already push_error'd each
+## one by name, so a torn-up scene fails loudly instead of half-updating.
+func _apply_total_state(total: int, empty: bool) -> void:
+	if not is_instance_valid(_total_pill) or not is_instance_valid(_total_number) \
+			or not is_instance_valid(_total_coin) or not is_instance_valid(_beli_button):
+		return
+	var over := not empty and total > _kas
+	var pill_state: StringName = &"TotalPillAsleep" if empty \
+		else (&"TotalPillOver" if over else &"TotalPillAwake")
+	var number_state: StringName = &"TotalNumberAsleep" if empty \
+		else (&"TotalNumberOver" if over else &"TotalNumberAwake")
+	_total_pill.theme_type_variation = pill_state
+	_total_number.theme_type_variation = number_state
+	_write_total_number(total, empty)
+	_total_coin.modulate.a = ASLEEP_COIN_ALPHA if empty else 1.0
+	_beli_button.modulate.a = BELI_OVER_ALPHA if over else 1.0
+
+
+## Writes the Total pill's number: counts up from the last value shown and
+## scale-pops the pill (AnimUtils.squash_bounce -- the pill is a Container
+## child of the footer VBoxContainer, the same reason play_withdrawal pops
+## the Kas pill by scale rather than by position) whenever the total actually
+## moved. Kills the previous tween before starting a new one, mirroring
+## show_kas()'s own kill-before-restart. Asleep, unchanged, or outside the
+## tree (no frame for a tween to run -- a test that instances the tray
+## without adding it, or a caller that hasn't been added yet) snaps straight
+## to the text instead. get_total_text() never reads this label, so it keeps
+## returning the computed value even mid-tween.
+func _write_total_number(total: int, empty: bool) -> void:
+	var old := _total
+	_total = total
+	if is_instance_valid(_total_tween) and _total_tween.is_valid():
+		_total_tween.kill()
+	if empty or not is_inside_tree() or old == total:
+		_total_number.text = format_koin(total)
+		return
+	_total_tween = Juice.count_up_formatted(_total_number, float(old), float(total), _format_koin_float)
+	AnimUtils.squash_bounce(_total_pill)
 
 
 ## Places every slot on the plank: each at its own size (times item_scale),
@@ -395,7 +548,11 @@ func _on_slot_tapped(item_name: String) -> void:
 	slot_tapped.emit(item_name)
 
 
-## Resolves @onready nodes when a method runs before _ready.
+## Resolves @onready nodes when a method runs before _ready. The six footer
+## nodes (Kas and Total's pills, labels and coin, plus Beli) are critical to
+## every public method below; a still-missing one after resolving gets a
+## push_error, once per node name, so a torn-up scene fails loudly instead
+## of the callers quietly skipping whichever writes they guarded.
 func _ensure_nodes() -> void:
 	if not is_instance_valid(_body):
 		_body = get_node_or_null("Body")
@@ -405,7 +562,33 @@ func _ensure_nodes() -> void:
 		_empty_state = get_node_or_null("Body/EmptyState")
 	if not is_instance_valid(_hint):
 		_hint = get_node_or_null("Body/Hint")
-	if not is_instance_valid(_total_label):
-		_total_label = get_node_or_null("Body/Footer/TotalLabel")
+	if not is_instance_valid(_kas_pill):
+		_kas_pill = get_node_or_null("%KasPill")
+	if not is_instance_valid(_kas_label):
+		_kas_label = get_node_or_null("%KasLabel")
+	if not is_instance_valid(_total_pill):
+		_total_pill = get_node_or_null("%TotalPill")
+	if not is_instance_valid(_total_number):
+		_total_number = get_node_or_null("%TotalNumber")
+	if not is_instance_valid(_total_coin):
+		_total_coin = get_node_or_null("%TotalCoin")
 	if not is_instance_valid(_beli_button):
 		_beli_button = get_node_or_null("Body/Footer/BeliButton")
+	var footer_nodes: Array = [
+		["KasPill", _kas_pill], ["KasLabel", _kas_label],
+		["TotalPill", _total_pill], ["TotalNumber", _total_number],
+		["TotalCoin", _total_coin], ["BeliButton", _beli_button],
+	]
+	for pair: Array in footer_nodes:
+		var node_name: String = pair[0]
+		var node: Object = pair[1]
+		if not is_instance_valid(node):
+			_report_missing_footer_node(node_name)
+
+
+## push_error, once per node name -- see _ensure_nodes()'s doc.
+func _report_missing_footer_node(node_name: String) -> void:
+	if _reported_missing_footer_nodes.has(node_name):
+		return
+	_reported_missing_footer_nodes[node_name] = true
+	push_error("BasketTray: %s is missing from the footer" % node_name)

@@ -53,6 +53,52 @@ until it moved from `ResultBodyLabel` to `EventBodyLabel`; and
 OpenAmplopConfirm's Batal/Terima buttons overlapped the taller frame until
 they moved inside `Letter/VBox`.
 
+## 2026-09-28 — Koperasi top-band promo: signboard, promo board, Kas Kelas footer
+
+Plan: `docs/superpowers/plans/2026-09-28-koperasi-top-band-promo.md`. The
+collaborator's own handoff plan was revised before building, for the
+clean-code standard and the UI depth pass (both landed after it was written)
+-- see the plan's "Revision" section.
+
+The shop's blank top band now carries a brown lipped Signboard and a cream
+lipped PromoBoard advertising the week's discount. The weekly promo is one
+deterministic pick per `(grade, week)` from the freshly rolled shelf
+(`GameState.promo_item_for`/`promo_percent_for`, hashed off the week key, not
+the shelf's own unseeded shuffle), surfaced through the single pricing
+chokepoint `Cart.price_of()` so the shelf's `PriceTag` (struck list price
+plus a tangerine "-N%" badge), the running Total and the Beli affordability
+check all agree. The old ledge `CoinHUD` is gone; the balance now lives in
+the basket tray's footer as a "KAS KELAS" pill beside its twin "TOTAL" pill,
+each a `ThemeFactory` lipped-cream variation with asleep (empty cart, the
+depth pass's own disabled look), awake and over-budget (tomato lip) states
+swapped by `theme_type_variation`, never a runtime colour override. A
+successful Beli sends a floating "-<total>" out of the Kas pill
+(`AnimUtils.create_floating_text`) with a `squash_bounce`, and the balance
+itself counts down through the existing `money_changed` -> `show_kas()`
+path.
+
+Review pass, same day: the Total pill now counts up and scale-pops on an
+awake change too (`Juice.count_up_formatted` on its own `_total_tween`,
+killed before a restart, mirroring `_kas_tween`), matching the spec's Part 3
+that the first cut had left as a straight text assignment.
+`GameState.promo_item_for` now sorts its distinct names before indexing, so
+the pick no longer depends on the shelf's shuffled order despite the suite's
+header claiming it did. `list_price_of` gained a test that actually proves
+it ignores the promo (the existing check could pass even if it didn't, since
+both sides of that comparison would be off by the same factor). An empty
+shelf now zeroes `shop_promo_percent` alongside `shop_promo_item`, matching
+its own doc comment. `Koperasi.gd`'s `_ready()` re-nudging `PromoBoard`
+after `Stage` rolls the shelf -- necessary because children ready before
+their parent -- is now pinned by a test instead of resting on an inline
+comment alone. Two stale test names from the pre-review cut
+(`test_koperasi_coin_hud_rides_the_stage`, `test_coin_hud_and_message_live_in_the_scene`)
+were renamed to what they actually check, and a couple of loop variables in
+`ThemeFactory._build_koperasi_chrome` and `BasketTray._ensure_nodes` picked
+up explicit types per the plan's clean-code revision (the ratchet itself
+only tracks `var` declarations and function signatures, not loop variables,
+so this is review guidance rather than a baseline move). No new bare
+numbers or untyped `var`s landed on any touched script.
+
 ## 2026-09-28 — UI depth pass, Phase 1: lipped buttons
 
 Plan: `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase1.md`.

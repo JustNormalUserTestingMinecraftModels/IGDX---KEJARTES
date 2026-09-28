@@ -713,9 +713,21 @@ static func _build_skin_select(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "SkinRosterHintLabel", tokens.font_caption)
 	theme.set_color("font_color", "SkinRosterHintLabel", tokens.text_secondary)
 
-	# Each tile's name caption underneath its photo (Task 3).
+	# Each tile's name caption underneath its photo (Task 3). A flat
+	# button_cream pill behind the name, not a lipped face -- this is a
+	# written caption tag on a photo, not a tappable sticker -- so the name
+	# reads against the portrait instead of sitting bare on skin tones.
+	# Only horizontal padding: the Caption node's authored rect is 26px
+	# tall (fix round 1, 2026-09-29), too tight for font_micro plus a
+	# vertical inset without clipping the text.
 	theme.add_type("SkinTileCaptionLabel")
 	theme.set_type_variation("SkinTileCaptionLabel", "Label")
+	var caption_box := StyleBoxFlat.new()
+	caption_box.bg_color = tokens.button_cream
+	caption_box.set_corner_radius_all(tokens.radius_pill)
+	caption_box.content_margin_left = tokens.space_xs
+	caption_box.content_margin_right = tokens.space_xs
+	theme.set_stylebox("normal", "SkinTileCaptionLabel", caption_box)
 	theme.set_font_size("font_size", "SkinTileCaptionLabel", tokens.font_micro)
 	theme.set_color("font_color", "SkinTileCaptionLabel", tokens.text_primary)
 	if tokens.font_display != null:

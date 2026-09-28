@@ -102,24 +102,26 @@ func test_idle_tile_is_a_lipped_opaque_face() -> void:
 
 
 ## A taped photo card needs a tape tab and a name caption (Task 3 of
-## docs/superpowers/plans/2026-09-29-skin-select-polish.md).
+## docs/superpowers/plans/2026-09-29-skin-select-polish.md). Behavioral, not
+## a source scan: the editor's own save (2026-09-29 fix round 1) drops
+## mouse_filter=2 from Caption because Label already defaults to it, and a
+## node's text block never contains its own resource's real path anyway --
+## that lives on the file's [ext_resource] line -- so a live instance is
+## the only thing that actually proves the wiring.
 func test_tile_has_a_tape_tab_and_a_caption() -> void:
-	var src := FileAccess.get_file_as_string(TILE)
-	var caption_at := src.find('[node name="Caption"')
-	assert_true(caption_at != -1, "Caption must exist")
-	if caption_at != -1:
-		var next := src.find("[node", caption_at + 1)
-		var block := src.substr(caption_at, (next - caption_at) if next != -1 else src.length() - caption_at)
-		assert_true(block.contains('type="Label"'))
-		assert_true(block.contains("unique_name_in_owner = true"))
-		assert_true(block.contains('theme_type_variation = &"SkinTileCaptionLabel"'))
-	var tape_at := src.find('[node name="Tape"')
-	assert_true(tape_at != -1, "Tape must exist")
-	if tape_at != -1:
-		var next_tape := src.find("[node", tape_at + 1)
-		var tape_block := src.substr(tape_at, (next_tape - tape_at) if next_tape != -1 else src.length() - tape_at)
-		assert_true(tape_block.contains('type="TextureRect"'))
-		assert_true(tape_block.contains("washi_tape.svg"))
+	var tile := _new_tile()
+	var caption := tile.get_node_or_null("%Caption") as Label
+	assert_true(caption != null, "Caption must exist")
+	if caption != null:
+		assert_true(caption.unique_name_in_owner)
+		assert_eq(caption.theme_type_variation, &"SkinTileCaptionLabel")
+	var tape := tile.get_node_or_null("Tape") as TextureRect
+	assert_true(tape != null, "Tape must exist")
+	if tape != null:
+		assert_true(tape.texture != null)
+		if tape.texture != null:
+			assert_eq(tape.texture.resource_path, "res://Assets/Images/AturJadwal/washi_tape.svg")
+		assert_eq(tape.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 
 
 ## show_student sets the caption to the student's name, the way it already

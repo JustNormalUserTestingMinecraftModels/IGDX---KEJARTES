@@ -499,31 +499,49 @@ func test_open_sets_the_roster_header_text() -> void:
 	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu · 4 murid")
 
 
-## The tray reads as ruled paper: a tiling Rules TextureRect over paper_rule.png
-## (Task 3, spec §2), the same idiom NotebookFrame.tscn uses.
+## The tray reads as ruled paper: a tiling Rules TextureRect over
+## paper_rule.png (Task 3, spec §2), the same idiom NotebookFrame.tscn uses.
+## Behavioral, not a source scan: the editor's own save (2026-09-29 fix
+## round 1) drops mouse_filter=2 from a Label/TextureRect that already
+## defaults to it, and a node block never contains the real resource path
+## anyway -- that lives on the file's [ext_resource] line, not inside the
+## node's own text -- so a live instance is the only thing that actually
+## proves the wiring.
 func test_tray_has_tiling_ruled_paper() -> void:
-	var src := FileAccess.get_file_as_string(SCREEN)
-	var rules := _node_block(src, "Rules")
-	assert_true(rules.contains('type="TextureRect"'))
-	assert_true(rules.contains("paper_rule.png"))
-	assert_true(rules.contains("texture_repeat = 1"))
-	assert_true(rules.contains("stretch_mode = 1"))
-	assert_true(rules.contains("mouse_filter = 2"))
+	var s := _new_screen()
+	var rules := s.get_node("%Tray").get_node_or_null("Rules") as TextureRect
+	assert_true(rules != null, "Tray must have a Rules TextureRect")
+	if rules == null:
+		return
+	assert_true(rules.texture != null)
+	if rules.texture != null:
+		assert_eq(rules.texture.resource_path, "res://Assets/Images/UI/Notebook/paper_rule.png")
+	assert_eq(rules.stretch_mode, TextureRect.STRETCH_TILE)
+	assert_eq(rules.texture_repeat, CanvasItem.TEXTURE_REPEAT_ENABLED)
+	assert_eq(rules.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 
 
 ## Two washi-tape strips at the tray's top corners, reusing the existing
-## washi_tape.svg (Task 3, spec §2) -- no new art.
+## washi_tape.svg (Task 3, spec §2) -- no new art. Behavioral, same reason
+## as test_tray_has_tiling_ruled_paper.
 func test_tray_has_corner_tape() -> void:
-	var src := FileAccess.get_file_as_string(SCREEN)
-	var left := _node_block(src, "TapeLeft")
-	assert_true(left.contains('type="TextureRect"'))
-	assert_true(left.contains("washi_tape.svg"))
-	var right := _node_block(src, "TapeRight")
-	assert_true(right.contains('type="TextureRect"'))
-	assert_true(right.contains("washi_tape.svg"))
+	var s := _new_screen()
+	var tray := s.get_node("%Tray")
+	var left := tray.get_node_or_null("TapeLeft") as TextureRect
+	var right := tray.get_node_or_null("TapeRight") as TextureRect
+	assert_true(left != null and right != null, "Tray must have TapeLeft and TapeRight")
+	if left == null or right == null:
+		return
+	assert_true(left.texture != null and right.texture != null)
+	if left.texture != null:
+		assert_eq(left.texture.resource_path, "res://Assets/Images/AturJadwal/washi_tape.svg")
+	if right.texture != null:
+		assert_eq(right.texture.resource_path, "res://Assets/Images/AturJadwal/washi_tape.svg")
+	assert_eq(left.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	assert_eq(right.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 	# Left and right must actually be different corners, not two copies of
 	# the same offsets.
-	assert_ne(_first_line_with(left, "offset_left"), _first_line_with(right, "offset_left"))
+	assert_ne(left.position, right.position)
 
 
 ## Paper-divider dots flank the skin name, matching the mockup's description
@@ -552,15 +570,6 @@ func test_terapkan_has_a_pakai_sticker() -> void:
 	assert_true(block.contains('text = "PAKAI!"'))
 
 
-## The first line of `block` containing `needle`, for comparing two node
-## blocks without asserting an exact offset value.
-func _first_line_with(block: String, needle: String) -> String:
-	for line in block.split("\n"):
-		if line.contains(needle):
-			return line
-	return ""
-
-
 ## SkinStudentTile / SkinStudentTileActive are lipped photo cards: cream at
 ## rest, sunflower when open (the palette's highlight colour, never an
 ## action -- ui-depth-pass-design.md, "Palette").
@@ -576,3 +585,19 @@ func test_skin_tiles_are_lipped_cream_and_sunflower() -> void:
 	assert_eq(idle.bg_color, tokens.button_cream)
 	assert_true(LippedBox.is_lipped(open), "open tile is a lipped accent_sunflower face")
 	assert_eq(open.bg_color, tokens.accent_sunflower)
+
+
+## The caption reads poorly straight over a light portrait (fix round 1,
+## 2026-09-29 live screenshot), so it gets a small button_cream backing --
+## a written caption tag on the photo, not a bare label. Flat, not lipped:
+## this is not a tap target.
+func test_tile_caption_has_a_cream_backing() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var box := theme.get_stylebox("normal", "SkinTileCaptionLabel") as StyleBoxFlat
+	assert_true(box != null, "SkinTileCaptionLabel must carry a normal stylebox")
+	if box == null:
+		return
+	assert_eq(box.bg_color, tokens.button_cream)
+	assert_eq(box.corner_radius_top_left, tokens.radius_pill)
+	assert_eq(theme.get_color("font_color", "SkinTileCaptionLabel"), tokens.text_primary)

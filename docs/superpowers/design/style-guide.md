@@ -55,9 +55,9 @@ Information badges keep their meaning colours. The palette pairs are the
 white; on a light face they are plain dark ink. `EventSelectCard` stays a
 flat box, because its pressed state means *selected*.
 
-The Lobby's scrapbook tiles (`BookHeroButton`, `NavTileKoperasi`/`Inventory`/
-`Rapor`, `PlusButton`) wear the same role palette with a thicker lip
-(`ThemeFactory.LOBBY_HUD_LIP`).
+The Lobby's scrapbook buttons (`BookHeroButton`, `NavTileKoperasi`/`Inventory`/
+`Rapor`, `PlusButton`) wear the same role palette; the hero and the three
+tiles also get a thicker lip (`ThemeFactory.LOBBY_HUD_LIP`).
 
 **Panels**:
 - `Card` — the standard raised surface (white bg, border, shadow).

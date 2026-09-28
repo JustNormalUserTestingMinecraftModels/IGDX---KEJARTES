@@ -83,8 +83,8 @@ func test_safe_area_can_be_disabled() -> void:
 
 ## The device inset only applies to a mobile build in a fullscreen window.
 ## get_display_safe_area() reports the MONITOR's safe area, so the editor's
-## embedded 1063x1891 run read a 768px bottom "inset" (2026-09-28: Settings'
-## MainColumn came out 1056px tall instead of 1824). These feed the pure
+## embedded 1063x1891 run read an 873px bottom "inset", clamped to 768
+## (2026-09-28: Settings' column came out 1056px tall instead of 1824). These feed the pure
 ## device_inset() fixed readings, so no result depends on the host monitor.
 const _PHONE := Vector2(1080, 1920)
 
@@ -127,10 +127,24 @@ func test_safe_area_clamps_a_bogus_device_reading() -> void:
 ## The gate reads the live build and window, not a fixed flag.
 func test_safe_area_gates_on_the_live_build_and_window() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/SafeAreaMargin.gd")
-	assert_true(src.contains('var mobile := OS.has_feature("mobile")'),
+	assert_true(src.contains('OS.has_feature("mobile")'),
 		"_apply must read the mobile feature tag")
 	assert_true(src.contains("WINDOW_MODE_FULLSCREEN") and src.contains("WINDOW_MODE_EXCLUSIVE_FULLSCREEN"),
 		"fullscreen must cover both fullscreen modes")
+
+
+## End to end: a live SafeAreaMargin in this (desktop) editor applies exactly
+## screen_margin on every side, whatever the host monitor reports.
+func test_safe_area_adds_no_device_inset_off_a_phone() -> void:
+	if OS.has_feature("mobile"):
+		return
+	var m := SafeAreaMargin.new()
+	m.size = _PHONE
+	_root.add_child(m)
+	var margin := DesignTokens.load_default().screen_margin
+	for side in ["margin_left", "margin_top", "margin_right", "margin_bottom"]:
+		assert_eq(m.get_theme_constant(side), margin,
+			"%s must be exactly screen_margin off a phone" % side)
 
 
 ## Renamed from test_statbar_tints_itself_from_its_category: a StatBar-family

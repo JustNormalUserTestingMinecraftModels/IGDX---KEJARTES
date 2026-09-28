@@ -106,6 +106,9 @@ static func _raw_inset(safe: Rect2i, win: Vector2i, area: Vector2) -> Vector4:
 		float(win.y - safe.end.y) * scale_y)
 
 
+## True when the game window covers the whole display, in either fullscreen
+## mode; the device inset is read only then.
 static func _window_is_fullscreen() -> bool:
 	var mode := DisplayServer.window_get_mode()
-	return mode == DisplayServer.WINDOW_MODE_FULLSCREEN 		or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+	return mode == DisplayServer.WINDOW_MODE_FULLSCREEN \
+		or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN

@@ -21,12 +21,12 @@ extends Control
 @onready var _master: HSlider = %MasterSlider
 @onready var _bgm: HSlider = %BgmSlider
 @onready var _sfx: HSlider = %SfxSlider
-@onready var _tutorial: CheckButton = %TutorialToggle
-@onready var _skip_dialog: CheckButton = %SkipDialogToggle
-@onready var _look_layer: CheckButton = %LookLayerToggle
-@onready var _ambient: CheckButton = %AmbientToggle
-@onready var _haptics: CheckButton = %HapticsToggle
-@onready var _reduce_motion: CheckButton = %ReduceMotionToggle
+@onready var _tutorial: CheckButton = %TutorialRow.toggle
+@onready var _skip_dialog: CheckButton = %SkipDialogRow.toggle
+@onready var _look_layer: CheckButton = %LookLayerRow.toggle
+@onready var _ambient: CheckButton = %AmbientRow.toggle
+@onready var _haptics: CheckButton = %HapticsRow.toggle
+@onready var _reduce_motion: CheckButton = %ReduceMotionRow.toggle
 @onready var _back: Button = %BackButton
 
 ## The screen Back returns to. MainMenu by default; the Lobby's Settings gear
@@ -62,17 +62,15 @@ func _ready() -> void:
 		# entry animation from here.
 		return
 
-	Juice.stagger_in(_collect_rows())
+	Juice.stagger_in(_collect_cards())
 	# Opened from the Lobby, its music keeps playing.
 	if return_scene == "res://Scenes/MainMenu/MainMenu.tscn":
 		AudioDirector.play_bgm(&"titlescreen")
 
 
-func _collect_rows() -> Array:
-	var rows: Array = []
-	for child in %Layout.get_children():
-		rows.append(child)
-	return rows
+## The three section cards, which pop in one after another on entry.
+func _collect_cards() -> Array:
+	return %Sections.get_children()
 
 
 func _on_volume_changed(value: float, bus: StringName) -> void:

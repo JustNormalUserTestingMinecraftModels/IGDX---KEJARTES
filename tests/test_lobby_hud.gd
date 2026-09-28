@@ -19,6 +19,7 @@ extends McpTestSuite
 
 const _LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+const _BADGE_SCENE := "res://Scenes/Lobby/NotifBadge.tscn"
 
 
 func suite_name() -> String:
@@ -28,6 +29,9 @@ func suite_name() -> String:
 ## The real Lobby, whose Safe/UI subtree resolves the header and coin
 ## plate's % nodes; shared by every test in this suite.
 var _lobby: Control
+## A bare NotifBadge.tscn instance, in the tree so its @onready %Count
+## resolves; null until the Task 6 scene step creates the .tscn.
+var _badge: NotifBadge
 var _saved_grade: int
 var _saved_max_minggu: int
 var _saved_minggu_ke: int
@@ -46,12 +50,19 @@ func suite_setup(_ctx: Dictionary) -> void:
 	_lobby = scene.instantiate() as Control
 	_lobby.theme = load(_THEME_PATH) as Theme
 	Engine.get_main_loop().root.add_child(_lobby)
+	if ResourceLoader.exists(_BADGE_SCENE):
+		var badge_scene: PackedScene = load(_BADGE_SCENE) as PackedScene
+		_badge = badge_scene.instantiate() as NotifBadge
+		Engine.get_main_loop().root.add_child(_badge)
 
 
 func suite_teardown() -> void:
 	if is_instance_valid(_lobby):
 		_lobby.free()
 	_lobby = null
+	if is_instance_valid(_badge):
+		_badge.free()
+	_badge = null
 
 
 func setup() -> void:
@@ -218,3 +229,104 @@ func test_the_hud_hands_the_chatter_its_blockers() -> void:
 	var blockers: Array[Control] = hud.tap_blockers()
 	for part: String in ["RaisedBlock", "Shelf", "ChevronGrip", "IconRail"]:
 		assert_true(blockers.has(hud.get_node("%" + part)), part + " blocks face taps")
+
+
+## Task 6: NotifBadge, the icon rail and nav tiles' red count pill. Fails
+## loudly until Scenes/Lobby/NotifBadge.tscn exists (the [editor] scene
+## step), matching this suite's existing Task 3-5 fixture pattern.
+func _badge_fixture() -> NotifBadge:
+	assert_true(_badge != null, "Scenes/Lobby/NotifBadge.tscn must exist and instance as NotifBadge")
+	return _badge
+
+
+func test_notif_badge_hides_at_zero() -> void:
+	var badge := _badge_fixture()
+	if badge == null:
+		return
+	GameSettings.reduce_motion = true
+	badge.set_count(0)
+	assert_false(badge.visible, "a zero count hides the badge")
+
+
+func test_notif_badge_shows_a_small_count() -> void:
+	var badge := _badge_fixture()
+	if badge == null:
+		return
+	GameSettings.reduce_motion = true
+	badge.set_count(3)
+	assert_true(badge.visible, "a positive count shows the badge")
+	assert_eq(badge.count_label.text, "3")
+
+
+func test_notif_badge_overflows_past_max_shown() -> void:
+	var badge := _badge_fixture()
+	if badge == null:
+		return
+	GameSettings.reduce_motion = true
+	badge.set_count(12)
+	assert_eq(badge.count_label.text, NotifBadge.OVERFLOW_TEXT,
+		"a count past MAX_SHOWN reads OVERFLOW_TEXT")
+
+
+func test_notif_badge_with_shows_count_off_reads_a_mark() -> void:
+	var badge := _badge_fixture()
+	if badge == null:
+		return
+	GameSettings.reduce_motion = true
+	badge.shows_count = false
+	badge.set_count(1)
+	assert_eq(badge.count_label.text, NotifBadge.MARK_TEXT,
+		"shows_count = false marks rather than counts")
+	badge.shows_count = true
+
+
+## refresh(true) must show the daily-gift badge. Fails loudly until the
+## [editor] scene step adds %DailyBadge under %DailyLogin.
+func test_daily_badge_shows_while_claimable() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	var badge := hud.get_node_or_null("%DailyBadge") as NotifBadge
+	assert_true(badge != null, "Lobby.tscn needs %DailyBadge under %DailyLogin")
+	if badge == null:
+		return
+	GameSettings.reduce_motion = true
+	hud.refresh(true)
+	assert_true(badge.visible, "the daily badge shows while today is claimable")
+
+
+## The inventory badge sums GameState.inventory's quantities, not its item
+## count. Fails loudly until %InventoryBadge exists under %Inventory.
+func test_inventory_badge_shows_the_total_quantity() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	var badge := hud.get_node_or_null("%InventoryBadge") as NotifBadge
+	assert_true(badge != null, "Lobby.tscn needs %InventoryBadge under %Inventory")
+	if badge == null:
+		return
+	GameSettings.reduce_motion = true
+	GameState.inventory = {"kompas": 2, "topi": 3}
+	hud.refresh(false)
+	assert_eq(badge.count_label.text, "5", "the inventory badge sums item quantities")
+
+
+## The three rail/shelf badges must carry distinct wiggle_delay_seconds
+## (0.0 / 0.8 / 1.6 per the brief) so they never wiggle in lockstep.
+func test_the_three_badges_wiggle_out_of_sync() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	var daily := hud.get_node_or_null("%DailyBadge") as NotifBadge
+	var achievement := hud.get_node_or_null("%AchievementBadge") as NotifBadge
+	var inventory := hud.get_node_or_null("%InventoryBadge") as NotifBadge
+	assert_true(daily != null and achievement != null and inventory != null,
+		"Lobby.tscn needs %DailyBadge, %AchievementBadge and %InventoryBadge")
+	if daily == null or achievement == null or inventory == null:
+		return
+	assert_ne(daily.wiggle_delay_seconds, achievement.wiggle_delay_seconds,
+		"DailyBadge and AchievementBadge must not share a wiggle offset")
+	assert_ne(daily.wiggle_delay_seconds, inventory.wiggle_delay_seconds,
+		"DailyBadge and InventoryBadge must not share a wiggle offset")
+	assert_ne(achievement.wiggle_delay_seconds, inventory.wiggle_delay_seconds,
+		"AchievementBadge and InventoryBadge must not share a wiggle offset")

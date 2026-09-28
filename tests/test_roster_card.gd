@@ -172,6 +172,32 @@ func test_set_inviting_asks_only_the_empty_notes() -> void:
 		assert_false(note.is_inviting(), "%s stops inviting" % note.name)
 
 
+## MURIDMU Task 4 fix: StudentList is not @tool, so the editor gives it a
+## placeholder instance a test cannot call into -- the week-scheduling half
+## of Task 4's work moved here, onto RosterCard, which is @tool and real.
+func test_apply_week_sets_each_notes_scheduled_and_the_tally() -> void:
+	_card.apply_week({
+		"Senin": {"category": "Akademis"},
+		"Rabu": {"category": "Olahraga"},
+	})
+	assert_eq(_card.days_scheduled, 2, "two of five days are set")
+	var expected := {"Senin": true, "Selasa": false, "Rabu": true, "Kamis": false, "Jumat": false}
+	for day: String in expected:
+		var note := _card.get_node("Paper/StickyNotesContainer/" + day) as StickyNote
+		assert_eq(note.scheduled, expected[day], "%s.scheduled mismatch" % day)
+
+
+## apply_week() must actively clear a day, not just skip ones that ARE set --
+## otherwise a card reused for a different student keeps its predecessor's
+## week.
+func test_apply_week_with_nothing_set_clears_every_note() -> void:
+	_card.apply_week({"Senin": {"category": "Akademis"}})
+	_card.apply_week({})
+	assert_eq(_card.days_scheduled, 0, "nothing is scheduled")
+	for note: StickyNote in _card.get_notes():
+		assert_false(note.scheduled, "%s must clear when the week has nothing" % note.name)
+
+
 # ------------------------------------------------------------ the portrait
 
 func test_the_portrait_frame_is_taped_down_at_minus_one_and_a_half() -> void:
@@ -284,6 +310,36 @@ func test_breathing_request_survives_leaving_and_rejoining_the_tree() -> void:
 func ", 0)
 	assert_true(entering.contains("if _breathing:") and entering.contains("_start_breathing"),
 		"_enter_tree must resume a standing breath request")
+
+
+## set_front() is StudentList's one call for "this is the front card now":
+## breathing and each empty note's glow together, so StudentList need not
+## drive them separately (MURIDMU Task 4 fix).
+func test_set_front_true_starts_breathing_and_invites_only_empty_notes() -> void:
+	_card.apply_week({"Senin": {"category": "Akademis"}})
+	_card.set_front(true)
+	assert_true(_card.is_breathing(), "set_front(true) must start breathing")
+	for note: StickyNote in _card.get_notes():
+		assert_eq(note.is_inviting(), not note.scheduled,
+			"%s invites only when empty" % note.name)
+	_card.set_front(false)
+
+
+func test_set_front_false_stops_breathing_and_every_notes_glow() -> void:
+	_card.apply_week({})
+	_card.set_front(true)
+	_card.set_front(false)
+	assert_false(_card.is_breathing(), "set_front(false) must stop breathing")
+	for note: StickyNote in _card.get_notes():
+		assert_false(note.is_inviting(), "%s must stop inviting" % note.name)
+
+
+## play_entry() itself is a no-op in the editor (see the test below), so
+## this only pins that set_front(true) is wired to call it.
+func test_set_front_true_is_wired_to_play_entry() -> void:
+	var src := FileAccess.get_file_as_string(_CARD_SCRIPT)
+	var body := src.get_slice("func set_front(on: bool) -> void:", 1)
+	assert_true(body.contains("play_entry()"), "set_front(true) must play the entry beats")
 
 
 func test_play_entry_is_a_no_op_in_the_editor() -> void:
@@ -445,3 +501,30 @@ func test_tally_dot_is_a_documented_filled_export_without_colours() -> void:
 	for path: String in [_DOT_SCRIPT, _CARD_SCRIPT]:
 		assert_eq(re.search_all(FileAccess.get_file_as_string(path)).size(), 0,
 			path + " must read colours from DesignTokens, not Color() literals")
+
+
+# --------------------------------------------------- reopening on a student
+#
+# initial_card_index() resolves StudentList's carousel starting position
+# (MURIDMU Task 4). It is pure and static, and lives here rather than on
+# StudentList.gd only because StudentList is not @tool -- the editor gives
+# a non-@tool script a placeholder instance a test cannot call into, while
+# RosterCard (this class, @tool, a class_name) already is (see
+# compose_catatan() above, called the same way).
+
+func test_initial_card_index_matches_the_selected_students_id() -> void:
+	var roster: Array = [{"id": 1}, {"id": 2}, {"id": 3}]
+	assert_eq(RosterCard.initial_card_index(roster, {"id": 3}), 2,
+		"the third student's id must resolve to index 2")
+
+
+func test_initial_card_index_defaults_to_zero_when_unset() -> void:
+	var roster: Array = [{"id": 1}, {"id": 2}, {"id": 3}]
+	assert_eq(RosterCard.initial_card_index(roster, {}), 0,
+		"an empty selection defaults to the first card")
+
+
+func test_initial_card_index_defaults_to_zero_when_unknown() -> void:
+	var roster: Array = [{"id": 1}, {"id": 2}, {"id": 3}]
+	assert_eq(RosterCard.initial_card_index(roster, {"id": 999}), 0,
+		"an id nobody in the roster carries defaults to the first card")

@@ -42,6 +42,10 @@ extends TextureRect
 ## ceiling days_scheduled clamps to.
 const WEEK_DAYS := 5
 
+## The five weekdays in order, matching StickyNotesContainer's child names
+## (and StudentList.gd's own REQUIRED_DAYS) -- apply_week()'s day keys.
+const WEEKDAY_KEYS: PackedStringArray = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
+
 ## The tally count label's text, "<scheduled>/<WEEK_DAYS> hari".
 const TALLY_FORMAT := "%d/%d hari"
 
@@ -216,6 +220,28 @@ static func compose_catatan(persona_name: String, quirk_name: String) -> String:
 	return " ".join(parts)
 
 
+## Roster position of `selected["id"]` in `roster` (Array[Dictionary],
+## StudentList.active_students-shaped -- each entry carries an "id"); 0 when
+## `selected` is empty, carries no id, or that id matches nobody. Pure and
+## static, and not really this ONE card's concern -- it lives here, not on
+## StudentList.gd, only because StudentList is not @tool: the editor gives a
+## non-@tool script a placeholder instance, so even a call on it from a test
+## hits a wall, while RosterCard (this class, @tool, class_name) is already
+## proven callable that way (see compose_catatan() above).
+## StudentList._init_carousel_state() is this function's only caller.
+static func initial_card_index(roster: Array, selected: Dictionary) -> int:
+	if selected.is_empty():
+		return 0
+	var selected_id: Variant = selected.get("id")
+	if selected_id == null:
+		return 0
+	for i: int in range(roster.size()):
+		var student: Dictionary = roster[i]
+		if student.get("id") == selected_id:
+			return i
+	return 0
+
+
 func _ready() -> void:
 	%Nama.text = student_name
 	%Portrait.texture = portrait_texture
@@ -306,7 +332,7 @@ func _required(unique: String) -> Node:
 # ------------------------------------------------------------ public reach
 
 ## The five day notes (Senin..Jumat under StickyNotesContainer), in day
-## order. Task 4 sets each one's `scheduled` from the week.
+## order. apply_week() sets each one's `scheduled` from the week.
 func get_notes() -> Array[StickyNote]:
 	var notes: Array[StickyNote] = []
 	var container := _required("StickyNotesContainer")
@@ -316,6 +342,30 @@ func get_notes() -> Array[StickyNote]:
 		if child is StickyNote:
 			notes.append(child as StickyNote)
 	return notes
+
+
+## Applies one student's week to this card's own notes: each note's
+## `scheduled` from `day_schedule`, and the count rolled into
+## days_scheduled. `day_schedule` is that student's GameState.day_schedules
+## entry (day name -> {category, ...}), or {} for a week with nothing set.
+## Set this (or is_scheduled) BEFORE play_entry() -- it snapshots both.
+## StudentList.gd still owns each note's activity text/glyph/pin height,
+## since those need data (CATEGORY_ICONS, the per-student pin hash) this
+## card has no reason to hold; this only owns what the card itself renders.
+func apply_week(day_schedule: Dictionary) -> void:
+	var container := _required("StickyNotesContainer")
+	if container == null:
+		return
+	var scheduled_count := 0
+	for day_name: String in WEEKDAY_KEYS:
+		var note := container.get_node_or_null(day_name) as StickyNote
+		if note == null:
+			continue
+		var is_set: bool = day_schedule.has(day_name)
+		note.scheduled = is_set
+		if is_set:
+			scheduled_count += 1
+	days_scheduled = scheduled_count
 
 
 ## DayTally's five TallyDot instances, in day order.
@@ -568,3 +618,18 @@ func _stop_breathing() -> void:
 	var shadow := get_node_or_null("%LiftShadow") as CanvasItem
 	if shadow != null:
 		shadow.modulate.a = 0.0
+
+
+# --------------------------------------------------------------- front card
+
+## Turns this card's front-card-only idle loops (breathing, the empty
+## notes' "tap me" glow) on or off in one call, so StudentList need not walk
+## breathing/inviting separately. `on` also plays the entry beats, so set
+## this student's week first (is_scheduled, apply_week()) -- play_entry()
+## snapshots both. StudentList calls this on the card that just landed as
+## the front card (true) and the card it is leaving (false).
+func set_front(on: bool) -> void:
+	if on:
+		play_entry()
+	set_breathing(on)
+	set_inviting(on)

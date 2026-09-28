@@ -156,7 +156,7 @@ var default_students = [
 ]
 
 var active_students: Array = []
-var card_nodes: Array[Control] = []
+var card_nodes: Array[RosterCard] = []
 var current_card_index: int = 0
 
 # Pointer & Swipe Gesture variables
@@ -232,7 +232,6 @@ func _setup_navigation_arrows():
 func _pin_slot_for(student: Dictionary, day_name: String) -> int:
 	var key: String = str(student.get("id", student.get("name", "")))
 	return absi(("%s|%s" % [key, day_name]).hash()) % 3
-
 
 func _setup_students():
 	var students = GameState.approved_students
@@ -321,23 +320,36 @@ func _setup_students():
 	_init_carousel_state()
 	_sync_roster_strip()
 
-## Per-card week wiring: notes' text/glyph/pin/scheduled + days_scheduled.
+## Each note's activity/glyph/pin; card.apply_week() owns scheduled/days_scheduled.
 func _apply_card_week(card: RosterCard, student_data: Dictionary, day_schedules_for_student: Dictionary) -> void:
 	var sticky_container: Node = card.get_node_or_null("%StickyNotesContainer")
-	if not sticky_container: return
-	var days_set := 0
-	for day_name: String in REQUIRED_DAYS:
-		var sticky_node := sticky_container.get_node_or_null(day_name) as StickyNote
-		if not sticky_node: continue
-		if sticky_note_texture: sticky_node.texture = sticky_note_texture
-		var is_day_set: bool = day_schedules_for_student.has(day_name)
-		var cat: String = day_schedules_for_student[day_name].get("category", "") if is_day_set else ""
-		sticky_node.activity = "-" if not is_day_set else (cat if cat != "" else "Terjadwal")
-		days_set += 1 if is_day_set else 0
-		sticky_node.icon_texture = load(CATEGORY_ICONS[cat]) if CATEGORY_ICONS.has(cat) else null
-		sticky_node.pin_slot = _pin_slot_for(student_data, day_name)
-		sticky_node.scheduled = is_day_set
-	card.days_scheduled = days_set
+	if sticky_container:
+		for day_name in REQUIRED_DAYS:
+			var sticky_node := sticky_container.get_node_or_null(day_name) as StickyNote
+			if sticky_node:
+				if sticky_note_texture:
+					sticky_node.texture = sticky_note_texture
+
+				var is_day_set: bool = day_schedules_for_student.has(day_name)
+				var cat := ""
+				if is_day_set:
+					cat = day_schedules_for_student[day_name].get("category", "")
+					sticky_node.activity = cat if cat != "" else "Terjadwal"
+				else:
+					sticky_node.activity = "-"
+
+				# Category glyph for the week strip (Part 3). An
+				# unscheduled day gets NO glyph rather than a stand-in:
+				# giving every blank day the same icon made all five
+				# notes read as identical, which is the opposite of
+				# what the strip is for.
+				var icon_path: String = CATEGORY_ICONS.get(cat, "")
+				sticky_node.icon_texture = (
+					load(icon_path) if icon_path != "" else null)
+
+				sticky_node.pin_slot = _pin_slot_for(
+					student_data, day_name)
+	card.apply_week(day_schedules_for_student)
 
 ## True when every weekday in REQUIRED_DAYS has a category assigned for this
 ## student. Same source as the Belum/Sudah badge in _setup_students(), so
@@ -351,7 +363,6 @@ func _is_student_scheduled(student: Dictionary) -> bool:
 		if not sched.has(day):
 			return false
 	return true
-
 
 ## Pushes every student's scheduled state and the current index onto the
 ## strip. Called after _setup_students() and from _switch_card(), so the
@@ -379,7 +390,6 @@ func _sync_roster_strip() -> void:
 		if extra:
 			extra.visible = false
 
-
 ## Jumps straight to a student instead of paging. Reuses the carousel's
 ## own switch so the slide direction and the animation guard still apply.
 func _on_avatar_pressed(index: int) -> void:
@@ -387,7 +397,6 @@ func _on_avatar_pressed(index: int) -> void:
 		return
 	var direction := 1 if index > current_card_index else -1
 	_switch_card(index, direction)
-
 
 func _build_page_indicators():
 	if not page_indicator:
@@ -399,14 +408,9 @@ func _build_page_indicators():
 		page_indicator.add_child(PageDotScene.instantiate())
 
 func _init_carousel_state():
-	if card_nodes.is_empty(): return
-	# Reopens on GameState.selected_student's card; 0 when unset/unmatched.
-	var selected: Dictionary = GameState.selected_student
-	var selected_id: Variant = selected.get("id") if not selected.is_empty() else null
-	current_card_index = 0
-	if selected_id != null:
-		for i in range(card_nodes.size()):
-			if (active_students[i] as Dictionary).get("id") == selected_id: current_card_index = i
+	if card_nodes.is_empty():
+		return
+	current_card_index = RosterCard.initial_card_index(active_students, GameState.selected_student)
 	for i in range(card_nodes.size()):
 		var card = card_nodes[i]
 		if i == current_card_index:
@@ -419,19 +423,15 @@ func _init_carousel_state():
 	_update_page_indicators()
 	Juice.stagger_in(card_nodes)
 	_stagger_card_notes(card_nodes[current_card_index])
-	_set_card_active(card_nodes[current_card_index], true)
+	card_nodes[current_card_index].set_front(true)
 
 ## Reveal one card's five day-notes with a shorter step than the
 ## card-level stagger, as if they're being pinned up as the card opens.
 func _stagger_card_notes(card: Control) -> void:
 	var sticky_container = card.get_node_or_null("%StickyNotesContainer")
-	if not sticky_container: return
+	if not sticky_container:
+		return
 	Juice.stagger_in(sticky_container.get_children(), DesignTokens.load_default().stagger_step * 0.5)
-
-func _set_card_active(card: RosterCard, on: bool) -> void:
-	if on: card.play_entry()
-	card.set_breathing(on)
-	card.set_inviting(on)
 
 func _update_page_indicators():
 	var tokens := DesignTokens.load_default()
@@ -470,7 +470,7 @@ func _switch_card(new_index: int, direction: int):
 	var old_card = card_nodes[current_card_index]
 	var new_card = card_nodes[new_index]
 	current_card_index = new_index
-	_set_card_active(old_card, false)
+	old_card.set_front(false)
 
 	var screen_width = get_viewport_rect().size.x
 	var throw_distance = screen_width * direction
@@ -509,7 +509,7 @@ func _switch_card(new_index: int, direction: int):
 	await tween_in.finished
 
 	_stagger_card_notes(new_card)
-	_set_card_active(new_card, true)
+	new_card.set_front(true)
 	card_animating = false
 
 	_sync_roster_strip()

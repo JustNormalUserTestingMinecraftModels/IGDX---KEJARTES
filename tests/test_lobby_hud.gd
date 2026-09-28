@@ -199,6 +199,8 @@ func test_the_hud_hides_to_its_peek_and_comes_back() -> void:
 	assert_eq(Vector2(rail.offset_left, rail.offset_right), open_rail,
 		"the rail returns with it")
 	assert_eq(glyph.rotation_degrees, 0.0)
+	assert_eq((hud.get_node("%RosterChip") as Control).modulate.a, 1.0,
+		"the roster chip comes back with the book")
 	assert_false((hud.get_node("%HudHint") as Control).visible,
 		"the hint leaves when the HUD is back")
 
@@ -247,6 +249,10 @@ func _assert_only_the_grip_peeks(hud: LobbyHud, where: String) -> void:
 		% [where, grip.position.y, grip.end.y, screen_bottom])
 	assert_true(glyph.end.y <= screen_bottom,
 		"%s: the chevron glyph (bottom %.1f) shows whole" % [where, glyph.end.y])
+	var chip := hud.get_node("%RosterChip") as Control
+	assert_true(is_zero_approx(chip.modulate.a)
+		or _drawn_rect(chip).position.y >= screen_bottom,
+		"%s: the roster chip does not peek cut in half beside the grip" % where)
 
 
 ## A Control's on-screen bounds. get_global_rect() ignores rotation, and the

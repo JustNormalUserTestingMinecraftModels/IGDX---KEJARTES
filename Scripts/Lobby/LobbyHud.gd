@@ -25,6 +25,8 @@ const ROSTER_CHIP_FORMAT := "%d murid"
 const CHEVRON_HIDDEN_DEGREES := 180.0
 ## Seconds of one bob's rise, and again of its fall.
 const PEEK_BOB_STEP_SECONDS := 0.18
+## Share of slide_seconds the roster chip takes to fade out or back in.
+const ROSTER_CHIP_FADE_SHARE := 0.5
 
 @export_group("Swipe")
 ## Seconds the book and rail take to slide (TRANS_BACK overshoot, "Feel A").
@@ -144,6 +146,7 @@ func set_open(open: bool) -> void:
 		return
 	_set_offsets(book, rail)
 	chevron_glyph.rotation_degrees = chevron_degrees
+	roster_chip.modulate.a = _roster_chip_alpha()
 	if not open:
 		_show_hint()
 
@@ -303,7 +306,15 @@ func _slide_to(book: Vector2, rail: Vector2, chevron_degrees: float) -> void:
 	_slide.tween_property(icon_rail, "offset_right", rail.y, slide_seconds)
 	_slide.tween_property(chevron_glyph, "rotation_degrees", chevron_degrees,
 		slide_seconds).set_delay(chevron_delay_seconds)
+	_slide.tween_property(roster_chip, "modulate:a", _roster_chip_alpha(),
+		slide_seconds * ROSTER_CHIP_FADE_SHARE).set_trans(Tween.TRANS_LINEAR)
 	_slide.chain().tween_callback(_on_slide_landed)
+
+
+## The roster chip rides above the page's top edge, inside the peek band,
+## so hidden it fades out rather than peek cut in half beside the grip.
+func _roster_chip_alpha() -> float:
+	return 1.0 if is_open else 0.0
 
 
 ## Open lands with a squash; hidden shows the hint and starts the bob.

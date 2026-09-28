@@ -22,10 +22,13 @@ const SCRIPT_PATH := "res://Scripts/Koperasi/Koperasi.gd"
 const BASKET_TRAY_SCENE_PATH := "res://Scenes/Koperasi/BasketTray.tscn"
 
 
-func test_coin_hud_and_message_live_in_the_scene() -> void:
+## Renamed from test_coin_hud_and_message_live_in_the_scene (2026-09-28
+## review): the coin HUD it once checked alongside MessageLabel moved into
+## the tray footer (test_koperasi_shows_the_kas_through_the_tray, below), so
+## this now pins MessageLabel alone -- no loop needed over a single name.
+func test_message_label_lives_in_the_scene() -> void:
 	var text := FileAccess.get_file_as_string(SCENE_PATH)
-	for node_name in ["MessageLabel"]:
-		assert_contains(text, node_name, "Koperasi.tscn is missing %s" % node_name)
+	assert_contains(text, "MessageLabel", "Koperasi.tscn is missing MessageLabel")
 
 
 ## The 2026-09-28 koperasi-top-band-promo Task 6 pass: the ledge coin HUD

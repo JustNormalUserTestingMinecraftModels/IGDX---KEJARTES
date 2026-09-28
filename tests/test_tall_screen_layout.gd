@@ -244,11 +244,15 @@ func test_koperasi_stage_is_one_piece_pinned_bottom() -> void:
 		assert_true(stage.get_node_or_null(n) != null, n + " moves with the stage")
 
 
-## The signboard and promo board stand on the counter ledge, so they are part
-## of the Stage picture like the back button -- not bottom-anchored in Safe,
-## whose bottom inset (768 px in a windowed editor run, a gesture bar on a
-## phone) would lift them off the ledge. Nothing over the shelf eats a tap.
-func test_koperasi_coin_hud_rides_the_stage() -> void:
+## The signboard and promo board (the top band) stand on the counter ledge,
+## so they are part of the Stage picture like the back button -- not
+## bottom-anchored in Safe, whose bottom inset (768 px in a windowed editor
+## run, a gesture bar on a phone) would lift them off the ledge. Nothing over
+## the shelf eats a tap. Renamed from test_koperasi_coin_hud_rides_the_stage
+## (2026-09-28 review): the ledge coin HUD it once pinned moved into the tray
+## footer (test_koperasi_kas_pill_rides_the_tray, below) -- this one now
+## checks the sign and board only.
+func test_koperasi_top_band_rides_the_stage() -> void:
 	var shop := _scene(KOPERASI)
 	var stage := shop.get_node_or_null("Stage")
 	for n in ["Signboard", "PromoBoard"]:

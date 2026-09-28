@@ -30,7 +30,12 @@ three `Particles/particle_*.png`, the minigame
 result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
 event-popup set (`icon_event.svg`, `bg_event_dialog.png`),
-`shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`
+`shadow_ellipse.png`, `bg_inventory_blur.png`,
+`Minigames/SeniBudaya/note_arrow.png` (Lomba Menari's note, recoloured white
+and turned to point right from `UI/Placeholders/arrow.png` with Pillow; a
+replacement must point **right**, keep a white fill for the lane tint and a
+dark outline, and `tests/test_lomba_menari_arrow.gd` checks all three),
+four `icon_filter_*.svg`
 (white on purpose: `FilterChipButton` inks its icons `brand_primary`, so a
 replacement must stay a white glyph, or that tint comes out of `ThemeFactory`
 with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
@@ -369,8 +374,6 @@ desktop and Android alike, until the chevron became a texture — now the shared
 `•`, `…`, `—`, `←` or `→` at all; those fall back to whatever system font the
 device picks. Buttons, titles and headings wear Boohong, so keep such
 characters out of their text, and draw an arrow or chevron as a real texture.
-`LombaMenari`'s ←/→/↖/↗ are body text, but Open Sans has no `←` either, so
-they ride system fallback too (minigames sit outside the design system).
 
 **SchoolDay still puts emoji in display text (swept 2026-09-22).** CLAUDE.md's
 `## Conventions` bans emoji as UI iconography and says to use real transparent

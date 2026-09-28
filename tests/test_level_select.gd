@@ -298,6 +298,15 @@ func test_idle_motion_present() -> void:
 	assert_true(src.contains("card.bob"), "idle drives the Bob pivot")
 
 
+## The fan's geometry knobs (Task A: de-crowd the amplop fan, 2026-09-28) must
+## stay @exports, or a designer's live tuning silently stops taking effect.
+## A light guard; the real acceptance of the fan's look is visual.
+func test_fan_geometry_knobs_are_still_exported() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for knob in ["fan_step_x", "fan_drop_y", "fan_step_degrees", "side_scale"]:
+		assert_true(src.contains("@export var %s" % knob), "exports %s" % knob)
+
+
 # ── Confirmation ─────────────────────────────────────────────────────────────
 
 func test_confirm_exposes_present_and_signals() -> void:

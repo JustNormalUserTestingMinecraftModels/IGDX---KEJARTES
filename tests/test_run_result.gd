@@ -243,13 +243,22 @@ func test_grade7_loss_clears_roster_grade8_9_loss_preserves_it() -> void:
 
 
 func test_grade7_loss_goes_to_main_menu_grade8_9_restarts_same_grade() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	# Grade-7 loss is a full restart (MainMenu); grade 8/9 loss retries the
 	# same grade at StudentCard so the punishment is not losing all progress.
-	assert_true(src.contains("GameState.current_grade == 7"),
-		"loss branch checks grade to pick destination")
-	assert_true(src.contains("res://Scenes/StudentCard/StudentCard.tscn"),
-		"grade 8/9 loss routes back to StudentCard")
+	var rr := load(_SCRIPT_PATH) as GDScript
+	assert_eq(rr.call("destination_for", true, 7), "res://Scenes/MainMenu/MainMenu.tscn",
+		"a grade-7 loss restarts from the menu")
+	assert_eq(rr.call("destination_for", true, 8), "res://Scenes/StudentCard/StudentCard.tscn",
+		"a grade-8 loss routes back to StudentCard")
+	assert_eq(rr.call("destination_for", true, 9), "res://Scenes/StudentCard/StudentCard.tscn",
+		"and so does a grade-9 loss")
+	assert_eq(rr.call("destination_for", false, 8), "res://Scenes/StudentCard/StudentCard.tscn",
+		"a pass below Kelas 9 picks the next grade's roster")
+	assert_eq(rr.call("destination_for", false, 9), "res://Scenes/MainMenu/MainMenu.tscn",
+		"beating Kelas 9 ends at the menu")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("var destination := destination_for(GameState.run_failed, GameState.current_grade)"),
+		"_apply_progression() routes by destination_for(), read before it clears run_failed")
 
 
 func test_it_applies_grade_progression_and_exits_to_the_menu() -> void:
@@ -485,3 +494,24 @@ func test_the_flag_reset_clears_the_student_list_walkthrough() -> void:
 	var after: Variant = list.get("tutorial_shown")
 	list.set("tutorial_shown", was)
 	assert_eq(after, false, "tutorial_shown is back to false")
+
+
+## The exit button read "Kembali ke Menu" on every outcome, but only a
+## Kelas 7 loss and a beaten Kelas 9 actually go to the menu (2026-09-28).
+## Its label now names where _apply_progression() really sends the player.
+func test_the_exit_label_names_where_it_leads() -> void:
+	var rr := load(_SCRIPT_PATH) as GDScript
+	assert_eq(rr.call("exit_label", false, 7), "Lanjut ke Kelas 8", "passing Kelas 7 moves on to Kelas 8")
+	assert_eq(rr.call("exit_label", false, 8), "Lanjut ke Kelas 9", "passing Kelas 8 moves on to Kelas 9")
+	assert_eq(rr.call("exit_label", false, 9), "Kembali ke Menu", "beating the game goes to the menu")
+	assert_eq(rr.call("exit_label", true, 7), "Kembali ke Menu", "failing Kelas 7 restarts from the menu")
+	assert_eq(rr.call("exit_label", true, 8), "Ulangi Kelas 8", "failing Kelas 8 retries it")
+	assert_eq(rr.call("exit_label", true, 9), "Ulangi Kelas 9", "failing Kelas 9 retries it")
+
+
+func test_the_exit_button_wears_the_label_before_progression_runs() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var ready := src.substr(src.find("func _ready("))
+	ready = ready.substr(0, ready.find("\nfunc ", 1))
+	assert_true(ready.contains("btn_selesai.text = exit_label(GameState.run_failed, GameState.current_grade)"),
+		"_ready() labels the button from the outcome, while run_failed and the grade are still this run's")

@@ -131,7 +131,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/EndGame/EndCutscene.gd": 3,
 	"res://Scripts/EndGame/ExamProgress.gd": 1,
 	"res://Scripts/EndGame/RunGrade.gd": 1,
-	"res://Scripts/EndGame/RunResult.gd": 7,
+	"res://Scripts/EndGame/RunResult.gd": 4,
 	"res://Scripts/EndGame/StarMeter.gd": 2,
 	"res://Scripts/EndGame/StatCheck.gd": 1,
 	"res://Scripts/EndGame/StatCheckRow.gd": 3,

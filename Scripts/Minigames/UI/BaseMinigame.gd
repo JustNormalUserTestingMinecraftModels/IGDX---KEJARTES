@@ -510,7 +510,7 @@ func _get_active_tutorial_instructions() -> String:
 		"MainBola": return "Geser jari ke arah gawang untuk menendang bola.\n\nArahkan tendangan ke kotak target yang bergerak di dalam gawang.\n\nCetak gol sebanyak-banyaknya sebelum kesempatan habis!"
 		"Badminton": return "Geser jari di area bawah layar untuk menggerakkan pemukul.\n\nPantulkan shuttlecock melewati lawan untuk mencetak poin.\n\nRaih skor target lebih dulu untuk menang!"
 		"BuatBatik": return "Seret alat-alat batik ke kanvas dalam urutan yang benar:\nPensil → Canting → Pewarna → Kompor\n\nTahan alat untuk melihat deskripsinya.\n\nUrutan salah akan mengurangi waktu!"
-		"LombaMenari": return "Ketuk tombol panah yang sesuai saat not musik memasuki zona target di layar.\n\nTekan tepat waktu untuk mendapatkan skor lebih tinggi!\n\nRaih skor target sebelum waktu habis untuk menang!"
+		"LombaMenari": return "Geser jari ke arah panah saat not musik memasuki zona target di layar.\n\nGeser tepat waktu untuk mendapatkan skor lebih tinggi!\n\nRaih skor target untuk menang, tapi terlalu banyak not terlewat berarti kalah!"
 		_: return "Selesaikan minigame dengan baik!"
 
 func activate_minigame() -> void:

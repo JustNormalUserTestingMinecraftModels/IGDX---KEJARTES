@@ -1,5 +1,14 @@
 # End-Game Plan C — RunResult Redesign Implementation Plan
 
+> **SUPERSEDED (2026-09-28, status audit): do not execute.** Never built.
+> RunResult moved on without it: the 2026-09-10 asset pass gave it five rank
+> badges and a fixed win backdrop, and PR #85 and the ambient kit changed it
+> since. Its successor is the badge rank scene polish
+> (`docs/superpowers/specs/2026-09-26-badge-rank-scene-polish-design.md`,
+> PR #86), revised for the clean-code standard on 2026-09-28. This plan is
+> kept as history only; it also predates the stat-key rename (it reads the
+> legacy `kepribadian1` key the clean-code ratchet now forbids).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Rebuild RunResult to the mockup_resultscreen: the win/lose backdrop dimmed under a scrim, an A/B/C/D badge stamped in, a horizontally scrollable row of per-student report papers, a **Detail** popup with five run metrics, and a **Konfirmasi** button that always opens the Kelas 7–9 difficulty selection.

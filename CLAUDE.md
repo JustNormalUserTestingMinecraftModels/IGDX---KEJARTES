@@ -39,7 +39,8 @@ Splashscreen still exists and is tested but nothing routes to it (the game
 boots straight to MainMenu, which loads in one hop). There is no Loading
 screen: the shared `Transition` wipe covers the scene-load gap.
 All navigation is a single `Transition.change_scene(target, …)`. **Lobby
-hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard;
+hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard (its coin
+`+` opens the Dapatkan Uang popup);
 **ShopHub** forks to Koperasi (items) or CosmeticShop (a stub), both returning
 to the hub rather than the Lobby.
 
@@ -199,7 +200,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 164 suites, 2541 tests (2026-09-28).
+the Godot AI MCP `test_run` tool. 165 suites, 2556 tests (2026-09-28).
 
 Hard constraints:
 
@@ -375,8 +376,7 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-Loby Final Polish Phase 2 (Dapatkan Uang + dev-mode ad stub) is next, on
-branch `LobyFinalpolish` (parked passes are in `docs/superpowers/DEBT.md`).
+Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
 
 ## Maintaining this file
 

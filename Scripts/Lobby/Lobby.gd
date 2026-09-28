@@ -71,6 +71,8 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 @onready var daily_reward: DailyLoginPanel = %DailyReward
 @onready var progress_header: LobbyProgressHeader = %ProgressHeader
 @onready var hud: LobbyHud = %Hud
+@onready var earn_panel: DapatkanUang = %DapatkanUang
+@onready var plus_button: Button = %PlusUang
 
 @onready var portraits_back: Control = %StudentPortraitsContainer_Back
 @onready var portraits_front: Control = %StudentPortraitsContainer_Front
@@ -225,6 +227,8 @@ func _connect_hud_buttons() -> void:
 	koperasi_button.pressed.connect(_on_koperasi_pressed)
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	report_student_button.pressed.connect(_on_report_student_pressed)
+	plus_button.pressed.connect(earn_panel.open)
+	earn_panel.paid.connect(_on_wallet_paid)
 	hud.can_reopen = _chatter_allowed  # popups keep the HUD down too
 
 ## Shows the one Hand_<Name> node in this slot that matches the student
@@ -646,15 +650,15 @@ func _create_blur_overlay():
 func _setup_daily_login() -> void:
 	_update_money_display()
 	daily_reward.refresh(Time.get_date_string_from_system())
-	if not daily_reward.claimed.is_connected(_on_daily_reward_claimed):
-		daily_reward.claimed.connect(_on_daily_reward_claimed)
+	if not daily_reward.claimed.is_connected(_on_wallet_paid):
+		daily_reward.claimed.connect(_on_wallet_paid)
 	if not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
 		daily_login_btn.pressed.connect(_on_daily_login_pressed)
 	hud.refresh(daily_reward.is_claimable())
 
-## The panel paid out: roll the wallet up from the old balance, and
-## the gift badge clears.
-func _on_daily_reward_claimed(_amount: int, previous_money: int) -> void:
+## A payout landed (the daily claim or Dapatkan Uang): roll the wallet up
+## from the old balance, and the gift badge follows the claim.
+func _on_wallet_paid(_amount: int, previous_money: int) -> void:
 	_update_money_display(previous_money)
 	RewardFeedback.play(&"coins_earned", money_label)
 	hud.refresh(daily_reward.is_claimable())
@@ -799,10 +803,11 @@ func _on_skin_switch_pressed() -> void:
 	screen.open()
 
 
-## LobbyChatter's gate: nobody talks over the tutorial, the daily reward
-## or the skin picker.
+## LobbyChatter's gate: nobody talks over the tutorial, the daily reward,
+## the skin picker or Dapatkan Uang. It also keeps the HUD down under them.
 func _chatter_allowed() -> bool:
-	return not tutorial_active and not reward_popup_open and not _skin_select_open
+	return not tutorial_active and not reward_popup_open and not _skin_select_open \
+		and not earn_panel.visible
 
 
 func _on_achievement_pressed() -> void:

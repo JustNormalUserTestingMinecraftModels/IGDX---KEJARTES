@@ -123,7 +123,7 @@ func test_daily_reward_is_a_daily_login_panel() -> void:
 		"the streak day is the panel's to write, not the Lobby's")
 	assert_false(src.contains("last_claim_date"),
 		"the claim date is the panel's to write, not the Lobby's")
-	assert_true(src.contains("claimed.connect(_on_daily_reward_claimed)"),
+	assert_true(src.contains("claimed.connect(_on_wallet_paid)"),
 		"the Lobby must listen for the panel's claimed signal")
 
 

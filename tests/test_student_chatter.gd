@@ -385,6 +385,9 @@ func test_loby_hands_seats_and_gate_to_chatter() -> void:
 	# _skin_popup_open became _skin_select_open on 2026-09-22, when
 	# SkinSelectPopup was rebuilt as the full-screen SkinSelect.
 	assert_true(src.contains("not tutorial_active and not reward_popup_open and not _skin_select_open"))
+	# Dapatkan Uang joined the gate on 2026-09-28 (Phase 2): its scrim covers
+	# the faces, but the chatter reads taps in _input, before any GUI node.
+	assert_true(src.contains("and not earn_panel.visible"), "no chatter under Dapatkan Uang")
 	assert_true(src.contains("chatter.dismiss()"))
 	assert_true(src.contains("chatter.tap_blockers = ["), "the HUD blocks taps over the faces")
 	assert_true(src.contains("hud.tap_blockers()"), "the book and rail block as whole pieces")

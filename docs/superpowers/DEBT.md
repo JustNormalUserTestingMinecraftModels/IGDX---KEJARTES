@@ -476,6 +476,24 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
+  Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
+  SDK is wired. Before one is: the child-directed ad-policy gate (COPPA,
+  GDPR-K, ad-content ratings; the audience likely includes minors). The
+  SDK's reward callback then calls `DapatkanUang._pay()`, and
+  `is_dev_mode` goes false. The six amounts (+150 / +450 / +900 for 4 ads /
+  +2000 for 8) await the Balance owner's sign-off:
+  `docs/superpowers/specs/2026-09-27-earn-money-balance-proposal.md`.
+- **Scrapbook HUD review leftovers** (2026-09-28, Phase 1 reviews in
+  `.superpowers/sdd/2026-09-27-loby-final-polish/`). On a phone that
+  reports a bottom inset, the hidden HUD's 48 px chevron peek sits inside
+  the system gesture strip: a design call, since lifting it would show
+  JADWAL again. `lobby_hud` measures the peek against the editor window,
+  not a 1080x1920 `SubViewport`. The landing squash (`AnimUtils.squash_bounce`,
+  1.18/0.85) is far stronger than the spec's ~1.04/0.97; tune it with
+  `motion-lab`. The entrance and the star sparkle mostly play under the
+  `Transition` wipe.
+
 - **`AnimUtils._active_tweens` never forgets freed nodes** (2026-09-28).
   Each helper call registers its tween keyed by the node and never erases
   the key, so the daily-login reveal leaves 20-30 dead keys per claim (one

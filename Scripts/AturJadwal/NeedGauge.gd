@@ -26,10 +26,11 @@ const FLAG_NUDGE_PX := 6.0
 const FLAG_NUDGE_SECONDS := 1.6
 
 # -- Target dot pulse ---------------------------------------------------------
-## The TargetDot's scale at the top of its pulse.
-const DOT_PULSE_SCALE := 1.25
-## Seconds for one full pulse, out and back.
-const DOT_PULSE_SECONDS := 1.2
+## The TargetDot's scale at the top of its pulse. A gentle swell, not a
+## throb: 1.25 read as nagging beside the bar (softened 2026-09-28).
+const DOT_PULSE_SCALE := 1.12
+## Seconds for one full pulse, out and back: a slow, breathing pace.
+const DOT_PULSE_SECONDS := 2.0
 
 ## How strongly the GapTail's ghost of the fill shows. Half: clearly visible
 ## on the dark track and plainly the same bar, yet a step quieter than the

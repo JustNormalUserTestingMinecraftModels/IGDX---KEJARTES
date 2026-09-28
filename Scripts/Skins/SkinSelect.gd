@@ -6,7 +6,9 @@ extends Control
 ## spec docs/superpowers/specs/2026-09-22-skin-select-screen-design.md).
 ## A full-screen surface over a blurred Lobby: the open character's splash in
 ## a horizontal carousel of their skins, a rail of the current roster's
-## characters underneath, and one TERAPKAN button.
+## characters underneath in a scrapbook paper tray, and one TERAPKAN button.
+## The tray's "Kelasmu · N murid" header (RosterHeader) is set from _names in
+## open(); its "ketuk untuk pilih" hint is authored, static text.
 ##
 ## It stays an OVERLAY the Lobby instantiates, not a scene of its own, even
 ## though the brief asked for a scene. A Transition.change_scene cannot blur
@@ -62,6 +64,8 @@ signal closed
 
 ## Width of the splash canvas every card is drawn at before scaling.
 const CARD_W := 1080.0
+## open()'s "Kelasmu · N murid" header text, %d is _names.size().
+const ROSTER_HEADER_FORMAT := "Kelasmu · %d murid"
 
 @onready var _carousel: Control = %Carousel
 @onready var _track: Control = %Track
@@ -72,6 +76,7 @@ const CARD_W := 1080.0
 @onready var _worn_chip: PanelContainer = %WornChip
 @onready var _back_button: TextureButton = %BackButton
 @onready var _terapkan: Button = %Terapkan
+@onready var _roster_header: Label = %RosterHeader
 
 ## The characters on the rail, in rail order: whoever open() was given, or
 ## StudentSkins.NAMES if it fell back. Tiles beyond _names.size() stay
@@ -136,6 +141,7 @@ func _ready() -> void:
 func open(names: Array[String] = []) -> void:
 	_names = names.duplicate() if not names.is_empty() else StudentSkins.NAMES.duplicate()
 	_pending.clear()
+	_roster_header.text = ROSTER_HEADER_FORMAT % _names.size()
 	for i in _rail.get_child_count():
 		var tile := _rail.get_child(i) as StudentTile
 		if tile == null:

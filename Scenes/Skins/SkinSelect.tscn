@@ -4,6 +4,8 @@
 [ext_resource type="Material" uid="uid://cw2ydcnw0g4b" path="res://Scenes/Koperasi/shop_hub_blur_material.tres" id="2_honiv"]
 [ext_resource type="PackedScene" uid="uid://b74inkag7vafv" path="res://Scenes/Skins/StudentTile.tscn" id="3_tile"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="4_back"]
+[ext_resource type="Texture2D" uid="uid://tfetbp70uc7n" path="res://Assets/Images/UI/Notebook/paper_rule.png" id="5_rule"]
+[ext_resource type="Texture2D" uid="uid://dv7re4xhg8tbg" path="res://Assets/Images/AturJadwal/washi_tape.svg" id="6_tape"]
 
 [node name="SkinSelect" type="Control" unique_id=488291167]
 layout_mode = 3
@@ -134,6 +136,70 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_type_variation = &"SkinTray"
 
+[node name="Rules" type="TextureRect" parent="Tray" unique_id=305817264]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_rule")
+texture_repeat = 1
+expand_mode = 1
+stretch_mode = 1
+
+[node name="TapeLeft" type="TextureRect" parent="Tray" unique_id=462091837]
+layout_mode = 0
+offset_left = 40.0
+offset_top = -14.0
+offset_right = 170.0
+offset_bottom = 16.0
+rotation = -0.13962634
+pivot_offset = Vector2(65, 15)
+mouse_filter = 2
+texture = ExtResource("6_tape")
+expand_mode = 1
+
+[node name="TapeRight" type="TextureRect" parent="Tray" unique_id=579318402]
+layout_mode = 0
+offset_left = 910.0
+offset_top = -14.0
+offset_right = 1040.0
+offset_bottom = 16.0
+rotation = 0.13962634
+pivot_offset = Vector2(65, 15)
+mouse_filter = 2
+texture = ExtResource("6_tape")
+expand_mode = 1
+
+[node name="RosterHeader" type="Label" parent="Tray" unique_id=734512890]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 10.0
+offset_bottom = 54.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"SkinRosterHeaderLabel"
+text = "Kelasmu · 6 murid"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RosterHint" type="Label" parent="Tray" unique_id=891023475]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 56.0
+offset_bottom = 86.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"SkinRosterHintLabel"
+text = "ketuk untuk pilih"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Rail" type="HBoxContainer" parent="Tray" unique_id=1893455654]
 unique_name_in_owner = true
 layout_mode = 1
@@ -162,6 +228,24 @@ layout_mode = 2
 
 [node name="Tile6" parent="Tray/Rail" unique_id=178671831 instance=ExtResource("3_tile")]
 layout_mode = 2
+
+[node name="NameDividerLeft" type="Panel" parent="Tray" unique_id=683920157]
+layout_mode = 0
+offset_left = 328.0
+offset_top = 289.0
+offset_right = 344.0
+offset_bottom = 305.0
+mouse_filter = 2
+theme_type_variation = &"SkinDotOn"
+
+[node name="NameDividerRight" type="Panel" parent="Tray" unique_id=726154893]
+layout_mode = 0
+offset_left = 736.0
+offset_top = 289.0
+offset_right = 752.0
+offset_bottom = 305.0
+mouse_filter = 2
+theme_type_variation = &"SkinDotOn"
 
 [node name="SkinName" type="Label" parent="Tray" unique_id=1644366027]
 unique_name_in_owner = true
@@ -196,3 +280,17 @@ offset_right = 1007.0
 offset_bottom = 521.0
 theme_type_variation = &"SkinApplyButton"
 text = "TERAPKAN"
+
+[node name="PakaiTag" type="Label" parent="Tray/Terapkan" unique_id=841937265]
+layout_mode = 0
+offset_left = 396.0
+offset_top = -26.0
+offset_right = 546.0
+offset_bottom = 30.0
+rotation = 0.13962634
+pivot_offset = Vector2(75, 28)
+mouse_filter = 2
+theme_type_variation = &"SkinApplyTag"
+text = "PAKAI!"
+horizontal_alignment = 1
+vertical_alignment = 1

@@ -99,3 +99,35 @@ func test_idle_tile_is_a_lipped_opaque_face() -> void:
 	assert_true(LippedBox.is_lipped(idle), "idle tile must be a lipped face")
 	assert_eq(LippedBox.lip_height_of(idle), tokens.lip_height)
 	assert_eq(idle.bg_color.a, 1.0, "the photo card is opaque, not a see-through rim")
+
+
+## A taped photo card needs a tape tab and a name caption (Task 3 of
+## docs/superpowers/plans/2026-09-29-skin-select-polish.md).
+func test_tile_has_a_tape_tab_and_a_caption() -> void:
+	var src := FileAccess.get_file_as_string(TILE)
+	var caption_at := src.find('[node name="Caption"')
+	assert_true(caption_at != -1, "Caption must exist")
+	if caption_at != -1:
+		var next := src.find("[node", caption_at + 1)
+		var block := src.substr(caption_at, (next - caption_at) if next != -1 else src.length() - caption_at)
+		assert_true(block.contains('type="Label"'))
+		assert_true(block.contains("unique_name_in_owner = true"))
+		assert_true(block.contains('theme_type_variation = &"SkinTileCaptionLabel"'))
+	var tape_at := src.find('[node name="Tape"')
+	assert_true(tape_at != -1, "Tape must exist")
+	if tape_at != -1:
+		var next_tape := src.find("[node", tape_at + 1)
+		var tape_block := src.substr(tape_at, (next_tape - tape_at) if next_tape != -1 else src.length() - tape_at)
+		assert_true(tape_block.contains('type="TextureRect"'))
+		assert_true(tape_block.contains("washi_tape.svg"))
+
+
+## show_student sets the caption to the student's name, the way it already
+## sets the crop.
+func test_show_student_sets_the_caption_text() -> void:
+	var tile := _new_tile()
+	tile.show_student("Andi", StudentSkins.DEFAULT_ID)
+	var caption := tile.get_node("%Caption") as Label
+	assert_true(caption != null)
+	if caption != null:
+		assert_eq(caption.text, "Andi")

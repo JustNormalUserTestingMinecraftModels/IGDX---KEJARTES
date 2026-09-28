@@ -465,6 +465,102 @@ func test_skin_theme_styles_use_the_depth_pass_look() -> void:
 	assert_eq(theme.get_constant("outline_size", "SkinTitleLabel"), 48)
 
 
+## The rail centres 2-4 tiles instead of packing them to the left, so a
+## grade-7 class of two does not leave a dead gap on the right (Task 3, spec
+## §3 "Centered rail").
+func test_rail_is_center_aligned() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(_node_block(src, "Rail").contains("alignment = 1"))
+
+
+## The "Kelasmu · N murid" header and its "ketuk untuk pilih" hint sit above
+## the rail, inside the tray (Task 3, spec §2).
+func test_tray_has_roster_header_and_hint_labels() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var header := _node_block(src, "RosterHeader")
+	assert_true(header.contains('type="Label"'))
+	assert_true(header.contains("unique_name_in_owner = true"))
+	assert_true(header.contains('theme_type_variation = &"SkinRosterHeaderLabel"'))
+	var hint := _node_block(src, "RosterHint")
+	assert_true(hint.contains('type="Label"'))
+	assert_true(hint.contains('theme_type_variation = &"SkinRosterHintLabel"'))
+	assert_true(hint.contains('text = "ketuk untuk pilih"'))
+
+
+## open() sets the header from the roster it was given -- per-call dynamic
+## TEXT, not a runtime-built visual (Global Constraints).
+func test_open_sets_the_roster_header_text() -> void:
+	var s := _new_screen()
+	var two: Array[String] = [StudentSkins.NAMES[0], StudentSkins.NAMES[1]]
+	s.open(two)
+	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu · 2 murid")
+	var four: Array[String] = StudentSkins.NAMES.slice(0, 4)
+	s.open(four)
+	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu · 4 murid")
+
+
+## The tray reads as ruled paper: a tiling Rules TextureRect over paper_rule.png
+## (Task 3, spec §2), the same idiom NotebookFrame.tscn uses.
+func test_tray_has_tiling_ruled_paper() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var rules := _node_block(src, "Rules")
+	assert_true(rules.contains('type="TextureRect"'))
+	assert_true(rules.contains("paper_rule.png"))
+	assert_true(rules.contains("texture_repeat = 1"))
+	assert_true(rules.contains("stretch_mode = 1"))
+	assert_true(rules.contains("mouse_filter = 2"))
+
+
+## Two washi-tape strips at the tray's top corners, reusing the existing
+## washi_tape.svg (Task 3, spec §2) -- no new art.
+func test_tray_has_corner_tape() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var left := _node_block(src, "TapeLeft")
+	assert_true(left.contains('type="TextureRect"'))
+	assert_true(left.contains("washi_tape.svg"))
+	var right := _node_block(src, "TapeRight")
+	assert_true(right.contains('type="TextureRect"'))
+	assert_true(right.contains("washi_tape.svg"))
+	# Left and right must actually be different corners, not two copies of
+	# the same offsets.
+	assert_ne(_first_line_with(left, "offset_left"), _first_line_with(right, "offset_left"))
+
+
+## Paper-divider dots flank the skin name, matching the mockup's description
+## in spec §2 ("paper-divider dots either side").
+func test_skin_name_has_dividers_either_side() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var left := _node_block(src, "NameDividerLeft")
+	assert_true(left.contains('type="Panel"'))
+	assert_true(left.contains('theme_type_variation = &"SkinDotOn"'))
+	var right := _node_block(src, "NameDividerRight")
+	assert_true(right.contains('type="Panel"'))
+	assert_true(right.contains('theme_type_variation = &"SkinDotOn"'))
+
+
+## TERAPKAN gets a small "PAKAI!" sticker on its corner (Task 3, spec §4).
+func test_terapkan_has_a_pakai_sticker() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var at := src.find('[node name="PakaiTag"')
+	assert_true(at != -1, "PakaiTag must exist")
+	if at == -1:
+		return
+	var next := src.find("[node", at + 1)
+	var block := src.substr(at, (next - at) if next != -1 else src.length() - at)
+	assert_true(block.contains('parent="Tray/Terapkan"'), "PakaiTag must be a child of Terapkan")
+	assert_true(block.contains('theme_type_variation = &"SkinApplyTag"'))
+	assert_true(block.contains('text = "PAKAI!"'))
+
+
+## The first line of `block` containing `needle`, for comparing two node
+## blocks without asserting an exact offset value.
+func _first_line_with(block: String, needle: String) -> String:
+	for line in block.split("\n"):
+		if line.contains(needle):
+			return line
+	return ""
+
+
 ## SkinStudentTile / SkinStudentTileActive are lipped photo cards: cream at
 ## rest, sunflower when open (the palette's highlight colour, never an
 ## action -- ui-depth-pass-design.md, "Palette").

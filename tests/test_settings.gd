@@ -253,6 +253,8 @@ func test_sections_scroll_under_the_header() -> void:
 	assert_eq(scroll.size_flags_vertical, Control.SIZE_EXPAND_FILL, "the scroll takes the rest")
 	assert_eq(scroll.horizontal_scroll_mode, ScrollContainer.SCROLL_MODE_DISABLED,
 		"it never scrolls sideways")
+	assert_eq(scroll.vertical_scroll_mode, ScrollContainer.SCROLL_MODE_SHOW_NEVER,
+		"it scrolls by drag with no unthemed scrollbar")
 	assert_true(scroll.get_node_or_null("Pad/Sections") != null, "the cards sit in Pad/Sections")
 
 
@@ -302,9 +304,13 @@ func test_every_switch_row_is_the_template_labelled_in_indonesian() -> void:
 			row_name + " is a SettingsToggleRow")
 		assert_eq((row.get_node("Label") as Label).text, _ROW_LABELS[row_name],
 			row_name + " is labelled in Indonesian")
-		assert_eq(_toggle(row_name).theme_type_variation, &"SettingsSwitch",
+		var toggle := _toggle(row_name)
+		assert_true(toggle != null, row_name + " needs its Toggle")
+		if toggle == null:
+			continue
+		assert_eq(toggle.theme_type_variation, &"SettingsSwitch",
 			row_name + " wears the brand switch")
-		assert_eq(row.toggle, _toggle(row_name), row_name + ".toggle is its switch")
+		assert_eq(row.toggle, toggle, row_name + ".toggle is its switch")
 
 
 func test_every_slider_wears_the_brand_slider() -> void:
@@ -312,6 +318,19 @@ func test_every_slider_wears_the_brand_slider() -> void:
 		var s := _screen.find_child(slider_name, true, false) as HSlider
 		assert_true(s != null and s.theme_type_variation == &"SettingsSlider",
 			slider_name + " is a SettingsSlider")
+
+
+## The entry stagger brings in the title, the three cards, then Kembali.
+func test_entry_stagger_runs_top_to_bottom() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd")
+	assert_true(src.contains("Juice.stagger_in(_collect_entry_nodes())"),
+		"_ready staggers the entry nodes")
+	var nodes: Array = _screen.call("_collect_entry_nodes")
+	var names: Array = []
+	for n in nodes:
+		names.append(String((n as Node).name))
+	assert_eq(names, ["Header", "AudioCard", "GameplayCard", "DisplayCard", "BackButton"],
+		"title, cards, then Kembali")
 
 
 ## Every switch opens on its setting and writes it back. It is restored

@@ -62,15 +62,19 @@ func _ready() -> void:
 		# entry animation from here.
 		return
 
-	Juice.stagger_in(_collect_cards())
+	Juice.stagger_in(_collect_entry_nodes())
 	# Opened from the Lobby, its music keeps playing.
 	if return_scene == "res://Scenes/MainMenu/MainMenu.tscn":
 		AudioDirector.play_bgm(&"titlescreen")
 
 
-## The three section cards, which pop in one after another on entry.
-func _collect_cards() -> Array:
-	return %Sections.get_children()
+## What pops in on entry, top to bottom: the title card, the three section
+## cards, then Kembali.
+func _collect_entry_nodes() -> Array:
+	var nodes: Array = [$SafeArea/MainColumn/Header]
+	nodes.append_array(%Sections.get_children())
+	nodes.append(_back)
+	return nodes
 
 
 func _on_volume_changed(value: float, bus: StringName) -> void:
@@ -90,7 +94,8 @@ func _on_volume_changed(value: float, bus: StringName) -> void:
 
 func _on_tutorial_toggled(pressed: bool) -> void:
 	GameSettings.minigame_tutorial_enabled = pressed
-	GameSettings.save_settings()
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
 
 
 ## "Lewati Dialog Minigame" (formerly the Lobby's Shorten button): skips the

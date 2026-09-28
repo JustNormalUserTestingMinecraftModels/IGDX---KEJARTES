@@ -138,8 +138,7 @@ func _ready() -> void:
 	if face_rigs.is_empty():
 		face_rigs = [load("res://Scenes/Lobby/CitraFace.tscn")]
 
-	if GameState.has_method("initialize_grade_targets"):
-		GameState.initialize_grade_targets()
+	GameState.initialize_grade_targets()
 	progress_header.refresh()
 
 	if chatter:

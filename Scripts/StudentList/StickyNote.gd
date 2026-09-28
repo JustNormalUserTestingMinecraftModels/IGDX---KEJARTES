@@ -167,7 +167,15 @@ func _apply_tint() -> void:
 ## Swaps EmptyFrame's visibility and the Icon/ActivityLabel content between
 ## the filled and empty skins, then retints via _apply_tint(). The single
 ## place the `scheduled` setter and _ready() both call, so they cannot drift.
+##
+## EmptyFrame's own self_modulate is set here, in the empty branch --
+## sticky_empty_frame.svg is drawn white for tinting, and this must not be
+## left to happen only as a side effect of set_inviting()/_stop_glow(): a
+## note that goes scheduled = false without ever being told to glow (every
+## non-front-card note, per spec 4.2's "only the front card glows") must
+## still render its frame kraft, not white.
 func _apply_state() -> void:
+	var tokens: DesignTokens = DesignTokens.load_default()
 	$EmptyFrame.visible = not scheduled
 	if scheduled:
 		$Icon.texture = icon_texture
@@ -177,6 +185,7 @@ func _apply_state() -> void:
 		$Icon.texture = empty_icon
 		$ActivityLabel.text = EMPTY_LABEL_TEXT
 		$ActivityLabel.theme_type_variation = &"StickyNoteEmptyLabel"
+		$EmptyFrame.self_modulate = tokens.surface_sunken
 	_apply_tint()
 
 
@@ -221,7 +230,9 @@ func _start_glow() -> void:
 		return
 	if GameSettings.reduce_motion:
 		return
-	if _glow_tween != null and _glow_tween.is_valid():
+	var frame_running := _glow_tween != null and _glow_tween.is_valid()
+	var icon_running := _glow_icon_tween != null and _glow_icon_tween.is_valid()
+	if frame_running or icon_running:
 		return
 	var tokens: DesignTokens = DesignTokens.load_default()
 	var frame_node: TextureRect = $EmptyFrame

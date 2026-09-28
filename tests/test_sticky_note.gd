@@ -85,6 +85,22 @@ func test_unscheduled_paper_is_the_kraft_surface_sunken_tone() -> void:
 		"the empty note's paper must be the flat surface_sunken kraft tone")
 
 
+## Regression: EmptyFrame's own self_modulate must be set the moment a note
+## goes unscheduled, not only as a side effect of set_inviting()'s glow
+## lifecycle. Every note except the current front card never gets a
+## set_inviting() call (spec 4.2: only the front card's empty notes glow),
+## so a fresh note here deliberately never calls it either -- if EmptyFrame's
+## tint only happened inside _start_glow()/_stop_glow(), this note would be
+## left rendering sticky_empty_frame.svg's raw white instead of kraft.
+func test_unscheduled_frame_is_tinted_kraft_without_ever_inviting() -> void:
+	_note.scheduled = false
+	var frame := _note.get_node_or_null("EmptyFrame") as TextureRect
+	assert_true(frame != null, "missing EmptyFrame")
+	assert_true(frame.self_modulate.is_equal_approx(DesignTokens.load_default().surface_sunken),
+		"EmptyFrame must be tinted surface_sunken as soon as scheduled goes false, "
+		+ "even if set_inviting() is never called on this note")
+
+
 # ------------------------------------------------------------ filled skin
 
 func test_scheduled_hides_the_frame_and_keeps_the_category_tint_path() -> void:

@@ -7,6 +7,15 @@ extends McpTestSuite
 ## StudentCard's cream secondary buttons and StudentList's red/green status
 ## badges, which keep theirs, and Weekly Results' light-red Logs button
 ## (ResultLogsButton, 2026-09-19).
+##
+## 2026-09-27 scrapbook HUD (Q7): the Lobby itself stops wearing this look.
+## Its new BookHeroButton, NavTileKoperasi/Inventory/Rapor and PlusButton
+## variations (Scripts/Design/ThemeFactory.gd's _build_lobby_hud) are a
+## deliberate, Lobby-only exception -- documented here rather than added to
+## LOBBY_LOOK, since every OTHER screen still copies the brown Lobby look.
+## LobbyCtaButton and LobbyNavTile stay built and pinned below: they are
+## still worn outside the Lobby, by Password.tscn, Variabel.tscn and
+## tests/test_kalkulator.gd.
 
 ## The restyled roles, with every generated size step.
 const LOBBY_LOOK := [

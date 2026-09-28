@@ -59,10 +59,28 @@ what a button is for, not how it looks:
   pill geometry and differ in accent, so the two trait kinds stay
   distinguishable.
 
+**Lobby-only exception (2026-09-27 scrapbook HUD, Q7):** the Lobby's own
+`BookHeroButton`, `NavTileKoperasi` / `NavTileInventory` / `NavTileRapor` and
+`PlusButton` (all in `ThemeFactory._build_lobby_hud()`) deliberately do
+**not** wear the shared brown Lobby look above — each carries its own
+colour (JADWAL green, the shop's own green, the Akademis blue, a warm
+amber, and green-never-gold for the `+`). They're absent on purpose from
+`tests/test_lobby_style_buttons.gd`'s `LOBBY_LOOK` roster. Every other
+screen still copies the brown look; this exception is scoped to the
+Lobby's bottom HUD only.
+
 **Panels**:
 - `Card` — the standard raised surface (white bg, border, shadow).
 - `SunkenPanel` — an inset/recessed surface (e.g. a text well).
 - `Scrim` — a translucent full-screen dim behind a modal/dialog.
+- `CoinPlate` / `ProgressPlate` — the Lobby header's cream 9-slice plates
+  (the wallet display and the grade/week/star strip).
+- `GradeBadge` — the header's flat "KELAS 7" chip.
+- `BookCoverPanel` / `BookPagePanel` — the stepped book's board and page,
+  9-sliced.
+- `NotifBadge` — the icon rail and nav tiles' small red count pill
+  (`NotifBadgeLabel` for its digit/mark text).
+- `RosterChip` — the book's "N murid" pill.
 
 **Labels**:
 - `DisplayLabel` — largest heading, outlined, uses the display font.

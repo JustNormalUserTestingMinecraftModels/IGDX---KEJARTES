@@ -54,14 +54,14 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 
 
 @onready var color_rect = $ColorRect
-@onready var click_area = $ColorRect/ClickArea
-# The HUD sits in Safe/UI/BottomBar and the diorama in Classroom since the
+@onready var click_area: Button = $ColorRect/ClickArea
+# The HUD sits in Safe/UI/Hud/BookHud and the diorama in Classroom since the
 # 2026-09-15 tall-phone pass; unique names find them wherever they sit.
-@onready var student_button = %Student
-@onready var jadwal_button = %Jadwal
-@onready var koperasi_button = %Koperasi
-@onready var report_student_button = %ReportStudent
-@onready var inventory_button = %Inventory
+@onready var student_button: Button = %Student
+@onready var jadwal_button: Button = %Jadwal
+@onready var koperasi_button: Button = %Koperasi
+@onready var report_student_button: Button = %ReportStudent
+@onready var inventory_button: Button = %Inventory
 @onready var settings_button = %SettingsButton
 @onready var achievement_button = %AchievementButton
 @onready var skin_switch_button = %SkinSwitchButton
@@ -69,6 +69,8 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 @onready var money_label = get_node("%DisplayUang/Label")
 @onready var daily_login_btn = %DailyLogin
 @onready var daily_reward: DailyLoginPanel = %DailyReward
+@onready var progress_header: LobbyProgressHeader = %ProgressHeader
+@onready var hud: LobbyHud = %Hud
 
 @onready var portraits_back: Control = %StudentPortraitsContainer_Back
 @onready var portraits_front: Control = %StudentPortraitsContainer_Front
@@ -124,38 +126,34 @@ var reward_popup_open := false
 ## True while SkinSelect is open; mutes the chatter.
 var _skin_select_open := false
 
-func _ready():
+## The front row's idle bob starts this far (a fraction of idle_bob_period)
+## behind the back row's, so the two containers never move in lockstep.
+const FRONT_ROW_BOB_PHASE := 0.25
+
+func _ready() -> void:
 	if bg_texture:
 		bg_layer.texture = bg_texture
 	else:
 		bg_layer.texture = load("res://Assets/Images/UI/lobby.png")
-		
-
-
-
 
 	if face_rigs.is_empty():
 		face_rigs = [load("res://Scenes/Lobby/CitraFace.tscn")]
 
-	if GameState.has_method("initialize_grade_targets"):
-		GameState.initialize_grade_targets()
+	GameState.initialize_grade_targets()
+	progress_header.refresh()
 
 	if chatter:
 		chatter.can_speak = _chatter_allowed
-		# The HUD sits over the front-row faces; its taps are not the
-		# students'.
-		chatter.tap_blockers = [student_button, jadwal_button, koperasi_button,
-			report_student_button, inventory_button, settings_button,
-			achievement_button, skin_switch_button, daily_login_btn,
-			get_node("%DisplayUang")]
+		# The HUD sits over the front-row faces; its taps are not theirs.
+		chatter.tap_blockers = [progress_header, get_node("%DisplayUang")] + hud.tap_blockers()
 	_setup_students()
 	_start_idle_bob(portraits_back, 0.0)
-	_start_idle_bob(portraits_front, idle_bob_period * 0.25)
+	_start_idle_bob(portraits_front, idle_bob_period * FRONT_ROW_BOB_PHASE)
 
 	if tutorial_phase1_steps.is_empty() or tutorial_phase2_steps.is_empty():
 		_populate_default_tutorial_steps()
 
-	var viewport_size = get_viewport_rect().size
+	var viewport_size: Vector2 = get_viewport_rect().size
 	var mat := color_rect.material as ShaderMaterial
 	if mat:
 		mat.set_shader_parameter("rect_size", viewport_size)
@@ -189,24 +187,13 @@ func _ready():
 		tutorial_active = false
 		student_button.visible = false
 		jadwal_button.visible = true
-		if student_button is BaseButton:
-			student_button.disabled = false
-		else:
-			student_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		student_button.disabled = false
 
-		if not student_button.pressed.is_connected(_on_student_pressed):
-			student_button.pressed.connect(_on_student_pressed)
-		if not jadwal_button.pressed.is_connected(_on_jadwal_pressed):
-			jadwal_button.pressed.connect(_on_jadwal_pressed)
-		if not koperasi_button.pressed.is_connected(_on_koperasi_pressed):
-			koperasi_button.pressed.connect(_on_koperasi_pressed)
-		if not inventory_button.pressed.is_connected(_on_inventory_pressed):
-			inventory_button.pressed.connect(_on_inventory_pressed)
-		if not report_student_button.pressed.is_connected(_on_report_student_pressed):
-			report_student_button.pressed.connect(_on_report_student_pressed)
+		_connect_hud_buttons()
 
 		_create_blur_overlay()
 		_setup_daily_login()
+		hud.activate(true)
 		return
 
 	if GameState.returned_from_student_card:
@@ -217,35 +204,28 @@ func _ready():
 		student_button.visible = true
 		jadwal_button.visible = false
 
-		if student_button is BaseButton:
-			student_button.disabled = true
-		else:
-			student_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		student_button.disabled = true
 
 		current_phase_steps = tutorial_phase1_steps.duplicate()
 
-	if not student_button.pressed.is_connected(_on_student_pressed):
-		student_button.pressed.connect(_on_student_pressed)
-	if not jadwal_button.pressed.is_connected(_on_jadwal_pressed):
-		jadwal_button.pressed.connect(_on_jadwal_pressed)
-	if not koperasi_button.pressed.is_connected(_on_koperasi_pressed):
-		koperasi_button.pressed.connect(_on_koperasi_pressed)
-	if not inventory_button.pressed.is_connected(_on_inventory_pressed):
-		inventory_button.pressed.connect(_on_inventory_pressed)
-	if not report_student_button.pressed.is_connected(_on_report_student_pressed):
-		report_student_button.pressed.connect(_on_report_student_pressed)
+	_connect_hud_buttons()
 
-	if click_area.has_signal("pressed"):
-		if not click_area.pressed.is_connected(_next_step):
-			click_area.pressed.connect(_next_step)
-	else:
-		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
-		if not click_area.gui_input.is_connected(_on_click_area_gui_input):
-			click_area.gui_input.connect(_on_click_area_gui_input)
+	if not click_area.pressed.is_connected(_next_step):
+		click_area.pressed.connect(_next_step)
 
 	_show_step(0)
 	_create_blur_overlay()
 	_setup_daily_login()
+
+## Wires every HUD button and the reopen gate. Called once from _ready's branch,
+## so no is_connected guard is needed (the scene holds no connections).
+func _connect_hud_buttons() -> void:
+	student_button.pressed.connect(_on_student_pressed)
+	jadwal_button.pressed.connect(_on_jadwal_pressed)
+	koperasi_button.pressed.connect(_on_koperasi_pressed)
+	inventory_button.pressed.connect(_on_inventory_pressed)
+	report_student_button.pressed.connect(_on_report_student_pressed)
+	hud.can_reopen = _chatter_allowed  # popups keep the HUD down too
 
 ## Shows the one Hand_<Name> node in this slot that matches the student
 ## sitting here, and hides its five siblings.
@@ -657,7 +637,7 @@ func _create_blur_overlay():
 	# Place blur_overlay at DailyReward's index, just before it: it then
 	# renders over the Classroom and the whole HUD (Safe and everything in
 	# it, DailyLogin and SettingsButton included) but behind the popup. Since
-	# the 2026-09-15 tall-phone pass the HUD sits in Safe/UI/BottomBar, so a
+	# the 2026-09-15 tall-phone pass the HUD sits in Safe/UI/Hud/BookHud, so a
 	# HUD node's own index says nothing about the root's draw order.
 	move_child(blur_overlay, daily_reward.get_index())
 	# Connect click on blur overlay to close popup
@@ -670,11 +650,14 @@ func _setup_daily_login() -> void:
 		daily_reward.claimed.connect(_on_daily_reward_claimed)
 	if not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
 		daily_login_btn.pressed.connect(_on_daily_login_pressed)
+	hud.refresh(daily_reward.is_claimable())
 
-## The panel paid out: roll the wallet up from the old balance.
+## The panel paid out: roll the wallet up from the old balance, and
+## the gift badge clears.
 func _on_daily_reward_claimed(_amount: int, previous_money: int) -> void:
 	_update_money_display(previous_money)
 	RewardFeedback.play(&"coins_earned", money_label)
+	hud.refresh(daily_reward.is_claimable())
 
 ## Animates the money display via Juice.count_up instead of setting the
 ## label's text directly. Pass the pre-change amount as `from_amount` to
@@ -830,14 +813,6 @@ func _on_report_student_pressed() -> void:
 	AudioDirector.play_sfx(&"tap")
 	Transition.change_scene("res://Scenes/ReportCard/ReportCard.tscn", Transition.Style.WIPE)
 
-func _on_click_area_gui_input(event: InputEvent):
-	if not tutorial_active:
-		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_next_step()
-	elif event is InputEventScreenTouch and event.pressed:
-		_next_step()
-
 func _next_step():
 	current_step += 1
 	if current_step >= current_phase_steps.size():
@@ -982,8 +957,9 @@ func _clear_highlight():
 	if _tutorial_arrow:
 		_tutorial_arrow.hide()
 
-func _end_tutorial():
+func _end_tutorial() -> void:
 	GameState.lobby_tutorial_completed = true
+	hud.activate(false)
 	tutorial_active = false
 	if _blink_tween and _blink_tween.is_valid():
 		_blink_tween.kill()

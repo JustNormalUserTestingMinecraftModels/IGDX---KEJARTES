@@ -28,6 +28,7 @@
 [ext_resource type="Texture2D" uid="uid://bed2fo2wc4bd7" path="res://Assets/Images/Achievements/achievement_button.png" id="28_ikpat"]
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="29_gear"]
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
+[ext_resource type="Script" uid="uid://p40qndw5jabq" path="res://Scripts/Lobby/LobbyHud.gd" id="32_nese6"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
 [ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="37_ayldy"]
 [ext_resource type="Texture2D" uid="uid://4t4pb40qap88" path="res://Assets/Images/UI/LobbyHud/icon_plus.svg" id="37_ty8k5"]
@@ -944,9 +945,19 @@ offset_right = 348.0
 offset_bottom = 104.0
 theme_type_variation = &"PlusButton"
 disabled = true
-icon = ExtResource("37_ty8k5")
 icon_alignment = 1
 expand_icon = true
+
+[node name="PlusIcon" type="TextureRect" parent="Safe/UI/DisplayUang/PlusUang" unique_id=2008619712]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 72.0
+offset_bottom = 68.0
+mouse_filter = 2
+texture = ExtResource("37_ty8k5")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ProgressHeader" type="Panel" parent="Safe/UI" unique_id=923979542]
 unique_name_in_owner = true
@@ -999,9 +1010,9 @@ vertical_alignment = 1
 [node name="StarBar" type="ProgressBar" parent="Safe/UI/ProgressHeader" unique_id=555781510]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 24.0
+offset_left = 140.0
 offset_top = 118.0
-offset_right = 322.0
+offset_right = 330.0
 offset_bottom = 142.0
 mouse_filter = 2
 theme_type_variation = &"StarProgressBar"
@@ -1055,6 +1066,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("32_nese6")
 
 [node name="BookHud" type="Control" parent="Safe/UI/Hud" unique_id=162709174]
 unique_name_in_owner = true

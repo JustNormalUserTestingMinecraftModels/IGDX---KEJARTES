@@ -746,3 +746,128 @@ func test_sticky_note_tint_is_washed_before_it_is_applied() -> void:
 		"the category color must be washed toward white before tinting")
 	assert_false(src.contains("self_modulate = DesignTokens.load_default()"),
 		"no call site may apply a raw category color to self_modulate")
+
+
+# ---------------------------------------------- Task 4: week wiring / reopen
+#
+# StudentList is not @tool, so (per this suite's header) _ready() never
+# fires on the shared `_list` fixture -- _setup_students() and everything
+# it reaches are simply never called by setup()'s add_child(). The four
+# tests below drive them directly instead: _wire_onready() assigns the
+# @onready vars _setup_students()/_init_carousel_state() need (exactly what
+# _ready()'s @onready block would have), then the test calls the private
+# method itself. `_list` is declared `Control`, which has none of
+# StudentList's own members, so each test aliases it into an untyped local
+# (`var list = _list`, no `:`/`:=`) the way the rest of this codebase
+# already calls a non-@tool node's own methods directly (see
+# tests/test_run_result.gd's `row._ready()`) -- an untyped var carries no
+# static type for the analyzer to check members against.
+# card_nodes' RosterCard elements and their StickyNote children ARE @tool,
+# so their own _ready() already ran when setup() added `_list` to the tree.
+
+func _wire_onready(list) -> void:
+	list.card_container = list.get_node("CardContainer")
+	list.left_arrow = list.get_node_or_null("%LeftArrow")
+	list.right_arrow = list.get_node_or_null("%RightArrow")
+	list.page_indicator = list.get_node_or_null("%PageIndicator")
+
+
+## GameState.day_schedules drives each note's `scheduled` and the card's
+## days_scheduled tally, and the front card's empty notes (only) invite.
+func test_setup_students_wires_scheduled_and_tally_from_day_schedules() -> void:
+	var saved_roster: Array = GameState.approved_students
+	var saved_schedules: Dictionary = GameState.day_schedules
+	var saved_selected: Dictionary = GameState.selected_student
+	GameState.approved_students = []
+	GameState.day_schedules = {
+		1: {
+			"Senin": {"category": "Akademis"},
+			"Selasa": {"category": "Istirahat"},
+			"Rabu": {"category": "Olahraga"},
+		},
+	}
+	GameState.selected_student = {}
+
+	var list = _list
+	_wire_onready(list)
+	list._setup_students()
+
+	var card: RosterCard = list.card_nodes[0]
+	assert_eq(card.days_scheduled, 3, "three of Marcel's five days are set")
+
+	var expected := {"Senin": true, "Selasa": true, "Rabu": true, "Kamis": false, "Jumat": false}
+	var container := card.get_node("%StickyNotesContainer")
+	for day_name in expected.keys():
+		var note: StickyNote = container.get_node(day_name)
+		assert_eq(note.scheduled, expected[day_name], "%s.scheduled mismatch" % day_name)
+		assert_eq(note.is_inviting(), not bool(expected[day_name]),
+			"the front card's empty notes must invite, its filled notes must not (%s)" % day_name)
+
+	# Front-card-only: Doni (Murid2, unscheduled, not the front card) must
+	# stay calm even though every one of his notes is empty too.
+	var other: RosterCard = list.card_nodes[1]
+	assert_eq(other.days_scheduled, 0, "Doni has no day_schedules entry")
+	for note: StickyNote in other.get_notes():
+		assert_false(note.is_inviting(), "only the front card's empty notes may invite")
+
+	GameState.approved_students = saved_roster
+	GameState.day_schedules = saved_schedules
+	GameState.selected_student = saved_selected
+
+
+## _init_carousel_state() resolves the starting card from
+## GameState.selected_student's id against the roster.
+func test_init_carousel_state_reopens_on_selected_student() -> void:
+	var saved_roster: Array = GameState.approved_students
+	var saved_schedules: Dictionary = GameState.day_schedules
+	var saved_selected: Dictionary = GameState.selected_student
+	GameState.approved_students = []
+	GameState.day_schedules = {}
+	# default_students' third entry (index 2) is Andi, id 3.
+	GameState.selected_student = {"id": 3, "name": "Andi"}
+
+	var list = _list
+	_wire_onready(list)
+	list._setup_students()
+	assert_eq(int(list.current_card_index), 2,
+		"the carousel must reopen on the selected student's card")
+
+	GameState.approved_students = saved_roster
+	GameState.day_schedules = saved_schedules
+	GameState.selected_student = saved_selected
+
+
+## Unset, or an id nobody in this roster carries, both fall back to the
+## first card -- a fresh approve and a Forget Session wipe.
+func test_init_carousel_state_defaults_to_first_card_when_unset_or_unknown() -> void:
+	var saved_roster: Array = GameState.approved_students
+	var saved_schedules: Dictionary = GameState.day_schedules
+	var saved_selected: Dictionary = GameState.selected_student
+	GameState.approved_students = []
+	GameState.day_schedules = {}
+
+	GameState.selected_student = {}
+	var list = _list
+	_wire_onready(list)
+	list._setup_students()
+	assert_eq(int(list.current_card_index), 0, "no selection defaults to the first card")
+
+	GameState.selected_student = {"id": 999, "name": "Ghost"}
+	list._setup_students()
+	assert_eq(int(list.current_card_index), 0,
+		"an id nobody in the roster carries defaults to the first card")
+
+	GameState.approved_students = saved_roster
+	GameState.day_schedules = saved_schedules
+	GameState.selected_student = saved_selected
+
+
+## _switch_card() awaits two 0.2s tweens before the new card lands, so its
+## front-card handoff cannot be observed synchronously in this harness --
+## pinned by source instead.
+func test_switch_card_wires_front_card_activation() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("_set_card_active(old_card, false)"),
+		"_switch_card must turn off the card it is leaving")
+	assert_true(src.contains("_set_card_active(new_card, true)"),
+		"_switch_card must turn on the card that lands")

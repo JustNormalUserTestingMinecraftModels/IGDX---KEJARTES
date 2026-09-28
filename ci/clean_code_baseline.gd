@@ -58,7 +58,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/StudentCard/StudentCard.gd::_ready": 74,
 	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 60,
 	"res://Scripts/StudentCard/StudentCard.gd::_transition_page": 61,
-	"res://Scripts/StudentList/StudentList.gd::_setup_students": 74,
+	"res://Scripts/StudentList/StudentList.gd::_setup_students": 55,
 	"res://Scripts/StudentList/StudentList.gd::_show_step": 53,
 }
 
@@ -103,7 +103,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/SchoolSimulation/StudentManager.gd": 38,
 	"res://Scripts/StudentCard/StudentCard.gd": 144,
 	"res://Scripts/StudentCard/StudentCardView.gd": 13,
-	"res://Scripts/StudentList/StudentList.gd": 110,
+	"res://Scripts/StudentList/StudentList.gd": 106,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 17,
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 7,
 	"res://Scripts/TutorialArrow.gd": 4,

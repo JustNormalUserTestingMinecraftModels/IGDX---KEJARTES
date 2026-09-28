@@ -394,7 +394,44 @@ const DISPLAY_ROSTER := [
 	# 2026-09-28 UI depth pass Task 6: the notebook frame's tabs, close and
 	# sticker title.
 	"NotebookTab", "NotebookTabActive", "NotebookClose", "NotebookSticker",
+	# 2026-09-28 koperasi-top-band-promo Task 3: the signboard, the promo
+	# board's header/item text and its "-N%" sticker, and the footer
+	# Total pill's balance number in all three of its states.
+	"KoperasiSignLabel", "KoperasiSignCaptionLabel",
+	"KoperasiPromoHeaderLabel", "KoperasiPromoItemLabel", "PromoBadge",
+	"TotalNumberAwake", "TotalNumberAsleep", "TotalNumberOver",
 ]
+
+
+## Koperasi's top-band signboard and promo board, and the footer's Kas /
+## Total pills (2026-09-28 koperasi-top-band-promo Task 3), all built on
+## LippedBox and the depth pass's palette.
+func test_koperasi_chrome_is_lipped_and_on_palette() -> void:
+	var tokens: DesignTokens = DesignTokens.load_default()
+	var theme: Theme = ThemeFactory.build(tokens)
+	for panel: String in ["KoperasiSignPanel", "KoperasiPromoPanel"]:
+		assert_true(LippedBox.is_lipped(theme.get_stylebox("panel", panel) as StyleBoxFlat),
+			panel + " is lipped")
+	for pill: String in ["KasPill", "TotalPillAwake", "TotalPillAsleep", "TotalPillOver"]:
+		assert_true(LippedBox.is_lipped(theme.get_stylebox("panel", pill) as StyleBoxFlat),
+			pill + " is lipped")
+	var asleep: StyleBoxFlat = theme.get_stylebox("panel", "TotalPillAsleep") as StyleBoxFlat
+	var awake: StyleBoxFlat = theme.get_stylebox("panel", "TotalPillAwake") as StyleBoxFlat
+	assert_true(LippedBox.lip_height_of(asleep) < LippedBox.lip_height_of(awake),
+		"an empty total sleeps on a thinner lip")
+	var over: StyleBoxFlat = theme.get_stylebox("panel", "TotalPillOver") as StyleBoxFlat
+	assert_eq(over.shadow_color, tokens.accent_tomato, "over budget stands on a tomato lip")
+	assert_eq(theme.get_color("font_color", "TotalNumberOver"), tokens.accent_tomato_lip,
+		"and its number reads in the dark tomato")
+	var badge: StyleBoxFlat = theme.get_stylebox("normal", "PromoBadge") as StyleBoxFlat
+	assert_eq(badge.bg_color, tokens.accent_tangerine, "the promo badge is tangerine")
+
+
+## The Koperasi ledge's old gold counter (2026-09-28 koperasi-top-band-promo
+## Task 3): the KAS KELAS pill in the new footer replaces it.
+func test_the_ledge_coin_label_is_gone() -> void:
+	var theme: Theme = ThemeFactory.build(DesignTokens.load_default())
+	assert_false(theme.get_type_list().has("ShopCoinLabel"), "the Kas pill replaced it")
 
 
 ## StatCheck's page shows the student's name alone on StudentCard's

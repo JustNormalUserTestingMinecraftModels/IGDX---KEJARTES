@@ -13,13 +13,16 @@ extends TextureRect
 ## RewardFeedback. The Lobby owns the backdrop blur and calls open() /
 ## close() / refresh() down.
 ##
-## @tool so the editor's test runner can call claim() and the static
-## rules. Only _ready is gated behind Engine.is_editor_hint(). The writers
-## (refresh, open, close and the claim handler) swap texture, modulate,
-## scale and visibility ungated; that is safe only because their one
-## caller, Lobby.gd, is not @tool, and the suites' bare panel never enters
-## the tree. A @tool node that restyles itself in the editor gets that
-## baked into Lobby.tscn on save, so never call them from editor code.
+## @tool so the editor's test runner can call claim(), refresh() and the
+## static rules. Only _ready (the claim button and reveal signal wiring) is
+## gated behind Engine.is_editor_hint(); the writers (refresh, open, close
+## and the claim handler) swap texture, modulate, scale and visibility
+## ungated. In the game their one caller is Lobby.gd, which is not @tool,
+## so nothing restyles the Lobby.tscn open in the editor. The suites do
+## call them, but only on a Lobby they instance into the editor root
+## themselves and free afterwards, never on the edited scene. A @tool node
+## that restyles itself in an edited scene gets that baked into Lobby.tscn
+## on save, so never call the writers on an edited scene's panel.
 
 ## A claim paid out. `previous_money` is the balance before it, so the
 ## Lobby can roll its money display up from there.
@@ -97,6 +100,9 @@ const CLOSE_SCALE := Vector2(0.8, 0.8)
 
 var _flicker: Tween
 var _invite: Tween
+## The date (YYYY-MM-DD) the Lobby last passed to refresh(). open() and the
+## claim read it, so the whole panel agrees on which day it drew.
+var _today: String = ""
 ## The claim whose payout waits on the reveal's coin landing.
 var _pending_amount: int = 0
 var _pending_previous_money: int = 0
@@ -113,11 +119,17 @@ func _ready() -> void:
 
 
 ## Resets a broken streak and redraws the strip for `today` (YYYY-MM-DD).
+## Once today is claimed, daily_login_day is already tomorrow's, so the
+## strip, streak line and amount show the day that was claimed, dimmed.
 func refresh(today: String) -> void:
+	_today = today
 	if is_streak_broken(GameState.last_claim_date, today):
 		# lewat lebih dari 1 hari tanpa klaim, streak reset ke Day1
 		GameState.daily_login_day = 1
-	_show_day(GameState.daily_login_day, GameState.last_claim_date == today)
+	if _is_claimed_today(today):
+		_show_day(claimed_day_for(GameState.daily_login_day), true)
+	else:
+		_show_day(GameState.daily_login_day, false)
 
 
 ## Pops the whole panel in -- the art bakes all seven slots, so there are
@@ -125,8 +137,7 @@ func refresh(today: String) -> void:
 func open() -> void:
 	visible = true
 	Juice.pop_in(self)
-	AnimUtils.popup_spring_in(greeting)
-	AnimUtils.popup_spring_in(streak_row)
+	_spring_in_headers()
 	reveal.show_ready()
 	_start_flicker()
 	_start_idle_invite()
@@ -147,7 +158,7 @@ func close() -> void:
 ## Pays today's reward into GameState and advances the streak. Returns
 ## the amount paid, or 0 when `today` was already claimed.
 func claim(today: String) -> int:
-	if GameState.last_claim_date == today:
+	if _is_claimed_today(today):
 		return 0
 	var amount: int = reward_for_day(GameState.daily_login_day)
 	GameState.player_money += amount
@@ -178,6 +189,13 @@ static func day_after(day: int) -> int:
 	return day % STREAK_DAYS + 1
 
 
+## The streak day that was claimed when `day` is the already-advanced
+## GameState.daily_login_day: the day before it, day 1 wrapping back to
+## the last streak day. The inverse of day_after.
+static func claimed_day_for(day: int) -> int:
+	return (day + STREAK_DAYS - 2) % STREAK_DAYS + 1
+
+
 ## True when more than one day has passed since `last_claim_date`. Never
 ## broken before the first claim, nor on the day of a claim.
 static func is_streak_broken(last_claim_date: String, today: String) -> bool:
@@ -188,17 +206,25 @@ static func is_streak_broken(last_claim_date: String, today: String) -> bool:
 	return today_unix - last_unix > SECONDS_PER_DAY
 
 
+## True once `today` (YYYY-MM-DD) has been claimed. The one place the
+## panel asks, so refresh, open, the claim and the invite always agree.
+func _is_claimed_today(today: String) -> bool:
+	return GameState.last_claim_date == today
+
+
 func _on_claim_pressed() -> void:
 	AnimUtils.squash_bounce(claim_button)
-	var today: String = Time.get_date_string_from_system()
-	if GameState.last_claim_date == today:
+	if _today.is_empty():
+		push_error("DailyLoginPanel: refresh(today) never ran, so there is no day to claim")
+		return
+	if _is_claimed_today(_today):
 		AudioDirector.play_sfx(&"error")
 		return
 	AudioDirector.play_sfx(&"daily_claim")
 	_stop_idle_invite()
 	var claimed_day: int = GameState.daily_login_day
 	var previous_money: int = GameState.player_money
-	var amount: int = claim(today)
+	var amount: int = claim(_today)
 	_show_day(claimed_day, true)
 	# The tiles are gone -- the panel itself is what pops now.
 	Juice.pop_in(self)
@@ -206,8 +232,10 @@ func _on_claim_pressed() -> void:
 
 
 ## Holds the payout and plays the reveal; the reward row counts up at its
-## burst and `claimed` goes out when its coin lands.
+## burst and `claimed` goes out when its coin lands. A payout still owed
+## by an earlier reveal is paid first, never overwritten.
 func _play_claim_moment(amount: int, claimed_day: int, previous_money: int) -> void:
+	_flush_pending_payout()
 	_pending_amount = amount
 	_pending_previous_money = previous_money
 	_is_payout_pending = true
@@ -219,11 +247,25 @@ func _play_claim_moment(amount: int, claimed_day: int, previous_money: int) -> v
 	reveal.play(claimed_day == STREAK_DAYS, wallet_anchor.get_global_rect().get_center())
 
 
+## Cuts an earlier reveal short and pays whatever claim it still owes.
+## Both steps are latched, so nothing is emitted when nothing is owed.
+func _flush_pending_payout() -> void:
+	reveal.skip()
+	_pay_out()
+
+
+## The reward row pops and counts up at the burst; under reduce_motion it
+## simply shows the final amount.
 func _on_reveal_burst_started() -> void:
 	# _show_day dimmed these for the "already claimed" cue before the reveal
 	# played; restore full brightness so the count-up pays off bright.
 	reward_coin.modulate.a = 1.0
 	reward_amount.modulate.a = 1.0
+	if GameSettings.reduce_motion:
+		reward_row.scale = Vector2.ONE
+		reward_row.modulate.a = 1.0
+		reward_amount.text = AMOUNT_FORMAT % _pending_amount
+		return
 	AnimUtils.spring_pop_in(reward_row)
 	Juice.count_up(reward_amount, 0.0, float(_pending_amount), AMOUNT_FORMAT)
 
@@ -234,6 +276,17 @@ func _pay_out() -> void:
 		return
 	_is_payout_pending = false
 	claimed.emit(_pending_amount, _pending_previous_money)
+
+
+## The greeting and the streak line spring in as the panel opens; under
+## reduce_motion they are simply placed at rest.
+func _spring_in_headers() -> void:
+	for header: Control in [greeting, streak_row]:
+		if GameSettings.reduce_motion:
+			header.scale = Vector2.ONE
+			header.rotation = 0.0
+		else:
+			AnimUtils.popup_spring_in(header)
 
 
 ## Draws the strip for streak `day`, dimmed when today's claim is done.
@@ -257,7 +310,7 @@ func _show_day(day: int, is_claimed: bool) -> void:
 
 ## Tomorrow's reward, shown only once today is claimed. By then the
 ## streak day has already advanced, so GameState.daily_login_day is
-## tomorrow's day.
+## tomorrow's day (while the strip shows claimed_day_for of it).
 func _show_teaser(is_claimed: bool) -> void:
 	besok_teaser.visible = is_claimed
 	besok_teaser.text = teaser_text(GameState.daily_login_day)
@@ -279,10 +332,14 @@ func _peak_tint(day: int) -> Color:
 
 
 ## The flame's idle flicker: a looped dip of its alpha while the panel is
-## open. Off under reduce_motion.
+## open. Off under reduce_motion, and off (with a warning) when
+## flame_flicker_seconds is not positive: a zero-length loop never ends.
 func _start_flicker() -> void:
 	_stop_flicker()
 	if GameSettings.reduce_motion:
+		return
+	if flame_flicker_seconds <= 0.0:
+		push_warning("DailyLoginPanel: flame_flicker_seconds must be above 0; the flame will not flicker")
 		return
 	var half: float = flame_flicker_seconds * 0.5
 	_flicker = create_tween().set_loops()
@@ -301,11 +358,13 @@ func _stop_flicker() -> void:
 ## idle_invite_seconds. The row, not ButtonClaim: the button draws nothing
 ## over the baked pill, so bouncing it would move only its "KLAIM" text.
 ## AnimUtils.wobble is no loop step -- it snaps to scale 0.7 each call.
+## Off, with a warning, when idle_invite_seconds is not positive.
 func _start_idle_invite() -> void:
 	_stop_idle_invite()
-	if GameState.last_claim_date == Time.get_date_string_from_system():
+	if _is_claimed_today(_today) or GameSettings.reduce_motion:
 		return
-	if GameSettings.reduce_motion:
+	if idle_invite_seconds <= 0.0:
+		push_warning("DailyLoginPanel: idle_invite_seconds must be above 0; the row will not bounce")
 		return
 	_invite = create_tween().set_loops()
 	_invite.tween_interval(idle_invite_seconds)

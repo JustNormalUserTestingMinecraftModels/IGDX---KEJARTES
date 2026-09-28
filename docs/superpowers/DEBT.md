@@ -81,7 +81,13 @@ displays at, or `test_texture_mipmaps` will want mipmaps on it), and the
 2026-09-28 daily-login streak flame, `Assets/Images/UI/DailyLogin/streak_flame.svg`
 (hand-written two-tone paths, 64x64, no `<text>`; the panel scales it
 0.8-1.3x by streak day and tints it `currency_gold` on day 7, so a
-replacement should stay warm and light enough for that tint to read).
+replacement should stay warm and light enough for that tint to read), and
+the 2026-09-28 daily-login reveal's chest, which has no art at all yet:
+`DailyRewardReveal`'s `chest_base_texture` / `chest_lid_texture` are empty and
+`use_chest_sprite` stays off until both exist, so the claim moment ships on the
+gift fallback (Box crops the day-1 slot's gift out of `day1.png`, Lid hidden).
+Drawing them means setting the three exports on the reveal's root in
+`DailyRewardReveal.tscn`; the Lid's hinge pivot is already authored.
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and

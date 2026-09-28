@@ -9,10 +9,13 @@ extends McpTestSuite
 ## Lobby no longer owns any of it.
 ##
 ## Suite is @tool and no test is a coroutine, per the runner constraints.
-## The panel under test is a bare DailyLoginPanel.new() that never enters
-## the tree, so its @onready % lookups never run: claim() and the static
-## rules touch no node.
+## Most tests use a bare DailyLoginPanel.new() that never enters the tree,
+## so its @onready % lookups never run: claim() and the static rules touch
+## no node. The tests that draw (refresh, the reveal's payout) use a Lobby
+## and a reveal the suite instances into the editor root once; only their
+## gated _readys run there, and nothing touches the edited scene.
 
+const _LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
 const _LOBBY_SCRIPT := "res://Scripts/Lobby/Lobby.gd"
 const _PANEL_SCRIPT := "res://Scripts/Lobby/DailyLoginPanel.gd"
 const _REVEAL_SCENE := "res://Scenes/Lobby/DailyRewardReveal.tscn"
@@ -30,41 +33,62 @@ func suite_name() -> String:
 
 var _panel: DailyLoginPanel
 var _reveal: DailyRewardReveal
+## The real Lobby, whose DailyReward panel resolves its % nodes; the tests
+## that draw use its panel.
+var _lobby: Control
 var _saved_money: int
 var _saved_day: int
 var _saved_date: String
+var _saved_reduce_motion: bool
 
 
-## One bare panel and one reveal (instanced, never added to the tree, so
-## its @onready lookups and gated _ready never run) for the whole suite.
-## Not tracked; suite_teardown frees both.
+## One bare panel, one reveal and one Lobby for the whole suite (instancing
+## per test floods the deferred-call queue). The reveal and the Lobby enter
+## the editor root so their @onready lookups resolve; their _readys are
+## gated, so nothing plays. Not tracked; suite_teardown frees all three.
 func suite_setup(_ctx: Dictionary) -> void:
 	_panel = DailyLoginPanel.new()
-	if not ResourceLoader.exists(_REVEAL_SCENE):
-		return
-	var reveal_scene: PackedScene = load(_REVEAL_SCENE) as PackedScene
-	_reveal = reveal_scene.instantiate() as DailyRewardReveal
+	var root: Node = Engine.get_main_loop().root
+	if ResourceLoader.exists(_REVEAL_SCENE):
+		var reveal_scene: PackedScene = load(_REVEAL_SCENE) as PackedScene
+		_reveal = reveal_scene.instantiate() as DailyRewardReveal
+		root.add_child(_reveal)
+	var lobby_scene: PackedScene = load(_LOBBY_SCENE) as PackedScene
+	_lobby = lobby_scene.instantiate() as Control
+	root.add_child(_lobby)
 
 
 func suite_teardown() -> void:
-	if is_instance_valid(_panel):
-		_panel.free()
+	for fixture: Node in [_panel, _reveal, _lobby]:
+		if is_instance_valid(fixture):
+			fixture.free()
 	_panel = null
-	if is_instance_valid(_reveal):
-		_reveal.free()
 	_reveal = null
+	_lobby = null
 
 
 func setup() -> void:
 	_saved_money = GameState.player_money
 	_saved_day = GameState.daily_login_day
 	_saved_date = GameState.last_claim_date
+	_saved_reduce_motion = GameSettings.reduce_motion
 
 
 func teardown() -> void:
 	GameState.player_money = _saved_money
 	GameState.daily_login_day = _saved_day
 	GameState.last_claim_date = _saved_date
+	GameSettings.reduce_motion = _saved_reduce_motion
+
+
+## The Lobby fixture's panel, or null (with a failed assertion) if the
+## Lobby lost it.
+func _lobby_panel() -> DailyLoginPanel:
+	var panel: DailyLoginPanel = null
+	if is_instance_valid(_lobby):
+		panel = _lobby.get_node_or_null("DailyReward") as DailyLoginPanel
+	assert_true(panel != null, "the Lobby fixture must carry its DailyReward panel")
+	return panel
 
 
 func test_day_after_wraps() -> void:
@@ -225,12 +249,141 @@ func test_teaser_names_tomorrows_reward() -> void:
 		"Besok: +80G", "after the last streak day the teaser wraps to day 1's reward")
 
 
+## The invite's own tween must loop and bounce the reward row; a bare
+## "set_loops()" scan would pass on the flame's flicker alone.
 func test_idle_invite_is_a_looped_squash_bounce() -> void:
 	var panel_src := FileAccess.get_file_as_string(_PANEL_SCRIPT)
-	assert_true(panel_src.contains("AnimUtils.squash_bounce.bind("),
-		"the idle invite bounces through AnimUtils.squash_bounce")
-	assert_true(panel_src.contains("set_loops()"),
-		"the idle invite repeats on a looped tween")
+	assert_true(panel_src.contains("_invite = create_tween().set_loops()"),
+		"the idle invite repeats on its own looped tween")
+	assert_true(panel_src.contains("_invite.tween_callback(AnimUtils.squash_bounce.bind(reward_row))"),
+		"each loop of the idle invite squash-bounces the reward row")
+
+
+## The streak day claimed today is the day before the advanced
+## daily_login_day, day 1 wrapping back to the last streak day.
+func test_claimed_day_for_is_the_day_before() -> void:
+	assert_eq(DailyLoginPanel.claimed_day_for(1), DailyLoginPanel.STREAK_DAYS,
+		"after claiming the last streak day, daily_login_day 1 means day 7 was claimed")
+	assert_eq(DailyLoginPanel.claimed_day_for(4), 3,
+		"daily_login_day 4 means day 3 was claimed")
+	for day: int in range(1, DailyLoginPanel.STREAK_DAYS + 1):
+		assert_eq(DailyLoginPanel.claimed_day_for(DailyLoginPanel.day_after(day)), day,
+			"claimed_day_for undoes day_after for day %d" % day)
+
+
+## Review Important 1: the Lobby re-runs refresh() on every visit the same
+## day. After a claim it must still draw the CLAIMED day (strip slot,
+## streak line, amount), dimmed, while the teaser names tomorrow's reward.
+## Day 7 is the case that used to read "Streak 1 hari".
+func test_refresh_after_a_claim_draws_the_claimed_day() -> void:
+	var panel: DailyLoginPanel = _lobby_panel()
+	if panel == null:
+		return
+	var cases: Array[Dictionary] = [
+		{"day": 3, "streak": "Streak 3 hari", "amount": "160G", "teaser": "Besok: +200G"},
+		{"day": DailyLoginPanel.STREAK_DAYS, "streak": "Streak 7 hari", "amount": "400G",
+			"teaser": "Besok: +80G"},
+	]
+	for expected: Dictionary in cases:
+		var day: int = expected["day"]
+		GameState.daily_login_day = day
+		GameState.last_claim_date = _YESTERDAY
+		panel.claim(_TODAY)
+		panel.refresh(_TODAY)
+		assert_eq(panel.streak_label.text, expected["streak"], "day %d's streak line survives a reload" % day)
+		assert_eq(panel.reward_amount.text, expected["amount"], "day %d's amount survives a reload" % day)
+		assert_eq(panel.texture, DailyLoginPanel.DAY_PANELS[day - 1],
+			"the strip keeps day %d's slot lit after a reload" % day)
+		assert_true(panel.claim_button.disabled, "day %d stays claimed after a reload" % day)
+		assert_true(panel.besok_teaser.visible, "the teaser shows once day %d is claimed" % day)
+		assert_eq(panel.besok_teaser.text, expected["teaser"], "the teaser names tomorrow's reward after day %d" % day)
+
+
+## Review Minor 1: the reveal's payout contract. Under reduce_motion
+## play() is synchronous: burst_started, then coin_landed, once each; a
+## later skip() owes nothing and emits nothing.
+func test_reveal_under_reduce_motion_emits_each_signal_once() -> void:
+	assert_true(_reveal != null and _reveal.is_inside_tree(),
+		"the suite's reveal fixture must be in the tree")
+	if _reveal == null or not _reveal.is_inside_tree():
+		return
+	GameSettings.reduce_motion = true
+	var emitted: Array[String] = []
+	var on_burst: Callable = func() -> void: emitted.append("burst_started")
+	var on_land: Callable = func() -> void: emitted.append("coin_landed")
+	_reveal.burst_started.connect(on_burst)
+	_reveal.coin_landed.connect(on_land)
+	_reveal.play(false, Vector2.ZERO)
+	var after_play: String = ",".join(emitted)
+	_reveal.skip()
+	_reveal.skip()
+	_reveal.burst_started.disconnect(on_burst)
+	_reveal.coin_landed.disconnect(on_land)
+	assert_eq(after_play, "burst_started,coin_landed",
+		"play() under reduce_motion emits burst_started then coin_landed at once")
+	assert_eq(",".join(emitted), after_play, "skip() after the payout emits nothing more")
+
+
+## Review Minor 1: `claimed` goes out once per claim, however many paths
+## try to pay it.
+func test_pay_out_announces_a_claim_once() -> void:
+	var paid: Array[int] = []
+	var on_claimed: Callable = func(amount: int, _previous: int) -> void: paid.append(amount)
+	_panel.claimed.connect(on_claimed)
+	_panel._pending_amount = DailyLoginPanel.REWARD_CURVE[0]
+	_panel._pending_previous_money = 0
+	_panel._is_payout_pending = true
+	_panel._pay_out()
+	_panel._pay_out()
+	_panel.claimed.disconnect(on_claimed)
+	assert_eq(paid.size(), 1, "a held claim is announced exactly once")
+
+
+## Review Minor 4: a new claim moment pays a still-pending payout first
+## instead of overwriting it.
+func test_a_new_claim_moment_pays_the_pending_payout_first() -> void:
+	var panel: DailyLoginPanel = _lobby_panel()
+	if panel == null:
+		return
+	GameSettings.reduce_motion = true
+	var earlier: int = DailyLoginPanel.REWARD_CURVE[0]
+	var paid: Array[int] = []
+	var on_claimed: Callable = func(amount: int, _previous: int) -> void: paid.append(amount)
+	panel.claimed.connect(on_claimed)
+	panel._pending_amount = earlier
+	panel._pending_previous_money = 0
+	panel._is_payout_pending = true
+	panel._play_claim_moment(DailyLoginPanel.REWARD_CURVE[1], 2, 0)
+	panel.claimed.disconnect(on_claimed)
+	panel._is_payout_pending = false
+	assert_true(paid.size() >= 1 and paid[0] == earlier,
+		"the earlier claim is paid before the new one is held, got %s" % str(paid))
+	assert_eq(paid.count(earlier), 1, "the earlier claim is paid exactly once")
+
+
+## Review Minor 6: a zero loop duration typed in the Inspector must not
+## start an infinite zero-length loop; the loop is simply skipped.
+func test_a_zero_loop_duration_starts_no_loop() -> void:
+	var panel: DailyLoginPanel = _lobby_panel()
+	if panel == null:
+		return
+	GameSettings.reduce_motion = false
+	GameState.last_claim_date = _YESTERDAY
+	panel.refresh(_TODAY)
+	var saved_flicker: float = panel.flame_flicker_seconds
+	var saved_invite: float = panel.idle_invite_seconds
+	panel.flame_flicker_seconds = 0.0
+	panel.idle_invite_seconds = 0.0
+	panel._start_flicker()
+	panel._start_idle_invite()
+	var flicker: Tween = panel._flicker
+	var invite: Tween = panel._invite
+	panel._stop_flicker()
+	panel._stop_idle_invite()
+	panel.flame_flicker_seconds = saved_flicker
+	panel.idle_invite_seconds = saved_invite
+	assert_true(flicker == null, "a zero flame_flicker_seconds starts no flicker loop")
+	assert_true(invite == null, "a zero idle_invite_seconds starts no invite loop")
 
 
 func test_lobby_no_longer_owns_the_claim() -> void:

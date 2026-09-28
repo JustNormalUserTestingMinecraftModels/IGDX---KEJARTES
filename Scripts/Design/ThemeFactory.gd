@@ -2900,13 +2900,33 @@ static func _build_koperasi_chrome(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "PromoBadge", tokens.font_display)
 
+	# -- PromoOldPriceLabel: the struck list price beside PriceTagLabel's own
+	# (already-discounted) number. Fix round 1, 2026-09-28: CaptionLabel's
+	# text_secondary ink has no outline or opaque backing of its own -- tuned
+	# for paper, not the green pill (and grey PriceTagDisabled fill) it sits
+	# on. Same ink, outline colour and outline approach as PriceTagLabel "so
+	# it reads on the bright green rest pill, the dark green wipe and the
+	# grey disabled pill alike" -- just a caption size, since it plays second
+	# to the live price. --
+	theme.add_type("PromoOldPriceLabel")
+	theme.set_type_variation("PromoOldPriceLabel", "Label")
+	theme.set_font_size("font_size", "PromoOldPriceLabel", tokens.font_caption)
+	theme.set_color("font_color", "PromoOldPriceLabel", tokens.text_on_brand)
+	theme.set_constant("outline_size", "PromoOldPriceLabel",
+		maxi(2, tokens.text_outline_size / 2))
+	theme.set_color("font_outline_color", "PromoOldPriceLabel", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "PromoOldPriceLabel", tokens.font_display)
+
 	# -- PromoStrikeLine: the struck list-price's line. Flat -- a lip under
 	# a rule a few px tall would be invisible -- the one panel in this
-	# builder LippedBox does not touch. --
+	# builder LippedBox does not touch. Same ink as PromoOldPriceLabel's
+	# font_color (fix round 1) so the strike reads through the outlined
+	# glyphs instead of vanishing against them. --
 	theme.add_type("PromoStrikeLine")
 	theme.set_type_variation("PromoStrikeLine", "Panel")
 	var strike := StyleBoxFlat.new()
-	strike.bg_color = tokens.text_secondary
+	strike.bg_color = tokens.text_on_brand
 	theme.set_stylebox("panel", "PromoStrikeLine", strike)
 
 	# -- KasPill / TotalPillAwake: the footer's resting cream pills, no

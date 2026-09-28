@@ -56,7 +56,10 @@ func test_reduce_motion_holds_the_diorama_at_rest() -> void:
 ## The Lobby look's flat screens (spec 2026-09-28): one picture plane under
 ## World/Room, drifting against the UI. They carry a single depth, so they
 ## skip the three-band test but must pass the baked-offset and overscan tests.
-const FLAT_DIORAMAS := {}
+const FLAT_DIORAMAS := {
+	"res://Scenes/Koperasi/ShopHub.tscn": "World/Room",
+	"res://Scenes/Koperasi/CosmeticShop.tscn": "World/Room",
+}
 
 
 ## Every diorama the driver runs on, layered or flat.

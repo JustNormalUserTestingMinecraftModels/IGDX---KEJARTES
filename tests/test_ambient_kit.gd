@@ -21,6 +21,7 @@ const GLINT_MATERIAL := "res://Scripts/Shaders/glint_material.tres"
 const DESK_AMBIENCE := "res://Scenes/Look/DeskAmbience.tscn"
 const SUN_SHAFTS := "res://Scenes/Look/SunShafts.tscn"
 const MAIN_MENU := "res://Scenes/MainMenu/MainMenu.tscn"
+const Census := preload("res://tests/scene_census.gd")
 
 var _sandbox: SubViewport
 var _tint: MoodTint
@@ -525,44 +526,20 @@ const BUTTON_TYPES := ["Button", "TextureButton", "CheckButton", "CheckBox",
 ## Every node of `scene_path` in file (= tree) order: {path, type, instance,
 ## props}. `instance` is the instanced scene's path or "".
 func _census(scene_path: String) -> Array[Dictionary]:
-	var state := (load(scene_path) as PackedScene).get_state()
-	var out: Array[Dictionary] = []
-	for i in state.get_node_count():
-		var inst := state.get_node_instance(i)
-		var props := {}
-		for j in state.get_node_property_count(i):
-			props[str(state.get_node_property_name(i, j))] = state.get_node_property_value(i, j)
-		out.append({
-			"path": str(state.get_node_path(i)).trim_prefix("./"),
-			"type": str(state.get_node_type(i)),
-			"instance": inst.resource_path if inst != null else "",
-			"props": props,
-		})
-	return out
+	return Census.of(scene_path)
 
 
 func _entry(census: Array[Dictionary], path: String) -> Dictionary:
-	for e in census:
-		if e["path"] == path:
-			return e
-	return {}
+	return Census.entry(census, path)
 
 
 func _prop(entry: Dictionary, name: String, fallback: Variant = null) -> Variant:
-	return (entry.get("props", {}) as Dictionary).get(name, fallback)
+	return Census.prop(entry, name, fallback)
 
 
 ## Direct children of `parent` ("." for the root), in draw order.
 func _children_of(census: Array[Dictionary], parent: String) -> Array[String]:
-	var out: Array[String] = []
-	for e in census:
-		var p: String = e["path"]
-		if p == ".":
-			continue
-		var dad := "." if not p.contains("/") else p.get_base_dir()
-		if dad == parent:
-			out.append(p.get_file())
-	return out
+	return Census.children_of(census, parent)
 
 
 ## A world screen: `World` is a CanvasLayer at -1 holding the backdrop and

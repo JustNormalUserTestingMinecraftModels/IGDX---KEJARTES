@@ -251,6 +251,8 @@ const BACKDROPS := {
 	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background"],
 	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background"],
 	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["FieldBG"],
+	"res://Scenes/Koperasi/ShopHub.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/Koperasi/CosmeticShop.tscn": ["World/Room/Backdrop"],
 }
 
 

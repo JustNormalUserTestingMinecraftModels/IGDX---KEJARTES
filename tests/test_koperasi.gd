@@ -94,6 +94,24 @@ func test_promo_board_reads_gamestate() -> void:
 	assert_true(src.contains("GameState.shop_promo_percent"), "and its discount")
 	assert_true(src.contains("Engine.is_editor_hint()"), "its live fill is editor-gated")
 
+## PromoBoard is a Stage child, so its own _ready() runs BEFORE Stage's --
+## children ready before their parent -- and Stage's _ready() is what rolls
+## the shelf (and with it shop_promo_item/percent). PromoBoard's own arrival
+## is correct only because Koperasi.gd's _ready() nudges it again with
+## promo_board.refresh() after Stage has finished, or a fresh shelf's promo
+## would never reach the board. Pinned as a source scan: the runner cannot
+## await a frame to prove Stage really has rolled by then.
+func test_koperasi_ready_refreshes_the_promo_board_after_the_shelf_rolls() -> void:
+	var src: String = _source()
+	var at: int = src.find("func _ready():")
+	assert_true(at != -1, "Koperasi.gd must have a _ready()")
+	if at == -1:
+		return
+	var next_func: int = src.find("\nfunc ", at + 1)
+	var body: String = src.substr(at, next_func - at)
+	assert_true(body.contains("promo_board.refresh()"),
+		"_ready() must refresh PromoBoard after Stage rolls the shelf")
+
 ## Control siblings under the same parent draw in scene-declaration order --
 ## later wins. Pak Herman's ChatBubble must draw OVER the top band, not
 ## under it, or a shown line gets clipped by Signboard/PromoBoard (fix
@@ -152,6 +170,8 @@ func test_a_promo_tag_shows_the_list_price_and_badge() -> void:
 	assert_eq(tag.get_badge_text(), "-20%", "the badge names the percent")
 	tag.clear_promo()
 	assert_false(tag.is_promo(), "a normal tag drops the promo dress")
+	assert_false(tag.get_node("Row/OldPrice").visible, "clear_promo() hides the struck price")
+	assert_false(tag.get_node("Row/PromoBadge").visible, "and the badge")
 	tag.free()
 
 func test_the_shelf_dresses_only_the_promo_item() -> void:

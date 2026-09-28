@@ -520,7 +520,8 @@ func test_each_card_fills_its_container() -> void:
 func test_the_card_bands_do_not_overlap() -> void:
 	var card := _list.get_node_or_null("CardContainer/Murid1") as Control
 	assert_true(card != null, "missing Murid1")
-	var bands := ["PortraitFrame", "TraitRow", "StickyNotesContainer", "CatatanGuru"]
+	# WeekHeader (MURIDMU Task 3) sits between the chips and the notes.
+	var bands := ["PortraitFrame", "TraitRow", "WeekHeader", "StickyNotesContainer", "CatatanGuru"]
 	var prev_bottom := 0.0
 	for name in bands:
 		var band := card.get_node_or_null(name) as Control
@@ -647,15 +648,26 @@ func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
 ## separate sibling node, so every card animation left it behind. The
 ## Card variation's stylebox carries its own shadow, which means the
 ## shadow is part of the card and cannot be left behind by anything.
+##
+## Since MURIDMU Task 3 the Sheet sits inside the card's inner Paper node
+## (with the breath's LiftShadow under it), so the idle breath can scale
+## the surface without touching the card root the carousel moves. Paper is
+## the card's first child, so the Sheet still draws behind every band.
 func test_each_card_surface_is_an_opaque_themed_panel() -> void:
 	for i in range(1, 5):
+		var paper := _list.get_node_or_null(
+			"CardContainer/Murid%d/Paper" % i) as Control
+		assert_true(paper != null, "missing Paper on Murid%d" % i)
+		if paper != null:
+			assert_eq(paper.get_index(), 0,
+				"Murid%d's Paper must draw behind every other band" % i)
 		var sheet := _list.get_node_or_null(
-			"CardContainer/Murid%d/Sheet" % i) as Panel
-		assert_true(sheet != null, "missing Sheet panel on Murid%d" % i)
+			"CardContainer/Murid%d/Paper/Sheet" % i) as Panel
+		assert_true(sheet != null, "missing Paper/Sheet panel on Murid%d" % i)
 		assert_eq(sheet.theme_type_variation, &"Card",
 			"Murid%d's Sheet must use the Card variation" % i)
-		assert_eq(sheet.get_index(), 0,
-			"Murid%d's Sheet must draw behind every other band" % i)
+		assert_eq(sheet.get_index(), sheet.get_parent().get_child_count() - 1,
+			"Murid%d's Sheet must draw over its lift shadow, as Paper's last child" % i)
 		assert_eq(sheet.anchor_right, 1.0,
 			"Murid%d's Sheet must span the full card width" % i)
 		assert_eq(sheet.anchor_bottom, 1.0,

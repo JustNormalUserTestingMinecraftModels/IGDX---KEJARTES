@@ -66,3 +66,26 @@ func test_the_arrow_keeps_a_dark_outline() -> void:
 			if p.a > 0.9:
 				darkest = minf(darkest, p.get_luminance())
 	assert_true(darkest < 0.3, "an opaque pixel is dark (outline): darkest luminance %.2f" % darkest)
+
+
+# ─── the template
+
+func test_the_note_template_carries_the_arrow() -> void:
+	var note := load(NOTE_SCENE_PATH).instantiate() as Control
+	track(note)
+	assert_true(note != null, "MenariNote.tscn's root is a Control")
+	var arrow := note.get_node_or_null("Arrow") as TextureRect
+	assert_true(arrow != null, "it has an Arrow TextureRect child")
+	assert_eq(arrow.texture.resource_path, ARROW_PATH, "wearing note_arrow.png")
+	assert_eq(arrow.anchor_right, 1.0, "Arrow fills the note horizontally")
+	assert_eq(arrow.anchor_bottom, 1.0, "and vertically")
+	assert_eq(arrow.expand_mode, TextureRect.EXPAND_IGNORE_SIZE, "so it scales with the note")
+	assert_eq(arrow.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "without squashing")
+
+
+## Swipes are read in _input(), never by the GUI, so a note must not eat them.
+func test_the_note_ignores_the_mouse() -> void:
+	var note := load(NOTE_SCENE_PATH).instantiate() as Control
+	track(note)
+	assert_eq(note.mouse_filter, Control.MOUSE_FILTER_IGNORE, "root ignores the mouse")
+	assert_eq((note.get_node("Arrow") as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE, "Arrow too")

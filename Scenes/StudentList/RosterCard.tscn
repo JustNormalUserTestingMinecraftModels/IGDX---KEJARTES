@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://bg1373ll7wros" path="res://Assets/Images/UI/StudentList/catatan_rule.png" id="7_gvl25"]
 [ext_resource type="Texture2D" uid="uid://doukswphj0tcw" path="res://Assets/Images/UI/StudentList/torn_band.svg" id="8_tband"]
 [ext_resource type="Texture2D" uid="uid://dxj8mevvvwfyp" path="res://Assets/Images/UI/StudentList/icon_calendar.svg" id="9_calen"]
-[ext_resource type="PackedScene" path="res://Scenes/StudentList/TallyDot.tscn" id="10_tdot"]
+[ext_resource type="PackedScene" uid="uid://d0nycpsrqmf7i" path="res://Scenes/StudentList/TallyDot.tscn" id="10_tdot"]
 [ext_resource type="Texture2D" uid="uid://bfimm3qodcayo" path="res://Assets/Images/UI/StudentList/paperclip.svg" id="11_clip"]
 [ext_resource type="Texture2D" uid="uid://b7wb4id48bymj" path="res://Assets/Images/UI/StudentList/pencil.svg" id="12_penc"]
 
@@ -22,7 +22,7 @@ script = ExtResource("2_dawm1")
 
 [node name="Paper" type="Control" parent="." unique_id=1454951533]
 unique_name_in_owner = true
-layout_mode = 0
+anchors_preset = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2

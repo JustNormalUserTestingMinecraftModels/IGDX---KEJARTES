@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://d0nycpsrqmf7i"]
 
-[ext_resource type="Script" path="res://Scripts/StudentList/TallyDot.gd" id="1_tally"]
+[ext_resource type="Script" uid="uid://bcl7et428mptn" path="res://Scripts/StudentList/TallyDot.gd" id="1_tally"]
 
 [node name="TallyDot" type="Panel" unique_id=917033028]
 custom_minimum_size = Vector2(24, 24)

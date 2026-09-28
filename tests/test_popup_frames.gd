@@ -22,6 +22,9 @@ const CLOSE_GLYPH := "✕"
 ## scene -> [frame node path, kind, fit]. The roster must never be empty;
 ## Task 2 adds the first rows.
 const POPUPS := {
+	"res://Scenes/UI/StatDetailPopup.tscn": ["Scrim/Safe/Center/Frame", "dialog", "safe"],
+	"res://Scenes/UI/TraitDetailPopup.tscn": ["Scrim/Safe/Center/Frame", "dialog", "safe"],
+	"res://Scenes/UI/WeekRecapPillInfoPopup.tscn": ["Scrim/Safe/Center/Frame", "dialog", "safe"],
 }
 
 ## scene -> the script that wires its frame's close, when that is the

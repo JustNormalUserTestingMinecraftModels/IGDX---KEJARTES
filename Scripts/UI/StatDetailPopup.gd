@@ -31,15 +31,14 @@ signal closed
 @export var scrim_fade_out_seconds: float = 0.22
 
 @onready var scrim: ColorRect = $Scrim
-@onready var card: PanelContainer = $Scrim/Card
-@onready var icon_rect: TextureRect = $Scrim/Card/Layout/Header/Row/IconRect
-@onready var glyph_label: Label = $Scrim/Card/Layout/Header/Row/GlyphLabel
-@onready var category_label: Label = $Scrim/Card/Layout/Header/Row/Titles/CategoryLabel
-@onready var name_label: Label = $Scrim/Card/Layout/Header/Row/Titles/NameLabel
-@onready var close_button: Button = $Scrim/Card/Layout/Header/Row/CloseButton
-@onready var value_label: Label = $Scrim/Card/Layout/Body/BodyLayout/ValueLabel
-@onready var bar: StatBar = $Scrim/Card/Layout/Body/BodyLayout/Bar
-@onready var description_label: Label = $Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel
+@onready var card: NotebookFrame = $Scrim/Safe/Center/Frame
+@onready var icon_rect: TextureRect = $Scrim/Safe/Center/Frame/Layout/Header/Row/IconRect
+@onready var glyph_label: Label = $Scrim/Safe/Center/Frame/Layout/Header/Row/GlyphLabel
+@onready var category_label: Label = $Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/CategoryLabel
+@onready var name_label: Label = $Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/NameLabel
+@onready var value_label: Label = $Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/ValueLabel
+@onready var bar: StatBar = $Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/Bar
+@onready var description_label: Label = $Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/DescriptionLabel
 
 ## Guards against a double close: the exit tween and the scrim tap can both
 ## fire, and freeing twice crashes.
@@ -53,7 +52,7 @@ func _ready() -> void:
 	# the same frame and immediately close what it just opened. open()
 	# re-enables input once the reveal finishes.
 	scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	close_button.pressed.connect(close)
+	card.close_pressed.connect(close)
 	scrim.gui_input.connect(_on_scrim_input)
 
 
@@ -117,10 +116,6 @@ func open() -> void:
 	await get_tree().process_frame
 	if not is_instance_valid(card):
 		return
-	var vp: Vector2 = get_viewport().get_visible_rect().size
-	card.position = Vector2(
-		(vp.x - card.size.x) * 0.5,
-		vp.y - card.size.y - float(DesignTokens.load_default().space_md))
 	Juice.pop_in(card)
 	var tw := create_tween()
 	tw.set_trans(Tween.TRANS_LINEAR)

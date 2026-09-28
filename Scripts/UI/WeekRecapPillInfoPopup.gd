@@ -7,7 +7,7 @@ extends CanvasLayer
 ## section 3.3).
 ##
 ## Structurally a smaller sibling of Scenes/UI/StatDetailPopup.tscn: same
-## scrim+card shell, same tap-anywhere-on-scrim-to-close behaviour, same
+## scrim + notebook dialog shell, same tap-anywhere-on-scrim-to-close behaviour, same
 ## open()/close() timing shape. No StatBar and no numeric value line --
 ## unlike a student's stat, a pill has no 0-100 value to visualize, just
 ## an icon, a title, and one sentence of explanation.
@@ -33,11 +33,10 @@ signal closed
 @export var scrim_fade_out_seconds: float = 0.22
 
 @onready var scrim: ColorRect = $Scrim
-@onready var card: PanelContainer = $Scrim/Card
-@onready var icon_rect: TextureRect = $Scrim/Card/Layout/Header/IconRect
-@onready var title_label: Label = $Scrim/Card/Layout/Header/TitleLabel
-@onready var close_button: Button = $Scrim/Card/Layout/Header/CloseButton
-@onready var body_label: Label = $Scrim/Card/Layout/BodyLabel
+@onready var card: NotebookFrame = $Scrim/Safe/Center/Frame
+@onready var icon_rect: TextureRect = $Scrim/Safe/Center/Frame/Layout/Header/IconRect
+@onready var title_label: Label = $Scrim/Safe/Center/Frame/Layout/Header/TitleLabel
+@onready var body_label: Label = $Scrim/Safe/Center/Frame/Layout/BodyLabel
 
 ## Guards against a double close: the exit tween and the scrim tap can
 ## both fire, and freeing twice crashes.
@@ -46,7 +45,7 @@ var _is_closing: bool = false
 
 func _ready() -> void:
 	scrim.color = _scrim_color(0.0)
-	close_button.pressed.connect(close)
+	card.close_pressed.connect(close)
 	scrim.gui_input.connect(_on_scrim_input)
 
 
@@ -76,10 +75,6 @@ func open() -> void:
 	await get_tree().process_frame
 	if not is_instance_valid(card):
 		return
-	var vp: Vector2 = get_viewport().get_visible_rect().size
-	card.position = Vector2(
-		(vp.x - card.size.x) * 0.5,
-		vp.y - card.size.y - float(DesignTokens.load_default().space_md))
 	Juice.pop_in(card)
 	var tw := create_tween()
 	tw.set_trans(Tween.TRANS_LINEAR)

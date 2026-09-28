@@ -52,17 +52,21 @@ func suite_name() -> String:
 var _lobby: Control
 
 
-func setup() -> void:
+## One Lobby for the whole suite, not one per test: the runner gives no
+## frame between tests, so 33 fresh Lobbies flooded the editor's message
+## queue with deferred layout calls and crashed a full run. Every test
+## here only reads it, bar one that puts its label back. Not tracked;
+## suite_teardown frees it.
+func suite_setup(_ctx: Dictionary) -> void:
 	var scene: PackedScene = load(_SCENE_PATH)
 	_lobby = scene.instantiate()
 	_lobby.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(_lobby)
-	track(_lobby)
 
 
-func teardown() -> void:
+func suite_teardown() -> void:
 	if is_instance_valid(_lobby):
-		_lobby.queue_free()
+		_lobby.free()
 	_lobby = null
 
 
@@ -445,8 +449,10 @@ func test_the_peak_reward_fits_its_row() -> void:
 	assert_eq(row.get_parent(), panel, "RewardRow sits directly on the panel")
 	assert_eq(coin.get_parent(), row, "the coin lives in the reward row")
 	assert_eq(amount.get_parent(), row, "the amount lives in the reward row")
+	var shown: String = amount.text
 	amount.text = "400G"
 	var row_right: float = row.offset_left + row.get_combined_minimum_size().x
+	amount.text = shown
 	assert_true(row_right <= panel.size.x,
 		"with 400G the row ends at %f, past the panel's %f width" % [row_right, panel.size.x])
 

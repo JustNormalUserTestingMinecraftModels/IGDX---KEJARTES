@@ -24,7 +24,8 @@ the day.
 **Generated placeholder art.** Produced with PowerShell + `System.Drawing`, not
 hand-authored. All are transparent PNG/SVG, drop-replaceable at the same path
 with no code change: the five generated `Assets/Images/UI/Nav/` icons
-(**not** `UI/Nav/return_button.png`, which is authored art delivered
+(now unreferenced -- see the UI depth pass entry below; **not**
+`UI/Nav/return_button.png`, which is authored art delivered
 2026-09-22 — do not regenerate that one over the top of it),
 three `Particles/particle_*.png`, the minigame
 result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
@@ -62,10 +63,9 @@ stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
 those exact dimensions; in Godot 4 the repeat comes from the node's
 `texture_repeat`, not a texture import flag), and the 2026-09-10 StudentList
 Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
-(completed the six-category placeholder set; now UNREFERENCED -- StudentList's
-category and specialty glyphs use the team's authored `StudentCard/stat_*`
-art instead, so this is kept only as the one wirausaha glyph in the
-placeholder family), `UI/Placeholders/stamp_sudah.svg` /
+(completed the six-category placeholder set; now UNREFERENCED -- its last
+caller, Dapatkan Uang's tip, moved onto `UI/Icons/cat_wirausaha.svg` in UI
+depth pass Phase 3), `UI/Placeholders/stamp_sudah.svg` /
 `stamp_belum.svg` (status-badge rubber-stamp rings), and
 `UI/StudentList/photo_corner.png` / `roster_avatar_frame.png` / `catatan_rule.png`
 (portrait tape, the avatar state ring, the teacher's-note rule — the last two
@@ -128,11 +128,6 @@ the existing `icon_check.svg` from the same folder, no new asset needed.
 Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to
 alpha, colour un-premultiplied, cropped -- not exported transparent; swap in a
 real transparent export at the same path when one exists.
-`DayStickyNote`'s holiday padlock (`Paper/Lock`) is still the emoji glyph
-"🔒" in a `Label`, against the no-emoji-iconography rule; swap it for a
-`TextureRect` wearing the existing `UI/Placeholders/icon_lock.svg` (a type
-change, so delete and recreate, and move `test_day_sticky_note`'s `Lock`
-assertions off `Label`).
 `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in for final art
 (`WinStage`'s `lose_backdrop` `@export`, so an Inspector swap). `InventorySlot`'s high-count
 `Shine` overlay is a plain white `ColorRect` with no texture.
@@ -144,9 +139,8 @@ back are painted in by that script, and the seal is lifted off with a 2 px
 paint-out. Separate layers from the artist would replace all four at the same
 paths (and the script's traced polygons would retire). Still placeholder: the
 white `pupil_head.svg`, `week_cell.svg` and `gauge_pill.svg` in
-`Assets/Images/LevelSelect/`, tinted from tokens, and the fan's arrows reuse
-`UI/Placeholders/arrow.png`. The envelopes wear no illustration grade; adding
-one means the census in `tests/test_illustration_ao.gd` and a rim along the
+`Assets/Images/LevelSelect/`, tinted from tokens. The envelopes wear no
+illustration grade; adding one means the census in `tests/test_illustration_ao.gd` and a rim along the
 flap's crease to judge.
 
 **Ambient kit art (2026-09-26).** `AmbientParticles`' `DAUN` preset and
@@ -387,6 +381,9 @@ StudentList still pins each note at runtime.
 falls back to `info["glyph"]` from `StatInfo`, and those glyphs are emoji, which
 the ban in `## Conventions` forbids. The trait popup was fixed the same way on
 2026-09-09 — real textures plus a display-font heading; this wants the same.
+Every current caller passes artwork, so the fallback never shows today; it is
+one of the two reviewed exceptions in `tests/test_ui_text_glyphs.gd`'s
+`ALLOWED`, and fixing it means removing that entry too.
 
 **Boohong draws some punctuation as quote marks, and lacks more (found
 2026-09-15).** `Assets/Fonts/Boohong.otf`'s cmap sends `‹`, `›` and `‚` to its
@@ -397,29 +394,6 @@ desktop and Android alike, until the chevron became a texture — now the shared
 `•`, `…`, `—`, `←` or `→` at all; those fall back to whatever system font the
 device picks. Buttons, titles and headings wear Boohong, so keep such
 characters out of their text, and draw an arrow or chevron as a real texture.
-
-**SchoolDay still puts emoji in display text (swept 2026-09-22).** CLAUDE.md's
-`## Conventions` bans emoji as UI iconography and says to use real transparent
-textures instead, so these want an art pass, not a deletion. The back-button
-pass fixed two of them -- `SchoolDay.tscn:105`'s back arrow became the shared
-`UI/Nav/return_button.png`, and `SchoolDay.gd`'s "Minggu selesai!" lost its
-party popper -- and left the rest, because six strings is a real pass:
-
-| Where | Glyph |
-|---|---|
-| `SchoolDay.gd:78` `end_tutorial_title` (an `@export` default) | graduation cap |
-| `SchoolDay.gd:80` `end_tutorial_text` (an `@export` default) | dart, and an arrow twice |
-| `SchoolDay.gd:437` -> `status_label` | check mark |
-| `SchoolDay.gd:959` -> `status_label` | herb |
-| `SchoolDay.tscn:95` `ClickToContinueLabel` | sparkles, arrow |
-| `SchoolDay.tscn:113` `SkipButton` | next-track |
-
-Two traps for whoever takes this. The first two are **`@export` defaults**, so
-per CLAUDE.md a changed default needs a **full editor restart** before it takes
-effect -- `load_default()` keeps serving the cached instance. And the
-emoji at `SchoolDay.gd:537-538` and `:628-655` are **not** display text: they
-are icon keys that `_add_pill()` strips at `:660-682` and swaps for a texture.
-Leave those alone.
 
 **Stock art still to replace (2026-09-22).** `pngwing.com (1).png` went
 with the back-button pass, which was a licensing tidy-up as well as a
@@ -461,9 +435,7 @@ retires the `TextureRect.new()` among the file's six `viewport_editability`
 BASELINE counts.
 
 **Loose ends from the event-cards pass (2026-09-12).**
-SchoolDay's `_add_pill()` schedule-pill builder uses 📚/⚽/🎨 as internal
-markers in label text before stripping them -- emoji in source, and
-brittle. `EventStudentCard.set_preview()` never passes `preview_stat()`'s
+`EventStudentCard.set_preview()` never passes `preview_stat()`'s
 `capped` argument, so the event picker's gain preview has no MAKS cap where
 `ApplyStudentRow.set_preview()`'s does. And `test_bar_contrast.gd`,
 `test_light_ground_text.gd` and `test_event_warning.gd` each carry their own
@@ -493,28 +465,48 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
-**UI depth pass, Phases 2–3 (2026-09-28).** Phase 1 made every button
-lipped and shipped `NotebookFrame` and the placeholder icons. Phase 2 moved
-every popup into the frame (2026-09-28, `docs/superpowers/CHANGELOG.md`);
-Phase 3 is the screen-by-screen icon and role pass, the Lobby tiles' icons
-included. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
+**UI depth pass, leftovers (2026-09-28, Phase 3 2026-09-29).** All three
+phases have shipped (`docs/superpowers/CHANGELOG.md`); these are what they
+left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
 
-- **Password/Variabel's `Hapus` wears `LobbyCtaButton`** (now mint, and it
-  ticks) though it is a delete action (Phase 3 role pass).
-- **Two assets are now unreferenced** (Phase 2 moved their callers onto
-  `NotebookFrame`): `Assets/Images/UI/notice.png` and
-  `Assets/Images/UI/penjadwalan_card_bg.png`. Grepped clean against
-  `Scenes/` and `Scripts/` on 2026-09-28; not yet deleted.
+- **Art no scene or script uses any more**, not yet deleted. Grepped by
+  path and by uid against `Scenes/`, `Scripts/` and `tests/` on 2026-09-29:
+  - Phase 2 (callers moved onto `NotebookFrame`):
+    `Assets/Images/UI/notice.png`, `Assets/Images/UI/penjadwalan_card_bg.png`.
+  - Phase 3 (callers moved onto `UI/Icons/`): the five Lobby tile icons
+    `UI/Nav/icon_cta_student.png`, `icon_cta_jadwal.png`,
+    `icon_nav_koperasi.png`, `icon_nav_inventory.png`, `icon_nav_rapor.png`
+    (named only in `test_lobby_tile_icons`'s `RETIRED` list, which asserts
+    the Lobby no longer points at them); `UI/icon_exit.svg`;
+    `UI/Nav/icon_chevron_left.png` / `icon_chevron_right.png`; and
+    `UI/Placeholders/icon_wirausaha.svg`.
+  - Phase 3, game-unreferenced only: `AturJadwal/icon_istirahat_placeholder.png`
+    and `icon_wirausaha_placeholder.png`. No scene or game script uses them,
+    but their generator `Scripts/Design/GenerateStickyNoteIcons.gd` writes
+    them and `tests/test_sticky_note_assets.gd` checks they exist, so
+    deleting them means trimming both (the generator's third output,
+    `icon_libur_nasional_placeholder.png`, is still the holiday icon).
+  - Keep `UI/Nav/return_button.png` (every Back) and
+    `UI/Placeholders/arrow.png` (`TutorialArrow.gd`, `test_texture_mipmaps`).
+- **`setting.png` has no `Icons/` counterpart yet.** MainMenu's
+  `SettingButton` and the Lobby rail's gear still wear
+  `Assets/Images/UI/setting.png`; the rail's four icons were left as finished
+  art on purpose, so a gear in the chunky set is the owner's call.
 - **Three screens still build their tutorial panel at runtime**, not from
   `Scenes/UI/TutorialPanel.tscn`, so Phase 2 did not move them into the
   frame: `Scripts/AturJadwal/AturJadwal.gd`, `Scripts/Lobby/Lobby.gd` and
   `Scripts/StudentList/StudentList.gd` each build their own
-  `_tutorial_panel: PanelContainer` in code (Phase 3 or a follow-up).
-- **Phase 2 review minors, deferred:**
+  `_tutorial_panel: PanelContainer` in code (a follow-up; Phase 3 did not
+  take it).
+- **Review minors, deferred:**
   - Nothing pins `NotebookFrame`'s Chrome/Close control to a 96px touch
-    target (a geometry test would catch a future regression).
+    target (a geometry test would catch a future regression). (Phase 2)
   - The Peringatan label/buttons test is now a sibling-order check only,
-    weaker than the old overlap check it replaced.
+    weaker than the old overlap check it replaced. (Phase 2)
+  - `tests/test_paging_arrows.gd` pins each arrow's `Arrow` child's texture,
+    rotation and mouse filter, but not its `expand_mode`, `stretch_mode` or
+    24 px inset, so a chevron shrunk back to its source size would pass.
+    (Phase 3)
 - **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
   Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
   SDK is wired. Debug builds only: a release build keeps the Lobby's `+`

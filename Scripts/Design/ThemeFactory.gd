@@ -2563,10 +2563,12 @@ static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	_thicken_lip(theme, "NavTileRapor", LOBBY_HUD_LIP)
 
 	# -- PlusButton: green, never gold -- a gold + would read as an IAP
-	# button (spec 3.2; test_scrapbook_plus_and_hero_are_green). Square. --
+	# button (spec 3.2; test_scrapbook_plus_and_hero_are_green). Square in
+	# its authored 96x96 node, with the house radius_button corners
+	# (test_button_geometry's one-fixed-radius rule). --
 	_add_button_variation(theme, tokens, "PlusButton",
 		tokens.state_success, tokens.state_success.darkened(0.25),
-		tokens.outline_card, tokens.text_on_brand, 0)
+		tokens.outline_card, tokens.text_on_brand)
 
 	# -- ChevronGripButton: the swipe handle. Texture only, every state --
 	# no text and no font (it carries no label). --

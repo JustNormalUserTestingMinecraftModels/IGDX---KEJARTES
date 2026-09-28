@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Button Press Feel</title>
+<style>body{margin:0;padding:24px 16px;background:#1f1f1f;color:#eee;font-family:'Open Sans',sans-serif}h2{margin:0 0 6px;font-size:22px}.subtitle{color:#aaa;margin:0 0 20px;font-size:14px;max-width:960px}.col{background:#2a2a2a;border-radius:14px}</style></head><body><style>
+@import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:wght@600;700&display=swap');
+.cols{display:flex;gap:22px;flex-wrap:wrap}
+.col.option{display:block;width:300px;padding:14px}
+.stage{background:#6B4026;border-radius:20px;padding:26px 18px 30px;display:flex;flex-direction:column;gap:22px;align-items:stretch;
+ background-image:linear-gradient(#8A5634,#6B4026)}
+.cap{font:600 13px 'Open Sans';color:#bbb;margin:12px 2px 0;line-height:1.45}.cap b{color:#fff}
+.try{font:700 12px 'Open Sans';color:#FFE07A;text-align:center;margin-bottom:-8px;letter-spacing:.5px}
+.row2{display:flex;gap:12px}.row2 .b{flex:1}
+
+/* the button: face + lip; --lip-h is how tall the lip is */
+.b{--lip-h:7px;position:relative;user-select:none;-webkit-user-select:none;cursor:pointer;touch-action:manipulation;
+ display:flex;align-items:center;justify-content:center;padding:14px 10px;border-radius:16px;
+ font:24px 'Lilita One';color:#fff;letter-spacing:.5px;
+ text-shadow:-2px -2px 0 var(--lip),2px -2px 0 var(--lip),-2px 2px 0 var(--lip),2px 2px 0 var(--lip),0 3px 0 var(--lip);
+ background:linear-gradient(var(--top),var(--base) 55%);
+ box-shadow:0 var(--lip-h) 0 var(--lip),0 calc(var(--lip-h) + 4px) 10px rgba(40,20,5,.4);
+ transform-origin:50% 100%}
+.b::before{content:"";position:absolute;left:8px;right:8px;top:4px;height:34%;border-radius:10px;background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.08));pointer-events:none}
+.b span{position:relative;pointer-events:none}
+.b.small{font-size:17px;padding:11px 6px}
+.gold{--top:#FFE07A;--base:#FFC93C;--lip:#C9801A}
+.mint{--top:#6BE3BB;--base:#2EC99A;--lip:#178A68}
+.cream{--top:#FFFFFF;--base:#FFF1DC;--lip:#C9A57E;color:#7A4A2B;text-shadow:0 2px 0 rgba(255,255,255,.9)}
+.tomato{--top:#F58A72;--base:#E5553E;--lip:#A3301E}
+
+/* A: shrink (today's Juice.press / release) */
+.fx-shrink{transition:transform .06s ease-out}
+.fx-shrink.down{transform:scale(.94)}
+.fx-shrink.up{animation:shrinkUp .22s cubic-bezier(.34,1.8,.64,1)}
+@keyframes shrinkUp{from{transform:scale(.94)}to{transform:scale(1)}}
+
+/* B: sink onto the lip */
+.fx-sink{transition:transform .05s ease-out,box-shadow .05s ease-out}
+.fx-sink.down{transform:translateY(var(--lip-h));box-shadow:0 0 0 var(--lip),0 2px 4px rgba(40,20,5,.35)}
+.fx-sink.up{animation:sinkUp .24s cubic-bezier(.3,1.6,.6,1)}
+@keyframes sinkUp{0%{transform:translateY(var(--lip-h))}100%{transform:translateY(0)}}
+
+/* C: sink + jelly (squash on press, stretch-wobble on release) */
+.fx-jelly{transition:transform .05s ease-out,box-shadow .05s ease-out}
+.fx-jelly.down{transform:translateY(var(--lip-h)) scale(1.04,.92);box-shadow:0 0 0 var(--lip),0 2px 4px rgba(40,20,5,.35)}
+.fx-jelly.up{animation:jellyUp .42s ease-out}
+@keyframes jellyUp{0%{transform:translateY(var(--lip-h)) scale(1.04,.92)}30%{transform:translateY(-3px) scale(.95,1.07)}55%{transform:translateY(0) scale(1.03,.97)}78%{transform:scale(.99,1.01)}100%{transform:none}}
+
+.log{font:600 12px 'Open Sans';color:#8fd;min-height:18px;text-align:center}
+</style>
+
+<h2>How should a button feel when you press it?</h2>
+<p class="subtitle"><b>Press and hold each button, then let go.</b> All three use the new lipped buttons; only the motion differs. On a phone, a tap sound and (optionally) a tiny vibration would come with it; those are the next question.</p>
+
+<div class="cols">
+ <div class="col option" data-choice="shrink">
+  <div class="stage">
+   <div class="try">PRESS ME</div>
+   <div class="b gold fx-shrink"><span>JADWAL!</span></div>
+   <div class="row2"><div class="b cream small fx-shrink"><span>KOPERASI</span></div><div class="b mint small fx-shrink"><span>LANJUT</span></div></div>
+   <div class="b tomato small fx-shrink" style="width:52px;height:52px;padding:0;border-radius:50%;align-self:center"><span>✕</span></div>
+  </div>
+  <p class="cap"><b>A · Shrink (today).</b> The whole button scales to 94% and springs back with a small overshoot. The lip shrinks with it, so the depth never changes; it feels like pinching a sticker.</p>
+ </div>
+
+ <div class="col option" data-choice="sink">
+  <div class="stage">
+   <div class="try">PRESS ME</div>
+   <div class="b gold fx-sink"><span>JADWAL!</span></div>
+   <div class="row2"><div class="b cream small fx-sink"><span>KOPERASI</span></div><div class="b mint small fx-sink"><span>LANJUT</span></div></div>
+   <div class="b tomato small fx-sink" style="width:52px;height:52px;padding:0;border-radius:50%;align-self:center"><span>✕</span></div>
+  </div>
+  <p class="cap"><b>B · Sink onto the lip.</b> The face drops straight down until the lip disappears, like pushing a real key, then pops back up with a tiny overshoot. Crisp and physical, and the standard in games like your references. Readable at any speed of tapping.</p>
+ </div>
+
+ <div class="col option" data-choice="jelly">
+  <div class="stage">
+   <div class="try">PRESS ME</div>
+   <div class="b gold fx-jelly"><span>JADWAL!</span></div>
+   <div class="row2"><div class="b cream small fx-jelly"><span>KOPERASI</span></div><div class="b mint small fx-jelly"><span>LANJUT</span></div></div>
+   <div class="b tomato small fx-jelly" style="width:52px;height:52px;padding:0;border-radius:50%;align-self:center"><span>✕</span></div>
+  </div>
+  <p class="cap"><b>C · Sink + jelly.</b> The same sink, plus a squash while held and a springy wobble on release. The most playful and "juicy", but it takes about 0.4 s to settle, so fast repeated taps (the shop, the scheduler) can feel busy.</p>
+ </div>
+</div>
+
+<script>
+document.querySelectorAll('.b').forEach(b=>{
+  const down=e=>{e.stopPropagation();b.classList.remove('up');b.classList.add('down')};
+  const up=e=>{if(!b.classList.contains('down'))return;e&&e.stopPropagation();b.classList.remove('down');void b.offsetWidth;b.classList.add('up')};
+  b.addEventListener('pointerdown',down);
+  b.addEventListener('pointerup',up);
+  b.addEventListener('pointerleave',up);
+  b.addEventListener('click',e=>e.stopPropagation());
+  b.addEventListener('animationend',()=>b.classList.remove('up'));
+});
+</script>
+</body></html>

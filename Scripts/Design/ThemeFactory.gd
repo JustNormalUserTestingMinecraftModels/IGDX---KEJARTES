@@ -17,6 +17,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	theme.default_font_size = tokens.font_body_size
 
 	_build_buttons(theme, tokens)
+	_build_notebook(theme, tokens)
 	_build_panels(theme, tokens)
 	_build_labels(theme, tokens)
 	_build_progress(theme, tokens)
@@ -1272,24 +1273,24 @@ static func _add_ghost_button(theme: Theme, tokens: DesignTokens) -> void:
 # ---------------------------------------------------------------- buttons
 
 static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
-	# The Lobby's STUDENT/JADWAL look (2026-09-14 lobby-style-buttons spec):
-	# every framed action button wears it, whatever its role name says.
-	for role in ["PrimaryButton", "SecondaryButton", "DangerButton", "SuccessButton"]:
-		_add_lobby_button(theme, tokens, role)
+	# Every framed action button is lipped and coloured by its role
+	# (2026-09-28 UI depth pass): mint is the main action, tomato is danger,
+	# brown is neutral.
+	_add_button_variation(theme, tokens, "PrimaryButton", tokens.accent_mint, tokens.accent_mint_lip)
+	_add_button_variation(theme, tokens, "SuccessButton", tokens.accent_mint, tokens.accent_mint_lip)
+	_add_lobby_button(theme, tokens, "SecondaryButton")
+	_add_button_variation(theme, tokens, "DangerButton", tokens.accent_tomato, tokens.accent_tomato_lip)
 
-	# StudentCard keeps the cream secondary look it had before that pass...
+	# StudentCard keeps its cream secondary look...
 	_add_button_variation(theme, tokens, "StudentCardSecondaryButton",
-		tokens.surface_card, tokens.surface_sunken,
-		tokens.brand_primary, tokens.brand_primary)
+		tokens.button_cream, tokens.button_cream_lip)
 
 	# ...and StudentList's BELUM/SUDAH badges keep their colour, which is the
 	# information they carry.
 	_add_button_variation(theme, tokens, "RosterStatusBelum",
-		tokens.state_danger.lightened(0.18), tokens.state_danger.darkened(0.24),
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.state_danger.lightened(0.18), tokens.state_danger.darkened(0.24))
 	_add_button_variation(theme, tokens, "RosterStatusSudah",
-		tokens.state_success.lightened(0.18), tokens.state_success.darkened(0.24),
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.state_success.lightened(0.18), tokens.state_success.darkened(0.24))
 
 	_add_shop_hub_tile(theme, tokens)
 	_add_shop_hub_tile_label(theme, tokens)
@@ -1299,12 +1300,13 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# so its "pressed" state has to read as SELECTED rather than as a
 	# button being held: normal is the plain card surface, pressed picks
 	# up the brand outline. Sits with the other button variations because
-	# it is literally a Button, however card-shaped it looks.
+	# it is literally a Button, however card-shaped it looks. Stays flat --
+	# a sink would say "held", not "selected".
 	# The radius argument is what makes "chips stay round" implementable.
 	# QuirkBadge and PersonaBadge are chips but are built through
 	# _add_button_variation, so without it they would be forced to
 	# radius_button along with everything else.
-	_add_button_variation(theme, tokens, "EventSelectCard",
+	_add_flat_button_variation(theme, tokens, "EventSelectCard",
 		tokens.surface_card, tokens.surface_card,
 		tokens.brand_primary, tokens.text_primary,
 		tokens.radius_lg)
@@ -1314,12 +1316,10 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# stay visually distinguishable without per-node styleboxes.
 	_add_button_variation(theme, tokens, "QuirkBadge",
 		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand,
 		tokens.radius_pill)
 
 	_add_button_variation(theme, tokens, "PersonaBadge",
 		tokens.cat_istirahat.lightened(0.18), tokens.cat_istirahat.darkened(0.24),
-		tokens.outline_card, tokens.text_on_brand,
 		tokens.radius_pill)
 
 	# The roster card's third chip. Quirk and Persona carry their own
@@ -1327,7 +1327,6 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# varies per student and rides on the chip's icon instead.
 	_add_button_variation(theme, tokens, "SpecialtyBadge",
 		tokens.surface_sunken, tokens.surface_sunken.darkened(0.18),
-		tokens.brand_primary, tokens.text_primary,
 		tokens.radius_pill)
 
 	# Compact S step for all three chips. The full-size badges are
@@ -1369,7 +1368,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# The week's primary call to action. Horizontal rather than stacked:
 	# it is 984px wide, and a stacked icon in a banner that shape leaves
 	# exactly the horizontal emptiness this pass exists to remove.
-	_add_lobby_button(theme, tokens, "LobbyCtaButton")
+	_add_button_variation(theme, tokens, "LobbyCtaButton", tokens.accent_mint, tokens.accent_mint_lip)
 	theme.set_font_size("font_size", "LobbyCtaButton", tokens.font_h1)
 	theme.set_constant("icon_max_width", "LobbyCtaButton", tokens.btn_icon_l)
 	theme.set_constant("h_separation", "LobbyCtaButton", 24)
@@ -1378,8 +1377,7 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# chip renders with the pressed stylebox _add_button_variation already
 	# builds, so no extra "selected" styling is needed.
 	_add_button_variation(theme, tokens, "FilterChipButton",
-		tokens.surface_card, tokens.surface_sunken,
-		tokens.brand_primary, tokens.brand_primary)
+		tokens.button_cream, tokens.button_cream_lip)
 	# Its category icons are white placeholder glyphs, and a Button draws its
 	# icon untinted unless its variation names an icon colour: white on this
 	# cream pill measured 1.02:1 at rest and 1.30:1 selected, so on a phone
@@ -1397,7 +1395,6 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# that had no palette relationship to anything.
 	_add_button_variation(theme, tokens, "CardArrowButton",
 		tokens.brand_primary, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand,
 		tokens.radius_pill)
 	theme.set_constant("icon_max_width", "CardArrowButton", tokens.btn_icon_m)
 
@@ -1448,19 +1445,18 @@ static func _build_shop_shelf_button(theme: Theme, tokens: DesignTokens) -> void
 		theme.clear_font("font", "ShopShelfButton")
 
 
-## Weekly Results' Logs and Selanjutnya, in the Lobby look (2026-09-14
-## lobby-style-buttons spec; the cream card_bg.png art is retired). Keeps
-## its 24 px sides and the card's 52 px text, so SELANJUTNYA still fits the
-## 436 px half-row it was laid out for.
+## Weekly Results' Logs and Selanjutnya. Selanjutnya wears the mint
+## main-action role (2026-09-28 UI depth pass; the cream card_bg.png art is
+## retired). Keeps its 24 px sides and the card's 52 px text, so SELANJUTNYA
+## still fits the 436 px half-row it was laid out for.
 static func _build_result_button(theme: Theme, tokens: DesignTokens) -> void:
-	_add_lobby_button(theme, tokens, "ResultButton")
+	_add_button_variation(theme, tokens, "ResultButton", tokens.accent_mint, tokens.accent_mint_lip)
 	_set_content_margins(theme, "ResultButton", 24, tokens.btn_pad_v_s)
 	theme.set_font_size("font_size", "ResultButton", tokens.day_stat_size)
-	# 2026-09-19: Logs is the ribbon's red, lightened; Selanjutnya keeps the
-	# brown as the one primary action.
+	# 2026-09-19: Logs is the ribbon's red, lightened; Selanjutnya keeps
+	# mint as the main action.
 	_add_button_variation(theme, tokens, "ResultLogsButton",
-		tokens.result_logs_fill, tokens.result_logs_dark,
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.result_logs_fill, tokens.result_logs_dark)
 	_set_content_margins(theme, "ResultLogsButton", 24, tokens.btn_pad_v_s)
 	theme.set_font_size("font_size", "ResultLogsButton", tokens.day_stat_size)
 
@@ -1475,28 +1471,24 @@ static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "MainMenuButton", 80)
 
 
-## The Lobby's STUDENT / JADWAL button: brand_primary_light over the darker
-## bevel, the cream card rim and cream display text. Every framed action
-## button wears it since the 2026-09-14 lobby-style-buttons pass; what
-## differs between them is size, text and icon, never the surface.
+## The brown neutral role: brand_primary_light on brand_primary_dark.
 static func _add_lobby_button(theme: Theme, tokens: DesignTokens, name: String) -> void:
 	_add_button_variation(theme, tokens, name,
-		tokens.brand_primary_light, tokens.brand_primary_dark,
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.brand_primary_light, tokens.brand_primary_dark)
 
 
-## Re-pad every state of a flat button variation: `pad_h` on both sides,
-## `pad_v` top and bottom.
+## Re-pad every state of a button variation: `pad_h` on both sides, `pad_v`
+## split around the lip (or top and bottom, on a flat box).
 static func _set_content_margins(theme: Theme, name: String, pad_h: int, pad_v: int) -> void:
 	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-		var sb := theme.get_stylebox(state, name) as StyleBoxFlat
+		var sb := theme.get_stylebox(state, name)
 		sb.content_margin_left = pad_h
 		sb.content_margin_right = pad_h
-		sb.content_margin_top = pad_v
-		sb.content_margin_bottom = pad_v
+		_pad_vertical(sb, pad_v)
 
 
-static func _add_button_variation(
+## Kept for EventSelectCard, whose pressed state means SELECTED.
+static func _add_flat_button_variation(
 	theme: Theme,
 	tokens: DesignTokens,
 	name: String,
@@ -1514,16 +1506,16 @@ static func _add_button_variation(
 	theme.set_type_variation(name, "Button")
 
 	theme.set_stylebox("normal", name,
-		_button_box(tokens, top, bottom, border, 0.0, r))
+		_flat_button_box(tokens, top, bottom, border, 0.0, r))
 	theme.set_stylebox("hover", name,
-		_button_box(tokens, top.lightened(0.08), bottom.lightened(0.08), border, 0.0, r))
+		_flat_button_box(tokens, top.lightened(0.08), bottom.lightened(0.08), border, 0.0, r))
 	# Pressed sinks: gradient flips and the shadow collapses.
 	theme.set_stylebox("pressed", name,
-		_button_box(tokens, bottom, top, border, -tokens.shadow_offset.y * 0.5, r))
+		_flat_button_box(tokens, bottom, top, border, -tokens.shadow_offset.y * 0.5, r))
 	theme.set_stylebox("focus", name,
-		_button_box(tokens, top, bottom, tokens.brand_primary, 0.0, r))
+		_flat_button_box(tokens, top, bottom, tokens.brand_primary, 0.0, r))
 
-	var disabled := _button_box(tokens,
+	var disabled := _flat_button_box(tokens,
 		top.lerp(tokens.surface_sunken, 0.7),
 		bottom.lerp(tokens.surface_sunken, 0.7),
 		border.lerp(tokens.surface_sunken, 0.5), 0.0, r)
@@ -1538,6 +1530,89 @@ static func _add_button_variation(
 	theme.set_font_size("font_size", name, tokens.font_title)
 	if tokens.font_display != null:
 		theme.set_font("font", name, tokens.font_display)
+
+
+## How far a disabled lipped button's face and lip fade toward surface_sunken.
+const DISABLED_FADE := 0.7
+
+
+## One lipped button role in five states (2026-09-28 UI depth pass).
+##
+## `face` is the resting surface and `lip` the darker slab under it. hover
+## and normal share one box, since a touch game has no hover. focus is
+## empty, because Godot draws focus OVER normal and a second face would
+## double the gloss. pressed is the same box held down; disabled fades
+## toward surface_sunken on half a lip. `radius` is -1 for radius_button;
+## chips and the arrow pass their own.
+static func _add_button_variation(
+	theme: Theme,
+	tokens: DesignTokens,
+	name: String,
+	face: Color,
+	lip: Color,
+	radius: int = -1
+) -> void:
+	var r: int = tokens.radius_button if radius < 0 else radius
+	theme.add_type(name)
+	theme.set_type_variation(name, "Button")
+
+	var rest := _button_box(tokens, face, lip, r)
+	theme.set_stylebox("normal", name, rest)
+	theme.set_stylebox("hover", name, rest)
+	theme.set_stylebox("focus", name, StyleBoxEmpty.new())
+	theme.set_stylebox("pressed", name, _button_box(tokens, face, lip, r, true))
+
+	var disabled := LippedBox.make(
+		face.lerp(tokens.surface_sunken, DISABLED_FADE),
+		lip.lerp(tokens.surface_sunken, DISABLED_FADE),
+		floori(tokens.lip_height / 2.0), r, 0.0)
+	disabled.content_margin_left = tokens.space_lg
+	disabled.content_margin_right = tokens.space_lg
+	LippedBox.set_vertical_padding(disabled, tokens.btn_pad_v_s)
+	theme.set_stylebox("disabled", name, disabled)
+
+	_apply_lipped_text(theme, tokens, name, face, lip)
+	theme.set_font_size("font_size", name, tokens.font_title)
+	if tokens.font_display != null:
+		theme.set_font("font", name, tokens.font_display)
+
+
+## A lipped button's label ink: outlined text_on_brand on a dark face, plain
+## text_primary on a light one (above lipped_light_face_luminance), where an
+## outline would only muddy it.
+static func _apply_lipped_text(theme: Theme, tokens: DesignTokens, name: String,
+		face: Color, lip: Color) -> void:
+	var light_face := face.get_luminance() > tokens.lipped_light_face_luminance
+	var ink := tokens.text_primary if light_face else tokens.text_on_brand
+	for key in ["font_color", "font_hover_color", "font_pressed_color",
+			"font_hover_pressed_color", "font_focus_color"]:
+		theme.set_color(key, name, ink)
+	theme.set_color("font_disabled_color", name, tokens.text_disabled)
+	theme.set_color("font_outline_color", name, lip)
+	theme.set_constant("outline_size", name, 0 if light_face else tokens.lipped_label_outline)
+
+
+## One lipped surface: `face` on `lip`, with the house gloss and padding,
+## built as a native StyleBoxFlat (LippedBox) -- no soft drop shadow of its
+## own, because the shadow slot draws the lip. `pressed` builds the held
+## state.
+static func _button_box(tokens: DesignTokens, face: Color, lip: Color, radius: int,
+		pressed: bool = false) -> StyleBoxFlat:
+	var sb := LippedBox.make(face, lip, tokens.lip_height, radius, tokens.gloss_strength, pressed)
+	sb.content_margin_left = tokens.space_lg
+	sb.content_margin_right = tokens.space_lg
+	LippedBox.set_vertical_padding(sb, tokens.btn_pad_v_s)
+	return sb
+
+
+## Set a box's vertical padding: a lipped box splits it around its lip, a
+## flat one takes it top and bottom.
+static func _pad_vertical(sb: StyleBox, pad_v: int) -> void:
+	if LippedBox.is_lipped(sb):
+		LippedBox.set_vertical_padding(sb as StyleBoxFlat, pad_v)
+		return
+	sb.content_margin_top = pad_v
+	sb.content_margin_bottom = pad_v
 
 
 ## Clone an existing role variation at a larger size step.
@@ -1563,23 +1638,26 @@ static func _add_size_step(
 	theme.set_type_variation(name, "Button")
 
 	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-		var sb := (theme.get_stylebox(state, base) as StyleBoxFlat).duplicate()
-		sb.content_margin_top = pad_v
-		sb.content_margin_bottom = pad_v
+		var sb := theme.get_stylebox(state, base).duplicate() as StyleBox
+		_pad_vertical(sb, pad_v)
 		if pad_h >= 0:
 			sb.content_margin_left = pad_h
 			sb.content_margin_right = pad_h
 		theme.set_stylebox(state, name, sb)
 
 	for key in ["font_color", "font_hover_color", "font_pressed_color",
-			"font_focus_color", "font_disabled_color"]:
+			"font_hover_pressed_color", "font_focus_color", "font_disabled_color",
+			"font_outline_color"]:
 		theme.set_color(key, name, theme.get_color(key, base))
+	theme.set_constant("outline_size", name, theme.get_constant("outline_size", base))
 
 	theme.set_font_size("font_size", name, font_size)
 	if tokens.font_display != null:
 		theme.set_font("font", name, tokens.font_display)
 
 
+## Kept for EventSelectCard, whose pressed state means SELECTED.
+##
 ## One button surface in four states.
 ##
 ## `radius` is explicit rather than always tokens.radius_button because
@@ -1591,7 +1669,7 @@ static func _add_size_step(
 ## StyleBoxFlat has no gradient: the two-tone read comes from a lighter
 ## fill plus the darker bottom border acting as a bevel, and the pressed
 ## state flips them.
-static func _button_box(
+static func _flat_button_box(
 	tokens: DesignTokens,
 	top: Color,
 	bottom: Color,
@@ -2067,8 +2145,7 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	# which is the whole rung -- a hand-rolled block here shipped with a 0
 	# radius and tests/test_button_geometry.gd caught it.
 	_add_button_variation(theme, tokens, "MinigameChoiceButton",
-		tokens.surface_card, tokens.surface_sunken,
-		tokens.brand_primary, tokens.text_primary)
+		tokens.button_cream, tokens.button_cream_lip)
 
 
 # --------------------------------------------------------------- progress
@@ -2581,58 +2658,56 @@ static func _lobby_hud_nine_patch(file_name: String, margin: Vector4i) -> StyleB
 	return box
 
 
-## Sets `border_width_bottom` on every state of a flat button variation --
-## the scrapbook tiles' chunky 3D lip along the bottom edge (Q4 default).
+## Give every state of a lipped variation a `lip` px lip -- the scrapbook
+## tiles' thicker slab -- keeping its padding. disabled keeps half.
 static func _thicken_lip(theme: Theme, name: String, lip: int) -> void:
-	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+	for state in ["normal", "hover", "pressed", "disabled"]:
 		var sb := theme.get_stylebox(state, name) as StyleBoxFlat
-		if sb != null:
-			sb.border_width_bottom = lip
+		if not LippedBox.is_lipped(sb):
+			continue
+		LippedBox.relip(sb, floori(lip / 2.0) if state == "disabled" else lip)
 
 
-## The Lobby's 2026-09-27 scrapbook HUD restyle (spec, Q3's colour table).
-## A Lobby-only exception to the shared brand look: these variations are
-## deliberately absent from tests/test_lobby_style_buttons.gd's LOBBY_LOOK
-## roster (Q7) -- every other screen keeps the brown Lobby look.
+## The Lobby's scrapbook HUD. Since the 2026-09-28 UI depth pass these wear
+## the shared role palette like every other framed button -- mint for the
+## main actions and Koperasi, sky for Inventory, sunflower (highlight only)
+## for Rapor -- with the scrapbook tiles' own thicker lip layered on top by
+## _thicken_lip.
 static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
-	# -- BookHeroButton: "JADWAL!", the greenest element on the screen. --
+	# -- BookHeroButton: "JADWAL!", the main action. --
 	_add_button_variation(theme, tokens, "BookHeroButton",
-		tokens.state_success, tokens.state_success.darkened(LOBBY_HUD_INK_DARKEN),
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.accent_mint, tokens.accent_mint_lip)
 	theme.set_font_size("font_size", "BookHeroButton", tokens.font_h1)
 	theme.set_constant("icon_max_width", "BookHeroButton", tokens.btn_icon_l)
 	_thicken_lip(theme, "BookHeroButton", LOBBY_HUD_LIP)
 
-	# -- NavTileKoperasi: the shop's own green tag colours. --
+	# -- NavTileKoperasi: the main-action mint, like every other main action. --
 	_add_button_variation(theme, tokens, "NavTileKoperasi",
-		tokens.koperasi_tag_fill, tokens.koperasi_tag_border,
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.accent_mint, tokens.accent_mint_lip)
 	theme.set_constant("icon_max_width", "NavTileKoperasi", tokens.btn_icon_m)
 	_thicken_lip(theme, "NavTileKoperasi", LOBBY_HUD_LIP)
 
-	# -- NavTileInventory: the Akademis blue -- may read as "Akademis"
-	# rather than a neutral inventory colour (Q3's own caveat). --
+	# -- NavTileInventory: its own sky, not mint -- inventory isn't the main
+	# action, so it gets the tile-only accent rather than the shared role. --
 	_add_button_variation(theme, tokens, "NavTileInventory",
-		tokens.cat_akademis_on_dark, tokens.cat_akademis,
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.accent_sky, tokens.accent_sky_lip)
 	theme.set_constant("icon_max_width", "NavTileInventory", tokens.btn_icon_m)
 	_thicken_lip(theme, "NavTileInventory", LOBBY_HUD_LIP)
 
-	# -- NavTileRapor: warm amber. Cream text on F5A623 only measures about
-	# 2:1 (Q3), so this tile keeps text_primary instead of text_on_brand. --
+	# -- NavTileRapor: sunflower highlight, never a main action. The lipped
+	# label-ink rule already gives a face this light text_primary with no
+	# outline, so no per-tile ink override is needed here any more. --
 	_add_button_variation(theme, tokens, "NavTileRapor",
-		tokens.state_warning, tokens.cat_libur,
-		tokens.outline_card, tokens.text_primary)
+		tokens.accent_sunflower, tokens.accent_sunflower_lip)
 	theme.set_constant("icon_max_width", "NavTileRapor", tokens.btn_icon_m)
 	_thicken_lip(theme, "NavTileRapor", LOBBY_HUD_LIP)
 
-	# -- PlusButton: green, never gold -- a gold + would read as an IAP
+	# -- PlusButton: mint, never gold -- a gold + would read as an IAP
 	# button (spec 3.2; test_scrapbook_plus_and_hero_are_green). Square in
 	# its authored 96x96 node, with the house radius_button corners
 	# (test_button_geometry's one-fixed-radius rule). --
 	_add_button_variation(theme, tokens, "PlusButton",
-		tokens.state_success, tokens.state_success.darkened(LOBBY_HUD_INK_DARKEN),
-		tokens.outline_card, tokens.text_on_brand)
+		tokens.accent_mint, tokens.accent_mint_lip)
 
 	# -- ChevronGripButton: the swipe handle. Texture only, every state --
 	# no text and no font (it carries no label). --
@@ -2756,6 +2831,45 @@ static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_stylebox("panel", "RosterChip", roster_chip)
 
 
+# ---------------------------------------------------------------- notebook
+
+## The notebook cover's lip, px: a board, thicker than a button's.
+const NOTEBOOK_COVER_LIP := 12
+## The page's lip, px: its two paper edges.
+const NOTEBOOK_PAGE_LIP := 8
+
+
+## The notebook popup frame's surfaces (2026-09-28 UI depth pass): a brown
+## hardcover on a lip, a cream page on paper edges, sky and gold tabs, a
+## tomato round close and the stitched sticker's title.
+static func _build_notebook(theme: Theme, tokens: DesignTokens) -> void:
+	for spec in [
+		["NotebookCover", tokens.brand_primary_light, tokens.brand_primary_dark,
+			NOTEBOOK_COVER_LIP, tokens.radius_lg],
+		["NotebookPage", tokens.outline_card, tokens.surface_sunken,
+			NOTEBOOK_PAGE_LIP, tokens.radius_md],
+	]:
+		theme.add_type(spec[0])
+		theme.set_type_variation(spec[0], "Panel")
+		theme.set_stylebox("panel", spec[0],
+			LippedBox.make(spec[1], spec[2], spec[3], spec[4], 0.0))
+
+	_add_button_variation(theme, tokens, "NotebookTab", tokens.accent_sky, tokens.accent_sky_lip)
+	_add_button_variation(theme, tokens, "NotebookTabActive",
+		tokens.accent_sunflower, tokens.accent_sunflower_lip)
+	_add_button_variation(theme, tokens, "NotebookClose",
+		tokens.accent_tomato, tokens.accent_tomato_lip, tokens.radius_pill)
+	_set_content_margins(theme, "NotebookClose", tokens.space_sm, tokens.btn_pad_v_s)
+	theme.set_constant("icon_max_width", "NotebookClose", tokens.btn_icon_s)
+
+	theme.add_type("NotebookSticker")
+	theme.set_type_variation("NotebookSticker", "Label")
+	theme.set_font_size("font_size", "NotebookSticker", tokens.font_h2)
+	theme.set_color("font_color", "NotebookSticker", tokens.text_primary)
+	if tokens.font_display != null:
+		theme.set_font("font", "NotebookSticker", tokens.font_display)
+
+
 # ------------------------------------------------- unstyled base controls
 
 ## Baseline styling for controls used without a variation, so a plain
@@ -2771,19 +2885,14 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 
 	theme.set_color("font_color", "Button", tokens.text_on_brand)
 	theme.set_font_size("font_size", "Button", tokens.font_title)
-	theme.set_stylebox("normal", "Button",
-		_button_box(tokens, tokens.brand_primary_light, tokens.brand_primary_dark,
-			tokens.outline_card, 0.0, tokens.radius_button))
-	theme.set_stylebox("hover", "Button",
-		_button_box(tokens, tokens.brand_primary_light.lightened(0.08),
-			tokens.brand_primary_dark.lightened(0.08), tokens.outline_card, 0.0,
-			tokens.radius_button))
-	theme.set_stylebox("pressed", "Button",
-		_button_box(tokens, tokens.brand_primary_dark, tokens.brand_primary_light,
-			tokens.outline_card, -tokens.shadow_offset.y * 0.5, tokens.radius_button))
-	theme.set_stylebox("disabled", "Button",
-		_button_box(tokens, tokens.surface_sunken, tokens.surface_sunken,
-			tokens.surface_sunken, 0.0, tokens.radius_button))
+	var base_rest := _button_box(tokens, tokens.brand_primary_light,
+		tokens.brand_primary_dark, tokens.radius_button)
+	theme.set_stylebox("normal", "Button", base_rest)
+	theme.set_stylebox("hover", "Button", base_rest)
+	theme.set_stylebox("pressed", "Button", _button_box(tokens,
+		tokens.brand_primary_light, tokens.brand_primary_dark, tokens.radius_button, true))
+	theme.set_stylebox("disabled", "Button", _button_box(tokens,
+		tokens.surface_sunken, tokens.surface_sunken.darkened(0.18), tokens.radius_button))
 
 	# RichTextLabel's base text color theme item is "default_color", not
 	# "font_color" (that name is a Label/Button theme item). Setting

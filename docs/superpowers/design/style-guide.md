@@ -39,35 +39,25 @@ effect everywhere. That's the point of the system.
 the existing variation that matches intent rather than styling a node by
 hand. As of this pass:
 
-**Buttons** (`theme_type_variation` on a `Button`). Since the 2026-09-14
-lobby-style-buttons pass, every framed action button wears the Lobby's look
-through `ThemeFactory._add_lobby_button()`: `brand_primary_light` over the
-darker bevel, a cream rim and cream display text. The role names below say
-what a button is for, not how it looks:
-- `LobbyCtaButton` / `LobbyNavTile`: the Lobby's own buttons, the look every
-  other role copies.
-- `PrimaryButton`: the screen's main call-to-action or forward navigation.
-- `SecondaryButton`: a lower-emphasis action alongside a primary one.
-- `DangerButton`: destructive or cancel actions.
-- `SuccessButton`: affirmative actions that aren't the screen's main nav.
-- `StudentCardSecondaryButtonL`: StudentCard's cream secondary (Batal and the
-  page arrows). StudentCard is the one screen that keeps the pre-2026-09-14
-  look.
-- `RosterStatusBelum` / `RosterStatusSudah`: StudentList's red and green
-  status badges, where the colour is the information.
-- `QuirkBadge` / `PersonaBadge`: StudentCard's trait chips. They share one
-  pill geometry and differ in accent, so the two trait kinds stay
-  distinguishable.
+**Buttons** (`theme_type_variation` on a `Button`). Since the 2026-09-28 UI depth pass every framed button is a lipped face
+built by `Scripts/Design/LippedBox.gd` from a plain `StyleBoxFlat`: a face
+on a solid darker lip (the box's drop shadow, in a strip freed by a
+negative `expand_margin_bottom`) with a soft gloss along its top (a blended
+top border), sinking onto the lip when held (`expand_margin_top`), with no
+rim. It is native on purpose: the theme loads before the SceneTree exists,
+and a script-backed StyleBox there makes every debug run log a SceneTree
+error. Its colours say its role — mint is the main
+action and affirm on every screen, tomato is danger, brown is neutral,
+cream is quiet; sky and sunflower belong to the Lobby tiles and the
+notebook tabs, and sunflower is never an action (gold reads as "buy").
+Information badges keep their meaning colours. The palette pairs are the
+`accent_*` / `button_cream*` tokens. Labels on a dark face are outlined
+white; on a light face they are plain dark ink. `EventSelectCard` stays a
+flat box, because its pressed state means *selected*.
 
-**Lobby-only exception (2026-09-27 scrapbook HUD, Q7):** the Lobby's own
-`BookHeroButton`, `NavTileKoperasi` / `NavTileInventory` / `NavTileRapor` and
-`PlusButton` (all in `ThemeFactory._build_lobby_hud()`) deliberately do
-**not** wear the shared brown Lobby look above — each carries its own
-colour (JADWAL green, the shop's own green, the Akademis blue, a warm
-amber, and green-never-gold for the `+`). They're absent on purpose from
-`tests/test_lobby_style_buttons.gd`'s `LOBBY_LOOK` roster. Every other
-screen still copies the brown look; this exception is scoped to the
-Lobby's bottom HUD only.
+The Lobby's scrapbook buttons (`BookHeroButton`, `NavTileKoperasi`/`Inventory`/
+`Rapor`, `PlusButton`) wear the same role palette; the hero and the three
+tiles also get a thicker lip (`ThemeFactory.LOBBY_HUD_LIP`).
 
 **Panels**:
 - `Card` — the standard raised surface (white bg, border, shadow).
@@ -157,6 +147,16 @@ See `Assets/Audio/README.md`. Bus/SFX/BGM slots are defined on
 `AudioDirector` and are currently silent placeholders (BGM tracks are
 explicitly deferred — "a stronger authorship choice than SFX").
 
+## The notebook frame
+
+Popups sit in `Scenes/UI/NotebookFrame.tscn`: drop your content in as
+children of the frame and it lays them into the page. Set `title_text`,
+`tabs` (up to three), `ring_count`, `show_well`, `show_tape` and
+`show_close` on the instance's root, and listen to `tab_selected` /
+`close_pressed`. A dialog is the same frame with no tabs, four rings and no
+well. The ring, rule and sticker textures are placeholders
+(`Assets/Images/UI/Notebook/README.md`).
+
 ## The Juice API (`Scripts/Design/Juice.gd`)
 
 Static helpers for consistent motion feel. All read shared timing/easing from
@@ -168,6 +168,7 @@ Static helpers for consistent motion feel. All read shared timing/easing from
 | `Juice.set_pivot_center(node)` | `Juice.set_pivot_center(my_button)` — center a Control's pivot before scaling it. |
 | `Juice.press(node)` | `Juice.press(button)` on `button_down` — quick squash toward the pivot. |
 | `Juice.release(node)` | `Juice.release(button)` on `button_up`/`pressed` — spring back to scale 1. |
+| `Juice.pop_release(node)` | `Juice.pop_release(button)` on release of a lipped button: its pressed stylebox already sank it, so it bumps to `release_pop_scale` and settles. |
 | `Juice.pop_in(node, delay)` | `Juice.pop_in(card, 0.1)` — scale-and-fade a Control in, optionally staggered. |
 | `Juice.fade_in(node, delay)` | `Juice.fade_in(icon)` — plain alpha fade for a `CanvasItem`. |
 | `Juice.stagger_in(nodes, step)` | `Juice.stagger_in(get_children())` — `pop_in` each node in sequence. |
@@ -176,7 +177,11 @@ Static helpers for consistent motion feel. All read shared timing/easing from
 | `Juice.shake(node, strength)` | `Juice.shake(panel, 18.0)` — a denial/error shake. |
 
 Buttons are auto-juiced (press/release wiring) by `UIPolish` when the scene
-loads — most screens never call `Juice.press`/`release` directly.
+loads — most screens never call `Juice.press`/`release` directly. Lipped
+buttons sink through their pressed stylebox and pop on release (`PressFeel`
+decides, per button), other and flat buttons keep the shrink, and the
+main-action roles tick the motor (`PressFeel.MAIN_ACTION_ROLES`, 8 ms,
+honouring Getar).
 
 ## The rule: never add a `theme_override_*`
 

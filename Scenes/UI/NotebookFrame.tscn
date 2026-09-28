@@ -1,0 +1,219 @@
+[gd_scene format=3 uid="uid://djkgrgndtsvc7"]
+
+[ext_resource type="Script" uid="uid://dlih60vn4t4g2" path="res://Scripts/UI/NotebookFrame.gd" id="1_frame"]
+[ext_resource type="Texture2D" uid="uid://dmhjfwemmwknh" path="res://Assets/Images/UI/Notebook/spiral_ring.png" id="2_ring"]
+[ext_resource type="Texture2D" uid="uid://tfetbp70uc7n" path="res://Assets/Images/UI/Notebook/paper_rule.png" id="3_rule"]
+[ext_resource type="Texture2D" uid="uid://dobprcl3gepo3" path="res://Assets/Images/UI/Notebook/sticker_stitch.png" id="4_sticker"]
+[ext_resource type="Texture2D" uid="uid://dv7re4xhg8tbg" path="res://Assets/Images/AturJadwal/washi_tape.svg" id="5_tape"]
+[ext_resource type="Texture2D" uid="uid://ce38tgh1vcjvb" path="res://Assets/Images/UI/Icons/close.svg" id="6_close"]
+
+[node name="NotebookFrame" type="Container" unique_id=244189710]
+custom_minimum_size = Vector2(640, 520)
+offset_right = 800.0
+offset_bottom = 900.0
+script = ExtResource("1_frame")
+tabs = PackedStringArray()
+
+[node name="Chrome" type="Control" parent="." unique_id=1253689987]
+layout_mode = 2
+mouse_filter = 2
+metadata/notebook_chrome = true
+
+[node name="Cover" type="Panel" parent="Chrome" unique_id=216772840]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -12.0
+offset_top = -12.0
+offset_right = 20.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"NotebookCover"
+
+[node name="Tabs" type="HBoxContainer" parent="Chrome" unique_id=714731532]
+visible = false
+layout_mode = 0
+offset_left = 72.0
+offset_top = -60.0
+offset_right = 640.0
+offset_bottom = 36.0
+theme_override_constants/separation = 12
+
+[node name="Tab0" type="Button" parent="Chrome/Tabs" unique_id=138391585]
+visible = false
+layout_mode = 2
+theme_type_variation = &"NotebookTabActive"
+text = "TAB"
+
+[node name="Tab1" type="Button" parent="Chrome/Tabs" unique_id=1241698839]
+visible = false
+layout_mode = 2
+theme_type_variation = &"NotebookTab"
+text = "TAB"
+
+[node name="Tab2" type="Button" parent="Chrome/Tabs" unique_id=920103900]
+visible = false
+layout_mode = 2
+theme_type_variation = &"NotebookTab"
+text = "TAB"
+
+[node name="Page" type="Panel" parent="Chrome" unique_id=21330776]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"NotebookPage"
+
+[node name="Rules" type="TextureRect" parent="Chrome" unique_id=1219887796]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = 24.0
+offset_right = -16.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_rule")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="MarginLine" type="ColorRect" parent="Chrome" unique_id=1047989012]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 44.0
+offset_top = 12.0
+offset_right = 47.0
+offset_bottom = -20.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.94902, 0.627451, 0.556863, 1)
+
+[node name="Well" type="Panel" parent="Chrome" unique_id=204621156]
+layout_mode = 0
+mouse_filter = 2
+theme_type_variation = &"SunkenPanel"
+
+[node name="Rings" type="VBoxContainer" parent="Chrome" unique_id=715976028]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = -22.0
+offset_top = 48.0
+offset_right = 50.0
+offset_bottom = -48.0
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="Ring0" type="TextureRect" parent="Chrome/Rings" unique_id=1926289095]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ring")
+
+[node name="Ring1" type="TextureRect" parent="Chrome/Rings" unique_id=1330021199]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ring")
+
+[node name="Ring2" type="TextureRect" parent="Chrome/Rings" unique_id=8239981]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ring")
+
+[node name="Ring3" type="TextureRect" parent="Chrome/Rings" unique_id=120696146]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ring")
+
+[node name="Ring4" type="TextureRect" parent="Chrome/Rings" unique_id=495979613]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ring")
+
+[node name="Ring5" type="TextureRect" parent="Chrome/Rings" unique_id=564911463]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ring")
+
+[node name="Ring6" type="TextureRect" parent="Chrome/Rings" unique_id=543517824]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ring")
+
+[node name="Ring7" type="TextureRect" parent="Chrome/Rings" unique_id=95740924]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ring")
+
+[node name="Sticker" type="NinePatchRect" parent="Chrome" unique_id=805263570]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -180.0
+offset_top = 20.0
+offset_right = 180.0
+offset_bottom = 92.0
+grow_horizontal = 2
+rotation = -0.0349066
+pivot_offset = Vector2(180, 36)
+texture = ExtResource("4_sticker")
+patch_margin_left = 28
+patch_margin_top = 28
+patch_margin_right = 28
+patch_margin_bottom = 28
+
+[node name="Title" type="Label" parent="Chrome/Sticker" unique_id=1208100198]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"NotebookSticker"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tape" type="TextureRect" parent="Chrome" unique_id=25510757]
+self_modulate = Color(1, 0.7882353, 0.23529412, 0.8)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -24.0
+offset_top = -40.0
+offset_right = 116.0
+offset_bottom = 4.0
+grow_vertical = 0
+rotation = -0.418879
+pivot_offset = Vector2(70, 22)
+mouse_filter = 2
+texture = ExtResource("5_tape")
+expand_mode = 1
+
+[node name="Close" type="Button" parent="Chrome" unique_id=979555765]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -60.0
+offset_top = -36.0
+offset_right = 36.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_type_variation = &"NotebookClose"
+icon = ExtResource("6_close")
+icon_alignment = 1
+expand_icon = true

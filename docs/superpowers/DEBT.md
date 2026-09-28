@@ -124,6 +124,10 @@ premultiplied) alpha, no drop shadow. Optional white-on-transparent redraws
 Sway shader stays deferred until separated plant/paper/curtain art exists
 for it to move.
 
+**Minigame HUD icons (2026-09-28).** `MinigameHeader`'s `pause_icon` /
+`timer_icon` stay unassigned until transparent SVGs exist (spec §6) — see
+"Deferred and pending"'s Minigame Polish Part 1 entry.
+
 ## Asset notes
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
@@ -450,6 +454,24 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Minigame Polish Part 1 follow-ons (2026-09-28).**
+  - **Score HUD restyle deferred (decision 2).** `MinigameScoreHUD` still
+    wears `ScoreHudPanel`/`ScoreHudValueLabel`, and `MinigameHeader` wraps it
+    unchanged. Moving it onto `MinigameHudPill`/`MinigameHudValue` restyles
+    all seven scoring minigames at once. It also needs its `TargetLabel`
+    (`ResultBodyLabel`) and combo chip re-checked for contrast on the dark
+    pill (`tests/test_light_ground_text.gd`).
+  - **The timer button is display-only (decision 3).** `MinigameHeader`'s
+    `TimerButton` has no signal and no behaviour. The follow-on plan wires it
+    to `BaseMinigame`'s timer (today `_create_visual_timer()`), or turns it
+    into a pure readout.
+  - **No pause or timer icon art.** `pause_icon`/`timer_icon` stay unassigned
+    until the transparent SVGs exist (spec §6); see "Placeholder art" above.
+  - **No minigame mounts `MinigameHeader` yet.** `BaseMinigame` still builds
+    its pause button at runtime, which is the existing `viewport_editability`
+    baseline debt.
+
+  The later Part 1 plans resolve all four.
 - **Clean-code ratchet debt** (`ci/clean_code_baseline.gd`, 2026-09-26): 1588
   untyped declarations, 2120 bare numbers, 46 functions over 50 code lines,
   5 large scripts, 22 duplicate groups. Phase 2 (PR4 one `TutorialGuide`,

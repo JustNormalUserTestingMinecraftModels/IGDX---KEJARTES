@@ -8,6 +8,42 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Minigame Polish Part 1: foundation kit
+
+- Nine new `ThemeFactory` variations for the minigame kit (`_build_minigame_kit`,
+  spec §4.1): `MinigameCard` / `MinigameCardInner` / `MinigameImagePlate` (the
+  Bingkai Kayu card family — a brand-primary frame with a cream rim, a cream
+  inner sheet, and the preview-pill image plate); `MinigameAnswerButton`
+  (brand-filled, the spec's hard `brand_primary_dark` drop shadow, with focus
+  and disabled states derived from tokens since the spec defines neither —
+  focus is a gold rim-only overlay, since the house focus rim is this
+  button's own fill, and disabled fades fill/rim toward `surface_sunken` and
+  flattens the shadow); `MinigameHudPill` / `MinigameHudValue` and
+  `MinigamePlankPanel` / `MinigamePlankLabel` (one dark-brand tab box at two
+  radii, gold display-face labels); `MinigameHudIconButton` (a round icon
+  button, no font, so off `DISPLAY_ROSTER`).
+- `MinigameHudIconButton` is radius-exempt in `tests/test_button_geometry.gd`'s
+  `RADIUS_EXEMPT`: it's a fixed `touch_target_min` square in
+  `MinigameHeader.tscn`, so `radius_pill` yields an exact circle — no
+  height-dependent-radius risk, like `CardArrowButton`.
+- `MinigameHeader` (`Scripts/Minigames/UI/MinigameHeader.gd` +
+  `Scenes/Minigames/UI/MinigameHeader.tscn`) is a shared top HUD strip
+  composed **over** `MinigameScoreHUD` rather than forking it: a pause
+  icon-button (left), an instanced `MinigameScoreHUD` (centre, so its pop,
+  burst and combo chip stay in one component), and a timer icon-button
+  (right, display-only — no signal yet). Icons arrive through root
+  `@export`s (`pause_icon`, `timer_icon`) rather than reaching into the
+  instance's children, since overrides on an instanced scene's children drop
+  on save. `@tool` so the strip previews in the editor.
+- The answer button's hard shadow, focus and disabled states are spec-driven
+  and new: the spec (§4.1) defines only rest, hover and pressed, so focus and
+  disabled were derived the way `_add_button_variation` derives its own.
+- Task 4 rebaked `Assets/Theme/kejartes_theme.tres`: stylebox ids renumbered,
+  but a content comparison showed all 241 existing theme types unchanged and
+  exactly nine added (the ones above).
+- Spec: `docs/superpowers/specs/2026-09-28-minigame-polish-part-1-design.md`.
+  Plan: `docs/superpowers/plans/2026-09-28-minigame-polish-part-1-foundation.md`.
+
 ## 2026-09-28 — Ambient kit: moods, light, particles and glints
 
 - Five pieces in `Scenes/Look/`: `MoodTint` (multiply colour mood over a

@@ -37,7 +37,7 @@ const DIORAMAS := {
 ## whatever the phone or the pointer does. The Lobby and Koperasi ignored the
 ## switch until then.
 func test_reduce_motion_holds_the_diorama_at_rest() -> void:
-	var before := GameSettings.reduce_motion
+	var before: bool = GameSettings.reduce_motion
 	var driver := (load("res://Scripts/UI/ParallaxDiorama.gd") as GDScript).new() as Control
 	track(driver)
 	var tilt := Vector2(0.5, -0.25)

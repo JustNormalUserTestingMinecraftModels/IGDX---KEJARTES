@@ -97,6 +97,15 @@ var _kas: int = 0
 ## money_changed signals back to back) never race on the same label, same
 ## as _tray_tween's own kill-before-restart.
 var _kas_tween: Tween
+## The Total pill's number last written, so _apply_total_state() can count up
+## from it rather than jump -- mirrors _kas's own before/after tracking, but
+## purely for the tween's start point: get_total_text() always recomputes
+## from _entries, never from this.
+var _total: int = 0
+## The tween driving the Total pill's count-up, if any -- killed before a new
+## one starts, same as _kas_tween's own kill-before-restart (two refresh()
+## calls in quick succession must never race on the same label).
+var _total_tween: Tween
 ## Footer node names already push_error'd missing by _ensure_nodes(), so a
 ## torn-up scene logs one error per node instead of one on every call.
 var _reported_missing_footer_nodes: Dictionary = {}
@@ -461,9 +470,32 @@ func _apply_total_state(total: int, empty: bool) -> void:
 		else (&"TotalNumberOver" if over else &"TotalNumberAwake")
 	_total_pill.theme_type_variation = pill_state
 	_total_number.theme_type_variation = number_state
-	_total_number.text = format_koin(total)
+	_write_total_number(total, empty)
 	_total_coin.modulate.a = ASLEEP_COIN_ALPHA if empty else 1.0
 	_beli_button.modulate.a = BELI_OVER_ALPHA if over else 1.0
+
+
+## Writes the Total pill's number: counts up from the last value shown and
+## scale-pops the pill (AnimUtils.squash_bounce -- the pill is a Container
+## child of the footer VBoxContainer, the same reason play_withdrawal pops
+## the Kas pill by scale rather than by position) whenever the total actually
+## moved. Kills the previous tween before starting a new one, mirroring
+## show_kas()'s own kill-before-restart. Asleep, unchanged, or outside the
+## tree (no frame for a tween to run -- a test that instances the tray
+## without adding it, or a caller that hasn't been added yet) snaps straight
+## to the text instead. get_total_text() never reads this label, so it keeps
+## returning the computed value even mid-tween.
+func _write_total_number(total: int, empty: bool) -> void:
+	var old := _total
+	_total = total
+	if is_instance_valid(_total_tween) and _total_tween.is_valid():
+		_total_tween.kill()
+	if empty or not is_inside_tree() or old == total:
+		_total_number.text = format_koin(total)
+		return
+	_total_tween = Juice.count_up_formatted(_total_number, float(old), float(total),
+		func(v: float) -> String: return format_koin(int(round(v))))
+	AnimUtils.squash_bounce(_total_pill)
 
 
 ## Places every slot on the plank: each at its own size (times item_scale),
@@ -541,7 +573,7 @@ func _ensure_nodes() -> void:
 		["TotalPill", _total_pill], ["TotalNumber", _total_number],
 		["TotalCoin", _total_coin], ["BeliButton", _beli_button],
 	]
-	for pair in footer_nodes:
+	for pair: Array in footer_nodes:
 		var node_name: String = pair[0]
 		var node: Object = pair[1]
 		if not is_instance_valid(node):

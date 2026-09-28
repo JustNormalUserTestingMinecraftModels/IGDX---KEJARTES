@@ -100,6 +100,23 @@ func test_a_total_past_the_kas_turns_over() -> void:
 	assert_eq(tray.get_total_state(), &"TotalPillOver", "more than the class fund holds")
 
 
+## Fix round 2 (2026-09-28 review): the Total pill used to jump straight to
+## its new text (`_total_number.text = format_koin(total)`), skipping the
+## spec's "count up ... a small coin_pulse/scale-pop on each change". A live
+## total change, with the tray inside the tree, must now start its own
+## count-up tween -- get_total_text() is unaffected either way, since it
+## always recomputes from _entries rather than reading the label.
+func test_an_awake_total_change_starts_a_total_tween() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	tray.refresh(_entries_costing(1000))
+	assert_true(is_instance_valid(tray._total_tween) and tray._total_tween.is_valid(),
+		"an awake total change should start its own count-up tween")
+	assert_eq(tray.get_total_text(), "1.000", "get_total_text() still reads the computed value")
+
+
 func test_the_kas_shows_the_balance() -> void:
 	var tray = _tray()
 	if tray == null:
@@ -119,8 +136,12 @@ func test_two_quick_kas_updates_leave_the_last_amount() -> void:
 	if tray == null:
 		return
 	tray.show_kas(1000)
+	var first_tween: Tween = tray._kas_tween
 	tray.show_kas(2000)
 	assert_eq(tray.get_kas_text(), "2.000", "the second call wins, not a race with the first")
+	assert_true(is_instance_valid(first_tween), "the first tween object should still exist")
+	assert_false(first_tween.is_valid(),
+		"but be killed by the second call, or the two count-ups would race on the same label")
 
 
 ## Fix round 1: a missing footer node must fail loudly (push_error, once)

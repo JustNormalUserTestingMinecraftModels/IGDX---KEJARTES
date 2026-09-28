@@ -8,6 +8,20 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Lomba Menari's notes are real arrows
+
+Plan: `docs/superpowers/plans/2026-09-28-lomba-menari-note-arrow.md`.
+
+The notes used to be a code-drawn coloured box with a `←`/`→`/`↖`/`↗` typed
+on it (and a bigger one flashed over the hit zone on each hit), glyphs
+neither Boohong nor Open Sans can draw, so they rode the device's fallback
+font. Each note is now `MenariNote.tscn`: one chunky, white-filled arrow
+(`note_arrow.png`, from the game's existing arrow art), turned per lane from
+`ARROW_DIRECTIONS` and tinted with the lane's `*_note_color`. A hit lightens
+it by `swiped_arrow_lighten` as it flies off. The eight never-filled
+per-direction texture slots are gone, and `LombaMenari.gd`'s runtime-UI
+baseline fell 4 → 1.
+
 ## 2026-09-28 — Atur Jadwal: "perlu" fix and the need gauge
 
 Plan: `docs/superpowers/plans/2026-09-28-atur-jadwal-perlu-gauge.md`.

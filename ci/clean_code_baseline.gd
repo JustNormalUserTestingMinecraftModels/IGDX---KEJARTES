@@ -40,8 +40,6 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/Minigames/Olahraga/MainBola.gd::_shoot_ball": 57,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd::_apply_visual_exports": 66,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd::reveal_answers": 81,
-	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd::_animate_swiped_note": 57,
-	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd::_spawn_single_note": 64,
 	"res://Scripts/Minigames/UI/BaseMinigame.gd::_show_result_overlay": 56,
 	"res://Scripts/Minigames/UI/MinigameResultPopup.gd::configure": 59,
 	"res://Scripts/Minigames/UI/MinigameResultPopup.gd::play": 61,
@@ -88,7 +86,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/Minigames/Akademis/Variabel.gd": 66,
 	"res://Scripts/Minigames/Olahraga/Badminton.gd": 52,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 52,
-	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 50,
+	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 40,
 	"res://Scripts/Minigames/UI/BaseMinigame.gd": 36,
 	"res://Scripts/Minigames/UI/MinigameMenu.gd": 7,
 	"res://Scripts/Minigames/UI/MinigameTutorial.gd": 17,
@@ -168,7 +166,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Minigames/Olahraga/MainBola.gd": 92,
 	"res://Scripts/Minigames/Olahraga/ShuttlecockSprite.gd": 2,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 51,
-	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 105,
+	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 85,
 	"res://Scripts/Minigames/UI/BaseMinigame.gd": 85,
 	"res://Scripts/Minigames/UI/ConfettiFireworks.gd": 2,
 	"res://Scripts/Minigames/UI/MinigameCountdown.gd": 4,
@@ -236,7 +234,7 @@ const DUPLICATE_GROUPS: Array[String] = [
 
 ## Scripts over 1,000 lines -> their line count.
 const LARGE_SCRIPTS: Dictionary = {
-	"res://Scripts/AturJadwal/AturJadwal.gd": 1626,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 1579,
 	"res://Scripts/Debug/DebugManager.gd": 1880,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1638,
 	"res://Scripts/StudentCard/StudentCard.gd": 1451,

@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://ds2rx8ahmal4d"]
+
+[ext_resource type="Texture2D" uid="uid://cj5t1878dj0g2" path="res://Assets/Images/Minigames/SeniBudaya/note_arrow.png" id="1_k3qoo"]
+
+[node name="MenariNote" type="Control" unique_id=512456447]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 96.0
+offset_bottom = 96.0
+mouse_filter = 2
+
+[node name="Arrow" type="TextureRect" parent="." unique_id=1086545786]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1_k3qoo")
+expand_mode = 1
+stretch_mode = 5

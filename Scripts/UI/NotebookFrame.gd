@@ -98,8 +98,12 @@ func content_rect() -> Rect2:
 
 
 ## Lay out every child now: Chrome over the whole frame, host content into
-## content_rect(), and the well around it.
+## content_rect(), and the well around it. A no-op off-tree -- this frame
+## only lays out once it is actually parented into a SceneTree, since size
+## and every Control rect resolve empty before that.
 func sort_now() -> void:
+	if not is_inside_tree():
+		return
 	for child in get_children():
 		var control := child as Control
 		if control == null:
@@ -108,6 +112,18 @@ func sort_now() -> void:
 			fit_child_in_rect(control, Rect2(Vector2.ZERO, size))
 		else:
 			fit_child_in_rect(control, content_rect())
+	# While NotebookFrame.tscn is itself the scene open for editing,
+	# sort_now() also runs here (this script is @tool). Leave the Well and
+	# Rings alone in that case: writing their computed offsets/overrides
+	# would bake this editor session's own frame size into the .tscn on the
+	# next save. An INSTANCED frame's inner children are never saved, so
+	# this only matters when the frame's OWN scene is the edited one --
+	# Rings keeps its authored separation for the preview; the Well has no
+	# authored rect, so it sits collapsed at the origin when this scene is
+	# opened on its own, and it is laid out only when the frame is
+	# instanced.
+	if _is_edited_scene_root():
+		return
 	var well := get_node_or_null("Chrome/Well") as Control
 	if well != null:
 		var r := content_rect().grow(WELL_BLEED)
@@ -116,10 +132,26 @@ func sort_now() -> void:
 	_spread_rings()
 
 
+## True only while this frame IS the scene currently open for editing, not
+## merely instanced inside one -- guards the runtime layout in sort_now()
+## that must never get saved back into NotebookFrame.tscn itself.
+func _is_edited_scene_root() -> bool:
+	if not Engine.is_editor_hint():
+		return false
+	var tree := get_tree()
+	return tree != null and tree.edited_scene_root == self
+
+
 ## Re-gap the shown rings so they always span the Rings box top to bottom,
 ## instead of sitting bunched at the authored separation and alignment --
 ## which only look right at the full MAX_RINGS count. A layout-only constant
-## override, allowed alongside the ThemeFactory-variation rule.
+## override, allowed alongside the ThemeFactory-variation rule. The span is
+## read from Rings' own anchors/offsets against Chrome, not from
+## `rings.size.y`: a Control's size is clamped to at least its combined
+## minimum size, and a VBox's minimum includes `separation * (shown - 1)`,
+## so a gap set once from the clamped size could only ever grow -- a frame
+## first sorted large and later shrunk would keep the old, too-big gap and
+## overflow.
 func _spread_rings() -> void:
 	var rings := get_node_or_null("Chrome/Rings") as BoxContainer
 	if rings == null:
@@ -128,7 +160,10 @@ func _spread_rings() -> void:
 	if shown < 2:
 		return
 	var ring_h := (rings.get_child(0) as Control).get_combined_minimum_size().y
-	var gap := (rings.size.y - shown * ring_h) / (shown - 1)
+	var chrome := rings.get_parent() as Control
+	var span := chrome.size.y * (rings.anchor_bottom - rings.anchor_top) \
+		+ rings.offset_bottom - rings.offset_top
+	var gap := (span - shown * ring_h) / (shown - 1)
 	rings.add_theme_constant_override(&"separation", maxi(floori(gap), 0))
 
 

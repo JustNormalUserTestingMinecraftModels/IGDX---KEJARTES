@@ -8,6 +8,19 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — UI depth pass, Phase 1: lipped buttons
+
+Plan: `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase1.md`.
+
+Every framed button is now a lipped face — a native `StyleBoxFlat` built by
+`LippedBox`, on a darker lip with a soft gloss and no rim — coloured by its role: mint for the main action on
+every screen (matching the Lobby's green JADWAL!), tomato for danger, brown
+neutral, cream quiet. Held, a button sinks onto its lip through its pressed
+stylebox and pops on release (`Juice.pop_release`); main actions also tick
+the motor (`PressFeel`, 8 ms, honouring Getar). The scrapbook Lobby keeps
+its layout and gets the same surface. New for Phase 2: `NotebookFrame`, and
+16 placeholder icons at fixed paths for the owner's set.
+
 ## 2026-09-28 — The Lobby look, part 3: the minigames
 
 Plan: `docs/superpowers/plans/2026-09-28-lobby-look-everywhere.md`, Tasks

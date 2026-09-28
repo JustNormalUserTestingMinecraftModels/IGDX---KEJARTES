@@ -130,14 +130,14 @@ pinned by `tests/test_illustration_ao.gd`); which, the Lobby's lighting and
 live tuning: `style-guide.md`, "Illustration materials".
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
-variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
-`SuccessButton`, `LobbyCtaButton`, `Card`, `SunkenPanel`, `Scrim`,
-`DisplayLabel`, `H1Label`, `H2Label`, `TitleLabel`, `CaptionLabel`,
-`MicroLabel`, `BarLabel`, `StatBar`, …). If none fits, add a new variation in
+variation instead (roster: style guide). If none fits, add a new variation in
 `ThemeFactory.gd` and rebake. Only accepted exception: layout-only constant
 overrides (`separation`, `margin_*`).
 
-Full detail: `docs/superpowers/design/style-guide.md`.
+Full detail: `docs/superpowers/design/style-guide.md`. **Buttons are lipped**
+faces from `LippedBox`, native only: a script StyleBox in the theme errors on
+every debug start. Mint is the main action, never gold. **Popups sit in
+`NotebookFrame`.**
 
 **The second rule: no visual is built at runtime.** Static chrome is a node in
 the `.tscn`; repeated rows are a `PackedScene` template; responsive geometry
@@ -200,7 +200,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 167 suites, 2599 tests (2026-09-28).
+the Godot AI MCP `test_run` tool. 172 suites, 2649 tests (2026-09-28).
 
 Hard constraints:
 

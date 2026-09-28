@@ -100,10 +100,6 @@ color = Color(0.94902, 0.627451, 0.556863, 1)
 
 [node name="Well" type="Panel" parent="Chrome" unique_id=204621156]
 layout_mode = 0
-offset_left = 56.0
-offset_top = 104.0
-offset_right = 776.0
-offset_bottom = 868.0
 mouse_filter = 2
 theme_type_variation = &"SunkenPanel"
 

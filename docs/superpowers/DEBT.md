@@ -108,7 +108,11 @@ R18 T18 B18; `coin_plate.png` 120x64, margins L20 R20 T18 B26;
 96x48, margins L26 R26 T8 B8 (a full pill, so the top/bottom margins are only
 a small buffer, not the cap radius). Still pending, waiting on real art: the
 dashed washi rim and tape, and JADWAL!'s washi flutter (deferred by the plan's
-Q4 -- `StyleBoxFlat` cannot draw dashes).
+Q4 -- `StyleBoxFlat` cannot draw dashes), the 16 UI icons in
+`Assets/Images/UI/Icons/` (placeholders for the owner's chunky set; rules in
+that folder's README, pinned by `test_ui_icons`), and the notebook frame's
+`spiral_ring.png`, `paper_rule.png` and `sticker_stitch.png`
+(`Assets/Images/UI/Notebook/README.md`).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
@@ -488,6 +492,16 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+**UI depth pass, Phases 2–3 (2026-09-28).** Phase 1 made every button
+lipped and shipped `NotebookFrame` and the placeholder icons. Phase 2 moves
+every popup into the frame; Phase 3 is the screen-by-screen icon and role
+pass, the Lobby tiles' icons included. Spec:
+`docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
+
+- **`NotebookFrame` has no `_get_minimum_size()`**, so host content larger
+  than `content_rect()` overflows the page (solve in Phase 2).
+- **Password/Variabel's `Hapus` wears `LobbyCtaButton`** (now mint, and it
+  ticks) though it is a delete action (Phase 3 role pass).
 - **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
   Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
   SDK is wired. Debug builds only: a release build keeps the Lobby's `+`

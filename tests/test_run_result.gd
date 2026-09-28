@@ -243,13 +243,22 @@ func test_grade7_loss_clears_roster_grade8_9_loss_preserves_it() -> void:
 
 
 func test_grade7_loss_goes_to_main_menu_grade8_9_restarts_same_grade() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	# Grade-7 loss is a full restart (MainMenu); grade 8/9 loss retries the
 	# same grade at StudentCard so the punishment is not losing all progress.
-	assert_true(src.contains("GameState.current_grade == 7"),
-		"loss branch checks grade to pick destination")
-	assert_true(src.contains("res://Scenes/StudentCard/StudentCard.tscn"),
-		"grade 8/9 loss routes back to StudentCard")
+	var rr := load(_SCRIPT_PATH) as GDScript
+	assert_eq(rr.call("destination_for", true, 7), "res://Scenes/MainMenu/MainMenu.tscn",
+		"a grade-7 loss restarts from the menu")
+	assert_eq(rr.call("destination_for", true, 8), "res://Scenes/StudentCard/StudentCard.tscn",
+		"a grade-8 loss routes back to StudentCard")
+	assert_eq(rr.call("destination_for", true, 9), "res://Scenes/StudentCard/StudentCard.tscn",
+		"and so does a grade-9 loss")
+	assert_eq(rr.call("destination_for", false, 8), "res://Scenes/StudentCard/StudentCard.tscn",
+		"a pass below Kelas 9 picks the next grade's roster")
+	assert_eq(rr.call("destination_for", false, 9), "res://Scenes/MainMenu/MainMenu.tscn",
+		"beating Kelas 9 ends at the menu")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("var destination := destination_for(GameState.run_failed, GameState.current_grade)"),
+		"_apply_progression() routes by destination_for(), read before it clears run_failed")
 
 
 func test_it_applies_grade_progression_and_exits_to_the_menu() -> void:

@@ -72,3 +72,14 @@ func test_the_how_to_card_warns_about_misses() -> void:
 	assert_true(line.contains("Geser"), "Menari is played by swiping")
 	assert_false(line.contains("waktu habis"), "and has no clock to beat")
 	assert_true(line.contains("terlewat"), "the card warns that missed notes lose the game")
+
+
+## Two notes can slip past on one frame; each label counts down in turn.
+func test_each_miss_on_one_frame_shows_its_own_count() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	var process := src.substr(src.find("func _process("))
+	process = process.substr(0, process.find("\nfunc ", 1))
+	var loop := process.substr(process.find("for note in notes_to_remove:"))
+	assert_true(loop.contains("misses_left -= 1"), "the count steps down once per note")
+	assert_true(loop.find("misses_left -= 1") < loop.find("miss_text(misses_left)"),
+		"before that note's label is shown")

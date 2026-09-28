@@ -190,7 +190,7 @@ var good_hits: int = 0
 ## Notes that reached the hit zone unanswered this run.
 var missed_notes: int = 0
 ## This run's miss limit, set by start_minigame() from the difficulty.
-var miss_limit: int = 10
+var miss_limit: int = MISS_LIMIT_BY_DIFFICULTY[EASIEST_DIFFICULTY]
 ## Consecutive hits without a miss, for the HUD's combo chip. Reset by a miss.
 var current_combo: int = 0
 ## Longest combo this run. Not yet read by the star rubric -- reserved for a
@@ -413,10 +413,14 @@ func _process(delta: float) -> void:
 				score_hud.set_combo(current_combo)
 			notes_to_remove.append(note)
 			
+	# Count down per note, so two notes slipping past on one frame read
+	# "Sisa 3" then "Sisa 2" rather than both showing the frame's final count.
+	var misses_left: int = miss_limit - missed_notes + notes_to_remove.size()
 	for note in notes_to_remove:
 		active_notes.erase(note)
 		note.queue_free()
-		_show_hit_feedback(miss_text(miss_limit - missed_notes), GRADE_COLOR[Grade.UPS])
+		misses_left -= 1
+		_show_hit_feedback(miss_text(misses_left), GRADE_COLOR[Grade.UPS])
 		_play_dancer_fail_motion()
 
 	if missed_notes >= miss_limit:

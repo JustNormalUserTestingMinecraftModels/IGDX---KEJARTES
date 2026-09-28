@@ -67,3 +67,35 @@ func test_show_message_swaps_theme_variation_and_errors_route_through_the_bubble
 	assert_contains(src, "ShopMessageSuccess", "missing message variation: ShopMessageSuccess")
 	assert_contains(src, 'say(&"EMPTY")', "empty-cart Beli should route through the bubble")
 	assert_contains(src, 'say(&"POOR")', "insufficient-funds Beli should route through the bubble")
+
+
+## The body of a source-text function, from its signature up to (not
+## including) the next top-level "func " -- or to end of file for the last
+## function. Lets a scan pin what one function does without matching the
+## same text elsewhere in the file.
+func _body(src: String, signature: String) -> String:
+	var at: int = src.find(signature)
+	if at < 0:
+		return ""
+	var next: int = src.find("\nfunc ", at + 1)
+	return src.substr(at, (src.length() if next < 0 else next) - at)
+
+
+## The 2026-09-28 koperasi-top-band-promo Task 7 pass: Beli withdraws
+## visibly from the Kas Kelas pill, and the withdrawal must play after the
+## money has actually left (GameState.player_money -= total), not before.
+func test_beli_withdraws_from_the_kas() -> void:
+	var body: String = _body(FileAccess.get_file_as_string(SCRIPT_PATH), "func _on_beli_pressed()")
+	var deduct_at: int = body.find("GameState.player_money -= total")
+	var play_at: int = body.find("tray.play_withdrawal(total)")
+	assert_true(deduct_at != -1 and play_at > deduct_at,
+		"the withdrawal plays after the money actually leaves")
+
+
+## play_withdrawal()'s "-total" float takes its colour from the theme
+## (TotalNumberOver's font_color), never a literal Color.
+func test_the_withdrawal_takes_its_red_from_the_theme() -> void:
+	var body: String = _body(FileAccess.get_file_as_string("res://Scripts/Koperasi/BasketTray.gd"),
+		"func play_withdrawal(")
+	assert_true(body.contains("create_floating_text"), "a -total floats out of the Kas")
+	assert_true(body.contains("get_theme_color("), "its colour is the theme's, not a literal")

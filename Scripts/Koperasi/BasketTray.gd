@@ -397,6 +397,26 @@ func get_kas_text() -> String:
 	return format_koin(_kas)
 
 
+## Plays the Beli purchase leaving the Kas Kelas pill: a "-amount" rises out
+## of it (AnimUtils.create_floating_text, parented to the tray itself so it
+## sits in local space rather than reaching up to the scene root) and the
+## pill bounces (AnimUtils.squash_bounce -- not Juice.shake, which moves
+## position and would fight the footer VBoxContainer re-sorting the pill as
+## the Kas label's text changes size mid-count). The balance itself counts
+## down separately, through money_changed -> show_kas(). Bails like every
+## other public method here if the footer failed to resolve.
+func play_withdrawal(amount: int) -> void:
+	_ensure_nodes()
+	if not is_instance_valid(_kas_pill):
+		return
+	var center: Vector2 = get_global_transform().affine_inverse() \
+			* _kas_pill.get_global_rect().get_center()
+	var color := get_theme_color("font_color", &"TotalNumberOver")
+	var font_size := get_theme_font_size("font_size", &"TotalNumberOver")
+	AnimUtils.create_floating_text(self, "-" + format_koin(amount), center, color, font_size)
+	AnimUtils.squash_bounce(_kas_pill)
+
+
 ## The Total pill's current theme_type_variation -- TotalPillAsleep (empty
 ## cart), TotalPillAwake (affordable) or TotalPillOver (past the Kas). Empty
 ## StringName if TotalPill is missing; _ensure_nodes() has already logged it.

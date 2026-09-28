@@ -192,7 +192,7 @@ func _on_beli_pressed():
 			bubble.say(&"EMPTY")
 		return
 
-	var total = Cart.get_total()
+	var total: int = Cart.get_total()
 	if GameState.player_money < total:
 		AudioDirector.play_sfx(&"error")
 		if bubble:
@@ -205,6 +205,8 @@ func _on_beli_pressed():
 
 	# Deduct money
 	GameState.player_money -= total
+	if is_instance_valid(tray):
+		tray.play_withdrawal(total)
 
 	# Transfer items to inventory. Each unit is sold for the rest of the week --
 	# marked here, before the cart empties below, so the shelf keeps its slot empty.

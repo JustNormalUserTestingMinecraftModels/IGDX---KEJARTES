@@ -23,6 +23,8 @@ func suite_name() -> String:
 	return "tutorial_panel"
 
 
+const LayoutFrame := preload("res://tests/layout_frame.gd")
+
 const SCENE_PATH := "res://Scenes/UI/TutorialPanel.tscn"
 const SCHOOL_DAY_PATH := "res://Scripts/SchoolSimulation/SchoolDay.gd"
 const STUDENT_CARD_PATH := "res://Scripts/StudentCard/StudentCard.gd"
@@ -52,6 +54,23 @@ func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
 	if frame != null:
 		assert_eq(frame.title_text, "TUTORIAL")
 		assert_false(frame.show_close, "a forced step shows no close")
+
+
+## The F2 regression: BodyLabel's forced minimum used to ignore the frame's
+## own horizontal content_padding, so the panel's real minimum width grew
+## past width_fraction/max_width and ran off a 1080px screen.
+## TutorialPanel.gd's _ready() is not gated behind is_editor_hint(), so
+## standing the scene up runs it (and _apply_geometry()) for real.
+## reset_size() is the same call StudentCard.gd and SchoolDay.gd make
+## before reading panel.size to position it.
+func test_the_panel_never_grows_past_its_own_width() -> void:
+	var frame := track(LayoutFrame.stand_up(SCENE_PATH, Vector2(1080, 1920))) as Control
+	var panel := frame.get_child(0) as TutorialPanel
+	panel.reset_size()
+	var panel_width: float = minf(1080.0 * panel.width_fraction, panel.max_width)
+	assert_true(panel.size.x <= panel_width + 0.5,
+		"panel is %.1fpx wide; expected at most %.1fpx (min(1080 * width_fraction, max_width))"
+		% [panel.size.x, panel_width])
 
 
 func test_show_step_fills_all_three_labels() -> void:

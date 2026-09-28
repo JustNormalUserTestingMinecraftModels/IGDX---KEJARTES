@@ -11,6 +11,8 @@ extends McpTestSuite
 ## checked by source-text scan, per this project's established pattern for
 ## GameState-dependent branching.
 
+const LayoutFrame := preload("res://tests/layout_frame.gd")
+
 const _SCENE_PATH := "res://Scenes/EndGame/TesNotice.tscn"
 const _SCRIPT_PATH := "res://Scripts/EndGame/TesNotice.gd"
 
@@ -50,6 +52,19 @@ func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
 	if frame != null:
 		assert_eq(frame.title_text, "PENGUMUMAN")
 		assert_false(frame.show_close, "a forced step shows no close")
+
+
+## The notebook page is cream, not the old dark notice.png card: BodyLabel
+## must wear dark ink (EventBodyLabel, the same body-text variation
+## StatDetailPopup and ItemDetailSheet use on their own cream pages), not
+## the cream text_on_brand ResultBodyLabel was authored with for a dark
+## ground -- that read invisibly here (fix round 1, F1).
+func test_the_body_reads_on_the_notebook_page() -> void:
+	var frame := track(LayoutFrame.stand_up(_SCENE_PATH, Vector2(1080, 1920))) as Control
+	var screen := frame.get_child(0) as Control
+	var label := screen.get_node("Safe/Center/NoticeCard/Content/BodyLabel") as Label
+	var ink: Color = label.get_theme_color(&"font_color")
+	assert_true(ink.get_luminance() < 0.5, "dark ink on the cream page")
 
 
 ## Since 2026-09-12 the title is the team's "Ujian Nasional" logo art, not a

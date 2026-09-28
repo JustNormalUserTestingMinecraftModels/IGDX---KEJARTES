@@ -29,8 +29,11 @@ extends McpTestSuite
 ##
 ## The cream is not wrong everywhere, which is why ResultBodyLabel was not
 ## simply recoloured. The HUD's TargetLabel sits on the dark translucent
-## ScoreHudPanel and needs it -- the last contrast test here holds that line --
-## and TesNotice's body floats on that screen's dark scrim, where it reads.
+## ScoreHudPanel and needs it -- the last contrast test here holds that line.
+## (TesNotice's BodyLabel used to float on that screen's dark scrim in
+## ResultBodyLabel too; the 2026-09-28 notebook-frame pass put it on a cream
+## page instead, so it switched to EventBodyLabel -- see test_tes_notice.gd's
+## test_the_body_reads_on_the_notebook_page.)
 
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 const _POPUP_PATH := "res://Scenes/Minigames/UI/MinigameResultPopup.tscn"

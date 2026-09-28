@@ -48,24 +48,7 @@ theme_override_constants/separation = 32
 layout_mode = 2
 theme_type_variation = &"Card"
 
-[node name="HeaderCol" type="VBoxContainer" parent="SafeArea/MainColumn/Header"]
-layout_mode = 2
-theme_override_constants/separation = 18
-
-[node name="Row" type="HBoxContainer" parent="SafeArea/MainColumn/Header/HeaderCol"]
-layout_mode = 2
-
-[node name="BackButton" type="Button" parent="SafeArea/MainColumn/Header/HeaderCol/Row"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-theme_type_variation = &"SecondaryButton"
-text = "Kembali"
-icon = ExtResource("4_ret")
-
-[node name="TitleLabel" type="Label" parent="SafeArea/MainColumn/Header/HeaderCol"]
+[node name="TitleLabel" type="Label" parent="SafeArea/MainColumn/Header"]
 layout_mode = 2
 theme_type_variation = &"DisplayLabel"
 text = "PENGATURAN"
@@ -79,7 +62,9 @@ horizontal_scroll_mode = 0
 [node name="Pad" type="MarginContainer" parent="SafeArea/MainColumn/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 24
 
 [node name="Sections" type="VBoxContainer" parent="SafeArea/MainColumn/Scroll/Pad"]
@@ -257,3 +242,12 @@ theme_type_variation = &"SettingsDivider"
 unique_name_in_owner = true
 layout_mode = 2
 label_text = "Getaran (Haptic)"
+
+[node name="BackButton" type="Button" parent="SafeArea/MainColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"SecondaryButton"
+text = "Kembali"
+icon = ExtResource("4_ret")

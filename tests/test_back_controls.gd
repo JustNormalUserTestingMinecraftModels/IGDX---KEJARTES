@@ -58,7 +58,7 @@ const ROSTER := {
 		"Safe/UI/BackButton": "icon",
 	},
 	"res://Scenes/UI/Settings.tscn": {
-		"SafeArea/MainColumn/Header/HeaderCol/Row/BackButton": "icon",
+		"SafeArea/MainColumn/BackButton": "icon",
 	},
 	"res://Scenes/EndGame/RunResult.tscn": {
 		"MarginContainer/Column/BtnSelesai": "icon",

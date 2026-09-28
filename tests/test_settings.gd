@@ -218,21 +218,31 @@ func test_backdrop_is_the_blurred_lobby() -> void:
 		"Settings sits on the blurred Lobby, like its siblings")
 
 
-## Inventory's header: a Card with Kembali over the DisplayLabel title.
-func test_header_matches_inventory() -> void:
+## Inventory's header card, holding only the DisplayLabel title.
+func test_header_is_a_title_card() -> void:
 	var header := _screen.get_node_or_null("SafeArea/MainColumn/Header") as PanelContainer
 	assert_true(header != null, "Settings needs SafeArea/MainColumn/Header")
 	if header == null:
 		return
 	assert_eq(header.theme_type_variation, &"Card", "the header is a Card")
-	var back := header.get_node_or_null("HeaderCol/Row/BackButton") as Button
-	assert_true(back != null, "Kembali rides in the header")
-	if back != null:
-		assert_eq(back.theme_type_variation, &"SecondaryButton", "Kembali is a SecondaryButton")
-		assert_eq(back.text, "Kembali", "Kembali, as on Inventory")
-	var title := header.get_node_or_null("HeaderCol/TitleLabel") as Label
+	var title := header.get_node_or_null("TitleLabel") as Label
 	assert_true(title != null and title.theme_type_variation == &"DisplayLabel",
-		"the title is a DisplayLabel under the back button")
+		"the header holds the DisplayLabel title")
+	assert_eq(header.get_child_count(), 1, "the header holds the title and nothing else")
+
+
+## Kembali sits at the bottom of the screen, centred under the cards, like
+## ShopHub's: the last child of MainColumn, after the scroll.
+func test_back_button_sits_at_the_bottom() -> void:
+	var column := _screen.get_node_or_null("SafeArea/MainColumn")
+	var back := _screen.get_node_or_null("SafeArea/MainColumn/BackButton") as Button
+	assert_true(column != null and back != null, "Kembali is a child of MainColumn")
+	if column == null or back == null:
+		return
+	assert_eq(back.get_index(), column.get_child_count() - 1, "Kembali is the column's last child")
+	assert_eq(back.size_flags_horizontal, Control.SIZE_SHRINK_CENTER, "Kembali is centred")
+	assert_eq(back.theme_type_variation, &"SecondaryButton", "Kembali is a SecondaryButton")
+	assert_eq(back.text, "Kembali", "Kembali, as on ShopHub and Inventory")
 
 
 func test_sections_scroll_under_the_header() -> void:

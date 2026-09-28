@@ -589,16 +589,19 @@ func test_settings_column_is_inside_the_safe_area() -> void:
 		"Settings MainColumn")
 
 
-## The header stays at the safe area's top-left, and the scroll runs to the
-## bottom margin, at `screen` size.
+## At `screen` size: the header stays at the safe area's top-left, Kembali
+## sits on the bottom margin, and the scroll takes everything between them.
 func _assert_settings_fills(screen: Vector2) -> void:
 	var s := _stood_up(SETTINGS, screen)
 	var header := s.get_node("SafeArea/MainColumn/Header") as Control
 	var scroll := s.get_node("SafeArea/MainColumn/Scroll") as Control
+	var back := s.get_node("SafeArea/MainColumn/BackButton") as Control
 	assert_eq(header.get_global_rect().position, Vector2(48, 48),
 		"the header stays at the top at %s" % str(screen))
-	assert_true(absf(scroll.get_global_rect().end.y - (screen.y - 48)) < 0.5,
-		"the scroll ends at %d, expected %d" % [scroll.get_global_rect().end.y, screen.y - 48])
+	assert_true(absf(back.get_global_rect().end.y - (screen.y - 48)) < 0.5,
+		"Kembali ends at %d, expected %d" % [back.get_global_rect().end.y, screen.y - 48])
+	assert_true(absf(scroll.get_global_rect().end.y - (back.get_global_rect().position.y - 32)) < 0.5,
+		"the scroll ends at %d, one gap above Kembali" % scroll.get_global_rect().end.y)
 
 
 func test_settings_on_a_tall_phone() -> void:

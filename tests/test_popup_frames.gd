@@ -41,12 +41,16 @@ const POPUPS := {
 	"res://Scenes/EndGame/StatCheck.tscn": ["Safe/Center/Frame", "dialog", "safe"],
 	# free: StudentCard and SchoolDay each place the panel themselves.
 	"res://Scenes/UI/TutorialPanel.tscn": ["Frame", "dialog", "free"],
+	# free: the frame is drawn behind the calendar art it wraps, so it
+	# rides DailyLoginPanel's own show, hide and scale.
+	"res://Scenes/Lobby/Lobby.tscn": ["DailyReward/DailyLoginFrame", "sheet", "free"],
 }
 
 ## scene -> the script that wires its frame's close, when that is the
 ## screen's own script rather than the instanced root's.
 const SCREEN_SCRIPTS := {
 	"res://Scenes/AturJadwal/AturJadwal.tscn": "res://Scripts/AturJadwal/AturJadwal.gd",
+	"res://Scenes/Lobby/Lobby.tscn": "res://Scripts/Lobby/Lobby.gd",
 }
 
 

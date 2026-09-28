@@ -340,7 +340,7 @@ script = ExtResource("1_script")
 
 **Interfaces:**
 - Consumes: `AmbientKit.is_still() -> bool`.
-- Produces: `ParallaxDiorama._target_tilt(delta: float) -> Vector2`, which returns `Vector2.ZERO` while `GameSettings.reduce_motion` is on and `_read_tilt(delta)` otherwise. A new `FLAT_DIORAMAS` dictionary and `_all_dioramas() -> Dictionary` in the test, which Tasks 3 and 7 extend.
+- Produces: `ParallaxDiorama._target_tilt(raw: Vector2) -> Vector2`, which returns `Vector2.ZERO` while `AmbientKit.is_still()` and `raw` otherwise. A new `FLAT_DIORAMAS` dictionary and `_all_dioramas() -> Dictionary` in the test, which Tasks 3 and 7 extend.
 
 - [ ] **Step 1: Write the failing test.** Append to `tests/test_parallax_diorama.gd`:
 
@@ -350,16 +350,20 @@ script = ExtResource("1_script")
 ## whatever the phone or the pointer does. The Lobby and Koperasi ignored the
 ## switch until then.
 func test_reduce_motion_holds_the_diorama_at_rest() -> void:
-	var before := GameSettings.reduce_motion
+	var before: bool = GameSettings.reduce_motion
 	var driver := (load("res://Scripts/UI/ParallaxDiorama.gd") as GDScript).new() as Control
 	track(driver)
+	var tilt := Vector2(0.5, -0.25)
 	GameSettings.reduce_motion = true
-	var still: Vector2 = driver.call("_target_tilt", 0.016)
+	var still: Vector2 = driver.call("_target_tilt", tilt)
+	GameSettings.reduce_motion = false
+	var moving: Vector2 = driver.call("_target_tilt", tilt)
 	GameSettings.reduce_motion = before
 	assert_eq(still, Vector2.ZERO, "no tilt reaches the bands while Kurangi Gerakan is on")
+	assert_eq(moving, tilt, "with it off, the reading passes through untouched")
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/ParallaxDiorama.gd")
-	assert_true(src.contains("_deflection.lerp(_target_tilt(delta)"),
-		"the bands chase _target_tilt, not the raw reading")
+	assert_true(src.contains("_deflection.lerp(_target_tilt(_read_tilt(delta))"),
+		"the bands chase the gated reading, not the raw one")
 ```
 
 - [ ] **Step 2: Run it and watch it fail.** `test_run(suite="parallax_diorama", session_id=<WT>)`. Expected: the new test fails, because `_target_tilt` does not exist.
@@ -367,7 +371,7 @@ func test_reduce_motion_holds_the_diorama_at_rest() -> void:
 - [ ] **Step 3: Implement.** In `Scripts/UI/ParallaxDiorama.gd`, change the `_deflection = …` line in `_process` to:
 
 ```gdscript
-	_deflection = _deflection.lerp(_target_tilt(delta), clampf(smoothing * delta, 0.0, 1.0))
+	_deflection = _deflection.lerp(_target_tilt(_read_tilt(delta)), clampf(smoothing * delta, 0.0, 1.0))
 ```
 
   Add directly above the function that reads the tilt (`_read_tilt`):
@@ -375,10 +379,10 @@ func test_reduce_motion_holds_the_diorama_at_rest() -> void:
 ```gdscript
 ## The tilt the bands chase: none while Kurangi Gerakan is on, so they settle
 ## back to rest and hold still (spec 2026-09-28, planning amendment 2).
-func _target_tilt(delta: float) -> Vector2:
+func _target_tilt(raw: Vector2) -> Vector2:
 	if AmbientKit.is_still():
 		return Vector2.ZERO
-	return _read_tilt(delta)
+	return raw
 ```
 
   Add one line to the file's `##` header, after the "WHAT DRIVES IT" paragraph: `## Kurangi Gerakan (GameSettings.reduce_motion) holds every band at rest.`
@@ -667,6 +671,11 @@ func test_the_lit_screens_backdrops_fill() -> void:
 	"res://Scenes/Koperasi/ShopHub.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/Koperasi/CosmeticShop.tscn": ["World/Room/Backdrop"],
 ```
+
+  A new graded plate must also be added to `tests/test_look_layer.gd`'s `GRADED`,
+  with the census count in `test_illustration_ao`'s
+  `test_the_census_covers_every_graded_plate_exactly_once` bumped to match (it
+  is now 33, the two shop backdrops having joined it).
 
   - In `tests/test_parallax_diorama.gd`, fill `FLAT_DIORAMAS`:
 

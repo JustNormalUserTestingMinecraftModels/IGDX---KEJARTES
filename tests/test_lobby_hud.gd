@@ -500,7 +500,9 @@ func test_idle_fade_under_reduce_motion_snaps_instead_of_tweening() -> void:
 	GameSettings.reduce_motion = true
 	fade.fade_out()
 	for target: CanvasItem in fade.targets:
-		assert_eq(target.modulate.a, fade.faded_alpha, "fade_out snaps straight to faded_alpha")
+		# modulate.a is a 32-bit float, so 0.55 reads back as 0.5500000119.
+		assert_true(is_equal_approx(target.modulate.a, fade.faded_alpha),
+			"fade_out snaps straight to faded_alpha")
 	fade.restore()
 	for target: CanvasItem in fade.targets:
 		assert_eq(target.modulate.a, 1.0, "restore snaps straight back to full opacity")

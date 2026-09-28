@@ -40,6 +40,7 @@
 [ext_resource type="Texture2D" uid="uid://bedjpscelrj33" path="res://Assets/Images/UI/DailyLogin/streak_flame.svg" id="40_hp3mh"]
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]
+[ext_resource type="Script" uid="uid://b7vwvw12t4yux" path="res://Scripts/UI/IdleFade.gd" id="52_rsfel"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/lobby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
@@ -1475,3 +1476,10 @@ bubble_path = NodePath("../ChatBubble")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2049146762]
 environment = ExtResource("41_7qlaa")
+
+[node name="IdleFade" type="Node" parent="." unique_id=880756292 node_paths=PackedStringArray("targets")]
+script = ExtResource("52_rsfel")
+targets = [NodePath("../Safe/UI/ProgressHeader"), NodePath("../Safe/UI/DisplayUang")]
+
+[node name="IdleTimer" type="Timer" parent="IdleFade" unique_id=664759917]
+one_shot = true

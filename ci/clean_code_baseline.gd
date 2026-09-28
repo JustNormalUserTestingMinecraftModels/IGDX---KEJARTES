@@ -206,7 +206,6 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 2,
 	"res://Scripts/Transition/Transition.gd": 7,
 	"res://Scripts/TutorialArrow.gd": 7,
-	"res://Scripts/UI/SafeAreaMargin.gd": 4,
 	"res://Scripts/UI/StatBar.gd": 1,
 }
 

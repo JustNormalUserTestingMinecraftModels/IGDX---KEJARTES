@@ -64,7 +64,7 @@ const GRADED := {
 		"FieldBG", "Goalie/GFX", "Ball/GFX",
 	],
 	"res://Scenes/Minigames/Olahraga/Badminton.tscn": [
-		"Puck/Sprite2D", "PlayerPaddle/Sprite2D", "EnemyPaddle/Sprite2D",
+		"Background", "Puck/Sprite2D", "PlayerPaddle/Sprite2D", "EnemyPaddle/Sprite2D",
 	],
 }
 

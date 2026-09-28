@@ -11,14 +11,14 @@
 [ext_resource type="Texture2D" uid="uid://w2eebv4y4ue0" path="res://Assets/Images/MuridPortrait/TanganItems/Citra_Table.png" id="7_ek62u"]
 [ext_resource type="PackedScene" path="res://Scenes/Lobby/TheaFace.tscn" id="8_gbno3"]
 [ext_resource type="Texture2D" uid="uid://ckls11l3yiniv" path="res://Assets/Images/MuridPortrait/TanganItems/Andi_Table.png" id="9_bfy74"]
-[ext_resource type="Texture2D" uid="uid://c5uf1bkw1f3ui" path="res://Assets/Images/UI/Nav/icon_cta_student.png" id="9_dyk4g"]
+[ext_resource type="Texture2D" uid="uid://bjccxqjbt3wyo" path="res://Assets/Images/UI/Icons/nav_students.svg" id="ic_nav_students"]
 [ext_resource type="Texture2D" uid="uid://vwe02tlwbjjg" path="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Table.png" id="9_q4xuc"]
 [ext_resource type="Texture2D" uid="uid://cowgvm1mr8ibi" path="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Table.png" id="10_3lohg"]
-[ext_resource type="Texture2D" uid="uid://b0caiiviquf" path="res://Assets/Images/UI/Nav/icon_nav_koperasi.png" id="10_bfy74"]
+[ext_resource type="Texture2D" uid="uid://c3gqcuvkc5py8" path="res://Assets/Images/UI/Icons/nav_koperasi.svg" id="ic_nav_koperasi"]
 [ext_resource type="Texture2D" uid="uid://ce1kfh8jybbhh" path="res://Assets/Images/MuridPortrait/TanganItems/Thea_Table.png" id="11_4d6wl"]
-[ext_resource type="Texture2D" uid="uid://ddjx1gmpupjvv" path="res://Assets/Images/UI/Nav/icon_nav_rapor.png" id="11_4w5lf"]
-[ext_resource type="Texture2D" uid="uid://b83solgop708f" path="res://Assets/Images/UI/Nav/icon_nav_inventory.png" id="12_fb4vu"]
-[ext_resource type="Texture2D" uid="uid://ccu4bm5rdto8r" path="res://Assets/Images/UI/Nav/icon_cta_jadwal.png" id="13_85cl3"]
+[ext_resource type="Texture2D" uid="uid://do8lxs3cf333x" path="res://Assets/Images/UI/Icons/nav_rapor.svg" id="ic_nav_rapor"]
+[ext_resource type="Texture2D" uid="uid://dkytvr1blm7n" path="res://Assets/Images/UI/Icons/nav_inventory.svg" id="ic_nav_inventory"]
+[ext_resource type="Texture2D" uid="uid://c20481fiqs6vb" path="res://Assets/Images/UI/Icons/nav_jadwal.svg" id="ic_nav_jadwal"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
@@ -1111,7 +1111,7 @@ offset_right = 548.0
 offset_bottom = 156.0
 theme_type_variation = &"BookHeroButton"
 text = "STUDENT"
-icon = ExtResource("9_dyk4g")
+icon = ExtResource("ic_nav_students")
 expand_icon = true
 
 [node name="Jadwal" type="Button" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage" unique_id=2126015085]
@@ -1123,7 +1123,7 @@ offset_right = 548.0
 offset_bottom = 156.0
 theme_type_variation = &"BookHeroButton"
 text = "JADWAL!"
-icon = ExtResource("13_85cl3")
+icon = ExtResource("ic_nav_jadwal")
 expand_icon = true
 
 [node name="Subtitle" type="Label" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Jadwal" unique_id=2064006818]
@@ -1181,7 +1181,7 @@ rotation = -0.02618
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileKoperasi"
 text = "Koperasi"
-icon = ExtResource("10_bfy74")
+icon = ExtResource("ic_nav_koperasi")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -1197,7 +1197,7 @@ rotation = 0.017453
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileInventory"
 text = "INVENTORY"
-icon = ExtResource("12_fb4vu")
+icon = ExtResource("ic_nav_inventory")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -1218,7 +1218,7 @@ rotation = -0.017453
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileRapor"
 text = "RAPOR"
-icon = ExtResource("11_4w5lf")
+icon = ExtResource("ic_nav_rapor")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true

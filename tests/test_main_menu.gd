@@ -197,7 +197,7 @@ func test_icon_button_art_paths() -> void:
 			"gear icon art")
 	var exit := _icon_button("QuitButton")
 	if exit != null and exit.icon != null:
-		assert_eq(exit.icon.resource_path, "res://Assets/Images/UI/icon_exit.svg",
+		assert_eq(exit.icon.resource_path, "res://Assets/Images/UI/Icons/exit.svg",
 			"exit icon art")
 
 

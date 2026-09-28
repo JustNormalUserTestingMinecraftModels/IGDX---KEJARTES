@@ -16,9 +16,9 @@ without `particle_flag_disable_z` (found building PaperConfetti on
 sets the flag: `RewardBurst` (its root burst), `CoinShower` (the week-recap
 banner's coins) and `StarBurst`'s star burst. Rescued from a worktree
 stranded since 2026-09-12, minus `CelebrationConfetti` and `ResultConfetti`,
-retired since. `test_spinning_particle_scenes_set_disable_z` in
-`day_summary` and `minigame_result_popup` pins that any emitter asking for
-spin carries the flag, children included.
+retired since. `test_every_spinning_particle_material_sets_disable_z`
+(day_summary) scans every scene, so any material asking for spin must
+carry the flag, listed or not.
 
 ## 2026-09-28 — Settings layout
 

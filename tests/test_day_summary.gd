@@ -1276,28 +1276,39 @@ func test_particle_scenes_are_one_shot_and_start_idle() -> void:
 
 ## Without particle_flag_disable_z a 2D ParticleProcessMaterial ignores
 ## angle and angular_velocity, so every piece stays upright (proven live on
-## 2026-09-12 building PaperConfetti). Any emitter here that asks for spin
-## must carry the flag, children included.
-func test_spinning_particle_scenes_set_disable_z() -> void:
-	for path in [
-		"res://Scenes/SchoolSimulation/RewardBurst.tscn",
-		"res://Scenes/SchoolSimulation/CoinShower.tscn",
-	]:
-		var fx := (load(path) as PackedScene).instantiate() as GPUParticles2D
-		var spinners := 0
-		var emitters: Array[Node] = [fx]
-		emitters.append_array(fx.find_children("*", "GPUParticles2D"))
-		for e in emitters:
-			var mat := (e as GPUParticles2D).process_material as ParticleProcessMaterial
-			if mat == null:
+## 2026-09-12 building PaperConfetti). A text scan of every scene, so a new
+## emitter is covered without being listed: any material that asks for spin
+## must carry the flag.
+func test_every_spinning_particle_material_sets_disable_z() -> void:
+	var scanned := 0
+	for path in _scene_files("res://Scenes"):
+		var src := FileAccess.get_file_as_string(path)
+		for block in src.split("
+
+"):
+			if not block.begins_with('[sub_resource type="ParticleProcessMaterial"'):
 				continue
-			if mat.angular_velocity_min != 0.0 or mat.angular_velocity_max != 0.0 \
-					or mat.angle_min != 0.0 or mat.angle_max != 0.0:
-				spinners += 1
-				assert_true(mat.particle_flag_disable_z,
-					"%s/%s spins, so it needs particle_flag_disable_z" % [path, e.name])
-		assert_gt(spinners, 0, "%s must still ask for spin" % path)
-		fx.free()
+			if not (block.contains("
+angular_velocity_") or block.contains("
+angle_")):
+				continue
+			scanned += 1
+			assert_true(block.contains("
+particle_flag_disable_z = true"),
+				"%s: %s asks for spin without particle_flag_disable_z"
+					% [path, block.get_slice("
+", 0)])
+	assert_gt(scanned, 2, "the scan found the spinning emitters it should")
+
+
+static func _scene_files(dir_path: String) -> PackedStringArray:
+	var out := PackedStringArray()
+	for f in DirAccess.get_files_at(dir_path):
+		if f.ends_with(".tscn"):
+			out.append(dir_path.path_join(f))
+	for d in DirAccess.get_directories_at(dir_path):
+		out.append_array(_scene_files(dir_path.path_join(d)))
+	return out
 
 
 ## Read a .gd as text. Many tests here are source scans rather than

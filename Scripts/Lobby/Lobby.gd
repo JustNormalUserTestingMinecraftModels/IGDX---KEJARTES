@@ -685,7 +685,7 @@ func _on_daily_reward_claimed(_amount: int, previous_money: int) -> void:
 func _update_money_display(from_amount: int = -1) -> void:
 	if not money_label:
 		return
-	var to_amount := GameState.player_money
+	var to_amount: int = GameState.player_money
 	var from := float(from_amount) if from_amount >= 0 else float(to_amount)
 	Juice.count_up(money_label, from, float(to_amount), "%dG")
 	if to_amount > int(from):

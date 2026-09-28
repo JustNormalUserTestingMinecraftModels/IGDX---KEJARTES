@@ -105,7 +105,7 @@ func test_fill_parent_restores_full_rect() -> void:
 ## follow_settings connects a bound method, so freeing the node drops its
 ## connections: a freed kit piece never hears a later flip.
 func test_a_freed_piece_leaves_no_connection_behind() -> void:
-	var before := GameSettings.ambient_effects_changed.get_connections().size()
+	var before: int = GameSettings.ambient_effects_changed.get_connections().size()
 	var probe := (load(MOOD_TINT) as PackedScene).instantiate() as MoodTint
 	AmbientKit.follow_settings(probe._refresh)
 	assert_eq(GameSettings.ambient_effects_changed.get_connections().size(), before + 1,

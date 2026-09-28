@@ -1461,7 +1461,7 @@ func _input(event: InputEvent) -> void:
 func _update_objective_strip() -> void:
 	if objective_title:
 		objective_title.text = ObjectiveHint.title(GameState.minggu_ke, GameState.max_minggu)
-	var stars := GameState.run_stars()
+	var stars: float = GameState.run_stars()
 	if objective_stars:
 		objective_stars.text = ObjectiveHint.star_text(stars)
 	if objective_progress:

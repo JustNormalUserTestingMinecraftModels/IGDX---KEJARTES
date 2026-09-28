@@ -11,6 +11,8 @@ extends McpTestSuiteCompat
 const ANSWER_STATES: Array[String] = ["normal", "hover", "pressed", "disabled", "focus"]
 ## Slack, px, for padding built from int tokens.
 const PAD_TOLERANCE := 1.0
+## The icon button's four styleboxes.
+const BUTTON_STATES: Array[String] = ["normal", "hover", "pressed", "disabled"]
 
 var _tokens: DesignTokens
 var _theme: Theme
@@ -123,3 +125,30 @@ func test_answer_button_focus_is_a_gold_rim_overlay() -> void:
 	assert_false(focus.draw_center, "focus draws no fill over the state beneath it")
 	assert_true(focus.border_color.is_equal_approx(_tokens.currency_gold),
 		"a gold rim reads on the brand wood fill")
+
+
+func test_hud_pill_and_value() -> void:
+	var pill: StyleBoxFlat = _flat("panel", "MinigameHudPill")
+	if pill != null:
+		assert_true(pill.bg_color.is_equal_approx(_tokens.brand_primary_dark), "pill is dark brand")
+	assert_true(_theme.get_color("font_color", "MinigameHudValue").is_equal_approx(_tokens.currency_gold),
+		"score value is gold")
+
+
+## The icon buttons' size is authored on the node (touch_target_min square in
+## MinigameHeader.tscn); the theme's job is the four states and the round shape.
+func test_hud_icon_button_has_all_states_and_is_round() -> void:
+	for state: String in BUTTON_STATES:
+		assert_true(_theme.has_stylebox(state, "MinigameHudIconButton"),
+			"MinigameHudIconButton must define stylebox: " + state)
+	var resting: StyleBoxFlat = _flat("normal", "MinigameHudIconButton")
+	assert_true(resting != null and resting.corner_radius_top_left >= _tokens.radius_md,
+		"icon button is round")
+
+
+func test_plank_panel_and_label() -> void:
+	var plank: StyleBoxFlat = _flat("panel", "MinigamePlankPanel")
+	assert_true(plank != null and plank.bg_color.is_equal_approx(_tokens.brand_primary_dark),
+		"plank panel is dark brand")
+	assert_true(_theme.get_color("font_color", "MinigamePlankLabel").is_equal_approx(_tokens.currency_gold),
+		"plank label text is gold")

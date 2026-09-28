@@ -1961,7 +1961,12 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 ##   MinigameImagePlate     the recessed slot a picture question sits in.
 ##   MinigameAnswerButton   solid brand answer button: light rim at rest, a
 ##                          hard brand-dark drop shadow, gold focus rim.
-## Tasks 2 and 3 of the plan extend this list.
+##   MinigameHudPill        the dark score pill with a cream rim,
+##   MinigameHudValue       and its gold display-face number.
+##   MinigameHudIconButton  the round pause/timer chrome. A fixed square in
+##                          MinigameHeader.tscn, so radius_pill is a circle.
+##   MinigamePlankPanel     the carved plank tab (SOAL / JAWABAN / titles)
+##   MinigamePlankLabel     and its gold display-face text.
 
 ## How far the card's shadow alpha is raised over shadow_color's, so the
 ## frame still pops on the bright light-orange wood backdrop.
@@ -1975,11 +1980,14 @@ const MINIGAME_HARD_SHADOW_BLUR := 1
 ## button, so a disabled answer reads like any other disabled button.
 const MINIGAME_DISABLED_FILL_FADE := 0.7
 const MINIGAME_DISABLED_RIM_FADE := 0.5
+## The Button states the HUD icon button styles.
+const MINIGAME_BUTTON_STATES: Array[String] = ["normal", "hover", "pressed", "disabled"]
 
 
 static func _build_minigame_kit(theme: Theme, tokens: DesignTokens) -> void:
 	_build_minigame_card_family(theme, tokens)
 	_build_minigame_answer_button(theme, tokens)
+	_build_minigame_hud(theme, tokens)
 
 
 ## MinigameCard, MinigameCardInner and MinigameImagePlate.
@@ -2094,6 +2102,52 @@ static func _set_minigame_display_text(theme: Theme, tokens: DesignTokens, name:
 	theme.set_font_size("font_size", name, font_size)
 	if tokens.font_display != null:
 		theme.set_font("font", name, tokens.font_display)
+
+
+## MinigameHudPill + MinigameHudValue, MinigamePlankPanel + MinigamePlankLabel,
+## and MinigameHudIconButton. The pill and the plank are one box that differs
+## only in its corners.
+static func _build_minigame_hud(theme: Theme, tokens: DesignTokens) -> void:
+	_add_minigame_panel(theme, "MinigameHudPill", _minigame_tab_box(tokens, tokens.radius_pill))
+	_add_minigame_gold_label(theme, tokens, "MinigameHudValue", tokens.font_title)
+	_add_minigame_panel(theme, "MinigamePlankPanel", _minigame_tab_box(tokens, tokens.radius_md))
+	_add_minigame_gold_label(theme, tokens, "MinigamePlankLabel", tokens.font_caption)
+
+	# An icon, never text, so no font: it stays off DISPLAY_ROSTER.
+	var icon_button := "MinigameHudIconButton"
+	theme.add_type(icon_button)
+	theme.set_type_variation(icon_button, "Button")
+	for state: String in MINIGAME_BUTTON_STATES:
+		var fill: Color = tokens.brand_primary if state == "pressed" else tokens.brand_primary_dark
+		theme.set_stylebox(state, icon_button, _minigame_rim_box(tokens, fill, tokens.radius_pill))
+
+
+## A gold display-face Label variation at `font_size`.
+static func _add_minigame_gold_label(theme: Theme, tokens: DesignTokens, name: String,
+		font_size: int) -> void:
+	theme.add_type(name)
+	theme.set_type_variation(name, "Label")
+	_set_minigame_display_text(theme, tokens, name, tokens.currency_gold, font_size)
+
+
+## A dark brand tab with a cream rim and the pill's padding, at `radius`.
+static func _minigame_tab_box(tokens: DesignTokens, radius: int) -> StyleBoxFlat:
+	var box := _minigame_rim_box(tokens, tokens.brand_primary_dark, radius)
+	box.content_margin_left = tokens.space_md
+	box.content_margin_right = tokens.space_md
+	box.content_margin_top = tokens.space_xs
+	box.content_margin_bottom = tokens.space_xs
+	return box
+
+
+## A flat `fill` box with `radius` corners and a half-width outline_card rim.
+static func _minigame_rim_box(tokens: DesignTokens, fill: Color, radius: int) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = fill
+	box.set_corner_radius_all(radius)
+	box.set_border_width_all(int(tokens.outline_width / 2.0))
+	box.border_color = tokens.outline_card
+	return box
 
 
 # --------------------------------------------------------------- progress

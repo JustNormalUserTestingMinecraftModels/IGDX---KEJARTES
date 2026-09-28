@@ -49,6 +49,8 @@ const RADIUS_EXEMPT := {
 		"reads as a card, not a button -- radius_lg",
 	"CardArrowButton":
 		"fixed 120x120 square, so radius_pill yields an exact circle -- no height-dependent-radius risk",
+	"MinigameHudIconButton":
+		"fixed touch_target_min square in MinigameHeader.tscn, so radius_pill yields an exact circle -- no height-dependent-radius risk, like CardArrowButton",
 	"AchievementClaimButton":
 		"the Achievements mockup's Klaim is a full capsule with a 6px olive rim -- radius_pill, like the chips",
 	"GhostButton":

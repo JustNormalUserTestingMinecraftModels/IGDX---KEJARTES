@@ -375,9 +375,10 @@ const DISPLAY_ROSTER := [
 	"PlateNameLabel",
 	# 2026-09-11 Koperasi Part 2: the tray's ×N and count badges.
 	"TrayBadgeLabel",
-	# 2026-09-28 minigame kit (Minigame Polish Part 1): the answer button.
-	# Task 3 adds the HUD value and the plank label under this comment.
-	"MinigameAnswerButton",
+	# 2026-09-28 minigame kit (Minigame Polish Part 1): the answer button,
+	# the HUD score value and the plank label. The kit's panels and its icon
+	# button carry no font.
+	"MinigameAnswerButton", "MinigameHudValue", "MinigamePlankLabel",
 ]
 
 

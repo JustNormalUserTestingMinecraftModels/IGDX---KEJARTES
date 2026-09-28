@@ -39,7 +39,10 @@ const BELI_TEXT := "Beli"
 var _price: int = 0
 
 ## True once set_promo() has dressed the tag with a struck list price and a
-## badge; false again after clear_promo() or a fresh set_price().
+## badge; false again after clear_promo(). set_price() does NOT clear this --
+## KoperasiStage.gd calls set_price() every refresh regardless, then set_promo()
+## or clear_promo() to say whether the item is still this week's promo, so a
+## fresh price on the same promo item must not silently drop its dress.
 var _is_promo: bool = false
 
 func _ready() -> void:
